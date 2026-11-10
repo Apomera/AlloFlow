@@ -104,7 +104,11 @@ test('a later same-run replay owns the sequence and prevents older remaining cli
 
 const viewEnd = source.indexOf('    // SyllableCountingView', helperEnd);
 const viewContext = vm.createContext({ React: { memo: fn => fn, createElement: (type, props, ...children) => ({ type, props: props || {}, children }) } });
-vm.runInContext(source.slice(helperEnd, viewEnd) + ';globalThis.View=SyllableBlendingView;', viewContext);
+// The view draws its choices with the shared answer-card helpers (2026-11-09), defined above RhymeView.
+const cardsStart = source.indexOf('    // BEGIN WORD SOUNDS ANSWER CARDS');
+const cardsEnd = source.indexOf('    // END WORD SOUNDS ANSWER CARDS', cardsStart);
+assert(cardsStart >= 0 && cardsEnd > cardsStart, 'answer-card helpers are present');
+vm.runInContext(source.slice(cardsStart, cardsEnd) + '\n' + source.slice(helperEnd, viewEnd) + ';globalThis.View=SyllableBlendingView;', viewContext);
 const view = overrides => viewContext.View({ data: { ...task, blendingOptions: ['sunset', 'raincoat'] }, canAnswer: true, t: () => '', ts: () => '', ...overrides });
 const all = node => typeof node === 'object' && node ? [node, ...node.children.flatMap(all)] : [];
 test('unsupported words show a review message with no answer controls', () => {

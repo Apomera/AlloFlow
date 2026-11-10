@@ -605,7 +605,7 @@ function createWordSoundsCore(options = {}) {
   };
   // Generated Rhyme Time choices are stable per target, but do not reuse the
   // first few model/filler words for every item. Saved boards remain intact.
-  const buildRhymeBoard = ({word, answer, phonemes, answerPhonemes, pool=[], distractors=[], prepared, isEnglish=true, count=4, exposure}) => {
+  const buildRhymeBoard = ({word, answer, phonemes, answerPhonemes, pool=[], distractors=[], prepared, isEnglish=true, count=4, exposure, difficulty}) => {
     const checked = rhymePairStatus({word, answer:prepared?.answer || answer, phonemes, answerPhonemes, pool, prepared, isEnglish});
     if (!checked.supported) return {answer:'', options:[], supported:false, contentStatus:'teacher_review_required',
       reason:checked.reason, suggestedAnswer:prepared?.answer || answer || ''};
@@ -677,7 +677,34 @@ function createWordSoundsCore(options = {}) {
       const last = recent[recent.length - 1] || [];
       return Math.min(3, uses) * 2 + (last.includes(w) ? 4 : recent.some(board => board.includes(w)) ? 2 : 0);
     };
-    const selected = challengePool.sort((a,b) => score(a) + repetitionCost(a) - score(b) - repetitionCost(b)).slice(0, count);
+    // Optional difficulty. Omitted (or 'hard'): the near contrasts above, as
+    // before. 'easy': clearly different words only (another vowel and another
+    // final sound than the target and its rhyme). 'medium': one near foil at most.
+    const level = difficulty === 'easy' || difficulty === 'medium' ? difficulty : null;
+    let selected;
+    if (!level) {
+      selected = challengePool.sort((a,b) => score(a) + repetitionCost(a) - score(b) - repetitionCost(b)).slice(0, count);
+    } else {
+      const spelledVowel = w => isEnglish ? (w.match(/[aeiouy]+/) || [''])[0] : '';
+      const vowelKeys = w => [labels(w).find(s => vowels.has(s)), spelledVowel(w)].filter(Boolean);
+      const endKeys = w => { const end = finalSound(w); return [end ? soundKey(end) : null, w.slice(-1)].filter(Boolean); };
+      const refVowels = new Set([...vowelKeys(target), ...vowelKeys(correct)]);
+      const refEnds = new Set([...endKeys(target), ...endKeys(correct)]);
+      const near = w => vowelKeys(w).some(key => refVowels.has(key)) || endKeys(w).some(key => refEnds.has(key));
+      const onset = edgeSound(target, 'first', phonemes);
+      const lengthCost = w => Math.abs((labels(w).length || w.length) - (targetSounds.length || target.length));
+      const plain = w => lengthCost(w) * 3 + (onset && edgeSound(w, 'first', (data.get(w) || {}).phonemes) === onset ? 1 : 0) + repetitionCost(w);
+      const order = shuffled(candidates, seed);
+      const far = order.filter(w => !near(w)).sort((a,b) => plain(a) - plain(b));
+      const close = order.filter(near).sort((a,b) => score(a) + repetitionCost(a) - score(b) - repetitionCost(b));
+      if (level === 'easy') {
+        selected = far.slice(0, count);
+        // Too few clearly different words: fill only as far as a two-foil board.
+        if (selected.length < Math.min(count, 2)) selected = [...selected, ...close.slice(0, Math.min(count, 2) - selected.length)];
+      } else {
+        selected = [...close.slice(0, far.length >= count - 1 ? 1 : count - far.length), ...far].slice(0, count);
+      }
+    }
     return {answer, options: shuffled([answer, ...selected], seed ^ 0x9e3779b9),
       ...(checked.pronunciations ? {pronunciations:checked.pronunciations} : {})};
   };
@@ -693,7 +720,8 @@ function createWordSoundsCore(options = {}) {
       prepared.answer && prepared.options.includes(prepared.answer);
     const previous = session.occurrences.get(key);
     const inputKey = JSON.stringify([normalize(args.word), normalize(args.answer), args.phonemes || [], args.answerPhonemes || [], args.distractors || [],
-      (args.pool || []).filter(value => value && typeof value === 'object').map(value => [value.targetWord || value.word || value.term, value.phonemes])]);
+      (args.pool || []).filter(value => value && typeof value === 'object').map(value => [value.targetWord || value.word || value.term, value.phonemes]),
+      ...(args.difficulty === 'easy' || args.difficulty === 'medium' ? [args.difficulty, args.count] : [])]);
     // Edits and saved boards are authoritative even if the same occurrence
     // was generated before them. An already counted occurrence stays counted.
     if (previous && !hasPrepared && previous.inputKey === inputKey) return {...previous.board, options: [...previous.board.options]};
@@ -752,19 +780,98 @@ function createWordSoundsCore(options = {}) {
   const wordFamilyInstruction = rime => `Find all words in the ${rime} family`;
   const difficultyDecision = (history, activity, support={}) => {
     const rows=(history||[]).filter(h=>h && h.activity===activity && !h.practiceOnly && h.activity!=='letter_tracing' && h.taskKind!=='word_matching' && !h.answerExposed && !!h.aacAssisted===!!support.aacAssisted && (h.mode||'sound_only')===(support.mode||'sound_only'));
-    let band=0, block=[], reason='starting', changes=0;
+    // support.hysteresis (optional): after a step back, moving up again takes
+    // two qualifying windows in a row (three after a second step back), and the
+    // result carries support:'more' when the lowest band is still under 40%.
+    // Without it the decision and its fields are exactly as before.
+    const steady=support.hysteresis===true;
+    let band=0, block=[], reason='starting', changes=0, backs=0, held=0;
     const bands=['easy','medium','hard'];
+    const need=()=>steady && backs>0 ? (backs>1?3:2) : 1;
     for(const h of rows){
       if(h.difficulty && h.difficulty!==bands[band]) continue;
       block.push(h); block=block.slice(-10);
       const distinct=new Set(block.map(r=>normalize(r.word)).filter(Boolean)).size;
       const n=block.length, accuracy=block.reduce((s,r)=>s+(r.correct?((r.attempts||1)>1?0.5:1):0),0)/n;
       const min=band===0?6:8, words=band===0?4:6;
-      if(band<2 && n>=min && distinct>=words && accuracy>=0.85){band++;changes++;block=[];reason='advance';}
-      else if(band>0 && n>=6 && distinct>=4 && accuracy<0.45){band--;changes++;block=[];reason='step_back';}
-      else if(reason==='starting')reason='practice';
+      const qualifies=band<2 && n>=min && distinct>=words && accuracy>=0.85;
+      if(qualifies && held+1>=need()){band++;changes++;block=[];held=0;reason='advance';}
+      else if(qualifies){held++;block=[];reason='holding';}
+      else if(band>0 && n>=6 && distinct>=4 && accuracy<0.45){band--;changes++;backs++;held=0;block=[];reason='step_back';}
+      else{
+        // The qualifying windows must be consecutive.
+        if(held>0 && n>=min && accuracy<0.85)held=0;
+        if(reason==='starting')reason='practice';
+      }
     }
-    return {difficulty:bands[band],reason,items:block.length,distinctWords:new Set(block.map(r=>normalize(r.word)).filter(Boolean)).size,changes};
+    const result={difficulty:bands[band],reason,items:block.length,distinctWords:new Set(block.map(r=>normalize(r.word)).filter(Boolean)).size,changes};
+    if(!steady)return result;
+    const tailAccuracy=block.length?block.reduce((s,r)=>s+(r.correct?((r.attempts||1)>1?0.5:1):0),0)/block.length:1;
+    return {...result,support:band===0 && block.length>=6 && tailAccuracy<0.4?'more':'none',windowsHeld:held,windowsNeeded:need()};
+  };
+  // How many choices a sound-only board shows. 'hard' (or anything else) keeps
+  // the board as built; support 'more' is the difficultyDecision signal.
+  const choiceLimit = (difficulty, full, support) => {
+    const size = Math.max(0, Number(full) || 0);
+    if (support === 'more' && difficulty === 'easy') return Math.min(size, 2);
+    return difficulty === 'easy' ? Math.min(size, 3) : difficulty === 'medium' ? Math.min(size, 4) : size;
+  };
+  // 0 = clearly different, higher = easier to confuse.
+  const SOUND_NEIGHBOURS = new Set('b d|b p|b v|d t|d g|g k|f v|f th|s z|s sh|s th|m n|n ng|sh ch|j ch|k t|p t|w r|l r|c k|ck k|e i|a e|o u|a u|ee i|a o|oo u'.split('|'));
+  const soundCloseness = (a, b) => {
+    const x = soundKey(a), y = soundKey(b);
+    if (!x || !y) return 0;
+    if (x === y) return 3;
+    if (SOUND_NEIGHBOURS.has(x + ' ' + y) || SOUND_NEIGHBOURS.has(y + ' ' + x)) return 2;
+    return RHYME_VOWELS.has(x) && RHYME_VOWELS.has(y) ? 1 : 0;
+  };
+  const wordCloseness = (a, b) => {
+    const x = normalize(a), y = normalize(b);
+    if (!x || !y) return 0;
+    const rime = w => (w.match(/[aeiouy][a-z]*$/) || [''])[0], vowel = w => (w.match(/[aeiouy]+/) || [''])[0];
+    return (x[0] === y[0] ? 2 : 0) + (rime(x) && rime(x) === rime(y) ? 2 : 0) + (x.slice(-1) === y.slice(-1) ? 1 : 0) + (vowel(x) && vowel(x) === vowel(y) ? 1 : 0);
+  };
+  // Show fewer choices from a board without rebuilding it: the answer always
+  // stays, a second spelling of the answer never does, and the kept choices
+  // keep their order. No count (or a count the board already fits): unchanged.
+  const trimChoices = ({options, answer, count, difficulty, same, closeness} = {}) => {
+    const list = Array.isArray(options) ? [...options] : [];
+    const equal = typeof same === 'function' ? same : (a, b) => normalize(a) === normalize(b);
+    const at = list.findIndex(option => equal(option, answer));
+    if (at < 0 || !Number.isFinite(count) || count < 2) return list;
+    const foils = list.map((option, index) => ({option, index})).filter(row => row.index !== at && !equal(row.option, answer));
+    if (foils.length === list.length - 1 && list.length <= count) return list;
+    const score = row => typeof closeness === 'function' ? Number(closeness(row.option, answer)) || 0 : 0;
+    const farFirst = [...foils].sort((a, b) => score(a) - score(b) || a.index - b.index);
+    let kept = farFirst.slice(0, count - 1);
+    if (difficulty === 'medium' && typeof closeness === 'function' && farFirst.length > count - 1) {
+      const nearest = farFirst[farFirst.length - 1];
+      if (score(nearest) > 0) kept = [...farFirst.slice(0, count - 2), nearest];
+    } else if (difficulty !== 'easy' && difficulty !== 'medium') kept = foils.slice(0, count - 1);
+    const keep = new Set([at, ...kept.map(row => row.index)]);
+    return list.filter((_, index) => keep.has(index));
+  };
+  // Number buttons for "how many sounds": easy = the count with two either side
+  // (kept inside 1-6 when the count is), medium = 1-8, otherwise null (the full row).
+  const countingChoices = (count, difficulty) => {
+    const n = Number(count);
+    if (!Number.isInteger(n) || n < 1 || n > 10) return null;
+    if (difficulty === 'easy') {
+      const top = Math.max(6, n);
+      let low = Math.max(1, n - 2), high = Math.min(top, n + 2);
+      while (high - low < 2) { if (low > 1) low--; else high++; }
+      return Array.from({length: high - low + 1}, (_, i) => low + i);
+    }
+    if (difficulty === 'medium' && n <= 8) return [1, 2, 3, 4, 5, 6, 7, 8];
+    return null;
+  };
+  // Which sound positions isolation may ask for: easy = first, medium = first
+  // or last, otherwise any.
+  const isolationPositions = (difficulty, length) => {
+    const n = Math.max(1, Math.floor(Number(length)) || 1);
+    if (difficulty === 'easy') return [0];
+    if (difficulty === 'medium') return n > 1 ? [0, n - 1] : [0];
+    return Array.from({length: n}, (_, i) => i);
   };
   const textEvidence = ({activity,imageAvailable,answerRevealed=false}) => {
     const connected=['read_sentence','read_passage'].includes(activity);
@@ -856,6 +963,31 @@ function createWordSoundsCore(options = {}) {
     bathmat: ['bath', 'mat'], headband: ['head', 'band'],
   };
   const syllableWords = () => Object.keys(SYLLABLE_COMPOUNDS);
+  // Machine-vetted; accepted by the owner 2026-11-10 (see compounds_review.md).
+  // Two-part compounds added to the 64 above. Each part is a common one-syllable
+  // word that sounds the same alone as in the compound (CMUdict: whole = part 1 +
+  // part 2) and has its own clip in word_audio_kokoro_bank.json, like every part
+  // of the 64. syllableWords() stays the 64: the audio-bank build and tests use it.
+  const SYLLABLE_COMPOUNDS_VETTED = {
+    moonlight: ['moon', 'light'], daylight: ['day', 'light'], starlight: ['star', 'light'],
+    spotlight: ['spot', 'light'], headlight: ['head', 'light'], lighthouse: ['light', 'house'],
+    greenhouse: ['green', 'house'], henhouse: ['hen', 'house'], doorway: ['door', 'way'],
+    hallway: ['hall', 'way'], driveway: ['drive', 'way'], walkway: ['walk', 'way'],
+    doorstep: ['door', 'step'], footstep: ['foot', 'step'], daytime: ['day', 'time'],
+    nighttime: ['night', 'time'], goodnight: ['good', 'night'], hillside: ['hill', 'side'],
+    hilltop: ['hill', 'top'], treetop: ['tree', 'top'], laptop: ['lap', 'top'],
+    downhill: ['down', 'hill'], sundown: ['sun', 'down'], sunbeam: ['sun', 'beam'],
+    sunburn: ['sun', 'burn'], bedside: ['bed', 'side'], seaside: ['sea', 'side'],
+    sidewalk: ['side', 'walk'], rainfall: ['rain', 'fall'], snowfall: ['snow', 'fall'],
+    seesaw: ['see', 'saw'], horseback: ['horse', 'back'], drawbridge: ['draw', 'bridge'],
+    playmate: ['play', 'mate'], bookcase: ['book', 'case'], shellfish: ['shell', 'fish'],
+    catfish: ['cat', 'fish'], cheesecake: ['cheese', 'cake'], homemade: ['home', 'made'],
+    shortcut: ['short', 'cut'],
+  };
+  const compoundParts = word => Object.prototype.hasOwnProperty.call(SYLLABLE_COMPOUNDS, word) ? SYLLABLE_COMPOUNDS[word]
+    : Object.prototype.hasOwnProperty.call(SYLLABLE_COMPOUNDS_VETTED, word) ? SYLLABLE_COMPOUNDS_VETTED[word] : null;
+  // The ready-made "Compound words" list: the 64 first, then the vetted additions.
+  const compoundWords = () => [...syllableWords(), ...Object.keys(SYLLABLE_COMPOUNDS_VETTED)];
   // Written hints for recording word-specific speech, never TTS fragments.
   // These expand the teaching inventory without claiming unrecorded sounds are
   // checked audio. The teacher still previews and confirms every recording.
@@ -880,6 +1012,89 @@ function createWordSoundsCore(options = {}) {
     responsibility: ['re', 'spon', 'si', 'bil', 'i', 'ty'],
   };
   const syllableCountWords = () => [...syllableWords(), ...Object.keys(SYLLABLE_RECORDING_HINTS)];
+  // The hint words as a ready-made list for Syllable Claps, mixed so the first ten cover 2, 3 and 4+ syllables.
+  const longerSyllableWords = () => {
+    const bySize = new Map();
+    Object.keys(SYLLABLE_RECORDING_HINTS).forEach(word => { const size = Math.min(4, SYLLABLE_RECORDING_HINTS[word].length); bySize.set(size, [...(bySize.get(size) || []), word]); });
+    const rows = [...bySize.keys()].sort((a, b) => a - b).map(size => bySize.get(size)), out = [];
+    for (let i = 0; rows.some(row => i < row.length); i++) rows.forEach(row => { if (i < row.length) out.push(row[i]); });
+    return out;
+  };
+  // Ready-made word lists for the setup picker. The preset objects (name -> words) come from allo_data.
+  // A list id is stable: 'family:<preset name>', 'sight:<preset name>', 'compound', 'longer'.
+  const READY_LIST_FIRST = 10;
+  const SIGHT_LIST_LABELS = {
+    'Pre-K (Dolch)': ['word_sounds.list_dolch_prek', 'Dolch Pre-K'], 'Kindergarten (Dolch)': ['word_sounds.list_dolch_k', 'Dolch Kindergarten'],
+    '1st Grade (Dolch)': ['word_sounds.list_dolch_1', 'Dolch 1st Grade'], '2nd Grade (Dolch)': ['word_sounds.list_dolch_2', 'Dolch 2nd Grade'],
+    '3rd Grade (Dolch)': ['word_sounds.list_dolch_3', 'Dolch 3rd Grade'],
+    // These two presets hold 50 words each (Fry 1-50 and 51-100), whatever their preset names say.
+    'Fry First 100': ['word_sounds.list_fry_1_50', 'Fry words 1 to 50'], 'Fry Second 100': ['word_sounds.list_fry_51_100', 'Fry words 51 to 100'],
+  };
+  const readyMadeListGroups = (input = {}) => {
+    const words = list => { const seen = new Set(); return (Array.isArray(list) ? list : []).map(word => String(word || '').trim()).filter(word => { const key = word.toLocaleLowerCase(); return word && !seen.has(key) && !!seen.add(key); }); };
+    const families = input.families || {}, sight = input.sightWords || {};
+    const groups = { rhyme: [], digraph: [], blend: [], sight: [], syllable: [] };
+    Object.keys(families).forEach(name => {
+      const pattern = (name.match(/\(([^)]+)\)\s*$/) || [])[1] || '', lead = name.replace(/\s*\([^)]*\)\s*$/, '');
+      const kind = /^digraph\b/i.test(name) ? 'digraph' : /^blend\b/i.test(name) ? 'blend' : 'rhyme';
+      const label = !pattern ? name : kind === 'rhyme' ? pattern + ' (' + lead.toLowerCase() + ')' : pattern;
+      groups[kind].push({ id: 'family:' + name, label, words: words(families[name]), filterBySyllables: true });
+    });
+    Object.keys(sight).forEach(name => {
+      const known = Object.prototype.hasOwnProperty.call(SIGHT_LIST_LABELS, name) ? SIGHT_LIST_LABELS[name] : null;
+      groups.sight.push({ id: 'sight:' + name, label: known ? known[1] : name, ...(known ? { labelKey: known[0] } : {}), words: words(sight[name]), filterBySyllables: false });
+    });
+    if (isSyllableLanguageSupported(input.language)) {
+      groups.syllable.push({ id: 'compound', labelKey: 'word_sounds.list_compound', label: 'Compound words (for {activity})', activity: 'syllable_blending', words: compoundWords(), filterBySyllables: true });
+      groups.syllable.push({ id: 'longer', labelKey: 'word_sounds.list_longer', label: 'Longer words (for {activity})', activity: 'syllable_counting', words: longerSyllableWords(), filterBySyllables: true });
+    }
+    return [
+      { id: 'rhyme', labelKey: 'word_sounds.list_group_rhyme', label: 'Rhyming families', lists: groups.rhyme },
+      { id: 'digraph', labelKey: 'word_sounds.list_group_digraph', label: 'Digraphs', lists: groups.digraph },
+      { id: 'blend', labelKey: 'word_sounds.list_group_blend', label: 'Blends', lists: groups.blend },
+      { id: 'sight', labelKey: 'word_sounds.list_group_sight', label: 'Sight words', lists: groups.sight },
+      { id: 'syllable', labelKey: 'word_sounds.list_group_syllable', label: 'Compound and longer words', lists: groups.syllable },
+    ].filter(group => group.lists.length);
+  };
+  // A setup draft saved before the picker: the two bank flags, one family and one sight list.
+  const readyListIdsFromDraft = draft => {
+    if (Array.isArray(draft?.readyLists)) return [...new Set(draft.readyLists.filter(id => typeof id === 'string' && id))];
+    const ids = [];
+    if (draft?.includeSyllableWords || draft?.includeSyllableCountWords) ids.push('compound');
+    if (draft?.includeSyllableCountWords) ids.push('longer');
+    if (draft?.includeFamily && draft.selectedFamily) ids.push('family:' + draft.selectedFamily);
+    if (draft?.includeSightWords && draft.selectedSightWordList) ids.push('sight:' + draft.selectedSightWordList);
+    return ids;
+  };
+  // Which preview words start ticked. sources: [{ words, first }] where first = how many of that source's words
+  // start ticked (left out = all of them). cap limits the total (a new assessment). Returns preview spellings.
+  const foldWord = word => String(word || '').trim().toLocaleLowerCase();
+  // One entry per (source, word) that the source ticks by itself: 'sourceId\u0000word'.
+  const defaultTickOffers = sources => {
+    const offers = [];
+    (sources || []).forEach((source, index) => {
+      const seen = new Set(), id = source?.id == null ? String(index) : String(source.id);
+      (source?.words || []).forEach(word => { const key = foldWord(word); if (!key || seen.has(key)) return; if (source.first == null || seen.size < source.first) offers.push(id + '\u0000' + key); seen.add(key); });
+    });
+    return offers;
+  };
+  const defaultTickedWords = (previewWords, sources, cap) => {
+    const want = new Set(defaultTickOffers(sources).map(offer => offer.slice(offer.indexOf('\u0000') + 1))), out = [];
+    (previewWords || []).forEach(word => { if (want.has(foldWord(word)) && (cap == null || out.length < cap)) out.push(word); });
+    return out;
+  };
+  // After a source change the teacher's own ticks stay. Words a source newly offers join (up to cap, when there
+  // is one); words no longer in the preview leave. A word the teacher unticked stays out unless a source newly offers it.
+  const mergeTickedWords = (selected, previewWords, previousOffers, nextOffers, cap) => {
+    const spelling = new Map(); (previewWords || []).forEach(word => { if (!spelling.has(foldWord(word))) spelling.set(foldWord(word), word); });
+    const before = new Set(previousOffers || []), next = new Set();
+    [...(selected || [])].forEach(word => { if (spelling.has(foldWord(word))) next.add(spelling.get(foldWord(word))); });
+    (nextOffers || []).forEach(offer => {
+      const key = offer.slice(offer.indexOf('\u0000') + 1);
+      if (!before.has(offer) && spelling.has(key) && (cap == null || next.size < cap)) next.add(spelling.get(key));
+    });
+    return next;
+  };
   const isSyllableLanguageSupported = language => !String(language || '').trim() || /^(?:en(?:[-_][a-z0-9]+)*|english(?:\s*\([^)]*\))?)$/i.test(String(language).trim());
   const syllableLanguageKey = language => isSyllableLanguageSupported(language) ? 'en' : normalize(language).replace(/_/g, '-');
   const validSyllableCount = count => Number.isInteger(count) && count >= 1 && count <= 12;
@@ -1101,7 +1316,7 @@ function createWordSoundsCore(options = {}) {
   const resolveSyllableTask = (word, prepared, language) => {
     const targetWord = normalize(word);
     const needsRecording = () => ({ version: 1, supported: false, contentStatus: 'syllable_audio_required', targetWord,
-      syllables: [], audioUnits: [], reason: 'Use a syllable bank word or add and review recordings for each syllable in Word Sounds Studio.' });
+      syllables: [], audioUnits: [], reason: 'Use a syllable bank word or add and review recordings for each syllable in Word Sounds.' });
     if (prepared?.contentStatus === 'teacher_recorded') {
       if (reviewedSyllableReady(prepared) && prepared.targetWord === targetWord && prepared.version === 2 && prepared.language === 'en') {
         return { ...needsRecording(), reason: 'recording_locale_review_required', recoverable: true };
@@ -1111,7 +1326,7 @@ function createWordSoundsCore(options = {}) {
       }
       return { ...needsRecording(), ...(reviewedSyllableReady(prepared) && prepared.targetWord === targetWord ? { reason: 'recording_locale_review_required', recoverable: true } : {}) };
     }
-    const parts = isSyllableLanguageSupported(language) && Object.prototype.hasOwnProperty.call(SYLLABLE_COMPOUNDS, targetWord) && SYLLABLE_COMPOUNDS[targetWord];
+    const parts = isSyllableLanguageSupported(language) && compoundParts(targetWord);
     if (!parts) return needsRecording();
     return { version: 1, supported: true, contentStatus: 'curated_compound', targetWord,
       syllables: [...parts], audioUnits: parts.map(text => ({ key: text, text })) };
@@ -1468,11 +1683,9 @@ function createWordSoundsCore(options = {}) {
       if (index) { delete copy._ttsAssets; delete copy._ttsRequiredKeys; }
       else copy._ttsAssets = assets;
       copy.ttsReady = portablePackAsset(assets[packAudioKey(item.targetWord || item.word || item.term)]);
-      copy._ttsFailed = !copy.ttsReady && !isTeacherSpokenSyllableCount(item.targetWord || item.word || item.term, {
-        language: item.activityItems?.syllable_counting?.language, prepared: item.activityItems?.syllable_counting,
-        recordedTask: item.activityItems?.syllable_blending,
-        audioContext: createSyllableCountAudioContext({ asset: assets[packAudioKey(item.targetWord || item.word || item.term)], language: item.activityItems?.syllable_counting?.language }),
-      });
+      // No saved clip is not a failure. _ttsFailed means a live attempt on this
+      // device failed, and only the player sets it; a saved clip clears it.
+      if (copy.ttsReady) copy._ttsFailed = false;
       const word = item.targetWord || item.word || item.term, key = packAudioKey(word);
       const countBoard = item.activityItems?.syllable_counting;
       const approval = countBoard?.reviewedEvidence || countBoard;
@@ -1489,5 +1702,316 @@ function createWordSoundsCore(options = {}) {
     next[0]._ttsCoverage = Object.assign({}, next[0]._ttsCoverage, { clips: Object.keys(assets).length, requiredClips: inventory.length, words: next.length, wordsWithAudio: next.filter(item => item.ttsReady).length });
     return next;
   };
-  return {soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  // BEGIN SYLLABLE ACTIVITY WORDS
+  // Syllable Blending and Syllable Claps never block a lesson. Each uses the lesson
+  // words it can play. With too few, built-in words are added for that activity
+  // only: such an item carries _wsOnlyFor (a list of activity ids) and belongs to
+  // no other activity, printout or word count.
+  const SYLLABLE_ACTIVITY_IDS = ['syllable_blending', 'syllable_counting'];
+  const SYLLABLE_PLAN_DEFAULT_COUNT = 5;
+  const packItemWord = item => String(item && (item.targetWord || item.word || item.term) || '');
+  const itemOnlyFor = item => {
+    const only = item && typeof item === 'object' && Array.isArray(item._wsOnlyFor) ? item._wsOnlyFor.filter(id => typeof id === 'string' && id) : [];
+    return only.length ? only : null;
+  };
+  const isTopUpItem = item => !!itemOnlyFor(item);
+  const lessonOwnItems = words => (Array.isArray(words) ? words : []).filter(item => !isTopUpItem(item));
+  const topUpItems = (words, activity) => (Array.isArray(words) ? words : []).filter(item => {
+    const only = itemOnlyFor(item);
+    return !!only && (!activity || only.includes(activity));
+  });
+  // A prepared item's own board decides whether a syllable activity can play it.
+  const syllableItemPlayable = (item, activity, language) => {
+    const word = packItemWord(item), boards = item && item.activityItems || {};
+    if (activity === 'syllable_blending') {
+      const board = boards.syllable_blending;
+      return !!board && packAudioKey(board.targetWord) === packAudioKey(word) && validSyllableBoard(board) &&
+        resolveSyllableTask(word, board, language || board.language).supported;
+    }
+    if (activity === 'syllable_counting') {
+      const board = boards.syllable_counting;
+      return !!board && resolveSyllableCount(word, { language: language || board.language, prepared: board, recordedTask: boards.syllable_blending }).supported;
+    }
+    return true;
+  };
+  const packItemPlaysIn = (item, activity, language) => {
+    if (!item || typeof item !== 'object') return true;
+    const only = itemOnlyFor(item);
+    if (only && !only.includes(activity)) return false;
+    return !SYLLABLE_ACTIVITY_IDS.includes(activity) || syllableItemPlayable(item, activity, language);
+  };
+  // The items one activity uses. A syllable activity with nothing playable (a lesson
+  // saved before this rule) keeps the lesson's own words, as it did then.
+  const wordsForActivity = (words, activity, language) => {
+    const list = (Array.isArray(words) ? words : []).filter(item => item && typeof item === 'object');
+    const used = list.filter(item => packItemPlaysIn(item, activity, language));
+    return used.length || !SYLLABLE_ACTIVITY_IDS.includes(activity) ? used : lessonOwnItems(list);
+  };
+  const syllableActivityHasWords = (words, activity, language) =>
+    (Array.isArray(words) ? words : []).some(item => item && typeof item === 'object' && packItemPlaysIn(item, activity, language));
+  const planWordKey = word => normalize(word);
+  const topUpSeed = (words, activity) => {
+    const text = String(activity) + '|' + [...new Set(words.map(planWordKey))].sort().join('|');
+    let hash = 2166136261;
+    for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+    return hash >>> 0;
+  };
+  const seededOrder = (values, seed) => {
+    let state = (seed >>> 0) || 1;
+    return values.map((value, index) => { state = (Math.imul(state, 1103515245) + 12345) >>> 0; return [state >>> 8, index, value]; })
+      .sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(row => row[2]);
+  };
+  // One-syllable built-in words for Syllable Claps: the parts of the compounds.
+  const compoundPartWords = () => [...new Set(compoundWords().flatMap(word => compoundParts(word)))];
+  // What one syllable activity will run with: the lesson words it can use, the ones it
+  // cannot, and the built-in words added to reach the item count. The same lesson word
+  // list always gives the same added words. One-syllable words are fine for Syllable
+  // Claps (clap once); Syllable Blending needs two or more recorded parts.
+  const syllableActivityPlan = (input = {}) => {
+    const activity = input.activity, language = input.language;
+    const seen = new Set();
+    const words = (Array.isArray(input.words) ? input.words : []).map(word => String(word || '').trim())
+      .filter(word => { const key = planWordKey(word); return key && !seen.has(key) && !!seen.add(key); });
+    const needed = Math.max(1, Math.min(20, Math.floor(Number(input.count)) || SYLLABLE_PLAN_DEFAULT_COUNT));
+    const blending = activity === 'syllable_blending';
+    const isEligible = typeof input.isEligible === 'function' ? input.isEligible
+      : blending ? word => resolveSyllableTask(word, null, language).supported
+      : word => resolveSyllableCount(word, { language }).supported;
+    const countOf = typeof input.countOf === 'function' ? input.countOf : word => resolveSyllableCount(word, { language }).count;
+    const eligible = [], unused = [];
+    words.forEach(word => { let ok = false; try { ok = !!isEligible(word); } catch (_) { ok = false; } (ok ? eligible : unused).push(word); });
+    const builtIn = SYLLABLE_ACTIVITY_IDS.includes(activity) && isSyllableLanguageSupported(language);
+    const shortfall = Math.max(0, needed - eligible.length);
+    const topUp = [];
+    if (shortfall && builtIn && input.topUp !== false) {
+      const seed = topUpSeed(words, activity);
+      // A built-in word joins Syllable Claps only when its count is settled (the dictionary may not have loaded).
+      const canTopUp = typeof input.canTopUp === 'function' ? input.canTopUp : blending ? () => true : word => resolveSyllableCount(word, { language }).supported;
+      const free = list => list.filter(word => { if (seen.has(word)) return false; try { return !!canTopUp(word); } catch (_) { return false; } });
+      if (blending) {
+        // A compound built on a lesson word comes first (cat: catfish); the rest follow in seeded order,
+        // compounds that repeat a part already in the activity last.
+        const pool = free(compoundWords());
+        const related = pool.filter(word => compoundParts(word).some(part => seen.has(part)));
+        const ordered = [...related, ...seededOrder(pool.filter(word => !related.includes(word)), seed)];
+        const usedParts = new Set(eligible.flatMap(word => compoundParts(planWordKey(word)) || []));
+        const fresh = [], repeats = [];
+        ordered.forEach(word => {
+          const parts = compoundParts(word);
+          if (parts.some(part => usedParts.has(part))) repeats.push(word);
+          else { fresh.push(word); parts.forEach(part => usedParts.add(part)); }
+        });
+        topUp.push(...[...fresh, ...repeats].slice(0, shortfall));
+      } else {
+        // Mix one, two and three-or-more claps: add from whichever the activity has least of.
+        const longer = longerSyllableWords();
+        const buckets = {
+          1: seededOrder(free(compoundPartWords()), seed + 1),
+          2: seededOrder(free([...longer.filter(word => SYLLABLE_RECORDING_HINTS[word].length === 2), ...compoundWords()]), seed + 2),
+          3: seededOrder(free(longer.filter(word => SYLLABLE_RECORDING_HINTS[word].length >= 3)), seed + 3),
+        };
+        const tally = { 1: 0, 2: 0, 3: 0 };
+        eligible.forEach(word => { let count = 0; try { count = Number(countOf(word)) || 0; } catch (_) { count = 0; } if (count >= 1) tally[Math.min(3, count)] += 1; });
+        while (topUp.length < shortfall) {
+          const open = [2, 3, 1].filter(size => buckets[size].length);
+          if (!open.length) break;
+          const size = open.reduce((best, next) => tally[next] < tally[best] ? next : best, open[0]);
+          topUp.push(buckets[size].shift());
+          tally[size] += 1;
+        }
+      }
+    }
+    return { activity, needed, eligible, unused, topUp, shortfall, builtIn, topUpOff: input.topUp === false,
+      skipped: eligible.length + topUp.length === 0 };
+  };
+  // END SYLLABLE ACTIVITY WORDS
+  // BEGIN ACTIVITY NAMES AND SKILL STRANDS
+  // One name per activity (the player's), one grouping (six strands, teaching order),
+  // a Big 5 tag and a one-line skill. English here is the fallback; translate() is
+  // the caller's (key, fallback) lookup.
+  const SKILL_STRANDS = [
+    { key: 'syllables_rhyme', name: 'Syllables and rhyme', big5: ['phonological_awareness'] },
+    { key: 'hearing_sounds', name: 'Hearing sounds', big5: ['phonemic_awareness'] },
+    { key: 'letters_sounds', name: 'Letters and sounds', big5: ['phonics'] },
+    { key: 'spelling', name: 'Spelling', big5: ['phonics'] },
+    { key: 'reading_words', name: 'Reading words', big5: ['phonics'] },
+    { key: 'reading_sentences', name: 'Reading sentences', big5: ['comprehension'] },
+  ];
+  const BIG5_NAMES = { phonological_awareness: 'phonological awareness', phonemic_awareness: 'phonemic awareness', phonics: 'phonics', fluency: 'fluency', vocabulary: 'vocabulary', comprehension: 'comprehension' };
+  const ACTIVITY_SKILLS = {
+    rhyming: { name: 'Rhyme Time', strand: 'syllables_rhyme', big5: ['phonological_awareness'], skill: 'Hearing which words rhyme' },
+    syllable_counting: { name: 'Syllable Claps', strand: 'syllables_rhyme', big5: ['phonological_awareness'], skill: 'Counting the syllables in a spoken word' },
+    syllable_blending: { name: 'Syllable Blending', strand: 'syllables_rhyme', big5: ['phonological_awareness'], skill: 'Blending syllables into a word' },
+    word_families: { name: 'Word Families', strand: 'syllables_rhyme', big5: ['phonological_awareness'], skill: 'Hearing which words share the same ending' },
+    isolation: { name: 'Find Sounds', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Finding the first, middle or last sound in a word' },
+    sound_sort: { name: 'Sound Sort', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Sorting words by their first or last sound' },
+    blending: { name: 'Blend Sounds', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Blending separate sounds into a word' },
+    segmentation: { name: 'Break it Down', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Breaking a word into its separate sounds' },
+    counting: { name: 'Sound Counting', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Counting the sounds in a spoken word' },
+    manipulation: { name: 'Sound Swap', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Taking away or changing one sound to make a new word' },
+    mapping: { name: 'Sound Mapping', strand: 'letters_sounds', big5: ['phonics'], skill: 'Matching each sound in a word to the letters that spell it' },
+    letter_tracing: { name: 'Letter Trace', strand: 'letters_sounds', big5: ['phonics'], skill: 'Forming the first letter of a word' },
+    missing_letter: { name: 'Missing Letter', strand: 'spelling', big5: ['phonics'], skill: 'Choosing the missing letter in a word' },
+    orthography: { name: 'Sight & Spell', strand: 'spelling', big5: ['phonics'], skill: 'Spelling a word you hear with letter tiles' },
+    word_scramble: { name: 'Word Scramble', strand: 'spelling', big5: ['phonics'], skill: 'Putting mixed-up letters in order to spell a word' },
+    spelling_bee: { name: 'Spelling Bee', strand: 'spelling', big5: ['phonics'], skill: 'Spelling a word you hear' },
+    decoding: { name: 'Read & Match', strand: 'reading_words', big5: ['phonics'], skill: 'Reading a word and matching it to its picture' },
+    read_sentence: { name: 'Finish the Sentence', strand: 'reading_sentences', big5: ['comprehension'], skill: 'Reading a sentence and choosing the word that finishes it' },
+    sentence_match: { name: 'Picture the Sentence', strand: 'reading_sentences', big5: ['comprehension'], skill: 'Reading a sentence and showing what it says with pictures' },
+    read_passage: { name: 'Read the Story', strand: 'reading_sentences', big5: ['comprehension'], skill: 'Reading a short story and choosing the word that finishes it' },
+  };
+  const skillLookup = (translate, key, fallback) => {
+    let found = '';
+    try { found = typeof translate === 'function' ? translate(key, fallback) : ''; } catch (_) { found = ''; }
+    return typeof found === 'string' && found && found !== key ? found : fallback;
+  };
+  const activityIds = () => Object.keys(ACTIVITY_SKILLS);
+  const activityEnglishName = (id) => {
+    const row = ACTIVITY_SKILLS[id];
+    if (row) return row.name;
+    const plain = String(id || '').replace(/_/g, ' ').trim();
+    return plain ? plain.charAt(0).toUpperCase() + plain.slice(1) : '';
+  };
+  const activityLabel = (id, translate) => ACTIVITY_SKILLS[id] ? skillLookup(translate, 'word_sounds.activity_' + id, ACTIVITY_SKILLS[id].name) : activityEnglishName(id);
+  const activitySkillLabel = (id, translate) => ACTIVITY_SKILLS[id] ? skillLookup(translate, 'word_sounds.skill_' + id, ACTIVITY_SKILLS[id].skill) : '';
+  const activityStrand = (id) => ACTIVITY_SKILLS[id] ? ACTIVITY_SKILLS[id].strand : '';
+  const activityBig5 = (id) => ACTIVITY_SKILLS[id] ? ACTIVITY_SKILLS[id].big5.slice() : [];
+  const strandOrder = () => SKILL_STRANDS.map(row => row.key);
+  const strandRow = (key) => SKILL_STRANDS.find(row => row.key === key) || null;
+  const strandLabel = (key, translate) => strandRow(key) ? skillLookup(translate, 'word_sounds.strand_' + key, strandRow(key).name) : '';
+  const big5Label = (key, translate) => BIG5_NAMES[key] ? skillLookup(translate, 'word_sounds.big5_' + key, BIG5_NAMES[key]) : '';
+  const strandBig5 = (key) => strandRow(key) ? strandRow(key).big5.slice() : [];
+  const strandBig5Label = (key, translate) => strandBig5(key).map(tag => big5Label(tag, translate)).join(', ');
+  // Ids keep their given order inside each strand; unknown ids come last under ''.
+  const groupActivitiesByStrand = (ids) => {
+    const list = (Array.isArray(ids) ? ids : []).filter(id => typeof id === 'string');
+    const groups = SKILL_STRANDS.map(row => ({ strand: row.key, ids: list.filter(id => activityStrand(id) === row.key) }));
+    const rest = list.filter(id => !activityStrand(id));
+    if (rest.length) groups.push({ strand: '', ids: rest });
+    return groups.filter(group => group.ids.length);
+  };
+  // END ACTIVITY NAMES AND SKILL STRANDS
+  // BEGIN LESSON STARTING POINTS
+  // A lesson always has a plan. A starting point is plain data that fills it: activities in
+  // running order with a weight each (the share of the lesson's items), and the streak that
+  // ends an activity early. Lesson length turns the weights into item counts.
+  const LESSON_STARTING_POINTS = [
+    { id: 'hearing_sounds', name: 'Hearing sounds', mastery: 2, activities: [['rhyming', 3], ['syllable_counting', 3], ['syllable_blending', 3], ['isolation', 3]] },
+    { id: 'first_sounds_letters', name: 'First sounds and letters', mastery: 3, activities: [['isolation', 4], ['sound_sort', 3], ['blending', 3], ['letter_tracing', 3]] },
+    { id: 'cvc', name: 'CVC blending and spelling', mastery: 3, activities: [['blending', 4], ['segmentation', 4], ['mapping', 4], ['spelling_bee', 3], ['decoding', 4]] },
+    { id: 'digraphs_blends', name: 'Digraphs and blends', mastery: 3, activities: [['isolation', 3], ['sound_sort', 4], ['blending', 4], ['mapping', 4], ['missing_letter', 3], ['spelling_bee', 3]] },
+    { id: 'syllables', name: 'Syllables', mastery: 3, activities: [['syllable_counting', 5], ['syllable_blending', 5], ['spelling_bee', 3]] },
+    { id: 'reading', name: 'Reading words and sentences', mastery: 3, activities: [['decoding', 4], ['read_sentence', 4], ['sentence_match', 3], ['read_passage', 2]] },
+  ];
+  // Half a minute an item (the app's own figure): 10, 20 and 30 items.
+  const LESSON_LENGTHS = { short: { items: 10, minutes: 5 }, regular: { items: 20, minutes: 10 }, long: { items: 30, minutes: 15 } };
+  const LESSON_LENGTH_DEFAULT = 'regular';
+  const LESSON_COUNT_MAX = 20;
+  const startingPointRow = id => LESSON_STARTING_POINTS.find(row => row.id === id) || null;
+  const startingPoints = () => LESSON_STARTING_POINTS.map(row => ({ id: row.id, name: row.name, mastery: row.mastery, activities: row.activities.map(([activity, weight]) => ({ id: activity, weight })) }));
+  const startingPointLabel = (id, translate) => startingPointRow(id) ? skillLookup(translate, 'word_sounds.starting_point_' + id, startingPointRow(id).name) : '';
+  const planEntries = entries => (Array.isArray(entries) ? entries : []).filter(entry => entry && typeof entry.id === 'string')
+    .map(entry => ({ id: entry.id, count: Math.max(1, Math.round(Number(entry.count != null ? entry.count : entry.weight)) || 1) }));
+  const lessonPlanItems = entries => planEntries(entries).reduce((sum, entry) => sum + entry.count, 0);
+  const lessonPlanMinutes = entries => Math.ceil(lessonPlanItems(entries) * 0.5);
+  // Shares the length's items between the activities in proportion to their current counts:
+  // every activity keeps at least one item and none passes 20. Largest remainders first, so the
+  // total is exact whenever the plan can hold it.
+  const scaleLessonCounts = (entries, length) => {
+    const rows = planEntries(entries), target = LESSON_LENGTHS[length] ? LESSON_LENGTHS[length].items : 0;
+    if (!rows.length || !target) return rows;
+    const weight = rows.reduce((sum, row) => sum + row.count, 0);
+    const exact = rows.map(row => row.count / weight * target);
+    const counts = exact.map(value => Math.min(LESSON_COUNT_MAX, Math.max(1, Math.floor(value))));
+    let left = target - counts.reduce((sum, count) => sum + count, 0);
+    const byRemainder = exact.map((value, index) => ({ index, part: value - Math.floor(value) })).sort((a, b) => b.part - a.part || a.index - b.index);
+    for (let turn = 0; left > 0 && turn < rows.length * LESSON_COUNT_MAX; turn++) {
+      const at = byRemainder[turn % rows.length].index;
+      if (counts[at] < LESSON_COUNT_MAX) { counts[at]++; left--; }
+      else if (counts.every(count => count >= LESSON_COUNT_MAX)) break;
+    }
+    return rows.map((row, index) => ({ id: row.id, count: counts[index] }));
+  };
+  const lessonLengthOf = entries => {
+    const items = lessonPlanItems(entries);
+    return Object.keys(LESSON_LENGTHS).find(key => LESSON_LENGTHS[key].items === items) || 'custom';
+  };
+  // The plan a starting point gives: its activities in order, minus any that cannot run here.
+  const startingPointPlan = (id, options = {}) => {
+    const row = startingPointRow(id);
+    if (!row) return null;
+    const unavailable = Array.isArray(options.unavailable) ? options.unavailable : [];
+    const kept = row.activities.filter(([activity]) => !unavailable.includes(activity));
+    const length = LESSON_LENGTHS[options.length] ? options.length : LESSON_LENGTH_DEFAULT;
+    const activities = scaleLessonCounts(kept.map(([activity, weight]) => ({ id: activity, count: weight })), length);
+    return { id: row.id, length, masteryThreshold: row.mastery, activities, order: activities.map(activity => activity.id),
+      dropped: row.activities.map(([activity]) => activity).filter(activity => unavailable.includes(activity)) };
+  };
+  // A saved plan with exactly a starting point's activities, in its order, is that starting point.
+  const matchStartingPoint = activityIdList => {
+    const ids = (Array.isArray(activityIdList) ? activityIdList : []).join(',');
+    const row = ids ? LESSON_STARTING_POINTS.find(candidate => candidate.activities.map(([activity]) => activity).join(',') === ids) : null;
+    return row ? row.id : '';
+  };
+  // The player's language gate, as data, so setup offers only what the player will run.
+  const NON_LETTER_TILE_LANGUAGES = ['ar', 'he', 'fa', 'prs', 'ur', 'ps', 'sd', 'ug', 'dv', 'hi', 'bn', 'mr', 'ne', 'gu', 'pa', 'ta', 'te', 'kn', 'ml', 'si', 'as', 'or',
+    'th', 'lo', 'km', 'my', 'bo', 'dz', 'zh', 'cmn', 'yue', 'ja', 'ko', 'am', 'ti'];
+  const RTL_LANGUAGES = ['ar', 'he', 'fa', 'prs', 'ur', 'ps', 'sd', 'ug', 'dv', 'ku'];
+  const ENGLISH_ONLY_ACTIVITIES = ['sound_sort', 'word_families', 'letter_tracing', 'read_sentence', 'read_passage', 'sentence_match'];
+  const LETTER_TILE_ACTIVITIES = ['orthography', 'spelling_bee', 'word_scramble', 'missing_letter'];
+  const activityRunsInLanguage = (id, language) => {
+    if (!language || String(language).toLowerCase().indexOf('en') === 0) return true;
+    const primary = String(language).toLowerCase().split(/[-_]/)[0];
+    if (ENGLISH_ONLY_ACTIVITIES.includes(id)) return false;
+    if (LETTER_TILE_ACTIVITIES.includes(id)) return !NON_LETTER_TILE_LANGUAGES.includes(primary);
+    if (id === 'mapping') return !NON_LETTER_TILE_LANGUAGES.includes(primary) && !RTL_LANGUAGES.includes(primary);
+    return true;
+  };
+  // What an activity cannot run without. Pictures: the word's picture is the answer.
+  // Sentences: the item is a written sentence or story.
+  const ACTIVITY_NEEDS = { pictures: ['decoding', 'sentence_match'], sentences: ['read_sentence', 'read_passage', 'sentence_match'] };
+  // '' when the activity can run; otherwise the first thing in its way.
+  const activityBlockedBy = (id, env = {}) => !activityRunsInLanguage(id, env.language) ? 'language'
+    : env.pictures === false && ACTIVITY_NEEDS.pictures.includes(id) ? 'pictures'
+      : env.sentences === false && ACTIVITY_NEEDS.sentences.includes(id) ? 'sentences' : '';
+  // A starting point that would lose more than half of its activities is not offered.
+  const startingPointStatus = (id, env = {}) => {
+    const row = startingPointRow(id);
+    if (!row) return { id, dropped: [], disabled: true, reason: '' };
+    const dropped = row.activities.map(([activity]) => ({ id: activity, reason: activityBlockedBy(activity, env) })).filter(entry => entry.reason);
+    const disabled = dropped.length * 2 > row.activities.length;
+    return { id, dropped, disabled, reason: dropped.some(entry => entry.reason === 'language') ? 'language' : dropped.length ? dropped[0].reason : '' };
+  };
+  const SPELLED_DIGRAPH = /(?:sh|ch|th|wh|ph|ck|ng|qu)/;
+  const SPELLED_BLEND = /^(?:[bcfgps]l|[bcdfgpt]r|s[cklmnptw]|tw|s[cp]r|str|spl)|(?:[lmn][dkpt]|s[kpt]|ft|ct|pt|nch)$/;
+  const roughSyllables = word => {
+    const text = String(word).toLowerCase(), groups = text.replace(/e$/, '').match(/[aeiouy]+/g);
+    return Math.max(1, (groups ? groups.length : 1) + (/[^aeiouy]le$/.test(text) ? 1 : 0));
+  };
+  // The starting point offered before the teacher chooses one. In order:
+  //  1. no words                                              -> Hearing sounds
+  //  2. not English (the spelling rules below are English)    -> Hearing sounds
+  //  3. at least 8 in 10 words are on a sight-word list       -> Reading words and sentences
+  //  4. at least 6 in 10 words have two or more syllables     -> Syllables
+  //  5. at least half the words have a digraph or a blend     -> Digraphs and blends
+  //  6. at least 6 in 10 are one syllable, up to 4 letters    -> CVC blending and spelling
+  //  7. anything else                                         -> Hearing sounds
+  // A starting point that is not offered here (isOffered) is passed over.
+  const suggestStartingPoint = (words, options = {}) => {
+    const list = [...new Set((Array.isArray(words) ? words : []).map(word => foldWord(word)).filter(word => /\p{L}/u.test(word)))];
+    const offered = id => typeof options.isOffered !== 'function' || !!options.isOffered(id);
+    const fallback = rule => ({ id: 'hearing_sounds', rule });
+    if (!list.length) return fallback('no_words');
+    if (!isSyllableLanguageSupported(options.language)) return fallback('language');
+    const share = test => list.filter(test).length / list.length;
+    const sight = new Set((Array.isArray(options.sightWords) ? options.sightWords : []).map(word => foldWord(word)));
+    const countOf = word => { const known = typeof options.countOf === 'function' ? Number(options.countOf(word)) : 0; return validSyllableCount(known) ? known : roughSyllables(word); };
+    if (sight.size && share(word => sight.has(word)) >= 0.8 && offered('reading')) return { id: 'reading', rule: 'sight_words' };
+    if (share(word => countOf(word) >= 2) >= 0.6 && offered('syllables')) return { id: 'syllables', rule: 'long_words' };
+    if (share(word => SPELLED_DIGRAPH.test(word) || SPELLED_BLEND.test(word)) >= 0.5 && offered('digraphs_blends')) return { id: 'digraphs_blends', rule: 'digraphs_blends' };
+    if (share(word => countOf(word) === 1 && word.length <= 4) >= 0.6 && offered('cvc')) return { id: 'cvc', rule: 'short_words' };
+    return fallback('other');
+  };
+  // END LESSON STARTING POINTS
+  return {LESSON_STARTING_POINTS,LESSON_LENGTHS,LESSON_LENGTH_DEFAULT,startingPoints,startingPointLabel,startingPointPlan,startingPointStatus,matchStartingPoint,suggestStartingPoint,scaleLessonCounts,lessonLengthOf,lessonPlanItems,lessonPlanMinutes,activityRunsInLanguage,activityBlockedBy,ACTIVITY_NEEDS,SYLLABLE_ACTIVITY_IDS,SYLLABLE_PLAN_DEFAULT_COUNT,isTopUpItem,lessonOwnItems,topUpItems,packItemPlaysIn,wordsForActivity,syllableActivityHasWords,syllableActivityPlan,compoundPartWords,ACTIVITY_SKILLS,SKILL_STRANDS,BIG5_NAMES,activityIds,activityEnglishName,activityLabel,activitySkillLabel,activityStrand,activityBig5,strandOrder,strandLabel,strandBig5,big5Label,strandBig5Label,groupActivitiesByStrand,soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,SYLLABLE_COMPOUNDS_VETTED,compoundWords,longerSyllableWords,READY_LIST_FIRST,readyMadeListGroups,readyListIdsFromDraft,defaultTickOffers,defaultTickedWords,mergeTickedWords,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,choiceLimit,soundCloseness,wordCloseness,trimChoices,countingChoices,isolationPositions,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }

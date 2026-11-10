@@ -27,6 +27,9 @@ function isolationFor(item, isEnglish, index = 0) {
     isolationState: null, setIsolationState: value => {state = value;}, isolationPositionRef: {current: null},
     Math: math, phonemeKey, wsLangCaps: {isEnglish}, preloadedWords: [item],
     fisherYatesShuffle: values => [...values], debugLog: () => {}, warnLog: () => {}, handleAudio: () => Promise.resolve(true),
+    // The board as built (2026-11-09): a fixed form asks for any position and shows every choice;
+    // fewer choices and first-sound-only for beginners are covered in word_sounds_answer_cards.test.js.
+    isFixedForm: true, getEffectiveDifficulty: () => 'hard', trimSoundChoices: (_kind, options) => options,
   };
   new Function(...Object.keys(env), slice(
     '        if (wordSoundsActivity !== "isolation" || !wordSoundsPhonemes',

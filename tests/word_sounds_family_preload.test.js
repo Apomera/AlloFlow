@@ -112,6 +112,7 @@ function audioHarness({ packed = null, cached = null } = {}) {
     loadAudioFromStorage: () => null, ttsInflight: { current: new Map() }, callTTS: vi.fn(async () => null),
     saveAudioToStorage: vi.fn(), wordSoundsLanguage: 'en', preloadedWords: [], wordSoundsAudioLibrary: {}, speakWord: vi.fn(),
     wsStudentDeviceVoiceOnly: () => false, wsSpeakDeviceVoice: vi.fn(async () => false),
+    noteWordAudioPlayed: vi.fn(),
   };
   if (cached) environment.audioInstances.current.set('hat', cached);
   const handleAudio = new Function(...Object.keys(environment), handleAudioSource + ';return handleAudio;')(...Object.values(environment));
@@ -133,11 +134,13 @@ describe('silent option loading and playback outcomes', () => {
     const played = h.handleAudio('hat'); await tick(); clip.finish();
     await expect(played).resolves.toEqual({ ok: true, status: 'ready' });
     expect(h.cancelMicInput).toHaveBeenCalledOnce();
+    expect(h.noteWordAudioPlayed.mock.calls).toEqual([['hat']]);
   });
   it('returns the actual cached playback failure to a sequenced activity', async () => {
     const h = audioHarness(), clip = new h.Audio('hat'); clip.play.mockRejectedValue(new Error('damaged')); h.audioInstances.current.set('hat', clip);
     await expect(h.handleAudio('hat')).resolves.toEqual({ ok: false, status: 'damaged' });
     expect(h.notifyAudioUnavailable).toHaveBeenCalledOnce();
+    expect(h.noteWordAudioPlayed).not.toHaveBeenCalled();
   });
   it('does not report cancellation of a delayed load as damaged audio', async () => {
     const h = audioHarness({ packed: 'data:audio/mp3;base64,HAT' }), played = h.handleAudio('hat');

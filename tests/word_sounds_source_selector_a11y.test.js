@@ -6,7 +6,14 @@ const source = fs.readFileSync('word_sounds_setup_source.jsx', 'utf8');
 describe('Word Sounds source selector keyboard behavior', () => {
   it('uses a named group of native checkboxes for all active source toggles', () => {
     expect(source).toContain('role="group" aria-labelledby="word-sounds-active-sources-label"');
-    expect(source.match(/type="checkbox" checked=\{include(?:Glossary|Family|Custom|SightWords|AI)\}/g)?.length).toBe(5);
+    // 2026-11-10: Word Family, Sight Words and both syllable banks became one labelled native select with an Add button.
+    expect(source.match(/type="checkbox" checked=\{include(?:Glossary|Custom|AI)\}/g)?.length).toBe(3);
+    expect(source).not.toMatch(/checked=\{include(?:Family|SightWords|SyllableWords|SyllableCountWords)\}/);
+    expect(source).toContain('<label htmlFor="ws-ready-list-select"');
+    expect(source).toMatch(/<select id="ws-ready-list-select" aria-describedby="ws-ready-list-help"/);
+    expect(source).toMatch(/<optgroup key=\{group\.id\} label=\{tf\(group\.labelKey, group\.label\)\}>/);
+    expect(source).toMatch(/<button type="button" onClick=\{addReadyList\} disabled=\{!readyListPick\} data-ws-ready-list-add="true"/);
+    expect(source).toContain("aria-label={tf('word_sounds.ready_list_remove_named', 'Remove list: {name}', { name })}");
     expect(source).not.toMatch(/aria-pressed=\{include(?:Glossary|Family|Custom|SightWords|AI)\}/);
     expect(source).not.toContain('<div role="button" tabIndex={0} aria-pressed={include');
   });
@@ -21,11 +28,16 @@ describe('Word Sounds source selector keyboard behavior', () => {
     expect(source).not.toContain('~5 audio clips per word');
   });
 
-  it('uses native disabled and checked state for the lesson-plan toggle', () => {
-    expect(source).toContain('type="checkbox" checked={includeLessonPlan} disabled={sessionType === \'assessment\'}');
+  // 2026-11-10 (plan first): the lesson-plan toggle is gone (a lesson always has a plan). The one
+  // checkbox beside the plan, free roaming, is a native checkbox with native checked and disabled state.
+  it('uses native disabled and checked state for the free-roaming checkbox', () => {
+    expect(source).toContain('<input type="checkbox" className="mt-0.5 h-5 w-5 shrink-0 accent-violet-700" checked={!!freeRoaming || !includeLessonPlan} disabled={!includeLessonPlan}');
+    expect(source).not.toContain('checked={includeLessonPlan}');
     expect(source).not.toContain('aria-disabled={sessionType === \'assessment\'} aria-pressed={includeLessonPlan}');
     expect(source).not.toContain("sessionType !== 'assessment' && (e.key === 'Enter' || e.key === ' ')");
-    expect(source.match(/focus-within:ring-2/g)?.length).toBeGreaterThanOrEqual(6);
+    // The source checkboxes keep a visible focus ring; the picker's select and buttons have their own.
+    expect(source.match(/focus-within:ring-2/g)?.length).toBeGreaterThanOrEqual(3);
+    expect(source.match(/focus-visible:ring-2 focus-visible:ring-pink-600/g)?.length).toBeGreaterThanOrEqual(3);
   });
 
   it('synchronizes both generated module copies', () => {

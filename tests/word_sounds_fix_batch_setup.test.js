@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 // Word Sounds setup fix batch (2026-11-09). Each block mounts the real setup component and checks one fix:
-// 1 an empty lesson plan blocks Start in every scope; 2 a new assessment follows Word Count; 3 a Word Count change keeps
-// the teacher's own picks; 4 strings go through the translation helper and the saved summary uses the list's names;
+// 1 an empty lesson plan blocks Start in every scope; 2 a new assessment starts with ten words (the Word Count slider is
+// gone, 2026-11-10); 3 a source change keeps the teacher's own picks; 4 strings go through the translation helper and the saved summary uses the list's names;
 // 5 source wording, Glossary row hidden when empty; 6 sidebar words seed "My words" once; 7 the empty state has an action;
 // 8 "Prepare lesson", Cancel, and a plain summary when audio or pictures are missing; 9 AI-off notes, assessment settings.
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -43,7 +43,9 @@ const one = (selector) => container.querySelector(selector);
 const click = (el) => { expect(el).toBeTruthy(); return act(async () => { el.click(); }); };
 const startButtons = () => all('button').filter((b) => /^(Prepare lesson|Start Activity|Start teacher-led activity|Generating\.\.\.)$/.test(b.textContent.trim()));
 const selected = () => all('button[aria-pressed="true"][aria-label$=": selected"]').map((b) => b.getAttribute('aria-label').split(':')[0]).sort();
-const setCount = (value) => act(async () => Simulate.change(one('[data-help-key="ws_gen_count_slider"]'), { target: { value: String(value) } }));
+const typeWords = (value) => act(async () => Simulate.change(one('[data-ws-my-words]'), { target: { value } }));
+const sourceBox = (helpKey) => all('input[type="checkbox"]').find((input) => input.closest('label')?.getAttribute('data-help-key') === helpKey);
+const setSource = (helpKey, checked) => act(async () => Simulate.change(sourceBox(helpKey), { target: { checked } }));
 
 beforeEach(() => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
@@ -66,10 +68,14 @@ describe('1. lesson plan on with no activity ticked', () => {
     expect(one('[data-ws-start-bar]').contains(reasons[1])).toBe(true);
     await click(startButtons()[0]);
     expect(props.onStartGame).not.toHaveBeenCalled();
-    one('[data-ws-lesson-activities]').scrollIntoView = vi.fn();
+    // 2026-11-10 (plan first): the activity list is behind "Change activities"; the message opens it.
+    expect(one('[data-ws-lesson-activities]'), 'closed until asked for').toBeNull();
     await click(reasons[0]);
     await tick();
-    expect(document.activeElement.id).toBe('ws-activity-check-isolation');
+    expect(one('[data-ws-lesson-activities]'), 'the message opens the list').toBeTruthy();
+    expect(one('[data-ws-change-activities]').getAttribute('aria-expanded')).toBe('true');
+    // The list starts in the recommended order (2026-11-09): Rhyme Time is the first row.
+    expect(document.activeElement.id).toBe('ws-activity-check-rhyming');
     await act(async () => Simulate.change(one('#ws-activity-check-blending'), { target: { checked: true } }));
     expect(all('[data-ws-start-blocked-plan]').length).toBe(0);
     startButtons().forEach((button) => expect(button.disabled).toBe(false));
@@ -82,13 +88,20 @@ describe('1. lesson plan on with no activity ticked', () => {
   });
 });
 
-describe('2. assessment word count', () => {
-  it('a new assessment selects Word Count words, not the whole list', async () => {
+describe('2. assessment word cap', () => {
+  it('a new assessment starts with ten words ticked, and Add all ticks the rest', async () => {
     const session = { key: 1, setupDraft: { sessionType: 'assessment' } };
     await mount({ glossaryTerms: glossary(TWENTY), syllableReviewSession: session });
     expect(selected()).toEqual(TWENTY.slice(0, 10).sort());
-    await setCount(6);
-    expect(selected()).toEqual(TWENTY.slice(0, 6).sort());
+    expect(one('[data-help-key="ws_gen_count_slider"]'), 'no Word Count slider').toBeNull();
+    expect(one('[data-ws-assessment-cap]').textContent).toContain('A new assessment starts with the first 10 words ticked.');
+    // Typed words are all ticked in practice; an assessment still starts with ten in all.
+    await setSource('ws_gen_src_custom', true);
+    await typeWords('zap zip zog');
+    expect(selected().length, 'typed words do not lift the cap').toBe(10);
+    await click(one('[data-ws-assessment-add-all]'));
+    expect(selected()).toEqual([...TWENTY, 'zap', 'zip', 'zog'].sort());
+    expect(one('[data-ws-assessment-cap]'), 'nothing left to add').toBeNull();
   });
 
   it('a reopened probe keeps its whole authored list', async () => {
@@ -98,50 +111,51 @@ describe('2. assessment word count', () => {
     expect(selected()).toEqual(TWENTY.slice(0, 14).sort());
   });
 
-  it('prepared practice words opened as an assessment follow Word Count', async () => {
+  it('prepared practice words opened as an assessment start with ten', async () => {
     const words = TWENTY.slice(0, 14).map((word) => prepared(word));
     await mount({ preloadedWords: words, preparedSessionConfig: {}, syllableReviewSession: { key: 1, setupDraft: { sessionType: 'assessment' } } });
     expect(selected().length).toBe(10);
   });
 });
 
-describe('3. Word Count keeps the teacher\'s own picks', () => {
-  it('a removed word stays out and an added word stays in while only the count changes', async () => {
+describe('3. source changes keep the teacher\'s own picks', () => {
+  it('a removed word stays out and an added word stays in while sources come and go', async () => {
     const session = { key: 1, setupDraft: { sessionType: 'practice' } };
     await mount({ glossaryTerms: glossary(TWENTY), syllableReviewSession: session });
     expect(selected()).toEqual(TWENTY.slice(0, 10).sort());
     await click(one('button[aria-label="cub: selected"]'));
     await click(one('button[aria-label="owl: not selected"]'));
-    const without = (count) => [...TWENTY.slice(0, count).filter((word) => word !== 'cub'), 'owl'].sort();
-    await setCount(11);
-    expect(selected(), 'one more automatic word, cub still out, owl still in').toEqual(without(11));
-    await setCount(5);
-    expect(selected()).toEqual(['ant', 'bee', 'dot', 'elf', 'owl']);
-    await setCount(6);
-    await setCount(12);
-    expect(selected(), 'cub stays out after the slider passed below it').toEqual(without(12));
-    await setCount(10);
-    expect(selected(), 'back at the first count: exactly what the teacher left').toEqual(without(10));
+    const kept = [...TWENTY.slice(0, 10).filter((word) => word !== 'cub'), 'owl'];
+    await setSource('ws_gen_src_custom', true);
+    expect(selected(), 'ticking an empty source changes nothing').toEqual([...kept].sort());
+    await typeWords('zap, zip');
+    expect(selected(), 'typed words join; cub still out, owl still in').toEqual([...kept, 'zap', 'zip'].sort());
+    await typeWords('zap, zip, cub');
+    expect(selected(), 'a word the teacher types is ticked even if they took it out before').toEqual([...kept, 'zap', 'zip', 'cub'].sort());
+    await setSource('ws_gen_src_glossary', false);
+    expect(selected(), 'glossary words leave with their source; typed words stay').toEqual(['cub', 'zap', 'zip']);
   });
 
-  it('a word the teacher puts back is no longer held out', async () => {
+  it('a word the teacher puts back stays in', async () => {
     await mount({ glossaryTerms: glossary(TWENTY) });
     await click(one('button[aria-label="cub: selected"]'));
-    await setCount(11);
     await click(one('button[aria-label="cub: not selected"]'));
-    await setCount(12);
-    expect(selected()).toEqual(TWENTY.slice(0, 12).sort());
+    await setSource('ws_gen_src_custom', true);
+    await typeWords('zap');
+    expect(selected()).toEqual([...TWENTY.slice(0, 10), 'zap'].sort());
   });
 
-  it('with no manual pick the count still re-picks, and a source change still starts a new automatic pick', async () => {
+  it('with no manual pick the ticks follow the sources: every typed word, ten from the glossary', async () => {
     const session = { key: 1, setupDraft: { sessionType: 'practice' } };
     await mount({ glossaryTerms: glossary(TWENTY), syllableReviewSession: session });
-    await setCount(7);
-    expect(selected()).toEqual(TWENTY.slice(0, 7).sort());
-    await click(one('button[aria-label="cub: selected"]'));
-    const customBox = all('input[type="checkbox"]').find((input) => input.closest('label')?.getAttribute('data-help-key') === 'ws_gen_src_custom');
-    await act(async () => Simulate.change(customBox, { target: { checked: true } }));
-    expect(selected(), 'today\'s behaviour for a source change').toEqual(TWENTY.slice(0, 7).sort());
+    await setSource('ws_gen_src_custom', true);
+    const typed = ['aa', 'bb', 'cc', 'dd', 'ee', 'ff', 'gg', 'hh', 'ii', 'jj', 'kk', 'll'];
+    await typeWords(typed.join(' '));
+    expect(selected()).toEqual([...TWENTY.slice(0, 10), ...typed].sort());
+    expect(one('[data-ws-glossary-progress]').textContent).toContain('10 of 20 in the lesson');
+    await click(one('[data-ws-glossary-add-all]'));
+    expect(selected()).toEqual([...TWENTY, ...typed].sort());
+    expect(one('[data-ws-glossary-add-all]')).toBeNull();
   });
 });
 
@@ -158,7 +172,7 @@ describe('4. strings', () => {
 
   it('translated values replace the English for the new keys', async () => {
     const words = { 'word_sounds.preparing_heading': 'PREPARANDO', 'word_sounds.preparing_word': 'AUDIO {word}', 'word_sounds.ai_go': 'IR',
-      'word_sounds.family_range_empty': 'SIN PALABRAS {min}-{max}', 'word_sounds.lesson_plan_heading': 'PLAN', 'word_sounds.prepare_lesson_button': 'PREPARAR' };
+      'word_sounds.ready_list_range_empty': 'SIN PALABRAS {min}-{max}', 'word_sounds.lesson_plan_heading': 'PLAN', 'word_sounds.prepare_lesson_button': 'PREPARAR' };
     const t = (key, params) => { let v = words[key]; if (v == null) return key; Object.keys(params || {}).forEach((p) => { v = v.split('{' + p + '}').join(params[p]); }); return v; };
     window.AlloModules = { WordSoundsPronunciations: { lookup: () => ['1'] } };
     window.WORD_FAMILY_PRESETS = { at: ['cat', 'hat'] };
@@ -167,35 +181,41 @@ describe('4. strings', () => {
     await mount({ syllableReviewSession: session, t, callGemini: hanging() });
     expect(all('button').some((b) => b.textContent.trim() === 'IR'), 'AI Go button').toBe(true);
     expect(container.textContent).toContain('PLAN');
-    if (container.textContent.includes('SIN PALABRAS')) expect(container.textContent).toContain('SIN PALABRAS 3-4');
+    expect(container.textContent).toContain('SIN PALABRAS 3-4');
     const start = all('button').find((b) => b.textContent.trim() === 'PREPARAR');
     await click(start);
     expect(container.textContent).toContain('PREPARANDO');
     expect(container.textContent).toContain('AUDIO cat');
   });
 
-  it('the family range warning is plain English by default', async () => {
+  it('the list range warning is plain English by default (a draft from before the picker still opens its family)', async () => {
     window.AlloModules = { WordSoundsPronunciations: { lookup: () => ['1'] } };
     window.WORD_FAMILY_PRESETS = { at: ['cat', 'hat'] };
     const session = { key: 1, setupDraft: { sessionType: 'practice', includeFamily: true, selectedFamily: 'at', syllableRange: { min: 3, max: 4 } } };
     await mount({ syllableReviewSession: session });
     await tick();
-    expect(container.textContent).toContain('No words in this family have 3 to 4 syllables. Change the syllable range or pick another family.');
+    expect(one('[data-ws-ready-list="family:at"]'), 'the old family choice became an added list').toBeTruthy();
+    expect(one('[data-ws-ready-list-empty]').textContent.trim()).toBe('No words in this list have 3 to 4 syllables. Change the syllable range or remove the list.');
   });
 
-  it('the syllable recordings alert goes through the helper', () => {
-    expect(source).toContain("tf('word_sounds.recordings_blocked', 'Add and review syllable recordings below, use a word from the syllable bank, or deselect: {words}.', { words: unsupportedSyllableWords.join(', ') })");
+  // 2026-11-10: the recordings alert is gone (syllable activities never block); its replacement, the plan line, uses the helper too.
+  it('the syllable plan line goes through the helper', () => {
+    expect(source).not.toContain('word_sounds.recordings_blocked');
+    expect(source).toContain("tf('word_sounds.syllable_plan_skip_blending', '{activity} needs recorded syllables in this language. It will be skipped.', { activity })");
+    expect(source).toContain("tf('word_sounds.syllable_plan_all', '{activity} will use all of your words.', { activity })");
   });
 
   it('the saved summary names activities as the setup list does', async () => {
     const session = { key: 1, setupDraft: { sessionType: 'practice', includeLessonPlan: true, lessonPlan: plan(['orthography', 'spelling_bee', 'read_sentence']) } };
     const props = await mount({ preloadedWords: [prepared('cat'), prepared('dog')], syllableReviewSession: session });
     const label = (id) => one('#ws-activity-label-' + id).textContent;
+    await click(one('[data-ws-change-activities]'));
     expect(label('orthography')).toBe('Sight & Spell');
     await click(startButtons()[0]);
     await until(() => props.onStartGame.mock.calls.length > 0, 'the run finishes');
     const summary = props.onStartGame.mock.calls[0][3];
-    expect(summary).toContain(label('orthography') + ' (5-10) → ' + label('spelling_bee') + ' (5-10) → ' + label('read_sentence') + ' (5-10)');
+    // Recommended order: Spelling Bee comes before Sight & Spell.
+    expect(summary).toContain(label('spelling_bee') + ' (5-10) → ' + label('orthography') + ' (5-10) → ' + label('read_sentence') + ' (5-10)');
     expect(summary).not.toMatch(/orthography|spelling_bee|spelling bee|read_sentence/);
     IDS.forEach((id) => expect(one('#ws-activity-label-' + id)?.textContent || 'Sound Swap', id).toBeTruthy());
   });
@@ -365,16 +385,21 @@ describe('9. AI off and assessment settings', () => {
     expect(aac.disabled).toBe(false);
   });
 
-  it('an assessment hides the session length and picture timing settings it ignores, and keeps Word Count', async () => {
+  it('an assessment hides the session length and picture timing settings it ignores; no Word Count in either mode', async () => {
     await mount({ glossaryTerms: glossary(['sun']), syllableReviewSession: { key: 1, setupDraft: { sessionType: 'assessment' } } });
-    expect(one('[data-help-key="ws_gen_count_slider"]')).toBeTruthy();
+    expect(one('[data-help-key="ws_gen_count_slider"]')).toBeNull();
     expect(one('[data-help-key="ws_gen_session_slider"]')).toBeNull();
     expect(one('[data-help-key="ws_gen_ortho_slider"]')).toBeNull();
+    expect(one('[data-ws-lesson-length]'), 'no lesson length in an assessment').toBeNull();
+    expect(one('[data-ws-plan-card]'), 'no plan in an assessment').toBeNull();
     expect(all('select').some((s) => [...s.options].some((o) => o.value === 'afterCompletion'))).toBe(false);
     expect(one('[data-ws-assessment-settings-note]')).toBeTruthy();
     await mount({ glossaryTerms: glossary(['sun']), syllableReviewSession: { key: 2, setupDraft: { sessionType: 'practice' } } });
-    expect(one('[data-help-key="ws_gen_session_slider"]')).toBeTruthy();
-    expect(one('[data-help-key="ws_gen_ortho_slider"]')).toBeTruthy();
+    expect(one('[data-help-key="ws_gen_count_slider"]')).toBeNull();
+    // 2026-11-10 (plan first): practice sets its length with one control on the plan card; the two sliders are gone.
+    expect(one('[data-help-key="ws_gen_session_slider"]')).toBeNull();
+    expect(one('[data-help-key="ws_gen_ortho_slider"]')).toBeNull();
+    expect(all('[data-ws-lesson-length] [data-ws-length]')).toHaveLength(3);
     expect(one('[data-ws-assessment-settings-note]')).toBeNull();
   });
 });

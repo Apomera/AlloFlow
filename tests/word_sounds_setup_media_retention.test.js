@@ -217,22 +217,25 @@ describe('authoring configuration follows the current resource',()=>{
       imageTheme:'pencil',imageThemeMode:'override',selectedFamily:'at',selectedSightWordList:'first',
       taughtPatternsText:'a, t',knownWordsText:'dog',syllableRange:{min:2,max:6},aiTopic:'Space'};
     await render({draft});
-    await change('[data-help-key="ws_gen_session_slider"]','15');
+    // 2026-11-10 (plan first): the session slider is gone; the real control edited here is the free-roaming checkbox.
+    expect(container.querySelector('[data-ws-free-roaming]').checked,'the draft prepares the lesson only').toBe(false);
+    await click(container.querySelector('[data-ws-free-roaming]'));
     await click(container.querySelector('[data-help-key="ws_gen_src_custom"] input'));
     const custom=container.querySelector('textarea');
     expect(custom).toBeTruthy();await act(async()=>Simulate.change(custom,{target:{value:'customword'}}));
     const session=state.session;
     await click(byText('Review Words'));await click(byText('Back to Setup'));
     expect(state.session).toBe(session);
-    expect(container.querySelector('[data-help-key="ws_gen_session_slider"]').value).toBe('15');
+    expect(container.querySelector('[data-ws-free-roaming]').checked).toBe(true);
     expect(container.querySelector('textarea').value).toBe('customword');
-    expect(state.session.setupDraft).toMatchObject({...draft,wordSoundsSessionGoal:15,includeCustom:true,customText:'customword'});
+    expect(state.session.setupDraft).toMatchObject({...draft,freeRoaming:true,includeCustom:true,customText:'customword'});
     await click(byText('Prepare lesson'));
     const preparedSession=state.session;
     expect(preparedSession).toBe(session);
     await click(byText('Back to Setup'));
     expect(state.session).toBe(session);
-    expect(state.session.setupDraft.wordSoundsSessionGoal).toBe(15);
+    expect(state.session.setupDraft.freeRoaming).toBe(true);
+    expect(container.querySelector('[data-ws-free-roaming]').checked).toBe(true);
   });
 
   it('starts fresh on resource replacement and rejects stale review and launch callbacks',async()=>{

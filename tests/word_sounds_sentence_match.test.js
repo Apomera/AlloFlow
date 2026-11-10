@@ -91,7 +91,7 @@ describe('the player treats the sentence as print', () => {
     const idx = MODULE.indexOf('id: "sentence_match"');
     expect(idx).toBeGreaterThan(0);
     expect(MODULE.slice(idx, idx + 400)).toMatch(/tier: "orthographic"/);
-    expect(MODULE).toMatch(/sentence_match: "text",/);
+    expect(MODULE).toMatch(/sentence_match: { name: 'Picture the Sentence', strand: 'reading_sentences',/);
   });
 
   it('is graded, English-only, and word-level like its siblings', () => {

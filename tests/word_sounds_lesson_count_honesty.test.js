@@ -226,7 +226,9 @@ describe('reopening a saved lesson in setup', () => {
     expect(hostSource).toContain("preparedLessonPlan={generatedContent?.type === 'word-sounds' ? generatedContent.lessonPlanConfig : null}");
     expect(setupSource).toContain("useSetupState('lessonPlan', () => restoreSavedLessonPlan(preparedLessonPlan,");
     expect(setupSource).toContain("useSetupState('lessonPlanOrder', () => restoreSavedLessonPlanOrder(preparedLessonPlan,");
-    expect(setupSource).toMatch(/useSetupState\('includeLessonPlan', \(\) => !!\(preparedLessonPlan/);
+    // 2026-11-10 (plan first): on for a saved plan and for every new lesson; off only for a saved lesson without a plan.
+    expect(setupSource).toContain("const savedPlanActivities = preparedLessonPlan && Array.isArray(preparedLessonPlan.activities) ? preparedLessonPlan.activities.filter(activity => activity && activity.id) : [];");
+    expect(setupSource).toContain("useSetupState('includeLessonPlan', () => savedPlanActivities.length > 0 || !reopenedLesson);");
   });
 });
 

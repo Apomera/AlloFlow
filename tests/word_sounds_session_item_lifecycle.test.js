@@ -89,12 +89,18 @@ async function clickNumber(n) {
   const target=host.querySelector(`[role="button"][aria-label="Number ${n}"]`);
   expect(target).toBeTruthy();await act(async()=>target.click());
 }
+// Sound-only cards (2026-11-09): a tap hears and selects the card, Check answers with it.
+// Probes and written choices have no Check, so this is then a no-op.
+async function pressCheck() {
+  const check=host.querySelector('[data-ws-card-check]');
+  if(check&&!check.disabled)await act(async()=>check.click());
+}
 async function clickSound(sound) {
   // Sound-only tiles are numbered for accessible access; their order follows
   // the authored prepared board and does not reveal printed phoneme labels.
   const index=state.data.activityItems.isolation.options.indexOf(sound);
   const target=host.querySelector(`button[aria-label="Choose Sound ${index+1}"]`);
-  expect(target).toBeTruthy();await act(async()=>target.click());
+  expect(target).toBeTruthy();await act(async()=>target.click());await pressCheck();
 }
 async function spellWord(word) {
   const input=host.querySelector('input[data-ws-spell-input]');
@@ -122,7 +128,7 @@ describe('authored Word Sounds item advancement',()=>{
     await mount({activity:'isolation',items:[pack('cat','cat'),pack('dog','dog')],isProbeMode:fixed,
       sessionConfig:{fixedForm:fixed,probeItemCount:2,sessionGoal:20}});
     const before=state.word;const choice=host.querySelector('button[aria-label="Choose Sound 1"]');choice.focus();
-    await act(async()=>choice.click());await tick(fixed?801:2001);
+    await act(async()=>choice.click());await pressCheck();await tick(fixed?801:2001);
     expect(state.word).not.toBe(before);expect(document.activeElement).not.toBe(document.body);
     expect(host.querySelector('[tabindex="-1"].animate-in')?.contains(document.activeElement)).toBe(true);
   });
@@ -146,7 +152,7 @@ describe('authored Word Sounds item advancement',()=>{
     expect(state.activity).toBe('rhyming');expect(state.word).toBe('cat');expect(state.history).toEqual([]);expect(state.score.total).toBe(0);
     expect(host.textContent).not.toContain('This item will not be scored');
     const correct=[...host.querySelectorAll('button')].find(button=>button.textContent.trim()==='Option 2');expect(correct).toBeTruthy();
-    await act(async()=>correct.click());expect(state.history.at(-1)).toMatchObject({itemId:'cat',correct:true});
+    await act(async()=>correct.click());await pressCheck();expect(state.history.at(-1)).toMatchObject({itemId:'cat',correct:true});
   });
 
   it('consumes one authored occurrence for a rapid double-click on an unscored item',async()=>{
@@ -223,7 +229,7 @@ describe('authored Word Sounds item advancement',()=>{
     const done=host.querySelector('button[aria-label="Done"],button[aria-label="common.done"]');expect(done).toBeTruthy();
     await act(async()=>done.click());
     const choice=[...host.querySelectorAll('button')].find(button=>button.textContent.trim()==='Option 3');expect(choice).toBeTruthy();
-    await act(async()=>choice.click());expect(state.history.at(-1)).toMatchObject({correct:true,itemId:'first'});
+    await act(async()=>choice.click());await pressCheck();expect(state.history.at(-1)).toMatchObject({correct:true,itemId:'first'});
   });
 
   it('shows an unscored review route instead of an empty rejected rhyme board',async()=>{
@@ -244,7 +250,9 @@ describe('authored Word Sounds item advancement',()=>{
     const col={...pack('col','col'),phonemes:['k','o','l']};
     await mount({activity:'rhyming',items:[sol,col],wordSoundsLanguage:'es',isProbeMode:false,sessionConfig:{fixedForm:true,probeItemCount:2}});
     expect(state.word).toBe('sol');expect(host.textContent).not.toContain('This item will not be scored');
-    expect(host.querySelectorAll('button[aria-label="common.listen_to_this_option"]')).toHaveLength(board.options.length);
+    // Each sound-only card is its own listen control now: one card per authored option, no separate small speaker.
+    expect(host.querySelectorAll('button[data-ws-card]')).toHaveLength(board.options.length);
+    expect(host.querySelectorAll('button[aria-label="common.listen_to_this_option"]')).toHaveLength(0);
     expect(state.data.activityItems.rhyming).toEqual(board);
   });
 
@@ -287,7 +295,7 @@ describe('authored Word Sounds item advancement',()=>{
     await clickNumber(3);await tick(2001);await tick(3001);
     expect(state.activity).toBe('blending');expect(state.score.total).toBe(0);
     const choices=host.querySelectorAll('button[data-ws-blend-choice]');expect(choices).toHaveLength(3);
-    await act(async()=>choices[1].click());await tick(2001);await tick(3001);
+    await act(async()=>choices[1].click());await pressCheck();await tick(2001);await tick(3001);
     expect(state.activity).toBe('blending');
     const next=[...host.querySelectorAll('button')].find(button=>/Next Activity|session_next_activity/.test(button.textContent));
     expect(next).toBeTruthy();await act(async()=>next.click());await tick(120);
@@ -326,7 +334,8 @@ describe('authored Word Sounds item advancement',()=>{
   const lessonPlan=count=>({lessonPlanConfig:{masteryMode:'consecutive',masteryThreshold:3,activities:[{id:'counting',count}],order:['counting'],totalItems:count,estimatedMinutes:1},
     initialActivitySequence:Array(count).fill('counting'),activity:'counting',isProbeMode:false,
     sessionConfig:{fixedForm:false,sessionGoal:30,preparedActivities:['counting']},wordSoundsSessionGoal:30});
-  const missItem=async()=>{await clickNumber(2);await tick(3001);await clickNumber(2);await tick(3001);};
+  // A tried number is disabled for the item, so the retry misses on another number.
+  const missItem=async()=>{await clickNumber(2);await tick(3001);await clickNumber(1);await tick(3001);};
   const completeDialog=()=>host.querySelector('[aria-labelledby="word-sounds-session-complete-title"]');
 
   it('ends a lesson at its limit for a learner who never reaches the streak, instead of at the session goal',async()=>{
@@ -425,10 +434,12 @@ describe('authored Word Sounds item advancement',()=>{
         await clickSound(board.correctSound);
       }else if(activity==='blending'){
         const choices=host.querySelectorAll('button[data-ws-blend-choice]');expect(choices).toHaveLength(3);
-        const listen=host.querySelector('button[aria-label="common.listen_to_this_option"]');
+        // Practice: tapping a card plays it (and selects it), then Check answers. A probe keeps its listen button.
+        const listen=host.querySelector('button[aria-label="common.listen_to_this_option"]')||choices[0];
         await act(async()=>listen.click());await tick(2);
         expect(played).toContain(`data:audio/webm;base64,${Buffer.from('pig').toString('base64')}`);
-        await act(async()=>choices[board.options.indexOf(state.word)].click());
+        expect(state.history.filter(row=>row.activity==='blending')).toHaveLength(index);
+        await act(async()=>choices[board.options.indexOf(state.word)].click());await pressCheck();
       }else{
         expect(observedOrthography.options).toEqual(board.options);
         await spellWord(state.word);
@@ -488,10 +499,11 @@ describe('authored Word Sounds item advancement',()=>{
       expect(choices).toHaveLength(3);
       // Named by what they show ("Option N" here, letters hidden), not "Volume".
       for(const choice of choices){expect(choice.getAttribute('aria-label')).toBeNull();expect(choice.textContent.trim()).toMatch(/^Option [1-3]$/);}
-      const listen=host.querySelector('button[aria-label="common.listen_to_this_option"]');
+      // Practice: tapping a card plays it (and selects it), then Check answers. A probe keeps its listen button.
+      const listen=host.querySelector('button[aria-label="common.listen_to_this_option"]')||choices[0];
       await act(async()=>listen.click());await tick(2);
       expect(played).toContain(`data:audio/webm;base64,${assets[options[index][0]].base64}`);
-      await act(async()=>choices[options[index].indexOf('cat')].click());
+      await act(async()=>choices[options[index].indexOf('cat')].click());await pressCheck();
       expect(state.history.at(-1)).toMatchObject({itemId:items[index].itemId,correct:true});
       await tick(801);
     }
@@ -546,7 +558,8 @@ describe('authored Word Sounds item advancement',()=>{
     await mount({items,isProbeMode:false,sessionConfig:{fixedForm:true,probeItemCount:3},wordSoundsSessionGoal:20});
     // Practice grants one retry, but a scored miss may not add another item
     // to the authored fixed form or rotate its repeated next target.
-    await clickSound('t');await clickSound('t');expect(state.history[0].correct).toBe(false);
+    // (The second miss is on another sound: a tried card is disabled for the item.)
+    await clickSound('t');await clickSound('a');expect(state.history[0].correct).toBe(false);
     await tick(3001);expect(state.data).toBe(items[1]);
     await clickSound('t');await tick(2001);expect(state.data).toBe(items[2]);
     await clickSound('d');await tick(2001);

@@ -62,7 +62,9 @@ function installRuntime(item){
   const scope={currentWordSoundsWord:item.word,wordSoundsPhonemes:item,lastWordForRhyming:{current:null},rhymeOptions:[],
     setRhymeOptions:value=>{options=value;},setRhymeReviewRequired:value=>{review=value;},preloadedWords:[item],
     wsLangCaps:{isEnglish:true},WS_CORE:core,debugLog(){},advanceEpochRef:{current:1},rhymePresentationRef:{current:0},
-    rhymeSessionRef:{current:core.createRhymeSession()},lastRhymeOccurrenceRef:{current:null}};
+    rhymeSessionRef:{current:core.createRhymeSession()},lastRhymeOccurrenceRef:{current:null},
+    // The board as built (2026-11-09): no level, so every choice is shown; fewer choices for beginners are in word_sounds_answer_cards.test.js.
+    isEditing:false,choiceLevel:()=>null,trimSoundChoices:(_kind,list)=>list};
   new Function(...Object.keys(scope),runtime.slice(start,end)+'\n          }')(...Object.values(scope));
   return {options,review};
 }

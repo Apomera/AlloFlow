@@ -276,14 +276,31 @@ const WordSoundsReviewPanel = ({
   // computed by the player so this list and the skip always agree.
   wordFamilySkips,
   soundSortSkips,
-  soundSwapSkips
+  soundSwapSkips,
+  // The activities this lesson was prepared for (a lesson-only pack), when the host knows them.
+  preparedActivities
 }) => {
-  const reviewActivities = Array.isArray(activitySequence) && activitySequence.length ? activitySequence : currentActivity ? [currentActivity] : null;
+  const reviewActivities = Array.isArray(activitySequence) && activitySequence.length ? activitySequence : Array.isArray(preparedActivities) && preparedActivities.length ? preparedActivities : currentActivity ? [currentActivity] : null;
   const reviewsActivity = (...activities) => !reviewActivities || reviewActivities.some((activity) => activities.includes(activity));
   const isGeneratingImage = (index) => generatingImageSet?.has?.(index) || generatingImageIndex === index;
   const teacherSpokenKey = JSON.stringify(teacherSpokenWords || []);
   const teacherSpokenKeys = React.useMemo(() => new Set(JSON.parse(teacherSpokenKey).map((value) => String(value).normalize("NFC").trim().toLowerCase())), [teacherSpokenKey]);
   const isTeacherSpoken = React.useCallback((word) => teacherSpokenKeys.has(String(word?.targetWord || word?.word || word?.term || "").normalize("NFC").trim().toLowerCase()), [teacherSpokenKeys]);
+  const audioPackKey = (value) => String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
+  const audioPortableKeys = React.useMemo(() => {
+    const keys = /* @__PURE__ */ new Set();
+    (preloadedWords || []).forEach((item) => {
+      if (item && item._ttsAssets && typeof item._ttsAssets === "object") Object.keys(item._ttsAssets).forEach((key) => keys.add(audioPackKey(key)));
+    });
+    return keys;
+  }, [preloadedWords]);
+  const wordAudioState = (word) => {
+    if (!word) return "none";
+    if (isTeacherSpoken(word)) return "teacher";
+    if (word.ttsReady || audioPortableKeys.has(audioPackKey(word.targetWord || word.word || word.term))) return "ready";
+    if (word._ttsFailed) return "failed";
+    return word._runtimeAudioReady ? "device" : "none";
+  };
   const reviewText = (key, fallback, params = {}) => {
     const fullKey = "word_sounds." + key;
     const translated = typeof t === "function" ? t(fullKey, params) : "";
@@ -756,7 +773,7 @@ const WordSoundsReviewPanel = ({
       className: "min-w-11 min-h-11 inline-flex items-center justify-center rounded-full text-white/90 hover:text-white hover:bg-white/15 focus:outline-none focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-violet-500 text-base"
     },
     /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2139\uFE0F")
-  ), isCountingGuideOpen && /* @__PURE__ */ React.createElement("div", { id: "word-sounds-counting-guide", role: "note", className: "absolute right-0 sm:left-0 sm:right-auto top-full mt-2 w-[min(18rem,calc(100vw-2rem))] p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl z-50" }, /* @__PURE__ */ React.createElement("strong", { className: "block mb-1" }, t("word_sounds.phonics_counting_guide_title") || "\u{1F4D6} Phonics Counting Guide"), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, t("word_sounds.r_controlled_explanation_prefix") || "R-controlled vowels (ar, er, ir, or, ur) are counted as ", /* @__PURE__ */ React.createElement("strong", null, t("word_sounds.single_sounds") || "single sounds"), t("word_sounds.r_controlled_explanation_suffix") || " because the vowel and R blend together."), /* @__PURE__ */ React.createElement("p", { className: "text-slate-200" }, t("word_sounds.r_controlled_example") || 'Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.')))), /* @__PURE__ */ React.createElement("p", { id: "word-sounds-review-description", className: "text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", null, t("word_sounds.review_and_edit_words") || "Review and edit words", " \u2022 ", preloadedWords.length, " ", t("word_sounds.words_ready") || "words ready"), isLoading && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 bg-white rounded-full animate-bounce motion-reduce:animate-none" }), " ", t("word_sounds.generating_more") || "Generating more..."), !isLoading && preloadedWords.some((w) => w && w._ttsFailed && !isTeacherSpoken(w)) && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 bg-red-500/30 border border-red-200/60 px-3 py-1 rounded-full text-xs" }, /* @__PURE__ */ React.createElement("span", null, reviewText("review_missing_audio", "Words missing audio: {count}", { count: preloadedWords.filter((w) => w && w._ttsFailed && !isTeacherSpoken(w)).length })), typeof onRetryFailedTTS === "function" && /* @__PURE__ */ React.createElement(
+  ), isCountingGuideOpen && /* @__PURE__ */ React.createElement("div", { id: "word-sounds-counting-guide", role: "note", className: "absolute right-0 sm:left-0 sm:right-auto top-full mt-2 w-[min(18rem,calc(100vw-2rem))] p-3 bg-slate-800 text-white text-xs rounded-lg shadow-xl z-50" }, /* @__PURE__ */ React.createElement("strong", { className: "block mb-1" }, t("word_sounds.phonics_counting_guide_title") || "\u{1F4D6} Phonics Counting Guide"), /* @__PURE__ */ React.createElement("p", { className: "mb-2" }, t("word_sounds.r_controlled_explanation_prefix") || "R-controlled vowels (ar, er, ir, or, ur) are counted as ", /* @__PURE__ */ React.createElement("strong", null, t("word_sounds.single_sounds") || "single sounds"), t("word_sounds.r_controlled_explanation_suffix") || " because the vowel and R blend together."), /* @__PURE__ */ React.createElement("p", { className: "text-slate-200" }, t("word_sounds.r_controlled_example") || 'Example: "star" = 3 sounds (s-t-ar), not 4. This aligns with Orton-Gillingham and Wilson Reading methods.')))), /* @__PURE__ */ React.createElement("p", { id: "word-sounds-review-description", className: "text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap" }, /* @__PURE__ */ React.createElement("span", null, t("word_sounds.review_and_edit_words") || "Review and edit words", " \u2022 ", preloadedWords.length, " ", t("word_sounds.words_ready") || "words ready"), isLoading && /* @__PURE__ */ React.createElement("span", { role: "status", "aria-live": "polite", className: "flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement("div", { className: "w-2 h-2 bg-white rounded-full animate-bounce motion-reduce:animate-none" }), " ", t("word_sounds.generating_more") || "Generating more..."), !isLoading && preloadedWords.some((w) => wordAudioState(w) === "failed") && /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 bg-red-500/30 border border-red-200/60 px-3 py-1 rounded-full text-xs" }, /* @__PURE__ */ React.createElement("span", null, reviewText("review_missing_audio", "Words missing audio: {count}", { count: preloadedWords.filter((w) => wordAudioState(w) === "failed").length })), typeof onRetryFailedTTS === "function" && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -817,14 +834,17 @@ const WordSoundsReviewPanel = ({
     const packNote = coverage && coverage.rateLimited ? coverage.gaveUp ? reviewText("review_pack_stopped", " The last packing run was cut short by a rate limit. Re-prepare in setup, or use the Kokoro local voice.") : reviewText("review_pack_recovered", " The last packing run hit a rate limit and recovered, so some audio may be missing.") : reviewText("review_pack_silent", " Student devices may lack audio for these words or use a fallback voice; re-prepare the pack in setup.");
     addGap({
       key: "audio",
-      test: (w) => w && !isTeacherSpoken(w) && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)),
+      // A word whose live attempt failed is listed once,
+      // under the runtime line below, which also says it
+      // is not saved for student devices.
+      test: (w) => w && !isTeacherSpoken(w) && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)) && !w._ttsFailed,
       text: (n) => reviewText("review_gap_audio", "Words without portable audio: {count}.{note}", { count: n, note: packNote }),
       each: null
     });
     addGap({
       key: "audio_runtime",
-      test: (w) => w && w._ttsFailed && !isTeacherSpoken(w),
-      text: (n) => reviewText("review_gap_runtime_audio", "Words whose audio failed to load in this session: {count}", { count: n }),
+      test: (w) => w && w._ttsFailed && !isTeacherSpoken(w) && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)),
+      text: (n) => reviewText("review_gap_runtime_audio", "Words whose audio failed to load in this session: {count}", { count: n }) + reviewText("review_gap_runtime_not_saved", ". They are not saved for student devices either."),
       label: t("word_sounds.fix_audio") || "Retry audio",
       needsNetwork: !ttsIsLocal,
       // Batch by nature: it re-arms the prefetch for every
@@ -1034,14 +1054,18 @@ const WordSoundsReviewPanel = ({
               setPlayingWordIndex(null);
             }
           },
-          disabled: isTeacherSpoken(word) || playingWordIndex !== null || !(word.ttsReady || word._runtimeAudioReady),
-          className: `w-10 h-10 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${word._ttsFailed ? "bg-red-100 hover:bg-red-200 text-red-700 border-2 border-red-300" : playingWordIndex === idx ? "bg-pink-200 text-pink-800 animate-pulse motion-reduce:animate-none" : playingWordIndex !== null ? "bg-pink-50 text-pink-300 cursor-not-allowed" : "bg-pink-100 hover:bg-pink-200 text-pink-700"}`,
-          title: isTeacherSpoken(word) ? reviewText("review_teacher_says_word", "Teacher says this word aloud") : playingWordIndex === idx ? t("word_sounds.playing") || "Playing..." : word._ttsFailed ? t("word_sounds.audio_failed_retry_hint") || "Audio failed to generate \u2014 click Retry audio in header" : !(word.ttsReady || word._runtimeAudioReady) ? t("word_sounds.loading_audio") || "Loading audio..." : t("word_sounds.play_word") || "Play word",
-          "aria-busy": !isTeacherSpoken(word) && (playingWordIndex === idx || !word._ttsFailed && !(word.ttsReady || word._runtimeAudioReady)),
-          "aria-label": isTeacherSpoken(word) ? reviewText("review_teacher_says_word", "Teacher says this word aloud") : playingWordIndex === idx ? t("word_sounds.playing") || "Playing" : word._ttsFailed ? t("word_sounds.audio_failed_aria") || "Audio failed" : !(word.ttsReady || word._runtimeAudioReady) ? t("word_sounds.loading_audio") || "Loading audio" : t("word_sounds.play_word") || "Play word"
+          disabled: isTeacherSpoken(word) || playingWordIndex !== null,
+          className: `w-10 h-10 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${playingWordIndex === idx ? "bg-pink-200 text-pink-800 animate-pulse motion-reduce:animate-none" : wordAudioState(word) === "failed" ? "bg-red-100 hover:bg-red-200 text-red-700 border-2 border-red-300" : playingWordIndex !== null ? "bg-pink-50 text-pink-300 cursor-not-allowed" : "bg-pink-100 hover:bg-pink-200 text-pink-700"}`,
+          title: isTeacherSpoken(word) ? reviewText("review_teacher_says_word", "Teacher says this word aloud") : playingWordIndex === idx ? t("word_sounds.playing") || "Playing..." : wordAudioState(word) === "failed" ? reviewText("review_audio_failed_try_again", "Audio failed: try again") : wordAudioState(word) === "none" && word._audioRequested ? t("word_sounds.loading_audio") || "Loading audio..." : t("word_sounds.play_word") || "Play word",
+          "aria-busy": !isTeacherSpoken(word) && (playingWordIndex === idx || wordAudioState(word) === "none" && !!word._audioRequested),
+          "aria-label": isTeacherSpoken(word) ? reviewText("review_teacher_says_word", "Teacher says this word aloud") : playingWordIndex === idx ? t("word_sounds.playing") || "Playing" : wordAudioState(word) === "failed" ? reviewText("review_audio_failed_try_again", "Audio failed: try again") : wordAudioState(word) === "none" && word._audioRequested ? t("word_sounds.loading_audio") || "Loading audio" : t("word_sounds.play_word") || "Play word"
         },
-        word._ttsFailed ? /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F507}") : playingWordIndex === idx ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Volume2, { size: 18, "aria-hidden": "true" })
-      ), word.phonemes && Array.isArray(word.phonemes) && word.phonemes.length > 0 && /* @__PURE__ */ React.createElement(
+        playingWordIndex === idx ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : wordAudioState(word) === "failed" ? /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F507}") : /* @__PURE__ */ React.createElement(Volume2, { size: 18, "aria-hidden": "true" })
+      ), wordAudioState(word) !== "teacher" && (() => {
+        const audioState = wordAudioState(word);
+        const look = audioState === "ready" ? { icon: "\u2713", tone: "bg-emerald-50 text-emerald-800 border-emerald-200", text: reviewText("review_audio_state_ready", "Ready") } : audioState === "device" ? { icon: "\u{1F4BB}", tone: "bg-amber-50 text-amber-900 border-amber-200", text: reviewText("review_audio_state_device", "Plays on this device; not saved for student devices") } : audioState === "failed" ? { icon: "\u26A0", tone: "bg-red-50 text-red-800 border-red-200", text: reviewText("review_audio_failed_try_again", "Audio failed: try again") } : { icon: "\u25CB", tone: "bg-slate-50 text-slate-700 border-slate-200", text: reviewText("review_audio_state_none", "No audio yet") };
+        return /* @__PURE__ */ React.createElement("span", { "data-ws-audio-state": audioState, className: `inline-flex max-w-[14rem] items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-bold leading-tight ${look.tone}` }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, look.icon), /* @__PURE__ */ React.createElement("span", null, look.text));
+      })(), word.phonemes && Array.isArray(word.phonemes) && word.phonemes.length > 0 && /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -1337,7 +1361,7 @@ const WordSoundsReviewPanel = ({
         },
         _isExp ? "\u25B4" : "\u22EF"
       )), _isExp && /* @__PURE__ */ React.createElement("div", { className: "mt-1 mb-1 px-2 py-1 bg-white border border-pink-200 rounded-lg text-[11px] text-slate-600 max-w-[220px]" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-pink-600" }, _ipaLabel), _disp.keyWord ? /* @__PURE__ */ React.createElement("span", { className: "text-slate-600" }, " \xB7 as in ", _disp.keyWord) : null, /* @__PURE__ */ React.createElement("div", { className: "mt-0.5 flex flex-wrap gap-1" }, _disp.graphemes.map((g, gi) => /* @__PURE__ */ React.createElement("span", { key: gi, className: "px-1.5 py-0.5 bg-slate-100 rounded font-mono text-slate-700" }, g)))));
-    })))))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-orange-700 uppercase tracking-wider mb-2 block" }, t("word_sounds.rhyme_options")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+    })))))), /* @__PURE__ */ React.createElement("div", { hidden: !reviewsActivity("rhyming"), "data-ws-review-part": "rhyming" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-orange-700 uppercase tracking-wider mb-2 block" }, t("word_sounds.rhyme_options")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.rhyme_time_options"),
@@ -1417,7 +1441,7 @@ const WordSoundsReviewPanel = ({
         className: "justify-self-start px-3 py-1.5 bg-orange-100 text-orange-800 rounded-lg border-2 border-dashed border-orange-300 hover:bg-orange-200 text-sm font-bold"
       },
       t("word_sounds.add_distractor") || "+ Add"
-    ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-violet-700 uppercase tracking-wider mb-2 block" }, t("word_sounds.blend_options")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center justify-between gap-2 px-3 py-1.5 font-bold bg-green-100 text-green-800 rounded-lg border-2 border-green-300" }, /* @__PURE__ */ React.createElement("span", { className: "min-w-0 break-words" }, word.targetWord || word.word), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-xs" }, t("word_sounds.review_answer_tag") || "\u2713 Answer")), (word.blendingDistractors || []).map((d, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+    ))), /* @__PURE__ */ React.createElement("div", { hidden: !reviewsActivity("blending"), "data-ws-review-part": "blending" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-violet-700 uppercase tracking-wider mb-2 block" }, t("word_sounds.blend_options")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center justify-between gap-2 px-3 py-1.5 font-bold bg-green-100 text-green-800 rounded-lg border-2 border-green-300" }, /* @__PURE__ */ React.createElement("span", { className: "min-w-0 break-words" }, word.targetWord || word.word), /* @__PURE__ */ React.createElement("span", { className: "shrink-0 text-xs" }, t("word_sounds.review_answer_tag") || "\u2713 Answer")), (word.blendingDistractors || []).map((d, i) => /* @__PURE__ */ React.createElement("div", { key: i, className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("common.enter_d"),
@@ -1491,9 +1515,9 @@ const WordSoundsReviewPanel = ({
       const _ct = word.activityItems || {};
       const _ctWord = word.targetWord || word.word || word.term;
       const _ctLines = [
-        _ct.read_sentence && _ct.read_sentence.sentence && { key: "sent", icon: "\u{1F4AC}", label: t("word_sounds.activity_read_sentence") || "Finish the Sentence", text: _ct.read_sentence.sentence },
-        _ct.read_passage && _ct.read_passage.story && { key: "story", icon: "\u{1F4DA}", label: t("word_sounds.activity_read_passage") || "Read the Story", text: _ct.read_passage.story },
-        _ct.sentence_match && _ct.sentence_match.sentence && { key: "pair", icon: "\u{1F5BC}\uFE0F", label: t("word_sounds.activity_sentence_match") || "Picture the Sentence", text: _ct.sentence_match.sentence }
+        reviewsActivity("read_sentence") && _ct.read_sentence && _ct.read_sentence.sentence && { key: "sent", icon: "\u{1F4AC}", label: t("word_sounds.activity_read_sentence") || "Finish the Sentence", text: _ct.read_sentence.sentence },
+        reviewsActivity("read_passage") && _ct.read_passage && _ct.read_passage.story && { key: "story", icon: "\u{1F4DA}", label: t("word_sounds.activity_read_passage") || "Read the Story", text: _ct.read_passage.story },
+        reviewsActivity("sentence_match") && _ct.sentence_match && _ct.sentence_match.sentence && { key: "pair", icon: "\u{1F5BC}\uFE0F", label: t("word_sounds.activity_sentence_match") || "Picture the Sentence", text: _ct.sentence_match.sentence }
       ].filter(Boolean);
       if (!_ctLines.length) return null;
       return /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-sky-600 uppercase tracking-wider mb-2 block" }, t("word_sounds.connected_text_label") || "Connected Text (sentence activities)"), /* @__PURE__ */ React.createElement("div", { className: "space-y-1.5 p-3 bg-sky-50 border-2 border-sky-200 rounded-lg" }, _ctLines.map((line) => /* @__PURE__ */ React.createElement("div", { key: line.key, className: "flex items-center gap-2 text-sm text-slate-700" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, line.icon), /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, line.label, ":"), /* @__PURE__ */ React.createElement("span", { className: "flex-1" }, wsHighlightTarget(line.text, _ctWord)), /* @__PURE__ */ React.createElement(
@@ -1517,7 +1541,7 @@ const WordSoundsReviewPanel = ({
         },
         playingAudioKey === `${idx}-ct-${line.key}` ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none h-4 w-4 border-2 border-current border-t-transparent rounded-full" }) : "\u{1F50A}"
       )))));
-    })(), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-amber-700 uppercase tracking-wider block" }, t("word_sounds.sound_swap_label") || "Sound Swap (Manipulation Activity)"), word.manipulationTask?.type && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300" }, word.manipulationTask.type)), word.manipulationTask ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 p-3 bg-amber-50 border-2 border-amber-200 rounded-lg" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1" }, t("word_sounds.instruction_label") || "Instruction (spoken to student)"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
+    })(), /* @__PURE__ */ React.createElement("div", { hidden: !reviewsActivity("manipulation"), "data-ws-review-part": "manipulation" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-amber-700 uppercase tracking-wider block" }, t("word_sounds.sound_swap_label") || "Sound Swap (Manipulation Activity)"), word.manipulationTask?.type && /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 border border-amber-300" }, word.manipulationTask.type)), word.manipulationTask ? /* @__PURE__ */ React.createElement("div", { className: "space-y-2 p-3 bg-amber-50 border-2 border-amber-200 rounded-lg" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-[10px] font-bold text-amber-700 uppercase tracking-wider block mb-1" }, t("word_sounds.instruction_label") || "Instruction (spoken to student)"), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement(
       "input",
       {
         "aria-label": t("word_sounds.sound_swap_instruction_aria") || "Sound Swap instruction",
@@ -1653,7 +1677,7 @@ const WordSoundsReviewPanel = ({
         className: "flex items-center gap-2 px-3 py-1.5 bg-amber-700 hover:bg-amber-800 text-white rounded-lg text-sm font-bold shadow"
       },
       regeneratingOptions[`${idx}-manip-regen`] ? /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin motion-reduce:animate-none" }), " ", t("word_sounds.generating") || "Generating\u2026") : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }), " ", t("word_sounds.generate") || "Generate")
-    ))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block" }, t("word_sounds.sound_positions_label") || "Sound Positions (Find Sounds Activity)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, (() => {
+    ))), /* @__PURE__ */ React.createElement("div", { hidden: !reviewsActivity("isolation"), "data-ws-review-part": "isolation" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block" }, t("word_sounds.sound_positions_label") || "Sound Positions (Find Sounds Activity)"), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, (() => {
       const phonemesRaw = word.phonemes;
       const phonemeArray = Array.isArray(phonemesRaw) ? phonemesRaw : phonemesRaw?.phonemes && Array.isArray(phonemesRaw.phonemes) ? phonemesRaw.phonemes : [];
       return phonemeArray;

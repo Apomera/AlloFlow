@@ -49,7 +49,7 @@ describe('Word Sounds dialog keyboard behavior', () => {
     const heading = host.querySelector('#word-sounds-dialog-title');
     expect(dialog).not.toBeNull();
     expect(dialog.getAttribute('aria-labelledby')).toBe('word-sounds-dialog-title');
-    expect(heading.textContent).toContain('Word Sounds Studio');
+    expect(heading.textContent).toBe('Word Sounds: Blend Sounds');
     expect(document.activeElement).toBe(heading);
 
     const focusable = Array.from(dialog.querySelectorAll(

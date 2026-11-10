@@ -29,34 +29,37 @@ function compile(words, reviews = {}, language = 'en') {
   return compiler(structuredClone(words));
 }
 const item = (word, extra = {}) => ({ word, targetWord: word, phonemes: ['a'], ...extra });
-const choosePreviewWords = new Function(between('function chooseWordSoundsPreviewWords(', 'const WordSoundsGenerator =') + ';return chooseWordSoundsPreviewWords;')();
 
-describe('Studio counting-bank selection', () => {
-  const bank = ['sunset', 'sunrise', 'sunlight', 'sunshine', 'raincoat', 'elephant', 'banana', 'alligator', 'caterpillar', 'responsibility'];
-  const counts = { sunset: 2, sunrise: 2, sunlight: 2, sunshine: 2, raincoat: 2, elephant: 3, banana: 3, alligator: 4, caterpillar: 4, responsibility: 6 };
-  const resolved = word => ({ supported: counts[word] != null, count: counts[word] });
-  it('balances supported counts while preserving unrelated source slots and ordinary selection', () => {
-    const picked = [...choosePreviewWords(bank, 6, bank, resolved, { min: 1, max: 4 })];
-    expect(picked.map(word => counts[word]).sort()).toEqual([2, 2, 3, 3, 4, 4]);
-    const mixed = [...choosePreviewWords(['custom', ...bank], 4, bank, resolved, { min: 1, max: 4 })];
-    expect(mixed).toContain('custom');
-    expect(mixed.filter(word => word !== 'custom').map(word => counts[word]).sort()).toEqual([2, 3, 4]);
-    expect([...choosePreviewWords(bank, 4, null, resolved, { min: 1, max: 4 })]).toEqual(bank.slice(0, 4));
-    expect([...choosePreviewWords(['responsibility'], 4, bank, resolved, { min: 5, max: 6 })]).toEqual(['responsibility']);
+describe('Studio counting words selection', () => {
+  // 2026-11-10: the counting bank card and Word Count are gone. The hint words are a ready-made list whose
+  // order mixes the counts, so the ten words a new list ticks cover 2, 3 and 4+ syllables.
+  it('mixes syllable counts in the first ten of the longer-words list, and ticks follow the sources', () => {
+    const real = new Function(coreSource + ';return createWordSoundsCore();')();
+    const longer = real.longerSyllableWords();
+    expect([...longer].sort()).toEqual(real.syllableCountWords().filter(word => !real.syllableWords().includes(word)).sort());
+    const sizes = longer.slice(0, 10).map(word => real.syllableRecordingTemplate(word, 'en').syllables.length);
+    expect(sizes.filter(size => size === 2).length).toBeGreaterThanOrEqual(3);
+    expect(sizes.filter(size => size === 3).length).toBeGreaterThanOrEqual(3);
+    expect(sizes.filter(size => size >= 4).length).toBeGreaterThanOrEqual(3);
+    const preview = ['custom', ...longer];
+    const ticked = real.defaultTickedWords(preview, [{ words: ['custom'] }, { words: longer, first: 10 }], null);
+    expect(ticked).toEqual(['custom', ...longer.slice(0, 10)]);
+    expect(real.defaultTickedWords(preview, [{ words: ['custom'] }, { words: longer, first: 10 }], 4)).toEqual(preview.slice(0, 4));
   });
 
   it('keeps manual word identities through dictionary/count updates and preview reordering without a render loop', async () => {
     const code = between('const previewWordsKey =', 'const normalizePackKey =');
-    const Host = new Function('React', 'chooseWordSoundsPreviewWords', `return function Host({words,ready}) {
+    const Host = new Function('React', 'WS_CORE', `return function Host({words,ready}) {
       const [selectedWords,setSelectedWords]=React.useState(new Set());
       const selectionControl=React.useRef({manual:false,inputsKey:null}),goalSelectionRef=React.useRef(null);
-      const previewList=words,selectionInputsKey='same-source',wordCount=4,includeSyllableCountWords=true,syllableCountingSelected=true,syllableRange={min:1,max:4};
+      const previewList=words,selectionInputsKey='same-source',syllableCountingSelected=true,syllableRange={min:1,max:4};
+      const customText='',includeCustom=false,withinSyllableRange=()=>true,tf=(_key,fallback)=>fallback;
+      const collectPreviewSources=()=>[{id:'longer',first:4,words:ready?words:words.filter(word=>word.startsWith('sun'))}];
       const selectedIndices=new Set(words.map((word,index)=>selectedWords.has(word)?index:-1).filter(index=>index>=0));
-      const WS_CORE={syllableCountWords:()=>words};
       const syllableCountFor=word=>({supported:ready||word.startsWith('sun'),count:word==='elephant'?3:word==='alligator'?4:2});
       ${code}
       return React.createElement('div',null,words.map((word,index)=>React.createElement('button',{key:word,'aria-pressed':selectedWords.has(word),onClick:()=>toggleSelection(index)},word)));
-    }`)(React, choosePreviewWords);
+    }`)(React, core);
     const words = ['sunset', 'sunrise', 'sunlight', 'sunshine', 'elephant', 'alligator'];
     container = document.createElement('div'); document.body.appendChild(container); root = createRoot(container);
     await act(async () => root.render(React.createElement(Host, { words, ready: false })));
@@ -392,10 +395,13 @@ describe('Studio review queue and reusable approvals', () => {
     const start = source.indexOf('<select aria-label={tf(\'word_sounds.probe_skill\'');
     const selector = source.slice(start, source.indexOf('</select>', start) + '</select>'.length);
     const code = transformSync('return ' + selector + ';', { plugins: ['@babel/plugin-transform-react-jsx'], configFile: false, babelrc: false, parserOpts: { allowReturnOutsideFunction: true } }).code;
-    const Picker = new Function('React', 'tf', 'probeActivitySel', 'setProbeActivitySel', code);
+    const Picker = new Function('React', 'tf', 'probeActivitySel', 'setProbeActivitySel', 'wsActivityName', code);
+    // The list names each skill as the player does (one name per activity, from the core table).
+    const names = new Function(coreSource + ';return createWordSoundsCore();')();
+    const wsActivityName = (id) => names.activityLabel(id, translate);
     container = document.createElement('div'); document.body.appendChild(container); root = createRoot(container);
-    for (const [mode, label] of [['syllable_counting', 'Syllable Counting'], ['syllable_blending', 'Syllable Blending']]) {
-      await act(async () => root.render(Picker(React, translate, mode, () => {})));
+    for (const [mode, label] of [['syllable_counting', 'Syllable Claps'], ['syllable_blending', 'Syllable Blending']]) {
+      await act(async () => root.render(Picker(React, translate, mode, () => {}, wsActivityName)));
       expect(container.querySelector('select').value).toBe(mode);
       expect(container.querySelector('select').selectedOptions[0].textContent).toBe(label);
     }

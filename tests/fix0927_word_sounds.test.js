@@ -178,7 +178,8 @@ describe('Medium: Missing Letter uses a prepared board only when it is consisten
   // which needs correctLetter; the letter choices stay beside the scramble.
   const span = sliceBetween(source, 'const preparedMissingLetter = React.useMemo(', 'const correctLetter =', { label: 'Missing Letter board' }) +
     sliceBetween(source, 'const correctLetter =', '\n', { label: 'Missing Letter answer line' }) + '\n' +
-    between('const letterOptions = React.useMemo(', 'const renderActivityContent = () => {');
+    // (2026-11-09: the answer-card helpers now sit between the letter choices and renderActivityContent.)
+    between('const letterOptions = React.useMemo(', '// BEGIN WORD SOUNDS ANSWER CARDS (modal side)');
   const board = (prepared, word = 'cat') => new Function('wsSpellFixedChar', 'React', 'packForCurrentWord', 'currentWordSoundsWord', 'wordSoundsPhonemes',
     span + ';return {hiddenIndex,correctLetter,letterOptions};')(
     spell.wsSpellFixedChar, { useMemo: fn => fn(), useState: v => [v, () => {}] }, prepared ? { missing_letter: prepared } : null, word, {});

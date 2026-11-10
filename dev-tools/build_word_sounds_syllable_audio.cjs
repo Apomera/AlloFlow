@@ -19,7 +19,8 @@ const work = path.join(root, '.tmp/word-sounds-syllable-audio');
 const check = process.argv.includes('--check');
 const reprocess = process.argv.includes('--reprocess');
 const core = new Function(fs.readFileSync(path.join(root, 'word_sounds_core.js'), 'utf8') + '\nreturn createWordSoundsCore;')()();
-const targets = core.syllableWords().sort();
+// Every ready-made compound: the original 64 and the 40 accepted on 2026-11-10.
+const targets = core.compoundWords().sort();
 const components = [...new Set(targets.flatMap(word => core.resolveSyllableTask(word, null, 'en').syllables))].sort();
 // Recording hints are never sent to TTS: only the complete target word.
 const recordingTargets = core.syllableCountWords().filter(word => !targets.includes(word)).sort();
@@ -42,6 +43,10 @@ const manifest = checkpoint && !check ? checkpoint.manifest : fs.existsSync(mani
   targets, components, clips: []
 };
 if (!check) {
+  // Compounds added to the list after the first build: their whole-word clips are new bank entries.
+  if (!manifest.compoundExpansion) manifest.compoundExpansion = { addedWords: targets.filter(word => !manifest.targets.includes(word) && !bank.words[word]) };
+  manifest.targets = targets;
+  manifest.components = components;
   manifest.recordingTargets = recordingTargets;
   if (!manifest.recordingExpansion) manifest.recordingExpansion = {
     preservedWordCount: Object.keys(bank.words).length,
@@ -129,7 +134,7 @@ async function run() {
   const original = Object.fromEntries(Object.entries(bank.words).filter(([word]) => !added.has(word)));
   assert(Object.keys(original).length === manifest.baseline.wordCount && sha(stableWords(original)) === manifest.baseline.wordsSha256, 'Existing bank clips changed');
   if (manifest.recordingExpansion) {
-    const newRecordingWords = new Set(manifest.recordingExpansion.addedWords);
+    const newRecordingWords = new Set([...manifest.recordingExpansion.addedWords, ...(manifest.compoundExpansion ? manifest.compoundExpansion.addedWords : [])]);
     const preserved = Object.fromEntries(Object.entries(bank.words).filter(([word]) => !newRecordingWords.has(word)));
     assert(Object.keys(preserved).length === manifest.recordingExpansion.preservedWordCount && sha(stableWords(preserved)) === manifest.recordingExpansion.preservedWordsSha256, 'Prior compound bank clips changed');
   }

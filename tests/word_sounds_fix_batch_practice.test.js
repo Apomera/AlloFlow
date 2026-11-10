@@ -195,7 +195,12 @@ describe('2. every wrong response is logged', () => {
     const choices = () => [...container.querySelectorAll('[data-ws-blend-choice]')];
     expect(choices().length).toBeGreaterThan(1);
     // Tap until the item is final; every wrong tap must be on the row and in the patterns.
-    for (let k = 0; k < 2 && current.history.length === 0; k++) { await click(choices()[k]); await tick(100); }
+    // The cards are sound-only: a tap hears and selects one, Check answers with it.
+    for (let k = 0; k < 2 && current.history.length === 0; k++) {
+      await click(choices()[k]);
+      expect(current.history.length, 'a tap alone grades nothing').toBe(0);
+      await click(container.querySelector('[data-ws-card-check]')); await tick(100);
+    }
     const row = current.history[0];
     const wrong = row.wrong || [];
     expect(wrong.length).toBe(row.correct ? row.attempts - 1 : row.attempts);
@@ -228,12 +233,13 @@ describe('3. session recap', () => {
     const copied = [];
     Object.defineProperty(window.navigator, 'clipboard', {configurable: true, value: {writeText: async (text) => { copied.push(text); }}});
     await mount({wordSoundsSessionGoal: 1, isParentMode: true});
-    await count(2); await count(5);              // Sound Counting: cat missed
+    await count(2); await count(5);              // Sound Counting: cat missed (two different wrong numbers)
     await tick(3100);
     await act(async () => current.setActivity('isolation')); await tick(120);
     expect(container.querySelector('[data-ws-header-subtitle]').textContent).toBe('Find Sounds');
     const iso = current.data.activityItems.isolation;
     await click(container.querySelector(`button[aria-label="Choose Sound ${iso.options.indexOf(iso.correctSound) + 1}"]`));
+    await click(container.querySelector('[data-ws-card-check]')); // sound-only card: select, then Check
     await tick(2100);                            // Find Sounds: cat right -> goal met
     expect(recap()).toBeTruthy();
     const chip = recap().querySelector('[data-ws-recap-word="cat"]');

@@ -90,8 +90,9 @@ describe('the pack owns ttsReady; the player does not', () => {
 describe('what the teacher sees stays accurate', () => {
   it('the play button accepts either kind of audio', async () => {
     // Otherwise splitting the flag would grey out a button for audio that
-    // plays perfectly well on this device. A word the teacher says aloud has
-    // no clip to play, so its button stays off even when a flag is set.
+    // plays perfectly well on this device. A word with neither flag yet is
+    // pressable too: pressing is how the teacher tests it. A word the teacher
+    // says aloud has no clip to play, so its button stays off even when a flag is set.
     const onPlayAudio = vi.fn(async () => {});
     const buttons = await renderPanel({
       onPlayAudio,
@@ -103,7 +104,7 @@ describe('what the teacher sees stays accurate', () => {
         { id: 'spoken', word: 'fire', ttsReady: true, _runtimeAudioReady: true },
       ],
     });
-    expect(buttons.map((b) => b.disabled)).toEqual([false, false, true, true]);
+    expect(buttons.map((b) => b.disabled)).toEqual([false, false, false, true]);
     await act(async () => buttons[1].click());
     expect(onPlayAudio).toHaveBeenCalledWith('dog');
   });

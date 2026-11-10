@@ -117,7 +117,8 @@ describe('sound counting: practice mode', () => {
     await act(async () => { await new Promise((r) => setTimeout(r, 30)); });
 
     await tapNumber(host, 5);
-    await tapNumber(host, 5);
+    // A tried number is disabled for the item (2026-11-09): the retry is another wrong number.
+    await tapNumber(host, 4);
 
     const rows = rec.history.flat().filter(Boolean);
     expect(rows.length, 'the retry is spent — this item must now be recorded').toBe(1);

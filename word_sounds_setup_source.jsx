@@ -606,7 +606,7 @@ function createWordSoundsCore(options = {}) {
   };
   // Generated Rhyme Time choices are stable per target, but do not reuse the
   // first few model/filler words for every item. Saved boards remain intact.
-  const buildRhymeBoard = ({word, answer, phonemes, answerPhonemes, pool=[], distractors=[], prepared, isEnglish=true, count=4, exposure}) => {
+  const buildRhymeBoard = ({word, answer, phonemes, answerPhonemes, pool=[], distractors=[], prepared, isEnglish=true, count=4, exposure, difficulty}) => {
     const checked = rhymePairStatus({word, answer:prepared?.answer || answer, phonemes, answerPhonemes, pool, prepared, isEnglish});
     if (!checked.supported) return {answer:'', options:[], supported:false, contentStatus:'teacher_review_required',
       reason:checked.reason, suggestedAnswer:prepared?.answer || answer || ''};
@@ -678,7 +678,34 @@ function createWordSoundsCore(options = {}) {
       const last = recent[recent.length - 1] || [];
       return Math.min(3, uses) * 2 + (last.includes(w) ? 4 : recent.some(board => board.includes(w)) ? 2 : 0);
     };
-    const selected = challengePool.sort((a,b) => score(a) + repetitionCost(a) - score(b) - repetitionCost(b)).slice(0, count);
+    // Optional difficulty. Omitted (or 'hard'): the near contrasts above, as
+    // before. 'easy': clearly different words only (another vowel and another
+    // final sound than the target and its rhyme). 'medium': one near foil at most.
+    const level = difficulty === 'easy' || difficulty === 'medium' ? difficulty : null;
+    let selected;
+    if (!level) {
+      selected = challengePool.sort((a,b) => score(a) + repetitionCost(a) - score(b) - repetitionCost(b)).slice(0, count);
+    } else {
+      const spelledVowel = w => isEnglish ? (w.match(/[aeiouy]+/) || [''])[0] : '';
+      const vowelKeys = w => [labels(w).find(s => vowels.has(s)), spelledVowel(w)].filter(Boolean);
+      const endKeys = w => { const end = finalSound(w); return [end ? soundKey(end) : null, w.slice(-1)].filter(Boolean); };
+      const refVowels = new Set([...vowelKeys(target), ...vowelKeys(correct)]);
+      const refEnds = new Set([...endKeys(target), ...endKeys(correct)]);
+      const near = w => vowelKeys(w).some(key => refVowels.has(key)) || endKeys(w).some(key => refEnds.has(key));
+      const onset = edgeSound(target, 'first', phonemes);
+      const lengthCost = w => Math.abs((labels(w).length || w.length) - (targetSounds.length || target.length));
+      const plain = w => lengthCost(w) * 3 + (onset && edgeSound(w, 'first', (data.get(w) || {}).phonemes) === onset ? 1 : 0) + repetitionCost(w);
+      const order = shuffled(candidates, seed);
+      const far = order.filter(w => !near(w)).sort((a,b) => plain(a) - plain(b));
+      const close = order.filter(near).sort((a,b) => score(a) + repetitionCost(a) - score(b) - repetitionCost(b));
+      if (level === 'easy') {
+        selected = far.slice(0, count);
+        // Too few clearly different words: fill only as far as a two-foil board.
+        if (selected.length < Math.min(count, 2)) selected = [...selected, ...close.slice(0, Math.min(count, 2) - selected.length)];
+      } else {
+        selected = [...close.slice(0, far.length >= count - 1 ? 1 : count - far.length), ...far].slice(0, count);
+      }
+    }
     return {answer, options: shuffled([answer, ...selected], seed ^ 0x9e3779b9),
       ...(checked.pronunciations ? {pronunciations:checked.pronunciations} : {})};
   };
@@ -694,7 +721,8 @@ function createWordSoundsCore(options = {}) {
       prepared.answer && prepared.options.includes(prepared.answer);
     const previous = session.occurrences.get(key);
     const inputKey = JSON.stringify([normalize(args.word), normalize(args.answer), args.phonemes || [], args.answerPhonemes || [], args.distractors || [],
-      (args.pool || []).filter(value => value && typeof value === 'object').map(value => [value.targetWord || value.word || value.term, value.phonemes])]);
+      (args.pool || []).filter(value => value && typeof value === 'object').map(value => [value.targetWord || value.word || value.term, value.phonemes]),
+      ...(args.difficulty === 'easy' || args.difficulty === 'medium' ? [args.difficulty, args.count] : [])]);
     // Edits and saved boards are authoritative even if the same occurrence
     // was generated before them. An already counted occurrence stays counted.
     if (previous && !hasPrepared && previous.inputKey === inputKey) return {...previous.board, options: [...previous.board.options]};
@@ -753,19 +781,98 @@ function createWordSoundsCore(options = {}) {
   const wordFamilyInstruction = rime => `Find all words in the ${rime} family`;
   const difficultyDecision = (history, activity, support={}) => {
     const rows=(history||[]).filter(h=>h && h.activity===activity && !h.practiceOnly && h.activity!=='letter_tracing' && h.taskKind!=='word_matching' && !h.answerExposed && !!h.aacAssisted===!!support.aacAssisted && (h.mode||'sound_only')===(support.mode||'sound_only'));
-    let band=0, block=[], reason='starting', changes=0;
+    // support.hysteresis (optional): after a step back, moving up again takes
+    // two qualifying windows in a row (three after a second step back), and the
+    // result carries support:'more' when the lowest band is still under 40%.
+    // Without it the decision and its fields are exactly as before.
+    const steady=support.hysteresis===true;
+    let band=0, block=[], reason='starting', changes=0, backs=0, held=0;
     const bands=['easy','medium','hard'];
+    const need=()=>steady && backs>0 ? (backs>1?3:2) : 1;
     for(const h of rows){
       if(h.difficulty && h.difficulty!==bands[band]) continue;
       block.push(h); block=block.slice(-10);
       const distinct=new Set(block.map(r=>normalize(r.word)).filter(Boolean)).size;
       const n=block.length, accuracy=block.reduce((s,r)=>s+(r.correct?((r.attempts||1)>1?0.5:1):0),0)/n;
       const min=band===0?6:8, words=band===0?4:6;
-      if(band<2 && n>=min && distinct>=words && accuracy>=0.85){band++;changes++;block=[];reason='advance';}
-      else if(band>0 && n>=6 && distinct>=4 && accuracy<0.45){band--;changes++;block=[];reason='step_back';}
-      else if(reason==='starting')reason='practice';
+      const qualifies=band<2 && n>=min && distinct>=words && accuracy>=0.85;
+      if(qualifies && held+1>=need()){band++;changes++;block=[];held=0;reason='advance';}
+      else if(qualifies){held++;block=[];reason='holding';}
+      else if(band>0 && n>=6 && distinct>=4 && accuracy<0.45){band--;changes++;backs++;held=0;block=[];reason='step_back';}
+      else{
+        // The qualifying windows must be consecutive.
+        if(held>0 && n>=min && accuracy<0.85)held=0;
+        if(reason==='starting')reason='practice';
+      }
     }
-    return {difficulty:bands[band],reason,items:block.length,distinctWords:new Set(block.map(r=>normalize(r.word)).filter(Boolean)).size,changes};
+    const result={difficulty:bands[band],reason,items:block.length,distinctWords:new Set(block.map(r=>normalize(r.word)).filter(Boolean)).size,changes};
+    if(!steady)return result;
+    const tailAccuracy=block.length?block.reduce((s,r)=>s+(r.correct?((r.attempts||1)>1?0.5:1):0),0)/block.length:1;
+    return {...result,support:band===0 && block.length>=6 && tailAccuracy<0.4?'more':'none',windowsHeld:held,windowsNeeded:need()};
+  };
+  // How many choices a sound-only board shows. 'hard' (or anything else) keeps
+  // the board as built; support 'more' is the difficultyDecision signal.
+  const choiceLimit = (difficulty, full, support) => {
+    const size = Math.max(0, Number(full) || 0);
+    if (support === 'more' && difficulty === 'easy') return Math.min(size, 2);
+    return difficulty === 'easy' ? Math.min(size, 3) : difficulty === 'medium' ? Math.min(size, 4) : size;
+  };
+  // 0 = clearly different, higher = easier to confuse.
+  const SOUND_NEIGHBOURS = new Set('b d|b p|b v|d t|d g|g k|f v|f th|s z|s sh|s th|m n|n ng|sh ch|j ch|k t|p t|w r|l r|c k|ck k|e i|a e|o u|a u|ee i|a o|oo u'.split('|'));
+  const soundCloseness = (a, b) => {
+    const x = soundKey(a), y = soundKey(b);
+    if (!x || !y) return 0;
+    if (x === y) return 3;
+    if (SOUND_NEIGHBOURS.has(x + ' ' + y) || SOUND_NEIGHBOURS.has(y + ' ' + x)) return 2;
+    return RHYME_VOWELS.has(x) && RHYME_VOWELS.has(y) ? 1 : 0;
+  };
+  const wordCloseness = (a, b) => {
+    const x = normalize(a), y = normalize(b);
+    if (!x || !y) return 0;
+    const rime = w => (w.match(/[aeiouy][a-z]*$/) || [''])[0], vowel = w => (w.match(/[aeiouy]+/) || [''])[0];
+    return (x[0] === y[0] ? 2 : 0) + (rime(x) && rime(x) === rime(y) ? 2 : 0) + (x.slice(-1) === y.slice(-1) ? 1 : 0) + (vowel(x) && vowel(x) === vowel(y) ? 1 : 0);
+  };
+  // Show fewer choices from a board without rebuilding it: the answer always
+  // stays, a second spelling of the answer never does, and the kept choices
+  // keep their order. No count (or a count the board already fits): unchanged.
+  const trimChoices = ({options, answer, count, difficulty, same, closeness} = {}) => {
+    const list = Array.isArray(options) ? [...options] : [];
+    const equal = typeof same === 'function' ? same : (a, b) => normalize(a) === normalize(b);
+    const at = list.findIndex(option => equal(option, answer));
+    if (at < 0 || !Number.isFinite(count) || count < 2) return list;
+    const foils = list.map((option, index) => ({option, index})).filter(row => row.index !== at && !equal(row.option, answer));
+    if (foils.length === list.length - 1 && list.length <= count) return list;
+    const score = row => typeof closeness === 'function' ? Number(closeness(row.option, answer)) || 0 : 0;
+    const farFirst = [...foils].sort((a, b) => score(a) - score(b) || a.index - b.index);
+    let kept = farFirst.slice(0, count - 1);
+    if (difficulty === 'medium' && typeof closeness === 'function' && farFirst.length > count - 1) {
+      const nearest = farFirst[farFirst.length - 1];
+      if (score(nearest) > 0) kept = [...farFirst.slice(0, count - 2), nearest];
+    } else if (difficulty !== 'easy' && difficulty !== 'medium') kept = foils.slice(0, count - 1);
+    const keep = new Set([at, ...kept.map(row => row.index)]);
+    return list.filter((_, index) => keep.has(index));
+  };
+  // Number buttons for "how many sounds": easy = the count with two either side
+  // (kept inside 1-6 when the count is), medium = 1-8, otherwise null (the full row).
+  const countingChoices = (count, difficulty) => {
+    const n = Number(count);
+    if (!Number.isInteger(n) || n < 1 || n > 10) return null;
+    if (difficulty === 'easy') {
+      const top = Math.max(6, n);
+      let low = Math.max(1, n - 2), high = Math.min(top, n + 2);
+      while (high - low < 2) { if (low > 1) low--; else high++; }
+      return Array.from({length: high - low + 1}, (_, i) => low + i);
+    }
+    if (difficulty === 'medium' && n <= 8) return [1, 2, 3, 4, 5, 6, 7, 8];
+    return null;
+  };
+  // Which sound positions isolation may ask for: easy = first, medium = first
+  // or last, otherwise any.
+  const isolationPositions = (difficulty, length) => {
+    const n = Math.max(1, Math.floor(Number(length)) || 1);
+    if (difficulty === 'easy') return [0];
+    if (difficulty === 'medium') return n > 1 ? [0, n - 1] : [0];
+    return Array.from({length: n}, (_, i) => i);
   };
   const textEvidence = ({activity,imageAvailable,answerRevealed=false}) => {
     const connected=['read_sentence','read_passage'].includes(activity);
@@ -857,6 +964,31 @@ function createWordSoundsCore(options = {}) {
     bathmat: ['bath', 'mat'], headband: ['head', 'band'],
   };
   const syllableWords = () => Object.keys(SYLLABLE_COMPOUNDS);
+  // Machine-vetted; accepted by the owner 2026-11-10 (see compounds_review.md).
+  // Two-part compounds added to the 64 above. Each part is a common one-syllable
+  // word that sounds the same alone as in the compound (CMUdict: whole = part 1 +
+  // part 2) and has its own clip in word_audio_kokoro_bank.json, like every part
+  // of the 64. syllableWords() stays the 64: the audio-bank build and tests use it.
+  const SYLLABLE_COMPOUNDS_VETTED = {
+    moonlight: ['moon', 'light'], daylight: ['day', 'light'], starlight: ['star', 'light'],
+    spotlight: ['spot', 'light'], headlight: ['head', 'light'], lighthouse: ['light', 'house'],
+    greenhouse: ['green', 'house'], henhouse: ['hen', 'house'], doorway: ['door', 'way'],
+    hallway: ['hall', 'way'], driveway: ['drive', 'way'], walkway: ['walk', 'way'],
+    doorstep: ['door', 'step'], footstep: ['foot', 'step'], daytime: ['day', 'time'],
+    nighttime: ['night', 'time'], goodnight: ['good', 'night'], hillside: ['hill', 'side'],
+    hilltop: ['hill', 'top'], treetop: ['tree', 'top'], laptop: ['lap', 'top'],
+    downhill: ['down', 'hill'], sundown: ['sun', 'down'], sunbeam: ['sun', 'beam'],
+    sunburn: ['sun', 'burn'], bedside: ['bed', 'side'], seaside: ['sea', 'side'],
+    sidewalk: ['side', 'walk'], rainfall: ['rain', 'fall'], snowfall: ['snow', 'fall'],
+    seesaw: ['see', 'saw'], horseback: ['horse', 'back'], drawbridge: ['draw', 'bridge'],
+    playmate: ['play', 'mate'], bookcase: ['book', 'case'], shellfish: ['shell', 'fish'],
+    catfish: ['cat', 'fish'], cheesecake: ['cheese', 'cake'], homemade: ['home', 'made'],
+    shortcut: ['short', 'cut'],
+  };
+  const compoundParts = word => Object.prototype.hasOwnProperty.call(SYLLABLE_COMPOUNDS, word) ? SYLLABLE_COMPOUNDS[word]
+    : Object.prototype.hasOwnProperty.call(SYLLABLE_COMPOUNDS_VETTED, word) ? SYLLABLE_COMPOUNDS_VETTED[word] : null;
+  // The ready-made "Compound words" list: the 64 first, then the vetted additions.
+  const compoundWords = () => [...syllableWords(), ...Object.keys(SYLLABLE_COMPOUNDS_VETTED)];
   // Written hints for recording word-specific speech, never TTS fragments.
   // These expand the teaching inventory without claiming unrecorded sounds are
   // checked audio. The teacher still previews and confirms every recording.
@@ -881,6 +1013,89 @@ function createWordSoundsCore(options = {}) {
     responsibility: ['re', 'spon', 'si', 'bil', 'i', 'ty'],
   };
   const syllableCountWords = () => [...syllableWords(), ...Object.keys(SYLLABLE_RECORDING_HINTS)];
+  // The hint words as a ready-made list for Syllable Claps, mixed so the first ten cover 2, 3 and 4+ syllables.
+  const longerSyllableWords = () => {
+    const bySize = new Map();
+    Object.keys(SYLLABLE_RECORDING_HINTS).forEach(word => { const size = Math.min(4, SYLLABLE_RECORDING_HINTS[word].length); bySize.set(size, [...(bySize.get(size) || []), word]); });
+    const rows = [...bySize.keys()].sort((a, b) => a - b).map(size => bySize.get(size)), out = [];
+    for (let i = 0; rows.some(row => i < row.length); i++) rows.forEach(row => { if (i < row.length) out.push(row[i]); });
+    return out;
+  };
+  // Ready-made word lists for the setup picker. The preset objects (name -> words) come from allo_data.
+  // A list id is stable: 'family:<preset name>', 'sight:<preset name>', 'compound', 'longer'.
+  const READY_LIST_FIRST = 10;
+  const SIGHT_LIST_LABELS = {
+    'Pre-K (Dolch)': ['word_sounds.list_dolch_prek', 'Dolch Pre-K'], 'Kindergarten (Dolch)': ['word_sounds.list_dolch_k', 'Dolch Kindergarten'],
+    '1st Grade (Dolch)': ['word_sounds.list_dolch_1', 'Dolch 1st Grade'], '2nd Grade (Dolch)': ['word_sounds.list_dolch_2', 'Dolch 2nd Grade'],
+    '3rd Grade (Dolch)': ['word_sounds.list_dolch_3', 'Dolch 3rd Grade'],
+    // These two presets hold 50 words each (Fry 1-50 and 51-100), whatever their preset names say.
+    'Fry First 100': ['word_sounds.list_fry_1_50', 'Fry words 1 to 50'], 'Fry Second 100': ['word_sounds.list_fry_51_100', 'Fry words 51 to 100'],
+  };
+  const readyMadeListGroups = (input = {}) => {
+    const words = list => { const seen = new Set(); return (Array.isArray(list) ? list : []).map(word => String(word || '').trim()).filter(word => { const key = word.toLocaleLowerCase(); return word && !seen.has(key) && !!seen.add(key); }); };
+    const families = input.families || {}, sight = input.sightWords || {};
+    const groups = { rhyme: [], digraph: [], blend: [], sight: [], syllable: [] };
+    Object.keys(families).forEach(name => {
+      const pattern = (name.match(/\(([^)]+)\)\s*$/) || [])[1] || '', lead = name.replace(/\s*\([^)]*\)\s*$/, '');
+      const kind = /^digraph\b/i.test(name) ? 'digraph' : /^blend\b/i.test(name) ? 'blend' : 'rhyme';
+      const label = !pattern ? name : kind === 'rhyme' ? pattern + ' (' + lead.toLowerCase() + ')' : pattern;
+      groups[kind].push({ id: 'family:' + name, label, words: words(families[name]), filterBySyllables: true });
+    });
+    Object.keys(sight).forEach(name => {
+      const known = Object.prototype.hasOwnProperty.call(SIGHT_LIST_LABELS, name) ? SIGHT_LIST_LABELS[name] : null;
+      groups.sight.push({ id: 'sight:' + name, label: known ? known[1] : name, ...(known ? { labelKey: known[0] } : {}), words: words(sight[name]), filterBySyllables: false });
+    });
+    if (isSyllableLanguageSupported(input.language)) {
+      groups.syllable.push({ id: 'compound', labelKey: 'word_sounds.list_compound', label: 'Compound words (for {activity})', activity: 'syllable_blending', words: compoundWords(), filterBySyllables: true });
+      groups.syllable.push({ id: 'longer', labelKey: 'word_sounds.list_longer', label: 'Longer words (for {activity})', activity: 'syllable_counting', words: longerSyllableWords(), filterBySyllables: true });
+    }
+    return [
+      { id: 'rhyme', labelKey: 'word_sounds.list_group_rhyme', label: 'Rhyming families', lists: groups.rhyme },
+      { id: 'digraph', labelKey: 'word_sounds.list_group_digraph', label: 'Digraphs', lists: groups.digraph },
+      { id: 'blend', labelKey: 'word_sounds.list_group_blend', label: 'Blends', lists: groups.blend },
+      { id: 'sight', labelKey: 'word_sounds.list_group_sight', label: 'Sight words', lists: groups.sight },
+      { id: 'syllable', labelKey: 'word_sounds.list_group_syllable', label: 'Compound and longer words', lists: groups.syllable },
+    ].filter(group => group.lists.length);
+  };
+  // A setup draft saved before the picker: the two bank flags, one family and one sight list.
+  const readyListIdsFromDraft = draft => {
+    if (Array.isArray(draft?.readyLists)) return [...new Set(draft.readyLists.filter(id => typeof id === 'string' && id))];
+    const ids = [];
+    if (draft?.includeSyllableWords || draft?.includeSyllableCountWords) ids.push('compound');
+    if (draft?.includeSyllableCountWords) ids.push('longer');
+    if (draft?.includeFamily && draft.selectedFamily) ids.push('family:' + draft.selectedFamily);
+    if (draft?.includeSightWords && draft.selectedSightWordList) ids.push('sight:' + draft.selectedSightWordList);
+    return ids;
+  };
+  // Which preview words start ticked. sources: [{ words, first }] where first = how many of that source's words
+  // start ticked (left out = all of them). cap limits the total (a new assessment). Returns preview spellings.
+  const foldWord = word => String(word || '').trim().toLocaleLowerCase();
+  // One entry per (source, word) that the source ticks by itself: 'sourceId\u0000word'.
+  const defaultTickOffers = sources => {
+    const offers = [];
+    (sources || []).forEach((source, index) => {
+      const seen = new Set(), id = source?.id == null ? String(index) : String(source.id);
+      (source?.words || []).forEach(word => { const key = foldWord(word); if (!key || seen.has(key)) return; if (source.first == null || seen.size < source.first) offers.push(id + '\u0000' + key); seen.add(key); });
+    });
+    return offers;
+  };
+  const defaultTickedWords = (previewWords, sources, cap) => {
+    const want = new Set(defaultTickOffers(sources).map(offer => offer.slice(offer.indexOf('\u0000') + 1))), out = [];
+    (previewWords || []).forEach(word => { if (want.has(foldWord(word)) && (cap == null || out.length < cap)) out.push(word); });
+    return out;
+  };
+  // After a source change the teacher's own ticks stay. Words a source newly offers join (up to cap, when there
+  // is one); words no longer in the preview leave. A word the teacher unticked stays out unless a source newly offers it.
+  const mergeTickedWords = (selected, previewWords, previousOffers, nextOffers, cap) => {
+    const spelling = new Map(); (previewWords || []).forEach(word => { if (!spelling.has(foldWord(word))) spelling.set(foldWord(word), word); });
+    const before = new Set(previousOffers || []), next = new Set();
+    [...(selected || [])].forEach(word => { if (spelling.has(foldWord(word))) next.add(spelling.get(foldWord(word))); });
+    (nextOffers || []).forEach(offer => {
+      const key = offer.slice(offer.indexOf('\u0000') + 1);
+      if (!before.has(offer) && spelling.has(key) && (cap == null || next.size < cap)) next.add(spelling.get(key));
+    });
+    return next;
+  };
   const isSyllableLanguageSupported = language => !String(language || '').trim() || /^(?:en(?:[-_][a-z0-9]+)*|english(?:\s*\([^)]*\))?)$/i.test(String(language).trim());
   const syllableLanguageKey = language => isSyllableLanguageSupported(language) ? 'en' : normalize(language).replace(/_/g, '-');
   const validSyllableCount = count => Number.isInteger(count) && count >= 1 && count <= 12;
@@ -1102,7 +1317,7 @@ function createWordSoundsCore(options = {}) {
   const resolveSyllableTask = (word, prepared, language) => {
     const targetWord = normalize(word);
     const needsRecording = () => ({ version: 1, supported: false, contentStatus: 'syllable_audio_required', targetWord,
-      syllables: [], audioUnits: [], reason: 'Use a syllable bank word or add and review recordings for each syllable in Word Sounds Studio.' });
+      syllables: [], audioUnits: [], reason: 'Use a syllable bank word or add and review recordings for each syllable in Word Sounds.' });
     if (prepared?.contentStatus === 'teacher_recorded') {
       if (reviewedSyllableReady(prepared) && prepared.targetWord === targetWord && prepared.version === 2 && prepared.language === 'en') {
         return { ...needsRecording(), reason: 'recording_locale_review_required', recoverable: true };
@@ -1112,7 +1327,7 @@ function createWordSoundsCore(options = {}) {
       }
       return { ...needsRecording(), ...(reviewedSyllableReady(prepared) && prepared.targetWord === targetWord ? { reason: 'recording_locale_review_required', recoverable: true } : {}) };
     }
-    const parts = isSyllableLanguageSupported(language) && Object.prototype.hasOwnProperty.call(SYLLABLE_COMPOUNDS, targetWord) && SYLLABLE_COMPOUNDS[targetWord];
+    const parts = isSyllableLanguageSupported(language) && compoundParts(targetWord);
     if (!parts) return needsRecording();
     return { version: 1, supported: true, contentStatus: 'curated_compound', targetWord,
       syllables: [...parts], audioUnits: parts.map(text => ({ key: text, text })) };
@@ -1469,11 +1684,9 @@ function createWordSoundsCore(options = {}) {
       if (index) { delete copy._ttsAssets; delete copy._ttsRequiredKeys; }
       else copy._ttsAssets = assets;
       copy.ttsReady = portablePackAsset(assets[packAudioKey(item.targetWord || item.word || item.term)]);
-      copy._ttsFailed = !copy.ttsReady && !isTeacherSpokenSyllableCount(item.targetWord || item.word || item.term, {
-        language: item.activityItems?.syllable_counting?.language, prepared: item.activityItems?.syllable_counting,
-        recordedTask: item.activityItems?.syllable_blending,
-        audioContext: createSyllableCountAudioContext({ asset: assets[packAudioKey(item.targetWord || item.word || item.term)], language: item.activityItems?.syllable_counting?.language }),
-      });
+      // No saved clip is not a failure. _ttsFailed means a live attempt on this
+      // device failed, and only the player sets it; a saved clip clears it.
+      if (copy.ttsReady) copy._ttsFailed = false;
       const word = item.targetWord || item.word || item.term, key = packAudioKey(word);
       const countBoard = item.activityItems?.syllable_counting;
       const approval = countBoard?.reviewedEvidence || countBoard;
@@ -1490,7 +1703,318 @@ function createWordSoundsCore(options = {}) {
     next[0]._ttsCoverage = Object.assign({}, next[0]._ttsCoverage, { clips: Object.keys(assets).length, requiredClips: inventory.length, words: next.length, wordsWithAudio: next.filter(item => item.ttsReady).length });
     return next;
   };
-  return {soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  // BEGIN SYLLABLE ACTIVITY WORDS
+  // Syllable Blending and Syllable Claps never block a lesson. Each uses the lesson
+  // words it can play. With too few, built-in words are added for that activity
+  // only: such an item carries _wsOnlyFor (a list of activity ids) and belongs to
+  // no other activity, printout or word count.
+  const SYLLABLE_ACTIVITY_IDS = ['syllable_blending', 'syllable_counting'];
+  const SYLLABLE_PLAN_DEFAULT_COUNT = 5;
+  const packItemWord = item => String(item && (item.targetWord || item.word || item.term) || '');
+  const itemOnlyFor = item => {
+    const only = item && typeof item === 'object' && Array.isArray(item._wsOnlyFor) ? item._wsOnlyFor.filter(id => typeof id === 'string' && id) : [];
+    return only.length ? only : null;
+  };
+  const isTopUpItem = item => !!itemOnlyFor(item);
+  const lessonOwnItems = words => (Array.isArray(words) ? words : []).filter(item => !isTopUpItem(item));
+  const topUpItems = (words, activity) => (Array.isArray(words) ? words : []).filter(item => {
+    const only = itemOnlyFor(item);
+    return !!only && (!activity || only.includes(activity));
+  });
+  // A prepared item's own board decides whether a syllable activity can play it.
+  const syllableItemPlayable = (item, activity, language) => {
+    const word = packItemWord(item), boards = item && item.activityItems || {};
+    if (activity === 'syllable_blending') {
+      const board = boards.syllable_blending;
+      return !!board && packAudioKey(board.targetWord) === packAudioKey(word) && validSyllableBoard(board) &&
+        resolveSyllableTask(word, board, language || board.language).supported;
+    }
+    if (activity === 'syllable_counting') {
+      const board = boards.syllable_counting;
+      return !!board && resolveSyllableCount(word, { language: language || board.language, prepared: board, recordedTask: boards.syllable_blending }).supported;
+    }
+    return true;
+  };
+  const packItemPlaysIn = (item, activity, language) => {
+    if (!item || typeof item !== 'object') return true;
+    const only = itemOnlyFor(item);
+    if (only && !only.includes(activity)) return false;
+    return !SYLLABLE_ACTIVITY_IDS.includes(activity) || syllableItemPlayable(item, activity, language);
+  };
+  // The items one activity uses. A syllable activity with nothing playable (a lesson
+  // saved before this rule) keeps the lesson's own words, as it did then.
+  const wordsForActivity = (words, activity, language) => {
+    const list = (Array.isArray(words) ? words : []).filter(item => item && typeof item === 'object');
+    const used = list.filter(item => packItemPlaysIn(item, activity, language));
+    return used.length || !SYLLABLE_ACTIVITY_IDS.includes(activity) ? used : lessonOwnItems(list);
+  };
+  const syllableActivityHasWords = (words, activity, language) =>
+    (Array.isArray(words) ? words : []).some(item => item && typeof item === 'object' && packItemPlaysIn(item, activity, language));
+  const planWordKey = word => normalize(word);
+  const topUpSeed = (words, activity) => {
+    const text = String(activity) + '|' + [...new Set(words.map(planWordKey))].sort().join('|');
+    let hash = 2166136261;
+    for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+    return hash >>> 0;
+  };
+  const seededOrder = (values, seed) => {
+    let state = (seed >>> 0) || 1;
+    return values.map((value, index) => { state = (Math.imul(state, 1103515245) + 12345) >>> 0; return [state >>> 8, index, value]; })
+      .sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(row => row[2]);
+  };
+  // One-syllable built-in words for Syllable Claps: the parts of the compounds.
+  const compoundPartWords = () => [...new Set(compoundWords().flatMap(word => compoundParts(word)))];
+  // What one syllable activity will run with: the lesson words it can use, the ones it
+  // cannot, and the built-in words added to reach the item count. The same lesson word
+  // list always gives the same added words. One-syllable words are fine for Syllable
+  // Claps (clap once); Syllable Blending needs two or more recorded parts.
+  const syllableActivityPlan = (input = {}) => {
+    const activity = input.activity, language = input.language;
+    const seen = new Set();
+    const words = (Array.isArray(input.words) ? input.words : []).map(word => String(word || '').trim())
+      .filter(word => { const key = planWordKey(word); return key && !seen.has(key) && !!seen.add(key); });
+    const needed = Math.max(1, Math.min(20, Math.floor(Number(input.count)) || SYLLABLE_PLAN_DEFAULT_COUNT));
+    const blending = activity === 'syllable_blending';
+    const isEligible = typeof input.isEligible === 'function' ? input.isEligible
+      : blending ? word => resolveSyllableTask(word, null, language).supported
+      : word => resolveSyllableCount(word, { language }).supported;
+    const countOf = typeof input.countOf === 'function' ? input.countOf : word => resolveSyllableCount(word, { language }).count;
+    const eligible = [], unused = [];
+    words.forEach(word => { let ok = false; try { ok = !!isEligible(word); } catch (_) { ok = false; } (ok ? eligible : unused).push(word); });
+    const builtIn = SYLLABLE_ACTIVITY_IDS.includes(activity) && isSyllableLanguageSupported(language);
+    const shortfall = Math.max(0, needed - eligible.length);
+    const topUp = [];
+    if (shortfall && builtIn && input.topUp !== false) {
+      const seed = topUpSeed(words, activity);
+      // A built-in word joins Syllable Claps only when its count is settled (the dictionary may not have loaded).
+      const canTopUp = typeof input.canTopUp === 'function' ? input.canTopUp : blending ? () => true : word => resolveSyllableCount(word, { language }).supported;
+      const free = list => list.filter(word => { if (seen.has(word)) return false; try { return !!canTopUp(word); } catch (_) { return false; } });
+      if (blending) {
+        // A compound built on a lesson word comes first (cat: catfish); the rest follow in seeded order,
+        // compounds that repeat a part already in the activity last.
+        const pool = free(compoundWords());
+        const related = pool.filter(word => compoundParts(word).some(part => seen.has(part)));
+        const ordered = [...related, ...seededOrder(pool.filter(word => !related.includes(word)), seed)];
+        const usedParts = new Set(eligible.flatMap(word => compoundParts(planWordKey(word)) || []));
+        const fresh = [], repeats = [];
+        ordered.forEach(word => {
+          const parts = compoundParts(word);
+          if (parts.some(part => usedParts.has(part))) repeats.push(word);
+          else { fresh.push(word); parts.forEach(part => usedParts.add(part)); }
+        });
+        topUp.push(...[...fresh, ...repeats].slice(0, shortfall));
+      } else {
+        // Mix one, two and three-or-more claps: add from whichever the activity has least of.
+        const longer = longerSyllableWords();
+        const buckets = {
+          1: seededOrder(free(compoundPartWords()), seed + 1),
+          2: seededOrder(free([...longer.filter(word => SYLLABLE_RECORDING_HINTS[word].length === 2), ...compoundWords()]), seed + 2),
+          3: seededOrder(free(longer.filter(word => SYLLABLE_RECORDING_HINTS[word].length >= 3)), seed + 3),
+        };
+        const tally = { 1: 0, 2: 0, 3: 0 };
+        eligible.forEach(word => { let count = 0; try { count = Number(countOf(word)) || 0; } catch (_) { count = 0; } if (count >= 1) tally[Math.min(3, count)] += 1; });
+        while (topUp.length < shortfall) {
+          const open = [2, 3, 1].filter(size => buckets[size].length);
+          if (!open.length) break;
+          const size = open.reduce((best, next) => tally[next] < tally[best] ? next : best, open[0]);
+          topUp.push(buckets[size].shift());
+          tally[size] += 1;
+        }
+      }
+    }
+    return { activity, needed, eligible, unused, topUp, shortfall, builtIn, topUpOff: input.topUp === false,
+      skipped: eligible.length + topUp.length === 0 };
+  };
+  // END SYLLABLE ACTIVITY WORDS
+  // BEGIN ACTIVITY NAMES AND SKILL STRANDS
+  // One name per activity (the player's), one grouping (six strands, teaching order),
+  // a Big 5 tag and a one-line skill. English here is the fallback; translate() is
+  // the caller's (key, fallback) lookup.
+  const SKILL_STRANDS = [
+    { key: 'syllables_rhyme', name: 'Syllables and rhyme', big5: ['phonological_awareness'] },
+    { key: 'hearing_sounds', name: 'Hearing sounds', big5: ['phonemic_awareness'] },
+    { key: 'letters_sounds', name: 'Letters and sounds', big5: ['phonics'] },
+    { key: 'spelling', name: 'Spelling', big5: ['phonics'] },
+    { key: 'reading_words', name: 'Reading words', big5: ['phonics'] },
+    { key: 'reading_sentences', name: 'Reading sentences', big5: ['comprehension'] },
+  ];
+  const BIG5_NAMES = { phonological_awareness: 'phonological awareness', phonemic_awareness: 'phonemic awareness', phonics: 'phonics', fluency: 'fluency', vocabulary: 'vocabulary', comprehension: 'comprehension' };
+  const ACTIVITY_SKILLS = {
+    rhyming: { name: 'Rhyme Time', strand: 'syllables_rhyme', big5: ['phonological_awareness'], skill: 'Hearing which words rhyme' },
+    syllable_counting: { name: 'Syllable Claps', strand: 'syllables_rhyme', big5: ['phonological_awareness'], skill: 'Counting the syllables in a spoken word' },
+    syllable_blending: { name: 'Syllable Blending', strand: 'syllables_rhyme', big5: ['phonological_awareness'], skill: 'Blending syllables into a word' },
+    word_families: { name: 'Word Families', strand: 'syllables_rhyme', big5: ['phonological_awareness'], skill: 'Hearing which words share the same ending' },
+    isolation: { name: 'Find Sounds', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Finding the first, middle or last sound in a word' },
+    sound_sort: { name: 'Sound Sort', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Sorting words by their first or last sound' },
+    blending: { name: 'Blend Sounds', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Blending separate sounds into a word' },
+    segmentation: { name: 'Break it Down', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Breaking a word into its separate sounds' },
+    counting: { name: 'Sound Counting', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Counting the sounds in a spoken word' },
+    manipulation: { name: 'Sound Swap', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Taking away or changing one sound to make a new word' },
+    mapping: { name: 'Sound Mapping', strand: 'letters_sounds', big5: ['phonics'], skill: 'Matching each sound in a word to the letters that spell it' },
+    letter_tracing: { name: 'Letter Trace', strand: 'letters_sounds', big5: ['phonics'], skill: 'Forming the first letter of a word' },
+    missing_letter: { name: 'Missing Letter', strand: 'spelling', big5: ['phonics'], skill: 'Choosing the missing letter in a word' },
+    orthography: { name: 'Sight & Spell', strand: 'spelling', big5: ['phonics'], skill: 'Spelling a word you hear with letter tiles' },
+    word_scramble: { name: 'Word Scramble', strand: 'spelling', big5: ['phonics'], skill: 'Putting mixed-up letters in order to spell a word' },
+    spelling_bee: { name: 'Spelling Bee', strand: 'spelling', big5: ['phonics'], skill: 'Spelling a word you hear' },
+    decoding: { name: 'Read & Match', strand: 'reading_words', big5: ['phonics'], skill: 'Reading a word and matching it to its picture' },
+    read_sentence: { name: 'Finish the Sentence', strand: 'reading_sentences', big5: ['comprehension'], skill: 'Reading a sentence and choosing the word that finishes it' },
+    sentence_match: { name: 'Picture the Sentence', strand: 'reading_sentences', big5: ['comprehension'], skill: 'Reading a sentence and showing what it says with pictures' },
+    read_passage: { name: 'Read the Story', strand: 'reading_sentences', big5: ['comprehension'], skill: 'Reading a short story and choosing the word that finishes it' },
+  };
+  const skillLookup = (translate, key, fallback) => {
+    let found = '';
+    try { found = typeof translate === 'function' ? translate(key, fallback) : ''; } catch (_) { found = ''; }
+    return typeof found === 'string' && found && found !== key ? found : fallback;
+  };
+  const activityIds = () => Object.keys(ACTIVITY_SKILLS);
+  const activityEnglishName = (id) => {
+    const row = ACTIVITY_SKILLS[id];
+    if (row) return row.name;
+    const plain = String(id || '').replace(/_/g, ' ').trim();
+    return plain ? plain.charAt(0).toUpperCase() + plain.slice(1) : '';
+  };
+  const activityLabel = (id, translate) => ACTIVITY_SKILLS[id] ? skillLookup(translate, 'word_sounds.activity_' + id, ACTIVITY_SKILLS[id].name) : activityEnglishName(id);
+  const activitySkillLabel = (id, translate) => ACTIVITY_SKILLS[id] ? skillLookup(translate, 'word_sounds.skill_' + id, ACTIVITY_SKILLS[id].skill) : '';
+  const activityStrand = (id) => ACTIVITY_SKILLS[id] ? ACTIVITY_SKILLS[id].strand : '';
+  const activityBig5 = (id) => ACTIVITY_SKILLS[id] ? ACTIVITY_SKILLS[id].big5.slice() : [];
+  const strandOrder = () => SKILL_STRANDS.map(row => row.key);
+  const strandRow = (key) => SKILL_STRANDS.find(row => row.key === key) || null;
+  const strandLabel = (key, translate) => strandRow(key) ? skillLookup(translate, 'word_sounds.strand_' + key, strandRow(key).name) : '';
+  const big5Label = (key, translate) => BIG5_NAMES[key] ? skillLookup(translate, 'word_sounds.big5_' + key, BIG5_NAMES[key]) : '';
+  const strandBig5 = (key) => strandRow(key) ? strandRow(key).big5.slice() : [];
+  const strandBig5Label = (key, translate) => strandBig5(key).map(tag => big5Label(tag, translate)).join(', ');
+  // Ids keep their given order inside each strand; unknown ids come last under ''.
+  const groupActivitiesByStrand = (ids) => {
+    const list = (Array.isArray(ids) ? ids : []).filter(id => typeof id === 'string');
+    const groups = SKILL_STRANDS.map(row => ({ strand: row.key, ids: list.filter(id => activityStrand(id) === row.key) }));
+    const rest = list.filter(id => !activityStrand(id));
+    if (rest.length) groups.push({ strand: '', ids: rest });
+    return groups.filter(group => group.ids.length);
+  };
+  // END ACTIVITY NAMES AND SKILL STRANDS
+  // BEGIN LESSON STARTING POINTS
+  // A lesson always has a plan. A starting point is plain data that fills it: activities in
+  // running order with a weight each (the share of the lesson's items), and the streak that
+  // ends an activity early. Lesson length turns the weights into item counts.
+  const LESSON_STARTING_POINTS = [
+    { id: 'hearing_sounds', name: 'Hearing sounds', mastery: 2, activities: [['rhyming', 3], ['syllable_counting', 3], ['syllable_blending', 3], ['isolation', 3]] },
+    { id: 'first_sounds_letters', name: 'First sounds and letters', mastery: 3, activities: [['isolation', 4], ['sound_sort', 3], ['blending', 3], ['letter_tracing', 3]] },
+    { id: 'cvc', name: 'CVC blending and spelling', mastery: 3, activities: [['blending', 4], ['segmentation', 4], ['mapping', 4], ['spelling_bee', 3], ['decoding', 4]] },
+    { id: 'digraphs_blends', name: 'Digraphs and blends', mastery: 3, activities: [['isolation', 3], ['sound_sort', 4], ['blending', 4], ['mapping', 4], ['missing_letter', 3], ['spelling_bee', 3]] },
+    { id: 'syllables', name: 'Syllables', mastery: 3, activities: [['syllable_counting', 5], ['syllable_blending', 5], ['spelling_bee', 3]] },
+    { id: 'reading', name: 'Reading words and sentences', mastery: 3, activities: [['decoding', 4], ['read_sentence', 4], ['sentence_match', 3], ['read_passage', 2]] },
+  ];
+  // Half a minute an item (the app's own figure): 10, 20 and 30 items.
+  const LESSON_LENGTHS = { short: { items: 10, minutes: 5 }, regular: { items: 20, minutes: 10 }, long: { items: 30, minutes: 15 } };
+  const LESSON_LENGTH_DEFAULT = 'regular';
+  const LESSON_COUNT_MAX = 20;
+  const startingPointRow = id => LESSON_STARTING_POINTS.find(row => row.id === id) || null;
+  const startingPoints = () => LESSON_STARTING_POINTS.map(row => ({ id: row.id, name: row.name, mastery: row.mastery, activities: row.activities.map(([activity, weight]) => ({ id: activity, weight })) }));
+  const startingPointLabel = (id, translate) => startingPointRow(id) ? skillLookup(translate, 'word_sounds.starting_point_' + id, startingPointRow(id).name) : '';
+  const planEntries = entries => (Array.isArray(entries) ? entries : []).filter(entry => entry && typeof entry.id === 'string')
+    .map(entry => ({ id: entry.id, count: Math.max(1, Math.round(Number(entry.count != null ? entry.count : entry.weight)) || 1) }));
+  const lessonPlanItems = entries => planEntries(entries).reduce((sum, entry) => sum + entry.count, 0);
+  const lessonPlanMinutes = entries => Math.ceil(lessonPlanItems(entries) * 0.5);
+  // Shares the length's items between the activities in proportion to their current counts:
+  // every activity keeps at least one item and none passes 20. Largest remainders first, so the
+  // total is exact whenever the plan can hold it.
+  const scaleLessonCounts = (entries, length) => {
+    const rows = planEntries(entries), target = LESSON_LENGTHS[length] ? LESSON_LENGTHS[length].items : 0;
+    if (!rows.length || !target) return rows;
+    const weight = rows.reduce((sum, row) => sum + row.count, 0);
+    const exact = rows.map(row => row.count / weight * target);
+    const counts = exact.map(value => Math.min(LESSON_COUNT_MAX, Math.max(1, Math.floor(value))));
+    let left = target - counts.reduce((sum, count) => sum + count, 0);
+    const byRemainder = exact.map((value, index) => ({ index, part: value - Math.floor(value) })).sort((a, b) => b.part - a.part || a.index - b.index);
+    for (let turn = 0; left > 0 && turn < rows.length * LESSON_COUNT_MAX; turn++) {
+      const at = byRemainder[turn % rows.length].index;
+      if (counts[at] < LESSON_COUNT_MAX) { counts[at]++; left--; }
+      else if (counts.every(count => count >= LESSON_COUNT_MAX)) break;
+    }
+    return rows.map((row, index) => ({ id: row.id, count: counts[index] }));
+  };
+  const lessonLengthOf = entries => {
+    const items = lessonPlanItems(entries);
+    return Object.keys(LESSON_LENGTHS).find(key => LESSON_LENGTHS[key].items === items) || 'custom';
+  };
+  // The plan a starting point gives: its activities in order, minus any that cannot run here.
+  const startingPointPlan = (id, options = {}) => {
+    const row = startingPointRow(id);
+    if (!row) return null;
+    const unavailable = Array.isArray(options.unavailable) ? options.unavailable : [];
+    const kept = row.activities.filter(([activity]) => !unavailable.includes(activity));
+    const length = LESSON_LENGTHS[options.length] ? options.length : LESSON_LENGTH_DEFAULT;
+    const activities = scaleLessonCounts(kept.map(([activity, weight]) => ({ id: activity, count: weight })), length);
+    return { id: row.id, length, masteryThreshold: row.mastery, activities, order: activities.map(activity => activity.id),
+      dropped: row.activities.map(([activity]) => activity).filter(activity => unavailable.includes(activity)) };
+  };
+  // A saved plan with exactly a starting point's activities, in its order, is that starting point.
+  const matchStartingPoint = activityIdList => {
+    const ids = (Array.isArray(activityIdList) ? activityIdList : []).join(',');
+    const row = ids ? LESSON_STARTING_POINTS.find(candidate => candidate.activities.map(([activity]) => activity).join(',') === ids) : null;
+    return row ? row.id : '';
+  };
+  // The player's language gate, as data, so setup offers only what the player will run.
+  const NON_LETTER_TILE_LANGUAGES = ['ar', 'he', 'fa', 'prs', 'ur', 'ps', 'sd', 'ug', 'dv', 'hi', 'bn', 'mr', 'ne', 'gu', 'pa', 'ta', 'te', 'kn', 'ml', 'si', 'as', 'or',
+    'th', 'lo', 'km', 'my', 'bo', 'dz', 'zh', 'cmn', 'yue', 'ja', 'ko', 'am', 'ti'];
+  const RTL_LANGUAGES = ['ar', 'he', 'fa', 'prs', 'ur', 'ps', 'sd', 'ug', 'dv', 'ku'];
+  const ENGLISH_ONLY_ACTIVITIES = ['sound_sort', 'word_families', 'letter_tracing', 'read_sentence', 'read_passage', 'sentence_match'];
+  const LETTER_TILE_ACTIVITIES = ['orthography', 'spelling_bee', 'word_scramble', 'missing_letter'];
+  const activityRunsInLanguage = (id, language) => {
+    if (!language || String(language).toLowerCase().indexOf('en') === 0) return true;
+    const primary = String(language).toLowerCase().split(/[-_]/)[0];
+    if (ENGLISH_ONLY_ACTIVITIES.includes(id)) return false;
+    if (LETTER_TILE_ACTIVITIES.includes(id)) return !NON_LETTER_TILE_LANGUAGES.includes(primary);
+    if (id === 'mapping') return !NON_LETTER_TILE_LANGUAGES.includes(primary) && !RTL_LANGUAGES.includes(primary);
+    return true;
+  };
+  // What an activity cannot run without. Pictures: the word's picture is the answer.
+  // Sentences: the item is a written sentence or story.
+  const ACTIVITY_NEEDS = { pictures: ['decoding', 'sentence_match'], sentences: ['read_sentence', 'read_passage', 'sentence_match'] };
+  // '' when the activity can run; otherwise the first thing in its way.
+  const activityBlockedBy = (id, env = {}) => !activityRunsInLanguage(id, env.language) ? 'language'
+    : env.pictures === false && ACTIVITY_NEEDS.pictures.includes(id) ? 'pictures'
+      : env.sentences === false && ACTIVITY_NEEDS.sentences.includes(id) ? 'sentences' : '';
+  // A starting point that would lose more than half of its activities is not offered.
+  const startingPointStatus = (id, env = {}) => {
+    const row = startingPointRow(id);
+    if (!row) return { id, dropped: [], disabled: true, reason: '' };
+    const dropped = row.activities.map(([activity]) => ({ id: activity, reason: activityBlockedBy(activity, env) })).filter(entry => entry.reason);
+    const disabled = dropped.length * 2 > row.activities.length;
+    return { id, dropped, disabled, reason: dropped.some(entry => entry.reason === 'language') ? 'language' : dropped.length ? dropped[0].reason : '' };
+  };
+  const SPELLED_DIGRAPH = /(?:sh|ch|th|wh|ph|ck|ng|qu)/;
+  const SPELLED_BLEND = /^(?:[bcfgps]l|[bcdfgpt]r|s[cklmnptw]|tw|s[cp]r|str|spl)|(?:[lmn][dkpt]|s[kpt]|ft|ct|pt|nch)$/;
+  const roughSyllables = word => {
+    const text = String(word).toLowerCase(), groups = text.replace(/e$/, '').match(/[aeiouy]+/g);
+    return Math.max(1, (groups ? groups.length : 1) + (/[^aeiouy]le$/.test(text) ? 1 : 0));
+  };
+  // The starting point offered before the teacher chooses one. In order:
+  //  1. no words                                              -> Hearing sounds
+  //  2. not English (the spelling rules below are English)    -> Hearing sounds
+  //  3. at least 8 in 10 words are on a sight-word list       -> Reading words and sentences
+  //  4. at least 6 in 10 words have two or more syllables     -> Syllables
+  //  5. at least half the words have a digraph or a blend     -> Digraphs and blends
+  //  6. at least 6 in 10 are one syllable, up to 4 letters    -> CVC blending and spelling
+  //  7. anything else                                         -> Hearing sounds
+  // A starting point that is not offered here (isOffered) is passed over.
+  const suggestStartingPoint = (words, options = {}) => {
+    const list = [...new Set((Array.isArray(words) ? words : []).map(word => foldWord(word)).filter(word => /\p{L}/u.test(word)))];
+    const offered = id => typeof options.isOffered !== 'function' || !!options.isOffered(id);
+    const fallback = rule => ({ id: 'hearing_sounds', rule });
+    if (!list.length) return fallback('no_words');
+    if (!isSyllableLanguageSupported(options.language)) return fallback('language');
+    const share = test => list.filter(test).length / list.length;
+    const sight = new Set((Array.isArray(options.sightWords) ? options.sightWords : []).map(word => foldWord(word)));
+    const countOf = word => { const known = typeof options.countOf === 'function' ? Number(options.countOf(word)) : 0; return validSyllableCount(known) ? known : roughSyllables(word); };
+    if (sight.size && share(word => sight.has(word)) >= 0.8 && offered('reading')) return { id: 'reading', rule: 'sight_words' };
+    if (share(word => countOf(word) >= 2) >= 0.6 && offered('syllables')) return { id: 'syllables', rule: 'long_words' };
+    if (share(word => SPELLED_DIGRAPH.test(word) || SPELLED_BLEND.test(word)) >= 0.5 && offered('digraphs_blends')) return { id: 'digraphs_blends', rule: 'digraphs_blends' };
+    if (share(word => countOf(word) === 1 && word.length <= 4) >= 0.6 && offered('cvc')) return { id: 'cvc', rule: 'short_words' };
+    return fallback('other');
+  };
+  // END LESSON STARTING POINTS
+  return {LESSON_STARTING_POINTS,LESSON_LENGTHS,LESSON_LENGTH_DEFAULT,startingPoints,startingPointLabel,startingPointPlan,startingPointStatus,matchStartingPoint,suggestStartingPoint,scaleLessonCounts,lessonLengthOf,lessonPlanItems,lessonPlanMinutes,activityRunsInLanguage,activityBlockedBy,ACTIVITY_NEEDS,SYLLABLE_ACTIVITY_IDS,SYLLABLE_PLAN_DEFAULT_COUNT,isTopUpItem,lessonOwnItems,topUpItems,packItemPlaysIn,wordsForActivity,syllableActivityHasWords,syllableActivityPlan,compoundPartWords,ACTIVITY_SKILLS,SKILL_STRANDS,BIG5_NAMES,activityIds,activityEnglishName,activityLabel,activitySkillLabel,activityStrand,activityBig5,strandOrder,strandLabel,strandBig5,big5Label,strandBig5Label,groupActivitiesByStrand,soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,SYLLABLE_COMPOUNDS_VETTED,compoundWords,longerSyllableWords,READY_LIST_FIRST,readyMadeListGroups,readyListIdsFromDraft,defaultTickOffers,defaultTickedWords,mergeTickedWords,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,choiceLimit,soundCloseness,wordCloseness,trimChoices,countingChoices,isolationPositions,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
@@ -3735,57 +4259,6 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         return { words, ttsAssets, ...(ttsAssetBanks.length ? { ttsAssetBanks } : {}) };
     }
 
-    // The names the setup list shows; the saved lesson summary uses the same ones.
-    const WS_SETUP_ACTIVITY_LABELS = {
-        isolation: 'Find Sounds', blending: 'Blending', segmentation: 'Break It Down', orthography: 'Sight & Spell', rhyming: 'Rhyme Time',
-        letter_tracing: 'Letter Tracing', counting: 'Sound Counting', mapping: 'Sound Mapping', sound_sort: 'Sound Sort', word_families: 'Word Families',
-        word_scramble: 'Word Scramble', manipulation: 'Sound Swap', syllable_counting: 'Syllable Counting', syllable_blending: 'Syllable Blending',
-        spelling_bee: 'Spelling Bee', missing_letter: 'Missing Letter', decoding: 'Read & Match', read_sentence: 'Finish the Sentence',
-        read_passage: 'Read the Story', sentence_match: 'Picture the Sentence',
-    };
-    // When only Word Count changes, the teacher's own picks stay: words they took out stay out, words they added stay in.
-    // The selection key is a JSON array that starts with the count. Returns null for any other change.
-    function keepWordSoundsManualPicks(control, nextKey, selected, pick) {
-        const rest = key => typeof key === 'string' && key.indexOf(',') > 0 ? key.slice(key.indexOf(',')) : null;
-        if (!control || !control.manual || rest(control.inputsKey) === null || rest(control.inputsKey) !== rest(nextKey)) return null;
-        let oldCount, newCount;
-        try { oldCount = JSON.parse(control.inputsKey)[0]; newCount = JSON.parse(nextKey)[0]; } catch (_) { return null; }
-        const before = pick(oldCount), after = pick(newCount);
-        const out = new Set([...(control.out || [])].filter(word => !selected.has(word)));
-        before.forEach(word => { if (!selected.has(word)) out.add(word); });
-        const added = new Set([...(control.added || [])].filter(word => selected.has(word)));
-        selected.forEach(word => { if (!before.has(word)) added.add(word); });
-        const next = new Set([...after].filter(word => !out.has(word)));
-        added.forEach(word => next.add(word));
-        return { next, out, added };
-    }
-    function chooseWordSoundsPreviewWords(words, limit, bankWords, resolveWord, range) {
-        const initial = words.slice(0, Math.max(0, limit));
-        if (!bankWords) return new Set(initial);
-        const bank = new Set(bankWords), selected = new Set(initial.filter(word => !bank.has(word)));
-        const slots = initial.length - selected.size, buckets = new Map();
-        words.filter(word => bank.has(word)).forEach(word => {
-            const result = resolveWord(word);
-            if (!result.supported || result.count < range.min || result.count > range.max) return;
-            if (!buckets.has(result.count)) buckets.set(result.count, []);
-            buckets.get(result.count).push(word);
-        });
-        const counts = [...buckets.keys()].sort((a, b) => a - b);
-        let picked = 0;
-        while (picked < slots && counts.some(count => buckets.get(count).length)) {
-            for (const count of counts) {
-                const word = buckets.get(count).shift();
-                if (word) { selected.add(word); picked++; }
-                if (picked === slots) break;
-            }
-        }
-        for (const word of words) {
-            if (picked >= slots) break;
-            if (bank.has(word) && !selected.has(word)) { selected.add(word); picked++; }
-        }
-        return selected;
-    }
-
     // The host owns this session so approved work survives leaving setup.
     // Unfinished editor drafts remain governed by the explicit discard choice.
     const WS_LESSON_MASTERY_THRESHOLD = 3;
@@ -3971,7 +4444,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             (mode === 'ask'
                 ? 'The teacher is asking a question. Answer it in two or three sentences, using the current setup. Do not propose changes. Return ONLY JSON: {"kind": "answer", "reply": "..."}'
                 : 'The teacher wants changes. Change only what the teacher asks for and leave everything else as it is. If the message is really a question, answer it with kind "answer" instead. ' +
-                'Changes are relative to CURRENT_SETUP. When the teacher adjusts the pending proposal, return the whole set of changes you now propose, including the parts of it they kept. ' +
+                'Changes are relative to CURRENT_SETUP. Its planChosenBy says who chose the activities that are on: "app" means the app suggested them from the words, so when the teacher asks for particular activities, also "disable" the suggested ones they did not ask for. When the teacher adjusts the pending proposal, return the whole set of changes you now propose, including the parts of it they kept. ' +
                 'Add 10 to 15 real, age-appropriate words only when the teacher asks for a new lesson or new words. If the teacher names letters or sounds already taught, use only words a child could read with them. ' +
                 'Activity ids: ' + WS_GOAL_ACTIVITIES.join(', ') + '. A count is the number of items for one activity, ' + WS_PLANNER_COUNT.min + ' to ' + WS_PLANNER_COUNT.max + '. ' +
                 'Give "order" (the full order of the activities that will be on) only if the teacher asks to reorder. Give "delivery" (' + WS_PLANNER_DELIVERY.join(', ') + ') only if the teacher says how students will work.\n' +
@@ -4125,16 +4598,21 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             'missing_letter': 'afterCompletion'
         };
         const [includeGlossary, setIncludeGlossary] = useSetupState('includeGlossary', () => true);
-        const [includeFamily, setIncludeFamily] = useSetupState('includeFamily', () => false);
         const [includeCustom, setIncludeCustom] = useSetupState('includeCustom', () => false);
         const [includeAI, setIncludeAI] = useSetupState('includeAI', () => false);
-        const [wordCount, setWordCount] = useSetupState('wordCount', () => 10);
-        const [selectedFamily, setSelectedFamily] = useSetupState('selectedFamily', () => '');
-    const [includeSightWords, setIncludeSightWords] = useSetupState('includeSightWords', () => false);
-    const [selectedSightWordList, setSelectedSightWordList] = useSetupState('selectedSightWordList', () => '');
-        const [wordSoundsSessionGoal, setWordSoundsSessionGoal] = useSetupState('wordSoundsSessionGoal', () => 30);
-        const [orthoSessionGoal, setOrthoSessionGoal] = useSetupState('orthoSessionGoal', () => 0);
-    const includeOrthographic = orthoSessionGoal > 0;
+        // Ready-made lists the teacher added (ids from WS_CORE.readyMadeListGroups). A draft from before the picker
+        // (bank flags, one family, one sight list) opens with the same lists added.
+        const [readyLists, setReadyLists] = useSetupState('readyLists', () => WS_CORE.readyListIdsFromDraft(setupDraft));
+        const [readyListPick, setReadyListPick] = React.useState('');
+        const [readyListNotice, setReadyListNotice] = React.useState('');
+        const readyListGroups = WS_CORE.readyMadeListGroups({ families: WORD_FAMILY_PRESETS, sightWords: SIGHT_WORD_PRESETS, language: wordSoundsLanguage });
+        const readyListById = new Map(readyListGroups.flatMap(group => group.lists.map(list => [list.id, list])));
+        const readyListLabel = list => tf(list.labelKey || '', list.label, list.activity ? { activity: wsActivityName(list.activity) } : undefined);
+        const addedReadyLists = readyLists.map(id => readyListById.get(id)).filter(Boolean);
+        // Only a saved lesson without a plan still uses these two goals; it keeps the ones it was saved with.
+        const savedGoal = (value, fallback) => { const goal = Math.floor(Number(value)); return preloadedWords.length > 0 && !preparedSessionConfig.fixedForm && Number.isFinite(goal) && goal >= 0 ? goal : fallback; };
+        const [wordSoundsSessionGoal] = useSetupState('wordSoundsSessionGoal', () => savedGoal(preparedSessionConfig.sessionGoal, 30) || 30);
+        const [orthoSessionGoal] = useSetupState('orthoSessionGoal', () => savedGoal(preparedSessionConfig.orthoSessionGoal, 0));
         const [customText, setCustomText] = useSetupState('customText', () => '');
         // Words the teacher typed in the sidebar before opening Word Sounds start the "My words" box,
         // once per setup session and only while that box is empty and no words are chosen.
@@ -4156,10 +4634,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         const [probeActivitySel, setProbeActivitySel] = useSetupState('probeActivitySel', () =>
             probeActivity && probeActivity !== 'orf' ? probeActivity : 'segmentation'
         );
-        const probeActivityLabel = tf(`word_sounds.act_${probeActivitySel}`, ({
-            segmentation: 'Segmentation', isolation: 'Sound Isolation', blending: 'Blending', rhyming: 'Rhyming', counting: 'Sound Counting',
-            syllable_counting: 'Syllable Counting', syllable_blending: 'Syllable Blending',
-        })[probeActivitySel] || String(probeActivitySel).replace(/_/g, ' '));
+        // One name per activity: the player's name, from the core table.
+        const wsActivityName = (id) => WS_CORE.activityLabel(id, tf);
+        const probeActivityLabel = wsActivityName(probeActivitySel);
         // Who this probe is FOR. The host banks a completed probe under
         // `probeTargetStudent`, which until now was only ever set by the
         // Assessment Center's Active Student selector and never cleared — so a
@@ -4174,16 +4651,32 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         // an existing child a click instead of a re-typing exercise.
         const [probeStudent, setProbeStudent] = useSetupState('probeStudent', () => '');
         const probeStudentTrimmed = String(probeStudent || '').trim();
-        const [includeLessonPlan, setIncludeLessonPlan] = useSetupState('includeLessonPlan', () => !!(preparedLessonPlan && Array.isArray(preparedLessonPlan.activities) && preparedLessonPlan.activities.length));
-        const [prepareScope, setPrepareScope] = useSetupState('prepareScope', () => 'all');
-        React.useEffect(() => { if (!includeLessonPlan) setPrepareScope('all'); }, [includeLessonPlan]);
+        // The plan is the lesson. A new lesson always has one; only a saved lesson made without a plan
+        // ("All activities", the old Quick Practice) opens without one and keeps running as it did.
+        const savedPlanActivities = preparedLessonPlan && Array.isArray(preparedLessonPlan.activities) ? preparedLessonPlan.activities.filter(activity => activity && activity.id) : [];
+        const reopenedLesson = preloadedWords.length > 0;
+        const savedPreparedActivities = Array.isArray(preparedSessionConfig.preparedActivities) ? preparedSessionConfig.preparedActivities.filter(Boolean) : [];
+        const [includeLessonPlan, setIncludeLessonPlan] = useSetupState('includeLessonPlan', () => savedPlanActivities.length > 0 || !reopenedLesson);
+        // Which plan is on screen: '' = the one suggested for the words (until the teacher chooses),
+        // a starting point id, 'custom' = My own mix, 'all' = a saved lesson without a plan.
+        // A plan already in this setup session (set by the teacher, or by an earlier build) is the teacher's.
+        const draftHasPlan = ['lessonPlan', 'lessonPlanOrder'].some(field => Object.prototype.hasOwnProperty.call(setupDraft, field));
+        const [planChoice, setPlanChoice] = useSetupState('planChoice', () => draftHasPlan ? 'custom' : savedPlanActivities.length
+            ? (WS_CORE.matchStartingPoint(savedPlanActivities.map(activity => activity.id)) || 'custom') : reopenedLesson ? 'all' : '');
+        const [lessonLength, setLessonLength] = useSetupState('lessonLength', () => savedPlanActivities.length ? WS_CORE.lessonLengthOf(savedPlanActivities) : WS_CORE.LESSON_LENGTH_DEFAULT);
+        // Free roaming: everything is prepared and students may choose any activity; off, only the plan is.
+        const [freeRoaming, setFreeRoaming] = useSetupState('freeRoaming', () => Object.prototype.hasOwnProperty.call(setupDraft, 'prepareScope') ? setupDraft.prepareScope !== 'lesson'
+            : reopenedLesson && !preparedSessionConfig.fixedForm ? (preparedSessionConfig.freeRoaming === true || !savedPreparedActivities.length) : false);
+        const prepareScope = freeRoaming || !includeLessonPlan ? 'all' : 'lesson';
+        const [planEditorOpen, setPlanEditorOpen] = React.useState(false);
+        const [planFineTuneOpen, setPlanFineTuneOpen] = React.useState(false);
         const [taughtPatternsText, setTaughtPatternsText] = useSetupState('taughtPatternsText', () => (preloadedWords[0]?._instructionalProfile?.taughtPatterns || []).join(', '));
         const [knownWordsText, setKnownWordsText] = useSetupState('knownWordsText', () => (preloadedWords[0]?._instructionalProfile?.knownWords || []).join(', '));
         const instructionalProfile = React.useMemo(() => ({
             taughtPatterns: taughtPatternsText.toLowerCase().split(/[\s,]+/).filter(Boolean),
             knownWords: knownWordsText.toLowerCase().split(/[\s,]+/).filter(Boolean),
         }), [taughtPatternsText, knownWordsText]);
-        const [lessonPlan, setLessonPlan] = useSetupState('lessonPlan', () => restoreSavedLessonPlan(preparedLessonPlan, {
+        const [lessonPlanState, setLessonPlanState] = useSetupState('lessonPlan', () => restoreSavedLessonPlan(preparedLessonPlan, {
             isolation: { enabled: false, count: 5 },
             blending: { enabled: false, count: 5 },
             segmentation: { enabled: false, count: 5 },
@@ -4205,41 +4698,13 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             read_passage: { enabled: false, count: 5 },
             sentence_match: { enabled: false, count: 5 },
         }));
-        const [lessonPlanOrder, setLessonPlanOrder] = useSetupState('lessonPlanOrder', () => restoreSavedLessonPlanOrder(preparedLessonPlan, [
-            'isolation', 'blending', 'segmentation', 'orthography', 'rhyming',
-            'letter_tracing', 'counting', 'mapping', 'sound_sort', 'word_families', 'word_scramble', 'manipulation',
-            'syllable_counting', 'syllable_blending', 'spelling_bee', 'missing_letter', 'decoding', 'read_sentence', 'read_passage', 'sentence_match'
-        ]));
+        const [lessonPlanOrderState, setLessonPlanOrderState] = useSetupState('lessonPlanOrder', () => restoreSavedLessonPlanOrder(preparedLessonPlan, [...WS_RECOMMENDED_LESSON_ORDER]));
         const [draggedActivity, setDraggedActivity] = React.useState(null);
         const [lessonPlanReorderStatus, setLessonPlanReorderStatus] = React.useState('');
         const [orderBeforeRecommended, setOrderBeforeRecommended] = React.useState(null);
-        const recommendedLessonOrder = wsRecommendedLessonOrder(lessonPlanOrder);
-        const lessonOrderIsRecommended = recommendedLessonOrder.every((id, i) => id === lessonPlanOrder[i]);
-        // Any later reorder replaces the remembered order, so Undo never undoes the teacher's own moves.
-        React.useEffect(() => { if (orderBeforeRecommended && !lessonOrderIsRecommended) setOrderBeforeRecommended(null); }, [lessonPlanOrder]);
-        const applyRecommendedLessonOrder = () => {
-            if (lessonOrderIsRecommended) return;
-            setOrderBeforeRecommended(lessonPlanOrder);
-            setLessonPlanOrder(recommendedLessonOrder);
-            setLessonPlanReorderStatus(tf('word_sounds.lesson_plan_recommended_done', 'Activities are in the recommended order.'));
-        };
-        const undoRecommendedLessonOrder = () => {
-            if (!orderBeforeRecommended) return;
-            setLessonPlanOrder(orderBeforeRecommended);
-            setOrderBeforeRecommended(null);
-            setLessonPlanReorderStatus(tf('word_sounds.lesson_plan_recommended_undone', 'Your previous order is back.'));
-        };
-        const [masteryThreshold, setMasteryThreshold] = useSetupState('masteryThreshold', () =>
-            WS_LESSON_MASTERY_CHOICES.includes(Number(preparedLessonPlan?.masteryThreshold)) ? Number(preparedLessonPlan.masteryThreshold) : WS_LESSON_MASTERY_THRESHOLD);
-        const moveLessonPlanActivity = (activityId, activityLabel, direction) => {
-            const fromIndex = lessonPlanOrder.indexOf(activityId);
-            const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
-            if (fromIndex < 0 || toIndex < 0 || toIndex >= lessonPlanOrder.length) return;
-            const next = [...lessonPlanOrder];
-            [next[fromIndex], next[toIndex]] = [next[toIndex], next[fromIndex]];
-            setLessonPlanOrder(next);
-            setLessonPlanReorderStatus(`${activityLabel} moved to position ${toIndex + 1} of ${next.length}.`);
-        };
+        const savedMasteryThreshold = WS_LESSON_MASTERY_CHOICES.includes(Number(preparedLessonPlan?.masteryThreshold)) ? Number(preparedLessonPlan.masteryThreshold) : WS_LESSON_MASTERY_THRESHOLD;
+        const [masteryThresholdState, setMasteryThresholdState] = useSetupState('masteryThreshold', () =>
+            savedMasteryThreshold);
         const [imageTheme, setImageTheme] = useSetupState('imageTheme', () => '');
         const [imageThemeMode, setImageThemeMode] = useSetupState('imageThemeMode', () => 'inherit');
         const effectiveImageTheme = imageThemeMode === 'override' && imageTheme.trim()
@@ -4248,8 +4713,6 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         const [includeAacImages, setIncludeAacImages] = useSetupState('includeAacImages', () => false);
         const [aacDefaultOn, setAacDefaultOn] = useSetupState('aacDefaultOn', () => false);
         const [syllableRange, setSyllableRange] = useSetupState('syllableRange', () => ({ min: 1, max: 4 }));
-        const [includeSyllableWords, setIncludeSyllableWords] = useSetupState('includeSyllableWords', () => false);
-        const [includeSyllableCountWords, setIncludeSyllableCountWords] = useSetupState('includeSyllableCountWords', () => false);
         const [aiTopic, setAiTopic] = useSetupState('aiTopic', () => '');
         const goalAiUsable = !!isTeacherMode && !isProbeMode && sessionType !== 'assessment' && (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function'
             ? !!window.__alloAiUsable('text', callGemini) : typeof callGemini === 'function');
@@ -4341,7 +4804,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             try { window.addEventListener('audio_bank_loaded', reapply); } catch (e) {}
             return () => { try { window.removeEventListener('audio_bank_loaded', reapply); } catch (e) {} };
         }, []);
-        const [generatedCount, setGeneratedCount] = React.useState(0);
+        const [generatedCountAll, setGeneratedCount] = React.useState(0);
         const [prewarmCount, setPrewarmCount] = React.useState(0);
         const [prewarmTotal, setPrewarmTotal] = React.useState(0);
         const [selectedWords, setSelectedWords] = useWordSoundsSetupReviewState(reviewSession, 'selection', () => new Set());
@@ -4491,6 +4954,12 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         const [reviewedCountAudio, setReviewedCountAudio] = useWordSoundsSetupReviewState(reviewSession, 'audio');
         const [detachedSyllableRecordings, setDetachedSyllableRecordings] = useWordSoundsSetupReviewState(reviewSession, 'detached');
         const syllableSessionDrafts = React.useRef({ counts: new Map(), recordings: new Map() });
+        // Syllable activities never block: each has one plan line, and its editor opens from [Change].
+        const [syllableTopUpOff, setSyllableTopUpOff] = useSetupState('syllableTopUpOff', () => {
+            const saved = preloadedWords[0]?._wsTopUpOff;
+            return Array.isArray(saved) ? Object.fromEntries(saved.filter(id => WS_CORE.SYLLABLE_ACTIVITY_IDS.includes(id)).map(id => [id, true])) : {};
+        });
+        const [syllablePlanOpen, setSyllablePlanOpen] = React.useState({});
         const [countReviewOpen, setCountReviewOpen] = React.useState(true);
         const [recordingReviewOpen, setRecordingReviewOpen] = React.useState(false);
         const recordingDraftKey = (word, language = wordSoundsLanguage) => JSON.stringify([WS_CORE.packAudioKey(word), WS_CORE.packAudioLanguageKey(language)]);
@@ -4658,40 +5127,28 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             });
             setDetachedSyllableRecordings(current => { const next = { ...current }; delete next[key]; return next; });
         };
-        const makeSelectionInputsKey = (next = {}) => JSON.stringify([wordCount, includeSyllableWords, includeSyllableCountWords, includeGlossary, includeFamily,
-            'includeCustom' in next ? next.includeCustom : includeCustom, includeSightWords, includeAI,
-            selectedFamily, selectedSightWordList, 'customText' in next ? next.customText : customText, aiTerms, next.syllableRange || syllableRange, wordSoundsLanguage,
+        const makeSelectionInputsKey = (next = {}) => JSON.stringify([readyLists, includeGlossary,
+            'includeCustom' in next ? next.includeCustom : includeCustom, includeAI,
+            'customText' in next ? next.customText : customText, aiTerms, next.syllableRange || syllableRange, wordSoundsLanguage,
             (glossaryTerms || []).map(value => value.term || value.word || value), preloadedWords.map(value => value.targetWord || value.word || value.term || value)]);
         const selectionInputsKey = makeSelectionInputsKey();
         if (selectionControl.current.manual && selectionControl.current.inputsKey === null) selectionControl.current.inputsKey = selectionInputsKey;
         // The goal preview runs this on the custom list and range "Use this" would leave.
-        const collectPreviewWords = (customValue, useCustom, inRange) => {
-            let list = includeSyllableWords && WS_CORE.isSyllableLanguageSupported(wordSoundsLanguage) ? WS_CORE.syllableWords().filter(inRange) : [];
-            if (includeSyllableCountWords && WS_CORE.isSyllableLanguageSupported(wordSoundsLanguage)) list.push(...WS_CORE.syllableCountWords().filter(inRange));
+        // Each source with how many of its words start ticked: typed, prepared and AI words all of them,
+        // the glossary and each ready-made list their first ten.
+        const collectPreviewSources = (customValue, useCustom, inRange) => {
+            const sources = [];
             // Include already-generated words so they appear in the Lesson Preview grid
-            if (preloadedWords && preloadedWords.length > 0) {
-                const preloadedWordStrings = preloadedWords.map(w => w.targetWord || w.word || w.term || (typeof w === 'string' ? w : ''));
-                list = [...list, ...preloadedWordStrings.filter(w => w)];
-            }
-            if (includeGlossary && Array.isArray(glossaryTerms)) {
-                const glossaryWords = glossaryTerms.map(t => t.term || t.word || t);
-                list = [...list, ...glossaryWords];
-            }
-            if (includeFamily && selectedFamily && WORD_FAMILY_PRESETS[selectedFamily]) {
-                const familyWords = WORD_FAMILY_PRESETS[selectedFamily].filter(inRange);
-                list = [...list, ...familyWords];
-            }
-            if (useCustom && customValue) {
-                const customWords = customValue.split(/[\s,]+/).map(w => w.trim()).filter(w => w.length > 0);
-                list = [...list, ...customWords];
-            }
-            if (includeSightWords && selectedSightWordList && SIGHT_WORD_PRESETS[selectedSightWordList]) {
-                const sightWords = SIGHT_WORD_PRESETS[selectedSightWordList];
-                list = [...list, ...sightWords];
-            }
-            if (includeAI && aiTerms.length > 0) {
-                list = [...list, ...aiTerms];
-            }
+            // Words the app added for one syllable activity are not the teacher's words.
+            if (preloadedWords && preloadedWords.length > 0) sources.push({ id: 'prepared', words: WS_CORE.lessonOwnItems(preloadedWords).map(w => w.targetWord || w.word || w.term || (typeof w === 'string' ? w : '')).filter(w => w) });
+            if (includeGlossary && Array.isArray(glossaryTerms)) sources.push({ id: 'glossary', first: WS_CORE.READY_LIST_FIRST, words: glossaryTerms.map(t => t.term || t.word || t) });
+            if (useCustom && customValue) sources.push({ id: 'custom', words: customValue.split(/[\s,]+/).map(w => w.trim()).filter(w => w.length > 0) });
+            addedReadyLists.forEach(list => sources.push({ id: list.id, first: WS_CORE.READY_LIST_FIRST, words: list.filterBySyllables ? list.words.filter(inRange) : list.words }));
+            if (includeAI && aiTerms.length > 0) sources.push({ id: 'ai', words: aiTerms });
+            return sources;
+        };
+        const collectPreviewWords = (customValue, useCustom, inRange) => {
+            const list = collectPreviewSources(customValue, useCustom, inRange).flatMap(source => source.words);
             const uniqueWords = [];
             const seenWords = new Set();
             list.forEach((value) => {
@@ -4712,8 +5169,91 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                 selectedWords.forEach(word => { if (!uniqueWords.includes(word)) uniqueWords.push(word); });
             }
             return uniqueWords;
-        }, [includeGlossary, includeFamily, includeCustom, includeAI, includeSightWords, selectedSightWordList, glossaryTerms, selectedFamily, customText, aiTerms, preloadedWords, includeSyllableWords, includeSyllableCountWords, wordSoundsLanguage, withinSyllableRange, selectedWords, selectionInputsKey]);
+        }, [includeGlossary, includeCustom, includeAI, glossaryTerms, customText, aiTerms, preloadedWords, JSON.stringify(readyLists), wordSoundsLanguage, withinSyllableRange, selectedWords, selectionInputsKey]);
         const selectedIndices = React.useMemo(() => new Set(previewList.map((word, index) => selectedWords.has(word) ? index : -1).filter(index => index >= 0)), [previewList, selectedWords]);
+        // ---- The plan on screen ----
+        // Starting points are data in the core. Until the teacher chooses, the plan is the one
+        // suggested for the selected words; nothing is written to the draft for a suggestion.
+        const planAiHere = (kind, fn) => typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable(kind, fn) : typeof fn === 'function';
+        const planEnv = {
+            language: wordSoundsLanguage,
+            pictures: planAiHere('images', callImagen) || preloadedWords.some(item => item && item.image),
+            sentences: planAiHere('text', callGemini) || preloadedWords.some(item => item && item.activityItems && item.activityItems.read_sentence),
+        };
+        const planLengthKey = WS_CORE.LESSON_LENGTHS[lessonLength] ? lessonLength : WS_CORE.LESSON_LENGTH_DEFAULT;
+        const startingPointRows = WS_CORE.startingPoints().map(point => {
+            const status = WS_CORE.startingPointStatus(point.id, planEnv);
+            return { ...point, label: WS_CORE.startingPointLabel(point.id, tf), status,
+                plan: WS_CORE.startingPointPlan(point.id, { length: planLengthKey, unavailable: status.dropped.map(entry => entry.id) }) };
+        });
+        const selectedWordList = previewList.filter((_, i) => selectedIndices.has(i));
+        const sightWordList = React.useMemo(() => Object.values(SIGHT_WORD_PRESETS || {}).flat(), []);
+        const planSuggestion = WS_CORE.suggestStartingPoint(selectedWordList, {
+            language: wordSoundsLanguage, sightWords: sightWordList, countOf: word => syllableCountFor(word).count,
+            isOffered: id => !startingPointRows.find(row => row.id === id)?.status.disabled,
+        });
+        const suggestedStartingPoint = startingPointRows.find(row => row.id === planSuggestion.id) || startingPointRows[0];
+        const planFromStartingPoint = row => {
+            const plan = {};
+            Object.keys(lessonPlanState).forEach(id => { plan[id] = { enabled: false, count: 5 }; });
+            row.plan.activities.forEach(activity => { if (plan[activity.id]) plan[activity.id] = { enabled: true, count: activity.count }; });
+            return plan;
+        };
+        // The whole list in the recommended order, with the starting point's own activities in its order.
+        const orderFromStartingPoint = row => {
+            const all = wsRecommendedLessonOrder(Object.keys(lessonPlanState)), own = row.plan.order.filter(id => all.includes(id));
+            let slot = 0;
+            return all.map(id => (own.includes(id) ? own[slot++] : id));
+        };
+        const planFollowsSuggestion = sessionType !== 'assessment' && !!includeLessonPlan && planChoice === '';
+        const lessonPlan = planFollowsSuggestion ? planFromStartingPoint(suggestedStartingPoint) : lessonPlanState;
+        const lessonPlanOrder = planFollowsSuggestion ? orderFromStartingPoint(suggestedStartingPoint) : lessonPlanOrderState;
+        const masteryThreshold = planFollowsSuggestion ? suggestedStartingPoint.plan.masteryThreshold : masteryThresholdState;
+        // Any change starts from the plan on screen. The first write in an event keeps the parts it
+        // does not name; later writes in the same event build on it, not on the plan this render drew.
+        const planDraftRef = React.useRef(null);
+        planDraftRef.current = null;
+        const commitPlan = (next, choice = 'custom') => {
+            const base = planDraftRef.current || { plan: lessonPlan, order: lessonPlanOrder, mastery: masteryThreshold };
+            const value = typeof next === 'function' ? next(base) : next;
+            const draft = { plan: value.plan || base.plan, order: value.order || base.order, mastery: value.mastery || base.mastery };
+            planDraftRef.current = draft;
+            setLessonPlanState(draft.plan); setLessonPlanOrderState(draft.order); setMasteryThresholdState(draft.mastery);
+            if (choice != null) setPlanChoice(choice);
+            setIncludeLessonPlan(true);
+        };
+        const setLessonPlan = next => commitPlan(base => ({ plan: typeof next === 'function' ? next(base.plan) : next }));
+        const setLessonPlanOrder = next => commitPlan(base => ({ order: typeof next === 'function' ? next(base.order) : next }));
+        const setMasteryThreshold = value => commitPlan({ mastery: Number(value) });
+        const pickStartingPoint = row => {
+            if (!row || row.status.disabled || !row.plan.activities.length) return;
+            commitPlan({ plan: planFromStartingPoint(row), order: orderFromStartingPoint(row), mastery: row.plan.masteryThreshold }, row.id);
+        };
+        const recommendedLessonOrder = wsRecommendedLessonOrder(lessonPlanOrder);
+        const lessonOrderIsRecommended = recommendedLessonOrder.every((id, i) => id === lessonPlanOrder[i]);
+        // Any later reorder replaces the remembered order, so Undo never undoes the teacher's own moves.
+        React.useEffect(() => { if (orderBeforeRecommended && !lessonOrderIsRecommended) setOrderBeforeRecommended(null); }, [lessonPlanOrder.join(',')]);
+        const applyRecommendedLessonOrder = () => {
+            if (lessonOrderIsRecommended) return;
+            setOrderBeforeRecommended(lessonPlanOrder);
+            setLessonPlanOrder(recommendedLessonOrder);
+            setLessonPlanReorderStatus(tf('word_sounds.lesson_plan_recommended_done', 'Activities are in the recommended order.'));
+        };
+        const undoRecommendedLessonOrder = () => {
+            if (!orderBeforeRecommended) return;
+            setLessonPlanOrder(orderBeforeRecommended);
+            setOrderBeforeRecommended(null);
+            setLessonPlanReorderStatus(tf('word_sounds.lesson_plan_recommended_undone', 'Your previous order is back.'));
+        };
+        const moveLessonPlanActivity = (activityId, activityLabel, direction) => {
+            const fromIndex = lessonPlanOrder.indexOf(activityId);
+            const toIndex = direction === 'up' ? fromIndex - 1 : fromIndex + 1;
+            if (fromIndex < 0 || toIndex < 0 || toIndex >= lessonPlanOrder.length) return;
+            const next = [...lessonPlanOrder];
+            [next[fromIndex], next[toIndex]] = [next[toIndex], next[fromIndex]];
+            setLessonPlanOrder(next);
+            setLessonPlanReorderStatus(`${activityLabel} moved to position ${toIndex + 1} of ${next.length}.`);
+        };
         // Sound Swap has checked one-sound changes for a short list of words only;
         // it is offered when at least one selected word is on that list (2026-10-25).
         const soundSwapAvailable = previewList.some((word, i) => selectedIndices.has(i)
@@ -4727,8 +5267,77 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             ? previewList.filter((word, i) => selectedIndices.has(i) && !WS_CORE.resolveSyllableTask(word, preparedSyllableFor(word), wordSoundsLanguage).supported) : [];
         const unreviewedSyllableCountWords = syllableCountingSelected
             ? previewList.filter((word, i) => selectedIndices.has(i) && !syllableCountFor(word).supported) : [];
-        // A lesson plan with no activity ticked has nothing to run.
-        const lessonPlanEmpty = sessionType !== 'assessment' && !!includeLessonPlan && !lessonPlanOrder.some(lessonPlanActivityOn);
+        // What each syllable activity in the lesson will run with: the teacher's words it can use
+        // and, when those are too few, built-in words added for that activity only. Never a block.
+        const syllablePlanInputKey = [syllableBlendingSelected, syllableCountingSelected, wordSoundsLanguage, sessionType,
+            lessonPlan.syllable_blending?.count, lessonPlan.syllable_counting?.count, !!syllableTopUpOff.syllable_blending, !!syllableTopUpOff.syllable_counting,
+            unsupportedSyllableWords.join('\n'), unreviewedSyllableCountWords.join('\n'), syllableDictionaryState,
+            previewList.filter((_, i) => selectedIndices.has(i)).join('\n')].join('\u0001');
+        const syllablePlans = React.useMemo(() => {
+            const words = previewList.filter((_, i) => selectedIndices.has(i));
+            const planFor = (activity, selected, isEligible) => !selected ? null : WS_CORE.syllableActivityPlan({
+                activity, words, language: wordSoundsLanguage, topUp: !syllableTopUpOff[activity],
+                count: sessionType === 'assessment' ? WS_CORE.SYLLABLE_PLAN_DEFAULT_COUNT : lessonPlan[activity]?.count,
+                isEligible, canTopUp: isEligible, countOf: word => syllableCountFor(word).count,
+            });
+            return {
+                syllable_blending: planFor('syllable_blending', syllableBlendingSelected, word => WS_CORE.resolveSyllableTask(word, preparedSyllableFor(word), wordSoundsLanguage).supported),
+                syllable_counting: planFor('syllable_counting', syllableCountingSelected, word => syllableCountFor(word).supported),
+            };
+        }, [syllablePlanInputKey]);
+        const syllablePlanList = WS_CORE.SYLLABLE_ACTIVITY_IDS.map(id => syllablePlans[id]).filter(Boolean);
+        const syllableActivitySkipped = id => !!syllablePlans[id]?.skipped;
+        // An activity that would have no words is left out of the prepared lesson.
+        const lessonActivityRuns = id => lessonPlanActivityOn(id) && !syllableActivitySkipped(id);
+        // A lesson plan with no activity ticked, or only skipped ones, has nothing to run.
+        const lessonPlanEmpty = sessionType !== 'assessment' && !!includeLessonPlan && !lessonPlanOrder.some(lessonActivityRuns);
+        const assessmentSkipped = sessionType === 'assessment' && syllableActivitySkipped(probeActivitySel);
+        // What the plan card shows: the chosen starting point, the activities that will run and how long.
+        const shownPlanChoice = !includeLessonPlan ? 'all' : planFollowsSuggestion ? suggestedStartingPoint.id : (planChoice || 'custom');
+        const shownStartingPoint = startingPointRows.find(row => row.id === shownPlanChoice) || null;
+        const planRunList = includeLessonPlan ? lessonPlanOrder.filter(lessonActivityRuns).map(id => ({ id, count: lessonPlan[id].count })) : [];
+        const planMinutes = WS_CORE.lessonPlanMinutes(planRunList);
+        const shownLessonLength = WS_CORE.lessonLengthOf(lessonPlanOrder.filter(lessonPlanActivityOn).map(id => ({ id, count: lessonPlan[id].count })));
+        const chooseLessonLength = length => {
+            if (!WS_CORE.LESSON_LENGTHS[length]) return;
+            setLessonLength(length);
+            if (!includeLessonPlan || planFollowsSuggestion) return;
+            const scaled = WS_CORE.scaleLessonCounts(lessonPlanOrder.filter(lessonPlanActivityOn).map(id => ({ id, count: lessonPlan[id].count })), length);
+            if (!scaled.length) return;
+            commitPlan(base => { const plan = { ...base.plan }; scaled.forEach(entry => { plan[entry.id] = { ...plan[entry.id], count: entry.count }; }); return { plan }; }, planChoice);
+        };
+        // The saved lesson was prepared for one plan. Say so when the plan on screen is another.
+        const planSignature = (activities, mastery, roaming) => JSON.stringify([activities.map(activity => [activity.id, Number(activity.count)]), Number(mastery) || 0, !!roaming]);
+        const planChangedSincePrepared = sessionType !== 'assessment' && reopenedLesson && !preparedSessionConfig.fixedForm && !isProcessing && (
+            savedPlanActivities.length
+                ? !includeLessonPlan || planSignature(planRunList, masteryThreshold, freeRoaming)
+                    !== planSignature(savedPlanActivities, savedMasteryThreshold, preparedSessionConfig.freeRoaming === true || !savedPreparedActivities.length)
+                : !!includeLessonPlan);
+        // The player's "Prepare this activity": add it to the plan, then prepare again (only what is missing is made).
+        const [activityToPrepare, setActivityToPrepare] = React.useState('');
+        const takeActivityToAdd = () => {
+            const id = typeof window !== 'undefined' ? window.__alloWordSoundsAddActivity : null;
+            if (typeof id !== 'string' || !id) return;
+            window.__alloWordSoundsAddActivity = null;
+            if (!lessonPlan[id] || sessionType === 'assessment') return;
+            if (!lessonPlanActivityOn(id) || !includeLessonPlan) setLessonPlan(previous => ({ ...previous, [id]: { ...previous[id], enabled: true } }));
+            setActivityToPrepare(id);
+        };
+        const takeActivityToAddRef = React.useRef(takeActivityToAdd);
+        takeActivityToAddRef.current = takeActivityToAdd;
+        React.useEffect(() => {
+            const take = () => takeActivityToAddRef.current();
+            take();
+            window.addEventListener('alloflow:word-sounds-add-activity', take);
+            return () => window.removeEventListener('alloflow:word-sounds-add-activity', take);
+        }, []);
+        const startRef = React.useRef(null);
+        React.useEffect(() => {
+            if (!activityToPrepare || isProcessing) return;
+            if (!includeLessonPlan || !lessonPlan[activityToPrepare]?.enabled) return;
+            setActivityToPrepare('');
+            if (selectedIndices.size > 0 && lessonActivityRuns(activityToPrepare) && startRef.current) startRef.current();
+        }, [activityToPrepare, includeLessonPlan, !!lessonPlan[activityToPrepare]?.enabled, isProcessing, selectedIndices.size]);
         // A reopened probe keeps its authored word list; a new assessment follows Word Count.
         const assessmentKeepsAllWords = sessionType === 'assessment' && preloadedWords.length > 0
             && (!!preparedSessionConfig.fixedForm || (Array.isArray(preparedSessionConfig.itemIds) && preparedSessionConfig.itemIds.length > 0)
@@ -4759,16 +5368,45 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             }, 600);
             return () => { clearTimeout(timer); controller.abort(); };
         }, [aiSyllableWantedKey, wordSoundsLanguage]);
-        const startBlocked = !isProcessing && (selectedIndices.size === 0 || lessonPlanEmpty || unsupportedSyllableWords.length > 0 || unreviewedSyllableCountWords.length > 0);
+        const startBlocked = !isProcessing && (selectedIndices.size === 0 || lessonPlanEmpty || assessmentSkipped);
         const startDisabled = startBlocked || isProcessing;
-        const jumpToLessonActivities = () => setTimeout(() => { const list = setupDialogRef.current?.querySelector('[data-ws-lesson-activities]'); if (list) { list.scrollIntoView({ block: 'start', behavior: 'smooth' }); list.querySelector('input[type="checkbox"]')?.focus(); } }, 0);
+        const jumpToLessonActivities = () => { setPlanEditorOpen(true); setTimeout(() => { const list = setupDialogRef.current?.querySelector('[data-ws-lesson-activities]'); if (list) { if (typeof list.scrollIntoView === 'function') list.scrollIntoView({ block: 'start', behavior: 'smooth' }); list.querySelector('input[type="checkbox"]')?.focus(); } }, 0); };
         const jumpToMyWords = () => { setIncludeCustom(true); setTimeout(() => { const box = setupDialogRef.current?.querySelector('[data-ws-my-words]'); if (box) { box.scrollIntoView({ block: 'center', behavior: 'smooth' }); box.focus(); } }, 0); };
-        const jumpToCountReview = () => { setCountReviewOpen(true); setTimeout(() => { const region = countReviewRegion.current; if (region) { region.scrollIntoView({ block: 'start', behavior: 'smooth' }); (region.querySelector('[data-syllable-count-listen]') || region.querySelector('summary'))?.focus(); } }, 0); };
-        const jumpToRecordings = () => { setRecordingReviewOpen(true); setTimeout(() => { const region = recordingReviewRegion.current; if (region) { region.scrollIntoView({ block: 'start', behavior: 'smooth' }); region.querySelector('summary')?.focus(); } }, 0); };
+        const openSyllablePlan = activity => setSyllablePlanOpen(previous => previous[activity] ? previous : { ...previous, [activity]: true });
+        // The one line a syllable activity shows at setup.
+        const syllablePlanSkipText = plan => {
+            const activity = wsActivityName(plan.activity);
+            if (plan.builtIn) return tf('word_sounds.syllable_plan_skip_own', '{activity} cannot use any of your words. It will be skipped.', { activity });
+            return plan.activity === 'syllable_blending'
+                ? tf('word_sounds.syllable_plan_skip_blending', '{activity} needs recorded syllables in this language. It will be skipped.', { activity })
+                : tf('word_sounds.syllable_plan_skip_counting', '{activity} needs a checked syllable count for each word in this language. It will be skipped.', { activity });
+        };
+        const syllablePlanText = plan => {
+            const activity = wsActivityName(plan.activity), own = plan.eligible.length, words = plan.topUp.join(', ');
+            if (plan.skipped) return syllablePlanSkipText(plan);
+            const blending = plan.activity === 'syllable_blending';
+            if (!plan.topUp.length) return !plan.unused.length ? tf('word_sounds.syllable_plan_all', '{activity} will use all of your words.', { activity })
+                : tf(own === 1 ? 'word_sounds.syllable_plan_own_one' : 'word_sounds.syllable_plan_own', own === 1 ? '{activity} will use 1 of your words.' : '{activity} will use {count} of your words.', { activity, count: own });
+            if (!own) return blending ? tf('word_sounds.syllable_plan_topup_only_blending', '{activity} will use {extra} compound words from our list ({words}).', { activity, extra: plan.topUp.length, words })
+                : tf('word_sounds.syllable_plan_topup_only_counting', '{activity} will use {extra} words from our list ({words}).', { activity, extra: plan.topUp.length, words });
+            if (plan.topUp.length === 1) return blending ? tf('word_sounds.syllable_plan_topup_blending_one', '{activity} will use {count} of your words and 1 compound word from our list ({words}).', { activity, count: own, words })
+                : tf('word_sounds.syllable_plan_topup_counting_one', '{activity} will use {count} of your words and 1 word from our list ({words}).', { activity, count: own, words });
+            return blending ? tf('word_sounds.syllable_plan_topup_blending', '{activity} will use {count} of your words and {extra} compound words from our list ({words}).', { activity, count: own, extra: plan.topUp.length, words })
+                : tf('word_sounds.syllable_plan_topup_counting', '{activity} will use {count} of your words and {extra} words from our list ({words}).', { activity, count: own, extra: plan.topUp.length, words });
+        };
+        // Syllable Claps: words whose count is not settled are named in the same line, not as a block.
+        const syllablePlanCheckText = plan => plan.activity !== 'syllable_counting' || plan.skipped || !plan.unused.length ? ''
+            : tf(plan.unused.length === 1 ? 'word_sounds.syllable_plan_need_check_one' : 'word_sounds.syllable_plan_need_check',
+                plan.unused.length === 1 ? '1 of your words needs a syllable check before it can be used here.' : '{count} of your words need a syllable check before they can be used here.', { count: plan.unused.length });
+        const toggleSyllablePlan = activity => {
+            const opening = !syllablePlanOpen[activity];
+            setSyllablePlanOpen(previous => ({ ...previous, [activity]: opening }));
+            if (opening && activity === 'syllable_counting') setCountReviewOpen(true);
+            if (opening && activity === 'syllable_blending') setRecordingReviewOpen(true);
+        };
         const startBlockedReason = (className) => selectedIndices.size === 0 ? tf('word_sounds.start_blocked_words', 'Select at least one word.')
             : lessonPlanEmpty ? <button type="button" className={className} onClick={jumpToLessonActivities} data-ws-start-blocked-plan="true">{tf('word_sounds.choose_lesson_activity', 'Choose at least one lesson activity before preparing.')}</button>
-            : unreviewedSyllableCountWords.length > 0 ? <button type="button" className={className} onClick={jumpToCountReview}>{tf(unreviewedSyllableCountWords.length === 1 ? 'word_sounds.start_blocked_counts_one' : 'word_sounds.start_blocked_counts', unreviewedSyllableCountWords.length === 1 ? 'Confirm 1 syllable count first' : 'Confirm {count} syllable counts first', { count: unreviewedSyllableCountWords.length })}</button>
-            : <button type="button" className={className} onClick={jumpToRecordings}>{tf('word_sounds.start_blocked_recordings', 'Add syllable recordings for {count} word(s) first', { count: unsupportedSyllableWords.length })}</button>;
+            : syllablePlanSkipText(syllablePlans[probeActivitySel]);
         const previewPreparedActivities = sessionType === 'assessment' ? [probeActivitySel]
             : prepareScope === 'lesson' && includeLessonPlan ? lessonPlanOrder.filter(lessonPlanActivityOn) : null;
         const teacherSpokenCountWords = previewPreparedActivities?.length === 1 && previewPreparedActivities[0] === 'syllable_counting'
@@ -4789,41 +5427,66 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             const first = findUnsavedSyllableEdits()[0];
             setPendingSyllableEdits(null);
             if (!first) return;
-            if (syllableCountingSelected) { setCountReviewOpen(true); setSyllableReviewRequest({ ...first }); }
-            else { pendingRecordingFocus.current = first.word; setRecordingReviewOpen(true); }
+            if (syllableCountingSelected) { openSyllablePlan('syllable_counting'); setCountReviewOpen(true); setSyllableReviewRequest({ ...first }); }
+            else { pendingRecordingFocus.current = first.word; openSyllablePlan('syllable_blending'); setRecordingReviewOpen(true); }
         };
         React.useEffect(() => { setPendingSyllableEdits(null); }, [selectionInputsKey, selectedWords, syllableCountingSelected, syllableBlendingSelected, selectedVoice]);
         const previewWordsKey = JSON.stringify(previewList);
-        const balanceCountBank = includeSyllableCountWords && syllableCountingSelected;
-        const countBalanceKey = balanceCountBank ? JSON.stringify(previewList.map(word => {
-            const result = syllableCountFor(word); return [word, result.supported ? result.count : null];
-        })) : '';
-        // Returning to an authored assessment keeps its whole vocabulary, even past
-        // the auto-selection limit. A new assessment follows Word Count, like practice.
-        const autoPick = (limit) => chooseWordSoundsPreviewWords(previewList, typeof assessmentKeepsAllWords !== 'undefined' && assessmentKeepsAllWords ? previewList.length : limit, balanceCountBank ? WS_CORE.syllableCountWords() : null, syllableCountFor, syllableRange);
+        // Which words start ticked: every typed, prepared and AI word, and the first ten of the glossary and of each
+        // ready-made list. A new assessment starts with ten. A reopened probe keeps its whole authored list.
+        const isNewAssessment = typeof sessionType !== 'undefined' && sessionType === 'assessment';
+        const keepsAuthoredWords = isNewAssessment && typeof assessmentKeepsAllWords !== 'undefined' && !!assessmentKeepsAllWords;
+        const assessmentTickCap = isNewAssessment && !keepsAuthoredWords ? WS_CORE.READY_LIST_FIRST : null;
+        const previewSources = collectPreviewSources(customText, includeCustom, withinSyllableRange);
+        const defaultTicked = keepsAuthoredWords ? previewList
+            : WS_CORE.defaultTickedWords(previewList, previewSources, assessmentTickCap);
+        const defaultOffers = WS_CORE.defaultTickOffers(previewSources);
+        const defaultTickedKey = JSON.stringify([defaultTicked, defaultOffers]);
         React.useEffect(() => {
-            if (selectionControl.current.inputsKey !== selectionInputsKey) {
-                // "Use this" chose the lesson words for exactly these inputs; any other change re-picks as before.
+            const control = selectionControl.current, inputsChanged = control.inputsKey !== selectionInputsKey;
+            if (inputsChanged) {
+                // "Use this" chose the lesson words for exactly these inputs.
                 const chosen = goalSelectionRef.current;
                 goalSelectionRef.current = null;
                 if (chosen && chosen.key === selectionInputsKey) {
-                    selectionControl.current = { manual: true, inputsKey: selectionInputsKey };
+                    selectionControl.current = { manual: true, inputsKey: selectionInputsKey, offers: defaultOffers };
                     setSelectedWords(new Set(chosen.words));
                     return;
                 }
-                // A Word Count change alone keeps the teacher's own picks.
-                const kept = typeof keepWordSoundsManualPicks === 'function' ? keepWordSoundsManualPicks(selectionControl.current, selectionInputsKey, selectedWords, autoPick) : null;
-                if (kept) {
-                    selectionControl.current = { manual: true, inputsKey: selectionInputsKey, out: kept.out, added: kept.added };
-                    setSelectedWords(previous => previous.size === kept.next.size && [...previous].every(word => kept.next.has(word)) ? previous : kept.next);
-                    return;
-                }
-                selectionControl.current = { manual: false, inputsKey: selectionInputsKey };
             }
-            if (selectionControl.current.manual) return;
-            const next = autoPick(wordCount);
-            setSelectedWords(previous => previous.size === next.size && [...previous].every(word => next.has(word)) ? previous : next);
-        }, [previewWordsKey, selectionInputsKey, balanceCountBank, countBalanceKey, typeof sessionType === 'undefined' ? null : sessionType]);
+            selectionControl.current = { manual: !!control.manual, inputsKey: selectionInputsKey, offers: defaultOffers };
+            // A selection the teacher has not touched follows the sources. Once they tick or untick a word, their
+            // ticks stay: a source change only adds the words it newly offers and drops words no longer in the grid.
+            // A dictionary count that arrives later never moves the teacher's ticks.
+            const next = !control.manual ? new Set(defaultTicked)
+                : inputsChanged && control.offers ? WS_CORE.mergeTickedWords(selectedWords, previewList, control.offers, defaultOffers, assessmentTickCap) : null;
+            if (next) setSelectedWords(previous => previous.size === next.size && [...previous].every(word => next.has(word)) ? previous : next);
+        }, [previewWordsKey, selectionInputsKey, defaultTickedKey]);
+        // "10 of 30": how many of a source's words are in the lesson. Add all ticks the rest; the teacher's other ticks stay.
+        const sourceTickState = (sourceId) => {
+            const source = previewSources.find(entry => entry.id === sourceId);
+            const keys = new Set((source ? source.words : []).map(word => String(word || '').trim().toLocaleLowerCase()).filter(Boolean));
+            const words = previewList.filter(word => keys.has(word.toLocaleLowerCase()));
+            return { words, total: words.length, selected: words.filter(word => selectedWords.has(word)).length };
+        };
+        const tickAllFrom = (words) => {
+            selectionControl.current.manual = true;
+            setSelectedWords(previous => new Set([...previous, ...words]));
+        };
+        const focusReadyListPicker = () => setTimeout(() => { try { document.getElementById('ws-ready-list-select')?.focus(); } catch (_) {} }, 0);
+        const addReadyList = () => {
+            const list = readyListById.get(readyListPick);
+            if (!list || readyLists.includes(list.id)) return;
+            setReadyLists([...readyLists, list.id]);
+            setReadyListPick('');
+            setReadyListNotice(tf('word_sounds.ready_list_added', 'Added: {name}', { name: readyListLabel(list) }));
+            focusReadyListPicker();
+        };
+        const removeReadyList = (list) => {
+            setReadyLists(readyLists.filter(id => id !== list.id));
+            setReadyListNotice(tf('word_sounds.ready_list_removed', 'Removed: {name}', { name: readyListLabel(list) }));
+            focusReadyListPicker();
+        };
         const toggleSelection = (index) => {
             selectionControl.current.manual = true;
             const next = new Set(selectedWords), word = previewList[index];
@@ -5244,14 +5907,24 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         });
         const handleStart = async (options = {}) => {
              if (!generationMountedRef.current) return;
-             const selectedVocabulary = previewList.filter((_, i) => selectedIndices.has(i));
-             const { wordsToProcess, sourceOccurrences, sourceOccurrenceIds } = wordSoundsSetupPreparationSelection(
+             const chosenVocabulary = previewList.filter((_, i) => selectedIndices.has(i));
+             // An assessment of a syllable skill asks only the words that skill can use.
+             const assessmentPlan = sessionType === 'assessment' ? syllablePlans[probeActivitySel] : null;
+             const selectedVocabulary = assessmentPlan ? assessmentPlan.eligible : chosenVocabulary;
+             // Built-in words added for one syllable activity: prepared after the lesson's own words
+             // (the first item carries the shared audio) and tagged for that activity only.
+             const topUpOnlyFor = new Map();
+             syllablePlanList.forEach(plan => plan.topUp.forEach(word => topUpOnlyFor.set(word, [...(topUpOnlyFor.get(word) || []), plan.activity])));
+             const { wordsToProcess: ownWordsToProcess, sourceOccurrences, sourceOccurrenceIds } = wordSoundsSetupPreparationSelection(
                  sessionType === 'assessment' ? applySetupSyllableReviews() : preloadedWords,
                  selectedVocabulary, sessionType === 'assessment', preparedSessionConfig.itemIds);
+             const wordsToProcess = [...ownWordsToProcess, ...topUpOnlyFor.keys()];
+             if (sourceOccurrences) topUpOnlyFor.forEach(() => { sourceOccurrences.push(null); sourceOccurrenceIds.push(null); });
              const preparedActivities = sessionType === 'assessment' ? [probeActivitySel]
-                 : prepareScope === 'lesson' && includeLessonPlan ? lessonPlanOrder.filter(lessonPlanActivityOn) : null;
+                 : prepareScope === 'lesson' && includeLessonPlan ? lessonPlanOrder.filter(lessonActivityRuns) : null;
+             if (assessmentSkipped) return;
              if (lessonPlanEmpty || (preparedActivities && !preparedActivities.length)) { setLessonPlanReorderStatus(tf('word_sounds.choose_lesson_activity', 'Choose at least one lesson activity before preparing.')); return; }
-             if (!generationMountedRef.current || wordsToProcess.length === 0 || unsupportedSyllableWords.length || unreviewedSyllableCountWords.length || startRunRef.current) return;
+             if (!generationMountedRef.current || wordsToProcess.length === 0 || startRunRef.current) return;
              const unsavedEdits = findUnsavedSyllableEdits();
              if (unsavedEdits.length && options.useSavedSyllables !== true) { setPendingSyllableEdits(unsavedEdits); return; }
              setPendingSyllableEdits(null);
@@ -5595,10 +6268,27 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
              // as reviewed (including distinct positions for repeated words).
              const authoredAssessmentBoards = sessionType === 'assessment'
                  ? processed.map(item => item.activityItems?.[probeActivitySel]) : [];
-             compileActivityItems(processed);
+             {
+                 // The lesson's own boards are built from the lesson's own words, so a word added
+                 // for one syllable activity never becomes an answer choice anywhere else.
+                 const isAdded = item => topUpOnlyFor.has(String(item.targetWord || item.word || item.term || '').trim().toLowerCase());
+                 compileActivityItems(processed.filter(item => !isAdded(item)));
+                 if (processed.some(isAdded)) compileActivityItems(processed.map(item => isAdded(item) ? item : { ...item }));
+             }
              authoredAssessmentBoards.forEach((board, index) => {
                  if (board) processed[index].activityItems[probeActivitySel] = board;
              });
+             processed.forEach(item => {
+                 const only = topUpOnlyFor.get(String(item.targetWord || item.word || item.term || '').trim().toLowerCase());
+                 delete item._wsOnlyFor; delete item._wsTopUpOff;
+                 if (!only) return;
+                 item._wsOnlyFor = only;
+                 item.activityItems = Object.fromEntries(Object.entries(item.activityItems || {}).filter(([id]) => only.includes(id)));
+             });
+             {
+                 const off = WS_CORE.SYLLABLE_ACTIVITY_IDS.filter(id => syllablePlans[id] && syllableTopUpOff[id]);
+                 if (off.length && processed[0]) processed[0]._wsTopUpOff = off;
+             }
              if (preparedActivities) processed.forEach(item => {
                  item.activityItems = Object.fromEntries(Object.entries(item.activityItems || {}).filter(([id]) => preparedActivities.includes(id)));
                  item._preparedActivities = preparedActivities;
@@ -5708,6 +6398,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
              // used to count only target words, which could report "ready"
              // while a choice, sentence, story, or spoken prompt was absent.
              const requiredTtsKeys = new Set();
+             const wordsWithAudioPlan = new Set();
              processed.forEach((item) => {
                  // A newly approved whole-word clip must also beat a legacy
                  // aggregate bucket later in the list.
@@ -5900,7 +6591,10 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                      }
                  }
                  item.ttsReady = !!packedTtsAssets[normalizePackKey(word)];
-                 item._ttsFailed = !item.ttsReady && !teacherSpoken;
+                 // No saved clip is not a failure: the player still tries the word live.
+                 // _ttsFailed is the player's (a live attempt failed on this device).
+                 item._ttsFailed = false;
+                 if (item.ttsReady || teacherSpoken) wordsWithAudioPlan.add(item);
              }
              // Drop media that belongs only to deselected words/activities,
              // after collecting every dependency of the rebuilt boards.
@@ -5938,7 +6632,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
              if (useLessonPlan) {
                  lessonPlanOrder.forEach(actId => {
                      const cfg = lessonPlan[actId];
-                     if (cfg && lessonPlanActivityOn(actId)) {
+                     if (cfg && lessonActivityRuns(actId)) {
                          enabledActivities.push({ id: actId, count: cfg.count, enabled: true });
                          for (let k = 0; k < cfg.count; k++) sequence.push(actId);
                      }
@@ -5948,10 +6642,12 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                  masteryMode: 'consecutive',
                  masteryThreshold,
                  activities: enabledActivities,
-                 order: lessonPlanOrder.filter(lessonPlanActivityOn),
+                 order: lessonPlanOrder.filter(lessonActivityRuns),
                  totalItems: sequence.length,
                  estimatedMinutes: Math.ceil(sequence.length * 0.5)
              } : null;
+             // A plan is never cut short by the session goal: the goal is the most the plan can ask.
+             const planItemCeiling = enabledActivities.reduce((sum, activity) => sum + WS_CORE.lessonItemCeiling(activity.count, masteryThreshold), 0);
              // `student` is deliberately sent even when blank: the host reads it
              // as "no student", which is what clears a target left over from an
              // Assessment Center run instead of misfiling this child's probe
@@ -5969,10 +6665,12 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
              const sessionConfig = {
                  schema: 'alloflow-word-sounds-session/v1',
                  ...(preparedActivities ? { preparedActivities } : {}),
+                 ...(useLessonPlan ? { freeRoaming: !!freeRoaming, startingPoint: shownPlanChoice } : {}),
                  instructionalProfile,
                  version: 1,
                  sessionGoal: isAssessment
                      ? processed.length
+                     : useLessonPlan ? Math.max(1, planItemCeiling)
                      : Math.max(1, Number(wordSoundsSessionGoal) || 30),
                  orthoSessionGoal: isAssessment || useLessonPlan
                      ? 0
@@ -5990,11 +6688,11 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                  probeForm: isAssessment ? (probeForm || 'A') : null
              };
              const configSummary = isAssessment
-                 ? `📊 Assessment · ${String(probeActivitySel).replace(/_/g, ' ')} probe (timed, no hints)` +
+                 ? `📊 Assessment · ${wsActivityName(probeActivitySel)} probe (timed, no hints)` +
                    (probeStudentTrimmed ? ` · ${probeStudentTrimmed}` : '')
                  : (lessonPlanConfig
                      ? `Goal: ${lessonPlanConfig.masteryThreshold} in a row • ` +
-                       enabledActivities.map(a => `${WS_SETUP_ACTIVITY_LABELS[a.id] || a.id.replace(/_/g, ' ')} (${a.count}-${WS_CORE.lessonItemCeiling(a.count, lessonPlanConfig.masteryThreshold)})`).join(' → ') +
+                       enabledActivities.map(a => `${wsActivityName(a.id)} (${a.count}-${WS_CORE.lessonItemCeiling(a.count, lessonPlanConfig.masteryThreshold)})`).join(' → ') +
                        ` • Est. ${lessonPlanConfig.estimatedMinutes} min`
                      : 'Quick Practice Mode');
              // The optional fifth and sixth arguments preserve compatibility with
@@ -6003,10 +6701,10 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
              // Say what the run could not make, on this screen, for when the teacher comes back from Review.
              const picturesWanted = !isAssessment && (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' ? !!window.__alloAiUsable('images', callImagen) : typeof callImagen === 'function');
              const runSummary = {
-                 words: processed.length,
-                 audioReady: processed.filter(item => !item._ttsFailed).length,
+                 words: WS_CORE.lessonOwnItems(processed).length,
+                 audioReady: WS_CORE.lessonOwnItems(processed).filter(item => wordsWithAudioPlan.has(item)).length,
                  pictures: picturesWanted,
-                 picturesReady: processed.filter(item => item.image || decodingAssets[normalizePackKey(item.targetWord || item.word || item.term)]).length,
+                 picturesReady: WS_CORE.lessonOwnItems(processed).filter(item => item.image || decodingAssets[normalizePackKey(item.targetWord || item.word || item.term)]).length,
              };
              if (!isGenerationActive()) return;
              onStartGame(processed, sequence, lessonPlanConfig, configSummary, probeOptions, sessionConfig);
@@ -6021,7 +6719,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                  }
              }
         };
-
+        startRef.current = handleStart;
+        // Progress counts the teacher's words; words added for a syllable activity are prepared after them.
+        const generatedCount = Math.min(generatedCountAll, selectedIndices.size);
         if (isMinimized) {
             return (
                 <div className="fixed bottom-4 right-4 z-[100] bg-white rounded-2xl shadow-2xl border-2 border-violet-500 p-4 animate-in motion-reduce:animate-none slide-in-from-bottom-10 fade-in w-80">
@@ -6029,7 +6729,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                          <div className="flex items-center gap-2">
                              <Loader2 className={`text-violet-600 ${isProcessing ? 'animate-spin motion-reduce:animate-none' : ''}`} size={20} />
                              <span className="font-bold text-slate-700 text-sm">
-                                 {isProcessing ? tf('word_sounds.preparing_heading', 'Getting the lesson ready...') : tf('word_sounds.title', 'Word Sounds Studio')}
+                                 {isProcessing ? tf('word_sounds.preparing_heading', 'Getting the lesson ready...') : tf('word_sounds.title', 'Word Sounds')}
                              </span>
                          </div>
                          <div className="flex items-center gap-1">
@@ -6078,18 +6778,15 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         }
         // The planner works from the setup as it is now (a proposal made for an older setup is marked).
         const storedDelivery = (() => { try { return window.localStorage.getItem('allo_ws_di_delivery') || ''; } catch (_) { return ''; } })();
-        const activityName = (id) => tf('word_sounds.activity_' + id, id.replace(/_/g, ' '));
+        const activityName = wsActivityName;
         const sourceLabel = (key, fallback) => tf(key, fallback).replace(/^[^\p{L}\p{N}]+/u, '');
         const otherSources = [
             preloadedWords.length > 0 && sourceLabel('word_sounds.goal_source_prepared', 'Words already in this activity'),
             includeGlossary && (glossaryTerms || []).length > 0 && sourceLabel('word_sounds.source_glossary', 'Glossary'),
-            includeFamily && selectedFamily && sourceLabel('word_sounds.source_family', 'Word Family'),
-            includeSightWords && selectedSightWordList && sourceLabel('word_sounds.source_sight_words', '📚 Sight Words'),
+            ...addedReadyLists.map(readyListLabel),
             includeAI && aiTerms.length > 0 && sourceLabel('word_sounds.source_ai', 'Words about a topic (AI)'),
-            includeSyllableWords && sourceLabel('word_sounds.blending_bank', 'Syllable blending word bank'),
-            includeSyllableCountWords && sourceLabel('word_sounds.counting_bank', 'Syllable counting word bank'),
         ].filter(Boolean);
-        const plannerSetupKey = JSON.stringify([customText, includeCustom, [...selectedWords], lessonPlanOrder, lessonPlanOrder.map((id) => [lessonPlanActivityOn(id), lessonPlan[id]?.count]),
+        const plannerSetupKey = JSON.stringify([customText, includeCustom, readyLists, [...selectedWords], lessonPlanOrder, lessonPlanOrder.map((id) => [lessonPlanActivityOn(id), lessonPlan[id]?.count]),
             includeLessonPlan, syllableRange, taughtPatternsText]);
         const plannerSetup = () => ({
             lessonWords: previewList.filter((word) => selectedWords.has(word)),
@@ -6097,6 +6794,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             typedWordList: String(customText || '').split(/[\s,]+/).filter(Boolean),
             otherWordSourcesOn: otherSources,
             lessonPlanOn: !!includeLessonPlan,
+            planChosenBy: planFollowsSuggestion ? 'app' : 'teacher',
             activitiesInOrder: lessonPlanOrder.filter((id) => lessonPlan[id]).map((id) => ({ id, name: activityName(id), on: !!includeLessonPlan && lessonPlanActivityOn(id), count: lessonPlan[id].count })),
             masteryInARow: masteryThreshold,
             syllablesPerWord: syllableRange,
@@ -6169,14 +6867,14 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         const isAssessmentSetup = sessionType === 'assessment';
         return (
             <div className="fixed inset-0 z-[60] flex items-center justify-center bg-slate-900/50 backdrop-blur-sm p-2 sm:p-4 animate-in motion-reduce:animate-none fade-in">
-                <div ref={setupDialogRef} role="dialog" aria-modal="true" aria-label={tf('word_sounds.setup_dialog_label', 'Word Sounds setup')} tabIndex={-1} className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full max-w-6xl max-h-[96vh] sm:max-h-[90vh] flex flex-col overflow-hidden border border-slate-400 focus:outline-none">
+                <div ref={setupDialogRef} role="dialog" aria-modal="true" aria-label={tf('word_sounds.setup_dialog_label', 'Word Sounds setup')} tabIndex={-1} data-ws-setup-dialog="true" style={{ maxWidth: 'min(96vw, 1500px)', maxHeight: '94vh' }} className="bg-white rounded-2xl sm:rounded-3xl shadow-2xl w-full flex flex-col overflow-hidden border border-slate-400 focus:outline-none">
                     <div className="bg-gradient-to-r from-violet-700 to-indigo-700 p-4 sm:p-6 flex flex-wrap justify-between items-center gap-3 text-white shrink-0">
                         <div className="flex items-center gap-4">
                             <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-md">
                                 <Sparkles size={32} className="text-yellow-300 animate-pulse motion-reduce:animate-none" />
                             </div>
                             <div>
-                                <h2 className="text-3xl font-black tracking-tight">{isProbeMode ? `📊 ${tf('word_sounds.probe_title', '{skill} Probe', { skill: probeActivityLabel })}` : tf('word_sounds.title', 'Word Sounds Studio')}</h2>
+                                <h2 className="text-3xl font-black tracking-tight">{isProbeMode ? `📊 ${tf('word_sounds.probe_title', '{skill} Probe', { skill: probeActivityLabel })}` : tf('word_sounds.title', 'Word Sounds')}</h2>
                                 <p className="text-indigo-100 font-medium opacity-90">{tf('word_sounds.subtitle', 'Design your phonics lesson')} • {gradeLevel || 'K-2'}</p>
                             </div>
                         </div>
@@ -6288,7 +6986,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         🎮 {tf('word_sounds.mode_practice', 'Practice')}
                                     </button>
                                     <button type="button" data-help-key="ws_gen_mode_assessment"
-                                        onClick={() => { setSessionType('assessment'); setIncludeLessonPlan(false); }}
+                                        onClick={() => setSessionType('assessment')}
                                         aria-pressed={sessionType === 'assessment'}
                                         className={`px-3 py-2 rounded-lg font-bold text-sm transition-colors ${sessionType === 'assessment' ? 'bg-amber-700 text-white shadow' : 'bg-slate-100 text-slate-600 hover:bg-slate-200'}`}>
                                         📊 {tf('word_sounds.mode_assessment', 'Assessment')}
@@ -6303,13 +7001,13 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         <select aria-label={tf('word_sounds.probe_skill', 'Probe skill')}
                                             value={probeActivitySel} onChange={(e) => setProbeActivitySel(e.target.value)}
                                             className="w-full px-2 py-1.5 rounded-lg border border-amber-300 bg-white text-sm font-semibold text-slate-700">
-                                            <option value="segmentation">{tf('word_sounds.act_segmentation', 'Segmentation')}</option>
-                                            <option value="isolation">{tf('word_sounds.act_isolation', 'Sound Isolation')}</option>
-                                            <option value="blending">{tf('word_sounds.act_blending', 'Blending')}</option>
-                                            <option value="rhyming">{tf('word_sounds.act_rhyming', 'Rhyming')}</option>
-                                            <option value="counting">{tf('word_sounds.act_counting', 'Sound Counting')}</option>
-                                            <option value="syllable_counting">{tf('word_sounds.act_syllable_counting', 'Syllable Counting')}</option>
-                                            <option value="syllable_blending">{tf('word_sounds.act_syllable_blending', 'Syllable Blending')}</option>
+                                            <option value="segmentation">{wsActivityName('segmentation')}</option>
+                                            <option value="isolation">{wsActivityName('isolation')}</option>
+                                            <option value="blending">{wsActivityName('blending')}</option>
+                                            <option value="rhyming">{wsActivityName('rhyming')}</option>
+                                            <option value="counting">{wsActivityName('counting')}</option>
+                                            <option value="syllable_counting">{wsActivityName('syllable_counting')}</option>
+                                            <option value="syllable_blending">{wsActivityName('syllable_blending')}</option>
                                         </select>
                                         <label className="block text-xs font-bold text-amber-900" htmlFor="ws-probe-student">
                                             {tf('word_sounds.probe_student', 'Student (for records)')}
@@ -6339,57 +7037,185 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     </div>
                                 )}
                             </div>
+                            {!isAssessmentSetup && <div className="space-y-3" data-ws-plan-card="true">
+                                <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.plan_heading', 'Lesson')}</label>
+                                <div className="bg-white p-3 rounded-xl border border-slate-400 shadow-sm space-y-3">
+                                    <div role="group" aria-label={tf('word_sounds.starting_points_label', 'Starting point')} className="grid grid-cols-2 gap-2" data-ws-starting-points="true">
+                                        {startingPointRows.map(row => {
+                                            const selected = shownPlanChoice === row.id;
+                                            return <button type="button" key={row.id} data-ws-starting-point={row.id} aria-pressed={selected} aria-disabled={row.status.disabled ? 'true' : undefined}
+                                                onClick={() => pickStartingPoint(row)}
+                                                className={`min-h-11 rounded-lg border-2 px-2 py-1.5 text-start text-sm font-bold leading-tight transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2 ${row.status.disabled ? 'cursor-not-allowed border-dashed border-slate-300 bg-slate-50 text-slate-600' : selected ? 'border-violet-700 bg-violet-700 text-white' : 'border-slate-300 bg-white text-slate-800 hover:border-violet-400'}`}>
+                                                <span className="block">{row.label}</span>
+                                                {selected && planFollowsSuggestion && <span className="block text-xs font-semibold" data-ws-plan-suggested="true">{tf('word_sounds.plan_suggested', 'Suggested for your words')}</span>}
+                                                {row.status.disabled && <span className="block text-xs font-normal" data-ws-starting-point-off={row.status.reason}>{row.status.reason === 'language'
+                                                    ? tf('word_sounds.plan_off_language', 'Not available in this language.')
+                                                    : tf('word_sounds.plan_off_ai', 'Needs AI pictures and sentences, which are off here.')}</span>}
+                                            </button>;
+                                        })}
+                                    </div>
+                                    <div className="text-sm text-slate-800" data-ws-plan-summary={shownPlanChoice}>
+                                        <p className="font-bold" data-ws-plan-name="true">{shownStartingPoint ? shownStartingPoint.label
+                                            : shownPlanChoice === 'all' ? tf('word_sounds.plan_all_activities', 'All activities') : tf('word_sounds.plan_own_mix', 'My own mix')}</p>
+                                        {!includeLessonPlan
+                                            ? <p data-ws-plan-all-note="true">{tf('word_sounds.plan_all_note', 'This lesson was saved without a plan. Students work through the sound activities as before. Pick a starting point to give it a plan.')}</p>
+                                            : planRunList.length > 0 ? <>
+                                                <ol className="list-decimal ps-5" data-ws-plan-summary-activities="true">{planRunList.map(activity => <li key={activity.id} data-ws-plan-summary-activity={activity.id}>{wsActivityName(activity.id)}</li>)}</ol>
+                                                <p className="font-semibold" data-ws-plan-minutes={planMinutes}>{tf('word_sounds.plan_about_minutes', 'About {minutes} min', { minutes: planMinutes })}</p>
+                                            </> : <p data-ws-plan-empty="true">{tf('word_sounds.choose_lesson_activity', 'Choose at least one lesson activity before preparing.')}</p>}
+                                        {includeLessonPlan && shownStartingPoint && ['pictures', 'sentences', 'language'].map(reason => {
+                                            const names = shownStartingPoint.status.dropped.filter(entry => entry.reason === reason).map(entry => wsActivityName(entry.id));
+                                            if (!names.length) return null;
+                                            return <p key={reason} className="text-xs text-slate-700" data-ws-plan-dropped={reason}>{reason === 'pictures'
+                                                ? tf('word_sounds.plan_dropped_pictures', 'Left out, because no pictures can be made here: {activities}', { activities: names.join(', ') })
+                                                : reason === 'sentences' ? tf('word_sounds.plan_dropped_sentences', 'Left out, because no sentences can be written here: {activities}', { activities: names.join(', ') })
+                                                    : tf('word_sounds.plan_dropped_language', 'Left out, because they are not available in this language: {activities}', { activities: names.join(', ') })}</p>;
+                                        })}
+                                    </div>
+                                    {includeLessonPlan && <div role="group" aria-label={tf('word_sounds.lesson_length', 'Lesson length')} className="flex flex-wrap items-center gap-2" data-ws-lesson-length={shownLessonLength}>
+                                        <span className="w-full text-sm font-bold text-slate-700">{tf('word_sounds.lesson_length', 'Lesson length')}</span>
+                                        {['short', 'regular', 'long'].map(length => <button type="button" key={length} data-ws-length={length} aria-pressed={shownLessonLength === length} onClick={() => chooseLessonLength(length)}
+                                            className={`min-h-11 flex-1 rounded-lg border-2 px-2 py-1 text-sm font-bold leading-tight focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2 ${shownLessonLength === length ? 'border-violet-700 bg-violet-700 text-white' : 'border-slate-300 bg-white text-slate-800 hover:border-violet-400'}`}>
+                                            <span className="block">{tf('word_sounds.lesson_length_' + length, { short: 'Short', regular: 'Regular', long: 'Long' }[length])}</span>
+                                            <span className="block text-xs font-normal">{tf('word_sounds.lesson_length_minutes', 'about {minutes} min', { minutes: WS_CORE.LESSON_LENGTHS[length].minutes })}</span></button>)}
+                                    </div>}
+                                    <label className="flex min-h-11 items-start gap-2 text-sm text-slate-800">
+                                        <input type="checkbox" className="mt-0.5 h-5 w-5 shrink-0 accent-violet-700" checked={!!freeRoaming || !includeLessonPlan} disabled={!includeLessonPlan} onChange={event => setFreeRoaming(event.target.checked)} data-ws-free-roaming="true" />
+                                        <span>{tf('word_sounds.plan_free_roaming', 'Let students choose from all activities (takes longer to prepare)')}</span>
+                                    </label>
+                                    <button type="button" onClick={() => setPlanEditorOpen(open => !open)} aria-expanded={planEditorOpen} aria-controls="ws-plan-editor" data-ws-change-activities="true"
+                                        className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-sm font-bold text-indigo-800 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2">{tf('word_sounds.plan_change_activities', 'Change activities')}</button>
+                                    {planEditorOpen && (
+                                        <div id="ws-plan-editor" className="space-y-2 mt-1 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1" role="list" aria-label="Lesson plan activity order" data-ws-lesson-activities="true">
+                                            <p className="text-xs text-slate-600">Drag activities or use the Move up and Move down buttons to reorder.</p>
+                                            <div className="flex flex-wrap items-center gap-2" data-ws-recommended-order="true">
+                                                <button type="button" onClick={applyRecommendedLessonOrder} disabled={lessonOrderIsRecommended}
+                                                    className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-sm font-semibold text-indigo-800 hover:bg-indigo-50 disabled:opacity-60">
+                                                    {lessonOrderIsRecommended ? tf('word_sounds.lesson_plan_recommended_active', 'In the recommended order') : tf('word_sounds.lesson_plan_recommended_order', 'Use recommended order')}</button>
+                                                {orderBeforeRecommended && <button type="button" onClick={undoRecommendedLessonOrder} className="min-h-11 rounded-lg px-3 py-1.5 text-sm font-semibold text-indigo-800 underline underline-offset-2">{tf('word_sounds.lesson_plan_recommended_undo', 'Undo')}</button>}
+                                            </div>
+                                            <p className="text-xs text-slate-600">{tf('word_sounds.lesson_plan_recommended_help', 'Recommended: rhyme and syllables first, then single sounds, then letters, spelling and reading.')}</p>
+                                            <button type="button" onClick={() => setPlanFineTuneOpen(open => !open)} aria-expanded={planFineTuneOpen} data-ws-plan-fine-tune="true"
+                                                className="min-h-11 rounded-lg px-2 text-sm font-bold text-indigo-800 underline underline-offset-2 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{tf('word_sounds.plan_fine_tune', 'Fine-tune')}</button>
+                                            {planFineTuneOpen && <label className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-700" data-ws-mastery-threshold="true">
+                                                {tf('word_sounds.lesson_plan_mastery_label', 'Move on after')}
+                                                <select value={masteryThreshold} onChange={(e) => setMasteryThreshold(Number(e.target.value))} className="min-h-9 rounded-md border border-slate-300 bg-white px-2 text-sm font-normal">
+                                                    {WS_LESSON_MASTERY_CHOICES.map((n) => <option key={n} value={n}>{tf('word_sounds.lesson_plan_mastery_option', '{n} right in a row', { n })}</option>)}
+                                                </select>
+                                            </label>}
+                                            {planFineTuneOpen && <p className="text-xs text-slate-600" data-ws-lesson-minimum-note="true">{tf('word_sounds.plan_fine_tune_note', 'Each number is the fewest items for that activity. It stops at about double.')}</p>}
+                                            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{lessonPlanReorderStatus}</div>
+                                            {!soundSwapAvailable && <p className="text-xs text-slate-600" data-ws-sound-swap-hidden="true">{tf('word_sounds.sound_swap_hidden_note', 'Sound Swap is hidden: none of the selected words has a checked one-sound change.')}</p>}
+                                            {lessonPlanOrder.map((actId, activityIndex) => {
+                                                if (actId === 'manipulation' && !soundSwapAvailable) return null;
+                                                const activityDefs = {
+                                                    isolation: { id: 'isolation', icon: ScanSearch },
+                                                    blending: { id: 'blending', icon: GripHorizontal },
+                                                    segmentation: { id: 'segmentation', icon: Scissors },
+                                                    orthography: { id: 'orthography', icon: Type },
+                                                    rhyming: { id: 'rhyming', icon: Music },
+                                                    letter_tracing: { id: 'letter_tracing', icon: PenTool },
+                                                    counting: { id: 'counting', icon: Calculator },
+                                                    mapping: { id: 'mapping', icon: GitCompare },
+                                                    sound_sort: { id: 'sound_sort', icon: Users },
+                                                    word_families: { id: 'word_families', icon: Users },
+                                                    word_scramble: { id: 'word_scramble', icon: Shuffle },
+                                                    manipulation: { id: 'manipulation', icon: Shuffle },
+                                                    syllable_counting: { id: 'syllable_counting', icon: Calculator },
+                                                    syllable_blending: { id: 'syllable_blending', icon: GripHorizontal },
+                                                    spelling_bee: { id: 'spelling_bee', icon: Type },
+                                                    missing_letter: { id: 'missing_letter', icon: Type },
+                                                    decoding: { id: 'decoding', icon: BookOpen },
+                                                    read_sentence: { id: 'read_sentence', icon: BookOpen },
+                                                    read_passage: { id: 'read_passage', icon: BookOpen },
+                                                    sentence_match: { id: 'sentence_match', icon: BookOpen },
+                                                };
+                                                const activity = { ...activityDefs[actId], label: wsActivityName(actId) };
+                                                const strandKey = WS_CORE.activityStrand(actId);
+                                                const shownBefore = lessonPlanOrder.slice(0, activityIndex).filter((id) => id !== 'manipulation' || soundSwapAvailable);
+                                                const startsStrand = !shownBefore.length || WS_CORE.activityStrand(shownBefore[shownBefore.length - 1]) !== strandKey;
+                                                const skillText = WS_CORE.activitySkillLabel(actId, tf);
+                                                return [
+                                                startsStrand && strandKey ? (
+                                                    <p key={'strand-' + activity.id} className="pt-2 text-xs font-bold text-slate-800" data-ws-lesson-strand={strandKey}>
+                                                        {WS_CORE.strandLabel(strandKey, tf)}<span className="font-normal text-slate-600" data-ws-lesson-strand-big5="true"> · {WS_CORE.strandBig5Label(strandKey, tf)}</span>
+                                                    </p>
+                                                ) : null,
+                                                <div
+                                                    key={activity.id}
+                                                    role="listitem"
+                                                    data-ws-lesson-activity={activity.id}
+                                                    draggable
+                                                    onDragStart={(e) => { e.dataTransfer.setData('text/plain', activity.id); setDraggedActivity(activity.id); }}
+                                                    data-keyboard-alternative="Use the Move up and Move down buttons"
+                                                    onDragOver={(e) => e.preventDefault()}
+                                                    onDrop={(e) => {
+                                                        e.preventDefault();
+                                                        const fromId = e.dataTransfer.getData('text/plain');
+                                                        const toId = activity.id;
+                                                        if (fromId !== toId) {
+                                                            setLessonPlanOrder(prev => {
+                                                                const newOrder = [...prev];
+                                                                const fromIdx = newOrder.indexOf(fromId);
+                                                                const toIdx = newOrder.indexOf(toId);
+                                                                newOrder.splice(fromIdx, 1);
+                                                                newOrder.splice(toIdx, 0, fromId);
+                                                                return newOrder;
+                                                            });
+                                                        }
+                                                        setDraggedActivity(null);
+                                                    }}
+                                                    onDragEnd={() => setDraggedActivity(null)}
+                                                    className={`bg-white px-3 py-2 rounded-lg border transition-all cursor-move ${draggedActivity === activity.id ? 'border-indigo-500 shadow-lg scale-[1.02]' : 'border-indigo-100 hover:border-indigo-300'}`}
+                                                >
+                                                    <div className="flex items-center justify-between gap-2">
+                                                        <div className="flex items-center gap-2 min-w-0">
+                                                            <GripVertical size={14} className="text-slate-600 cursor-grab active:cursor-grabbing" aria-hidden="true" />
+                                                            <input aria-labelledby={`ws-activity-label-${activity.id}`} aria-describedby={skillText ? `ws-activity-skill-${activity.id}` : undefined}
+                                                                id={`ws-activity-check-${activity.id}`}
+                                                                type="checkbox"
+                                                                checked={lessonPlan[activity.id]?.enabled}
+                                                                onChange={(e) => setLessonPlan(prev => ({
+                                                                    ...prev,
+                                                                    [activity.id]: { ...prev[activity.id], enabled: e.target.checked }
+                                                                }))}
+                                                                className="accent-indigo-600 w-4 h-4"
+                                                            />
+                                                            <span className="min-w-0">
+                                                                <label id={`ws-activity-label-${activity.id}`} htmlFor={`ws-activity-check-${activity.id}`} className="text-sm font-semibold text-slate-700 cursor-pointer">{activity.label}</label>
+                                                                {skillText && <span id={`ws-activity-skill-${activity.id}`} data-ws-activity-skill="true" className="block text-xs leading-tight text-slate-600">{skillText}</span>}
+                                                            </span>
+                                                        </div>
+                                                        <div className="flex shrink-0 items-center gap-1" role="group" aria-label={`Reorder ${activity.label}`}>
+                                                            <button type="button" onClick={() => moveLessonPlanActivity(activity.id, activity.label, 'up')} disabled={activityIndex === 0} className="min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={`Move ${activity.label} up`}><span aria-hidden="true">↑</span></button>
+                                                            <button type="button" onClick={() => moveLessonPlanActivity(activity.id, activity.label, 'down')} disabled={activityIndex === lessonPlanOrder.length - 1} className="min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={`Move ${activity.label} down`}><span aria-hidden="true">↓</span></button>
+                                                        </div>
+                                                    </div>
+                                                    {lessonPlan[activity.id].enabled && planFineTuneOpen && (
+                                                        <div className="mt-1 mb-1 flex items-center gap-3">
+                                                        <input aria-label={tf('word_sounds.activity_min_items', '{activity}: minimum items', { activity: activity.label })}
+                                                            type="range" min="1" max="20" step="1"
+                                                            value={lessonPlan[activity.id].count}
+                                                            onChange={(e) => setLessonPlan(prev => ({
+                                                                ...prev,
+                                                                [activity.id]: { ...prev[activity.id], count: parseInt(e.target.value) }
+                                                            }))}
+                                                            className="min-w-0 flex-1 accent-indigo-600 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer"
+                                                        />
+                                                        <span className="shrink-0 whitespace-nowrap text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded" data-ws-lesson-item-range="true">
+                                                            {tf('word_sounds.lesson_plan_item_range', '{min}–{max} items', { min: lessonPlan[activity.id].count, max: WS_CORE.lessonItemCeiling(lessonPlan[activity.id].count, masteryThreshold) })}
+                                                        </span>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            ]; })}
+                                        </div>
+                                    )}
+                                </div>
+                            </div>}
                             <div className="space-y-3">
                                 <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.settings', 'Settings')}</label>
-                                <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <span className="font-bold text-slate-700">{tf('word_sounds.count', 'Word Count')}</span>
-                                        <span className="bg-violet-100 text-violet-700 px-2 py-1 rounded-md text-xs font-bold">{wordCount}</span>
-                                    </div>
-                                    <input aria-label={t('common.word_count_slider')}
-                                        type="range" min="5" max="40" step="1"
-                                        data-help-key="ws_gen_count_slider" value={wordCount} onChange={(e) => setWordCount(parseInt(e.target.value))}
-                                        className="w-full accent-violet-600 cursor-pointer"
-                                    />
-                                    <p className="text-xs text-slate-600 mt-2">{t('word_sounds.auto_select_hint', `Auto-selects ${wordCount} words`)}</p>
-                                </div>
                                 {isAssessmentSetup && <p className="text-xs text-slate-600 mt-2" data-ws-assessment-settings-note="true">{tf('word_sounds.assessment_settings_note', 'An assessment gives each selected word once, without pictures, so the session length and picture timing settings are hidden.')}</p>}
-                                {!isAssessmentSetup && <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
-                                    <div className="flex justify-between items-center mb-2">
-                                        <span className="font-bold text-slate-700">{tf('word_sounds.phono_activity_length', 'Sound Activities per Session')}</span>
-                                        <span className="bg-emerald-100 text-emerald-700 px-2 py-1 rounded-md text-xs font-bold">{wordSoundsSessionGoal || 30}</span>
-                                    </div>
-                                    <input aria-label={t('common.session_goal_slider')}
-                                        type="range" min="5" max="200" step="5"
-                                        data-help-key="ws_gen_session_slider" value={wordSoundsSessionGoal || 30}
-                                        onChange={(e) => setWordSoundsSessionGoal && setWordSoundsSessionGoal(parseInt(e.target.value))}
-                                        className="w-full accent-emerald-600 cursor-pointer"
-                                    />
-                                    <p className="text-xs text-slate-600 mt-2">{tf('word_sounds.phono_activity_length_hint', 'Phonological activities complete after this many correct answers')}</p>
-                                </div>}
-                                {!isAssessmentSetup && <div className="mt-3">
-                                    <div className={`p-4 rounded-xl border shadow-sm ${includeLessonPlan ? 'cursor-not-allowed border-dashed border-slate-300 bg-slate-50' : orthoSessionGoal > 0 ? 'bg-white border-indigo-300 bg-indigo-50/30' : 'bg-white border-slate-200'}`}>
-                                        <div className="flex justify-between items-center mb-2">
-                                            <span className="font-bold text-slate-700">{tf('word_sounds.ortho_activity_length', '🔤 Spelling Activities per Session')}</span>
-                                            <span className={`px-2 py-1 rounded-md text-xs font-bold ${orthoSessionGoal > 0 ? 'bg-indigo-100 text-indigo-700' : 'bg-slate-100 text-slate-600'}`}>{orthoSessionGoal || tf('word_sounds.ortho_off', 'Off')}</span>
-                                        </div>
-                                        <input aria-label={t('common.spelling_session_goal_slider')}
-                                            type="range" min="0" max="100" step="5"
-                                            data-help-key="ws_gen_ortho_slider" value={orthoSessionGoal || 0}
-                                            onChange={(e) => !includeLessonPlan && setOrthoSessionGoal(parseInt(e.target.value))}
-                                            className={`w-full ${includeLessonPlan ? 'opacity-50' : ''} accent-indigo-500 cursor-pointer`}
-                                            disabled={includeLessonPlan}
-                                        />
-                                        <p className="text-xs text-slate-600 mt-2">
-                                            {includeLessonPlan
-                                                ? tf('word_sounds.ortho_controlled_by_plan', 'Set by the lesson plan below.')
-                                                : orthoSessionGoal > 0
-                                                    ? t('word_sounds.ortho_activity_hint_on', `Spelling activities begin after sound activities complete (${orthoSessionGoal} items)`)
-                                                    : tf('word_sounds.ortho_activity_hint_off', 'Slide right to add spelling practice after phonics activities')
-                                            }
-                                        </p>
-                                    </div>
-                                </div>}
                                 <div className="bg-white p-4 rounded-xl border border-slate-400 shadow-sm mt-3">
                                     <div className="flex justify-between items-center mb-2">
                                         <span className="font-bold text-slate-700">{tf('word_sounds.image_theme', 'Image Style')}</span>
@@ -6514,47 +7340,6 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                             {showVoicePack ? <PhonemeVoicePackEditor onClose={() => setShowVoicePack(false)} t={t} /> : null}
                             <div className="space-y-3" role="group" aria-labelledby="word-sounds-active-sources-label">
                                 <div id="word-sounds-active-sources-label" className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">{tf('word_sounds.sources', 'Word sources')}</div>
-                                {WS_CORE.isSyllableLanguageSupported(wordSoundsLanguage) && <label className="block p-3 rounded-xl border-2 border-sky-200 bg-sky-50 cursor-pointer">
-                                    <span className="flex items-center gap-2 font-bold text-sky-800"><input type="checkbox" checked={includeSyllableWords} onChange={e => setIncludeSyllableWords(e.target.checked)} />{tf('word_sounds.blending_bank', 'Syllable blending word bank')}</span>
-                                    <span className="block text-xs text-slate-700 mt-1">{tf('word_sounds.blending_bank_help', '{count} compound words, such as sun + set and rain + coat. Each part has a reliable whole-word pronunciation.', { count: WS_CORE.syllableWords().length })}</span>
-                                </label>}
-                                {WS_CORE.isSyllableLanguageSupported(wordSoundsLanguage) && <label className="block p-3 rounded-xl border-2 border-sky-200 bg-sky-50 cursor-pointer">
-                                    <span className="flex items-center gap-2 font-bold text-sky-800"><input type="checkbox" checked={includeSyllableCountWords} onChange={e => setIncludeSyllableCountWords(e.target.checked)} />{tf('word_sounds.counting_bank', 'Syllable counting word bank')}</span>
-                                    <span className="block text-xs text-slate-700 mt-1">{tf('word_sounds.counting_bank_help', '{count} familiar words for counting, including noncompound and longer words. Blending uses separate word-specific recordings.', { count: WS_CORE.syllableCountWords().length })}</span>
-                                </label>}
-                                {(glossaryTerms || []).length > 0 && <label className={`block min-h-11 p-3 rounded-xl border-2 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2 ${includeGlossary ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`} data-help-key="ws_gen_src_glossary"><input type="checkbox" checked={includeGlossary} onChange={(e) => setIncludeGlossary(e.target.checked)} className="sr-only" />
-                                    <span className="flex items-center gap-3">
-                                        <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? 'bg-violet-600 border-violet-600' : 'border-slate-300'}`}>
-                                            {includeGlossary && <Check size={14} className="text-white" aria-hidden="true" />}
-                                        </span>
-                                        <BookOpen size={18} className="text-violet-600" />
-                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_glossary', 'Glossary')} ({glossaryTerms?.length || 0})</span>
-                                    </span>
-                                </label>}
-                                <div className={`p-3 rounded-xl border-2 transition-all ${includeFamily ? 'bg-pink-50 border-pink-500' : 'bg-white border-slate-200'}`}>
-                                    <label className="min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-pink-600 focus-within:ring-offset-2" data-help-key="ws_gen_src_family"><input type="checkbox" checked={includeFamily} onChange={(e) => setIncludeFamily(e.target.checked)} className="sr-only" />
-                                        <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeFamily ? 'bg-pink-600 border-pink-600' : 'border-slate-300'}`}>
-                                            {includeFamily && <Check size={14} className="text-white" aria-hidden="true" />}
-                                        </span>
-                                        <Layers size={18} className="text-pink-600" />
-                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_family', 'Word Family')}</span>
-                                    </label>
-                                    {includeFamily && (
-                                        <><select aria-label={t('common.selection')} data-help-key="ws_gen_family_select"
-                                            value={selectedFamily}
-                                            onChange={(e) => setSelectedFamily(e.target.value)}
-                                            className="mt-3 w-full p-2 rounded-lg border border-pink-200 bg-white text-sm focus:ring-2 focus:ring-pink-400 focus:outline-none"
-                                        >
-                                            <option value="">{tf('word_sounds.select_family', 'Select family...')}</option>
-                                            {Object.keys(WORD_FAMILY_PRESETS).map(k => <option key={k} value={k}>{k} ({WORD_FAMILY_PRESETS[k].length})</option>)}
-                                        </select>
-                                        {selectedFamily && WORD_FAMILY_PRESETS[selectedFamily] && WORD_FAMILY_PRESETS[selectedFamily].filter(withinSyllableRange).length === 0 && (
-                                            <p className="text-red-700 text-xs mt-2 font-bold bg-red-50 p-2 rounded border border-red-100">
-                                                ⚠️ {tf('word_sounds.family_range_empty', 'No words in this family have {min} to {max} syllables. Change the syllable range or pick another family.', { min: syllableRange.min, max: syllableRange.max })}
-                                            </p>
-                                        )}
-                                    </>)}
-                                </div>
                                 <div className={`p-3 rounded-xl border-2 transition-all ${includeCustom ? 'bg-emerald-50 border-emerald-500' : 'bg-white border-slate-200'}`}>
                                     <label className="min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-emerald-600 focus-within:ring-offset-2" data-help-key="ws_gen_src_custom"><input type="checkbox" checked={includeCustom} onChange={(e) => setIncludeCustom(e.target.checked)} className="sr-only" />
                                         <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeCustom ? 'bg-emerald-600 border-emerald-600' : 'border-slate-300'}`}>
@@ -6605,26 +7390,62 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                         />
                                     </>)}
                                 </div>
-                                <div className={`p-3 rounded-xl border-2 transition-all ${includeSightWords ? 'bg-amber-50 border-amber-500' : 'bg-white border-slate-200'}`}>
-                                    <label className="min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-amber-600 focus-within:ring-offset-2"><input type="checkbox" checked={includeSightWords} onChange={(e) => setIncludeSightWords(e.target.checked)} className="sr-only" />
-                                        <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeSightWords ? 'bg-amber-600 border-amber-600' : 'border-slate-300'}`}>
-                                            {includeSightWords && <Check size={14} className="text-white" aria-hidden="true" />}
+                                {(glossaryTerms || []).length > 0 && <label className={`block min-h-11 p-3 rounded-xl border-2 transition-all cursor-pointer focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2 ${includeGlossary ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`} data-help-key="ws_gen_src_glossary"><input type="checkbox" checked={includeGlossary} onChange={(e) => setIncludeGlossary(e.target.checked)} className="sr-only" />
+                                    <span className="flex items-center gap-3">
+                                        <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeGlossary ? 'bg-violet-600 border-violet-600' : 'border-slate-300'}`}>
+                                            {includeGlossary && <Check size={14} className="text-white" aria-hidden="true" />}
                                         </span>
-                                        <BookOpen size={18} className="text-amber-600" />
-                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_sight_words', '📚 Sight Words')}</span>
-                                    </label>
-                                    {includeSightWords && (
-                                        <select aria-label={t('common.selection')}
-                                            value={selectedSightWordList}
-                                            onChange={(e) => setSelectedSightWordList(e.target.value)}
-                                            className="mt-3 w-full p-2 rounded-lg border border-amber-200 bg-white text-sm focus:ring-2 focus:ring-amber-400 focus:outline-none"
-                                        >
-                                            <option value="">{t('word_sounds.sight_word_list_placeholder') || 'Select a sight word list...'}</option>
-                                            {Object.keys(SIGHT_WORD_PRESETS).map(k => (
-                                                <option key={k} value={k}>{k} ({SIGHT_WORD_PRESETS[k].length} words)</option>
-                                            ))}
+                                        <BookOpen size={18} className="text-violet-600" />
+                                        <span className="font-bold text-slate-700">{tf('word_sounds.source_glossary', 'Glossary')} ({glossaryTerms?.length || 0})</span>
+                                    </span>
+                                </label>}
+                                {(glossaryTerms || []).length > 0 && includeGlossary && (() => {
+                                    const state = sourceTickState('glossary');
+                                    return state.total > 0 && <p className="-mt-1 px-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-slate-700" data-ws-glossary-progress="true">
+                                        <span>{tf('word_sounds.ready_list_progress', '{selected} of {total} in the lesson', { selected: state.selected, total: state.total })}</span>
+                                        {state.selected < state.total && <button type="button" onClick={() => tickAllFrom(state.words)} data-ws-glossary-add-all="true"
+                                            aria-label={tf('word_sounds.ready_list_add_all_named', 'Add all {total} words: {name}', { total: state.total, name: sourceLabel('word_sounds.source_glossary', 'Glossary') })}
+                                            className="min-h-11 px-2 font-bold text-violet-800 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">{tf('word_sounds.ready_list_add_all', 'Add all {total}', { total: state.total })}</button>}
+                                    </p>;
+                                })()}
+                                <div className={`p-3 rounded-xl border-2 transition-all ${addedReadyLists.length ? 'bg-pink-50 border-pink-500' : 'bg-white border-slate-200'}`} data-ws-ready-lists="true" data-help-key="ws_gen_src_family">
+                                    <label htmlFor="ws-ready-list-select" className="flex items-center gap-3 font-bold text-slate-700"><Layers size={18} className="text-pink-600" aria-hidden="true" />{tf('word_sounds.ready_list_heading', 'Add a ready-made list')}</label>
+                                    <p id="ws-ready-list-help" className="mt-1 text-xs text-slate-700">{tf('word_sounds.ready_list_help', 'Each list you add puts its first {count} words in the lesson. You can add more than one list.', { count: WS_CORE.READY_LIST_FIRST })}</p>
+                                    <div className="mt-2 flex gap-2">
+                                        <select id="ws-ready-list-select" aria-describedby="ws-ready-list-help" data-help-key="ws_gen_family_select"
+                                            value={readyListPick} onChange={(e) => setReadyListPick(e.target.value)}
+                                            className="min-h-11 min-w-0 flex-1 p-2 rounded-lg border border-pink-300 bg-white text-sm focus:ring-2 focus:ring-pink-600 focus:outline-none">
+                                            <option value="">{tf('word_sounds.ready_list_choose', 'Choose a list...')}</option>
+                                            {readyListGroups.map(group => <optgroup key={group.id} label={tf(group.labelKey, group.label)}>
+                                                {group.lists.map(list => <option key={list.id} value={list.id} disabled={readyLists.includes(list.id)}>{readyListLabel(list)} ({list.words.length})</option>)}
+                                            </optgroup>)}
                                         </select>
-                                    )}
+                                        <button type="button" onClick={addReadyList} disabled={!readyListPick} data-ws-ready-list-add="true"
+                                            className="min-h-11 px-4 py-2 bg-pink-700 hover:bg-pink-800 text-white text-sm font-bold rounded-lg disabled:opacity-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-600 focus-visible:ring-offset-2">{tf('word_sounds.ready_list_add', 'Add')}</button>
+                                    </div>
+                                    <p role="status" className="sr-only" data-ws-ready-list-status="true">{readyListNotice}</p>
+                                    {addedReadyLists.length > 0 && <ul className="mt-3 space-y-2" aria-label={tf('word_sounds.ready_list_added_label', 'Lists you added')}>
+                                        {addedReadyLists.map(list => {
+                                            const state = sourceTickState(list.id), name = readyListLabel(list);
+                                            return <li key={list.id} data-ws-ready-list={list.id} className="rounded-lg border border-pink-200 bg-white p-2">
+                                                <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                                    <span className="font-bold text-slate-800">{name}</span>
+                                                    <span className="text-sm text-slate-700" data-ws-ready-list-progress="true">{tf('word_sounds.ready_list_progress', '{selected} of {total} in the lesson', { selected: state.selected, total: state.total })}</span>
+                                                    <span className="ms-auto flex gap-1">
+                                                        {state.selected < state.total && <button type="button" onClick={() => tickAllFrom(state.words)} data-ws-ready-list-add-all="true"
+                                                            aria-label={tf('word_sounds.ready_list_add_all_named', 'Add all {total} words: {name}', { total: state.total, name })}
+                                                            className="min-h-11 px-2 text-sm font-bold text-pink-800 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-600">{tf('word_sounds.ready_list_add_all', 'Add all {total}', { total: state.total })}</button>}
+                                                        <button type="button" onClick={() => removeReadyList(list)} data-ws-ready-list-remove="true"
+                                                            aria-label={tf('word_sounds.ready_list_remove_named', 'Remove list: {name}', { name })}
+                                                            className="min-h-11 px-2 text-sm font-bold text-slate-700 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-pink-600">{tf('word_sounds.ready_list_remove', 'Remove')}</button>
+                                                    </span>
+                                                </div>
+                                                {state.total === 0 && <p className="text-red-700 text-xs mt-2 font-bold bg-red-50 p-2 rounded border border-red-100" data-ws-ready-list-empty="true">
+                                                    {tf('word_sounds.ready_list_range_empty', 'No words in this list have {min} to {max} syllables. Change the syllable range or remove the list.', { min: syllableRange.min, max: syllableRange.max })}
+                                                </p>}
+                                            </li>;
+                                        })}
+                                    </ul>}
                                 </div>
                                 <div className={`p-3 rounded-xl border-2 transition-all ${includeAI ? 'bg-violet-50 border-violet-500' : 'bg-white border-slate-200'}`}>
                                     <label className="min-h-11 flex items-center gap-3 cursor-pointer rounded-lg focus-within:ring-2 focus-within:ring-violet-600 focus-within:ring-offset-2"><input type="checkbox" checked={includeAI} disabled={typeof textAiHere !== 'undefined' && !textAiHere && !includeAI} aria-describedby={typeof textAiHere !== 'undefined' && !textAiHere ? 'ws-source-ai-off' : undefined} onChange={(e) => { aiSuggestions.cancel(); setIncludeAI(e.target.checked); }} className="sr-only" />
@@ -6656,11 +7477,11 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     {includeAI && aiSuggestions.failed && <p role="status" className="mt-2 text-sm text-amber-800">{tf('word_sounds.ai_failed', 'Could not generate words. Your previous list was kept. Try again.')}</p>}
                                 </div>
                             </div>
-                            <div className="space-y-3 pt-4 mt-4 border-t border-slate-200">
+                            {goalAiUsable && <div className="space-y-3 pt-4 mt-4 border-t border-slate-200">
                                 <label className="text-xs font-bold text-slate-600 uppercase tracking-widest px-1">📋 {tf('word_sounds.lesson_plan_heading', 'Lesson plan')}</label>
-                                {goalAiUsable && <div className="p-3 rounded-xl border-2 border-indigo-300 bg-indigo-50" data-ws-goal-plan="true">
+                                <div className="p-3 rounded-xl border-2 border-indigo-300 bg-indigo-50" data-ws-goal-plan="true">
                                     <label htmlFor="ws-goal-text" className="flex items-center gap-2 font-bold text-slate-800"><Sparkles size={18} className="text-indigo-700" aria-hidden="true" />{tf('word_sounds.goal_heading', 'Describe your goals')}</label>
-                                    <p id="ws-goal-help" className="mt-1 text-sm text-slate-700">{tf('word_sounds.planner_help', 'Ask AlloBot about this lesson, or ask for changes. It starts from your setup below. Nothing changes until you press Use this.')}</p>
+                                    <p id="ws-goal-help" className="mt-1 text-sm text-slate-700">{tf('word_sounds.planner_help_plan', 'Ask AlloBot about this lesson, or ask for changes. It starts from your words and plan. Nothing changes until you press Use this.')}</p>
                                     {planner.thread.length > 0 && <ol className="mt-3 space-y-2" role="log" aria-live="polite" aria-label={tf('word_sounds.planner_log', 'Planning conversation')} data-ws-planner-log="true">
                                         {planner.thread.map((turn) => turn.role === 'note'
                                             ? <li key={turn.id} className="text-sm font-semibold text-emerald-800" data-ws-planner-note={turn.state}>{turn.state === 'applied'
@@ -6727,129 +7548,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                             <button type="button" onClick={() => planner.setAside(planner.draft.version)} data-ws-planner-set-aside="true" className="min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-2 text-sm font-bold text-slate-800">{tf('word_sounds.planner_set_aside', 'Set aside')}</button>
                                         </div>
                                     </div>}
-                                </div>}<div className={`p-4 rounded-xl border-2 transition-all ${sessionType === 'assessment' ? 'opacity-50 pointer-events-none' : ''} ${includeLessonPlan ? 'bg-indigo-50 border-indigo-500' : 'bg-white border-slate-200'}`}>
-                                    <label className="min-h-11 flex items-center justify-between cursor-pointer mb-3 rounded-lg focus-within:ring-2 focus-within:ring-indigo-600 focus-within:ring-offset-2">
-                                        <input type="checkbox" checked={includeLessonPlan} disabled={sessionType === 'assessment'} onChange={(e) => setIncludeLessonPlan(e.target.checked)} className="sr-only" />
-                                        <span className="flex items-center gap-2">
-                                            <span aria-hidden="true" className={`w-5 h-5 rounded border flex items-center justify-center ${includeLessonPlan ? 'bg-indigo-600 border-indigo-600' : 'border-slate-300'}`}>
-                                                {includeLessonPlan && <Check size={14} className="text-white" aria-hidden="true" />}
-                                            </span>
-                                            <span className="font-bold text-slate-700">{t('word_sounds.enable_lesson_plan')}</span>
-                                        </span>
-                                    </label>
-                                    {includeLessonPlan && (
-                                        <div className="space-y-2 mt-3 animate-in motion-reduce:animate-none fade-in slide-in-from-top-1" role="list" aria-label="Lesson plan activity order" data-ws-lesson-activities="true">
-                                            <p className="text-xs text-slate-600">Drag activities or use the Move up and Move down buttons to reorder.</p>
-                                            <div className="flex flex-wrap items-center gap-2" data-ws-recommended-order="true">
-                                                <button type="button" onClick={applyRecommendedLessonOrder} disabled={lessonOrderIsRecommended}
-                                                    className="min-h-11 rounded-lg border border-indigo-300 bg-white px-3 py-1.5 text-sm font-semibold text-indigo-800 hover:bg-indigo-50 disabled:opacity-60">
-                                                    {lessonOrderIsRecommended ? tf('word_sounds.lesson_plan_recommended_active', 'In the recommended order') : tf('word_sounds.lesson_plan_recommended_order', 'Use recommended order')}</button>
-                                                {orderBeforeRecommended && <button type="button" onClick={undoRecommendedLessonOrder} className="min-h-11 rounded-lg px-3 py-1.5 text-sm font-semibold text-indigo-800 underline underline-offset-2">{tf('word_sounds.lesson_plan_recommended_undo', 'Undo')}</button>}
-                                            </div>
-                                            <p className="text-xs text-slate-600">{tf('word_sounds.lesson_plan_recommended_help', 'Recommended: rhyme and syllables first, then single sounds, then letters, spelling and reading.')}</p>
-                                            <label className="flex flex-wrap items-center gap-2 text-xs font-semibold text-slate-700" data-ws-mastery-threshold="true">
-                                                {tf('word_sounds.lesson_plan_mastery_label', 'Move on after')}
-                                                <select value={masteryThreshold} onChange={(e) => setMasteryThreshold(Number(e.target.value))} className="min-h-9 rounded-md border border-slate-300 bg-white px-2 text-sm font-normal">
-                                                    {WS_LESSON_MASTERY_CHOICES.map((n) => <option key={n} value={n}>{tf('word_sounds.lesson_plan_mastery_option', '{n} right in a row', { n })}</option>)}
-                                                </select>
-                                            </label>
-                                            <p className="text-xs text-slate-600" data-ws-lesson-minimum-note="true">{tf('word_sounds.lesson_plan_min_note', 'Each number is a minimum, and an activity stops at about double that at most. In between, it keeps going until the child gets {streak} in a row right on the first try, using different words. Missed words may come back at the end, and the session goal can end it sooner.', { streak: masteryThreshold })}</p>
-                                            <div className="sr-only" role="status" aria-live="polite" aria-atomic="true">{lessonPlanReorderStatus}</div>
-                                            {!soundSwapAvailable && <p className="text-xs text-slate-600" data-ws-sound-swap-hidden="true">{tf('word_sounds.sound_swap_hidden_note', 'Sound Swap is hidden: none of the selected words has a checked one-sound change.')}</p>}
-                                            {lessonPlanOrder.map((actId, activityIndex) => {
-                                                if (actId === 'manipulation' && !soundSwapAvailable) return null;
-                                                const activityDefs = {
-                                                    isolation: { id: 'isolation', label: 'Find Sounds', icon: ScanSearch },
-                                                    blending: { id: 'blending', label: 'Blending', icon: GripHorizontal },
-                                                    segmentation: { id: 'segmentation', label: 'Break It Down', icon: Scissors },
-                                                    orthography: { id: 'orthography', label: 'Sight & Spell', icon: Type },
-                                                    rhyming: { id: 'rhyming', label: 'Rhyme Time', icon: Music },
-                                                    letter_tracing: { id: 'letter_tracing', label: 'Letter Tracing', icon: PenTool },
-                                                    counting: { id: 'counting', label: 'Sound Counting', icon: Calculator },
-                                                    mapping: { id: 'mapping', label: 'Sound Mapping', icon: GitCompare },
-                                                    sound_sort: { id: 'sound_sort', label: 'Sound Sort', icon: Users },
-                                                    word_families: { id: 'word_families', label: 'Word Families', icon: Users },
-                                                    word_scramble: { id: 'word_scramble', label: 'Word Scramble', icon: Shuffle },
-                                                    manipulation: { id: 'manipulation', label: 'Sound Swap', icon: Shuffle },
-                                                    syllable_counting: { id: 'syllable_counting', label: 'Syllable Counting', icon: Calculator },
-                                                    syllable_blending: { id: 'syllable_blending', label: 'Syllable Blending', icon: GripHorizontal },
-                                                    spelling_bee: { id: 'spelling_bee', label: 'Spelling Bee', icon: Type },
-                                                    missing_letter: { id: 'missing_letter', label: 'Missing Letter', icon: Type },
-                                                    decoding: { id: 'decoding', label: 'Read & Match', icon: BookOpen },
-                                                    read_sentence: { id: 'read_sentence', label: 'Finish the Sentence', icon: BookOpen },
-                                                    read_passage: { id: 'read_passage', label: 'Read the Story', icon: BookOpen },
-                                                    sentence_match: { id: 'sentence_match', label: 'Picture the Sentence', icon: BookOpen },
-                                                };
-                                                const activity = activityDefs[actId];
-                                                return (
-                                                <div
-                                                    key={activity.id}
-                                                    role="listitem"
-                                                    draggable
-                                                    onDragStart={(e) => { e.dataTransfer.setData('text/plain', activity.id); setDraggedActivity(activity.id); }}
-                                                    data-keyboard-alternative="Use the Move up and Move down buttons"
-                                                    onDragOver={(e) => e.preventDefault()}
-                                                    onDrop={(e) => {
-                                                        e.preventDefault();
-                                                        const fromId = e.dataTransfer.getData('text/plain');
-                                                        const toId = activity.id;
-                                                        if (fromId !== toId) {
-                                                            setLessonPlanOrder(prev => {
-                                                                const newOrder = [...prev];
-                                                                const fromIdx = newOrder.indexOf(fromId);
-                                                                const toIdx = newOrder.indexOf(toId);
-                                                                newOrder.splice(fromIdx, 1);
-                                                                newOrder.splice(toIdx, 0, fromId);
-                                                                return newOrder;
-                                                            });
-                                                        }
-                                                        setDraggedActivity(null);
-                                                    }}
-                                                    onDragEnd={() => setDraggedActivity(null)}
-                                                    className={`bg-white px-3 py-2 rounded-lg border transition-all cursor-move ${draggedActivity === activity.id ? 'border-indigo-500 shadow-lg scale-[1.02]' : 'border-indigo-100 hover:border-indigo-300'}`}
-                                                >
-                                                    <div className="flex items-center justify-between gap-2">
-                                                        <div className="flex items-center gap-2 min-w-0">
-                                                            <GripVertical size={14} className="text-slate-600 cursor-grab active:cursor-grabbing" aria-hidden="true" />
-                                                            <input aria-labelledby={`ws-activity-label-${activity.id}`}
-                                                                id={`ws-activity-check-${activity.id}`}
-                                                                type="checkbox"
-                                                                checked={lessonPlan[activity.id]?.enabled}
-                                                                onChange={(e) => setLessonPlan(prev => ({
-                                                                    ...prev,
-                                                                    [activity.id]: { ...prev[activity.id], enabled: e.target.checked }
-                                                                }))}
-                                                                className="accent-indigo-600 w-4 h-4"
-                                                            />
-                                                            <label id={`ws-activity-label-${activity.id}`} htmlFor={`ws-activity-check-${activity.id}`} className="text-sm font-semibold text-slate-700 cursor-pointer">{activity.label}</label>
-                                                        </div>
-                                                        <div className="flex shrink-0 items-center gap-1" role="group" aria-label={`Reorder ${activity.label}`}>
-                                                            <button type="button" onClick={() => moveLessonPlanActivity(activity.id, activity.label, 'up')} disabled={activityIndex === 0} className="min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={`Move ${activity.label} up`}><span aria-hidden="true">↑</span></button>
-                                                            <button type="button" onClick={() => moveLessonPlanActivity(activity.id, activity.label, 'down')} disabled={activityIndex === lessonPlanOrder.length - 1} className="min-h-11 min-w-11 rounded-lg border border-indigo-200 bg-white text-indigo-700 hover:bg-indigo-50 disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2" aria-label={`Move ${activity.label} down`}><span aria-hidden="true">↓</span></button>
-                                                        </div>
-                                                    </div>
-                                                    {lessonPlan[activity.id].enabled && (
-                                                        <div className="mt-1 mb-1 flex items-center gap-3">
-                                                        <input aria-label={tf('word_sounds.activity_min_items', '{activity}: minimum items', { activity: activity.label })}
-                                                            type="range" min="1" max="20" step="1"
-                                                            value={lessonPlan[activity.id].count}
-                                                            onChange={(e) => setLessonPlan(prev => ({
-                                                                ...prev,
-                                                                [activity.id]: { ...prev[activity.id], count: parseInt(e.target.value) }
-                                                            }))}
-                                                            className="min-w-0 flex-1 accent-indigo-600 h-1.5 bg-slate-100 rounded-lg appearance-none cursor-pointer"
-                                                        />
-                                                        <span className="shrink-0 whitespace-nowrap text-xs font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded" data-ws-lesson-item-range="true">
-                                                            {tf('word_sounds.lesson_plan_item_range', '{min}–{max} items', { min: lessonPlan[activity.id].count, max: WS_CORE.lessonItemCeiling(lessonPlan[activity.id].count, masteryThreshold) })}
-                                                        </span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            ); })}
-                                        </div>
-                                    )}
                                 </div>
-                            </div>
+                            </div>}
                         </div>
                         <div className="flex-1 bg-white p-4 sm:p-6 lg:p-8 lg:overflow-y-auto flex flex-col">
                              <div className="flex justify-between items-end mb-6">
@@ -6867,6 +7567,11 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                             </button>
                                         )}
                                     </div>
+                                    {assessmentTickCap != null && previewList.length > assessmentTickCap && selectedIndices.size < previewList.length && <p className="mt-1 flex flex-wrap items-center gap-x-3 text-sm text-slate-700" data-ws-assessment-cap="true">
+                                        <span>{tf('word_sounds.assessment_cap_note', 'A new assessment starts with the first {count} words ticked.', { count: assessmentTickCap })}</span>
+                                        <button type="button" onClick={() => tickAllFrom(previewList)} data-ws-assessment-add-all="true"
+                                            className="min-h-11 px-2 font-bold text-violet-800 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">{tf('word_sounds.ready_list_add_all', 'Add all {total}', { total: previewList.length })}</button>
+                                    </p>}
                                 </div>
                                 <div className="hidden lg:flex flex-col items-end gap-1">
                                 <button type="button"
@@ -6941,14 +7646,29 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                     <button type="button" onClick={() => setLastRunSummary(null)} className="min-h-11 rounded-lg border border-amber-400 bg-white px-4 py-2 text-sm font-semibold text-amber-900 hover:bg-amber-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 focus-visible:ring-offset-2">{tf('word_sounds.run_summary_dismiss', 'Hide this')}</button>
                                 </div>
                             </div>}
+                            {planChangedSincePrepared && selectedIndices.size > 0 && <div role="status" data-ws-plan-changed="true" className="mb-3 p-3 rounded-xl border border-amber-300 bg-amber-50 text-amber-900">
+                                <p className="font-semibold">{tf('word_sounds.plan_changed', 'The plan changed since this lesson was prepared.')}</p>
+                                <button type="button" onClick={() => handleStart()} disabled={startDisabled} data-ws-plan-prepare-again="true" className="mt-2 min-h-11 rounded-lg bg-amber-800 px-4 py-2 text-sm font-bold text-white hover:bg-amber-900 disabled:opacity-60 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 focus-visible:ring-offset-2">{tf('word_sounds.plan_prepare_again', 'Prepare again')}</button>
+                            </div>}
                             {pendingSyllableEdits?.length > 0 && <div ref={unsavedSyllableNotice} className="mb-3">
                                 <WordSoundsSyllableDraftNotice words={pendingSyllableEdits.map(edit => edit.word)} translate={tf}
                                     onReview={reviewUnsavedSyllableEdits} onUseSaved={() => handleStart({ useSavedSyllables: true })} />
                             </div>}
-                            {unsupportedSyllableWords.length > 0 && <p role="alert" className="mb-3 p-3 rounded-xl border border-amber-300 bg-amber-50 text-amber-900">{tf('word_sounds.recordings_blocked', 'Add and review syllable recordings below, use a word from the syllable bank, or deselect: {words}.', { words: unsupportedSyllableWords.join(', ') })}</p>}
-                            {unreviewedSyllableCountWords.length > 0 && <p role="alert" className="mb-3 p-3 rounded-xl border border-amber-300 bg-amber-50 text-amber-900">{tf('word_sounds.count_review_blocked', 'Review the syllable count below or deselect: {words}.', { words: unreviewedSyllableCountWords.join(', ') })}</p>}
+                            {selectedIndices.size > 0 && syllablePlanList.map(plan => <div key={plan.activity} data-ws-syllable-plan={plan.activity} data-ws-syllable-plan-skipped={plan.skipped ? 'true' : undefined} className="mb-3 rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm text-violet-950">
+                                <p className="flex flex-wrap items-center gap-x-3 gap-y-1">
+                                    <span role="status" data-ws-syllable-plan-text="true">{syllablePlanText(plan)}{syllablePlanCheckText(plan) ? ' ' + syllablePlanCheckText(plan) : ''}</span>
+                                    <button type="button" onClick={() => toggleSyllablePlan(plan.activity)} aria-expanded={!!syllablePlanOpen[plan.activity]} data-ws-syllable-plan-change={plan.activity}
+                                        aria-label={tf('word_sounds.syllable_plan_change_named', 'Change the words for {activity}', { activity: wsActivityName(plan.activity) })}
+                                        className="min-h-11 px-2 font-bold text-violet-800 underline rounded focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600">{tf('word_sounds.syllable_plan_change', 'Change')}</button>
+                                </p>
+                                {syllablePlanOpen[plan.activity] && plan.builtIn && <label className="mt-1 flex min-h-11 items-center gap-2 font-semibold">
+                                    <input type="checkbox" className="h-5 w-5" checked={!!syllableTopUpOff[plan.activity]} data-ws-syllable-only-mine={plan.activity}
+                                        onChange={event => { const off = event.target.checked; setSyllableTopUpOff(previous => ({ ...previous, [plan.activity]: off })); }} />
+                                    <span>{tf('word_sounds.syllable_plan_only_mine', 'Use only my words')}</span>
+                                </label>}
+                            </div>)}
                             {teacherSpokenCountWords.length > 0 && <p role="status" className="mb-3 p-3 rounded-xl border border-violet-300 bg-violet-50 text-violet-900">{tf('word_sounds.count_teacher_led_notice', 'Teacher-led activity: say these words aloud for the learner: {words}. Their approved counts will be kept without generating whole-word audio. This activity needs a teacher present.', { words: teacherSpokenCountWords.join(', ') })}</p>}
-                            {syllableCountingSelected && <details ref={countReviewRegion} open={countReviewOpen} onToggle={event => { if (event.target === event.currentTarget) setCountReviewOpen(event.currentTarget.open); }} className="bg-white border border-violet-300 rounded-xl p-4 mb-3">
+                            {syllableCountingSelected && syllablePlanOpen.syllable_counting && <details ref={countReviewRegion} open={countReviewOpen} onToggle={event => { if (event.target === event.currentTarget) setCountReviewOpen(event.currentTarget.open); }} className="bg-white border border-violet-300 rounded-xl p-4 mb-3">
                                 <summary className="cursor-pointer font-bold text-violet-900">{tf('word_sounds.count_review_list_title', 'Review syllable counts')}</summary>
                                 <p className="text-sm my-2">{tf('word_sounds.count_review_help', 'Listen, confirm the count, then move to the next word. Approvals follow this pronunciation; changing the clip requires another review. Your word selection stays the same.')}</p>
                                 {syllableDictionaryState === 'loading' && <p role="status" className="text-sm my-2">{tf('word_sounds.count_dictionary_loading', 'Loading pronunciation dictionary… You can also confirm counts yourself.')}</p>}
@@ -6965,7 +7685,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                 </p>)}
                                 <p role="status" aria-live="polite" className="text-sm mt-2">{countLibraryNotice}</p>
                             </details>}
-                            {syllableBlendingSelected && <details ref={recordingReviewRegion} open={recordingReviewOpen} onToggle={event => { if (event.target === event.currentTarget) setRecordingReviewOpen(event.currentTarget.open); }} className="bg-white border border-violet-300 rounded-xl p-4 mb-3">
+                            {syllableBlendingSelected && syllablePlanOpen.syllable_blending && <details ref={recordingReviewRegion} open={recordingReviewOpen} onToggle={event => { if (event.target === event.currentTarget) setRecordingReviewOpen(event.currentTarget.open); }} className="bg-white border border-violet-300 rounded-xl p-4 mb-3">
                                 <summary className="cursor-pointer font-bold text-violet-900">{tf('word_sounds.syllable_recordings_heading', 'Word-specific syllable recordings')}</summary>
                                 <p className="text-sm my-2">{tf('word_sounds.syllable_recording_help', 'Extend blending to words with two to eight syllables using your reviewed recordings. Recordings travel with the saved lesson.')}</p>
                                 <div className="space-y-2">{recordingReviewOpen && previewList.filter((word, index) => selectedIndices.has(index)).map(word => <WordSoundsSyllableRecordingEditor
@@ -6979,9 +7699,13 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                      {previewList.map((word, i) => {
                                          const isSelected = selectedIndices.has(i);
                                          const countInfo = syllableCountFor(word);
+                                         const showCount = (!isAssessmentSetup && !includeLessonPlan) || syllableCountingSelected || syllableBlendingSelected;
+                                         const countSource = !countInfo.supported ? '' : countInfo.status === 'reviewed' ? tf('word_sounds.count_source_reviewed', 'Teacher reviewed') : countInfo.status === 'curated' ? tf('word_sounds.count_source_curated', 'Reviewed word bank') : tf('word_sounds.count_source_dictionary', 'Pronunciation dictionary (US English)');
                                          return (
                                              <button
                                                  type="button"
+                                                 title={showCount && countSource ? countSource : undefined}
+                                                 data-ws-word-chip={word}
                                                  key={i}
                                                  onClick={() => toggleSelection(i)}
                                                  aria-pressed={isSelected}
@@ -6999,8 +7723,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                                          {isSelected && <Check size={14} className="text-white" />}
                                                      </div>
                                                      <span><span className={`block font-bold text-lg capitalize ${isSelected ? 'text-violet-900' : 'text-slate-600'}`}>{word}</span>
-                                                         {(!includeLessonPlan || syllableCountingSelected || syllableBlendingSelected) && <span className="block text-xs text-slate-600">{countInfo.supported
-                                                             ? tf(countInfo.count === 1 ? 'word_sounds.preview_syllable_count_one' : 'word_sounds.preview_syllable_count', countInfo.count === 1 ? '{count} syllable · {source}' : '{count} syllables · {source}', { count: countInfo.count, source: countInfo.status === 'reviewed' ? tf('word_sounds.count_source_reviewed', 'Teacher reviewed') : countInfo.status === 'curated' ? tf('word_sounds.count_source_curated', 'Reviewed word bank') : tf('word_sounds.count_source_dictionary', 'Pronunciation dictionary (US English)') })
+                                                         {showCount && <span className="block text-xs text-slate-600" data-ws-chip-syllables={countInfo.supported ? countInfo.count : 'review'}>{countInfo.supported
+                                                             ? tf(countInfo.count === 1 ? 'word_sounds.chip_syllable_count_one' : 'word_sounds.chip_syllable_count', countInfo.count === 1 ? '{count} syllable' : '{count} syllables', { count: countInfo.count })
                                                              : tf('word_sounds.preview_syllable_review', 'Syllable count needs review')}</span>}
                                                      </span>
                                                  </div>
@@ -7017,12 +7741,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                                  </div>
                              )}
                              <details className="bg-white border border-slate-300 rounded-xl p-4 mb-3">
-                                <summary className="cursor-pointer font-bold text-slate-700">{tf('word_sounds.preparation_options', 'Preparation and taught spellings')}</summary>
-                                <label className="block mt-3 text-sm font-semibold" htmlFor="ws-prepare-scope">{tf('word_sounds.prepare_scope', 'Activities to prepare')}</label>
-                                <select id="ws-prepare-scope" value={prepareScope} onChange={e => setPrepareScope(e.target.value)} className="w-full min-h-11 border border-slate-400 rounded-lg p-2">
-                                    <option value="all">{tf('word_sounds.prepare_all', 'All activities (allows switching)')}</option>
-                                    <option value="lesson" disabled={!includeLessonPlan}>{tf('word_sounds.prepare_lesson', 'Selected lesson only (less audio to prepare)')}</option>
-                                </select>
+                                <summary className="cursor-pointer font-bold text-slate-700">{tf('word_sounds.taught_spellings_options', 'Taught spellings')}</summary>
                                 <p className="text-sm text-slate-600 mt-2">{tf('word_sounds.taught_spellings_help', 'Optional spelling coverage check. Enter taught letters and adjacent letter groups, separated by commas; list known whole words separately. Review sound values and irregular spellings with the learner.')}</p>
                                 <label className="block mt-3 text-sm font-semibold" htmlFor="ws-taught-patterns">{tf('word_sounds.taught_patterns', 'Taught letters and letter groups')}</label>
                                 <input id="ws-taught-patterns" value={taughtPatternsText} onChange={e => setTaughtPatternsText(e.target.value)} placeholder={tf('word_sounds.taught_spellings_placeholder', 's, a, t, p, i, n, sh, ck')} className="w-full min-h-11 border border-slate-400 rounded-lg p-2" />

@@ -69,6 +69,9 @@ async function toggleAac(host, on) {
 const answerSound = async (host, n = 1) => {
   const button = host.querySelector('button[aria-label="Choose Sound ' + n + '"]');
   expect(button).toBeTruthy(); await act(async () => button.click());
+  // A sound-only card is selected by the tap (2026-11-09); Check answers with it. Picture cards and probes answer on the tap.
+  const check = host.querySelector('[data-ws-card-check]');
+  if (check && !check.disabled) await act(async () => check.click());
 };
 
 describe('item support is retained in response evidence', () => {

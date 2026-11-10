@@ -230,9 +230,13 @@ describe('WS4: setup hides Sound Swap when no selected word qualifies', () => {
     expect(rule(['cat'], new Set([0]), 'es', core, plan).soundSwapAvailable).toBe(false);
   });
   it('the lesson plan list, preview, prepare and start all use the rule', () => {
+    // Preview, prepare and start now go through lessonActivityRuns, which is the
+    // Sound Swap rule plus "this syllable activity has enough words".
+    expect(src.includes('const lessonActivityRuns = id => lessonPlanActivityOn(id) && !syllableActivitySkipped(id);')).toBe(true);
+    expect(src.split('lessonPlanOrder.filter(lessonActivityRuns)').length - 1).toBe(3);
     expect(src.split('lessonPlanOrder.filter(lessonPlanActivityOn)').length - 1).toBe(3);
     expect(src.includes('lessonPlanOrder.filter(id => lessonPlan[id]?.enabled)')).toBe(false);
-    expect(src.includes("if (cfg && lessonPlanActivityOn(actId)) {")).toBe(true);
+    expect(src.includes("if (cfg && lessonActivityRuns(actId)) {")).toBe(true);
     expect(src.includes("if (actId === 'manipulation' && !soundSwapAvailable) return null;")).toBe(true);
   });
 });

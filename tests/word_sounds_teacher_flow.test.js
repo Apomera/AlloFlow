@@ -30,8 +30,12 @@ describe('recommended lesson order', () => {
     expect(at('decoding')).toBeLessThan(at('read_passage'));
   });
   it('covers every activity in the default plan and keeps unknown ids at the end', () => {
-    const defaults = [...between("restoreSavedLessonPlanOrder(preparedLessonPlan, [", ']));').matchAll(/'([a-z_]+)'/g)].map((m) => m[1]);
+    // 2026-11-09: a new lesson's list starts in the recommended order itself, so the default plan IS this list.
+    expect(source).toContain('restoreSavedLessonPlanOrder(preparedLessonPlan, [...WS_RECOMMENDED_LESSON_ORDER])');
+    const defaults = [...order];
     expect(defaults.length).toBe(20);
+    expect(new Set(defaults).size).toBe(20);
+    expect([...defaults].sort()).toEqual(core.activityIds().sort());
     for (const id of defaults) expect(order, id).toContain(id);
     expect(sort(['decoding', 'future_tool', 'rhyming'])).toEqual(['rhyming', 'decoding', 'future_tool']);
   });
@@ -48,7 +52,10 @@ describe('mastery rule', () => {
     expect(source).toContain('WS_LESSON_MASTERY_CHOICES.includes(Number(preparedLessonPlan?.masteryThreshold))');
     expect(source).toMatch(/masteryMode: 'consecutive',\n\s+masteryThreshold,\n/);
     expect(source).toContain('WS_CORE.lessonItemCeiling(lessonPlan[activity.id].count, masteryThreshold)');
-    expect(source).toMatch(/data-ws-lesson-minimum-note="true">\{tf\('word_sounds\.lesson_plan_min_note'[^\n]*streak: masteryThreshold/);
+    // 2026-11-10 (plan first): the streak is the select beside this note, under Fine-tune; the session goal no longer cuts a plan.
+    expect(source).toMatch(/\{planFineTuneOpen && <label[^\n]*data-ws-mastery-threshold="true">/);
+    expect(source).toMatch(/\{planFineTuneOpen && <p[^\n]*data-ws-lesson-minimum-note="true">\{tf\('word_sounds\.plan_fine_tune_note'/);
+    expect(source).not.toContain('lesson_plan_min_note');
     expect((source.match(/WS_LESSON_MASTERY_THRESHOLD/g) || []).length).toBe(2);
   });
   it('the player and the lesson script already read it from the plan', () => {

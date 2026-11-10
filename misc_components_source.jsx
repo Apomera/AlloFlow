@@ -312,18 +312,43 @@ const WordSoundsReviewPanel = ({
     // computed by the player so this list and the skip always agree.
     wordFamilySkips,
     soundSortSkips,
-    soundSwapSkips
+    soundSwapSkips,
+    // The activities this lesson was prepared for (a lesson-only pack), when the host knows them.
+    preparedActivities
 }) => {
     // Setup can select several activities; standalone sessions provide only
     // the current activity. Older hosts that provide neither retain the full
     // readiness overview rather than hiding warnings without a known scope.
-    const reviewActivities = Array.isArray(activitySequence) && activitySequence.length
-        ? activitySequence : currentActivity ? [currentActivity] : null;
+    // A lesson's plan, then the activities it was prepared for, set the scope: a requirement of
+    // an activity that is not in the lesson is never shown.
+    const reviewActivities = Array.isArray(activitySequence) && activitySequence.length ? activitySequence
+        : Array.isArray(preparedActivities) && preparedActivities.length ? preparedActivities
+            : currentActivity ? [currentActivity] : null;
     const reviewsActivity = (...activities) => !reviewActivities || reviewActivities.some(activity => activities.includes(activity));
     const isGeneratingImage = index => generatingImageSet?.has?.(index) || generatingImageIndex === index;
     const teacherSpokenKey = JSON.stringify(teacherSpokenWords || []);
     const teacherSpokenKeys = React.useMemo(() => new Set(JSON.parse(teacherSpokenKey).map(value => String(value).normalize('NFC').trim().toLowerCase())), [teacherSpokenKey]);
     const isTeacherSpoken = React.useCallback(word => teacherSpokenKeys.has(String(word?.targetWord || word?.word || word?.term || '').normalize('NFC').trim().toLowerCase()), [teacherSpokenKeys]);
+    // Two facts per word, never conflated. PORTABLE: a clip is saved in the
+    // lesson for student devices (ttsReady / _ttsAssets, owned by setup).
+    // RUNTIME: the word plays on this device now (_runtimeAudioReady);
+    // _ttsFailed is a live attempt that failed in this session. A word with no
+    // saved clip is not "failed": it has simply not been saved for students.
+    const audioPackKey = (value) => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+    const audioPortableKeys = React.useMemo(() => {
+        const keys = new Set();
+        (preloadedWords || []).forEach((item) => {
+            if (item && item._ttsAssets && typeof item._ttsAssets === 'object') Object.keys(item._ttsAssets).forEach((key) => keys.add(audioPackKey(key)));
+        });
+        return keys;
+    }, [preloadedWords]);
+    const wordAudioState = (word) => {
+        if (!word) return 'none';
+        if (isTeacherSpoken(word)) return 'teacher';
+        if (word.ttsReady || audioPortableKeys.has(audioPackKey(word.targetWord || word.word || word.term))) return 'ready';
+        if (word._ttsFailed) return 'failed';
+        return word._runtimeAudioReady ? 'device' : 'none';
+    };
     // Match the host translator while tolerating missing keys and both placeholder conventions.
     const reviewText = (key, fallback, params = {}) => {
         const fullKey = 'word_sounds.' + key;
@@ -773,9 +798,9 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                     <p id="word-sounds-review-description" className="text-sm opacity-80 mt-1 flex items-center gap-2 flex-wrap">
                         <span>{t('word_sounds.review_and_edit_words') || 'Review and edit words'} • {preloadedWords.length} {t('word_sounds.words_ready') || 'words ready'}</span>
                         {isLoading && <span role="status" aria-live="polite" className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse motion-reduce:animate-none"><div className="w-2 h-2 bg-white rounded-full animate-bounce motion-reduce:animate-none"/> {t('word_sounds.generating_more') || 'Generating more...'}</span>}
-                        {!isLoading && preloadedWords.some(w => w && w._ttsFailed && !isTeacherSpoken(w)) && (
+                        {!isLoading && preloadedWords.some(w => wordAudioState(w) === 'failed') && (
                             <span className="flex items-center gap-2 bg-red-500/30 border border-red-200/60 px-3 py-1 rounded-full text-xs">
-                                <span>{reviewText('review_missing_audio', "Words missing audio: {count}", { count: preloadedWords.filter(w => w && w._ttsFailed && !isTeacherSpoken(w)).length })}</span>
+                                <span>{reviewText('review_missing_audio', "Words missing audio: {count}", { count: preloadedWords.filter(w => wordAudioState(w) === 'failed').length })}</span>
                                 {typeof onRetryFailedTTS === 'function' && (
                                     <button
                                         type="button"
@@ -891,7 +916,10 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                             : reviewText('review_pack_silent', " Student devices may lack audio for these words or use a fallback voice; re-prepare the pack in setup.");
                         addGap({
                             key: 'audio',
-                            test: (w) => w && !isTeacherSpoken(w) && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)),
+                            // A word whose live attempt failed is listed once,
+                            // under the runtime line below, which also says it
+                            // is not saved for student devices.
+                            test: (w) => w && !isTeacherSpoken(w) && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)) && !w._ttsFailed,
                             text: (n) => reviewText('review_gap_audio', "Words without portable audio: {count}.{note}", { count: n, note: packNote }),
                             each: null,
                         });
@@ -901,8 +929,9 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         // still reach TTS.
                         addGap({
                             key: 'audio_runtime',
-                            test: (w) => w && w._ttsFailed && !isTeacherSpoken(w),
-                            text: (n) => reviewText('review_gap_runtime_audio', "Words whose audio failed to load in this session: {count}", { count: n }),
+                            test: (w) => w && w._ttsFailed && !isTeacherSpoken(w) && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)),
+                            text: (n) => reviewText('review_gap_runtime_audio', "Words whose audio failed to load in this session: {count}", { count: n })
+                                + reviewText('review_gap_runtime_not_saved', ". They are not saved for student devices either."),
                             label: t('word_sounds.fix_audio') || 'Retry audio',
                             needsNetwork: !ttsIsLocal,
                             // Batch by nature: it re-arms the prefetch for every
@@ -1188,22 +1217,43 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                     setPlayingWordIndex(null);
                                                 }
                                             }}
-                                            disabled={isTeacherSpoken(word) || playingWordIndex !== null || !(word.ttsReady || word._runtimeAudioReady)}
+                                            // Always pressable: pressing tries the word and the
+                                            // row reports the result. Only a word the teacher
+                                            // says aloud has nothing to play.
+                                            disabled={isTeacherSpoken(word) || playingWordIndex !== null}
                                             className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors motion-reduce:transition-none ${
-                                                word._ttsFailed
-                                                    ? 'bg-red-100 hover:bg-red-200 text-red-700 border-2 border-red-300'
-                                                    : playingWordIndex === idx
-                                                        ? 'bg-pink-200 text-pink-800 animate-pulse motion-reduce:animate-none'
+                                                playingWordIndex === idx
+                                                    ? 'bg-pink-200 text-pink-800 animate-pulse motion-reduce:animate-none'
+                                                    : wordAudioState(word) === 'failed'
+                                                        ? 'bg-red-100 hover:bg-red-200 text-red-700 border-2 border-red-300'
                                                         : playingWordIndex !== null
                                                             ? 'bg-pink-50 text-pink-300 cursor-not-allowed'
                                                             : 'bg-pink-100 hover:bg-pink-200 text-pink-700'
                                             }`}
-                                            title={isTeacherSpoken(word) ? reviewText('review_teacher_says_word', 'Teacher says this word aloud') : playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing...') : word._ttsFailed ? (t('word_sounds.audio_failed_retry_hint') || 'Audio failed to generate — click Retry audio in header') : !(word.ttsReady || word._runtimeAudioReady) ? (t('word_sounds.loading_audio') || 'Loading audio...') : (t('word_sounds.play_word') || 'Play word')}
-                                            aria-busy={!isTeacherSpoken(word) && (playingWordIndex === idx || (!word._ttsFailed && !(word.ttsReady || word._runtimeAudioReady)))}
-                                            aria-label={isTeacherSpoken(word) ? reviewText('review_teacher_says_word', 'Teacher says this word aloud') : playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing') : word._ttsFailed ? (t('word_sounds.audio_failed_aria') || 'Audio failed') : !(word.ttsReady || word._runtimeAudioReady) ? (t('word_sounds.loading_audio') || 'Loading audio') : (t('word_sounds.play_word') || 'Play word')}
+                                            title={isTeacherSpoken(word) ? reviewText('review_teacher_says_word', 'Teacher says this word aloud') : playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing...') : wordAudioState(word) === 'failed' ? reviewText('review_audio_failed_try_again', 'Audio failed: try again') : (wordAudioState(word) === 'none' && word._audioRequested) ? (t('word_sounds.loading_audio') || 'Loading audio...') : (t('word_sounds.play_word') || 'Play word')}
+                                            aria-busy={!isTeacherSpoken(word) && (playingWordIndex === idx || (wordAudioState(word) === 'none' && !!word._audioRequested))}
+                                            aria-label={isTeacherSpoken(word) ? reviewText('review_teacher_says_word', 'Teacher says this word aloud') : playingWordIndex === idx ? (t('word_sounds.playing') || 'Playing') : wordAudioState(word) === 'failed' ? reviewText('review_audio_failed_try_again', 'Audio failed: try again') : (wordAudioState(word) === 'none' && word._audioRequested) ? (t('word_sounds.loading_audio') || 'Loading audio') : (t('word_sounds.play_word') || 'Play word')}
                                         >
-                                            {word._ttsFailed ? <span aria-hidden="true">🔇</span> : (playingWordIndex === idx ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <Volume2 size={18} aria-hidden="true" />)}
+                                            {playingWordIndex === idx ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : wordAudioState(word) === 'failed' ? <span aria-hidden="true">🔇</span> : <Volume2 size={18} aria-hidden="true" />}
                                         </button>
+                                        {/* One audio state per word: icon and words, never colour alone.
+                                            "Not saved for student devices" stays visible on purpose. */}
+                                        {wordAudioState(word) !== 'teacher' && (() => {
+                                            const audioState = wordAudioState(word);
+                                            const look = audioState === 'ready'
+                                                ? { icon: '✓', tone: 'bg-emerald-50 text-emerald-800 border-emerald-200', text: reviewText('review_audio_state_ready', 'Ready') }
+                                                : audioState === 'device'
+                                                    ? { icon: '💻', tone: 'bg-amber-50 text-amber-900 border-amber-200', text: reviewText('review_audio_state_device', 'Plays on this device; not saved for student devices') }
+                                                    : audioState === 'failed'
+                                                        ? { icon: '⚠', tone: 'bg-red-50 text-red-800 border-red-200', text: reviewText('review_audio_failed_try_again', 'Audio failed: try again') }
+                                                        : { icon: '○', tone: 'bg-slate-50 text-slate-700 border-slate-200', text: reviewText('review_audio_state_none', 'No audio yet') };
+                                            return (
+                                                <span data-ws-audio-state={audioState} className={`inline-flex max-w-[14rem] items-center gap-1 rounded-full border px-2 py-0.5 text-[11px] font-bold leading-tight ${look.tone}`}>
+                                                    <span aria-hidden="true">{look.icon}</span>
+                                                    <span>{look.text}</span>
+                                                </span>
+                                            );
+                                        })()}
                                         {word.phonemes && Array.isArray(word.phonemes) && word.phonemes.length > 0 && (
                                             <button type="button"
                                                 aria-label={t('common.play_phoneme_sequence')}
@@ -1529,7 +1579,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 </div>
                                             )}
                                         </div>
-                                        <div>
+                                        <div hidden={!reviewsActivity('rhyming')} data-ws-review-part="rhyming">
                                             <label className="text-xs font-bold text-orange-700 uppercase tracking-wider mb-2 block">{t('word_sounds.rhyme_options')}</label>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                     <div className="flex items-center gap-1">
@@ -1596,7 +1646,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                     >{t('word_sounds.add_distractor') || '+ Add'}</button>
                                                 </div>
                                             </div>
-                                        <div>
+                                        <div hidden={!reviewsActivity('blending')} data-ws-review-part="blending">
                                             <label className="text-xs font-bold text-violet-700 uppercase tracking-wider mb-2 block">{t('word_sounds.blend_options')}</label>
                                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                                     <span className="flex items-center justify-between gap-2 px-3 py-1.5 font-bold bg-green-100 text-green-800 rounded-lg border-2 border-green-300">
@@ -1665,9 +1715,9 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                             const _ct = word.activityItems || {};
                                             const _ctWord = word.targetWord || word.word || word.term;
                                             const _ctLines = [
-                                                _ct.read_sentence && _ct.read_sentence.sentence && { key: 'sent', icon: '💬', label: t('word_sounds.activity_read_sentence') || 'Finish the Sentence', text: _ct.read_sentence.sentence },
-                                                _ct.read_passage && _ct.read_passage.story && { key: 'story', icon: '📚', label: t('word_sounds.activity_read_passage') || 'Read the Story', text: _ct.read_passage.story },
-                                                _ct.sentence_match && _ct.sentence_match.sentence && { key: 'pair', icon: '🖼️', label: t('word_sounds.activity_sentence_match') || 'Picture the Sentence', text: _ct.sentence_match.sentence },
+                                                reviewsActivity('read_sentence') && _ct.read_sentence && _ct.read_sentence.sentence && { key: 'sent', icon: '💬', label: t('word_sounds.activity_read_sentence') || 'Finish the Sentence', text: _ct.read_sentence.sentence },
+                                                reviewsActivity('read_passage') && _ct.read_passage && _ct.read_passage.story && { key: 'story', icon: '📚', label: t('word_sounds.activity_read_passage') || 'Read the Story', text: _ct.read_passage.story },
+                                                reviewsActivity('sentence_match') && _ct.sentence_match && _ct.sentence_match.sentence && { key: 'pair', icon: '🖼️', label: t('word_sounds.activity_sentence_match') || 'Picture the Sentence', text: _ct.sentence_match.sentence },
                                             ].filter(Boolean);
                                             if (!_ctLines.length) return null;
                                             return (
@@ -1699,7 +1749,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 </div>
                                             );
                                         })()}
-                                        <div>
+                                        <div hidden={!reviewsActivity('manipulation')} data-ws-review-part="manipulation">
                                             <div className="flex items-center justify-between mb-2">
                                                 <label className="text-xs font-bold text-amber-700 uppercase tracking-wider block">{t('word_sounds.sound_swap_label') || 'Sound Swap (Manipulation Activity)'}</label>
                                                 {word.manipulationTask?.type && (
@@ -1829,7 +1879,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                                 </div>
                                             )}
                                         </div>
-                                        <div>
+                                        <div hidden={!reviewsActivity('isolation')} data-ws-review-part="isolation">
                                             <label className="text-xs font-bold text-slate-600 uppercase tracking-wider mb-2 block">{t('word_sounds.sound_positions_label') || 'Sound Positions (Find Sounds Activity)'}</label>
                                             <div className="flex flex-wrap gap-2">
                                                 {(() => {

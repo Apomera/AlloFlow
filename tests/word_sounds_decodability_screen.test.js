@@ -111,8 +111,11 @@ describe('it runs where the generated words land', () => {
 
   it('the flag pass runs after every word, so the session counts as vouched for', () => {
     const flagIdx = SOURCE.indexOf('const sessionWords = new Set(');
-    const compileIdx = SOURCE.indexOf('compileActivityItems(processed);');
+    // The boards are now compiled in two calls (the lesson's own words, then
+    // any words added for one syllable activity); the flags precede both.
+    const compileIdx = SOURCE.indexOf('compileActivityItems(processed');
     expect(flagIdx).toBeGreaterThan(0);
+    expect(compileIdx, 'board compilation not found').toBeGreaterThan(0);
     expect(flagIdx, 'must run before the boards are compiled').toBeLessThan(compileIdx);
     expect(SOURCE).toMatch(/item\._unverifiedWords = unverified;/);
   });

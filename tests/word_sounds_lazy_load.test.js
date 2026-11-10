@@ -76,12 +76,25 @@ describe('every path that renders the player also triggers the load', () => {
     // lands. Without this card (and its Close button) that tick is a blank
     // screen a child cannot get out of. Anchor on the Word Sounds card
     // specifically — several other modules have their own loading fallbacks.
-    const idx = anti.indexOf("loading_module', { name: 'Word Sounds' }");
+    // The setup screen's own stub (WordSoundsGenerator) now uses the same
+    // name, so anchor on the card at the modal's render site.
+    const site = anti.indexOf('const WS = window.AlloModules && window.AlloModules.WordSoundsModal');
+    expect(site, 'render site not found').toBeGreaterThan(0);
+    const idx = anti.indexOf("loading_module', { name: 'Word Sounds' }", site);
     expect(idx, 'Word Sounds loading fallback not found').toBeGreaterThan(0);
+    // Same block: the modal's props sit between the two, then the failed check.
+    expect(idx - site, 'the fallback must belong to the modal render site').toBeLessThan(20000);
+    expect(anti.slice(site, idx)).toMatch(/const wsLoadFailed = window\.__alloModuleRegistry\?\.WordSoundsModal\?\.status === 'failed';/);
     const card = anti.slice(idx, idx + 600);
     expect(card, 'the loading card needs a Close escape').toMatch(/common\.close/);
     expect(card, 'Close must exit Word Sounds mode, not just hide the card')
       .toMatch(/setIsWordSoundsMode\(false\)/);
+    // The card also has a "could not load" state. Close must show in both:
+    // it may not sit behind either branch of the failed check.
+    const close = card.slice(0, card.indexOf('common.close'));
+    const button = close.slice(close.lastIndexOf('<button'));
+    expect(button, 'Close is the button that exits the mode').toMatch(/setIsWordSoundsMode\(false\)/);
+    expect(close.slice(close.lastIndexOf('\n')), 'Close must not depend on the load state').not.toMatch(/wsLoadFailed/);
   });
 });
 

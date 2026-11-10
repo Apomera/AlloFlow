@@ -126,6 +126,76 @@
       '.ws-streak-bg { background: linear-gradient(90deg, #f59e0b, #ef4444, #f59e0b, #ef4444); background-size: 200% 100%; animation: ws-streak-fire 1s linear infinite; }',
       '.ws-float-xp { animation: ws-float-up 1.2s ease-out forwards; pointer-events: none; position: absolute; z-index: 100; font-weight: 900; color: #fbbf24; text-shadow: 0 1px 3px rgba(0,0,0,0.3); }',
       '.ws-correct-shake { animation: ws-shake-correct 0.5s ease-out; }',
+      // Answer cards (tap to hear and select, then Check). Structure only:
+      // colours come from utility classes the app themes already remap, and
+      // borders and marks use the card's own text colour.
+      '.word-sounds-root .ws-card { position: relative; }',
+      '.word-sounds-root .ws-card[data-ws-card-state="selected"], .word-sounds-root .ws-card[data-ws-card-state="correct"] { border-width: 4px !important; border-style: solid !important; border-color: currentColor !important; }',
+      '.word-sounds-root .ws-card[data-ws-card-state="correct"] { outline: 3px solid currentColor; outline-offset: 3px; }',
+      '.word-sounds-root .ws-card[data-ws-card-state="wrong"] { border-width: 3px !important; border-style: dashed !important; border-color: currentColor !important; opacity: 0.6; cursor: not-allowed; transform: none !important; }',
+      '.word-sounds-root .ws-card-small .ws-card-mark { top: -8px; inset-inline-end: -8px; width: 22px; height: 22px; font-size: 13px; }',
+      '.word-sounds-root .ws-card-mark { position: absolute; top: 6px; inset-inline-end: 6px; width: 28px; height: 28px; border-radius: 9999px; display: flex; align-items: center; justify-content: center; font-size: 18px; line-height: 1; font-weight: 900; pointer-events: none; border: 2px solid currentColor; background: transparent; color: inherit; box-sizing: border-box; }',
+      '@keyframes ws-card-pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.05); } }',
+      '.word-sounds-root .ws-card[data-ws-card-state="correct"]:not(.ws-card-still) { animation: ws-card-pulse 0.9s ease-in-out 2; }',
+      '.word-sounds-root .ws-card-check { display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%; max-width: 24rem; min-height: 56px !important; margin-left: auto; margin-right: auto; }',
+      '@media (min-width: 641px) { .word-sounds-root .ws-card-check { max-width: 20rem; } }',
+      '.word-sounds-root .ws-scramble-slots { display: flex; flex-wrap: wrap; justify-content: center; gap: 4px; width: 100%; max-width: 100%; }',
+      '.word-sounds-root .ws-scramble-slots > [data-ws-spell-slot] { flex: 0 1 2.5rem; min-width: 1.5rem; width: auto; }',
+      // Student practice screen. Layout only: every colour comes from the
+      // utility classes the dark and high-contrast themes already remap.
+      // Teachers get a large window (still a window: slim backdrop, round corners).
+      '.word-sounds-root > .ws-teach-dialog { box-sizing: border-box; width: min(96vw, 1500px); max-width: none; margin: 0; height: 94vh; height: 94dvh; max-height: 94vh; max-height: 94dvh; }',
+      // Students get the whole screen at every size: no window, no backdrop
+      // margin. The content stays one centred column (--ws-stu-col); the
+      // header background runs full width with its content on that column.
+      '.word-sounds-root[data-ws-student-screen] > .ws-stu-dialog { position: relative; --ws-stu-header-h: 64px; --ws-stu-col: 900px; --ws-stu-pad: 12px; --ws-stu-side: max(var(--ws-stu-pad), calc((100% - var(--ws-stu-col)) / 2)); box-sizing: border-box; width: 100%; max-width: none; margin: 0; height: 100vh; height: 100dvh; max-height: 100vh; max-height: 100dvh; border-radius: 0; box-shadow: none; padding-bottom: env(safe-area-inset-bottom, 0px); }',
+      '@media (max-width: 640px), (max-height: 500px) { .word-sounds-root[data-ws-student-screen] > .ws-stu-dialog { --ws-stu-header-h: 56px; } }',
+      '@media (max-width: 640px) { .word-sounds-root[data-ws-student-screen] > .ws-stu-dialog { --ws-stu-pad: 8px; } }',
+      '.word-sounds-root .ws-stu-header { display: flex; align-items: center; gap: 8px; flex: none; box-sizing: border-box; height: calc(var(--ws-stu-header-h, 64px) + env(safe-area-inset-top, 0px)); padding: env(safe-area-inset-top, 0px) max(var(--ws-stu-side, 12px), env(safe-area-inset-right, 0px)) 0 max(var(--ws-stu-side, 12px), env(safe-area-inset-left, 0px)); }',
+      '.word-sounds-root .ws-stu-title { flex: 1 1 0; min-width: 3.5rem; margin: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 1.0625rem; line-height: 1.75rem; }',
+      '@media (max-width: 640px) { .word-sounds-root .ws-stu-header { gap: 6px; } .word-sounds-root .ws-stu-title { font-size: 1rem; } }',
+      '.word-sounds-root .ws-stu-progress { flex: 0 1 auto; display: flex; align-items: center; gap: 2px; min-width: 0; max-width: 55%; overflow: hidden; white-space: nowrap; font-size: 0.875rem; line-height: 1; }',
+      '.word-sounds-root .ws-stu-dot { flex: none; }',
+      '.word-sounds-root .ws-stu-bar { display: block; flex: 1 1 5rem; width: 5rem; min-width: 2rem; height: 8px; border-radius: 9999px; overflow: hidden; margin-inline-end: 6px; }',
+      '.word-sounds-root .ws-stu-bar-fill { display: block; height: 100%; border-radius: 9999px; }',
+      '.word-sounds-root .ws-stu-streak { flex: none; font-size: 0.875rem; font-weight: 700; white-space: nowrap; }',
+      '.word-sounds-root .ws-stu-more-wrap { flex: none; display: flex; }',
+      '.word-sounds-root .ws-stu-btn { flex: none; display: inline-flex; align-items: center; justify-content: center; gap: 4px; min-width: 44px; min-height: 44px; }',
+      '@media (max-width: 479px) { .word-sounds-root .ws-stu-more-label { display: none; } }',
+      '.word-sounds-root .ws-stu-more { position: absolute; top: calc(var(--ws-stu-header-h, 64px) + env(safe-area-inset-top, 0px) + 4px); inset-inline-end: max(8px, calc((100% - var(--ws-stu-col, 900px)) / 2)); z-index: 60; box-sizing: border-box; width: min(24rem, calc(100% - 16px)); max-height: calc(100% - var(--ws-stu-header-h, 64px) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px) - 12px); overflow-y: auto; overscroll-behavior: contain; display: flex; flex-direction: column; gap: 10px; padding: 12px; border-radius: 16px; text-align: start; }',
+      '.word-sounds-root .ws-stu-more[hidden] { display: none; }',
+      '.word-sounds-root .ws-stu-more button, .word-sounds-root .ws-stu-more select { min-height: 44px; }',
+      '.word-sounds-root .ws-stu-more button { min-width: 44px; }',
+      // Pinned row: the message, the audio notice and the anchor chip are all
+      // in flow. The row grows to its tallest child and the task below takes
+      // what is left; on narrow screens the three stack. Nothing lays over the task.
+      '.word-sounds-root .ws-stu-feedback { position: relative; z-index: 5; flex: none; display: flex; justify-content: center; min-height: 56px; }',
+      '.word-sounds-root .ws-stu-feedback-inner { flex: 1 1 auto; min-width: 0; max-width: calc(var(--ws-stu-col, 900px) + 24px); box-sizing: border-box; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 4px 8px; padding: 2px max(12px, env(safe-area-inset-right, 0px)) 2px max(12px, env(safe-area-inset-left, 0px)); }',
+      '.word-sounds-root .ws-stu-banner { flex: 1 1 10rem; min-width: 0; box-sizing: border-box; min-height: 44px; padding: 0 12px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 0 10px; }',
+      '.word-sounds-root .ws-stu-banner[data-ws-audio-notice] { flex: 2 1 17rem; flex-wrap: nowrap; gap: 8px; padding: 2px; padding-inline-start: 12px; text-align: start; line-height: 1.25; }',
+      '.word-sounds-root .ws-stu-banner[data-ws-audio-notice] > span { flex: 1 1 auto; min-width: 0; }',
+      '.word-sounds-root .ws-stu-banner[data-ws-audio-notice] > button { flex: none; white-space: nowrap; }',
+      '.word-sounds-root .ws-stu-feedback-inner > [role="region"] { position: static; flex: 0 1 auto; min-width: 0; max-width: 100%; margin: 0; padding-top: 2px; padding-bottom: 2px; }',
+      // Vertical rhythm of the task: fixed gaps and blocks give way on short screens.
+      '.word-sounds-root .ws-stu-task { --ws-stu-gap: clamp(8px, 2.2vh, 24px); --ws-stu-gap-sm: clamp(6px, 1.6vh, 16px); padding: 4px max(clamp(12px, 3vw, 24px), env(safe-area-inset-right, 0px)) var(--ws-stu-gap) max(clamp(12px, 3vw, 24px), env(safe-area-inset-left, 0px)); }',
+      '.word-sounds-root .ws-stu-task > * { max-width: var(--ws-stu-col, 900px); margin-left: auto; margin-right: auto; }',
+      '.word-sounds-root .ws-stu-task .space-y-6 > :not([hidden]) ~ :not([hidden]) { margin-top: var(--ws-stu-gap); }',
+      '.word-sounds-root .ws-stu-task .space-y-4 > :not([hidden]) ~ :not([hidden]) { margin-top: var(--ws-stu-gap-sm); }',
+      '.word-sounds-root .ws-stu-task .mb-6, .word-sounds-root .ws-stu-task .mb-8 { margin-bottom: var(--ws-stu-gap); }',
+      '.word-sounds-root .ws-stu-task .mt-6 { margin-top: var(--ws-stu-gap); }',
+      '.word-sounds-root .ws-stu-task .mb-4 { margin-bottom: var(--ws-stu-gap-sm); }',
+      '.word-sounds-root .ws-stu-task .gap-8 { gap: var(--ws-stu-gap); }',
+      '.word-sounds-root .ws-stu-task .p-6 { padding: var(--ws-stu-gap); }',
+      '.word-sounds-root .ws-stu-task .py-12 { padding-top: var(--ws-stu-gap); padding-bottom: var(--ws-stu-gap); }',
+      '.word-sounds-root .ws-stu-task .h-32 { height: clamp(72px, 16vh, 128px); }',
+      '.word-sounds-root .ws-stu-task .w-32.h-32 { width: clamp(72px, 16vh, 128px); }',
+      '.word-sounds-root .ws-stu-task .w-48.h-48 { width: clamp(120px, 24vh, 192px); height: clamp(120px, 24vh, 192px); }',
+      // Room to spare (a laptop or a board): bigger targets, same gaps. Heights
+      // follow the viewport height, so a short wide screen grows cards sideways only.
+      '@media (min-width: 900px) and (min-height: 650px) { .word-sounds-root .ws-stu-task { --ws-stu-card-h: clamp(72px, 10.4vh, 94px); --ws-stu-num: clamp(64px, 9.2vh, 83px); --ws-stu-check-h: clamp(56px, 8vh, 72px); } .word-sounds-root .ws-stu-task [data-ws-cards].max-w-sm { max-width: 30rem; } .word-sounds-root .ws-stu-task [data-ws-card]:not(.ws-card-small) { min-height: var(--ws-stu-card-h); justify-content: center; font-size: clamp(1.25rem, 2.9vh, 1.625rem); } .word-sounds-root .ws-stu-task .ws-card-small.w-16.h-16 { width: var(--ws-stu-num); height: var(--ws-stu-num); font-size: clamp(1.5rem, 3.45vh, 1.95rem); } .word-sounds-root .ws-card-check { max-width: 24rem; min-height: var(--ws-stu-check-h, 56px) !important; font-size: clamp(1.25rem, 2.9vh, 1.5rem); } .word-sounds-root .ws-stu-task .h-32 { height: clamp(72px, 18vh, 160px); } .word-sounds-root .ws-stu-task .w-32.h-32 { width: clamp(72px, 18vh, 160px); } .word-sounds-root .ws-stu-task .w-48.h-48 { width: clamp(120px, 27vh, 240px); height: clamp(120px, 27vh, 240px); } }',
+      // The replay control ("Play word") scales whole, icon and label together.
+      '@media (min-width: 900px) and (min-height: 700px) { .word-sounds-root .ws-stu-task button.flex-col.mx-auto.p-4.rounded-2xl { zoom: 1.15; } }',
+      '@media (min-width: 900px) and (min-height: 900px) { .word-sounds-root .ws-stu-task button.flex-col.mx-auto.p-4.rounded-2xl { zoom: 1.3; } }',
     ].join('\n');
     document.head.appendChild(wsA11yStyle);
   }
@@ -799,7 +869,7 @@ function createWordSoundsCore(options = {}) {
   };
   // Generated Rhyme Time choices are stable per target, but do not reuse the
   // first few model/filler words for every item. Saved boards remain intact.
-  const buildRhymeBoard = ({word, answer, phonemes, answerPhonemes, pool=[], distractors=[], prepared, isEnglish=true, count=4, exposure}) => {
+  const buildRhymeBoard = ({word, answer, phonemes, answerPhonemes, pool=[], distractors=[], prepared, isEnglish=true, count=4, exposure, difficulty}) => {
     const checked = rhymePairStatus({word, answer:prepared?.answer || answer, phonemes, answerPhonemes, pool, prepared, isEnglish});
     if (!checked.supported) return {answer:'', options:[], supported:false, contentStatus:'teacher_review_required',
       reason:checked.reason, suggestedAnswer:prepared?.answer || answer || ''};
@@ -871,7 +941,34 @@ function createWordSoundsCore(options = {}) {
       const last = recent[recent.length - 1] || [];
       return Math.min(3, uses) * 2 + (last.includes(w) ? 4 : recent.some(board => board.includes(w)) ? 2 : 0);
     };
-    const selected = challengePool.sort((a,b) => score(a) + repetitionCost(a) - score(b) - repetitionCost(b)).slice(0, count);
+    // Optional difficulty. Omitted (or 'hard'): the near contrasts above, as
+    // before. 'easy': clearly different words only (another vowel and another
+    // final sound than the target and its rhyme). 'medium': one near foil at most.
+    const level = difficulty === 'easy' || difficulty === 'medium' ? difficulty : null;
+    let selected;
+    if (!level) {
+      selected = challengePool.sort((a,b) => score(a) + repetitionCost(a) - score(b) - repetitionCost(b)).slice(0, count);
+    } else {
+      const spelledVowel = w => isEnglish ? (w.match(/[aeiouy]+/) || [''])[0] : '';
+      const vowelKeys = w => [labels(w).find(s => vowels.has(s)), spelledVowel(w)].filter(Boolean);
+      const endKeys = w => { const end = finalSound(w); return [end ? soundKey(end) : null, w.slice(-1)].filter(Boolean); };
+      const refVowels = new Set([...vowelKeys(target), ...vowelKeys(correct)]);
+      const refEnds = new Set([...endKeys(target), ...endKeys(correct)]);
+      const near = w => vowelKeys(w).some(key => refVowels.has(key)) || endKeys(w).some(key => refEnds.has(key));
+      const onset = edgeSound(target, 'first', phonemes);
+      const lengthCost = w => Math.abs((labels(w).length || w.length) - (targetSounds.length || target.length));
+      const plain = w => lengthCost(w) * 3 + (onset && edgeSound(w, 'first', (data.get(w) || {}).phonemes) === onset ? 1 : 0) + repetitionCost(w);
+      const order = shuffled(candidates, seed);
+      const far = order.filter(w => !near(w)).sort((a,b) => plain(a) - plain(b));
+      const close = order.filter(near).sort((a,b) => score(a) + repetitionCost(a) - score(b) - repetitionCost(b));
+      if (level === 'easy') {
+        selected = far.slice(0, count);
+        // Too few clearly different words: fill only as far as a two-foil board.
+        if (selected.length < Math.min(count, 2)) selected = [...selected, ...close.slice(0, Math.min(count, 2) - selected.length)];
+      } else {
+        selected = [...close.slice(0, far.length >= count - 1 ? 1 : count - far.length), ...far].slice(0, count);
+      }
+    }
     return {answer, options: shuffled([answer, ...selected], seed ^ 0x9e3779b9),
       ...(checked.pronunciations ? {pronunciations:checked.pronunciations} : {})};
   };
@@ -887,7 +984,8 @@ function createWordSoundsCore(options = {}) {
       prepared.answer && prepared.options.includes(prepared.answer);
     const previous = session.occurrences.get(key);
     const inputKey = JSON.stringify([normalize(args.word), normalize(args.answer), args.phonemes || [], args.answerPhonemes || [], args.distractors || [],
-      (args.pool || []).filter(value => value && typeof value === 'object').map(value => [value.targetWord || value.word || value.term, value.phonemes])]);
+      (args.pool || []).filter(value => value && typeof value === 'object').map(value => [value.targetWord || value.word || value.term, value.phonemes]),
+      ...(args.difficulty === 'easy' || args.difficulty === 'medium' ? [args.difficulty, args.count] : [])]);
     // Edits and saved boards are authoritative even if the same occurrence
     // was generated before them. An already counted occurrence stays counted.
     if (previous && !hasPrepared && previous.inputKey === inputKey) return {...previous.board, options: [...previous.board.options]};
@@ -946,19 +1044,98 @@ function createWordSoundsCore(options = {}) {
   const wordFamilyInstruction = rime => `Find all words in the ${rime} family`;
   const difficultyDecision = (history, activity, support={}) => {
     const rows=(history||[]).filter(h=>h && h.activity===activity && !h.practiceOnly && h.activity!=='letter_tracing' && h.taskKind!=='word_matching' && !h.answerExposed && !!h.aacAssisted===!!support.aacAssisted && (h.mode||'sound_only')===(support.mode||'sound_only'));
-    let band=0, block=[], reason='starting', changes=0;
+    // support.hysteresis (optional): after a step back, moving up again takes
+    // two qualifying windows in a row (three after a second step back), and the
+    // result carries support:'more' when the lowest band is still under 40%.
+    // Without it the decision and its fields are exactly as before.
+    const steady=support.hysteresis===true;
+    let band=0, block=[], reason='starting', changes=0, backs=0, held=0;
     const bands=['easy','medium','hard'];
+    const need=()=>steady && backs>0 ? (backs>1?3:2) : 1;
     for(const h of rows){
       if(h.difficulty && h.difficulty!==bands[band]) continue;
       block.push(h); block=block.slice(-10);
       const distinct=new Set(block.map(r=>normalize(r.word)).filter(Boolean)).size;
       const n=block.length, accuracy=block.reduce((s,r)=>s+(r.correct?((r.attempts||1)>1?0.5:1):0),0)/n;
       const min=band===0?6:8, words=band===0?4:6;
-      if(band<2 && n>=min && distinct>=words && accuracy>=0.85){band++;changes++;block=[];reason='advance';}
-      else if(band>0 && n>=6 && distinct>=4 && accuracy<0.45){band--;changes++;block=[];reason='step_back';}
-      else if(reason==='starting')reason='practice';
+      const qualifies=band<2 && n>=min && distinct>=words && accuracy>=0.85;
+      if(qualifies && held+1>=need()){band++;changes++;block=[];held=0;reason='advance';}
+      else if(qualifies){held++;block=[];reason='holding';}
+      else if(band>0 && n>=6 && distinct>=4 && accuracy<0.45){band--;changes++;backs++;held=0;block=[];reason='step_back';}
+      else{
+        // The qualifying windows must be consecutive.
+        if(held>0 && n>=min && accuracy<0.85)held=0;
+        if(reason==='starting')reason='practice';
+      }
     }
-    return {difficulty:bands[band],reason,items:block.length,distinctWords:new Set(block.map(r=>normalize(r.word)).filter(Boolean)).size,changes};
+    const result={difficulty:bands[band],reason,items:block.length,distinctWords:new Set(block.map(r=>normalize(r.word)).filter(Boolean)).size,changes};
+    if(!steady)return result;
+    const tailAccuracy=block.length?block.reduce((s,r)=>s+(r.correct?((r.attempts||1)>1?0.5:1):0),0)/block.length:1;
+    return {...result,support:band===0 && block.length>=6 && tailAccuracy<0.4?'more':'none',windowsHeld:held,windowsNeeded:need()};
+  };
+  // How many choices a sound-only board shows. 'hard' (or anything else) keeps
+  // the board as built; support 'more' is the difficultyDecision signal.
+  const choiceLimit = (difficulty, full, support) => {
+    const size = Math.max(0, Number(full) || 0);
+    if (support === 'more' && difficulty === 'easy') return Math.min(size, 2);
+    return difficulty === 'easy' ? Math.min(size, 3) : difficulty === 'medium' ? Math.min(size, 4) : size;
+  };
+  // 0 = clearly different, higher = easier to confuse.
+  const SOUND_NEIGHBOURS = new Set('b d|b p|b v|d t|d g|g k|f v|f th|s z|s sh|s th|m n|n ng|sh ch|j ch|k t|p t|w r|l r|c k|ck k|e i|a e|o u|a u|ee i|a o|oo u'.split('|'));
+  const soundCloseness = (a, b) => {
+    const x = soundKey(a), y = soundKey(b);
+    if (!x || !y) return 0;
+    if (x === y) return 3;
+    if (SOUND_NEIGHBOURS.has(x + ' ' + y) || SOUND_NEIGHBOURS.has(y + ' ' + x)) return 2;
+    return RHYME_VOWELS.has(x) && RHYME_VOWELS.has(y) ? 1 : 0;
+  };
+  const wordCloseness = (a, b) => {
+    const x = normalize(a), y = normalize(b);
+    if (!x || !y) return 0;
+    const rime = w => (w.match(/[aeiouy][a-z]*$/) || [''])[0], vowel = w => (w.match(/[aeiouy]+/) || [''])[0];
+    return (x[0] === y[0] ? 2 : 0) + (rime(x) && rime(x) === rime(y) ? 2 : 0) + (x.slice(-1) === y.slice(-1) ? 1 : 0) + (vowel(x) && vowel(x) === vowel(y) ? 1 : 0);
+  };
+  // Show fewer choices from a board without rebuilding it: the answer always
+  // stays, a second spelling of the answer never does, and the kept choices
+  // keep their order. No count (or a count the board already fits): unchanged.
+  const trimChoices = ({options, answer, count, difficulty, same, closeness} = {}) => {
+    const list = Array.isArray(options) ? [...options] : [];
+    const equal = typeof same === 'function' ? same : (a, b) => normalize(a) === normalize(b);
+    const at = list.findIndex(option => equal(option, answer));
+    if (at < 0 || !Number.isFinite(count) || count < 2) return list;
+    const foils = list.map((option, index) => ({option, index})).filter(row => row.index !== at && !equal(row.option, answer));
+    if (foils.length === list.length - 1 && list.length <= count) return list;
+    const score = row => typeof closeness === 'function' ? Number(closeness(row.option, answer)) || 0 : 0;
+    const farFirst = [...foils].sort((a, b) => score(a) - score(b) || a.index - b.index);
+    let kept = farFirst.slice(0, count - 1);
+    if (difficulty === 'medium' && typeof closeness === 'function' && farFirst.length > count - 1) {
+      const nearest = farFirst[farFirst.length - 1];
+      if (score(nearest) > 0) kept = [...farFirst.slice(0, count - 2), nearest];
+    } else if (difficulty !== 'easy' && difficulty !== 'medium') kept = foils.slice(0, count - 1);
+    const keep = new Set([at, ...kept.map(row => row.index)]);
+    return list.filter((_, index) => keep.has(index));
+  };
+  // Number buttons for "how many sounds": easy = the count with two either side
+  // (kept inside 1-6 when the count is), medium = 1-8, otherwise null (the full row).
+  const countingChoices = (count, difficulty) => {
+    const n = Number(count);
+    if (!Number.isInteger(n) || n < 1 || n > 10) return null;
+    if (difficulty === 'easy') {
+      const top = Math.max(6, n);
+      let low = Math.max(1, n - 2), high = Math.min(top, n + 2);
+      while (high - low < 2) { if (low > 1) low--; else high++; }
+      return Array.from({length: high - low + 1}, (_, i) => low + i);
+    }
+    if (difficulty === 'medium' && n <= 8) return [1, 2, 3, 4, 5, 6, 7, 8];
+    return null;
+  };
+  // Which sound positions isolation may ask for: easy = first, medium = first
+  // or last, otherwise any.
+  const isolationPositions = (difficulty, length) => {
+    const n = Math.max(1, Math.floor(Number(length)) || 1);
+    if (difficulty === 'easy') return [0];
+    if (difficulty === 'medium') return n > 1 ? [0, n - 1] : [0];
+    return Array.from({length: n}, (_, i) => i);
   };
   const textEvidence = ({activity,imageAvailable,answerRevealed=false}) => {
     const connected=['read_sentence','read_passage'].includes(activity);
@@ -1050,6 +1227,31 @@ function createWordSoundsCore(options = {}) {
     bathmat: ['bath', 'mat'], headband: ['head', 'band'],
   };
   const syllableWords = () => Object.keys(SYLLABLE_COMPOUNDS);
+  // Machine-vetted; accepted by the owner 2026-11-10 (see compounds_review.md).
+  // Two-part compounds added to the 64 above. Each part is a common one-syllable
+  // word that sounds the same alone as in the compound (CMUdict: whole = part 1 +
+  // part 2) and has its own clip in word_audio_kokoro_bank.json, like every part
+  // of the 64. syllableWords() stays the 64: the audio-bank build and tests use it.
+  const SYLLABLE_COMPOUNDS_VETTED = {
+    moonlight: ['moon', 'light'], daylight: ['day', 'light'], starlight: ['star', 'light'],
+    spotlight: ['spot', 'light'], headlight: ['head', 'light'], lighthouse: ['light', 'house'],
+    greenhouse: ['green', 'house'], henhouse: ['hen', 'house'], doorway: ['door', 'way'],
+    hallway: ['hall', 'way'], driveway: ['drive', 'way'], walkway: ['walk', 'way'],
+    doorstep: ['door', 'step'], footstep: ['foot', 'step'], daytime: ['day', 'time'],
+    nighttime: ['night', 'time'], goodnight: ['good', 'night'], hillside: ['hill', 'side'],
+    hilltop: ['hill', 'top'], treetop: ['tree', 'top'], laptop: ['lap', 'top'],
+    downhill: ['down', 'hill'], sundown: ['sun', 'down'], sunbeam: ['sun', 'beam'],
+    sunburn: ['sun', 'burn'], bedside: ['bed', 'side'], seaside: ['sea', 'side'],
+    sidewalk: ['side', 'walk'], rainfall: ['rain', 'fall'], snowfall: ['snow', 'fall'],
+    seesaw: ['see', 'saw'], horseback: ['horse', 'back'], drawbridge: ['draw', 'bridge'],
+    playmate: ['play', 'mate'], bookcase: ['book', 'case'], shellfish: ['shell', 'fish'],
+    catfish: ['cat', 'fish'], cheesecake: ['cheese', 'cake'], homemade: ['home', 'made'],
+    shortcut: ['short', 'cut'],
+  };
+  const compoundParts = word => Object.prototype.hasOwnProperty.call(SYLLABLE_COMPOUNDS, word) ? SYLLABLE_COMPOUNDS[word]
+    : Object.prototype.hasOwnProperty.call(SYLLABLE_COMPOUNDS_VETTED, word) ? SYLLABLE_COMPOUNDS_VETTED[word] : null;
+  // The ready-made "Compound words" list: the 64 first, then the vetted additions.
+  const compoundWords = () => [...syllableWords(), ...Object.keys(SYLLABLE_COMPOUNDS_VETTED)];
   // Written hints for recording word-specific speech, never TTS fragments.
   // These expand the teaching inventory without claiming unrecorded sounds are
   // checked audio. The teacher still previews and confirms every recording.
@@ -1074,6 +1276,89 @@ function createWordSoundsCore(options = {}) {
     responsibility: ['re', 'spon', 'si', 'bil', 'i', 'ty'],
   };
   const syllableCountWords = () => [...syllableWords(), ...Object.keys(SYLLABLE_RECORDING_HINTS)];
+  // The hint words as a ready-made list for Syllable Claps, mixed so the first ten cover 2, 3 and 4+ syllables.
+  const longerSyllableWords = () => {
+    const bySize = new Map();
+    Object.keys(SYLLABLE_RECORDING_HINTS).forEach(word => { const size = Math.min(4, SYLLABLE_RECORDING_HINTS[word].length); bySize.set(size, [...(bySize.get(size) || []), word]); });
+    const rows = [...bySize.keys()].sort((a, b) => a - b).map(size => bySize.get(size)), out = [];
+    for (let i = 0; rows.some(row => i < row.length); i++) rows.forEach(row => { if (i < row.length) out.push(row[i]); });
+    return out;
+  };
+  // Ready-made word lists for the setup picker. The preset objects (name -> words) come from allo_data.
+  // A list id is stable: 'family:<preset name>', 'sight:<preset name>', 'compound', 'longer'.
+  const READY_LIST_FIRST = 10;
+  const SIGHT_LIST_LABELS = {
+    'Pre-K (Dolch)': ['word_sounds.list_dolch_prek', 'Dolch Pre-K'], 'Kindergarten (Dolch)': ['word_sounds.list_dolch_k', 'Dolch Kindergarten'],
+    '1st Grade (Dolch)': ['word_sounds.list_dolch_1', 'Dolch 1st Grade'], '2nd Grade (Dolch)': ['word_sounds.list_dolch_2', 'Dolch 2nd Grade'],
+    '3rd Grade (Dolch)': ['word_sounds.list_dolch_3', 'Dolch 3rd Grade'],
+    // These two presets hold 50 words each (Fry 1-50 and 51-100), whatever their preset names say.
+    'Fry First 100': ['word_sounds.list_fry_1_50', 'Fry words 1 to 50'], 'Fry Second 100': ['word_sounds.list_fry_51_100', 'Fry words 51 to 100'],
+  };
+  const readyMadeListGroups = (input = {}) => {
+    const words = list => { const seen = new Set(); return (Array.isArray(list) ? list : []).map(word => String(word || '').trim()).filter(word => { const key = word.toLocaleLowerCase(); return word && !seen.has(key) && !!seen.add(key); }); };
+    const families = input.families || {}, sight = input.sightWords || {};
+    const groups = { rhyme: [], digraph: [], blend: [], sight: [], syllable: [] };
+    Object.keys(families).forEach(name => {
+      const pattern = (name.match(/\(([^)]+)\)\s*$/) || [])[1] || '', lead = name.replace(/\s*\([^)]*\)\s*$/, '');
+      const kind = /^digraph\b/i.test(name) ? 'digraph' : /^blend\b/i.test(name) ? 'blend' : 'rhyme';
+      const label = !pattern ? name : kind === 'rhyme' ? pattern + ' (' + lead.toLowerCase() + ')' : pattern;
+      groups[kind].push({ id: 'family:' + name, label, words: words(families[name]), filterBySyllables: true });
+    });
+    Object.keys(sight).forEach(name => {
+      const known = Object.prototype.hasOwnProperty.call(SIGHT_LIST_LABELS, name) ? SIGHT_LIST_LABELS[name] : null;
+      groups.sight.push({ id: 'sight:' + name, label: known ? known[1] : name, ...(known ? { labelKey: known[0] } : {}), words: words(sight[name]), filterBySyllables: false });
+    });
+    if (isSyllableLanguageSupported(input.language)) {
+      groups.syllable.push({ id: 'compound', labelKey: 'word_sounds.list_compound', label: 'Compound words (for {activity})', activity: 'syllable_blending', words: compoundWords(), filterBySyllables: true });
+      groups.syllable.push({ id: 'longer', labelKey: 'word_sounds.list_longer', label: 'Longer words (for {activity})', activity: 'syllable_counting', words: longerSyllableWords(), filterBySyllables: true });
+    }
+    return [
+      { id: 'rhyme', labelKey: 'word_sounds.list_group_rhyme', label: 'Rhyming families', lists: groups.rhyme },
+      { id: 'digraph', labelKey: 'word_sounds.list_group_digraph', label: 'Digraphs', lists: groups.digraph },
+      { id: 'blend', labelKey: 'word_sounds.list_group_blend', label: 'Blends', lists: groups.blend },
+      { id: 'sight', labelKey: 'word_sounds.list_group_sight', label: 'Sight words', lists: groups.sight },
+      { id: 'syllable', labelKey: 'word_sounds.list_group_syllable', label: 'Compound and longer words', lists: groups.syllable },
+    ].filter(group => group.lists.length);
+  };
+  // A setup draft saved before the picker: the two bank flags, one family and one sight list.
+  const readyListIdsFromDraft = draft => {
+    if (Array.isArray(draft?.readyLists)) return [...new Set(draft.readyLists.filter(id => typeof id === 'string' && id))];
+    const ids = [];
+    if (draft?.includeSyllableWords || draft?.includeSyllableCountWords) ids.push('compound');
+    if (draft?.includeSyllableCountWords) ids.push('longer');
+    if (draft?.includeFamily && draft.selectedFamily) ids.push('family:' + draft.selectedFamily);
+    if (draft?.includeSightWords && draft.selectedSightWordList) ids.push('sight:' + draft.selectedSightWordList);
+    return ids;
+  };
+  // Which preview words start ticked. sources: [{ words, first }] where first = how many of that source's words
+  // start ticked (left out = all of them). cap limits the total (a new assessment). Returns preview spellings.
+  const foldWord = word => String(word || '').trim().toLocaleLowerCase();
+  // One entry per (source, word) that the source ticks by itself: 'sourceId\u0000word'.
+  const defaultTickOffers = sources => {
+    const offers = [];
+    (sources || []).forEach((source, index) => {
+      const seen = new Set(), id = source?.id == null ? String(index) : String(source.id);
+      (source?.words || []).forEach(word => { const key = foldWord(word); if (!key || seen.has(key)) return; if (source.first == null || seen.size < source.first) offers.push(id + '\u0000' + key); seen.add(key); });
+    });
+    return offers;
+  };
+  const defaultTickedWords = (previewWords, sources, cap) => {
+    const want = new Set(defaultTickOffers(sources).map(offer => offer.slice(offer.indexOf('\u0000') + 1))), out = [];
+    (previewWords || []).forEach(word => { if (want.has(foldWord(word)) && (cap == null || out.length < cap)) out.push(word); });
+    return out;
+  };
+  // After a source change the teacher's own ticks stay. Words a source newly offers join (up to cap, when there
+  // is one); words no longer in the preview leave. A word the teacher unticked stays out unless a source newly offers it.
+  const mergeTickedWords = (selected, previewWords, previousOffers, nextOffers, cap) => {
+    const spelling = new Map(); (previewWords || []).forEach(word => { if (!spelling.has(foldWord(word))) spelling.set(foldWord(word), word); });
+    const before = new Set(previousOffers || []), next = new Set();
+    [...(selected || [])].forEach(word => { if (spelling.has(foldWord(word))) next.add(spelling.get(foldWord(word))); });
+    (nextOffers || []).forEach(offer => {
+      const key = offer.slice(offer.indexOf('\u0000') + 1);
+      if (!before.has(offer) && spelling.has(key) && (cap == null || next.size < cap)) next.add(spelling.get(key));
+    });
+    return next;
+  };
   const isSyllableLanguageSupported = language => !String(language || '').trim() || /^(?:en(?:[-_][a-z0-9]+)*|english(?:\s*\([^)]*\))?)$/i.test(String(language).trim());
   const syllableLanguageKey = language => isSyllableLanguageSupported(language) ? 'en' : normalize(language).replace(/_/g, '-');
   const validSyllableCount = count => Number.isInteger(count) && count >= 1 && count <= 12;
@@ -1295,7 +1580,7 @@ function createWordSoundsCore(options = {}) {
   const resolveSyllableTask = (word, prepared, language) => {
     const targetWord = normalize(word);
     const needsRecording = () => ({ version: 1, supported: false, contentStatus: 'syllable_audio_required', targetWord,
-      syllables: [], audioUnits: [], reason: 'Use a syllable bank word or add and review recordings for each syllable in Word Sounds Studio.' });
+      syllables: [], audioUnits: [], reason: 'Use a syllable bank word or add and review recordings for each syllable in Word Sounds.' });
     if (prepared?.contentStatus === 'teacher_recorded') {
       if (reviewedSyllableReady(prepared) && prepared.targetWord === targetWord && prepared.version === 2 && prepared.language === 'en') {
         return { ...needsRecording(), reason: 'recording_locale_review_required', recoverable: true };
@@ -1305,7 +1590,7 @@ function createWordSoundsCore(options = {}) {
       }
       return { ...needsRecording(), ...(reviewedSyllableReady(prepared) && prepared.targetWord === targetWord ? { reason: 'recording_locale_review_required', recoverable: true } : {}) };
     }
-    const parts = isSyllableLanguageSupported(language) && Object.prototype.hasOwnProperty.call(SYLLABLE_COMPOUNDS, targetWord) && SYLLABLE_COMPOUNDS[targetWord];
+    const parts = isSyllableLanguageSupported(language) && compoundParts(targetWord);
     if (!parts) return needsRecording();
     return { version: 1, supported: true, contentStatus: 'curated_compound', targetWord,
       syllables: [...parts], audioUnits: parts.map(text => ({ key: text, text })) };
@@ -1662,11 +1947,9 @@ function createWordSoundsCore(options = {}) {
       if (index) { delete copy._ttsAssets; delete copy._ttsRequiredKeys; }
       else copy._ttsAssets = assets;
       copy.ttsReady = portablePackAsset(assets[packAudioKey(item.targetWord || item.word || item.term)]);
-      copy._ttsFailed = !copy.ttsReady && !isTeacherSpokenSyllableCount(item.targetWord || item.word || item.term, {
-        language: item.activityItems?.syllable_counting?.language, prepared: item.activityItems?.syllable_counting,
-        recordedTask: item.activityItems?.syllable_blending,
-        audioContext: createSyllableCountAudioContext({ asset: assets[packAudioKey(item.targetWord || item.word || item.term)], language: item.activityItems?.syllable_counting?.language }),
-      });
+      // No saved clip is not a failure. _ttsFailed means a live attempt on this
+      // device failed, and only the player sets it; a saved clip clears it.
+      if (copy.ttsReady) copy._ttsFailed = false;
       const word = item.targetWord || item.word || item.term, key = packAudioKey(word);
       const countBoard = item.activityItems?.syllable_counting;
       const approval = countBoard?.reviewedEvidence || countBoard;
@@ -1683,7 +1966,318 @@ function createWordSoundsCore(options = {}) {
     next[0]._ttsCoverage = Object.assign({}, next[0]._ttsCoverage, { clips: Object.keys(assets).length, requiredClips: inventory.length, words: next.length, wordsWithAudio: next.filter(item => item.ttsReady).length });
     return next;
   };
-  return {soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  // BEGIN SYLLABLE ACTIVITY WORDS
+  // Syllable Blending and Syllable Claps never block a lesson. Each uses the lesson
+  // words it can play. With too few, built-in words are added for that activity
+  // only: such an item carries _wsOnlyFor (a list of activity ids) and belongs to
+  // no other activity, printout or word count.
+  const SYLLABLE_ACTIVITY_IDS = ['syllable_blending', 'syllable_counting'];
+  const SYLLABLE_PLAN_DEFAULT_COUNT = 5;
+  const packItemWord = item => String(item && (item.targetWord || item.word || item.term) || '');
+  const itemOnlyFor = item => {
+    const only = item && typeof item === 'object' && Array.isArray(item._wsOnlyFor) ? item._wsOnlyFor.filter(id => typeof id === 'string' && id) : [];
+    return only.length ? only : null;
+  };
+  const isTopUpItem = item => !!itemOnlyFor(item);
+  const lessonOwnItems = words => (Array.isArray(words) ? words : []).filter(item => !isTopUpItem(item));
+  const topUpItems = (words, activity) => (Array.isArray(words) ? words : []).filter(item => {
+    const only = itemOnlyFor(item);
+    return !!only && (!activity || only.includes(activity));
+  });
+  // A prepared item's own board decides whether a syllable activity can play it.
+  const syllableItemPlayable = (item, activity, language) => {
+    const word = packItemWord(item), boards = item && item.activityItems || {};
+    if (activity === 'syllable_blending') {
+      const board = boards.syllable_blending;
+      return !!board && packAudioKey(board.targetWord) === packAudioKey(word) && validSyllableBoard(board) &&
+        resolveSyllableTask(word, board, language || board.language).supported;
+    }
+    if (activity === 'syllable_counting') {
+      const board = boards.syllable_counting;
+      return !!board && resolveSyllableCount(word, { language: language || board.language, prepared: board, recordedTask: boards.syllable_blending }).supported;
+    }
+    return true;
+  };
+  const packItemPlaysIn = (item, activity, language) => {
+    if (!item || typeof item !== 'object') return true;
+    const only = itemOnlyFor(item);
+    if (only && !only.includes(activity)) return false;
+    return !SYLLABLE_ACTIVITY_IDS.includes(activity) || syllableItemPlayable(item, activity, language);
+  };
+  // The items one activity uses. A syllable activity with nothing playable (a lesson
+  // saved before this rule) keeps the lesson's own words, as it did then.
+  const wordsForActivity = (words, activity, language) => {
+    const list = (Array.isArray(words) ? words : []).filter(item => item && typeof item === 'object');
+    const used = list.filter(item => packItemPlaysIn(item, activity, language));
+    return used.length || !SYLLABLE_ACTIVITY_IDS.includes(activity) ? used : lessonOwnItems(list);
+  };
+  const syllableActivityHasWords = (words, activity, language) =>
+    (Array.isArray(words) ? words : []).some(item => item && typeof item === 'object' && packItemPlaysIn(item, activity, language));
+  const planWordKey = word => normalize(word);
+  const topUpSeed = (words, activity) => {
+    const text = String(activity) + '|' + [...new Set(words.map(planWordKey))].sort().join('|');
+    let hash = 2166136261;
+    for (let i = 0; i < text.length; i++) hash = Math.imul(hash ^ text.charCodeAt(i), 16777619);
+    return hash >>> 0;
+  };
+  const seededOrder = (values, seed) => {
+    let state = (seed >>> 0) || 1;
+    return values.map((value, index) => { state = (Math.imul(state, 1103515245) + 12345) >>> 0; return [state >>> 8, index, value]; })
+      .sort((a, b) => a[0] - b[0] || a[1] - b[1]).map(row => row[2]);
+  };
+  // One-syllable built-in words for Syllable Claps: the parts of the compounds.
+  const compoundPartWords = () => [...new Set(compoundWords().flatMap(word => compoundParts(word)))];
+  // What one syllable activity will run with: the lesson words it can use, the ones it
+  // cannot, and the built-in words added to reach the item count. The same lesson word
+  // list always gives the same added words. One-syllable words are fine for Syllable
+  // Claps (clap once); Syllable Blending needs two or more recorded parts.
+  const syllableActivityPlan = (input = {}) => {
+    const activity = input.activity, language = input.language;
+    const seen = new Set();
+    const words = (Array.isArray(input.words) ? input.words : []).map(word => String(word || '').trim())
+      .filter(word => { const key = planWordKey(word); return key && !seen.has(key) && !!seen.add(key); });
+    const needed = Math.max(1, Math.min(20, Math.floor(Number(input.count)) || SYLLABLE_PLAN_DEFAULT_COUNT));
+    const blending = activity === 'syllable_blending';
+    const isEligible = typeof input.isEligible === 'function' ? input.isEligible
+      : blending ? word => resolveSyllableTask(word, null, language).supported
+      : word => resolveSyllableCount(word, { language }).supported;
+    const countOf = typeof input.countOf === 'function' ? input.countOf : word => resolveSyllableCount(word, { language }).count;
+    const eligible = [], unused = [];
+    words.forEach(word => { let ok = false; try { ok = !!isEligible(word); } catch (_) { ok = false; } (ok ? eligible : unused).push(word); });
+    const builtIn = SYLLABLE_ACTIVITY_IDS.includes(activity) && isSyllableLanguageSupported(language);
+    const shortfall = Math.max(0, needed - eligible.length);
+    const topUp = [];
+    if (shortfall && builtIn && input.topUp !== false) {
+      const seed = topUpSeed(words, activity);
+      // A built-in word joins Syllable Claps only when its count is settled (the dictionary may not have loaded).
+      const canTopUp = typeof input.canTopUp === 'function' ? input.canTopUp : blending ? () => true : word => resolveSyllableCount(word, { language }).supported;
+      const free = list => list.filter(word => { if (seen.has(word)) return false; try { return !!canTopUp(word); } catch (_) { return false; } });
+      if (blending) {
+        // A compound built on a lesson word comes first (cat: catfish); the rest follow in seeded order,
+        // compounds that repeat a part already in the activity last.
+        const pool = free(compoundWords());
+        const related = pool.filter(word => compoundParts(word).some(part => seen.has(part)));
+        const ordered = [...related, ...seededOrder(pool.filter(word => !related.includes(word)), seed)];
+        const usedParts = new Set(eligible.flatMap(word => compoundParts(planWordKey(word)) || []));
+        const fresh = [], repeats = [];
+        ordered.forEach(word => {
+          const parts = compoundParts(word);
+          if (parts.some(part => usedParts.has(part))) repeats.push(word);
+          else { fresh.push(word); parts.forEach(part => usedParts.add(part)); }
+        });
+        topUp.push(...[...fresh, ...repeats].slice(0, shortfall));
+      } else {
+        // Mix one, two and three-or-more claps: add from whichever the activity has least of.
+        const longer = longerSyllableWords();
+        const buckets = {
+          1: seededOrder(free(compoundPartWords()), seed + 1),
+          2: seededOrder(free([...longer.filter(word => SYLLABLE_RECORDING_HINTS[word].length === 2), ...compoundWords()]), seed + 2),
+          3: seededOrder(free(longer.filter(word => SYLLABLE_RECORDING_HINTS[word].length >= 3)), seed + 3),
+        };
+        const tally = { 1: 0, 2: 0, 3: 0 };
+        eligible.forEach(word => { let count = 0; try { count = Number(countOf(word)) || 0; } catch (_) { count = 0; } if (count >= 1) tally[Math.min(3, count)] += 1; });
+        while (topUp.length < shortfall) {
+          const open = [2, 3, 1].filter(size => buckets[size].length);
+          if (!open.length) break;
+          const size = open.reduce((best, next) => tally[next] < tally[best] ? next : best, open[0]);
+          topUp.push(buckets[size].shift());
+          tally[size] += 1;
+        }
+      }
+    }
+    return { activity, needed, eligible, unused, topUp, shortfall, builtIn, topUpOff: input.topUp === false,
+      skipped: eligible.length + topUp.length === 0 };
+  };
+  // END SYLLABLE ACTIVITY WORDS
+  // BEGIN ACTIVITY NAMES AND SKILL STRANDS
+  // One name per activity (the player's), one grouping (six strands, teaching order),
+  // a Big 5 tag and a one-line skill. English here is the fallback; translate() is
+  // the caller's (key, fallback) lookup.
+  const SKILL_STRANDS = [
+    { key: 'syllables_rhyme', name: 'Syllables and rhyme', big5: ['phonological_awareness'] },
+    { key: 'hearing_sounds', name: 'Hearing sounds', big5: ['phonemic_awareness'] },
+    { key: 'letters_sounds', name: 'Letters and sounds', big5: ['phonics'] },
+    { key: 'spelling', name: 'Spelling', big5: ['phonics'] },
+    { key: 'reading_words', name: 'Reading words', big5: ['phonics'] },
+    { key: 'reading_sentences', name: 'Reading sentences', big5: ['comprehension'] },
+  ];
+  const BIG5_NAMES = { phonological_awareness: 'phonological awareness', phonemic_awareness: 'phonemic awareness', phonics: 'phonics', fluency: 'fluency', vocabulary: 'vocabulary', comprehension: 'comprehension' };
+  const ACTIVITY_SKILLS = {
+    rhyming: { name: 'Rhyme Time', strand: 'syllables_rhyme', big5: ['phonological_awareness'], skill: 'Hearing which words rhyme' },
+    syllable_counting: { name: 'Syllable Claps', strand: 'syllables_rhyme', big5: ['phonological_awareness'], skill: 'Counting the syllables in a spoken word' },
+    syllable_blending: { name: 'Syllable Blending', strand: 'syllables_rhyme', big5: ['phonological_awareness'], skill: 'Blending syllables into a word' },
+    word_families: { name: 'Word Families', strand: 'syllables_rhyme', big5: ['phonological_awareness'], skill: 'Hearing which words share the same ending' },
+    isolation: { name: 'Find Sounds', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Finding the first, middle or last sound in a word' },
+    sound_sort: { name: 'Sound Sort', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Sorting words by their first or last sound' },
+    blending: { name: 'Blend Sounds', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Blending separate sounds into a word' },
+    segmentation: { name: 'Break it Down', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Breaking a word into its separate sounds' },
+    counting: { name: 'Sound Counting', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Counting the sounds in a spoken word' },
+    manipulation: { name: 'Sound Swap', strand: 'hearing_sounds', big5: ['phonemic_awareness'], skill: 'Taking away or changing one sound to make a new word' },
+    mapping: { name: 'Sound Mapping', strand: 'letters_sounds', big5: ['phonics'], skill: 'Matching each sound in a word to the letters that spell it' },
+    letter_tracing: { name: 'Letter Trace', strand: 'letters_sounds', big5: ['phonics'], skill: 'Forming the first letter of a word' },
+    missing_letter: { name: 'Missing Letter', strand: 'spelling', big5: ['phonics'], skill: 'Choosing the missing letter in a word' },
+    orthography: { name: 'Sight & Spell', strand: 'spelling', big5: ['phonics'], skill: 'Spelling a word you hear with letter tiles' },
+    word_scramble: { name: 'Word Scramble', strand: 'spelling', big5: ['phonics'], skill: 'Putting mixed-up letters in order to spell a word' },
+    spelling_bee: { name: 'Spelling Bee', strand: 'spelling', big5: ['phonics'], skill: 'Spelling a word you hear' },
+    decoding: { name: 'Read & Match', strand: 'reading_words', big5: ['phonics'], skill: 'Reading a word and matching it to its picture' },
+    read_sentence: { name: 'Finish the Sentence', strand: 'reading_sentences', big5: ['comprehension'], skill: 'Reading a sentence and choosing the word that finishes it' },
+    sentence_match: { name: 'Picture the Sentence', strand: 'reading_sentences', big5: ['comprehension'], skill: 'Reading a sentence and showing what it says with pictures' },
+    read_passage: { name: 'Read the Story', strand: 'reading_sentences', big5: ['comprehension'], skill: 'Reading a short story and choosing the word that finishes it' },
+  };
+  const skillLookup = (translate, key, fallback) => {
+    let found = '';
+    try { found = typeof translate === 'function' ? translate(key, fallback) : ''; } catch (_) { found = ''; }
+    return typeof found === 'string' && found && found !== key ? found : fallback;
+  };
+  const activityIds = () => Object.keys(ACTIVITY_SKILLS);
+  const activityEnglishName = (id) => {
+    const row = ACTIVITY_SKILLS[id];
+    if (row) return row.name;
+    const plain = String(id || '').replace(/_/g, ' ').trim();
+    return plain ? plain.charAt(0).toUpperCase() + plain.slice(1) : '';
+  };
+  const activityLabel = (id, translate) => ACTIVITY_SKILLS[id] ? skillLookup(translate, 'word_sounds.activity_' + id, ACTIVITY_SKILLS[id].name) : activityEnglishName(id);
+  const activitySkillLabel = (id, translate) => ACTIVITY_SKILLS[id] ? skillLookup(translate, 'word_sounds.skill_' + id, ACTIVITY_SKILLS[id].skill) : '';
+  const activityStrand = (id) => ACTIVITY_SKILLS[id] ? ACTIVITY_SKILLS[id].strand : '';
+  const activityBig5 = (id) => ACTIVITY_SKILLS[id] ? ACTIVITY_SKILLS[id].big5.slice() : [];
+  const strandOrder = () => SKILL_STRANDS.map(row => row.key);
+  const strandRow = (key) => SKILL_STRANDS.find(row => row.key === key) || null;
+  const strandLabel = (key, translate) => strandRow(key) ? skillLookup(translate, 'word_sounds.strand_' + key, strandRow(key).name) : '';
+  const big5Label = (key, translate) => BIG5_NAMES[key] ? skillLookup(translate, 'word_sounds.big5_' + key, BIG5_NAMES[key]) : '';
+  const strandBig5 = (key) => strandRow(key) ? strandRow(key).big5.slice() : [];
+  const strandBig5Label = (key, translate) => strandBig5(key).map(tag => big5Label(tag, translate)).join(', ');
+  // Ids keep their given order inside each strand; unknown ids come last under ''.
+  const groupActivitiesByStrand = (ids) => {
+    const list = (Array.isArray(ids) ? ids : []).filter(id => typeof id === 'string');
+    const groups = SKILL_STRANDS.map(row => ({ strand: row.key, ids: list.filter(id => activityStrand(id) === row.key) }));
+    const rest = list.filter(id => !activityStrand(id));
+    if (rest.length) groups.push({ strand: '', ids: rest });
+    return groups.filter(group => group.ids.length);
+  };
+  // END ACTIVITY NAMES AND SKILL STRANDS
+  // BEGIN LESSON STARTING POINTS
+  // A lesson always has a plan. A starting point is plain data that fills it: activities in
+  // running order with a weight each (the share of the lesson's items), and the streak that
+  // ends an activity early. Lesson length turns the weights into item counts.
+  const LESSON_STARTING_POINTS = [
+    { id: 'hearing_sounds', name: 'Hearing sounds', mastery: 2, activities: [['rhyming', 3], ['syllable_counting', 3], ['syllable_blending', 3], ['isolation', 3]] },
+    { id: 'first_sounds_letters', name: 'First sounds and letters', mastery: 3, activities: [['isolation', 4], ['sound_sort', 3], ['blending', 3], ['letter_tracing', 3]] },
+    { id: 'cvc', name: 'CVC blending and spelling', mastery: 3, activities: [['blending', 4], ['segmentation', 4], ['mapping', 4], ['spelling_bee', 3], ['decoding', 4]] },
+    { id: 'digraphs_blends', name: 'Digraphs and blends', mastery: 3, activities: [['isolation', 3], ['sound_sort', 4], ['blending', 4], ['mapping', 4], ['missing_letter', 3], ['spelling_bee', 3]] },
+    { id: 'syllables', name: 'Syllables', mastery: 3, activities: [['syllable_counting', 5], ['syllable_blending', 5], ['spelling_bee', 3]] },
+    { id: 'reading', name: 'Reading words and sentences', mastery: 3, activities: [['decoding', 4], ['read_sentence', 4], ['sentence_match', 3], ['read_passage', 2]] },
+  ];
+  // Half a minute an item (the app's own figure): 10, 20 and 30 items.
+  const LESSON_LENGTHS = { short: { items: 10, minutes: 5 }, regular: { items: 20, minutes: 10 }, long: { items: 30, minutes: 15 } };
+  const LESSON_LENGTH_DEFAULT = 'regular';
+  const LESSON_COUNT_MAX = 20;
+  const startingPointRow = id => LESSON_STARTING_POINTS.find(row => row.id === id) || null;
+  const startingPoints = () => LESSON_STARTING_POINTS.map(row => ({ id: row.id, name: row.name, mastery: row.mastery, activities: row.activities.map(([activity, weight]) => ({ id: activity, weight })) }));
+  const startingPointLabel = (id, translate) => startingPointRow(id) ? skillLookup(translate, 'word_sounds.starting_point_' + id, startingPointRow(id).name) : '';
+  const planEntries = entries => (Array.isArray(entries) ? entries : []).filter(entry => entry && typeof entry.id === 'string')
+    .map(entry => ({ id: entry.id, count: Math.max(1, Math.round(Number(entry.count != null ? entry.count : entry.weight)) || 1) }));
+  const lessonPlanItems = entries => planEntries(entries).reduce((sum, entry) => sum + entry.count, 0);
+  const lessonPlanMinutes = entries => Math.ceil(lessonPlanItems(entries) * 0.5);
+  // Shares the length's items between the activities in proportion to their current counts:
+  // every activity keeps at least one item and none passes 20. Largest remainders first, so the
+  // total is exact whenever the plan can hold it.
+  const scaleLessonCounts = (entries, length) => {
+    const rows = planEntries(entries), target = LESSON_LENGTHS[length] ? LESSON_LENGTHS[length].items : 0;
+    if (!rows.length || !target) return rows;
+    const weight = rows.reduce((sum, row) => sum + row.count, 0);
+    const exact = rows.map(row => row.count / weight * target);
+    const counts = exact.map(value => Math.min(LESSON_COUNT_MAX, Math.max(1, Math.floor(value))));
+    let left = target - counts.reduce((sum, count) => sum + count, 0);
+    const byRemainder = exact.map((value, index) => ({ index, part: value - Math.floor(value) })).sort((a, b) => b.part - a.part || a.index - b.index);
+    for (let turn = 0; left > 0 && turn < rows.length * LESSON_COUNT_MAX; turn++) {
+      const at = byRemainder[turn % rows.length].index;
+      if (counts[at] < LESSON_COUNT_MAX) { counts[at]++; left--; }
+      else if (counts.every(count => count >= LESSON_COUNT_MAX)) break;
+    }
+    return rows.map((row, index) => ({ id: row.id, count: counts[index] }));
+  };
+  const lessonLengthOf = entries => {
+    const items = lessonPlanItems(entries);
+    return Object.keys(LESSON_LENGTHS).find(key => LESSON_LENGTHS[key].items === items) || 'custom';
+  };
+  // The plan a starting point gives: its activities in order, minus any that cannot run here.
+  const startingPointPlan = (id, options = {}) => {
+    const row = startingPointRow(id);
+    if (!row) return null;
+    const unavailable = Array.isArray(options.unavailable) ? options.unavailable : [];
+    const kept = row.activities.filter(([activity]) => !unavailable.includes(activity));
+    const length = LESSON_LENGTHS[options.length] ? options.length : LESSON_LENGTH_DEFAULT;
+    const activities = scaleLessonCounts(kept.map(([activity, weight]) => ({ id: activity, count: weight })), length);
+    return { id: row.id, length, masteryThreshold: row.mastery, activities, order: activities.map(activity => activity.id),
+      dropped: row.activities.map(([activity]) => activity).filter(activity => unavailable.includes(activity)) };
+  };
+  // A saved plan with exactly a starting point's activities, in its order, is that starting point.
+  const matchStartingPoint = activityIdList => {
+    const ids = (Array.isArray(activityIdList) ? activityIdList : []).join(',');
+    const row = ids ? LESSON_STARTING_POINTS.find(candidate => candidate.activities.map(([activity]) => activity).join(',') === ids) : null;
+    return row ? row.id : '';
+  };
+  // The player's language gate, as data, so setup offers only what the player will run.
+  const NON_LETTER_TILE_LANGUAGES = ['ar', 'he', 'fa', 'prs', 'ur', 'ps', 'sd', 'ug', 'dv', 'hi', 'bn', 'mr', 'ne', 'gu', 'pa', 'ta', 'te', 'kn', 'ml', 'si', 'as', 'or',
+    'th', 'lo', 'km', 'my', 'bo', 'dz', 'zh', 'cmn', 'yue', 'ja', 'ko', 'am', 'ti'];
+  const RTL_LANGUAGES = ['ar', 'he', 'fa', 'prs', 'ur', 'ps', 'sd', 'ug', 'dv', 'ku'];
+  const ENGLISH_ONLY_ACTIVITIES = ['sound_sort', 'word_families', 'letter_tracing', 'read_sentence', 'read_passage', 'sentence_match'];
+  const LETTER_TILE_ACTIVITIES = ['orthography', 'spelling_bee', 'word_scramble', 'missing_letter'];
+  const activityRunsInLanguage = (id, language) => {
+    if (!language || String(language).toLowerCase().indexOf('en') === 0) return true;
+    const primary = String(language).toLowerCase().split(/[-_]/)[0];
+    if (ENGLISH_ONLY_ACTIVITIES.includes(id)) return false;
+    if (LETTER_TILE_ACTIVITIES.includes(id)) return !NON_LETTER_TILE_LANGUAGES.includes(primary);
+    if (id === 'mapping') return !NON_LETTER_TILE_LANGUAGES.includes(primary) && !RTL_LANGUAGES.includes(primary);
+    return true;
+  };
+  // What an activity cannot run without. Pictures: the word's picture is the answer.
+  // Sentences: the item is a written sentence or story.
+  const ACTIVITY_NEEDS = { pictures: ['decoding', 'sentence_match'], sentences: ['read_sentence', 'read_passage', 'sentence_match'] };
+  // '' when the activity can run; otherwise the first thing in its way.
+  const activityBlockedBy = (id, env = {}) => !activityRunsInLanguage(id, env.language) ? 'language'
+    : env.pictures === false && ACTIVITY_NEEDS.pictures.includes(id) ? 'pictures'
+      : env.sentences === false && ACTIVITY_NEEDS.sentences.includes(id) ? 'sentences' : '';
+  // A starting point that would lose more than half of its activities is not offered.
+  const startingPointStatus = (id, env = {}) => {
+    const row = startingPointRow(id);
+    if (!row) return { id, dropped: [], disabled: true, reason: '' };
+    const dropped = row.activities.map(([activity]) => ({ id: activity, reason: activityBlockedBy(activity, env) })).filter(entry => entry.reason);
+    const disabled = dropped.length * 2 > row.activities.length;
+    return { id, dropped, disabled, reason: dropped.some(entry => entry.reason === 'language') ? 'language' : dropped.length ? dropped[0].reason : '' };
+  };
+  const SPELLED_DIGRAPH = /(?:sh|ch|th|wh|ph|ck|ng|qu)/;
+  const SPELLED_BLEND = /^(?:[bcfgps]l|[bcdfgpt]r|s[cklmnptw]|tw|s[cp]r|str|spl)|(?:[lmn][dkpt]|s[kpt]|ft|ct|pt|nch)$/;
+  const roughSyllables = word => {
+    const text = String(word).toLowerCase(), groups = text.replace(/e$/, '').match(/[aeiouy]+/g);
+    return Math.max(1, (groups ? groups.length : 1) + (/[^aeiouy]le$/.test(text) ? 1 : 0));
+  };
+  // The starting point offered before the teacher chooses one. In order:
+  //  1. no words                                              -> Hearing sounds
+  //  2. not English (the spelling rules below are English)    -> Hearing sounds
+  //  3. at least 8 in 10 words are on a sight-word list       -> Reading words and sentences
+  //  4. at least 6 in 10 words have two or more syllables     -> Syllables
+  //  5. at least half the words have a digraph or a blend     -> Digraphs and blends
+  //  6. at least 6 in 10 are one syllable, up to 4 letters    -> CVC blending and spelling
+  //  7. anything else                                         -> Hearing sounds
+  // A starting point that is not offered here (isOffered) is passed over.
+  const suggestStartingPoint = (words, options = {}) => {
+    const list = [...new Set((Array.isArray(words) ? words : []).map(word => foldWord(word)).filter(word => /\p{L}/u.test(word)))];
+    const offered = id => typeof options.isOffered !== 'function' || !!options.isOffered(id);
+    const fallback = rule => ({ id: 'hearing_sounds', rule });
+    if (!list.length) return fallback('no_words');
+    if (!isSyllableLanguageSupported(options.language)) return fallback('language');
+    const share = test => list.filter(test).length / list.length;
+    const sight = new Set((Array.isArray(options.sightWords) ? options.sightWords : []).map(word => foldWord(word)));
+    const countOf = word => { const known = typeof options.countOf === 'function' ? Number(options.countOf(word)) : 0; return validSyllableCount(known) ? known : roughSyllables(word); };
+    if (sight.size && share(word => sight.has(word)) >= 0.8 && offered('reading')) return { id: 'reading', rule: 'sight_words' };
+    if (share(word => countOf(word) >= 2) >= 0.6 && offered('syllables')) return { id: 'syllables', rule: 'long_words' };
+    if (share(word => SPELLED_DIGRAPH.test(word) || SPELLED_BLEND.test(word)) >= 0.5 && offered('digraphs_blends')) return { id: 'digraphs_blends', rule: 'digraphs_blends' };
+    if (share(word => countOf(word) === 1 && word.length <= 4) >= 0.6 && offered('cvc')) return { id: 'cvc', rule: 'short_words' };
+    return fallback('other');
+  };
+  // END LESSON STARTING POINTS
+  return {LESSON_STARTING_POINTS,LESSON_LENGTHS,LESSON_LENGTH_DEFAULT,startingPoints,startingPointLabel,startingPointPlan,startingPointStatus,matchStartingPoint,suggestStartingPoint,scaleLessonCounts,lessonLengthOf,lessonPlanItems,lessonPlanMinutes,activityRunsInLanguage,activityBlockedBy,ACTIVITY_NEEDS,SYLLABLE_ACTIVITY_IDS,SYLLABLE_PLAN_DEFAULT_COUNT,isTopUpItem,lessonOwnItems,topUpItems,packItemPlaysIn,wordsForActivity,syllableActivityHasWords,syllableActivityPlan,compoundPartWords,ACTIVITY_SKILLS,SKILL_STRANDS,BIG5_NAMES,activityIds,activityEnglishName,activityLabel,activitySkillLabel,activityStrand,activityBig5,strandOrder,strandLabel,strandBig5,big5Label,strandBig5Label,groupActivitiesByStrand,soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,SYLLABLE_COMPOUNDS_VETTED,compoundWords,longerSyllableWords,READY_LIST_FIRST,readyMadeListGroups,readyListIdsFromDraft,defaultTickOffers,defaultTickedWords,mergeTickedWords,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,choiceLimit,soundCloseness,wordCloseness,trimChoices,countingChoices,isolationPositions,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }
 const WS_CORE = createWordSoundsCore();
 // END GENERATED WORD SOUNDS CORE
@@ -2082,7 +2676,7 @@ const WS_CORE = createWordSoundsCore();
             },
             "🔊",
           ),
-          React.createElement(
+          props.lockMode ? null : React.createElement(
             "button",
             {
               type: "button",
@@ -3326,6 +3920,90 @@ const WS_CORE = createWordSoundsCore();
     // isMountedRef, playSound, speakInstructionWithPhonemes, audioInstances,
     // feedbackAudioRef) is passed explicitly as props instead.
     // ───────────────────────────────────────────────────────────────────
+    // BEGIN WORD SOUNDS ANSWER CARDS
+    // One pattern for every choice card. `cards` is built by the modal for the
+    // live item: selectMode (the card has to be heard, so a tap plays and
+    // selects it and Check grades it), the choices already tried, and whether
+    // the item has ended (the answer card is then marked).
+    const wsSafeIcon = (name, props) => {
+      const Icon = typeof window !== "undefined" ? window[name] : null;
+      return typeof Icon === "function" || (Icon && typeof Icon === "object") ? React.createElement(Icon, props) : null;
+    };
+    const wsCardState = (cards, value) => {
+      if (!cards) return "idle";
+      if (cards.revealed && cards.isAnswer(value)) return "correct";
+      if (cards.wrong.some((tried) => cards.same(tried, value))) return "wrong";
+      return cards.selectMode && cards.selected != null && cards.same(cards.selected, value) ? "selected" : "idle";
+    };
+    const WS_CARD_CLASS = {
+      selected: "border-violet-600 bg-violet-50 text-violet-700",
+      correct: "border-emerald-500 bg-emerald-100 text-emerald-700",
+      wrong: "border-slate-200 bg-slate-100 text-slate-600",
+    };
+    const WS_CARD_MARK = {
+      selected: ["\u2713", ""],
+      correct: ["\u2713", ""],
+      wrong: ["\u2715", ""],
+    };
+    const wsCardKeyDown = (event, cards, value) => {
+      const key = event.key;
+      if (key === "Enter" && cards && cards.selectMode && wsCardState(cards, value) === "selected") {
+        // A second Enter on the selected card is Check. (Space replays it.)
+        event.preventDefault();
+        if (!event.repeat) cards.check();
+        return;
+      }
+      const step = key === "ArrowRight" || key === "ArrowDown" ? 1 : key === "ArrowLeft" || key === "ArrowUp" ? -1 : 0;
+      const group = step && event.currentTarget && event.currentTarget.closest ? event.currentTarget.closest("[data-ws-cards]") : null;
+      if (!group) return;
+      const list = Array.from(group.querySelectorAll("[data-ws-card]"));
+      const at = list.indexOf(event.currentTarget);
+      if (at < 0 || list.length < 2) return;
+      const sideways = key === "ArrowRight" || key === "ArrowLeft";
+      const rtl = sideways && typeof getComputedStyle === "function" && getComputedStyle(group).direction === "rtl";
+      event.preventDefault();
+      list[(at + (rtl ? -step : step) + list.length) % list.length].focus();
+    };
+    const wsCardProps = (cards, value, play) => {
+      const state = wsCardState(cards, value);
+      return {
+        "data-ws-card": "true",
+        "data-ws-card-state": state,
+        ...(cards && cards.selectMode ? { "aria-pressed": state === "selected" } : {}),
+        ...(state === "wrong" ? { "aria-disabled": "true" } : {}),
+        onClick: () => { if (cards) cards.pick(value, play); },
+        onKeyDown: (event) => wsCardKeyDown(event, cards, value),
+      };
+    };
+    const wsCardClass = (cards, value, idle) => {
+      const state = wsCardState(cards, value);
+      return "ws-card " + (state === "idle" ? idle : WS_CARD_CLASS[state]) + (cards && cards.still ? " ws-card-still" : "");
+    };
+    // Spoken state for a card whose name is an aria-label.
+    const wsCardSuffix = (cards, value) => {
+      const state = wsCardState(cards, value);
+      return state === "wrong" ? ", " + cards.labels.wrong : state === "correct" ? ", " + cards.labels.answer : "";
+    };
+    const wsCardMark = (cards, value) => {
+      const state = wsCardState(cards, value);
+      const mark = WS_CARD_MARK[state];
+      if (!mark) return null;
+      const text = state === "wrong" ? cards.labels.wrong : state === "correct" ? cards.labels.answer : "";
+      return React.createElement("span", { key: "ws-card-mark", className: "ws-card-mark " + mark[1], "data-ws-card-mark": state },
+        React.createElement("span", { "aria-hidden": "true" }, mark[0]),
+        text ? React.createElement("span", { className: "sr-only" }, " " + text) : null);
+    };
+    const wsCardCheck = (cards) => {
+      if (!cards || !cards.selectMode) return null;
+      const ready = cards.selected != null && !cards.locked;
+      return React.createElement("button", {
+        key: "ws-card-check", type: "button", "data-ws-card-check": "true", disabled: !ready,
+        onClick: () => cards.check(),
+        className: "ws-card-check px-8 py-3 rounded-2xl font-bold text-xl shadow-lg transition-all " + (ready ? "bg-violet-600 text-white hover:bg-violet-700" : "bg-slate-200 text-slate-600 cursor-not-allowed"),
+      }, wsSafeIcon("Check", { size: 24 }), cards.labels.check);
+    };
+    // END WORD SOUNDS ANSWER CARDS
+
     const RhymeView = React.memo(
       ({
         data,
@@ -3337,6 +4015,7 @@ const WS_CORE = createWordSoundsCore();
         highlightedIndex,
         isAudioBusy,
         optionImages,
+        cards,
         t,
         ts,
       }) => {
@@ -3346,12 +4025,12 @@ const WS_CORE = createWordSoundsCore();
           "div",
           {
             className:
-              "flex flex-col items-center gap-8 animate-in slide-in-from-right duration-500",
+              "flex flex-col items-center gap-4 animate-in slide-in-from-right duration-500",
           },
 
           /*#__PURE__*/ React.createElement(
             "div",
-            { className: "grid grid-cols-2 gap-4 w-full max-w-lg" },
+            { className: "grid grid-cols-2 gap-4 w-full max-w-lg", "data-ws-cards": "true" },
             (data.options || []).map((opt, i) =>
               isEditing
                 ? /*#__PURE__*/ React.createElement(
@@ -3424,8 +4103,8 @@ const WS_CORE = createWordSoundsCore();
                     "button",
                     {
                       type: "button",
-                      onClick: () => onCheckAnswer(opt),
-                      className: `w-full ${optionImages ? "p-4" : "p-6"} rounded-2xl transition-all text-left cursor-pointer outline-none focus:ring-2 focus:ring-orange-400 ${activeIndex === i ? "border-orange-500 bg-orange-200 ring-4 ring-orange-400 scale-[1.05] shadow-xl font-black z-10 relative" : "bg-white border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50"}`,
+                      ...(cards ? wsCardProps(cards, opt, () => onPlayAudio(opt, true)) : { onClick: () => onCheckAnswer(opt) }),
+                      className: `w-full ${optionImages ? "p-4" : "p-6"} rounded-2xl transition-all text-left cursor-pointer outline-none focus:ring-2 focus:ring-orange-400 ${wsCardClass(cards, opt, activeIndex === i ? "border-orange-500 bg-orange-200 ring-4 ring-orange-400 scale-[1.05] shadow-xl font-black z-10" : "bg-white border-2 border-slate-100 hover:border-orange-400 hover:bg-orange-50")}`,
                     },
                     optionImages && optionImages[opt]
                       ? /*#__PURE__*/ React.createElement(
@@ -3451,8 +4130,10 @@ const WS_CORE = createWordSoundsCore();
                           },
                           showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
                         ),
+                    wsCardMark(cards, opt),
                   ),
-                  /*#__PURE__*/ React.createElement(
+                  // In select mode the whole card plays: no second, smaller target.
+                  cards && cards.selectMode ? null : /*#__PURE__*/ React.createElement(
                     "button",
                     {
                       type: "button",
@@ -3462,7 +4143,7 @@ const WS_CORE = createWordSoundsCore();
                         onPlayAudio(opt, true);
                       },
                       className:
-                        "absolute bottom-3 right-3 w-9 h-9 rounded-full bg-orange-50 hover:bg-orange-200 text-slate-600 hover:text-orange-600 flex items-center justify-center transition-colors z-10 shadow-sm",
+                        "absolute bottom-2 right-2 w-11 h-11 rounded-full bg-orange-50 hover:bg-orange-200 text-slate-600 hover:text-orange-600 flex items-center justify-center transition-colors z-10 shadow-sm",
                       title: ts("common.listen") || "Listen",
                     },
                     /*#__PURE__*/ React.createElement(Volume2, {
@@ -3472,6 +4153,7 @@ const WS_CORE = createWordSoundsCore();
                 ),
             ),
           ),
+          wsCardCheck(cards),
         );
       },
     );
@@ -3490,6 +4172,7 @@ const WS_CORE = createWordSoundsCore();
         isAudioBusy,
         optionImages,
         isLoading,
+        cards,
         t,
         ts,
         speakInstructionWithPhonemes,
@@ -3569,7 +4252,7 @@ const WS_CORE = createWordSoundsCore();
           // Options grid
           /*#__PURE__*/ React.createElement(
             "div",
-            { className: "grid grid-cols-2 gap-4 w-full max-w-lg" },
+            { className: "grid grid-cols-2 gap-4 w-full max-w-lg", "data-ws-cards": "true" },
             (data.options || []).map((opt, i) =>
               isEditing
                 ? /*#__PURE__*/ React.createElement(
@@ -3633,8 +4316,8 @@ const WS_CORE = createWordSoundsCore();
                       "button",
                       {
                         type: "button",
-                        onClick: () => onCheckAnswer(opt),
-                        className: `w-full ${optionImages ? "p-4" : "p-6"} rounded-2xl transition-all text-left cursor-pointer outline-none focus:ring-2 focus:ring-violet-400 ${activeIndex === i ? "border-violet-500 bg-violet-200 ring-4 ring-violet-400 scale-[1.05] shadow-xl font-black z-10 relative" : "bg-white border-2 border-slate-100 hover:border-violet-400 hover:bg-violet-50"}`,
+                        ...(cards ? wsCardProps(cards, opt, () => onPlayAudio(opt, true)) : { onClick: () => onCheckAnswer(opt) }),
+                        className: `w-full ${optionImages ? "p-4" : "p-6"} rounded-2xl transition-all text-left cursor-pointer outline-none focus:ring-2 focus:ring-violet-400 ${wsCardClass(cards, opt, activeIndex === i ? "border-violet-500 bg-violet-200 ring-4 ring-violet-400 scale-[1.05] shadow-xl font-black z-10" : "bg-white border-2 border-slate-100 hover:border-violet-400 hover:bg-violet-50")}`,
                       },
                       optionImages && optionImages[opt]
                         ? /*#__PURE__*/ React.createElement(
@@ -3660,8 +4343,9 @@ const WS_CORE = createWordSoundsCore();
                             },
                             showLetterHints ? opt : `${ts("word_sounds.option_label") || "Option"} ${i + 1}`,
                           ),
+                      wsCardMark(cards, opt),
                     ),
-                    /*#__PURE__*/ React.createElement(
+                    cards && cards.selectMode ? null : /*#__PURE__*/ React.createElement(
                       "button",
                       {
                         type: "button",
@@ -3671,7 +4355,7 @@ const WS_CORE = createWordSoundsCore();
                           onPlayAudio(opt, true);
                         },
                         className:
-                          "absolute bottom-3 right-3 w-9 h-9 rounded-full bg-violet-50 hover:bg-violet-200 text-slate-600 hover:text-violet-600 flex items-center justify-center transition-colors z-10 shadow-sm",
+                          "absolute bottom-2 right-2 w-11 h-11 rounded-full bg-violet-50 hover:bg-violet-200 text-slate-600 hover:text-violet-600 flex items-center justify-center transition-colors z-10 shadow-sm",
                         title: ts("common.listen") || "Listen",
                       },
                       /*#__PURE__*/ React.createElement(Volume2, {
@@ -3681,6 +4365,7 @@ const WS_CORE = createWordSoundsCore();
                   ),
             ),
           ),
+          wsCardCheck(cards),
         );
       },
     );
@@ -4672,7 +5357,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
     const SyllableBlendingView = React.memo(({
       wordDir, data, isLoading, highlightedSyllableIndex, highlightedOptionIndex,
       showLetterHints, onPlayAudio, onPlaySyllables, isEditing,
-      onUpdateOption, isAudioBusy, canAnswer, optionImages, onCheckAnswer, t, ts,
+      onUpdateOption, isAudioBusy, canAnswer, optionImages, onCheckAnswer, cards, t, ts,
     }) => {
       if (isLoading && !data) return React.createElement("p", { role: "status", className: "text-center text-slate-600 py-8" }, ts("word_sounds.building_syllable_activity") || "Building syllable activity…");
       if (!data?.supported || !data?.blendingOptions?.length) return React.createElement("p", {
@@ -4699,11 +5384,12 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             })
             : React.createElement("div", { key: option, className: "flex flex-col gap-1" },
               React.createElement("button", {
-                type: "button", onClick: () => onCheckAnswer?.(option), disabled: isAudioBusy || !canAnswer,
-                "aria-label": option,
-                className: "flex flex-col items-center gap-1 p-3 rounded-2xl border-2 font-bold text-lg bg-white hover:bg-sky-50 border-sky-200 disabled:opacity-50" + (highlightedOptionIndex === i ? " ring-4 ring-sky-400" : ""),
+                type: "button", ...(cards ? wsCardProps(cards, option) : { onClick: () => onCheckAnswer?.(option) }), disabled: isAudioBusy || !canAnswer,
+                "aria-label": option + wsCardSuffix(cards, option),
+                className: "flex flex-col items-center gap-1 p-3 rounded-2xl border-2 font-bold text-lg disabled:opacity-50 " + wsCardClass(cards, option, "bg-white hover:bg-sky-50 border-sky-200") + (highlightedOptionIndex === i ? " ring-4 ring-sky-400" : ""),
               }, optionImages?.[option] ? React.createElement("img", { src: optionImages[option].startsWith("data:") ? optionImages[option] : "data:image/png;base64," + optionImages[option], alt: "", className: "w-20 h-20 object-contain rounded-lg" }) : null,
-              (showLetterHints || !optionImages?.[option]) ? React.createElement("span", null, option) : null),
+              (showLetterHints || !optionImages?.[option]) ? React.createElement("span", null, option) : null,
+              wsCardMark(cards, option)),
               React.createElement("button", {
                 type: "button", onClick: () => onPlayAudio?.(option), disabled: isAudioBusy,
                 className: "text-sky-700 rounded-lg py-1 hover:bg-sky-50 disabled:opacity-50",
@@ -5788,8 +6474,44 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         const rect = canvas.getBoundingClientRect();
         const clientX = e.touches ? e.touches[0].clientX : e.clientX;
         const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-        return { x: clientX - rect.left, y: clientY - rect.top };
+        // The surface may be drawn smaller than its 320 px grid (short
+        // screens); map the pointer back onto the grid.
+        const k = rect.width > 0 && canvas.offsetWidth > 0 ? canvas.offsetWidth / rect.width : 1;
+        return { x: (clientX - rect.left) * k, y: (clientY - rect.top) * k };
       };
+      // Fit the tracing surface to the height left in the task area so Clear
+      // and Check stay on screen with it: 320 px where there is room, never
+      // under 220 px. The grid itself stays 320 x 320; only its drawn size
+      // changes, so paths and scoring are untouched.
+      const traceFitRef = React.useRef(null);
+      const traceBoxRef = React.useRef(null);
+      const traceInnerRef = React.useRef(null);
+      const [traceFit, setTraceFit] = React.useState(null);
+      React.useLayoutEffect(() => {
+        const host = traceFitRef.current;
+        const scroller = host && typeof host.closest === "function" ? host.closest("[data-ws-task-area]") : null;
+        if (!scroller) return undefined;
+        const fit = () => {
+          const box = traceBoxRef.current, inner = traceInnerRef.current, el = traceFitRef.current;
+          if (!box || !inner || !el) return;
+          const area = scroller.getBoundingClientRect(), own = el.getBoundingClientRect(), boxRect = box.getBoundingClientRect();
+          if (!(area.height > 0) || !(own.height > 0) || !(inner.offsetWidth > 0)) return;
+          const padBottom = parseFloat(getComputedStyle(scroller).paddingBottom) || 0;
+          const above = own.top - area.top + scroller.scrollTop;
+          const around = own.height - boxRect.height;
+          const frame = inner.offsetHeight - 320;
+          const room = scroller.clientHeight - padBottom - above - around - frame;
+          const size = Math.max(220, Math.min(320, Math.floor(room)));
+          const scale = size / 320;
+          const next = scale >= 0.995 ? null : { scale, width: Math.round(inner.offsetWidth * scale), height: Math.round(inner.offsetHeight * scale) };
+          setTraceFit((prev) => ((prev && next && Math.abs(prev.scale - next.scale) < 0.01) || (!prev && !next) ? prev : next));
+        };
+        fit();
+        window.addEventListener("resize", fit);
+        let observer = null;
+        if (typeof ResizeObserver === "function") { observer = new ResizeObserver(fit); observer.observe(scroller); }
+        return () => { window.removeEventListener("resize", fit); if (observer) observer.disconnect(); };
+      }, [letter, word]);
       const startDraw = (e) => {
         if (!canTrace()) return;
         setIsDrawing(true);
@@ -5825,7 +6547,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       };
       return /*#__PURE__*/ React.createElement(
         "div",
-        { className: "flex flex-col items-center animate-in fade-in" },
+        { ref: traceFitRef, className: "flex flex-col items-center animate-in fade-in" },
         // WCAG 2.1.1 / 2.5.7: formation scoring depends on the complete
         // movement path, not only its endpoints. The tracing gesture therefore
         // uses the path-dependent-input exception; the internal scoring mask is
@@ -5846,7 +6568,11 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         ),
         /*#__PURE__*/ React.createElement(
           "div",
-          { className: "relative" },
+          { ref: traceBoxRef, "data-ws-trace-box": "true", style: traceFit ? { position: "relative", width: traceFit.width, height: traceFit.height } : undefined },
+        /*#__PURE__*/ React.createElement(
+          "div",
+          // Pinned by its physical corner so the scaled surface sits the same in RTL.
+          { ref: traceInnerRef, className: "relative", style: traceFit ? { position: "absolute", left: 0, top: 0, transform: "scale(" + traceFit.scale + ")", transformOrigin: "top left", width: "max-content" } : undefined },
           /*#__PURE__*/ React.createElement("canvas", {
             ref: canvasRef,
             role: "img",
@@ -5921,6 +6647,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             ),
           ),
         ),
+        ),
         /*#__PURE__*/ React.createElement(
           "div",
           { className: "flex items-center justify-center gap-3 mb-6" },
@@ -5960,8 +6687,9 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                 setFeedback(null);
               },
               className:
-                "px-6 py-3 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors",
+                "inline-flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors",
             },
+            wsSafeIcon("Trash2", { size: 18 }),
             ts("word_sounds.word_scramble_clear") || "Clear",
           ),
           /*#__PURE__*/ React.createElement(
@@ -6673,7 +7401,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
     const wsPresentItems = (activity, words, opts = {}) => {
       if (!WS_PRESENT_ACTIVITIES.includes(activity)) return [];
       const language = opts.language || "en";
-      const pool = (Array.isArray(words) ? words : []).filter((entry) => entry && typeof entry === "object");
+      // Only the items this activity uses (a word added for one syllable activity stays there).
+      const pool = WS_CORE.wordsForActivity(words, activity, language);
       const image = (word) => {
         const value = opts.images && opts.images[String(word || "").trim().toLowerCase()];
         if (typeof value !== "string" || !value || value.startsWith("ref::")) return null;
@@ -7194,7 +7923,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             tr("word_sounds.present_picker_close", "Close"))));
     };
     const WordSoundsPresenter = ({ words, itemOptions, activities, initialActivity, startWord, ts, onPlay, onStop, onEnd,
-      fullscreenBlocked, reducedMotion, contentLang, contentDir, diLines, drawer, plan, speed, onSpeed, onDownload }) => {
+      fullscreenBlocked, reducedMotion, contentLang, contentDir, diLines, drawer, plan, speed, onSpeed, onDownload, lessonOnly }) => {
       const [offlineNote, setOfflineNote] = React.useState("");
       const [offlineBusy, setOfflineBusy] = React.useState(false);
       const pickerButtonRef = React.useRef(null);
@@ -7444,10 +8173,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         : (prev[0] === value ? [] : [value])));
       const content = { lang: contentLang || undefined, dir: contentDir || "auto" };
       const button = "min-h-11 rounded-xl px-4 py-2 font-bold focus:outline-none focus-visible:ring-4 focus-visible:ring-indigo-500 focus-visible:ring-offset-2";
-      const activityLabel = (id) => {
-        const found = (activities || []).find((a) => a.id === id);
-        return tr("word_sounds.activity_" + id, (found && found.label) || id.replace(/_/g, " ").replace(/^./, (c) => c.toUpperCase()));
-      };
+      const activityLabel = (id) => WS_CORE.activityLabel(id, tr);
       const isCorrect = (value) => item && item.correct.some((c) => c.toLowerCase() === String(value).toLowerCase());
       const rank = (id) => (!WS_PRESENT_ACTIVITIES.includes(id) ? 2 : counts[id] ? 0 : 1);
       const boxes = (sounds, count, plain) => h("div", { className: "flex flex-wrap justify-center gap-3", ...content },
@@ -7653,6 +8379,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                 }, h("span", { "aria-hidden": "true", className: "me-1" }, a.icon || ""), activityLabel(a.id))))),
                 h(React.Fragment, { key: "not-ready" }, chips(notReady, tr("word_sounds.present_no_items", "No ready items in this word list"))),
                 h(React.Fragment, { key: "not-allowed" }, chips(notAllowed, tr("word_sounds.present_unavailable", "Not available while presenting"))),
+                lessonOnly ? h("p", { key: "lesson-only", className: "mt-3 text-sm text-slate-700", "data-ws-lesson-only-note": "present" },
+                  tr("word_sounds.lesson_only_note", "Only the activities in this lesson are listed. Add an activity in setup.")) : null,
               ];
             })()),
           typeof onDownload === "function" ? h("div", { className: "mb-4", "data-present-offline": "true" },
@@ -7747,8 +8475,20 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
     // boxes and a take-home letter. Each is written into a window of its own,
     // because Canvas ignores window.print() on the app. A word's box count is
     // its phonemes array, the one the segmentation activity checks against.
+    // Page margins that do not depend on the print dialog. Chrome's "Margins:
+    // None" (it remembers the choice) overrides any @page margin, and the
+    // sheet then printed to the paper's edge. So the page box has no margin
+    // and the sheet sits in a print-only table: its header and footer groups
+    // are empty 0.6in spacers, which browsers repeat on every printed page
+    // (Chrome only when the group is break-inside:avoid, as a real thead is),
+    // and its one cell pads the sides. On screen the wrapper is plain blocks.
+    const WS_PRINT_MARGIN_CSS = "@page{margin:0}.ws-pg-top,.ws-pg-bottom{display:none}" +
+      "@media print{html,body{margin:0 !important;padding:0 !important}.ws-pg{display:table;table-layout:fixed;width:100%}" +
+      ".ws-pg-top{display:table-header-group}.ws-pg-bottom{display:table-footer-group}.ws-pg-top,.ws-pg-bottom{break-inside:avoid;page-break-inside:avoid}.ws-pg-top>div,.ws-pg-bottom>div{display:table-cell;height:0.6in}" +
+      ".ws-pg-row{display:table-row}.ws-pg-main{display:table-cell;box-sizing:border-box;padding:0 0.6in;vertical-align:top}}";
+    const wsPrintPage = (inner) => '<div class="ws-pg"><div class="ws-pg-top" aria-hidden="true"><div></div></div><div class="ws-pg-row"><main class="ws-pg-main">' +
+      inner + '</main></div><div class="ws-pg-bottom" aria-hidden="true"><div></div></div></div>';
     const WS_PRINT_CSS = [
-      "@page{margin:0.5in}",
       "body{margin:0;padding:24px;color:#000;background:#fff;font:18px/1.45 system-ui,-apple-system,'Segoe UI',Arial,sans-serif}",
       ".print-bar{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-bottom:16px}",
       ".print-bar button{font:600 16px system-ui,sans-serif;padding:10px 18px;border:2px solid #000;border-radius:8px;background:#fff;color:#000;cursor:pointer}",
@@ -7801,6 +8541,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       ".ws-ws-newpage{break-before:page;page-break-before:always}.ws-ws-teacher{margin-top:24px}.ws-ws-teacher li{margin:6px 0;font-size:1.125rem}",
       ".ws-editing [data-ws-edit]{outline:2px dashed #1d4ed8;outline-offset:2px;cursor:text}.ws-editing [data-ws-edit]:focus{outline-style:solid}",
       "@media print{.print-bar{display:none}body{padding:0}[data-ws-edit]{outline:none !important}}",
+      WS_PRINT_MARGIN_CSS,
     ].join("");
     // "Use my reading settings": type in rem follows the reader's size (the
     // reader CSS sets html font-size), headings and lists are capped, and a
@@ -8091,7 +8832,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       if (mode === "last") return student + keyPage("ws-ws-key");
       if (mode === "none") return student + sayPage("ws-ws-teacher ws-ws-newpage");
       return student + '<template id="ws-key-doc" data-title="' + esc(text.keyTitle) + form + '"><div class="print-bar"><button type="button" onclick="window.print()">' +
-        esc(text.print || "Print") + "</button></div><main>" + keyPage("ws-ws-teacher") + sayPage("ws-ws-teacher") + "</main></template>";
+        esc(text.print || "Print") + "</button></div>" + wsPrintPage(keyPage("ws-ws-teacher") + sayPage("ws-ws-teacher")) + "</template>";
     };
     // One activity's worksheet (key: see wsPrintSheets).
     const wsPrintWorksheet = (items, wordAttrs, text, picture, key) => wsPrintSheets([{ items }], wordAttrs, text, picture, key);
@@ -8099,7 +8840,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
     const wsPrintDocument = ({ title, docAttrs, bar, body, head, css }) =>
       "<!DOCTYPE html><html" + docAttrs + '><head><meta charset="utf-8"><title>' + wsPrintEsc(title) + "</title>" +
       (/^<link\b[^<>]*>$/i.test(head || "") ? head : "") + "<style>" + WS_PRINT_CSS + String(css || "").replace(/<\/style/gi, "<\\/style") +
-      "</style></head><body>" + bar + "<main>" + body + "</main>" + WS_PRINT_EDIT_SCRIPT + "</body></html>";
+      "</style></head><body>" + bar + wsPrintPage(body) + WS_PRINT_EDIT_SCRIPT + "</body></html>";
     // False when no window could be written (pop-ups blocked). Pictures
     // decode after the write, so printing waits for them (or 2.5 s); with
     // fonts, for the font stylesheet and the faces too (or 5 s).
@@ -8600,6 +9341,10 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       };
       const learnerSkipNonePlayable = (activityId) => {
         if (activityId === "word_families") return wordFamilyNonePlayable();
+        if (WS_CORE.SYLLABLE_ACTIVITY_IDS.includes(activityId)) {
+          const pack = wsPreloadedWords || [];
+          return pack.length > 0 && !isFixedForm && !WS_CORE.syllableActivityHasWords(pack, activityId, wordSoundsLanguage);
+        }
         if (!LEARNER_SKIP_RULES[activityId]) return false;
         const pack = wsPreloadedWords || [];
         const pool = pack.length > 0 ? pack : (wordPool || []);
@@ -9015,6 +9760,27 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       const activityRegionRef = React.useRef(null);
       const activityFocusInitedRef = React.useRef(false);
       const lastFocusActivityRef = React.useRef(wordSoundsActivity);
+      // Student header: the More panel (a disclosure, not a menu).
+      const [studentMoreOpen, setStudentMoreOpen] = React.useState(false);
+      const studentMoreButtonRef = React.useRef(null);
+      const studentMoreWrapRef = React.useRef(null);
+      const studentProgressRef = React.useRef(null);
+      const closeStudentMore = React.useCallback((refocus) => {
+        setStudentMoreOpen(false);
+        if (refocus) { try { studentMoreButtonRef.current && studentMoreButtonRef.current.focus(); } catch (e) {} }
+      }, []);
+      React.useEffect(() => {
+        if (!studentMoreOpen) return undefined;
+        // A press elsewhere in this dialog closes the panel. A press outside
+        // the dialog (a host dialog the panel opened) leaves it alone.
+        const onDown = (event) => {
+          const wrap = studentMoreWrapRef.current;
+          const root = wrap && typeof wrap.closest === "function" ? wrap.closest(".word-sounds-root") : null;
+          if (wrap && root && root.contains(event.target) && !wrap.contains(event.target)) setStudentMoreOpen(false);
+        };
+        document.addEventListener("pointerdown", onDown, true);
+        return () => document.removeEventListener("pointerdown", onDown, true);
+      }, [studentMoreOpen]);
       const isolationPositionRef = React.useRef(null);
       const lastWordForIsolation = React.useRef(null);
       const lastWordForRhyming = React.useRef(null);
@@ -9601,14 +10367,14 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         copy.querySelectorAll("button[data-ws-di-sound]").forEach((link) => link.replaceWith(document.createTextNode(link.textContent)));
         copy.querySelectorAll("h1,h2,h3,p,li,td,th").forEach((el) => { if (!el.querySelector("h1,h2,h3,p,li,td,th")) el.setAttribute("data-ws-edit", ""); });
         const html = '<!DOCTYPE html><html' + wsPrintLangAttrs(document.documentElement.lang || "en") + '><head><meta charset="utf-8"><title>' +
-          esc(title) + "</title><style>" + WS_DI_PRINT_CSS + '</style></head><body><div class="print-bar"><button type="button" onclick="window.print()">' +
+          esc(title) + "</title><style>" + WS_DI_PRINT_CSS + WS_PRINT_MARGIN_CSS + '</style></head><body><div class="print-bar"><button type="button" onclick="window.print()">' +
           esc(ts("word_sounds.di_script_print_button") || "Print") + "</button><span>" +
           esc(ts("word_sounds.di_script_print_hint") || "If the print dialog does not open, press Ctrl+P (or Cmd+P on a Mac).") + "</span>" +
           wsPrintEditTools({
             edit: ts("word_sounds.print_edit_text") || "Edit text", done: ts("word_sounds.print_edit_done") || "Done editing",
             hint: ts("word_sounds.print_edit_hint") || "Click any text to change it. Changes print, but they are not saved in the lesson.",
             how: ts("word_sounds.print_edit_how") || "To change any text first, close the print dialog, choose Edit text, then Print.",
-          }) + "</div>" + copy.outerHTML + WS_PRINT_EDIT_SCRIPT + "</body></html>";
+          }) + "</div>" + wsPrintPage(copy.outerHTML) + WS_PRINT_EDIT_SCRIPT + "</body></html>";
         let win = null;
         try { win = window.open("", "_blank"); } catch (_) { win = null; }
         if (win) {
@@ -9991,11 +10757,27 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         // Removed answer tiles leave focus on the document body. Restore it
         // for each new item, while retaining a surviving input or a control
         // the learner deliberately focused during the feedback interval.
-        if (!activityChanged && document.activeElement && document.activeElement !== document.body) return;
+        if (!activityChanged) {
+          // A new item: focus left on an old answer tile inside the task moves
+          // to the task. A text box being typed in, and a control outside the
+          // task that the learner chose, keep it.
+          const active = document.activeElement;
+          const onOldControl = !!(region && active && active !== region && region.contains(active) && !/^(INPUT|TEXTAREA|SELECT)$/.test(active.tagName));
+          if (active && active !== document.body && !onOldControl) return;
+        }
         if (region && typeof region.focus === "function") {
           try { region.focus({ preventScroll: false }); } catch (e) { try { region.focus(); } catch (e2) {} }
         }
       }, [wordSoundsActivity, itemPresentation]);
+      // On each new item after the first, say where the learner is, once.
+      // It also replaces the last "Correct!" still sitting in the live region.
+      React.useEffect(() => {
+        if (itemPresentation < 2 || isProbeMode) return;
+        const progress = studentProgressRef.current;
+        if (!progress) return;
+        const n = Math.min(progress.done + 1, progress.total);
+        wsAnnounce(ts("word_sounds.word_n_of_m", { n: n, m: progress.total }) || ("Word " + n + " of " + progress.total));
+      }, [itemPresentation]);
       React.useEffect(() => {
         console.log(
           `[WS-DBG] initialShowReviewPanel changed to: ${initialShowReviewPanel}`,
@@ -10035,6 +10817,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       const [errorMessage, setErrorMessage] = React.useState(null);
       const [showSessionComplete, setShowSessionComplete] =
         React.useState(false);
+      // The student More panel never outlives the screen it was opened on.
+      React.useEffect(() => { setStudentMoreOpen(false); }, [wordSoundsActivity, showSessionComplete, isMinimized]);
       // ── Graphophonemic anchor strip state (persistent letter ↔ sound card) ──
       // Mode ('full' | 'compact' | 'hidden') is persisted to localStorage.
       const [anchorMode, setAnchorMode] = React.useState(() => getStoredAnchorMode());
@@ -10249,6 +11033,20 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       const latestAudioRequestRef = React.useRef(null);
       const heardClipSinkRef = React.useRef(null);
       const presentRateRef = React.useRef(null);
+      // A word that was just heard plays on this device: clear a stale failure
+      // and record RUNTIME readiness. Never writes ttsReady, which means a clip
+      // is saved in the lesson and belongs to the pack compiler.
+      const noteWordAudioPlayed = (spoken) => {
+        if (typeof setWsPreloadedWords !== "function" || typeof spoken !== "string") return;
+        const key = spoken.trim().toLowerCase();
+        if (!key) return;
+        const stale = (w) => !!w && typeof w === "object" &&
+          String(w.targetWord || w.word || w.term || "").trim().toLowerCase() === key &&
+          (!!w._ttsFailed || (!w.ttsReady && !w._runtimeAudioReady));
+        setWsPreloadedWords((prev) => Array.isArray(prev) && prev.some(stale)
+          ? prev.map((w) => (stale(w) ? { ...w, _runtimeAudioReady: true, _ttsFailed: false } : w))
+          : prev);
+      };
       const handleAudio = React.useCallback(
         async (input, playImmediately = true) => {
           if (!input) {
@@ -10885,7 +11683,11 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           return { ok: false, status: playbackStale() ? 'cancelled' : 'unavailable' };
           };
           try {
-            return await runAudioRequest();
+            const audioResult = await runAudioRequest();
+            // Heard = a played clip (its source) or a spoken device voice.
+            if (playImmediately && !phonemeObject && isMountedRef.current &&
+              (typeof audioResult === "string" ? !!audioResult : !!(audioResult && audioResult.ok === true))) noteWordAudioPlayed(requestedWord);
+            return audioResult;
           } finally {
             if (playImmediately && !playbackStale()) setIsPlayingAudio(false);
           }
@@ -11089,6 +11891,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           onUpdateOption,
           highlightedIndex: externalHighlightedIndex,
           optionImages,
+          cards,
         }) => {
           const [playingIndex, setPlayingIndex] = React.useState(null);
           const [isSequencing, setIsSequencing] = React.useState(false);
@@ -11282,11 +12085,13 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                     ),
                 ),
               ),
+              /*#__PURE__*/ React.createElement("div", { className: "w-full flex flex-col items-center gap-4" },
               /*#__PURE__*/ React.createElement(
                 "div",
                 {
                   className:
                     "grid grid-cols-2 md:grid-cols-3 gap-4 w-full max-w-3xl",
+                  "data-ws-cards": "true",
                 },
                 (data.options || []).map((opt, idx) =>
                   isEditing
@@ -11342,11 +12147,13 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                         /*#__PURE__*/ React.createElement(
                         "button",
                         {
-                          "aria-label": showLetterHints
+                          "aria-label": (showLetterHints
                             ? ts("word_sounds.choose_sound_ipa", { sound: String(opt).replace(/^\/+|\/+$/g, "") }) || `Choose /${String(opt).replace(/^\/+|\/+$/g, "")}/`
-                            : ts("word_sounds.choose_sound_n", { n: idx + 1 }) || `Choose Sound ${idx + 1}`,
-                          onClick: () => { stopSequence(); onCheckAnswer(opt); },
-                          className: `w-full h-32 rounded-2xl font-bold flex items-center justify-center shadow-sm transition-all active:scale-95 ${optionImages ? "flex-col gap-1 text-lg" : "text-4xl"} ${playingIndex === idx || externalHighlightedIndex === idx ? "bg-violet-50 border-violet-400 text-violet-700 ring-4 ring-violet-200 scale-105" : "bg-white border-b-4 border-slate-200 text-slate-700 hover:shadow-md hover:scale-[1.02] hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700"}`,
+                            : ts("word_sounds.choose_sound_n", { n: idx + 1 }) || `Choose Sound ${idx + 1}`) + wsCardSuffix(cards, opt),
+                          ...(cards
+                            ? { ...wsCardProps(cards, opt), onClick: () => { if (!cards.selectMode) stopSequence(); cards.pick(opt, () => playSingle(opt)); } }
+                            : { onClick: () => { stopSequence(); onCheckAnswer(opt); } }),
+                          className: `w-full h-32 rounded-2xl font-bold flex items-center justify-center shadow-sm transition-all active:scale-95 ${optionImages ? "flex-col gap-1 text-lg" : "text-4xl"} ${wsCardClass(cards, opt, playingIndex === idx || externalHighlightedIndex === idx ? "bg-violet-50 border-violet-400 text-violet-700 ring-4 ring-violet-200 scale-105" : "bg-white border-b-4 border-slate-200 text-slate-700 hover:shadow-md hover:scale-[1.02] hover:bg-violet-50 hover:border-violet-300 hover:text-violet-700")}`,
                         },
                         (() => {
                           const clean = opt.replace(/\//g, "").toLowerCase();
@@ -11375,8 +12182,10 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                                 ts("word_sounds.sound_n", { n: idx + 1 }) || ("Sound " + (idx + 1)),
                               );
                         })(),
+                        wsCardMark(cards, opt),
                       ),
-                        /*#__PURE__*/ React.createElement(
+                        // In select mode the whole card plays: no second, smaller target.
+                        cards && cards.selectMode ? null : /*#__PURE__*/ React.createElement(
                         "button",
                         {
                           "aria-label": showLetterHints
@@ -11387,7 +12196,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                             playSingle(opt);
                           },
                           className:
-                            "absolute top-2 right-2 w-10 h-10 bg-violet-100 hover:bg-violet-700 hover:text-white text-violet-600 rounded-xl flex items-center justify-center shadow-sm transition-all z-10",
+                            "absolute top-2 right-2 w-11 h-11 bg-violet-100 hover:bg-violet-700 hover:text-white text-violet-600 rounded-xl flex items-center justify-center shadow-sm transition-all z-10",
                           title: showLetterHints
                             ? ts("word_sounds.listen_sound_ipa", { sound: String(opt).replace(/^\/+|\/+$/g, "") }) || `Listen to /${String(opt).replace(/^\/+|\/+$/g, "")}/`
                             : ts("word_sounds.listen_sound_n", { n: idx + 1 }) || `Listen to Sound ${idx + 1}`,
@@ -11398,6 +12207,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                       ),
                     ),
                 ),
+              ),
+              wsCardCheck(cards),
               ),
             );
           }
@@ -11417,6 +12228,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             onUpdateOption,
             showLetterHints,
             soundOnlyMode,
+            revealAnswers,
           }) => {
             const [foundWords, setFoundWords] = React.useState([]);
             const [shakenWord, setShakenWord] = React.useState(null);
@@ -11964,7 +12776,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                           hearWord(item.text);
                         },
                         className:
-                          "p-2 rounded-full text-violet-700 hover:text-violet-600 hover:bg-violet-50 transition-colors",
+                          "min-w-11 min-h-11 flex items-center justify-center p-2 rounded-full text-violet-700 hover:text-violet-600 hover:bg-violet-50 transition-colors",
                         "aria-label": (ts("word_sounds.sr_hear") || "Hear ") + (soundOnlyMode ? (ts("word_sounds.sr_option") || "option") + " " + (idx + 1) : item.text),
                         title: t("common.hear_this_word"),
                       },
@@ -11976,9 +12788,14 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                         onClick: () => handleWordClick(item),
                         "data-ws-bank-pick": "true",
                         "aria-label": soundOnlyMode ? (ts("word_sounds.sr_option") || "Option") + " " + (idx + 1) : item.text,
-                        className: `px-5 py-3 rounded-xl text-lg font-bold shadow-sm border-b-4 transition-all hover:scale-105 active:scale-95 ${isShaking ? "bg-red-100 border-red-300 text-red-700 animate-shake" : activeIndex === idx ? "bg-violet-200 border-violet-500 text-violet-800 scale-[1.05] ring-4 ring-violet-300 z-10" : "bg-white border-slate-200 text-slate-700 hover:border-violet-300 hover:text-violet-600"}`,
+                        ...(revealAnswers && item.isFamily ? { "data-ws-card-state": "correct" } : {}),
+                        className: `px-5 py-3 rounded-xl text-lg font-bold shadow-sm border-b-4 transition-all hover:scale-105 active:scale-95 ${revealAnswers && item.isFamily ? "ws-card ws-card-small " + WS_CARD_CLASS.correct : isShaking ? "bg-red-100 border-red-300 text-red-700 animate-shake" : activeIndex === idx ? "bg-violet-200 border-violet-500 text-violet-800 scale-[1.05] ring-4 ring-violet-300 z-10" : "bg-white border-slate-200 text-slate-700 hover:border-violet-300 hover:text-violet-600"}`,
                       },
                       soundOnlyMode ? "🔊" : item.text,
+                      // The item ended with this word still to find.
+                      revealAnswers && item.isFamily
+                        ? React.createElement("span", { className: "ws-card-mark " + WS_CARD_MARK.correct[1], "data-ws-card-mark": "correct" }, React.createElement("span", { "aria-hidden": "true" }, WS_CARD_MARK.correct[0]))
+                        : null,
                     ),
                   );
                 }),
@@ -12002,45 +12819,47 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         },
         [t],
       );
+      // One name per activity: the player strings, with the English in the core table.
+      const wsActivityName = (id) => WS_CORE.activityLabel(id, ts);
       const ALL_ACTIVITIES = [
         {
           id: "counting",
-          label: ts("word_sounds.activity_counting"),
+          label: wsActivityName("counting"),
           icon: "🔢",
           description: ts("word_sounds.counting_desc"),
           tier: "phonological",
         },
         {
           id: "isolation",
-          label: ts("word_sounds.activity_isolation"),
+          label: wsActivityName("isolation"),
           icon: "🎯",
           description: ts("word_sounds.isolation_desc"),
           tier: "phonological",
         },
         {
           id: "blending",
-          label: ts("word_sounds.activity_blending"),
+          label: wsActivityName("blending"),
           icon: "🔗",
           description: ts("word_sounds.blending_desc"),
           tier: "phonological",
         },
         {
           id: "segmentation",
-          label: ts("word_sounds.activity_segmentation"),
+          label: wsActivityName("segmentation"),
           icon: "📦",
           description: ts("word_sounds.segmentation_desc"),
           tier: "phonological",
         },
         {
           id: "rhyming",
-          label: ts("word_sounds.activity_rhyming"),
+          label: wsActivityName("rhyming"),
           icon: "🎵",
           description: ts("word_sounds.rhyming_desc"),
           tier: "phonological",
         },
         {
           id: "manipulation",
-          label: ts("word_sounds.activity_manipulation") || "Sound Swap",
+          label: wsActivityName("manipulation"),
           icon: "✂️",
           description:
             ts("word_sounds.manipulation_desc") ||
@@ -12049,8 +12868,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         },
         {
           id: "syllable_blending",
-          label:
-            ts("word_sounds.activity_syllable_blending") || "Syllable Blending",
+          label: wsActivityName("syllable_blending"),
           icon: "🔗",
           description:
             ts("word_sounds.syllable_blending_desc") ||
@@ -12059,8 +12877,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         },
         {
           id: "syllable_counting",
-          label:
-            ts("word_sounds.activity_syllable_counting") || "Syllable Claps",
+          label: wsActivityName("syllable_counting"),
           icon: "👏",
           description:
             ts("word_sounds.syllable_counting_desc") ||
@@ -12069,7 +12886,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         },
         {
           id: "orthography",
-          label: ts("word_sounds.activity_orthography") || "Sight & Spell",
+          label: wsActivityName("orthography"),
           icon: "👁️",
           description:
             ts("word_sounds.orthography_desc") || "Match sounds to spelling",
@@ -12077,7 +12894,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         },
         {
           id: "mapping",
-          label: ts("word_sounds.activity_mapping") || "Sound Mapping",
+          label: wsActivityName("mapping"),
           icon: "🎹",
           description:
             ts("word_sounds.mapping_desc") || "Connect sounds to letters",
@@ -12085,7 +12902,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         },
         {
           id: "spelling_bee",
-          label: ts("word_sounds.activity_spelling_bee") || "Spelling Bee",
+          label: wsActivityName("spelling_bee"),
           icon: "🐝",
           description:
             ts("word_sounds.spelling_bee_desc") || "Spell the word you hear",
@@ -12093,7 +12910,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         },
         {
           id: "word_scramble",
-          label: ts("word_sounds.activity_word_scramble") || "Word Scramble",
+          label: wsActivityName("word_scramble"),
           icon: "🔀",
           description:
             ts("word_sounds.word_scramble_desc") || "Unscramble the letters",
@@ -12101,7 +12918,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         },
         {
           id: "missing_letter",
-          label: ts("word_sounds.activity_missing_letter") || "Missing Letter",
+          label: wsActivityName("missing_letter"),
           icon: "❓",
           description:
             ts("word_sounds.missing_letter_desc") || "Fill in the blank",
@@ -12109,7 +12926,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         },
         {
           id: "sound_sort",
-          label: ts("word_sounds.activity_sound_sort") || "Sound Sort",
+          label: wsActivityName("sound_sort"),
           icon: "🔊",
           description:
             ts("word_sounds.sound_sort_desc") || "Sort words by shared sounds",
@@ -12117,7 +12934,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         },
         {
           id: "letter_tracing",
-          label: ts("word_sounds.activity_letter_tracing") || "Letter Trace",
+          label: wsActivityName("letter_tracing"),
           icon: "✍️",
           description:
             ts("word_sounds.letter_tracing_desc") || "Trace the first letter",
@@ -12127,7 +12944,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         },
         {
           id: "word_families",
-          label: ts("word_sounds.activity_word_families") || "Word Families",
+          label: wsActivityName("word_families"),
           icon: "🏠",
           description:
             ts("word_sounds.word_families_desc") ||
@@ -12136,14 +12953,14 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         },
         {
           id: "decoding",
-          label: ts("word_sounds.activity_decoding") || "Read & Match",
+          label: wsActivityName("decoding"),
           icon: "\uD83D\uDCD6",
           description: ts("word_sounds.decoding_desc") || "Read the word and tap its picture",
           tier: "orthographic",
         },
         {
           id: "read_sentence",
-          label: ts("word_sounds.activity_read_sentence") || "Finish the Sentence",
+          label: wsActivityName("read_sentence"),
           icon: "\uD83D\uDCAC",
           description: ts("word_sounds.read_sentence_desc") || "Read a sentence and pick its missing word",
           // Connected text is print work \u2014 keep it out of phonological-only
@@ -12152,26 +12969,21 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         },
         {
           id: "read_passage",
-          label: ts("word_sounds.activity_read_passage") || "Read the Story",
+          label: wsActivityName("read_passage"),
           icon: "\uD83D\uDCDA",
           description: ts("word_sounds.read_passage_desc") || "Read a tiny story and pick its missing word",
           tier: "orthographic",
         },
         {
           id: "sentence_match",
-          label: ts("word_sounds.activity_sentence_match") || "Picture the Sentence",
+          label: wsActivityName("sentence_match"),
           icon: "\uD83D\uDDBC\uFE0F",
           description: ts("word_sounds.sentence_match_desc") || "Read a sentence and place its pictures in order",
           tier: "orthographic",
         },
       ];
       // The name a child or parent reads, never the raw id ("syllable_counting").
-      const activityDisplayName = (id) => {
-        const known = ALL_ACTIVITIES.find((a) => a.id === id)?.label;
-        if (known) return known;
-        const plain = String(id || "").replace(/_/g, " ").trim();
-        return plain ? plain.charAt(0).toUpperCase() + plain.slice(1) : "";
-      };
+      const activityDisplayName = wsActivityName;
       // ── Language capability model (multilingual stage 2, 2026-07-12) ──
       // English sessions take the FIRST branch everywhere below and behave
       // byte-identically to the pre-multilingual module. For other content
@@ -12238,27 +13050,36 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         },
         [wsLangCaps, runtimeSessionConfig.preparedActivities, soundSwapAvailable, isTeacherMode, wsImagesUsable, hasPreparedImages],
       );
+      const lessonPreparedList = Array.isArray(runtimeSessionConfig.preparedActivities) ? runtimeSessionConfig.preparedActivities.filter(Boolean) : [];
+      const lessonPreparedOnly = lessonPreparedList.length > 0;
+      const lessonPreparedKey = lessonPreparedList.join(",");
+      // Free roaming: the plan is the suggested order and students may choose any activity.
+      const lessonFreeRoaming = runtimeSessionConfig.freeRoaming === true;
+      const lessonPlannedKey = [...new Set([...(lessonPlanConfig && Array.isArray(lessonPlanConfig.activities) ? lessonPlanConfig.activities.map((a) => a && a.id) : []), ...(activitySequence || [])])].filter(Boolean).join(",");
       const ACTIVITIES = React.useMemo(() => {
-        const tierFiltered = includeOrthographic
+        const planned = lessonPlannedKey ? lessonPlannedKey.split(",") : [];
+        const tierFiltered = includeOrthographic || lessonPreparedOnly || lessonFreeRoaming
           ? ALL_ACTIVITIES
-          : ALL_ACTIVITIES.filter((a) => a.tier === "phonological");
-        if (wsLangCaps.isEnglish && !runtimeSessionConfig.preparedActivities?.length) return tierFiltered.filter((a) => a.id !== "manipulation" || soundSwapAvailable);
+          : ALL_ACTIVITIES.filter((a) => a.tier === "phonological" || planned.includes(a.id));
+        if (wsLangCaps.isEnglish && !lessonPreparedOnly) return tierFiltered.filter((a) => a.id !== "manipulation" || soundSwapAvailable);
         return tierFiltered.filter((a) => wsActivityAvailableForLang(a.id));
-      }, [includeOrthographic, wsLangCaps, wsActivityAvailableForLang, soundSwapAvailable]);
-      // Skill-cluster grouping for the activity picker (UX). Maps each activity
-      // to a research-aligned cluster along the phonological-awareness continuum
-      // -> phonics -> spelling -> handwriting. Purely presentational; the
-      // orthographic-tier gating above is unchanged.
-      const ACTIVITY_GROUP_OF = {
-        syllable_counting: "pa_large", syllable_blending: "pa_large", rhyming: "pa_large", word_families: "pa_large",
-        counting: "pa_phoneme", segmentation: "pa_phoneme", isolation: "pa_phoneme", blending: "pa_phoneme", sound_sort: "pa_phoneme", manipulation: "pa_phoneme",
-        mapping: "phonics", orthography: "phonics",
-        spelling_bee: "spelling", word_scramble: "spelling", missing_letter: "spelling",
-        letter_tracing: "handwriting", decoding: "phonics", read_sentence: "text", read_passage: "text", sentence_match: "text",
-      };
-      const ACTIVITY_GROUP_ORDER = ["pa_large", "pa_phoneme", "phonics", "text", "spelling", "handwriting"];
-      const ACTIVITY_GROUP_LABELS = { pa_large: "Syllables & Rhyme", pa_phoneme: "Phonemes", phonics: "Phonics", text: "Sentences", spelling: "Spelling", handwriting: "Writing" };
-      const ACTIVITY_GROUP_FULL = { pa_large: "Sound awareness - larger units (syllables & rhyme)", pa_phoneme: "Phonemic awareness - individual sounds", phonics: "Phonics - sound to letter", text: "Connected text - reading decodable sentences", spelling: "Spelling / encoding", handwriting: "Handwriting / letter formation" };
+      }, [includeOrthographic, wsLangCaps, wsActivityAvailableForLang, soundSwapAvailable, lessonPreparedOnly, lessonFreeRoaming, lessonPlannedKey]);
+      // Teachers see what the lesson was not prepared for, with a way to add it.
+      const wsUnpreparedActivities = React.useMemo(() => !isTeacherMode || !lessonPreparedOnly || isFixedForm ? []
+        : ALL_ACTIVITIES.filter((a) => !lessonPreparedList.includes(a.id) && WS_CORE.activityRunsInLanguage(a.id, wordSoundsLanguage)
+          && (a.id !== "manipulation" || soundSwapAvailable)),
+      [isTeacherMode, lessonPreparedKey, isFixedForm, wordSoundsLanguage, soundSwapAvailable, t]);
+      const [prepareOffer, setPrepareOffer] = React.useState("");
+      // What this lesson asks for. Requirements of other activities are not the teacher's concern.
+      const lessonScopeList = activitySequence && activitySequence.length ? [...new Set(activitySequence)] : lessonPreparedOnly ? lessonPreparedList : null;
+      const lessonNeeds = (...ids) => !lessonScopeList || ids.some((id) => lessonScopeList.includes(id) || id === wordSoundsActivity);
+      // The six skill strands (core table) are the one grouping, in teaching order.
+      // Rows keep their given order inside a strand. Presentational only.
+      const wsStrandGroups = (list) => WS_CORE.groupActivitiesByStrand((list || []).map((a) => a.id)).map((group) => ({
+        strand: group.strand,
+        label: WS_CORE.strandLabel(group.strand, ts),
+        items: group.ids.map((id) => list.find((a) => a.id === id)),
+      }));
       const extractWords = React.useCallback((term) => {
         if (!term) return [];
         return term
@@ -12904,7 +13725,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       }, []);
       const adaptiveDifficulty = React.useMemo(() => WS_CORE.difficultyDecision(
         learnerScopedHistory.filter(wsIsGradedRow), wordSoundsActivity,
-        { aacAssisted: aacMode, mode: ["read_sentence", "read_passage", "missing_letter"].includes(wordSoundsActivity) || showLetterHints || getEffectiveTextMode() === "alwaysOn" ? "visual" : "sound_only" },
+        { aacAssisted: aacMode, hysteresis: true, mode: ["read_sentence", "read_passage", "missing_letter"].includes(wordSoundsActivity) || showLetterHints || getEffectiveTextMode() === "alwaysOn" ? "visual" : "sound_only" },
       ), [learnerScopedHistory, wordSoundsActivity, aacMode, showLetterHints, imageVisibilityMode]);
       const getEffectiveDifficulty = React.useCallback((activityId = wordSoundsActivity) => {
         if (wordSoundsDifficulty !== "auto") return wordSoundsDifficulty;
@@ -12913,6 +13734,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         // queue with its own evidence while switching activities.
         return WS_CORE.difficultyDecision(learnerScopedHistory.filter(wsIsGradedRow), activityId, {
           aacAssisted: aacMode,
+          hysteresis: true,
           mode: ["read_sentence", "read_passage", "missing_letter"].includes(activityId) || showLetterHints || getEffectiveTextMode(activityId) === "alwaysOn" ? "visual" : "sound_only",
         }).difficulty;
       }, [wordSoundsDifficulty, adaptiveDifficulty, wordSoundsActivity, learnerScopedHistory, aacMode, showLetterHints, imageVisibilityMode]);
@@ -12968,6 +13790,85 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       const [soundChips, setSoundChips] = React.useState([]);
       const [segmentationErrors, setSegmentationErrors] = React.useState([]);
       const [playingOptionIndex, setPlayingOptionIndex] = React.useState(null);
+      // BEGIN WORD SOUNDS ANSWER CARD STATE
+      // What the child has done with the live item's cards: the selected card
+      // (sound-only cards), the choices already tried, and whether it has ended.
+      const [answerCards, setAnswerCards] = React.useState({ key: null, selected: null, wrong: [], revealed: false });
+      // The picture and word that appear when an item ends can push the choices
+      // down: keep the marked answer card on screen.
+      React.useEffect(() => {
+        if (!answerCards.revealed) return undefined;
+        const show = () => {
+          try {
+            const root = document.querySelector(".word-sounds-root");
+            const card = root && root.querySelector('[data-ws-card-state="correct"]');
+            if (card && typeof card.scrollIntoView === "function") card.scrollIntoView({ block: "nearest", behavior: disableAnimations ? "auto" : "smooth" });
+          } catch (_) { /* scrolling is a convenience */ }
+        };
+        // Twice: the feedback row can still grow after the first pass.
+        const timers = [setTimeout(show, 120), setTimeout(show, 1000)];
+        return () => timers.forEach((timer) => clearTimeout(timer));
+      }, [answerCards.revealed, answerCards.key]);
+      // The boards as built, so a teacher who starts editing gets every choice back.
+      const rawBoardsRef = React.useRef({});
+      // The last choice handed in for grading (item | tries so far | choice) and when.
+      const cardGradeStampRef = React.useRef(null);
+      // The find-all board on screen (Sound Sort, Word Families), for the end-of-item model.
+      const findAllBoardRef = React.useRef(null);
+      // Fewer sound-only choices for beginners (easy 3, medium 4, hard as
+      // built; 2 while the lowest band is still under 40%). Fixed forms and
+      // probes are never changed.
+      const choiceLevel = (activityId = wordSoundsActivity) => isFixedForm ? null : {
+        difficulty: getEffectiveDifficulty(activityId),
+        support: wordSoundsDifficulty === "auto" && activityId === wordSoundsActivity ? adaptiveDifficulty.support : "none",
+      };
+      const soundSame = (a, b) => {
+        const x = String(a ?? "").toLowerCase().trim(), y = String(b ?? "").toLowerCase().trim();
+        return !!x && !!y && (x === y || WS_CORE.soundAnswerMatches(x, y) || phonemeKey(x) === phonemeKey(y));
+      };
+      const trimSoundChoices = (kind, options, answer, activityId) => {
+        const list = Array.isArray(options) ? options : [];
+        rawBoardsRef.current[kind] = { answer, options: [...list] };
+        const level = choiceLevel(activityId);
+        if (!level || isEditing || !answer) return list;
+        const count = WS_CORE.choiceLimit(level.difficulty, list.length, level.support);
+        if (count >= list.length) return list;
+        return WS_CORE.trimChoices({ options: list, answer, count, difficulty: level.difficulty,
+          same: kind === "isolation" ? soundSame : undefined,
+          closeness: kind === "isolation" ? WS_CORE.soundCloseness : WS_CORE.wordCloseness });
+      };
+      React.useEffect(() => {
+        if (!isEditing) return;
+        const raw = rawBoardsRef.current;
+        const within = (shown, full) => full.length > shown.length && shown.every((option) => full.includes(option));
+        if (wordSoundsActivity === "blending" && raw.blending && within(blendingOptions, raw.blending.options)) setBlendingOptions(raw.blending.options);
+        if (wordSoundsActivity === "rhyming" && raw.rhyming && within(rhymeOptions, raw.rhyming.options)) setRhymeOptions(raw.rhyming.options);
+        if (wordSoundsActivity === "isolation" && raw.isolation && isolationState && within(isolationState.isoOptions || [], raw.isolation.options)) {
+          setIsolationState((prev) => (prev ? { ...prev, isoOptions: raw.isolation.options } : prev));
+        }
+      }, [isEditing]);
+      // What to say when an item ends on a miss: the target, then its answer.
+      const answerModelSteps = () => {
+        const word = currentWordSoundsWord;
+        if (!word) return null;
+        const sounds = (Array.isArray(wordSoundsPhonemes?.phonemes) ? wordSoundsPhonemes.phonemes : [])
+          .map((sound) => WS_CORE.phonemeLabel(sound, wsLangCaps.isEnglish)).filter(Boolean);
+        switch (wordSoundsActivity) {
+          case "isolation": { const sound = isolationStateRef.current?.correctSound; return sound ? [word, sound] : null; }
+          case "blending": return [...sounds, word];
+          case "rhyming": return wordSoundsPhonemes?.rhymeWord ? [word, wordSoundsPhonemes.rhymeWord] : null;
+          case "manipulation": return manipulationStateRef.current?.answer ? [manipulationStateRef.current.answer] : null;
+          case "segmentation": return sounds.length ? [word, ...sounds] : null;
+          case "mapping": case "spelling_bee": case "word_scramble": case "orthography": case "missing_letter": return [word];
+          case "sound_sort": case "word_families": {
+            const board = findAllBoardRef.current;
+            const members = board && String(board.word || "").toLowerCase() === String(word).toLowerCase() && Array.isArray(board.options) ? board.options.filter(Boolean) : [];
+            return members.length ? members.slice(0, 4) : null;
+          }
+          default: return null;
+        }
+      };
+      // END WORD SOUNDS ANSWER CARD STATE
       const [showWordText, setShowWordText] = React.useState(false);
       // Supports shown while the current item is live. Hiding them again
       // cannot undo what they revealed; post-answer reveals (lock held) and
@@ -13221,9 +14122,27 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           // sessions drew raw glossary words with no prepared boards or
           // portable audio (blank on student devices). The glossary pool is
           // only the fallback when no pack was prepared.
+          // Each activity draws only the items it uses: a word added for one
+          // syllable activity stays in that activity, and a syllable activity
+          // leaves out lesson words it cannot play. Fixed forms keep every
+          // authored item.
+          const activityUses = isFixedForm ? () => true : (() => {
+            let list = WS_CORE.wordsForActivity(preloadedWords, activityId, wordSoundsLanguage);
+            if (activityId === "syllable_counting") {
+              const settled = list.filter((pw) => {
+                const word = pw.targetWord || pw.word || pw.term;
+                const audio = syllableCountAudioFor(word, wordSoundsLanguage, pw, preloadedWords, wordSoundsAudioLibrary, selectedVoice);
+                return WS_CORE.resolveSyllableCount(word, { language: wordSoundsLanguage, prepared: pw.activityItems?.syllable_counting,
+                  recordedTask: pw.activityItems?.syllable_blending, audioContext: audio.context }).supported;
+              });
+              if (settled.length) list = settled;
+            }
+            const used = new Set(list);
+            return (pw) => !pw || typeof pw !== "object" || used.has(pw);
+          })();
           const rawPool =
             preloadedWords && preloadedWords.length > 0
-              ? preloadedWords.map((pw, itemIndex) => ({
+              ? preloadedWords.map((pw, itemIndex) => activityUses(pw) && ({
                 preparedItem: pw,
                 itemIndex,
                 itemId: String((Array.isArray(runtimeSessionConfig.itemIds) ? runtimeSessionConfig.itemIds[itemIndex] : null) ?? pw.itemId ?? pw.probeItemId ?? pw.id ?? `${activityId}:${itemIndex + 1}`),
@@ -13233,7 +14152,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                 definition: pw.definition,
                 image: pw.image,
                 difficulty: "medium",
-              }))
+              })).filter(Boolean)
               : (wordPool || []);
           const uniqueMap = new Map();
           if (rawPool) {
@@ -13353,6 +14272,9 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           probeItemGoal,
           runtimeSessionConfig.itemIds,
           wordFamilySkipMode,
+          wordSoundsLanguage,
+          wordSoundsAudioLibrary,
+          selectedVoice,
         ],
       );
       const generateSoundChips = React.useCallback((phonemes) => {
@@ -13700,7 +14622,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         setWordSoundsPhonemes(data);
         const preparedOptions = wordSoundsActivity === "blending" ? preparedBlendingOptionsFor(data, data.word) : null;
         if (preparedOptions) {
-          setBlendingOptions(preparedOptions);
+          setBlendingOptions(trimSoundChoices("blending", preparedOptions, data.word));
         } else if (
           wordSoundsActivity === "blending" &&
           data.blendingDistractors &&
@@ -13726,7 +14648,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                 if (!usedSet.has(fw)) { validUnique.push(fw); usedSet.add(fw); }
               }
             }
-            const opts = fisherYatesShuffle([target, ...validUnique]);
+            const opts = trimSoundChoices("blending", fisherYatesShuffle([target, ...validUnique]), target);
             setBlendingOptions(opts);
           }
         }
@@ -14200,7 +15122,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             // answer isn't even on the board).
             const preparedOptions = preparedBlendingOptionsFor(wordSoundsPhonemes, targetToCheck);
             if (preparedOptions) {
-              setBlendingOptions(preparedOptions);
+              setBlendingOptions(trimSoundChoices("blending", preparedOptions, targetToCheck));
               return;
             }
             let rawDistractors = wordSoundsPhonemes?.blendingDistractors || [];
@@ -14282,7 +15204,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             // target wasn't even in the list, so blending was unwinnable.
             if (_repairCancelled) return;
             setBlendingOptions &&
-              setBlendingOptions(fisherYatesShuffle(uniqueFinalOptions));
+              setBlendingOptions(trimSoundChoices("blending", fisherYatesShuffle(uniqueFinalOptions), targetToCheck));
             debugLog(
               "✅ Blending options set (Unique & Filtered):",
               uniqueFinalOptions,
@@ -15310,10 +16232,15 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         preloadInitialBatch,
       ]);
       const audioPrefetchRequestsRef = React.useRef(new Map());
+      // Words whose LIVE attempt failed in this session. A _ttsFailed flag that
+      // arrives with the pack (older setup wrote it for every word with no
+      // saved clip) is not in here, so that word is still tried.
+      const audioLiveFailuresRef = React.useRef(new Set());
       React.useEffect(() => {
         const wordKey = word => String(word?.targetWord || word?.word || word?.term || '').trim().toLowerCase();
         const currentKeys = new Set((preloadedWords || []).map(wordKey));
         for (const key of audioPrefetchRequestsRef.current.keys()) if (!currentKeys.has(key)) audioPrefetchRequestsRef.current.delete(key);
+        for (const key of audioLiveFailuresRef.current) if (!currentKeys.has(key)) audioLiveFailuresRef.current.delete(key);
         if (!preloadedWords || preloadedWords.length === 0) return;
         const hasPackedAudio = (words, key) => words.some(item => {
           const asset = item?._ttsAssets?.[key];
@@ -15322,9 +16249,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         const wordsNeedingAudio = [...new Map(preloadedWords.filter(
           // Either kind of readiness means nothing needs fetching now: a
           // portable clip in the pack, or one already fetched this session.
-          // Exhausted failures stay visible until Retry audio or a word edit
-          // clears _ttsFailed; automatically re-arming them flickers the warning.
-          (w) => wordKey(w) && !w.ttsReady && !w._runtimeAudioReady && !w._audioRequested && !w._ttsFailed && !hasPackedAudio(preloadedWords, wordKey(w)) && !isTeacherSpokenWord(w),
+          // A failure that was really attempted here stays visible until Retry
+          // audio, a word edit or a successful play clears _ttsFailed;
+          // automatically re-arming it flickers the warning.
+          (w) => wordKey(w) && !w.ttsReady && !w._runtimeAudioReady && !w._audioRequested && !(w._ttsFailed && audioLiveFailuresRef.current.has(wordKey(w))) && !hasPackedAudio(preloadedWords, wordKey(w)) && !isTeacherSpokenWord(w),
         ).map(word => [wordKey(word), word])).values()];
         if (wordsNeedingAudio.length === 0) return;
         debugLog(
@@ -15388,6 +16316,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           audioPrefetchRequestsRef.current.set(text, request);
           const ok = await tryPrefetch(text, request);
           if (ok !== null && isMountedRef.current && setWsPreloadedWords && audioPrefetchRequestsRef.current.get(text) === request) {
+            if (ok) audioLiveFailuresRef.current.delete(text);
+            else audioLiveFailuresRef.current.add(text);
             setWsPreloadedWords((prev) =>
               prev.map((pw) => {
                 if (audioPrefetchRequestsRef.current.get(text) !== request || !pw._audioRequested) return pw;
@@ -15418,6 +16348,28 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           }
         });
       }, [preloadedWords, setWsPreloadedWords, isTeacherSpokenWord]);
+      // Review panel play button. A success is recorded by handleAudio itself;
+      // a play that really failed is recorded here as a runtime failure, so the
+      // row says so and the teacher can press again. Portable state is untouched.
+      const handleReviewPlayAudio = React.useCallback(async (input, ...rest) => {
+        const outcome = await handleAudio(input, ...rest);
+        const key = typeof input === "string" ? input.trim().toLowerCase() : "";
+        const failed = outcome === null || (!!outcome && typeof outcome === "object" && outcome.ok === false &&
+          (outcome.status === "unavailable" || outcome.status === "damaged"));
+        if (!key || !failed || !setWsPreloadedWords || !isMountedRef.current) return outcome;
+        const packKey = key.replace(/\s+/g, " ");
+        // A request already running for the word reports its own result.
+        const fails = (w) => !!w && typeof w === "object" &&
+          String(w.targetWord || w.word || w.term || "").trim().toLowerCase() === key &&
+          !w.ttsReady && !w._audioRequested && !w._ttsFailed && !portableTtsLibrary[packKey] && !isTeacherSpokenWord(w);
+        setWsPreloadedWords((prev) => {
+          if (!Array.isArray(prev) || !prev.some(fails)) return prev;
+          audioLiveFailuresRef.current.add(key);
+          return prev.map((w) => (fails(w) ? { ...w, _runtimeAudioReady: false, _ttsFailed: true } : w));
+        });
+        return outcome;
+      }, [handleAudio, setWsPreloadedWords, portableTtsLibrary, isTeacherSpokenWord]);
+      // END REVIEW PLAY AUDIO
       // Teacher preview saves what it plays into the lesson, so other places reuse it. Students,
       // probes and parents never write to the class lesson. Saves are batched: each one rewrites the pack.
       const canSaveHeardClips = !!isTeacherMode && !isProbeMode && !isParentMode && typeof setWsPreloadedWords === "function" && !wsStudentDeviceVoiceOnly();
@@ -16563,26 +17515,30 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const board = WS_CORE.buildSessionRhymeBoard({
               session: rhymeSessionRef.current, occurrenceId: rhymeOccurrence,
               word: currentWord, prepared: preparedRhyming, phonemes: wordSoundsPhonemes?.phonemes,
-              pool: [...(preloadedWords || []), ...(wsLangCaps.isEnglish ? WS_CORE.knownWords : [])],
+              pool: [...WS_CORE.lessonOwnItems(preloadedWords), ...(wsLangCaps.isEnglish ? WS_CORE.knownWords : [])],
               isEnglish: wsLangCaps.isEnglish,
             });
             lastWordForRhyming.current = currentWord;
             lastRhymeOccurrenceRef.current = rhymeOccurrence;
             setRhymeReviewRequired(board.supported === false);
-            setRhymeOptions(board.options);
+            setRhymeOptions(trimSoundChoices("rhyming", board.options, board.answer));
             return;
           }
           const correctRhyme = wordSoundsPhonemes?.rhymeWord;
           if (correctRhyme) {
+            const rhymeLevel = choiceLevel();
             const board = WS_CORE.buildSessionRhymeBoard({
               session: rhymeSessionRef.current, occurrenceId: rhymeOccurrence,
               word: currentWord, answer: correctRhyme, phonemes: wordSoundsPhonemes?.phonemes,
-              pool: [...(preloadedWords || []), ...(wsLangCaps.isEnglish ? WS_CORE.knownWords : [])],
+              pool: [...WS_CORE.lessonOwnItems(preloadedWords), ...(wsLangCaps.isEnglish ? WS_CORE.knownWords : [])],
               distractors: wordSoundsPhonemes?.rhymeDistractors || [],
               isEnglish: wsLangCaps.isEnglish,
+              // Easy and medium: fewer, clearly different foils. Hard is unchanged.
+              ...(rhymeLevel && !isEditing && (rhymeLevel.difficulty === "easy" || rhymeLevel.difficulty === "medium")
+                ? { difficulty: rhymeLevel.difficulty, count: WS_CORE.choiceLimit(rhymeLevel.difficulty, 5, rhymeLevel.support) - 1 } : {}),
             });
             setRhymeReviewRequired(board.supported === false);
-            setRhymeOptions(board.options);
+            setRhymeOptions(trimSoundChoices("rhyming", board.options, board.answer));
             lastWordForRhyming.current = currentWord;
             lastRhymeOccurrenceRef.current = rhymeOccurrence;
           } else {
@@ -16596,7 +17552,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               // leave the board unbuilt (the word simply isn't rhymable with
               // the data we have) rather than fabricate English content.
               if (!wsLangCaps.isEnglish) {
-                const _ownWords = (preloadedWords || [])
+                const _ownWords = WS_CORE.lessonOwnItems(preloadedWords)
                   .map((p) => String(p.targetWord || p.word || p.term || "").toLowerCase())
                   .filter((w) => w && w !== word);
                 const _ending = word.slice(-2);
@@ -16707,7 +17663,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             currentPosition: preparedIsolation.position || 0,
             correctSound: preparedIsolation.correctSound,
             correctAnswer: preparedIsolation.correctSound,
-            isoOptions: [...preparedIsolation.options],
+            isoOptions: trimSoundChoices("isolation", [...preparedIsolation.options], preparedIsolation.correctSound),
           };
           isolationPositionRef.current = preparedState.currentPosition;
           lastWordForIsolation.current = currentWord;
@@ -16738,7 +17694,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           );
           lastWordForIsolation.current = currentWord;
           const phonemeCount = wordSoundsPhonemes?.phonemes?.length || 2;
-          const positionIndex = Math.floor(Math.random() * phonemeCount);
+          // Easy asks for the first sound, medium the first or last, hard any.
+          const isoAllowed = isFixedForm ? null : WS_CORE.isolationPositions(getEffectiveDifficulty(), phonemeCount);
+          const positionIndex = isoAllowed ? isoAllowed[Math.floor(Math.random() * isoAllowed.length)] : Math.floor(Math.random() * phonemeCount);
           isolationPositionRef.current = positionIndex;
           const currentPosition =
             typeof isolationPositionRef.current === "number"
@@ -16950,7 +17908,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               isoUsedSet.add(k);
             }
           }
-          const isoOptions = fisherYatesShuffle(isoUniqueOpts.slice(0, 6));
+          const isoOptions = trimSoundChoices("isolation", fisherYatesShuffle(isoUniqueOpts.slice(0, 6)), effectiveCorrect);
           setIsolationState({
             word: currentWordSoundsWord,
             currentPosition,
@@ -16984,7 +17942,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           const phonemes =
             wordSoundsPhonemes?.phonemes ||
             estimatePhonemesBasic(currentWordSoundsWord);
-          const pos = Math.floor(Math.random() * phonemes.length);
+          const isoAllowed = isFixedForm ? null : WS_CORE.isolationPositions(getEffectiveDifficulty(), phonemes.length);
+          const pos = isoAllowed ? isoAllowed[Math.floor(Math.random() * isoAllowed.length)] : Math.floor(Math.random() * phonemes.length);
           const correct = phonemes[pos] || currentWordSoundsWord[0] || "a";
           // Phoneme-key dedup — keep distractors in truly different phonemes
           // from the correct answer AND from each other.
@@ -17011,7 +17970,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             currentPosition: pos,
             correctSound: correct,
             correctAnswer: correct,
-            isoOptions: fisherYatesShuffle([correct, ...dists.slice(0, 5)]),
+            isoOptions: trimSoundChoices("isolation", fisherYatesShuffle([correct, ...dists.slice(0, 5)]), correct),
           });
           setIsLoadingPhonemes(false);
         }, 3000);
@@ -17445,7 +18404,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               setIsLoadingPhonemes(false);
               const preparedBlendOptions = activityId === "blending" ? preparedBlendingOptionsFor(preloadedWord, targetWord) : null;
               if (preparedBlendOptions) {
-                setBlendingOptions(preparedBlendOptions);
+                setBlendingOptions(trimSoundChoices("blending", preparedBlendOptions, targetWord, activityId));
                 lastWordForBlending.current = targetWord;
               } else if (activityId === "blending" && preloadedWord.blendingDistractors) {
                 let distractors = preloadedWord.blendingDistractors.slice(
@@ -17461,7 +18420,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   }
                 }
                 setBlendingOptions(
-                  fisherYatesShuffle([targetWord, ...distractors]),
+                  trimSoundChoices("blending", fisherYatesShuffle([targetWord, ...distractors]), targetWord, activityId),
                 );
                 lastWordForBlending.current = targetWord;
                 debugLog(
@@ -18540,6 +19499,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               const newAttempts = attempts + 1;
               setAttempts(newAttempts);
               playSound("error");
+              {
+                // "Not this one": the tried card is marked and the selection clears.
+                const _triedResp = opts && opts.response && typeof opts.response === "object" ? opts.response : null;
+                const _tried = String((_triedResp && _triedResp.picked != null ? _triedResp.picked : answer) ?? "");
+                setAnswerCards((prev) => ({ key: _itemKey, selected: null, revealed: false,
+                  wrong: [...(prev.key === _itemKey ? prev.wrong : []), _tried] }));
+              }
               if (newAttempts === 1) {
                 if (effectiveCheckMode === "progressive")
                   setShowImageForCurrentWord(true);
@@ -18664,6 +19630,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             setAttempts(0);
             // Final answer is in: the anchor card may now show as reinforcement.
             setAnchorAnsweredKey(_itemKey);
+            if (!isProbeMode) {
+              // The item is over: mark the answer card (and the last miss).
+              const _triedResp = opts && opts.response && typeof opts.response === "object" ? opts.response : null;
+              const _tried = String((_triedResp && _triedResp.picked != null ? _triedResp.picked : answer) ?? "");
+              setAnswerCards((prev) => ({ key: _itemKey, selected: null, revealed: true,
+                wrong: [...(prev.key === _itemKey ? prev.wrong : []), ...(isCorrect ? [] : [_tried])] }));
+              if (!isCorrect) setShowWordText(true);
+            }
             const _wrongPicks = wrongPicksRef.current.list.slice(0, 4);
             wrongPicksRef.current = { key: null, list: [] };
             // Connected-text read-backs are longer than the standard 2s
@@ -18672,6 +19646,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             // a read-back plays, the advance waits for it (scaled by text
             // length, clamped so a long story can never stall the session).
             let _rbAdvanceMs = 2000;
+            let _missAdvanceMs = 3000;
             const newStreak = isCorrect
               ? attempts > 0
                 ? wordSoundsScore.streak
@@ -18969,12 +19944,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   completed: true,
                 },
               }));
-              const uniqueActivities = [...new Set(activitySequence)];
+              const uniqueActivities = [...new Set(activitySequence)].filter((a) => a === wordSoundsActivity || wsActivityAvailableForLang(a));
               const currentIdx = uniqueActivities.indexOf(wordSoundsActivity);
               if (currentIdx < uniqueActivities.length - 1) {
                 const nextActivity = uniqueActivities[currentIdx + 1];
                 // A miss that hits the limit keeps its own "Nice try" feedback.
-                const nextLabel = ALL_ACTIVITIES.find((a) => a.id === nextActivity)?.label || nextActivity.replace(/_/g, " ");
+                const nextLabel = activityDisplayName(nextActivity);
                 if (isCorrect) _lessonTransitionMessage = "✅ " + (ts("word_sounds.lesson_activity_next", { activity: nextLabel }) || ("Activity complete! Next: " + nextLabel)) + " 🎉";
                 setWordSoundsScore((prev) => ({ ...prev, streak: 0 }));
                 if (setWordSoundsStreak) setWordSoundsStreak(0);
@@ -19045,6 +20020,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   "read_sentence",
                   "read_passage",
                 ].filter(wsActivityAvailableForLang);
+                // A lesson-only pack without its plan walks its own activities, in their saved order.
+                if (lessonPreparedOnly) {
+                  PHONO_ORDER.splice(0, PHONO_ORDER.length, ...lessonPreparedList.filter((id) => wsActivityAvailableForLang(id)));
+                  ORTHO_ORDER.length = 0;
+                }
                 const phonoIdx = PHONO_ORDER.indexOf(wordSoundsActivity);
                 const orthoIdx = ORTHO_ORDER.indexOf(wordSoundsActivity);
                 let nextActivity = null;
@@ -19211,7 +20191,20 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               message: _lessonTransitionMessage || _resultMsg,
             });
             // (announced by the wordSoundsFeedback mirror effect)
-            if (
+            // A missed item is modelled once: the target, then its answer. The
+            // next item waits for it.
+            const _model = !isCorrect && !isProbeMode ? answerModelSteps() : null;
+            if (_model && _model.length) {
+              const answerRun = audioRunIdRef.current;
+              _missAdvanceMs = Math.min(7000, Math.max(3000, 1100 + _model.length * 900));
+              setTimeout(async () => {
+                for (const step of _model) {
+                  if (!isMountedRef.current || audioCancelledRef.current || audioRunIdRef.current !== answerRun) return;
+                  try { await handleAudio(step); } catch (_) { /* a missing clip must not stop the model */ }
+                  await new Promise((resolve) => setTimeout(resolve, 250));
+                }
+              }, 600);
+            } else if (
               !isCorrect &&
               expectedAnswer &&
               !_expIsSentinel &&
@@ -19275,7 +20268,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ? postScore.total >= probeItemGoal
                   : postScore.correct >=
                     wordSoundsSessionGoal + (orthoSessionGoal || 0);
-                if (_goalMet) {
+                // Free practice used to end only at N correct, so a learner who
+                // kept missing never finished. Same hard stop as a lesson
+                // activity: twice the goal, counted in answered items.
+                const _practiceCeilingHit = !isFixedForm && !isProbeMode && !hasLessonPlan &&
+                  postScore.total >= WS_CORE.lessonItemCeiling(wordSoundsSessionGoal + (orthoSessionGoal || 0));
+                if (_goalMet || _practiceCeilingHit) {
                   debugLog("WordSounds: Session Goal Met! Complete.");
                   if (isProbeMode && probeStartTimeRef.current) {
                     emitProbeComplete(postScore, _historyEntry);
@@ -19318,7 +20316,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               // Keep scored probe exposure intervals correctness-neutral.
               // Otherwise incorrect responses received 400ms more elapsed
               // time and depressed the reported correct-per-minute rate.
-              isProbeMode ? 800 : isCorrect ? _rbAdvanceMs : 3000,
+              isProbeMode ? 800 : isCorrect ? _rbAdvanceMs : _missAdvanceMs,
             );
           } catch (e) {
             warnLog("CheckAnswer CRITICAL FAIL", e);
@@ -20375,6 +21373,52 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         }
         return options.sort(() => nextRand() - 0.5);
       }, [correctLetter, currentWordSoundsWord, wordSoundsPhonemes]);
+      // BEGIN WORD SOUNDS ANSWER CARDS (modal side)
+      const cardsItemKey = `${advanceEpochRef.current}|${itemPresentation}|${wordSoundsActivity}|${currentWordSoundsWord}`;
+      const liveAnswerCards = !isProbeMode && answerCards.key === cardsItemKey ? answerCards : { key: cardsItemKey, selected: null, wrong: [], revealed: false };
+      const cardLabels = {
+        check: ts("word_sounds.card_check") || "Check",
+        wrong: ts("word_sounds.card_not_this_one") || "Not this one",
+        answer: ts("word_sounds.card_answer") || "Answer",
+      };
+      const wordSame = (a, b) => { const x = String(a ?? "").toLowerCase().trim(); return !!x && x === String(b ?? "").toLowerCase().trim(); };
+      // heardOnly: the card shows no word or picture, so it must be heard
+      // before it can be chosen. Probes keep one-tap answers and no marks.
+      const buildAnswerCards = ({ answer, isAnswer, same = wordSame, grade, heardOnly }) => {
+        const selectMode = !!heardOnly && !isProbeMode && !isEditing;
+        const state = liveAnswerCards;
+        const stamp = (value) => cardsItemKey + "|" + state.wrong.length + "|" + String(value).toLowerCase();
+        // The same choice again within 600 ms is a double tap. (Timed, so a swallowed first tap never locks a choice.)
+        const doubleTap = (value) => {
+          const last = cardGradeStampRef.current, now = Date.now();
+          cardGradeStampRef.current = { stamp: stamp(value), at: now };
+          return !!last && last.stamp === stamp(value) && now - last.at < 600;
+        };
+        return {
+          selectMode, selected: selectMode ? state.selected : null, wrong: state.wrong, revealed: state.revealed,
+          locked: !!submissionLockRef.current, still: !!disableAnimations, labels: cardLabels, same,
+          isAnswer: isAnswer || ((value) => same(value, answer)),
+          pick: (value, play) => {
+            if (!isMountedRef.current || (submissionLockRef.current && !isProbeMode)) return;
+            if (state.wrong.some((tried) => same(tried, value))) return;
+            if (!selectMode) {
+              // A double tap is one answer, not a miss and its retry.
+              if (!isProbeMode && doubleTap(value)) return;
+              grade(value);
+              return;
+            }
+            cardGradeStampRef.current = null;
+            try { if (play) play(); } catch (_) { /* audio must not block the selection */ }
+            setAnswerCards({ key: cardsItemKey, selected: value, wrong: state.wrong, revealed: false });
+          },
+          check: () => {
+            if (!selectMode || state.selected == null || submissionLockRef.current) return;
+            if (doubleTap(state.selected)) return;
+            grade(state.selected);
+          },
+        };
+      };
+      // END WORD SOUNDS ANSWER CARDS (modal side)
       const renderActivityContent = () => {
         const handleDragStart = (e, item, source, index = null) => {
           setDraggedItem({ item, source, index });
@@ -20538,6 +21582,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 onStartPlayback: beginIsolationPlayback,
                 onPlayInstruction: playIsolationInstruction,
                 onCheckAnswer: (ans) => checkAnswer(ans, correctSound),
+                cards: buildAnswerCards({
+                  answer: correctSound, same: soundSame, grade: (ans) => checkAnswer(ans, correctSound),
+                  heardOnly: !showLetterHints && !(aacMode && (isoOptions || []).every((option) => {
+                    const keyword = PHONEME_KEYWORDS[String(option).replace(/\//g, "").toLowerCase()];
+                    return !!(keyword && optionImages && optionImages[keyword]);
+                  })),
+                }),
                 isEditing: isEditing,
                 onUpdateOption: handleOptionUpdate,
                 highlightedIndex: highlightedIsoIndex,
@@ -20563,6 +21614,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           case "segmentation":
           case "blending": {
             const availableChips = soundChips.filter((c) => !c.used);
+            const blendCards = wordSoundsActivity === "blending" ? buildAnswerCards({
+              answer: currentWordSoundsWord,
+              grade: (word) => {
+                const isCorrect = word?.toLowerCase() === currentWordSoundsWord?.toLowerCase();
+                checkAnswer(isCorrect ? "correct" : "incorrect", "correct", { response: { picked: word, expected: currentWordSoundsWord } });
+              },
+              heardOnly: !showLetterHints && !(aacMode && (blendingOptions || []).every((option) => optionImages[option])),
+            }) : null;
             return /*#__PURE__*/ React.createElement(
               "div",
               { className: "space-y-6" },
@@ -20627,7 +21686,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         )
                         : /*#__PURE__*/ React.createElement(
                           "span",
-                          { className: "text-sm opacity-50" },
+                          { className: "inline-flex flex-col items-center text-sm opacity-50" },
+                          wsSafeIcon("Download", { size: 18 }),
                           ts("word_sounds.drop") || "Drop",
                         ),
                     );
@@ -20791,8 +21851,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         }
                       },
                       disabled: submissionLockRef.current || !elkoninBoxes.length || elkoninBoxes.some((b) => b === null),
-                      className: `px-8 py-3 rounded-full font-bold text-lg shadow-lg transition-all ${!elkoninBoxes.length || elkoninBoxes.some((b) => b === null) ? "bg-slate-200 text-slate-600 cursor-not-allowed" : "bg-violet-600 text-white hover:bg-violet-700 hover:scale-105"}`,
+                      className: `inline-flex items-center gap-2 px-8 py-3 rounded-full font-bold text-lg shadow-lg transition-all ${!elkoninBoxes.length || elkoninBoxes.some((b) => b === null) ? "bg-slate-200 text-slate-600 cursor-not-allowed" : "bg-violet-600 text-white hover:bg-violet-700 hover:scale-105"}`,
                     },
+                    wsSafeIcon("Check", { size: 22 }),
                     t("common.check"),
                   ),
                 ),
@@ -20918,8 +21979,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       "div",
                       {
                         key: "blend-grid-" + (showLetterHints ? "phonics" : "soundsonly"),
+                        "data-ws-cards": "true",
                         className:
-                          "grid grid-cols-2 gap-3 max-w-sm mx-auto",
+                          "grid grid-cols-2 gap-3 w-full max-w-sm mx-auto" + ((blendingOptions || []).length > 4 ? " md:grid-cols-3 md:max-w-xl" : ""),
                       },
                       (blendingOptions || []).map((word, idx) =>
                         isEditing
@@ -20949,18 +22011,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                 // "Option N" when letters are hidden); it
                                 // was announced as "Volume".
                                 "data-ws-blend-choice": "true",
-                                onClick: () => {
-                                  const isCorrect =
-                                    word?.toLowerCase() ===
-                                    currentWordSoundsWord?.toLowerCase();
-                                  checkAnswer(
-                                    isCorrect ? "correct" : "incorrect",
-                                    "correct",
-                                    { response: { picked: word, expected: currentWordSoundsWord } },
-                                  );
-                                },
+                                ...wsCardProps(blendCards, word, () => handleManualAudio(word)),
                                 className:
-                                  "w-full px-8 py-6 bg-white border-2 border-slate-200 rounded-xl font-bold text-xl shadow-md hover:border-violet-400 hover:scale-105 hover:shadow-lg transition-all capitalize flex flex-col items-center gap-2",
+                                  "w-full px-8 py-6 border-2 rounded-xl font-bold text-xl shadow-md transition-all capitalize flex flex-col items-center gap-2 " + wsCardClass(blendCards, word, "bg-white border-slate-200 hover:border-violet-400 hover:scale-105 hover:shadow-lg"),
                               },
                               aacMode && optionImages[word]
                                 ? /*#__PURE__*/ React.createElement("img", {
@@ -20980,8 +22033,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                   },
                                   ts("word_sounds.option_n", { n: idx + 1 }) || ("Option " + (idx + 1)),
                                 ),
+                              wsCardMark(blendCards, word),
                             ),
-                                    /*#__PURE__*/ React.createElement(
+                                    // In select mode the whole card plays: no second, smaller target.
+                                    blendCards && blendCards.selectMode ? null : /*#__PURE__*/ React.createElement(
                               "button",
                               {
                                 "aria-label": t(
@@ -20992,7 +22047,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                                   handleManualAudio(word);
                                 },
                                 className:
-                                  "absolute top-1 right-1 w-8 h-8 bg-pink-100 hover:bg-pink-700 hover:text-white text-pink-700 rounded-lg flex items-center justify-center shadow-sm transition-all z-10",
+                                  "absolute top-1 right-1 w-11 h-11 bg-pink-100 hover:bg-pink-700 hover:text-white text-pink-700 rounded-lg flex items-center justify-center shadow-sm transition-all z-10",
                                 title: t(
                                   "common.listen_to_this_option",
                                 ),
@@ -21005,6 +22060,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                           ),
                       ),
                     ),
+                    wsCardCheck(blendCards),
                           /*#__PURE__*/ React.createElement(
                       "button",
                       {
@@ -21443,12 +22499,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
               /*#__PURE__*/ React.createElement(
                 "div",
-                { dir: wsWordDir, className: "flex gap-1 justify-center" },
+                { dir: wsWordDir, className: "ws-scramble-slots" },
                 (() => {
                   // Typed letters fill the letter slots in order; fixed slots
                   // (apostrophe, hyphen, space) are already in place.
                   const typed = String(userAnswer || "").split("").filter((ch) => !wsSpellFixedChar(ch));
                   let at = 0;
+                  // One row while a slot can stay 24px wide or more; longer words wrap.
+                  const slotStyle = { flex: "0 1 calc(" + (100 / Math.max(1, (currentWordSoundsWord || "").length)).toFixed(3) + "% - 4px)", maxWidth: "2.5rem" };
                   return (currentWordSoundsWord || "").split("").map((ch, idx) => {
                     if (wsSpellFixedChar(ch)) return /*#__PURE__*/ React.createElement(
                       "div",
@@ -21461,6 +22519,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       {
                         key: idx,
                         "data-ws-spell-slot": "true",
+                        style: slotStyle,
                         className: `w-10 h-12 border-2 rounded flex items-center justify-center text-lg font-bold uppercase ${shown ? "border-violet-400 bg-violet-100 text-violet-700" : "border-slate-200 bg-white"}`,
                       },
                       shown ? shown.toUpperCase() : "",
@@ -21498,8 +22557,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         if (editConstructionAnswer("")) setUsedScrambleIndices([]);
                       },
                       className:
-                        "px-4 py-2 rounded-lg bg-slate-100 text-slate-600 font-medium hover:bg-slate-200 transition-all",
+                        "inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-slate-100 text-slate-600 font-medium hover:bg-slate-200 transition-all",
                     },
+                    wsSafeIcon("Trash2", { size: 18 }),
                     ts("word_sounds.word_scramble_clear") || "Clear",
                   ),
                 /*#__PURE__*/ React.createElement(
@@ -21508,8 +22568,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       "aria-label": ts("word_sounds.word_scramble_check") || "Check Answer",
                       onClick: checkScramble,
                       disabled: submissionLockRef.current || useMicInput || !String(userAnswer || "").trim(),
-                      className: `px-6 py-2 rounded-lg font-bold shadow-md transition-all ${userAnswer ? "bg-violet-500 hover:bg-violet-600 text-white hover:scale-105" : "bg-slate-200 text-slate-600 cursor-not-allowed"}`,
+                      className: `inline-flex items-center gap-2 px-6 py-2 rounded-lg font-bold shadow-md transition-all ${userAnswer ? "bg-violet-500 hover:bg-violet-600 text-white hover:scale-105" : "bg-slate-200 text-slate-600 cursor-not-allowed"}`,
                     },
+                    wsSafeIcon("Check", { size: 18 }),
                     ts("word_sounds.word_scramble_check"),
                   ),
                 ),
@@ -21647,6 +22708,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             );
           }
           case "manipulation": {
+            const gradeManipulation = (ans) => {
+                  if (!WS_CORE.manipulationReady(manipulationState)) return;
+                  const isCorrect =
+                    ans?.toLowerCase() ===
+                    manipulationState?.answer?.toLowerCase();
+                  checkAnswer(isCorrect ? "correct" : "incorrect", "correct", { response: { picked: ans, expected: manipulationState?.answer } });
+                };
             return /*#__PURE__*/ React.createElement(
               "div",
               { className: "flex flex-col gap-4" },
@@ -21664,13 +22732,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 onUpdateOption: handleOptionUpdate,
                 isAudioBusy: isPlayingAudio,
                 optionImages: aacMode ? optionImages : null,
-                onCheckAnswer: (ans) => {
-                  if (!WS_CORE.manipulationReady(manipulationState)) return;
-                  const isCorrect =
-                    ans?.toLowerCase() ===
-                    manipulationState?.answer?.toLowerCase();
-                  checkAnswer(isCorrect ? "correct" : "incorrect", "correct", { response: { picked: ans, expected: manipulationState?.answer } });
-                },
+                onCheckAnswer: gradeManipulation,
+                cards: buildAnswerCards({
+                  answer: manipulationState?.answer, grade: gradeManipulation,
+                  heardOnly: !showLetterHints && !(aacMode && (manipulationOptions || []).every((option) => optionImages[option])),
+                }),
                 t: t,
                 ts: ts,
                 speakInstructionWithPhonemes: speakInstructionWithPhonemes,
@@ -21689,6 +22755,21 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             );
           }
           case "syllable_blending": {
+            const gradeSyllableBlend = (ans) => {
+                  if (!WS_CORE.syllableReady(syllableDataRef.current)) return;
+                  const word =
+                    currentWordSoundsWord || wordSoundsPhonemes?.word || "";
+                  const isCorrect =
+                    String(ans || "").trim().toLowerCase() === word.trim().toLowerCase();
+                  checkAnswer(isCorrect ? "correct" : "incorrect", "correct", {
+                    response: { picked: ans, expected: word },
+                    taskEvidence: {
+                      taskKind: "syllable_blending_choice",
+                      textSupported: showLetterHints || !aacMode || (syllableData?.blendingOptions || []).some((option) => !optionImages?.[option]),
+                      cluesShown: [showLetterHints || !aacMode || (syllableData?.blendingOptions || []).some((option) => !optionImages?.[option]) ? "written_choices" : "picture_choices"],
+                    },
+                  });
+                };
             return /*#__PURE__*/ React.createElement(
               "div",
               { className: "flex flex-col gap-4" },
@@ -21712,21 +22793,9 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 isAudioBusy: isPlayingAudio || isSyllableSequenceBusy,
                 canAnswer: syllableDelivered && syllableDeliveredRef.current === syllableData,
                 optionImages: aacMode ? optionImages : null,
-                onCheckAnswer: (ans) => {
-                  if (!WS_CORE.syllableReady(syllableDataRef.current)) return;
-                  const word =
-                    currentWordSoundsWord || wordSoundsPhonemes?.word || "";
-                  const isCorrect =
-                    String(ans || "").trim().toLowerCase() === word.trim().toLowerCase();
-                  checkAnswer(isCorrect ? "correct" : "incorrect", "correct", {
-                    response: { picked: ans, expected: word },
-                    taskEvidence: {
-                      taskKind: "syllable_blending_choice",
-                      textSupported: showLetterHints || !aacMode || (syllableData?.blendingOptions || []).some((option) => !optionImages?.[option]),
-                      cluesShown: [showLetterHints || !aacMode || (syllableData?.blendingOptions || []).some((option) => !optionImages?.[option]) ? "written_choices" : "picture_choices"],
-                    },
-                  });
-                },
+                onCheckAnswer: gradeSyllableBlend,
+                // Written choices: one tap answers; the cards only carry the tried / answer marks.
+                cards: buildAnswerCards({ answer: currentWordSoundsWord || wordSoundsPhonemes?.word || "", grade: gradeSyllableBlend, heardOnly: false }),
                 t: t,
                 ts: ts,
               }),
@@ -21856,24 +22925,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 ),
               );
             }
-            return /*#__PURE__*/ React.createElement(
-              "div",
-              { className: "flex flex-col gap-4" },
-              renderPrompt(),
-              /*#__PURE__*/ React.createElement(RhymeView, {
-                data: {
-                  word: currentWordSoundsWord,
-                  rhymeWord: wordSoundsPhonemes?.rhymeWord,
-                  options: rhymeOptions,
-                },
-                highlightedIndex: highlightedRhymeIndex,
-                showLetterHints: showLetterHints,
-                onPlayAudio: handleManualAudio,
-                isEditing: isEditing,
-                onUpdateOption: handleOptionUpdate,
-                isAudioBusy: isPlayingAudio,
-                optionImages: aacMode ? optionImages : null,
-                onCheckAnswer: (ans) => {
+            const gradeRhyme = (ans) => {
                   const _a = (ans || "").toLowerCase().trim();
                   const _rw = (
                     wordSoundsPhonemes?.rhymeWord || ""
@@ -21906,7 +22958,29 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       _rimeOf(_a).length >= 2 &&
                       _rimeOf(_a) === _rimeOf(_tw));
                   checkAnswer(isRhyme ? "correct" : "incorrect", "correct", { response: { picked: _a, expected: _rw || null } });
+                };
+            return /*#__PURE__*/ React.createElement(
+              "div",
+              { className: "flex flex-col gap-4" },
+              renderPrompt(),
+              /*#__PURE__*/ React.createElement(RhymeView, {
+                data: {
+                  word: currentWordSoundsWord,
+                  rhymeWord: wordSoundsPhonemes?.rhymeWord,
+                  options: rhymeOptions,
                 },
+                highlightedIndex: highlightedRhymeIndex,
+                showLetterHints: showLetterHints,
+                onPlayAudio: handleManualAudio,
+                isEditing: isEditing,
+                onUpdateOption: handleOptionUpdate,
+                isAudioBusy: isPlayingAudio,
+                optionImages: aacMode ? optionImages : null,
+                onCheckAnswer: gradeRhyme,
+                cards: buildAnswerCards({
+                  answer: wordSoundsPhonemes?.rhymeWord, grade: gradeRhyme,
+                  heardOnly: !showLetterHints && !(aacMode && (rhymeOptions || []).every((option) => optionImages[option])),
+                }),
                 t: t,
                 ts: ts,
               }),
@@ -21945,6 +23019,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const difficulty = _ssItem.difficulty;
             const selectedMatches = _ssItem.options;
             const selectedDistractors = _ssItem.distractors;
+            findAllBoardRef.current = { word: targetWord, options: selectedMatches };
             return /*#__PURE__*/ React.createElement(
               "div",
               { className: "space-y-4" },
@@ -21968,6 +23043,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 // The global letters toggle (👁️) also reveals — one mental
                 // model across all activities; the local toggle still works.
                 soundOnlyMode: !showWordText && !showLetterHints,
+                revealAnswers: liveAnswerCards.revealed,
                 onPlayAudio: handleAudio,
                 onPreloadAudio: (word) => handleAudio(word, false),
                 onUpdateOption: (i, v, type) =>
@@ -22137,13 +23213,20 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               wordSoundsPhonemes?.phonemes?.length ||
               0;
             const expectedCount = count >= 11 ? "11+" : count;
-            const numberOptions = Array.from({ length: 10 }, (_, i) => i + 1);
+            // Easy: the count with two either side. Medium: 1-8. Hard, probes and editing: the full row.
+            const countLevel = choiceLevel();
+            const trimmedCounts = countLevel && !isEditing ? WS_CORE.countingChoices(count, countLevel.difficulty) : null;
+            const numberOptions = trimmedCounts || Array.from({ length: 10 }, (_, i) => i + 1);
+            const countCards = buildAnswerCards({
+              answer: expectedCount, same: (a, b) => String(a) === String(b),
+              grade: (value) => checkAnswer(value, expectedCount), heardOnly: false,
+            });
             const handleCountDrop = (e) => {
               e.preventDefault();
               if (!draggedItem) return;
               const { item } = draggedItem;
               const val = item === 11 || item === "11+" ? "11+" : parseInt(item);
-              checkAnswer(val, expectedCount);
+              countCards.pick(val);
               setDraggedItem(null);
             };
             const handleCountKeyDown = (e, num) => {
@@ -22151,8 +23234,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               if (e.key === "Enter" || e.key === " " || e.key === "Spacebar") {
                 e.preventDefault();
                 if (e.repeat) return;
-                checkAnswer(num === 11 ? "11+" : num, expectedCount);
+                countCards.pick(num === 11 ? "11+" : num);
+                return;
               }
+              wsCardKeyDown(e, null, num);
             };
             return /*#__PURE__*/ React.createElement(
               "div",
@@ -22212,7 +23297,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
               /*#__PURE__*/ React.createElement(
                 "div",
-                { className: "flex justify-center flex-wrap gap-4" },
+                { className: "flex justify-center flex-wrap gap-4", "data-ws-cards": "true" },
                 numberOptions.map((num) =>
                   /*#__PURE__*/ React.createElement(
                   "div",
@@ -22223,23 +23308,29 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     onDragStart: (e) => handleDragStart(e, num, "number"),
                     onKeyDown: (e) => handleCountKeyDown(e, num),
                     tabIndex: 0,
-                    onClick: () => checkAnswer(num, expectedCount),
+                    onClick: () => countCards.pick(num),
+                    "data-ws-card": "true",
+                    "data-ws-card-state": wsCardState(countCards, num),
+                    ...(wsCardState(countCards, num) === "wrong" ? { "aria-disabled": "true" } : {}),
+                    ...(wsCardState(countCards, num) === "correct" ? { "aria-current": "true" } : {}),
                     className:
-                      "w-16 h-16 rounded-2xl bg-white border-b-4 border-violet-200 text-violet-700 font-black text-2xl flex items-center justify-center shadow-sm hover:shadow-md hover:scale-110 hover:bg-violet-50 hover:border-violet-400 transition-all cursor-grab active:cursor-grabbing",
+                      "ws-card-small w-16 h-16 rounded-2xl font-black text-2xl flex items-center justify-center shadow-sm transition-all cursor-grab active:cursor-grabbing " + wsCardClass(countCards, num, "bg-white border-b-4 border-violet-200 text-violet-700 hover:shadow-md hover:scale-110 hover:bg-violet-50 hover:border-violet-400"),
                     "aria-label": (ts("word_sounds.sr_number") || "Number ") + num,
                   },
                   num,
+                  wsCardMark(countCards, num),
                 ),
                 ),
-                /*#__PURE__*/ React.createElement(
+                trimmedCounts ? null : /*#__PURE__*/ React.createElement(
                   "div",
                   {
                     draggable: true,
                     role: "button",
+                    "data-ws-card": "true",
                     onDragStart: (e) => handleDragStart(e, 11, "number"),
                     onKeyDown: (e) => handleCountKeyDown(e, 11),
                     tabIndex: 0,
-                    onClick: () => checkAnswer("11+", expectedCount),
+                    onClick: () => countCards.pick("11+"),
                     className:
                       "w-16 h-16 rounded-2xl bg-gradient-to-br from-violet-100 to-purple-100 border-b-4 border-purple-300 text-purple-700 font-black text-lg flex items-center justify-center shadow-sm hover:shadow-md hover:scale-110 hover:bg-purple-50 hover:border-purple-400 transition-all cursor-grab active:cursor-grabbing",
                     "aria-label": t("common.11_or_more_sounds"),
@@ -22261,6 +23352,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const { targetRime, rimeDifficulty, selectedMembers, selectedDistractors } = _wfBoard;
             // Teachers still get the editor so a conflicting board can be fixed.
             if (!isEditing && _wfBoard.issue) return _wfReviewNeeded();
+            findAllBoardRef.current = { word: targetWord, options: selectedMembers };
             return /*#__PURE__*/ React.createElement(
               "div",
               { className: "space-y-4" },
@@ -22327,6 +23419,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 showLetterHints: showLetterHints,
                 // Global letters toggle reveals here too (see Sound Sort note).
                 soundOnlyMode: !showWordText && !showLetterHints,
+                revealAnswers: liveAnswerCards.revealed,
               }),
             );
           }
@@ -22887,7 +23980,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             } catch (_) {}
           }
         }
-        const words = preloadedWords.slice(0, 3).map((w) => wsPresentWord(w)).filter(Boolean);
+        const words = WS_CORE.lessonOwnItems(preloadedWords).slice(0, 3).map((w) => wsPresentWord(w)).filter(Boolean);
         const title = presentTr("word_sounds.present_offline_title", "Word Sounds: {words}", { words: words.join(", ") });
         // Labels follow the interface language; the lesson keeps its own (screen readers switch voice by lang).
         let uiLang = "", uiDir = "";
@@ -23026,7 +24119,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       const printDialogRef = React.useRef(null);
       const printFocusBackRef = React.useRef(false);
       const printTr = wsPresentTr(ts);
-      const printEntries = React.useMemo(() => wsPrintEntries(preloadedWords, preparedImageLibrary), [preloadedWords, preparedImageLibrary]);
+      // Word cards, sound boxes and the family letter list the lesson's own words.
+      const printEntries = React.useMemo(() => wsPrintEntries(WS_CORE.lessonOwnItems(preloadedWords), preparedImageLibrary), [preloadedWords, preparedImageLibrary]);
       const printSkipped = printEntries.filter((e) => !e.sounds).length;
       const printSkippedNote = printSkipped === 1
         ? printTr("word_sounds.print_boxes_skipped_one", "{count} word has no sound data and is left out.", { count: 1 })
@@ -23099,7 +24193,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           const recorded = clip && clip.provenance && clip.provenance.language;
           if (!recorded || WS_CORE.packAudioLanguageKey(recorded) === lessonKey) ttsAssets[name] = clip;
         });
-        const words = preloadedWords.map((entry) => {
+        const words = WS_CORE.lessonOwnItems(preloadedWords).map((entry) => {
           const copy = { ...entry };
           delete copy._ttsAssets;
           return { ...copy, word: entry.targetWord || entry.word || entry.term };
@@ -23170,12 +24264,27 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         for (let waited = 0; !loaded() && waited < 10000; waited += 250) await new Promise((r) => setTimeout(r, 250));
         return banks();
       };
-      const takeHomeLesson = async (lib, submit, words) => lib.lessonFromPack(words || preloadedWords, {
+      // Each take-home activity is built from the items that activity uses; a word left out
+      // because it belongs to another activity is not reported as a problem.
+      const takeHomeAdapters = (lib) => Object.fromEntries(Object.entries(lib.ADAPTERS || {}).map(([id, adapter]) => [id, {
+        ...adapter,
+        prepare: (item, env) => WS_CORE.packItemPlaysIn(item, id, "en") || (WS_CORE.SYLLABLE_ACTIVITY_IDS.includes(id) && !WS_CORE.isTopUpItem(item))
+          ? adapter.prepare(item, env) : { missing: ["other-activity"] },
+      }]));
+      const takeHomeOwn = (built) => {
+        if (!built || !Array.isArray(built.exceptions)) return built;
+        const keep = (list) => list.filter((entry) => !(Array.isArray(entry.missing) && entry.missing[0] === "other-activity"));
+        const exceptions = keep(built.exceptions);
+        return { ...built, exceptions, total: built.ready + exceptions.length,
+          perActivity: (built.perActivity || []).map((row) => ({ ...row, exceptions: keep(row.exceptions || []) })) };
+      };
+      const takeHomeLesson = async (lib, submit, words) => takeHomeOwn(lib.lessonFromPack(words || preloadedWords, {
+        adapters: takeHomeAdapters(lib),
         core: WS_CORE, banks: await takeHomeBanks(), isEnglish: true, showLetters: takeHomeLetters,
         activities: takeHomeChosen(lib.activities()), submit: submit || null,
         title: takeHomeTitle.trim() || printTr("word_sounds.take_home_default_title", "Find the sound"),
         lessonId: historyResourceId != null ? "ws-" + String(historyResourceId) : undefined,
-      });
+      }));
       React.useEffect(() => {
         if (!takeHomeOpen) return undefined;
         const run = ++takeHomeRunRef.current;
@@ -23533,7 +24642,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         const section = "rounded-xl border-2 border-slate-200 p-4";
         const ready = takeHomeReady;
         const chosen = takeHomeChosen();
-        const takeHomeActivityName = (id, fallback) => (ALL_ACTIVITIES.find((x) => x.id === id) || {}).label || fallback;
+        const takeHomeActivityName = (id, fallback) => (WS_CORE.ACTIVITY_SKILLS[id] ? activityDisplayName(id) : fallback);
         const toggleActivity = (id, on) => {
           const next = on ? [...chosen, id] : chosen.filter((x) => x !== id);
           setTakeHomeActivities(takeHomeCatalog.map((a) => a.id).filter((x) => next.includes(x)));
@@ -23577,13 +24686,16 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   className: "mt-1 min-h-11 w-full rounded-lg border-2 border-slate-300 px-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }),
                 takeHomeCatalog.length > 0 && h("fieldset", { className: "mt-3" },
                   h("legend", { className: "text-sm font-semibold" }, printTr("word_sounds.take_home_activities", "Activities in the file")),
-                  h("div", { className: "mt-1 grid gap-1 sm:grid-cols-2" }, takeHomeCatalog.map((a) => {
+                  lessonPreparedOnly && h("p", { className: "text-sm text-slate-600", "data-ws-lesson-only-note": "take-home" },
+                    printTr("word_sounds.lesson_only_note", "Only the activities in this lesson are listed. Add an activity in setup.")),
+                  h("div", { className: "mt-1 grid gap-1 sm:grid-cols-2" }, wsStrandGroups(takeHomeCatalog).flatMap((group) => [h("div", { key: "strand-" + group.strand, "data-ws-take-home-strand": group.strand,
+                    className: "mt-1 text-xs font-bold text-slate-700 sm:col-span-2" }, group.label)].concat(group.items.map((a) => {
                     const row = ready && !ready.error && ready.perActivity ? ready.perActivity.find((p) => p.activity === a.id) : null;
                     return h("label", { key: a.id, className: "flex min-h-11 items-center gap-3 text-sm" },
                       h("input", { type: "checkbox", checked: chosen.includes(a.id), onChange: (event) => toggleActivity(a.id, event.target.checked), className: "h-5 w-5", "data-ws-take-home-activity": a.id }),
                       h("span", null, takeHomeActivityName(a.id, a.title),
                         row ? h("span", { className: "text-slate-600" }, " " + printTr("word_sounds.take_home_activity_ready", "({ready} of {total} ready)", { ready: row.ready, total: row.ready + row.exceptions.length })) : null));
-                  }))),
+                  }))))),
                 h("label", { className: "mt-3 flex min-h-11 items-center gap-3 text-sm font-semibold" },
                   h("input", { type: "checkbox", checked: takeHomeLetters, onChange: (event) => setTakeHomeLetters(event.target.checked), className: "h-5 w-5" }),
                   printTr("word_sounds.take_home_letters", "Show letters on the answer choices (off: students choose by listening)")),
@@ -23633,7 +24745,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                       h("td", { className: "py-1 pr-2" }, r.summary.firstTry + " / " + r.summary.items),
                       h("td", { className: "py-1 pr-2" }, String(r.summary.afterRetry)),
                       h("td", { className: "py-1 pr-2" }, String(r.summary.missed) + (r.summary.done < r.summary.items ? " " + printTr("word_sounds.take_home_unfinished", "({count} not done)", { count: r.summary.items - r.summary.done }) : "")),
-                      h("td", { className: "py-1" }, Object.keys(r.byActivity || {}).map((id) => (r.activityTitles && r.activityTitles[id] || id) + ": " +
+                      h("td", { className: "py-1" }, Object.keys(r.byActivity || {}).map((id) => takeHomeActivityName(id, r.activityTitles && r.activityTitles[id] || id) + ": " +
                         r.items.filter((item) => item.activity === id).map((item) => item.word + " " + (!item.done ? "–" : item.practice === "traced" ? "✎" : item.practice === "skipped" ? "↷" : item.firstTry ? "✓" : item.correct ? "↻" : "✗") + (wsTakeHomeHelped(item) ? " " + helpMark : "")).join(", ")).join("; ")));
                   }))),
                 goodRows.length > 0 && h("p", { className: "mt-1 text-xs text-slate-600" },
@@ -23677,6 +24789,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 printTr("common.close", "Close"))),
             h("p", { id: "ws-print-intro", className: "mt-1 text-sm text-slate-600" },
               printTr("word_sounds.print_intro", "Each printout opens in a new window, where you can print it or save it as a PDF.")),
+            lessonPreparedOnly && h("p", { className: "mt-1 text-sm text-slate-600", "data-ws-lesson-only-note": "print" },
+              printTr("word_sounds.lesson_only_note", "Only the activities in this lesson are listed. Add an activity in setup.")),
             h("div", { className: "mt-4 space-y-3" },
               h("section", { className: section, "aria-labelledby": "ws-print-cards-heading" },
                 h("h3", { id: "ws-print-cards-heading", className: "font-bold" }, printTr("word_sounds.print_cards_heading", "Word cards")),
@@ -23712,7 +24826,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   h("label", { className: control },
                     printTr("word_sounds.present_activity", "Activity"),
                     h("select", { value: worksheetActivity, "data-ws-print-activity": "true", onChange: (event) => setPrintActivity(event.target.value), className: select },
-                      worksheetActivities.map((a) => h("option", { key: a.id, value: a.id }, a.label)))),
+                      wsStrandGroups(worksheetActivities).map((group) => h("optgroup", { key: group.strand, label: group.label, "data-ws-print-strand": group.strand },
+                        group.items.map((a) => h("option", { key: a.id, value: a.id }, a.label)))))),
                   // One group for the options both the worksheet and the review sheet use.
                   h("fieldset", { className: "mt-3 rounded-lg bg-slate-50 p-3", "data-ws-print-options": "true" },
                     h("legend", { className: "px-1 text-sm font-bold" }, printTr("word_sounds.print_options_legend", "Worksheet and review sheet options")),
@@ -23746,11 +24861,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     h("legend", { className: "font-bold" }, printTr("word_sounds.print_review_heading", "Review sheet")),
                     h("p", { className: "text-sm text-slate-600" }, printTr("word_sounds.print_review_desc", "Choose 2 to 4 activities for one sheet. Each gets its own heading, the numbers run on, and one answer key covers them all.")),
                     h("div", { className: "grid grid-cols-2 gap-x-3" },
-                      worksheetActivities.map((a) => h("label", { key: a.id, className: control },
+                      wsStrandGroups(worksheetActivities).flatMap((group) => [h("div", { key: "strand-" + group.strand, "data-ws-print-review-strand": group.strand,
+                        className: "col-span-2 mt-1 text-xs font-bold text-slate-700" }, group.label)].concat(group.items.map((a) => h("label", { key: a.id, className: control },
                         h("input", { type: "checkbox", checked: reviewChosen.includes(a.id), disabled: !reviewChosen.includes(a.id) && reviewChosen.length >= 4, "data-ws-print-review": a.id,
                           onChange: (event) => { const on = event.target.checked; setPrintReview((prev) => (on ? [...prev.filter((id) => id !== a.id), a.id] : prev.filter((id) => id !== a.id))); },
                           className: checkbox }),
-                        a.label))),
+                        a.label))))),
                     h("button", { type: "button", className: action, "data-ws-print": "review", disabled: reviewChosen.length < 2, onClick: () => handlePrintMaterial("review") },
                       printTr("word_sounds.print_review_action", "Print review sheet")),
                     studioReady ? h("button", { type: "button", "data-ws-studio": "review", disabled: reviewChosen.length < 2, onClick: () => handleEditInStudio("review"),
@@ -23800,6 +24916,26 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         wordSoundsScore.total > 0
           ? Math.round((wordSoundsScore.correct / wordSoundsScore.total) * 100)
           : 0;
+      // The compact student screen. Teachers and parents keep the full header
+      // (they need its controls); a probe keeps its own bar.
+      const studentScreen = !isTeacherMode && !isParentMode && !isProbeMode && !showReviewPanel;
+      const lessonRunning = !!lessonPlanConfig && Array.isArray(activitySequence) && activitySequence.length > 0;
+      // Where the learner is, as a count and never a percentage. In a lesson
+      // it is the activity's own item goal (the minimum, then the hard stop).
+      const studentProgress = (() => {
+        if (!wordSoundsActivity || isProbeMode) return null;
+        if (lessonRunning) {
+          const goal = Number(lessonPlanConfig.activities?.find((a) => a.id === wordSoundsActivity)?.count) || 5;
+          const done = masteryStats[wordSoundsActivity]?.attempted || 0;
+          const max = WS_CORE.lessonItemCeiling(goal, lessonPlanConfig.masteryThreshold);
+          const total = done < goal ? goal : max;
+          return { done: Math.min(done, total), total, text: wsLessonItemsText(ts, done, goal, max) };
+        }
+        const total = Math.max(1, isFixedForm ? (Number(probeItemGoal) || 1) : wordSoundsSessionGoal + (orthoSessionGoal || 0));
+        const done = Math.min(Math.max(0, Number(isFixedForm ? wordSoundsScore.total : wordSoundsScore.correct) || 0), total);
+        return { done, total, text: ts("word_sounds.student_progress_n_of_m", { n: done, m: total }) || (done + " of " + total) };
+      })();
+      studentProgressRef.current = studentProgress;
       // A student part-way through practice is asked first: one stray tap on
       // the X (or Escape) used to throw the session away. Teachers, a session
       // that is finished, and one with nothing answered yet close at once.
@@ -24404,14 +25540,26 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         runtimeDirtyWordsRef.current = () => [...pendingSyllableEdits(true).map(edit => edit.word),
           ...wordSoundsSyllableHiddenDraftWords([countReviewDraftsRef.current, recordingReviewDraftsRef.current], preloadedWords.map(item => item.targetWord || item.word || item.term), wordSoundsLanguage)];
         const unresolvedCounts = countingRequested ? preloadedWords.flatMap((item, index) => {
+          if (WS_CORE.isTopUpItem(item) && !WS_CORE.packItemPlaysIn(item, 'syllable_counting', wordSoundsLanguage)) return [];
           const word = item.targetWord || item.word || item.term;
           const audio = syllableCountAudioFor(word, wordSoundsLanguage, item, preloadedWords, wordSoundsAudioLibrary, selectedVoice);
           const resolution = WS_CORE.resolveSyllableCount(word, { language: wordSoundsLanguage, prepared: item.activityItems?.syllable_counting,
             recordedTask: item.activityItems?.syllable_blending, audioContext: audio.context });
           return resolution.supported ? [] : [{ word, index }];
         }) : [];
+        // A word with an unsettled count is left out of Syllable Claps. It stops the start only
+        // in a fixed form, or when no word at all could be counted.
+        const countCandidates = countingRequested ? preloadedWords.filter(item => !WS_CORE.isTopUpItem(item) || WS_CORE.packItemPlaysIn(item, 'syllable_counting', wordSoundsLanguage)).length : 0;
+        const countsBlockStart = unresolvedCounts.length > 0 && (isFixedForm || unresolvedCounts.length >= countCandidates);
+        const topUpGroups = WS_CORE.SYLLABLE_ACTIVITY_IDS.map(id => ({ id, words: WS_CORE.topUpItems(preloadedWords, id).map(item => item.targetWord || item.word || item.term).filter(Boolean) })).filter(group => group.words.length);
+        const ownWords = WS_CORE.lessonOwnItems(preloadedWords);
+        // The panel works by row number: hide the added words only while they sit after the lesson's own.
+        const hideTopUpRows = ownWords.length > 0 && ownWords.length < preloadedWords.length && ownWords.every((item, index) => preloadedWords[index] === item);
+        const reviewRows = hideTopUpRows ? ownWords : preloadedWords;
+        const topUpKeys = new Set(WS_CORE.topUpItems(preloadedWords).map(item => String(item.displayWord || item.word || item.targetWord || '').trim().toLowerCase()));
+        const ownSkips = list => hideTopUpRows ? list.filter(word => !topUpKeys.has(String(word || '').trim().toLowerCase())) : list;
         const startReviewedActivity = (useSavedVersion = false) => {
-          if (unresolvedCounts.length) {
+          if (countsBlockStart) {
             setShowUnsavedSyllableStart(false);
             setSyllableReviewRequest({ index: unresolvedCounts[0].index, nonce: Date.now() });
             return;
@@ -24438,7 +25586,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         return /*#__PURE__*/ React.createElement(WordSoundsReviewPanel, {
           wordDir: wsWordDir,
           ts: ts,
-          teacherSpokenWords: preloadedWords.filter(isTeacherSpokenWord).map(item => item.targetWord || item.word || item.term),
+          teacherSpokenWords: reviewRows.filter(isTeacherSpokenWord).map(item => item.targetWord || item.word || item.term),
           syllableReviewRequest: syllableReviewRequest,
           packMaintenance: React.createElement(React.Fragment, null,
             syllableExitGuard.notice,
@@ -24454,8 +25602,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             countingRequested && reviewDictionaryState === 'loading' ? React.createElement('p', { role: 'status' }, ts("word_sounds.count_dictionary_loading") || 'Checking syllable counts…') : null,
             countingRequested && reviewDictionaryState === 'unavailable' ? React.createElement('button', { type: 'button', className: 'min-h-11 rounded-lg border px-3 py-2',
               onClick: async () => { setReviewDictionaryState('loading'); const ready = await WS_CORE.loadSyllablePronunciations().catch(() => false); if (isMountedRef.current) setReviewDictionaryState(ready ? 'ready' : 'unavailable'); } }, ts("word_sounds.count_dictionary_retry") || 'Retry pronunciation dictionary') : null,
-            unresolvedCounts.length ? React.createElement('section', { role: 'alert', className: 'rounded-xl border border-amber-300 bg-amber-50 p-3 text-amber-900' },
-              React.createElement('p', null, ts("word_sounds.count_unresolved_heading") || 'Check these syllable counts against the current audio before starting:'),
+            topUpGroups.length ? React.createElement('section', { 'data-ws-extra-words': 'true', className: 'rounded-xl border border-violet-200 bg-violet-50 p-3 text-sm text-violet-950' },
+              ...topUpGroups.map(group => React.createElement('p', { key: group.id, 'data-ws-extra-words-for': group.id },
+                String(ts("word_sounds.extra_words_for", { activity: wsActivityName(group.id), words: group.words.join(', ') }) || 'Extra words for {activity}: {words}')
+                  .replace('{activity}', () => wsActivityName(group.id)).replace('{words}', () => group.words.join(', '))))) : null,
+            unresolvedCounts.length ? React.createElement('section', { role: countsBlockStart ? 'alert' : 'status', 'data-ws-count-unresolved': countsBlockStart ? 'blocking' : 'note', className: 'rounded-xl border border-amber-300 bg-amber-50 p-3 text-amber-900' },
+              React.createElement('p', null, countsBlockStart
+                ? ts("word_sounds.count_unresolved_heading") || 'Check these syllable counts against the current audio before starting:'
+                : ts("word_sounds.count_unused_heading") || 'These words are left out of Syllable Claps until their syllable count is checked:'),
               ...unresolvedCounts.map(({ word, index }) => React.createElement('button', { type: 'button', key: index,
                 className: 'min-h-11 rounded-lg border border-amber-400 px-3 py-2 m-1',
                 onClick: () => setSyllableReviewRequest({ index, nonce: Date.now() }) }, ts("word_sounds.count_review_word", { word }) || 'Review count: ' + word))) : null,
@@ -24466,11 +25620,14 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             onAction: handlePackAudioUpdate, onCancel: cancelPackAudioUpdate, onPlayAudio: handleAudio,
             onReviewSyllables: index => setSyllableReviewRequest({ index, nonce: Date.now() }),
           }) : null),
-          preloadedWords: preloadedWords,
+          preloadedWords: reviewRows,
           onUpdateWord: handleUpdatePreloadedWord,
+          preparedActivities: lessonPreparedOnly ? lessonPreparedList : null,
           renderSyllableEditor: (item, index) => {
             const target = String(item.targetWord || item.word || item.term || '').trim().toLowerCase();
             if (!target) return null;
+            // A lesson without a syllable activity never shows syllable work.
+            if (!lessonNeeds('syllable_counting', 'syllable_blending')) return null;
             const audio = syllableCountAudioFor(target, wordSoundsLanguage, item, preloadedWords, wordSoundsAudioLibrary, selectedVoice);
             const countResolution = WS_CORE.resolveSyllableCount(target, { language: wordSoundsLanguage, prepared: item.activityItems?.syllable_counting,
               recordedTask: item.activityItems?.syllable_blending, audioContext: audio.context });
@@ -24595,7 +25752,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }
             })));
           },
-          onReorderWords: handleReorderPreloadedWords,
+          onReorderWords: hideTopUpRows ? (newOrder) => handleReorderPreloadedWords([...(Array.isArray(newOrder) ? newOrder : []), ...WS_CORE.topUpItems(preloadedWords)]) : handleReorderPreloadedWords,
           onRegenerateWord: handleRegenerateWord,
           onCheckPhonemes: handleCheckPhonemes,
           onRegenerateOption: handleRegenerateOption,
@@ -24609,11 +25766,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           setActivitySequence: setActivitySequence,
           // Words students skip in Word Families (board cannot be played).
           wordFamilySkips: wsActivityAvailableForLang("word_families") && (!activitySequence.length || activitySequence.includes("word_families"))
-            ? wordFamilySkippedWords() : [],
+            ? ownSkips(wordFamilySkippedWords()) : [],
           soundSortSkips: wsActivityAvailableForLang("sound_sort") && (!activitySequence.length || activitySequence.includes("sound_sort"))
-            ? learnerSkippedWords("sound_sort") : [],
+            ? ownSkips(learnerSkippedWords("sound_sort")) : [],
           soundSwapSkips: wsActivityAvailableForLang("manipulation") && (!activitySequence.length || activitySequence.includes("manipulation"))
-            ? learnerSkippedWords("manipulation") : [],
+            ? ownSkips(learnerSkippedWords("manipulation")) : [],
           isStudentLocked: isStudentLocked,
           setIsStudentLocked: setIsStudentLocked,
           generatingImageIndex: generatingImageIndex,
@@ -24629,7 +25786,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               else onClose?.();
             });
           },
-          onPlayAudio: handleAudio,
+          onPlayAudio: handleReviewPlayAudio,
           onDeleteWord: handleDeleteWord,
           t: t,
           imageVisibilityMode: imageVisibilityMode,
@@ -24758,302 +25915,12 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           ),
         );
       }
-      return /*#__PURE__*/ React.createElement(
-        "div",
-        {
-          ref: modalRef,
-          className:
-            "word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in",
-          role: "dialog",
-          "aria-modal": "true",
-          "aria-labelledby": "word-sounds-dialog-title",
-          // Same path as the X button: the unsaved-syllable guard and the
-          // session reset run before the modal closes.
-          onKeyDown: (event) => handleDialogKeyDown(event, closeSessionDialog),
-        },
-        stopConfirmDialog,
-        /*#__PURE__*/ React.createElement(
-          "div",
-          {
-            // While the stop question is open, the practice behind it is
-            // covered, out of the Tab order (trap above) and hidden from AT.
-            "aria-hidden": stopConfirmDialog ? "true" : undefined,
-            className:
-              "bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4",
-            hidden: isPresenting || undefined,
-            style: isPresenting ? { display: "none" } : undefined,
-          },
-          errorMessage &&
-            /*#__PURE__*/ React.createElement(
-            "div",
-            {
-              className:
-                "bg-red-700 text-white px-4 py-2 text-center text-sm font-medium animate-in slide-in-from-top",
-            },
-            "\u26A0\uFE0F ",
-            errorMessage,
-          ),
-          /*#__PURE__*/ React.createElement(
-            "div",
-            {
-              className:
-                "bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white",
-            },
-            /*#__PURE__*/ React.createElement(
-              "div",
-              { className: "flex items-center justify-between" },
-              /*#__PURE__*/ React.createElement(
-                "div",
-                { className: "flex items-center gap-3" },
-                /*#__PURE__*/ React.createElement(
-                  "svg",
-                  {
-                    width: "48",
-                    height: "48",
-                    viewBox: "0 0 48 48",
-                    className: `drop-shadow-lg transition-transform duration-500 ${isCelebrating ? "animate-bounce motion-reduce:animate-none scale-110" : ""}`,
-                  },
-                  /*#__PURE__*/ React.createElement("circle", {
-                    cx: "24",
-                    cy: "24",
-                    r: "16",
-                    fill: "#FBBF24",
-                    stroke: "#F59E0B",
-                    strokeWidth: "2",
-                  }),
-                  /*#__PURE__*/ React.createElement("rect", {
-                    x: "10",
-                    y: "19",
-                    width: "12",
-                    height: "8",
-                    rx: "2",
-                    fill: "#1F2937",
-                  }),
-                  /*#__PURE__*/ React.createElement("rect", {
-                    x: "26",
-                    y: "19",
-                    width: "12",
-                    height: "8",
-                    rx: "2",
-                    fill: "#1F2937",
-                  }),
-                  /*#__PURE__*/ React.createElement("rect", {
-                    x: "22",
-                    y: "21",
-                    width: "4",
-                    height: "3",
-                    fill: "#1F2937",
-                  }),
-                  /*#__PURE__*/ React.createElement("rect", {
-                    x: "11",
-                    y: "20",
-                    width: "4",
-                    height: "2",
-                    rx: "1",
-                    fill: "#4B5563",
-                    opacity: "0.5",
-                  }),
-                  /*#__PURE__*/ React.createElement("rect", {
-                    x: "27",
-                    y: "20",
-                    width: "4",
-                    height: "2",
-                    rx: "1",
-                    fill: "#4B5563",
-                    opacity: "0.5",
-                  }),
-                  /*#__PURE__*/ React.createElement("path", {
-                    d: "M18 32 Q24 35 30 32",
-                    stroke: "#B45309",
-                    strokeWidth: "2",
-                    fill: "none",
-                    strokeLinecap: "round",
-                  }),
-                  /*#__PURE__*/ React.createElement("path", {
-                    d: "M6 24 Q6 8 24 8 Q42 8 42 24",
-                    stroke: "#1F2937",
-                    strokeWidth: "4",
-                    fill: "none",
-                    strokeLinecap: "round",
-                  }),
-                  /*#__PURE__*/ React.createElement("ellipse", {
-                    cx: "6",
-                    cy: "26",
-                    rx: "5",
-                    ry: "7",
-                    fill: "#374151",
-                  }),
-                  /*#__PURE__*/ React.createElement("ellipse", {
-                    cx: "42",
-                    cy: "26",
-                    rx: "5",
-                    ry: "7",
-                    fill: "#374151",
-                  }),
-                  /*#__PURE__*/ React.createElement("ellipse", {
-                    cx: "6",
-                    cy: "26",
-                    rx: "3",
-                    ry: "5",
-                    fill: "#4B5563",
-                  }),
-                  /*#__PURE__*/ React.createElement("ellipse", {
-                    cx: "42",
-                    cy: "26",
-                    rx: "3",
-                    ry: "5",
-                    fill: "#4B5563",
-                  }),
-                ),
-                /*#__PURE__*/ React.createElement(
-                  "div",
-                  null,
-                  /*#__PURE__*/ React.createElement(
-                    "h2",
-                    {
-                      id: "word-sounds-dialog-title",
-                      tabIndex: -1,
-                      "data-dialog-initial-focus": "true",
-                      className: "text-xl font-bold",
-                    },
-                    ts("word_sounds.studio_title") || "\uD83D\uDD24 Word Sounds Studio",
-                  ),
-                  /*#__PURE__*/ React.createElement(
-                    "p",
-                    { className: "text-violet-200 text-sm", "data-ws-header-subtitle": "true" },
-                    // Once an activity is running the header names it; the
-                    // "choose an activity" prompt is for the picker only.
-                    wordSoundsActivity && !showReviewPanel
-                      ? activityDisplayName(wordSoundsActivity)
-                      : ts("word_sounds.choose_activity_prompt") ||
-                        "Choose an activity below to get started!",
-                  ),
-                ),
-              ),
-              /*#__PURE__*/ React.createElement(WsReadingSettingsButton, {
-                ts,
-                className:
-                  "ms-auto me-1 flex min-h-11 min-w-11 items-center justify-center rounded-full px-2 text-base font-black text-white hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-violet-700",
-              }),
-              /*#__PURE__*/ React.createElement(
-                "button",
-                {
-                  "aria-label": t("common.minimize_to_background"),
-                  onClick: () => setIsMinimized(true),
-                  className:
-                    "p-2 hover:bg-white/20 rounded-full transition-colors mr-1",
-                  title: t("common.minimize_to_background"),
-                },
-                /*#__PURE__*/ React.createElement(Minimize, { size: 20 }),
-              ),
-              /*#__PURE__*/ React.createElement(
-                "button",
-                {
-                  onClick: closeSessionDialog,
-                  className:
-                    "p-2 hover:bg-white/20 rounded-full transition-colors",
-                  "aria-label": t("common.close"),
-                },
-                /*#__PURE__*/ React.createElement(X, { size: 20 }),
-              ),
-            ),
-            lessonPlanConfig &&
-            activitySequence?.length > 0 &&
-              /*#__PURE__*/ React.createElement(
-              "div",
-              { className: "mt-3 bg-white/10 rounded-xl p-3 backdrop-blur" },
-                /*#__PURE__*/ React.createElement(
-                "div",
-                {
-                  className: "flex items-center justify-between text-xs mb-2",
-                },
-                  /*#__PURE__*/ React.createElement(
-                  "div",
-                  {
-                    className: "flex items-center gap-2 text-white font-bold",
-                  },
-                    /*#__PURE__*/ React.createElement(
-                    "span",
-                    { className: "text-violet-200" },
-                    "\uD83D\uDCCB",
-                  ),
-                    /*#__PURE__*/ React.createElement(
-                    "span",
-                    null,
-                    ALL_ACTIVITIES.find((a) => a.id === wordSoundsActivity)?.label || wordSoundsActivity
-                      ?.replace("_", " ")
-                      .replace(/^./, (c) => c.toUpperCase()) || ts("word_sounds.activity_fallback") || "Activity",
-                  ),
-                ),
-                  /*#__PURE__*/ React.createElement(
-                  "div",
-                  { className: "flex items-center gap-1" },
-                  [...Array(lessonPlanConfig.masteryThreshold || 3)].map(
-                    (_, i) =>
-                        /*#__PURE__*/ React.createElement(
-                      "span",
-                      {
-                        key: i,
-                        className: `text-base ${(masteryStats[wordSoundsActivity]?.consecutiveStreak || 0) > i ? "opacity-100" : "opacity-30"}`,
-                      },
-                      (masteryStats[wordSoundsActivity]
-                        ?.consecutiveStreak || 0) > i
-                        ? "✓"
-                        : "○",
-                    ),
-                  ),
-                ),
-              ),
-                /*#__PURE__*/ React.createElement(
-                "div",
-                { className: "h-2 bg-white/20 rounded-full overflow-hidden" },
-                  /*#__PURE__*/ React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
-                  className:
-                    "h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-300",
-                  style: {
-                    width: `${Math.min(100, ((masteryStats[wordSoundsActivity]?.attempted || 0) / (lessonPlanConfig.activities?.find((a) => a.id === wordSoundsActivity)?.count || 5)) * 100)}%`,
-                  },
-                }),
-              ),
-                /*#__PURE__*/ React.createElement(
-                "div",
-                {
-                  className:
-                    "flex justify-between text-[0.6875rem] text-violet-200 mt-1",
-                },
-                  /*#__PURE__*/ React.createElement(
-                  "span",
-                  null,
-                  (function () {
-                    const _done = masteryStats[wordSoundsActivity]?.attempted || 0;
-                    const _goal = lessonPlanConfig.activities?.find(
-                      (a) => a.id === wordSoundsActivity,
-                    )?.count || 5;
-                    return wsLessonItemsText(ts, _done, _goal, WS_CORE.lessonItemCeiling(_goal, lessonPlanConfig.masteryThreshold));
-                  })(),
-                ),
-                  /*#__PURE__*/ React.createElement(
-                  "span",
-                  null,
-                  (() => {
-                    const uniqueActs = [...new Set(activitySequence)];
-                    const currentIdx = uniqueActs.indexOf(wordSoundsActivity);
-                    if (currentIdx < uniqueActs.length - 1) {
-                      const nextName = activityDisplayName(uniqueActs[currentIdx + 1]);
-                      return ts("word_sounds.lesson_strip_next", { activity: nextName }) || ("Next: " + nextName);
-                    }
-                    return "🎉 " + (ts("word_sounds.lesson_strip_final") || "Final Activity");
-                  })(),
-                ),
-              ),
-            ),
-            /*#__PURE__*/ React.createElement(
-              "div",
-              {
-                className:
-                  "flex items-center justify-between gap-4 mt-3 text-sm flex-wrap",
-              },
-              /*#__PURE__*/ React.createElement(
+      // BEGIN STUDENT PRACTICE SCREEN (2026-11-09)
+      // A student sees one header row: activity name, progress, More, close.
+      // Every other header control lives in the More panel, the activity tabs
+      // too. Teachers, parents and probes keep the full header. The pieces
+      // below are built once and placed in whichever header is on screen.
+      const headerStatsChips =               /*#__PURE__*/ React.createElement(
                 "div",
                 { className: "flex items-center gap-2 flex-wrap" },
                 /*#__PURE__*/ React.createElement(
@@ -25113,136 +25980,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     ts("word_sounds.accuracy"),
                   ),
                 ),
-              ),
-              /*#__PURE__*/ React.createElement(
-                "div",
-                { className: "flex flex-wrap items-center gap-2" },
-                presentAllowed &&
-                  /*#__PURE__*/ React.createElement(
-                  "button",
-                  {
-                    ref: presentButtonRef,
-                    type: "button",
-                    onClick: startPresenting,
-                    "data-ws-present-open": "true",
-                    className:
-                      "flex items-center gap-1 min-h-11 whitespace-nowrap px-3 py-1.5 bg-white text-violet-800 rounded-full text-sm font-bold hover:bg-violet-50 transition-colors shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-violet-700",
-                  },
-                  /*#__PURE__*/ React.createElement("span", { "aria-hidden": "true" }, "\ud83d\udcfd\ufe0f"),
-                  ts("word_sounds.present_button") || "Present to class",
-                ),
-                // Teacher review/edit are practice affordances \u2014 opening the
-                // review panel mid-probe replaces the probe UI entirely and
-                // its Start button wipes the evidence (setWordSoundsHistory([])).
-                // Teacher-only for a second reason: the panel lists every word
-                // with its phonemes, rhyme answers and distractors, so on a
-                // student device it hands over the answers to the activity
-                // they are about to be scored on.
-                isTeacherMode &&
-                !isProbeMode &&
-                preloadedWords.length > 0 &&
-                  /*#__PURE__*/ React.createElement(
-                  "button",
-                  {
-                    "aria-label": t("common.review_and_edit_word_list"),
-                    onClick: () => setShowReviewPanel(true),
-                    className:
-                      "flex items-center gap-1 min-h-11 whitespace-nowrap px-3 py-1.5 bg-amber-700 text-white rounded-full text-sm font-bold hover:bg-amber-800 transition-colors shadow-md",
-                    title: t("common.review_and_edit_word_list"),
-                  },
-                  ts("word_sounds.review_words") || "\u270F\uFE0F Review Words",
-                ),
-                // Same gate as Review Words, for the same reason: the script
-                // prints every word with its sounds and its answers, so it must
-                // never render on a student device or during a probe.
-                isTeacherMode &&
-                !isProbeMode &&
-                preloadedWords.length > 0 &&
-                  /*#__PURE__*/ React.createElement(
-                  "button",
-                   {
-                     id: "word-sounds-di-script-open",
-                     type: "button",
-                    "aria-label": ts("word_sounds.di_script_open") || "Open the lesson script",
-                    onClick: handleOpenDiScript,
-                    disabled: diScriptState === "loading",
-                    className:
-                      "flex items-center gap-1 min-h-11 whitespace-nowrap px-3 py-1.5 bg-indigo-700 text-white rounded-full text-sm font-bold hover:bg-indigo-600 disabled:opacity-60 transition-colors shadow-md",
-                    title: ts("word_sounds.di_script_open") || "Open the lesson script",
-                  },
-                  diScriptState === "loading"
-                    ? (ts("common.loading") || "Loading...")
-                    : (ts("word_sounds.di_script_button") || "\u{1F4C4} Lesson script"),
-                ),
-                printAllowed &&
-                  /*#__PURE__*/ React.createElement(
-                  "div",
-                  { className: "relative", "data-ws-share": "true" },
-                  /*#__PURE__*/ React.createElement(
-                    "button",
-                    {
-                      // Dialogs opened from the menu hand focus back here.
-                      ref: (element) => { shareButtonRef.current = element; printButtonRef.current = element; takeHomeButtonRef.current = element; },
-                      type: "button",
-                      id: "ws-share-menu-button",
-                      "aria-haspopup": "menu",
-                      "aria-expanded": shareMenuOpen,
-                      "aria-controls": "ws-share-menu",
-                      "data-ws-share-open": "true",
-                      onClick: () => setShareMenuOpen((open) => !open),
-                      onKeyDown: (event) => { if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); setShareMenuOpen(true); } },
-                      className:
-                        "flex items-center gap-1 min-h-11 whitespace-nowrap px-3 py-1.5 bg-indigo-700 text-white rounded-full text-sm font-bold hover:bg-indigo-600 transition-colors shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-violet-700",
-                    },
-                    /*#__PURE__*/ React.createElement("span", { "aria-hidden": "true" }, "🖨️"),
-                    ts("word_sounds.share_menu_button") || "Print & share",
-                    /*#__PURE__*/ React.createElement("span", { "aria-hidden": "true" }, "▾"),
-                  ),
-                  /*#__PURE__*/ React.createElement(
-                    "div",
-                    {
-                      ref: shareMenuRef,
-                      id: "ws-share-menu",
-                      role: "menu",
-                      "aria-labelledby": "ws-share-menu-button",
-                      hidden: !shareMenuOpen,
-                      onKeyDown: onShareMenuKey,
-                      className: "absolute end-0 top-full z-50 mt-2 w-72 rounded-2xl border border-slate-200 bg-white p-2 text-start shadow-2xl",
-                    },
-                    [
-                      { id: "print", show: printAllowed, attrs: { "data-ws-print-open": "true", "aria-haspopup": "dialog" }, icon: "🖨️",
-                        label: ts("word_sounds.print_button") || "Print materials", hint: ts("word_sounds.share_print_hint") || "Word cards, sound boxes and a family letter",
-                        run: () => { setPrintStatus(""); setPrintMenuOpen(true); } },
-                      { id: "take-home", show: takeHomeAllowed, attrs: { "data-ws-take-home-open": "true", "aria-haspopup": "dialog" }, icon: "🏠",
-                        label: ts("word_sounds.take_home_button") || "Take-home file", hint: ts("word_sounds.share_take_home_hint") || "A practice file students open at home",
-                        run: () => { setTakeHomeStatus(""); setTakeHomeOpen(true); } },
-                      { id: "present-offline", show: presentAllowed && isTeacherMode, attrs: { "data-ws-present-offline": "true" }, icon: "💾",
-                        label: ts("word_sounds.share_present_offline") || "Present offline", hint: ts("word_sounds.share_present_offline_hint") || "One file with every activity and its sounds. Works without internet.",
-                        run: () => { Promise.resolve(downloadPresentOffline()).then((result) => { if (result && result.message) addToast?.(result.message, result.ok ? "success" : "error"); }, () => {}); } },
-                      { id: "word-practice", show: shareWordPracticeAllowed, attrs: { "data-ws-word-practice-open": "true" }, icon: "🃏",
-                        label: ts("word_sounds.share_word_practice") || "Word Practice", hint: ts("word_sounds.share_word_practice_hint") || "Project the words, or download HTML or PowerPoint",
-                        run: openWordPracticeFromLesson },
-                    ].filter((entry) => entry.show).map((entry) => /*#__PURE__*/ React.createElement(
-                      "button",
-                      {
-                        key: entry.id,
-                        type: "button",
-                        role: "menuitem",
-                        tabIndex: -1,
-                        ...entry.attrs,
-                        onClick: () => { setShareMenuOpen(false); entry.run(); },
-                        className: "flex w-full min-h-11 items-start gap-3 rounded-xl px-3 py-2 text-start text-slate-800 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
-                      },
-                      /*#__PURE__*/ React.createElement("span", { "aria-hidden": "true", className: "text-lg" }, entry.icon),
-                      /*#__PURE__*/ React.createElement("span", { className: "flex flex-col" },
-                        /*#__PURE__*/ React.createElement("span", { className: "font-bold" }, entry.label),
-                        /*#__PURE__*/ React.createElement("span", { className: "text-xs font-normal text-slate-600" }, entry.hint)),
-                    )),
-                  ),
-                ),
-              ),
-              // Practice settings: their own line, the speed control at its end.
-              /*#__PURE__*/ React.createElement(
+              );
+      const headerSettingsRow =               /*#__PURE__*/ React.createElement(
                 "div",
                 { className: "flex w-full flex-wrap items-center gap-2", "data-ws-header-settings": "true" },
                 isTeacherMode &&
@@ -25475,9 +26214,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     "x",
                   ),
                 ),
-              ),
-            ),
-            wordSoundsSessionProgress > 0 &&
+              );
+      const headerSessionProgress =             wordSoundsSessionProgress > 0 &&
               /*#__PURE__*/ React.createElement(
               "div",
               { className: "mt-3" },
@@ -25511,8 +26249,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   },
                 }),
               ),
-            ),
-            wordSoundsBadges &&
+            );
+      const headerBadges =             wordSoundsBadges &&
             wordSoundsBadges.length > 0 &&
               /*#__PURE__*/ React.createElement(
               "div",
@@ -25540,7 +26278,769 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   ),
                 ),
                 ),
+            );
+      // Back to setup with the activity added to the plan; setup prepares again (only what is missing is made).
+      const requestPrepareActivity = (activityId) => {
+        syllableExitGuard.requestExit(() => {
+          try { window.__alloWordSoundsAddActivity = activityId; } catch (_) {}
+          setPrepareOffer("");
+          resetRuntimeSession();
+          if (onBackToSetup) onBackToSetup();
+          try { window.dispatchEvent(new Event("alloflow:word-sounds-add-activity")); } catch (_) {}
+        });
+      };
+      const renderActivityTabs = (inPanel) =>           !isStudentLocked &&
+          !isProbeMode &&
+            /*#__PURE__*/ React.createElement(
+            "div",
+            {
+              className:
+                inPanel ? "rounded-xl bg-white p-2" : "border-b border-slate-200 px-4 py-3 overflow-x-auto",
+              "data-ws-activity-tabs": "true",
+              onClick: inPanel ? () => setStudentMoreOpen(false) : undefined,
+            },
+              /*#__PURE__*/ React.createElement(
+              "div",
+              { className: inPanel ? "flex flex-wrap gap-2 items-center" : "flex gap-2 items-center" },
+              isParentMode &&
+                /*#__PURE__*/ React.createElement(
+                "span",
+                {
+                  className:
+                    "flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold border border-amber-200 whitespace-nowrap mr-1",
+                  title: ts("word_sounds.home_practice_mode") || "Home Practice Mode",
+                },
+                ts("word_sounds.home_practice") || "\uD83C\uDFE0 Home Practice",
+              ),
+              // Honesty chip: in a non-English session some activities are
+              // hidden because their machinery is English-specific (letter
+              // paths, rime families, letter tiles on non-alphabetic scripts).
+              !wsLangCaps.isEnglish &&
+                ALL_ACTIVITIES.some((a) => !wsActivityAvailableForLang(a.id)) &&
+                /*#__PURE__*/ React.createElement(
+                "span",
+                {
+                  className:
+                    "flex items-center gap-1 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 whitespace-nowrap mr-1",
+                  title:
+                    ts("word_sounds.lang_hidden_activities_hint") ||
+                    "Some letter- and spelling-pattern activities are designed for English and are hidden for this language.",
+                },
+                "\uD83C\uDF10 ",
+                ts("word_sounds.lang_hidden_activities") || "Some activities are English-only",
+              ),
+              (inPanel && lessonRunning && !lessonFreeRoaming ? [] : wsStrandGroups(ACTIVITIES)).flatMap((__grp) => {
+                const __g = __grp.strand;
+                const __acts = __grp.items;
+                if (!__acts.length) return [];
+                return [
+                  /*#__PURE__*/ React.createElement(
+                    "span",
+                    {
+                      key: "wsgrp-" + __g,
+                      className: "text-[0.625rem] font-bold uppercase tracking-wide text-slate-700 px-1 self-center whitespace-nowrap",
+                      "data-ws-strand": __g,
+                    },
+                    __grp.label,
+                  ),
+                  ...__acts.map((activity) =>
+                    /*#__PURE__*/ React.createElement(
+                      "button",
+                      {
+                        key: activity.id,
+                        onClick: () => startActivity(activity.id),
+                        className: `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${wordSoundsActivity === activity.id ? "bg-violet-700 text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
+                        title: activity.description,
+                      },
+                      /*#__PURE__*/ React.createElement("span", null, activity.icon),
+                      /*#__PURE__*/ React.createElement("span", null, activity.label),
+                    ),
+                  ),
+                ];
+              }),
+              ...(!inPanel && wsUnpreparedActivities.length ? [
+                React.createElement("span", { key: "ws-unprepared-heading", "data-ws-unprepared-heading": "true",
+                  className: "text-[0.625rem] font-bold uppercase tracking-wide text-slate-700 px-1 self-center whitespace-nowrap" },
+                  ts("word_sounds.not_in_lesson") || "Not in this lesson"),
+                ...wsUnpreparedActivities.map((activity) => React.createElement("button", {
+                  key: "ws-unprepared-" + activity.id, type: "button", "data-ws-unprepared-activity": activity.id,
+                  "aria-expanded": prepareOffer === activity.id, "aria-controls": "ws-prepare-offer",
+                  "aria-label": activity.label + ": " + (ts("word_sounds.not_in_lesson") || "Not in this lesson"),
+                  onClick: () => setPrepareOffer((current) => (current === activity.id ? "" : activity.id)),
+                  className: "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap border border-dashed border-slate-400 bg-white text-slate-600 hover:bg-slate-50",
+                },
+                  React.createElement("span", { "aria-hidden": "true", className: "grayscale opacity-70" }, activity.icon),
+                  React.createElement("span", null, activity.label))),
+              ] : []),
+              (wsImagesUsable || hasPreparedImages) &&
+                /*#__PURE__*/ React.createElement(
+                "button",
+                {
+                  onClick: () => setAacMode((prev) => !prev),
+                  className: `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto ${aacMode ? "bg-teal-700 text-white shadow-md ring-2 ring-teal-300" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
+                  title: aacMode
+                    ? ts("word_sounds.aac_overlay_on_title") || "AAC Symbol Overlay ON — click to turn off"
+                    : ts("word_sounds.aac_overlay_off_title") || "Turn on AAC Symbol Overlay (generates images for answer choices)",
+                },
+                /*#__PURE__*/ React.createElement("span", null, "\uD83D\uDDBC\uFE0F"),
+                /*#__PURE__*/ React.createElement("span", null, ts("word_sounds.aac_abbrev") || "AAC"),
+              ),
             ),
+            !inPanel && prepareOffer && wsUnpreparedActivities.some((a) => a.id === prepareOffer) && React.createElement(
+              "div",
+              { id: "ws-prepare-offer", role: "group", "data-ws-prepare-offer": prepareOffer, className: "sticky left-0 mt-2 flex w-fit max-w-full flex-wrap items-center gap-2 text-sm text-slate-800" },
+              React.createElement("span", { role: "status" },
+                String(ts("word_sounds.not_in_lesson_named", { activity: activityDisplayName(prepareOffer) }) || "{activity} is not in this lesson.").replace("{activity}", () => activityDisplayName(prepareOffer))),
+              typeof onBackToSetup === "function" && React.createElement("button", {
+                type: "button", "data-ws-prepare-activity": prepareOffer, onClick: () => requestPrepareActivity(prepareOffer),
+                className: "min-h-11 rounded-lg bg-violet-700 px-4 py-2 font-bold text-white hover:bg-violet-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2",
+              }, ts("word_sounds.prepare_this_activity") || "Prepare this activity"),
+              React.createElement("button", {
+                type: "button", onClick: () => setPrepareOffer(""),
+                className: "min-h-11 rounded-lg border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-700 hover:bg-slate-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600 focus-visible:ring-offset-2",
+              }, ts("common.cancel") || "Cancel"),
+            ),
+          );
+      const studentTitle = wordSoundsActivity
+        ? activityDisplayName(wordSoundsActivity)
+        : (ts("word_sounds.studio_title") || "Word Sounds");
+      const studentLessonNext = (() => {
+        if (!lessonRunning) return "";
+        const uniqueActs = [...new Set(activitySequence)].filter((a) => a === wordSoundsActivity || wsActivityAvailableForLang(a));
+        const currentIdx = uniqueActs.indexOf(wordSoundsActivity);
+        if (currentIdx < uniqueActs.length - 1) {
+          const nextName = activityDisplayName(uniqueActs[currentIdx + 1]);
+          return ts("word_sounds.lesson_strip_next", { activity: nextName }) || ("Next: " + nextName);
+        }
+        return ts("word_sounds.lesson_strip_final") || "Final Activity";
+      })();
+      const studentStreak = Number(wordSoundsScore.streak) || 0;
+      const studentTabsShown = !isStudentLocked && !isProbeMode && (!lessonRunning || lessonFreeRoaming || wsImagesUsable || hasPreparedImages);
+      const studentHeaderFocusRing = " focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-violet-700";
+      const studentHeader = !studentScreen ? null : React.createElement(
+        "div",
+        {
+          className: "ws-stu-header bg-gradient-to-r from-violet-700 to-purple-700 text-white",
+          "data-ws-student-header": "true",
+        },
+        React.createElement(
+          "h2",
+          {
+            id: "word-sounds-dialog-title",
+            tabIndex: -1,
+            "data-dialog-initial-focus": "true",
+            className: "ws-stu-title font-bold",
+            title: studentTitle,
+          },
+          // The dialog is still named as Word Sounds for a screen reader.
+          wordSoundsActivity ? React.createElement("span", { className: "sr-only" }, (ts("word_sounds.studio_title") || "Word Sounds") + ": ") : null,
+          React.createElement("span", { "data-ws-student-title": "true", "data-ws-header-subtitle": "true" }, studentTitle),
+        ),
+        // Dots, or a slim bar for a long run. Never a percentage. Glyphs, not
+        // background colours, so the count survives the high-contrast theme.
+        studentProgress && React.createElement(
+          "div",
+          {
+            className: "ws-stu-progress",
+            role: "progressbar",
+            "data-ws-student-progress": "true",
+            "aria-label": ts("word_sounds.session_progress") || "Session Progress",
+            "aria-valuemin": 0,
+            "aria-valuemax": studentProgress.total,
+            "aria-valuenow": studentProgress.done,
+            "aria-valuetext": studentProgress.text,
+            title: studentProgress.text,
+          },
+          studentProgress.total <= 10
+            ? Array.from({ length: studentProgress.total }, (_, i) => React.createElement(
+              "span",
+              { key: i, "aria-hidden": "true", className: "ws-stu-dot", "data-ws-dot": i < studentProgress.done ? "done" : "todo" },
+              i < studentProgress.done ? "●" : "○",
+            ))
+            : [
+              React.createElement("span", { key: "bar", "aria-hidden": "true", className: "ws-stu-bar bg-white/20" },
+                React.createElement("span", { className: "ws-stu-bar-fill bg-emerald-400", style: { width: Math.round((studentProgress.done / studentProgress.total) * 100) + "%" } })),
+              React.createElement("span", { key: "count", "aria-hidden": "true", className: "text-xs font-bold" }, studentProgress.done + "/" + studentProgress.total),
+            ],
+        ),
+        studentStreak >= 3 && React.createElement(
+          "span",
+          { className: "ws-stu-streak", "data-ws-student-streak": "true" },
+          React.createElement("span", { "aria-hidden": "true" }, "🔥 " + studentStreak),
+          React.createElement("span", { className: "sr-only" }, (ts("word_sounds.streak") || "Streak") + ": " + studentStreak),
+        ),
+        React.createElement(
+          "div",
+          { ref: studentMoreWrapRef, className: "ws-stu-more-wrap" },
+          React.createElement(
+            "button",
+            {
+              ref: studentMoreButtonRef,
+              type: "button",
+              id: "ws-student-more-button",
+              "data-ws-student-more": "true",
+              "aria-expanded": studentMoreOpen,
+              "aria-controls": "ws-student-more-panel",
+              "aria-label": ts("word_sounds.student_more") || "More",
+              onClick: () => setStudentMoreOpen((open) => !open),
+              className: "ws-stu-btn rounded-full bg-white/20 px-3 text-sm font-bold text-white hover:bg-white/30 transition-colors" + studentHeaderFocusRing,
+            },
+            React.createElement("span", { "aria-hidden": "true" }, "•••"),
+            React.createElement("span", { className: "ws-stu-more-label", "aria-hidden": "true" }, ts("word_sounds.student_more") || "More"),
+          ),
+          // Kept in the page while closed (hidden), like the share menu: its
+          // controls hold their state and a dialog one of them opened keeps
+          // its opener. Hidden controls are out of the Tab order and the trap.
+          React.createElement(
+            "div",
+            {
+              id: "ws-student-more-panel",
+              role: "group",
+              "aria-labelledby": "ws-student-more-button",
+              "data-ws-student-more-panel": "true",
+              hidden: !studentMoreOpen,
+              className: "ws-stu-more bg-gradient-to-r from-violet-700 to-purple-700 text-white shadow-2xl border border-white/30",
+            },
+            studentLessonNext && React.createElement("p", { className: "text-sm font-bold text-white", "data-ws-lesson-next": "true" }, studentLessonNext),
+            React.createElement("div", { className: "text-sm" }, headerStatsChips),
+            React.createElement("div", { className: "text-sm" }, headerSettingsRow),
+            React.createElement(
+              "div",
+              { className: "flex flex-wrap items-center gap-2" },
+              React.createElement(WsReadingSettingsButton, {
+                ts,
+                className: "flex min-h-11 min-w-11 items-center justify-center rounded-full bg-white/10 px-2 text-base font-black text-white hover:bg-white/20 transition-colors" + studentHeaderFocusRing,
+              }),
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  "aria-label": t("common.minimize_to_background"),
+                  title: t("common.minimize_to_background"),
+                  onClick: () => { setStudentMoreOpen(false); setIsMinimized(true); },
+                  className: "flex items-center justify-center rounded-full bg-white/10 p-2 text-white hover:bg-white/20 transition-colors" + studentHeaderFocusRing,
+                },
+                React.createElement(Minimize, { size: 20 }),
+              ),
+            ),
+            headerSessionProgress,
+            headerBadges,
+            studentTabsShown && React.createElement(
+              "div",
+              { "data-ws-change-activity": "true" },
+              (!lessonRunning || lessonFreeRoaming) && React.createElement("p", { className: "mb-1 text-sm font-bold text-white" }, ts("word_sounds.student_change_activity") || "Change activity"),
+              renderActivityTabs(true),
+            ),
+          ),
+        ),
+        React.createElement(
+          "button",
+          {
+            type: "button",
+            onClick: closeSessionDialog,
+            className: "ws-stu-btn rounded-full text-white hover:bg-white/20 transition-colors" + studentHeaderFocusRing,
+            "aria-label": t("common.close"),
+          },
+          React.createElement(X, { size: 20 }),
+        ),
+      );
+      // Feedback and the audio notice sit directly under the header, outside
+      // the scrolling task, so neither is ever below the fold. For a student
+      // the row keeps its height while empty, so nothing moves when a message
+      // arrives; a taller set of messages grows the row and the task below
+      // takes what is left (nothing lays over the task). Announcements are unchanged: feedback is mirrored to the
+      // live region by its effect, the audio notice is a status.
+      const feedbackIsCorrect = !!wordSoundsFeedback && (wordSoundsFeedback.isCorrect || wordSoundsFeedback.type === "correct" || wordSoundsFeedback.type === "success");
+      // After the final answer a student gets the anchor as a compact chip in
+      // this row, not a full card that pushes the activity down.
+      const studentAnchorAfter = studentScreen && !!anchorView && !anchorView.before;
+      const feedbackRegion = React.createElement(
+        "div",
+        { className: studentScreen ? "ws-stu-feedback" : "ws-feedback-flow", "data-ws-feedback-region": "true" },
+        React.createElement(
+          "div",
+          { className: studentScreen ? "ws-stu-feedback-inner" : "flex flex-col gap-2 px-6" + (wordSoundsFeedback || audioNotice ? " pt-3" : "") },
+          wordSoundsFeedback &&
+            React.createElement(
+              "div",
+              {
+                "data-ws-feedback": feedbackIsCorrect ? "correct" : "retry",
+                className: (studentScreen ? "ws-stu-banner rounded-xl text-center text-sm font-bold " : "p-4 rounded-xl text-center font-bold animate-in slide-in-from-bottom-2 ") +
+                  (feedbackIsCorrect ? "bg-green-100 text-green-700 border-2 border-green-300" : "bg-red-100 text-red-700 border-2 border-red-300"),
+              },
+              feedbackIsCorrect
+                ? (feedbackMascot && feedbackMascot !== "off" && !disableAnimations && !isProbeMode
+                  ? React.createElement("span", { "aria-hidden": "true", "data-ws-feedback-mascot": feedbackMascot, className: "me-2 inline-block align-middle" },
+                    wsMascotGroup(feedbackMascot, (wordSoundsScore.streak || 0) >= 10 ? "win" : (wordSoundsScore.streak || 0) >= 3 ? "combo" : "wow", studentScreen ? 32 : 48, "-ws-feedback"))
+                  : "🎉 ")
+                : "💡 ",
+              wordSoundsFeedback.message,
+            ),
+          audioNotice &&
+            React.createElement(
+              "div",
+              {
+                role: "status",
+                "data-ws-audio-notice": "true",
+                className: (studentScreen ? "ws-stu-banner " : "p-3 ") +
+                  "rounded-xl text-center text-sm font-semibold bg-amber-50 text-amber-800 border-2 border-amber-200 flex flex-wrap items-center justify-center gap-3",
+              },
+              React.createElement("span", null, "🔇 " + audioNotice),
+              React.createElement(
+                "button",
+                {
+                  type: "button",
+                  onClick: retryLastAudio,
+                  className: (studentScreen ? "min-h-11 " : "") +
+                    "px-3 py-1 rounded-lg bg-amber-700 text-white font-bold hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400",
+                },
+                ts("word_sounds.audio_retry") || "🔊 Try again",
+              ),
+            ),
+          studentAnchorAfter
+            ? React.createElement(AnchorStrip, {
+              target: anchorTarget,
+              mode: anchorView.mode === "hidden" ? "hidden" : "compact",
+              lockMode: true,
+              onModeChange: updateAnchorMode,
+              onPlaySound: handleAnchorPlay,
+              ts: ts,
+            })
+            : null,
+        ),
+      );
+      // END STUDENT PRACTICE SCREEN
+      return /*#__PURE__*/ React.createElement(
+        "div",
+        {
+          ref: modalRef,
+          className:
+            "word-sounds-root fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm animate-in motion-reduce:animate-none motion-reduce:transition-none fade-in",
+          role: "dialog",
+          "aria-modal": "true",
+          "aria-labelledby": "word-sounds-dialog-title",
+          // Same path as the X button: the unsaved-syllable guard and the
+          // session reset run before the modal closes.
+          onKeyDown: (event) => {
+            // Escape closes the More panel first, and hands focus back to its button.
+            if (event.key === "Escape" && studentScreen && studentMoreOpen) { event.preventDefault(); event.stopPropagation(); closeStudentMore(true); return; }
+            handleDialogKeyDown(event, closeSessionDialog);
+          },
+          "data-ws-student-screen": studentScreen ? "true" : undefined,
+        },
+        stopConfirmDialog,
+        /*#__PURE__*/ React.createElement(
+          "div",
+          {
+            // While the stop question is open, the practice behind it is
+            // covered, out of the Tab order (trap above) and hidden from AT.
+            "aria-hidden": stopConfirmDialog ? "true" : undefined,
+            className:
+              "bg-white rounded-2xl shadow-2xl max-w-6xl w-full mx-4 max-h-[90vh] overflow-hidden flex flex-col animate-in slide-in-from-bottom-4" + (studentScreen ? " ws-stu-dialog" : isTeacherMode && !isProbeMode && !isParentMode ? " ws-teach-dialog" : ""),
+            hidden: isPresenting || undefined,
+            style: isPresenting ? { display: "none" } : undefined,
+          },
+          errorMessage &&
+            /*#__PURE__*/ React.createElement(
+            "div",
+            {
+              className:
+                "bg-red-700 text-white px-4 py-2 text-center text-sm font-medium animate-in slide-in-from-top",
+            },
+            "\u26A0\uFE0F ",
+            errorMessage,
+          ),
+          studentScreen ? studentHeader : /*#__PURE__*/ React.createElement(
+            "div",
+            {
+              className:
+                "bg-gradient-to-r from-violet-700 to-purple-700 p-4 text-white",
+            },
+            /*#__PURE__*/ React.createElement(
+              "div",
+              { className: "flex items-center justify-between" },
+              /*#__PURE__*/ React.createElement(
+                "div",
+                { className: "flex items-center gap-3" },
+                /*#__PURE__*/ React.createElement(
+                  "svg",
+                  {
+                    width: "48",
+                    height: "48",
+                    viewBox: "0 0 48 48",
+                    className: `drop-shadow-lg transition-transform duration-500 ${isCelebrating ? "animate-bounce motion-reduce:animate-none scale-110" : ""}`,
+                  },
+                  /*#__PURE__*/ React.createElement("circle", {
+                    cx: "24",
+                    cy: "24",
+                    r: "16",
+                    fill: "#FBBF24",
+                    stroke: "#F59E0B",
+                    strokeWidth: "2",
+                  }),
+                  /*#__PURE__*/ React.createElement("rect", {
+                    x: "10",
+                    y: "19",
+                    width: "12",
+                    height: "8",
+                    rx: "2",
+                    fill: "#1F2937",
+                  }),
+                  /*#__PURE__*/ React.createElement("rect", {
+                    x: "26",
+                    y: "19",
+                    width: "12",
+                    height: "8",
+                    rx: "2",
+                    fill: "#1F2937",
+                  }),
+                  /*#__PURE__*/ React.createElement("rect", {
+                    x: "22",
+                    y: "21",
+                    width: "4",
+                    height: "3",
+                    fill: "#1F2937",
+                  }),
+                  /*#__PURE__*/ React.createElement("rect", {
+                    x: "11",
+                    y: "20",
+                    width: "4",
+                    height: "2",
+                    rx: "1",
+                    fill: "#4B5563",
+                    opacity: "0.5",
+                  }),
+                  /*#__PURE__*/ React.createElement("rect", {
+                    x: "27",
+                    y: "20",
+                    width: "4",
+                    height: "2",
+                    rx: "1",
+                    fill: "#4B5563",
+                    opacity: "0.5",
+                  }),
+                  /*#__PURE__*/ React.createElement("path", {
+                    d: "M18 32 Q24 35 30 32",
+                    stroke: "#B45309",
+                    strokeWidth: "2",
+                    fill: "none",
+                    strokeLinecap: "round",
+                  }),
+                  /*#__PURE__*/ React.createElement("path", {
+                    d: "M6 24 Q6 8 24 8 Q42 8 42 24",
+                    stroke: "#1F2937",
+                    strokeWidth: "4",
+                    fill: "none",
+                    strokeLinecap: "round",
+                  }),
+                  /*#__PURE__*/ React.createElement("ellipse", {
+                    cx: "6",
+                    cy: "26",
+                    rx: "5",
+                    ry: "7",
+                    fill: "#374151",
+                  }),
+                  /*#__PURE__*/ React.createElement("ellipse", {
+                    cx: "42",
+                    cy: "26",
+                    rx: "5",
+                    ry: "7",
+                    fill: "#374151",
+                  }),
+                  /*#__PURE__*/ React.createElement("ellipse", {
+                    cx: "6",
+                    cy: "26",
+                    rx: "3",
+                    ry: "5",
+                    fill: "#4B5563",
+                  }),
+                  /*#__PURE__*/ React.createElement("ellipse", {
+                    cx: "42",
+                    cy: "26",
+                    rx: "3",
+                    ry: "5",
+                    fill: "#4B5563",
+                  }),
+                ),
+                /*#__PURE__*/ React.createElement(
+                  "div",
+                  null,
+                  /*#__PURE__*/ React.createElement(
+                    "h2",
+                    {
+                      id: "word-sounds-dialog-title",
+                      tabIndex: -1,
+                      "data-dialog-initial-focus": "true",
+                      className: "text-xl font-bold",
+                    },
+                    ts("word_sounds.studio_title") || "\uD83D\uDD24 Word Sounds",
+                  ),
+                  /*#__PURE__*/ React.createElement(
+                    "p",
+                    { className: "text-violet-200 text-sm", "data-ws-header-subtitle": "true" },
+                    // Once an activity is running the header names it; the
+                    // "choose an activity" prompt is for the picker only.
+                    wordSoundsActivity && !showReviewPanel
+                      ? activityDisplayName(wordSoundsActivity)
+                      : ts("word_sounds.choose_activity_prompt") ||
+                        "Choose an activity below to get started!",
+                  ),
+                ),
+              ),
+              /*#__PURE__*/ React.createElement(WsReadingSettingsButton, {
+                ts,
+                className:
+                  "ms-auto me-1 flex min-h-11 min-w-11 items-center justify-center rounded-full px-2 text-base font-black text-white hover:bg-white/20 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-violet-700",
+              }),
+              /*#__PURE__*/ React.createElement(
+                "button",
+                {
+                  "aria-label": t("common.minimize_to_background"),
+                  onClick: () => setIsMinimized(true),
+                  className:
+                    "p-2 hover:bg-white/20 rounded-full transition-colors mr-1",
+                  title: t("common.minimize_to_background"),
+                },
+                /*#__PURE__*/ React.createElement(Minimize, { size: 20 }),
+              ),
+              /*#__PURE__*/ React.createElement(
+                "button",
+                {
+                  onClick: closeSessionDialog,
+                  className:
+                    "p-2 hover:bg-white/20 rounded-full transition-colors",
+                  "aria-label": t("common.close"),
+                },
+                /*#__PURE__*/ React.createElement(X, { size: 20 }),
+              ),
+            ),
+            lessonPlanConfig &&
+            activitySequence?.length > 0 &&
+              /*#__PURE__*/ React.createElement(
+              "div",
+              { className: "mt-3 bg-white/10 rounded-xl p-3 backdrop-blur" },
+                /*#__PURE__*/ React.createElement(
+                "div",
+                {
+                  className: "flex items-center justify-between text-xs mb-2",
+                },
+                  /*#__PURE__*/ React.createElement(
+                  "div",
+                  {
+                    className: "flex items-center gap-2 text-white font-bold",
+                  },
+                    /*#__PURE__*/ React.createElement(
+                    "span",
+                    { className: "text-violet-200" },
+                    "\uD83D\uDCCB",
+                  ),
+                    /*#__PURE__*/ React.createElement(
+                    "span",
+                    null,
+                    (wordSoundsActivity && activityDisplayName(wordSoundsActivity)) || ts("word_sounds.activity_fallback") || "Activity",
+                  ),
+                ),
+                  /*#__PURE__*/ React.createElement(
+                  "div",
+                  { className: "flex items-center gap-1" },
+                  [...Array(lessonPlanConfig.masteryThreshold || 3)].map(
+                    (_, i) =>
+                        /*#__PURE__*/ React.createElement(
+                      "span",
+                      {
+                        key: i,
+                        className: `text-base ${(masteryStats[wordSoundsActivity]?.consecutiveStreak || 0) > i ? "opacity-100" : "opacity-30"}`,
+                      },
+                      (masteryStats[wordSoundsActivity]
+                        ?.consecutiveStreak || 0) > i
+                        ? "✓"
+                        : "○",
+                    ),
+                  ),
+                ),
+              ),
+                /*#__PURE__*/ React.createElement(
+                "div",
+                { className: "h-2 bg-white/20 rounded-full overflow-hidden" },
+                  /*#__PURE__*/ React.createElement("div", { role: "progressbar", "aria-valuemin": "0", "aria-valuemax": "100",
+                  className:
+                    "h-full bg-gradient-to-r from-emerald-400 to-teal-400 rounded-full transition-all duration-300",
+                  style: {
+                    width: `${Math.min(100, ((masteryStats[wordSoundsActivity]?.attempted || 0) / (lessonPlanConfig.activities?.find((a) => a.id === wordSoundsActivity)?.count || 5)) * 100)}%`,
+                  },
+                }),
+              ),
+                /*#__PURE__*/ React.createElement(
+                "div",
+                {
+                  className:
+                    "flex justify-between text-[0.6875rem] text-violet-200 mt-1",
+                },
+                  /*#__PURE__*/ React.createElement(
+                  "span",
+                  null,
+                  (function () {
+                    const _done = masteryStats[wordSoundsActivity]?.attempted || 0;
+                    const _goal = lessonPlanConfig.activities?.find(
+                      (a) => a.id === wordSoundsActivity,
+                    )?.count || 5;
+                    return wsLessonItemsText(ts, _done, _goal, WS_CORE.lessonItemCeiling(_goal, lessonPlanConfig.masteryThreshold));
+                  })(),
+                ),
+                  /*#__PURE__*/ React.createElement(
+                  "span",
+                  null,
+                  (() => {
+                    const uniqueActs = [...new Set(activitySequence)];
+                    const currentIdx = uniqueActs.indexOf(wordSoundsActivity);
+                    if (currentIdx < uniqueActs.length - 1) {
+                      const nextName = activityDisplayName(uniqueActs[currentIdx + 1]);
+                      return ts("word_sounds.lesson_strip_next", { activity: nextName }) || ("Next: " + nextName);
+                    }
+                    return "🎉 " + (ts("word_sounds.lesson_strip_final") || "Final Activity");
+                  })(),
+                ),
+              ),
+            ),
+            /*#__PURE__*/ React.createElement(
+              "div",
+              {
+                className:
+                  "flex items-center justify-between gap-4 mt-3 text-sm flex-wrap",
+              },
+              headerStatsChips,
+              /*#__PURE__*/ React.createElement(
+                "div",
+                { className: "flex flex-wrap items-center gap-2" },
+                presentAllowed &&
+                  /*#__PURE__*/ React.createElement(
+                  "button",
+                  {
+                    ref: presentButtonRef,
+                    type: "button",
+                    onClick: startPresenting,
+                    "data-ws-present-open": "true",
+                    className:
+                      "flex items-center gap-1 min-h-11 whitespace-nowrap px-3 py-1.5 bg-white text-violet-800 rounded-full text-sm font-bold hover:bg-violet-50 transition-colors shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-violet-700",
+                  },
+                  /*#__PURE__*/ React.createElement("span", { "aria-hidden": "true" }, "\ud83d\udcfd\ufe0f"),
+                  ts("word_sounds.present_button") || "Present to class",
+                ),
+                // Teacher review/edit are practice affordances \u2014 opening the
+                // review panel mid-probe replaces the probe UI entirely and
+                // its Start button wipes the evidence (setWordSoundsHistory([])).
+                // Teacher-only for a second reason: the panel lists every word
+                // with its phonemes, rhyme answers and distractors, so on a
+                // student device it hands over the answers to the activity
+                // they are about to be scored on.
+                isTeacherMode &&
+                !isProbeMode &&
+                preloadedWords.length > 0 &&
+                  /*#__PURE__*/ React.createElement(
+                  "button",
+                  {
+                    "aria-label": t("common.review_and_edit_word_list"),
+                    onClick: () => setShowReviewPanel(true),
+                    className:
+                      "flex items-center gap-1 min-h-11 whitespace-nowrap px-3 py-1.5 bg-amber-700 text-white rounded-full text-sm font-bold hover:bg-amber-800 transition-colors shadow-md",
+                    title: t("common.review_and_edit_word_list"),
+                  },
+                  ts("word_sounds.review_words") || "\u270F\uFE0F Review Words",
+                ),
+                // Same gate as Review Words, for the same reason: the script
+                // prints every word with its sounds and its answers, so it must
+                // never render on a student device or during a probe.
+                isTeacherMode &&
+                !isProbeMode &&
+                preloadedWords.length > 0 &&
+                  /*#__PURE__*/ React.createElement(
+                  "button",
+                   {
+                     id: "word-sounds-di-script-open",
+                     type: "button",
+                    "aria-label": ts("word_sounds.di_script_open") || "Open the lesson script",
+                    onClick: handleOpenDiScript,
+                    disabled: diScriptState === "loading",
+                    className:
+                      "flex items-center gap-1 min-h-11 whitespace-nowrap px-3 py-1.5 bg-indigo-700 text-white rounded-full text-sm font-bold hover:bg-indigo-600 disabled:opacity-60 transition-colors shadow-md",
+                    title: ts("word_sounds.di_script_open") || "Open the lesson script",
+                  },
+                  diScriptState === "loading"
+                    ? (ts("common.loading") || "Loading...")
+                    : (ts("word_sounds.di_script_button") || "\u{1F4C4} Lesson script"),
+                ),
+                printAllowed &&
+                  /*#__PURE__*/ React.createElement(
+                  "div",
+                  { className: "relative", "data-ws-share": "true" },
+                  /*#__PURE__*/ React.createElement(
+                    "button",
+                    {
+                      // Dialogs opened from the menu hand focus back here.
+                      ref: (element) => { shareButtonRef.current = element; printButtonRef.current = element; takeHomeButtonRef.current = element; },
+                      type: "button",
+                      id: "ws-share-menu-button",
+                      "aria-haspopup": "menu",
+                      "aria-expanded": shareMenuOpen,
+                      "aria-controls": "ws-share-menu",
+                      "data-ws-share-open": "true",
+                      onClick: () => setShareMenuOpen((open) => !open),
+                      onKeyDown: (event) => { if (event.key === "ArrowDown" || event.key === "ArrowUp") { event.preventDefault(); setShareMenuOpen(true); } },
+                      className:
+                        "flex items-center gap-1 min-h-11 whitespace-nowrap px-3 py-1.5 bg-indigo-700 text-white rounded-full text-sm font-bold hover:bg-indigo-600 transition-colors shadow-md focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-violet-700",
+                    },
+                    /*#__PURE__*/ React.createElement("span", { "aria-hidden": "true" }, "🖨️"),
+                    ts("word_sounds.share_menu_button") || "Print & share",
+                    /*#__PURE__*/ React.createElement("span", { "aria-hidden": "true" }, "▾"),
+                  ),
+                  /*#__PURE__*/ React.createElement(
+                    "div",
+                    {
+                      ref: shareMenuRef,
+                      id: "ws-share-menu",
+                      role: "menu",
+                      "aria-labelledby": "ws-share-menu-button",
+                      hidden: !shareMenuOpen,
+                      onKeyDown: onShareMenuKey,
+                      className: "absolute end-0 top-full z-50 mt-2 w-72 rounded-2xl border border-slate-200 bg-white p-2 text-start shadow-2xl",
+                    },
+                    [
+                      { id: "print", show: printAllowed, attrs: { "data-ws-print-open": "true", "aria-haspopup": "dialog" }, icon: "🖨️",
+                        label: ts("word_sounds.print_button") || "Print materials", hint: ts("word_sounds.share_print_hint") || "Word cards, sound boxes and a family letter",
+                        run: () => { setPrintStatus(""); setPrintMenuOpen(true); } },
+                      { id: "take-home", show: takeHomeAllowed, attrs: { "data-ws-take-home-open": "true", "aria-haspopup": "dialog" }, icon: "🏠",
+                        label: ts("word_sounds.take_home_button") || "Take-home file", hint: ts("word_sounds.share_take_home_hint") || "A practice file students open at home",
+                        run: () => { setTakeHomeStatus(""); setTakeHomeOpen(true); } },
+                      { id: "present-offline", show: presentAllowed && isTeacherMode, attrs: { "data-ws-present-offline": "true" }, icon: "💾",
+                        label: ts("word_sounds.share_present_offline") || "Present offline", hint: ts("word_sounds.share_present_offline_hint") || "One file with every activity and its sounds. Works without internet.",
+                        run: () => { Promise.resolve(downloadPresentOffline()).then((result) => { if (result && result.message) addToast?.(result.message, result.ok ? "success" : "error"); }, () => {}); } },
+                      { id: "word-practice", show: shareWordPracticeAllowed, attrs: { "data-ws-word-practice-open": "true" }, icon: "🃏",
+                        label: ts("word_sounds.share_word_practice") || "Word Practice", hint: ts("word_sounds.share_word_practice_hint") || "Project the words, or download HTML or PowerPoint",
+                        run: openWordPracticeFromLesson },
+                    ].filter((entry) => entry.show).map((entry) => /*#__PURE__*/ React.createElement(
+                      "button",
+                      {
+                        key: entry.id,
+                        type: "button",
+                        role: "menuitem",
+                        tabIndex: -1,
+                        ...entry.attrs,
+                        onClick: () => { setShareMenuOpen(false); entry.run(); },
+                        className: "flex w-full min-h-11 items-start gap-3 rounded-xl px-3 py-2 text-start text-slate-800 hover:bg-indigo-50 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600",
+                      },
+                      /*#__PURE__*/ React.createElement("span", { "aria-hidden": "true", className: "text-lg" }, entry.icon),
+                      /*#__PURE__*/ React.createElement("span", { className: "flex flex-col" },
+                        /*#__PURE__*/ React.createElement("span", { className: "font-bold" }, entry.label),
+                        /*#__PURE__*/ React.createElement("span", { className: "text-xs font-normal text-slate-600" }, entry.hint)),
+                    )),
+                  ),
+                ),
+              ),
+              // Practice settings: their own line, the speed control at its end.
+              headerSettingsRow,
+            ),
+            headerSessionProgress,
+            headerBadges,
           ),
           // Garden Bridge banner — appears when garden-prepared phonics words are available
           showGardenBanner && gardenPhonicsWords && !gardenWordsApplied &&
@@ -25573,87 +27073,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   className: "text-emerald-700 hover:text-emerald-600 text-lg",
                   "aria-label": ts("word_sounds.sr_dismiss") || "Dismiss"
                 }, "\u00D7"))),
-          !isStudentLocked &&
-          !isProbeMode &&
-            /*#__PURE__*/ React.createElement(
-            "div",
-            {
-              className:
-                "border-b border-slate-200 px-4 py-3 overflow-x-auto",
-            },
-              /*#__PURE__*/ React.createElement(
-              "div",
-              { className: "flex gap-2 items-center" },
-              isParentMode &&
-                /*#__PURE__*/ React.createElement(
-                "span",
-                {
-                  className:
-                    "flex items-center gap-1 px-3 py-1 rounded-full bg-amber-100 text-amber-700 text-xs font-bold border border-amber-200 whitespace-nowrap mr-1",
-                  title: ts("word_sounds.home_practice_mode") || "Home Practice Mode",
-                },
-                ts("word_sounds.home_practice") || "\uD83C\uDFE0 Home Practice",
-              ),
-              // Honesty chip: in a non-English session some activities are
-              // hidden because their machinery is English-specific (letter
-              // paths, rime families, letter tiles on non-alphabetic scripts).
-              !wsLangCaps.isEnglish &&
-                ALL_ACTIVITIES.some((a) => !wsActivityAvailableForLang(a.id)) &&
-                /*#__PURE__*/ React.createElement(
-                "span",
-                {
-                  className:
-                    "flex items-center gap-1 px-3 py-1 rounded-full bg-slate-100 text-slate-600 text-xs font-bold border border-slate-200 whitespace-nowrap mr-1",
-                  title:
-                    ts("word_sounds.lang_hidden_activities_hint") ||
-                    "Some letter- and spelling-pattern activities are designed for English and are hidden for this language.",
-                },
-                "\uD83C\uDF10 ",
-                ts("word_sounds.lang_hidden_activities") || "Some activities are English-only",
-              ),
-              ACTIVITY_GROUP_ORDER.flatMap((__g) => {
-                const __acts = ACTIVITIES.filter((a) => (ACTIVITY_GROUP_OF[a.id] || "pa_phoneme") === __g);
-                if (!__acts.length) return [];
-                return [
-                  /*#__PURE__*/ React.createElement(
-                    "span",
-                    {
-                      key: "wsgrp-" + __g,
-                      className: "text-[0.625rem] font-bold uppercase tracking-wide text-slate-700 px-1 self-center whitespace-nowrap",
-                      title: ACTIVITY_GROUP_FULL[__g],
-                    },
-                    ACTIVITY_GROUP_LABELS[__g],
-                  ),
-                  ...__acts.map((activity) =>
-                    /*#__PURE__*/ React.createElement(
-                      "button",
-                      {
-                        key: activity.id,
-                        onClick: () => startActivity(activity.id),
-                        className: `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ${wordSoundsActivity === activity.id ? "bg-violet-700 text-white shadow-md" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
-                        title: activity.description,
-                      },
-                      /*#__PURE__*/ React.createElement("span", null, activity.icon),
-                      /*#__PURE__*/ React.createElement("span", null, activity.label),
-                    ),
-                  ),
-                ];
-              }),
-              (wsImagesUsable || hasPreparedImages) &&
-                /*#__PURE__*/ React.createElement(
-                "button",
-                {
-                  onClick: () => setAacMode((prev) => !prev),
-                  className: `flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold whitespace-nowrap transition-all ml-auto ${aacMode ? "bg-teal-700 text-white shadow-md ring-2 ring-teal-300" : "bg-slate-100 text-slate-600 hover:bg-slate-200"}`,
-                  title: aacMode
-                    ? ts("word_sounds.aac_overlay_on_title") || "AAC Symbol Overlay ON — click to turn off"
-                    : ts("word_sounds.aac_overlay_off_title") || "Turn on AAC Symbol Overlay (generates images for answer choices)",
-                },
-                /*#__PURE__*/ React.createElement("span", null, "\uD83D\uDDBC\uFE0F"),
-                /*#__PURE__*/ React.createElement("span", null, ts("word_sounds.aac_abbrev") || "AAC"),
-              ),
-            ),
-          ),
+          studentScreen ? null : renderActivityTabs(false),
           isProbeMode &&
             /*#__PURE__*/ React.createElement(
             "div",
@@ -25699,9 +27119,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
             ),
           ),
+          feedbackRegion,
           /*#__PURE__*/ React.createElement(
             "div",
-            { className: "flex-1 overflow-y-auto p-6" },
+            { className: studentScreen ? "ws-stu-task flex-1 overflow-y-auto" : "flex-1 overflow-y-auto p-6", "data-ws-task-area": "true" },
             phonemeError &&
               /*#__PURE__*/ React.createElement(
               "div",
@@ -25758,7 +27179,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               // Mode (full / compact / hidden) persists to localStorage.
               // anchorView decides: nothing before the final answer wherever the
               // card would print the word or sound the child is working out.
-              anchorView
+              anchorView && !studentAnchorAfter
                 ? /*#__PURE__*/ React.createElement(AnchorStrip, {
                   target: anchorTarget,
                   // "full" briefly after a final miss, even when the user set
@@ -25800,40 +27221,6 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               ),
               renderActivityContent(),
             ),
-            wordSoundsFeedback &&
-              /*#__PURE__*/ React.createElement(
-              "div",
-              {
-                className: `mt-6 p-4 rounded-xl text-center font-bold animate-in slide-in-from-bottom-2 ${(wordSoundsFeedback.isCorrect || wordSoundsFeedback.type === "correct" || wordSoundsFeedback.type === "success") ? "bg-green-100 text-green-700 border-2 border-green-300" : "bg-red-100 text-red-700 border-2 border-red-300"}`,
-              },
-              (wordSoundsFeedback.isCorrect || wordSoundsFeedback.type === "correct" || wordSoundsFeedback.type === "success")
-                ? (feedbackMascot && feedbackMascot !== "off" && !disableAnimations && !isProbeMode
-                  ? /*#__PURE__*/ React.createElement("span", { "aria-hidden": "true", "data-ws-feedback-mascot": feedbackMascot, className: "me-2 inline-block align-middle" },
-                    wsMascotGroup(feedbackMascot, (wordSoundsScore.streak || 0) >= 10 ? "win" : (wordSoundsScore.streak || 0) >= 3 ? "combo" : "wow", 48, "-ws-feedback"))
-                  : "🎉 ")
-                : "💡 ",
-              wordSoundsFeedback.message,
-            ),
-            audioNotice &&
-              /*#__PURE__*/ React.createElement(
-                "div",
-                {
-                  role: "status",
-                  className:
-                    "mt-3 p-3 rounded-xl text-center text-sm font-semibold bg-amber-50 text-amber-800 border-2 border-amber-200 flex flex-wrap items-center justify-center gap-3",
-                },
-                /*#__PURE__*/ React.createElement("span", null, "🔇 " + audioNotice),
-                /*#__PURE__*/ React.createElement(
-                  "button",
-                  {
-                    type: "button",
-                    onClick: retryLastAudio,
-                    className:
-                      "px-3 py-1 rounded-lg bg-amber-700 text-white font-bold hover:bg-amber-700 focus:outline-none focus:ring-2 focus:ring-amber-400",
-                  },
-                  ts("word_sounds.audio_retry") || "🔊 Try again",
-                ),
-              ),
           ),
         ),
         isPresenting &&
@@ -25841,6 +27228,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             words: preloadedWords,
             itemOptions: presentItemOptions,
             activities: presentActivities,
+            lessonOnly: isTeacherMode && lessonPreparedOnly,
             initialActivity: wordSoundsActivity,
             startWord: currentWordSoundsWord,
             ts: ts,

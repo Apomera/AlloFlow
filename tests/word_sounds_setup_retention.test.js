@@ -42,7 +42,7 @@ const freeze = value => {
 // handlers, compiler and handoff in a small React host. This isolates the
 // persistence contract from the Studio's unrelated network/audio loaders.
 const Host = new Function('React', 'WS_CORE', `
-  ${between('function chooseWordSoundsPreviewWords(', 'const WordSoundsGenerator =')}
+  ${between('// The host owns this session so approved work survives leaving setup.', 'const WordSoundsGenerator =')}
   ${between('function useWordSoundsSyllableExitGuard(', 'function WordSoundsSyllableDraftNotice(')}
   ${between('const PACK_COMMON_WORDS =', '// ── eSpeak G2P')}
   return function Host({ session: reviewSession, words: preloadedWords = [], dirty = [], capture, onShowReview, onClose }) {
@@ -62,12 +62,12 @@ const Host = new Function('React', 'WS_CORE', `
     const syllableCountFor = word => WS_CORE.resolveSyllableCount(word, {language:wordSoundsLanguage, prepared:preparedCountFor(word),
       recordedTask:preparedSyllableFor(word), audioContext:WS_CORE.createSyllableCountAudioContext({asset:syllableCountAudioFor(word), language:wordSoundsLanguage, voice:selectedVoice})});
     ${between('const saveSyllableCount =', 'const selectionInputsKey =')}
-    const wordCount = 10, includeSyllableWords = false, includeSyllableCountWords = false, includeGlossary = false;
-    const includeFamily = false, includeCustom = false, includeSightWords = false, includeAI = false;
-    const selectedFamily = '', selectedSightWordList = '', customText = '', aiTerms = [], glossaryTerms = [];
+    const readyLists = [], addedReadyLists = [], includeGlossary = false;
+    const includeCustom = false, includeAI = false;
+    const customText = '', aiTerms = [], glossaryTerms = [];
     const syllableRange = {min:1,max:4}, withinSyllableRange = () => true;
     const syllableCountingSelected = true;
-    ${between('const selectionInputsKey =', 'const syllableBlendingSelected =')}
+    ${between('const selectionInputsKey =', '// ---- The plan on screen ----')}
     ${between('const previewWordsKey =', 'const normalizePackKey =')}
     ${between('const normalizePackKey =', 'const applySetupSyllableReviews =')}
     const syllableExitGuard = useWordSoundsSyllableExitGuard(() => dirty, tf);

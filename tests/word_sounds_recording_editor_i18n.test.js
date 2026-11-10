@@ -155,7 +155,12 @@ describe('keys, fallbacks and copies stay in step', () => {
     const block = sliceBetween(runtime, LIB_START, EDITOR_END);
     const di = readFileSync(DIR + '/word_sounds_di_loader.js', 'utf8');
     const used = [...literalKeys(block), ...literalKeys(di), 'word_sounds.missing_letter_say', 'word_sounds.syllable_recordings_heading'];
-    const registered = (k) => alloData.includes(`'${k}':`) || alloData.includes(`"${k}":`);
+    // A literal ending in "_" is a key PREFIX the code completes with an id (activity_<id>, skill_<id>,
+    // strand_<key>, big5_<key>): the family must have registered members, checked one by one in
+    // word_sounds_names_and_strands.test.js.
+    const registered = (k) => (k.endsWith('_')
+      ? new RegExp(`['"]${k.replace('.', '\\.')}[a-z0-9_]+['"]:`).test(alloData)
+      : alloData.includes(`'${k}':`) || alloData.includes(`"${k}":`));
     expect(used.filter((k) => !registered(k)), 'missing from WORD_SOUNDS_STRINGS').toEqual([]);
     for (const [key, english] of pairs(block)) {
       if (!(key in keys)) continue; // pre-existing keys (exit guard, notices)

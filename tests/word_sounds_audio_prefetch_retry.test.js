@@ -95,13 +95,23 @@ async function mount(initialWords = [word()], isTeacherSpokenWord = () => false)
   };
 }
 
+// _ttsFailed means a live attempt failed in THIS session. A flag that only
+// arrives with the pack is stale (older setup wrote it for every word with no
+// saved clip) and the word is tried, so these tests make the failure happen.
+async function mountFailed() {
+  const harness = await mount();
+  await harness.settle(0, { error: new Error('429 Rate Limited') });
+  expect(harness.requests).toHaveLength(1);
+  expect(harness.state.words[0]).toMatchObject({ _audioRequested: false, _ttsFailed: true, _runtimeAudioReady: false });
+  return harness;
+}
 async function advance(ms) {
   await act(async () => { await vi.advanceTimersByTimeAsync(ms); });
 }
 function expectFailedPanel(harness) {
   expect(harness.element.querySelector('#word-sounds-review-description').textContent).toContain('Words missing audio: 1');
   expect(harness.element.textContent).toContain('Words whose audio failed to load in this session: 1');
-  expect(harness.element.querySelector('button[aria-label="Audio failed"]')).not.toBeNull();
+  expect(harness.element.querySelector('button[aria-label="Audio failed: try again"]')).not.toBeNull();
   expect(harness.element.querySelector('button[aria-label="Loading audio"]')).toBeNull();
   expect(harness.state.words[0]).toMatchObject({ _audioRequested: false, _ttsFailed: true, _runtimeAudioReady: false });
 }
@@ -141,13 +151,13 @@ describe('Word Sounds prefetch failure and review warnings', () => {
     let finishBank;
     window.loadWordAudioBank = vi.fn(() => new Promise(resolve => { finishBank = resolve; }));
     try {
-      const harness = await mount([word({ _ttsFailed: true })]);
+      const harness = await mountFailed();
       let retrying;
       await act(async () => { retrying = harness.state.handlers.retry(); });
       expect(window.loadWordAudioBank).toHaveBeenCalledWith({ retry: true });
-      expect(harness.requests).toHaveLength(0);
-      await act(async () => { finishBank(); await retrying; });
       expect(harness.requests).toHaveLength(1);
+      await act(async () => { finishBank(); await retrying; });
+      expect(harness.requests).toHaveLength(2);
     } finally { window.loadWordAudioBank = original; }
   });
   it('does not rearm an edited lesson after an old bank retry completes', async () => {
@@ -155,12 +165,12 @@ describe('Word Sounds prefetch failure and review warnings', () => {
     let finishBank;
     window.loadWordAudioBank = vi.fn(() => new Promise(resolve => { finishBank = resolve; }));
     try {
-      const harness = await mount([word({ _ttsFailed: true })]);
+      const harness = await mountFailed();
       let retrying;
       await act(async () => { retrying = harness.state.handlers.retry(); });
       await harness.changeMetadata();
       await act(async () => { finishBank(); await retrying; });
-      expect(harness.requests).toHaveLength(0);
+      expect(harness.requests).toHaveLength(1);
       expect(harness.state.words[0]._ttsFailed).toBe(true);
     } finally { window.loadWordAudioBank = original; }
   });
@@ -169,7 +179,7 @@ describe('Word Sounds prefetch failure and review warnings', () => {
     let finishBank;
     window.loadWordAudioBank = vi.fn(() => new Promise(resolve => { finishBank = resolve; }));
     try {
-      const harness = await mount([word({ _ttsFailed: true })]);
+      const harness = await mountFailed();
       let retrying;
       await act(async () => { retrying = harness.state.handlers.retry(); });
       await act(async () => {
@@ -177,7 +187,7 @@ describe('Word Sounds prefetch failure and review warnings', () => {
         harness.state.setWords(previous => previous.map(value => ({ ...value, reviewedNote: 'Queued edit' })));
         await retrying;
       });
-      expect(harness.requests).toHaveLength(0);
+      expect(harness.requests).toHaveLength(1);
       expect(harness.state.words[0]).toMatchObject({ _ttsFailed: true, reviewedNote: 'Queued edit' });
     } finally { window.loadWordAudioBank = original; }
   });
@@ -235,7 +245,7 @@ describe('Word Sounds prefetch failure and review warnings', () => {
     await harness.settle(0, { error: new Error('429 Rate Limited') });
     expect(harness.state.words[0]).toMatchObject({ ttsReady: true, _audioRequested: false, _ttsFailed: false, _ttsAssets: { cat: asset } });
     expect(harness.element.textContent).not.toContain('Words whose audio failed to load in this session:');
-    expect(harness.element.querySelector('button[aria-label="Audio failed"]')).toBeNull();
+    expect(harness.element.querySelector('button[aria-label="Audio failed: try again"]')).toBeNull();
     await advance(5000);
     expect(harness.requests).toHaveLength(1);
   });
@@ -250,7 +260,7 @@ describe('Word Sounds prefetch failure and review warnings', () => {
     expect(harness.requests).toHaveLength(1);
     expect(harness.state.words[0]).toMatchObject({ _audioRequested: false, _ttsFailed: false });
     expect(harness.state.words[0]._ttsAssets.cat).toBe(asset);
-    expect(harness.element.querySelector('button[aria-label="Audio failed"]')).toBeNull();
+    expect(harness.element.querySelector('button[aria-label="Audio failed: try again"]')).toBeNull();
   });
 
   it('keeps runtime audio ready when an older prefetch fails', async () => {
@@ -268,7 +278,7 @@ describe('Word Sounds prefetch failure and review warnings', () => {
     expect(harness.requests).toHaveLength(2);
     await harness.settle(0, { error: new Error('429 Rate Limited') });
     expect(harness.state.words[0]).toMatchObject({ _audioRequested: true, _ttsFailed: false });
-    expect(harness.element.querySelector('button[aria-label="Audio failed"]')).toBeNull();
+    expect(harness.element.querySelector('button[aria-label="Audio failed: try again"]')).toBeNull();
     await harness.settle(1, { cached: true });
     expectReadyPanel(harness);
   });
@@ -285,32 +295,38 @@ describe('Word Sounds prefetch failure and review warnings', () => {
   });
 
   it('lets the panel Retry audio button re-arm a failed word and recover', async () => {
-    const harness = await mount([word({ _ttsFailed: true, _audioRequested: false, _runtimeAudioReady: false })]);
-    expect(harness.requests).toHaveLength(0);
+    const harness = await mountFailed();
     expectFailedPanel(harness);
     await advance(3000);
-    expect(harness.requests).toHaveLength(0);
+    expect(harness.requests).toHaveLength(1);
     expectFailedPanel(harness);
     const retryButton = harness.element.querySelector('#word-sounds-review-description button');
     expect(retryButton.textContent).toBe('Retry audio');
     await act(async () => retryButton.click());
+    expect(harness.requests).toHaveLength(2);
+    expect(harness.state.words[0]).toMatchObject({ _audioRequested: true, _ttsFailed: false });
+    await harness.settle(1, { cached: true });
+    expectReadyPanel(harness);
+    await advance(5000);
+    expect(harness.requests).toHaveLength(2);
+  });
+
+  it('tries a word whose failure flag only came with the pack, and clears the warning when it plays', async () => {
+    const harness = await mount([word({ _ttsFailed: true, _audioRequested: false, _runtimeAudioReady: false })]);
     expect(harness.requests).toHaveLength(1);
     expect(harness.state.words[0]).toMatchObject({ _audioRequested: true, _ttsFailed: false });
     await harness.settle(0, { cached: true });
     expectReadyPanel(harness);
-    await advance(5000);
-    expect(harness.requests).toHaveLength(1);
   });
 
   it('lets the existing edit handler re-arm a renamed failed word', async () => {
-    const harness = await mount([word({ _ttsFailed: true, _audioRequested: false, _runtimeAudioReady: false })]);
-    expect(harness.requests).toHaveLength(0);
+    const harness = await mountFailed();
     expectFailedPanel(harness);
     await act(async () => harness.state.handlers.edit(0, { word: 'dog' }));
-    expect(harness.requests).toHaveLength(1);
-    expect(harness.requests[0].text).toBe('dog');
+    expect(harness.requests).toHaveLength(2);
+    expect(harness.requests[1].text).toBe('dog');
     expect(harness.state.words[0]).toMatchObject({ word: 'dog', _audioRequested: true, _ttsFailed: false });
-    await harness.settle(0, { cached: true });
+    await harness.settle(1, { cached: true });
     expectReadyPanel(harness);
   });
 });

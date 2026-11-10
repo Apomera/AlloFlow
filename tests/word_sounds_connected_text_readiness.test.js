@@ -31,7 +31,10 @@ describe('the advance waits for the read-back', () => {
     const marker = MODULE.indexOf('// Keep scored probe exposure intervals correctness-neutral.');
     expect(marker).toBeGreaterThan(0);
     const advance = MODULE.slice(marker, marker + 450);
-    expect(advance).toMatch(/isProbeMode \? 800 : isCorrect \? _rbAdvanceMs : 3000,/);
+    // A miss waits 3000 ms, or longer while the answer is modelled aloud (practice only, never a probe).
+    expect(advance).toMatch(/isProbeMode \? 800 : isCorrect \? _rbAdvanceMs : _missAdvanceMs,/);
+    expect(MODULE).toMatch(/let _missAdvanceMs = 3000;/);
+    expect(MODULE).toMatch(/const _model = !isCorrect && !isProbeMode \? answerModelSteps\(\) : null;/);
     expect(advance).not.toMatch(/isProbeMode\s*\?\s*\(isCorrect/);
   });
 

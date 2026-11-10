@@ -113,7 +113,8 @@ describe('Word Sounds awards and displayed XP agree', () => {
   });
 
   it('does not award or add XP after two wrong responses', async () => {
-    await mount(); await answer(2); await answer(2);
+    // Two different wrong numbers: a tried number is disabled for the item (2026-11-09).
+    await mount(); await answer(2); await answer(1);
     expect(awards).not.toHaveBeenCalled(); expect(lastFloat()).toBeUndefined();
     await tick(3001); await answer(); await tick(2001);
     expect(awards.mock.calls.map(call => call[0])).toEqual([12]);
@@ -126,6 +127,9 @@ describe('Word Sounds awards and displayed XP agree', () => {
     const position = current.data.activityItems.isolation.options.indexOf(current.data.activityItems.isolation.correctSound);
     const choice = container.querySelector(`button[aria-label="Choose Sound ${position + 1}"]`);
     expect(choice).toBeTruthy(); await act(async () => choice.click());
+    // Sound-only card: the tap selects it, Check answers.
+    expect(awards.mock.calls.map(call => call[0])).toEqual([12]);
+    await act(async () => container.querySelector('[data-ws-card-check]').click());
     expect(awards.mock.calls.map(call => call[0])).toEqual([12, 14]);
     await tick(2001); expect(recapValue()).toBe('26 ✨');
   });

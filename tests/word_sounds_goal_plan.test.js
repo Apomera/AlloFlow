@@ -117,7 +117,11 @@ describe('on the setup screen', () => {
     expect(text(effect(), '[data-ws-goal-effect-added]')).toBe('New to your word list: map, sat, pat, tap');
     expect(text(effect(), '[data-ws-goal-effect-leaving]')).toBe('Leave the lesson but stay in the word grid: ' + glossary.slice(0, 10).join(', '));
     expect(text(effect(), '[data-ws-goal-effect-sources]')).toBe('Other word sources stay on: Glossary');
-    expect(activityRows()).toEqual(['blending: 5–N items', 'segmentation: 5–N items']);
+    // 2026-11-10 (plan first): there is always a plan. These glossary words get the app's suggestion (CVC blending and
+    // spelling, without Read & Match: this mount cannot make pictures), and the proposal's two activities are already in it.
+    expect(prompt, 'the prompt says the app chose these').toContain('"planChosenBy":"app"');
+    expect(activityRows()).toEqual(['Blend Sounds: 6–N items', 'Break it Down: 5–N items', 'Sound Mapping: 5–N items', 'Spelling Bee: 4–N items']);
+    expect(session.setupDraft.lessonPlan, 'the suggestion is not written until Use this').toBeUndefined();
     expect(effect().textContent).toContain('Syllables per word: 1–4 becomes 1–1');
     expect(text(effect(), '[data-ws-goal-effect-taught]')).toBe('Taught letters: m s t a p');
     expect(session.setupDraft.customText, 'nothing applied yet').toBeUndefined();
@@ -129,7 +133,8 @@ describe('on the setup screen', () => {
     expect(session.setupDraft.customText).toBe('map, sat, pat, tap');
     expect(session.setupDraft.syllableRange).toEqual({ min: 1, max: 1 });
     expect(session.setupDraft.taughtPatternsText).toBe('m s t a p');
-    expect(IDS.filter((id) => session.setupDraft.lessonPlan[id].enabled)).toEqual(['blending', 'segmentation']);
+    expect(IDS.filter((id) => session.setupDraft.lessonPlan[id].enabled)).toEqual(['blending', 'segmentation', 'mapping', 'spelling_bee']);
+    expect(session.setupDraft.planChoice, 'an applied proposal makes the plan My own mix').toBe('custom');
   });
 
   it('answers a question without proposing or changing anything, even if the reply carries changes', async () => {
@@ -158,7 +163,7 @@ describe('on the setup screen', () => {
     expect(setup.typedWordList).toEqual(['cat', 'dog']);
     expect(setup.activitiesInOrder.filter((a) => a.on).map((a) => [a.id, a.count])).toEqual([['counting', 4], ['blending', 4]]);
     expect(text(effect(), '[data-ws-goal-effect-words-same]')).toBe('Words: no change (1 in the lesson)');
-    expect(activityRows(), 'teacher order, new count, rhyming joins in its own slot').toEqual(['counting: 6–N items', 'blending: 4–N items', 'rhyming: 5–N items']);
+    expect(activityRows(), 'teacher order, new count, rhyming joins in its own slot').toEqual(['Sound Counting: 6–N items', 'Blend Sounds: 4–N items', 'Rhyme Time: 5–N items']);
     expect(effect().querySelector('[data-ws-goal-effect-off]')).toBeNull();
     await apply();
     expect(session.setupDraft.lessonPlanOrder).toEqual(order);
@@ -178,13 +183,13 @@ describe('on the setup screen', () => {
     await send('Short a words instead of counting.');
     expect(text(effect(), '[data-ws-goal-effect-words]')).toBe('dog, map, sat, pat, tap');
     expect(text(effect(), '[data-ws-goal-effect-kept]')).toBe('Words you chose stay in the lesson: dog');
-    expect(text(effect(), '[data-ws-goal-effect-off]')).toBe('Turned off: counting');
+    expect(text(effect(), '[data-ws-goal-effect-off]')).toBe('Turned off: Sound Counting');
     await act(async () => { proposal().querySelector('[data-ws-planner-set-aside]').click(); });
     expect(proposal()).toBeNull();
     expect(turns().at(-1)).toBe('Proposal 1 set aside. Nothing changed.');
     expect(session.setupDraft.customText, 'set aside changes nothing').toBe('cat, dog');
     await send('Do blending before counting.');
-    expect(activityRows()).toEqual(['blending: 4–N items', 'counting: 4–N items']);
+    expect(activityRows()).toEqual(['Blend Sounds: 4–N items', 'Sound Counting: 4–N items']);
     await apply();
     expect(session.setupDraft.lessonPlanOrder.slice(0, 3), 'the two swap inside the slots they held').toEqual(['segmentation', 'blending', 'counting']);
   });
@@ -208,7 +213,7 @@ describe('on the setup screen', () => {
     await act(async () => { waiting.shift()(changeReply({ disable: ['blending', 'counting'], counts: { rhyming: 8 } }, 'LATE')); });
     expect(turns().join(' | ')).not.toContain('LATE');
     expect(proposal().getAttribute('data-ws-goal-proposal')).toBe('2');
-    expect(activityRows()).toEqual(['counting: 4–N items', 'blending: 4–N items', 'rhyming: 6–N items']);
+    expect(activityRows()).toEqual(['Sound Counting: 4–N items', 'Blend Sounds: 4–N items', 'Rhyme Time: 6–N items']);
     await apply();
     expect(session.setupDraft.lessonPlan.rhyming).toEqual({ enabled: true, count: 6 });
     expect(session.setupDraft.lessonPlan.blending.enabled, 'the late reply changed nothing').toBe(true);
@@ -287,9 +292,13 @@ describe('placement (2026-11-08)', () => {
     expect(lessonPlan).toBeGreaterThan(0);
     const card = src.indexOf('data-ws-goal-plan="true"');
     const aiTopic = src.indexOf('<div className={`p-3 rounded-xl border-2 transition-all ${includeAI');
-    const planToggle = src.indexOf('checked={includeLessonPlan}', lessonPlan);
     expect(aiTopic).toBeGreaterThan(0);
+    expect(aiTopic).toBeLessThan(lessonPlan);
     expect(card).toBeGreaterThan(lessonPlan);
-    expect(card).toBeLessThan(planToggle);
+    // 2026-11-10 (plan first): the plan it edits is the card at the top of the column, not a toggle below it.
+    expect(src).not.toContain('checked={includeLessonPlan}');
+    expect(src.indexOf('data-ws-plan-card="true"')).toBeGreaterThan(0);
+    expect(src.indexOf('data-ws-plan-card="true"')).toBeLessThan(lessonPlan);
+    expect(src).toContain("tf('word_sounds.planner_help_plan', 'Ask AlloBot about this lesson, or ask for changes. It starts from your words and plan.");
   });
 });

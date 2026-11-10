@@ -106,7 +106,7 @@ describe('the player treats the story as print', () => {
     const idx = MODULE.indexOf('id: "read_passage"');
     expect(idx).toBeGreaterThan(0);
     expect(MODULE.slice(idx, idx + 400)).toMatch(/tier: "orthographic"/);
-    expect(MODULE).toMatch(/read_passage: "text",/);
+    expect(MODULE).toMatch(/read_passage: { name: 'Read the Story', strand: 'reading_sentences',/);
   });
 
   it('is graded, English-only, and word-level like its siblings', () => {

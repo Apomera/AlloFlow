@@ -24,6 +24,6 @@ describe('source generation language ownership', () => {
   it('gives the Word Sounds disclosures their localized panel name', () => {
     expect(sidebarSource).toContain("aria-label={t('sidebar.tool_wordsounds') || t('word_sounds.title') || 'Word Sounds'}");
     expect(sidebarSource).toContain("aria-expanded={expandedTools.includes('ui-tool-wordsounds')}");
-    expect(wordSoundsSource).toContain("tf('word_sounds.title', 'Word Sounds Studio')");
+    expect(wordSoundsSource).toContain("tf('word_sounds.title', 'Word Sounds')");
   });
 });

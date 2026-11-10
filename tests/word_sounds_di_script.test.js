@@ -359,9 +359,9 @@ describe('source shape', () => {
 
   it('every activity in the setup screen lesson plan has a skill entry', () => {
     const setup = fs.readFileSync(path.join(ROOT, 'word_sounds_setup_source.jsx'), 'utf8');
-    const start = setup.indexOf('const [lessonPlan, setLessonPlan] =');
+    const start = setup.indexOf('const [lessonPlanState, setLessonPlanState] =');
     expect(start).toBeGreaterThan(-1);
-    const end = setup.indexOf('const [lessonPlanOrder, setLessonPlanOrder] =', start);
+    const end = setup.indexOf('const [lessonPlanOrderState, setLessonPlanOrderState] =', start);
     expect(end).toBeGreaterThan(start);
     const block = setup.slice(start, end);
     const ids = [...block.matchAll(/^\s{12}([a-z_]+):\s*\{ enabled/gm)].map((m) => m[1]);

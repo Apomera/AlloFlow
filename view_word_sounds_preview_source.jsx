@@ -166,7 +166,7 @@ function WordSoundsPreviewView(props) {
                   <div className="space-y-6">{launchError && <p role="alert" className="rounded-lg border border-amber-300 bg-amber-50 p-3 text-sm text-amber-900">{launchError}</p>}
                     <div className="bg-gradient-to-br from-violet-50 to-indigo-50 p-6 rounded-2xl border border-violet-200 text-center">
                       <div className="text-4xl mb-3">🎵</div>
-                      <h3 className="text-lg font-bold text-slate-800 mb-2">{generatedContent?.title || label('preview_title', 'Word Sounds Studio')}</h3>
+                      <h3 className="text-lg font-bold text-slate-800 mb-2">{generatedContent?.title || label('modal_title', 'Word Sounds')}</h3>
                       <p className="text-sm text-slate-600 mb-1">{generatedContent?.configSummary || label('preview_ready', 'Ready to practice')}</p>
                       {generatedContent?.data && <p className="text-xs text-violet-700 font-medium">{label('preview_word_count', '{count} words loaded', { count: generatedContent.data.length })}</p>}
                       {canPresentPractice && <div className="mt-4 rounded-xl border border-violet-200 bg-white p-4 text-start">

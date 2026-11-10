@@ -221,9 +221,9 @@ describe('the player treats the target as print, not sound', () => {
     expect(MODULE).toMatch(/lastWordForReadSentence\.current = null;/);
   });
 
-  it('sits in its own continuum group between phonics and spelling', () => {
-    expect(MODULE).toMatch(/read_sentence: "text",/);
-    expect(MODULE).toMatch(/"pa_large", "pa_phoneme", "phonics", "text", "spelling", "handwriting"/);
+  it('sits in the Reading sentences strand, the last of the six', () => {
+    expect(MODULE).toMatch(/read_sentence: { name: 'Finish the Sentence', strand: 'reading_sentences',/);
+    expect(MODULE).toMatch(/key: 'syllables_rhyme',[^;]*key: 'hearing_sounds',[^;]*key: 'letters_sounds',[^;]*key: 'spelling',[^;]*key: 'reading_words',[^;]*key: 'reading_sentences',/);
   });
 
   it('the adaptive ladder culminates in connected text — English sessions only', () => {

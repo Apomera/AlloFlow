@@ -36,10 +36,13 @@ describe('Word Sounds stays readable in light, dark and high contrast', () => {
     expect(WS).toContain("'.word-sounds-root:not(.theme-dark *):not(.theme-contrast *) .text-slate-600 { color: #475569 !important; }',");
     expect(WS).not.toContain("'.word-sounds-root .text-slate-600 { color: #475569 !important; }'");
   });
-  it('the Spelling card switched off by the lesson plan stays readable (no fade) and is translatable', () => {
-    expect(SETUP).toContain("includeLessonPlan ? 'cursor-not-allowed border-dashed border-slate-300 bg-slate-50'");
+  // 2026-11-10 (plan first): the Spelling card and its slider are gone. The control that can be
+  // switched off now is a starting point; it stays readable (no fade) and says why, translatably.
+  it('a starting point that is not offered stays readable (no fade) and is translatable', () => {
+    expect(SETUP).toContain("row.status.disabled ? 'cursor-not-allowed border-dashed border-slate-300 bg-slate-50 text-slate-600'");
     expect(SETUP).not.toContain("'opacity-50 cursor-not-allowed border-slate-200'");
-    expect(SETUP).toContain("tf('word_sounds.ortho_controlled_by_plan', 'Set by the lesson plan below.')");
-    expect(SETUP).toContain("{orthoSessionGoal || tf('word_sounds.ortho_off', 'Off')}");
+    expect(SETUP).toContain("tf('word_sounds.plan_off_ai', 'Needs AI pictures and sentences, which are off here.')");
+    expect(SETUP).toContain("tf('word_sounds.plan_off_language', 'Not available in this language.')");
+    expect(SETUP).not.toContain('ortho_controlled_by_plan');
   });
 });

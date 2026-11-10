@@ -6865,7 +6865,7 @@ const WordSoundsGenerator = React.memo((props) => {
         <div className="fixed inset-0 z-[200] bg-black/60 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl p-8 text-center max-w-md shadow-2xl">
                 <div className="text-4xl mb-3">🔤</div>
-                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Word Sounds Studio' }) || 'Loading Word Sounds Studio...'}</p>
+                <p className="text-lg font-bold text-slate-700">{t('common.loading_module', { name: 'Word Sounds' }) || 'Loading Word Sounds...'}</p>
                 <p className="text-sm text-slate-600 mt-2">{t('common.cdn_loading_hint_short') || 'Module loading from CDN.'}</p>
                 {props.onClose && <button onClick={props.onClose} className="mt-4 px-4 py-2 bg-slate-200 text-slate-700 font-bold rounded-lg text-sm hover:bg-slate-300 transition-all">Close</button>}
             </div>
@@ -40462,7 +40462,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
           case 'lesson-plan': return t('lesson_plan.title');
           case 'gemini-bridge': return t('sidebar.tool_bridge');
           case 'persona': return t('persona.title');
-          case 'word-sounds': return t('output.word_sounds_studio') || 'Word Sounds Studio';
+          case 'word-sounds': return t('output.word_sounds_studio') || 'Word Sounds';
           case 'dbq': return '📜 ' + (t('common.dbq_title') || 'Document Analysis (DBQ)');
           case 'storyforge-config': return t('output.title_storyforge_config') || '📖 StoryForge Assignment';
           case 'storyforge-submission': return t('output.title_storyforge_submission') || '📖 Story Submission';
@@ -45344,8 +45344,8 @@ const handleSubmitOrganizerReflection = async (reflection) => {
                 activeView === 'math' ? <><Calculator className="text-blue-600" size={20} /> {t('math.title')}</> :
                 activeView === 'image' ? <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</> :
                 activeView === 'dbq' ? <><FileText className="text-amber-700" size={20} /> 📜 {t('common.dbq_title') || 'Document Analysis (DBQ)'}</> :
-                activeView === 'word-sounds' ? <><Sparkles className="text-violet-600" size={20} /> {isProbeMode ? (t('output.activity_probe', { activity: (probeActivity || '').charAt(0).toUpperCase() + (probeActivity || '').slice(1) }) || `${(probeActivity || '').charAt(0).toUpperCase() + (probeActivity || '').slice(1)} Probe`) : (t('output.word_sounds_studio') || 'Word Sounds Studio')}</> :
-                activeView === 'word-sounds-generator' ? <><Sparkles className="text-violet-600" size={20} /> {t('output.word_sounds_studio') || 'Word Sounds Studio'}</> :
+                activeView === 'word-sounds' ? <><Sparkles className="text-violet-600" size={20} /> {isProbeMode ? (t('output.activity_probe', { activity: (probeActivity || '').charAt(0).toUpperCase() + (probeActivity || '').slice(1) }) || `${(probeActivity || '').charAt(0).toUpperCase() + (probeActivity || '').slice(1)} Probe`) : (t('output.word_sounds_studio') || 'Word Sounds')}</> :
+                activeView === 'word-sounds-generator' ? <><Sparkles className="text-violet-600" size={20} /> {t('output.word_sounds_studio') || 'Word Sounds'}</> :
                 activeView === 'gemini-bridge' ? <><Terminal className="text-slate-600" size={20} /> {t('common.gemini_bridge') || 'Gemini Bridge'}</> :
                 generatedContent?.type ? <><FileText className="text-slate-600" size={20} /> {getDefaultTitle(generatedContent.type)}</> :
                 <><ImageIcon className="text-purple-600" size={20} /> {t('visuals.title')}</>}

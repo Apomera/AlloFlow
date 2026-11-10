@@ -33,6 +33,9 @@ describe('Word Sounds setup session contract', () => {
     expect(block).toContain('version: 1');
     expect(block).toMatch(/sessionGoal:\s*isAssessment\s*\? processed\.length/);
     expect(block).toContain('Number(wordSoundsSessionGoal)');
+    // 2026-11-10 (plan first): a planned lesson's goal is the most its plan can ask, and it says how it was prepared.
+    expect(block).toContain(': useLessonPlan ? Math.max(1, planItemCeiling)');
+    expect(block).toContain('...(useLessonPlan ? { freeRoaming: !!freeRoaming, startingPoint: shownPlanChoice } : {}),');
     expect(block).toContain('Number(orthoSessionGoal)');
     expect(block).toContain("imageVisibilityMode: isAssessment ? 'off' : imageVisibilityMode");
     expect(block).toContain('fixedForm: isAssessment');
@@ -69,7 +72,8 @@ describe('Word Sounds setup word handling', () => {
     const preview = sliceBetween(
       setupSource,
       // Since 2026-11-08 the list is built by collectPreviewWords, which the goal preview also runs.
-      'const collectPreviewWords =',
+      // Since 2026-11-10 it reads its words from collectPreviewSources (one entry per source, defined just above).
+      'const collectPreviewSources =',
       'const toggleSelection =',
     );
 

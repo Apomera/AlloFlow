@@ -44,7 +44,9 @@ function generation(language = 'en', gemini = vi.fn()) {
   return new Function('React', 'WS_CORE', 'wordSoundsLanguage', 'callGemini', body + '\nreturn generateManipulationTask;')({useCallback: fn => fn}, core, language, gemini);
 }
 function manipulationView(body = embeddedSource) {
-  return new Function('React', 'WS_CORE', 'Volume2', between('    const ManipulationView =', '    // Syllable', body) + '\nreturn ManipulationView;')(React, core, () => null);
+  // The view draws its choices with the shared answer-card helpers (2026-11-09), defined just above RhymeView.
+  const cards = between('    // BEGIN WORD SOUNDS ANSWER CARDS', '    // END WORD SOUNDS ANSWER CARDS', body);
+  return new Function('React', 'WS_CORE', 'Volume2', cards + '\n' + between('    const ManipulationView =', '    // Syllable', body) + '\nreturn ManipulationView;')(React, core, () => null);
 }
 function preloadEffect(task, target = 'migrate', language = 'en') {
   const state = {}, lastWordForManipulation = {current: null};
@@ -164,18 +166,24 @@ describe('Actual play and teacher-review render paths', () => {
     expect(captures).toHaveLength(2); for (const words of captures) expect(words[0].manipulationTask).toEqual(invalid);
   });
   it('the actual grading callback refuses an altered curated answer', () => {
-    const body = between('                onCheckAnswer: (ans) => {\n                  if (!WS_CORE.manipulationReady', '                t: t,');
+    // One grading closure serves the view and its answer cards (2026-11-09).
+    const body = between('            const gradeManipulation = (ans) => {\n                  if (!WS_CORE.manipulationReady', '            return /*#__PURE__*/ React.createElement(');
+    expect(source).toContain('onCheckAnswer: gradeManipulation,');
+    expect(source).toContain('answer: manipulationState?.answer, grade: gradeManipulation,');
     const checkAnswer = vi.fn();
     const task = core.resolveManipulationTask('cat', null, 'en');
-    const handler = new Function('WS_CORE', 'manipulationState', 'checkAnswer', 'return ({' + body + '}).onCheckAnswer;')(core, {...task, answer: 'vibrate'}, checkAnswer);
+    const handler = new Function('WS_CORE', 'manipulationState', 'checkAnswer', body + '\nreturn gradeManipulation;')(core, {...task, answer: 'vibrate'}, checkAnswer);
     handler('vibrate'); expect(checkAnswer).not.toHaveBeenCalled();
   });
   it('fails when the ready-task guard is removed in memory (mutation check)', () => {
-    const body = between('                onCheckAnswer: (ans) => {\n                  if (!WS_CORE.manipulationReady', '                t: t,');
+    // One grading closure serves the view and its answer cards (2026-11-09).
+    const body = between('            const gradeManipulation = (ans) => {\n                  if (!WS_CORE.manipulationReady', '            return /*#__PURE__*/ React.createElement(');
+    expect(source).toContain('onCheckAnswer: gradeManipulation,');
+    expect(source).toContain('answer: manipulationState?.answer, grade: gradeManipulation,');
     const altered = body.replace('if (!WS_CORE.manipulationReady(manipulationState)) return;', '');
     const task = {...core.resolveManipulationTask('cat', null, 'en'), answer: 'vibrate'};
     const checkAnswer = vi.fn();
-    new Function('WS_CORE', 'manipulationState', 'checkAnswer', 'return ({' + altered + '}).onCheckAnswer;')(core, task, checkAnswer)('vibrate');
+    new Function('WS_CORE', 'manipulationState', 'checkAnswer', altered + '\nreturn gradeManipulation;')(core, task, checkAnswer)('vibrate');
     expect(checkAnswer).toHaveBeenCalled();
   });
   it('does not prewarm an unsupported instruction or answer from the real task collection block', () => {

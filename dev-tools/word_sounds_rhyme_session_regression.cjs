@@ -77,7 +77,7 @@ function runRhymeSessionRegressions(coreSource, runtimeSource) {
   const correctAt=runtimeSource.indexOf('const correctRhyme =',start);
   const end=runtimeSource.indexOf('          } else {',correctAt);
   assert.ok(start>=0 && end>start);
-  const effect=new Function('currentWordSoundsWord','wordSoundsPhonemes','lastWordForRhyming','rhymeOptions','setRhymeOptions','preloadedWords','wsLangCaps','WS_CORE','debugLog','advanceEpochRef','rhymePresentationRef','rhymeSessionRef','lastRhymeOccurrenceRef','const setRhymeReviewRequired=()=>{};\n'+runtimeSource.slice(start,end)+'\n          }');
+  const effect=new Function('currentWordSoundsWord','wordSoundsPhonemes','lastWordForRhyming','rhymeOptions','setRhymeOptions','preloadedWords','wsLangCaps','WS_CORE','debugLog','advanceEpochRef','rhymePresentationRef','rhymeSessionRef','lastRhymeOccurrenceRef','const setRhymeReviewRequired=()=>{};const isEditing=false;const choiceLevel=()=>null;const trimSoundChoices=(_kind,list)=>list;\n'+runtimeSource.slice(start,end)+'\n          }');
   function harness() {
     const epoch={current:1},presentation={current:0},session={current:core.createRhymeSession()},last={current:null},occurrence={current:null};
     const installed=[]; let options=[];
