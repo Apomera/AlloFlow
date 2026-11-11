@@ -16,6 +16,10 @@
 // WS_CORE.soundAnswerMatches, the function the app itself uses. Answers travel
 // with the file to be graded offline, so they can be read in its source: this
 // is for practice, not for tests.
+//
+// A lesson with mode 'probe' is a CHECK (one try, no feedback, an honest clock,
+// a teacher's screen): see takeHomeCheck. Its answers are scrambled, which
+// stops casual looking and nothing more; the same caution applies.
 (function (root) {
   'use strict';
   if (root.AlloWordSoundsTakeHome) return;
@@ -96,6 +100,97 @@
     ordinals: ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth'],
   };
 
+  // Words only a check shows (lesson.mode 'probe'). Kept apart from
+  // DEFAULT_LABELS so a practice file does not carry them; translated through
+  // word_sounds.take_home_player_<key> like the others. Everything from
+  // check_teacher_title down to check_r_practice is the teacher's screen and is
+  // written for an adult.
+  var CHECK_LABELS = {
+    check_about: 'This is a check to see how you are doing. It is not for a grade.',
+    check_go_on: 'Next',
+    check_practice_title: 'Practice {n} of {total}',
+    check_practice_note: 'This one is for practice. It does not count.',
+    check_practice_right: 'Yes! That is right.',
+    check_practice_wrong: 'Not quite. The answer is {answer}.',
+    check_ready_title: 'Get ready',
+    check_ready_timed: 'You have {time}. Do as many as you can.',
+    check_ready_untimed: 'There is no clock. Take your time.',
+    check_ready_one_try: 'You get one try for each one. You cannot go back.',
+    check_begin: 'Start',
+    check_item_of: 'Question {n} of {total}',
+    check_time_left: 'Time left: {time}',
+    check_time_start: 'The clock has started. You have {time}.',
+    check_time_10: '10 seconds left.',
+    check_time_up: 'Time is up.',
+    check_one_minute: '1 minute',
+    check_minutes: '{n} minutes',
+    check_seconds: '{n} seconds',
+    check_skip: 'Skip',
+    check_stop: 'Stop the check',
+    check_stop_confirm: 'Do you want to stop now? You cannot come back to this check.',
+    check_stop_yes: 'Yes, stop',
+    check_stop_no: 'Keep going',
+    check_done_title: 'You finished. Thank you.',
+    check_done_count: 'You answered {done} of {total}.',
+    check_done_time: 'Time: {time}.',
+    check_again: 'Start over',
+    check_again_confirm: 'Do you want to start this check again? It will be saved as a new try. Save your work first.',
+    check_again_yes: 'Yes, start over',
+    check_again_no: 'Keep my work',
+    check_pad_label: 'Your answer',
+    check_pad_keys: 'Number keys',
+    check_pad_delete: 'Delete',
+    check_pad_minus: 'Minus',
+    check_pad_next: 'Next',
+    check_teacher_title: 'For the teacher',
+    check_teacher_open: 'For the teacher: show results',
+    check_teacher_code: 'Teacher code',
+    check_teacher_show: 'Show results',
+    check_teacher_checking: 'Checking the code...',
+    check_teacher_wrong: 'That code is not correct. Tries left before a 30-second wait: {left}.',
+    check_teacher_wait: 'Too many incorrect codes. Wait {seconds} seconds, then try again.',
+    check_review_title: 'Results for the teacher',
+    check_review_close: 'Close the results',
+    check_review_score: 'Score: {score} {unit}.',
+    check_review_no_score: 'No score: {reason}.',
+    check_reason_ended_early: 'the check was stopped before the end',
+    check_reason_too_fast: 'every item was finished in under 20 seconds, which is too fast to prorate to a full minute',
+    check_reason_untimed: 'a rate needs a time limit',
+    check_unit_items_correct: 'items correct',
+    check_unit_digits_correct_per_minute: 'digits correct per minute',
+    check_review_items: 'Items correct: {correct} of {attempted} attempted ({given} given).',
+    check_review_digits: 'Digits correct: {correct} of {possible} possible on the items attempted.',
+    check_review_time: 'Time used: {elapsed} s. Time limit: {limit}.',
+    check_review_limit: '{seconds} s',
+    check_review_no_limit: 'none',
+    check_review_hidden: 'Time with the page hidden or closed: {hidden} s.',
+    check_review_prorated: 'All items were finished before the time limit, so the rate is prorated over the time used.',
+    check_review_attempt: 'Attempt {n} for this learner label on this device.',
+    check_review_flags: 'Flags: {flags}.',
+    check_flag_left_the_page: 'left the page for more than 3 seconds',
+    check_flag_clock_changed: 'the device clock was set back',
+    check_flag_reloaded: 'the page was reloaded',
+    check_review_note: 'All times come from the clock of the learner device.',
+    check_col_n: 'No.',
+    check_col_prompt: 'Item',
+    check_col_response: 'Response',
+    check_col_result: 'Result',
+    check_col_expected: 'Expected',
+    check_col_time: 'Time (s)',
+    check_r_right: 'right',
+    check_r_wrong: 'wrong',
+    check_r_skipped: 'skipped',
+    check_r_time_up: 'time ran out',
+    check_r_not_reached: 'not reached',
+    check_r_practice: 'practice (not scored)',
+    check_no_script: 'If the check does not start, download this file and open it in Chrome, Edge or Safari.',
+    check_about_what: 'This is a check in one file. It works with no internet.',
+    check_about_clock: 'The clock uses the time on this device. It keeps going when you leave the page.',
+    check_about_tries: 'It also keeps a count of how many times this check was started on this device.',
+    check_about_scrambled: 'The answers are scrambled so they cannot be read by opening the file. This stops casual looking, not a determined person.',
+    check_about_code: 'The teacher code keeps the answers screen closed. It is a lock on the screen, not secret writing: someone who knows how to read the file\'s code could still work the answers out.',
+  };
+
   function str(value) { return value == null ? '' : String(value); }
   function hashText(text) {
     var h = 2166136261 >>> 0;
@@ -160,6 +255,14 @@
     };
     var header = ['format', 'session_id', 'packet_id', 'packet_version', 'form', 'mode', 'learner', 'started_local', 'finished_local', 'duration_s',
       'item_n', 'item_id', 'activity', 'activity_title', 'scored', 'word', 'target', 'responses', 'correct', 'first_try', 'tries', 'time_ms', 'supports', 'flag'];
+    // A check (packet.mode "probe") has two more cells in every item row, after
+    // "flag": digits_correct and digits_possible, each a whole number or empty
+    // (item.digitsCorrect / item.digitsPossible; empty when null or absent).
+    // The integrity value covers the item rows as written, so in a check it
+    // covers these two cells too. The "#score" row is, like "#summary", not covered.
+    var probe = text(packet.mode) === 'probe';
+    var count = function (v) { return v == null || v === '' || !isFinite(Number(v)) ? '' : Math.max(0, Math.round(Number(v))); };
+    if (probe) header.push('digits_correct', 'digits_possible');
     var titles = r.activityTitles && typeof r.activityTitles === 'object' ? r.activityTitles : {};
     var learner = text(r.learner != null ? r.learner : r.learnerName);
     var session = text(r.sessionId);
@@ -183,7 +286,8 @@
       return ['alloflow-packet-result/1', session, text(packet.id), text(packet.version), text(packet.form), text(packet.mode), learner,
         text(r.startedLocal), text(r.finishedLocal), seconds, Number(it.n) || i + 1, text(it.itemId), activity, text(titles[activity]),
         practice ? 0 : 1, text(it.word), text(it.target), (Array.isArray(it.responses) ? it.responses : []).map(text).join(' | '),
-        it.correct ? 1 : 0, it.firstTry ? 1 : 0, Number(it.attempts) || 0, Math.max(0, Math.round(Number(it.ms) || 0)), supports, text(it.flag)];
+        it.correct ? 1 : 0, it.firstTry ? 1 : 0, Number(it.attempts) || 0, Math.max(0, Math.round(Number(it.ms) || 0)), supports, text(it.flag)]
+        .concat(probe ? [count(it.digitsCorrect), count(it.digitsPossible)] : []);
     });
     summary.accuracyPct = summary.itemsGiven ? Math.round(summary.correct / summary.itemsGiven * 100) : 0;
     var line = function (cells) { return cells.map(cell).join(','); };
@@ -202,6 +306,14 @@
         var tail = [['#summary', session, 'items_given=' + summary.itemsGiven, 'attempted=' + summary.attempted, 'correct=' + summary.correct,
           'first_try=' + summary.firstTry, 'accuracy_pct=' + summary.accuracyPct],
         ['#integrity', text(g.method), text(g.value), 'detects accidental edits, not deliberate ones']];
+        // A check: the try number, and a "#score" row between the other two.
+        var sc = probe && r.score && typeof r.score === 'object' ? r.score : null;
+        var kv = function (k, v) { return k + '=' + (v == null ? '' : v === true ? 1 : v === false ? 0 : text(v)); };
+        if (probe) tail[0].push(kv('attempt', sc && sc.attempt != null ? sc.attempt : 1));
+        if (sc) tail.splice(1, 0, ['#score', session, kv('measure', sc.measure), kv('score', sc.score), kv('score_unit', sc.scoreUnit), kv('digits_correct', sc.digitsCorrect),
+          kv('digits_possible', sc.digitsPossible), kv('items_correct', sc.itemsCorrect), kv('items_attempted', sc.itemsAttempted), kv('time_limit_s', sc.timeLimitS),
+          kv('elapsed_s', sc.elapsedS), kv('hidden_s', sc.hiddenS), kv('completion', sc.completion), kv('prorated', !!sc.prorated), kv('scoring_version', sc.scoringVersion),
+          kv('form_version', sc.formVersion), kv('attempt', sc.attempt), kv('flags', Array.isArray(sc.flags) ? sc.flags.map(text).join(';') : '')]);
         return String.fromCharCode(0xFEFF) + [header].concat(rows, tail).map(line).join('\r\n') + '\r\n';
       },
       tsv: function () {
@@ -3485,6 +3597,212 @@
   })();
   // END GENERATED ADAPTERS
 
+  // Check activities (word_sounds_take_home/check_adapters/*.js). They are not
+  // Word Sounds activities, so they stay out of ADAPTERS and activities(): the
+  // app's take-home dialog never lists them. Beside prepare and render, each
+  // has score(item, answer, response) -> { correct, digitsCorrect,
+  // digitsPossible }, copied into a check file with toString() like render.
+  var CHECK_ADAPTERS = {};
+  // BEGIN GENERATED CHECK ADAPTERS (dev-tools/build_word_sounds_take_home.cjs)
+  CHECK_ADAPTERS["math_computation"] = (function () {
+    var module = { exports: {} };
+    // Check adapter: math computation ("7 + 8 =", type the answer).
+    // App source of truth (math_fluency_module.js):
+    //   countCorrectDigits (~1110): CBM digits correct, each correct digit in its
+    //   place value; an answer with the opposite sign earns no digit.
+    //   submitAnswer (~1952): a typed whole number, or Skip; a fixed form gives no
+    //   feedback; correct = the number typed === problem.answer.
+    //   finishProbe (~1505): digits correct per minute over the time used (see
+    //   checkScore in the loader for the rate; this file scores one item).
+    //   Forms: MATH_PROBE_BANKS in psychometric_math_probes.json, 120 seconds.
+    // Also plays a teacher's own problems: { a, b, op } or { display, answer }.
+    module.exports = {
+      id: 'math_computation',
+      title: 'Math Fluency',
+      labels: {
+        math_computation_directions: 'Type the answer to each one.',
+        math_computation_label: '{problem}. Type the answer.',
+      },
+      // p: { a, b, op } with op add, sub, mul or div (the answer is worked out
+      // here; a given answer that disagrees is refused), or { display, answer }.
+      // A division must be exact unless p.allowRemainder is true; then the answer
+      // is the whole-number part.
+      prepare: function (p) {
+        p = p || {};
+        var whole = function (v) { return v != null && v !== '' && Number.isSafeInteger(Number(v)) && Math.abs(Number(v)) <= 99999999; };
+        if (p.a == null && p.b == null && p.display != null) {
+          var display = String(p.display).replace(/\s+/g, ' ').trim();
+          if (!display || display.length > 40) return { missing: ['a problem of 1 to 40 characters'] };
+          if (!whole(p.answer)) return { missing: ['a whole-number answer'] };
+          return { item: { word: display, display: display, answer: String(Number(p.answer)) } };
+        }
+        if (!whole(p.a) || !whole(p.b)) return { missing: ['two whole numbers'] };
+        var a = Number(p.a), b = Number(p.b);
+        var symbol = p.op === 'add' ? '+' : p.op === 'sub' ? String.fromCharCode(0x2212) : p.op === 'mul' ? String.fromCharCode(0xD7) : p.op === 'div' ? String.fromCharCode(0xF7) : '';
+        if (!symbol) return { missing: ['an operation: add, sub, mul or div'] };
+        if (p.op === 'div' && b === 0) return { missing: ['a divisor that is not 0'] };
+        if (p.op === 'div' && a % b !== 0 && p.allowRemainder !== true) return { missing: ['a division with no remainder'] };
+        var answer = p.op === 'add' ? a + b : p.op === 'sub' ? a - b : p.op === 'mul' ? a * b : Math.trunc(a / b);
+        if (!whole(answer)) return { missing: ['an answer of 8 digits or fewer'] };
+        if (p.answer != null && Number(p.answer) !== answer) return { missing: ['an answer that matches the problem'] };
+        return { item: { word: a + ' ' + symbol + ' ' + b, a: a, b: b, symbol: symbol, answer: String(answer) } };
+      },
+      render: function (item, ctx) {
+        var problem = item.display || (item.a + ' ' + item.symbol + ' ' + item.b);
+        var pad = ctx.keypad({ label: ctx.fmt(ctx.L.math_computation_label, { problem: problem }), onNext: function (value) { ctx.answer(value); } });
+        ctx.root.appendChild(ctx.el('p', { class: 'prompt', 'aria-hidden': 'true', text: item.display ? problem : problem + ' =' }));
+        ctx.root.appendChild(pad.node);
+        pad.focus();
+        return {
+          // Practice items only: lock the keys.
+          reveal: function () { pad.lock(); },
+        };
+      },
+      score: function (item, answer, response) {
+        // BEGIN COPY of countCorrectDigits (math_fluency_module.js). Keep the body
+        // the same, line for line: tests/packet_check_mode.test.js compares the two.
+        function countCorrectDigits(expected, actual) {
+          if (!Number.isFinite(Number(expected)) || !Number.isFinite(Number(actual))) return 0;
+          if (Number(expected) * Number(actual) < 0) return 0;
+          var expectedDigits = String(Math.abs(Math.trunc(Number(expected))));
+          var actualDigits = String(Math.abs(Math.trunc(Number(actual))));
+          var len = Math.max(expectedDigits.length, actualDigits.length);
+          expectedDigits = expectedDigits.padStart(len, ' ');
+          actualDigits = actualDigits.padStart(len, ' ');
+          var correct = 0;
+          for (var i = 0; i < len; i++) {
+            if (expectedDigits[i] !== ' ' && expectedDigits[i] === actualDigits[i]) correct++;
+          }
+          return correct;
+        }
+        // END COPY
+        var typed = String(response == null ? '' : response);
+        var valid = /^-?[0-9]+$/.test(typed) && Number.isSafeInteger(Number(typed));
+        var expected = Number(answer);
+        return { correct: valid && Number(typed) === expected, digitsCorrect: valid ? countCorrectDigits(expected, Number(typed)) : 0,
+          digitsPossible: Math.max(1, String(Math.abs(expected)).length) };
+      },
+    };
+    return module.exports;
+  })();
+  CHECK_ADAPTERS["missing_number"] = (function () {
+    var module = { exports: {} };
+    // Check adapter: Missing Number (an equation with one blank; type the number).
+    // App source of truth (student_analytics_module.js, the Assessment Center):
+    //   the Missing Number runner (~9646-9800): the form's display string, e.g.
+    //   "__ + 8 = 14", with the typed answer shown in the blank; correct =
+    //   parseInt(typed) === problem.answer; one try, no feedback; a Skip button;
+    //   120 seconds; the result is the count of correct answers.
+    //   Forms: MISSING_NUMBER_PROBES in psychometric_math_probes.json. They are
+    //   missing-addend equations; the title is the app's own name for the measure.
+    module.exports = {
+      id: 'missing_number',
+      title: 'Missing Number',
+      labels: {
+        missing_number_directions: 'Type the missing number.',
+        missing_number_question: 'What number is missing?',
+        missing_number_blank: 'blank',
+        missing_number_label: '{problem}. Type the missing number.',
+      },
+      // p: { display: "__ + 8 = 14", answer: 6 } as in the form bank.
+      prepare: function (p) {
+        p = p || {};
+        var display = String(p.display == null ? '' : p.display).replace(/\s+/g, ' ').trim();
+        if (!display || display.length > 40 || (display.match(/_{2,}/g) || []).length !== 1) return { missing: ['a problem with one blank written as __'] };
+        if (p.answer == null || p.answer === '' || !Number.isSafeInteger(Number(p.answer)) || Math.abs(Number(p.answer)) > 99999999) return { missing: ['a whole-number answer'] };
+        return { item: { word: display, display: display, answer: String(Number(p.answer)) } };
+      },
+      render: function (item, ctx) {
+        // The blank shows what is being typed.
+        var blank = ctx.el('span', { class: 'blank', text: '?' });
+        var pieces = String(item.display).split(/(_{2,})/).filter(function (part) { return part !== ''; }).map(function (part) { return /^_{2,}$/.test(part) ? blank : part; });
+        var pad = ctx.keypad({
+          label: ctx.fmt(ctx.L.missing_number_label, { problem: String(item.display).replace(/_{2,}/, ctx.L.missing_number_blank) }),
+          onChange: function (value) { blank.textContent = value || '?'; },
+          onNext: function (value) { ctx.answer(value); },
+        });
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', style: 'text-align:center', text: ctx.L.missing_number_question }));
+        ctx.root.appendChild(ctx.el('p', { class: 'prompt', 'aria-hidden': 'true' }, pieces));
+        ctx.root.appendChild(pad.node);
+        pad.focus();
+        return {
+          // Practice items only: lock the keys and show the number in the blank.
+          reveal: function (answer) { pad.lock(); if (answer != null) blank.textContent = String(answer); },
+        };
+      },
+      score: function (item, answer, response) {
+        var typed = String(response == null ? '' : response);
+        return { correct: /^-?[0-9]+$/.test(typed) && Number(typed) === Number(answer), digitsCorrect: null, digitsPossible: null };
+      },
+    };
+    return module.exports;
+  })();
+  CHECK_ADAPTERS["quantity_discrimination"] = (function () {
+    var module = { exports: {} };
+    // Check adapter: Quantity Discrimination (two numbers; tap the bigger one).
+    // App source of truth (student_analytics_module.js, the Assessment Center):
+    //   the QD runner (~9918-10046): "Which number is bigger?", two buttons,
+    //   correct = the chosen number === problem.answer, one try, no feedback;
+    //   60 seconds; the result is the count of correct answers.
+    //   Forms: QUANTITY_DISCRIMINATION_PROBES in psychometric_math_probes.json.
+    // The title is the app's own name for the measure.
+    // A check adapter has three halves: prepare (when the file is built), and
+    // render and score (copied into the file with toString, so they may use only
+    // their arguments). The answer never reaches render in a scored item.
+    module.exports = {
+      id: 'quantity_discrimination',
+      title: 'Quantity Discrimination',
+      labels: {
+        quantity_discrimination_directions: 'Tap the bigger number.',
+        quantity_discrimination_question: 'Which number is bigger?',
+        quantity_discrimination_practice_wrong: 'Not quite. The bigger number is {answer}.',
+      },
+      // p: { left, right } as in the form bank. The answer is worked out here; a
+      // form whose own answer disagrees is refused.
+      prepare: function (p) {
+        p = p || {};
+        var whole = function (v) { return v != null && v !== '' && Number.isSafeInteger(Number(v)) && Math.abs(Number(v)) <= 99999999; };
+        if (!whole(p.left) || !whole(p.right)) return { missing: ['two whole numbers'] };
+        var left = Number(p.left), right = Number(p.right);
+        if (left === right) return { missing: ['two different numbers'] };
+        var bigger = Math.max(left, right);
+        if (p.answer != null && Number(p.answer) !== bigger) return { missing: ['an answer that is the bigger number'] };
+        return { item: { word: left + ' or ' + right, left: left, right: right, answer: String(bigger) } };
+      },
+      render: function (item, ctx) {
+        var buttons = [];
+        var make = function (value) {
+          var b = ctx.el('button', { type: 'button', 'data-choice': String(value), on: { click: function () { ctx.answer(String(value)); } }, text: String(value) });
+          buttons.push(b);
+          return ctx.el('li', {}, [b]);
+        };
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', style: 'text-align:center', text: ctx.L.quantity_discrimination_question }));
+        ctx.root.appendChild(ctx.el('ul', { class: 'pair' }, [make(item.left), make(item.right)]));
+        // Keys 1 and 2 pick the first and the second number.
+        ctx.keys(function (key) {
+          if (key !== '1' && key !== '2') return false;
+          ctx.answer(String(key === '1' ? item.left : item.right));
+          return true;
+        });
+        return {
+          // Practice items only: lock the two buttons and mark the bigger number.
+          reveal: function (answer) {
+            buttons.forEach(function (b) {
+              b.setAttribute('aria-disabled', 'true');
+              if (answer != null && b.getAttribute('data-choice') === String(answer)) b.classList.add('right');
+            });
+          },
+        };
+      },
+      score: function (item, answer, response) {
+        var chosen = String(response == null ? '' : response);
+        return { correct: chosen !== '' && chosen === String(answer), digitsCorrect: null, digitsPossible: null };
+      },
+    };
+    return module.exports;
+  })();
+  // END GENERATED CHECK ADAPTERS
+
   // ---------------------------------------------------------------------------
   // Building the lesson (runs in the app)
   // ---------------------------------------------------------------------------
@@ -3847,6 +4165,7 @@
         fmt(L.about_licence, { licence: m.licence || '' }),
         m.attributions && m.attributions.length ? fmt(L.about_credits, { list: m.attributions.join('; ') }) : '',
       ];
+      if (check) texts = check.about(texts);
       var panel = el('div', { class: 'card about', id: 'about-panel', hidden: true, 'data-about': '' }, [
         el('ul', {}, texts.filter(Boolean).map(function (t) { return el('li', { text: t }); })),
       ]);
@@ -3859,6 +4178,7 @@
 
     var renderStart = function () {
       var prior = load();
+      if (check && check.resume(prior)) return;
       // A teacher can hand out the file with the label filled in: file.html#learner=BlueHeron7
       var given = '';
       try { var hashed = /(?:^#|&)learner=([^&]*)/.exec(String(win.location.hash || '')); if (hashed) given = decodeURIComponent(hashed[1]).trim().slice(0, 60); } catch (_) {}
@@ -3886,7 +4206,7 @@
         if (!state.startedAt) { var began = new Date(); state.startedAt = began.toISOString(); state.startedLocal = localIso(began); }
         if (!state.sessionId) state.sessionId = uuid();
         save();
-        renderItem();
+        if (check) check.begin(prior); else renderItem();
       };
       var buttons = [el('button', { class: 'primary', type: 'button', on: { click: function () { begin(false); } }, text: resumable ? L.start_over : L.start })];
       if (resumable) buttons.unshift(el('button', { class: 'primary', type: 'button', on: { click: function () { begin(true); } }, text: L.continue }));
@@ -4011,8 +4331,9 @@
             supports: r.supports, practice: r.practice || null, flag: r.flag || '' };
         }),
       };
+      if (check) check.result(out);
       var table = kit.csv(out);
-      out.summary = summarize();
+      out.summary = out.summary || summarize();
       Object.keys(table.summary).forEach(function (k) { out.summary[k] = table.summary[k]; });
       if (!sealed || sealed.basis !== table.basis) sealed = { basis: table.basis, method: 'fnv1a', value: kit.hash(table.basis) };
       out.integrity = { method: sealed.method, value: sealed.value, note: 'detects accidental edits, not deliberate ones' };
@@ -4138,6 +4459,7 @@
         if (state.sent || state.savedFile) { startOver(); return; }
         confirmBox.hidden = false; confirmText.focus();
       } }, text: L.practice_again });
+      if (check) { check.finish({ send: sendButton, save: saveButton, csv: csvButton, copy: copyButton, about: info, status: fileStatus, copyBox: copyBox, note: closedNote || (sendButton ? L.send_note : L.not_sent) }); return; }
       screen(L.done_title, [
         el('div', { class: 'card' }, [
           el('p', { class: 'letters', text: fmt(L.done_summary, { first: s.firstTry, total: s.items }) }),
@@ -4151,29 +4473,699 @@
         info.panel,
       ]);
     };
+    // A check (lesson.mode 'probe') brings its own flow in kit.check; a practice file has none.
+    var check = kit.check ? kit.check({ doc: doc, win: win, lesson: lesson, L: L, kit: kit, items: items, renders: renders, matches: matches, el: el, fmt: fmt, announce: announce,
+      screen: screen, statusLine: statusLine, fresh: fresh, save: save, now: now, clockStart: clockStart, clockStop: clockStop, play: play, playAll: playAll, stop: stop,
+      state: function (next) { if (next !== undefined) state = next; return state; }, results: function () { return resultFile(); },
+      renderStart: function () { renderStart(); }, renderFinish: function () { renderFinish(); } }) : null;
     renderStart();
     return { results: function () { return state && resultFile(); } };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Check mode (lesson.mode 'probe'; the visible word is "check"). The four
+  // functions below travel ONLY in a check file; a practice file has none of them.
+  // ---------------------------------------------------------------------------
+  var CHECK_ROUNDS = 20000;
+  var CHECK_CSS = [
+    '.timer{display:flex;align-items:center;gap:12px;margin:0 0 12px;color:var(--muted);font-variant-numeric:tabular-nums}',
+    '.timebar{flex:1;height:10px;border-radius:6px;background:var(--line);overflow:hidden}.timebar span{display:block;height:100%;background:var(--accent)}',
+    '.prompt{font-size:2.6rem;font-weight:700;text-align:center;margin:8px 0 16px;overflow-wrap:anywhere}.blank{display:inline-block;min-width:1.6em;border-bottom:4px solid var(--accent);color:var(--accent)}',
+    '.answer{display:block;margin:0 auto;text-align:center;font-size:2rem;font-weight:700;max-width:220px}',
+    '.pad{display:grid;grid-template-columns:repeat(3,minmax(64px,96px));gap:10px;justify-content:center;margin:16px auto 0}.pad button{min-height:56px;font-size:1.5rem;font-weight:700;padding:6px}.pad .wide{grid-column:1/-1}',
+    '.pair{display:flex;gap:24px;justify-content:center;flex-wrap:wrap;list-style:none;padding:0;margin:16px 0}.pair button{min-width:132px;min-height:132px;font-size:3rem;font-weight:700;border-width:4px}.pair button.right{border-color:var(--ok);background:var(--ok-bg)}',
+    '.scroll{overflow-x:auto}.review{width:100%;border-collapse:collapse;font-size:.95rem}.review th,.review td{border:1px solid var(--line);padding:6px 8px;text-align:start}.review td:nth-child(2),.review td:nth-child(5){white-space:nowrap}',
+  ].join('\n');
+
+  // Scrambled answers and the teacher-code lock. Used here to seal a check and
+  // embedded in the file (toString) to read it back, so the two cannot differ.
+  // It uses only its argument: the synchronous SHA-256 above. Neither is secret
+  // writing: the file scores itself offline, so everything needed to
+  // unscramble an answer travels inside the file.
+  function checkCodec(sha) {
+    var bytesOf = function (text) {
+      var t = unescape(encodeURIComponent(String(text))), out = [];
+      for (var i = 0; i < t.length; i++) out.push(t.charCodeAt(i));
+      return out;
+    };
+    var textOf = function (bytes) {
+      var s = '';
+      for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i]);
+      try { return decodeURIComponent(escape(s)); } catch (_) { return s; }
+    };
+    // Keystream for one item: SHA-256(salt + itemId). A longer answer goes on
+    // with SHA-256(salt + itemId + '|' + n), n = 1, 2, ...
+    var stream = function (salt, id, length) {
+      var out = [];
+      for (var n = 0; out.length < length; n++) {
+        var hex = sha(String(salt) + String(id) + (n ? '|' + n : '')).hex;
+        for (var i = 0; i < 64 && out.length < length; i += 2) out.push(parseInt(hex.substr(i, 2), 16));
+      }
+      return out;
+    };
+    return {
+      // Answer text -> base64 of (its UTF-8 bytes, zero-padded to a multiple of
+      // 12 so the length does not show the number of digits) XOR keystream.
+      scramble: function (text, salt, id) {
+        var bytes = bytesOf(text);
+        do { bytes.push(0); } while (bytes.length % 12 !== 0);
+        var key = stream(salt, id, bytes.length), s = '';
+        for (var i = 0; i < bytes.length; i++) s += String.fromCharCode(bytes[i] ^ key[i]);
+        return btoa(s);
+      },
+      unscramble: function (data, salt, id) {
+        var s = '';
+        try { s = atob(String(data)); } catch (_) { return ''; }
+        var key = stream(salt, id, s.length), bytes = [];
+        for (var i = 0; i < s.length; i++) bytes.push(s.charCodeAt(i) ^ key[i]);
+        while (bytes.length && bytes[bytes.length - 1] === 0) bytes.pop();
+        return textOf(bytes);
+      },
+      // The teacher code is kept only as this: SHA-256(salt + '|' + code), hashed
+      // again with the salt until `rounds` hashes have been made.
+      lockHash: function (code, salt, rounds) {
+        var h = sha(String(salt) + '|' + String(code)).hex;
+        for (var i = 1; i < rounds; i++) h = sha(h + String(salt)).hex;
+        return h;
+      },
+      // Looks at every character, wherever the first difference is.
+      same: function (a, b) {
+        a = String(a); b = String(b);
+        var diff = a.length ^ b.length;
+        for (var i = 0; i < a.length; i++) diff |= a.charCodeAt(i) ^ b.charCodeAt(i % (b.length || 1));
+        return diff === 0;
+      },
+    };
+  }
+
+  // The score of one finished check. Pure; embedded in the file (toString).
+  // rows: one per item, { practice, attempted, correct, digitsCorrect,
+  // digitsPossible }. timing: { elapsedMs, hiddenMs, completion, attempt, flags }.
+  // Attempted = answered or skipped. A rate (digits_correct_per_minute) follows
+  // math_fluency_module.js, scoring version 3: digits correct over the minutes
+  // used, the time capped at the limit; every item done before the limit =
+  // prorated over the time used; done in under 20 s, no time limit, or ended
+  // early = no score. A check ended early has no score in any unit.
+  function checkScore(meta, rows, timing) {
+    var m = meta || {}, t = timing || {};
+    var unit = String(m.scoreUnit || 'items_correct');
+    var limit = Number(m.timeLimitS) > 0 ? Number(m.timeLimitS) : null;
+    var itemsCorrect = 0, itemsAttempted = 0, digitsCorrect = 0, digitsPossible = 0, hasDigits = false;
+    (Array.isArray(rows) ? rows : []).forEach(function (r) {
+      if (!r || r.practice || !r.attempted) return;
+      itemsAttempted++;
+      if (r.correct) itemsCorrect++;
+      if (r.digitsPossible != null) { hasDigits = true; digitsCorrect += Number(r.digitsCorrect) || 0; digitsPossible += Number(r.digitsPossible) || 0; }
+    });
+    var completion = t.completion === 'time' || t.completion === 'ended_early' ? t.completion : 'complete';
+    var raw = Math.max(0, Number(t.elapsedMs) || 0) / 1000;
+    var elapsed = limit === null ? raw : completion === 'time' ? limit : Math.min(limit, raw);
+    var early = limit !== null && completion === 'complete' && elapsed < limit;
+    var score = null, prorated = false, why = '';
+    if (completion === 'ended_early') why = 'ended_early';
+    else if (unit === 'digits_correct_per_minute') {
+      if (limit === null) why = 'untimed';
+      else if (early && elapsed < 20) why = 'too_fast';
+      else { score = Math.round(digitsCorrect / Math.max(1 / 60, elapsed / 60)); prorated = early; }
+    } else score = itemsCorrect;
+    var tenth = function (ms) { return Math.round(Math.max(0, Number(ms) || 0) / 100) / 10; };
+    return { measure: String(m.measure || ''), score: score, scoreUnit: unit, digitsCorrect: hasDigits ? digitsCorrect : null, digitsPossible: hasDigits ? digitsPossible : null,
+      itemsCorrect: itemsCorrect, itemsAttempted: itemsAttempted, timeLimitS: limit, elapsedS: tenth(elapsed * 1000), hiddenS: tenth(t.hiddenMs), completion: completion,
+      prorated: prorated, noScoreReason: why, scoringVersion: Number(m.scoringVersion) || 1, formVersion: m.formVersion == null ? '' : m.formVersion,
+      attempt: Math.max(1, Math.floor(Number(t.attempt)) || 1), flags: (Array.isArray(t.flags) ? t.flags : []).map(String) };
+  }
+
+  // Seal a check for the file: every item goes through its adapter's prepare
+  // (an allowlist, as for a practice lesson), each answer is replaced by its
+  // scrambled form and the teacher code by its salted hash. Nothing here comes
+  // from the clock: the same lesson and code make the same bytes.
+  function sealCheck(lesson, adapters, teacherCode) {
+    var copy = JSON.parse(JSON.stringify(lesson));
+    var codec = checkCodec(sha256);
+    var seen = {};
+    var minus = false;
+    copy.blocks.forEach(function (block) {
+      var adapter = adapters[block.activity];
+      if (!adapter || typeof adapter.prepare !== 'function') throw new Error('Unknown check activity: ' + str(block.activity));
+      block.items = (Array.isArray(block.items) ? block.items : []).map(function (raw, i) {
+        var made = null;
+        try { made = adapter.prepare(raw || {}, {}); } catch (_) {}
+        if (!made || !made.item || str(made.item.answer) === '') throw new Error('Check item ' + (i + 1) + ' cannot be used' + (made && made.missing ? ': ' + made.missing.join(', ') : ''));
+        var item = Object.assign({ id: str(raw && raw.id) || block.activity + '-' + i }, made.item);
+        if (raw && raw.practice) item.practice = true;
+        if (seen['i:' + item.id]) throw new Error('Two check items share the id ' + item.id);
+        seen['i:' + item.id] = true;
+        if (/^-/.test(str(item.answer))) minus = true;
+        return item;
+      });
+    });
+    var meta = copy.check = Object.assign({}, copy.check && typeof copy.check === 'object' ? copy.check : {});
+    var content = JSON.stringify([copy.lessonId, copy.revision, copy.title, copy.form || '', copy.timeLimitS || null, copy.blocks]);
+    var lockSalt = sha256('alloflow-check-lock|' + content).hex.slice(0, 32);
+    var code = str(teacherCode).trim();
+    if (code && (code.length < 4 || code.length > 64)) throw new Error('The teacher code needs 4 to 64 characters');
+    meta.lock = code ? { salt: lockSalt, rounds: CHECK_ROUNDS, hash: codec.lockHash(code, lockSalt, CHECK_ROUNDS) } : null;
+    // The file salt comes from the lesson and the code's hash, never from the clock.
+    meta.salt = sha256('alloflow-check-salt|' + content + '|' + (meta.lock ? meta.lock.hash : '')).hex.slice(0, 32);
+    meta.minus = minus;
+    copy.blocks.forEach(function (block) {
+      block.items.forEach(function (item) { item.key = codec.scramble(str(item.answer), meta.salt, item.id); delete item.answer; });
+    });
+    return copy;
+  }
+
+  // The check flow (runs INSIDE the file, in place of the practice flow). Only
+  // its argument is in scope: `api` is what takeHomeShell hands over, and
+  // api.kit carries sha (SHA-256), codec (checkCodec), score (checkScore) and
+  // scorers (activity id -> adapter.score).
+  function takeHomeCheck(api) {
+    var doc = api.doc, win = api.win, lesson = api.lesson, L = api.L, kit = api.kit, items = api.items, el = api.el, fmt = api.fmt;
+    var meta = lesson.check || {};
+    var limitMs = Number(lesson.timeLimitS) > 0 ? Math.round(Number(lesson.timeLimitS) * 1000) : 0;
+    var scoredTotal = items.filter(function (e) { return !e.item.practice; }).length;
+    var practiceTotal = items.length - scoredTotal;
+    var S = function () { return api.state(); };
+    var C = function () {
+      var s = S();
+      if (!s.check || typeof s.check !== 'object') s.check = { phase: '', hiddenMs: 0, flags: {} };
+      if (!s.check.flags || typeof s.check.flags !== 'object') s.check.flags = {};
+      return s.check;
+    };
+    // The first screen of a check says what a check is; its button leads on to
+    // the practice items or to "Get ready", where Start begins the clock.
+    L.intro = L.check_about; L.start = L.check_go_on;
+
+    // The clock. The deadline is a wall-clock time (Date.now) kept in the saved
+    // state, so a reload finds the time that is truly left. While the page
+    // stays loaded, time is also measured with performance.now and the LARGER
+    // of the two is used: setting the device clock back gives no time back, and
+    // a device that slept still loses the time it slept. A wall clock that falls
+    // more than 2 s behind is recorded as "clock_changed". (Running ahead is not:
+    // a phone that suspends the page stops performance.now, not the wall clock.)
+    var wallNow = function () { try { return win.Date.now(); } catch (_) { return Date.now(); } };
+    var anchor = { wall: wallNow(), perf: api.now() };
+    var jumped = false;
+    var nowMs = function () {
+      var w = wallNow() - anchor.wall, p = api.now() - anchor.perf;
+      if (p - w > 2000) jumped = true;
+      return anchor.wall + Math.max(w, p);
+    };
+    var clockText = function (ms) {
+      var s = Math.max(0, Math.ceil(ms / 1000));
+      return Math.floor(s / 60) + ':' + (s % 60 < 10 ? '0' : '') + (s % 60);
+    };
+    var timeWords = function (seconds) {
+      var n = Math.round(seconds);
+      if (n % 60 === 0) return n === 60 ? L.check_one_minute : fmt(L.check_minutes, { n: n / 60 });
+      return fmt(L.check_seconds, { n: n });
+    };
+    var answerOf = function (item) { return kit.codec.unscramble(item.key, meta.salt, item.id); };
+    var markOf = function (entry, answer, response) {
+      var scorer = kit.scorers && kit.scorers[entry.activity];
+      var mark = null;
+      try { mark = scorer ? scorer(entry.item, answer, response) : null; } catch (_) {}
+      return mark || { correct: String(response) === String(answer), digitsCorrect: null, digitsPossible: null };
+    };
+
+    var current = null;   // the item on screen: { rec, at, keys, pad }
+    var ticker = null, timerText = null, timerBar = null, shownSecond = -1, warned = false, lastSave = 0;
+    var calm = false, touch = false;
+    try { calm = win.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) {}
+    try { touch = win.matchMedia('(hover: none) and (pointer: coarse)').matches; } catch (_) {}
+    // The countdown is plain text and a bar that shortens once a second: no
+    // colour change, no flashing. With reduced motion there is no bar and the
+    // text changes every 5 seconds. Screen readers hear the time only at the
+    // start, at 10 seconds left and at the end (the text is not a live region).
+    var paint = function (left) {
+      var s = Math.max(0, Math.ceil(left / 1000));
+      var shown = calm ? Math.ceil(s / 5) * 5 : s;
+      if (shown === shownSecond) return;
+      shownSecond = shown;
+      if (timerText) timerText.textContent = fmt(L.check_time_left, { time: clockText(shown * 1000) });
+      if (timerBar) timerBar.style.width = Math.max(0, Math.min(100, shown * 100000 / limitMs)) + '%';
+    };
+    var tick = function () {
+      var s = S(), c = s && s.check;
+      if (!c || c.phase !== 'run') return;
+      var t = nowMs();
+      if (c.deadline) {
+        var left = c.deadline - t;
+        if (left <= 0) { timeUp(); return; }
+        paint(left);
+        if (left <= 10000 && !warned) { warned = true; api.announce(L.check_time_10); }
+      }
+      if (t - lastSave >= 2000) { lastSave = t; c.seen = t; if (jumped) c.flags.clock_changed = 1; api.save(); }
+    };
+    var startTicker = function () { if (!ticker) ticker = win.setInterval(tick, 250); };
+
+    // Time with the page hidden does not stop the clock; it is added up, and
+    // more than 3 s of it flags the session "left_the_page". Closing the page
+    // and coming back counts the same way.
+    var noteHidden = function () {
+      var s = S(), c = s && s.check;
+      if (!c || c.phase !== 'run') return;
+      c.seen = nowMs();
+      if (!c.hiddenFrom) c.hiddenFrom = c.seen;
+      api.save();
+    };
+    var noteShown = function () {
+      var s = S(), c = s && s.check;
+      if (!c || c.phase !== 'run' || !c.hiddenFrom) return;
+      c.hiddenMs = (Number(c.hiddenMs) || 0) + Math.max(0, nowMs() - c.hiddenFrom);
+      c.hiddenFrom = null;
+      if (c.hiddenMs > 3000) c.flags.left_the_page = 1;
+      api.save();
+    };
+    doc.addEventListener('visibilitychange', function () { if (doc.hidden) noteHidden(); else { noteShown(); tick(); } });
+    win.addEventListener('pagehide', noteHidden);
+
+    // Hardware keys on an item: the number pad, or the keys an activity asked for.
+    doc.addEventListener('keydown', function (e) {
+      var cur = current;
+      if (!cur || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+      var t = e.target, tag = t && t.tagName ? String(t.tagName).toUpperCase() : '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+      var key = String(e.key || '');
+      if (cur.pad) {
+        var k = /^[0-9]$/.test(key) ? key : key === 'Backspace' ? 'back' : key === '-' || key === String.fromCharCode(0x2212) ? 'minus' : key === 'Enter' && tag !== 'BUTTON' ? 'next' : '';
+        if (k) { e.preventDefault(); cur.pad.press(k); }
+      } else if (cur.keys && cur.keys(key) === true) e.preventDefault();
+    });
+
+    // ctx.keypad: digits, delete, minus only when the check has a negative
+    // answer, and Next. The answer box takes a hardware keyboard too; on a
+    // touch screen it has inputmode="none" so the system keyboard stays away.
+    var keypad = function (options) {
+      var o = options || {};
+      var minus = o.minus != null ? !!o.minus : !!meta.minus;
+      var locked = false;
+      // Digits and one leading minus sign, 8 digits at most.
+      var clean = function (raw) {
+        var t = String(raw == null ? '' : raw);
+        var negative = minus && (t.replace(/^\s+/, '').charAt(0) === '-' || t.replace(/^\s+/, '').charCodeAt(0) === 0x2212);
+        return (negative ? '-' : '') + t.replace(/[^0-9]/g, '').slice(0, 8);
+      };
+      var input = el('input', { type: 'text', class: 'answer', inputmode: touch ? 'none' : 'numeric', autocomplete: 'off', autocapitalize: 'off', spellcheck: 'false',
+        'aria-label': o.label || L.check_pad_label, 'data-pad-input': '' });
+      var next = el('button', { type: 'button', class: 'primary wide', 'data-key': 'next', 'aria-disabled': 'true', on: { click: function () { press('next'); } }, text: L.check_pad_next });
+      var set = function (value) {
+        var v = clean(value);
+        if (input.value !== v) input.value = v;
+        next.setAttribute('aria-disabled', /[0-9]/.test(v) ? 'false' : 'true');
+        if (typeof o.onChange === 'function') o.onChange(v);
+      };
+      var press = function (key) {
+        if (locked) return;
+        var v = input.value;
+        if (key === 'back') set(v.slice(0, -1));
+        else if (key === 'minus') { if (minus) set(v.charAt(0) === '-' ? v.slice(1) : '-' + v); }
+        else if (key === 'next') { if (/[0-9]/.test(v) && typeof o.onNext === 'function') o.onNext(v); }
+        else if (/^[0-9]$/.test(key)) set(v + key);
+      };
+      var button = function (label, key, name) {
+        return el('button', { type: 'button', 'data-key': key, 'aria-label': name || false, on: { click: function () { press(key); } } }, [label]);
+      };
+      var grid = el('div', { class: 'pad', role: 'group', 'aria-label': L.check_pad_keys }, ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(function (d) { return button(d, d); }).concat([
+        minus ? button(String.fromCharCode(0x2212), 'minus', L.check_pad_minus) : el('span', {}),
+        button('0', '0'),
+        button(String.fromCharCode(0x2190), 'back', L.check_pad_delete),
+        next,
+      ]));
+      input.addEventListener('input', function () { set(input.value); });
+      input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); press('next'); } });
+      var pad = { node: el('div', {}, [input, grid]), input: input, press: press,
+        value: function () { return input.value; },
+        focus: function () { try { input.focus(); } catch (_) {} },
+        lock: function () { locked = true; input.setAttribute('readonly', ''); next.setAttribute('aria-disabled', 'true'); } };
+      if (current) current.pad = pad;
+      return pad;
+    };
+    var ctxFor = function (entry, rec, area, practice, answer) {
+      return { root: area, el: el, fmt: fmt, L: L, item: entry.item, matches: api.matches, showLetters: !!lesson.showLetters, check: true, practice: practice,
+        announce: api.announce, play: api.play, playAll: api.playAll, stop: api.stop,
+        image: function (id) { return (id && lesson.images && lesson.images[id]) || null; },
+        support: function (name) { rec.supports[name] = (rec.supports[name] || 0) + 1; api.save(); },
+        isDone: function () { return rec.done; },
+        attempts: function () { return rec.attempts; },
+        keys: function (handler) { if (current) current.keys = handler; },
+        keypad: keypad,
+        answer: answer };
+    };
+    var show = function (entry, rec, ctx) {
+      var handle = null;
+      try { handle = api.renders[entry.activity](entry.item, ctx) || null; } catch (_) {}
+      // Seen in an earlier opening of the file: the time on it counts from now.
+      if (rec.shown) rec.flag = 'resumed';
+      rec.shown = true; rec.ms = 0;
+      api.clockStart(rec);
+      api.save();
+      return handle;
+    };
+
+    // Practice items come first. They give feedback and are never scored.
+    var practiceItem = function () {
+      var s = S();
+      var entry = items[s.index], rec = s.items[s.index];
+      var n = items.slice(0, s.index).filter(function (e) { return e.item.practice; }).length + 1;
+      var area = el('div', {}), feedback = api.statusLine('', ''), handle = null;
+      var next = el('button', { class: 'primary', type: 'button', hidden: true, 'data-practice-next': '', on: { click: function () { s.index++; api.save(); route(); } }, text: L.next });
+      var answer = function (response) {
+        var cur = current;
+        if (!cur || rec.done) return 'ignored';
+        if (api.now() - cur.at < 250) return 'ignored';
+        var right = answerOf(entry.item);
+        var mark = markOf(entry, right, response);
+        rec.attempts = 1; rec.done = true; rec.practice = 'practice';
+        rec.responses = [String(response == null ? '' : response).slice(0, 80)];
+        api.clockStop();
+        current = null;
+        api.save();
+        feedback.className = 'status ' + (mark.correct ? 'ok' : 'warn');
+        feedback.textContent = mark.correct ? L.check_practice_right : fmt(L[entry.activity + '_practice_wrong'] || L.check_practice_wrong, { answer: right });
+        if (handle && typeof handle.reveal === 'function') { try { handle.reveal(right); } catch (_) {} }
+        next.hidden = false;
+        next.focus();
+        return mark.correct ? 'correct' : 'missed';
+      };
+      api.screen(fmt(L.check_practice_title, { n: n, total: practiceTotal }), [
+        el('div', { class: 'card' }, [el('p', { class: 'muted', text: L.check_practice_note }), area, feedback, next]),
+      ]);
+      current = { rec: rec, at: api.now(), keys: null, pad: null };
+      handle = show(entry, rec, ctxFor(entry, rec, area, true, answer));
+    };
+    var readyScreen = function () {
+      var first = items.filter(function (e) { return !e.item.practice; })[0];
+      var how = first ? L[first.activity + '_directions'] : '';
+      api.screen(L.check_ready_title, [
+        el('div', { class: 'card' }, [
+          how ? el('p', { class: 'letters', text: how }) : null,
+          el('p', { text: limitMs ? fmt(L.check_ready_timed, { time: timeWords(limitMs / 1000) }) : L.check_ready_untimed }),
+          el('p', { text: L.check_ready_one_try }),
+          el('div', { class: 'row' }, [el('button', { class: 'primary', type: 'button', 'data-check-begin': '', on: { click: startRun }, text: L.check_begin })]),
+        ]),
+      ]);
+    };
+    var route = function () {
+      var s = S(), c = C();
+      if (c.phase === 'done') { api.renderFinish(); return; }
+      if (c.phase === 'run') { runItem(); return; }
+      while (s.index < items.length && items[s.index].item.practice && s.items[s.index].done) s.index++;
+      c.phase = s.index < items.length && items[s.index].item.practice ? 'practice' : 'ready';
+      api.save();
+      if (c.phase === 'practice') practiceItem(); else readyScreen();
+    };
+
+    // Start: the clock begins here and nowhere else.
+    var startRun = function () {
+      var s = S(), c = C();
+      if (c.phase === 'run' || c.phase === 'done') return;
+      var t = nowMs();
+      c.phase = 'run'; c.t0 = t; c.deadline = limitMs ? t + limitMs : null; c.seen = t; c.hiddenMs = 0; c.hiddenFrom = null;
+      // Tries are counted for each learner label on this device. The label is
+      // kept as a hash, so no earlier name stays behind after Start over.
+      var who = 't' + kit.hash(String(s.name || '').replace(/^\s+|\s+$/g, '').toLowerCase());
+      s.tries = s.tries && typeof s.tries === 'object' ? s.tries : {};
+      c.attempt = (Number(s.tries[who]) || 0) + 1;
+      s.tries[who] = c.attempt;
+      api.save();
+      startTicker();
+      runItem();
+      if (limitMs) api.announce(fmt(L.check_time_start, { time: timeWords(limitMs / 1000) }));
+    };
+    // One try, no feedback, straight on to the next item, no way back.
+    var record = function (response, skipped) {
+      var s = S(), c = C(), cur = current;
+      if (!cur || cur.rec.done || c.phase !== 'run') return 'ignored';
+      if (c.deadline && nowMs() >= c.deadline) { timeUp(); return 'time_up'; }
+      // A tap within a quarter second of a new item is the tail of a double tap, not an answer.
+      if (api.now() - cur.at < 250) return 'ignored';
+      cur.rec.attempts = 1; cur.rec.done = true;
+      if (skipped) cur.rec.flag = 'skipped'; else cur.rec.responses = [String(response == null ? '' : response).slice(0, 80)];
+      api.clockStop();
+      current = null;
+      s.index++;
+      c.seen = nowMs();
+      api.save();
+      runItem();
+      return 'recorded';
+    };
+    var runItem = function () {
+      var s = S(), c = C();
+      while (s.index < items.length && (s.items[s.index].done || items[s.index].item.practice)) s.index++;
+      if (c.deadline && nowMs() >= c.deadline) { timeUp(); return; }
+      if (s.index >= items.length) { finishRun('complete'); return; }
+      var entry = items[s.index], rec = s.items[s.index];
+      var n = items.slice(0, s.index).filter(function (e) { return !e.item.practice; }).length + 1;
+      var area = el('div', {});
+      var timer = null;
+      timerText = timerBar = null;
+      if (c.deadline) {
+        timerText = el('span', { role: 'timer', 'data-time-left': '' });
+        timerBar = calm ? null : el('span', {});
+        timer = el('div', { class: 'timer' }, [timerText, timerBar ? el('div', { class: 'timebar', 'aria-hidden': 'true' }, [timerBar]) : null]);
+        shownSecond = -1;
+        paint(c.deadline - nowMs());
+      }
+      var skip = meta.allowSkip ? el('div', { class: 'row', style: 'margin-top:16px;justify-content:center' }, [
+        el('button', { type: 'button', 'data-skip': '', on: { click: function () { record(null, true); } }, text: L.check_skip })]) : null;
+      var stopText = el('p', { id: 'check-stop-text', tabindex: '-1', style: 'margin:0 0 8px', text: L.check_stop_confirm });
+      var stopButton = el('button', { type: 'button', 'data-stop': '', on: { click: function () { stopBox.hidden = false; stopText.focus(); } }, text: L.check_stop });
+      var stopBox = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'check-stop-text', hidden: true, 'data-stop-confirm': '' }, [
+        stopText,
+        el('div', { class: 'row' }, [
+          el('button', { type: 'button', class: 'primary', 'data-stop-no': '', on: { click: function () { stopBox.hidden = true; stopButton.focus(); } }, text: L.check_stop_no }),
+          el('button', { type: 'button', 'data-stop-yes': '', on: { click: function () { finishRun('ended_early'); } }, text: L.check_stop_yes }),
+        ]),
+      ]);
+      api.screen(fmt(L.check_item_of, { n: n, total: scoredTotal }), [timer, el('div', { class: 'card' }, [area, skip]), el('div', { class: 'row' }, [stopButton]), stopBox]);
+      current = { rec: rec, at: api.now(), keys: null, pad: null };
+      show(entry, rec, ctxFor(entry, rec, area, false, function (response) { return record(response, false); }));
+    };
+    // At the deadline the item on screen ends unanswered.
+    var timeUp = function () {
+      var s = S(), c = C();
+      if (c.phase !== 'run') return;
+      var rec = s.items[s.index];
+      if (rec && !rec.done) rec.flag = 'time_up';
+      finishRun('time');
+    };
+    var finishRun = function (completion) {
+      var c = C();
+      if (c.phase !== 'run') return;
+      var t = nowMs();
+      var end = completion === 'time' && c.deadline ? c.deadline : t;
+      if (c.hiddenFrom) { c.hiddenMs = (Number(c.hiddenMs) || 0) + Math.max(0, Math.min(t, end) - c.hiddenFrom); c.hiddenFrom = null; }
+      if (c.hiddenMs > 3000) c.flags.left_the_page = 1;
+      if (jumped) c.flags.clock_changed = 1;
+      c.phase = 'done'; c.completion = completion; c.end = end; c.seen = t;
+      if (ticker) { win.clearInterval(ticker); ticker = null; }
+      current = null; timerText = timerBar = null;
+      api.clockStop();
+      api.save();
+      api.renderFinish();
+      if (completion === 'time') api.announce(L.check_time_up);
+    };
+
+    return {
+      // "About this file", for a check.
+      about: function (texts) {
+        var out = texts.slice();
+        out[0] = L.check_about_what;
+        out.splice(1, 0, L.check_about, limitMs ? L.check_about_clock : '', L.check_about_scrambled, meta.lock ? L.check_about_code : '');
+        out.splice(7, 0, L.check_about_tries);
+        return out;
+      },
+      // Opening the file again. A finished check shows its finish screen: it
+      // cannot be run again under the same session id. A running check goes
+      // straight back to its items with the time that is truly left.
+      resume: function (prior) {
+        var c = prior && prior.check;
+        if (!c || typeof c !== 'object' || (c.phase !== 'run' && c.phase !== 'done')) return false;
+        api.state(prior);
+        c = C();
+        if (c.phase === 'done') { api.renderFinish(); return true; }
+        var real = wallNow();
+        if (c.seen && real < c.seen - 2000) c.flags.clock_changed = 1;
+        // Never earlier than the last moment this check was seen running.
+        anchor = { wall: Math.max(real, Number(c.seen) || 0), perf: api.now() };
+        var t = nowMs();
+        c.hiddenMs = (Number(c.hiddenMs) || 0) + Math.max(0, Math.min(t, c.deadline || t) - (c.hiddenFrom || c.seen || t));
+        c.hiddenFrom = null;
+        if (c.hiddenMs > 3000) c.flags.left_the_page = 1;
+        c.flags.reloaded = 1;
+        c.seen = t;
+        api.save();
+        startTicker();
+        runItem();
+        return true;
+      },
+      // After the first screen (the learner label).
+      begin: function (prior) {
+        var s = S();
+        if (prior && prior !== s && prior.tries && !s.tries) s.tries = prior.tries;
+        route();
+      },
+      // Called for every results file: scoring happens here, in memory. Right
+      // and wrong are never written to the saved state.
+      result: function (out) {
+        var s = S(), c = C();
+        out.packet.form = String(lesson.form || ''); out.packet.mode = 'probe';
+        var rows = [], practised = 0;
+        out.items.forEach(function (it, i) {
+          var entry = items[i], rec = s.items[i];
+          var practice = !!entry.item.practice;
+          var right = answerOf(entry.item);
+          var skipped = rec.flag === 'skipped';
+          var attempted = !!rec.done && rec.attempts > 0;
+          var mark = attempted ? markOf(entry, right, skipped ? '' : rec.responses[0]) : null;
+          var digits = attempted && !practice && mark.digitsPossible != null;
+          it.word = entry.item.word; it.target = right;
+          it.practice = practice ? 'practice' : null;
+          it.correct = !!(mark && mark.correct && !skipped); it.firstTry = it.correct;
+          it.digitsCorrect = digits ? (skipped ? 0 : Number(mark.digitsCorrect) || 0) : null;
+          it.digitsPossible = digits ? Number(mark.digitsPossible) || 0 : null;
+          if (practice && attempted) practised++;
+          rows.push({ practice: practice, attempted: attempted, correct: it.correct, digitsCorrect: it.digitsCorrect, digitsPossible: it.digitsPossible });
+        });
+        out.score = kit.score({ measure: meta.measure, scoreUnit: meta.scoreUnit, timeLimitS: lesson.timeLimitS, scoringVersion: meta.scoringVersion, formVersion: meta.formVersion }, rows,
+          { elapsedMs: c.t0 ? (c.end || nowMs()) - c.t0 : 0, hiddenMs: c.hiddenMs, completion: c.completion, attempt: c.attempt, flags: Object.keys(c.flags).sort() });
+        // The fields older readers use.
+        out.summary = { items: scoredTotal, done: out.score.itemsAttempted, firstTry: out.score.itemsCorrect, afterRetry: 0, missed: out.score.itemsAttempted - out.score.itemsCorrect, practised: practised };
+      },
+      // The finish screen: thanks, how many and how long. No right or wrong and
+      // no score for the learner; those are behind "For the teacher".
+      finish: function (p) {
+        var s = S(), c = C();
+        var file = api.results(), sc = file.score;
+        var answered = file.items.filter(function (it) { return !it.practice && it.attempts > 0 && it.flag !== 'skipped'; }).length;
+        var lock = meta.lock && meta.lock.hash ? meta.lock : null;
+        var review = function () {
+          var f = api.results(), r = f.score;
+          var cell = function (v) { return el('td', { text: v == null ? '' : String(v) }); };
+          var lines = [
+            r.score != null ? fmt(L.check_review_score, { score: r.score, unit: L['check_unit_' + r.scoreUnit] || r.scoreUnit })
+              : fmt(L.check_review_no_score, { reason: L['check_reason_' + r.noScoreReason] || r.noScoreReason }),
+            fmt(L.check_review_items, { correct: r.itemsCorrect, attempted: r.itemsAttempted, given: scoredTotal }),
+            r.digitsPossible != null ? fmt(L.check_review_digits, { correct: r.digitsCorrect, possible: r.digitsPossible }) : '',
+            fmt(L.check_review_time, { elapsed: r.elapsedS, limit: r.timeLimitS ? fmt(L.check_review_limit, { seconds: r.timeLimitS }) : L.check_review_no_limit }),
+            fmt(L.check_review_hidden, { hidden: r.hiddenS }),
+            r.prorated ? L.check_review_prorated : '',
+            fmt(L.check_review_attempt, { n: r.attempt }),
+            r.flags.length ? fmt(L.check_review_flags, { flags: r.flags.map(function (name) { return L['check_flag_' + name] || name; }).join('; ') }) : '',
+            L.check_review_note,
+          ];
+          var body = f.items.map(function (it) {
+            var result = it.practice ? L.check_r_practice : it.flag === 'skipped' ? L.check_r_skipped : it.flag === 'time_up' ? L.check_r_time_up
+              : !it.attempts ? L.check_r_not_reached : it.correct ? L.check_r_right : L.check_r_wrong;
+            return el('tr', {}, [cell(it.n), cell(it.word), cell((it.responses || []).join(' | ')), cell(result), cell(it.target), cell(Math.round((Number(it.ms) || 0) / 100) / 10)]);
+          });
+          api.screen(L.check_review_title, [
+            el('div', { class: 'card', 'data-review': '' }, [
+              el('ul', {}, lines.filter(Boolean).map(function (text) { return el('li', { text: text }); })),
+              el('div', { class: 'scroll' }, [el('table', { class: 'review' }, [
+                el('thead', {}, [el('tr', {}, [L.check_col_n, L.check_col_prompt, L.check_col_response, L.check_col_result, L.check_col_expected, L.check_col_time]
+                  .map(function (text) { return el('th', { scope: 'col', text: text }); }))]),
+                el('tbody', {}, body),
+              ])]),
+              el('div', { class: 'row', style: 'margin-top:16px' }, [el('button', { class: 'primary', type: 'button', 'data-review-close': '', on: { click: function () { api.renderFinish(); } }, text: L.check_review_close })]),
+            ]),
+          ]);
+        };
+        // With a teacher code the review screen asks for it. Five wrong codes,
+        // then a 30 s wait (kept in the saved state, so a reload does not clear it).
+        var teacher;
+        if (!lock) teacher = [el('button', { type: 'button', 'data-teacher-open': '', on: { click: review }, text: L.check_teacher_open })];
+        else {
+          var busy = false;
+          var message = api.statusLine('', '');
+          var code = el('input', { id: 'teacher-code', type: 'password', autocomplete: 'off', maxlength: '64' });
+          var tryCode = function () {
+            var k = c.lock && typeof c.lock === 'object' ? c.lock : (c.lock = { fails: 0, until: 0 });
+            var t = nowMs();
+            if (k.until > t) { message.className = 'status warn'; message.textContent = fmt(L.check_teacher_wait, { seconds: Math.ceil((k.until - t) / 1000) }); return; }
+            var typed = String(code.value || '').replace(/^\s+|\s+$/g, '');
+            if (!typed || busy) return;
+            busy = true;
+            message.className = 'status'; message.textContent = L.check_teacher_checking;
+            win.setTimeout(function () {
+              busy = false;
+              if (kit.codec.same(kit.codec.lockHash(typed, lock.salt, lock.rounds), lock.hash)) { k.fails = 0; k.until = 0; api.save(); review(); return; }
+              k.fails = (Number(k.fails) || 0) + 1;
+              message.className = 'status warn';
+              if (k.fails >= 5) { k.fails = 0; k.until = nowMs() + 30000; message.textContent = fmt(L.check_teacher_wait, { seconds: 30 }); }
+              else message.textContent = fmt(L.check_teacher_wrong, { left: 5 - k.fails });
+              code.value = '';
+              api.save();
+            }, 30);
+          };
+          code.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); tryCode(); } });
+          teacher = [el('h3', { style: 'margin:0 0 8px;font-size:1.1rem', text: L.check_teacher_title }), el('label', { for: 'teacher-code', text: L.check_teacher_code }),
+            el('div', { class: 'row' }, [code, el('button', { type: 'button', 'data-teacher-show': '', on: { click: tryCode }, text: L.check_teacher_show })]), message];
+        }
+        // Start over asks first. The new run gets a new session id and the next try number.
+        var againText = el('p', { id: 'check-again-text', tabindex: '-1', style: 'margin:0 0 8px', text: L.check_again_confirm });
+        var again = el('button', { type: 'button', 'data-check-again': '', on: { click: function () { againBox.hidden = false; againText.focus(); } }, text: L.check_again });
+        var againBox = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'check-again-text', hidden: true, 'data-check-again-confirm': '' }, [
+          againText,
+          el('div', { class: 'row' }, [
+            el('button', { type: 'button', class: 'primary', 'data-check-again-no': '', on: { click: function () { againBox.hidden = true; again.focus(); } }, text: L.check_again_no }),
+            el('button', { type: 'button', 'data-check-again-yes': '', on: { click: function () {
+              var next = api.fresh();
+              next.name = s.name; next.tries = s.tries;
+              api.state(next); api.save(); api.renderStart();
+            } }, text: L.check_again_yes }),
+          ]),
+        ]);
+        api.screen(L.check_done_title, [
+          el('div', { class: 'card' }, [
+            c.completion === 'time' ? el('p', { text: L.check_time_up }) : null,
+            el('p', { class: 'letters', text: fmt(L.check_done_count, { done: answered, total: scoredTotal }) }),
+            el('p', { text: fmt(L.check_done_time, { time: clockText(sc.elapsedS * 1000) }) }),
+            el('p', { text: L.check_about }),
+            el('div', { class: 'row' }, [p.send, p.save, p.csv, p.copy, again, p.about.button]),
+            againBox, p.status, p.copyBox,
+            el('p', { class: 'muted', text: p.note }),
+          ]),
+          el('div', { class: 'card', 'data-teacher': '' }, teacher),
+          p.about.panel,
+        ]);
+      },
+    };
   }
 
   function buildHtml(lesson, options) {
     var opts = options || {};
     var core = opts.core;
     if (!lesson || lesson.schema !== LESSON_SCHEMA || !lesson.blocks || !lesson.blocks.length) throw new Error('No ready items to export');
-    if (!core || typeof core.soundAnswerMatches !== 'function') throw new Error('buildHtml needs WS_CORE');
-    var adapters = Object.assign({}, ADAPTERS, opts.adapters || {});
+    // A check (mode 'probe') is sealed here, whoever built the lesson: its
+    // answers are scrambled and opts.teacherCode becomes a salted hash.
+    var probe = lesson.mode === 'probe';
+    var adapters = Object.assign({}, ADAPTERS, CHECK_ADAPTERS, opts.adapters || {});
     var used = lesson.blocks.map(function (b) { return b.activity; }).filter(function (id, i, all) { return all.indexOf(id) === i; });
-    var labels = Object.assign({}, DEFAULT_LABELS);
+    // Only a file with a Word Sounds activity grades by sound.
+    var hasCore = !!core && typeof core.soundAnswerMatches === 'function';
+    if (!hasCore && !(probe && used.every(function (id) { return !!CHECK_ADAPTERS[id] && !(opts.adapters && opts.adapters[id]); }))) throw new Error('buildHtml needs WS_CORE');
+    if (probe) lesson = sealCheck(lesson, adapters, opts.teacherCode);
+    var labels = Object.assign({}, DEFAULT_LABELS, probe ? CHECK_LABELS : {});
     used.forEach(function (id) { Object.assign(labels, adapters[id].labels || {}); labels[id + '_title'] = labels[id + '_title'] || adapters[id].title; });
     Object.assign(labels, opts.labels || {});
     var renders = '{' + used.map(function (id) { return JSON.stringify(id) + ':' + adapters[id].render.toString(); }).join(',\n') + '}';
+    // A check carries its own flow, the SHA-256 that reads its answers and the
+    // scoring of its activities. TextEncoder is stood in for where a browser
+    // has none, so the answers can always be read.
+    var checkParts = !probe ? '' : 'kit.sha=(function(){var SHA_K=' + JSON.stringify(SHA_K)
+      + ';\nvar TextEncoder=window.TextEncoder||function(){this.encode=function(t){t=unescape(encodeURIComponent(t));var b=new Uint8Array(t.length);for(var i=0;i<t.length;i++)b[i]=t.charCodeAt(i);return b;};};\nreturn '
+      + sha256.toString() + ';})();\nkit.codec=(' + checkCodec.toString() + ')(kit.sha);\nkit.score=' + checkScore.toString()
+      + ';\nkit.scorers={' + used.map(function (id) { return JSON.stringify(id) + ':' + (typeof adapters[id].score === 'function' ? adapters[id].score.toString() : 'null'); }).join(',\n')
+      + '};\nkit.check=' + takeHomeCheck.toString() + ';\n';
     var mailbox = lesson.submit && /^https:\/\/script\.google\.com\//.test(lesson.submit.url);
     var connect = mailbox ? 'https://script.google.com https://script.googleusercontent.com' : "'none'";
     // The mailbox code travels only in a file that has a mailbox. Line ends are
     // made \n because the browser reads them so, and the script is allowed by
     // its exact hash.
-    var script = ('\n(function(){"use strict";\nvar lesson=' + safeJson(lesson) + ';\nvar labels=' + safeJson(labels) + ';\nvar matches=' + core.soundAnswerMatches.toString()
+    var script = ('\n(function(){"use strict";\nvar lesson=' + safeJson(lesson) + ';\nvar labels=' + safeJson(labels) + ';\nvar matches=' + (hasCore ? core.soundAnswerMatches.toString() : 'null')
       + ';\nvar renders=' + renders + ';\nvar kit={csv:' + packetCsv.toString() + ',\nhash:' + hashText.toString() + ',\nmailbox:' + (mailbox ? takeHomeMailbox.toString() : 'null')
-      + '};\n(' + takeHomeShell.toString() + ')(document,window,lesson,labels,matches,renders,kit);\n})();\n').replace(/\r\n?/g, '\n');
+      + '};\n' + checkParts + '(' + takeHomeShell.toString() + ')(document,window,lesson,labels,matches,renders,kit);\n})();\n').replace(/\r\n?/g, '\n');
     var digest = sha256(script);
     var csp = "default-src 'none'; script-src " + (digest ? "'sha256-" + digest.base64 + "'" : "'unsafe-inline'") + "; style-src 'unsafe-inline'; media-src data: blob:; img-src data:"
       + "; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; connect-src " + connect;
@@ -4181,23 +5173,35 @@
     var stem = packetCsv({ lessonTitle: lesson.title, learner: 'LEARNER' }).stem + '__DATE';
     var manifest = {
       kind: 'alloflow-packet-manifest', engine: PACKET_ENGINE, player: PLAYER, title: lesson.title,
-      packet: { id: lesson.lessonId, version: lesson.revision, form: '', mode: 'practice' },
-      what: 'A practice activity in one file. It runs in a browser with no internet connection.',
+      packet: { id: lesson.lessonId, version: lesson.revision, form: probe ? str(lesson.form) : '', mode: probe ? 'probe' : 'practice' },
+      what: probe ? 'A check in one file: one try for each item, and no right or wrong shown to the learner. It runs in a browser with no internet connection.'
+        : 'A practice activity in one file. It runs in a browser with no internet connection.',
       stores: [{ where: 'localStorage', key: 'alloflow-take-home:' + lesson.lessonId + ':' + lesson.revision,
-        holds: 'the learner label, the place reached, the answers and the time on each item', until: 'Start over or Practice again' }],
+        holds: probe ? 'the learner label, the place reached, the answers given, the time on each item, the time limit clock and a count of tries (by a hash of the learner label)'
+          : 'the learner label, the place reached, the answers and the time on each item',
+        until: probe ? 'the browser storage is cleared; Start over keeps only the learner label and the count of tries' : 'Start over or Practice again' }],
       saves: [{ file: stem + '.csv', format: 'alloflow-packet-result/1' }, { file: stem + '.json', format: RESULT_KIND + ' schemaVersion ' + RESULT_SCHEMA }],
       network: mailbox ? { sendsTo: 'script.google.com', what: 'the results, to the class mailbox of the teacher', when: 'only when the learner presses Send' } : 'none',
       never: (mailbox ? [] : ['internet connection']).concat(['microphone', 'camera', 'cookies', 'AI']),
       integrity: 'Each saved file carries a check value (SHA-256, or FNV-1a where the browser cannot make SHA-256). It detects accidental edits, not deliberate ones.',
       csp: csp, scriptSha256: digest ? digest.hex : '', licence: 'AGPL-3.0', attributions: Array.isArray(opts.attributions) ? opts.attributions.map(str) : [],
     };
+    if (probe) {
+      var all = lesson.blocks.reduce(function (list, b) { return list.concat(b.items); }, []);
+      manifest.check = { measure: str(lesson.check.measure), scoreUnit: str(lesson.check.scoreUnit), scoringVersion: lesson.check.scoringVersion || 1, formVersion: lesson.check.formVersion == null ? '' : lesson.check.formVersion,
+        timeLimitS: Number(lesson.timeLimitS) > 0 ? Number(lesson.timeLimitS) : null, items: all.filter(function (it) { return !it.practice; }).length, practiceItems: all.filter(function (it) { return it.practice; }).length,
+        clock: Number(lesson.timeLimitS) > 0 ? 'the clock of the device; it does not pause when the page is hidden' : 'no time limit',
+        answers: 'scrambled (XOR with a SHA-256 keystream); this stops casual looking, not a determined person',
+        teacherCode: lesson.check.lock ? 'set; kept only as a salted SHA-256 hash (' + lesson.check.lock.rounds + ' rounds); it locks the review screen and is not encryption' : 'none' };
+      labels.no_script = labels.check_no_script || labels.no_script;
+    }
     // dir comes from the app (labels.dir) so Arabic, Farsi, Urdu, Hebrew... files read right to left.
     var dir = labels.dir === 'rtl' || labels.dir === 'ltr' ? ' dir="' + labels.dir + '"' : '';
     return '<!doctype html><html lang="' + escapeHtml(labels.lang || 'en') + '"' + dir + '><head><meta charset="utf-8">'
       + '<meta name="viewport" content="width=device-width,initial-scale=1">'
       + '<meta http-equiv="Content-Security-Policy" content="' + csp + '">'
       + '<meta name="generator" content="' + PLAYER + '">'
-      + '<title>' + escapeHtml(lesson.title) + '</title><style>' + CSS + '</style></head>'
+      + '<title>' + escapeHtml(lesson.title) + '</title><style>' + CSS + (probe ? '\n' + CHECK_CSS : '') + '</style></head>'
       // #app holds a plain note for previews that do not run the file (Drive, Classroom, iPad Files);
       // the player replaces it as soon as it starts.
       + '<body><main><h1>' + escapeHtml(lesson.title) + '</h1><div id="app"><p data-no-script>' + escapeHtml(labels.no_script) + '</p></div><p id="live" class="sr" aria-live="polite"></p></main>'
@@ -4227,11 +5231,14 @@
         if (value !== null) integrity = value && value === str(saved.value) ? 'ok' : 'changed';
       } catch (_) { integrity = 'changed'; }
     }
+    // A check (packet.mode "probe"): its items also carry digits, and the file a score block.
+    var probe = !!data.packet && typeof data.packet === 'object' && data.packet.mode === 'probe';
+    var whole = function (v) { return v == null || v === '' || !Number.isFinite(Number(v)) ? null : Math.max(0, Math.min(1000000, Math.round(Number(v)))); };
     var items = data.items.slice(0, 200).map(function (it) {
       return { ms: Math.max(0, Math.min(86400000, Math.round(Number(it && it.ms) || 0))), flag: str(it && it.flag).slice(0, 40), activity: str((it && it.activity) || (data.schemaVersion === 1 ? 'isolation' : '')).slice(0, 40), word: str(it && it.word).slice(0, 60),
         target: str(it && it.target).slice(0, 40), attempts: Math.max(0, Math.min(9, Number(it && it.attempts) || 0)),
         firstTry: !!(it && it.firstTry), correct: !!(it && it.correct), done: !!(it && it.done),
-        practice: it && (it.practice === 'traced' || it.practice === 'skipped') ? it.practice : null,
+        practice: it && (it.practice === 'traced' || it.practice === 'skipped' || it.practice === 'practice') ? it.practice : null,
         responses: Array.isArray(it && it.responses) ? it.responses.slice(0, 6).map(function (r) { return str(r).slice(0, 80); }) : [],
         // Supports used (replays, hints): counts only, a bounded set of names.
         supports: (function (s) {
@@ -4260,10 +5267,26 @@
       var given = data.activityTitles && typeof data.activityTitles === 'object' ? data.activityTitles[id] : null;
       titles[id] = str(given || (ADAPTERS[id] && ADAPTERS[id].title) || (id === 'isolation' ? 'Find Sounds' : id)).slice(0, 60);
     });
-    return { ok: true, integrity: integrity, result: { activityTitles: titles, lessonId: str(data.lessonId).slice(0, 120), revision: str(data.revision).slice(0, 40), lessonTitle: str(data.lessonTitle).slice(0, 120),
+    var result = { activityTitles: titles, lessonId: str(data.lessonId).slice(0, 120), revision: str(data.revision).slice(0, 40), lessonTitle: str(data.lessonTitle).slice(0, 120),
       learnerName: str(data.learnerName || data.learner).slice(0, 60), finishedAt: str(data.finishedAt).slice(0, 40), items: items, summary: summary, byActivity: byActivity,
       integrity: integrity, sessionId: str(data.sessionId).slice(0, 80), startedLocal: str(data.startedLocal).slice(0, 40), finishedLocal: str(data.finishedLocal).slice(0, 40),
-      durationMs: Math.max(0, Math.round(Number(data.durationMs) || 0)) } };
+      durationMs: Math.max(0, Math.round(Number(data.durationMs) || 0)) };
+    if (probe) {
+      items.forEach(function (r, i) { var it = data.items[i] || {}; r.digitsCorrect = whole(it.digitsCorrect); r.digitsPossible = whole(it.digitsPossible); });
+      var sc = data.score && typeof data.score === 'object' ? data.score : {};
+      var num = function (v) { return v == null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v); };
+      result.mode = 'probe';
+      result.form = str(data.packet.form).slice(0, 40);
+      // The score as the file states it. It is not covered by the integrity
+      // value; the items are, and the counts can be made again from them.
+      result.score = { measure: str(sc.measure).slice(0, 40), score: num(sc.score), scoreUnit: str(sc.scoreUnit).slice(0, 40), digitsCorrect: whole(sc.digitsCorrect), digitsPossible: whole(sc.digitsPossible),
+        itemsCorrect: whole(sc.itemsCorrect) || 0, itemsAttempted: whole(sc.itemsAttempted) || 0, timeLimitS: num(sc.timeLimitS), elapsedS: num(sc.elapsedS) || 0, hiddenS: num(sc.hiddenS) || 0,
+        completion: sc.completion === 'time' || sc.completion === 'ended_early' || sc.completion === 'complete' ? sc.completion : '', prorated: sc.prorated === true,
+        noScoreReason: str(sc.noScoreReason).slice(0, 40), scoringVersion: whole(sc.scoringVersion),
+        formVersion: typeof sc.formVersion === 'number' && Number.isFinite(sc.formVersion) ? sc.formVersion : str(sc.formVersion).slice(0, 20), attempt: whole(sc.attempt) || 1,
+        flags: (Array.isArray(sc.flags) ? sc.flags : []).slice(0, 8).map(function (f) { return str(f).slice(0, 40); }) };
+    }
+    return { ok: true, integrity: integrity, result: result };
   }
 
   // Every recorded sound in the shipped file as WAV. The sound bank and most
@@ -4353,6 +5376,8 @@
     ADAPTERS: ADAPTERS, activities: activities,
     lessonFromPack: lessonFromPack, buildHtml: buildHtml, parseResult: parseResult, portableAudio: portableAudio,
     PACKET_ENGINE: PACKET_ENGINE, resultsCsv: packetCsv, sha256: sha256,
+    // Check mode (lesson.mode 'probe'): see takeHomeCheck.
+    CHECK_ADAPTERS: CHECK_ADAPTERS, CHECK_LABELS: CHECK_LABELS, CHECK_ROUNDS: CHECK_ROUNDS, checkCodec: checkCodec, checkScore: checkScore, _check: takeHomeCheck,
     // v1 name kept for callers built against the first release.
     buildFindSoundsHtml: buildHtml,
     _shell: takeHomeShell,
