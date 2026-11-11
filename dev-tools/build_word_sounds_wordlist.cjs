@@ -6,6 +6,9 @@
 // Row = word, frequency rank, sound shape, flags, child-book Zipf frequency, child-book count.
 // It also carries the stage table (data/word_sounds_stages_en.json) so a page needs no fetch.
 // Inputs are all in the repo; nothing downloads. --check compares without writing.
+// A word has a clip when it is in the recorded bank, the Kokoro bank, or the Kokoro shard store
+// (word_audio_shards/index.json, made by dev-tools/build_word_sounds_word_audio.cjs): run this tool
+// again after that store changes, together with the callers that load the shards.
 //
 // --cyplex <main_cyplex79.csv> re-makes the vendored child-book file (data/vendor/cyplex/) from the
 // original download: it checks the download's sha256 against source.json, keeps three of its
@@ -23,7 +26,9 @@ const STAGES = path.join(ROOT, 'data/word_sounds_stages_en.json');
 const COMMON = path.join(ROOT, 'data/syllables/en_common_words.txt');
 const CYPLEX_SOURCE = path.join(ROOT, 'data/vendor/cyplex/source.json');
 const CYPLEX_DATA = path.join(ROOT, 'data/vendor/cyplex/cyplex79_dictionary_words.tsv');
-const FLAGS = { recorded: 1, kokoro: 2, blocked: 4, nearBlocked: 8, known: 16, dropBlocked: 32, british: 64 };
+// The words voiced by dev-tools/build_word_sounds_word_audio.cjs (word_audio_shards/): a third clip source.
+const SHARDS_INDEX = path.join(ROOT, 'word_audio_shards/index.json');
+const FLAGS = { recorded: 1, kokoro: 2, blocked: 4, nearBlocked: 8, known: 16, dropBlocked: 32, british: 64, shards: 128 };
 const compare = (left, right) => left < right ? -1 : left > right ? 1 : 0;
 const clean = word => String(word || '').normalize('NFC').trim().toLowerCase();
 const json = file => JSON.parse(fs.readFileSync(path.join(ROOT, file), 'utf8').replace(/^﻿/, ''));
@@ -136,7 +141,18 @@ function readStages() {
   return table;
 }
 
-function build() {
+// The words of the Kokoro shard store, from its index ({ format, words: { word: shard } }). No store yet = no words.
+function readShardWords(indexFile = SHARDS_INDEX) {
+  if (!fs.existsSync(indexFile)) return new Set();
+  const index = JSON.parse(fs.readFileSync(indexFile, 'utf8'));
+  if (!index || index.format !== 'alloflow-word-audio-index/1' || !index.words || typeof index.words !== 'object' || Array.isArray(index.words)) {
+    throw new Error('Not a word audio index (alloflow-word-audio-index/1): ' + path.relative(ROOT, indexFile));
+  }
+  return new Set(Object.keys(index.words).map(clean).filter(Boolean));
+}
+
+// options.shardIndex: another index file than word_audio_shards/index.json (a test passes a fixture).
+function build(options = {}) {
   const { phonemes, words } = dictionaryWords();
   const lists = require('./build_word_sounds_phonemes.cjs').appWordLists(
     new Function(fs.readFileSync(path.join(ROOT, 'word_sounds_core.js'), 'utf8') + ';return createWordSoundsCore();')());
@@ -146,7 +162,8 @@ function build() {
   fs.readFileSync(COMMON, 'utf8').split(/\r?\n/).forEach((line, index) => { const word = clean(line); if (word && !rank.has(word)) rank.set(word, index + 1); });
   const recorded = new Set(Object.keys(json('audio_bank/words.json')).map(clean));
   const kokoro = new Set(Object.keys(json('word_audio_kokoro_bank.json').words).map(clean));
-  const known = new Set([...lists.soundMatchPool, ...lists.rimeFamilies, ...lists.sightWords, ...lists.wordFamilies, ...lists.coreWords].map(clean));
+  const shardWords = readShardWords(options.shardIndex);
+  const known =new Set([...lists.soundMatchPool, ...lists.rimeFamilies, ...lists.sightWords, ...lists.wordFamilies, ...lists.coreWords].map(clean));
   const sections = readBlocklist();
   const blocked = new Set(sections.flatMap(section => section.words));
   const british = new Set(readBritish().flatMap(section => section.words));
@@ -157,7 +174,7 @@ function build() {
   for (const section of sections) if (section.derive) for (const word of section.words) { const s = sounds(word); if (s.length) derive.add(s.join(' ')); }
   const shapes = [], shapeIndex = new Map();
   const rows = [];
-  const counts = { blocked: 0, nearBlocked: 0, dropBlocked: 0, recorded: 0, kokoro: 0, known: 0, ranked: 0, british: 0, childBook: 0 };
+  const counts = { blocked: 0, nearBlocked: 0, dropBlocked: 0, recorded: 0, kokoro: 0, shards: 0, known: 0, ranked: 0, british: 0, childBook: 0 };
   const nearExamples = [], dropExamples = [];
   for (const word of words.slice().sort(compare)) {
     const s = sounds(word);
@@ -166,6 +183,7 @@ function build() {
     let flags = 0;
     if (recorded.has(word)) { flags |= FLAGS.recorded; counts.recorded++; }
     if (kokoro.has(word)) { flags |= FLAGS.kokoro; counts.kokoro++; }
+    if (shardWords.has(word)) { flags |= FLAGS.shards; counts.shards++; }
     if (known.has(word)) { flags |= FLAGS.known; counts.known++; }
     if (british.has(word)) { flags |= FLAGS.british; counts.british++; }
     if (blocked.has(word)) { flags |= FLAGS.blocked; counts.blocked++; }
@@ -219,13 +237,16 @@ var createWordSoundsWordlist = (function () {
         var p = entry.split(','), flags = parseInt(p[3], 36), shape = shapes[parseInt(p[2], 36)];
         var row = Object.freeze({ word: p[0], rank: parseInt(p[1], 36), shape: shape, sounds: shape.length, syllables: shape.split('V').length - 1,
           zipf: p[4] ? parseInt(p[4], 36) / 100 : 0, books: p[5] ? parseInt(p[5], 36) : 0,
-          recorded: !!(flags & FLAGS.recorded), kokoro: !!(flags & FLAGS.kokoro), hasClip: !!(flags & (FLAGS.recorded | FLAGS.kokoro)),
+          // A clip is in one of three places: recorded = audio_bank/words.json, kokoro = word_audio_kokoro_bank.json,
+          // shards = word_audio_shards/<first letter>.json (its index.json names the file for each word).
+          recorded: !!(flags & FLAGS.recorded), kokoro: !!(flags & FLAGS.kokoro), shards: !!(flags & FLAGS.shards),
+          hasClip: !!(flags & (FLAGS.recorded | FLAGS.kokoro | FLAGS.shards)),
           blocked: !!(flags & FLAGS.blocked), nearBlocked: !!(flags & FLAGS.nearBlocked), dropBlocked: !!(flags & FLAGS.dropBlocked), known: !!(flags & FLAGS.known),
           british: !!(flags & FLAGS.british) });
         index.set(row.word, row);
         return row;
       });
-      extraBlocked.forEach(function (word) { index.set(word, Object.freeze({ word: word, rank: 0, shape: '', sounds: 0, syllables: 0, zipf: 0, books: 0, recorded: false, kokoro: false, hasClip: false, blocked: true, nearBlocked: false, dropBlocked: false, known: false, british: false, notInDictionary: true })); });
+      extraBlocked.forEach(function (word) { index.set(word, Object.freeze({ word: word, rank: 0, shape: '', sounds: 0, syllables: 0, zipf: 0, books: 0, recorded: false, kokoro: false, shards: false, hasClip: false, blocked: true, nearBlocked: false, dropBlocked: false, known: false, british: false, notInDictionary: true })); });
       text = '';
       return list;
     }
@@ -260,7 +281,7 @@ function main(args) {
   const built = build();
   const output = render(built);
   const c = built.counts;
-  const size = `${built.total} words (${c.ranked} with a frequency rank, ${c.childBook} in the child-book list, ${c.known} on the app lists); clips: ${c.recorded} recorded, ${c.kokoro} Kokoro bank; ` +
+  const size = `${built.total} words (${c.ranked} with a frequency rank, ${c.childBook} in the child-book list, ${c.known} on the app lists); clips: ${c.recorded} recorded, ${c.kokoro} Kokoro bank, ${c.shards} Kokoro shards; ` +
     `blocklist ${built.blockedTotal} entries in ${built.sections.length} sections (${c.blocked} in the dictionary, ${built.extraBlocked.length} outside it), ${c.nearBlocked} more blocked as sound-alikes, ${c.dropBlocked} flagged as one dropped sound away; ` +
     `British list ${built.britishTotal} entries (${c.british} in the dictionary); ${built.stages.frameworks.map(f => f.stages.length + ' stages ' + f.id).join(', ')}; ` +
     `${Buffer.byteLength(output)} bytes (${zlib.gzipSync(output, { level: 9 }).length} gzip)`;
@@ -281,7 +302,7 @@ function main(args) {
   if (built.dropExamples.length) console.log('Flagged, one dropped sound away (10,000 most frequent): ' + built.dropExamples.join(' '));
 }
 
-module.exports = { OUTPUT, BLOCKLIST, BRITISH, STAGES, CYPLEX_SOURCE, CYPLEX_DATA, FLAGS, readBlocklist, readBritish, readStages, readFamiliarity, build, render };
+module.exports = { OUTPUT, BLOCKLIST, BRITISH, STAGES, CYPLEX_SOURCE, CYPLEX_DATA, SHARDS_INDEX, FLAGS, readBlocklist, readBritish, readStages, readFamiliarity, readShardWords, build, render };
 if (require.main === module) {
   try { main(process.argv.slice(2)); } catch (error) { console.error(error.message); process.exitCode = 1; }
 }
