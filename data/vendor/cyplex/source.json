@@ -1,0 +1,48 @@
+{
+  "id": "cyplex",
+  "name": "The Children and Young People's Books Lexicon (CYP-LEX)",
+  "band": "ages 7-9 (400 books; the youngest of its three bands)",
+  "language": "en-GB",
+  "citation": "Korochkina, M., Marelli, M., Brysbaert, M., & Rastle, K. (2024). The Children and Young People's Books Lexicon (CYP-LEX): A large-scale lexical database of books read by children and young people in the United Kingdom. Quarterly Journal of Experimental Psychology, 77(12), 2418-2438.",
+  "doi": "10.1177/17470218241229694",
+  "doiUrl": "https://doi.org/10.1177/17470218241229694",
+  "repository": "https://osf.io/squ49/",
+  "component": "https://osf.io/tnu8k/",
+  "file": "main_cyplex79.csv",
+  "url": "https://osf.io/download/s73vd/",
+  "sha256": "c9ea85878a0d33a6251711d36638fbde515d0d71f51b668bedf42a538643bc57",
+  "bytes": 9334207,
+  "rows": 52851,
+  "retrieved": "2026-11-11",
+  "license": "Creative Commons Attribution 4.0 International (CC BY 4.0)",
+  "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+  "licenseEvidence": "Checked 2026-11-11 through the OSF API: the project (api.osf.io/v2/nodes/squ49) and the data component that holds this file (api.osf.io/v2/nodes/tnu8k) both name licence 563c1cf88c5e4a3877f9e96a, \"CC-By Attribution 4.0 International\", year 2024. The article's Crossref record names the same licence. The file's sha256 above equals the hash OSF lists for main_cyplex79.csv.",
+  "readme": "README_main.txt (from the same component, https://osf.io/download/wn3ek/, sha256 ec01289920fe72247fbbf31fbd638cc29cdc25542e94c360c88f0e1bc1035291): what each column of the original means. The copy here has its line ends changed from CRLF to LF and nothing else (sha256 7c6084cfadb18ff308a6c1375a6669a5c14485d0f19fa8f51686ae167d2ae7f3).",
+  "columnsKept": {
+    "Word": "word form, lower case",
+    "Zipf_freq": "Zipf frequency in the 7-9 band, here rounded to 2 decimal places",
+    "CD_book_count_raw": "how many of the band's 400 books hold the word form"
+  },
+  "columnsDropped": {
+    "CYP-LEX's own, not needed": "Count, Lemma, the other seven CD_ columns, AllPoS, AllPoSFreq, AllPoSLemma, CYPLEX1012_raw, CYPLEX1012_log, CYPLEX13_raw, CYPLEX13_log",
+    "copied from OTHER databases, under their own terms, so never kept": "CPWD_raw, CPWD_log (Children's Printed Word Database, Masterson et al. 2010); CBBC_raw, CBBC_log, CBeebies_raw, CBeebies_log, SubtlexUK_raw, SubtlexUK_log (SUBTLEX-UK, van Heuven et al. 2014)"
+  },
+  "filtered": {
+    "file": "cyplex79_dictionary_words.tsv",
+    "format": "Lines that start with # are the notice. Then one word per line: word, tab, Zipf frequency, tab, number of books. Sorted by word; line ends are LF.",
+    "changes": "Changed from the original: 3 of 27 columns kept; only the words that are in the Word Sounds sound dictionary kept; Zipf rounded to 2 decimal places.",
+    "header": [
+      "From CYP-LEX, the Children and Young People's Books Lexicon: ages 7-9 band, file main_cyplex79.csv (https://osf.io/tnu8k/).",
+      "Korochkina, M., Marelli, M., Brysbaert, M., & Rastle, K. (2024). Quarterly Journal of Experimental Psychology, 77(12), 2418-2438. https://doi.org/10.1177/17470218241229694",
+      "Licence: Creative Commons Attribution 4.0 International, https://creativecommons.org/licenses/by/4.0/",
+      "Changed from the original: 3 of 27 columns kept; only the words that are in the Word Sounds sound dictionary kept; Zipf rounded to 2 decimal places.",
+      "Columns: word, Zipf frequency (ages 7-9 books), number of the 400 books that hold the word."
+    ],
+    "words": 25912,
+    "bytes": 415164,
+    "sha256": "d4554ad0a670a64d2a5d4f9fee83da24957cbf67de01eb6089c5ac3b513c09e0"
+  },
+  "remake": "node dev-tools/build_word_sounds_wordlist.cjs --cyplex <path to main_cyplex79.csv>, then copy the printed words, bytes and sha256 into \"filtered\" above. The original is not kept in the repo (9.3 MB).",
+  "scope": "How often a word form appears in 400 books popular with children aged 7 to 9 in the United Kingdom. Used only to decide whether a word is familiar enough to offer as a practice word.",
+  "limitations": "British books: British spellings and words score high (colour, mum), which is why data/word_sounds_british_en.txt exists. The youngest band is ages 7-9, so this is weak evidence for kindergarten and grade 1: it shows a word is common in books for slightly older children, not that a five-year-old knows it. All word forms are lower case, so names of characters score like ordinary words (the book count helps: a name is usually in few books). It counts printed forms, not meanings, and says nothing about whether a word is suitable. A word added to the sound dictionary later has no value until the file is re-made from the original."
+}

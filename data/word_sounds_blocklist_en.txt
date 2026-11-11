@@ -139,3 +139,58 @@ california florida virginia carolina georgia jersey dallas denver berlin tokyo m
 venice athens troy nile rhine thames alps arab arabs arabia turk turks turkish dutch swiss
 swede swedes swedish dane danes danish norse persia persian israel korea
 korean vietnam cuba cuban peru chile brazil yankee yankees saxon saxons celt celtic july june mars
+
+# ---------------------------------------------------------------------------------------------
+# ADDED 2026-11-11 (quality pass on the word picker's output, after the child-book familiarity
+# list replaced the old-book frequency list). Found by reading every word the picker can return
+# for the kindergarten and grade 1 stages (2,665 words), the 500 least widely used words of the
+# later stages, and hand lists of names, places, brands and crude words checked against the pool.
+# Grade 2 and grade 3+ were NOT read in full. Still a first pass that needs human review.
+# None of these sections is marked derive: "wee" would otherwise block "we".
+# ---------------------------------------------------------------------------------------------
+
+## 2026-11-11 names of people and characters
+frank smith jackson jean santa sherlock flora ellie victoria beatrice peters williams wright
+logan lucas sebastian caleb cameron jordan dominic kai wesley harrison nathaniel milo jasper calvin
+ivan blake avery marcus colin malcolm spencer gideon julius hector jeffrey otto marco winston
+harvey erik hugo archie francis eden charlotte amelia abigail aria madison stella hannah maya
+claire brooklyn lydia eliza isabel esther ada elsie diana vera gracie sydney melissa frances
+michelle jessica sierra leslie rosa louisa winnie nellie wendy brenda bertha lottie hilda maud
+gertrude mildred hal kirk neil saul bea dee flo ida kay fanny mason carter parker connor brooks
+levi owen juan penelope hermione
+
+## 2026-11-11 places, peoples, planets
+atlantic pacific arctic antarctic antarctica amazon latin viking vikings neptune saturn uranus
+pluto hollywood olympic olympics australian maine mississippi everest caribbean cornwall kent
+victorian zealand sweden norway norman aztec aztecs hawaii alaska kansas oxford egyptians
+
+## 2026-11-11 days, months, holidays
+monday tuesday wednesday thursday friday saturday sunday january february april august september
+october november december thanksgiving valentine
+
+## 2026-11-11 brand and media names
+jeep superman google facebook twitter hulk
+
+## 2026-11-11 crude in some English dialect, or adult
+wee sod gob cum willy slag spunk shag shagged nonce poof poofter prat tosser bellend minge bint
+todger paki wog yid pikey chav mong snog snogging knickers undies topless grope flirt lover lovers
+affair mating sucking spitting cursing lame
+
+## 2026-11-11 alcohol and mild oaths
+cider sherry pint pints barman gosh darn heck golly jeez crikey blimey
+
+## 2026-11-11 violence, weapons, death
+attack attacked attacking attacks combat raid raids armed troops trigger ransom thrash thrashed
+thrashing wound wounds wounded sword swords spear spears cannon cannons kidnapping grave graves
+graveyard tomb
+
+## 2026-11-11 religion
+angel angels soul souls chapel cathedral vicar
+
+## 2026-11-11 archaic
+prig
+
+## 2026-11-11 not practice words (fillers, word pieces, short forms)
+yep yup nope nah yeah yea yo oi ow ouch oops whoops whoa ooh aah uh um huh hm hmm hee hoo tut ugh
+phew gee sis bro hon ya ing fi san st mr mrs ms mans est ly pre el von mac etc coz dunno lemme
+gimme gonna wanna gotta kinda sorta madame

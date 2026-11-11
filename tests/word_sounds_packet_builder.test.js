@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
+import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import { JSDOM } from 'jsdom';
 
@@ -282,7 +283,10 @@ describe('(e) pickWords', () => {
       expect(row, word).toMatchObject({ blocked: false, nearBlocked: false, hasClip: true, shape: 'CVC' });
       expect(dictionary.lookup(word)[0][0], word).toBe('sh');
     }
-    expect(one.reasons.fitsTheCriteria).toBe(one.pool + one.reasons.blocked + one.reasons.soundsLikeABlockedWord + one.reasons.notFamiliarEnough + one.reasons.noRecording);
+    // Every word that fit is either in the pool or counted under exactly one reason.
+    const { fitsTheCriteria, ...dropped } = one.reasons;
+    expect(Object.keys(dropped).sort()).toEqual(['blocked', 'britishSpellingOrWord', 'excluded', 'noRecording', 'notFamiliarEnough', 'oneDroppedSoundFromABlockedWord', 'soundsLikeABlockedWord']);
+    expect(fitsTheCriteria).toBe(one.pool + Object.values(dropped).reduce((sum, n) => sum + n, 0));
     expect(one.reasons.blocked).toBeGreaterThan(0);
   });
 
@@ -296,13 +300,27 @@ describe('(e) pickWords', () => {
   });
 
   it('says how many fit, so a page can say "only 4 words fit"', () => {
-    const got = pick({ ...SH, stage: 'K late' });
+    const got = pick({ ...SH, stage: 'G1 early' });
     expect(got.words.length).toBe(got.pool);
+    expect(got.pool).toBeGreaterThan(3);
     expect(got.pool).toBeLessThan(10);
     expect(got.reasons.noRecording + got.reasons.notFamiliarEnough).toBeGreaterThan(0);
-    expect(got.criteria).toMatchObject({ stage: 'K late', stageNote: builder.STAGE_NOTE, maxRank: builder.DEFAULT_MAX_RANK, requireClip: true });
-    expect(builder.STAGE_NOTE).toMatch(/^PROVISIONAL/);
-    expect(() => pick({ stage: 'Grade 9' })).toThrow(/Unknown stage/);
+    expect(got.criteria).toMatchObject({ stage: 'G1 early', framework: 'us-ccss', stageVerified: true, stageBasis: 'standard and common practice',
+      minZipf: builder.DEFAULT_MIN_ZIPF, minBooks: builder.DEFAULT_MIN_BOOKS, maxRank: null, british: false, requireClip: true });
+    // A row checked against the documents says so; the word PROVISIONAL is kept for rows that were not.
+    expect(got.criteria.stageNote).toBe('Checked on ' + wordlist.stages.checked + ' against the Common Core Reading Foundational Skills standards. '
+      + 'That document places part of this row at this grade or year; the rest follows common classroom practice, not a standard.');
+    expect(pick({ stage: 'K early', count: 1 }).criteria.stageNote).toBe('Checked on ' + wordlist.stages.checked + ' against the Common Core Reading Foundational Skills standards. '
+      + 'That document places everything in this row at this grade or year.');
+    expect(pick({ stage: 'Year 1', count: 1 }).criteria.stageNote).toMatch(/^Checked on \d{4}-\d{2}-\d{2} against the spelling appendix of the National Curriculum in England\./);
+    expect(got.criteria.stageNote).not.toMatch(/PROVISIONAL/);
+    expect(pick({ stage: 'Reception', count: 1 }).criteria).toMatchObject({ framework: 'england-nc', stageVerified: false, british: true });
+    expect(pick({ stage: 'Reception', count: 1 }).criteria.stageNote).toMatch(/^PROVISIONAL/);
+    expect(builder.STAGE_NOTE).not.toMatch(/^PROVISIONAL/);
+    expect(builder.STAGE_NOTE).toMatch(/Common Core Reading Foundational Skills standards.*common classroom practice.*PROVISIONAL/);
+    // Nothing a built file could carry holds a web address: the sources live in the data file.
+    expect(JSON.stringify(got.criteria)).not.toMatch(/https?:/);
+    expect(() => pick({ stage: 'Grade 9' })).toThrow(/Unknown stage: Grade 9 \(use K early, K late, G1 early, G1 late, G2, G3\+, Reception, Year 1, Year 2\)/);
   });
 
   it('stage K early never returns a digraph, a blend or a long vowel', () => {
@@ -317,8 +335,20 @@ describe('(e) pickWords', () => {
         expect(units.filter((u) => u.vowel).every((u) => 'aeiou'.includes(u.sounds[0])), word).toBe(true);
       }
     }
-    expect(pick({ stage: 'K late', spellingPattern: 'sh', count: 50 }).words.length).toBeGreaterThan(3);
+    // Consonant digraphs are grade 1 in the Common Core (RF.1.3.a), so neither kindergarten row has them.
+    expect(pick({ stage: 'G1 early', spellingPattern: 'sh', count: 50 }).words.length).toBeGreaterThan(3);
+    expect(pick({ stage: 'K late', spellingPattern: 'sh', count: 50 }).words).toEqual([]);
     expect(pick({ stage: 'K early', spellingPattern: 'sh', count: 50 }).words).toEqual([]);
+    // K late adds only s as /z/ and one-letter long vowels in short words (RF.K.3.a, RF.K.3.b).
+    const early = pick({ stage: 'K early', count: 1000, requireClip: false }).words, late = pick({ stage: 'K late', count: 1000, requireClip: false }).words;
+    expect(early.filter((word) => !late.includes(word))).toEqual([]);
+    expect(late.filter((word) => !early.includes(word))).toEqual(expect.arrayContaining(['he', 'me', 'go', 'no', 'is', 'his']));
+    // Kindergarten: three sounds at most, and no word that ends in /l/, /r/ or x (RF.K.2.d).
+    for (const word of late) {
+      expect(wordlist.get(word).sounds, word).toBeLessThanOrEqual(3);
+      expect(word, word).not.toMatch(/[lrx]$/);
+    }
+    expect(pick({ stage: 'G1 early', count: 2000, requireClip: false }).words).toEqual(expect.arrayContaining(['box', 'six', 'bell', 'frog', 'ship']));
   });
 
   it('a spelling pattern is matched on the aligned spelling, at the place asked for', () => {
@@ -400,5 +430,270 @@ describe('(g) the builder file itself', () => {
     expect(typeof page.AlloPacketBuilder.buildPacket).toBe('function');
     expect(typeof page.AlloPacketBuilder.pickWords).toBe('function');
     expect(page.AlloPacketBuilder.SUPPORTED_ACTIVITIES).toEqual(builder.SUPPORTED_ACTIVITIES);
+    // With no word list script on the page there is no stage table, and asking for a stage says so.
+    expect(page.AlloPacketBuilder.STAGES).toEqual(builder.STAGES);
+    expect(page.AlloPacketBuilder.stageList()).toEqual([]);
+    expect(() => page.AlloPacketBuilder.pickWords({ stage: 'K early' }, { wordlist: { rows: () => [] }, core })).toThrow(/needs the stage table/);
+  });
+});
+
+describe('(h) child-book familiarity (CYP-LEX, vendored)', () => {
+  const pick = (criteria, seed = 7) => builder.pickWords(criteria, { wordlist, core, dictionary, seed });
+  const source = JSON.parse(readFileSync('data/vendor/cyplex/source.json', 'utf8'));
+  const bytes = readFileSync('data/vendor/cyplex/' + source.filtered.file);
+  const sha256 = (buffer) => createHash('sha256').update(buffer).digest('hex');
+
+  it('source.json says where the file came from, under which licence, and what was changed', () => {
+    expect(source).toMatchObject({ id: 'cyplex', doi: '10.1177/17470218241229694', file: 'main_cyplex79.csv', url: 'https://osf.io/download/s73vd/',
+      license: 'Creative Commons Attribution 4.0 International (CC BY 4.0)', licenseUrl: 'https://creativecommons.org/licenses/by/4.0/', language: 'en-GB' });
+    expect(source.sha256).toMatch(/^[0-9a-f]{64}$/);
+    expect(source.citation).toMatch(/Korochkina, M\., Marelli, M\., Brysbaert, M\., & Rastle, K\. \(2024\)/);
+    for (const field of ['band', 'repository', 'component', 'retrieved', 'licenseEvidence', 'scope', 'remake']) expect(typeof source[field], field).toBe('string');
+    expect(source.limitations).toMatch(/British/);
+    expect(source.limitations).toMatch(/weak evidence for kindergarten/);
+    expect(Object.keys(source.columnsKept)).toEqual(['Word', 'Zipf_freq', 'CD_book_count_raw']);
+    // The columns the original copies from other databases are named as dropped.
+    for (const name of ['CPWD_raw', 'CBBC_raw', 'CBeebies_raw', 'SubtlexUK_raw']) expect(JSON.stringify(source.columnsDropped), name).toContain(name);
+    expect(source.filtered.changes).toMatch(/^Changed from the original/);
+  });
+
+  it('the filtered file is the one source.json describes: same bytes, three columns, notice on top', () => {
+    expect(sha256(bytes)).toBe(source.filtered.sha256);
+    expect(bytes.length).toBe(source.filtered.bytes);
+    expect(bytes.length).toBeLessThan(600000);
+    expect(bytes.includes(13)).toBe(false);
+    const lines = bytes.toString('utf8').split('\n');
+    expect(lines.pop()).toBe('');
+    const notice = lines.filter((line) => line[0] === '#'), rows = lines.filter((line) => line[0] !== '#');
+    expect(notice).toEqual(source.filtered.header.map((line) => '# ' + line));
+    expect(notice.join(' ')).toMatch(/Korochkina.*10\.1177\/17470218241229694.*Creative Commons Attribution 4\.0 International.*Changed from the original/);
+    expect(rows).toHaveLength(source.filtered.words);
+    expect(rows.every((row) => /^[a-z][a-z']*\t\d\.\d\d\t\d{1,3}$/.test(row))).toBe(true);
+    expect(rows.every((row) => dictionary.lookup(row.split('\t')[0]).length > 0)).toBe(true);
+    expect(rows.every((row) => Number(row.split('\t')[2]) <= 400)).toBe(true);
+    expect(rows.slice().sort()).toEqual(rows);
+    expect(wordlist.meta.childBooks).toMatchObject({ id: 'cyplex', sha256: source.filtered.sha256, license: source.license, doi: source.doi });
+    expect(wordlistTool.readFamiliarity().map.size).toBe(source.filtered.words);
+  });
+
+  it('the word list carries the value beside the old rank', () => {
+    expect(wordlist.get('mop')).toMatchObject({ zipf: 3.96, books: 62, rank: 28256, syllables: 1, british: false });
+    expect(wordlist.get('cat')).toMatchObject({ zipf: 5.38, books: 265, syllables: 1 });
+    expect(wordlist.get('rabbit').syllables).toBe(2);
+    expect(wordlist.get('qqqq')).toBe(null);
+    const rows = wordlist.rows();
+    expect(rows.filter((row) => row.zipf > 0).length).toBe(source.filtered.words);
+    expect(rows.every((row) => row.syllables === row.shape.split('V').length - 1 && row.zipf >= 0 && row.zipf < 8 && row.books >= 0 && row.books <= 400)).toBe(true);
+  });
+
+  it('a word passes when it is on the app lists OR common enough in children\'s books', () => {
+    expect([builder.DEFAULT_MIN_ZIPF, builder.DEFAULT_MIN_BOOKS]).toEqual([3.8, 20]);
+    const everyone = pick({ count: 100000, requireClip: false });
+    expect(everyone.criteria).toMatchObject({ minZipf: 3.8, minBooks: 20, maxRank: null });
+    expect(everyone.words.length).toBe(everyone.pool);
+    for (const word of everyone.words) {
+      const row = wordlist.get(word);
+      expect(row.known || (row.zipf >= 3.8 && row.books >= 20), word).toBe(true);
+    }
+    // Everyday words the old-book list ranked far down are in; rare or bookish ones are out.
+    expect(everyone.words).toEqual(expect.arrayContaining(['mop', 'zip', 'bake', 'cat', 'face', 'rabbit']));
+    for (const word of ['membranes', 'hormones', 'indicates', 'domain', 'doth']) expect(everyone.words, word).not.toContain(word);
+    // A name sits in few books even when one book says it often: tam, Zipf 4.98 in 6 books.
+    expect(wordlist.get('tam')).toMatchObject({ zipf: 4.98, books: 6, known: false, blocked: false });
+    expect(everyone.words).not.toContain('tam');
+    expect(pick({ count: 100000, requireClip: false, minBooks: 0 }).words).toContain('tam');
+    // The cut-off can be moved, and maxRank brings the older rule back as one more way in.
+    expect(pick({ count: 100000, requireClip: false, minZipf: 5 }).pool).toBeLessThan(everyone.pool);
+    expect(pick({ count: 100000, requireClip: false, minZipf: 2.5, minBooks: 0 }).words).toContain('membranes');
+    expect(pick({ count: 100000, requireClip: false, maxRank: 4000 }).words).toContain('membranes');
+    // requireClip is what it was: on by default, and only words with a recording pass.
+    const clips = pick({ count: 100000 });
+    expect(clips.criteria.requireClip).toBe(true);
+    expect(clips.words.every((word) => wordlist.get(word).hasClip)).toBe(true);
+    expect(clips.reasons.noRecording).toBe(everyone.pool - clips.pool);
+  });
+
+  it('a word list with no child-book column falls back to the old rank rule', () => {
+    const old = { rows: wordlist.rows, meta: { version: 1 }, stages: wordlist.stages };
+    const got = builder.pickWords({ shape: 'CVC', count: 100000, requireClip: false }, { wordlist: old, core, dictionary, seed: 7 });
+    expect(got.criteria).toMatchObject({ maxRank: builder.DEFAULT_MAX_RANK, minZipf: null, minBooks: null });
+    expect(got.criteria.familiarity).toBe('on the app lists, or reading-library rank <= 4000');
+  });
+
+  it('a British spelling or word is not returned unless asked for', () => {
+    for (const word of ['colour', 'mum', 'favourite', 'grey', 'centre']) expect(wordlist.get(word), word).toMatchObject({ british: true, blocked: false });
+    expect(wordlist.get('color').british).toBe(false);
+    const byDefault = pick({ count: 100000, requireClip: false });
+    expect(byDefault.criteria.british).toBe(false);
+    expect(byDefault.words.filter((word) => wordlist.get(word).british)).toEqual([]);
+    expect(byDefault.reasons.britishSpellingOrWord).toBeGreaterThan(50);
+    const asked = pick({ count: 100000, requireClip: false, british: true });
+    expect(asked.words).toEqual(expect.arrayContaining(['colour', 'mum', 'favourite', 'grey', 'centre']));
+    expect(asked.reasons.britishSpellingOrWord).toBe(0);
+    // The England rows allow them; a caller can still say no.
+    expect(pick({ stage: 'Reception', shape: 'CVC', count: 100000, requireClip: false }).words).toContain('mum');
+    expect(pick({ stage: 'Reception', shape: 'CVC', count: 100000, requireClip: false, british: false }).words).not.toContain('mum');
+    expect(pick({ stage: 'K early', shape: 'CVC', count: 100000, requireClip: false }).words).not.toContain('mum');
+    // It is not a block: a teacher who types the word still gets it.
+    expect(wordlist.isBlocked('colour')).toBe(false);
+    const listed = wordlistTool.readBritish().flatMap((section) => section.words);
+    expect(listed.length).toBeGreaterThan(150);
+    expect(listed.filter((word) => wordlist.isBlocked(word))).toEqual([]);
+    expect(wordlist.rows().filter((row) => row.british).length).toBe(new Set(listed.filter((word) => dictionary.lookup(word).length)).size);
+  });
+});
+
+describe('(i) the stage table is data, with its sources', () => {
+  const pick = (criteria, seed = 7) => builder.pickWords(criteria, { wordlist, core, dictionary, seed });
+  const table = JSON.parse(readFileSync('data/word_sounds_stages_en.json', 'utf8'));
+  const stages = table.frameworks.flatMap((framework) => framework.stages.map((stage) => ({ ...stage, framework: framework.id })));
+  const unitsOf = (word) => B.wordUnits(core, word, [...dictionary.lookup(word)[0]]);
+  // The units a row may use: its own and those of the rows before it in the same table.
+  const allowed = (stageId) => {
+    const framework = table.frameworks.find((f) => f.stages.some((s) => s.id === stageId));
+    const units = new Set();
+    for (const stage of framework.stages) {
+      stage.groups.forEach((group) => group.units.split(' ').filter(Boolean).forEach((unit) => units.add(unit)));
+      if (stage.id === stageId) break;
+    }
+    return units;
+  };
+
+  it('the word list carries the same table, and the builder names the default rows', () => {
+    expect(wordlist.stages).toEqual(table);
+    expect(wordlistTool.readStages()).toEqual(table);
+    expect(table.frameworks.map((framework) => framework.id)).toEqual(['us-ccss', 'england-nc']);
+    expect(table.defaultFramework).toBe('us-ccss');
+    expect(table.frameworks[0].stages.map((stage) => stage.id)).toEqual(builder.STAGES);
+    expect(builder.STAGES).toEqual(['K early', 'K late', 'G1 early', 'G1 late', 'G2', 'G3+']);
+    expect(builder.stageList(wordlist.stages).map((stage) => stage.id)).toEqual([...builder.STAGES, 'Reception', 'Year 1', 'Year 2']);
+    expect(builder.stageList(wordlist.stages).every((stage) => stage.label.length > 20 && stage.note && ['standard', 'common practice', 'standard and common practice'].includes(stage.basis))).toBe(true);
+    // A caller may pass its own table.
+    const mine = { defaultFramework: 't', frameworks: [{ id: 't', stages: [{ id: 'Only at', verified: false, limits: { maxSyllables: 1, maxSounds: 2, basis: 'common practice' }, groups: [{ units: 'a>a t>t', basis: 'common practice' }] }] }] };
+    const got = builder.pickWords({ stage: 'only  AT', count: 50, requireClip: false }, { wordlist, core, dictionary, seed: 1, stages: mine });
+    expect(got.words).toEqual(['at']);
+    expect(got.criteria).toMatchObject({ stage: 'Only at', framework: 't', stageVerified: false, stageBasis: 'common practice' });
+    expect(got.criteria.stageNote).toMatch(/^PROVISIONAL/);
+  });
+
+  it('every row has a source or is marked common practice, and every source names a document that was opened', () => {
+    expect(stages).toHaveLength(9);
+    for (const stage of stages) {
+      const entries = [...stage.groups, stage.limits];
+      expect(stage.label.length, stage.id).toBeGreaterThan(20);
+      expect(typeof stage.verified, stage.id).toBe('boolean');
+      for (const entry of entries) {
+        expect(['standard', 'common practice'], stage.id).toContain(entry.basis);
+        if (entry.basis === 'standard') expect(entry.sources.length, stage.id + ': ' + (entry.what || 'limits')).toBeGreaterThan(0);
+        for (const one of entry.sources || []) {
+          const document = table.documents[one.document];
+          expect(document, stage.id + ' ' + one.document).toBeTruthy();
+          expect(one.url, stage.id).toBe(document.url);
+          expect(one.code.length, stage.id).toBeGreaterThan(3);
+          expect((one.quote || one.summary).length, stage.id + ' ' + one.code).toBeGreaterThan(3);
+          if (one.document === 'ccss') expect(one.code, stage.id).toMatch(/^RF\.[K123]\.[23]\.[a-g]$/);
+        }
+      }
+      expect(entries.some((entry) => (entry.sources || []).length > 0) || entries.every((entry) => entry.basis === 'common practice'), stage.id).toBe(true);
+      // PROVISIONAL stays only on a row that was not checked.
+      const row = builder.stageList(wordlist.stages).find((item) => item.id === stage.id);
+      expect(row.verified, stage.id).toBe(stage.verified);
+      expect(/PROVISIONAL/.test(row.note), stage.id).toBe(!stage.verified);
+      if (!stage.verified) expect(stage.provisional, stage.id).toMatch(/^PROVISIONAL: /);
+      expect(JSON.stringify(stage).includes('PROVISIONAL'), stage.id).toBe(!stage.verified);
+    }
+    expect(stages.filter((stage) => !stage.verified).map((stage) => stage.id)).toEqual(['Reception']);
+    // What the licences ask to be shown when a quote is printed.
+    expect(table.documents.ccss.notice).toBe('© Copyright 2010. National Governors Association Center for Best Practices and Council of Chief State School Officers. All rights reserved.');
+    expect(table.documents.england.notice).toBe('Contains public sector information licensed under the Open Government Licence v3.0.');
+    expect(table.documents.ies.licence).toBe('Public domain');
+    for (const document of Object.values(table.documents)) {
+      expect(document.url).toMatch(/^https:\/\//);
+      expect(document.sha256).toMatch(/^[0-9a-f]{64}$/);
+      expect(document.opened).toBe(table.checked);
+    }
+    // Things the documents do not say are written down as such, not passed off as a standard.
+    const g1late = stages.find((stage) => stage.id === 'G1 late');
+    expect(g1late.groups.find((group) => group.units.includes('ar>ar'))).toMatchObject({ basis: 'common practice' });
+    expect(stages.find((stage) => stage.id === 'G1 early').groups.find((group) => group.units.includes('sh>sh')).sources[0].code).toBe('RF.1.3.a');
+    expect(stages.find((stage) => stage.id === 'K late').notHere).toMatch(/sh, ch, th and ck are NOT in this row/);
+    expect(table.claims.may).toMatch(/^The order of spelling patterns follows the grade placements in the Common Core Reading Foundational Skills standards\./);
+    expect(table.claims.mustNot.length).toBeGreaterThan(5);
+  });
+
+  it('a stage never returns a unit outside its row, or a word over its length limits', () => {
+    for (const stage of stages) {
+      const units = allowed(stage.id), limits = stage.limits;
+      const got = pick({ stage: stage.id, count: 100000, requireClip: false });
+      expect(got.words.length, stage.id).toBe(got.pool);
+      expect(got.pool, stage.id).toBeGreaterThan(150);
+      const outside = [];
+      for (const word of got.words) {
+        const row = wordlist.get(word), mine = unitsOf(word);
+        if (!units.has('*') && mine.some((unit) => !units.has(unit.key))) outside.push(word + ': unit');
+        if (limits.maxSyllables && row.syllables > limits.maxSyllables) outside.push(word + ': syllables');
+        if (limits.maxSounds && row.sounds > limits.maxSounds) outside.push(word + ': sounds');
+        if (!limits.clusters && mine.some((unit, i) => i > 0 && !unit.vowel && !mine[i - 1].vowel)) outside.push(word + ': cluster');
+        if (limits.longVowelsInLongerWords === false && row.syllables > 1 && mine.some((unit) => unit.sounds.some((s) => ['ay', 'ee', 'ie', 'oa', 'oo'].includes(s)))) outside.push(word + ': long vowel in a longer word');
+      }
+      expect(outside, stage.id).toEqual([]);
+    }
+    // Each row of a table holds the row before it.
+    for (const framework of table.frameworks) {
+      const pools = framework.stages.map((stage) => pick({ stage: stage.id, count: 100000, requireClip: false, british: false }).words);
+      for (let i = 1; i < pools.length; i++) {
+        const later = new Set(pools[i]);
+        expect(pools[i - 1].filter((word) => !later.has(word)), framework.stages[i].id).toEqual([]);
+        expect(pools[i].length, framework.stages[i].id).toBeGreaterThan(pools[i - 1].length);
+      }
+    }
+  });
+
+  it('grade 1 final e gives short words: no three-syllable word, and none of rotate, donate, locate', () => {
+    for (const vowel of ['a', 'i', 'o', 'u']) {
+      const got = pick({ spellingPattern: vowel + '_e', stage: 'G1 late', count: 100000, requireClip: false });
+      expect(got.pool, vowel).toBeGreaterThan(10);
+      for (const word of got.words) {
+        expect(wordlist.get(word).syllables, word).toBe(1);
+        expect(word, word).toMatch(new RegExp(vowel + '[^aeiou]{1,2}e'));
+      }
+      for (const word of ['rotate', 'donate', 'locate', 'membranes', 'hormones', 'timezone', 'homegrown']) expect(got.words, word).not.toContain(word);
+    }
+    expect(pick({ spellingPattern: 'a_e', stage: 'G1 late', count: 100000, requireClip: false }).words).toEqual(expect.arrayContaining(['cake', 'game', 'made', 'wave', 'maze']));
+    expect(pick({ spellingPattern: 'o_e', stage: 'G1 late', count: 100000, requireClip: false }).words).toEqual(expect.arrayContaining(['home', 'bone', 'nose', 'rose', 'woke']));
+    // No stage before grade 3 returns three syllables; two-syllable words with long vowels start at grade 2 (RF.2.3.c).
+    for (const id of ['K early', 'K late', 'G1 early', 'G1 late', 'G2']) {
+      expect(pick({ stage: id, count: 100000, requireClip: false }).words.filter((word) => wordlist.get(word).syllables > 2), id).toEqual([]);
+    }
+    expect(pick({ stage: 'G1 late', syllables: 2, count: 100000, requireClip: false }).words).toEqual(expect.arrayContaining(['rabbit', 'sunset', 'basket', 'winter']));
+    expect(pick({ stage: 'G1 late', syllables: 2, count: 100000, requireClip: false }).words).not.toContain('baby');
+    expect(pick({ stage: 'G2', syllables: 2, count: 100000, requireClip: false }).words).toEqual(expect.arrayContaining(['baby', 'open', 'happy', 'rabbit']));
+    expect(pick({ stage: 'G3+', syllables: 3, count: 100000, requireClip: false }).pool).toBeGreaterThan(100);
+  });
+
+  it('the same criteria and seed give the same words, for a stage too', () => {
+    for (const criteria of [{ stage: 'K early', shape: 'CVC', count: 20 }, { stage: 'G1 late', spellingPattern: 'ai', count: 20, requireClip: false }, { stage: 'Year 1', syllables: 2, count: 20 }]) {
+      const one = pick(criteria, 3), two = pick(criteria, 3), other = pick(criteria, 4);
+      expect(two).toEqual(one);
+      expect(one.words).toHaveLength(20);
+      expect(other.pool).toBe(one.pool);
+      expect(other.words).not.toEqual(one.words);
+      expect(new Set(one.words).size).toBe(20);
+    }
+  });
+});
+
+describe('(j) the dated additions to the blocklist', () => {
+  const pick = (criteria, seed = 7) => builder.pickWords(criteria, { wordlist, core, dictionary, seed });
+  it('names, word pieces and crude words found in the output are blocked; ordinary words are not', () => {
+    const sections = wordlistTool.readBlocklist();
+    const added = sections.filter((section) => /^2026-11-11 /.test(section.name));
+    expect(added.length).toBeGreaterThanOrEqual(8);
+    expect(added.every((section) => !section.derive)).toBe(true);
+    for (const word of ['frank', 'smith', 'santa', 'sherlock', 'sunday', 'latin', 'jeep', 'sod', 'gob', 'wee', 'yep', 'ing', 'san', 'attack', 'sword']) expect(wordlist.isBlocked(word), word).toBe(true);
+    // Not derived: "wee" must not take "we" with it.
+    for (const word of ['we', 'he', 'so', 'jack', 'kiss', 'fight', 'jail', 'ruby', 'may', 'march', 'will', 'rob', 'smoke', 'bar', 'hi', 'wow']) expect(wordlist.isBlocked(word) || wordlist.get(word).nearBlocked, word).toBe(false);
+    const everything = pick({ count: 100000, requireClip: false }).words;
+    for (const section of added) expect(section.words.filter((word) => everything.includes(word)), section.name).toEqual([]);
   });
 });

@@ -12,8 +12,15 @@
   var SUPPORTED = ['isolation', 'segmentation', 'counting', 'mapping', 'missing_letter', 'orthography', 'word_scramble',
     'spelling_bee', 'letter_tracing', 'blending', 'rhyming', 'word_families', 'sound_sort'];
   var LENGTHS = { short: 5, medium: 10, long: 15 };
-  // Familiarity cut-off for pickWords: a word is familiar when the app's own K-2 lists hold it,
-  // or it is among this many most frequent words of the reading-library list.
+  // Familiarity cut-off for pickWords: a word is familiar when the app's own K-2 lists hold it, or
+  // children's books use it often enough: Zipf frequency in CYP-LEX books for ages 7-9 at or above
+  // DEFAULT_MIN_ZIPF, in at least DEFAULT_MIN_BOOKS of its 400 books (a name is usually in few books).
+  // Both numbers were chosen by reading real output on 2026-11-11; see data/vendor/cyplex/source.json
+  // for what the data is and is not.
+  var DEFAULT_MIN_ZIPF = 3.8;
+  var DEFAULT_MIN_BOOKS = 20;
+  // The older rule (place in the reading-library frequency list, built from old books). It applies
+  // only when the word list carries no child-book column, or when the caller passes maxRank.
   var DEFAULT_MAX_RANK = 4000;
 
   // The notice of data/vendor/cmudict/LICENSE, word for word: the sound labels come from CMUdict.
@@ -682,57 +689,119 @@
   // ---------------------------------------------------------------------------
   // pickWords
   // ---------------------------------------------------------------------------
-  // PROVISIONAL. The grade placements below come from a research summary written from memory
-  // (2026-11-11) and have NOT been checked against CCSS RF or England's spelling appendix.
+  // The stage table is DATA, not code: data/word_sounds_stages_en.json, with the document that
+  // places each group of letter-sound units at its stage. word_sounds_wordlist_en.js carries a copy
+  // (wordlist.stages) so a page needs no fetch; a caller may pass another table as context.stages.
   // A unit is "letters>sound" as core.soundAnalysis aligns them; "/pattern" marks a long vowel
   // written with one letter (silent_e, open_syllable, y_as_vowel, single_letter).
-  var STAGE_NOTE = 'PROVISIONAL: the stage table has not been checked against the source documents.';
-  var STAGE_UNITS = [
-    { id: 'K early', clusters: false, silentE: false,
-      add: 'b>b c>k d>d f>f g>g h>h j>j k>k l>l m>m n>n p>p r>r s>s t>t v>v w>w y>y z>z x>k+s a>a e>e i>i o>o u>u' },
-    { id: 'K late', clusters: false, silentE: false, add: 'sh>sh ch>ch th>th th>dh ck>k ng>ng' },
-    { id: 'G1 early', clusters: true, silentE: false, add: 'ff>f ll>l ss>s zz>z s>z qu>k+w wh>w n>ng' },
-    { id: 'G1 late', clusters: true, silentE: true,
-      add: 'a>ay/silent_e e>ee/silent_e i>ie/silent_e o>oa/silent_e u>oo/silent_e u>y+oo ai>ay ay>ay ee>ee ea>ee oa>oa ow>oa oo>oo oo>oo_short ' +
-        'ed>t ed>d ar>ar or>or er>er ir>ir ur>ur e>ee/open_syllable o>oa/open_syllable i>ie/open_syllable y>ie/y_as_vowel a>aw' },
-    { id: 'G2', clusters: true, silentE: true,
-      add: 'ou>ow ow>ow oi>oy oy>oy au>aw aw>aw ew>oo ue>oo igh>ie ie>ie ie>ee ea>e ey>ee y>ee/y_as_vowel c>s g>j ge>j dge>j tch>ch kn>n wr>r mb>m gn>n ph>f ' +
-        'le>schwa+l bb>b dd>d gg>g mm>m nn>n pp>p rr>r tt>t ve>v se>s se>z ce>s a>ay/open_syllable u>oo/open_syllable ' +
-        'a>ay/single_letter i>ie/single_letter o>oa/single_letter' },
-  ];
-  var STAGES = STAGE_UNITS.map(function (stage, index) {
-    var units = {};
-    STAGE_UNITS.slice(0, index + 1).forEach(function (s) { s.add.split(' ').forEach(function (u) { if (u) units[u] = true; }); });
-    return { id: stage.id, clusters: stage.clusters, silentE: stage.silentE, units: units };
-  });
-  function stageOf(name) {
-    var want = String(name || '').trim().toLowerCase().replace(/\s+/g, ' ');
-    for (var i = 0; i < STAGES.length; i++) if (STAGES[i].id.toLowerCase() === want) return STAGES[i];
-    return null;
-  }
+  // STAGE_IDS names the rows of the default (US, Common Core) table; a test keeps it equal to the data.
+  var STAGE_IDS = ['K early', 'K late', 'G1 early', 'G1 late', 'G2', 'G3+'];
+  var STAGE_NOTE = 'Stage rows follow the grade placements of the Common Core Reading Foundational Skills standards where the standards give one, ' +
+    'and common classroom practice where they do not; the stage table says which. A row marked PROVISIONAL has not been checked against a source document.';
   var VOWEL_LABELS = 'a e i o u ay ee ie oa oo oo_short oy ow aw ar or er ir ur air ear schwa'.split(' ');
+  var LONG_VOWELS = { ay: true, ee: true, ie: true, oa: true, oo: true };
+  var compiledTables = [];
+  // Turns the data table into one lookup per stage. Each stage holds its own units and those of the rows before it.
+  function compileStages(table) {
+    if (!table || !Array.isArray(table.frameworks)) return null;
+    for (var k = 0; k < compiledTables.length; k++) if (compiledTables[k].table === table) return compiledTables[k].compiled;
+    var compiled = { byId: {}, list: [] };
+    table.frameworks.forEach(function (framework) {
+      var units = {}, anyUnit = false;
+      (framework.stages || []).forEach(function (stage) {
+        var bases = {}, sources = 0;
+        (stage.groups || []).concat(stage.limits ? [stage.limits] : []).forEach(function (group) {
+          if (group.basis) bases[group.basis] = true;
+          sources += (group.sources || []).length;
+        });
+        (stage.groups || []).forEach(function (group) {
+          String(group.units || '').split(' ').forEach(function (u) { if (u === '*') anyUnit = true; else if (u) units[u] = true; });
+        });
+        var limits = stage.limits || {}, avoidFinal = {}, mine = {};
+        String(limits.avoidFinal || '').split(' ').forEach(function (s) { if (s) avoidFinal[s] = true; });
+        Object.keys(units).forEach(function (u) { mine[u] = true; });
+        var verified = stage.verified === true;
+        var one = { id: stage.id, label: stage.label || stage.id, framework: framework.id, frameworkLabel: framework.label || framework.id,
+          isDefault: framework.id === table.defaultFramework, verified: verified,
+          basis: bases.standard && bases['common practice'] ? 'standard and common practice' : bases.standard ? 'standard' : 'common practice',
+          sources: sources, units: mine, anyUnit: anyUnit, clusters: !!limits.clusters, silentE: !!limits.silentE,
+          maxSyllables: limits.maxSyllables > 0 ? limits.maxSyllables : 0, maxSounds: limits.maxSounds > 0 ? limits.maxSounds : 0,
+          longVowelsInLongerWords: limits.longVowelsInLongerWords !== false, avoidFinal: avoidFinal, allowBritish: !!framework.allowBritish,
+          note: verified ? 'Checked on ' + (table.checked || 'an unrecorded date') + ' against ' + (framework.checkedAgainst || 'the source documents') + '. ' +
+            (bases.standard && bases['common practice'] ? 'That document places part of this row at this grade or year; the rest follows common classroom practice, not a standard.'
+              : bases.standard ? 'That document places everything in this row at this grade or year.' : 'This row follows common classroom practice, not a standard.')
+            : (stage.provisional || 'PROVISIONAL: this stage row has not been checked against a source document.') };
+        compiled.byId[String(stage.id).trim().toLowerCase().replace(/\s+/g, ' ')] = one;
+        compiled.list.push(one);
+      });
+    });
+    compiledTables.push({ table: table, compiled: compiled });
+    return compiled;
+  }
+  // The table a caller did not pass: the copy inside the word list script, when a page or node has loaded it.
+  function defaultStageTable() {
+    var loaded = root && root.AlloModules && root.AlloModules.WordSoundsWordlist;
+    return loaded && loaded.stages ? loaded.stages : null;
+  }
+  function stageOf(name, table) {
+    var compiled = compileStages(table || defaultStageTable());
+    if (!compiled) return null;
+    return compiled.byId[String(name || '').trim().toLowerCase().replace(/\s+/g, ' ')] || null;
+  }
+  // For a page: the rows of a table, in order, with what to print beside each.
+  function stageList(table) {
+    var compiled = compileStages(table || defaultStageTable());
+    return !compiled ? [] : compiled.list.map(function (s) {
+      return { id: s.id, label: s.label, framework: s.framework, frameworkLabel: s.frameworkLabel, isDefault: s.isDefault, verified: s.verified, basis: s.basis, note: s.note,
+        maxSyllables: s.maxSyllables, maxSounds: s.maxSounds };
+    });
+  }
   // The word as taught units: [{ letters, sounds, key, vowel, silentE }], or null when it does not align.
   function wordUnits(core, word, sounds) {
     var analysis = core.soundAnalysis(word, sounds);
     if (!analysis || !analysis.chunks || analysis.mapping.status !== 'ready') return null;
     var patterns = {};
     analysis.flags.vowelPatterns.forEach(function (p) { patterns[p.start] = p.pattern; });
-    return analysis.chunks.map(function (chunk) {
+    var units = analysis.chunks.map(function (chunk) {
       var letters = chunk.silentE ? chunk.text.slice(0, -1) : chunk.text;
       var mine = sounds.slice(chunk.start, chunk.start + chunk.size);
       var pattern = patterns[chunk.start];
       return { letters: letters, sounds: mine, silentE: !!chunk.silentE, vowel: mine.some(function (s) { return VOWEL_LABELS.indexOf(s) >= 0; }),
         pattern: pattern || '', key: letters + '>' + mine.join('+') + (pattern && pattern !== 'vowel_team' ? '/' + pattern : '') };
     });
+    // nose, these, size, face, cage: the aligner gives the final e to the consonant (se, ze, ce, ge) and
+    // calls the vowel a lone letter. For a teacher it is the same final-e pattern as make.
+    // The aligner also names no pattern for u said as two sounds (cute, music): final e or open syllable.
+    units.forEach(function (u, i) {
+      var next = units[i + 1];
+      var finalE = !!next && !next.vowel && (next.silentE || (next.letters.length === 2 && next.letters.charAt(1) === 'e'));
+      var twoSoundU = !u.pattern && u.letters === 'u' && u.sounds.length === 2 && u.vowel;
+      if ((u.pattern === 'single_letter' && finalE && !next.silentE) || twoSoundU) {
+        u.pattern = twoSoundU && !finalE ? 'open_syllable' : 'silent_e';
+        u.key = u.letters + '>' + u.sounds.join('+') + '/' + u.pattern;
+      }
+    });
+    return units;
   }
+  // Does the word stay inside the stage: only its units, and inside its length limits?
   function fitsStage(stage, units) {
-    if (!units) return false;
+    if (!units || !units.length || !stage) return false;
+    var sounds = 0, syllables = 0, long = false;
     for (var i = 0; i < units.length; i++) {
       var u = units[i];
-      if (!stage.units[u.key]) return false;
+      if (!stage.anyUnit && !stage.units[u.key]) return false;
       if (u.silentE && !stage.silentE) return false;
       if (!stage.clusters && i > 0 && !u.vowel && !units[i - 1].vowel) return false;
+      for (var j = 0; j < u.sounds.length; j++) {
+        sounds++;
+        if (VOWEL_LABELS.indexOf(u.sounds[j]) >= 0) { syllables++; if (LONG_VOWELS[u.sounds[j]]) long = true; }
+      }
     }
+    if (stage.maxSounds && sounds > stage.maxSounds) return false;
+    if (stage.maxSyllables && syllables > stage.maxSyllables) return false;
+    if (stage.longVowelsInLongerWords === false && syllables > 1 && long) return false;
+    var last = units[units.length - 1];
+    if (stage.avoidFinal && stage.avoidFinal[last.letters === 'x' ? 'x' : last.sounds[last.sounds.length - 1]]) return false;
     return true;
   }
   // The aligner splits shop as s + ho + p (the h goes with the vowel, as in honest). Until that is
@@ -754,10 +823,21 @@
     if (!core || typeof core.soundAnalysis !== 'function') throw new Error('pickWords needs core (createWordSoundsCore)');
     var seed = ctx.seed == null ? 1 : ctx.seed;
     var count = c.count > 0 ? Math.floor(c.count) : 10;
-    var maxRank = c.maxRank > 0 ? c.maxRank : DEFAULT_MAX_RANK;
+    // Familiar = on the app's own lists, OR common enough in children's books. maxRank (the older
+    // reading-library rule) is one more way in, only when the caller passes it or the word list is an
+    // old one with no child-book column.
+    var hasChildBooks = !!(wordlist.meta && wordlist.meta.childBooks);
+    var minZipf = c.minZipf > 0 ? Number(c.minZipf) : DEFAULT_MIN_ZIPF;
+    var minBooks = typeof c.minBooks === 'number' && c.minBooks >= 0 ? c.minBooks : DEFAULT_MIN_BOOKS;
+    var maxRank = c.maxRank > 0 ? c.maxRank : hasChildBooks ? 0 : DEFAULT_MAX_RANK;
     var requireClip = c.requireClip !== false;
-    var stage = c.stage ? stageOf(c.stage) : null;
-    if (c.stage && !stage) throw new Error('Unknown stage: ' + c.stage + ' (use ' + STAGES.map(function (s) { return s.id; }).join(', ') + ')');
+    var stageTable = ctx.stages || wordlist.stages || defaultStageTable();
+    var stage = c.stage ? stageOf(c.stage, stageTable) : null;
+    if (c.stage && !stageTable) throw new Error('pickWords needs the stage table (wordlist.stages or context.stages) to use a stage');
+    if (c.stage && !stage) throw new Error('Unknown stage: ' + c.stage + ' (use ' + compileStages(stageTable).list.map(function (s) { return s.id; }).join(', ') + ')');
+    // British spellings and words (colour, mum) are left out unless asked for, or the stage is an England row.
+    var allowBritish = c.british === true || (c.british !== false && !!stage && stage.allowBritish);
+    var syllables = c.syllables > 0 ? Math.floor(c.syllables) : 0;
     var shape = c.shape ? String(c.shape).toUpperCase() : '';
     var target = c.targetSound ? String(c.targetSound).replace(/^\/|\/$/g, '').trim().toLowerCase() : '';
     var spelling = c.spellingPattern ? String(c.spellingPattern).trim().toLowerCase() : '';
@@ -770,12 +850,13 @@
       var entry = core.dictionarySounds(word);
       return entry ? entry.sounds : null;
     };
-    var reasons = { fitsTheCriteria: 0, blocked: 0, soundsLikeABlockedWord: 0, oneDroppedSoundFromABlockedWord: 0, notFamiliarEnough: 0, noRecording: 0, excluded: 0 };
+    var reasons = { fitsTheCriteria: 0, blocked: 0, soundsLikeABlockedWord: 0, oneDroppedSoundFromABlockedWord: 0, britishSpellingOrWord: 0, notFamiliarEnough: 0, noRecording: 0, excluded: 0 };
     var pool = [];
     wordlist.rows().forEach(function (row) {
       if (!/^[a-z]{2,10}$/.test(row.word) || !/[aeiouy]/.test(row.word)) return;
       if (c.sounds > 0 && row.sounds !== c.sounds) return;
       if (shape && row.shape !== shape) return;
+      if (syllables && row.shape.split('V').length - 1 !== syllables) return;
       var needUnits = !!stage || !!spelling;
       var sounds = target || needUnits ? soundsOf(row.word) : null;
       if ((target || needUnits) && !sounds) return;
@@ -797,7 +878,8 @@
       if (row.blocked) { reasons.blocked++; return; }
       if (row.nearBlocked) { reasons.soundsLikeABlockedWord++; return; }
       if (c.avoidDroppedSound && row.dropBlocked) { reasons.oneDroppedSoundFromABlockedWord++; return; }
-      if (!row.known && !(row.rank > 0 && row.rank <= maxRank)) { reasons.notFamiliarEnough++; return; }
+      if (row.british && !allowBritish) { reasons.britishSpellingOrWord++; return; }
+      if (!row.known && !(row.zipf >= minZipf && row.books >= minBooks) && !(maxRank > 0 && row.rank > 0 && row.rank <= maxRank)) { reasons.notFamiliarEnough++; return; }
       if (requireClip && !row.hasClip) { reasons.noRecording++; return; }
       if (exclude[row.word]) { reasons.excluded++; return; }
       pool.push(row.word);
@@ -810,16 +892,22 @@
       var swap = order[i]; order[i] = order[j]; order[j] = swap;
     }
     var used = { count: count, sounds: c.sounds || null, shape: shape || null, targetSound: target || null, spellingPattern: spelling || null,
-      position: target || spelling ? position : null, stage: stage ? stage.id : null, maxRank: maxRank, requireClip: requireClip, seed: seed };
-    if (stage) used.stageNote = STAGE_NOTE;
+      position: target || spelling ? position : null, stage: stage ? stage.id : null, syllables: syllables || null,
+      familiarity: hasChildBooks ? 'on the app lists, or child-book Zipf >= ' + minZipf + ' in >= ' + minBooks + ' books' + (maxRank ? ', or reading-library rank <= ' + maxRank : '')
+        : 'on the app lists, or reading-library rank <= ' + maxRank,
+      minZipf: hasChildBooks ? minZipf : null, minBooks: hasChildBooks ? minBooks : null, maxRank: maxRank || null, british: allowBritish, requireClip: requireClip, seed: seed };
+    if (stage) {
+      used.stageLabel = stage.label; used.framework = stage.framework; used.stageVerified = stage.verified; used.stageBasis = stage.basis;
+      used.stageNote = stage.note;
+    }
     return { words: order.slice(0, count), pool: pool.length, reasons: reasons, criteria: used };
   }
 
   var api = {
-    VERSION: VERSION, SUPPORTED_ACTIVITIES: SUPPORTED.slice(), STAGES: STAGES.map(function (s) { return s.id; }), STAGE_NOTE: STAGE_NOTE,
-    DEFAULT_MAX_RANK: DEFAULT_MAX_RANK, CMUDICT_NOTICE: CMUDICT_NOTICE,
-    buildPacket: buildPacket, pickWords: pickWords, pcmToWavUri: pcmToWavUri,
-    _internals: { createPackLogic: createPackLogic, mulberry32: mulberry32, seedFor: seedFor, wordUnits: wordUnits, fitsStage: fitsStage, suspectSplit: suspectSplit, stageOf: stageOf, withCredits: withCredits },
+    VERSION: VERSION, SUPPORTED_ACTIVITIES: SUPPORTED.slice(), STAGES: STAGE_IDS.slice(), STAGE_NOTE: STAGE_NOTE,
+    DEFAULT_MAX_RANK: DEFAULT_MAX_RANK, DEFAULT_MIN_ZIPF: DEFAULT_MIN_ZIPF, DEFAULT_MIN_BOOKS: DEFAULT_MIN_BOOKS, CMUDICT_NOTICE: CMUDICT_NOTICE,
+    buildPacket: buildPacket, pickWords: pickWords, stageList: stageList, pcmToWavUri: pcmToWavUri,
+    _internals: { createPackLogic: createPackLogic, mulberry32: mulberry32, seedFor: seedFor, wordUnits: wordUnits, fitsStage: fitsStage, suspectSplit: suspectSplit, stageOf: stageOf, compileStages: compileStages, withCredits: withCredits },
   };
   if (root) root.AlloPacketBuilder = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

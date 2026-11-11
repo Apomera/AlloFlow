@@ -1,0 +1,52 @@
+# Word Sounds: British spellings and British-only words (English)
+#
+# The child-book familiarity list (data/vendor/cyplex/) is built from books popular in the United
+# Kingdom, so British spellings and words score as very familiar there (colour, mum, favourite).
+# The word picker leaves the words below out by default, so a US teacher is not handed them. A
+# caller can ask for them (criteria.british = true), and the England stage rows allow them.
+# This is NOT a block: a teacher who types one of these words still gets it.
+#
+# Written by hand on 2026-11-11 with the help of spelling rules (-our/-or, -re/-er, -ise/-ize,
+# doubled l, -ence/-ense) run over the sound dictionary; every entry was read before it was kept.
+# It is a short list, not a full dictionary of differences. Words used in both countries are left
+# out even when one country prefers another form (towards, burnt, leapt, biscuit, rubbish, torch).
+#
+# Format: the same as the blocklist ("## section", words separated by spaces, "#" comment lines).
+# After editing: node dev-tools/build_word_sounds_wordlist.cjs
+
+## spellings: -our (US -or)
+arbour armour armoured behaviour behaviours candour clamour colour coloured colourful colouring colours
+demeanour endeavour endeavoured endeavours favour favourable favoured favourite favourites favours
+fervour flavour flavoured flavours harbour harbours honour honourable honourably honoured
+honours humour humoured labour laboured labourer labourers labours neighbour neighbourhood
+neighbouring neighbourly neighbours odour odours parlour rigour rumour rumours savour splendour
+vapour vigour valour
+
+## spellings: -re (US -er)
+centre centred centres fibre fibres litre litres lustre meagre metre metres kilometre kilometres
+centimetre centimetres millimetre sabre sabres sceptre sombre spectre theatre theatres calibre
+
+## spellings: -ise, -yse (US -ize, -yze)
+apologise apologised civilised organise organised organisation organisations realisation realise
+realised realises realising recognise recognised recognises recognising analyse analysed paralysed
+practise practised practises practising
+
+## spellings: doubled l and single l
+cancelled cancelling counsellor counsellors jewellery jeweller labelled levelled marshalled marvelled
+marvellous modelled modelling quarrelled quarrelling reveller revellers signalled signalling travelled
+traveller travellers travelling woollen fulfil skilful wilful enrol instil
+
+## spellings: others
+defence offence licence pretence catalogue analogue cheque cheques grey plough ploughed ploughing
+ploughs tyre tyres kerb moustache moustaches aluminium programme programmes storey storeys mould
+moulds mouldy moulding moult smoulder draught draughts draughty cosy sulphur encyclopaedia
+aeroplane aeroplanes pyjamas sceptic sceptical tonne tonnes gaol learnt leant spilt spoilt whilst
+yoghurt
+
+## words
+mum mums mam quid fortnight shilling shillings pence tuppence sixpence farthing guinea guineas
+lorry lorries nappy nappies pram prams telly petrol bloke blokes loo maths daft sledge
+cheerio wellies motorway aubergine courgette pushchair dustbin ladybird settee
+
+## words (added after reading the picker's output, 2026-11-11)
+gran larder matron prefect
