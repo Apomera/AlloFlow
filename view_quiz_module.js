@@ -14329,7 +14329,7 @@ function QuizViewContent(props) {
     className: "fill-current"
   }) : /*#__PURE__*/React.createElement(CheckSquare, {
     size: 14
-  }), showQuizAnswers ? isIndependentMode ? t('quiz.hide_answers_student') : isParentMode ? 'Hide Scores' : t('quiz.hide_key') : isIndependentMode ? t('quiz.check_answers') : isParentMode ? 'View Scores' : t('quiz.show_key')))), quizGamesOpen && /*#__PURE__*/React.createElement("section", {
+  }), showQuizAnswers ? isIndependentMode ? t('quiz.hide_answers_student') : t('quiz.hide_key') : isIndependentMode ? t('quiz.check_answers') : t('quiz.show_key')))), quizGamesOpen && /*#__PURE__*/React.createElement("section", {
     ref: quizGamesPanelRef,
     id: "quiz-games-tools",
     "aria-labelledby": "quiz-games-title",
