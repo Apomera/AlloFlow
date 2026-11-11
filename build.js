@@ -1414,6 +1414,9 @@ const PLUGIN_FILES = [
     'translate_loader.js',
     'dictionary_loader.js',
     'sd_turbo_loader.js',
+    'word_sounds_phonemes_en.js',
+    'word_sounds_pronunciations.js',
+    'packet_check_builder.js',
     // AlloHaven Arcade modes are lazy-loaded with pluginCdnBase. Keep local
     // desktop builds self-contained so live classroom activities do not depend
     // on the public CDN (and so a freshly built palace can be QA'd before push).

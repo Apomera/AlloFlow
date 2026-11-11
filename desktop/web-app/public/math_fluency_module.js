@@ -1290,6 +1290,8 @@
     // The learner a standardized administration is recorded against. null means
     // practice, which is recorded against nobody.
     var _ps = useState(null), probeStudent = _ps[0], setProbeStudent = _ps[1];
+    // "Save as a file for home": the line shown under that button.
+    var _hf = useState(''), homeFileNote = _hf[0], setHomeFileNote = _hf[1];
 
     // ── Handoff from a producer that configures this panel ───────────────────
     // Two producers park a config in window.__alloFluencyPendingConfig and then
@@ -2824,6 +2826,27 @@
     // A fixed form sets its own operation, facts, timer and count, so those pickers
     // (and the session goal) are hidden for it instead of showing stale practice values.
     var practiceOnlyField = probeMode === 'benchmark' ? { 'data-mf-practice-only': 'true', hidden: true, style: { display: 'none' } } : { 'data-mf-practice-only': 'true' };
+    // "Save as a file for home": the practice set as it is set up now, as one
+    // check file. The problems are made once, here, by the generator Start
+    // uses, and fixed in the file, so every learner who gets it gets the same
+    // list. The file is made by the Assessment Center (AlloTakeHomeChecks).
+    function saveForHome() {
+      var api = typeof window !== 'undefined' ? window.AlloTakeHomeChecks : null;
+      var unavailable = tt('math_fluency.home_file_unavailable', 'Saving a file for home is not available in this version.');
+      var failed = tt('math_fluency.home_file_failed', 'The file could not be made.');
+      if (!api || typeof api.saveCustom !== 'function') { setHomeFileNote(unavailable); return; }
+      var names = { add: tt('math_fluency.addition', 'Addition'), sub: tt('math_fluency.subtraction', 'Subtraction'), mul: tt('math_fluency.multiplication', 'Multiplication'), div: tt('math_fluency.division', 'Division'), mixed: tt('math_fluency.mixed', 'Mixed') };
+      // A check file holds 60 problems at most.
+      var list = generatePracticeProblems(operation, difficulty, setupNormalizedGrade || gradeLevel, Math.min(60, problemCount)).map(function (p) { return { a: p.a, b: p.b, op: p.op }; });
+      setHomeFileNote(tt('math_fluency.home_file_making', 'Making the file...'));
+      Promise.resolve().then(function () {
+        return api.saveCustom({ title: tt('math_fluency.home_file_title', 'Math facts check: {operation}', { operation: names[operation] || names.mixed }), problems: list, timeLimitS: timeLimit, allowSkip: true, t: t });
+      }).then(function (saved) {
+        setHomeFileNote(saved && saved.ok
+          ? tt('math_fluency.home_file_saved', 'Saved {file}: {count} problems, the same for every learner. Home results are for seeing progress, not for a grade.', { file: saved.name, count: list.length })
+          : saved && saved.reason === 'unavailable' ? unavailable : failed);
+      }).catch(function () { setHomeFileNote(failed); });
+    }
     function renderSessionReadiness() {
       var operationKey = probeMode === 'benchmark' && setupBank ? (setupBank.operation || 'mixed') : operation;
       var operationLabels = { add: tt('math_fluency.addition', 'Addition'), sub: tt('math_fluency.subtraction', 'Subtraction'), mul: tt('math_fluency.multiplication', 'Multiplication'), div: tt('math_fluency.division', 'Division'), mixed: tt('math_fluency.mixed', 'Mixed') };
@@ -2887,7 +2910,14 @@
             ? tt('math_fluency.fixed_forms_comparable', 'Fixed forms preserve timing and problem order for comparable repeated checks.')
             : timeLimit === 0
               ? tt('math_fluency.accuracy_focus_launch_detail', 'Accuracy Focus records first-try accuracy without a speed score.')
-              : tt('math_fluency.timed_practice_launch_detail', 'Timed practice records accuracy and Digits Correct Per Minute (DCPM).'))
+              : tt('math_fluency.timed_practice_launch_detail', 'Timed practice records accuracy and Digits Correct Per Minute (DCPM).')),
+        // One quiet second action, for the practice set only; gone once a learner is on the device.
+        probeMode === 'benchmark' || studentLocked ? null : h('div', { style: { marginTop: '8px', textAlign: 'center' } },
+          h('button', {
+            type: 'button', 'data-mf-home-file': 'true', disabled: !setupCountReady, onClick: saveForHome,
+            style: { minHeight: '44px', padding: '8px 12px', background: '#fff', color: '#7c2d12', border: '1px solid #9a3412', borderRadius: '10px', fontSize: '12px', fontWeight: 800, cursor: setupCountReady ? 'pointer' : 'not-allowed' }
+          }, tt('math_fluency.home_file_button', 'Save as a file for home')),
+          h('p', { role: 'status', 'data-mf-home-file-note': 'true', style: { fontSize: '11px', color: '#7c2d12', margin: '6px 0 0' } }, homeFileNote))
       );
     }
 

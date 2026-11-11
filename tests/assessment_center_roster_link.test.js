@@ -153,7 +153,8 @@ describe('module handleLinkImportedStudent', () => {
   const PARAMS = ['askStudentAnalyticsConfirmation', 'mergeStudentRecords', 'setExternalCBMScores',
     'setIdentityLinks', 'setRosterKey', 'setImportedStudents', 'selectedStudent', 'setSelectedStudent',
     'researchStudent', 'setResearchStudent', 'activeStudent', 'setActiveStudent', 'setProbeTargetStudent',
-    'addToast', 't', 'localStorage', 'window', 'rosterKey', 'probeHistory', 'interventionLogs', 'rtiGoals',
+    // probeHistoryAll: the whole store, take-home results included (the undo snapshot must hold them too).
+    'addToast', 't', 'localStorage', 'window', 'rosterKey', 'probeHistoryAll', 'interventionLogs', 'rtiGoals',
     'externalCBMScores', '_acIdentityLinkKey', '_acPersistableStudent', 'identityLinks',
     'safeSessionSetItem', 'AC_LINK_UNDO_KEY', 'setLastLinkUndo'];
 
@@ -255,15 +256,16 @@ describe('year boundary', () => {
     expect(at).toBeGreaterThan(-1);
     const fnSrc = ac.slice(at, ac.indexOf('{', at)) + braceBalanced(ac, ac.indexOf('{', at)) + ');';
     // eslint-disable-next-line no-new-func
-    const build = new Function('probeHistory', 'interventionLogs', 'rtiGoals', 'externalCBMScores', 'rosterKey', 'importedStudents',
+    // The archive reads the whole store (probeHistoryAll): a take-home result is a record too.
+    const build = new Function('probeHistoryAll', 'interventionLogs', 'rtiGoals', 'externalCBMScores', 'rosterKey', 'importedStudents',
       helpers + fnSrc + ' return buildYearArchive;')(
-      { Falcon: [{ wcpm: 42 }] }, { Falcon: [] }, {}, { Falcon: [] },
+      { Falcon: [{ wcpm: 42 }, { activity: 'math_dcpm', dcpm: 21, home: true, source: 'take_home_file' }] }, { Falcon: [] }, {}, { Falcon: [] },
       { progressHistory: { Falcon: [{ date: '2026-05-01' }] } },
       [{ name: 'Falcon', stats: {} }, { name: 'Ghost', isLive: true, stats: {} }],
     );
     const archive = build();
     expect(archive.schemaVersion).toBe(1);
-    expect(archive.probeHistory.Falcon).toHaveLength(1);
+    expect(archive.probeHistory.Falcon).toHaveLength(2);
     expect(archive.progressHistory.Falcon).toHaveLength(1);
     expect(archive.importedStudents.map(s => s.name)).toEqual(['Falcon']); // live rows excluded
     expect(archive.importedStudents[0].restored).toBe(true);

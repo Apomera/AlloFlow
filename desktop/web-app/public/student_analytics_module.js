@@ -634,8 +634,9 @@ try {
     if (scope !== 'class-summary' && datasets.probeTrends !== false) {
       var probeCandidates = [];
       selectedNames.forEach(function(name) {
+        // Results from a take-home file (home: true) are never part of a trend.
         var records = saAlloSheetPlainObject(data.probeHistory) && Array.isArray(data.probeHistory[name])
-          ? data.probeHistory[name]
+          ? data.probeHistory[name].filter(function(r) { return !_acCkIsHome(r); })
           : [];
         records.forEach(function(record) {
           if (!record || typeof record !== 'object') return;
@@ -743,8 +744,9 @@ try {
         var baseline = saAlloSheetNumber(goal.baseline);
         var target = saAlloSheetNumber(goal.target);
         if (baseline === null || target === null) return;
+        // Nor of progress toward a goal.
         var records = saAlloSheetPlainObject(data.probeHistory) && Array.isArray(data.probeHistory[name])
-          ? data.probeHistory[name]
+          ? data.probeHistory[name].filter(function(r) { return !_acCkIsHome(r); })
           : [];
         var matching = records.map(function(record) {
           if (!record || typeof record !== 'object') return null;
@@ -1850,9 +1852,12 @@ try {
     var responses = (Array.isArray(raw.responses) ? raw.responses : []).slice(0, 8).map(function(r) { return _acThText(r, 40); }).filter(Boolean);
     var tries = Math.max(0, Math.min(99, Math.floor(Number(raw.tries)) || 0));
     var correct = raw.correct === true;
-    return { activity: activity, word: _acThText(raw.word, 40), target: _acThText(raw.target, 40), responses: responses, correct: correct,
+    var item = { activity: activity, word: _acThText(raw.word, 40), target: _acThText(raw.target, 40), responses: responses, correct: correct,
       firstTry: correct && raw.firstTry === true, practice: raw.scored === false || activity === 'letter_tracing',
       attempted: raw.done === true || tries > 0 || responses.length > 0 || correct };
+    // A check also says, per item, how many digits were right and how many there were.
+    if (raw.digits) { item.digitsCorrect = _acCkCount(raw.digits[0]); item.digitsPossible = _acCkCount(raw.digits[1]); }
+    return item;
   }
   // CSV rows to raw sessions (one per session_id). Columns are found by their
   // header names, in any order; columns this version does not know are ignored.
@@ -1862,14 +1867,19 @@ try {
     var index = {};
     var extra = [];
     var headerAt = -1;
+    // A check's two columns after "flag": read, and part of the saved row.
+    var digitsAt = { digits_correct: -1, digits_possible: -1 };
     for (var r = 0; r < rows.length && r < 5 && headerAt < 0; r++) {
       var names = rows[r].map(function(c) { return _acThText(_acThUnguard(c), 40).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); });
       if (names.indexOf('format') < 0 || names.indexOf('session_id') < 0 || (names.indexOf('item_id') < 0 && names.indexOf('activity') < 0)) continue;
       names.forEach(function(name, i) {
         if (_AC_TH_COLUMNS.indexOf(name) >= 0 && !_acWsOwn(index, name)) index[name] = i;
-        // Columns added after this version (a probe's digits_correct): not
-        // read, but part of the saved row, so the edit check covers them.
-        else if (name) extra.push(i);
+        // Columns added after the first version: part of the saved row, so
+        // the edit check covers them.
+        else if (name) {
+          extra.push(i);
+          if (_acWsOwn(digitsAt, name) && digitsAt[name] < 0) digitsAt[name] = i;
+        }
       });
       headerAt = r;
     }
@@ -1877,15 +1887,21 @@ try {
       // No header row (deleted in a spreadsheet): the columns are in the saved order.
       if (!/^alloflow-packet-result\//.test(_acThText(rows[0][0], 60)) || rows[0].length < _AC_TH_COLUMNS.length) return { ok: false, reason: 'not_results' };
       _AC_TH_COLUMNS.forEach(function(name, i) { index[name] = i; });
+      for (var x = _AC_TH_COLUMNS.length; x < rows[0].length && x < _AC_TH_COLUMNS.length + 8; x++) extra.push(x);
+      if (extra.length >= 2) { digitsAt.digits_correct = extra[0]; digitsAt.digits_possible = extra[1]; }
     }
     var groups = {};
     var order = [];
     var integrity = null;
     var newer = false;
+    var scores = {};
+    var lastScore = null;
     rows.slice(headerAt + 1).forEach(function(row) {
       var first = _acThText(_acThUnguard(row[0]), 60);
       if (first.charAt(0) === '#') {
         if (first.toLowerCase() === '#integrity') integrity = { method: _acThText(row[1], 12).toLowerCase(), value: _acThText(row[2], 80).toLowerCase() };
+        // A check's score line: "#score", session id, then name=value cells.
+        else if (first.toLowerCase() === '#score') { lastScore = _acCkScoreFromCells(row.slice(2)); scores['k' + _acThText(_acThUnguard(row[1]), 80)] = lastScore; }
         return;
       }
       var rawCell = function(name) { return _acWsOwn(index, name) && row[index[name]] != null ? String(row[index[name]]) : ''; };
@@ -1897,7 +1913,8 @@ try {
       if (!_acWsOwn(groups, key)) {
         groups[key] = { sid: _acThText(get('session_id'), 80), learner: _acThText(get('learner'), 60), packetId: _acThText(get('packet_id'), 80), title: '',
           stamps: [get('finished_local'), get('started_local')], startedText: _acThText(get('started_local'), 40),
-          prefix: [get('packet_id'), get('packet_version'), get('form'), get('session_id')].join('|').slice(0, 600), items: [], lines: [], integrity: null };
+          prefix: [get('packet_id'), get('packet_version'), get('form'), get('session_id')].join('|').slice(0, 600), items: [], lines: [], integrity: null,
+          mode: _acThText(get('mode'), 12).toLowerCase(), form: _acThText(get('form'), 20), score: null };
         order.push(key);
       }
       var group = groups[key];
@@ -1906,12 +1923,18 @@ try {
       group.lines.push(_AC_TH_COLUMNS.map(rawCell).concat(extra.map(function(i) { return row[i] != null ? String(row[i]) : ''; }))
         .map(function(text) { return '"' + text.replace(/"/g, '""') + '"'; }).join(','));
       var scored = _acThText(get('scored'), 8);
+      var cellAt = function(i) { return i >= 0 && row[i] != null ? _acThUnguard(String(row[i])) : ''; };
       group.items.push(_acThItem({ activity: get('activity'), word: get('word'), target: get('target'), responses: get('responses').split(' | '),
-        correct: _acThYes(get('correct')), firstTry: _acThYes(get('first_try')), tries: get('tries'), scored: scored === '' ? true : _acThYes(scored) }));
+        correct: _acThYes(get('correct')), firstTry: _acThYes(get('first_try')), tries: get('tries'), scored: scored === '' ? true : _acThYes(scored),
+        digits: group.mode === 'probe' ? [cellAt(digitsAt.digits_correct), cellAt(digitsAt.digits_possible)] : null }));
     });
     if (!order.length) return { ok: false, reason: newer ? 'newer' : 'no_items' };
     // The check line covers the file's one session.
     if (order.length === 1) groups[order[0]].integrity = integrity;
+    order.forEach(function(key) {
+      var g = groups[key];
+      g.score = _acWsOwn(scores, 'k' + g.sid) ? scores['k' + g.sid] : order.length === 1 ? lastScore : null;
+    });
     return { ok: true, sessions: order.map(function(key) { return groups[key]; }) };
   }
   // The take-home JSON, or a class mailbox copy of it, to one raw session.
@@ -1931,6 +1954,8 @@ try {
     var rawItems = data.items.slice(0, _AC_TH_MAX_ITEMS).map(function(it) { return it && typeof it === 'object' ? it : {}; });
     var learner = _acThScalar(data.learner) || _acThScalar(data.learnerName);
     var lines = null;
+    // A check (packet.mode "probe") has two more cells in every row, after "flag".
+    var probe = _acThScalar(packet.mode) === 'probe';
     var integrity = data.integrity && typeof data.integrity === 'object' ? { method: _acThText(data.integrity.method, 12).toLowerCase(), value: _acThText(data.integrity.value, 80).toLowerCase() } : null;
     if (integrity && integrity.value) {
       // The same rows the CSV file holds, rebuilt with its rules.
@@ -1946,7 +1971,9 @@ try {
           Number.isFinite(data.durationMs) ? Math.round(data.durationMs / 1000) : '', it.n != null ? it.n : i + 1, it.itemId, activity,
           _acWsOwn(titles, activity) ? titles[activity] : '', it.scored === false || it.practice || activity === 'letter_tracing' ? 0 : 1, it.word, it.target,
           (Array.isArray(it.responses) ? it.responses : []).map(_acThScalar).join(' | '), it.correct === true ? 1 : 0, it.firstTry === true ? 1 : 0,
-          it.attempts != null ? it.attempts : it.tries, it.ms, supports, it.flag].map(cellOf).join(',');
+          it.attempts != null ? it.attempts : it.tries, it.ms, supports, it.flag]
+          // The file writes each as a whole number, or empty (packetCsv in the take-home loader).
+          .concat(probe ? [_acCkCount(it.digitsCorrect), _acCkCount(it.digitsPossible)] : []).map(cellOf).join(',');
       });
     }
     return { ok: true, sessions: [{ sid: _acThText(data.sessionId, 80), learner: _acThText(learner, 60), packetId: _acThText(packet.id, 80) || _acThText(data.lessonId, 80),
@@ -1956,12 +1983,13 @@ try {
       items: rawItems.map(function(it) {
         return _acThItem({ activity: _acThScalar(it.activity) || (version === 1 ? 'isolation' : ''), word: it.word, target: it.target, responses: it.responses,
           correct: it.correct === true, firstTry: it.firstTry === true, tries: it.attempts != null ? it.attempts : it.tries, done: it.done === true,
-          scored: !(it.scored === false || it.practice) });
-      }), lines: lines, integrity: integrity }] };
+          scored: !(it.scored === false || it.practice), digits: probe ? [it.digitsCorrect, it.digitsPossible] : null });
+      }), lines: lines, integrity: integrity, mode: probe ? 'probe' : _acThText(packet.mode, 12).toLowerCase(), form: _acThText(packet.form, 20),
+      score: probe ? _acCkScoreFromJson(data.score) : null }] };
   }
   // A raw session to what the dashboard keeps: activity counts in the stored
   // Word Sounds shape (see _acWsAct), the date of record and the edit check.
-  async function _acThSession(raw, lastModified) {
+  async function _acThSession(raw, lastModified, fileName) {
     var acts = {};
     var wrong = {};
     var done = 0, graded = 0, firstTry = 0;
@@ -2001,9 +2029,16 @@ try {
     var sid = raw.sid || 'old-' + _acThFnv1a(raw.learner + '|' + raw.startedText + '|' + raw.items.length);
     var stored = {};
     Object.keys(acts).forEach(function(id) { stored[id] = _acWsActStored(acts[id]); });
-    return { id: 'th:' + sid.slice(0, 64), learner: raw.learner, title: raw.title || raw.packetId, start: start, date: _acLocalDate(start), dateFromFile: dateFromFile,
+    var session = { id: 'th:' + sid.slice(0, 64), learner: raw.learner, title: raw.title || raw.packetId, start: start, date: _acLocalDate(start), dateFromFile: dateFromFile,
       given: raw.items.length, done: done, firstTryItems: graded, firstTryCorrect: firstTry, percent: graded ? Math.round(firstTry / graded * 100) : null,
       acts: stored, wrong: wrong, integrity: check };
+    // A check is a math result, never a Word Sounds session.
+    if (raw.mode === 'probe') {
+      session.check = _acCkFromRaw(raw, fileName);
+      session.title = session.check.title || session.title;
+      session.acts = {}; session.wrong = {}; session.firstTryItems = 0; session.firstTryCorrect = 0; session.percent = null;
+    }
+    return session;
   }
   // One dropped file to { name, sessions } or { name, reason }. Never throws.
   async function _acThReadFile(file) {
@@ -2029,11 +2064,14 @@ try {
         read = _acThReadJson(data);
       } else read = _acThReadCsv(text);
       if (!read.ok) { out.reason = read.reason; return out; }
+      var unknownCheck = false;
       for (var i = 0; i < read.sessions.length && i < 40; i++) {
-        var session = await _acThSession(read.sessions[i], file.lastModified);
+        var session = await _acThSession(read.sessions[i], file.lastModified, out.name);
+        // A check of a kind this version does not know is not guessed at.
+        if (session.check && !session.check.measure) { unknownCheck = true; continue; }
         if (session.done > 0) out.sessions.push(session);
       }
-      if (!out.sessions.length) out.reason = 'nothing_done';
+      if (!out.sessions.length) out.reason = unknownCheck ? 'unknown_check' : 'nothing_done';
     } catch (e) { out.sessions = []; out.reason = 'unreadable'; }
     return out;
   }
@@ -2072,23 +2110,31 @@ try {
     label = _acThText(label, 60);
     return label in {} ? 'Learner ' + label : label;
   }
-  function _acThSessionIds(students) {
+  // Every take-home session already kept: Word Sounds sessions on the rows,
+  // check results on the rows (Missing Number, Quantity Discrimination) and
+  // in probe history (math). probeHistoryAll is the whole store, home results included.
+  function _acThSessionIds(students, probeHistoryAll) {
     var have = {};
+    var addCheck = function(r) { if (_acCkIsHome(r) && typeof r.sessionId === 'string' && r.sessionId) have['xth:' + r.sessionId] = true; };
     (Array.isArray(students) ? students : []).forEach(function(s) {
       var saved = s && s.data && s.data.wordSoundsState && s.data.wordSoundsState.wsSessions;
       (saved && Array.isArray(saved.sessions) ? saved.sessions : []).forEach(function(session) {
         if (session && typeof session.id === 'string' && session.id.indexOf('th:') === 0) have['x' + session.id] = true;
       });
+      (s && Array.isArray(s.screeningHistory) ? s.screeningHistory : []).forEach(addCheck);
+    });
+    if (probeHistoryAll && typeof probeHistoryAll === 'object') Object.keys(probeHistoryAll).forEach(function(name) {
+      (Array.isArray(probeHistoryAll[name]) ? probeHistoryAll[name] : []).forEach(addCheck);
     });
     return have;
   }
   // Read the dropped files and say, per session, what would happen. Nothing
   // is stored here. status: new / added (on the dashboard already) / repeat
   // (the same session twice in this drop, such as its CSV and its JSON).
-  async function _acThPreview(files, students, rosterKeyValue, labels) {
+  async function _acThPreview(files, students, rosterKeyValue, labels, probeHistoryAll) {
     var all = Array.from(files || []);
     var names = _acThNames(students, rosterKeyValue);
-    var have = _acThSessionIds(students);
+    var have = _acThSessionIds(students, probeHistoryAll);
     var seen = {};
     var rows = [];
     var others = [];
@@ -2101,7 +2147,9 @@ try {
         var match = _acThMatch(session.learner, names, labelKey && labels && _acWsOwn(labels, labelKey) ? labels[labelKey] : '');
         var status = _acWsOwn(have, 'x' + session.id) ? 'added' : _acWsOwn(seen, 'x' + session.id) ? 'repeat' : 'new';
         seen['x' + session.id] = true;
-        rows.push({ key: rows.length + ':' + session.id, file: read.name, session: session, status: status, labelKey: labelKey, match: match, choice: match.name, skip: false });
+        // A check with no score (stopped early, too fast, no score line) is left out unless the teacher asks for it.
+        rows.push({ key: rows.length + ':' + session.id, file: read.name, session: session, status: status, labelKey: labelKey, match: match, choice: match.name,
+          skip: !!(session.check && session.check.noScore) });
       }
     }
     return { rows: rows, others: others, names: names, leftOut: Math.max(0, all.length - _AC_TH_MAX_FILES) };
@@ -2121,7 +2169,8 @@ try {
   }
   function _acThHasTakeHome(student) {
     var saved = student && student.data && student.data.wordSoundsState && student.data.wordSoundsState.wsSessions;
-    return !!(saved && Array.isArray(saved.sessions) && saved.sessions.some(function(s) { return s && s.src === 'th'; }));
+    return !!(saved && Array.isArray(saved.sessions) && saved.sessions.some(function(s) { return s && s.src === 'th'; }))
+      || !!(student && Array.isArray(student.screeningHistory) && student.screeningHistory.some(_acCkIsHome));
   }
   // A learner who has only handed in take-home files still gets a row.
   function _acThNewStudent(name, session, stats, linkedToRoster) {
@@ -2148,11 +2197,15 @@ try {
   }
   // picks: [{ session, name }]. A session already on any student is left out,
   // so the same file dropped twice, or as CSV and JSON, counts once.
-  function _acThApply(students, picks, makeStudent) {
+  // A check goes where the app keeps that measure: Missing Number and Quantity
+  // Discrimination on the student's row, math in probe history. Those come
+  // back in probeAdds ({ name, record }) for the caller to hand to the host.
+  function _acThApply(students, picks, makeStudent, probeHistoryAll) {
     var list = (Array.isArray(students) ? students : []).slice();
-    var have = _acThSessionIds(list);
+    var have = _acThSessionIds(list, probeHistoryAll);
     var added = 0, created = 0;
     var touched = [];
+    var probeAdds = [];
     (Array.isArray(picks) ? picks : []).forEach(function(pick) {
       var session = pick && pick.session;
       if (!session || typeof pick.name !== 'string' || !pick.name || _acWsOwn(have, 'x' + session.id)) return;
@@ -2163,15 +2216,25 @@ try {
         if (at < 0 || !_acThHasTakeHome(list[at])) at = i;
       });
       if (at < 0) { list.push(makeStudent(pick.name, session)); at = list.length - 1; created++; }
-      list[at] = _acThAddSession(list[at], session);
+      if (session.check) {
+        var record = _acCkRecord(session, pick.name);
+        if (!record) return;
+        if (_acCkStoreOf(session.check.measure) === 'row') list[at] = Object.assign({}, list[at], { screeningHistory: (Array.isArray(list[at].screeningHistory) ? list[at].screeningHistory : []).concat([record]) });
+        else probeAdds.push({ name: pick.name, record: record });
+      } else list[at] = _acThAddSession(list[at], session);
       have['x' + session.id] = true;
       added++;
       if (touched.indexOf(at) < 0) touched.push(at);
     });
-    return { students: list, added: added, created: created, studentCount: touched.length };
+    return { students: list, added: added, created: created, studentCount: touched.length, probeAdds: probeAdds };
   }
-  // Take every take-home session off one student, with the wrong answers they added.
+  // Take every take-home session off one student, with the wrong answers they
+  // added, and every take-home check result kept on the row. (Math check
+  // results live in probe history: see _acCkRemoveFromProbeStore.)
   function _acThRemove(student) {
+    if (student && Array.isArray(student.screeningHistory) && student.screeningHistory.some(_acCkIsHome)) {
+      student = Object.assign({}, student, { screeningHistory: student.screeningHistory.filter(function(h) { return !_acCkIsHome(h); }) });
+    }
     var ws = student && student.data && student.data.wordSoundsState;
     if (!ws || typeof ws !== 'object') return student;
     var summary = _acWsSessionSummary(ws);
@@ -2220,6 +2283,7 @@ try {
       : reason === 'no_items' ? _acWsText(t, 'class_analytics.th_reason_no_items', 'This results file has no items in it.')
       : reason === 'nothing_done' ? _acWsText(t, 'class_analytics.th_reason_nothing_done', 'No items were done in this file.')
       : reason === 'unreadable' ? _acWsText(t, 'class_analytics.th_reason_unreadable', 'This file could not be read.')
+      : reason === 'unknown_check' ? _acWsText(t, 'class_analytics.th_ck_reason_unknown', 'This is a check of a kind this version cannot add. Update AlloFlow to add it.')
       : _acWsText(t, 'class_analytics.th_reason_not_results', 'This is not a take-home results file.');
   }
   function _acThStatusText(t, row) {
@@ -2276,6 +2340,8 @@ try {
     var waiting = rows.filter(function(row) { return row.status === 'new' && !row.skip && !_acThReady(row); }).length;
     var saveFiles = (preview.others || []).filter(function(o) { return o.reason === 'save_file' && o.file; }).map(function(o) { return o.file; });
     var button = 'min-h-11 px-4 py-2 rounded-lg text-sm font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-800 focus-visible:ring-offset-2 ';
+    // A check shows its score where practice shows "right on the first try".
+    var anyCheck = rows.some(function(row) { return !!(row.session && row.session.check); });
     return h('section', { 'data-th-preview': 'true', 'aria-label': heading, className: 'mb-4 rounded-xl border border-sky-400 bg-sky-50 p-3' },
       h('h3', { className: 'text-base font-bold text-slate-900 mb-1' }, heading),
       h('p', { role: 'status', className: 'text-xs text-slate-800 mb-2' }, preview.busy
@@ -2291,24 +2357,31 @@ try {
           h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_col_lesson', 'Lesson')),
           h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_col_date', 'Date finished')),
           h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_items', 'Items')),
-          h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_first_try', 'Right on the first try')),
+          h('th', { scope: 'col', className: th }, anyCheck ? _acWsText(t, 'class_analytics.th_ck_col_result', 'Right on the first try, or score') : _acWsText(t, 'class_analytics.ws_col_first_try', 'Right on the first try')),
           h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_col_status', 'Status')),
           h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_col_add_to', 'Add to')),
           h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_col_skip', 'Skip')))),
         h('tbody', null, rows.map(function(row) {
           var s = row.session;
           var open = row.status === 'new';
-          return h('tr', { key: row.key, 'data-th-row': row.status, 'data-th-check': s.integrity },
+          var c = s.check || null;
+          return h('tr', { key: row.key, 'data-th-row': row.status, 'data-th-check': s.integrity, 'data-th-kind': c ? 'check' : 'practice' },
             h('th', { scope: 'row', className: td + ' font-semibold text-left break-all' }, row.file),
             h('td', { className: td }, s.learner || _acWsText(t, 'class_analytics.th_no_name', '(no name)')),
-            h('td', { className: td }, s.title || '–'),
+            c ? h('td', { className: td, 'data-th-ck-measure': c.measure }, _acCkGroupName(t, c), h('span', { className: small }, _acCkFormText(t, c)))
+              : h('td', { className: td }, s.title || '–'),
             h('td', { className: td + ' whitespace-nowrap' }, s.date,
               s.dateFromFile ? h('span', { 'data-th-date-from-file': 'true', className: small + ' whitespace-normal' }, '⚠ ' + _acWsText(t, 'class_analytics.th_date_from_file', 'Date from the file, not from the results')) : null),
-            h('td', { className: td }, s.done === s.given ? s.done : _acWsText(t, 'class_analytics.th_items_done_of', '{done} of {given} done', { done: s.done, given: s.given })),
-            h('td', { className: td }, s.percent === null ? _acWsText(t, 'class_analytics.ws_practice_only', 'practice only')
+            c ? h('td', { className: td }, c.attempted === c.given ? c.given : _acWsText(t, 'class_analytics.th_items_done_of', '{done} of {given} done', { done: c.attempted, given: c.given }))
+              : h('td', { className: td }, s.done === s.given ? s.done : _acWsText(t, 'class_analytics.th_items_done_of', '{done} of {given} done', { done: s.done, given: s.given })),
+            c ? h('td', { className: td, 'data-th-ck-score': c.score === null ? 'none' : String(c.score) }, _acCkScoreText(t, c))
+              : h('td', { className: td }, s.percent === null ? _acWsText(t, 'class_analytics.ws_practice_only', 'practice only')
               : _acWsText(t, 'class_analytics.ws_first_try_cell', '{percent}% ({correct} of {items})', { percent: s.percent, correct: s.firstTryCorrect, items: s.firstTryItems })),
             h('td', { className: td }, h('strong', null, _acThStatusText(t, row)),
-              h('span', { className: small }, (s.integrity === 'changed' ? '⚠ ' : '') + _acThCheckText(t, s.integrity))),
+              h('span', { className: small }, (s.integrity === 'changed' ? '⚠ ' : '') + _acThCheckText(t, s.integrity)),
+              // The flags come first and carry the warning mark; the other notes are plain.
+              c ? _acCkNotes(t, c).map(function(note, i) { return h('span', { key: i, 'data-th-ck-note': 'true', className: small }, (i < c.flags.length ? '⚠ ' : '') + note); }) : null,
+              c && c.noScore && open ? h('span', { 'data-th-ck-skipped': c.noScore, className: small + ' font-semibold' }, _acWsText(t, 'class_analytics.th_ck_skipped_why', 'It has no score, so it is skipped. Clear Skip to add it anyway.')) : null),
             h('td', { className: td }, open ? h('select', {
               'data-th-choice': 'true',
               'aria-label': _acWsText(t, 'class_analytics.th_choice_label', 'Student to add {file} to', { file: row.file }),
@@ -2330,7 +2403,9 @@ try {
               className: 'w-5 h-5'
             }) : '–'));
         })))) : null,
-      rows.length ? h('p', { className: 'text-[11px] text-slate-700 mt-1' }, _acWsText(t, 'class_analytics.th_check_hint', 'The edit check finds accidental changes to a file, not deliberate ones. Take-home work is added to the Word Sounds tables only; it does not change review groups.')) : null,
+      rows.some(function(row) { return !row.session.check; }) ? h('p', { className: 'text-[11px] text-slate-700 mt-1' }, _acWsText(t, 'class_analytics.th_check_hint', 'The edit check finds accidental changes to a file, not deliberate ones. Take-home work is added to the Word Sounds tables only; it does not change review groups.'))
+        : rows.length ? h('p', { className: 'text-[11px] text-slate-700 mt-1' }, _acWsText(t, 'class_analytics.th_ck_edit_hint', 'The edit check finds accidental changes to a file, not deliberate ones.')) : null,
+      anyCheck ? h('p', { 'data-th-ck-hint': 'true', className: 'text-[11px] text-slate-700 mt-1' }, _acWsText(t, 'class_analytics.th_ck_hint', 'A check done at home is kept with the student and marked Take-home. It is for seeing progress: it is never used for benchmarks, review groups or risk levels.')) : null,
       (preview.others || []).length ? h('div', { 'data-th-others': 'true', className: 'mt-2' },
         h('h4', { className: 'text-xs font-bold text-slate-900' }, _acWsText(t, 'class_analytics.th_others_heading', 'Files that were not added')),
         h('ul', { className: 'list-disc pl-5 text-xs text-slate-900' }, preview.others.map(function(o, i) {
@@ -2354,6 +2429,461 @@ try {
         }, _acWsText(t, 'class_analytics.th_add_all', 'Add all ({count})', { count: ready })),
         h('button', { type: 'button', 'data-th-close': 'true', onClick: function() { actions.onClose(); }, className: button + 'bg-white hover:bg-slate-100 text-slate-900 border border-slate-500' },
           preview.done ? _acWsText(t, 'class_analytics.th_close', 'Close') : _acWsText(t, 'class_analytics.th_cancel', 'Cancel'))));
+  }
+  // ── Take-home checks ──
+  // A check is a math measure done at home in one file (mode "probe"): Math
+  // Fluency, Missing Number, Quantity Discrimination, or a teacher's own
+  // problem set. Its result is kept where the app keeps that measure, in the
+  // same shape, with home: true. A home result is shown, marked Take-home. It
+  // is never compared with anything and never enters a benchmark, review
+  // group, risk level, growth rate or aimline (see _acCkSupervised).
+  var AC_PROBE_STORE_KEY = 'alloflow_probe_history';
+  // measure in the file -> where it is kept ('probe': the host's probe
+  // history, by `activity`; 'row': the student's screeningHistory, by `type`),
+  // the activity the file holds for it, and its name.
+  var _AC_CK_MEASURES = {
+    math_dcpm: { store: 'probe', activity: 'math_computation', unit: 'digits_correct_per_minute', nameKey: 'class_analytics.th_ck_name_math', name: 'Math Fluency' },
+    math_items: { store: 'probe', activity: 'math_computation', unit: 'items_correct', nameKey: 'class_analytics.th_ck_name_math', name: 'Math Fluency' },
+    missing_number: { store: 'row', activity: 'missing_number', unit: 'items_correct', nameKey: 'class_analytics.th_ck_name_missing_number', name: 'Missing Number' },
+    quantity_discrimination: { store: 'row', activity: 'quantity_discrimination', unit: 'items_correct', nameKey: 'class_analytics.th_ck_name_quantity', name: 'Quantity Discrimination' }
+  };
+  // The builder's name for a fixed form -> the measure its file reports.
+  var _AC_CK_FORM_MEASURES = { math_computation: 'math_dcpm', missing_number: 'missing_number', quantity_discrimination: 'quantity_discrimination' };
+  function _acCkIsHome(record) { return !!record && typeof record === 'object' && record.home === true; }
+  function _acCkStoreOf(measure) { return _acWsOwn(_AC_CK_MEASURES, measure) ? _AC_CK_MEASURES[measure].store : ''; }
+  // A whole number or null, by the rule the take-home file uses for its digit cells.
+  function _acCkCount(value) {
+    if ((typeof value !== 'number' && typeof value !== 'string') || value === '' || !isFinite(Number(value))) return null;
+    return Math.max(0, Math.round(Number(value)));
+  }
+  function _acCkNumber(value) {
+    if (typeof value === 'number') return Number.isFinite(value) ? value : null;
+    if (typeof value !== 'string' || !value.trim()) return null;
+    var n = Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
+  // The score line of a check, from the JSON file's score object.
+  function _acCkScoreFromJson(sc) {
+    if (!sc || typeof sc !== 'object' || Array.isArray(sc)) return null;
+    var flags = (Array.isArray(sc.flags) ? sc.flags : []).slice(0, 8).map(function(f) { return _acThText(f, 30).toLowerCase(); }).filter(function(f) { return /^[a-z_]+$/.test(f); });
+    var completion = _acThText(sc.completion, 20);
+    return { measure: _acThText(sc.measure, 40), score: _acCkNumber(sc.score), unit: _acThText(sc.scoreUnit, 40), timeLimitS: _acCkNumber(sc.timeLimitS), elapsedS: _acCkNumber(sc.elapsedS),
+      hiddenS: _acCkNumber(sc.hiddenS), completion: completion === 'complete' || completion === 'time' || completion === 'ended_early' ? completion : '',
+      scoringVersion: _acCkCount(sc.scoringVersion), formVersion: _acCkCount(sc.formVersion), attempt: _acCkCount(sc.attempt) || 1, flags: flags };
+  }
+  // The same from the CSV file's "#score" row: name=value cells.
+  function _acCkScoreFromCells(cells) {
+    var kv = {};
+    (Array.isArray(cells) ? cells : []).slice(0, 40).forEach(function(cell) {
+      var text = _acThText(_acThUnguard(cell), 200);
+      var at = text.indexOf('=');
+      if (at > 0) kv['k' + text.slice(0, at).trim().toLowerCase()] = text.slice(at + 1).trim();
+    });
+    var get = function(name) { return _acWsOwn(kv, 'k' + name) ? kv['k' + name] : ''; };
+    return _acCkScoreFromJson({ measure: get('measure'), score: get('score'), scoreUnit: get('score_unit'), timeLimitS: get('time_limit_s'), elapsedS: get('elapsed_s'), hiddenS: get('hidden_s'),
+      completion: get('completion'), scoringVersion: get('scoring_version'), formVersion: get('form_version'), attempt: get('attempt'), flags: get('flags') ? get('flags').split(';') : [] });
+  }
+  // A raw check session to what the dashboard shows and keeps. The counts are
+  // made again from the item rows, which the edit check covers. The time
+  // used, how the check ended and the flags come from the score line. The
+  // rate follows the file's own rule (checkScore in the take-home loader;
+  // Math Fluency scoring version 3): digits correct over the minutes used,
+  // and no score when the check was stopped early, had no time limit, or was
+  // finished in under 20 seconds.
+  function _acCkFromRaw(raw, fileName) {
+    var sc = raw.score || null;
+    var given = 0, attempted = 0, correct = 0, digitsCorrect = 0, digitsPossible = 0, hasDigits = false;
+    var activity = '';
+    raw.items.forEach(function(it) {
+      if (it.practice) return;
+      if (!activity) activity = it.activity;
+      given++;
+      if (!it.attempted) return;
+      attempted++;
+      if (it.correct) correct++;
+      if (it.digitsPossible != null) { hasDigits = true; digitsCorrect += it.digitsCorrect || 0; digitsPossible += it.digitsPossible; }
+    });
+    // With no score line the measure is read from the activity; a score cannot be.
+    var measure = sc ? sc.measure : activity === 'math_computation' ? 'math_dcpm' : activity;
+    if (!_acWsOwn(_AC_CK_MEASURES, measure) || _AC_CK_MEASURES[measure].activity !== activity) measure = '';
+    var unit = measure ? _AC_CK_MEASURES[measure].unit : '';
+    var limit = sc && sc.timeLimitS > 0 ? sc.timeLimitS : null;
+    var elapsed = sc && sc.elapsedS > 0 ? sc.elapsedS : 0;
+    var completion = sc ? sc.completion : '';
+    var score = null, noScore = '', prorated = false;
+    if (!sc) noScore = 'no_score_line';
+    else if (completion === 'ended_early') noScore = 'ended_early';
+    else if ((completion !== 'complete' && completion !== 'time') || sc.unit !== unit) noScore = 'unknown';
+    else if (unit === 'digits_correct_per_minute') {
+      var early = limit !== null && completion === 'complete' && elapsed < limit;
+      if (limit === null) noScore = 'untimed';
+      else if (early && elapsed < 20) noScore = 'too_fast';
+      else if (!(elapsed > 0)) noScore = 'unknown';
+      else { score = Math.round(digitsCorrect / Math.max(1 / 60, elapsed / 60)); prorated = early; }
+    } else score = correct;
+    var custom = raw.form === 'custom' || /^math-custom-/.test(raw.packetId);
+    var grade = custom ? '' : ((/-g(k|[0-9]{1,2})$/i.exec(raw.packetId) || [])[1] || '').toUpperCase();
+    // A CSV file does not hold the title; the name it was saved under starts with it.
+    var named = /^(.+?)__/.exec(_acThText(fileName, 120));
+    var title = raw.title || (custom && named ? named[1].replace(/[-_]+/g, ' ').trim() : '');
+    return { measure: measure, custom: custom, grade: grade, form: custom ? 'custom' : _acThText(raw.form, 8).toUpperCase(), formVersion: sc && sc.formVersion ? sc.formVersion : 1,
+      scoringVersion: sc ? sc.scoringVersion : null, packetId: raw.packetId, title: _acThText(title, 80) || (custom ? raw.packetId : ''),
+      given: given, attempted: attempted, correct: correct, digitsCorrect: hasDigits ? digitsCorrect : null, digitsPossible: hasDigits ? digitsPossible : null,
+      score: score, unit: unit, noScore: noScore, prorated: prorated, completion: completion, elapsedSeconds: sc ? sc.elapsedS : null, timeLimitSeconds: limit,
+      hiddenSeconds: sc && sc.hiddenS > 0 ? sc.hiddenS : 0, flags: sc ? sc.flags : [], attempt: sc ? sc.attempt : 1,
+      recounted: !!(sc && sc.score !== null && score !== null && sc.score !== score), stated: sc ? sc.score : null };
+  }
+  // The record that is kept: the app's own shape for the measure, plus the
+  // home fields. name is the student it is added to.
+  function _acCkRecord(session, name) {
+    var c = session && session.check;
+    if (!c || !_acWsOwn(_AC_CK_MEASURES, c.measure)) return null;
+    var counts = { correct: c.correct, total: c.attempted, accuracy: c.attempted > 0 ? Math.round(c.correct / c.attempted * 100) : 0 };
+    var home = { date: new Date(session.start).toISOString(), timestamp: session.start, source: 'take_home_file', home: true, sessionId: String(session.id).replace(/^th:/, ''),
+      packetId: c.packetId, title: c.title, completion: c.completion, hiddenSeconds: c.hiddenSeconds, flags: c.flags.slice(), attempt: c.attempt, integrity: session.integrity,
+      timeLimitSeconds: c.timeLimitSeconds };
+    if (session.dateFromFile) home.dateFromFile = true;
+    if (c.noScore) home.noScore = c.noScore;
+    // Missing Number and Quantity Discrimination: the shape saveNumeracyResult writes.
+    if (_AC_CK_MEASURES[c.measure].store === 'row') {
+      return Object.assign({ student: name, type: c.measure }, counts, { grade: c.grade || null, form: c.form, formVersion: c.formVersion, elapsedSeconds: c.elapsedSeconds }, home);
+    }
+    // Math: the shape the Math Fluency panel writes (activity 'math_dcpm'). A
+    // teacher's own problem set has its own activity, so nothing reads it as a fixed form.
+    var own = c.custom || c.measure !== 'math_dcpm';
+    var rate = c.measure === 'math_dcpm' ? c.score : null;
+    return Object.assign({ activity: own ? 'math_custom' : 'math_dcpm', grade: c.grade || null, form: c.form, formVersion: c.formVersion, scoringVersion: c.scoringVersion,
+      prorated: c.prorated, elapsedSeconds: c.elapsedSeconds, dcpm: rate, itemsPerMin: rate }, counts, home, own ? { measure: c.measure } : null);
+  }
+  // Probe history as every benchmark, review group, risk level, growth rate,
+  // aimline and report reads it: without the results from home. The same
+  // object comes back when there are none.
+  function _acCkSupervised(history) {
+    if (!history || typeof history !== 'object' || Array.isArray(history)) return history;
+    var out = null;
+    Object.keys(history).forEach(function(name) {
+      var list = history[name];
+      if (!Array.isArray(list) || !list.some(_acCkIsHome)) return;
+      if (!out) out = Object.assign({}, history);
+      out[name] = list.filter(function(r) { return !_acCkIsHome(r); });
+    });
+    return out || history;
+  }
+  // Math check results from home live in the host's probe history. Without a
+  // host function to add them, write the store and ask the host to read it
+  // again (the study-bundle idiom).
+  function _acCkWriteProbeStore(change) {
+    try {
+      var store = JSON.parse(localStorage.getItem(AC_PROBE_STORE_KEY) || '{}');
+      if (!store || typeof store !== 'object' || Array.isArray(store)) store = {};
+      var count = change(store);
+      if (!count) return 0;
+      localStorage.setItem(AC_PROBE_STORE_KEY, JSON.stringify(store));
+      try { window.dispatchEvent(new CustomEvent('alloflow:study-bundle-imported', { detail: { source: 'take-home-checks', keys: [AC_PROBE_STORE_KEY] } })); } catch (e) {}
+      return count;
+    } catch (e) { return 0; }
+  }
+  function _acCkAddToProbeStore(adds) {
+    return _acCkWriteProbeStore(function(store) {
+      var count = 0;
+      (Array.isArray(adds) ? adds : []).forEach(function(add) {
+        if (!add || typeof add.name !== 'string' || !add.name || add.name in {} || !add.record) return;
+        store[add.name] = (Array.isArray(store[add.name]) ? store[add.name] : []).concat([add.record]);
+        count++;
+      });
+      return count;
+    });
+  }
+  // "Remove this student's take-home results" for the math results. Returns how many went.
+  function _acCkRemoveFromProbeStore(names) {
+    return _acCkWriteProbeStore(function(store) {
+      var count = 0;
+      (Array.isArray(names) ? names : []).filter(function(name, i, all) { return typeof name === 'string' && name && all.indexOf(name) === i; }).forEach(function(name) {
+        if (!_acWsOwn(store, name) || !Array.isArray(store[name])) return;
+        var kept = store[name].filter(function(r) { return !(_acCkIsHome(r) && r.source === 'take_home_file'); });
+        if (kept.length === store[name].length) return;
+        count += store[name].length - kept.length;
+        if (kept.length) store[name] = kept; else delete store[name];
+      });
+      return count;
+    });
+  }
+  function _acCkMeasureName(t, measure) {
+    return _acWsOwn(_AC_CK_MEASURES, measure) ? _acWsText(t, _AC_CK_MEASURES[measure].nameKey, _AC_CK_MEASURES[measure].name) : '';
+  }
+  // What a result is listed under: the measure, or the title of a teacher's own problem set.
+  function _acCkGroupName(t, c) {
+    return c.custom ? _acWsText(t, 'class_analytics.th_ck_custom_name', '{title} (your own problems)', { title: c.title || c.packetId || '' }) : _acCkMeasureName(t, c.measure);
+  }
+  function _acCkFormText(t, c) {
+    if (c.custom || !c.form) return c.custom ? _acCkMeasureName(t, c.measure) : '–';
+    return c.grade ? _acWsText(t, 'class_analytics.th_ck_grade_form', 'Grade {grade}, Form {form}', { grade: c.grade, form: c.form })
+      : _acWsText(t, 'class_analytics.th_ck_form', 'Form {form}', { form: c.form });
+  }
+  function _acCkNoScoreText(t, reason) {
+    return reason === 'ended_early' ? _acWsText(t, 'class_analytics.th_ck_why_ended_early', 'the check was stopped before the end.')
+      : reason === 'too_fast' ? _acWsText(t, 'class_analytics.th_ck_why_too_fast', 'every problem was finished in under 20 seconds, which is too fast to give a rate.')
+      : reason === 'untimed' ? _acWsText(t, 'class_analytics.th_ck_why_untimed', 'it had no time limit, so there is no rate.')
+      : reason === 'no_score_line' ? _acWsText(t, 'class_analytics.th_ck_why_no_line', 'the score line is missing from the file.')
+      : _acWsText(t, 'class_analytics.th_ck_why_unknown', 'the file does not say how the check ended.');
+  }
+  // c: a check from a file, or a row of the over-time table.
+  function _acCkScoreText(t, c) {
+    if (c.noScore || c.score === null || c.score === undefined) return _acWsText(t, 'class_analytics.th_ck_no_score', 'No score: {reason}', { reason: _acCkNoScoreText(t, c.noScore) });
+    if (c.unit === 'digits_correct_per_minute') return _acWsText(t, 'class_analytics.th_ck_score_dcpm', '{score} digits correct per minute', { score: c.score });
+    return c.attempted == null ? _acWsText(t, 'class_analytics.th_ck_score_items_only', '{score} items correct', { score: c.score })
+      : _acWsText(t, 'class_analytics.th_ck_score_items', '{score} items correct ({tried} tried)', { score: c.score, tried: c.attempted });
+  }
+  function _acCkFlagText(t, flag) {
+    return flag === 'left_the_page' ? _acWsText(t, 'class_analytics.th_ck_flag_left', 'The learner left the page for more than 3 seconds.')
+      : flag === 'clock_changed' ? _acWsText(t, 'class_analytics.th_ck_flag_clock', 'The clock on the device was set back during the check.')
+      : flag === 'reloaded' ? _acWsText(t, 'class_analytics.th_ck_flag_reloaded', 'The page was reloaded during the check.')
+      : _acWsText(t, 'class_analytics.th_ck_flag_other', 'The file notes: {flag}.', { flag: String(flag).replace(/_/g, ' ') });
+  }
+  // Things a teacher should know before reading the score, in plain words.
+  function _acCkNotes(t, c) {
+    var notes = (Array.isArray(c.flags) ? c.flags : []).slice(0, 8).map(function(flag) { return _acCkFlagText(t, flag); });
+    if (c.attempt > 1) notes.push(_acWsText(t, 'class_analytics.th_ck_note_attempt', 'Try {n} of this check on that device.', { n: c.attempt }));
+    if (c.prorated) notes.push(_acWsText(t, 'class_analytics.th_ck_note_prorated', 'Every problem was finished early, so the rate uses the time taken.'));
+    if (c.recounted) notes.push(_acWsText(t, 'class_analytics.th_ck_note_recounted', 'The file gave {stated} as the score. The score shown is worked out from the answers in the file.', { stated: c.stated }));
+    return notes;
+  }
+  // One student's results of every measure that has a take-home result, oldest
+  // first: the ones given in the app and the ones from home in one list, each
+  // marked with where it was done. Nothing is averaged or compared.
+  function _acCkOverTime(student, probeHistoryAll) {
+    if (!student) return [];
+    var groups = {};
+    var order = [];
+    var num = function(v) { return typeof v === 'number' && Number.isFinite(v) ? v : null; };
+    var one = function(r) {
+      if (!r || typeof r !== 'object' || r.invalid) return;
+      var kind = String(r.activity || r.type || '').toLowerCase();
+      var time = Number(r.timestamp) > 0 ? Number(r.timestamp) : Date.parse(r.date);
+      if (!(time > 0)) return;
+      var home = _acCkIsHome(r);
+      var key, info, score, unit;
+      if (kind === 'math_custom') {
+        if (!home) return;
+        unit = r.measure === 'math_items' ? 'items_correct' : 'digits_correct_per_minute';
+        key = 'custom:' + _acThText(r.packetId, 80) + ':' + unit;
+        info = { measure: r.measure === 'math_items' ? 'math_items' : 'math_dcpm', custom: true, title: _acThText(r.title, 80), packetId: _acThText(r.packetId, 80) };
+        score = unit === 'items_correct' ? num(r.correct) : num(r.dcpm);
+      } else if (kind === 'math_dcpm' || kind === 'math_fluency' || (kind === 'math' && num(r.dcpm) !== null)) {
+        key = 'math_dcpm'; info = { measure: 'math_dcpm', custom: false }; unit = 'digits_correct_per_minute';
+        score = num(r.dcpm) !== null ? num(r.dcpm) : num(r.itemsPerMin);
+      } else if (kind === 'missing_number' || kind === 'quantity_discrimination') {
+        key = kind; info = { measure: kind, custom: false }; unit = 'items_correct';
+        score = num(r.correct);
+      } else return;
+      // A record made in the app with no score is not a result to list.
+      if (!home && score === null) return;
+      if (!_acWsOwn(groups, key)) { groups[key] = Object.assign({ key: key, rows: [] }, info); order.push(key); }
+      if (info.custom && info.title && !groups[key].title) groups[key].title = info.title;
+      groups[key].rows.push({ time: time, date: _acLocalDate(time), where: home ? 'th' : 'app', score: home && r.noScore ? null : score, unit: unit, attempted: num(r.total),
+        custom: false, measure: info.measure, grade: r.grade == null ? '' : _acThText(String(r.grade), 4), form: info.custom ? '' : _acThText(r.form, 8), noScore: home && r.noScore ? _acThText(r.noScore, 20) : (score === null ? 'unknown' : ''),
+        flags: home && Array.isArray(r.flags) ? r.flags.filter(function(f) { return typeof f === 'string'; }) : [], attempt: home ? Number(r.attempt) || 1 : 1, prorated: r.prorated === true,
+        edited: home && r.integrity === 'changed', dateFromFile: home && r.dateFromFile === true });
+    };
+    [student.nickname || student.name, student.name].filter(function(name, i, all) { return typeof name === 'string' && name && all.indexOf(name) === i; }).forEach(function(name) {
+      if (probeHistoryAll && _acWsOwn(probeHistoryAll, name) && Array.isArray(probeHistoryAll[name])) probeHistoryAll[name].forEach(one);
+    });
+    (Array.isArray(student.screeningHistory) ? student.screeningHistory : []).forEach(one);
+    return order.map(function(key) { return groups[key]; }).filter(function(g) { return g.rows.some(function(row) { return row.where === 'th'; }); }).map(function(g) {
+      g.rows.sort(function(a, b) { return a.time - b.time; });
+      g.rows = g.rows.slice(-20);
+      return g;
+    });
+  }
+  function _acCkHasHomeResults(student, probeHistoryAll) { return _acCkOverTime(student, probeHistoryAll).length > 0; }
+  // The student's card: one table per measure, one row per result, text only.
+  function _acCkOverTimeCard(h, t, student, probeHistoryAll, opts) {
+    var groups = _acCkOverTime(student, probeHistoryAll);
+    if (!groups.length) return null;
+    var heading = _acWsText(t, 'class_analytics.th_ck_over_time_heading', 'Math checks over time');
+    var th = 'px-2 py-1 text-left text-xs font-bold text-slate-800 border-b border-sky-300';
+    var td = 'px-2 py-1 text-xs text-slate-900 border-b border-sky-100 align-top';
+    var wsSaved = student.data && student.data.wordSoundsState && student.data.wordSoundsState.wsSessions;
+    // The Word Sounds card has the same button when the student has take-home practice.
+    var buttonElsewhere = !!(wsSaved && Array.isArray(wsSaved.sessions) && wsSaved.sessions.some(function(s) { return s && s.src === 'th'; }));
+    return h('div', { 'data-ck-over-time-card': 'true', className: 'mb-4 p-4 bg-sky-50 border border-sky-300 rounded-xl' },
+      h('h4', { className: 'font-bold text-slate-900 mb-1' }, heading),
+      h('p', { className: 'text-[11px] text-slate-800 mb-2' }, _acWsText(t, 'class_analytics.th_ck_over_time_hint', 'Checks given in the app and checks done at home, by date. A check done at home has no teacher present. It is shown for progress and is never used for benchmarks, review groups or risk levels.')),
+      groups.map(function(g) {
+        var name = _acCkGroupName(t, g);
+        return h('div', { key: g.key, 'data-ck-group': g.key, className: 'mb-2 bg-white rounded-lg border border-sky-200 p-2' },
+          h('h5', { className: 'text-sm font-bold text-slate-900 mb-1' }, name),
+          g.custom ? h('p', { 'data-ck-custom-note': 'true', className: 'text-[11px] text-slate-800 mb-1' }, _acWsText(t, 'class_analytics.th_ck_custom_note', 'Your own problem set. It is not compared with any other check.')) : null,
+          h('div', { className: 'overflow-x-auto' }, h('table', { 'data-ck-over-time': g.key, className: 'w-full border-collapse' },
+            h('caption', { className: 'sr-only' }, name),
+            h('thead', null, h('tr', null,
+              h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_date', 'Date')),
+              h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_col_where', 'Where')),
+              g.custom ? null : h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_ck_col_form', 'Form')),
+              h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_ck_col_score', 'Score')),
+              h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_ck_col_notes', 'Notes')))),
+            h('tbody', null, g.rows.map(function(row, i) {
+              var notes = _acCkNotes(t, row);
+              if (row.edited) notes.push(_acWsText(t, 'class_analytics.th_edited_short', 'File edited after it was saved'));
+              if (row.dateFromFile) notes.push(_acWsText(t, 'class_analytics.th_date_from_file', 'Date from the file, not from the results'));
+              return h('tr', { key: i, 'data-ck-where': row.where },
+                h('th', { scope: 'row', className: td + ' font-semibold text-left whitespace-nowrap' }, row.date),
+                h('td', { className: td }, _acWsWhereText(t, row.where)),
+                g.custom ? null : h('td', { className: td }, _acCkFormText(t, row)),
+                h('td', { className: td }, _acCkScoreText(t, row)),
+                h('td', { className: td }, notes.length ? notes.join(' ') : '–'));
+            })))));
+      }),
+      !buttonElsewhere && opts && typeof opts.onRemoveTakeHome === 'function' ? h('button', {
+        type: 'button',
+        'data-th-remove': 'true',
+        onClick: function() { opts.onRemoveTakeHome(student); },
+        className: 'mt-1 min-h-11 bg-white hover:bg-slate-100 text-slate-900 border border-slate-500 px-3 py-2 rounded-lg text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2'
+      }, _acWsText(t, 'class_analytics.th_remove_button', "Remove this student's take-home results")) : null);
+  }
+  // ── Saving a check as a file for home ──
+  // The file is made by the take-home loader with packet_check_builder.js.
+  // Both are fetched the way Word Sounds fetches the loader
+  // (window.__alloLoadPlugin). null when this version does not ship one of them.
+  async function _acCkLibs() {
+    var w = typeof window !== 'undefined' ? window : null;
+    if (!w) return null;
+    try {
+      if (!w.AlloWordSoundsTakeHome && typeof w.__alloLoadPlugin === 'function') await w.__alloLoadPlugin('word_sounds_take_home_loader.js');
+      if (!w.AlloPacketChecks && typeof w.__alloLoadPlugin === 'function') await w.__alloLoadPlugin('packet_check_builder.js');
+    } catch (e) {}
+    var loader = w.AlloWordSoundsTakeHome, builder = w.AlloPacketChecks;
+    return loader && builder && typeof loader.buildHtml === 'function' && loader.CHECK_ADAPTERS && typeof builder.buildCheckPacket === 'function' ? { loader: loader, builder: builder } : null;
+  }
+  // The words inside the file, in the app's language where a translation
+  // exists (word_sounds.take_home_player_<label>, as Word Sounds does for a
+  // practice file); the loader's own English otherwise.
+  function _acCkFileLabels(t, loader, activity) {
+    var labels = {};
+    var keys = Object.keys(loader.DEFAULT_LABELS || {}).concat(Object.keys(loader.CHECK_LABELS || {}));
+    var adapter = loader.CHECK_ADAPTERS && _acWsOwn(loader.CHECK_ADAPTERS, activity) ? loader.CHECK_ADAPTERS[activity] : null;
+    if (adapter) keys = keys.concat(Object.keys(adapter.labels || {}), [activity + '_title']);
+    keys.forEach(function(key) {
+      if (key === 'ordinals' || key === 'lang' || key === 'dir') return;
+      var full = 'word_sounds.take_home_player_' + key;
+      var value = '';
+      try { value = typeof t === 'function' ? t(full) : ''; } catch (e) { value = ''; }
+      if (typeof value === 'string' && value && value !== full) labels[key] = value;
+    });
+    // The file's language and direction follow the app's, as the printouts do.
+    try {
+      var docEl = document.documentElement;
+      if (/^[a-z]{2,3}(?:-[A-Za-z0-9]{1,8})*$/.test(docEl.lang || '')) labels.lang = docEl.lang;
+      if (docEl.dir === 'rtl' || docEl.dir === 'ltr') labels.dir = docEl.dir;
+    } catch (e) {}
+    return labels;
+  }
+  // The fixed forms the in-app checks use (loadProbeBanks puts them on window).
+  function _acCkBank() {
+    var w = typeof window !== 'undefined' ? window : {};
+    return { MATH_PROBE_BANKS: w.MATH_PROBE_BANKS, MISSING_NUMBER_PROBES: w.MISSING_NUMBER_PROBES, QUANTITY_DISCRIMINATION_PROBES: w.QUANTITY_DISCRIMINATION_PROBES };
+  }
+  function _acCkFileStem(text) {
+    var stem = String(text == null ? '' : text).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+    return stem || 'math-check';
+  }
+  // A fixed form of Math Fluency ('math_computation'), Missing Number or
+  // Quantity Discrimination. { ok, html, name, lesson } or { ok: false,
+  // reason: 'unavailable' | 'no_form' | 'failed' }.
+  async function _acCkBuildForm(input) {
+    var o = input || {};
+    var libs = await _acCkLibs();
+    if (!libs) return { ok: false, reason: 'unavailable' };
+    var info = libs.builder.MEASURES && _acWsOwn(libs.builder.MEASURES, o.measure) ? libs.builder.MEASURES[o.measure] : null;
+    var bank = _acCkBank();
+    var grade = String(o.grade == null ? '' : o.grade).toUpperCase(), form = String(o.form == null ? '' : o.form).toUpperCase();
+    var forms = info && bank[info.bank] && typeof bank[info.bank] === 'object' && _acWsOwn(bank[info.bank], grade) ? bank[info.bank][grade] : null;
+    if (!forms || !_acWsOwn(forms, form)) return { ok: false, reason: 'no_form' };
+    try {
+      var lesson = libs.builder.lessonFromMathForm({ bank: bank, measure: o.measure, grade: grade, form: form });
+      // The heading inside the file, in the app's language when it has one.
+      var titleKey = 'class_analytics.th_ck_file_title';
+      var title = '';
+      try { title = typeof o.t === 'function' ? o.t(titleKey) : ''; } catch (e) { title = ''; }
+      title = typeof title === 'string' && title && title !== titleKey
+        ? _acWsText(o.t, titleKey, '', { name: _acCkMeasureName(o.t, _AC_CK_FORM_MEASURES[o.measure]), grade: grade, form: form }) : '';
+      var built = libs.builder.buildCheckPacket({ lesson: lesson, title: title, teacherCode: o.teacherCode || '', loader: libs.loader, labels: _acCkFileLabels(o.t, libs.loader, o.measure) });
+      return { ok: true, html: built.html, name: info.slug + '-g' + grade + '-' + form + '.html', lesson: lesson, manifest: built.manifest };
+    } catch (e) { return { ok: false, reason: 'failed', message: e && e.message ? String(e.message) : '' }; }
+  }
+  // A teacher's own problems, as one fixed list: every learner who gets the
+  // file gets the same problems. The packet id is made from the problems, so
+  // repeat tries of the same list are listed together.
+  async function _acCkBuildCustom(input) {
+    var o = input || {};
+    var libs = await _acCkLibs();
+    if (!libs) return { ok: false, reason: 'unavailable' };
+    try {
+      var lesson = libs.builder.lessonFromMathProblems({ title: o.title, problems: o.problems, timeLimitS: o.timeLimitS, allowSkip: o.allowSkip !== false });
+      var built = libs.builder.buildCheckPacket({ lesson: lesson, teacherCode: o.teacherCode || '', loader: libs.loader, labels: _acCkFileLabels(o.t, libs.loader, 'math_computation') });
+      return { ok: true, html: built.html, name: _acCkFileStem(lesson.title) + '.html', lesson: lesson, manifest: built.manifest, packetId: lesson.lessonId, problems: lesson.blocks[0].items.length };
+    } catch (e) { return { ok: false, reason: 'failed', message: e && e.message ? String(e.message) : '' }; }
+  }
+  function _acCkDownload(html, name) {
+    var url = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+    var link = document.createElement('a');
+    link.href = url; link.download = name;
+    document.body.appendChild(link); link.click(); link.remove();
+    setTimeout(function() { try { URL.revokeObjectURL(url); } catch (e) {} }, 60000);
+  }
+  async function _acCkSaveForm(input) { var built = await _acCkBuildForm(input); if (built.ok) _acCkDownload(built.html, built.name); return built; }
+  async function _acCkSaveCustom(input) { var built = await _acCkBuildCustom(input); if (built.ok) _acCkDownload(built.html, built.name); return built; }
+  // For the Math Fluency panel ("Save as a file for home" on its setup screen).
+  try { if (typeof window !== 'undefined') window.AlloTakeHomeChecks = { libs: _acCkLibs, buildForm: _acCkBuildForm, buildCustom: _acCkBuildCustom, saveForm: _acCkSaveForm, saveCustom: _acCkSaveCustom }; } catch (e) {}
+  // The quiet second action beside a check's Start button.
+  function _acCkSaveButton(h, t, measure, actions) {
+    if (!actions) return null;
+    var off = !!actions.unavailable;
+    var open = !!(actions.state && actions.state.measure === measure);
+    return h('button', {
+      type: 'button',
+      'data-ck-save-open': measure,
+      'aria-expanded': open ? 'true' : 'false',
+      disabled: off,
+      onClick: function() { actions.onOpen(measure); },
+      className: 'min-h-11 px-3 py-2 rounded-lg text-xs font-bold border focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2 '
+        + (off ? 'border-slate-400 text-slate-700 bg-slate-100 cursor-not-allowed' : 'border-slate-500 text-slate-900 bg-white hover:bg-slate-100')
+    }, off ? _acWsText(t, 'class_analytics.th_ck_save_off', 'Save as a file for home: not available in this version')
+      : _acWsText(t, 'class_analytics.th_ck_save_button', 'Save as a file for home'));
+  }
+  // The small dialog under the launcher: what is saved, the one-line note,
+  // an optional teacher code (folded away) and Save.
+  function _acCkSaveDialog(h, t, measure, actions) {
+    var s = actions && actions.state;
+    if (!s || s.measure !== measure) return null;
+    var pick = actions.formOf(measure);
+    var title = _acWsText(t, 'class_analytics.th_ck_save_title', 'Save for home: {name}, Grade {grade}, Form {form}', { name: _acCkMeasureName(t, _AC_CK_FORM_MEASURES[measure]), grade: pick.grade, form: pick.form });
+    var button = 'min-h-11 px-4 py-2 rounded-lg text-sm font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2 ';
+    return h('div', {
+      role: 'dialog',
+      'aria-label': title,
+      'data-ck-save-dialog': measure,
+      tabIndex: -1,
+      ref: function(el) { if (el && !el.getAttribute('data-ck-focused')) { el.setAttribute('data-ck-focused', '1'); try { el.focus(); } catch (e) {} } },
+      onKeyDown: function(e) { if (e.key === 'Escape') { e.stopPropagation(); actions.onClose(); } },
+      className: 'mt-2 max-w-xl rounded-lg border border-slate-500 bg-white p-3 focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-700'
+    },
+      h('p', { className: 'text-sm font-bold text-slate-900' }, title),
+      h('p', { 'data-ck-save-note': 'true', className: 'text-xs text-slate-900 mt-1' }, _acWsText(t, 'class_analytics.th_ck_save_note', 'Home results are for seeing progress, not for a grade.')),
+      s.unavailable ? null : h('details', { className: 'mt-2' },
+        h('summary', { className: 'text-xs font-semibold text-slate-900 cursor-pointer' }, _acWsText(t, 'class_analytics.th_ck_code_summary', 'Add a teacher code (optional)')),
+        h('label', { className: 'block text-xs text-slate-900 mt-1' }, _acWsText(t, 'class_analytics.th_ck_code_label', 'Teacher code'),
+          h('input', { type: 'text', 'data-ck-code': 'true', value: s.code || '', maxLength: 64, autoComplete: 'off', spellCheck: false,
+            onChange: function(e) { actions.onCode(e.target.value); }, className: 'ml-2 px-2 py-1.5 rounded-lg border border-slate-500 bg-white text-xs text-slate-900' })),
+        h('p', { className: 'text-[11px] text-slate-800 mt-1' }, _acWsText(t, 'class_analytics.th_ck_code_hint', 'With a code, the results screen inside the file opens only for someone who types it. Use 4 or more characters. It locks that screen; it does not hide the answers from someone determined.'))),
+      h('p', { role: 'status', 'data-ck-save-message': s.unavailable ? 'unavailable' : s.error ? 'error' : s.message ? 'ok' : 'none', className: 'text-xs font-semibold text-slate-900 mt-2' },
+        s.unavailable ? _acWsText(t, 'class_analytics.th_ck_save_unavailable', 'Saving a file for home is not available in this version.') : (s.message || '')),
+      h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+        s.unavailable ? null : h('button', { type: 'button', 'data-ck-save-go': 'true', disabled: !!s.busy, onClick: function() { actions.onSave(); },
+          className: button + (s.busy ? 'bg-slate-200 text-slate-700 cursor-not-allowed' : 'bg-sky-800 hover:bg-sky-900 text-white') },
+          s.busy ? _acWsText(t, 'class_analytics.th_ck_save_busy', 'Making the file...') : _acWsText(t, 'class_analytics.th_ck_save_go', 'Save the file')),
+        h('button', { type: 'button', 'data-ck-save-close': 'true', onClick: function() { actions.onClose(); }, className: button + 'bg-white hover:bg-slate-100 text-slate-900 border border-slate-500' },
+          _acWsText(t, 'class_analytics.th_close', 'Close'))));
   }
   // END TAKE-HOME RESULTS IMPORT
   function _acRestoreIdentityLinks(raw) {
@@ -2745,7 +3275,9 @@ try {
     // Hands a standardized math administration to the tool that owns the
     // measure, the same way onLaunchORF hands reading fluency to the reader.
     onLaunchMathProbe,
-    probeHistory,
+    // The whole store, results from home included. Everything below reads
+    // `probeHistory`, which leaves them out (see _acCkSupervised).
+    probeHistory: probeHistoryAll,
     interventionLogs,
     addToast,
     probeGradeLevel,
@@ -2825,6 +3357,14 @@ try {
     // and the files read but not yet added.
     const [thLabels, setThLabels] = React.useState(() => _acThRestoreLabels(safeGetItem(AC_TH_LABEL_STORE_KEY)));
     const [thPreview, setThPreview] = React.useState(null);
+    // Probe history without the results from home: what every benchmark,
+    // review group, risk level, growth rate, aimline and report below reads.
+    // Only the take-home import, the "Math checks over time" table, the
+    // archive and the record tools use probeHistoryAll.
+    const probeHistory = React.useMemo(() => _acCkSupervised(probeHistoryAll), [probeHistoryAll]);
+    // "Save as a file for home": the open dialog, and whether this version can make the file.
+    const [ckSave, setCkSave] = React.useState(null);
+    const [ckUnavailable, setCkUnavailable] = React.useState(false);
     React.useEffect(() => {
       try {
         if (Object.keys(thLabels).length) safeSetItem(AC_TH_LABEL_STORE_KEY, JSON.stringify(thLabels));
@@ -3796,6 +4336,8 @@ try {
           interpretation: reason + ' Keep this result as descriptive practice data; it does not assign an intervention tier.',
           recommendations: ['Review the task, scoring, access supports and multiple evidence sources with the educator team before changing services.'] };
       };
+      // A result from a take-home file is never compared with a reference.
+      if (_acCkIsHome(record)) return unavailable('This result is from a take-home file, done without a teacher present, so it is not compared with a reference.');
       if (typeof score !== 'number' || !Number.isFinite(score) || score < 0) return unavailable('A finite, non-negative score is required.');
       grade = String(grade == null ? '' : grade);
       if (probeType !== 'orf') return unavailable('No validated reference is configured for this measure and its AlloFlow forms.');
@@ -4082,6 +4624,11 @@ try {
           const row = [s.nickname || s.name, h.grade || '', (h.form || '') + (h.form && h.formVersion ? ' v' + h.formVersion : ''), when ? new Date(when).toLocaleDateString() : '', h.activity || h.type || '', h.correct || 0, h.total || 0];
           // A record flagged invalid stays listed, without accuracy or a risk level.
           if (h.invalid) { invalidRows++; rows.push(row.concat(['', '', '', invalidNote])); return; }
+          // A result from a take-home file is listed and marked, with no risk level.
+          if (_acCkIsHome(h)) {
+            rows.push(row.concat([h.noScore ? '' : (h.accuracy || 0), '', '', _acWsText(t, 'class_analytics.th_ck_csv_note', 'Take-home: done without a teacher present, so no risk level')]));
+            return;
+          }
           const risk = h.accuracy >= 80 ? 'Low' : h.accuracy >= 60 ? 'Some' : 'At Risk';
           rows.push(row.concat([h.accuracy || 0, h.itemsPerMin || 0, risk, '']));
         });
@@ -4149,7 +4696,7 @@ try {
         if (list.length === 0) return;
         setThPreview({ busy: true, rows: [], others: [], done: null });
         let preview;
-        try { preview = await _acThPreview(list, importedStudents, rosterKey, thLabels); }
+        try { preview = await _acThPreview(list, importedStudents, rosterKey, thLabels, probeHistoryAll); }
         catch (e) { preview = { rows: [], others: [{ name: '', reason: 'unreadable', file: null }], names: [], leftOut: 0 }; }
         setThPreview(Object.assign({ busy: false, done: null }, preview));
       },
@@ -4161,8 +4708,13 @@ try {
         if (ready.length === 0) return;
         const picks = ready.map(row => ({ session: row.session, name: row.choice === '+new' ? _acThNewName(row.session.learner) : row.choice }));
         const makeStudent = (name, session) => _acThNewStudent(name, session, calculateStudentStats({}), !!(rosterKey && rosterKey.students && _acWsOwn(rosterKey.students, name)));
-        const result = _acThApply(importedStudents, picks, makeStudent);
+        const result = _acThApply(importedStudents, picks, makeStudent, probeHistoryAll);
         setImportedStudents(result.students);
+        // Math check results go to probe history, where the app keeps Math Fluency.
+        if (result.probeAdds.length) {
+          if (typeof saveProbeResult === 'function') result.probeAdds.forEach(add => saveProbeResult(add.name, add.record));
+          else _acCkAddToProbeStore(result.probeAdds);
+        }
         setSelectedStudent(current => current && current.id ? (result.students.find(s => s && s.id === current.id) || current) : current);
         setThLabels(prev => _acThRemember(prev, ready));
         const addedKeys = ready.map(row => row.key);
@@ -4181,10 +4733,59 @@ try {
         const same = s => !!s && (s === student || (!!s.id && s.id === student.id));
         setImportedStudents(prev => prev.map(s => same(s) ? _acThRemove(s) : s));
         setSelectedStudent(current => same(current) ? _acThRemove(current) : current);
+        // Math check results from home are in probe history; the host reads the store again.
+        _acCkRemoveFromProbeStore([student.nickname || student.name, student.name]);
       }
     };
     const renderTakeHomePreview = onStudentsTab => thPreview && (effectiveTab === 'students') === onStudentsTab
       ? _acThPreviewPanel(React.createElement, t, thPreview, takeHomeActions) : null;
+    // "Save as a file for home" beside the three fixed-form checks. The grade
+    // and form are the ones the Start button would use.
+    const checkFileActions = {
+      state: ckSave,
+      unavailable: ckUnavailable,
+      formOf: measure => measure === 'math_computation' ? { grade: mathProbeGrade || '1', form: mathProbeForm || 'A' }
+        : measure === 'missing_number' ? { grade: mnGrade || '1', form: mnForm || 'A' } : { grade: qdGrade || 'K', form: qdForm || 'A' },
+      onOpen: async measure => {
+        if (ckSave && ckSave.measure === measure) { setCkSave(null); return; }
+        setCkSave({ measure: measure, code: '', busy: true, message: '', error: false, unavailable: false });
+        const libs = await _acCkLibs();
+        if (!libs) setCkUnavailable(true);
+        setCkSave(prev => prev && prev.measure === measure ? Object.assign({}, prev, { busy: false, unavailable: !libs }) : prev);
+      },
+      onCode: value => setCkSave(prev => prev ? Object.assign({}, prev, { code: String(value == null ? '' : value).slice(0, 64), message: '', error: false }) : prev),
+      onSave: async () => {
+        const s = ckSave;
+        if (!s || s.busy || s.unavailable) return;
+        const say = (message, error) => setCkSave(prev => prev && prev.measure === s.measure ? Object.assign({}, prev, { busy: false, message: message, error: !!error }) : prev);
+        const code = String(s.code || '').trim();
+        if (code && code.length < 4) { say(_acWsText(t, 'class_analytics.th_ck_code_short', 'The teacher code needs 4 or more characters.'), true); return; }
+        setCkSave(prev => prev ? Object.assign({}, prev, { busy: true, message: '', error: false }) : prev);
+        const pick = checkFileActions.formOf(s.measure);
+        const input = { measure: s.measure, grade: pick.grade, form: pick.form, teacherCode: code, t: t };
+        let built = await _acCkBuildForm(input);
+        // The fixed forms download on first use, as they do for Start.
+        if (!built.ok && built.reason === 'no_form' && typeof loadProbeBanks === 'function') {
+          try { await loadProbeBanks(); } catch (e) {}
+          built = await _acCkBuildForm(input);
+        }
+        if (built.ok) {
+          _acCkDownload(built.html, built.name);
+          say(_acWsText(t, 'class_analytics.th_ck_saved', 'Saved {file}. Send it home. The learner opens it in a browser and saves a results file at the end. Add that file here with Add take-home results.', { file: built.name }), false);
+        } else if (built.reason === 'unavailable') {
+          setCkUnavailable(true);
+          setCkSave(prev => prev && prev.measure === s.measure ? Object.assign({}, prev, { busy: false, unavailable: true }) : prev);
+        } else {
+          say(built.reason === 'no_form' ? _acWsText(t, 'class_analytics.th_ck_no_form', 'This form is not loaded yet. Wait a moment, then try again.')
+            : _acWsText(t, 'class_analytics.th_ck_failed', 'The file could not be made.'), true);
+        }
+      },
+      onClose: () => {
+        const measure = ckSave && ckSave.measure;
+        setCkSave(null);
+        if (measure) setTimeout(() => { try { const opener = document.querySelector('[data-ck-save-open="' + measure + '"]'); if (opener) opener.focus(); } catch (e) {} }, 0);
+      }
+    };
     const renderWordSoundsExportButtons = () => React.createElement(React.Fragment, null,
       [['results', 'class_analytics.ws_export_button', 'Export Word Sounds results (CSV)'], ['summary', 'class_analytics.ws_summary_button', 'Word Sounds summary by sound (CSV)'],
         ['sessions', 'class_analytics.ws_sessions_button', 'Word Sounds sessions (CSV)'], ['skills', 'class_analytics.ws_skills_button', 'Word Sounds by skill (CSV)']].map(([part, key, english]) => React.createElement("button", {
@@ -4640,7 +5241,7 @@ try {
     const [recordsRemovalTarget, setRecordsRemovalTarget] = React.useState('');
     const listRecordIdentities = () => {
       const names = new Set();
-      try { Object.keys(probeHistory || {}).forEach(n => names.add(n)); } catch (e) {}
+      try { Object.keys(probeHistoryAll || {}).forEach(n => names.add(n)); } catch (e) {}
       try { Object.keys(interventionLogs || {}).forEach(n => names.add(n)); } catch (e) {}
       try { Object.keys(rtiGoals || {}).forEach(n => names.add(n)); } catch (e) {}
       try { Object.keys(externalCBMScores || {}).forEach(n => names.add(n)); } catch (e) {}
@@ -4741,7 +5342,7 @@ try {
         identityKey: identityKey,
         priorLink: identityKey && identityLinks[identityKey] !== undefined ? identityLinks[identityKey] : null,
         stores: {
-          alloflow_probe_history: { from: (probeHistory || {})[fromName], to: (probeHistory || {})[codename] },
+          alloflow_probe_history: { from: (probeHistoryAll || {})[fromName], to: (probeHistoryAll || {})[codename] },
           alloflow_intervention_logs: { from: (interventionLogs || {})[fromName], to: (interventionLogs || {})[codename] },
           alloflow_rti_goals: { from: (rtiGoals || {})[fromName], to: (rtiGoals || {})[codename] },
           alloflow_external_cbm: { from: (externalCBMScores || {})[fromName], to: (externalCBMScores || {})[codename] }
@@ -4831,7 +5432,8 @@ try {
     const buildYearArchive = () => ({
       schemaVersion: 1,
       exportedAt: new Date().toISOString(),
-      probeHistory: probeHistory || {},
+      // The archive keeps every record, results from home included (each says home: true).
+      probeHistory: probeHistoryAll || {},
       interventionLogs: interventionLogs || {},
       rtiGoals: rtiGoals || {},
       externalCBMScores: externalCBMScores || {},
@@ -8721,7 +9323,7 @@ try {
       },
       "aria-label": "Start math probe",
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-orange-700 to-amber-700 text-white rounded-lg font-bold text-sm hover:from-orange-800 hover:to-amber-800 transition-all shadow-md"
-    }, "\u25B6 Start Math Probe")), /*#__PURE__*/React.createElement("div", {
+    }, "\u25B6 Start Math Probe"), _acCkSaveButton(React.createElement, t, 'math_computation', checkFileActions)), _acCkSaveDialog(React.createElement, t, 'math_computation', checkFileActions), /*#__PURE__*/React.createElement("div", {
       className: "mt-2 text-[11px] text-slate-600 font-semibold"
     }, window.MATH_PROBE_BANKS && window.MATH_PROBE_BANKS[mathProbeGrade || "1"] && window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"] ? `✅ ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].problems.length} problems · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].operation} · ${window.MATH_PROBE_BANKS[mathProbeGrade || "1"][mathProbeForm || "A"].difficulty}` : probeBanksReady ? "— No math probe bank for this grade / form yet" : "⏳ Loading math probes...")), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 mb-4 border border-emerald-200"
@@ -9676,7 +10278,7 @@ try {
         setTimeout(() => mnProbeInputRef.current?.focus(), 100);
       },
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-700 to-indigo-700 text-white rounded-lg font-bold text-sm hover:from-purple-800 hover:to-indigo-800 transition-all shadow-md"
-    }, "\u25B6 Start Missing Number")), numeracyHandback && !mnProbeActive && !qdProbeActive && /*#__PURE__*/React.createElement(SaProbeFullscreen, {
+    }, "\u25B6 Start Missing Number"), _acCkSaveButton(React.createElement, t, 'missing_number', checkFileActions)), _acCkSaveDialog(React.createElement, t, 'missing_number', checkFileActions), numeracyHandback && !mnProbeActive && !qdProbeActive && /*#__PURE__*/React.createElement(SaProbeFullscreen, {
       kind: 'handback', label: 'Probe finished',
       className: "bg-white rounded-xl border-2 border-slate-300 p-8 shadow-lg text-center"
     }, /*#__PURE__*/React.createElement("p", {
@@ -9946,7 +10548,7 @@ try {
         }, 1000);
       },
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-700 to-sky-700 text-white rounded-lg font-bold text-sm hover:from-cyan-800 hover:to-sky-800 transition-all shadow-md"
-    }, "\u25B6 Start QD Probe")), qdProbeActive && /*#__PURE__*/React.createElement(SaProbeFullscreen, {
+    }, "\u25B6 Start QD Probe"), _acCkSaveButton(React.createElement, t, 'quantity_discrimination', checkFileActions)), _acCkSaveDialog(React.createElement, t, 'quantity_discrimination', checkFileActions), qdProbeActive && /*#__PURE__*/React.createElement(SaProbeFullscreen, {
       kind: 'quantity_discrimination', label: 'Quantity Discrimination probe',
       className: "bg-white rounded-xl border-2 border-cyan-300 p-6 shadow-lg"
     }, /*#__PURE__*/React.createElement("div", {
@@ -11941,7 +12543,9 @@ try {
       })));
     })(),
     // The wrong answers picked most often, by word.
-    _acWsWrongAnswers(React.createElement, t, selectedStudent), selectedStudent.stats?.gamesPlayed > 0 && /*#__PURE__*/React.createElement("div", {
+    _acWsWrongAnswers(React.createElement, t, selectedStudent),
+    // Math checks given in the app and done at home, by date (only when there is one from home).
+    _acCkOverTimeCard(React.createElement, t, selectedStudent, probeHistoryAll, takeHomeActions), selectedStudent.stats?.gamesPlayed > 0 && /*#__PURE__*/React.createElement("div", {
       "data-help-key": "dashboard_detail_games",
       className: "mb-4 p-4 bg-violet-50 border border-violet-200 rounded-xl"
     }, /*#__PURE__*/React.createElement("h4", {
@@ -12145,9 +12749,16 @@ try {
     storageKey: 'alloflow_probe_history',
     allosheetMinimumGroupSize: SA_ALLOSHEET_MIN_GROUP_SIZE,
     buildAlloSheetEnvelope: buildStudentAnalyticsAlloSheetEnvelope,
+    // Results from a take-home file (home: true) are left out here, so the
+    // screening summary, review tier, trend series and Report Writer export
+    // built on this never use them. They are in getStudentTakeHomeResults.
     getStudentProbeHistory: function(nickname) {
       var arr = _readProbeStore()[nickname];
-      return Array.isArray(arr) ? arr.slice() : [];
+      return Array.isArray(arr) ? arr.filter(function(r) { return !_acCkIsHome(r); }) : [];
+    },
+    getStudentTakeHomeResults: function(nickname) {
+      var arr = _readProbeStore()[nickname];
+      return Array.isArray(arr) ? arr.filter(_acCkIsHome) : [];
     },
     getScreeningSummary: function(nickname) {
       var arr = _saMeta.getStudentProbeHistory(nickname);

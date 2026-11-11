@@ -19738,7 +19738,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // and the fluency panel's AlloSheet envelope both call this. Replaces the
   // retired device-global mathFluencyHistory.
   const mathProbesFor = (name) => (name && probeHistory && probeHistory[name])
-    ? probeHistory[name].filter(r => r && (r.activity === 'math_dcpm' || r.activity === 'math'))
+    ? probeHistory[name].filter(r => r && r.home !== true && (r.activity === 'math_dcpm' || r.activity === 'math'))
     : [];
   const [surveyResponses, setSurveyResponses] = useState(() => {
     try { return JSON.parse(localStorage.getItem('alloflow_survey_responses') || '[]'); } catch { return []; }

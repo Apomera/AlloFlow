@@ -242,7 +242,8 @@ describe('module records manager (finding 6)', () => {
   it('the picker unions every store, so roster-only and orphaned identities are reachable', () => {
     const fnSrc = extractDecl(ac, 'const listRecordIdentities = () => {');
     // eslint-disable-next-line no-new-func
-    const list = new Function('probeHistory', 'interventionLogs', 'rtiGoals', 'externalCBMScores', 'rosterKey', 'importedStudents',
+    // probeHistoryAll: the whole store, so a learner with only take-home results is reachable too.
+    const list = new Function('probeHistoryAll', 'interventionLogs', 'rtiGoals', 'externalCBMScores', 'rosterKey', 'importedStudents',
       fnSrc + ' return listRecordIdentities;')(
       { 'Marcus Reyes': [] },       // orphaned split identity: probe history only
       { Falcon: [] },
