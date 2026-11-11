@@ -3814,6 +3814,32 @@
     return /^data:image\/(png|jpe?g|gif|webp|svg\+xml);base64,[a-z0-9+/=\s]+$/i.test(value) && value.length < 1500000 ? value : null;
   }
 
+  // When a word's own picture shows, activity by activity. This is the app's
+  // player, as a learner meets it (word_sounds_module.js: SMART_IMAGE_VISIBILITY
+  // and its "progressive" default, drawn by renderPrompt(), revealed in
+  // checkAnswer; tests/word_sounds_packet_pictures.test.js reads that code and
+  // fails when this table and the app part ways):
+  //   'prompt'  with the question                                  (app: alwaysOn)
+  //   'retry'   after the first wrong try, or when the item is done (app: progressive)
+  //   'after'   only when the item is done                          (app: afterCompletion)
+  //   no entry  never. The app draws no prompt picture there (Sound Sort,
+  //             Syllable Blending), or the pictures ARE the activity and its
+  //             adapter places them (Read & Match, Finish the Sentence, Read
+  //             the Story, Picture the Sentence).
+  // Find Sounds is 'prompt': the app's answer screen puts the picture on its
+  // "hear the word" button from the start. The word there is the question, never the answer.
+  var PICTURE_RULE = {
+    isolation: 'prompt', segmentation: 'prompt', rhyming: 'prompt', letter_tracing: 'prompt', mapping: 'prompt',
+    word_families: 'retry', manipulation: 'retry', syllable_counting: 'retry',
+    counting: 'after', blending: 'after', orthography: 'after', spelling_bee: 'after', word_scramble: 'after', missing_letter: 'after',
+  };
+  // Words for the picture. They travel only in a file that has word pictures.
+  // Translated through word_sounds.take_home_player_<key> in the app.
+  var PICTURE_LABELS = {
+    picture_clue: 'Picture clue',
+    picture_of: 'Picture of {word}',
+  };
+
   // Build the learner lesson from a prepared pack by ALLOWLIST: each adapter
   // copies only the fields and clips its activity plays. Nothing else in the
   // pack (other answers, review data, provenance, learner data) can reach the
@@ -3901,6 +3927,7 @@
     };
     var blocks = [];
     var exceptions = [];
+    var pictured = {};
     activities.forEach(function (id) {
       var adapter = adapters[id];
       var items = [];
@@ -3914,7 +3941,15 @@
         var made;
         try { made = adapter.prepare(w, Object.assign({ word: word }, env)); } catch (_) { made = { missing: ['board'] }; }
         if (!made || !made.item) { exceptions.push({ activity: id, word: word, missing: (made && made.missing) || ['board'] }); return; }
-        items.push(Object.assign({ id: id + '-' + items.length, word: word }, made.item));
+        var item = Object.assign({ id: id + '-' + items.length, word: word }, made.item);
+        // The word's own picture, where the app shows one (PICTURE_RULE). A
+        // row with no picture adds nothing, so its file is as it was.
+        if (PICTURE_RULE[id]) {
+          var raw = env.packImage(word);
+          var picture = raw && !/^https?:/i.test(raw) ? addImage(/^data:/i.test(raw) ? raw : 'data:image/png;base64,' + raw) : null;
+          if (picture) { item.wordPicture = picture; pictured[id] = PICTURE_RULE[id]; }
+        }
+        items.push(item);
       });
       if (items.length) blocks.push({ activity: id, items: items });
     });
@@ -3952,6 +3987,8 @@
       submit: opts.submit && /^https:\/\/script\.google\.com\/(?:a\/macros\/[A-Za-z0-9.-]+\/|macros\/)s\/[A-Za-z0-9_-]+\/exec$/.test(str(opts.submit.url)) && /^PK-[0-9a-f-]{36}$/i.test(str(opts.submit.packId))
         ? { url: str(opts.submit.url), packId: str(opts.submit.packId), secret: str(opts.submit.secret).slice(0, 64), expiresAt: str(opts.submit.expiresAt).slice(0, 40) } : null,
     };
+    // Only a lesson with word pictures says when they show.
+    if (Object.keys(pictured).length) lesson.pictures = { rule: pictured };
     var ready = blocks.reduce(function (n, b) { return n + b.items.length; }, 0);
     var perActivity = activities.map(function (id) {
       var block = blocks.filter(function (b) { return b.activity === id; })[0];
@@ -4480,6 +4517,78 @@
       renderStart: function () { renderStart(); }, renderFinish: function () { renderFinish(); } }) : null;
     renderStart();
     return { results: function () { return state && resultFile(); } };
+  }
+
+  // ---------------------------------------------------------------------------
+  // Word pictures. This function travels ONLY in a practice file whose lesson
+  // has word pictures (lesson.pictures); every other file is as it was. It
+  // wraps each activity's render, so the rule lives in one place: the picture
+  // goes above the activity and shows when PICTURE_RULE says. Until the item
+  // is done its alt text is empty and a neutral label stands in ("Picture
+  // clue"), so a screen reader never names the word early; then it is named.
+  // Self-contained: it uses only its parameters.
+  // ---------------------------------------------------------------------------
+  function takeHomePictures(renders, rule, L) {
+    var out = {};
+    Object.keys(renders).forEach(function (id) {
+      var base = renders[id];
+      var when = rule && rule[id];
+      if (when !== 'prompt' && when !== 'retry' && when !== 'after') { out[id] = base; return; }
+      out[id] = function (item, ctx) {
+        var src = ctx.image(item.wordPicture);
+        if (!src) return base(item, ctx);
+        // White behind the drawing: symbols are drawn for a white page, also in dark mode.
+        var img = ctx.el('img', { class: 'picture', src: src, alt: '', style: 'width:160px;height:160px;object-fit:contain;background:#fff;padding:6px' });
+        var label = ctx.el('span', { class: 'sr', text: L.picture_clue });
+        // No "display" on the box: it would undo "hidden".
+        var box = ctx.el('div', { 'data-word-picture': when, style: 'margin:0 0 12px;text-align:center', hidden: when !== 'prompt' }, [img, label]);
+        ctx.root.appendChild(box);
+        var mine = {};
+        Object.keys(ctx).forEach(function (k) { mine[k] = ctx[k]; });
+        // 'retry': the picture is the help after a first wrong try.
+        mine.answer = function (response, isCorrect, options) {
+          var outcome = ctx.answer(response, isCorrect, options);
+          if (when === 'retry' && outcome === 'retry') box.hidden = false;
+          return outcome;
+        };
+        var handle = base(item, mine) || null;
+        return {
+          // The item is over (right, missed, practised, or reopened when done):
+          // the picture shows and may now be named.
+          reveal: function (correct) {
+            box.hidden = false;
+            img.setAttribute('alt', ctx.fmt(L.picture_of, { word: item.word }));
+            if (label.parentNode) label.parentNode.removeChild(label);
+            if (handle && typeof handle.reveal === 'function') handle.reveal(correct);
+          },
+        };
+      };
+    });
+    return out;
+  }
+  // A lesson without its word pictures (a check never shows one). Pictures an
+  // activity places itself stay. The lesson passed in is not changed.
+  function withoutWordPictures(lesson) {
+    var blocks = lesson.blocks.map(function (b) {
+      return Object.assign({}, b, { items: (b.items || []).map(function (it) {
+        if (!it || it.wordPicture == null) return it;
+        var copy = Object.assign({}, it);
+        delete copy.wordPicture;
+        return copy;
+      }) });
+    });
+    var images = {}, all = lesson.images || {};
+    var walk = function (value) {
+      if (typeof value === 'string') { if (all[value]) images[value] = all[value]; return; }
+      if (value && typeof value === 'object') Object.keys(value).forEach(function (k) { walk(value[k]); });
+    };
+    walk(blocks);
+    var out = Object.assign({}, lesson, { blocks: blocks, images: images });
+    delete out.pictures;
+    return out;
+  }
+  function hasWordPictures(lesson) {
+    return (lesson.blocks || []).some(function (b) { return (b.items || []).some(function (it) { return !!it && it.wordPicture != null; }); });
   }
 
   // ---------------------------------------------------------------------------
@@ -5145,11 +5254,16 @@
     // Only a file with a Word Sounds activity grades by sound.
     var hasCore = !!core && typeof core.soundAnswerMatches === 'function';
     if (!hasCore && !(probe && used.every(function (id) { return !!CHECK_ADAPTERS[id] && !(opts.adapters && opts.adapters[id]); }))) throw new Error('buildHtml needs WS_CORE');
+    // A check never shows a word's picture, so it carries none.
+    if (probe && (lesson.pictures || hasWordPictures(lesson))) lesson = withoutWordPictures(lesson);
     if (probe) lesson = sealCheck(lesson, adapters, opts.teacherCode);
-    var labels = Object.assign({}, DEFAULT_LABELS, probe ? CHECK_LABELS : {});
+    // Word pictures: their words and their code travel only in a practice file that has some.
+    var pictured = !probe && !!lesson.pictures && !!lesson.pictures.rule && hasWordPictures(lesson);
+    var labels = Object.assign({}, DEFAULT_LABELS, probe ? CHECK_LABELS : {}, pictured ? PICTURE_LABELS : {});
     used.forEach(function (id) { Object.assign(labels, adapters[id].labels || {}); labels[id + '_title'] = labels[id + '_title'] || adapters[id].title; });
     Object.assign(labels, opts.labels || {});
     var renders = '{' + used.map(function (id) { return JSON.stringify(id) + ':' + adapters[id].render.toString(); }).join(',\n') + '}';
+    var pictureParts = pictured ? 'renders=(' + takeHomePictures.toString() + ')(renders,lesson.pictures.rule,labels);\n' : '';
     // A check carries its own flow, the SHA-256 that reads its answers and the
     // scoring of its activities. TextEncoder is stood in for where a browser
     // has none, so the answers can always be read.
@@ -5165,7 +5279,7 @@
     // its exact hash.
     var script = ('\n(function(){"use strict";\nvar lesson=' + safeJson(lesson) + ';\nvar labels=' + safeJson(labels) + ';\nvar matches=' + (hasCore ? core.soundAnswerMatches.toString() : 'null')
       + ';\nvar renders=' + renders + ';\nvar kit={csv:' + packetCsv.toString() + ',\nhash:' + hashText.toString() + ',\nmailbox:' + (mailbox ? takeHomeMailbox.toString() : 'null')
-      + '};\n' + checkParts + '(' + takeHomeShell.toString() + ')(document,window,lesson,labels,matches,renders,kit);\n})();\n').replace(/\r\n?/g, '\n');
+      + '};\n' + checkParts + pictureParts + '(' + takeHomeShell.toString() + ')(document,window,lesson,labels,matches,renders,kit);\n})();\n').replace(/\r\n?/g, '\n');
     var digest = sha256(script);
     var csp = "default-src 'none'; script-src " + (digest ? "'sha256-" + digest.base64 + "'" : "'unsafe-inline'") + "; style-src 'unsafe-inline'; media-src data: blob:; img-src data:"
       + "; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; connect-src " + connect;
@@ -5378,6 +5492,8 @@
     PACKET_ENGINE: PACKET_ENGINE, resultsCsv: packetCsv, sha256: sha256,
     // Check mode (lesson.mode 'probe'): see takeHomeCheck.
     CHECK_ADAPTERS: CHECK_ADAPTERS, CHECK_LABELS: CHECK_LABELS, CHECK_ROUNDS: CHECK_ROUNDS, checkCodec: checkCodec, checkScore: checkScore, _check: takeHomeCheck,
+    // Word pictures: when each activity shows one (see PICTURE_RULE), and the words for it.
+    PICTURE_RULE: PICTURE_RULE, PICTURE_LABELS: PICTURE_LABELS, _pictures: takeHomePictures,
     // v1 name kept for callers built against the first release.
     buildFindSoundsHtml: buildHtml,
     _shell: takeHomeShell,

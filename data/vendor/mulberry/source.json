@@ -1,0 +1,51 @@
+{
+  "id": "mulberry",
+  "name": "Mulberry Symbols",
+  "author": "Steve Lee",
+  "language": "en",
+  "homepage": "https://mulberrysymbols.org",
+  "repository": "https://github.com/mulberrysymbols/mulberry-symbols",
+  "version": "3.6.1",
+  "release": "v3.6.1 (\"Clarified copyright\", published 2026-08-21)",
+  "commit": "9cbab9f400c5de44e2bc58839cca07294aadb086",
+  "url": "https://github.com/mulberrysymbols/mulberry-symbols/releases/download/v3.6.1/mulberry-symbols.zip",
+  "sha256": "9da3f23a17bd71aec3c94eae9a3367e977e7b65d3d7feeaadb3f4690182aa05b",
+  "bytes": 52347398,
+  "files": 3441,
+  "retrieved": "2026-11-11",
+  "license": "Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)",
+  "licenseShort": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "copyright": "Copyright 2018-2026 Steve Lee",
+  "licenseEvidence": "Checked 2026-11-11 in three places. (1) LICENSE.txt in the repository at tag v3.6.1 (commit 9cbab9f400c5de44e2bc58839cca07294aadb086) and on master, and the same file inside the release zip (identical bytes, sha256 dc26aeda254c860a5d8e8ad5ba3ce44f41c6b1418836df87119899d9a2a7e13c): \"Copyright 2018-2026 Steve Lee. This work is licensed under the Creative Commons Attribution-Share Alike License. To view a copy of this license, visit https://creativecommons.org/licenses/by-sa/4.0/\". The sentence names no version; the address it gives is version 4.0. (2) The project's site, https://mulberrysymbols.org, section Licence: \"These symbols are published under the Creative Commons BY-SA 4.0 licence. You can use the symbols in any project or product, commercial or otherwise as long as any distribution gives us clear attribution and any new or derived symbols are shared under the same licence.\" (3) The attribution the site asks for: \"Mulberry Symbols by Steve Lee are licenced under the Creative Commons Attribution-ShareAlike 4.0 License. See https://mulberrysymbols.org for details\". GitHub's own licence field for the repository says \"Other\" (it does not recognise the short LICENSE.txt), so it was not relied on.",
+  "licenseFiles": {
+    "LICENSE.txt": {
+      "what": "the set's own notice, from the release zip; line ends changed from CRLF to LF and nothing else (the repo stores text with LF)",
+      "sha256": "4dd805b76c6e2dff76a6a4cc1913b4925fe92201b9f3409637244ecafd348ca6",
+      "originalSha256": "dc26aeda254c860a5d8e8ad5ba3ce44f41c6b1418836df87119899d9a2a7e13c"
+    },
+    "CC-BY-SA-4.0.txt": {
+      "what": "the full text of the license, from https://creativecommons.org/licenses/by-sa/4.0/legalcode.txt, unchanged",
+      "sha256": "28a9529c7d0bb4dc51f4bf5c116a3d16ef247a052f7591466768ddf563fd1cf5"
+    }
+  },
+  "symbolInfo": {
+    "file": "symbol-info.csv",
+    "what": "the set's table of every symbol (3,436 rows): id, category, grammar, rated, tags, English name, category name, French name. From the release zip, unchanged (the release also offers it as its own download, with the same bytes). The matching script reads names and categories from it, so the map can be re-made without the whole set.",
+    "sha256": "7ab9c0a3a964334c4f8d38fb2d49bd3e08a3be652a1eca36ac9036ba7adc568c",
+    "bytes": 302110
+  },
+  "symbols": {
+    "folder": "symbols",
+    "what": "The symbol files a Word Sounds word could use, and no others: every candidate of every matched word in data/word_sounds_symbols_map_en.json (used, held for review or rejected). Each file is the release's EN-symbols/<name>.svg, unchanged, byte for byte. The other symbols of the release (flags, maps, multi-word names, words we do not use) are not kept.",
+    "digest": "sha256 of the lines \"<sha256 of the file>  <file name>\\n\", sorted by file name (dev-tools/build_word_sounds_symbols.cjs, symbolsDigest)",
+    "count": 988,
+    "bytes": 6987247,
+    "sha256": "d63487dc0d1d8d197e9b6340023cd4f0d0e066cdee40ef8b7d18ff65bbe62545"
+  },
+  "changes": "The vendored symbol files are unchanged. The page data (word_sounds_symbols/en-<n>.json, with its index word_sounds_symbols_en.js) holds, as text, the drawings of the used words that have a recording. The script passes each through a tidy-up that may remove only an XML prolog, comments, metadata, editor data, the space between tags and space at the ends of the file; the 3.6.1 release files are already clean, so in practice nothing but a final line end is removed (the script reports how many files it changed). No drawing is redrawn, recolored, cropped or turned into pixels.",
+  "remake": "Download the release zip (url above), check its sha256, unzip it, then: node dev-tools/build_word_sounds_symbols.cjs --from <the unzipped folder>. That copies the symbol files that are needed, updates \"symbols\" above, and re-makes data/word_sounds_symbols_map_en.json, word_sounds_symbols_en.js and word_sounds_symbols/en-<n>.json. Without --from the script re-makes the generated files from what is vendored here (enough unless new words need symbols that are not here yet); --check fails when anything is out of date. Run it again after recordings are added or the word list or its blocklist changes. The zip itself (52 MB) is not kept in the repo.",
+  "scope": "Pictures for single words in Word Sounds practice packets, when the teacher checks \"Include pictures\". A packet embeds only the symbols of its own words, credits the set under About this file, and carries the license notice in its manifest.",
+  "shareAlike": "The symbols stay a separately licensed work: they live in this folder and in word_sounds_symbols/ under CC BY-SA 4.0, apart from the AGPL-3.0 program, and each of those data files says so in its first line. A packet with pictures is a collection of the program and the pictures; the pictures in it stay under CC BY-SA 4.0. Anyone who changes a drawing must share the changed drawing under the same license.",
+  "limitations": "The set was drawn in Britain for adults who use symbols to communicate, not for children learning to read: many everyday K-2 words have no symbol (pig, map, ship), some symbols show an adult meaning, and some show the British meaning of a word (chips, pants, football, tap). A symbol named with one word may show a different meaning than a child expects (light is \"not heavy\", top is a position). Matching is by name. The script author looked at every used drawing once (2026-11-11) and held or rejected the ones that looked wrong; a reviewer has not yet gone through them (see the review sheet the script writes). Verbs are named \"word_,_to\", so some file names hold a comma. Six symbols the set marks as rated (body parts) are never used. Symbols that embed a font (fractions and percentages) are refused by the packet builder's safety test. The folder adds about 1,000 small files that no page loads: keep them out of a static-site upload that has a file limit."
+}

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<title>Add up results</title>
+<meta name="description" content="Put the results files your students hand back on one page. See the group together and each learner over time. Your files are read in this browser and are not uploaded. Runs without AI. No accounts.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-results.css">
+<script src="packets-page.js" defer></script>
+<script src="packets_results_reader.js" defer></script>
+<script src="packets-results.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <a class="top-link" href="packets-make.html">Make a practice file</a>
+  </div>
+</header>
+
+<details class="proof">
+  <summary class="wrap">
+    <span class="proof-line">This page runs without AI. No account. Your files are read in this browser and are not uploaded.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap proof-body">
+    <ul>
+      <li>Your files are read with the browser's own file reader. What is in them stays in this tab.</li>
+      <li>Nothing is sent. This page cannot connect to anything: the rule below tells the browser to refuse every connection, and the browser enforces it.</li>
+      <li>This page runs without AI. It counts, sorts and draws what is in your files, and nothing else.</li>
+      <li>Nothing is kept on this device unless you turn on <strong>Keep these results on this device</strong>. When it is on, the results shown on this page are kept in this browser's storage for this site (local storage), on this device only. <strong>Remove them from this device</strong> deletes them. On a shared computer, leave it off.</li>
+      <li>The files you save from this page are made in this tab and saved to this device by your browser.</li>
+      <li>This page loads seven files, all from this site: the page itself, two stylesheets (<code>packets.css</code>, <code>packets-results.css</code>), three scripts (<code>packets-page.js</code>, <code>packets_results_reader.js</code>, <code>packets-results.js</code>) and the icon in the browser tab. It loads no fonts, no trackers and nothing from another site.</li>
+      <li>There are no cookies and nothing to sign in to.</li>
+      <li>Like any website, the server that sends these files can see that your browser asked for them. It receives nothing else.</li>
+    </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+
+<main id="main" class="results">
+  <div class="wrap">
+    <p class="print-only print-head" id="print-head"></p>
+    <h1>Add up results</h1>
+    <p class="results-lead">Put the results files your students hand back on this page. See the group together, and each learner over time.</p>
+    <noscript><p class="note note-problem">This page needs JavaScript to read your files. Nothing is sent anywhere.</p></noscript>
+    <p id="said" class="sr-only" role="status" aria-live="polite"></p>
+
+    <section id="state-empty" aria-labelledby="drop-title">
+      <div id="drop" class="drop">
+        <svg class="drop-mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M24 30V8"/><path d="m15 17 9-9 9 9"/><path d="M8 30v8a2 2 0 0 0 2 2h28a2 2 0 0 0 2-2v-8"/></svg>
+        <h2 id="drop-title">Drop results files here</h2>
+        <p class="drop-sub" id="drop-sub">The files your students saved at the end: CSV or JSON. Up to 500 at a time.</p>
+        <p class="drop-go"><button type="button" class="btn btn-primary" id="choose" aria-describedby="drop-sub">Choose files</button></p>
+        <input type="file" id="files" multiple accept=".csv,.json,text/csv,application/json" aria-label="Results files" hidden>
+      </div>
+      <p class="drop-foot"><button type="button" class="btn btn-text" id="samples">Try with sample results</button> <span class="hint">Eight made-up results files, to see how the page works.</span></p>
+    </section>
+
+    <section id="state-check" class="sheet" aria-labelledby="check-title" hidden>
+      <h2 id="check-title" tabindex="-1">Check what was read</h2>
+      <p id="check-line" class="sheet-intro"></p>
+      <div id="check-body"></div>
+      <div class="actions">
+        <button type="button" class="btn" id="check-more">Add more files</button>
+        <button type="button" class="btn btn-primary push" id="show-results">Show the results</button>
+      </div>
+    </section>
+
+    <section id="state-results" aria-labelledby="results-title" hidden>
+      <div class="results-head">
+        <div>
+          <h2 id="results-title" tabindex="-1">Results</h2>
+          <p id="results-line" class="results-line"></p>
+        </div>
+        <p class="results-tools no-print">
+          <button type="button" class="btn btn-small" id="add-more">Add more files</button>
+          <button type="button" class="btn btn-small" id="open-check" hidden>Check what was read</button>
+          <button type="button" class="btn btn-small" id="start-over">Start over</button>
+        </p>
+      </div>
+      <p id="start-over-ask" class="note no-print" hidden>
+        <span>Clear the results from this page? The files on your device are not touched. Goals you typed here are lost unless you saved them.</span>
+        <button type="button" class="btn btn-small" id="start-over-yes">Clear the page</button>
+        <button type="button" class="btn btn-small" id="start-over-no">Keep the results</button>
+      </p>
+      <p id="sample-note" class="note" hidden>These are sample results. The code names and the scores are made up.</p>
+
+      <fieldset class="view-pick no-print">
+        <legend class="sr-only">What to show</legend>
+        <div class="switch">
+          <label><input type="radio" name="view" value="group" checked> The group</label>
+          <label><input type="radio" name="view" value="learner"> One learner</label>
+        </div>
+      </fieldset>
+
+      <section id="view-group" aria-labelledby="group-title">
+        <h3 id="group-title" tabindex="-1">The group</h3>
+        <div id="middles"></div>
+        <div id="group-table"></div>
+      </section>
+
+      <section id="view-learner" aria-labelledby="learner-title" hidden>
+        <h3 id="learner-title" tabindex="-1">One learner</h3>
+        <div class="field learner-pick no-print">
+          <label for="pick-learner">Learner</label>
+          <select id="pick-learner"></select>
+        </div>
+        <div id="learner-body"></div>
+      </section>
+
+      <section id="take" class="take no-print" aria-labelledby="take-title">
+        <h3 id="take-title">Take it with you</h3>
+        <div class="take-row">
+          <button type="button" class="btn" id="print-group">Print the group</button>
+          <button type="button" class="btn" id="print-learner">Print this learner</button>
+          <button type="button" class="btn" id="save-csv">Save a summary (CSV)</button>
+          <button type="button" class="btn" id="save-bundle">Save all of this as one file</button>
+        </div>
+        <p class="hint">The summary has one row for each result and opens in a spreadsheet. The one file holds everything on this page: drop it here later to open where you left off.</p>
+        <p id="take-said" class="take-said" role="status"></p>
+        <div class="keep">
+          <label class="keep-switch"><input type="checkbox" id="keep" role="switch" aria-describedby="keep-hint"> Keep these results on this device</label>
+          <p class="hint" id="keep-hint">Off: nothing is kept, and closing this tab clears the page. On: the results stay in this browser, on this device, until you remove them. On a shared computer, leave it off.</p>
+          <p class="keep-row">
+            <button type="button" class="btn btn-small" id="forget" hidden>Remove them from this device</button>
+            <span id="keep-said" role="status"></span>
+          </p>
+        </div>
+      </section>
+    </section>
+  </div>
+  <p id="drop-over" class="drop-over" aria-hidden="true" hidden>Drop the files to add them</p>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

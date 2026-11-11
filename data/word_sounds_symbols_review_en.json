@@ -1,0 +1,6 @@
+{
+  "about": "A person's decisions about which Mulberry symbol a Word Sounds word gets. They win over dev-tools/build_word_sounds_symbols.cjs. After a change run: node dev-tools/build_word_sounds_symbols.cjs",
+  "how": "Add the word under \"words\". To use a symbol: {\"status\": \"reviewed\", \"file\": \"name.svg\"} (the file must be one of the word's candidates in data/word_sounds_symbols_map_en.json; leave \"file\" out to approve the one the script chose). To use none: {\"status\": \"rejected\"}. An optional \"note\" says why. A decision on a word also holds for its plain plural.",
+  "example": { "watch": { "status": "reviewed", "file": "watch.svg", "note": "the wristwatch" }, "smoke": { "status": "rejected" } },
+  "words": {}
+}

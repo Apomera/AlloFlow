@@ -1,0 +1,91 @@
+{
+  "kind": "alloflow-take-home-result",
+  "schemaVersion": 3,
+  "player": "alloflow-word-sounds-take-home/2",
+  "sessionId": "4a0bac8e-b6a1-4dae-af30-84c9a84d101c",
+  "packet": {
+    "id": "L-smoke",
+    "version": "r0e0caff1",
+    "engine": "alloflow-packet/1",
+    "form": "",
+    "mode": "practice"
+  },
+  "lessonId": "L-smoke",
+  "revision": "r0e0caff1",
+  "lessonTitle": "Short a",
+  "activityTitles": {
+    "isolation": "Find Sounds"
+  },
+  "learner": "Blue Heron7",
+  "learnerName": "Blue Heron7",
+  "startedAt": "2026-11-11T18:49:43.228Z",
+  "finishedAt": "2026-11-11T18:49:44.838Z",
+  "startedLocal": "2026-11-11T13:49:43-05:00",
+  "finishedLocal": "2026-11-11T13:49:44-05:00",
+  "durationMs": 1610,
+  "timesAreFromTheLearnerDevice": true,
+  "items": [
+    {
+      "n": 1,
+      "itemId": "isolation-0",
+      "activity": "isolation",
+      "word": "cat",
+      "target": "k",
+      "responses": [
+        "k"
+      ],
+      "attempts": 1,
+      "firstTry": true,
+      "correct": true,
+      "done": true,
+      "ms": 762,
+      "supports": {},
+      "practice": null,
+      "flag": ""
+    },
+    {
+      "n": 2,
+      "itemId": "isolation-1",
+      "activity": "isolation",
+      "word": "map",
+      "target": "p",
+      "responses": [
+        "m",
+        "p"
+      ],
+      "attempts": 2,
+      "firstTry": false,
+      "correct": true,
+      "done": true,
+      "ms": 724,
+      "supports": {},
+      "practice": null,
+      "flag": ""
+    }
+  ],
+  "summary": {
+    "items": 2,
+    "done": 2,
+    "firstTry": 1,
+    "afterRetry": 1,
+    "missed": 0,
+    "practised": 0,
+    "itemsGiven": 2,
+    "attempted": 2,
+    "correct": 2,
+    "accuracyPct": 100,
+    "byActivity": [
+      {
+        "activity": "isolation",
+        "items": 2,
+        "correct": 2,
+        "firstTry": 1
+      }
+    ]
+  },
+  "integrity": {
+    "method": "sha256",
+    "value": "3ac6e55e9c4c5d59e5866e1ec964a0da416b3067eef37a82664902d4fc5a0a4c",
+    "note": "detects accidental edits, not deliberate ones"
+  }
+}

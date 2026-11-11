@@ -1,0 +1,5 @@
+﻿"format","session_id","packet_id","packet_version","form","mode","learner","started_local","finished_local","duration_s","item_n","item_id","activity","activity_title","scored","word","target","responses","correct","first_try","tries","time_ms","supports","flag"
+"alloflow-packet-result/1","4a0bac8e-b6a1-4dae-af30-84c9a84d101c","L-smoke","r0e0caff1","","practice","Blue Heron7","2026-11-11T13:49:43-05:00","2026-11-11T13:49:44-05:00","2","1","isolation-0","isolation","Find Sounds","1","cat","k","k","1","1","1","762","",""
+"alloflow-packet-result/1","4a0bac8e-b6a1-4dae-af30-84c9a84d101c","L-smoke","r0e0caff1","","practice","Blue Heron7","2026-11-11T13:49:43-05:00","2026-11-11T13:49:44-05:00","2","2","isolation-1","isolation","Find Sounds","1","map","p","m | p","1","0","2","724","",""
+"#summary","4a0bac8e-b6a1-4dae-af30-84c9a84d101c","items_given=2","attempted=2","correct=2","first_try=1","accuracy_pct=100"
+"#integrity","sha256","3ac6e55e9c4c5d59e5866e1ec964a0da416b3067eef37a82664902d4fc5a0a4c","detects accidental edits, not deliberate ones"

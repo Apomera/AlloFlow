@@ -28,8 +28,9 @@ const ALLOWED_ADDRESSES = [
 ];
 // Every sentence on the pages that holds the word AI. Each says that none runs, or says exactly where one was used.
 const ALLOWED_AI_SENTENCES = [
-  'No AI.',                                                                  // the tagline, in the title, the description and the h1
-  'This page: no AI, no account, nothing you choose leaves your device.',    // the proof line
+  'Runs without AI.',  
+  'This page runs without AI.',                                                                  // the tagline, in the title, the description and the h1
+  'This page runs without AI. No account. Nothing you choose leaves your device.',    // the proof line
   'Run AI.',                                                                 // a list item under "A practice file cannot"
   'The spoken sounds were recorded ahead of time with computer voices, including an AI voice.',   // the voices, said exactly
 ];
@@ -101,9 +102,9 @@ describe('the pages as files', () => {
   it('load nothing from the shared site assets, which pull in fonts and icons from other hosts', () => {
     for (const file of PAGES) expect(read(file), file).not.toMatch(/shared\.css|site\.js|lucide|fonts\.g|unpkg|promo/i);
     for (const file of SCRIPTS) expect(read(file), file).not.toMatch(/XMLHttpRequest|WebSocket|EventSource|sendBeacon|\beval\s*\(|new\s+Function|\bimport\s*\(|\.\s*cookie\b|getUserMedia|serviceWorker/);
-    // The only requests the page scripts make: the sound files (maker) and the built file in memory (preview).
+    // The only requests the page scripts make: the sound files and the picture files (maker) and the built file in memory (preview).
     expect(read('packets-page.js')).not.toMatch(/fetch|localStorage/);
-    expect(read('packets-make.js').match(/window\.fetch\(([^,)]+)/g)).toEqual(['window.fetch(file.url', 'window.fetch(file.url']);
+    expect(read('packets-make.js').match(/window\.fetch\(([^,)]+)/g)).toEqual(['window.fetch(file.url', 'window.fetch(file.url', 'window.fetch(shard.url']);
     expect(read('packets-try.js').match(/window\.fetch\(([^,)]+)/g)).toEqual(['window.fetch(address']);
   });
 
@@ -141,7 +142,7 @@ describe('the pages as files', () => {
     const cannot = [...parse('packets.html').querySelectorAll('h3')].find((heading) => heading.textContent === 'A practice file cannot');
     expect(cannot.nextElementSibling.querySelector('li').textContent).toBe('Run AI. ' + VOICES);
     // The headline stays, and the details say exactly how the voices were made, on both pages.
-    expect(parse('packets.html').querySelector('h1').textContent).toBe('Practice and progress checks. No AI. No accounts.');
+    expect(parse('packets.html').querySelector('h1').textContent).toBe('Practice and progress checks. Runs without AI. No accounts.');
     for (const file of ['packets.html', 'packets-make.html']) expect(parse(file).querySelector('details.proof .proof-body li').textContent, file).toBe(VOICES);
     expect(parse('packets-make.html').getElementById('sources').textContent).toContain('recorded ahead of time with computer voices, including an AI voice');
     // In the scripts the word appears in comments only: no line a visitor reads.
@@ -192,7 +193,7 @@ describe('the pages as files', () => {
       const doc = parse(file);
       expect(doc.querySelector('a.skip').getAttribute('href'), file).toBe('#main');
       expect(doc.querySelector('header') && doc.querySelector('main#main') && doc.querySelector('footer'), file).toBeTruthy();
-      expect(doc.querySelector('details.proof summary').textContent, file).toContain('This page: no AI, no account, nothing you choose leaves your device.');
+      expect(doc.querySelector('details.proof summary').textContent, file).toContain('This page runs without AI. No account. Nothing you choose leaves your device.');
       expect([...doc.querySelectorAll('footer a')].map((link) => link.textContent), file).toEqual(['More from AlloFlow']);
     }
     expect(read('packets.css')).toMatch(/:focus-visible\s*\{[^}]*outline:\s*3px/);
@@ -242,11 +243,11 @@ describe('the pages as files', () => {
   it('the front door links only to what exists, and claims only what is true today', () => {
     const doc = parse('packets.html');
     const cards = [...doc.querySelectorAll('.card')].map((card) => ({ title: card.querySelector('h2').textContent, link: card.querySelector('a')?.getAttribute('href') || null, text: card.textContent }));
-    expect(cards.map((card) => [card.title, card.link])).toEqual([['Make a practice file', 'packets-make.html'], ['Add up results', null], ['Check it yourself', '#check']]);
-    expect(cards[1].text).toContain('Coming soon');
+    expect(cards.map((card) => [card.title, card.link])).toEqual([['Make a practice file', 'packets-make.html'], ['Add up results', 'packets-results.html'], ['Check it yourself', '#check']]);
+    expect(cards[1].text).toContain('not uploaded');
     expect(doc.getElementById('check')).toBeTruthy();
     expect(doc.body.textContent).toContain('For practice and for checking progress. Not a standardized test.');
-    expect(doc.body.textContent).toMatch(/Being built\s+Timed checks with one try and no hints\. Math checks\./);
+    expect(doc.body.textContent).toMatch(/Being built\s+Timed math checks you can make on this site\. Pictures\./);
     expect(doc.body.textContent).not.toContain('!');
     // What the page says about the file is what the file says about itself.
     const loaderSource = read('word_sounds_take_home_loader.js');
@@ -261,7 +262,10 @@ describe('the pages as files', () => {
     expect(files.map((file) => file.url)).toEqual(['audio_bank/phonemes.json', 'audio_bank/isolation.json', 'audio_bank/instructions.json', 'word_audio_kokoro_bank.json', 'audio_bank_kokoro.json']);
     for (const file of files) expect(Math.abs(statSync(file.url).size - file.bytes) / file.bytes, file.url).toBeLessThan(0.05);
     const scripts = [...parse('packets-make.html').querySelectorAll('script')].map((script) => script.getAttribute('src'));
-    expect(scripts).toEqual(['packets-page.js', 'word_sounds_phonemes_en.js', 'word_sounds_core.js', 'word_sounds_wordlist_en.js', 'word_sounds_take_home_loader.js', 'word_sounds_packet_builder.js', 'packets-make.js']);
+    expect(scripts).toEqual(['packets-page.js', 'word_sounds_phonemes_en.js', 'word_sounds_core.js', 'word_sounds_wordlist_en.js', 'word_sounds_take_home_loader.js', 'word_sounds_packet_builder.js',
+      'word_sounds_symbols_en.js', 'packets-make.js']);
+    // The picture index is small (it says which words have a picture); the drawings load only when a file is made with them.
+    expect(statSync('word_sounds_symbols_en.js').size).toBeLessThan(40000);
     const megabytes = scripts.reduce((sum, file) => sum + statSync(file).size, 0) / 1e6;
     expect(read('packets-make.html')).toContain('Getting the word lists, about 2 MB.');
     expect(megabytes).toBeGreaterThan(1.5);
@@ -281,6 +285,12 @@ const SOUNDS = Object.fromEntries(SOUND_URLS.map((url) => {
   const text = read(url);
   return [url, JSON.stringify(shrink(JSON.parse(text.charCodeAt(0) === 0xFEFF ? text.slice(1) : text), url))];
 }));
+// The picture files (Mulberry Symbols), as the index names them. Served only to a page opened with { pictures: true }:
+// every other test sees the page carry on without them.
+const PICTURE_INDEX = require('../word_sounds_symbols_en.js');
+const PICTURE_URLS = PICTURE_INDEX.shards.map((shard) => shard.url);
+const PICTURES = Object.fromEntries(PICTURE_URLS.map((url) => [url, read(url)]));
+const PICTURES_FAILED = 'The pictures could not be downloaded, so this file has none. Check the box to try again.';
 // A stand-in for the browser's audio decoder: any clip becomes a short buffer that depends on its bytes.
 class FakeOffline {
   constructor(channels, length, rate) { this.length = length; this.sampleRate = rate; this.destination = {}; this.played = null; }
@@ -313,8 +323,9 @@ function openMaker(options = {}) {
   w.fetch = async (url, init) => {
     page.asked.push(String(url));
     if (page.offline) throw new TypeError('Failed to fetch');
-    if (init || !SOUNDS[url]) return { ok: false, status: 404, headers: { get: () => null }, text: async () => '' };
-    return { ok: true, status: 200, headers: { get: () => null }, text: async () => SOUNDS[url] };
+    const body = SOUNDS[url] || (options.pictures && !page.noPictures ? PICTURES[url] : null);
+    if (init || !body) return { ok: false, status: 404, headers: { get: () => null }, text: async () => '' };
+    return { ok: true, status: 200, headers: { get: () => null }, text: async () => body };
   };
   w.OfflineAudioContext = FakeOffline;
   w.Blob = class { constructor(parts, opts) { this.body = parts.join(''); this.type = opts && opts.type; this.size = Buffer.byteLength(this.body); } };
@@ -490,7 +501,13 @@ describe('the maker, run with the real builder', () => {
     expect(page.d.querySelector('input[name="length"]:checked').value).toBe('regular');
     await ready(page);
     expect(page.seen('summary')).toBe(true);
-    expect(page.asked).toEqual(SOUND_URLS);
+    // When a word has a picture the page also asks for the picture files. This page is not given them (see openMaker):
+    // it says so under the box, leaves the box unchecked, and makes the plain file.
+    const asksForPictures = used.some((word) => PICTURE_INDEX.has(word));
+    const askedOnce = asksForPictures ? SOUND_URLS.concat(PICTURE_URLS) : SOUND_URLS;
+    expect(page.asked).toEqual(askedOnce);
+    if (asksForPictures) expect(page.$('pictures-line').textContent).toBe(PICTURES_FAILED);
+    expect(page.$('f-pictures').checked).toBe(false);
     expect(page.d.querySelectorAll('script').length).toBe(scriptsBefore);
     const html = page.built();
     expect(audit(html)).toEqual([]);
@@ -538,8 +555,103 @@ describe('the maker, run with the real builder', () => {
     await ready(page);
     for (const block of lessonOf(page.built()).blocks) expect(block.items.map((item) => item.word)).toEqual(few.slice(0, 4));
     expect(page.$('sum-out').textContent).toBe(few.length - 4 + ' words not needed for a Short file: ' + few.slice(4).join(', ') + '. A longer file uses more.');
-    expect(page.asked).toEqual(SOUND_URLS);
+    expect(page.asked).toEqual(askedOnce);
     page.dom.window.close();
+  });
+
+  it('Include pictures: one box, on when a word has a picture; the file gets the drawings and their credit, or is the plain file', async () => {
+    const page = openMaker({ pictures: true });
+    for (const box of page.d.querySelectorAll('.strand input')) if (box.checked !== (box.value === 'isolation')) box.click();
+    page.$('next-1').click();
+    page.choose('mode', 'own');
+    page.set('f-own', 'cat pig sun');
+    await page.until(() => page.$('own-line').textContent === '3 of 3 words can be used.', 'three ready words');
+    expect(['cat', 'pig', 'sun'].map((word) => PICTURE_INDEX.has(word))).toEqual([true, false, true]);
+    expect(page.asked).toEqual([]);
+    page.$('next-2').click();
+    // One box at step 3, and its one line. It is on because a word has a picture.
+    const box = page.$('f-pictures');
+    expect([...page.$('step-3').querySelectorAll('input[type="checkbox"]')]).toEqual([box]);
+    expect(box.closest('label').textContent.trim()).toBe('Include pictures');
+    expect(box.getAttribute('aria-describedby')).toBe('pictures-line');
+    expect(box.checked && !box.disabled).toBe(true);
+    expect(page.$('pictures-line').textContent).toBe('Pictures for 2 of 3 words. Symbols: Mulberry.');
+    await ready(page);
+    expect(page.seen('summary')).toBe(true);
+    // The picture files are the ones the index names, whatever the words; they come after the sounds, once.
+    expect(page.asked).toEqual(SOUND_URLS.concat(PICTURE_URLS));
+    const withPictures = page.built(), sizeWith = page.files[page.files.length - 1].size;
+    expect(audit(withPictures)).toEqual([]);
+    expect(withPictures).not.toMatch(/<(?:iframe|object|embed|link|base|img|audio|video)\b/i);
+    const lesson = lessonOf(withPictures);
+    expect(lesson.blocks[0].items.map((item) => [item.word, item.wordPicture != null])).toEqual([['cat', true], ['pig', false], ['sun', true]]);
+    expect(Object.values(lesson.images).every((uri) => /^data:image\/svg\+xml;base64,/.test(uri))).toBe(true);
+    expect(Object.values(lesson.images).map((uri) => Buffer.from(uri.split(',')[1], 'base64').toString('utf8')).sort())
+      .toEqual(['cat.svg', 'sun.svg'].map((file) => read('data/vendor/mulberry/symbols/' + file).trim()).sort());
+    expect(manifestOf(withPictures).attributions.slice(-1)).toEqual(['Pictures: Mulberry Symbols by Steve Lee, CC BY-SA 4.0 (creativecommons.org/licenses/by-sa/4.0/), mulberrysymbols.org']);
+    expect(manifestOf(withPictures).notices.map((notice) => notice.id)).toEqual(['cmudict', 'mulberry']);
+    expect(page.$('pictures-line').textContent).toBe('Pictures for 2 of 3 words. Symbols: Mulberry.');
+    expect(page.$('summary-facts').textContent).toMatch(/^3 questions\. About 2 minutes\. \d+(?:\.\d)? (?:KB|MB)\.$/);
+    // The page says where its pictures come from, and lists their files with the others it loads.
+    expect(page.$('sources').textContent).toContain('The pictures: Mulberry Symbols by Steve Lee. License: CC BY-SA 4.0.');
+    expect(page.d.querySelector('[data-show-files]').textContent).toContain('When a file is made with pictures: ' + PICTURE_URLS.join(', ') + '.');
+
+    // Unchecked: the plain file, smaller, the same one the builder makes when it is not asked for pictures.
+    box.click();
+    expect(box.checked).toBe(false);
+    await page.until(() => !page.seen('summary'), 'the old file to go');
+    await ready(page);
+    const without = page.built(), sizeWithout = page.files[page.files.length - 1].size;
+    expect(lessonOf(without).images).toEqual({});
+    for (const part of ['Mulberry', 'takeHomePictures', 'wordPicture', 'data:image']) expect(without, part).not.toContain(part);
+    expect(sizeWithout).toBeLessThan(sizeWith);
+    expect(sizeWith - sizeWithout).toBeGreaterThan(Object.values(lesson.images).reduce((sum, uri) => sum + uri.length, 0));
+    expect(page.$('pictures-line').textContent).toBe('Pictures for 2 of 3 words. Symbols: Mulberry.');
+    // Checked again: the same file as the first time, and nothing is fetched again.
+    box.click();
+    await page.until(() => !page.seen('summary'), 'the plain file to go');
+    await ready(page);
+    expect(page.built()).toBe(withPictures);
+    expect(page.asked).toEqual(SOUND_URLS.concat(PICTURE_URLS));
+
+    // No word with a picture: the box cannot be checked, the line says none, and the file is the plain one.
+    page.$('back-3').click();
+    page.set('f-own', 'pig hen');
+    await page.until(() => page.$('own-line').textContent === '2 of 2 words can be used.', 'two ready words');
+    expect(['pig', 'hen'].map((word) => PICTURE_INDEX.has(word))).toEqual([false, false]);
+    page.$('next-2').click();
+    expect(box.disabled).toBe(true);
+    expect(box.checked).toBe(false);
+    expect(page.$('pictures-line').textContent).toBe('Pictures for 0 of 2 words. Symbols: Mulberry.');
+    await ready(page);
+    expect(page.built()).not.toContain('Mulberry');
+    expect(page.w.localStorage.length).toBe(1);
+    expect(JSON.parse(page.w.localStorage.getItem('alloflow-packets-maker/1'))).not.toHaveProperty('pictures');
+    page.dom.window.close();
+
+    // The picture files do not arrive: the page says so, the box goes off, the plain file is made. Checking the box tries again.
+    const poor = openMaker({ pictures: true });
+    poor.noPictures = true;
+    for (const one of poor.d.querySelectorAll('.strand input')) if (one.checked !== (one.value === 'isolation')) one.click();
+    poor.$('next-1').click();
+    poor.choose('mode', 'own');
+    poor.set('f-own', 'cat pig sun');
+    await poor.until(() => poor.$('own-line').textContent === '3 of 3 words can be used.', 'three ready words');
+    poor.$('next-2').click();
+    await ready(poor);
+    expect(poor.seen('summary') && !poor.seen('build-problem')).toBe(true);
+    expect(poor.$('pictures-line').textContent).toBe(PICTURES_FAILED);
+    expect(poor.$('f-pictures').checked).toBe(false);
+    expect(poor.$('f-pictures').disabled).toBe(false);
+    expect(poor.built()).toBe(without);
+    poor.noPictures = false;
+    poor.$('f-pictures').click();
+    await poor.until(() => !poor.seen('summary'), 'the plain file to go');
+    await ready(poor);
+    expect(poor.built()).toBe(withPictures);
+    expect(poor.$('pictures-line').textContent).toBe('Pictures for 2 of 3 words. Symbols: Mulberry.');
+    expect(poor.asked).toEqual(SOUND_URLS.concat(PICTURE_URLS, PICTURE_URLS));
+    poor.dom.window.close();
   });
 
   it('typed words: a blocked word is refused with its reason, a word with no recording says so, and neither is in the file', async () => {

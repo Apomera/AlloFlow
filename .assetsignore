@@ -27,3 +27,7 @@ tests/
 # the CDN URL space), so it is excluded on the same basis as tests/ and
 # dev-tools/ above: kept in Git/Codeberg, not served by alloflow-cdn.
 reports/
+
+# Mulberry symbol sources (988 SVGs, CC BY-SA 4.0) are build inputs for word_sounds_symbols/*.json;
+# no page loads them. Kept in Git, not uploaded, to save the static-file budget.
+data/vendor/mulberry/symbols/

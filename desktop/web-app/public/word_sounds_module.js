@@ -24912,6 +24912,16 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       const [takeHomeOpen, setTakeHomeOpen] = React.useState(false);
       const [takeHomeTitle, setTakeHomeTitle] = React.useState("");
       const [takeHomeLetters, setTakeHomeLetters] = React.useState(false);
+      // "Include pictures": off = the file is made from rows without their pictures.
+      const [takeHomePictures, setTakeHomePictures] = React.useState(true);
+      const takeHomeHasPicture = (w) => !!w && ((typeof w.image === "string" && !!w.image && !w.image.startsWith("ref::")) ||
+        [w._decodingAssets, w._aacAssets].some((bucket) => bucket && typeof bucket === "object" && Object.keys(bucket).length > 0));
+      const takeHomeRows = (rows) => takeHomePictures ? rows : (rows || []).map((w) => {
+        if (!w || typeof w !== "object") return w;
+        const row = { ...w };
+        delete row.image; delete row._decodingAssets; delete row._aacAssets;
+        return row;
+      });
       // null = follow the lesson plan's activities (or Find Sounds alone).
       const [takeHomeActivities, setTakeHomeActivities] = React.useState(null);
       const [takeHomeCatalog, setTakeHomeCatalog] = React.useState([]);
@@ -24960,7 +24970,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         return { ...built, exceptions, total: built.ready + exceptions.length,
           perActivity: (built.perActivity || []).map((row) => ({ ...row, exceptions: keep(row.exceptions || []) })) };
       };
-      const takeHomeLesson = async (lib, submit, words) => takeHomeOwn(lib.lessonFromPack(words || preloadedWords, {
+      const takeHomeLesson = async (lib, submit, words) => takeHomeOwn(lib.lessonFromPack(takeHomeRows(words || preloadedWords), {
         adapters: takeHomeAdapters(lib),
         core: WS_CORE, banks: await takeHomeBanks(), isEnglish: true, showLetters: takeHomeLetters,
         activities: takeHomeChosen(lib.activities()), submit: submit || null,
@@ -24980,7 +24990,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           if (run === takeHomeRunRef.current) setTakeHomeReady(built);
         })().catch(() => { if (run === takeHomeRunRef.current) setTakeHomeReady({ error: true }); });
         return undefined;
-      }, [takeHomeOpen, preloadedWords, takeHomeLetters, takeHomeActivities]);
+      }, [takeHomeOpen, preloadedWords, takeHomeLetters, takeHomeActivities, takeHomePictures]);
       const closeTakeHome = React.useCallback(() => {
         takeHomeFocusBackRef.current = true;
         setTakeHomeOpen(false);
@@ -25034,7 +25044,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         // Keys word_sounds.take_home_player_<label>, registered one by one.
         const labels = {};
         const playerKeyPrefix = ["word_sounds", "take_home_player_"].join(".");
-        const labelKeys = Object.keys(lib.DEFAULT_LABELS);
+        const labelKeys = Object.keys(lib.DEFAULT_LABELS).concat(Object.keys(lib.PICTURE_LABELS || {}));
         Object.keys(lib.ADAPTERS || {}).forEach((id) => labelKeys.push(...Object.keys(lib.ADAPTERS[id].labels || {}), id + "_title"));
         labelKeys.forEach((key) => {
           if (key === "ordinals" || key === "lang") return;
@@ -25332,6 +25342,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         const missingText = (missing) => missing.map((m) => m === "board" ? printTr("word_sounds.take_home_missing_board", "no prepared item for this activity")
           : m === "word" ? printTr("word_sounds.take_home_missing_word", "no recording of the word")
           : m === "question" ? printTr("word_sounds.take_home_missing_question", "no recording of the question")
+          : /^picture:/.test(m) ? printTr("word_sounds.take_home_missing_picture", "no picture of {word}", { word: m.slice(8) })
           : printTr("word_sounds.take_home_missing_sound", "no recording of {sound}", { sound: m })).join(", ");
         const goodRows = takeHomeResults.filter((row) => row.ok);
         const badRows = takeHomeResults.filter((row) => !row.ok);
@@ -25381,6 +25392,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 h("label", { className: "mt-3 flex min-h-11 items-center gap-3 text-sm font-semibold" },
                   h("input", { type: "checkbox", checked: takeHomeLetters, onChange: (event) => setTakeHomeLetters(event.target.checked), className: "h-5 w-5" }),
                   printTr("word_sounds.take_home_letters", "Show letters on the answer choices (off: students choose by listening)")),
+                (preloadedWords || []).some(takeHomeHasPicture) && h("label", { className: "mt-1 flex min-h-11 items-center gap-3 text-sm font-semibold" },
+                  h("input", { type: "checkbox", checked: takeHomePictures, onChange: (event) => setTakeHomePictures(event.target.checked), className: "h-5 w-5", "data-ws-take-home-pictures": "true" }),
+                  h("span", null, printTr("word_sounds.take_home_include_pictures", "Include pictures"),
+                    h("span", { className: "block text-xs font-normal text-slate-600" },
+                      printTr("word_sounds.take_home_include_pictures_help", "A picture shows only where it cannot give the answer away, or after the answer.")))),
                 takeHomeMailboxReady
                   ? h("label", { className: "mt-1 flex min-h-11 items-center gap-3 text-sm font-semibold" },
                     h("input", { type: "checkbox", checked: takeHomeMailbox, onChange: (event) => setTakeHomeMailbox(event.target.checked), className: "h-5 w-5", "data-ws-take-home-send": "true" }),

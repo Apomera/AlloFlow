@@ -1,6 +1,7 @@
 // The maker page (packets-make.html): three steps, then one practice file.
 // Everything happens in this tab. The only requests are for files on this site: the scripts the page
-// names, and (at step 3) the sound files listed in SOUND_FILES, the same ones whatever is chosen.
+// names, and (at step 3) the sound files listed in SOUND_FILES, the same ones whatever is chosen. With
+// "Include pictures" checked it also gets the picture files, again the same ones whatever words are chosen.
 // No AI runs here, and there is no account and no cookie. What it keeps on the device is listed under "About this page".
 (function () {
   'use strict';
@@ -553,6 +554,50 @@
     return made;
   }
 
+  // Pictures: Mulberry Symbols (CC BY-SA 4.0), kept on this site. word_sounds_symbols_en.js, loaded with the
+  // page, says which words have one. The drawings are in the files it names: the same files whatever words are
+  // chosen, fetched only when a file is made with the box checked. A file made without them is the same file as before.
+  var symbols = null, picturesOff = false, picturesNote = '', picturesLoading = null;
+  function loadPictures() {
+    if (symbols.ready()) return Promise.resolve(true);
+    if (!picturesLoading) {
+      picturesLoading = Promise.all(symbols.shards.map(function (shard) {
+        return window.fetch(shard.url).then(function (reply) {
+          if (!reply.ok) throw new Error(shard.url + ' answered ' + reply.status);
+          return reply.text();
+        }).then(function (text) { symbols.add(JSON.parse(text)); });
+      })).then(function () { picturesLoading = null; return symbols.ready(); }, function (error) { picturesLoading = null; throw error; });
+    }
+    return picturesLoading;
+  }
+  // The box and its one line: how many of this file's words have a picture. inFile is what a finished file reports.
+  function drawPictures(inFile) {
+    var box = $('f-pictures');
+    if (!box) return;
+    var words = chosenWords().slice(0, wordsFor(state.length));
+    var have = symbols ? words.filter(function (word) { return symbols.has(word); }).length : 0;
+    box.disabled = !have;
+    box.checked = have > 0 && !picturesOff;
+    box.parentNode.classList.toggle('is-on', box.checked);
+    var n = inFile ? inFile.withPicture : have, of = inFile ? inFile.withPicture + inFile.withoutPicture : words.length;
+    setText('pictures-line', picturesNote || (symbols ? 'Pictures for ' + n + ' of ' + count(of, 'word') + '. Symbols: Mulberry.' : 'Pictures are not available right now.'));
+  }
+  // Whether the file being made gets pictures: the box is checked and the drawings are here.
+  function picturesFor(run) {
+    var box = $('f-pictures');
+    if (!symbols || !box || !box.checked) return Promise.resolve(false);
+    if (!symbols.ready() && run === buildRun) making('Getting the pictures, about ' + megabytes(symbols.bytes) + ' MB.', null);
+    return loadPictures().then(function (ready) { return !!ready; }, function () { return false; }).then(function (ready) {
+      if (!ready) {
+        picturesOff = true;
+        picturesNote = 'The pictures could not be downloaded, so this file has none. Check the box to try again.';
+        drawPictures();
+      }
+      if (run === buildRun) making('Putting the file together.', null);
+      return ready;
+    });
+  }
+
   function autoTitle() {
     var what = 'mixed words';
     if (state.mode === 'own') what = 'my words';
@@ -601,6 +646,7 @@
   function makeSoon(delay) {
     clearTimeout(buildTimer);
     clearBuilt();
+    drawPictures();
     making('Putting the file together.', null);
     buildTimer = setTimeout(make, delay);
   }
@@ -632,8 +678,11 @@
       soundsNote();
       wavCount = 0;
       making('Putting the file together.', null);
-      return builder.buildPacket({ words: words, activities: activities, seed: seed(), title: title, core: core, dictionary: dictionary, banks: banks, loader: loader,
-        wordlist: wordlist, toWav: toWav, picked: state.mode === 'pick' ? picked : null });
+      return picturesFor(run).then(function (pictures) {
+        if (run !== buildRun) return null;
+        return builder.buildPacket({ words: words, activities: activities, seed: seed(), title: title, core: core, dictionary: dictionary, banks: banks, loader: loader,
+          wordlist: wordlist, toWav: toWav, picked: state.mode === 'pick' ? picked : null, pictures: pictures, symbols: pictures ? symbols : null });
+      });
     }).then(function (result) {
       if (!result || run !== buildRun) return;
       drawResult(result, words);
@@ -699,6 +748,8 @@
       return core.activityLabel(id) + ': ' + (n ? count(n, 'question') : 'none (see Left out)') + '.';
     }));
     drawList('sum-out', out.length ? out : ['Nothing. Every word is in every activity you chose.']);
+    // With pictures, the line under the box now counts the words that show one in this file.
+    if (manifest.pictures && manifest.pictures.symbols) drawPictures(manifest.pictures.counts);
     show('summary', true);
     if (fileUrl) { $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl); show('try', true); }
     show('save', true);
@@ -794,6 +845,7 @@
       makeSoon(700);
     });
     $('f-title').addEventListener('blur', function () { if (!state.titleEdited) this.value = autoTitle(); });
+    $('f-pictures').addEventListener('change', function () { picturesOff = !this.checked; picturesNote = ''; makeSoon(0); });
     $('save').addEventListener('click', saveFile);
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
@@ -818,7 +870,8 @@
     var files = ['packets-make.html'];
     Array.prototype.forEach.call(doc.querySelectorAll('link[href]'), function (link) { files.push(link.getAttribute('href')); });
     Array.prototype.forEach.call(doc.querySelectorAll('script[src]'), function (script) { files.push(script.getAttribute('src')); });
-    var text = files.join(', ') + '. At step 3: ' + SOUND_FILES.map(function (file) { return file.url; }).join(', ') + '. For Try it: ' + TRY_PAGE + ' and packets-try.js.';
+    var pictures = symbols ? ' When a file is made with pictures: ' + symbols.shards.map(function (shard) { return shard.url; }).join(', ') + '.' : '';
+    var text = files.join(', ') + '. At step 3: ' + SOUND_FILES.map(function (file) { return file.url; }).join(', ') + '.' + pictures + ' For Try it: ' + TRY_PAGE + ' and packets-try.js.';
     Array.prototype.forEach.call(doc.querySelectorAll('[data-show-files]'), function (node) { node.textContent = text; });
   }
 
@@ -829,6 +882,7 @@
     var lines = [], source = dictionary.source || {}, books = wordlist.meta && wordlist.meta.childBooks;
     if (source.name) lines.push('How each word sounds: ' + source.name + (source.license ? ' (' + source.license + ')' : '') + ', turned into sound labels by AlloFlow.');
     if (books && books.name) lines.push('How common a word is in children\'s books: ' + books.name + '. ' + (books.citation ? books.citation + ' ' : '') + (books.license ? 'License: ' + books.license + '.' : ''));
+    if (symbols && symbols.credit) lines.push('The pictures: ' + symbols.credit.set + ' by ' + symbols.credit.author + '. License: ' + symbols.credit.license + '. ' + symbols.credit.url);
     lines.forEach(function (line) { host.insertBefore(el('li', '', line), host.lastElementChild); });
   }
 
@@ -851,6 +905,9 @@
       return;
     }
     core = window.createWordSoundsCore({ phonemes: dictionary });
+    // The pictures are an extra: the page works without them, and says so under the box.
+    var pictureIndex = modules.WordSoundsSymbols;
+    symbols = pictureIndex && typeof pictureIndex.has === 'function' && typeof pictureIndex.add === 'function' && Array.isArray(pictureIndex.shards) ? pictureIndex : null;
     var buildable = builder.SUPPORTED_ACTIVITIES.filter(function (id) { return loader.ADAPTERS[id] && core.ACTIVITY_SKILLS[id]; });
     heldBack = buildable.filter(function (id) { return HELD_BACK.indexOf(id) >= 0; });
     var offered = buildable.filter(function (id) { return HELD_BACK.indexOf(id) < 0; });

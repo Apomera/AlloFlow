@@ -7,7 +7,7 @@
 <meta name="referrer" content="no-referrer">
 <!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
 <title>Make a practice file</title>
-<meta name="description" content="Make a Word Sounds practice file in three steps. The file is put together in your browser. No AI. No accounts.">
+<meta name="description" content="Make a Word Sounds practice file in three steps. The file is put together in your browser. Runs without AI. No accounts.">
 <link rel="icon" type="image/svg+xml" href="packets-mark.svg">
 <link rel="stylesheet" href="packets.css">
 <script src="packets-page.js" defer></script>
@@ -16,6 +16,7 @@
 <script src="word_sounds_wordlist_en.js" defer></script>
 <script src="word_sounds_take_home_loader.js" defer></script>
 <script src="word_sounds_packet_builder.js" defer></script>
+<script src="word_sounds_symbols_en.js" defer></script>
 <script src="packets-make.js" defer></script>
 </head>
 <body>
@@ -33,7 +34,7 @@
 
 <details class="proof">
   <summary class="wrap wrap-narrow">
-    <span class="proof-line">This page: no AI, no account, nothing you choose leaves your device.</span>
+    <span class="proof-line">This page runs without AI. No account. Nothing you choose leaves your device.</span>
     <span class="proof-open proof-open-closed">See the details</span>
     <span class="proof-open proof-open-opened">Hide the details</span>
   </summary>
@@ -189,6 +190,11 @@
         <label for="f-title">Title</label>
         <span class="hint" id="title-hint">The student sees it at the top of the file. The results file's name starts with it.</span>
         <input type="text" id="f-title" maxlength="80" autocomplete="off" aria-describedby="title-hint">
+      </div>
+
+      <div class="block">
+        <label class="radio"><input type="checkbox" id="f-pictures" aria-describedby="pictures-line" disabled> <span>Include pictures</span></label>
+        <span class="hint" id="pictures-line"></span>
       </div>
 
       <div id="making" class="making" hidden>

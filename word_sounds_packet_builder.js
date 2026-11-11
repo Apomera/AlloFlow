@@ -66,6 +66,87 @@
   ];
 
   // ---------------------------------------------------------------------------
+  // Pictures (only with pictures: true): Mulberry Symbols, vendored in data/vendor/mulberry and
+  // handed in as `symbols` (word_sounds_symbols_en.js). Nothing is fetched here.
+  // ---------------------------------------------------------------------------
+  // The credit holds what the app's MULBERRY_CREDIT holds (alt_text_source.jsx): set, author,
+  // license and the two addresses, written out because a practice file has no links. The app adds
+  // "via Global Symbols" because it searches there; these come from the set's own release.
+  // The two addresses are written without "https" and its two slashes: a practice file, and this
+  // file, hold no web address at all, and their checks look for that scheme.
+  var MULBERRY_CREDIT = { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0',
+    licenseUrl: 'creativecommons.org/licenses/by-sa/4.0/', url: 'mulberrysymbols.org' };
+  function pictureCredit() {
+    var c = MULBERRY_CREDIT;
+    return 'Pictures: ' + c.set + ' by ' + c.author + ', ' + c.license + ' (' + c.licenseUrl + '), ' + c.url;
+  }
+  // Down to the license address this is data/vendor/mulberry/LICENSE.txt, word for word but for the
+  // scheme of that address; the rest says what this file does with the pictures. Share-alike: they
+  // stay a separately licensed work.
+  var MULBERRY_NOTICE = [
+    'The Mulberry Symbol set',
+    '=======================',
+    '',
+    'Copyright 2018-2026 Steve Lee',
+    '',
+    'This work is licensed under the Creative Commons Attribution-Share Alike License.',
+    '',
+    'To view a copy of this license, visit creativecommons.org/licenses/by-sa/4.0/',
+    '',
+    'The pictures in this file are from that set (mulberrysymbols.org). They are a separate work from',
+    'the program in this file and stay under that license (CC BY-SA 4.0): you may copy and share them, and',
+    'change them, as long as you give this credit and share changed pictures under the same license.',
+    'The drawings are unchanged. Each one is stored inside this file as text.',
+  ].join('\n');
+  // Why an SVG may not go into a file, or '' when it may. The symbols are vendored and were tested
+  // when their data file was made; this tests each one again as it is written into a packet. A
+  // drawing shown through <img> cannot run script or load anything, so every test is a second lock.
+  var SVG_MAX = 300000;
+  function svgRefusal(svg) {
+    var text = typeof svg === 'string' ? svg : '';
+    if (!/^\s*<svg[\s>]/.test(text) || !/<\/svg>\s*$/.test(text)) return 'not an SVG drawing';
+    if (text.length > SVG_MAX) return 'the drawing is too large';
+    if (text.indexOf('\\') >= 0) return 'an escape character';
+    if (/<!(?:doctype|entity)/i.test(text)) return 'a document type or entity declaration';
+    if (/<\?(?!xml\s)/i.test(text)) return 'a processing instruction';
+    // Read character references the way a browser does, so "java&#115;cript:" is seen.
+    var plain = text.replace(/&#x([0-9a-f]+);?/gi, function (m, hex) { return String.fromCharCode(parseInt(hex, 16) & 0xFFFF); })
+      .replace(/&#(\d+);?/g, function (m, dec) { return String.fromCharCode(Number(dec) & 0xFFFF); })
+      .replace(/&(colon|newline|tab);/gi, function (m, name) { return name.toLowerCase() === 'colon' ? ':' : ''; });
+    // A browser ignores spaces and control characters inside an address.
+    var packed = plain.replace(/[\x00-\x20]+/g, '');
+    var bare = function (value) { return String(value || '').replace(/[\x00-\x20]+/g, ''); };
+    if (/<\s*(?:[\w-]+:)?script\b/i.test(plain)) return 'a script';
+    if (/<\s*(?:[\w-]+:)?foreignObject\b/i.test(plain)) return 'a foreignObject';
+    if (/<\s*(?:[\w-]+:)?(?:iframe|embed|object|audio|video|animate\w*|set|handler|listener)\b/i.test(plain)) return 'an element that is not a drawing';
+    if (/[\s"'\/]on[a-z]+\s*=/i.test(plain)) return 'an event handler';
+    if (/(?:java|vb|live)script:/i.test(packed)) return 'a script address';
+    if (/xml:base\s*=/i.test(plain)) return 'a base address';
+    // Every link must point inside the drawing itself ("#name"): no other file, no site, no data: address.
+    var m, href = /(?:[\s"'\/])(?:[\w-]+:)?href\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]*))/gi;
+    while ((m = href.exec(plain))) {
+      if (bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return 'a link to something outside the drawing';
+    }
+    if (/[\s"'\/]src\s*=/i.test(plain)) return 'a link to something outside the drawing';
+    // A style block may not load anything: no @import, no url(), no font.
+    var style = /<\s*(?:[\w-]+:)?style\b[^>]*>/gi;
+    while ((m = style.exec(plain))) {
+      if (/\/\s*>$/.test(m[0])) continue;
+      var end = plain.slice(style.lastIndex).search(/<\s*\/\s*(?:[\w-]+:)?style\s*>/i);
+      var css = end < 0 ? plain.slice(style.lastIndex) : plain.slice(style.lastIndex, style.lastIndex + end);
+      if (end < 0 || /@import|@font-face|@namespace|url\s*\(|expression\s*\(/i.test(css)) return 'a style block that loads something';
+    }
+    // Anywhere else, url(...) may only name something inside the drawing: fill="url(#a)".
+    var url = /url\s*\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))/gi;
+    while ((m = url.exec(plain))) {
+      if (bare(m[1] != null ? m[1] : m[2] != null ? m[2] : m[3]).charAt(0) !== '#') return 'a link to something outside the drawing';
+    }
+    return '';
+  }
+  // The address a practice file may show: its rule allows img-src data: and nothing else.
+  function svgDataUri(svg) { return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg))); }
+
+  // ---------------------------------------------------------------------------
   // Seeded order
   // ---------------------------------------------------------------------------
   function mulberry32(seed) {
@@ -580,8 +661,22 @@
       }).then(function (row) { if (row && row.phonemeSource === 'dictionary') rows.push(row); else except(word, null, 'not in the sound dictionary'); });
     }, Promise.resolve());
 
+    // pictures: true puts each word's symbol in the file, where `symbols` has one. Off (the default)
+    // leaves the rows without an image, and the file is what it was before pictures existed.
+    var wantPictures = opts.pictures === true && !!opts.symbols && typeof opts.symbols.get === 'function';
+    var pictureFiles = {}, pictureRefused = [];
+
     return prepare.then(function () {
       logic.compileActivityItems(rows);
+      if (wantPictures) rows.forEach(function (item) {
+        var symbol = null;
+        try { symbol = opts.symbols.get(item.word); } catch (_) { symbol = null; }
+        if (!symbol || typeof symbol.svg !== 'string') return;
+        var why = svgRefusal(symbol.svg);
+        if (why) { pictureRefused.push({ word: item.word, file: String(symbol.file || ''), reason: why }); return; }
+        item.image = svgDataUri(symbol.svg);
+        pictureFiles[item.word] = String(symbol.file || '');
+      });
       rows.forEach(function (item) {
         item.activityItems = Object.fromEntries(Object.entries(item.activityItems || {}).filter(function (pair) { return activities.indexOf(pair[0]) >= 0; }));
         item._preparedActivities = activities;
@@ -662,6 +757,17 @@
       });
       var notices = [{ id: 'cmudict', name: 'Carnegie Mellon Pronouncing Dictionary', text: CMUDICT_NOTICE }];
       var attributions = ATTRIBUTIONS.filter(function (line, index) { return index === 0 || (index === 1 ? bySource[SOURCE_NAMES.kokoro] || bySource[SOURCE_NAMES.spoken] : bySource[SOURCE_NAMES.recorded]); });
+      // A word counts as having a picture when the file shows one for it: an activity that never
+      // shows the word's picture does not carry it.
+      var withPicture = [], withoutPicture = [];
+      if (opts.pictures === true) usedWords.forEach(function (word) {
+        var shown = wantPictures && lesson.blocks.some(function (block) { return block.items.some(function (item) { return item.wordPicture != null && String(item.word).toLowerCase() === word; }); });
+        (shown ? withPicture : withoutPicture).push(word);
+      });
+      if (withPicture.length) {
+        attributions.push(pictureCredit());
+        notices.push({ id: 'mulberry', name: MULBERRY_CREDIT.set, text: MULBERRY_NOTICE });
+      }
       var manifest = {
         kind: 'alloflow-packet-build-manifest', builder: VERSION, seed: seed, title: title,
         learnerLabel: opts.learnerLabel ? String(opts.learnerLabel).trim().slice(0, 60) : '',
@@ -677,10 +783,22 @@
       };
       if (opts.picked && opts.picked.criteria && opts.picked.criteria.stage) manifest.stageNote = STAGE_NOTE;
       if (manifest.learnerLabel) manifest.openWith = '#learner=' + encodeURIComponent(manifest.learnerLabel);
+      // Only a packet asked for with pictures says anything about them.
+      var pictureFacts = null;
+      if (opts.pictures === true) {
+        var version = opts.symbols && opts.symbols.credit && /^[\w.]{1,16}$/.test(String(opts.symbols.credit.version || '')) ? String(opts.symbols.credit.version) : '';
+        pictureFacts = { set: MULBERRY_CREDIT.set, version: version, license: MULBERRY_CREDIT.license, wordsWithPicture: withPicture.length, wordsWithoutPicture: withoutPicture.length };
+        manifest.pictures = { asked: true, symbols: wantPictures, set: MULBERRY_CREDIT.set, version: version, license: MULBERRY_CREDIT.license,
+          withPicture: withPicture, withoutPicture: withoutPicture, counts: { withPicture: withPicture.length, withoutPicture: withoutPicture.length },
+          files: withPicture.reduce(function (acc, word) { acc[word] = pictureFiles[word] || ''; return acc; }, {}), refused: pictureRefused };
+      }
       if (!lesson) return { html: '', lesson: null, manifest: manifest, exceptions: exceptions, sha256: '' };
       var html = loader.buildHtml(lesson, { core: core, attributions: attributions });
-      var credited = withCredits(html, { attributions: attributions, notices: notices,
-        builder: { name: VERSION, seed: seed, ai: 'none', words: usedWords.length, items: manifest.items.total } });
+      var extra = { attributions: attributions, notices: notices,
+        builder: { name: VERSION, seed: seed, ai: 'none', words: usedWords.length, items: manifest.items.total } };
+      // The file itself changes only when it really holds a picture.
+      if (pictureFacts && withPicture.length) extra.pictures = pictureFacts;
+      var credited = withCredits(html, extra);
       manifest.creditsInFile = credited.done;
       var digest = typeof loader.sha256 === 'function' ? loader.sha256(credited.html) : null;
       return { html: credited.html, lesson: lesson, manifest: manifest, exceptions: exceptions, sha256: digest ? digest.hex : '' };
@@ -908,7 +1026,9 @@
     VERSION: VERSION, SUPPORTED_ACTIVITIES: SUPPORTED.slice(), STAGES: STAGE_IDS.slice(), STAGE_NOTE: STAGE_NOTE,
     DEFAULT_MAX_RANK: DEFAULT_MAX_RANK, DEFAULT_MIN_ZIPF: DEFAULT_MIN_ZIPF, DEFAULT_MIN_BOOKS: DEFAULT_MIN_BOOKS, CMUDICT_NOTICE: CMUDICT_NOTICE,
     buildPacket: buildPacket, pickWords: pickWords, stageList: stageList, pcmToWavUri: pcmToWavUri,
-    _internals: { createPackLogic: createPackLogic, mulberry32: mulberry32, seedFor: seedFor, wordUnits: wordUnits, fitsStage: fitsStage, suspectSplit: suspectSplit, stageOf: stageOf, compileStages: compileStages, withCredits: withCredits },
+    // Pictures: the credit and notice a file with pictures carries, and the test every symbol must pass.
+    MULBERRY_CREDIT: MULBERRY_CREDIT, MULBERRY_NOTICE: MULBERRY_NOTICE, pictureCredit: pictureCredit, svgRefusal: svgRefusal,
+    _internals: { createPackLogic: createPackLogic, mulberry32: mulberry32, seedFor: seedFor, wordUnits: wordUnits, fitsStage: fitsStage, suspectSplit: suspectSplit, stageOf: stageOf, compileStages: compileStages, withCredits: withCredits, svgDataUri: svgDataUri },
   };
   if (root) root.AlloPacketBuilder = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
