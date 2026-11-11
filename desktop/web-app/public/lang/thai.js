@@ -12504,7 +12504,11 @@
     "not_in_lesson": "ไม่อยู่ในบทเรียนนี้",
     "not_in_lesson_named": "{activity} ไม่อยู่ในบทเรียนนี้",
     "prepare_this_activity": "เตรียมกิจกรรมนี้",
-    "lesson_only_note": "แสดงเฉพาะกิจกรรมที่อยู่ในบทเรียนนี้ เพิ่มกิจกรรมได้ในการตั้งค่า"
+    "lesson_only_note": "แสดงเฉพาะกิจกรรมที่อยู่ในบทเรียนนี้ เพิ่มกิจกรรมได้ในการตั้งค่า",
+    "review_gap_sound_glance": "เสียงที่ควรดูอย่างรวดเร็ว ({why}): {count} คำ: {words}",
+    "review_glance_alternate": "ออกเสียงได้มากกว่าหนึ่งแบบ",
+    "review_glance_schwa": "มีสระเสียงอ่อน (schwa)",
+    "review_glance_not_dictionary": "ไม่มีในพจนานุกรมเสียง"
   },
   "escape_room": {
     "save_config": "บันทึกการตั้งค่า",

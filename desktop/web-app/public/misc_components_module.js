@@ -656,15 +656,16 @@ const WordSoundsReviewPanel = ({
     return { ipa: _bankIpaFallback[key] || normalizePhoneme(key).ipa || key, graphemes: [key], keyWord: "" };
   };
   const _bankDisplayGrapheme = (key) => key === "oo_short" ? "\u014F\u014F" : key === "schwa" ? "\u0259" : key;
+  const teacherSounds = (word, phonemes) => ({ ...word, phonemes, phonemeSource: "teacher", _soundsGlance: void 0, phonemeAlternates: void 0 });
   const addPhoneme = (wordIdx, phoneme) => {
     const word = preloadedWords[wordIdx];
     const newPhonemes = [...word.phonemes || [], phoneme];
-    onUpdateWord(wordIdx, { ...word, phonemes: newPhonemes });
+    onUpdateWord(wordIdx, teacherSounds(word, newPhonemes));
   };
   const removePhoneme = (wordIdx, phonemeIdx) => {
     const word = preloadedWords[wordIdx];
     const newPhonemes = (word.phonemes || []).filter((_, i) => i !== phonemeIdx);
-    onUpdateWord(wordIdx, { ...word, phonemes: newPhonemes });
+    onUpdateWord(wordIdx, teacherSounds(word, newPhonemes));
   };
   const handlePhonemeReorder = (wordIdx, fromIndex, toIndex) => {
     const word = preloadedWords[wordIdx];
@@ -692,7 +693,7 @@ const WordSoundsReviewPanel = ({
         const currentPhonemes = Array.isArray(word.phonemes) ? [...word.phonemes] : [];
         if (dropPosition >= 0 && dropPosition < currentPhonemes.length) {
           currentPhonemes[dropPosition] = phoneme;
-          onUpdateWord(wordIdx, { ...word, phonemes: currentPhonemes });
+          onUpdateWord(wordIdx, teacherSounds(word, currentPhonemes));
         }
       } else {
         addPhoneme(wordIdx, phoneme);
@@ -989,6 +990,27 @@ const WordSoundsReviewPanel = ({
       label: t("word_sounds.fix_phonemes") || "Re-check sounds",
       needsNetwork: true,
       each: onCheckPhonemes
+    });
+    const glanceFor = (w) => w && !w._fallbackUsed && w.phonemeSource !== "teacher" && Array.isArray(w._soundsGlance) ? w._soundsGlance : [];
+    addGap({
+      key: "sound_glance",
+      activities: ["blending", "segmentation", "counting", "isolation", "manipulation", "mapping", "sound_sort", "rhyming"],
+      test: (w) => glanceFor(w).length > 0,
+      text: (n) => {
+        const flagged = preloadedWords.filter((w) => glanceFor(w).length > 0);
+        const reasons = new Set(flagged.flatMap(glanceFor));
+        const why = [
+          reasons.has("alternate") ? reviewText("review_glance_alternate", "said more than one way") : "",
+          reasons.has("schwa") ? reviewText("review_glance_schwa", "has a schwa") : "",
+          reasons.has("not_dictionary") ? reviewText("review_glance_not_dictionary", "not in the sound dictionary") : ""
+        ].filter(Boolean).join(", ");
+        return reviewText(
+          "review_gap_sound_glance",
+          "Sounds worth a quick look ({why}): {count}. Words: {words}.",
+          { count: n, why, words: flagged.slice(0, 6).map((w) => w.targetWord || w.word).join(", ") }
+        );
+      },
+      each: null
     });
     if (!gaps.length && fixingGap === null && !gapFixResult) return null;
     const busy = fixingGap !== null;

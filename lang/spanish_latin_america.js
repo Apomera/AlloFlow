@@ -11403,7 +11403,11 @@
     "not_in_lesson": "No está en esta lección",
     "not_in_lesson_named": "La actividad {activity} no está en esta lección.",
     "prepare_this_activity": "Preparar esta actividad",
-    "lesson_only_note": "Solo aparecen las actividades de esta lección. Agrega una actividad en la configuración."
+    "lesson_only_note": "Solo aparecen las actividades de esta lección. Agrega una actividad en la configuración.",
+    "review_gap_sound_glance": "Sonidos que vale la pena revisar ({why}): {count}. Palabras: {words}.",
+    "review_glance_alternate": "se pronuncia de más de una forma",
+    "review_glance_schwa": "tiene una schwa",
+    "review_glance_not_dictionary": "no está en el diccionario de sonidos"
   },
   "escape_room": {
     "save_config": "Guardar Configuración",

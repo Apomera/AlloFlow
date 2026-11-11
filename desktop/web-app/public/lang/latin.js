@@ -3915,7 +3915,11 @@
     "not_in_lesson": "Non in hac lectione",
     "not_in_lesson_named": "{activity} in hac lectione non est.",
     "prepare_this_activity": "Hoc exercitium para",
-    "lesson_only_note": "Sola exercitia huius lectionis hic ostenduntur. Exercitium in apparatu adde."
+    "lesson_only_note": "Sola exercitia huius lectionis hic ostenduntur. Exercitium in apparatu adde.",
+    "review_gap_sound_glance": "Soni celeri aspectu digni ({why}): {count}. Verba: {words}.",
+    "review_glance_alternate": "pluribus modis pronuntiatur",
+    "review_glance_schwa": "schwa habet",
+    "review_glance_not_dictionary": "non in lexico sonorum"
   },
   "common": {
     "audio_device_voice_no_file": "Vox instrumenti clare legit, sed ut fasciculus servari non potest. Ut sonum depromas, in constitutionibus narratoris elige vocem nubis aut vocem localem.",

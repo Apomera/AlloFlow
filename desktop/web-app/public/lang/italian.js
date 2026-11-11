@@ -5164,7 +5164,11 @@
     "not_in_lesson": "Non in questa lezione",
     "not_in_lesson_named": "{activity} non fa parte di questa lezione.",
     "prepare_this_activity": "Prepara questa attività",
-    "lesson_only_note": "Sono elencate solo le attività di questa lezione. Aggiungi un'attività nella configurazione."
+    "lesson_only_note": "Sono elencate solo le attività di questa lezione. Aggiungi un'attività nella configurazione.",
+    "review_gap_sound_glance": "Suoni da controllare rapidamente ({why}): {count}. Parole: {words}.",
+    "review_glance_alternate": "si pronuncia in più di un modo",
+    "review_glance_schwa": "contiene uno schwa",
+    "review_glance_not_dictionary": "non è nel dizionario dei suoni"
   },
   "common": {
     "audio_device_voice_no_file": "La voce del dispositivo legge ad alta voce, ma non può essere salvata come file. Per scaricare l’audio, scegli una voce cloud o una voce locale nelle impostazioni della voce narrante.",

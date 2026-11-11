@@ -8405,7 +8405,11 @@
     "not_in_lesson": "Pas dans cette leçon",
     "not_in_lesson_named": "{activity} ne fait pas partie de cette leçon.",
     "prepare_this_activity": "Préparer cette activité",
-    "lesson_only_note": "Seules les activités de cette leçon sont affichées. Ajoutez une activité dans la configuration."
+    "lesson_only_note": "Seules les activités de cette leçon sont affichées. Ajoutez une activité dans la configuration.",
+    "review_gap_sound_glance": "Sons à vérifier rapidement ({why}) : {count}. Mots : {words}.",
+    "review_glance_alternate": "se prononce de plusieurs façons",
+    "review_glance_schwa": "contient un schwa",
+    "review_glance_not_dictionary": "absent du dictionnaire des sons"
   },
   "adventure": {
     "offline": {

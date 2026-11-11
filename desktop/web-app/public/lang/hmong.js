@@ -3973,7 +3973,11 @@
     "not_in_lesson": "Tsis nyob hauv zaj lus qhia no",
     "not_in_lesson_named": "{activity} tsis nyob hauv zaj lus qhia no.",
     "prepare_this_activity": "Npaj txoj haujlwm no",
-    "lesson_only_note": "Tsuas teev cov haujlwm hauv zaj lus qhia no xwb. Ntxiv ib txoj haujlwm hauv kev teeb tsa."
+    "lesson_only_note": "Tsuas teev cov haujlwm hauv zaj lus qhia no xwb. Ntxiv ib txoj haujlwm hauv kev teeb tsa.",
+    "review_gap_sound_glance": "Cov suab uas tsim nyog saib sai sai ({why}): {count}. Cov lus: {words}.",
+    "review_glance_alternate": "hais tau ntau tshaj ib txoj kev",
+    "review_glance_schwa": "muaj ib lub suab schwa",
+    "review_glance_not_dictionary": "tsis muaj nyob hauv phau ntawv txhais suab"
   },
   "common": {
     "audio_device_voice_no_file": "Lub suab ntawm lub cuab yeej nyeem tau nrov nrov, tab sis khaws ua ib daim ntawv tsis tau. Yog xav rub tau lub suab, xaiv ib lub suab hauv internet los yog ib lub suab hauv zos ntawm kev teeb tsa tus piav.",

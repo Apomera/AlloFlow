@@ -17019,7 +17019,11 @@
     "not_in_lesson": "不在這堂課中",
     "not_in_lesson_named": "{activity} 不在這堂課中。",
     "prepare_this_activity": "準備此活動",
-    "lesson_only_note": "這裡只列出這堂課中的活動。可在設定中新增活動。"
+    "lesson_only_note": "這裡只列出這堂課中的活動。可在設定中新增活動。",
+    "review_gap_sound_glance": "值得快速查看的音 ({why})：{count}。單字：{words}。",
+    "review_glance_alternate": "有不止一種讀法",
+    "review_glance_schwa": "含有弱讀母音（中央母音）",
+    "review_glance_not_dictionary": "不在語音詞典中"
   },
   "escape_room": {
     "save_config": "儲存配置",

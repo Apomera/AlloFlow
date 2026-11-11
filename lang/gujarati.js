@@ -3974,7 +3974,11 @@
     "not_in_lesson": "આ પાઠમાં નથી",
     "not_in_lesson_named": "{activity} આ પાઠમાં નથી.",
     "prepare_this_activity": "આ પ્રવૃત્તિ તૈયાર કરો",
-    "lesson_only_note": "ફક્ત આ પાઠની પ્રવૃત્તિઓ યાદીમાં છે. સેટઅપમાં પ્રવૃત્તિ ઉમેરો."
+    "lesson_only_note": "ફક્ત આ પાઠની પ્રવૃત્તિઓ યાદીમાં છે. સેટઅપમાં પ્રવૃત્તિ ઉમેરો.",
+    "review_gap_sound_glance": "ઝડપથી જોવા જેવા ધ્વનિ ({why}): {count}. શબ્દો: {words}.",
+    "review_glance_alternate": "એક કરતાં વધુ રીતે બોલાય છે",
+    "review_glance_schwa": "શ્વા (નબળો સ્વર) છે",
+    "review_glance_not_dictionary": "ધ્વનિ શબ્દકોશમાં નથી"
   },
   "common": {
     "audio_device_voice_no_file": "ઉપકરણનો અવાજ મોટેથી વાંચે છે, પણ તેને ફાઇલ તરીકે સાચવી શકાતો નથી. ઑડિયો ડાઉનલોડ કરવા માટે વાચકની સેટિંગ્સમાં ક્લાઉડ અવાજ અથવા સ્થાનિક અવાજ પસંદ કરો.",

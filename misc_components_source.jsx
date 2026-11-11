@@ -671,15 +671,17 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
     // written form. Schwa's is the IPA symbol itself — it is the one sound with
     // no spelling of its own, which is the whole teaching point.
     const _bankDisplayGrapheme = (key) => (key === 'oo_short' ? 'ŏŏ' : key === 'schwa' ? 'ə' : key);
+    // Sounds a teacher set are the teacher's: no later step may replace or question them.
+    const teacherSounds = (word, phonemes) => ({ ...word, phonemes, phonemeSource: 'teacher', _soundsGlance: undefined, phonemeAlternates: undefined });
     const addPhoneme = (wordIdx, phoneme) => {
         const word = preloadedWords[wordIdx];
         const newPhonemes = [...(word.phonemes || []), phoneme];
-        onUpdateWord(wordIdx, { ...word, phonemes: newPhonemes });
+        onUpdateWord(wordIdx, teacherSounds(word, newPhonemes));
     };
     const removePhoneme = (wordIdx, phonemeIdx) => {
         const word = preloadedWords[wordIdx];
         const newPhonemes = (word.phonemes || []).filter((_, i) => i !== phonemeIdx);
-        onUpdateWord(wordIdx, { ...word, phonemes: newPhonemes });
+        onUpdateWord(wordIdx, teacherSounds(word, newPhonemes));
     };
     const handlePhonemeReorder = (wordIdx, fromIndex, toIndex) => {
         const word = preloadedWords[wordIdx];
@@ -707,7 +709,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                 const currentPhonemes = Array.isArray(word.phonemes) ? [...word.phonemes] : [];
                 if (dropPosition >= 0 && dropPosition < currentPhonemes.length) {
                     currentPhonemes[dropPosition] = phoneme;
-                    onUpdateWord(wordIdx, { ...word, phonemes: currentPhonemes });
+                    onUpdateWord(wordIdx, teacherSounds(word, currentPhonemes));
                 }
             } else {
                 addPhoneme(wordIdx, phoneme);
@@ -1115,6 +1117,29 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                             label: t('word_sounds.fix_phonemes') || 'Re-check sounds',
                             needsNetwork: true,
                             each: onCheckPhonemes,
+                        });
+
+                        // Sounds prepared without AI that are worth a glance: a second
+                        // pronunciation, a schwa, or a word the sound dictionary lacks.
+                        // Not an error, so there is no button: the teacher edits the
+                        // sounds on the word's row if they disagree.
+                        const glanceFor = (w) => (w && !w._fallbackUsed && w.phonemeSource !== 'teacher' && Array.isArray(w._soundsGlance) ? w._soundsGlance : []);
+                        addGap({
+                            key: 'sound_glance',
+                            activities: ['blending', 'segmentation', 'counting', 'isolation', 'manipulation', 'mapping', 'sound_sort', 'rhyming'],
+                            test: (w) => glanceFor(w).length > 0,
+                            text: (n) => {
+                                const flagged = preloadedWords.filter((w) => glanceFor(w).length > 0);
+                                const reasons = new Set(flagged.flatMap(glanceFor));
+                                const why = [
+                                    reasons.has('alternate') ? reviewText('review_glance_alternate', 'said more than one way') : '',
+                                    reasons.has('schwa') ? reviewText('review_glance_schwa', 'has a schwa') : '',
+                                    reasons.has('not_dictionary') ? reviewText('review_glance_not_dictionary', 'not in the sound dictionary') : '',
+                                ].filter(Boolean).join(', ');
+                                return reviewText('review_gap_sound_glance', "Sounds worth a quick look ({why}): {count}. Words: {words}.",
+                                    { count: n, why, words: flagged.slice(0, 6).map((w) => w.targetWord || w.word).join(', ') });
+                            },
+                            each: null,
                         });
 
                         // Stay mounted while a fix runs or its result shows: a fix

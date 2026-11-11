@@ -12033,7 +12033,11 @@
     "not_in_lesson": "לא בשיעור הזה",
     "not_in_lesson_named": "הפעילות {activity} לא נכללת בשיעור הזה.",
     "prepare_this_activity": "הכנת הפעילות הזאת",
-    "lesson_only_note": "מוצגות רק הפעילויות שבשיעור הזה. אפשר להוסיף פעילות בהגדרה."
+    "lesson_only_note": "מוצגות רק הפעילויות שבשיעור הזה. אפשר להוסיף פעילות בהגדרה.",
+    "review_gap_sound_glance": "צלילים שכדאי להציץ בהם ({why}): {count}. מילים: {words}.",
+    "review_glance_alternate": "נהגית ביותר מדרך אחת",
+    "review_glance_schwa": "יש בה שווא",
+    "review_glance_not_dictionary": "לא נמצאת במילון הצלילים"
   },
   "escape_room": {
     "save_config": "שמור תצורה",

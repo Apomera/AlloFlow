@@ -3973,7 +3973,11 @@
     "not_in_lesson": "Bu derste yok",
     "not_in_lesson_named": "{activity} bu derste yok.",
     "prepare_this_activity": "Bu etkinliği hazırla",
-    "lesson_only_note": "Yalnızca bu dersteki etkinlikler listelenir. Etkinliği ayarlardan ekleyin."
+    "lesson_only_note": "Yalnızca bu dersteki etkinlikler listelenir. Etkinliği ayarlardan ekleyin.",
+    "review_gap_sound_glance": "Hızlıca bakmaya değer sesler ({why}): {count}. Sözcükler: {words}.",
+    "review_glance_alternate": "birden fazla şekilde söylenir",
+    "review_glance_schwa": "şva sesi var",
+    "review_glance_not_dictionary": "ses sözlüğünde yok"
   },
   "common": {
     "audio_device_voice_no_file": "Cihaz sesi metni sesli okur ama dosya olarak kaydedilemez. Ses indirmek için anlatıcı ayarlarından bir bulut sesi veya yerel bir ses seçin.",

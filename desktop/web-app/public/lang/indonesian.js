@@ -3974,7 +3974,11 @@
     "not_in_lesson": "Tidak ada dalam pelajaran ini",
     "not_in_lesson_named": "{activity} tidak ada dalam pelajaran ini.",
     "prepare_this_activity": "Siapkan kegiatan ini",
-    "lesson_only_note": "Hanya kegiatan dalam pelajaran ini yang ditampilkan. Tambahkan kegiatan di Penyiapan."
+    "lesson_only_note": "Hanya kegiatan dalam pelajaran ini yang ditampilkan. Tambahkan kegiatan di Penyiapan.",
+    "review_gap_sound_glance": "Bunyi yang perlu dilihat sekilas ({why}): {count}. Kata: {words}.",
+    "review_glance_alternate": "diucapkan dengan lebih dari satu cara",
+    "review_glance_schwa": "memiliki pepet (schwa)",
+    "review_glance_not_dictionary": "tidak ada di kamus bunyi"
   },
   "common": {
     "audio_device_voice_no_file": "Suara perangkat dapat membacakan teks, tetapi tidak bisa disimpan sebagai file. Untuk mengunduh audio, pilih suara cloud atau suara lokal di pengaturan narator.",

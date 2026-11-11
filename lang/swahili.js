@@ -3975,7 +3975,11 @@
     "not_in_lesson": "Haimo katika somo hili",
     "not_in_lesson_named": "{activity} haimo katika somo hili.",
     "prepare_this_activity": "Andaa shughuli hii",
-    "lesson_only_note": "Ni shughuli za somo hili pekee zinazoonyeshwa. Ongeza shughuli kwenye mipangilio."
+    "lesson_only_note": "Ni shughuli za somo hili pekee zinazoonyeshwa. Ongeza shughuli kwenye mipangilio.",
+    "review_gap_sound_glance": "Sauti zinazostahili kuangaliwa haraka ({why}): {count}. Maneno: {words}.",
+    "review_glance_alternate": "hutamkwa kwa njia zaidi ya moja",
+    "review_glance_schwa": "ina irabu dhaifu (schwa)",
+    "review_glance_not_dictionary": "haimo katika kamusi ya sauti"
   },
   "common": {
     "audio_device_voice_no_file": "Sauti ya kifaa husoma kwa sauti, lakini haiwezi kuhifadhiwa kama faili. Ili kupakua sauti, chagua sauti ya wingu au sauti ya ndani katika mipangilio ya msimuliaji.",

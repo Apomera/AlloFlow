@@ -13204,7 +13204,11 @@
     "not_in_lesson": "Não faz parte desta aula",
     "not_in_lesson_named": "A atividade {activity} não faz parte desta aula.",
     "prepare_this_activity": "Preparar esta atividade",
-    "lesson_only_note": "Só aparecem as atividades desta aula. Adicione uma atividade na configuração."
+    "lesson_only_note": "Só aparecem as atividades desta aula. Adicione uma atividade na configuração.",
+    "review_gap_sound_glance": "Sons a verificar rapidamente ({why}): {count}. Palavras: {words}.",
+    "review_glance_alternate": "pronuncia-se de mais de uma forma",
+    "review_glance_schwa": "tem um schwa",
+    "review_glance_not_dictionary": "não está no dicionário de sons"
   },
   "escape_room": {
     "save_config": "Guardar Configuração",

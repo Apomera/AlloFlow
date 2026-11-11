@@ -12013,7 +12013,11 @@
     "not_in_lesson": "Kuma jirto casharkan",
     "not_in_lesson_named": "{activity} kuma jirto casharkan.",
     "prepare_this_activity": "Diyaari hawshan",
-    "lesson_only_note": "Kaliya hawlaha casharkan ku jira ayaa halkan lagu muujiyay. Hawl ku dar habaynta."
+    "lesson_only_note": "Kaliya hawlaha casharkan ku jira ayaa halkan lagu muujiyay. Hawl ku dar habaynta.",
+    "review_gap_sound_glance": "Codad mudan in si degdeg ah loo eego ({why}): {count}. Erayada: {words}.",
+    "review_glance_alternate": "loogu dhawaaqo in ka badan hal qaab",
+    "review_glance_schwa": "waxaa ku jira shaqal daciif ah (schwa)",
+    "review_glance_not_dictionary": "kuma jiro qaamuuska codadka"
   },
   "escape_room": {
     "save_config": "Kaydi Habaynta",

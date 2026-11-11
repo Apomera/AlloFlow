@@ -14773,7 +14773,11 @@
     "not_in_lesson": "په دې درس کې نشته",
     "not_in_lesson_named": "{activity} په دې درس کې نشته.",
     "prepare_this_activity": "دا فعالیت چمتو کړئ",
-    "lesson_only_note": "یوازې د دې درس فعالیتونه دلته ښودل شوي دي. فعالیت په تنظیماتو کې ورزیات کړئ."
+    "lesson_only_note": "یوازې د دې درس فعالیتونه دلته ښودل شوي دي. فعالیت په تنظیماتو کې ورزیات کړئ.",
+    "review_gap_sound_glance": "هغه غږونه چې یو چټک نظر ته ارزي ({why}): {count}. کلمې: {words}.",
+    "review_glance_alternate": "له یوې ډول څخه زیات ویل کېږي",
+    "review_glance_schwa": "شوا لري",
+    "review_glance_not_dictionary": "د غږونو په قاموس کې نشته"
   },
   "escape_room": {
     "save_config": "محفاوظ کړئ تنظیمات",

@@ -5157,7 +5157,11 @@
     "not_in_lesson": "Niet in deze les",
     "not_in_lesson_named": "{activity} zit niet in deze les.",
     "prepare_this_activity": "Deze activiteit voorbereiden",
-    "lesson_only_note": "Alleen de activiteiten van deze les staan in de lijst. Voeg een activiteit toe bij de instellingen."
+    "lesson_only_note": "Alleen de activiteiten van deze les staan in de lijst. Voeg een activiteit toe bij de instellingen.",
+    "review_gap_sound_glance": "Klanken om even naar te kijken ({why}): {count}. Woorden: {words}.",
+    "review_glance_alternate": "op meer dan één manier uitgesproken",
+    "review_glance_schwa": "heeft een sjwa",
+    "review_glance_not_dictionary": "niet in het klankwoordenboek"
   },
   "common": {
     "audio_device_voice_no_file": "De apparaatstem leest voor, maar kan niet als bestand worden opgeslagen. Kies een cloudstem of een lokale stem in de instellingen van de verteller om audio te downloaden.",

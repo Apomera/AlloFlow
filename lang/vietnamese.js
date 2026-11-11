@@ -3978,7 +3978,11 @@
     "not_in_lesson": "Không có trong bài học này",
     "not_in_lesson_named": "{activity} không có trong bài học này.",
     "prepare_this_activity": "Chuẩn bị hoạt động này",
-    "lesson_only_note": "Chỉ liệt kê các hoạt động trong bài học này. Hãy thêm hoạt động trong phần thiết lập."
+    "lesson_only_note": "Chỉ liệt kê các hoạt động trong bài học này. Hãy thêm hoạt động trong phần thiết lập.",
+    "review_gap_sound_glance": "Âm nên xem nhanh ({why}): {count}. Từ: {words}.",
+    "review_glance_alternate": "được đọc theo nhiều cách",
+    "review_glance_schwa": "có nguyên âm schwa",
+    "review_glance_not_dictionary": "không có trong từ điển âm"
   },
   "common": {
     "audio_device_voice_no_file": "Giọng của thiết bị đọc to được nhưng không thể lưu thành tệp. Để tải âm thanh xuống, hãy chọn giọng đám mây hoặc giọng cục bộ trong phần cài đặt người dẫn truyện.",

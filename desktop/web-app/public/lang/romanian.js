@@ -3915,7 +3915,11 @@
     "not_in_lesson": "Nu este în această lecție",
     "not_in_lesson_named": "Activitatea {activity} nu este în această lecție.",
     "prepare_this_activity": "Pregătește această activitate",
-    "lesson_only_note": "Sunt afișate doar activitățile din această lecție. Adaugă o activitate în configurare."
+    "lesson_only_note": "Sunt afișate doar activitățile din această lecție. Adaugă o activitate în configurare.",
+    "review_gap_sound_glance": "Sunete de verificat rapid ({why}): {count}. Cuvinte: {words}.",
+    "review_glance_alternate": "se pronunță în mai multe feluri",
+    "review_glance_schwa": "are un schwa",
+    "review_glance_not_dictionary": "nu este în dicționarul de sunete"
   },
   "common": {
     "audio_device_voice_no_file": "Vocea dispozitivului citește cu voce tare, dar nu poate fi salvată ca fișier. Pentru a descărca audio, alegeți o voce cloud sau o voce locală în setările naratorului.",

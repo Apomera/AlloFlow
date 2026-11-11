@@ -14781,7 +14781,11 @@
     "not_in_lesson": "در این درس نیست",
     "not_in_lesson_named": "{activity} در این درس نیست.",
     "prepare_this_activity": "آماده‌سازی این فعالیت",
-    "lesson_only_note": "فقط فعالیت‌های این درس فهرست شده‌اند. در تنظیمات یک فعالیت اضافه کنید."
+    "lesson_only_note": "فقط فعالیت‌های این درس فهرست شده‌اند. در تنظیمات یک فعالیت اضافه کنید.",
+    "review_gap_sound_glance": "صداهایی که ارزش یک نگاه سریع را دارند ({why}): {count}. واژه‌ها: {words}.",
+    "review_glance_alternate": "به بیش از یک شکل تلفظ می‌شود",
+    "review_glance_schwa": "واکهٔ شوا دارد",
+    "review_glance_not_dictionary": "در فرهنگ آواها نیست"
   },
   "escape_room": {
     "save_config": "ذخیره تنظیمات",

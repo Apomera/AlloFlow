@@ -5219,7 +5219,11 @@
     "not_in_lesson": "Nicht in dieser Lektion",
     "not_in_lesson_named": "{activity} ist nicht Teil dieser Lektion.",
     "prepare_this_activity": "Diese Übung vorbereiten",
-    "lesson_only_note": "Es werden nur die Übungen dieser Lektion aufgeführt. Fügen Sie eine Übung in der Einrichtung hinzu."
+    "lesson_only_note": "Es werden nur die Übungen dieser Lektion aufgeführt. Fügen Sie eine Übung in der Einrichtung hinzu.",
+    "review_gap_sound_glance": "Laute für einen kurzen Blick ({why}): {count}. Wörter: {words}.",
+    "review_glance_alternate": "wird auf mehr als eine Art gesprochen",
+    "review_glance_schwa": "hat ein Schwa",
+    "review_glance_not_dictionary": "nicht im Lautwörterbuch"
   },
   "common": {
     "audio_device_voice_no_file": "Die Gerätestimme liest vor, kann aber nicht als Datei gespeichert werden. Wähle in den Einstellungen der Erzählstimme eine Cloud-Stimme oder eine lokale Stimme, um Audio herunterzuladen.",

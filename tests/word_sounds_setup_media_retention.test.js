@@ -82,7 +82,9 @@ const lessonDraft=()=>({includeGlossary:false,includeLessonPlan:true,prepareScop
   lessonPlan:{blending:{enabled:true,count:2}},lessonPlanOrder:['blending'],wordSoundsSessionGoal:12});
 beforeEach(()=>{
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT',true);
-  window.AlloModules={WordSoundsPronunciations:{lookup:()=>['1']}};
+// The sound dictionary is loaded but holds none of these words, so each word takes the AI analysis this file
+  // tests. The dictionary route (no AI call) is tested in word_sounds_ai_free_prepare.test.js.
+  window.AlloModules={WordSoundsPronunciations:{lookup:()=>['1']},WordSoundsPhonemes:{lookup:()=>[]}};
   window.WORD_FAMILY_PRESETS={at:['cat','hat']};window.SIGHT_WORD_PRESETS={first:['the']};
   container=document.createElement('div');document.body.appendChild(container);root=createRoot(container);
   props={initialWords:words(),capture:value=>{state=value;}};

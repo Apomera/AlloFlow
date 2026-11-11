@@ -3975,7 +3975,11 @@
     "not_in_lesson": "ኣብዚ ትምህርቲ የለን",
     "not_in_lesson_named": "{activity} ኣብዚ ትምህርቲ የለን።",
     "prepare_this_activity": "ነዚ ንጥፈት ኣዳሉ",
-    "lesson_only_note": "ናይዚ ትምህርቲ ንጥፈታት ጥራይ እዮም ተዘርዚሮም ዘለዉ። ንጥፈት ኣብ ኣሰራርዓ ወስኹ።"
+    "lesson_only_note": "ናይዚ ትምህርቲ ንጥፈታት ጥራይ እዮም ተዘርዚሮም ዘለዉ። ንጥፈት ኣብ ኣሰራርዓ ወስኹ።",
+    "review_gap_sound_glance": "ቅልጡፍ ምርኣይ ዝግብኦም ድምጽታት ({why})፦ {count}። ቃላት፦ {words}።",
+    "review_glance_alternate": "ብልዕሊ ሓደ መገዲ ይንበብ",
+    "review_glance_schwa": "ሽዋ (ድኹም ኣናባቢ) ኣለዎ",
+    "review_glance_not_dictionary": "ኣብ መዝገበ ቃላት ድምጺ የለን"
   },
   "common": {
     "audio_device_voice_no_file": "ድምጺ መሳርሒ ብዓውታ የንብብ እዩ፣ ግን ከም ፋይል ክዕቀብ ኣይክእልን። ድምጺ ንምውራድ፡ ኣብ ስርዓታት ኣዘንታዊ ናይ ደበና ድምጺ ወይ ከባቢያዊ ድምጺ ምረጹ።",

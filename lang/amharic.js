@@ -3975,7 +3975,11 @@
     "not_in_lesson": "በዚህ ትምህርት ውስጥ የለም",
     "not_in_lesson_named": "{activity} በዚህ ትምህርት ውስጥ የለም።",
     "prepare_this_activity": "ይህን እንቅስቃሴ አዘጋጅ",
-    "lesson_only_note": "በዚህ ትምህርት ውስጥ ያሉ እንቅስቃሴዎች ብቻ ተዘርዝረዋል። በማዋቀሪያው ውስጥ እንቅስቃሴ ጨምር።"
+    "lesson_only_note": "በዚህ ትምህርት ውስጥ ያሉ እንቅስቃሴዎች ብቻ ተዘርዝረዋል። በማዋቀሪያው ውስጥ እንቅስቃሴ ጨምር።",
+    "review_gap_sound_glance": "በፍጥነት ሊታዩ የሚገባቸው ድምፆች ({why})፦ {count}። ቃላት፦ {words}።",
+    "review_glance_alternate": "ከአንድ በላይ በሆነ መንገድ ይነበባል",
+    "review_glance_schwa": "ሽዋ (ደካማ አናባቢ) አለው",
+    "review_glance_not_dictionary": "በድምፅ መዝገበ ቃላቱ ውስጥ የለም"
   },
   "common": {
     "audio_device_voice_no_file": "የመሣሪያው ድምፅ ጮክ ብሎ ያነብባል፣ ነገር ግን እንደ ፋይል ሊቀመጥ አይችልም። ድምፅ ለማውረድ በተራኪ ቅንብሮች ውስጥ የደመና ድምፅ ወይም አካባቢያዊ ድምፅ ይምረጡ።",

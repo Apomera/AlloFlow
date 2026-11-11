@@ -13691,7 +13691,11 @@
     "not_in_lesson": "ليس في هذا الدرس",
     "not_in_lesson_named": "{activity} ليس في هذا الدرس.",
     "prepare_this_activity": "جهّز هذا النشاط",
-    "lesson_only_note": "تظهر هنا أنشطة هذا الدرس فقط. أضف نشاطًا من الإعداد."
+    "lesson_only_note": "تظهر هنا أنشطة هذا الدرس فقط. أضف نشاطًا من الإعداد.",
+    "review_gap_sound_glance": "أصوات تستحق نظرة سريعة ({why}): {count}. الكلمات: {words}.",
+    "review_glance_alternate": "تُنطق بأكثر من طريقة",
+    "review_glance_schwa": "تحتوي على صوت شوا",
+    "review_glance_not_dictionary": "غير موجودة في قاموس الأصوات"
   },
   "escape_room": {
     "save_config": "حفظ الإعدادات",

@@ -3719,7 +3719,11 @@
     "not_in_lesson": "Ntikiri muri iki cigwa",
     "not_in_lesson_named": "{activity} ntikiri muri iki cigwa.",
     "prepare_this_activity": "Tegura iki gikorwa",
-    "lesson_only_note": "Herekanwa gusa ibikorwa biri muri iki cigwa. Ongerako igikorwa mu gice c'itegurwa."
+    "lesson_only_note": "Herekanwa gusa ibikorwa biri muri iki cigwa. Ongerako igikorwa mu gice c'itegurwa.",
+    "review_gap_sound_glance": "Amajwi akwiye kurabwa vuba ({why}): {count}. Amajambo: {words}.",
+    "review_glance_alternate": "rivugwa mu buryo burenze bumwe",
+    "review_glance_schwa": "rifise inyajwi schwa",
+    "review_glance_not_dictionary": "ntiri mu gitabu c'amajwi"
   },
   "common": {
     "enter_value": "Injiza agaciro",

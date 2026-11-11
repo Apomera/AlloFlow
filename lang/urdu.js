@@ -13512,7 +13512,11 @@
     "not_in_lesson": "اس سبق میں نہیں",
     "not_in_lesson_named": "{activity} اس سبق میں نہیں ہے۔",
     "prepare_this_activity": "یہ سرگرمی تیار کریں",
-    "lesson_only_note": "صرف اس سبق کی سرگرمیاں یہاں دکھائی گئی ہیں۔ سرگرمی ترتیبات میں شامل کریں۔"
+    "lesson_only_note": "صرف اس سبق کی سرگرمیاں یہاں دکھائی گئی ہیں۔ سرگرمی ترتیبات میں شامل کریں۔",
+    "review_gap_sound_glance": "ایک نظر دیکھنے کے لائق آوازیں ({why}): {count}۔ الفاظ: {words}۔",
+    "review_glance_alternate": "ایک سے زیادہ طریقوں سے بولا جاتا ہے",
+    "review_glance_schwa": "اس میں شوا (کمزور مصوتہ) ہے",
+    "review_glance_not_dictionary": "آوازوں کی لغت میں نہیں ہے"
   },
   "escape_room": {
     "save_config": "محفوظ کریں ترتیبات",

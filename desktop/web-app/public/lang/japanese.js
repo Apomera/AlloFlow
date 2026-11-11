@@ -12925,7 +12925,11 @@
     "not_in_lesson": "このレッスンには含まれません",
     "not_in_lesson_named": "{activity}はこのレッスンに含まれていません。",
     "prepare_this_activity": "このアクティビティを準備",
-    "lesson_only_note": "このレッスンのアクティビティだけが表示されています。アクティビティはセットアップで追加できます。"
+    "lesson_only_note": "このレッスンのアクティビティだけが表示されています。アクティビティはセットアップで追加できます。",
+    "review_gap_sound_glance": "さっと確認したい音 ({why})：{count}。単語：{words}。",
+    "review_glance_alternate": "複数の読み方がある",
+    "review_glance_schwa": "あいまい母音 (シュワー) を含む",
+    "review_glance_not_dictionary": "音の辞書にない"
   },
   "games": {
     "syntax": {

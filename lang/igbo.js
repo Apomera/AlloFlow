@@ -3975,7 +3975,11 @@
     "not_in_lesson": "Ọ nọghị na nkuzi a",
     "not_in_lesson_named": "{activity} anọghị na nkuzi a.",
     "prepare_this_activity": "Kwadebe ọrụ a",
-    "lesson_only_note": "Naanị ọrụ ndị dị na nkuzi a ka e depụtara. Tinye ọrụ na Nhazi."
+    "lesson_only_note": "Naanị ọrụ ndị dị na nkuzi a ka e depụtara. Tinye ọrụ na Nhazi.",
+    "review_gap_sound_glance": "Ụda kwesịrị ilele ngwa ngwa ({why}): {count}. Okwu: {words}.",
+    "review_glance_alternate": "a na-akpọ ya karịa otu ụzọ",
+    "review_glance_schwa": "nwere ụdaume schwa",
+    "review_glance_not_dictionary": "ọ nọghị na akwụkwọ ọkọwa okwu ụda"
   },
   "common": {
     "audio_device_voice_no_file": "Olu ngwaọrụ na-agụpụta n'olu dara ụda, mana enweghị ike ịchekwa ya dị ka faịlụ. Iji budata ọdịyo, họrọ olu ịntanetị ma ọ bụ olu mpaghara n'ntọala onye nkọwa.",

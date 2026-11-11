@@ -9768,7 +9768,11 @@
     "not_in_lesson": "ບໍ່ຢູ່ໃນບົດຮຽນນີ້",
     "not_in_lesson_named": "{activity} ບໍ່ຢູ່ໃນບົດຮຽນນີ້.",
     "prepare_this_activity": "ກະກຽມກິດຈະກຳນີ້",
-    "lesson_only_note": "ສະແດງສະເພາະກິດຈະກຳທີ່ຢູ່ໃນບົດຮຽນນີ້. ເພີ່ມກິດຈະກຳໄດ້ໃນການຕັ້ງຄ່າ."
+    "lesson_only_note": "ສະແດງສະເພາະກິດຈະກຳທີ່ຢູ່ໃນບົດຮຽນນີ້. ເພີ່ມກິດຈະກຳໄດ້ໃນການຕັ້ງຄ່າ.",
+    "review_gap_sound_glance": "ສຽງທີ່ຄວນເບິ່ງໄວໆ ({why}): {count}. ຄຳ: {words}.",
+    "review_glance_alternate": "ອອກສຽງໄດ້ຫຼາຍກວ່າໜຶ່ງແບບ",
+    "review_glance_schwa": "ມີສະຫຼະອ່ອນ (schwa)",
+    "review_glance_not_dictionary": "ບໍ່ມີໃນວັດຈະນານຸກົມສຽງ"
   },
   "games": {
     "syntax": {

@@ -3975,7 +3975,11 @@
     "not_in_lesson": "Kò sí nínú ẹ̀kọ́ yìí",
     "not_in_lesson_named": "{activity} kò sí nínú ẹ̀kọ́ yìí.",
     "prepare_this_activity": "Múra iṣẹ́ yìí sílẹ̀",
-    "lesson_only_note": "Àwọn iṣẹ́ tó wà nínú ẹ̀kọ́ yìí nìkan ni a tò síbí. Fi iṣẹ́ kan kún un nínú ètò ìṣètò."
+    "lesson_only_note": "Àwọn iṣẹ́ tó wà nínú ẹ̀kọ́ yìí nìkan ni a tò síbí. Fi iṣẹ́ kan kún un nínú ètò ìṣètò.",
+    "review_gap_sound_glance": "Àwọn ìró tó yẹ ká wò kíákíá ({why}): {count}. Àwọn ọ̀rọ̀: {words}.",
+    "review_glance_alternate": "a máa ń pè é ní ọ̀nà ju ẹyọ kan lọ",
+    "review_glance_schwa": "ó ní fáwẹ̀lì schwa",
+    "review_glance_not_dictionary": "kò sí nínú ìwé atúmọ̀ ìró"
   },
   "common": {
     "audio_device_voice_no_file": "Ohùn ẹ̀rọ náà ń kà á sókè, ṣùgbọ́n a kò lè fi pamọ́ bí fáìlì. Láti ṣe ìgbàsílẹ̀ ohùn, yan ohùn ayélujára tàbí ohùn agbègbè nínú ètò onítàn.",

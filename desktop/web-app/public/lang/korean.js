@@ -3975,7 +3975,11 @@
     "not_in_lesson": "이 수업에 없음",
     "not_in_lesson_named": "{activity} 활동은 이 수업에 없습니다.",
     "prepare_this_activity": "이 활동 준비",
-    "lesson_only_note": "이 수업에 있는 활동만 표시됩니다. 활동은 설정에서 추가하세요."
+    "lesson_only_note": "이 수업에 있는 활동만 표시됩니다. 활동은 설정에서 추가하세요.",
+    "review_gap_sound_glance": "빠르게 확인해 볼 소리 ({why}): {count}. 단어: {words}.",
+    "review_glance_alternate": "두 가지 이상으로 발음됨",
+    "review_glance_schwa": "슈와(약모음)가 있음",
+    "review_glance_not_dictionary": "소리 사전에 없음"
   },
   "common": {
     "audio_device_voice_no_file": "기기 음성은 소리 내어 읽을 수 있지만 파일로 저장할 수는 없습니다. 오디오를 다운로드하려면 내레이터 설정에서 클라우드 음성이나 로컬 음성을 선택하세요.",

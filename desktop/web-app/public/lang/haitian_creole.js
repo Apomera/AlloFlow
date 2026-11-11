@@ -14977,7 +14977,11 @@
     "not_in_lesson": "Pa nan leson sa a",
     "not_in_lesson_named": "{activity} pa nan leson sa a.",
     "prepare_this_activity": "Prepare aktivite sa a",
-    "lesson_only_note": "Se sèlman aktivite ki nan leson sa a ki parèt nan lis la. Ajoute yon aktivite nan Konfigirasyon."
+    "lesson_only_note": "Se sèlman aktivite ki nan leson sa a ki parèt nan lis la. Ajoute yon aktivite nan Konfigirasyon.",
+    "review_gap_sound_glance": "Son ki merite yon ti gade rapid ({why}): {count}. Mo: {words}.",
+    "review_glance_alternate": "yo pwononse l plis pase yon fason",
+    "review_glance_schwa": "gen yon schwa ladan l",
+    "review_glance_not_dictionary": "pa nan diksyonè son yo"
   },
   "escape_room": {
     "save_config": "Sove Konfigirasyon",

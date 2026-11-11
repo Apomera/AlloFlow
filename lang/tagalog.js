@@ -3973,7 +3973,11 @@
     "not_in_lesson": "Wala sa araling ito",
     "not_in_lesson_named": "Wala sa araling ito ang {activity}.",
     "prepare_this_activity": "Ihanda ang gawaing ito",
-    "lesson_only_note": "Ang mga gawain lang sa araling ito ang nakalista. Magdagdag ng gawain sa mga setting."
+    "lesson_only_note": "Ang mga gawain lang sa araling ito ang nakalista. Magdagdag ng gawain sa mga setting.",
+    "review_gap_sound_glance": "Mga tunog na dapat silipin ({why}): {count}. Mga salita: {words}.",
+    "review_glance_alternate": "binibigkas sa higit sa isang paraan",
+    "review_glance_schwa": "may schwa na tunog",
+    "review_glance_not_dictionary": "wala sa diksyunaryo ng tunog"
   },
   "common": {
     "audio_device_voice_no_file": "Nagbabasa nang malakas ang boses ng device, pero hindi ito mase-save bilang file. Para ma-download ang audio, pumili ng cloud na boses o lokal na boses sa mga setting ng tagapagsalaysay.",

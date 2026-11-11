@@ -187,7 +187,9 @@ describe('setup: the plan is the lesson', () => {
 
   beforeEach(() => {
     vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
-    window.AlloModules = { WordSoundsPronunciations: pronunciations };
+// The sound dictionary is loaded but holds none of these words, so each word takes the AI analysis this file
+    // tests. The dictionary route (no AI call) is tested in word_sounds_ai_free_prepare.test.js.
+    window.AlloModules = { WordSoundsPronunciations: pronunciations, WordSoundsPhonemes: { lookup: () => [] } };
     window.WORD_FAMILY_PRESETS = {}; window.SIGHT_WORD_PRESETS = {};
     delete window.__alloAiUsable; delete window.__alloWordSoundsAddActivity;
     analysis.mockClear(); picture.mockClear();
@@ -242,6 +244,24 @@ describe('setup: the plan is the lesson', () => {
     expect(config.preparedActivities).toEqual(plan.order);
     expect(config.startingPoint).toBe('cvc');
     expect(configSummary).not.toMatch(/Quick Practice/);
+  });
+
+  it('with the sound dictionary loaded, the suggested CVC lesson is prepared without analysing any word with AI', async () => {
+    window.AlloModules = { WordSoundsPronunciations: pronunciations, WordSoundsPhonemes: require(resolve('word_sounds_phonemes_en.js')) };
+    const props = await mountWords(CVC);
+    const { words, plan } = await prepare(props);
+    expect(plan.order).toEqual(['blending', 'segmentation', 'mapping', 'spelling_bee', 'decoding']);
+    expect(analysis, 'no AI text call at all').not.toHaveBeenCalled();
+    expect(words.map((w) => [w.word, w.phonemeSource, w.phonemes.join('-'), w.activityItems.mapping.graphemes.join('-')])).toEqual([
+      ['cat', 'dictionary', 'k-a-t', 'c-a-t'], ['hat', 'dictionary', 'h-a-t', 'h-a-t'], ['map', 'dictionary', 'm-a-p', 'm-a-p'],
+      ['sun', 'dictionary', 's-u-n', 's-u-n'], ['pig', 'dictionary', 'p-i-g', 'p-i-g'], ['dog', 'dictionary', 'd-o-g', 'd-o-g']]);
+    words.forEach((w) => {
+      expect(Object.keys(w.activityItems).sort(), w.word).toEqual([...plan.order].sort());
+      expect(w.activityItems.blending.options, w.word).toContain(w.word);
+      expect(w._fallbackUsed, w.word).toBeFalsy();
+    });
+    // The picture request is unchanged: Read & Match needs one for each word.
+    expect(picture).toHaveBeenCalled();
   });
 
   it('picking a starting point fills the plan and the summary, and the app never changes it back', async () => {

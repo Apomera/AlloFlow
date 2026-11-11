@@ -17206,7 +17206,11 @@
     "not_in_lesson": "不在这节课中",
     "not_in_lesson_named": "{activity} 不在这节课中。",
     "prepare_this_activity": "准备此活动",
-    "lesson_only_note": "这里只列出这节课中的活动。可在设置中添加活动。"
+    "lesson_only_note": "这里只列出这节课中的活动。可在设置中添加活动。",
+    "review_gap_sound_glance": "值得快速查看的音 ({why})：{count}。单词：{words}。",
+    "review_glance_alternate": "有不止一种读法",
+    "review_glance_schwa": "含有弱读元音（中央元音）",
+    "review_glance_not_dictionary": "不在语音词典中"
   },
   "escape_room": {
     "save_config": "保存配置",

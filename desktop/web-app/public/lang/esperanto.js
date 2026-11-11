@@ -5167,7 +5167,11 @@
     "not_in_lesson": "Ne en ĉi tiu leciono",
     "not_in_lesson_named": "{activity} ne estas en ĉi tiu leciono.",
     "prepare_this_activity": "Prepari ĉi tiun agadon",
-    "lesson_only_note": "Nur la agadoj de ĉi tiu leciono estas listigitaj. Aldonu agadon en la agordo."
+    "lesson_only_note": "Nur la agadoj de ĉi tiu leciono estas listigitaj. Aldonu agadon en la agordo.",
+    "review_gap_sound_glance": "Sonoj indaj je rapida rigardo ({why}): {count}. Vortoj: {words}.",
+    "review_glance_alternate": "prononcata en pli ol unu maniero",
+    "review_glance_schwa": "havas ŝvaon",
+    "review_glance_not_dictionary": "ne en la sonvortaro"
   },
   "common": {
     "audio_device_voice_no_file": "La aparata voĉo laŭtlegas, sed ne povas esti konservita kiel dosiero. Por elŝuti sonon, elektu nuban aŭ lokan voĉon en la agordoj de la rakontanto.",

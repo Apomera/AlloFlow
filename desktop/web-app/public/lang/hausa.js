@@ -3975,7 +3975,11 @@
     "not_in_lesson": "Ba ya cikin wannan darasi",
     "not_in_lesson_named": "{activity} ba ya cikin wannan darasi.",
     "prepare_this_activity": "Shirya wannan aikin",
-    "lesson_only_note": "Ayyukan da ke cikin wannan darasi kaɗai aka jera. Ƙara aiki a Saitin."
+    "lesson_only_note": "Ayyukan da ke cikin wannan darasi kaɗai aka jera. Ƙara aiki a Saitin.",
+    "review_gap_sound_glance": "Sautuka da suka cancanci a duba su da sauri ({why}): {count}. Kalmomi: {words}.",
+    "review_glance_alternate": "ana furta shi ta hanyoyi fiye da ɗaya",
+    "review_glance_schwa": "yana da wasalin schwa",
+    "review_glance_not_dictionary": "ba ya cikin kamus ɗin sauti"
   },
   "common": {
     "audio_device_voice_no_file": "Muryar na'urar tana karantawa da ƙarfi, amma ba za a iya ajiye ta a matsayin fayil ba. Don sauke sauti, zaɓi muryar intanet ko muryar gida a saitin mai ba da labari.",

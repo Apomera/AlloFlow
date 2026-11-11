@@ -49,7 +49,9 @@ const setSource = (helpKey, checked) => act(async () => Simulate.change(sourceBo
 
 beforeEach(() => {
   vi.stubGlobal('IS_REACT_ACT_ENVIRONMENT', true);
-  window.AlloModules = {}; window.WORD_FAMILY_PRESETS = {}; window.SIGHT_WORD_PRESETS = {};
+// The sound dictionary is loaded but holds none of these words, so each word takes the AI analysis this file
+  // tests. The dictionary route (no AI call) is tested in word_sounds_ai_free_prepare.test.js.
+  window.AlloModules = { WordSoundsPhonemes: { lookup: () => [] } }; window.WORD_FAMILY_PRESETS = {}; window.SIGHT_WORD_PRESETS = {};
   delete window.__alloAiUsable;
   container = document.createElement('div'); document.body.appendChild(container); root = createRoot(container);
 });

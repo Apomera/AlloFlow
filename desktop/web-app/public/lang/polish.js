@@ -5161,7 +5161,11 @@
     "not_in_lesson": "Nie ma w tej lekcji",
     "not_in_lesson_named": "Ćwiczenia {activity} nie ma w tej lekcji.",
     "prepare_this_activity": "Przygotuj to ćwiczenie",
-    "lesson_only_note": "Widoczne są tylko ćwiczenia z tej lekcji. Ćwiczenie możesz dodać w ustawieniach."
+    "lesson_only_note": "Widoczne są tylko ćwiczenia z tej lekcji. Ćwiczenie możesz dodać w ustawieniach.",
+    "review_gap_sound_glance": "Głoski warte szybkiego sprawdzenia ({why}): {count}. Wyrazy: {words}.",
+    "review_glance_alternate": "wymawiane na więcej niż jeden sposób",
+    "review_glance_schwa": "zawiera szwę",
+    "review_glance_not_dictionary": "brak w słowniku głosek"
   },
   "common": {
     "audio_device_voice_no_file": "Głos urządzenia czyta na głos, ale nie da się go zapisać jako pliku. Aby pobrać dźwięk, wybierz głos w chmurze lub głos lokalny w ustawieniach narratora.",

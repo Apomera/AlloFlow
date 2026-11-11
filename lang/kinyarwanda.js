@@ -3975,7 +3975,11 @@
     "not_in_lesson": "Ntikiri muri iri somo",
     "not_in_lesson_named": "{activity} ntikiri muri iri somo.",
     "prepare_this_activity": "Tegura iki gikorwa",
-    "lesson_only_note": "Herekanwa gusa ibikorwa biri muri iri somo. Ongeraho igikorwa mu Itegurwa."
+    "lesson_only_note": "Herekanwa gusa ibikorwa biri muri iri somo. Ongeraho igikorwa mu Itegurwa.",
+    "review_gap_sound_glance": "Amajwi akwiye kurebwa vuba ({why}): {count}. Amagambo: {words}.",
+    "review_glance_alternate": "rivugwa mu buryo burenze bumwe",
+    "review_glance_schwa": "rifite inyajwi schwa",
+    "review_glance_not_dictionary": "ntiri mu nkoranyamagambo y'amajwi"
   },
   "common": {
     "audio_device_voice_no_file": "Ijwi ry'igikoresho rirasoma mu ijwi riranguruye, ariko ntirishobora kubikwa nka dosiye. Kugira ngo umanure amajwi, hitamo ijwi ryo kuri interineti cyangwa ijwi ryo hafi (local) mu igenamiterere ry'umuvugizi.",
