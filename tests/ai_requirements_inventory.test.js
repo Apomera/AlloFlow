@@ -236,4 +236,51 @@ describe('the real inventory', () => {
     }
     expect(wrong).toEqual([]);
   });
+
+  it('says the directory shows AI needs only next to the badges that back it up', () => {
+    const page = readReal('tools.html');
+    expect(page).toContain('nothing to install. Each tool shows whether it needs AI.');
+    expect(page).toContain('class="tool-directory-ai"');
+  });
+});
+
+// The finder cards exist three times: tool-catalog-data.js (what the page renders), the static
+// cards in tools.html (what a visitor without JavaScript and a crawler see) and the JSON-LD list.
+// 2026-11-11: a card injected by tool-finder.js named a tool no file registers, and the
+// "Works without AI" filter returned no card at all.
+describe('the finder cards', () => {
+  const catalogue = parseCatalogue(readReal('tool-catalog-data.js'));
+  const page = readReal('tools.html');
+  const LABEL = { none: 'Works without AI', optional: 'AI optional', required: 'AI required' };
+  const staticCards = [...page.matchAll(/<article class="tool-result-card" data-tool-id="([^"]+)">([\s\S]*?)<\/article>/g)]
+    .map((m) => ({ id: m[1], badge: (/tool-badge-ai">([^<]*)</.exec(m[2]) || [])[1], name: (/<h2>([^<]*)<\/h2>/.exec(m[2]) || [])[1] }));
+
+  it('the "Works without AI" filter returns cards, each backed by a counted record', () => {
+    const none = catalogue.filter((c) => c.ai === 'none');
+    expect(none.length).toBeGreaterThanOrEqual(5);
+    const byId = new Map(inventory.tools.map((t) => [t.id, t]));
+    for (const card of none) {
+      const rec = byId.get(card.id);
+      expect(rec && rec.class, card.id).toBe('none');
+      expect(rec.gate, card.id + ' must be count-gated, not hand-read').toBeUndefined();
+      expect(rec.callSites, card.id).toEqual({ text: 0, vision: 0, image: 0, hint: 0 });
+    }
+  });
+
+  it('no card is added outside the data file', () => {
+    expect(readReal('tool-finder.js')).not.toMatch(/tools\.push\(/);
+  });
+
+  it('the static cards are the data cards, in order, with the same AI badge', () => {
+    expect(staticCards.map((c) => c.id)).toEqual(catalogue.map((c) => c.id));
+    expect(staticCards.filter((c, i) => c.badge !== LABEL[catalogue[i].ai]).map((c) => c.id + ': ' + c.badge)).toEqual([]);
+  });
+
+  it('the static count and the structured data list every card once', () => {
+    expect(page).toContain('aria-live="polite">' + catalogue.length + ' tools shown</p>');
+    const ld = JSON.parse(/<script id="toolCatalogSchema" type="application\/ld\+json">([\s\S]*?)<\/script>/.exec(page)[1]);
+    expect(ld.mainEntity.numberOfItems).toBe(catalogue.length);
+    expect(ld.mainEntity.itemListElement.map((x) => x.name)).toEqual(catalogue.map((c) => c.name));
+    expect(ld.mainEntity.itemListElement.map((x) => x.position)).toEqual(catalogue.map((c, i) => i + 1));
+  });
 });

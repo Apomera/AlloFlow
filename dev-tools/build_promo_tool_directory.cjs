@@ -104,7 +104,9 @@ out.push('        <section class="tool-directory-section" aria-labelledby="direc
 out.push('            <div class="section-inner">');
 out.push('                <div class="section-header">');
 out.push('                    <h2 id="directory-heading">Every STEM tool, with a link you can share</h2>');
-out.push('                    <p>Each link opens that tool directly — no account, no signup, nothing to install. Copy one');
+// "No account, no signup, nothing to install" said nothing about AI, and two listed tools need
+// it. The sentence is written only when the badges are (a claim with nothing under it is worse).
+out.push('                    <p>Each link opens that tool directly — no account, no signup, nothing to install.' + (aiById.size ? ' Each tool shows whether it needs AI.' : '') + ' Copy one');
 out.push('                        into an assignment, a sub plan, or a message to a colleague and it opens on the tool they need.</p>');
 out.push('                </div>');
 out.push('                <p class="tool-directory-count">' + listed + ' tools across ' + names.length + ' areas of the STEM Lab.</p>');

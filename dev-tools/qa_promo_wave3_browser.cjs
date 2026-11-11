@@ -231,7 +231,7 @@ async function main() {
 
         const noScriptTools = await noScriptContext.newPage();
         await noScriptTools.goto(origin + '/tools.html', { waitUntil: 'domcontentloaded' });
-        assert(await noScriptTools.locator('#toolResults .tool-result-card').count() === 33, 'static catalog does not preserve all 33 tools without JavaScript');
+        assert(await noScriptTools.locator('#toolResults .tool-result-card').count() === 39, 'static catalog does not preserve all 39 tools without JavaScript');
         assert(await noScriptTools.locator('#toolCatalogNoScript').isVisible(), 'catalog no-JavaScript guidance is not visible');
         assert(await noScriptTools.locator('.noscript-nav').isVisible(), 'catalog no-JavaScript navigation is not visible');
         await noScriptTools.close();

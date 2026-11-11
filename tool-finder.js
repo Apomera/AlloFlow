@@ -2,22 +2,14 @@
     'use strict';
 
     var tools = Array.isArray(window.ALLOFLOW_PUBLIC_TOOLS) ? window.ALLOFLOW_PUBLIC_TOOLS : [];
-    if (!tools.some(function (tool) { return tool.id === 'photosynthesis'; })) {
-        tools.push({
-            id: 'photosynthesis', name: 'Photosynthesis & Plant Science', icon: '🌱',
-            summary: 'Explore how plants use light, water, and carbon dioxide to produce sugars and release oxygen.',
-            category: 'STEM', audiences: ['Students', 'Educators'], subjects: ['Biology', 'Plant science'],
-            grades: ['Elementary', 'Middle school'], source: 'none', ai: 'optional',
-            access: ['gemini', 'desktop', 'byok'], location: 'STEM Lab → Life Science & Genetics',
-            tags: ['photosynthesis', 'plants', 'chloroplast', 'sunlight', 'carbon dioxide', 'oxygen', 'teach', 'learn', 'activity'],
-            featured: true, detailHref: 'features.html#stem'
-        });
-    }
+    // Every card lives in tool-catalog-data.js, where check_ai_requirements.cjs can see it. A
+    // "Photosynthesis & Plant Science" card used to be injected here for a tool id that no file
+    // registers; the tool it meant is the Tree Life Lab card (id treeLab) in the data file.
     tools.forEach(function (tool) {
         tool.tags = (tool.tags || []).concat(['teach', 'learn', 'activity']);
         if (tool.ai === 'required') tool.tags = tool.tags.concat(['create', 'make', 'generate']);
         if (tool.id === 'exitTicket') tool.tags = tool.tags.concat(['article', 'passage', 'source text', 'from', 'an']);
-        if (['a11yAuditor', 'accessLens', 'documentRemediation'].indexOf(tool.id) !== -1) {
+        if (['a11yAuditor', 'documentRemediation'].indexOf(tool.id) !== -1) {
             tool.detailHref = 'remediation.html';
         }
     });
