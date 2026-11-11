@@ -55,13 +55,52 @@
 
   // Companion window (camera fallback outside the Canvas iframe). Same CDN
   // hosting pattern as video_studio/video_studio.html.
-  var LENS_URL = 'https://alloflow-cdn.pages.dev/access_lens/access_lens.html?v=1';
+  // v=2: the window now sends the photo only to an opener that answered its
+  // nonce handshake (see access_lens.html), so it needs this tool's reply.
+  var LENS_URL = 'https://alloflow-cdn.pages.dev/access_lens/access_lens.html?v=2';
+  var LENS_ORIGIN = 'https://alloflow-cdn.pages.dev';
 
+  // English names stay the PROMPT value (the model is instructed in English);
+  // the code drives the voice and the lang attribute of translated text.
   var TARGET_LANGS = [
     'Spanish', 'French', 'Portuguese', 'Arabic', 'Somali', 'Vietnamese',
     'Chinese (Simplified)', 'Haitian Creole', 'Russian', 'Ukrainian',
     'Swahili', 'Farsi', 'Pashto', 'Khmer', 'Tagalog', 'English'
   ];
+  var LANG_CODES = {
+    'Spanish': 'es', 'French': 'fr', 'Portuguese': 'pt', 'Arabic': 'ar', 'Somali': 'so', 'Vietnamese': 'vi',
+    'Chinese (Simplified)': 'zh-CN', 'Haitian Creole': 'ht', 'Russian': 'ru', 'Ukrainian': 'uk',
+    'Swahili': 'sw', 'Farsi': 'fa', 'Pashto': 'ps', 'Khmer': 'km', 'Tagalog': 'tl', 'English': 'en'
+  };
+  function langSlug(name) { return String(name).toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_|_$/g, ''); }
+  // The page language, as an English language name the prompt can use. A
+  // blind English learner otherwise got every description in English. Returns
+  // '' for English or unknown, which keeps the prompt unchanged.
+  function uiLanguageName(code) {
+    var c = String(code || '').trim();
+    if (!c || /^en\b/i.test(c)) return '';
+    var base = c.toLowerCase();
+    for (var name in LANG_CODES) {
+      if (Object.prototype.hasOwnProperty.call(LANG_CODES, name) && LANG_CODES[name].toLowerCase() === base) return name;
+    }
+    var short = base.split(/[-_]/)[0];
+    for (var n2 in LANG_CODES) {
+      if (Object.prototype.hasOwnProperty.call(LANG_CODES, n2) && LANG_CODES[n2].toLowerCase().split('-')[0] === short) return n2;
+    }
+    try {
+      if (typeof Intl !== 'undefined' && Intl.DisplayNames) {
+        var dn = new Intl.DisplayNames(['en'], { type: 'language' }).of(c);
+        if (dn && dn.toLowerCase() !== base) return dn;
+      }
+    } catch (_) {}
+    return '';
+  }
+  function languageRule(lang) {
+    return lang ? '\nWrite every text value in ' + lang + ' (keep the JSON keys in English).' : '';
+  }
+  // Spoken strings are built outside the component, so they take the
+  // component's translator; without one they fall back to English.
+  function plainTr(k, fb) { return fb; }
 
   // ═══════════════════════════════════════════════════════════════════════
   //  PURE HELPERS (no React, no DOM) — prompt builders + parsers
@@ -73,14 +112,16 @@
     return 'a middle school student; keep language clear and concrete';
   }
 
-  function describePrompt(band) {
+  function describePrompt(band, lang) {
     return 'You are describing a photo for a student who is blind or has low vision. The student took this photo themselves and cannot see it. Audience: ' + bandPhrase(band) + '.\n' +
       'Describe only what is actually visible:\n' +
       '1. One short overview sentence first.\n' +
       '2. Then the layout: what is on the left, center, right, near, and far.\n' +
       '3. Objects with their colors, rough sizes, and textures.\n' +
-      '4. Read out any text you can see, word for word.\n' +
+      '4. Read out text you can see, word for word, except the personal details in rule 7.\n' +
       '5. If a person appears, say only "a person" plus clothing color and where they are. Never guess identity, age, gender, or feelings.\n' +
+      '6. Never say that a path, road, doorway, area, or object is safe, clear, or free of obstacles, and never say that nothing is in the way. Describe what you see; the student decides with someone they trust.\n' +
+      '7. If the photo shows a document, a screen, mail, an ID card, or a gradebook, say what kind it is and read its headings, but do not read out people\'s names, addresses, phone numbers, ID numbers, or grades. Say the student can use Read mode for the full text.\n' +
       'Never guess brands, prices, or value. ' +
       'Respond with STRICT JSON only (no markdown fences, no extra text):\n' +
       '{"photo":{"usable":true,"problem":""},' +
@@ -90,7 +131,7 @@
       'mostly covered, or aimed at nothing identifiable. Say which, in one short sentence the student ' +
       'can act on, such as "too dark" or "the lens looks covered". The student cannot see the photo, ' +
       'so this is the only way they learn to retake it. Put anything you are unsure of in unsure, ' +
-      'never hedged inside the description.';
+      'never hedged inside the description.' + languageRule(lang);
   }
 
   function readPrompt() {
@@ -110,14 +151,18 @@
       'If there is no readable text, output exactly: NO_TEXT_FOUND';
   }
 
-  function inquirePrompt(band) {
-    return 'You are a Socratic science guide looking at a photo a student just took of an object they are curious about. Audience: ' + bandPhrase(band) + '.\n' +
+  // The never-list is spelled out because "touching safely" left it to the
+  // model, and the headline user explores by touch.
+  var INQUIRE_NEVER = 'Never suggest tasting, licking, or smelling anything. Never suggest touching, picking up, or handling unknown plants, mushrooms or other fungi, chemicals or powders, animals or insects, batteries or electrical items, or anything that may be sharp or hot. If the object might be one of these, say so and tell the student to ask an adult before touching it.';
+  function inquirePrompt(band, lang) {
+    return 'You are a Socratic science guide looking at a photo a student just took of an object they are curious about. Audience: ' + bandPhrase(band) + '. The student may be blind or have low vision.\n' +
       'Your job is NOT to lecture or identify with false confidence. Respond with STRICT JSON only (no markdown fences, no extra text):\n' +
       '{"observations":["2 or 3 things you can literally SEE in the photo (colors, shapes, textures, markings)"],' +
-      '"questions":["3 short questions that push the student to notice, compare, or test something about the object; each answerable by looking, touching safely, measuring, or trying something, never by memorized trivia"],' +
+      '"questions":["3 short questions that push the student to notice, compare, or test something about the object; each answerable WITHOUT seeing it, by touching it gently, listening to it, weighing or measuring it, comparing it with something familiar, or asking someone; at most one question may need eyesight; never by memorized trivia"],' +
       '"guess":{"what":"your best guess at what the object is","confidence":"low|medium|high","why":"the visible evidence for the guess and what evidence would change your mind"},' +
-      '"tryThis":"one safe, concrete way the student could test whether the guess is right"}\n' +
-      'Rules: observations must be visible facts only. Never state a price or value. Never present the guess as certain. If the photo is too unclear, use low confidence and say why in the why field.';
+      '"tryThis":"one safe, concrete way the student could test whether the guess is right, using touch, sound, or measuring where possible"}\n' +
+      'Rules: observations must be visible facts only. Never state a price or value. Never present the guess as certain. If the photo is too unclear, use low confidence and say why in the why field. ' +
+      INQUIRE_NEVER + ' These safety rules apply to the questions and to tryThis.' + languageRule(lang);
   }
 
   // Describe mode is the one a blind student lives in, so it must never lose
@@ -127,16 +172,17 @@
   // Read-aloud is how this mode is actually consumed, so the photo problem and
   // the hedges have to be spoken too. Putting the problem FIRST means a student
   // hears "this may not have come out" before a description built on a bad shot.
-  function describeSpeech(out) {
+  function describeSpeech(out, tr) {
+    tr = tr || plainTr;
     if (!out) return '';
     var parts = [];
     if (!out.usable) {
-      var why = out.problem || 'the picture is unclear';
+      var why = out.problem || tr('stem.accessLens.speech_unclear', 'the picture is unclear');
       why = why.replace(/[.!?]+$/, '');
-      parts.push('This photo may not have come out: ' + why + '.');
+      parts.push(tr('stem.accessLens.speech_photo_problem', 'This photo may not have come out:') + ' ' + why + '.');
     }
     if (out.description) parts.push(out.description);
-    if (out.unsure && out.unsure.length) parts.push('The AI was not sure about: ' + out.unsure.join('; ') + '.');
+    if (out.unsure && out.unsure.length) parts.push(tr('stem.accessLens.unsure_title', 'The AI was not sure about:') + ' ' + out.unsure.join('; ') + '.');
     return parts.join(' ');
   }
   // The transcription prompts tell the model to write [unclear] where a word
@@ -166,17 +212,18 @@
     var lastSpace = cut.lastIndexOf(' ');
     return (lastSpace > 0 ? cut.slice(0, lastSpace) : cut) + '\u2026';
   }
-  function resultAnnouncement(mode, value, noTextMsg, moreMsg) {
+  function resultAnnouncement(mode, value, noTextMsg, moreMsg, tr) {
+    tr = tr || plainTr;
     if (mode === 'describe') {
       if (!value) return '';
-      var lead = value.usable ? '' : ('This photo may not have come out: ' + (value.problem || 'the picture is unclear') + '. ');
+      var lead = value.usable ? '' : (tr('stem.accessLens.speech_photo_problem', 'This photo may not have come out:') + ' ' + (value.problem || tr('stem.accessLens.speech_unclear', 'the picture is unclear')) + '. ');
       return announceCap(lead + (value.description || ''));
     }
     if (mode === 'read') {
       if (isNoTextReply(value)) return noTextMsg;
       var gaps = countUnclear(value);
-      var gapNote = gaps ? (gaps === 1 ? '1 word could not be read. ' : gaps + ' words could not be read. ') : '';
-      return announceCap(gapNote + speechWithGaps(value));
+      var gapNote = gaps ? (gaps === 1 ? tr('stem.accessLens.gap_one', '1 word could not be read. ') : gaps + tr('stem.accessLens.gap_many', ' words could not be read. ')) : '';
+      return announceCap(gapNote + speechWithGaps(value, tr));
     }
     if (mode === 'translate') {
       if (!value || value.none) return noTextMsg;
@@ -185,10 +232,18 @@
     if (mode === 'inquire') {
       if (!value) return '';
       if (value.raw) return announceCap(value.raw);
-      var guess = value.guess || {};
-      return announceCap('Best guess, ' + (guess.confidence || 'low') + ' confidence: ' + (guess.what || '') + '. ' + (moreMsg || ''));
+      // The guess stays hidden until the student asks for it, so the arrival
+      // announcement must not give it away; guessAnnouncement speaks it then.
+      return announceCap(tr('stem.accessLens.sr_inquire_ready', 'The AI shared what it can notice and asked you some questions. Its guess stays hidden until you choose Show the AI\'s guess.') + ' ' + (moreMsg || ''));
     }
     return '';
+  }
+  // Spoken when the student reveals the guess. Never bare: a guess heard
+  // without its confidence is heard as a fact.
+  function guessAnnouncement(guess, tr) {
+    tr = tr || plainTr;
+    var g = guess || {};
+    return announceCap(tr('stem.accessLens.sr_guess_prefix', 'The AI\'s guess, as a') + ' ' + confidenceLabel(g.confidence, tr) + ': ' + (g.what || '') + '.');
   }
   // A label token counts as decorative when it is made only of symbol
   // characters: emoji (surrogate pairs), arrows, and misc symbols. Built from
@@ -229,10 +284,12 @@
   }
   // Speech: "unclear" on its own is heard as a word in the sentence. Saying
   // what it means keeps the gap audible.
-  function speechWithGaps(text) {
+  function speechWithGaps(text, tr) {
+    tr = tr || plainTr;
     if (text == null) return '';
+    var gap = ' (' + tr('stem.accessLens.speech_gap', 'one word could not be read') + ') ';
     return splitUnclear(text).map(function (p) {
-      return p.unclear ? ' (one word could not be read) ' : p.text;
+      return p.unclear ? gap : p.text;
     }).join('').replace(/\s{2,}/g, ' ').trim();
   }
   function parseDescribe(text) {
@@ -316,10 +373,26 @@
     return { mime: m[1], base64: m[2] };
   }
 
-  function confidenceLabel(c) {
-    if (c === 'high') return 'fairly confident, but still a guess';
-    if (c === 'medium') return 'somewhat confident guess';
-    return 'low-confidence guess';
+  function confidenceLabel(c, tr) {
+    tr = tr || plainTr;
+    if (c === 'high') return tr('stem.accessLens.conf_high', 'fairly confident, but still a guess');
+    if (c === 'medium') return tr('stem.accessLens.conf_medium', 'somewhat confident guess');
+    return tr('stem.accessLens.conf_low', 'low-confidence guess');
+  }
+  // A request that never answers left every Analyze button disabled for good.
+  var VISION_TIMEOUT_MS = 60000;
+  function withTimeout(promise, ms) {
+    var timer = null;
+    var limit = new Promise(function (_, reject) {
+      timer = setTimeout(function () { var e = new Error('timeout'); e.accessLensTimeout = true; reject(e); }, ms);
+    });
+    return Promise.race([Promise.resolve(promise), limit]).then(
+      function (v) { clearTimeout(timer); return v; },
+      function (e) { clearTimeout(timer); throw e; });
+  }
+  function isHeicFile(f) {
+    if (!f) return false;
+    return /^image\/hei[cf]/i.test(String(f.type || '')) || /\.hei[cf]$/i.test(String(f.name || ''));
   }
 
   // ═══════════════════════════════════════════════════════════════════════
@@ -371,11 +444,32 @@
     var sAnswers = useState({}); var answers = sAnswers[0], setAnswers = sAnswers[1];
     var sSpeaking = useState(false); var speaking = sSpeaking[0], setSpeaking = sSpeaking[1];
     var sLive = useState(''); var liveMsg = sLive[0], setLiveMsg = sLive[1];
+    var sGuess = useState(false); var guessShown = sGuess[0], setGuessShown = sGuess[1];
+    var sCustomLang = useState(false); var customLang = sCustomLang[0], setCustomLang = sCustomLang[1];
+
+    // Focus targets. A screen-reader user whose button just vanished (Clear
+    // photo, Live camera, Snap) was dropped at the top of the page every time;
+    // each action now names where focus goes next, applied after the render
+    // that creates that control.
+    var takeBtnRef = useRef(null);
+    var liveBtnRef = useRef(null);
+    var snapBtnRef = useRef(null);
+    var analyzeBtnRef = useRef(null);
+    var resultRef = useRef(null);
+    var langInputRef = useRef(null);
+    var pendingFocusRef = useRef('');
+    // The speech request in flight (or playing): bumping the token makes a
+    // late answer harmless, the controller aborts the request, and the timer
+    // ends the "speaking" state when the host gives no end event.
+    var speechTokenRef = useRef(0);
+    var speechCtlRef = useRef(null);
+    var speechTimerRef = useRef(null);
 
     var fileRef = useRef(null);
     var videoRef = useRef(null);
     var streamRef = useRef(null);
     var lensWinRef = useRef(null);
+    var lensNonceRef = useRef('');
     var busyRef = useRef(''); busyRef.current = busy;
     // Which photo an in-flight analysis belongs to. Without this, clearing or
     // replacing a photo mid-analysis still let the old result land: the student
@@ -390,13 +484,35 @@
     // A trailing run of zero-width spaces changes the text without changing
     // what is read aloud.
     var liveSeqRef = useRef(0);
+    // ONE channel. Writing the local region AND the host's made a screen reader
+    // read every result twice (up to 240 characters, twice). The host region
+    // is used when the host offers one; the local region is the fallback.
     var announce = useCallback(function (m) {
       var text = String(m || '');
+      var cx = ctxRef.current;
+      if (cx && typeof cx.announceToSR === 'function') {
+        try { cx.announceToSR(text); return; } catch (_) {}
+      }
       liveSeqRef.current = (liveSeqRef.current + 1) % 4;
       setLiveMsg(text ? text + '\u200B'.repeat(liveSeqRef.current) : '');
-      var cx = ctxRef.current;
-      if (cx && typeof cx.announceToSR === 'function') { try { cx.announceToSR(text); } catch (_) {} }
     }, []);
+
+    // Apply a requested focus move once its target exists (runs after every
+    // render; never during SSR).
+    useEffect(function () {
+      var want = pendingFocusRef.current;
+      if (!want) return;
+      var el = want === 'take' ? takeBtnRef.current
+        : want === 'live' ? liveBtnRef.current
+        : want === 'snap' ? snapBtnRef.current
+        : want === 'analyze' ? analyzeBtnRef.current
+        : want === 'result' ? resultRef.current
+        : want === 'lang' ? langInputRef.current
+        : null;
+      if (!el) return;
+      pendingFocusRef.current = '';
+      try { el.focus(); } catch (_) {}
+    });
 
     // ── quest persistence: booleans/counters only, NEVER the photo ──
     var markQuest = useCallback(function (flag) {
@@ -436,10 +552,15 @@
       if (typeof window === 'undefined') return undefined;
       function onMsg(ev) {
         if (!lensWinRef.current || ev.source !== lensWinRef.current) return;
+        if (ev.origin && ev.origin !== LENS_ORIGIN) return;
         var d = ev.data || {};
-        if (d.type === 'allolens-photo' && d.payload && typeof d.payload.dataUrl === 'string') {
+        if (d.type === 'allolens-ready') {
+          // The window sends a photo only to an opener that proves it opened
+          // it (this nonce), and only to the origin that answered.
+          try { lensWinRef.current.postMessage({ type: 'allolens-hello', nonce: lensNonceRef.current }, LENS_ORIGIN); } catch (_) {}
+        } else if (d.type === 'allolens-photo' && d.payload && typeof d.payload.dataUrl === 'string') {
           acceptPhoto(d.payload.dataUrl, 'companion window');
-          try { lensWinRef.current.postMessage({ type: 'allolens-photo-ack' }, '*'); } catch (_) {}
+          try { lensWinRef.current.postMessage({ type: 'allolens-photo-ack' }, LENS_ORIGIN); } catch (_) {}
         } else if (d.type === 'allolens-closed') {
           lensWinRef.current = null;
         }
@@ -454,16 +575,28 @@
       streamRef.current = null;
     }
 
+    // Stop meant only the browser voice. The app voice (ctx.callTTS) plays in
+    // the host, so Stop, Clear photo and switching tabs left it talking, and a
+    // second press started another copy over it. A blind student who cleared a
+    // photo kept hearing the old photo described.
     function stopSpeech() {
+      speechTokenRef.current++;
+      if (speechCtlRef.current) { try { speechCtlRef.current.abort(); } catch (_) {} speechCtlRef.current = null; }
+      if (speechTimerRef.current) { clearTimeout(speechTimerRef.current); speechTimerRef.current = null; }
+      var cx = ctxRef.current;
+      if (cx && typeof cx.stopTTS === 'function') { try { cx.stopTTS(); } catch (_) {} }
       try { if (typeof window !== 'undefined' && window.speechSynthesis) window.speechSynthesis.cancel(); } catch (_) {}
       setSpeaking(false);
     }
 
     // ── photo intake: everything funnels through here; downscale to <=1024px
     //    JPEG so the AI payload stays small ──
-    function acceptPhoto(dataUrl, sourceLabel) {
+    function acceptPhoto(dataUrl, sourceLabel, heic) {
       // Claim this decode. A later photo bumps the token and wins.
       var token = ++photoTokenRef.current;
+      var loadErr = heic
+        ? _t('stem.accessLens.err_heic', 'This looks like an iPhone HEIC photo, which this browser cannot open. Take the photo with the Take or choose a photo button instead, or set the iPhone camera format to Most Compatible.')
+        : _t('stem.accessLens.err_photo', 'That photo could not be loaded. Please try another one.');
       var img = new Image();
       img.onload = function () {
         if (token !== photoTokenRef.current) return;
@@ -478,17 +611,18 @@
           cv.getContext('2d').drawImage(img, 0, 0, cw, chg);
           var out = cv.toDataURL('image/jpeg', 0.85);
           setPhoto({ dataUrl: out });
-          setResults({}); setAnswers({}); setErr(''); setBusy('');
+          setResults({}); setAnswers({}); setErr(''); setBusy(''); setGuessShown(false);
           stopSpeech();
           markQuest('captured');
+          pendingFocusRef.current = 'analyze';
           announce(_t('stem.accessLens.sr_photo_ready', 'Photo ready. Choose a lens mode and press Analyze.'));
         } catch (e) {
-          setErr(_t('stem.accessLens.err_photo', 'That photo could not be loaded. Please try another one.'));
+          setErr(loadErr);
         }
       };
       img.onerror = function () {
         if (token !== photoTokenRef.current) return;
-        setErr(_t('stem.accessLens.err_photo', 'That photo could not be loaded. Please try another one.'));
+        setErr(loadErr);
       };
       img.src = dataUrl;
     }
@@ -501,8 +635,9 @@
         setErr(_t('stem.accessLens.err_not_image', 'Please choose a photo (image file).'));
         return;
       }
+      var heic = isHeicFile(f);
       var fr = new FileReader();
-      fr.onload = function () { acceptPhoto(String(fr.result), 'file'); };
+      fr.onload = function () { acceptPhoto(String(fr.result), 'file', heic); };
       fr.onerror = function () { setErr(_t('stem.accessLens.err_photo', 'That photo could not be loaded. Please try another one.')); };
       fr.readAsDataURL(f);
     }
@@ -514,11 +649,14 @@
         setCamState('denied');
         return;
       }
+      // The Live camera button is replaced by Snap as soon as this renders.
+      pendingFocusRef.current = 'snap';
       setCamState('starting');
       navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }, audio: false })
         .then(function (stream) {
           streamRef.current = stream;
           setCamReason('');
+          pendingFocusRef.current = 'snap';
           setCamState('live');
           announce(_t('stem.accessLens.sr_cam_live', 'Live camera started. Press Snap photo when ready.'));
         })
@@ -528,29 +666,43 @@
           // the same thing: that the camera is blocked and to try the pop-out
           // window, which fails identically for three of the four.
           setCamReason(cameraFailureReason(error));
+          pendingFocusRef.current = 'take';
           setCamState('denied');
         });
     }
 
     function snapFromLive() {
       var v = videoRef.current;
-      if (!v || !v.videoWidth) return;
+      if (!v || !v.videoWidth) {
+        announce(_t('stem.accessLens.sr_cam_not_ready', 'The camera is not ready yet. Wait a moment, then press Snap photo again.'));
+        return;
+      }
       var cv = document.createElement('canvas');
       cv.setAttribute('aria-hidden', 'true');
       cv.width = v.videoWidth; cv.height = v.videoHeight;
       cv.getContext('2d').drawImage(v, 0, 0);
       var url = cv.toDataURL('image/jpeg', 0.9);
       stopStream();
+      // Snap disappears with the live view; land on the photo button until the
+      // decoded photo moves focus on to Analyze.
+      pendingFocusRef.current = 'take';
       setCamState('idle');
       acceptPhoto(url, 'live camera');
     }
 
-    function cancelLive() { stopStream(); setCamState('idle'); }
+    function cancelLive() { stopStream(); pendingFocusRef.current = 'live'; setCamState('idle'); }
 
     function openLensWindow() {
       setErr('');
       var w = null;
-      try { w = window.open(LENS_URL, 'alloflow-access-lens', 'width=980,height=760'); } catch (_) { w = null; }
+      var nonce = '';
+      try {
+        var bytes = new Uint8Array(16);
+        (window.crypto || {}).getRandomValues(bytes);
+        nonce = Array.prototype.map.call(bytes, function (b) { return ('0' + b.toString(16)).slice(-2); }).join('');
+      } catch (_) { nonce = String(Math.random()).slice(2) + String(Date.now()); }
+      lensNonceRef.current = nonce;
+      try { w = window.open(LENS_URL + '&nonce=' + nonce, 'alloflow-access-lens', 'width=980,height=760'); } catch (_) { w = null; }
       if (!w) {
         setErr(_t('stem.accessLens.err_popup', 'The camera window was blocked. Allow pop-ups for this page, or use Take or choose a photo instead.'));
         return;
@@ -561,8 +713,9 @@
 
     function clearPhoto() {
       photoTokenRef.current++;
-      setPhoto(null); setResults({}); setAnswers({}); setErr(''); setBusy('');
+      setPhoto(null); setResults({}); setAnswers({}); setErr(''); setBusy(''); setGuessShown(false);
       stopSpeech();
+      pendingFocusRef.current = 'take';
       announce(_t('stem.accessLens.sr_cleared', 'Photo cleared. Nothing was saved.'));
     }
 
@@ -572,15 +725,18 @@
       var parts = splitDataUrl(photo.dataUrl);
       if (!parts) { setErr(_t('stem.accessLens.err_photo', 'That photo could not be loaded. Please try another one.')); return; }
       var band = ctx.gradeBand || 'g68';
+      var uiLang = '';
+      try { uiLang = uiLanguageName(document.documentElement && document.documentElement.lang); } catch (_) {}
       var prompt =
-        m === 'describe' ? describePrompt(band) :
+        m === 'describe' ? describePrompt(band, uiLang) :
         m === 'read' ? readPrompt() :
         m === 'translate' ? translatePrompt(targetLang || 'Spanish') :
-        inquirePrompt(band);
+        inquirePrompt(band, uiLang);
       setBusy(m); setErr('');
+      if (m === 'inquire') setGuessShown(false);
       var token = photoTokenRef.current;
       announce(_t('stem.accessLens.sr_analyzing', 'Analyzing your photo.'));
-      vision(prompt, parts.base64, parts.mime).then(function (text) {
+      withTimeout(vision(prompt, parts.base64, parts.mime), VISION_TIMEOUT_MS).then(function (text) {
         // The photo this describes is gone or replaced; saying anything now
         // would attach it to whatever is on screen instead.
         if (token !== photoTokenRef.current) return;
@@ -598,6 +754,9 @@
           m === 'inquire' ? (parseInquire(text) || { raw: String(text) }) :
           m === 'describe' ? (parseDescribe(text) || { description: String(text).trim(), usable: true, problem: '', unsure: [], structured: false }) :
           String(text).trim();
+        // The language this translation is IN, fixed at request time, so a later
+        // change of the list cannot read it with the wrong voice.
+        if (m === 'translate' && parsed && !parsed.none) parsed.lang = targetLang || 'Spanish';
         setResults(function (r) {
           var n = Object.assign({}, r);
           n[m] = parsed;
@@ -609,41 +768,71 @@
         else markQuest('inquired');
         var spoken = resultAnnouncement(m, parsed,
           _t('stem.accessLens.no_text', 'No readable text was found in this photo. Try getting closer or adding more light.'),
-          _t('stem.accessLens.sr_more_below', 'The observations, questions and a way to test the guess are below.'));
+          _t('stem.accessLens.sr_more_below', 'The observations, questions and a way to test the guess are below.'), _t);
         announce(spoken || _t('stem.accessLens.sr_done', 'Analysis ready.'));
-      }).catch(function () {
+        // Move to the result only if the student is still on the Analyze
+        // button (or focus was lost); never pull them away from somewhere else.
+        try {
+          var active = document.activeElement;
+          if (!active || active === document.body || active === analyzeBtnRef.current) pendingFocusRef.current = 'result';
+        } catch (_) {}
+      }).catch(function (e) {
         if (token !== photoTokenRef.current) return;
         setBusy('');
-        setErr(_t('stem.accessLens.err_ai', 'The AI could not answer right now. Please try again.'));
+        setErr(e && e.accessLensTimeout
+          ? _t('stem.accessLens.err_timeout', 'The AI took too long to answer. Check the internet connection and press Analyze again.')
+          : _t('stem.accessLens.err_ai', 'The AI could not answer right now. Please try again.'));
       });
     }
 
     // ── read-aloud: prefer the app TTS (user-initiated, so force:true past the
     //    header mute), fall back to the browser's built-in voice ──
-    function speak(text) {
+    // lang: an English language name (Translate) so the right voice reads it.
+    function speak(text, lang) {
       if (!text) return;
       stopSpeech();
+      var token = speechTokenRef.current;
       var cx = ctxRef.current;
       if (cx && typeof cx.callTTS === 'function') {
         setSpeaking(true);
-        cx.callTTS(text, null, null, { force: true }).then(function (url) {
-          if (url) { setSpeaking(false); return; }
-          browserSpeak(text);
-        }).catch(function () { browserSpeak(text); });
+        var opts = { force: true };
+        if (lang) opts.language = lang;
+        if (typeof AbortController !== 'undefined') {
+          try { speechCtlRef.current = new AbortController(); opts.signal = speechCtlRef.current.signal; } catch (_) {}
+        }
+        Promise.resolve(cx.callTTS(text, null, null, opts)).then(function (url) {
+          if (token !== speechTokenRef.current) return;
+          speechCtlRef.current = null;
+          if (url) {
+            // The host plays the audio and reports no end, so Stop stays
+            // available for about as long as the speech should last.
+            speechTimerRef.current = setTimeout(function () {
+              speechTimerRef.current = null;
+              if (token === speechTokenRef.current) setSpeaking(false);
+            }, Math.max(2500, Math.round(String(text).length * 75)));
+            return;
+          }
+          browserSpeak(text, lang, token);
+        }).catch(function () { if (token === speechTokenRef.current) browserSpeak(text, lang, token); });
         return;
       }
-      browserSpeak(text);
+      browserSpeak(text, lang, token);
     }
-    function browserSpeak(text) {
+    function browserSpeak(text, lang, token) {
       if (typeof window === 'undefined' || !window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') {
         setSpeaking(false); return;
       }
       try {
         var u = new SpeechSynthesisUtterance(text);
         u.rate = 0.95;
-        u.onend = function () { setSpeaking(false); };
-        u.onerror = function () { setSpeaking(false); };
+        var code = lang && LANG_CODES[lang];
+        if (code) u.lang = code;
+        var done = function () { if (token === undefined || token === speechTokenRef.current) setSpeaking(false); };
+        u.onend = done;
+        u.onerror = done;
         setSpeaking(true);
+        // One voice at a time: a device voice the host may have started is replaced, not doubled.
+        try { window.speechSynthesis.cancel(); } catch (_) {}
         window.speechSynthesis.speak(u);
       } catch (_) { setSpeaking(false); }
     }
@@ -651,18 +840,26 @@
     // ════════════════════ UI helpers ════════════════════
     function btn(label, onClick, opts) {
       opts = opts || {};
+      // ariaDisabled keeps the button focusable (a disabled button drops focus
+      // and is skipped by Tab, so its reason was unreachable); clicks are ignored.
+      var off = !!opts.disabled || !!opts.ariaDisabled;
       return h('button', {
-        key: opts.key, type: 'button', className: 'accesslens-btn', onClick: onClick,
+        key: opts.key, type: 'button', className: 'accesslens-btn', ref: opts.ref,
+        onClick: opts.ariaDisabled ? function (e) { if (e && e.preventDefault) e.preventDefault(); } : onClick,
         disabled: !!opts.disabled,
+        'aria-disabled': opts.ariaDisabled ? 'true' : undefined,
+        'aria-describedby': opts.describedBy || undefined,
+        'aria-expanded': opts.expanded === undefined ? undefined : (opts.expanded ? 'true' : 'false'),
+        'aria-controls': opts.controls || undefined,
         'aria-pressed': opts.pressed === undefined ? undefined : !!opts.pressed,
         title: opts.title || undefined,
         style: {
-          padding: '8px 14px', borderRadius: '10px', cursor: opts.disabled ? 'not-allowed' : 'pointer',
+          padding: '8px 14px', borderRadius: '10px', cursor: off ? 'not-allowed' : 'pointer',
           fontSize: '13px', fontWeight: 700, whiteSpace: 'nowrap',
           border: '1px solid ' + (opts.primary ? C.btnBg : C.border),
           background: opts.pressed ? C.btnBg : (opts.primary ? C.btnBg : C.panel),
           color: (opts.pressed || opts.primary) ? '#ffffff' : C.text,
-          opacity: opts.disabled ? 0.55 : 1
+          opacity: off ? 0.55 : 1
         }
       }, splitButtonLabel(label));
     }
@@ -700,10 +897,14 @@
         _t('stem.accessLens.disclaimer', 'This is an AI guess and it can be confidently wrong. It can miss things that are there and describe things that are not. Ask someone you trust, take another photo from a different angle, or check another way before you rely on it.'));
     }
 
-    function speakBtn(text) {
+    function speakBtn(text, lang) {
       return btn(speaking ? '⏹ ' + _t('stem.accessLens.stop_audio', 'Stop') : '🔊 ' + _t('stem.accessLens.read_aloud', 'Read aloud'),
-        function () { if (speaking) stopSpeech(); else { speak(text); markQuest('listened'); } },
+        function () { if (speaking) stopSpeech(); else { speak(text, lang); markQuest('listened'); } },
         { title: _t('stem.accessLens.read_aloud_title', 'Hear this text spoken out loud') });
+    }
+    // Focus target for a result that just arrived.
+    function resultHeading(text) {
+      return h('h3', { key: 'rh', ref: resultRef, tabIndex: -1, style: { margin: '0 0 8px', fontSize: '13px', fontWeight: 800, color: C.text, outline: 'none' } }, text);
     }
 
     // Shared by the photo preview and the Describe panel.
@@ -739,16 +940,16 @@
             style: { width: '100%', maxWidth: '440px', borderRadius: '10px', border: '1px solid ' + C.border, background: '#000', minHeight: '120px' }
           }),
           h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap' } },
-            btn('📸 ' + _t('stem.accessLens.snap', 'Snap photo'), snapFromLive, { primary: true, disabled: camState !== 'live' }),
+            btn('📸 ' + _t('stem.accessLens.snap', 'Snap photo'), snapFromLive, { primary: true, ariaDisabled: camState !== 'live', ref: snapBtnRef }),
             btn(_t('stem.accessLens.cancel', 'Cancel'), cancelLive))));
       } else {
         var row = [
           h('button', {
-            key: 'file', type: 'button', className: 'accesslens-btn',
+            key: 'file', type: 'button', className: 'accesslens-btn', ref: takeBtnRef,
             onClick: function () { if (fileRef.current) fileRef.current.click(); },
             style: { padding: '10px 16px', borderRadius: '10px', cursor: 'pointer', fontSize: '14px', fontWeight: 800, border: '1px solid ' + C.btnBg, background: C.btnBg, color: '#ffffff' }
           }, splitButtonLabel('📷 ' + _t('stem.accessLens.take_photo', 'Take or choose a photo'))),
-          btn('🎥 ' + _t('stem.accessLens.live_camera', 'Live camera'), startLiveCamera, { key: 'livecam', title: _t('stem.accessLens.live_camera_title', 'Show a live preview and snap from it') })
+          btn('🎥 ' + _t('stem.accessLens.live_camera', 'Live camera'), startLiveCamera, { key: 'livecam', ref: liveBtnRef, title: _t('stem.accessLens.live_camera_title', 'Show a live preview and snap from it') })
         ];
         if (camState === 'denied' && camReason !== 'none' && camReason !== 'unsupported') {
           row.push(btn('🪟 ' + _t('stem.accessLens.popout', 'Open camera window'), openLensWindow, { key: 'popout', title: _t('stem.accessLens.popout_title', 'Opens a separate window where the camera is allowed') }));
@@ -800,13 +1001,23 @@
       var offMsg = !aiOn
         ? _t('stem.accessLens.ai_off', 'AI is turned off. Ask your teacher to switch on AI features in the STEAM Lab header.')
         : (!vision ? _t('stem.accessLens.ai_unavailable', 'AI vision is not available in this setup.') : '');
+      var whyId = 'accesslens-analyze-why-' + m;
+      var blocked = !photo || !canAnalyze || !!busy;
+      // The reason the button cannot be pressed, linked to it so a screen
+      // reader says it on focus. Exactly one of these renders while blocked.
+      var whyNode = !blocked ? null
+        : offMsg ? h('div', { id: whyId, role: 'note', style: { fontSize: '11.5px', color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '6px 9px', lineHeight: 1.5 } }, offMsg)
+        : !photo ? h('span', { id: whyId, style: { fontSize: '11.5px', color: C.sub } }, _t('stem.accessLens.need_photo', 'Capture a photo first.'))
+        : busy === m ? h('span', { id: whyId, style: { fontSize: '11.5px', color: C.sub } }, _t('stem.accessLens.busy_this', 'Working on it. The answer will be read out when it arrives.'))
+        : h('span', { id: whyId, style: { fontSize: '11.5px', color: C.sub } }, _t('stem.accessLens.busy_other', 'Another analysis is still running. Wait for it to finish.'));
+      // An AI-off message always means blocked, so it is the reason (a block note).
       return h('div', { style: { display: 'flex', flexDirection: 'column', gap: '6px' } },
         h('div', { style: { display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' } },
           btn(busy === m ? '⏳ ' + _t('stem.accessLens.analyzing', 'Analyzing…') : '✨ ' + label,
             function () { analyze(m); },
-            { primary: true, disabled: !photo || !canAnalyze || !!busy }),
-          !photo ? h('span', { style: { fontSize: '11.5px', color: C.sub } }, _t('stem.accessLens.need_photo', 'Capture a photo first.')) : null),
-        offMsg ? h('div', { role: 'note', style: { fontSize: '11.5px', color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '6px 9px', lineHeight: 1.5 } }, offMsg) : null);
+            { primary: true, ariaDisabled: blocked, describedBy: blocked ? whyId : undefined, ref: m === mode ? analyzeBtnRef : undefined }),
+          offMsg ? null : whyNode),
+        offMsg ? whyNode : null);
     }
 
     function renderDescribe() {
@@ -816,6 +1027,7 @@
           _t('stem.accessLens.describe_intro', 'Get a spoken picture of what is in front of you: layout, objects, colors, and any text. Made for students who are blind or have low vision.')),
         analyzeButton('describe', _t('stem.accessLens.describe_cta', 'Describe my photo')),
         out ? card([
+          resultHeading(_t('stem.accessLens.result_describe', 'Description')),
           // A student who cannot see the photo cannot tell a bad PHOTO from a
           // bad description. Reported first, and announced, so the fix (retake
           // it) is obvious rather than inferred from a vague description.
@@ -824,14 +1036,14 @@
             style: { marginBottom: '10px', fontSize: '13px', lineHeight: 1.5, color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '8px 10px' }
           }, h('strong', null, _t('stem.accessLens.photo_problem_title', 'This photo may not have come out. ')),
              out.problem || _t('stem.accessLens.photo_problem_generic', 'The picture is unclear. Try taking it again.')) : null,
-          h('div', { key: 'txt', style: { fontSize: '15px', lineHeight: 1.7, color: C.text, whiteSpace: 'pre-wrap' } }, out.description),
+          h('div', { key: 'txt', dir: 'auto', style: { fontSize: '15px', lineHeight: 1.7, color: C.text, whiteSpace: 'pre-wrap' } }, out.description),
           // Hedges belong in their own list, not buried mid-sentence where a
           // listener loses them.
           out.unsure && out.unsure.length ? h('div', { key: 'unsure', style: { marginTop: '10px', fontSize: '13px', lineHeight: 1.6, color: C.text } },
             h('strong', null, _t('stem.accessLens.unsure_title', 'The AI was not sure about:')),
             h('ul', { style: { margin: '4px 0 0', paddingLeft: '20px' } },
               out.unsure.map(function (u, i) { return h('li', { key: i }, u); }))) : null,
-          h('div', { key: 'act', style: { marginTop: '10px', display: 'flex', gap: '8px' } }, speakBtn(describeSpeech(out))),
+          h('div', { key: 'act', style: { marginTop: '10px', display: 'flex', gap: '8px' } }, speakBtn(describeSpeech(out, _t))),
           h('div', { key: 'disc' }, aiDisclaimer())
         ]) : null);
     }
@@ -844,19 +1056,22 @@
           _t('stem.accessLens.read_intro', 'Point at a worksheet, a whiteboard, a sign, or a label. The text is re-typed here in large print you can resize and listen to.')),
         analyzeButton('read', _t('stem.accessLens.read_cta', 'Read the text')),
         out ? (noText
-          ? card(h('div', { style: { fontSize: '13px', color: C.sub } }, _t('stem.accessLens.no_text', 'No readable text was found in this photo. Try getting closer or adding more light.')))
+          ? card([resultHeading(_t('stem.accessLens.result_read', 'Text from your photo')),
+              h('div', { key: 'nt', style: { fontSize: '13px', color: C.sub } }, _t('stem.accessLens.no_text', 'No readable text was found in this photo. Try getting closer or adding more light.'))])
           : card([
+            resultHeading(_t('stem.accessLens.result_read', 'Text from your photo')),
             h('div', { key: 'ctrl', style: { display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '10px' } },
               h('label', { style: { fontSize: '12px', color: C.sub, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px' } },
                 _t('stem.accessLens.text_size', 'Text size'),
+                // 44px was small for many low-vision readers; 96 matches a magnifier at about 4x body text.
                 h('input', {
-                  type: 'range', min: 16, max: 44, step: 2, value: readerPx,
+                  type: 'range', min: 16, max: 96, step: 4, value: readerPx,
                   'aria-label': _t('stem.accessLens.text_size', 'Text size'),
-                  'aria-valuetext': readerPx + ' pixels',
+                  'aria-valuetext': _t('stem.accessLens.text_size_value', '{n} pixels').replace('{n}', String(readerPx)),
                   onChange: function (e) { setReaderPx(parseInt(e.target.value, 10) || 24); },
-                  style: { width: '130px' }
+                  style: { width: '160px' }
                 })),
-              speakBtn(speechWithGaps(out))),
+              speakBtn(speechWithGaps(out, _t))),
             // Announced before the text: a gap count is the difference between
             // "this is what the label says" and "this is most of what it says".
             countUnclear(out) ? h('div', {
@@ -867,7 +1082,7 @@
                  : countUnclear(out) + _t('stem.accessLens.gap_many', ' words could not be read. ')),
                _t('stem.accessLens.gap_advice', 'Each gap is marked below. If this text matters, take the photo again with more light or move closer, or ask someone to check it.')) : null,
             h('div', {
-              key: 'reader',
+              key: 'reader', dir: 'auto',
               style: {
                 fontSize: readerPx + 'px', lineHeight: 1.8, letterSpacing: '0.02em', wordSpacing: '0.12em',
                 color: C.text, background: C.soft, borderRadius: '10px', padding: '14px 16px',
@@ -894,36 +1109,49 @@
         h('label', { style: { fontSize: '12.5px', color: C.text, fontWeight: 700, display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' } },
           _t('stem.accessLens.translate_into', 'Translate into'),
           h('select', {
-            value: TARGET_LANGS.indexOf(targetLang) === -1 ? '_custom' : targetLang,
-            onChange: function (e) { if (e.target.value !== '_custom') setTargetLang(e.target.value); },
+            value: (customLang || TARGET_LANGS.indexOf(targetLang) === -1) ? '_custom' : targetLang,
+            // "Other…" snapped straight back to the previous language with no
+            // cue; it now hands the student to the language-name box.
+            onChange: function (e) {
+              if (e.target.value === '_custom') {
+                setCustomLang(true);
+                pendingFocusRef.current = 'lang';
+                announce(_t('stem.accessLens.sr_other_language', 'Type the name of the language in the box next to this list.'));
+              } else { setCustomLang(false); setTargetLang(e.target.value); }
+            },
             'aria-label': _t('stem.accessLens.translate_into', 'Translate into'),
             style: { padding: '7px 9px', borderRadius: '8px', border: '1px solid ' + C.border, background: C.panel, color: C.text, fontSize: '13px', fontWeight: 700 }
           },
-            TARGET_LANGS.map(function (l) { return h('option', { key: l, value: l }, l); }),
+            TARGET_LANGS.map(function (l) { return h('option', { key: l, value: l }, _t('stem.accessLens.lang_' + langSlug(l), l)); }),
             h('option', { value: '_custom' }, _t('stem.accessLens.other_language', 'Other…'))),
           h('input', {
-            type: 'text', value: targetLang,
+            type: 'text', value: targetLang, ref: langInputRef,
             'aria-label': _t('stem.accessLens.language_name', 'Language name'),
             onChange: function (e) { setTargetLang(e.target.value); },
             style: { padding: '7px 9px', borderRadius: '8px', border: '1px solid ' + C.border, background: C.panel, color: C.text, fontSize: '13px', width: '150px' }
           })),
         analyzeButton('translate', _t('stem.accessLens.translate_cta', 'Translate the text')),
         out ? (out.none
-          ? card(h('div', { style: { fontSize: '13px', color: C.sub } }, _t('stem.accessLens.no_text', 'No readable text was found in this photo. Try getting closer or adding more light.')))
+          ? card([resultHeading(_t('stem.accessLens.result_translate', 'Translation of your photo')),
+              h('div', { key: 'nt', style: { fontSize: '13px', color: C.sub } }, _t('stem.accessLens.no_text', 'No readable text was found in this photo. Try getting closer or adding more light.'))])
           : card([
+            resultHeading(_t('stem.accessLens.result_translate', 'Translation of your photo')),
             out.original ? h('div', { key: 'orig', style: { marginBottom: '10px' } },
               h('div', { style: { fontSize: '10px', fontWeight: 800, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, _t('stem.accessLens.original', 'Original')),
-              h('div', { style: { fontSize: '13.5px', lineHeight: 1.6, color: C.sub, whiteSpace: 'pre-wrap' } }, splitUnclear(out.original).map(function (part, i) {
+              h('div', { dir: 'auto', style: { fontSize: '13.5px', lineHeight: 1.6, color: C.sub, whiteSpace: 'pre-wrap' } }, splitUnclear(out.original).map(function (part, i) {
                 return part.unclear
                   ? h('span', { key: i, style: { background: C.warnBg, border: '1px dashed ' + C.warnBorder, borderRadius: '4px', padding: '0 3px', fontStyle: 'italic', fontWeight: 700 } }, _t('stem.accessLens.unclear_inline', '[could not read]'))
                   : h('span', { key: i }, part.text);
               }))) : null,
             h('div', { key: 'trans' },
               h('div', { style: { fontSize: '10px', fontWeight: 800, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '4px' } }, _t('stem.accessLens.translation', 'Translation')),
-              h('div', { style: { fontSize: '16px', lineHeight: 1.7, color: C.text, whiteSpace: 'pre-wrap' } }, out.translated)),
+              // lang picks the right font and voice; dir=auto lays out Arabic, Farsi and Pashto right to left.
+              h('div', { dir: 'auto', lang: (out.lang && LANG_CODES[out.lang]) || undefined, style: { fontSize: '16px', lineHeight: 1.7, color: C.text, whiteSpace: 'pre-wrap' } }, out.translated)),
             countUnclear(out.original) ? h('div', { key: 'gaps', role: 'status', style: { marginTop: '10px', fontSize: '12.5px', lineHeight: 1.5, color: C.text, background: C.warnBg, border: '1px solid ' + C.warnBorder, borderRadius: '8px', padding: '8px 10px' } },
               _t('stem.accessLens.translate_gap', 'Some words in the original could not be read, so the translation is missing part of the text. Take the photo again with more light if this matters.')) : null,
-            h('div', { key: 'act', style: { marginTop: '10px', display: 'flex', gap: '8px' } }, speakBtn(out.translated)),
+            h('div', { key: 'mt', role: 'note', style: { marginTop: '10px', fontSize: '13px', lineHeight: 1.5, color: C.text } },
+              _t('stem.accessLens.translate_machine_note', 'This is a machine translation. For important school notices, ask an interpreter or a bilingual staff member.')),
+            h('div', { key: 'act', style: { marginTop: '10px', display: 'flex', gap: '8px' } }, speakBtn(out.translated, out.lang)),
             h('div', { key: 'disc' }, aiDisclaimer())
           ])) : null);
     }
@@ -933,12 +1161,14 @@
       var body = null;
       if (out && out.raw) {
         body = card([
-          h('div', { key: 'raw', style: { fontSize: '13px', lineHeight: 1.6, color: C.text, whiteSpace: 'pre-wrap' } }, out.raw),
+          resultHeading(_t('stem.accessLens.result_inquire', 'Your investigation')),
+          h('div', { key: 'raw', dir: 'auto', style: { fontSize: '13px', lineHeight: 1.6, color: C.text, whiteSpace: 'pre-wrap' } }, out.raw),
           h('div', { key: 'disc' }, aiDisclaimer())
         ]);
       } else if (out) {
         body = h('div', { style: { display: 'flex', flexDirection: 'column', gap: '10px' } },
           card([
+            resultHeading(_t('stem.accessLens.result_inquire', 'Your investigation')),
             h('div', { key: 'hd', style: { fontSize: '11px', fontWeight: 800, color: C.accent, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, '👀 ' + _t('stem.accessLens.observations', 'What the AI can see')),
             h('ul', { key: 'ls', style: { margin: 0, paddingLeft: '18px', fontSize: '13.5px', lineHeight: 1.7, color: C.text } },
               out.observations.map(function (o, i) { return h('li', { key: i }, o); }))
@@ -951,7 +1181,7 @@
                   h('label', { htmlFor: 'accesslens-q' + i, style: { display: 'block', fontSize: '13.5px', fontWeight: 700, color: C.text, marginBottom: '4px', lineHeight: 1.5 } }, (i + 1) + '. ' + q),
                   h('textarea', {
                     id: 'accesslens-q' + i, rows: 2, value: answers[i] || '',
-                    placeholder: _t('stem.accessLens.answer_placeholder', 'Look closely, then type what you notice…'),
+                    placeholder: _t('stem.accessLens.answer_placeholder_any', 'Feel, listen, measure, or look, then type what you notice…'),
                     onChange: function (e) {
                       var v = e.target.value;
                       setAnswers(function (a) { var n = Object.assign({}, a); n[i] = v; return n; });
@@ -961,14 +1191,28 @@
                   }));
               }))
           ]),
+          // The guess sat beside the questions, so it was read before the
+          // student had thought about any of them. It now waits behind a button.
           card([
             h('div', { key: 'hd', style: { fontSize: '11px', fontWeight: 800, color: C.sub, textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '6px' } }, '🧪 ' + _t('stem.accessLens.guess_title', 'The AI\'s guess (not a fact)')),
-            h('div', { key: 'what', style: { fontSize: '14px', fontWeight: 800, color: C.text } }, out.guess.what),
-            h('div', { key: 'conf', style: { display: 'inline-block', marginTop: '4px', fontSize: '11px', fontWeight: 800, padding: '3px 9px', borderRadius: '999px', background: C.warnBg, border: '1px solid ' + C.warnBorder, color: C.text } },
-              confidenceLabel(out.guess.confidence)),
-            out.guess.why ? h('div', { key: 'why', style: { marginTop: '6px', fontSize: '12.5px', lineHeight: 1.6, color: C.sub } }, out.guess.why) : null,
-            out.tryThis ? h('div', { key: 'try', style: { marginTop: '8px', fontSize: '13px', lineHeight: 1.6, color: C.text, background: C.okBg, borderRadius: '8px', padding: '8px 10px' } },
-              h('strong', null, _t('stem.accessLens.try_this', 'Test it: ')), out.tryThis) : null,
+            h('div', { key: 'tog', style: { display: 'flex', gap: '8px', alignItems: 'center', flexWrap: 'wrap' } },
+              btn(guessShown ? _t('stem.accessLens.hide_guess', 'Hide the AI\'s guess') : _t('stem.accessLens.show_guess', 'Show the AI\'s guess'),
+                function () {
+                  var next = !guessShown;
+                  setGuessShown(next);
+                  if (next) announce(guessAnnouncement(out.guess, _t));
+                },
+                { expanded: guessShown, controls: 'accesslens-guess' }),
+              guessShown ? null : h('span', { style: { fontSize: '12px', color: C.sub } }, _t('stem.accessLens.guess_wait', 'Try answering the questions first, then compare with the AI.'))),
+            h('div', { key: 'guess', id: 'accesslens-guess', hidden: !guessShown },
+              guessShown ? [
+                h('div', { key: 'what', dir: 'auto', style: { marginTop: '8px', fontSize: '14px', fontWeight: 800, color: C.text } }, out.guess.what),
+                h('div', { key: 'conf', style: { display: 'inline-block', marginTop: '4px', fontSize: '11px', fontWeight: 800, padding: '3px 9px', borderRadius: '999px', background: C.warnBg, border: '1px solid ' + C.warnBorder, color: C.text } },
+                  confidenceLabel(out.guess.confidence, _t)),
+                out.guess.why ? h('div', { key: 'why', dir: 'auto', style: { marginTop: '6px', fontSize: '12.5px', lineHeight: 1.6, color: C.sub } }, out.guess.why) : null,
+                out.tryThis ? h('div', { key: 'try', dir: 'auto', style: { marginTop: '8px', fontSize: '13px', lineHeight: 1.6, color: C.text, background: C.okBg, borderRadius: '8px', padding: '8px 10px' } },
+                  h('strong', null, _t('stem.accessLens.try_this', 'Test it: ')), out.tryThis) : null
+              ] : null),
             h('div', { key: 'disc' }, aiDisclaimer())
           ]));
       }
@@ -1100,5 +1344,13 @@
     window.AccessLensPure.announceCap = announceCap;
     window.AccessLensPure.resultAnnouncement = resultAnnouncement;
     window.AccessLensPure.isDecorativeLead = function (t) { return DECORATIVE_LEAD.test(t); };
+    window.AccessLensPure.guessAnnouncement = guessAnnouncement;
+    window.AccessLensPure.confidenceLabel = confidenceLabel;
+    window.AccessLensPure.describePrompt = describePrompt;
+    window.AccessLensPure.inquirePrompt = inquirePrompt;
+    window.AccessLensPure.uiLanguageName = uiLanguageName;
+    window.AccessLensPure.withTimeout = withTimeout;
+    window.AccessLensPure.isHeicFile = isHeicFile;
+    window.AccessLensPure.LENS_ORIGIN = LENS_ORIGIN;
   }
 })();

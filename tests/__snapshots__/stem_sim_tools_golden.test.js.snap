@@ -5,10 +5,10 @@ exports[`science-sim + studio render goldens > renders + pins a digest for a11yA
   "buttons": 11,
   "canvases": 0,
   "inputs": 0,
-  "lengthBucket": 30,
+  "lengthBucket": 33,
   "paths": 0,
   "selects": 0,
-  "sha": "2b6748e0a74f1b88",
+  "sha": "698bb230c0ec1fcb",
   "svgs": 0,
 }
 `;

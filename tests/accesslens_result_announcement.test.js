@@ -48,12 +48,20 @@ describe('result announcement', () => {
     expect(resultAnnouncement('translate', { original: 'Leche', translated: 'Milk' }, NT, '')).toBe('Milk');
   });
 
-  it('speaks the guess WITH its confidence, never bare', () => {
+  // 2026-11-09: the guess now waits behind "Show the AI's guess", so the arrival
+  // announcement must not give it away; it is spoken (with its confidence) on reveal.
+  it('does not give the guess away when the investigation arrives', () => {
     const said = resultAnnouncement('inquire', { guess: { what: 'a pine cone', confidence: 'medium' }, questions: [], observations: [] }, NT, 'More below.');
+    expect(said).not.toContain('a pine cone');
+    expect(said).toContain('Show the AI');
+    expect(said).toContain('More below.');
+  });
+
+  it('speaks the revealed guess WITH its confidence, never bare', () => {
+    const said = window.AccessLensPure.guessAnnouncement({ what: 'a pine cone', confidence: 'medium' });
     expect(said).toContain('a pine cone');
     // A guess announced without its confidence is heard as a fact.
-    expect(said).toContain('medium confidence');
-    expect(said).toContain('More below.');
+    expect(said).toContain('somewhat confident guess');
   });
 
   it('caps a long announcement without cutting mid-word', () => {

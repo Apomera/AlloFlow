@@ -73,7 +73,9 @@ const FILL_FNS = new Set(['__alloFill']);
 const PROSE = /[A-Za-z]{2,}/;
 
 function scan(src) {
-  const ast = acorn.parse(src, { ecmaVersion: 2020, locations: true });
+  // 'latest': Art Studio and Flight Sim use `??=` (ES2021). At 2020 they failed to
+  // parse and were reported "not counted", which reads as a pass.
+  const ast = acorn.parse(src, { ecmaVersion: 'latest', locations: true });
   const hits = [];
   // A tool may wrap the translator to save repeating a key prefix, e.g.
   //   function sculptLabel(key, fallback) { return t('stem.geosandbox.studio_' + key, fallback); }
@@ -84,8 +86,8 @@ function scan(src) {
   // <known-t>(...)` and treat it as a boundary too. Deliberately narrow: the
   // body must be a single return of a direct call to an ALREADY-known
   // translator, so a helper that merely mentions t() is not swept in.
-  const localT = new Set();
-  (function findWrappers(n) {
+  const localT = new Set(), factoryT = new Set();
+  const findWrappersFn = (function findWrappers(n) {
     if (!n || typeof n.type !== 'string') return;
     // The wrapper may be a declaration, a `var x = function(...)`, or an
     // arrow — geoSandbox alone uses two of the three, and a detector that
@@ -105,16 +107,60 @@ function scan(src) {
       return !!(call && call.type === 'CallExpression' && call.callee
         && call.callee.type === 'Identifier' && T_FNS.has(call.callee.name));
     };
+    // A second, equally common shape guards the result instead of returning it
+    // directly (Access Lens):
+    //   var _t = function (k, fb) { var v = __alloT(k, fb); return (v == null || v === k) ? fb : v; };
+    // All 24 of that tool's findings were this wrapper's own key and fallback.
+    // Accept it only when the function hands ITS OWN first two parameters, in
+    // order, straight to a known translator, in a body of at most four
+    // statements: a helper that merely calls t('some.key', 'text') inside is not
+    // a boundary for the strings its callers pass.
+    const passesParamsToT = (fn) => {
+      if (!fn || !fn.body || fn.body.type !== 'BlockStatement' || fn.body.body.length > 4) return false;
+      const ps = fn.params || [];
+      if (ps.length < 2 || ps[0].type !== 'Identifier' || ps[1].type !== 'Identifier') return false;
+      // The key may be the bare parameter or the parameter behind a literal prefix:
+      //   function S(key, fb, vars) { var v = t('stem.scaleExplorer.' + key, fb); ... }
+      const isOwnKey = (e) => (e.type === 'Identifier' && e.name === ps[0].name)
+        || (e.type === 'BinaryExpression' && e.operator === '+' && e.left.type === 'Literal' && typeof e.left.value === 'string' && isOwnKey(e.right));
+      let found = false;
+      (function walk(x) {
+        if (!x || typeof x.type !== 'string' || found) return;
+        if (x !== fn && /Function/.test(x.type)) return;
+        if (x.type === 'CallExpression') {
+          const c = x.callee, nm = c && (c.name || (c.property && c.property.name)), a = x.arguments;
+          if (T_FNS.has(nm) && a.length >= 2 && isOwnKey(a[0]) && a[1].type === 'Identifier' && a[1].name === ps[1].name) { found = true; return; }
+        }
+        for (const k of Object.keys(x)) {
+          const v = x[k];
+          if (Array.isArray(v)) v.forEach(walk); else if (v && typeof v.type === 'string') walk(v);
+        }
+      })(fn);
+      return found;
+    };
     const isFn = (v) => v && (v.type === 'FunctionExpression' || v.type === 'ArrowFunctionExpression');
-    if (n.type === 'FunctionDeclaration' && n.id && delegatesToT(n)) localT.add(n.id.name);
-    if (n.type === 'VariableDeclarator' && n.id && n.id.type === 'Identifier' && isFn(n.init) && delegatesToT(n.init)) localT.add(n.id.name);
-    if (n.type === 'AssignmentExpression' && n.left && n.left.type === 'Identifier' && isFn(n.right) && delegatesToT(n.right)) localT.add(n.left.name);
+    // Third shape, a translator FACTORY (Nuclear Lab):
+    //   function nkStudioTranslate(ctx) { return function (key, fallback, values) { ... ctx.t('prefix_' + key, fallback) ... }; }
+    //   var nt = nkStudioTranslate(props.ctx);
+    // The factory's whole body must be one return of such a function.
+    const makesT = (fn) => {
+      if (!fn || !fn.body || fn.body.type !== 'BlockStatement' || fn.body.body.length !== 1) return false;
+      const only = fn.body.body[0];
+      return only.type === 'ReturnStatement' && isFn(only.argument) && passesParamsToT(only.argument);
+    };
+    if (n.type === 'FunctionDeclaration' && n.id && makesT(n)) factoryT.add(n.id.name);
+    if (n.type === 'VariableDeclarator' && n.id && n.id.type === 'Identifier' && n.init && n.init.type === 'CallExpression'
+      && n.init.callee.type === 'Identifier' && factoryT.has(n.init.callee.name)) localT.add(n.id.name);
+    if (n.type === 'FunctionDeclaration' && n.id && (delegatesToT(n) || passesParamsToT(n))) localT.add(n.id.name);
+    if (n.type === 'VariableDeclarator' && n.id && n.id.type === 'Identifier' && isFn(n.init) && (delegatesToT(n.init) || passesParamsToT(n.init))) localT.add(n.id.name);
+    if (n.type === 'AssignmentExpression' && n.left && n.left.type === 'Identifier' && isFn(n.right) && (delegatesToT(n.right) || passesParamsToT(n.right))) localT.add(n.left.name);
     for (const k of Object.keys(n)) {
       const v = n[k];
       if (Array.isArray(v)) v.forEach(findWrappers);
       else if (v && typeof v.type === 'string') findWrappers(v);
     }
-  })(ast);
+  });
+  findWrappersFn(ast); findWrappersFn(ast);
   const visit = (node, inT, attr, props) => {
     if (!node || typeof node.type !== 'string') return;
 
@@ -151,7 +197,9 @@ function scan(src) {
       if (ATTRS.has(k)) { visit(node.value, inT, k, false); return; }
     }
 
-    if (node.type === 'Literal' && attr && !inT && typeof node.value === 'string' && PROSE.test(node.value)) {
+    // A bare placeholder token ('{mode}', as in t(...).replace('{mode}', name)) is a
+    // substitution slot, not words a student hears.
+    if (node.type === 'Literal' && attr && !inT && typeof node.value === 'string' && PROSE.test(node.value) && !/^{[A-Za-z0-9_]+}$/.test(node.value)) {
       hits.push({ line: node.loc.start.line, attr, text: node.value });
     }
 

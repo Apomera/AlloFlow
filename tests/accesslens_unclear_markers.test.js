@@ -92,7 +92,8 @@ describe('unreadable-word markers', () => {
   });
 
   it('routes read-aloud through the gap-aware text', () => {
-    expect(src).toContain('speakBtn(speechWithGaps(out))');
+    // Second argument: the component's translator, so the spoken gap phrase is localized.
+    expect(src).toContain('speakBtn(speechWithGaps(out, _t))');
   });
 
   it('marks gaps in the Translate transcription too', () => {

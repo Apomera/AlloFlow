@@ -22,7 +22,12 @@ describe('a11yAuditor — WCAG contrast math', () => {
 describe('a11yAuditor — deterministic linter findings', () => {
   it('flags an image with no alt (1.1.1)', () => { expect(crits('<img src="x.png">')).toContain('1.1.1'); });
   it('passes an image with alt', () => { expect(crits('<img src="x.png" alt="a cat">')).not.toContain('1.1.1'); });
-  it('flags a heading-level skip h1 -> h3 (1.3.1)', () => { expect(crits('<h1>A</h1><h3>B</h3>')).toContain('1.3.1'); });
+  // Changed 2026-11: a skipped heading level is a best-practice note (axe "heading-order"), not a 1.3.1 failure.
+  it('notes a heading-level skip h1 -> h3 as best practice, not a WCAG failure', () => {
+    const r = audit('<h1>A</h1><h3>B</h3>');
+    expect(r.findings.map((f) => f.wcag)).not.toContain('1.3.1');
+    expect(r.bestPractice.map((f) => f.key)).toContain('lint_bp_heading_skip');
+  });
   it('flags an unlabeled input (3.3.2)', () => { expect(crits('<form><input type="text"></form>')).toContain('3.3.2'); });
   it('accepts an input wrapped in a label', () => { expect(crits('<label>Name <input type="text"></label>')).not.toContain('3.3.2'); });
   it('accepts an input with aria-label', () => { expect(crits('<input type="text" aria-label="Name">')).not.toContain('3.3.2'); });

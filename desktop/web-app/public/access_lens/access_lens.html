@@ -17,6 +17,12 @@
   - The only data that leaves is the single JPEG the student explicitly
     chooses, sent to the opening AlloFlow window via postMessage
     ({ type: 'allolens-photo' }), acknowledged with 'allolens-photo-ack'.
+  - The photo goes ONLY to an opener that proves it opened this window: the
+    tool puts a random nonce in the URL and answers 'allolens-ready' with
+    'allolens-hello' carrying it. The photo is sent to the origin that answered
+    (or, for a sandboxed opener whose origin is opaque, only right after a
+    fresh handshake), never blindly with '*': an opener that navigated away
+    must not receive it. No nonce or no answer = nothing is sent.
   - No storage APIs are used; closing the window discards everything.
 -->
 <style>
@@ -42,36 +48,46 @@
 </head>
 <body>
 <header>
-  <h1>📷 AlloFlow Access Lens Camera</h1>
+  <h1><span aria-hidden="true">📷 </span>AlloFlow Access Lens Camera</h1>
   <p class="sub">Take a photo here and it appears back in AlloFlow automatically. This window makes nothing but the one photo you choose leave your device screen.</p>
 </header>
 <main>
-  <div class="privacy">🔒 <strong>Privacy:</strong> this page saves nothing and uploads nothing. Only the photo you press <em>Use this photo</em> on is handed back to AlloFlow. Please point the camera at things, not at people.</div>
+  <div class="privacy"><span aria-hidden="true">🔒 </span><strong>Privacy:</strong> this page saves nothing and uploads nothing. Only the photo you press <em>Use this photo</em> on is handed back to AlloFlow. Please point the camera at things, not at people.</div>
+  <p class="note" id="keysNote">Keyboard: when the camera view has focus, press Space or Enter to snap a photo.</p>
 
   <div id="err" class="error hidden" role="alert"></div>
   <div id="done" class="ok hidden" role="status"></div>
 
-  <video id="cam" autoplay playsinline muted aria-label="Live camera preview"></video>
+  <video id="cam" autoplay playsinline muted tabindex="0" aria-label="Live camera preview. Press Space or Enter to snap a photo." aria-describedby="keysNote"></video>
   <img id="shot" class="preview hidden" alt="The photo you just took">
 
   <div class="row" id="liveRow">
-    <button id="snapBtn" class="primary" type="button">📸 Snap photo</button>
-    <button id="flipBtn" type="button">🔄 Switch camera</button>
+    <button id="snapBtn" class="primary" type="button"><span aria-hidden="true">📸 </span>Snap photo</button>
+    <button id="flipBtn" type="button"><span aria-hidden="true">🔄 </span>Switch camera</button>
   </div>
   <div class="row hidden" id="reviewRow">
-    <button id="useBtn" class="primary" type="button">✅ Use this photo</button>
-    <button id="retakeBtn" type="button">↩️ Retake</button>
+    <button id="useBtn" class="primary" type="button"><span aria-hidden="true">✅ </span>Use this photo</button>
+    <button id="retakeBtn" type="button"><span aria-hidden="true">↩️ </span>Retake</button>
   </div>
 
   <p class="note">If the camera does not start, use your browser's address-bar permission prompt to allow it, then press Retry. You can also close this window and use the photo button inside AlloFlow instead.</p>
-  <div class="row"><button id="retryBtn" type="button" class="hidden">🔁 Retry camera</button></div>
+  <div class="row"><button id="retryBtn" type="button" class="hidden"><span aria-hidden="true">🔁 </span>Retry camera</button></div>
   <div aria-live="polite" id="live"></div>
 </main>
 <script>
 (function () {
   'use strict';
   var opener = window.opener || null;
-  function postToOpener(msg) { try { if (opener) opener.postMessage(msg, '*'); } catch (_) {} }
+  var nonce = '';
+  try { nonce = new URLSearchParams(window.location.search).get('nonce') || ''; } catch (_) { nonce = ''; }
+  // Origin of the opener that answered our nonce. 'null' = a sandboxed opener
+  // whose origin is opaque; such an opener can only be addressed with '*', so
+  // the photo is then sent only straight after a fresh handshake.
+  var verifiedOrigin = null;
+  var pendingSend = false;
+  var helloTimer = null;
+  // Carries no photo or nonce: just asks the opener to prove itself.
+  function askOpener(type) { try { if (opener) opener.postMessage({ type: type }, '*'); } catch (_) {} }
 
   var stream = null;
   var facing = 'environment';
@@ -87,10 +103,18 @@
   var retryBtn = document.getElementById('retryBtn');
   var live = document.getElementById('live');
 
-  function say(m) { live.textContent = m; }
+  var snapBtn = document.getElementById('snapBtn');
+  var useBtn = document.getElementById('useBtn');
+  // aria-live fires on a text change; a trailing zero-width run lets the same
+  // message (e.g. "not ready yet" twice) be heard again.
+  var saySeq = 0;
+  function say(m) { saySeq = (saySeq + 1) % 4; live.textContent = m + '\u200B'.repeat(saySeq); }
   function show(el) { el.classList.remove('hidden'); }
   function hide(el) { el.classList.add('hidden'); }
-  function showError(m) { err.textContent = m; show(err); show(retryBtn); }
+  function focusEl(el) { try { el.focus(); } catch (_) {} }
+  // Buttons hide themselves (Snap, Retake), which dropped keyboard and screen
+  // reader focus to the top of the page; each step now says where focus goes.
+  function showError(m) { err.textContent = m; show(err); show(retryBtn); focusEl(retryBtn); }
   function clearError() { hide(err); hide(retryBtn); }
 
   function stopStream() {
@@ -105,23 +129,34 @@
       return;
     }
     stopStream();
-    navigator.mediaDevices.getUserMedia({ video: { facingMode: facing, width: { ideal: 1280 } }, audio: false })
+    navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: facing }, width: { ideal: 1280 } }, audio: false })
       .then(function (s) {
         stream = s;
         cam.srcObject = s;
         show(cam); hide(shot); show(liveRow); hide(reviewRow);
-        say('Camera started.');
+        focusEl(snapBtn);
+        say('Camera started. Press Snap photo, or Space while the camera view has focus.');
       })
       .catch(function (e) {
-        var denied = e && (e.name === 'NotAllowedError' || e.name === 'AbortError');
-        showError(denied
+        var name = e && e.name ? e.name : '';
+        // AbortError is not a refusal: the camera started and then failed,
+        // usually because another app holds it. Telling the student to grant
+        // permission they already granted is advice they cannot act on.
+        showError(name === 'NotAllowedError' || name === 'SecurityError'
           ? 'Camera permission was not given. Allow the camera for this page in your browser, then press Retry.'
-          : 'The camera could not start (' + (e && e.name ? e.name : 'unknown error') + '). Press Retry, or close this window and use the photo button inside AlloFlow.');
+          : name === 'AbortError' || name === 'NotReadableError'
+            ? 'The camera stopped before it could start, often because another app such as a video call is using it. Close that app, then press Retry.'
+            : name === 'NotFoundError' || name === 'OverconstrainedError'
+              ? 'No camera was found on this device. Close this window and use the photo button inside AlloFlow to choose a picture instead.'
+              : 'The camera could not start (' + (name || 'unknown error') + '). Press Retry, or close this window and use the photo button inside AlloFlow.');
       });
   }
 
   function snap() {
-    if (!cam.videoWidth) return;
+    if (!cam.videoWidth) {
+      say('The camera is not ready yet. Wait a moment, then try again.');
+      return;
+    }
     var maxDim = 1024;
     var scale = Math.min(1, maxDim / Math.max(cam.videoWidth, cam.videoHeight));
     var c = document.createElement('canvas');
@@ -132,17 +167,40 @@
     shot.src = lastDataUrl;
     stopStream();
     hide(cam); show(shot); hide(liveRow); show(reviewRow);
-    say('Photo taken. Review it, then choose Use this photo or Retake.');
+    focusEl(useBtn);
+    say('Photo taken. Press Use this photo to send it to AlloFlow, or Retake.');
   }
 
   function usePhoto() {
     if (!lastDataUrl) return;
+    if (!nonce) {
+      showError('This camera window was not opened by AlloFlow, so it will not send the photo anywhere. Close it and press Open camera window inside AlloFlow.');
+      return;
+    }
     if (!opener || opener.closed) {
       showError('The AlloFlow window is no longer open. Close this window, reopen AlloFlow, and try again.');
       return;
     }
-    postToOpener({ type: 'allolens-photo', payload: { dataUrl: lastDataUrl } });
+    // A fresh handshake right before every send: the opener may have navigated
+    // since the window opened, and an opaque origin can only be trusted this way.
+    pendingSend = true;
+    verifiedOrigin = null;
     hide(done);
+    say('Sending the photo to AlloFlow.');
+    askOpener('allolens-ready');
+    if (helloTimer) clearTimeout(helloTimer);
+    helloTimer = setTimeout(function () {
+      if (!pendingSend) return;
+      pendingSend = false;
+      showError('AlloFlow did not answer, so the photo was not sent. Switch to the AlloFlow tab, make sure Access Lens is still open, and try again.');
+    }, 4000);
+  }
+
+  function sendPhoto() {
+    pendingSend = false;
+    if (helloTimer) { clearTimeout(helloTimer); helloTimer = null; }
+    var target = verifiedOrigin && verifiedOrigin !== 'null' ? verifiedOrigin : '*';
+    try { opener.postMessage({ type: 'allolens-photo', payload: { dataUrl: lastDataUrl } }, target); } catch (_) {}
     if (ackTimer) clearTimeout(ackTimer);
     ackTimer = setTimeout(function () {
       showError('AlloFlow did not confirm it received the photo. Switch to the AlloFlow tab to check, or try again.');
@@ -152,17 +210,28 @@
   window.addEventListener('message', function (ev) {
     if (!opener || ev.source !== opener) return;
     var d = ev.data || {};
+    if (d.type === 'allolens-hello') {
+      if (!nonce || d.nonce !== nonce) return;
+      verifiedOrigin = typeof ev.origin === 'string' && ev.origin ? ev.origin : 'null';
+      if (pendingSend && lastDataUrl) sendPhoto();
+      return;
+    }
+    if (verifiedOrigin && verifiedOrigin !== 'null' && ev.origin !== verifiedOrigin) return;
     if (d.type === 'allolens-photo-ack') {
       if (ackTimer) { clearTimeout(ackTimer); ackTimer = null; }
       clearError();
-      done.textContent = '✅ Photo delivered to AlloFlow. You can take another, or close this window.';
+      done.textContent = 'Photo delivered to AlloFlow. You can take another, or close this window.';
       show(done);
       say('Photo delivered to AlloFlow.');
     }
   });
 
-  document.getElementById('snapBtn').addEventListener('click', snap);
-  document.getElementById('useBtn').addEventListener('click', usePhoto);
+  snapBtn.addEventListener('click', snap);
+  useBtn.addEventListener('click', usePhoto);
+  // A keyboard shutter: Space or Enter on the focused camera view.
+  cam.addEventListener('keydown', function (e) {
+    if (e.key === ' ' || e.key === 'Spacebar' || e.key === 'Enter') { e.preventDefault(); snap(); }
+  });
   document.getElementById('retakeBtn').addEventListener('click', function () { lastDataUrl = null; startCamera(); });
   document.getElementById('flipBtn').addEventListener('click', function () {
     facing = facing === 'environment' ? 'user' : 'environment';
@@ -172,10 +241,10 @@
 
   window.addEventListener('beforeunload', function () {
     stopStream();
-    postToOpener({ type: 'allolens-closed' });
+    askOpener('allolens-closed');
   });
 
-  postToOpener({ type: 'allolens-ready' });
+  askOpener('allolens-ready');
   startCamera();
 })();
 </script>

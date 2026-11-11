@@ -10628,8 +10628,21 @@
             // would otherwise trigger "Cannot update a component while rendering".
             //
             // Hook-safety: the bridge inlines the tool's render() into ONE fiber,
+          // The app keeps <html lang dir> current (AlloFlowANTI: bcp47 code + rtl flag).
+          // Tools asked for these (Unit Converter, GIS Studio) and got undefined, so
+          // each guessed its own way. Read at ctx build, so a language change that
+          // re-renders the lab reaches the tool.
+          var _stemDocEl = (typeof document !== 'undefined' && document.documentElement) || null;
+          var _stemLang = String((_stemDocEl && _stemDocEl.lang) || 'en').replace(/_/g, '-');
+          var _stemDir = (_stemDocEl && _stemDocEl.dir === 'rtl') ? 'rtl' : 'ltr';
             // and many tools dispatch to different sub-renderers per tab/subtool,
             // each calling a DIFFERENT set of canvas hooks (useRef/useEffect).
+            lang: _stemLang,
+            locale: _stemLang,
+            uiLanguage: _stemLang,
+            dir: _stemDir,
+            // Language NAME ("Spanish"), as the app's text-language global gives it.
+            language: (typeof window !== 'undefined' && typeof window.__alloTextLanguage === 'string') ? window.__alloTextLanguage : '',
             // Keying only by tool ID meant a same-fiber subtool switch reordered
             // hooks → "Rendered fewer hooks than expected" (e.g. semiconductor
             // bandgap→gates). Fold the active tab + the tool's own mode field into
