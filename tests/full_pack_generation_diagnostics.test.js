@@ -1717,7 +1717,7 @@ describe('Full Pack reading choice and scoped roles', () => {
     expect(await GenerationHelpers.handleGenerateFullPack(null, deps)).toBe(false);
     expect(deps.autoConfigureSettings).not.toHaveBeenCalled();
     expect(deps.handleGenerate).not.toHaveBeenCalled();
-    expect(deps.addToast.mock.calls[0][0]).toContain('Based on');
+    expect(deps.addToast.mock.calls[0][0]).toContain('Make activities from');
   });
   it('requires a fresh plan after a reading role changes', async () => {
     const { original, adapted } = readings(); let latestRun;

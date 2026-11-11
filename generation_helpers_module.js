@@ -2636,7 +2636,7 @@ const handleGenerateFullPack = async (chatContextOverride = null, deps) => {
         sourceSelection: batchSource.selection || '',
     };
     if (!batchSourceText.trim()) {
-        const noSourceError = new Error(batchSource.status === 'ambiguous' ? 'Choose a reading in Based on before planning the Full Pack. This lesson has more than one main reading.' : (selectedReadingSourceId ? 'The selected reading is unavailable. Choose a reading in Based on before planning the Full Pack.' : 'No source text is available for Full Pack generation. Add text or choose a reading in Based on.'));
+        const noSourceError = new Error(batchSource.status === 'ambiguous' ? 'Choose a reading under "Make activities from" before planning the Full Pack. This lesson has more than one main reading.' : (selectedReadingSourceId ? 'The selected reading is no longer available. Choose another under "Make activities from" before planning the Full Pack.' : 'No source text is available for Full Pack generation. Add a source passage, or choose a reading under "Make activities from".'));
         recordFullPackFailure({ type: 'preflight', index: 0, reason: noSourceError.message, error: noSourceError, sourceTextChars: 0 });
         addToast(noSourceError.message, "info");
         updateFullPackRun(prev => Object.assign({}, prev, { status: 'failed', finishedAt: new Date().toISOString(), elapsedMs: Math.max(0, Date.now() - _fullPackStartedAt) }));

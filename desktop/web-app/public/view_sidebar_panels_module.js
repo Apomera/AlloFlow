@@ -2880,7 +2880,7 @@ function SourceView(props) {
       "data-help-key": "input_area",
       className: "h-[50vh] min-h-[240px] w-full resize-y rounded-xl border border-slate-400 p-4 text-sm leading-relaxed focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30"
     }
-  ), /* @__PURE__ */ React.createElement("div", { className: "pointer-events-none absolute bottom-2 right-4 text-[11px] font-medium text-slate-600" }, isDraftSaving ? say("status.saving_draft", "Saving draft\u2026") : text && !isCanvas ? say("status.saved_device", "Saved on this device") : null))), (isGeneratingSource || isExtracting) && /* @__PURE__ */ React.createElement("p", { "data-source-writing-status": true, role: "status", className: "text-sm font-medium text-violet-900" }, (generationStep || say("common.writing_content", "Writing content...")) + " " + say("sidebar.source_writing_keeps_text", "Your text stays here until you choose to replace it.")), pending && /* @__PURE__ */ React.createElement("p", { "data-source-lock-pending": true, role: "status", className: "rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950" }, sourceRecord.pending === text ? say("source_view.pending", "A resource is being made from this text. It will be used when you leave the editor.") : say("source_view.pending_changed", "You changed the text after starting a resource, so it stays a draft.")), replacement && replacement.status === "review" && /* @__PURE__ */ React.createElement("section", { "data-source-replacement-review": true, "aria-labelledby": "source-replacement-review-title", className: "rounded-xl border-2 border-amber-400 bg-amber-50 p-4 text-sm text-amber-950" }, /* @__PURE__ */ React.createElement("h3", { id: "source-replacement-review-title", className: "font-bold" }, reviewTitle), /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-1" }, reviewBody), /* @__PURE__ */ React.createElement("div", { className: "mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap rounded border border-amber-200 bg-white p-3 text-slate-800", "data-source-review-text": true }, replacement.text), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-review-keep": true, onClick: keepText, className: "min-h-11 rounded-md border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-50" }, say("sidebar.source_review_keep", "Keep my text")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-review-replace": true, onClick: usePassage, className: "min-h-11 rounded-md bg-amber-800 px-3 font-bold text-white hover:bg-amber-900" }, replacement.reason === "refine" ? say("source_view.review_use_rewrite", "Use this rewrite") : say("sidebar.source_review_replace", "Replace with the new passage")))), replacement && replacement.status === "replaced" && /* @__PURE__ */ React.createElement("div", { "data-source-replaced-notice": true, className: "flex flex-wrap items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm text-violet-950" }, /* @__PURE__ */ React.createElement("p", { role: "status", className: "m-0 flex-1" }, replacement.topic ? fill(say("sidebar.source_replaced_topic", "Your source text was replaced with a new passage about \u201C{topic}\u201D."), { topic: replacement.topic }) : say("source_view.replaced", "Your source text was replaced.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-replace-undo": true, onClick: undo, className: "min-h-11 rounded-full border border-violet-300 bg-white px-3 font-bold text-violet-800 hover:bg-violet-100" }, say("sidebar.source_replace_undo", "Undo"))), replacement && replacement.status === "restored" && /* @__PURE__ */ React.createElement("p", { "data-source-restored-notice": true, role: "status", className: "rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950" }, say("sidebar.source_restored", "Your previous source text is back.")), /* @__PURE__ */ React.createElement("section", { id: "source-check-panel", "data-source-check": true, "data-help-key": "source_view_check", "aria-labelledby": "source-check-title", className: "rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm" }, /* @__PURE__ */ React.createElement("h3", { id: "source-check-title", className: "font-bold text-slate-900" }, say("source_view.check_title", "Source check")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, say("source_view.check_desc", "Reading level, key concepts and accuracy for this text. It runs when you use the source.")), /* @__PURE__ */ React.createElement("p", { ref: checkLineRef, tabIndex: -1, "data-source-check-state": checkState, role: "status", className: "mt-2 text-slate-800 focus:outline-none" }, checkLine), checkBusy && !!isProcessing && !!generationStep && /* @__PURE__ */ React.createElement("p", { "data-source-check-step": true, className: "mt-1 text-xs text-slate-600" }, generationStep), !checkBusy && runForText && !!checkRun.failure && /* @__PURE__ */ React.createElement("p", { "data-source-check-failure": true, role: "alert", className: "mt-1 text-red-800" }, checkRun.failure), typeof setCheckAccuracyWithSearch === "function" && /* @__PURE__ */ React.createElement("label", { className: "mt-2 inline-flex min-h-11 items-center gap-2 text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", "data-source-web-check": true, checked: !!checkAccuracyWithSearch, onChange: (event) => setCheckAccuracyWithSearch(event.target.checked) }), say("source_view.web_check", "Check accuracy with a web search")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid gap-2 sm:grid-cols-2" }, (check || partial) && typeof openAnalysis === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-check-details": true, onClick: () => openAnalysis(check || incomplete), className: "min-h-11 rounded-lg bg-indigo-700 px-3 font-bold text-white hover:bg-indigo-800" }, partial ? say("analysis.view_partial", "View partial analysis") : say("source_view.check_details", "View analyzed source material")), aiReady && checkState !== "running" && !!text.trim() && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-run-check": true, disabled: !!isProcessing, onClick: () => runCheck(text, true), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-60" }, checkState === "done" ? say("source_view.check_again", "Analyze again") : checkState === "partial" ? partial.legacy ? say("analysis.check_all_sections", "Check all sections") : say("analysis.check_remaining", "Check remaining sections") : checkState === "failed" ? say("source_view.check_retry", "Retry") : checkState === "changed" ? say("analysis.recheck_action", "Recheck edited source") : say("source_view.check_run", "Analyze source material")))), !readOnly && aiReady && typeof refineSourceSuggestion === "function" && !!text.trim() && /* @__PURE__ */ React.createElement("section", { "data-source-refine": true, "aria-labelledby": "source-refine-title", className: "rounded-xl border border-slate-200 bg-white p-4 text-sm" }, /* @__PURE__ */ React.createElement("h3", { id: "source-refine-title", className: "font-bold text-slate-900" }, say("source_view.refine_title", "Ask AI to adjust this text")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, say("source_view.refine_desc", "You get a suggested rewrite to review. Your text changes only if you use it.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", "data-source-refine-input": true, value: refineInstruction, onChange: (event) => setRefineInstruction(event.target.value), onKeyDown: (event) => {
+  ), /* @__PURE__ */ React.createElement("div", { className: "pointer-events-none absolute bottom-2 right-4 text-[11px] font-medium text-slate-600" }, isDraftSaving ? say("status.saving_draft", "Saving draft\u2026") : text && !isCanvas ? say("status.saved_device", "Saved on this device") : null))), (isGeneratingSource || isExtracting) && /* @__PURE__ */ React.createElement("p", { "data-source-writing-status": true, role: "status", className: "text-sm font-medium text-violet-900" }, (generationStep || say("common.writing_content", "Writing content...")) + " " + say("sidebar.source_writing_keeps_text", "Your text stays here until you choose to replace it.")), pending && /* @__PURE__ */ React.createElement("p", { "data-source-lock-pending": true, role: "status", className: "rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950" }, sourceRecord.pending === text ? say("source_view.pending", "A resource is being made from this text. It will be used when you leave the editor.") : say("source_view.pending_changed", "You changed the text after starting a resource, so it stays a draft.")), replacement && replacement.status === "review" && /* @__PURE__ */ React.createElement("section", { "data-source-replacement-review": true, "aria-labelledby": "source-replacement-review-title", className: "rounded-xl border-2 border-amber-400 bg-amber-50 p-4 text-sm text-amber-950" }, /* @__PURE__ */ React.createElement("h3", { id: "source-replacement-review-title", className: "font-bold" }, reviewTitle), /* @__PURE__ */ React.createElement("p", { role: "status", className: "mt-1" }, reviewBody), /* @__PURE__ */ React.createElement("div", { className: "mt-2 max-h-64 overflow-y-auto whitespace-pre-wrap rounded border border-amber-200 bg-white p-3 text-slate-800", "data-source-review-text": true }, replacement.text), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-review-keep": true, onClick: keepText, className: "min-h-11 rounded-md border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-50" }, say("sidebar.source_review_keep", "Keep my text")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-review-replace": true, onClick: usePassage, className: "min-h-11 rounded-md bg-amber-800 px-3 font-bold text-white hover:bg-amber-900" }, replacement.reason === "refine" ? say("source_view.review_use_rewrite", "Use this rewrite") : say("sidebar.source_review_replace", "Replace with the new passage")))), replacement && replacement.status === "replaced" && /* @__PURE__ */ React.createElement("div", { "data-source-replaced-notice": true, className: "flex flex-wrap items-center gap-2 rounded-lg border border-violet-200 bg-violet-50 p-3 text-sm text-violet-950" }, /* @__PURE__ */ React.createElement("p", { role: "status", className: "m-0 flex-1" }, replacement.topic ? fill(say("sidebar.source_replaced_topic", "Your source text was replaced with a new passage about \u201C{topic}\u201D."), { topic: replacement.topic }) : say("source_view.replaced", "Your source text was replaced.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-replace-undo": true, onClick: undo, className: "min-h-11 rounded-full border border-violet-300 bg-white px-3 font-bold text-violet-800 hover:bg-violet-100" }, say("sidebar.source_replace_undo", "Undo"))), replacement && replacement.status === "restored" && /* @__PURE__ */ React.createElement("p", { "data-source-restored-notice": true, role: "status", className: "rounded-lg border border-emerald-200 bg-emerald-50 p-3 text-sm text-emerald-950" }, say("sidebar.source_restored", "Your previous source text is back.")), /* @__PURE__ */ React.createElement("section", { id: "source-check-panel", "data-source-check": true, "data-help-key": "source_view_check", "aria-labelledby": "source-check-title", className: "rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm" }, /* @__PURE__ */ React.createElement("h3", { id: "source-check-title", className: "font-bold text-slate-900" }, say("source_view.check_title", "Source check")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, say("source_view.check_desc", "Reading level, key concepts and accuracy for this text. It runs when you use the source.")), /* @__PURE__ */ React.createElement("p", { ref: checkLineRef, tabIndex: -1, "data-source-check-state": checkState, role: "status", className: "mt-2 rounded text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" }, checkLine), checkBusy && !!isProcessing && !!generationStep && /* @__PURE__ */ React.createElement("p", { "data-source-check-step": true, className: "mt-1 text-xs text-slate-600" }, generationStep), !checkBusy && runForText && !!checkRun.failure && /* @__PURE__ */ React.createElement("p", { "data-source-check-failure": true, role: "alert", className: "mt-1 text-red-800" }, checkRun.failure), typeof setCheckAccuracyWithSearch === "function" && /* @__PURE__ */ React.createElement("label", { className: "mt-2 inline-flex min-h-11 items-center gap-2 text-slate-700" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", "data-source-web-check": true, checked: !!checkAccuracyWithSearch, onChange: (event) => setCheckAccuracyWithSearch(event.target.checked) }), say("source_view.web_check", "Check accuracy with a web search")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 grid gap-2 sm:grid-cols-2" }, (check || partial) && typeof openAnalysis === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-check-details": true, onClick: () => openAnalysis(check || incomplete), className: "min-h-11 rounded-lg bg-indigo-700 px-3 font-bold text-white hover:bg-indigo-800" }, partial ? say("analysis.view_partial", "View partial analysis") : say("source_view.check_details", "View analyzed source material")), aiReady && checkState !== "running" && !!text.trim() && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-run-check": true, disabled: !!isProcessing, onClick: () => runCheck(text, true), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-3 font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-60" }, checkState === "done" ? say("source_view.check_again", "Analyze again") : checkState === "partial" ? partial.legacy ? say("analysis.check_all_sections", "Check all sections") : say("analysis.check_remaining", "Check remaining sections") : checkState === "failed" ? say("source_view.check_retry", "Retry") : checkState === "changed" ? say("analysis.recheck_action", "Recheck edited source") : say("source_view.check_run", "Analyze source material")))), !readOnly && aiReady && typeof refineSourceSuggestion === "function" && !!text.trim() && /* @__PURE__ */ React.createElement("section", { "data-source-refine": true, "aria-labelledby": "source-refine-title", className: "rounded-xl border border-slate-200 bg-white p-4 text-sm" }, /* @__PURE__ */ React.createElement("h3", { id: "source-refine-title", className: "font-bold text-slate-900" }, say("source_view.refine_title", "Ask AI to adjust this text")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-slate-600" }, say("source_view.refine_desc", "You get a suggested rewrite to review. Your text changes only if you use it.")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("input", { type: "text", "data-source-refine-input": true, value: refineInstruction, onChange: (event) => setRefineInstruction(event.target.value), onKeyDown: (event) => {
     if (event.key === "Enter") {
       event.preventDefault();
       suggestRewrite();
@@ -4534,11 +4534,20 @@ function ReadingSourceChoice(props) {
   const selected = result.artifact || result.item;
   const title = selected?.title || result.title || (result.status === "resolved" ? "Current pasted text" : "");
   const unknownSelection = selectedId && selectedId !== "__input__" && !candidates.some((candidate) => candidateId(candidate) === selectedId);
-  return /* @__PURE__ */ React.createElement("section", { "data-reading-source-choice": true, className: "rounded-2xl border border-indigo-200 bg-white p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "reading-activity-source", className: "block text-sm font-bold text-slate-900" }, "Based on"), /* @__PURE__ */ React.createElement("select", { id: "reading-activity-source", "aria-describedby": "reading-activity-source-help", value: selectedId, disabled: props.isProcessing || !api?.resolveReadingSource, onChange: (event) => props.setSelectedReadingSourceId?.(event.target.value), className: "mt-2 min-h-11 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600" }, /* @__PURE__ */ React.createElement("option", { value: "" }, automaticSource ? say("sidebar.based_on_auto_source", "Automatic: your source") : result.status === "ambiguous" ? "Choose a reading for this activity" : "Automatic \u2014 follow lesson roles"), hasSourceText && (selectedId === "__input__" || !automaticSource) && /* @__PURE__ */ React.createElement("option", { value: "__input__" }, say("sidebar.based_on_your_source", "Your source text")), unknownSelection && /* @__PURE__ */ React.createElement("option", { value: selectedId, disabled: true }, "Selected reading is no longer available in this lesson"), candidates.map((candidate) => {
+  const readingText = (candidate) => {
+    const item = candidateItem(candidate) || {};
+    return String(item.type === "analysis" ? item.data && item.data.originalText || "" : typeof item.data === "string" ? item.data : "").trim();
+  };
+  const differentTexts = new Set(candidates.map(readingText).filter(Boolean));
+  if (hasSourceText) differentTexts.add(String(props.inputText).trim());
+  const needsAttention = result.status === "ambiguous" || !!selectedId && selectedId !== "__input__" && result.status !== "resolved";
+  if (differentTexts.size < 2 && !needsAttention) return null;
+  const optionLabel = (candidate, item, profile) => (item.title || candidate.title || say("sidebar.reading_choice_untitled", "Reading")) + " \xB7 " + formLabel(profile.form) + (profile.role === "supplemental" ? " \xB7 " + roleLabel(profile.role) : "") + (candidate.eligible === false ? " " + say("sidebar.reading_choice_needs_review", "(needs review)") : "");
+  return /* @__PURE__ */ React.createElement("section", { "data-reading-source-choice": true, className: "rounded-2xl border border-indigo-200 bg-white p-3 shadow-sm" }, /* @__PURE__ */ React.createElement("label", { htmlFor: "reading-activity-source", className: "block text-sm font-bold text-slate-900" }, say("sidebar.reading_choice_label", "Make activities from")), /* @__PURE__ */ React.createElement("p", { "data-reading-source-purpose": true, className: "m-0 mt-1 text-xs leading-relaxed text-slate-700" }, say("sidebar.reading_choice_purpose", "Choose which reading your quizzes and other activities are built from.")), /* @__PURE__ */ React.createElement("select", { id: "reading-activity-source", "aria-describedby": "reading-activity-source-help", value: selectedId, disabled: props.isProcessing || !api?.resolveReadingSource, onChange: (event) => props.setSelectedReadingSourceId?.(event.target.value), className: "mt-2 min-h-11 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600" }, /* @__PURE__ */ React.createElement("option", { value: "" }, automaticSource ? say("sidebar.based_on_auto_source", "Automatic: your source") : result.status === "ambiguous" ? say("sidebar.reading_choice_choose", "Choose a reading") : say("sidebar.reading_choice_auto_main", "Automatic (your main reading)")), hasSourceText && (selectedId === "__input__" || !automaticSource) && /* @__PURE__ */ React.createElement("option", { value: "__input__" }, say("sidebar.based_on_your_source", "Your source text")), unknownSelection && /* @__PURE__ */ React.createElement("option", { value: selectedId, disabled: true }, say("sidebar.reading_choice_gone", "This reading is no longer in the lesson")), candidates.map((candidate) => {
     const item = candidateItem(candidate);
     const profile = candidate.instructionalText || api?.getInstructionalText?.(item) || {};
-    return /* @__PURE__ */ React.createElement("option", { key: candidateId(candidate), value: candidateId(candidate), disabled: candidate.eligible === false }, item.title || candidate.title || "Reading", " \xB7 ", formLabel(profile.form), " \xB7 ", roleLabel(profile.role), candidate.eligible === false ? " (needs review)" : "");
-  })), usesSource ? /* @__PURE__ */ React.createElement("div", { id: "reading-activity-source-help", "data-source-using": true, role: "status", className: "mt-2 break-words text-xs leading-relaxed text-slate-700" }, /* @__PURE__ */ React.createElement("p", { className: "m-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-900" }, say("sidebar.based_on_uses_source", "Activities will use your source: {title}").replace("{title}", SourceRecord.title(props.inputText))), " \xB7 ", sourceStatus === "in-use" ? sourceVersion > 1 ? say("sidebar.source_using_version", "In use, version {version}").replace("{version}", String(sourceVersion)) : say("sidebar.source_using_in_use", "In use") : say("sidebar.source_using_draft", "Draft, used when you make a resource")), typeof props.openSourceView === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-using-open": true, onClick: () => props.openSourceView({ focus: false }), className: "min-h-11 font-bold text-indigo-700 underline" }, say("sidebar.source_open", "Open source"))) : /* @__PURE__ */ React.createElement("p", { id: "reading-activity-source-help", role: "status", className: "mt-2 break-words text-xs leading-relaxed " + (result.status === "resolved" ? "text-slate-700" : "text-amber-900") }, result.status === "resolved" ? "Activities will use: " + title + ". This choice does not change its lesson role." : result.status === "ambiguous" ? "More than one reading could be used. Choose the passage before generating activities." : result.status === "loading" ? "Reading choices are loading." : selectedId ? "Choose an available reading or the current pasted text." : "Add a passage or choose a saved reading for text-based activities."));
+    return /* @__PURE__ */ React.createElement("option", { key: candidateId(candidate), value: candidateId(candidate), disabled: candidate.eligible === false }, optionLabel(candidate, item, profile));
+  })), usesSource ? /* @__PURE__ */ React.createElement("div", { id: "reading-activity-source-help", "data-source-using": true, role: "status", className: "mt-2 break-words text-xs leading-relaxed text-slate-700" }, /* @__PURE__ */ React.createElement("p", { className: "m-0" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-slate-900" }, say("sidebar.based_on_uses_source", "Activities will use your source: {title}").replace("{title}", SourceRecord.title(props.inputText))), " \xB7 ", sourceStatus === "in-use" ? sourceVersion > 1 ? say("sidebar.source_using_version", "In use, version {version}").replace("{version}", String(sourceVersion)) : say("sidebar.source_using_in_use", "In use") : say("sidebar.source_using_draft", "Draft, used when you make a resource")), typeof props.openSourceView === "function" && /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-using-open": true, onClick: () => props.openSourceView({ focus: false }), className: "min-h-11 font-bold text-indigo-700 underline" }, say("sidebar.source_open", "Open source"))) : /* @__PURE__ */ React.createElement("p", { id: "reading-activity-source-help", role: "status", className: "mt-2 break-words text-xs leading-relaxed " + (result.status === "resolved" ? "text-slate-700" : "text-amber-900") }, result.status === "resolved" ? say("sidebar.reading_choice_uses", "Activities will use: {title}").replace("{title}", title) : result.status === "ambiguous" ? say("sidebar.reading_choice_ambiguous", "More than one reading could be used. Choose one before making activities.") : result.status === "loading" ? say("sidebar.reading_choice_loading", "Reading choices are loading.") : selectedId ? say("sidebar.reading_choice_unavailable", "Choose a reading from the list, or your source text.") : say("sidebar.reading_choice_missing", "Add a passage or choose a saved reading for text-based activities.")));
 }
 function GeneratorActionsView(props) {
   const {
@@ -5104,7 +5113,7 @@ function GeneratorActionsView(props) {
     resolveTranslationPolicy,
     isTranslationControlRelevant,
     translationTargetChoices
-  }), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("glossary") ? void 0 : "none" }, id: "ui-tool-glossary", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+  }), !guidedMode && toolCatalogGroup === "all" && !String(toolCatalogQuery || "").trim() && (TOOL_CATALOG_GROUPS?.access || []).some((id) => isGuidedToolVisible(id)) && /* @__PURE__ */ React.createElement("h3", { "data-tool-group": "access", className: "px-1 pt-2 text-xs font-black uppercase tracking-wider text-slate-600" }, t("sidebar.tool_finder_group_access") || "Make accessible"), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("glossary") ? void 0 : "none" }, id: "ui-tool-glossary", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
                 ${activeView === "glossary" ? "border-sky-600 shadow-xl shadow-sky-500/20" : "border-slate-200 hover:border-sky-200 shadow-lg shadow-sky-500/10"}
               ` }, /* @__PURE__ */ React.createElement(
     "button",
@@ -5301,38 +5310,6 @@ function GeneratorActionsView(props) {
     memoryAidCustomInstructions,
     setMemoryAidCustomInstructions,
     t
-  })), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("applied-challenge") ? void 0 : "none" }, id: "tour-tool-applied-challenge", "data-help-key": "tool_applied_challenge", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
-                ${activeView === "applied-challenge" ? "border-orange-600 shadow-xl shadow-orange-500/20" : "border-slate-200 hover:border-orange-200 shadow-lg shadow-orange-500/10"}
-              ` }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "aria-label": t("common.toggle_applied_challenge") || "Toggle Applied Challenge Studio",
-      "data-help-key": "tool_applied_challenge",
-      "aria-expanded": expandedTools.includes("applied-challenge"),
-      onClick: () => toggleTool("applied-challenge"),
-      className: "w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-orange-50 transition-colors motion-reduce:transition-none"
-    },
-    /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Target, { size: 16 }), " ", t("sidebar.tool_applied_challenge") || "Applied Challenge Studio"),
-    expandedTools.includes("applied-challenge") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("applied-challenge") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("applied-challenge") && window.AlloModules && window.AlloModules.AppliedChallengePanel && React.createElement(window.AlloModules.AppliedChallengePanel, {
-    expandedTools,
-    handleGenerate,
-    hasSourceOrAnalysis,
-    isProcessing,
-    t,
-    appliedChallengeSelectionMode,
-    setAppliedChallengeSelectionMode,
-    appliedChallengeFamily,
-    setAppliedChallengeFamily,
-    appliedChallengeAgencyMode,
-    setAppliedChallengeAgencyMode,
-    appliedChallengeScope,
-    setAppliedChallengeScope,
-    appliedChallengeCustomInstructions,
-    setAppliedChallengeCustomInstructions,
-    appliedChallengePlan,
-    setAppliedChallengePlan
   })), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("image") ? void 0 : "none" }, id: "tour-tool-visual", "data-help-key": "tool_visual", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
                 ${activeView === "image" ? "border-purple-600 shadow-xl shadow-purple-500/20" : "border-slate-200 hover:border-purple-200 shadow-lg shadow-purple-500/10"}
               ` }, /* @__PURE__ */ React.createElement(
@@ -5415,7 +5392,7 @@ function GeneratorActionsView(props) {
     setFrameCustomInstructions,
     setFrameType,
     t
-  })), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("brainstorm") ? void 0 : "none" }, id: "tour-tool-brainstorm", "data-help-key": "tool_brainstorm", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+  })), !guidedMode && toolCatalogGroup === "all" && !String(toolCatalogQuery || "").trim() && (TOOL_CATALOG_GROUPS?.engage || []).some((id) => isGuidedToolVisible(id)) && /* @__PURE__ */ React.createElement("h3", { "data-tool-group": "engage", className: "px-1 pt-2 text-xs font-black uppercase tracking-wider text-slate-600" }, t("sidebar.tool_finder_group_engage") || "Engage"), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("brainstorm") ? void 0 : "none" }, id: "tour-tool-brainstorm", "data-help-key": "tool_brainstorm", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
                 ${activeView === "brainstorm" ? "border-yellow-600 shadow-xl shadow-yellow-500/20" : "border-slate-200 hover:border-yellow-200 shadow-lg shadow-yellow-500/10"}
               ` }, /* @__PURE__ */ React.createElement(
     "button",
@@ -5442,6 +5419,38 @@ function GeneratorActionsView(props) {
     setBridgeSimType,
     setBridgeStepCount,
     t
+  })), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("applied-challenge") ? void 0 : "none" }, id: "tour-tool-applied-challenge", "data-help-key": "tool_applied_challenge", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === "applied-challenge" ? "border-orange-600 shadow-xl shadow-orange-500/20" : "border-slate-200 hover:border-orange-200 shadow-lg shadow-orange-500/10"}
+              ` }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "aria-label": t("common.toggle_applied_challenge") || "Toggle Applied Challenge Studio",
+      "data-help-key": "tool_applied_challenge",
+      "aria-expanded": expandedTools.includes("applied-challenge"),
+      onClick: () => toggleTool("applied-challenge"),
+      className: "w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-orange-50 transition-colors motion-reduce:transition-none"
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(Target, { size: 16 }), " ", t("sidebar.tool_applied_challenge") || "Applied Challenge Studio"),
+    expandedTools.includes("applied-challenge") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
+  ), expandedTools.includes("applied-challenge") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("applied-challenge") && window.AlloModules && window.AlloModules.AppliedChallengePanel && React.createElement(window.AlloModules.AppliedChallengePanel, {
+    expandedTools,
+    handleGenerate,
+    hasSourceOrAnalysis,
+    isProcessing,
+    t,
+    appliedChallengeSelectionMode,
+    setAppliedChallengeSelectionMode,
+    appliedChallengeFamily,
+    setAppliedChallengeFamily,
+    appliedChallengeAgencyMode,
+    setAppliedChallengeAgencyMode,
+    appliedChallengeScope,
+    setAppliedChallengeScope,
+    appliedChallengeCustomInstructions,
+    setAppliedChallengeCustomInstructions,
+    appliedChallengePlan,
+    setAppliedChallengePlan
   })), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("persona") ? void 0 : "none" }, id: "tour-tool-persona", "data-help-key": "tool_persona", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
                 ${activeView === "persona" ? "border-indigo-600 shadow-xl shadow-indigo-500/20" : "border-slate-200 hover:border-indigo-200 shadow-lg shadow-indigo-500/10"}
               ` }, /* @__PURE__ */ React.createElement(
@@ -5535,32 +5544,6 @@ function GeneratorActionsView(props) {
     setConceptItemCount,
     setConceptSortCustomInstructions,
     setConceptSortImageStyle,
-    t
-  })), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("dbq") ? void 0 : "none" }, id: "tour-tool-dbq", "data-help-key": "tool_dbq", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
-                ${activeView === "dbq" ? "border-rose-600 shadow-xl shadow-rose-500/20" : "border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10"}
-              ` }, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      "data-help-key": "tool_dbq",
-      "aria-expanded": expandedTools.includes("dbq"),
-      onClick: () => toggleTool("dbq"),
-      className: "w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors motion-reduce:transition-none"
-    },
-    /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(FileText2, { size: 16 }), " ", t("dbq.title") || "Document Analysis (DBQ)"),
-    expandedTools.includes("dbq") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
-  ), expandedTools.includes("dbq") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("dbq") && window.AlloModules && window.AlloModules.DbqPanel && React.createElement(window.AlloModules.DbqPanel, {
-    expandedTools,
-    addToast,
-    callGemini,
-    callGeminiVision,
-    dbqCustomInstructions,
-    fetchAndCleanUrl,
-    handleGenerate,
-    hasSourceOrAnalysis,
-    isProcessing,
-    setDbqCustomInstructions,
-    setExpandedTools,
     t
   })), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("math") ? void 0 : "none" }, id: "tour-tool-math", "data-help-key": "tool_math", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
                 ${activeView === "math" ? "border-blue-600 shadow-xl shadow-blue-500/20" : "border-slate-200 hover:border-blue-200 shadow-lg shadow-blue-500/10"}
@@ -5728,6 +5711,32 @@ function GeneratorActionsView(props) {
     adventureFluencyEnabled: props.adventureFluencyEnabled,
     setAdventureTypingPaceEnabled: props.setAdventureTypingPaceEnabled,
     setAdventureFluencyEnabled: props.setAdventureFluencyEnabled
+  })), !guidedMode && toolCatalogGroup === "all" && !String(toolCatalogQuery || "").trim() && (TOOL_CATALOG_GROUPS?.assess || []).some((id) => isGuidedToolVisible(id)) && /* @__PURE__ */ React.createElement("h3", { "data-tool-group": "assess", className: "px-1 pt-2 text-xs font-black uppercase tracking-wider text-slate-600" }, t("sidebar.tool_finder_group_assess") || "Assess & deliver"), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("dbq") ? void 0 : "none" }, id: "tour-tool-dbq", "data-help-key": "tool_dbq", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === "dbq" ? "border-rose-600 shadow-xl shadow-rose-500/20" : "border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10"}
+              ` }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-key": "tool_dbq",
+      "aria-expanded": expandedTools.includes("dbq"),
+      onClick: () => toggleTool("dbq"),
+      className: "w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors motion-reduce:transition-none"
+    },
+    /* @__PURE__ */ React.createElement("div", { className: "text-sm font-bold text-slate-700 flex gap-2 items-center" }, /* @__PURE__ */ React.createElement(FileText2, { size: 16 }), " ", t("dbq.title") || "Document Analysis (DBQ)"),
+    expandedTools.includes("dbq") ? /* @__PURE__ */ React.createElement(ChevronUp, { size: 16, className: "text-slate-600" }) : /* @__PURE__ */ React.createElement(ChevronDown2, { size: 16, className: "text-slate-600" })
+  ), expandedTools.includes("dbq") && !hasSourceOrAnalysis && /* @__PURE__ */ React.createElement(SourceNeededNotice, { t, onAddSource: openSourceInput }), expandedTools.includes("dbq") && window.AlloModules && window.AlloModules.DbqPanel && React.createElement(window.AlloModules.DbqPanel, {
+    expandedTools,
+    addToast,
+    callGemini,
+    callGeminiVision,
+    dbqCustomInstructions,
+    fetchAndCleanUrl,
+    handleGenerate,
+    hasSourceOrAnalysis,
+    isProcessing,
+    setDbqCustomInstructions,
+    setExpandedTools,
+    t
   })), /* @__PURE__ */ React.createElement("div", { style: { display: isGuidedToolVisible("quiz") ? void 0 : "none" }, id: "ui-tool-quiz", "data-help-key": "tool_quiz", className: `rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
                 ${activeView === "quiz" ? "border-emerald-600 shadow-xl shadow-emerald-500/20" : "border-slate-200 hover:border-emerald-200 shadow-lg shadow-emerald-500/10"}
               ` }, /* @__PURE__ */ React.createElement(

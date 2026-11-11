@@ -2806,7 +2806,7 @@ function SourceView(props) {
       <section id="source-check-panel" data-source-check data-help-key="source_view_check" aria-labelledby="source-check-title" className="rounded-xl border border-slate-200 bg-slate-50 p-4 text-sm">
         <h3 id="source-check-title" className="font-bold text-slate-900">{say('source_view.check_title', 'Source check')}</h3>
         <p className="mt-1 text-xs text-slate-600">{say('source_view.check_desc', 'Reading level, key concepts and accuracy for this text. It runs when you use the source.')}</p>
-        <p ref={checkLineRef} tabIndex={-1} data-source-check-state={checkState} role="status" className="mt-2 text-slate-800 focus:outline-none">{checkLine}</p>
+        <p ref={checkLineRef} tabIndex={-1} data-source-check-state={checkState} role="status" className="mt-2 rounded text-slate-800 focus:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600">{checkLine}</p>
         {checkBusy && !!isProcessing && !!generationStep && <p data-source-check-step className="mt-1 text-xs text-slate-600">{generationStep}</p>}
         {!checkBusy && runForText && !!checkRun.failure && <p data-source-check-failure role="alert" className="mt-1 text-red-800">{checkRun.failure}</p>}
         {typeof setCheckAccuracyWithSearch === 'function' && <label className="mt-2 inline-flex min-h-11 items-center gap-2 text-slate-700"><input type="checkbox" data-source-web-check checked={!!checkAccuracyWithSearch} onChange={(event) => setCheckAccuracyWithSearch(event.target.checked)} />{say('source_view.web_check', 'Check accuracy with a web search')}</label>}
@@ -4600,13 +4600,25 @@ function ReadingSourceChoice(props) {
   const selected = result.artifact || result.item;
   const title = selected?.title || result.title || (result.status === 'resolved' ? 'Current pasted text' : '');
   const unknownSelection = selectedId && selectedId !== '__input__' && !candidates.some(candidate => candidateId(candidate) === selectedId);
+  // The panel is a choice between readings, so it is shown only when there is one
+  // to make: two or more different texts, or a selection that needs fixing. With
+  // a single passage (the usual case) it was a one-option dropdown under a label,
+  // "Based on", that did not say what it controlled.
+  const readingText = candidate => { const item = candidateItem(candidate) || {}; return String(item.type === 'analysis' ? (item.data && item.data.originalText) || '' : typeof item.data === 'string' ? item.data : '').trim(); };
+  const differentTexts = new Set(candidates.map(readingText).filter(Boolean));
+  if (hasSourceText) differentTexts.add(String(props.inputText).trim());
+  const needsAttention = result.status === 'ambiguous' || (!!selectedId && selectedId !== '__input__' && result.status !== 'resolved');
+  if (differentTexts.size < 2 && !needsAttention) return null;
+  const optionLabel = (candidate, item, profile) => (item.title || candidate.title || say('sidebar.reading_choice_untitled', 'Reading')) + ' \u00b7 ' + formLabel(profile.form)
+    + (profile.role === 'supplemental' ? ' \u00b7 ' + roleLabel(profile.role) : '') + (candidate.eligible === false ? ' ' + say('sidebar.reading_choice_needs_review', '(needs review)') : '');
   return <section data-reading-source-choice className="rounded-2xl border border-indigo-200 bg-white p-3 shadow-sm">
-    <label htmlFor="reading-activity-source" className="block text-sm font-bold text-slate-900">Based on</label>
+    <label htmlFor="reading-activity-source" className="block text-sm font-bold text-slate-900">{say('sidebar.reading_choice_label', 'Make activities from')}</label>
+    <p data-reading-source-purpose className="m-0 mt-1 text-xs leading-relaxed text-slate-700">{say('sidebar.reading_choice_purpose', 'Choose which reading your quizzes and other activities are built from.')}</p>
     <select id="reading-activity-source" aria-describedby="reading-activity-source-help" value={selectedId} disabled={props.isProcessing || !api?.resolveReadingSource} onChange={event => props.setSelectedReadingSourceId?.(event.target.value)} className="mt-2 min-h-11 w-full min-w-0 rounded-lg border border-slate-300 bg-white px-2 text-sm text-slate-900 focus-visible:ring-2 focus-visible:ring-indigo-600">
-      <option value="">{automaticSource ? say('sidebar.based_on_auto_source', 'Automatic: your source') : result.status === 'ambiguous' ? 'Choose a reading for this activity' : 'Automatic — follow lesson roles'}</option>
+      <option value="">{automaticSource ? say('sidebar.based_on_auto_source', 'Automatic: your source') : result.status === 'ambiguous' ? say('sidebar.reading_choice_choose', 'Choose a reading') : say('sidebar.reading_choice_auto_main', 'Automatic (your main reading)')}</option>
       {hasSourceText && (selectedId === '__input__' || !automaticSource) && <option value="__input__">{say('sidebar.based_on_your_source', 'Your source text')}</option>}
-      {unknownSelection && <option value={selectedId} disabled>Selected reading is no longer available in this lesson</option>}
-      {candidates.map(candidate => { const item = candidateItem(candidate); const profile = candidate.instructionalText || api?.getInstructionalText?.(item) || {}; return <option key={candidateId(candidate)} value={candidateId(candidate)} disabled={candidate.eligible === false}>{item.title || candidate.title || 'Reading'} · {formLabel(profile.form)} · {roleLabel(profile.role)}{candidate.eligible === false ? ' (needs review)' : ''}</option>; })}
+      {unknownSelection && <option value={selectedId} disabled>{say('sidebar.reading_choice_gone', 'This reading is no longer in the lesson')}</option>}
+      {candidates.map(candidate => { const item = candidateItem(candidate); const profile = candidate.instructionalText || api?.getInstructionalText?.(item) || {}; return <option key={candidateId(candidate)} value={candidateId(candidate)} disabled={candidate.eligible === false}>{optionLabel(candidate, item, profile)}</option>; })}
     </select>
     {usesSource ? <div id="reading-activity-source-help" data-source-using role="status" className="mt-2 break-words text-xs leading-relaxed text-slate-700">
       <p className="m-0"><span className="font-bold text-slate-900">{say('sidebar.based_on_uses_source', 'Activities will use your source: {title}').replace('{title}', SourceRecord.title(props.inputText))}</span>{' · '}{sourceStatus === 'in-use'
@@ -4614,7 +4626,7 @@ function ReadingSourceChoice(props) {
         : say('sidebar.source_using_draft', 'Draft, used when you make a resource')}</p>
       {typeof props.openSourceView === 'function' && <button type="button" data-source-using-open onClick={() => props.openSourceView({ focus: false })} className="min-h-11 font-bold text-indigo-700 underline">{say('sidebar.source_open', 'Open source')}</button>}
     </div>
-    : <p id="reading-activity-source-help" role="status" className={'mt-2 break-words text-xs leading-relaxed ' + (result.status === 'resolved' ? 'text-slate-700' : 'text-amber-900')}>{result.status === 'resolved' ? 'Activities will use: ' + title + '. This choice does not change its lesson role.' : result.status === 'ambiguous' ? 'More than one reading could be used. Choose the passage before generating activities.' : result.status === 'loading' ? 'Reading choices are loading.' : selectedId ? 'Choose an available reading or the current pasted text.' : 'Add a passage or choose a saved reading for text-based activities.'}</p>}
+    : <p id="reading-activity-source-help" role="status" className={'mt-2 break-words text-xs leading-relaxed ' + (result.status === 'resolved' ? 'text-slate-700' : 'text-amber-900')}>{result.status === 'resolved' ? say('sidebar.reading_choice_uses', 'Activities will use: {title}').replace('{title}', title) : result.status === 'ambiguous' ? say('sidebar.reading_choice_ambiguous', 'More than one reading could be used. Choose one before making activities.') : result.status === 'loading' ? say('sidebar.reading_choice_loading', 'Reading choices are loading.') : selectedId ? say('sidebar.reading_choice_unavailable', 'Choose a reading from the list, or your source text.') : say('sidebar.reading_choice_missing', 'Add a passage or choose a saved reading for text-based activities.')}</p>}
   </section>;
 }
 
@@ -4828,6 +4840,11 @@ function GeneratorActionsView(props) {
           translationMode, setTranslationMode, currentUiLanguage, outputLanguagePreference, setOutputLanguagePreference,
           resolveTranslationPolicy, isTranslationControlRelevant, translationTargetChoices
             })}
+            {/* The list reads in three groups, under the same names as the Find a tool filters.
+                Headings show only for the full, unsearched list; a filtered list is already one group. */}
+            {!guidedMode && toolCatalogGroup === 'all' && !String(toolCatalogQuery || '').trim() && (TOOL_CATALOG_GROUPS?.access || []).some(id => isGuidedToolVisible(id)) && (
+              <h3 data-tool-group="access" className="px-1 pt-2 text-xs font-black uppercase tracking-wider text-slate-600">{t('sidebar.tool_finder_group_access') || 'Make accessible'}</h3>
+            )}
             <div style={{display: isGuidedToolVisible('glossary') ? undefined : 'none'}} id="ui-tool-glossary" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
                 ${activeView === 'glossary' ? 'border-sky-600 shadow-xl shadow-sky-500/20' : 'border-slate-200 hover:border-sky-200 shadow-lg shadow-sky-500/10'}
               `}>
@@ -4980,28 +4997,6 @@ function GeneratorActionsView(props) {
                   t
                 })}
             </div>
-            <div style={{display: isGuidedToolVisible('applied-challenge') ? undefined : 'none'}} id='tour-tool-applied-challenge' data-help-key='tool_applied_challenge' className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
-                ${activeView === 'applied-challenge' ? 'border-orange-600 shadow-xl shadow-orange-500/20' : 'border-slate-200 hover:border-orange-200 shadow-lg shadow-orange-500/10'}
-              `}>
-                <button type="button"
-                    aria-label={t('common.toggle_applied_challenge') || 'Toggle Applied Challenge Studio'}
-                    data-help-key='tool_applied_challenge'
-                    aria-expanded={expandedTools.includes('applied-challenge')} onClick={() => toggleTool('applied-challenge')}
-                    className='w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-orange-50 transition-colors motion-reduce:transition-none'
-                >
-                  <div className='text-sm font-bold text-slate-700 flex gap-2 items-center'><Target size={16}/> {t('sidebar.tool_applied_challenge') || 'Applied Challenge Studio'}</div>
-                  {expandedTools.includes('applied-challenge') ? <ChevronUp size={16} className='text-slate-600'/> : <ChevronDown size={16} className='text-slate-600'/>}
-                </button>
-                  {expandedTools.includes('applied-challenge') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
-                {expandedTools.includes('applied-challenge') && window.AlloModules && window.AlloModules.AppliedChallengePanel && React.createElement(window.AlloModules.AppliedChallengePanel, {
-                  expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, t,
-                  appliedChallengeSelectionMode, setAppliedChallengeSelectionMode,
-                  appliedChallengeFamily, setAppliedChallengeFamily,
-                  appliedChallengeAgencyMode, setAppliedChallengeAgencyMode,
-                  appliedChallengeScope, setAppliedChallengeScope,
-                  appliedChallengeCustomInstructions, setAppliedChallengeCustomInstructions, appliedChallengePlan, setAppliedChallengePlan
-                })}
-            </div>
             <div style={{display: isGuidedToolVisible('image') ? undefined : 'none'}} id="tour-tool-visual" data-help-key="tool_visual" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
                 ${activeView === 'image' ? 'border-purple-600 shadow-xl shadow-purple-500/20' : 'border-slate-200 hover:border-purple-200 shadow-lg shadow-purple-500/10'}
               `}>
@@ -5060,6 +5055,9 @@ function GeneratorActionsView(props) {
           isProcessing, setFrameCustomInstructions, setFrameType, t
                 })}
             </div>
+            {!guidedMode && toolCatalogGroup === 'all' && !String(toolCatalogQuery || '').trim() && (TOOL_CATALOG_GROUPS?.engage || []).some(id => isGuidedToolVisible(id)) && (
+              <h3 data-tool-group="engage" className="px-1 pt-2 text-xs font-black uppercase tracking-wider text-slate-600">{t('sidebar.tool_finder_group_engage') || 'Engage'}</h3>
+            )}
             <div style={{display: isGuidedToolVisible('brainstorm') ? undefined : 'none'}} id="tour-tool-brainstorm" data-help-key="tool_brainstorm" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
                 ${activeView === 'brainstorm' ? 'border-yellow-600 shadow-xl shadow-yellow-500/20' : 'border-slate-200 hover:border-yellow-200 shadow-lg shadow-yellow-500/10'}
               `}>
@@ -5077,6 +5075,28 @@ function GeneratorActionsView(props) {
           expandedTools, BRIDGE_MODES, Terminal, brainstormCustomInstructions, bridgeSimType,
           bridgeStepCount, handleGenerate, hasSourceOrAnalysis, isProcessing, setBrainstormCustomInstructions,
           setBridgeSimType, setBridgeStepCount, t
+                })}
+            </div>
+            <div style={{display: isGuidedToolVisible('applied-challenge') ? undefined : 'none'}} id='tour-tool-applied-challenge' data-help-key='tool_applied_challenge' className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'applied-challenge' ? 'border-orange-600 shadow-xl shadow-orange-500/20' : 'border-slate-200 hover:border-orange-200 shadow-lg shadow-orange-500/10'}
+              `}>
+                <button type="button"
+                    aria-label={t('common.toggle_applied_challenge') || 'Toggle Applied Challenge Studio'}
+                    data-help-key='tool_applied_challenge'
+                    aria-expanded={expandedTools.includes('applied-challenge')} onClick={() => toggleTool('applied-challenge')}
+                    className='w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-orange-50 transition-colors motion-reduce:transition-none'
+                >
+                  <div className='text-sm font-bold text-slate-700 flex gap-2 items-center'><Target size={16}/> {t('sidebar.tool_applied_challenge') || 'Applied Challenge Studio'}</div>
+                  {expandedTools.includes('applied-challenge') ? <ChevronUp size={16} className='text-slate-600'/> : <ChevronDown size={16} className='text-slate-600'/>}
+                </button>
+                  {expandedTools.includes('applied-challenge') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
+                {expandedTools.includes('applied-challenge') && window.AlloModules && window.AlloModules.AppliedChallengePanel && React.createElement(window.AlloModules.AppliedChallengePanel, {
+                  expandedTools, handleGenerate, hasSourceOrAnalysis, isProcessing, t,
+                  appliedChallengeSelectionMode, setAppliedChallengeSelectionMode,
+                  appliedChallengeFamily, setAppliedChallengeFamily,
+                  appliedChallengeAgencyMode, setAppliedChallengeAgencyMode,
+                  appliedChallengeScope, setAppliedChallengeScope,
+                  appliedChallengeCustomInstructions, setAppliedChallengeCustomInstructions, appliedChallengePlan, setAppliedChallengePlan
                 })}
             </div>
             <div style={{display: isGuidedToolVisible('persona') ? undefined : 'none'}} id="tour-tool-persona" data-help-key="tool_persona" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
@@ -5139,25 +5159,6 @@ function GeneratorActionsView(props) {
           conceptSortCustomInstructions, conceptSortImageStyle, handleConceptKeyDown, handleGenerate, hasSourceOrAnalysis, isProcessing,
           removeConcept, selectedConcepts, setConceptImageMode, setConceptInput, setConceptItemCount,
           setConceptSortCustomInstructions, setConceptSortImageStyle, t
-                })}
-            </div>
-            {/* ── DBQ Tool Panel ── */}
-            <div style={{display: isGuidedToolVisible('dbq') ? undefined : 'none'}} id="tour-tool-dbq" data-help-key="tool_dbq" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
-                ${activeView === 'dbq' ? 'border-rose-600 shadow-xl shadow-rose-500/20' : 'border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10'}
-              `}>
-                <button type="button"
-                    data-help-key="tool_dbq"
-                    aria-expanded={expandedTools.includes('dbq')} onClick={() => toggleTool('dbq')}
-                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors motion-reduce:transition-none"
-                >
-                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileText size={16}/> {t('dbq.title') || 'Document Analysis (DBQ)'}</div>
-                  {expandedTools.includes('dbq') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
-                </button>
-                  {expandedTools.includes('dbq') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
-                {/* ── DbqPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
-                {expandedTools.includes('dbq') && window.AlloModules && window.AlloModules.DbqPanel && React.createElement(window.AlloModules.DbqPanel, {
-          expandedTools, addToast, callGemini, callGeminiVision, dbqCustomInstructions, fetchAndCleanUrl,
-          handleGenerate, hasSourceOrAnalysis, isProcessing, setDbqCustomInstructions, setExpandedTools, t
                 })}
             </div>
             <div style={{display: isGuidedToolVisible('math') ? undefined : 'none'}} id="tour-tool-math" data-help-key="tool_math" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
@@ -5240,6 +5241,28 @@ function GeneratorActionsView(props) {
           theme: props.theme, adventureTypingPaceEnabled: props.adventureTypingPaceEnabled, adventureFluencyEnabled: props.adventureFluencyEnabled,
           setAdventureTypingPaceEnabled: props.setAdventureTypingPaceEnabled, setAdventureFluencyEnabled: props.setAdventureFluencyEnabled
               })}
+            </div>
+            {!guidedMode && toolCatalogGroup === 'all' && !String(toolCatalogQuery || '').trim() && (TOOL_CATALOG_GROUPS?.assess || []).some(id => isGuidedToolVisible(id)) && (
+              <h3 data-tool-group="assess" className="px-1 pt-2 text-xs font-black uppercase tracking-wider text-slate-600">{t('sidebar.tool_finder_group_assess') || 'Assess & deliver'}</h3>
+            )}
+            {/* ── DBQ Tool Panel ── */}
+            <div style={{display: isGuidedToolVisible('dbq') ? undefined : 'none'}} id="tour-tool-dbq" data-help-key="tool_dbq" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
+                ${activeView === 'dbq' ? 'border-rose-600 shadow-xl shadow-rose-500/20' : 'border-slate-200 hover:border-rose-200 shadow-lg shadow-rose-500/10'}
+              `}>
+                <button type="button"
+                    data-help-key="tool_dbq"
+                    aria-expanded={expandedTools.includes('dbq')} onClick={() => toggleTool('dbq')}
+                    className="w-full p-3 bg-slate-50 border-b border-slate-100 flex justify-between items-center hover:bg-rose-50 transition-colors motion-reduce:transition-none"
+                >
+                  <div className="text-sm font-bold text-slate-700 flex gap-2 items-center"><FileText size={16}/> {t('dbq.title') || 'Document Analysis (DBQ)'}</div>
+                  {expandedTools.includes('dbq') ? <ChevronUp size={16} className="text-slate-600"/> : <ChevronDown size={16} className="text-slate-600"/>}
+                </button>
+                  {expandedTools.includes('dbq') && !hasSourceOrAnalysis && <SourceNeededNotice t={t} onAddSource={openSourceInput} />}
+                {/* ── DbqPanel extracted to view_sidebar_panels_module.js (CDN) ── */}
+                {expandedTools.includes('dbq') && window.AlloModules && window.AlloModules.DbqPanel && React.createElement(window.AlloModules.DbqPanel, {
+          expandedTools, addToast, callGemini, callGeminiVision, dbqCustomInstructions, fetchAndCleanUrl,
+          handleGenerate, hasSourceOrAnalysis, isProcessing, setDbqCustomInstructions, setExpandedTools, t
+                })}
             </div>
              <div style={{display: isGuidedToolVisible('quiz') ? undefined : 'none'}} id="ui-tool-quiz" data-help-key="tool_quiz" className={`rounded-3xl border-2 transition-all motion-reduce:transition-none bg-white overflow-hidden
                 ${activeView === 'quiz' ? 'border-emerald-600 shadow-xl shadow-emerald-500/20' : 'border-slate-200 hover:border-emerald-200 shadow-lg shadow-emerald-500/10'}

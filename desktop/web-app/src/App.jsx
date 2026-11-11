@@ -40518,11 +40518,11 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
           onGenerate: value => generationSourceChoiceContextRef.current.handleGenerateLessonPlan(switchView,
             { ...configOverride, inputArtifactId: value, selectedReadingSourceId: value }) })) return completion;
       }
-      addToast('Choose a reading in Based on before generating. More than one reading is available.', 'info');
+      addToast('More than one reading is available. Choose a reading under "Make activities from" before generating.', 'info');
       return;
     }
     if (source?.status !== 'resolved') {
-      addToast('Choose an available reading in Based on before generating.', 'info');
+      addToast('Add a source passage, or choose a reading under "Make activities from", before generating.', 'info');
       return;
     }
     setAlloGenerationType('lesson-plan');
@@ -43395,7 +43395,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
     let sourceItem = selected, resolved = null;
     if (!sourceItem) {
       resolved = api.resolveReadingSource({ items: history, sourceArtifactId: _alloReadingSourceChoice(), inputText, unitId: activeUnitId, language: leveledTextLanguage });
-      if (resolved.status !== 'resolved') { addToast(resolved.status === 'ambiguous' ? 'Choose a passage in Based on before opening its original.' : 'Add a source passage or choose an available reading first.', 'info'); return; }
+      if (resolved.status !== 'resolved') { addToast(resolved.status === 'ambiguous' ? 'Choose a reading under "Make activities from" before opening its original.' : 'Add a source passage or choose an available reading first.', 'info'); return; }
       sourceItem = resolved.artifact || null;
     }
     const profile = sourceItem ? api.getInstructionalText(sourceItem) : null;

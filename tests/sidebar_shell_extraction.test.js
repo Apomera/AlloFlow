@@ -137,10 +137,69 @@ describe('sidebar shell CDN boundaries', () => {
     const used = fixture('GeneratorActionsView', { ...base, sourceRecord: { inUse: { text: inputText, version: 2 } } });
     act(() => root.render(choice(used)));
     expect(host.querySelector('[data-source-using]').textContent).toContain('In use, version 2');
-    const unit = fixture('GeneratorActionsView', { ...base, effectiveReadingSourceId: '', activeUnitId: 'unit-1', history: [] });
+    // The panel says what it is for (it used to be labelled only "Based on").
+    expect(host.querySelector('label[for="reading-activity-source"]').textContent).toBe('Make activities from');
+    expect(host.querySelector('[data-reading-source-purpose]').textContent).toBe('Choose which reading your quizzes and other activities are built from.');
+    expect([...host.querySelector('#reading-activity-source').options].map(option => option.textContent)).toEqual(['Automatic: your source', 'Older check · Original text']);
+    const easier = { id: 's1', type: 'simplified', title: 'Garden (easier)', data: 'A simpler garden text.', unitId: 'unit-1' };
+    const unit = fixture('GeneratorActionsView', { ...base, effectiveReadingSourceId: '', activeUnitId: 'unit-1', history: [easier] });
     act(() => root.render(choice(unit)));
-    expect(host.querySelector('#reading-activity-source').options[0].textContent).toBe('Automatic — follow lesson roles');
+    expect(host.querySelector('#reading-activity-source').options[0].textContent).not.toMatch(/lesson roles/);
     expect([...host.querySelector('#reading-activity-source').options].some(option => option.value === '__input__' && option.textContent === 'Your source text')).toBe(true);
+    expect([...host.querySelector('#reading-activity-source').options].some(option => option.value === 's1' && /^Garden \(easier\) · /.test(option.textContent) && !/Not designated/.test(option.textContent))).toBe(true);
+  });
+  // With one passage there is nothing to choose, and the panel was a one-option
+  // dropdown at the top of the sidebar. It appears once there is a real choice.
+  it('shows the reading choice only when there is a choice to make', () => {
+    window.AlloModules.InstructionalContext || new Function('window', readFileSync('instructional_context_module.js', 'utf8'))(window);
+    const choice = p => all(api.GeneratorActionsView(p)).find(node => node.type && node.type.name === 'ReadingSourceChoice');
+    const inputText = 'Our town garden opened this spring.';
+    const base = { inputText, selectedReadingSourceId: '', effectiveReadingSourceId: '__input__', activeUnitId: 'all', sourceRecord: null };
+    host = document.createElement('div'); document.body.appendChild(host); root = createRoot(host);
+    const shown = history => { act(() => root.render(choice(fixture('GeneratorActionsView', { ...base, ...history })))); return !!host.querySelector('[data-reading-source-choice]'); };
+    // One pasted passage.
+    expect(shown({ history: [] })).toBe(false);
+    // The source analysis holds the same text as the source: still one reading.
+    expect(shown({ history: [{ id: 'a1', type: 'analysis', title: 'Source check', data: { originalText: inputText } }] })).toBe(false);
+    // In a lesson with only the source.
+    expect(shown({ history: [], activeUnitId: 'unit-1', effectiveReadingSourceId: '' })).toBe(false);
+    // An adapted version exists: now there is a choice.
+    expect(shown({ history: [{ id: 's1', type: 'simplified', title: 'Easier version', data: 'A simpler garden text.' }] })).toBe(true);
+    // A chosen reading that has gone missing still needs the teacher's attention.
+    expect(shown({ history: [], selectedReadingSourceId: 'gone', effectiveReadingSourceId: 'gone' })).toBe(true);
+    expect(host.querySelector('#reading-activity-source-help').textContent).toBe('Choose a reading from the list, or your source text.');
+  });
+  // The tool list was 23 rows with no grouping. It now reads in three groups under
+  // the same names as the Find a tool filters, and every tool sits under its own group.
+  it('groups the full tool list under the filter names, and only the full list', () => {
+    const groups = {
+      essentials: ['glossary', 'simplified', 'image', 'quiz', 'lesson-plan', 'directions', 'package-deliver'],
+      access: ['glossary', 'simplified', 'ui-tool-wordsounds', 'outline', 'note-taking', 'anchor-chart', 'memory-aid', 'image', 'faq', 'sentence-frames'],
+      engage: ['brainstorm', 'applied-challenge', 'persona', 'timeline', 'concept-sort', 'math', 'adventure'],
+      assess: ['dbq', 'quiz', 'alignment', 'lesson-plan', 'directions', 'package-deliver'],
+      all: [],
+    };
+    groups.all = [...groups.access, ...groups.engage, ...groups.assess];
+    const labels = { 'sidebar.tool_finder_group_access': 'Make accessible', 'sidebar.tool_finder_group_engage': 'Engage', 'sidebar.tool_finder_group_assess': 'Assess & deliver' };
+    const tree = overrides => api.GeneratorActionsView(fixture('GeneratorActionsView', { TOOL_CATALOG_GROUPS: groups, t: k => labels[k] || k, ...overrides }));
+    const headings = t => all(t).filter(n => n.type === 'h3' && n.props['data-tool-group']);
+    expect(headings(tree()).map(n => [n.props['data-tool-group'], n.props.children])).toEqual([['access', 'Make accessible'], ['engage', 'Engage'], ['assess', 'Assess & deliver']]);
+    // A filtered or searched list is already one group; Guided Mode shows one step.
+    expect(headings(tree({ toolCatalogGroup: 'engage' }))).toHaveLength(0);
+    expect(headings(tree({ toolCatalogQuery: 'quiz' }))).toHaveLength(0);
+    expect(headings(tree({ guidedMode: true }))).toHaveLength(0);
+    // No heading over a group with nothing visible in it.
+    expect(headings(tree({ isGuidedToolVisible: id => groups.access.includes(id) })).map(n => n.props['data-tool-group'])).toEqual(['access']);
+    // Each tool sits between its own heading and the next one.
+    const order = React.Children.toArray(tree().props.children).map(n => (n.type === 'h3' && n.props['data-tool-group'] ? '#' + n.props['data-tool-group'] : n.props && n.props.id) || '').filter(Boolean);
+    const at = id => order.indexOf(id);
+    expect(at('#access')).toBeLessThan(at('ui-tool-glossary'));
+    expect(at('tour-tool-scaffolds')).toBeLessThan(at('#engage'));
+    for (const id of ['tour-tool-brainstorm', 'tour-tool-applied-challenge', 'tour-tool-persona', 'tour-tool-math', 'tour-tool-adventure']) {
+      expect(at(id), id).toBeGreaterThan(at('#engage'));
+      expect(at(id), id).toBeLessThan(at('#assess'));
+    }
+    for (const id of ['tour-tool-dbq', 'ui-tool-quiz', 'tour-tool-lesson-plan']) expect(at(id), id).toBeGreaterThan(at('#assess'));
   });
   it('preserves catalog callbacks and suppresses discovery in Guided Mode', () => {
     const p = fixture('GeneratorActionsView'); const tree = api.GeneratorActionsView(p);

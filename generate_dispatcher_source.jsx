@@ -2253,7 +2253,7 @@ function computeVocabularyFit(artifacts, gradeLevel, language, sourceOptions = {
 
   const supportsEnglishTierHeuristic = /^(?:en(?:[-_]|$)|english\b)/i.test(effectiveLanguage);
   if (!supportsEnglishTierHeuristic || auditedTextWords === 0 || sourceSelection === 'ambiguous-reading-selection') {
-    const reason = sourceSelection === 'ambiguous-reading-selection' ? 'More than one reading is in this audit scope. Choose a reading in Based on to evaluate vocabulary against a specific source.' : !supportsEnglishTierHeuristic
+    const reason = sourceSelection === 'ambiguous-reading-selection' ? 'More than one reading is in this audit scope. Choose a reading under "Make activities from" to evaluate vocabulary against a specific source.' : !supportsEnglishTierHeuristic
       ? 'Tier 1/2/3 classification is currently validated only for English; word counts are provided, but vocabulary fit was not scored.'
       : 'No readable curriculum text was available for vocabulary scoring.';
     return {
@@ -4034,8 +4034,8 @@ const handleGenerate = async (type, langOverride = null, keepLoading = false, te
     }
     if (type !== 'alignment-report' && (_selectedSource.status === 'ambiguous' || (_selectedSource.status === 'missing' && (selectedReadingSourceId || configOverride.inputArtifactId)))) {
         const sourceError = new Error(_selectedSource.status === 'ambiguous'
-            ? 'Choose a reading in Based on before generating. More than one reading is available.'
-            : 'The selected reading is unavailable in this lesson. Choose a reading in Based on.');
+            ? 'More than one reading is available. Choose a reading under "Make activities from" before generating.'
+            : 'The selected reading is no longer in this lesson. Choose another under "Make activities from".');
         sourceError.code = 'allo/source-' + _selectedSource.status;
         if (configOverride.rethrowErrors) throw sourceError;
         addToast(sourceError.message, 'info');

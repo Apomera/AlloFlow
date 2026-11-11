@@ -258,7 +258,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
                     return executeStartAdventure(contextOverride, { ...current, adventureSourceArtifactId: value });
                 } }) === true) return completion;
         }
-        addToast('Choose a reading in Based on before generating. More than one reading is available.', 'info');
+        addToast('More than one reading is available. Choose a reading under "Make activities from" before generating.', 'info');
         return;
     }
     const sourceText = reading.text || '';

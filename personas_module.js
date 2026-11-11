@@ -1019,7 +1019,7 @@ const createPersonas = deps => {
       return;
     }
     if (sourceResolution?.status === 'missing' && (selectedReadingSourceId || sourceConfig.inputArtifactId || sourceConfig.selectedReadingSourceId || Array.isArray(history) && history.some(item => item && ['analysis', 'simplified'].includes(item.type)))) {
-      addToast('The selected reading is unavailable in this lesson. Choose a reading in Based on.', 'info');
+      addToast('The selected reading is no longer in this lesson. Choose another under "Make activities from".', 'info');
       return;
     }
     if (!sourceText.trim() && !String(sourceTopic || '').trim()) return;
