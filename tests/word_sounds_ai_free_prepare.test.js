@@ -251,23 +251,33 @@ describe('where sounds come from, in order', () => {
 });
 
 describe('Sound Mapping never grades a wrong board', () => {
-  it('x, long u and -le words are left out with the reason; qu and welded words map and record their unit', async () => {
-    const items = await runNow(setup({ words: ['fox', 'cute', 'little', 'queen', 'bank', 'ship'], activities: ['mapping'], callGemini: undefined }));
-    const board = word => items.find(item => item.word === word).activityItems.mapping;
-    for (const word of ['fox', 'cute', 'little']) {
-      expect(board(word), word).toMatchObject({ supported: false, contentStatus: 'teacher_review_required', reason: 'two_sound_spelling', graphemes: [] });
-    }
-    expect(board('queen')).toMatchObject({ graphemes: ['q', 'u', 'ee', 'n'], soundUnits: [{ unit: 'qu', start: 0, length: 2 }] });
+  it('x, long u, -le and qu map with a chip over two sound boxes; "one" is left out with the reason; welded words record their unit', async () => {
+    const items = await runNow(setup({ words: ['fox', 'cute', 'little', 'queen', 'one', 'bank', 'ship'], activities: ['mapping'], callGemini: undefined }));
+    const item = word => items.find(entry => entry.word === word);
+    const board = word => item(word).activityItems.mapping;
+    expect(board('fox')).toMatchObject({ graphemes: ['f', 'o', 'x'], chipSpans: [1, 1, 2] });
+    expect(board('cute')).toMatchObject({ graphemes: ['c', 'u', 'te'], chipSpans: [1, 2, 1] });
+    expect(board('little')).toMatchObject({ graphemes: ['l', 'i', 'tt', 'le'], chipSpans: [1, 1, 1, 2] });
+    expect(board('queen')).toMatchObject({ graphemes: ['qu', 'ee', 'n'], chipSpans: [2, 1, 1], soundUnits: [{ unit: 'qu', start: 0, length: 2 }] });
+    expect(board('queen').chipOrder.map(chip => chip.text).sort()).toEqual(['ee', 'n', 'qu']);
+    // Sounds stay one per phoneme everywhere else: queen is 4 sounds.
+    expect(item('queen').phonemes).toEqual(['k', 'w', 'ee', 'n']);
+    expect(board('queen').supported).toBeUndefined();
+    expect(item('queen').phonemeCount).toBe(4);
+    expect(board('one')).toMatchObject({ supported: false, contentStatus: 'teacher_review_required', reason: 'two_sound_spelling', graphemes: [] });
     expect(board('bank')).toMatchObject({ graphemes: ['b', 'a', 'n', 'k'], soundUnits: [{ unit: 'ank', start: 1, length: 3 }] });
     expect(board('ship')).toMatchObject({ graphemes: ['sh', 'i', 'p'] });
     expect(board('ship').soundUnits).toBeUndefined();
+    expect(board('ship').chipSpans).toBeUndefined();
   });
 
   it('the one-letter-per-sound guess is refused for AI sounds too when the aligner disagrees', async () => {
-    // "cute": four letters, four sounds, but u is two sounds and e is silent.
+    // "cute": four letters, four sounds, but u is two sounds and e is silent:
+    // the aligner's board (u over two boxes) is used, never c-u-t-e.
     const callGemini = vi.fn(async () => JSON.stringify({ word: 'cute', phonemes: ['k', 'y', 'oo', 't'], graphemes: [] }));
     const items = await runBefore(setup({ words: ['cute'], activities: ['mapping'], callGemini }));
-    expect(items[0].activityItems.mapping).toMatchObject({ supported: false, graphemes: [] });
+    expect(items[0].activityItems.mapping.graphemes).not.toEqual(['c', 'u', 't', 'e']);
+    expect(items[0].activityItems.mapping).toMatchObject({ graphemes: ['c', 'u', 'te'], chipSpans: [1, 2, 1] });
   });
 });
 

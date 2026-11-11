@@ -911,6 +911,41 @@ function createWordSoundsCore(options = {}) {
   // if the mastery streak never comes. Never below the streak itself, or a
   // one-item plan could not show one.
   const lessonItemCeiling = (count, masteryThreshold) => Math.max((Number(count) || 5) * 2, Number(masteryThreshold) || 3);
+  // Adaptive length inside a planned lesson. One rule for when an activity
+  // ends; the activity ORDER is never touched here.
+  //   below the minimum count        -> continue
+  //   at the ceiling                 -> advance (hard stop, always)
+  //   mastery rule met (masteryMet)  -> advance
+  //   otherwise                      -> continue until one of the two above
+  // With adaptive on (difficulty "auto"), a learner who is at or past the
+  // minimum with at least PLAN_EXTENSION.minGraded graded items and under
+  // PLAN_EXTENSION.lowAccuracy first-try accuracy in THIS activity starts an
+  // extension: the extra items are marked, missed words come first and extra
+  // support applies. The extension ends on a recovery run (recoveryRun
+  // first-try correct in a row, or the plan's streak if that is shorter) or at
+  // the ceiling, and an activity is never extended twice.
+  const PLAN_EXTENSION = { minGraded: 4, lowAccuracy: 0.5, recoveryRun: 2 };
+  const planExtensionDecision = (input = {}) => {
+    const num = (v, d) => { const n = Number(v); return Number.isFinite(n) && n >= 0 ? n : d; };
+    const threshold = Math.max(1, num(input.masteryThreshold, 3) || 3);
+    const minCount = Math.max(1, num(input.minCount, 5) || 5);
+    const ceiling = Math.max(minCount, num(input.ceiling, 0) || lessonItemCeiling(minCount, threshold));
+    const answered = num(input.answered, 0);
+    const graded = Math.min(answered, num(input.graded, answered));
+    const firstTry = Math.min(graded, num(input.firstTryCorrect, 0));
+    const streak = num(input.streak, 0);
+    const extended = input.extended === true;
+    const masteryMet = typeof input.masteryMet === 'boolean' ? input.masteryMet : answered >= minCount && streak >= threshold;
+    const recoveryRun = Math.min(PLAN_EXTENSION.recoveryRun, threshold);
+    const out = (action, reason, extra) => ({ action, reason, extending: false, startsExtension: false, minCount, ceiling, recoveryRun, ...extra });
+    if (answered >= ceiling) return out('advance', extended ? 'ceiling_no_recovery' : 'ceiling');
+    if (answered < minCount) return out('continue', 'below_minimum');
+    if (masteryMet) return out('advance', 'mastery');
+    if (extended) return streak >= recoveryRun ? out('advance', 'recovered') : out('continue', 'extending', { extending: true });
+    const struggling = input.adaptive === true && input.alreadyExtended !== true &&
+      graded >= PLAN_EXTENSION.minGraded && firstTry / graded < PLAN_EXTENSION.lowAccuracy && streak < recoveryRun;
+    return struggling ? out('continue', 'extend', { extending: true, startsExtension: true }) : out('continue', 'awaiting_streak');
+  };
   // Progress keys are SOUNDS, the same label the learner sees, for both legacy
   // strings and prepared pronunciation objects: c as /k/ and c as /s/ stay apart,
   // and c, k and ck as /k/ stay together. One response counts once per label.
@@ -2026,8 +2061,11 @@ function createWordSoundsCore(options = {}) {
     welded: Object.freeze(['ang', 'ing', 'ong', 'ung', 'ank', 'ink', 'onk', 'unk']),
     weldedExtended: Object.freeze(['all', 'am', 'an']),
     useWeldedExtended: false,
-    // 'split': q spells /k/ and u spells /w/. 'unit': qu is one two-sound spelling.
-    qu: 'split',
+    // Welded units stay separate chips on Sound Mapping (true = one chip, Wilson/Fundations style; not built).
+    groupWelded: false,
+    // qu is always two sounds, /k/ + /w/. 'unit': one "qu" chip spans both
+    // sound boxes on Sound Mapping. 'split': q and u are separate chips.
+    qu: 'unit',
     // The suffix -ed after t or d (wanted, needed).
     edSyllable: Object.freeze(['e', 'd']),
     // "ure" has no recording: these two sounds play and the unit is recorded.
@@ -2058,10 +2096,22 @@ function createWordSoundsCore(options = {}) {
     UW: 'oo u ue ew ou o oe ui ough wo eu',
     AAR: 'ar ear arr are er', AOR: 'or ore oor our oar ar orr aur arr', EHR: 'air are ear ere eir ayer ayor aire', IHR: 'ear eer ere ier eir',
   };
-  // One spelling for two sounds. These words cannot fill one box per sound.
+  // One spelling for two sounds.
   const OG_TWO_SOUND_TEXT = {
     'K+S': 'x', 'G+Z': 'x', 'K+SH': 'x', 'K+W': 'qu', 'Y+UW': 'u ew ue eu iew eau', 'Y+UH': 'u', 'Y+AH0': 'u', 'Y+ER': 'ure ur',
     'AH0+L': 'le l', 'AH0+M': 'm', 'W+AH': 'o', 'T+S': 'zz z',
+  };
+  // Of those, the spellings whose one chip may span two sound boxes on Sound
+  // Mapping. Other two-sound spellings (the o of "one", ew, ure) stay out.
+  const OG_SPANNING_SPELLINGS = { 'k+s': ['x'], 'g+z': ['x'], 'k+w': ['qu'], 'y+oo': ['u'], 'schwa+l': ['le'] };
+  // Sound Mapping has one box per sound. Chip i covers chipSpans[i] boxes
+  // (1, or 2 for a spanning chip). No spans = one box per chip. null = no fit.
+  const mappingChipSpans = (graphemes, soundCount, spans) => {
+    const chips = Array.isArray(graphemes) ? graphemes : [];
+    if (!chips.length || !(soundCount > 0)) return null;
+    if (spans == null) return chips.length === soundCount ? chips.map(() => 1) : null;
+    if (!Array.isArray(spans) || spans.length !== chips.length || !spans.every(n => n === 1 || n === 2)) return null;
+    return spans.reduce((sum, n) => sum + n, 0) === soundCount ? [...spans] : null;
   };
   const OG_SILENT_SPELLINGS = { kn: 'k', wr: 'w', gn: 'g', mb: 'b', bt: 'b', mn: 'n', lf: 'l', lm: 'l', ps: 'p', pn: 'p', rh: 'h', sw: 'w', pb: 'p', nd: 'd' };
   const OG_LONG_VOWELS = new Set(['ay', 'ee', 'ie', 'oa', 'oo']);
@@ -2256,11 +2306,20 @@ function createWordSoundsCore(options = {}) {
       j => !OG_VOWEL_LABELS.has(keys[j]));
   };
   // What Sound Mapping and the teacher need to know about a word's sounds.
-  // mapping.status: 'ready' (one spelling per sound), 'two_sound_spelling'
-  // (x, long u, -le: left out of Sound Mapping) or 'no_alignment' (teacher review).
+  // mapping.status: 'ready' (graphemes + chipSpans: one box per sound, a chip
+  // may span two), 'two_sound_spelling' (the o of "one", ew: left out of Sound
+  // Mapping) or 'no_alignment' (teacher review).
   const soundAnalysis = (word, sounds) => {
     const w = normalize(word), list = (Array.isArray(sounds) ? sounds : []).map(sound => phonemeLabel(sound)).filter(Boolean);
-    const keys = list.map(soundKey), chunks = alignGraphemes(w, list);
+    const keys = list.map(soundKey), aligned = alignGraphemes(w, list);
+    // qu as a unit: the q (/k/) and u (/w/) chunks become one chip over both sounds.
+    const chunks = aligned && OG_CONVENTIONS.qu === 'unit' ? aligned.reduce((out, chunk) => {
+      const last = out[out.length - 1];
+      if (last && last.text === 'q' && last.size === 1 && !last.silentE && chunk.text === 'u' && chunk.size === 1 && keys[chunk.start] === 'w' && keys[last.start] === 'k') {
+        out[out.length - 1] = { text: 'qu', start: last.start, size: 2, at: last.at };
+      } else out.push(chunk);
+      return out;
+    }, []) : aligned;
     const flags = { schwa: keys.includes('schwa'), welded: [], units: [], twoSound: [], silentLetters: [], vowelPatterns: [], digraphs: [], rControlled: [], ed: null, finalLe: false };
     // The three sounds of -ed: /t/ (jumped), /d/ (played), /ed/ (wanted).
     if (/ed$/.test(w) && keys.length > 2) {
@@ -2275,6 +2334,7 @@ function createWordSoundsCore(options = {}) {
       if (chunk.size === 2) {
         flags.twoSound.push({ grapheme: chunk.text, sounds: keys.slice(chunk.start, chunk.start + 2), start: chunk.start });
         if (chunk.text === 'le') flags.finalLe = true;
+        if (chunk.text === 'qu' && keys[chunk.start] === 'k' && keys[chunk.start + 1] === 'w') flags.units.push({ unit: 'qu', start: chunk.start, length: 2 });
         return;
       }
       const letters = chunk.silentE ? chunk.text.slice(0, -1) : chunk.text;
@@ -2283,7 +2343,7 @@ function createWordSoundsCore(options = {}) {
       if (OG_R_CONTROLLED.has(first)) flags.rControlled.push({ grapheme: letters, sound: list[chunk.start], start: chunk.start });
       if (OG_LONG_VOWELS.has(first)) {
         // Open syllable: the vowel ends the word, or one consonant and then a vowel follow (pa-per).
-        const after = chunks[index + 2], vowelNext = item => !!item && OG_VOWEL_LABELS.has(keys[item.start + item.size - 1]) || !!item && item.size === 2;
+        const after = chunks[index + 2], vowelNext = item => !!item && OG_VOWEL_LABELS.has(keys[item.start + item.size - 1]) || !!item && item.size === 2 && item.text !== 'qu';
         const open = !next || (!vowelNext(next) && !!after && vowelNext(after));
         flags.vowelPatterns.push({ start: chunk.start, grapheme: letters, pattern: letters.length > 1 ? 'vowel_team'
           : next && next.silentE && next.size === 1 && next.start === chunk.start + 1 ? 'silent_e' : letters === 'y' ? 'y_as_vowel' : open ? 'open_syllable' : 'single_letter' });
@@ -2303,10 +2363,9 @@ function createWordSoundsCore(options = {}) {
         }
       }
     });
-    const splitQu = OG_CONVENTIONS.qu === 'split' || !flags.units.some(unit => unit.unit === 'qu');
-    const oneToOne = !flags.twoSound.length && splitQu;
-    return { word: w, sounds: list, chunks, graphemes: oneToOne ? chunks.map(chunk => chunk.text) : [],
-      mapping: { status: oneToOne ? 'ready' : 'two_sound_spelling' }, flags };
+    const ready = flags.twoSound.every(item => ownKey(OG_SPANNING_SPELLINGS, item.sounds.join('+')) && OG_SPANNING_SPELLINGS[item.sounds.join('+')].includes(item.grapheme));
+    return { word: w, sounds: list, chunks, graphemes: ready ? chunks.map(chunk => chunk.text) : [], chipSpans: ready ? chunks.map(chunk => chunk.size) : [],
+      mapping: { status: ready ? 'ready' : 'two_sound_spelling' }, flags };
   };
   // Where a word's sounds came from, and whether a teacher should glance at them.
   const SOUND_SOURCES = Object.freeze(['teacher', 'dictionary', 'espeak', 'ai', 'estimate']);
@@ -2439,5 +2498,5 @@ function createWordSoundsCore(options = {}) {
       orthographyDistractors: misspellings(target, { sounds, isRealWord: real }) };
   };
   // END WORD SOUNDS SOUND DICTIONARY
-  return {OG_CONVENTIONS,SOUND_SOURCES,arpabetToSounds,arpabetEntry,loadPhonemeDictionary,dictionarySounds,alignGraphemes,soundAnalysis,soundsNeedGlance,misspellings,derivedAnswerSets,LESSON_STARTING_POINTS,LESSON_LENGTHS,LESSON_LENGTH_DEFAULT,startingPoints,startingPointLabel,startingPointPlan,startingPointStatus,matchStartingPoint,suggestStartingPoint,scaleLessonCounts,lessonLengthOf,lessonPlanItems,lessonPlanMinutes,activityRunsInLanguage,activityBlockedBy,ACTIVITY_NEEDS,SYLLABLE_ACTIVITY_IDS,SYLLABLE_PLAN_DEFAULT_COUNT,isTopUpItem,lessonOwnItems,topUpItems,packItemPlaysIn,wordsForActivity,syllableActivityHasWords,syllableActivityPlan,compoundPartWords,ACTIVITY_SKILLS,SKILL_STRANDS,BIG5_NAMES,activityIds,activityEnglishName,activityLabel,activitySkillLabel,activityStrand,activityBig5,strandOrder,strandLabel,strandBig5,big5Label,strandBig5Label,groupActivitiesByStrand,soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,SYLLABLE_COMPOUNDS_VETTED,compoundWords,longerSyllableWords,READY_LIST_FIRST,readyMadeListGroups,readyListIdsFromDraft,defaultTickOffers,defaultTickedWords,mergeTickedWords,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,choiceLimit,soundCloseness,wordCloseness,trimChoices,countingChoices,isolationPositions,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
+  return {OG_CONVENTIONS,SOUND_SOURCES,arpabetToSounds,arpabetEntry,loadPhonemeDictionary,dictionarySounds,alignGraphemes,soundAnalysis,mappingChipSpans,soundsNeedGlance,misspellings,derivedAnswerSets,LESSON_STARTING_POINTS,LESSON_LENGTHS,LESSON_LENGTH_DEFAULT,startingPoints,startingPointLabel,startingPointPlan,startingPointStatus,matchStartingPoint,suggestStartingPoint,scaleLessonCounts,lessonLengthOf,lessonPlanItems,lessonPlanMinutes,activityRunsInLanguage,activityBlockedBy,ACTIVITY_NEEDS,SYLLABLE_ACTIVITY_IDS,SYLLABLE_PLAN_DEFAULT_COUNT,isTopUpItem,lessonOwnItems,topUpItems,packItemPlaysIn,wordsForActivity,syllableActivityHasWords,syllableActivityPlan,compoundPartWords,ACTIVITY_SKILLS,SKILL_STRANDS,BIG5_NAMES,activityIds,activityEnglishName,activityLabel,activitySkillLabel,activityStrand,activityBig5,strandOrder,strandLabel,strandBig5,big5Label,strandBig5Label,groupActivitiesByStrand,soundAnswerMatches,phonemeBankCandidates,PHONEME_BANK_SPECIAL,PHONEME_BANK_MATCHES,lessonItemCeiling,PLAN_EXTENSION,planExtensionDecision,preparedSentenceParts,loadSyllablePronunciations,resolveSyllableCount,isTeacherSpokenSyllableCount,createReviewedSyllableCount,createSyllableCountAudioContext,selectSyllableCountAudio,recoverSyllableRecordingDraft,syllableCountWords,syllableRecordingTemplate,normalizeRecordedSyllableDependencies,packAudioLanguageKey,packAudioKey,packAudioAssets,portablePackAsset,packAudioProvenance,packAudioProfileStatus,packAudioInventory,planPackRepair,replacePackAssets,createReviewedSyllableTask,reviewedSyllableReady,syllableAssetSource,resolveSyllableTask,syllableReady,validSyllableBoard,syllableWords,isSyllableLanguageSupported,SYLLABLE_COMPOUNDS_VETTED,compoundWords,longerSyllableWords,READY_LIST_FIRST,readyMadeListGroups,readyListIdsFromDraft,defaultTickOffers,defaultTickedWords,mergeTickedWords,reviewedRhymeEdit,rhymePairStatus,createRhymeSession,buildSessionRhymeBoard,buildRhymeBoard,resolveManipulationTask,manipulationReady,VERSION,phonemeToken,phonemeLabel,soundKey,edgeSound,validSoundBoard,buildSoundSort,validWordFamilyBoard,wordFamilyInstruction,difficultyDecision,choiceLimit,soundCloseness,wordCloseness,trimChoices,countingChoices,isolationPositions,textEvidence,phonemeLabels,responseEvidence,profileCheck,knownWords:Object.keys(EDGES)};
 }

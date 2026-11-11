@@ -99,13 +99,18 @@ describe('ARPAbet to sound labels, rule by rule', () => {
     expect(core.soundsNeedGlance({ source: 'dictionary', sounds: sounds('about'), alternates: [] })).toEqual(['schwa']);
   });
 
-  it('x is /k/ + /s/ and qu is /k/ + /w/', () => {
+  it('x is /k/ + /s/ and qu is /k/ + /w/; each is one chip over two sound boxes', () => {
     expect(sounds('box')).toEqual(['b', 'o', 'k', 's']);
     expect(analysis('box').flags.twoSound).toEqual([{ grapheme: 'x', sounds: ['k', 's'], start: 2 }]);
+    expect(analysis('box')).toMatchObject({ mapping: { status: 'ready' }, graphemes: ['b', 'o', 'x'], chipSpans: [1, 1, 2] });
+    expect(sounds('exam')).toEqual(['i', 'g', 'z', 'a', 'm']);
+    expect(analysis('exam').chipSpans).toEqual([1, 2, 1, 1]);
+    // qu: still two sounds (queen = 4), taught as one "qu" chip.
     expect(sounds('queen')).toEqual(['k', 'w', 'ee', 'n']);
-    expect(spelled('queen')).toEqual(['q', 'u', 'ee', 'n']);
+    expect(spelled('queen')).toEqual(['qu', 'ee', 'n']);
+    expect(analysis('queen').chipSpans).toEqual([2, 1, 1]);
     expect(analysis('queen').flags.units).toEqual([{ unit: 'qu', start: 0, length: 2 }]);
-    expect(core.OG_CONVENTIONS.qu).toBe('split');
+    expect(core.OG_CONVENTIONS.qu).toBe('unit');
   });
 
   it('long u is /y/ + /oo/ where it is said and /oo/ where it is not', () => {
@@ -113,12 +118,23 @@ describe('ARPAbet to sound labels, rule by rule', () => {
     expect(sounds('use').slice(0, 2)).toEqual(core.OG_CONVENTIONS.longU);
     expect(sounds('rule')).toEqual(['r', 'oo', 'l']);
     expect(sounds('blue')).toEqual(['b', 'l', 'oo']);
+    // u spelling /y/ + /oo/ is one chip over two boxes; ew does not span.
+    expect(analysis('cute')).toMatchObject({ mapping: { status: 'ready' }, graphemes: ['c', 'u', 'te'], chipSpans: [1, 2, 1] });
+    expect(analysis('music').chipSpans).toEqual([1, 2, 1, 1, 1]);
+    expect(analysis('few').mapping.status).toBe('two_sound_spelling');
+  });
+
+  it('"one" and "once" (o = /w/ + /u/) stay out of Sound Mapping', () => {
+    expect(sounds('one')).toEqual(['w', 'u', 'n']);
+    for (const word of ['one', 'once']) expect(analysis(word), word).toMatchObject({ mapping: { status: 'two_sound_spelling' }, graphemes: [] });
   });
 
   it('-le is a final stable syllable: schwa + l', () => {
     expect(sounds('little')).toEqual(['l', 'i', 't', 'schwa', 'l']);
     expect(spelled('little')).toEqual(['l', 'i', 'tt', 'le']);
     expect(analysis('little').flags.finalLe).toBe(true);
+    expect(analysis('little').chipSpans).toEqual([1, 1, 1, 2]);
+    expect(analysis('table')).toMatchObject({ graphemes: ['t', 'a', 'b', 'le'], chipSpans: [1, 1, 1, 2] });
   });
 
   it('-ng and -nk stay separate sounds and the welded unit is recorded', () => {

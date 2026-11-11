@@ -2,8 +2,9 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 
-// Letters matched to sounds for Sound Mapping. The board needs exactly one
-// spelling per sound, so a word that cannot give that must say so.
+// Letters matched to sounds for Sound Mapping. The board has one box per
+// sound; a spelling chip covers one box, or two (chipSpans) for qu, x, the u
+// of cute and le. A word that cannot give that must say so.
 const require = createRequire(import.meta.url);
 const data = require('../word_sounds_phonemes_en.js');
 const builder = require('../dev-tools/build_word_sounds_phonemes.cjs');
@@ -47,7 +48,7 @@ describe('grapheme aligner', () => {
     expect(graphemes('through')).toEqual(['th', 'r', 'ough']);
   });
 
-  it('every grapheme list spells the word and has one entry per sound', () => {
+  it('every grapheme list spells the word and its chips cover one box per sound', () => {
     const lists = builder.appWordLists(core);
     let ready = 0;
     for (const raw of Object.values(lists).flat()) {
@@ -57,29 +58,63 @@ describe('grapheme aligner', () => {
       if (result.mapping.status !== 'ready') { expect(result.graphemes, word).toEqual([]); continue; }
       ready++;
       expect(result.graphemes.join(''), word).toBe(word);
-      expect(result.graphemes.length, word).toBe(entry.sounds.length);
+      expect(result.chipSpans.length, word).toBe(result.graphemes.length);
+      expect(result.chipSpans.reduce((sum, n) => sum + n, 0), word).toBe(entry.sounds.length);
+      expect(core.mappingChipSpans(result.graphemes, entry.sounds.length, result.chipSpans), word).toEqual(result.chipSpans);
       expect(result.graphemes.every(text => text.length > 0), word).toBe(true);
     }
     expect(ready).toBeGreaterThan(1500);
   });
 
-  it('x, long u, -le and "one" are two sounds in one spelling: no one-per-sound list', () => {
-    for (const [word, spelling, pair] of [['box', 'x', ['k', 's']], ['cute', 'u', ['y', 'oo']], ['little', 'le', ['schwa', 'l']], ['one', 'o', ['w', 'u']], ['exam', 'x', ['g', 'z']]]) {
+  it('x, long u and -le: one chip spans two sound boxes', () => {
+    for (const [word, chips, spans, spelling, pair] of [
+      ['box', ['b', 'o', 'x'], [1, 1, 2], 'x', ['k', 's']], ['six', ['s', 'i', 'x'], [1, 1, 2], 'x', ['k', 's']],
+      ['exam', ['e', 'x', 'a', 'm'], [1, 2, 1, 1], 'x', ['g', 'z']], ['cute', ['c', 'u', 'te'], [1, 2, 1], 'u', ['y', 'oo']],
+      ['use', ['u', 'se'], [2, 1], 'u', ['y', 'oo']], ['music', ['m', 'u', 's', 'i', 'c'], [1, 2, 1, 1, 1], 'u', ['y', 'oo']],
+      ['little', ['l', 'i', 'tt', 'le'], [1, 1, 1, 2], 'le', ['schwa', 'l']], ['apple', ['a', 'pp', 'le'], [1, 1, 2], 'le', ['schwa', 'l']]]) {
+      const result = analyse(word);
+      expect(result.mapping.status, word).toBe('ready');
+      expect(result.graphemes, word).toEqual(chips);
+      expect(result.chipSpans, word).toEqual(spans);
+      expect(result.flags.twoSound.map(item => [item.grapheme, item.sounds]), word).toEqual([[spelling, pair]]);
+    }
+    expect(analyse('box').chunks.map(chunk => [chunk.text, chunk.size])).toEqual([['b', 1], ['o', 1], ['x', 2]]);
+    // The sounds stay one per box: box is 4 sounds.
+    expect(analyse('box').sounds).toEqual(['b', 'o', 'k', 's']);
+  });
+
+  it('"one", "once" and other two-sound spellings with no taught chip stay out of Sound Mapping', () => {
+    for (const [word, spelling] of [['one', 'o'], ['once', 'o'], ['few', 'ew']]) {
       const result = analyse(word);
       expect(result.mapping.status, word).toBe('two_sound_spelling');
       expect(result.graphemes, word).toEqual([]);
-      expect(result.flags.twoSound.map(item => [item.grapheme, item.sounds]), word).toEqual([[spelling, pair]]);
+      expect(result.chipSpans, word).toEqual([]);
+      expect(result.flags.twoSound.map(item => item.grapheme), word).toEqual([spelling]);
     }
-    // The letters are still matched, so a teacher note can name the spelling.
-    expect(analyse('box').chunks.map(chunk => [chunk.text, chunk.size])).toEqual([['b', 1], ['o', 1], ['x', 2]]);
   });
 
-  it('qu maps q to /k/ and u to /w/ under the split convention, and records the unit', () => {
-    expect(core.OG_CONVENTIONS.qu).toBe('split');
+  it('qu is one chip over the /k/ and /w/ boxes (the unit convention); the sounds stay four', () => {
+    expect(core.OG_CONVENTIONS.qu).toBe('unit');
+    expect(core.OG_CONVENTIONS.groupWelded).toBe(false);
     const result = analyse('queen');
+    expect(result.sounds).toEqual(['k', 'w', 'ee', 'n']);
     expect(result.mapping.status).toBe('ready');
-    expect(result.graphemes).toEqual(['q', 'u', 'ee', 'n']);
+    expect(result.graphemes).toEqual(['qu', 'ee', 'n']);
+    expect(result.chipSpans).toEqual([2, 1, 1]);
     expect(result.flags.units).toEqual([{ unit: 'qu', start: 0, length: 2 }]);
+    expect(analyse('squid')).toMatchObject({ graphemes: ['s', 'qu', 'i', 'd'], chipSpans: [1, 2, 1, 1] });
+    // A word with no spanning chip has all ones.
+    expect(analyse('ship').chipSpans).toEqual([1, 1, 1]);
+  });
+
+  it('mappingChipSpans checks a board: chips = spellings, spans add up to the sounds', () => {
+    expect(core.mappingChipSpans(['qu', 'ee', 'n'], 4, [2, 1, 1])).toEqual([2, 1, 1]);
+    expect(core.mappingChipSpans(['q', 'u', 'ee', 'n'], 4)).toEqual([1, 1, 1, 1]); // an old board
+    expect(core.mappingChipSpans(['qu', 'ee', 'n'], 4)).toBeNull();
+    expect(core.mappingChipSpans(['qu', 'ee', 'n'], 4, [2, 2, 1])).toBeNull();
+    expect(core.mappingChipSpans(['qu', 'ee', 'n'], 4, [3, 1])).toBeNull();
+    expect(core.mappingChipSpans(['b', 'o', 'x'], 4, [1, 1, 3])).toBeNull();
+    expect(core.mappingChipSpans([], 0)).toBeNull();
   });
 
   it('welded units are recorded over separate sounds', () => {
@@ -101,7 +136,7 @@ describe('grapheme aligner', () => {
     expect(analyse('rain', [{ ipa: 'ɹ' }, { ipa: 'eɪ' }, { ipa: 'n' }]).graphemes).toEqual(['r', 'ai', 'n']);
     expect(analyse('turn', ['t', 'ur', 'n']).graphemes).toEqual(['t', 'ur', 'n']);
     // Four letters and four sounds, but not one letter each: the letter guess would be wrong.
-    expect(analyse('cute', ['k', 'y', 'oo', 't']).graphemes).toEqual([]);
+    expect(analyse('cute', ['k', 'y', 'oo', 't'])).toMatchObject({ graphemes: ['c', 'u', 'te'], chipSpans: [1, 2, 1] });
   });
 
   it('is deterministic', () => {

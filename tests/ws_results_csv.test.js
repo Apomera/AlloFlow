@@ -241,7 +241,7 @@ describe('the export buttons', () => {
     const section = JSON.parse(readFileSync(DIR + '/ui_strings.js', 'utf8')).class_analytics || {};
     const keys = Object.fromEntries(Object.entries(section).map(([k, v]) => ['class_analytics.' + k, v]));
     const used = [...new Set(src.match(/class_analytics\.ws_[a-z_]+/g))];
-    expect(used.length).toBe(9);
+    expect(used.length).toBe(36);
     for (const k of used) expect(typeof keys[k], k).toBe('string');
   });
 });

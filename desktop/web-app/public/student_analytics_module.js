@@ -1039,6 +1039,9 @@ try {
         // counts by sound outlive the trimmed rows.
         if (typeof _acWsSoundSummary === 'function') out.wordSoundsState.soundSummary = _acWsSoundSummary(ws);
         else if (ws.soundSummary && typeof ws.soundSummary === 'object') out.wordSoundsState.soundSummary = ws.soundSummary;
+        // Sessions, activities and wrong answers, also read before the cut.
+        if (typeof _acWsSessionSummary === 'function') out.wordSoundsState.wsSessions = _acWsSessionSummary(ws);
+        else if (ws.wsSessions && typeof ws.wsSessions === 'object') out.wordSoundsState.wsSessions = ws.wsSessions;
       }
       if (data.gameCompletions && typeof data.gameCompletions === 'object') {
         out.gameCompletions = {};
@@ -1246,6 +1249,395 @@ try {
     document.body.removeChild(a);
     setTimeout(function() { URL.revokeObjectURL(url); }, 1500);
   }
+  // BEGIN WORD SOUNDS SESSIONS AND SKILLS
+  // Activity -> skill strand, with the English names. A copy of SKILL_STRANDS
+  // and ACTIVITY_SKILLS in word_sounds_core.js, which is not loaded here;
+  // tests/word_sounds_results_exports.test.js fails when the two differ.
+  var _AC_WS_STRANDS = [
+    ['syllables_rhyme', 'Syllables and rhyme'],
+    ['hearing_sounds', 'Hearing sounds'],
+    ['letters_sounds', 'Letters and sounds'],
+    ['spelling', 'Spelling'],
+    ['reading_words', 'Reading words'],
+    ['reading_sentences', 'Reading sentences']
+  ];
+  var _AC_WS_ACTIVITIES = {
+    rhyming: ['Rhyme Time', 'syllables_rhyme'],
+    syllable_counting: ['Syllable Claps', 'syllables_rhyme'],
+    syllable_blending: ['Syllable Blending', 'syllables_rhyme'],
+    word_families: ['Word Families', 'syllables_rhyme'],
+    isolation: ['Find Sounds', 'hearing_sounds'],
+    sound_sort: ['Sound Sort', 'hearing_sounds'],
+    blending: ['Blend Sounds', 'hearing_sounds'],
+    segmentation: ['Break it Down', 'hearing_sounds'],
+    counting: ['Sound Counting', 'hearing_sounds'],
+    manipulation: ['Sound Swap', 'hearing_sounds'],
+    mapping: ['Sound Mapping', 'letters_sounds'],
+    letter_tracing: ['Letter Trace', 'letters_sounds'],
+    missing_letter: ['Missing Letter', 'spelling'],
+    orthography: ['Sight & Spell', 'spelling'],
+    word_scramble: ['Word Scramble', 'spelling'],
+    spelling_bee: ['Spelling Bee', 'spelling'],
+    decoding: ['Read & Match', 'reading_words'],
+    read_sentence: ['Finish the Sentence', 'reading_sentences'],
+    sentence_match: ['Picture the Sentence', 'reading_sentences'],
+    read_passage: ['Read the Story', 'reading_sentences']
+  };
+  var _AC_WS_SESSION_CAP = 60;
+  function _acWsOwn(obj, key) { return !!obj && Object.prototype.hasOwnProperty.call(obj, key); }
+  function _acWsStrandOf(id) { return _acWsOwn(_AC_WS_ACTIVITIES, id) ? _AC_WS_ACTIVITIES[id][1] : ''; }
+  // The player's name for an activity. Pass no t for English (CSV files).
+  function _acWsActivityName(t, id) {
+    if (_acWsOwn(_AC_WS_ACTIVITIES, id)) return _acWsText(t, 'word_sounds.activity_' + id, _AC_WS_ACTIVITIES[id][0]);
+    if (!id || id === 'unknown') return _acWsText(t, 'class_analytics.ws_activity_not_recorded', 'Activity not recorded');
+    var plain = String(id).replace(/_/g, ' ').trim();
+    return plain ? plain.charAt(0).toUpperCase() + plain.slice(1) : '';
+  }
+  function _acWsStrandName(t, key) {
+    var row = _AC_WS_STRANDS.filter(function(r) { return r[0] === key; })[0];
+    return row ? _acWsText(t, 'word_sounds.strand_' + key, row[1]) : _acWsText(t, 'class_analytics.ws_other_activities', 'Other activities');
+  }
+  function _acWsNum(value) { var n = Number(value); return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0; }
+  // One activity inside one session, as stored (short keys, zeros left out):
+  //   n items, g graded items, f graded items that say whether the first try
+  //   was right, fc of those right on the first try, c right in the end (with
+  //   retries), x extra-practice items, xe how extra practice ended,
+  //   s items that say which supports were shown, st word in print, sl letter
+  //   hints, sp picture, sa picture symbols (AAC), sk anchor card, d difficulty.
+  function _acWsAct(e) {
+    e = e && typeof e === 'object' ? e : {};
+    return { n: _acWsNum(e.n), g: _acWsNum(e.g), f: _acWsNum(e.f), fc: _acWsNum(e.fc), c: _acWsNum(e.c), x: _acWsNum(e.x),
+      xe: e.xe === 'recovered' || e.xe === 'limit' ? e.xe : '',
+      s: _acWsNum(e.s), st: _acWsNum(e.st), sl: _acWsNum(e.sl), sp: _acWsNum(e.sp), sa: _acWsNum(e.sa), sk: _acWsNum(e.sk),
+      d: (Array.isArray(e.d) ? e.d : []).filter(function(v) { return typeof v === 'string' && v; }).slice(0, 3).map(function(v) { return v.slice(0, 16); }) };
+  }
+  function _acWsActStored(a) {
+    var out = {};
+    ['n', 'g', 'f', 'fc', 'c', 'x', 's', 'st', 'sl', 'sp', 'sa', 'sk'].forEach(function(k) { if (a[k]) out[k] = a[k]; });
+    if (a.xe) out.xe = a.xe;
+    if (a.d.length) out.d = a.d;
+    return out;
+  }
+  // Sessions, activities and wrong answers, read from every saved row before
+  // the 40-row cut. A summary saved with the student already counted the rows
+  // up to `through`; only newer rows are added, so saving again never counts a
+  // row twice. Rows with no sessionId are grouped by local day. Keeps the 60
+  // most recent sessions; `count` numbers them from the first one ever seen.
+  function _acWsSessionSummary(ws) {
+    var prior = ws && ws.wsSessions && typeof ws.wsSessions === 'object' && Array.isArray(ws.wsSessions.sessions) ? ws.wsSessions : null;
+    var through = prior ? Number(prior.through) || 0 : 0;
+    var count = prior ? _acWsNum(prior.count) : 0;
+    var sessions = [];
+    var byId = {};
+    var wrong = {};
+    if (prior) {
+      prior.sessions.slice(-_AC_WS_SESSION_CAP).forEach(function(p) {
+        if (!p || typeof p !== 'object' || typeof p.id !== 'string' || !p.id || _acWsOwn(byId, p.id)) return;
+        var entry = { id: p.id.slice(0, 80), n: _acWsNum(p.n), start: Number(p.start) || 0, acts: {} };
+        Object.keys(p.acts && typeof p.acts === 'object' ? p.acts : {}).slice(0, 24).forEach(function(id) { entry.acts[id.slice(0, 40)] = _acWsAct(p.acts[id]); });
+        byId[entry.id] = entry;
+        sessions.push(entry);
+      });
+      Object.keys(prior.wrong && typeof prior.wrong === 'object' ? prior.wrong : {}).slice(0, 60).forEach(function(key) {
+        if (_acWsNum(prior.wrong[key])) wrong[key] = _acWsNum(prior.wrong[key]);
+      });
+      if (count < sessions.length) count = sessions.length;
+    }
+    var newest = through;
+    (ws && Array.isArray(ws.history) ? ws.history : []).forEach(function(row) {
+      if (!row || typeof row !== 'object') return;
+      var when = new Date(row.timestamp || row.date).getTime();
+      if (!Number.isFinite(when)) when = 0;
+      if (prior && when <= through) return;
+      if (when > newest) newest = when;
+      var hasId = (typeof row.sessionId === 'string' && row.sessionId) || Number.isFinite(row.sessionId);
+      var id = hasId ? 's:' + String(row.sessionId).slice(0, 64) : 'd:' + (when ? _acLocalDate(when) : 'undated');
+      var session = _acWsOwn(byId, id) ? byId[id] : null;
+      if (!session) {
+        session = byId[id] = { id: id, n: ++count, start: when, acts: {} };
+        sessions.push(session);
+      }
+      if (when && (!session.start || when < session.start)) session.start = when;
+      var activity = typeof row.activity === 'string' && row.activity ? row.activity.slice(0, 40) : 'unknown';
+      var a = _acWsOwn(session.acts, activity) ? session.acts[activity] : null;
+      if (!a) {
+        if (Object.keys(session.acts).length >= 24) return;
+        a = session.acts[activity] = _acWsAct(null);
+      }
+      a.n++;
+      var correct = typeof row.correct === 'boolean' ? row.correct : typeof row.isCorrect === 'boolean' ? row.isCorrect : null;
+      if (row.practiceOnly !== true && activity !== 'letter_tracing' && correct !== null) {
+        a.g++;
+        if (correct) a.c++;
+        var first = _acWsRowFirstTry(row);
+        if (first !== null) { a.f++; if (first) a.fc++; }
+      }
+      if (row.extended === true) {
+        a.x++;
+        if (row.extensionEnd === 'recovered' || row.extensionEnd === 'limit') a.xe = row.extensionEnd;
+      }
+      var clues = Array.isArray(row.cluesShown) ? row.cluesShown : null;
+      if (typeof row.textSupported === 'boolean' || clues) {
+        a.s++;
+        if (row.textSupported === true) a.st++;
+        if (clues && clues.indexOf('printed_sound_labels') >= 0) a.sl++;
+        if (clues && (clues.indexOf('picture') >= 0 || clues.indexOf('picture_choices') >= 0)) a.sp++;
+        if (clues && clues.indexOf('anchor_card') >= 0) a.sk++;
+      }
+      if (row.aacAssisted === true) a.sa++;
+      if (typeof row.difficulty === 'string' && row.difficulty && a.d.indexOf(row.difficulty.slice(0, 16)) < 0 && a.d.length < 3) a.d.push(row.difficulty.slice(0, 16));
+      if (Array.isArray(row.wrong) && typeof row.word === 'string' && row.word.trim()) row.wrong.slice(0, 4).forEach(function(picked) {
+        if (typeof picked !== 'string' && !Number.isFinite(picked)) return;
+        picked = String(picked).trim().slice(0, 24);
+        if (!picked) return;
+        var key = row.word.trim().toLowerCase().slice(0, 40) + '\t' + picked;
+        wrong[key] = (_acWsOwn(wrong, key) ? wrong[key] : 0) + 1;
+      });
+    });
+    sessions.sort(function(a, b) { return (a.start - b.start) || (a.n - b.n); });
+    var keptWrong = {};
+    Object.keys(wrong).sort(function(a, b) { return wrong[b] - wrong[a] || a.localeCompare(b); }).slice(0, 60).forEach(function(key) { keptWrong[key] = wrong[key]; });
+    return { through: newest, count: count, wrong: keptWrong,
+      sessions: sessions.slice(-_AC_WS_SESSION_CAP).map(function(s) {
+        var acts = {};
+        Object.keys(s.acts).forEach(function(id) { acts[id] = _acWsActStored(s.acts[id]); });
+        return { id: s.id, n: s.n, start: s.start, acts: acts };
+      }) };
+  }
+  // First-try figures use only the items that say whether the first try was
+  // right; the others are counted as not recorded, never as wrong.
+  function _acWsFirstTryCell(g, f, fc) {
+    return { items: g, firstTryItems: f, firstTryCorrect: fc, notRecorded: Math.max(0, g - f),
+      percent: f ? Math.round(fc / f * 100) : null,
+      // Under 50% right on the first try, over at least 6 items.
+      needsSupport: f >= 6 && fc / f < 0.5 };
+  }
+  // The six strands that have items, in teaching order, each with its activities.
+  function _acWsBySkill(summary) {
+    var acts = {};
+    var order = [];
+    (summary && Array.isArray(summary.sessions) ? summary.sessions : []).forEach(function(s) {
+      Object.keys(s.acts || {}).forEach(function(id) {
+        var a = _acWsAct(s.acts[id]);
+        if (!_acWsOwn(acts, id)) { acts[id] = { n: 0, g: 0, f: 0, fc: 0, c: 0, x: 0 }; order.push(id); }
+        ['n', 'g', 'f', 'fc', 'c', 'x'].forEach(function(k) { acts[id][k] += a[k]; });
+      });
+    });
+    var known = Object.keys(_AC_WS_ACTIVITIES);
+    order.sort(function(a, b) { return (known.indexOf(a) < 0 ? 99 : known.indexOf(a)) - (known.indexOf(b) < 0 ? 99 : known.indexOf(b)); });
+    return _AC_WS_STRANDS.map(function(r) { return r[0]; }).concat(['']).map(function(key) {
+      var mine = order.filter(function(id) { return _acWsStrandOf(id) === key; });
+      var total = { n: 0, g: 0, f: 0, fc: 0, c: 0, x: 0 };
+      var activities = mine.map(function(id) {
+        var a = acts[id];
+        ['n', 'g', 'f', 'fc', 'c', 'x'].forEach(function(k) { total[k] += a[k]; });
+        return Object.assign({ id: id, allItems: a.n, correct: a.c, extra: a.x }, _acWsFirstTryCell(a.g, a.f, a.fc));
+      });
+      return Object.assign({ key: key, allItems: total.n, correct: total.c, extra: total.x, activities: activities }, _acWsFirstTryCell(total.g, total.f, total.fc));
+    }).filter(function(strand) { return strand.activities.length > 0; });
+  }
+  // Newest first. `extra` counts the extra-practice items given in the session.
+  function _acWsRecentSessions(summary, limit) {
+    return (summary && Array.isArray(summary.sessions) ? summary.sessions : []).slice().reverse().slice(0, limit || 8).map(function(s) {
+      var total = { g: 0, f: 0, fc: 0, x: 0 };
+      var ids = Object.keys(s.acts || {});
+      var extraIn = [];
+      ids.forEach(function(id) {
+        var a = _acWsAct(s.acts[id]);
+        ['g', 'f', 'fc', 'x'].forEach(function(k) { total[k] += a[k]; });
+        if (a.x) extraIn.push(id);
+      });
+      return Object.assign({ number: s.n, date: s.start ? _acLocalDate(s.start) : '', activities: ids, extra: total.x, extraIn: extraIn }, _acWsFirstTryCell(total.g, total.f, total.fc));
+    });
+  }
+  function _acWsWrongList(summary, limit) {
+    var wrong = summary && summary.wrong && typeof summary.wrong === 'object' ? summary.wrong : {};
+    return Object.keys(wrong).map(function(key) {
+      var cut = key.indexOf('\t');
+      return { word: cut < 0 ? key : key.slice(0, cut), picked: cut < 0 ? '' : key.slice(cut + 1), count: _acWsNum(wrong[key]) };
+    }).filter(function(r) { return r.count > 0 && r.word && r.picked; })
+      .sort(function(a, b) { return b.count - a.count || a.word.localeCompare(b.word) || a.picked.localeCompare(b.picked); }).slice(0, limit || 5);
+  }
+  function _acWsSupportsText(a) {
+    var parts = [];
+    if (a.st) parts.push('word in print ' + a.st);
+    if (a.sl) parts.push('letter hints ' + a.sl);
+    if (a.sp) parts.push('picture ' + a.sp);
+    if (a.sa) parts.push('picture symbols (AAC) ' + a.sa);
+    if (a.sk) parts.push('anchor card ' + a.sk);
+    return parts.length ? parts.join('; ') : a.s ? 'none' : 'not recorded';
+  }
+  // Headers and values stay English, like the other Word Sounds CSV files, so
+  // spreadsheet imports can key on them.
+  var _AC_WS_SESSION_CSV_HEADER = ['Student', 'Date', 'Session number', 'Activity', 'Skill strand', 'Items', 'First-try items recorded', 'First-try correct', 'First-try %', 'Correct with retries', 'Extra practice items', 'Extra practice ended', 'Supports used', 'Difficulty'];
+  // One row per student x session x activity, oldest session first.
+  function _acWsSessionCsv(students) {
+    var rows = [];
+    var included = 0;
+    var leftOut = 0;
+    (Array.isArray(students) ? students : []).forEach(function(s) {
+      var ws = s && s.data && s.data.wordSoundsState;
+      var sessions = ws && typeof ws === 'object' ? _acWsSessionSummary(ws).sessions : [];
+      var before = rows.length;
+      sessions.forEach(function(session) {
+        Object.keys(session.acts).forEach(function(id) {
+          var a = _acWsAct(session.acts[id]);
+          var graded = a.g > 0;
+          rows.push([String(s.name || s.nickname || ''), session.start ? _acLocalDate(session.start) : '', session.n,
+            _acWsActivityName(null, id), _acWsStrandOf(id) ? _acWsStrandName(null, _acWsStrandOf(id)) : '',
+            a.n, a.f, a.f ? a.fc : '', a.f ? Math.round(a.fc / a.f * 100) : '', graded ? a.c : '',
+            a.x, a.xe === 'limit' ? 'item limit' : a.xe, _acWsSupportsText(a), a.d.join(' / ')]);
+        });
+      });
+      if (rows.length > before) included++; else leftOut++;
+    });
+    return { rows: [_AC_WS_SESSION_CSV_HEADER].concat(rows), included: included, leftOut: leftOut };
+  }
+  // One row per student: first-try % by strand, and the strands flagged.
+  function _acWsSkillCsv(students) {
+    var header = ['Student'];
+    _AC_WS_STRANDS.forEach(function(r) { header.push(r[1] + ': first-try items', r[1] + ': first-try %'); });
+    header.push('Needs support in');
+    var rows = [];
+    var leftOut = 0;
+    (Array.isArray(students) ? students : []).forEach(function(s) {
+      var ws = s && s.data && s.data.wordSoundsState;
+      var skills = ws && typeof ws === 'object' ? _acWsBySkill(_acWsSessionSummary(ws)) : [];
+      if (!skills.length) { leftOut++; return; }
+      var line = [String(s.name || s.nickname || '')];
+      var flagged = [];
+      _AC_WS_STRANDS.forEach(function(r) {
+        var strand = skills.filter(function(k) { return k.key === r[0]; })[0];
+        line.push(strand ? strand.firstTryItems : 0, strand && strand.percent !== null ? strand.percent : '');
+        if (strand && strand.needsSupport) flagged.push(r[1]);
+      });
+      line.push(flagged.join('; '));
+      rows.push(line);
+    });
+    return { rows: [header].concat(rows), included: rows.length, leftOut: leftOut };
+  }
+  function _acWsFileStem(name) {
+    return String(name || '').normalize('NFKD').replace(/[^A-Za-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 40) || 'student';
+  }
+  function _acWsEsc(value) {
+    return String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+  function _acWsFirstTryText(t, cell) {
+    if (!cell.items) return _acWsText(t, 'class_analytics.ws_practice_only', 'practice only');
+    if (cell.percent === null) return _acWsText(t, 'class_analytics.ws_not_recorded', 'not recorded');
+    var text = _acWsText(t, 'class_analytics.ws_first_try_cell', '{percent}% ({correct} of {items})', { percent: cell.percent, correct: cell.firstTryCorrect, items: cell.firstTryItems });
+    return cell.notRecorded ? text + ' · ' + _acWsText(t, 'class_analytics.ws_not_recorded_count', 'not recorded: {count}', { count: cell.notRecorded }) : text;
+  }
+  function _acWsMorePracticeText(t, session) {
+    if (!session.extra) return '';
+    return _acWsText(t, 'class_analytics.ws_more_practice_cell', 'Needed more practice: {count} extra items ({activities})',
+      { count: session.extra, activities: session.extraIn.map(function(id) { return _acWsActivityName(t, id); }).join(', ') });
+  }
+  function _acWsWrongText(t, r) {
+    return r.count === 1
+      ? _acWsText(t, 'class_analytics.ws_wrong_answer_once', "{word}: picked '{picked}' once", { word: r.word, picked: r.picked })
+      : _acWsText(t, 'class_analytics.ws_wrong_answer_line', "{word}: picked '{picked}' {count} times", { word: r.word, picked: r.picked, count: r.count });
+  }
+  // By skill + Recent sessions for the downloaded student report. The student
+  // may read this page, so it carries the numbers and no flags.
+  function _acWsReportTablesHtml(t, ws) {
+    var summary = _acWsSessionSummary(ws);
+    var skills = _acWsBySkill(summary);
+    if (!skills.length) return '';
+    var cell = 'padding:6px 10px;border-bottom:1px solid #e2e8f0;text-align:left;font-size:13px;';
+    var table = function(caption, heads, lines) {
+      return '<h3 style="font-size:18px;font-weight:800;color:#334155;margin:20px 0 8px">' + _acWsEsc(caption) + '</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:white;border-radius:12px"><caption style="position:absolute;left:-9999px">' + _acWsEsc(caption) + '</caption><thead><tr>' +
+        heads.map(function(h) { return '<th scope="col" style="' + cell + 'color:#475569">' + _acWsEsc(h) + '</th>'; }).join('') + '</tr></thead><tbody>' + lines.join('') + '</tbody></table></div>';
+    };
+    var skillLines = [];
+    skills.forEach(function(strand) {
+      skillLines.push('<tr><th scope="row" style="' + cell + 'font-weight:700">' + _acWsEsc(_acWsStrandName(t, strand.key)) + '</th><td style="' + cell + '">' + strand.allItems + '</td><td style="' + cell + '">' + _acWsEsc(_acWsFirstTryText(t, strand)) + '</td></tr>');
+      strand.activities.forEach(function(a) {
+        skillLines.push('<tr><th scope="row" style="' + cell + 'font-weight:400;padding-left:26px;color:#475569">' + _acWsEsc(_acWsActivityName(t, a.id)) + '</th><td style="' + cell + 'color:#475569">' + a.allItems + '</td><td style="' + cell + 'color:#475569">' + _acWsEsc(_acWsFirstTryText(t, a)) + '</td></tr>');
+      });
+    });
+    var sessionLines = _acWsRecentSessions(summary, 8).map(function(s) {
+      return '<tr><th scope="row" style="' + cell + 'font-weight:600">' + _acWsEsc(s.date || _acWsText(t, 'class_analytics.ws_date_not_recorded', 'date not recorded')) + '</th><td style="' + cell + '">' +
+        _acWsEsc(s.activities.map(function(id) { return _acWsActivityName(t, id); }).join(', ')) + '</td><td style="' + cell + '">' + _acWsEsc(_acWsFirstTryText(t, s)) + '</td><td style="' + cell + '">' + (s.extra || 0) + '</td></tr>';
+    });
+    return '<div data-ws-report-tables="true" style="margin-top:8px">' +
+      table(_acWsText(t, 'class_analytics.ws_by_skill_heading', 'Word Sounds by skill'), [_acWsText(t, 'class_analytics.ws_col_skill', 'Skill'), _acWsText(t, 'class_analytics.ws_col_items', 'Items'), _acWsText(t, 'class_analytics.ws_col_first_try', 'Right on the first try')], skillLines) +
+      table(_acWsText(t, 'class_analytics.ws_recent_sessions_heading', 'Recent Word Sounds sessions'), [_acWsText(t, 'class_analytics.ws_col_date', 'Date'), _acWsText(t, 'class_analytics.ws_col_activities', 'Activities'), _acWsText(t, 'class_analytics.ws_col_first_try', 'Right on the first try'), _acWsText(t, 'class_analytics.ws_col_extra_items', 'Extra practice items')], sessionLines) + '</div>';
+  }
+  // Teacher's view of one student: By skill, Recent sessions, the most frequent
+  // wrong answers and this student's CSV. `h` is React.createElement.
+  function _acWsStudentTables(h, t, student) {
+    var ws = student && student.data && student.data.wordSoundsState;
+    if (!ws || typeof ws !== 'object') return null;
+    var summary = _acWsSessionSummary(ws);
+    var skills = _acWsBySkill(summary);
+    if (!skills.length) return null;
+    var sessions = _acWsRecentSessions(summary, 8);
+    var th = 'px-2 py-1 text-left text-xs font-bold text-slate-700 border-b border-emerald-200';
+    var td = 'px-2 py-1 text-xs text-slate-800 border-b border-emerald-100 align-top';
+    var flag = function(cell) {
+      return cell.needsSupport ? h('span', { 'data-ws-needs-support': 'true', className: 'ml-2 inline-block px-1.5 py-0.5 rounded border border-amber-700 bg-amber-50 text-amber-900 text-[11px] font-bold whitespace-nowrap' },
+        '⚠ ' + _acWsText(t, 'class_analytics.ws_needs_support', 'Needs support')) : null;
+    };
+    var skillRows = [];
+    skills.forEach(function(strand) {
+      skillRows.push(h('tr', { key: 's-' + strand.key, 'data-ws-strand': strand.key || 'other', className: 'bg-emerald-100/60' },
+        h('th', { scope: 'row', className: td + ' font-bold text-left' }, _acWsStrandName(t, strand.key)),
+        h('td', { className: td + ' font-bold' }, strand.allItems),
+        h('td', { className: td + ' font-bold' }, _acWsFirstTryText(t, strand), flag(strand))));
+      strand.activities.forEach(function(a) {
+        skillRows.push(h('tr', { key: 'a-' + a.id, 'data-ws-activity': a.id },
+          h('th', { scope: 'row', className: td + ' font-normal text-left pl-6' }, _acWsActivityName(t, a.id)),
+          h('td', { className: td }, a.allItems),
+          h('td', { className: td }, _acWsFirstTryText(t, a), flag(a))));
+      });
+    });
+    var skillHeading = _acWsText(t, 'class_analytics.ws_by_skill_heading', 'Word Sounds by skill');
+    var sessionHeading = _acWsText(t, 'class_analytics.ws_recent_sessions_heading', 'Recent Word Sounds sessions');
+    return h('div', { 'data-ws-student-tables': 'true', className: 'mt-3 grid grid-cols-1 xl:grid-cols-2 gap-3' },
+      h('div', { className: 'bg-white rounded-lg border border-emerald-100 p-2' },
+        h('h5', { className: 'text-sm font-bold text-emerald-800 mb-1' }, skillHeading),
+        h('div', { className: 'overflow-x-auto' }, h('table', { 'data-ws-by-skill': 'true', className: 'w-full border-collapse' },
+          h('caption', { className: 'sr-only' }, skillHeading),
+          h('thead', null, h('tr', null,
+            h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_skill', 'Skill')),
+            h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_items', 'Items')),
+            h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_first_try', 'Right on the first try')))),
+          h('tbody', null, skillRows))),
+        h('p', { className: 'text-[11px] text-slate-600 mt-1' }, _acWsText(t, 'class_analytics.ws_needs_support_hint', 'Needs support: under 50% right on the first try, over at least 6 items. Items saved without first-try data are left out and shown as not recorded.'))),
+      h('div', { className: 'bg-white rounded-lg border border-emerald-100 p-2' },
+        h('h5', { className: 'text-sm font-bold text-emerald-800 mb-1' }, sessionHeading),
+        h('div', { className: 'overflow-x-auto' }, h('table', { 'data-ws-recent-sessions': 'true', className: 'w-full border-collapse' },
+          h('caption', { className: 'sr-only' }, sessionHeading),
+          h('thead', null, h('tr', null,
+            h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_date', 'Date')),
+            h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_activities', 'Activities')),
+            h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_first_try', 'Right on the first try')),
+            h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_more_practice', 'More practice')))),
+          h('tbody', null, sessions.map(function(s) {
+            return h('tr', { key: s.number, 'data-ws-session': s.number },
+              h('th', { scope: 'row', className: td + ' font-semibold text-left whitespace-nowrap' }, s.date || _acWsText(t, 'class_analytics.ws_date_not_recorded', 'date not recorded')),
+              h('td', { className: td }, s.activities.map(function(id) { return _acWsActivityName(t, id); }).join(', ')),
+              h('td', { className: td }, _acWsFirstTryText(t, s)),
+              h('td', { className: td, 'data-ws-more-practice': s.extra ? String(s.extra) : '0' }, s.extra ? _acWsMorePracticeText(t, s) : '–'));
+          })))),
+        h('button', {
+          type: 'button',
+          'data-ws-student-csv': 'true',
+          onClick: function() { _acDownloadCsv(_acWsSessionCsv([student]).rows, 'word_sounds_record_' + _acWsFileStem(student.name || student.nickname) + '_' + _acLocalDate(new Date()) + '.csv'); },
+          className: 'mt-2 min-h-11 bg-teal-700 hover:bg-teal-800 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2'
+        }, _acWsText(t, 'class_analytics.ws_student_csv_button', "Download this student's Word Sounds record (CSV)")),
+        h('p', { className: 'text-[11px] text-slate-600 mt-1' }, _acWsText(t, 'class_analytics.ws_file_saved_here', 'The file is saved on this device. Nothing is sent anywhere.'))));
+  }
+  function _acWsWrongAnswers(h, t, student) {
+    var ws = student && student.data && student.data.wordSoundsState;
+    var list = ws && typeof ws === 'object' ? _acWsWrongList(_acWsSessionSummary(ws), 5) : [];
+    if (!list.length) return null;
+    return h('div', { 'data-ws-wrong-answers': 'true', className: 'mb-4 p-4 bg-rose-50 border border-rose-200 rounded-xl' },
+      h('h4', { className: 'font-bold text-rose-700 mb-1' }, _acWsText(t, 'class_analytics.ws_wrong_answers_heading', 'Most frequent wrong answers')),
+      h('ul', { className: 'list-disc pl-5 text-xs text-slate-800 space-y-0.5' }, list.map(function(r, i) { return h('li', { key: i }, _acWsWrongText(t, r)); })));
+  }
+  // END WORD SOUNDS SESSIONS AND SKILLS
   function _acRestoreIdentityLinks(raw) {
     try {
       var parsed = JSON.parse(raw || '{}');
@@ -3009,11 +3401,25 @@ try {
       const done = wsExportLabel('class_analytics.ws_export_done', 'Word Sounds results exported. Students included: {count}.', { count: result.included });
       addToast(result.leftOut ? done + ' ' + wsExportLabel('class_analytics.ws_export_left_out', 'Students left out because they have no Word Sounds results: {count}.', { count: result.leftOut }) : done, 'success');
     };
+    // 'sessions': one row per student x session x activity. 'skills': one row
+    // per student, first-try % by skill strand. Saved on this device only.
+    const exportWordSoundsSessionsCSV = part => {
+      const result = part === 'skills' ? _acWsSkillCsv(importedStudents) : _acWsSessionCsv(importedStudents);
+      if (result.rows.length < 2) {
+        addToast(wsExportLabel('class_analytics.ws_sessions_none', 'No imported student has Word Sounds session results yet.'), 'warning');
+        return;
+      }
+      _acDownloadCsv(result.rows, (part === 'skills' ? 'word_sounds_by_skill_' : 'word_sounds_sessions_') + _acLocalDate(new Date()) + '.csv');
+      const done = wsExportLabel('class_analytics.ws_export_done', 'Word Sounds results exported. Students included: {count}.', { count: result.included });
+      addToast((result.leftOut ? done + ' ' + wsExportLabel('class_analytics.ws_export_left_out', 'Students left out because they have no Word Sounds results: {count}.', { count: result.leftOut }) : done) +
+        ' ' + wsExportLabel('class_analytics.ws_file_saved_here', 'The file is saved on this device. Nothing is sent anywhere.'), 'success');
+    };
     const renderWordSoundsExportButtons = () => React.createElement(React.Fragment, null,
-      [['results', 'class_analytics.ws_export_button', 'Export Word Sounds results (CSV)'], ['summary', 'class_analytics.ws_summary_button', 'Word Sounds summary by sound (CSV)']].map(([part, key, english]) => React.createElement("button", {
+      [['results', 'class_analytics.ws_export_button', 'Export Word Sounds results (CSV)'], ['summary', 'class_analytics.ws_summary_button', 'Word Sounds summary by sound (CSV)'],
+        ['sessions', 'class_analytics.ws_sessions_button', 'Word Sounds sessions (CSV)'], ['skills', 'class_analytics.ws_skills_button', 'Word Sounds by skill (CSV)']].map(([part, key, english]) => React.createElement("button", {
         key: part,
         type: "button",
-        onClick: () => exportWordSoundsCSV(part),
+        onClick: () => part === 'sessions' || part === 'skills' ? exportWordSoundsSessionsCSV(part) : exportWordSoundsCSV(part),
         "data-ws-results-export": part,
         className: "min-h-11 bg-teal-700 hover:bg-teal-800 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2"
       }, React.createElement(Download, { size: 16 }), wsExportLabel(key, english))));
@@ -6599,7 +7005,7 @@ try {
       const strengthsHtml = masteredPhonemes.length > 0 ? '<div style="margin-top:20px;padding:20px;background:#f0fdf4;border-radius:16px;border:2px solid #86efac"><h3 style="font-size:18px;font-weight:800;color:#166534;margin:0 0 12px">\u{1F4AA} My Strengths</h3><div style="display:flex;flex-wrap:wrap;gap:8px">' + masteredPhonemes.slice(0, 12).map(([phoneme]) => '<span style="background:white;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;color:#166534;border:1px solid #86efac">✅ ' + phoneme + '</span>').join('') + '</div></div>' : '';
       const growthHtml = hasHistory ? '<div style="margin-top:24px"><h3 style="font-size:18px;font-weight:800;color:#334155;margin:0 0 16px">\u{1F4C8} My Growth Journey (' + snapshots.length + ' sessions)</h3><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px">' + growthCard('Word Sounds', snapshotWsAccuracy(first), snapshotWsAccuracy(latest), '%') + growthCard('Quiz Average', first.quizAvg || 0, latest.quizAvg || 0, '%') + growthCard('Activities', first.totalActivities || 0, latest.totalActivities || 0, '') + '</div><p style="font-size:12px;color:#64748b;text-align:center;font-style:italic">From ' + first.date + ' to ' + latest.date + '</p></div>' : '';
       const historyHtml = snapshots.length > 0 ? '<div style="margin-top:24px"><h3 style="font-size:18px;font-weight:800;color:#334155;margin:0 0 12px">\u{1F4CB} Session History</h3><div style="overflow-x:auto"><table style="width:100%;border-collapse:collapse;background:white;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0"><thead><tr style="background:#f8fafc"><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">#</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">Date</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + t('learner.word_sounds') + '</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + t('learner.quiz_avg') + '</th><th style="padding:8px 12px;font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;text-align:left">' + t('learner.activities') + '</th></tr></thead><tbody>' + snapshots.map((s, i) => sessionRow(s, i)).join('') + '</tbody></table></div></div>' : '';
-      const html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>' + t('learner.my_learning_journey') + '</title><style>@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap);*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:linear-gradient(180deg,#dbeafe 0%,#ede9fe 50%,#fce7f3 100%);min-height:100vh;padding:32px}@media print{body{background:white;padding:16px}}</style></head><body><div style="max-width:700px;margin:0 auto"><div style="text-align:center;margin-bottom:32px"><div style="font-size:48px;margin-bottom:8px">\u{1F31F}</div><h1 style="font-size:32px;font-weight:800;color:#1e293b;margin-bottom:4px">' + t('learner.my_learning_journey') + '</h1><p style="color:#64748b;font-size:14px">' + date + (hasHistory ? ' • ' + snapshots.length + ' sessions tracked' + dateRangeLabel : '') + '</p></div><div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:20px;padding:24px;text-align:center;margin-bottom:24px;box-shadow:0 8px 32px rgba(99,102,241,0.3)"><div style="font-size:14px;text-transform:uppercase;letter-spacing:0.1em;opacity:0.8;margin-bottom:8px">Level</div><div style="font-size:48px;font-weight:800">' + level + '</div><div style="font-size:16px;font-weight:600;margin-top:4px">' + xp + ' XP earned ' + quizEnc.emoji + '</div><div style="margin-top:12px;font-size:14px;opacity:0.9">' + quizEnc.msg + '</div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">' + statCard('\u{1F4DA}', 'Activities', totalActivities, '#6366f1') + statCard('✅', 'Quiz Avg', avgQuizScore !== null ? avgQuizScore + '%' : '—', '#16a34a') + statCard('\u{1F524}', _acWsText(t, 'class_analytics.ws_accuracy_with_retries', 'Word accuracy (with second tries)'), wsAccuracy !== null ? wsAccuracy + '%' : '—', '#0891b2') + (wsFirstTryAccuracy !== null ? statCard('\u{1F3AF}', _acWsText(t, 'class_analytics.ws_first_try_label', 'First try'), wsFirstTryAccuracy + '%', '#0e7490') : '') + '</div>' + growthHtml + historyHtml + badgeHtml + strengthsHtml + '<div style="margin-top:32px;text-align:center;color:#94a3b8;font-size:12px">Generated ' + date + ' • Created with AlloFlow • Keep learning! \u{1F680}</div></div></body></html>';
+      const html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>' + t('learner.my_learning_journey') + '</title><style>@import url(https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap);*{box-sizing:border-box;margin:0;padding:0}body{font-family:Inter,sans-serif;background:linear-gradient(180deg,#dbeafe 0%,#ede9fe 50%,#fce7f3 100%);min-height:100vh;padding:32px}@media print{body{background:white;padding:16px}}</style></head><body><div style="max-width:700px;margin:0 auto"><div style="text-align:center;margin-bottom:32px"><div style="font-size:48px;margin-bottom:8px">\u{1F31F}</div><h1 style="font-size:32px;font-weight:800;color:#1e293b;margin-bottom:4px">' + t('learner.my_learning_journey') + '</h1><p style="color:#64748b;font-size:14px">' + date + (hasHistory ? ' • ' + snapshots.length + ' sessions tracked' + dateRangeLabel : '') + '</p></div><div style="background:linear-gradient(135deg,#6366f1,#8b5cf6);color:white;border-radius:20px;padding:24px;text-align:center;margin-bottom:24px;box-shadow:0 8px 32px rgba(99,102,241,0.3)"><div style="font-size:14px;text-transform:uppercase;letter-spacing:0.1em;opacity:0.8;margin-bottom:8px">Level</div><div style="font-size:48px;font-weight:800">' + level + '</div><div style="font-size:16px;font-weight:600;margin-top:4px">' + xp + ' XP earned ' + quizEnc.emoji + '</div><div style="margin-top:12px;font-size:14px;opacity:0.9">' + quizEnc.msg + '</div></div><div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:24px">' + statCard('\u{1F4DA}', 'Activities', totalActivities, '#6366f1') + statCard('✅', 'Quiz Avg', avgQuizScore !== null ? avgQuizScore + '%' : '—', '#16a34a') + statCard('\u{1F524}', _acWsText(t, 'class_analytics.ws_accuracy_with_retries', 'Word accuracy (with second tries)'), wsAccuracy !== null ? wsAccuracy + '%' : '—', '#0891b2') + (wsFirstTryAccuracy !== null ? statCard('\u{1F3AF}', _acWsText(t, 'class_analytics.ws_first_try_label', 'First try'), wsFirstTryAccuracy + '%', '#0e7490') : '') + '</div>' + growthHtml + historyHtml + _acWsReportTablesHtml(t, sessionData?.wordSoundsState && typeof sessionData.wordSoundsState === 'object' ? sessionData.wordSoundsState : { history: wsHistory }) + badgeHtml + strengthsHtml + '<div style="margin-top:32px;text-align:center;color:#94a3b8;font-size:12px">Generated ' + date + ' • Created with AlloFlow • Keep learning! \u{1F680}</div></div></body></html>';
       const blob = new Blob([html], {
         type: 'text/html'
       });
@@ -9708,6 +10114,7 @@ try {
       onClick: () => generateStudentFriendlyReport({
         history: selectedStudent.history || [],
         wordSoundsHistory: selectedStudent.wordSoundsHistory || selectedStudent.data?.wordSoundsState?.history || [],
+        wordSoundsState: selectedStudent.wordSoundsHistory ? null : selectedStudent.data?.wordSoundsState || null,
         phonemeMastery: selectedStudent.phonemeMastery || selectedStudent.data?.wordSoundsState?.phonemeMastery || {},
         wordSoundsBadges: selectedStudent.wordSoundsBadges || {},
         gameCompletions: selectedStudent.gameCompletions || [],
@@ -10729,7 +11136,9 @@ try {
     }, selectedStudent.data.wordSoundsState.badges.map((badge, bi) => /*#__PURE__*/React.createElement("span", {
       key: bi,
       className: "px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-xs font-medium"
-    }, typeof badge === 'string' ? badge : badge.name || '🏆')))), (function() {
+    }, typeof badge === 'string' ? badge : badge.name || '🏆'))),
+    // Word Sounds by skill, recent sessions and this student's CSV.
+    _acWsStudentTables(React.createElement, t, selectedStudent)), (function() {
       // Most-confused sound pairs (target -> chosen), captured by trackConfusion in
       // Word Sounds. Diagnostic gold for an interventionist (b/d reversals, vowel/
       // minimal-pair errors). Dormant until the session persists confusionPatterns.
@@ -10753,7 +11162,9 @@ try {
           title: "Target: " + (parts[0] || "?") + ", chose: " + (parts[1] || "?")
         }, (parts[0] || "?") + " → " + (parts[1] || "?") + " ×" + _cp[pair]);
       })));
-    })(), selectedStudent.stats?.gamesPlayed > 0 && /*#__PURE__*/React.createElement("div", {
+    })(),
+    // The wrong answers picked most often, by word.
+    _acWsWrongAnswers(React.createElement, t, selectedStudent), selectedStudent.stats?.gamesPlayed > 0 && /*#__PURE__*/React.createElement("div", {
       "data-help-key": "dashboard_detail_games",
       className: "mb-4 p-4 bg-violet-50 border border-violet-200 rounded-xl"
     }, /*#__PURE__*/React.createElement("h4", {

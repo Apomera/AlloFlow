@@ -41,6 +41,8 @@ function itemFor(word, phonemes) {
   return {...item, id: word, itemId: word, ttsReady: true, _ttsAssets: {...assets, [word]: assets.cat}};
 }
 const box = () => itemFor('box', ['b', 'ɑ', 'k', 's'].map(ipa => ({ipa, grapheme: ''})));
+// "one": o spells /w/ + /u/, a spelling with no taught two-sound chip (box now maps with x over two boxes).
+const one = () => itemFor('one', ['w', 'ʌ', 'n'].map(ipa => ({ipa, grapheme: ''})));
 function Host({item, initialActivity}) {
   const [activity, setActivity] = React.useState(initialActivity), [word, setWord] = React.useState(null), [data, setData] = React.useState(null);
   const [score, setScore] = React.useState({correct: 0, total: 0, streak: 0}), [history, setHistory] = React.useState([]), [feedback, setFeedback] = React.useState(null);
@@ -61,11 +63,11 @@ async function mount(item, initialActivity) {
 }
 
 describe('unaligned sound data does not become a scored mapping board', () => {
-  it.each(['box', 'explicit rejection'])('shows an unscored review route for %s instead of synthesizing letter slots', async scenario => {
-    const item = scenario === 'box' ? box() : itemFor('cat', ['k', 'a', 't']);
+  it.each(['one', 'explicit rejection'])('shows an unscored review route for %s instead of synthesizing letter slots', async scenario => {
+    const item = scenario === 'one' ? one() : itemFor('cat', ['k', 'a', 't']);
     if (scenario === 'explicit rejection') item.activityItems.mapping = {...item.activityItems.mapping, supported: false, contentStatus: 'teacher_review_required'};
     await mount(item, 'mapping');
-    expect(state.data.phonemes).toHaveLength(scenario === 'box' ? 4 : 3);
+    expect(state.data.phonemes).toHaveLength(3);
     expect(host.textContent).toContain('Sound Mapping needs a teacher to check how the letters match these sounds.');
     expect(host.querySelector('button[aria-label^="word_sounds.select_sound_chip"], button[aria-label^="Select sound "]')).toBeNull();
     expect(state.score.total).toBe(0); expect(state.history).toEqual([]);

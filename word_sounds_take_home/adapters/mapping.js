@@ -2,11 +2,13 @@
 // App source of truth:
 //   board   compileActivityItems (word_sounds_setup_source.jsx:4678-4683, 4807-4809):
 //           { graphemes: one spelling per sound, joined = the word, chipOrder: shuffled
-//           [{ id, text }] } or { supported: false, contentStatus: 'teacher_review_required' }.
-//   data    soundMappingGraphemes (word_sounds_module.js:5018-5029): no board when
+//           [{ id, text }], chipSpans?: boxes each chip covers } or { supported: false,
+//           contentStatus: 'teacher_review_required' }.
+//   data    soundMappingBoard (word_sounds_module.js): no board when
 //           unsupported/review-required; else the first of board.graphemes,
-//           item.graphemes, phoneme .grapheme fields, the word's letters whose length
-//           equals the phoneme count and whose join is the word.
+//           item.graphemes, phoneme .grapheme fields, the word's letters whose join
+//           is the word and that fit the sounds: one box per sound, a chip covering
+//           chipSpans[i] boxes (2 for qu, x, the u of cute, le; no chipSpans = 1 each).
 //   view    SoundMappingView (word_sounds_module.js:5030-5170): the word stays printed
 //           (SMART_TEXT_VISIBILITY mapping 'alwaysOn', :7563), one slot per spelling,
 //           a chip tray, tapping a chip fills the first empty slot and plays it,
@@ -39,6 +41,10 @@ module.exports = {
     mapping_retry: 'Not quite. Take out a spelling and move it, then try once more.',
     mapping_correct: 'Yes! You spelled every sound.',
     mapping_missed: 'This is how the sounds are spelled: {spellings}. Listen.',
+    mapping_two_sounds: '{spelling} spells two sounds.',
+    mapping_listen_two: 'Listen to the two sounds of {spelling}',
+    mapping_slot_filled_two: 'Slots {n} and {m}: {spelling}, two sounds',
+    mapping_needs_two: '{spelling} spells two sounds. Choose a slot with another slot after it.',
   },
   prepare: function (w, env) {
     var board = w && w.activityItems && w.activityItems.mapping;
@@ -46,14 +52,24 @@ module.exports = {
     if (board.supported === false || board.unavailable || /review_required|needs_review/.test(board.contentStatus || '')) return { missing: ['board'] };
     var phonemes = Array.isArray(w.phonemes) ? w.phonemes : [];
     var spelling = String(env.word || '').trim().normalize('NFC').toLowerCase();
-    var graphemes = [board.graphemes, w.graphemes, phonemes.map(function (p) { return p && typeof p === 'object' ? p.grapheme : ''; }), spelling.split('')]
-      .filter(function (values) {
-        return Array.isArray(values) && values.length > 0 && values.length === phonemes.length &&
+    // WS_CORE.mappingChipSpans: one box per sound; chip i covers spans[i] boxes.
+    var fit = function (values, spans) {
+      if (spans == null) return values.length === phonemes.length ? values.map(function () { return 1; }) : null;
+      if (!Array.isArray(spans) || spans.length !== values.length || !spans.every(function (k) { return k === 1 || k === 2; })) return null;
+      return spans.reduce(function (sum, k) { return sum + k; }, 0) === phonemes.length ? spans.slice() : null;
+    };
+    var found = [[board.graphemes, board.chipSpans], [w.graphemes, w.chipSpans], [phonemes.map(function (p) { return p && typeof p === 'object' ? p.grapheme : ''; }), null], [spelling.split(''), null]]
+      .map(function (pair) {
+        var values = pair[0];
+        return [values, Array.isArray(values) && values.length > 0 && phonemes.length > 0 &&
           values.every(function (v) { return typeof v === 'string' && v.trim(); }) &&
-          values.join('').trim().normalize('NFC').toLowerCase() === spelling;
-      })[0];
-    if (!graphemes) return { missing: ['board'] };
-    graphemes = graphemes.map(String);
+          values.join('').trim().normalize('NFC').toLowerCase() === spelling ? fit(values, pair[1]) : null];
+      })
+      .filter(function (pair) { return pair[1]; })[0];
+    if (!found) return { missing: ['board'] };
+    var graphemes = found[0].map(String), spans = found[1];
+    var starts = [];
+    spans.reduce(function (at, k) { starts.push(at); return at + k; }, 0);
     // Tray order: the prepared chipOrder when it is a true shuffle of these
     // spellings. (The view reshuffles randomly; a file needs a fixed order.)
     var order = Array.isArray(board.chipOrder) && board.chipOrder.length === graphemes.length &&
@@ -67,38 +83,57 @@ module.exports = {
     if (!wordAudio) missing.push('word');
     var prompt = env.bankClip('instructions', 'mapping');
     if (!prompt) missing.push('question');
-    // Each chip plays its sound: the word's own sound at that position.
+    // Each chip plays its sound: the word's own sound at that position. A
+    // spanning chip plays its two sounds in order (no clip for the pair).
     var clips = graphemes.map(function (g, i) {
-      var label = env.label(phonemes[i]);
+      if (spans[i] > 1) {
+        return phonemes.slice(starts[i], starts[i] + spans[i]).map(function (p) {
+          var part = env.label(p), partClip = part && env.phonemeClip(part);
+          if (!partClip) missing.push('/' + (part || g) + '/');
+          return partClip;
+        });
+      }
+      var label = env.label(phonemes[starts[i]]);
       var clip = (label && env.phonemeClip(label)) || env.phonemeClip(g);
       if (!clip) missing.push('/' + (label || g) + '/');
       return clip;
     });
     if (missing.length) return { missing: missing };
-    return { item: {
+    var spanning = spans.some(function (k) { return k > 1; });
+    var result = {
       target: graphemes.join(' '), graphemes: graphemes,
-      chips: order.map(function (id) { return { text: graphemes[id], audio: clips[id] }; }),
+      chips: order.map(function (id) { return spans[id] > 1 ? { text: graphemes[id], audio: clips[id][0], audios: clips[id], span: spans[id] } : { text: graphemes[id], audio: clips[id] }; }),
       wordAudio: wordAudio, promptAudio: prompt,
       introAudio: [prompt], answerAudio: [wordAudio],
-    } };
+    };
+    if (spanning) result.spans = spans;
+    return { item: result };
   },
   render: function (item, ctx) {
     var L = ctx.L;
-    var n = item.graphemes.length;
+    // One slot per sound. A spanning chip (item.spans[i] = 2: qu, x, the u of
+    // cute, le) covers two slots side by side. No spans = one slot per chip.
+    var spanOf = function (ci) { return item.chips[ci].span || 1; };
+    var n = (item.spans || item.graphemes.map(function () { return 1; })).reduce(function (sum, k) { return sum + k; }, 0);
     var slots = [];
     for (var s = 0; s < n; s++) slots.push(null);
     var picked = null;
     var locked = function () { return ctx.isDone(); };
     var text = function (ci) { return item.chips[ci].text; };
+    var covered = function (si) { return si > 0 && slots[si] != null && slots[si - 1] === slots[si]; };
+    var hear = function (ci) { var chip = item.chips[ci]; if (chip.audios) ctx.playAll(chip.audios); else ctx.play(chip.audio); };
+    var takeOut = function (ci) { for (var i = 0; i < n; i++) if (slots[i] === ci) slots[i] = null; };
 
     var tray = ctx.el('ul', { class: 'row', 'aria-label': L.mapping_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:12px' });
     var chipEls = item.chips.map(function (chip, ci) {
+      var two = spanOf(ci) > 1;
       var pick = ctx.el('button', { type: 'button', class: 'primary', 'aria-pressed': 'false',
-        'aria-label': ctx.fmt(L.mapping_pick, { spelling: chip.text }),
-        style: 'min-width:72px;min-height:56px;font-size:1.5rem;font-weight:700',
+        'aria-label': ctx.fmt(L.mapping_pick, { spelling: chip.text }) + (two ? '. ' + ctx.fmt(L.mapping_two_sounds, { spelling: chip.text }) : ''),
+        'data-span': two ? String(spanOf(ci)) : null,
+        style: (two ? 'min-width:154px;' : 'min-width:72px;') + 'min-height:56px;font-size:1.5rem;font-weight:700',
         on: { click: function () { onChip(ci); } } }, [chip.text]);
-      var listen = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(L.mapping_listen, { spelling: chip.text }),
-        on: { click: function () { ctx.support('soundListens'); ctx.play(chip.audio); } } }, ['▶']);
+      var listen = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(two ? L.mapping_listen_two : L.mapping_listen, { spelling: chip.text }),
+        on: { click: function () { ctx.support('soundListens'); hear(ci); } } }, ['▶']);
       var li = ctx.el('li', { class: 'row', style: 'gap:6px;border:2px solid var(--line);border-radius:14px;padding:6px' }, [pick, listen]);
       tray.appendChild(li);
       return { li: li, pick: pick };
@@ -107,8 +142,9 @@ module.exports = {
     var slotEls = slots.map(function (_, si) {
       var btn = ctx.el('button', { type: 'button', class: 'slot', style: 'min-width:80px;min-height:80px;font-size:1.5rem;font-weight:700',
         on: { click: function () { onSlot(si); } } });
-      slotList.appendChild(ctx.el('li', {}, [btn]));
-      return btn;
+      var li = ctx.el('li', {}, [btn]);
+      slotList.appendChild(li);
+      return { btn: btn, li: li };
     });
     var clearBtn = ctx.el('button', { type: 'button', on: { click: function () {
       if (locked()) return;
@@ -123,12 +159,19 @@ module.exports = {
         c.pick.setAttribute('aria-pressed', picked === ci ? 'true' : 'false');
         if (locked()) c.pick.setAttribute('aria-disabled', 'true');
       });
-      slotEls.forEach(function (btn, si) {
-        var ci = slots[si];
+      slotEls.forEach(function (el, si) {
+        var btn = el.btn, ci = slots[si];
+        // The second slot under a spanning chip is drawn by the chip's first slot.
+        el.li.hidden = covered(si);
+        var two = ci != null && spanOf(ci) > 1;
         btn.textContent = ci == null ? String(si + 1) : text(ci);
+        btn.style.minWidth = two ? '170px' : '80px';
+        if (two) btn.setAttribute('data-span', String(spanOf(ci))); else btn.removeAttribute('data-span');
         btn.style.borderStyle = ci == null ? 'dashed' : 'solid';
         btn.style.borderColor = ci == null ? 'var(--muted)' : 'var(--accent)';
-        btn.setAttribute('aria-label', ci == null ? ctx.fmt(L.mapping_slot_empty, { n: si + 1 }) : ctx.fmt(L.mapping_slot_filled, { n: si + 1, spelling: text(ci) }));
+        btn.setAttribute('aria-label', ci == null ? ctx.fmt(L.mapping_slot_empty, { n: si + 1 })
+          : two ? ctx.fmt(L.mapping_slot_filled_two, { n: si + 1, m: si + spanOf(ci), spelling: text(ci) })
+          : ctx.fmt(L.mapping_slot_filled, { n: si + 1, spelling: text(ci) }));
         if (locked()) btn.setAttribute('aria-disabled', 'true');
       });
       if (locked()) clearBtn.setAttribute('aria-disabled', 'true');
@@ -138,34 +181,41 @@ module.exports = {
       if (picked === ci) { picked = null; draw(); ctx.announce(ctx.fmt(L.mapping_dropped, { spelling: text(ci) })); return; }
       picked = ci;
       draw();
-      ctx.play(item.chips[ci].audio);
+      hear(ci);
       ctx.announce(ctx.fmt(L.mapping_picked, { spelling: text(ci) }));
       var empty = slots.indexOf(null);
-      slotEls[empty >= 0 ? empty : 0].focus();
+      slotEls[empty >= 0 ? empty : 0].btn.focus();
     };
     var onSlot = function (si) {
       if (locked()) return;
       if (picked == null) {
         var out = slots[si];
         if (out == null) { ctx.announce(L.mapping_how); return; }
-        slots[si] = null;
+        var first = slots.indexOf(out);
+        takeOut(out);
         draw();
-        ctx.announce(ctx.fmt(L.mapping_removed, { spelling: text(out), n: si + 1 }));
+        ctx.announce(ctx.fmt(L.mapping_removed, { spelling: text(out), n: first + 1 }));
         return;
       }
-      var ci = picked;
+      var ci = picked, span = spanOf(ci);
+      // A spanning chip cannot start in the last slot.
+      if (si + span > n) { ctx.announce(ctx.fmt(L.mapping_needs_two, { spelling: text(ci) })); return; }
       picked = null;
-      slots[si] = ci; // a chip already there goes back to the tray
+      for (var k = 0; k < span; k++) if (slots[si + k] != null) takeOut(slots[si + k]); // chips already there go back to the tray
+      for (var j = 0; j < span; j++) slots[si + j] = ci;
       draw();
       if (slots.indexOf(null) >= 0) {
-        ctx.play(item.chips[ci].audio);
+        hear(ci);
         ctx.announce(ctx.fmt(L.mapping_placed, { spelling: text(ci), n: si + 1 }));
-        for (var k = 0; k < chipEls.length; k++) if (slots.indexOf(k) < 0) { chipEls[k].pick.focus(); break; }
+        for (var c = 0; c < chipEls.length; c++) if (slots.indexOf(c) < 0) { chipEls[c].pick.focus(); break; }
         return;
       }
-      // The last slot filled: grade the arrangement now (:5062-5066).
-      var right = slots.every(function (c, i) { return String(text(c)) === String(item.graphemes[i]); });
-      ctx.answer(slots.map(text).join(' '), right, {
+      // The last slot filled: grade the chips in slot order.
+      var order = slots.filter(function (c2, i) { return !covered(i); });
+      var right = order.length === item.graphemes.length && order.every(function (c2, i) {
+        return String(text(c2)) === String(item.graphemes[i]) && spanOf(c2) === ((item.spans && item.spans[i]) || 1);
+      });
+      ctx.answer(order.map(text).join(' '), right, {
         correctText: L.mapping_correct,
         retryText: L.mapping_retry,
         missedText: ctx.fmt(L.mapping_missed, { spellings: item.graphemes.join(' ') }),
@@ -189,15 +239,17 @@ module.exports = {
         picked = null;
         if (!correct) {
           var used = [];
-          for (var i = 0; i < n; i++) {
-            var hit = -1;
-            for (var ci = 0; ci < item.chips.length && hit < 0; ci++) if (used.indexOf(ci) < 0 && item.chips[ci].text === item.graphemes[i]) hit = ci;
+          for (var i = 0; i < n; i++) slots[i] = null;
+          for (var g = 0, box = 0; g < item.graphemes.length; g++) {
+            var want = (item.spans && item.spans[g]) || 1, hit = -1;
+            for (var ci = 0; ci < item.chips.length && hit < 0; ci++) if (used.indexOf(ci) < 0 && item.chips[ci].text === item.graphemes[g] && spanOf(ci) === want) hit = ci;
             used.push(hit);
-            slots[i] = hit;
+            for (var k = 0; k < want; k++) slots[box + k] = hit < 0 ? null : hit;
+            box += want;
           }
         }
         draw();
-        slotEls.forEach(function (btn) { btn.style.borderColor = 'var(--ok)'; btn.style.background = 'var(--ok-bg)'; });
+        slotEls.forEach(function (el) { el.btn.style.borderColor = 'var(--ok)'; el.btn.style.background = 'var(--ok-bg)'; });
       },
     };
   },

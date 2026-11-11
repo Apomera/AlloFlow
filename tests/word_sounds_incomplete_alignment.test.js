@@ -83,23 +83,28 @@ describe('valid sound sequences survive incomplete spelling alignment', () => {
     expect(await h.espeakPackPhonemes('box', 'en')).toBeNull();
   });
 
-  it('delivers four-sound boards and a separate mapping review state through portable save/reopen and DI', async () => {
+  it('delivers four-sound boards and a mapping board with x over two sound boxes through portable save/reopen and DI', async () => {
     const {item} = await generate('box');
     const compiled = compileWords([item], {}, 'en', ['counting', 'segmentation', 'blending', 'mapping', 'word_scramble', 'orthography']);
     const board = compiled[0].activityItems;
     expect(board.counting.answer).toBe(4);
     expect(board.segmentation.slotCount).toBe(4);
     expect(board.segmentation.chips.filter(chip => !chip.isDistractor).map(chip => chip.phoneme).sort()).toEqual(['b', 'o', 'k', 's'].sort());
-    expect(board.mapping).toEqual({supported: false, contentStatus: 'teacher_review_required', graphemes: [], chipOrder: []});
-    expect(compiled[0].graphemes).toEqual([]);
+    // 2026-11-10: one box per sound; the x chip spans the /k/ and /s/ boxes.
+    expect(board.mapping).toMatchObject({graphemes: ['b', 'o', 'x'], chipSpans: [1, 1, 2]});
+    expect(compiled[0].graphemes).toEqual(['b', 'o', 'x']);
     expect(board.word_scramble.letters.slice().sort()).toEqual(['b', 'o', 'x']);
     expect(board.orthography.answer).toBe('box');
     const saved = JSON.parse(JSON.stringify(readiness.portable({type: 'word-sounds', lessonPlanSequence: ['counting'], data: compiled}))).data[0];
     expect(DI.presenterLines('counting', saved, {language: 'en', words: [saved]}).model).toContain('/b/ /ɑ/ /k/ /s/. Four sounds.');
+    // DI has no one-letter-per-sound line for x, so it leaves its mapping model out.
     expect(DI.presenterLines('mapping', saved, {language: 'en', words: [saved]})).toBeNull();
     expect(DI.presenterLines('word_scramble', saved, {language: 'en', words: [saved]}).model).toContain('b, o, x');
     expect(readiness.requirements({type: 'word-sounds', lessonPlanSequence: ['counting'], data: [saved]}).contentIssues).toEqual([]);
-    expect(readiness.requirements({type: 'word-sounds', lessonPlanSequence: ['mapping'], data: [saved]}).contentIssues).toEqual([
+    expect(readiness.requirements({type: 'word-sounds', lessonPlanSequence: ['mapping'], data: [saved]}).contentIssues).toEqual([]);
+    // A board whose spans do not fit the sounds still needs the teacher.
+    const stale = {...saved, chipSpans: undefined, activityItems: {...saved.activityItems, mapping: {...saved.activityItems.mapping, chipSpans: [1, 1, 1]}}};
+    expect(readiness.requirements({type: 'word-sounds', lessonPlanSequence: ['mapping'], data: [stale]}).contentIssues).toEqual([
       'Sound Mapping for box needs a checked match between letters and sounds.']);
   });
 
