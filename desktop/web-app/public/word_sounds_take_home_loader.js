@@ -89,10 +89,10 @@
     about_saves: 'When you finish, it can save two files: {csv} opens in a spreadsheet, and {json} is for your teacher to open in AlloFlow.',
     about_no_network: 'It never connects to the internet.',
     about_mailbox: 'It connects to the internet for one thing only: when you press Send, your results go to your teacher\'s class mailbox at {host}. Nothing is sent before that.',
-    about_never: 'It never uses the microphone or the camera. It has no cookies and no AI.',
+    about_never: 'It never uses the microphone or the camera. It has no cookies and runs no AI.',
     about_check: 'Each saved file has a check value. It shows when a file was changed by accident. It cannot stop someone who changes a file on purpose.',
     about_rules: 'The safety rules this file gives the browser: {csp}',
-    about_licence: 'Licence: {licence}. Anyone may read, share and change the code.',
+    about_licence: 'License: {licence}. Anyone may read, share and change the code.',
     about_credits: 'Made with: {list}',
     // Shown only when the file is opened somewhere that does not run it (a Drive or Files preview).
     no_script: 'If the practice does not start, download this file and open it in Chrome, Edge or Safari.',

@@ -432,8 +432,8 @@ describe('the manifest and "About this file"', () => {
     const m = manifestOf(t.html);
     const text = panel().textContent;
     for (const part of ['It works with no internet.', 'File type: alloflow-packet/1.', 'under the name ' + m.stores[0].key + '.', 'Short-a__LEARNER__DATE.csv opens in a spreadsheet',
-      'Short-a__LEARNER__DATE.json is for your teacher', 'It never connects to the internet.', 'It never uses the microphone or the camera. It has no cookies and no AI.',
-      'It cannot stop someone who changes a file on purpose.', m.csp, 'Licence: AGPL-3.0.']) expect(text).toContain(part);
+      'Short-a__LEARNER__DATE.json is for your teacher', 'It never connects to the internet.', 'It never uses the microphone or the camera. It has no cookies and runs no AI.',
+      'It cannot stop someone who changes a file on purpose.', m.csp, 'License: AGPL-3.0.']) expect(text).toContain(part);
     expect(text).not.toContain('class mailbox');
     opener().click();
     expect(panel().hidden).toBe(true);

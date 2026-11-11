@@ -62,6 +62,7 @@
   var ATTRIBUTIONS = [
     'Word sounds: Carnegie Mellon Pronouncing Dictionary (CMUdict), Copyright (C) 1993-2015 Carnegie Mellon University, converted to sound labels by AlloFlow',
     'Machine-made recordings: Kokoro-82M text-to-speech (voice af_heart)',
+    'Machine-made recordings: Google Gemini text-to-speech, made ahead of time',
   ];
 
   // ---------------------------------------------------------------------------
@@ -660,7 +661,7 @@
         if (usedWords.indexOf(word) < 0 && !exceptions.some(function (e) { return e.word === word && e.activity === null; })) except(word, null, 'no activity could be built for this word');
       });
       var notices = [{ id: 'cmudict', name: 'Carnegie Mellon Pronouncing Dictionary', text: CMUDICT_NOTICE }];
-      var attributions = ATTRIBUTIONS.filter(function (line, index) { return index === 0 || bySource[SOURCE_NAMES.kokoro] || bySource[SOURCE_NAMES.spoken]; });
+      var attributions = ATTRIBUTIONS.filter(function (line, index) { return index === 0 || (index === 1 ? bySource[SOURCE_NAMES.kokoro] || bySource[SOURCE_NAMES.spoken] : bySource[SOURCE_NAMES.recorded]); });
       var manifest = {
         kind: 'alloflow-packet-build-manifest', builder: VERSION, seed: seed, title: title,
         learnerLabel: opts.learnerLabel ? String(opts.learnerLabel).trim().slice(0, 60) : '',

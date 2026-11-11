@@ -626,7 +626,7 @@ describe('scrambled answers', () => {
     t.q('[data-about-open]').click();
     const plain = t.q('[data-about]').textContent;
     for (const line of ['This is a check in one file. It works with no internet.', NOT_GRADED, ABOUT_SCRAMBLED, 'The clock uses the time on this device. It keeps going when you leave the page.',
-      'It also keeps a count of how many times this check was started on this device.', 'It never connects to the internet.', 'Licence: AGPL-3.0.']) expect(plain).toContain(line);
+      'It also keeps a count of how many times this check was started on this device.', 'It never connects to the internet.', 'License: AGPL-3.0.']) expect(plain).toContain(line);
     expect(plain).not.toContain('practice activity');
     expect(plain).not.toContain('teacher code');
     const coded = open(FILES.coded.html);

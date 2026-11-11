@@ -3,7 +3,7 @@
 
 // Try the packet builder from the command line: a Word Sounds practice file with no AI.
 //   node dev-tools/make_word_sounds_packet.cjs --words "cat,dog,sun" --activities blending,segmentation,mapping --seed 7 --out packet.html
-//   node dev-tools/make_word_sounds_packet.cjs --sound sh --position first --shape CVC --count 10 --stage "K late" --activities isolation,counting --out packet.html
+//   node dev-tools/make_word_sounds_packet.cjs --sound sh --position first --shape CVC --count 10 --stage "G1 early" --activities isolation,counting --out packet.html
 // Other flags: --sounds 3  --spelling a_e  --max-rank 4000  --any-word (no recording needed)  --title "..."  --learner "..."
 //   --length 10  --show-letters  --keep-webm (ship WebM clips as they are when ffmpeg is missing)
 // WebM clips are converted to WAV with ffmpeg when it is on PATH.
