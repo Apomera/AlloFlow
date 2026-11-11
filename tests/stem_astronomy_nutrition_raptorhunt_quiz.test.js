@@ -226,7 +226,7 @@ describe('Raptor Hunt Field ID quiz rotation (correctIdx schema)', () => {
   const rotated = loadFieldId(true);
 
   it('the authored bank put 46 of 70 answers at B, only 4 at A (the tell)', () => {
-    expect(raw.length).toBe(70);
+    expect(raw.length).toBe(73);
     const slots = [0, 0, 0, 0];
     raw.forEach((q) => slots[q.correctIdx]++);
     expect(slots[1]).toBeGreaterThanOrEqual(46);

@@ -59,12 +59,13 @@ describe('BirdLab alarm calls in the woodland', () => {
     await act(async () => { vi.advanceTimersByTime(450); });
     expect(caption().getAttribute('data-birdlab-heard')).toBe('chickadee');
     expect(caption().getAttribute('data-birdlab-heard-alarm')).toBe('true');
-    expect(caption().textContent).toMatch(/Alarm: chick-a-dee(-dee){7}, 8 dee notes\.$/);
+    // A hawk flying over draws the high seet, not chick-a-dee (Templeton et al. 2005).
+    expect(caption().textContent).toMatch(/Alarm: a high, thin seet, hard to locate\.$/);
     expect(scene.cueSong).toHaveBeenCalledTimes(1);
     expect(scene.cueSong.mock.calls[0][0]).toBe('chickadee');
-    expect(scene.cueSong.mock.calls[0][1]).toHaveLength(10);
+    expect(scene.cueSong.mock.calls[0][1]).toHaveLength(1);
     const tones = started;
-    expect(tones).toBe(10);
+    expect(tones).toBe(1);
     // The same freeze is not voiced again; the dove's freeze is never voiced.
     await act(async () => { vi.advanceTimersByTime(2000); });
     expect(scene.cueSong).toHaveBeenCalledTimes(1);
@@ -73,7 +74,7 @@ describe('BirdLab alarm calls in the woodland', () => {
     await act(async () => publish({ ...view, wildlife: [row('chickadee', 'Black-capped chickadee', { at: 20, danger: 0 })] }));
     await act(async () => { vi.advanceTimersByTime(450); });
     expect(scene.cueSong).toHaveBeenCalledTimes(2);
-    expect(scene.cueSong.mock.calls[1][1]).toHaveLength(4);
+    expect(scene.cueSong.mock.calls[1][1]).toHaveLength(1);
     // Mobbing a perched hawk is voiced as scolding, not as the overhead seet.
     await act(async () => publish({ ...view, wildlife: [row('tuftedTitmouse', 'Tufted titmouse', { at: 40, danger: .15, mob: true })] }));
     await act(async () => { vi.advanceTimersByTime(450); });

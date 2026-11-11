@@ -65,6 +65,9 @@ test('light rain is built on demand, falls on the scene clock and clears without
   await rain.click(); await step(page, 2);
   await expect(rain).toHaveAttribute('aria-pressed', 'true');
   await expect(page.locator('[data-birdlab-weather]')).toHaveAttribute('data-birdlab-weather', 'rain');
+  // The note waits for a prediction.
+  await expect(page.locator('[data-birdlab-rain-note]')).toBeHidden();
+  await page.locator('[data-birdlab-predict="rain"]').getByRole('button', { name: 'Sit tight and preen' }).click();
   await expect(page.locator('[data-birdlab-rain-note]')).toBeVisible();
   expect((await call(page, 'getState')).weather).toBe('rain');
   const group = await page.evaluate(() => { const g = (window as any).rainScene.getObjectByName('rain-shower'); return { visible: g.visible, streaks: !!g.getObjectByName('rain-streaks'), ripples: g.getObjectByName('rain-ripples').visible }; });

@@ -73,8 +73,8 @@ describe('BirdLab alarm calls', () => {
   let p;
   beforeAll(() => { resetStemLab(); loadTool('stem_lab/stem_tool_birdlab.js', 'birdLab'); p = window.__alloBirdLabPure; });
 
-  it('adds chickadee dee notes as danger grows', () => {
-    const dees = [0, .5, 1].map(d => p.alarmCall('chickadee', d));
+  it('adds chickadee dee notes as danger grows when scolding a perched hawk', () => {
+    const dees = [0, .5, 1].map(d => p.alarmCall('chickadee', d, true));
     expect(dees.map(a => a.dees)).toEqual([2, 5, 8]);
     for (const a of dees) {
       expect(a.sketch.notes.filter(n => n.syl === 'dee')).toHaveLength(a.dees);
@@ -87,7 +87,7 @@ describe('BirdLab alarm calls', () => {
     expect(p.alarmCall('mourningDove', 1)).toBeNull();
     expect(p.alarmCall('grouse', 1)).toBeNull();
     expect(p.alarmCall('blueJay', 1).sketch.notes).toBe(p.CALL_SKETCHES.jay_call.notes);
-    for (const id of ['robin', 'northernCardinal', 'darkEyedJunco', 'americanGoldfinch', 'whiteThroatedSparrow']) {
+    for (const id of ['chickadee', 'robin', 'northernCardinal', 'darkEyedJunco', 'americanGoldfinch', 'whiteThroatedSparrow']) {
       const tones = p.callTones({ sketch: p.alarmCall(id, .5).sketch });
       expect(tones).toHaveLength(1);
       expect(Math.min(tones[0].freq, tones[0].endFreq), id).toBeGreaterThan(6500);

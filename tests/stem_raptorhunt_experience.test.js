@@ -496,7 +496,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
 
     expect(html).toContain('99 sections');
     expect(html).toContain('23 species');
-    expect(html).toContain('70-question quiz');
+    expect(html).toContain('73-question quiz');
     expect(html).not.toContain('25 species');
     expect(html).not.toContain('100+ sections');
 
@@ -2309,7 +2309,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
       expect((html.match(/data-call-group-control=/g) || [])).toHaveLength(5);
       expect((html.match(/data-call-context-control=/g) || [])).toHaveLength(7);
       expect((html.match(/data-call-lens-control=/g) || [])).toHaveLength(3);
-      expect((html.match(/data-call-card=/g) || [])).toHaveLength(20);
+      expect((html.match(/data-call-card=/g) || [])).toHaveLength(22);
       expect((html.match(/data-call-resource-link=/g) || [])).toHaveLength(4);
       expect(html).toContain('data-call-comparison="true"');
       expect(html).toContain('data-call-listening-ethics="true"');
@@ -2326,7 +2326,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
       expect(html).toContain(`data-lens="${callLens}"`);
     });
 
-    [['hawks-allies', 11], ['falcons', 2], ['owls', 5], ['vultures', 2]].forEach(([callGroup, expectedCards]) => {
+    [['hawks-allies', 13], ['falcons', 2], ['owls', 5], ['vultures', 2]].forEach(([callGroup, expectedCards]) => {
       const html = renderTool('raptorHunt', {
         raptorHunt: { activeSection: 'calls', callGroup, callContext: 'all', callDirectoryExpanded: true, selectedSpecies: 'peregrine' },
       });

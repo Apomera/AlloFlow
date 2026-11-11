@@ -2290,12 +2290,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     condor: {
       breeding: 'Cliff or large-tree nest in remote mountainous habitat. 1 egg every 2 years (slowest reproduction of any North American raptor). Incubated 56-58 days. Chicks fledge 6 months but stay dependent on parents for 1+ year.',
       huntStrategyDetail: 'Pure scavenger — never kills live prey. Soars on mountain thermals at 5-15 mph scanning for carrion. Eats deer, elk, large mammals at carcass sites.',
-      populationHistory: 'See Recovery Case Studies. 22 birds in 1987 (all captive) → 530 today via 40-year captive-breed-release program. Wild population NOT yet self-sustaining; permanent active management required due to lead-shot poisoning.',
+      populationHistory: 'See Recovery Case Studies. 22 birds were left by 1982; in 1987 the last wild birds were caught, leaving 27, all in captivity → 566 at the end of 2024 (about 370 flying free, USFWS) via a 40-year captive-breed-release program. Wild population NOT yet self-sustaining; permanent active management required due to lead-shot poisoning.',
       idTips: 'Largest flying bird in N. America (9.5 ft wingspan). Black body with white triangular wing patches visible from below. Bare red head + neck. Often seen circling on mountain thermals.',
       whenToSee: 'Restricted range — California (Big Sur, Hopper Mountain), Arizona/Utah (Vermilion Cliffs, Grand Canyon), Baja California. Best viewing: Pinnacles National Park CA + Vermilion Cliffs AZ.',
       photoTips: 'Pinnacles National Park near campground. Vermilion Cliffs release-site overlook. Both have predictable presence + close approaches.',
       taxonomyNotes: 'Gymnogyps californianus — only living species in its genus. New World vulture (Cathartidae). Lives 60+ years in captivity.',
       culturalNotes: 'Most expensive endangered-species recovery in U.S. history (~$50M to date). Sacred bird to Yurok, Wiyot, + other Indigenous nations of California — actively involved in recovery as cultural partners.'
+    },
+    broadWinged: {
+      breeding: 'Nests in a fork of a large tree in deciduous or mixed forest, usually near a clearing, road or water. 2-3 eggs, incubated about 4 weeks, mostly by the female. Young leave the nest at about 5-6 weeks. Like many hawks, the pair adds fresh green leaves to the nest.',
+      huntStrategyDetail: 'PERCH + DROP under the canopy. Sits on a low branch at a forest edge, trail or pond and watches the ground, then glides down onto prey: frogs and toads, voles, shrews and chipmunks, snakes, and large insects and caterpillars.',
+      populationHistory: 'Partners in Flight estimates about 1.9 million birds, and BirdLife rates the population as stable to slowly increasing. Its main need is large, unbroken forest. Almost the whole population migrates, so fall hawk-watch counts track it: Veracruz, Mexico often counts more than a million broad-wings in one autumn.',
+      idTips: 'Small, stocky buteo, about crow-sized. Adult tail: bold black and white bands. Underwing: pale, with a dark border along the trailing edge and wingtips. Wingtips look more pointed than other buteos. Call: a thin, high, two-part whistle, "pee-teeee".',
+      whenToSee: 'May-August in eastern forests (listen for the whistle). The big show is fall migration, mid-September, at hawk watches such as Hawk Mountain (PA), Hawk Ridge (Duluth, MN) and Corpus Christi (TX).',
+      photoTips: 'A kettle overhead is backlit, so expose for the bird, not the sky. Use 400mm+. In the breeding season stay on trails and never play calls to draw a hawk from its nest.',
+      taxonomyNotes: 'Buteo platypterus — "platypterus" means broad-winged. Resident subspecies live on Caribbean islands; the Puerto Rican broad-winged hawk is federally endangered.',
+      culturalNotes: 'Fall kettles built the hawk-watching tradition. Hawk Mountain Sanctuary was founded in 1934 to stop the shooting of migrating hawks, and its counts are among the longest raptor-migration records anywhere.'
+    },
+    redShouldered: {
+      breeding: 'Pairs often keep the same territory for years. Stick nest in a fork of a large tree in wet woods, usually near water. 3-4 eggs, incubated about 4-5 weeks. Young leave the nest at about 6 weeks. Pairs are noisy in late winter and spring, calling and soaring in display.',
+      huntStrategyDetail: 'PERCH + POUNCE in wet woods. Sits on a branch below the canopy near a stream or swamp and drops onto prey: small mammals, frogs and toads, snakes, lizards and crayfish.',
+      populationHistory: 'Lost ground as bottomland forests were cleared, but the North American Breeding Bird Survey shows an increase of more than 2% a year across most of its range since 1966. Partners in Flight estimates about 1.9 million birds. It still depends on mature wet forest.',
+      idTips: 'Adult: reddish-barred breast, reddish "shoulders", black-and-white checkered flight feathers, and a black tail with narrow white bands. In flight, look for a pale crescent near each wingtip. Quick, stiff wingbeats, then a glide. Call: a loud, repeated "kee-aah".',
+      whenToSee: 'Year-round across much of the southeastern U.S.; spring to fall farther north. A separate population lives in California river woods and suburbs. Listen in March and April, when calling peaks.',
+      photoTips: 'In Florida and California it often perches low beside paths and is fairly tolerant of people. Keep your distance anyway, and never approach a nest.',
+      taxonomyNotes: 'Buteo lineatus — "lineatus" means lined, for the barred and streaked plumage. Five subspecies: Florida birds are paler, California birds are especially richly colored.',
+      culturalNotes: 'Blue jays copy its call so well that birders look up for a hawk that is not there. Why jays do this is still being studied.'
+    },
+    northernHarrier: {
+      breeding: 'Nests on the ground in tall grass, cattails or low shrubs. Some males have two or more mates at once. Early in nesting the male brings most of the food and passes it to the female in mid-air: she flips over and catches it. 4-6 eggs, incubated about a month; young fly at about 5 weeks.',
+      huntStrategyDetail: 'LOW COURSING. Flies slowly a few feet above marsh or grassland, tilting from side to side with wings in a shallow V, listening as well as looking. Its owl-like facial disk funnels sound to its ears, so it can find hidden prey by sound. Drops on voles and other small mammals; also takes small birds.',
+      populationHistory: 'Declined in North America since about 1970, mostly as marshes were drained and grasslands plowed, and earlier from DDT. Partners in Flight estimates about 820,000-920,000 birds. Listed as threatened or endangered in several states; for example, threatened in New York.',
+      idTips: 'Slim hawk with long wings and a long tail. A white patch at the base of the tail in every plumage. Owl-like face. Adult male: pale gray above, white below, black wingtips (the "gray ghost"). Female: brown above, streaked below. Young birds: brown with warm orange-buff underparts.',
+      whenToSee: 'Breeds in northern prairies and marshes. In winter it hunts open fields and coastal marshes across the U.S. by day; at dusk short-eared owls often take over the same fields.',
+      photoTips: 'Park at the edge of a marsh or grassland refuge and wait: harriers quarter the same routes again and again. Use your car as a blind. In spring and summer never walk into nesting grassland, because the nests are on the ground.',
+      taxonomyNotes: 'Circus hudsonius. Until 2016 it was treated as the same species as the Eurasian hen harrier (Circus cyaneus); the American Ornithological Society split them on genetic and plumage differences.',
+      culturalNotes: 'The genus name Circus comes from the Greek kirkos, circle, for the circling flight of harriers. "Harrier" comes from "harry", to harass, for the way it works over a field.'
     }
   };
 
@@ -2346,7 +2376,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     redTail:         ['rodent', 'rabbit', 'snake', 'songbird'],
     harpyEagle:      ['sloth', 'howlerMonkey', 'capuchin', 'coati'],
     greatHorned:     ['rabbit', 'rodent', 'skunk', 'smallOwl'],
-    goldenEagle:     ['groundSquirrel', 'fawnDeer', 'pronghornCalf', 'fox'],
+    goldenEagle:     ['rabbit', 'groundSquirrel', 'rabbit', 'groundSquirrel', 'rabbit', 'groundSquirrel', 'fox', 'fawnDeer', 'pronghornCalf'],
     northernGoshawk: ['grouse', 'songbird', 'squirrel', 'hare'],
     osprey:          ['fish'],
     // NEW v0.18
@@ -4222,7 +4252,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
       explanation: '1.5-2 million pairs is both the theoretical maximum + the actual current population. Red-tails are at carrying capacity across most of their range. This is why they\'re NOT a conservation concern — they\'ve filled the available niche. Compare to peregrines at ~3,200 pairs (limited by cliff nest sites + urban skyscraper alternatives) or California condors at 530 (limited by habitat + lead-shot exposure).' },
     { id: 'q70', difficulty: 'hard', q: 'The "raptor question" — are turkey vultures + black vultures actually raptors?',
       options: ['Yes, they are', 'No — DNA evidence places them in Cathartiformes, separate from true raptors (Accipitriformes + Falconiformes). Convergent evolution of the raptor body plan from carrion-eating ancestors.', 'Sometimes', 'Depends on the country: European and Asian checklists count all vultures as raptors on the basis of diet and hooked bill, while the American Ornithological Society counts only Old World vultures, so the answer changes with the authority you cite'], correctIdx: 1,
-      explanation: 'Strict taxonomy: New World vultures (turkey, black, condor) are NOT true raptors. DNA work places them in their own order, Cathartiformes; an early DNA-era idea even put them near storks, though genome-scale studies (Jarvis et al 2014) now make them the sister group to hawks (Accipitriformes). The hooked beak + talons + soaring lifestyle are CONVERGENT EVOLUTION from carrion-eating ancestors. But conventionally, hawkwatch sites count them as raptors because they share migration corridors + threats. Both perspectives valid — taxonomic vs ecological.' }
+      explanation: 'Strict taxonomy: New World vultures (turkey, black, condor) are NOT true raptors. DNA work places them in their own order, Cathartiformes; an early DNA-era idea even put them near storks, though genome-scale studies (Jarvis et al 2014) now make them the sister group to hawks (Accipitriformes). The hooked beak + talons + soaring lifestyle are CONVERGENT EVOLUTION from carrion-eating ancestors. But conventionally, hawkwatch sites count them as raptors because they share migration corridors + threats. Both perspectives valid — taxonomic vs ecological.' },
+    { id: 'q71', difficulty: 'medium', q: 'In mid-September, hundreds of small hawks circle together in a rising "kettle" over a hawk watch in eastern North America. Which species is most likely?',
+      options: ['Northern harrier', 'Cooper\'s hawk', 'Broad-winged hawk', 'Peregrine falcon'], correctIdx: 2,
+      explanation: 'Broad-winged hawks migrate in huge flocks in mid-September, riding thermals in kettles. Cooper\'s hawks, harriers and peregrines usually migrate alone.' },
+    { id: 'q72', difficulty: 'medium', q: 'A slim hawk glides a few feet above a marsh, wings in a shallow V, with a white patch at the base of its tail. How does it find voles hidden in the grass?',
+      options: ['It sees ultraviolet urine trails', 'It hovers high, then dives', 'It waits on a tall perch', 'It hears them, like an owl'], correctIdx: 3,
+      explanation: 'This is a northern harrier. An owl-like disk of stiff facial feathers funnels sound to its ears, so it can locate prey it cannot see.' },
+    { id: 'q73', difficulty: 'hard', q: 'In wet spring woods you hear a loud, repeated "kee-aah, kee-aah", but the only bird you can find is a blue jay. What is the best explanation?',
+      options: ['Jays and hawks share one call', 'The hawk called, then flew off', 'Blue jays imitate this hawk', 'Only young hawks give this call'], correctIdx: 2,
+      explanation: 'Blue jays often imitate the red-shouldered hawk\'s call. A call alone is weak evidence; find the bird before recording it.' }
   ];
 
   // The authored bank put 46 of 70 correct answers at option B (and only 4
@@ -5224,7 +5263,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // NEW v0.36: CALLS + VOCALIZATIONS LIBRARY
   // ───────────────────────────────────────────────────────────
   var CALL_GROUPS = [
-    { id: 'all', code: 'ALL', label: 'All 20 species', summary: 'Scan the full vocal library.' },
+    { id: 'all', code: 'ALL', label: 'All species', summary: 'Scan the full vocal library.' },
     { id: 'hawks-allies', code: 'ACC', label: 'Hawks + allies', summary: 'Hawks, eagles, kites, harriers, and osprey.' },
     { id: 'falcons', code: 'FAL', label: 'Falcons', summary: 'Harsh alarm series and clear repeated notes.' },
     { id: 'owls', code: 'OWL', label: 'Owls', summary: 'Hoots, trills, whinnies, screeches, and hisses.' },
@@ -5369,7 +5408,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         mnemonic: 'hiss and snort', signature: 'Adults hiss or snort, especially in nest defense; chicks may hiss, wheeze, or grunt.', contexts: ['alarm', 'contact', 'juvenile'],
         meaning: 'Defense and close parent-chick communication rather than long-distance song.', listenFor: 'Short broadband bursts and breathy texture, not an unsupported croak or eagle scream.',
         contrast: 'Turkey Vulture sounds overlap in hiss-like texture, so identity depends strongly on location, context, and sighting.', caveat: 'Family-level 2026 research makes blanket “no syrinx” claims unsafe; California Condor anatomy was not directly examined and the precise sound source remains unresolved.',
-        source: 'https://www.allaboutbirds.org/guide/California_Condor/sounds', sourceLabel: 'Cornell Lab - California Condor sounds' }
+        source: 'https://www.allaboutbirds.org/guide/California_Condor/sounds', sourceLabel: 'Cornell Lab - California Condor sounds' },
+      { id: 'broad-winged-hawk', code: 'C21', name: 'Broad-winged hawk', group: 'hawks-allies', pattern: 'whistle', pitchLabel: 'high', pitchRank: 88, beats: 2, rhythm: 'short note into a long thin whistle', texture: 'clear / thin',
+        mnemonic: 'pee-teeee', signature: 'A thin, high whistle: a brief first note runs into a longer, level or slightly falling second note.', contexts: ['territory', 'contact', 'alarm'],
+        meaning: 'Given around the nest and territory, often by a perched or circling bird, and in alarm.', listenFor: 'One high, thin, two-part whistle, often repeated after a pause; far thinner than a red-tail scream.',
+        contrast: 'Mississippi kites also give a thin two-part whistle, but their second note falls more clearly; check habitat and season.', caveat: 'Migrating flocks are mostly silent; the whistle is heard mainly in breeding woods.',
+        source: 'https://www.allaboutbirds.org/guide/Broad-winged_Hawk/sounds', sourceLabel: 'Cornell Lab - Broad-winged Hawk sounds' },
+      { id: 'red-shouldered-hawk', code: 'C22', name: 'Red-shouldered hawk', group: 'hawks-allies', pattern: 'pulses', pitchLabel: 'mid-high', pitchRank: 68, beats: 6, rhythm: 'repeated two-part notes', texture: 'clear / ringing',
+        mnemonic: 'kee-aah, kee-aah', signature: 'A loud series of clear, downslurred kee-aah notes, often five or more in a row.', contexts: ['territory', 'courtship', 'alarm'],
+        meaning: 'Territorial advertisement and courtship, especially in late winter and spring; also alarm near the nest.', listenFor: 'Count the notes: a red-tail usually gives one long scream, a red-shoulder a repeated series.',
+        contrast: 'Blue jays imitate this call closely, so find the bird before recording a red-shoulder.', caveat: 'The trace sketches the repeated kee-aah series, not softer calls near the nest.',
+        source: 'https://www.allaboutbirds.org/guide/Red-shouldered_Hawk/sounds', sourceLabel: 'Cornell Lab - Red-shouldered Hawk sounds' }
     ],
     resources: [
       { id: 'macaulay', code: 'ML', name: 'Macaulay Library', description: 'Search an archival collection of bird recordings with recordist and observation context.', url: 'https://www.macaulaylibrary.org/' },
@@ -10379,7 +10428,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
     intro: 'Quests + achievements track your raptor journey. Each unlocks recognition + builds your expertise.',
     quests: [
       { name: '🌱 First Steps', goal: 'Visit 5 different sections', xp: 50, badge: 'Curious Apprentice', tip: 'Start with Hub, then Hunt Sim, then any 3 others.' },
-      { name: '🦅 Species Master', goal: 'View all 20 species deep profiles', xp: 200, badge: 'Species Scholar', tip: 'Use the Species Roster to navigate.' },
+      { name: '🦅 Species Master', goal: 'View all 23 species deep profiles', xp: 200, badge: 'Species Scholar', tip: 'Use the Species Roster to navigate.' },
       { name: '🎯 Hunter\'s Eye', goal: 'Achieve >80% on the 70-question Field ID Quiz', xp: 250, badge: 'Sharp Identifier', tip: 'Practice in Field ID + Mystery Cases first.' },
       { name: '📚 Glossary Maven', goal: 'Mark 50+ glossary terms as "known" in flashcards', xp: 150, badge: 'Vocabulary Expert', tip: 'Use flashcards mode in Glossary.' },
       { name: '🌐 World Traveler', goal: 'View all 15 World Tour destinations', xp: 100, badge: 'Globe-Trotter', tip: 'Click through each destination in World Tour.' },
@@ -15513,7 +15562,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               { id: 'barred', call: '"Who cooks for you? Who cooks for you-ALL?" — distinctive 8-syllable phrase', mnemonic: 'best-known owl call', when: 'territory + at any hour, even daytime' },
               { id: 'snowyOwl', call: 'silent female; males give "krooh-krooh" hoot during breeding', mnemonic: 'rare + low', when: 'mostly silent in winter (when most people see them)' },
               { id: 'gyrfalcon', call: '"keh-keh-keh-keh" — similar to other falcons but slower + lower-pitched', mnemonic: 'big-falcon bark', when: 'rare; alarm + at nest' },
-              { id: 'missKite', call: '"phee-phew" — descending 2-note whistle, repeated', mnemonic: 'two-tone whistle', when: 'often given in flight + at communal nest colonies' }
+              { id: 'missKite', call: '"phee-phew" — descending 2-note whistle, repeated', mnemonic: 'two-tone whistle', when: 'often given in flight + at communal nest colonies' },
+              { id: 'broadWinged', call: '"pee-teeee" — thin, high 2-part whistle', mnemonic: 'a thin whistle from the treetops', when: 'breeding woods in spring + summer; migrating flocks are mostly silent' },
+              { id: 'northernHarrier', call: '"kek-kek-kek" — fast, sharp series; females also scream when food is passed', mnemonic: 'dry chatter over the marsh', when: 'near the ground nest + during sky-dance courtship' }
             ];
             return h('div', { className: 'bg-slate-900/40 border border-pink-700/40 rounded-xl p-4 space-y-2' },
               h('div', { className: 'text-sm font-bold text-pink-300' }, __alloT('stem.raptorhunt.vocalizations_iconic_calls_mnemonics', '🎵 Vocalizations — Iconic Calls + Mnemonics')),
@@ -15794,7 +15845,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         },
         {
           id: 'thermalKettle',
-          recommendedSpecies: 'redTail',
+          recommendedSpecies: 'broadWinged',
           name: __alloT('stem.raptorhunt.ride_the_thermal', 'Ride the Thermal'),
           icon: '🌀',
           difficulty: 'Medium',
@@ -16838,7 +16889,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               { id: 'masterEye', icon: '🪶', label: __alloT('stem.raptorhunt.master_hunter', 'Master Hunter'), desc: __alloT('stem.raptorhunt.70_hit_rate_min_20_attempts', '70%+ hit rate (min 20 attempts)'), cond: allAttempts >= 20 && accuracy >= 70 },
               { id: 'threeSpecies', icon: '🦅', label: __alloT('stem.raptorhunt.generalist', 'Generalist'), desc: __alloT('stem.raptorhunt.catch_with_3_different_species', 'Catch with 3 different species'), cond: speciesHunted >= 3 },
               { id: 'fiveSpecies', icon: '👑', label: __alloT('stem.raptorhunt.versatile_falconer', 'Versatile Falconer'), desc: __alloT('stem.raptorhunt.catch_with_5_different_species', 'Catch with 5 different species'), cond: speciesHunted >= 5 },
-              { id: 'allSpecies', icon: '🏆', label: __alloT('stem.raptorhunt.master_of_all', 'Master of All'), desc: __alloT('stem.raptorhunt.catch_with_all_8_species', 'Catch with all 8 species'), cond: speciesHunted >= 8 }
+              { id: 'allSpecies', icon: '🏆', label: __alloT('stem.raptorhunt.master_of_all', 'Master of All'), desc: __alloT('stem.raptorhunt.catch_with_all_8_species', 'Catch with 8 different species'), cond: speciesHunted >= 8 }
             ];
             var earnedCount = achievements.filter(function(a) { return a.cond; }).length;
             return h('details', {
@@ -30996,7 +31047,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           coopersHawk:     { iucn: 'LC', trend: 'increasing', pop: '~700,000 (continent)', esa: 'Not listed' },
           snowyOwl:        { iucn: 'VU', trend: 'decreasing', pop: '~28,000 (Arctic, declining)', esa: 'Not listed (foreign)' },
           gyrfalcon:       { iucn: 'LC', trend: 'stable', pop: '~21,000 (circumpolar)', esa: 'Not listed' },
-          missKite:        { iucn: 'LC', trend: 'increasing', pop: '~520,000 (US)', esa: 'Not listed (expanding range)' }
+          missKite:        { iucn: 'LC', trend: 'increasing', pop: '~520,000 (US)', esa: 'Not listed (expanding range)' },
+          broadWinged:     { iucn: 'LC', trend: 'stable', pop: '~1.9 million (Partners in Flight)', esa: 'Not listed (Puerto Rico subspecies endangered)' },
+          redShouldered:   { iucn: 'LC', trend: 'increasing', pop: '~1.9 million (Partners in Flight)', esa: 'Not listed' },
+          northernHarrier: { iucn: 'LC', trend: 'declining', pop: '~820,000-920,000 (Partners in Flight)', esa: 'State-listed in several states' },
+          condor:          { iucn: 'CR', trend: 'increasing', pop: '566 in 2024, ~370 wild (USFWS)', esa: 'Endangered' }
         };
         var sortBy = rh.statusSort || 'iucn';
         var sortDir = rh.statusDir || 'asc';
@@ -31886,7 +31941,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                   { id: 'easy', label: __alloT('stem.raptorhunt.easy', 'Easy'), desc: __alloT('stem.raptorhunt.silhouettes_obvious_questions', 'Silhouettes + obvious questions'), count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'easy'; }).length },
                   { id: 'medium', label: __alloT('stem.raptorhunt.medium', 'Medium'), desc: __alloT('stem.raptorhunt.deeper_combos', 'Deeper combos'), count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'medium'; }).length },
                   { id: 'hard', label: __alloT('stem.raptorhunt.hard', 'Hard'), desc: __alloT('stem.raptorhunt.deep_science_nuance', 'Deep science + nuance'), count: QUIZ_QUESTIONS.filter(function(q) { return q.difficulty === 'hard'; }).length },
-                  { id: 'all', label: __alloT('stem.raptorhunt.all_18', 'All 18'), desc: __alloT('stem.raptorhunt.full_quiz', 'Full quiz'), count: QUIZ_QUESTIONS.length }
+                  { id: 'all', label: __alloT('stem.raptorhunt.all_18', 'All questions'), desc: __alloT('stem.raptorhunt.full_quiz', 'Full quiz'), count: QUIZ_QUESTIONS.length }
                 ].map(function(d) {
                   var active = quizState.difficulty === d.id;
                   return h('button', {
@@ -33530,7 +33585,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var ARCHETYPE = {
           peregrine: 'falcon', gyrfalcon: 'falcon', merlin: 'falcon', kestrel: 'falcon',
           baldEagle: 'soaring', goldenEagle: 'soaring', condor: 'soaring', turkeyVulture: 'soaring', missKite: 'soaring',
-          redTail: 'buteo', roughLeg: 'buteo', swainsons: 'buteo', broadWinged: 'buteo', redShouldered: 'buteo', northernHarrier: 'buteo',
+          redTail: 'buteo', roughLeg: 'buteo', swainsons: 'buteo', broadWinged: 'buteo', redShouldered: 'buteo', northernHarrier: 'harrier',
           northernGoshawk: 'accipiter', coopersHawk: 'accipiter', sharpShin: 'accipiter', harpyEagle: 'accipiter',
           greatHorned: 'owl', snowyOwl: 'owl', barred: 'owl',
           osprey: 'fisher'
@@ -33546,6 +33601,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             styleDesc: 'Short broad wings + long tail = high agility, poor glide efficiency. Threads through dense canopy after agile prey. Comparable to: Cooper\'s hawk, sharp-shinned hawk, northern goshawk — and, scaled way up, the harpy eagle.' },
           owl: { huntStyle: 'Owl — Silent Glide', styleEmoji: '🦉', styleColor: 'violet',
             styleDesc: 'Low loading + broad wings with comb-edged primaries = silent stalk + drop attack from a perch. Comparable to: great horned owl, barred owl, snowy owl.' },
+          harrier: { huntStyle: 'Harrier — Low Coursing', styleEmoji: '🌾', styleColor: 'lime',
+            styleDesc: 'Very low wing loading + long wings and a long tail = slow, buoyant flight just above the grass. This bird quarters marshes and fields a few feet up, listening as well as looking, then drops on hidden prey. An owl-like facial disk funnels sound to its ears. Comparable to: northern harrier.' },
           fisher: { huntStyle: 'Osprey — Hover-Dive Fisher', styleEmoji: '🐟', styleColor: 'sky',
             styleDesc: 'Long, crooked wings with moderate loading — built to hover over water, then plunge feet-first. A one-species niche: reversible outer toes and barbed footpads for gripping fish. Comparable to: osprey (Pandionidae has exactly one living member).' },
           generalist: { huntStyle: 'Generalist / Intermediate', styleEmoji: '🦅', styleColor: 'slate',
@@ -33587,14 +33644,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             h('div', { className: 'text-sm text-cyan-100/90 leading-relaxed' },
               __alloT('stem.raptorhunt.in_the_flight_physics_module_you_learn', 'In the Flight Physics module you learned that wing loading + aspect ratio predict hunt style. This is the inverse: '),
               h('span', { className: 'font-bold text-amber-300' }, __alloT('stem.raptorhunt.design_a_raptor_by_setting_its_body_di', 'design a raptor by setting its body dimensions')),
-              __alloT('stem.raptorhunt.the_tool_tells_you_what_hunt_strategy_', ' + the tool tells you what hunt strategy that bird would evolve. Compare to real species. The fingers-of-the-glove fit between body geometry + behavior is the core insight of raptor flight biology.')
+              __alloT('stem.raptorhunt.the_tool_tells_you_what_hunt_strategy_', ' + the tool tells you which hunt strategy fits that body. Compare to real species. The fingers-of-the-glove fit between body geometry + behavior is the core insight of raptor flight biology.')
             )
           ),
 
           // ── NEW v0.16: Frankenraptor picker (only in franken mode) ──
           predictorMode === 'franken' && h('div', { className: 'bg-purple-900/30 border border-purple-700/40 rounded-xl p-4' },
             h('div', { className: 'text-sm font-bold text-purple-300 mb-2' }, __alloT('stem.raptorhunt.build_a_frankenraptor_mix_species_body', '🧬 Build a Frankenraptor — mix species body parts')),
-            h('div', { className: 'text-xs text-purple-100/80 italic mb-3' }, __alloT('stem.raptorhunt.pick_wings_from_one_species_and_body_f', 'Pick wings from one species and body from another. The tool computes what hunt style your hybrid would evolve toward.')),
+            h('div', { className: 'text-xs text-purple-100/80 italic mb-3' }, __alloT('stem.raptorhunt.pick_wings_from_one_species_and_body_f', 'Pick wings from one species and body from another. The tool works out which hunt style fits your hybrid\'s body.')),
             h('div', { className: 'grid grid-cols-1 md:grid-cols-2 gap-3' },
               h('div', null,
                 h('label', { className: 'text-xs text-purple-300 font-bold block mb-1' }, __alloT('stem.raptorhunt.wings_from', '🪶 Wings from')),
@@ -40197,7 +40254,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           !cur ? h('div', null,
             h('div', { className: 'enc-head' }, h('div', null,
               h('h2', { className: 'enc-title' }, __alloT('stem.raptorhunt.enc_heading_r', 'Raptor Encyclopedia')),
-              h('p', { className: 'enc-sub' }, __alloFill(__alloT('stem.raptorhunt.enc_intro_r', '{n} raptors, from the 20 flyable species to world-famous relatives. Each entry has a field-mark plate, range map, hunting, nesting, senses and conservation. Pick one to read.'), { n: RAPTOR_ENC.length }))), h('button', { type: 'button', className: 'enc-btn', onClick: function() { openCompareR(null, null); } }, __alloT('stem.raptorhunt.enc_cmp_open_r', '⇄ Compare two raptors'))),
+              h('p', { className: 'enc-sub' }, __alloFill(__alloT('stem.raptorhunt.enc_intro_r', '{n} raptors, from the {f} flyable species to world-famous relatives. Each entry has a field-mark plate, range map, hunting, nesting, senses and conservation. Pick one to read.'), { n: RAPTOR_ENC.length, f: SPECIES.length }))), h('button', { type: 'button', className: 'enc-btn', onClick: function() { openCompareR(null, null); } }, __alloT('stem.raptorhunt.enc_cmp_open_r', '⇄ Compare two raptors'))),
             encBrowser(h, ENC_P, { entries: RAPTOR_ENC, groups: RAPTOR_ENC_GROUPS, q: q, group: grp, page: pg, idp: 'enc-r', onQ: function(v) { setRH({ encQ: v, encPage: 1 }); }, onGroup: function(g) { setRH({ encGroup: g, encPage: 1 }); }, onPage: function(p) { setRH({ encPage: p }); }, onOpen: open,
               maineMonths: false, raptor: true, toggles: [{ id: 'fly', label: __alloT('stem.raptorhunt.enc_flt_fly', 'Flyable in the simulator'), test: function(E) { return !!E.simId; } }],
               f: rh.encF || {}, onF: function(p) { setRH({ encF: Object.assign({}, rh.encF || {}, p), encPage: 1 }); },

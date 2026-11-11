@@ -78,6 +78,7 @@ test('summer keeps the woodland as built, then the season buttons change it', as
   await weather.getByRole('button', { name: 'Light snow' }).click(); await step(page, 2);
   expect(await visible(page, 'winter-snowfall')).toBe(true);
   expect(await visible(page, 'rain-shower')).not.toBe(true);
+  await page.locator('[data-birdlab-predict="snow"]').getByRole('button', { name: 'Fluff their feathers and shelter' }).click();
   await expect(page.locator('[data-birdlab-snow-note]')).toBeVisible();
   const axe = await page.evaluate(async () => (await (window as any).axe.run(document.querySelector('[data-birdlab-3d-shell]'), { resultTypes: ['violations'] })).violations.map((v: any) => v.id));
   expect(axe).toEqual([]);

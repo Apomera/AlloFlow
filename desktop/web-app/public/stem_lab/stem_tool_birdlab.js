@@ -191,6 +191,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-3d button[aria-pressed="true"] { color:#f8f9e9; background:#385741; border-color:#385741; }',
       '.birdlab-3d button[aria-pressed="true"]:hover:not(:disabled), .birdlab-3d button[aria-pressed="true"]:focus-visible { color:#f8f9e9; background:#2c4935; border-color:#2c4935; }',
       '.birdlab-3d-hint { color:#5b6a55; font-size:11px; line-height:1.7; margin:2px 0; }',
+      '.birdlab-3d-predict { margin:8px 0; padding:8px 10px; border-left:2px solid #a27436; }',
+      '.birdlab-3d-predict-question { font-size:12px; margin:0 0 6px; }',
+      '.birdlab-3d-predict-choices, .birdlab-3d-id-choices { display:flex; flex-wrap:wrap; gap:5px; margin:6px 0; }',
+      '.birdlab-3d-predict-choices button, .birdlab-3d-id-choices button { padding:7px 9px; font-size:11px; min-height:44px; }',
+      '.birdlab-3d-predict summary, .birdlab-3d-goals summary { cursor:pointer; font-size:11px; padding:12px 0; }',
+      '.birdlab-3d-goals ul { list-style:disc; padding-left:18px; margin:4px 0 0; }',
+      '.birdlab-3d-goals { margin:0 0 14px; font-size:12px; }',
+      '.birdlab-3d-goals small { display:block; color:#5b6a55; }',
+      '.birdlab-3d-name-toggle { display:flex; align-items:center; gap:6px; min-height:44px; }',
       '.birdlab-3d-phase-note { border-left:2px solid #a27436; padding-left:10px; }',
       '.birdlab-3d-mode { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 16px; }',
       '.birdlab-3d-binocular-mask { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; opacity:.94; }',
@@ -304,6 +313,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     ];
     function ethogramCategory(behavior) { return ETHOGRAM.filter(function(entry) { return entry.match.test(String(behavior || '')); })[0] || null; }
     var ethoPair = React.useState({}), ethogram = ethoPair[0], setEthogram = ethoPair[1];
+    // Predict first: the student commits to a choice before the note that
+    // explains the outcome opens. Predictions are not graded.
+    var predictPair = React.useState({}), predictions = predictPair[0], setPredictions = predictPair[1];
+    // Binocular ID: the student names the bird from three choices before recording it.
+    var idPair = React.useState({}), idState = idPair[0], setIdState = idPair[1];
+    var namePair = React.useState(false), nameForMe = namePair[0], setNameForMe = namePair[1];
     function logBehavior(entry, subject) {
       if (!entry || !subject) return;
       setEthogram(function(previous) { if (previous[entry.id]) return previous; var next = Object.assign({}, previous); next[entry.id] = { species: subject.name, behavior: subject.behavior }; return next; });
@@ -442,6 +457,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     var focusProgress = subject ? Math.max(0,Math.min(1,Number(subject.progress)||0)) : 0;
     var sightings = state.sightings || [];
     var recorded = !!(identified && sightings.some(function(entry) { return entry.id === subject.id; }));
+    var ID_LOOKALIKES = {chippingSparrow:['americanTreeSparrow','whiteThroatedSparrow'],americanTreeSparrow:['chippingSparrow','darkEyedJunco'],whiteThroatedSparrow:['chippingSparrow','americanTreeSparrow'],purpleFinch:['northernCardinal','americanGoldfinch'],northernCardinal:['purpleFinch','easternTowhee'],hermitThrush:['robin','whiteThroatedSparrow'],robin:['hermitThrush','easternTowhee'],easternTowhee:['robin','darkEyedJunco'],darkEyedJunco:['chickadee','easternTowhee'],chickadee:['tuftedTitmouse','darkEyedJunco'],tuftedTitmouse:['chickadee','blueJay'],blueJay:['easternBluebird','tuftedTitmouse'],easternBluebird:['blueJay','americanGoldfinch'],americanGoldfinch:['purpleFinch','easternBluebird'],mourningDove:['grouse','robin'],grouse:['mourningDove','hermitThrush']};
+    // The correct name and two look-alikes, in an order fixed per species.
+    function idChoices(id){var pool=(ID_LOOKALIKES[id]||[]).concat(residentIds).filter(function(other,index,all){return other!==id&&all.indexOf(other)===index;}).slice(0,2),at=0;
+      for(var i=0;i<id.length;i++)at=(at*31+id.charCodeAt(i))%9973;pool.splice(at%3,0,id);return pool;}
+    var idEntry = identified ? idState[subject.id] || null : null;
+    var needsName = !!(identified && residentIds.indexOf(subject.id) >= 0 && !recorded && !nameForMe && !(idEntry && idEntry.named));
+    function guessName(id){var truth=subject&&subject.id;if(!truth)return;setIdState(function(previous){var current=previous[truth]||{wrong:[]};if(current.named)return previous;var next=Object.assign({},previous);
+      next[truth]=id===truth?{named:true,wrong:current.wrong,firstTry:!current.wrong.length}:{named:false,wrong:current.wrong.indexOf(id)>=0?current.wrong:current.wrong.concat([id])};return next;});}
+    function predictFirst(id,question,options,note){var chosen=predictions[id];
+      return h('div',{className:'birdlab-3d-predict','data-birdlab-predict':id,'data-birdlab-predicted':chosen?'true':'false'},
+        h('p',{className:'birdlab-3d-predict-question'},h('strong',null,'Predict first: '),question),
+        h('div',{className:'birdlab-3d-predict-choices',role:'group','aria-label':'Your prediction'},options.map(function(option){return h('button',{key:option,type:'button','aria-pressed':String(chosen===option),
+          onClick:function(){setPredictions(function(previous){var next=Object.assign({},previous);next[id]=option;return next;});}},option);})),
+        h('details',{open:!!chosen},h('summary',null,chosen?'You predicted: '+chosen+'. Compare with what you see, and read the note.':'Show the note without predicting'),note));}
+    function downloadFieldNotes(){
+      var lines=['BirdLab woodland field notes','Season: '+season+' · Light: '+(BIRDLAB_LIGHT_NAMES[state.lighting]||'Daylight')+' · Weather: '+(state.weather==='rain'?(winter?'light snow':'light rain'):'clear'),''];
+      lines.push('Sightings ('+sightings.length+')');sightings.forEach(function(entry){lines.push('- '+entry.name+' ('+entry.scientificName+'): '+entry.behavior+', '+distanceLabel(entry.distance)+', '+visitTime(entry.time)+' into the visit'+(entry.food?', diet evidence: '+entry.food.label:''));});
+      var named=Object.keys(idState).filter(function(id){return idState[id].named;});
+      if(named.length)lines.push('','Named from three choices: '+named.length+', '+named.filter(function(id){return idState[id].firstTry;}).length+' on the first try');
+      lines.push('','Ethogram ('+Object.keys(ethogram).length+' of '+ETHOGRAM.length+' behaviors)');ETHOGRAM.forEach(function(entry){var seen=ethogram[entry.id];if(seen)lines.push('- '+entry.label+': '+seen.species+', '+seen.behavior);});
+      var predicted=Object.keys(predictions);if(predicted.length){lines.push('','Predictions');predicted.forEach(function(id){lines.push('- '+id+': '+predictions[id]);});}
+      try{var blob=new Blob([lines.join('\n')+'\n'],{type:'text/plain'}),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='birdlab-field-notes.txt';document.body.appendChild(link);link.click();link.remove();setTimeout(function(){URL.revokeObjectURL(url);},1000);}catch(ignore){}}
     function distanceLabel(value) { return isFinite(Number(value)) ? Number(value).toFixed(1)+' m away' : 'Distance unavailable'; }
     function visitTime(value) { var seconds=Math.max(0,Math.floor(Number(value)||0)); return Math.floor(seconds/60)+':'+('0'+seconds%60).slice(-2); }
     var neighbor = (state.wildlife || []).filter(function(bird) { return bird.id === state.camera; })[0];
@@ -813,7 +850,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       return h('section',{className:'birdlab-3d-card','data-birdlab-woodland-sounds':soundOn?'on':'off','aria-labelledby':'birdlab-3d-sounds-title'},
         h('div',{className:'birdlab-3d-eyebrow'},'Listen'),
         h('h2',{id:'birdlab-3d-sounds-title'},'Woodland sounds'),
-        h('p',null,'Each bird calls now and then from where it is. Calls pan left or right and grow fainter with distance, so you can find a bird by ear. Then watch it: a calling bird lifts its head and opens its bill, wider for higher notes; a grouse beats its wings. When the hawk passes low in Free roam, small birds freeze and give alarm calls: chickadees add more “dee” notes as danger grows, and many songbirds give a thin “seet” that is hard to locate. When it lands near them, jays, chickadees, titmice and robins may mob it instead, with loud, easy-to-locate scolding, until it leaves.'),
+        h('p',null,'Each bird calls now and then from where it is. Calls pan left or right and grow fainter with distance, so you can find a bird by ear. Then watch it: a calling bird lifts its head and opens its bill, wider for higher notes; a grouse beats its wings.'),
+        predictFirst('alarm','When a hawk flies low over the woods, what will the small birds do?',['Keep feeding as before','Freeze and give alarm calls','Fly up to chase it'],
+          h('p',{className:'birdlab-3d-hint','data-birdlab-alarm-note':'true'},'When the hawk passes low in Free roam, small birds freeze, and chickadees and many songbirds give a thin, high “seet” that is hard to locate. Jays scream. When the hawk lands near them, jays, chickadees, titmice and robins may mob it instead, with loud, easy-to-locate scolding, until it leaves. Chickadees scold with “chick-a-dee” calls and add more “dee” notes for a more dangerous threat.')),
         h('button',{type:'button',disabled:disabled,'aria-pressed':String(soundOn),'data-birdlab-sounds-toggle':'true',onClick:toggleSound},soundOn?'Turn sounds off':'Turn sounds on'),
         soundOn?h('p',{className:'birdlab-3d-sound-caption','data-birdlab-heard':heard?heard.id:'','data-birdlab-heard-alarm':heard&&heard.alarm?'true':undefined},heard?'Heard: '+heard.name+', '+heard.words+', about '+Math.max(1,Math.round(heard.distance))+' m away. '+heard.label+'.':'Listening…'):null,
         state.weather==='rain'?h('p',{className:'birdlab-3d-hint','data-birdlab-rain-calls':'true'},'Light rain: many songbirds call less in steady rain, so calls come about half as often, under the hiss of the shower.'):null,
@@ -828,7 +867,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('button', {type:'button', onClick:props.onMenu}, 'BirdLab menu')),
         h('div', {className:'birdlab-3d-eyebrow'}, 'An observation in three dimensions'),
         h('h1', {className:'birdlab-3d-heading', ref:titleRef, tabIndex:-1}, 'Woodland flight observatory'),
-        h('p', {className:'birdlab-3d-intro'}, 'Study a wingbeat, or walk into the woodland with binoculars. Meet thirteen bird species, and watch an Eastern gray squirrel forage in Free roam.'),
+        h('p', {className:'birdlab-3d-intro'}, 'Study a wingbeat, or walk into the woodland with binoculars. Meet sixteen woodland bird species, and watch an Eastern gray squirrel forage in Free roam.'),
+        h('details',{className:'birdlab-3d-goals','data-birdlab-learning-goals':'true'},h('summary',null,'Learning goals and standards'),
+          h('ul',null,
+            h('li',null,'Identify woodland birds by field marks, shape and behavior, and record the evidence in a field notebook. ',h('small',null,'NGSS 4-LS1-1: structures that support survival and behavior.')),
+            h('li',null,'Predict, then observe, how weather and seasons change what birds do and which birds are present. ',h('small',null,'NGSS 3-LS4-3: in a habitat, some organisms survive well, some less well, some not at all.')),
+            h('li',null,'Explain how alarm calls and mobbing help a group of birds survive a hawk. ',h('small',null,'NGSS 3-LS2-1: groups help members survive.')),
+            h('li',null,'Use the feeding study to connect the food supply with which birds feed where. ',h('small',null,'NGSS MS-LS2-1: effects of resource availability on organisms.')))),
         h('div',{className:'birdlab-3d-mode',role:'group','aria-label':t('stem.birdlab.a11y_observation_mode', 'Observation mode')},[{id:'guided',label:'Guided study'},{id:'free',label:'Free roam'}].map(function(choice){return h('button',{key:choice.id,type:'button',disabled:disabled,'aria-pressed':String((state.mode||'guided')===choice.id),onClick:function(){command('setMode',choice.id);}},choice.label);})),
         h('div', {className:'birdlab-3d-layout'},
           h('section', {'aria-label':t('stem.birdlab.a11y_interactive_3d_woodland', 'Interactive 3D woodland')},
@@ -909,14 +954,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('aside', {className:'birdlab-3d-side', 'aria-label':free?'Woodland fieldwork':'Flight observation'},
             free?h('section',{className:'birdlab-3d-card birdlab-3d-observation','aria-labelledby':'birdlab-3d-observation-title'},
               h('div',{className:'birdlab-3d-eyebrow'},identified?(subject.category==='mammal'?'Woodland mammal':'Woodland bird'):'Through the lens'),
-              h('h2',{id:'birdlab-3d-observation-title'},identified?subject.name:subject?'Wildlife in view':'Watch the woodland'),
-              h('span',{className:'birdlab-3d-sr-only',role:'status','aria-live':'polite','aria-atomic':'true','data-birdlab-3d-identification':'true'},identified?(recorded?subject.name+' is in your field notebook.':subject.name+' identified. Ready to record.'):''),
-              identified?h('p',{style:{fontStyle:'italic',marginTop:5}},subject.scientificName):null,
+              h('h2',{id:'birdlab-3d-observation-title'},identified?(needsName?'Which bird is this?':subject.name):subject?'Wildlife in view':'Watch the woodland'),
+              h('span',{className:'birdlab-3d-sr-only',role:'status','aria-live':'polite','aria-atomic':'true','data-birdlab-3d-identification':'true'},identified?(recorded?subject.name+' is in your field notebook.':needsName?'Bird in focus. Choose its name from three choices.':subject.name+' identified. Ready to record.'):''),
+              identified&&!needsName?h('p',{style:{fontStyle:'italic',marginTop:5}},subject.scientificName):null,
               identified?h('p',{'data-birdlab-3d-observation-details':'true'},distanceLabel(subject.distance),' · ',subject.behavior):
                 h('p',null,!state.binoculars?'Raise your binoculars and look for wildlife.':subject?(state.paused?'The woodland is paused. Keep this animal near the center and hold your view steady.':'Keep the animal near the center and hold your view steady.'):'Look for wildlife in the clearing, then bring it toward the center of the lenses.'),
               identified&&residentIds.indexOf(subject.id)>=0?h('p',{className:'birdlab-3d-field-marks','data-birdlab-3d-field-marks':subject.id},h('strong',null,'Confirm the marks: '),residentSpecies(subject.id).note.split('. ')[0].replace(/\.$/,'')+'.'):null,
+              needsName?h('div',{className:'birdlab-3d-id-choices',role:'group','aria-label':'Which bird is this?','data-birdlab-id-choices':subject.id},idChoices(subject.id).map(function(id){var wrong=!!(idEntry&&idEntry.wrong.indexOf(id)>=0);
+                return h('button',{key:id,type:'button','data-birdlab-id-choice':id,disabled:disabled||wrong,onClick:function(){guessName(id);}},residentSpecies(id).name);})):null,
+              needsName&&idEntry&&idEntry.wrong.length?h('p',{className:'birdlab-3d-hint',role:'status','data-birdlab-id-wrong':idEntry.wrong[idEntry.wrong.length-1]},'Not this one. Field marks of the '+residentSpecies(idEntry.wrong[idEntry.wrong.length-1]).name+': '+residentSpecies(idEntry.wrong[idEntry.wrong.length-1]).note.split('. ')[0].replace(/\.$/,'')+'. Look again.'):null,
+              identified&&idEntry&&idEntry.named&&!recorded?h('p',{className:'birdlab-3d-hint','data-birdlab-id-right':subject.id},idEntry.firstTry?'Right on the first try.':'Right. You checked the marks.'):null,
               state.binoculars?h('div',{className:'birdlab-3d-focus-meter'},h('label',{htmlFor:'birdlab-3d-focus-progress'},identified?'Identified':'Steady view',h('span',{'aria-hidden':'true'},Math.round(focusProgress*100)+'%')),h('progress',{id:'birdlab-3d-focus-progress',max:1,value:focusProgress,'aria-label':t('stem.birdlab.a11y_steady_binocular_view', 'Steady binocular view')})):null,
-              h('button',{type:'button',disabled:disabled||!identified||recorded,onClick:function(){command('recordSighting');}},recorded?'Recorded in notebook':'Record sighting'),
+              h('button',{type:'button',disabled:disabled||!identified||recorded||needsName,onClick:function(){command('recordSighting');}},recorded?'Recorded in notebook':'Record sighting'),
+              h('label',{className:'birdlab-3d-hint birdlab-3d-name-toggle'},h('input',{type:'checkbox',checked:nameForMe,'data-birdlab-name-for-me':'true',onChange:function(event){setNameForMe(!!event.target.checked);}}),' Show bird names for me'),
               (function(){var entry=identified&&subject.category!=='mammal'?ethogramCategory(subject.behavior):null,logged=!!(entry&&ethogram[entry.id]);
                 return h('button',{type:'button','data-birdlab-log-behavior':entry?entry.id:'none',disabled:disabled||!entry||logged,onClick:function(){logBehavior(entry,subject);}},!entry?'Log behavior':logged?entry.label+' already in your ethogram':'Log behavior: '+entry.label);})(),
               h('p',{className:'birdlab-3d-hint'},'Explore slowly. Birds and squirrels may become alert when you approach.')):
@@ -934,7 +984,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('p',null,sightings.length?sightings.length+' species recorded':'Your notebook is waiting for its first sighting.'),
               sightings.length?h('ol',{className:'birdlab-3d-notebook'},sightings.map(function(entry){return h('li',{key:entry.id},h('strong',null,entry.name),h('small',{style:{fontStyle:'italic'}},entry.scientificName),h('small',null,entry.behavior),entry.food?h('small',{'data-birdlab-sighting-food':entry.food.kind},'Diet evidence · '+entry.food.label):null,entry.conditions?h('small',{'data-birdlab-sighting-conditions':entry.conditions.light+' '+entry.conditions.weather},'Conditions · '+(entry.conditions.season==='spring'?'Spring · ':entry.conditions.season==='autumn'?'Autumn · ':entry.conditions.season==='winter'?'Winter · ':'')+(BIRDLAB_LIGHT_NAMES[entry.conditions.light]||'Daylight')+(entry.conditions.weather==='rain'?(entry.conditions.season==='winter'?', light snow':', light rain'):', clear')):null,h('small',null,distanceLabel(entry.distance),' · ',visitTime(entry.time),' into your visit'));})):h('p',null,'Identify an animal through your binoculars, then choose Record sighting.'),
               sightings.length?h('p',{className:'birdlab-3d-hint','data-birdlab-conditions-hint':'true'},'Each entry notes the light and weather, as field checklists do: bird activity changes with both.'):null,
-              h('p',{className:'birdlab-3d-hint'},'One entry per species. Notes stay here while you switch views during this visit.')):null,
+              h('p',{className:'birdlab-3d-hint'},'One entry per species. Notes stay here while you switch views during this visit.'),
+              h('button',{type:'button','data-birdlab-download-notes':'true',disabled:!sightings.length&&!Object.keys(ethogram).length,onClick:downloadFieldNotes},'Download field notes (.txt)')):null,
             renderFeedingStudy(),
             renderWoodlandSounds(),
             renderResidentInspection(),
@@ -942,14 +993,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('div', {className:'birdlab-3d-eyebrow birdlab-3d-lighting-label'}, 'Woodland light'), h('div', {className:'birdlab-3d-lighting-buttons birdlab-3d-light-presets', role:'group', 'aria-label':t('stem.birdlab.a11y_woodland_lighting', 'Woodland lighting')}, [{value:'dawn', label:'Dawn'}, {value:'daylight', label:'Daylight'}, {value:'golden', label:'Golden hour'}].map(function(light) { return h('button', {key:light.value, type:'button', disabled:disabled, 'aria-pressed':String(state.lighting === light.value&&!state.lightingDirectionCustom), onClick:function() { command('setLighting', light.value, {lighting:light.value}); }}, light.label); })),
               state.lightingDirectionCustom?h('p',{className:'birdlab-3d-hint','data-birdlab-custom-light':'true'},'Custom direction · '+(BIRDLAB_LIGHT_NAMES[state.lighting]||'Daylight')+' palette. Choose a lighting preset to reset.'):null,
               h('div', {className:'birdlab-3d-eyebrow birdlab-3d-lighting-label'}, 'Weather'), h('div', {className:'birdlab-3d-weather-buttons', role:'group', 'aria-label':'Woodland weather', 'data-birdlab-weather':state.weather||'clear'}, [{value:'clear', label:'Clear'}, {value:'rain', label:winter?'Light snow':'Light rain'}].map(function(sky) { return h('button', {key:sky.value, type:'button', disabled:disabled, 'aria-pressed':String((state.weather||'clear') === sky.value), onClick:function() { command('setWeather', sky.value, {weather:sky.value}); }}, sky.label); })),
-              state.weather==='rain'&&!winter?h('p',{className:'birdlab-3d-hint','data-birdlab-rain-note':'true'},'A light shower greys whichever light you chose. In real rain, birds often sit tight and preen, while robins may feed on wet lawns where earthworms come up. In Free roam the residents do the same: fewer flights, more preening, and robins still working the lawn.'):null,
-              state.weather==='rain'&&winter?h('p',{className:'birdlab-3d-hint','data-birdlab-snow-note':'true'},'Light snow is falling. In real snow, small birds fluff their feathers to trap warm air, shelter in thick conifers and spend more time at feeders. In Free roam the residents sit tight and preen more, as they do in rain.'):null,
+              state.weather==='rain'&&!winter?predictFirst('rain','When light rain starts, what will most of the birds do?',['Sit tight and preen','Fly around more','Nothing will change'],h('p',{className:'birdlab-3d-hint','data-birdlab-rain-note':'true'},'A light shower greys whichever light you chose. In real rain, birds often sit tight and preen, while robins may feed on wet lawns where earthworms come up. In Free roam the residents do the same: fewer flights, more preening, and robins still working the lawn.')):null,
+              state.weather==='rain'&&winter?predictFirst('snow','When snow falls, how will small birds keep warm?',['Fly fast to warm up','Nothing will change','Fluff their feathers and shelter'],h('p',{className:'birdlab-3d-hint','data-birdlab-snow-note':'true'},'Light snow is falling. In real snow, small birds fluff their feathers to trap warm air, shelter in thick conifers and spend more time at feeders. In Free roam the residents sit tight and preen more, as they do in rain.')):null,
               // Seasons: Maine Audubon and Cornell Lab (All About Birds) range and molt accounts.
               h('div', {className:'birdlab-3d-eyebrow birdlab-3d-lighting-label'}, 'Season'), h('div', {className:'birdlab-3d-lighting-buttons birdlab-3d-season-buttons', role:'group', 'aria-label':'Woodland season', 'data-birdlab-season':season}, [{value:'spring', label:'Spring'}, {value:'summer', label:'Summer'}, {value:'autumn', label:'Autumn'}, {value:'winter', label:'Winter'}].map(function(choice) { return h('button', {key:choice.value, type:'button', disabled:disabled, 'aria-pressed':String(season === choice.value), onClick:function() { if (controllerRef.current && controllerRef.current.setSeason) command('setSeason', choice.value, {season:choice.value}); }}, choice.label); })),
               season==='spring'?h('p',{className:'birdlab-3d-hint','data-birdlab-season-note':'spring'},'Spring: new leaves open yellow-green, and shadbush blooms white before the other trees leaf out. Wildflowers such as trout lily, violets and starflower bloom on the forest floor while sunlight still reaches it. Birdsong is at its peak as males claim territories, so calls come more often. The Eastern towhee, chipping sparrow and hermit thrush are back from the south, and goldfinches are molting into bright yellow.'):null,
               season==='autumn'?h('p',{className:'birdlab-3d-hint','data-birdlab-season-note':'autumn'},'Autumn in a Maine woodland: maples, birches and oaks turn red, orange and yellow while the pines stay green. Goldfinches are molting toward their duller winter feathers, and many songbirds are feeding heavily before they migrate.'):null,
-              season==='winter'?h('p',{className:'birdlab-3d-hint','data-birdlab-season-note':'winter'},'Winter: the broadleaf trees are bare and snow covers the ground. The Eastern towhee, chipping sparrow and hermit thrush have flown south, and American tree sparrows have arrived from the far north to spend the winter here. Many robins, bluebirds and white-throated sparrows leave too, but some stay through a Maine winter, living on fruit and seeds. Goldfinches stay in drab olive feathers. Chickadees, titmice, cardinals, jays, doves, juncos, purple finches and ruffed grouse live here all year; a grouse grows comb-like fringes on its toes that work like snowshoes.'):null,
-              season==='winter'?h('p',{className:'birdlab-3d-hint','data-birdlab-tracks-note':'true'},'Look for tracks in the snow. Birds that hop, such as juncos, sparrows and cardinals, leave prints in side-by-side pairs. Birds that walk, such as mourning doves and ruffed grouse, leave a line of alternating prints. Old tracks soften, and falling snow fills them in. The snow under pines stays thin, because the boughs catch it.'):null,
+              season==='winter'?predictFirst('winter','Will the same birds live here in winter as in summer?',['Yes, all the same birds','Some leave, and a new one arrives','All the birds leave'],h('p',{className:'birdlab-3d-hint','data-birdlab-season-note':'winter'},'Winter: the broadleaf trees are bare and snow covers the ground. The Eastern towhee, chipping sparrow and hermit thrush have flown south, and American tree sparrows have arrived from the far north to spend the winter here. Many robins, bluebirds and white-throated sparrows leave too, but some stay through a Maine winter, living on fruit and seeds. Goldfinches stay in drab olive feathers. Chickadees, titmice, cardinals, jays, doves, juncos, purple finches and ruffed grouse live here all year; a grouse grows comb-like fringes on its toes that work like snowshoes.')):null,
+              season==='winter'?predictFirst('tracks','How will a hopping bird\'s tracks look different from a walking bird\'s?',['They will look the same','One line of alternating prints','Pairs of prints side by side'],h('p',{className:'birdlab-3d-hint','data-birdlab-tracks-note':'true'},'Look for tracks in the snow. Birds that hop, such as juncos, sparrows and cardinals, leave prints in side-by-side pairs. Birds that walk, such as mourning doves and ruffed grouse, leave a line of alternating prints. Old tracks soften, and falling snow fills them in. The snow under pines stays thin, because the boughs catch it.')):null,
               !free?h('div', {className:'birdlab-3d-eyebrow birdlab-3d-lighting-label'}, 'Woodland neighbors'):null, !free?h('div', {className:'birdlab-3d-lighting-buttons', role:'group', 'aria-label':t('stem.birdlab.a11y_observe_woodland_birds', 'Observe woodland birds')}, presentResidents.map(function(other) { return h('button', {key:other.id,type:'button',disabled:disabled,'data-birdlab-resident-camera':other.id,'aria-pressed':String(state.camera===other.id),onClick:function(){command('setCamera',other.id,{camera:other.id});}},other.label); })):null),
             !free&&watchingNeighbor && (state.camera==='mourningDove'||state.camera==='grouse') ? h('section', {className:'birdlab-3d-card'}, h('div',{className:'birdlab-3d-eyebrow'},'Observe this bird'),
               h('button',{type:'button',disabled:disabled,'aria-pressed':String(!!state.repeatFlights),'aria-describedby':'birdlab-3d-repeat-help',onClick:function(){command('setRepeatFlights',!state.repeatFlights,{repeatFlights:!state.repeatFlights});}},'Repeat flights'),
@@ -10215,9 +10266,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
   // about twice as often (the dawn chorus); in steady rain, less often.
   function birdLabCallInterval(entry, lighting, weather) { return entry.every * (lighting === 'dawn' ? .45 : 1) * (weather === 'rain' ? 1.8 : 1); }
   var BIRDLAB_LIGHT_NAMES = { dawn: 'Dawn', daylight: 'Daylight', golden: 'Golden hour' };
-  // Alarm calls when the hawk passes low. Chickadees add 'dee' notes as danger
-  // grows; jays scream; most small songbirds give a high, thin 'seet' that is
-  // hard to locate. Doves and grouse freeze in silence (null). Mobbing a
+  // Alarm calls when the hawk passes low: jays scream; chickadees and most small
+  // songbirds give a high, thin 'seet' that is hard to locate (Templeton et al.
+  // 2005). Chickadees scold a perched hawk with chick-a-dee calls, more 'dee'
+  // notes for more danger. Doves and grouse freeze in silence (null). Mobbing a
   // perched hawk is the opposite: loud, harsh scolding that is easy to locate,
   // which recruits other birds to join in.
   function birdLabAlarmCall(id, danger, mob) {
@@ -10228,7 +10280,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       for (var c = 0; c < 6; c++) chatter.push({ syl: 'chit', hz: 3300, to: 2500, dur: .05, gap: c === 5 ? 0 : .07 });
       return { sketch: { label: 'Mobbing call: harsh scolding chatter, easy to locate', quality: 'harsh', notes: chatter } };
     }
-    if (id === 'chickadee') {
+    if (id === 'chickadee' && mob) {
       var dees = 2 + Math.round(danger * 6), notes = [{ syl: 'chick', hz: 6200, to: 5200, dur: .06, gap: .03 }, { syl: 'a', hz: 5000, dur: .05, gap: .05 }];
       for (var i = 0; i < dees; i++) notes.push({ syl: 'dee', hz: 3700, to: 3500, dur: .15, gap: i === dees - 1 ? 0 : .05 });
       return { dees: dees, sketch: { label: (mob ? 'Mobbing call' : 'Alarm') + ': chick-a-' + new Array(dees).fill('dee').join('-') + ', ' + dees + ' dee notes', quality: 'buzz', notes: notes } };

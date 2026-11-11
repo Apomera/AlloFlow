@@ -225,6 +225,18 @@ describe('BirdLab optional 3D view lifecycle', () => {
     expect(host.querySelector('[data-birdlab-3d-identification]').textContent).toBe('');
     expect(button('Record sighting').disabled).toBe(true);
     await act(async()=>publish({observation:{...jay,identified:true,progress:1}}));
+    // The student names the bird from three choices before it is revealed.
+    expect(side.querySelector('h2').textContent).toBe('Which bird is this?');
+    expect(side.textContent).not.toContain(jay.scientificName);
+    expect(button('Record sighting').disabled).toBe(true);
+    const choices=[...host.querySelectorAll('[data-birdlab-id-choice]')].map(b=>b.getAttribute('data-birdlab-id-choice'));
+    expect(choices).toHaveLength(3); expect(choices).toContain('blueJay');
+    const wrongId=choices.find(id=>id!=='blueJay');
+    await act(async()=>host.querySelector('[data-birdlab-id-choice="'+wrongId+'"]').click());
+    expect(host.querySelector('[data-birdlab-id-wrong]').getAttribute('data-birdlab-id-wrong')).toBe(wrongId);
+    expect(host.querySelector('[data-birdlab-id-choice="'+wrongId+'"]').disabled).toBe(true);
+    await act(async()=>host.querySelector('[data-birdlab-id-choice="blueJay"]').click());
+    expect(host.querySelector('[data-birdlab-id-right]').textContent).toBe('Right. You checked the marks.');
     expect(side.querySelector('h2').textContent).toBe('Blue jay');
     expect(side.textContent).toContain(jay.scientificName);
     expect(host.querySelector('[data-birdlab-3d-observation-details]').textContent).toBe('4.3 m away · Watching from the leaf litter');
@@ -249,6 +261,7 @@ describe('BirdLab optional 3D view lifecycle', () => {
     const entry={...dove,time:72.4};
     window.BirdLab3D={mount:vi.fn((canvas,options)=>{publish=options.onState;publish({...state,mode:'free',binoculars:true,observation:dove,sightings:[]});return scene;})};
     await mount(()=>Promise.resolve());
+    await act(async()=>host.querySelector('[data-birdlab-id-choice="mourningDove"]').click());
     await act(async()=>button('Record sighting').click());
     expect(scene.recordSighting).toHaveBeenCalledTimes(1);
     expect(host.querySelector('.birdlab-3d-notebook')).toBeNull();
@@ -291,6 +304,9 @@ describe('BirdLab optional 3D view lifecycle', () => {
     expect(host.querySelector('#birdlab-3d-camera-help').textContent).toContain('C lowers your viewpoint');
     expect(host.querySelector('.birdlab-3d-observation').textContent).toContain('The woodland is paused');
     await act(async()=>publish({observation:{...robin,progress:1,identified:true}}));
+    // "Show bird names for me" skips the naming step.
+    await act(async()=>host.querySelector('[data-birdlab-name-for-me]').click());
+    expect(host.querySelector('[data-birdlab-id-choices]')).toBeNull();
     expect(button('Record sighting').disabled).toBe(false);
     await act(async()=>button('Record sighting').click());
     expect(scene.recordSighting).toHaveBeenCalledTimes(1);
