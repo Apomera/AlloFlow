@@ -10,7 +10,7 @@ const fixtureBytes = Buffer.from('window.__reviewedHelperFixture = true;\n');
 const integrity = 'sha384-' + createHash('sha384').update(fixtureBytes).digest('base64');
 const names = ['qrcode.js', 'allo_device_storage_module.js', 'allo_crypto_module.js', 'vendor/lz-string-1.4.4.min.js', 'vendor/idb-keyval-6.2.0.umd.min.js'];
 
-function harness(hostFile, { href = 'https://alloflow.example/app/', missingQr = false } = {}) {
+function harness(hostFile, { href = 'https://alloflow.example/app/', missingQr = false, fallbackCommit = null } = {}) {
   const host = fs.readFileSync(hostFile, 'utf8');
   const slice = (start, end) => {
     const first = host.indexOf(start), last = host.indexOf(end, first);
@@ -37,7 +37,7 @@ function harness(hostFile, { href = 'https://alloflow.example/app/', missingQr =
     },
   };
   const manifest = {
-    schemaVersion: 1, releaseId: 'a'.repeat(64), fallbackCommit: null, allowDesktopRemoteFallback: false,
+    schemaVersion: 1, releaseId: 'a'.repeat(64), fallbackCommit, allowDesktopRemoteFallback: false,
     assets: Object.fromEntries(names.filter(name => !missingQr || name !== 'qrcode.js').map(name => [name, { integrity, bytes: fixtureBytes.length }])),
   };
   const optionalManifest = { schemaVersion: 1, libraries: Object.fromEntries([
@@ -77,6 +77,50 @@ describe.each(hosts)('first-party global helper delivery: %s', (host) => {
     expect(f.scripts).toHaveLength(0);
     expect(f.timers.size).toBe(0);
     expect(f.window.__alloStorageDependencyPromises.unknown).toBeUndefined();
+  });
+
+  // A deploy replaces the adapter at its CDN address, and an older build's pin then
+  // rejects it (seen 2026-11-09 on a v1.16 Canvas: "Device storage module could not
+  // load"). The loader retries once from the build's own pinned commit.
+  it('retries a failed first-party load from the pinned commit, with the same integrity', async () => {
+    const commit = 'c'.repeat(40);
+    const f = harness(host, { fallbackCommit: commit });
+    const loading = f.loadStorage('https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=old', () => f.window.storage, { cacheKey: 'device-storage' });
+    expect(f.scripts).toHaveLength(1);
+    f.scripts[0].onerror();
+    expect(f.scripts).toHaveLength(2);
+    expect(f.scripts[0].parentNode).toBe(null);
+    expect(f.scripts[1].src).toBe('https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@' + commit + '/allo_device_storage_module.js');
+    expect(f.scripts[1].atSrc).toEqual({ integrity, crossOrigin: 'anonymous', referrerPolicy: 'no-referrer' });
+    f.window.storage = { ready: true };
+    f.scripts[1].onload();
+    await expect(loading).resolves.toBe(f.window.storage);
+    expect(f.timers.size).toBe(0);
+  });
+
+  it('tries the pinned copy once, then reports both failures', async () => {
+    const f = harness(host, { fallbackCommit: 'c'.repeat(40) });
+    const loading = f.loadStorage('https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=old', () => null, { label: 'Device storage module' });
+    f.scripts[0].onerror();
+    f.scripts[1].onerror();
+    await expect(loading).rejects.toThrow('Device storage module could not load from https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=old, or from its pinned copy');
+    expect(f.scripts).toHaveLength(2);
+    expect(f.scripts[1].parentNode).toBe(null);
+    expect(f.timers.size).toBe(0);
+  });
+
+  it('has no fallback without a pinned commit, for a vendor URL, or on bundled Desktop', async () => {
+    const plain = harness(host);
+    const first = plain.loadStorage('https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=old', () => null, { label: 'Device storage module' });
+    plain.scripts[0].onerror();
+    await expect(first).rejects.toThrow(/^Device storage module could not load from https:\/\/alloflow-cdn\.pages\.dev\/allo_device_storage_module\.js\?v=old$/);
+    expect(plain.scripts).toHaveLength(1);
+
+    const vendor = harness(host, { fallbackCommit: 'c'.repeat(40) });
+    const second = vendor.loadStorage('https://cdn.jsdelivr.net/npm/lz-string@1.4.4/libs/lz-string.min.js', () => null);
+    vendor.scripts[0].onerror();
+    await expect(second).rejects.toThrow(/could not load from/);
+    expect(vendor.scripts).toHaveLength(1);
   });
 
   it('keeps Desktop/device storage and dev helpers on bundled reviewed bytes', async () => {

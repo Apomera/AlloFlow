@@ -9618,49 +9618,86 @@ const _alloLoadScriptGlobal = (url, readGlobal, options = {}) => {
   if (sharedCache && sharedCache[cacheKey]) return sharedCache[cacheKey];
   const label = options.label || 'Storage dependency';
   const timeoutMs = Math.max(1, Number(options.timeoutMs) || ALLO_STORAGE_SCRIPT_TIMEOUT_MS);
+  // A deploy replaces a module at its CDN address, and this build's integrity pin
+  // then rejects the newer file: an older Canvas build lost device storage on
+  // every release that touched the adapter. The same file at this build's pinned
+  // commit still matches the pin, so it is tried once when the CDN copy fails.
+  const pinnedFallbackUrl = (primary) => {
+    try {
+      const manifest = typeof _alloBrowserDeliveryManifest !== 'undefined' ? _alloBrowserDeliveryManifest : null;
+      const commit = manifest && manifest.fallbackCommit;
+      if (typeof commit !== 'string' || !/^[0-9a-f]{40}$/.test(commit)) return null;
+      const parsed = new URL(primary);
+      if (parsed.origin !== 'https://alloflow-cdn.pages.dev') return null;
+      const asset = parsed.pathname.slice(1);
+      if (!manifest.assets || !Object.prototype.hasOwnProperty.call(manifest.assets, asset)) return null;
+      return 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow@' + commit + '/' + asset;
+    } catch (_) { return null; }
+  };
   const operation = new Promise((resolve, reject) => {
-    const script = document.createElement('script');
+    let script = null;
     let settled = false;
     let timer = null;
+    const detach = () => {
+      if (!script) return;
+      script.onload = null;
+      script.onerror = null;
+      if (script.parentNode) {
+        try { script.parentNode.removeChild(script); } catch (_) {}
+      }
+    };
     const finish = (error, value) => {
       if (settled) return;
       settled = true;
       if (timer) clearTimeout(timer);
-      script.onload = null;
-      script.onerror = null;
-      if (error && script.parentNode) {
-        try { script.parentNode.removeChild(script); } catch (_) {}
+      if (script) {
+        script.onload = null;
+        script.onerror = null;
+        if (error && script.parentNode) {
+          try { script.parentNode.removeChild(script); } catch (_) {}
+        }
       }
       if (error) reject(error);
       else resolve(value);
     };
-    // Local and fixed third-party dependencies share pinned native SRI.
-    try {
-      const configure = window.__alloConfigureTrustedScript;
-      if (typeof configure !== 'function') throw new Error('Trusted script delivery is unavailable');
-      configure(script, url);
-    } catch (error) { finish(error); return; }
-    script.async = true;
-    script.onload = () => {
-      let registered = null;
-      try { registered = readGlobal(); } catch (_) {}
-      finish(
-        registered ? null : new Error(`${label} did not register after loading ${url}`),
-        registered
-      );
+    const attempt = (target, primaryFailure) => {
+      script = document.createElement('script');
+      // Local and fixed third-party dependencies share pinned native SRI.
+      try {
+        const configure = window.__alloConfigureTrustedScript;
+        if (typeof configure !== 'function') throw new Error('Trusted script delivery is unavailable');
+        configure(script, target);
+      } catch (error) { finish(primaryFailure || error); return; }
+      script.async = true;
+      script.onload = () => {
+        let registered = null;
+        try { registered = readGlobal(); } catch (_) {}
+        finish(
+          registered ? null : new Error(`${label} did not register after loading ${target}`),
+          registered
+        );
+      };
+      script.onerror = () => {
+        if (primaryFailure) { finish(new Error(primaryFailure.message + ', or from its pinned copy')); return; }
+        const failure = new Error(`${label} could not load from ${target}`);
+        const fallback = pinnedFallbackUrl(target);
+        if (!fallback) { finish(failure); return; }
+        detach();
+        attempt(fallback, failure);
+      };
+      const parent = options.parent || document.head || document.body;
+      if (!parent || typeof parent.appendChild !== 'function') {
+        finish(new Error(`${label} could not be attached to the document.`));
+        return;
+      }
+      try { parent.appendChild(script); }
+      catch (error) { finish(error); }
     };
-    script.onerror = () => finish(new Error(`${label} could not load from ${url}`));
     timer = setTimeout(
       () => finish(new Error(`${label} timed out while loading ${url}`)),
       timeoutMs
     );
-    const parent = options.parent || document.head || document.body;
-    if (!parent || typeof parent.appendChild !== 'function') {
-      finish(new Error(`${label} could not be attached to the document.`));
-      return;
-    }
-    try { parent.appendChild(script); }
-    catch (error) { finish(error); }
+    attempt(url, null);
   });
   if (!sharedCache) return operation;
   const sharedOperation = operation.catch((error) => {
