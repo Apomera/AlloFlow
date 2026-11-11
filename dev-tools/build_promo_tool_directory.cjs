@@ -20,6 +20,7 @@
 //   tool_index.json  labels + sections (build_tool_index.cjs)
 //   _redirects       slug per tool id  (build_stem_deep_links.cjs)
 //   Both are generated. This script invents nothing; a tool with no slug is skipped and reported.
+//   ai_requirements.json  AI badge per tool (human-set class; check_ai_requirements.cjs)
 //
 // USAGE
 //   node dev-tools/build_promo_tool_directory.cjs           rewrite the block in tools.html
@@ -67,7 +68,28 @@ for (const tool of tools) {
   // that says what they are instead of inventing a subject for them.
   const section = (tool.section || '').trim() || 'Also in the STEM Lab';
   if (!groups.has(section)) groups.set(section, []);
-  groups.get(section).push({ label: tool.label || tool.id, slug });
+  groups.get(section).push({ label: tool.label || tool.id, slug, id: tool.id });
+}
+
+// AI requirement badge (2026-11-11). ai_requirements.json holds one human-set class per tool
+// (dev-tools/check_ai_requirements.cjs keeps it honest). The finder's 32 cards already showed
+// an AI badge; the other 120 tools here showed nothing, so "which of these work with no AI?"
+// had no answer on the page. A tool with no record gets no badge and is reported, never a guess.
+const AI_FILE = path.join(ROOT, 'ai_requirements.json');
+const aiById = new Map();
+if (fs.existsSync(AI_FILE)) {
+  for (const rec of JSON.parse(fs.readFileSync(AI_FILE, 'utf8')).tools || []) {
+    if (rec && rec.family === 'stem') aiById.set(rec.id, rec);
+  }
+}
+const unbadged = [];
+function aiBadge(id) {
+  const rec = aiById.get(id);
+  const text = !rec ? '' : rec.class === 'none' ? 'Works without AI'
+    : rec.class === 'required' ? 'Needs AI'
+    : rec.class === 'optional' && rec.aiAdds ? 'AI adds: ' + rec.aiAdds : '';
+  if (!text) { unbadged.push(id); return { attr: '', html: '' }; }
+  return { attr: ' data-ai="' + rec.class + '"', html: ' <span class="tool-directory-ai">' + esc(text) + '</span>' };
 }
 
 const UNSECTIONED = 'Also in the STEM Lab';
@@ -117,12 +139,51 @@ for (const name of names) {
     const about = fs.existsSync(path.join(ROOT, 'tool-' + item.slug + '.html'))
       ? ' <a class="tool-directory-about" href="tool-' + item.slug + '.html" aria-label="About ' + esc(item.label) + '">About</a>'
       : '';
-    out.push('                        <li><a href="' + APP_ORIGIN + '/' + item.slug + '">' + esc(item.label) + '</a>' + about + '</li>');
+    const ai = aiBadge(item.id);
+    out.push('                        <li' + ai.attr + '><a href="' + APP_ORIGIN + '/' + item.slug + '">' + esc(item.label) + '</a>' + about + ai.html + '</li>');
   }
   out.push('                    </ul>');
   out.push('                </div>');
 }
 out.push('            </div>');
+if (aiById.size) {
+  // The badge style and the filter hook live INSIDE the generated block so the directory
+  // stays one self-contained unit: tool-finder.css / tool-finder-core.js are untouched.
+  // The page's existing "AI requirement" select (#toolAi) now filters these rows too.
+  // `li` is display:flex in tool-finder.css, which beats the hidden attribute, hence the
+  // explicit [hidden] rule. Badge text is #475569 on #f8fafc (7.2:1); the meaning is in the
+  // words, never in colour.
+  out.push('            <style>');
+  out.push('                .tool-directory-ai { flex: 1 0 100%; margin: -4px 0 8px; padding: 0 8px; color: #475569; font-size: .8rem; line-height: 1.35; }');
+  out.push('                .tool-directory-list li[hidden], .tool-directory-group[hidden] { display: none; }');
+  out.push('            </style>');
+  out.push('            <script>');
+  out.push('                (function () {');
+  out.push('                    var select = document.getElementById("toolAi");');
+  out.push('                    var section = document.querySelector(".tool-directory-section");');
+  out.push('                    if (!select || !section) return;');
+  out.push('                    var count = section.querySelector(".tool-directory-count");');
+  out.push('                    var allText = count ? count.textContent : "";');
+  out.push('                    var rows = section.querySelectorAll(".tool-directory-list li");');
+  out.push('                    function apply() {');
+  out.push('                        var want = select.value, shown = 0;');
+  out.push('                        rows.forEach(function (row) {');
+  out.push('                            var keep = !want || row.getAttribute("data-ai") === want;');
+  out.push('                            row.hidden = !keep;');
+  out.push('                            if (keep) shown++;');
+  out.push('                        });');
+  out.push('                        section.querySelectorAll(".tool-directory-group").forEach(function (group) {');
+  out.push('                            group.hidden = !group.querySelector(".tool-directory-list li:not([hidden])");');
+  out.push('                        });');
+  out.push('                        if (count) count.textContent = want ? shown + " of " + rows.length + " tools match the AI requirement filter above." : allText;');
+  out.push('                    }');
+  out.push('                    select.addEventListener("change", apply);');
+  out.push('                    var clear = document.getElementById("clearToolFilters");');
+  out.push('                    if (clear) clear.addEventListener("click", function () { window.setTimeout(apply, 0); });');
+  out.push('                    window.addEventListener("load", apply);');
+  out.push('                })();');
+  out.push('            </script>');
+}
 out.push('        </section>');
 out.push('');
 out.push(END);
@@ -146,6 +207,8 @@ if (b >= 0 && e > b) {
 const changed = next !== body;
 console.log('Tool directory: ' + listed + ' linked tools in ' + names.length + ' groups.');
 if (skipped.length) console.log('  no deep-link slug (skipped): ' + skipped.length + ' -> ' + skipped.join(', '));
+if (!aiById.size) console.log('  ai_requirements.json not found: no AI badges written.');
+else if (unbadged.length) console.log('  no AI record (no badge): ' + unbadged.length + ' -> ' + unbadged.join(', '));
 if (CHECK) {
   if (changed) {
     console.error('\nbuild_promo_tool_directory: FAIL — the published directory is stale.');
