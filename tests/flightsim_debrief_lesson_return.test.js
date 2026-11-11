@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { passLessonCheck } from './helpers/flightsim_lesson_check.js';
 
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -39,6 +40,8 @@ async function mount(seed = {}, t) {
     }));
   }
   await act(async () => root.render(React.createElement(App)));
+  // Lessons are completed through their check question; answer it as a student would.
+  await passLessonCheck(host, act);
 }
 beforeEach(() => {
   resetStemLab(); window.__RR_TEST_EXPORTS__ = {};
@@ -115,6 +118,7 @@ describe('Sky School debrief supporting-lesson return', () => {
     const context = { ...latest.debriefLessonReturn };
     const other = [...host.querySelectorAll('nav[aria-label="Aerodynamics lessons"] button')].find(button => !button.hasAttribute('aria-current'));
     await click(other); expect(back()).toBeTruthy(); expect(latest.debriefLessonReturn).toEqual(context);
+    await passLessonCheck(host, act);
     const complete = [...host.querySelectorAll('button')].find(button => button.textContent.includes('Mark lesson complete'));
     await click(complete); expect(latest.completedLessons[latest.selectedLesson]).toBe(true);
     await click(back()); expect(reviewState()).toEqual(original); expect(xp).toHaveLength(0);

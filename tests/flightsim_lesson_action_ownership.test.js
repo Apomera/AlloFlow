@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { passLessonCheck } from './helpers/flightsim_lesson_check.js';
 
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -56,6 +57,8 @@ async function mount(seed = {}, options = {}) {
     }));
   }
   await act(async () => root.render(React.createElement(App)));
+  // Lessons are completed through their check question; answer it as a student would.
+  await passLessonCheck(host, act);
 }
 beforeEach(() => {
   resetStemLab(); window.__RR_TEST_EXPORTS__ = {};
@@ -159,7 +162,7 @@ describe('Sky School lesson action ownership', () => {
     expect(writes).toHaveLength(1);
     await mount(copy(latest)); expect(button('✓ Lesson completed').disabled).toBe(false);
     expect(button('✓ Lesson completed').getAttribute('aria-disabled')).toBe('true');
-    await click(nav('drag')); await click(complete());
+    await click(nav('drag')); await passLessonCheck(host, act); await click(complete());
     expect(latest.completedLessons).toEqual({ lift: true, drag: true, weather: true }); expect(latest.lessonsCompleted).toBe(3);
     expect(host.querySelector('[aria-live="polite"]').textContent).toContain('3 done');
     expect(tool.questHooks.find(hook => hook.id === 'complete_lesson').check(latest)).toBe(true);

@@ -77,11 +77,21 @@ describe('Flight coaching selects the immediate action', () => {
 
   it.each([
     ['below the cue range', { onGround: true }, { pitch: 0 }, 50],
-    ['above the cue range', { onGround: true }, { pitch: 0 }, 70],
-    ['already rotating', { onGround: true }, { pitch: 1 }, 60],
+    ['the nose already raised', { onGround: true }, { pitch: 6 }, 60],
+    ['the nose already raised at high speed', { onGround: true }, { pitch: 8 }, 90],
     ['airborne', { onGround: false }, { pitch: 0 }, 60],
   ])('does not repeat the rotation cue when %s', (_label, s, c, ias) => {
     expect(hint(s, c, {}, 55, 5500, ias)).toBeNull();
+  });
+
+  // A student who is fast but still level on the runway is the one who most needs
+  // the cue. It used to stop 15 kt above rotation speed and as soon as the nose
+  // moved one degree, leaving the aircraft rolling at 80 kt with no instruction.
+  it.each([
+    ['well above rotation speed', { pitch: 0 }, 80],
+    ['a nose raised only slightly', { pitch: 3 }, 60],
+  ])('keeps the rotation cue on the runway with %s', (_label, c, ias) => {
+    expect(hint({ onGround: true }, c, {}, 55, 5500, ias)).toBe('rotate');
   });
 
   it('leaves ordinary cruise free of a persistent coaching paragraph', () => {
@@ -387,7 +397,7 @@ describe('Mounted cockpit information priority and retained evidence', () => {
   it('advances the single departure cue with power and indicated airspeed, and clears it while the deck is expanded', async () => {
     await mount();
     holdFlightState();
-    expect(host.querySelector('[data-flight-current-cue]').textContent).toContain('Hold SHIFT');
+    expect(host.querySelector('[data-flight-current-cue]').textContent).toContain('Hold + or Shift');
     const parked = { ...hooks().flightRef.current, onGround: true, speed: 30, vsi: 0,
       stalling: false, lowAirspeed: false, hitCeiling: false };
     await paintFrame(parked, { ...levelControls, throttle: 0.8 });
@@ -397,13 +407,13 @@ describe('Mounted cockpit information priority and retained evidence', () => {
     const rotation = helpers().aircraftVrKts(aircraft);
     await paintFrame({ ...parked, speed: (rotation + 2) / 0.5924838 }, { ...levelControls, throttle: 0.8 });
     expect(latest.tutorialCue).toBe('rotate');
-    expect(host.querySelector('[data-flight-current-cue]').textContent).toContain('Press W');
+    expect(host.querySelector('[data-flight-current-cue]').textContent).toContain('HOLD W');
     expect(host.querySelector('[data-flight-walkthrough]').open).toBe(false);
     await click(host.querySelector('button[aria-label="Expand the flight deck controls"]'));
     expect(host.querySelector('[data-flight-current-cue]')).toBeNull();
     expect(host.querySelector('.skyschool-tutorial-card')).toBeNull();
     await click(host.querySelector('button[aria-label="Collapse the flight deck controls"]'));
-    expect(host.querySelector('[data-flight-current-cue]').textContent).toContain('Press W');
+    expect(host.querySelector('[data-flight-current-cue]').textContent).toContain('HOLD W');
   });
 
   it('records a milestone at time zero once across paused resize repaints', async () => {
@@ -419,5 +429,218 @@ describe('Mounted cockpit information priority and retained evidence', () => {
     const after = [...host.querySelector('[data-flight-notes]').querySelectorAll('strong')].map(element => element.textContent);
     expect(after).toEqual(before);
     expect(hooks().timeRef.current).toBe(0);
+  });
+});
+
+// A first-time student used to get one sentence and a card titled "Ready for
+// Takeoff" all the way up. The guided first flight gives three steps measured from
+// the flight itself, each with a live target band, and ends when the student has
+// actually levelled off.
+describe('Guided first flight', () => {
+  const guide = () => host.querySelector('[data-first-flight-guide]');
+  const stepState = id => guide().querySelector(`[data-guide-step="${id}"]`).getAttribute('data-guide-state');
+  const ground = () => ({ ...hooks().flightRef.current, onGround: true, vsi: 0, stalling: false, lowAirspeed: false, hitCeiling: false });
+
+  it('ticks each step from the flight, shows a live band for the current step, and finishes on level flight', async () => {
+    await mount();
+    holdFlightState();
+    const field = hooks().flightRef.current.fieldElev || hooks().flightRef.current.altitude;
+    const rotation = helpers().aircraftVrKts(helpers().AIRCRAFT.find(item => item.id === 'cessna172'));
+    await paintFrame({ ...ground(), speed: 30 }, { ...levelControls, throttle: 1 });
+    expect(guide().getAttribute('data-first-flight-guide')).toBe('power');
+    expect(stepState('power')).toBe('current');
+    expect(guide().querySelector('[role="meter"]').getAttribute('aria-valuetext')).toMatch(/Airspeed \d+ kt\. Target: \d+ kt or more\./);
+    expect(guide().querySelector('[role="meter"]').getAttribute('data-guide-band')).toBe('outside');
+
+    await paintFrame({ ...ground(), speed: (rotation + 3) / 0.5924838 }, { ...levelControls, throttle: 1 });
+    await paintFrame({ ...ground(), speed: (rotation + 3) / 0.5924838 }, { ...levelControls, throttle: 1 });
+    expect(stepState('power')).toBe('done');
+    expect(stepState('climb')).toBe('current');
+    expect(guide().querySelector('[role="meter"]').getAttribute('aria-label')).toBe('Nose attitude for the climb');
+
+    // Airborne at 300 ft with the nose at 10 degrees: still climbing, band satisfied.
+    const air = { ...ground(), onGround: false, altitude: field + 300, vsi: 11, speed: 125 };
+    await paintFrame(air, { ...levelControls, throttle: 1, pitch: 10 });
+    await paintFrame(air, { ...levelControls, throttle: 1, pitch: 10 });
+    expect(host.querySelector('[data-flight-tutorial-title]').textContent).toContain('You are flying');
+    expect(stepState('climb')).toBe('current');
+    expect(guide().querySelector('[role="meter"]').getAttribute('data-guide-band')).toBe('inside');
+    expect(guide().textContent).toContain('Height 300 of 500 ft');
+    expect(latest.takeoffTutorialDismissed).not.toBe(true);
+
+    await paintFrame({ ...air, altitude: field + 520 }, { ...levelControls, throttle: 1, pitch: 10 });
+    await paintFrame({ ...air, altitude: field + 520 }, { ...levelControls, throttle: 1, pitch: 10 });
+    expect(stepState('climb')).toBe('done');
+    expect(stepState('level')).toBe('current');
+    expect(host.querySelector('[data-flight-current-cue]').textContent).toContain('level off');
+
+    // Still climbing at 660 fpm: no credit however long it lasts.
+    for (let i = 0; i < 40; i++) await paintFrame({ ...air, altitude: field + 600 }, { ...levelControls, throttle: 1, pitch: 10 });
+    expect(stepState('level')).toBe('current');
+    // Level within 200 fpm for three seconds.
+    for (let i = 0; i < 40; i++) await paintFrame({ ...air, altitude: field + 600, vsi: 1 }, { ...levelControls, throttle: 1, pitch: 3 });
+    expect(guide().getAttribute('data-first-flight-guide')).toBe('done');
+    expect(stepState('level')).toBe('done');
+    expect(host.querySelector('[data-flight-current-cue]').textContent).toContain('First flight complete');
+  });
+
+  it('can be skipped, and is not offered to helicopters or after it is finished', async () => {
+    await mount();
+    holdFlightState();
+    await paintFrame({ ...ground(), speed: 30 }, { ...levelControls, throttle: 1 });
+    await click(host.querySelector('[data-guide-skip]'));
+    expect(latest.firstFlightGuideDone).toBe(true);
+    expect(latest.takeoffTutorialDismissed).toBe(true);
+    const active = helpers().isFirstFlightGuideActive;
+    expect(active({}, {})).toBe(true);
+    expect(active({}, { isHelicopter: true })).toBe(false);
+    expect(active({}, { isDrone: true })).toBe(false);
+    expect(active({ firstFlightGuideDone: true }, {})).toBe(false);
+    expect(active({ takeoffTutorialDismissed: true }, {})).toBe(false);
+  });
+});
+
+describe('Guided first flight progress rules', () => {
+  const step = (...args) => helpers().stepFirstFlightGuide(...args);
+  const name = progress => helpers().getFirstFlightGuideStep(progress);
+  it('needs rotation speed, then 500 ft in the air, then three continuous seconds within 200 fpm', () => {
+    let p = step(null, { iasKts: 40, rotationKts: 54, agl: 0, fpm: 0, onGround: true }, 0.1);
+    expect(name(p)).toBe('power');
+    // Height alone, before rotation speed was ever reached, earns nothing.
+    expect(name(step(p, { iasKts: 40, rotationKts: 54, agl: 900, fpm: 0, onGround: false }, 0.1))).toBe('power');
+    p = step(p, { iasKts: 54, rotationKts: 54, agl: 0, fpm: 0, onGround: true }, 0.1);
+    expect(name(p)).toBe('climb');
+    expect(name(step(p, { iasKts: 60, rotationKts: 54, agl: 499, fpm: 600, onGround: false }, 0.1))).toBe('climb');
+    expect(name(step(p, { iasKts: 60, rotationKts: 54, agl: 600, fpm: 0, onGround: true }, 0.1))).toBe('climb');
+    p = step(p, { iasKts: 70, rotationKts: 54, agl: 500, fpm: 650, onGround: false }, 0.1);
+    expect(name(p)).toBe('level');
+    for (let i = 0; i < 25; i++) p = step(p, { iasKts: 90, rotationKts: 54, agl: 600, fpm: 150, onGround: false }, 0.1);
+    expect(name(p)).toBe('level');
+    // One excursion resets the three seconds.
+    p = step(p, { iasKts: 90, rotationKts: 54, agl: 600, fpm: -260, onGround: false }, 0.1);
+    expect(p.levelFor).toBe(0);
+    for (let i = 0; i < 29; i++) p = step(p, { iasKts: 90, rotationKts: 54, agl: 600, fpm: -150, onGround: false }, 0.1);
+    expect(name(p)).toBe('level');
+    p = step(p, { iasKts: 90, rotationKts: 54, agl: 600, fpm: 200, onGround: false }, 0.1);
+    p = step(p, { iasKts: 90, rotationKts: 54, agl: 600, fpm: 200, onGround: false }, 0.1);
+    expect(name(p)).toBe('done');
+    // Finished stays finished.
+    expect(name(step(p, { iasKts: 20, rotationKts: 54, agl: 0, fpm: -900, onGround: true }, 0.1))).toBe('done');
+  });
+
+  it('keeps the takeoff card through the guided climb, but not for a dismissed or finished guide', () => {
+    const kind = helpers().getFlightTutorialKind;
+    const air = { onGround: false, altitude: 900, fieldElev: 0, vsi: 10 };
+    expect(kind(air, { railCollapsed: true }, {}, null)).toBe('takeoff');
+    expect(kind(air, { railCollapsed: true, firstFlightGuideDone: true }, {}, null)).toBe(null);
+    expect(kind(air, { railCollapsed: true, takeoffTutorialDismissed: true }, {}, null)).toBe(null);
+    expect(kind(air, { railCollapsed: true }, { isHelicopter: true }, null)).toBe(null);
+    expect(kind({ ...air, altitude: 3200 }, { railCollapsed: true }, {}, null)).toBe(null);
+    const stage = helpers().getTakeoffGuidanceStage;
+    expect(stage(air, {}, {}, 54, 70)).toBe('climb');
+    expect(stage(air, {}, {}, 54, 70, { power: true, climb: true, level: false })).toBe('level');
+    expect(stage(air, {}, {}, 54, 70, { power: true, climb: true, level: true })).toBe('guide-done');
+  });
+});
+
+// A crash used to show one line while the intact aircraft rolled on through a field
+// at flying speed. In free flight a hard touchdown now stops the flight and explains
+// itself from the last seconds flown, with a way to try the approach again.
+describe('Hard landing and crash review', () => {
+  const review = () => host.querySelector('[data-landing-review]');
+  const airborne = (agl, vsi, extra = {}) => {
+    const base = hooks().flightRef.current, field = base.fieldElev || 0;
+    return { ...base, onGround: false, altitude: field + agl, fieldElev: field, vsi, speed: 130, stalling: false, lowAirspeed: false, hitCeiling: false, groundContact: null, ...extra };
+  };
+  async function descendAndTouch(contactVsi, pitch) {
+    await mount({ takeoffTutorialDismissed: true, landingTutorialDismissed: true });
+    holdFlightState();
+    // 30 frames of 0.1 s: three seconds of recorded approach, well above 100 ft.
+    for (let i = 0; i < 30; i++) await paintFrame(airborne(400 - i * 9, contactVsi), { ...levelControls, throttle: 0.2, pitch });
+    const field = hooks().flightRef.current.fieldElev || 0;
+    await paintFrame({ ...airborne(0, 0), onGround: true, altitude: field, vsi: 0, groundContact: { vsi: contactVsi, speed: 130 } }, { ...levelControls, throttle: 0.2, pitch });
+    // The review opens one second after touchdown, once the sound, dust and radio call have happened.
+    for (let i = 0; i < 12; i++) await paintFrame({ groundContact: null }, {});
+  }
+
+  it('stops the aircraft after a crash, says why, and puts focus on the retry button', async () => {
+    await descendAndTouch(-30, -8); // 1800 ft per minute, nose down
+    expect(review().getAttribute('data-landing-review')).toBe('crash');
+    expect(hooks().pausedRef.current).toBe(true);
+    expect(hooks().flightRef.current.speed).toBe(0);
+    expect(hooks().controlsRef.current.throttle).toBe(0);
+    expect(review().querySelector('[data-review-reason="descent"]').textContent).toContain('1800 ft per minute');
+    expect(review().querySelector('[data-review-reason="nose_down"]').textContent).toContain('8° below level');
+    expect(review().querySelector('[data-landing-continue]')).toBeNull();
+    expect(document.activeElement).toBe(review().querySelector('[data-landing-retry]'));
+    const chart = review().querySelector('svg[role="img"]');
+    expect(chart.getAttribute('aria-label')).toMatch(/Height above the ground over the last seconds: .*at touchdown: 1800 ft per minute down/);
+    expect(review().querySelector('figcaption').textContent).toContain('stayed faster than 400 ft per minute');
+  });
+
+  it('returns to the approach as it was before the touchdown, re-arms scoring and resumes', async () => {
+    await descendAndTouch(-30, -8);
+    await click(review().querySelector('[data-landing-retry]'));
+    expect(review()).toBeNull();
+    expect(hooks().pausedRef.current).toBe(false);
+    const state = hooks().flightRef.current;
+    expect(state.onGround).toBe(false);
+    expect(state.altitude - (state.fieldElev || 0)).toBeGreaterThanOrEqual(100);
+    expect(state.speed).toBe(130);
+    expect(hooks().controlsRef.current.pitch).toBe(-8);
+    expect(hooks().getLandingRef().current).toMatchObject({ scored: false, wasAirborne: true });
+    expect(hooks().getLandingRef().current.peakAGL).toBeGreaterThanOrEqual(100);
+  });
+
+  it('lets a hard (not crashed) landing continue, and stays out of the way of a firm one', async () => {
+    await descendAndTouch(-8, 1); // 480 ft per minute
+    expect(review().getAttribute('data-landing-review')).toBe('hard');
+    expect(hooks().flightRef.current.speed).toBe(130);
+    expect(review().querySelector('[data-review-reason="no_flare"]')).toBeTruthy();
+    await click(review().querySelector('[data-landing-continue]'));
+    expect(review()).toBeNull();
+    expect(hooks().pausedRef.current).toBe(false);
+  });
+
+  it('shows no review for a firm or better landing', async () => {
+    await descendAndTouch(-5, 4); // 300 ft per minute
+    expect(review()).toBeNull();
+    expect(hooks().pausedRef.current).toBe(false);
+  });
+});
+
+describe('Landing review rules', () => {
+  const build = (...args) => helpers().getLandingReview(...args);
+  const samples = [20, 15, 10, 5, 2, 1].map(before => ({ t: 100 - before, agl: before * 12, fpm: before > 5 ? -300 : -700, ias: 66, pitch: 2 }));
+  it('grades from the touchdown descent and marks where the descent first stayed too fast', () => {
+    expect(build(samples, { t: 100, descentFpm: 399, pitch: 4, iasKts: 64 }, { approachKts: 64, stallKts: 49 })).toBeNull();
+    const hard = build(samples, { t: 100, descentFpm: 450, pitch: 4, iasKts: 64 }, { approachKts: 64, stallKts: 49 });
+    expect(hard).toMatchObject({ kind: 'hard', attitude: 'flared', speed: 'on_speed' });
+    const crash = build(samples, { t: 100, descentFpm: 700, pitch: -3, iasKts: 95 }, { approachKts: 64, stallKts: 49 });
+    expect(crash).toMatchObject({ kind: 'crash', attitude: 'nose_down', speed: 'fast' });
+    // Only the last ten seconds are shown: the 20 s and 15 s samples are left out.
+    expect(crash.trace.map(item => item.secondsBefore)).toEqual([10, 5, 2, 1, 0]);
+    // 10 s before was a normal 300 ft per minute; from 5 s on it stayed above 400.
+    expect(crash.trace[crash.decidingIndex].secondsBefore).toBe(5);
+    expect(build(samples, { t: 100, descentFpm: 700, pitch: 1, iasKts: 50 }, { approachKts: 64, stallKts: 49 })).toMatchObject({ attitude: 'no_flare', speed: 'slow' });
+  });
+
+  it('keeps half a minute of approach and restarts the record when the clock goes back', () => {
+    const record = helpers().recordApproachSample;
+    let trace = { samples: [], snapshots: [] };
+    for (let t = 0; t <= 60; t += 0.25) trace = record(trace, t, { agl: 500, fpm: -400, ias: 65, pitch: 2 }, { state: { onGround: false }, controls: {} });
+    expect(trace.samples[0].t).toBeGreaterThanOrEqual(30);
+    expect(trace.samples.length).toBeLessThanOrEqual(61);
+    expect(trace.snapshots.length).toBeLessThanOrEqual(31);
+    trace = record(trace, 5, { agl: 500, fpm: 0, ias: 65, pitch: 2 }, { state: { onGround: false }, controls: {} });
+    expect(trace.samples).toHaveLength(1);
+  });
+
+  it('retries from about twenty seconds before contact, never from a moment on or near the ground', () => {
+    const pick = helpers().getLandingRetrySnapshot;
+    const snap = (t, agl, onGround = false) => ({ t, agl, state: { onGround }, controls: {} });
+    expect(pick([snap(70, 900), snap(79, 600), snap(81, 500), snap(95, 150), snap(99, 20)], 100).t).toBe(79);
+    expect(pick([snap(90, 400), snap(95, 150), snap(99, 20)], 100).t).toBe(90);
+    expect(pick([snap(95, 60), snap(99, 20), snap(80, 300, true)], 100)).toBeNull();
   });
 });

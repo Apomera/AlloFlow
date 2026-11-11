@@ -86,7 +86,8 @@ describe('Astronomy Sky Map resilience', () => {
     expect(html).not.toContain('Invalid Date');
     expect(html).toContain('aria-label="Hours from now" aria-valuetext="Now"');
     expect(html).toMatch(/aria-label="Days from now"[^>]*>\+0d<\/span>/);
-    expect(html).toContain('aria-label="Portland, Maine" aria-pressed="true"');
+    // A forged place recovers to the tool's ONE default place (shared with Tonight and the Observatory).
+    expect(html).toContain('aria-label="Moosehead Lake, Maine" aria-pressed="true"');
   });
 
   it('clamps restored time travel to the supported one-year window', () => {
@@ -156,8 +157,9 @@ describe('Astronomy observing-plan workflow', () => {
 
   it('recovers malformed Bortle state and exposes the active class', () => {
     const html = renderAstronomy({ tab: 'observe', observingList: [], bortleClass: 'forged' });
-    expect(html).toContain('aria-label="Bortle class 5: Suburban sky" aria-pressed="true"');
-    expect(html).toContain('Bortle 5: Suburban sky');
+    // One default darkness for every section (it was 5 here and 3 in the Observatory).
+    expect(html).toContain('aria-label="Bortle class 3: Rural sky" aria-pressed="true"');
+    expect(html).toContain('Bortle 3: Rural sky');
   });
 
   it('centralizes observing-list updates and validates Bortle state', () => {
@@ -356,14 +358,17 @@ describe('Astronomy meteor simulator resilience', () => {
       simZhr: { forged: true }, simBortleSim: Number.NaN,
       simRadiantAlt: Number.POSITIVE_INFINITY, simMeteorFrame: {}, simMeteorPlaying: 'true'
     })).not.toThrow();
+    // An invalid shower now recovers to the NEXT shower by date at the place (it was always Perseids);
+    // a July date keeps this pinned to the Perseids.
     const html = renderAstronomy({
-      tab: 'eclipses', observingList: [], selectedShower: 'invalid-shower',
-      simZhr: { forged: true }, simBortleSim: Number.NaN,
+      tab: 'eclipses', observingList: [], selectedShower: 'invalid-shower', obsLive: false, obsDate: '2026-07-20', obsTime: '21:00',
+      bortleClass: 4, simZhr: { forged: true }, simBortleSim: Number.NaN,
       simRadiantAlt: Number.POSITIVE_INFINITY, simMeteorFrame: {}, simMeteorPlaying: 'true'
     });
     expect(html).toContain('role="group" aria-label="Meteor showers"');
     expect(html).toContain('aria-label="Perseids shower summary"');
     expect(html).toContain('aria-valuetext="100 /hr" aria-describedby="astronomy-meteor-rate-status"');
+    // An invalid simulator darkness falls back to the darkness chosen in Your sky (set to 4 above; it was a fixed 4).
     expect(html).toContain('aria-valuetext="Bortle 4" aria-describedby="astronomy-meteor-rate-status"');
     expect(html).toContain('aria-valuetext="60°" aria-describedby="astronomy-meteor-rate-status"');
     expect(html).toContain('39 /hr');

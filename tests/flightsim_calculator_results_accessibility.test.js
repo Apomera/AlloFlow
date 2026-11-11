@@ -7,7 +7,7 @@ const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 let api, tool, host, root, latest, savedRoot, externalPatch, poke, pending, replayChecks, errors, xp, writes;
 const copy = value => JSON.parse(JSON.stringify(value));
-const inputs = (patch = {}) => ({ calcPreset: 0, calcSpeed: 100, calcAltitude: 0, calcWingArea: 174, calcCl: 1.5, ...patch });
+const inputs = (patch = {}) => ({ calcPreset: 0, calcSpeed: 100, calcAltitude: 0, calcWingArea: 174, calcCl: 0.75, ...patch });
 const reference = (patch = {}) => inputs({ calcSpeed: 50, ...patch });
 const readButton = () => host.querySelector('[data-flight-calculator-read-results]');
 const snapshot = () => host.querySelector('[data-flight-calculator-results]');

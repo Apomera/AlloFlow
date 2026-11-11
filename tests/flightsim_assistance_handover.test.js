@@ -183,7 +183,8 @@ describe('attitude ownership through actual cockpit keyboard and RAF', () => {
     key('keydown', value); await frames(); key('keyup', value);
     expect(latest.autopilot).toEqual({ hdg: false, alt: false, spd: false });
     if (axis === 'bank') expect(controls().bank).toBeCloseTo(before.bank + 0.5, 10);
-    else expect(controls().pitch).toBeCloseTo(before.pitch + 0.25, 10);
+    // Nose-up key rate is 0.3 a step (9 degrees a second) since 2026-11; it was 0.5.
+    else expect(controls().pitch).toBeCloseTo(before.pitch + 0.15, 10);
   });
 
   it('holds a banked handover while paused and resumes at the bounded roll rate', async () => {

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { passLessonCheck } from './helpers/flightsim_lesson_check.js';
 
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -31,6 +32,8 @@ async function mount(seed = {}) {
     }));
   }
   await act(async () => { root.render(React.createElement(App)); });
+  // Lessons are completed through their check question; answer it as a student would.
+  await passLessonCheck(host, act);
 }
 
 beforeEach(() => {
@@ -78,6 +81,7 @@ describe('SkySchool activity navigation focus', () => {
     await click(differentLesson);
     expect(title.textContent).not.toBe(initialTitle);
     expect(document.activeElement).toBe(title);
+    await passLessonCheck(host, act);
     const done = button('Mark lesson complete');
     await click(done);
     expect(latest.completedLessons[latest.selectedLesson]).toBe(true);

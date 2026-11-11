@@ -54,13 +54,13 @@ exports[`science-sim + studio render goldens > renders + pins a digest for artSt
 
 exports[`science-sim + studio render goldens > renders + pins a digest for astronomy [mount] 1`] = `
 {
-  "buttons": 28,
+  "buttons": 31,
   "canvases": 0,
   "inputs": 3,
-  "lengthBucket": 170,
+  "lengthBucket": 182,
   "paths": 1,
   "selects": 1,
-  "sha": "5336efad9edfb0f6",
+  "sha": "00e447d3d9bc7647",
   "svgs": 1,
 }
 `;

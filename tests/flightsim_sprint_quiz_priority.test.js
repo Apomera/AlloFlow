@@ -212,7 +212,8 @@ describe('SkySchool sprint owns quiz input and presentation', () => {
     expect(host.querySelector('[data-geoq-feedback]').textContent).toContain('Your answer: ' + first);
     expect(host.querySelector('#skyschool-geoq-title').textContent).toMatch(/Score: [01]\/1/);
     await act(async () => host.querySelector('[data-geoq-next]').click());
-    expect(host.querySelector('#skyschool-geoq-title').textContent).toMatch(/Score: [01]\/2/);
+    // The second question is not answered yet, so it is not in the score's total.
+    expect(host.querySelector('#skyschool-geoq-title').textContent).toMatch(/Question 2 · Score so far: [01]\/1/);
     expect(host.querySelector('[data-geoq-feedback]')).toBe(feedback);
     expect(feedback.textContent).toBe('');
     expect(host.querySelector('[data-geoq-feedback]').textContent).toBe('');
@@ -235,7 +236,7 @@ describe('SkySchool sprint owns quiz input and presentation', () => {
     expect(feedback.textContent).toBe('');
     expect(host.querySelector('[data-geoq-feedback]').textContent).toBe('');
     expect(host.querySelector('[data-geoq-feedback]').getAttribute('role')).toBe('status');
-    expect(host.querySelector('#skyschool-geoq-title').textContent).toMatch(/\/2/);
+    expect(host.querySelector('#skyschool-geoq-title').textContent).toMatch(/Question 2 · Score so far: [01]\/1/);
     const close = [...host.querySelectorAll('[data-flight-geography-quiz] button')].find(button => button.textContent === 'Close quiz');
     await act(async () => close.click());
     expect(ordinaryQuizDrawn()).toBe(false);

@@ -193,16 +193,19 @@ describe('claimed touches retain intentional control', () => {
     expect(apUpdates).toEqual([{ hdg: false, alt: false, spd: false }]);
   });
 
+  // Bank still returns to wings level. Pitch now holds its attitude like a trimmed
+  // aircraft: springing back to level put a student who let go after liftoff back
+  // on the runway, so a resting finger has no pitch centering left to suppress.
   it('does not let an unclaimed resting finger suppress ordinary manual auto-centering', async () => {
     await mount({ assisted: false }); Object.assign(controls(), { pitch: 6, bank: 20 });
     const point = stick(); touch('touchstart', [point]);
     touch('touchmove', [finger(point.identifier, point.clientX + 0.5, point.clientY - 0.5)]);
     expect(controls()).toMatchObject({ pitch: 6, bank: 20 });
     await frames();
-    expect(controls().pitch).toBeCloseTo(6 * Math.pow(0.92, 0.5), 10);
+    expect(controls().pitch).toBeCloseTo(6, 10);
     expect(controls().bank).toBeCloseTo(20 * Math.pow(0.95, 0.5), 10);
     touch('touchend', [point], []);
-    expect(controls().pitch).toBeCloseTo(6 * Math.pow(0.92, 0.5), 10);
+    expect(controls().pitch).toBeCloseTo(6, 10);
     expect(controls().bank).toBeCloseTo(20 * Math.pow(0.95, 0.5), 10);
   });
 });

@@ -303,8 +303,10 @@ describe('altitude hold through the production cockpit loop', () => {
     await frames();
     key('keyup', 'ArrowUp');
     expect(latest.autopilot).toMatchObject({ hdg: false, alt: false, spd: false });
-    expect(hooks().controlsRef.current.pitch).toBeGreaterThan(trim.pitch + 0.2);
-    expect(hooks().controlsRef.current.pitch).toBeLessThan(trim.pitch + 0.3);
+    // One half-step frame of the nose-up key rate (9 degrees a second since 2026-11;
+    // it was 15, which over-rotated a first takeoff into a stall within a second).
+    expect(hooks().controlsRef.current.pitch).toBeGreaterThan(trim.pitch + 0.1);
+    expect(hooks().controlsRef.current.pitch).toBeLessThan(trim.pitch + 0.2);
   });
 
   it.each(['stick', 'power'])('gives a deflected touch %s ownership immediately', async zone => {

@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { React, ReactDOMClient, loadTool, makeCtx, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { passLessonCheck } from './helpers/flightsim_lesson_check.js';
 
 const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
@@ -35,6 +36,8 @@ async function mount(seed = {}) {
     }));
   }
   await act(async () => root.render(React.createElement(App)));
+  // Lessons are completed through their check question; answer it as a student would.
+  await passLessonCheck(host, act);
 }
 async function search(value) {
   const input = host.querySelector('input[type="search"]');

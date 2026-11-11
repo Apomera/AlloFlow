@@ -15,6 +15,8 @@ function response(index, correct = false, order = 0) {
   return { choice: correct ? question.correct : question.options.find(option => option !== question.correct), correct, order };
 }
 function studySeed(index = weatherIndex(), options = {}) {
+  // A saved practice pick is an index into THAT attempt's option order.
+  api.setFlightQuizSeed(options.sequence ?? 5);
   const first = response(index, !!options.correct), question = deck()[index];
   const topic = api.flightQuizStudyTopic(question.topic), sequence = options.sequence ?? 5;
   const practicePicked = options.practice ? question.options.indexOf(question.correct) : null;

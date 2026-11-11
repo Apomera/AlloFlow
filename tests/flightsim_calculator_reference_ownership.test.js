@@ -5,7 +5,7 @@ const { act } = React;
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 let api, tool, host, root, latest, savedRoot, externalPatch, poke, pending, replayChecks, errors, xp;
 const copy = value => JSON.parse(JSON.stringify(value));
-const inputs = (patch = {}) => ({ calcPreset: 0, calcSpeed: 100, calcAltitude: 0, calcWingArea: 174, calcCl: 1.5, ...patch });
+const inputs = (patch = {}) => ({ calcPreset: 0, calcSpeed: 100, calcAltitude: 0, calcWingArea: 174, calcCl: 0.75, ...patch });
 const reference = (patch = {}) => inputs({ calcSpeed: 50, ...patch });
 const action = name => host.querySelector('[data-flight-calculator-reference-action="' + name + '"]');
 const comparison = () => host.querySelector('[data-flight-calculator-compare]');
@@ -252,7 +252,7 @@ describe('Sky School calculator reference ownership', () => {
     await mount({}, { delayed: true, cloneAtCommit: true });
     const preset = handler(button('Boeing 747')), speed = slider('True airspeed (kts)', 100), save = handler(action('save'));
     await act(async () => { preset(); speed(); save(); }); await run(poke); await flush();
-    expect(latest.calcReference).toEqual({ calcPreset: 1, calcSpeed: 100, calcAltitude: 0, calcWingArea: 5500, calcCl: 1.4 });
+    expect(latest.calcReference).toEqual({ calcPreset: 1, calcSpeed: 100, calcAltitude: 0, calcWingArea: 5500, calcCl: 0.6 });
     expect(api.normalizeFlightCalculatorInputs(latest)).toEqual(latest.calcReference);
     expect(button('Boeing 747').getAttribute('aria-pressed')).toBe('true');
   });

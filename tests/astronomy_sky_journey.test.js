@@ -558,7 +558,8 @@ describe('Quiz', () => {
 
   it('without practice mode answers can be changed and no explanation leaks early', () => {
     const q = P.QUIZ_QUESTIONS;
-    const v = mount();
+    // Practice feedback is now ON unless the student turns it off, so this test turns it off.
+    const v = mount({ quizPractice: false });
     click(choice(v, 0, 0)); click(choice(v, 0, 1));
     expect(v.state.quizAnswers[0]).toBe(1);
     expect(v.host.textContent).not.toContain(q[0].explain.slice(0, 40));

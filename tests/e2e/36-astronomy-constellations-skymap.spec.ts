@@ -345,7 +345,8 @@ test.describe('Astronomy constellation and Sky Map visuals - real Chromium', () 
     const darkness = page.locator('#astronomy-sky-darkness');
     const darknessStatus = page.locator('#astronomy-sky-darkness-status');
     const diagram = page.locator('#astronomy-sky-map-diagram');
-    await expect(darkness).toHaveValue('5');
+    // The whole tool now starts from one Your-sky darkness (Bortle 3, a rural sky), no longer the map's own 5.
+    await expect(darkness).toHaveValue('3');
     await expect(darkness.locator('option')).toHaveCount(9);
     await darkness.selectOption('9');
     await expect(darkness).toHaveValue('9');
@@ -381,8 +382,10 @@ test.describe('Astronomy constellation and Sky Map visuals - real Chromium', () 
     const figure = page.locator('#astronomy-season-sun-path');
     const status = page.locator('#astronomy-season-sun-status');
     const conciseStatus = page.locator('#astronomy-season-status');
-    await expect(observer).toHaveValue('portland');
-    await expect(observer.locator('option')).toHaveCount(6);
+    // Seasons follows the one Your-sky place: Moosehead Lake by default, listed ahead of the six presets.
+    await expect(observer).toHaveValue('custom');
+    await expect(observer.locator('option')).toHaveCount(7);
+    await expect(observer.locator('option:checked')).toHaveText(/Moosehead Lake/);
     await expect(figure).toHaveAttribute('role', 'img');
     await expect(figure).toHaveAttribute('viewBox', '0 0 360 190');
     await expect(figure).toHaveAttribute('data-solar-state', 'normal');

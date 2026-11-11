@@ -47,7 +47,9 @@ async function mount(seed = {}) {
   function App() {
     const [data, setData] = React.useState({ flightSim: {
       view: 'menu', aircraft: 'cessna172', railCollapsed: true,
-      takeoffTutorialDismissed: true, landingTutorialDismissed: true, ...seed,
+      takeoffTutorialDismissed: true, landingTutorialDismissed: true,
+      // Online search is opt-in since 2026-11; these tests are about a planner whose owner turned it on.
+      cityOnline: true, ...seed,
     } });
     latest = data.flightSim;
     return tool.render(makeCtx({ toolData: data, setToolData: setData,
@@ -389,5 +391,21 @@ describe('SkySchool city planning integration', () => {
     await act(async () => field.form.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
     expect(details.querySelector('ul[aria-label="City results"] li button')).toBeTruthy();
     expect(latest.view).toBe('menu'); expect(fetchSpy).not.toHaveBeenCalled();
+  });
+});
+
+// Online search used to be on unless switched off: a typed place name left the device
+// before anyone had been told. It now waits for the person to turn it on.
+describe('SkySchool city search is offline until switched on', () => {
+  it('searches only the built-in cities, and sends nothing, when the choice has never been made', async () => {
+    await mount({ cityOnline: undefined });
+    const box = planner().querySelector('input[type="checkbox"]');
+    expect(box.checked).toBe(false);
+    expect(planner().querySelector('[data-flight-city-online-note]').textContent).toContain('photon.komoot.io');
+    await input('Kyoto');
+    await click(planner().querySelector('button[type="submit"]'));
+    await act(async () => { await Promise.resolve(); });
+    expect(fetchSpy).not.toHaveBeenCalled();
+    expect(resultButtons().some(item => resultNamed(item, 'Kyoto'))).toBe(true);
   });
 });

@@ -79,7 +79,9 @@ describe('Meteor view controls and resilience', () => {
   });
 
   it('normalizes malformed 3D state without corrupting labels or geometry', () => {
-    const html=render({simMeteorPattern:'__proto__',simRadiantAlt:null,simZhr:true,simBortleSim:'invalid',simMeteorFrame:Infinity});
+    // The tab now opens on the NEXT shower by date; these expectations are the Perseids' numbers, so choose it.
+    // A malformed simulator darkness falls back to the Your-sky darkness (was a fixed 4); 39 per hour is the Bortle 4 figure.
+    const html=render({selectedShower:'perseids',bortleClass:4,simMeteorPattern:'__proto__',simRadiantAlt:null,simZhr:true,simBortleSim:'invalid',simMeteorFrame:Infinity});
     expect(html.includes('Cassiopeia recognition guide')).toBe(true);
     expect(html.includes('at 60 degrees')).toBe(true);
     expect(html.includes('39 meteors per hour')).toBe(true);

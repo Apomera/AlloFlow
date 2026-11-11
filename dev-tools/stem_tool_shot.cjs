@@ -100,6 +100,30 @@ function extractStemPalette() {
   return src.slice(start, end + 1);
 }
 
+
+// ── Tools with a sibling data file ──
+// SkySchool reads stem_data_skyschool_geo.js with a same-origin request at load, so
+// on a setContent page (about:blank, no base URL) it threw "Invalid URL", never
+// registered, and this instrument reported nothing about it. For such a tool only,
+// the page is given a real local URL that serves the repo, and vendored three.js is
+// loaded first the way the app shell does. Every other tool takes the old path
+// byte for byte.
+function needsSiblingData(source) { return /new URL\('stem_data_[A-Za-z0-9_]+\.js'/.test(source); }
+function serveRepoForTool() {
+  const http = require('http');
+  const root = path.resolve(ROOT);
+  const types = { '.js': 'text/javascript', '.json': 'application/json', '.css': 'text/css', '.png': 'image/png' };
+  const server = http.createServer((req, res) => {
+    const pathname = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+    if (pathname === '/__tool_page') { res.writeHead(200, { 'content-type': 'text/html' }); res.end('<!doctype html><title>tool</title>'); return; }
+    const target = path.resolve(root, '.' + pathname);
+    if (req.method !== 'GET' || !target.startsWith(root + path.sep) || !fs.existsSync(target) || !fs.statSync(target).isFile()) { res.writeHead(404); res.end(); return; }
+    res.writeHead(200, { 'content-type': types[path.extname(target)] || 'application/octet-stream' });
+    fs.createReadStream(target).pipe(res);
+  });
+  return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve({ origin: 'http://127.0.0.1:' + server.address().port, close: () => server.close() })));
+}
+
 (async () => {
   const { chromium } = require(path.join(ROOT, 'node_modules', 'playwright'));
   const palette = extractStemPalette();
@@ -118,6 +142,8 @@ function extractStemPalette() {
   page.on('pageerror', (e) => errors.push(String(e).slice(0, 200)));
   // Same condition as the gate: the host layer only exists for contrast.
   const hostCss = CONTRAST ? extractHostThemeRules('contrast') : '';
+  const site = needsSiblingData(src) ? await serveRepoForTool() : null;
+  if (site) await page.goto(site.origin + '/__tool_page');
   await page.setContent('<!doctype html><html><head><style>' + tw + '</style><style>' + palette +
     '</style><style>' + hostCss +
     '</style><style>body{margin:0;font-family:system-ui;background:' +
@@ -125,6 +151,7 @@ function extractStemPalette() {
     '}</style></head><body><main id="slot" class="' +
     (CONTRAST ? 'theme-contrast' : (DARK ? 'theme-dark' : 'theme-default')) + '"></main></body></html>');
   for (const code of runtime) await page.addScriptTag({ content: code });
+  if (site) await page.addScriptTag({ content: read('vendor/three-r128/three.min.js') });
   await page.addScriptTag({ content: src });
   await page.addScriptTag({ content: SHELL });
   if (PRE) await page.evaluate(new Function(PRE));
@@ -169,7 +196,7 @@ function extractStemPalette() {
   const out = outArg || path.join(ROOT, 'dev-tools', '.cache', toolId + '_' + theme + '.png');
   fs.mkdirSync(path.dirname(out), { recursive: true });
   await page.screenshot({ path: out, fullPage: FULL });
-  await browser.close();
+  await browser.close(); if (site) site.close();
   if (errors.length) console.error('page errors: ' + errors.join(' | '));
   console.log(out);
 })();

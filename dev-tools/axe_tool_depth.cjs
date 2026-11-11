@@ -57,6 +57,30 @@ const idMatch = /registerTool\(\s*['"]([^'"]+)['"]/.exec(toolSrc);
 if (!idMatch) { console.error('no registerTool() id found in ' + toolFile); process.exit(2); }
 const TOOL_ID = idMatch[1];
 
+
+// ── Tools with a sibling data file ──
+// SkySchool reads stem_data_skyschool_geo.js with a same-origin request at load, so
+// on a setContent page (about:blank, no base URL) it threw "Invalid URL", never
+// registered, and this instrument reported nothing about it. For such a tool only,
+// the page is given a real local URL that serves the repo, and vendored three.js is
+// loaded first the way the app shell does. Every other tool takes the old path
+// byte for byte.
+function needsSiblingData(source) { return /new URL\('stem_data_[A-Za-z0-9_]+\.js'/.test(source); }
+function serveRepoForTool() {
+  const http = require('http');
+  const root = path.resolve(ROOT);
+  const types = { '.js': 'text/javascript', '.json': 'application/json', '.css': 'text/css', '.png': 'image/png' };
+  const server = http.createServer((req, res) => {
+    const pathname = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+    if (pathname === '/__tool_page') { res.writeHead(200, { 'content-type': 'text/html' }); res.end('<!doctype html><title>tool</title>'); return; }
+    const target = path.resolve(root, '.' + pathname);
+    if (req.method !== 'GET' || !target.startsWith(root + path.sep) || !fs.existsSync(target) || !fs.statSync(target).isFile()) { res.writeHead(404); res.end(); return; }
+    res.writeHead(200, { 'content-type': types[path.extname(target)] || 'application/octet-stream' });
+    fs.createReadStream(target).pipe(res);
+  });
+  return new Promise((resolve) => server.listen(0, '127.0.0.1', () => resolve({ origin: 'http://127.0.0.1:' + server.address().port, close: () => server.close() })));
+}
+
 const SHELL = `
 window.__mount = function (id, dark) {
   var Icons = new Proxy({}, { get: function () { return function () { return React.createElement('span'); }; } });
@@ -107,6 +131,8 @@ window.__mount = function (id, dark) {
   const errors = [];
   page.on('pageerror', (e) => errors.push(String(e).slice(0, 140)));
 
+  const site = needsSiblingData(toolSrc) ? await serveRepoForTool() : null;
+  if (site) await page.goto(site.origin + '/__tool_page');
   await page.setContent('<!doctype html><html><head><style>' + fs.readFileSync(TW, 'utf8') +
     '</style><style>' + STEM_PALETTE +
     '</style><style>body{margin:0;font-family:system-ui;background:' + (DARK ? '#0f172a' : '#ffffff') +
@@ -117,13 +143,20 @@ window.__mount = function (id, dark) {
     read('desktop/web-app/node_modules/react/umd/react.production.min.js'),
     read('desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js'),
     read('stem_lab/stem_lab_module.js'),
+    site ? read('vendor/three-r128/three.min.js') : '',
     toolSrc, SHELL,
-  ]) await page.addScriptTag({ content: code });
+  ]) if (code) await page.addScriptTag({ content: code });
 
   const status = await page.evaluate(({ id, dark }) => window.__mount(id, dark),
     { id: TOOL_ID, dark: DARK });
   if (typeof status === 'string' && /^not-registered|^threw/.test(status)) {
-    console.error(status); await browser.close(); process.exit(2);
+    // One quiet "not-registered:<id>" line read as "nothing to report". Say what it
+    // means and why, and leave no doubt that this tool was NOT checked.
+    console.error('✗ axe_tool_depth: ' + path.basename(toolFile) + ' did not mount (' + status + '), so NOTHING was checked for it.');
+    console.error('  The tool script ' + (/^not-registered/.test(status) ? 'never called registerTool(): it threw while loading.' : 'threw on its first render.'));
+    if (errors.length) console.error('  Page error(s): ' + errors.slice(0, 3).join(' | '));
+    else console.error('  No page error was captured; load it with dev-tools/stem_tool_shot.cjs to see the console.');
+    await browser.close(); if (site) site.close(); process.exit(2);
   }
   await page.waitForTimeout(3500);
 
@@ -199,6 +232,6 @@ window.__mount = function (id, dark) {
   }
   if (!anyFresh && report[0].fresh.length === 0) console.log('CLEAN at depth');
   if (errors.length) console.log('page errors: ' + errors.slice(0, 3).join(' | '));
-  await browser.close();
+  await browser.close(); if (site) site.close();
   process.exit(anyFresh || report[0].fresh.length ? 1 : 0);
 })();

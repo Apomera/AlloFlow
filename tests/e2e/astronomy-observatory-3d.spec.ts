@@ -27,6 +27,9 @@ const HARNESS = `<!doctype html>
   window.__events = { errors: [], rejections: [] };
   window.addEventListener('error', function (e) { window.__events.errors.push(String(e.message)); });
   window.addEventListener('unhandledrejection', function (e) { window.__events.rejections.push(String(e.reason)); });
+  // The app shell approves each lazily loaded script (Three.js here). This harness serves the tree itself,
+  // so its stand-in only assigns src; without it the host refuses to load the 3D engine at all.
+  if (typeof window.__alloConfigureTrustedScript !== 'function') window.__alloConfigureTrustedScript = function (script, src) { script.src = src; return script; };
 </script>
 <script src="/stem_lab/stem_tool_astronomy.js"></script>
 <script>

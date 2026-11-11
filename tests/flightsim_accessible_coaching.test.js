@@ -132,7 +132,7 @@ describe('visible first-flight coaching', () => {
     await act(async () => hooks().startFlightChallenge('first_flight'));
     expect(cue()).toBeTruthy();
     expect(cue().closest('details')).toBeNull();
-    expect(cue().textContent).toContain(usesTouch ? 'Drag UP along the right edge' : 'Hold SHIFT');
+    expect(cue().textContent).toContain(usesTouch ? 'Drag UP along the right edge' : 'Hold + or Shift');
     expect(host.querySelector('[aria-label="Flight challenge"] details').open).toBe(false);
     if (usesTouch) expect(host.querySelector('[aria-label="Flight challenge"]').textContent).not.toContain('W/S');
 

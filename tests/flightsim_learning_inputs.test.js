@@ -122,7 +122,7 @@ describe('Sky School checklist continuity', () => {
 
 describe('Sky School force calculator input integrity', () => {
   it('preserves current valid defaults and values for every aircraft preset', () => {
-    const defaultSpeeds = [74, 294, 317, 720, 60];
+    const defaultSpeeds = [76, 280, 318, 474, 61];
     api.FORCE_CALCULATOR_PRESETS.forEach((preset, index) => {
       expect(api.normalizeFlightCalculatorInputs({ calcPreset: index })).toEqual({ calcPreset: index,
         calcSpeed: defaultSpeeds[index], calcAltitude: 0, calcWingArea: preset.wingArea, calcCl: preset.cl });
@@ -155,15 +155,15 @@ describe('Sky School force calculator input integrity', () => {
   it('preserves batched slider edits, canonicalizes the saved fields, and computes from their displayed values', async () => {
     await mount({ view: 'calculator', calcPreset: 0, calcWingArea: -1, calcCl: '1.5', keep: 'preserved' });
     await act(async () => { moveRange(range('True airspeed (kts)'), 100); moveRange(range('Altitude'), 10000); });
-    expect(latest).toMatchObject({ calcPreset: 0, calcSpeed: 100, calcAltitude: 10000, calcWingArea: 5, calcCl: 1.5, keep: 'preserved' });
-    const lift = .5 * api.Physics.airDensity(10000) * (100 * 1.6878) ** 2 * 5 * 1.5;
+    expect(latest).toMatchObject({ calcPreset: 0, calcSpeed: 100, calcAltitude: 10000, calcWingArea: 5, calcCl: 0.75, keep: 'preserved' });
+    const lift = .5 * api.Physics.airDensity(10000) * (100 * 1.6878) ** 2 * 5 * 0.75;
     expect(host.textContent).toContain(Math.round(lift).toLocaleString() + ' lb');
     expect(host.textContent).toContain('L/W = ' + (lift / 2550).toFixed(2));
   });
   it('keeps a newly selected preset when a slider event arrives before React commits', async () => {
     await mount({ view: 'calculator', calcPreset: 0 }); const oldSpeed = range('True airspeed (kts)');
     await act(async () => { button('Boeing 747').click(); moveRange(oldSpeed, 100); });
-    expect(latest).toMatchObject({ calcPreset: 1, calcSpeed: 100, calcAltitude: 0, calcWingArea: 5500, calcCl: 1.4 });
+    expect(latest).toMatchObject({ calcPreset: 1, calcSpeed: 100, calcAltitude: 0, calcWingArea: 5500, calcCl: 0.6 });
     expect(button('Boeing 747').getAttribute('aria-pressed')).toBe('true');
     expect(range('Wing area').valueAsNumber).toBe(5500);
   });
@@ -182,7 +182,7 @@ describe('Sky School force calculator input integrity', () => {
   it('saves only valid native steps when input events carry off-step values', async () => {
     await mount({ view: 'calculator', calcPreset: 0 });
     await act(async () => { moveRange(range('Altitude'), 7310); moveRange(range('Lift coefficient (Cₗ)'), 1.333); });
-    expect(latest).toMatchObject({ calcSpeed: 74, calcAltitude: 7500, calcWingArea: 174, calcCl: 1.35 });
+    expect(latest).toMatchObject({ calcSpeed: 76, calcAltitude: 7500, calcWingArea: 174, calcCl: 1.35 });
     expect(range('Altitude').validity.stepMismatch).toBe(false);
     expect(range('Lift coefficient (Cₗ)').validity.stepMismatch).toBe(false);
   });

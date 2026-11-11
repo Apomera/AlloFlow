@@ -27,6 +27,9 @@ const HARNESS = `<!doctype html>
   window.__events = { errors: [], rejections: [] };
   window.addEventListener('error', function (e) { window.__events.errors.push(String(e.message)); });
   window.addEventListener('unhandledrejection', function (e) { window.__events.rejections.push(String(e.reason)); });
+  // The app shell approves each lazily loaded script (Three.js here). This harness serves the tree itself,
+  // so its stand-in only assigns src; without it the host refuses to load the 3D engine at all.
+  if (typeof window.__alloConfigureTrustedScript !== 'function') window.__alloConfigureTrustedScript = function (script, src) { script.src = src; return script; };
 </script>
 <script src="/stem_lab/stem_tool_astronomy.js"></script>
 <script>
@@ -228,7 +231,8 @@ test('failed engine load leaves the 2D simulator usable and Retry recovers', asy
   await page.evaluate(() => {
     (window as any).__originalEnsure = (window as any).StemLab.ensureThree;
     (window as any).StemLab.ensureThree = () => Promise.reject(new Error('Unavailable GPU'));
-    (window as any).__mount({tab:'meteors'});
+    // The tab now opens on the next shower by date, so the shower is named here to keep this about the fallback.
+    (window as any).__mount({tab:'meteors',selectedShower:'perseids'});
   });
   await expect(page.getByText('The 3D sky could not start.', { exact:false })).toBeVisible();
   await page.getByRole('button', { name: '2D diagram', exact:true }).click();
@@ -258,7 +262,8 @@ test('poor conditions produce zero trails, and resetting restores shower default
   await page.getByRole('button',{name:'🌠 Geminids',exact:true}).click();
   await page.getByRole('button',{name:'Reset meteor simulation conditions',exact:true}).click();
   await expect(page.locator('#astr-sim-zhr')).toHaveValue('150');
-  await expect(page.locator('#astr-sim-bortle')).toHaveValue('4');
+  // Reset returns to the darkness chosen in Your sky (Bortle 3 by default), no longer a fixed 4.
+  await expect(page.locator('#astr-sim-bortle')).toHaveValue('3');
   await expect(page.locator('#astr-sim-alt')).toHaveValue('60');
   await expect.poll(()=>sky.evaluate((el:any)=>el.__meteorDebug().count)).toBeGreaterThan(0);
   expect(errors).toEqual([]);

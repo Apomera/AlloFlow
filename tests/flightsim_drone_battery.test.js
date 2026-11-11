@@ -267,7 +267,7 @@ describe('drone mission battery follows active simulation time', () => {
 
   it('accumulates travel drain across frames and flushes the last fraction on End Flight', async () => {
     await mount(); await start(); await frames(60);
-    const expected = 100 - 0.17 * hooks().timeRef.current;
+    const expected = 100 - 0.115 * hooks().timeRef.current;
     expect(latest.survey.battery).toBeLessThan(99.5);
     expect(latest.survey.battery).toBeGreaterThanOrEqual(expected);
     expect(latest.survey.battery - expected).toBeLessThanOrEqual(0.5);
@@ -287,7 +287,7 @@ describe('drone mission battery follows active simulation time', () => {
     expect(latest.survey.battery).toBe(heldBattery);
     hooks().keysRef.current[' '] = true;
     await frames(); await frames(20); await finish();
-    expect(latest.survey.battery).toBeCloseTo(100 - 0.17 * hooks().timeRef.current, 8);
+    expect(latest.survey.battery).toBeCloseTo(100 - 0.115 * hooks().timeRef.current, 8);
     expect(hooks().timeRef.current).toBeGreaterThan(heldTime);
   });
 
@@ -299,7 +299,7 @@ describe('drone mission battery follows active simulation time', () => {
     await act(async () => updateSaved({ view: 'menu' }));
     await start(); await frames(); await finish();
     expect(latest.survey.battery).toBeGreaterThan(99.9);
-    expect(latest.survey.battery).toBeCloseTo(100 - 0.17 * hooks().timeRef.current, 8);
+    expect(latest.survey.battery).toBeCloseTo(100 - 0.115 * hooks().timeRef.current, 8);
   });
 
   it('announces low battery once when crossing the return threshold', async () => {

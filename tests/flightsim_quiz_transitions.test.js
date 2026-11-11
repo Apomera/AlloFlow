@@ -132,7 +132,8 @@ describe('Sky School live quiz transitions', () => {
     await mount({ quizFirstAttempts: saved, quizPracticeKey: key(0), quizPracticePicked, quizScore: 0, quizTotal: 1 });
     expect(choices().every(choice => !choice.disabled)).toBe(true);
     await click(correctChoice(0));
-    expect(latest.quizPracticePicked).toBe(0);
+    // The practice pick is a position in this attempt's shuffled order: the key's position.
+    expect(latest.quizPracticePicked).toBe(api.getQuizDeck()[0].options.indexOf(api.getQuizDeck()[0].correct));
     expect(latest.quizFirstAttempts).toEqual(saved);
     expect([latest.quizScore, latest.quizTotal]).toEqual([0, 1]);
     expect(host.textContent).toContain('✓ Correct!');

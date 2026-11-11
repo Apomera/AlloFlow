@@ -29,7 +29,7 @@ const eachSource = (fn) => PATHS.forEach((p) => fn(readFileSync(p, 'utf8'), p));
 describe('flightsim four-forces overlay', () => {
   it('is drawn after the world layers that used to bury it', () => {
     eachSource((source, path) => {
-      const forces = source.indexOf('drawForces(gfx, W - 112, 352');
+      const forces = source.indexOf('drawForces(gfx, forcesX, 352');
       expect(forces, `${path}: the force diagram call is gone`).toBeGreaterThan(-1);
       // Every one of these paints part of the scene. All must run BEFORE the card.
       for (const later of ['drawRunway(gfx, W, H', 'drawParticles(gfx, W, H']) {

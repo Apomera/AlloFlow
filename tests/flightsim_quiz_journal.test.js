@@ -7,6 +7,8 @@ let host, root, tool, FS, latest;
 const choices = () => [...host.querySelectorAll('button[aria-label^="Answer "]')];
 const button = text => [...host.querySelectorAll('button')].find(element => element.textContent === text);
 const history = () => [...host.querySelectorAll('[data-quiz-history-entry]')];
+// Option order is shuffled per attempt: find the key by its text, never by position.
+const rightChoice = () => { const q = FS.getQuizDeck().find(item => item.question === host.querySelector('h3').textContent); return choices()[q.options.indexOf(q.correct)]; };
 const first = (index, correct = true, order = index) => {
   const question = FS.getQuizDeck()[index];
   return { [FS.flightQuizQuestionKey(question)]: { choice: correct ? question.correct : question.options.find(choice => choice !== question.correct), order } };
@@ -100,7 +102,7 @@ describe('Sky School earlier quiz attempt journal', () => {
   it('restores saved history after remount while continuing the current attempt', async () => {
     await mount({ quizFirstAttempts: first(0, false) });
     await click(button('Start new attempt'));
-    await click(choices()[0]);
+    await click(rightChoice());
     await click(button('Next ▶'));
     const saved = structuredClone(latest);
     await act(async () => { root.unmount(); });
@@ -149,7 +151,7 @@ describe('Sky School earlier quiz attempt journal', () => {
 
   it('archives a response that arrived in the same tick as reset', async () => {
     await mount();
-    const reset = button('Start new attempt'), answer = choices()[0];
+    const reset = button('Start new attempt'), answer = rightChoice();
     await act(async () => { answer.click(); reset.click(); });
     const saved = FS.flightQuizJournalState(FS.getQuizDeck(), latest.quizAttemptHistory);
     expect(saved).toHaveLength(1);

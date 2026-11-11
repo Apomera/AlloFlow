@@ -241,7 +241,9 @@ describe('single-pointer flight controls', () => {
     const commanded = controls().pitch;
     expect(commanded).toBeGreaterThan(5);
     await frames(6);
-    expect(controls().pitch).toBeLessThan(commanded);
+    // The keyboard nose-up holds its attitude after release (trimmed aircraft): it used to
+    // spring back to level, which put a student back on the runway after liftoff.
+    expect(controls().pitch).toBe(commanded);
     expect(controls().bank).toBe(10);
   });
 
@@ -402,7 +404,8 @@ describe('single-pointer flight controls', () => {
     // should therefore allow ordinary manual auto-centering to take over.
     await openControls(); await click(host.querySelector('[data-flight-assistance]'));
     await frames(3);
-    expect(controls().pitch).toBeLessThan(2);
+    // Bank returns to wings level; pitch now holds its attitude instead of centring.
+    expect(controls().pitch).toBe(2);
     expect(controls().bank).toBeLessThan(10);
   });
 
