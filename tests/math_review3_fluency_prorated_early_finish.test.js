@@ -88,7 +88,7 @@ async function mountBenchmark(bank) {
       addToast: () => {}, onProbeComplete: e => completed.push(e), handleScoreUpdate: (...a) => xp.push(a),
     }));
   });
-  await change(host.querySelector('select[aria-label="Probe Mode"]'), 'benchmark');
+  await change(host.querySelector('select[aria-label="Session type"]'), 'benchmark');
   await click(host.querySelector('button[aria-label="Start fixed form"]'));
   return { completed, xp, start: clock };
 }

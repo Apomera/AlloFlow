@@ -6,6 +6,26 @@
 (function () {
   'use strict';
 
+  // Missing Number and Quantity Discrimination are taken by a student on the
+  // teacher's device, so the runner covers the dashboard (other students' data)
+  // instead of sitting inside it. z-index sits above the Assessment Center
+  // overlays (300) and below its confirm dialog (400).
+  function SaProbeFullscreen(props) {
+    var R = window.React;
+    var sheet = R.createElement('div', {
+      role: 'dialog', 'aria-modal': 'true', 'aria-label': props.label, 'data-probe-fullscreen': props.kind,
+      style: { position: 'fixed', inset: 0, zIndex: 350, background: '#f8fafc', overflowY: 'auto', display: 'flex', justifyContent: 'center', alignItems: 'flex-start', padding: '16px' }
+    }, R.createElement('div', { className: props.className, style: { width: '100%', maxWidth: '44rem', marginTop: '6vh' } }, props.children));
+    var RD = window.ReactDOM;
+    return RD && typeof RD.createPortal === 'function' && typeof document !== 'undefined' && document.body ? RD.createPortal(sheet, document.body) : sheet;
+  }
+  // Digits and one leading minus sign only. A number field changes its value on
+  // the mouse wheel and the arrow keys, which can alter a typed answer.
+  function saCleanProbeAnswer(raw) {
+    var text = String(raw == null ? '' : raw);
+    return ((/^\s*[-\u2212]/.test(text) ? '-' : '') + text.replace(/[^0-9]/g, '')).slice(0, 8);
+  }
+
   function saEscapeReportText(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
@@ -1849,6 +1869,27 @@ try {
         setMnProbeActive(false);
       }
     }, [mnProbeTimer, mnProbeActive, mnProbeProblems, mnProbeResults]);
+    // After a numeracy probe ends, the device is still the student's: results
+    // stay covered until the teacher asks for them.
+    const [numeracyHandback, setNumeracyHandback] = React.useState(null);
+    // Which finished result objects are already in the student's record.
+    const [numeracySaved, setNumeracySaved] = React.useState({ missing_number: null, quantity_discrimination: null });
+    const saveNumeracyResult = (results, formInfo, fallbackGrade, fallbackForm) => {
+      if (!results || !mathProbeStudent || numeracySaved[results.type] === results) return false;
+      setLatestProbeResult({
+        student: mathProbeStudent,
+        type: results.type,
+        date: new Date().toISOString(),
+        correct: results.correct,
+        total: results.total,
+        accuracy: results.total > 0 ? Math.round(results.correct / results.total * 100) : 0,
+        grade: formInfo ? formInfo.grade : fallbackGrade,
+        form: formInfo ? formInfo.form : fallbackForm,
+        formVersion: formInfo ? formInfo.formVersion : 1
+      });
+      setNumeracySaved(prev => ({ ...prev, [results.type]: results }));
+      return true;
+    };
     const [qdProbeActive, setQdProbeActive] = React.useState(false);
     const [qdProbeProblems, setQdProbeProblems] = React.useState([]);
     const [qdProbeIndex, setQdProbeIndex] = React.useState(0);
@@ -1874,6 +1915,16 @@ try {
         setQdProbeActive(false);
       }
     }, [qdProbeTimer, qdProbeActive, qdProbeProblems, qdProbeResults]);
+    React.useEffect(() => {
+      if (mnProbeResults && !mnProbeResults.endedEarly && mathProbeStudent && numeracySaved.missing_number !== mnProbeResults) {
+        if (saveNumeracyResult(mnProbeResults, mnProbeFormRef.current, mnGrade, mnForm)) addToast(`Probe results saved for ${mathProbeStudent}`, 'success');
+      }
+    }, [mnProbeResults]);
+    React.useEffect(() => {
+      if (qdProbeResults && !qdProbeResults.endedEarly && mathProbeStudent && numeracySaved.quantity_discrimination !== qdProbeResults) {
+        if (saveNumeracyResult(qdProbeResults, qdProbeFormRef.current, qdGrade, qdForm)) addToast(screenerLabel('toasts.qd_results_saved_for', 'QD results saved for {student}').split('{student}').join(String(mathProbeStudent)), 'success');
+      }
+    }, [qdProbeResults]);
     const [nwfProbeActive, setNwfProbeActive] = React.useState(false);
     const [nwfProbeWords, setNwfProbeWords] = React.useState([]);
     const [nwfProbeIndex, setNwfProbeIndex] = React.useState(0);
@@ -8428,6 +8479,7 @@ try {
         setMnProbeAnswer("");
         setMnProbeResults(null);
         setMnProbeTimer(data.timeLimit);
+        setNumeracyHandback('missing_number');
         setMnProbeActive(true);
         if (mnProbeTimerRef.current) clearInterval(mnProbeTimerRef.current);
         mnProbeTimerRef.current = setInterval(() => {
@@ -8443,10 +8495,22 @@ try {
         setTimeout(() => mnProbeInputRef.current?.focus(), 100);
       },
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-purple-700 to-indigo-700 text-white rounded-lg font-bold text-sm hover:from-purple-800 hover:to-indigo-800 transition-all shadow-md"
-    }, "\u25B6 Start Missing Number")), mnProbeActive && /*#__PURE__*/React.createElement("div", {
-      className: "mt-4 bg-white rounded-xl border-2 border-purple-300 p-6 shadow-lg animate-in fade-in slide-in-from-top-4"
+    }, "\u25B6 Start Missing Number")), numeracyHandback && !mnProbeActive && !qdProbeActive && /*#__PURE__*/React.createElement(SaProbeFullscreen, {
+      kind: 'handback', label: 'Probe finished',
+      className: "bg-white rounded-xl border-2 border-slate-300 p-8 shadow-lg text-center"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "text-2xl font-bold text-slate-800 mb-2"
+    }, "All done!"), /*#__PURE__*/React.createElement("p", {
+      className: "text-base text-slate-700 mb-6"
+    }, "Please give the device back to your teacher."), /*#__PURE__*/React.createElement("button", {
+      type: "button", autoFocus: true,
+      onClick: () => setNumeracyHandback(null),
+      className: "px-5 py-3 bg-slate-800 text-white rounded-lg font-bold text-sm"
+    }, "Teacher: show results")), mnProbeActive && /*#__PURE__*/React.createElement(SaProbeFullscreen, {
+      kind: 'missing_number', label: 'Missing Number probe',
+      className: "bg-white rounded-xl border-2 border-purple-300 p-6 shadow-lg"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center justify-between mb-4"
+      className: "flex flex-wrap items-center justify-between gap-2 mb-4"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-3"
     }, /*#__PURE__*/React.createElement("span", {
@@ -8459,7 +8523,7 @@ try {
       className: `tabular-nums px-3 py-1 rounded-full text-sm font-bold ${mnProbeTimer <= 10 ? 'bg-red-100 text-red-700 animate-pulse' : 'bg-slate-100 text-slate-700'}`
     }, "\u23F1 ", Math.floor(mnProbeTimer / 60), ":", String(mnProbeTimer % 60).padStart(2, '0')), /*#__PURE__*/React.createElement("button", {
       onClick: async () => {
-        if (await askStudentAnalyticsConfirmation("End probe early? Progress will be saved.", { title: 'End missing number probe', confirmText: 'End probe' })) {
+        if (await askStudentAnalyticsConfirmation("End probe early? The answers so far are kept, and you choose whether to save them.", { title: 'End missing number probe', confirmText: 'End probe' })) {
           clearInterval(mnProbeTimerRef.current);
           mnProbeTimerRef.current = null;
           const answered = mnProbeProblems.filter(p => p.studentAnswer !== null);
@@ -8468,12 +8532,13 @@ try {
             correct,
             total: answered.length,
             problems: mnProbeProblems,
-            type: 'missing_number'
+            type: 'missing_number',
+            endedEarly: true
           });
           setMnProbeActive(false);
         }
       },
-      className: "text-xs text-red-500 hover:text-red-700 font-bold"
+      className: "text-sm text-red-700 font-bold underline px-3 py-2 min-h-[44px]"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
     }, /*#__PURE__*/React.createElement("div", { role: "progressbar",
@@ -8488,10 +8553,40 @@ try {
       }
     })), mnProbeTimer > 0 && mnProbeIndex < mnProbeProblems.length ? (() => {
       const problem = mnProbeProblems[mnProbeIndex];
+      // One submit path for the Enter key and the Enter button.
+      const submitMnAnswer = () => {
+        if (!/^-?\d+$/.test(String(mnProbeAnswer))) return;
+        const ans = parseInt(mnProbeAnswer, 10);
+        const isCorrect = ans === problem.answer;
+        const updated = [...mnProbeProblems];
+        updated[mnProbeIndex] = {
+          ...updated[mnProbeIndex],
+          studentAnswer: ans,
+          correct: isCorrect
+        };
+        setMnProbeProblems(updated);
+        setMnProbeAnswer('');
+        if (mnProbeIndex + 1 < mnProbeProblems.length) {
+          setMnProbeIndex(mnProbeIndex + 1);
+          setTimeout(() => mnProbeInputRef.current?.focus(), 50);
+        } else {
+          clearInterval(mnProbeTimerRef.current);
+          mnProbeTimerRef.current = null;
+          const correct = updated.filter(p => p.correct).length;
+          setMnProbeResults({
+            correct,
+            total: updated.length,
+            problems: updated,
+            type: 'missing_number'
+          });
+          setMnProbeActive(false);
+        }
+      };
       return /*#__PURE__*/React.createElement("div", {
         className: "text-center"
       }, /*#__PURE__*/React.createElement("div", {
-        className: "text-3xl font-bold text-slate-800 mb-6 tracking-wider"
+        className: "text-3xl font-bold text-slate-800 mb-6 tracking-wider",
+        style: { fontSize: "3rem", lineHeight: 1.25 }
       }, // The shipped bank items are {display: "7 + __ = 12"}; an older shape carried a sequence array.
       (Array.isArray(problem.sequence) ? problem.sequence : String(problem.display || '').split(/\s+/).filter(Boolean)).map((item, i) => /*#__PURE__*/React.createElement("span", {
         key: i,
@@ -8500,43 +8595,26 @@ try {
         className: "flex items-center justify-center gap-3"
       }, /*#__PURE__*/React.createElement("input", {
         ref: mnProbeInputRef,
-        type: "number",
+        type: "text",
+        inputMode: "numeric",
+        pattern: "-?[0-9]*",
+        autoComplete: "off",
         "aria-label": "Math probe answer",
         value: mnProbeAnswer,
-        onChange: e => setMnProbeAnswer(e.target.value),
+        onChange: e => setMnProbeAnswer(saCleanProbeAnswer(e.target.value)),
         onKeyDown: e => {
-          if (e.key === 'Enter' && mnProbeAnswer !== '') {
-            const ans = parseInt(mnProbeAnswer, 10);
-            const isCorrect = ans === problem.answer;
-            const updated = [...mnProbeProblems];
-            updated[mnProbeIndex] = {
-              ...updated[mnProbeIndex],
-              studentAnswer: ans,
-              correct: isCorrect
-            };
-            setMnProbeProblems(updated);
-            setMnProbeAnswer('');
-            if (mnProbeIndex + 1 < mnProbeProblems.length) {
-              setMnProbeIndex(mnProbeIndex + 1);
-              setTimeout(() => mnProbeInputRef.current?.focus(), 50);
-            } else {
-              clearInterval(mnProbeTimerRef.current);
-              mnProbeTimerRef.current = null;
-              const correct = updated.filter(p => p.correct).length;
-              setMnProbeResults({
-                correct,
-                total: updated.length,
-                problems: updated,
-                type: 'missing_number'
-              });
-              setMnProbeActive(false);
-            }
-          }
+          if (e.key === 'Enter') { e.preventDefault(); submitMnAnswer(); }
         },
         className: "w-24 text-center text-2xl font-bold border-2 border-purple-600 rounded-xl px-3 py-2 focus:outline-none focus:ring-2 focus:ring-purple-400",
+        style: { width: "8rem", fontSize: "2.25rem", lineHeight: 1.2 },
         placeholder: "?",
         autoFocus: true
       }), /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        "data-mn-submit": "true",
+        onClick: () => { submitMnAnswer(); setTimeout(() => mnProbeInputRef.current?.focus(), 50); },
+        className: "px-5 py-3 min-h-[44px] bg-purple-700 text-white rounded-xl font-bold text-base hover:bg-purple-600"
+      }, "Enter \u21B5"), /*#__PURE__*/React.createElement("button", {
         onClick: () => {
           // Skip button
           const updated = [...mnProbeProblems];
@@ -8609,23 +8687,16 @@ try {
       className: "text-2xl font-bold text-indigo-600"
     }, mnProbeResults.total > 0 ? Math.round(mnProbeResults.correct / mnProbeResults.total * 100) : 0, "%"), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600"
-    }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
+    }, "Accuracy"))), mnProbeResults.endedEarly && /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-amber-800 font-semibold mb-1", "data-probe-ended-early": "missing_number"
+    }, "Ended early, so this result was not saved automatically."), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
+      disabled: numeracySaved.missing_number === mnProbeResults,
+      style: numeracySaved.missing_number === mnProbeResults ? { background: "#e2e8f0", color: "#1e293b", cursor: "default" } : undefined,
       onClick: () => {
-        setLatestProbeResult({
-          student: mathProbeStudent,
-          type: 'missing_number',
-          date: new Date().toISOString(),
-          correct: mnProbeResults.correct,
-          total: mnProbeResults.total,
-          accuracy: mnProbeResults.total > 0 ? Math.round(mnProbeResults.correct / mnProbeResults.total * 100) : 0,
-          grade: mnProbeFormRef.current ? mnProbeFormRef.current.grade : mnGrade,
-          form: mnProbeFormRef.current ? mnProbeFormRef.current.form : mnForm,
-          formVersion: mnProbeFormRef.current ? mnProbeFormRef.current.formVersion : 1
-        });
-        addToast(`Probe results saved for ${mathProbeStudent}`, 'success');
+        if (saveNumeracyResult(mnProbeResults, mnProbeFormRef.current, mnGrade, mnForm)) addToast(`Probe results saved for ${mathProbeStudent}`, 'success');
       },
       className: "w-full mt-2 px-4 py-2 bg-purple-700 text-white rounded-lg font-bold text-sm hover:bg-purple-600 transition-colors"
-    }, "\uD83D\uDCBE Save to Student Record"))), /*#__PURE__*/React.createElement("div", {
+    }, numeracySaved.missing_number === mnProbeResults ? "\u2713 Saved to " + mathProbeStudent + "'s record" : "\uD83D\uDCBE Save to Student Record"))), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-r from-cyan-50 to-sky-50 rounded-2xl p-4 mb-4 border border-cyan-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mb-3"
@@ -8679,6 +8750,7 @@ try {
         setQdProbeIndex(0);
         setQdProbeResults(null);
         setQdProbeTimer(data.timeLimit);
+        setNumeracyHandback('quantity_discrimination');
         setQdProbeActive(true);
         if (qdProbeTimerRef.current) clearInterval(qdProbeTimerRef.current);
         qdProbeTimerRef.current = setInterval(() => {
@@ -8693,10 +8765,11 @@ try {
         }, 1000);
       },
       className: "flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-700 to-sky-700 text-white rounded-lg font-bold text-sm hover:from-cyan-800 hover:to-sky-800 transition-all shadow-md"
-    }, "\u25B6 Start QD Probe")), qdProbeActive && /*#__PURE__*/React.createElement("div", {
-      className: "mt-4 bg-white rounded-xl border-2 border-cyan-300 p-6 shadow-lg animate-in fade-in slide-in-from-top-4"
+    }, "\u25B6 Start QD Probe")), qdProbeActive && /*#__PURE__*/React.createElement(SaProbeFullscreen, {
+      kind: 'quantity_discrimination', label: 'Quantity Discrimination probe',
+      className: "bg-white rounded-xl border-2 border-cyan-300 p-6 shadow-lg"
     }, /*#__PURE__*/React.createElement("div", {
-      className: "flex items-center justify-between mb-4"
+      className: "flex flex-wrap items-center justify-between gap-2 mb-4"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-3"
     }, /*#__PURE__*/React.createElement("span", {
@@ -8718,12 +8791,13 @@ try {
             correct,
             total: answered.length,
             problems: qdProbeProblems,
-            type: 'quantity_discrimination'
+            type: 'quantity_discrimination',
+            endedEarly: true
           });
           setQdProbeActive(false);
         }
       },
-      className: "text-xs text-red-500 hover:text-red-700 font-bold"
+      className: "text-sm text-red-700 font-bold underline px-3 py-2 min-h-[44px]"
     }, "\u23F9 End Early"))), /*#__PURE__*/React.createElement("div", {
       className: "w-full bg-slate-100 rounded-full h-2 mb-4"
     }, /*#__PURE__*/React.createElement("div", { role: "progressbar",
@@ -8817,23 +8891,16 @@ try {
       className: "text-2xl font-bold text-cyan-600"
     }, qdProbeResults.total > 0 ? Math.round(qdProbeResults.correct / qdProbeResults.total * 100) : 0, "%"), /*#__PURE__*/React.createElement("div", {
       className: "text-xs text-slate-600"
-    }, "Accuracy"))), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
+    }, "Accuracy"))), qdProbeResults.endedEarly && /*#__PURE__*/React.createElement("p", {
+      className: "text-xs text-amber-800 font-semibold mb-1", "data-probe-ended-early": "quantity_discrimination"
+    }, "Ended early, so this result was not saved automatically."), mathProbeStudent && /*#__PURE__*/React.createElement("button", {
+      disabled: numeracySaved.quantity_discrimination === qdProbeResults,
+      style: numeracySaved.quantity_discrimination === qdProbeResults ? { background: "#e2e8f0", color: "#1e293b", cursor: "default" } : undefined,
       onClick: () => {
-        setLatestProbeResult({
-          student: mathProbeStudent,
-          type: 'quantity_discrimination',
-          date: new Date().toISOString(),
-          correct: qdProbeResults.correct,
-          total: qdProbeResults.total,
-          accuracy: qdProbeResults.total > 0 ? Math.round(qdProbeResults.correct / qdProbeResults.total * 100) : 0,
-          grade: qdProbeFormRef.current ? qdProbeFormRef.current.grade : qdGrade,
-          form: qdProbeFormRef.current ? qdProbeFormRef.current.form : qdForm,
-          formVersion: qdProbeFormRef.current ? qdProbeFormRef.current.formVersion : 1
-        });
-        addToast(screenerLabel('toasts.qd_results_saved_for', 'QD results saved for {student}').split('{student}').join(String(mathProbeStudent)), 'success');
+        if (saveNumeracyResult(qdProbeResults, qdProbeFormRef.current, qdGrade, qdForm)) addToast(screenerLabel('toasts.qd_results_saved_for', 'QD results saved for {student}').split('{student}').join(String(mathProbeStudent)), 'success');
       },
       className: "w-full mt-2 px-4 py-2 bg-cyan-700 text-white rounded-lg font-bold text-sm hover:bg-cyan-800 transition-colors"
-    }, "\uD83D\uDCBE Save to Student Record"))), /*#__PURE__*/React.createElement("div", {
+    }, numeracySaved.quantity_discrimination === qdProbeResults ? "\u2713 Saved to " + mathProbeStudent + "'s record" : "\uD83D\uDCBE Save to Student Record"))), /*#__PURE__*/React.createElement("div", {
       className: "bg-gradient-to-r from-emerald-50 to-teal-50 rounded-2xl p-4 mb-4 border border-emerald-200"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mb-3"

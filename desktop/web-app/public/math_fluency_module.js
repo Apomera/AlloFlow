@@ -86,6 +86,19 @@
       '.mf-reduce-motion *, .mf-reduce-motion *::before, .mf-reduce-motion *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }',
       '.mf-high-contrast { background: #fff !important; color: #000 !important; } .mf-high-contrast .mf-problem-card, .mf-high-contrast button, .mf-high-contrast input { border-color: #000 !important; box-shadow: none !important; } .mf-high-contrast :focus-visible { outline: 4px solid #000 !important; outline-offset: 3px !important; } .mf-high-contrast .mf-maze-hud, .mf-high-contrast .mf-maze-quest, .mf-high-contrast .mf-maze-gate { background: #000 !important; color: #fff !important; border: 3px solid #fff !important; box-shadow: 0 0 0 2px #000 !important; } .mf-high-contrast .mf-maze-hud-stat, .mf-high-contrast .mf-maze-quest-step, .mf-high-contrast .mf-maze-quest-connector { background: #000 !important; border-color: #fff !important; color: #fff !important; } .mf-high-contrast .mf-maze-hud-stat small { color: #fff !important; } .mf-high-contrast .mf-maze-minimap-shell { border-color: #fff !important; box-shadow: 0 0 0 2px #000 !important; }',
       '@supports (height: 100dvh) { .mf-active-probe { min-height: 100dvh; } }',
+      // Results and the Teacher Report open over the page at reading width; the tools sidebar is too narrow for them.
+      '.mf-wide-sheet { position: fixed !important; inset: 0 !important; z-index: 9998 !important; overflow-y: auto !important; margin: 0 !important; border-radius: 0 !important; border-left: 0 !important; border-right: 0 !important; border-bottom: 0 !important; padding: 24px calc(50vw - 30rem) 32px !important; }',
+      '@media (max-width: 1000px) { .mf-wide-sheet { padding: 16px !important; } }',
+      '.mf-wide-sheet.mf-teacher-report { background: #fff !important; border-top: 6px solid #1d4ed8 !important; }',
+      '.mf-wide-sheet .mf-teacher-report-table { font-size: 13px; } .mf-wide-sheet .mf-teacher-report-table th, .mf-wide-sheet .mf-teacher-report-table td { padding: 8px; }',
+      '.mf-wide-sheet .mf-teacher-report-metrics strong { font-size: 22px; } .mf-wide-sheet .mf-teacher-report-metrics span { font-size: 12px; } .mf-wide-sheet .mf-teacher-report-metrics > div { padding: 12px; }',
+      '.mf-wide-sheet .mf-teacher-report-actions button, .mf-wide-sheet .mf-teacher-report-chips button { font-size: 13px; padding: 8px 12px; min-height: 36px; }',
+      '.mf-wide-sheet .mf-teacher-report-targets, .mf-wide-sheet .mf-teacher-report-maze { font-size: 13px; }',
+      '.mf-wide-sheet .mf-metric-card > div:first-of-type { white-space: nowrap; }',
+      // The results sheet was laid out for a 400px sidebar (9-11px text). At full width, scale its sections up so a student can read them.
+      '@media (min-width: 900px) { .mf-results-panel.mf-wide-sheet > *:not(header) { zoom: 1.18; } }',
+      '@media (max-width: 520px) { .mf-wide-sheet .mf-results-metrics { grid-template-columns: repeat(2, 1fr) !important; } }',
+      '@media print { .mf-wide-sheet { position: absolute !important; inset: auto !important; left: 0 !important; top: 0 !important; width: 100% !important; padding: 0 !important; overflow: visible !important; border: 0 !important; } }',
     ].join('\n');
     document.head.appendChild(mfA11yStyle);
   }
@@ -629,9 +642,24 @@
     }
     if (op === 'add') {
       var larger = Math.max(a, b), smaller = Math.min(a, b), difference = larger - smaller;
+      // A multiple of ten is added as tens: 55 + 30 is 55 and 3 more tens, not "make the next ten".
+      var aTens = a >= 10 && a % 10 === 0, bTens = b >= 10 && b % 10 === 0;
+      if (attempt === 1 && aTens && bTens && a + b > 20) return {
+        stage: 'strategy', title: 'Think in tens',
+        message: 'Think ' + (a / 10) + ' tens plus ' + (b / 10) + ' tens.',
+        model: { type: 'number-line', start: larger, change: smaller, direction: 'right' }
+      };
+      if (attempt === 1 && (aTens || bTens) && !(aTens && bTens)) {
+        var tensAddend = aTens ? a : b, otherAddend = aTens ? b : a, tensCount = tensAddend / 10;
+        return {
+          stage: 'strategy', title: 'Add the tens',
+          message: 'Add ' + tensCount + (tensCount === 1 ? ' ten' : ' tens') + ' to ' + otherAddend + '. The ones digit stays ' + (otherAddend % 10) + '.',
+          model: { type: 'number-line', start: otherAddend, change: tensAddend, direction: 'right' }
+        };
+      }
       if (attempt === 1 && difference <= 2) return {
         stage: 'strategy', title: 'Use a nearby double',
-        message: 'Start with ' + smaller + ' + ' + smaller + ', then adjust by ' + difference + '.',
+        message: difference === 0 ? 'This is a double: ' + smaller + ' + ' + smaller + '.' : 'Start with ' + smaller + ' + ' + smaller + ', then adjust by ' + difference + '.',
         model: { type: 'number-line', start: smaller, change: smaller, direction: 'right' }
       };
       var nextTen = Math.ceil(larger / 10) * 10;
@@ -642,6 +670,17 @@
         message: 'Move ' + move + ' from ' + smaller + ' to ' + larger + '. Think ' + nextTen + ' plus what remains.',
         model: { type: 'number-line', start: larger, change: move, direction: 'right' }
       };
+      // Counting on by ones is not workable past the teens: break the smaller addend into tens and ones.
+      if (smaller >= 10) {
+        var smallTens = Math.floor(smaller / 10) * 10, smallOnes = smaller % 10;
+        return {
+          stage: 'model', title: 'Break apart the addition',
+          message: smallOnes === 0
+            ? 'Start with ' + larger + ' and add ' + (smallTens / 10) + (smallTens === 10 ? ' ten.' : ' tens.')
+            : 'Break ' + smaller + ' into ' + smallTens + ' and ' + smallOnes + '. Add ' + smallTens + ' to ' + larger + ', then ' + smallOnes + ' more.',
+          model: { type: 'number-line', start: larger, change: smallTens, direction: 'right' }
+        };
+      }
       return {
         stage: 'model', title: 'Build the addition',
         message: 'Start with ' + larger + ' and count on ' + smaller + ' more.',
@@ -1083,6 +1122,12 @@
     return correct;
   }
 
+  // Keeps digits and one leading minus sign, so letters and symbols never reach the answer box.
+  function cleanAnswerInput(raw) {
+    var text = String(raw == null ? '' : raw);
+    var negative = /^s*[-−]/.test(text);
+    return ((negative ? '-' : '') + text.replace(/[^0-9]/g, '')).slice(0, 8);
+  }
   function parseStudentAnswer(raw) {
     var text = String(raw == null ? '' : raw).trim();
     if (!/^-?\d+$/.test(text)) return { valid: false, value: null };
@@ -1322,6 +1367,8 @@
     var _y = useState('accuracy-90'), sessionGoal = _y[0], setSessionGoal = _y[1];
     var _endEarly = useState(false), confirmEndEarly = _endEarly[0], setConfirmEndEarly = _endEarly[1];
     var _clearHistory = useState(false), confirmClearHistory = _clearHistory[0], setConfirmClearHistory = _clearHistory[1];
+    var confirmClearHistoryRef = useRef(false);
+    confirmClearHistoryRef.current = confirmClearHistory;
     var _practicePause = useState(false), practicePaused = _practicePause[0], setPracticePaused = _practicePause[1];
     var _accuracyDraft = useState(loadAccuracyDraft(learnerId)), accuracyDraft = _accuracyDraft[0], setAccuracyDraft = _accuracyDraft[1];
     var _supportPrefs = loadFluencySupportPrefs();
@@ -1349,6 +1396,8 @@
     var deadlineRef = useRef(0);
     var runTimingRef = useRef({ startedAt: 0, pausedMs: 0, resumedMs: 0 });
     var visibilityPauseRef = useRef(null);
+    // Set while "End this session?" is open: the clock stops and the fact is hidden.
+    var confirmPauseRef = useRef(null);
     var manualPracticePauseRef = useRef(null);
     var practicePauseStatsRef = useRef({ count: 0, seconds: 0 });
     var adaptiveStatsRef = useRef({ firstTryStreak: 0, coachedOrMissed: 0, adjustments: 0, level: 'steady' });
@@ -1440,6 +1489,7 @@
         var effectiveNow = nowMs();
         if (manualPracticePauseRef.current !== null) effectiveNow = Math.min(effectiveNow, manualPracticePauseRef.current);
         if (visibilityPauseRef.current !== null) effectiveNow = Math.min(effectiveNow, visibilityPauseRef.current);
+        if (confirmPauseRef.current !== null) effectiveNow = Math.min(effectiveNow, confirmPauseRef.current);
         var elapsedMs = Math.max(0, (runTimingRef.current.resumedMs || 0) + effectiveNow - runTimingRef.current.startedAt - runTimingRef.current.pausedMs);
         saveLearnerAccuracyDraft({
           version: 1, savedAt: Date.now(), currentIndex: index, elapsedMs: elapsedMs,
@@ -1487,6 +1537,10 @@
         runTimingRef.current.pausedMs += pendingPauseMs;
         interruptionStatsRef.current.seconds += pendingPauseMs / 1000;
         visibilityPauseRef.current = null;
+      }
+      if (confirmPauseRef.current !== null) {
+        runTimingRef.current.pausedMs += Math.max(0, finishTime - confirmPauseRef.current);
+        confirmPauseRef.current = null;
       }
       var rawElapsedSeconds = Math.max(0, ((runTimingRef.current.resumedMs || 0) + finishTime - runTimingRef.current.startedAt - runTimingRef.current.pausedMs) / 1000);
       var isUntimed = !!config.untimed;
@@ -1625,7 +1679,7 @@
       if (config.mode === 'benchmark') config.readAloud = false;
       cancelProblemSpeech();
       config.comparisonKey = buildComparisonKey(config);
-      config.goal = restoredDraft && config.goal ? config.goal : buildSessionGoal(sessionGoal, history, config);
+      config.goal = restoredDraft && config.goal ? config.goal : buildSessionGoal(config.mode === 'benchmark' ? 'none' : sessionGoal, history, config);
       config.resumedFromDraft = !!restoredDraft;
       finishedRef.current = false;
       runConfigRef.current = config;
@@ -1668,7 +1722,7 @@
       if (timerRef.current) { clearInterval(timerRef.current); timerRef.current = null; }
       if (!config.untimed) {
         timerRef.current = setInterval(function () {
-          if (visibilityPauseRef.current !== null) return;
+          if (visibilityPauseRef.current !== null || confirmPauseRef.current !== null) return;
           var next = Math.max(0, Math.ceil((deadlineRef.current - nowMs()) / 1000));
           timerValueRef.current = next;
           setTimer(next);
@@ -1896,7 +1950,7 @@
     }, []);
 
     var submitAnswer = useCallback(function (skip) {
-      if (finishedRef.current || !sessionMountedRef.current || manualPracticePauseRef.current !== null) return;
+      if (finishedRef.current || !sessionMountedRef.current || manualPracticePauseRef.current !== null || confirmPauseRef.current !== null) return;
       if (runConfigRef.current && !runConfigRef.current.untimed && nowMs() >= deadlineRef.current) { finishProbe('time'); return; }
       var isSkip = skip === true;
       var parsed = isSkip ? { valid: true, value: null } : parseStudentAnswer(studentInput);
@@ -2047,6 +2101,47 @@
       return function () { window.removeEventListener('keydown', handleKey); };
     }, [active, confirmEndEarly, pauseAccuracyPractice, resumeAccuracyPractice]);
 
+    // Results and the Teacher Report cover the page: Escape closes, Tab stays inside.
+    var sheetOpen = !active && (!!results || (showTeacherReport && !studentLocked));
+    useEffect(function () {
+      if (!sheetOpen) return;
+      function handleSheetKey(e) {
+        var sheet = document.querySelector('.mf-wide-sheet');
+        if (!sheet) return;
+        if (e.key === 'Escape') {
+          if (confirmClearHistoryRef.current) return;
+          e.preventDefault();
+          if (results) setResults(null); else setShowTeacherReport(false);
+          return;
+        }
+        if (e.key !== 'Tab') return;
+        var focusable = Array.prototype.slice.call(sheet.querySelectorAll('input:not([disabled]), button:not([disabled]), select:not([disabled]), summary, a[href], [tabindex="0"]'));
+        if (!focusable.length) return;
+        var first = focusable[0], last = focusable[focusable.length - 1];
+        if (!sheet.contains(document.activeElement)) { e.preventDefault(); first.focus(); }
+        else if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+      }
+      window.addEventListener('keydown', handleSheetKey);
+      return function () { window.removeEventListener('keydown', handleSheetKey); };
+    }, [sheetOpen, !!results]);
+
+    // The end-session question stops the clock, so an accidental Escape costs no
+    // time. Closing it moves the deadline by however long it was open.
+    useEffect(function () {
+      if (!active || !confirmEndEarly || manualPracticePauseRef.current !== null || visibilityPauseRef.current !== null) return;
+      confirmPauseRef.current = nowMs();
+      return function () {
+        var started = confirmPauseRef.current;
+        if (started === null) return;
+        confirmPauseRef.current = null;
+        var pausedMs = Math.max(0, nowMs() - started);
+        if (runConfigRef.current && !runConfigRef.current.untimed) deadlineRef.current += pausedMs;
+        runTimingRef.current.pausedMs += pausedMs;
+        itemPausedMsRef.current += pausedMs;
+      };
+    }, [active, confirmEndEarly]);
+
     // Browser reloads and tab/window closes can otherwise discard an active
     // session before its attempted facts and incomplete status are saved.
     useEffect(function () {
@@ -2068,6 +2163,14 @@
         var currentTime = nowMs();
         if (document.hidden) {
           if (manualPracticePauseRef.current !== null) return;
+          if (confirmPauseRef.current !== null) {
+            // Already stopped by the end-session question; still an interruption for a fixed form.
+            if (runConfigRef.current && runConfigRef.current.mode === 'benchmark') {
+              interruptionStatsRef.current.count += 1;
+              setInterruptionCount(interruptionStatsRef.current.count);
+            }
+            return;
+          }
           if (visibilityPauseRef.current === null) {
             visibilityPauseRef.current = currentTime;
             if (runConfigRef.current && runConfigRef.current.mode === 'benchmark') {
@@ -2142,6 +2245,11 @@
       var liveElapsed = activeTimeLimit - timer;
       var liveDcpm = liveElapsed > 0 ? Math.round(liveDigitsCorrect / Math.max(0.1, liveElapsed / 60)) : 0;
 
+      var touchOnlyDevice = false;
+      try { touchOnlyDevice = typeof window.matchMedia === 'function' && window.matchMedia('(hover: none) and (pointer: coarse)').matches; } catch (_) {}
+      // The minus key only appears when a fact in this run has a negative answer.
+      var runNeedsMinus = problems.some(function (p) { return Number(p && p.answer) < 0; });
+      var endEarlyLabel = isFixedRun ? tt('math_fluency.end_probe_early', 'End probe early') : tt('math_fluency.end_practice_early', 'End practice early');
       var feedbackBg = isFixedRun || calmDisplayRun ? 'transparent' : (lastFeedback === 'correct' ? 'rgba(34,197,94,0.15)'
         : lastFeedback === 'wrong' ? 'rgba(239,68,68,0.1)'
         : lastFeedback === 'skip' ? 'rgba(100,116,139,0.08)' : 'transparent');
@@ -2165,7 +2273,7 @@
           h('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px', gap: '8px', flexWrap: 'wrap' } },
             h('span', {
               'aria-label': isUntimedRun ? undefined : exactTimeLabel,
-              style: { fontSize: '14px', fontWeight: 800, color: isUntimedRun ? '#6d28d9' : (calmDisplayRun ? (isLowTime ? '#b45309' : '#6d28d9') : (isLowTime ? '#dc2626' : '#b45309')), animation: isLowTime && !reducedMotion && !calmDisplayRun ? 'pulse 1s infinite' : 'none' }
+              style: { fontSize: '14px', fontWeight: 800, color: isUntimedRun ? '#6d28d9' : (calmDisplayRun ? (isLowTime ? '#b45309' : '#6d28d9') : (isLowTime ? '#dc2626' : '#334155')), animation: isLowTime && !reducedMotion && !calmDisplayRun ? 'pulse 1s infinite' : 'none' }
             },
               isUntimedRun ? '\uD83C\uDFAF ' + tt('math_fluency.accuracy_focus', 'Accuracy Focus') : (calmDisplayRun ? '\uD83C\uDF3F ' + calmTimeLabel : '\u23f1\ufe0f ' + Math.floor(timer / 60) + ':' + String(timer % 60).padStart(2, '0'))),
             // Live DCPM pill — updates every second as the timer ticks. Low
@@ -2177,19 +2285,19 @@
               onClick: pauseAccuracyPractice,
               style: { padding: '4px 9px', borderRadius: '999px', border: '1px solid #c4b5fd', background: '#f5f3ff', color: '#6d28d9', fontSize: '12px', fontWeight: 850, cursor: 'pointer' }
             }, '⏸ ' + tt('math_fluency.pause', 'Pause')) : null,
-            !isFixedRun && !isUntimedRun && !calmDisplayRun ? h('span', {
+            // Shown after 15 seconds: before that a handful of facts swings the rate wildly.
+            !isFixedRun && !isUntimedRun && !calmDisplayRun && liveElapsed >= 15 ? h('span', {
+              className: 'mf-live-rate',
               style: {
                 fontSize: '13px', fontWeight: 800,
                 padding: '3px 10px', borderRadius: '999px',
                 background: 'linear-gradient(90deg,#ede9fe,#e9d5ff)',
                 color: '#6d28d9',
                 border: '1px solid #c4b5fd',
-                opacity: liveElapsed >= 10 ? 1 : 0.45,
-                transition: 'opacity 0.4s'
               },
               title: tt('math_fluency.live_dcpm_help', 'Digits-correct per minute, updating live.')
-            }, '\uD83D\uDCC8 ' + liveDcpm + ' dcpm') : null,
-            !isFixedRun && !calmDisplayRun && runConfigRef.current && runConfigRef.current.adaptivePractice ? h('span', { className: 'mf-adaptive-level', role: 'status', style: { fontSize: '11px', fontWeight: 850, padding: '3px 8px', borderRadius: '999px', background: adaptiveLevel === 'stretch' ? '#dcfce7' : adaptiveLevel === 'support' ? '#fef3c7' : '#eff6ff', color: adaptiveLevel === 'stretch' ? '#166534' : adaptiveLevel === 'support' ? '#92400e' : '#1d4ed8' } }, tt('math_fluency.adaptive_label', 'Adaptive') + ': ' + adaptiveLevel) : null,
+            }, '\uD83D\uDCC8 ' + liveDcpm + ' ' + tt('math_fluency.digits_per_minute_short', 'digits/min')) : null,
+            !isFixedRun && !calmDisplayRun && runConfigRef.current && runConfigRef.current.adaptivePractice ? h('span', { className: 'mf-adaptive-level', role: 'status', style: { fontSize: '11px', fontWeight: 850, padding: '3px 8px', borderRadius: '999px', background: adaptiveLevel === 'stretch' ? '#dcfce7' : adaptiveLevel === 'support' ? '#fef3c7' : '#eff6ff', color: adaptiveLevel === 'stretch' ? '#166534' : adaptiveLevel === 'support' ? '#92400e' : '#1d4ed8' } }, adaptiveLevel === 'stretch' ? tt('math_fluency.level_stepping_up', 'Stepping up') : adaptiveLevel === 'support' ? tt('math_fluency.level_warming_up', 'Warming up') : tt('math_fluency.level_on_track', 'On track')) : null,
             h('span', { style: { fontSize: '14px', fontWeight: 800, color: '#475569' } },
               isFixedRun || calmDisplayRun
                 ? '#' + (currentIndex + 1) + ' / ' + problems.length
@@ -2202,7 +2310,7 @@
                 ? tt('math_fluency.problem_progress', 'Problem progress: {current} of {total}', { current: currentIndex, total: problems.length })
                 : exactTimeLabel, style: {
               height: '100%', borderRadius: '9999px', transition: 'width 1s linear',
-              background: isUntimedRun || calmDisplayRun ? 'linear-gradient(to right, #7c3aed, #a78bfa)' : (isLowTime ? 'linear-gradient(to right, #ef4444, #dc2626)' : 'linear-gradient(to right, #f59e0b, #f97316)'),
+              background: isUntimedRun || calmDisplayRun ? 'linear-gradient(to right, #7c3aed, #a78bfa)' : (isLowTime ? 'linear-gradient(to right, #ef4444, #dc2626)' : 'linear-gradient(to right, #2563eb, #60a5fa)'),
               width: timerPct + '%'
             } })
           )
@@ -2228,7 +2336,12 @@
           }, '▶ ' + tt('math_fluency.resume', 'Resume')),
           h('div', { style: { marginTop: '10px', color: '#7c3aed', fontSize: '11px', fontWeight: 700 } },
             tt('math_fluency.pause_shortcut', 'Keyboard shortcut: P'))
-        ) :
+        ) : confirmEndEarly ? h('div', {
+          className: 'mf-problem-card mf-end-confirm-hold', role: 'status',
+          style: { background: '#fff', borderRadius: '20px', border: '1px solid #cbd5e1', padding: '1.6rem 2rem', width: '100%', maxWidth: '28rem', textAlign: 'center', color: '#334155', fontWeight: 800, fontSize: '15px' }
+        }, isUntimedRun
+          ? tt('math_fluency.fact_hidden_while_deciding', 'The fact is hidden while you decide.')
+          : tt('math_fluency.timer_paused_while_deciding', 'Timer paused. The fact is hidden while you decide.')) :
         // Problem card
         h('div', { className: 'mf-problem-card', role: 'group', 'data-operation': prob.op,
           'aria-label': tt('math_fluency.problem_of', 'Problem {current} of {total}', { current: currentIndex + 1, total: problems.length }),
@@ -2272,8 +2385,9 @@
           ) : null,
           h('form', { noValidate: true, onSubmit: function (e) { e.preventDefault(); submitAnswer(false); } },
             h('input', {
-              ref: inputRef, type: 'number', inputMode: 'numeric', step: 1, value: studentInput,
-              onChange: function (e) { setStudentInput(e.target.value); if (inputError) setInputError(''); },
+              // Not type=number: the mouse wheel and arrow keys change a number field's value.
+              ref: inputRef, type: 'text', inputMode: touchKeypad ? 'none' : 'numeric', pattern: '-?[0-9]*', autoComplete: 'off', autoCorrect: 'off', spellCheck: false, maxLength: 8, value: studentInput,
+              onChange: function (e) { setStudentInput(cleanAnswerInput(e.target.value)); if (inputError) setInputError(''); },
               autoFocus: true, 'aria-label': tt('math_fluency.your_answer', 'Your answer'),
               'aria-invalid': inputError ? 'true' : 'false',
               'aria-describedby': inputError ? 'mf-answer-error' : undefined,
@@ -2284,7 +2398,7 @@
               }
             }),
             touchKeypad ? h('div', { className: 'mf-touch-keypad', role: 'group', 'aria-label': tt('math_fluency.answer_keypad', 'Answer keypad'), style: { display: 'grid', gridTemplateColumns: 'repeat(4,minmax(52px,1fr))', gap: '7px', marginTop: '14px' } },
-              ['1','2','3','4','5','6','7','8','9','-','0','backspace'].map(function(key) {
+              (runNeedsMinus ? ['1','2','3','4','5','6','7','8','9','-','0','backspace'] : ['1','2','3','4','5','6','7','8','9','0','backspace']).map(function(key) {
                 var label = key === 'backspace' ? tt('math_fluency.delete_digit', 'Delete digit') : key === '-' ? tt('math_fluency.toggle_negative', 'Toggle negative') : tt('math_fluency.number_key', 'Number {number}', { number: key });
                 return h('button', { key: key, type: 'button', 'aria-label': label,
                   onMouseDown: function(e) { e.preventDefault(); },
@@ -2294,7 +2408,7 @@
                     else setStudentInput(function(value) { return (String(value) + key).slice(0, 8); });
                     setInputError('');
                   },
-                  style: { minHeight: '48px', borderRadius: '10px', border: '1px solid ' + (highContrast ? '#000' : '#cbd5e1'), background: highContrast ? '#fff' : '#f8fafc', color: '#0f172a', fontSize: '18px', fontWeight: 900, cursor: 'pointer' }
+                  style: { gridColumn: key === 'backspace' && !runNeedsMinus ? 'span 2' : undefined, minHeight: '48px', borderRadius: '10px', border: '1px solid ' + (highContrast ? '#000' : '#cbd5e1'), background: highContrast ? '#fff' : '#f8fafc', color: '#0f172a', fontSize: '18px', fontWeight: 900, cursor: 'pointer' }
                 }, key === 'backspace' ? '⌫' : key);
               })
             ) : null,
@@ -2317,7 +2431,8 @@
               }, tt('math_fluency.skip_2', 'Skip \u2192'))
             )
           ),
-          h('div', { style: { marginTop: '12px', fontSize: '11px', color: '#64748b' } },
+          // Keyboard shortcuts mean nothing on a touch-only device.
+          touchOnlyDevice ? null : h('div', { className: 'mf-keyboard-hints', style: { marginTop: '12px', fontSize: '11px', color: '#64748b' } },
             tt('math_fluency.tab_controls_esc_end_early', 'Tab = Next Control \u2022 Esc = End Early') + (isUntimedRun ? ' \u2022 P = Pause' : '') + (!isFixedRun && autoAdvance ? ' \u2022 Auto-advance ON' : '')),
           isFixedRun && interruptionCount > 0 ? h('div', { role: 'status', style: { marginTop: '10px', color: '#b45309', fontSize: '12px', fontWeight: 700 } },
             tt('math_fluency.interrupted_run_notice', 'Interrupted - this run will be saved but excluded from comparable trends.')) : null
@@ -2345,17 +2460,17 @@
                 setTimeout(function () { if (inputRef.current) inputRef.current.focus(); }, 0);
               },
               style: { flex: '1 1 130px', padding: '9px 12px', borderRadius: '10px', border: '1px solid #cbd5e1', background: '#fff', color: '#334155', fontWeight: 800, cursor: 'pointer' }
-            }, tt('math_fluency.keep_practicing', 'Keep practicing')),
+            }, isFixedRun ? tt('math_fluency.keep_going', 'Keep going') : tt('math_fluency.keep_practicing', 'Keep practicing')),
             h('button', {
               type: 'button',
               onClick: function () { finishProbe('early'); },
               style: { flex: '1 1 130px', padding: '9px 12px', borderRadius: '10px', border: '1px solid #c2410c', background: '#c2410c', color: '#fff', fontWeight: 800, cursor: 'pointer' }
             }, tt('math_fluency.end_and_save', 'End & save'))
           )
-        ) : h('button', { 'aria-label': tt('math_fluency.end_probe_early', 'End probe early'),
+        ) : h('button', { 'aria-label': endEarlyLabel,
           type: 'button', onClick: function () { setConfirmEndEarly(true); },
-          style: { marginTop: '1.5rem', fontSize: '14px', color: '#64748b', background: 'none', border: 'none', cursor: 'pointer', fontWeight: 500 }
-        }, tt('math_fluency.end_probe_early', 'End probe early'))
+          style: { marginTop: '1rem', minHeight: '44px', padding: '10px 18px', fontSize: '14px', color: '#475569', background: 'none', border: 'none', borderRadius: '10px', cursor: 'pointer', fontWeight: 650, textDecoration: 'underline' }
+        }, endEarlyLabel)
       );
     }
 
@@ -2384,7 +2499,9 @@
         ? tt('math_fluency.fixed_form_named', 'Fixed Form {form}', { form: resultFormLabel })
         : results.untimed ? tt('math_fluency.accuracy_focus', 'Accuracy Focus') : tt('math_fluency.timed_practice', 'Timed practice');
 
-      return h('div', { className: 'mf-results-panel' + (reducedMotion ? ' mf-reduce-motion' : '') + (highContrast ? ' mf-high-contrast' : ''), role: 'region', 'aria-label': tt('math_fluency.fluency_probe_results', 'Fluency Probe Results'), style: {
+      // Practice is not a probe: only a fixed form is one.
+      var resultsTitle = results.mode === 'benchmark' ? tt('math_fluency.fluency_probe_results', 'Fluency Probe Results') : tt('math_fluency.practice_results', 'Practice Results');
+      return h('div', { className: 'mf-results-panel mf-wide-sheet' + (reducedMotion ? ' mf-reduce-motion' : '') + (highContrast ? ' mf-high-contrast' : ''), role: 'dialog', 'aria-modal': 'true', 'aria-label': resultsTitle, style: {
           background: highContrast ? '#fff' : 'radial-gradient(circle at 0% 0%, ' + resultPalette.soft + ' 0, transparent 34%), linear-gradient(145deg, #fff, #fffaf0)', borderRadius: '20px',
           border: '1px solid ' + (highContrast ? '#000' : resultPalette.border), borderTop: '6px solid ' + (highContrast ? '#000' : resultPalette.accent), padding: '24px', marginBottom: '24px',
           boxShadow: highContrast ? 'none' : '0 20px 50px rgba(15,23,42,0.1)', animation: 'fadeIn 0.3s ease-out'
@@ -2395,12 +2512,12 @@
           h('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', minWidth: 0 } },
             h('span', { 'aria-hidden': 'true', style: { width: '36px', height: '36px', display: 'grid', placeItems: 'center', flex: '0 0 36px', borderRadius: '11px', background: resultPalette.soft, border: '1px solid ' + resultPalette.border, fontSize: '18px' } }, '\ud83d\udcca'),
             h('div', { style: { minWidth: 0 } },
-              h('h3', { style: { fontSize: '18px', fontWeight: 900, color: '#0f172a', margin: 0 } }, tt('math_fluency.fluency_probe_results', 'Fluency Probe Results')),
+              h('h3', { style: { fontSize: '18px', fontWeight: 900, color: '#0f172a', margin: 0 } }, resultsTitle),
               h('span', { style: { display: 'inline-flex', marginTop: '4px', padding: '3px 7px', borderRadius: '999px', background: resultPalette.soft, border: '1px solid ' + resultPalette.border, color: resultPalette.strong, fontSize: '9px', fontWeight: 900, letterSpacing: '0.05em', textTransform: 'uppercase' } }, resultModeLabel)
             )
           ),
-          h('button', { onClick: function () { setResults(null); }, 'aria-label': tt('math_fluency.close_results', 'Close results'),
-            style: { width: '34px', height: '34px', display: 'grid', placeItems: 'center', color: '#475569', cursor: 'pointer', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '10px', padding: 0 }
+          h('button', { type: 'button', autoFocus: true, onClick: function () { setResults(null); }, 'aria-label': tt('math_fluency.close_results', 'Close results'),
+            style: { width: '44px', height: '44px', flex: '0 0 44px', display: 'grid', placeItems: 'center', color: '#475569', cursor: 'pointer', background: '#fff', border: '1px solid #cbd5e1', borderRadius: '10px', padding: 0 }
           }, h(X, { size: 18 }))
         ),
 
@@ -2426,7 +2543,7 @@
                       ? tt('math_fluency.too_fast_result_detail', 'All items were finished in under {seconds} seconds, too fast to prorate to a full minute. Re-administer for a comparable score.', { seconds: results.prorationMinimumSeconds || MF_MIN_PRORATED_SECONDS })
                       : results.completionStatus === 'complete'
                         ? tt('math_fluency.descriptive_result_detail', 'Completed with adaptive practice or read-aloud on, so the rate is descriptive only.')
-                        : tt('math_fluency.incomplete_result_detail', 'The probe ended early, so the run is incomplete.'))
+                        : (results.mode === 'benchmark' ? tt('math_fluency.incomplete_result_detail', 'The probe ended early, so the run is incomplete.') : tt('math_fluency.incomplete_practice_detail', 'This practice ended early, so the run is incomplete.')))
                 : (results.benchmark.available
                   ? tt('math_fluency.instructional_reference_detail', 'Grade {grade} {season} instructional reference: {target} DCPM', { grade: results.benchmark.grade, season: results.benchmark.season, target: results.benchmark.target })
                   : (results.mode === 'benchmark'
@@ -2457,7 +2574,7 @@
             { id: 'speed', icon: '\u26a1', val: results.dcpm == null ? '\u2014' : results.dcpm, label: results.untimed ? tt('math_fluency.speed', 'Speed') : 'DCPM', sub: results.untimed ? tt('math_fluency.not_scored_accuracy_focus', 'Not scored in Accuracy Focus') : tt('math_fluency.digits_correct_min', 'Digits Correct/Min'), color: '#b45309', bg: '#fffbeb', border: '#fde68a' },
             { id: 'accuracy', icon: '\u2713', val: results.accuracy + '%', label: results.strategyCoach ? tt('math_fluency.first_try_accuracy', 'First-Try Accuracy') : tt('math_fluency.accuracy', 'Accuracy'), sub: results.strategyCoach ? tt('math_fluency.attempts_recorded', '{count} attempts recorded', { count: results.totalPracticeAttempts }) : '', color: '#15803d', bg: '#f0fdf4', border: '#bbf7d0' },
             { id: 'correct', icon: '#', val: results.totalCorrect + '/' + results.totalAttempted, label: tt('math_fluency.correct', 'Correct'), sub: '', color: '#1d4ed8', bg: '#eff6ff', border: '#bfdbfe' },
-            { id: 'digits', icon: '123', val: results.totalDigitsCorrect, label: tt('math_fluency.total_digits', 'Total Digits'), sub: '', color: '#7e22ce', bg: '#faf5ff', border: '#e9d5ff' }
+            { id: 'digits', icon: '123', val: results.totalDigitsCorrect, label: tt('math_fluency.digits_correct', 'Digits Correct'), sub: '', color: '#7e22ce', bg: '#faf5ff', border: '#e9d5ff' }
           ].map(function (m, i) {
             return h('div', {
               key: m.id, className: 'mf-metric-card', 'data-metric': m.id,
@@ -2704,6 +2821,9 @@
       + (calmDisplay ? 1 : 0) + (adaptivePractice && probeMode === 'practice' ? 1 : 0)
       + (readAloud && speechAvailable && probeMode === 'practice' ? 1 : 0);
 
+    // A fixed form sets its own operation, facts, timer and count, so those pickers
+    // (and the session goal) are hidden for it instead of showing stale practice values.
+    var practiceOnlyField = probeMode === 'benchmark' ? { 'data-mf-practice-only': 'true', hidden: true, style: { display: 'none' } } : { 'data-mf-practice-only': 'true' };
     function renderSessionReadiness() {
       var operationKey = probeMode === 'benchmark' && setupBank ? (setupBank.operation || 'mixed') : operation;
       var operationLabels = { add: tt('math_fluency.addition', 'Addition'), sub: tt('math_fluency.subtraction', 'Subtraction'), mul: tt('math_fluency.multiplication', 'Multiplication'), div: tt('math_fluency.division', 'Division'), mixed: tt('math_fluency.mixed', 'Mixed') };
@@ -2782,7 +2902,7 @@
         h('div', { style: { display: 'flex', alignItems: 'center', gap: '11px', minWidth: 0 } },
           h('div', { 'aria-hidden': 'true', style: { width: '38px', height: '38px', flex: '0 0 38px', display: 'grid', placeItems: 'center', borderRadius: '11px', background: highContrast ? '#fff' : 'rgba(255,255,255,0.16)', border: '1px solid ' + (highContrast ? '#000' : 'rgba(255,255,255,0.3)') } }, h(Zap, { size: 19 })),
           h('div', { style: { minWidth: 0 } },
-            h('h2', { style: { margin: 0, fontWeight: 900, fontSize: '16px', lineHeight: 1.2, color: 'inherit' } }, tt('math_fluency.math_fluency_probe_2', 'Math Fluency Probe')),
+            h('h2', { style: { margin: 0, fontWeight: 900, fontSize: '16px', lineHeight: 1.2, color: 'inherit' } }, tt('math_fluency.math_fluency_title', 'Math Fluency')),
             h('p', { style: { margin: '3px 0 0', fontSize: '10px', lineHeight: 1.35, color: highContrast ? '#000' : 'rgba(255,255,255,0.82)' } }, tt('math_fluency.fluency_hero_subtitle', 'Build accuracy, confidence, and efficient recall - one fact at a time.'))
           )
         ),
@@ -2866,18 +2986,18 @@
         h('strong', { style: { fontSize: '12px' } }, tt('math_fluency.choose_your_session', 'Choose your session'))
       ),
       h('div', { className: 'mf-config-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '10px', marginBottom: '12px', padding: '12px', borderRadius: '13px', border: '1px solid #fed7aa', background: 'rgba(255,255,255,0.9)', boxShadow: '0 8px 20px rgba(146,64,14,0.06)' } },
-        h('div', null,
-          h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.probe_mode', 'Probe Mode')),
+        h('div', { style: { gridColumn: '1 / -1' } },
+          h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.session_type', 'Session type')),
           h('select', {
             value: probeMode, onChange: function (e) { setProbeMode(e.target.value); },
-            'aria-label': tt('math_fluency.probe_mode', 'Probe Mode'),
+            'aria-label': tt('math_fluency.session_type', 'Session type'),
             style: { width: '100%', fontSize: '12px', padding: '6px 8px', borderRadius: '8px', border: '1px solid #d1d5db' }
           },
             h('option', { value: 'practice' }, tt('math_fluency.practice_mode', 'Practice - Custom Settings')),
             h('option', { value: 'benchmark' }, tt('math_fluency.fixed_form_mode', 'Fixed Comparable Form'))
           )
         ),
-        h('div', null,
+        h('div', { 'data-mf-fixed-only': 'true', hidden: probeMode !== 'benchmark', style: probeMode !== 'benchmark' ? { display: 'none' } : { gridColumn: '1 / -1' } },
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.form', 'Form')),
           h('select', {
             value: probeForm, onChange: function (e) { setProbeForm(e.target.value); }, disabled: probeMode !== 'benchmark',
@@ -2888,7 +3008,7 @@
           )
         ),
         // Operation
-        h('div', null,
+        h('div', practiceOnlyField,
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.operation', 'Operation')),
           h('select', {
             value: operation, onChange: function (e) { setOperation(e.target.value); setDifficulty('recommended'); }, disabled: probeMode === 'benchmark',
@@ -2903,7 +3023,7 @@
           )
         ),
         // Grade-aligned practice set. Fixed benchmark forms keep their bank metadata.
-        h('div', null,
+        h('div', practiceOnlyField,
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.practice_set', 'Practice Set')),
           h('select', {
             value: difficulty, onChange: function (e) { setDifficulty(e.target.value); }, disabled: probeMode === 'benchmark',
@@ -2916,7 +3036,7 @@
           )
         ),
         // Timer
-        h('div', null,
+        h('div', practiceOnlyField,
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.timer', 'Timer')),
           h('select', {
             value: timeLimit, onChange: function (e) { setTimeLimit(parseInt(e.target.value)); }, disabled: probeMode === 'benchmark',
@@ -2930,7 +3050,7 @@
           )
         ),
         // Problem count
-        h('div', null,
+        h('div', practiceOnlyField,
           h('label', { style: { display: 'block', fontSize: '11px', color: '#64748b', marginBottom: '4px', fontWeight: 600 } }, tt('math_fluency.of_problems', '# of Problems')),
           h('select', {
             value: handoffCountIssue && probeMode !== 'benchmark' ? '' : problemCount, onChange: function (e) { setProblemCount(parseInt(e.target.value, 10)); setHandoffCountIssue(false); }, disabled: probeMode === 'benchmark',
@@ -2944,8 +3064,8 @@
             h('option', { value: 40 }, '40 (Short)'),
             h('option', { value: 60 }, '60 (Standard)'),
             h('option', { value: 80 }, '80 (Extended)'),
-            h('option', { value: 120 }, '120 (Full CBM)'),
-            h('option', { value: 150 }, '150 (Mastery)')
+            h('option', { value: 120 }, '120 (Long)'),
+            h('option', { value: 150 }, '150 (Extra long)')
           )
         )
       ),
@@ -2982,6 +3102,7 @@
           : sessionGoal === 'personal-best' ? 'Beat the best score from matching comparable settings.'
           : sessionGoal === 'instructional-reference' ? 'Use the descriptive grade-and-season reference as a target.'
           : 'Practice without a session goal.';
+        if (probeMode === 'benchmark') return null;
         return h('div', { className: 'mf-session-goal-picker', style: { display: 'grid', gridTemplateColumns: 'minmax(110px, 0.45fr) minmax(0, 1fr)', gap: '9px', alignItems: 'center', background: '#f0fdfa', border: '1px solid #99f6e4', borderRadius: '10px', padding: '9px 10px', marginBottom: '12px' } },
           h('label', { style: { display: 'grid', gap: '3px', color: '#0f766e', fontSize: '10px', fontWeight: 850 } },
             tt('math_fluency.session_goal', 'Session Goal'),
@@ -3085,9 +3206,13 @@
         type: 'button', onClick: function () { setShowTeacherReport(!showTeacherReport); }, 'data-mf-teacher-tool': 'true',
         'aria-expanded': showTeacherReport, 'aria-controls': 'mf-teacher-report',
         style: { width: '100%', padding: '9px', marginBottom: showTeacherReport ? '0' : '8px', background: '#eff6ff', color: '#1d4ed8', border: '1px solid #93c5fd', borderRadius: showTeacherReport ? '10px 10px 0 0' : '10px', fontSize: '12px', fontWeight: 850, cursor: 'pointer' }
-      }, 'Teacher Report - ' + (showTeacherReport ? 'Hide' : 'Show')),
+      }, tt('math_fluency.open_teacher_report', 'Open Teacher Report')),
       !studentLocked && showTeacherReport && (function () {
         var report = getTeacherReport();
+        function closeTeacherReport() {
+          setShowTeacherReport(false);
+          setTimeout(function () { var toggle = document.querySelector('[data-mf-teacher-tool][aria-controls="mf-teacher-report"]'); if (toggle) toggle.focus(); }, 0);
+        }
         var proratedTag = ' (' + tt('math_fluency.prorated_short', 'prorated') + ')';
         var metricCards = [
           { label: 'Sessions', value: report.sessionCount },
@@ -3097,22 +3222,23 @@
           { label: 'Goals Met', value: report.goalRate == null ? 'N/A' : report.goalRate + '%' }
         ];
         function filterSelect(label, value, onChange, options) {
-          return h('label', { style: { display: 'grid', gap: '3px', fontSize: '10px', color: '#475569', fontWeight: 750 } },
+          return h('label', { style: { display: 'grid', gap: '3px', fontSize: '12px', color: '#475569', fontWeight: 750 } },
             label,
-            h('select', { value: value, onChange: onChange, style: { minWidth: 0, width: '100%', padding: '6px', borderRadius: '7px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '11px' } },
+            h('select', { value: value, onChange: onChange, style: { minWidth: 0, width: '100%', minHeight: '40px', padding: '6px', borderRadius: '7px', border: '1px solid #cbd5e1', background: '#fff', fontSize: '14px' } },
               options.map(function (option) { return h('option', { key: option.value, value: option.value }, option.label); })
             )
           );
         }
-        return h('section', { id: 'mf-teacher-report', className: 'mf-teacher-report', role: 'region', 'aria-label': tt('math_fluency.teacher_report_center', 'Teacher Report Center') },
+        return h('section', { id: 'mf-teacher-report', className: 'mf-teacher-report mf-wide-sheet', role: 'dialog', 'aria-modal': 'true', 'aria-label': tt('math_fluency.teacher_report_center', 'Teacher Report Center') },
           h('div', { className: 'mf-teacher-report-heading' },
             h('div', null,
-              h('strong', { style: { display: 'block', color: '#1e3a8a', fontSize: '13px' } }, tt('math_fluency.teacher_report_center', 'Teacher Report Center')),
-              h('span', { style: { color: '#64748b', fontSize: '10px' } }, 'Grade ' + report.grade + ' - benchmark, timed practice, and Accuracy Focus stay separate')
+              h('strong', { style: { display: 'block', color: '#1e3a8a', fontSize: '20px' } }, tt('math_fluency.teacher_report_center', 'Teacher Report Center')),
+              h('span', { style: { color: '#475569', fontSize: '13px' } }, 'Grade ' + report.grade + ' - benchmark, timed practice, and Accuracy Focus stay separate')
             ),
             h('div', { className: 'mf-teacher-report-actions' },
               h('button', { type: 'button', onClick: exportTeacherReport }, 'CSV'),
-              h('button', { type: 'button', onClick: printTeacherReport }, 'Print')
+              h('button', { type: 'button', onClick: printTeacherReport }, 'Print'),
+              h('button', { type: 'button', autoFocus: true, className: 'mf-teacher-report-close', onClick: closeTeacherReport }, tt('math_fluency.close_report', 'Close report'))
             )
           ),
           h('div', { className: 'mf-teacher-report-filters', 'aria-label': 'Report filters' },
@@ -3206,6 +3332,35 @@
   // ═══════════════════════════════════════════════════════════
 
   var CELL_SIZE = 52;
+  // Chase mode: the monster sleeps on the start cell until the player is this many
+  // gates away from it, so the chase always opens with a gap.
+  var MAZE_CHASE_HEAD_START = 3;
+  // Chase mazes get loops. The generator makes a maze with exactly one route
+  // between any two cells, and a pursuer in that kind of maze turns every dead
+  // end into a certain catch: there is never a way around it. Opening a share of
+  // the inner walls gives the player alternative routes. Pure apart from the
+  // random source, which tests can pass in.
+  function addMazeLoops(maze, share, random) {
+    if (!Array.isArray(maze) || !maze.length) return 0;
+    var rnd = typeof random === 'function' ? random : Math.random;
+    var rows = maze.length, cols = maze[0].length, candidates = [];
+    for (var r = 0; r < rows; r++) {
+      for (var c = 0; c < cols; c++) {
+        if (c < cols - 1 && maze[r][c].walls.right) candidates.push([r, c, 'right']);
+        if (r < rows - 1 && maze[r][c].walls.bottom) candidates.push([r, c, 'bottom']);
+      }
+    }
+    for (var i = candidates.length - 1; i > 0; i--) {
+      var j = Math.floor(rnd() * (i + 1)), swap = candidates[i]; candidates[i] = candidates[j]; candidates[j] = swap;
+    }
+    var opened = Math.min(candidates.length, Math.max(2, Math.round(candidates.length * (Number(share) || 0))));
+    for (var k = 0; k < opened; k++) {
+      var wall = candidates[k], cell = maze[wall[0]][wall[1]];
+      if (wall[2] === 'right') { cell.walls.right = false; maze[wall[0]][wall[1] + 1].walls.left = false; }
+      else { cell.walls.bottom = false; maze[wall[0] + 1][wall[1]].walls.top = false; }
+    }
+    return opened;
+  }
   var MAZE_SIZES = { small: { cols: 5, rows: 5, label: tt('math_fluency.small_5_5', 'Small (5\u00d75)') }, medium: { cols: 7, rows: 7, label: tt('math_fluency.medium_7_7', 'Medium (7\u00d77)') }, large: { cols: 9, rows: 9, label: tt('math_fluency.large_9_9', 'Large (9×9)') } };
 
   // ── Procedural stone/dungeon textures (no external assets) ──
@@ -3550,6 +3705,44 @@
     var fovState = useState([65,80,95].indexOf(Number(_prefs.cameraFov)) >= 0 ? Number(_prefs.cameraFov) : 80);
     var cameraFov = fovState[0];
     var setCameraFov = function(v) { v = Number(v); fovState[1](v); _savePrefs({ cameraFov: v }); };
+    // Camera for Classic mode. Overhead looks down on the player from the south,
+    // so the arrow keys match the screen (up = away, left = left). First-person
+    // stays available; Explorer mode is always first-person.
+    var viewState = useState(_prefs.mazeView === 'first' ? 'first' : 'overhead');
+    var mazeView = viewState[0];
+    var setMazeView = function(v) { v = v === 'first' ? 'first' : 'overhead'; viewState[1](v); _savePrefs({ mazeView: v }); };
+    var mazeViewRef = useRef(mazeView);
+    mazeViewRef.current = mazeView;
+    // First-person Classic faces the way the player last moved (0 = south, the +z axis).
+    var faceYawRef = useRef(0);
+    var prevFacePosRef = useRef(null);
+    // The maze does not ship the 3D engine. Ask the app's shared loader for it, so
+    // 3D is what students get instead of only when another tool happened to load it.
+    var threeReadyState = useState(0);
+    useEffect(function() {
+      if (performance2D || window.THREE) return;
+      var host = window.StemLab;
+      if (!host || typeof host.ensureThree !== 'function') return;
+      var alive = true;
+      try {
+        Promise.resolve(host.ensureThree({ orbit: false })).then(function() {
+          if (alive && window.THREE) threeReadyState[1](function(n) { return n + 1; });
+        }).catch(function() {});
+      } catch (_) {}
+      return function() { alive = false; };
+    }, [performance2D]);
+    // Where the minimap sits: inside the top-right corner of the 3D view, wherever
+    // the bars above it push that view. (It used to assume a one-line HUD and
+    // covered the Fullscreen and Hint buttons.)
+    var mapSpotState = useState({ top: 52, right: 10 });
+    useEffect(function() {
+      var el = maze3dRef.current;
+      if (!el || !el.offsetParent) return;
+      var top = el.offsetTop + 10;
+      var right = Math.max(6, el.offsetParent.clientWidth - (el.offsetLeft + el.offsetWidth) + 10);
+      var cur = mapSpotState[0];
+      if (Math.abs(cur.top - top) > 1 || Math.abs(cur.right - right) > 1) mapSpotState[1]({ top: top, right: right });
+    });
     var brightnessState = useState(Math.max(0.8, Math.min(1.3, Number(_prefs.brightness) || 1)));
     var mazeBrightness = brightnessState[0];
     var setMazeBrightness = function(v) { v = Math.max(0.8, Math.min(1.3, Number(v) || 1)); brightnessState[1](v); _savePrefs({ brightness: v }); };
@@ -3597,6 +3790,8 @@
     var elapsed = timerState[0], setElapsed = timerState[1];
     var monsterState = useState({ r: 0, c: 0 });
     var monsterPos = monsterState[0], setMonsterPos = monsterState[1];
+    var monsterAwakeState = useState(false);
+    var monsterAwake = monsterAwakeState[0], setMonsterAwake = monsterAwakeState[1];
     var gameOverState = useState(false);
     var gameOver = gameOverState[0], setGameOver = gameOverState[1];
     var wonState = useState(false);
@@ -3749,7 +3944,7 @@
     var timerBlockedRef = useRef(false);
     pausedRef.current = paused;
     timerBlockedRef.current = paused || helpOpen || !tutorialSeen;
-    monsterBlockedRef.current = timerBlockedRef.current || !!currentProblem;
+    monsterBlockedRef.current = timerBlockedRef.current || !!currentProblem || !monsterAwake;
 
     function makeProblem() {
       return generateMazeProblem(operation, difficulty);
@@ -3792,6 +3987,8 @@
       } else {
         sz = getMazeSize();
         newMaze = generateMaze(sz.rows, sz.cols);
+        // A pursuer needs a maze with more than one way round.
+        if (chaseMode) addMazeLoops(newMaze, 0.16);
       }
       setMaze(newMaze);
       setPlayerPos({ r: 0, c: 0 }); playerPosRef.current = { r: 0, c: 0 };
@@ -3808,6 +4005,7 @@
       // panel reflects only the current attempt, not lifetime stumbles.
       factStatsRef.current = {};
       setMonsterPos({ r: 0, c: 0 });
+      setMonsterAwake(false);
       setCurrentProblem(null);
       setScore(0); setCorrect(0); setWrong(0); setMoveCount(0); setElapsed(0);
       setGameOver(false); setWon(false); setFeedback('');
@@ -4252,9 +4450,17 @@
       }, 220);
     }
 
+    // The monster wakes once the player is far enough from it. Until then it cannot
+    // move or catch, so stepping back onto the start cell early is safe.
+    useEffect(function() {
+      if (!chaseMode || mode !== 'playing' || monsterAwake || !maze) return;
+      var gap = findMazePathDistance(maze, monsterPos, playerPos);
+      if (gap != null && gap >= MAZE_CHASE_HEAD_START) setMonsterAwake(true);
+    }, [chaseMode, mode, monsterAwake, maze, playerPos, monsterPos]);
+
     // Check monster catch
     useEffect(function() {
-      if (chaseMode && mode === 'playing' && monsterPos.r === playerPos.r && monsterPos.c === playerPos.c && moveCount > 0) {
+      if (chaseMode && mode === 'playing' && monsterPos.r === playerPos.r && monsterPos.c === playerPos.c && monsterAwake) {
         setGameOver(true); setMode('results');
         if (timerRef.current) clearInterval(timerRef.current);
         if (monsterTimerRef.current) clearInterval(monsterTimerRef.current);
@@ -4266,6 +4472,10 @@
     useEffect(function() {
       function handleKey(e) {
         if (mode !== 'playing') return;
+        if (!tutorialSeen) {
+          if (e.key !== 'Tab' && e.key !== 'Shift' && !e.ctrlKey && !e.metaKey && !e.altKey) { e.preventDefault(); _dismissTutorial(); }
+          return;
+        }
         if (paused) {
           if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') { e.preventDefault(); setPaused(false); }
           return;
@@ -4376,8 +4586,16 @@
           }
           // Floor tint — warm tan for visible corridor floor (was near-black).
           if (isSeen) {
-            ctx.fillStyle = 'rgba(217,180,140,0.18)';
+            ctx.fillStyle = 'rgba(217,180,140,0.30)';
             ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
+            // Flagstone seams, so lit floor reads as paving instead of a flat tint.
+            if (!mazeHighContrast) {
+              ctx.strokeStyle = 'rgba(40,26,16,0.28)'; ctx.lineWidth = 1;
+              ctx.beginPath();
+              ctx.moveTo(x + CELL_SIZE / 2, y + 3); ctx.lineTo(x + CELL_SIZE / 2, y + CELL_SIZE / 2);
+              ctx.moveTo(x + 3, y + CELL_SIZE / 2); ctx.lineTo(x + CELL_SIZE - 3, y + CELL_SIZE / 2);
+              ctx.stroke();
+            }
           }
           // Fog-of-war (Classic): lighter warm-brown overlay. Keeps the
           // unexplored region distinct without making it feel oppressive.
@@ -4395,12 +4613,21 @@
             ctx.fillRect(x, y, CELL_SIZE, CELL_SIZE);
           }
           // Walls — warmer stone tone, brighter for seen cells.
-          ctx.strokeStyle = isSeen ? '#a8957d' : '#5b4d3f';
-          ctx.lineWidth = 2;
-          if (cell.walls.top) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x + CELL_SIZE, y); ctx.stroke(); }
-          if (cell.walls.right) { ctx.beginPath(); ctx.moveTo(x + CELL_SIZE, y); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
-          if (cell.walls.bottom) { ctx.beginPath(); ctx.moveTo(x, y + CELL_SIZE); ctx.lineTo(x + CELL_SIZE, y + CELL_SIZE); ctx.stroke(); }
-          if (cell.walls.left) { ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + CELL_SIZE); ctx.stroke(); }
+          // Lit walls are thick pale stone over a dark shadow line; unexplored walls stay thin and dim.
+          var wallSegments = [];
+          if (cell.walls.top) wallSegments.push([x, y, x + CELL_SIZE, y]);
+          if (cell.walls.right) wallSegments.push([x + CELL_SIZE, y, x + CELL_SIZE, y + CELL_SIZE]);
+          if (cell.walls.bottom) wallSegments.push([x, y + CELL_SIZE, x + CELL_SIZE, y + CELL_SIZE]);
+          if (cell.walls.left) wallSegments.push([x, y, x, y + CELL_SIZE]);
+          ctx.lineCap = 'round';
+          if (isSeen && !mazeHighContrast) {
+            ctx.strokeStyle = 'rgba(0,0,0,0.5)'; ctx.lineWidth = 5;
+            wallSegments.forEach(function(seg) { ctx.beginPath(); ctx.moveTo(seg[0] + 1, seg[1] + 1.5); ctx.lineTo(seg[2] + 1, seg[3] + 1.5); ctx.stroke(); });
+          }
+          ctx.strokeStyle = mazeHighContrast ? '#ffffff' : (isSeen ? '#dcc8a8' : '#5b4d3f');
+          ctx.lineWidth = isSeen ? 3.5 : 2;
+          wallSegments.forEach(function(seg) { ctx.beginPath(); ctx.moveTo(seg[0], seg[1]); ctx.lineTo(seg[2], seg[3]); ctx.stroke(); });
+          ctx.lineCap = 'butt';
           // Explorer Mode — highlight solved passages with a small gold
           // dot at the midpoint of each opened doorway. Builds a visible
           // trail of "doors I've already unlocked" without revealing
@@ -4435,15 +4662,15 @@
       // each torch's intensity flickers using minimapTickRef + a phase
       // offset derived from the cell so neighboring torches aren't in sync.
       ctx.save();
-      for (var tr = 0; tr < MAZE_ROWS; tr++) {
+      for (var torchRow = 0; torchRow < MAZE_ROWS; torchRow++) {
         for (var tc = 0; tc < MAZE_COLS; tc++) {
           // Sparse placement — every 4th cell along a stable hash, only
           // where the cell is seen (don't reveal unexplored corridors).
-          if ((tr * 5 + tc * 3) % 4 !== 0) continue;
-          if (!seen(tr, tc)) continue;
+          if ((torchRow * 5 + tc * 3) % 4 !== 0) continue;
+          if (!seen(torchRow, tc)) continue;
           var tcx = (tc + 0.5) * CELL_SIZE;
-          var tcy = (tr + 0.5) * CELL_SIZE;
-          var phase = (tr * 17 + tc * 31) * 0.05;
+          var tcy = (torchRow + 0.5) * CELL_SIZE;
+          var phase = (torchRow * 17 + tc * 31) * 0.05;
           var flicker = 0.7 + 0.3 * Math.sin(minimapTickRef.current * 0.18 + phase);
           // Halo
           var torchGrad = ctx.createRadialGradient(tcx, tcy, 1, tcx, tcy, CELL_SIZE * 1.1);
@@ -4747,6 +4974,37 @@
       torchGlow.position.set(0, 2, 0.1);
       eng.camera.add(torchGlow);
       eng.scene.add(eng.camera);
+      eng.camTorch = torchLight;
+      eng.camGlow = torchGlow;
+      eng._userFov = cameraFov;
+      // Warm fill light, so stone reads as stone instead of near-black.
+      eng.scene.add(new THREE.HemisphereLight(0xffe7c2, 0x2b2118, 0.5));
+      // The lantern travels with the player: the overhead camera carries no torch.
+      eng.playerLight = new THREE.PointLight(0xffc27a, 1.5, 11);
+      eng.playerLight.position.set(1, 1.9, 1);
+      eng.scene.add(eng.playerLight);
+      // Avatar (the chosen character) and a ground ring, shown in the overhead view.
+      var avatarCanvas = document.createElement('canvas');
+      avatarCanvas.width = avatarCanvas.height = 128;
+      var avatarCtx = avatarCanvas.getContext('2d');
+      if (avatarCtx) {
+        avatarCtx.font = '96px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif';
+        avatarCtx.textAlign = 'center'; avatarCtx.textBaseline = 'middle';
+        avatarCtx.fillText(String(playerAvatar || '\uD83D\uDC31'), 64, 70);
+      }
+      var avatarTex = new THREE.CanvasTexture(avatarCanvas);
+      eng.avatar = new THREE.Sprite(new THREE.SpriteMaterial({ map: avatarTex, transparent: true, depthWrite: false, depthTest: false, fog: false }));
+      eng.avatar.scale.set(1.25, 1.25, 1);
+      eng.avatar.renderOrder = 5;
+      eng.scene.add(eng.avatar);
+      eng.avatarRing = new THREE.Mesh(new THREE.RingGeometry(0.46, 0.6, 32), new THREE.MeshBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.75, side: THREE.DoubleSide, depthWrite: false, depthTest: false, fog: false }));
+      eng.avatarRing.renderOrder = 4;
+      eng.avatarRing.rotation.x = -Math.PI / 2;
+      eng.scene.add(eng.avatarRing);
+      // Start facing an open passage, not a wall.
+      var startWalls = maze[playerPosRef.current.r] && maze[playerPosRef.current.r][playerPosRef.current.c] ? maze[playerPosRef.current.r][playerPosRef.current.c].walls : null;
+      faceYawRef.current = startWalls && startWalls.bottom && !startWalls.right ? Math.PI / 2 : startWalls && startWalls.bottom && startWalls.right && !startWalls.left ? -Math.PI / 2 : startWalls && startWalls.bottom && startWalls.right && !startWalls.top ? Math.PI : 0;
+      prevFacePosRef.current = { r: playerPosRef.current.r, c: playerPosRef.current.c };
 
       // Textures — built once, reused across all walls/floor/ceiling.
       var wallTex = buildStoneTexture(THREE, 'rgb(46,42,66)');
@@ -4755,7 +5013,7 @@
       floorTex.repeat.set(MAZE_COLS * 0.8, MAZE_ROWS * 0.8);
       var ceilTex = buildStoneTexture(THREE, 'rgb(16,14,28)');
       ceilTex.repeat.set(MAZE_COLS * 0.8, MAZE_ROWS * 0.8);
-      eng._textures = [wallTex, floorTex, ceilTex];
+      eng._textures = [wallTex, floorTex, ceilTex, avatarTex];
 
       // Floor
       var floorMat = new THREE.MeshStandardMaterial({ map: floorTex, color: 0xffffff, roughness: 0.95 });
@@ -4793,6 +5051,10 @@
         }
       }
 
+      // The overhead view lowers the walls so corridors behind them stay visible.
+      eng.walls = [];
+      eng.scene.traverse(function(obj) { if (obj.isMesh && obj.material === wallMat) eng.walls.push(obj); });
+
       // Dust motes — ~200 floating particles drifting slowly through the
       // whole maze volume. Each mote also carries a per-particle phase so the
       // cloud doesn't drift in lockstep.
@@ -4827,12 +5089,12 @@
       var sconceMat = new THREE.MeshStandardMaterial({ color: 0x3a2815, roughness: 1 });
       var torchTargetCount = Math.round((MAZE_COLS + MAZE_ROWS) * 1.2);
       var torchCandidates = [];
-      for (var tr = 0; tr < MAZE_ROWS; tr++) {
+      for (var wallRow = 0; wallRow < MAZE_ROWS; wallRow++) {
         for (var tc = 0; tc < MAZE_COLS; tc++) {
-          var cellT = maze[tr][tc];
+          var cellT = maze[wallRow][tc];
           // Favor outer walls (visible more often) but include some interior.
-          if (cellT.walls.top && tr > 0) torchCandidates.push({ r: tr, c: tc, side: 'top' });
-          if (cellT.walls.left && tc > 0) torchCandidates.push({ r: tr, c: tc, side: 'left' });
+          if (cellT.walls.top && wallRow > 0) torchCandidates.push({ r: wallRow, c: tc, side: 'top' });
+          if (cellT.walls.left && tc > 0) torchCandidates.push({ r: wallRow, c: tc, side: 'left' });
         }
       }
       // Fisher-Yates shuffle so the torch locations are varied each run
@@ -4841,8 +5103,10 @@
         var tmp = torchCandidates[shI]; torchCandidates[shI] = torchCandidates[shJ]; torchCandidates[shJ] = tmp;
       }
       var torchN = Math.min(torchTargetCount, torchCandidates.length);
-      for (var tt = 0; tt < torchN; tt++) {
-        var cand = torchCandidates[tt];
+      // Not `tt`: a var by that name is hoisted over the translation helper tt() for this
+      // whole function, and the canvas labels above then threw "tt is not a function".
+      for (var torchIndex = 0; torchIndex < torchN; torchIndex++) {
+        var cand = torchCandidates[torchIndex];
         var tcx = cand.c * 2 + 1, tcz = cand.r * 2 + 1;
         var tOff = cand.side === 'top' ? { x: 0, z: -0.95 } : { x: -0.95, z: 0 };
         var torchGroup = new THREE.Group();
@@ -4985,9 +5249,29 @@
         // Position camera at player cell
         var pr = playerPosRef.current;
         var targetX = pr.c * 2 + 1, targetZ = pr.r * 2 + 1;
-        eng.camera.position.x += (targetX - eng.camera.position.x) * 0.1;
-        eng.camera.position.z += (targetZ - eng.camera.position.z) * 0.1;
-        eng.camera.position.y = 1.2 + (mazeReducedRef.current ? 0 : Math.sin(t2 * 3) * 0.03); // subtle bob
+        // Smoothed player position: the avatar, lantern and overhead camera follow it.
+        if (eng._px == null) { eng._px = targetX; eng._pz = targetZ; }
+        eng._px += (targetX - eng._px) * 0.16;
+        eng._pz += (targetZ - eng._pz) * 0.16;
+        var overhead = !isExplorerRef.current && mazeViewRef.current === 'overhead';
+        var mazeW = MAZE_COLS * 2, mazeD = MAZE_ROWS * 2;
+        var focusX = mazeW <= 11 ? mazeW / 2 : Math.max(5.5, Math.min(mazeW - 5.5, eng._px));
+        var focusZ = Math.max(Math.min(4, mazeD / 2), Math.min(mazeD - 1.5, eng._pz));
+        if (overhead) {
+          // Above and just south of the player, steep enough to see over the wall behind them.
+          if (!eng._wasOverhead) { eng.camera.position.set(focusX, 8.8, focusZ + 4.1); eng._fx = focusX; eng._fz = focusZ; }
+          eng._fx += (focusX - eng._fx) * 0.1;
+          eng._fz += (focusZ - eng._fz) * 0.1;
+          eng.camera.position.x += (eng._fx - eng.camera.position.x) * 0.12;
+          eng.camera.position.y += (8.8 - eng.camera.position.y) * 0.12;
+          eng.camera.position.z += (eng._fz + 4.1 - eng.camera.position.z) * 0.12;
+        } else {
+          if (eng._wasOverhead) { eng.camera.position.set(targetX, 1.2, targetZ); }
+          eng.camera.position.x += (targetX - eng.camera.position.x) * 0.1;
+          eng.camera.position.z += (targetZ - eng.camera.position.z) * 0.1;
+          eng.camera.position.y = 1.2 + (mazeReducedRef.current ? 0 : Math.sin(t2 * 3) * 0.03); // subtle bob
+        }
+        eng._wasOverhead = overhead;
         // Screen shake — decays over ~0.4s after a wrong answer. Applied as
         // a small additive offset on top of the smoothed camera position.
         if (!mazeReducedRef.current && visualEffectsRef.current && shakeRef.current > 0) {
@@ -5015,6 +5299,37 @@
             eng.camera.position.y,
             eng.camera.position.z + Math.cos(_ya)
           );
+        } else if (overhead) {
+          eng.camera.lookAt(eng._fx, 0.5, eng._fz - 0.9);
+        } else {
+          // First-person Classic: turn smoothly to face the way the player last moved.
+          var wantYaw = faceYawRef.current;
+          var curYaw = eng._yaw == null ? wantYaw : eng._yaw;
+          var yawGap = wantYaw - curYaw;
+          while (yawGap > Math.PI) yawGap -= Math.PI * 2;
+          while (yawGap < -Math.PI) yawGap += Math.PI * 2;
+          curYaw += yawGap * (mazeReducedRef.current ? 1 : 0.16);
+          eng._yaw = curYaw;
+          eng.camera.lookAt(eng.camera.position.x + Math.sin(curYaw), eng.camera.position.y, eng.camera.position.z + Math.cos(curYaw));
+        }
+        if (eng._wallsLow !== overhead) {
+          eng._wallsLow = overhead;
+          var wallScale = overhead ? 0.56 : 1;
+          (eng.walls || []).forEach(function(wall) { wall.scale.y = wallScale; wall.position.y = 1.25 * wallScale; });
+          (eng.torches || []).forEach(function(torch) { torch.position.y = overhead ? 1.05 : 1.7; });
+        }
+        // Lens, fog and lights for the current view.
+        var wantFov = overhead ? 50 : eng._userFov;
+        if (eng.camera.fov !== wantFov) { eng.camera.fov = wantFov; eng.camera.updateProjectionMatrix(); }
+        if (eng.scene.fog) { eng.scene.fog.near = overhead ? 8 : 2; eng.scene.fog.far = overhead ? 26 : 16; }
+        if (eng.camTorch) eng.camTorch.intensity = overhead ? 0 : 1.2;
+        if (eng.camGlow) eng.camGlow.visible = !overhead;
+        if (eng.playerLight) { eng.playerLight.position.set(eng._px, 1.9, eng._pz); eng.playerLight.intensity = overhead ? 1.7 : 0.5; }
+        if (eng.avatar) {
+          eng.avatar.visible = overhead;
+          eng.avatar.position.set(eng._px, 0.95 + (mazeReducedRef.current ? 0 : Math.sin(t2 * 4) * 0.06), eng._pz);
+          eng.avatarRing.visible = overhead;
+          eng.avatarRing.position.set(eng._px, 0.04, eng._pz);
         }
 
         // Exit portal — ring spins one axis, swirl spins the other, glow pulses.
@@ -5196,11 +5511,11 @@
         // ── Wall-torch flame flicker ──
         if (eng.torches) {
           for (var ti = 0; ti < eng.torches.length; ti++) {
-            var tr = eng.torches[ti];
-            var phase = tr.userData.phase || 0;
+            var wallTorch = eng.torches[ti];
+            var phase = wallTorch.userData.phase || 0;
             var flick = 0.8 + Math.sin(t2 * 8 + phase) * 0.15 + Math.random() * 0.1;
-            if (tr.flame) tr.flame.scale.set(flick, flick * 1.2, 1);
-            if (tr.light) tr.light.intensity = 0.7 * flick;
+            if (wallTorch.flame) wallTorch.flame.scale.set(flick, flick * 1.2, 1);
+            if (wallTorch.light) wallTorch.light.intensity = 0.7 * flick;
           }
         }
 
@@ -5236,16 +5551,23 @@
         if (cnv.parentNode) cnv.parentNode.removeChild(cnv);
         maze3dEngRef.current = null;
       };
-    }, [mode === 'playing', maze]);
+    // threeReadyState: the engine can arrive after play has begun (slow network), and
+    // the view has already switched to the 3D container by then.
+    }, [mode === 'playing', maze, threeReadyState[0]]);
 
     // Camera facing: update on each move
     useEffect(function() {
       var eng = maze3dEngRef.current;
       if (!eng || !eng.camera) return;
-      // Look in the direction of last move
-      var pr = playerPosRef.current;
-      var lookX = pr.c * 2 + 1, lookZ = pr.r * 2 + 1 + 2; // default: look forward (+z)
-      eng.camera.lookAt(lookX, 1.2, lookZ);
+      // Record the direction of the last move; the render loop turns the camera
+      // toward it. (This used to aim at a fixed point south of the cell once per
+      // move, so the view often ended up pressed against a wall.)
+      var pr = playerPosRef.current, prevFace = prevFacePosRef.current;
+      if (prevFace) {
+        var faceDr = pr.r - prevFace.r, faceDc = pr.c - prevFace.c;
+        if (Math.abs(faceDr) + Math.abs(faceDc) === 1) faceYawRef.current = faceDr === 1 ? 0 : faceDr === -1 ? Math.PI : faceDc === 1 ? Math.PI / 2 : -Math.PI / 2;
+      }
+      prevFacePosRef.current = { r: pr.r, c: pr.c };
     }, [playerPos]);
 
     // Native browser Fullscreen API — sync our isFullscreen state with
@@ -5323,7 +5645,7 @@
         bestRecord = keyed[bestKey] || null;
       } catch (e) { bestRecord = null; }
       return h('div', { style: { maxWidth: 460, margin: '0 auto', padding: '20px 24px', textAlign: 'center', background: 'linear-gradient(180deg, #fef3c7 0%, #fed7aa 100%)', borderRadius: '14px', border: '2px solid #d97706', boxShadow: '0 8px 24px rgba(146,64,14,0.15), inset 0 0 32px rgba(217,119,6,0.08)' } },
-        h('div', { style: { fontSize: '36px', marginBottom: '8px' } }, '\uD83C\uDFAF'),
+        h('div', { 'aria-hidden': 'true', style: { fontSize: '36px', marginBottom: '8px' } }, '\uD83C\uDFF0'),
         h('h2', { style: { fontSize: '22px', fontWeight: 900, color: '#78350f', marginBottom: '2px', letterSpacing: '0.04em' } }, tt('math_fluency.fluency_maze', 'Fluency Maze')),
         h('p', { style: { fontSize: '12px', color: '#92400e', marginBottom: '12px', fontStyle: 'italic' } }, 'Each gate is locked by a math fact. Solve it to pass. Find the golden key to unlock the exit.'),
         bestRecord && bestRecord.score && h('div', {
@@ -5342,7 +5664,7 @@
           'aria-expanded': showCustomSettings,
           'aria-controls': 'fluency-maze-custom-settings',
           style: { width: '100%', padding: '8px 14px', marginBottom: '12px', borderRadius: '9px', border: '1px solid #d97706', background: 'rgba(254,243,199,0.8)', color: '#78350f', fontSize: '12px', fontWeight: 800, cursor: 'pointer' }
-        }, (showCustomSettings ? '\u25B2 Hide Custom Settings' : '\u25BC Customize Maze') + '  \u00b7  ' + operation + ' / ' + difficulty + ' / ' + mazeSize + (performance2D ? ' / 2D' : ' / 3D Auto')),
+        }, (showCustomSettings ? '\u25B2 Hide Custom Settings' : '\u25BC Customize Maze') + '  \u00b7  ' + tr({ add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division', mixed: 'Mixed', volume: 'Volume' }[operation] || String(operation)) + ' \u00b7 ' + (difficulty === 'single' ? tt('math_fluency.facts_to_12', 'Facts to 12') : tt('math_fluency.extended_short', 'Extended')) + ' \u00b7 ' + tr({ small: 'Small maze', medium: 'Medium maze', large: 'Large maze' }[mazeSize] || String(mazeSize)) + (performance2D ? ' \u00b7 2D' : '')),
         showCustomSettings && (function() {
           var lt = null;
           try { lt = JSON.parse(localStorage.getItem('fluency_maze_lifetime') || 'null'); } catch (e) {}
@@ -5543,7 +5865,7 @@
                 background: diffSel ? 'linear-gradient(135deg, #ea580c, #c2410c)' : '#fef3c7',
                 color: diffSel ? '#fff' : '#78350f',
                 border: diffSel ? '2px solid #9a3412' : '2px solid #fcd34d' }
-            }, d === 'single' ? tt('math_fluency.single_digit_0_12_2', 'Single Digit (0-12)') : tt('math_fluency.extended_numbers', 'Extended (10-99; facts 10-20)'));
+            }, d === 'single' ? tt('math_fluency.facts_to_12', 'Facts to 12') : tt('math_fluency.extended_numbers', 'Extended (10-99; facts 10-20)'));
           })
         ),
         // Maze size selector
@@ -5582,6 +5904,7 @@
           ),
           h('div', { style: { color: '#92400e', fontSize: '10px', fontWeight: 900, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: '6px' } }, 'View controls'),
           h('div', { className: 'mf-maze-view-grid', style: { display: 'grid', gridTemplateColumns: 'repeat(2,minmax(0,1fr))', gap: '8px' } },
+            h('label', { className: 'mf-maze-view-control', style: { display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '6px', color: '#78350f', fontSize: '11px', fontWeight: 800, gridColumn: '1 / -1' } }, tt('math_fluency.camera_view', 'Camera'), h('select', { value: isExplorer ? 'first' : mazeView, disabled: isExplorer, onChange: function(e) { setMazeView(e.target.value); }, 'aria-label': tt('math_fluency.camera_view', 'Camera'), title: isExplorer ? tt('math_fluency.camera_view_explorer_note', 'Explorer mode always uses the first-person camera.') : undefined, style: { minHeight: '36px', borderRadius: '8px', border: '1px solid #d97706', color: '#78350f', background: '#fff' } }, h('option', { value: 'overhead' }, tt('math_fluency.camera_overhead', 'Overhead (see the maze around you)')), h('option', { value: 'first' }, tt('math_fluency.camera_first_person', 'First-person (through your eyes)')))),
             h('label', { className: 'mf-maze-view-control', style: { display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '6px', color: '#78350f', fontSize: '11px', fontWeight: 800 } }, tt('math_fluency.camera_sensitivity', 'Camera sensitivity'), h('span', { style: { padding: '2px 6px', borderRadius: '999px', background: '#fff7ed', color: '#9a3412' } }, cameraSensitivity.toFixed(1) + 'x'), h('input', { type: 'range', min: 0.5, max: 2, step: 0.1, value: cameraSensitivity, onChange: function(e) { setCameraSensitivity(e.target.value); }, style: { gridColumn: '1 / -1', width: '100%' } })),
             h('label', { className: 'mf-maze-view-control', style: { display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '6px', color: '#78350f', fontSize: '11px', fontWeight: 800 } }, tt('math_fluency.field_of_view', 'Field of view'), h('select', { value: cameraFov, onChange: function(e) { setCameraFov(e.target.value); }, 'aria-label': tt('math_fluency.field_of_view', 'Field of view'), style: { minHeight: '36px', borderRadius: '8px', border: '1px solid #d97706', color: '#78350f', background: '#fff' } }, h('option', { value: 65 }, 'Narrow'), h('option', { value: 80 }, 'Standard'), h('option', { value: 95 }, 'Wide'))),
             h('label', { className: 'mf-maze-view-control', style: { display: 'grid', gridTemplateColumns: '1fr auto', alignItems: 'center', gap: '6px', color: '#78350f', fontSize: '11px', fontWeight: 800, gridColumn: '1 / -1' } }, tt('math_fluency.brightness', 'Brightness'), h('span', { style: { padding: '2px 6px', borderRadius: '999px', background: '#fff7ed', color: '#9a3412' } }, Math.round(mazeBrightness * 100) + '%'), h('input', { type: 'range', min: 0.8, max: 1.3, step: 0.1, value: mazeBrightness, onChange: function(e) { setMazeBrightness(e.target.value); }, style: { gridColumn: '1 / -1', width: '100%' } }))
@@ -5781,7 +6104,7 @@
               var card = (won ? '\uD83C\uDFC6 Math Fluency Maze' : '\uD83D\uDC7E Math Fluency Maze') + '\n'
                 + '\u2705 ' + correct + ' gates  ·  \u274C ' + wrong + ' wrong\n'
                 + '\u23F1 ' + elapsed + 's  ·  \uD83C\uDFAF ' + score + ' pts' + (medalIcon ? '  ·  ' + medalIcon + ' ' + medal.toUpperCase() : '') + '\n'
-                + 'Mode: ' + opLabel + ' / ' + (difficulty === 'single' ? tt('math_fluency.single_digit', 'Single-digit') : tt('math_fluency.double_digit', 'Double-digit')) + ' / ' + sizeLabel;
+                + 'Mode: ' + opLabel + ' / ' + (difficulty === 'single' ? tt('math_fluency.facts_to_12', 'Facts to 12') : tt('math_fluency.extended_short', 'Extended')) + ' / ' + sizeLabel;
               if (navigator.clipboard && navigator.clipboard.writeText) {
                 navigator.clipboard.writeText(card).then(function() {
                   if (addToast) addToast('\uD83D\uDCCB Result copied to clipboard', 'success');
@@ -5807,9 +6130,9 @@
       : { r: MAZE_ROWS - 1, c: MAZE_COLS - 1 };
     var objectiveDistance = maze ? findMazePathDistance(maze, playerPos, objectiveTarget) : null;
     var objectiveDistanceLabel = objectiveDistance == null ? '' : objectiveDistance === 0 ? 'Here' : objectiveDistance + ' gate' + (objectiveDistance === 1 ? '' : 's') + ' away';
-    var chaseRadar = chaseMode && moveCount > 0 ? buildChaseRadar(maze, playerPos, monsterPos) : null;
-    var chaseStatus = !chaseMode ? null : moveCount === 0
-      ? { level: 'armed', label: 'Chase armed', distance: null, bearing: null, strength: 1, message: 'Chase begins after your first move.' }
+    var chaseRadar = chaseMode && monsterAwake ? buildChaseRadar(maze, playerPos, monsterPos) : null;
+    var chaseStatus = !chaseMode ? null : !monsterAwake
+      ? { level: 'armed', label: 'Chase armed', distance: null, bearing: null, strength: 1, message: 'The monster is asleep. It wakes when you are ' + MAZE_CHASE_HEAD_START + ' gates from the start.' }
       : chaseRadar;
     function mazeDirectionAvailable(dir) {
       if (!maze || !maze[playerPos.r] || !maze[playerPos.r][playerPos.c] || currentProblem || paused || helpOpen || !tutorialSeen) return false;
@@ -5851,7 +6174,7 @@
               var deg = (Math.atan2(dr, dc) * 180 / Math.PI + 360) % 360;
               var dirsByDeg = ['E','SE','S','SW','W','NW','N','NE'];
               var label = dirsByDeg[Math.round(deg / 45) % 8];
-              return h('span', { className: 'mf-maze-bearing', style: { color: '#fde68a', fontWeight: 800, fontSize: '10px', background: 'rgba(254,243,199,0.12)', border: '1px solid rgba(254,243,199,0.28)', padding: '2px 7px', borderRadius: '999px', letterSpacing: '0.04em' }, 'aria-label': goal.label + ' is to the ' + label + (objectiveDistanceLabel ? ', ' + objectiveDistanceLabel : '') }, goal.icon + ' ' + label + (objectiveDistanceLabel ? ' - ' + objectiveDistanceLabel : ''));
+              return h('span', { className: 'mf-maze-bearing', style: { color: '#fde68a', fontWeight: 800, fontSize: '10px', background: 'rgba(254,243,199,0.12)', border: '1px solid rgba(254,243,199,0.28)', padding: '2px 7px', borderRadius: '999px', letterSpacing: '0.04em' }, 'aria-label': goal.label + ' is to the ' + label + (objectiveDistanceLabel ? ', ' + objectiveDistanceLabel : '') }, goal.icon + ' ' + label);
             })(),
             chaseStatus && (function() {
               var radarPalette = chaseStatus.level === 'caught' || chaseStatus.level === 'danger'
@@ -5861,7 +6184,7 @@
                   : chaseStatus.level === 'watch'
                     ? { bg: 'rgba(161,98,7,0.48)', border: '#facc15', color: '#fef9c3' }
                     : { bg: 'rgba(30,41,59,0.5)', border: '#94a3b8', color: '#e2e8f0' };
-              var detail = chaseStatus.distance == null ? 'after first move' : chaseStatus.distance + ' gate' + (chaseStatus.distance === 1 ? '' : 's') + (chaseStatus.bearing ? ' - ' + chaseStatus.bearing : '');
+              var detail = chaseStatus.distance == null ? 'asleep until you are ' + MAZE_CHASE_HEAD_START + ' gates away' : chaseStatus.distance + ' gate' + (chaseStatus.distance === 1 ? '' : 's') + (chaseStatus.bearing ? ' - ' + chaseStatus.bearing : '');
               return h('span', { className: 'mf-maze-chase-radar', role: 'status', 'aria-live': 'polite', 'data-danger-level': chaseStatus.level, 'aria-label': chaseStatus.message, style: { display: 'inline-flex', alignItems: 'center', gap: '5px', color: radarPalette.color, fontWeight: 850, fontSize: '10px', background: radarPalette.bg, border: '1px solid ' + radarPalette.border, padding: '3px 7px', borderRadius: '8px' } },
                 h('span', { 'aria-hidden': 'true' }, '\uD83D\uDC7E'),
                 h('span', null, chaseStatus.label),
@@ -5906,7 +6229,7 @@
         var pct = Math.min(100, Math.round((visitedCount / totalCells) * 100));
         var label = keyCollected
           ? '\uD83D\uDDDD\uFE0F Key in hand · ' + pct + '% explored'
-          : '\uD83D\uDDFA · ' + pct + '% explored · find the \uD83D\uDDDD\uFE0F';
+          : '\uD83D\uDDFA · ' + pct + '% explored';
         return h('div', {
           role: 'progressbar', 'aria-valuemin': 0, 'aria-valuemax': 100, 'aria-valuenow': pct, 'aria-label': label,
           style: {
@@ -5948,7 +6271,7 @@
       // the 3D view fills nearly the whole viewport. The ResizeObserver in
       // the init effect keeps the WebGL canvas matched to the container.
       has3D ? h('div', { ref: maze3dRef, className: 'mf-maze-viewport', style: { width: '100%', height: isFullscreen ? 'min(78vh, 900px)' : '440px', borderRadius: '10px', overflow: 'hidden', border: '2px solid ' + (keyCollected ? '#f59e0b' : '#7c3aed'), position: 'relative', background: '#0a0a1a', flex: isFullscreen ? '1 1 auto' : 'none', boxShadow: '0 0 0 1px rgba(255,255,255,0.08), 0 6px 20px ' + (keyCollected ? 'rgba(245,158,11,0.24)' : 'rgba(124,58,237,0.22)'), transition: 'border-color 220ms, box-shadow 220ms' } }) :
-      h('canvas', { ref: canvasRef, className: 'mf-maze-viewport', role: 'application', tabIndex: 0, 'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D H P F', 'aria-label': 'Interactive 2D fluency maze. ' + objectiveText + (objectiveDistanceLabel ? '. ' + objectiveDistanceLabel : ''), style: { width: '100%', height: 'auto', maxHeight: isFullscreen ? '78vh' : 'none', borderRadius: '10px', border: '3px solid ' + (keyCollected ? '#f59e0b' : '#7c3aed'), display: 'block', boxShadow: '0 6px 20px ' + (keyCollected ? 'rgba(245,158,11,0.28)' : 'rgba(124,58,237,0.24)'), objectFit: 'contain', transition: 'border-color 220ms, box-shadow 220ms' } }),
+      h('canvas', { ref: canvasRef, className: 'mf-maze-viewport', role: 'application', tabIndex: 0, 'aria-keyshortcuts': 'ArrowUp ArrowDown ArrowLeft ArrowRight W A S D H P F', 'aria-label': 'Interactive 2D fluency maze. ' + objectiveText + (objectiveDistanceLabel ? '. ' + objectiveDistanceLabel : ''), style: { width: '100%', maxWidth: isFullscreen ? '78vh' : '58vh', minWidth: '260px', margin: '0 auto', height: 'auto', maxHeight: isFullscreen ? '78vh' : 'none', borderRadius: '10px', border: '3px solid ' + (keyCollected ? '#f59e0b' : '#7c3aed'), display: 'block', boxShadow: '0 6px 20px ' + (keyCollected ? 'rgba(245,158,11,0.28)' : 'rgba(124,58,237,0.24)'), objectFit: 'contain', transition: 'border-color 220ms, box-shadow 220ms' } }),
       // Streak milestone banner — center-top of the maze area, fades in
       // and out via opacity transition. Pointer-events:none so it never
       // blocks the gate or arrow buttons underneath.
@@ -6098,7 +6421,7 @@
         )
       ),
       // 2D minimap overlay (top-right of 3D view)
-      has3D && maze && h('div', { className: 'mf-maze-minimap-shell', 'data-objective': keyCollected ? 'portal' : 'key', style: { position: 'absolute', top: isFullscreen ? '72px' : '52px', right: isFullscreen ? '24px' : '10px', width: isFullscreen ? '176px' : '124px', height: isFullscreen ? '176px' : '124px', padding: '5px', borderRadius: '14px', border: (mazeHighContrast ? '4px solid #fff' : '3px solid ' + (keyCollected ? '#f59e0b' : '#a78bfa')), background: 'rgba(15,23,42,0.94)', boxShadow: '0 10px 28px rgba(0,0,0,0.55)', zIndex: 5, transition: 'border-color 220ms, box-shadow 220ms' } },
+      has3D && maze && h('div', { className: 'mf-maze-minimap-shell', 'data-objective': keyCollected ? 'portal' : 'key', style: { position: 'absolute', top: mapSpotState[0].top + 'px', right: mapSpotState[0].right + 'px', width: isFullscreen ? '176px' : '124px', height: isFullscreen ? '176px' : '124px', padding: '5px', borderRadius: '14px', border: (mazeHighContrast ? '4px solid #fff' : '3px solid ' + (keyCollected ? '#f59e0b' : '#a78bfa')), background: 'rgba(15,23,42,0.94)', boxShadow: '0 10px 28px rgba(0,0,0,0.55)', zIndex: 5, transition: 'border-color 220ms, box-shadow 220ms' } },
         h('span', { 'aria-hidden': 'true', style: { position: 'absolute', top: '7px', left: '50%', transform: 'translateX(-50%)', zIndex: 3, padding: '2px 7px', borderRadius: '999px', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(255,255,255,0.32)', color: '#fff', fontSize: '9px', fontWeight: 900, letterSpacing: '0.11em', whiteSpace: 'nowrap' } }, keyCollected ? 'MAP \u00b7 PORTAL' : 'MAP \u00b7 KEY'),
         h('canvas', { ref: canvasRef, className: 'mf-maze-minimap' + (simplifiedMinimap ? ' mf-maze-minimap-simple' : ''), role: 'img', 'data-simplified': simplifiedMinimap ? 'true' : 'false', 'aria-label': 'Maze minimap. ' + objectiveText + (objectiveDistanceLabel ? '. ' + objectiveDistanceLabel : ''), style: { display: 'block', width: '100%', height: '100%', borderRadius: '10px', opacity: simplifiedMinimap ? 1 : 0.98, background: '#2a221c' } })
       ),
@@ -6109,6 +6432,11 @@
       currentProblem && h('div', {
         key: 'gate-' + (currentProblem.problem.text), // remount when problem changes so animations replay
         className: 'mf-maze-gate ' + (feedback === 'wrong' ? 'allo-gate-shake' : (feedback === 'correct' ? 'allo-gate-open' : '')),
+        ref: function (el) {
+          if (!el || el.__mfShown || typeof el.scrollIntoView !== 'function') return;
+          el.__mfShown = true;
+          try { el.scrollIntoView({ block: 'nearest', inline: 'nearest' }); } catch (_) {}
+        },
         role: 'dialog', 'aria-labelledby': 'mf-maze-gate-title',
         'data-feedback': feedback || 'ready',
         style: {
@@ -6235,7 +6563,9 @@
         h('input', {
           ref: inputRef, type: 'text', value: userInput,
           onChange: function(e) { if (/^-?\d*$/.test(e.target.value)) setUserInput(e.target.value); },
-          onKeyDown: function(e) { if (e.key === 'Enter') submitAnswer(); else if (e.key === 'Escape') setUserInput(''); },
+          // Enter is handled once, by the document key handler above. Handling it here as
+          // well submitted every keyboard answer twice (2 correct, double points, or 2 wrong).
+          onKeyDown: function(e) { if (e.key === 'Escape') setUserInput(''); },
           'aria-label': tt('math_fluency.type_your_answer_to', 'Type your answer to ') + currentProblem.problem.text,
           inputMode: 'numeric', enterKeyHint: 'done', autoComplete: 'off', autoFocus: true,
           style: { display: 'block', width: isFullscreen ? '180px' : '140px', padding: isFullscreen ? '10px 16px' : '8px 12px', margin: '0 auto 10px', fontSize: isFullscreen ? '36px' : '26px', fontWeight: 800, fontFamily: 'monospace', textAlign: 'center', color: feedback === 'wrong' ? '#fee2e2' : (feedback === 'correct' ? '#bbf7d0' : '#fff'), background: feedback === 'wrong' ? '#7f1d1d' : (feedback === 'correct' ? '#14532d' : '#0f172a'), border: '3px solid ' + (feedback === 'wrong' ? '#f87171' : (feedback === 'correct' ? '#4ade80' : '#a78bfa')), borderRadius: '8px', letterSpacing: '0.08em', outlineOffset: '3px' }
@@ -6411,8 +6741,8 @@
     getAdaptivePracticeLevel: getAdaptivePracticeLevel, buildStudentSessionReview: buildStudentSessionReview, formatProblemSpeech: formatProblemSpeech,
     getMasteryFocusFacts: getMasteryFocusFacts, buildFocusedProblems: buildFocusedProblems,
     sanitizeAccuracyDraft: sanitizeAccuracyDraft,
-    parseStudentAnswer: parseStudentAnswer, countCorrectDigits: countCorrectDigits,
-    findMazePathStep: findMazePathStep, findMazePathDistance: findMazePathDistance, buildChaseRadar: buildChaseRadar, buildMazeBestKey: buildMazeBestKey,
+    parseStudentAnswer: parseStudentAnswer, cleanAnswerInput: cleanAnswerInput, countCorrectDigits: countCorrectDigits,
+    findMazePathStep: findMazePathStep, findMazePathDistance: findMazePathDistance, addMazeLoops: addMazeLoops, generateMaze: generateMaze, MAZE_CHASE_HEAD_START: MAZE_CHASE_HEAD_START, buildChaseRadar: buildChaseRadar, buildMazeBestKey: buildMazeBestKey,
     generateMazeProblem: generateMazeProblem,
     dailyStreak: _mfDailyStreak, localDate: _mfLocalDate,
   };

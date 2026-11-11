@@ -53,7 +53,7 @@ async function openReport(addToast) {
     }));
   });
   await act(async () => { await new Promise(r => setTimeout(r, 30)); });
-  const toggle = Array.from(host.querySelectorAll('button')).find(b => /^Teacher Report/.test(b.textContent));
+  const toggle = Array.from(host.querySelectorAll('button')).find(b => /^Open Teacher Report/.test(b.textContent));
   expect(toggle, 'Teacher Report toggle').toBeTruthy();
   await act(async () => { toggle.dispatchEvent(new MouseEvent('click', { bubbles: true })); });
   const report = host.querySelector('#mf-teacher-report');

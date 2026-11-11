@@ -165,6 +165,8 @@ describe('new Missing Number and QD records carry the form version', () => {
     mount(saved);
     choose(document.querySelector('select[aria-label="Assign probe to student"]'), 'Ana');
     click(buttons().find((b) => /Start QD Probe/.test(b.textContent)));
+    // A student takes it, so the runner covers the teacher dashboard.
+    expect(document.body.querySelector('[role="dialog"][data-probe-fullscreen="quantity_discrimination"]')).toBeTruthy();
     const items = banks.QUANTITY_DISCRIMINATION_PROBES.K.A.problems;
     items.forEach((item) => {
       const choices = buttons().filter((b) => /w-28 h-28/.test(b.className));
@@ -174,8 +176,17 @@ describe('new Missing Number and QD records carry the form version', () => {
     expect(box && box.textContent).toContain('Form A v2');
     // The picker moving after the run must not relabel the record.
     choose(document.querySelector('select[aria-label="QD form"]'), 'B');
-    click(Array.from(box.querySelectorAll('button')).find((b) => /Save to Student Record/.test(b.textContent)));
+    // A finished run saves itself; the button reports it and cannot save twice.
     expect(saved).toHaveLength(1);
+    const qdSave = Array.from(box.querySelectorAll('button')).find((b) => /Saved to Ana/.test(b.textContent));
+    expect(qdSave && qdSave.disabled).toBe(true);
+    click(qdSave);
+    expect(saved).toHaveLength(1);
+    // Results stay covered until the teacher asks for them.
+    const handback = document.body.querySelector('[data-probe-fullscreen="handback"]');
+    expect(handback && handback.textContent).toContain('give the device back');
+    click(Array.from(handback.querySelectorAll('button')).find((b) => /show results/.test(b.textContent)));
+    expect(document.body.querySelector('[data-probe-fullscreen="handback"]')).toBeNull();
     expect(saved[0]).toMatchObject({ type: 'quantity_discrimination', grade: 'K', form: 'A', formVersion: 2, correct: items.length, total: items.length });
   });
 
@@ -186,15 +197,23 @@ describe('new Missing Number and QD records carry the form version', () => {
     click(buttons().find((b) => /Start Missing Number/.test(b.textContent)));
     const items = banks.MISSING_NUMBER_PROBES['1'].A.problems;
     const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
-    items.forEach((item) => {
+    const first = document.querySelector('input[aria-label="Math probe answer"]');
+    // Not a number field: the mouse wheel and arrow keys change those.
+    expect(first.getAttribute('type')).toBe('text');
+    expect(first.closest('[data-probe-fullscreen="missing_number"]')).toBeTruthy();
+    React.act(() => { setter.call(first, '1e.5x'); first.dispatchEvent(new Event('input', { bubbles: true })); });
+    expect(document.querySelector('input[aria-label="Math probe answer"]').value).toBe('15');
+    items.forEach((item, index) => {
       const input = document.querySelector('input[aria-label="Math probe answer"]');
       React.act(() => { setter.call(input, String(item.answer)); input.dispatchEvent(new Event('input', { bubbles: true })); });
+      // The Enter button submits too, for a touch device with no Enter key.
+      if (index === 0) { click(document.querySelector('button[data-mn-submit]')); React.act(() => { vi.advanceTimersByTime(60); }); return; }
       React.act(() => { input.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true })); vi.advanceTimersByTime(60); });
     });
     const box = resultsBox(/Missing Number Probe Results/);
     expect(box && box.textContent).toContain('Form A v2');
-    click(Array.from(box.querySelectorAll('button')).find((b) => /Save to Student Record/.test(b.textContent)));
     expect(saved).toHaveLength(1);
+    expect(Array.from(box.querySelectorAll('button')).find((b) => /Saved to Ana/.test(b.textContent)).disabled).toBe(true);
     expect(saved[0]).toMatchObject({ type: 'missing_number', grade: '1', form: 'A', formVersion: 2, correct: items.length, total: items.length });
   });
 });

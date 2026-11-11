@@ -150,7 +150,7 @@ describe('a run hands the keyboard to a student', () => {
   it('a fixed-form run locks the same way', async () => {
     window.MATH_PROBE_BANKS = { '3': { A: { operation: 'add', difficulty: 'fixed', timeLimit: 60, problems: [{ a: 1, b: 1, op: 'add', symbol: '+', answer: 2 }] } } };
     await mountAsOtter();
-    await change(host.querySelector('select[aria-label="Probe Mode"]'), 'benchmark');
+    await change(host.querySelector('select[aria-label="Session type"]'), 'benchmark');
     await click(host.querySelector('button[aria-label="Start fixed form"]'));
     await change(document.querySelector('input[aria-label="Your answer"]'), '2');
     await click(document.querySelector('form button[type="submit"]'));

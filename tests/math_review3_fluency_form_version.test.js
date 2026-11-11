@@ -77,7 +77,7 @@ async function runOneItemForm(bank) {
   vi.spyOn(performance, 'now').mockReturnValue(1000);
   window.MATH_PROBE_BANKS = { '3': { A: bank } };
   const completed = await mount();
-  await change(host.querySelector('select[aria-label="Probe Mode"]'), 'benchmark');
+  await change(host.querySelector('select[aria-label="Session type"]'), 'benchmark');
   await click(host.querySelector('button[aria-label="Start fixed form"]'));
   await change(document.querySelector('input[aria-label="Your answer"]'), '2');
   await click(document.querySelector('form button[type="submit"]'));
@@ -119,7 +119,7 @@ describe('a benchmark result records which version of the form was given', () =>
     vi.spyOn(performance, 'now').mockReturnValue(1000);
     const completed = await mount();
     await click(host.querySelector('button[aria-label="Start practice"]'));
-    await click(document.querySelector('button[aria-label="End probe early"]'));
+    await click(document.querySelector('button[aria-label="End practice early"], button[aria-label="End probe early"]'));
     const safeguard = document.querySelector('[role="alertdialog"][aria-labelledby="mf-end-early-title"]');
     await click(Array.from(safeguard.querySelectorAll('button')).find(b => b.textContent.includes('End & save')));
     expect(completed[0].data.formVersion).toBeNull();

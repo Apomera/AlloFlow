@@ -55,7 +55,7 @@ async function click(element) {
 }
 
 async function confirmEarlyFinish() {
-  await click(document.querySelector('button[aria-label="End probe early"]'));
+  await click(document.querySelector('button[aria-label="End practice early"], button[aria-label="End probe early"]'));
   const safeguard = document.querySelector('[role="alertdialog"][aria-labelledby="mf-end-early-title"]');
   expect(safeguard).toBeTruthy();
   const confirm = Array.from(safeguard.querySelectorAll('button')).find((button) => button.textContent.includes('End & save'));
@@ -75,7 +75,7 @@ describe('Math Fluency UI localization', () => {
     const hero = host.querySelector('header.mf-fluency-hero');
     const config = host.querySelector('.mf-config-grid');
     expect(hero).toBeTruthy();
-    expect(hero.querySelector('h2').textContent).toContain('Math Fluency Probe');
+    expect(hero.querySelector('h2').textContent).toBe('Math Fluency');
     expect(hero.textContent).toContain('Build accuracy, confidence, and efficient recall');
     expect(config.style.borderRadius).toBe('13px');
     expect(getComputedStyle(config.querySelector('select')).minHeight).toBe('40px');
@@ -155,7 +155,7 @@ describe('Math Fluency probe modes and administration integrity', () => {
     expect(preview.textContent).toContain('No countdown');
     expect(start.textContent).toContain('Start Accuracy Focus');
 
-    await change(host.querySelector('select[aria-label="Probe Mode"]'), 'benchmark');
+    await change(host.querySelector('select[aria-label="Session type"]'), 'benchmark');
     preview = host.querySelector('#mf-session-preview');
     start = host.querySelector('button[aria-label="Start fixed form"]');
     expect(preview.textContent).toContain('Fixed Form A');
@@ -238,7 +238,7 @@ describe('Math Fluency probe modes and administration integrity', () => {
       C: { operation: 'mul', difficulty: 'facts', timeLimit: 60, problems: [{ a: 2, b: 3, op: 'mul', symbol: '×', answer: 6 }] },
     } };
     await mount({ onProbeComplete: (entry) => completed.push(entry) });
-    await change(host.querySelector('select[aria-label="Probe Mode"]'), 'benchmark');
+    await change(host.querySelector('select[aria-label="Session type"]'), 'benchmark');
     await change(host.querySelector('select[aria-label="Fixed probe form"]'), 'B');
     expect(host.querySelector('select[aria-label="Math operation"]').disabled).toBe(true);
     await click(host.querySelector('button[aria-label="Start fixed form"]'));
@@ -254,12 +254,18 @@ describe('Math Fluency probe modes and administration integrity', () => {
     expect(completed[0].data).toMatchObject({ mode: 'benchmark', form: 'B', grade: '3', operation: 'sub', difficulty: 'within20', timeLimit: 42, problemCount: 1 });
   });
 
-  it('rejects decimal answers without advancing the problem', async () => {
+  it('keeps the answer box to digits and rejects a non-number without advancing', async () => {
     await mount();
     await click(host.querySelector('button[aria-label="Start practice"]'));
     const dialog = document.querySelector('[role="dialog"]');
     const input = dialog.querySelector('input[aria-label="Your answer"]');
-    await change(input, '3.9');
+    // A number field changes its value on the mouse wheel and arrow keys.
+    expect(input.getAttribute('type')).toBe('text');
+    expect(input.getAttribute('inputmode')).toBe('numeric');
+    await change(input, '3.9e1x');
+    expect(input.value).toBe('391');
+    await change(input, '-');
+    expect(input.value).toBe('-');
     await click(dialog.querySelector('button[type="submit"]'));
     expect(dialog.querySelector('[role="alert"]').textContent).toContain('whole-number');
     expect(dialog.textContent).toContain('#1');
@@ -275,7 +281,7 @@ describe('Math Fluency probe modes and administration integrity', () => {
       ],
     } } };
     await mount();
-    await change(host.querySelector('select[aria-label="Probe Mode"]'), 'benchmark');
+    await change(host.querySelector('select[aria-label="Session type"]'), 'benchmark');
     const autoButton = Array.from(host.querySelectorAll('button')).find((button) => button.textContent.includes('Auto'));
     expect(autoButton.disabled).toBe(true);
     expect(autoButton.getAttribute('aria-disabled')).toBe('true');
@@ -301,7 +307,7 @@ describe('Math Fluency probe modes and administration integrity', () => {
       handleScoreUpdate: (...args) => scoreUpdates.push(args),
     });
     await click(host.querySelector('button[aria-label="Start practice"]'));
-    await click(document.querySelector('button[aria-label="End probe early"]'));
+    await click(document.querySelector('button[aria-label="End practice early"], button[aria-label="End probe early"]'));
     expect(completed).toHaveLength(0);
     const safeguard = document.querySelector('[role="alertdialog"][aria-labelledby="mf-end-early-title"]');
     const confirm = Array.from(safeguard.querySelectorAll('button')).find((button) => button.textContent.includes('End & save'));
@@ -328,7 +334,7 @@ describe('Math Fluency probe modes and administration integrity', () => {
       onProbeComplete: (entry) => completed.push(entry),
       handleScoreUpdate: (...args) => scoreUpdates.push(args),
     });
-    await change(host.querySelector('select[aria-label="Probe Mode"]'), 'benchmark');
+    await change(host.querySelector('select[aria-label="Session type"]'), 'benchmark');
     await click(host.querySelector('button[aria-label="Start fixed form"]'));
 
     Object.defineProperty(document, 'hidden', { configurable: true, value: true });
@@ -602,7 +608,7 @@ describe('Math Fluency learner and form safeguards', () => {
     window.MATH_PROBE_BANKS = { '3': { A: { operation: 'add', difficulty: 'fixed', timeLimit: 60, problems: [{ a: 1, b: 1, op: 'add', symbol: '+', answer: 2 }] } } };
     const completed = [];
     await mount({ onProbeComplete: entry => completed.push(entry) });
-    await change(host.querySelector('select[aria-label="Probe Mode"]'), 'benchmark');
+    await change(host.querySelector('select[aria-label="Session type"]'), 'benchmark');
     await click(host.querySelector('button[aria-label="Start fixed form"]'));
     await change(document.querySelector('input[aria-label="Your answer"]'), '2');
     await click(document.querySelector('button[type="submit"]'));
@@ -645,7 +651,7 @@ it('rejects an answer submitted after the fixed-form deadline', async () => {
   const completed = [];
   window.MATH_PROBE_BANKS = { '3': { A: { operation: 'add', difficulty: 'fixed', timeLimit: 60, problems: [{ a: 1, b: 1, op: 'add', symbol: '+', answer: 2 }] } } };
   await mount({ onProbeComplete: entry => completed.push(entry) });
-  await change(host.querySelector('select[aria-label="Probe Mode"]'), 'benchmark');
+  await change(host.querySelector('select[aria-label="Session type"]'), 'benchmark');
   await click(host.querySelector('button[aria-label="Start fixed form"]'));
   now = 61001;
   await change(document.querySelector('input[aria-label="Your answer"]'), '2');

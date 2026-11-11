@@ -62,7 +62,10 @@ describe('Fluency Maze setup UX', () => {
     await click(performanceToggle);
     expect(performanceToggle.checked).toBe(true);
     expect(JSON.parse(localStorage.getItem('fluency_maze_prefs')).performance2D).toBe(true);
-    expect(customize.textContent).toContain('/ 2D');
+    // The summary reads in words, not internal codes (was "mul / single / medium / 2D").
+    expect(customize.textContent).toContain('· 2D');
+    expect(customize.textContent).toMatch(/Multiplication · Facts to 12 · (Small|Medium|Large) maze/);
+    expect(customize.textContent).not.toMatch(/\bmul\b|single/);
     expect(customPanel.querySelectorAll('button').length).toBeGreaterThan(5);
   });
 });
