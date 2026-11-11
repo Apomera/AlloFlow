@@ -14516,7 +14516,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('p', null, __alloT('stem.raptorhunt.inquiry_review_checklist', 'Did I use specific evidence, explain why it supports my idea, and name an uncertainty? Discuss with a partner or read your explanation back to yourself.')),
                 h('p', { className: 'rh-journal-help' }, __alloT('stem.raptorhunt.inquiry_self_review_hint', 'This records your own review; it does not grade your explanation.'))),
               h('button', { type: 'button', className: 'rh-inquiry-button', 'data-primary': true, disabled: !readyToReview || record.reviewed,
-                onClick: function() { if (!readyToReview) return; patchRecord({ reviewed: true }); rhAnnounce(__alloT('stem.raptorhunt.inquiry_review_saved', 'Your reflection review is recorded. You can return and revise it.')); }
+                onClick: function() { if (!readyToReview) return; if (!record.everReviewed && ctx.awardXP) ctx.awardXP('raptorInvestigation_' + investigation.id, 15, 'Raptor investigation reviewed'); patchRecord({ reviewed: true, everReviewed: true }); rhAnnounce(__alloT('stem.raptorhunt.inquiry_review_saved', 'Your reflection review is recorded. You can return and revise it.')); }
               }, record.reviewed ? __alloT('stem.raptorhunt.inquiry_review_recorded', 'Review recorded') : __alloT('stem.raptorhunt.inquiry_mark_reviewed', 'Mark reflection reviewed')),
               !readyToReview && h('p', { className: 'rh-journal-help' }, __alloT('stem.raptorhunt.inquiry_review_requirements', 'For your review: add a prediction, at least two observations, an explanation, and a next question.'))
             ),
@@ -14919,6 +14919,49 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             );
           })(),
 
+          // Your own flights, one point per species, against wing loading. Data the
+          // student collected, then a claim, evidence and reasoning about it.
+          (function() {
+            var bests = rh.speciesBests || {};
+            var rows = Object.keys(bests).map(function(id) { var sp = findSpecies(id); return sp ? { id: id, name: sp.name, wl: Number(sp.wingLoading) || 0, ar: Number(sp.aspectRatio) || 0, best: bests[id] } : null; }).filter(Boolean)
+              .sort(function(a, b) { return a.wl - b.wl; });
+            if (!rows.length) return null;
+            var METRICS = { bestSpeedMph: ['Best speed', 'mph'], bestAltitudeM: ['Best height', 'm'], bestCatches: ['Most catches in one flight', ''] };
+            var metric = METRICS[rh.compareMetric] ? rh.compareMetric : 'bestSpeedMph';
+            var W = 520, H = 230, L = 48, R = 16, T = 16, B = 40;
+            var xs = rows.map(function(r) { return r.wl; }), xMin = Math.min.apply(null, xs) - .5, xMax = Math.max.apply(null, xs) + .5;
+            var yMax = Math.max(1, Math.max.apply(null, rows.map(function(r) { return Number(r.best[metric]) || 0; }))) * 1.15;
+            var px = function(v) { return L + (v - xMin) / (xMax - xMin) * (W - L - R); }, py = function(v) { return H - B - v / yMax * (H - T - B); };
+            var claim = rh.flightClaim || {}, ready = rows.length >= 3 && ['claim', 'evidence', 'reasoning'].every(function(k) { return String(claim[k] || '').trim().length >= 15; });
+            function setClaim(key, value) { setRH(function(cur) { var next = Object.assign({}, cur.flightClaim || {}); next[key] = value; next.saved = false; return Object.assign({}, cur, { flightClaim: next }); }); }
+            return h('section', { className: 'rh-hub-card bg-slate-900/40 border border-slate-700/40 rounded-xl p-3', role: 'region', 'aria-label': 'Compare your flights', 'data-raptor-flight-compare': rows.length },
+              h('div', { className: 'text-xs font-bold text-cyan-200 mb-1' }, 'Compare your flights'),
+              h('p', { className: 'text-xs text-slate-300 mb-2' }, 'Each point is one species you have flown: its wing loading, and your best result with it. Fly more species to see whether wing shape predicts the result.'),
+              h('label', { className: 'text-xs text-slate-200 block mb-2' }, 'Show ', h('select', { value: metric, 'data-raptor-compare-metric': 'true', className: 'bg-slate-800 text-slate-100 rounded px-2 py-1 ml-1', onChange: function(event) { setRH({ compareMetric: event.target.value }); } },
+                Object.keys(METRICS).map(function(k) { return h('option', { key: k, value: k }, METRICS[k][0]); }))),
+              h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': METRICS[metric][0] + ' against wing loading for ' + rows.length + ' species. The table below lists the same values.', style: { width: '100%', maxWidth: W, height: 'auto' } },
+                h('line', { x1: L, y1: H - B, x2: W - R, y2: H - B, stroke: '#94a3b8' }), h('line', { x1: L, y1: T, x2: L, y2: H - B, stroke: '#94a3b8' }),
+                h('text', { x: (L + W - R) / 2, y: H - 8, fill: '#cbd5e1', fontSize: 12, textAnchor: 'middle' }, 'Wing loading (kg/m²): more weight per area of wing →'),
+                h('text', { x: 14, y: (T + H - B) / 2, fill: '#cbd5e1', fontSize: 12, textAnchor: 'middle', transform: 'rotate(-90 14 ' + ((T + H - B) / 2) + ')' }, METRICS[metric][0] + (METRICS[metric][1] ? ' (' + METRICS[metric][1] + ')' : '')),
+                [0, .5, 1].map(function(f) { var v = Math.round(yMax / 1.15 * f); return h('text', { key: f, x: L - 6, y: py(v) + 4, fill: '#94a3b8', fontSize: 10, textAnchor: 'end' }, v); }),
+                rows.map(function(r) { var v = Number(r.best[metric]) || 0; return h('g', { key: r.id, 'data-raptor-compare-point': r.id },
+                  h('circle', { cx: px(r.wl), cy: py(v), r: 6, fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 1.5 }),
+                  h('text', { x: px(r.wl), y: py(v) - 10, fill: '#f1f5f9', fontSize: 10, textAnchor: 'middle' }, r.name.replace(/ (Hawk|Falcon|Eagle|Owl)$/, ''))); })),
+              h('table', { className: 'text-xs text-slate-200 w-full mt-2', 'data-raptor-compare-table': 'true' },
+                h('caption', { className: 'text-left text-slate-300 mb-1' }, 'Your flights by species'),
+                h('thead', null, h('tr', null, ['Species', 'Wing loading (kg/m²)', 'Aspect ratio', 'Flights', 'Best speed (mph)', 'Best height (m)', 'Most catches'].map(function(c) { return h('th', { key: c, scope: 'col', className: 'text-left pr-2' }, c); }))),
+                h('tbody', null, rows.map(function(r) { return h('tr', { key: r.id }, h('th', { scope: 'row', className: 'text-left pr-2 font-normal' }, r.name), h('td', null, r.wl.toFixed(1)), h('td', null, r.ar.toFixed(1)), h('td', null, r.best.flights || 0), h('td', null, r.best.bestSpeedMph || 0), h('td', null, r.best.bestAltitudeM || 0), h('td', null, r.best.bestCatches || 0)); }))),
+              h('details', { className: 'mt-2', 'data-raptor-flight-claim': claim.saved ? 'saved' : 'open' },
+                h('summary', { className: 'text-xs font-bold text-amber-200 cursor-pointer', style: { minHeight: 44, display: 'flex', alignItems: 'center' } }, 'Explain what your flights show'),
+                h('p', { className: 'text-xs text-slate-300' }, 'Fly at least three species. Then answer: does wing loading predict your results?'),
+                [['claim', 'Claim: what pattern do you see?'], ['evidence', 'Evidence: which species and numbers show it?'], ['reasoning', 'Reasoning: what about the wings explains it?']].map(function(f) {
+                  return h('label', { key: f[0], className: 'block text-xs text-slate-200 mt-2' }, f[1], h('textarea', { value: claim[f[0]] || '', rows: 2, 'data-raptor-claim-field': f[0], className: 'block w-full bg-slate-800 text-slate-100 rounded p-2 mt-1', onChange: function(event) { setClaim(f[0], event.target.value); } }));
+                }),
+                h('button', { type: 'button', disabled: !ready || !!claim.saved, 'data-raptor-claim-save': 'true', className: 'mt-2 px-3 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white disabled:opacity-50', style: { minHeight: 44 },
+                  onClick: function() { if (!ready) return; setRH(function(cur) { return Object.assign({}, cur, { flightClaim: Object.assign({}, cur.flightClaim || {}, { saved: true }) }); }); if (ctx.awardXP) ctx.awardXP('raptorFlightComparison', 15, 'Explained a flight comparison'); rhAnnounce('Your explanation is saved.'); } },
+                  claim.saved ? 'Explanation saved' : 'Save my explanation'),
+                !ready && h('p', { className: 'text-xs text-slate-400 mt-1' }, rows.length < 3 ? 'Fly ' + (3 - rows.length) + ' more species first.' : 'Write a sentence or more in each box.')));
+          })(),
           // ── NEW v0.11: Progress Tracker ──
           (function() {
             var history = Array.isArray(rh.runHistory) ? rh.runHistory.slice(-5).reverse() : [];
@@ -16495,6 +16538,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                             })
                           )
                         ),
+                        flightSummary && flightSummary.physics && (function() {
+                          var p = flightSummary.physics;
+                          return h('section', { className: 'rh-flight-debrief-coach', role: 'group', 'aria-label': 'The physics of this flight', 'data-raptor-flight-physics': 'true' },
+                            h('div', { className: 'rh-flight-debrief-coach-head' }, 'The physics of this flight'),
+                            h('div', { className: 'rh-flight-debrief-coach-copy' }, 'Your ' + p.speciesName + ' has a wing loading of ' + p.wingLoading.toFixed(1) + ' kg/m² and an aspect ratio of ' + p.aspectRatio.toFixed(1) + ', so in this simulation it sinks about ' + p.glideSinkMps.toFixed(1) + ' m/s in a glide. This flight peaked at ' + flightSummary.maxSpeedMph + ' mph and ' + flightSummary.peakAltitudeM + ' m.'),
+                            h('div', { className: 'rh-flight-debrief-coach-next' }, 'Why? More weight on each square meter of wing (higher loading) sinks faster; long, narrow wings (higher aspect ratio) sink slower. Fly a species with a different wing shape, then compare them in Compare your flights on the hub.'));
+                        })(),
                         flightSummary && flightSummary.debriefCoach && h('section', {
                           className: 'rh-flight-debrief-coach',
                           role: 'group',
@@ -16877,8 +16927,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               }
             });
             var accuracy = allAttempts > 0 ? Math.round((allCatches / allAttempts) * 100) : 0;
-            // Achievement definitions
+            var reviewedInvestigations = Object.keys(rh.investigations || {}).filter(function(id) { var r = rh.investigations[id]; return r && (r.reviewed || r.everReviewed); }).length;
+            var quizStats = (rh.quiz && rh.quiz.statsByDifficulty) || {}, quizCorrect = 0, quizTotal = 0;
+            Object.keys(quizStats).forEach(function(k) { quizCorrect += (quizStats[k] || {}).correct || 0; quizTotal += (quizStats[k] || {}).total || 0; });
+            var speciesFlown = Object.keys(rh.speciesBests || {}).length, missionWins = rh.missionWins || {};
+            // Achievement definitions. Understanding first: investigating, comparing, explaining.
             var achievements = [
+              { id: 'fieldScientist', icon: '🔬', label: 'Field Scientist', desc: 'Review one guided investigation', cond: reviewedInvestigations >= 1 },
+              { id: 'leadInvestigator', icon: '📓', label: 'Lead Investigator', desc: 'Review all three guided investigations', cond: reviewedInvestigations >= 3 },
+              { id: 'thermalRider', icon: '🌀', label: 'Thermal Rider', desc: 'Complete Ride the Thermal', cond: !!missionWins.thermalKettle },
+              { id: 'comparativeFlyer', icon: '📊', label: 'Comparative Flyer', desc: 'Fly four different species, then compare them', cond: speciesFlown >= 4 },
+              { id: 'evidenceExplainer', icon: '💬', label: 'Evidence Explainer', desc: 'Save a claim, evidence and reasoning about your flights', cond: !!(rh.flightClaim && rh.flightClaim.saved) },
+              { id: 'quizScholar', icon: '🎓', label: 'Quiz Scholar', desc: '80%+ correct over at least 20 quiz answers', cond: quizTotal >= 20 && quizCorrect / quizTotal >= .8 },
               { id: 'firstCatch', icon: '🎯', label: __alloT('stem.raptorhunt.first_catch', 'First Catch'), desc: __alloT('stem.raptorhunt.catch_your_first_prey', 'Catch your first prey'), cond: allCatches >= 1 },
               { id: 'tenCatches', icon: '🏹', label: __alloT('stem.raptorhunt.ten_catches', 'Ten Catches'), desc: __alloT('stem.raptorhunt.catch_10_prey_total', 'Catch 10 prey total'), cond: allCatches >= 10 },
               { id: 'fiftyCatches', icon: '🦅', label: __alloT('stem.raptorhunt.apex_predator', 'Apex Predator'), desc: __alloT('stem.raptorhunt.catch_50_prey_total', 'Catch 50 prey total'), cond: allCatches >= 50 },
@@ -25606,7 +25666,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             caloriesDelivered: Math.round(missionCalories),
             signature: flightSignature,
             timeline: flightRecorder.slice(-12),
-            debriefCoach: buildFlightDebrief(finalEnergyPct)
+            debriefCoach: buildFlightDebrief(finalEnergyPct),
+            physics: { speciesName: species.name, wingLoading: Number(species.wingLoading) || 0, aspectRatio: Number(species.aspectRatio) || 0, glideSinkMps: Math.round(glideSinkRate * 10) / 10 }
           };
           var historyEntry = {
             id: String(Date.now()) + '-' + mission.id,
@@ -25617,14 +25678,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             outcome: missionOutcome,
             catches: missionCatches,
             energyPct: finalEnergyPct,
-            flightTimeS: Math.round(missionElapsed)
+            flightTimeS: Math.round(missionElapsed),
+            maxSpeedMph: Math.round(runMaxSpeed * 2.237),
+            peakAltitudeM: finalAltitudeM
           };
           setRH(function(cur) {
             var runHistory = Array.isArray(cur.runHistory) ? cur.runHistory.slice() : [];
             runHistory.push(historyEntry);
             if (runHistory.length > 6) runHistory = runHistory.slice(-6);
-            return Object.assign({}, cur, { runHistory: runHistory });
+            // Lasting bests per species, so flights can be compared across wing shapes.
+            var bests = Object.assign({}, cur.speciesBests || {}), best = bests[species.id] || {};
+            bests[species.id] = { flights: (best.flights || 0) + 1, bestSpeedMph: Math.max(best.bestSpeedMph || 0, historyEntry.maxSpeedMph), bestAltitudeM: Math.max(best.bestAltitudeM || 0, historyEntry.peakAltitudeM), bestCatches: Math.max(best.bestCatches || 0, historyEntry.catches) };
+            var wins = cur.missionWins || {};
+            if (success && mission.id !== 'open' && !wins[mission.id]) { wins = Object.assign({}, wins); wins[mission.id] = true; }
+            return Object.assign({}, cur, { runHistory: runHistory, speciesBests: bests, missionWins: wins });
           });
+          // XP rewards finishing a mission's goal; the host caps each id at 100.
+          if (success && mission.id !== 'open' && ctx.awardXP) ctx.awardXP('raptorMission_' + mission.id, 20, 'Raptor mission complete: ' + mission.name);
           notifyUI({ missionState: missionOutcome, missionMessage: missionOutcomeText, flightSummary: finalSummary });
           energyEventLog.push({
             msg: (success ? 'MISSION COMPLETE - ' : 'MISSION FAILED - ') + missionOutcomeText,
@@ -26924,7 +26994,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           rhAnnounce(__alloFill(__alloT('stem.raptorhunt.sr_strike', 'Strike! {value1}'), { value1: catchFeedback }));
           playSpeciesCall('strike');
           queueFlightAction(function() { playSpeciesCall('screech'); }, 200);
-          if (ctx.awardXP) ctx.awardXP(caught.data.points, 'Raptor Hunt: caught ' + caught.data.label);
+          // Flat catch XP under one capped id: bigger prey is not a bigger reward.
+          if (ctx.awardXP) ctx.awardXP('raptorHuntCatches', 2, 'Raptor Hunt: caught ' + caught.data.label);
           setRH(function(prev) {
             var stats = (prev.huntStats && prev.huntStats[species.id]) || { catches: 0, attempts: 0, bestRun: 0 };
             var nextStats = { catches: stats.catches + 1, attempts: stats.attempts + 1, bestRun: Math.max(stats.bestRun, runCatches) };
@@ -32131,7 +32202,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 };
               });
               rhAnnounce(nowCorrect ? 'Correct' : 'Incorrect. See explanation.');
-              if (nowCorrect && ctx.awardXP) ctx.awardXP(question.difficulty === 'hard' ? 5 : question.difficulty === 'medium' ? 3 : 2, 'Raptor Hunt quiz: ' + question.difficulty);
+              if (nowCorrect && ctx.awardXP) ctx.awardXP('raptorHuntQuiz', question.difficulty === 'hard' ? 5 : question.difficulty === 'medium' ? 3 : 2, 'Raptor Hunt quiz: ' + question.difficulty);
             },
             disabled: quizState.selected < 0,
             className: 'w-full px-4 py-3 rounded-lg text-sm font-bold transition-all ' + (quizState.selected < 0
@@ -43944,11 +44015,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Quests
           h('div', { className: 'space-y-2' },
             h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.quests', '🎯 Quests')),
+            h('p', { className: 'text-xs text-slate-300', 'data-raptor-quests-note': 'true' }, 'Suggested goals to aim for. The lab does not track quests; your badges and XP come from the hunt simulator, investigations, missions and the quiz.'),
             ACHIEVEMENTS.quests.map(function(q, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-yellow-700/30 rounded-lg p-3' },
                 h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },
-                  h('div', { className: 'text-sm font-bold text-yellow-300' }, q.name),
-                  h('div', { className: 'text-xs text-emerald-300 font-mono' }, '+' + q.xp + ' XP')
+                  h('div', { className: 'text-sm font-bold text-yellow-300' }, q.name)
                 ),
                 h('div', { className: 'text-xs text-slate-200 mb-1' }, '🎯 ' + q.goal),
                 h('div', { className: 'text-xs text-purple-300 italic mb-1' }, '🏅 ' + q.badge),

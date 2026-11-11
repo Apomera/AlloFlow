@@ -200,6 +200,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       '.birdlab-3d-goals { margin:0 0 14px; font-size:12px; }',
       '.birdlab-3d-goals small { display:block; color:#5b6a55; }',
       '.birdlab-3d-name-toggle { display:flex; align-items:center; gap:6px; min-height:44px; }',
+      '.birdlab-3d-count-chart { margin:8px 0; display:grid; gap:4px; }',
+      '.birdlab-3d-count-row { display:grid; grid-template-columns:76px 1fr; gap:2px 6px; font-size:10px; align-items:center; }',
+      '.birdlab-3d-count-row > span:first-child { grid-row:span 2; }',
+      '.birdlab-3d-count-bar { display:block; height:7px; min-width:2px; border-radius:2px; background:#9fb58c; }',
+      '.birdlab-3d-count-bar[data-sky="wet"] { background:#385741; }',
+      '.birdlab-3d-count-table { width:100%; font-size:10px; border-collapse:collapse; margin:6px 0; }',
+      '.birdlab-3d-count-table th, .birdlab-3d-count-table td { text-align:left; padding:2px 4px; border-bottom:1px solid #d9dfcc; }',
+      '.birdlab-3d-survey { margin:6px 0; padding-left:16px; font-size:11px; }',
       '.birdlab-3d-phase-note { border-left:2px solid #a27436; padding-left:10px; }',
       '.birdlab-3d-mode { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 16px; }',
       '.birdlab-3d-binocular-mask { position:absolute; inset:0; width:100%; height:100%; pointer-events:none; opacity:.94; }',
@@ -312,16 +320,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
       { id: 'vigilance', label: 'Vigilance', definition: 'Watching for danger, head up and looking around.', tip: 'Approach slowly; a bird will look up at you.', match: /^Scanning|Watching the observer|Alert|^Settling after/ }
     ];
     function ethogramCategory(behavior) { return ETHOGRAM.filter(function(entry) { return entry.match.test(String(behavior || '')); })[0] || null; }
-    var ethoPair = React.useState({}), ethogram = ethoPair[0], setEthogram = ethoPair[1];
+    var ethoPair = React.useState(function() { var w = props.progress && props.progress.woodland; return (w && w.ethogram && typeof w.ethogram === 'object') ? w.ethogram : {}; }), ethogram = ethoPair[0], setEthogram = ethoPair[1];
     // Predict first: the student commits to a choice before the note that
     // explains the outcome opens. Predictions are not graded.
     var predictPair = React.useState({}), predictions = predictPair[0], setPredictions = predictPair[1];
     // Binocular ID: the student names the bird from three choices before recording it.
     var idPair = React.useState({}), idState = idPair[0], setIdState = idPair[1];
     var namePair = React.useState(false), nameForMe = namePair[0], setNameForMe = namePair[1];
+    // Lasting woodland record, saved by the host: residents recorded in each
+    // season, behaviors ever logged, behavior counts by weather, survey answer.
+    var progress = props.progress || null;
+    var woodlandPair = React.useState(function() { var w = progress && progress.woodland; return w && typeof w === 'object' ? w : {}; }), woodland = woodlandPair[0], setWoodland = woodlandPair[1];
+    var woodlandRef = React.useRef(woodland);
+    function saveWoodland(change) { var next = change(woodlandRef.current || {}); if (next === woodlandRef.current) return; woodlandRef.current = next; setWoodland(next); if (progress && progress.saveWoodland) progress.saveWoodland(next); }
+    function awardXp(key, amount, label) { if (progress && progress.award) progress.award(key, amount, label); }
+    var countPair = React.useState(''), countNote = countPair[0], setCountNote = countPair[1];
+    var lastCountRef = React.useRef({});
+    var surveyPair = React.useState(''), surveyGuess = surveyPair[0], setSurveyGuess = surveyPair[1];
+    var sightingCount = (state.sightings || []).length;
+    // Each newly recorded species (and each new season for it) joins the record;
+    // the first sighting of a species pays XP once.
+    React.useEffect(function() {
+      var list = state.sightings || []; if (!list.length) return;
+      saveWoodland(function(w) {
+        var known = w.list || {}, next = null;
+        list.forEach(function(entry) {
+          var when = (entry.conditions && entry.conditions.season) || 'summer', prev = known[entry.id];
+          if (prev && prev.seasons && prev.seasons[when]) return;
+          next = next || Object.assign({}, known);
+          var seasons = Object.assign({}, prev && prev.seasons); seasons[when] = true;
+          next[entry.id] = { name: entry.name, category: entry.category || 'bird', firstSeen: (prev && prev.firstSeen) || new Date().toISOString(), seasons: seasons };
+          if (!prev) {
+            awardXp('3d-sighting:' + entry.id, 5, 'Woodland 3D sighting: ' + entry.name);
+            if (idState[entry.id] && idState[entry.id].firstTry) awardXp('3d-named:' + entry.id, 3, 'Named on the first try: ' + entry.name);
+            if (progress && progress.addLifer) progress.addLifer(entry.id);
+          }
+        });
+        return next ? Object.assign({}, w, { list: next }) : w;
+      });
+      var foods = {}; list.forEach(function(entry) { if (entry.food) foods[entry.food.kind] = true; });
+      if (DIET_GUILDS.every(function(guild) { return foods[guild.kind]; })) awardXp('3d-diet-complete', 20, 'Woodland diet challenge complete');
+    }, [sightingCount]);
     function logBehavior(entry, subject) {
       if (!entry || !subject) return;
       setEthogram(function(previous) { if (previous[entry.id]) return previous; var next = Object.assign({}, previous); next[entry.id] = { species: subject.name, behavior: subject.behavior }; return next; });
+      saveWoodland(function(w) {
+        var logged = w.ethogram || {}; if (logged[entry.id]) return w;
+        var next = Object.assign({}, logged); next[entry.id] = { species: subject.name, behavior: subject.behavior };
+        if (Object.keys(next).length >= ETHOGRAM.length) awardXp('3d-ethogram-complete', 20, 'Woodland ethogram: all ' + ETHOGRAM.length + ' behaviors');
+        return Object.assign({}, w, { ethogram: next });
+      });
     }
     var soundRef = React.useRef(null);
     function toggleSound() {
@@ -820,6 +868,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
     // Feeding study: one food type per diet guild, checked off by recorded
     // sightings of a bird actually eating it.
     var DIET_GUILDS=[{kind:'seed',guild:'Seed-eater',food:'seed'},{kind:'berry',guild:'Fruit-eater',food:'winterberries'},{kind:'insect',guild:'Insect-gleaner',food:'insects in leaf litter'},{kind:'worm',guild:'Earthworm hunter',food:'earthworms'},{kind:'acorn',guild:'Acorn gatherer',food:'acorns'}];
+    var BL3D_SEASONS = [['spring', 'Spring'], ['summer', 'Summer'], ['autumn', 'Autumn'], ['winter', 'Winter']];
+    function countBehavior() {
+      var entry = identified && subject.category !== 'mammal' ? ethogramCategory(subject.behavior) : null;
+      if (!entry || needsName) return;
+      var sky = state.weather === 'rain' ? 'wet' : 'clear', key = subject.id + '|' + entry.id + '|' + sky, now = Date.now();
+      if (lastCountRef.current[key] && now - lastCountRef.current[key] < 20000) { setCountNote('This ' + subject.name.toLowerCase() + ' was counted ' + entry.label.toLowerCase() + ' in the last 20 seconds. Look for another bird.'); return; }
+      lastCountRef.current[key] = now;
+      saveWoodland(function(w) { var tallies = Object.assign({}, w.tallies || {}), row = Object.assign({}, tallies[sky] || {}); row[entry.id] = (row[entry.id] || 0) + 1; tallies[sky] = row; return Object.assign({}, w, { tallies: tallies }); });
+      setCountNote('Counted: ' + subject.name + ', ' + entry.label.toLowerCase() + ', in ' + (sky === 'wet' ? (winter ? 'snow' : 'rain') : 'clear weather') + '.');
+    }
+    function renderBehaviorCounts() {
+      var tallies = woodland.tallies || {}, clear = tallies.clear || {}, wet = tallies.wet || {};
+      var total = function(row) { return Object.keys(row).reduce(function(sum, k) { return sum + (Number(row[k]) || 0); }, 0); }, nClear = total(clear), nWet = total(wet);
+      var entry = identified && subject.category !== 'mammal' ? ethogramCategory(subject.behavior) : null;
+      var share = function(row, n, id) { return n ? Math.round((Number(row[id]) || 0) / n * 100) : 0; };
+      var rows = ETHOGRAM.filter(function(item) { return clear[item.id] || wet[item.id]; });
+      return h('section', { className: 'birdlab-3d-card', 'data-birdlab-behavior-counts': nClear + nWet, 'aria-labelledby': 'birdlab-3d-counts-title' },
+        h('div', { className: 'birdlab-3d-eyebrow' }, 'Weather study'), h('h2', { id: 'birdlab-3d-counts-title' }, 'Behavior by weather'),
+        h('p', null, 'Count what each bird is doing in clear weather, then again in light rain or snow. Do birds preen and shelter more when it is wet?'),
+        h('button', { type: 'button', 'data-birdlab-count-behavior': entry ? entry.id : 'none', disabled: disabled || !entry || needsName, onClick: countBehavior }, entry ? 'Count: ' + entry.label + (state.weather === 'rain' ? ' (wet)' : ' (clear)') : 'Count a behavior'),
+        countNote ? h('p', { className: 'birdlab-3d-hint', role: 'status' }, countNote) : null,
+        rows.length ? h('div', { className: 'birdlab-3d-count-chart', 'aria-hidden': 'true' }, rows.map(function(item) {
+          return h('div', { key: item.id, className: 'birdlab-3d-count-row' }, h('span', null, item.label),
+            h('span', { className: 'birdlab-3d-count-bar', 'data-sky': 'clear', style: { width: share(clear, nClear, item.id) + '%' } }),
+            h('span', { className: 'birdlab-3d-count-bar', 'data-sky': 'wet', style: { width: share(wet, nWet, item.id) + '%' } }));
+        })) : h('p', { className: 'birdlab-3d-hint' }, 'No counts yet. Identify a bird through your binoculars, then count its behavior.'),
+        rows.length ? h('table', { className: 'birdlab-3d-count-table', 'data-birdlab-count-table': 'true' }, h('caption', null, 'Share of each weather\'s counts'),
+          h('thead', null, h('tr', null, h('th', { scope: 'col' }, 'Behavior'), h('th', { scope: 'col' }, 'Clear (' + nClear + ')'), h('th', { scope: 'col' }, 'Rain or snow (' + nWet + ')'))),
+          h('tbody', null, rows.map(function(item) { return h('tr', { key: item.id }, h('th', { scope: 'row' }, item.label), h('td', null, share(clear, nClear, item.id) + '% (' + (clear[item.id] || 0) + ')'), h('td', null, share(wet, nWet, item.id) + '% (' + (wet[item.id] || 0) + ')')); }))) : null,
+        h('p', { className: 'birdlab-3d-hint' }, 'Light bars: clear weather. Dark bars: rain or snow. Each bird and behavior counts once every 20 seconds, so one busy bird does not fill the chart. Compare shares, since you may count more in one weather than the other.'));
+    }
+    function renderSeasonSurvey() {
+      var list = woodland.list || {}, bySeason = {};
+      BL3D_SEASONS.forEach(function(pair) { bySeason[pair[0]] = Object.keys(list).filter(function(id) { return list[id] && list[id].category !== 'mammal' && list[id].seasons && list[id].seasons[pair[0]]; }); });
+      var seasonsDone = BL3D_SEASONS.filter(function(pair) { return bySeason[pair[0]].length; }).length, solved = woodland.surveyAnswer === 'americanTreeSparrow';
+      var ask = seasonsDone >= 2 && bySeason.winter.length > 0;
+      function answer(id) {
+        if (id !== 'americanTreeSparrow') { setSurveyGuess(id); return; }
+        setSurveyGuess(''); saveWoodland(function(w) { return Object.assign({}, w, { surveyAnswer: id }); });
+        awardXp('3d-season-survey', 15, 'Seasonal survey: the winter-only bird');
+      }
+      return h('section', { className: 'birdlab-3d-card', 'data-birdlab-season-survey': seasonsDone, 'aria-labelledby': 'birdlab-3d-survey-title' },
+        h('div', { className: 'birdlab-3d-eyebrow' }, 'Across the year'), h('h2', { id: 'birdlab-3d-survey-title' }, 'Seasonal survey'),
+        h('p', null, 'Record birds in each season. Your survey keeps every visit. Which birds stay all year, and which come and go?'),
+        h('ul', { className: 'birdlab-3d-survey' }, BL3D_SEASONS.map(function(pair) { var ids = bySeason[pair[0]];
+          return h('li', { key: pair[0], 'data-birdlab-survey-season': pair[0] }, h('strong', null, pair[1] + ': '), ids.length ? ids.length + (ids.length === 1 ? ' bird · ' : ' birds · ') + ids.map(function(id) { return list[id].name; }).join(', ') : 'not surveyed yet'); })),
+        ask && !solved ? h('div', { className: 'birdlab-3d-predict', 'data-birdlab-survey-question': 'true' },
+          h('p', { className: 'birdlab-3d-predict-question' }, h('strong', null, 'Use your survey: '), 'which bird did you find only in winter?'),
+          h('div', { className: 'birdlab-3d-predict-choices', role: 'group', 'aria-label': 'The winter-only bird' }, ['darkEyedJunco', 'americanTreeSparrow', 'chickadee'].map(function(id) {
+            return h('button', { key: id, type: 'button', 'data-birdlab-survey-choice': id, disabled: surveyGuess === id, onClick: function() { answer(id); } }, residentSpecies(id).name); })),
+          surveyGuess ? h('p', { className: 'birdlab-3d-hint', role: 'status' }, 'Check your survey: the ' + residentSpecies(surveyGuess).name.toLowerCase().replace(/^black-capped /, '') + ' lives here all year. Look for a bird in your winter row and in no other.') : null) : null,
+        solved ? h('p', { className: 'birdlab-3d-hint', 'data-birdlab-survey-solved': 'true' }, 'Right: American tree sparrows nest in the far north and spend only the winter here. Chipping sparrows, hermit thrushes and towhees do the opposite.') : null,
+        !ask && !solved ? h('p', { className: 'birdlab-3d-hint' }, 'Record birds in at least two seasons, including winter, to answer the survey question.') : null);
+    }
     function renderDietChallenge(){
       var found={};(state.sightings||[]).forEach(function(entry){if(entry.food&&!found[entry.food.kind])found[entry.food.kind]=entry.name;});
       var done=DIET_GUILDS.filter(function(guild){return found[guild.kind];}).length;
@@ -987,6 +1089,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
               h('p',{className:'birdlab-3d-hint'},'One entry per species. Notes stay here while you switch views during this visit.'),
               h('button',{type:'button','data-birdlab-download-notes':'true',disabled:!sightings.length&&!Object.keys(ethogram).length,onClick:downloadFieldNotes},'Download field notes (.txt)')):null,
             renderFeedingStudy(),
+            free?renderBehaviorCounts():null,
+            free?renderSeasonSurvey():null,
             renderWoodlandSounds(),
             renderResidentInspection(),
             h('section', {className:'birdlab-3d-card'}, h('div', {className:'birdlab-3d-eyebrow'}, 'Your viewpoint'), !free?h('div', {className:'birdlab-3d-camera-buttons', role:'group', 'aria-label':t('stem.birdlab.a11y_camera_view', 'Camera view')}, ['orbit','follow','wide'].map(function(camera) { return h('button', {key:camera, type:'button', disabled:disabled, 'aria-pressed':String(state.camera === camera), onClick:function() { command('setCamera', camera, {camera:camera}); }}, camera === 'orbit' ? 'Orbit' : camera === 'follow' ? 'Follow' : 'Habitat'); })):null, h('p', null, free?(state.crouching?'You are crouching with slower steps and a lower viewpoint. Stand up for a wider view across the clearing.':'Walk at eye level, or crouch for a lower, quieter approach. Raise binoculars for a closer view and lower them to find your way.'):watchingNeighbor ? 'Move around this bird or zoom closer to study its field marks.' : state.camera === 'follow' ? 'Travel alongside the hawk as it crosses the clearing.' : state.camera === 'wide' ? 'See the flight path in the wider woodland.' : 'Circle the hawk to examine its wings and feather layers.'),
@@ -2328,6 +2432,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
   function lsGet(key, fallback) { try { var v = localStorage.getItem(key); return v ? JSON.parse(v) : fallback; } catch(e) { return fallback; } }
   function lsSet(key, val)      { try { localStorage.setItem(key, JSON.stringify(val)); } catch(e) {} }
+  var birdLab3DWriteCache = {};
+  function birdLab3DPick(field, current) { var c = birdLab3DWriteCache[field]; return c && c.from === current ? c.value : current; }
   function birdLabLocalDateKey(value) {
     var date = value instanceof Date ? value : new Date(value == null ? Date.now() : value);
     if (!isFinite(date.getTime())) return '';
@@ -38112,7 +38218,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
 
       // VIEW DISPATCH
       // ─────────────────────────────────────────────────────
-      if (view === 'observatory3d') return h(Birdlab3DObservatory, {React:React, t:__alloT, onBack:function() { goto('ispy'); }, onMenu:function() { goto('menu'); }});
+      // Bird Lab 3D progress: XP through the same reward ledger as the 2D
+      // habitats (each key pays once), a woodland record kept across visits, and
+      // the residents that are also 2D species added to the life list.
+      var BIRDLAB_3D_LIFE_LIST = { robin: 'robin', chickadee: 'chickadee', blueJay: 'bluejay', northernCardinal: 'cardinal', darkEyedJunco: 'junco', easternTowhee: 'towhee' };
+      function birdLab3DProgress() {
+        var plain = function(v) { return v && typeof v === 'object' && !Array.isArray(v) ? v : null; };
+        return {
+          woodland: plain(d.blWoodland) || plain(lsGet('birdLab.woodland3d.v1', null)) || {},
+          saveWoodland: function(next) { upd('blWoodland', next); lsSet('birdLab.woodland3d.v1', next); },
+          award: function(key, amount, label) {
+            var dLedger = plain(d.blXpLedger) || {}, ledger = birdLab3DPick('ledger', dLedger);
+            if (!key || !amount || ledger[key]) return false;
+            var xp = ledger === dLedger ? (Number(d.blXp) || 0) : birdLab3DWriteCache.xp;
+            var nextLedger = Object.assign({}, ledger); nextLedger[key] = { amount: amount, label: label, ts: Date.now() };
+            var nextXp = xp + amount;
+            birdLab3DWriteCache.ledger = { from: dLedger, value: nextLedger }; birdLab3DWriteCache.xp = nextXp;
+            upd('blXp', nextXp); upd('blXpLedger', nextLedger); lsSet('birdLab.progress.v1', { xp: nextXp, ledger: nextLedger });
+            if (typeof addToast === 'function') addToast('+' + amount + ' XP  ' + label, 'success');
+            return true;
+          },
+          addLifer: function(id3d) {
+            var sp = BIRDLAB_3D_LIFE_LIST[id3d]; if (!sp || !BIRDS[sp]) return;
+            var dList = plain(d.blLifeList) || {}, prev = birdLab3DPick('life', dList), old = prev[sp], now = new Date().toISOString(), where = 'Living woodland (3D)';
+            var habitats = Object.assign({}, old && old.habitats); habitats[where] = (habitats[where] || 0) + 1;
+            var next = Object.assign({}, prev);
+            next[sp] = old ? Object.assign({}, old, { lastSeen: now, habitats: habitats }) : { firstSeen: now, firstHabitat: where, lastSeen: now, habitats: habitats };
+            birdLab3DWriteCache.life = { from: dList, value: next };
+            upd('blLifeList', next); lsSet('birdLab.lifeList.v1', next);
+            try { window.__alloflowBirdLab = window.__alloflowBirdLab || {}; window.__alloflowBirdLab.lifeList = next; } catch (e) {}
+            if (!old && typeof addToast === 'function') addToast('New on your life list: ' + BIRDS[sp].name, 'success');
+          }
+        };
+      }
+      if (view === 'observatory3d') return h(Birdlab3DObservatory, {React:React, t:__alloT, onBack:function() { goto('ispy'); }, onMenu:function() { goto('menu'); }, progress:birdLab3DProgress()});
       if (view === 'ispy') return h(stableType('ISpyHabitat', ISpyHabitat));
       if (view === 'fieldMarks') return h(stableType('FieldMarksTrainer', FieldMarksTrainer));
       if (view === 'beakFeet') return h(stableType('BeakFeetLab', BeakFeetLab));
