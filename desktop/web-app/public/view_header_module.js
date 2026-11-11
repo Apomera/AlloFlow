@@ -310,6 +310,8 @@ function HeaderBar(props) {
     }
   };
   const [showSetupPathMenu, setShowSetupPathMenu] = React.useState(false);
+  const [showHelpMenu, setShowHelpMenu] = React.useState(false);
+  const [helpMenuShift, setHelpMenuShift] = React.useState(0);
   const [headerCollapsedPreference, setHeaderCollapsed] = React.useState(() => {
     try {
       const saved = localStorage.getItem("allo_header_collapsed");
@@ -477,6 +479,7 @@ function HeaderBar(props) {
     }
   };
   const _setupMenuRef = React.useRef(null);
+  const _helpMenuRef = React.useRef(null);
   const _textSettingsRef = React.useRef(null);
   const _voiceSettingsRef = React.useRef(null);
   const _joinPopoverRef = React.useRef(null);
@@ -487,6 +490,29 @@ function HeaderBar(props) {
   const _translateObserverRef = React.useRef(null);
   const _exportDialogRef = React.useRef(null);
   _headerUseFocusTrap(_setupMenuRef, showSetupPathMenu, () => setShowSetupPathMenu(false));
+  React.useEffect(() => {
+    if (!showHelpMenu) return void 0;
+    const first = _helpMenuRef.current && _helpMenuRef.current.querySelector("button");
+    if (first) first.focus();
+    const outside = (event) => {
+      const target = event.target;
+      if (_helpMenuRef.current && _helpMenuRef.current.contains(target)) return;
+      if (target && target.closest && target.closest("[data-help-menu-toggle]")) return;
+      setShowHelpMenu(false);
+    };
+    const escape = (event) => {
+      if (event.key !== "Escape") return;
+      setShowHelpMenu(false);
+      const toggle = document.querySelector("[data-help-menu-toggle]");
+      if (toggle) toggle.focus();
+    };
+    document.addEventListener("mousedown", outside);
+    document.addEventListener("keydown", escape);
+    return () => {
+      document.removeEventListener("mousedown", outside);
+      document.removeEventListener("keydown", escape);
+    };
+  }, [showHelpMenu]);
   _headerUseFocusTrap(_textSettingsRef, showTextSettings, handleSetShowTextSettingsToFalse);
   _headerUseFocusTrap(_voiceSettingsRef, showVoiceSettings, handleSetShowVoiceSettingsToFalse);
   _headerUseFocusTrap(_joinPopoverRef, isJoinPopoverOpen, handleSetIsJoinPopoverOpenToFalse);
@@ -769,7 +795,15 @@ function HeaderBar(props) {
       });
     }
   };
-  const piiWarningText = t("header.pii_warning_plain");
+  const piiStudentText = (() => {
+    try {
+      const v = t("header.pii_warning_student");
+      return v && v !== "header.pii_warning_student" ? v : "";
+    } catch (_) {
+      return "";
+    }
+  })();
+  const piiWarningText = !isTeacherMode && !isParentMode && !isIndependentMode ? piiStudentText || "Don't type your real name or other personal information." : t("header.pii_warning_plain");
   const compactRoleLabel = isTeacherMode && isSpecialistMode ? homeToolsText("launch_pad.door_specialist", "Specialist") : isIndependentMode ? t("roles.independent") || "Independent Learner" : isParentMode ? t("parent_mode.label") || t("roles.parent") || "Family Mode" : isTeacherMode ? t("roles.teacher") || "Teacher" : t("roles.student") || "Student";
   const dashboardNavLabel = isParentMode ? t("parent_mode.dashboard_title") || t("dashboard.title_parent") || "Family Dashboard" : isIndependentMode ? t("common.progress") || "My Learning Progress" : isTeacherMode ? t("dashboard.title") || "Dashboard" : t("common.progress") || "My Learning Progress";
   const parentProgressLabel = isParentMode ? t("parent_mode.progress_label") || t("common.assessment_center") || "Child Progress" : t("common.assessment_center") || "Assessment Center";
@@ -777,6 +811,51 @@ function HeaderBar(props) {
   const headerAnalyticsLabel = screeningLiveActive ? (t("header.screening_live") || "Screening") + " \xB7 " + Math.max(0, (screenerSession.subtests || []).length - (screenerSession.currentIndex || 0)) + " " + (t("header.screening_left") || "left") : parentProgressLabel;
   const compactViewFallback = String(activeView || "").replace(/[-_]+/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
   const compactContextLabel = guidedMode ? t("launch_pad.guided_title") || "Guided Mode" : activeView === "dashboard" ? dashboardNavLabel : activeView === "input" ? t("tools.source") || "Source Material" : compactViewFallback || (t("common.ready") || "Ready");
+  const helpMenuAvailable = !!isTeacherMode;
+  const helpHasHistory = helpMenuAvailable && ((hintHistory || []).length > 0 || (toastHistoryCount || 0) > 0);
+  const helpMenuTitle = homeToolsText("help_menu.title", "Help");
+  const helpButtonLabel = isHelpMode ? t("help_mode.deactivate") : helpMenuAvailable ? helpMenuTitle : t("help_mode.activate");
+  const handleHelpButton = (event) => {
+    if (isHelpMode || !helpMenuAvailable) {
+      setShowHelpMenu(false);
+      handleToggleIsHelpMode();
+      return;
+    }
+    if (showHelpOnboarding && typeof dismissHelpOnboarding === "function") dismissHelpOnboarding();
+    try {
+      const rect = event.currentTarget.getBoundingClientRect();
+      setHelpMenuShift(Math.max(0, 12 - (rect.right - 272)));
+    } catch (_) {
+      setHelpMenuShift(0);
+    }
+    setShowHelpMenu((open) => !open);
+  };
+  const helpDot = helpHasHistory && !isHelpMode ? /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", "data-help-dot": "", className: "absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white/50" }) : null;
+  const helpMenuRow = "flex w-full min-h-11 flex-col items-start justify-center gap-0.5 rounded-lg px-3 py-2 text-start " + (theme === "contrast" ? "text-yellow-400 hover:bg-white/10" : "text-slate-900 hover:bg-slate-100");
+  const helpMenu = showHelpMenu && helpMenuAvailable ? /* @__PURE__ */ React.createElement(
+    "div",
+    {
+      ref: _helpMenuRef,
+      "data-help-menu": "",
+      "data-help-ignore": "true",
+      role: "group",
+      "aria-label": helpMenuTitle,
+      style: { right: -helpMenuShift },
+      className: "absolute top-full mt-2 w-[17rem] max-w-[calc(100vw-1.5rem)] rounded-xl border p-1.5 shadow-xl z-[10999] " + (theme === "contrast" ? "bg-black border-yellow-400" : "bg-white border-slate-200")
+    },
+    /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-menu-explain": "", onClick: () => {
+      setShowHelpMenu(false);
+      handleToggleIsHelpMode();
+    }, className: helpMenuRow }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(CircleHelp, { size: 16, "aria-hidden": "true" }), homeToolsText("help_menu.explain", "What does this do?")), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-medium leading-snug" }, homeToolsText("help_menu.explain_desc", "Turn this on, then click anything to see what it does."))),
+    /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "header_tour_start", "data-help-menu-tour": "", onClick: () => {
+      setShowHelpMenu(false);
+      startAppTour(0);
+    }, className: helpMenuRow }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, "aria-hidden": "true" }), homeToolsText("toolbar.tour_take", "Take the app tour")), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-medium leading-snug" }, homeToolsText("help_menu.tour_desc", "A guided look at each area."))),
+    /* @__PURE__ */ React.createElement("button", { type: "button", "data-help-key": "hints_recall", "data-help-menu-tips": "", onClick: () => {
+      setShowHelpMenu(false);
+      handleSetShowHintsModalToTrue();
+    }, className: helpMenuRow }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-2 text-sm font-black" }, /* @__PURE__ */ React.createElement(Lightbulb, { size: 16, "aria-hidden": "true" }), homeToolsText("help_menu.tips", "Past tips and messages"), helpHasHistory && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "w-2 h-2 bg-red-500 rounded-full" })), /* @__PURE__ */ React.createElement("span", { className: "text-xs font-medium leading-snug" }, homeToolsText("help_menu.tips_desc", "Read a tip or notice again after it has gone.")))
+  ) : null;
   const guidedResumeChip = canUseTeacherGuidedMode && !guidedMode && _guidedHasProgress ? /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -952,6 +1031,7 @@ function HeaderBar(props) {
     },
     _isHomeworkStatus ? /* @__PURE__ */ React.createElement(BookOpen, { size: 16, "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(Wifi, { size: 16, className: _liveConnected ? "animate-pulse motion-reduce:animate-none" : "", "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", null, _isHomeworkStatus ? "Homework" : (t("header.live_session") || "Live:") + " " + activeSessionCode),
+    liveStatus && liveStatus.nickname ? /* @__PURE__ */ React.createElement("span", { "data-live-status-codename": "", "aria-hidden": "true", className: "hidden max-w-[11rem] truncate font-bold sm:inline" }, String.fromCharCode(183) + " " + liveStatus.nickname) : null,
     _liveSignalCurrent && /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", title: _liveSignalCurrent.label }, _liveSignalCurrent.emoji),
     theme === "contrast" && !_isHomeworkStatus && /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, "\xB7 ", _liveConnectionLabel),
     /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, _isHomeworkStatus ? liveStatus && liveStatus.nickname || "Student" : _liveConnectionLabel, _liveSignalCurrent ? ". Signal sent: " + _liveSignalCurrent.label : "")
@@ -989,7 +1069,36 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 16, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", { className: "hidden sm:inline max-w-[10rem] truncate" }, t("toolbar.start_setup") || "Start & setup")
-  ), guidedResumeChip, /* @__PURE__ */ React.createElement(
+  ), headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "relative shrink-0" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-help-ignore": "true",
+      "data-compact-help-toggle": "",
+      "data-help-menu-toggle": "",
+      onClick: handleHelpButton,
+      "aria-pressed": isHelpMode,
+      "aria-haspopup": helpMenuAvailable ? "true" : void 0,
+      "aria-expanded": helpMenuAvailable ? showHelpMenu : void 0,
+      className: `relative inline-flex h-full min-h-9 items-center justify-center rounded-xl border px-2.5 transition-colors ${isHelpMode ? "border-yellow-300 bg-yellow-400 text-slate-900" : "border-white/20 bg-white/10 text-white hover:bg-white/20"}`,
+      title: helpButtonLabel,
+      "aria-label": helpButtonLabel
+    },
+    /* @__PURE__ */ React.createElement(CircleHelp, { size: 16, "aria-hidden": "true" }),
+    helpDot
+  ), helpMenu, showHelpOnboarding && !isHelpMode && /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      onClick: dismissHelpOnboarding,
+      "aria-label": t("common.dismiss") || "Dismiss help tip",
+      "data-compact-help-tip": "",
+      className: "absolute top-full right-0 mt-3 min-h-6 bg-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400",
+      style: { minWidth: "160px", textAlign: "center" }
+    },
+    /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "absolute -top-2 right-4 w-4 h-4 bg-indigo-600 rotate-45 border-l-2 border-t-2 border-indigo-400" }),
+    /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1}"), " ", t("header.click_for_help") || "Click", " ", /* @__PURE__ */ React.createElement("strong", null, "?"), " ", t("header.anytime_for_help") || "anytime for help!")
+  )), guidedResumeChip, /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1440,18 +1549,6 @@ function HeaderBar(props) {
     },
     /* @__PURE__ */ React.createElement(X, { size: 14, "aria-hidden": "true" }),
     /* @__PURE__ */ React.createElement("span", { className: "hidden xl:inline" }, personalAIDisconnectLabel)
-  ), isTeacherMode && /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: handleSetShowHintsModalToTrue,
-      "data-help-key": "hints_recall",
-      className: "p-2 rounded-xl hover:bg-white/10 text-white/70 hover:text-white transition-colors relative",
-      title: t("common.recall_hints_and_messages") || t("common.recall_hints"),
-      "aria-label": t("common.recall_hints_and_messages") || t("common.recall_hints")
-    },
-    /* @__PURE__ */ React.createElement(Lightbulb, { size: 20, className: hintHistory.length > 0 || (toastHistoryCount || 0) > 0 ? "fill-yellow-500/20" : "" }),
-    (hintHistory.length > 0 || (toastHistoryCount || 0) > 0) && /* @__PURE__ */ React.createElement("span", { className: "absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full border border-white/50" })
   ), /* @__PURE__ */ React.createElement(
     "button",
     {
@@ -1469,14 +1566,18 @@ function HeaderBar(props) {
     {
       type: "button",
       "data-help-ignore": "true",
-      onClick: handleToggleIsHelpMode,
+      "data-help-menu-toggle": "",
+      onClick: handleHelpButton,
       "aria-pressed": isHelpMode,
-      className: `p-2 rounded-xl transition-colors ${isHelpMode ? "bg-yellow-400 text-slate-900 shadow-md animate-pulse" : "hover:bg-white/10 text-white/70 hover:text-white"}`,
-      title: isHelpMode ? t("help_mode.deactivate") : t("help_mode.activate"),
-      "aria-label": isHelpMode ? t("help_mode.deactivate") : t("help_mode.activate")
+      "aria-haspopup": helpMenuAvailable ? "true" : void 0,
+      "aria-expanded": helpMenuAvailable ? showHelpMenu : void 0,
+      className: `relative p-2 rounded-xl transition-colors ${isHelpMode ? "bg-yellow-400 text-slate-900 shadow-md animate-pulse" : "hover:bg-white/10 text-white/70 hover:text-white"}`,
+      title: helpButtonLabel,
+      "aria-label": helpButtonLabel
     },
-    /* @__PURE__ */ React.createElement(CircleHelp, { size: 20 })
-  ), showHelpOnboarding && !isHelpMode && /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement(CircleHelp, { size: 20, "aria-hidden": "true" }),
+    helpDot
+  ), helpMenu, showHelpOnboarding && !isHelpMode && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1499,21 +1600,6 @@ function HeaderBar(props) {
     },
     isCloudSyncEnabled ? /* @__PURE__ */ React.createElement(Cloud, { size: 20 }) : /* @__PURE__ */ React.createElement(CloudOff, { size: 20 })
   ), isTeacherMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement(
-    "button",
-    {
-      type: "button",
-      onClick: () => {
-        setRunTour(true);
-        setTourStep(0);
-        setSpotlightMessage("");
-      },
-      "data-help-key": "header_tour_start",
-      className: "p-2 rounded-xl hover:bg-white/10 text-white transition-colors",
-      title: t("toolbar.start_tour"),
-      "aria-label": t("toolbar.start_tour_aria")
-    },
-    /* @__PURE__ */ React.createElement(MapIcon, { size: 20 })
-  ), /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -1620,7 +1706,7 @@ function HeaderBar(props) {
         },
         !pptxLoaded ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 14, className: "animate-spin" }) : /* @__PURE__ */ React.createElement(MonitorPlay, { size: 14 }),
         t("export_menu.slides")
-      ), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, t("export_menu.section_student_qr") || "Student QR"), /* @__PURE__ */ React.createElement(
+      ), !isIndependentMode && /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, t("export_menu.section_student_qr") || "Student QR"), /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -1640,7 +1726,7 @@ function HeaderBar(props) {
       }, className: "mt-2 flex w-full items-center gap-2 rounded-lg border border-sky-300 bg-sky-50 px-3 py-2 text-left text-[11px] font-bold text-sky-900 hover:bg-sky-100" }, t("export_menu.setup_activity") || "Set up a poll, sign-up sheet or class activity"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
         if (typeof openRecentQrShares === "function") openRecentQrShares();
         setShowExportMenu(false);
-      }, className: "mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800" }, /* @__PURE__ */ React.createElement(History, { size: 14 }), " ", t("export_menu.shared_links") || "Polls, sign-ups & shared links", recentQrShareCount ? ` (${recentQrShareCount})` : "")), /* @__PURE__ */ React.createElement("p", { className: "px-3 pb-2 text-[11px] leading-snug text-slate-500" }, studentAiPolicyForShare === "student-byok" ? t("export_menu.share_policy_byok") || "Teacher-prepared resources open with optional personal AI. Students supply and test their own provider." : t("export_menu.share_policy_ai_off") || "Teacher-prepared resources open for students with AI generation off."), !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F3EB}", " ", t("export_menu.section_lms") || "LMS Integration"), activeView === "quiz" && !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(
+      }, className: "mt-2 flex w-full items-center justify-center gap-2 rounded-md border border-slate-300 bg-white px-2 py-1.5 text-xs font-bold text-slate-700 hover:border-cyan-400 hover:text-cyan-800" }, /* @__PURE__ */ React.createElement(History, { size: 14 }), " ", t("export_menu.shared_links") || "Polls, sign-ups & shared links", recentQrShareCount ? ` (${recentQrShareCount})` : "")), /* @__PURE__ */ React.createElement("p", { className: "px-3 pb-2 text-[11px] leading-snug text-slate-500" }, studentAiPolicyForShare === "student-byok" ? t("export_menu.share_policy_byok") || "Teacher-prepared resources open with optional personal AI. Students supply and test their own provider." : t("export_menu.share_policy_ai_off") || "Teacher-prepared resources open for students with AI generation off.")), !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1" }, "\u{1F3EB}", " ", t("export_menu.section_lms") || "LMS Integration"), activeView === "quiz" && !isIndependentMode && !isParentMode && /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",

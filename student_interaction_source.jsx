@@ -233,6 +233,15 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
   const descId = 'student-submit-modal-desc';
   const summaryId = 'student-submit-summary-title';
   const [submitting, setSubmitting] = useState(false);
+  // The student already chose a codename on the way in: send as that one, and
+  // show the pickers only when they ask to change it (or none was chosen).
+  const [changingName, setChangingName] = useState(false);
+  // A receipt that stays until the student closes it; the toast alone was gone in seconds.
+  const [receipt, setReceipt] = useState(null);
+  const receiptDoneRef = useRef(null);
+  useEffect(() => { if (isOpen) { setChangingName(false); setReceipt(null); } }, [isOpen]);
+  useEffect(() => { if (receipt && receiptDoneRef.current) receiptDoneRef.current.focus(); }, [receipt]);
+  const say = (key, fallback) => { try { const v = key ? t(key) : ''; return typeof v === 'string' && v && v !== key ? v : fallback; } catch (_) { return fallback; } };
   const submitVoiceScopeRef = useRef(null);
   const adjectives = t('codenames.adjectives', { returnObjects: true }) || [];
   const animals = t('codenames.animals', { returnObjects: true }) || [];
@@ -325,14 +334,31 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     : submissionContext === 'standard-live'
       ? 'Live quiz and activity responses sync during class. Your complete portfolio downloads as a file for your teacher or LMS.'
       : 'Your complete work downloads as a file. Send it to your teacher or upload it to your LMS.';
+  const knownName = parseNickname(currentNickname);
+  const hasKnownName = !!(knownName.adj && knownName.animal);
+  const pickingName = !hasKnownName || changingName;
+  const oldNameLabel = say('modals.student_name_label', '');
+  const nameLabel = pickingName
+    ? say('modals.submit_pick_codename', oldNameLabel && oldNameLabel !== 'Student Name / Nickname' ? oldNameLabel : 'Pick a codename')
+    : say('modals.submit_sending_as', 'Sending as');
+  const receiptTitle = !receipt ? '' : receipt.delivery === 'mailbox'
+    ? say('modals.submit_receipt_sent_title', 'Sent to your teacher')
+    : receipt.delivery === 'backup'
+      ? say('modals.submit_receipt_backup_title', 'Not sent yet')
+      : say('modals.submit_receipt_file_title', 'File downloaded');
+  const receiptBody = !receipt ? '' : receipt.delivery === 'mailbox'
+    ? say('modals.submit_receipt_sent_body', 'Your teacher has your work. You do not need to send anything else.')
+    : receipt.delivery === 'backup'
+      ? say('modals.submit_receipt_backup_body', 'The class mailbox could not take your work, so a backup file was downloaded to this device. Give that file to your teacher.')
+      : say('modals.submit_receipt_file_body', 'Your work is in a file on this device. Your teacher does not have it yet: send them the file or upload it to your LMS.');
   const handleSubmit = async () => {
     const fullName = getFullName();
-    if (!selectedAdj || !selectedAnimal || submitting) return false;
+    if (!selectedAdj || !selectedAnimal || submitting || receipt) return false;
     setSubmitting(true);
     try {
       const completed = await Promise.resolve(onSubmit(fullName, stats));
       const succeeded = completed !== false && !(completed && completed.ok === false);
-      if (succeeded) onClose();
+      if (succeeded) setReceipt({ delivery: (completed && completed.delivery) || (mailboxDelivery ? 'mailbox' : 'download'), name: fullName, time: new Date().toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' }) });
       return succeeded ? (completed || true) : false;
     } finally {
       setSubmitting(false);
@@ -342,7 +368,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     isOpen: !!isOpen,
     submitting: !!submitting,
     codenameReady: !!(selectedAdj && selectedAnimal),
-    canSubmit: !!(selectedAdj && selectedAnimal && !submitting),
+    canSubmit: !!(selectedAdj && selectedAnimal && !submitting && !receipt),
     adjectiveCount: adjectives.length,
     animalCount: animals.length,
     summary: stats,
@@ -434,12 +460,23 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
             <div className={cx('w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4', styles.iconBubble)} aria-hidden="true">
                 <Send size={32} className="ml-1" />
             </div>
-            <h2 id={titleId} className={cx('text-2xl font-black mb-1', styles.title)}>{t('modals.submit_title')}</h2>
-            <p id={descId} className={cx('text-sm font-medium', styles.text)}>{t('modals.submit_ready')}</p>
+            <h2 id={titleId} className={cx('text-2xl font-black mb-1', styles.title)}>{receipt ? receiptTitle : t('modals.submit_title')}</h2>
+            <p id={descId} className={cx('text-sm font-medium', styles.text)}>{receipt ? receiptBody : t('modals.submit_ready')}</p>
         </div>
+        {receipt ? (
+          <div data-submit-receipt={receipt.delivery}>
+            <div role="status" className={cx('rounded-xl p-4 mb-6 text-center', styles.panelSoft)}>
+              <div className={cx('text-xs font-bold uppercase tracking-wider mb-1', styles.muted)}>{say('modals.submit_receipt_as', 'Codename')}</div>
+              <div className={cx('text-xl font-black tracking-tight break-words', styles.title)}>{receipt.name}</div>
+              <div className={cx('text-sm font-medium mt-2', styles.text)}>{receipt.time}</div>
+            </div>
+            <button type="button" ref={receiptDoneRef} onClick={onClose} data-submit-receipt-done="" className={cx('w-full font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95', styles.primary)}>{say('modals.submit_receipt_done', 'Done')}</button>
+          </div>
+        ) : (<React.Fragment>
         <div className="mb-6">
-            <label className={cx('block text-xs font-bold uppercase tracking-wider mb-2 text-center', styles.muted)}>{t('modals.student_name_label')}</label>
+            <label className={cx('block text-xs font-bold uppercase tracking-wider mb-2 text-center', styles.muted)}>{nameLabel}</label>
             <div className={cx('p-4 rounded-xl', styles.panelSoft)}>
+                {pickingName && (
                 <div className="flex gap-2 mb-3">
                     <select
                         value={selectedAdj}
@@ -464,10 +501,12 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
                         ))}
                     </select>
                 </div>
+                )}
                 <div className={cx('flex items-center justify-between p-3 rounded-xl shadow-sm', styles.panel)} role="status" aria-live="polite">
                     <div className={cx('text-xl font-black tracking-tight truncate mr-2', styles.title)}>
                         {selectedAdj} {selectedAnimal}
                     </div>
+                    {pickingName ? (
                     <button
                         type="button"
                         onClick={randomizeName}
@@ -478,6 +517,9 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
                     >
                         <RefreshCw size={18} />
                     </button>
+                    ) : (
+                    <button type="button" onClick={() => setChangingName(true)} data-submit-change-codename="" className={cx('min-h-11 px-3 rounded-lg text-sm font-bold underline shrink-0', styles.secondary)}>{say('modals.submit_change_codename', 'Change')}</button>
+                    )}
                 </div>
             </div>
         </div>
@@ -528,6 +570,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
                 {t('common.cancel')}
             </button>
         </div>
+        </React.Fragment>)}
       </div>
     </div>
   );

@@ -301,6 +301,26 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
   const descId = "student-submit-modal-desc";
   const summaryId = "student-submit-summary-title";
   const [submitting, setSubmitting] = useState(false);
+  const [changingName, setChangingName] = useState(false);
+  const [receipt, setReceipt] = useState(null);
+  const receiptDoneRef = useRef(null);
+  useEffect(() => {
+    if (isOpen) {
+      setChangingName(false);
+      setReceipt(null);
+    }
+  }, [isOpen]);
+  useEffect(() => {
+    if (receipt && receiptDoneRef.current) receiptDoneRef.current.focus();
+  }, [receipt]);
+  const say = (key, fallback) => {
+    try {
+      const v = key ? t(key) : "";
+      return typeof v === "string" && v && v !== key ? v : fallback;
+    } catch (_) {
+      return fallback;
+    }
+  };
   const submitVoiceScopeRef = useRef(null);
   const adjectives = t("codenames.adjectives", { returnObjects: true }) || [];
   const animals = t("codenames.animals", { returnObjects: true }) || [];
@@ -389,14 +409,21 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
   const mailboxDelivery = submissionMethod === "mailbox";
   const submitLabel = mailboxDelivery ? "Submit to teacher's Drive" : t("modals.download_submission") || "Download submission file";
   const submitHint = mailboxDelivery ? "Your complete work will be saved automatically as a JSON file in your teacher's private AlloFlow Class Mailbox Drive folder. If delivery fails, a backup file downloads instead." : submissionContext === "standard-live" ? "Live quiz and activity responses sync during class. Your complete portfolio downloads as a file for your teacher or LMS." : "Your complete work downloads as a file. Send it to your teacher or upload it to your LMS.";
+  const knownName = parseNickname(currentNickname);
+  const hasKnownName = !!(knownName.adj && knownName.animal);
+  const pickingName = !hasKnownName || changingName;
+  const oldNameLabel = say("modals.student_name_label", "");
+  const nameLabel = pickingName ? say("modals.submit_pick_codename", oldNameLabel && oldNameLabel !== "Student Name / Nickname" ? oldNameLabel : "Pick a codename") : say("modals.submit_sending_as", "Sending as");
+  const receiptTitle = !receipt ? "" : receipt.delivery === "mailbox" ? say("modals.submit_receipt_sent_title", "Sent to your teacher") : receipt.delivery === "backup" ? say("modals.submit_receipt_backup_title", "Not sent yet") : say("modals.submit_receipt_file_title", "File downloaded");
+  const receiptBody = !receipt ? "" : receipt.delivery === "mailbox" ? say("modals.submit_receipt_sent_body", "Your teacher has your work. You do not need to send anything else.") : receipt.delivery === "backup" ? say("modals.submit_receipt_backup_body", "The class mailbox could not take your work, so a backup file was downloaded to this device. Give that file to your teacher.") : say("modals.submit_receipt_file_body", "Your work is in a file on this device. Your teacher does not have it yet: send them the file or upload it to your LMS.");
   const handleSubmit = async () => {
     const fullName = getFullName();
-    if (!selectedAdj || !selectedAnimal || submitting) return false;
+    if (!selectedAdj || !selectedAnimal || submitting || receipt) return false;
     setSubmitting(true);
     try {
       const completed = await Promise.resolve(onSubmit(fullName, stats));
       const succeeded = completed !== false && !(completed && completed.ok === false);
-      if (succeeded) onClose();
+      if (succeeded) setReceipt({ delivery: completed && completed.delivery || (mailboxDelivery ? "mailbox" : "download"), name: fullName, time: (/* @__PURE__ */ new Date()).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" }) });
       return succeeded ? completed || true : false;
     } finally {
       setSubmitting(false);
@@ -406,7 +433,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
     isOpen: !!isOpen,
     submitting: !!submitting,
     codenameReady: !!(selectedAdj && selectedAnimal),
-    canSubmit: !!(selectedAdj && selectedAnimal && !submitting),
+    canSubmit: !!(selectedAdj && selectedAnimal && !submitting && !receipt),
     adjectiveCount: adjectives.length,
     animalCount: animals.length,
     summary: stats,
@@ -495,8 +522,8 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
       },
       /* @__PURE__ */ React.createElement(X, { size: 20, "aria-hidden": "true" })
     ),
-    /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6 relative" }, /* @__PURE__ */ React.createElement("div", { className: cx("w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4", styles.iconBubble), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Send, { size: 32, className: "ml-1" })), /* @__PURE__ */ React.createElement("h2", { id: titleId, className: cx("text-2xl font-black mb-1", styles.title) }, t("modals.submit_title")), /* @__PURE__ */ React.createElement("p", { id: descId, className: cx("text-sm font-medium", styles.text) }, t("modals.submit_ready"))),
-    /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("label", { className: cx("block text-xs font-bold uppercase tracking-wider mb-2 text-center", styles.muted) }, t("modals.student_name_label")), /* @__PURE__ */ React.createElement("div", { className: cx("p-4 rounded-xl", styles.panelSoft) }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6 relative" }, /* @__PURE__ */ React.createElement("div", { className: cx("w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4", styles.iconBubble), "aria-hidden": "true" }, /* @__PURE__ */ React.createElement(Send, { size: 32, className: "ml-1" })), /* @__PURE__ */ React.createElement("h2", { id: titleId, className: cx("text-2xl font-black mb-1", styles.title) }, receipt ? receiptTitle : t("modals.submit_title")), /* @__PURE__ */ React.createElement("p", { id: descId, className: cx("text-sm font-medium", styles.text) }, receipt ? receiptBody : t("modals.submit_ready"))),
+    receipt ? /* @__PURE__ */ React.createElement("div", { "data-submit-receipt": receipt.delivery }, /* @__PURE__ */ React.createElement("div", { role: "status", className: cx("rounded-xl p-4 mb-6 text-center", styles.panelSoft) }, /* @__PURE__ */ React.createElement("div", { className: cx("text-xs font-bold uppercase tracking-wider mb-1", styles.muted) }, say("modals.submit_receipt_as", "Codename")), /* @__PURE__ */ React.createElement("div", { className: cx("text-xl font-black tracking-tight break-words", styles.title) }, receipt.name), /* @__PURE__ */ React.createElement("div", { className: cx("text-sm font-medium mt-2", styles.text) }, receipt.time)), /* @__PURE__ */ React.createElement("button", { type: "button", ref: receiptDoneRef, onClick: onClose, "data-submit-receipt-done": "", className: cx("w-full font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95", styles.primary) }, say("modals.submit_receipt_done", "Done"))) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("div", { className: "mb-6" }, /* @__PURE__ */ React.createElement("label", { className: cx("block text-xs font-bold uppercase tracking-wider mb-2 text-center", styles.muted) }, nameLabel), /* @__PURE__ */ React.createElement("div", { className: cx("p-4 rounded-xl", styles.panelSoft) }, pickingName && /* @__PURE__ */ React.createElement("div", { className: "flex gap-2 mb-3" }, /* @__PURE__ */ React.createElement(
       "select",
       {
         value: selectedAdj,
@@ -516,7 +543,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
         "data-help-key": "entry_animal"
       },
       animals.map((anim, i) => /* @__PURE__ */ React.createElement("option", { key: i, value: anim }, anim))
-    )), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center justify-between p-3 rounded-xl shadow-sm", styles.panel), role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: cx("text-xl font-black tracking-tight truncate mr-2", styles.title) }, selectedAdj, " ", selectedAnimal), /* @__PURE__ */ React.createElement(
+    )), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center justify-between p-3 rounded-xl shadow-sm", styles.panel), role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("div", { className: cx("text-xl font-black tracking-tight truncate mr-2", styles.title) }, selectedAdj, " ", selectedAnimal), pickingName ? /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -527,9 +554,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
         "data-help-key": "entry_randomize_btn"
       },
       /* @__PURE__ */ React.createElement(RefreshCw, { size: 18 })
-    )))),
-    /* @__PURE__ */ React.createElement("div", { role: "group", className: cx("rounded-xl p-4 mb-6", styles.panelSoft), "aria-labelledby": summaryId }, /* @__PURE__ */ React.createElement("h4", { id: summaryId, className: cx("text-xs font-bold uppercase tracking-widest mb-3 border-b pb-2", styles.muted) }, t("modals.work_summary")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 16, className: "text-teal-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.quizzes), " ", t("modals.summary_quizzes")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16, className: "text-green-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.readings), " ", t("modals.summary_readings")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, className: "text-purple-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.adventures), " ", t("modals.summary_adventures")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(Quote, { size: 16, className: "text-rose-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.scaffolds), " ", t("modals.summary_scaffolds"))), /* @__PURE__ */ React.createElement("div", { className: cx("text-xs italic text-center mt-2 pt-2 border-t", styles.muted) }, '"', getSummaryString(), '"')),
-    /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3" }, /* @__PURE__ */ React.createElement(
+    ) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setChangingName(true), "data-submit-change-codename": "", className: cx("min-h-11 px-3 rounded-lg text-sm font-bold underline shrink-0", styles.secondary) }, say("modals.submit_change_codename", "Change"))))), /* @__PURE__ */ React.createElement("div", { role: "group", className: cx("rounded-xl p-4 mb-6", styles.panelSoft), "aria-labelledby": summaryId }, /* @__PURE__ */ React.createElement("h4", { id: summaryId, className: cx("text-xs font-bold uppercase tracking-widest mb-3 border-b pb-2", styles.muted) }, t("modals.work_summary")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(CheckSquare, { size: 16, className: "text-teal-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.quizzes), " ", t("modals.summary_quizzes")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(BookOpen, { size: 16, className: "text-green-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.readings), " ", t("modals.summary_readings")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(MapIcon, { size: 16, className: "text-purple-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.adventures), " ", t("modals.summary_adventures")), /* @__PURE__ */ React.createElement("div", { className: cx("flex items-center gap-2 text-sm", styles.text) }, /* @__PURE__ */ React.createElement(Quote, { size: 16, className: "text-rose-500", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", { className: "font-bold" }, stats.scaffolds), " ", t("modals.summary_scaffolds"))), /* @__PURE__ */ React.createElement("div", { className: cx("text-xs italic text-center mt-2 pt-2 border-t", styles.muted) }, '"', getSummaryString(), '"')), /* @__PURE__ */ React.createElement("div", { className: "flex flex-col gap-3" }, /* @__PURE__ */ React.createElement(
       "button",
       {
         type: "button",
@@ -551,7 +576,7 @@ const StudentSubmitModal = React.memo(({ isOpen, onClose, onSubmit, history = []
         className: cx("w-full font-bold py-3 rounded-xl transition-all motion-reduce:transition-none active:scale-95", styles.secondary)
       },
       t("common.cancel")
-    ))
+    )))
   ));
 });
 const DraftFeedbackInterface = React.memo(({

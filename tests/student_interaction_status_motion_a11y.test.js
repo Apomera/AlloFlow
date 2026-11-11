@@ -21,7 +21,7 @@ describe('Student Interaction status and motion accessibility', () => {
     expect(source.match(/animate-in motion-reduce:animate-none/g)).toHaveLength(4);
     expect(source.match(/animate-spin motion-reduce:animate-none/g)).toHaveLength(2);
     expect(source.match(/animate-pulse motion-reduce:animate-none/g)).toHaveLength(2);
-    expect(source.match(/transition-all motion-reduce:transition-none/g)).toHaveLength(5);
+    expect(source.match(/transition-all motion-reduce:transition-none/g)).toHaveLength(6);
     expect(source.match(/transition-transform motion-reduce:transition-none motion-reduce:transform-none/g)).toHaveLength(2);
   });
 

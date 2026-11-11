@@ -1876,6 +1876,14 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
       },
     });
   }, [isOpen]);
+  // New English wording, without dropping a pack's existing translation of the old key.
+  const entryFresh = (key, oldKey, oldEnglish, english) => {
+    const read = (k) => { try { const v = k ? t(k) : ''; return typeof v === 'string' && v && v !== k ? v : ''; } catch (_) { return ''; } };
+    const fresh = read(key);
+    if (fresh) return fresh;
+    const old = read(oldKey);
+    return old && old !== oldEnglish ? old : english;
+  };
   if (!isOpen) return null;
   return (
     <div
@@ -1899,7 +1907,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
             <X aria-hidden="true" size={20} />
         </button>
         <h2 id="student-entry-title" className="text-2xl font-black text-slate-800 mb-2">{t('wizard.step_codename') || 'Pick Your Codename!'}</h2>
-        <p id="student-entry-description" className="text-slate-600 mb-6 font-medium">{t('modals.student_entry_sub')}</p>
+        <p id="student-entry-description" className="text-slate-600 mb-6 font-medium">{entryFresh('modals.student_entry_pick', 'modals.student_entry_sub', 'Enter your Class Codename or Nickname to begin.', 'Choose two words to make your codename.')}</p>
         <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 mb-6">
             <div className="grid grid-cols-1 gap-3 mb-4 sm:grid-cols-2">
                 <label className="text-left text-xs font-bold text-indigo-900">
@@ -1931,6 +1939,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
                     </select>
                 </label>
             </div>
+            <p className="m-0 mb-1 text-start text-xs font-bold text-indigo-900">{entryFresh('modals.entry.your_codename', '', '', 'Your codename')}</p>
             <div className="flex items-center justify-between bg-white p-3 rounded-xl shadow-sm border border-indigo-100">
                 <div className="min-w-0 flex-grow break-words text-start text-xl font-black text-indigo-600 tracking-tight me-2" role="status" aria-live="polite" aria-atomic="true">
                     {selectedAdj} {selectedAnimal}
@@ -1957,7 +1966,7 @@ const StudentEntryModal = React.memo(({ isOpen, onClose, onConfirm }) => {
                 className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl shadow-lg transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 data-help-key="entry_start_new"
             >
-                <Sparkles size={18} className="text-yellow-400 fill-current" /> {t('entry.start')}
+                <Sparkles size={18} className="text-yellow-400 fill-current" /> {entryFresh('entry.start_plain', 'entry.start', 'Start New Adventure', 'Start')}
             </button>
             <button
                 onClick={() => handleConfirm('load')}

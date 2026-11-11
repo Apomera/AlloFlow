@@ -14067,18 +14067,6 @@ const AlloFlowContent = () => {
   const [isResearchSuiteOpen, setIsResearchSuiteOpen] = useState(false);
   const [isHelpMode, setIsHelpMode] = useState(false);
   const [showHelpOnboarding, setShowHelpOnboarding] = useState(false);
-  useEffect(() => {
-      try {
-          if (safeGetItem('allo_help_onboarded') !== 'true') {
-              const timer = setTimeout(() => setShowHelpOnboarding(true), 4000);
-              const autoDismiss = setTimeout(() => {
-                  setShowHelpOnboarding(false);
-                  try { safeSetItem('allo_help_onboarded', 'true'); } catch {}
-              }, 14000);
-              return () => { clearTimeout(timer); clearTimeout(autoDismiss); };
-          }
-      } catch {}
-  }, []);
   const dismissHelpOnboarding = () => { setShowHelpOnboarding(false); try { safeSetItem('allo_help_onboarded', 'true'); } catch {} };
   const [hasSeenBotIntro, setHasSeenBotIntro] = useState(() => {
       if (typeof window !== 'undefined') {
@@ -14107,6 +14095,21 @@ const AlloFlowContent = () => {
   // hydrateHistory extracted to firestore_sync_module.js; top-level shim
   // at file head (line ~130) gets upgraded on CDN load.
   const [hasSelectedRole, setHasSelectedRole] = useState(false);
+  // First-run help tip: only once a role is chosen, so it is not spent behind the Launch Pad.
+  useEffect(() => {
+      if (!hasSelectedRole) return undefined;
+      try {
+          if (safeGetItem('allo_help_onboarded') !== 'true') {
+              const timer = setTimeout(() => setShowHelpOnboarding(true), 4000);
+              const autoDismiss = setTimeout(() => {
+                  setShowHelpOnboarding(false);
+                  try { safeSetItem('allo_help_onboarded', 'true'); } catch {}
+              }, 24000);
+              return () => { clearTimeout(timer); clearTimeout(autoDismiss); };
+          }
+      } catch {}
+      return undefined;
+  }, [hasSelectedRole]);
   const [showStudentWelcome, setShowStudentWelcome] = useState(false);
   const [isAppReady, setIsAppReady] = useState(false);
   const [loadingProgress, setLoadingProgress] = useState(0);
@@ -16343,7 +16346,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     if (window.__alloVisualPanelRequested) window.__alloLazyVisualPanel();
     loadModule('WordSoundsSetupModule', 'https://alloflow-cdn.pages.dev/word_sounds_setup_module.js?v=05426f677a84a3f038dc825e5996d4aa87ea6f26');
     loadModule('AdventureModule', 'https://alloflow-cdn.pages.dev/adventure_module.js?v=05426f677a84a3f038dc825e5996d4aa87ea6f26');
-    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=3a2c2b4c');
+    loadModule('StudentInteractionModule', 'https://alloflow-cdn.pages.dev/student_interaction_module.js?v=a5980cde');
     window.__alloLazyMathFluency = () => { loadModule('MathFluency', 'https://alloflow-cdn.pages.dev/math_fluency_module.js?v=05426f677a84a3f038dc825e5996d4aa87ea6f26'); };
     loadModule('UIModalsModule', 'https://alloflow-cdn.pages.dev/ui_modals_module.js?v=05426f677a84a3f038dc825e5996d4aa87ea6f26');
     loadModule('UIFontLibrary', 'https://alloflow-cdn.pages.dev/ui_font_library_module.js?v=05426f677a84a3f038dc825e5996d4aa87ea6f26');
@@ -37564,9 +37567,9 @@ const parseTaggedContent = (text) => {
           // the only field diagnostic we get from an external phone.
           const codeSuffix = ' [' + errorCode + ']';
           if (errorCode === 'permission-denied') {
-              addToast("The class Firebase project refused this student device — its security rules denied the session read/write. The teacher's hosting environment may not accept outside student devices." + codeSuffix, "error");
+              addToast("This device could not join the class. Tell your teacher: the class setup is blocking student devices." + codeSuffix, "error");
           } else if (errorCode === 'auth/operation-not-allowed' || errorCode === 'auth/admin-restricted-operation') {
-              addToast('Anonymous student sign-in is turned off on the class Firebase project, so QR devices cannot authenticate. Live QR needs a session backend with Anonymous Authentication enabled.' + codeSuffix, "error");
+              addToast('This device could not join the class. Tell your teacher: student sign-in is turned off in the class setup.' + codeSuffix, "error");
           } else if (errorCode.startsWith('auth/') || errorCode.startsWith('allo/')) {
               addToast('Student sign-in did not complete on this device. Use Retry below without reloading.' + codeSuffix, "error");
           } else {
