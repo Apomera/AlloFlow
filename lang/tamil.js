@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "அளவு வேறுபடுத்தல்",
     "take_home_player_quantity_discrimination_directions": "பெரிய எண்ணைத் தட்டு.",
     "take_home_player_quantity_discrimination_question": "எந்த எண் பெரியது?",
-    "take_home_player_quantity_discrimination_practice_wrong": "முழுவதும் சரியில்லை. பெரிய எண் {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "முழுவதும் சரியில்லை. பெரிய எண் {answer}.",
+    "take_home_include_pictures": "படங்களைச் சேர்",
+    "take_home_include_pictures_help": "விடையை வெளிப்படுத்தாத இடங்களில் மட்டுமே, அல்லது விடை அளித்த பிறகே படம் தோன்றும்.",
+    "take_home_missing_picture": "{word} படம் இல்லை",
+    "take_home_player_picture_clue": "படக் குறிப்பு",
+    "take_home_player_picture_of": "{word} படம்"
   },
   "common": {
     "audio_device_voice_no_file": "சாதனக் குரல் உரக்கப் படிக்கும், ஆனால் அதைக் கோப்பாகச் சேமிக்க முடியாது. ஆடியோவைப் பதிவிறக்க, விவரிப்பாளர் அமைப்புகளில் கிளவுட் குரல் அல்லது உள்ளூர் குரலைத் தேர்ந்தெடுங்கள்.",

@@ -4106,7 +4106,12 @@
     "take_home_player_quantity_discrimination_title": "प्रमाण भेद",
     "take_home_player_quantity_discrimination_directions": "मोठ्या संख्येवर टॅप कर.",
     "take_home_player_quantity_discrimination_question": "कोणती संख्या मोठी आहे?",
-    "take_home_player_quantity_discrimination_practice_wrong": "अगदी बरोबर नाही. मोठी संख्या {answer} आहे."
+    "take_home_player_quantity_discrimination_practice_wrong": "अगदी बरोबर नाही. मोठी संख्या {answer} आहे.",
+    "take_home_include_pictures": "चित्रे समाविष्ट करा",
+    "take_home_include_pictures_help": "चित्र फक्त तिथेच दिसते जिथे त्यामुळे उत्तर कळणार नाही, किंवा उत्तर दिल्यानंतर.",
+    "take_home_missing_picture": "{word} चे चित्र नाही",
+    "take_home_player_picture_clue": "चित्र संकेत",
+    "take_home_player_picture_of": "{word} चे चित्र"
   },
   "common": {
     "audio_device_voice_no_file": "डिव्हाइसचा आवाज मोठ्याने वाचतो, पण तो फाइल म्हणून जतन करता येत नाही. ऑडिओ डाउनलोड करण्यासाठी निवेदकाच्या सेटिंग्जमध्ये क्लाउड आवाज किंवा स्थानिक आवाज निवडा.",

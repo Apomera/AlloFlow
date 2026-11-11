@@ -12286,7 +12286,12 @@
     "take_home_player_quantity_discrimination_title": "Kala-soocida Tirada",
     "take_home_player_quantity_discrimination_directions": "Taabo tirada weyn.",
     "take_home_player_quantity_discrimination_question": "Tiradee ayaa weyn?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Weli sax ma aha. Tirada weyn waa {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Weli sax ma aha. Tirada weyn waa {answer}.",
+    "take_home_include_pictures": "Ku dar sawirro",
+    "take_home_include_pictures_help": "Sawirku wuxuu soo muuqdaa oo keliya meesha uusan jawaabta shaaca ka qaadi karin, ama jawaabta ka dib.",
+    "take_home_missing_picture": "sawirka {word} ma jiro",
+    "take_home_player_picture_clue": "Tilmaan sawir",
+    "take_home_player_picture_of": "Sawirka {word}"
   },
   "escape_room": {
     "save_config": "Kaydi Habaynta",

@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "Bambanci na Adadi",
     "take_home_player_quantity_discrimination_directions": "Taɓa lambar da ta fi girma.",
     "take_home_player_quantity_discrimination_question": "Wace lamba ce ta fi girma?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Ba daidai ba tukuna. Lambar da ta fi girma ita ce {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Ba daidai ba tukuna. Lambar da ta fi girma ita ce {answer}.",
+    "take_home_include_pictures": "Saka hotuna",
+    "take_home_include_pictures_help": "Hoto yana fitowa ne kawai a inda ba zai iya bayyana amsar ba, ko kuma bayan an ba da amsa.",
+    "take_home_missing_picture": "babu hoton {word}",
+    "take_home_player_picture_clue": "Alamar hoto",
+    "take_home_player_picture_of": "Hoton {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Muryar na'urar tana karantawa da ƙarfi, amma ba za a iya ajiye ta a matsayin fayil ba. Don sauke sauti, zaɓi muryar intanet ko muryar gida a saitin mai ba da labari.",

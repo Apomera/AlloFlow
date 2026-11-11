@@ -15046,7 +15046,12 @@
     "take_home_player_quantity_discrimination_title": "د مقدار توپیر",
     "take_home_player_quantity_discrimination_directions": "پر لویه شمېره ټک وکړه.",
     "take_home_player_quantity_discrimination_question": "کومه شمېره لویه ده؟",
-    "take_home_player_quantity_discrimination_practice_wrong": "پوره سم نه دی. لویه شمېره {answer} ده."
+    "take_home_player_quantity_discrimination_practice_wrong": "پوره سم نه دی. لویه شمېره {answer} ده.",
+    "take_home_include_pictures": "انځورونه شامل کړه",
+    "take_home_include_pictures_help": "انځور یوازې هلته ښکاري چې ځواب نه شي څرګندولای، یا له ځواب ورکولو وروسته.",
+    "take_home_missing_picture": "د {word} انځور نشته",
+    "take_home_player_picture_clue": "انځوریزه اشاره",
+    "take_home_player_picture_of": "د {word} انځور"
   },
   "escape_room": {
     "save_config": "محفاوظ کړئ تنظیمات",

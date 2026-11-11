@@ -12306,7 +12306,12 @@
     "take_home_player_quantity_discrimination_title": "הבחנת כמות",
     "take_home_player_quantity_discrimination_directions": "הקישו על המספר הגדול יותר.",
     "take_home_player_quantity_discrimination_question": "איזה מספר גדול יותר?",
-    "take_home_player_quantity_discrimination_practice_wrong": "לא בדיוק. המספר הגדול יותר הוא {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "לא בדיוק. המספר הגדול יותר הוא {answer}.",
+    "take_home_include_pictures": "הוספת תמונות",
+    "take_home_include_pictures_help": "תמונה מוצגת רק במקום שבו היא לא יכולה לגלות את התשובה, או אחרי התשובה.",
+    "take_home_missing_picture": "אין תמונה של {word}",
+    "take_home_player_picture_clue": "רמז בתמונה",
+    "take_home_player_picture_of": "תמונה של {word}"
   },
   "escape_room": {
     "save_config": "שמור תצורה",

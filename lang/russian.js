@@ -5360,7 +5360,12 @@
     "take_home_player_quantity_discrimination_title": "Различение количеств",
     "take_home_player_quantity_discrimination_directions": "Нажми на большее число.",
     "take_home_player_quantity_discrimination_question": "Какое число больше?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Не совсем. Большее число: {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Не совсем. Большее число: {answer}.",
+    "take_home_include_pictures": "Добавить картинки",
+    "take_home_include_pictures_help": "Картинка показывается только там, где она не может подсказать ответ, или после ответа.",
+    "take_home_missing_picture": "нет картинки для слова {word}",
+    "take_home_player_picture_clue": "Подсказка-картинка",
+    "take_home_player_picture_of": "Картинка: {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Голос устройства читает вслух, но его нельзя сохранить в файл. Чтобы скачать аудио, выберите облачный или локальный голос в настройках рассказчика.",

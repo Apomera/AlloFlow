@@ -4106,7 +4106,12 @@
     "take_home_player_quantity_discrimination_title": "ക്വാണ്ടിറ്റി ഡിസ്ക്രിമിനേഷൻ",
     "take_home_player_quantity_discrimination_directions": "വലിയ സംഖ്യയിൽ ടാപ്പ് ചെയ്യൂ.",
     "take_home_player_quantity_discrimination_question": "ഏത് സംഖ്യയാണ് വലുത്?",
-    "take_home_player_quantity_discrimination_practice_wrong": "മുഴുവൻ ശരിയല്ല. വലിയ സംഖ്യ {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "മുഴുവൻ ശരിയല്ല. വലിയ സംഖ്യ {answer}.",
+    "take_home_include_pictures": "ചിത്രങ്ങൾ ഉൾപ്പെടുത്തുക",
+    "take_home_include_pictures_help": "ഉത്തരം വെളിപ്പെടുത്താത്ത ഇടങ്ങളിൽ മാത്രമോ ഉത്തരം നൽകിയ ശേഷമോ ആണ് ചിത്രം കാണിക്കുന്നത്.",
+    "take_home_missing_picture": "{word} എന്നതിന്റെ ചിത്രം ഇല്ല",
+    "take_home_player_picture_clue": "ചിത്രസൂചന",
+    "take_home_player_picture_of": "{word} ന്റെ ചിത്രം"
   },
   "common": {
     "audio_device_voice_no_file": "ഉപകരണത്തിന്റെ ശബ്ദം ഉറക്കെ വായിക്കും, പക്ഷേ അത് ഫയലായി സേവ് ചെയ്യാൻ കഴിയില്ല. ഓഡിയോ ഡൗൺലോഡ് ചെയ്യാൻ ആഖ്യാതാവിന്റെ ക്രമീകരണങ്ങളിൽ ഒരു ക്ലൗഡ് ശബ്ദമോ ലോക്കൽ ശബ്ദമോ തിരഞ്ഞെടുക്കുക.",

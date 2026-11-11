@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "పరిమాణ వివక్షణ",
     "take_home_player_quantity_discrimination_directions": "పెద్ద సంఖ్యపై నొక్కు.",
     "take_home_player_quantity_discrimination_question": "ఏ సంఖ్య పెద్దది?",
-    "take_home_player_quantity_discrimination_practice_wrong": "పూర్తిగా సరికాదు. పెద్ద సంఖ్య {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "పూర్తిగా సరికాదు. పెద్ద సంఖ్య {answer}.",
+    "take_home_include_pictures": "బొమ్మలను చేర్చు",
+    "take_home_include_pictures_help": "బొమ్మ జవాబును బయటపెట్టని చోట మాత్రమే, లేదా జవాబు ఇచ్చిన తర్వాత కనిపిస్తుంది.",
+    "take_home_missing_picture": "{word} బొమ్మ లేదు",
+    "take_home_player_picture_clue": "బొమ్మ సూచన",
+    "take_home_player_picture_of": "{word} బొమ్మ"
   },
   "common": {
     "audio_device_voice_no_file": "పరికరం గొంతు బిగ్గరగా చదువుతుంది, కానీ దాన్ని ఫైల్‌గా సేవ్ చేయలేము. ఆడియోను డౌన్‌లోడ్ చేయడానికి వ్యాఖ్యాత సెట్టింగులలో క్లౌడ్ గొంతు లేదా లోకల్ గొంతును ఎంచుకోండి.",

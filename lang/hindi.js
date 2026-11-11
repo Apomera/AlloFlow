@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "मात्रा भेद",
     "take_home_player_quantity_discrimination_directions": "बड़ी संख्या पर टैप करो।",
     "take_home_player_quantity_discrimination_question": "कौन सी संख्या बड़ी है?",
-    "take_home_player_quantity_discrimination_practice_wrong": "पूरी तरह सही नहीं। बड़ी संख्या {answer} है।"
+    "take_home_player_quantity_discrimination_practice_wrong": "पूरी तरह सही नहीं। बड़ी संख्या {answer} है।",
+    "take_home_include_pictures": "चित्र शामिल करें",
+    "take_home_include_pictures_help": "चित्र केवल वहीं दिखता है जहाँ उससे उत्तर का पता न चले, या उत्तर देने के बाद।",
+    "take_home_missing_picture": "{word} का चित्र नहीं है",
+    "take_home_player_picture_clue": "चित्र संकेत",
+    "take_home_player_picture_of": "{word} का चित्र"
   },
   "common": {
     "audio_device_voice_no_file": "डिवाइस की आवाज़ ज़ोर से पढ़ती है, लेकिन इसे फ़ाइल के रूप में सहेजा नहीं जा सकता। ऑडियो डाउनलोड करने के लिए वाचक सेटिंग्स में क्लाउड आवाज़ या स्थानीय आवाज़ चुनें।",

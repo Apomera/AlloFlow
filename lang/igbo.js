@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "Ịmata Iche Ọnụọgụgụ",
     "take_home_player_quantity_discrimination_directions": "Pịa ọnụọgụgụ ka ukwuu.",
     "take_home_player_quantity_discrimination_question": "Kedu ọnụọgụgụ ka ukwuu?",
-    "take_home_player_quantity_discrimination_practice_wrong": "O zibeghị ezi. Ọnụọgụgụ ka ukwuu bụ {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "O zibeghị ezi. Ọnụọgụgụ ka ukwuu bụ {answer}.",
+    "take_home_include_pictures": "Gụnye foto",
+    "take_home_include_pictures_help": "Foto na-apụta naanị ebe ọ na-agaghị ekpughe azịza, ma ọ bụ mgbe e nyechara azịza.",
+    "take_home_missing_picture": "enweghị foto {word}",
+    "take_home_player_picture_clue": "Foto enyemaka",
+    "take_home_player_picture_of": "Foto {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Olu ngwaọrụ na-agụpụta n'olu dara ụda, mana enweghị ike ịchekwa ya dị ka faịlụ. Iji budata ọdịyo, họrọ olu ịntanetị ma ọ bụ olu mpaghara n'ntọala onye nkọwa.",

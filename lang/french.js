@@ -8539,7 +8539,12 @@
     "take_home_player_quantity_discrimination_title": "Discrimination de quantités",
     "take_home_player_quantity_discrimination_directions": "Touche le plus grand nombre.",
     "take_home_player_quantity_discrimination_question": "Quel nombre est le plus grand ?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Pas tout à fait. Le plus grand nombre est {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Pas tout à fait. Le plus grand nombre est {answer}.",
+    "take_home_include_pictures": "Inclure les images",
+    "take_home_include_pictures_help": "Une image n'apparaît que là où elle ne peut pas révéler la réponse, ou après la réponse.",
+    "take_home_missing_picture": "pas d'image de {word}",
+    "take_home_player_picture_clue": "Indice en image",
+    "take_home_player_picture_of": "Image de {word}"
   },
   "adventure": {
     "offline": {

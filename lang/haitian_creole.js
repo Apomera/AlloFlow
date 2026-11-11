@@ -15250,7 +15250,12 @@
     "take_home_player_quantity_discrimination_title": "Diskriminasyon Kantite",
     "take_home_player_quantity_discrimination_directions": "Peze nimewo ki pi gwo a.",
     "take_home_player_quantity_discrimination_question": "Ki nimewo ki pi gwo?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Pa fin bon. Nimewo ki pi gwo a se {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Pa fin bon. Nimewo ki pi gwo a se {answer}.",
+    "take_home_include_pictures": "Mete imaj ladan",
+    "take_home_include_pictures_help": "Yon imaj parèt sèlman kote li pa ka bay repons lan, oswa apre repons lan.",
+    "take_home_missing_picture": "pa gen imaj pou {word}",
+    "take_home_player_picture_clue": "Endis imaj",
+    "take_home_player_picture_of": "Imaj {word}"
   },
   "escape_room": {
     "save_config": "Sove Konfigirasyon",

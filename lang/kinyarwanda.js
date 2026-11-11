@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "Gutandukanya Ingano",
     "take_home_player_quantity_discrimination_directions": "Kanda ku mubare munini kurusha undi.",
     "take_home_player_quantity_discrimination_question": "Ni uwuhe mubare munini kurusha undi?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Si byo neza. Umubare munini ni {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Si byo neza. Umubare munini ni {answer}.",
+    "take_home_include_pictures": "Shyiramo amashusho",
+    "take_home_include_pictures_help": "Ishusho igaragara gusa aho idashobora guhishura igisubizo, cyangwa nyuma yo gusubiza.",
+    "take_home_missing_picture": "nta shusho ya {word}",
+    "take_home_player_picture_clue": "Ishusho igufasha",
+    "take_home_player_picture_of": "Ishusho ya {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Ijwi ry'igikoresho rirasoma mu ijwi riranguruye, ariko ntirishobora kubikwa nka dosiye. Kugira ngo umanure amajwi, hitamo ijwi ryo kuri interineti cyangwa ijwi ryo hafi (local) mu igenamiterere ry'umuvugizi.",

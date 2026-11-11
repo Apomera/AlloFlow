@@ -4105,7 +4105,12 @@
     "take_home_player_quantity_discrimination_title": "Miktar Ayırt Etme",
     "take_home_player_quantity_discrimination_directions": "Büyük olan sayıya dokun.",
     "take_home_player_quantity_discrimination_question": "Hangi sayı daha büyük?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Tam değil. Büyük olan sayı {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Tam değil. Büyük olan sayı {answer}.",
+    "take_home_include_pictures": "Resimleri ekle",
+    "take_home_include_pictures_help": "Resim yalnızca yanıtı ele veremeyeceği yerlerde ya da yanıttan sonra gösterilir.",
+    "take_home_missing_picture": "{word} kelimesinin resmi yok",
+    "take_home_player_picture_clue": "Resim ipucu",
+    "take_home_player_picture_of": "Resim: {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Cihaz sesi metni sesli okur ama dosya olarak kaydedilemez. Ses indirmek için anlatıcı ayarlarından bir bulut sesi veya yerel bir ses seçin.",

@@ -13964,7 +13964,12 @@
     "take_home_player_quantity_discrimination_title": "تمييز الكميات",
     "take_home_player_quantity_discrimination_directions": "اضغط على العدد الأكبر.",
     "take_home_player_quantity_discrimination_question": "أي العددين أكبر؟",
-    "take_home_player_quantity_discrimination_practice_wrong": "ليس تمامًا. العدد الأكبر هو {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "ليس تمامًا. العدد الأكبر هو {answer}.",
+    "take_home_include_pictures": "تضمين الصور",
+    "take_home_include_pictures_help": "تظهر الصورة فقط حيث لا يمكن أن تكشف الإجابة، أو بعد الإجابة.",
+    "take_home_missing_picture": "لا توجد صورة للكلمة {word}",
+    "take_home_player_picture_clue": "تلميح بالصورة",
+    "take_home_player_picture_of": "صورة {word}"
   },
   "escape_room": {
     "save_config": "حفظ الإعدادات",

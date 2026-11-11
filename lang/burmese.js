@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "အရေအတွက် ခွဲခြားသိမြင်မှု",
     "take_home_player_quantity_discrimination_directions": "ပိုကြီးတဲ့ ဂဏန်းကို နှိပ်ပါ။",
     "take_home_player_quantity_discrimination_question": "ဘယ်ဂဏန်းက ပိုကြီးသလဲ။",
-    "take_home_player_quantity_discrimination_practice_wrong": "မမှန်သေးပါဘူး။ ပိုကြီးတဲ့ ဂဏန်းက {answer} ပါ။"
+    "take_home_player_quantity_discrimination_practice_wrong": "မမှန်သေးပါဘူး။ ပိုကြီးတဲ့ ဂဏန်းက {answer} ပါ။",
+    "take_home_include_pictures": "ပုံများ ထည့်သွင်းပါ",
+    "take_home_include_pictures_help": "ပုံသည် အဖြေကို မသိစေနိုင်သည့် နေရာတွင်သာ၊ သို့မဟုတ် ဖြေပြီးမှသာ ပေါ်သည်။",
+    "take_home_missing_picture": "{word} ၏ ပုံ မရှိ",
+    "take_home_player_picture_clue": "ပုံ အရိပ်အမြွက်",
+    "take_home_player_picture_of": "{word} ၏ ပုံ"
   },
   "common": {
     "audio_device_voice_no_file": "စက်ပစ္စည်း၏ အသံသည် အသံထွက်ဖတ်ပေးသော်လည်း ဖိုင်အဖြစ် သိမ်းဆည်း၍ မရပါ။ အသံဖိုင် ဒေါင်းလုဒ်လုပ်ရန် ဇာတ်ကြောင်းပြောသူ ဆက်တင်များတွင် ကလောက်ဒ် အသံ သို့မဟုတ် လိုကယ် အသံကို ရွေးပါ။",

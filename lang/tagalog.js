@@ -4105,7 +4105,12 @@
     "take_home_player_quantity_discrimination_title": "Pagkakaiba ng Dami",
     "take_home_player_quantity_discrimination_directions": "I-tap ang mas malaking numero.",
     "take_home_player_quantity_discrimination_question": "Aling numero ang mas malaki?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Hindi pa tama. Ang mas malaking numero ay {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Hindi pa tama. Ang mas malaking numero ay {answer}.",
+    "take_home_include_pictures": "Isama ang mga larawan",
+    "take_home_include_pictures_help": "Lumalabas lang ang larawan kung saan hindi nito maibubunyag ang sagot, o pagkatapos sumagot.",
+    "take_home_missing_picture": "walang larawan ng {word}",
+    "take_home_player_picture_clue": "Pahiwatig na larawan",
+    "take_home_player_picture_of": "Larawan ng {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Nagbabasa nang malakas ang boses ng device, pero hindi ito mase-save bilang file. Para ma-download ang audio, pumili ng cloud na boses o lokal na boses sa mga setting ng tagapagsalaysay.",

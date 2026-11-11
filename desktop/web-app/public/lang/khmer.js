@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "ការវែកញែកបរិមាណ",
     "take_home_player_quantity_discrimination_directions": "ចុចលើលេខដែលធំជាង។",
     "take_home_player_quantity_discrimination_question": "តើលេខណាធំជាង?",
-    "take_home_player_quantity_discrimination_practice_wrong": "មិនទាន់ត្រូវទេ។ លេខដែលធំជាងគឺ {answer}។"
+    "take_home_player_quantity_discrimination_practice_wrong": "មិនទាន់ត្រូវទេ។ លេខដែលធំជាងគឺ {answer}។",
+    "take_home_include_pictures": "រួមបញ្ចូលរូបភាព",
+    "take_home_include_pictures_help": "រូបភាពលេចឡើងតែនៅកន្លែងដែលវាមិនអាចបង្ហើបចម្លើយ ឬក្រោយពីឆ្លើយរួច។",
+    "take_home_missing_picture": "គ្មានរូបភាពនៃ {word}",
+    "take_home_player_picture_clue": "តម្រុយរូបភាព",
+    "take_home_player_picture_of": "រូបភាពនៃ {word}"
   },
   "common": {
     "audio_device_voice_no_file": "សំឡេងឧបករណ៍អាចអានឮៗបាន ប៉ុន្តែមិនអាចរក្សាទុកជាឯកសារបានទេ។ ដើម្បីទាញយកសំឡេង សូមជ្រើសរើសសំឡេងពពក ឬសំឡេងមូលដ្ឋាន នៅក្នុងការកំណត់អ្នកនិទាន។",

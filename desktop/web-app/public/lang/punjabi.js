@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "ਮਾਤਰਾ ਵਿਤਕਰਾ",
     "take_home_player_quantity_discrimination_directions": "ਵੱਡੇ ਨੰਬਰ 'ਤੇ ਟੈਪ ਕਰੋ।",
     "take_home_player_quantity_discrimination_question": "ਕਿਹੜਾ ਨੰਬਰ ਵੱਡਾ ਹੈ?",
-    "take_home_player_quantity_discrimination_practice_wrong": "ਪੂਰਾ ਸਹੀ ਨਹੀਂ। ਵੱਡਾ ਨੰਬਰ {answer} ਹੈ।"
+    "take_home_player_quantity_discrimination_practice_wrong": "ਪੂਰਾ ਸਹੀ ਨਹੀਂ। ਵੱਡਾ ਨੰਬਰ {answer} ਹੈ।",
+    "take_home_include_pictures": "ਤਸਵੀਰਾਂ ਸ਼ਾਮਲ ਕਰੋ",
+    "take_home_include_pictures_help": "ਤਸਵੀਰ ਸਿਰਫ਼ ਉੱਥੇ ਹੀ ਦਿਖਦੀ ਹੈ ਜਿੱਥੇ ਇਸ ਨਾਲ ਜਵਾਬ ਪਤਾ ਨਾ ਲੱਗੇ, ਜਾਂ ਜਵਾਬ ਦੇਣ ਤੋਂ ਬਾਅਦ।",
+    "take_home_missing_picture": "{word} ਦੀ ਤਸਵੀਰ ਨਹੀਂ",
+    "take_home_player_picture_clue": "ਤਸਵੀਰ ਵਾਲਾ ਸੰਕੇਤ",
+    "take_home_player_picture_of": "{word} ਦੀ ਤਸਵੀਰ"
   },
   "common": {
     "audio_device_voice_no_file": "ਡਿਵਾਈਸ ਦੀ ਆਵਾਜ਼ ਉੱਚੀ ਪੜ੍ਹਦੀ ਹੈ, ਪਰ ਇਸਨੂੰ ਫ਼ਾਈਲ ਵਜੋਂ ਸੰਭਾਲਿਆ ਨਹੀਂ ਜਾ ਸਕਦਾ। ਆਡੀਓ ਡਾਊਨਲੋਡ ਕਰਨ ਲਈ ਬਿਆਨਕਾਰ ਦੀਆਂ ਸੈਟਿੰਗਾਂ ਵਿੱਚ ਕਲਾਊਡ ਆਵਾਜ਼ ਜਾਂ ਸਥਾਨਕ ਆਵਾਜ਼ ਚੁਣੋ।",

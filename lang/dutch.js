@@ -5289,7 +5289,12 @@
     "take_home_player_quantity_discrimination_title": "Hoeveelheidsdiscriminatie",
     "take_home_player_quantity_discrimination_directions": "Tik op het grootste getal.",
     "take_home_player_quantity_discrimination_question": "Welk getal is groter?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Niet helemaal. Het grootste getal is {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Niet helemaal. Het grootste getal is {answer}.",
+    "take_home_include_pictures": "Plaatjes toevoegen",
+    "take_home_include_pictures_help": "Een plaatje verschijnt alleen waar het antwoord er niet door wordt verklapt, of pas na het antwoord.",
+    "take_home_missing_picture": "geen plaatje van {word}",
+    "take_home_player_picture_clue": "Hint met plaatje",
+    "take_home_player_picture_of": "Plaatje van {word}"
   },
   "common": {
     "audio_device_voice_no_file": "De apparaatstem leest voor, maar kan niet als bestand worden opgeslagen. Kies een cloudstem of een lokale stem in de instellingen van de verteller om audio te downloaden.",

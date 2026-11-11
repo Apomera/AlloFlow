@@ -17479,7 +17479,12 @@
     "take_home_player_quantity_discrimination_title": "数量辨别",
     "take_home_player_quantity_discrimination_directions": "点一下较大的数。",
     "take_home_player_quantity_discrimination_question": "哪个数更大？",
-    "take_home_player_quantity_discrimination_practice_wrong": "不太对。较大的数是 {answer}。"
+    "take_home_player_quantity_discrimination_practice_wrong": "不太对。较大的数是 {answer}。",
+    "take_home_include_pictures": "包含图片",
+    "take_home_include_pictures_help": "图片只在不会泄露答案的地方显示，或在作答之后显示。",
+    "take_home_missing_picture": "没有 {word} 的图片",
+    "take_home_player_picture_clue": "图片线索",
+    "take_home_player_picture_of": "{word} 的图片"
   },
   "escape_room": {
     "save_config": "保存配置",

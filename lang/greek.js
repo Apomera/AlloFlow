@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "Διάκριση ποσότητας",
     "take_home_player_quantity_discrimination_directions": "Πάτησε τον μεγαλύτερο αριθμό.",
     "take_home_player_quantity_discrimination_question": "Ποιος αριθμός είναι μεγαλύτερος;",
-    "take_home_player_quantity_discrimination_practice_wrong": "Όχι ακριβώς. Ο μεγαλύτερος αριθμός είναι {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Όχι ακριβώς. Ο μεγαλύτερος αριθμός είναι {answer}.",
+    "take_home_include_pictures": "Συμπερίληψη εικόνων",
+    "take_home_include_pictures_help": "Η εικόνα εμφανίζεται μόνο εκεί όπου δεν μπορεί να προδώσει την απάντηση, ή μετά την απάντηση.",
+    "take_home_missing_picture": "δεν υπάρχει εικόνα για τη λέξη {word}",
+    "take_home_player_picture_clue": "Εικόνα-βοήθεια",
+    "take_home_player_picture_of": "Εικόνα: {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Η φωνή της συσκευής διαβάζει φωναχτά, αλλά δεν μπορεί να αποθηκευτεί ως αρχείο. Για λήψη ήχου, επιλέξτε φωνή νέφους ή τοπική φωνή στις ρυθμίσεις αφηγητή.",

@@ -5296,7 +5296,12 @@
     "take_home_player_quantity_discrimination_title": "Discriminazione di quantità",
     "take_home_player_quantity_discrimination_directions": "Tocca il numero più grande.",
     "take_home_player_quantity_discrimination_question": "Quale numero è più grande?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Non proprio. Il numero più grande è {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Non proprio. Il numero più grande è {answer}.",
+    "take_home_include_pictures": "Includi le immagini",
+    "take_home_include_pictures_help": "Un'immagine compare solo dove non può svelare la risposta, oppure dopo la risposta.",
+    "take_home_missing_picture": "nessuna immagine di {word}",
+    "take_home_player_picture_clue": "Indizio illustrato",
+    "take_home_player_picture_of": "Immagine di {word}"
   },
   "common": {
     "audio_device_voice_no_file": "La voce del dispositivo legge ad alta voce, ma non può essere salvata come file. Per scaricare l’audio, scegli una voce cloud o una voce locale nelle impostazioni della voce narrante.",

@@ -4047,7 +4047,12 @@
     "take_home_player_quantity_discrimination_title": "Discriminarea cantității",
     "take_home_player_quantity_discrimination_directions": "Atinge numărul mai mare.",
     "take_home_player_quantity_discrimination_question": "Care număr este mai mare?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Nu chiar. Numărul mai mare este {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Nu chiar. Numărul mai mare este {answer}.",
+    "take_home_include_pictures": "Include imagini",
+    "take_home_include_pictures_help": "O imagine apare doar acolo unde nu poate dezvălui răspunsul sau după răspuns.",
+    "take_home_missing_picture": "nicio imagine pentru {word}",
+    "take_home_player_picture_clue": "Indiciu cu imagine",
+    "take_home_player_picture_of": "Imaginea pentru {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Vocea dispozitivului citește cu voce tare, dar nu poate fi salvată ca fișier. Pentru a descărca audio, alegeți o voce cloud sau o voce locală în setările naratorului.",

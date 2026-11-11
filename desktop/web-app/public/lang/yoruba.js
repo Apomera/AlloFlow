@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "Ìyàtọ̀ Iye",
     "take_home_player_quantity_discrimination_directions": "Tẹ nọ́ńbà tó tóbi jù.",
     "take_home_player_quantity_discrimination_question": "Nọ́ńbà wo ló tóbi jù?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Kò tíì tọ̀nà. Nọ́ńbà tó tóbi jù ni {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Kò tíì tọ̀nà. Nọ́ńbà tó tóbi jù ni {answer}.",
+    "take_home_include_pictures": "Fi àwọn àwòrán kún un",
+    "take_home_include_pictures_help": "Ibi tí kò ti lè fi ìdáhùn hàn nìkan ni àwòrán máa ń hàn, tàbí lẹ́yìn ìdáhùn.",
+    "take_home_missing_picture": "kò sí àwòrán {word}",
+    "take_home_player_picture_clue": "Ìtọ́ka àwòrán",
+    "take_home_player_picture_of": "Àwòrán {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Ohùn ẹ̀rọ náà ń kà á sókè, ṣùgbọ́n a kò lè fi pamọ́ bí fáìlì. Láti ṣe ìgbàsílẹ̀ ohùn, yan ohùn ayélujára tàbí ohùn agbègbè nínú ètò onítàn.",

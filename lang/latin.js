@@ -4047,7 +4047,12 @@
     "take_home_player_quantity_discrimination_title": "Discriminatio Quantitatis",
     "take_home_player_quantity_discrimination_directions": "Numerum maiorem tange.",
     "take_home_player_quantity_discrimination_question": "Uter numerus maior est?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Non plane. Numerus maior est {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Non plane. Numerus maior est {answer}.",
+    "take_home_include_pictures": "Imagines include",
+    "take_home_include_pictures_help": "Imago tantum ibi apparet ubi responsum prodere non potest, aut post responsum.",
+    "take_home_missing_picture": "nulla imago verbi {word}",
+    "take_home_player_picture_clue": "Indicium imaginis",
+    "take_home_player_picture_of": "Imago: {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Vox instrumenti clare legit, sed ut fasciculus servari non potest. Ut sonum depromas, in constitutionibus narratoris elige vocem nubis aut vocem localem.",

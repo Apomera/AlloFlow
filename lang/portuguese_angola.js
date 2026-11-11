@@ -5298,7 +5298,12 @@
     "take_home_player_quantity_discrimination_title": "Discriminação de quantidade",
     "take_home_player_quantity_discrimination_directions": "Toca no número maior.",
     "take_home_player_quantity_discrimination_question": "Qual é o número maior?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Quase. O número maior é {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Quase. O número maior é {answer}.",
+    "take_home_include_pictures": "Incluir imagens",
+    "take_home_include_pictures_help": "Uma imagem só aparece onde não pode revelar a resposta, ou depois da resposta.",
+    "take_home_missing_picture": "sem imagem de {word}",
+    "take_home_player_picture_clue": "Pista com imagem",
+    "take_home_player_picture_of": "Imagem de {word}"
   },
   "common": {
     "audio_device_voice_no_file": "A voz do dispositivo lê em voz alta, mas não pode ser guardada como ficheiro. Para transferir o áudio, escolha uma voz na nuvem ou uma voz local nas definições do narrador.",

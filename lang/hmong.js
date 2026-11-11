@@ -4105,7 +4105,12 @@
     "take_home_player_quantity_discrimination_title": "Cais Tus Lej Coob Tsawg",
     "take_home_player_quantity_discrimination_directions": "Kov tus lej uas loj dua.",
     "take_home_player_quantity_discrimination_question": "Tus lej twg loj dua?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Tseem tsis tau raug. Tus lej uas loj dua yog {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Tseem tsis tau raug. Tus lej uas loj dua yog {answer}.",
+    "take_home_include_pictures": "Suav nrog cov duab",
+    "take_home_include_pictures_help": "Daim duab tsuas tshwm rau qhov chaw uas nws tsis qhia lo lus teb xwb, los yog tom qab teb lawm.",
+    "take_home_missing_picture": "tsis muaj duab ntawm {word}",
+    "take_home_player_picture_clue": "Duab pab",
+    "take_home_player_picture_of": "Duab ntawm {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Lub suab ntawm lub cuab yeej nyeem tau nrov nrov, tab sis khaws ua ib daim ntawv tsis tau. Yog xav rub tau lub suab, xaiv ib lub suab hauv internet los yog ib lub suab hauv zos ntawm kev teeb tsa tus piav.",

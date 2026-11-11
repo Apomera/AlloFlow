@@ -5351,7 +5351,12 @@
     "take_home_player_quantity_discrimination_title": "Mengenunterscheidung",
     "take_home_player_quantity_discrimination_directions": "Tippe auf die größere Zahl.",
     "take_home_player_quantity_discrimination_question": "Welche Zahl ist größer?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Nicht ganz. Die größere Zahl ist {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Nicht ganz. Die größere Zahl ist {answer}.",
+    "take_home_include_pictures": "Bilder hinzufügen",
+    "take_home_include_pictures_help": "Ein Bild erscheint nur dort, wo es die Antwort nicht verraten kann, oder erst nach der Antwort.",
+    "take_home_missing_picture": "kein Bild von {word}",
+    "take_home_player_picture_clue": "Bildhinweis",
+    "take_home_player_picture_of": "Bild von {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Die Gerätestimme liest vor, kann aber nicht als Datei gespeichert werden. Wähle in den Einstellungen der Erzählstimme eine Cloud-Stimme oder eine lokale Stimme, um Audio herunterzuladen.",

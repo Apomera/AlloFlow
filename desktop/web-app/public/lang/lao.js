@@ -9900,7 +9900,12 @@
     "take_home_player_quantity_discrimination_title": "ການຈຳແນກປະລິມານ",
     "take_home_player_quantity_discrimination_directions": "ແຕະຈຳນວນທີ່ໃຫຍ່ກວ່າ.",
     "take_home_player_quantity_discrimination_question": "ຈຳນວນໃດໃຫຍ່ກວ່າ?",
-    "take_home_player_quantity_discrimination_practice_wrong": "ຍັງບໍ່ຖືກ. ຈຳນວນທີ່ໃຫຍ່ກວ່າແມ່ນ {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "ຍັງບໍ່ຖືກ. ຈຳນວນທີ່ໃຫຍ່ກວ່າແມ່ນ {answer}.",
+    "take_home_include_pictures": "ໃສ່ຮູບ",
+    "take_home_include_pictures_help": "ຮູບຈະສະແດງສະເພາະບ່ອນທີ່ມັນບໍ່ສາມາດບອກຄຳຕອບໄດ້, ຫຼື ຫຼັງຈາກຕອບແລ້ວ.",
+    "take_home_missing_picture": "ບໍ່ມີຮູບຂອງ {word}",
+    "take_home_player_picture_clue": "ຮູບຄຳໃບ້",
+    "take_home_player_picture_of": "ຮູບຂອງ {word}"
   },
   "games": {
     "syntax": {

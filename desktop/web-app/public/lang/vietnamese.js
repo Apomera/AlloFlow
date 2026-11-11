@@ -4110,7 +4110,12 @@
     "take_home_player_quantity_discrimination_title": "Phân biệt số lượng",
     "take_home_player_quantity_discrimination_directions": "Hãy chạm vào số lớn hơn.",
     "take_home_player_quantity_discrimination_question": "Số nào lớn hơn?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Chưa đúng. Số lớn hơn là {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Chưa đúng. Số lớn hơn là {answer}.",
+    "take_home_include_pictures": "Kèm theo hình",
+    "take_home_include_pictures_help": "Hình chỉ hiện ở chỗ không làm lộ đáp án, hoặc sau khi học sinh trả lời.",
+    "take_home_missing_picture": "chưa có hình của {word}",
+    "take_home_player_picture_clue": "Gợi ý bằng hình",
+    "take_home_player_picture_of": "Hình của {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Giọng của thiết bị đọc to được nhưng không thể lưu thành tệp. Để tải âm thanh xuống, hãy chọn giọng đám mây hoặc giọng cục bộ trong phần cài đặt người dẫn truyện.",

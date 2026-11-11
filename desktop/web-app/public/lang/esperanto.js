@@ -5299,7 +5299,12 @@
     "take_home_player_quantity_discrimination_title": "Kvanta Distingo",
     "take_home_player_quantity_discrimination_directions": "Tuŝu la pli grandan nombron.",
     "take_home_player_quantity_discrimination_question": "Kiu nombro estas pli granda?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Ne tute. La pli granda nombro estas {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Ne tute. La pli granda nombro estas {answer}.",
+    "take_home_include_pictures": "Inkluzivi bildojn",
+    "take_home_include_pictures_help": "Bildo aperas nur tie, kie ĝi ne povas malkaŝi la respondon, aŭ post la respondo.",
+    "take_home_missing_picture": "neniu bildo de {word}",
+    "take_home_player_picture_clue": "Bilda indiko",
+    "take_home_player_picture_of": "Bildo de {word}"
   },
   "common": {
     "audio_device_voice_no_file": "La aparata voĉo laŭtlegas, sed ne povas esti konservita kiel dosiero. Por elŝuti sonon, elektu nuban aŭ lokan voĉon en la agordoj de la rakontanto.",

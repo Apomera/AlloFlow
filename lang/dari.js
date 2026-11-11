@@ -15054,7 +15054,12 @@
     "take_home_player_quantity_discrimination_title": "تشخیص کمیت",
     "take_home_player_quantity_discrimination_directions": "عدد بزرگ‌تر را لمس کن.",
     "take_home_player_quantity_discrimination_question": "کدام عدد بزرگ‌تر است؟",
-    "take_home_player_quantity_discrimination_practice_wrong": "نه کاملاً. عدد بزرگ‌تر {answer} است."
+    "take_home_player_quantity_discrimination_practice_wrong": "نه کاملاً. عدد بزرگ‌تر {answer} است.",
+    "take_home_include_pictures": "شامل ساختن تصویرها",
+    "take_home_include_pictures_help": "تصویر تنها در جایی نشان داده می‌شود که جواب را فاش نکند، یا بعد از جواب دادن.",
+    "take_home_missing_picture": "تصویری از {word} نیست",
+    "take_home_player_picture_clue": "تصویر رهنما",
+    "take_home_player_picture_of": "تصویر {word}"
   },
   "escape_room": {
     "save_config": "ذخیره تنظیمات",

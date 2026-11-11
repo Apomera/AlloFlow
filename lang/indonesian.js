@@ -4106,7 +4106,12 @@
     "take_home_player_quantity_discrimination_title": "Diskriminasi Kuantitas",
     "take_home_player_quantity_discrimination_directions": "Ketuk bilangan yang lebih besar.",
     "take_home_player_quantity_discrimination_question": "Bilangan mana yang lebih besar?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Belum tepat. Bilangan yang lebih besar adalah {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Belum tepat. Bilangan yang lebih besar adalah {answer}.",
+    "take_home_include_pictures": "Sertakan gambar",
+    "take_home_include_pictures_help": "Gambar hanya muncul jika tidak membocorkan jawaban, atau setelah siswa menjawab.",
+    "take_home_missing_picture": "tidak ada gambar untuk {word}",
+    "take_home_player_picture_clue": "Petunjuk gambar",
+    "take_home_player_picture_of": "Gambar {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Suara perangkat dapat membacakan teks, tetapi tidak bisa disimpan sebagai file. Untuk mengunduh audio, pilih suara cloud atau suara lokal di pengaturan narator.",

@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "የብዛት ልዩነት",
     "take_home_player_quantity_discrimination_directions": "ትልቁን ቁጥር ንካ።",
     "take_home_player_quantity_discrimination_question": "የትኛው ቁጥር ይበልጣል?",
-    "take_home_player_quantity_discrimination_practice_wrong": "ልክ አይደለም። ትልቁ ቁጥር {answer} ነው።"
+    "take_home_player_quantity_discrimination_practice_wrong": "ልክ አይደለም። ትልቁ ቁጥር {answer} ነው።",
+    "take_home_include_pictures": "ሥዕሎችን አካትት",
+    "take_home_include_pictures_help": "ሥዕል የሚታየው መልሱን በማይገልጥበት ቦታ ብቻ፣ ወይም ከመልሱ በኋላ ነው።",
+    "take_home_missing_picture": "የ{word} ሥዕል የለም",
+    "take_home_player_picture_clue": "የሥዕል ፍንጭ",
+    "take_home_player_picture_of": "የ{word} ሥዕል"
   },
   "common": {
     "audio_device_voice_no_file": "የመሣሪያው ድምፅ ጮክ ብሎ ያነብባል፣ ነገር ግን እንደ ፋይል ሊቀመጥ አይችልም። ድምፅ ለማውረድ በተራኪ ቅንብሮች ውስጥ የደመና ድምፅ ወይም አካባቢያዊ ድምፅ ይምረጡ።",

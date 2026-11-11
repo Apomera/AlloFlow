@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "수량 변별",
     "take_home_player_quantity_discrimination_directions": "더 큰 수를 누르세요.",
     "take_home_player_quantity_discrimination_question": "어느 수가 더 클까요?",
-    "take_home_player_quantity_discrimination_practice_wrong": "아쉬워요. 더 큰 수: {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "아쉬워요. 더 큰 수: {answer}.",
+    "take_home_include_pictures": "그림 넣기",
+    "take_home_include_pictures_help": "그림은 정답을 알려 주지 않는 곳에만 나오거나, 답한 뒤에 나옵니다.",
+    "take_home_missing_picture": "{word} 그림 없음",
+    "take_home_player_picture_clue": "그림 힌트",
+    "take_home_player_picture_of": "{word} 그림"
   },
   "common": {
     "audio_device_voice_no_file": "기기 음성은 소리 내어 읽을 수 있지만 파일로 저장할 수는 없습니다. 오디오를 다운로드하려면 내레이터 설정에서 클라우드 음성이나 로컬 음성을 선택하세요.",

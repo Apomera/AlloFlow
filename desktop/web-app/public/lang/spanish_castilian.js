@@ -14214,7 +14214,12 @@
     "take_home_player_quantity_discrimination_title": "Discriminación de cantidades",
     "take_home_player_quantity_discrimination_directions": "Toca el número más grande.",
     "take_home_player_quantity_discrimination_question": "¿Qué número es más grande?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Casi. El número más grande es {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Casi. El número más grande es {answer}.",
+    "take_home_include_pictures": "Incluir imágenes",
+    "take_home_include_pictures_help": "Una imagen solo aparece donde no puede desvelar la respuesta, o después de responder.",
+    "take_home_missing_picture": "no hay imagen de {word}",
+    "take_home_player_picture_clue": "Pista con imagen",
+    "take_home_player_picture_of": "Imagen de {word}"
   },
   "escape_room": {
     "save_config": "Guardar Configuración",

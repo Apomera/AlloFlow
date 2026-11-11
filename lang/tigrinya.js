@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "ናይ ብዝሒ ምፍልላይ",
     "take_home_player_quantity_discrimination_directions": "ነቲ ዝዓበየ ቁጽሪ ጠውቕ።",
     "take_home_player_quantity_discrimination_question": "ኣየናይ ቁጽሪ ይዓቢ?",
-    "take_home_player_quantity_discrimination_practice_wrong": "ልክዕ ኣይኮነን። እቲ ዝዓበየ ቁጽሪ {answer} እዩ።"
+    "take_home_player_quantity_discrimination_practice_wrong": "ልክዕ ኣይኮነን። እቲ ዝዓበየ ቁጽሪ {answer} እዩ።",
+    "take_home_include_pictures": "ስእልታት ኣካትት",
+    "take_home_include_pictures_help": "ስእሊ ኣብቲ ነቲ መልሲ ዘይገልጸሉ ቦታ ጥራይ፣ ወይ ድሕሪ መልሲ እዩ ዝቐርብ።",
+    "take_home_missing_picture": "ስእሊ ናይ {word} የለን",
+    "take_home_player_picture_clue": "ፍንጪ ስእሊ",
+    "take_home_player_picture_of": "ስእሊ {word}"
   },
   "common": {
     "audio_device_voice_no_file": "ድምጺ መሳርሒ ብዓውታ የንብብ እዩ፣ ግን ከም ፋይል ክዕቀብ ኣይክእልን። ድምጺ ንምውራድ፡ ኣብ ስርዓታት ኣዘንታዊ ናይ ደበና ድምጺ ወይ ከባቢያዊ ድምጺ ምረጹ።",

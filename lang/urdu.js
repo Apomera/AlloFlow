@@ -13785,7 +13785,12 @@
     "take_home_player_quantity_discrimination_title": "مقداروں میں فرق کی پہچان",
     "take_home_player_quantity_discrimination_directions": "بڑے عدد پر ٹیپ کرو۔",
     "take_home_player_quantity_discrimination_question": "کون سا عدد بڑا ہے؟",
-    "take_home_player_quantity_discrimination_practice_wrong": "بالکل ٹھیک نہیں۔ بڑا عدد {answer} ہے۔"
+    "take_home_player_quantity_discrimination_practice_wrong": "بالکل ٹھیک نہیں۔ بڑا عدد {answer} ہے۔",
+    "take_home_include_pictures": "تصویریں شامل کریں",
+    "take_home_include_pictures_help": "تصویر صرف وہیں دکھائی دیتی ہے جہاں اس سے جواب ظاہر نہ ہو، یا جواب دینے کے بعد۔",
+    "take_home_missing_picture": "{word} کی تصویر نہیں",
+    "take_home_player_picture_clue": "تصویری اشارہ",
+    "take_home_player_picture_of": "{word} کی تصویر"
   },
   "escape_room": {
     "save_config": "محفوظ کریں ترتیبات",

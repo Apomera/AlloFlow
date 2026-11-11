@@ -4106,7 +4106,12 @@
     "take_home_player_quantity_discrimination_title": "ಪ್ರಮಾಣ ತಾರತಮ್ಯ",
     "take_home_player_quantity_discrimination_directions": "ದೊಡ್ಡ ಸಂಖ್ಯೆಯನ್ನು ಒತ್ತು.",
     "take_home_player_quantity_discrimination_question": "ಯಾವ ಸಂಖ್ಯೆ ದೊಡ್ಡದು?",
-    "take_home_player_quantity_discrimination_practice_wrong": "ಪೂರ್ತಿ ಸರಿಯಲ್ಲ. ದೊಡ್ಡ ಸಂಖ್ಯೆ {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "ಪೂರ್ತಿ ಸರಿಯಲ್ಲ. ದೊಡ್ಡ ಸಂಖ್ಯೆ {answer}.",
+    "take_home_include_pictures": "ಚಿತ್ರಗಳನ್ನು ಸೇರಿಸಿ",
+    "take_home_include_pictures_help": "ಚಿತ್ರವು ಉತ್ತರವನ್ನು ಬಯಲು ಮಾಡದ ಕಡೆ ಮಾತ್ರ, ಅಥವಾ ಉತ್ತರ ನೀಡಿದ ನಂತರ ಕಾಣಿಸುತ್ತದೆ.",
+    "take_home_missing_picture": "{word} ಚಿತ್ರ ಇಲ್ಲ",
+    "take_home_player_picture_clue": "ಚಿತ್ರದ ಸುಳಿವು",
+    "take_home_player_picture_of": "{word} ಚಿತ್ರ"
   },
   "common": {
     "audio_device_voice_no_file": "ಸಾಧನದ ಧ್ವನಿ ಗಟ್ಟಿಯಾಗಿ ಓದುತ್ತದೆ, ಆದರೆ ಅದನ್ನು ಫೈಲ್ ಆಗಿ ಉಳಿಸಲು ಸಾಧ್ಯವಿಲ್ಲ. ಆಡಿಯೊ ಡೌನ್‌ಲೋಡ್ ಮಾಡಲು ನಿರೂಪಕನ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಕ್ಲೌಡ್ ಧ್ವನಿ ಅಥವಾ ಸ್ಥಳೀಯ ಧ್ವನಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.",

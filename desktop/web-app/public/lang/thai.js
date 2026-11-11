@@ -12777,7 +12777,12 @@
     "take_home_player_quantity_discrimination_title": "การแยกแยะปริมาณ",
     "take_home_player_quantity_discrimination_directions": "แตะจำนวนที่มากกว่า",
     "take_home_player_quantity_discrimination_question": "จำนวนไหนมากกว่า",
-    "take_home_player_quantity_discrimination_practice_wrong": "ยังไม่ถูก จำนวนที่มากกว่าคือ {answer}"
+    "take_home_player_quantity_discrimination_practice_wrong": "ยังไม่ถูก จำนวนที่มากกว่าคือ {answer}",
+    "take_home_include_pictures": "ใส่รูปด้วย",
+    "take_home_include_pictures_help": "รูปจะแสดงเฉพาะในจุดที่ไม่เฉลยคำตอบ หรือหลังจากตอบแล้ว",
+    "take_home_missing_picture": "ไม่มีรูปของ {word}",
+    "take_home_player_picture_clue": "คำใบ้จากรูป",
+    "take_home_player_picture_of": "รูปของ {word}"
   },
   "escape_room": {
     "save_config": "บันทึกการตั้งค่า",

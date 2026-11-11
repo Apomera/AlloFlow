@@ -4107,7 +4107,12 @@
     "take_home_player_quantity_discrimination_title": "Utofautishaji wa Kiasi",
     "take_home_player_quantity_discrimination_directions": "Gusa namba kubwa zaidi.",
     "take_home_player_quantity_discrimination_question": "Namba ipi ni kubwa zaidi?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Bado si sahihi. Namba kubwa zaidi ni {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Bado si sahihi. Namba kubwa zaidi ni {answer}.",
+    "take_home_include_pictures": "Jumuisha picha",
+    "take_home_include_pictures_help": "Picha huonekana tu pale ambapo haiwezi kufichua jibu, au baada ya jibu.",
+    "take_home_missing_picture": "hakuna picha ya {word}",
+    "take_home_player_picture_clue": "Kidokezo cha picha",
+    "take_home_player_picture_of": "Picha ya {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Sauti ya kifaa husoma kwa sauti, lakini haiwezi kuhifadhiwa kama faili. Ili kupakua sauti, chagua sauti ya wingu au sauti ya ndani katika mipangilio ya msimuliaji.",

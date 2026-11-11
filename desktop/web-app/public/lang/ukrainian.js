@@ -5361,7 +5361,12 @@
     "take_home_player_quantity_discrimination_title": "Розрізнення кількості",
     "take_home_player_quantity_discrimination_directions": "Натисни на більше число.",
     "take_home_player_quantity_discrimination_question": "Яке число більше?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Не зовсім. Більше число: {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Не зовсім. Більше число: {answer}.",
+    "take_home_include_pictures": "Додати малюнки",
+    "take_home_include_pictures_help": "Малюнок показується лише там, де він не може підказати відповідь, або після відповіді.",
+    "take_home_missing_picture": "немає малюнка для слова {word}",
+    "take_home_player_picture_clue": "Підказка-малюнок",
+    "take_home_player_picture_of": "Малюнок: {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Голос пристрою читає вголос, але його не можна зберегти як файл. Щоб завантажити аудіо, виберіть хмарний або локальний голос у налаштуваннях оповідача.",

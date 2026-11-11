@@ -4106,7 +4106,12 @@
     "take_home_player_quantity_discrimination_title": "পরিমাণ বৈষম্য",
     "take_home_player_quantity_discrimination_directions": "বড় সংখ্যাটিতে ট্যাপ করো।",
     "take_home_player_quantity_discrimination_question": "কোন সংখ্যাটি বড়?",
-    "take_home_player_quantity_discrimination_practice_wrong": "পুরোপুরি ঠিক নয়। বড় সংখ্যাটি হলো {answer}।"
+    "take_home_player_quantity_discrimination_practice_wrong": "পুরোপুরি ঠিক নয়। বড় সংখ্যাটি হলো {answer}।",
+    "take_home_include_pictures": "ছবি অন্তর্ভুক্ত করুন",
+    "take_home_include_pictures_help": "ছবি শুধু সেখানেই দেখা যায় যেখানে তা উত্তর ফাঁস করে না, অথবা উত্তর দেওয়ার পরে।",
+    "take_home_missing_picture": "{word}-এর ছবি নেই",
+    "take_home_player_picture_clue": "ছবির সূত্র",
+    "take_home_player_picture_of": "{word}-এর ছবি"
   },
   "common": {
     "audio_device_voice_no_file": "ডিভাইসের কণ্ঠ জোরে পড়ে, কিন্তু ফাইল হিসেবে সংরক্ষণ করা যায় না। অডিও ডাউনলোড করতে বর্ণনাকারীর সেটিংসে একটি ক্লাউড কণ্ঠ বা লোকাল কণ্ঠ বেছে নিন।",

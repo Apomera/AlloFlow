@@ -3851,7 +3851,12 @@
     "take_home_player_quantity_discrimination_title": "Ugutandukanya Igitigiri",
     "take_home_player_quantity_discrimination_directions": "Fyonda ku gitigiri kinini kuruta ikindi.",
     "take_home_player_quantity_discrimination_question": "Ni ikihe gitigiri kinini kuruta ikindi?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Si vyo neza. Igitigiri kinini ni {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Si vyo neza. Igitigiri kinini ni {answer}.",
+    "take_home_include_pictures": "Shiramwo amashusho",
+    "take_home_include_pictures_help": "Ishusho iboneka gusa aho idashobora guhishura inyishu, canke inyuma y'inyishu.",
+    "take_home_missing_picture": "nta shusho ya {word}",
+    "take_home_player_picture_clue": "Ishusho igufasha",
+    "take_home_player_picture_of": "Ishusho ya {word}"
   },
   "common": {
     "enter_value": "Injiza agaciro",

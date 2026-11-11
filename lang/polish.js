@@ -5293,7 +5293,12 @@
     "take_home_player_quantity_discrimination_title": "Rozróżnianie liczebności",
     "take_home_player_quantity_discrimination_directions": "Dotknij większej liczby.",
     "take_home_player_quantity_discrimination_question": "Która liczba jest większa?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Nie całkiem. Większa liczba to {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Nie całkiem. Większa liczba to {answer}.",
+    "take_home_include_pictures": "Dołącz obrazki",
+    "take_home_include_pictures_help": "Obrazek pojawia się tylko tam, gdzie nie może zdradzić odpowiedzi, albo dopiero po odpowiedzi.",
+    "take_home_missing_picture": "brak obrazka dla słowa {word}",
+    "take_home_player_picture_clue": "Podpowiedź obrazkowa",
+    "take_home_player_picture_of": "Obrazek: {word}"
   },
   "common": {
     "audio_device_voice_no_file": "Głos urządzenia czyta na głos, ale nie da się go zapisać jako pliku. Aby pobrać dźwięk, wybierz głos w chmurze lub głos lokalny w ustawieniach narratora.",

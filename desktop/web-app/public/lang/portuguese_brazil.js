@@ -13479,7 +13479,12 @@
     "take_home_player_quantity_discrimination_title": "Discriminação de quantidade",
     "take_home_player_quantity_discrimination_directions": "Toque no número maior.",
     "take_home_player_quantity_discrimination_question": "Qual número é maior?",
-    "take_home_player_quantity_discrimination_practice_wrong": "Quase. O número maior é {answer}."
+    "take_home_player_quantity_discrimination_practice_wrong": "Quase. O número maior é {answer}.",
+    "take_home_include_pictures": "Incluir imagens",
+    "take_home_include_pictures_help": "Uma imagem só aparece onde não entrega a resposta, ou depois da resposta.",
+    "take_home_missing_picture": "sem imagem de {word}",
+    "take_home_player_picture_clue": "Dica com imagem",
+    "take_home_player_picture_of": "Imagem de {word}"
   },
   "escape_room": {
     "save_config": "Salvar Configuração",

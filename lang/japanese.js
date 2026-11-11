@@ -13057,7 +13057,12 @@
     "take_home_player_quantity_discrimination_title": "数量識別",
     "take_home_player_quantity_discrimination_directions": "大きい ほうの かずを タップしてね。",
     "take_home_player_quantity_discrimination_question": "どちらの かずが 大きいですか？",
-    "take_home_player_quantity_discrimination_practice_wrong": "おしい。大きい ほうの かずは {answer} です。"
+    "take_home_player_quantity_discrimination_practice_wrong": "おしい。大きい ほうの かずは {answer} です。",
+    "take_home_include_pictures": "絵を入れる",
+    "take_home_include_pictures_help": "絵は、答えが分かってしまわないところにだけ、または答えたあとに表示されます。",
+    "take_home_missing_picture": "{word} の絵がありません",
+    "take_home_player_picture_clue": "絵の ヒント",
+    "take_home_player_picture_of": "{word} の 絵"
   },
   "games": {
     "syntax": {

@@ -17292,7 +17292,12 @@
     "take_home_player_quantity_discrimination_title": "數量辨別",
     "take_home_player_quantity_discrimination_directions": "點一下較大的數。",
     "take_home_player_quantity_discrimination_question": "哪個數比較大？",
-    "take_home_player_quantity_discrimination_practice_wrong": "不太對。較大的數是 {answer}。"
+    "take_home_player_quantity_discrimination_practice_wrong": "不太對。較大的數是 {answer}。",
+    "take_home_include_pictures": "包含圖片",
+    "take_home_include_pictures_help": "圖片只會顯示在不會洩漏答案的地方，或在作答之後才顯示。",
+    "take_home_missing_picture": "沒有 {word} 的圖片",
+    "take_home_player_picture_clue": "圖片線索",
+    "take_home_player_picture_of": "{word} 的圖片"
   },
   "escape_room": {
     "save_config": "儲存配置",
