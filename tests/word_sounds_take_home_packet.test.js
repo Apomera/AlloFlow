@@ -120,12 +120,28 @@ describe('the spreadsheet table (pure function, shared by the file and the app)'
     expect([at(rows[2], 'word'), at(rows[2], 'target'), at(rows[2], 'responses'), at(rows[2], 'time_ms'), at(rows[2], 'flag')]).toEqual(["'-ing", "'+1", "'@x | line\nbreak", '0', 'resumed']);
     // Practice (Letter Trace) is in the table, never scored.
     expect([at(rows[3], 'scored'), at(rows[3], 'correct'), at(rows[3], 'activity_title')]).toEqual(['0', '0', 'Letter Trace']);
-    expect(rows[4]).toEqual(['#summary', 's-1', 'items_given=2', 'attempted=2', 'correct=1', 'first_try=0', 'accuracy_pct=50']);
+    // The summary row ends with the title the learner saw, commas and quotes and all.
+    expect(rows[4]).toEqual(['#summary', 's-1', 'items_given=2', 'attempted=2', 'correct=1', 'first_try=0', 'accuracy_pct=50', 'title=Short a, "set 1"']);
     expect(rows[5]).toEqual(['#integrity', 'fnv1a', '0badf00d', 'detects accidental edits, not deliberate ones']);
     expect(table.summary).toEqual({ itemsGiven: 2, attempted: 2, correct: 1, firstTry: 0, accuracyPct: 50,
       byActivity: [{ activity: 'isolation', items: 2, correct: 1, firstTry: 0 }, { activity: 'letter_tracing', items: 0, correct: 0, firstTry: 0 }] });
     expect(table.stem).toBe('Short-a-set-1__Ana-Li__2026-11-12');
     expect(TH.resultsCsv({ lessonTitle: '', items: [] }).stem).toBe('packet__results');
+  });
+
+  it('carries the title in the summary row, and the integrity value does not cover it', () => {
+    const table = TH.resultsCsv(sample());
+    const summaryRow = (lessonTitle) => parseCsv(TH.resultsCsv({ ...sample(), lessonTitle }).text({ method: 'fnv1a', value: 'x' }).slice(1))[4];
+    // At most 120 characters, on one line. With no title there is no cell: the row is the one saved before 2026-11-11.
+    expect(summaryRow('T'.repeat(300))[7]).toBe('title=' + 'T'.repeat(120));
+    expect(summaryRow('  Short a,\n set = 2  ')[7]).toBe('title=Short a, set = 2');
+    expect(summaryRow('=SUM(A1)')[7]).toBe('title==SUM(A1)');
+    expect(summaryRow('')).toEqual(['#summary', 's-1', 'items_given=2', 'attempted=2', 'correct=1', 'first_try=0', 'accuracy_pct=50']);
+    expect(summaryRow(undefined)).toHaveLength(7);
+    // The same answers under another title, or under none, give the same text to hash: a file saved before the title was added keeps its value.
+    expect(table.basis).not.toContain('Short a');
+    expect(TH.resultsCsv({ ...sample(), lessonTitle: 'Another title' }).basis).toBe(table.basis);
+    expect(TH.resultsCsv({ ...sample(), lessonTitle: '' }).basis).toBe(table.basis);
   });
 
   it('the text to paste has the same columns, tabs between them, and no trailer rows', () => {
@@ -201,7 +217,9 @@ describe('a played session', () => {
         String(Math.round(file.durationMs / 1000)), String(i + 1), item.itemId, 'isolation', 'Find Sounds', '1', item.word, item.target, item.responses.join(' | '), '1', '1', '1', String(item.ms), '', '']);
       expect(Number(row[21])).toBeGreaterThanOrEqual(0);
     });
-    expect(rows[3]).toEqual(['#summary', file.sessionId, 'items_given=2', 'attempted=2', 'correct=2', 'first_try=2', 'accuracy_pct=100']);
+    // The title in the summary row is the heading at the top of the file, and the JSON's lessonTitle.
+    expect([t.d.querySelector('h1').textContent, file.lessonTitle]).toEqual(['Short a', 'Short a']);
+    expect(rows[3]).toEqual(['#summary', file.sessionId, 'items_given=2', 'attempted=2', 'correct=2', 'first_try=2', 'accuracy_pct=100', 'title=Short a']);
     expect(rows[4]).toEqual(['#integrity', file.integrity.method, file.integrity.value, 'detects accidental edits, not deliberate ones']);
     // The value covers exactly the item rows as they sit in the file, after the id line.
     const itemLines = blob.body.slice(1).split('\r\n').slice(1, 3);

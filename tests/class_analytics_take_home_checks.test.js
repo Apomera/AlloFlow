@@ -146,19 +146,26 @@ describe('reading a check file', () => {
       expect([s.acts, s.wrong, s.percent]).toEqual([{}, {}, null]);
     }
     expect(json.id).toBe(csv.id);
-    expect({...json.check, title: ''}).toEqual({...csv.check, title: ''});
+    // The title too: the CSV carries it in its summary row, the JSON as lessonTitle.
+    expect(json.check).toEqual(csv.check);
+    expect([csv.title, json.title]).toEqual([LESSONS[id].title, LESSONS[id].title]);
+    expect(PLAYED[id].csv).toContain('"attempt=1","title=' + LESSONS[id].title + '"\r\n');
   });
   it('reads the four saved sample files as they were saved on 11 November', async () => {
     const got = {};
     for (const name of ['quantity-discrimination-gK-A__results.csv', 'missing-number-g1-A__results.csv', 'math-computation-g3-A_code2468__results.csv', 'custom-facts-to-20__results.csv']) {
-      const s = await read(readFileSync(resolve(FIXTURES, name), 'utf8'), name);
-      got[name.split('__')[0]] = [s.integrity, s.check.measure, s.check.score, s.check.correct, s.check.attempted, s.check.given, s.check.prorated];
+      const text = readFileSync(resolve(FIXTURES, name), 'utf8');
+      // Saved before the title was added to the summary row: these files have none.
+      expect(text).not.toContain('title=');
+      const s = await read(text, name);
+      got[name.split('__')[0]] = [s.integrity, s.check.measure, s.check.score, s.check.correct, s.check.attempted, s.check.given, s.check.prorated, s.title];
     }
+    // Still "not edited", and named as before: a fixed form by its packet id, a teacher's own set by the start of its file name.
     expect(got).toEqual({
-      'quantity-discrimination-gK-A': ['ok', 'quantity_discrimination', 23, 23, 25, 25, false],
-      'missing-number-g1-A': ['ok', 'missing_number', 17, 17, 19, 25, false],
-      'math-computation-g3-A_code2468': ['ok', 'math_dcpm', 21, 22, 25, 25, true],
-      'custom-facts-to-20': ['ok', 'math_dcpm', 15, 7, 8, 8, true],
+      'quantity-discrimination-gK-A': ['ok', 'quantity_discrimination', 23, 23, 25, 25, false, 'quantity-discrimination-gk'],
+      'missing-number-g1-A': ['ok', 'missing_number', 17, 17, 19, 25, false, 'missing-number-g1'],
+      'math-computation-g3-A_code2468': ['ok', 'math_dcpm', 21, 22, 25, 25, true, 'math-computation-g3'],
+      'custom-facts-to-20': ['ok', 'math_dcpm', 15, 7, 8, 8, true, 'custom facts to 20'],
     });
   });
   it('reads a check CSV whose header row was deleted: the two digit columns are still read and still checked', async () => {
@@ -177,11 +184,18 @@ describe('reading a check file', () => {
     expect([s.integrity, s.check.score, s.check.recounted, s.check.stated]).toEqual(['ok', 21, true, 99]);
     expect(AC.notes((k) => k, s.check)).toContain('The file gave 99 as the score. The score shown is worked out from the answers in the file.');
   });
-  it('a custom set takes its title from the JSON, or from the name the CSV was saved under', async () => {
+  it('a custom set takes its title from the file; a CSV saved before the title was there, from the name it was saved under', async () => {
     expect(PLAYED.own.csvName).toBe('Facts-to-20__BlueHeron7__2026-11-12.csv');
     expect((await read(PLAYED.own.csv, PLAYED.own.csvName)).check.title).toBe('Facts to 20');
     expect((await read(PLAYED.own.json, PLAYED.own.jsonName)).check.title).toBe('Facts to 20');
-    expect((await read(PLAYED.own.csv, 'renamed.csv')).check.title).toBe(LESSONS.own.lessonId);
+    // The title is in the file now, so a renamed CSV keeps it.
+    expect((await read(PLAYED.own.csv, 'renamed.csv')).check.title).toBe('Facts to 20');
+    // Before 2026-11-11 the summary row ended at the try number. Such a file reads as it always did, and is still "not edited".
+    const older = PLAYED.own.csv.replace(',"title=Facts to 20"', '');
+    expect(older).not.toBe(PLAYED.own.csv);
+    const named = await read(older, PLAYED.own.csvName), renamed = await read(older, 'renamed.csv');
+    expect([named.check.title, named.integrity]).toEqual(['Facts to 20', 'ok']);
+    expect([renamed.check.title, renamed.integrity]).toEqual([LESSONS.own.lessonId, 'ok']);
   });
   it('a check of a kind this version does not know is not added, with a plain reason', async () => {
     const text = PLAYED.qd.csv.replace('"measure=quantity_discrimination"', '"measure=letter_names"');
@@ -814,7 +828,7 @@ describe('Math Fluency setup: Save as a file for home', () => {
     expect(shown(ana.csv)).toEqual(shown(ben.csv));
     expect(shown(ana.csv)).toHaveLength(12);
     const a = await read(ana.csv, ana.csvName), b = await read(ben.json, ben.jsonName);
-    expect([a.integrity, a.check.custom, a.check.packetId, a.check.title, a.check.measure, a.check.correct]).toEqual(['ok', true, first.packetId, 'Math facts check Mixed', 'math_dcpm', 12]);
+    expect([a.integrity, a.check.custom, a.check.packetId, a.check.title, a.check.measure, a.check.correct]).toEqual(['ok', true, first.packetId, 'Math facts check: Mixed', 'math_dcpm', 12]);
     expect([b.integrity, b.check.packetId, b.check.title, b.check.correct, b.date]).toEqual(['ok', first.packetId, 'Math facts check: Mixed', 10, '2026-11-19']);
     // On the dashboard both tries of one learner are listed together, under the title.
     const result = AC.apply([student('s1', 'Ana')], [{session: a, name: 'Ana'}, {session: b, name: 'Ana'}], make, {});

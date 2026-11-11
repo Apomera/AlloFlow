@@ -1,0 +1,560 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; media-src data: blob:; img-src data:"><meta name="generator" content="alloflow-word-sounds-take-home/2"><title>Short vowels practice</title><style>:root{--bg:#f6f7fb;--card:#fff;--ink:#1d2433;--muted:#4a5468;--accent:#3d3aa8;--accent-ink:#fff;--ok:#1d6b3a;--ok-bg:#e3f4e9;--warn:#8a4b00;--warn-bg:#fff1dc;--line:#c9cede;--focus:#b54700}
+@media (prefers-color-scheme:dark){:root{--bg:#141824;--card:#1f2535;--ink:#eef1f8;--muted:#b7bfd2;--accent:#a9a7ff;--accent-ink:#141824;--ok:#8fe0ab;--ok-bg:#163423;--warn:#ffc77a;--warn-bg:#3a2a12;--line:#3a4258;--focus:#ffb070}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+main{max-width:760px;margin:0 auto;padding:24px 16px 48px}h1{font-size:1.6rem;margin:0 0 12px}h2{font-size:1.3rem;margin:0 0 12px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:16px 0}
+button{font:inherit;min-height:48px;min-width:48px;padding:10px 18px;border-radius:12px;border:2px solid var(--accent);background:var(--card);color:var(--ink);cursor:pointer}
+button.primary{background:var(--accent);color:var(--accent-ink)}button:disabled,button[aria-disabled=true]{opacity:.55;cursor:not-allowed}
+button[aria-pressed=true]{outline:3px solid var(--accent);outline-offset:2px}
+:focus-visible{outline:3px solid var(--focus);outline-offset:3px}h2[tabindex="-1"]:focus{outline:none}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.choices{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;list-style:none;padding:0;margin:16px 0}
+.choice{border:2px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px}.choice.tried{border-style:dashed}.choice.right{border-color:var(--ok);background:var(--ok-bg)}.choice.solo{border-color:transparent}.choice.solo.tried{border-color:var(--line)}.choice.solo.right{border-color:var(--ok)}
+.slots{display:flex;flex-wrap:wrap;gap:10px;list-style:none;padding:0;margin:16px 0}.slot{min-width:64px;min-height:64px;border:2px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700}
+.picture{max-width:160px;max-height:160px;border-radius:12px}
+.letters{font-size:1.5rem;font-weight:700}.status{min-height:1.5em;margin:12px 0;padding:8px 12px;border-radius:10px}.status.ok{background:var(--ok-bg);color:var(--ok)}.status.warn{background:var(--warn-bg);color:var(--warn)}
+label{display:block;margin:12px 0 4px;font-weight:600}input{font:inherit;width:100%;max-width:360px;min-height:48px;padding:8px 12px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink)}
+.muted{color:var(--muted)}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}</style></head><body><main><h1>Short vowels practice</h1><div id="app"><p data-no-script>If the practice does not start, download this file and open it in Chrome, Edge or Safari.</p></div><p id="live" class="sr" aria-live="polite"></p></main><script>
+(function(){"use strict";
+var lesson={"schema":"alloflow-take-home-lesson/v2","player":"alloflow-word-sounds-take-home/2","lessonId":"ws-sample-1","revision":"r3b5f0486","createdAt":"2026-11-11T18:10:29.030Z","language":"en","title":"Short vowels practice","showLetters":false,"activityTitles":{"isolation":"Find Sounds","blending":"Blend Sounds","counting":"Sound Counting"},"blocks":[{"activity":"isolation","items":[{"id":"isolation-0","word":"cat","position":0,"target":"k","wordAudio":"a0","promptAudio":"a1","choices":[{"label":"k","audio":"a2"},{"label":"a","audio":"a3"},{"label":"t","audio":"a4"},{"label":"m","audio":"a5"}],"introAudio":["a1","a0"],"answerAudio":["a0","a2"]},{"id":"isolation-1","word":"dog","position":1,"target":"o","wordAudio":"a6","promptAudio":"a7","choices":[{"label":"d","audio":"a8"},{"label":"o","audio":"a9"},{"label":"g","audio":"a10"},{"label":"m","audio":"a5"}],"introAudio":["a7","a6"],"answerAudio":["a6","a9"]},{"id":"isolation-2","word":"bed","position":2,"target":"d","wordAudio":"a11","promptAudio":"a12","choices":[{"label":"b","audio":"a13"},{"label":"e","audio":"a14"},{"label":"d","audio":"a8"},{"label":"m","audio":"a5"}],"introAudio":["a12","a11"],"answerAudio":["a11","a8"]},{"id":"isolation-3","word":"cup","position":0,"target":"k","wordAudio":"a15","promptAudio":"a1","choices":[{"label":"k","audio":"a2"},{"label":"u","audio":"a16"},{"label":"p","audio":"a17"},{"label":"m","audio":"a5"}],"introAudio":["a1","a15"],"answerAudio":["a15","a2"]},{"id":"isolation-4","word":"bug","position":1,"target":"u","wordAudio":"a18","promptAudio":"a7","choices":[{"label":"b","audio":"a13"},{"label":"u","audio":"a16"},{"label":"g","audio":"a10"},{"label":"m","audio":"a5"}],"introAudio":["a7","a18"],"answerAudio":["a18","a16"]}]},{"activity":"blending","items":[{"id":"blending-0","word":"cat","target":"cat","instruction":"a19","question":"a20","sounds":["a2","a3","a4"],"choices":[{"text":"cat","audio":"a0"},{"text":"dog","audio":"a6"},{"text":"bug","audio":"a18"},{"text":"bed","audio":"a11"}],"answerAudio":["a0"]},{"id":"blending-1","word":"dog","target":"dog","instruction":"a19","question":"a20","sounds":["a8","a9","a10"],"choices":[{"text":"dog","audio":"a6"},{"text":"bed","audio":"a11"},{"text":"cat","audio":"a0"},{"text":"cup","audio":"a15"}],"answerAudio":["a6"]},{"id":"blending-2","word":"bed","target":"bed","instruction":"a19","question":"a20","sounds":["a13","a14","a8"],"choices":[{"text":"bed","audio":"a11"},{"text":"cup","audio":"a15"},{"text":"dog","audio":"a6"},{"text":"bug","audio":"a18"}],"answerAudio":["a11"]},{"id":"blending-3","word":"cup","target":"cup","instruction":"a19","question":"a20","sounds":["a2","a16","a17"],"choices":[{"text":"cup","audio":"a15"},{"text":"bug","audio":"a18"},{"text":"bed","audio":"a11"},{"text":"cat","audio":"a0"}],"answerAudio":["a15"]},{"id":"blending-4","word":"bug","target":"bug","instruction":"a19","question":"a20","sounds":["a13","a16","a10"],"choices":[{"text":"bug","audio":"a18"},{"text":"cat","audio":"a0"},{"text":"cup","audio":"a15"},{"text":"dog","audio":"a6"}],"answerAudio":["a18"]}]},{"activity":"counting","items":[{"id":"counting-0","word":"cat","target":"3","wordAudio":"a0","promptAudio":"a21","introAudio":["a21","a0"],"answerAudio":["a0"]},{"id":"counting-1","word":"dog","target":"3","wordAudio":"a6","promptAudio":"a21","introAudio":["a21","a6"],"answerAudio":["a6"]},{"id":"counting-2","word":"bed","target":"3","wordAudio":"a11","promptAudio":"a21","introAudio":["a21","a11"],"answerAudio":["a11"]},{"id":"counting-3","word":"cup","target":"3","wordAudio":"a15","promptAudio":"a21","introAudio":["a21","a15"],"answerAudio":["a15"]},{"id":"counting-4","word":"bug","target":"3","wordAudio":"a18","promptAudio":"a21","introAudio":["a21","a18"],"answerAudio":["a18"]}]}],"feedback":{"correct":["a22","a23","a24"],"retry":"a25"},"audio":{"a0":"data:audio/wav;base64,","a1":"data:audio/wav;base64,","a2":"data:audio/wav;base64,","a3":"data:audio/wav;base64,","a4":"data:audio/wav;base64,","a5":"data:audio/wav;base64,","a6":"data:audio/wav;base64,","a7":"data:audio/wav;base64,","a8":"data:audio/wav;base64,","a9":"data:audio/wav;base64,","a10":"data:audio/wav;base64,","a11":"data:audio/wav;base64,","a12":"data:audio/wav;base64,","a13":"data:audio/wav;base64,","a14":"data:audio/wav;base64,","a15":"data:audio/wav;base64,","a16":"data:audio/wav;base64,","a17":"data:audio/wav;base64,","a18":"data:audio/wav;base64,","a19":"data:audio/wav;base64,","a20":"data:audio/wav;base64,","a21":"data:audio/wav;base64,","a22":"data:audio/wav;base64,","a23":"data:audio/wav;base64,","a24":"data:audio/wav;base64,","a25":"data:audio/wav;base64,"},"images":{},"submit":null};
+var labels={"lang":"en","title":"Word Sounds practice","intro":"Listen carefully and answer each question. You can hear everything again as many times as you like.","name_label":"Your name or initials (optional)","start":"Start","continue":"Continue where I left off","start_over":"Start over","item_of":"{activity}: {n} of {total}","hear_word":"Hear the word","hear_question":"Hear the question","listen_sound":"Listen to sound {n}","choose_sound":"Choose sound {n}","choose_label":"Choose {sound}","sound_n":"Sound {n}","correct":"Yes! That is right.","try_again":"Not quite. Listen again and try once more.","missed":"Here is the answer. Listen.","next":"Next","finish":"See my results","done_title":"You finished!","done_summary":"Right on the first try: {first} of {total}.","done_retry":"Right after trying again: {retry}.","save":"Save my work as a file","send":"Send my work to my teacher","sending":"Sending...","sent":"Sent. Your teacher's mailbox received it ({receipt}).","send_failed":"It did not send. Save your work as a file instead, and give the file to your teacher.","saved_device":"Your work is kept on this device until you start over.","saved_device_off":"This browser cannot keep your work. Save it as a file before you close this page.","saved_file":"Saved as {file}. Give this file to your teacher.","not_sent":"Saving does not send anything. Your teacher gets your work when you give them the file.","send_note":"Sending goes only to your teacher's school mailbox.","send_closed":"Sending closed on {date}. Save your work as a file and give it to your teacher.","practice_again":"Practice again","practice_again_confirm":"Your results have not been sent or saved as a file yet. If you start over, they will be lost.","keep_results":"Keep my results","name_prompt":"Add your name so your teacher knows these are yours.","name_prompt_add":"Add my name","name_prompt_skip":"Continue without a name","copy_results":"This browser cannot save files. Copy all of this text and send it to your teacher.","no_script":"If the practice does not start, download this file and open it in Chrome, Edge or Safari.","audio_missing":"This sound could not play.","ordinals":["first","second","third","fourth","fifth","sixth","seventh","eighth","ninth","tenth","eleventh","twelfth"],"isolation_question":"What is the {position} sound in the word?","isolation_correct":"Yes! That is the {position} sound.","isolation_missed":"The {position} sound is {sound}. Listen.","isolation_missed_no_letters":"Here is the {position} sound. Listen.","isolation_title":"Find Sounds","blending_prompt":"Blend these sounds together!","blending_question":"Which word did you hear?","blending_hear_sounds":"Hear the sounds","blending_play_all":"Play all the words","blending_option_n":"Option {n}","blending_listen":"Listen","blending_listen_option":"Listen to option {n}","blending_listen_word":"Listen to {word}","blending_choose_option":"Choose option {n}","blending_choose_word":"Choose {word}","blending_correct":"Yes! You blended the sounds.","blending_missed":"The word was {word}. Listen.","blending_missed_no_letters":"Here is the word. Listen.","blending_answer_mark":"(the answer)","blending_title":"Blend Sounds","counting_question":"How many sounds do you hear in the word?","counting_sounds_one":"1 sound","counting_sounds_n":"{n} sounds","counting_sounds_more":"11 or more sounds","counting_correct":"Yes! The word has {count}.","counting_missed":"The word has {count}. Listen to it again.","counting_title":"Sound Counting"};
+var matches=function soundAnswerMatches(answer, expected) {
+    var EQUIV = { oy: 'oi', au: 'aw', ew: 'oo', oe: 'oa', ai: 'ay', ea: 'ee', ir: 'er', ur: 'er', igh: 'ie', ou: 'ow', ck: 'k', ph: 'f', wr: 'r', kn: 'n' };
+    var a = String(answer == null ? '' : answer).toLowerCase().trim();
+    var e = String(expected == null ? '' : expected).toLowerCase().trim();
+    if (!e) return false;
+    return a === e || (EQUIV[a] || a) === (EQUIV[e] || e);
+  };
+var renders={"isolation":function (item, ctx) {
+      var position = ctx.ordinal(item.position);
+      var cards = [];
+      var list = ctx.el('ul', { class: 'choices' });
+      item.choices.forEach(function (choice, i) {
+        var n = i + 1;
+        var shown = ctx.showLetters ? '/' + choice.label + '/' : ctx.fmt(ctx.L.sound_n, { n: n });
+        var listen = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(ctx.L.listen_sound, { n: n }),
+          on: { click: function () { ctx.support('soundListens'); ctx.play(choice.audio); } } }, ['\u25B6 ', ctx.fmt(ctx.L.sound_n, { n: n })]);
+        var choose = ctx.el('button', { type: 'button', class: 'primary',
+          'aria-label': ctx.showLetters ? ctx.fmt(ctx.L.choose_label, { sound: shown }) : ctx.fmt(ctx.L.choose_sound, { n: n }),
+          on: { click: function () {
+            if (ctx.isDone() || choose.getAttribute('aria-disabled') === 'true') return;
+            var outcome = ctx.answer(choice.label, ctx.matches(choice.label, item.target), {
+              correctText: ctx.fmt(ctx.L.isolation_correct, { position: position }),
+              missedText: ctx.showLetters ? ctx.fmt(ctx.L.isolation_missed, { position: position, sound: '/' + item.target + '/' })
+                : ctx.fmt(ctx.L.isolation_missed_no_letters, { position: position }),
+            });
+            if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
+          } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: shown }) : ctx.fmt(ctx.L.choose_sound, { n: n })]);
+        var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
+        cards.push({ box: box, choose: choose, label: choice.label });
+        list.appendChild(box);
+      });
+      ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.fmt(ctx.L.isolation_question, { position: position }) }));
+      ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
+        ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: ctx.L.hear_question }),
+        ctx.el('button', { type: 'button', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
+      ]));
+      ctx.root.appendChild(list);
+      return {
+        // Called once the item is over (right, or missed twice): lock it and
+        // show which choice was right.
+        reveal: function () {
+          cards.forEach(function (c) { c.choose.setAttribute('aria-disabled', 'true'); if (c.label === item.target) c.box.classList.add('right'); });
+        },
+      };
+    },
+"blending":function (item, ctx) {
+        var win = ctx.root.ownerDocument.defaultView;
+        var cards = [];
+        var token = 0;
+        var mark = function (index) {
+          cards.forEach(function (c, i) { c.box.style.outline = i === index ? '4px solid var(--accent)' : ''; c.box.style.outlineOffset = i === index ? '2px' : ''; });
+        };
+        // Play a sequence with the app's pauses; any tap, answer or new screen
+        // ends it (a stopped clip never resolves, and the token moves on).
+        var run = function (steps) {
+          var mine = ++token;
+          var i = 0;
+          var step = function () {
+            if (mine !== token || !ctx.root.isConnected) return;
+            if (i >= steps.length) { mark(-1); return; }
+            var s = steps[i++];
+            mark(s.hi == null ? -1 : s.hi);
+            ctx.play(s.id).then(function () {
+              if (mine === token) win.setTimeout(step, s.gap || 0);
+            });
+          };
+          step();
+        };
+        var halt = function () { token++; mark(-1); };
+        var soundSteps = function () {
+          return item.sounds.map(function (id) { return { id: id, gap: 500 }; }).concat([{ id: item.question, gap: 100 }]);
+        };
+        var optionSteps = function (gap) {
+          return item.choices.map(function (c, i) { return { id: c.audio, gap: gap, hi: i }; });
+        };
+        var list = ctx.el('ul', { class: 'choices' });
+        item.choices.forEach(function (choice, i) {
+          var n = i + 1;
+          var shownWord = choice.text;
+          var listen = ctx.el('button', { type: 'button',
+            'aria-label': ctx.showLetters ? ctx.fmt(ctx.L.blending_listen_word, { word: shownWord }) : ctx.fmt(ctx.L.blending_listen_option, { n: n }),
+            on: { click: function () { halt(); ctx.support('optionListens'); ctx.play(choice.audio); } } }, ['▶ ', ctx.L.blending_listen]);
+          var choose = ctx.el('button', { type: 'button', class: 'primary',
+            'aria-label': ctx.showLetters ? ctx.fmt(ctx.L.blending_choose_word, { word: shownWord }) : ctx.fmt(ctx.L.blending_choose_option, { n: n }),
+            on: { click: function () {
+              if (ctx.isDone() || choose.getAttribute('aria-disabled') === 'true') return;
+              halt();
+              // word_sounds_module.js:19517-19519: case-insensitive, exact otherwise.
+              var right = String(choice.text).toLowerCase() === String(item.target).toLowerCase();
+              var outcome = ctx.answer(choice.text, right, {
+                correctText: ctx.L.blending_correct,
+                missedText: ctx.showLetters ? ctx.fmt(ctx.L.blending_missed, { word: item.target }) : ctx.L.blending_missed_no_letters,
+              });
+              if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
+            } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: shownWord }) : ctx.fmt(ctx.L.blending_option_n, { n: n })]);
+          var box = ctx.el('li', { class: 'choice' }, [choose, listen]);
+          cards.push({ box: box, choose: choose, right: String(choice.text).toLowerCase() === String(item.target).toLowerCase() });
+          list.appendChild(box);
+        });
+        ctx.root.appendChild(ctx.el('p', { text: ctx.L.blending_prompt }));
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.blending_question }));
+        ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
+          ctx.el('button', { type: 'button', on: { click: function () { ctx.support('soundReplays'); run(soundSteps()); } }, text: ctx.L.blending_hear_sounds }),
+          ctx.el('button', { type: 'button', on: { click: function () { ctx.support('optionReplays'); run(optionSteps(600)); } }, text: ctx.L.blending_play_all }),
+        ]));
+        ctx.root.appendChild(list);
+        // Opening sequence (word_sounds_module.js:16790-16845): instruction, each
+        // sound, "Which word did you hear?", then every choice in turn.
+        if (!ctx.isDone()) {
+          run([{ id: item.instruction, gap: 200 }].concat(soundSteps(), optionSteps(200)));
+        }
+        return {
+          reveal: function () {
+            halt();
+            cards.forEach(function (c) {
+              c.choose.setAttribute('aria-disabled', 'true');
+              if (c.right && !c.box.classList.contains('right')) {
+                c.box.classList.add('right');
+                c.choose.setAttribute('aria-label', c.choose.getAttribute('aria-label') + ' ' + ctx.L.blending_answer_mark);
+              }
+            });
+          },
+        };
+      },
+"counting":function (item, ctx) {
+        var values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11+'];
+        var countText = function (v) {
+          return v === '11+' ? ctx.L.counting_sounds_more : v === '1' ? ctx.L.counting_sounds_one : ctx.fmt(ctx.L.counting_sounds_n, { n: v });
+        };
+        var cards = [];
+        var list = ctx.el('ul', { class: 'counting-numbers', style: 'display:flex;flex-wrap:wrap;gap:10px;list-style:none;padding:0;margin:16px 0' });
+        values.forEach(function (v) {
+          var button = ctx.el('button', { type: 'button', class: 'primary', 'aria-label': countText(v),
+            style: 'min-width:64px;min-height:64px;font-size:1.4rem;font-weight:700',
+            on: { click: function () {
+              if (ctx.isDone() || button.getAttribute('aria-disabled') === 'true') return;
+              var outcome = ctx.answer(v, v === item.target, {
+                correctText: ctx.fmt(ctx.L.counting_correct, { count: countText(item.target) }),
+                missedText: ctx.fmt(ctx.L.counting_missed, { count: countText(item.target) }),
+              });
+              if (outcome !== 'correct') { box.classList.add('tried'); button.setAttribute('aria-disabled', 'true'); }
+            } } }, [v]);
+          var box = ctx.el('li', { class: 'choice solo', style: 'padding:6px' }, [button]);
+          cards.push({ box: box, button: button, value: v });
+          list.appendChild(box);
+        });
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.counting_question }));
+        ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
+          ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: ctx.L.hear_question }),
+          ctx.el('button', { type: 'button', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
+        ]));
+        ctx.root.appendChild(list);
+        return {
+          reveal: function () {
+            cards.forEach(function (c) { c.button.setAttribute('aria-disabled', 'true'); if (c.value === item.target) c.box.classList.add('right'); });
+          },
+        };
+      }};
+(function takeHomeShell(doc, win, lesson, L, matches, renders) {
+    var storageKey = 'alloflow-take-home:' + lesson.lessonId + ':' + lesson.revision;
+    var main = doc.getElementById('app');
+    var live = doc.getElementById('live');
+    var storeOk = true;
+    var state = null;
+    var audioEl = null;
+    var screenId = 0;
+    var namePrompted = false;
+    var items = [];
+    lesson.blocks.forEach(function (block) { block.items.forEach(function (item, i) { items.push({ activity: block.activity, item: item, n: i + 1, total: block.items.length }); }); });
+    var fmt = function (template, params) {
+      return String(template || '').replace(/\{(\w+)\}/g, function (m, k) { return params && params[k] != null ? params[k] : m; });
+    };
+    var announce = function (text) { live.textContent = ''; win.setTimeout(function () { live.textContent = text; }, 30); };
+    var el = function (tag, attrs, children) {
+      var node = doc.createElement(tag);
+      Object.keys(attrs || {}).forEach(function (k) {
+        if (k === 'text') node.textContent = attrs[k];
+        else if (k === 'on') Object.keys(attrs.on).forEach(function (ev) { node.addEventListener(ev, attrs.on[ev]); });
+        else if (attrs[k] !== false && attrs[k] != null) node.setAttribute(k, attrs[k] === true ? '' : attrs[k]);
+      });
+      (children || []).forEach(function (c) { if (c) node.appendChild(typeof c === 'string' ? doc.createTextNode(c) : c); });
+      return node;
+    };
+    var fresh = function () {
+      return { name: '', index: 0, startedAt: null, finishedAt: null, savedFile: null, sent: null,
+        items: items.map(function (e) { return { itemId: e.item.id, activity: e.activity, responses: [], attempts: 0, firstTry: false, correct: false, done: false, supports: {} }; }) };
+    };
+    var save = function () {
+      try { win.localStorage.setItem(storageKey, JSON.stringify(state)); storeOk = true; } catch (_) { storeOk = false; }
+    };
+    var load = function () {
+      try {
+        var raw = win.localStorage.getItem(storageKey);
+        var parsed = raw && JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.items) && parsed.items.length === items.length) return parsed;
+      } catch (_) { storeOk = false; }
+      return null;
+    };
+    // ONE audio element for every clip: iPad/iPhone Safari lets an element play
+    // without a tap only after a tap has played it once, so a new element per
+    // clip could stay silent after the first clip of a sequence. A clip cut off
+    // by another (playToken moved on) never settles.
+    var playToken = 0;
+    var stop = function () { playToken++; if (audioEl) { try { audioEl.pause(); } catch (_) {} } };
+    // rate: optional playback speed (e.g. 0.5 for "Hear it slowly").
+    var play = function (id, rate) {
+      stop();
+      var src = id && lesson.audio[id];
+      if (!src) return Promise.resolve(false);
+      var mine = playToken;
+      if (!audioEl) { try { audioEl = new win.Audio(); } catch (_) { return Promise.resolve(false); } }
+      var a = audioEl;
+      return new Promise(function (resolve) {
+        var settle = function (ok) { if (mine !== playToken) return; a.onended = a.onerror = null; resolve(ok); };
+        a.onended = function () { settle(true); };
+        a.onerror = function () { settle(false); };
+        var speed = rate > 0 ? rate : 1;
+        var p;
+        try {
+          a.src = src;
+          try { a.defaultPlaybackRate = speed; a.playbackRate = speed; } catch (_) {}
+          p = a.play();
+        } catch (_) { settle(false); return; }
+        if (p && p.catch) p.catch(function () { settle(false); });
+      }).then(function (ok) {
+        if (!ok && mine === playToken) announce(L.audio_missing);
+        return ok;
+      });
+    };
+    // A sequence belongs to the screen that started it: moving on cancels it.
+    // Its first clip starts at once, inside the tap that asked for it (Safari).
+    var playAll = function (ids) {
+      var mine = screenId;
+      var step = function (id) { return mine === screenId && id ? play(id) : false; };
+      var list = ids || [];
+      if (!list.length) return Promise.resolve(true);
+      return list.slice(1).reduce(function (chain, id) {
+        return chain.then(function () { return step(id); });
+      }, Promise.resolve(step(list[0])));
+    };
+    var keyItem = null;
+    // Keyboard on an item screen: 1-9 picks that answer choice (the answer
+    // button of the nth li.choice the adapter drew), R plays the question again.
+    // Never while typing in a field, and never with Ctrl/Alt/Cmd.
+    doc.addEventListener('keydown', function (e) {
+      if (!keyItem || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+      var t = e.target, tag = t && t.tagName ? String(t.tagName).toUpperCase() : '';
+      if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || (t && t.isContentEditable)) return;
+      var key = String(e.key || ''), code = String(e.code || '');
+      var digit = /^[1-9]$/.test(key) ? key : (/^(?:Digit|Numpad)([1-9])$/.exec(code) || [])[1];
+      if (digit) {
+        var box = keyItem.area.querySelectorAll('li.choice')[Number(digit) - 1];
+        var button = box && (box.querySelector('button.primary') || box.querySelector('button'));
+        if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
+        e.preventDefault();
+        button.click();
+      } else if (key === 'r' || key === 'R' || (code === 'KeyR' && !/^[a-z]$/i.test(key))) {
+        var it = keyItem.item;
+        var ids = it.introAudio && it.introAudio.length ? it.introAudio : [it.promptAudio || it.prompt];
+        if (!ids.filter(Boolean).length) return;
+        e.preventDefault();
+        keyItem.replay();
+        playAll(ids);
+      }
+    });
+    var screen = function (heading, nodes, hideHeading) {
+      screenId++;
+      stop();
+      keyItem = null;
+      main.textContent = '';
+      // hideHeading: the page title already shows it; screen readers still hear it.
+      var h = el('h2', hideHeading ? { tabindex: '-1', class: 'sr', text: heading } : { tabindex: '-1', text: heading });
+      main.appendChild(h);
+      nodes.forEach(function (n) { if (n) main.appendChild(n); });
+      h.focus();
+    };
+    var statusLine = function (text, tone) { return el('p', { class: 'status' + (tone ? ' ' + tone : ''), role: 'status', text: text }); };
+    var activityTitle = function (id) { return L[id + '_title'] || (lesson.activityTitles && lesson.activityTitles[id]) || id; };
+
+    var renderStart = function () {
+      var prior = load();
+      var nameInput = el('input', { id: 'learner-name', type: 'text', autocomplete: 'off', maxlength: '60' });
+      var resumable = prior && prior.index > 0 && !prior.finishedAt;
+      // No name: ask once (per opening of the file), gently; a name stays optional.
+      var promptKeep = false;
+      var promptText = el('p', { id: 'name-prompt-text', tabindex: '-1', style: 'margin:0 0 8px', text: L.name_prompt });
+      var namePrompt = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'name-prompt-text', hidden: true, 'data-name-prompt': '' }, [
+        promptText,
+        el('div', { class: 'row' }, [
+          el('button', { type: 'button', 'data-name-prompt-add': '', on: { click: function () { namePrompt.hidden = true; nameInput.focus(); } }, text: L.name_prompt_add }),
+          el('button', { type: 'button', 'data-name-prompt-skip': '', on: { click: function () { begin(promptKeep); } }, text: L.name_prompt_skip }),
+        ]),
+      ]);
+      var begin = function (keep) {
+        var typed = String(nameInput.value || (keep && prior ? prior.name : '') || '').trim();
+        if (!typed && !namePrompted) {
+          namePrompted = true; promptKeep = keep;
+          namePrompt.hidden = false; promptText.focus();
+          return;
+        }
+        state = keep && prior ? prior : fresh();
+        state.name = typed.slice(0, 60);
+        if (!state.startedAt) state.startedAt = new Date().toISOString();
+        save();
+        renderItem();
+      };
+      var buttons = [el('button', { class: 'primary', type: 'button', on: { click: function () { begin(false); } }, text: resumable ? L.start_over : L.start })];
+      if (resumable) buttons.unshift(el('button', { class: 'primary', type: 'button', on: { click: function () { begin(true); } }, text: L.continue }));
+      if (prior && prior.name) nameInput.value = prior.name;
+      screen(lesson.title, [
+        el('div', { class: 'card' }, [
+          el('p', { text: L.intro }),
+          el('label', { for: 'learner-name', text: L.name_label }), nameInput, namePrompt,
+          el('div', { class: 'row', style: 'margin-top:16px' }, buttons),
+        ]),
+      ], true);
+    };
+
+    var renderItem = function () {
+      if (state.index >= items.length) { renderFinish(); return; }
+      var entry = items[state.index];
+      var item = entry.item;
+      var rec = state.items[state.index];
+      var render = renders[entry.activity];
+      var feedback = statusLine('', '');
+      var area = el('div', {});
+      var handle = null;
+      var nextButton = el('button', { class: 'primary', type: 'button', hidden: true, on: { click: function () { state.index++; save(); renderItem(); } },
+        text: state.index === items.length - 1 ? L.finish : L.next });
+      var finishPractice = function () {
+        rec.done = true; rec.correct = false; rec.firstTry = false;
+        save();
+        if (handle && typeof handle.reveal === 'function') { try { handle.reveal(null); } catch (_) {} }
+        nextButton.hidden = false;
+        nextButton.focus();
+      };
+      var finishItem = function (correct) {
+        rec.done = true; rec.correct = correct; rec.firstTry = correct && rec.attempts === 1;
+        save();
+        if (handle && typeof handle.reveal === 'function') { try { handle.reveal(correct); } catch (_) {} }
+        nextButton.hidden = false;
+        nextButton.focus();
+      };
+      var ctx = {
+        root: area, el: el, fmt: fmt, L: L, item: item, matches: matches, showLetters: !!lesson.showLetters,
+        play: play, playAll: playAll, stop: stop, announce: announce,
+        image: function (id) { return (id && lesson.images && lesson.images[id]) || null; },
+        ordinal: function (p) { return (L.ordinals && L.ordinals[p]) || String(p + 1); },
+        support: function (name) { rec.supports[name] = (rec.supports[name] || 0) + 1; save(); },
+        isDone: function () { return rec.done; },
+        attempts: function () { return rec.attempts; },
+        // Practice that is never scored (Letter Trace): 'traced' or 'skipped'.
+        practice: function (status, text) {
+          if (rec.done) return;
+          rec.attempts++;
+          rec.responses.push(status === 'skipped' ? 'skipped' : 'traced');
+          rec.practice = status === 'skipped' ? 'skipped' : 'traced';
+          feedback.className = 'status ok'; feedback.textContent = text || '';
+          finishPractice();
+        },
+        // Grade one response. Returns 'correct', 'retry' (try again) or 'missed'
+        // (attempts used up). The shell handles feedback, sounds and Next.
+        answer: function (response, isCorrect, options) {
+          if (rec.done) return rec.correct ? 'correct' : 'missed';
+          var o = options || {};
+          var max = Number(item.maxAttempts) > 0 ? Number(item.maxAttempts) : 2;
+          rec.attempts++;
+          rec.responses.push(typeof response === 'string' ? response.slice(0, 80) : JSON.stringify(response).slice(0, 200));
+          if (isCorrect) {
+            feedback.className = 'status ok'; feedback.textContent = o.correctText || L.correct;
+            var praise = lesson.feedback.correct;
+            finishItem(true);
+            play(praise.length ? praise[state.index % praise.length] : null);
+            return 'correct';
+          }
+          if (rec.attempts < max) {
+            feedback.className = 'status warn'; feedback.textContent = o.retryText || L.try_again;
+            save();
+            play(lesson.feedback.retry);
+            return 'retry';
+          }
+          feedback.className = 'status warn'; feedback.textContent = o.missedText || L.missed;
+          finishItem(false);
+          playAll(item.answerAudio || []);
+          return 'missed';
+        },
+      };
+      screen(fmt(L.item_of, { activity: activityTitle(entry.activity), n: entry.n, total: entry.total }), [
+        el('div', { class: 'card' }, [area, feedback, nextButton]),
+      ]);
+      keyItem = { area: area, item: item, replay: function () { ctx.support('questionReplays'); } };
+      try { handle = render(item, ctx) || null; } catch (err) { area.appendChild(statusLine(L.audio_missing, 'warn')); }
+      // Reopened on an answered item: show its outcome, do not ask again.
+      if (rec.done) { if (rec.practice) finishPractice(); else finishItem(rec.correct); }
+      else playAll(item.introAudio || []);
+    };
+
+    var resultFile = function () {
+      return {
+        kind: 'alloflow-take-home-result', schemaVersion: 2, player: lesson.player,
+        lessonId: lesson.lessonId, revision: lesson.revision, lessonTitle: lesson.title, activityTitles: lesson.activityTitles || {},
+        learnerName: state.name, startedAt: state.startedAt, finishedAt: state.finishedAt, timesAreFromTheLearnerDevice: true,
+        items: items.map(function (e, i) {
+          var r = state.items[i];
+          return { itemId: e.item.id, activity: e.activity, word: e.item.word, target: e.item.target != null ? e.item.target : null,
+            responses: r.responses.slice(), attempts: r.attempts, firstTry: r.firstTry, correct: r.correct, done: r.done, supports: r.supports,
+            practice: r.practice || null };
+        }),
+        summary: summarize(),
+      };
+    };
+    var summarize = function () {
+      var s = { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0, practised: 0 };
+      state.items.forEach(function (r, i) {
+        // Practice items (Letter Trace) are counted apart and never scored.
+        if (r.practice || (items[i] && items[i].activity === 'letter_tracing')) { if (r.done) s.practised++; return; }
+        s.items++;
+        if (!r.done) return; s.done++; if (r.firstTry) s.firstTry++; else if (r.correct) s.afterRetry++; else s.missed++;
+      });
+      return s;
+    };
+    // Mailbox send: the endpoint, pack capability (id + k) and chunked
+    // `putsubmission` protocol a hosted homework link uses. Plain-text POST,
+    // so there is no preflight. The submission id is kept per attempt, so a
+    // retry is recognised by the mailbox instead of filed twice.
+    var uuid = function () {
+      try { if (win.crypto && win.crypto.randomUUID) return win.crypto.randomUUID(); } catch (_) {}
+      var h = '0123456789abcdef', s = '';
+      for (var i = 0; i < 36; i++) s += (i === 8 || i === 13 || i === 18 || i === 23) ? '-' : h[Math.floor(Math.random() * 16)];
+      return s;
+    };
+    var post = function (url, payload) {
+      return win.fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) { if (!data || data.ok !== true) throw new Error((data && data.e) || 'not ok'); return data; });
+    };
+    var send = function () {
+      var target = lesson.submit;
+      if (!state.sendSid) { state.sendSid = 'SUB-' + uuid(); save(); }
+      var payload = JSON.stringify({ kind: 'alloflow-take-home-submission', schemaVersion: 1, studentName: String(state.name || 'Student').slice(0, 80),
+        submissionDate: state.finishedAt, takeHomeResult: resultFile() });
+      var parts = [];
+      for (var at = 0; at < payload.length; at += 60000) parts.push(payload.slice(at, at + 60000));
+      return parts.reduce(function (chain, data, i) {
+        return chain.then(function () { return post(target.url, { a: 'putsubmission', id: target.packId, k: target.secret, sid: state.sendSid, part: i + 1, of: parts.length, data: data }); });
+      }, Promise.resolve(null));
+    };
+    var renderFinish = function () {
+      if (!state.finishedAt) { state.finishedAt = new Date().toISOString(); save(); }
+      var s = summarize();
+      var fileStatus = statusLine(state.sent ? fmt(L.sent, { receipt: state.sent }) : state.savedFile ? fmt(L.saved_file, { file: state.savedFile }) : (storeOk ? L.saved_device : L.saved_device_off),
+        state.sent || state.savedFile ? 'ok' : (storeOk ? '' : 'warn'));
+      var notName = /[^a-z0-9]+/gi;
+      try { notName = new RegExp('[^\\p{L}\\p{M}\\p{N}]+', 'gu'); } catch (_) {}
+      var safe = function (v) { return String(v || '').replace(notName, '-').replace(/^-+|-+$/g, '').slice(0, 40); };
+      // Older iPad Safari (before iOS 13) cannot download: show the results as
+      // text to copy instead of a button that does nothing.
+      var copyBox = el('div', { hidden: true, 'data-results-text': '' });
+      var saveButton = el('button', { class: state.sent ? '' : 'primary', type: 'button', on: { click: function () {
+        var name = ['word-sounds', safe(lesson.title), safe(state.name), 'results'].filter(Boolean).join('-') + '.json';
+        var json = JSON.stringify(resultFile(), null, 2);
+        var a = el('a', { download: name });
+        if (!('download' in a) || !win.Blob || !win.URL || !win.URL.createObjectURL) {
+          var text = el('textarea', { id: 'results-text', readonly: true, rows: '8', style: 'width:100%;font:inherit;font-size:.8rem;border-radius:10px', on: { focus: function () { try { text.select(); } catch (_) {} } } });
+          text.value = json;
+          copyBox.textContent = '';
+          copyBox.appendChild(el('label', { for: 'results-text', text: L.copy_results }));
+          copyBox.appendChild(text);
+          copyBox.hidden = false;
+          text.focus();
+          return;
+        }
+        var url = win.URL.createObjectURL(new win.Blob([json], { type: 'application/json' }));
+        a.setAttribute('href', url);
+        doc.body.appendChild(a); a.click(); a.remove();
+        win.setTimeout(function () { win.URL.revokeObjectURL(url); }, 60000);
+        state.savedFile = name; save();
+        if (!state.sent) { fileStatus.className = 'status ok'; fileStatus.textContent = fmt(L.saved_file, { file: name }); announce(fileStatus.textContent); }
+      } }, text: L.save });
+      var sendButton = null;
+      // The mailbox refuses sends after the teacher's closing date, so the
+      // button goes away then instead of failing.
+      var closesAt = lesson.submit ? Date.parse(lesson.submit.expiresAt || '') : NaN;
+      var sendClosed = !state.sent && isFinite(closesAt) && closesAt <= Date.now();
+      var closedDate = '';
+      if (sendClosed) {
+        try { closedDate = new Date(closesAt).toLocaleDateString(lesson.language || undefined); }
+        catch (_) { closedDate = new Date(closesAt).toISOString().slice(0, 10); }
+      }
+      var closedNote = sendClosed ? fmt(L.send_closed, { date: closedDate }) : '';
+      if (lesson.submit && lesson.submit.url && win.fetch && !sendClosed) {
+        sendButton = el('button', { class: 'primary', type: 'button', on: { click: function () {
+          if (sendButton.getAttribute('aria-disabled') === 'true') return;
+          sendButton.setAttribute('aria-disabled', 'true');
+          fileStatus.className = 'status'; fileStatus.textContent = L.sending; announce(L.sending);
+          send().then(function (data) {
+            state.sent = String((data && data.filename) || 'ok').slice(0, 120); save();
+            fileStatus.className = 'status ok'; fileStatus.textContent = fmt(L.sent, { receipt: state.sent }); announce(fileStatus.textContent);
+          }, function () {
+            sendButton.removeAttribute('aria-disabled');
+            fileStatus.className = 'status warn'; fileStatus.textContent = L.send_failed; announce(L.send_failed);
+          });
+        } }, text: L.send });
+        if (state.sent) sendButton.setAttribute('aria-disabled', 'true');
+      }
+      var startOver = function () {
+        try { win.localStorage.removeItem(storageKey); } catch (_) {}
+        state = null; renderStart();
+      };
+      // Practice again throws this attempt away: ask first unless it was sent
+      // or saved as a file. An in-page panel (window.confirm is unreliable in
+      // iPad Safari and in file previews).
+      var confirmText = el('p', { id: 'practice-again-text', tabindex: '-1', style: 'margin:0 0 8px', text: L.practice_again_confirm });
+      var keepButton = el('button', { type: 'button', class: 'primary', 'data-practice-keep': '', on: { click: function () { confirmBox.hidden = true; againButton.focus(); } }, text: L.keep_results });
+      var confirmBox = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'practice-again-text', hidden: true, 'data-practice-confirm': '',
+        on: { keydown: function (e) { if (e.key === 'Escape' || e.key === 'Esc') { e.preventDefault(); keepButton.click(); } } } }, [
+        confirmText,
+        el('div', { class: 'row' }, [keepButton, el('button', { type: 'button', 'data-practice-start-over': '', on: { click: startOver }, text: L.start_over })]),
+      ]);
+      var againButton = el('button', { type: 'button', 'data-practice-again': '', on: { click: function () {
+        if (state.sent || state.savedFile) { startOver(); return; }
+        confirmBox.hidden = false; confirmText.focus();
+      } }, text: L.practice_again });
+      screen(L.done_title, [
+        el('div', { class: 'card' }, [
+          el('p', { class: 'letters', text: fmt(L.done_summary, { first: s.firstTry, total: s.items }) }),
+          s.afterRetry ? el('p', { text: fmt(L.done_retry, { retry: s.afterRetry }) }) : null,
+          el('div', { class: 'row' }, [sendButton, saveButton, againButton]),
+          confirmBox,
+          fileStatus,
+          copyBox,
+          el('p', { class: 'muted', text: closedNote || (sendButton ? L.send_note : L.not_sent) }),
+        ]),
+      ]);
+    };
+    renderStart();
+    return { results: function () { return state && resultFile(); } };
+  })(document,window,lesson,labels,matches,renders);
+})();
+</script></body></html>

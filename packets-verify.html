@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<title>Check a file</title>
+<meta name="description" content="See what a practice file or a check says about itself and what its code can reach, before it goes to students. The file is read as text in this browser and is not uploaded. Runs without AI. No accounts.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-verify.css">
+<script src="packets-page.js" defer></script>
+<script src="packets_verify_core.js" defer></script>
+<script src="packets_samples/sample_practice.js" defer></script>
+<script src="packets_samples/sample_check.js" defer></script>
+<script src="packets_samples/sample_changed.js" defer></script>
+<script src="packets-verify.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <a class="top-link" href="packets-it.html">For school IT</a>
+  </div>
+</header>
+
+<details class="proof">
+  <summary class="wrap">
+    <span class="proof-line">This page runs without AI. No account. The file you choose is read in this browser and is not uploaded.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap proof-body">
+    <ul>
+      <li>The file you choose is read with the browser's own file reader. What is in it stays in this tab.</li>
+      <li>The file is read as text. It is never run, and nothing in it is added to this page as markup: what you see from the file is shown as plain text.</li>
+      <li>Nothing is sent. This page cannot connect to anything: the rule below tells the browser to refuse every connection, and the browser enforces it.</li>
+      <li>This page runs without AI. It reads, counts and compares what is in the file, and nothing else.</li>
+      <li>Nothing is kept on this device. There are no cookies, there is no storage, and there is nothing to sign in to. Closing the tab clears the page.</li>
+      <li>This page loads ten files, all from this site: the page itself, two stylesheets (<code>packets.css</code>, <code>packets-verify.css</code>), six scripts (<code>packets-page.js</code>, <code>packets_verify_core.js</code>, <code>packets_samples/sample_practice.js</code>, <code>packets_samples/sample_check.js</code>, <code>packets_samples/sample_changed.js</code>, <code>packets-verify.js</code>) and the icon in the browser tab. It loads no fonts, no trackers and nothing from another site.</li>
+      <li>The three sample scripts hold the sample files as text. The checks are in <code>packets_verify_core.js</code>, which is written to be read.</li>
+      <li>Like any website, the server that sends these files can see that your browser asked for them. It receives nothing else.</li>
+    </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+
+<main id="main" class="checker">
+  <div class="wrap">
+    <h1>Check a file</h1>
+    <p class="checker-lead">Before a practice file or a check goes to students, see what it says about itself and what its code can reach.</p>
+    <noscript><p class="note note-problem">This page needs JavaScript to read your file. Nothing is sent anywhere.</p></noscript>
+    <p id="said" class="sr-only" role="status" aria-live="polite"></p>
+
+    <section id="pick" class="no-print" aria-labelledby="drop-title">
+      <div id="drop" class="drop">
+        <svg class="drop-mark" viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M24 30V8"/><path d="m15 17 9-9 9 9"/><path d="M8 30v8a2 2 0 0 0 2 2h28a2 2 0 0 0 2-2v-8"/></svg>
+        <h2 id="drop-title">Drop a file here</h2>
+        <p class="drop-sub" id="drop-sub">A practice file or a check: one HTML file. Drop several and each gets its own report.</p>
+        <p class="drop-go"><button type="button" class="btn btn-primary" id="choose" aria-describedby="drop-sub">Choose a file</button></p>
+        <input type="file" id="files" multiple accept=".html,.htm,text/html" aria-label="A practice file or a check" hidden>
+      </div>
+      <p class="drop-foot" id="samples">
+        <span class="drop-foot-label">Try with a sample file:</span>
+        <button type="button" class="btn btn-text" data-sample="practice">a practice file</button>
+        <button type="button" class="btn btn-text" data-sample="check">a check</button>
+        <button type="button" class="btn btn-text" data-sample="changed">a file that was changed</button>
+      </p>
+    </section>
+
+    <div class="limits">
+      <h2 class="limits-title">What this page can and cannot tell you</h2>
+      <p id="limits">This page reads the file's text in your browser. It does not run the file and does not upload it. It reports what the file declares and what its code contains. It cannot prove that software is free of mistakes; the file is one readable script, and your IT staff can read it.</p>
+      <p class="no-print">The <a href="packets-it.html">guide for school IT</a> shows how to confirm each point by hand, without this page.</p>
+    </div>
+
+    <section id="reports" aria-labelledby="reports-title" hidden>
+      <div class="reports-head">
+        <div>
+          <h2 id="reports-title">What was found</h2>
+          <p id="reports-line" class="reports-line"></p>
+        </div>
+        <p class="no-print"><button type="button" class="btn btn-small" id="clear">Clear the page</button></p>
+      </div>
+      <div id="report-list"></div>
+    </section>
+  </div>
+  <p id="drop-over" class="drop-over" aria-hidden="true" hidden>Drop the file to check it</p>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

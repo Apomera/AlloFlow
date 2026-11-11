@@ -3,16 +3,16 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<!-- "Try it" on the maker opens this page. It shows the practice file the maker has just built.
-     A practice file carries its script and its styles inside itself, and a browser hands this page's rule
-     down to the file it shows. So this page, and only this page, has to allow inline script and style.
+<!-- "Try it" on either maker opens this page. It shows the file that maker has just built: a practice file
+     or a math check. Such a file carries its script and its styles inside itself, and a browser hands this page's
+     rule down to the file it shows. So this page, and only this page, has to allow inline script and style.
      The file runs in a sandboxed frame: it cannot read anything this site keeps in the browser.
      connect-src blob: lets the page read the built file from the maker tab; frame-src blob: lets it show it.
      Nothing on this page can reach the network. -->
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src data: blob:; connect-src blob:; frame-src blob:; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <meta name="robots" content="noindex">
-<title>Try the practice file</title>
+<title>Try the file</title>
 <link rel="icon" type="image/svg+xml" href="packets-mark.svg">
 <link rel="stylesheet" href="packets.css">
 <script src="packets-try.js" defer></script>
@@ -20,14 +20,17 @@
 <body class="try-page">
 <header class="try-bar">
   <h1>Preview</h1>
-  <p>This is the file your students get. Nothing you do here is kept. Close this tab to go back to the maker.</p>
+  <p>This is the file a learner gets. Nothing you do here is kept. Close this tab to go back to the maker.</p>
 </header>
 <main id="try-main" class="try-main">
   <p id="try-wait" class="try-problem" role="status">Opening the file.</p>
   <div id="try-problem" class="try-problem" hidden>
     <h2>The preview is not here any more</h2>
-    <p>A preview lasts while the maker page stays open on the file it made. Go back to the maker and press Try it again.</p>
-    <p><a class="btn btn-primary" href="packets-make.html">Open the maker</a></p>
+    <p>A preview lasts while the maker page stays open on the file it made. Go back to the maker and press Try it again. Or start a new file.</p>
+    <div class="actions">
+      <a class="btn btn-primary" href="packets-make.html">Make a practice file</a>
+      <a class="btn btn-primary" href="packets-check.html">Make a math check</a>
+    </div>
   </div>
   <noscript><p class="try-problem">The preview needs JavaScript.</p></noscript>
 </main>

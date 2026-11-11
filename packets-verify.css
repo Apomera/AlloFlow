@@ -1,0 +1,206 @@
+/* What "Check a file" (packets-verify.html) and the guide for school IT (packets-it.html) need beyond
+   packets.css: the drop area, the report, its folding parts, the tables and the print sheets.
+   Colors, fonts, buttons and the header come from packets.css. Nothing is loaded from another site. */
+
+.checker, .guide { padding: clamp(1.5rem, 4vw, 2.75rem) 0 4rem; }
+.checker h1, .guide h1 { font-size: clamp(1.8rem, 1.4rem + 1.8vw, 2.5rem); letter-spacing: -0.024em; }
+.checker-lead, .guide-lead { margin-top: 0.6rem; max-width: 42rem; color: var(--muted); font-size: 1.125rem; }
+h4 { margin: 0; padding: 0; color: var(--ink); line-height: 1.2; }
+
+/* One calm place to put the file */
+.drop { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; margin-top: 1.75rem; padding: clamp(2rem, 6vw, 3.5rem) clamp(1rem, 4vw, 2rem); text-align: center; background: var(--surface); border: 2px dashed var(--line-strong); border-radius: 14px; }
+.drop.is-over { border-style: solid; border-color: var(--accent); background: var(--accent-soft); }
+.drop-mark { width: 3rem; height: 3rem; color: var(--accent); }
+.drop h2 { font-size: clamp(1.45rem, 1.25rem + 0.9vw, 1.8rem); letter-spacing: -0.018em; }
+.drop-sub { max-width: 30rem; color: var(--muted); }
+.drop-go { margin-top: 0.75rem; }
+.drop-go .btn { min-width: 12rem; }
+.drop-foot { display: flex; flex-wrap: wrap; align-items: center; gap: 0 1rem; margin-top: 1rem; }
+.drop-foot-label { font-weight: 600; color: var(--ink); }
+.drop-over { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; margin: 0; padding: 1rem; text-align: center; font-size: 1.5rem; font-weight: 700; color: var(--ink); background: var(--accent-soft); border: 4px dashed var(--accent); pointer-events: none; }
+
+/* What the page can and cannot tell: always on the page */
+.limits { margin-top: 1.75rem; padding: 1rem 1.25rem; max-width: 50rem; background: var(--note); border-left: 4px solid var(--ink); border-radius: 0 8px 8px 0; }
+.limits-title { font-size: 1.0625rem; }
+.limits p { margin-top: 0.4rem; color: var(--text); }
+
+/* The reports */
+.reports-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0.5rem 1.5rem; margin-top: 2.5rem; padding-bottom: 0.75rem; border-bottom: 2px solid var(--ink); }
+.reports-head h2 { font-size: clamp(1.45rem, 1.25rem + 0.9vw, 1.8rem); letter-spacing: -0.018em; }
+.reports-line { margin-top: 0.2rem; color: var(--muted); }
+.report { margin-top: 1.5rem; background: var(--surface); border: 1px solid var(--line-strong); border-radius: var(--radius); overflow: hidden; }
+.report + .report { margin-top: 2.5rem; }
+
+.verdict { padding: clamp(1.1rem, 3.5vw, 1.75rem); border-left: 8px solid var(--accent); }
+.report[data-result="look"] .verdict, .report[data-result="not_packet"] .verdict, .report[data-result="refused"] .verdict { border-left-color: var(--ink); }
+.verdict .kicker { overflow-wrap: anywhere; text-transform: none; letter-spacing: 0; font-size: 0.9375rem; }
+.verdict-line { margin-top: 0.4rem; max-width: 46rem; font-size: clamp(1.3rem, 1.1rem + 1vw, 1.75rem); letter-spacing: -0.016em; line-height: 1.25; }
+.verdict-sub { margin-top: 0.6rem; max-width: 46rem; color: var(--text); }
+.facts-row { display: flex; flex-wrap: wrap; gap: 0.75rem 2.25rem; margin: 1.1rem 0 0; }
+.facts-row dt { font-size: 0.75rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.facts-row dd { font-weight: 600; color: var(--ink); font-variant-numeric: tabular-nums; }
+.fingerprint { margin-top: 0.9rem; font-size: 0.875rem; color: var(--muted); }
+.fingerprint code { color: var(--ink); }
+
+/* A part of the report: closed until it is opened */
+.part { border-top: 1px solid var(--line); }
+.part > summary { display: flex; align-items: center; gap: 0.75rem; min-height: 3.5rem; padding: 0.75rem clamp(1.1rem, 3.5vw, 1.75rem); cursor: pointer; list-style: none; color: var(--ink); font-size: 1.125rem; font-weight: 700; }
+.part > summary::-webkit-details-marker { display: none; }
+.part > summary::before { content: ""; flex: none; width: 0.55rem; height: 0.55rem; margin-right: 0.15rem; border-right: 2px solid var(--accent); border-bottom: 2px solid var(--accent); transform: rotate(-45deg); }
+.part[open] > summary::before { transform: rotate(45deg); }
+.part > summary:hover .part-title { text-decoration: underline; text-underline-offset: 0.18em; }
+.part > summary:focus-visible { outline-offset: -4px; }
+.part-count { display: inline-flex; align-items: center; justify-content: center; min-width: 1.75rem; height: 1.75rem; padding: 0 0.5rem; border: 2px solid var(--line-strong); border-radius: 999px; font-size: 0.875rem; font-variant-numeric: tabular-nums; color: var(--ink); }
+.report[data-result="look"] .part-count { background: var(--ink); border-color: var(--ink); color: var(--on-accent); }
+.part-body { padding: 0 clamp(1.1rem, 3.5vw, 1.75rem) 1.5rem; }
+.part-body .plain-list { margin-top: 0; }
+.part-body .plain-list li { max-width: 46rem; overflow-wrap: anywhere; }
+.look-list strong { color: var(--ink); }
+.look-line { font-variant-numeric: tabular-nums; }
+.part-it { background: var(--bg); }
+.part-it h4 { margin-top: 1.75rem; font-size: 1.0625rem; }
+.part-it .part-body > h4:first-child { margin-top: 0.25rem; }
+.part-it h4 + .hint, .part-it h4 + p { margin-top: 0.35rem; }
+.part-it .hint, .part-it .part-body > p { max-width: 50rem; }
+.part-it .hint + .hint { margin-top: 0.5rem; }
+.part-it .rule-text { margin-top: 0.6rem; }
+
+.hashes { display: grid; grid-template-columns: 1fr; gap: 0; margin: 0.6rem 0 0.75rem; background: var(--surface); border: 1px solid var(--line); border-radius: 8px; }
+.hashes > div { display: grid; grid-template-columns: 1fr; gap: 0.1rem 1rem; padding: 0.6rem 0.9rem; }
+.hashes > div + div { border-top: 1px solid var(--line); }
+.hashes dt { font-weight: 600; color: var(--ink); font-size: 0.9375rem; }
+.hashes dd { font-size: 0.9375rem; }
+.hashes code { font-size: 0.8125rem; }
+
+/* A table on a wide screen; on a narrow one each row folds into a block with its labels */
+.grid { width: 100%; margin-top: 0.75rem; border-collapse: collapse; font-size: 0.9375rem; background: var(--surface); border: 1px solid var(--line); }
+.grid th, .grid td { padding: 0.55rem 0.8rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.grid thead th { font-size: 0.8125rem; color: var(--ink); background: var(--note); border-bottom: 1px solid var(--line-strong); }
+.grid tbody tr:last-child td { border-bottom: 0; }
+.grid code { font-size: 0.8125rem; }
+.grid .outcome { font-weight: 700; color: var(--ink); }
+.grid .is-differs, .grid .is-unexpected, .grid .is-look, .grid .is-open { box-shadow: inset 4px 0 0 var(--ink); }
+.grid .is-expected, .grid .is-cannot { font-weight: 400; color: var(--muted); }
+.grid-found td:first-child { font-variant-numeric: tabular-nums; }
+
+.copy-said { margin-top: 0.6rem; font-weight: 600; color: var(--ink); min-height: 1.6em; }
+.copy-text { display: block; width: 100%; margin-top: 0.5rem; padding: 0.6rem 0.75rem; font-family: var(--mono); font-size: 0.8125rem; line-height: 1.5; color: var(--ink); background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; }
+.part-it .actions { margin-top: 1.5rem; }
+
+/* The guide for school IT */
+.guide-section { margin-top: 2.25rem; }
+.guide-section > h2 { font-size: clamp(1.3rem, 1.15rem + 0.7vw, 1.6rem); letter-spacing: -0.016em; padding-bottom: 0.4rem; border-bottom: 2px solid var(--ink); }
+.guide-section > p { margin-top: 0.75rem; max-width: 46rem; }
+.guide .steps-list li, .guide .plain-list li { max-width: 46rem; }
+.guide .steps-list { margin-top: 1rem; }
+.guide-go { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.25rem; }
+.facts-table { width: 100%; margin-top: 1rem; border-collapse: collapse; background: var(--surface); border: 1px solid var(--line-strong); }
+.facts-table th, .facts-table td { padding: 0.7rem 0.9rem; text-align: left; vertical-align: top; border-bottom: 1px solid var(--line); }
+.facts-table tr:last-child th, .facts-table tr:last-child td { border-bottom: 0; }
+.facts-table th { width: 30%; min-width: 9rem; font-weight: 700; color: var(--ink); background: var(--note); }
+.facts-table p + p { margin-top: 0.5rem; }
+.decision { margin-top: 1.5rem; padding: 1rem 1.25rem; max-width: 50rem; background: var(--surface); border: 2px solid var(--ink); border-radius: var(--radius); font-size: 1.125rem; font-weight: 600; color: var(--ink); }
+.tested { font-weight: 600; color: var(--ink); }
+.print-only { display: none; }
+
+@media (max-width: 43.99rem) {
+  .grid thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+  .grid, .grid tbody, .grid tr, .grid td { display: block; }
+  .grid tr { padding: 0.5rem 0; border-bottom: 1px solid var(--line-strong); }
+  .grid tr:last-child { border-bottom: 0; }
+  .grid td { padding: 0.25rem 0.8rem; border-bottom: 0; overflow-wrap: anywhere; }
+  .grid td:empty { display: none; }
+  .grid td::before { content: attr(data-label); display: block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted); }
+  .facts-table, .facts-table tbody, .facts-table tr, .facts-table th, .facts-table td { display: block; width: auto; }
+  .facts-table th { border-bottom: 0; padding-bottom: 0.35rem; }
+  .facts-table td { padding-top: 0.5rem; }
+  .part-it .actions .btn { flex: 1 1 100%; }
+}
+
+@media (min-width: 44rem) {
+  .hashes > div { grid-template-columns: 15rem 1fr; }
+  /* Each table keeps the widths given here, so a long hash wraps inside its cell and never widens the page. */
+  .grid { table-layout: fixed; }
+  .grid th, .grid td { overflow-wrap: anywhere; }
+  .grid-policy th:nth-child(1) { width: 27%; }
+  .grid-policy th:nth-child(3) { width: 30%; }
+  .grid-claims th:nth-child(1) { width: 15%; }
+  .grid-claims th:nth-child(2) { width: 36%; }
+  .grid-claims th:nth-child(4) { width: 11%; }
+  .grid-found th:nth-child(1) { width: 12%; }
+  .grid-found th:nth-child(2) { width: 17%; }
+  .grid-found th:nth-child(3) { width: 12%; }
+  .grid-found th:nth-child(5) { width: 28%; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .drop { transition: background-color 0.12s ease, border-color 0.12s ease; }
+  .part > summary::before { transition: transform 0.12s ease; }
+}
+
+@media (forced-colors: active) {
+  .drop.is-over { border-width: 4px; }
+  .part > summary::before { border-color: CanvasText; }
+  .grid .is-differs, .grid .is-unexpected, .grid .is-look, .grid .is-open { box-shadow: none; outline: 2px solid CanvasText; outline-offset: -2px; }
+}
+
+/* Print: black on white, no controls. "Check a file" prints its reports with every part open;
+   the guide for school IT is set small enough to fit on one sheet. */
+@media print {
+  @page { margin: 9mm; }
+  html, body { background: #ffffff; color: #000000; font-size: 10pt; }
+  .top, .proof, .skip, .foot, .no-print, .drop-over, .checker-lead, .btn { display: none !important; }
+  .print-only { display: block; }
+  .checker, .guide { padding: 0; }
+  .wrap { max-width: none; padding: 0; }
+  .checker h1, .guide h1 { font-size: 16pt; }
+  h1, h2, h3, h4, dt, dd, th, td, code, p, li, .hint, .kicker, .verdict-sub, .fingerprint, .fingerprint code, .reports-line, .grid .outcome, .grid .is-expected, .grid .is-cannot, .part > summary { color: #000000 !important; }
+  .limits, .report, .part-it, .hashes, .grid, .grid thead th, .rule-text, .facts-table, .facts-table th, .decision { background: #ffffff !important; }
+  .limits { border: 1px solid #000000; border-left-width: 4px; border-radius: 0; max-width: none; }
+  .reports-head { margin-top: 1rem; }
+  .report { border-color: #000000; border-radius: 0; overflow: visible; }
+  .verdict { border-left-color: #000000; }
+  .part { border-top-color: #000000; }
+  .part > summary { min-height: 0; padding-top: 0.5rem; padding-bottom: 0.3rem; font-size: 11pt; }
+  .part > summary::before { display: none; }
+  .part-count { border-color: #000000; background: #ffffff !important; color: #000000 !important; height: auto; min-width: 0; }
+  .part-body { padding-bottom: 0.6rem; }
+  .part-body .plain-list li, .part-it .hint, .part-it .part-body > p { max-width: none; }
+  .grid, .hashes, .rule-text { border-color: #000000; }
+  .grid { font-size: 8.5pt; }
+  .grid th, .grid td { padding: 0.2rem 0.4rem; border-color: #999999; overflow-wrap: anywhere; }
+  .grid code, .hashes code, .rule-text { font-size: 7.5pt; }
+  .grid .is-differs, .grid .is-unexpected, .grid .is-look, .grid .is-open { box-shadow: inset 3px 0 0 #000000; }
+  .grid tr, .hashes > div, .verdict, .plain-list li { break-inside: avoid; }
+  .grid thead { display: table-header-group; }
+  .copy-said, .copy-box { display: none !important; }
+
+  /* The guide: the name of the product stays at the top of the sheet, and the type is small enough for one sheet. */
+  .guide-page .top { display: block !important; background: #ffffff; border: 0; }
+  .guide-page .top-row { min-height: 0; padding: 0; }
+  .guide-page .top-link { display: none; }
+  .guide-page .brand { min-height: 0; gap: 0.3rem; font-size: 8pt; color: #000000; }
+  .guide-page .brand svg { width: 0.8rem; height: 0.8rem; color: #000000; }
+  .guide { font-size: 7.6pt; line-height: 1.25; }
+  .guide h1 { font-size: 13pt; }
+  .guide-lead { margin-top: 0.1rem; max-width: none; font-size: 7.9pt; color: #000000; }
+  .guide-section { margin-top: 0.3rem; }
+  .guide-section > h2 { font-size: 9pt; padding-bottom: 0; border-bottom: 1px solid #000000; }
+  .guide-section > p { margin-top: 0.15rem; max-width: none; }
+  .guide .steps-list, .guide .plain-list { margin-top: 0.15rem; }
+  .guide .steps-list li, .guide .plain-list li { max-width: none; padding-left: 1.3rem; }
+  .guide .steps-list li + li, .guide .plain-list li + li { margin-top: 0.06rem; }
+  .guide .plain-list li { padding-left: 0.9rem; }
+  .guide code { font-size: 7pt; }
+  .guide-two { column-count: 2; column-gap: 6mm; }
+  .guide-three { column-count: 3; column-gap: 5mm; }
+  .guide-two li, .guide-three li { break-inside: avoid; }
+  .facts-table { margin-top: 0.2rem; border-color: #000000; }
+  .facts-table th, .facts-table td { padding: 0.06rem 0.35rem; border-color: #999999; }
+  .facts-table th { width: 19%; min-width: 0; }
+  .facts-table p + p { margin-top: 0.12rem; }
+  .facts-table tr { break-inside: avoid; }
+  .decision { margin-top: 0.3rem; padding: 0.2rem 0.5rem; max-width: none; border-width: 1px; border-radius: 0; font-size: 8.2pt; }
+  .guide a { color: #000000; text-decoration: none; }
+  .guide a[rel~="noopener"]::after { content: " (" attr(href) ")"; font-weight: 400; }
+}

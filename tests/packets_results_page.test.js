@@ -94,6 +94,8 @@ const jsonOf = (result, method = 'sha256') => {
   return JSON.stringify({ ...result, ...(integrity ? { integrity: { ...integrity, note: 'detects accidental edits, not deliberate ones' } } : {}) });
 };
 const nameOf = (result, ext = 'csv') => loader.resultsCsv(result).stem + '.' + ext;
+// A CSV as it was saved before 2026-11-11: the summary row ends without its title cell. Everything else is the same bytes.
+const older = (csv) => { const out = csv.replace(/,"title=(?:[^"]|"")*"(?=\r\n)/, ''); expect(out).not.toBe(csv); return out; };
 // The cells of a file as saved (every cell quoted, no cell in these fixtures holds the three characters ","), and a spreadsheet's re-save of them.
 const cellsOf = (csv) => csv.slice(1, -2).split('\r\n').map((line) => line.slice(1, -1).split('","').map((cell) => cell.replace(/""/g, '"')));
 const resave = (rows, separator, lineEnd = '\n') => rows.map((row) => row.map((cell) => (cell.includes(separator) || /["\r\n]/.test(cell) ? '"' + cell.replace(/"/g, '""') + '"' : cell)).join(separator)).join(lineEnd) + lineEnd;
@@ -117,7 +119,7 @@ describe('the reader: a practice results file', () => {
     expect(text.split('\r\n')).toHaveLength(9);
     const s = await one(text, nameOf(result));
     expect([s.sessionId, s.learner, s.packetId, s.packetVersion, s.title, s.mode, s.form, s.measure, s.source, s.sourceFile])
-      .toEqual(['b3f1c2f0-7a55-4d0e-9c0b-0d0f6d1e52aa', 'BlueHeron7', 'ws-short-vowels', 'r91b7d204', 'ws-short-vowels', 'practice', '', 'practice', 'csv', 'Short-vowels__BlueHeron7__2026-11-03.csv']);
+      .toEqual(['b3f1c2f0-7a55-4d0e-9c0b-0d0f6d1e52aa', 'BlueHeron7', 'ws-short-vowels', 'r91b7d204', 'Short vowels', 'practice', '', 'practice', 'csv', 'Short-vowels__BlueHeron7__2026-11-03.csv']);
     expect([s.startedLocal, s.finishedLocal, s.date, s.dateFromFile, s.durationS]).toEqual(['2026-11-03T16:00:05-05:00', '2026-11-03T16:05:05-05:00', '2026-11-03', false, 300]);
     expect(s.summary).toEqual({ itemsInFile: 5, done: 5, given: 5, attempted: 5, correct: 4, firstTry: 3, accuracyPct: 80, firstTryPct: 60 });
     expect(s.byActivity).toEqual([
@@ -136,12 +138,35 @@ describe('the reader: a practice results file', () => {
   it('reads the JSON of the same piece of work to the same result', async () => {
     const result = practice();
     const fromCsv = await one(csvOf(result), 'a.csv'), fromJson = await one(jsonOf(result), 'a.json');
-    expect(fromJson.title).toBe('Short vowels');
-    expect({ ...fromJson, title: '', source: '', sourceFile: '' }).toEqual({ ...fromCsv, title: '', source: '', sourceFile: '' });
+    expect([fromJson.title, fromCsv.title]).toEqual(['Short vowels', 'Short vowels']);
+    expect({ ...fromJson, source: '', sourceFile: '' }).toEqual({ ...fromCsv, source: '', sourceFile: '' });
     expect(fromJson.integrity).toBe('ok');
     // A class mailbox copy wraps the same result.
     const wrapped = await one(JSON.stringify({ kind: 'alloflow-take-home-submission', schemaVersion: 1, takeHomeResult: JSON.parse(jsonOf(result)) }), 'sent.json');
     expect(wrapped.sessionId).toBe(fromCsv.sessionId);
+  });
+
+  it('shows the title the file carries; a file saved before the title was there shows its packet id and still checks out', async () => {
+    const text = csvOf(practice());
+    expect(text).toContain('"accuracy_pct=80","title=Short vowels"\r\n"#integrity","sha256","');
+    // The older file is the same bytes without that one cell, its check line included: it reads "ok" and is named by its packet id, as before.
+    expect(older(text).split('\r\n')[7]).toBe(text.split('\r\n')[7]);
+    const before = await one(older(text));
+    expect([before.title, before.integrity]).toEqual(['ws-short-vowels', 'ok']);
+    expect({ ...before, title: 'Short vowels' }).toEqual(await one(text));
+    // Any title leaves the check value alone: commas and quotes, a formula, markup, a title typed over in a spreadsheet.
+    for (const title of ['Short a, "set 1" = week 2', '=SUM(A1)', '<b>x</b>']) {
+      const s = await one(csvOf(practice({ title })));
+      expect([s.title, s.integrity], title).toEqual([title, 'ok']);
+    }
+    const typed = await one(text.replace('"title=Short vowels"', '"title=Week 3"'));
+    expect([typed.title, typed.integrity]).toEqual(['Week 3', 'ok']);
+    // One line, 80 characters at most, as from the JSON. An empty title is no title. The first title cell is the one read.
+    const long = practice({ title: '  Long \n title ' + 'x'.repeat(300) });
+    expect((await one(csvOf(long))).title).toBe((await one(jsonOf(long), 'long.json')).title);
+    expect((await one(csvOf(long))).title).toHaveLength(80);
+    expect((await one(csvOf(practice({ title: '' })))).title).toBe('ws-short-vowels');
+    expect((await one(text.replace('"title=Short vowels"', '"title=First","title=Second"'))).title).toBe('First');
   });
 
   it('reads a spreadsheet re-save: LF, ; or tab between cells, quotes dropped, a sep= line, columns moved, columns added, rows it does not know', async () => {
@@ -312,7 +337,14 @@ describe('the reader: a check', () => {
     const fixed = await one(csvOf(check()), 'Math-Fluency-check-2A__BlueHeron7__2026-11-17.csv');
     const own = check({ packetId: 'math-custom-291e3aa6', form: 'custom', title: 'Facts to 20', sid: 'own-1' });
     const ownCsv = await one(csvOf(own), nameOf(own)), ownJson = await one(jsonOf(own), 'x.json');
-    expect([fixed.title, ownCsv.title, ownJson.title]).toEqual(['math-computation-g2', 'Facts to 20', 'Facts to 20']);
+    expect([fixed.title, ownCsv.title, ownJson.title]).toEqual(['Math Fluency check (2A)', 'Facts to 20', 'Facts to 20']);
+    // A CSV saved before the title was in it: the packet id, and for a teacher's own set the start of the name it was saved under.
+    const fixedBefore = await one(older(csvOf(check())), 'Math-Fluency-check-2A__BlueHeron7__2026-11-17.csv');
+    const ownBefore = await one(older(csvOf(own)), nameOf(own)), ownRenamed = await one(older(csvOf(own)), 'renamed.csv');
+    expect([fixedBefore.title, ownBefore.title, ownRenamed.title, (await one(csvOf(own), 'renamed.csv')).title]).toEqual(['math-computation-g2', 'Facts to 20', 'math-custom-291e3aa6', 'Facts to 20']);
+    expect([fixedBefore.integrity, ownBefore.integrity]).toEqual(['ok', 'ok']);
+    // The lists are named the same from either file.
+    expect(reader.addUp([fixedBefore, ownBefore], {}).checks.map((row) => row.label)).toEqual(['Math Fluency (grade 2)', 'Math Fluency (Facts to 20)']);
     const model = reader.addUp([fixed, ownCsv], {});
     expect(model.checks.map((row) => [row.label, row.unitName, row.forms])).toEqual([['Math Fluency (grade 2)', 'digits correct per minute', ['A']], ['Math Fluency (Facts to 20)', 'digits correct per minute', ['custom']]]);
     // The grade is read from the packet id the check builder gives a fixed form.
@@ -388,6 +420,7 @@ describe('the reader: hostile files', () => {
     expect(s.sourceFile).toBe('<svg onload=alert(3)>.csv');
     expect(s.byActivity.map((a) => [a.activity, a.strand])).toEqual([['proto', 'other'], ['unknown', 'other']]);
     expect(s.wrong).toEqual([{ word: 'constructor', answer: '__proto__', times: 1 }]);
+    expect(s.title).toBe('<script>alert(2)</script>');
     expect((await one(jsonOf(result), 'a.json')).title).toBe('<script>alert(2)</script>');
     for (const label of ['__proto__', 'constructor', 'hasOwnProperty', 'toString']) {
       const got = await one(csvOf(practice({ learner: label, sid: label })));
@@ -411,7 +444,11 @@ describe('the reader: hostile files', () => {
     expect(({}).polluted).toBeUndefined();
     // Very long cells are clipped, and a file with a great many rows is cut off at a limit.
     const long = await one(csvOf(practice({ learner: 'L'.repeat(5000), title: 'T'.repeat(5000), answers: [pick('blending', 'w'.repeat(900), 'w', ['x'.repeat(900), 'w'])] })));
-    expect([long.learner.length, long.items[0].word.length, long.wrong[0].answer.length]).toEqual([60, 40, 24]);
+    expect([long.learner.length, long.items[0].word.length, long.wrong[0].answer.length, long.title.length]).toEqual([60, 40, 24, 80]);
+    // A summary row that names object internals: read as text, and the title cell after them is still found.
+    const sly = await one(csvOf(practice()).replace('"title=Short vowels"', '"__proto__=x","constructor=y","title=__proto__"'));
+    expect([sly.title, sly.integrity]).toEqual(['__proto__', 'ok']);
+    expect(({}).x).toBeUndefined();
     const many = await one(csvOf(practice({ answers: Array.from({ length: 700 }, (_, i) => pick('blending', 'w' + i, 'w' + i, ['w' + i])) })));
     expect([many.items.length, many.summary.done]).toEqual([reader.MAX_ITEMS, reader.MAX_ITEMS]);
   });
@@ -535,6 +572,10 @@ describe('the reader: the real sample files', () => {
     expect(brief(got['sample_results.csv'])).toEqual(['Blue Heron7', 'practice', '', 'Practice', 50, 'first-try percent', '2026-11-11', 2, 2, 2, null, 'ok', '']);
     expect(brief(got['sample_results.json'])).toEqual(brief(got['sample_results.csv']));
     expect(got['sample_results.json'].sessionId).toBe(got['sample_results.csv'].sessionId);
+    // These files were saved on 11 November, before the title was added to the summary row. Each CSV still reads "ok" (above) and is
+    // named as it was then: by its packet id, and a teacher's own set by the start of its file name. The JSON always had the title.
+    for (const file of files.filter((name) => name.endsWith('.csv'))) expect(read(SAMPLES + file), file).not.toContain('title=');
+    expect(files.map((file) => got[file].title)).toEqual(['custom facts to 20', 'math-computation-g3', 'missing-number-g1', 'quantity-discrimination-gk', 'L-smoke', 'Short a']);
     expect(brief(got['quantity-discrimination-gK-A__results.csv'])).toEqual(['BlueHeron7', 'probe', 'A', 'Quantity Discrimination', 23, 'items correct', '2026-11-12', 25, 25, 23, 1, 'ok', '']);
     expect(brief(got['missing-number-g1-A__results.csv'])).toEqual(['BlueHeron7', 'probe', 'A', 'Missing Number', 17, 'items correct', '2026-11-12', 25, 19, 17, 1, 'ok', '']);
     expect(brief(got['math-computation-g3-A_code2468__results.csv'])).toEqual(['BlueHeron7', 'probe', 'A', 'Math Fluency', 21, 'digits correct per minute', '2026-11-12', 25, 25, 22, 1, 'ok', 'finished_early']);
@@ -632,6 +673,34 @@ describe('parity with the dashboard importer (student_analytics_module.js)', () 
     await both(JSON.stringify({ kind: 'alloflow-take-home-submission', schemaVersion: 1, takeHomeResult: JSON.parse(jsonOf(result)) }), 'sent.json');
   });
 
+  it('the title in the summary row reads the same: present, absent, odd, long, doubled, on another row', async () => {
+    const result = practice();
+    const text = csvOf(result);
+    // both() compares the two titles; this returns the one they agree on.
+    const titled = async (file, name) => (await both(file, name)).mine.sessions[0].title;
+    expect(await titled(text, 'titled.csv')).toBe('Short vowels');
+    expect(await titled(older(text), 'saved-before.csv')).toBe('ws-short-vowels');
+    expect(await titled(csvOf(practice({ title: 'Short a, "set 1" = week 2' })), 'odd.csv')).toBe('Short a, "set 1" = week 2');
+    expect(await titled(csvOf(practice({ title: '=SUM(A1)' })), 'formula.csv')).toBe('=SUM(A1)');
+    expect(await titled(csvOf(practice({ title: '<script>alert(2)</script>' })), 'markup.csv')).toBe('<script>alert(2)</script>');
+    expect(await titled(csvOf(practice({ title: '  Long \n title ' + 'x'.repeat(300) })), 'long.csv')).toHaveLength(80);
+    expect(await titled(csvOf(practice({ title: '' })), 'empty.csv')).toBe('ws-short-vowels');
+    expect(await titled(text.replace('"title=Short vowels"', '"title="'), 'emptied.csv')).toBe('ws-short-vowels');
+    expect(await titled(text.replace('"title=Short vowels"', '"title=First","title=Second"'), 'two.csv')).toBe('First');
+    expect(await titled(text.replace('"title=Short vowels"', '"TITLE=Typed over"'), 'capitals.csv')).toBe('Typed over');
+    expect(await titled(text.replace('"title=Short vowels"', '"__proto__=x","title=__proto__"'), 'sly.csv')).toBe('__proto__');
+    // A file with one result takes the title from its summary row whatever id that row carries; a later summary row with no title has the last word.
+    expect(await titled(text.replace('"#summary","' + result.sessionId + '"', '"#summary","someone-else"'), 'other-id.csv')).toBe('Short vowels');
+    expect(await titled(text.replace('"#integrity"', '"#summary","' + result.sessionId + '","items_given=5"\r\n"#integrity"'), 'two-rows.csv')).toBe('ws-short-vowels');
+    // Two results in one file: each takes the title on its own row.
+    const second = csvOf(practice({ sid: 'second-1', title: 'Long vowels', day: '2026-11-10' }));
+    const two = await both(text.slice(0, -2).split('\r\n').slice(0, 7).concat(second.slice(1, -2).split('\r\n').slice(1, 7)).join('\r\n') + '\r\n', 'two-results.csv');
+    expect(two.mine.sessions.map((s) => s.title)).toEqual(['Short vowels', 'Long vowels']);
+    // Spreadsheet re-saves keep it.
+    expect(await titled(resave(cellsOf(text), ';'), 'semicolons.csv')).toBe('Short vowels');
+    expect(await titled(resave(cellsOf(text).slice(1), ','), 'no-header.csv')).toBe('Short vowels');
+  });
+
   it('check files read the same: the score, the digits, the flags, a stopped check, an edited score line', async () => {
     const full = check({ wrong: { 3: 9 }, hiddenS: 14, flags: ['left_the_page'], attempt: 2 });
     await both(csvOf(full), nameOf(full));
@@ -644,6 +713,12 @@ describe('parity with the dashboard importer (student_analytics_module.js)', () 
     const own = check({ packetId: 'math-custom-291e3aa6', form: 'custom', title: 'Facts to 20', sid: 'own-1' });
     await both(csvOf(own), nameOf(own));
     await both(jsonOf(own), nameOf(own, 'json'));
+    // The title: from the summary row, and for a CSV saved before it was there, as before (the packet id; an own set by its file name).
+    expect((await both(csvOf(full), nameOf(full))).theirs.sessions[0].title).toBe('Math Fluency check (2A)');
+    expect((await both(older(csvOf(full)), nameOf(full))).theirs.sessions[0].title).toBe('math-computation-g2');
+    expect((await both(csvOf(own), 'renamed.csv')).theirs.sessions[0].title).toBe('Facts to 20');
+    expect((await both(older(csvOf(own)), nameOf(own))).theirs.sessions[0].title).toBe('Facts to 20');
+    expect((await both(older(csvOf(own)), 'renamed.csv')).theirs.sessions[0].title).toBe('math-custom-291e3aa6');
     const row = csvOf(full).split('\r\n')[4];
     await both(csvOf(full).replace(row, row.slice(0, -'"0","1"'.length) + '"1","1"'), 'digit-edited.csv');
   });
@@ -877,6 +952,9 @@ describe('the page as files', () => {
       expect(s.flags.includes('score_differs'), file.name).toBe(false);
       sessions.push(s);
     }
+    // Each carries its title in the summary row, as a file saved today does: the start of the name it is saved under.
+    expect(sessions.map((s) => s.title)).toEqual(files.map((file) => (file.name.startsWith('Short-vowels__') ? 'Short vowels' : 'Math Fluency check (' + file.name.slice(19, 21) + ')')));
+    expect([...new Set(sessions.map((s) => s.title))]).toEqual(['Math Fluency check (2A)', 'Short vowels', 'Math Fluency check (2B)']);
     const model = reader.addUp(sessions, {});
     expect(model.learners.map((row) => [row.label, row.count])).toEqual([['BlueHeron7', 4], ['GoldFinch5', 1], ['GrayOwl4', 1], ['GreenTurtle2', 1], ['RedFox3', 1]]);
     expect(model.middles.map((row) => [row.label, row.form, row.n, row.median, row.q1, row.q3])).toEqual([['Math Fluency (grade 2)', 'A', 5, 9, 8, 12]]);
@@ -946,8 +1024,9 @@ const A3 = check({ sid: 'a-3', learner: 'BlueHeron7', day: '2026-11-17', wrong: 
 const B1 = practice({ sid: 'b-1', learner: 'RedFox3', day: '2026-11-03', answers: [pick('isolation', 'cat', 'k', ['k']), pick('isolation', 'dog', 'o', ['d', 'o']), pick('isolation', 'bed', 'd', ['b', 'e'], true), pick('blending', 'cup', 'cup', ['cap', 'cup']), pick('missing_letter', 'pig', 'i', ['e', 'i'])] });
 const B2 = check({ sid: 'b-2', learner: 'RedFox3', day: '2026-11-10', done: 6, elapsedS: 120 });
 const B3 = check({ sid: 'b-3', learner: 'RedFox3', day: '2026-11-17', elapsedS: 120, hiddenS: 9, flags: ['left_the_page'] });
+// The second file was saved before 2026-11-11: its summary row has no title, so the page names it by its packet id.
 const EIGHT = (page) => [
-  page.file(csvOf(A1), nameOf(A1)), page.file(csvOf(A2), nameOf(A2)), page.file(csvOf(A3), nameOf(A3)), page.file(csvOf(B1), nameOf(B1)), page.file(csvOf(B2), nameOf(B2)),
+  page.file(csvOf(A1), nameOf(A1)), page.file(older(csvOf(A2)), nameOf(A2)), page.file(csvOf(A3), nameOf(A3)), page.file(csvOf(B1), nameOf(B1)), page.file(csvOf(B2), nameOf(B2)),
   // Changed after it was saved: one time cell.
   page.file(csvOf(B3).replace('"15000"', '"15001"'), nameOf(B3)),
   // The JSON of a result whose CSV is also here.
@@ -1055,7 +1134,8 @@ describe('the page: from files to results', () => {
     expect([...page.$('learner-body').querySelectorAll(':scope > h4')].map((node) => node.textContent)).toEqual(['Most frequent wrong answers in practice', 'Every result, in date order']);
     expect(page.table(tables[0])).toEqual([['bed', 'b', '2'], ['bed', 'e', '1'], ['dog', 'd', '1']]);
     expect(page.table(tables[1])).toEqual([
-      ['Nov 3, 2026', 'Practice: ws-short-vowels', '60% on the first try', '5 of 5', '5 min', ''],
+      // The first file carries its title; the second was saved before files did, and shows its packet id.
+      ['Nov 3, 2026', 'Practice: Short vowels', '60% on the first try', '5 of 5', '5 min', ''],
       ['Nov 10, 2026', 'Practice: ws-short-vowels', '80% on the first try', '5 of 5', '4 min', ''],
       ['Nov 17, 2026', 'Math Fluency, form A, try 1', '8 digits correct per minute', '8 of 8', '1 min 48 s', 'Finished before the time was up, so the score is for the time used']]);
     // The other learner: the check has two dates, and the changed file carries its notes and a ring on its dot.

@@ -240,14 +240,55 @@ describe('the pages as files', () => {
     expect(parse('packets.html').querySelectorAll('details')).toHaveLength(1);
   });
 
+  it('the main site has one quiet way in from its home page and one from its tool finder, and neither claims more than the front door', () => {
+    const squash = (text) => text.replace(/\s+/g, ' ').trim();
+    const home = parse('index.html');
+    const homeLinks = [...home.querySelectorAll('a[href^="packets"]')];
+    expect(homeLinks.map((a) => [a.getAttribute('href'), a.textContent])).toEqual([['packets.html', 'Open ' + NAME]]);
+    const band = home.getElementById('homePackets');
+    expect(band.contains(homeLinks[0])).toBe(true);
+    expect(home.getElementById(band.getAttribute('aria-labelledby')).textContent).toBe('Just need practice files and progress checks?');
+    expect(squash(band.textContent)).toBe('Just need practice files and progress checks? ' + NAME + ' makes them in your browser. Runs without AI. No account. Open ' + NAME);
+    // One band of its own: after the entry paths, before the tool finder and the long sections, and in no navigation.
+    expect([band.previousElementSibling.id, band.nextElementSibling.id]).toEqual(['homeEntryPaths', 'home-tool-finder']);
+    expect(band.querySelectorAll('script, link, img, iframe, form')).toHaveLength(0);
+    const tools = parse('tools.html');
+    const toolLinks = [...tools.querySelectorAll('a[href^="packets"]')];
+    expect(toolLinks.map((a) => [a.getAttribute('href'), a.textContent])).toEqual([['packets.html', NAME]]);
+    expect(squash(toolLinks[0].parentElement.textContent)).toBe('Looking for practice files and math checks that run without AI? ' + NAME + '.');
+    expect(toolLinks[0].closest('header.tool-finder-hero')).toBeTruthy();
+    for (const link of [homeLinks[0], toolLinks[0]]) expect(link.closest('nav, .nav-links, .mobile-nav, .noscript-nav, footer')).toBeNull();
+    expect(existsSync('packets.html')).toBe(true);
+  });
+
   it('the front door links only to what exists, and claims only what is true today', () => {
     const doc = parse('packets.html');
     const cards = [...doc.querySelectorAll('.card')].map((card) => ({ title: card.querySelector('h2').textContent, link: card.querySelector('a')?.getAttribute('href') || null, text: card.textContent }));
-    expect(cards.map((card) => [card.title, card.link])).toEqual([['Make a practice file', 'packets-make.html'], ['Add up results', 'packets-results.html'], ['Check it yourself', '#check']]);
-    expect(cards[1].text).toContain('not uploaded');
+    expect(cards.map((card) => [card.title, card.link])).toEqual([['Make a practice file', 'packets-make.html'], ['Make a math check', 'packets-check.html'], ['Add up results', 'packets-results.html'],
+      ['Check it yourself', '#check']]);
+    expect(cards[0].text).toContain('Word Sounds: hearing sounds, letters and sounds, spelling, rhyme.');
+    expect(cards[1].text).toContain('Three ready checks, or your own problems. About 90 KB, no sound needed.');
+    expect(cards[2].text).toContain('not uploaded');
     expect(doc.getElementById('check')).toBeTruthy();
     expect(doc.body.textContent).toContain('For practice and for checking progress. Not a standardized test.');
-    expect(doc.body.textContent).toMatch(/Being built\s+Timed math checks you can make on this site\. Pictures\./);
+    // Four equal cards, each a direct child of the grid and built the same way: a heading that is the card's one link, a line, a foot.
+    // packets.css stretches that link over the whole card (.card a::after), so a card can hold only one. The two that make a file are
+    // filled; the two for what comes after are outlined.
+    expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual(['card card-main', 'card card-main', 'card card-go', 'card card-go']);
+    for (const card of doc.querySelectorAll('.card')) {
+      expect([...card.children].map((node) => node.tagName + (node.className ? '.' + node.className : ''))).toEqual(['H2', 'P', 'P.card-foot']);
+      expect(card.querySelectorAll('a')).toHaveLength(1);
+      expect(card.querySelector('h2 > a')).toBeTruthy();
+    }
+    expect(doc.body.textContent).not.toContain('Or make a math check');
+    // One column on a phone, two by two from 44rem. The old three-column rule is gone.
+    const css = read('packets.css');
+    expect(css).toContain('.cards { display: grid; gap: 1rem; grid-template-columns: 1fr;');
+    expect(css).toContain('@media (min-width: 44rem) {\n  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }');
+    expect(css.match(/\.cards \{/g)).toHaveLength(2);
+    expect(css).not.toContain('1.15fr');
+    const today = Object.fromEntries([...doc.querySelectorAll('#today h3')].map((heading) => [heading.textContent, heading.nextElementSibling.textContent]));
+    expect(today).toEqual({ 'Available today': 'Word Sounds practice files and math checks, with a results file for each student.', 'Being built': 'More words with recordings. Checks for reading skills.' });
     expect(doc.body.textContent).not.toContain('!');
     // What the page says about the file is what the file says about itself.
     const loaderSource = read('word_sounds_take_home_loader.js');
@@ -829,8 +870,27 @@ describe('the two small scripts', () => {
     const frame = good.d.querySelector('iframe');
     expect(frame.getAttribute('sandbox')).toBe('allow-scripts allow-downloads');
     expect(frame.getAttribute('src')).toBe('blob:https://packets.test/copy');
-    expect(frame.getAttribute('title')).toBe('The practice file');
+    expect(frame.getAttribute('title')).toBe('The file a learner gets');
     expect(good.d.getElementById('try-problem').hidden).toBe(true);
     good.dom.window.close();
+  });
+
+  it('the preview page serves both makers: it says "file" and "learner", and offers both makers when a preview is gone', () => {
+    const doc = parse('packets-try.html');
+    expect(doc.title).toBe('Try the file');
+    expect(doc.querySelector('.try-bar').textContent.replace(/\s+/g, ' ').trim()).toBe('Preview This is the file a learner gets. Nothing you do here is kept. Close this tab to go back to the maker.');
+    expect(doc.getElementById('try-wait').textContent).toBe('Opening the file.');
+    const problem = doc.getElementById('try-problem');
+    expect(problem.querySelector('h2').textContent).toBe('The preview is not here any more');
+    expect(problem.querySelector('p').textContent).toBe('A preview lasts while the maker page stays open on the file it made. Go back to the maker and press Try it again. Or start a new file.');
+    // Both makers, as equals, in the order of the front door.
+    expect([...problem.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('href'), a.className])).toEqual([
+      ['Make a practice file', 'packets-make.html', 'btn btn-primary'], ['Make a math check', 'packets-check.html', 'btn btn-primary']]);
+    for (const a of problem.querySelectorAll('a')) expect(existsSync(a.getAttribute('href')), a.getAttribute('href')).toBe(true);
+    // Nothing a person reads or hears names one kind of file, or says "student": the two links above are the only exception.
+    const said = [doc.title, doc.querySelector('.try-bar').textContent, doc.getElementById('try-wait').textContent, problem.querySelector('h2').textContent, problem.querySelector('p').textContent,
+      doc.querySelector('noscript').textContent, ...(read('packets-try.js').match(/'[^'\n]*'/g) || [])].join('\n');
+    expect(said).toContain('The file a learner gets');
+    expect(said).not.toMatch(/practice|math|check|student/i);
   });
 });

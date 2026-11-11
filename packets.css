@@ -210,9 +210,9 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 .fields { display: grid; gap: 1rem; grid-template-columns: 1fr; margin-top: 1.5rem; }
 .field label, .field-label { display: block; font-weight: 600; color: var(--ink); }
 .field .hint, .hint { display: block; font-size: 0.9375rem; font-weight: 400; color: var(--muted); }
-.field select, .field input[type="text"], .field textarea { display: block; width: 100%; min-height: 3rem; margin-top: 0.35rem; padding: 0.55rem 0.75rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); }
+.field select, .field input[type="text"], .field input[type="password"], .field textarea { display: block; width: 100%; min-height: 3rem; margin-top: 0.35rem; padding: 0.55rem 0.75rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); }
 .field textarea { min-height: 8rem; line-height: 1.5; resize: vertical; }
-.field select:hover, .field input[type="text"]:hover, .field textarea:hover { border-color: var(--ink); }
+.field select:hover, .field input[type="text"]:hover, .field input[type="password"]:hover, .field textarea:hover { border-color: var(--ink); }
 
 .result { margin-top: 1.5rem; padding-top: 1.25rem; border-top: 1px solid var(--line); }
 .result-line { font-size: 1.125rem; font-weight: 700; color: var(--ink); }
@@ -300,6 +300,7 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 }
 
 @media (min-width: 44rem) {
+  .cards { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .choices { grid-template-columns: 1fr 1fr; }
   .fields { grid-template-columns: 1fr 1fr; }
   .two { grid-template-columns: 1fr 1fr; }
@@ -307,10 +308,6 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
   .today { grid-template-columns: 1fr 1fr; }
   .summary dl { grid-template-columns: 11rem 1fr; }
   .summary dd { padding-top: 0.75rem; border-top: 1px solid var(--line); }
-}
-
-@media (min-width: 58rem) {
-  .cards { grid-template-columns: 1.15fr 1fr 1fr; }
 }
 
 @media (prefers-reduced-motion: no-preference) {

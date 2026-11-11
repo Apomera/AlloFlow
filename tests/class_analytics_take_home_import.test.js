@@ -63,11 +63,13 @@ const integrityOf = (s, method) => {
   const text = [s.packetId, s.version, s.form, s.sid].join('|') + '\n' + itemRows(s).map((r) => r.map(quote).join(',')).join('\n');
   return method === 'fnv1a' ? fnv1a(text) : sha256(text);
 };
-const csvOf = (s, {method = 'sha256', integrity = true, extraHeader = [], extraTrailers = []} = {}) => {
+// title: false writes the summary row as files saved before 2026-11-11 have it, with no title cell.
+const csvOf = (s, {method = 'sha256', integrity = true, extraHeader = [], extraTrailers = [], title = true} = {}) => {
   const rows = itemRows(s);
   const firstTry = s.items.filter((x) => x.firstTry).length, correct = s.items.filter((x) => x.correct).length;
   const lines = [COLUMNS.concat(extraHeader).map(quote).join(',')].concat(rows.map((r) => r.map(quote).join(',')));
-  lines.push(['#summary', s.sid, 'items_given=' + rows.length, 'attempted=' + rows.length, 'correct=' + correct, 'first_try=' + firstTry, 'accuracy_pct=' + Math.round(correct / rows.length * 100)].map(quote).join(','));
+  lines.push(['#summary', s.sid, 'items_given=' + rows.length, 'attempted=' + rows.length, 'correct=' + correct, 'first_try=' + firstTry, 'accuracy_pct=' + Math.round(correct / rows.length * 100)]
+    .concat(title && s.title ? ['title=' + s.title] : []).map(quote).join(','));
   if (integrity) lines.push(['#integrity', method, integrityOf(s, method), 'detects accidental edits, not deliberate ones'].map(quote).join(','));
   extraTrailers.forEach((r) => lines.push(r.map(quote).join(',')));
   return String.fromCharCode(0xFEFF) + lines.join('\r\n') + '\r\n';
@@ -93,9 +95,30 @@ describe('reading the CSV', () => {
   it('reads the file as it is saved: BOM, CRLF, every cell quoted', async () => {
     const s = await one(csvOf(makeSession()));
     expect([s.id, s.learner, s.title, s.date, s.dateFromFile, s.given, s.done, s.firstTryItems, s.firstTryCorrect, s.percent, s.integrity])
-      .toEqual(['th:b3f1c2f0-7a55-4d0e-9c0b-0d0f6d1e52aa', 'Blue Heron', 'ws-short-vowels', '2026-11-12', false, 5, 5, 5, 3, 60, 'ok']);
+      .toEqual(['th:b3f1c2f0-7a55-4d0e-9c0b-0d0f6d1e52aa', 'Blue Heron', 'Short vowels practice', '2026-11-12', false, 5, 5, 5, 3, 60, 'ok']);
     expect(s.acts).toEqual({isolation: {n: 3, g: 3, f: 3, fc: 1, c: 2}, blending: {n: 2, g: 2, f: 2, fc: 2, c: 2}});
     expect(s.wrong).toEqual({'dog\td': 1, 'bed\tb': 1, 'bed\te': 1});
+  });
+  it('reads the title from the summary row, and shows the packet id for a file saved before the title was there', async () => {
+    const older = csvOf(makeSession(), {title: false});
+    expect(older).toContain('"accuracy_pct=80"\r\n"#integrity"');
+    // The file saved now is the older file with one more cell in that row. The edit check is the same line in both.
+    expect(csvOf(makeSession())).toBe(older.replace('"accuracy_pct=80"', '"accuracy_pct=80","title=Short vowels practice"'));
+    const before = await one(older);
+    expect([before.title, before.integrity]).toEqual(['ws-short-vowels', 'ok']);
+    // A title of any kind leaves the file "not edited": the row is outside the check.
+    const odd = await one(csvOf(makeSession({title: 'Short a, "set 1" = week 2'})));
+    expect([odd.title, odd.integrity]).toEqual(['Short a, "set 1" = week 2', 'ok']);
+    const retitled = await one(csvOf(makeSession()).replace('"title=Short vowels practice"', '"title=Typed over in a spreadsheet"'));
+    expect([retitled.title, retitled.integrity]).toEqual(['Typed over in a spreadsheet', 'ok']);
+    // One line of text, 80 characters at most, as from the JSON. An empty title is no title.
+    const long = makeSession({title: '  Long \n title ' + 'x'.repeat(200)});
+    expect((await one(csvOf(long))).title).toBe((await one(jsonOf(long), 'long.json')).title);
+    expect((await one(csvOf(long))).title).toHaveLength(80);
+    expect((await one(csvOf(makeSession()).replace('"title=Short vowels practice"', '"title="'))).title).toBe('ws-short-vowels');
+    // A spreadsheet re-save without quotes still carries it.
+    const resaved = csvOf(makeSession()).slice(1).split('\r\n').map((line) => line.replace(/^"|"$/g, '').split('","').join(';')).join('\n');
+    expect((await one(resaved, 'resaved.csv')).title).toBe('Short vowels practice');
   });
   it('reads quoted cells holding commas, line breaks and doubled quotes, with LF line ends', () => {
     expect(AC.parseCsv('a,"b, c","d\ne","say ""hi"""\n1,2,3,4\n')).toEqual([['a', 'b, c', 'd\ne', 'say "hi"'], ['1', '2', '3', '4']]);
@@ -228,8 +251,11 @@ describe('the take-home JSON', () => {
     const session = makeSession();
     const fromJson = await one(jsonOf(session), 'r.json');
     const fromCsv = await one(csvOf(session));
-    expect({...fromJson, title: ''}).toEqual({...fromCsv, title: ''});
+    expect(fromJson).toEqual(fromCsv);
     expect(fromJson.title).toBe('Short vowels practice');
+    // A CSV saved before 2026-11-11 has no title; everything else is the same.
+    const older = await one(csvOf(session, {title: false}));
+    expect({...fromJson, title: 'ws-short-vowels'}).toEqual(older);
   });
   it('reads a real schema 2 file saved before session ids, dates and the edit check existed', async () => {
     const s = await one(SAMPLE_V2, 'sample_results.json');
@@ -345,9 +371,9 @@ describe('adding the sessions', () => {
     const s = await one(csvOf(makeSession({learner: 'Swift Falcon'})));
     const added = AC.apply([falcon()], [{session: s, name: 'Swift Falcon'}], make).students[0];
     const summary = AC.summary(added.data.wordSoundsState);
-    expect(summary.sessions.map((x) => [x.id, x.n, x.src || 'app', x.pk || '', x.ig || ''])).toEqual([['s:sA', 1, 'app', '', ''], ['th:' + makeSession().sid, 2, 'th', 'ws-short-vowels', 'ok']]);
+    expect(summary.sessions.map((x) => [x.id, x.n, x.src || 'app', x.pk || '', x.ig || ''])).toEqual([['s:sA', 1, 'app', '', ''], ['th:' + makeSession().sid, 2, 'th', 'Short vowels practice', 'ok']]);
     expect(AC.bySkill(summary).map((k) => [k.key, k.allItems, k.firstTryItems, k.firstTryCorrect, k.percent])).toEqual([['hearing_sounds', 7, 7, 4, 57]]);
-    expect(AC.recent(summary).map((x) => [x.date, x.takeHome, x.packet, x.percent, x.edited])).toEqual([['2026-11-12', true, 'ws-short-vowels', 60, false], ['2026-11-03', false, '', 50, false]]);
+    expect(AC.recent(summary).map((x) => [x.date, x.takeHome, x.packet, x.percent, x.edited])).toEqual([['2026-11-12', true, 'Short vowels practice', 60, false], ['2026-11-03', false, '', 50, false]]);
     expect(AC.wrongList(summary, 9)).toEqual([{word: 'bed', picked: 'b', count: 1}, {word: 'bed', picked: 'e', count: 1}, {word: 'dog', picked: 'd', count: 1}, {word: 'dog', picked: 'dig', count: 1}]);
     // Reading it again, and saving it with the student, counts nothing twice.
     const kept = AC.persistable(added);
@@ -443,10 +469,14 @@ describe('files that are not take-home results', () => {
     expect((await AC.readFile({name: 'liar.csv', size: 10, text: () => Promise.resolve(big)})).reason).toBe('too_big');
   });
   it('hostile cells stay text: object keys, formulas and HTML', async () => {
-    const hostile = makeSession({learner: '__proto__', packetId: '<img src=x onerror=alert(1)>', sid: 'constructor',
+    const hostile = makeSession({learner: '__proto__', packetId: '<img src=x onerror=alert(1)>', sid: 'constructor', title: '<script>alert(2)</script>',
       items: [it4('isolation', '__proto__', 'k', 'miss', ['constructor', '=HYPERLINK("http://x")']), it4('toString', '<b>cat</b>', 'cat', 'first')]});
     const s = await one(csvOf(hostile));
-    expect([s.learner, s.title, s.id, s.integrity]).toEqual(['__proto__', '<img src=x onerror=alert(1)>', 'th:constructor', 'ok']);
+    expect([s.learner, s.title, s.id, s.integrity]).toEqual(['__proto__', '<script>alert(2)</script>', 'th:constructor', 'ok']);
+    expect((await one(csvOf(hostile, {title: false}))).title).toBe('<img src=x onerror=alert(1)>');
+    // A summary row that names object internals is read as text and reaches nothing.
+    const sly = await one(csvOf(hostile).replace('"title=<script>alert(2)</script>"', '"__proto__=x","constructor=y","title=__proto__","title=second"'));
+    expect([sly.title, sly.integrity]).toEqual(['__proto__', 'ok']);
     expect(Object.keys(s.acts)).toEqual(['isolation', 'tostring']);
     expect(Object.keys(s.wrong)).toEqual(['__proto__\tconstructor', '__proto__\t=HYPERLINK("http://x")']);
     expect(AC.newName('__proto__')).toBe('Learner __proto__');
@@ -532,7 +562,8 @@ describe('Class Analytics: Add take-home results', () => {
     const heron1 = makeSession({sid: 'h1', started: '2026-11-05T17:00:00-05:00', finished: '2026-11-05T17:06:00-05:00'});
     const heron2 = makeSession({sid: 'h2'});
     const falcon = makeSession({sid: 'f1', learner: 'swift falcon', packetId: '<img src=x onerror=alert(1)>'});
-    const edited = csvOf(falcon).replace('"d | o","1","0","2"', '"d | o","1","1","2"');
+    // falcon.csv was saved before 2026-11-11: no title in it, so its packet id is shown.
+    const edited = csvOf(falcon, {title: false}).replace('"d | o","1","0","2"', '"d | o","1","1","2"');
     await choose([file(csvOf(heron1), 'heron-nov5.csv'), file(jsonOf(heron2), 'heron-nov12.json'), file(csvOf(heron2), 'heron-nov12.csv'), file(edited, 'falcon.csv'),
       file('Student,Date\r\nA,B\r\n', 'grades.csv'), file(JSON.stringify({studentNickname: 'Old Owl', wordSoundsState: {history: []}}), 'owl-save.json'), file(SAMPLE_V2, 'sample.json', 0)]);
     const panel = document.body.querySelector('[data-th-preview]');
@@ -540,7 +571,7 @@ describe('Class Analytics: Add take-home results', () => {
     expect([...panel.querySelectorAll('thead th')].map((th) => [th.getAttribute('scope'), th.textContent])).toEqual([['col', 'File'], ['col', 'Name in the file'], ['col', 'Lesson'],
       ['col', 'Date finished'], ['col', 'Items'], ['col', 'Right on the first try'], ['col', 'Status'], ['col', 'Add to'], ['col', 'Skip']]);
     const cells = previewRows().map((tr) => [...tr.children].slice(0, 7).map(textOf));
-    expect(cells[0]).toEqual(['heron-nov5.csv', 'Blue Heron', 'ws-short-vowels', '2026-11-05', '5', '60% (3 of 5)', 'NewNot edited since it was saved']);
+    expect(cells[0]).toEqual(['heron-nov5.csv', 'Blue Heron', 'Short vowels practice', '2026-11-05', '5', '60% (3 of 5)', 'NewNot edited since it was saved']);
     expect(cells[1]).toEqual(['heron-nov12.json', 'Blue Heron', 'Short vowels practice', '2026-11-12', '5', '60% (3 of 5)', 'NewNot edited since it was saved']);
     expect(cells[2][6]).toBe('Same results as another file hereNot edited since it was saved');
     expect(cells[3]).toEqual(['falcon.csv', 'swift falcon', '<img src=x onerror=alert(1)>', '2026-11-12', '5', '80% (4 of 5)', 'New⚠ Edited after it was saved. The numbers are from the file as it is now.']);

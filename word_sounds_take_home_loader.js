@@ -310,6 +310,9 @@
         var sc = probe && r.score && typeof r.score === 'object' ? r.score : null;
         var kv = function (k, v) { return k + '=' + (v == null ? '' : v === true ? 1 : v === false ? 0 : text(v)); };
         if (probe) tail[0].push(kv('attempt', sc && sc.attempt != null ? sc.attempt : 1));
+        // The title the learner saw: the last "#summary" cell. That row is outside the integrity value.
+        var title = text(r.lessonTitle).replace(/\s+/g, ' ').trim().slice(0, 120);
+        if (title) tail[0].push('title=' + title);
         if (sc) tail.splice(1, 0, ['#score', session, kv('measure', sc.measure), kv('score', sc.score), kv('score_unit', sc.scoreUnit), kv('digits_correct', sc.digitsCorrect),
           kv('digits_possible', sc.digitsPossible), kv('items_correct', sc.itemsCorrect), kv('items_attempted', sc.itemsAttempted), kv('time_limit_s', sc.timeLimitS),
           kv('elapsed_s', sc.elapsedS), kv('hidden_s', sc.hiddenS), kv('completion', sc.completion), kv('prorated', !!sc.prorated), kv('scoring_version', sc.scoringVersion),

@@ -790,7 +790,8 @@ describe('the results of a check', () => {
     // The trailer: summary (with the try), score, integrity last.
     const digits = item.reduce((sum, p, i) => sum + (i === 4 ? 0 : appDigits(p.answer, i === 2 ? p.answer + 1 : p.answer)), 0);
     const possible = item.reduce((sum, p) => sum + String(p.answer).length, 0);
-    expect(rows[27]).toEqual(['#summary', file.sessionId, 'items_given=25', 'attempted=25', 'correct=23', 'first_try=23', 'accuracy_pct=92', 'attempt=1']);
+    expect(rows[27]).toEqual(['#summary', file.sessionId, 'items_given=25', 'attempted=25', 'correct=23', 'first_try=23', 'accuracy_pct=92', 'attempt=1', 'title=Math Fluency check (3A)']);
+    expect(file.lessonTitle).toBe('Math Fluency check (3A)');
     expect(rows[28]).toEqual(['#score', file.sessionId, 'measure=math_dcpm', 'score=' + Math.round(digits / (25 / 60)), 'score_unit=digits_correct_per_minute', 'digits_correct=' + digits, 'digits_possible=' + possible,
       'items_correct=23', 'items_attempted=25', 'time_limit_s=120', 'elapsed_s=25', 'hidden_s=0', 'completion=complete', 'prorated=1', 'scoring_version=3', 'form_version=2', 'attempt=1', 'flags=']);
     expect(rows[29]).toEqual(['#integrity', 'sha256', file.integrity.value, 'detects accidental edits, not deliberate ones']);
@@ -846,7 +847,10 @@ describe('the results of a check', () => {
     expect(table.rows[0]).toHaveLength(24);
     const rows = parseCsv(table.text({ method: 'fnv1a', value: 'x' }).slice(1));
     expect(rows.map((r) => r[0])).toEqual(['format', 'alloflow-packet-result/1', '#summary', '#integrity']);
+    // No title in the result, no title cell: the summary row of a file saved before 2026-11-11.
     expect(rows[2]).toHaveLength(7);
+    const titled = TH.resultsCsv({ sessionId: 's', packet: { id: 'P', version: 'r', form: '', mode: 'practice' }, lessonTitle: 'Short a', items: [{ activity: 'isolation', correct: true, attempts: 1 }] });
+    expect(parseCsv(titled.text({ method: 'fnv1a', value: 'x' }).slice(1))[2]).toEqual(['#summary', 's', 'items_given=1', 'attempted=1', 'correct=1', 'first_try=0', 'accuracy_pct=100', 'title=Short a']);
     expect(TH.parseResult({ kind: 'alloflow-take-home-result', schemaVersion: 3, lessonId: 'L', items: [{ activity: 'isolation' }] }).result).not.toHaveProperty('score');
   });
 });
@@ -1238,6 +1242,10 @@ describe('practice files are as they were', () => {
   //     its try number in "#summary" and its "#score" row. All three are behind `probe`, false in a practice file.
   //  3. takeHomeShell: seven places where a check's own flow takes over. `check` is null in a practice file,
   //     so each is skipped; `out.summary || summarize()` is summarize(), because nothing has set a summary.
+  //  4. packetCsv, 2026-11-11: the title as the last "#summary" cell (three lines). This one is not behind
+  //     `probe`: a practice file's CSV now ends that row with title=<the lesson title>. The row is outside
+  //     the integrity value, so a file saved before still checks out (the played practice file below, and the
+  //     files saved on 11 November that tests/packets_results_page.test.js reads).
   const REMOVED = [
     "        it.correct ? 1 : 0, it.firstTry ? 1 : 0, Number(it.attempts) || 0, Math.max(0, Math.round(Number(it.ms) || 0)), supports, text(it.flag)];",
     "        renderItem();",
@@ -1258,6 +1266,9 @@ describe('practice files are as they were', () => {
     "        var sc = probe && r.score && typeof r.score === 'object' ? r.score : null;",
     "        var kv = function (k, v) { return k + '=' + (v == null ? '' : v === true ? 1 : v === false ? 0 : text(v)); };",
     "        if (probe) tail[0].push(kv('attempt', sc && sc.attempt != null ? sc.attempt : 1));",
+    "        // The title the learner saw: the last \"#summary\" cell. That row is outside the integrity value.",
+    "        var title = text(r.lessonTitle).replace(/\\s+/g, ' ').trim().slice(0, 120);",
+    "        if (title) tail[0].push('title=' + title);",
     "        if (sc) tail.splice(1, 0, ['#score', session, kv('measure', sc.measure), kv('score', sc.score), kv('score_unit', sc.scoreUnit), kv('digits_correct', sc.digitsCorrect),",
     "          kv('digits_possible', sc.digitsPossible), kv('items_correct', sc.itemsCorrect), kv('items_attempted', sc.itemsAttempted), kv('time_limit_s', sc.timeLimitS),",
     "          kv('elapsed_s', sc.elapsedS), kv('hidden_s', sc.hiddenS), kv('completion', sc.completion), kv('prorated', !!sc.prorated), kv('scoring_version', sc.scoringVersion),",
@@ -1322,5 +1333,13 @@ describe('practice files are as they were', () => {
     expect(file.summary).toMatchObject({ items: 2, done: 2, firstTry: 2, itemsGiven: 2, correct: 2 });
     d.querySelector('[data-save-csv]').click();
     expect(saved[1].body.slice(1).split('\r\n')[0]).toBe(HEADER);
+    // The summary row ends with the heading at the top of the file. It is no part of the integrity value:
+    // the value is made from the id line and the two item rows, and the file checks out under any title.
+    const lines = saved[1].body.slice(1).split('\r\n');
+    expect(d.querySelector('h1').textContent).toBe('Short a');
+    expect(lines[3]).toBe('"#summary","' + file.sessionId + '","items_given=2","attempted=2","correct=2","first_try=2","accuracy_pct=100","title=Short a"');
+    expect(parseCsv(saved[1].body.slice(1))[4].slice(0, 3)).toEqual(['#integrity', file.integrity.method, file.integrity.value]);
+    expect(TH.resultsCsv(file).basis).toBe([file.packet.id, file.packet.version, '', file.sessionId].join('|') + '\n' + lines.slice(1, 3).join('\n'));
+    expect([TH.parseResult(file).integrity, TH.parseResult({ ...file, lessonTitle: 'Another title' }).integrity, TH.parseResult({ ...file, lessonTitle: '' }).integrity]).toEqual(['ok', 'ok', 'ok']);
   });
 });

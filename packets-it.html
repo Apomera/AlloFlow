@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<title>For school IT: check a packet in ten minutes</title>
+<meta name="description" content="What a packet is, where its data goes, how a technician can check a file without trusting this site, and the facts a privacy officer can weigh. Runs without AI. No accounts.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-verify.css">
+<script src="packets-page.js" defer></script>
+</head>
+<body class="guide-page">
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <a class="top-link" href="packets-verify.html">Check a file</a>
+  </div>
+</header>
+
+<details class="proof">
+  <summary class="wrap">
+    <span class="proof-line">This page runs without AI. No account. It is a page to read: nothing you do here is sent or kept.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap proof-body">
+    <ul>
+      <li>This page loads five files, all from this site: the page itself, two stylesheets (<code>packets.css</code>, <code>packets-verify.css</code>), one small script (<code>packets-page.js</code>) and the icon in the browser tab. It loads no fonts, no trackers and nothing from another site.</li>
+      <li>It sets no cookies and stores nothing on your device.</li>
+      <li>It has one link to another site: the public source code, near the end of the page. Nothing is asked of that site unless you follow the link.</li>
+      <li>Like any website, the server that sends these files can see that your browser asked for them. It receives nothing else.</li>
+    </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+
+<main id="main" class="guide">
+  <div class="wrap">
+    <h1>For school IT: check a packet in ten minutes</h1>
+    <p class="guide-lead">A packet is one HTML file that holds a short practice activity or a short check. The questions, the recorded sounds and the scoring are inside the file, so it runs in a web browser with no internet connection. At the end the learner can save a results file to the device, and a teacher opens that file in a spreadsheet.</p>
+
+    <section class="guide-section" aria-labelledby="flow-title">
+      <h2 id="flow-title">Where the data goes</h2>
+      <ol class="steps-list guide-two">
+        <li>A teacher makes the file on their own device: on the maker page of this site, or inside the AlloFlow app. The maker page puts the file together in the browser. The words and the choices are not uploaded.</li>
+        <li>The file reaches the learner by a channel the school already uses, such as its learning platform, email or a shared drive. These pages have no way to deliver a file.</li>
+        <li>The learner opens the file in a browser. The learner's place, answers and the time on each item are kept in that browser's local storage, on that device.</li>
+        <li>At the end the learner presses a button to save a results file to the device: CSV for a spreadsheet, or JSON. Saving sends nothing.</li>
+        <li>The learner hands the results file to the teacher, again by the school's own channel.</li>
+        <li>If the teacher wants, the results files are added up in a spreadsheet, or on the <a href="packets-results.html">Add up results</a> page, which cannot connect to anything.</li>
+      </ol>
+    </section>
+
+    <section class="guide-section" aria-labelledby="steps-title">
+      <h2 id="steps-title">Check it yourself</h2>
+      <p>None of these steps asks you to trust this site. Each uses the file itself and your own browser.</p>
+      <ol class="steps-list guide-two">
+        <li><strong>Read the report.</strong> Put the file on <a href="packets-verify.html">Check a file</a>. It reads the file as text in your browser and lists the policy, the script hashes and every construct that could reach out, with line numbers. Then confirm by hand:</li>
+        <li><strong>Find the policy line.</strong> Open the file in a text editor. Near the top is <code>&lt;meta http-equiv="Content-Security-Policy" content="..."&gt;</code>. That is the policy the browser enforces on this file.</li>
+        <li><strong>Read the policy.</strong> <code>default-src 'none'</code> refuses everything the policy does not name. <code>connect-src 'none'</code> refuses every connection a script can make: fetch, XMLHttpRequest, WebSocket, EventSource and sendBeacon. <code>img-src data:</code> and <code>media-src data: blob:</code> allow only pictures and sounds held in the file. <code>form-action 'none'</code> and <code>base-uri 'none'</code> block forms and a base address.</li>
+        <li><strong>Check the script hash.</strong> <code>script-src 'sha256-...'</code> lets one script run: the one whose SHA-256 is that value. The file has one script. Change a character of it and the browser refuses to run it. A matching hash shows that the file agrees with itself, not who made it: a person who changes a file on purpose can change the hash too, and the policy still limits what that file can reach. The report also gives a hash of the code without its data block: two files made the same way, with the same activities, show the same value, so code that was read once does not have to be read again.</li>
+        <li><strong>Search for what a policy cannot stop.</strong> A policy cannot stop a page from being sent to another address. Search the file for <code>location</code>, <code>open(</code>, <code>&lt;form</code> and <code>http</code>. In a packet with no class mailbox, the code uses <code>location</code> once, to read the learner's code name after <code>#</code> in the file's own address, and <code>http</code> appears only in <code>http-equiv</code>. A file with a class mailbox also holds the address of its mailbox.</li>
+        <li><strong>Run it and watch.</strong> Open the file with the browser's developer tools on the Network tab, or with the network unplugged, and complete it. No request leaves the device.</li>
+        <li><strong>Find the saved place.</strong> In the developer tools, open Application (Chrome, Edge) or Storage (Firefox, Safari), then Local Storage. There is one key, named <code>alloflow-take-home:</code> then the packet id, a colon and the version. To clear it, press Start over in a practice file, delete the key, or clear the browser's site data. A check keeps the learner's label and a count of tries after Start over, so clear a check in the browser.</li>
+      </ol>
+    </section>
+
+    <section class="guide-section" aria-labelledby="facts-title">
+      <h2 id="facts-title">The facts, for a privacy review</h2>
+      <table class="facts-table">
+        <tbody>
+          <tr>
+            <th scope="row">What is collected</th>
+            <td>A label the learner types (a code name or a first name; it can be left blank), each answer, the time on each item, and the start and finish times from the device clock, with its offset from UTC. Each run also gets a random session number. Nothing else: no email address, no account, no details of the device or the browser, no location.</td>
+          </tr>
+          <tr>
+            <th scope="row">Where it is stored</th>
+            <td>In the browser's local storage on the learner's device, and in any results file the learner saves.</td>
+          </tr>
+          <tr>
+            <th scope="row">Who can read it</th>
+            <td>Anyone who uses that browser on that device, and anyone who is given the results file. Neither is encrypted. The answers of a practice file can be read in its source. The answers of a check are scrambled, which stops casual looking only. A teacher code locks the review screen of a check; it is not encryption.</td>
+          </tr>
+          <tr>
+            <th scope="row">What leaves the device, and when</th>
+            <td>Nothing, unless a person passes on a saved results file. There is one exception: the class mailbox kind of practice file, in the next row.</td>
+          </tr>
+          <tr>
+            <th scope="row">The class mailbox kind</th>
+            <td>A practice file made inside the AlloFlow app by a teacher who has set up a class mailbox has a Send button. When the learner presses Send, the results go to that class mailbox, a Google Apps Script web app at script.google.com, and nowhere else. How to recognize one: the report on Check a file starts "This file can send results to one place", the policy's <code>connect-src</code> names script.google.com, and About this file says so. Files made on this site's maker page have no mailbox. Checks are made with no mailbox.</td>
+          </tr>
+          <tr>
+            <th scope="row">What this site's server can see</th>
+            <td>When someone uses these pages: ordinary web requests for the pages, their scripts and, on the maker page, the sound files (the same files whatever is chosen), with what every web request carries, such as the IP address and the time. Never the words or the choices, and never results. If a school puts a packet on its own web server, that server sees requests for the file and nothing the learner does in it.</td>
+          </tr>
+          <tr>
+            <th scope="row">Accounts, cookies, analytics</th>
+            <td>None on these pages: no sign-in, no cookies, no analytics or tracking scripts. Each page lists every file it loads under See the details. In the browser, the maker page keeps the teacher's last choices and the sound files, the results page keeps results only if a switch is turned on, and this page and Check a file keep nothing.</td>
+          </tr>
+          <tr>
+            <th scope="row">How long it is kept</th>
+            <td>As long as the school keeps the files. The saved place stays in the learner's browser until it is cleared. This site holds no copy, because nothing is sent to it. Results sent to a class mailbox are held by that mailbox; ask the teacher who set it up.</td>
+          </tr>
+          <tr>
+            <th scope="row">License and code</th>
+            <td>AGPL-3.0, free to use. The code is public: <a href="https://github.com/Apomera/AlloFlow" rel="noopener noreferrer">AlloFlow on GitHub</a>. A packet is built by <code>word_sounds_packet_builder.js</code> or <code>packet_check_builder.js</code>, with <code>word_sounds_take_home_loader.js</code>. The checks on Check a file are in <code>packets_verify_core.js</code>.</td>
+          </tr>
+        </tbody>
+      </table>
+      <p class="decision">Whether this meets your district's obligations under FERPA or state law is your district's decision; this page gives you the facts to make it.</p>
+    </section>
+
+    <section class="guide-section" aria-labelledby="limits-title">
+      <h2 id="limits-title">Known limits</h2>
+      <ul class="plain-list guide-three">
+        <li>A results file can be edited. The check value inside it finds accidental changes, not deliberate ones.</li>
+        <li>Times come from the clock of the learner's device.</li>
+        <li>A packet is for practice and for checking progress. It is not a locked test: the answers travel inside the file so that it can score with no internet.</li>
+        <li>Check a file reads text. It cannot follow code that hides what it does, and it cannot prove that software is free of mistakes. Reading the script goes further: it is one script and it is not minified.</li>
+        <li>On an iPad, the Files app shows a preview that does not run the file, so an iPad may need the file served from a web address, such as the school's learning platform. <span class="tested">Reported, not yet tested by us.</span></li>
+        <li>The file has had no formal accessibility audit yet.</li>
+      </ul>
+    </section>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

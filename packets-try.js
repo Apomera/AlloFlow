@@ -1,6 +1,7 @@
-// The preview page (packets-try.html). The maker opens it with the address of the file it built after the #.
-// That address is a blob: address of this same site, held in the maker tab's memory: it is read here, never sent.
-// The file is shown in a sandboxed frame, so it runs as it will for a student and cannot touch this site's storage.
+// The preview page (packets-try.html). Either maker (practice files, math checks) opens it with the address of the
+// file it built after the #. That address is a blob: address of this same site, held in the maker tab's memory: it
+// is read here, never sent. The file is shown in a sandboxed frame, so it runs as it will for a learner and cannot
+// touch this site's storage.
 (function () {
   'use strict';
   var doc = document;
@@ -15,10 +16,10 @@
     if (!reply.ok) throw new Error('gone');
     return reply.text();
   }).then(function (html) {
-    if (!/^<!doctype html>/i.test(html) || html.indexOf('id="packet-manifest"') < 0) throw new Error('not a practice file');
+    if (!/^<!doctype html>/i.test(html) || html.indexOf('id="packet-manifest"') < 0) throw new Error('not a file from a maker');
     var frame = doc.createElement('iframe');
     frame.className = 'try-frame';
-    frame.title = 'The practice file';
+    frame.title = 'The file a learner gets';
     frame.setAttribute('sandbox', 'allow-scripts allow-downloads');
     frame.src = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
     doc.getElementById('try-wait').hidden = true;

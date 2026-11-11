@@ -1859,6 +1859,18 @@ try {
     if (raw.digits) { item.digitsCorrect = _acCkCount(raw.digits[0]); item.digitsPossible = _acCkCount(raw.digits[1]); }
     return item;
   }
+  // The lesson or check title a file saved from 2026-11-11 carries in its
+  // "#summary" row, as a "title=Short vowels" cell. '' for an older file: the
+  // packet id is shown then. The row is outside the edit check.
+  function _acThTitleFromCells(cells) {
+    var title = null;
+    (Array.isArray(cells) ? cells : []).forEach(function(cell) {
+      var text = _acThText(_acThUnguard(cell), 200);
+      var at = text.indexOf('=');
+      if (title === null && at > 0 && text.slice(0, at).toLowerCase().replace(/[^a-z0-9]+/g, '_') === 'title') title = _acThText(text.slice(at + 1), 80);
+    });
+    return title || '';
+  }
   // CSV rows to raw sessions (one per session_id). Columns are found by their
   // header names, in any order; columns this version does not know are ignored.
   function _acThReadCsv(text) {
@@ -1896,12 +1908,16 @@ try {
     var newer = false;
     var scores = {};
     var lastScore = null;
+    var titles = {};
+    var lastTitle = '';
     rows.slice(headerAt + 1).forEach(function(row) {
       var first = _acThText(_acThUnguard(row[0]), 60);
       if (first.charAt(0) === '#') {
         if (first.toLowerCase() === '#integrity') integrity = { method: _acThText(row[1], 12).toLowerCase(), value: _acThText(row[2], 80).toLowerCase() };
         // A check's score line: "#score", session id, then name=value cells.
         else if (first.toLowerCase() === '#score') { lastScore = _acCkScoreFromCells(row.slice(2)); scores['k' + _acThText(_acThUnguard(row[1]), 80)] = lastScore; }
+        // The summary line: "#summary", session id, then name=value cells. Only its title is read.
+        else if (first.toLowerCase() === '#summary') { lastTitle = _acThTitleFromCells(row.slice(2)); titles['k' + _acThText(_acThUnguard(row[1]), 80)] = lastTitle; }
         return;
       }
       var rawCell = function(name) { return _acWsOwn(index, name) && row[index[name]] != null ? String(row[index[name]]) : ''; };
@@ -1934,6 +1950,7 @@ try {
     order.forEach(function(key) {
       var g = groups[key];
       g.score = _acWsOwn(scores, 'k' + g.sid) ? scores['k' + g.sid] : order.length === 1 ? lastScore : null;
+      g.title = _acWsOwn(titles, 'k' + g.sid) ? titles['k' + g.sid] : order.length === 1 ? lastTitle : '';
     });
     return { ok: true, sessions: order.map(function(key) { return groups[key]; }) };
   }
@@ -2523,7 +2540,7 @@ try {
     } else score = correct;
     var custom = raw.form === 'custom' || /^math-custom-/.test(raw.packetId);
     var grade = custom ? '' : ((/-g(k|[0-9]{1,2})$/i.exec(raw.packetId) || [])[1] || '').toUpperCase();
-    // A CSV file does not hold the title; the name it was saved under starts with it.
+    // An older CSV file does not hold the title; the name it was saved under starts with it.
     var named = /^(.+?)__/.exec(_acThText(fileName, 120));
     var title = raw.title || (custom && named ? named[1].replace(/[-_]+/g, ' ').trim() : '');
     return { measure: measure, custom: custom, grade: grade, form: custom ? 'custom' : _acThText(raw.form, 8).toUpperCase(), formVersion: sc && sc.formVersion ? sc.formVersion : 1,

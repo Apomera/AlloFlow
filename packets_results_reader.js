@@ -348,6 +348,9 @@
         return hit.length ? hit[hit.length - 1].pairs : order.length === 1 && list.length ? list[list.length - 1].pairs : null;
       };
       var stated = mine(scores), counted = mine(summaries);
+      // A file saved from 2026-11-11 carries its lesson or check title in the summary row ("title=Short vowels").
+      // An older file has none, and the packet id is shown. The row is outside the check value.
+      group.title = counted && typeof counted.title === 'string' ? text(counted.title, 80) : '';
       if (group.mode !== 'probe') return;
       group.score = stated ? scoreFromPairs(stated) : null;
       group.attempt = group.score ? group.score.attempt : counted && whole(counted.attempt, 9999) ? whole(counted.attempt, 9999) : null;
@@ -533,7 +536,7 @@
     // An older file has no session id: the same learner, start time and number of answers is taken
     // to be the same piece of work.
     var sid = raw.sid || 'old-' + fnv1a(raw.learner + '|' + raw.startedText + '|' + raw.items.length);
-    // A CSV file does not hold the title. For a teacher's own problem set, the name the file was
+    // An older CSV file does not hold the title. For a teacher's own problem set, the name the file was
     // saved under starts with it.
     var title = raw.title;
     var named = /^(.+?)__/.exec(text(fileName, 120));

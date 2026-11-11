@@ -329,9 +329,12 @@ describe('the builder: pictures off', () => {
   // The files this builder and loader made for these inputs BEFORE pictures existed (2026-11-11, from the saved
   // copies of both files at commit ecb54adc5a). A change to the practice player, the builder or the sound
   // dictionary changes them: after a deliberate one, put the new values here.
+  // Renewed 2026-11-11 for one such change: packetCsv, which every file carries, now writes the title as the last
+  // "#summary" cell (three lines, 239 bytes). With the loader as it was before that change these inputs still give
+  // the first values (11854e18..., 168847 bytes and ed033f0d..., 53296 bytes): nothing else moved.
   const BEFORE = {
-    all: { sha256: '11854e186f059a591aaae9347259dbae67278e2b99bdbd0d3abc2b6af628065d', bytes: 168847, items: 124 },
-    isolation: { sha256: 'ed033f0d36a5fd0bf5d29d5b68821e6422011a192848d815788fec318304cb83', bytes: 53296, items: 5 },
+    all: { sha256: '66b679c7f86f062c911aa8afd0ffc757149f1712bb73e1fe3051b32d436a4ba5', bytes: 169086, items: 124 },
+    isolation: { sha256: '7b8d85cd11bf6925f41bf55556545b99f913a894530cf180b2d93cb88884bb5d', bytes: 53535, items: 5 },
   };
   const CASES = { all: {}, isolation: { words: CVC.slice(0, 5), activities: ['isolation'], title: undefined } };
 
