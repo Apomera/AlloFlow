@@ -194,14 +194,14 @@ const CLASS = () => [
   student('s4', 'No Data Owl', null),
 ];
 const HEADER = ['Student', 'Date', 'Session number', 'Activity', 'Skill strand', 'Items', 'First-try items recorded', 'First-try correct', 'First-try %',
-  'Correct with retries', 'Extra practice items', 'Extra practice ended', 'Supports used', 'Difficulty'];
+  'Correct with retries', 'Extra practice items', 'Extra practice ended', 'Supports used', 'Difficulty', 'Source'];
 const FALCON_CSV = [
-  ['Swift Falcon', '2026-10-01', '1', 'Rhyme Time', 'Syllables and rhyme', '1', '0', '', '', '1', '0', '', 'not recorded', ''],
-  ['Swift Falcon', '2026-11-03', '2', 'Blend Sounds', 'Hearing sounds', '6', '6', '2', '33', '3', '2', 'item limit', 'none', 'easy'],
-  ['Swift Falcon', '2026-11-05', '3', 'Blend Sounds', 'Hearing sounds', '4', '4', '1', '25', '2', '0', '', 'none', 'medium'],
-  ['Swift Falcon', '2026-11-05', '3', 'Sound Mapping', 'Letters and sounds', '3', '3', '3', '100', '3', '0', '', 'word in print 3; letter hints 3; picture symbols (AAC) 1', 'medium'],
-  ['Swift Falcon', '2026-11-10', '4', 'Find Sounds', 'Hearing sounds', '2', '2', '2', '100', '2', '0', '', 'word in print 1; anchor card 2', 'hard'],
-  ['Swift Falcon', '2026-11-10', '4', 'Letter Trace', 'Letters and sounds', '2', '0', '', '', '', '0', '', 'none', 'hard'],
+  ['Swift Falcon', '2026-10-01', '1', 'Rhyme Time', 'Syllables and rhyme', '1', '0', '', '', '1', '0', '', 'not recorded', '', 'In app'],
+  ['Swift Falcon', '2026-11-03', '2', 'Blend Sounds', 'Hearing sounds', '6', '6', '2', '33', '3', '2', 'item limit', 'none', 'easy', 'In app'],
+  ['Swift Falcon', '2026-11-05', '3', 'Blend Sounds', 'Hearing sounds', '4', '4', '1', '25', '2', '0', '', 'none', 'medium', 'In app'],
+  ['Swift Falcon', '2026-11-05', '3', 'Sound Mapping', 'Letters and sounds', '3', '3', '3', '100', '3', '0', '', 'word in print 3; letter hints 3; picture symbols (AAC) 1', 'medium', 'In app'],
+  ['Swift Falcon', '2026-11-10', '4', 'Find Sounds', 'Hearing sounds', '2', '2', '2', '100', '2', '0', '', 'word in print 1; anchor card 2', 'hard', 'In app'],
+  ['Swift Falcon', '2026-11-10', '4', 'Letter Trace', 'Letters and sounds', '2', '0', '', '', '', '0', '', 'none', 'hard', 'In app'],
 ];
 function parseCsv(text) {
   const rows = [];
@@ -285,8 +285,8 @@ describe('Class Analytics', () => {
     expect(rows[0]).toEqual(HEADER);
     expect(rows.slice(1, 7)).toEqual(FALCON_CSV);
     // A student name and nothing else can start with = here; it stays text.
-    expect(rows[7]).toEqual(["'=SUM(A1), \"Lee\"", '2026-11-04', '1', 'Sight & Spell', 'Spelling', '1', '1', '0', '0', '0', '0', '', 'none', 'easy']);
-    expect(rows[8]).toEqual(['Old Heron', '', '1', 'Activity not recorded', '', '2', '0', '', '', '1', '0', '', 'not recorded', '']);
+    expect(rows[7]).toEqual(["'=SUM(A1), \"Lee\"", '2026-11-04', '1', 'Sight & Spell', 'Spelling', '1', '1', '0', '0', '0', '0', '', 'none', 'easy', 'In app']);
+    expect(rows[8]).toEqual(['Old Heron', '', '1', 'Activity not recorded', '', '2', '0', '', '', '1', '0', '', 'not recorded', '', 'In app']);
     expect(rows).toHaveLength(9);
     const lines = text.replace(/^\uFEFF/, '').split('\r\n');
     expect(lines.pop()).toBe('');
@@ -396,7 +396,7 @@ describe('Class Analytics', () => {
     const html = new TextDecoder().decode(await bytesOf(blobs[blobs.length - 1]));
     const report = new DOMParser().parseFromString(html, 'text/html');
     const tables = [...report.querySelectorAll('[data-ws-report-tables] table')];
-    expect(tables.map((table) => table.querySelector('caption').textContent)).toEqual(['Word Sounds by skill', 'Recent Word Sounds sessions']);
+    expect(tables.map((table) => table.querySelector('caption').textContent)).toEqual(['Word Sounds by skill', 'Recent Word Sounds sessions', 'Word Sounds over time']);
     expect([...tables[0].querySelectorAll('tbody tr')].map((row) => [...row.children].map(textOf))[2]).toEqual(['Hearing sounds', '12', '42% (5 of 12)']);
     expect([...tables[1].querySelectorAll('tbody tr')].map((row) => [...row.children].map(textOf))[2]).toEqual(['2026-11-03', 'Blend Sounds', '33% (2 of 6)', '2']);
     expect(report.body.textContent).not.toMatch(/needs support/i);

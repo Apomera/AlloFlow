@@ -24,6 +24,19 @@ describe('grapheme aligner', () => {
     expect(graphemes('butterfly')).toEqual(['b', 'u', 'tt', 'er', 'f', 'l', 'y']);
   });
 
+  it('takes the commoner spelling when two fit', () => {
+    expect(graphemes('shop')).toEqual(['sh', 'o', 'p']);
+    expect(graphemes('chop')).toEqual(['ch', 'o', 'p']);
+    expect(graphemes('shock')).toEqual(['sh', 'o', 'ck']);
+    expect(graphemes('shout')).toEqual(['sh', 'ou', 't']);
+    expect(graphemes('guess')).toEqual(['gu', 'e', 'ss']);
+    expect(graphemes('guitar')).toEqual(['gu', 'i', 't', 'ar']);
+    expect(graphemes('blackness')).toEqual(['b', 'l', 'a', 'ck', 'n', 'e', 'ss']);
+    expect(graphemes('sign')).toEqual(['s', 'i', 'gn']);
+    expect(graphemes('received')).toEqual(['r', 'e', 'c', 'ei', 've', 'd']);
+    expect(graphemes('honest')).toEqual(['ho', 'n', 'e', 's', 't']);
+  });
+
   it('attaches a silent e to the consonant before it', () => {
     expect(graphemes('cake')).toEqual(['c', 'a', 'ke']);
     expect(graphemes('home')).toEqual(['h', 'o', 'me']);

@@ -1,0 +1,256 @@
+{
+  "kind": "alloflow-take-home-result",
+  "schemaVersion": 2,
+  "player": "alloflow-word-sounds-take-home/2",
+  "lessonId": "ws-sample-1",
+  "revision": "r3b5f0486",
+  "lessonTitle": "Short vowels practice",
+  "activityTitles": {
+    "isolation": "Find Sounds",
+    "blending": "Blend Sounds",
+    "counting": "Sound Counting"
+  },
+  "learnerName": "Sample Student",
+  "startedAt": "2026-11-11T18:10:31.167Z",
+  "finishedAt": "2026-11-11T18:10:31.208Z",
+  "timesAreFromTheLearnerDevice": true,
+  "items": [
+    {
+      "itemId": "isolation-0",
+      "activity": "isolation",
+      "word": "cat",
+      "target": "k",
+      "responses": [
+        "k"
+      ],
+      "attempts": 1,
+      "firstTry": true,
+      "correct": true,
+      "done": true,
+      "supports": {
+        "wordReplays": 1
+      },
+      "practice": null
+    },
+    {
+      "itemId": "isolation-1",
+      "activity": "isolation",
+      "word": "dog",
+      "target": "o",
+      "responses": [
+        "d",
+        "o"
+      ],
+      "attempts": 2,
+      "firstTry": false,
+      "correct": true,
+      "done": true,
+      "supports": {},
+      "practice": null
+    },
+    {
+      "itemId": "isolation-2",
+      "activity": "isolation",
+      "word": "bed",
+      "target": "d",
+      "responses": [
+        "b",
+        "e"
+      ],
+      "attempts": 2,
+      "firstTry": false,
+      "correct": false,
+      "done": true,
+      "supports": {},
+      "practice": null
+    },
+    {
+      "itemId": "isolation-3",
+      "activity": "isolation",
+      "word": "cup",
+      "target": "k",
+      "responses": [
+        "k"
+      ],
+      "attempts": 1,
+      "firstTry": true,
+      "correct": true,
+      "done": true,
+      "supports": {},
+      "practice": null
+    },
+    {
+      "itemId": "isolation-4",
+      "activity": "isolation",
+      "word": "bug",
+      "target": "u",
+      "responses": [
+        "u"
+      ],
+      "attempts": 1,
+      "firstTry": true,
+      "correct": true,
+      "done": true,
+      "supports": {},
+      "practice": null
+    },
+    {
+      "itemId": "blending-0",
+      "activity": "blending",
+      "word": "cat",
+      "target": "cat",
+      "responses": [
+        "cat"
+      ],
+      "attempts": 1,
+      "firstTry": true,
+      "correct": true,
+      "done": true,
+      "supports": {},
+      "practice": null
+    },
+    {
+      "itemId": "blending-1",
+      "activity": "blending",
+      "word": "dog",
+      "target": "dog",
+      "responses": [
+        "dog"
+      ],
+      "attempts": 1,
+      "firstTry": true,
+      "correct": true,
+      "done": true,
+      "supports": {},
+      "practice": null
+    },
+    {
+      "itemId": "blending-2",
+      "activity": "blending",
+      "word": "bed",
+      "target": "bed",
+      "responses": [
+        "bed"
+      ],
+      "attempts": 1,
+      "firstTry": true,
+      "correct": true,
+      "done": true,
+      "supports": {},
+      "practice": null
+    },
+    {
+      "itemId": "blending-3",
+      "activity": "blending",
+      "word": "cup",
+      "target": "cup",
+      "responses": [
+        "cup"
+      ],
+      "attempts": 1,
+      "firstTry": true,
+      "correct": true,
+      "done": true,
+      "supports": {},
+      "practice": null
+    },
+    {
+      "itemId": "blending-4",
+      "activity": "blending",
+      "word": "bug",
+      "target": "bug",
+      "responses": [
+        "bug"
+      ],
+      "attempts": 1,
+      "firstTry": true,
+      "correct": true,
+      "done": true,
+      "supports": {},
+      "practice": null
+    },
+    {
+      "itemId": "counting-0",
+      "activity": "counting",
+      "word": "cat",
+      "target": "3",
+      "responses": [
+        "3"
+      ],
+      "attempts": 1,
+      "firstTry": true,
+      "correct": true,
+      "done": true,
+      "supports": {},
+      "practice": null
+    },
+    {
+      "itemId": "counting-1",
+      "activity": "counting",
+      "word": "dog",
+      "target": "3",
+      "responses": [
+        "3"
+      ],
+      "attempts": 1,
+      "firstTry": true,
+      "correct": true,
+      "done": true,
+      "supports": {},
+      "practice": null
+    },
+    {
+      "itemId": "counting-2",
+      "activity": "counting",
+      "word": "bed",
+      "target": "3",
+      "responses": [
+        "3"
+      ],
+      "attempts": 1,
+      "firstTry": true,
+      "correct": true,
+      "done": true,
+      "supports": {},
+      "practice": null
+    },
+    {
+      "itemId": "counting-3",
+      "activity": "counting",
+      "word": "cup",
+      "target": "3",
+      "responses": [
+        "3"
+      ],
+      "attempts": 1,
+      "firstTry": true,
+      "correct": true,
+      "done": true,
+      "supports": {},
+      "practice": null
+    },
+    {
+      "itemId": "counting-4",
+      "activity": "counting",
+      "word": "bug",
+      "target": "3",
+      "responses": [
+        "3"
+      ],
+      "attempts": 1,
+      "firstTry": true,
+      "correct": true,
+      "done": true,
+      "supports": {},
+      "practice": null
+    }
+  ],
+  "summary": {
+    "items": 15,
+    "done": 15,
+    "firstTry": 13,
+    "afterRetry": 1,
+    "missed": 1,
+    "practised": 0
+  }
+}

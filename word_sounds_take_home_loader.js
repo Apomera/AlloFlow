@@ -22,7 +22,8 @@
 
   var LESSON_SCHEMA = 'alloflow-take-home-lesson/v2';
   var RESULT_KIND = 'alloflow-take-home-result';
-  var RESULT_SCHEMA = 2;
+  var RESULT_SCHEMA = 3;
+  var PACKET_ENGINE = 'alloflow-packet/1';
   var PLAYER = 'alloflow-word-sounds-take-home/2';
   var ORDINAL_KEYS = ['1st', '2nd', '3rd', '4th', '5th', '6th', '7th', '8th', '9th', '10th', '11th', '12th'];
   var FEEDBACK_CORRECT = ['fb_great_job', 'fb_nice', 'fb_correct'];
@@ -36,7 +37,7 @@
     lang: 'en',
     title: 'Word Sounds practice',
     intro: 'Listen carefully and answer each question. You can hear everything again as many times as you like.',
-    name_label: 'Your name or initials (optional)',
+    learner_label: 'Your code name or first name',
     start: 'Start',
     continue: 'Continue where I left off',
     start_over: 'Start over',
@@ -73,6 +74,22 @@
     name_prompt_add: 'Add my name',
     name_prompt_skip: 'Continue without a name',
     copy_results: 'This browser cannot save files. Copy all of this text and send it to your teacher.',
+    save_csv: 'Save results as a spreadsheet file (CSV)',
+    copy_tsv: 'Copy for a spreadsheet',
+    copied: 'Copied. Now paste it into a spreadsheet.',
+    copy_manual: 'Copy all of this text and paste it into a spreadsheet.',
+    about_button: 'About this file',
+    about_what: 'This is a practice activity in one file. It works with no internet.',
+    about_engine: 'File type: {engine}.',
+    about_stores: 'It keeps your place and your answers on this device only, under the name {key}. Start over removes them.',
+    about_saves: 'When you finish, it can save two files: {csv} opens in a spreadsheet, and {json} is for your teacher to open in AlloFlow.',
+    about_no_network: 'It never connects to the internet.',
+    about_mailbox: 'It connects to the internet for one thing only: when you press Send, your results go to your teacher\'s class mailbox at {host}. Nothing is sent before that.',
+    about_never: 'It never uses the microphone or the camera. It has no cookies and no AI.',
+    about_check: 'Each saved file has a check value. It shows when a file was changed by accident. It cannot stop someone who changes a file on purpose.',
+    about_rules: 'The safety rules this file gives the browser: {csp}',
+    about_licence: 'Licence: {licence}. Anyone may read, share and change the code.',
+    about_credits: 'Made with: {list}',
     // Shown only when the file is opened somewhere that does not run it (a Drive or Files preview).
     no_script: 'If the practice does not start, download this file and open it in Chrome, Edge or Safari.',
     audio_missing: 'This sound could not play.',
@@ -88,6 +105,133 @@
   function randomId() {
     try { if (root.crypto && root.crypto.randomUUID) return root.crypto.randomUUID(); } catch (_) {}
     return 'th-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 10);
+  }
+  var SHA_K = [0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5, 0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5, 0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3, 0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+    0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc, 0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da, 0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7, 0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+    0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13, 0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85, 0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3, 0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+    0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5, 0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3, 0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208, 0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2];
+  // SHA-256 of a string's UTF-8 bytes, synchronously (the app side: the file's
+  // script hash and checking a returned file). null where it cannot be made.
+  function sha256(text) {
+    var bytes;
+    try { bytes = new TextEncoder().encode(text); } catch (_) { return null; }
+    var H = [0x6a09e667, 0xbb67ae85, 0x3c6ef372, 0xa54ff53a, 0x510e527f, 0x9b05688c, 0x1f83d9ab, 0x5be0cd19];
+    var n = bytes.length, total = ((n + 72) >> 6) << 6;
+    var data = new Uint8Array(total);
+    data.set(bytes); data[n] = 0x80;
+    var view = new DataView(data.buffer);
+    view.setUint32(total - 8, Math.floor(n / 536870912), false); view.setUint32(total - 4, (n << 3) >>> 0, false);
+    var w = new Int32Array(64), i;
+    for (var at = 0; at < total; at += 64) {
+      for (i = 0; i < 16; i++) w[i] = view.getInt32(at + i * 4, false);
+      for (i = 16; i < 64; i++) {
+        var x = w[i - 15], y = w[i - 2];
+        w[i] = (w[i - 16] + ((x >>> 7 | x << 25) ^ (x >>> 18 | x << 14) ^ (x >>> 3)) + w[i - 7] + ((y >>> 17 | y << 15) ^ (y >>> 19 | y << 13) ^ (y >>> 10))) | 0;
+      }
+      var a = H[0], b = H[1], c = H[2], d = H[3], e = H[4], f = H[5], g = H[6], h = H[7];
+      for (i = 0; i < 64; i++) {
+        var t1 = (h + ((e >>> 6 | e << 26) ^ (e >>> 11 | e << 21) ^ (e >>> 25 | e << 7)) + ((e & f) ^ (~e & g)) + SHA_K[i] + w[i]) | 0;
+        var t2 = (((a >>> 2 | a << 30) ^ (a >>> 13 | a << 19) ^ (a >>> 22 | a << 10)) + ((a & b) ^ (a & c) ^ (b & c))) | 0;
+        h = g; g = f; f = e; e = (d + t1) | 0; d = c; c = b; b = a; a = (t1 + t2) | 0;
+      }
+      H[0] = (H[0] + a) | 0; H[1] = (H[1] + b) | 0; H[2] = (H[2] + c) | 0; H[3] = (H[3] + d) | 0;
+      H[4] = (H[4] + e) | 0; H[5] = (H[5] + f) | 0; H[6] = (H[6] + g) | 0; H[7] = (H[7] + h) | 0;
+    }
+    var out = new Uint8Array(32), ov = new DataView(out.buffer);
+    for (i = 0; i < 8; i++) ov.setInt32(i * 4, H[i], false);
+    var hex = '', bin = '';
+    for (i = 0; i < 32; i++) { hex += (out[i] < 16 ? '0' : '') + out[i].toString(16); bin += String.fromCharCode(out[i]); }
+    return { hex: hex, base64: btoa(bin) };
+  }
+
+  // The results as one table: the spreadsheet file, the text to copy, the
+  // summary and the text the integrity value covers. Uses only its argument (a
+  // result object, as saved): it is embedded in the learner's file with
+  // toString() and also checks returned files in the app.
+  function packetCsv(result) {
+    var r = result || {};
+    var packet = r.packet && typeof r.packet === 'object' ? r.packet : {};
+    var text = function (v) { return v == null ? '' : typeof v === 'string' ? v : typeof v === 'object' ? JSON.stringify(v) : String(v); };
+    // Same rules as _acCsvCell (student_analytics_module.js).
+    var cell = function (v) {
+      var t = v == null ? '' : String(v);
+      if (typeof v === 'string' && /^[=+\-@\t\r]/.test(t)) t = "'" + t;
+      return '"' + t.replace(/"/g, '""') + '"';
+    };
+    var header = ['format', 'session_id', 'packet_id', 'packet_version', 'form', 'mode', 'learner', 'started_local', 'finished_local', 'duration_s',
+      'item_n', 'item_id', 'activity', 'activity_title', 'scored', 'word', 'target', 'responses', 'correct', 'first_try', 'tries', 'time_ms', 'supports', 'flag'];
+    var titles = r.activityTitles && typeof r.activityTitles === 'object' ? r.activityTitles : {};
+    var learner = text(r.learner != null ? r.learner : r.learnerName);
+    var session = text(r.sessionId);
+    var seconds = Math.round((Number(r.durationMs) || 0) / 1000);
+    var list = Array.isArray(r.items) ? r.items : [];
+    var summary = { itemsGiven: 0, attempted: 0, correct: 0, firstTry: 0, accuracyPct: 0, byActivity: [] };
+    var by = {};
+    var rows = list.map(function (it, i) {
+      it = it && typeof it === 'object' ? it : {};
+      var activity = text(it.activity);
+      var practice = !!it.practice || activity === 'letter_tracing';
+      var a = by['a:' + activity];
+      if (!a) { a = by['a:' + activity] = { activity: activity, items: 0, correct: 0, firstTry: 0 }; summary.byActivity.push(a); }
+      if (!practice) {
+        summary.itemsGiven++; a.items++;
+        if (Number(it.attempts) > 0) summary.attempted++;
+        if (it.correct) { summary.correct++; a.correct++; }
+        if (it.firstTry) { summary.firstTry++; a.firstTry++; }
+      }
+      var supports = it.supports && typeof it.supports === 'object' ? Object.keys(it.supports).map(function (k) { return k + ':' + text(it.supports[k]); }).join(';') : '';
+      return ['alloflow-packet-result/1', session, text(packet.id), text(packet.version), text(packet.form), text(packet.mode), learner,
+        text(r.startedLocal), text(r.finishedLocal), seconds, Number(it.n) || i + 1, text(it.itemId), activity, text(titles[activity]),
+        practice ? 0 : 1, text(it.word), text(it.target), (Array.isArray(it.responses) ? it.responses : []).map(text).join(' | '),
+        it.correct ? 1 : 0, it.firstTry ? 1 : 0, Number(it.attempts) || 0, Math.max(0, Math.round(Number(it.ms) || 0)), supports, text(it.flag)];
+    });
+    summary.accuracyPct = summary.itemsGiven ? Math.round(summary.correct / summary.itemsGiven * 100) : 0;
+    var line = function (cells) { return cells.map(cell).join(','); };
+    var lines = rows.map(line);
+    var notName = /[^a-z0-9]+/gi;
+    try { notName = new RegExp('[^\\p{L}\\p{M}\\p{N}]+', 'gu'); } catch (_) {}
+    var safe = function (v) { return text(v).replace(notName, '-').replace(/^-+|-+$/g, '').slice(0, 40); };
+    // The file name carries the FINISH date, on the learner's clock.
+    var day = /^\d{4}-\d{2}-\d{2}/.exec(text(r.finishedLocal) || text(r.startedLocal));
+    return {
+      header: header, rows: rows, lines: lines, summary: summary,
+      stem: [safe(r.lessonTitle) || 'packet', safe(learner) || 'results'].concat(day ? [day[0]] : []).join('__'),
+      basis: [text(packet.id), text(packet.version), text(packet.form), session].join('|') + '\n' + lines.join('\n'),
+      text: function (integrity) {
+        var g = integrity || {};
+        var tail = [['#summary', session, 'items_given=' + summary.itemsGiven, 'attempted=' + summary.attempted, 'correct=' + summary.correct,
+          'first_try=' + summary.firstTry, 'accuracy_pct=' + summary.accuracyPct],
+        ['#integrity', text(g.method), text(g.value), 'detects accidental edits, not deliberate ones']];
+        return String.fromCharCode(0xFEFF) + [header].concat(rows, tail).map(line).join('\r\n') + '\r\n';
+      },
+      tsv: function () {
+        return [header].concat(rows).map(function (cells) {
+          return cells.map(function (v) {
+            var t = (v == null ? '' : String(v)).replace(/[\t\r\n]+/g, ' ');
+            return typeof v === 'string' && /^[=+\-@]/.test(t) ? "'" + t : t;
+          }).join('\t');
+        }).join('\n');
+      },
+    };
+  }
+
+  // Class Mailbox send: embedded ONLY in a file that has a mailbox. The pack
+  // capability (id + k) and chunked `putsubmission` protocol a hosted homework
+  // link uses. Plain-text POST, so there is no preflight.
+  function takeHomeMailbox(win, target) {
+    if (!target || !target.url || !win.fetch) return null;
+    var post = function (payload) {
+      return win.fetch(target.url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow' })
+        .then(function (r) { return r.json(); })
+        .then(function (data) { if (!data || data.ok !== true) throw new Error((data && data.e) || 'not ok'); return data; });
+    };
+    return function (sid, payload) {
+      var parts = [];
+      for (var at = 0; at < payload.length; at += 60000) parts.push(payload.slice(at, at + 60000));
+      return parts.reduce(function (chain, data, i) {
+        return chain.then(function () { return post({ a: 'putsubmission', id: target.packId, k: target.secret, sid: sid, part: i + 1, of: parts.length, data: data }); });
+      }, Promise.resolve(null));
+    };
   }
 
   // ---------------------------------------------------------------------------
@@ -3523,6 +3667,7 @@
     '.picture{max-width:160px;max-height:160px;border-radius:12px}',
     '.letters{font-size:1.5rem;font-weight:700}.status{min-height:1.5em;margin:12px 0;padding:8px 12px;border-radius:10px}.status.ok{background:var(--ok-bg);color:var(--ok)}.status.warn{background:var(--warn-bg);color:var(--warn)}',
     'label{display:block;margin:12px 0 4px;font-weight:600}input{font:inherit;width:100%;max-width:360px;min-height:48px;padding:8px 12px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink)}',
+    '.about ul{margin:0;padding-inline-start:20px}.about li{margin:8px 0;overflow-wrap:anywhere}',
     '.muted{color:var(--muted)}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}',
     '@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}',
   ].join('\n');
@@ -3532,8 +3677,12 @@
   // uses only its parameters. `matches` is WS_CORE.soundAnswerMatches and
   // `renders` maps activity id -> adapter.render, all embedded verbatim.
   // ---------------------------------------------------------------------------
-  function takeHomeShell(doc, win, lesson, L, matches, renders) {
+  // `kit` = { csv: packetCsv, hash: hashText, mailbox: takeHomeMailbox | null }.
+  function takeHomeShell(doc, win, lesson, L, matches, renders, kit) {
     var storageKey = 'alloflow-take-home:' + lesson.lessonId + ':' + lesson.revision;
+    var manifest = {};
+    try { manifest = JSON.parse(doc.getElementById('packet-manifest').textContent) || {}; } catch (_) {}
+    var sendNow = kit.mailbox ? kit.mailbox(win, lesson.submit) : null;
     var main = doc.getElementById('app');
     var live = doc.getElementById('live');
     var storeOk = true;
@@ -3572,6 +3721,36 @@
       } catch (_) { storeOk = false; }
       return null;
     };
+    var uuid = function () {
+      try { if (win.crypto && win.crypto.randomUUID) return win.crypto.randomUUID(); } catch (_) {}
+      var h = '0123456789abcdef', s = '', bytes = null;
+      try { bytes = win.crypto.getRandomValues(new win.Uint8Array(36)); } catch (_) {}
+      for (var i = 0; i < 36; i++) s += (i === 8 || i === 13 || i === 18 || i === 23) ? '-' : h[(bytes ? bytes[i] : Math.floor(Math.random() * 256)) & 15];
+      return s;
+    };
+    // Local wall clock with its UTC offset, e.g. 2026-11-12T09:14:05-05:00.
+    var localIso = function (d) {
+      var p = function (n) { return (n < 10 ? '0' : '') + n; };
+      var off = -d.getTimezoneOffset(), abs = Math.abs(off);
+      return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()) + 'T' + p(d.getHours()) + ':' + p(d.getMinutes()) + ':' + p(d.getSeconds())
+        + (off < 0 ? '-' : '+') + p(Math.floor(abs / 60)) + ':' + p(abs % 60);
+    };
+    // Time on one item: from its being shown to its being done, not counting
+    // time the tab was hidden. Kept in memory, so a reload starts the count again.
+    var now = function () { try { return win.performance.now(); } catch (_) { return Date.now(); } };
+    var clock = null;
+    var clockLap = function () {
+      if (!clock || clock.from == null) return;
+      var t = now();
+      clock.ms += Math.max(0, t - clock.from); clock.from = t;
+      clock.rec.ms = Math.round(clock.ms);
+    };
+    var clockStart = function (rec) { clock = { rec: rec, ms: 0, from: doc.hidden ? null : now() }; };
+    var clockStop = function () { clockLap(); clock = null; };
+    doc.addEventListener('visibilitychange', function () {
+      if (!clock) return;
+      if (doc.hidden) { clockLap(); clock.from = null; } else if (clock.from == null) clock.from = now();
+    });
     // ONE audio element for every clip: iPad/iPhone Safari lets an element play
     // without a tap only after a tap has played it once, so a new element per
     // clip could stay silent after the first clip of a sequence. A clip cut off
@@ -3642,6 +3821,7 @@
     var screen = function (heading, nodes, hideHeading) {
       screenId++;
       stop();
+      clockStop();
       keyItem = null;
       main.textContent = '';
       // hideHeading: the page title already shows it; screen readers still hear it.
@@ -3652,9 +3832,36 @@
     };
     var statusLine = function (text, tone) { return el('p', { class: 'status' + (tone ? ' ' + tone : ''), role: 'status', text: text }); };
     var activityTitle = function (id) { return L[id + '_title'] || (lesson.activityTitles && lesson.activityTitles[id]) || id; };
+    // "About this file": the manifest block, in plain words.
+    var about = function () {
+      var m = manifest, saves = m.saves || [], net = m.network && m.network.sendsTo;
+      var texts = [
+        L.about_what,
+        fmt(L.about_engine, { engine: m.engine || '' }),
+        fmt(L.about_stores, { key: (m.stores && m.stores[0] && m.stores[0].key) || storageKey }),
+        fmt(L.about_saves, { csv: (saves[0] && saves[0].file) || '.csv', json: (saves[1] && saves[1].file) || '.json' }),
+        net ? fmt(L.about_mailbox, { host: net }) : L.about_no_network,
+        L.about_never,
+        L.about_check,
+        fmt(L.about_rules, { csp: m.csp || '' }),
+        fmt(L.about_licence, { licence: m.licence || '' }),
+        m.attributions && m.attributions.length ? fmt(L.about_credits, { list: m.attributions.join('; ') }) : '',
+      ];
+      var panel = el('div', { class: 'card about', id: 'about-panel', hidden: true, 'data-about': '' }, [
+        el('ul', {}, texts.filter(Boolean).map(function (t) { return el('li', { text: t }); })),
+      ]);
+      var button = el('button', { type: 'button', 'data-about-open': '', 'aria-expanded': 'false', 'aria-controls': 'about-panel', on: { click: function () {
+        panel.hidden = !panel.hidden;
+        button.setAttribute('aria-expanded', panel.hidden ? 'false' : 'true');
+      } }, text: L.about_button });
+      return { button: button, panel: panel };
+    };
 
     var renderStart = function () {
       var prior = load();
+      // A teacher can hand out the file with the label filled in: file.html#learner=BlueHeron7
+      var given = '';
+      try { var hashed = /(?:^#|&)learner=([^&]*)/.exec(String(win.location.hash || '')); if (hashed) given = decodeURIComponent(hashed[1]).trim().slice(0, 60); } catch (_) {}
       var nameInput = el('input', { id: 'learner-name', type: 'text', autocomplete: 'off', maxlength: '60' });
       var resumable = prior && prior.index > 0 && !prior.finishedAt;
       // No name: ask once (per opening of the file), gently; a name stays optional.
@@ -3676,20 +3883,25 @@
         }
         state = keep && prior ? prior : fresh();
         state.name = typed.slice(0, 60);
-        if (!state.startedAt) state.startedAt = new Date().toISOString();
+        if (!state.startedAt) { var began = new Date(); state.startedAt = began.toISOString(); state.startedLocal = localIso(began); }
+        if (!state.sessionId) state.sessionId = uuid();
         save();
         renderItem();
       };
       var buttons = [el('button', { class: 'primary', type: 'button', on: { click: function () { begin(false); } }, text: resumable ? L.start_over : L.start })];
       if (resumable) buttons.unshift(el('button', { class: 'primary', type: 'button', on: { click: function () { begin(true); } }, text: L.continue }));
-      if (prior && prior.name) nameInput.value = prior.name;
+      if (given) nameInput.value = given;
+      else if (prior && prior.name) nameInput.value = prior.name;
+      var info = about();
+      buttons.push(info.button);
       screen(lesson.title, [
         el('div', { class: 'card' }, [
           el('p', { text: L.intro }),
-          el('label', { for: 'learner-name', text: L.name_label }), nameInput, namePrompt,
+          el('label', { for: 'learner-name', text: L.learner_label }), nameInput, namePrompt,
           el('div', { class: 'row', style: 'margin-top:16px' }, buttons),
         ]),
       ], true);
+      main.appendChild(info.panel);
     };
 
     var renderItem = function () {
@@ -3704,6 +3916,7 @@
       var nextButton = el('button', { class: 'primary', type: 'button', hidden: true, on: { click: function () { state.index++; save(); renderItem(); } },
         text: state.index === items.length - 1 ? L.finish : L.next });
       var finishPractice = function () {
+        clockStop();
         rec.done = true; rec.correct = false; rec.firstTry = false;
         save();
         if (handle && typeof handle.reveal === 'function') { try { handle.reveal(null); } catch (_) {} }
@@ -3711,6 +3924,7 @@
         nextButton.focus();
       };
       var finishItem = function (correct) {
+        clockStop();
         rec.done = true; rec.correct = correct; rec.firstTry = correct && rec.attempts === 1;
         save();
         if (handle && typeof handle.reveal === 'function') { try { handle.reveal(correct); } catch (_) {} }
@@ -3768,22 +3982,52 @@
       try { handle = render(item, ctx) || null; } catch (err) { area.appendChild(statusLine(L.audio_missing, 'warn')); }
       // Reopened on an answered item: show its outcome, do not ask again.
       if (rec.done) { if (rec.practice) finishPractice(); else finishItem(rec.correct); }
-      else playAll(item.introAudio || []);
+      else {
+        // Shown before in an earlier opening of the file: the time counts from now.
+        if (rec.shown) rec.flag = 'resumed';
+        rec.shown = true; rec.ms = 0;
+        clockStart(rec);
+        save();
+        playAll(item.introAudio || []);
+      }
     };
 
+    // The integrity value detects accidental edits, not deliberate ones: FNV-1a
+    // at once, replaced by SHA-256 when the browser has made it (renderFinish).
+    var sealed = null;
     var resultFile = function () {
-      return {
-        kind: 'alloflow-take-home-result', schemaVersion: 2, player: lesson.player,
+      var out = {
+        kind: 'alloflow-take-home-result', schemaVersion: 3, player: lesson.player, sessionId: state.sessionId || '',
+        packet: { id: lesson.lessonId, version: lesson.revision, engine: 'alloflow-packet/1', form: '', mode: 'practice' },
         lessonId: lesson.lessonId, revision: lesson.revision, lessonTitle: lesson.title, activityTitles: lesson.activityTitles || {},
-        learnerName: state.name, startedAt: state.startedAt, finishedAt: state.finishedAt, timesAreFromTheLearnerDevice: true,
+        learner: state.name, learnerName: state.name, startedAt: state.startedAt, finishedAt: state.finishedAt,
+        startedLocal: state.startedLocal || (state.startedAt ? localIso(new Date(state.startedAt)) : ''),
+        finishedLocal: state.finishedLocal || (state.finishedAt ? localIso(new Date(state.finishedAt)) : ''),
+        durationMs: Math.max(0, Date.parse(state.finishedAt) - Date.parse(state.startedAt)) || 0, timesAreFromTheLearnerDevice: true,
         items: items.map(function (e, i) {
           var r = state.items[i];
-          return { itemId: e.item.id, activity: e.activity, word: e.item.word, target: e.item.target != null ? e.item.target : null,
-            responses: r.responses.slice(), attempts: r.attempts, firstTry: r.firstTry, correct: r.correct, done: r.done, supports: r.supports,
-            practice: r.practice || null };
+          return { n: i + 1, itemId: e.item.id, activity: e.activity, word: e.item.word, target: e.item.target != null ? e.item.target : null,
+            responses: r.responses.slice(), attempts: r.attempts, firstTry: r.firstTry, correct: r.correct, done: r.done, ms: r.ms || 0,
+            supports: r.supports, practice: r.practice || null, flag: r.flag || '' };
         }),
-        summary: summarize(),
       };
+      var table = kit.csv(out);
+      out.summary = summarize();
+      Object.keys(table.summary).forEach(function (k) { out.summary[k] = table.summary[k]; });
+      if (!sealed || sealed.basis !== table.basis) sealed = { basis: table.basis, method: 'fnv1a', value: kit.hash(table.basis) };
+      out.integrity = { method: sealed.method, value: sealed.value, note: 'detects accidental edits, not deliberate ones' };
+      return out;
+    };
+    var seal = function () {
+      resultFile();
+      var mine = sealed;
+      try {
+        win.crypto.subtle.digest('SHA-256', new win.TextEncoder().encode(mine.basis)).then(function (buffer) {
+          var bytes = new win.Uint8Array(buffer), hex = '';
+          for (var i = 0; i < bytes.length; i++) hex += (bytes[i] < 16 ? '0' : '') + bytes[i].toString(16);
+          mine.method = 'sha256'; mine.value = hex;
+        }, function () {});
+      } catch (_) {}
     };
     var summarize = function () {
       var s = { items: 0, done: 0, firstTry: 0, afterRetry: 0, missed: 0, practised: 0 };
@@ -3795,64 +4039,61 @@
       });
       return s;
     };
-    // Mailbox send: the endpoint, pack capability (id + k) and chunked
-    // `putsubmission` protocol a hosted homework link uses. Plain-text POST,
-    // so there is no preflight. The submission id is kept per attempt, so a
-    // retry is recognised by the mailbox instead of filed twice.
-    var uuid = function () {
-      try { if (win.crypto && win.crypto.randomUUID) return win.crypto.randomUUID(); } catch (_) {}
-      var h = '0123456789abcdef', s = '';
-      for (var i = 0; i < 36; i++) s += (i === 8 || i === 13 || i === 18 || i === 23) ? '-' : h[Math.floor(Math.random() * 16)];
-      return s;
-    };
-    var post = function (url, payload) {
-      return win.fetch(url, { method: 'POST', headers: { 'Content-Type': 'text/plain;charset=utf-8' }, body: JSON.stringify(payload), redirect: 'follow' })
-        .then(function (r) { return r.json(); })
-        .then(function (data) { if (!data || data.ok !== true) throw new Error((data && data.e) || 'not ok'); return data; });
-    };
+    // The submission id is kept per attempt, so a retry is recognised by the
+    // mailbox instead of filed twice.
     var send = function () {
-      var target = lesson.submit;
       if (!state.sendSid) { state.sendSid = 'SUB-' + uuid(); save(); }
-      var payload = JSON.stringify({ kind: 'alloflow-take-home-submission', schemaVersion: 1, studentName: String(state.name || 'Student').slice(0, 80),
-        submissionDate: state.finishedAt, takeHomeResult: resultFile() });
-      var parts = [];
-      for (var at = 0; at < payload.length; at += 60000) parts.push(payload.slice(at, at + 60000));
-      return parts.reduce(function (chain, data, i) {
-        return chain.then(function () { return post(target.url, { a: 'putsubmission', id: target.packId, k: target.secret, sid: state.sendSid, part: i + 1, of: parts.length, data: data }); });
-      }, Promise.resolve(null));
+      return sendNow(state.sendSid, JSON.stringify({ kind: 'alloflow-take-home-submission', schemaVersion: 1, studentName: String(state.name || 'Student').slice(0, 80),
+        submissionDate: state.finishedAt, takeHomeResult: resultFile() }));
     };
     var renderFinish = function () {
-      if (!state.finishedAt) { state.finishedAt = new Date().toISOString(); save(); }
+      if (!state.finishedAt) { var ended = new Date(); state.finishedAt = ended.toISOString(); state.finishedLocal = localIso(ended); save(); }
+      seal();
       var s = summarize();
       var fileStatus = statusLine(state.sent ? fmt(L.sent, { receipt: state.sent }) : state.savedFile ? fmt(L.saved_file, { file: state.savedFile }) : (storeOk ? L.saved_device : L.saved_device_off),
         state.sent || state.savedFile ? 'ok' : (storeOk ? '' : 'warn'));
-      var notName = /[^a-z0-9]+/gi;
-      try { notName = new RegExp('[^\\p{L}\\p{M}\\p{N}]+', 'gu'); } catch (_) {}
-      var safe = function (v) { return String(v || '').replace(notName, '-').replace(/^-+|-+$/g, '').slice(0, 40); };
       // Older iPad Safari (before iOS 13) cannot download: show the results as
       // text to copy instead of a button that does nothing.
       var copyBox = el('div', { hidden: true, 'data-results-text': '' });
-      var saveButton = el('button', { class: state.sent ? '' : 'primary', type: 'button', on: { click: function () {
-        var name = ['word-sounds', safe(lesson.title), safe(state.name), 'results'].filter(Boolean).join('-') + '.json';
-        var json = JSON.stringify(resultFile(), null, 2);
+      var showText = function (label, value) {
+        var text = el('textarea', { id: 'results-text', readonly: true, rows: '8', style: 'width:100%;font:inherit;font-size:.8rem;border-radius:10px', on: { focus: function () { try { text.select(); } catch (_) {} } } });
+        text.value = value;
+        copyBox.textContent = '';
+        copyBox.appendChild(el('label', { for: 'results-text', text: label }));
+        copyBox.appendChild(text);
+        copyBox.hidden = false;
+        text.focus();
+      };
+      var saveAs = function (name, body, type) {
         var a = el('a', { download: name });
-        if (!('download' in a) || !win.Blob || !win.URL || !win.URL.createObjectURL) {
-          var text = el('textarea', { id: 'results-text', readonly: true, rows: '8', style: 'width:100%;font:inherit;font-size:.8rem;border-radius:10px', on: { focus: function () { try { text.select(); } catch (_) {} } } });
-          text.value = json;
-          copyBox.textContent = '';
-          copyBox.appendChild(el('label', { for: 'results-text', text: L.copy_results }));
-          copyBox.appendChild(text);
-          copyBox.hidden = false;
-          text.focus();
-          return;
-        }
-        var url = win.URL.createObjectURL(new win.Blob([json], { type: 'application/json' }));
+        if (!('download' in a) || !win.Blob || !win.URL || !win.URL.createObjectURL) { showText(L.copy_results, body.charCodeAt(0) === 0xFEFF ? body.slice(1) : body); return; }
+        var url = win.URL.createObjectURL(new win.Blob([body], { type: type }));
         a.setAttribute('href', url);
         doc.body.appendChild(a); a.click(); a.remove();
         win.setTimeout(function () { win.URL.revokeObjectURL(url); }, 60000);
         state.savedFile = name; save();
         if (!state.sent) { fileStatus.className = 'status ok'; fileStatus.textContent = fmt(L.saved_file, { file: name }); announce(fileStatus.textContent); }
+      };
+      // Both files are named <lesson>__<learner or results>__<finish date>.
+      var saveButton = el('button', { class: state.sent ? '' : 'primary', type: 'button', 'data-save-json': '', on: { click: function () {
+        var file = resultFile();
+        saveAs(kit.csv(file).stem + '.json', JSON.stringify(file, null, 2), 'application/json');
       } }, text: L.save });
+      var csvButton = el('button', { type: 'button', 'data-save-csv': '', on: { click: function () {
+        var file = resultFile(), table = kit.csv(file);
+        saveAs(table.stem + '.csv', table.text(file.integrity), 'text/csv;charset=utf-8');
+      } }, text: L.save_csv });
+      // For devices where a download goes nowhere: the same table, to paste.
+      var copyButton = el('button', { type: 'button', 'data-copy-tsv': '', on: { click: function () {
+        var tsv = kit.csv(resultFile()).tsv();
+        var manual = function () { showText(L.copy_manual, tsv); };
+        try {
+          win.navigator.clipboard.writeText(tsv).then(function () {
+            fileStatus.className = 'status ok'; fileStatus.textContent = L.copied; announce(L.copied);
+          }, manual);
+        } catch (_) { manual(); }
+      } }, text: L.copy_tsv });
+      var info = about();
       var sendButton = null;
       // The mailbox refuses sends after the teacher's closing date, so the
       // button goes away then instead of failing.
@@ -3864,7 +4105,7 @@
         catch (_) { closedDate = new Date(closesAt).toISOString().slice(0, 10); }
       }
       var closedNote = sendClosed ? fmt(L.send_closed, { date: closedDate }) : '';
-      if (lesson.submit && lesson.submit.url && win.fetch && !sendClosed) {
+      if (sendNow && !sendClosed) {
         sendButton = el('button', { class: 'primary', type: 'button', on: { click: function () {
           if (sendButton.getAttribute('aria-disabled') === 'true') return;
           sendButton.setAttribute('aria-disabled', 'true');
@@ -3901,12 +4142,13 @@
         el('div', { class: 'card' }, [
           el('p', { class: 'letters', text: fmt(L.done_summary, { first: s.firstTry, total: s.items }) }),
           s.afterRetry ? el('p', { text: fmt(L.done_retry, { retry: s.afterRetry }) }) : null,
-          el('div', { class: 'row' }, [sendButton, saveButton, againButton]),
+          el('div', { class: 'row' }, [sendButton, saveButton, csvButton, copyButton, againButton, info.button]),
           confirmBox,
           fileStatus,
           copyBox,
           el('p', { class: 'muted', text: closedNote || (sendButton ? L.send_note : L.not_sent) }),
         ]),
+        info.panel,
       ]);
     };
     renderStart();
@@ -3924,8 +4166,31 @@
     used.forEach(function (id) { Object.assign(labels, adapters[id].labels || {}); labels[id + '_title'] = labels[id + '_title'] || adapters[id].title; });
     Object.assign(labels, opts.labels || {});
     var renders = '{' + used.map(function (id) { return JSON.stringify(id) + ':' + adapters[id].render.toString(); }).join(',\n') + '}';
-    var connect = lesson.submit && /^https:\/\/script\.google\.com\//.test(lesson.submit.url) ? ' https://script.google.com https://script.googleusercontent.com' : '';
-    var csp = "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; media-src data: blob:; img-src data:" + (connect ? '; connect-src' + connect : '');
+    var mailbox = lesson.submit && /^https:\/\/script\.google\.com\//.test(lesson.submit.url);
+    var connect = mailbox ? 'https://script.google.com https://script.googleusercontent.com' : "'none'";
+    // The mailbox code travels only in a file that has a mailbox. Line ends are
+    // made \n because the browser reads them so, and the script is allowed by
+    // its exact hash.
+    var script = ('\n(function(){"use strict";\nvar lesson=' + safeJson(lesson) + ';\nvar labels=' + safeJson(labels) + ';\nvar matches=' + core.soundAnswerMatches.toString()
+      + ';\nvar renders=' + renders + ';\nvar kit={csv:' + packetCsv.toString() + ',\nhash:' + hashText.toString() + ',\nmailbox:' + (mailbox ? takeHomeMailbox.toString() : 'null')
+      + '};\n(' + takeHomeShell.toString() + ')(document,window,lesson,labels,matches,renders,kit);\n})();\n').replace(/\r\n?/g, '\n');
+    var digest = sha256(script);
+    var csp = "default-src 'none'; script-src " + (digest ? "'sha256-" + digest.base64 + "'" : "'unsafe-inline'") + "; style-src 'unsafe-inline'; media-src data: blob:; img-src data:"
+      + "; form-action 'none'; base-uri 'none'; object-src 'none'; frame-src 'none'; worker-src 'none'; manifest-src 'none'; connect-src " + connect;
+    // What a reviewer (or a parent, behind "About this file") can check.
+    var stem = packetCsv({ lessonTitle: lesson.title, learner: 'LEARNER' }).stem + '__DATE';
+    var manifest = {
+      kind: 'alloflow-packet-manifest', engine: PACKET_ENGINE, player: PLAYER, title: lesson.title,
+      packet: { id: lesson.lessonId, version: lesson.revision, form: '', mode: 'practice' },
+      what: 'A practice activity in one file. It runs in a browser with no internet connection.',
+      stores: [{ where: 'localStorage', key: 'alloflow-take-home:' + lesson.lessonId + ':' + lesson.revision,
+        holds: 'the learner label, the place reached, the answers and the time on each item', until: 'Start over or Practice again' }],
+      saves: [{ file: stem + '.csv', format: 'alloflow-packet-result/1' }, { file: stem + '.json', format: RESULT_KIND + ' schemaVersion ' + RESULT_SCHEMA }],
+      network: mailbox ? { sendsTo: 'script.google.com', what: 'the results, to the class mailbox of the teacher', when: 'only when the learner presses Send' } : 'none',
+      never: (mailbox ? [] : ['internet connection']).concat(['microphone', 'camera', 'cookies', 'AI']),
+      integrity: 'Each saved file carries a check value (SHA-256, or FNV-1a where the browser cannot make SHA-256). It detects accidental edits, not deliberate ones.',
+      csp: csp, scriptSha256: digest ? digest.hex : '', licence: 'AGPL-3.0', attributions: Array.isArray(opts.attributions) ? opts.attributions.map(str) : [],
+    };
     // dir comes from the app (labels.dir) so Arabic, Farsi, Urdu, Hebrew... files read right to left.
     var dir = labels.dir === 'rtl' || labels.dir === 'ltr' ? ' dir="' + labels.dir + '"' : '';
     return '<!doctype html><html lang="' + escapeHtml(labels.lang || 'en') + '"' + dir + '><head><meta charset="utf-8">'
@@ -3936,8 +4201,8 @@
       // #app holds a plain note for previews that do not run the file (Drive, Classroom, iPad Files);
       // the player replaces it as soon as it starts.
       + '<body><main><h1>' + escapeHtml(lesson.title) + '</h1><div id="app"><p data-no-script>' + escapeHtml(labels.no_script) + '</p></div><p id="live" class="sr" aria-live="polite"></p></main>'
-      + '<script>\n(function(){"use strict";\nvar lesson=' + safeJson(lesson) + ';\nvar labels=' + safeJson(labels) + ';\nvar matches=' + core.soundAnswerMatches.toString()
-      + ';\nvar renders=' + renders + ';\n(' + takeHomeShell.toString() + ')(document,window,lesson,labels,matches,renders);\n})();\n</script></body></html>';
+      + '<script type="application/json" id="packet-manifest">' + safeJson(manifest) + '</script>'
+      + '<script>' + script + '</script></body></html>';
   }
 
   // Teacher side: read returned result files (v1 Find Sounds files too).
@@ -3947,10 +4212,23 @@
     try { data = typeof text === 'string' ? JSON.parse(text) : text; } catch (_) { return { ok: false, error: 'not_json' }; }
     if (data && data.kind === 'alloflow-take-home-submission' && data.takeHomeResult) data = data.takeHomeResult;
     if (!data || data.kind !== RESULT_KIND) return { ok: false, error: 'not_a_result' };
-    if (data.schemaVersion !== 1 && data.schemaVersion !== RESULT_SCHEMA) return { ok: false, error: 'unsupported_version' };
+    if (data.schemaVersion !== 1 && data.schemaVersion !== 2 && data.schemaVersion !== RESULT_SCHEMA) return { ok: false, error: 'unsupported_version' };
     if (!Array.isArray(data.items) || !data.lessonId) return { ok: false, error: 'incomplete' };
+    // 'changed': the rows no longer match the value saved with them. It is
+    // shown, never a reason to refuse the file (and it cannot catch a
+    // deliberate edit). 'absent': an older file, or a value this browser cannot check.
+    var integrity = 'absent';
+    var saved = data.integrity && typeof data.integrity === 'object' ? data.integrity : null;
+    if (saved && saved.value) {
+      try {
+        var basis = packetCsv(data).basis;
+        var digest = saved.method === 'sha256' ? sha256(basis) : null;
+        var value = saved.method === 'sha256' ? (digest && digest.hex) : saved.method === 'fnv1a' ? hashText(basis) : null;
+        if (value !== null) integrity = value && value === str(saved.value) ? 'ok' : 'changed';
+      } catch (_) { integrity = 'changed'; }
+    }
     var items = data.items.slice(0, 200).map(function (it) {
-      return { activity: str((it && it.activity) || (data.schemaVersion === 1 ? 'isolation' : '')).slice(0, 40), word: str(it && it.word).slice(0, 60),
+      return { ms: Math.max(0, Math.min(86400000, Math.round(Number(it && it.ms) || 0))), flag: str(it && it.flag).slice(0, 40), activity: str((it && it.activity) || (data.schemaVersion === 1 ? 'isolation' : '')).slice(0, 40), word: str(it && it.word).slice(0, 60),
         target: str(it && it.target).slice(0, 40), attempts: Math.max(0, Math.min(9, Number(it && it.attempts) || 0)),
         firstTry: !!(it && it.firstTry), correct: !!(it && it.correct), done: !!(it && it.done),
         practice: it && (it.practice === 'traced' || it.practice === 'skipped') ? it.practice : null,
@@ -3982,8 +4260,10 @@
       var given = data.activityTitles && typeof data.activityTitles === 'object' ? data.activityTitles[id] : null;
       titles[id] = str(given || (ADAPTERS[id] && ADAPTERS[id].title) || (id === 'isolation' ? 'Find Sounds' : id)).slice(0, 60);
     });
-    return { ok: true, result: { activityTitles: titles, lessonId: str(data.lessonId).slice(0, 120), revision: str(data.revision).slice(0, 40), lessonTitle: str(data.lessonTitle).slice(0, 120),
-      learnerName: str(data.learnerName).slice(0, 60), finishedAt: str(data.finishedAt).slice(0, 40), items: items, summary: summary, byActivity: byActivity } };
+    return { ok: true, integrity: integrity, result: { activityTitles: titles, lessonId: str(data.lessonId).slice(0, 120), revision: str(data.revision).slice(0, 40), lessonTitle: str(data.lessonTitle).slice(0, 120),
+      learnerName: str(data.learnerName || data.learner).slice(0, 60), finishedAt: str(data.finishedAt).slice(0, 40), items: items, summary: summary, byActivity: byActivity,
+      integrity: integrity, sessionId: str(data.sessionId).slice(0, 80), startedLocal: str(data.startedLocal).slice(0, 40), finishedLocal: str(data.finishedLocal).slice(0, 40),
+      durationMs: Math.max(0, Math.round(Number(data.durationMs) || 0)) } };
   }
 
   // Every recorded sound in the shipped file as WAV. The sound bank and most
@@ -4072,6 +4352,7 @@
     LESSON_SCHEMA: LESSON_SCHEMA, RESULT_KIND: RESULT_KIND, PLAYER: PLAYER, ORDINAL_KEYS: ORDINAL_KEYS, DEFAULT_LABELS: DEFAULT_LABELS,
     ADAPTERS: ADAPTERS, activities: activities,
     lessonFromPack: lessonFromPack, buildHtml: buildHtml, parseResult: parseResult, portableAudio: portableAudio,
+    PACKET_ENGINE: PACKET_ENGINE, resultsCsv: packetCsv, sha256: sha256,
     // v1 name kept for callers built against the first release.
     buildFindSoundsHtml: buildHtml,
     _shell: takeHomeShell,

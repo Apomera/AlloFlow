@@ -307,6 +307,7 @@ describe('year boundary', () => {
     let imported = [{ name: 'Swift Falcon', stats: {} }];
     let links = { ['sha256:' + 'a'.repeat(64)]: 'Swift Falcon' };
     let undoState = { fromName: 'Marcus Reyes' };
+    let takeHomeLabels = { ['sha256:' + 'b'.repeat(64)]: 'Swift Falcon' };
     const cleared = [];
     const localRemoved = [];
     const sessionRemoved = [];
@@ -316,6 +317,7 @@ describe('year boundary', () => {
       'setActiveStudent', 'setProbeTargetStudent', 'setRecordsRemovalTarget', 'addToast', 't', 'localStorage', 'window',
       'setIdentityLinks', 'safeRemoveItem', 'AC_IDENTITY_LINK_STORE_KEY', 'AC_ROSTER_STORE_KEY',
       'safeSessionRemoveItem', 'AC_LINK_UNDO_KEY', 'setLastLinkUndo',
+      'setThLabels', 'setThPreview', 'AC_TH_LABEL_STORE_KEY',
       fnSrc + ' return handleClearAllStudentRecords();');
     await run(
       () => ['Swift Falcon'],
@@ -331,7 +333,11 @@ describe('year boundary', () => {
       (key) => localRemoved.push(key), 'identity-key', 'roster-key',
       (key) => sessionRemoved.push(key), 'undo-key',
       (u) => { undoState = u; },
+      (u) => { takeHomeLabels = u; }, () => cleared.push('takeHomePreview'), 'take-home-labels-key',
     );
+    // The teacher's take-home learner choices go with the records.
+    expect(takeHomeLabels).toEqual({});
+    expect(localRemoved).toContain('take-home-labels-key');
     expect(cleared).toContain('host');
     expect(cbm).toEqual({});
     expect(imported).toEqual([]);

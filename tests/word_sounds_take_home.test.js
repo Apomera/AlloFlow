@@ -141,7 +141,9 @@ describe('sending back', () => {
 
   it('opens the network only to Apps Script, and only when sending is on', () => {
     const plain = TH.buildHtml(TH.lessonFromPack(PACK(), { core, banks: BANKS }).lesson, { core });
-    expect(plain).not.toContain('connect-src');
+    // Packet phase 1 (2026-11-11): a file with no mailbox now says so outright.
+    expect(plain).toContain("connect-src 'none'");
+    expect(plain).not.toContain('connect-src h');
     const sending = TH.buildHtml(TH.lessonFromPack(PACK(), { core, banks: BANKS, submit: MAILBOX }).lesson, { core });
     expect(sending).toMatch(/connect-src https:\/\/script\.google\.com https:\/\/script\.googleusercontent\.com"/);
   });
@@ -158,7 +160,9 @@ describe('the file', () => {
     const html = TH.buildHtml(lesson, { core });
     expect(html).toContain("default-src 'none'");
     expect(html).toContain(core.soundAnswerMatches.toString());
-    expect(html.match(/<\/script>/gi)).toHaveLength(1);
+    // Two blocks since 2026-11-11: the packet manifest (JSON, never run) and the one script.
+    expect(html.match(/<\/script>/gi)).toHaveLength(2);
+    expect(html.match(/<script/gi)).toHaveLength(2);
     expect(html).not.toMatch(/https?:\/\//);
   });
 
@@ -349,7 +353,7 @@ describe('the teacher dialog in Word Sounds', () => {
     expect(html).toContain("default-src 'none'");
     expect(html).toContain('"word":"cat"');
     expect(html).not.toContain('"word":"dog"');
-    expect(html).not.toContain('connect-src');
+    expect(html).toContain("connect-src 'none'");
     expect(dialog.textContent).toMatch(/Downloaded word-sounds-.*\.html/);
     // The teacher sees the size, and no "too big" warning for a small file.
     const shown = Number((/The file is ([\d.]+) MB\./.exec(dialog.textContent) || [])[1]);
@@ -361,10 +365,22 @@ describe('the teacher dialog in Word Sounds', () => {
       activityTitles: { isolation: 'Find Sounds' },
       items: [{ activity: 'isolation', word: 'cat', attempts: 1, firstTry: true, correct: true, done: true }, { activity: 'isolation', word: 'map', attempts: 2, done: true }] })], 'ana.json', { type: 'application/json' });
     const bad = new File(['not json'], 'notes.txt');
-    Object.defineProperty(input, 'files', { configurable: true, value: [good, bad] });
+    // Packet files (schemaVersion 3) carry an integrity value: one that matches says nothing, one that does not is noted, and both are read.
+    const v3 = (name, edit) => {
+      const file = { kind: 'alloflow-take-home-result', schemaVersion: 3, lessonId: 'other', lessonTitle: 'Other', learnerName: name, learner: name, finishedAt: 't-' + name, sessionId: 's-' + name,
+        packet: { id: 'other', version: 'r1', form: '', mode: 'practice' }, items: [{ n: 1, activity: 'isolation', word: 'cat', attempts: 2, firstTry: false, correct: true, done: true, responses: ['a', 'k'], ms: 900 }] };
+      file.integrity = { method: 'sha256', value: TH.sha256(TH.resultsCsv(file).basis).hex };
+      if (edit) file.items[0].firstTry = true;
+      return new File([JSON.stringify(file)], name + '.json', { type: 'application/json' });
+    };
+    Object.defineProperty(input, 'files', { configurable: true, value: [good, bad, v3('Ben', false), v3('Cy', true)] });
     await act(async () => { input.dispatchEvent(new Event('change', { bubbles: true })); });
     await flush(50);
     const table = dialog.querySelector('[data-ws-take-home-results]');
+    const notes = [...table.querySelectorAll('[data-ws-take-home-edited]')];
+    expect(notes.map((n) => n.textContent)).toEqual(['Edited after saving']);
+    expect(notes[0].closest('tr').textContent).toContain('Cy');
+    expect(table.textContent).toContain('Ben');
     expect(table.textContent).toContain('Ana');
     expect(table.textContent).toContain('1 / 2');
     expect(table.textContent).toContain('Find Sounds: cat');
@@ -383,7 +399,7 @@ describe('the teacher dialog in Word Sounds', () => {
     expect(target).toHaveBeenCalledOnce();
     const html = await blobs[0].text();
     expect(html).toContain(MAILBOX.packId);
-    expect(html).toContain('connect-src');
+    expect(html).toContain('connect-src https://script.google.com');
     expect(dialog.textContent).toContain('Get submissions from Class Mailbox');
   });
 
@@ -398,6 +414,6 @@ describe('the teacher dialog in Word Sounds', () => {
     await act(async () => { dialog.querySelector('[data-ws-take-home-send]').click(); });
     await download(dialog);
     expect(blobs).toHaveLength(1);
-    expect(await blobs[0].text()).not.toContain('connect-src');
+    expect(await blobs[0].text()).toContain("connect-src 'none'");
   });
 });

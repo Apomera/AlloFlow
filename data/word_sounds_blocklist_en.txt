@@ -1,0 +1,141 @@
+# Word Sounds blocklist (English): words the packet maker must never choose as a practice word
+# and must refuse when a teacher types one.
+#
+# THIS IS A FIRST PASS THAT NEEDS HUMAN REVIEW. It was written by hand in one sitting (2026-11-11),
+# with no outside dataset. It is conservative on purpose: it blocks some ordinary words (fat, gun,
+# beer, church) because a practice file goes home with no teacher beside it. It is certainly
+# incomplete, above all for proper names: the sound dictionary holds about 31,000 words taken from
+# old books, and only the names a reviewer thought of or saw in sample output are listed here.
+# The word picker's frequency cut-off is the second guard, not a replacement for review.
+#
+# Format: "## section" starts a section; words are separated by spaces or new lines; "#" starts a
+# comment line. A section marked [derive] also blocks, in the generated table, every dictionary word
+# that sounds the same as one of its words or becomes one when its first or last sound is dropped
+# (gas -> ass). Swapping a sound and rhyme sets are NOT derived here: nearly every short word is one
+# swapped sound from something rude. The builder screens the answer choices it actually makes instead.
+# After editing: node dev-tools/build_word_sounds_wordlist.cjs
+
+## profanity [derive]
+ass asses arse asshole bastard bastards bitch bitches bitchy bollocks bugger bullshit crap crappy
+cunt damn damned dammit goddamn hell hellish fuck fucked fucker fuckers fucking fucks motherfucker
+piss pissed pissing shit shits shitty shite twat wank wanker cock cocks dick dicks prick pricks
+pussy slut sluts slutty whore whores tit tits titty titties turd turds douche jackass dumbass
+
+## slurs [derive]
+nigger niggers nigga negro negroes coon coons spic wop kike chink chinks gook jap japs kraut
+dago fag fags faggot faggots dyke dykes tranny retard retards retarded spaz
+
+## slurs and insults
+gypsy gypsies redskin redskins savage savages squaw injun darky darkies mulatto cripple crippled
+crippling spastic moron morons idiot idiots idiotic imbecile dumb dummy stupid stupidity lunatic
+lunatics midget heathen heathens infidel infidels pagan pagans barbarian barbarians oriental
+colored halfbreed hick hillbilly slave slaves slavery enslaved loser losers freak freaks psycho
+crazy insane fat fatty fatso fatter fattest ugly dork dorks hag wench bimbo skank tramp
+
+## sexual and body
+sex sexes sexy sexual sexually sexuality intercourse orgasm erotic erection condom condoms rape
+raped rapes rapist raping molest molested incest pedophile prostitute prostitutes prostitution
+brothel harlot mistress mistresses lust lustful lusts horny kinky fetish virgin virgins virginity
+orgy masturbate ejaculate genitals genital pubic puberty menstrual porn porno pornography
+pornographic nude nudity naked nakedness stripper strippers hooker hookers hoe hoes ho hos
+penis vagina vulva testicle testicles scrotum sperm semen nipple nipples breast breasts bosom
+bosoms buttocks butt butts butthole bum bums boob boobs booby crotch groin anus anal rectum
+bra bras panties thong lingerie underwear busty seduce seduced seduction adultery concubine
+homo queer gay gays lesbian lesbians homosexual homosexuals homosexuality transgender
+spank spanked spanking bondage hump humped pecker boner wiener balls suck sucks sucked sucker
+
+## risky or embarrassing as a practice target
+brat brats clan clans lice louse moan moans moaned scat slit slits spit spits spat thigh thighs knob knobs
+screw screwed stoned junkie pimp thug thugs gang gangs gangster jerk jerks
+
+## not practice words (letter names and word pieces in the clip banks)
+ai ar ay dr de em en er th na mm ln hz cb cc cd ce ae ab ac ad al ba bc ca co da dc des ee et fe ha id im la le
+lo ma mc mo mu oz pa ph pi re sec sha ter tu un una vs non ah eh oh min
+
+## archaic and dialect spellings (the frequency list comes from old books)
+doth hast hath thee thou thy thine ye quoth unto tis nay shalt dost wilt ere hither thither thence whence
+whither wherefore spake bade fain nigh yea aye alas morrow oft dis dey dat git wat wen yer goin knowed fer fro
+ole maam shant arent cant wont cos
+
+## body functions
+pee peed pees poop pooped poo fart farts farted burp burps burped belch vomit vomited vomiting
+puke puked barf snot booger boogers urine urinate feces dung manure diarrhea constipation bowel
+bowels bladder pus phlegm mucus
+
+## violence and death
+kill kills killed killer killers killing murder murders murdered murderer murderers murderous
+slay slain slew slaughter slaughtered stab stabs stabbed stabbing shoot shoots shot shots
+shooting shooter gun guns gunman gunmen gunshot gunpowder pistol pistols rifle rifles revolver
+shotgun bullet bullets ammunition bomb bombs bombed bomber bombing grenade dynamite explosive
+explosives weapon weapons dagger die died dies dying dead death deaths deadly corpse corpses
+coffin funeral suicide suicidal hanged noose strangle strangled choke choked choking drown
+drowned drowning poison poisoned poisonous gore gory bloody war wars warfare torture tortured
+execute executed execution executioner massacre assassin assassinated assassination terror
+terrorist terrorists terrorism hostage kidnap kidnapped abuse abused abusive assault assaulted
+victim victims lynch lynched behead beheaded gallows genocide holocaust nazi nazis hitler klan
+swastika fascist fascists fascism hate hated hates hatred hateful cruel cruelty curse cursed curses
+
+## drugs alcohol tobacco gambling
+drug drugs drugged cocaine heroin opium marijuana cannabis meth dope doped narcotic narcotics
+overdose addict addicts addicted addiction bong vape vaping coke cigar cigars cigarette
+cigarettes tobacco nicotine smoker smokers alcohol alcoholic beer beers wine wines whiskey whisky
+vodka rum gin brandy liquor liquors booze ale lager champagne cocktail cocktails tequila drunk
+drunken drunkard drunkards pub pubs tavern taverns saloon saloons brewery keg sober hangover
+tipsy intoxicated intoxication gamble gambled gambling gambler gamblers casino poker betting
+lottery jackpot roulette wager
+
+## religion
+god gods goddess goddesses lord lords jesus christ christian christians christianity christendom
+bible biblical gospel gospels church churches pray prays prayed prayer prayers praying priest
+priests pastor bishop bishops pope nun nuns monk monks rabbi imam mosque synagogue heaven
+heavens heavenly holy sacred sin sins sinned sinner sinners sinful saint saints devil devils
+demon demons satan satanic damnation salvation savior saviour baptism baptist baptized catholic
+catholics protestant protestants methodist mormon mormons muslim muslims islam islamic koran
+quran allah mohammed muhammad jew jews jewish judaism hebrew hebrews hindu hindus buddha
+buddhist buddhism sikh atheist atheists worship worshipped altar crucifix crucified amen psalm
+psalms hymn hymns sermon sermons cult sect sects zen messiah prophet prophets apostle apostles
+disciple disciples christmas easter hanukkah ramadan halloween puritan puritans quaker quakers
+presbyterian episcopal lutheran calvinist jesuit jesuits
+
+## politics
+democrat democrats democratic republican republicans liberal liberals conservative conservatives
+communist communists communism socialist socialists socialism marxist trump biden obama clinton
+reagan nixon abortion racist racism racial feminist feminism riot riots confederate whig whigs
+tory tories immigrant immigrants
+
+## proper names: people
+aaron abe abel abraham adam adams alan albert alex alexander alfred alice allen amy andrew andy
+ann anna anne annie anthony arthur barbara ben benjamin bert bess betty billy bob bobby
+brian bruce carl carol caroline catherine charles charley charlie chris christopher clara
+dan daniel dave david dick don donald dora dorothy doug ed eddie edgar edith edward edwin
+eleanor elizabeth ellen emily emma eric ernest eva fred frederick gary george
+gilbert greg harold harry helen henry herbert howard hugh jacob jake james jane
+janet jason jeff jennifer jenny jerry jess jesse jill jim jimmy joan joe joel john
+johnny jon jonathan joseph josh joyce judy julia julie karen kate katherine kathy keith ken
+kenneth kevin kim larry laura lawrence lee len leo lewis linda lisa liz louis louise lucy
+luke margaret maria marie martha martin mary matt matthew max meg michael mike molly
+nancy nat ned nell nick noah nora oliver oscar pam patrick paul peggy pete peter phil
+philip polly rachel ralph rebecca rex richard rick robert roger ron ross
+roy ruth ryan sally sam samuel sarah scott sean seth sid simon stan stephen steve steven
+susan ted teddy thomas tim tom tommy tony val vic victor walter wayne william
+willie zach zeke jones johnson davis wilson clark lewis
+allen nelson mitchell roberts phillips
+campbell evans edwards collins stewart morris murphy rogers morgan
+peterson bailey kelly howard cox richardson watson bennett
+hughes myers sanders ross sullivan russell
+shakespeare napoleon caesar washington jefferson franklin lincoln kennedy roosevelt churchill
+columbus darwin newton einstein plato aristotle socrates homer zeus apollo jupiter venus
+hercules odin thor moses noah paul peter mary joseph jacob isaac israel solomon david goliath heidi holmes hans sara fogg becky barney bobbie blythe davy edna iago kemp lynde percy
+pooh nemo terry huck nan epps freud hoover moore nietzsche prynne sawyer shirley barry allan ali chang wu yu
+kung demi ford jo
+
+## proper names: places and peoples
+america american americans africa african asia asian europe european europeans australia
+canada canadian china chinese japan japanese india indian indians russia russian russians
+england english britain british france french paris germany german germans italy italian
+italians rome roman romans spain spanish greece greek greeks egypt egyptian mexico mexican
+ireland irish scotland scottish scotch wales welsh london york boston chicago texas ohio
+california florida virginia carolina georgia jersey dallas denver berlin tokyo moscow vienna
+venice athens troy nile rhine thames alps arab arabs arabia turk turks turkish dutch swiss
+swede swedes swedish dane danes danish norse persia persian israel korea
+korean vietnam cuba cuban peru chile brazil yankee yankees saxon saxons celt celtic july june mars

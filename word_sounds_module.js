@@ -2349,7 +2349,7 @@ function createWordSoundsCore(options = {}) {
   // Spellings each sound may take. A silent letter belongs to the spelling of
   // the sound beside it (kn, wr, gn, mb), so it is listed with that sound.
   const OG_SPELLING_TEXT = {
-    B: 'b bb pb', CH: 'ch tch t ti c ci', D: 'd dd ed', DH: 'th', F: 'f ff ph gh lf ft', G: 'g gg gh gu gue', HH: 'h wh',
+    B: 'b bb pb', CH: 'ch tch t ti c ci', D: 'd dd ed', DH: 'th', F: 'f ff ph gh lf ft', G: 'g gu gg gh gue', HH: 'h wh',
     JH: 'j g ge dge dg d gg di dj', K: 'k c ck cc ch q que qu cq cu', L: 'l ll', M: 'm mm mb mn lm', N: 'n nn kn gn pn mn nd',
     NG: 'ng n ngue', P: 'p pp', R: 'r rr wr rh', S: 's ss c ce se sc st ps sw', SH: 'sh ti ci ch s ss si ce sci ssi', T: 't tt ed bt pt th',
     TH: 'th', V: 'v ve f vv lv', W: 'w wh u', Y: 'y i', Z: 'z zz s se ze x ss', ZH: 's si g ge z ti',
@@ -2418,6 +2418,12 @@ function createWordSoundsCore(options = {}) {
   // Letters to sounds by dynamic programming: every sound takes one allowed
   // spelling; a silent e joins the consonant before it; a listed spelling may
   // take two sounds. null = no legal alignment (the word goes to the teacher).
+  const spellingRanks = new WeakMap();
+  const spellingRank = (set, text) => {
+    let ranks = spellingRanks.get(set);
+    if (!ranks) { ranks = new Map(); let i = 0; set.forEach(g => ranks.set(g, i++)); spellingRanks.set(set, ranks); }
+    return ranks.get(text) || 0;
+  };
   const alignSpelling = (word, count, single, pair, isConsonant) => {
     const n = word.length, INF = 1e9;
     if (!n || !count || !/^[a-z]+$/.test(word)) return null;
@@ -2431,7 +2437,10 @@ function createWordSoundsCore(options = {}) {
         const text = word.slice(i, i + size);
         const one = single(j);
         // ed is one spelling only as the ending of a word, and "seed" is s-ee-d.
-        const step = text === 'ed' ? cost + 0.05 : cost;
+        // Spellings are listed most common first: of two fits, the commoner wins (shop is sh-o-p).
+        // A vowel team counts as common, so receive keeps its ei.
+        const rank = one && one.has(text) ? spellingRank(one, text) : 0;
+        const step = (text === 'ed' ? cost + 0.05 : cost) + (size > 1 && !isConsonant(j) ? Math.min(rank, 3) : rank) * 0.0002;
         if (one && one.has(text) && (text !== 'ed' || i + size === n) && step < best[i + size][j + 1]) { best[i + size][j + 1] = step; back[i + size][j + 1] = [i, j, text, 1]; }
         const two = j + 1 < count ? pair(j) : null;
         if (two && two.includes(text) && cost + 0.5 < best[i + size][j + 2]) { best[i + size][j + 2] = cost + 0.5; back[i + size][j + 2] = [i, j, text, 2]; }
@@ -25414,7 +25423,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     const other = lessonId && r.lessonId !== lessonId;
                     return h("tr", { key: row.id, className: "border-t border-slate-200 align-top" },
                       h("th", { scope: "row", className: "py-1 pr-2 font-semibold" }, (r.learnerName || printTr("word_sounds.take_home_no_name", "(no name)")) +
-                        (other ? " " + printTr("word_sounds.take_home_other_lesson", "(from another lesson: {title})", { title: r.lessonTitle }) : "")),
+                        (other ? " " + printTr("word_sounds.take_home_other_lesson", "(from another lesson: {title})", { title: r.lessonTitle }) : ""),
+                        r.integrity === "changed" && h("span", { className: "block text-xs font-normal text-amber-800", "data-ws-take-home-edited": "true" }, printTr("word_sounds.take_home_integrity_changed", "Edited after saving"))),
                       h("td", { className: "py-1 pr-2" }, r.summary.firstTry + " / " + r.summary.items),
                       h("td", { className: "py-1 pr-2" }, String(r.summary.afterRetry)),
                       h("td", { className: "py-1 pr-2" }, String(r.summary.missed) + (r.summary.done < r.summary.items ? " " + printTr("word_sounds.take_home_unfinished", "({count} not done)", { count: r.summary.items - r.summary.done }) : "")),

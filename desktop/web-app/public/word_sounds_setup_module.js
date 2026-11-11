@@ -2408,7 +2408,7 @@ function createWordSoundsCore(options = {}) {
     D: "d dd ed",
     DH: "th",
     F: "f ff ph gh lf ft",
-    G: "g gg gh gu gue",
+    G: "g gu gg gh gue",
     HH: "h wh",
     JH: "j g ge dge dg d gg di dj",
     K: "k c ck cc ch q que qu cq cu",
@@ -2509,6 +2509,17 @@ function createWordSoundsCore(options = {}) {
     return ogTableCache;
   };
   const OG_VOWEL_LABELS = /* @__PURE__ */ new Set([...RHYME_VOWELS, "ir", "ur"]);
+  const spellingRanks = /* @__PURE__ */ new WeakMap();
+  const spellingRank = (set, text) => {
+    let ranks = spellingRanks.get(set);
+    if (!ranks) {
+      ranks = /* @__PURE__ */ new Map();
+      let i = 0;
+      set.forEach((g) => ranks.set(g, i++));
+      spellingRanks.set(set, ranks);
+    }
+    return ranks.get(text) || 0;
+  };
   const alignSpelling = (word, count, single, pair, isConsonant) => {
     const n = word.length, INF = 1e9;
     if (!n || !count || !/^[a-z]+$/.test(word)) return null;
@@ -2521,7 +2532,8 @@ function createWordSoundsCore(options = {}) {
       if (j < count) for (let size = 1; size <= 4 && i + size <= n; size++) {
         const text = word.slice(i, i + size);
         const one = single(j);
-        const step = text === "ed" ? cost + 0.05 : cost;
+        const rank = one && one.has(text) ? spellingRank(one, text) : 0;
+        const step = (text === "ed" ? cost + 0.05 : cost) + (size > 1 && !isConsonant(j) ? Math.min(rank, 3) : rank) * 2e-4;
         if (one && one.has(text) && (text !== "ed" || i + size === n) && step < best[i + size][j + 1]) {
           best[i + size][j + 1] = step;
           back[i + size][j + 1] = [i, j, text, 1];

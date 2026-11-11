@@ -113,16 +113,19 @@ describe('the name screen', () => {
 });
 
 describe('the results file name', () => {
-  it('has one "-results", with or without a name', () => {
+  // 2026-11-11: <lesson>__<learner or results>__<finish date, learner's clock>.json
+  it('carries the lesson, the learner label (or "results") and the finish date', () => {
     const named = open();
     named.finish('Ana Li');
     named.button('Save my work as a file').click();
     const nameless = open();
     nameless.finish('');
     nameless.button('Save my work as a file').click();
-    expect(named.downloads).toEqual(['word-sounds-Short-a-Ana-Li-results.json']);
-    expect(nameless.downloads).toEqual(['word-sounds-Short-a-results.json']);
-    expect(nameless.d.getElementById('app').textContent).toContain('Saved as word-sounds-Short-a-results.json.');
+    expect(named.downloads).toHaveLength(1);
+    expect(named.downloads[0]).toMatch(/^Short-a__Ana-Li__\d{4}-\d{2}-\d{2}\.json$/);
+    expect(nameless.downloads[0]).toMatch(/^Short-a__results__\d{4}-\d{2}-\d{2}\.json$/);
+    expect(named.downloads[0].slice(-15, -5)).toBe(named.stored().finishedLocal.slice(0, 10));
+    expect(nameless.d.getElementById('app').textContent).toContain('Saved as ' + nameless.downloads[0] + '.');
   });
 });
 

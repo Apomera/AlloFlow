@@ -1335,6 +1335,8 @@ try {
         if (!p || typeof p !== 'object' || typeof p.id !== 'string' || !p.id || _acWsOwn(byId, p.id)) return;
         var entry = { id: p.id.slice(0, 80), n: _acWsNum(p.n), start: Number(p.start) || 0, acts: {} };
         Object.keys(p.acts && typeof p.acts === 'object' ? p.acts : {}).slice(0, 24).forEach(function(id) { entry.acts[id.slice(0, 40)] = _acWsAct(p.acts[id]); });
+        // A session added from a take-home results file keeps its marker.
+        if (p.src === 'th') _acWsTakeHomeFields(entry, p);
         byId[entry.id] = entry;
         sessions.push(entry);
       });
@@ -1401,8 +1403,62 @@ try {
       sessions: sessions.slice(-_AC_WS_SESSION_CAP).map(function(s) {
         var acts = {};
         Object.keys(s.acts).forEach(function(id) { acts[id] = _acWsActStored(s.acts[id]); });
-        return { id: s.id, n: s.n, start: s.start, acts: acts };
+        var kept = { id: s.id, n: s.n, start: s.start, acts: acts };
+        return s.src === 'th' ? _acWsTakeHomeFields(kept, s) : kept;
       }) };
+  }
+  // Take-home session fields: src 'th', pk lesson or packet name, ig the
+  // edit check (ok / changed / absent / unchecked), df 1 when the date came
+  // from the file and not from the results, w the wrong answers it added.
+  function _acWsTakeHomeFields(entry, p) {
+    entry.src = 'th';
+    if (typeof p.pk === 'string' && p.pk) entry.pk = p.pk.slice(0, 80);
+    if (p.ig === 'ok' || p.ig === 'changed' || p.ig === 'absent' || p.ig === 'unchecked') entry.ig = p.ig;
+    if (p.df) entry.df = 1;
+    if (p.w && typeof p.w === 'object' && !Array.isArray(p.w)) {
+      var w = {};
+      Object.keys(p.w).slice(0, 24).forEach(function(key) { if (_acWsNum(p.w[key])) w[String(key).slice(0, 70)] = _acWsNum(p.w[key]); });
+      if (Object.keys(w).length) entry.w = w;
+    }
+    return entry;
+  }
+  // Skill strands by date, oldest first, for a student with sessions on two
+  // or more dates. `where` says if the day's items were done in the app, in a
+  // take-home file, or both.
+  function _acWsOverTime(summary, limit) {
+    var byDate = {};
+    var dates = [];
+    var strandsSeen = {};
+    (summary && Array.isArray(summary.sessions) ? summary.sessions : []).forEach(function(s) {
+      var date = s.start ? _acLocalDate(s.start) : '';
+      if (!date) return;
+      if (!_acWsOwn(byDate, date)) { byDate[date] = { date: date, app: false, takeHome: false, strands: {} }; dates.push(date); }
+      var day = byDate[date];
+      if (s.src === 'th') day.takeHome = true; else day.app = true;
+      Object.keys(s.acts || {}).forEach(function(id) {
+        var a = _acWsAct(s.acts[id]);
+        var key = _acWsStrandOf(id);
+        if (!_acWsOwn(day.strands, key)) day.strands[key] = { n: 0, g: 0, f: 0, fc: 0 };
+        ['n', 'g', 'f', 'fc'].forEach(function(k) { day.strands[key][k] += a[k]; });
+        strandsSeen[key] = true;
+      });
+    });
+    dates.sort();
+    var strands = _AC_WS_STRANDS.map(function(r) { return r[0]; }).concat(['']).filter(function(key) { return _acWsOwn(strandsSeen, key); });
+    return { strands: strands, rows: dates.slice(-(limit || 12)).map(function(date) {
+      var day = byDate[date];
+      var cells = {};
+      strands.forEach(function(key) {
+        var c = _acWsOwn(day.strands, key) ? day.strands[key] : null;
+        cells[key] = c ? Object.assign({ allItems: c.n }, _acWsFirstTryCell(c.g, c.f, c.fc)) : null;
+      });
+      return { date: date, where: day.app && day.takeHome ? 'both' : day.takeHome ? 'th' : 'app', cells: cells };
+    }) };
+  }
+  function _acWsWhereText(t, where) {
+    return where === 'th' ? _acWsText(t, 'class_analytics.th_source_take_home', 'Take-home')
+      : where === 'both' ? _acWsText(t, 'class_analytics.th_source_both', 'In the app and take-home')
+      : _acWsText(t, 'class_analytics.th_source_app', 'In the app');
   }
   // First-try figures use only the items that say whether the first try was
   // right; the others are counted as not recorded, never as wrong.
@@ -1447,7 +1503,8 @@ try {
         ['g', 'f', 'fc', 'x'].forEach(function(k) { total[k] += a[k]; });
         if (a.x) extraIn.push(id);
       });
-      return Object.assign({ number: s.n, date: s.start ? _acLocalDate(s.start) : '', activities: ids, extra: total.x, extraIn: extraIn }, _acWsFirstTryCell(total.g, total.f, total.fc));
+      return Object.assign({ number: s.n, date: s.start ? _acLocalDate(s.start) : '', activities: ids, extra: total.x, extraIn: extraIn,
+        takeHome: s.src === 'th', packet: s.src === 'th' && s.pk ? s.pk : '', edited: s.src === 'th' && s.ig === 'changed', dateFromFile: s.src === 'th' && !!s.df }, _acWsFirstTryCell(total.g, total.f, total.fc));
     });
   }
   function _acWsWrongList(summary, limit) {
@@ -1469,8 +1526,9 @@ try {
   }
   // Headers and values stay English, like the other Word Sounds CSV files, so
   // spreadsheet imports can key on them.
-  var _AC_WS_SESSION_CSV_HEADER = ['Student', 'Date', 'Session number', 'Activity', 'Skill strand', 'Items', 'First-try items recorded', 'First-try correct', 'First-try %', 'Correct with retries', 'Extra practice items', 'Extra practice ended', 'Supports used', 'Difficulty'];
-  // One row per student x session x activity, oldest session first.
+  var _AC_WS_SESSION_CSV_HEADER = ['Student', 'Date', 'Session number', 'Activity', 'Skill strand', 'Items', 'First-try items recorded', 'First-try correct', 'First-try %', 'Correct with retries', 'Extra practice items', 'Extra practice ended', 'Supports used', 'Difficulty', 'Source'];
+  // One row per student x session x activity, oldest session first. Source is
+  // 'In app' or 'Take-home file' (its Date is the day the file was finished).
   function _acWsSessionCsv(students) {
     var rows = [];
     var included = 0;
@@ -1486,7 +1544,8 @@ try {
           rows.push([String(s.name || s.nickname || ''), session.start ? _acLocalDate(session.start) : '', session.n,
             _acWsActivityName(null, id), _acWsStrandOf(id) ? _acWsStrandName(null, _acWsStrandOf(id)) : '',
             a.n, a.f, a.f ? a.fc : '', a.f ? Math.round(a.fc / a.f * 100) : '', graded ? a.c : '',
-            a.x, a.xe === 'limit' ? 'item limit' : a.xe, _acWsSupportsText(a), a.d.join(' / ')]);
+            a.x, a.xe === 'limit' ? 'item limit' : a.xe, _acWsSupportsText(a), a.d.join(' / '),
+            session.src === 'th' ? 'Take-home file' : 'In app']);
         });
       });
       if (rows.length > before) included++; else leftOut++;
@@ -1557,16 +1616,23 @@ try {
       });
     });
     var sessionLines = _acWsRecentSessions(summary, 8).map(function(s) {
-      return '<tr><th scope="row" style="' + cell + 'font-weight:600">' + _acWsEsc(s.date || _acWsText(t, 'class_analytics.ws_date_not_recorded', 'date not recorded')) + '</th><td style="' + cell + '">' +
+      return '<tr><th scope="row" style="' + cell + 'font-weight:600">' + _acWsEsc((s.date || _acWsText(t, 'class_analytics.ws_date_not_recorded', 'date not recorded')) + (s.takeHome ? ' · ' + _acWsWhereText(t, 'th') : '')) + '</th><td style="' + cell + '">' +
         _acWsEsc(s.activities.map(function(id) { return _acWsActivityName(t, id); }).join(', ')) + '</td><td style="' + cell + '">' + _acWsEsc(_acWsFirstTryText(t, s)) + '</td><td style="' + cell + '">' + (s.extra || 0) + '</td></tr>';
     });
+    var over = _acWsOverTime(summary, 12);
+    var overHtml = over.rows.length < 2 ? '' : table(_acWsText(t, 'class_analytics.th_over_time_heading', 'Word Sounds over time'),
+      [_acWsText(t, 'class_analytics.ws_col_date', 'Date'), _acWsText(t, 'class_analytics.th_col_where', 'Where')].concat(over.strands.map(function(key) { return _acWsStrandName(t, key); })),
+      over.rows.map(function(row) {
+        return '<tr><th scope="row" style="' + cell + 'font-weight:600">' + _acWsEsc(row.date) + '</th><td style="' + cell + '">' + _acWsEsc(_acWsWhereText(t, row.where)) + '</td>' +
+          over.strands.map(function(key) { return '<td style="' + cell + '">' + _acWsEsc(row.cells[key] ? _acWsFirstTryText(t, row.cells[key]) : '–') + '</td>'; }).join('') + '</tr>';
+      }));
     return '<div data-ws-report-tables="true" style="margin-top:8px">' +
       table(_acWsText(t, 'class_analytics.ws_by_skill_heading', 'Word Sounds by skill'), [_acWsText(t, 'class_analytics.ws_col_skill', 'Skill'), _acWsText(t, 'class_analytics.ws_col_items', 'Items'), _acWsText(t, 'class_analytics.ws_col_first_try', 'Right on the first try')], skillLines) +
-      table(_acWsText(t, 'class_analytics.ws_recent_sessions_heading', 'Recent Word Sounds sessions'), [_acWsText(t, 'class_analytics.ws_col_date', 'Date'), _acWsText(t, 'class_analytics.ws_col_activities', 'Activities'), _acWsText(t, 'class_analytics.ws_col_first_try', 'Right on the first try'), _acWsText(t, 'class_analytics.ws_col_extra_items', 'Extra practice items')], sessionLines) + '</div>';
+      table(_acWsText(t, 'class_analytics.ws_recent_sessions_heading', 'Recent Word Sounds sessions'), [_acWsText(t, 'class_analytics.ws_col_date', 'Date'), _acWsText(t, 'class_analytics.ws_col_activities', 'Activities'), _acWsText(t, 'class_analytics.ws_col_first_try', 'Right on the first try'), _acWsText(t, 'class_analytics.ws_col_extra_items', 'Extra practice items')], sessionLines) + overHtml + '</div>';
   }
   // Teacher's view of one student: By skill, Recent sessions, the most frequent
   // wrong answers and this student's CSV. `h` is React.createElement.
-  function _acWsStudentTables(h, t, student) {
+  function _acWsStudentTables(h, t, student, opts) {
     var ws = student && student.data && student.data.wordSoundsState;
     if (!ws || typeof ws !== 'object') return null;
     var summary = _acWsSessionSummary(ws);
@@ -1616,7 +1682,10 @@ try {
             h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_more_practice', 'More practice')))),
           h('tbody', null, sessions.map(function(s) {
             return h('tr', { key: s.number, 'data-ws-session': s.number },
-              h('th', { scope: 'row', className: td + ' font-semibold text-left whitespace-nowrap' }, s.date || _acWsText(t, 'class_analytics.ws_date_not_recorded', 'date not recorded')),
+              h('th', { scope: 'row', className: td + ' font-semibold text-left whitespace-nowrap' }, s.date || _acWsText(t, 'class_analytics.ws_date_not_recorded', 'date not recorded'),
+                s.takeHome ? h('span', { 'data-ws-take-home': 'true', title: s.packet || undefined, className: 'ml-1 inline-block px-1 rounded border border-sky-800 bg-sky-50 text-sky-900 text-[11px] font-bold' }, _acWsWhereText(t, 'th')) : null,
+                s.edited ? h('span', { className: 'block text-[11px] font-normal text-slate-700 whitespace-normal' }, _acWsText(t, 'class_analytics.th_edited_short', 'File edited after it was saved')) : null,
+                s.dateFromFile ? h('span', { className: 'block text-[11px] font-normal text-slate-700 whitespace-normal' }, _acWsText(t, 'class_analytics.th_date_from_file', 'Date from the file, not from the results')) : null),
               h('td', { className: td }, s.activities.map(function(id) { return _acWsActivityName(t, id); }).join(', ')),
               h('td', { className: td }, _acWsFirstTryText(t, s)),
               h('td', { className: td, 'data-ws-more-practice': s.extra ? String(s.extra) : '0' }, s.extra ? _acWsMorePracticeText(t, s) : '–'));
@@ -1627,7 +1696,39 @@ try {
           onClick: function() { _acDownloadCsv(_acWsSessionCsv([student]).rows, 'word_sounds_record_' + _acWsFileStem(student.name || student.nickname) + '_' + _acLocalDate(new Date()) + '.csv'); },
           className: 'mt-2 min-h-11 bg-teal-700 hover:bg-teal-800 text-white px-3 py-2 rounded-lg text-sm font-medium transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-teal-700 focus-visible:ring-offset-2'
         }, _acWsText(t, 'class_analytics.ws_student_csv_button', "Download this student's Word Sounds record (CSV)")),
-        h('p', { className: 'text-[11px] text-slate-600 mt-1' }, _acWsText(t, 'class_analytics.ws_file_saved_here', 'The file is saved on this device. Nothing is sent anywhere.'))));
+        h('p', { className: 'text-[11px] text-slate-600 mt-1' }, _acWsText(t, 'class_analytics.ws_file_saved_here', 'The file is saved on this device. Nothing is sent anywhere.'))),
+      _acWsOverTimeCard(h, t, summary, th, td, student, opts));
+  }
+  // "Over time": one row per date, one column per skill strand. Shown when the
+  // student has sessions on two or more dates. Text only, no colour meaning.
+  function _acWsOverTimeCard(h, t, summary, th, td, student, opts) {
+    var over = _acWsOverTime(summary, 12);
+    var hasTakeHome = (summary.sessions || []).some(function(s) { return s.src === 'th'; });
+    if (over.rows.length < 2 && !hasTakeHome) return null;
+    var heading = _acWsText(t, 'class_analytics.th_over_time_heading', 'Word Sounds over time');
+    return h('div', { 'data-ws-over-time-card': 'true', className: 'bg-white rounded-lg border border-emerald-100 p-2 xl:col-span-2' },
+      h('h5', { className: 'text-sm font-bold text-emerald-800 mb-1' }, heading),
+      over.rows.length < 2
+        ? h('p', { className: 'text-xs text-slate-700' }, _acWsText(t, 'class_analytics.th_over_time_one_date', 'Results from one date so far. Add results from another date to see change over time.'))
+        : h('div', { className: 'overflow-x-auto' }, h('table', { 'data-ws-over-time': 'true', className: 'w-full border-collapse' },
+          h('caption', { className: 'sr-only' }, heading),
+          h('thead', null, h('tr', null,
+            h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_date', 'Date')),
+            h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_col_where', 'Where')),
+            over.strands.map(function(key) { return h('th', { key: key || 'other', scope: 'col', className: th }, _acWsStrandName(t, key)); }))),
+          h('tbody', null, over.rows.map(function(row) {
+            return h('tr', { key: row.date, 'data-ws-over-time-date': row.date },
+              h('th', { scope: 'row', className: td + ' font-semibold text-left whitespace-nowrap' }, row.date),
+              h('td', { className: td }, _acWsWhereText(t, row.where)),
+              over.strands.map(function(key) { return h('td', { key: key || 'other', className: td }, row.cells[key] ? _acWsFirstTryText(t, row.cells[key]) : '–'); }));
+          })))),
+      over.rows.length >= 2 ? h('p', { className: 'text-[11px] text-slate-600 mt-1' }, _acWsText(t, 'class_analytics.th_over_time_hint', 'Right on the first try, by date. Take-home work is done without a teacher present, so read it beside what you see in class.')) : null,
+      hasTakeHome && opts && typeof opts.onRemoveTakeHome === 'function' ? h('button', {
+        type: 'button',
+        'data-th-remove': 'true',
+        onClick: function() { opts.onRemoveTakeHome(student); },
+        className: 'mt-2 min-h-11 bg-white hover:bg-slate-100 text-slate-900 border border-slate-500 px-3 py-2 rounded-lg text-sm font-medium focus:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2'
+      }, _acWsText(t, 'class_analytics.th_remove_button', "Remove this student's take-home results")) : null);
   }
   function _acWsWrongAnswers(h, t, student) {
     var ws = student && student.data && student.data.wordSoundsState;
@@ -1638,6 +1739,623 @@ try {
       h('ul', { className: 'list-disc pl-5 text-xs text-slate-800 space-y-0.5' }, list.map(function(r, i) { return h('li', { key: i }, _acWsWrongText(t, r)); })));
   }
   // END WORD SOUNDS SESSIONS AND SKILLS
+  // BEGIN TAKE-HOME RESULTS IMPORT
+  // Results files a learner saved from a take-home practice file become Word
+  // Sounds sessions on the matching student: the CSV "alloflow-packet-result/1"
+  // and the take-home JSON (schemaVersion 1 to 3). Files are recognised by
+  // what is in them, never by name. Nothing here sends anything anywhere.
+  var AC_TH_LABEL_STORE_KEY = 'alloflow_ac_take_home_labels_v1';
+  var _AC_TH_MAX_BYTES = 2 * 1024 * 1024;
+  var _AC_TH_MAX_FILES = 200;
+  var _AC_TH_MAX_ITEMS = 600;
+  var _AC_TH_COLUMNS = ['format', 'session_id', 'packet_id', 'packet_version', 'form', 'mode', 'learner', 'started_local', 'finished_local', 'duration_s',
+    'item_n', 'item_id', 'activity', 'activity_title', 'scored', 'word', 'target', 'responses', 'correct', 'first_try', 'tries', 'time_ms', 'supports', 'flag'];
+  // Only text and numbers are read from a file; anything else reads as empty.
+  function _acThScalar(value) {
+    return typeof value === 'string' ? value : typeof value === 'number' && Number.isFinite(value) ? String(value) : '';
+  }
+  // One line of plain text: control characters out, spaces collapsed, clipped.
+  function _acThText(value, max) {
+    var text = _acThScalar(value).slice(0, 4000);
+    var out = '';
+    for (var i = 0; i < text.length; i++) { var code = text.charCodeAt(i); out += code < 32 || code === 127 ? ' ' : text.charAt(i); }
+    return out.replace(/\s+/g, ' ').trim().slice(0, max || 80);
+  }
+  // The leading apostrophe _acCsvCell puts before = + - @ comes off on read.
+  function _acThUnguard(cell) {
+    cell = cell == null ? '' : String(cell);
+    return /^'[=+\-@\t\r]/.test(cell) ? cell.slice(1) : cell;
+  }
+  function _acThYes(value) { return /^(1|true|yes|y)$/i.test(_acThText(value, 8)); }
+  // CSV text to rows of cells. Reads the BOM, CRLF or LF, quoted cells with
+  // commas, line breaks and doubled quotes, a "sep=" first line, and a
+  // spreadsheet's re-save that used ; or tab or dropped the quotes.
+  function _acThParseCsv(text) {
+    text = text == null ? '' : String(text);
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    var delimiter = '';
+    var hint = /^sep=(.)\r?\n/i.exec(text);
+    if (hint) { delimiter = hint[1]; text = text.slice(hint[0].length); }
+    if (!delimiter) {
+      var counts = { ',': 0, ';': 0, '\t': 0 };
+      var inside = false;
+      for (var k = 0; k < text.length && k < 20000; k++) {
+        var ch = text.charAt(k);
+        if (ch === '"') inside = !inside;
+        else if (!inside && (ch === '\n' || ch === '\r')) break;
+        else if (!inside && _acWsOwn(counts, ch)) counts[ch]++;
+      }
+      delimiter = counts[';'] > counts[','] && counts[';'] >= counts['\t'] ? ';' : counts['\t'] > counts[','] ? '\t' : ',';
+    }
+    var rows = [];
+    var row = [];
+    var cell = '';
+    var quoted = false;
+    for (var i = 0; i < text.length; i++) {
+      var c = text.charAt(i);
+      if (quoted) {
+        if (c !== '"') cell += c;
+        else if (text.charAt(i + 1) === '"') { cell += '"'; i++; }
+        else quoted = false;
+      } else if (c === '"' && cell === '') quoted = true;
+      else if (c === delimiter) { row.push(cell); cell = ''; }
+      else if (c === '\n' || c === '\r') {
+        if (c === '\r' && text.charAt(i + 1) === '\n') i++;
+        row.push(cell); cell = '';
+        rows.push(row); row = [];
+        if (rows.length >= 5000) return rows;
+      } else cell += c;
+    }
+    if (cell !== '' || row.length) { row.push(cell); rows.push(row); }
+    return rows.filter(function(r) { return r.some(function(v) { return v !== ''; }); });
+  }
+  // The take-home file's own short hash (hashText in
+  // word_sounds_take_home_loader.js), kept the same so its values compare.
+  function _acThFnv1a(text) {
+    var h = 2166136261 >>> 0;
+    for (var i = 0; i < text.length; i++) { h ^= text.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; }
+    return ('0000000' + h.toString(16)).slice(-8);
+  }
+  async function _acThSha256(text) {
+    try {
+      var cryptoApi = (typeof globalThis !== 'undefined' && globalThis.crypto) || (typeof window !== 'undefined' && window.crypto);
+      var Encoder = (typeof TextEncoder !== 'undefined' && TextEncoder) || (typeof window !== 'undefined' && window.TextEncoder);
+      if (!cryptoApi || !cryptoApi.subtle || !Encoder) return '';
+      var digest = await cryptoApi.subtle.digest('SHA-256', new Encoder().encode(text));
+      return Array.from(new Uint8Array(digest)).map(function(b) { return b.toString(16).padStart(2, '0'); }).join('');
+    } catch (e) { return ''; }
+  }
+  // A stamp such as 2026-11-12T23:30:05-05:00 is the learner's wall clock, so
+  // it is read as written: the teacher's time zone cannot move the date. An
+  // older file's UTC stamp (ends in Z) is turned into this device's local time.
+  function _acThStamp(value) {
+    var text = _acThText(value, 40);
+    var m = /^(\d{4})-(\d{2})-(\d{2})(?:[T ](\d{2}):(\d{2})(?::(\d{2}))?)?/.exec(text);
+    if (!m) return 0;
+    var utc = m[4] != null && /Z$/i.test(text);
+    var d = utc ? new Date(text) : new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]), m[4] != null ? Number(m[4]) : 12, Number(m[5]) || 0, Number(m[6]) || 0);
+    if (isNaN(d.getTime())) return 0;
+    if (!utc && (d.getMonth() !== Number(m[2]) - 1 || d.getDate() !== Number(m[3]))) return 0;
+    return d.getFullYear() >= 2000 && d.getFullYear() <= 2100 ? d.getTime() : 0;
+  }
+  // The file's activity ids are the take-home activity ids, which are the
+  // ids in _AC_WS_ACTIVITIES. Any other id is kept and shows under "Other
+  // activities"; an unusable one becomes 'unknown'.
+  function _acThActivityId(value) {
+    var id = _acThText(value, 40).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '');
+    return id && !(id in {}) ? id : 'unknown';
+  }
+  function _acThItem(raw) {
+    var activity = _acThActivityId(raw.activity);
+    var responses = (Array.isArray(raw.responses) ? raw.responses : []).slice(0, 8).map(function(r) { return _acThText(r, 40); }).filter(Boolean);
+    var tries = Math.max(0, Math.min(99, Math.floor(Number(raw.tries)) || 0));
+    var correct = raw.correct === true;
+    return { activity: activity, word: _acThText(raw.word, 40), target: _acThText(raw.target, 40), responses: responses, correct: correct,
+      firstTry: correct && raw.firstTry === true, practice: raw.scored === false || activity === 'letter_tracing',
+      attempted: raw.done === true || tries > 0 || responses.length > 0 || correct };
+  }
+  // CSV rows to raw sessions (one per session_id). Columns are found by their
+  // header names, in any order; columns this version does not know are ignored.
+  function _acThReadCsv(text) {
+    var rows = _acThParseCsv(text);
+    if (!rows.length) return { ok: false, reason: 'empty' };
+    var index = {};
+    var extra = [];
+    var headerAt = -1;
+    for (var r = 0; r < rows.length && r < 5 && headerAt < 0; r++) {
+      var names = rows[r].map(function(c) { return _acThText(_acThUnguard(c), 40).toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, ''); });
+      if (names.indexOf('format') < 0 || names.indexOf('session_id') < 0 || (names.indexOf('item_id') < 0 && names.indexOf('activity') < 0)) continue;
+      names.forEach(function(name, i) {
+        if (_AC_TH_COLUMNS.indexOf(name) >= 0 && !_acWsOwn(index, name)) index[name] = i;
+        // Columns added after this version (a probe's digits_correct): not
+        // read, but part of the saved row, so the edit check covers them.
+        else if (name) extra.push(i);
+      });
+      headerAt = r;
+    }
+    if (headerAt < 0) {
+      // No header row (deleted in a spreadsheet): the columns are in the saved order.
+      if (!/^alloflow-packet-result\//.test(_acThText(rows[0][0], 60)) || rows[0].length < _AC_TH_COLUMNS.length) return { ok: false, reason: 'not_results' };
+      _AC_TH_COLUMNS.forEach(function(name, i) { index[name] = i; });
+    }
+    var groups = {};
+    var order = [];
+    var integrity = null;
+    var newer = false;
+    rows.slice(headerAt + 1).forEach(function(row) {
+      var first = _acThText(_acThUnguard(row[0]), 60);
+      if (first.charAt(0) === '#') {
+        if (first.toLowerCase() === '#integrity') integrity = { method: _acThText(row[1], 12).toLowerCase(), value: _acThText(row[2], 80).toLowerCase() };
+        return;
+      }
+      var rawCell = function(name) { return _acWsOwn(index, name) && row[index[name]] != null ? String(row[index[name]]) : ''; };
+      var get = function(name) { return _acThUnguard(rawCell(name)); };
+      var format = _acThText(get('format'), 60);
+      if (!/^alloflow-packet-result\//.test(format)) return;
+      if (format !== 'alloflow-packet-result/1') { newer = true; return; }
+      var key = 'k' + _acThText(get('session_id'), 80);
+      if (!_acWsOwn(groups, key)) {
+        groups[key] = { sid: _acThText(get('session_id'), 80), learner: _acThText(get('learner'), 60), packetId: _acThText(get('packet_id'), 80), title: '',
+          stamps: [get('finished_local'), get('started_local')], startedText: _acThText(get('started_local'), 40),
+          prefix: [get('packet_id'), get('packet_version'), get('form'), get('session_id')].join('|').slice(0, 600), items: [], lines: [], integrity: null };
+        order.push(key);
+      }
+      var group = groups[key];
+      if (group.items.length >= _AC_TH_MAX_ITEMS) return;
+      // The row as it was saved: every cell quoted, cell text untouched.
+      group.lines.push(_AC_TH_COLUMNS.map(rawCell).concat(extra.map(function(i) { return row[i] != null ? String(row[i]) : ''; }))
+        .map(function(text) { return '"' + text.replace(/"/g, '""') + '"'; }).join(','));
+      var scored = _acThText(get('scored'), 8);
+      group.items.push(_acThItem({ activity: get('activity'), word: get('word'), target: get('target'), responses: get('responses').split(' | '),
+        correct: _acThYes(get('correct')), firstTry: _acThYes(get('first_try')), tries: get('tries'), scored: scored === '' ? true : _acThYes(scored) }));
+    });
+    if (!order.length) return { ok: false, reason: newer ? 'newer' : 'no_items' };
+    // The check line covers the file's one session.
+    if (order.length === 1) groups[order[0]].integrity = integrity;
+    return { ok: true, sessions: order.map(function(key) { return groups[key]; }) };
+  }
+  // The take-home JSON, or a class mailbox copy of it, to one raw session.
+  function _acThReadJson(data) {
+    if (data && typeof data === 'object' && data.kind === 'alloflow-take-home-submission' && data.takeHomeResult && typeof data.takeHomeResult === 'object') data = data.takeHomeResult;
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return { ok: false, reason: 'not_results' };
+    if (data.kind !== 'alloflow-take-home-result') {
+      var saveFile = ['wordSoundsState', 'studentNickname', 'studentProgressSummary', 'fluencyAssessments', 'gameCompletions', 'adventureState', 'responses', 'timeOnTask', 'profile']
+        .some(function(key) { return _acWsOwn(data, key); });
+      return { ok: false, reason: saveFile ? 'save_file' : 'not_results' };
+    }
+    var version = Number(data.schemaVersion);
+    if (version !== 1 && version !== 2 && version !== 3) return { ok: false, reason: version > 3 ? 'newer' : 'not_results' };
+    if (!Array.isArray(data.items)) return { ok: false, reason: 'no_items' };
+    var packet = data.packet && typeof data.packet === 'object' ? data.packet : {};
+    var titles = data.activityTitles && typeof data.activityTitles === 'object' ? data.activityTitles : {};
+    var rawItems = data.items.slice(0, _AC_TH_MAX_ITEMS).map(function(it) { return it && typeof it === 'object' ? it : {}; });
+    var learner = _acThScalar(data.learner) || _acThScalar(data.learnerName);
+    var lines = null;
+    var integrity = data.integrity && typeof data.integrity === 'object' ? { method: _acThText(data.integrity.method, 12).toLowerCase(), value: _acThText(data.integrity.value, 80).toLowerCase() } : null;
+    if (integrity && integrity.value) {
+      // The same rows the CSV file holds, rebuilt with its rules.
+      var cellOf = function(value) {
+        var text = value == null ? '' : _acThScalar(value);
+        if (/^[=+\-@\t\r]/.test(text)) text = "'" + text;
+        return '"' + text.replace(/"/g, '""') + '"';
+      };
+      lines = rawItems.map(function(it, i) {
+        var activity = _acThScalar(it.activity);
+        var supports = it.supports && typeof it.supports === 'object' && !Array.isArray(it.supports) ? Object.keys(it.supports).map(function(k) { return k + ':' + _acThScalar(it.supports[k]); }).join(';') : '';
+        return ['alloflow-packet-result/1', data.sessionId, packet.id, packet.version, packet.form, packet.mode, learner, data.startedLocal, data.finishedLocal,
+          Number.isFinite(data.durationMs) ? Math.round(data.durationMs / 1000) : '', it.n != null ? it.n : i + 1, it.itemId, activity,
+          _acWsOwn(titles, activity) ? titles[activity] : '', it.scored === false || it.practice || activity === 'letter_tracing' ? 0 : 1, it.word, it.target,
+          (Array.isArray(it.responses) ? it.responses : []).map(_acThScalar).join(' | '), it.correct === true ? 1 : 0, it.firstTry === true ? 1 : 0,
+          it.attempts != null ? it.attempts : it.tries, it.ms, supports, it.flag].map(cellOf).join(',');
+      });
+    }
+    return { ok: true, sessions: [{ sid: _acThText(data.sessionId, 80), learner: _acThText(learner, 60), packetId: _acThText(packet.id, 80) || _acThText(data.lessonId, 80),
+      title: _acThText(data.lessonTitle, 80) || _acThText(packet.title, 80),
+      stamps: [data.finishedLocal, data.finishedAt, data.startedLocal, data.startedAt], startedText: _acThText(data.startedLocal, 40) || _acThText(data.startedAt, 40),
+      prefix: [packet.id, packet.version, packet.form, data.sessionId].map(_acThScalar).join('|').slice(0, 600),
+      items: rawItems.map(function(it) {
+        return _acThItem({ activity: _acThScalar(it.activity) || (version === 1 ? 'isolation' : ''), word: it.word, target: it.target, responses: it.responses,
+          correct: it.correct === true, firstTry: it.firstTry === true, tries: it.attempts != null ? it.attempts : it.tries, done: it.done === true,
+          scored: !(it.scored === false || it.practice) });
+      }), lines: lines, integrity: integrity }] };
+  }
+  // A raw session to what the dashboard keeps: activity counts in the stored
+  // Word Sounds shape (see _acWsAct), the date of record and the edit check.
+  async function _acThSession(raw, lastModified) {
+    var acts = {};
+    var wrong = {};
+    var done = 0, graded = 0, firstTry = 0;
+    raw.items.forEach(function(it) {
+      if (!it.attempted) return;
+      var a = _acWsOwn(acts, it.activity) ? acts[it.activity] : null;
+      if (!a) {
+        if (Object.keys(acts).length >= 24) return;
+        a = acts[it.activity] = _acWsAct(null);
+      }
+      a.n++; done++;
+      // Letter Trace and unscored items are practice: counted, never graded.
+      if (it.practice) return;
+      a.g++; a.f++; graded++;
+      if (it.correct) a.c++;
+      if (it.firstTry) { a.fc++; firstTry++; }
+      if (!it.word) return;
+      (it.correct ? it.responses.slice(0, -1) : it.responses).slice(0, 4).forEach(function(picked) {
+        if (picked === it.target) return;
+        var key = it.word.toLowerCase() + '\t' + picked.slice(0, 24);
+        if (_acWsOwn(wrong, key)) wrong[key]++;
+        else if (Object.keys(wrong).length < 24) wrong[key] = 1;
+      });
+    });
+    var start = 0;
+    raw.stamps.forEach(function(stamp) { if (!start) start = _acThStamp(stamp); });
+    var dateFromFile = !start;
+    if (!start) start = Number(lastModified) > 0 && Number.isFinite(Number(lastModified)) ? Number(lastModified) : Date.now();
+    var check = 'absent';
+    if (raw.integrity && raw.integrity.value && raw.lines) {
+      var text = raw.prefix + '\n' + raw.lines.join('\n');
+      var got = raw.integrity.method === 'fnv1a' ? _acThFnv1a(text) : raw.integrity.method === 'sha256' ? await _acThSha256(text) : '';
+      check = !got ? 'unchecked' : got === raw.integrity.value ? 'ok' : 'changed';
+    }
+    // An older file has no session id: the same learner, start time and item
+    // count is taken to be the same piece of work.
+    var sid = raw.sid || 'old-' + _acThFnv1a(raw.learner + '|' + raw.startedText + '|' + raw.items.length);
+    var stored = {};
+    Object.keys(acts).forEach(function(id) { stored[id] = _acWsActStored(acts[id]); });
+    return { id: 'th:' + sid.slice(0, 64), learner: raw.learner, title: raw.title || raw.packetId, start: start, date: _acLocalDate(start), dateFromFile: dateFromFile,
+      given: raw.items.length, done: done, firstTryItems: graded, firstTryCorrect: firstTry, percent: graded ? Math.round(firstTry / graded * 100) : null,
+      acts: stored, wrong: wrong, integrity: check };
+  }
+  // One dropped file to { name, sessions } or { name, reason }. Never throws.
+  async function _acThReadFile(file) {
+    var out = { name: _acThText(file && file.name, 120) || 'file', sessions: [], reason: '' };
+    try {
+      if (!file || !(Number(file.size) <= _AC_TH_MAX_BYTES)) { out.reason = 'too_big'; return out; }
+      var text = typeof file.text === 'function' ? await file.text() : await new Promise(function(done, fail) {
+        var reader = new FileReader();
+        reader.onload = function() { done(String(reader.result || '')); };
+        reader.onerror = function() { fail(reader.error); };
+        reader.readAsText(file);
+      });
+      text = String(text == null ? '' : text);
+      if (text.length > _AC_TH_MAX_BYTES) { out.reason = 'too_big'; return out; }
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+      var head = text.slice(0, 400).replace(/^\s+/, '').charAt(0);
+      var read;
+      if (!head) read = { ok: false, reason: 'empty' };
+      else if (head === '<') read = { ok: false, reason: 'web_page' };
+      else if (head === '{' || head === '[') {
+        var data = null;
+        try { data = JSON.parse(text); } catch (e) { data = null; }
+        read = _acThReadJson(data);
+      } else read = _acThReadCsv(text);
+      if (!read.ok) { out.reason = read.reason; return out; }
+      for (var i = 0; i < read.sessions.length && i < 40; i++) {
+        var session = await _acThSession(read.sessions[i], file.lastModified);
+        if (session.done > 0) out.sessions.push(session);
+      }
+      if (!out.sessions.length) out.reason = 'nothing_done';
+    } catch (e) { out.sessions = []; out.reason = 'unreadable'; }
+    return out;
+  }
+  // Learner matching. Letters and digits only, any case: "blue-heron 7" and
+  // "BlueHeron7" are the same label.
+  function _acThNorm(label) {
+    var text = label == null ? '' : String(label);
+    try { text = text.normalize('NFKC'); } catch (e) {}
+    return text.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '');
+  }
+  // Names a result can be added to: students on the dashboard, then roster codenames.
+  function _acThNames(students, rosterKeyValue) {
+    var names = [];
+    var add = function(name) { if (typeof name === 'string' && name && names.indexOf(name) < 0) names.push(name); };
+    (Array.isArray(students) ? students : []).forEach(function(s) { if (s && !s.isLive) add(s.nickname || s.name); });
+    var roster = rosterKeyValue && rosterKeyValue.students && typeof rosterKeyValue.students === 'object' ? rosterKeyValue.students : {};
+    Object.keys(roster).forEach(add);
+    return names;
+  }
+  // Exact name, then the teacher's earlier choice for this label, then the
+  // one student whose name is the same apart from case, spaces and
+  // punctuation. Two close students, or none: the teacher chooses.
+  function _acThMatch(label, names, remembered) {
+    label = _acThText(label, 60);
+    if (!label) return { name: '', how: 'no_label' };
+    if (names.indexOf(label) >= 0) return { name: label, how: 'exact' };
+    if (remembered === '+new') return { name: '+new', how: 'remembered' };
+    if (typeof remembered === 'string' && remembered && names.indexOf(remembered) >= 0) return { name: remembered, how: 'remembered' };
+    var norm = _acThNorm(label);
+    var close = norm ? names.filter(function(name) { return _acThNorm(name) === norm; }) : [];
+    if (close.length === 1) return { name: close[0], how: 'close' };
+    return { name: '', how: close.length > 1 ? 'several' : 'none' };
+  }
+  // The name a new student gets from a typed label.
+  function _acThNewName(label) {
+    label = _acThText(label, 60);
+    return label in {} ? 'Learner ' + label : label;
+  }
+  function _acThSessionIds(students) {
+    var have = {};
+    (Array.isArray(students) ? students : []).forEach(function(s) {
+      var saved = s && s.data && s.data.wordSoundsState && s.data.wordSoundsState.wsSessions;
+      (saved && Array.isArray(saved.sessions) ? saved.sessions : []).forEach(function(session) {
+        if (session && typeof session.id === 'string' && session.id.indexOf('th:') === 0) have['x' + session.id] = true;
+      });
+    });
+    return have;
+  }
+  // Read the dropped files and say, per session, what would happen. Nothing
+  // is stored here. status: new / added (on the dashboard already) / repeat
+  // (the same session twice in this drop, such as its CSV and its JSON).
+  async function _acThPreview(files, students, rosterKeyValue, labels) {
+    var all = Array.from(files || []);
+    var names = _acThNames(students, rosterKeyValue);
+    var have = _acThSessionIds(students);
+    var seen = {};
+    var rows = [];
+    var others = [];
+    for (var i = 0; i < all.length && i < _AC_TH_MAX_FILES; i++) {
+      var read = await _acThReadFile(all[i]);
+      if (read.reason) { others.push({ name: read.name, reason: read.reason, file: read.reason === 'save_file' ? all[i] : null }); continue; }
+      for (var j = 0; j < read.sessions.length; j++) {
+        var session = read.sessions[j];
+        var labelKey = session.learner ? await _acIdentityLinkKey(session.learner) : '';
+        var match = _acThMatch(session.learner, names, labelKey && labels && _acWsOwn(labels, labelKey) ? labels[labelKey] : '');
+        var status = _acWsOwn(have, 'x' + session.id) ? 'added' : _acWsOwn(seen, 'x' + session.id) ? 'repeat' : 'new';
+        seen['x' + session.id] = true;
+        rows.push({ key: rows.length + ':' + session.id, file: read.name, session: session, status: status, labelKey: labelKey, match: match, choice: match.name, skip: false });
+      }
+    }
+    return { rows: rows, others: others, names: names, leftOut: Math.max(0, all.length - _AC_TH_MAX_FILES) };
+  }
+  function _acThReady(row) {
+    return !!row && row.status === 'new' && !row.skip && !!row.choice && (row.choice !== '+new' || !!row.session.learner);
+  }
+  // The teacher's choice for one row also fills the other rows that carry the
+  // same label and have no choice yet.
+  function _acThChoose(rows, key, value) {
+    var picked = rows.filter(function(row) { return row.key === key; })[0];
+    if (!picked) return rows;
+    return rows.map(function(row) {
+      if (row.key === key) return Object.assign({}, row, { choice: value });
+      return value && picked.labelKey && row.labelKey === picked.labelKey && row.status === 'new' && !row.choice ? Object.assign({}, row, { choice: value }) : row;
+    });
+  }
+  function _acThHasTakeHome(student) {
+    var saved = student && student.data && student.data.wordSoundsState && student.data.wordSoundsState.wsSessions;
+    return !!(saved && Array.isArray(saved.sessions) && saved.sessions.some(function(s) { return s && s.src === 'th'; }));
+  }
+  // A learner who has only handed in take-home files still gets a row.
+  function _acThNewStudent(name, session, stats, linkedToRoster) {
+    return { id: 'student-' + Date.now() + '-' + Math.random().toString(36).slice(2), name: name, importedName: null, linkedToRoster: !!linkedToRoster, filename: null,
+      data: { wordSoundsState: { history: [] } }, stats: stats && typeof stats === 'object' ? stats : {}, safetyFlags: [], screeningHistory: [],
+      lastSession: new Date(session.start).toISOString() };
+  }
+  // The session joins the student's stored Word Sounds summary as one more
+  // entry, so every table, the report and the CSV files read it. `through`
+  // stays, so rows from the app are never skipped or counted twice.
+  function _acThAddSession(student, session) {
+    var data = Object.assign({}, student.data && typeof student.data === 'object' ? student.data : {});
+    var ws = Object.assign({}, data.wordSoundsState && typeof data.wordSoundsState === 'object' ? data.wordSoundsState : { history: [] });
+    var summary = _acWsSessionSummary(ws);
+    var entry = { id: session.id, n: summary.count + 1, start: session.start, acts: session.acts, src: 'th', pk: session.title, ig: session.integrity, w: session.wrong };
+    if (session.dateFromFile) entry.df = 1;
+    summary.sessions.push(entry);
+    summary.count++;
+    Object.keys(session.wrong).forEach(function(key) { summary.wrong[key] = (_acWsOwn(summary.wrong, key) ? summary.wrong[key] : 0) + session.wrong[key]; });
+    ws.wsSessions = summary;
+    ws.wsSessions = _acWsSessionSummary(ws);
+    data.wordSoundsState = ws;
+    return Object.assign({}, student, { data: data, lastSession: student.lastSession || new Date(session.start).toISOString() });
+  }
+  // picks: [{ session, name }]. A session already on any student is left out,
+  // so the same file dropped twice, or as CSV and JSON, counts once.
+  function _acThApply(students, picks, makeStudent) {
+    var list = (Array.isArray(students) ? students : []).slice();
+    var have = _acThSessionIds(list);
+    var added = 0, created = 0;
+    var touched = [];
+    (Array.isArray(picks) ? picks : []).forEach(function(pick) {
+      var session = pick && pick.session;
+      if (!session || typeof pick.name !== 'string' || !pick.name || _acWsOwn(have, 'x' + session.id)) return;
+      var at = -1;
+      list.forEach(function(s, i) {
+        if (!s || s.isLive || (s.nickname || s.name) !== pick.name) return;
+        // The row that already holds take-home results, else the newest row.
+        if (at < 0 || !_acThHasTakeHome(list[at])) at = i;
+      });
+      if (at < 0) { list.push(makeStudent(pick.name, session)); at = list.length - 1; created++; }
+      list[at] = _acThAddSession(list[at], session);
+      have['x' + session.id] = true;
+      added++;
+      if (touched.indexOf(at) < 0) touched.push(at);
+    });
+    return { students: list, added: added, created: created, studentCount: touched.length };
+  }
+  // Take every take-home session off one student, with the wrong answers they added.
+  function _acThRemove(student) {
+    var ws = student && student.data && student.data.wordSoundsState;
+    if (!ws || typeof ws !== 'object') return student;
+    var summary = _acWsSessionSummary(ws);
+    var wrong = Object.assign({}, summary.wrong);
+    var kept = summary.sessions.filter(function(s) {
+      if (s.src !== 'th') return true;
+      Object.keys(s.w || {}).forEach(function(key) {
+        if (!_acWsOwn(wrong, key)) return;
+        wrong[key] -= s.w[key];
+        if (!(wrong[key] > 0)) delete wrong[key];
+      });
+      return false;
+    });
+    var nextWs = Object.assign({}, ws, { wsSessions: { through: summary.through, count: summary.count, wrong: wrong, sessions: kept } });
+    return Object.assign({}, student, { data: Object.assign({}, student.data, { wordSoundsState: nextWs }) });
+  }
+  // The teacher's choices, kept by a one-way fingerprint of the typed label.
+  function _acThRestoreLabels(raw) {
+    try {
+      var parsed = JSON.parse(raw || '{}');
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) return {};
+      var out = {};
+      Object.keys(parsed).slice(0, 500).forEach(function(key) {
+        if (!/^(sha256|fallback-v1):[a-f0-9]+$/.test(key) || typeof parsed[key] !== 'string' || !parsed[key].trim()) return;
+        out[key] = parsed[key].trim().slice(0, 80);
+      });
+      return out;
+    } catch (e) { return {}; }
+  }
+  function _acThRemember(labels, rows) {
+    var next = Object.assign({}, labels);
+    rows.forEach(function(row) {
+      if (!row.labelKey || row.match.how === 'exact') return;
+      next[row.labelKey] = row.choice === '+new' ? '+new' : row.choice;
+    });
+    var keys = Object.keys(next);
+    keys.slice(0, Math.max(0, keys.length - 500)).forEach(function(key) { delete next[key]; });
+    return next;
+  }
+  function _acThReasonText(t, reason) {
+    return reason === 'too_big' ? _acWsText(t, 'class_analytics.th_reason_too_big', 'This file is too big to be a results file (over 2 MB).')
+      : reason === 'empty' ? _acWsText(t, 'class_analytics.th_reason_empty', 'This file is empty.')
+      : reason === 'web_page' ? _acWsText(t, 'class_analytics.th_reason_web_page', 'This is a web page, not a results file. Ask the learner for the results file they saved at the end.')
+      : reason === 'save_file' ? _acWsText(t, 'class_analytics.th_reason_save_file', 'This is a student save file, not take-home results.')
+      : reason === 'newer' ? _acWsText(t, 'class_analytics.th_reason_newer', 'This file was made by a newer version. Update AlloFlow to add it.')
+      : reason === 'no_items' ? _acWsText(t, 'class_analytics.th_reason_no_items', 'This results file has no items in it.')
+      : reason === 'nothing_done' ? _acWsText(t, 'class_analytics.th_reason_nothing_done', 'No items were done in this file.')
+      : reason === 'unreadable' ? _acWsText(t, 'class_analytics.th_reason_unreadable', 'This file could not be read.')
+      : _acWsText(t, 'class_analytics.th_reason_not_results', 'This is not a take-home results file.');
+  }
+  function _acThStatusText(t, row) {
+    return row.justAdded ? _acWsText(t, 'class_analytics.th_status_just_added', 'Added')
+      : row.status === 'added' ? _acWsText(t, 'class_analytics.th_status_added', 'Already added')
+      : row.status === 'repeat' ? _acWsText(t, 'class_analytics.th_status_repeat', 'Same results as another file here')
+      : _acWsText(t, 'class_analytics.th_status_new', 'New');
+  }
+  function _acThCheckText(t, check) {
+    return check === 'ok' ? _acWsText(t, 'class_analytics.th_check_ok', 'Not edited since it was saved')
+      : check === 'changed' ? _acWsText(t, 'class_analytics.th_check_changed', 'Edited after it was saved. The numbers are from the file as it is now.')
+      : check === 'unchecked' ? _acWsText(t, 'class_analytics.th_check_unchecked', 'This device could not check the file for edits')
+      : _acWsText(t, 'class_analytics.th_check_absent', 'This file has no edit check');
+  }
+  function _acThMatchText(t, row) {
+    var how = row.match.how;
+    return how === 'exact' ? _acWsText(t, 'class_analytics.th_match_exact', 'Same name as this student')
+      : how === 'close' ? _acWsText(t, 'class_analytics.th_match_close', 'Close match. Check it is the right student.')
+      : how === 'remembered' ? _acWsText(t, 'class_analytics.th_match_remembered', 'Your choice from last time')
+      : how === 'several' ? _acWsText(t, 'class_analytics.th_match_several', 'More than one student has a name like this. Choose one.')
+      : how === 'no_label' ? _acWsText(t, 'class_analytics.th_match_no_label', 'No name in the file. Choose a student.')
+      : _acWsText(t, 'class_analytics.th_match_none', 'No student has this name. Choose one, or add a new student.');
+  }
+  // The one control: a button that opens a multi-file picker, inside a box
+  // files can be dropped on. `h` is React.createElement.
+  function _acThAddControl(h, t, actions) {
+    var label = _acWsText(t, 'class_analytics.th_add_button', 'Add take-home results');
+    return h('div', {
+      'data-th-drop': 'true',
+      onDragOver: function(e) { e.preventDefault(); },
+      onDrop: function(e) { e.preventDefault(); actions.onFiles(e.dataTransfer && e.dataTransfer.files); },
+      className: 'flex items-center gap-2 rounded-lg border-2 border-dashed border-slate-500 pr-2'
+    },
+      h('input', { type: 'file', accept: '.csv,.json,text/csv,application/json', multiple: true, tabIndex: -1, 'aria-hidden': 'true', 'data-th-input': 'true', className: 'hidden',
+        onChange: function(e) { var files = Array.from(e.target.files || []); try { e.target.value = ''; } catch (err) {} actions.onFiles(files); } }),
+      h('button', {
+        type: 'button',
+        'data-th-add': 'true',
+        title: _acWsText(t, 'class_analytics.th_add_hint', 'Results files learners saved from take-home practice (CSV or JSON). Choose many at once.'),
+        onClick: function(e) { var input = e.currentTarget.parentNode.querySelector('input[type="file"]'); if (input) input.click(); },
+        className: 'min-h-11 bg-sky-800 hover:bg-sky-900 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-800 focus-visible:ring-offset-2'
+      }, label),
+      h('span', { className: 'text-xs text-slate-700' }, _acWsText(t, 'class_analytics.th_drop_hint', 'or drop the files here')));
+  }
+  // What the files hold, before anything is added. One row per results file.
+  function _acThPreviewPanel(h, t, preview, actions) {
+    if (!preview) return null;
+    var heading = _acWsText(t, 'class_analytics.th_preview_heading', 'Take-home results to add');
+    var th = 'px-2 py-1 text-left text-xs font-bold text-slate-800 border-b border-sky-300';
+    var td = 'px-2 py-1 text-xs text-slate-900 border-b border-sky-200 align-top';
+    var small = 'block text-[11px] text-slate-700';
+    var rows = preview.rows || [];
+    var ready = rows.filter(_acThReady).length;
+    var waiting = rows.filter(function(row) { return row.status === 'new' && !row.skip && !_acThReady(row); }).length;
+    var saveFiles = (preview.others || []).filter(function(o) { return o.reason === 'save_file' && o.file; }).map(function(o) { return o.file; });
+    var button = 'min-h-11 px-4 py-2 rounded-lg text-sm font-bold focus:outline-none focus-visible:ring-2 focus-visible:ring-sky-800 focus-visible:ring-offset-2 ';
+    return h('section', { 'data-th-preview': 'true', 'aria-label': heading, className: 'mb-4 rounded-xl border border-sky-400 bg-sky-50 p-3' },
+      h('h3', { className: 'text-base font-bold text-slate-900 mb-1' }, heading),
+      h('p', { role: 'status', className: 'text-xs text-slate-800 mb-2' }, preview.busy
+        ? _acWsText(t, 'class_analytics.th_reading', 'Reading the files...')
+        : preview.done
+          ? _acWsText(t, 'class_analytics.th_done', 'Take-home results added: {count}. Students with new results: {students}. They are kept on this device with the students\' other records.', { count: preview.done.added, students: preview.done.students })
+          : _acWsText(t, 'class_analytics.th_preview_intro', 'Nothing is added until you press Add all. The date is the day the learner finished, read from the file.')),
+      rows.length ? h('div', { className: 'overflow-x-auto bg-white rounded-lg border border-sky-200' }, h('table', { 'data-th-table': 'true', className: 'w-full border-collapse' },
+        h('caption', { className: 'sr-only' }, heading),
+        h('thead', null, h('tr', null,
+          h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_col_file', 'File')),
+          h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_col_learner', 'Name in the file')),
+          h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_col_lesson', 'Lesson')),
+          h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_col_date', 'Date finished')),
+          h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_items', 'Items')),
+          h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.ws_col_first_try', 'Right on the first try')),
+          h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_col_status', 'Status')),
+          h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_col_add_to', 'Add to')),
+          h('th', { scope: 'col', className: th }, _acWsText(t, 'class_analytics.th_col_skip', 'Skip')))),
+        h('tbody', null, rows.map(function(row) {
+          var s = row.session;
+          var open = row.status === 'new';
+          return h('tr', { key: row.key, 'data-th-row': row.status, 'data-th-check': s.integrity },
+            h('th', { scope: 'row', className: td + ' font-semibold text-left break-all' }, row.file),
+            h('td', { className: td }, s.learner || _acWsText(t, 'class_analytics.th_no_name', '(no name)')),
+            h('td', { className: td }, s.title || '–'),
+            h('td', { className: td + ' whitespace-nowrap' }, s.date,
+              s.dateFromFile ? h('span', { 'data-th-date-from-file': 'true', className: small + ' whitespace-normal' }, '⚠ ' + _acWsText(t, 'class_analytics.th_date_from_file', 'Date from the file, not from the results')) : null),
+            h('td', { className: td }, s.done === s.given ? s.done : _acWsText(t, 'class_analytics.th_items_done_of', '{done} of {given} done', { done: s.done, given: s.given })),
+            h('td', { className: td }, s.percent === null ? _acWsText(t, 'class_analytics.ws_practice_only', 'practice only')
+              : _acWsText(t, 'class_analytics.ws_first_try_cell', '{percent}% ({correct} of {items})', { percent: s.percent, correct: s.firstTryCorrect, items: s.firstTryItems })),
+            h('td', { className: td }, h('strong', null, _acThStatusText(t, row)),
+              h('span', { className: small }, (s.integrity === 'changed' ? '⚠ ' : '') + _acThCheckText(t, s.integrity))),
+            h('td', { className: td }, open ? h('select', {
+              'data-th-choice': 'true',
+              'aria-label': _acWsText(t, 'class_analytics.th_choice_label', 'Student to add {file} to', { file: row.file }),
+              value: row.choice,
+              disabled: row.skip,
+              onChange: function(e) { actions.onChoice(row.key, e.target.value); },
+              className: 'max-w-[14rem] text-xs px-2 py-1.5 rounded-lg border border-slate-500 bg-white text-slate-900'
+            },
+              h('option', { value: '' }, _acWsText(t, 'class_analytics.th_choice_none', 'Choose a student')),
+              s.learner ? h('option', { value: '+new' }, _acWsText(t, 'class_analytics.th_choice_new', 'New student: {name}', { name: _acThNewName(s.learner) })) : null,
+              (preview.names || []).map(function(name) { return h('option', { key: name, value: name }, name); })) : '–',
+              open ? h('span', { className: small }, _acThMatchText(t, row)) : null),
+            h('td', { className: td }, open ? h('input', {
+              type: 'checkbox',
+              'data-th-skip': 'true',
+              checked: !!row.skip,
+              'aria-label': _acWsText(t, 'class_analytics.th_skip_label', 'Skip {file}', { file: row.file }),
+              onChange: function(e) { actions.onSkip(row.key, !!e.target.checked); },
+              className: 'w-5 h-5'
+            }) : '–'));
+        })))) : null,
+      rows.length ? h('p', { className: 'text-[11px] text-slate-700 mt-1' }, _acWsText(t, 'class_analytics.th_check_hint', 'The edit check finds accidental changes to a file, not deliberate ones. Take-home work is added to the Word Sounds tables only; it does not change review groups.')) : null,
+      (preview.others || []).length ? h('div', { 'data-th-others': 'true', className: 'mt-2' },
+        h('h4', { className: 'text-xs font-bold text-slate-900' }, _acWsText(t, 'class_analytics.th_others_heading', 'Files that were not added')),
+        h('ul', { className: 'list-disc pl-5 text-xs text-slate-900' }, preview.others.map(function(o, i) {
+          return h('li', { key: i, 'data-th-reason': o.reason }, h('span', { className: 'font-semibold break-all' }, o.name), ': ', _acThReasonText(t, o.reason));
+        })),
+        saveFiles.length && typeof actions.onSaveFiles === 'function' ? h('button', {
+          type: 'button',
+          'data-th-save-files': 'true',
+          onClick: function() { actions.onSaveFiles(saveFiles); },
+          className: button + 'mt-1 bg-indigo-700 hover:bg-indigo-800 text-white'
+        }, _acWsText(t, 'class_analytics.th_import_save_files', 'Import these as student save files ({count})', { count: saveFiles.length })) : null) : null,
+      preview.leftOut ? h('p', { className: 'text-xs text-slate-900 mt-1' }, _acWsText(t, 'class_analytics.th_left_out', 'Only the first 200 files were read. Add the other {count} in a second go.', { count: preview.leftOut })) : null,
+      waiting ? h('p', { 'data-th-waiting': 'true', className: 'text-xs font-semibold text-slate-900 mt-2' }, _acWsText(t, 'class_analytics.th_waiting', 'Choose a student for {count} more, or skip them.', { count: waiting })) : null,
+      h('div', { className: 'mt-2 flex flex-wrap gap-2' },
+        h('button', {
+          type: 'button',
+          'data-th-add-all': 'true',
+          disabled: !ready || !!preview.busy,
+          onClick: function() { actions.onAddAll(); },
+          className: button + (ready && !preview.busy ? 'bg-sky-800 hover:bg-sky-900 text-white' : 'bg-slate-200 text-slate-600 cursor-not-allowed')
+        }, _acWsText(t, 'class_analytics.th_add_all', 'Add all ({count})', { count: ready })),
+        h('button', { type: 'button', 'data-th-close': 'true', onClick: function() { actions.onClose(); }, className: button + 'bg-white hover:bg-slate-100 text-slate-900 border border-slate-500' },
+          preview.done ? _acWsText(t, 'class_analytics.th_close', 'Close') : _acWsText(t, 'class_analytics.th_cancel', 'Cancel'))));
+  }
+  // END TAKE-HOME RESULTS IMPORT
   function _acRestoreIdentityLinks(raw) {
     try {
       var parsed = JSON.parse(raw || '{}');
@@ -2103,6 +2821,16 @@ try {
         else safeRemoveItem(AC_IDENTITY_LINK_STORE_KEY);
       } catch (e) {}
     }, [identityLinks]);
+    // Take-home results: the teacher's learner choices (by label fingerprint)
+    // and the files read but not yet added.
+    const [thLabels, setThLabels] = React.useState(() => _acThRestoreLabels(safeGetItem(AC_TH_LABEL_STORE_KEY)));
+    const [thPreview, setThPreview] = React.useState(null);
+    React.useEffect(() => {
+      try {
+        if (Object.keys(thLabels).length) safeSetItem(AC_TH_LABEL_STORE_KEY, JSON.stringify(thLabels));
+        else safeRemoveItem(AC_TH_LABEL_STORE_KEY);
+      } catch (e) {}
+    }, [thLabels]);
     // Migrate already-linked durable rows from the older shape: once the row's
     // current name is a roster codename, raw import identity metadata is no
     // longer needed in localStorage.
@@ -3414,6 +4142,49 @@ try {
       addToast((result.leftOut ? done + ' ' + wsExportLabel('class_analytics.ws_export_left_out', 'Students left out because they have no Word Sounds results: {count}.', { count: result.leftOut }) : done) +
         ' ' + wsExportLabel('class_analytics.ws_file_saved_here', 'The file is saved on this device. Nothing is sent anywhere.'), 'success');
     };
+    // Take-home results files: read, show what they hold, add on confirm.
+    const takeHomeActions = {
+      onFiles: async files => {
+        const list = Array.from(files || []);
+        if (list.length === 0) return;
+        setThPreview({ busy: true, rows: [], others: [], done: null });
+        let preview;
+        try { preview = await _acThPreview(list, importedStudents, rosterKey, thLabels); }
+        catch (e) { preview = { rows: [], others: [{ name: '', reason: 'unreadable', file: null }], names: [], leftOut: 0 }; }
+        setThPreview(Object.assign({ busy: false, done: null }, preview));
+      },
+      onChoice: (key, value) => setThPreview(prev => prev ? Object.assign({}, prev, { rows: _acThChoose(prev.rows, key, value) }) : prev),
+      onSkip: (key, skip) => setThPreview(prev => prev ? Object.assign({}, prev, { rows: prev.rows.map(row => row.key === key ? Object.assign({}, row, { skip: skip }) : row) }) : prev),
+      onAddAll: () => {
+        if (!thPreview) return;
+        const ready = thPreview.rows.filter(_acThReady);
+        if (ready.length === 0) return;
+        const picks = ready.map(row => ({ session: row.session, name: row.choice === '+new' ? _acThNewName(row.session.learner) : row.choice }));
+        const makeStudent = (name, session) => _acThNewStudent(name, session, calculateStudentStats({}), !!(rosterKey && rosterKey.students && _acWsOwn(rosterKey.students, name)));
+        const result = _acThApply(importedStudents, picks, makeStudent);
+        setImportedStudents(result.students);
+        setSelectedStudent(current => current && current.id ? (result.students.find(s => s && s.id === current.id) || current) : current);
+        setThLabels(prev => _acThRemember(prev, ready));
+        const addedKeys = ready.map(row => row.key);
+        setThPreview(prev => prev ? Object.assign({}, prev, {
+          rows: prev.rows.map(row => addedKeys.indexOf(row.key) >= 0 ? Object.assign({}, row, { status: 'added', justAdded: true }) : row),
+          done: { added: result.added, students: result.studentCount }
+        }) : prev);
+        addToast && addToast(_acWsText(t, 'class_analytics.th_toast_added', 'Take-home results added: {count}.', { count: result.added }), 'success');
+      },
+      onClose: () => setThPreview(null),
+      onSaveFiles: files => { setThPreview(null); handleFileImport({ target: { files: files } }); },
+      onRemoveTakeHome: async student => {
+        if (!student) return;
+        if (!await askStudentAnalyticsConfirmation(_acWsText(t, 'class_analytics.th_remove_confirm', "Remove every take-home result added for {name}? The student's other records stay. You can add the files again later.", { name: student.name || student.nickname || '' }),
+          { title: _acWsText(t, 'class_analytics.th_remove_title', 'Remove take-home results?'), confirmText: _acWsText(t, 'class_analytics.th_remove_yes', 'Remove'), cancelText: _acWsText(t, 'class_analytics.th_cancel', 'Cancel') })) return;
+        const same = s => !!s && (s === student || (!!s.id && s.id === student.id));
+        setImportedStudents(prev => prev.map(s => same(s) ? _acThRemove(s) : s));
+        setSelectedStudent(current => same(current) ? _acThRemove(current) : current);
+      }
+    };
+    const renderTakeHomePreview = onStudentsTab => thPreview && (effectiveTab === 'students') === onStudentsTab
+      ? _acThPreviewPanel(React.createElement, t, thPreview, takeHomeActions) : null;
     const renderWordSoundsExportButtons = () => React.createElement(React.Fragment, null,
       [['results', 'class_analytics.ws_export_button', 'Export Word Sounds results (CSV)'], ['summary', 'class_analytics.ws_summary_button', 'Word Sounds summary by sound (CSV)'],
         ['sessions', 'class_analytics.ws_sessions_button', 'Word Sounds sessions (CSV)'], ['skills', 'class_analytics.ws_skills_button', 'Word Sounds by skill (CSV)']].map(([part, key, english]) => React.createElement("button", {
@@ -4090,6 +4861,9 @@ try {
       setImportedStudents([]);
       setIdentityLinks({});
       safeRemoveItem(AC_IDENTITY_LINK_STORE_KEY);
+      setThLabels({});
+      setThPreview(null);
+      safeRemoveItem(AC_TH_LABEL_STORE_KEY);
       safeRemoveItem(AC_ROSTER_STORE_KEY);
       safeSessionRemoveItem(AC_LINK_UNDO_KEY);
       safeRemoveItem(AC_LINK_UNDO_KEY);
@@ -7374,6 +8148,7 @@ try {
       role: "note",
       className: "mb-4 rounded-xl border border-amber-300 bg-amber-50 p-3 text-xs text-amber-950"
     }, /*#__PURE__*/React.createElement("strong", null, "Confidential Assessment Center storage. "), "Imported files may contain real names and are saved on this device. They stay separate from the codename-only roster and its export; use the records manager below to remove them."),
+    !isIndependentMode && renderTakeHomePreview(false),
     !isIndependentMode && /*#__PURE__*/React.createElement("div", {
       className: "flex flex-wrap gap-3 mb-4"
     }, /*#__PURE__*/React.createElement("label", {
@@ -7390,7 +8165,7 @@ try {
       className: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
     }, /*#__PURE__*/React.createElement(Upload, {
       size: 16
-    }), t('class_analytics.import_button'))), typeof onOpenAlloSheet === 'function' && alloSheetLearners.length > 0 && /*#__PURE__*/React.createElement("button", {
+    }), t('class_analytics.import_button'))), _acThAddControl(React.createElement, t, takeHomeActions), typeof onOpenAlloSheet === 'function' && alloSheetLearners.length > 0 && /*#__PURE__*/React.createElement("button", {
       type: "button",
       onClick: openAlloSheetHandoff,
       "aria-haspopup": "dialog",
@@ -9570,6 +10345,7 @@ try {
     !isIndependentMode && !isParentMode && effectiveTab === 'students' && React.createElement("div", {
       className: "flex-1 overflow-y-auto p-4 animate-in fade-in duration-200"
     },
+      renderTakeHomePreview(true),
       // Import toolbar
       React.createElement("div", { className: "flex flex-wrap gap-3 mb-4" },
         React.createElement("label", { className: "cursor-pointer" },
@@ -9582,6 +10358,7 @@ try {
             className: "bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-lg font-medium flex items-center gap-2 transition-colors"
           }, React.createElement(Upload, { size: 16 }), t('class_analytics.import_button'))
         ),
+        _acThAddControl(React.createElement, t, takeHomeActions),
         importedStudents.length > 0 && React.createElement(React.Fragment, null,
           React.createElement("button", {
             onClick: handleExportCSV,
@@ -11077,7 +11854,7 @@ try {
       }, /*#__PURE__*/React.createElement("span", null, t('class_analytics.benchmark_vs') || 'vs. Benchmark', ":"), /*#__PURE__*/React.createElement("span", {
         className: "font-bold"
       }, latest.wcpm, " WCPM"));
-    })()), selectedStudent.data?.wordSoundsState && (selectedStudent.data.wordSoundsState.history?.length > 0 || selectedStudent.data.wordSoundsState.sessionScore) && /*#__PURE__*/React.createElement("div", {
+    })()), selectedStudent.data?.wordSoundsState && (selectedStudent.data.wordSoundsState.history?.length > 0 || selectedStudent.data.wordSoundsState.sessionScore || selectedStudent.data.wordSoundsState.wsSessions?.sessions?.length > 0) && /*#__PURE__*/React.createElement("div", {
       "data-help-key": "dashboard_detail_word_sounds",
       className: "mb-4 p-4 bg-emerald-50 border border-emerald-200 rounded-xl"
     }, /*#__PURE__*/React.createElement("h4", {
@@ -11138,7 +11915,7 @@ try {
       className: "px-2 py-0.5 bg-amber-100 text-amber-800 rounded-full text-xs font-medium"
     }, typeof badge === 'string' ? badge : badge.name || '🏆'))),
     // Word Sounds by skill, recent sessions and this student's CSV.
-    _acWsStudentTables(React.createElement, t, selectedStudent)), (function() {
+    _acWsStudentTables(React.createElement, t, selectedStudent, takeHomeActions)), (function() {
       // Most-confused sound pairs (target -> chosen), captured by trackConfusion in
       // Word Sounds. Diagnostic gold for an interventionist (b/d reversals, vowel/
       // minimal-pair errors). Dormant until the session persists confusionPatterns.
