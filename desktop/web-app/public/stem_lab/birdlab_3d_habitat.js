@@ -2209,8 +2209,8 @@
     // shower into light snow. Shader additions are attached on first use, so
     // the default scene keeps its exact programs, and they read two shared
     // uniforms, so changing season never recompiles twice.
-    var season = 'summer', wetWeather = false, snowfall = null, seasonReady = false;
-    var seasonUniforms = { blAutumn: { value: 0 }, blSnow: { value: 0 } };
+    var season = 'summer', wetWeather = false, snowfall = null, seasonReady = false, pineWells = [], wellCount = 0;
+    var seasonUniforms = { blAutumn: { value: 0 }, blSnow: { value: 0 }, blSpring: { value: 0 } }, wildflowers = null;
     var SEASON_PARTS = {
       'individual-leaf-sprays': 'leaf', 'falling-woodland-leaves': 'leaf', 'airy-needle-boughs': 'needles',
       'fine-meadow-grasses': 'grass', 'woodland-fern-fronds': 'fern', 'clustered-woodland-ground-leaves': 'herb',
@@ -2227,14 +2227,20 @@
       // yellow or oak russet, with a few sprays still green.
       leaf: 'vec2 blCell=floor(blSeasonOrigin.xz/4.5);float blPick=blSeasonHash(blCell),blOwn=blSeasonHash(blSeasonOrigin.xz*3.7);' +
         'vec3 blTurn=blPick<.30?vec3(.62,.075,.03):blPick<.56?vec3(.80,.30,.035):blPick<.86?vec3(.74,.55,.055):vec3(.40,.19,.065);' +
-        'diffuseColor.rgb=mix(diffuseColor.rgb,blTurn*(.35+blLuma*5.2),blAutumn*(blOwn<.10?.35:.93));',
-      grass: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.58,.46,.24)*(.25+blLuma*4.),blAutumn*.62);',
-      fern: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.56,.30,.10)*(.25+blLuma*4.5),blAutumn*.86);',
+        'diffuseColor.rgb=mix(diffuseColor.rgb,blTurn*(.35+blLuma*5.2),blAutumn*(blOwn<.10?.35:.93));' +
+        'float blBloom=step(blPick,.20)*step(.22,blOwn);vec3 blFresh=mix(vec3(.34,.50,.12),vec3(1.25,1.18,1.12),blBloom);' +
+        'diffuseColor.rgb=mix(diffuseColor.rgb,blFresh*(.35+blLuma*5.2),blSpring*mix(.55,.96,blBloom));',
+      grass: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.58,.46,.24)*(.25+blLuma*4.),blAutumn*.62);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.30,.50,.12)*(.3+blLuma*4.),blSpring*.4);',
+      fern: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.56,.30,.10)*(.25+blLuma*4.5),blAutumn*.86);diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.36,.52,.14)*(.3+blLuma*4.),blSpring*.4);',
       herb: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.66,.52,.12)*(.25+blLuma*4.5),blAutumn*.65);',
       needles: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.55,.58,.63),blSnow*.62*smoothstep(.15,.75,blSeasonN.y));',
       ground: 'diffuseColor.rgb*=mix(vec3(1.),vec3(1.08,.97,.84),blAutumn*.7);' +
         'float blDrift=blSeasonNoise(blSeasonWorld.xz*.35)*.6+blSeasonNoise(blSeasonWorld.xz*1.9)*.4;' +
-        'float blCover=blSnow*smoothstep(.08,.42,blDrift+blSeasonN.y-.62);' +
+        'float blSeasonShelter=0.;for(int i=0;i<32;i++){if(float(i)>=blPineCount)break;vec3 blPine=blPines[i];' +
+        'float blGap=length(blSeasonWorld.xz-blPine.xy)/blPine.z+(blDrift-.5)*.22;blSeasonShelter=max(blSeasonShelter,1.-smoothstep(.58,1.05,blGap));}' +
+        'float blCover=blSnow*smoothstep(.08,.42,blDrift+blSeasonN.y-.62)*(1.-.78*blSeasonShelter);' +
+        // Shed needles and bare duff show through in the well under a pine.
+        'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.075,.058,.036)*(.8+blDrift*.4),blSnow*blSeasonShelter*.7);' +
         'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.55,.58,.63)*(.94+blDrift*.08),blCover*.96);',
       ridge: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.34,.24,.12)*(.3+blLuma*3.),blAutumn*.55);' +
         'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.27,.24,.23)*(.4+blLuma*2.),blSnow*.75);' +
@@ -2242,6 +2248,7 @@
       farLeaf: 'float blFar=blSeasonHash(floor(blSeasonOrigin.xz/9.));' +
         'vec3 blFarTurn=blFar<.22?vec3(.42,.11,.05):blFar<.55?vec3(.54,.27,.07):blFar<.80?vec3(.50,.40,.11):vec3(.24,.27,.13);' +
         'diffuseColor.rgb=mix(diffuseColor.rgb,blFarTurn*(.25+blLuma*3.),blAutumn*.72);' +
+        'diffuseColor.rgb=mix(diffuseColor.rgb,(blFar>.90?vec3(.80,.76,.72):vec3(.34,.47,.15))*(.3+blLuma*3.2),blSpring*.6);' +
         // Bare winter crowns read as a grey-brown haze of twigs.
         'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.30,.26,.25)*(.45+blLuma*2.),blSnow*.88);',
       farPine: 'diffuseColor.rgb=mix(diffuseColor.rgb,vec3(.50,.53,.58),blSnow*.38*smoothstep(.25,.9,blSeasonN.y));',
@@ -2253,7 +2260,9 @@
       var previous = mat.onBeforeCompile, previousKey = mat.customProgramCacheKey.call(mat);
       mat.onBeforeCompile = function (shader, renderer) {
         previous.call(this, shader, renderer);
-        shader.uniforms.blAutumn = seasonUniforms.blAutumn; shader.uniforms.blSnow = seasonUniforms.blSnow;
+        shader.uniforms.blAutumn = seasonUniforms.blAutumn; shader.uniforms.blSnow = seasonUniforms.blSnow; shader.uniforms.blSpring = seasonUniforms.blSpring;
+        var ground = kind === 'ground';
+        if (ground) { shader.uniforms.blPines = { value: pineWells }; shader.uniforms.blPineCount = { value: wellCount }; }
         shader.vertexShader = 'varying vec3 blSeasonWorld;\nvarying vec3 blSeasonOrigin;\n' + shader.vertexShader.replace('#include <fog_vertex>', [
           '#include <fog_vertex>',
           '#ifdef USE_INSTANCING',
@@ -2263,7 +2272,7 @@
           '#endif'
         ].join('\n'));
         shader.fragmentShader = [
-          'uniform float blAutumn;uniform float blSnow;varying vec3 blSeasonWorld;varying vec3 blSeasonOrigin;',
+          'uniform float blAutumn;uniform float blSnow;uniform float blSpring;varying vec3 blSeasonWorld;varying vec3 blSeasonOrigin;' + (ground ? 'uniform vec3 blPines[32];uniform float blPineCount;' : ''),
           'float blSeasonHash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}',
           'float blSeasonNoise(vec2 p){vec2 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);',
           'return mix(mix(blSeasonHash(i),blSeasonHash(i+vec2(1.,0.)),f.x),mix(blSeasonHash(i+vec2(0.,1.)),blSeasonHash(i+vec2(1.,1.)),f.x),f.y);}'
@@ -2273,7 +2282,7 @@
           '#include <lights_physical_fragment>'
         ].join('\n'));
       };
-      mat.customProgramCacheKey = function () { return previousKey + '|birdlab-season-v1-' + kind; };
+      mat.customProgramCacheKey = function () { return previousKey + '|birdlab-season-v2-' + kind; };
       mat.needsUpdate = true;
     }
     function syncSnowfall() {
@@ -2309,10 +2318,56 @@
       }
       if (snowfall) snowfall.visible = falling;
     }
+    // Spring ephemerals flower on the forest floor before the canopy closes:
+    // yellow trout lily, violets, white starflower and pink spring beauty.
+    // One instanced draw, built the first time spring is chosen.
+    function buildWildflowers() {
+      var positions = [], colors = [], indices = [];
+      function tri(a, b, c, color) { var at = positions.length / 3; [a, b, c].forEach(function (p) { positions.push(p[0], p[1], p[2]); colors.push(color[0], color[1], color[2]); }); indices.push(at, at + 1, at + 2); }
+      var stem = [.10, .22, .06], petal = [1, 1, 1], eye = [1, .78, .15];
+      tri([-.018, 0, 0], [.018, 0, 0], [.012, 1, 0], stem); tri([-.018, 0, 0], [.012, 1, 0], [-.012, 1, 0], stem);
+      tri([0, 0, -.018], [0, 0, .018], [0, 1, .012], stem); tri([0, 0, -.018], [0, 1, .012], [0, 1, -.012], stem);
+      // Five petals on a face tilted toward the light, with a yellow eye.
+      var tilt = .55, face = function (x, z, lift) { return [x, 1 + (lift || 0) + z * Math.sin(tilt), z * Math.cos(tilt)]; };
+      for (var p = 0; p < 5; p++) {
+        var a = p / 5 * Math.PI * 2, c = Math.cos(a), s = Math.sin(a), px = -s, pz = c;
+        var base = face(c * .04, s * .04), tip = face(c * .27, s * .27, .03), left = face(c * .15 + px * .085, s * .15 + pz * .085, .015), right = face(c * .15 - px * .085, s * .15 - pz * .085, .015);
+        tri(base, left, tip, petal); tri(base, tip, right, petal);
+      }
+      for (var e = 0; e < 5; e++) { var a0 = e / 5 * Math.PI * 2, a1 = (e + 1) / 5 * Math.PI * 2; tri(face(0, 0, .012), face(Math.cos(a0) * .06, Math.sin(a0) * .06, .012), face(Math.cos(a1) * .06, Math.sin(a1) * .06, .012), eye); }
+      var geo = geometry(new THREE.BufferGeometry());
+      geo.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+      geo.setAttribute('color', new THREE.Float32BufferAttribute(colors, 3));
+      geo.setIndex(indices); geo.computeVertexNormals();
+      var mat = material({ color: 0xffffff, vertexColors: true, side: THREE.DoubleSide, roughness: .9 });
+      applyWind(mat, 'grass');
+      var count = detailed ? 300 : 130, kinds = [[1, .86, .22], [.60, .48, .92], [1, 1, .97], [1, .74, .84]];
+      wildflowers = new THREE.InstancedMesh(geo, mat, count); wildflowers.name = 'spring-wildflowers';
+      for (var item = 0; item < count; item++) {
+        // Colonies of one species, as these spread by runners and corms.
+        var colony = Math.floor(item / 10), bearing = hash(colony, 1201) * Math.PI * 2, distance = 2.6 + hash(colony + 9, 1203) * 19;
+        var scatterAngle = hash(item, 1207) * Math.PI * 2, scatter = Math.sqrt(hash(item + 13, 1211)) * 1.5;
+        var x = Math.cos(bearing) * distance + Math.cos(scatterAngle) * scatter, z = Math.sin(bearing) * distance + Math.sin(scatterAngle) * scatter;
+        var size = .075 + hash(item + 5, 1213) * .06;
+        if (residentForagingLane(x, z) || isBlocked(x, z, .12)) size = 0;
+        dummy.position.set(x, groundSurfaceAt(x, z).height - .004, z); dummy.rotation.set(0, hash(item + 41, 1217) * Math.PI * 2, 0);
+        dummy.scale.set(size, size, size); dummy.updateMatrix(); wildflowers.setMatrixAt(item, dummy.matrix);
+        var kind = kinds[Math.floor(hash(colony + 3, 1223) * kinds.length)], shade = .86 + hash(item + 21, 1229) * .14;
+        tint.setRGB(kind[0] * shade, kind[1] * shade, kind[2] * shade); wildflowers.setColorAt(item, tint);
+      }
+      wildflowers.instanceMatrix.needsUpdate = true; wildflowers.instanceColor.needsUpdate = true;
+      wildflowers.frustumCulled = false; wildflowers.receiveShadow = true; root.add(wildflowers);
+    }
     function setSeason(value) {
-      if (['summer', 'autumn', 'winter'].indexOf(value) < 0 || disposed) return;
+      if (['spring', 'summer', 'autumn', 'winter'].indexOf(value) < 0 || disposed) return;
       if (value !== 'summer' && !seasonReady) {
         seasonReady = true;
+        // Shelter under each pine: dense boughs catch falling snow, leaving a
+        // thin, needle-strewn well out to about the drip line. The nearest 32.
+        treeLocations.filter(function (t) { return t.pine; }).sort(function (p, q) { return Math.hypot(p.x, p.z) - Math.hypot(q.x, q.z); })
+          .slice(0, 32).forEach(function (t) { pineWells.push(new THREE.Vector3(t.x, t.z, t.radius * .72)); });
+        // Three uploads the whole declared array, so pad it with far, unused entries.
+        wellCount = pineWells.length; while (pineWells.length < 32) pineWells.push(new THREE.Vector3(1e4, 1e4, 1));
         Object.keys(SEASON_PARTS).forEach(function (name) {
           var part = root.getObjectByName(name);
           if (part) seasonShader(part.material, SEASON_PARTS[name]);
@@ -2320,6 +2375,9 @@
       }
       season = value;
       seasonUniforms.blAutumn.value = value === 'autumn' ? 1 : 0;
+      seasonUniforms.blSpring.value = value === 'spring' ? 1 : 0;
+      if (value === 'spring' && !wildflowers) buildWildflowers();
+      if (wildflowers) wildflowers.visible = value === 'spring';
       seasonUniforms.blSnow.value = value === 'winter' ? 1 : 0;
       WINTER_HIDDEN.forEach(function (name) { var part = root.getObjectByName(name); if (part) part.visible = value !== 'winter'; });
       if (rain) rain.visible = wetWeather && value !== 'winter';

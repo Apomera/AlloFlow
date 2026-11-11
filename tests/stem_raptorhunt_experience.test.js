@@ -495,7 +495,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     });
 
     expect(html).toContain('99 sections');
-    expect(html).toContain('20 species');
+    expect(html).toContain('23 species');
     expect(html).toContain('70-question quiz');
     expect(html).not.toContain('25 species');
     expect(html).not.toContain('100+ sections');
@@ -3108,6 +3108,9 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
       [{ id: 'missKite', family: 'Accipitridae', isOwl: false }, 'kite'],
       [{ id: 'turkeyVulture', family: 'Cathartidae', isOwl: false }, 'vulture'],
       [{ id: 'harpyEagle', family: 'Accipitridae', isOwl: false }, 'harpy'],
+      [{ id: 'broadWinged', family: 'Accipitridae', isOwl: false }, 'buteo'],
+      [{ id: 'redShouldered', family: 'Accipitridae', isOwl: false }, 'buteo'],
+      [{ id: 'northernHarrier', family: 'Accipitridae', isOwl: false }, 'buteo'],
     ].forEach(([raptorSpecies, expectedKind]) => {
       expect(getProfile(raptorSpecies).kind).toBe(expectedKind);
     });

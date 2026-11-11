@@ -4,7 +4,8 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import { loadTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const RESIDENTS = ['robin', 'chickadee', 'mourningDove', 'grouse', 'blueJay', 'northernCardinal', 'darkEyedJunco',
-  'tuftedTitmouse', 'easternTowhee', 'americanGoldfinch', 'easternBluebird', 'whiteThroatedSparrow'];
+  'tuftedTitmouse', 'easternTowhee', 'americanGoldfinch', 'easternBluebird', 'whiteThroatedSparrow',
+  'chippingSparrow', 'americanTreeSparrow', 'hermitThrush', 'purpleFinch'];
 let p;
 beforeAll(() => {
   resetStemLab(); loadTool('stem_lab/stem_tool_birdlab.js', 'birdLab');

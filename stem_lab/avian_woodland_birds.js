@@ -174,6 +174,68 @@
         billWidth: .0047, billHeight: .0044, billDroop: .0007, billTaper: 1.02, eye: [.0030, .0031, .0024, .0025],
         peckDrop: .0782, peckForward: .032, upperLeg: .033, footScale: .76, tailShape: [1.8, .055], fan: .36,
         wingRound: .23, tailRound: .28, plumage: 'White-striped adult' }
+    },
+    // Second expansion: breeding adult Chipping Sparrow, adult American Tree
+    // Sparrow (a winter visitor), adult Hermit Thrush and adult male Purple Finch.
+    // Fieldmarks: Cornell Lab, allaboutbirds.org/guide/Chipping_Sparrow/id,
+    // /guide/American_Tree_Sparrow/id, /guide/Hermit_Thrush/id and /guide/Purple_Finch/id.
+    // Dimensions/cadence are illustrative model tuning, not measured kinematics.
+    chippingSparrow: {
+      body: [.022, .027, .040], bodyY: .057, bodyZ: -.008,
+      head: [.0138, .0160, .0172], headY: .092, headZ: .036,
+      leg: .025, stance: .0095, shoulder: [.017, .067, .007], wing: .45,
+      tailY: .055, tailZ: -.039, tailLength: .070, tailWidth: .0074,
+      neckBase: [.070, .017], neckWidth: .015, billLength: .0085,
+      dark: '#241d19', back: '#7d5a3a', breast: '#a19e96', pale: '#efece4',
+      wingColor: '#6a4c36', foot: '#c79a84',
+      tune: { hop: true, walkReach: .013, stepLift: .008, strideRate: 13, wingbeatCruise: 7.6, wingbeatBurst: 9.0, sizeM: .135,
+        eyeRing: '#2a2523', bill: '#2b2624', iris: '#121111', crown: '#7c3216', cheek: '#85837d', throat: '#d6d3ca',
+        billWidth: .0040, billHeight: .0039, billDroop: .0006, billTaper: 1.04, eye: [.0028, .0029, .0022, .0023],
+        peckDrop: .0675, peckForward: .028, upperLeg: .028, footScale: .68, tailShape: [1.5, -.08], fan: .34,
+        wingRound: .22, tailRound: .22, plumage: 'Breeding adult' }
+    },
+    americanTreeSparrow: {
+      body: [.0245, .029, .044], bodyY: .061, bodyZ: -.009,
+      head: [.0142, .0168, .0178], headY: .099, headZ: .040,
+      leg: .028, stance: .0104, shoulder: [.0195, .072, .0075], wing: .47,
+      tailY: .058, tailZ: -.042, tailLength: .080, tailWidth: .0080,
+      neckBase: [.074, .019], neckWidth: .016, billLength: .0095,
+      dark: '#2a211c', back: '#855632', breast: '#a09d95', pale: '#efece3',
+      wingColor: '#70482f', foot: '#6b4a3a',
+      tune: { hop: true, walkReach: .015, stepLift: .009, strideRate: 12, wingbeatCruise: 7.2, wingbeatBurst: 8.6, sizeM: .155,
+        // Two-toned bill: dark above, yellow below.
+        eyeRing: '#4a443f', bill: '#d0a637', billUpper: '#3a302a', iris: '#131212', crown: '#7a3618', cheek: '#88857f', throat: '#a5a29a',
+        billWidth: .0042, billHeight: .0041, billDroop: .0006, billTaper: 1.04, eye: [.0029, .0030, .0023, .0024],
+        peckDrop: .0735, peckForward: .030, upperLeg: .031, footScale: .72, tailShape: [1.6, -.05], fan: .35,
+        flank: '#b3946f', wingRound: .23, tailRound: .24, plumage: 'Adult' }
+    },
+    hermitThrush: {
+      body: [.028, .034, .050], bodyY: .074, bodyZ: -.010,
+      head: [.0166, .0191, .0204], headY: .119, headZ: .047,
+      leg: .036, stance: .0115, shoulder: [.022, .087, .009], wing: .58,
+      tailY: .071, tailZ: -.047, tailLength: .072, tailWidth: .0098,
+      neckBase: [.090, .022], neckWidth: .018, billLength: .0135,
+      dark: '#2a211b', back: '#6f5438', breast: '#e9e2d2', pale: '#f1eee6',
+      wingColor: '#6a4a30', foot: '#c9a08d',
+      tune: { hop: true, walkReach: .019, stepLift: .010, strideRate: 11.5, wingbeatCruise: 6.6, wingbeatBurst: 8.0, sizeM: .17,
+        eyeRing: '#e6e0d2', bill: '#4a3d33', iris: '#100f0f', crown: '#70553a', cheek: '#84684c', throat: '#efeadf',
+        billWidth: .0033, billHeight: .0031, billDroop: .0008, billTaper: .88, eye: [.0035, .0036, .0028, .0029],
+        peckDrop: .0885, peckForward: .037, upperLeg: .039, footScale: .82, tailShape: [1.7, .05], fan: .36,
+        tail: '#55280f', wingRound: .22, tailRound: .28, plumage: 'Adult' }
+    },
+    purpleFinch: {
+      body: [.026, .031, .045], bodyY: .064, bodyZ: -.009,
+      head: [.0160, .0185, .0195], headY: .103, headZ: .041,
+      leg: .028, stance: .011, shoulder: [.021, .076, .008], wing: .50,
+      tailY: .061, tailZ: -.043, tailLength: .062, tailWidth: .0085,
+      neckBase: [.078, .020], neckWidth: .0172, billLength: .0115,
+      dark: '#33211f', back: '#6a4141', breast: '#8a3c4e', pale: '#f1ebe6',
+      wingColor: '#4b3a33', foot: '#6a5148',
+      tune: { hop: true, walkReach: .015, stepLift: .009, strideRate: 12, wingbeatCruise: 7.0, wingbeatBurst: 8.4, sizeM: .15,
+        eyeRing: '#5e2a36', bill: '#a8947f', iris: '#121111', crown: '#8d3149', cheek: '#733a45', throat: '#8c374b',
+        billWidth: .0056, billHeight: .0055, billDroop: .0007, billTaper: 1.06, eye: [.0030, .0031, .0024, .0025],
+        peckDrop: .0768, peckForward: .031, upperLeg: .031, footScale: .74, tailShape: [1.5, -.10], fan: .33,
+        vent: true, wingRound: .20, tailRound: .20, plumage: 'Adult male' }
     }
   };
   function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
@@ -192,6 +254,10 @@
     var junco = id === 'darkEyedJunco', titmouse = id === 'tuftedTitmouse', towhee = id === 'easternTowhee';
     var robin = id === 'americanRobin', chickadee = id === 'blackCappedChickadee';
     var goldfinch = id === 'americanGoldfinch', bluebird = id === 'easternBluebird', sparrow = id === 'whiteThroatedSparrow';
+    var chipping = id === 'chippingSparrow', treeSparrow = id === 'americanTreeSparrow', thrush = id === 'hermitThrush', purpleFinch = id === 'purpleFinch';
+    // Streaked brown sparrows share the mantle, wingbar and covert code; each keeps its own head.
+    var sparrowKin = chipping || treeSparrow, streaked = sparrow || sparrowKin;
+    var fineBill = goldfinch || bluebird || streaked || thrush || purpleFinch;
     // Small songbirds share the cardinal's short rounded wing and its paired
     // two-footed hop. The cardinal's flight-loading cues stay its own.
     var songbird = cardinal || junco || titmouse || towhee || chickadee || !!(tune && tune.hop), hopper = songbird;
@@ -224,7 +290,9 @@
     var back = color(p.back), breast = color(p.breast), pale = color(p.pale), dark = color(p.dark);
     var wingColor = color(p.wingColor), footColor = color(p.foot), eyeColor = color(tune ? tune.iris : '#0f1010');
     var eyeRing = color(tune ? tune.eyeRing : grouse ? '#aa9370' : jay ? '#41474b' : cardinal ? '#6b5148' : '#a0b6bd'), billColor = color(tune ? tune.bill : grouse ? '#615647' : jay ? '#242b31' : cardinal ? '#e16638' : '#555450');
-    var flank = tune && tune.flank ? color(tune.flank) : null, tinted = hooded || vent || !!flank || bluebird || sparrow;
+    var flank = tune && tune.flank ? color(tune.flank) : null, tinted = hooded || vent || !!flank || bluebird || streaked || thrush || jay;
+    var thrushBuff = thrush ? color('#d8c096') : null, thrushTail = thrush ? color(tune.tail) : null;
+    var billUpper = tune && tune.billUpper ? color(tune.billUpper) : null;
     var loreYellow = sparrow ? color('#e2c628') : null;
     var billDroop = tune ? tune.billDroop : jay ? .0015 : cardinal ? .001 : .0038;
     function mix(a, b, t) { return new THREE.Color(a.r + (b.r - a.r) * t, a.g + (b.g - a.g) * t, a.b + (b.b - a.b) * t); }
@@ -234,6 +302,8 @@
     // Arguments are the unit surface direction: `down` (+1 under the belly),
     // `front` (+1 at the breast pole) and `side` (|lateral|).
     function songbirdTint(c, down, front, side) {
+      // A blue jay is blue only above: its sides and flanks are pale gray-white.
+      if (jay) c = mix(c, breast, smooth((down + .26) / .34));
       if (hooded) c = mix(c, back, smooth((front - .08) / .26) * (1 - smooth((down - (.28 + .22 * front)) / .12)));
       if (flank) c = mix(c, flank, smooth((side - .26) / .34) * smooth((down + .34) / .36) *
         (1 - smooth((down - .84) / .14)) * (1 - smooth((front - .58) / .30)) * .95);
@@ -246,14 +316,30 @@
         c = mix(back, breast, bluebirdBreast);
         c = mix(c, pale, smooth((down - .24) / .30) * (1 - smooth((front - .13) / .43)));
       }
-      if (sparrow) {
+      if (streaked) {
         // Long dark mantle streaks run toward the tail over a warm brown back.
         // Gray, unstreaked adult underparts stay outside this dorsal mask.
-        c = mix(back, breast, smooth((down + .22) / .44));
+        c = mix(back, breast, sparrowKin ? Math.max(smooth((down + .22) / .44), smooth((front - .30) / .30)) : smooth((down + .22) / .44));
         var mantleStreak = smooth((Math.cos(side * 28 + front * .7) - .18) / .54) *
           (1 - smooth((down + .06) / .26)) * smooth((.97 - Math.abs(front)) / .22);
         c = mix(c, dark, mantleStreak * .76);
+        // The tree sparrow's single dark central breast spot.
+        if (treeSparrow) {
+          c = mix(c, dark, smooth((front - .87) / .07) * (1 - smooth((side - .12) / .12)) * smooth((down + .10) / .22) * .9);
+        }
       }
+      if (thrush) {
+        // Olive-brown above, white below, a buff wash and dark spots that
+        // are boldest on the upper breast and fade toward the belly.
+        c = mix(back, breast, smooth((down + .22) / .44));
+        c = mix(c, thrushBuff, smooth((front - .30) / .40) * smooth((down + .12) / .30) * .55);
+        var thrushSpot = smooth((Math.sin(side * 27 + front * 4) * Math.sin(down * 21 + side * 6 + 1.3) - .30) / .30) *
+          smooth((front - .10) / .30) * smooth((down + .22) / .22) * (1 - smooth((down - .50) / .30));
+        c = mix(c, dark, thrushSpot * .82);
+      }
+      // The purple finch's white belly reaches forward under the raspberry breast.
+      if (purpleFinch) c = mix(c, dark, smooth((Math.cos(side * 26 + front * .7) - .30) / .50) * (1 - smooth((down + .10) / .26)) * smooth((.97 - Math.abs(front)) / .22) * .38);
+      if (purpleFinch) c = mix(c, pale, smooth((down - .50) / .28) * (1 - smooth((front - .45) / .30)) * .92);
       // A white lower belly and undertail behind the colored breast.
       if (vent) c = mix(c, pale, smooth((-front - .02) / .40) * smooth((down - .05) / .35) * .95);
       return c;
@@ -396,6 +482,12 @@
         'float awRachis = (1.0 - smoothstep(.006, .013 + awRachisAA, awRachisDistance)) * awRachisResolve * awRemex;',
         'awRachis *= smoothstep(.04, .18, awV) * (1.0 - smoothstep(.87, .99, awV));',
         'diffuseColor.rgb = mix(diffuseColor.rgb, vec3(.36, .32, .25), awRachis * .24);',
+        // Each tail feather and flight feather darkens toward its own margin and
+        // differs a little in tone from its neighbour, so a folded tail reads as
+        // a stack of overlapping feathers and a folded wing as separate quills.
+        'float awTailVane = step(4.5, awKind) * (1.0 - awNeck);',
+        'float awEdgeLine = smoothstep(.66, .97, awAcross) * (1.0 - smoothstep(.92, 1.0, awV));',
+        'diffuseColor.rgb *= 1.0 - awEdgeLine * (awTailVane * .34 + (awRemex - awTailVane) * .22) + (awRandom - .5) * awTailVane * .12;',
         // A second, wider barb scale remains visible at observation distance;
         // the fine scale below resolves only as the camera moves closer.
         // Short contours and folded dorsal coverts need a softly varied barb
@@ -438,7 +530,7 @@
         'if (abs(awDet) > 1e-12) normal = normalize(abs(awDet) * normal - sign(awDet) * (dFdx(awRelief) * awR1 + dFdy(awRelief) * awR2));'
       ].join('\n'));
     };
-    plumage.customProgramCacheKey = function () { return 'avian-woodland-plumage-v14'; };
+    plumage.customProgramCacheKey = function () { return 'avian-woodland-plumage-v15'; };
     var details = keep(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: cardinal ? .34 : .48 }));
     if (cardinal) {
       // A closed seed bill needs two readable mandibles without another mesh
@@ -472,7 +564,7 @@
         ].join('\n'));
       };
       details.customProgramCacheKey = function () { return 'avian-woodland-cardinal-details-v1'; };
-    } else if (goldfinch || bluebird || sparrow) {
+    } else if (fineBill) {
       // Close observation should reveal a closed upper/lower mandible, rather
       // than a featureless cone. Bill-local masks follow each authored size
       // and taper; they add no geometry, texture, draw call or animated state.
@@ -857,6 +949,21 @@
         var throatPatch = smooth((-sparrowY - .29) / .18) * smooth((sparrowZ - .15) / .22);
         c = mix(c, headThroat, throatPatch);
         c = shade(c, .985 + noise(Math.floor(t * 35), Math.floor(angle * 12)) * .03);
+      } else if (sparrowKin) {
+        // A rufous cap over a gray face. Chipping: white eyebrow and a black
+        // line through the eye to the bill. Tree: gray eyebrow and a rufous
+        // line that starts behind the eye.
+        var kinY = Math.cos(t * PI), kinX = Math.abs(Math.sin(t * PI) * Math.cos(angle));
+        var kinZ = Math.sin(t * PI) * Math.sin(angle), kinArc = Math.atan2(kinX, kinY);
+        var kinCrown = smooth((kinY - .12) / .28);
+        c = mix(headCheek, headCrown, kinCrown * (1 - smooth((kinArc - .66) / .10)));
+        var kinBrow = smooth((kinArc - .72) / .10) * (1 - smooth((kinArc - 1.10) / .11)) * kinCrown;
+        c = mix(c, pale, kinBrow * (chipping ? .94 : .30));
+        var kinEye = Math.exp(-Math.pow((kinY - .12) / .085, 2)) * smooth((kinX - (chipping ? .26 : .44)) / .22);
+        if (chipping) c = mix(c, dark, kinEye * .90);
+        else c = mix(c, headCrown, kinEye * (1 - smooth((kinZ + .02) / .22)) * .92);
+        c = mix(c, headThroat, smooth((-kinY - .29) / .18) * smooth((kinZ - .15) / .22));
+        c = shade(c, .985 + noise(Math.floor(t * 35), Math.floor(angle * 12)) * .03);
       } else if (chickadee) {
         // Black cap and bib frame a white cheek that wraps toward the nape.
         var chickFront = Math.sin(angle);
@@ -864,7 +971,7 @@
         c = mix(c, headThroat, smooth((chickFront + .05) / .25) * smooth((t - .58) / .07));
         c = mix(c, back, smooth((-chickFront - .45) / .25) * smooth((t - .40) / .08) * .85);
         c = shade(c, .98 + noise(Math.floor(t * 35), Math.floor(angle * 12)) * .04);
-      } else if (robin) {
+      } else if (robin || thrush) {
         // Dark head over a white, dark-streaked throat; the white eye arcs are the eye ring.
         var robinFront = .5 + .5 * Math.sin(angle);
         c = mix(c, headThroat, smooth((t - .64) / .12) * smooth((robinFront - .62) / .20));
@@ -1105,14 +1212,14 @@
     // The seed-cracking cardinal bill has a deep, short cone. Other bills
     // retain their slender, slightly drooped tip and historical dimensions.
     var billOffset = face.p.length / 3, billRings = high ? 9 : 6, billSegments = high ? 12 : 8;
-    face.kind = cardinal || goldfinch || bluebird || sparrow ? 1 : 0;
+    face.kind = cardinal || fineBill ? 1 : 0;
     for (var br = 0; br <= billRings; br++) {
       var bv = br / billRings, taper = .04 + .96 * Math.pow(1 - bv, tune ? tune.billTaper : cardinal ? 1.04 : .8);
       for (var bs = 0; bs < billSegments; bs++) {
         var ba = bs / billSegments * TAU;
         vertex(face, Math.cos(ba) * (tune ? tune.billWidth : grouse ? .0073 : jay ? .0058 : cardinal ? .0083 : .0045) * taper,
           -.0035 - bv * bv * billDroop + Math.sin(ba) * (tune ? tune.billHeight : grouse ? .006 : jay ? .0051 : cardinal ? .0080 : .0039) * taper,
-          p.head[2] * .76 + p.billLength * bv, shade(billColor, .92 + .10 * Math.sin(ba)), bs / billSegments, bv);
+          p.head[2] * .76 + p.billLength * bv, shade(billUpper && Math.sin(ba) > .05 ? billUpper : billColor, .92 + .10 * Math.sin(ba)), bs / billSegments, bv);
       }
     }
     for (var bi = 0; bi < billRings; bi++) for (var bj = 0; bj < billSegments; bj++) {
@@ -1190,6 +1297,10 @@
         // A discrete white throat reaches the upper neck, with gray below it.
         c = mix(c, headThroat, smooth((Math.sin(angle) - .48) / .24) * smooth((t - .36) / .22));
       }
+      // Gray neck sides and front below the rufous cap.
+      if (sparrowKin) c = mix(back, headCheek, throat * .92);
+      // Buff, faintly spotted upper breast below the thrush's white throat.
+      if (thrush) c = mix(mix(back, mix(breast, thrushBuff, .55), throat * .80), dark, smooth((Math.sin(angle * 9) * Math.sin(t * 14) - .45) / .25) * throat * (1 - smooth((t - .55) / .25)) * .6);
       if (chickadee) c = mix(c, dark, smooth((Math.sin(angle) - .05) / .30) * smooth((t - .22) / .20) * .97);
       if (jay) {
         c = mix(back, headThroat, throat * .94);
@@ -1270,7 +1381,22 @@
           if (kind === 'primary' || kind === 'secondary') c = mix(c, dark, smooth((Math.abs(u - .5) - .10) / .35) * .30);
           if (kind === 'scapular') c = mix(c, back, .70);
           if (kind === 'tail') c = mix(c, back, .22);
-        } else if (sparrow) {
+        } else if (thrush) {
+          // Plain brown wings; the reddish tail is the field mark.
+          if (kind === 'tail') c = mix(c, thrushTail, .86);
+          else if (kind === 'primary') c = mix(c, thrushTail, smooth((Math.abs(u - .5) - .24) / .20) * .40);
+          else if (kind === 'scapular') c = mix(c, back, .70);
+        } else if (purpleFinch) {
+          // Brown vanes edged raspberry, with two rosy wingbars.
+          var finchShaft = 1 - smooth((Math.abs(u - .5) - .09) / .28);
+          c = mix(c, dark, finchShaft * .30);
+          c = mix(c, breast, smooth((Math.abs(u - .5) - .30) / .15) * (kind === 'tail' ? .16 : .34));
+          if (kind === 'covert') {
+            var rosyBar = Math.floor(index / 13) === 1 || Math.floor(index / 13) === 2;
+            c = mix(c, mix(breast, pale, .45), rosyBar ? smooth((v - .72) / .16) * .80 : .04);
+          }
+          if (kind === 'scapular') c = mix(c, back, .72);
+        } else if (streaked) {
           // Warm edged brown vanes with dark centers and two pale wingbars.
           var sparrowShaft = 1 - smooth((Math.abs(u - .5) - .09) / .28);
           if (kind !== 'covert') c = mix(c, dark, sparrowShaft * .52);
@@ -1372,13 +1498,13 @@
         var b = q / 9, tipX = .132 + Math.sin(b * PI * (songbird ? .62 : .5)) * (grouse ? .112 : .098);
         feather('primary', q, [.093 + b * .048, -.0009, -.014 + b * .018],
           [tipX, -.002 + b * .002, songbird ? -.083 + b * .053 : -.103 + b * (grouse ? .049 : .068)],
-          [.024 + b * .004, -.006, -.034 - b * .020], [.022 + b * .003, -.015, -.108 - b * .019],
+          [.024 + b * .004, -.006, -.034 - b * .020], [.022 + b * .003, -.015 + (tune ? b * .0030 : 0), -.108 - b * (tune ? .026 : .019)],
           (grouse ? .025 : .020) * (1 - b * .38), .0012);
       }
       // The jay's white greater-covert tips depend on the next overlapping
       // row. Keep that coverage at low detail too; removing it exposes the
       // whole pale vane as a triangular patch instead of a narrow wingbar.
-      var covertRows = high || jay || goldfinch || sparrow ? 4 : 3, covertCount = high ? 12 : 9;
+      var covertRows = high || jay || goldfinch || streaked || purpleFinch ? 4 : 3, covertCount = high ? 12 : 9;
       for (var cr = 0; cr < covertRows; cr++) for (var cc = 0; cc < covertCount; cc++) {
         var t = cc / (covertCount - 1), z = .022 - cr * .013;
         // Alternate the interior roots and vary the free tips just enough to
@@ -1742,6 +1868,7 @@
       var cardinalDrop = cardinal ? -.005 * launchLoad - .004 * landingLoad + .0008 * cardinalAir * Math.sin(beat - .50) : 0;
       body.position.set(walkX, p.bodyY - peck * .004 + walkY, p.bodyZ);
       body.rotation.set(.08 * unfold - transition * .07 + peck * .09, 0, -Math.sin(bank) * unfold * .015);
+      if (tune) body.scale.set(1 - .08 * unfold, 1 - .13 * unfold, 1 + .05 * unfold);
       head.position.set(Math.sin(yaw) * (grouse ? .004 : .0025), p.headY - peck * (tune ? tune.peckDrop : grouse ? .153 : jay ? .100 : cardinal ? .0765 : .0937) - flight * .013,
         p.headZ + peck * (tune ? tune.peckForward : grouse ? .068 : cardinal ? .034 : .048) + flight * .013);
       head.rotation.set(pitch * (1 - peck) + peck * 1.16 - flight * .05, yaw, -Math.sin(bank) * flight * .07);

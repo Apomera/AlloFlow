@@ -330,7 +330,11 @@
       easternTowhee: {lift: .34, beat: 6.2, forage: [6.4, 8.0], hop: true},
       americanGoldfinch: {lift: .52, beat: 7.6, forage: [8.2, 10.0], hop: true},
       easternBluebird: {lift: .58, beat: 6.8, forage: [10.5, 12.3], hop: true},
-      whiteThroatedSparrow: {lift: .32, beat: 7.0, forage: [5.6, 7.2], hop: true}
+      whiteThroatedSparrow: {lift: .32, beat: 7.0, forage: [5.6, 7.2], hop: true},
+      chippingSparrow: {lift: .40, beat: 7.6, forage: [7.6, 9.2], hop: true},
+      americanTreeSparrow: {lift: .36, beat: 7.2, forage: [8.8, 10.4], hop: true},
+      hermitThrush: {lift: .44, beat: 6.6, forage: [9.8, 11.6], hop: true},
+      purpleFinch: {lift: .50, beat: 7.0, forage: [6.2, 7.9], hop: true}
     };
     function addSharedBird(id, name, scientific, x, z, yaw, course, factoryId) {
       var catalog = global.StemSimAssets, nativeId = factoryId || id;
@@ -430,6 +434,33 @@
         {start:23.6,end:25.0,x:.61,z:-.41,kind:'ground',hops:2},
         {start:32.4,end:33.6,x:0,z:0,kind:'flight'}
       ]);
+      // Second expansion, appended for the same reason. The chipping sparrow
+      // (spring to autumn) and the American tree sparrow (winter) are look-alikes
+      // that trade places with the seasons; see SEASON_ABSENT.
+      if (global.AvianWoodlandBirds.supports('chippingSparrow')) addSharedBird('chippingSparrow', 'Chipping sparrow', 'Spizella passerina', 2.45, .30, 2.2, [
+        {start:3.6,end:4.9,x:-.13,z:.05,kind:'ground',hops:2},
+        {start:15.8,end:16.95,x:-.70,z:.40,kind:'flight'},
+        {start:25.2,end:26.5,x:-.57,z:.35,kind:'ground',hops:2},
+        {start:35.2,end:36.35,x:0,z:0,kind:'flight'}
+      ]);
+      if (global.AvianWoodlandBirds.supports('americanTreeSparrow')) addSharedBird('americanTreeSparrow', 'American tree sparrow', 'Spizelloides arborea', 2.40, -.40, 2.6, [
+        {start:4.0,end:5.3,x:-.13,z:-.05,kind:'ground',hops:2},
+        {start:14.2,end:15.35,x:-.72,z:-.38,kind:'flight'},
+        {start:24.0,end:25.3,x:-.59,z:-.33,kind:'ground',hops:2},
+        {start:33.8,end:34.95,x:0,z:0,kind:'flight'}
+      ]);
+      if (global.AvianWoodlandBirds.supports('hermitThrush')) addSharedBird('hermitThrush', 'Hermit thrush', 'Catharus guttatus', -2.35, -.90, .9, [
+        {start:5.4,end:6.7,x:.15,z:.06,kind:'ground',hops:2},
+        {start:18.8,end:20.1,x:.85,z:.45,kind:'flight'},
+        {start:27.8,end:29.1,x:.71,z:.40,kind:'ground',hops:2},
+        {start:36.6,end:37.9,x:0,z:0,kind:'flight'}
+      ]);
+      if (global.AvianWoodlandBirds.supports('purpleFinch')) addSharedBird('purpleFinch', 'Purple finch', 'Haemorhous purpureus', .20, -2.20, -.2, [
+        {start:2.2,end:3.5,x:-.12,z:.07,kind:'ground',hops:2},
+        {start:13.4,end:14.6,x:-.55,z:.75,kind:'flight'},
+        {start:22.6,end:23.9,x:-.44,z:.68,kind:'ground',hops:2},
+        {start:30.8,end:32.0,x:0,z:0,kind:'flight'}
+      ]);
     }
     // Soft contact shadows. A songbird is far below the shadow map's texel, so
     // without these the residents float. One batched mesh keeps a single draw
@@ -464,6 +495,86 @@
     var contactShadows = new THREE.Mesh(shadowGeometry, shadowMaterial);
     contactShadows.name = 'resident-contact-shadows'; contactShadows.frustumCulled = false; contactShadows.renderOrder = 1;
     root.add(contactShadows);
+    // Tracks in snow. A print is pressed where a foot is planted, so hopping
+    // birds leave side-by-side pairs and walking birds an alternating line,
+    // exactly as each model moves. Sizes are typical real track lengths (m).
+    var TRACK_LENGTH={chickadee:.022,tuftedTitmouse:.022,americanGoldfinch:.02,darkEyedJunco:.024,easternBluebird:.025,whiteThroatedSparrow:.025,
+      chippingSparrow:.021,americanTreeSparrow:.024,hermitThrush:.027,purpleFinch:.024,
+      easternTowhee:.03,northernCardinal:.028,robin:.045,blueJay:.04,mourningDove:.04,grouse:.06};
+    var TRACK_MAX=detailed?900:420,tracks=null,trackClock=0,trackNext=0,trackPoint=new THREE.Vector3();
+    function buildTracks(){
+      var canvasNode=global.document&&global.document.createElement('canvas'),paint=null;
+      try{if(canvasNode){canvasNode.width=canvasNode.height=64;paint=canvasNode.getContext('2d');}}catch(ignore){paint=null;}
+      if(paint){
+        paint.strokeStyle='#fff';paint.lineCap='round';
+        // Three forward toes and the hind toe of a perching bird's foot.
+        [[32,40,32,5,8],[32,40,12,11,7],[32,40,52,11,7],[32,40,32,61,7]].forEach(function(toe){
+          paint.lineWidth=toe[4];paint.beginPath();paint.moveTo(toe[0],toe[1]);paint.lineTo(toe[2],toe[3]);paint.stroke();
+        });
+      }
+      var map=paint?keep(new THREE.CanvasTexture(canvasNode)):null;
+      var positions=new Float32Array(TRACK_MAX*12),alpha=new Float32Array(TRACK_MAX*4),uv=new Float32Array(TRACK_MAX*8),index=[];
+      for(var q=0;q<TRACK_MAX;q++){uv.set([0,0,1,0,1,1,0,1],q*8);var c=q*4;index.push(c,c+2,c+1,c,c+3,c+2);}
+      var geometry=keep(new THREE.BufferGeometry());
+      geometry.setAttribute('position',new THREE.BufferAttribute(positions,3).setUsage(THREE.DynamicDrawUsage));
+      geometry.setAttribute('uv',new THREE.BufferAttribute(uv,2));
+      geometry.setAttribute('blTrackAlpha',new THREE.BufferAttribute(alpha,1).setUsage(THREE.DynamicDrawUsage));
+      geometry.setIndex(index);
+      var material=keep(new THREE.MeshBasicMaterial({color:0x4f5d72,map:map,transparent:true,depthWrite:false,polygonOffset:true,polygonOffsetFactor:-2,polygonOffsetUnits:-2}));
+      material.onBeforeCompile=function(shader){
+        shader.vertexShader='attribute float blTrackAlpha; varying float vBlTrackAlpha;\n'+shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvBlTrackAlpha = blTrackAlpha;');
+        shader.fragmentShader='varying float vBlTrackAlpha;\n'+shader.fragmentShader.replace('#include <map_fragment>','#include <map_fragment>\ndiffuseColor.rgb = vec3(.22,.27,.36); diffuseColor.a *= vBlTrackAlpha;');
+      };
+      material.customProgramCacheKey=function(){return 'birdlab-snow-tracks-v1';};
+      var mesh=new THREE.Mesh(geometry,material);mesh.name='snow-tracks';mesh.frustumCulled=false;mesh.renderOrder=1;root.add(mesh);
+      tracks={mesh:mesh,positions:positions,alpha:alpha,born:new Float32Array(TRACK_MAX),count:0};
+    }
+    function clearTracks(){
+      trackClock=0;trackNext=0;
+      birds.concat(sharedBirds).forEach(function(bird){bird.track=null;});
+      if(!tracks)return;
+      tracks.alpha.fill(0);tracks.born.fill(0);tracks.count=0;tracks.mesh.visible=seasonName==='winter';
+      tracks.mesh.geometry.attributes.blTrackAlpha.needsUpdate=true;
+    }
+    function pressTrack(x,z,yaw,length){
+      var slot=trackNext;trackNext=(trackNext+1)%TRACK_MAX;tracks.count=Math.min(TRACK_MAX,tracks.count+1);
+      var w=length*.42,l=length*.5,c=Math.cos(yaw),sn=Math.sin(yaw),y=height(x,z)+.002;
+      var corners=[[-w,-l],[w,-l],[w,l],[-w,l]];
+      for(var k=0;k<4;k++){
+        var cx=corners[k][0],cz=corners[k][1],at=slot*12+k*3;
+        tracks.positions[at]=x+cx*c+cz*sn;tracks.positions[at+1]=y;tracks.positions[at+2]=z-cx*sn+cz*c;
+      }
+      tracks.born[slot]=trackClock;
+    }
+    function updateTracks(dt){
+      if(seasonName!=='winter'||!(dt>0))return;
+      if(!tracks)buildTracks();
+      tracks.mesh.visible=true;trackClock+=dt;root.updateMatrixWorld(true);
+      birds.concat(sharedBirds).forEach(function(bird){
+        if(absent(bird))return;
+        var feet=bird.model?bird.model.feet:bird.feet,length=TRACK_LENGTH[bird.id]||.026;
+        if(!feet||!feet.length)return;
+        if(!bird.track)bird.track=feet.map(function(){return {low:Infinity,x:0,z:0,has:false};});
+        var forward=bird.root.rotation.y+(bird.model?0:Math.PI);
+        feet.forEach(function(foot,i){
+          var mark=bird.track[i];foot.getWorldPosition(trackPoint);
+          var lift=trackPoint.y-height(trackPoint.x,trackPoint.z);
+          mark.low=Math.min(mark.low,lift);
+          // Planted: on the ground, at its lowest, and moved since the last print.
+          if((bird.altitude||0)>.004||lift>mark.low+.003||lift>.09)return;
+          if(mark.has&&Math.hypot(trackPoint.x-mark.x,trackPoint.z-mark.z)<Math.max(.012,length*.55))return;
+          mark.has=true;mark.x=trackPoint.x;mark.z=trackPoint.z;
+          pressTrack(trackPoint.x,trackPoint.z,forward,length);
+        });
+      });
+      // Old prints soften; falling snow fills them in three times as fast.
+      var fade=wet?3:1;
+      for(var p=0;p<tracks.count;p++){
+        var age=(trackClock-tracks.born[p])*fade,a=.88*(1-Math.min(1,Math.max(0,(age-150)/90)));
+        tracks.alpha[p*4]=tracks.alpha[p*4+1]=tracks.alpha[p*4+2]=tracks.alpha[p*4+3]=a;
+      }
+      tracks.mesh.geometry.attributes.position.needsUpdate=true;tracks.mesh.geometry.attributes.blTrackAlpha.needsUpdate=true;
+    }
     function writeShadow(index, x, z, yaw, halfWidth, halfLength, altitude, strength) {
       var y = height(x, z) + .003, spread = 1 + altitude * 2.2, w = halfWidth * spread, l = halfLength * spread;
       var c = Math.cos(yaw), sn = Math.sin(yaw), corners = [[-w, -l], [w, -l], [w, l], [-w, l]];
@@ -824,7 +935,9 @@
       grouse:{berry:.45,acorn:.35,insect:.20},blueJay:{acorn:.60,seed:.30,insect:.10},
       northernCardinal:{seed:.75,berry:.20,insect:.05},darkEyedJunco:{seed:.85,insect:.15},
       tuftedTitmouse:{seed:.50,insect:.40,acorn:.10},easternTowhee:{insect:.55,seed:.35,berry:.10},
-      americanGoldfinch:{seed:1},easternBluebird:{insect:.60,berry:.40},whiteThroatedSparrow:{seed:.60,insect:.25,berry:.15}
+      americanGoldfinch:{seed:1},easternBluebird:{insect:.60,berry:.40},whiteThroatedSparrow:{seed:.60,insect:.25,berry:.15},
+      chippingSparrow:{seed:.70,insect:.30},americanTreeSparrow:{seed:.90,berry:.10},
+      hermitThrush:{insect:.70,berry:.30},purpleFinch:{seed:.70,berry:.20,insect:.10}
     };
     // Blue jays displace smaller birds; the grouse is too large to be moved off.
     function displacedByJay(bird){return bird.id!=='blueJay'&&bird.id!=='grouse';}
@@ -835,13 +948,28 @@
     // Seasons: a Maine winter without the towhee, which leaves for the southern
     // states (robins, bluebirds and white-throated sparrows partly stay), and
     // goldfinches in drab olive winter plumage, molting in autumn.
-    var SEASON_ABSENT={winter:{easternTowhee:true}},absentIds={},goldfinchDrab={value:0},drabReady=false;
+    // Chipping sparrows and hermit thrushes leave too; the American tree sparrow
+    // nests in the far north and is here only in winter.
+    var TREE_SPARROW_AWAY={americanTreeSparrow:true};
+    var SEASON_ABSENT={winter:{easternTowhee:true,chippingSparrow:true,hermitThrush:true},spring:TREE_SPARROW_AWAY,summer:TREE_SPARROW_AWAY,autumn:TREE_SPARROW_AWAY},absentIds=TREE_SPARROW_AWAY,goldfinchDrab={value:0},drabReady=false,seasonName='summer';
+    // Food through the year: frozen winter ground holds no reachable
+    // earthworms and few active insects; autumn brings the acorn and berry crop.
+    var FOOD_SEASON={winter:{cap:{worm:0,insect:.25},grow:{}},autumn:{cap:{},grow:{acorn:2.5,berry:1.5}},
+      // Spring: thawed, wet soil and the first insect hatches; last year's berries and acorns are nearly gone.
+      spring:{cap:{berry:.3,acorn:.4},grow:{worm:1.6,insect:1.5}}};
+    function foodCap(kind){var entry=FOOD_SEASON[seasonName];return entry&&entry.cap[kind]!=null?entry.cap[kind]:1;}
+    function foodGrow(kind){var entry=FOOD_SEASON[seasonName];return entry&&entry.grow[kind]!=null?entry.grow[kind]:1;}
     function absent(bird){return !!absentIds[bird.id];}
+    sharedBirds.forEach(function(bird){if(absent(bird))bird.root.visible=false;});
     function setSeason(value){
-      if(disposed||['summer','autumn','winter'].indexOf(value)<0)return;
-      absentIds=SEASON_ABSENT[value]||{};
+      if(disposed||['spring','summer','autumn','winter'].indexOf(value)<0)return;
+      absentIds=SEASON_ABSENT[value]||{};seasonName=value;
+      if(feeding)feeding.sources.forEach(function(source){source.amount=Math.min(source.amount,foodCap(source.kind));});
+      // Shadows on snow are blue-grey, not the brown of bare soil.
+      shadowMaterial.color.set(value==='winter'?0x26303f:0x1b130c);
+      clearTracks();
       birds.concat(sharedBirds).forEach(function(bird){bird.root.visible=!absent(bird);});
-      goldfinchDrab.value=value==='winter'?1:value==='autumn'?.55:0;
+      goldfinchDrab.value=value==='winter'?1:value==='autumn'?.55:value==='spring'?.3:0;
       var finch=sharedBirds.filter(function(bird){return bird.id==='americanGoldfinch';})[0];
       if(goldfinchDrab.value&&!drabReady&&finch){
         drabReady=true;
@@ -913,7 +1041,9 @@
       // A bird already at a suitable food usually keeps feeding there.
       if(here&&(here===best||randomChoice(state)<.7)){
         state.kind='forage';state.food=here;state.duration=3.6+randomChoice(state)*2.4;
-        here.amount=Math.max(0,here.amount-.08);return true;
+        // A bite was .08 with twelve residents; fifteen now share the same food.
+        // Only the robin takes earthworms, so its bite is unchanged.
+        here.amount=Math.max(0,here.amount-(here.kind==='worm'?.08:.064));return true;
       }
       if(!best)return false;
       for(var attempt=0;attempt<10;attempt++){
@@ -930,7 +1060,7 @@
     function setFeedingStudy(sources){
       if(disposed)return;
       feeding=sources&&sources.length?{sources:sources.map(function(source){return {id:source.id,kind:source.kind,label:source.label,place:source.place,eat:source.eat,
-        x:source.x,z:source.z,radius:source.radius,regrow:source.regrow,amount:1};})}:null;
+        x:source.x,z:source.z,radius:source.radius,regrow:source.regrow,amount:foodCap(source.kind)};})}:null;
       residents.forEach(function(bird){bird.free.food=null;bird.free.target=null;bird.free.avoid=null;bird.free.displaced=-1;});
     }
     function foodLevels(){
@@ -1169,14 +1299,15 @@
         state.preenAfter=5+index*1.1;state.preenSide=1;state.preenExit=-1;state.preenExitWeight=0;state.freezeAfter=0;state.alarm=null;
         state.food=null;state.target=null;state.avoid=null;state.displaced=-1;
       });
-      if(feeding)feeding.sources.forEach(function(source){source.amount=1;});
+      if(feeding)feeding.sources.forEach(function(source){source.amount=foodCap(source.kind);});
+      clearTracks();
       update(0,0);
     }
     function advanceFree(dt,observer) {
       freeTime+=dt;
       if(feeding) {
         // Wet ground brings earthworms up, so the lawn restocks faster in rain.
-        feeding.sources.forEach(function(source){source.amount=Math.min(1,source.amount+source.regrow*(wet&&source.kind==='worm'?3:1)*dt);});
+        feeding.sources.forEach(function(source){source.amount=Math.min(foodCap(source.kind),source.amount+source.regrow*(wet&&source.kind==='worm'?3:1)*foodGrow(source.kind)*dt);});
         residents.forEach(function(jay){
           if(jay.id!=='blueJay'||jay.free.kind!=='forage'||!jay.free.food)return;
           residents.forEach(function(other){
@@ -1320,6 +1451,7 @@
           groundMove ? (chickadee ? 'Hopping' : 'Scurrying') : peck > .05 ? 'Foraging' : freeFlight&&wingOpen>.05?'Settling wings':'Scanning';
       });
       sharedBirds.forEach(function(bird) { updateSharedBird(bird,time); });
+      updateTracks(dt);
       if(mode==='free')residents.forEach(function(bird) {
         var state=bird.free,course=state.course[0];
         if(state.alarmed&&course&&state.elapsed<course.start)bird.behavior='Alert — preparing to move away';

@@ -94,7 +94,9 @@ function frozenWorld(before: any, after: any) {
 
 test('three distinct native species retain finite articulated models through ground, flight, return and actual mesh selection', async ({ page }) => {
   const errors = await mount(page), initial = await call(page, 'getState');
-  expect(initial.wildlife.map((bird: any) => bird.id)).toEqual(['robin', 'chickadee', 'mourningDove', 'grouse', 'blueJay', 'northernCardinal', 'darkEyedJunco', 'tuftedTitmouse', 'easternTowhee', ...residents.map(bird => bird.id)]);
+  expect(initial.wildlife.map((bird: any) => bird.id)).toEqual(['robin', 'chickadee', 'mourningDove', 'grouse', 'blueJay', 'northernCardinal', 'darkEyedJunco', 'tuftedTitmouse', 'easternTowhee', ...residents.map(bird => bird.id),
+    // The second expansion; the American tree sparrow is away until winter.
+    'chippingSparrow', 'hermitThrush', 'purpleFinch']);
   const signatures: string[] = [];
   for (const species of residents) {
     await call(page, 'setCamera', species.id); await call(page, 'seek', 0); await step(page);

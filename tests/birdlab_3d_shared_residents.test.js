@@ -17,16 +17,20 @@ describe('BirdLab shared woodland residents',()=>{
     const {wildlife,calls}=fixture(quality);
     try{
       // New residents are appended, so earlier species keep their seeds.
-      const shared=['mourningDove','grouse','blueJay','northernCardinal','darkEyedJunco','tuftedTitmouse','easternTowhee','americanGoldfinch','easternBluebird','whiteThroatedSparrow'];
+      const shared=['mourningDove','grouse','blueJay','northernCardinal','darkEyedJunco','tuftedTitmouse','easternTowhee','americanGoldfinch','easternBluebird','whiteThroatedSparrow','chippingSparrow','americanTreeSparrow','hermitThrush','purpleFinch'];
+      // The American tree sparrow is built with the rest but is away until winter.
+      const present=shared.filter(id=>id!=='americanTreeSparrow');
       // The robin and chickadee lead, built from their factory species.
       expect(calls).toEqual(['americanRobin','blackCappedChickadee',...shared].map(id=>[id,quality]));
       expect(wildlife.isShared('robin')).toBe(true);expect(wildlife.isShared('chickadee')).toBe(true);
-      expect(wildlife.snapshot().map(b=>b.id)).toEqual(['robin','chickadee',...shared]);
-      for(const id of shared){
+      expect(wildlife.snapshot().map(b=>b.id)).toEqual(['robin','chickadee',...present]);
+      expect(wildlife.getFocus('americanTreeSparrow',new THREE.Vector3())).toBeNull();
+      for(const id of present){
         const focus=new THREE.Vector3();expect(wildlife.getFocus(id,focus)).toBe(focus);expect(focus.toArray().every(Number.isFinite)).toBe(true);
         const bird=wildlife.snapshot().find(b=>b.id===id);expect(bird.scientificName).toBe({grouse:'Bonasa umbellus',mourningDove:'Zenaida macroura',blueJay:'Cyanocitta cristata',northernCardinal:'Cardinalis cardinalis',
           darkEyedJunco:'Junco hyemalis',tuftedTitmouse:'Baeolophus bicolor',easternTowhee:'Pipilo erythrophthalmus',
-          americanGoldfinch:'Spinus tristis',easternBluebird:'Sialia sialis',whiteThroatedSparrow:'Zonotrichia albicollis'}[id]);
+          americanGoldfinch:'Spinus tristis',easternBluebird:'Sialia sialis',whiteThroatedSparrow:'Zonotrichia albicollis',
+          chippingSparrow:'Spizella passerina',hermitThrush:'Catharus guttatus',purpleFinch:'Haemorhous purpureus'}[id]);
       }
     }finally{wildlife.dispose();}
   });
@@ -67,7 +71,10 @@ describe('BirdLab shared woodland residents',()=>{
       easternTowhee:{feed:6.83,flight:15.1,bounds:[2.6,3.9,14.6,15.6,24.5,25.8,33.5,34.5]},
       americanGoldfinch:{feed:8.63,flight:18.0,bounds:[4.8,6.1,17.4,18.65,27.2,28.5,36,37.25]},
       easternBluebird:{feed:10.93,flight:22.3,bounds:[6.6,7.8,21.6,23,29.6,30.8,38.2,39.6]},
-      whiteThroatedSparrow:{feed:6.03,flight:12.97,bounds:[2,3.4,12.4,13.55,23.6,25,32.4,33.6]}};
+      whiteThroatedSparrow:{feed:6.03,flight:12.97,bounds:[2,3.4,12.4,13.55,23.6,25,32.4,33.6]},
+      chippingSparrow:{feed:8.2,flight:16.4,bounds:[3.6,4.9,15.8,16.95,25.2,26.5,35.2,36.35]},
+      hermitThrush:{feed:10.5,flight:19.45,bounds:[5.4,6.7,18.8,20.1,27.8,29.1,36.6,37.9]},
+      purpleFinch:{feed:6.9,flight:14.0,bounds:[2.2,3.5,13.4,14.6,22.6,23.9,30.8,32.0]}};
     try{
       for(const [id,course] of Object.entries(courses)){
         wildlife.update(course.feed);expect(wildlife.snapshot().find(b=>b.id===id).behavior,id).toBe('Foraging');

@@ -933,7 +933,7 @@
       if(flightStudy.heading.visible){flightStudy.heading.position.copy(position);flightStudy.heading.setDirection(flightStudy.direction.normalize());}
     }
     function setSpeed(value) {if(mode==='free')return;var next=Number(value); if([.25,.5,1].indexOf(next)>=0) speed=next; notify(true); }
-    var SHARED_RESIDENT_CAMERAS=['mourningDove','grouse','blueJay','northernCardinal','darkEyedJunco','tuftedTitmouse','easternTowhee','americanGoldfinch','easternBluebird','whiteThroatedSparrow'];
+    var SHARED_RESIDENT_CAMERAS=['mourningDove','grouse','blueJay','northernCardinal','darkEyedJunco','tuftedTitmouse','easternTowhee','americanGoldfinch','easternBluebird','whiteThroatedSparrow','chippingSparrow','americanTreeSparrow','hermitThrush','purpleFinch'];
     function isResidentCamera(mode) { return mode==='robin'||mode==='chickadee'||SHARED_RESIDENT_CAMERAS.indexOf(mode)>=0; }
     function residentLensVisible(){return !disposed&&mode==='guided'&&isResidentCamera(cameraMode)&&residentActive;}
     function resetResidentLens(){residentExplore=false;residentPick=null;residentPresentation='woodland';residentPart='whole';residentView='free';residentActive=false;residentZoom=1;residentCache=null;}
@@ -1558,7 +1558,7 @@
       if(disposed||contextLost||mode!=='free'||!binoculars)return false;
       updateCamera(0,false);var observed=fieldObserver.update(0,camera,true,observer.speed,true);
       if(!observed||!observed.identified||sightings.some(function(entry){return entry.id===observed.id;})){notify(true);return false;}
-      sightings.push({id:observed.id,name:observed.name,scientificName:observed.scientificName,category:observed.category||'bird',behavior:observed.behavior,distance:observed.distance,time:fieldVisitTime,food:sightingFood(observed.id),conditions:{light:lighting,weather:raining?'rain':'clear'}});notify(true);return true;
+      sightings.push({id:observed.id,name:observed.name,scientificName:observed.scientificName,category:observed.category||'bird',behavior:observed.behavior,distance:observed.distance,time:fieldVisitTime,food:sightingFood(observed.id),conditions:season==='summer'?{light:lighting,weather:raining?'rain':'clear'}:{light:lighting,weather:raining?'rain':'clear',season:season}});notify(true);return true;
     }
     function setMove(direction,pressed){if(mode!=='free'||disposed||['forward','back','left','right'].indexOf(direction)<0)return;moveKeys[direction]=!!pressed;refresh();}
     function moveObserver(forward,side,dt){
@@ -1687,7 +1687,7 @@
     // Seasons change the woodland and who lives in it; the hawk's flight,
     // the light palette and the weather choice are kept.
     function setSeason(value){
-      if(disposed||['summer','autumn','winter'].indexOf(value)<0||value===season||!habitat.setSeason)return;
+      if(disposed||['spring','summer','autumn','winter'].indexOf(value)<0||value===season||!habitat.setSeason)return;
       season=value;habitat.setSeason(value);if(wildlife.setSeason)wildlife.setSeason(value);
       if(isResidentCamera(cameraMode)&&wildlife.isPresent&&!wildlife.isPresent(cameraMode))setCamera('orbit');
       if(fieldObserver){fieldObserver.reset();observationKey='';}
@@ -1814,7 +1814,7 @@
       var desiredFar=240;
       if(isResidentCamera(cameraMode)) {
         wildlife.getFocus(cameraMode,targetGoal);
-        var viewingDistance=({robin:1.05,chickadee:.70,mourningDove:.85,grouse:1.10,blueJay:1.02,northernCardinal:.75,darkEyedJunco:.66,tuftedTitmouse:.66,easternTowhee:.80,americanGoldfinch:.62,easternBluebird:.76,whiteThroatedSparrow:.72}[cameraMode])*orbit.distance/2.65;
+        var viewingDistance=({robin:1.05,chickadee:.70,mourningDove:.85,grouse:1.10,blueJay:1.02,northernCardinal:.75,darkEyedJunco:.66,tuftedTitmouse:.66,easternTowhee:.80,americanGoldfinch:.62,easternBluebird:.76,whiteThroatedSparrow:.72,chippingSparrow:.62,americanTreeSparrow:.68,hermitThrush:.74,purpleFinch:.68}[cameraMode])*orbit.distance/2.65;
         var viewingPitch=clamp(orbit.pitch+.17,-.35,1.35);
         cameraGoal.set(Math.sin(orbit.yaw)*Math.cos(viewingPitch)*viewingDistance,Math.sin(viewingPitch)*viewingDistance,Math.cos(orbit.yaw)*Math.cos(viewingPitch)*viewingDistance).add(targetGoal);
       } else if(cameraMode==='wide') {

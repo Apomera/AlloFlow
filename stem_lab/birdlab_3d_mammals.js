@@ -78,7 +78,7 @@
         if (r < rows - 1) builder.indices.push(a + 1, b + 1, b);
       }
     }
-    function contour(builder, sections, tint, underside) {
+    function contour(builder, sections, tint, underside, coat) {
       // A continuous longitudinal surface joins rump, waist, shoulders and
       // neck. The same construction tapers the skull into its muzzle, without
       // separate spherical parts or dark intersection seams.
@@ -98,8 +98,14 @@
           var u = side / sides, theta = u * TAU, ny = Math.sin(theta);
           var belly = underside ? smooth((-ny - .18) / .65) : 0;
           var fleck = 1 + .018 * Math.sin(side * 12.9898 + row * 78.233);
-          var tintAt = { r: (tint.r + (pale.r - tint.r) * belly) * fleck,
-            g: (tint.g + (pale.g - tint.g) * belly) * fleck, b: (tint.b + (pale.b - tint.b) * belly) * fleck };
+          // Eastern gray squirrels are grizzled gray with a tawny-brown wash down the
+          // middle of the back, along the flanks, over the face and on the feet.
+          var warm = coat === 'body' ? Math.max(smooth((ny - .45) / .45) * .62, smooth((ny + .42) / .22) * (1 - smooth((ny - .02) / .25)) * .46) :
+            coat === 'head' ? smooth((ny + .10) / .50) * .55 * smooth((row / rows - .18) / .30) :
+            coat === 'limb' ? smooth((row / rows - .38) / .40) * .58 : 0;
+          var base = { r: tint.r + (warmGray.r - tint.r) * warm, g: tint.g + (warmGray.g - tint.g) * warm, b: tint.b + (warmGray.b - tint.b) * warm };
+          var tintAt = { r: (base.r + (pale.r - base.r) * belly) * fleck,
+            g: (base.g + (pale.g - base.g) * belly) * fleck, b: (base.b + (pale.b - base.b) * belly) * fleck };
           vertex(builder, Math.cos(theta) * width, yAt + ny * depth, zAt, tintAt, u, row / rows);
         }
       }
@@ -143,7 +149,7 @@
       [-.049, .010, 0, 0], [-.033, .011, .036, .035], [-.010, .009, .052, .047],
       [.018, .007, .052, .049], [.050, .005, .042, .043], [.080, .007, .037, .039],
       [.108, .013, .039, .042], [.130, .024, .031, .035], [.148, .030, .024, .027], [.168, .031, 0, 0]
-    ], gray, true);
+    ], gray, true, 'body');
     mesh(bodyData, 'squirrel-body-fur', torso);
     var head = new THREE.Group(); head.name = 'squirrel-head'; torso.add(head);
     var headData = data();
@@ -151,7 +157,7 @@
       [-.038, -.001, 0, 0], [-.024, .001, .022, .025], [-.006, .002, .029, .030],
       [.012, -.001, .026, .027], [.029, -.007, .019, .021], [.043, -.012, .0118, .014],
       [.055, -.013, .0067, .009], [.061, -.013, 0, 0]
-    ], gray, true);
+    ], gray, true, 'head');
     // Fine curved whiskers sweep back from the tapered muzzle; they stay in
     // this retained head draw call rather than a fan of straight white rods.
     for (var side = -1; side <= 1; side += 2) for (var whisker = 0; whisker < 5; whisker++) {
@@ -193,7 +199,9 @@
         var theta = ts / tailSides * TAU, fuzz = 1 + .035 * Math.sin(tr * 12.7 + ts * 6.3);
         var radial = width * fuzz, ny = -dz / length, nz = dy / length;
         var shade = .83 + .20 * Math.abs(Math.cos(theta)) + .08 * Math.sin(tr * 5 + ts * 3.2);
-        var tailColor = { r: gray.r * shade, g: gray.g * shade, b: gray.b * shade };
+        var tailEdge = Math.pow(Math.abs(Math.cos(theta)), 1.6), tailWarm = .40 * (1 - tailEdge);
+        shade *= 1 - tailEdge * .38;
+        var tailColor = { r: (gray.r + (warmGray.r - gray.r) * tailWarm) * shade, g: (gray.g + (warmGray.g - gray.g) * tailWarm) * shade, b: (gray.b + (warmGray.b - gray.b) * tailWarm) * shade };
         // The plume is flattened side to side, wider than it is deep.
         vertex(tailData, Math.cos(theta) * radial * 1.22, cy + Math.sin(theta) * radial * .82 * ny,
           cz + Math.sin(theta) * radial * .82 * nz, tailColor, ts / tailSides, t);
@@ -214,12 +222,12 @@
       var hairSpan = Math.hypot(hairDy, hairDz), tyAxis = hairDy / hairSpan, tzAxis = hairDz / hairSpan;
       var ox = Math.cos(hairAngle), oy = Math.sin(hairAngle) * -tzAxis, oz = Math.sin(hairAngle) * tyAxis;
       var lateral = Math.pow(Math.abs(ox), 1.4), vary = .5 + .5 * Math.sin(hairRing * 7.5 + hairSide * 12.3);
-      var hairLength = (.006 + .013 * lateral + .004 * vary) * (.55 + .45 * Math.sin(Math.PI * Math.min(1, hairT * 1.08)));
-      var tipX = hx + ox * hairLength, tipY = hy + (oy + tyAxis * .45) * hairLength, tipZ = hz + (oz + tzAxis * .45) * hairLength;
-      var banded = { r: gray.r * .78, g: gray.g * .78, b: gray.b * .76 };
+      var hairLength = (.0015 + .016 * lateral + .004 * vary * lateral) * (.55 + .45 * Math.sin(Math.PI * Math.min(1, hairT * 1.08)));
+      var tipX = hx + ox * hairLength, tipY = hy + (oy + tyAxis * 1.25) * hairLength, tipZ = hz + (oz + tzAxis * 1.25) * hairLength;
+      var banded = { r: gray.r * .55, g: gray.g * .55, b: gray.b * .54 };
       var hairFirst = tailData.positions.length / 3;
-      vertex(tailData, hx, hy - tyAxis * .0013, hz - tzAxis * .0013, banded, 0, hairT);
-      vertex(tailData, hx, hy + tyAxis * .0013, hz + tzAxis * .0013, banded, 1, hairT);
+      vertex(tailData, hx, hy - tyAxis * .0022, hz - tzAxis * .0022, banded, 0, hairT);
+      vertex(tailData, hx, hy + tyAxis * .0022, hz + tzAxis * .0022, banded, 1, hairT);
       vertex(tailData, tipX, tipY, tipZ, pale, .5, (hairRing + 1) / tailRows);
       tailData.indices.push(hairFirst, hairFirst + 1, hairFirst + 2);
     }
@@ -230,8 +238,10 @@
     tail.geometry.boundingSphere.radius += .055;
 
     var limbData = data();
-    contour(limbData, [[-1, 0, 0, 0], [-.83, 0, .83, .83], [-.48, 0, 1, 1],
-      [0, 0, .86, .86], [.58, 0, .62, .62], [.88, 0, .42, .42], [1, 0, 0, 0]], gray);
+    // Muscle sits near the body: each segment is fullest just below its upper
+    // joint and tapers to a slim elbow, knee, wrist or ankle.
+    contour(limbData, [[-1, 0, 0, 0], [-.86, 0, .94, .94], [-.52, 0, 1.12, 1.12],
+      [0, 0, .84, .84], [.55, 0, .52, .52], [.88, 0, .34, .34], [1, 0, 0, 0]], gray, false, 'limb');
     // Rods orient their local Y axis from shoulder/hip to elbow/knee. Rotate
     // the continuous sleeve once so its broad end covers the proximal joint.
     for (var limbVertex = 0; limbVertex < limbData.positions.length; limbVertex += 3) {
@@ -707,7 +717,7 @@
         knee.copy(hips).addScaledVector(direction, along / distance);
         var yz = Math.max(.00001, Math.hypot(direction.y, direction.z)), bendSide = leg.front ? 1 : -1;
         knee.y += -direction.z / yz * bend * bendSide; knee.z += direction.y / yz * bend * bendSide;
-        rod(leg.upper, hips, knee, leg.front ? .014 : .021); rod(leg.lower, knee, target, leg.front ? .0070 : .0085);
+        rod(leg.upper, hips, knee, leg.front ? .015 : .024); rod(leg.lower, knee, target, leg.front ? .0078 : .0095);
         leg.paw.position.copy(target); leg.paw.rotation.set((leg.front ? pawPitch : 0) + swingFlex, angle(leg.worldYaw - heading), 0);
       }
       if (action.kind === 'handle' && elapsed > action.duration - .10) seedConsumed = true;

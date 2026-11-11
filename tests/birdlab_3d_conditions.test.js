@@ -99,9 +99,9 @@ describe('BirdLab notebook conditions', () => {
     await mount(() => Promise.resolve());
     expect(host.querySelector('[data-birdlab-conditions-hint]')).toBeNull();
     const entry = (id, name, conditions) => ({ id, name, scientificName: 'x', category: 'bird', behavior: 'Scanning', distance: 4, time: 30, conditions });
-    await act(async () => publish({ mode: 'free', sightings: [entry('robin', 'American robin', { light: 'dawn', weather: 'rain' }), entry('blueJay', 'Blue jay', { light: 'golden', weather: 'clear' }), entry('grouse', 'Ruffed grouse')] }));
+    await act(async () => publish({ mode: 'free', sightings: [entry('robin', 'American robin', { light: 'dawn', weather: 'rain' }), entry('blueJay', 'Blue jay', { light: 'golden', weather: 'clear' }), entry('grouse', 'Ruffed grouse'), entry('chickadee', 'Black-capped chickadee', { light: 'daylight', weather: 'rain', season: 'winter' }), entry('northernCardinal', 'Northern cardinal', { light: 'golden', weather: 'clear', season: 'autumn' }), entry('robin2', 'Eastern towhee', { light: 'dawn', weather: 'rain', season: 'spring' })] }));
     const lines = [...host.querySelectorAll('[data-birdlab-sighting-conditions]')].map(n => n.textContent);
-    expect(lines).toEqual(['Conditions · Dawn, light rain', 'Conditions · Golden hour, clear']);
+    expect(lines).toEqual(['Conditions · Dawn, light rain', 'Conditions · Golden hour, clear', 'Conditions · Winter · Daylight, light snow', 'Conditions · Autumn · Golden hour, clear', 'Conditions · Spring · Dawn, light rain']);
     expect(host.querySelector('[data-birdlab-conditions-hint]').textContent).toMatch(/light and weather/);
   });
 });

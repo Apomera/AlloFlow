@@ -61,8 +61,10 @@ describe('BirdLab residents and the hawk', () => {
       const longest = Math.max(...frozen.map(b => 2.6 + b.alarm.danger * 2));
       trace(w, Math.ceil(longest) + 1);
       expect(w.snapshot().filter(b => b.alarm)).toEqual([]);
+      // A bird that was preening or in mid-flight during the first pass never froze, so it may freeze now.
+      const frozenIds = frozen.map(b => b.id);
       w.setPredator(hawk); w.update(20, 1 / 30); w.setPredator(null);
-      expect(w.snapshot().filter(b => b.alarm)).toEqual([]);
+      expect(w.snapshot().filter(b => b.alarm && frozenIds.includes(b.id))).toEqual([]);
     } finally { w.dispose(); }
   });
 });

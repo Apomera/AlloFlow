@@ -266,7 +266,7 @@ describe('Raptor Hunt wing-loading predictor classifier', () => {
   const ARCHETYPE = new Function(am[0] + '\nreturn ARCHETYPE;')();
 
   it('every roster species round-trips to its own archetype', () => {
-    expect(SPECIES.length).toBe(20);
+    expect(SPECIES.length).toBe(23);
     for (const sp of SPECIES) {
       expect(ARCHETYPE[sp.id], sp.id).toBeTruthy();
       // Replicate the in-tool classifier exactly (normalized nearest-neighbor

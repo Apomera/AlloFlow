@@ -46,7 +46,12 @@ test('summer keeps the woodland as built, then the season buttons change it', as
   const group = page.getByRole('group', { name: 'Woodland season' });
   await expect(group.getByRole('button', { name: 'Summer' })).toHaveAttribute('aria-pressed', 'true');
 
+  await group.getByRole('button', { name: 'Spring' }).click(); await step(page, 2);
+  expect((await call(page, 'getState')).season).toBe('spring');
+  expect(await visible(page, 'spring-wildflowers')).toBe(true);
+  await expect(page.locator('[data-birdlab-season-note="spring"]')).toContainText('Birdsong');
   await group.getByRole('button', { name: 'Autumn' }).click(); await step(page, 2);
+  expect(await visible(page, 'spring-wildflowers'), 'wildflowers are over by autumn').toBe(false);
   expect((await call(page, 'getState')).season).toBe('autumn');
   expect(await visible(page, 'individual-leaf-sprays')).toBe(true);
   expect(await seasonKeys(page)).toBeGreaterThan(8);
@@ -62,6 +67,8 @@ test('summer keeps the woodland as built, then the season buttons change it', as
   expect(bright(winter), 'snow lies on the clearing floor').toBeGreaterThan(bright(summer) + 45);
   expect(winter.b, 'snow is not tinted green or brown').toBeGreaterThan(winter.g - 6);
   await expect(page.locator('[data-birdlab-season-note="winter"]')).toContainText('towhee');
+  await expect(page.locator('[data-birdlab-tracks-note]')).toContainText('side-by-side pairs');
+  await expect(page.locator('[data-birdlab-food-season="winter"]')).toContainText('earthworms');
   await expect(page.locator('[data-birdlab-resident-camera="easternTowhee"]')).toHaveCount(0);
   await expect(page.locator('[data-birdlab-resident-camera="chickadee"]')).toHaveCount(1);
   expect((await call(page, 'getState')).wildlife.map((b: any) => b.id)).not.toContain('easternTowhee');

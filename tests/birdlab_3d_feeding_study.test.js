@@ -18,7 +18,8 @@ const SOURCES = [
 // Diet accounts the model teaches; a bird must never eat outside its own.
 const DIETS = { robin: ['worm', 'berry', 'insect'], chickadee: ['seed', 'insect'], mourningDove: ['seed'], grouse: ['berry', 'acorn', 'insect'],
   blueJay: ['acorn', 'seed', 'insect'], northernCardinal: ['seed', 'berry', 'insect'], darkEyedJunco: ['seed', 'insect'], tuftedTitmouse: ['seed', 'insect', 'acorn'],
-  easternTowhee: ['insect', 'seed', 'berry'], americanGoldfinch: ['seed'], easternBluebird: ['insect', 'berry'], whiteThroatedSparrow: ['seed', 'insect', 'berry'] };
+  easternTowhee: ['insect', 'seed', 'berry'], americanGoldfinch: ['seed'], easternBluebird: ['insect', 'berry'], whiteThroatedSparrow: ['seed', 'insect', 'berry'],
+  chippingSparrow: ['seed', 'insect'], americanTreeSparrow: ['seed', 'berry'], hermitThrush: ['insect', 'berry'], purpleFinch: ['seed', 'berry', 'insect'] };
 
 function fixture() {
   const local = {};

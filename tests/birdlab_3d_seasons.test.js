@@ -37,14 +37,20 @@ describe('BirdLab woodland residents by season', () => {
     } finally { plain.dispose(); summer.dispose(); }
   });
 
-  it('sends only the towhee south in winter and brings it back in summer', () => {
+  it('sends the towhee, chipping sparrow and hermit thrush south in winter, and brings the tree sparrow in', () => {
     const wildlife = makeWildlife();
     try {
       const ids = wildlife.snapshot().map(b => b.id);
       expect(ids).toContain('easternTowhee');
       wildlife.setSeason('winter');
       const winter = wildlife.snapshot().map(b => b.id);
-      expect(ids.filter(id => !winter.includes(id))).toEqual(['easternTowhee']);
+      expect(ids.filter(id => !winter.includes(id))).toEqual(['easternTowhee', 'chippingSparrow', 'hermitThrush']);
+      // The American tree sparrow nests in the far north and is here only in winter.
+      expect(ids).not.toContain('americanTreeSparrow');
+      expect(winter.filter(id => !ids.includes(id))).toEqual(['americanTreeSparrow']);
+      expect(wildlife.root.getObjectByName('woodland-americanTreeSparrow').visible).toBe(true);
+      for (const season of ['spring', 'autumn', 'summer']) { wildlife.setSeason(season); expect(wildlife.isPresent('americanTreeSparrow'), season).toBe(false); expect(wildlife.root.getObjectByName('woodland-americanTreeSparrow').visible, season).toBe(false); }
+      wildlife.setSeason('winter');
       // Robins, bluebirds and white-throated sparrows partly stay in Maine.
       for (const id of ['robin', 'easternBluebird', 'whiteThroatedSparrow', 'americanGoldfinch', 'chickadee', 'darkEyedJunco']) expect(winter).toContain(id);
       expect(wildlife.isPresent('easternTowhee')).toBe(false);
@@ -57,7 +63,7 @@ describe('BirdLab woodland residents by season', () => {
       const alpha = shadow.geometry.attributes.blShadowAlpha.array, index = ids.indexOf('easternTowhee');
       wildlife.update(3, 1 / 30);
       expect(Math.max(...alpha.slice(index * 4, index * 4 + 4))).toBe(0);
-      for (const bad of ['spring', 'toString', undefined]) wildlife.setSeason(bad);
+      for (const bad of ['monsoon', 'toString', undefined]) wildlife.setSeason(bad);
       expect(wildlife.isPresent('easternTowhee')).toBe(false);
       wildlife.setSeason('summer');
       expect(wildlife.snapshot().map(b => b.id)).toEqual(ids);
@@ -102,6 +108,124 @@ describe('BirdLab woodland residents by season', () => {
       expect(labels.has('Sitting tight in the snow')).toBe(true);
       expect(labels.has('Sitting tight in the rain')).toBe(false);
     } finally { wildlife.dispose(); }
+  });
+});
+
+// Each print the tracks mesh holds: centre, and the frame it was pressed.
+function prints(wildlife, seconds, onFrame) {
+  wildlife.setMode('free');
+  const out = []; let seen = 0;
+  for (let frame = 0; frame < seconds * 30; frame++) {
+    wildlife.update(frame / 30, 1 / 30);
+    if (onFrame) onFrame(frame);
+    const mesh = wildlife.root.getObjectByName('snow-tracks'); if (!mesh) continue;
+    const p = mesh.geometry.attributes.position.array, a = mesh.geometry.attributes.blTrackAlpha.array;
+    let live = 0; for (let q = 0; q < a.length / 4; q++) if (a[q * 4] > 0) live++;
+    for (let q = seen; q < live; q++) out.push({ x: (p[q * 12] + p[q * 12 + 6]) / 2, z: (p[q * 12 + 2] + p[q * 12 + 8]) / 2, frame, birds: wildlife.snapshot() });
+    seen = live;
+  }
+  return out;
+}
+const nearest = (print) => print.birds.reduce((best, b) => { const d = Math.hypot(b.position[0] - print.x, b.position[2] - print.z); return d < best.d ? { id: b.id, d } : best; }, { id: null, d: 9 }).id;
+
+describe('BirdLab residents in spring', () => {
+  it('has every resident back, goldfinches partway into yellow, and no snow tracks', () => {
+    const wildlife = makeWildlife();
+    try {
+      const all = wildlife.snapshot().map(b => b.id);
+      wildlife.setSeason('winter'); wildlife.setSeason('spring');
+      expect(wildlife.snapshot().map(b => b.id)).toEqual(all);
+      const finch = wildlife.root.getObjectByName('woodland-americanGoldfinch'); let material;
+      finch.traverse(n => { if (!material && n.material && n.material.vertexColors) material = n.material; });
+      const shader = { uniforms: {}, vertexShader: THREE.ShaderLib.standard.vertexShader, fragmentShader: THREE.ShaderLib.standard.fragmentShader };
+      material.onBeforeCompile(shader, {});
+      expect(shader.uniforms.blDrab.value).toBeGreaterThan(0);
+      expect(shader.uniforms.blDrab.value).toBeLessThan(.55); // brighter than the autumn molt
+      expect(prints(wildlife, 20)).toEqual([]);
+    } finally { wildlife.dispose(); }
+  });
+});
+
+describe('BirdLab tracks in the snow', () => {
+  it('presses no tracks outside winter', () => {
+    const wildlife = makeWildlife();
+    try {
+      wildlife.setSeason('autumn');
+      expect(prints(wildlife, 30)).toEqual([]);
+      expect(wildlife.root.getObjectByName('snow-tracks')).toBeUndefined();
+    } finally { wildlife.dispose(); }
+  });
+
+  it('leaves side-by-side pairs from hoppers and alternating single prints from walkers', () => {
+    const wildlife = makeWildlife();
+    try {
+      wildlife.setSeason('winter');
+      const list = prints(wildlife, 60), by = {};
+      list.forEach(p => { const id = nearest(p); (by[id] ||= []).push(p); });
+      expect(Object.keys(by)).not.toContain('easternTowhee');
+      // Hoppers land with both feet at once: their prints come two to a frame.
+      const paired = id => { const frames = {}; by[id].forEach(p => { frames[p.frame] = (frames[p.frame] || 0) + 1; }); const counts = Object.values(frames); return counts.filter(n => n === 2).length / counts.length; };
+      for (const id of ['darkEyedJunco', 'northernCardinal', 'whiteThroatedSparrow']) { expect(by[id].length, id).toBeGreaterThan(6); expect(paired(id), id).toBeGreaterThan(.8); }
+      // Walkers set one foot down at a time after their first stance.
+      for (const id of ['mourningDove', 'blueJay']) { expect(by[id].length, id).toBeGreaterThan(6); expect(paired(id), id).toBeLessThan(.5); }
+      // Every print is pressed under its bird, not left in the air.
+      const gap = p => Math.min(...p.birds.map(b => Math.hypot(b.position[0] - p.x, b.position[2] - p.z)));
+      expect(Math.max(...list.map(gap))).toBeLessThan(.12);
+    } finally { wildlife.dispose(); }
+  });
+
+  it('fades old prints, faster under falling snow, and clears them when the season changes', () => {
+    const alphaAt = (wildlife) => Array.from(wildlife.root.getObjectByName('snow-tracks').geometry.attributes.blTrackAlpha.array.filter((_, i) => i % 4 === 0).slice(0, 4));
+    const clear = makeWildlife(), snowing = makeWildlife();
+    try {
+      clear.setSeason('winter'); snowing.setSeason('winter'); snowing.setWeather('rain');
+      prints(clear, 70); prints(snowing, 70);
+      const fresh = Math.max(...alphaAt(clear));
+      expect(fresh).toBeGreaterThan(.8);
+      expect(Math.max(...alphaAt(snowing)), 'falling snow fills the first prints in').toBeLessThan(fresh);
+      clear.setSeason('summer');
+      expect(clear.root.getObjectByName('snow-tracks').visible).toBe(false);
+      expect(Math.max(...alphaAt(clear))).toBe(0);
+    } finally { clear.dispose(); snowing.dispose(); }
+  });
+});
+
+describe('BirdLab food through the seasons', () => {
+  const SOURCES = [
+    { id: 'feeder', kind: 'seed', label: 'Seed', place: 'the feeder', eat: 'Eating seed', x: 2.9, z: -1.9, radius: .55, regrow: .03 },
+    { id: 'leaf-litter', kind: 'insect', label: 'Insects', place: 'the leaf litter', eat: 'Scratching leaf litter', x: -2.6, z: 2.6, radius: .6, regrow: .02 },
+    { id: 'lawn', kind: 'worm', label: 'Earthworms', place: 'the lawn', eat: 'Pulling earthworms', x: 2.4, z: 2.9, radius: .7, regrow: .015 },
+    { id: 'oak', kind: 'acorn', label: 'Acorns', place: 'the oak', eat: 'Taking acorns', x: .6, z: 4.2, radius: .6, regrow: .008 }
+  ];
+  function feed(season, seconds = 120) {
+    const wildlife = makeWildlife();
+    try {
+      if (season) wildlife.setSeason(season);
+      wildlife.setFeedingStudy(SOURCES); wildlife.setMode('free');
+      const levels = [], eaten = new Set();
+      for (let frame = 0; frame < seconds * 30; frame++) {
+        wildlife.update(frame / 30, 1 / 30);
+        if (frame % 30 === 0) { levels.push(wildlife.foodLevels().map(s => +s.amount.toFixed(6))); wildlife.snapshot().forEach(b => { if (b.food) eaten.add(b.food.kind); }); }
+      }
+      return { levels, eaten };
+    } finally { wildlife.dispose(); }
+  }
+  it('keeps summer feeding exactly as it was', () => {
+    expect(feed('summer', 60)).toEqual(feed(null, 60));
+  });
+  it('leaves few acorns in spring, so birds turn to earthworms and insects', () => {
+    const spring = feed('spring', 90);
+    expect(spring.levels.every(row => row[3] <= .4)).toBe(true);
+    expect(spring.eaten.has('worm') || spring.eaten.has('insect')).toBe(true);
+    // Soil foods are available again after winter.
+    expect(Math.max(...spring.levels.map(row => row[2]))).toBeGreaterThan(.5);
+  });
+  it('leaves frozen winter ground without earthworms and few insects', () => {
+    const winter = feed('winter');
+    expect(winter.levels.every(row => row[2] === 0)).toBe(true);
+    expect(winter.levels.every(row => row[1] <= .25)).toBe(true);
+    expect(winter.eaten.has('worm')).toBe(false);
+    expect(winter.eaten.has('seed')).toBe(true);
   });
 });
 
@@ -154,7 +278,7 @@ describe('BirdLab 3D engine seasons', () => {
       test.controller.setSeason('summer'); test.controller.setLighting('daylight');
       expect(test.hemi().groundColor.getHexString()).toBe(before.getHexString());
       const calls = test.seasons.length;
-      for (const bad of ['spring', 'constructor', undefined, 'summer']) test.controller.setSeason(bad);
+      for (const bad of ['monsoon', 'constructor', undefined, 'summer']) test.controller.setSeason(bad);
       expect(test.seasons.length).toBe(calls);
     } finally { test.dispose(); }
   });
