@@ -33,9 +33,10 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
   // ── Audio (auto-injected) ──
   var _calcAC = null;
   function getCalcAC() { if (!_calcAC) { try { _calcAC = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} } if (_calcAC && _calcAC.state === "suspended") { try { _calcAC.resume(); } catch(e) {} } return _calcAC; }
-  function calcTone(f,d,tp,v) { var ac = getCalcAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
+  function calcTone(f,d,tp,v) { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return; } catch (e) {} if (window._alloGlobalMute) return; var ac = getCalcAC(); if (!ac) return; try { var o = ac.createOscillator(); var g = ac.createGain(); o.type = tp||"sine"; o.frequency.value = f; g.gain.setValueAtTime(v||0.07, ac.currentTime); g.gain.exponentialRampToValueAtTime(0.001, ac.currentTime+(d||0.1)); o.connect(g); g.connect(ac.destination); o.start(); o.stop(ac.currentTime+(d||0.1)); } catch(e) {} }
   function sfxCalcClick() { calcTone(600, 0.03, "sine", 0.04); }
   function sfxCalcSuccess() { calcTone(523, 0.08, "sine", 0.07); setTimeout(function() { calcTone(659, 0.08, "sine", 0.07); }, 70); setTimeout(function() { calcTone(784, 0.1, "sine", 0.08); }, 140); }
+  function sfxCalcError() { calcTone(220, 0.18, "triangle", 0.06); }
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -2792,7 +2793,8 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
       var ArrowLeft = ctx.icons.ArrowLeft;
       var awardStemXP = ctx.awardXP;
       var stemCelebrate = ctx.celebrate;
-      var stemBeep = ctx.beep;
+      // Not ctx.beep: that takes a frequency, and a name like 'click' left every beep silent. calcTone honours the app mute.
+      var stemBeep = function(kind) { if (kind === 'success') sfxCalcSuccess(); else if (kind === 'error') sfxCalcError(); else sfxCalcClick(); };
       var callGemini = ctx.callGemini;
       var announceToSR = ctx.announceToSR;
       var a11yClick = ctx.a11yClick;
@@ -4966,7 +4968,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
             return Object.assign({}, prev, { calculus: Object.assign({}, pc, patch) });
           });
           if (correct) {
-            stemBeep && stemBeep('success');
+            if (!(stemCelebrate && firstTry && newStreak >= 3 && newStreak % 3 === 0)) stemBeep('success'); // else the streak fanfare below plays the same chord
             // Paid once per generated item: first try 5 XP, second try 3 XP, never after a reveal.
             if (typeof awardStemXP === 'function') awardStemXP('calculus', firstTry ? 5 : 3, fillT(__alloT('stem.calculus.xp_challenge', 'Calculus challenge: {mode}'), { mode: cq.mode }));
             addToast(firstTry ? __alloT('stem.calculus.toast_correct', '\u2705 Correct! +5 XP') : __alloT('stem.calculus.toast_correct_second', '\u2705 Correct on the second try! +3 XP'), 'success');
@@ -7153,7 +7155,7 @@ window.StemLab = window.StemLab || { registerTool: function(){}, registerModule:
                 // `overunder` builds its own options, so a quiz with no opts is VALID there.
                 quizOptions(cq).map(function(opt){
                   var tried = (Array.isArray(cq.tried) ? cq.tried : []).indexOf(String(opt.id)) >= 0;
-                  return h('button',{ key:String(opt.id),type:'button',disabled:tried,onClick:function(){checkCalcAnswer(opt.id);stemBeep&&stemBeep('click');},className:'min-h-[40px] px-3 py-2.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-800 border-slate-300 hover:border-red-500 hover:bg-red-50 transition-all disabled:opacity-40 disabled:line-through'},opt.label);
+                  return h('button',{ key:String(opt.id),type:'button',disabled:tried,onClick:function(){checkCalcAnswer(opt.id);},className:'min-h-[40px] px-3 py-2.5 rounded-lg text-xs font-bold border-2 bg-white text-slate-800 border-slate-300 hover:border-red-500 hover:bg-red-50 transition-all disabled:opacity-40 disabled:line-through'},opt.label);
                 })
               )
             ),

@@ -224,16 +224,27 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   // The host's speech when there is one (force: the student asked, so the sound
   // mute does not apply), else the browser's own speech, which also works
   // offline. A new request replaces anything still being spoken.
-  function mmStopSpeech() { try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {} }
+  // mmStopSpeech cancels device speech only while this tool's own utterance is
+  // queued (cancel is global: Listen mode / AlloBot must keep talking).
+  var mmOwnSpeech = { u: null };
+  function mmStopSpeech() {
+    var u = mmOwnSpeech.u;
+    mmOwnSpeech.u = null;
+    if (!u) return false;
+    try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+    return true;
+  }
   function mmSpeakText(text, callTTS) {
     var said = String(text || '').replace(/\s+/g, ' ').trim();
     if (!said) return false;
     function viaBrowser() {
       try {
         if (!window.speechSynthesis || typeof window.SpeechSynthesisUtterance !== 'function') return false;
-        mmStopSpeech();
+        window.speechSynthesis.cancel();
         var utterance = new window.SpeechSynthesisUtterance(said), lang = (document.documentElement && document.documentElement.lang) || '';
         if (lang) utterance.lang = lang;
+        utterance.onend = utterance.onerror = function () { if (mmOwnSpeech.u === utterance) mmOwnSpeech.u = null; };
+        mmOwnSpeech.u = utterance;
         window.speechSynthesis.speak(utterance);
         return true;
       } catch (e) { return false; }
@@ -12365,6 +12376,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       }
 
       function setPhase(p) {
+        // Stop this tool's own read-aloud: host speech (ctx.stopTTS ends only what the host started) and its device voice.
+        if (typeof ctx.stopTTS === 'function') { try { ctx.stopTTS(); } catch (e) {} }
         mmStopSpeech();
         upd('missionPhase', p);
         var phaseName = PHASES[p] ? PHASES[p].name : 'Mission Complete';

@@ -1979,7 +1979,8 @@
       }
       function speak(text) {
         if (typeof ctx.callTTS === 'function') {
-          try { ctx.callTTS(text); } catch (_) {}
+          // Read-aloud buttons only: force past the header narration switch (it gates automatic narration).
+          try { ctx.callTTS(text, undefined, undefined, { force: true }); } catch (_) {}
         } else if (typeof window !== 'undefined' && window.speechSynthesis && typeof SpeechSynthesisUtterance !== 'undefined') {
           try { window.speechSynthesis.cancel(); window.speechSynthesis.speak(new SpeechSynthesisUtterance(text)); } catch (_) {}
         }

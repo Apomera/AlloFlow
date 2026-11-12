@@ -3419,6 +3419,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
   // to React only a few times a second, instead of re-rendering the whole tool
   // twenty times a second.
   var universePlayer = { clock: 0, last: 0, committed: 0, leg: null, start: 0, hooks: null, holdUntil: 0 };
+  // The tool's own speech, so stopSpeech ends only that: gen changes on every stop (an answer that
+  // comes back empty afterwards starts no fallback voice); audio / utter = its Kokoro clip / utterance.
+  var universeSpeech = { gen: 0, audio: null, utter: null };
   function universePaintTime(age, position) {
     var root = document.querySelector('[data-universe-tool]');
     if (!root) return;
@@ -4456,14 +4459,30 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
             });
           }
 
-          function speakText(text) {
+          // Listen buttons and the student's own "Read moments aloud" switch (off by default): the host
+          // voice with force (the header narration switch gates only narration nobody asked for). The host
+          // plays the clip and never throws. It resolves null while the app is muted (stay silent), when
+          // student AI is off (it already used the device voice) or when no voice came back: only then the
+          // device voice, unless stopSpeech ran meanwhile (gen).
+          function speakText(text, onDevice) {
             if (!text) return;
-            if (callTTS) { try { callTTS(text); return; } catch(e) {} }
-            if (window._kokoroTTS && window._kokoroTTS.speak) {
-              window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url){var a=new Audio(url);a.playbackRate=0.95;a.play();}}).catch(function(){});
+            if (callTTS && !onDevice) {
+              var req = null, gen = universeSpeech.gen;
+              try { req = callTTS(text, undefined, undefined, { force: true }); } catch (e) {}
+              var fallBack = function () {
+                var muted = false;
+                try { muted = (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || !!window._alloGlobalMute; } catch (e) {}
+                if (gen === universeSpeech.gen && !muted && window.__alloStudentAiDisabled !== true) speakText(text, true);
+              };
+              Promise.resolve(req).then(function (url) { if (!url) fallBack(); }, fallBack);
               return;
             }
-            if (window.speechSynthesis) { window.speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(text); u.rate=0.9; window.speechSynthesis.speak(u); }
+            if (!onDevice && window._kokoroTTS && window._kokoroTTS.speak) {
+              var kgen = universeSpeech.gen;
+              window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url&&kgen===universeSpeech.gen){var a=new Audio(url);a.playbackRate=0.95;universeSpeech.audio=a;a.play();}}).catch(function(){});
+              return;
+            }
+            if (window.speechSynthesis) { window.speechSynthesis.cancel(); var u=new SpeechSynthesisUtterance(text); u.rate=0.9; universeSpeech.utter=u; u.onend=u.onerror=function(){if(universeSpeech.utter===u)universeSpeech.utter=null;}; window.speechSynthesis.speak(u); }
           }
 
           // --- Star Lifecycle Data ---
@@ -5672,7 +5691,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('universe'))) {
               return Math.min(16, 0.8 + spoken.split(/\s+/).length * 0.42);
             }
           };
-          function stopSpeech() { try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {} }
+          // Stops only this tool's speech: the host's clip (ctx.stopTTS), its own Kokoro clip and its own
+          // browser utterance. A global speechSynthesis.cancel() also cut off Listen mode and AlloBot.
+          function stopSpeech() {
+            universeSpeech.gen++;
+            if (typeof ctx.stopTTS === 'function') { try { ctx.stopTTS(); } catch (e) {} }
+            var a = universeSpeech.audio, u = universeSpeech.utter;
+            universeSpeech.audio = null; universeSpeech.utter = null;
+            if (a) { try { a.pause(); } catch (e) {} }
+            if (u) { try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {} }
+          }
           function sceneCanvas() { return typeof document !== 'undefined' ? document.querySelector('[data-universe-canvas]') : null; }
           // The age the canvas shows. While playing it runs a few frames ahead of tool data.
           function paintedAge() { var cv = sceneCanvas(), value = cv ? parseFloat(cv.dataset.time) : NaN; return isFinite(value) ? value : cosmicTime; }

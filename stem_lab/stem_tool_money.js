@@ -1698,8 +1698,10 @@ window.StemLab = window.StemLab || {
                   : { text: __alloT('stem.money.power_s_out_cash_register_is_dead_cust_2', 'Power\'s out. Cash register is dead. Customers need you to add it up in your head.'), kind: 'intro', ts: Date.now() };
                 upd('crBotMessage', greetMsg);
                 upd('crSeenIntro', true);
+                // crBotTtsOn is the student's own "Voice on" switch (off by default): force past the
+                // header narration switch, which gates only narration nobody asked for.
                 if (crBotTtsOn && typeof ctx.callTTS === 'function') {
-                  try { ctx.callTTS(greetMsg.text); } catch (e) {}
+                  try { ctx.callTTS(greetMsg.text, undefined, undefined, { force: true }); } catch (e) {}
                 }
               }
             };
@@ -1764,7 +1766,7 @@ window.StemLab = window.StemLab || {
                 upd('crBotMessage', botMsg);
                 // TTS pass-through if enabled
                 if (crBotTtsOn && typeof ctx.callTTS === 'function') {
-                  try { ctx.callTTS(botMsg.text); } catch (e) {}
+                  try { ctx.callTTS(botMsg.text, undefined, undefined, { force: true }); } catch (e) {}
                 }
               }
 
@@ -3429,7 +3431,7 @@ window.StemLab = window.StemLab || {
                           React.createElement("p", { className: 'text-sm text-zinc-100 leading-snug', 'aria-live': 'polite' }, crBotMessage.text),
                           React.createElement("div", { className: 'flex gap-2 mt-2' },
                             React.createElement("button", {
-                              onClick: function () { upd('crBotTtsOn', !crBotTtsOn); },
+                              onClick: function () { if (crBotTtsOn && typeof ctx.stopTTS === 'function') { try { ctx.stopTTS(); } catch (e) {} } upd('crBotTtsOn', !crBotTtsOn); },
                               'aria-pressed': crBotTtsOn,
                               title: crBotTtsOn ? 'Stop reading aloud' : 'Read aloud',
                               className: 'text-[0.625rem] font-bold px-2 py-0.5 rounded ' + (crBotTtsOn ? 'bg-indigo-600 text-white' : 'transition-colors bg-zinc-800 text-zinc-300 hover:bg-zinc-700')

@@ -6535,7 +6535,7 @@ window.StemLab = window.StemLab || {
                 h("p", { className: "text-xs leading-relaxed text-slate-600" }, content),
                 h("div", { className: "flex flex-wrap gap-2 border-t border-slate-100 pt-2" },
                   h("button", { onClick: function() { updMulti({ tab: topic.tryIt }); announceToSR('Switched to ' + topic.tryIt); }, className: "rounded-lg bg-violet-50 px-3 py-1.5 text-[0.6875rem] font-bold text-violet-600 transition-all hover:bg-violet-100 active:scale-[0.97]" }, t('stem.dna.try_it', '\uD83D\uDD2C Try It')),
-                  callTTS && h("button", { onClick: function() { callTTS(content); }, className: "rounded-lg bg-blue-50 px-3 py-1.5 text-[0.6875rem] font-bold text-blue-700 transition-all hover:bg-blue-100 active:scale-[0.97]" }, t('stem.dna.read_aloud', '\uD83D\uDD0A Read Aloud'))
+                  callTTS && h("button", { onClick: function() { callTTS(content, undefined, undefined, { force: true }); }, className: "rounded-lg bg-blue-50 px-3 py-1.5 text-[0.6875rem] font-bold text-blue-700 transition-all hover:bg-blue-100 active:scale-[0.97]" }, t('stem.dna.read_aloud', '\uD83D\uDD0A Read Aloud'))
                 )
               )
             );

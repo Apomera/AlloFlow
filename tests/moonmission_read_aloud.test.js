@@ -101,11 +101,21 @@ describe('Moon Mission read aloud', () => {
   });
 
   it('stops reading when the student moves to the next phase', () => {
-    const { tree } = mount({ missionPhase: 0 });
+    const stopTTS = vi.fn();
+    const { tree, readAloud } = mount({ missionPhase: 0 }, { stopTTS });
     const begin = buttons(tree, (p) => /Begin Mission/.test(textOf(p.children)))[0];
     expect(begin, 'Begin Mission button').toBeTruthy();
+    readAloud('phase')[0].onClick();
     const before = speech.cancelled;
     begin.onClick();
-    expect(speech.cancelled, 'speech cancelled on the phase change').toBeGreaterThan(before);
+    expect(speech.cancelled, 'its own speech cancelled on the phase change').toBeGreaterThan(before);
+    expect(stopTTS, 'host speech stopped through the host').toHaveBeenCalledTimes(1);
+  });
+
+  it('a phase change leaves other speech alone when the tool is not reading (cancel is global)', () => {
+    const { tree } = mount({ missionPhase: 0 });
+    const before = speech.cancelled;
+    buttons(tree, (p) => /Begin Mission/.test(textOf(p.children)))[0].onClick();
+    expect(speech.cancelled, 'Listen mode / AlloBot keep talking').toBe(before);
   });
 });

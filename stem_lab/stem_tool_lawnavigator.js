@@ -407,6 +407,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
       var activeSlug = d.slug || '';
       var activeSection = d.section || '';
 
+      // Live-first refresh for the section screen. This hook must run on EVERY
+      // render: the host bridge renders the tool inline in one fiber and does not
+      // remount when `view` changes, so a hook placed below the loading / home /
+      // compare / doc returns changed the hook count whenever the reader reached
+      // or left a section ("Rendered more hooks than during the previous render").
+      // liveCan is the section screen's canLive, derived from the same manifest
+      // entry so the deps keep their meaning. The body runs after render, when
+      // the section branch below has set smeta / liveKey for refreshLive.
+      var liveDocMeta = manifest ? (manifest.documents || []).filter(function(x) { return x.slug === activeSlug; })[0] : null;
+      var liveCan = !!(liveDocMeta && liveDocMeta.cfrPart);
+      React.useEffect(function() {
+        if (view !== 'section' || !liveCan || !activeSection) return;
+        if (live.section === activeSection && (live.status === 'live' || live.status === 'checking')) return;
+        refreshLive(false);
+      }, [view, activeSlug, activeSection, liveCan]);
+
       // ── Reading supports ──────────────────────────────────────────────────
       // This is the densest prose in the whole platform and it was the only
       // place rendering without any of AlloFlow's reading affordances. These
@@ -439,7 +455,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
           ctx.callTTS ? ctlBtn('🔊 ' + __alloT('stem.lawNav.read_aloud', 'Read aloud'), function() {
             var s = usingLive ? live.sec : cachedSec;
             if (!s) return;
-            try { ctx.callTTS((s.heading ? s.heading + '. ' : '') + s.paragraphs.join(' ')); announceToSR(__alloT('stem.lawNav.reading_aloud_sr', 'Reading the section aloud.')); } catch (_) {}
+            // force: the student pressed Read aloud (the header narration switch gates only automatic
+            // narration). The host plays the clip; it resolves null while muted or when no voice came back.
+            var muted = function() { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (_) {} return !!window._alloGlobalMute; };
+            if (muted()) { announceToSR(__alloT('stem.lawNav.read_aloud_muted_sr', 'Sound is muted, so the section was not read aloud.')); return; }
+            var req = null;
+            try { req = ctx.callTTS((s.heading ? s.heading + '. ' : '') + s.paragraphs.join(' '), undefined, undefined, { force: true }); } catch (_) {}
+            announceToSR(__alloT('stem.lawNav.reading_aloud_sr', 'Reading the section aloud.'));
+            Promise.resolve(req).then(function(url) {
+              if (!url && window.__alloStudentAiDisabled !== true) announceToSR(muted() ? __alloT('stem.lawNav.read_aloud_muted_sr', 'Sound is muted, so the section was not read aloud.') : __alloT('stem.lawNav.read_aloud_unavailable_sr', 'Read aloud is not available right now. The section text is on the page.'));
+            }, function() {});
           }, undefined, __alloT('stem.lawNav.read_aloud', 'Read this section aloud')) : null
         );
       }
@@ -807,11 +832,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('lawNavigator')
           setLive({ status: 'failed', section: activeSection, sec: null, err: String(e.message || e) });
         });
       }
-      React.useEffect(function() {
-        if (view !== 'section' || !canLive || !activeSection) return;
-        if (live.section === activeSection && (live.status === 'live' || live.status === 'checking')) return;
-        refreshLive(false);
-      }, [view, activeSlug, activeSection, canLive]);
+      // (The effect that calls refreshLive(false) on opening a section sits with
+      // the other hooks above the early returns.)
 
       var usingLive = live.status === 'live' && live.section === activeSection && live.sec;
       var sec = usingLive ? live.sec : cachedSec;

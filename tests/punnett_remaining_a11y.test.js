@@ -99,7 +99,7 @@ describe('Remaining Punnett activity structure and learning navigation', () => {
     await activate(query('#punnett-learn-topic-0')); const panel = query('#punnett-learn-panel-0');
     const lesson = [...panel.querySelectorAll('p')].find(node => node.textContent.includes('double-stranded polymer'));
     expect(lesson).toBeDefined(); expect(read.disabled).toBe(false); expect(tts).not.toHaveBeenCalled();
-    await activate(read); expect(tts).toHaveBeenCalledTimes(1); expect(tts).toHaveBeenCalledWith(lesson.textContent);
+    await activate(read); expect(tts).toHaveBeenCalledTimes(1); expect(tts).toHaveBeenCalledWith(lesson.textContent, undefined, undefined, { force: true });
     await activate(query('#punnett-learn-topic-0')); expect(read.disabled).toBe(true); expect(tts).toHaveBeenCalledTimes(1); preserved();
   });
 

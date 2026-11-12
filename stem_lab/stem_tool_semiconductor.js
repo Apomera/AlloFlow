@@ -1794,7 +1794,8 @@ window.StemLab = window.StemLab || {
       // ═══ TTS HELPER ═══
       function speakText(text) {
         if (callTTS) {
-          try { callTTS(text); } catch(e) { /* TTS unavailable */ }
+          // Read buttons only: force past the header narration switch (it gates automatic narration).
+          try { callTTS(text, undefined, undefined, { force: true }); } catch(e) { /* TTS unavailable */ }
         }
       }
 

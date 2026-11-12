@@ -1627,16 +1627,30 @@
   function speakText(text, callTTS) {
     if (gcAppMuted()) return;
     SOUNDS.tts();
-    if (callTTS) { try { callTTS(text); return; } catch (e) {} }
-    if (window._kokoroTTS && window._kokoroTTS.speak) {
-      window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url&&!gcAppMuted()){var a=new Audio(url);a.playbackRate=0.95;
-        // The app cancels speechSynthesis on mute but not this Audio: stop it here.
-        var onMute=function(ev){if(ev&&ev.detail&&ev.detail.muted){try{a.pause();}catch(e){}window.removeEventListener('alloflow-mute-changed',onMute);}};
-        window.addEventListener('alloflow-mute-changed',onMute);a.onended=function(){window.removeEventListener('alloflow-mute-changed',onMute);};
-        a.play();}}).catch(function(){});
+    // A speak button: the host voice with force (the header narration switch gates only automatic
+    // narration). The host plays the clip itself and never throws. It resolves null while the app is
+    // muted (stay silent), when student AI is off (it already used the device voice) or when no voice
+    // came back: only that last case falls back to Kokoro / the device voice.
+    if (callTTS) {
+      var req = null;
+      try { req = callTTS(text, undefined, undefined, { force: true }); } catch (e) {}
+      var onNone = function() { if (window.__alloStudentAiDisabled !== true) onDevice(); };
+      Promise.resolve(req).then(function(url) { if (!url) onNone(); }, onNone);
       return;
     }
-    if (window.speechSynthesis) { var utter=new SpeechSynthesisUtterance(text); utter.rate=0.9; window.speechSynthesis.cancel(); window.speechSynthesis.speak(utter); }
+    onDevice();
+    function onDevice() {
+      if (gcAppMuted()) return;
+      if (window._kokoroTTS && window._kokoroTTS.speak) {
+        window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url&&!gcAppMuted()){var a=new Audio(url);a.playbackRate=0.95;
+          // The app cancels speechSynthesis on mute but not this Audio: stop it here.
+          var onMute=function(ev){if(ev&&ev.detail&&ev.detail.muted){try{a.pause();}catch(e){}window.removeEventListener('alloflow-mute-changed',onMute);}};
+          window.addEventListener('alloflow-mute-changed',onMute);a.onended=function(){window.removeEventListener('alloflow-mute-changed',onMute);};
+          a.play();}}).catch(function(){});
+        return;
+      }
+      if (window.speechSynthesis) { var utter=new SpeechSynthesisUtterance(text); utter.rate=0.9; window.speechSynthesis.cancel(); window.speechSynthesis.speak(utter); }
+    }
   }
 
   /* ═══════════════════════════════════════════════════════════

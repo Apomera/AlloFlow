@@ -2941,7 +2941,8 @@ window.StemLab = window.StemLab || {
 
           // ═══ TTS Helper ═══
           const speakText = (text) => {
-            if (typeof callTTS === 'function' && text) callTTS(text);
+            // Speak buttons only (force: past the header narration switch, which gates automatic narration).
+            if (typeof callTTS === 'function' && text) callTTS(text, undefined, undefined, { force: true });
           };
 
           // ═══ Sound Helpers ═══

@@ -2847,6 +2847,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
       var teacherMsg = stTeacherMsg[0], setTeacherMsg = stTeacherMsg[1];
       var playRef = React.useRef(null);
       var ownAcRef = React.useRef(null);
+      var ownUttRef = React.useRef(null);
       var tickTempRef = React.useRef({ T: 20, lo: 20, hi: 200 });
       var announceRef = React.useRef({ at: 0, keys: {} });
       var phaseSeenRef = React.useRef({});
@@ -6184,7 +6185,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             var ss = window.speechSynthesis;
             if (!ss || typeof window.SpeechSynthesisUtterance !== 'function') { htSay(t('stem.heatlab.speech_unavailable', 'Read-aloud is not available here.')); return; }
             ss.cancel();
-            ss.speak(new window.SpeechSynthesisUtterance(text));
+            var u = new window.SpeechSynthesisUtterance(text);
+            u.onend = u.onerror = function () { if (ownUttRef.current === u) ownUttRef.current = null; };
+            ownUttRef.current = u;
+            ss.speak(u);
           } catch (e) { htSay(t('stem.heatlab.speech_unavailable', 'Read-aloud is not available here.')); }
         };
         // A press of "Read aloud" is an explicit request, so it may pass the
@@ -6342,7 +6346,10 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           var p = playRef.current;
           playRef.current = null;
           if (p && typeof p.stop === 'function') { try { p.stop(); } catch (e) {} }
-          try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e2) {}
+          // Device speech only if this tool started it: Listen mode / AlloBot keep talking.
+          var ownU = ownUttRef.current;
+          ownUttRef.current = null;
+          if (ownU) { try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e2) {} }
           var own = ownAcRef.current;
           ownAcRef.current = null;
           if (own && typeof own.close === 'function') { try { own.close(); } catch (e3) {} }

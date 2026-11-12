@@ -1797,7 +1797,7 @@ window.StemLab = window.StemLab || {
                             var solvedKey = aiProof ? 'ai:' + activeCh.premises.join('|') + '=>' + goal : 'L' + currentChallenge;
                             var solvedMap = d.solvedProofs && typeof d.solvedProofs === 'object' ? d.solvedProofs : {};
                             if (stemCelebrate) stemCelebrate();
-                            if (stemBeep) stemBeep(880, 200);
+                            if (stemBeep) stemBeep(880, 0.2);
                             if (!solvedMap[solvedKey]) {
                               var _xp = 5 + (activeCh.level || 1) * 3;
                               if (typeof awardStemXP === 'function') awardStemXP('logicLab', _xp, 'Proof completed');
@@ -1977,8 +1977,8 @@ window.StemLab = window.StemLab || {
                         var correct = f.valid === true;
                         var ns = correct ? streak + 1 : 0; var nb = Math.max(bestStreak, ns);
                         upd({ challengeAnswer: correct ? 'correct' : 'wrong', streak: ns, bestStreak: nb, score: correct ? score + 10 + (ns > 2 ? ns : 0) : score, animTick: animTick + 1 });
-                        if (correct) { if (stemBeep) stemBeep(660, 100); payOnce('fallacy:' + (challengeIdx % FALLACIES.length), 3, 'Fallacy spotted'); if (stemCelebrate && ns >= 5) stemCelebrate(); }
-                        else { if (stemBeep) stemBeep(220, 120); }
+                        if (correct) { if (stemBeep) stemBeep(660, 0.1); payOnce('fallacy:' + (challengeIdx % FALLACIES.length), 3, 'Fallacy spotted'); if (stemCelebrate && ns >= 5) stemCelebrate(); }
+                        else { if (stemBeep) stemBeep(220, 0.12); }
                       },
 
                       className: "px-6 py-3 bg-emerald-100 hover:bg-emerald-200 text-emerald-800 font-bold rounded-xl border-2 border-emerald-600 transition-all hover:shadow-md text-sm"
@@ -1990,8 +1990,8 @@ window.StemLab = window.StemLab || {
                         var correct = f.valid === false;
                         var ns = correct ? streak + 1 : 0; var nb = Math.max(bestStreak, ns);
                         upd({ challengeAnswer: correct ? 'correct' : 'wrong', streak: ns, bestStreak: nb, score: correct ? score + 10 + (ns > 2 ? ns : 0) : score, animTick: animTick + 1 });
-                        if (correct) { if (stemBeep) stemBeep(660, 100); payOnce('fallacy:' + (challengeIdx % FALLACIES.length), 3, 'Fallacy spotted'); if (stemCelebrate && ns >= 5) stemCelebrate(); }
-                        else { if (stemBeep) stemBeep(220, 120); }
+                        if (correct) { if (stemBeep) stemBeep(660, 0.1); payOnce('fallacy:' + (challengeIdx % FALLACIES.length), 3, 'Fallacy spotted'); if (stemCelebrate && ns >= 5) stemCelebrate(); }
+                        else { if (stemBeep) stemBeep(220, 0.12); }
                       },
 
                       className: "px-6 py-3 bg-red-100 hover:bg-red-200 text-red-800 font-bold rounded-xl border-2 border-red-600 transition-all hover:shadow-md text-sm"

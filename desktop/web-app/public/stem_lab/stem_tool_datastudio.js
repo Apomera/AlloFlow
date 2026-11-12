@@ -1718,7 +1718,7 @@ var d = (labToolData && labToolData._dataStudio) || {};
               React.createElement("div", { className: "flex items-center gap-2 mb-2" },
                 React.createElement("span", { className: "font-bold", style: { color: _accent } }, "Data quality"),
                 typeof callTTS === 'function' && React.createElement("button", { className: "ml-auto px-2 py-1 rounded-lg text-[0.6875rem] font-bold", style: { border: '1px solid ' + _border, color: _accent },
-                  onClick: function() { callTTS("Data summary. " + displayRows.length + " rows shown. Mean " + mean.toFixed(1) + ". Median " + median.toFixed(1) + ". Trend " + trendDirection + "." + (chartType === 'scatter' && pearsonR !== null ? " Pearson correlation " + pearsonR.toFixed(3) + "." : "")); }, "aria-label": t('stem.datastudio.read_data_summary_aloud','Read data summary aloud') }, "Read aloud")
+                  onClick: function() { callTTS("Data summary. " + displayRows.length + " rows shown. Mean " + mean.toFixed(1) + ". Median " + median.toFixed(1) + ". Trend " + trendDirection + "." + (chartType === 'scatter' && pearsonR !== null ? " Pearson correlation " + pearsonR.toFixed(3) + "." : ""), undefined, undefined, { force: true }); }, "aria-label": t('stem.datastudio.read_data_summary_aloud','Read data summary aloud') }, "Read aloud")
               ),
               React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-4 gap-2" },
                 [

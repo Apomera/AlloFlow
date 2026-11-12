@@ -10508,7 +10508,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
         // Read aloud helper
         var vReadAloud = function() {
           if (!callTTS) return;
-          callTTS(t('stem.migration.tts_vformation', 'V formation simulator. Birds fly in a V shape to save energy. The lead bird works hardest because it breaks through the air first. Birds behind it ride on the upwash from the leader\'s wingtips. Measurements on real flocks put the saving at roughly 10 to 30 percent, and this tool uses 22 percent as a midpoint. When the leader gets tired, it drops back and another bird takes over. This is called leader rotation. Choose a bird and use the position controls or arrow keys to explore the formation. You can also drag birds. Pause motion to inspect each arrangement and read which bird supplies upwash.'));
+          callTTS(t('stem.migration.tts_vformation', 'V formation simulator. Birds fly in a V shape to save energy. The lead bird works hardest because it breaks through the air first. Birds behind it ride on the upwash from the leader\'s wingtips. Measurements on real flocks put the saving at roughly 10 to 30 percent, and this tool uses 22 percent as a midpoint. When the leader gets tired, it drops back and another bird takes over. This is called leader rotation. Choose a bird and use the position controls or arrow keys to explore the formation. You can also drag birds. Pause motion to inspect each arrangement and read which bird supplies upwash.'), undefined, undefined, { force: true });
         };
 
         var formationUi = _vfControlRef.current;
@@ -14135,7 +14135,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('migration'))) 
               tabIndex: 0,
               onKeyDown: function(e) {
                 if (e.key === 'r' || e.key === 'R') {
-                  if (callTTS) callTTS(t('stem.migration.tts_navigation', 'Birds navigate using a combination of star patterns, Earth\'s magnetic field, the sun\'s position, landmarks, and even smell. Many songbirds migrate at night when the air is calmer and stars are visible.'));
+                  if (callTTS) callTTS(t('stem.migration.tts_navigation', 'Birds navigate using a combination of star patterns, Earth\'s magnetic field, the sun\'s position, landmarks, and even smell. Many songbirds migrate at night when the air is calmer and stars are visible.'), undefined, undefined, { force: true });
                 }
               },
               style: { width: '100%', display: 'block' }

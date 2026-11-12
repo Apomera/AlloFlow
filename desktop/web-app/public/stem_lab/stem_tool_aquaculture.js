@@ -94,7 +94,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('aquacultureLab
       famousLeases: ['Bagaduce River', 'Damariscotta River', 'Casco Bay'],
       dmrAuthority: 'Maine Department of Marine Resources — Aquaculture Division',
       complete: true,
-      portCoords: 'Bagaduce River, Penobscot Bay · 44.4° N, 68.8° W',
       authority: 'Maine Department of Marine Resources · Aquaculture Division',
       focusSpecies: ['Eastern oyster', 'Blue mussel', 'Sugar kelp', 'Sea scallop'],
       operatingSignals: ['Cold-water temperature and salinity', 'Dissolved oxygen, exchange, and tides', 'Storm, ice, and working-waterfront access'],

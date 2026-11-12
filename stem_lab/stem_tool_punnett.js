@@ -3945,7 +3945,7 @@ window.StemLab = window.StemLab || {
                   onClick: function() {
                     if (learnTopic >= 0 && LEARN_TOPICS[learnTopic]) {
                       var content = LEARN_TOPICS[learnTopic][band] || LEARN_TOPICS[learnTopic].g35;
-                      if (ctx.callTTS) ctx.callTTS(content);
+                      if (ctx.callTTS) ctx.callTTS(content, undefined, undefined, { force: true });
                     }
                   },
                   disabled: learnTopic < 0,

@@ -2338,17 +2338,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('oratory'))) {
             return;
           }
           setTtsLoading(true);
-          callTTS(text, voice || 'Kore', 1.0)
+          // force: a student pressed a model button (the header narration switch gates only automatic
+          // narration). The host plays the clip itself; it resolves null while the app is muted.
+          Promise.resolve(callTTS(text, voice || 'Kore', 1.0, { force: true }))
             .then(function(audioUrl) {
               setTtsLoading(false);
               if (!audioUrl) {
-                if (addToast) addToast('Could not generate speech model.', 'error');
+                var appMuted = false;
+                try { appMuted = (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) || !!window._alloGlobalMute; } catch (e) {}
+                if (addToast) addToast(appMuted ? 'Sound is muted. Unmute the app to hear the model phrase.' : 'The model phrase could not be read aloud right now.', appMuted ? 'info' : 'error');
                 return;
               }
               setModelAudioUrl(audioUrl);
-              // Play the audio
-              var audio = new Audio(audioUrl);
-              audio.play().catch(function(e) { console.warn('[Oratory] Audio play error:', e); });
 
               // Generate a synthetic model curve (a smooth pitch contour)
               // This simulates what ideal prosody looks like for the phrase

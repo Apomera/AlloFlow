@@ -2611,8 +2611,8 @@ window.StemLab = window.StemLab || {
         if (!_audioCtx) { try { _audioCtx = (window.StemLab && window.StemLab.audioContext ? window.StemLab.audioContext() : new (window.AudioContext || window.webkitAudioContext)()); } catch(e) {} }
         return _audioCtx;
       };
-      var playTone = function(freq, dur, type, vol) {
-        if (muted) return;
+      var playTone = function(freq, dur, type, vol, unmuting) {
+        if (muted && !unmuting) return; // unmuting: the "sound on" tone, played from the render where muted was still true
         try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return; } catch (e) {}
         if (window._alloGlobalMute) return;
         var ac = getAudio(); if (!ac) return;
@@ -6592,7 +6592,7 @@ window.StemLab = window.StemLab || {
               onClick: function() {
                 var next = !muted;
                 updCG({ muted: next });
-                if (!next) { later(function() { playTone(660, 0.08, 'sine', 0.08); }, 0); }
+                if (!next) { later(function() { playTone(660, 0.08, 'sine', 0.08, true); }, 0); }
                 say(next ? t('stem.coordgrid.sound_muted', 'Sound muted.') : t('stem.coordgrid.sound_on', 'Sound on.'));
               },
               // A toggle keeps one name; aria-pressed carries the state.

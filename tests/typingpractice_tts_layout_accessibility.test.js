@@ -12,7 +12,8 @@ describe('Typing Practice locale speech and profile controls', () => {
     expect(source).toContain('ctx.callTTS(targetStr, null, 1.0, { force: true, language: activeTargetLanguage })');
     expect(source).toContain('ctx.callTTS(result.lastCompletedWord, null, 1.1, { force: false, language: activeTargetLanguage })');
     expect(source).toContain('activeTargetLanguage, typed');
-    expect(host).toContain('return callTTS(text, voice, speed, opts).then(function(url)');
+    // The hub forwards a copy of opts minus `force` (language kept): round 23.
+    expect(host).toContain('return callTTS(text, voice, speed, ttsOpts).then(function(url)');
   });
 
   it('keeps the keyboard layout setting available without the visual keyboard', () => {

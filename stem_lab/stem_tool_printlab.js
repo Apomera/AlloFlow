@@ -1144,8 +1144,7 @@
     scaledGeometryWorldDimensions: scaledGeometryWorldDimensions,
     geometryWorldPrinterFit: geometryWorldPrinterFit,
     geometryWorldScaleRecommendation: geometryWorldScaleRecommendation,
-    geometryWorldOrientationAdvice: geometryWorldOrientationAdvice,
-    readPendingLocalHandoff: readPendingLocalHandoff
+    geometryWorldOrientationAdvice: geometryWorldOrientationAdvice
   };
 
   window.StemLab.registerTool('printLab', {

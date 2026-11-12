@@ -166437,7 +166437,9 @@
       "doc_err_title": "This text could not be loaded.",
       "doc_err_body": "Nothing is shown here rather than text recalled from memory. Check your connection and try again, or read it at the official source.",
       "doc_err_retry": "Try again",
-      "open_official": "Open the official source ↗"
+      "open_official": "Open the official source ↗",
+      "read_aloud_muted_sr": "Sound is muted, so the section was not read aloud.",
+      "read_aloud_unavailable_sr": "Read aloud is not available right now. The section text is on the page."
     },
     "machinelab": {
       "a_bit_easier": "A bit easier",

@@ -1847,8 +1847,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('worldBuilder')
 
             // TTS narrate both player and enemy
             callTTS && h('div', { className: 'flex gap-2' },
-              h('button', { onClick: function() { callTTS(actionResult.narrative || ''); }, className: 'text-[0.6875rem] text-violet-700 hover:text-violet-700 font-bold' }, __alloT('stem.worldbuilder.hear_your_action', '🔊 Hear your action')),
-              actionResult.enemyWriting && h('button', { 'aria-label': __alloT('stem.worldbuilder.refresh', 'Refresh'), onClick: function() { callTTS(actionResult.enemyWriting); }, className: 'text-[0.6875rem] text-red-500 hover:text-red-700 font-bold' }, __alloT('stem.worldbuilder.hear_enemy_s_response', '🔊 Hear enemy\'s response'))
+              h('button', { onClick: function() { callTTS(actionResult.narrative || '', undefined, undefined, { force: true }); }, className: 'text-[0.6875rem] text-violet-700 hover:text-violet-700 font-bold' }, __alloT('stem.worldbuilder.hear_your_action', '🔊 Hear your action')),
+              actionResult.enemyWriting && h('button', { 'aria-label': __alloT('stem.worldbuilder.refresh', 'Refresh'), onClick: function() { callTTS(actionResult.enemyWriting, undefined, undefined, { force: true }); }, className: 'text-[0.6875rem] text-red-500 hover:text-red-700 font-bold' }, __alloT('stem.worldbuilder.hear_enemy_s_response', '🔊 Hear enemy\'s response'))
             )
           ),
 

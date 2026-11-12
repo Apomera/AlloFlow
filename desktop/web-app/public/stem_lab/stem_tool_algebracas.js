@@ -918,9 +918,19 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
   try { window.__alloCASPure = __alloCASPure; } catch (_e) {}
 
   /* ============ TTS Helper (Kokoro-first) ============ */
-  function speakText(text, callTTS) {
-    SOUNDS.tts();
-    if (callTTS) { try { callTTS(text); return; } catch(e) {} }
+  // A speak button: the host voice with force (the header narration switch gates only automatic
+  // narration). The host plays the clip itself and never throws. It resolves null while the app is
+  // muted (stay silent), when student AI is off (it already used the device voice) or when no voice
+  // came back: only that last case calls onNone.
+  function raHostSpeak(callTTS, text, onNone) {
+    var req = null;
+    try { req = callTTS(text, undefined, undefined, { force: true }); } catch (e) {}
+    function quiet() { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {} return !!window._alloGlobalMute || window.__alloStudentAiDisabled === true; }
+    Promise.resolve(req).then(function (url) { if (!url && !quiet() && onNone) onNone(); }, function () { if (!quiet() && onNone) onNone(); });
+  }
+  function speakText(text, callTTS, fallingBack) {
+    if (!fallingBack) SOUNDS.tts();
+    if (callTTS) { raHostSpeak(callTTS, text, function () { speakText(text, null, true); }); return; }
     if (window._kokoroTTS && window._kokoroTTS.speak) {
       window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url){var a=new Audio(url);a.playbackRate=0.95;a.play();}}).catch(function(){});
       return;
@@ -979,14 +989,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 onSpeak: function(formats) {
               var spoken = (formats && (formats.spoken || formats.plainText || formats.latex)) || currentValue || '';
               if (!spoken) return;
-              if (callTTS) {
-                try {
-                  Promise.resolve(callTTS(spoken)).then(function(url) {
-                    if (url) { var audio = new Audio(url); audio.play().catch(function() {}); }
-                  }).catch(function() { speakText(spoken, null); });
-                  return;
-                } catch (_ttsErr) {}
-              }
+              // The host plays its own clip (playing the URL here too was a second copy).
+              if (callTTS) { raHostSpeak(callTTS, spoken, function() { speakText(spoken, null); }); return; }
               speakText(spoken, null);
             }
           });
@@ -1395,7 +1399,7 @@ onSpeak: function(formats) {
             if (isAns) return h('div', { key: i, style: { marginTop: '8px', padding: '8px', borderRadius: '8px', background: 'rgba(34,197,94,0.15)', border: '1px solid rgba(34,197,94,0.3)', fontWeight: '700', animation: 'casStepIn 300ms ease-out both', animationDelay: Math.min(i * 40, 320) + 'ms' } }, '\u2705 ' + trimmed);
             if (isStep) return h('div', { key: i, style: { display: 'flex', flexWrap: 'wrap', alignItems: 'flex-start', gap: '6px', padding: '4px 0', animation: 'casStepIn 240ms ease-out both', animationDelay: Math.min(i * 40, 280) + 'ms' } },
               h('span', { style: { flex: '1 1 160px', minWidth: 0, overflowWrap: 'anywhere' } }, ruleM ? line.replace(ruleM[0], '').trim() : trimmed),
-              ruleM ? h('span', { style: { padding: '2px 6px', borderRadius: '99px', fontSize: '10px', fontWeight: '700', background: 'rgba(99,102,241,0.15)', color: ACCENT, border: '1px solid rgba(99,102,241,0.35)', whiteSpace: 'normal', maxWidth: '100%', overflowWrap: 'anywhere', borderRadius: '8px' } }, ruleM[1]) : null
+              ruleM ? h('span', { style: { padding: '2px 6px', borderRadius: '8px', fontSize: '10px', fontWeight: '700', background: 'rgba(99,102,241,0.15)', color: ACCENT, border: '1px solid rgba(99,102,241,0.35)', whiteSpace: 'normal', maxWidth: '100%', overflowWrap: 'anywhere' } }, ruleM[1]) : null
             );
             if (/^SOLUTION:/i.test(trimmed)) return null;
             return h('div', { key: i, style: { padding: '2px 0' } }, trimmed);
@@ -1473,12 +1477,8 @@ onSpeak: function(formats) {
         };
         var canSpeak = !!(callTTS || window.speechSynthesis || (window._kokoroTTS && window._kokoroTTS.speak));
         var speakAloud = function(text) {
-          if (callTTS) {
-            try {
-              Promise.resolve(callTTS(text)).then(function(url) { if (url && typeof url === 'string') { var audio = new Audio(url); audio.play().catch(function() {}); } }).catch(function() { speakText(text, null); });
-              return;
-            } catch (_e) {}
-          }
+          // The host plays its own clip (playing the URL here too was a second copy).
+          if (callTTS) { raHostSpeak(callTTS, text, function() { speakText(text, null); }); return; }
           speakText(text, null);
         };
         var withKey = function(obj, k, v) { var o = Object.assign({}, obj); o[k] = v; return o; };

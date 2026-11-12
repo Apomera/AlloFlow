@@ -75,7 +75,8 @@ describe('Typing Practice language metrics, keyboard profiles, and TTS locale fo
 
   it('forwards passage language through the host TTS bridge and keeps source/mirror aligned', () => {
     expect(source).toContain('ctx.callTTS(targetStr, null, 1.0, { force: true, language: activeTargetLanguage })');
-    expect(host).toContain('return callTTS(text, voice, speed, opts).then(function(url)');
+    // The hub forwards a copy of opts minus `force` (language kept): round 23.
+    expect(host).toContain('return callTTS(text, voice, speed, ttsOpts).then(function(url)');
     expect(mirror).toBe(source);
   });
 });

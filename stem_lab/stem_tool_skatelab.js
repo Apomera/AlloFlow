@@ -7601,7 +7601,7 @@ window.StemLab = window.StemLab || {
             try { audioRef.current.close(); } catch (err) {}
           }
           audioRef.current = null;
-          try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (err) {}
+          stopOwnSpeech(false);
         };
       }, []);
 

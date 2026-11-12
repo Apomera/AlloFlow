@@ -9091,6 +9091,7 @@ function updateCoreRig3d(dt3d) {
       var cameraViewRef = React.useRef('iso'); cameraViewRef.current = cameraViewState;
       var tts = React.useState(false); var ttsSpeaking = tts[0], setTtsSpeaking = tts[1];
       var ttsAudioRef = React.useRef(null);
+      var ttsUtterRef = React.useRef(null);
       var ttsSessionRef = React.useRef(0);
       var ttsContextRef = React.useRef({ scene: scene, mode: mode });
       var sg = React.useState(function () { return sceneResumeState(scene, d).index; }); var signalStep = sg[0], setSignalStep = sg[1];
@@ -9587,7 +9588,10 @@ function updateCoreRig3d(dt3d) {
       function routeTargetClass(target) { return routeTarget === target ? ' ring-2 ring-amber-400 ring-offset-2 ' : ''; }
       function stopReadAloud() {
         ttsSessionRef.current += 1;
-        try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {}
+        // Device speech only while this tool's own utterance is queued (cancel is global).
+        var ownU = ttsUtterRef.current;
+        ttsUtterRef.current = null;
+        if (ownU) { try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {} }
         var audio = ttsAudioRef.current;
         ttsAudioRef.current = null;
         if (audio) {
@@ -9605,9 +9609,10 @@ function updateCoreRig3d(dt3d) {
         try {
           var utterance = new window.SpeechSynthesisUtterance(text);
           utterance.rate = 0.95;
-          utterance.onend = function () { setTtsSpeaking(false); };
-          utterance.onerror = function () { setTtsSpeaking(false); };
+          utterance.onend = utterance.onerror = function () { if (ttsUtterRef.current === utterance) ttsUtterRef.current = null; setTtsSpeaking(false); };
           setTtsSpeaking(true);
+          window.speechSynthesis.cancel();
+          ttsUtterRef.current = utterance;
           window.speechSynthesis.speak(utterance);
         } catch (e) { setTtsSpeaking(false); announce(t('stem.geology.sr.read_aloud_could_not_start', 'Read aloud could not start.')); }
       }

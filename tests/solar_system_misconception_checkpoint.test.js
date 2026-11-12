@@ -177,7 +177,7 @@ describe('Solar System misconception checkpoint', () => {
     env.click(env.button('Review explanation'));
     expect(env.field('feedback-title').textContent).toMatch(/^Not quite/); expect(env.speak).not.toHaveBeenCalled();
     const text = env.field('statement').textContent + ' ' + env.copy.textContent;
-    env.click(env.button('Read explanation aloud')); expect(env.speak).toHaveBeenCalledExactlyOnceWith(text);
+    env.click(env.button('Read explanation aloud')); expect(env.speak).toHaveBeenCalledExactlyOnceWith(text, undefined, undefined, { force: true });
     env.click(env.button('Hide explanation')); env.click(env.button('Review explanation'));
     expect(env.state.misconceptionsSeen).toBe(history); expect(env.state.mc_choice_Earth).toBe(true);
     expect(env.speak).toHaveBeenCalledTimes(1); expect(env.award).not.toHaveBeenCalled();

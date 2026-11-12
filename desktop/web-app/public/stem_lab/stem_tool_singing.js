@@ -3928,11 +3928,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('singing'))) {
         return this.ctx.decodeAudioData(data);
       }
     
-      /** Go to a moment of the performance (score seconds). */
-      seek(sec) {
-        this._seek(sec);
-      }
-    
       _startTake(sec) {
         const k = this.take;
         if (!k?.on || Math.abs(k.tempo - this.tempo) > 1e-3 || k.transpose !== this.transpose) return;

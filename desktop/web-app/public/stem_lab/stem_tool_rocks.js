@@ -7061,7 +7061,7 @@ const d = labToolData.rocks || {};
           // wording does not silently orphan the translations.
           const ROCKS = RK_ROCKS.map(function (r) {
             return Object.assign({}, r, {
-              label: t(r.labelKey),
+              label: t(r.labelKey, rkFallbackLabels[r.labelKey]),
               desc: __alloT('stem.rocks.desc_' + r.id, r.desc),
               uses: __alloT('stem.rocks.uses_' + r.id, r.uses)
             });
@@ -15606,7 +15606,7 @@ const d = labToolData.rocks || {};
                         (__alloT('stem.rocks.weath_log_temp', 'ΔT') + ' ' + entry.t + '°  ' +
                          __alloT('stem.rocks.weath_log_rain', 'rain') + ' ' + entryMm + ' mm  ' +
                          __alloT('stem.rocks.weath_log_ph', 'pH') + ' ' + entry.p +
-                         (entry.rk ? '  · ' + (entry.rk === 'limestone' ? __alloT('stem.rocks.weath_rock_carbonate', 'Limestone or marble') : t('stem.rocks.' + entry.rk)) : ''))),
+                         (entry.rk ? '  · ' + (entry.rk === 'limestone' ? __alloT('stem.rocks.weath_rock_carbonate', 'Limestone or marble') : t('stem.rocks.' + entry.rk, rkFallbackLabels['stem.rocks.' + entry.rk])) : ''))),
                       h('span', {
                         className: 'ml-auto px-1.5 py-0.5 rounded font-bold shrink-0',
                         style: { background: em.bg, color: em.color, border: '1px solid ' + em.border }

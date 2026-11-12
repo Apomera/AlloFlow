@@ -34402,7 +34402,7 @@ var d = labToolData.cell || {};
                 h('div', { 'data-cell-study-layout': true, 'data-cell-study-surface': true },
                 h('div', { 'data-cell-visual-column': true },
                 // the living cell
-                h('div', { 'data-cell-study-surface': true, 'data-allo-fs-stage': 'true', style: { position: 'relative' }, 'data-cell-canvas-frame': true, className: 'rounded-xl overflow-hidden border border-emerald-900 shadow-xl', style: { background: 'radial-gradient(circle at 24% 18%,rgba(16,185,129,0.18),rgba(4,24,29,0) 34%),#04181d' } },
+                h('div', { 'data-cell-study-surface': true, 'data-allo-fs-stage': 'true', 'data-cell-canvas-frame': true, className: 'rounded-xl overflow-hidden border border-emerald-900 shadow-xl', style: { position: 'relative', background: 'radial-gradient(circle at 24% 18%,rgba(16,185,129,0.18),rgba(4,24,29,0) 34%),#04181d' } },
                   h('button', {
                     type: 'button',
                     'data-allo-fs-btn': 'true',
@@ -34414,7 +34414,7 @@ var d = labToolData.cell || {};
                     onClick: function (ev) { ev.stopPropagation(); },
                     style: { position: 'absolute', top: 8, right: 8, zIndex: 30, width: 34, height: 34, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(15,23,42,0.88)', border: '1px solid rgba(148,163,184,0.55)', color: '#e2e8f0', fontSize: 16, fontWeight: 700, cursor: 'pointer' }
                   }, h('span', { 'aria-hidden': 'true' }, '⛶')),
-                  h('div', { 'data-cell-diagram-heading': true }, h('strong', null, ctype === 'bacterium' ? 'Bacterial cell' : ctype === 'plant' ? 'Plant cell' : 'Animal cell'), h('span', null, ctype === 'bacterium' ? 'PROKARYOTE' : 'EUKARYOTE')),
+                  h('div', { 'data-cell-diagram-heading': true, style: { paddingRight: 60 } }, h('strong', null, ctype === 'bacterium' ? 'Bacterial cell' : ctype === 'plant' ? 'Plant cell' : 'Animal cell'), h('span', null, ctype === 'bacterium' ? 'PROKARYOTE' : 'EUKARYOTE')),
                   h('canvas', { key: 'cell-interior-canvas', "data-cell-interior-canvas": true, width: 760, height: 440, role: 'img',
                     'aria-label': 'Cross-section of a living ' + ctype + ' cell. ' + (showLabels ? 'All study labels are visible. ' : '') + (depthMode ? ('Optical section at ' + Math.round(depthLevel) + '% depth. ') : '') + (selOrg ? ('Selected: ' + selOrg.name + '. ' + selOrg.fn) : 'Tap an organelle, or use the buttons below, to learn what each one does.'),
                     tabIndex: 0, 'aria-describedby': 'cell-interior-keyboard-help', 'aria-keyshortcuts': 'ArrowRight ArrowLeft ArrowUp ArrowDown Home End Enter Space',
@@ -35076,10 +35076,10 @@ h('div', { className: 'mt-2 grid gap-2 md:grid-cols-2' },
 
               React.createElement("canvas", {
 
-                "data-cell-sim-canvas": "", "data-cell-view-mode": d.mode || 'observe', "data-cell-illumination": cellPetriIllumEffective, "data-cell-sim-state": activeMissionComplete ? "complete" : activeMissionEvidenceComplete ? "explain" : activePlayPredictionPending ? "predict" : activePlayDef ? "active" : "observe", role: "img", "aria-label": activePlayDef && activePlayTutorial && activeTargetVisual ? (activePlayPredictionPending ? "Prediction checkpoint. Choose what you expect before controlling " + activePlayDef.label + ". " : "Interactive cell biology simulation. Playing as " + activePlayDef.label + ". ") + "Mission: " + activePlayTutorial.objective + " Target key: " + activeTargetVisual.keyline + ". " + activePlayTargetStatusText + " Control models " + activePlayTutorial.movement + "." : "Interactive cell biology simulation. Click or tap organisms, or use the organism buttons below, to inspect behavior and anatomy. Press Escape to dismiss an anatomy explanation.", "aria-describedby": activeCellMode === 'observe' && selDef ? "cell-sim-status cell-anatomy-keyboard-help" : "cell-sim-status", "aria-keyshortcuts": activeCellMode === 'observe' && selDef ? "ArrowLeft ArrowRight ArrowUp ArrowDown Home End Enter Escape" : undefined,
+                "data-cell-sim-canvas": "", "data-cell-view-mode": d.mode || 'observe', "data-cell-illumination": cellPetriIllumEffective, "data-cell-sim-state": activeMissionComplete ? "complete" : activeMissionEvidenceComplete ? "explain" : activePlayPredictionPending ? "predict" : activePlayDef ? "active" : "observe", role: "img", "aria-label": activePlayDef && activePlayTutorial && activeTargetVisual ? (activePlayPredictionPending ? "Prediction checkpoint. Choose what you expect before controlling " + activePlayDef.label + ". " : "Interactive cell biology simulation. Playing as " + activePlayDef.label + ". ") + "Mission: " + activePlayTutorial.objective + " Target key: " + activeTargetVisual.keyline + ". " + activePlayTargetStatusText + " Control models " + activePlayTutorial.movement + "." : "Interactive cell biology simulation. Click or tap organisms, or use the organism buttons below, to inspect behavior and anatomy. Press Escape to dismiss an anatomy explanation.", "aria-describedby": activeCellMode === 'observe' && selDef ? "cell-sim-status cell-anatomy-keyboard-help" : "cell-sim-status",
 
                 tabIndex: 0,
-                "aria-keyshortcuts": activePlayDef && activePlayTutorial && !activePlayTutorial.stationary && !activePlayPredictionPending && !activeMissionEvidenceComplete ? "ArrowUp ArrowDown ArrowLeft ArrowRight W A S D" : undefined,
+                "aria-keyshortcuts": activePlayDef && activePlayTutorial && !activePlayTutorial.stationary && !activePlayPredictionPending && !activeMissionEvidenceComplete ? "ArrowUp ArrowDown ArrowLeft ArrowRight W A S D" : !activePlayDef && activeCellMode === 'observe' && selDef ? "ArrowLeft ArrowRight ArrowUp ArrowDown Home End Enter Escape" : undefined,
 
                 // The canvas is a tab stop, so it needs a visible focus ring. Drawn just
                 // OUTSIDE the canvas box rather than inset: the top of the canvas is a

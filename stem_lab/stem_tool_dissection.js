@@ -27962,7 +27962,7 @@ var d = labToolData.dissection || {};
               ),
               React.createElement("section", { className: "diss-lab-tool-group", "data-lab-tools-group": "records", role: "group", "aria-labelledby": "diss-lab-records-heading" },
                 React.createElement("h4", { id: "diss-lab-records-heading", className: "diss-lab-tool-heading" }, 'Report and reset'),
-                React.createElement("button", { "aria-label": __alloT('stem.dissection.a11y_copy_accurate_lab_report_to_clipboard', 'Copy accurate lab report to clipboard'),
+                React.createElement("button", {
                 disabled: !!(d.quizMode || d.practicalMode), onClick: function () {
                   copyLabReport();
                 },
@@ -30375,7 +30375,7 @@ var d = labToolData.dissection || {};
 
                     ),
 
-                    React.createElement("button", { type: "button", "aria-label": masteryComplete ? "Copy verified dissection completion summary" : "Copy dissection practice log",
+                    React.createElement("button", { type: "button",
 
                       onClick: function () {
 

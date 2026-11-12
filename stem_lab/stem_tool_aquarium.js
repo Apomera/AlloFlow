@@ -26106,7 +26106,6 @@ React.createElement("section", {
                               instanceKey: selectedTank,
                               onSelect: function(itemId) { updMulti({ selectedHabitatItemId: itemId, ecosystemFocusType: 'all', ecosystemFocusId: null }); },
                               onSelectFish: function(instanceId) { updMulti({ ecosystemFocusType: 'fish', ecosystemFocusId: instanceId }); },
-                              onSelectPlant: function(plantId) { selectPlant(plantId); },
                               onSelectEquipment: function() { focusAquariumWorkspaceSection('aquarium-life-support'); },
                               label: tank.name + " 3D habitat. " + habitatSummary.items + " structures. Shelter " + habitatSummary.shelterScore + ", territory " + habitatSummary.territoryScore + ", open swimming space " + habitatSummary.openSwimScore + ". Residents can be selected in 3D to trace their exchanges. Use the synchronized object list and movement controls to edit.",
                               onSelectPlant: selectPlant,

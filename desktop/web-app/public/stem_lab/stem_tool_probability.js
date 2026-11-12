@@ -4523,7 +4523,7 @@ var d = (labToolData.probability) || {};
                     var narration = 'Probability Lab results. Mode: ' + d.mode + '. ' + statN + ' trials run. ' +
                       'Most frequent: ' + (topOutcome||'unknown') + ' at ' + (topOutcome&&statN>0?((counts[topOutcome]||0)/statN*100).toFixed(0):'0') + ' percent. ' +
                       'Chi-square test: ' + (!chiIndependent ? 'does not apply, because draws without replacement are not independent' : !chiApplicable ? 'does not apply, because only one outcome is possible' : chiReady ? (chiPass?'fair':'potentially biased') : 'not enough trials yet, it needs ' + chiTrialsNeeded + ' for this setup') + '.';
-                    callTTS(narration, null);
+                    callTTS(narration, null, undefined, { force: true });
                   },
                   className: "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all",
                   style: { background: isDark||isContrast?'rgba(34,197,94,0.1)':'#f0fdf4', color: isDark||isContrast?'#86efac':'#16a34a' }

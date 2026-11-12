@@ -5740,7 +5740,7 @@ window.StemLab = window.StemLab || {
                   h('input', { type: 'range', min: s[2], max: s[3], step: s[4], value: iq[s[0]], onChange: function(e) { setKey(s[0], s[0] === 'n' || s[0] === 'outlierCount' ? parseInt(e.target.value, 10) : parseFloat(e.target.value)); }, className: 'w-full', style: { minHeight: 28 } }));
               })),
             h('div', { className: 'flex gap-2 mb-2' },
-              h('button', { type: 'button', style: chipStyle, onClick: function() {
+              h('button', { type: 'button', onClick: function() {
                 var tm = new Date().toISOString().slice(11, 19);
                 setIQ({ log: iq.log.concat([{ t: tm, tr: iq.trueR.toFixed(2), pop: popR.toFixed(2), n: iq.n, sd: iq.noiseSD.toFixed(1), out: iq.outlierCount, obs: observedR.toFixed(2), state: sm.label }]).slice(-40) });
                 say(t('stem.dataplot.sr_logged', 'Draw logged.'));

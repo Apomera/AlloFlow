@@ -195,7 +195,8 @@ describe('graphcalc: speakText ("Read aloud" / "Speak Text")', () => {
     const G = loadGraphcalcSound();
     const tts = vi.fn(() => Promise.resolve('blob:x'));
     G.speakText('y equals x squared', tts);
-    expect(tts).toHaveBeenCalledWith('y equals x squared');
+    // force: a student pressed Read aloud (the header narration switch gates only automatic narration).
+    expect(tts).toHaveBeenCalledWith('y equals x squared', undefined, undefined, { force: true });
     expect(ac.started()).toBe(1); // the little "tts" tone
     const audios = fakeAudio();
     window._kokoroTTS = { speak: vi.fn(() => Promise.resolve('blob:k')) };

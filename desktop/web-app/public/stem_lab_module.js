@@ -825,6 +825,174 @@
 })();
 // STEM_LISTEN_RUNTIME_END
 
+// STEM_AUDIO_GATE_BEGIN
+// The app mute for every STEAM Lab sound (most tools never check it). AudioContexts created while the lab is
+// open are tracked: mute suspends the running ones; a resume() while muted resolves without resuming and is
+// remembered; unmute resumes only what was playing or asked to play, never what the tool suspended itself.
+// Contexts with a stream node (mic, recording, export) are left running. Media is force-muted, not paused, so
+// video keeps playing and `ended` still fires; the tool reads back its own `muted`. Offline contexts untouched.
+(function () {
+  if (typeof window === 'undefined') return;
+  var G = window.__alloStemAudioGate;
+  if (G && typeof G.install === 'function') { G.install(); return; }
+  var WR = typeof WeakRef === 'function' ? WeakRef : null;
+  var st = new WeakMap(), mst = new WeakMap(), proxies = new WeakMap(), ours = new WeakSet(), patched = new WeakSet(), raw = new WeakMap();
+  var ctxs = [], media = [], forced = [], gated = false, evMuted = false, active = false, mutedDesc = null;
+  function muted() {
+    var f = window.__alloIsGlobalMuted;
+    if (typeof f === 'function') { try { if (f()) return true; } catch (e) {} return !!window._alloGlobalMute; }
+    return evMuted || !!window._alloGlobalMute;
+  }
+  function keep(list, x, strongOk) { if (WR) list.push(new WR(x)); else if (strongOk) list.push({ deref: function () { return x; } }); }
+  function live(list) { var out = []; for (var i = list.length - 1; i >= 0; i--) { var x = list[i].deref(); if (x) out.push(x); else list.splice(i, 1); } return out; }
+  function isOffline(c) { var O = window.OfflineAudioContext || window.webkitOfflineAudioContext; try { return typeof O === 'function' && c instanceof O; } catch (e) { return false; } }
+  function quiet(p) { if (p && typeof p.catch === 'function') p.catch(function () {}); return p; }
+  // The browser's own suspend/resume, never the tool-facing wrappers.
+  function rawCall(c, name) {
+    try {
+      for (var p = Object.getPrototypeOf(c); p; p = Object.getPrototypeOf(p)) { var r = raw.get(p); if (r && r[name]) return quiet(r[name].call(c)); }
+      var f = c[name]; if (typeof f === 'function' && !ours.has(f)) return quiet(f.call(c));
+    } catch (e) {}
+  }
+  function track(c) {
+    if (st.has(c) || isOffline(c)) return st.get(c);
+    var s = { own: false, want: false, held: false, cap: false, closed: false, resuming: false };
+    st.set(c, s); keep(ctxs, c, true);
+    if (sync()) { s.want = true; s.held = true; rawCall(c, 'suspend'); }
+    return s;
+  }
+  function force(el) {
+    if (!mutedDesc) return;
+    var m = mst.get(el); if (!m) { m = {}; mst.set(el, m); }
+    if (m.forced) return;
+    try { m.want = !!mutedDesc.get.call(el); m.forced = true; mutedDesc.set.call(el, true); forced.push(el); } catch (e) {}
+  }
+  function enter() {
+    gated = true;
+    live(ctxs).forEach(function (c) {
+      var s = st.get(c);
+      if (!s || s.cap || s.closed || s.own || c.state === 'closed') return;
+      if (c.state === 'running' || s.resuming) s.want = true;
+      s.held = true; rawCall(c, 'suspend');
+    });
+    live(media).forEach(function (el) { if (!el.paused) force(el); });
+    try { if (active && document.querySelectorAll) Array.prototype.forEach.call(document.querySelectorAll('audio,video'), force); } catch (e) {}
+  }
+  function exit() {
+    gated = false;
+    live(ctxs).forEach(function (c) {
+      var s = st.get(c);
+      if (!s || !s.held) return;
+      var w = s.want; s.held = false; s.want = false;
+      if (w && !s.own && !s.closed && c.state !== 'closed') rawCall(c, 'resume');
+    });
+    var list = forced; forced = [];
+    list.forEach(function (el) { var m = mst.get(el); if (!m || !m.forced) return; m.forced = false; try { mutedDesc.set.call(el, m.want); } catch (e) {} });
+  }
+  function sync() { var m = muted(); if (m && !gated) enter(); else if (!m && gated) exit(); return m; }
+  function mark(f) { ours.add(f); return f; }
+  function patchProto(P) {
+    if (!P || patched.has(P)) return;
+    patched.add(P);
+    var oRes = P.resume, oSus = P.suspend, oClose = P.close;
+    raw.set(P, { resume: typeof oRes === 'function' ? oRes : null, suspend: typeof oSus === 'function' ? oSus : null });
+    if (typeof oRes === 'function') P.resume = mark(function resume() {
+      var s = st.get(this);
+      if (!s) return oRes.apply(this, arguments);
+      s.own = false;
+      if (!s.cap && sync()) { s.want = true; if (!s.held) { s.held = true; rawCall(this, 'suspend'); } return Promise.resolve(); }
+      s.resuming = true;
+      var p = oRes.apply(this, arguments), done = function () { s.resuming = false; };
+      if (p && typeof p.then === 'function') p.then(done, done); else done();
+      return p;
+    });
+    if (typeof oSus === 'function') P.suspend = mark(function suspend() {
+      var s = st.get(this);
+      if (s) { s.own = true; s.want = false; }
+      return oSus.apply(this, arguments);
+    });
+    if (typeof oClose === 'function') P.close = mark(function close() {
+      var s = st.get(this);
+      if (s) { s.closed = true; s.held = false; s.want = false; }
+      return oClose.apply(this, arguments);
+    });
+    // A note started and told to stop while muted would sound on unmute, all at once: stop it now instead.
+    ['createOscillator', 'createBufferSource', 'createConstantSource'].forEach(function (name) {
+      var o = P[name];
+      if (typeof o !== 'function') return;
+      P[name] = mark(function () {
+        var n = o.apply(this, arguments), s = st.get(this);
+        if (s && n && typeof n.stop === 'function') {
+          var stop = n.stop;
+          try { n.stop = function () { if (s.held && !s.cap) { try { return stop.call(n, 0); } catch (e) {} } return stop.apply(n, arguments); }; } catch (e) {}
+        }
+        return n;
+      });
+    });
+    // A stream node means mic analysis, recording or export: suspending it would stall those, so it plays on.
+    ['createMediaStreamSource', 'createMediaStreamTrackSource', 'createMediaStreamDestination'].forEach(function (name) {
+      var o = P[name];
+      if (typeof o !== 'function') return;
+      P[name] = mark(function () {
+        var s = st.get(this);
+        if (s && !s.cap) {
+          s.cap = true;
+          if (s.held) { var w = s.want; s.held = false; s.want = false; if (w && !s.own) rawCall(this, 'resume'); }
+        }
+        return o.apply(this, arguments);
+      });
+    });
+  }
+  function wrapCtor(C) {
+    if (typeof C !== 'function' || ours.has(C) || typeof Proxy !== 'function' || typeof Reflect !== 'object') return C;
+    if (proxies.has(C)) return proxies.get(C);
+    patchProto(C.prototype);
+    var W = new Proxy(C, {
+      construct: function (t, args, nt) {
+        var c = Reflect.construct(t, args, nt === W ? t : nt);
+        if (active) { try { track(c); } catch (e) {} }
+        return c;
+      }
+    });
+    ours.add(W); proxies.set(C, W);
+    return W;
+  }
+  function install() {
+    var A = window.AudioContext, K = window.webkitAudioContext;
+    var a = wrapCtor(A), k = K === A ? a : wrapCtor(K);
+    try { if (a !== A) window.AudioContext = a; } catch (e) {}
+    try { if (k !== K) window.webkitAudioContext = k; } catch (e) {}
+    var MP = window.HTMLMediaElement && window.HTMLMediaElement.prototype;
+    if (!MP || patched.has(MP)) return;
+    var d = Object.getOwnPropertyDescriptor(MP, 'muted'), oPlay = MP.play;
+    if (!d || !d.get || !d.set || !d.configurable || typeof oPlay !== 'function') return;
+    patched.add(MP); mutedDesc = d;
+    Object.defineProperty(MP, 'muted', {
+      configurable: true, enumerable: d.enumerable,
+      get: function () { var m = mst.get(this); return m && m.forced ? m.want : d.get.call(this); },
+      set: function (v) { var m = mst.get(this); if (m && m.forced) m.want = !!v; else d.set.call(this, v); }
+    });
+    var see = function (el) {
+      if (!active && !mst.has(el)) return false;
+      if (!mst.has(el)) { mst.set(el, {}); keep(media, el, false); if (media.length > 200) live(media); }
+      if (sync()) force(el);
+      return true;
+    };
+    MP.play = mark(function play() { see(this); return oPlay.apply(this, arguments); });
+    window.addEventListener('play', function (e) { var el = e && e.target; if (el && MP.isPrototypeOf(el)) see(el); }, true);
+  }
+  window.addEventListener('alloflow-mute-changed', function (e) { evMuted = !!(e && e.detail && e.detail.muted === true); sync(); });
+  window.__alloStemAudioGate = {
+    install: install, sync: sync, isMuted: muted,
+    // The hub's render marks the lab open (before tools' mount effects); its unmount cleanup ends it.
+    touch: function () { active = true; },
+    open: function () { active = true; sync(); return function () { active = false; }; }
+  };
+  install();
+  sync();
+})();
+// STEM_AUDIO_GATE_END
+
 // Readable controls for Math Fundamentals. Geometric pieces and table cells keep their dimensions.
 (function () {
   if (document.getElementById("allo-basic-math-controls-css")) return;
@@ -4369,6 +4537,13 @@
         // Inline, not _stemGlobalMuted(): tests run this function on its own. Covers stemCelebrate + XP chime.
         try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return; } catch (e) {}
         if (window._alloGlobalMute) return;
+        // beep() and beep('correct') reached the AudioParam as a non-finite value, which throws: silent. Numbers unchanged.
+        if (freq == null || (typeof freq === 'string' && !(freq.trim() && isFinite(freq)))) {
+          var named = { click: [880, 0.05, 0.06], tick: [1200, 0.03, 0.05], correct: [784, 0.15, 0.1], success: [784, 0.15, 0.1], complete: [1047, 0.3, 0.1], wrong: [220, 0.18, 0.08], error: [220, 0.18, 0.08], incorrect: [220, 0.18, 0.08] };
+          var key = String(freq || 'click').trim().toLowerCase();
+          var preset = Object.prototype.hasOwnProperty.call(named, key) ? named[key] : named.click;
+          freq = preset[0]; dur = dur || preset[1]; vol = vol || preset[2];
+        }
         try {
           var ctx = (window.StemLab && typeof window.StemLab.audioContext === 'function')
             ? window.StemLab.audioContext()
@@ -5677,6 +5852,13 @@
         var onMute = function (e) { if (e && e.detail && e.detail.muted) _stemStopTTS(); };
         window.addEventListener('alloflow-mute-changed', onMute);
         return function () { window.removeEventListener('alloflow-mute-changed', onMute); };
+      }, []);
+      // Sound made while the lab is open follows the app mute (STEM_AUDIO_GATE).
+      var _stemAudioGate = window.__alloStemAudioGate;
+      if (_stemAudioGate && typeof _stemAudioGate.touch === 'function') _stemAudioGate.touch();
+      React.useEffect(function () {
+        if (!_stemAudioGate || typeof _stemAudioGate.open !== 'function') return;
+        return _stemAudioGate.open();
       }, []);
 
       // Accessibility semantics belong to the React source. The report-only

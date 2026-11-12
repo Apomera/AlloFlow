@@ -602,6 +602,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
     return result;
   }
 
+  // Audio Narration: gen changes when the student turns it off, so a host answer that comes back
+  // empty afterwards does not start the browser voice; utter = this tool's own browser utterance.
+  var colonySpeech = { gen: 0, utter: null };
+
   window.StemLab.registerTool('spaceColony', {
     icon: '\uD83C\uDFD5\uFE0F',
     label: 'Kepler Colony',
@@ -1105,11 +1109,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
           // which aborted turn processing once any building existed.
           var activeSeason = seasonDefs[seasonIndex2] || { effect: {} };
 
-          // TTS helper — prefers Kokoro TTS when available, falls back to browser TTS
-          function colonySpeak(text2, voice) {
+          // TTS helper. Every caller checks d.colonyTTS, the student's own Audio Narration switch (off by
+          // default), so this is speech the student asked for: the host voice with force (past the header
+          // switch, which gates only narration nobody asked for). Through the host, app mute and
+          // ctx.stopTTS apply and the host plays the clip. It resolves null while muted (stay silent), when
+          // student AI is off (it already used the device voice) or when no voice came back: only then the
+          // browser voice below. Older hosts without ctx.callTTS: Kokoro, then the browser voice.
+          function colonySpeak(text2, voice, onDevice) {
             if (!text2) return;
+            var colonyQuiet = function () { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {} return !!window._alloGlobalMute; };
+            if (!onDevice && typeof ctx.callTTS === 'function') {
+              var req = null, gen = colonySpeech.gen;
+              try { req = ctx.callTTS(text2, undefined, 0.95, { force: true }); } catch (e) {}
+              var fallBack = function () { if (gen === colonySpeech.gen && !colonyQuiet() && window.__alloStudentAiDisabled !== true) colonySpeak(text2, voice, true); };
+              Promise.resolve(req).then(function (url) { if (!url) fallBack(); }, fallBack);
+              return;
+            }
+            if (colonyQuiet()) return;
             // Try Kokoro TTS first (async, fire-and-forget for narration)
-            if (window._kokoroTTS) {
+            if (!onDevice && window._kokoroTTS) {
               try {
                 window._kokoroTTS.speak(text2, null, 0.95).then(function (url) {
                   if (url) {
@@ -1136,7 +1154,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
               var fem = voices.find(function (v) { return v.name.indexOf('Female') >= 0 || v.name.indexOf('Zira') >= 0 || v.name.indexOf('Samantha') >= 0; });
               if (fem) utter.voice = fem;
             }
+            colonySpeech.utter = utter;
+            utter.onend = utter.onerror = function () { if (colonySpeech.utter === utter) colonySpeech.utter = null; };
             window.speechSynthesis.speak(utter);
+          }
+          // Audio Narration off: stop this tool's speech only (the host's clip, its own browser utterance).
+          function colonyStopSpeech() {
+            colonySpeech.gen++;
+            if (typeof ctx.stopTTS === 'function') { try { ctx.stopTTS(); } catch (e) {} }
+            var u = colonySpeech.utter;
+            colonySpeech.utter = null;
+            if (u) { try { if (window.speechSynthesis) window.speechSynthesis.cancel(); } catch (e) {} }
           }
 
           var terrainTypes = [
@@ -2185,7 +2213,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('spaceColony'))
                       React.createElement('button', {
                         type: 'button',
                         'aria-pressed': !!d.colonyTTS,
-                        onClick: function () { upd('colonyTTS', !(d.colonyTTS)); },
+                        onClick: function () { if (d.colonyTTS) colonyStopSpeech(); upd('colonyTTS', !(d.colonyTTS)); },
                         className: 'flex-1 px-2 py-2 rounded-lg text-[0.6875rem] font-bold border-2 transition-all ' +
                           (d.colonyTTS ? 'border-green-400 bg-green-900 text-green-200' : 'border-slate-600 bg-slate-900 text-slate-200')
                       }, d.colonyTTS ? '\uD83D\uDD0A ON' : '\uD83D\uDD07 OFF')

@@ -4364,7 +4364,7 @@ window.StemLab = window.StemLab || {
                       ),
                       // Actions
                       h('div', { className: 'flex gap-2 pt-2 border-t border-slate-100' },
-                        callTTS && h('button', { 'aria-label': __alloT('stem.epidemic.read_aloud', 'Read Aloud'), onClick: function() { callTTS(p.gradeSummary[gradeBand] || p.gradeSummary['3-5']); }, className: 'px-3 py-1.5 text-[0.6875rem] font-bold bg-blue-50 text-blue-600 rounded-lg' }, __alloT('stem.epidemic.read_aloud_2', '\uD83D\uDD0A Read Aloud')),
+                        callTTS && h('button', { 'aria-label': __alloT('stem.epidemic.read_aloud', 'Read Aloud'), onClick: function() { callTTS(p.gradeSummary[gradeBand] || p.gradeSummary['3-5'], undefined, undefined, { force: true }); }, className: 'px-3 py-1.5 text-[0.6875rem] font-bold bg-blue-50 text-blue-600 rounded-lg' }, __alloT('stem.epidemic.read_aloud_2', '\uD83D\uDD0A Read Aloud')),
                         h('button', { 'aria-label': __alloT('stem.epidemic.simulate', 'Simulate'), onClick: function() { var approxR0 = parseFloat(String(p.r0Est).replace(/[^0-9.]/g, '')) || 2.5; var safeR0 = Math.max(0.5, Math.min(100, approxR0)); applyPreset(0); updMulti({ tab: 'sir', r0: safeR0, historySimulationNote: p.name + ' is shown as a simplified SIR approximation using R0≈' + safeR0 + '. Historical estimates vary by place, time, and transmission route.' }); }, className: 'px-3 py-1.5 text-[0.6875rem] font-bold bg-violet-50 text-violet-600 rounded-lg' }, 'Approximate in SIR')
                       )
                     )
@@ -4621,7 +4621,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, content),
               h('div', { className: 'flex gap-2 pt-2 border-t border-slate-100' },
                 h('button', { 'aria-label': __alloT('stem.epidemic.try_it', 'Try It') + ': ' + topic.title, onClick: function() { markLearnRead(topic.title); updMulti({ tab: topic.tryIt }); announceToSR('Switched to ' + topic.tryIt); }, className: 'px-3 py-1.5 text-[0.6875rem] font-bold bg-violet-50 text-violet-600 rounded-lg hover:bg-violet-100 transition-all' }, __alloT('stem.epidemic.try_it_2', '\uD83D\uDD2C Try It')),
-                callTTS && h('button', { 'aria-label': __alloT('stem.epidemic.read_aloud_3', 'Read Aloud') + ': ' + topic.title, onClick: function() { markLearnRead(topic.title); callTTS(content); }, className: 'px-3 py-1.5 text-[0.6875rem] font-bold bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-all' }, __alloT('stem.epidemic.read_aloud_4', '\uD83D\uDD0A Read Aloud'))
+                callTTS && h('button', { 'aria-label': __alloT('stem.epidemic.read_aloud_3', 'Read Aloud') + ': ' + topic.title, onClick: function() { markLearnRead(topic.title); callTTS(content, undefined, undefined, { force: true }); }, className: 'px-3 py-1.5 text-[0.6875rem] font-bold bg-blue-50 text-blue-700 rounded-lg hover:bg-blue-100 transition-all' }, __alloT('stem.epidemic.read_aloud_4', '\uD83D\uDD0A Read Aloud'))
               )
             );
           })

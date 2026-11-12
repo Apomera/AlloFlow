@@ -3283,12 +3283,22 @@ window.StemLab = window.StemLab || {
         if (correct && interviewScenarioScore + 1 >= 3) checkBadge('mockInterviewPro');
       }
 
-      function speakInterviewText(text) {
+      // The Read button, or the student's own Auto-read switch (off by default): force past the header
+      // narration switch. The host plays the clip itself and never throws; it resolves null while the
+      // app is muted (stay silent), when student AI is off (it already used the device voice) or when no
+      // voice came back: only then the device voice below.
+      function speakInterviewText(text, onDevice) {
         if (!text) return;
-        announceToSR(__alloT('stem.lifeskills.sr_reading_interview_text', 'Reading interview text'));
-        if (callTTS && typeof callTTS === 'function') {
-          try { callTTS(text, { voice: 'Kore', source: 'lifeSkillsInterviewStudio' }); return; } catch(e) {}
+        var quiet = function() { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {} return !!window._alloGlobalMute; };
+        if (!onDevice && !quiet()) announceToSR(__alloT('stem.lifeskills.sr_reading_interview_text', 'Reading interview text'));
+        if (!onDevice && callTTS && typeof callTTS === 'function') {
+          var req = null;
+          try { req = callTTS(text, 'Kore', undefined, { force: true }); } catch(e) {}
+          var fallBack = function() { if (!quiet() && window.__alloStudentAiDisabled !== true) speakInterviewText(text, true); };
+          Promise.resolve(req).then(function(url) { if (!url) fallBack(); }, fallBack);
+          return;
         }
+        if (quiet()) return;
         try {
           if (window.speechSynthesis && window.SpeechSynthesisUtterance) {
             window.speechSynthesis.cancel();
@@ -7973,7 +7983,7 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, content),
               h('div', { className: 'flex gap-2 pt-2 border-t border-slate-100' },
                 h('button', { 'aria-label': __alloT('stem.lifeskills.try_it', 'Try It'), onClick: function() { markLearnRead(topic.title); updMulti({ tab: topic.tryIt }); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-violet-50 text-violet-600 rounded-lg' }, __alloT('stem.lifeskills.try_it_2', '\uD83D\uDD2C Try It')),
-                callTTS && h('button', { 'aria-label': __alloT('stem.lifeskills.read_aloud', 'Read Aloud'), onClick: function() { markLearnRead(topic.title); callTTS(content); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-blue-50 text-blue-600 rounded-lg' }, __alloT('stem.lifeskills.read_aloud_2', '\uD83D\uDD0A Read Aloud'))
+                callTTS && h('button', { 'aria-label': __alloT('stem.lifeskills.read_aloud', 'Read Aloud'), onClick: function() { markLearnRead(topic.title); callTTS(content, undefined, undefined, { force: true }); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-blue-50 text-blue-600 rounded-lg' }, __alloT('stem.lifeskills.read_aloud_2', '\uD83D\uDD0A Read Aloud'))
               )
             );
           })

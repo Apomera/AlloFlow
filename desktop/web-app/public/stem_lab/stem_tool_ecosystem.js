@@ -12284,8 +12284,18 @@ function EcoPairMeasurement(props) {
       };
 
       // ── TTS (Kokoro-first) ──
-      var speakText = function(text) {
-        if (callTTS) { try { callTTS(text); return; } catch(e) {} }
+      // A speak button: the host voice with force (the header narration switch gates only automatic
+      // narration). The host plays the clip itself and never throws. It resolves null while the app is
+      // muted (stay silent), when student AI is off (it already used the device voice) or when no voice
+      // came back: only that last case calls onNone.
+      var raHostSpeak = function(callTTS, text, onNone) {
+        var req = null;
+        try { req = callTTS(text, undefined, undefined, { force: true }); } catch (e) {}
+        function quiet() { try { if (typeof window.__alloIsGlobalMuted === 'function' && window.__alloIsGlobalMuted()) return true; } catch (e) {} return !!window._alloGlobalMute || window.__alloStudentAiDisabled === true; }
+        Promise.resolve(req).then(function (url) { if (!url && !quiet() && onNone) onNone(); }, function () { if (!quiet() && onNone) onNone(); });
+      };
+      var speakText = function(text, onDevice) {
+        if (callTTS && !onDevice) { raHostSpeak(callTTS, text, function () { speakText(text, true); }); return; }
         if (window._kokoroTTS && window._kokoroTTS.speak) {
           window._kokoroTTS.speak(String(text),'af_heart',1).then(function(url){if(url){var a=new Audio(url);a.playbackRate=0.95;a.play();}}).catch(function(){});
           return;
