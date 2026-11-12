@@ -30,12 +30,14 @@ const AC = new Function(
   ' parseCsv: _acThParseCsv, readCsv: _acThReadCsv, readJson: _acThReadJson, readFile: _acThReadFile, session: _acThSession, stamp: _acThStamp,' +
   ' fnv: _acThFnv1a, sha: _acThSha256, match: _acThMatch, norm: _acThNorm, newName: _acThNewName, preview: _acThPreview, apply: _acThApply,' +
   ' remove: _acThRemove, ready: _acThReady, choose: _acThChoose, remember: _acThRemember, restoreLabels: _acThRestoreLabels, newStudent: _acThNewStudent,' +
-  ' columns: _AC_TH_COLUMNS, labelKey: _acIdentityLinkKey, localDate: _acLocalDate};')();
+  ' columns: _AC_TH_COLUMNS, labelKey: _acIdentityLinkKey, localDate: _acLocalDate,' +
+  ' activityName: _acWsActivityName, strandName: _acWsStrandName, mathActivities: _AC_MATH_FACT_ACTIVITIES, strands: _AC_WS_STRANDS};')();
 
 // ── Fixtures, written from the format's rules ──
 const COLUMNS = ['format', 'session_id', 'packet_id', 'packet_version', 'form', 'mode', 'learner', 'started_local', 'finished_local', 'duration_s',
   'item_n', 'item_id', 'activity', 'activity_title', 'scored', 'word', 'target', 'responses', 'correct', 'first_try', 'tries', 'time_ms', 'supports', 'flag'];
-const TITLES = {isolation: 'Find Sounds', blending: 'Blend Sounds', rhyming: 'Rhyme Time', letter_tracing: 'Letter Trace', mapping: 'Sound Mapping'};
+const TITLES = {isolation: 'Find Sounds', blending: 'Blend Sounds', rhyming: 'Rhyme Time', letter_tracing: 'Letter Trace', mapping: 'Sound Mapping',
+  math_ccc: 'Cover, copy, compare', math_rehearsal: 'Fact rehearsal'};
 const quote = (value) => {
   let text = value == null ? '' : String(value);
   if (/^[=+\-@\t\r]/.test(text)) text = "'" + text;
@@ -56,7 +58,7 @@ const makeSession = (over = {}) => ({sid: 'b3f1c2f0-7a55-4d0e-9c0b-0d0f6d1e52aa'
   items: [it4('isolation', 'cat', 'k', 'first'), it4('isolation', 'dog', 'o', 'retry', ['d']), it4('isolation', 'bed', 'd', 'miss', ['b', 'e']),
     it4('blending', 'cup', 'cup', 'first'), it4('blending', 'bug', 'bug', 'first')], ...over});
 const itemRows = (s) => s.items.map((it, i) => ['alloflow-packet-result/1', s.sid, s.packetId, s.version, s.form, s.mode, s.learner, s.started, s.finished,
-  Math.round(s.durationMs / 1000), i + 1, it.activity + '-' + i, it.activity, TITLES[it.activity] || '', it.scored === false || it.activity === 'letter_tracing' ? 0 : 1,
+  Math.round(s.durationMs / 1000), i + 1, it.id || it.activity + '-' + i, it.activity, TITLES[it.activity] || '', it.scored === false || it.activity === 'letter_tracing' ? 0 : 1,
   it.word, it.target, it.responses.join(' | '), it.correct ? 1 : 0, it.firstTry ? 1 : 0, it.tries, it.ms,
   Object.keys(it.supports).map((k) => k + ':' + it.supports[k]).join(';'), it.flag, ...(it.extra || [])]);
 const integrityOf = (s, method) => {
@@ -79,7 +81,7 @@ const jsonOf = (s, {method = 'sha256', integrity = true} = {}) => JSON.stringify
   activityTitles: TITLES, sessionId: s.sid, packet: {id: s.packetId, version: s.version, engine: 'alloflow-packet/1', form: s.form, mode: s.mode},
   learner: s.learner, learnerName: s.learner, startedAt: '2026-11-12T21:00:05.000Z', finishedAt: '2026-11-12T21:05:05.000Z', startedLocal: s.started, finishedLocal: s.finished,
   durationMs: s.durationMs, timesAreFromTheLearnerDevice: true,
-  items: s.items.map((it, i) => ({n: i + 1, itemId: it.activity + '-' + i, activity: it.activity, word: it.word, target: it.target, responses: it.responses,
+  items: s.items.map((it, i) => ({n: i + 1, itemId: it.id || it.activity + '-' + i, activity: it.activity, word: it.word, target: it.target, responses: it.responses,
     attempts: it.tries, firstTry: it.firstTry, correct: it.correct, done: true, supports: it.supports, practice: null, ms: it.ms, flag: it.flag})),
   summary: {itemsGiven: s.items.length, attempted: s.items.length},
   ...(integrity ? {integrity: {method, value: integrityOf(s, method)}} : {}),
@@ -304,6 +306,94 @@ describe('activities and skill strands', () => {
     const added = AC.apply([], [{session: s, name: 'Blue Heron'}], make).students[0];
     const skills = AC.bySkill(AC.summary(added.data.wordSoundsState));
     expect(skills.map((k) => [k.key, k.allItems, k.activities.map((a) => a.id)])).toEqual([['', 3, ['future_game', 'unknown', 'proto']]]);
+  });
+});
+
+// Math fact practice (packet_math_practice_builder.js), written from the format's rules: cover, copy, compare
+// (activity math_ccc, item ids math_ccc-01 ...) and fact rehearsal (math_rehearsal, item ids ending in -new or -known).
+// Each card is right in the end; "retry" is right on the second try, after one miss.
+describe('math fact practice', () => {
+  const X = String.fromCharCode(0xD7);
+  const fact = (activity, n, a, b, kind, role = '') => ({...it4(activity, a + ' ' + X + ' ' + b, String(a * b), kind, [String(a * b + 1)]),
+    id: activity + '-' + String(n).padStart(2, '0') + (role ? '-' + role : '')});
+  const cccSession = (over = {}) => makeSession({sid: 'ccc-1', packetId: 'math-facts-mul-7-ccc', title: X + ' 7 facts: cover, copy, compare',
+    items: [[1, 'first'], [5, 'retry'], [2, 'first'], [8, 'retry'], [7, 'retry'], [9, 'retry']].map(([b, kind], i) => fact('math_ccc', i + 1, 7, b, kind)), ...over});
+  // The cards the builder makes for the x 7 facts: 7 x 8 is the new fact.
+  const REHEARSAL = [['new', 8], ['known', 10], ['new', 8], ['known', 10], ['known', 9], ['new', 8], ['known', 10], ['known', 9], ['known', 6], ['new', 8], ['known', 5], ['known', 3]];
+  const rehearsalSession = (misses = [2, 3, 9], over = {}) => makeSession({sid: 'reh-1', packetId: 'math-facts-mul-7-rehearsal', title: X + ' 7 facts: new and known facts',
+    started: '2026-11-13T16:00:05-05:00', finished: '2026-11-13T16:05:05-05:00',
+    items: REHEARSAL.map(([role, b], i) => fact('math_rehearsal', i + 1, 7, b, misses.includes(i) ? 'retry' : 'first', role)), ...over});
+  const SPLIT = {newItems: 4, newFirstTry: 2, missed: ['7 ' + X + ' 8'], knownItems: 8, knownFirstTry: 7};
+
+  it('is a group of its own, "Math facts", with its two activities by name, and is added as practice, never as a check', async () => {
+    const ccc = await one(csvOf(cccSession()));
+    const reh = await one(csvOf(rehearsalSession()));
+    expect([ccc.check, reh.check, ccc.percent, reh.percent, ccc.integrity, reh.integrity]).toEqual([undefined, undefined, 33, 75, 'ok', 'ok']);
+    expect(ccc.acts).toEqual({math_ccc: {n: 6, g: 6, f: 6, fc: 2, c: 6}});
+    expect(reh.acts).toEqual({math_rehearsal: {n: 12, g: 12, f: 12, fc: 9, c: 12, nf: 4, nfc: 2, nm: ['7 ' + X + ' 8'], kf: 8, kfc: 7}});
+    expect((await one(jsonOf(rehearsalSession()), 'r.json')).acts).toEqual(reh.acts);
+    const result = AC.apply([], [{session: ccc, name: 'Blue Heron'}, {session: reh, name: 'Blue Heron'}], make);
+    expect([result.added, result.created, result.probeAdds]).toEqual([2, 1, []]);
+    const added = result.students[0];
+    expect(added.screeningHistory).toEqual([]);
+    const summary = AC.summary(added.data.wordSoundsState);
+    expect(summary.sessions.map((s) => [s.src, s.pk, Object.keys(s.acts)])).toEqual([['th', X + ' 7 facts: cover, copy, compare', ['math_ccc']], ['th', X + ' 7 facts: new and known facts', ['math_rehearsal']]]);
+    // Under 50% right on the first try over 6 items flags a Word Sounds skill; a math fact being learned is not flagged.
+    expect(AC.bySkill(summary).map((k) => [k.key, k.allItems, k.firstTryCorrect, k.firstTryItems, k.needsSupport, k.activities.map((a) => [a.id, a.firstTryCorrect, a.firstTryItems, a.needsSupport])]))
+      .toEqual([['math_facts', 18, 11, 18, false, [['math_ccc', 2, 6, false], ['math_rehearsal', 9, 12, false]]]]);
+    expect(AC.overTime(AC.summary(added.data.wordSoundsState)).strands).toEqual(['math_facts']);
+    expect([AC.strandName(null, 'math_facts'), AC.activityName(null, 'math_ccc'), AC.activityName(null, 'math_rehearsal'), AC.strandName(null, '')])
+      .toEqual(['Math facts', 'Cover, copy, compare', 'Fact rehearsal', 'Other activities']);
+    expect(Object.entries(AC.mathActivities).map(([id, row]) => [AC.activityName(null, id), row[1]])).toEqual([['Cover, copy, compare', 'math_facts'], ['Fact rehearsal', 'math_facts']]);
+    // In the app language when the keys are registered.
+    const t = (key) => 'T:' + key;
+    expect([AC.strandName(t, 'math_facts'), AC.activityName(t, 'math_ccc'), AC.activityName(t, 'math_rehearsal')])
+      .toEqual(['T:class_analytics.th_mf_group', 'T:class_analytics.th_mf_activity_ccc', 'T:class_analytics.th_mf_activity_rehearsal']);
+    // The Word Sounds strands are untouched.
+    expect(AC.strands.map((r) => r[0])).not.toContain('math_facts');
+    const rows = AC.sessionCsv(result.students).rows;
+    expect(rows.slice(1).map((r) => [r[0], r[1], r[3], r[4], r[5], r[8], r[r.length - 1]])).toEqual([
+      ['Blue Heron', '2026-11-12', 'Cover, copy, compare', 'Math facts', 6, 33, 'Take-home file'],
+      ['Blue Heron', '2026-11-13', 'Fact rehearsal', 'Math facts', 12, 75, 'Take-home file']]);
+  });
+
+  it('a rehearsal file counts its new facts on their own, beside the overall figure, with the facts missed and the known facts after them', async () => {
+    const reh = await one(csvOf(rehearsalSession()));
+    const added = AC.apply([], [{session: reh, name: 'Blue Heron'}], make).students[0];
+    const summary = AC.summary(added.data.wordSoundsState);
+    expect(AC.recent(summary)[0]).toMatchObject({percent: 75, firstTryCorrect: 9, firstTryItems: 12, newFacts: SPLIT});
+    expect(AC.bySkill(summary)[0].activities[0].newFacts).toEqual(SPLIT);
+    // Kept with the student, and read back the same.
+    expect(AC.summary(AC.persistable(added).data.wordSoundsState)).toEqual(summary);
+    expect(AC.summary(JSON.parse(JSON.stringify(AC.persistable(added))).data.wordSoundsState)).toEqual(summary);
+    const html = AC.reportHtml(null, added.data.wordSoundsState);
+    for (const line of ['75% (9 of 12)', 'New facts: 2 of 4 right on the first try.', 'New facts missed on the first try: 7 ' + X + ' 8.', 'Known facts: 7 of 8 right on the first try.']) expect(html).toContain(line);
+    // No miss on a new fact: none listed.
+    const clean = AC.apply([], [{session: await one(csvOf(rehearsalSession([3], {sid: 'reh-2'}))), name: 'Blue Heron'}], make).students[0];
+    expect(AC.recent(AC.summary(clean.data.wordSoundsState))[0].newFacts).toEqual({...SPLIT, newFirstTry: 4, missed: []});
+    // A cover, copy, compare file, and a Word Sounds file, have no new facts and read as before.
+    for (const s of [cccSession(), makeSession()]) {
+      const plain = AC.apply([], [{session: await one(csvOf(s)), name: 'Blue Heron'}], make).students[0];
+      const sum = AC.summary(plain.data.wordSoundsState);
+      expect('newFacts' in AC.recent(sum)[0]).toBe(false);
+      expect(AC.bySkill(sum).every((k) => k.activities.every((a) => !('newFacts' in a)))).toBe(true);
+      expect(AC.reportHtml(null, plain.data.wordSoundsState)).not.toContain('New facts');
+    }
+    // Any other file whose item ids end in -new or -known is counted the same way.
+    const tagged = makeSession({sid: 'tagged', items: makeSession().items.map((it, i) => ({...it, id: it.activity + '-' + i + (i < 2 ? '-new' : '-known')}))});
+    expect((await one(csvOf(tagged))).acts).toEqual({isolation: {n: 3, g: 3, f: 3, fc: 1, c: 2, nf: 2, nfc: 1, nm: ['dog'], kf: 1}, blending: {n: 2, g: 2, f: 2, fc: 2, c: 2, kf: 2, kfc: 2}});
+  });
+
+  it('the same file as CSV and as JSON, or dropped again, is added once', async () => {
+    const s = rehearsalSession();
+    const files = () => [file(csvOf(s), 'r.csv'), file(jsonOf(s), 'r.json')];
+    const preview = await AC.preview(files(), [], null, {});
+    expect(preview.rows.map((r) => [r.file, r.status])).toEqual([['r.csv', 'new'], ['r.json', 'repeat']]);
+    const result = AC.apply([], preview.rows.map((r) => ({session: r.session, name: 'Blue Heron'})), make);
+    expect([result.added, result.created, result.probeAdds]).toEqual([1, 1, []]);
+    const again = await AC.preview(files(), result.students, null, {});
+    expect(again.rows.map((r) => r.status)).toEqual(['added', 'added']);
+    expect(AC.recent(AC.summary(result.students[0].data.wordSoundsState)).map((x) => x.newFacts)).toEqual([SPLIT]);
   });
 });
 

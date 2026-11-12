@@ -64,6 +64,16 @@
     sentence_match: ['Picture the Sentence', 'reading_sentences'],
     read_passage: ['Read the Story', 'reading_sentences'],
   };
+  // Math fact PRACTICE (packet_math_practice_builder.js), a group of its own. Not a Word Sounds
+  // strand, so it is not in the two copies above; never a check. A copy of _AC_MATH_FACT_STRANDS /
+  // _AC_MATH_FACT_ACTIVITIES in the dashboard: tests/packets_results_page.test.js compares them.
+  var MATH_STRANDS = [['math_facts', 'Math facts']];
+  var MATH_ACTIVITIES = {
+    math_ccc: ['Cover, copy, compare', 'math_facts'],
+    math_rehearsal: ['Fact rehearsal', 'math_facts'],
+  };
+  // Every group a practice result is counted in, in the order they are shown.
+  var GROUPS = STRANDS.concat(MATH_STRANDS, [OTHER_STRAND]);
   // The check measures and their units, named as the check files name them (packet_check_builder.js
   // MEASURES, and check_unit_* in the take-home loader). The test compares these too.
   var MEASURES = { quantity_discrimination: 'Quantity Discrimination', missing_number: 'Missing Number', math_dcpm: 'Math Fluency' };
@@ -206,17 +216,29 @@
     var d = new Date(ms);
     return !ms || isNaN(d.getTime()) ? '' : d.getFullYear() + '-' + two(d.getMonth() + 1) + '-' + two(d.getDate());
   }
-  // The file's activity ids are the take-home activity ids. Any other id is kept and shows under
-  // "Other activities"; an unusable one becomes 'unknown'.
+  // The file's activity ids are the take-home activity ids. The math practice ids show under
+  // "Math facts"; any other id is kept and shows under "Other activities"; an unusable one becomes 'unknown'.
   function activityId(value) { return idOf(value, 40) || 'unknown'; }
   function activityName(id, title) {
     if (own(ACTIVITIES, id)) return ACTIVITIES[id][0];
     if (title) return title;
+    if (own(MATH_ACTIVITIES, id)) return MATH_ACTIVITIES[id][0];
     if (!id || id === 'unknown') return 'Activity not recorded';
     var plain = String(id).replace(/_/g, ' ').trim();
     return plain.charAt(0).toUpperCase() + plain.slice(1);
   }
-  function strandOf(id) { return own(ACTIVITIES, id) ? ACTIVITIES[id][1] : OTHER_STRAND[0]; }
+  function strandOf(id) { return own(ACTIVITIES, id) ? ACTIVITIES[id][1] : own(MATH_ACTIVITIES, id) ? MATH_ACTIVITIES[id][1] : OTHER_STRAND[0]; }
+  // A file that folds a few new facts in among known ones (math_rehearsal; any file whose item ids end
+  // in -new or -known) is counted again for the new ones: most of its items are known facts, so the
+  // overall first-try count says little about how the new ones are going.
+  var MAX_MISSED = 8;
+  function roleOf(it) { var id = String(it.itemId || '').toLowerCase(); return /-new$/.test(id) ? 'new' : /-known$/.test(id) ? 'known' : ''; }
+  function newKnown() { return { items: 0, firstTry: 0, missed: [], knownItems: 0, knownFirstTry: 0 }; }
+  function addNewKnown(into, from) {
+    into.items += from.items; into.firstTry += from.firstTry; into.knownItems += from.knownItems; into.knownFirstTry += from.knownFirstTry;
+    from.missed.forEach(function (word) { if (into.missed.indexOf(word) < 0 && into.missed.length < MAX_MISSED) into.missed.push(word); });
+    return into;
+  }
 
   // ---------------------------------------------------------------------------
   // One answer, and the score block of a check
@@ -442,6 +464,13 @@
       a.graded++; graded++;
       if (it.correct) { a.correct++; correct++; }
       if (it.firstTry) { a.firstTry++; firstTry++; }
+      // An activity has newFacts only when its items say new or known.
+      var role = roleOf(it);
+      if (role) {
+        var nk = a.newFacts || (a.newFacts = newKnown());
+        if (role === 'known') { nk.knownItems++; if (it.firstTry) nk.knownFirstTry++; }
+        else { nk.items++; if (it.firstTry) nk.firstTry++; else if (it.word && nk.missed.indexOf(it.word) < 0 && nk.missed.length < MAX_MISSED) nk.missed.push(it.word); }
+      }
       if (it.digitsPossible !== null) { hasDigits = true; digits += it.digitsCorrect || 0; digitsPossible += it.digitsPossible; }
       if (!it.word) return;
       (it.correct ? it.responses.slice(0, -1) : it.responses).slice(0, 4).forEach(function (picked) {
@@ -455,12 +484,19 @@
     s.summary = { itemsInFile: s.items.length, done: done, given: given, attempted: graded, correct: correct, firstTry: firstTry,
       accuracyPct: percent(correct, given), firstTryPct: percent(firstTry, graded) };
     s.byActivity = order;
-    s.byStrand = STRANDS.concat([OTHER_STRAND]).map(function (row) {
+    s.byStrand = GROUPS.map(function (row) {
       var sum = { strand: row[0], name: row[1], graded: 0, correct: 0, firstTry: 0, firstTryPct: null };
-      order.forEach(function (a) { if (a.strand === row[0]) { sum.graded += a.graded; sum.correct += a.correct; sum.firstTry += a.firstTry; } });
+      order.forEach(function (a) {
+        if (a.strand !== row[0]) return;
+        sum.graded += a.graded; sum.correct += a.correct; sum.firstTry += a.firstTry;
+        if (a.newFacts) addNewKnown(sum.newFacts || (sum.newFacts = newKnown()), a.newFacts);
+      });
       sum.firstTryPct = percent(sum.firstTry, sum.graded);
       return sum;
     }).filter(function (sum) { return sum.graded > 0; });
+    // The new and known facts of the whole result, or null.
+    s.newFacts = null;
+    order.forEach(function (a) { if (a.newFacts) s.newFacts = addNewKnown(s.newFacts || newKnown(), a.newFacts); });
     s.wrong = wrongList;
     var probe = s.mode === 'probe';
     var st = probe ? s.stated : null;
@@ -733,7 +769,7 @@
         if (s.mode !== 'probe') {
           s.byStrand.forEach(function (row) {
             strandsSeen[row.strand] = true;
-            learner.strands[row.strand] = { value: row.firstTryPct, firstTry: row.firstTry, graded: row.graded, date: s.date, sessionId: s.sessionId };
+            learner.strands[row.strand] = { value: row.firstTryPct, firstTry: row.firstTry, graded: row.graded, date: s.date, sessionId: s.sessionId, newFacts: row.newFacts || null };
           });
           return;
         }
@@ -772,7 +808,7 @@
       }
     }
     return { learners: learners, count: (sessions || []).length, firstDate: first, lastDate: last,
-      strands: STRANDS.concat([OTHER_STRAND]).filter(function (row) { return strandsSeen[row[0]]; }),
+      strands: GROUPS.filter(function (row) { return strandsSeen[row[0]]; }),
       checks: checks, middles: middles, suggestions: suggestions,
       changed: (sessions || []).filter(function (s) { return s.integrity === 'changed'; }) };
   }
@@ -789,7 +825,8 @@
       learner.sessions.forEach(function (s) {
         if (s.mode === 'probe') return;
         s.byStrand.forEach(function (sum) {
-          if (sum.strand === row[0]) points.push({ sessionId: s.sessionId, date: s.date, value: sum.firstTryPct, detail: sum.firstTry + ' of ' + sum.graded + ' on the first try', form: '', attempt: null, flags: s.flags, session: s });
+          if (sum.strand === row[0]) points.push({ sessionId: s.sessionId, date: s.date, value: sum.firstTryPct, detail: sum.firstTry + ' of ' + sum.graded + ' on the first try', form: '', attempt: null, flags: s.flags, session: s,
+            newFacts: sum.newFacts || null });
         });
       });
       if (points.length) out.push({ key: 'strand\t' + row[0], kind: 'practice', name: row[1], unitName: FIRST_TRY_UNIT, percent: true, points: points, dates: datesOf(points), formKey: '' });
@@ -834,6 +871,7 @@
     VERSION: VERSION, FORMAT: FORMAT, BUNDLE_KIND: BUNDLE_KIND, BUNDLE_VERSION: BUNDLE_VERSION, MAX_BYTES: MAX_BYTES, MAX_FILES: MAX_FILES, MAX_ITEMS: MAX_ITEMS,
     MAX_SESSIONS: MAX_SESSIONS, MIN_GROUP: MIN_GROUP, MIN_GROUP_HALF: MIN_GROUP_HALF, NO_NAME: NO_NAME, COLUMNS: COLUMNS.slice(), PROBE_COLUMNS: PROBE_COLUMNS.slice(), SUMMARY_COLUMNS: SUMMARY_COLUMNS.slice(),
     STRANDS: STRANDS.map(function (row) { return row.slice(); }), OTHER_STRAND: OTHER_STRAND.slice(), ACTIVITIES: ACTIVITIES, MEASURES: MEASURES, UNITS: UNITS,
+    MATH_STRANDS: MATH_STRANDS.map(function (row) { return row.slice(); }), MATH_ACTIVITIES: MATH_ACTIVITIES,
     MEASURE_UNITS: MEASURE_UNITS, REASONS: REASONS,
     read: read, refuse: refuse, parseCsv: parseCsv, readCsv: readCsv, readJson: readJson, finish: finish, fnv1a: fnv1a, sha256: sha256, stamp: stamp, csvCell: csvCell,
     labelKey: labelKey, looksAlike: looksAlike, pairKey: pairKey, middle: middle, addUp: addUp, learnerSeries: learnerSeries, wrongAnswers: wrongAnswers,

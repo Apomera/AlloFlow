@@ -1285,19 +1285,38 @@ try {
     sentence_match: ['Picture the Sentence', 'reading_sentences'],
     read_passage: ['Read the Story', 'reading_sentences']
   };
+  // Math fact PRACTICE from a take-home file (packet_math_practice_builder.js):
+  // a group of its own, apart from the two Word Sounds copies above. Practice,
+  // never a check: never in probe or screening history. A copy of
+  // MATH_STRANDS / MATH_ACTIVITIES in packets_results_reader.js;
+  // tests/packets_results_page.test.js fails when the two differ.
+  var _AC_MATH_FACT_STRANDS = [
+    ['math_facts', 'Math facts']
+  ];
+  var _AC_MATH_FACT_ACTIVITIES = {
+    math_ccc: ['Cover, copy, compare', 'math_facts'],
+    math_rehearsal: ['Fact rehearsal', 'math_facts']
+  };
+  // The groups in the order shown; '' is "Other activities".
+  var _AC_WS_GROUP_KEYS = _AC_WS_STRANDS.concat(_AC_MATH_FACT_STRANDS).map(function(r) { return r[0]; }).concat(['']);
   var _AC_WS_SESSION_CAP = 60;
   function _acWsOwn(obj, key) { return !!obj && Object.prototype.hasOwnProperty.call(obj, key); }
-  function _acWsStrandOf(id) { return _acWsOwn(_AC_WS_ACTIVITIES, id) ? _AC_WS_ACTIVITIES[id][1] : ''; }
+  function _acWsStrandOf(id) {
+    return _acWsOwn(_AC_WS_ACTIVITIES, id) ? _AC_WS_ACTIVITIES[id][1] : _acWsOwn(_AC_MATH_FACT_ACTIVITIES, id) ? _AC_MATH_FACT_ACTIVITIES[id][1] : '';
+  }
   // The player's name for an activity. Pass no t for English (CSV files).
   function _acWsActivityName(t, id) {
     if (_acWsOwn(_AC_WS_ACTIVITIES, id)) return _acWsText(t, 'word_sounds.activity_' + id, _AC_WS_ACTIVITIES[id][0]);
+    if (id === 'math_ccc') return _acWsText(t, 'class_analytics.th_mf_activity_ccc', 'Cover, copy, compare');
+    if (id === 'math_rehearsal') return _acWsText(t, 'class_analytics.th_mf_activity_rehearsal', 'Fact rehearsal');
     if (!id || id === 'unknown') return _acWsText(t, 'class_analytics.ws_activity_not_recorded', 'Activity not recorded');
     var plain = String(id).replace(/_/g, ' ').trim();
     return plain ? plain.charAt(0).toUpperCase() + plain.slice(1) : '';
   }
   function _acWsStrandName(t, key) {
     var row = _AC_WS_STRANDS.filter(function(r) { return r[0] === key; })[0];
-    return row ? _acWsText(t, 'word_sounds.strand_' + key, row[1]) : _acWsText(t, 'class_analytics.ws_other_activities', 'Other activities');
+    if (row) return _acWsText(t, 'word_sounds.strand_' + key, row[1]);
+    return key === 'math_facts' ? _acWsText(t, 'class_analytics.th_mf_group', 'Math facts') : _acWsText(t, 'class_analytics.ws_other_activities', 'Other activities');
   }
   function _acWsNum(value) { var n = Number(value); return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0; }
   // One activity inside one session, as stored (short keys, zeros left out):
@@ -1306,19 +1325,50 @@ try {
   //   retries), x extra-practice items, xe how extra practice ended,
   //   s items that say which supports were shown, st word in print, sl letter
   //   hints, sp picture, sa picture symbols (AAC), sk anchor card, d difficulty.
+  //   A take-home file whose item ids end in -new or -known (math_rehearsal):
+  //   nf new-fact items, nfc of those right on the first try, nm the new facts
+  //   missed on the first try, kf known-fact items, kfc of those right on the first try.
   function _acWsAct(e) {
     e = e && typeof e === 'object' ? e : {};
     return { n: _acWsNum(e.n), g: _acWsNum(e.g), f: _acWsNum(e.f), fc: _acWsNum(e.fc), c: _acWsNum(e.c), x: _acWsNum(e.x),
       xe: e.xe === 'recovered' || e.xe === 'limit' ? e.xe : '',
       s: _acWsNum(e.s), st: _acWsNum(e.st), sl: _acWsNum(e.sl), sp: _acWsNum(e.sp), sa: _acWsNum(e.sa), sk: _acWsNum(e.sk),
-      d: (Array.isArray(e.d) ? e.d : []).filter(function(v) { return typeof v === 'string' && v; }).slice(0, 3).map(function(v) { return v.slice(0, 16); }) };
+      d: (Array.isArray(e.d) ? e.d : []).filter(function(v) { return typeof v === 'string' && v; }).slice(0, 3).map(function(v) { return v.slice(0, 16); }),
+      nf: _acWsNum(e.nf), nfc: _acWsNum(e.nfc), kf: _acWsNum(e.kf), kfc: _acWsNum(e.kfc),
+      nm: (Array.isArray(e.nm) ? e.nm : []).filter(function(v) { return typeof v === 'string' && v; }).slice(0, 8).map(function(v) { return v.slice(0, 40); }) };
   }
   function _acWsActStored(a) {
     var out = {};
-    ['n', 'g', 'f', 'fc', 'c', 'x', 's', 'st', 'sl', 'sp', 'sa', 'sk'].forEach(function(k) { if (a[k]) out[k] = a[k]; });
+    ['n', 'g', 'f', 'fc', 'c', 'x', 's', 'st', 'sl', 'sp', 'sa', 'sk', 'nf', 'nfc', 'kf', 'kfc'].forEach(function(k) { if (a[k]) out[k] = a[k]; });
     if (a.xe) out.xe = a.xe;
     if (a.d.length) out.d = a.d;
+    if (a.nm.length) out.nm = a.nm;
     return out;
+  }
+  // The new and known facts of some activities added up, or null when no item
+  // said new or known. The overall first-try figure stays the main one.
+  function _acMfSplit(acts) {
+    var out = { newItems: 0, newFirstTry: 0, missed: [], knownItems: 0, knownFirstTry: 0 };
+    (Array.isArray(acts) ? acts : []).forEach(function(e) {
+      var a = _acWsAct(e);
+      out.newItems += a.nf; out.newFirstTry += a.nfc; out.knownItems += a.kf; out.knownFirstTry += a.kfc;
+      a.nm.forEach(function(word) { if (out.missed.indexOf(word) < 0 && out.missed.length < 8) out.missed.push(word); });
+    });
+    return out.newItems || out.knownItems ? out : null;
+  }
+  // The split as lines of text: new facts first, then those missed, then the known facts.
+  function _acMfSplitLines(t, split, withMissed) {
+    if (!split) return [];
+    var lines = [];
+    if (split.newItems) lines.push(_acWsText(t, 'class_analytics.th_mf_new_facts', 'New facts: {correct} of {items} right on the first try.', { correct: split.newFirstTry, items: split.newItems }));
+    if (withMissed && split.missed.length) lines.push(_acWsText(t, 'class_analytics.th_mf_new_missed', 'New facts missed on the first try: {facts}.', { facts: split.missed.join(', ') }));
+    if (split.knownItems) lines.push(_acWsText(t, 'class_analytics.th_mf_known_facts', 'Known facts: {correct} of {items} right on the first try.', { correct: split.knownFirstTry, items: split.knownItems }));
+    return lines;
+  }
+  // The same lines as small text under a table cell's figure. `h` is React.createElement.
+  function _acMfSplitSpans(h, t, split, withMissed) {
+    var lines = _acMfSplitLines(t, split, withMissed);
+    return lines.length ? lines.map(function(line, i) { return h('span', { key: 'mf' + i, 'data-mf-line': 'true', className: 'block text-[11px] font-normal text-slate-700 whitespace-normal' }, line); }) : null;
   }
   // Sessions, activities and wrong answers, read from every saved row before
   // the 40-row cut. A summary saved with the student already counted the rows
@@ -1446,7 +1496,7 @@ try {
       });
     });
     dates.sort();
-    var strands = _AC_WS_STRANDS.map(function(r) { return r[0]; }).concat(['']).filter(function(key) { return _acWsOwn(strandsSeen, key); });
+    var strands = _AC_WS_GROUP_KEYS.filter(function(key) { return _acWsOwn(strandsSeen, key); });
     return { strands: strands, rows: dates.slice(-(limit || 12)).map(function(date) {
       var day = byDate[date];
       var cells = {};
@@ -1470,28 +1520,38 @@ try {
       // Under 50% right on the first try, over at least 6 items.
       needsSupport: f >= 6 && fc / f < 0.5 };
   }
-  // The six strands that have items, in teaching order, each with its activities.
+  // The six strands that have items, in teaching order, each with its
+  // activities; then math facts, then other activities.
   function _acWsBySkill(summary) {
     var acts = {};
     var order = [];
     (summary && Array.isArray(summary.sessions) ? summary.sessions : []).forEach(function(s) {
       Object.keys(s.acts || {}).forEach(function(id) {
         var a = _acWsAct(s.acts[id]);
-        if (!_acWsOwn(acts, id)) { acts[id] = { n: 0, g: 0, f: 0, fc: 0, c: 0, x: 0 }; order.push(id); }
-        ['n', 'g', 'f', 'fc', 'c', 'x'].forEach(function(k) { acts[id][k] += a[k]; });
+        if (!_acWsOwn(acts, id)) { acts[id] = { n: 0, g: 0, f: 0, fc: 0, c: 0, x: 0, nf: 0, nfc: 0, kf: 0, kfc: 0, nm: [] }; order.push(id); }
+        ['n', 'g', 'f', 'fc', 'c', 'x', 'nf', 'nfc', 'kf', 'kfc'].forEach(function(k) { acts[id][k] += a[k]; });
+        a.nm.forEach(function(word) { if (acts[id].nm.indexOf(word) < 0 && acts[id].nm.length < 8) acts[id].nm.push(word); });
       });
     });
-    var known = Object.keys(_AC_WS_ACTIVITIES);
+    var known = Object.keys(_AC_WS_ACTIVITIES).concat(Object.keys(_AC_MATH_FACT_ACTIVITIES));
     order.sort(function(a, b) { return (known.indexOf(a) < 0 ? 99 : known.indexOf(a)) - (known.indexOf(b) < 0 ? 99 : known.indexOf(b)); });
-    return _AC_WS_STRANDS.map(function(r) { return r[0]; }).concat(['']).map(function(key) {
+    return _AC_WS_GROUP_KEYS.map(function(key) {
       var mine = order.filter(function(id) { return _acWsStrandOf(id) === key; });
       var total = { n: 0, g: 0, f: 0, fc: 0, c: 0, x: 0 };
+      // Math fact practice is never flagged: a fact being learned is expected to be missed at first.
+      var practiceOnly = key === 'math_facts';
       var activities = mine.map(function(id) {
         var a = acts[id];
         ['n', 'g', 'f', 'fc', 'c', 'x'].forEach(function(k) { total[k] += a[k]; });
-        return Object.assign({ id: id, allItems: a.n, correct: a.c, extra: a.x }, _acWsFirstTryCell(a.g, a.f, a.fc));
+        var row = Object.assign({ id: id, allItems: a.n, correct: a.c, extra: a.x }, _acWsFirstTryCell(a.g, a.f, a.fc));
+        if (practiceOnly) row.needsSupport = false;
+        var split = _acMfSplit([a]);
+        if (split) row.newFacts = split;
+        return row;
       });
-      return Object.assign({ key: key, allItems: total.n, correct: total.c, extra: total.x, activities: activities }, _acWsFirstTryCell(total.g, total.f, total.fc));
+      var strand = Object.assign({ key: key, allItems: total.n, correct: total.c, extra: total.x, activities: activities }, _acWsFirstTryCell(total.g, total.f, total.fc));
+      if (practiceOnly) strand.needsSupport = false;
+      return strand;
     }).filter(function(strand) { return strand.activities.length > 0; });
   }
   // Newest first. `extra` counts the extra-practice items given in the session.
@@ -1505,8 +1565,11 @@ try {
         ['g', 'f', 'fc', 'x'].forEach(function(k) { total[k] += a[k]; });
         if (a.x) extraIn.push(id);
       });
-      return Object.assign({ number: s.n, date: s.start ? _acLocalDate(s.start) : '', activities: ids, extra: total.x, extraIn: extraIn,
+      var row = Object.assign({ number: s.n, date: s.start ? _acLocalDate(s.start) : '', activities: ids, extra: total.x, extraIn: extraIn,
         takeHome: s.src === 'th', packet: s.src === 'th' && s.pk ? s.pk : '', edited: s.src === 'th' && s.ig === 'changed', dateFromFile: s.src === 'th' && !!s.df }, _acWsFirstTryCell(total.g, total.f, total.fc));
+      var split = _acMfSplit(ids.map(function(id) { return s.acts[id]; }));
+      if (split) row.newFacts = split;
+      return row;
     });
   }
   function _acWsWrongList(summary, limit) {
@@ -1611,15 +1674,19 @@ try {
         heads.map(function(h) { return '<th scope="col" style="' + cell + 'color:#475569">' + _acWsEsc(h) + '</th>'; }).join('') + '</tr></thead><tbody>' + lines.join('') + '</tbody></table></div>';
     };
     var skillLines = [];
+    // New and known facts, each on a line under the first-try figure.
+    var splitHtml = function(split, withMissed) {
+      return _acMfSplitLines(t, split, withMissed).map(function(line) { return '<span data-mf-line="true" style="display:block;font-size:12px;color:#475569">' + _acWsEsc(line) + '</span>'; }).join('');
+    };
     skills.forEach(function(strand) {
       skillLines.push('<tr><th scope="row" style="' + cell + 'font-weight:700">' + _acWsEsc(_acWsStrandName(t, strand.key)) + '</th><td style="' + cell + '">' + strand.allItems + '</td><td style="' + cell + '">' + _acWsEsc(_acWsFirstTryText(t, strand)) + '</td></tr>');
       strand.activities.forEach(function(a) {
-        skillLines.push('<tr><th scope="row" style="' + cell + 'font-weight:400;padding-left:26px;color:#475569">' + _acWsEsc(_acWsActivityName(t, a.id)) + '</th><td style="' + cell + 'color:#475569">' + a.allItems + '</td><td style="' + cell + 'color:#475569">' + _acWsEsc(_acWsFirstTryText(t, a)) + '</td></tr>');
+        skillLines.push('<tr><th scope="row" style="' + cell + 'font-weight:400;padding-left:26px;color:#475569">' + _acWsEsc(_acWsActivityName(t, a.id)) + '</th><td style="' + cell + 'color:#475569">' + a.allItems + '</td><td style="' + cell + 'color:#475569">' + _acWsEsc(_acWsFirstTryText(t, a)) + splitHtml(a.newFacts, false) + '</td></tr>');
       });
     });
     var sessionLines = _acWsRecentSessions(summary, 8).map(function(s) {
       return '<tr><th scope="row" style="' + cell + 'font-weight:600">' + _acWsEsc((s.date || _acWsText(t, 'class_analytics.ws_date_not_recorded', 'date not recorded')) + (s.takeHome ? ' · ' + _acWsWhereText(t, 'th') : '')) + '</th><td style="' + cell + '">' +
-        _acWsEsc(s.activities.map(function(id) { return _acWsActivityName(t, id); }).join(', ')) + '</td><td style="' + cell + '">' + _acWsEsc(_acWsFirstTryText(t, s)) + '</td><td style="' + cell + '">' + (s.extra || 0) + '</td></tr>';
+        _acWsEsc(s.activities.map(function(id) { return _acWsActivityName(t, id); }).join(', ')) + '</td><td style="' + cell + '">' + _acWsEsc(_acWsFirstTryText(t, s)) + splitHtml(s.newFacts, true) + '</td><td style="' + cell + '">' + (s.extra || 0) + '</td></tr>';
     });
     var over = _acWsOverTime(summary, 12);
     var overHtml = over.rows.length < 2 ? '' : table(_acWsText(t, 'class_analytics.th_over_time_heading', 'Word Sounds over time'),
@@ -1657,7 +1724,7 @@ try {
         skillRows.push(h('tr', { key: 'a-' + a.id, 'data-ws-activity': a.id },
           h('th', { scope: 'row', className: td + ' font-normal text-left pl-6' }, _acWsActivityName(t, a.id)),
           h('td', { className: td }, a.allItems),
-          h('td', { className: td }, _acWsFirstTryText(t, a), flag(a))));
+          h('td', { className: td }, _acWsFirstTryText(t, a), flag(a), _acMfSplitSpans(h, t, a.newFacts, false))));
       });
     });
     var skillHeading = _acWsText(t, 'class_analytics.ws_by_skill_heading', 'Word Sounds by skill');
@@ -1689,7 +1756,7 @@ try {
                 s.edited ? h('span', { className: 'block text-[11px] font-normal text-slate-700 whitespace-normal' }, _acWsText(t, 'class_analytics.th_edited_short', 'File edited after it was saved')) : null,
                 s.dateFromFile ? h('span', { className: 'block text-[11px] font-normal text-slate-700 whitespace-normal' }, _acWsText(t, 'class_analytics.th_date_from_file', 'Date from the file, not from the results')) : null),
               h('td', { className: td }, s.activities.map(function(id) { return _acWsActivityName(t, id); }).join(', ')),
-              h('td', { className: td }, _acWsFirstTryText(t, s)),
+              h('td', { className: td }, _acWsFirstTryText(t, s), _acMfSplitSpans(h, t, s.newFacts, true)),
               h('td', { className: td, 'data-ws-more-practice': s.extra ? String(s.extra) : '0' }, s.extra ? _acWsMorePracticeText(t, s) : '–'));
           })))),
         h('button', {
@@ -1855,6 +1922,10 @@ try {
     var item = { activity: activity, word: _acThText(raw.word, 40), target: _acThText(raw.target, 40), responses: responses, correct: correct,
       firstTry: correct && raw.firstTry === true, practice: raw.scored === false || activity === 'letter_tracing',
       attempted: raw.done === true || tries > 0 || responses.length > 0 || correct };
+    // An item id ending in -new or -known (math_rehearsal): a new fact, or one the learner knows.
+    var itemId = _acThText(raw.itemId, 80).toLowerCase();
+    if (/-new$/.test(itemId)) item.role = 'new';
+    else if (/-known$/.test(itemId)) item.role = 'known';
     // A check also says, per item, how many digits were right and how many there were.
     if (raw.digits) { item.digitsCorrect = _acCkCount(raw.digits[0]); item.digitsPossible = _acCkCount(raw.digits[1]); }
     return item;
@@ -1940,7 +2011,7 @@ try {
         .map(function(text) { return '"' + text.replace(/"/g, '""') + '"'; }).join(','));
       var scored = _acThText(get('scored'), 8);
       var cellAt = function(i) { return i >= 0 && row[i] != null ? _acThUnguard(String(row[i])) : ''; };
-      group.items.push(_acThItem({ activity: get('activity'), word: get('word'), target: get('target'), responses: get('responses').split(' | '),
+      group.items.push(_acThItem({ itemId: get('item_id'), activity: get('activity'), word: get('word'), target: get('target'), responses: get('responses').split(' | '),
         correct: _acThYes(get('correct')), firstTry: _acThYes(get('first_try')), tries: get('tries'), scored: scored === '' ? true : _acThYes(scored),
         digits: group.mode === 'probe' ? [cellAt(digitsAt.digits_correct), cellAt(digitsAt.digits_possible)] : null }));
     });
@@ -1998,7 +2069,7 @@ try {
       stamps: [data.finishedLocal, data.finishedAt, data.startedLocal, data.startedAt], startedText: _acThText(data.startedLocal, 40) || _acThText(data.startedAt, 40),
       prefix: [packet.id, packet.version, packet.form, data.sessionId].map(_acThScalar).join('|').slice(0, 600),
       items: rawItems.map(function(it) {
-        return _acThItem({ activity: _acThScalar(it.activity) || (version === 1 ? 'isolation' : ''), word: it.word, target: it.target, responses: it.responses,
+        return _acThItem({ itemId: it.itemId, activity: _acThScalar(it.activity) || (version === 1 ? 'isolation' : ''), word: it.word, target: it.target, responses: it.responses,
           correct: it.correct === true, firstTry: it.firstTry === true, tries: it.attempts != null ? it.attempts : it.tries, done: it.done === true,
           scored: !(it.scored === false || it.practice), digits: probe ? [it.digitsCorrect, it.digitsPossible] : null });
       }), lines: lines, integrity: integrity, mode: probe ? 'probe' : _acThText(packet.mode, 12).toLowerCase(), form: _acThText(packet.form, 20),
@@ -2023,6 +2094,12 @@ try {
       a.g++; a.f++; graded++;
       if (it.correct) a.c++;
       if (it.firstTry) { a.fc++; firstTry++; }
+      if (it.role === 'known') { a.kf++; if (it.firstTry) a.kfc++; }
+      else if (it.role === 'new') {
+        a.nf++;
+        if (it.firstTry) a.nfc++;
+        else if (it.word && a.nm.indexOf(it.word) < 0 && a.nm.length < 8) a.nm.push(it.word);
+      }
       if (!it.word) return;
       (it.correct ? it.responses.slice(0, -1) : it.responses).slice(0, 4).forEach(function(picked) {
         if (picked === it.target) return;
@@ -2393,7 +2470,8 @@ try {
               : h('td', { className: td }, s.done === s.given ? s.done : _acWsText(t, 'class_analytics.th_items_done_of', '{done} of {given} done', { done: s.done, given: s.given })),
             c ? h('td', { className: td, 'data-th-ck-score': c.score === null ? 'none' : String(c.score) }, _acCkScoreText(t, c))
               : h('td', { className: td }, s.percent === null ? _acWsText(t, 'class_analytics.ws_practice_only', 'practice only')
-              : _acWsText(t, 'class_analytics.ws_first_try_cell', '{percent}% ({correct} of {items})', { percent: s.percent, correct: s.firstTryCorrect, items: s.firstTryItems })),
+              : _acWsText(t, 'class_analytics.ws_first_try_cell', '{percent}% ({correct} of {items})', { percent: s.percent, correct: s.firstTryCorrect, items: s.firstTryItems }),
+                _acMfSplitSpans(h, t, _acMfSplit(Object.keys(s.acts || {}).map(function(id) { return s.acts[id]; })), true)),
             h('td', { className: td }, h('strong', null, _acThStatusText(t, row)),
               h('span', { className: small }, (s.integrity === 'changed' ? '⚠ ' : '') + _acThCheckText(t, s.integrity)),
               // The flags come first and carry the warning mark; the other notes are plain.

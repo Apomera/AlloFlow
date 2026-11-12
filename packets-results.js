@@ -106,6 +106,16 @@
     });
   }
   function hasLoudNote(flags) { return flags.some(function (flag) { return !own(QUIET, flag); }); }
+  // A practice file that folds new facts in among known ones (newFacts from the reader): how the new
+  // ones went, shown beside the overall line; the known facts come last.
+  function newFactsLines(nk) {
+    if (!nk) return [];
+    var lines = [];
+    if (nk.items) lines.push('New facts: ' + nk.firstTry + ' of ' + nk.items + ' on the first try.');
+    if (nk.missed.length) lines.push('New facts missed on the first try: ' + nk.missed.join(', ') + '.');
+    if (nk.knownItems) lines.push('Known facts: ' + nk.knownFirstTry + ' of ' + nk.knownItems + ' on the first try.');
+    return lines;
+  }
   function learnerNamed(key) { return model ? model.learners.filter(function (row) { return row.key === key; })[0] || null : null; }
   function labelFor(key) {
     var found = '';
@@ -386,7 +396,12 @@
     ];
     model.strands.forEach(function (strand) {
       columns.push({ id: 's:' + strand[0], label: strand[1], group: 'practice', number: true, value: function (row) { var cell = row.strands[strand[0]]; return cell ? cell.value : null; },
-        cell: function (row) { var cell = row.strands[strand[0]]; return cell ? [cell.value + '%', cell.firstTry + ' of ' + cell.graded] : null; } });
+        cell: function (row) {
+          var cell = row.strands[strand[0]];
+          if (!cell) return null;
+          var nk = cell.newFacts;
+          return [cell.value + '%', cell.firstTry + ' of ' + cell.graded].concat(nk && nk.items ? ['new facts ' + nk.firstTry + ' of ' + nk.items] : []);
+        } });
     });
     model.checks.forEach(function (series) {
       columns.push({ id: 'c:' + series.key, label: series.label, sub: series.unitName, group: 'checks', number: true, value: function (row) { var cell = row.checks[series.key]; return cell ? cell.value : null; },
@@ -454,7 +469,7 @@
         if (!column.group) return;
         var parts = column.cell(learner);
         var td = el('td', 'num');
-        if (parts) add(td, el('span', 'cell-value', parts[0]), parts[1] ? el('span', 'cell-sub', parts[1]) : null);
+        if (parts) parts.forEach(function (part, i) { if (part) add(td, el('span', i ? 'cell-sub' : 'cell-value', part)); });
         else add(td, el('span', 'sr-only', 'No result'));
         row.appendChild(td);
       });
@@ -545,7 +560,14 @@
     var body = el('tbody');
     rows.forEach(function (cells) {
       var row = el('tr');
-      cells.forEach(function (text, i) { var cell = el(i ? 'td' : 'th', '', text); if (!i) cell.scope = 'row'; row.appendChild(cell); });
+      // A cell is text, or a list: its first line, then smaller lines under it.
+      cells.forEach(function (text, i) {
+        var lines = Array.isArray(text) ? text : [text];
+        var cell = el(i ? 'td' : 'th', '', lines[0]);
+        lines.slice(1).forEach(function (line) { add(cell, el('span', 'cell-sub', line)); });
+        if (!i) cell.scope = 'row';
+        row.appendChild(cell);
+      });
       body.appendChild(row);
     });
     var scroll = el('div', 'table-scroll' + (size === 'narrow' ? ' table-narrow' : ''));
@@ -604,7 +626,8 @@
     var check = series.kind === 'check';
     var table = plainTable(series.name + ': each result', ['Date', sentence(series.unitName), 'Details', 'Notes'], series.points.map(function (p) {
       var details = (check ? (p.form ? 'Form ' + p.form + ', ' : '') + (p.attempt ? 'try ' + p.attempt + '. ' : '') : '') + sentence(p.detail) + '.';
-      return [showDate(p.date), valueText(p.value, series.percent), details, sentence(notesOf(p.session).join('; '))];
+      var more = check ? [] : newFactsLines(p.newFacts);
+      return [showDate(p.date), valueText(p.value, series.percent), more.length ? [details].concat(more) : details, sentence(notesOf(p.session).join('; '))];
     }), 'measure');
     // The chart and its goal on one side, the same numbers as a table on the other (under it on a narrow screen).
     return add(card, add(el('div', 'measure-body'), add(el('div', 'measure-side'), holder, add(field, label, input, hint), goalLine), table));
@@ -633,7 +656,8 @@
         var probe = s.mode === 'probe';
         var what = probe ? s.measureName + (s.form ? ', form ' + s.form : '') + (s.attempt ? ', try ' + s.attempt : '') : 'Practice: ' + s.title;
         var result = probe ? (s.value === null ? 'No score' : s.value + ' ' + s.unitName) : s.summary.firstTryPct === null ? 'Not scored' : s.summary.firstTryPct + '% on the first try';
-        return [showDate(s.date), what, result, s.summary.attempted + ' of ' + s.summary.given, timeTaken(s.durationS), sentence(notesOf(s).join('; '))];
+        var more = probe ? [] : newFactsLines(s.newFacts);
+        return [showDate(s.date), what, more.length ? [result].concat(more) : result, s.summary.attempted + ' of ' + s.summary.given, timeTaken(s.durationS), sentence(notesOf(s).join('; '))];
       }), 'wide'));
   }
 

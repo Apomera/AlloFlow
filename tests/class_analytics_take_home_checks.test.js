@@ -37,7 +37,7 @@ const AC = new Function(
   '\nreturn {readFile: _acThReadFile, preview: _acThPreview, apply: _acThApply, remove: _acThRemove, ready: _acThReady, newStudent: _acThNewStudent, sessionIds: _acThSessionIds,' +
   ' persistable: _acPersistableStudent, record: _acCkRecord, supervised: _acCkSupervised, overTime: _acCkOverTime, card: _acCkOverTimeCard, panel: _acThPreviewPanel,' +
   ' notes: _acCkNotes, scoreText: _acCkScoreText, groupName: _acCkGroupName, removeFromStore: _acCkRemoveFromProbeStore, addToStore: _acCkAddToProbeStore,' +
-  ' libs: _acCkLibs, buildForm: _acCkBuildForm, buildCustom: _acCkBuildCustom, fileLabels: _acCkFileLabels, reasonText: _acThReasonText};')();
+  ' libs: _acCkLibs, buildForm: _acCkBuildForm, buildCustom: _acCkBuildCustom, fileLabels: _acCkFileLabels, reasonText: _acThReasonText, studentTables: _acWsStudentTables};')();
 
 // The two scripts the app fetches with window.__alloLoadPlugin.
 const loadLoader = () => new Function(loaderSource)();
@@ -408,6 +408,89 @@ describe('a take-home result is shown, marked, and never compared', () => {
 });
 
 // ── The calculations that must never see a result from home ──
+describe('math fact practice is practice, never a check', () => {
+  const MP = require(resolve('packet_math_practice_builder.js'));
+  const X = String.fromCharCode(0xD7);
+  // A file made by the math practice builder with the loader, its cards answered and saved by the loader's own writer.
+  // misses: the cards (0-based) not right on the first try; each is typed one too high, then right. The x 7 rehearsal
+  // file has 12 cards: 7 x 8 is the new fact (cards 0, 2, 5, 9), the other 8 are known facts.
+  const practiceFile = (mode, misses, sid) => {
+    const lesson = MP.lessonFromMathPractice({loader: TH, mode, factSet: 'mul-7'});
+    const block = lesson.blocks[0];
+    const result = {kind: 'alloflow-take-home-result', schemaVersion: 3, player: 'alloflow-word-sounds-take-home/2', sessionId: sid,
+      packet: {id: lesson.lessonId, version: lesson.revision, engine: 'alloflow-packet/1', form: '', mode: 'practice'}, lessonId: lesson.lessonId, revision: lesson.revision,
+      lessonTitle: lesson.title, activityTitles: lesson.activityTitles, learner: 'BlueHeron7', learnerName: 'BlueHeron7',
+      startedAt: '2026-11-12T14:14:05.000Z', finishedAt: '2026-11-12T14:16:05.000Z', startedLocal: '2026-11-12T09:14:05-05:00', finishedLocal: '2026-11-12T09:16:05-05:00',
+      durationMs: 120000, timesAreFromTheLearnerDevice: true,
+      items: block.items.map((it, i) => ({n: i + 1, itemId: it.id, activity: block.activity, word: it.word, target: it.target,
+        responses: misses.includes(i) ? [String(Number(it.answer) + 1), it.answer] : [it.answer], attempts: misses.includes(i) ? 2 : 1, firstTry: !misses.includes(i),
+        correct: true, done: true, ms: 2400, supports: misses.includes(i) ? {copied: 1} : {}, practice: null, flag: ''}))};
+    const table = TH.resultsCsv(result);
+    const integrity = {method: 'sha256', value: TH.sha256(table.basis).hex};
+    return {csv: table.text(integrity), csvName: table.stem + '.csv', json: JSON.stringify({...result, integrity: {...integrity, note: 'detects accidental edits, not deliberate ones'}}), jsonName: table.stem + '.json'};
+  };
+  const t = (k) => k;
+  const render = (element) => { const host = document.createElement('div'); host.innerHTML = renderToStaticMarkup(element); return host; };
+  // A cell's lines: its own text, then each line under it.
+  const lines = (cell) => [...cell.childNodes].filter((node) => node.nodeType !== 8).map((node) => node.textContent);
+  const NEW_LINES = ['New facts: 2 of 4 right on the first try.', 'New facts missed on the first try: 7 ' + X + ' 8.', 'Known facts: 7 of 8 right on the first try.'];
+  let ccc, reh;
+  beforeAll(() => { ccc = practiceFile('ccc', [3], 'mf-ccc'); reh = practiceFile('rehearsal', [2, 3, 9], 'mf-reh'); });
+
+  it('the files hold practice from the builder: no score line, every card with its role', () => {
+    expect(ccc.csv).toContain('"math_ccc-01","math_ccc","Cover, copy, compare"');
+    expect(reh.csv).toContain('"math_rehearsal-01-new","math_rehearsal","Fact rehearsal"');
+    expect(reh.csv).toContain('"math_rehearsal-02-known"');
+    for (const f of [ccc, reh]) expect([f.csv.includes('"#score"'), f.csv.includes('"practice"'), f.csv.includes('"probe"')]).toEqual([false, true, false]);
+  });
+
+  it('the preview lists it as practice, with the new facts of a rehearsal file under its first-try figure', async () => {
+    const store = {BlueHeron7: [SUPERVISED_MATH(3, 30)]};
+    const preview = await AC.preview([file(ccc.csv, ccc.csvName), file(reh.json, reh.jsonName)], [student('s1', 'BlueHeron7')], null, {}, store);
+    expect(preview.rows.map((r) => [r.status, r.skip, r.choice, r.session.check, r.session.integrity])).toEqual([['new', false, 'BlueHeron7', undefined, 'ok'], ['new', false, 'BlueHeron7', undefined, 'ok']]);
+    const host = render(AC.panel(React.createElement, t, {busy: false, done: null, ...preview}, {onFiles() {}, onChoice() {}, onSkip() {}, onAddAll() {}, onClose() {}}));
+    expect([...host.querySelectorAll('thead th')].map((th) => th.textContent)[5]).toBe('Right on the first try');
+    const rows = [...host.querySelectorAll('tbody tr')];
+    expect(rows.map((row) => [row.getAttribute('data-th-kind'), row.children[2].textContent])).toEqual([['practice', X + ' 7 facts: cover, copy, compare'], ['practice', X + ' 7 facts: new and known facts']]);
+    expect(rows.map((row) => lines(row.children[5]))).toEqual([['90% (9 of 10)'], ['75% (9 of 12)', ...NEW_LINES]]);
+    expect(host.querySelector('[data-th-ck-hint]')).toBeNull();
+    expect(host.textContent).not.toMatch(/digits correct|items correct|\bscore\b/i);
+  });
+
+  it('is added to the learner\'s practice sessions, never to probe or screening history, and makes no check table', async () => {
+    const sessions = [await read(ccc.csv, ccc.csvName), await read(reh.csv, reh.csvName)];
+    const store = {BlueHeron7: [SUPERVISED_MATH(3, 30)]};
+    const before = JSON.stringify(store);
+    const picks = sessions.map((session) => ({session, name: 'BlueHeron7'}));
+    const result = AC.apply([student('s1', 'BlueHeron7', {screeningHistory: [SUPERVISED_MN(3, 12)]})], picks, make, store);
+    expect([result.added, result.created, result.probeAdds]).toEqual([2, 0, []]);
+    const row = result.students[0];
+    expect(row.screeningHistory).toEqual([SUPERVISED_MN(3, 12)]);
+    expect(JSON.stringify(store)).toBe(before);
+    expect(AC.supervised(store)).toBe(store);
+    expect(AC.overTime(row, store)).toEqual([]);
+    expect(AC.card(React.createElement, t, row, store)).toBeNull();
+    expect(AC.persistable(row).screeningHistory).toEqual([SUPERVISED_MN(3, 12)]);
+    // Counted once: the same files again add nothing.
+    const ids = AC.sessionIds(result.students, store);
+    expect(sessions.every((s) => ids['x' + s.id])).toBe(true);
+    expect(AC.apply(result.students, picks, make, store).added).toBe(0);
+    // The student's page: "Math facts" with its two activities, never flagged, and the new facts beside the overall line.
+    const host = render(AC.studentTables(React.createElement, t, row, {}));
+    const skill = [...host.querySelectorAll('[data-ws-by-skill] tbody tr')];
+    expect(skill.map((tr) => [tr.getAttribute('data-ws-strand') || tr.getAttribute('data-ws-activity'), tr.children[0].textContent, tr.children[1].textContent, lines(tr.children[2])])).toEqual([
+      ['math_facts', 'Math facts', '22', ['82% (18 of 22)']],
+      ['math_ccc', 'Cover, copy, compare', '10', ['90% (9 of 10)']],
+      ['math_rehearsal', 'Fact rehearsal', '12', ['75% (9 of 12)', NEW_LINES[0], NEW_LINES[2]]]]);
+    expect(host.querySelector('[data-ws-needs-support]')).toBeNull();
+    const recent = [...host.querySelectorAll('[data-ws-recent-sessions] tbody tr')];
+    expect(recent.map((tr) => [tr.children[1].textContent, lines(tr.children[2])])).toEqual([['Fact rehearsal', ['75% (9 of 12)', ...NEW_LINES]], ['Cover, copy, compare', ['90% (9 of 10)']]]);
+    // Removing the take-home results takes them off and leaves the checks as they were.
+    const removed = AC.remove(row);
+    expect([removed.screeningHistory, removed.data.wordSoundsState.wsSessions.sessions]).toEqual([[SUPERVISED_MN(3, 12)], []]);
+  });
+});
+
 describe('the Assessment Center query surface leaves results from home out', () => {
   let meta;
   const HOME_MATH = {...SUPERVISED_MATH(20, 99), source: 'take_home_file', home: true, sessionId: 'h1'};

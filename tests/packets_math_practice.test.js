@@ -490,9 +490,19 @@ function playedResults() {
   const csv = t.csv(), json = t.json();
   return { csv: csv.body, csvName: csv.name, json: JSON.stringify(json, null, 2), result: json, made };
 }
+// The × 7 rehearsal file played to the end: 7 × 8 is its new fact (cards 0, 2, 5, 9). misses: the cards missed once, then copied and typed right.
+function playedRehearsal(misses) {
+  const made = build({ mode: 'rehearsal', factSet: 'mul-7' });
+  const t = play(made.html);
+  t.start();
+  lessonOf(made.html).blocks[0].items.forEach((it, i) => { t.card(it.answer, misses.includes(i) ? 1 : 0); t.next(); });
+  const csv = t.csv(), json = t.json();
+  return { csv: csv.body, csvName: csv.name, json: JSON.stringify(json, null, 2) };
+}
+const NEW_AND_KNOWN = { items: 4, firstTry: 3, missed: ['7 ' + X + ' 8'], knownItems: 8, knownFirstTry: 7 };
 
 describe('the results page reads a practice file as practice', () => {
-  it('a practice result with its activity name, under "Other activities", never with a score', async () => {
+  it('a practice result with its activity name, under "Math facts", never with a score', async () => {
     const r = playedResults();
     for (const [text, name] of [[r.csv, r.csvName], [r.json, 'x.json']]) {
       const got = await reader.read(text, { name, lastModified: Date.UTC(2026, 10, 20) });
@@ -501,17 +511,27 @@ describe('the results page reads a practice file as practice', () => {
       expect([s.mode, s.measure, s.measureName, s.unitName, s.score, s.title, s.integrity]).toEqual(['practice', 'practice', 'Practice', 'first-try percent', null, 'Doubles facts: cover, copy, compare', 'ok']);
       expect(s.summary).toMatchObject({ given: 9, attempted: 9, correct: 9, firstTry: 8, firstTryPct: 89 });
       expect(s.value).toBe(89);
-      expect(s.byActivity.map((a) => [a.activity, a.name, a.strand, a.graded, a.firstTry])).toEqual([['math_ccc', 'Cover, copy, compare', 'other', 9, 8]]);
-      expect(s.byStrand.map((row) => [row.strand, row.name])).toEqual([['other', 'Other activities']]);
+      expect(s.byActivity.map((a) => [a.activity, a.name, a.strand, a.graded, a.firstTry])).toEqual([['math_ccc', 'Cover, copy, compare', 'math_facts', 9, 8]]);
+      expect(s.byStrand.map((row) => [row.strand, row.name])).toEqual([['math_facts', 'Math facts']]);
+      expect(s.newFacts).toBeNull();
       expect(s.wrong).toEqual([{ word: '9 + 9', answer: '19', times: 1 }]);
       const model = reader.addUp([s]);
       expect(model.checks).toEqual([]);
       expect(model.middles).toEqual([]);
-      expect(model.strands).toEqual([reader.OTHER_STRAND]);
-      expect(reader.learnerSeries(model.learners[0], model).map((series) => [series.kind, series.name])).toEqual([['practice', 'Other activities']]);
+      expect(model.strands).toEqual(reader.MATH_STRANDS);
+      expect(reader.learnerSeries(model.learners[0], model).map((series) => [series.kind, series.name])).toEqual([['practice', 'Math facts']]);
       const summary = parseCsv(reader.summaryCsv([{ learner: 'BlueHeron7', session: s }]));
       const head = summary[0];
       expect([summary[1][head.indexOf('measure')], summary[1][head.indexOf('score')], summary[1][head.indexOf('score_unit')]]).toEqual(['practice', '', '']);
+    }
+  });
+  it('a played rehearsal file: the new facts counted on their own, beside the overall first-try figure', async () => {
+    const r = playedRehearsal([2, 3]);
+    for (const [text, name] of [[r.csv, r.csvName], [r.json, 'x.json']]) {
+      const s = (await reader.read(text, { name, lastModified: Date.UTC(2026, 10, 20) })).sessions[0];
+      expect([s.mode, s.score, s.value, s.integrity, s.title], name).toEqual(['practice', null, 83, 'ok', X + ' 7 facts: new and known facts']);
+      expect(s.byActivity.map((a) => [a.activity, a.name, a.strand, a.graded, a.firstTry])).toEqual([['math_rehearsal', 'Fact rehearsal', 'math_facts', 12, 10]]);
+      expect([s.newFacts, s.byStrand[0].newFacts]).toEqual([NEW_AND_KNOWN, NEW_AND_KNOWN]);
     }
   });
 });
@@ -553,10 +573,25 @@ describe('Class Analytics files a practice file as a take-home practice session,
     expect(learner.screeningHistory).toEqual([]);
     const summary = AC.summary(learner.data.wordSoundsState);
     expect(summary.sessions.map((s) => [s.src, s.pk, Object.keys(s.acts)])).toEqual([['th', 'Doubles facts: cover, copy, compare', ['math_ccc']]]);
-    // Not a Word Sounds activity: it is kept under "Other activities", by its id.
+    // Not a Word Sounds activity: it is kept under "Math facts", by its name.
     const skills = AC.bySkill(summary);
-    expect(skills.map((k) => [k.key, k.activities.map((a) => [a.id, a.firstTryCorrect, a.firstTryItems])])).toEqual([['', [['math_ccc', 8, 9]]]]);
-    expect([AC.strandName(null, ''), AC.activityName(null, 'math_ccc'), AC.activityName(null, 'math_rehearsal')]).toEqual(['Other activities', 'Math ccc', 'Math rehearsal']);
+    expect(skills.map((k) => [k.key, k.activities.map((a) => [a.id, a.firstTryCorrect, a.firstTryItems])])).toEqual([['math_facts', [['math_ccc', 8, 9]]]]);
+    expect([AC.strandName(null, 'math_facts'), AC.activityName(null, 'math_ccc'), AC.activityName(null, 'math_rehearsal')]).toEqual(['Math facts', 'Cover, copy, compare', 'Fact rehearsal']);
+  });
+
+  it('a played rehearsal file keeps its new and known facts apart, and is added as practice', async () => {
+    const r = playedRehearsal([2, 3]);
+    const sessions = [];
+    for (const [text, name] of [[r.csv, r.csvName], [r.json, 'results.json']]) {
+      const s = (await AC.readFile(new File([text], name, { type: 'text/plain', lastModified: Date.UTC(2026, 10, 20) }))).sessions[0];
+      expect([s.check, s.percent, s.integrity], name).toEqual([undefined, 83, 'ok']);
+      expect(s.acts).toEqual({ math_rehearsal: { n: 12, g: 12, f: 12, fc: 10, c: 12, nf: 4, nfc: 3, nm: ['7 ' + X + ' 8'], kf: 8, kfc: 7 } });
+      sessions.push(s);
+    }
+    const applied = AC.apply([], sessions.map((session) => ({ session, name: 'BlueHeron7' })), make);
+    expect([applied.added, applied.probeAdds, applied.students[0].screeningHistory]).toEqual([1, [], []]);
+    const fact = AC.bySkill(AC.summary(applied.students[0].data.wordSoundsState))[0];
+    expect([fact.key, fact.needsSupport, fact.activities[0].newFacts]).toEqual(['math_facts', false, { newItems: 4, newFirstTry: 3, missed: ['7 ' + X + ' 8'], knownItems: 8, knownFirstTry: 7 }]);
   });
 });
 

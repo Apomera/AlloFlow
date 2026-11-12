@@ -87,7 +87,26 @@ function check(over = {}) {
     { elapsedMs: o.elapsedS * 1000, hiddenMs: o.hiddenS * 1000, completion, attempt: o.attempt, flags: o.flags });
   return out;
 }
-const seal = (result, method) => { const table = loader.resultsCsv(result); return { table, integrity: method === 'none' ? null : { method, value: method === 'fnv1a' ? fnv(table.basis) : loader.sha256(table.basis).hex } }; };
+// A math fact practice result: the cards of a file made by packet_math_practice_builder.js with the loader, answered.
+// misses: the cards (0-based) not right on the first try; each is typed one too high, then right.
+// The × 7 rehearsal file has 12 cards: 7 × 8 is the new fact (cards 0, 2, 5, 9), the other 8 are known facts.
+const MP = require('../packet_math_practice_builder.js');
+function mathPractice(mode, misses = [], over = {}) {
+  const lesson = MP.lessonFromMathPractice({ loader, mode, factSet: 'mul-7' });
+  const o = { sid: 'mf-' + mode, learner: 'BlueHeron7', day: '2026-11-12', time: '16:00:05', seconds: 120, ...over };
+  const startedLocal = wall(o.day, o.time), finishedLocal = wall(o.day, o.time, o.seconds);
+  const block = lesson.blocks[0];
+  return { kind: 'alloflow-take-home-result', schemaVersion: 3, player: 'alloflow-word-sounds-take-home/2', sessionId: o.sid,
+    packet: { id: lesson.lessonId, version: lesson.revision, engine: 'alloflow-packet/1', form: '', mode: 'practice' }, lessonId: lesson.lessonId, revision: lesson.revision, lessonTitle: lesson.title,
+    activityTitles: lesson.activityTitles, learner: o.learner, learnerName: o.learner, startedAt: utc(startedLocal), finishedAt: utc(finishedLocal), startedLocal, finishedLocal,
+    durationMs: o.seconds * 1000, timesAreFromTheLearnerDevice: true,
+    items: block.items.map((it, i) => {
+      const missed = misses.includes(i);
+      return { n: i + 1, itemId: it.id, activity: block.activity, word: it.word, target: it.target, responses: missed ? [String(Number(it.answer) + 1), it.answer] : [it.answer],
+        attempts: missed ? 2 : 1, firstTry: !missed, correct: true, done: true, ms: 2400, supports: missed ? { copied: 1 } : {}, practice: null, flag: '' };
+    }) };
+}
+const seal =(result, method) => { const table = loader.resultsCsv(result); return { table, integrity: method === 'none' ? null : { method, value: method === 'fnv1a' ? fnv(table.basis) : loader.sha256(table.basis).hex } }; };
 const csvOf = (result, method = 'sha256') => { const { table, integrity } = seal(result, method); return table.text(integrity); };
 const jsonOf = (result, method = 'sha256') => {
   const { integrity } = seal(result, method);
@@ -231,6 +250,71 @@ describe('the reader: a practice results file', () => {
     expect(s.byActivity).toEqual([{ activity: 'new_game', name: 'New Game', strand: 'other', items: 1, graded: 1, correct: 1, firstTry: 1 }]);
     expect(s.byStrand).toEqual([{ strand: 'other', name: 'Other activities', graded: 1, correct: 1, firstTry: 1, firstTryPct: 100 }]);
     expect(s.integrity).toBe('changed');
+  });
+});
+
+describe('the reader: math fact practice', () => {
+  const X = String.fromCharCode(0xD7);
+  it('files cover, copy, compare and fact rehearsal under "Math facts", as practice, with the names the files give', async () => {
+    for (const [result, activity, name] of [[mathPractice('ccc', [3]), 'math_ccc', 'Cover, copy, compare'], [mathPractice('rehearsal', [2, 3, 9]), 'math_rehearsal', 'Fact rehearsal']]) {
+      for (const [text, file] of [[csvOf(result), nameOf(result)], [jsonOf(result), nameOf(result, 'json')]]) {
+        const s = await one(text, file);
+        expect([s.mode, s.measure, s.measureName, s.unitName, s.score, s.attempt, s.title, s.integrity, s.flags], file)
+          .toEqual(['practice', 'practice', 'Practice', 'first-try percent', null, null, result.lessonTitle, 'ok', []]);
+        expect(s.byActivity.map((a) => [a.activity, a.name, a.strand]), file).toEqual([[activity, name, 'math_facts']]);
+        expect(s.byStrand.map((row) => [row.strand, row.name]), file).toEqual([['math_facts', 'Math facts']]);
+      }
+    }
+    // The name comes from the file when it has one, and from the table when it does not.
+    const rows = cellsOf(csvOf(mathPractice('ccc')));
+    const at = rows[0].indexOf('activity_title');
+    const named = (title) => resave(rows.map((row, r) => (r && !row[0].startsWith('#') ? row.map((cell, i) => (i === at ? title : cell)) : row)), ',');
+    expect((await one(named('Cubrir, copiar, comparar'))).byActivity[0].name).toBe('Cubrir, copiar, comparar');
+    expect((await one(named(''))).byActivity[0].name).toBe('Cover, copy, compare');
+  });
+
+  it('counts the new facts of a rehearsal file on their own, beside the overall first-try count, and the known facts after them', async () => {
+    const s = await one(csvOf(mathPractice('rehearsal', [2, 3, 9])));
+    expect(s.items.filter((it) => it.itemId.endsWith('-new')).map((it) => it.word)).toEqual(Array(4).fill('7 ' + X + ' 8'));
+    expect(s.summary).toEqual({ itemsInFile: 12, done: 12, given: 12, attempted: 12, correct: 12, firstTry: 9, accuracyPct: 100, firstTryPct: 75 });
+    const split = { items: 4, firstTry: 2, missed: ['7 ' + X + ' 8'], knownItems: 8, knownFirstTry: 7 };
+    expect(s.newFacts).toEqual(split);
+    expect(s.byActivity).toEqual([{ activity: 'math_rehearsal', name: 'Fact rehearsal', strand: 'math_facts', items: 12, graded: 12, correct: 12, firstTry: 9, newFacts: split }]);
+    expect(s.byStrand).toEqual([{ strand: 'math_facts', name: 'Math facts', graded: 12, correct: 12, firstTry: 9, firstTryPct: 75, newFacts: split }]);
+    // The value of the result stays the overall first-try percent.
+    expect(s.value).toBe(75);
+    // No miss on a new fact: none listed. A cover, copy, compare file has no new facts at all.
+    expect((await one(csvOf(mathPractice('rehearsal', [3])))).newFacts).toEqual({ items: 4, firstTry: 4, missed: [], knownItems: 8, knownFirstTry: 7 });
+    const ccc = await one(csvOf(mathPractice('ccc', [3])));
+    expect([ccc.newFacts, 'newFacts' in ccc.byActivity[0], 'newFacts' in ccc.byStrand[0], ccc.summary.firstTryPct]).toEqual([null, false, false, 90]);
+    // Any other file whose item ids end in -new or -known is counted the same way; a Word Sounds file without them reads as before.
+    const usual = practice();
+    expect((await one(csvOf(usual))).newFacts).toBeNull();
+    const tagged = { ...usual, items: usual.items.map((it, i) => ({ ...it, itemId: it.itemId + (i < 2 ? '-new' : '-known') })) };
+    const t = await one(csvOf(tagged));
+    expect([t.integrity, t.newFacts]).toEqual(['ok', { items: 2, firstTry: 1, missed: ['dog'], knownItems: 3, knownFirstTry: 2 }]);
+    expect(t.byStrand.map((row) => [row.strand, row.newFacts])).toEqual([['hearing_sounds', { items: 2, firstTry: 1, missed: ['dog'], knownItems: 2, knownFirstTry: 1 }],
+      ['spelling', { items: 0, firstTry: 0, missed: [], knownItems: 1, knownFirstTry: 1 }]]);
+  });
+
+  it('keeps math fact practice out of the checks: no score, no check series, no middle of the group, no score in the summary file', async () => {
+    const sessions = [];
+    for (const [i, learner] of ['BlueHeron7', 'RedFox3', 'GreenOwl1', 'GoldBee2', 'TealCat5'].entries()) {
+      sessions.push(await one(csvOf(mathPractice('ccc', [i], { sid: 'c-' + i, learner, day: '2026-11-10' }))));
+      sessions.push(await one(csvOf(mathPractice('rehearsal', [i], { sid: 'r-' + i, learner }))));
+    }
+    const model = reader.addUp(sessions, {});
+    expect([model.checks, model.middles, model.strands]).toEqual([[], [], reader.MATH_STRANDS]);
+    const heron = model.learners.find((row) => row.label === 'BlueHeron7');
+    // The latest result with math facts: the rehearsal file of 12 November, with its new facts.
+    expect(heron.strands.math_facts).toEqual({ value: 92, firstTry: 11, graded: 12, date: '2026-11-12', sessionId: 'r-0', newFacts: { items: 4, firstTry: 3, missed: ['7 ' + X + ' 8'], knownItems: 8, knownFirstTry: 8 } });
+    expect(heron.checks).toEqual({});
+    const series = reader.learnerSeries(heron, model);
+    expect(series.map((row) => [row.kind, row.name, row.points.map((p) => [p.date, p.value, p.detail, p.newFacts && p.newFacts.items])]))
+      .toEqual([['practice', 'Math facts', [['2026-11-10', 90, '9 of 10 on the first try', null], ['2026-11-12', 92, '11 of 12 on the first try', 4]]]]);
+    const summary = reader.parseCsv(reader.summaryCsv(heron.sessions.map((session) => ({ learner: 'BlueHeron7', session }))).slice(1));
+    const head = summary[0];
+    expect(summary.slice(1).map((row) => ['measure', 'score', 'score_unit', 'first_try_pct'].map((name) => row[head.indexOf(name)]))).toEqual([['practice', '', '', '90'], ['practice', '', '', '92']]);
   });
 });
 
@@ -610,7 +694,8 @@ describe('parity with the dashboard importer (student_analytics_module.js)', () 
     };
     // The module's own functions, evaluated as they are written (the slice tests/class_analytics_take_home_import.test.js takes).
     AC = new Function(cut('  function _acTrimStudentData(data) {', '  function _acRestoreImportedStudents(raw) {') + cut('  function _acWsSoundMastered(entry) {', '  async function _acCanonicalStudentName(')
-      + '\nreturn {readFile: _acThReadFile, parseCsv: _acThParseCsv, norm: _acThNorm, fnv: _acThFnv1a, stamp: _acThStamp, columns: _AC_TH_COLUMNS, strands: _AC_WS_STRANDS, activities: _AC_WS_ACTIVITIES, cell: _acCsvCell};')();
+      + '\nreturn {readFile: _acThReadFile, parseCsv: _acThParseCsv, norm: _acThNorm, fnv: _acThFnv1a, stamp: _acThStamp, columns: _AC_TH_COLUMNS, strands: _AC_WS_STRANDS, activities: _AC_WS_ACTIVITIES, cell: _acCsvCell,'
+      + ' mathStrands: _AC_MATH_FACT_STRANDS, mathActivities: _AC_MATH_FACT_ACTIVITIES, activityName: _acWsActivityName, strandName: _acWsStrandName};')();
   });
   const NO_SCORE = { '': '', ended_early: 'stopped_early', untimed: 'no_time_limit', too_fast: 'too_fast', unknown: 'score_unreadable', no_score_line: 'no_score_line' };
   // Every field both readers produce, side by side. Returns the importer's session.
@@ -627,7 +712,10 @@ describe('parity with the dashboard importer (student_analytics_module.js)', () 
         expect(s.mode, name).toBe('practice');
         expect({ firstTryItems: s.summary.attempted, firstTryCorrect: s.summary.firstTry, percent: s.summary.firstTryPct }, name)
           .toEqual({ firstTryItems: t.firstTryItems, firstTryCorrect: t.firstTryCorrect, percent: t.percent });
-        const acts = Object.fromEntries(s.byActivity.map((a) => [a.activity, Object.fromEntries(Object.entries({ n: a.items, g: a.graded, f: a.graded, fc: a.firstTry, c: a.correct }).filter(([, n]) => n))]));
+        // The new and known facts of a rehearsal file are kept as nf / nfc / nm / kf / kfc there.
+        const nk = (a) => a.newFacts || { items: 0, firstTry: 0, missed: [], knownItems: 0, knownFirstTry: 0 };
+        const acts = Object.fromEntries(s.byActivity.map((a) => [a.activity, Object.fromEntries(Object.entries({ n: a.items, g: a.graded, f: a.graded, fc: a.firstTry, c: a.correct,
+          nf: nk(a).items, nfc: nk(a).firstTry, nm: nk(a).missed.length ? nk(a).missed : 0, kf: nk(a).knownItems, kfc: nk(a).knownFirstTry }).filter(([, n]) => n))]));
         expect(acts, name).toEqual(t.acts);
         expect(Object.fromEntries(s.wrong.map((row) => [row.word + '\t' + row.answer, row.times])), name).toEqual(t.wrong);
         return;
@@ -649,6 +737,15 @@ describe('parity with the dashboard importer (student_analytics_module.js)', () 
     expect(reader.COLUMNS).toEqual(AC.columns);
     expect(reader.STRANDS).toEqual(AC.strands);
     expect(reader.ACTIVITIES).toEqual(AC.activities);
+    // Math fact practice: a table of its own in each reader, the same in both, and never part of the Word Sounds copies.
+    expect(reader.MATH_STRANDS).toEqual(AC.mathStrands);
+    expect(reader.MATH_ACTIVITIES).toEqual(AC.mathActivities);
+    expect(reader.MATH_STRANDS).toEqual([['math_facts', 'Math facts']]);
+    for (const [id, [name, strand]] of Object.entries(reader.MATH_ACTIVITIES)) {
+      expect([core.ACTIVITY_SKILLS[id], reader.ACTIVITIES[id], AC.activityName(null, id), strand], id).toEqual([undefined, undefined, name, 'math_facts']);
+    }
+    expect(core.SKILL_STRANDS.map((row) => row.key)).not.toContain('math_facts');
+    expect([AC.strandName(null, 'math_facts'), AC.strandName(null, '')]).toEqual(['Math facts', 'Other activities']);
     for (const label of ['BlueHeron7', 'blue heron 7', 'Zoë-3', '__proto__', '', 'ÅNGSTRÖM 12']) expect(reader.labelKey(label), label).toBe(AC.norm(label));
     for (const text of ['', 'abc', 'a|b\n"c"']) expect(reader.fnv1a(text)).toBe(AC.fnv(text));
     for (const value of ['2026-11-12T23:30:05-05:00', '2026-11-12', '2026-11-12T21:00:05.000Z', '2026-02-30', 'soon', '1999-01-01', '']) expect(reader.stamp(value), value).toBe(AC.stamp(value));
@@ -677,6 +774,17 @@ describe('parity with the dashboard importer (student_analytics_module.js)', () 
     await both(resave(cellsOf(csvOf(result)).slice(1), ','), 'no-header.csv');
     await both(csvOf(practice({ sid: '' })), 'no-session-id.csv');
     await both(JSON.stringify({ kind: 'alloflow-take-home-submission', schemaVersion: 1, takeHomeResult: JSON.parse(jsonOf(result)) }), 'sent.json');
+  });
+
+  it('math fact practice files read the same, with the same new and known facts', async () => {
+    for (const result of [mathPractice('ccc', [3]), mathPractice('rehearsal', [2, 3, 9]), mathPractice('rehearsal', [])]) {
+      const { mine, theirs } = await both(csvOf(result), nameOf(result));
+      await both(jsonOf(result), nameOf(result, 'json'));
+      await both(resave(cellsOf(csvOf(result)), ';'), 'semicolons.csv');
+      expect([mine.sessions[0].mode, theirs.sessions[0].check]).toEqual(['practice', undefined]);
+    }
+    const theirs = (await both(csvOf(mathPractice('rehearsal', [2, 3, 9])), 'r.csv')).theirs.sessions[0];
+    expect(theirs.acts).toEqual({ math_rehearsal: { n: 12, g: 12, f: 12, fc: 9, c: 12, nf: 4, nfc: 2, nm: ['7 ' + String.fromCharCode(0xD7) + ' 8'], kf: 8, kfc: 7 } });
   });
 
   it('the title in the summary row reads the same: present, absent, odd, long, doubled, on another row', async () => {
@@ -1298,6 +1406,47 @@ describe('the page: from files to results', () => {
     expect(await page.drop(more)).toBe('5 files read.');
     expect(page.$('middles').querySelector('.middle-label').textContent).toBe('Middle of this group (n = 10)');
     expect(page.$('middles').querySelector('.middle-range').textContent).toMatch(/^Middle half: [0-9.]+ to [0-9.]+\. Lowest [0-9.]+, highest [0-9.]+\.$/);
+    page.dom.window.close();
+  });
+});
+
+describe('the page: math fact practice', () => {
+  const X = String.fromCharCode(0xD7);
+  it('shows math fact practice under "Math facts", the new facts beside the overall line, catches the same file twice, and shows no score', async () => {
+    const page = openPage();
+    const ccc = mathPractice('ccc', [3], { sid: 'm-1', day: '2026-11-10' }), rehearsal = mathPractice('rehearsal', [2, 3, 9], { sid: 'm-2' });
+    const said = await page.drop([page.file(csvOf(ccc), nameOf(ccc)), page.file(csvOf(rehearsal), nameOf(rehearsal)), page.file(jsonOf(rehearsal), nameOf(rehearsal, 'json'))]);
+    expect(said).toBe('3 files read, 1 needs a look.');
+    const groups = [...page.$('check-body').querySelectorAll('.check-group')].map((group) => [group.querySelector('h3').textContent, [...group.querySelectorAll('li')].map((item) => [...item.children].map((part) => part.textContent))]);
+    expect(groups).toEqual([['The same result more than once', [[nameOf(rehearsal, 'json'), 'The same result as ' + nameOf(rehearsal) + '.']]]]);
+    page.$('show-results').click();
+    expect(page.$('results-line').textContent).toBe('2 results from 1 learner. Nov 10 to Nov 12, 2026.');
+    const head = [...page.$('group-table').querySelectorAll('thead tr')].map((row) => [...row.children].map((cell) => cell.textContent));
+    expect(head).toEqual([['Learner', 'Results', 'Last date', 'Practice: latest first-try percent'], ['Math facts']]);
+    const cell = page.$('group-table').querySelector('tbody td:last-child');
+    expect([...cell.children].map((node) => [node.className, node.textContent])).toEqual([['cell-value', '75%'], ['cell-sub', '9 of 12'], ['cell-sub', 'new facts 2 of 4']]);
+    expect(page.$('middles').textContent).toBe('');
+    page.view('learner');
+    expect([...page.d.querySelectorAll('.measure h4')].map((node) => node.textContent)).toEqual(['Math facts']);
+    const facts = page.measure('Math facts');
+    expect(facts.querySelector('.measure-unit').textContent).toBe('First-try percent');
+    const lines = (td) => [td.firstChild.textContent, ...[...td.querySelectorAll('.cell-sub')].map((node) => node.textContent)];
+    const measureRows = [...facts.querySelectorAll('tbody tr')];
+    expect(lines(measureRows[0].children[2])).toEqual(['9 of 10 on the first try.']);
+    expect(lines(measureRows[1].children[2])).toEqual(['9 of 12 on the first try.', 'New facts: 2 of 4 on the first try.', 'New facts missed on the first try: 7 ' + X + ' 8.', 'Known facts: 7 of 8 on the first try.']);
+    const every = [...page.$('learner-body').querySelectorAll(':scope > .table-scroll table')].pop();
+    expect(page.table(every).map((row) => row.slice(0, 2).concat(row.slice(3)))).toEqual([
+      ['Nov 10, 2026', 'Practice: ' + X + ' 7 facts: cover, copy, compare', '10 of 10', '2 min', ''],
+      ['Nov 12, 2026', 'Practice: ' + X + ' 7 facts: new and known facts', '12 of 12', '2 min', '']]);
+    const results = [...every.querySelectorAll('tbody tr')].map((row) => lines(row.children[2]));
+    expect(results).toEqual([['90% on the first try'],
+      ['75% on the first try', 'New facts: 2 of 4 on the first try.', 'New facts missed on the first try: 7 ' + X + ' 8.', 'Known facts: 7 of 8 on the first try.']]);
+    // Practice only: no check, no score, and nothing that judges.
+    const text = page.$('state-results').textContent;
+    expect(text).not.toMatch(/Checks: latest score|digits correct|items correct|No score/);
+    expect(text).not.toMatch(JUDGING);
+    expect(text).not.toMatch(BRITISH);
+    expect(page.reached).toEqual([]);
     page.dom.window.close();
   });
 });
