@@ -10310,8 +10310,21 @@
           }) : function() {};
           var _safeSetStemLabTab = typeof setStemLabTab === 'function' ? _deferSafe(setStemLabTab) : function() {};
           var _safeSetToolSnapshots = typeof setToolSnapshots === 'function' ? _deferSafe(setToolSnapshots) : function() {};
+          // The app keeps <html lang dir> current (AlloFlowANTI: bcp47 code + rtl flag).
+          // Tools asked for these (Unit Converter, GIS Studio) and got undefined, so
+          // each guessed its own way. Read at ctx build, so a language change that
+          // re-renders the lab reaches the tool.
+          var _stemDocEl = (typeof document !== 'undefined' && document.documentElement) || null;
+          var _stemLang = String((_stemDocEl && _stemDocEl.lang) || 'en').replace(/_/g, '-');
+          var _stemDir = (_stemDocEl && _stemDocEl.dir === 'rtl') ? 'rtl' : 'ltr';
           var _ctx = {
             React: React,
+            lang: _stemLang,
+            locale: _stemLang,
+            uiLanguage: _stemLang,
+            dir: _stemDir,
+            // Language NAME ("Spanish"), as the app's text-language global gives it.
+            language: (typeof window !== 'undefined' && typeof window.__alloTextLanguage === 'string') ? window.__alloTextLanguage : '',
             // The loader has computed this since the reduced-motion work but never
             // handed it to tools, so `ctx.reduceMotion` read undefined everywhere.
             // Tree Lab asks for it and, getting false, animated growth at full rate
