@@ -400,6 +400,14 @@ describe('RoadReady driving-view refinements', () => {
     await React.act(async () => { window.dispatchEvent(new Event('blur')); });
     expect(host.querySelector('[role="dialog"][aria-labelledby="rr-pause-title"]')).toBeTruthy();
     await React.act(async () => { buttonByText('▶ Resume Driving').click(); });
+    // Round 30: the More panel is still open here, and Escape closes the top panel first.
+    expect(host.querySelector('#rr-drive-more-controls')).toBeTruthy();
+    await React.act(async () => {
+      window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
+    });
+    expect(host.querySelector('#rr-drive-more-controls')).toBeNull();
+    expect(updates.some((values) => values?.view === 'debrief')).toBe(false);
+    // With no panel open, Escape ends the drive and opens the debrief.
     await React.act(async () => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true }));
     });

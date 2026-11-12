@@ -48,9 +48,22 @@ describe('STEM autosave scheduling and durability', () => {
     const h = harness(), initial = state();
     h.saver.queue(initial); vi.advanceTimersByTime(400);
     h.json.stringify.mockClear(); h.storage.setItem.mockClear();
-    for (let tick = 0; tick < 1000; tick++) h.saver.queue({ ...initial, roadReady: { tick } });
+    for (let tick = 0; tick < 1000; tick++) h.saver.queue({ ...initial, circuit: { tick } });
     vi.advanceTimersByTime(1000);
     expect(h.json.stringify).not.toHaveBeenCalled();
+    expect(h.storage.setItem).not.toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
+    h.saver.dispose();
+  });
+  // Round 32: Road Ready progress is saved now. Screen changes and other unsaved Road Ready fields schedule one
+  // bounded check, and write nothing when what would be stored is the same.
+  it('Road Ready: unsaved fields cost at most one serialization per 400 ms window and no storage write', () => {
+    const h = harness(), initial = { ...state(), roadReady: { badges: { first_drive: true }, view: 'menu' } };
+    h.saver.queue(initial); vi.advanceTimersByTime(400);
+    h.json.stringify.mockClear(); h.storage.setItem.mockClear();
+    for (let tick = 0; tick < 1000; tick++) h.saver.queue({ ...initial, roadReady: { badges: { first_drive: true }, view: 'driving', challengeTick: tick, driverName: 'Sam Lee' } });
+    vi.advanceTimersByTime(1000);
+    expect(h.json.stringify).toHaveBeenCalledTimes(1);
     expect(h.storage.setItem).not.toHaveBeenCalled();
     expect(vi.getTimerCount()).toBe(0);
     h.saver.dispose();

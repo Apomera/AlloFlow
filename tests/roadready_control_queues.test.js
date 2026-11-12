@@ -101,8 +101,8 @@ describe('traffic queues protect complete vehicle bodies at stop controls', () =
   it('uses the stronger defensive headway tier below a safety score of 50', () => {
     const random = vi.spyOn(Math, 'random').mockReturnValue(0.5);
     try {
-      for (const [score, gap, expected] of [[49, 47, 1], [50, 47, 0],
-        [50, 38, 1], [69, 38, 1], [70, 38, 0]]) {
+      for (const [score, gap, expected] of [[49, 62, 1], [50, 62, 0],
+        [50, 50, 1], [69, 50, 1], [70, 50, 0]]) {
         const run = queue();
         run.scope.infiniteWorldRef.current._railroadCrossings = [];
         run.scope.statsRef.current.safetyScore = score;

@@ -55,8 +55,10 @@ describe('BirdLab stabilized head sightline', () => {
     try {
       for(const crouch of [0,.8])for(const headYaw of [-.6,0,.6])for(const gazePitch of [-.1,.2]) {
         bird.update(pose({fold:1,feet:1,crouch,headYaw,gazePitch}),0);
-        const neck=.53-crouch*.15;
-        expected.setFromEuler(new THREE.Euler(-neck*.58-gazePitch,headYaw,0,'XYZ'));
+        // The perched body sits .25 rad more upright; the head gives that lift
+        // back, so its world pitch is still neck*.42 + gaze as authored.
+        const neck=.53-crouch*.15, perchLift=.25;
+        expected.setFromEuler(new THREE.Euler(-neck*.58-perchLift-gazePitch,headYaw,0,'XYZ'));
         expect(1-Math.abs(bird.joints.head.quaternion.dot(expected))).toBeLessThan(1e-12);
         expect(bird.joints.head.position.y).toBe(.068+crouch*.006);
         expect(bird.joints.head.position.z).toBe(-.202-crouch*.005);

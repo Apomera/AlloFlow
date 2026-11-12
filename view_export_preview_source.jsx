@@ -3485,6 +3485,22 @@ function _readBuilderViewPreferences() {
     return defaults;
   }
 }
+// The preview runs the page, so an unanswered "Who is working" (or annotation
+// confirm) dialog can be open when the teacher exports. A copy must not keep
+// its overlay or the inert/aria-hidden it put on the page, or students get a
+// second prompt and a page they cannot click.
+function _builderClearOpenPagePrompt(root) {
+  if (!root || typeof root.querySelectorAll !== 'function') return;
+  root.querySelectorAll('.alloflow-export-prompt-overlay,.alloflow-anno-confirm-backdrop').forEach((node) => node.remove());
+  root.querySelectorAll('[data-alloflow-prompt-aria]').forEach((node) => {
+    if (node.hasAttribute('data-alloflow-prompt-inert')) node.removeAttribute('inert');
+    const was = node.getAttribute('data-alloflow-prompt-aria');
+    if (was === '-') node.removeAttribute('aria-hidden'); else node.setAttribute('aria-hidden', was);
+    node.removeAttribute('data-alloflow-prompt-inert');
+    node.removeAttribute('data-alloflow-prompt-aria');
+  });
+}
+
 function _builderExportPreflight(doc, mode) {
   const issues = [];
   const add = (severity, code, message, count) => issues.push({ severity, code, message, count: count || 1 });
@@ -3536,6 +3552,8 @@ function _builderExportPreflight(doc, mode) {
   if (citationReferences.bibliography && !citationReferences.citations.length) add('warning', 'bibliography-empty', 'The bibliography has no cited sources yet.');
   const emptyFootnotes = references.footnotes.filter((entry) => !entry.broken && (!entry.text || entry.text === 'Empty footnote')).length;
   if (emptyFootnotes) add('warning', 'empty-footnotes', emptyFootnotes + ' footnote' + (emptyFootnotes === 1 ? ' is' : 's are') + ' empty.', emptyFootnotes);
+  const factsPending = Array.from(doc.querySelectorAll('[data-allo-facts-pending]')).reduce((sum, node) => sum + (parseInt(node.getAttribute('data-allo-facts-pending'), 10) || 0), 0);
+  if (factsPending) add('warning', 'memory-aid-facts', factsPending + ' Memory Aid card' + (factsPending === 1 ? ' has' : 's have') + ' facts you have not checked yet. Students will see "Your teacher is still checking these facts" and cannot use recall practice. Check them in Memory Aid Studio first.', factsPending);
   const pendingChanges = _builderTrackedChangeEntries(doc).length;
   if (pendingChanges) add('warning', 'pending-changes', pendingChanges + ' pending revision' + (pendingChanges === 1 ? ' will' : 's will') + ' export using the final accepted view.', pendingChanges);
   if (mode === 'slides' && headings.length < 2) add('warning', 'slide-structure', 'Add section headings so the slide deck can split content into meaningful slides.');
@@ -7878,7 +7896,9 @@ function ExportPreviewView(props) {
       _builderClearReviewCommentTransientState(clone);
       _builderClearTrackedChangeTransientState(clone);
     }
-    clone.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css,script:not([data-allo-citation-store])').forEach((node) => node.remove());
+    _builderClearOpenPagePrompt(clone);
+    // keepScripts: an LMS package carries the same page runtime as Download HTML.
+    clone.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css' + (options?.keepScripts ? '' : ',script:not([data-allo-citation-store])')).forEach((node) => node.remove());
     if (options?.forExport) clone.querySelectorAll(_BUILDER_CITATION_STORE_SELECTOR).forEach((node) => node.remove());
     clone.querySelectorAll('[contenteditable]').forEach((node) => node.removeAttribute('contenteditable'));
     clone.querySelectorAll('[data-allo-semantic-selected]').forEach((node) => node.removeAttribute('data-allo-semantic-selected'));
@@ -8642,13 +8662,20 @@ function ExportPreviewView(props) {
         const succeeded = await handler({ generatedContent: selected.item });
         if (succeeded !== true) return;
       } else {
-        const built = getCleanBuilderDocument({ forExport: true });
+        // Keep the page runtime so sorts, quizzes and saved answers work inside the LMS.
+        const built = getCleanBuilderDocument({ forExport: true, keepScripts: true });
         if (!built) throw new Error('The editable preview is not ready.');
         // An LMS package is student-facing: keep only the student copy.
         const studentRoot = built.clone || new DOMParser().parseFromString(built.html, 'text/html').documentElement;
         const teacherSections = _removeStudentPackageTeacherSections(studentRoot);
-        const clean = teacherSections ? { ...built, html: '<!DOCTYPE html>\n' + studentRoot.outerHTML } : built;
-        const succeeded = await handler({ liveHtml: clean.html, liveTitle: clean.title });
+        let packageHtml = teacherSections ? '<!DOCTYPE html>\n' + studentRoot.outerHTML : built.html;
+        if (exportConfig && exportConfig.assessmentMode === true) {
+          // Same answer-data pass as Download HTML; without it, ship the page with no scripts.
+          const sanitize = window.AlloModules?.ExportHandlers?.sanitizeAssessmentStudentHtml;
+          if (typeof sanitize === 'function') packageHtml = sanitize(packageHtml);
+          else { studentRoot.querySelectorAll('script:not([data-allo-citation-store])').forEach((node) => node.remove()); packageHtml = '<!DOCTYPE html>\n' + studentRoot.outerHTML; }
+        }
+        const succeeded = await handler({ liveHtml: packageHtml, liveTitle: built.title });
         if (succeeded !== true) return;
         if (teacherSections && addToast) {
           // English fallback for a cached strings bank that predates the key.
@@ -8660,7 +8687,7 @@ function ExportPreviewView(props) {
     }
     catch (error) { addToast && addToast(`${kind.toUpperCase()} export failed: ${error?.message || 'unknown error'}`, 'error'); }
     finally { finishAlternativeExport(); }
-  }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument, onExportSuccess, t]);
+  }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, handleExportQTI, handleExportH5P, handleExportIMS, addToast, qtiAssessments, selectedQtiKey, h5pActivities, selectedH5PKey, getCleanBuilderDocument, onExportSuccess, t, exportConfig]);
 
   // `sink` (optional) receives the built { blob, fileName, message } instead of
   // triggering a download: "Send to my Drive" reuses the exact accessible DOCX
@@ -9944,6 +9971,14 @@ const _downloadBRF = (brf) => {
                         <option value="standard">Standard</option>
                         <option value="extended">Extended — more room</option>
                       </select>
+                    </label>
+                  )}
+                  {exportPreviewMode === 'worksheet' && (
+                    <label className="flex items-center gap-2 mt-2 text-xs text-slate-700" htmlFor="alloflow-worksheet-page-per-activity">
+                      <input type="checkbox" id="alloflow-worksheet-page-per-activity" className="accent-indigo-600"
+                        checked={!!exportConfig.worksheetPagePerActivity}
+                        onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, worksheetPagePerActivity: e.target.checked }))} />
+                      <span>{(() => { const v = t('export_preview.worksheet_page_per_activity'); return typeof v === 'string' && v.trim() && v !== 'export_preview.worksheet_page_per_activity' ? v : 'Start each activity on a new page'; })()}</span>
                     </label>
                   )}
                 </div>

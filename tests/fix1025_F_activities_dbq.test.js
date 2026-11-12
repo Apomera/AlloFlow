@@ -236,7 +236,8 @@ describe('F5: Timeline "not yet checked" badge', () => {
   }
   const item = (event, verification) => ({ date: '1900', event, ...(verification ? { verification } : {}) });
   it('shows the teacher that nothing has been checked yet', () => {
-    expect(timeline([item('a'), item('b')]).textContent).toContain('Accuracy not yet checked');
+    // 2026-11-11: fallback reworded to "AI review" language in 7d9bda5674.
+    expect(timeline([item('a'), item('b')]).textContent).toContain('AI review not yet run');
   });
   it('counts items added or edited after a check', () => {
     expect(timeline([item('a', { factual: true, position: true }), item('b')]).textContent).toContain('1 items not yet checked');

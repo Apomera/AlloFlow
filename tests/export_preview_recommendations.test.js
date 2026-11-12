@@ -1055,7 +1055,9 @@ describe('Document Builder export recommendations', () => {
     // 585a61ba2 (2026-10-10) localized the name; the English fallback is unchanged.
     expect(source).toContain('aria-label={t("export_preview.accessibility.quiz_to_export_as_qti") || "Quiz to export as QTI"}');
     expect(source).toContain('await handler({ generatedContent: selected.item })');
-    expect(source).toContain('await handler({ liveHtml: clean.html, liveTitle: clean.title })');
+    // 2026-11-11: the IMS package keeps the page runtime (keepScripts), like Download HTML.
+    expect(source).toContain('await handler({ liveHtml: packageHtml, liveTitle: built.title })');
+    expect(source).toContain('getCleanBuilderDocument({ forExport: true, keepScripts: true })');
     expect(source).toContain('const downloadBuilderBlob = React.useCallback');
     expect(source).toContain("downloadBuilderBlob(blob, { extension: 'epub' })");
     // 0bb48eb97 (2026-09-08) moved the remote-image fetch into _builderFetchExportImage (bounded,

@@ -58,6 +58,6 @@ describe('consistent small measurements across circuit views',()=>{
     const el=scene({voltage:9,components:[{type:'voltmeter',id:1}]});
     expect(el.querySelector('.circuit-scene-metrics').textContent).toContain('0.0810 µW');
     expect(el.querySelector('svg').getAttribute('aria-label')).not.toContain('0.000 amps');
-    expect(el.querySelector('svg').getAttribute('aria-label')).toContain('µA');
+    expect(el.querySelector('svg').getAttribute('aria-label')).toContain('nA');
   });
 });

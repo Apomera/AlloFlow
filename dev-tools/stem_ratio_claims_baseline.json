@@ -40,10 +40,6 @@
     "about 230 times",
     "about 50 times"
   ],
-  "stem_tool_bikelab.js": [
-    "4x faster",
-    "5x faster"
-  ],
   "stem_tool_birdlab.js": [
     "about 400 times",
     "about 50 times"
@@ -164,6 +160,11 @@
   ],
   "stem_tool_renewables.js": [
     "3x more"
+  ],
+  "stem_tool_roadready.js": [
+    "about 2 times",
+    "about 3 times",
+    "about 4 times"
   ],
   "stem_tool_scaleexplorer.js": [
     "about 3.5 times",

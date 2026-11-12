@@ -24,7 +24,8 @@ describe('exported document dialog accessibility', () => {
     expect(source).toContain("if (event.key === 'Escape')");
     expect(source).toContain("if (!dialog.contains(document.activeElement))");
     expect(source).toContain('opener && opener.isConnected');
-    expect(source).toContain("blocked.forEach(function (entry) { entry.el.setAttribute('inert', '')");
+    // 2026-11-11: the block also records what it changed, so a Builder copy can undo it.
+    expect(source).toContain("entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true');");
   });
 
   it('reuses the resolved learner identity and keeps accessible save-prompt fallbacks', () => {

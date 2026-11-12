@@ -87,11 +87,11 @@ function playerFixture(options = {}) {
 
 describe('railroad stops use front-bumper clearance from the nearest rail', () => {
   it.each([
-    { description: 'credits a bus in its lane', stationOffset: 19, lateral: 1.5, legal: true },
-    { description: 'rejects a bus parked on grass', stationOffset: 16, lateral: 6, legal: false },
-  ])('$description beside the curved rural track', ({ stationOffset, lateral, legal }) => {
+    // ra33: the road no longer kinks at chunk -39 (it bounced off its corridor there); two bends of the smoothed road show the same two cases
+    { description: 'credits a bus in its lane', stationOffset: 19, lateral: 1.5, legal: true, chunkIdx: -40 },
+    { description: 'rejects a bus parked on grass', stationOffset: 16, lateral: 6, legal: false, chunkIdx: -46 },
+  ])('$description beside the curved rural track', ({ stationOffset, lateral, legal, chunkIdx }) => {
     const world = RR.createScenarioWorld({ id: 'rural', speedLimit: 45 });
-    const chunkIdx = -39;
     const trackStation = chunkIdx * 32 + 19.2;
     const center = RR.mainRoadWorldPoint(world, trackStation, 0);
     const crossing = { chunkIdx, centerX: center.x, centerY: center.y, heading: center.heading,

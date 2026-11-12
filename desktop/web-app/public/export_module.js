@@ -85,9 +85,9 @@ const createExport = deps => {
       case 'storyforge-submission':
         return '📖 Story Submission';
       case 'note-taking':
-        return t('help_mode.tool_note_taking') || 'Note-Taking Templates';
+        return t('sidebar.tool_note_taking') || 'Note-Taking Templates';
       case 'anchor-chart':
-        return t('help_mode.tool_anchor_chart') || 'Anchor Chart';
+        return t('sidebar.tool_anchor_chart') || 'Anchor Chart';
       case 'memory-aid':
         return t('help_mode.tool_memory_aid') || 'Memory Aid Studio';
       case 'applied-challenge':
@@ -224,7 +224,7 @@ const createExport = deps => {
   };
   const _jsonForHtmlScript = value => String(JSON.stringify(value == null ? null : value)).replace(/</g, '\\u003c');
   const _safeXmlIdentifier = (prefix, raw, idx) => {
-    const body = String(raw || idx || Date.now()).replace(/[^A-Za-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 80) || String(idx || '0');
+    const body = String(raw || idx || Date.now()).replace(/[^A-Za-z0-9_.-]+/g, '-').replace(/^-+|-+$/g, '').replace(/^(.{60}).{2,}(.{19})$/, '$1-$2') || String(idx || '0');
     return `${prefix}-${body}`;
   };
   const _exportLanguage = () => {
@@ -1092,15 +1092,15 @@ const createExport = deps => {
     const manifestXml = `<?xml version="1.0" encoding="UTF-8"?>
 <manifest identifier="${manifestId}" xmlns="http://www.imsglobal.org/xsd/imscp_v1p1" xmlns:lom="http://www.imsglobal.org/xsd/imsmd_v1p2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/imscp_v1p1.xsd http://www.imsglobal.org/xsd/imsmd_v1p2 http://www.imsglobal.org/xsd/imsmd_v1p2.xsd">
   <metadata>
-    <schema>${_escapeExportText(t('common.ims_content') || 'IMS Content')}</schema>
+    <schema>IMS Content</schema>
     <schemaversion>1.1.3</schemaversion>
     <lom:lom>
       <lom:general>
         <lom:title>
-          <lom:string language="${_escapeExportText(exportLang)}">${title}</lom:string>
+          <lom:langstring xml:lang="${_escapeExportText(exportLang)}">${title}</lom:langstring>
         </lom:title>
         <lom:description>
-          <lom:string language="${_escapeExportText(exportLang)}">${description}</lom:string>
+          <lom:langstring xml:lang="${_escapeExportText(exportLang)}">${description}</lom:langstring>
         </lom:description>
       </lom:general>
     </lom:lom>
@@ -1918,6 +1918,7 @@ const createExport = deps => {
       sourceTopic,
       studentResponses,
       generateResourceHTML,
+      generateFullPackHTML,
       addToast,
       t
     } = liveRef.current;
@@ -1969,10 +1970,10 @@ const createExport = deps => {
           type: 'builder-document',
           label: 'Builder document',
           status: 'ready',
-          html: 'static',
+          html: /<script\b/i.test(liveHtml) ? 'interactive' : 'static',
           canExportHtml: true,
           canExportIms: true,
-          interactiveHtml: false,
+          interactiveHtml: /<script\b/i.test(liveHtml),
           qti: false,
           tracking: 'none',
           fallback: 'static-html',
@@ -2017,6 +2018,50 @@ const createExport = deps => {
     if (!packagedEntries.length) {
       addToast('No IMS-compatible resources are ready to package yet.', 'error');
       return false;
+    }
+    // Per-resource fragments have no page runtime (sorts, quiz checks and saved
+    // answers do nothing), so package the same single-file student page as
+    // Download HTML. Hosts without generateFullPackHTML keep the fragments.
+    if (!liveHtml && typeof generateFullPackHTML === 'function') {
+      try {
+        const included = packagedEntries.map(entry => entry.item);
+        const fullHtml = String(generateFullPackHTML(included, sourceTopic, false, studentResponses, {
+          annotations: [],
+          includeTeacherKey: false,
+          audience: 'student'
+        }) || '');
+        if (/<html[\s>]/i.test(fullHtml)) {
+          const includedItems = packagedEntries.map(entry => safeManifestItem(entry.item, {
+            originalIndex: entry.originalIndex
+          }));
+          packagedEntries.splice(0, packagedEntries.length, {
+            item: {
+              id: 'alloflow-resource-pack',
+              type: 'resource-pack',
+              title: liveTitle
+            },
+            html: /^\s*<!DOCTYPE/i.test(fullHtml) ? fullHtml.trim() : '<!DOCTYPE html>\n' + fullHtml.trim(),
+            profile: {
+              type: 'resource-pack',
+              label: 'Resource pack',
+              status: 'ready',
+              html: 'interactive',
+              canExportHtml: true,
+              canExportIms: true,
+              interactiveHtml: true,
+              qti: false,
+              tracking: 'none',
+              fallback: 'single-file-html',
+              includedItems,
+              notes: 'The same single-file student page as Download HTML: activities run inside the page and answers save in this browser. No grades or completion are sent to the LMS.'
+            },
+            originalIndex: 0,
+            completeDocument: true
+          });
+        }
+      } catch (err) {
+        warnLog('IMS full-page render failed; packaging separate resources', err);
+      }
     }
     let profileSummary;
     try {
@@ -2101,15 +2146,15 @@ const createExport = deps => {
     const manifest = `<?xml version="1.0" encoding="UTF-8"?>
 <manifest identifier="${manifestId}" xmlns="http://www.imsglobal.org/xsd/imscp_v1p1" xmlns:lom="http://www.imsglobal.org/xsd/imsmd_v1p2" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imscp_v1p1 http://www.imsglobal.org/xsd/imscp_v1p1.xsd http://www.imsglobal.org/xsd/imsmd_v1p2 http://www.imsglobal.org/xsd/imsmd_v1p2.xsd">
   <metadata>
-    <schema>${_escapeExportText(t('common.ims_content') || 'IMS Content')}</schema>
+    <schema>IMS Content</schema>
     <schemaversion>1.1</schemaversion>
     <lom:lom>
       <lom:general>
         <lom:title>
-          <lom:string language="${_escapeExportText(exportLang)}">${manifestTitle}</lom:string>
+          <lom:langstring xml:lang="${_escapeExportText(exportLang)}">${manifestTitle}</lom:langstring>
         </lom:title>
         <lom:description>
-          <lom:string language="${_escapeExportText(exportLang)}">${manifestDescription}</lom:string>
+          <lom:langstring xml:lang="${_escapeExportText(exportLang)}">${manifestDescription}</lom:langstring>
         </lom:description>
       </lom:general>
     </lom:lom>
@@ -2122,6 +2167,7 @@ const createExport = deps => {
   </organizations>
   <resources>
     ${resourcesXml}
+    <resource identifier="RES-alloflow-object-profile" type="webcontent" href="alloflow-object-profile.json"><file href="alloflow-object-profile.json"/></resource>
   </resources>
 </manifest>`;
     zip.file("imsmanifest.xml", manifest);

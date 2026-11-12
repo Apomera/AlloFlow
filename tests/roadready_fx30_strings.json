@@ -1,0 +1,527 @@
+{
+ "new": {
+  "permit_real_format": "Good to know: the real Maine knowledge test has 30 questions and you need 24 right to pass. The Maine test format below uses the same numbers.",
+  "postcrash_at_the_scene": "At the scene",
+  "postcrash_stay_calm_title": "Stay, Help, Stay Calm",
+  "postcrash_stay_at_scene": "Stay at the scene. Leaving a crash is a crime in Maine.",
+  "postcrash_check_injuries": "Check everyone for injuries and call 911. Give an injured person the help you safely can.",
+  "postcrash_dont_argue": "Do not argue about who caused it. Tell the police what happened, plainly and truthfully.",
+  "postcrash_be_kind": "It is fine to ask \"Are you okay?\" and to be kind. If you feel hurt later, see a doctor.",
+  "postcrash_tell_parent_insurer": "Tell a parent or guardian right away, and tell your insurance company.",
+  "cheat_uncontrolled": "No signs or signals: slow down, yield to the car on your right",
+  "cheat_narrow_road": "Narrow road: stop at a wide spot and let the other car pass",
+  "cheat_wet_gap": "5+ seconds",
+  "cheat_snow_gap_label": "Snow or fog: ",
+  "cheat_ice_gap": "; ice: 8+ seconds",
+  "cheat_stop_ft": "{n} ft",
+  "cheat_manual_stopping": "Maine driver's manual table (dry, level road): 20 mph 45 ft, 30 mph 78 ft, 40 mph 125 ft, 50 mph 188 ft, 60 mph 272 ft, 70 mph 381 ft. The manual uses a shorter reaction time. Learn the manual's numbers for the permit test."
+ },
+ "changed": {
+  "dry_0_7": {
+   "old": "— Dry (μ=0.7)",
+   "new": "— Dry (μ=0.72)"
+  },
+  "wet_0_4": {
+   "old": "— Wet (μ=0.4)",
+   "new": "— Wet (μ=0.42)"
+  },
+  "signsview_road_surface_loses_grip_in_rain_extend_followi": {
+   "old": "Road surface loses grip in rain. Extend following distance 4+ seconds.",
+   "new": "Road surface loses grip in rain. Extend following distance to 5+ seconds."
+  },
+  "signsview_interstate_highway_limited_access_65_70_mph_in": {
+   "old": "Interstate highway. Limited access, 65-70 mph in Maine.",
+   "new": "Interstate highway. Limited access. The limit is what the sign says: never more than 75 mph in Maine, and lower in cities."
+  },
+  "maine_bmv_permit_test": {
+   "old": "Maine BMV Permit Test",
+   "new": "Maine Permit Practice Test"
+  },
+  "debrief_hard_brakes": {
+   "old": "🛑 {n} hard brakes — hard braking means you were not reading the road ahead. Look 15 seconds down the road, not at the car in front of you.",
+   "new": "🛑 {n} hard brakes — hard braking means you were not reading the road ahead. Look 20 to 30 seconds down the road, not at the car in front of you."
+  },
+  "following_too_close_use_the_3_second_r": {
+   "old": "👀 Following too close. Use the 3-second rule. Pick a fixed point ahead. Count after the car in front passes it.",
+   "new": "👀 Following too close. Use the 4-second rule. Pick a fixed point ahead. Count after the car in front passes it."
+  },
+  "nd_adhd_strategy3": {
+   "old": "Use cruise control on long drives — it removes one demand and frees attention for scanning.",
+   "new": "Cruise control is a personal call. It holds your speed steady, but it can make a dull highway even duller, and dull roads are where attention drops. If your mind drifts with it on, turn it off."
+  },
+  "nd_anxiety_strategy1": {
+   "old": "Build up in tiers. Empty parking lot → empty residential street → quiet town road → light suburban → dense suburban → highway shoulder → on-ramp → highway. Stay at each tier until it is genuinely boring before moving up. Boring is the goal.",
+   "new": "Build up in tiers. Empty parking lot → empty residential street → quiet town road → light suburban → dense suburban → on-ramp → highway. Stay at each tier until it is genuinely boring before moving up. Boring is the goal."
+  },
+  "nd_accommodation_strategy2": {
+   "old": "A familiar instructor present in the back seat as a comfort presence (varies by state — Maine BMV examiners can permit this on request).",
+   "new": "A familiar instructor present in the back seat as a comfort presence (ask the BMV whether this is allowed)."
+  },
+  "you_do_not_have_to_go_into_the_bmv_roa": {
+   "old": "You do not have to go into the BMV road test cold. Maine BMV examiners can grant accommodations on request when there is a documented disability — sometimes with paperwork, sometimes just with a reasonable conversation. Common ones, the same kind a 504 plan covers in school:",
+   "new": "You do not have to go into the BMV road test cold. If you have a disability, you can ASK the BMV about accommodations before test day: call the Examination Section at 207-624-9000, ext. 52119. Road Ready has not found a published BMV list, so none of these is promised. Things you can ask about, the same kind a 504 plan covers in school:"
+  },
+  "drexel_autism_driving_project_peer_rev": {
+   "old": "Drexel Autism Driving Project (peer-reviewed research on autistic driver outcomes); ADDitude Magazine + Russell Barkley's ADHD-and-driving research summaries; CHADD position statements on stimulant medication and driving safety; Autism Self Advocacy Network disclosure guidance; Maine BMV examiner-policy documentation. Identity-first language follows community-consensus norms (Kenny 2016, Bury 2020).",
+   "new": "Drexel Autism Driving Project (peer-reviewed research on autistic driver outcomes); ADDitude Magazine + Russell Barkley's ADHD-and-driving research summaries; CHADD position statements on stimulant medication and driving safety; Autism Self Advocacy Network disclosure guidance. Identity-first language follows community-consensus norms (Kenny 2016, Bury 2020)."
+  },
+  "roundaboutdrill_c4_2": {
+   "old": "Left (inner) lane to enter and travel, move right and signal before your exit",
+   "new": "Left (inner) lane: choose it before you enter, follow the lane lines, signal your exit"
+  },
+  "roundaboutdrill_exp4": {
+   "old": "Standard rule: right lane = first exit (right turn) or straight. Left lane = later exits (left turn / U-turn / 3rd-exit-equivalent). Follow the ground arrows if painted. Signal LEFT entering (telling others you're going around), then signal RIGHT before your exit. Changing lanes is the move before you exit, not after.",
+   "new": "Maine driver's manual: if you leave within two exits (right turn or straight), use the right lane. For a later exit, choose the left lane BEFORE you enter. Signs and pavement arrows come first. Inside the circle, follow the lane lines and do not change lanes. Signal RIGHT before your exit. Maine law also says you may not travel past two exits in the outside lane (29-A §2053)."
+  },
+  "roundaboutdrill_c6_2": {
+   "old": "Signal left on approach if going more than halfway around; signal right before your exit always",
+   "new": "Signal right before the exit you are taking, every time; that is the Maine manual's rule"
+  },
+  "roundaboutdrill_exp6": {
+   "old": "Best practice: signal LEFT on approach if you're going PAST the 12 o'clock position (more than halfway around — tells drivers behind you you're not exiting early). Signal RIGHT before EVERY exit (tells circulating and entering drivers you're leaving so they can move). Signaling right for a first-exit right turn is also correct.",
+   "new": "The Maine driver's manual gives one signal rule for traffic circles: \"Signal your exit.\" Signal RIGHT before the exit you are taking, so drivers waiting to enter and drivers behind you know you are leaving. The manual does not ask for a left signal on the way in."
+  },
+  "driving_on_a_maine_road_is_legal_conse": {
+   "old": "Driving on a Maine road is legal consent to breath/blood testing when an officer has probable cause. First refusal triggers a 275-day license suspension; repeat refusals are longer and refusal can be used in court.",
+   "new": "Driving on a Maine road is legal consent to breath/blood testing when an officer has probable cause. First refusal triggers a 275-day license suspension (18 months if you are under 21); repeat refusals are longer and refusal can be used in court."
+  },
+  "duidrill_c1_3": {
+   "old": "Call an Uber / Lyft / Maine Ride Service or a parent",
+   "new": "Stop him from driving and call a ride or a trusted adult, such as a parent"
+  },
+  "duidrill_c1_4": {
+   "old": "B or C — never let an impaired driver drive, full stop",
+   "new": "Ride along with him so you can keep him awake and watch the road"
+  },
+  "duidrill_exp1": {
+   "old": "There is no \"just a mile.\" Most fatal DUIs happen within a few miles of home because drivers feel safe and let their guard down. Taking the keys and driving him yourself is the right call if you're sober and licensed — if your GDL restrictions prevent it, call a rideshare or parent. Never, ever let an impaired person drive.",
+   "new": "There is no \"just a mile.\" Never let an impaired person drive, and never ride with one. Call a ride or a trusted adult. Driving him yourself can break the law: with an intermediate license (under 18) you may not carry passengers who are not immediate family unless a qualified licensed adult supervises (29-A §1311), and a drunk friend does not count. A parent would rather get that call."
+  },
+  "duidrill_c2_2": {
+   "old": "Automatic 275-day license suspension — often worse than the first-offense penalty",
+   "new": "Automatic 18-month license suspension — longer than the first-offense suspension"
+  },
+  "duidrill_exp2": {
+   "old": "Maine has implied-consent laws. Driving on a Maine road is legal consent to breath or blood testing when an officer establishes probable cause. Refusing = automatic 275-day suspension, separate from any conviction penalty. First-offense OUI conviction is only a 150-day suspension — so refusal is actually WORSE. Also, refusal can be used against you in court.",
+   "new": "Maine has implied-consent laws. Driving on a Maine road is legal consent to breath or blood testing when an officer establishes probable cause. You are under 21, so a first refusal = automatic 18-month suspension (29-A §2472; it is 275 days for drivers 21 and over), separate from any conviction penalty. A first under-21 alcohol suspension is one year — so refusal is actually WORSE. Also, refusal can be used against you in court."
+  },
+  "a_full_grown_moose_weighs_800_1_400_lb": {
+   "old": "A full-grown moose weighs 800–1,400 lb. Its mass sits on long legs — your bumper takes the legs out and the body comes through the windshield. Roof-crush is the usual cause of death, not the impact itself.",
+   "new": "A full-grown moose weighs about 1,000 lb. Its mass sits on long legs — your bumper takes the legs out and the body comes through the windshield. Roof-crush is the usual cause of death, not the impact itself."
+  },
+  "emergencyvehicle_c5_2": {
+   "old": "Move left into the adjacent lane if safe, otherwise slow to about 45 mph",
+   "new": "Move into the left lane if safe; if not, slow to a careful, prudent speed"
+  },
+  "schoolbus_exp4": {
+   "old": "Slow down and prepare to stop. Yellow = \"I'm about to stop\" — exactly like a yellow traffic light. Speeding up to pass is illegal AND puts you next to the bus exactly when kids will be getting off. In Maine this counts as passing a school bus.",
+   "new": "Slow down and prepare to stop. Yellow = \"I'm about to stop\" — exactly like a yellow traffic light. Speeding up to pass puts you next to the bus exactly when kids will be getting off. Maine law says you must stop once the bus has stopped with its red lights flashing (29-A §2308), so be ready before that."
+  },
+  "at_55_mph_a_freight_train_needs_over_1": {
+   "old": "At 55 mph a freight train needs over 1 mile (≈ 6,000 ft) to stop. A 100-car train weighs roughly 18,000 tons — the equivalent of ~3,000 cars.",
+   "new": "At 55 mph an average freight train needs more than a mile to stop: the length of 18 football fields (Operation Lifesaver). Trains cannot stop quickly and cannot swerve."
+  },
+  "railroadcrossing_exp2": {
+   "old": "Never try to beat a train. Large objects look slower than they actually are — a train looking \"a ways off\" is usually doing 50+ mph and moving 80+ ft/sec. If your engine stalls mid-crossing (a real risk at low-speed crossings), you die. The train physically cannot stop in under a mile.",
+   "new": "Never try to beat a train. A large object looks slower than it is, so a train that looks far away can reach you very soon. If your engine stalls on the crossing, the train cannot stop for you: at 55 mph it needs more than a mile."
+  },
+  "black_ice_forms_between_28_f_and_38_f_": {
+   "old": "Black ice forms between 28°F and 38°F — it doesn't need to be below freezing. Highest risk: bridges and overpasses (cold air on both sides), shaded curves, and pre-dawn hours. The surface looks wet, not icy.",
+   "new": "Black ice is most slippery when the temperature is near freezing, because the ice is wet. Expect it at or below 32°F, and stay alert when your car's thermometer reads a few degrees above that: the road can be colder than the air. Bridges and overpasses freeze first and dry out last (Maine driver's manual). Also watch shaded curves and pre-dawn hours. The surface looks wet, not icy."
+  },
+  "winterdriving_c2_1": {
+   "old": "2 seconds (like dry pavement)",
+   "new": "4 seconds (like dry pavement)"
+  },
+  "winterdriving_c2_2": {
+   "old": "4 seconds (like rain)",
+   "new": "5 seconds (like rain)"
+  },
+  "winterdriving_c2_3": {
+   "old": "8–10 seconds",
+   "new": "6 seconds or more"
+  },
+  "winterdriving_exp2": {
+   "old": "8–10 seconds minimum on snow and ice. Braking distance on packed snow runs about 3× dry pavement, and on ice about 7× — the friction drops from μ 0.72 to 0.22 to 0.10, and braking distance is inversely proportional to μ. The \"car length per 10 mph\" rule is a 1950s formula and not remotely safe. Count from when the car ahead passes a fixed object until you pass it: one-one-thousand, two-one-thousand…",
+   "new": "At least 6 seconds on snow, and 8 on ice. That is Road Ready's guidance: the Maine manual says at least 4 seconds on a dry road and more on slick roads, without giving a snow number. Braking distance on packed snow runs about 3× dry pavement, and on ice about 7× — the friction drops from μ 0.72 to 0.22 to 0.10, and braking distance is inversely proportional to μ. The \"car length per 10 mph\" rule is a 1950s formula and not remotely safe. Count from when the car ahead passes a fixed object until you pass it: one-one-thousand, two-one-thousand…"
+  },
+  "constructionzone_c3_2": {
+   "old": "Stay right until just before the closure — the \"zipper merge\" maximizes throughput in heavy traffic",
+   "new": "Stay right and speed up, so you pass as many cars as you can before the lane closes"
+  },
+  "constructionzone_c3_3": {
+   "old": "Either A or B depending on traffic: light traffic, merge early; congested, zipper at the end",
+   "new": "Merge early when traffic is light; when it is backed up, use both lanes and take turns at the end"
+  },
+  "constructionzone_exp5": {
+   "old": "Orange barrels delineate active work areas — the gaps exist so workers, trucks, and equipment can move in and out. Cutting through can drive you over fresh paint, hot asphalt, or open trenches, and it's a doubled-fine traffic violation. Whatever 30 seconds you save isn't worth the ticket or the injury risk.",
+   "new": "Orange barrels delineate active work areas — the gaps exist so workers, trucks, and equipment can move in and out. Cutting through can drive you over fresh paint, hot asphalt, or open trenches, and it's a traffic violation. Whatever 30 seconds you save isn't worth the ticket or the injury risk."
+  },
+  "i_295_merge_65_mph_3_second_following_": {
+   "old": "I-295 merge. 65 mph, 3-second following, smooth acceleration.",
+   "new": "I-295 merge. 65 mph, 4-second following, smooth acceleration."
+  },
+  "i_will_scan_my_mirrors_every_5_8_secon": {
+   "old": "I will scan my mirrors every 5-8 seconds. I will look 15 seconds down the road. I will shoulder-check before every lane change.",
+   "new": "I will scan my mirrors every 5-8 seconds. I will look 20 to 30 seconds down the road. I will shoulder-check before every lane change."
+  },
+  "i_will_keep_3_seconds_of_following_dis": {
+   "old": "I will keep 3 seconds of following distance in clear weather, 4 seconds in rain, 6+ seconds in snow or fog.",
+   "new": "I will keep at least 4 seconds of following distance in clear weather, 5 in rain, and 6 or more in snow or fog."
+  },
+  "i_will_come_to_a_complete_stop_at_ever": {
+   "old": "I will come to a complete stop at every stop sign. I will never run a yellow light.",
+   "new": "I will come to a complete stop at every stop sign. When a light turns yellow, I will slow down and stop if I can do it safely."
+  },
+  "research_shows_signing_a_written_pledg": {
+   "old": "Research shows signing a written pledge reduces teen crash rates. This is your commitment to yourself.",
+   "new": "A written pledge is a promise you can look back on. This is your commitment to yourself."
+  },
+  "rightofway_c3_2": {
+   "old": "Traffic on the through-road",
+   "new": "Not you: slow down and be ready to yield"
+  },
+  "rightofway_exp3": {
+   "old": "The through-road has right-of-way at a T-intersection. The stem traffic must yield or stop.",
+   "new": "Maine has no special T-intersection rule, so do not count on going first. Slow down, be ready to stop, yield to a vehicle already in the intersection and to one on your right (29-A §2053), and turn only when the road is clear."
+  },
+  "rightofway_c10_3": {
+   "old": "The car going UPHILL goes first (has right-of-way)",
+   "new": "Stop at a safe wide spot and let the other car pass"
+  },
+  "rightofway_exp10": {
+   "old": "Car going UPHILL has right-of-way. Backing downhill is much easier than backing uphill loaded. The descending driver yields.",
+   "new": "Maine law gives neither car automatic priority on a hill. When passing is unsafe or difficult, a driver must stop at a reasonable time and a convenient place to let the other pass (29-A §2053). Slow early and use the first wide spot."
+  },
+  "rightofway_exp11": {
+   "old": "Zipper merge: use BOTH lanes fully until the merge point, then alternate. This is both legal and ~40% faster for total throughput. Early merging creates the backup.",
+   "new": "Zipper merge: use BOTH lanes fully until the merge point, then alternate. This is legal, and it keeps the backup shorter."
+  },
+  "rightofway_exp16": {
+   "old": "In a work zone, a flagger's hand signals are the LAW — they override posted signs and signals. Ignoring a flagger is a serious traffic offense, usually with doubled fines in work zones.",
+   "new": "In a work zone, a flagger's hand signals are the LAW — they override posted signs and signals. Ignoring a flagger is a traffic offense and puts workers in danger. (Maine doubles the fine for SPEEDING in a posted work zone.)"
+  },
+  "you_must_hold_the_permit_6_months_with": {
+   "old": "You must hold the permit 6 months with NO violations. Keep logging practice hours!",
+   "new": "You must hold the permit for 6 months and log 70 hours of supervised driving, 10 of them at night. Keep logging practice hours!"
+  },
+  "full_license": {
+   "old": "Full License!",
+   "new": "Restrictions lifted"
+  },
+  "congratulations_you_have_a_full_maine_": {
+   "old": "Congratulations. You have a full Maine driver's license. Drive responsibly — Maine roads count on you.",
+   "new": "Congratulations. The intermediate restrictions have ended. Your license is still provisional. For 2 years after you got it, a conviction for a moving violation suspends it for 30 days (longer if it happens again). Until you turn 21, you may not drive with any alcohol in your body. Drive with care. Maine roads count on you."
+  },
+  "eyes_level_with_top_of_steering_wheel_": {
+   "old": "Eyes level with top of steering wheel. Backrest nearly vertical (100-110°).",
+   "new": "Eyes above the top of the steering wheel. Backrest nearly upright."
+  },
+  "raise_the_seat_until_your_eyes_are_lev": {
+   "old": "Raise the seat until your EYES are level with the TOP of the steering wheel — you should see over it, not through it. Tilt the backrest slightly back (100-110° from vertical). Your back should touch the seat from tailbone to shoulders.",
+   "new": "Raise the seat until you can see clearly OVER the steering wheel, not through it. Set the backrest nearly upright, leaning back only a little (about 100-110° between the seat cushion and the backrest). Your back should touch the seat from tailbone to shoulders."
+  },
+  "most_drivers_set_side_mirrors_to_see_t": {
+   "old": "Most drivers set side mirrors to see the back of their own car — that doubles the rearview mirror. Instead: LEAN LEFT until your head almost touches the window, then adjust the left mirror until you just see your car's side. Repeat on the right by leaning right. When sitting normally, you'll see the lanes beside you — ELIMINATING BLIND SPOTS.",
+   "new": "Most drivers set side mirrors to see the back of their own car — that doubles the rearview mirror. Instead: LEAN LEFT until your head almost touches the window, then adjust the left mirror until you just see your car's side. Repeat on the right by leaning right. When sitting normally, you'll see the lanes beside you — REDUCING BLIND SPOTS. Always look over your shoulder too."
+  },
+  "postcrash_give_them_the_same_from_you_but_not_your_home_": {
+   "old": "Give them the same from you — but NOT your home address unless they're your parent's insurance holder.",
+   "new": "Give them yours: your name and address, your plate number, and your license and insurance if they ask. Maine law requires this (29-A §2252 and §2255)."
+  },
+  "1_5s_reaction_time_braking_doubles_eac": {
+   "old": "1.5s reaction time. Braking doubles each ~20 mph.",
+   "new": "Road Ready's model with a 1.5 s reaction time. Braking distance grows with speed squared: double the speed, about four times the braking distance."
+  },
+  "age_15_hold_6_months_no_violations": {
+   "old": " age 15, hold 6 months no violations",
+   "new": " age 15 (after driver ed if under 18), hold 6 months"
+  },
+  "65_70_mph": {
+   "old": "65-70 mph",
+   "new": "as posted (75 mph at most)"
+  },
+  "in_a_multi_lane_roundabout_right_lane_": {
+   "old": "In a multi-lane roundabout: right lane = first exit. Left lane = second or third exit.",
+   "new": "In a two-lane roundabout, choose your lane before you enter: right lane to leave within two exits (right turn or straight), left lane for a later exit. Signs and road arrows come first. Follow the lane lines."
+  },
+  "underinflated_tires_3_psi_low_across_a": {
+   "old": "Underinflated tires (~3 PSI low across all 4 tires) raise rolling resistance ~25%, costing roughly 3% MPG.",
+   "new": "Badly underinflated tires (about 25% low on all 4) cost a gas car roughly 3% MPG. Rule of thumb from fueleconomy.gov: about 0.2% for each 1 PSI low."
+  },
+  "tire_pressure_every_1_psi_low_0_3_mpg_": {
+   "old": "• Tire pressure: every 1 PSI low ≈ 0.3% MPG loss. Free fuel from a $5 gauge.",
+   "new": "• Tire pressure: every 1 PSI low ≈ 0.2% MPG loss, up to about 3% (fueleconomy.gov). Free fuel from a $5 gauge."
+  },
+  "low_350_ft": {
+   "old": "💡 Low (350 ft)",
+   "new": "💡 Low (250 ft)"
+  },
+  "low_beams_illuminate_350_ft_high_beams": {
+   "old": "• Low beams illuminate ~350 ft. High beams ~500 ft.",
+   "new": "• Low beams show about 250 ft (Maine driver's manual). High beams about twice that, ~500 ft."
+  },
+  "permit_q13_a1": {
+   "old": "Seconds (3-second rule minimum)",
+   "new": "Seconds (4-second rule minimum)"
+  },
+  "permit_q13_exp": {
+   "old": "Use the 3-second rule (4+ in bad weather). Pick a fixed point, count after the car ahead passes it — you should reach it no sooner than 3 seconds.",
+   "new": "Use the 4-second rule (more in bad weather). Pick a fixed point, count after the car ahead passes it — you should reach it no sooner than 4 seconds."
+  },
+  "permit_q17_a1": {
+   "old": "Dawn and dusk, especially May-December",
+   "new": "Dusk to dawn; moose May-June, deer in fall"
+  },
+  "permit_q17_exp": {
+   "old": "Dawn and dusk are peak risk because animals are most active and visibility is worst. Deer peak Oct-Dec (rut); moose active May-Oct.",
+   "new": "Moose and deer are most active between dusk and dawn, when they are also hardest to see. Moose collisions peak in May and June. Deer collisions rise in the fall and peak in November (Maine driver's manual)."
+  },
+  "permit_q27_q": {
+   "old": "Reaction time is typically increased by how much at legally drunk levels?",
+   "new": "How much does reaction time change at legally drunk levels?"
+  },
+  "permit_q27_a2": {
+   "old": "By 30-50% or more",
+   "new": "It gets clearly slower"
+  },
+  "permit_q27_exp": {
+   "old": "Alcohol slows reaction time dramatically — 0.08% BAC can double your reaction distance. Drugs, fatigue, and phones all do the same.",
+   "new": "Alcohol slows reaction time, and it also harms judgment, vision, and coordination. How much differs from person to person, and you cannot feel it yourself. Drugs, fatigue, and phones slow you too."
+  },
+  "permit_q34_exp": {
+   "old": "Maine allows learner permits starting at age 15 with driver's ed enrollment.",
+   "new": "Maine allows a learner's permit from age 15. If you are under 18 you must COMPLETE a driver education course before you apply."
+  },
+  "permit_q37_q": {
+   "old": "The 3-second rule is used to determine:",
+   "new": "What does the 4-second rule help you find?"
+  },
+  "permit_q37_exp": {
+   "old": "3-second rule: pick a fixed landmark. When the car ahead passes it, count \"1-Mississippi, 2-Mississippi, 3-Mississippi.\" You should reach it no sooner. Increase to 4+ in rain/snow.",
+   "new": "4-second rule: pick a fixed landmark. When the car ahead passes it, count \"one-thousand-one, one-thousand-two, one-thousand-three, one-thousand-four.\" You should reach it no sooner. Leave more in rain or snow."
+  },
+  "permit_q47_a2": {
+   "old": "30 seconds",
+   "new": "10 seconds"
+  },
+  "permit_q47_exp": {
+   "old": "Modern fuel-injected engines use so little fuel to restart that idling for more than ~30 seconds wastes more. The \"warm up for 5 minutes\" advice is from the carburetor era and no longer applies.",
+   "new": "Modern fuel-injected engines use so little fuel to restart that idling for more than about 10 seconds wastes more (U.S. Department of Energy). The \"warm up for 5 minutes\" advice is from the carburetor era and no longer applies."
+  },
+  "permit_q58_a1": {
+   "old": "12-15 seconds ahead down the road",
+   "new": "20-30 seconds ahead down the road"
+  },
+  "permit_q58_exp": {
+   "old": "Scan 12-15 seconds ahead (about 1/4 mile at highway speed). This is called \"high visual horizon\" — it gives you maximum time to react to hazards, stops, and lane changes.",
+   "new": "The Maine manual says to look 20 to 30 seconds ahead. At highway speed that is 1/3 to 1/2 mile. Looking far ahead gives you the most time to react to hazards, stops and lane changes."
+  },
+  "permit_q60_exp": {
+   "old": "Rain reduces friction by 30-50%. Slow down, increase following to 4+ seconds, and turn on headlights when wipers are in constant use or visibility is reduced. The first 10 minutes of rain are worst — oil lifts off the road.",
+   "new": "The Maine manual says to slow down 5 to 10 mph on a wet road. Leave 5 seconds or more behind the car ahead. Turn on your headlights when your wipers are in constant use or when it is hard to see. The road can be very slippery in the first few minutes of rain, because oil comes to the surface."
+  },
+  "permit_q68_a2": {
+   "old": "35 mph in heavy rain or standing water",
+   "new": "30 to 40 mph in heavy rain or standing water"
+  },
+  "permit_q68_exp": {
+   "old": "Hydroplaning starts as low as 35 mph in heavy rain or standing water. Tires lose contact and ride on a film of water. If it happens: ease off gas, do not brake or steer hard, wait for tires to regain grip.",
+   "new": "Hydroplaning can begin at speeds as low as 30 to 40 mph (Maine driver's manual); in a bad rainstorm tires can lose all contact at 50 to 60 mph. The tires ride on a film of water. If it happens: ease off gas, do not brake or steer hard, wait for tires to regain grip."
+  },
+  "permit_q71_q": {
+   "old": "Two-second rule, three-second rule, four-second rule. The number is the minimum:",
+   "new": "In the \"four-second rule\" for following another car, what does the number measure?"
+  },
+  "permit_q71_exp": {
+   "old": "These rules count SECONDS of following distance to the car ahead. Three seconds is the minimum on dry roads, four+ in rain, six+ in snow or fog.",
+   "new": "The rule counts SECONDS of following distance to the car ahead. Four seconds is the minimum on dry roads (Maine manual). Leave five+ in rain and six+ in snow or fog."
+  },
+  "permit_q72_a1": {
+   "old": "Have already been following at 3+ seconds and brake firmly",
+   "new": "Have already been following at 4+ seconds and brake firmly"
+  },
+  "permit_q87_q": {
+   "old": "The two-second rule should be increased to four or more seconds when:",
+   "new": "When should you increase the four-second rule to five or more seconds?"
+  },
+  "permit_q87_exp": {
+   "old": "Wet roads: 4+ seconds. Snow: 6+ seconds. Fog: 6+ seconds. Following a motorcycle or large truck: 4+ seconds. At night: 4+ seconds. When in doubt, add more distance.",
+   "new": "Wet roads: 5+ seconds. Snow: 6+ seconds. Fog: 6+ seconds. Behind a motorcycle or large truck: leave extra room. At night: add at least 1 second. When in doubt, add more distance."
+  },
+  "permit_q103_a1": {
+   "old": "Unbuckle your seatbelt and open the window or door IMMEDIATELY before the car sinks",
+   "new": "Unbuckle your seatbelt, open the window IMMEDIATELY and get out before the car sinks"
+  },
+  "permit_q103_exp": {
+   "old": "You have 30-60 seconds. Unbuckle. Open the window (or break it with a window breaker tool). Get out BEFORE the car submerges. Electric windows may still work for ~1 minute. Do not try to open doors until water equalizes.",
+   "new": "Act at once. Unbuckle. Open the window (or break it with a window breaker tool). Get out BEFORE the car submerges. Open power windows as soon as possible, before the water shorts them out. The window is the best way out: water pressure makes a door very hard to open (Maine driver's manual)."
+  },
+  "permit_q108_q": {
+   "old": "What is the \"2-second rule\" for following distance based on?",
+   "new": "What is the \"4-second rule\" for following distance based on?"
+  },
+  "permit_q108_exp": {
+   "old": "The time-based rule auto-adjusts for speed. At 30 mph, 2 seconds = 88 ft. At 60 mph, 2 seconds = 176 ft. The distance doubles but the gap in seconds stays the same. That is why seconds are better than feet or car lengths.",
+   "new": "The time-based rule auto-adjusts for speed. At 30 mph, 4 seconds = 176 ft. At 60 mph, 4 seconds = 352 ft. The distance doubles but the gap in seconds stays the same. That is why seconds are better than feet or car lengths."
+  },
+  "permit_q111_a0": {
+   "old": "The car on the through road always goes first",
+   "new": "Slow down and yield to the car on your right"
+  },
+  "permit_q111_a1": {
+   "old": "The car on the stem road goes first if it arrived first",
+   "new": "Go first if you are the one turning"
+  },
+  "permit_q111_a3": {
+   "old": "Whoever arrives first",
+   "new": "Go first if you are moving faster"
+  },
+  "permit_q111_exp": {
+   "old": "At a T-intersection without signs, the through road (top of the T) has the right-of-way. The car on the terminating road (stem) must yield. This is because they are essentially entering a new road.",
+   "new": "Maine has no special T-intersection rule. With no signs or signals, slow down and be ready to stop. Yield to a vehicle already in the intersection. If two cars arrive at about the same time, yield to the car on your right (29-A §2053). Never assume the other driver will wait."
+  },
+  "permit_q114_q": {
+   "old": "In Maine, the minimum age to obtain a full unrestricted license is:",
+   "new": "In Maine, what is the youngest age at which the intermediate license limits can end?"
+  },
+  "permit_q114_exp": {
+   "old": "Maine graduated licensing: permit at 15, intermediate at 16 (after 70 hrs supervised driving), and full unrestricted at about 16 years and 9 months if the 270-day intermediate restrictions are not extended.",
+   "new": "Maine licenses come in steps. You can get a permit at 15. You can get an intermediate license at 16, after 6 months and 70 hours of supervised driving. The intermediate restrictions last 270 days, so they can end at about 16 years and 9 months. The license is still PROVISIONAL. For 2 years after you get it, a moving-violation conviction suspends it for 30 days (180 days for a second, 1 year for a third). The law keeps the name \"provisional\" until you turn 21."
+  },
+  "permit_q117_exp": {
+   "old": "By driving in Maine you have already consented to chemical testing if police suspect impairment. Refusing triggers an automatic 275-day suspension (longer for repeat offenses), separate from any OUI charges.",
+   "new": "When you drive in Maine, you have already agreed to a chemical test if police suspect you are impaired. Refusing triggers an automatic 275-day suspension (18 months if you are under 21; longer for repeat offenses). That is separate from any OUI charge."
+  },
+  "permit_q120_exp": {
+   "old": "Fatigue + alcohol is exponentially worse than either alone. Studies show being awake 18+ hours alongside a \"legal\" 0.05% BAC gives you the impairment of a 0.10% drunk driver.",
+   "new": "Fatigue and alcohol each slow your reactions and judgment, and together they are worse than either alone. The CDC says being awake for 17 hours is similar to having a BAC of 0.05%, and being awake for 24 hours is similar to a BAC of 0.10%. If you are tired, do not drive, even after one drink."
+  },
+  "permit_q121_exp": {
+   "old": "Sedating antihistamines (Benadryl, NyQuil, Advil PM) cause drowsiness comparable to alcohol. Read labels: \"may cause drowsiness\" means do not drive. Non-drowsy options (Claritin, Zyrtec) are safer.",
+   "new": "Some allergy and cold medicines make you sleepy. Benadryl, NyQuil and Advil PM are examples. Read the label: \"may cause drowsiness\" means do not drive. Non-drowsy options such as loratadine (Claritin) are safer. Cetirizine (Zyrtec) is not one of them: its label warns that drowsiness may occur."
+  },
+  "permit_q127_q": {
+   "old": "In light snow, you should reduce your speed by approximately:",
+   "new": "On packed snow, what speed does the Maine driver's manual say to slow down to?"
+  },
+  "permit_q127_a0": {
+   "old": "Nothing — modern cars handle snow",
+   "new": "No change, since modern cars handle snow well"
+  },
+  "permit_q127_a2": {
+   "old": "About a third (1/3) below the posted limit",
+   "new": "About half of your normal dry-road speed"
+  },
+  "permit_q127_a3": {
+   "old": "You should drive at least 50% slower than normal",
+   "new": "A walking pace, however light the snow is"
+  },
+  "permit_q127_exp": {
+   "old": "Light snow: reduce speed by ~1/3. Heavy snow or ice: reduce by 1/2 or more. The posted limit assumes ideal conditions; you are responsible for adjusting to real conditions.",
+   "new": "Maine driver's manual: wet road, slow down 5 to 10 mph; packed snow, slow down to half speed; ice, slow to a crawl. The posted limit assumes ideal conditions; you are responsible for adjusting to real conditions."
+  },
+  "permit_q185_exp": {
+   "old": "Maine sets the inspection fee by statute at about $12.50 for standard passenger cars (heavier or commercial vehicles cost more). Pay it at any licensed inspection station — independent garages and dealerships hold most of the licenses.",
+   "new": "Maine law caps the standard inspection fee at $12.50 (29-A §1751). Cars registered in Cumberland County need an enhanced inspection. It can cost more: up to $18.50 for 1996 and newer models. You pay at any licensed inspection station. Most are garages and car dealers."
+  },
+  "permit_q188_exp": {
+   "old": "Maine Title 12 §12403: report a collision with a deer, moose, bear or wild turkey to a law enforcement officer BY THE QUICKEST MEANS. If the officer finds your vehicle has apparent damage, they issue a certificate giving you ownership of the carcass — and you must then take the WHOLE animal, not the parts you want. Failing to report, or removing part of a carcass without that certificate, is a civil violation carrying a $100–$500 fine. Report number: dial 911 (or *SP for State Police).",
+   "new": "Maine Title 12 §12403: report a collision with a deer, moose, bear or wild turkey to a law enforcement officer BY THE QUICKEST MEANS. To report it, call 911. If the officer finds that your vehicle has apparent damage, the officer gives you a certificate. The certificate makes the carcass yours. You must then take the WHOLE animal, not only the parts you want. Failing to report, or removing part of a carcass without that certificate, is a civil violation carrying a $100–$500 fine."
+  },
+  "permit_q189_exp": {
+   "old": "After a wildlife strike: hazards on, get OFF the travel lane, call 911 — and stay clear of the carcass (a moose can weigh 1,200 lbs and other drivers can hit it). Only after the scene is safe do you assess the car. Reporting also documents the crash for insurance.",
+   "new": "After a wildlife strike: hazards on, get OFF the travel lane, call 911 — and stay clear of the carcass (a moose can weigh about 1,000 lbs and other drivers can hit it). Only after the scene is safe do you assess the car. Reporting also documents the crash for insurance."
+  },
+  "drag_content": {
+   "old": "Every car pushes air out of the way as it moves. The force it takes to do that is DRAG. The key insight: drag grows with the square of speed. Double your speed and drag becomes 4× stronger. At 30 mph, drag is small. At 70 mph, it is the dominant force working against you. This is why most cars get their best MPG around 45-55 mph and lose efficiency sharply above that. Engineers spend huge effort shrinking 'Cd × A' — the drag coefficient times frontal area. A sleek EV might have Cd × A ≈ 0.53 m². A boxy pickup is ≈ 1.35 m² — almost three times more drag at the same speed.",
+   "new": "Every car pushes air out of the way as it moves. The force it takes to do that is DRAG. The key insight: drag grows with the square of speed. Double your speed and drag becomes 4× stronger. At 30 mph, drag is small. At 70 mph, it is the dominant force working against you. This is why most cars have a broad fuel-economy sweet spot in the 30-55 mph range, with the peak often around 40 mph, and lose efficiency sharply above it: by 75 mph a typical sedan has given up roughly a quarter of its best MPG. Engineers spend huge effort shrinking 'Cd × A' — the drag coefficient times frontal area. A sleek EV might have Cd × A ≈ 0.53 m². A boxy pickup is ≈ 1.35 m² — almost three times more drag at the same speed.",
+   "note": "stale ui_strings copy: the tool source was already corrected; English users see the ui_strings value"
+  },
+  "rolling_content": {
+   "old": "Tires are flexible. They squish at the contact patch, unsquish at the back — and some energy is lost to heat every rotation. That loss is called ROLLING RESISTANCE. Unlike drag, it barely changes with speed. It depends on: tire inflation (underinflated = huge penalty, lose ~0.3% MPG per 1 PSI low), tire compound (low-rolling-resistance LRR tires save ~4-8% fuel), road surface (asphalt < concrete < gravel), and vehicle weight. Below about 40 mph, rolling resistance is the DOMINANT force slowing you down. Above 40 mph, aerodynamic drag takes over.",
+   "new": "Tires are flexible. They squish at the contact patch, unsquish at the back — and some energy is lost to heat every rotation. That loss is called ROLLING RESISTANCE. Unlike drag, it barely changes with speed. It depends on: tire inflation (underinflated = wasted fuel, about 0.2% MPG per 1 PSI low, up to about 3%), tire compound (low-rolling-resistance LRR tires save ~4-8% fuel), road surface (asphalt < concrete < gravel), and vehicle weight. Below about 40 mph, rolling resistance is the DOMINANT force slowing you down. Above 40 mph, aerodynamic drag takes over."
+  },
+  "mpg_content": {
+   "old": "Miles per gallon (MPG) is a ratio — distance divided by fuel used. Higher = better. But MPG hides something important: the relationship is NON-LINEAR. Going from 15 to 20 MPG saves more fuel than going from 35 to 40 MPG, even though both are a 5 MPG improvement. That is why gallons-per-100-miles (GPM) is sometimes a better metric. Europe uses L/100km for exactly this reason. The things that move your MPG up or down are: speed (sweet spot 45-55 mph), aggression (jackrabbit starts = -15 to -40%), tire pressure (low = -3 to -10%), AC use (-5 to -10% at low speed, negligible at highway), roof racks (-10 to -25%), cargo weight (-1% per 100 lbs), and engine condition.",
+   "new": "Miles per gallon (MPG) is a ratio — distance divided by fuel used. Higher = better. But MPG hides something important: the relationship is NON-LINEAR. Going from 15 to 20 MPG saves more fuel than going from 35 to 40 MPG, even though both are a 5 MPG improvement. That is why gallons-per-100-miles (GPM) is sometimes a better metric. Europe uses L/100km for exactly this reason. The things that move your MPG up or down are: speed (sweet spot is a broad 30-55 mph plateau, peaking near 40), aggression (jackrabbit starts = -15 to -40%), tire pressure (low = up to -3%), AC use (-5 to -10% at low speed, negligible at highway), roof racks (-10 to -25%), cargo weight (-1% per 100 lbs), and engine condition.",
+   "tool_old": "Miles per gallon (MPG) is a ratio — distance divided by fuel used. Higher = better. But MPG hides something important: the relationship is NON-LINEAR. Going from 15 to 20 MPG saves more fuel than going from 35 to 40 MPG, even though both are a 5 MPG improvement. That is why gallons-per-100-miles (GPM) is sometimes a better metric. Europe uses L/100km for exactly this reason. The things that move your MPG up or down are: speed (sweet spot is a broad 30-55 mph plateau, peaking near 40), aggression (jackrabbit starts = -15 to -40%), tire pressure (low = -3 to -10%), AC use (-5 to -10% at low speed, negligible at highway), roof racks (-10 to -25%), cargo weight (-1% per 100 lbs), and engine condition."
+  },
+  "hypermiling_content": {
+   "old": "Hypermiling is the art of squeezing every mile from a gallon. Proven techniques: (1) Gentle accel — imagine an egg between your foot and the pedal. (2) Anticipate — read the road 15 seconds ahead so you brake less. (3) Coast to stops — fuel cut-off activates when you lift off the gas, meaning coasting in gear uses ZERO fuel on modern cars. (4) Pulse and glide — gently accelerate, then coast. Works best under 45 mph. (5) Highway cruise at 55-60 mph, not 75 (drag is brutal). (6) Tires at door-sticker PSI. (7) Remove the roof box when not using it. (8) Don't idle — modern engines restart on <0.5 s of fuel, so 30+ sec of idling wastes more than restarting. Combined, these techniques can boost real-world MPG by 20-40% over aggressive driving. Free money.",
+   "new": "Hypermiling is the art of squeezing every mile from a gallon. Proven techniques: (1) Gentle accel — imagine an egg between your foot and the pedal. (2) Anticipate — read the road 20-30 seconds ahead so you brake less. (3) Coast to stops — fuel cut-off activates when you lift off the gas, meaning coasting in gear uses ZERO fuel on modern cars. (4) Pulse and glide — gently accelerate, then coast. Works best under 45 mph. (5) Highway cruise at 55-60 mph, not 75 (drag is brutal). (6) Tires at door-sticker PSI. (7) Remove the roof box when not using it. (8) Don't idle — modern engines restart on <0.5 s of fuel, so 30+ sec of idling wastes more than restarting. Aggressive driving can lower gas mileage by roughly 15% to 30% at highway speeds and 10% to 40% in stop-and-go traffic (fueleconomy.gov). Driving smoothly gets that back. Free money."
+  },
+  "night_content": {
+   "old": "At night your headlights illuminate about 350 feet with low beams, ~500 feet with high beams. Your braking distance at 60 mph is ~240 ft. Add reaction distance — you are already using your ENTIRE headlight range just to stop in time. At 75 mph, you physically cannot stop within your headlight range with low beams. This is called 'overdriving your headlights' and it is how single-vehicle-at-night crashes happen. Rule: drive slow enough that you could stop within the distance you can see. Use high beams only when clear; Maine §2067 requires dimming within 500 ft of oncoming traffic and within 300 ft when following another vehicle.",
+   "new": "At night your low beams let you see clearly only about 250 feet ahead (Maine driver's manual). High beams reach about twice as far, ~500 feet. On dry pavement your braking distance at 50 mph is about 116 ft, and at night you should budget a 2-second reaction (slower than the 1.5 s daytime figure, because an unlit hazard has to resolve out of darkness before you even recognize it) — that is another ~147 ft, so roughly 263 ft total. That is already MORE than your low beams show, on a dry road with good tires. The manual says it plainly: faster than about 50 mph on a dark road, you are really 'driving blind'. This is called 'overdriving your headlights' and it is how single-vehicle-at-night crashes happen. Rule: drive slow enough that you could stop within the distance you can see. Use high beams only when clear; Maine §2067 requires dimming within 500 ft of oncoming traffic and within 300 ft when following another vehicle.",
+   "tool_old": "At night your headlights illuminate about 350 feet with low beams, ~500 feet with high beams. On dry pavement your braking distance at 60 mph is about 170 ft, and at night you should budget a 2-second reaction (slower than the 1.5 s daytime figure, because an unlit hazard has to resolve out of darkness before you even recognize it) — that is another ~176 ft, so roughly 345 ft total. You are already using your ENTIRE low-beam range just to stop in time, on a dry road with good tires. At 75 mph, you physically cannot stop within your headlight range with low beams. This is called 'overdriving your headlights' and it is how single-vehicle-at-night crashes happen. Rule: drive slow enough that you could stop within the distance you can see. Use high beams only when clear; Maine §2067 requires dimming within 500 ft of oncoming traffic and within 300 ft when following another vehicle."
+  },
+  "winter_content": {
+   "old": "Maine winters test every skill you have. Four rules: (1) Look far ahead. Bad things happen slowly if you see them coming. Tight focus = surprise = crashes. (2) Gentle inputs. Smooth acceleration, smooth braking, smooth steering. Jerky = slip. (3) Increase following distance to 6-10 seconds on snow. Regular 3 seconds is nowhere near enough when friction drops to 0.2. (4) When in doubt, slow down more. Maine-specific: moose warnings are real — May through October at dawn/dusk, scan treelines. Black ice on bridges FIRST. Take reasonable measures so snow and ice cannot fall from your car; safest practice is clearing the roof, windows, lights, and hood before driving. Keep your gas tank above half (prevents fuel line freeze, and a half tank means real emergency reserves if you get stuck).",
+   "new": "Maine winters test every skill you have. Four rules: (1) Look far ahead. Bad things happen slowly if you see them coming. Tight focus = surprise = crashes. (2) Gentle inputs. Smooth acceleration, smooth braking, smooth steering. Jerky = slip. (3) Increase following distance to at least 6 seconds on snow and 8 on ice (this is Road Ready's guidance; the Maine manual says at least 4 seconds, and more on slick roads). The regular 4 seconds is not enough when friction drops to 0.2. (4) When in doubt, slow down more. Maine-specific: moose warnings are real — the risk runs from dusk to dawn and peaks in May and June, scan treelines. Black ice on bridges FIRST. Take reasonable measures so snow and ice cannot fall from your car; safest practice is clearing the roof, windows, lights, and hood before driving. Keep your gas tank above half (prevents fuel line freeze, and a half tank means real emergency reserves if you get stuck)."
+  },
+  "highway_desc": {
+   "old": "I-295 Portland. Practice merging, lane changes, and keeping 3-second following distance at speed.",
+   "new": "I-295 Portland. Practice merging, lane changes, and keeping 4-second following distance at speed."
+  },
+  "roundabout_desc": {
+   "old": "Yield to traffic already in the circle. Enter on a gap. No stopping inside. Common in Maine new roads.",
+   "new": "Yield to traffic already in the circle. Enter on a gap. Keep moving unless safety requires a stop. Common in Maine new roads.",
+   "note": "stale ui_strings copy: the tool source was already corrected; English users see the ui_strings value"
+  },
+  "night_desc": {
+   "old": "Suburban roads after dark. Headlights reach ~350 ft with lows, 500 ft with highs. Do not overdrive them.",
+   "new": "Suburban roads after dark. Headlights reach ~250 ft with lows, 500 ft with highs. Do not overdrive them."
+  },
+  "rain_desc": {
+   "old": "Wet pavement. Friction drops ~40%. Hydroplaning risk above 45 mph. Headlights on when wipers are in constant use or visibility is reduced.",
+   "new": "Wet pavement. Friction drops ~40%. Hydroplaning can begin at 30 to 40 mph. Headlights on when wipers are in constant use or visibility is reduced."
+  }
+ },
+ "ui_only_corrections": {
+  "tile_questions_count": {
+   "old": "{n} questions. Maine BMV format.",
+   "new": "{n} questions. Practice test (the real BMV test has 30).",
+   "note": "key is not used by the tool source (orphan in ui_strings); correct or delete"
+  },
+  "roundaboutdrill_exp2": {
+   "action": "delete",
+   "note": "orphan: the tool now uses roundabout_emergency_exit_safely; old text says never stop inside a roundabout"
+  },
+  "rightofway_exp6": {
+   "action": "delete",
+   "note": "orphan: superseded advice (Never stop inside)"
+  },
+  "rightofway_exp19": {
+   "action": "delete",
+   "note": "orphan: superseded advice (Never stop INSIDE a roundabout)"
+  },
+  "before_you_drive": {
+   "action": "none",
+   "note": "NOT mojibake: value is U+1F9CA (ice cube emoji) + ' Before You Drive'; it only looks garbled in a viewer that is not reading UTF-8"
+  }
+ },
+ "orphaned_by_this_lane": [
+  "never_say_these_words",
+  "postcrash_i_m_so_sorry_even_when_you_feel_awful_this_is_",
+  "postcrash_i_didn_t_see_you_admission_say_let_s_let_the_p",
+  "postcrash_i_m_not_hurt_your_adrenaline_is_masking_pain_i",
+  "postcrash_are_you_okay_let_s_wait_for_the_police",
+  "postcrash_i_d_like_to_be_checked_out_by_a_doctor_to_be_s",
+  "has_row",
+  "uphill_downhill_on_narrow_roads",
+  "3_seconds",
+  "60_ft",
+  "95_ft",
+  "250_ft",
+  "105_ft",
+  "170_ft",
+  "470_ft",
+  "225_ft",
+  "385_ft",
+  "1100_ft",
+  "295_ft",
+  "510_ft",
+  "1500_ft"
+ ]
+}

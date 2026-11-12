@@ -164,7 +164,8 @@ describe('ordinary traffic yields to pedestrian intent and protects the crossing
     run.scope.infiniteWorldRef.current = { profile, chunks: {}, getChunk: () => profile,
       spline: { centerAt: () => 48, headingAt: () => 0 } };
     Object.assign(run.actor, { y: 120, speed: 10 });
-    Object.assign(run.pedestrian, { y: 25.8, crosswalkY: 25.8, _roadStation: 25.8, _curvedRoadFrame: true });
+    // round 32 (tr32): Math.random = 0.5 now places the car 37.8 m behind the learner (station 92.8), not 29.2 m ahead (25.8)
+    Object.assign(run.pedestrian, { y: 92.8, crosswalkY: 92.8, _roadStation: 92.8, _curvedRoadFrame: true });
     const random = vi.spyOn(Math, 'random').mockReturnValue(0.5);
     try {
       run.step(1 / 60);
@@ -172,7 +173,7 @@ describe('ordinary traffic yields to pedestrian intent and protects the crossing
       expect(run.actor.y).toBeGreaterThan(100);
       run.scope.pedsRef.current = [];
       run.step(1 / 60);
-      expect(run.actor.y).toBeCloseTo(25.8, 6);
+      expect(run.actor.y).toBeCloseTo(92.8, 6);
     } finally { random.mockRestore(); }
   });
 

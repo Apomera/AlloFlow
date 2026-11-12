@@ -109,10 +109,12 @@ describe('Document Builder refinement pass', () => {
 
   it('makes generated Concept Sort placement keyboard-completable', () => {
     expect(pipeline).toContain('class="alloflow-cs-place-btn"');
-    expect(pipeline).toContain('Place selected item in ${_escTxt(cat.label)}');
+    // 2026-11-11: translated label with the category filled in.
+    expect(pipeline).toContain("'Place selected item in {category}', { category: cat.label }");
     expect(pipeline).toContain('b.disabled = false');
-    expect(pipeline).toContain("resultsEl.textContent = 'Selected '");
-    expect(pipeline).toContain("resultsEl.textContent = 'Placed '");
+    // Translated runtime templates (document language).
+    expect(pipeline).toContain("resultsEl.textContent = csCopy('selected', 'Selected {item}. Choose a category.'");
+    expect(pipeline).toContain("resultsEl.textContent = csCopy('placed', 'Placed {item} in {category}.'");
   });
 
   it('makes editable A11y Inspector badges keyboard operable without self-scanning', () => {

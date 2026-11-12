@@ -6,7 +6,8 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 const component = { id: 1, type: 'resistor', value: 10000 };
 const families = [
   { name: 'current from voltage', first: [3, 5, 6, 9, 12, 24], second: [10, 20, 50, 100, 200, 500], answer: (v, r) => v / r, unit: 'A' },
-  { name: 'voltage', first: [.1, .2, .5, 1, 2, 3], second: [10, 20, 50, 100, 200], answer: (i, r) => i * r, unit: 'V' },
+  // Voltage questions pick the resistor first, then only currents that need 1-24 V.
+  { name: 'voltage', first: [10, 20, 50, 100, 200], second: r => [.01, .02, .05, .1, .2, .5, 1, 2].filter(i => i * r >= 1 && i * r <= 24), answer: (r, i) => i * r, unit: 'V' },
   { name: 'resistance', first: [6, 9, 12, 24], second: [.1, .2, .5, 1, 2], answer: (v, i) => v / i, unit: 'Ω' },
   { name: 'power from current', first: [6, 9, 12], second: [.5, 1, 2, 3], answer: (v, i) => v * i, unit: 'W' },
   { name: 'series resistance', first: [50, 100, 200], second: [50, 100, 200], answer: (a, b) => a + b, unit: 'Ω' },
@@ -22,13 +23,15 @@ describe('Ohm quiz options', () => {
   it.each(families.map((family, index) => ({ ...family, index })))('has one correct, positive, visibly distinct option for every $name input pair', family => {
     const random = vi.spyOn(Math, 'random');
     const decimals = family.unit === 'A' ? 3 : 1;
-    for (let a = 0; a < family.first.length; a++) for (let b = 0; b < family.second.length; b++) {
-      for (const draws of [[0, 0, 0], [.999, .999, .999], [.5, .5, .5], [.25, .75, .25]]) {
-        const sequence = [(family.index + .1) / 8, (a + .1) / family.first.length, (b + .1) / family.second.length, ...draws];
+    for (let a = 0; a < family.first.length; a++) {
+      const second = typeof family.second === 'function' ? family.second(family.first[a]) : family.second;
+      expect(second.length).toBeGreaterThan(0);
+      for (let b = 0; b < second.length; b++) for (const draws of [[0, 0, 0], [.999, .999, .999], [.5, .5, .5], [.25, .75, .25]]) {
+        const sequence = [(family.index + .1) / 8, (a + .1) / family.first.length, (b + .1) / second.length, ...draws];
         let draw = 0;
         random.mockImplementation(() => sequence[draw++] ?? .5);
         const question = window.StemLab.circuitOhmQuestion();
-        const expected = Number(family.answer(family.first[a], family.second[b]).toFixed(decimals));
+        const expected = Number(family.answer(family.first[a], second[b]).toFixed(decimals));
         expect(question.answer).toBe(expected);
         expect(question.unit).toBe(family.unit);
         expect(question.opts).toHaveLength(4);

@@ -189,6 +189,8 @@ describe('ordinary-road riders protect active pedestrian crossings', () => {
           if (recycle) { run.rider.y = 150; run.rider._roadStation = 150; }
           const beforeScope = { ...run.scope, cyclistsRef: { current: [{ ...run.rider }] } };
           makeBeforeUpdater(beforeScope)(1 / 60); run.step(1 / 60);
+          // round 32 (tr32): a streamed recycle now lands outside the learner's stopping envelope, so it no longer equals the old code
+          if (recycle && !finite && !hit) { const away = Math.abs(run.rider._roadStation - RR.mainRoadLocalPoint(run.scope.infiniteWorldRef.current, run.scope.carRef.current.x, run.scope.carRef.current.y).longitudinal); expect(away).toBeGreaterThanOrEqual(RR.RR_SPAWN_BEHIND_MIN_METERS - 1e-6); continue; }
           for (const key of ['x', 'y', 'heading', 'speed', '_cruiseSpeed', '_roadStation',
             '_bikeLane', '_hit', '_followingPlayer', '_brakingForPlayer'])
             expect(run.rider[key], key).toEqual(beforeScope.cyclistsRef.current[0][key]);

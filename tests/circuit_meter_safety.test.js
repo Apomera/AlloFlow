@@ -51,7 +51,7 @@ describe('Circuit Lab meter topology and safety coach', () => {
     expect(html).toContain('Incorrect placement: circuit is nearly open');
     expect(html).toContain('nearly stops current');
     expect(html).toContain('data-circuit-meter-coach="voltmeter-open"');
-    expect(html).toContain('0.000A');
+    expect(html).toContain('9.00 nA');
   });
 
   it('recognizes an ammeter in series as correct', () => {
@@ -62,7 +62,7 @@ describe('Circuit Lab meter topology and safety coach', () => {
 
     expect(html).toContain('Measurement placement is correct');
     expect(html).toContain('data-circuit-meter-coach="correct"');
-    expect(html).toContain('0.090A');
+    expect(html).toContain('90.00 mA');
     expect(html).not.toContain('Unsafe placement');
   });
 
@@ -74,7 +74,7 @@ describe('Circuit Lab meter topology and safety coach', () => {
 
     expect(html).toContain('Measurement placement is correct');
     expect(html).toContain('drawing negligible current');
-    expect(html).toContain('0.090A');
+    expect(html).toContain('90.00 mA');
     expect(html).not.toContain('Incorrect placement');
   });
 });

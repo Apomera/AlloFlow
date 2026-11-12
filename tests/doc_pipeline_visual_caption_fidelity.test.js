@@ -97,13 +97,20 @@ describe('visual captions are readable content in printed resources', () => {
   });
 
   it('scopes the single-column, contained-image layout to print media and structured panels', () => {
-    const item = image('**Read:** A fact and a reason.');item.data.visualPlan.panels.push({ ...item.data.visualPlan.panels[0], id: 'panel-two' });
+    // 2026-11-11: panels repeating one picture now render once, so panel two needs its own image to keep a 2-column grid.
+    const item = image('**Read:** A fact and a reason.');item.data.visualPlan.panels.push({ ...item.data.visualPlan.panels[0], id: 'panel-two', imageUrl: 'data:image/png;base64,iVBORw0KGgoB' });
     const doc = parse(pipeline.generateResourceHTML(item, false, {}, { isWorksheet: false }));
     expect(doc.querySelector('.vp-grid').style.gridTemplateColumns).toBe('repeat(2,minmax(0,1fr))');
     const css = [...doc.querySelectorAll('style')].map(style => style.textContent).join('\n');
     expect(css).toMatch(/@media print\s*\{[\s\S]*data-vp-print-layout="reading"[\s\S]*max-height:180px/);
     expect(css).toContain('object-fit:contain!important');
     expect(css).toContain('line-height:1.4!important; margin-top:0!important; margin-bottom:8px!important');
+  });
+
+  it('shows a picture repeated across panels once, with every caption', () => {
+    const item = image('**Read:** A fact and a reason.');item.data.visualPlan.panels.push({ ...item.data.visualPlan.panels[0], id: 'panel-two' });
+    const doc = parse(pipeline.generateResourceHTML(item, false, {}, { isWorksheet: false }));
+    expect(doc.querySelector('.vp-grid').style.gridTemplateColumns).toBe('repeat(1,minmax(0,1fr))');
   });
 });
 

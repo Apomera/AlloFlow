@@ -124,7 +124,8 @@ describe('Memory Aid export rules are shared with the live view', () => {
     const sheet = worksheet([card]);
     expect(sheet.querySelector('.memory-aid-recall-sheet')).toBeNull();
     expect(sheet.querySelector('.memory-aid-authoring-sheet')).not.toBeNull();
-    expect(sheet.textContent).toContain('Authoring only');
+    // 2026-11-11: student wording replaced the "Authoring only" kicker.
+    expect(sheet.textContent).toContain('Your teacher is still checking these facts');
     expect(sheet.textContent).not.toContain('Recall practice · facts hidden');
   });
 

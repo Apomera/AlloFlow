@@ -282,7 +282,8 @@ describe('Applied Challenge Studio pass 2: self-check, teacher comment, compact 
     const html = render(item, false);
     const doc = new DOMParser().parseFromString(html, 'text/html');
     const section = doc.querySelector('.applied-challenge-export');
-    expect(section.textContent).toContain('Not rated yet');
+    // An unrated row offers the three ratings instead of a "Not rated yet" chip.
+    expect(section.querySelectorAll('[role="radiogroup"] input[type="radio"][data-allo-response-key*=":applied:selfcheck-"]').length).toBe(6);
     expect(section.textContent).toContain('Evidence is in paragraph two.');
     expect(section.textContent).toContain('Uses lesson evidence');
     expect(section.textContent).toContain('TEACHER COMMENT REACHES THE STUDENT COPY');

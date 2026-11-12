@@ -187,6 +187,8 @@ describe('ordinary riders obey their actual traffic-light approach', () => {
           if (recycle) { run.rider.y = 150; run.rider._roadStation = 150; }
           const before = { ...run.scope, cyclistsRef: { current: [{ ...run.rider }] } };
           makeBeforeUpdater(before)(1 / 60); run.step(1 / 60);
+          // round 32 (tr32): a streamed recycle now lands outside the learner's stopping envelope, so it no longer equals the old code
+          if (recycle && !finite && !hit) { const away = Math.abs(run.rider._roadStation - RR.mainRoadLocalPoint(run.scope.infiniteWorldRef.current, run.scope.carRef.current.x, run.scope.carRef.current.y).longitudinal); expect(away).toBeGreaterThanOrEqual(RR.RR_SPAWN_BEHIND_MIN_METERS - 1e-6); continue; }
           for (const key of ['x', 'y', 'heading', 'speed', '_roadStation', '_bikeLane', '_hit', '_followingPlayer', '_brakingForPlayer'])
             expect(run.rider[key], key).toEqual(before.cyclistsRef.current[0][key]);
         }
@@ -198,7 +200,8 @@ describe('ordinary riders obey their actual traffic-light approach', () => {
     const run = junction({ type: 'cyclist', indication: 'yellow', gap: 8 });
     const original = { ...run.rider };
     run.step(1 / 60); expect(run.rider._riderYellowSignal?.stop).toBe(true);
-    Object.assign(run.scope.carRef.current, run.point(-40, run.lane + 18)); run.step(1 / 60);
+    // round 32 (tr32): a rider ahead of the learner is kept out to about 100 m, so move the car farther to force the recycle
+    Object.assign(run.scope.carRef.current, run.point(-140, run.lane + 18)); run.step(1 / 60);
     expect(run.rider._riderYellowSignal).toBeNull();
     Object.assign(run.rider, original);
     Object.assign(run.scope.carRef.current, run.point(50, run.lane + 18));

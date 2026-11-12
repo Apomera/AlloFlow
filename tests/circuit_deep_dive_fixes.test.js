@@ -9,6 +9,32 @@ const p = (id, type, a, b, value, waveform) => ({ id, type, a, b, value, wavefor
 const sine = (extra = {}) => ({ shape: 'sine', amplitude: 5, frequency: 10, phase: 0, duty: 50, edge: 2, ...extra });
 beforeEach(() => { resetStemLab(); config = loadTool('stem_lab/stem_tool_circuit.js', 'circuit'); api = window.StemLab; });
 
+// 2026-11-11: a 1 µs RC in a 10 s window used to draw one straight line from 0 to 5 V (63% at 31.6 ms).
+describe('fast time constants in a long window', () => {
+  const rc = (duration, extra = {}) => ({ analysis: 'time', duration, components: [p(1, 'voltage', 'A', '0', 5), Object.assign(p(2, 'switch', 'A', 'B', 0), extra.sw || { closed: true }), p(3, 'resistor', 'B', 'C', 1000), Object.assign(p(4, 'capacitor', 'C', '0', 0.001), { initial: 0 })] });
+  const crossing = (run, after = 0) => {
+    const v = (f) => f.rows.find((r) => r.component.id === 4).voltage, target = 5 * (1 - Math.exp(-1));
+    for (let i = 1; i < run.frames.length; i++) { const a = run.frames[i - 1], b = run.frames[i]; if (a.time < after) continue; if (v(a) < target && v(b) >= target) return a.time + (target - v(a)) / (v(b) - v(a)) * (b.time - a.time) - after; }
+    return null;
+  };
+  it('resolves a 1 µs charge in a 10 s and a 60 s window', () => {
+    for (const duration of [10, 60]) {
+      const run = api.circuitNetworkTransient(rc(duration));
+      expect(run.ok, run.message).toBe(true);
+      expect(crossing(run) / 1e-6, duration + ' s window').toBeGreaterThan(0.9);
+      expect(crossing(run) / 1e-6, duration + ' s window').toBeLessThan(1.1);
+      expect(run.steps).toBeLessThan(2000);
+    }
+  });
+  it('resolves it again after a switch closes part-way through', () => {
+    const run = api.circuitNetworkTransient(rc(10, { sw: { closed: false, switching: { enabled: true, events: [{ id: 1, time: 4, closed: true }] } } }));
+    expect(run.ok, run.message).toBe(true);
+    const t = crossing(run, 4);
+    expect(t / 1e-6).toBeGreaterThan(0.9);
+    expect(t / 1e-6).toBeLessThan(1.1);
+  });
+});
+
 describe('connected time response integrator fallback', () => {
   const filter = (duration, integration) => ({ duration, integration, components: [p(1, 'voltage', 'A', '0', 0, sine()), p(2, 'resistor', 'A', 'B', 1000), p(3, 'capacitor', 'B', '0', 10)] });
 
@@ -228,6 +254,60 @@ describe('3D bench bulb glow follows power', () => {
     const dim = bench([{ type: 'resistor', value: 150, id: 1 }, { type: 'bulb', value: 50, id: 2 }]);
     expect(dim).not.toContain('#fff3c4');
     expect(dim).toContain('#ff9a4a');
+  });
+});
+
+describe('3D board explains the heat and charge cues', () => {
+  const board = (ohms, extra) => renderTool('circuit', { _circuit: { networkWorkbench: true }, _circuitNetwork: { view: 'orbit', selected: 2, components: [{ id: 1, type: 'voltage', a: 'A', b: '0', value: 9 }, { id: 2, type: 'resistor', a: 'A', b: '0', value: ohms }, ...(extra || [])] } });
+  it('warns only when a resistor dissipates more than a typical 1/4 W rating', () => {
+    expect(board(100)).toContain('It dissipates 0.81 W, more than the ¼ W rating of a typical small resistor.');
+    expect(board(1000)).not.toContain('¼ W rating');
+  });
+  it('tells students what the capacitor patch shows', () => {
+    const html = renderTool('circuit', { _circuit: { networkWorkbench: true }, _circuitNetwork: { view: 'orbit', selected: 3, components: [{ id: 1, type: 'voltage', a: 'A', b: '0', value: 5 }, { id: 2, type: 'resistor', a: 'A', b: 'B', value: 1000 }, { id: 3, type: 'capacitor', a: 'B', b: '0', value: 100 }] } });
+    expect(html).toContain('The bright patch on the 3D capacitor grows with its voltage, as stored charge does (Q = CV).');
+  });
+});
+
+describe('3D board explains the coil field and transistor region cues', () => {
+  const orbit = (components, selected) => renderTool('circuit', { _circuit: { networkWorkbench: true }, _circuitNetwork: { view: 'orbit', selected, components } });
+  it('says what the coil field loops show', () => {
+    const html = orbit([{ id: 1, type: 'voltage', a: 'A', b: '0', value: 5 }, { id: 2, type: 'resistor', a: 'A', b: 'B', value: 10 }, { id: 3, type: 'inductor', a: 'B', b: '0', value: 100 }], 3);
+    expect(html).toContain('The blue loops around the 3D coil brighten with its current');
+  });
+  it('says what the diode and op-amp state cues show', () => {
+    expect(orbit([{ id: 1, type: 'voltage', a: 'A', b: '0', value: 9 }, { id: 2, type: 'diode', a: 'A', b: 'B', value: 0 }, { id: 3, type: 'resistor', a: 'B', b: '0', value: 470 }], 2)).toContain('its label adds forward, reverse or breakdown');
+    expect(orbit([{ id: 1, type: 'voltage', a: 'A', b: '0', value: 5 }, { id: 2, type: 'opamp', a: 'C', b: '0', value: 1000, control: { positive: 'A', negative: '0' } }, { id: 3, type: 'resistor', a: 'C', b: '0', value: 1000 }], 2)).toContain('a warm glow show when the output is pinned at a limit');
+  });
+  it('names the colour for the transistor region', () => {
+    const html = orbit([{ id: 1, type: 'voltage', a: 'A', b: '0', value: 9 }, { id: 2, type: 'resistor', a: 'A', b: 'C', value: 1000 }, { id: 4, type: 'resistor', a: 'A', b: 'B', value: 100000 }, { id: 3, type: 'bjt', a: 'C', b: '0', bjt: { base: 'B', polarity: 'npn' } }], 3);
+    expect(html).toContain('On the 3D board the transistor’s face shows this region: grey when off, green when active');
+  });
+});
+
+describe('mixed bench labels each branch with its current', () => {
+  const mixed = (closed) => renderTool('circuit', { _circuit: { mixedWorkbench: true }, _circuitMixed: { mode: 'mixed', voltage: 12, components: [{ id: 1, type: 'resistor', value: 200, branch: 1 }, { id: 2, type: 'resistor', value: 100, branch: 1 }, { id: 3, type: 'bulb', value: 300, branch: 2 }, { id: 4, type: 'switch', closed, branch: 2 }] } });
+  it('shows the branch current and says when a branch carries none', () => {
+    expect(mixed(true)).toContain('BRANCH A · 40.00 mA');
+    expect(mixed(false)).toContain('BRANCH A · 40.00 mA');
+    expect(mixed(false)).toContain('BRANCH B · no current');
+  });
+});
+
+describe('builder warns about resistor power from grades 6-8 up', () => {
+  const builder = (band, ohms, extra) => renderTool('circuit', { _circuit: Object.assign({ voltage: 9, components: [{ type: 'resistor', value: ohms, id: 1 }] }, extra) }, { gradeBand: band });
+  const note = 'This resistor turns 0.81 W into heat, more than the ¼ W rating of a typical small resistor.';
+  it('shows the note for grades 6-8 and 9-12, not for younger grades or a safe resistor', () => {
+    expect(builder('g68', 100)).toContain(note);
+    expect(builder('g912', 100)).toContain(note);
+    expect(builder('k2', 100)).not.toContain('¼ W rating');
+    expect(builder('g35', 100)).not.toContain('¼ W rating');
+    expect(builder('g912', 1000)).not.toContain('¼ W rating');
+  });
+  it('heats the 3D bench resistor only where the note shows', () => {
+    expect(builder('g912', 100, { benchView: '3d' })).toMatch(/data-resistor-hot="0.81"/);
+    expect(builder('g912', 100, { benchView: '3d' })).toContain('0.81 W · over ¼ W');
+    expect(builder('k2', 100, { benchView: '3d' })).not.toContain('data-resistor-hot');
   });
 });
 

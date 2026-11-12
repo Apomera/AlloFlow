@@ -163,13 +163,14 @@ describe('1. the teacher reviews the factual fix before it lands', () => {
     expect(h.state.history).toHaveLength(1);
     expect(h.state.history[0].id).toBe('analysis-a');
     expect(h.state.history[0].data.originalText).toBe(CORRECTED);
-    expect(h.state.history[0].data.accuracy.discrepancies).toEqual(['✓ FIXED: ' + NOTE, 'Wrong river name.']);
+    // 2026-11-11: since 7d9bda5674 a source edit drops the old findings and asks for a recheck.
+    expect(h.state.history[0].data.accuracy).toBeUndefined();
+    expect(h.state.history[0].data.analysisNeedsRecheck).toBe(true);
     expect(h.state.inputText).toBe(CORRECTED);
     expect(h.handleGenerate).not.toHaveBeenCalled();
     act(() => root.render(React.createElement(AnalysisView, h.props())));
-    expect(el.querySelector('[data-discrepancy-fixed]').textContent).toContain('Fixed in source');
-    expect(el.querySelector('[data-factual-fix-stale]')).not.toBeNull();
-    expect(el.querySelector('[data-factual-fix]').textContent).toContain('(0)');
+    expect(el.querySelector('[data-analysis-needs-recheck]')).not.toBeNull();
+    expect(el.querySelector('[data-factual-fix]')).toBeNull();
   });
 
   it('Discard leaves the source alone', async () => {
@@ -209,7 +210,8 @@ describe('2. accuracy verification label', () => {
     expect(el.querySelector('.bg-green-100')).toBeNull();
   });
   it('keeps the coloured rating for a web-verified report and labels legacy reports by their citations', () => {
-    let el = render(AnalysisView, viewProps({ accuracy: { rating: 'High', reason: 'ok', verification: 'web-search', citations: '1. [x](https://e.org)', discrepancies: [], verifiedFacts: [] } }));
+    // 2026-11-11: since 7d9bda5674 "verified" needs a fact that cites a search source.
+    let el = render(AnalysisView, viewProps({ accuracy: { rating: 'High', reason: 'ok', verification: 'web-search', citations: '1. [x](https://e.org)', discrepancies: [], verifiedFacts: ['A cited fact [1].'] } }));
     expect(el.querySelector('[data-accuracy-verification]').getAttribute('data-accuracy-verification')).toBe('web-search');
     expect(el.querySelector('[data-accuracy-verification]').className).toContain('bg-green-100');
     act(() => root.unmount()); root = null;

@@ -96,6 +96,8 @@ const languageHelpers = new Function(source.slice(source.indexOf('const _generat
 function deps(overrides = {}) {
   return {
     ...languageHelpers, _nativeLanguageDefaultsVersion: 0, _nativeAppLanguage: 'English', _effectiveLanguageList: ['Spanish', 'French'],
+    // 2026-11-11: word-list seeds (7d9bda5674) read handleGenerate's _seed/_wordListStart; no seed here.
+    _seed: null, _wordListStart: false,
     type: 'glossary', glossaryTier2Count: 1, glossaryTier3Count: 0, configOverride: {},
     glossaryDefinitionLevel: 'Same as Global Level', effectiveGrade: '5th Grade',
     textToProcess: context.sourceText, glossaryImageStyle: context.style, universalImageStyle: '',

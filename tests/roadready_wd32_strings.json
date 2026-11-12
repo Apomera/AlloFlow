@@ -1,0 +1,1085 @@
+{
+ "note": "Road Ready round 32 lane_words (wd32). new = keys to add; changed = existing keys whose English changed (old = the ui_strings.js value today).",
+ "new": {
+  "guide_lic_s3_n3": "So two things have different end dates. The suspension rule for moving violations ends 2 years after your license date. The no-alcohol rule lasts until you turn 21.",
+  "say_hydroplaning": "Hydroplaning. Ease off the gas. No sudden braking or steering.",
+  "alert_off_road": "You are off the road. Steer back gently. Do not jerk the wheel.",
+  "alert_rumble_strip": "Rumble strip. You are drifting toward the shoulder. Steer back gently.",
+  "alert_high_speed_impact": "High-speed crash. The airbags opened. In real life, people could be badly hurt.",
+  "say_high_speed_impact": "High-speed crash. The airbags opened.",
+  "alert_speed_limit": "Ease off the gas. The posted limit is {n} mph.",
+  "alert_wrong_way": "You are going the wrong way. Follow the white arrows and turn around safely.",
+  "say_wrong_way": "Wrong way on a one-way street. Turn around safely.",
+  "alert_wrong_side": "You are on the wrong side of the road. Do not cross a solid yellow line. Get back to your side.",
+  "say_wrong_side": "Wrong side of the road. Return to your lane immediately.",
+  "say_moose_ahead": "Moose ahead. Slow down. If a crash is coming, brake and steer straight.",
+  "say_deer_ahead": "Deer ahead. Slow down and look for more deer. If a crash is coming, brake and steer straight.",
+  "say_animal_ahead": "Animal in the road. Slow down. If a crash is coming, brake and steer straight.",
+  "alert_bus_lights_off": "The red lights are off. Check that the road is clear, then go.",
+  "alert_bus_passed": "You passed a stopped school bus with red lights flashing. That puts children in danger.",
+  "say_bus_passed": "You passed a stopped school bus. That is a serious violation of Maine law.",
+  "alert_bus_full_stop": "Good. You stopped for the school bus. Wait until its red lights stop or the driver signals you.",
+  "alert_child_struck": "You hit a child. Always stop for a school bus with red lights flashing on an undivided road.",
+  "say_child_struck": "You hit a child. Always stop for a school bus with red lights flashing.",
+  "alert_pedestrian_struck": "You hit a pedestrian. Stop at once and call 911.",
+  "alert_emergency_good": "Good. You pulled to the right and stopped for the emergency vehicle (Maine §2054).",
+  "alert_emergency_pull_right": "You must pull to the RIGHT side of the road, then stop.",
+  "alert_emergency_failed": "You did not yield. Pull right, stay clear of intersections, and stop for emergency vehicles.",
+  "alert_child_running": "A child is running from the bus. BRAKE NOW.",
+  "say_child_crossing": "Child crossing! Brake immediately.",
+  "alert_bus_law_good": "Good. Maine law says to stop for a school bus with red lights flashing on an undivided road.",
+  "say_bus_passed_law": "You passed a stopped school bus. That violates Maine law.",
+  "alert_pedestrian_crosswalk": "A person is in the crosswalk. Stop fully until the crosswalk is clear.",
+  "alert_pedestrian_yield": "Yield to pedestrians in crosswalks. Stop until the crosswalk is clear.",
+  "say_pedestrian_yield": "You did not yield to a pedestrian in a crosswalk.",
+  "alert_cyclist_3ft": "Leave at least 3 feet between your vehicle and the cyclist.",
+  "alert_head_on": "Danger of a head-on crash. Get back to your lane NOW.",
+  "feature_permit_desc": "Practice sets of 20 questions, and a Maine-format practice test: 30 questions, 24 to pass.",
+  "feature_flashcards_desc": "Study the permit questions as cards. Cards you miss come back sooner.",
+  "feature_drive_sim": "Drive Simulator ({n} scenarios)",
+  "nav_let_s_start": "Let's start",
+  "nav_next": "Next",
+  "nav_back": "Back",
+  "nav_menu": "Menu",
+  "nav_explore_parking": "Explore parking",
+  "nav_view_briefing": "View briefing",
+  "nav_lessons": "Lessons",
+  "nav_try_again_new_shuffle": "Try Again (new shuffle)",
+  "nav_permit_start": "Permit Start",
+  "cert_about_maine": "This certifies that the student passed the Road Ready Maine-format practice test: 30 questions, 24 or more correct. The questions in this format are written to the Maine Driver's License Manual (Rev. 4/24) and Title 29-A (Motor Vehicles).",
+  "cert_about_practice": "This certifies that the student passed a Road Ready permit practice set at the 80% mark. This is not the format of the real Maine test. Practice sets can include car-care and extra questions that are not from the Maine driver's manual.",
+  "cert_important": "This is a PRACTICE certificate, not a Maine permit. To get a Maine learner's permit you must pass the official BMV test, show the required documents, and be at least 15.",
+  "nav_new": "New",
+  "nav_drive_debrief": "Drive Debrief",
+  "nav_retry": "Retry",
+  "nav_all_crash_types": "All crash types",
+  "nav_reset": "Reset",
+  "nav_prev": "Prev",
+  "nav_reset_all": "Reset All",
+  "nav_skip": "Skip",
+  "nav_practice_right_of_way_quiz": "Practice: Right-of-Way Quiz",
+  "nav_take_the_permit_test": "Take the Permit Test",
+  "nav_try_again": "Try Again",
+  "nav_start_test": "Start Test",
+  "nav_cancel": "Cancel",
+  "nav_start_impaired_test": "Start Impaired Test",
+  "nav_test_again": "Test Again",
+  "nav_reset_to_default": "Reset to Default",
+  "nav_debrief": "Debrief",
+  "nav_start": "Start"
+ },
+ "changed": {
+  "guide_lic_s3_title": {
+   "old": "Step 3: Provisional license (the first 2 years)",
+   "new": "Step 3: Provisional license"
+  },
+  "guide_lic_s3_intro": {
+   "old": "The end of the 270 days is not the end of the steps. A first license you get before age 21 is a provisional license for 2 years. The 2 years start on the day the license is issued.",
+   "new": "The end of the 270 days is not the end of the steps. A first license you get before age 21 is also a provisional license. The Maine manual says it is provisional for 2 years. Maine law says 2 years or until you turn 21, whichever comes later. The 2 years start on the day the license is issued."
+  },
+  "guide_lic_q1": {
+   "old": "You get your first license at 16. How long is it a provisional license?",
+   "new": "You get your first license at 16. For how long can one moving violation suspend it under the provisional rule?"
+  },
+  "guide_lic_q1_why": {
+   "old": "The 270 days are the intermediate rules. The provisional period is 2 years from the day the license is issued.",
+   "new": "The 270 days are the intermediate rules. The suspension rule for moving violations lasts 2 years from the day the license is issued. The law keeps the name \"provisional\" until you turn 21."
+  },
+  "permit_test_20q_quiz": {
+   "old": "Permit Test (20q quiz)",
+   "new": "Permit Practice Tests"
+  },
+  "tour_permit_body": {
+   "old": "{n} Maine BMV-style questions. Try the full Road Test Simulator when you are ready — includes the pre-trip vehicle inspection.",
+   "new": "Practice questions on Maine rules and signs. When you are ready, try the Road Test Simulator. It includes the pre-trip vehicle check."
+  },
+  "oct_1_may_1": {
+   "old": "Oct 1–May 1",
+   "new": "Oct 2 to Apr 30"
+  },
+  "debrief_speeding_one": {
+   "old": "⚠️ Speed limit exceeded for {s}s total ({n} separate incident). Remember: braking distance grows with v². A little faster = a lot more stopping distance.",
+   "new": "⚠️ Speed limit exceeded for {s}s total ({n} separate incident). Remember: double the speed needs about 4 times the braking distance. A little faster means a lot more room to stop."
+  },
+  "debrief_speeding_many": {
+   "old": "⚠️ Speed limit exceeded for {s}s total ({n} separate incidents). Remember: braking distance grows with v². A little faster = a lot more stopping distance.",
+   "new": "⚠️ Speed limit exceeded for {s}s total ({n} separate incidents). Remember: double the speed needs about 4 times the braking distance. A little faster means a lot more room to stop."
+  },
+  "moosesafety_exp5": {
+   "old": "Pull over safely and collect yourself. Adrenaline tunnel-vision is real and lasts 3–5 minutes. Driving on immediately means your scanning and reaction time are worse, not better. If you hit the moose — even a glancing strike — call the Maine Warden Service (911) and stay put; injured moose in the road kill more people than the first hit.",
+   "new": "Pull over safely and collect yourself. After a scare your body is tense, and you scan and react worse for a few minutes. If you hit the moose, even lightly, call 911 and stay clear of it. An injured moose is dangerous, and another driver can hit it."
+  },
+  "railroadcrossing_exp2": {
+   "old": "Never try to beat a train. Large objects look slower than they actually are — a train looking \"a ways off\" is usually doing 50+ mph and moving 80+ ft/sec. If your engine stalls mid-crossing (a real risk at low-speed crossings), the train cannot stop for you: at 55 mph it needs more than a mile.",
+   "new": "Never try to beat a train. A large object looks slower than it is, so a train that looks far away can reach you very soon. If your engine stalls on the crossing, the train cannot stop for you: at 55 mph it needs more than a mile."
+  },
+  "all_season_tires_lose_roughly_40_of_th": {
+   "old": "All-season rubber starts stiffening below about 45°F (7°C) — that is the industry threshold where a winter tire begins to out-grip it, and it is well above freezing, so the window opens earlier in the fall than most people expect. Winter compounds stay pliable: on packed snow at 30 mph a winter tire stops in roughly 59 ft where an all-season needs about 30 ft more — two car lengths. Maine law allows studs Oct 1–May 1.",
+   "new": "All-season rubber gets stiff in the cold and loses grip. Winter tires use softer rubber that stays flexible, so they grip better on snow, ice and cold pavement. A common rule of thumb is to switch when days stay below about 45°F (7°C). That is well above freezing. Maine law allows studded tires from October 2 to April 30 (29-A §1919)."
+  },
+  "congratulations_you_have_a_full_maine_": {
+   "old": "Congratulations. The intermediate restrictions have ended. Your license is still provisional: for 2 years after you got it, a moving-violation conviction suspends it for 30 days (longer for a repeat). Drive responsibly — Maine roads count on you.",
+   "new": "Congratulations. The intermediate restrictions have ended. Your license is still provisional. For 2 years after you got it, a conviction for a moving violation suspends it for 30 days (longer if it happens again). Until you turn 21, you may not drive with any alcohol in your body. Drive with care. Maine roads count on you."
+  },
+  "gdl_stage_provisional_desc": {
+   "old": "The 270-day rules have ended. Your license is still provisional through {date}. Until then, a conviction for a moving violation suspends it: 30 days the first time, 180 days the second time, and 1 year after that.",
+   "new": "The 270-day rules have ended. Your license is still provisional. The 2-year rule lasts through {date}. Until then, a conviction for a moving violation suspends your license: 30 days the first time, 180 days the second time, and 1 year after that. If you turn 21 after that date, the law keeps the name \"provisional\" until your 21st birthday."
+  },
+  "gdl_stage_after_desc": {
+   "old": "The 2-year provisional suspension rule covered your first 2 years. That time has passed. Demerit points and every traffic law still apply. If you are under 21, you still may not drive with any alcohol in your body.",
+   "new": "The 2-year suspension rule for new drivers covered your first 2 years. That time has passed. Demerit points and every traffic law still apply. If you are under 21, the law still calls your license provisional, and you still may not drive with any alcohol in your body."
+  },
+  "gdl_dates_prov_until": {
+   "old": "Your license is provisional through {date}. Days left: {n}.",
+   "new": "The 2-year rule for new drivers lasts through {date}. Days left: {n}."
+  },
+  "gdl_dates_prov_ended": {
+   "old": "The 2-year provisional period ended on {date}.",
+   "new": "The 2-year rule for new drivers ended on {date}."
+  },
+  "gdl_dates_note": {
+   "old": "These dates count from the license date you entered. If you are convicted of breaking a 270-day rule, those rules last 270 more days.",
+   "new": "These dates count from the license date you entered. If you are convicted of breaking a 270-day rule, those rules last 270 more days. Maine law also calls a first license provisional until age 21, when that comes later than the 2-year date."
+  },
+  "gdl_dates_empty": {
+   "old": "Enter the date of your first license above. You will see when the 270-day rules and the 2-year provisional period end.",
+   "new": "Enter the date of your first license above. You will see when the 270-day rules and the 2-year rule for new drivers end."
+  },
+  "postcrash_get_medically_checked_even_if_you_feel_fine_co": {
+   "old": "Get medically checked even if you feel fine. Concussion, whiplash, soft tissue damage: 24-48 hour delay is normal.",
+   "new": "See a doctor or nurse if you feel any pain, even later. Some injuries do not hurt right away."
+  },
+  "postcrash_call_your_insurance_within_24_hours_give_them_": {
+   "old": "Call YOUR insurance within 24 hours. Give them the police report number if one was issued. Do NOT give recorded statements to the OTHER driver's insurance without your agent present.",
+   "new": "Tell your insurance company about the crash soon. Give them the police report number if one was issued."
+  },
+  "postcrash_do_not_post_about_it_on_social_media_insurance": {
+   "old": "Do NOT post about it on social media. Insurance adjusters screenshot these. \"Cool, I'm totally fine!\" can void your injury claim.",
+   "new": "Do NOT post about it on social media. Write down what happened while you remember it: the time, the place, the weather and the road."
+  },
+  "postcrash_keep_every_receipt_tow_rental_medical_co_pays_": {
+   "old": "Keep every receipt: tow, rental, medical co-pays, lost work. All reimbursable.",
+   "new": "Keep your papers from the crash: the tow bill, repair bills and medical bills."
+  },
+  "postcrash_journal_your_pain_and_limitations_daily_memory": {
+   "old": "Journal your pain and limitations daily. Memory fades; notes don't.",
+   "new": "Talk with a parent or guardian about what happened and how you feel. A crash is upsetting."
+  },
+  "before_opening_your_door_in_traffic_us": {
+   "old": "Before opening your door in traffic, use your FAR hand — your right hand from the driver seat in the U.S. — so your body naturally turns to check behind. Dooring is one of the most common urban bike crashes — studies put it at 12-27% of city car-bike collisions (Chicago logged 19.7% of cycling injuries in 2011).",
+   "new": "Before opening your door in traffic, use your FAR hand — your right hand from the driver seat in the U.S. — so your body naturally turns to check behind. A door opened into a cyclist's path is a common city bike crash."
+  },
+  "oct_1_may_1_only": {
+   "old": " Oct 1 – May 1 only",
+   "new": " October 2 to April 30 only"
+  },
+  "3_142_distracted_driving_deaths_in_the": {
+   "old": ". At 55 mph, NHTSA compares that to driving a football-field length blind. Talking on a handheld phone roughly quadruples your crash risk — but TEXTING is in a different category again: the Virginia Tech naturalistic driving studies put it near 23×, because it takes your eyes, hands, and attention at the same time. NHTSA also reports 3,208 distracted-driving deaths and 315,167 injuries in 2024.",
+   "new": ". At 55 mph, NHTSA compares that to driving a football-field length blind. Talking on a handheld phone roughly quadruples your crash risk — but TEXTING is in a different category again: a Virginia Tech study of truck drivers put it near 23×, because it takes your eyes, hands, and attention at the same time. NHTSA also reports 3,208 distracted-driving deaths and 315,167 injuries in 2024."
+  },
+  "roundabouts_reduce_fatal_crashes_by_90": {
+   "old": "Roundabouts reduce fatal crashes by 90% vs. signaled intersections. Here is how to use them.",
+   "new": "Roundabouts are safer than signals: U.S. studies found 72% to 80% fewer injury crashes (IIHS). Here is how to use them."
+  },
+  "roundabouts_reduce_fatal_crashes_by_90_2": {
+   "old": "Roundabouts reduce fatal crashes by 90% vs. signals. Once you get used to them, they are faster and safer.",
+   "new": "U.S. studies found 72% to 80% fewer injury crashes after intersections were changed to roundabouts (IIHS). Once you get used to them, they are faster and safer."
+  },
+  "left_turns_are_the_1_most_dangerous_co": {
+   "old": "Left turns are the #1 most dangerous common maneuver. NHTSA puts about 53% of CROSSING-PATH crashes — the head-on-into-turning kind — at or just after a left turn, against roughly 1% for right turns. You are crossing oncoming traffic instead of merging with it.",
+   "new": "A left turn is one of the riskiest common moves. You cross oncoming traffic instead of merging with it. Wait for a gap you are sure of."
+  },
+  "smooth_driving_no_jackrabbits_coast_to": {
+   "old": "• Smooth driving (no jackrabbits, coast to stops) improves real-world MPG by 20-40% over the EPA sticker.",
+   "new": "• Smooth driving saves fuel. Fast starts and hard braking can lower gas mileage by 10% to 40% in stop-and-go traffic (fueleconomy.gov)."
+  },
+  "alcohol_shrinks_your_visual_field_by_u": {
+   "old": "• Alcohol shrinks your visual field by up to 25% at night — tunnel vision + slow reaction = deadly.",
+   "new": "• Alcohol makes it harder to see at night and slows your reactions. Together that is deadly."
+  },
+  "permit_q0_exp": {
+   "old": "When two vehicles arrive simultaneously at a 4-way stop, the vehicle on the RIGHT has the right-of-way.",
+   "new": "When two vehicles reach a 4-way stop at the same time, the vehicle on the RIGHT goes first."
+  },
+  "permit_q1_q": {
+   "old": "A solid yellow line on your side of the centerline means:",
+   "new": "What does a solid yellow line on your side of the centerline mean?"
+  },
+  "permit_q4_q": {
+   "old": "The speed limit in a Maine school zone during active school-zone times is typically:",
+   "new": "What is the usual speed limit in a Maine school zone during active school-zone times?"
+  },
+  "permit_q5_q": {
+   "old": "When approaching a school bus with flashing red lights and extended stop arm on a two-lane road, you must:",
+   "new": "You are approaching a school bus with flashing red lights and its stop arm out on a two-lane road. What must you do?"
+  },
+  "permit_q5_exp": {
+   "old": "On undivided roads, ALL traffic must stop for a school bus with flashing red lights, regardless of direction.",
+   "new": "On an undivided road, ALL traffic must stop for a school bus with flashing red lights. This is true in both directions."
+  },
+  "permit_q6_q": {
+   "old": "In Maine, the legal BAC limit for drivers 21 and older is:",
+   "new": "In Maine, what is the legal BAC limit for drivers 21 and older?"
+  },
+  "permit_q7_exp": {
+   "old": "Maine §2067 requires headlights from sunset to sunrise, whenever visibility is under 1,000 ft due to unfavorable conditions such as rain/fog/snow, and whenever windshield wipers are in constant use.",
+   "new": "Maine §2067 requires headlights from sunset to sunrise. It also requires them whenever visibility is under 1,000 ft due to unfavorable conditions such as rain, fog or snow. And it requires them whenever your windshield wipers are in constant use."
+  },
+  "permit_q8_q": {
+   "old": "You are approaching a yield sign. You should:",
+   "new": "You are approaching a yield sign. What should you do?"
+  },
+  "permit_q9_q": {
+   "old": "You are in a roundabout. A car enters from an incoming road. You should:",
+   "new": "You are in a roundabout. A car is about to enter from an incoming road. What should you do?"
+  },
+  "permit_q10_q": {
+   "old": "Your total stopping distance is the sum of:",
+   "new": "What makes up your total stopping distance?"
+  },
+  "permit_q10_exp": {
+   "old": "Total stopping = REACTION distance (while you perceive + react, typically 1.5 s) + BRAKING distance (tires slowing the car).",
+   "new": "Total stopping distance has two parts. REACTION distance is how far you travel while you see the danger and move your foot. That usually takes about 1.5 seconds. BRAKING distance is how far you travel while the tires slow the car."
+  },
+  "permit_q13_q": {
+   "old": "Safe following distance at highway speeds is measured in:",
+   "new": "How is a safe following distance measured at highway speeds?"
+  },
+  "permit_q14_q": {
+   "old": "On wet pavement, your stopping distance:",
+   "new": "How does wet pavement change your stopping distance?"
+  },
+  "permit_q14_a0": {
+   "old": "Is the same as dry if you have ABS",
+   "new": "It is the same as dry if you have ABS"
+  },
+  "permit_q14_a1": {
+   "old": "Is about 30-50% longer",
+   "new": "It is about 30-40% longer"
+  },
+  "permit_q14_a2": {
+   "old": "Is about 10% longer",
+   "new": "It is about 10% longer"
+  },
+  "permit_q14_a3": {
+   "old": "Is at least four times longer",
+   "new": "It is at least four times longer"
+  },
+  "permit_q14_exp": {
+   "old": "Wet roads cut friction by ~30-50%. Ice can cut it by 90%. Friction coefficient (μ) directly determines minimum braking distance.",
+   "new": "Wet roads give your tires less grip, so it takes longer to stop. In Road Ready's model, the total stopping distance at 35 to 65 mph is about 30% to 40% longer on a wet road than on a dry one. The Maine manual gives no percentage. It says to slow down 5 to 10 mph on a wet road."
+  },
+  "permit_q15_q": {
+   "old": "You hit a patch of ice and start to skid. You should:",
+   "new": "You hit a patch of ice and start to skid. What should you do?"
+  },
+  "permit_q18_q": {
+   "old": "Black ice is most likely to form on:",
+   "new": "Where is black ice most likely to form?"
+  },
+  "permit_q19_q": {
+   "old": "In Maine, studded snow tires are legal:",
+   "new": "When are studded snow tires legal in Maine?"
+  },
+  "permit_q19_a1": {
+   "old": "October 1 to May 1",
+   "new": "October 2 to April 30"
+  },
+  "permit_q19_exp": {
+   "old": "Maine allows studded tires Oct 1 – May 1. They help on ice but damage pavement in warm months.",
+   "new": "Maine law bans studded tires from May 1 to October 1 (29-A §1919). So you may use them from October 2 to April 30. They help on ice, but they wear the pavement in warm months."
+  },
+  "permit_q20_q": {
+   "old": "Before driving in winter, Maine law requires you to:",
+   "new": "Before you drive in winter, what does Maine law require you to do?"
+  },
+  "permit_q21_q": {
+   "old": "An eight-sided (octagonal) red sign always means:",
+   "new": "What does an eight-sided (octagonal) red sign always mean?"
+  },
+  "permit_q22_q": {
+   "old": "A diamond-shaped yellow sign means:",
+   "new": "What does a diamond-shaped yellow sign mean?"
+  },
+  "permit_q23_q": {
+   "old": "An orange diamond sign means:",
+   "new": "What does an orange diamond sign mean?"
+  },
+  "permit_q23_exp": {
+   "old": "Orange = temporary construction/work zone warning. If a temporary construction speed is posted, speeding fines can be doubled.",
+   "new": "Orange signs warn of a temporary construction or work zone. If a temporary construction speed is posted, speeding fines can be doubled."
+  },
+  "permit_q24_exp": {
+   "old": "Yellow-green pentagon = school zone / school crossing. High-visibility color chosen specifically for child safety.",
+   "new": "A yellow-green pentagon (a sign with five sides) means a school zone or a school crossing. The bright color is easy to see. It was chosen to keep children safe."
+  },
+  "permit_q26_q": {
+   "old": "Texting while driving is:",
+   "new": "Is texting while driving legal in Maine?"
+  },
+  "permit_q28_q": {
+   "old": "You are fatigued on a long drive. The safest option is:",
+   "new": "You are very tired on a long drive. What is the safest thing to do?"
+  },
+  "permit_q29_exp": {
+   "old": "Rapid acceleration and hard braking can lower MPG by 15-40%. Every time you brake hard, you turn kinetic energy into heat — wasted fuel.",
+   "new": "Fast starts and hard braking waste gas. They can lower your gas mileage by roughly 15% to 30% at highway speeds and 10% to 40% in stop-and-go traffic (fueleconomy.gov). Each time you brake hard, the energy of the moving car turns into heat. That fuel is wasted."
+  },
+  "permit_q31_exp": {
+   "old": "Below ~40 mph rolling resistance dominates. Above it, aerodynamic drag takes over. Peak MPG for a gasoline car usually falls in a broad 30-55 mph plateau, often near 40 mph. Crawling is not better: an idling engine burns fuel per SECOND, so very low speeds cost more per mile.",
+   "new": "Below about 40 mph, most of the fuel goes to rolling the tires. Above it, pushing through the air costs the most. A gasoline car usually gets its best MPG somewhere between 30 and 55 mph, often near 40 mph. Crawling is not better: an idling engine burns fuel every SECOND, so very low speeds cost more per mile."
+  },
+  "permit_q34_q": {
+   "old": "A Maine learner's permit requires you to be at least:",
+   "new": "What is the minimum age for a Maine learner's permit?"
+  },
+  "permit_q36_exp": {
+   "old": "During Maine's 270-day intermediate restriction period: no driving midnight-5 AM, no mobile-device use while driving, including hands-free or GPS input, and no passengers other than immediate family unless a qualifying licensed operator is present.",
+   "new": "Maine's 270-day intermediate restriction period has three rules. Rule one: no driving between midnight and 5 AM. Rule two: no mobile-device use while driving, including hands-free or GPS input. Rule three: no passengers other than immediate family, unless a qualifying licensed driver rides with you."
+  },
+  "permit_q37_q": {
+   "old": "The 4-second rule is used to determine:",
+   "new": "What does the 4-second rule help you find?"
+  },
+  "permit_q38_q": {
+   "old": "Your right front tire drops off the pavement edge. You should:",
+   "new": "Your right front tire drops off the pavement edge. What should you do?"
+  },
+  "permit_q39_exp": {
+   "old": "Maine §2070 requires at least 3 feet when passing a bicycle or roller skier. It allows passing in a no-passing zone only when it can be done safely: clear view, no oncoming conflict, and enough room to complete the pass.",
+   "new": "Maine §2070 requires at least 3 feet when passing a bicycle or roller skier. You may pass one in a no-passing zone only when it is safe. That means you can see clearly, no one is coming the other way, and you have room to finish the pass."
+  },
+  "permit_q40_q": {
+   "old": "When making a lane change, you should signal:",
+   "new": "When should you signal for a lane change?"
+  },
+  "permit_q42_q": {
+   "old": "The friction circle concept teaches you to:",
+   "new": "What does the friction circle idea teach you to do?"
+  },
+  "permit_q43_q": {
+   "old": "When backing up, you should primarily look:",
+   "new": "Where should you mainly look when you are backing up?"
+  },
+  "permit_q44_q": {
+   "old": "An emergency vehicle with lights and siren is approaching from behind. On a 2-lane road you should:",
+   "new": "An emergency vehicle with lights and siren is approaching from behind on a 2-lane road. What should you do?"
+  },
+  "permit_q45_q": {
+   "old": "After an emergency vehicle passes you with lights on, you should:",
+   "new": "After an emergency vehicle passes you with its lights on, what should you do?"
+  },
+  "permit_q45_exp": {
+   "old": "Wait until the emergency vehicle is well past, then check for additional emergency vehicles before resuming. Following an emergency vehicle too closely (tailgating) is illegal.",
+   "new": "Wait until the emergency vehicle is well past you. Then check for more emergency vehicles before you drive on. It is illegal to follow an emergency vehicle too closely."
+  },
+  "permit_q49_q": {
+   "old": "You are turning left at a green light (no arrow). You must yield to:",
+   "new": "You are turning left at a green light (no arrow). Who must you yield to?"
+  },
+  "permit_q50_q": {
+   "old": "Your oil pressure warning light comes on while driving. You should:",
+   "new": "Your oil pressure warning light comes on while driving. What should you do?"
+  },
+  "permit_q51_q": {
+   "old": "The TPMS (tire pressure) light means:",
+   "new": "What does the TPMS (tire pressure) light mean?"
+  },
+  "permit_q52_q": {
+   "old": "Before driving, the FIRST thing you should adjust is:",
+   "new": "Before driving, what is the FIRST thing you should adjust?"
+  },
+  "permit_q53_q": {
+   "old": "The penny test for tire tread measures:",
+   "new": "What does the penny test for tire tread measure?"
+  },
+  "permit_q54_q": {
+   "old": "Your check engine light is FLASHING (not steady). This means:",
+   "new": "Your check engine light is FLASHING (not steady). What does this mean?"
+  },
+  "permit_q55_q": {
+   "old": "You are stopped at a red light when an ambulance with sirens approaches from behind. You should:",
+   "new": "You are stopped at a red light when an ambulance with sirens approaches from behind. What should you do?"
+  },
+  "permit_q56_exp": {
+   "old": "Emergency vehicles often travel in groups (ambulance + fire truck, multiple police). Wait until you are sure no more are coming, then signal left and merge carefully.",
+   "new": "Emergency vehicles often travel in groups, such as an ambulance with a fire truck, or several police cars. Wait until you are sure no more are coming. Then signal left and merge with care."
+  },
+  "permit_q57_q": {
+   "old": "An emergency vehicle is approaching on a divided highway from the OPPOSITE direction. You must:",
+   "new": "An emergency vehicle is approaching on a divided highway from the OPPOSITE direction. What must you do?"
+  },
+  "permit_q58_q": {
+   "old": "When driving, you should look:",
+   "new": "Where should you look when you are driving?"
+  },
+  "permit_q58_exp": {
+   "old": "The Maine manual says to look 20 to 30 seconds ahead (1/3 to 1/2 mile at highway speed). This is called \"high visual horizon\" — it gives you maximum time to react to hazards, stops, and lane changes.",
+   "new": "The Maine manual says to look 20 to 30 seconds ahead. At highway speed that is 1/3 to 1/2 mile. Looking far ahead gives you the most time to react to hazards, stops and lane changes."
+  },
+  "permit_q59_q": {
+   "old": "A white car is in your blind spot. The safest way to check before changing lanes is:",
+   "new": "A white car is in your blind spot. What is the safest way to check before changing lanes?"
+  },
+  "permit_q60_q": {
+   "old": "You are driving 55 mph and it starts raining. You should:",
+   "new": "You are driving 55 mph and it starts raining. What should you do?"
+  },
+  "permit_q60_a1": {
+   "old": "Slow down by at least 10 mph and increase following distance",
+   "new": "Slow down by 5 to 10 mph and increase your following distance"
+  },
+  "permit_q60_exp": {
+   "old": "Rain reduces friction by 30-50%. Slow down, increase following to 5+ seconds, and turn on headlights when wipers are in constant use or visibility is reduced. The first 10 minutes of rain are worst — oil lifts off the road.",
+   "new": "The Maine manual says to slow down 5 to 10 mph on a wet road. Leave 5 seconds or more behind the car ahead. Turn on your headlights when your wipers are in constant use or when it is hard to see. The road can be very slippery in the first few minutes of rain, because oil comes to the surface."
+  },
+  "permit_q61_q": {
+   "old": "You approach a railroad crossing and the gates begin to lower as you arrive. You should:",
+   "new": "You approach a railroad crossing and the gates begin to lower as you arrive. What should you do?"
+  },
+  "permit_q62_q": {
+   "old": "The primary purpose of antilock brakes (ABS) is to:",
+   "new": "What do antilock brakes (ABS) mainly do?"
+  },
+  "permit_q63_q": {
+   "old": "When driving in heavy fog, you should use:",
+   "new": "Which lights should you use when driving in heavy fog?"
+  },
+  "permit_q64_q": {
+   "old": "You are parking uphill next to a curb. You should turn the front wheels:",
+   "new": "You are parking uphill next to a curb. Which way should you turn the front wheels?"
+  },
+  "permit_q65_q": {
+   "old": "The safest way to enter a highway from an on-ramp is to:",
+   "new": "What is the safest way to enter a highway from an on-ramp?"
+  },
+  "permit_q66_q": {
+   "old": "You see a triangle-shaped sign with a red border. It means:",
+   "new": "You see a triangle-shaped sign with a red border. What does it mean?"
+  },
+  "permit_q69_q": {
+   "old": "You are driving and you suddenly have a tire blowout. You should:",
+   "new": "You are driving and you suddenly have a tire blowout. What should you do?"
+  },
+  "permit_q70_q": {
+   "old": "When parking on a downhill grade with a curb, your front wheels should point:",
+   "new": "When you park on a downhill grade with a curb, which way should your front wheels point?"
+  },
+  "permit_q72_q": {
+   "old": "A driver in front of you stops suddenly for a deer. The best way to avoid hitting them is:",
+   "new": "A driver in front of you stops suddenly for a deer. What is the best way to avoid hitting them?"
+  },
+  "permit_q72_exp": {
+   "old": "Crashes are avoided BEFORE they happen — by following far enough behind that you have time and room to brake. Reaction distance is half the equation; following distance is the other half.",
+   "new": "You avoid a crash BEFORE it happens. Follow far enough behind that you have time and room to brake."
+  },
+  "permit_q74_q": {
+   "old": "You approach a school bus on the opposite side of a roadway separated by curbing, a guardrail, a concrete barrier, or another physical barrier. The bus has red flashing lights. You must:",
+   "new": "You approach a school bus on the opposite side of a roadway separated by curbing, a guardrail, a concrete barrier, or another physical barrier. The bus has red flashing lights. What must you do?"
+  },
+  "permit_q75_q": {
+   "old": "In an emergency stop with ABS brakes, you should:",
+   "new": "What should you do in an emergency stop with ABS brakes?"
+  },
+  "permit_q76_q": {
+   "old": "A \"no zone\" refers to:",
+   "new": "What is a \"no zone\"?"
+  },
+  "permit_q77_exp": {
+   "old": "Maine OUI law covers ANY substance that impairs you — including legal prescription medications and OTC drugs (like some allergy meds). Read your medication labels.",
+   "new": "Maine OUI law covers ANY substance that impairs you. That includes legal prescription medicines and medicines you buy without a prescription, such as some allergy medicines. Read the labels on your medicines."
+  },
+  "permit_q78_q": {
+   "old": "Cell phone use while driving in Maine is:",
+   "new": "What is the rule for cell phone use while driving in Maine?"
+  },
+  "permit_q79_exp": {
+   "old": "Maine's stationary-vehicle passing law requires drivers to move to a non-adjacent lane if possible, or slow to a careful and prudent speed. Roadside workers die every year from drivers passing too close.",
+   "new": "Maine law tells you how to pass a vehicle that is stopped at the roadside with its lights flashing. Move to a non-adjacent lane if possible (a lane that is not next to it). If you cannot, slow to a careful and prudent speed. Each year, roadside workers are killed by drivers who pass too close."
+  },
+  "permit_q80_q": {
+   "old": "You are involved in a minor fender bender with no injuries. Your first step should be:",
+   "new": "You are involved in a minor fender bender with no injuries. What should your first step be?"
+  },
+  "permit_q80_exp": {
+   "old": "Move vehicles to safety first (if drivable). Then exchange info, take photos, and report the crash when required. Maine §2251 defines a reportable accident as one with injury, death, or apparent property damage of $2,000 or more.",
+   "new": "First move the vehicles to a safe place, if they can be driven. Then exchange information, take photos, and report the crash when the law requires it. Maine §2251 defines a reportable accident as one with injury, death, or apparent property damage of $2,000 or more."
+  },
+  "permit_q81_exp": {
+   "old": "Always exchange: name, phone, insurance company + policy number, driver's license number, license plate, vehicle make/model. Take photos of everything.",
+   "new": "Trade this information with the other driver: name, phone number, insurance company and policy number. Also get the driver's license number, the license plate number, and the make and model of the car. Take photos of everything."
+  },
+  "permit_q82_q": {
+   "old": "You hit a parked car and the owner is nowhere around. You should:",
+   "new": "You hit a parked car and the owner is nowhere around. What should you do?"
+  },
+  "permit_q87_q": {
+   "old": "The four-second rule should be increased to five or more seconds when:",
+   "new": "When should you increase the four-second rule to five or more seconds?"
+  },
+  "permit_q88_q": {
+   "old": "You are driving and smell gasoline inside the car. You should:",
+   "new": "You are driving and smell gasoline inside the car. What should you do?"
+  },
+  "permit_q88_exp": {
+   "old": "A gasoline smell indicates a potential fuel leak — fire hazard. Ventilate immediately (open windows, NOT recirculate), pull over safely, and check under the hood and underneath.",
+   "new": "A gasoline smell can mean a fuel leak, and a fuel leak can start a fire. Open the windows at once. Do NOT set the air to recirculate. Pull over when it is safe. Then check under the hood and under the car."
+  },
+  "permit_q92_q": {
+   "old": "You are approaching a green light that has been green for a long time (stale green). You should:",
+   "new": "You are approaching a green light that has been green for a long time (stale green). What should you do?"
+  },
+  "permit_q94_q": {
+   "old": "Your car starts to hydroplane. The correct response is:",
+   "new": "Your car starts to hydroplane. What is the correct response?"
+  },
+  "permit_q95_exp": {
+   "old": "The Smith System is a professional defensive driving method: (1) Aim High — look 15 sec ahead, (2) Keep Eyes Moving — scan constantly, (3) Get the Big Picture — awareness of all surroundings, (4) Leave Yourself an Out — always have an escape route, (5) Make Sure They See You — use signals, lights, horn.",
+   "new": "The Smith System is a method that professional drivers learn. It has 5 rules. Rule 1: Aim High. Look 15 seconds ahead. Rule 2: Keep Your Eyes Moving. Rule 3: Get the Big Picture. Know what is all around you. Rule 4: Leave Yourself an Out. Keep a space to escape into. Rule 5: Make Sure They See You. Use your signals, lights and horn."
+  },
+  "permit_q97_exp": {
+   "old": "Regen braking runs the electric motor backwards as a generator, converting motion → electricity → battery charge. This is why hybrids get BETTER city MPG — every stop recaptures energy.",
+   "new": "Regenerative braking runs the electric motor backward, so it works as a generator. The motion of the car becomes electricity, and the electricity charges the battery. This is why hybrids get BETTER city MPG. Each stop wins back some energy."
+  },
+  "permit_q98_q": {
+   "old": "The safest position for your hands on the steering wheel is:",
+   "new": "What is the safest position for your hands on the steering wheel?"
+  },
+  "permit_q100_q": {
+   "old": "Your brakes fail completely while driving. Your first action should be:",
+   "new": "Your brakes fail completely while driving. What should your first action be?"
+  },
+  "permit_q102_q": {
+   "old": "Your hood suddenly flies up while driving, blocking your view. You should:",
+   "new": "Your hood suddenly flies up while driving, blocking your view. What should you do?"
+  },
+  "permit_q103_q": {
+   "old": "Your car starts to sink in water (flood, off a bridge). The most important thing to do is:",
+   "new": "Your car starts to sink in water (flood, off a bridge). What is the most important thing to do?"
+  },
+  "permit_q104_q": {
+   "old": "During the Maine road test, the examiner will mark you down for:",
+   "new": "What will the examiner mark you down for during the Maine road test?"
+  },
+  "permit_q104_exp": {
+   "old": "Common failures: rolling stops, not checking mirrors/blind spots, wide turns, poor lane position, not yielding to pedestrians, and not using turn signals. The test is about demonstrating HABITS, not just skills.",
+   "new": "Common mistakes are rolling stops, not checking mirrors and blind spots, wide turns, poor lane position, not yielding to pedestrians, and not using turn signals. The test is about showing good HABITS, not just skills."
+  },
+  "permit_q105_q": {
+   "old": "On the road test, when the examiner says \"Turn left at the next intersection,\" you should:",
+   "new": "On the road test, the examiner says \"Turn left at the next intersection.\" What should you do?"
+  },
+  "permit_q105_exp": {
+   "old": "The examiner is testing your PROCESS: signal → mirror → blind spot → lane position → speed adjustment → gap assessment → smooth turn. Each step matters more than the turn itself.",
+   "new": "The examiner is testing your PROCESS. Signal. Check your mirror. Check your blind spot. Get into the correct lane position. Adjust your speed. Judge the gap. Then turn smoothly. Each step matters more than the turn itself."
+  },
+  "permit_q106_q": {
+   "old": "You see a sign that says \"WRONG WAY.\" You should:",
+   "new": "You see a sign that says \"WRONG WAY.\" What should you do?"
+  },
+  "permit_q107_q": {
+   "old": "When parking parallel to a curb on a public road in Maine, your car must end up:",
+   "new": "When you parallel park by a curb on a public road in Maine, where must your car end up?"
+  },
+  "permit_q109_q": {
+   "old": "Drowsy driving is comparable in danger to:",
+   "new": "Drowsy driving is about as dangerous as which of these?"
+  },
+  "permit_q110_q": {
+   "old": "If your car has a manual transmission and you are stopped on a steep uphill, you should:",
+   "new": "Your car has a manual transmission and you are stopped on a steep uphill. What should you do?"
+  },
+  "permit_q112_q": {
+   "old": "The purpose of rumble strips on the highway shoulder is to:",
+   "new": "What do rumble strips on the highway shoulder do?"
+  },
+  "permit_q113_exp": {
+   "old": "Rule: if you cannot see the truck driver's mirrors, they cannot see you. Stay out of all 4 no-zones. Pass quickly — do not cruise alongside. Never cut in front of a truck. FMCSA puts a loaded 80,000 lb tractor-trailer at about 525 ft to stop from 65 mph against roughly 316 ft for a car — about 66% farther, nearly two football fields.",
+   "new": "Rule: if you cannot see the truck driver's mirrors, the driver cannot see you. Stay out of all 4 no-zones. Pass quickly, and do not drive alongside for long. Never cut in front of a truck. A loaded tractor-trailer needs much more room to stop than a car."
+  },
+  "permit_q114_exp": {
+   "old": "Maine graduated licensing: permit at 15, intermediate license at 16 (after 6 months and 70 hours of supervised driving). The intermediate restrictions last 270 days, so they can end at about 16 years and 9 months. The license is still PROVISIONAL: for 2 years after you get it, a moving-violation conviction suspends it for 30 days (180 days for a second, 1 year for a third).",
+   "new": "Maine licenses come in steps. You can get a permit at 15. You can get an intermediate license at 16, after 6 months and 70 hours of supervised driving. The intermediate restrictions last 270 days, so they can end at about 16 years and 9 months. The license is still PROVISIONAL. For 2 years after you get it, a moving-violation conviction suspends it for 30 days (180 days for a second, 1 year for a third). The law keeps the name \"provisional\" until you turn 21."
+  },
+  "permit_q115_q": {
+   "old": "In Maine, the BAC limit for drivers UNDER 21 is:",
+   "new": "In Maine, what is the BAC limit for drivers UNDER 21?"
+  },
+  "permit_q115_exp": {
+   "old": "Maine §2472 sets zero tolerance for under-21/provisional drivers: do not operate with an alcohol level over 0.00. Unless a longer period applies, the first suspension is one year; refusal is 18 months for a first refusal.",
+   "new": "Maine §2472 sets zero tolerance for under-21/provisional drivers. You may not drive with an alcohol level over 0.00. Unless a longer period applies, the first suspension is one year; refusal is 18 months for a first refusal."
+  },
+  "permit_q117_q": {
+   "old": "Maine's \"implied consent\" law means that refusing a breath test after a traffic stop:",
+   "new": "Under Maine's \"implied consent\" law, what happens when you refuse a breath test after a traffic stop?"
+  },
+  "permit_q117_a0": {
+   "old": "Means the police must then let you drive home",
+   "new": "It means the police must then let you drive home"
+  },
+  "permit_q117_a1": {
+   "old": "Triggers an automatic license suspension",
+   "new": "It triggers an automatic license suspension"
+  },
+  "permit_q117_a2": {
+   "old": "Is your legal right, and carries no penalty",
+   "new": "It is your legal right, and carries no penalty"
+  },
+  "permit_q117_a3": {
+   "old": "Leads to a penalty only if a court convicts you",
+   "new": "It leads to a penalty only if a court convicts you"
+  },
+  "permit_q117_exp": {
+   "old": "By driving in Maine you have already consented to chemical testing if police suspect impairment. Refusing triggers an automatic 275-day suspension (18 months if you are under 21; longer for repeat offenses), separate from any OUI charges.",
+   "new": "When you drive in Maine, you have already agreed to a chemical test if police suspect you are impaired. Refusing triggers an automatic 275-day suspension (18 months if you are under 21; longer for repeat offenses). That is separate from any OUI charge."
+  },
+  "permit_q118_q": {
+   "old": "You went out for drinks and feel \"okay to drive.\" The safest choice is:",
+   "new": "You went out for drinks and feel \"okay to drive.\" What is the safest choice?"
+  },
+  "permit_q120_exp": {
+   "old": "Fatigue and alcohol each slow your reactions and judgment, and together they are worse than either alone. Being awake for many hours can impair you much like drinking does. If you are tired, do not drive, even after one drink.",
+   "new": "Fatigue and alcohol each slow your reactions and judgment, and together they are worse than either alone. The CDC says being awake for 17 hours is similar to having a BAC of 0.05%, and being awake for 24 hours is similar to a BAC of 0.10%. If you are tired, do not drive, even after one drink."
+  },
+  "permit_q121_exp": {
+   "old": "Sedating antihistamines (Benadryl, NyQuil, Advil PM) cause drowsiness comparable to alcohol. Read labels: \"may cause drowsiness\" means do not drive. Non-drowsy options such as loratadine (Claritin) are safer. Cetirizine (Zyrtec) is not one of them: its label warns that drowsiness may occur.",
+   "new": "Some allergy and cold medicines make you sleepy. Benadryl, NyQuil and Advil PM are examples. Read the label: \"may cause drowsiness\" means do not drive. Non-drowsy options such as loratadine (Claritin) are safer. Cetirizine (Zyrtec) is not one of them: its label warns that drowsiness may occur."
+  },
+  "permit_q123_exp": {
+   "old": "THC slows reaction time, narrows attention, distorts time perception, and degrades multitasking. Effects last 4-8 hours after smoking and longer after edibles. There is no equivalent of \"one drink is fine\" for cannabis.",
+   "new": "THC slows your reactions and narrows your attention. It changes your sense of time and makes it harder to do two things at once. The effects last 4-8 hours after smoking and longer after edibles. With cannabis there is no rule like \"one drink is fine\"."
+  },
+  "permit_q124_q": {
+   "old": "Your friend has had several drinks and insists they're fine to drive. The best action is:",
+   "new": "Your friend has had several drinks and insists they're fine to drive. What is the best action?"
+  },
+  "permit_q125_exp": {
+   "old": "All-season tire rubber stiffens below ~45°F, losing grip. Winter tires use a softer compound and aggressive tread that grips snow, slush, and cold pavement. Mainers often switch in November and back in April.",
+   "new": "All-season tire rubber gets stiff in the cold and loses grip. A common rule of thumb is about 45°F. Winter tires use softer rubber and a deeper tread that grips snow, slush and cold pavement. Many Mainers put winter tires on in late October or November and go back to all-season tires in April."
+  },
+  "permit_q126_q": {
+   "old": "The main difference between all-season tires and winter (snow) tires is:",
+   "new": "What is the main difference between all-season tires and winter (snow) tires?"
+  },
+  "permit_q126_exp": {
+   "old": "Winter tires have a softer, silica-rich compound that stays flexible in cold. Tread blocks have sipes (tiny zigzag cuts) that bite into snow and ice. Stopping distance on ice can be 30-50% shorter than all-seasons.",
+   "new": "Winter tires use softer rubber that stays flexible in the cold. Their tread blocks have sipes (tiny zigzag cuts) that bite into snow and ice. On ice and snow they stop in a shorter distance than all-season tires."
+  },
+  "permit_q127_q": {
+   "old": "On packed snow, the Maine driver's manual says to slow down to about:",
+   "new": "On packed snow, what speed does the Maine driver's manual say to slow down to?"
+  },
+  "permit_q128_q": {
+   "old": "Your car is stuck in deep snow. Spinning the wheels harder will:",
+   "new": "Your car is stuck in deep snow. What will spinning the wheels harder do?"
+  },
+  "permit_q129_q": {
+   "old": "A Maine winter emergency car kit should include:",
+   "new": "What should a Maine winter emergency car kit include?"
+  },
+  "permit_q129_exp": {
+   "old": "A real winter kit: warm blanket, water, granola/protein bars, flashlight + spare batteries, jumper cables, full ice scraper, gloves/hat, sand or kitty litter (for traction), small shovel, phone charger, hand-warmers.",
+   "new": "Pack a real winter kit. Put in a warm blanket, water and snack bars. Add a flashlight with spare batteries. Add jumper cables and an ice scraper. Pack gloves, a hat and hand warmers. Carry sand or kitty litter to help your tires grip. Add a small shovel and a phone charger."
+  },
+  "permit_q130_q": {
+   "old": "Ice on your windshield is best cleared by:",
+   "new": "What is the best way to clear ice from your windshield?"
+  },
+  "permit_q131_q": {
+   "old": "Wiper blades stuck to a frozen windshield: you should NOT:",
+   "new": "Your wiper blades are stuck to a frozen windshield. What should you NOT do?"
+  },
+  "permit_q132_q": {
+   "old": "Your defroster fails on a cold morning. The safest workaround is:",
+   "new": "Your defroster fails on a cold morning. What is the safest thing to do?"
+  },
+  "permit_q135_q": {
+   "old": "Black ice is more dangerous than visible ice or frost because:",
+   "new": "Why is black ice more dangerous than visible ice or frost?"
+  },
+  "permit_q136_q": {
+   "old": "In a near-whiteout snow squall on a highway, the safest action is:",
+   "new": "You are in a near-whiteout snow squall on a highway. What is the safest action?"
+  },
+  "permit_q137_exp": {
+   "old": "Maine §2056 requires drivers to yield to a pedestrian crossing within a marked crosswalk or showing visible intent to enter it. Outside marked crosswalks, pedestrians generally yield, but drivers still owe due care.",
+   "new": "Maine §2056 requires drivers to yield to a pedestrian crossing within a marked crosswalk or showing visible intent to enter it. Outside a marked crosswalk the law tells the pedestrian to yield, but a driver must still use due care. The Maine manual says to always yield to pedestrians."
+  },
+  "permit_q138_q": {
+   "old": "You are turning right at an intersection. A pedestrian is at the marked crosswalk showing visible intent to cross. You should:",
+   "new": "You are turning right at an intersection. A pedestrian is at the marked crosswalk showing visible intent to cross. What should you do?"
+  },
+  "permit_q139_q": {
+   "old": "If a pedestrian is crossing outside a marked crosswalk in Maine, a driver should:",
+   "new": "A pedestrian is crossing outside a marked crosswalk in Maine. What should a driver do?"
+  },
+  "permit_q139_exp": {
+   "old": "Maine §2056 says pedestrians crossing outside a marked crosswalk generally yield to vehicles, but drivers must exercise due care to avoid colliding with any pedestrian.",
+   "new": "Maine §2056 says a pedestrian who crosses outside a marked crosswalk must yield to vehicles, but drivers must exercise due care to avoid hitting any pedestrian. The Maine manual goes further. It says to always yield to pedestrians, even when they are not in a crosswalk. So slow down or stop."
+  },
+  "permit_q142_q": {
+   "old": "Approaching a school crossing where a crossing guard holds up a stop paddle, you must:",
+   "new": "You approach a school crossing where a crossing guard holds up a stop paddle. What must you do?"
+  },
+  "permit_q142_exp": {
+   "old": "Maine §2091-A requires drivers to obey a qualified school crossing guard's hand signal or handheld traffic-control device at a marked crosswalk. The guard may not contradict or override a lighted traffic or pedestrian signal. Stop until the guard signals you may proceed, and keep scanning for children.",
+   "new": "Maine §2091-A requires drivers to obey a qualified school crossing guard's hand signal or handheld traffic-control device at a marked crosswalk. A stop paddle is one such device. The guard may not contradict or override a lighted traffic or pedestrian signal. Stop until the guard signals that you may go, and keep watching for children."
+  },
+  "permit_q143_q": {
+   "old": "A flashing yellow light at a school zone means:",
+   "new": "What does a flashing yellow light at a school zone mean?"
+  },
+  "permit_q143_exp": {
+   "old": "Flashing yellow at a school zone indicates an active school-zone period. Maine §2074 sets the school-zone speed at 15 mph during active periods such as recess, opening/closing windows, flashing signs, or locally designated times. Standard speed applies otherwise.",
+   "new": "A flashing yellow light at a school zone means the school-zone limit is in effect now. Maine §2074 sets the school-zone speed at 15 mph during active periods. Those are times such as recess, opening/closing windows, when signs flash, and other times set locally. At other times the normal posted speed applies."
+  },
+  "permit_q144_q": {
+   "old": "A pedestrian carrying a white cane (sometimes with a red tip) is signaling:",
+   "new": "A pedestrian is carrying a white cane (sometimes with a red tip). What does the cane tell you, and what should you do?"
+  },
+  "permit_q144_a1": {
+   "old": "Visual impairment — yield, stop as needed, and give room",
+   "new": "Visual impairment — stop, wait, and give room"
+  },
+  "permit_q144_exp": {
+   "old": "A white or metallic cane, with or without a red tip, or a guide/personal care dog indicates a visually impaired pedestrian. Maine §2056 requires drivers to yield; failure is a traffic infraction with a $50-$1,000 fine. Stop as needed and avoid honking unless necessary to prevent an immediate collision.",
+   "new": "A white or metallic cane, with or without a red tip, or a guide/personal care dog tells you the person is blind or has low vision. The Maine manual says to stop at least 10 feet away and wait until the person is out of danger. Maine §2056 requires drivers to yield; failure is a traffic infraction with a $50-$1,000 fine. Give the person room, and avoid honking unless necessary to prevent an immediate collision."
+  },
+  "permit_q145_q": {
+   "old": "A car ahead of you stops at a marked crosswalk for a pedestrian. You should:",
+   "new": "A car ahead of you stops at a marked crosswalk for a pedestrian. What should you do?"
+  },
+  "permit_q147_q": {
+   "old": "Smoke pours out from under your hood while driving. You should:",
+   "new": "Smoke pours out from under your hood while driving. What should you do?"
+  },
+  "permit_q148_q": {
+   "old": "Engine temperature gauge spikes into red while driving on the highway. You should:",
+   "new": "Your engine temperature gauge spikes into the red while you are driving on the highway. What should you do?"
+  },
+  "permit_q149_q": {
+   "old": "Power steering fails at 60 mph. The car becomes much harder to steer. You should:",
+   "new": "Power steering fails at 60 mph. The car becomes much harder to steer. What should you do?"
+  },
+  "permit_q150_q": {
+   "old": "Engine stalls suddenly on the highway. You should:",
+   "new": "Your engine stalls suddenly on the highway. What should you do?"
+  },
+  "permit_q151_q": {
+   "old": "The ABS warning light comes on while driving. The car still stops, but ABS is disabled. You should:",
+   "new": "The ABS warning light comes on while driving. The car still stops, but ABS is disabled. What should you do?"
+  },
+  "permit_q152_q": {
+   "old": "The battery warning light comes on while driving. This typically means:",
+   "new": "The battery warning light comes on while driving. What does this usually mean?"
+  },
+  "permit_q153_q": {
+   "old": "Your car is stuck on railroad tracks and a train is coming. You should:",
+   "new": "Your car is stuck on railroad tracks and a train is coming. What should you do?"
+  },
+  "permit_q154_q": {
+   "old": "In Maine, if you strike and kill a deer or moose with your car, you must:",
+   "new": "In Maine, what must you do if you strike and kill a deer or moose with your car?"
+  },
+  "permit_q154_exp": {
+   "old": "Maine law: report deer/moose strikes to a game warden or police. If your vehicle has apparent damage, the officer issues a certificate at the scene that gives you the carcass — there is no permit to apply for afterward, and no taking it without that certificate. Do not approach a wounded moose — they are dangerous when injured.",
+   "new": "Maine law says to report a deer or moose strike to a game warden or the police. If your vehicle has apparent damage, the officer issues a certificate at the scene that gives you the carcass. There is no permit to apply for afterward, and you may not take the animal without that certificate. Do not go near a wounded moose. An injured moose is dangerous."
+  },
+  "permit_q155_q": {
+   "old": "You witness a serious crash on the highway. The legal and right thing to do is:",
+   "new": "You witness a serious crash on the highway. What is the legal and right thing to do?"
+  },
+  "permit_q157_q": {
+   "old": "When you call 911 from the scene of a crash, the FIRST thing to report is:",
+   "new": "When you call 911 from the scene of a crash, what is the FIRST thing to report?"
+  },
+  "permit_q158_q": {
+   "old": "A downed power line is across the road in front of your car. You should:",
+   "new": "A downed power line is across the road in front of your car. What should you do?"
+  },
+  "permit_q159_q": {
+   "old": "You feel a sudden severe shake — earthquake while driving. You should:",
+   "new": "You feel a sudden severe shake while driving: an earthquake. What should you do?"
+  },
+  "permit_q160_exp": {
+   "old": "Call 911 with their location, description, plate, direction. Police can stop the vehicle safely. Do NOT try to ram or pull alongside — a slumping driver may swerve unpredictably and you become the next victim.",
+   "new": "Call 911. Give the location, what the car looks like, its plate and which way it is going. Police can stop the vehicle safely. Do NOT try to ram it or pull alongside. The driver may swerve without warning, and then you could be hurt too."
+  },
+  "permit_q161_q": {
+   "old": "Your car catches fire while driving. The first thing to do is:",
+   "new": "Your car catches fire while driving. What is the first thing to do?"
+  },
+  "permit_q162_q": {
+   "old": "Modern cars with synthetic oil typically need oil changes:",
+   "new": "How often do modern cars with synthetic oil usually need an oil change?"
+  },
+  "permit_q162_exp": {
+   "old": "Old \"every 3,000 miles\" advice is from conventional oil. Synthetic oil typically lasts 5,000-10,000 miles. Severe driving (short trips, towing, dust, extreme cold) shortens the interval. Follow your owner's manual.",
+   "new": "The old advice of \"every 3,000 miles\" was for conventional oil. Synthetic oil usually lasts 5,000-10,000 miles. Hard use, such as short trips, towing, dust and extreme cold, means you must change it sooner. Follow your owner's manual."
+  },
+  "permit_q164_q": {
+   "old": "Squealing or grinding when you press the brakes typically means:",
+   "new": "What does squealing or grinding usually mean when you press the brakes?"
+  },
+  "permit_q168_q": {
+   "old": "The cabin air filter (different from engine air filter) is for:",
+   "new": "What is the cabin air filter (different from the engine air filter) for?"
+  },
+  "permit_q170_q": {
+   "old": "Spare tire pressure should be checked:",
+   "new": "How often should you check the pressure in your spare tire?"
+  },
+  "permit_q171_q": {
+   "old": "When replacing a burned-out headlight bulb, you should:",
+   "new": "A headlight bulb has burned out. What should you do when you replace it?"
+  },
+  "permit_q172_exp": {
+   "old": "Maine intermediate license: no driving between midnight and 5 AM during the 270-day restriction period. Violating a restriction can extend the restrictions another 270 days, trigger a $250-$500 fine, and suspend the license.",
+   "new": "With a Maine intermediate license you may not drive between midnight and 5 AM during the 270-day restriction period. If you break a restriction, the restrictions last another 270 days. You can also get a $250-$500 fine, and your license is suspended (60 days for a first offense)."
+  },
+  "permit_q174_exp": {
+   "old": "Maine driver's ed: 30 hours classroom and 10 hours behind-the-wheel (split over multiple sessions) with a state-licensed instructor. Required to get a permit before age 18.",
+   "new": "Maine driver's ed is 30 hours classroom and 10 hours behind-the-wheel with a state-licensed instructor. The driving is split over several sessions. You must finish the course to get a permit before age 18."
+  },
+  "permit_q175_exp": {
+   "old": "A violation of the intermediate-license restrictions extends the restriction period another 270 days. Maine also sets a $250-$500 fine and license suspensions for violations.",
+   "new": "If you break an intermediate-license rule, the rules last another 270 days. Maine also sets a $250-$500 fine, and your license is suspended."
+  },
+  "permit_q176_exp": {
+   "old": "Maine permit supervisor: licensed driver age 20+ with 2+ years of licensed experience. Common supervisors are parents, but other family or qualified adults work. They sit in the front passenger seat.",
+   "new": "The person who supervises a Maine permit holder must be a licensed driver who is at least 20 and has held a license for at least 2 years. Parents often do this, but another family member or adult who meets the rule can too. The supervisor sits in the front passenger seat."
+  },
+  "permit_q177_q": {
+   "old": "A pennant-shaped (sideways triangle) yellow sign on the LEFT side of the road means:",
+   "new": "What does a pennant-shaped (sideways triangle) yellow sign on the LEFT side of the road mean?"
+  },
+  "permit_q178_q": {
+   "old": "A round yellow sign with a black \"X\" and the letters \"RR\" warns of:",
+   "new": "What does a round yellow sign with a black \"X\" and the letters \"RR\" warn of?"
+  },
+  "permit_q179_exp": {
+   "old": "Blue = motorist services. Includes gas, food, lodging, hospital, rest area, EV charging. Different from green (directions) and brown (recreational/scenic).",
+   "new": "Blue signs show services for drivers: gas, food, lodging, hospitals, rest areas and EV charging. Green signs give directions. Brown signs show parks and scenic places."
+  },
+  "permit_q181_exp": {
+   "old": "Maine law (Title 12, §13106-A(6) and (7)): a snowmobile must come to a COMPLETE STOP before entering a public way, and must yield right-of-way to ALL vehicular traffic. Cross as directly as possible, on a marked or designated crossing where one exists. As a driver: a stopped sled at a trail crossing has to yield to you, but treat it as a vehicle that may pull out anyway — sleds are quiet, low, and easy to lose against a snowbank.",
+   "new": "Maine law (Title 12, §13106-A(6) and (7)): a snowmobile must come to a COMPLETE STOP before it enters a public way. It must yield to ALL vehicle traffic. It must cross as directly as possible, at a marked crossing where there is one. As a driver, know that a stopped sled at a trail crossing has to yield to you. Still, treat it as a vehicle that may pull out anyway. Sleds are quiet and low, and they are hard to see against a snowbank."
+  },
+  "permit_q182_q": {
+   "old": "You are driving on a rural Maine road at night and approach a marked snowmobile crossing. You should:",
+   "new": "You are driving on a rural Maine road at night and approach a marked snowmobile crossing. What should you do?"
+  },
+  "permit_q184_exp": {
+   "old": "Maine requires an ANNUAL safety inspection at a Maine BMV/State-Police-licensed inspection station. The sticker goes on the inside of the windshield, lower-left, and shows the month and year it expires. Driving with an expired sticker is a citation.",
+   "new": "Maine requires an ANNUAL safety inspection (once a year) at a licensed inspection station. The sticker goes on the inside of the windshield, at the lower left. It shows the month and year it expires. You can get a ticket for driving with an expired sticker."
+  },
+  "permit_q185_exp": {
+   "old": "Maine law caps the standard inspection fee at $12.50 (29-A §1751). Cars registered in Cumberland County need an enhanced inspection that can cost more: up to $18.50 for 1996 and newer models. Pay it at any licensed inspection station — independent garages and dealerships hold most of the licenses.",
+   "new": "Maine law caps the standard inspection fee at $12.50 (29-A §1751). Cars registered in Cumberland County need an enhanced inspection. It can cost more: up to $18.50 for 1996 and newer models. You pay at any licensed inspection station. Most are garages and car dealers."
+  },
+  "permit_q187_q": {
+   "old": "You parked on a city street and your passenger is about to open the curb-side door. The risk to watch for is:",
+   "new": "You parked on a city street and your passenger is about to open the curb-side door. What risk should you watch for?"
+  },
+  "permit_q188_q": {
+   "old": "You hit a deer on a rural Maine road and the animal is killed. Maine law requires you to:",
+   "new": "You hit a deer on a rural Maine road and the animal is killed. What does Maine law require you to do?"
+  },
+  "permit_q188_exp": {
+   "old": "Maine Title 12 §12403: report a collision with a deer, moose, bear or wild turkey to a law enforcement officer BY THE QUICKEST MEANS. If the officer finds your vehicle has apparent damage, they issue a certificate giving you ownership of the carcass — and you must then take the WHOLE animal, not the parts you want. Failing to report, or removing part of a carcass without that certificate, is a civil violation carrying a $100–$500 fine. To report it, call 911.",
+   "new": "Maine Title 12 §12403: report a collision with a deer, moose, bear or wild turkey to a law enforcement officer BY THE QUICKEST MEANS. To report it, call 911. If the officer finds that your vehicle has apparent damage, the officer gives you a certificate. The certificate makes the carcass yours. You must then take the WHOLE animal, not only the parts you want. Failing to report, or removing part of a carcass without that certificate, is a civil violation carrying a $100–$500 fine."
+  },
+  "permit_q189_q": {
+   "old": "You strike a moose on Route 201 at night. The animal is on the shoulder and your car is drivable. The MOST important first action is:",
+   "new": "You strike a moose on Route 201 at night. The animal is on the shoulder and your car is drivable. What is the MOST important first action?"
+  },
+  "permit_q190_q": {
+   "old": "Driving on a Maine secondary road in late March, you notice the pavement has uneven bumps and dips that throw your steering off. These are:",
+   "new": "Driving on a Maine secondary road in late March, you notice the pavement has uneven bumps and dips that throw your steering off. What are they?"
+  },
+  "permit_q191_q": {
+   "old": "After a winter of road salt, the area on your car most prone to rust is:",
+   "new": "After a winter of road salt, which area of your car is most likely to rust?"
+  },
+  "permit_q192_q": {
+   "old": "You hit a deep pothole at speed in early Maine spring and feel the steering pull to one side. The most likely problem is:",
+   "new": "You hit a deep pothole at speed in early Maine spring and feel the steering pull to one side. What is the most likely problem?"
+  },
+  "permit_q195_exp": {
+   "old": "A steady red arrow means traffic making the turn the arrow shows must stop and wait until the arrow changes to green.",
+   "new": "A steady red arrow means stop if you want to turn the way the arrow points. Wait until the arrow turns green."
+  },
+  "permit_q207_exp": {
+   "old": "With one solid and one dashed yellow line, passing is allowed only for traffic that has the dashed line on its side, and only when it is safe.",
+   "new": "Sometimes one yellow line is solid and the other is dashed. Then only traffic with the dashed line on its side may pass, and only when it is safe."
+  },
+  "permit_q213_exp": {
+   "old": "You may not pass where a yellow pennant NO PASSING ZONE sign is on the left of the road, or where a white rectangular DO NOT PASS sign is on the right.",
+   "new": "A yellow pennant sign on the left of the road says NO PASSING ZONE. A white rectangular sign on the right says DO NOT PASS. You may not pass where you see either sign."
+  },
+  "permit_q218_exp": {
+   "old": "A visual distraction makes you look away from the road at something that has nothing to do with driving, such as a billboard or a crash scene.",
+   "new": "A visual distraction makes you look away from the road. You look at something that has nothing to do with driving, such as a billboard or a crash scene."
+  },
+  "permit_q219_exp": {
+   "old": "A manual distraction takes one or both hands off the wheel for something that is not driving: eating, drinking, tuning the radio, or setting a GPS.",
+   "new": "A manual distraction takes one or both hands off the wheel. Your hands do something that is not driving. Examples are eating, drinking, tuning the radio and setting a GPS."
+  },
+  "permit_q220_exp": {
+   "old": "Cognitive distractions are thoughts and feelings, such as anger, anxiety, or worry, that pull your attention away from the road.",
+   "new": "Cognitive distractions are thoughts and feelings that pull your mind away from the road. Anger, anxiety and worry are examples."
+  },
+  "permit_q227_exp": {
+   "old": "The manual says using a phone or other device in a moving vehicle can lead to crashes as critical and as devastating as those caused by impaired driving.",
+   "new": "The manual says that using a phone or other device in a moving vehicle can cause crashes. Those crashes can be as serious as the ones that impaired drivers cause."
+  },
+  "permit_q239_exp": {
+   "old": "Headlights show about 250 feet. The manual's chart gives a total stopping distance of 188 feet at 50 mph and 272 feet at 60 mph, so above about 50 mph you cannot stop inside the distance you can see.",
+   "new": "Headlights show about 250 feet. The manual's chart gives a total stopping distance of 188 feet at 50 mph and 272 feet at 60 mph. So above about 50 mph you cannot stop inside the distance you can see."
+  },
+  "permit_q242_exp": {
+   "old": "A conviction for a moving violation while your license is provisional brings a 30-day suspension the first time. Second and third offenses bring longer suspensions.",
+   "new": "If you are convicted of a moving violation while your license is provisional, you get a 30-day suspension the first time. The second and third times, the suspension is longer."
+  },
+  "permit_q243_exp": {
+   "old": "Provisional license suspensions for moving violations: 30 days for the first, 180 days for the second, and one year for the third or later.",
+   "new": "A moving violation suspends a provisional license. The first time it is for 30 days. The second time it is for 180 days. The third time or later it is for one year."
+  },
+  "permit_q251_exp": {
+   "old": "Maine law requires every owner and operator of a motor vehicle to have liability insurance and to show evidence of it when a law enforcement officer asks. Carry the insurance card in the vehicle.",
+   "new": "Maine law says every owner and every driver of a motor vehicle must have liability insurance. You must show proof of it when a police officer asks. Keep the insurance card in the vehicle."
+  },
+  "kinetic_content": {
+   "old": "A moving car stores energy — kinetic energy. KE = ½mv². Notice the v-squared again. At 30 mph a car has some kinetic energy. At 60 mph it has FOUR TIMES that. At 90 mph it has NINE TIMES. Every bit of that has to go somewhere in a crash — into crumple zones, airbags, and unfortunately, into people. This is the single biggest reason speed limits exist. Modern crumple zones are designed for ~35 mph impacts. Above that, the occupants start to see forces that human bodies cannot survive. Seatbelts, airbags, and crumple zones together cut fatality risk by ~75% at legal speeds — but they cannot fight physics forever.",
+   "new": "A moving car stores energy — kinetic energy. KE = ½mv². Notice the v-squared again. At 30 mph a car has some kinetic energy. At 60 mph it has FOUR TIMES that. At 90 mph it has NINE TIMES. Every bit of that has to go somewhere in a crash — into crumple zones, airbags, and unfortunately, into people. This is the single biggest reason speed limits exist. Modern crumple zones are designed for ~35 mph impacts. Above that, the occupants start to see forces that human bodies cannot survive. Seatbelts, airbags, and crumple zones together save many lives at legal speeds — but they cannot fight physics forever."
+  },
+  "hypermiling_content": {
+   "old": "Hypermiling is the art of squeezing every mile from a gallon. Proven techniques: (1) Gentle accel — imagine an egg between your foot and the pedal. (2) Anticipate — read the road 20-30 seconds ahead so you brake less. (3) Coast to stops — fuel cut-off activates when you lift off the gas, meaning coasting in gear uses ZERO fuel on modern cars. (4) Pulse and glide — gently accelerate, then coast. Works best under 45 mph. (5) Highway cruise at 55-60 mph, not 75 (drag is brutal). (6) Tires at door-sticker PSI. (7) Remove the roof box when not using it. (8) Don't idle — modern engines restart on <0.5 s of fuel, so 30+ sec of idling wastes more than restarting. Combined, these techniques can boost real-world MPG by 20-40% over aggressive driving. Free money.",
+   "new": "Hypermiling is the art of squeezing every mile from a gallon. Proven techniques: (1) Gentle accel — imagine an egg between your foot and the pedal. (2) Anticipate — read the road 20-30 seconds ahead so you brake less. (3) Coast to stops — fuel cut-off activates when you lift off the gas, meaning coasting in gear uses ZERO fuel on modern cars. (4) Pulse and glide — gently accelerate, then coast. Works best under 45 mph. (5) Highway cruise at 55-60 mph, not 75 (drag is brutal). (6) Tires at door-sticker PSI. (7) Remove the roof box when not using it. (8) Don't idle — modern engines restart on <0.5 s of fuel, so 30+ sec of idling wastes more than restarting. Aggressive driving can lower gas mileage by roughly 15% to 30% at highway speeds and 10% to 40% in stop-and-go traffic (fueleconomy.gov). Driving smoothly gets that back. Free money."
+  }
+ },
+ "orphaned_by_this_lane": [
+  "let_s_start",
+  "next",
+  "next_2",
+  "next_3",
+  "next_4",
+  "back",
+  "menu",
+  "menu_2",
+  "scenario_explore_parking",
+  "scenario_view_briefing",
+  "menu_3",
+  "lessons",
+  "menu_4",
+  "try_again_new_shuffle",
+  "menu_5",
+  "permit_start",
+  "new",
+  "drive_debrief_2",
+  "menu_8",
+  "menu_9",
+  "menu_10",
+  "menu_11",
+  "menu_12",
+  "menu_13",
+  "menu_14",
+  "menu_15",
+  "menu_16",
+  "retry_3",
+  "menu_17",
+  "retry_5",
+  "menu_18",
+  "retry_7",
+  "menu_19",
+  "retry_9",
+  "menu_20",
+  "retry_11",
+  "menu_21",
+  "retry_13",
+  "menu_22",
+  "retry_15",
+  "menu_23",
+  "retry_17",
+  "menu_24",
+  "retry_19",
+  "menu_25",
+  "all_crash_types",
+  "menu_26",
+  "menu_27",
+  "retry_20",
+  "menu_28",
+  "menu_29",
+  "reset",
+  "menu_30",
+  "prev",
+  "reset_all",
+  "skip",
+  "menu_31",
+  "practice_right_of_way_quiz",
+  "take_the_permit_test",
+  "menu_32",
+  "try_again",
+  "menu_33",
+  "menu_34",
+  "menu_35",
+  "menu_36",
+  "back_2",
+  "menu_37",
+  "menu_38",
+  "menu_39",
+  "menu_40",
+  "menu_41",
+  "try_again_2",
+  "menu_42",
+  "menu_43",
+  "start_test",
+  "cancel",
+  "menu_44",
+  "start_impaired_test",
+  "menu_45",
+  "test_again",
+  "menu_46",
+  "menu_47",
+  "menu_48",
+  "menu_49",
+  "reset_to_default",
+  "menu_50",
+  "menu_51",
+  "menu_52",
+  "menu_53",
+  "reset_2",
+  "menu_54",
+  "menu_55",
+  "menu_56",
+  "menu_57",
+  "reset_3",
+  "menu_58",
+  "menu_59",
+  "menu_60",
+  "debrief",
+  "back_3",
+  "menu_61",
+  "menu_62",
+  "menu_63",
+  "menu_64",
+  "menu_65",
+  "menu_66",
+  "menu_67",
+  "menu_68",
+  "menu_69",
+  "menu_70",
+  "start",
+  "menu_71",
+  "menu_72",
+  "menu_73",
+  "menu_74",
+  "menu_75"
+ ],
+ "ui_only": {
+  "tile_questions_count": {
+   "old": "{n} questions. Maine BMV format.",
+   "note": "not used by the tool. It says \"Maine BMV format\": delete it, or set it to \"{n} questions\" if the host uses it."
+  }
+ }
+}

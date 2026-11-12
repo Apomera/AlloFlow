@@ -78,7 +78,8 @@ describe('anti-drift: content_engine quick-wins shipped', () => {
 describe('anti-drift: generated-document accessibility fixes (doc_pipeline) + host', () => {
   it('the generated doc html lang follows the CONTENT language, not the UI language (WCAG 3.1.1)', () => {
     // The inline map became the named _documentLanguageMap; same content-first rule.
-    expect(pipe).toContain("_documentLanguageMap[leveledTextLanguage || currentUiLanguage] || 'en'");
+    // 2026-11-11: the lookup moved into _exportLangTag (shared with the document-language labels).
+    expect(pipe).toContain('_exportLangTag(leveledTextLanguage || currentUiLanguage)');
     expect(pipe).toMatch(/<html lang="\$\{_documentLanguage\}" dir="\$\{direction\}"/);
   });
   it('the generated quiz radio no longer ships a literal t() aria-label (the <label> names it)', () => {

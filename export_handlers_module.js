@@ -1436,6 +1436,7 @@
     });
     doc.querySelectorAll('.answer-key,.alloflow-teacher-copy-banner').forEach((node) => node.remove());
     doc.querySelectorAll('.question[data-correct]').forEach((node) => node.setAttribute('data-correct', ''));
+    doc.querySelectorAll('.question[data-fill-answers]').forEach((node) => node.removeAttribute('data-fill-answers'));
     doc.querySelectorAll('.alloflow-cs-strip[data-category-id]').forEach((node) => node.setAttribute('data-category-id', ''));
     // A stale Builder iframe may still contain timeline answer metadata or
     // the canonical order. Remove both, then materialize a deterministic
@@ -1587,6 +1588,18 @@
         }
         var _exBody = _exClone.querySelector('body');
         if (_exBody) _exBody.removeAttribute('data-allo-user-edited');
+        // An unanswered page prompt in the preview (name / annotation confirm) must not
+        // ship: drop its overlay and undo the inert/aria-hidden it set on the page.
+        var _exPrompts = _exClone.querySelectorAll('.alloflow-export-prompt-overlay, .alloflow-anno-confirm-backdrop');
+        for (var _pi = 0; _pi < _exPrompts.length; _pi++) _exPrompts[_pi].remove();
+        var _exBlocked = _exClone.querySelectorAll('[data-alloflow-prompt-aria]');
+        for (var _bi = 0; _bi < _exBlocked.length; _bi++) {
+          var _bn = _exBlocked[_bi];
+          if (_bn.hasAttribute('data-alloflow-prompt-inert')) _bn.removeAttribute('inert');
+          var _was = _bn.getAttribute('data-alloflow-prompt-aria');
+          if (_was === '-') _bn.removeAttribute('aria-hidden'); else _bn.setAttribute('aria-hidden', _was);
+          _bn.removeAttribute('data-alloflow-prompt-inert'); _bn.removeAttribute('data-alloflow-prompt-aria');
+        }
       } catch (_exStripErr) { /* strip is best-effort — never block an export */ }
       // Read-aloud: turn every [data-ka-readable] passage into inline
       // sentence-karaoke on the clone (modal-driven, at download time).

@@ -35,7 +35,7 @@ function keysCalledBy(src) {
       const c = node.callee;
       const name = c.type === 'Identifier' ? c.name
         : (c.type === 'MemberExpression' && c.property ? c.property.name : null);
-      if (name === 't' || name === '__alloT') {
+      if (name === 't' || /^__allo(?:[A-Z][A-Za-z0-9]*)?T$/.test(name)) {
         const a0 = node.arguments[0];
         if (a0 && a0.type === 'Literal' && typeof a0.value === 'string' && a0.value.startsWith('stem.')) {
           out.add(a0.value);

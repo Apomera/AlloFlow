@@ -1,0 +1,99 @@
+{
+ "new": {
+  "next_seen_one": "Seen {n} time on your last drive."
+ },
+ "changed": {
+  "permit_q14_a1": {
+   "old": "It is about 30-50% longer",
+   "new": "It is about 30-40% longer"
+  },
+  "permit_q35_exp": {
+   "old": "Maine requires 70 hours of supervised driving, including 10 at night, before you can take the road test.",
+   "new": "Maine requires 70 hours of supervised driving, including 10 at night, before you can take the road test. You need to pass the road test to get your intermediate license."
+  },
+  "permit_q125_exp": {
+   "old": "All-season tire rubber gets stiff in the cold and loses grip. A common rule of thumb is about 45°F. Winter tires use softer rubber and a deeper tread that grips snow, slush and cold pavement. Many Mainers switch in November and back in April.",
+   "new": "All-season tire rubber gets stiff in the cold and loses grip. A common rule of thumb is about 45°F. Winter tires use softer rubber and a deeper tread that grips snow, slush and cold pavement. Many Mainers put winter tires on in late October or November and go back to all-season tires in April."
+  },
+  "permit_q136_exp": {
+   "old": "Stopping in the lane = rear-end crash risk. The shoulder is unsafe (others may also leave the road). Slow, increase distance, low beams, and exit at a rest area, gas station, or wide pull-off. Hazards on the shoulder, NOT in the lane.",
+   "new": "Stopping in a travel lane can get you hit from behind. Slow down, leave more space, and use low beams, because high beams reflect off the snow. Then pull off the road at a safe place, such as a rest area, a gas station or a wide pull-off, and wait there. The shoulder is a last choice, because other drivers may drift off the road too. If you must stop there, pull as far right as you can and turn on your hazard lights. Never stop in the lane, and never sit with your lights off."
+  },
+  "permit_q151_exp": {
+   "old": "ABS off = pre-1990s braking. Brakes work but wheels can lock under hard stops, removing steering. Drive carefully, maintain extra distance, get the system diagnosed. Common causes: wheel-speed sensor or fuse.",
+   "new": "With the ABS light on, your brakes still work, but without anti-lock. In a hard stop the wheels can lock, and locked wheels cannot steer. Leave extra room to stop and drive with care to a shop. Normal stops do not change, so there is no need to pump the brakes at every stop. In an emergency stop, pump the brakes, as the Maine manual says for cars without ABS. Common causes are a wheel-speed sensor or a fuse."
+  },
+  "permit_q153_a1": {
+   "old": "Get out at once and run AT AN ANGLE TOWARD the train, then call 911",
+   "new": "Get out and run AWAY from the tracks at an angle, TOWARD the train"
+  },
+  "permit_q153_exp": {
+   "old": "A train cannot stop in time. Get out NOW. Run TOWARD the train at a 45° angle — when it hits the car, debris flies forward in the train's direction. Running away from the train means you may be hit by the debris.",
+   "new": "A train cannot stop in time. Get out NOW. Run away from the tracks at a 45° angle, TOWARD the train. When the train hits the car, debris flies forward in the train's direction. If you run away from the train, the debris may hit you. When you are safely away from the tracks, call 911 or the railroad's number on the blue sign at the crossing."
+  },
+  "permit_q172_exp": {
+   "old": "With a Maine intermediate license you may not drive between midnight and 5 AM during the 270-day restriction period. If you break a restriction, the restrictions can last another 270 days. You can also get a $250-$500 fine, and your license can be suspended.",
+   "new": "With a Maine intermediate license you may not drive between midnight and 5 AM during the 270-day restriction period. If you break a restriction, the restrictions last another 270 days. You can also get a $250-$500 fine, and your license is suspended (60 days for a first offense)."
+  },
+  "permit_q175_a1": {
+   "old": "It is extended by another 270 days and can include fines/suspension",
+   "new": "It is extended by 270 more days, and the license is suspended"
+  },
+  "winterdriving_exp6": {
+   "old": "Exactly. 4WD / AWD powers all four wheels from the engine, which helps you GO from a stop on snow. But when you brake, all cars use the same four brake pads on the same four tires — so stopping distance depends entirely on tire grip, not drivetrain. An AWD SUV on all-seasons stops WORSE than a sedan on winter tires. Drive to your tires, not your drivetrain.",
+   "new": "Exactly. 4WD / AWD powers all four wheels from the engine, which helps you GO from a stop on snow. But when you brake, every car brakes with all four wheels — so stopping distance depends on tire grip, not drivetrain. An AWD SUV on all-seasons stops WORSE than a sedan on winter tires. Drive to your tires, not your drivetrain."
+  },
+  "schoolbus_c5_3": {
+   "old": "It applies when an adult is present at the stop",
+   "new": "It applies only when an adult is present at the stop"
+  },
+  "emergencyvehicle_c5_2": {
+   "old": "Move left into the adjacent lane if safe, otherwise slow to a careful, prudent speed",
+   "new": "Move into the left lane if safe; if not, slow to a careful, prudent speed"
+  },
+  "intersectionguide_tie_and_both_going_straight_left_turner_yields": {
+   "old": "Tie AND both going straight: left-turner yields.",
+   "new": "Tie, and you face each other: a driver turning left yields to one going straight."
+  },
+  "intersectionguide_traffic_on_the_through_road_has_the_right_of_w": {
+   "old": "Traffic on the through road has the right-of-way.",
+   "new": "A stop or yield sign on the stem means the stem yields to the through road."
+  },
+  "intersectionguide_the_vehicle_on_the_terminating_road_must_yield": {
+   "old": "The vehicle on the terminating road must yield/stop.",
+   "new": "With no signs, Maine has no special T rule: yield to a car already there, and to the car on your right."
+  },
+  "the_top_of_the_t_is_the_through_road_t": {
+   "old": "The \"top of the T\" is the through road. The \"stem\" yields.",
+   "new": "Never assume the other driver will wait. Slow down and be ready to stop."
+  },
+  "everyone_out_run_at_a_45_angle_toward_": {
+   "old": "Everyone OUT. Run AT A 45° ANGLE TOWARD the oncoming train. Debris from an impact launches FORWARD in the train's direction of travel — running toward the train puts you behind the debris field.",
+   "new": "Everyone OUT. Run away from the tracks at a 45° angle, TOWARD the oncoming train. Debris from an impact launches FORWARD in the train's direction of travel — running toward the train puts you behind the debris field."
+  },
+  "railroadcrossing_c3_3": {
+   "old": "Get everyone out immediately and run AT A 45° ANGLE TOWARD the oncoming train",
+   "new": "Get everyone out and move away from the tracks at a 45° angle, TOWARD the train"
+  },
+  "railroadcrossing_exp6": {
+   "old": "The \"humped\" warning means long or low vehicles can get beached with their chassis on the tracks. Crossing at an angle does NOT help — it actually increases the chassis-to-rail contact distance. If no alternative exists, approach at a crawl in the center of the lane. If you get stuck: immediate evacuation, run at 45° toward any oncoming train, and call the emergency number posted on the blue-and-white sign at every crossing.",
+   "new": "The \"humped\" warning means long or low vehicles can get beached with their chassis on the tracks. Crossing at an angle does NOT help — it actually increases the chassis-to-rail contact distance. If no alternative exists, approach at a crawl in the center of the lane. If you get stuck: immediate evacuation, run away from the tracks at a 45° angle, toward any oncoming train, and call the emergency number posted on the blue-and-white sign at every crossing."
+  },
+  "rightofway_c14_2": {
+   "old": "Get out and walk TOWARD the train at a 45° angle",
+   "new": "Get out, leave the tracks at 45°, TOWARD the train"
+  },
+  "rightofway_exp14": {
+   "old": "Get out IMMEDIATELY. Walk toward the oncoming train at a 45° angle — debris from the collision flies forward. Running away puts you in the debris path. Call 911 and the emergency number on the crossing post.",
+   "new": "Get out IMMEDIATELY. Walk away from the tracks at a 45° angle, toward the oncoming train — debris from the collision flies forward. Running away puts you in the debris path. Call 911 and the emergency number on the crossing post."
+  },
+  "get_out_run_45_toward_approaching_trai": {
+   "old": " GET OUT, run 45° toward approaching train",
+   "new": " GET OUT, run away from the tracks at 45°, toward the train"
+  },
+  "debrief_ai_caused_crashes": {
+   "old": "ℹ️ {n} of your {m} crashes were caused by other drivers (mostly tailgating). In real life you would file an insurance claim — your safety score was only lightly penalized.",
+   "new": "ℹ️ Crashes caused by other drivers (mostly tailgating): {n} of {m}. You did not cause them, so they cost your safety score little or nothing. In real life you would file an insurance claim."
+  }
+ }
+}

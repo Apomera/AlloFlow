@@ -247,7 +247,8 @@ describe('exported activity state and printable response space', () => {
     expect(standard.querySelectorAll('.alloflow-ruled-line')).toHaveLength(5);
     expect(extended.querySelectorAll('.alloflow-ruled-line')).toHaveLength(8);
     expect(extended.querySelector('.alloflow-ruled-response-long')).not.toBeNull();
-    expect(standardHtml).toContain('@page { margin: 1.5in; }');
+    // 2026-11-11: the page rule also prints page numbers.
+    expect(standardHtml).toContain('@page { margin: 1.5in; @bottom-right');
     expect(standardHtml).toContain('max-height: 5.25in');
     expect(standardHtml).toContain('figure img { max-height: 4.60in; }');
     expect(standardHtml).toContain('figure:not(.alloflow-captioned-figure) img { max-height: 5.25in; }');

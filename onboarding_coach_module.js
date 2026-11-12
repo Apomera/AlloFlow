@@ -61,6 +61,11 @@ function OnboardingCoach(props) {
   };
   var setRunTour = props.setRunTour;
   var pickMode = typeof props.pickMode === "function" ? props.pickMode : null;
+  var roleDoors = props.embedded === true;
+  var copy = function(key, fallback) {
+    var value = t(key);
+    return value && value !== key ? value : fallback;
+  };
   var _open = React.useState(false);
   var isOpen = _open[0];
   var setIsOpen = _open[1];
@@ -85,7 +90,14 @@ function OnboardingCoach(props) {
     } catch (_) {
     }
     if (ao && typeof ao.announce === "function") {
-      var msg = t("onboarding.panel_open_announcement") || "AlloBot onboarding open. Four mode options are listed: Full AlloFlow, Guided Mode, Learning Tools, and Educator Tools. A Start the Tour button is at the bottom.";
+      var msg = roleDoors ? [
+        copy("onboarding.panel_title", "Hi! I\u2019m AlloBot."),
+        copy("launch_pad.role_title", "How will you use AlloFlow today?"),
+        modes.map(function(m) {
+          return m.title;
+        }).join(", ") + ".",
+        typeof setRunTour === "function" ? copy("onboarding.start_tour_cta", "Start the tour") + "." : ""
+      ].join(" ").trim() : t("onboarding.panel_open_announcement") || "AlloBot onboarding open. Four mode options are listed: Full AlloFlow, Guided Mode, Learning Tools, and Educator Tools. A Start the Tour button is at the bottom.";
       try {
         ao.announce(msg, { politeness: "polite" });
       } catch (_) {
@@ -219,6 +231,7 @@ function OnboardingCoach(props) {
     Promise.resolve(ao.askCoach({
       question: questionText,
       screen: screenCtx,
+      layout: roleDoors ? "roles" : "modes",
       signal: controller ? controller.signal : null
     })).then(function(res) {
       setInFlight(false);
@@ -338,6 +351,11 @@ function OnboardingCoach(props) {
   };
   var chipLabel = function(chip) {
     if (chip.kind === "pick_mode") {
+      var door = modes.filter(function(m) {
+        return m.key === chip.key;
+      })[0];
+      if (roleDoors && door) return door.title;
+      if (roleDoors && chip.key === "full") return copy("launch_pad.teacher_full_link", "Open the full workspace instead");
       var titleKey = "launch_pad." + chip.key + "_title";
       var label = t(titleKey);
       if (!label || label === titleKey) {
@@ -359,7 +377,51 @@ function OnboardingCoach(props) {
       return t("onboarding.open_settings") || "Open settings";
     return "";
   };
-  var modes = [
+  var teacherPrefersFull = false;
+  try {
+    teacherPrefersFull = window.localStorage.getItem("alloflow_teacher_workspace") === "full";
+  } catch (_) {
+  }
+  var guidedBestIf = copy("onboarding.guided_best_if", "Best if you\u2019re brand new and want a calmer interface that holds your hand at each step.");
+  var fullBestIf = copy("onboarding.full_best_if", "Best if you want full control and you\u2019re comfortable exploring on your own.");
+  var modes = roleDoors ? [
+    {
+      key: "teacher",
+      icon: "\u{1F9D1}\u200D\u{1F3EB}",
+      title: copy("roles.teacher", "Teacher"),
+      desc: teacherPrefersFull ? copy("launch_pad.teacher_return_full", "Create and adapt lessons in your full workspace.") : copy("launch_pad.teacher_guided_desc", "Create and adapt lessons with step-by-step guidance."),
+      bestIf: teacherPrefersFull ? fullBestIf : guidedBestIf,
+      alt: (teacherPrefersFull ? copy("launch_pad.teacher_guided_link", "Open Guided Mode instead") : copy("launch_pad.teacher_full_link", "Open the full workspace instead")) + ": " + (teacherPrefersFull ? guidedBestIf : fullBestIf)
+    },
+    {
+      key: "student",
+      icon: "\u{1F392}",
+      title: copy("roles.student", "Student"),
+      desc: copy("launch_pad.student_desc", "Join your class or explore learning activities."),
+      bestIf: copy("onboarding.student_best_if", "Best if you\u2019re a student, with or without a class code from your teacher.")
+    },
+    {
+      key: "family",
+      icon: "\u{1F3E0}",
+      title: copy("launch_pad.door_family", "Family"),
+      desc: copy("launch_pad.door_family_desc", "Support your child's reading at home."),
+      bestIf: copy("onboarding.family_best_if", "Best if you\u2019re a parent or caregiver helping a child read at home.")
+    },
+    {
+      key: "specialist",
+      icon: "\u{1F4CB}",
+      title: copy("launch_pad.professional_tools", "Professional tools"),
+      desc: copy("launch_pad.professional_tools_desc", "BehaviorLens, Report Writer, and tools for school support professionals."),
+      bestIf: copy("onboarding.specialist_best_if", "Best if you\u2019re a school psychologist, counselor, or other support professional.")
+    },
+    {
+      key: "adult",
+      icon: "\u{1F4DA}",
+      title: copy("launch_pad.learn_independently", "Learn independently"),
+      desc: "",
+      bestIf: copy("onboarding.independent_best_if", "Best if you\u2019re an adult learning on your own, for example for a course or a licensing exam.")
+    }
+  ] : [
     {
       key: "full",
       icon: "\u{1F680}",
@@ -616,13 +678,13 @@ function OnboardingCoach(props) {
             }
           },
           /* @__PURE__ */ React.createElement("span", { style: { fontSize: "34px", flexShrink: 0, lineHeight: 1 }, "aria-hidden": "true" }, m.icon),
-          /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("h3", { style: { margin: 0, fontSize: "15px", fontWeight: 800, color: "#1e293b" } }, m.title), /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 6px", fontSize: "12px", color: "#475569", lineHeight: 1.5 } }, m.desc), /* @__PURE__ */ React.createElement("p", { style: {
-            margin: 0,
+          /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: 0 } }, /* @__PURE__ */ React.createElement("h3", { style: { margin: 0, fontSize: "15px", fontWeight: 800, color: "#1e293b" } }, m.title), m.desc ? /* @__PURE__ */ React.createElement("p", { style: { margin: "4px 0 6px", fontSize: "12px", color: "#475569", lineHeight: 1.5 } }, m.desc) : null, /* @__PURE__ */ React.createElement("p", { style: {
+            margin: m.desc ? 0 : "4px 0 0",
             fontSize: "11px",
             color: "#7c3aed",
             fontWeight: 700,
             lineHeight: 1.4
-          } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1} "), m.bestIf))
+          } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F4A1} "), m.bestIf), m.alt ? /* @__PURE__ */ React.createElement("p", { "data-coach-alt": "", style: { margin: "6px 0 0", fontSize: "11px", color: "#475569", lineHeight: 1.4 } }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u21AA "), m.alt) : null)
         );
       }), typeof setRunTour === "function" && /* @__PURE__ */ React.createElement(
         "div",

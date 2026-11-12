@@ -72,7 +72,13 @@ describe('gravity follows the pavement beneath the vehicle', () => {
     expect(rawSlope * fixture.direction).toBeGreaterThan(0.2);
     const forward = RR.drivingRoadGrade(world, { ...point, heading });
     const backward = RR.drivingRoadGrade(world, { ...point, heading: heading + Math.PI });
-    expect(forward).toBeCloseTo(fixture.direction * 0.10, 10);
+    // ra33: the grade is the height difference between the two axles (was a 1 m sample, which
+    // read the bank's ripple as a 10% hill and hit the clamp here). Still inside the 10% envelope.
+    const half = RR.RR_GRADE_HALF_WHEELBASE_METERS;
+    const ax = Math.cos(heading) * half, ay = Math.sin(heading) * half;
+    const axle = (RR.roadSurfacePoseAt(world, point.x + ax, point.y + ay).height - RR.roadSurfacePoseAt(world, point.x - ax, point.y - ay).height) / (2 * half);
+    expect(forward).toBeCloseTo(Math.max(-0.10, Math.min(0.10, axle)), 10);
+    expect(Math.abs(forward)).toBeLessThanOrEqual(0.10);
     expect(backward).toBeCloseTo(-forward, 10);
   });
 

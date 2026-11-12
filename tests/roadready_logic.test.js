@@ -305,9 +305,9 @@ describe('world-space simulation consistency', () => {
     const speed60 = 60 * RR.MPH_TO_MS;
     expect(RR.followingGapSeconds(speed60 * 3, speed60)).toBeCloseTo(3, 6);
     expect(RR.recommendedFollowingMeters(speed60, 'clear', 1))
-      .toBeCloseTo(2.5 + speed60 * 3, 6);
-    expect(RR.recommendedFollowingMeters(speed60, 'rain', 1))
       .toBeCloseTo(2.5 + speed60 * 4, 6);
+    expect(RR.recommendedFollowingMeters(speed60, 'rain', 1))
+      .toBeCloseTo(2.5 + speed60 * 5, 6);
     expect(RR.recommendedFollowingMeters(speed60, 'snow', 1))
       .toBeCloseTo(2.5 + speed60 * 6, 6);
     expect(RR.recommendedFollowingMeters(speed60, 'ice', 1))
@@ -485,7 +485,10 @@ describe('world-space simulation consistency', () => {
 describe('Ride-Along safety planning', () => {
   it('only advertises automatic driving on spline-backed road scenarios', () => {
     expect(RR.rideAlongSupportsScenario('residential', false)).toBe(true);
-    expect(RR.rideAlongSupportsScenario('highway', false)).toBe(true);
+    // ra33: the highway carries rideAlong: false until its acceptance sweep is clean (see the round 33 notes)
+    expect(RR.rideAlongSupportsScenario('highway', false)).toBe(false);
+    expect(RR.rideAlongSupportsScenario('highway', true)).toBe(true);
+    expect(RR.rideAlongSupportsScenario('snow', false)).toBe(true);
     expect(RR.rideAlongSupportsScenario('parking', false)).toBe(false);
     expect(RR.rideAlongSupportsScenario('roundabout', false)).toBe(false);
     expect(RR.rideAlongSupportsScenario('suburban', true)).toBe(true);
@@ -871,7 +874,8 @@ describe('physical road layouts', () => {
 
     const cyclists = [{ x: 0, y: 12, heading: -Math.PI / 2, type: 'cyclist' }];
     RR.alignCyclistsToStreamedWorld(world, cyclists);
-    expect(cyclists[0]._bikeLane).toBeCloseTo(5.8, 8);
+    // round 32 (tr32): riders keep to the paved shoulder just outside the edge line (was 0.7 m inside the road edge: 5.8)
+    expect(cyclists[0]._bikeLane).toBeCloseTo(6.55, 8);
     expect(cyclists[0].x).toBeCloseTo(48 + cyclists[0]._bikeLane * Math.cos(heading), 8);
     expect(cyclists[0].y).toBeCloseTo(12 - cyclists[0]._bikeLane * Math.sin(heading), 8);
     expect(RR.mainRoadLocalPoint(world, cyclists[0].x, cyclists[0].y).lateral).toBeCloseTo(cyclists[0]._bikeLane, 3);
@@ -1500,11 +1504,12 @@ describe('physical road layouts', () => {
     expect(RR.isStaticObstacleCell(8)).toBe(true);
 
     const bounds = RR.workZoneBoundsForChunk(1);
-    expect(bounds).toEqual({ startY: 35, endY: 61, playerStopY: 61, opposingStopY: 35 });
-    expect(RR.workZoneStopLineForDirection(bounds, -1)).toBe(61);
-    expect(RR.workZoneStopLineForDirection(bounds, 1)).toBe(35);
-    expect(RR.workZoneStopLineForDirection({ _workZoneStartY: 35, _workZoneEndY: 61 }, -1)).toBe(61);
-    expect(RR.workZoneStopLineForDirection({ _workZoneStartY: 35, _workZoneEndY: 61 }, 1)).toBe(35);
+    // ra33: each flagger station is one taper (16 m) outside the cones
+    expect(bounds).toEqual({ startY: 35, endY: 61, playerStopY: 77, opposingStopY: 19 });
+    expect(RR.workZoneStopLineForDirection(bounds, -1)).toBe(77);
+    expect(RR.workZoneStopLineForDirection(bounds, 1)).toBe(19);
+    expect(RR.workZoneStopLineForDirection({ _workZoneStartY: 35, _workZoneEndY: 61 }, -1)).toBe(77);
+    expect(RR.workZoneStopLineForDirection({ _workZoneStartY: 35, _workZoneEndY: 61 }, 1)).toBe(19);
     expect(RR.workZoneConeOffset(0)).toBeCloseTo(-0.4);
     expect(RR.workZoneConeOffset(8)).toBeCloseTo(-2.7);
     expect(RR.flaggerStopsDirection('red', -1)).toBe(true);
@@ -1687,9 +1692,9 @@ describe('stoppingDistance', () => {
 });
 
 describe('safeFollowingFeet', () => {
-  it('is the 3-second rule on dry (60 mph → ~264 ft) and stretches in weather', () => {
-    expect(RR.safeFollowingFeet(60, 'clear')).toBeCloseTo(60 * 1.467 * 3, 1);
-    expect(RR.safeFollowingFeet(60, 'rain')).toBeCloseTo(60 * 1.467 * 4, 1);
+  it('is the 4-second rule on dry (60 mph → ~352 ft) and stretches in weather', () => {
+    expect(RR.safeFollowingFeet(60, 'clear')).toBeCloseTo(60 * 1.467 * 4, 1);
+    expect(RR.safeFollowingFeet(60, 'rain')).toBeCloseTo(60 * 1.467 * 5, 1);
     expect(RR.safeFollowingFeet(60, 'snow')).toBeCloseTo(60 * 1.467 * 6, 1);
     expect(RR.safeFollowingFeet(60, 'fog')).toBeCloseTo(60 * 1.467 * 6, 1);
   });
@@ -2375,7 +2380,8 @@ describe('coachTipFor', () => {
 });
 
 describe('rrPracticeFocusFor', () => {
-  it('summarizes the most frequent moments with a rule cue and coaching advice', () => {
+  // Round 31: ranked by what an event cost (safety points) times how recent it was, not by count.
+  it('summarizes the costliest, most recent moments with a rule cue and coaching advice', () => {
     const focus = RR.rrPracticeFocusFor([
       { type: 'speedViolation', t: 10, severity: 2, mu: 0.72, postedLimitMph: 25 },
       { type: 'hardBrake', t: 20, severity: 2, mu: 0.42 },
@@ -2387,7 +2393,9 @@ describe('rrPracticeFocusFor', () => {
     expect(focus[0]).toMatchObject({ type: 'speedViolation', count: 3, label: 'Hold the posted limit' });
     expect(focus[0].rule).toMatch(/posted limit/);
     expect(focus[0].advice.length).toBeGreaterThan(20);
-    expect(focus[1].type).toBe('hardBrake');
+    // speeding (2 points a second, at t=40 of 50) 1.8 > an unknown severity-1 event at t=50 (1.0) > one hard brake at t=20 (0.7)
+    expect(focus[1].type).toBe('newEvent');
+    expect(RR.rrPracticeFocusFor([{ type: 'hardBrake', t: 1, severity: 3 }, { type: 'hardBrake', t: 2, severity: 3 }, { type: 'hardBrake', t: 3, severity: 3 }, { type: 'crash', t: 4, severity: 3, points: 25 }], 1)[0].type).toBe('crash');
     expect(RR.rrPracticeFocusFor([], 3)).toEqual([]);
     expect(RR.rrPracticeFocusFor([{ type: 'crash' }], 0)).toEqual([]);
   });

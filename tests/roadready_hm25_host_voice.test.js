@@ -87,7 +87,7 @@ describe('Road Ready reports its own voice to the host (hm25)', () => {
 });
 
 describe('Road Ready stops the line already playing with ctx.stopTTS (hm25)', () => {
-  it('Instructor voice switched off mid-drive: ctx.stopTTS, plus the existing abort and device-voice cancel', async () => {
+  it('Instructor voice switched off mid-drive: ctx.stopTTS and the existing abort; no global device-voice cancel (the host stops its own speech)', async () => {
     window.__alloStudentAiDisabled = true;
     const cancel = vi.fn();
     const prevSynth = Object.getOwnPropertyDescriptor(window, 'speechSynthesis');
@@ -104,7 +104,9 @@ describe('Road Ready stops the line already playing with ctx.stopTTS (hm25)', ()
       await React.act(async () => { buttonByText(m.host, 'Instructor voice: On').click(); });
       expect(stopTTS).toHaveBeenCalled();
       expect(belt.opts.signal.aborted).toBe(true);
-      expect(cancel).toHaveBeenCalled();
+      // Round 30: speechSynthesis.cancel() is global (it would cut Listen mode or AlloBot); with ctx.stopTTS
+      // the host cancels only its own utterances, so the tool leaves the device voice to it.
+      expect(cancel).not.toHaveBeenCalled();
     } finally {
       if (prevSynth) Object.defineProperty(window, 'speechSynthesis', prevSynth); else delete window.speechSynthesis;
     }

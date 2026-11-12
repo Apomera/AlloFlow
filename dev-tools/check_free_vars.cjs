@@ -45,7 +45,7 @@ const KNOWN_GLOBALS = new Set([
   // filtered by hand. escape/unescape are deprecated but still real globals.
   'NaN', 'Infinity', 'undefined', 'escape', 'unescape',
   'Math', 'JSON', 'Object', 'Array', 'String', 'Number', 'Boolean', 'Date', 'RegExp', 'Map', 'Set',
-  'WeakMap', 'WeakSet', 'Promise', 'Symbol', 'Proxy', 'Reflect', 'Error', 'TypeError', 'RangeError', 'SyntaxError',
+  'WeakMap', 'WeakSet', 'WeakRef', 'FinalizationRegistry', 'Promise', 'Symbol', 'Proxy', 'Reflect', 'Error', 'TypeError', 'RangeError', 'SyntaxError',
   'Function', 'parseInt', 'parseFloat', 'isNaN', 'isFinite', 'encodeURIComponent', 'decodeURIComponent',
   'encodeURI', 'decodeURI', 'setTimeout', 'clearTimeout', 'setInterval', 'clearInterval',
   'requestAnimationFrame', 'cancelAnimationFrame', 'queueMicrotask', 'structuredClone',

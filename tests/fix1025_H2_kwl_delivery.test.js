@@ -134,7 +134,10 @@ describe('HTML pack export', () => {
     const body = text(studentHtml);
     expect(body.includes(KNOW)).toBe(true);
     expect(body.includes(WANT)).toBe(true);
-    for (const marker of [...PROMPTS, LABEL]) expect(body.includes(marker), marker).toBe(false);
+    // 2026-11-11: an EMPTY column (here Learned) gets its prompt and writing space on the
+    // student copy; filled columns keep their items and get no prompt.
+    for (const marker of [PROMPTS[0], PROMPTS[1], LABEL]) expect(body.includes(marker), marker).toBe(false);
+    expect(body.includes(PROMPTS[2])).toBe(true);
     // As before, the teacher key does not repeat a legacy organizer.
     const count = html => text(html).split(KNOW).length - 1;
     expect(count(teacherHtml)).toBe(count(studentHtml));

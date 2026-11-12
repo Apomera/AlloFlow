@@ -112,7 +112,7 @@ describe('directions i18n: the view has its own keys', () => {
     const doc = read('doc_pipeline_source.jsx');
     const shared = readFileSync(resolve('directions_markdown_source.js'), 'utf8').trim();
     const start = doc.indexOf('const generateResourceHTML =');
-    const generate = new Function('exportConfig', 'isRtlLang', 'leveledTextLanguage', 'getDefaultTitle', 't', shared + doc.slice(start, doc.indexOf('\n  };', start) + 6) + ';return generateResourceHTML;')({}, () => false, 'English', () => 'Assignment Directions', t);
+    const generate = new Function('exportConfig', 'isRtlLang', 'leveledTextLanguage', 'getDefaultTitle', 't', shared + 'const _hostLabelT = (key, params) => t(key, params); const _exportLabelT = () => _hostLabelT;' + doc.slice(start, doc.indexOf('\n  };', start) + 6) + ';return generateResourceHTML;')({}, () => false, 'English', () => 'Assignment Directions', t);
     const html = generate(directions({ body: 'Read.', objectives: [{ id: 'g', kind: 'manual', label: 'Read it' }] }), false);
     expect(html).toContain('<h3>Your goals</h3>');
   });

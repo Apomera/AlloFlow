@@ -94,6 +94,14 @@ function OnboardingCoach(props) {
   // If absent, pick_mode chips degrade to a polite "select that card on the
   // LaunchPad behind me" message rather than firing setters directly.
   var pickMode = (typeof props.pickMode === 'function') ? props.pickMode : null;
+  // Role-first hosts (2026-10-16+) embed the coach in the Launch Pad, which then
+  // shows role doors. Older hosts render it standalone beside the four mode cards.
+  var roleDoors = props.embedded === true;
+  // Same rule as the Launch Pad: a missing key falls back to English, not the key.
+  var copy = function (key, fallback) {
+    var value = t(key);
+    return value && value !== key ? value : fallback;
+  };
 
   var _open = React.useState(false);
   var isOpen = _open[0]; var setIsOpen = _open[1];
@@ -123,10 +131,18 @@ function OnboardingCoach(props) {
     // AT-safe orientation cue (works regardless of TTS opt-in). The clear+
     // rewrite inside announce() makes the screen reader pick it up reliably.
     if (ao && typeof ao.announce === 'function') {
-      var msg = t('onboarding.panel_open_announcement') ||
+      // The stored announcement names the four old mode cards, so role-door
+      // hosts compose it from the strings the panel actually shows.
+      var msg = roleDoors
+        ? [copy('onboarding.panel_title', 'Hi! I’m AlloBot.'),
+           copy('launch_pad.role_title', 'How will you use AlloFlow today?'),
+           modes.map(function (m) { return m.title; }).join(', ') + '.',
+           typeof setRunTour === 'function' ? copy('onboarding.start_tour_cta', 'Start the tour') + '.' : ''
+          ].join(' ').trim()
+        : (t('onboarding.panel_open_announcement') ||
         ('AlloBot onboarding open. Four mode options are listed: Full AlloFlow, ' +
          'Guided Mode, Learning Tools, and Educator Tools. A Start the Tour ' +
-         'button is at the bottom.');
+         'button is at the bottom.'));
       try { ao.announce(msg, { politeness: 'polite' }); } catch (_) {}
     }
   }, [isOpen]);
@@ -249,6 +265,7 @@ function OnboardingCoach(props) {
     Promise.resolve(ao.askCoach({
       question: questionText,
       screen: screenCtx,
+      layout: roleDoors ? 'roles' : 'modes',
       signal: controller ? controller.signal : null,
     })).then(function (res) {
       setInFlight(false);
@@ -367,6 +384,10 @@ function OnboardingCoach(props) {
   // Chip label — host overrides for pick_mode via t() to stay i18n-consistent.
   var chipLabel = function (chip) {
     if (chip.kind === 'pick_mode') {
+      // Role-door chips reuse the Launch Pad door labels.
+      var door = modes.filter(function (m) { return m.key === chip.key; })[0];
+      if (roleDoors && door) return door.title;
+      if (roleDoors && chip.key === 'full') return copy('launch_pad.teacher_full_link', 'Open the full workspace instead');
       var titleKey = 'launch_pad.' + chip.key + '_title';
       var label = t(titleKey);
       if (!label || label === titleKey) {
@@ -392,7 +413,54 @@ function OnboardingCoach(props) {
   // "Best if..." is hand-written guidance for 0-familiarity users — these are
   // new keys (onboarding.*_best_if); the t() fallback renders the English when
   // the lang pack hasn't been translated yet.
-  var modes = [
+  // Role-door hosts: describe the doors the Launch Pad shows, with its own keys,
+  // so labels match it in every language.
+  var teacherPrefersFull = false;
+  try { teacherPrefersFull = window.localStorage.getItem('alloflow_teacher_workspace') === 'full'; } catch (_) {}
+  var guidedBestIf = copy('onboarding.guided_best_if', 'Best if you’re brand new and want a calmer interface that holds your hand at each step.');
+  var fullBestIf = copy('onboarding.full_best_if', 'Best if you want full control and you’re comfortable exploring on your own.');
+  var modes = roleDoors ? [
+    {
+      key: 'teacher',
+      icon: '\u{1F9D1}‍\u{1F3EB}',
+      title: copy('roles.teacher', 'Teacher'),
+      desc: teacherPrefersFull
+        ? copy('launch_pad.teacher_return_full', 'Create and adapt lessons in your full workspace.')
+        : copy('launch_pad.teacher_guided_desc', 'Create and adapt lessons with step-by-step guidance.'),
+      bestIf: teacherPrefersFull ? fullBestIf : guidedBestIf,
+      alt: (teacherPrefersFull
+        ? copy('launch_pad.teacher_guided_link', 'Open Guided Mode instead')
+        : copy('launch_pad.teacher_full_link', 'Open the full workspace instead')) + ': ' + (teacherPrefersFull ? guidedBestIf : fullBestIf),
+    },
+    {
+      key: 'student',
+      icon: '\u{1F392}',
+      title: copy('roles.student', 'Student'),
+      desc: copy('launch_pad.student_desc', 'Join your class or explore learning activities.'),
+      bestIf: copy('onboarding.student_best_if', 'Best if you’re a student, with or without a class code from your teacher.'),
+    },
+    {
+      key: 'family',
+      icon: '\u{1F3E0}',
+      title: copy('launch_pad.door_family', 'Family'),
+      desc: copy('launch_pad.door_family_desc', 'Support your child\'s reading at home.'),
+      bestIf: copy('onboarding.family_best_if', 'Best if you’re a parent or caregiver helping a child read at home.'),
+    },
+    {
+      key: 'specialist',
+      icon: '\u{1F4CB}',
+      title: copy('launch_pad.professional_tools', 'Professional tools'),
+      desc: copy('launch_pad.professional_tools_desc', 'BehaviorLens, Report Writer, and tools for school support professionals.'),
+      bestIf: copy('onboarding.specialist_best_if', 'Best if you’re a school psychologist, counselor, or other support professional.'),
+    },
+    {
+      key: 'adult',
+      icon: '\u{1F4DA}',
+      title: copy('launch_pad.learn_independently', 'Learn independently'),
+      desc: '',
+      bestIf: copy('onboarding.independent_best_if', 'Best if you’re an adult learning on your own, for example for a course or a licensing exam.'),
+    },
+  ] : [
     {
       key: 'full',
       icon: '\u{1F680}',
@@ -626,16 +694,24 @@ function OnboardingCoach(props) {
                       <h3 style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#1e293b' }}>
                         {m.title}
                       </h3>
-                      <p style={{ margin: '4px 0 6px', fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>
-                        {m.desc}
-                      </p>
+                      {m.desc ? (
+                        <p style={{ margin: '4px 0 6px', fontSize: '12px', color: '#475569', lineHeight: 1.5 }}>
+                          {m.desc}
+                        </p>
+                      ) : null}
                       <p style={{
-                        margin: 0, fontSize: '11px', color: '#7c3aed',
+                        margin: m.desc ? 0 : '4px 0 0', fontSize: '11px', color: '#7c3aed',
                         fontWeight: 700, lineHeight: 1.4,
                       }}>
                         <span aria-hidden="true">{'\u{1F4A1} '}</span>
                         {m.bestIf}
                       </p>
+                      {m.alt ? (
+                        <p data-coach-alt="" style={{ margin: '6px 0 0', fontSize: '11px', color: '#475569', lineHeight: 1.4 }}>
+                          <span aria-hidden="true">{'↪ '}</span>
+                          {m.alt}
+                        </p>
+                      ) : null}
                     </div>
                   </div>
                 );

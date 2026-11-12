@@ -473,12 +473,13 @@ function defaultAppliedChallengePhasePrompts(family) {
   return {
     workingQuestion: "Write the exact question or challenge you will answer. Make it specific enough to guide your work.",
     stakeholders: "Who is affected? What systems, needs, criteria, and constraints matter?",
-    possibilities: "Generate multiple " + meta.possibilitiesLabel.toLowerCase() + " before choosing a direction.",
+    // Prompts ask a question; they do not repeat the family heading shown above them.
+    possibilities: "Come up with at least three different directions before you choose. What makes each one worth taking seriously?",
     evidence: "Use lesson facts as anchors. Distinguish evidence you have from information you still need.",
     assumptions: "Which claims are assumptions, estimates, hypotheses, or value judgments rather than established facts?",
     tradeoffs: "What does each option improve, risk, cost, exclude, or leave unresolved?",
-    response: "Create your " + meta.responseLabel.toLowerCase() + ". Make the reasoning visible.",
-    testReflection: meta.testLabel + ".",
+    response: "Write the finished piece for your audience. Show your reasoning: the evidence you used and the tradeoffs you accepted.",
+    testReflection: "Test your work against " + meta.stressTestFocus + ". What did you find, and does it change anything?",
     revision: "Explain what you will change after checking, or why the evidence supports keeping your current direction.",
     transferReflection: "Which lesson idea did you apply, and where else could the same reasoning move help?"
   };

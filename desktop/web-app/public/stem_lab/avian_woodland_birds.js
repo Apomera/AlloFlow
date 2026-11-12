@@ -1074,6 +1074,12 @@
       headData.p[skullVertex] *= 1 - forehead * .18;
       headData.p[skullVertex + 1] -= p.head[1] * (crown * .10 + nape * .065);
       headData.p[skullVertex + 2] -= p.head[2] * nape * .10;
+      if (!grouse && !dove) {
+        var midline = 1 - smooth((Math.abs(headData.p[skullVertex]) / p.head[0] - .25) / .55);
+        var slope = smooth((skullZ - .15) / .70) * smooth((skullY - .05) / .75) * midline;
+        headData.p[skullVertex + 1] -= p.head[1] * 0.28 * slope;
+        headData.p[skullVertex + 2] += p.head[2] * 0.06 * slope;
+      }
     }
 
     function vane(d, ax, ay, az, bx, by, bz, width, paint, longSteps, wideSteps, bulge, asymmetry) {

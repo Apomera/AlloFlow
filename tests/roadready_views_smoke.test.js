@@ -67,7 +67,7 @@ const STATS = {
 };
 
 const PERMIT_QUESTION = {
-  q: 'A solid yellow line on your side of the centerline means:',
+  q: 'What does a solid yellow line on your side of the centerline mean?',
   a: ['You may pass if safe', 'No passing', 'Lane ends', 'Bike lane'],
   correct: 1, exp: 'Solid yellow = NO passing from your side.', category: 'general',
 };
@@ -144,6 +144,12 @@ const VIEWS = {
   rulesFoundations: { d: {}, sig: null },
   rightOfWay: { d: {}, sig: null },
   gdlTracker: { d: {}, sig: null },
+  // Round 31 (cn31): the five plain-language guides share one renderer.
+  licenseGuide: { d: {}, sig: 'Step 3: Provisional license' },
+  pulledOver: { d: {}, sig: 'Keep your hands on the steering wheel. Stay calm.' },
+  insuranceBasics: { d: {}, sig: 'What liability insurance is' },
+  slowVehicles: { d: {}, sig: 'The shared center left-turn lane' },
+  languageHelp: { d: {}, sig: 'If your language is not on the list' },
   dailyChallenge: { d: {}, sig: 'Daily Challenge' },
   seatSetup: { d: {}, sig: null },
   postCrash: { d: {}, sig: null },

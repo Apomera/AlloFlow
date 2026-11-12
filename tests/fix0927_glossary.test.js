@@ -193,7 +193,9 @@ describe('G3: cloud glossary output is normalized like the local path', () => {
       unwrapArray: (v, keys) => Array.isArray(v) ? v : (keys.map(k => v && v[k]).find(Array.isArray) || []),
       normalizeGlossaryTerms: Dispatcher.normalizeGlossaryTerms, resolveGlossaryLanguagePlan: Dispatcher.resolveGlossaryLanguagePlan,
       stampNativeGlossaryTerms: Dispatcher.stampNativeGlossaryTerms, buildNativeGlossaryPrompt: Dispatcher.buildNativeGlossaryPrompt,
-      _nativeLanguageDefaultsVersion: 0, _nativeAppLanguage: 'English', _effectiveLanguageList: ['Spanish'], ...overrides,
+      _nativeLanguageDefaultsVersion: 0, _nativeAppLanguage: 'English', _effectiveLanguageList: ['Spanish'],
+      // 2026-11-11: word-list seeds (7d9bda5674) read handleGenerate's _seed/_wordListStart; no seed here.
+      _seed: null, _wordListStart: false, ...overrides,
     };
     return new Function('scope', 'with (scope) { return (async () => { let content, metaInfo, glossaryLanguagePlan;\n' + glossaryBranch + '\nreturn { content, metaInfo }; })(); }')(scope);
   }

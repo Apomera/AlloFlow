@@ -166,8 +166,8 @@ describe('RoadReady following-distance rule', () => {
     // so a future icy scenario cannot inherit the contradiction.
     expect(RR.drivingFollowingTarget('ice')).toBe(8);
     expect(RR.drivingFollowingTarget('snow')).toBe(6);
-    expect(RR.drivingFollowingTarget('rain')).toBe(4);
-    expect(RR.drivingFollowingTarget('clear')).toBe(3);
+    expect(RR.drivingFollowingTarget('rain')).toBe(5);
+    expect(RR.drivingFollowingTarget('clear')).toBe(4);
   });
 
   it('does not give ice the dry-pavement gap', () => {

@@ -19453,7 +19453,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var x=p.getX(i),y=p.getY(i),z=p.getZ(i);
             var crown=Math.max(0,Math.min(1,(y-0.06)/0.16)),chin=Math.max(0,Math.min(1,(-y-0.02)/0.20));
             crown=crown*crown*(3-2*crown);chin=chin*chin*(3-2*chin);
-            p.setXYZ(i,x*(1-chin*0.12),y-crown*0.052+chin*0.030,z);
+            var cap=Math.max(0,Math.min(1,(y-0.10)/0.12));cap=cap*cap*(3-2*cap);
+            p.setXYZ(i,x*(1-chin*0.12),y-crown*0.052-cap*0.024+chin*0.030,z);
           }
           geometry.computeVertexNormals();return geometry;
         }
@@ -19571,8 +19572,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var rise = new THREE.Vector3().crossVectors(outward, ridge).normalize();
             var brow = new THREE.Mesh(browGeometry, browMaterial);
             brow.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(ridge, rise, outward));
-            brow.scale.set(0.052, 0.010, 0.017);
-            brow.position.copy(outward).multiplyScalar(0.2135).addScaledVector(up, 0.034);
+            brow.scale.set(0.06, 0.014, 0.024);
+            brow.position.copy(outward).multiplyScalar(0.216).addScaledVector(up, 0.034);
             brow.name = side < 0 ? 'left-brow-ridge' : 'right-brow-ridge';
             headGroup.add(brow);
           });

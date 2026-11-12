@@ -123,7 +123,8 @@ describe('wet-weather copy agrees with the model and with the permit bank', () =
     const brakePct = Math.round((rain.braking_ft / dry.braking_ft - 1) * 100);
 
     // The coaching copy quotes both numbers; they must be the model's.
-    const m = source.match(/Wet roads need roughly (\d+)% more total stopping distance[^.]*?about (\d+)% more/);
+    // Wave 3 reworded the sentence in plain words ("On a wet road you need roughly ..."); both forms are accepted.
+    const m = source.match(/(?:Wet roads need|On a wet road you need) roughly (\d+)% more total stopping distance[^.]*?about (\d+)% more/);
     expect(m, 'wet-weather coaching claim not found in the expected form').not.toBeNull();
     expect(Math.abs(Number(m[1]) - totalPct)).toBeLessThanOrEqual(10);
     expect(Math.abs(Number(m[2]) - brakePct)).toBeLessThanOrEqual(10);

@@ -30,7 +30,8 @@ describe('Cornell print copies preserve guidance and usable response space', () 
     expect(guidance[0].style.whiteSpace).toBe('pre-wrap');
     const spaces = [...doc.querySelectorAll('[data-cornell-writing-space="notes"]')];
     expect(spaces).toHaveLength(2);
-    expect(spaces.every(space => space.style.height === '96px' && space.children.length === 4)).toBe(true);
+    // 2026-11-11: 32px lines like quiz answer lines (was 4 x 24px in a 96px box).
+    expect(spaces.every(space => space.style.minHeight === '128px' && space.children.length === 4)).toBe(true);
     expect(doc.querySelector('[data-cornell-summary-space]').textContent).toBe('Summary');
     expect(doc.body.textContent).not.toContain('No summary written yet');
     expect(doc.body.textContent).not.toContain('Student has not requested AI feedback');
@@ -54,11 +55,15 @@ describe('Cornell print copies preserve guidance and usable response space', () 
     expect(JSON.stringify(input)).toBe(before);
   });
 
-  it('keeps normal exports compact and their existing empty-state messages', () => {
+  // 2026-11-09: an unwritten template is typable on the on-screen student copy
+  // (see export_pack_html_usability.test.js); the teacher copy keeps the empty-state text.
+  it('keeps normal exports compact: typing fields for the student, empty-state messages for the teacher', () => {
     const doc = parse(pipeline.generateResourceHTML(record(), false, {}, { isWorksheet: false }));
     expect(doc.querySelectorAll('[data-cornell-print-guidance]')).toHaveLength(2);
     expect(doc.querySelector('[data-cornell-writing-space]')).toBeNull();
-    expect(doc.body.textContent).toContain('No summary written yet');
+    expect(doc.body.textContent).not.toContain('No summary written yet');
+    expect(doc.querySelectorAll('textarea[data-allo-response-key]')).toHaveLength(3);
+    expect(parse(pipeline.generateResourceHTML(record(), true, {}, { isWorksheet: false })).body.textContent).toContain('No summary written yet');
     expect(doc.body.textContent).not.toContain('Student has not requested AI feedback');
     expect(parse(pipeline.generateResourceHTML(record(), true, {}, { isWorksheet: false })).body.textContent).toContain('Student has not requested AI feedback');
   });

@@ -5,7 +5,7 @@ let api;
 const resistor={type:'resistor',value:100,id:1};
 beforeEach(()=>{resetStemLab();loadTool('stem_lab/stem_tool_circuit.js','circuit');api=window.StemLab;});
 describe('Guided circuit investigations',()=>{
-  it.each([['resistance',0,.09,.045],['paths',2,.09,.18],['loop',0,0,9/100.001]])('uses the actual single-variable model for %s',(id,choice,before,after)=>{
+  it.each([['resistance',0,.09,.045],['paths',2,.09,.18],['loop',0,0,9/100.001],['used',1,9/100.001,9/100.001],['bulbs',2,.09,.045]])('uses the actual single-variable model for %s',(id,choice,before,after)=>{
     const trial=api.circuitLessonResult(id,choice);
     expect(trial.correct).toBe(true);
     expect(api.solveCircuit(trial.before).current).toBeCloseTo(before,10);

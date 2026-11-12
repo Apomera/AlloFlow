@@ -235,7 +235,12 @@ describe('E3: readiness computes whether answer keys reach students', () => {
     expect(again.host.textContent).toContain('0/6');
   });
   it('printed or LMS exports stay a manual confirmation', () => {
-    const view = mount(Banner(), props([reading, quiz('teacher-graded')], 'print'));
+    // 2026-11-11: since 7d9bda5674 the print check stays locked until the print file is reviewed; LMS stays a free manual tick.
+    const printed = mount(Banner(), props([reading, quiz('teacher-graded')], 'print'));
+    expect(item(printed.host).getAttribute('data-readiness-state')).toBe('confirm');
+    expect(box(printed.host).disabled).toBe(true);
+    cleanups.splice(0).reverse().forEach(fn => fn());
+    const view = mount(Banner(), props([reading, quiz('teacher-graded')], 'lms'));
     expect(item(view.host).getAttribute('data-readiness-state')).toBe('confirm');
     expect(box(view.host).disabled).toBe(false);
     act(() => box(view.host).click());

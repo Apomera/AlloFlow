@@ -127,8 +127,8 @@ describe('Simple challenge selection and checking',()=>{
   });
   it('retains tiny nonzero current and power readings in the card and failure feedback',async()=>{
     await mount(seed({voltage:9,components:[{id:1,type:'voltmeter'}]}));
-    expect(panel().querySelector('[data-target-reading]').textContent).toBe('0.00900 µA');
-    await act(async()=>check().click());expect(panel().querySelector('[role="status"]').textContent).toContain('0.00900 µA');
+    expect(panel().querySelector('[data-target-reading]').textContent).toBe('9.00 nA');
+    await act(async()=>check().click());expect(panel().querySelector('[role="status"]').textContent).toContain('9.00 nA');
     await act(async()=>select(6).click());
     expect(panel().querySelector('[data-target-reading]').textContent).toBe('0.0810 µW');
     expect(panel().querySelector('[data-target-goal]').textContent).toBe('1.000 W');

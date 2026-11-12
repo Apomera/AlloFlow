@@ -54,7 +54,7 @@ function keysCalledBy(src) {
   // single-quoted keys alone missed ~700 call sites in 15 tools.
   // A quoted prefix followed by + is a computed key, not a literal call site.
   // Require the complete first argument; comments may separate it from the comma.
-  const re = /__alloT\((['"])stem\.([A-Za-z0-9_]+)\.([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*)\1(?=(?:\s|\/\*[\s\S]*?\*\/|\/\/[^\r\n]*(?:\r?\n|$))*[,\)])/g;
+  const re = /__allo(?:[A-Z][A-Za-z0-9]*)?T\((['"])stem\.([A-Za-z0-9_]+)\.([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*)\1(?=(?:\s|\/\*[\s\S]*?\*\/|\/\/[^\r\n]*(?:\r?\n|$))*[,\)])/g;
   for (let m = re.exec(src); m; m = re.exec(src)) {
     if (!byNs.has(m[2])) byNs.set(m[2], new Set());
     byNs.get(m[2]).add(m[3]);
@@ -96,7 +96,7 @@ function unregisteredCount(src, stemRegistry) {
  */
 function collidingKeys(src) {
   const byKey = new Map();
-  const re = /(.{0,40})__alloT\((['"])stem\.([A-Za-z0-9_]+)\.([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*)\2,\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")/g;
+  const re = /(.{0,40})__allo(?:[A-Z][A-Za-z0-9]*)?T\((['"])stem\.([A-Za-z0-9_]+)\.([A-Za-z0-9_]+(?:\.[A-Za-z0-9_]+)*)\2,\s*('(?:[^'\\]|\\.)*'|"(?:[^"\\]|\\.)*")/g;
   for (let m = re.exec(src); m; m = re.exec(src)) {
     const key = m[3] + '.' + m[4];
     let val;

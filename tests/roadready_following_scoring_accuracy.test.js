@@ -68,8 +68,9 @@ describe('live following-distance scoring uses time and physical clearance', () 
     expect(run.stats.safetyScore).toBeLessThan(100);
   });
 
-  it('does not apply the severe penalty to a sedan at 15.5 m clear space and 10 m/s', () => {
-    const run = fixture({ gap: 20 });
+  it('does not apply the severe penalty to a sedan at 20.5 m clear space and 10 m/s', () => {
+    // Half of the 4-second dry target is 2.0 s: 20.5 m at 10 m/s is 2.05 s.
+    const run = fixture({ gap: 25 });
     run.run(1, 60);
     expect(run.stats.safetyScore).toBe(100);
     expect(run.stats.closeFollows).toBe(0);
@@ -84,7 +85,7 @@ describe('live following-distance scoring uses time and physical clearance', () 
   });
 
   it.each([0.35, -0.35])('keeps the same physical safe gap on a road rotated by %s radians', theta => {
-    const run = fixture({ gap: 20, theta });
+    const run = fixture({ gap: 25, theta });
     run.run(1, 60);
     expect(run.stats.safetyScore).toBe(100);
     expect(run.stats.closeFollows).toBe(0);
@@ -92,9 +93,9 @@ describe('live following-distance scoring uses time and physical clearance', () 
 
   it('measures following space along a short bend rather than its chord or station difference', () => {
     const run = fixture();
-    // x = 0.03*y² has 20.001 m of road between these stations, while the
-    // endpoint chord is only 19.460 m. The two sedans retain 15.501 m of space.
-    const station = 17.277;
+    // x = 0.03*y² has 25.001 m of road between these stations, while the
+    // endpoint chord is only 24.186 m. The two sedans retain 20.501 m of space.
+    const station = 20.58;
     run.scope.infiniteWorldRef.current = { profile: { lanes: 2 }, spline: {
       centerAt: s => 0.03 * s * s,
       headingAt: s => Math.atan(0.06 * s),

@@ -252,7 +252,8 @@ describe('original reader instructional role and lesson scope', () => {
     const harness = readerHarness({ history: sources });
     harness.open();
     expect(harness.state.opened).toBeNull();
-    expect(harness.deps.addToast).toHaveBeenCalledWith(expect.stringContaining('Choose a passage'), 'info');
+    // 2026-11-11: "Based on" panel renamed "Make activities from" (74cc8a0780).
+    expect(harness.deps.addToast).toHaveBeenCalledWith(expect.stringContaining('Make activities from'), 'info');
   });
   it('analyzing an adaptation does not relabel its rewritten text as the original', () => {
     const snapshot = Context.createSourceSnapshot('The actual original.', { sourceArtifactId: 'root-source' });

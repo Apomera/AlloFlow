@@ -120,7 +120,9 @@ describe('RoadReady canvas alternatives', () => {
   // 1ea58b53c when this was written, two removed in 08df4edd2 (→20), one added back
   // in f3c63b90c (makeSignTexture, and it arrived without the marking). The test was
   // red across all of it, reporting only the symptom it happened to reach first.
-  const EXPECTED_INTERNAL_CANVASES = 21;
+  // 21 -> 20 in release 7d9bda5674: the two per-approach stop-sign face canvases (ssCan,
+  // cs_can) became one shared stopCanvas. All 20 are aria-hidden (round 30 review).
+  const EXPECTED_INTERNAL_CANVASES = 21; // ra33: + the curve warning sign's texture canvas (aria-hidden)
 
   it('explicitly excludes every internal canvas buffer from the accessibility tree', () => {
     const lines = readFileSync(SOURCE, 'utf8').split(/\r?\n/);

@@ -93,6 +93,10 @@ describe('Exported Assess response guidance and reset', () => {
     expect(status.hidden).toBe(false); expect(status.getAttribute('role')).toBe('status');
     expect(first.querySelector('.quiz-check-btn').hidden).toBe(true);
     const changed = []; first.addEventListener('change', event => changed.push(event.target.value));
+    // 2026-11-11: the first press only warns that written answers will be erased.
+    first.querySelector('.quiz-reset-btn').click();
+    expect(field.value).toBe('x'.repeat(1500)); expect(status.textContent).toMatch(/clears all your answers/);
+    expect(changed).toEqual([]);
     first.querySelector('.quiz-reset-btn').click();
     expect(field.value).toBe(''); expect(field.nextElementSibling.textContent).toBe('0 / 1500 characters');
     expect(first.querySelector('.allo-quiz-limit-notice').textContent).toBe('');

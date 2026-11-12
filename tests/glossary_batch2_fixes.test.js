@@ -266,7 +266,8 @@ describe('Word Practice: translated dialog and player, offline file language', (
   it('the offline HTML file carries the explicit interface language independently from lesson content', () => {
     const win = load();
     win.AlloModules.ModuleScopeExtras = { getSpeechLangCode: (n) => (n === 'Arabic' ? 'ar-SA' : 'en-US'), isRtlLang: (n) => n === 'Arabic' };
-    const html = win.AlloModules.WordPractice.buildHtml({ words: [{ word: 'ship', termLanguage: 'English' }], language: 'Arabic' }, { repetitions: 1 }, undefined, { next: 'التالي', practice_label: 'تدريب الكلمات' }, undefined, 'Arabic');
+    // 2026-11-11: the last card's Next reads "Finish round" since 7d9bda5674, so two cards keep a Next on card 1.
+    const html = win.AlloModules.WordPractice.buildHtml({ words: [{ word: 'ship', termLanguage: 'English' }, { word: 'rain', termLanguage: 'English' }], language: 'Arabic' }, { repetitions: 1 }, undefined, { next: 'التالي', practice_label: 'تدريب الكلمات' }, undefined, 'Arabic');
     expect(html.startsWith('<!doctype html><html lang="ar" dir="rtl">'), html.slice(0, 60)).toBe(true);
     const offline = new JSDOM(html, { runScripts: 'dangerously' });
     windows.push(offline.window);

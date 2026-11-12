@@ -63,7 +63,7 @@ describe('exported annotation sidebar accessibility', () => {
     expect(source).toContain('.alloflow-anno-sb-close { background: transparent; border: 0; cursor: pointer; padding: 4px 6px; border-radius: 50%; color: #64748b; font-size: 12px; min-width: 44px; min-height: 44px;');
     expect(source).toContain('.alloflow-anno-pill { min-height: 44px;');
     expect(source).toContain('.alloflow-anno-item-body { appearance: none; flex: 1; min-width: 0; min-height: 44px;');
-    expect(source).toContain('.alloflow-anno-item-del { background: transparent; border: 0; color: #6b7280; cursor: pointer; padding: 4px; border-radius: 6px; font-size: 11px; min-width: 44px; min-height: 44px;');
+    expect(source).toContain('.alloflow-anno-item-del { background: transparent; border: 0; color: #6b7280; cursor: pointer; padding: 4px; border-radius: 6px; font-size: 12px; min-width: 44px; min-height: 44px;'); // 12px since the 2026-11-11 phone pass
     expect(source).toContain('.alloflow-anno-item-body:focus-visible');
     expect(readFileSync('desktop/web-app/public/doc_pipeline_module.js', 'utf8'))
       .toBe(readFileSync('doc_pipeline_module.js', 'utf8'));

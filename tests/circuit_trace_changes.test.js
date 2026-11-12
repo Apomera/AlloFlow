@@ -61,7 +61,7 @@ describe('Changes in the saved experiment trace', () => {
   }
   function assertNumericText() {
     for (const value of trace().querySelectorAll('dd strong')) {
-      const parts = value.textContent.match(/^([+-]?\d+(?:\.\d+)?)(\s*)([µm]?[AV])$/); expect(parts).toBeTruthy();
+      const parts = value.textContent.match(/^([+-]?\d+(?:\.\d+)?)(\s*)([nµm]?[AV])$/); expect(parts).toBeTruthy();
       expect(value.classList.contains('circuit-trace-reading-value')).toBe(true);
       const spans = value.querySelectorAll('span'); expect(spans).toHaveLength(2); expect(spans[0].classList.contains('circuit-trace-reading-magnitude')).toBe(true); expect(spans[1].classList.contains('circuit-trace-reading-unit')).toBe(true); expect(spans[0].textContent).toBe(parts[1]); expect(spans[1].textContent).toBe(parts[3]);
       expect(value.textContent).toBe(parts[1] + parts[2] + parts[3]); expect(value.querySelector('[aria-hidden="true"]')).toBeNull();
@@ -86,7 +86,7 @@ describe('Changes in the saved experiment trace', () => {
   it('subtracts unrounded inputs even when displayed endpoints conceal or distort the actual change', async () => {
     const before = { baseCurrent: .00003004, collectorCurrent: .0030049, collectorVoltage: 4.344 }, after = { baseCurrent: .00003005, collectorCurrent: .0030051, collectorVoltage: 4.346 }, original = clone({ before, after });
     await synthetic(before, after);
-    expect(rows()).toEqual([['baseCurrent', '30.0 µA', '30.0 µA', '+0.0100 µA'], ['collectorCurrent', '3.00 mA', '3.01 mA', '+0.200 µA'], ['collectorVoltage', '4.34V', '4.35V', '+2.00 mV']]);
+    expect(rows()).toEqual([['baseCurrent', '30.0 µA', '30.0 µA', '+10.0 nA'], ['collectorCurrent', '3.00 mA', '3.01 mA', '+200 nA'], ['collectorVoltage', '4.34V', '4.35V', '+2.00 mV']]);
     assertNumericText(); expect({ before, after }).toEqual(original);
   });
 

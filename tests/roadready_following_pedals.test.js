@@ -56,9 +56,9 @@ describe('Road Ready following-space guidance', () => {
   });
   it('keeps highway gaps measurable beyond the old 30-metre display range', () => {
     const speed = 65 * RR.MPH_TO_MS;
-    const display = RR.drivingFollowingDisplay(speed * 4, speed, 'rain');
-    expect(display.seconds).toBeCloseTo(4);
-    expect(display.target).toBe(4);
+    const display = RR.drivingFollowingDisplay(speed * 5, speed, 'rain');
+    expect(display.seconds).toBeCloseTo(5);
+    expect(display.target).toBe(5);
     expect(display.fraction).toBeCloseTo(2 / 3);
     expect(display.distanceFeet).toBeGreaterThan(300);
     expect(display.action).toBe('Keep scanning');

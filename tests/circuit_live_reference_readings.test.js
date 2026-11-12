@@ -66,7 +66,7 @@ describe('Live circuit reference readings', () => {
     await mount({ input: 1 }, { input: 1 + 1e-10 });
     const base = cards()[0];
     expect(base.querySelector('[data-reference-reading=before] dd').textContent).toBe(base.querySelector('[data-reference-reading=after] dd').textContent);
-    expect(directions()[0]).toBe('Increased'); expect(deltas()[0]).toContain('µA'); expect(deltas()[0]).not.toBe('0 A');
+    expect(directions()[0]).toBe('Increased'); expect(deltas()[0]).toMatch(/ [µnp]A$/); expect(deltas()[0]).not.toBe('0 A');
     expect(panel().textContent).toContain('before rounding');
   });
 

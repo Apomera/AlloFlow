@@ -1,0 +1,2354 @@
+{
+ "new": {
+  "permit_bank_line": "{n} practice questions in {c} categories.",
+  "permit_maine_format": "Maine test format",
+  "permit_maine_format_sub": "30 questions. Pass with 24. Rules of the road, signs, pedestrians and bicycles, OUI law, distracted driving.",
+  "permit_review_misses": "Review my misses",
+  "permit_review_misses_none": "No missed questions saved",
+  "permit_review_misses_count": "{n} to review",
+  "permit_misses_saved_note": "• Questions you miss are saved on this device (question numbers and dates only), so you can review them later",
+  "permit_cat_count": "Test: {n} questions · {m} in this category",
+  "permit_pass_maine": "You reached the real pass mark: 24 or more out of 30. Take it again on another day to be sure.",
+  "permit_pass_practice": "You passed this practice set. Next, try the Maine test format: 30 questions, 24 to pass.",
+  "flash_plan_line": "Due today: {due} · New: {fresh} · Coming back later: {later}",
+  "flash_done_today": "You are done for today. No cards are due.",
+  "flash_next_due": "Your next cards come back on {date}.",
+  "flash_study_ahead": "Study ahead anyway",
+  "flash_spacing_note": "A card you miss comes back tomorrow. Then after 3 days, then after 7 days.",
+  "permit_q193_q": "What does a steady yellow traffic light mean?",
+  "permit_q193_a0": "Speed up so that you clear the intersection before the red",
+  "permit_q193_a1": "The light is about to turn red, so begin to slow down",
+  "permit_q193_a2": "Stop at once, even if you are already in the intersection",
+  "permit_q193_a3": "Go on with care, the same as at a flashing yellow light",
+  "permit_q193_exp": "A steady yellow light means caution: the light is about to change to red. Begin to slow down. The yellow light gives cars already in the intersection time to leave it.",
+  "permit_q194_q": "You face a red light with a green arrow. What may you do?",
+  "permit_q194_a0": "Stay stopped until the round light turns green, because a red light overrules a green arrow shown with it",
+  "permit_q194_a1": "Go in the direction of the arrow; other traffic must yield to you",
+  "permit_q194_a2": "Go carefully in the direction of the arrow, yielding to other traffic and pedestrians",
+  "permit_q194_a3": "Go straight or turn either way, as long as the way is clear",
+  "permit_q194_exp": "A red light with a green arrow means you may go carefully in the direction of the arrow. You must still yield to other vehicles and to pedestrians.",
+  "permit_q195_q": "What does a steady red arrow mean?",
+  "permit_q195_a0": "Stop: you may not make that turn until the arrow turns green",
+  "permit_q195_a1": "The turn lane ahead is closed, so move over and turn from another lane",
+  "permit_q195_a2": "Turn with care after yielding to oncoming cars",
+  "permit_q195_a3": "You may turn that way after a full stop, the same as at a stop sign",
+  "permit_q195_exp": "A steady red arrow means stop if you want to turn the way the arrow points. Wait until the arrow turns green.",
+  "permit_q196_q": "A steady red \"X\" is lit above your lane. What does it mean?",
+  "permit_q196_a0": "A railroad crossing is ahead",
+  "permit_q196_a1": "This lane is for left turns",
+  "permit_q196_a2": "The exit ahead is closed",
+  "permit_q196_a3": "Do not drive in this lane",
+  "permit_q196_exp": "Some highways use overhead lane lights. A steady red X means do not drive in this lane. A green arrow means you may use the lane.",
+  "permit_q197_q": "There is more than one traffic light at an intersection. Which one do you obey?",
+  "permit_q197_a0": "The one that is closest to you",
+  "permit_q197_a1": "The one directly over your lane",
+  "permit_q197_a2": "The one on the far right side",
+  "permit_q197_a3": "The one that turns green first",
+  "permit_q197_exp": "When there is more than one traffic light, obey the one that is directly over your lane.",
+  "permit_q198_q": "What shape and color are most warning signs?",
+  "permit_q198_a0": "Rectangular, white with black letters or symbols",
+  "permit_q198_a1": "Round, yellow with a black X and two letters",
+  "permit_q198_a2": "Diamond-shaped, yellow with black symbols",
+  "permit_q198_a3": "Triangular, red and white, with the point down",
+  "permit_q198_exp": "Warning signs tell you about danger ahead. They are usually diamond-shaped and yellow, with black letters or symbols. Slow down when you see one.",
+  "permit_q199_q": "What do regulatory signs (white with black, red, or green letters) tell you?",
+  "permit_q199_a0": "Dangers ahead, such as curves, merges, and crossings",
+  "permit_q199_a1": "Where to find services such as fuel, food, lodging, hospitals, and rest areas",
+  "permit_q199_a2": "Directions to towns, exits, and points of interest",
+  "permit_q199_a3": "Rules you must follow, such as speed, turns, lane use, and parking",
+  "permit_q199_exp": "Regulatory signs give rules: traffic direction, lane use, turning, speed, and parking. They are white with black, red, or green letters or symbols.",
+  "permit_q200_q": "A sign shows a red circle with a red slash across a symbol. What does it mean?",
+  "permit_q200_a0": "Use extra care when you do what the symbol shows",
+  "permit_q200_a1": "You may not do what the symbol shows",
+  "permit_q200_a2": "What the symbol shows is allowed at this place",
+  "permit_q200_a3": "The rule shown has ended",
+  "permit_q200_exp": "A red circle with a red slash means NO. You may not do what the symbol shows, such as turn left or make a U-turn.",
+  "permit_q201_q": "What do black-and-white speed limit signs show?",
+  "permit_q201_a0": "The legal speed when conditions are ideal",
+  "permit_q201_a1": "The speed you should hold, whatever the weather",
+  "permit_q201_a2": "A suggested speed that police do not enforce",
+  "permit_q201_a3": "The lowest speed you may drive on that road",
+  "permit_q201_exp": "A speed limit sign shows the legal speed when conditions are ideal. In rain, snow, fog, or heavy traffic you must drive slower.",
+  "permit_q202_q": "You come to a stop sign. There is no stop line and no crosswalk. Where must you stop?",
+  "permit_q202_a0": "Level with the stop sign itself, even if you cannot see the cross street from there",
+  "permit_q202_a1": "A car length into the intersection, so that you can see past parked cars and hedges on both sides",
+  "permit_q202_a2": "At the point nearest the intersection where you can see traffic, before any part of your car enters it",
+  "permit_q202_a3": "Anywhere within about 30 feet of the intersection, as long as you are fully stopped",
+  "permit_q202_exp": "Stop behind the stop line or crosswalk if there is one. If there is none, stop at the point nearest the intersection where you can see traffic on the other road. No part of your car may be in the intersection.",
+  "permit_q203_q": "What does a \"Shared Center Lane — Left Turn Only\" sign mark?",
+  "permit_q203_a0": "A passing lane that drivers from both directions take turns using",
+  "permit_q203_a1": "A lane for left turns only, used by traffic from either direction",
+  "permit_q203_a2": "A lane for through traffic when the other lanes are full",
+  "permit_q203_a3": "A lane where left turns are banned during rush hour",
+  "permit_q203_exp": "A shared center lane is only for vehicles turning left. Traffic from either direction may use it. It is not for through traffic or for passing.",
+  "permit_q204_q": "What does a ONE WAY sign tell you?",
+  "permit_q204_a0": "The lane beside you ends in the direction of the arrow",
+  "permit_q204_a1": "Trucks must follow the arrow; cars may go either way",
+  "permit_q204_a2": "Parking is allowed on the side the arrow points to",
+  "permit_q204_a3": "Traffic moves only in the direction of the arrow",
+  "permit_q204_exp": "On a one-way street, traffic moves only in the direction of the arrow. Do not turn against the arrow, and do not drive the wrong way.",
+  "permit_q205_q": "A police officer is directing traffic at an intersection where the light is red. What do you do?",
+  "permit_q205_a0": "Obey the light, not the officer",
+  "permit_q205_a1": "Follow the car ahead of you",
+  "permit_q205_a2": "Do as the officer directs",
+  "permit_q205_a3": "Go when it looks clear",
+  "permit_q205_exp": "If police are directing traffic, do as they direct. Police have the authority to direct all traffic. When police are not there, signs and signals have the force of law.",
+  "permit_q206_q": "Guide signs are square or rectangular. What colors are they?",
+  "permit_q206_a0": "Yellow, orange, or red",
+  "permit_q206_a1": "Green, brown, or blue",
+  "permit_q206_a2": "Red and white, or black",
+  "permit_q206_a3": "White with black letters",
+  "permit_q206_exp": "Guide signs are green, brown, or blue. They point the way to roads, towns, and points of interest, and help you find hospitals, fuel, food, and hotels.",
+  "permit_q207_q": "A two-way road has a solid yellow line and a dashed yellow line down the middle. When may you pass?",
+  "permit_q207_a0": "When the dashed line is on your side and the way is clear",
+  "permit_q207_a1": "When the solid line is on your side, and the way is clear",
+  "permit_q207_a2": "From either side of the road, as long as the way ahead is clear",
+  "permit_q207_a3": "At no time: two yellow lines mean no passing for both sides",
+  "permit_q207_exp": "Sometimes one yellow line is solid and the other is dashed. Then only traffic with the dashed line on its side may pass, and only when it is safe.",
+  "permit_q208_q": "What do two solid yellow lines down the middle of a road mean?",
+  "permit_q208_a0": "Passing is allowed for both directions when the way is clear",
+  "permit_q208_a1": "The road ahead is one-way",
+  "permit_q208_a2": "No passing for traffic in either direction",
+  "permit_q208_a3": "No left turns into driveways or side streets",
+  "permit_q208_exp": "Two solid yellow lines mean passing is prohibited in both directions.",
+  "permit_q209_q": "What do broken white lines between lanes tell you?",
+  "permit_q209_a0": "Traffic in the next lane is coming toward you",
+  "permit_q209_a1": "You must stay in your lane until the line ends",
+  "permit_q209_a2": "The lane beside you is for buses and bicycles",
+  "permit_q209_a3": "The lanes go the same way, and you may change lanes when safe",
+  "permit_q209_exp": "Broken white lines mark lanes going in the same direction. You may change lanes when it is safe.",
+  "permit_q210_q": "What does a solid white line between two lanes going the same way mean?",
+  "permit_q210_a0": "Traffic on the other side of the line is coming toward you",
+  "permit_q210_a1": "The lanes have different uses, and changing lanes is discouraged",
+  "permit_q210_a2": "You may pass on either side of the line at highway speeds",
+  "permit_q210_a3": "The lane on the other side of the line is closed to all traffic for now",
+  "permit_q210_exp": "Solid white lines separate lanes going the same way that have different uses, such as a turn lane. They discourage changing lanes.",
+  "permit_q211_q": "A vehicle ahead has an orange triangle with a red border on its back. What does it tell you?",
+  "permit_q211_a0": "It is a slow-moving vehicle, going 25 mph or less",
+  "permit_q211_a1": "It is carrying a wide load that may hang into your lane",
+  "permit_q211_a2": "It is a driver education car with a student at the wheel",
+  "permit_q211_a3": "It has broken down and is waiting for a tow truck to come",
+  "permit_q211_exp": "The orange triangle with a red border is the slow-moving vehicle sign. Farm tractors, animal-drawn carts, and road maintenance vehicles use it. They usually go 25 mph or less. Slow down early and pass only when it is safe.",
+  "permit_q212_q": "What does a white, X-shaped sign that says \"RAILROAD CROSSING\" tell you to do?",
+  "permit_q212_a0": "Come to a full stop each time, even with no train",
+  "permit_q212_a1": "Speed up, so you spend less time on the tracks",
+  "permit_q212_a2": "Stop behind the stop line or before the tracks if a train is coming",
+  "permit_q212_a3": "Stop on the tracks and look both ways before going on",
+  "permit_q212_exp": "The white X-shaped sign marks the crossing itself. If a train is coming, you must stop behind the stop line or before the tracks. Look both ways and never stop on the tracks.",
+  "permit_q213_q": "Which two signs mark a place where you may not pass?",
+  "permit_q213_a0": "A yellow diamond on the right and a green rectangle on the left",
+  "permit_q213_a1": "A yellow pennant on the left and a white DO NOT PASS sign on the right",
+  "permit_q213_a2": "An orange diamond on either side of the road",
+  "permit_q213_a3": "A red octagon on the right and a white X-shaped sign on the left side of the road",
+  "permit_q213_exp": "A yellow pennant sign on the left of the road says NO PASSING ZONE. A white rectangular sign on the right says DO NOT PASS. You may not pass where you see either sign.",
+  "permit_q214_q": "A flagger in a work zone signals you to stop, but the lane ahead looks clear. What must you do?",
+  "permit_q214_a0": "Go slowly if the lane is clear",
+  "permit_q214_a1": "Stop, then go if no one is coming",
+  "permit_q214_a2": "Follow the car ahead of you",
+  "permit_q214_a3": "Do as the flagger directs",
+  "permit_q214_exp": "A flagger may direct traffic in a work zone. You must do as the flagger directs, even when the road looks clear to you.",
+  "permit_q215_q": "May you turn right at a red light in Maine?",
+  "permit_q215_a0": "Yes, after a full stop, unless a sign says no; yield to people and traffic",
+  "permit_q215_a1": "Yes, without stopping, if no traffic is coming from the left",
+  "permit_q215_a2": "No. A right turn at a red light is against Maine law",
+  "permit_q215_a3": "Yes, but in daylight hours and not after dark or in rain",
+  "permit_q215_exp": "A right turn at a red light is allowed after you stop, unless a sign says otherwise. You must yield to pedestrians and to all other traffic first.",
+  "permit_q216_q": "What is a driver distraction?",
+  "permit_q216_a0": "A phone call or text, but not eating or talking",
+  "permit_q216_a1": "Anything that takes your mind or body away from driving",
+  "permit_q216_a2": "Something outside the car, such as a crash scene",
+  "permit_q216_a3": "A problem that affects new drivers, not skilled ones",
+  "permit_q216_exp": "A distraction is anything that takes your mind or body away from driving. Phones, food, passengers, and your own thoughts can all be distractions.",
+  "permit_q217_q": "What are the three types of driver distraction?",
+  "permit_q217_a0": "Phones, food, and loud passengers",
+  "permit_q217_a1": "Inside the car, outside the car, and weather",
+  "permit_q217_a2": "Visual, manual, and cognitive",
+  "permit_q217_a3": "Sight, sound, and touch",
+  "permit_q217_exp": "Visual distractions take your eyes off the road. Manual distractions take your hands off the wheel. Cognitive distractions take your mind off driving. Most crashes involve two or all three.",
+  "permit_q218_q": "You look at a billboard as you drive past. What type of distraction is that?",
+  "permit_q218_a0": "Visual: your eyes leave the road",
+  "permit_q218_a1": "Manual: your hands leave the wheel",
+  "permit_q218_a2": "Cognitive: your mind leaves the task",
+  "permit_q218_a3": "None, because you are still steering",
+  "permit_q218_exp": "A visual distraction makes you look away from the road. You look at something that has nothing to do with driving, such as a billboard or a crash scene.",
+  "permit_q219_q": "Which of these is a manual distraction?",
+  "permit_q219_a0": "Worrying about a test you have at school today",
+  "permit_q219_a1": "Looking at a crash on the other side of the road",
+  "permit_q219_a2": "Listening to a friend tell a long, funny story",
+  "permit_q219_a3": "Reaching for a drink or tuning the radio",
+  "permit_q219_exp": "A manual distraction takes one or both hands off the wheel. Your hands do something that is not driving. Examples are eating, drinking, tuning the radio and setting a GPS.",
+  "permit_q220_q": "You are angry and upset as you drive. What type of distraction is that?",
+  "permit_q220_a0": "Visual: you cannot see as well when upset",
+  "permit_q220_a1": "Cognitive: your mind is not on driving",
+  "permit_q220_a2": "Manual: you grip the wheel too hard",
+  "permit_q220_a3": "It is not a distraction if your eyes stay on the road",
+  "permit_q220_exp": "Cognitive distractions are thoughts and feelings that pull your mind away from the road. Anger, anxiety and worry are examples.",
+  "permit_q221_q": "What should you do with your phone and GPS before you start to drive?",
+  "permit_q221_a0": "Hold the phone in your hand so you can answer quickly",
+  "permit_q221_a1": "Set the GPS at the first red light, while the car is stopped",
+  "permit_q221_a2": "Turn off the phone and set the GPS before you leave",
+  "permit_q221_a3": "Put the phone on the dash where you can read texts at a glance",
+  "permit_q221_exp": "Prevent distractions before you drive: turn off your phone, set the navigation, finish eating, and secure loose items. When driving, do not talk on the phone and do not text.",
+  "permit_q222_q": "You are stopped at a red light in Maine. May you read or send a text?",
+  "permit_q222_a0": "No. The texting ban still applies when you are stopped in traffic",
+  "permit_q222_a1": "Yes. The law covers moving vehicles, so a stopped car at a light does not count",
+  "permit_q222_a2": "Yes, if you are 18 or older and use one hand",
+  "permit_q222_a3": "Yes, if you finish before the light turns green",
+  "permit_q222_exp": "Maine bans texting while you operate a vehicle on a public way. That includes when you are stopped for traffic, a traffic light, or a stop sign. Pull safely off the road first.",
+  "permit_q223_q": "You are 16 with an intermediate license and need to make a call. What does Maine law require?",
+  "permit_q223_a0": "Use the speaker so that your hands stay on the wheel",
+  "permit_q223_a1": "Keep the call under one minute and use one hand",
+  "permit_q223_a2": "Wait for a stop sign or a red light, then make the call",
+  "permit_q223_a3": "Pull off the road and stop in a safe place before you use the phone",
+  "permit_q223_exp": "A licensed driver under 18 may not use a phone while driving, even when stopped at a light or in traffic. You may use it once you have pulled over to the side of, or off, the road and stopped where the car can safely stay.",
+  "permit_q224_q": "In a study the Maine driver's manual cites, which distraction was by far the most dangerous one seen?",
+  "permit_q224_a0": "Eating",
+  "permit_q224_a1": "Texting",
+  "permit_q224_a2": "Talking to passengers",
+  "permit_q224_a3": "Tuning the radio",
+  "permit_q224_exp": "The manual cites a study of truck drivers in which texting was by far the most dangerous distraction. Texting takes your eyes, your hands, and your mind off driving at the same time.",
+  "permit_q225_q": "How does the Maine driver's manual say to travel with a pet?",
+  "permit_q225_a0": "On your lap, where you can keep the animal calm",
+  "permit_q225_a1": "Loose on the back seat, with a window open a little for air",
+  "permit_q225_a2": "In a pet carrier, not loose in the vehicle",
+  "permit_q225_a3": "In the front seat, held in a passenger's arms",
+  "permit_q225_exp": "Keep pets in a pet carrier, not loose in the vehicle. A loose animal can climb on you, block the pedals, or pull your eyes off the road.",
+  "permit_q226_q": "Your friends in the back seat start to argue loudly while you drive. What is the best thing to do?",
+  "permit_q226_a0": "Turn around for a moment to tell them to stop, then look back at the road",
+  "permit_q226_a1": "Do not join in; keep your mind on driving, and pull over if you need to",
+  "permit_q226_a2": "Join in, but keep one hand on the wheel and glance back",
+  "permit_q226_a3": "Watch them in the rearview mirror until they calm down, and drive from memory",
+  "permit_q226_exp": "Do not argue with passengers while you drive. Get rid of things that take your mind away from driving: it is your job to drive safely. If you cannot ignore it, pull over in a safe place.",
+  "permit_q227_q": "How does the Maine driver's manual compare crashes caused by phone distraction with crashes caused by impaired driving?",
+  "permit_q227_a0": "They are less serious, because the driver is sober",
+  "permit_q227_a1": "They happen at low speeds, so few people are hurt",
+  "permit_q227_a2": "They are rare, because most drivers can multitask",
+  "permit_q227_a3": "They can be just as serious and as deadly",
+  "permit_q227_exp": "The manual says that using a phone or other device in a moving vehicle can cause crashes. Those crashes can be as serious as the ones that impaired drivers cause.",
+  "permit_q228_q": "The Maine manual says to stop at least how far from a person in the roadway who has a white cane or a guide dog?",
+  "permit_q228_a0": "3 feet",
+  "permit_q228_a1": "10 feet",
+  "permit_q228_a2": "25 feet",
+  "permit_q228_a3": "50 feet",
+  "permit_q228_exp": "A person with a white cane or a guide dog has the right of way. Stop at least 10 feet away and wait until the person is out of danger.",
+  "permit_q229_q": "A cyclist is riding on your right, and you want to turn right. What does Maine law say?",
+  "permit_q229_a0": "Turn only when you can do it safely and without interfering with the cyclist",
+  "permit_q229_a1": "Speed up and turn in front of the cyclist before they reach the corner",
+  "permit_q229_a2": "Turn at once; the cyclist must brake, because cars have the right of way",
+  "permit_q229_a3": "Tap the horn and turn, since a signal gives you the right to go first",
+  "permit_q229_exp": "A driver near a cyclist may not turn right unless the turn can be made safely and without getting in the way of the cyclist. Slow down and let the cyclist clear the corner first.",
+  "permit_q230_q": "You are turning left. A cyclist is coming toward you from the other direction. Who must yield?",
+  "permit_q230_a0": "The cyclist must yield to you",
+  "permit_q230_a1": "The one who is moving slower",
+  "permit_q230_a2": "You must yield to the cyclist",
+  "permit_q230_a3": "Whoever reached the corner last",
+  "permit_q230_exp": "A driver turning left must yield to a cyclist coming from the opposite direction, the same as for an oncoming car. Turn only when it is safe.",
+  "permit_q231_q": "When should you use your horn near a cyclist?",
+  "permit_q231_a0": "Each time you pass, so they know you are there",
+  "permit_q231_a1": "When they are riding too far out in the lane",
+  "permit_q231_a2": "At night, because bikes are hard to see",
+  "permit_q231_a3": "Only when there is a chance of a crash",
+  "permit_q231_exp": "Do not use your horn close to a cyclist unless there is a chance of a crash. The horn can startle the rider and make them steer into your path.",
+  "permit_q232_q": "Under Maine law, how is a bicycle on the road treated?",
+  "permit_q232_a0": "As a pedestrian, so it should use the sidewalk",
+  "permit_q232_a1": "As a vehicle, with the same rights and duties as other drivers",
+  "permit_q232_a2": "As a slow vehicle that must pull over each time a car comes up behind it",
+  "permit_q232_a3": "As a non-vehicle, with no right to the travel lane",
+  "permit_q232_exp": "Bicycles are considered vehicles. A cyclist has the same rights and responsibilities as other drivers and has a legal right to use the road.",
+  "permit_q233_q": "On a road too narrow for a car and a bike side by side, where may the cyclist ride?",
+  "permit_q233_a0": "On the far edge, or else off the road",
+  "permit_q233_a1": "On the left, facing traffic",
+  "permit_q233_a2": "In or near the center of the lane",
+  "permit_q233_a3": "On the sidewalk, since the road is closed to bikes there",
+  "permit_q233_exp": "When a road is too narrow for cars and bikes to travel side by side, a cyclist should \"take the travel lane\" by riding in or near the center. Stay behind until you can pass with at least 3 feet of space.",
+  "permit_q234_q": "When may you drive or park in a bicycle lane?",
+  "permit_q234_a0": "Only when entering or leaving an alley or driveway",
+  "permit_q234_a1": "When you need to get around a car that is waiting to turn left",
+  "permit_q234_a2": "When you can see that no cyclists are using the lane",
+  "permit_q234_a3": "For up to five minutes, to drop off or pick up a passenger",
+  "permit_q234_exp": "Do not stop, park, or drive in a bicycle lane unless you are entering or leaving an alley or driveway. Yield to cyclists where a bike lane or path crosses the road.",
+  "permit_q235_q": "You are driving out of a driveway across a sidewalk. What must you do?",
+  "permit_q235_a0": "Pull across the sidewalk first, then stop at the curb so that you can see the cars coming",
+  "permit_q235_a1": "Stop before the sidewalk and wait for pedestrians and traffic",
+  "permit_q235_a2": "Roll slowly across while sounding your horn",
+  "permit_q235_a3": "Yield to cars, but people on the sidewalk must wait for you",
+  "permit_q235_exp": "Cars coming out of a driveway or alley must stop before the sidewalk and wait for pedestrians and traffic. You must yield to everyone on the sidewalk.",
+  "permit_q236_q": "Your light is green, but a person is still crossing in front of you. What do you do?",
+  "permit_q236_a0": "Go, because a green light gives you the right of way",
+  "permit_q236_a1": "Tap the horn and move forward slowly",
+  "permit_q236_a2": "Drive around the person on the side with more room",
+  "permit_q236_a3": "Yield and let the person finish crossing",
+  "permit_q236_exp": "Yield to all pedestrians even if the traffic light is green. A green light means go only when the way is clear of traffic and people.",
+  "permit_q237_q": "About how far ahead do your headlights let you see clearly at night?",
+  "permit_q237_a0": "100 feet",
+  "permit_q237_a1": "250 feet",
+  "permit_q237_a2": "500 feet",
+  "permit_q237_a3": "1,000 feet",
+  "permit_q237_exp": "Headlights let you see clearly only about 250 feet ahead. Do not drive faster than you can stop in that distance.",
+  "permit_q238_q": "What does \"overdriving your headlights\" mean?",
+  "permit_q238_a0": "Leaving your high beams on when another car is coming toward you at night",
+  "permit_q238_a1": "Using your headlights in the daytime, which wears the bulbs out",
+  "permit_q238_a2": "Driving so fast that you cannot stop within the distance your lights show",
+  "permit_q238_a3": "Driving at night with one headlight burned out",
+  "permit_q238_exp": "Never drive so fast that you cannot stop within the distance you can see ahead with your lights. If your stopping distance is longer than your headlight range, you will see a hazard too late to stop.",
+  "permit_q239_q": "On a dark road, above about what speed does the Maine manual say you are \"driving blind\" with your headlights?",
+  "permit_q239_a0": "30 mph",
+  "permit_q239_a1": "40 mph",
+  "permit_q239_a2": "65 mph",
+  "permit_q239_a3": "50 mph",
+  "permit_q239_exp": "Headlights show about 250 feet. The manual's chart gives a total stopping distance of 188 feet at 50 mph and 272 feet at 60 mph. So above about 50 mph you cannot stop inside the distance you can see.",
+  "permit_q240_q": "You are using high beams at night. When must you switch to low beams?",
+  "permit_q240_a0": "Within 500 feet of an oncoming car, or 300 feet behind a car",
+  "permit_q240_a1": "Within 100 feet of an oncoming car, or 50 feet behind a car",
+  "permit_q240_a2": "When the other driver flashes their lights at you",
+  "permit_q240_a3": "At the town line, where street lights begin",
+  "permit_q240_exp": "Dim your headlights when you come within 500 feet of an oncoming vehicle or follow within 300 feet of a vehicle. If an oncoming driver does not dim, slow down and look toward the right side of the road.",
+  "permit_q241_q": "You get your first Maine license at age 19. For how long is it a provisional license?",
+  "permit_q241_a0": "6 months",
+  "permit_q241_a1": "1 year",
+  "permit_q241_a2": "2 years",
+  "permit_q241_a3": "5 years",
+  "permit_q241_exp": "The first license issued to a new driver under 21 is provisional for two years. (The law says two years or until you turn 21, whichever is later.) For a new driver who is 21 or older, it is provisional for one year.",
+  "permit_q242_q": "You have a provisional license and are convicted of a moving violation. What happens the first time?",
+  "permit_q242_a0": "You get a written warning for the first offense",
+  "permit_q242_a1": "Your license is suspended for 30 days",
+  "permit_q242_a2": "You pay a fine, but you keep your license",
+  "permit_q242_a3": "You must take the road test again within 30 days",
+  "permit_q242_exp": "If you are convicted of a moving violation while your license is provisional, you get a 30-day suspension the first time. The second and third times, the suspension is longer.",
+  "permit_q243_q": "For a provisional license holder, how long is the suspension for a SECOND moving violation?",
+  "permit_q243_a0": "30 days",
+  "permit_q243_a1": "60 days",
+  "permit_q243_a2": "1 year",
+  "permit_q243_a3": "180 days",
+  "permit_q243_exp": "A moving violation suspends a provisional license. The first time it is for 30 days. The second time it is for 180 days. The third time or later it is for one year.",
+  "permit_q244_q": "You get your first Maine license at age 20. Does it stop being provisional when you turn 21?",
+  "permit_q244_a0": "No. It lasts the full two years from the day the license was issued",
+  "permit_q244_a1": "Yes. Provisional rules stop on the 21st birthday",
+  "permit_q244_a2": "Yes, if the driver has had no violations so far",
+  "permit_q244_a3": "No. It lasts until the driver passes a second road test",
+  "permit_q244_exp": "If your first license was issued before your 21st birthday, it is provisional for a full two years. The provisional period does not end when you turn 21.",
+  "permit_q245_q": "In the Maine point system, at how many demerit points does the Secretary of State send a warning?",
+  "permit_q245_a0": "3 points",
+  "permit_q245_a1": "6 points",
+  "permit_q245_a2": "9 points",
+  "permit_q245_a3": "12 points",
+  "permit_q245_exp": "Maine gives demerit points for convictions of certain traffic offenses. A warning is sent at 6 points. At 12 points or more, the license is suspended.",
+  "permit_q246_q": "In the Maine point system, what happens when a driver reaches 12 demerit points?",
+  "permit_q246_a0": "The driver must retake the written test",
+  "permit_q246_a1": "The points are erased and the count starts over",
+  "permit_q246_a2": "The driver's license is suspended",
+  "permit_q246_a3": "The driver gets a warning letter",
+  "permit_q246_exp": "When the point total reaches 12 or more, the driver's license is suspended. The warning comes earlier, at 6 points.",
+  "permit_q247_q": "How long do demerit points stay on a Maine driving record?",
+  "permit_q247_a0": "Until the license is renewed",
+  "permit_q247_a1": "For three years from the conviction",
+  "permit_q247_a2": "For as long as you hold a license",
+  "permit_q247_a3": "Until they are one year old",
+  "permit_q247_exp": "Points are erased from a driver's record when they become one year old.",
+  "permit_q248_q": "You are in a crash and someone is hurt. What does Maine law say you must do?",
+  "permit_q248_a0": "Stop, stay at the scene, give your name and address, and help the injured",
+  "permit_q248_a1": "Stop and give your insurance card, then you are free to drive away",
+  "permit_q248_a2": "Drive straight to the nearest police station or hospital and report the crash from there",
+  "permit_q248_a3": "Wait in your car without speaking until your insurer calls you",
+  "permit_q248_exp": "You must stop at once, stay at the scene, and give your name and address and your vehicle's registration number. Show your license and proof of insurance if asked. Give reasonable help to anyone who is hurt, and call 911.",
+  "permit_q249_q": "A crash must be reported to the police if anyone is hurt, or if the property damage is at least how much?",
+  "permit_q249_a0": "$500",
+  "permit_q249_a1": "$2,000",
+  "permit_q249_a2": "$1,000",
+  "permit_q249_a3": "$5,000",
+  "permit_q249_exp": "If a crash involves any injury, or property damage of $2,000 or more, the drivers must report it to the police. Failing to report can bring criminal charges and a license suspension.",
+  "permit_q250_q": "How close may you follow a fire truck that is answering an alarm?",
+  "permit_q250_a0": "No closer than 50 feet",
+  "permit_q250_a1": "No closer than 100 feet",
+  "permit_q250_a2": "No closer than 500 feet",
+  "permit_q250_a3": "As close as you like, with your hazard lights on",
+  "permit_q250_exp": "It is against the law to follow within 500 feet of a fire truck that is responding to a fire alarm.",
+  "permit_q251_q": "What does Maine law require about insurance for a vehicle you drive?",
+  "permit_q251_a0": "Insurance is a good idea, but the law does not require it",
+  "permit_q251_a1": "The owner must be insured, but you need no proof when you borrow a car from a friend or relative",
+  "permit_q251_a2": "You need insurance once you have caused your first crash",
+  "permit_q251_a3": "It must have liability insurance, and you must show proof if an officer asks",
+  "permit_q251_exp": "Maine law says every owner and every driver of a motor vehicle must have liability insurance. You must show proof of it when a police officer asks. Keep the insurance card in the vehicle.",
+  "permit_q252_q": "You borrow a friend's car. Does it need to be insured for you to drive it?",
+  "permit_q252_a0": "No. Insurance is the owner's concern, not the driver's",
+  "permit_q252_a1": "Yes. Any vehicle you drive must be insured, even if you do not own it",
+  "permit_q252_a2": "No, if you are driving it for less than a day",
+  "permit_q252_a3": "Yes, on highways, but not on town streets near home",
+  "permit_q252_exp": "Any vehicle you are operating must be insured even though you are not the owner. Check that the car is insured and that proof of insurance is in it before you drive.",
+  "permit_q253_q": "A police car behind you turns on its blue lights to stop you. What should you do first?",
+  "permit_q253_a0": "Stop right away in your own lane, wherever you happen to be",
+  "permit_q253_a1": "Drive on at the speed limit until you reach a parking lot you know, however far that is",
+  "permit_q253_a2": "Move to the right side of the road and stop in a safe spot",
+  "permit_q253_a3": "Slow down and wave the officer past you on the left-hand side",
+  "permit_q253_exp": "If you are pulled over by the police, move to the right side of the road and make sure you are in a safe spot. Then turn off the engine and turn on your hazard flashers.",
+  "permit_q254_q": "You have been pulled over by the police. What does the Maine manual tell you to do while you wait?",
+  "permit_q254_a0": "Get out, close the door, and walk back to the police car to meet the officer halfway",
+  "permit_q254_a1": "Take off your seat belt and look for your papers in the glove box",
+  "permit_q254_a2": "Call a parent on your phone before you speak to the officer",
+  "permit_q254_a3": "Stay in the car, keep your seat belt on, and keep your hands on the wheel",
+  "permit_q254_exp": "Stay in the vehicle unless you are asked to get out. Stay calm, keep your seat belt fastened, and keep your hands on the steering wheel. Roll down your window so you and the officer can talk.",
+  "permit_q255_q": "It is night and the police have pulled you over. What extra step does the manual give?",
+  "permit_q255_a0": "Turn off your headlights and dash lights to save the battery",
+  "permit_q255_a1": "Turn on your inside lights so the officer can see in",
+  "permit_q255_a2": "Keep your high beams on so the officer can see the road",
+  "permit_q255_a3": "Shine your phone light toward the officer's car",
+  "permit_q255_exp": "At night, turn on your inside lights so the officer can see inside the vehicle. Keep your hands on the wheel where they can be seen.",
+  "permit_q256_q": "The officer asks for your license and registration. They are in the glove box. What should you do?",
+  "permit_q256_a0": "Tell the officer where they are, then reach for them slowly",
+  "permit_q256_a1": "Reach for them quickly so the stop takes less time",
+  "permit_q256_a2": "Say you will bring them to the police station later",
+  "permit_q256_a3": "Ask a passenger to search the car for them",
+  "permit_q256_exp": "The officer may ask for your license, insurance card, or registration. Tell the officer where they are, and reach for them slowly with one hand on the wheel. Then answer the officer's questions.",
+  "permit_q257_q": "Must you show your license to a police officer who asks to see it?",
+  "permit_q257_a0": "No, unless the officer has a written warrant",
+  "permit_q257_a1": "Yes, but only after a crash",
+  "permit_q257_a2": "Yes. You must show it to any officer who asks",
+  "permit_q257_a3": "No. You may mail a copy within 10 days",
+  "permit_q257_exp": "Carry your license with you whenever you drive. You must show it to any police officer who asks to see it. It is illegal to lend your license to anyone else.",
+  "permit_q258_q": "You turn left from a two-way street onto a street with two lanes going your way. Which lane do you turn into?",
+  "permit_q258_a0": "The rightmost lane, to stay out of the way",
+  "permit_q258_a1": "The leftmost lane going in your direction",
+  "permit_q258_a2": "Either lane, as long as you signal before you turn",
+  "permit_q258_a3": "The lane that has the fewest cars in it at the time",
+  "permit_q258_exp": "Turn into the lane closest to the lane you came from. On a left turn, that is the leftmost lane going in your direction. Change lanes only after the turn is finished.",
+  "permit_q259_q": "You are stopped, waiting to turn left. Why should you keep your front wheels straight?",
+  "permit_q259_a0": "Straight wheels let the engine idle with less strain",
+  "permit_q259_a1": "Turned wheels wear out the tires while you wait",
+  "permit_q259_a2": "Turned wheels make the power steering pump overheat if the wait is longer than a minute",
+  "permit_q259_a3": "If you are hit from behind, you will not be pushed into oncoming traffic",
+  "permit_q259_exp": "Do not turn the wheels before you make the turn. If you are struck from behind with the wheels turned, you may be pushed forward into oncoming traffic.",
+  "permit_q260_q": "When may you pass another vehicle on the right?",
+  "permit_q260_a0": "When it is turning left and there is room, or on a road with two or more lanes going your way",
+  "permit_q260_a1": "When the driver ahead is going under the speed limit and will not move over",
+  "permit_q260_a2": "When you can use the paved shoulder to get around the car",
+  "permit_q260_a3": "Whenever you signal first and sound your horn to warn them",
+  "permit_q260_exp": "Pass on the left in general. You may pass on the right only when the other car is making a left turn and there is room, or when the road has two or more marked lanes going your way. Never drive off the pavement to pass."
+ },
+ "changed": {
+  "permit_real_format": {
+   "old": "This is practice, not the BMV format: the real Maine knowledge test has 30 questions and you need 24 right to pass.",
+   "new": "Good to know: the real Maine knowledge test has 30 questions and you need 24 right to pass. The Maine test format below uses the same numbers."
+  },
+  "start_standard_20_question_test_mixed_": {
+   "old": "Start standard 20-question test, mixed categories",
+   "new": "Start quick practice: 20 mixed questions"
+  },
+  "standard_test": {
+   "old": "Standard Test",
+   "new": "Quick Practice"
+  },
+  "mixed_20_qs": {
+   "old": "Mixed, 20 Qs",
+   "new": "20 mixed questions"
+  },
+  "each_category_is_padded_to_a_20_questi": {
+   "old": "Each category is padded to a 20-question test if the topic alone has fewer than 20 Qs.",
+   "new": "Each test has questions from that category only: up to 20 at a time."
+  },
+  "roundaboutdrill_c1_3": {
+   "old": "Honk to signal your intent",
+   "new": "Tap the horn and merge beside the car, since two cars always fit"
+  },
+  "roundaboutdrill_c1_4": {
+   "old": "Stop completely no matter what",
+   "new": "Come to a full stop and wait for a driver in the circle to wave you in first"
+  },
+  "roundaboutdrill_c2_3": {
+   "old": "Swerve into the inner lane",
+   "new": "Move to the inner lane and keep circling until it passes"
+  },
+  "roundaboutdrill_c2_4": {
+   "old": "Exit at the next available exit regardless of where it goes, then stop",
+   "new": "Speed up and stay ahead of it until your road leaves the circle"
+  },
+  "roundaboutdrill_c3_3": {
+   "old": "Pass them on the inside",
+   "new": "Pass on the inside while the trailer swings wide to the right"
+  },
+  "roundaboutdrill_c3_4": {
+   "old": "Pass them on the outside",
+   "new": "Pass on the outside before the truck reaches the next exit"
+  },
+  "roundaboutdrill_c4_1": {
+   "old": "Right (outer) lane throughout",
+   "new": "Right (outer) lane all the way around, because the outer lane is the safest place for a new driver"
+  },
+  "roundaboutdrill_c4_3": {
+   "old": "Either lane, since lane choice does not matter in roundabouts as long as you signal",
+   "new": "Either lane, since lane choice does not matter in a roundabout as long as you signal before your exit"
+  },
+  "roundaboutdrill_c4_4": {
+   "old": "Middle of the road",
+   "new": "Straddle both lanes on the way in, so that you can pick one later"
+  },
+  "roundaboutdrill_c5_3": {
+   "old": "Honk to warn them",
+   "new": "Tap the horn so that they step back, and then finish your exit"
+  },
+  "roundaboutdrill_c5_4": {
+   "old": "Swerve around them",
+   "new": "Steer around them, using the space on the far side of the lane"
+  },
+  "roundaboutdrill_c6_3": {
+   "old": "No signaling required in roundabouts",
+   "new": "No signal is needed, since all traffic in a roundabout goes the same way"
+  },
+  "roundaboutdrill_c6_4": {
+   "old": "Signal left on approach and right on exit, always both, no matter which exit you are taking or how far around",
+   "new": "Signal left on approach and right on exit, both each time you use a roundabout"
+  },
+  "duidrill_c2_3": {
+   "old": "$100 civil fine only",
+   "new": "Only a $100 civil fine, with no suspension of your license"
+  },
+  "duidrill_c2_4": {
+   "old": "They can't require a test without a warrant",
+   "new": "They cannot require a test without a warrant, so refusing has no effect on your license"
+  },
+  "duidrill_c3_1": {
+   "old": "Yes, because it is prescribed and taken as directed, so driving on it is legal in every state including Maine",
+   "new": "Yes, because a doctor prescribed it and you are taking it just as the label directs"
+  },
+  "duidrill_c3_2": {
+   "old": "Only if you don't feel drowsy",
+   "new": "Yes, as long as you drive slowly and stay off the main highways"
+  },
+  "duidrill_c3_4": {
+   "old": "Only to/from the pharmacy",
+   "new": "Yes, for short trips such as to the pharmacy and straight back"
+  },
+  "duidrill_c4_1": {
+   "old": "Yes — under 0.08",
+   "new": "Yes — 0.03 is well under the 0.08 limit that applies in Maine"
+  },
+  "duidrill_c4_4": {
+   "old": "Only until midnight",
+   "new": "Yes, if you wait one more hour and drink some water first"
+  },
+  "duidrill_c5_1": {
+   "old": "Yes — it's legal to use",
+   "new": "Yes — it is legal to use, so it is legal to drive"
+  },
+  "duidrill_c5_2": {
+   "old": "Only if you stay under 5 ng/mL THC, the per se limit Maine adopted when it legalized recreational use in 2016",
+   "new": "Yes, as long as you stay under 5 ng/mL THC, the per se limit that Maine adopted when it legalized recreational use"
+  },
+  "duidrill_c5_4": {
+   "old": "Only on private roads",
+   "new": "Yes, but only on private roads or quiet back roads"
+  },
+  "duidrill_c6_1": {
+   "old": "Only a fine and a warning",
+   "new": "Only a fine and a written warning for a first offense"
+  },
+  "duidrill_c6_3": {
+   "old": "Automatic felony charge",
+   "new": "An automatic felony charge and a lifetime loss of license"
+  },
+  "duidrill_c6_4": {
+   "old": "Nothing, because first offenses are sealed: Maine diverts first-time OUI into an education program, and the record is expunged after a year with no fine or suspension attached to it",
+   "new": "No penalty: Maine sends first-time OUI cases to an education program and clears the record after a year without a fine"
+  },
+  "moosesafety_c1_1": {
+   "old": "Swerve hard right onto the shoulder",
+   "new": "Swerve hard right onto the gravel shoulder"
+  },
+  "moosesafety_c1_2": {
+   "old": "Swerve left into the oncoming lane (clear)",
+   "new": "Swerve left into the oncoming lane, which is clear"
+  },
+  "moosesafety_c2_1": {
+   "old": "Resume normal speed — she's across",
+   "new": "Resume normal speed, since she is across the road"
+  },
+  "moosesafety_c2_4": {
+   "old": "Stop in the lane and wait for her to leave",
+   "new": "Stop in the lane and wait until she is out of sight"
+  },
+  "moosesafety_c3_1": {
+   "old": "Hold the lane and keep your speed",
+   "new": "Hold the lane and keep your speed, since it has not moved"
+  },
+  "moosesafety_c3_3": {
+   "old": "Honk to scare it off",
+   "new": "Sound the horn to scare it off and hold your speed"
+  },
+  "moosesafety_c5_3": {
+   "old": "Speed up to outrun the area",
+   "new": "Speed up to get out of the area before another moose appears"
+  },
+  "moosesafety_c5_4": {
+   "old": "Keep driving — you're fine",
+   "new": "Keep driving and call a friend to talk it through while you are on the road"
+  },
+  "moosesafety_c6_1": {
+   "old": "High beams + 55 mph (posted limit)",
+   "new": "High beams + 55 mph, because that is the posted limit"
+  },
+  "moosesafety_c6_3": {
+   "old": "Fog lights only and normal speed",
+   "new": "Fog lights only and normal speed, since fog lights cut through"
+  },
+  "moosesafety_c6_4": {
+   "old": "Hazard lights + normal speed, so that the cars behind you can see and follow",
+   "new": "Hazard lights + normal speed, so cars behind can follow"
+  },
+  "emergencyvehicle_c1_1": {
+   "old": "Stop immediately in your lane",
+   "new": "Stop at once in your lane, so the driver behind knows where you are"
+  },
+  "emergencyvehicle_c1_2": {
+   "old": "Speed up to get out of the way",
+   "new": "Speed up to the next side street, so that you are out of the way"
+  },
+  "emergencyvehicle_c2_4": {
+   "old": "Reverse to give the truck your spot",
+   "new": "Reverse into the lane behind you to give the truck your spot"
+  },
+  "emergencyvehicle_c3_2": {
+   "old": "Stay in your lane at normal speed, since the median separates you from the ambulance completely",
+   "new": "Stay in your lane at normal speed, since the median separates you from it"
+  },
+  "emergencyvehicle_c3_3": {
+   "old": "Move left toward the median",
+   "new": "Move left toward the median and slow down to a crawl"
+  },
+  "emergencyvehicle_c3_4": {
+   "old": "Stop immediately",
+   "new": "Stop at once in the travel lane and wait for it to pass"
+  },
+  "emergencyvehicle_c4_1": {
+   "old": "Keep going at normal speed",
+   "new": "Keep going at normal speed in your lane"
+  },
+  "emergencyvehicle_c5_1": {
+   "old": "Hold your lane and speed",
+   "new": "Hold your lane and speed, since the trooper is on the shoulder"
+  },
+  "emergencyvehicle_c5_3": {
+   "old": "Change lanes even if the left lane is occupied, because the move-over law requires it",
+   "new": "Change lanes even if the left lane is occupied; the other car must make room"
+  },
+  "emergencyvehicle_c6_1": {
+   "old": "Pull out immediately — it's gone",
+   "new": "Pull out right away, because the fire engine is gone"
+  },
+  "emergencyvehicle_c6_4": {
+   "old": "Use the shoulder to catch up with traffic flow",
+   "new": "Use the shoulder to catch up with the flow of traffic"
+  },
+  "schoolbus_c1_3": {
+   "old": "Drive around on the shoulder",
+   "new": "Drive around the bus on the right shoulder"
+  },
+  "schoolbus_c1_4": {
+   "old": "Honk so the kids know you're there",
+   "new": "Tap the horn so the children know you are there, then pass slowly"
+  },
+  "schoolbus_c2_1": {
+   "old": "Keep driving, since you are in the opposite lane and the rule applies only behind the bus",
+   "new": "Keep driving, since you are in the opposite lane from the bus"
+  },
+  "schoolbus_c2_3": {
+   "old": "Slow down but keep moving",
+   "new": "Slow down to 10 mph but keep moving past the bus"
+  },
+  "schoolbus_c2_4": {
+   "old": "Stop only if a child is visible",
+   "new": "Stop if a child is in sight; if not, pass slowly"
+  },
+  "schoolbus_c3_1": {
+   "old": "Stop immediately",
+   "new": "Stop and wait until the red lights stop flashing"
+  },
+  "schoolbus_c3_2": {
+   "old": "Slow to 20 mph",
+   "new": "Slow to 20 mph as you pass, in case a child crosses"
+  },
+  "schoolbus_c4_3": {
+   "old": "Stay at speed — yellow means nothing",
+   "new": "Stay at speed — yellow is just a notice"
+  },
+  "schoolbus_c5_1": {
+   "old": "Neighborhood streets are exempt",
+   "new": "Neighborhood streets are exempt from the bus rule"
+  },
+  "schoolbus_c5_3": {
+   "old": "Only applies if an adult is present at the stop",
+   "new": "It applies only when an adult is present at the stop"
+  },
+  "schoolbus_c5_4": {
+   "old": "Pass slowly on the left",
+   "new": "Pass slowly on the left, leaving the bus lots of room"
+  },
+  "railroadcrossing_c1_1": {
+   "old": "Drive around the gates — you can fit",
+   "new": "Drive around the gates, since there is room to fit"
+  },
+  "railroadcrossing_c1_3": {
+   "old": "Proceed slowly as long as no train is in sight in either direction down the track",
+   "new": "Proceed slowly as long as no train is in sight either way"
+  },
+  "railroadcrossing_c1_4": {
+   "old": "Ease through the gap between gates",
+   "new": "Wait a minute, then cross if no train comes"
+  },
+  "railroadcrossing_c2_1": {
+   "old": "Accelerate and cross quickly",
+   "new": "Accelerate and cross before it arrives"
+  },
+  "railroadcrossing_c2_3": {
+   "old": "Keep going at normal speed",
+   "new": "Keep going at normal speed, as you planned"
+  },
+  "railroadcrossing_c3_1": {
+   "old": "Stay in the car and try to restart it",
+   "new": "Stay in the car and keep trying to restart the engine"
+  },
+  "railroadcrossing_c3_2": {
+   "old": "Push the car off the tracks with the passengers helping, since it is only a few feet",
+   "new": "Push the car off the tracks with the passengers helping, since it is just a few feet"
+  },
+  "railroadcrossing_c3_4": {
+   "old": "Run away from the train along the tracks",
+   "new": "Run away from the train, straight along the tracks"
+  },
+  "railroadcrossing_c4_1": {
+   "old": "Go around the gates, since the train is past and the gate mechanism is just slow to reset after a long freight",
+   "new": "Go around the gates, since the train is past and the gates are just slow to reset after a long train"
+  },
+  "railroadcrossing_c4_3": {
+   "old": "Get out and look both ways yourself",
+   "new": "Get out of the car and look both ways down the tracks yourself"
+  },
+  "railroadcrossing_c4_4": {
+   "old": "Creep forward slowly to check",
+   "new": "Creep forward slowly under the gate arm to check the tracks"
+  },
+  "railroadcrossing_c5_1": {
+   "old": "Drive through at normal speed",
+   "new": "Drive through at normal speed, since a crossing without lights or gates is no longer in use"
+  },
+  "railroadcrossing_c5_2": {
+   "old": "Stop completely at the crossbuck every time, as at a stop sign, before crossing",
+   "new": "Stop on the tracks, look both ways, and then finish crossing"
+  },
+  "railroadcrossing_c5_4": {
+   "old": "Sound your horn to warn any train",
+   "new": "Sound your horn to warn a train that may be near, then cross at your normal speed"
+  },
+  "railroadcrossing_c6_2": {
+   "old": "Cross at an angle to reduce the bump",
+   "new": "Cross at an angle to reduce the bump, as you would for a speed bump"
+  },
+  "railroadcrossing_c6_4": {
+   "old": "Accelerate to skim the hump",
+   "new": "Accelerate so that the truck skims over the top of the hump"
+  },
+  "winterdriving_c1_1": {
+   "old": "Brake hard and steer toward the shoulder",
+   "new": "Brake hard and steer toward the shoulder to get off the ice"
+  },
+  "winterdriving_c1_3": {
+   "old": "Pump the brakes to break through the ice",
+   "new": "Pump the brakes quickly to break through the ice to pavement"
+  },
+  "winterdriving_c3_1": {
+   "old": "Steer LEFT to counter the slide",
+   "new": "Steer LEFT, away from the slide, to pull the car straight again"
+  },
+  "winterdriving_c3_3": {
+   "old": "Brake hard",
+   "new": "Brake hard and hold the wheel still until the car stops sliding"
+  },
+  "winterdriving_c4_3": {
+   "old": "Stomp the brakes",
+   "new": "Press the brake pedal to the floor and hold it there"
+  },
+  "winterdriving_c4_4": {
+   "old": "Accelerate to transfer weight to the back wheels",
+   "new": "Accelerate to move weight onto the back wheels, which pushes the front around the curve"
+  },
+  "winterdriving_c5_3": {
+   "old": "Tailgate to get their attention",
+   "new": "Follow close behind, where the road is freshly cleared"
+  },
+  "winterdriving_c6_1": {
+   "old": "Your 4WD is malfunctioning",
+   "new": "Your 4WD system must be broken, because it should stop faster"
+  },
+  "winterdriving_c6_3": {
+   "old": "SUVs have worse brakes than sedans",
+   "new": "SUVs always have weaker brakes than sedans do"
+  },
+  "winterdriving_c6_4": {
+   "old": "You should have engaged low-range 4WD, which brakes all four wheels through the transfer case",
+   "new": "Low-range 4WD was not engaged, and that is the part that does the braking"
+  },
+  "constructionzone_c1_3": {
+   "old": "Creep forward until the flagger steps aside",
+   "new": "Creep forward slowly until the flagger steps aside"
+  },
+  "constructionzone_c1_4": {
+   "old": "Honk to get the flagger's attention",
+   "new": "Tap the horn so the flagger sees the light is green"
+  },
+  "constructionzone_c2_3": {
+   "old": "Accelerate to pass the zone before the flagger changes back",
+   "new": "Speed up to clear the zone before the flagger turns the paddle back to STOP"
+  },
+  "constructionzone_c2_4": {
+   "old": "Wait for an explicit \"GO\" paddle signal",
+   "new": "Stay stopped until the flagger shows a \"GO\" paddle"
+  },
+  "constructionzone_c3_4": {
+   "old": "Wait for a forced merge at the cones",
+   "new": "Wait for a forced merge at the cones, then push in"
+  },
+  "constructionzone_c4_3": {
+   "old": "Stop completely to offer help",
+   "new": "Stop completely on the highway to offer the worker help"
+  },
+  "constructionzone_c4_4": {
+   "old": "Flash high beams as courtesy and maintain speed",
+   "new": "Flash your high beams as a courtesy and hold 65 mph, because a lane change right beside a work crew adds more risk"
+  },
+  "constructionzone_c5_3": {
+   "old": "Cut through only if no one appears to be watching and the gap is completely clear",
+   "new": "Cut through if the gap is clear and no one is watching"
+  },
+  "constructionzone_c5_4": {
+   "old": "Honk first, then cut through if clear",
+   "new": "Speed up in your lane to make up the lost time"
+  },
+  "constructionzone_c6_1": {
+   "old": "Pass the pilot car when safe, since it is well below the posted limit and holding up the traffic behind it for no good reason at all",
+   "new": "Pass the pilot car when safe, since it is well below the posted limit and is holding up the traffic behind it for no clear reason"
+  },
+  "constructionzone_c6_3": {
+   "old": "Honk and flash for the pilot to speed up",
+   "new": "Honk and flash your lights so the pilot car speeds up"
+  },
+  "constructionzone_c6_4": {
+   "old": "Pass only if you have a truck with a horn",
+   "new": "Pass on the right shoulder if it is paved and looks clear"
+  },
+  "teengdl_c1_1": {
+   "old": "Yes, you are licensed, so you can carry whoever you want; the passenger rule only covers the learner permit stage, which ended when you passed the road test",
+   "new": "Yes. The passenger rule covers the learner's permit stage, which ended on the day you passed the road test and got your license"
+  },
+  "teengdl_c1_3": {
+   "old": "Yes, as long as everyone buckles up",
+   "new": "Yes, as long as everyone in the car buckles up"
+  },
+  "teengdl_c2_1": {
+   "old": "Yes, intermediate drivers can drive at any time as long as they carry the licence",
+   "new": "Yes, intermediate drivers may drive at night as long as they carry the license"
+  },
+  "teengdl_c2_3": {
+   "old": "Only on weekends",
+   "new": "Yes, but only on Friday and Saturday nights"
+  },
+  "teengdl_c2_4": {
+   "old": "Only with parental text-permission",
+   "new": "Yes, if a parent has sent you a text giving permission for that one late-night trip"
+  },
+  "teengdl_c3_1": {
+   "old": "Yes, because hands-free calling is always legal for licensed drivers of any age in Maine",
+   "new": "Yes, because hands-free calling is legal for licensed drivers of whatever age in Maine"
+  },
+  "teengdl_c3_3": {
+   "old": "Only if the call is under 30 seconds",
+   "new": "Yes, if the call is kept under 30 seconds"
+  },
+  "teengdl_c3_4": {
+   "old": "Only for family calls",
+   "new": "Yes, but only for calls from a parent or guardian"
+  },
+  "teengdl_c4_1": {
+   "old": "40 hours",
+   "new": "40 hours in total, with 5 of those at night"
+  },
+  "teengdl_c4_2": {
+   "old": "50 hours",
+   "new": "50 hours in total — with 10 of those at night"
+  },
+  "teengdl_c5_1": {
+   "old": "Nothing, because the restrictions keep counting down regardless",
+   "new": "No change; the 270 days keep counting down"
+  },
+  "teengdl_c5_3": {
+   "old": "You lose your license permanently",
+   "new": "You lose your license forever"
+  },
+  "teengdl_c6_3": {
+   "old": "Only with a licensed adult in the passenger seat, even for an immediate family member",
+   "new": "Only if a licensed adult rides beside you, even when the passenger is your sister"
+  },
+  "teengdl_c6_4": {
+   "old": "Only with written parental permission",
+   "new": "Yes, but your parents must first give written permission, and you must carry it in the car"
+  },
+  "rightofway_c2_3": {
+   "old": "Whoever is closer",
+   "new": "Whoever is closer to the middle of the intersection"
+  },
+  "rightofway_c3_3": {
+   "old": "Turn-signal decides",
+   "new": "Whoever signals first"
+  },
+  "rightofway_c4_3": {
+   "old": "Swerve around them",
+   "new": "Slow down and steer around them"
+  },
+  "rightofway_c6_1": {
+   "old": "Enter — you have the momentum",
+   "new": "Enter — you have momentum"
+  },
+  "rightofway_c6_3": {
+   "old": "Stop completely",
+   "new": "Enter beside the other car"
+  },
+  "rightofway_c8_3": {
+   "old": "Whoever is lighter",
+   "new": "Whoever is driving the smaller, lighter vehicle"
+  },
+  "rightofway_c9_3": {
+   "old": "Honk to let them know that you are coming through",
+   "new": "Honk and go through between cars"
+  },
+  "rightofway_c10_1": {
+   "old": "You go — you have momentum",
+   "new": "Keep going: the driver with more momentum has the right of way"
+  },
+  "rightofway_c11_1": {
+   "old": "Merge immediately, because it is the polite thing to do and it keeps the closing lane free",
+   "new": "Merge at once, because it is the polite thing to do in traffic"
+  },
+  "rightofway_c11_3": {
+   "old": "Drive in the shoulder to get ahead",
+   "new": "Drive on the shoulder to get ahead"
+  },
+  "rightofway_c12_3": {
+   "old": "Go immediately, because you have the right-of-way",
+   "new": "Go at once — the arrow is yours"
+  },
+  "rightofway_c14_1": {
+   "old": "Try to restart the car quickly",
+   "new": "Stay in the car and keep trying to restart the engine"
+  },
+  "rightofway_c15_1": {
+   "old": "Maintain your speed, since you have the right-of-way in the travel lane",
+   "new": "Hold your speed, since you have the right-of-way"
+  },
+  "rightofway_c15_3": {
+   "old": "Stop to help in your lane",
+   "new": "Stop in your lane to offer help"
+  },
+  "rightofway_c17_1": {
+   "old": "STOP, because you must always stop for a school bus with red lights",
+   "new": "STOP, as you must for a bus with red lights flashing"
+  },
+  "rightofway_c18_3": {
+   "old": "Honk to alert them",
+   "new": "Tap the horn so they know a car is coming"
+  },
+  "rightofway_c20_3": {
+   "old": "Honk and turn",
+   "new": "Speed up so that you finish the turn before the cyclist gets there"
+  },
+  "permit_q0_a2": {
+   "old": "The vehicle going straight",
+   "new": "The vehicle that is turning left"
+  },
+  "permit_q0_a3": {
+   "old": "Whoever honks first",
+   "new": "The driver who signals first"
+  },
+  "permit_q1_a2": {
+   "old": "Lane ends",
+   "new": "The lane ends ahead"
+  },
+  "permit_q1_a3": {
+   "old": "Bike lane",
+   "new": "Left turns are not allowed"
+  },
+  "permit_q2_a0": {
+   "old": "Slow down",
+   "new": "Stop and wait there until the light turns green"
+  },
+  "permit_q2_a2": {
+   "old": "Caution: slow down and proceed without stopping, as at a yield sign",
+   "new": "Slow down and go through with care, as at a yield"
+  },
+  "permit_q2_a3": {
+   "old": "Signal is broken, keep going",
+   "new": "The signal is broken, so keep going"
+  },
+  "permit_q3_a0": {
+   "old": "Stop and wait",
+   "new": "Stop and wait until it stops flashing"
+  },
+  "permit_q3_a2": {
+   "old": "Same as a stop sign",
+   "new": "Stop first, the same as at a stop sign"
+  },
+  "permit_q4_a1": {
+   "old": "25 mph unless otherwise posted",
+   "new": "25 mph"
+  },
+  "permit_q5_a3": {
+   "old": "Honk to warn the driver",
+   "new": "Stop only if children are crossing in front of you"
+  },
+  "permit_q7_q": {
+   "old": "Maine law requires headlights to be on:",
+   "new": "When does Maine law require you to turn on your headlights?"
+  },
+  "permit_q7_a0": {
+   "old": "Only after dark, between sunset and sunrise",
+   "new": "After dark, but not in daytime rain, fog, or snow"
+  },
+  "permit_q7_a1": {
+   "old": "When windshield wipers are in constant use",
+   "new": "From sunset to sunrise, and whenever your wipers are in constant use"
+  },
+  "permit_q7_a2": {
+   "old": "Only in fog, mist, or falling snow",
+   "new": "From one hour after sunset until one hour before sunrise"
+  },
+  "permit_q7_a3": {
+   "old": "Only when driving on highways above 45 mph",
+   "new": "At night on unlit roads; in town, parking lights are enough"
+  },
+  "permit_q8_a0": {
+   "old": "Come to a complete stop every time, exactly as you would at a stop sign",
+   "new": "Come to a full stop each time, the same as you would at a stop sign"
+  },
+  "permit_q9_a0": {
+   "old": "Stop to let them in",
+   "new": "Stop in the circle to let the driver in"
+  },
+  "permit_q9_a3": {
+   "old": "Honk and brake",
+   "new": "Slow down and wave the other driver in"
+  },
+  "permit_q10_a0": {
+   "old": "Only the distance travelled while the brakes are applied",
+   "new": "Braking distance alone"
+  },
+  "permit_q10_a2": {
+   "old": "Speed × time",
+   "new": "Speed × reaction time"
+  },
+  "permit_q10_a3": {
+   "old": "Tire grip × weight",
+   "new": "Braking distance + skid distance"
+  },
+  "permit_q11_q": {
+   "old": "If you double your speed, your braking distance approximately:",
+   "new": "If you double your speed, what happens to your braking distance?"
+  },
+  "permit_q11_a0": {
+   "old": "Doubles",
+   "new": "It is about 2 times longer"
+  },
+  "permit_q11_a1": {
+   "old": "Stays the same, since brakes are rated for speed",
+   "new": "It stays about the same"
+  },
+  "permit_q11_a2": {
+   "old": "Quadruples (4× longer)",
+   "new": "It is about 4 times longer"
+  },
+  "permit_q11_a3": {
+   "old": "Triples",
+   "new": "It is about 3 times longer"
+  },
+  "permit_q13_a0": {
+   "old": "Car lengths (two cars at any speed)",
+   "new": "Car lengths (two cars is enough)"
+  },
+  "permit_q13_a2": {
+   "old": "Feet (always 50)",
+   "new": "Feet (100 feet at highway speed)"
+  },
+  "permit_q13_a3": {
+   "old": "Meters (always 10)",
+   "new": "Car lengths (five cars at any speed)"
+  },
+  "permit_q14_a0": {
+   "old": "Is the same as dry",
+   "new": "It is the same as dry if you have ABS"
+  },
+  "permit_q14_a2": {
+   "old": "Is about half",
+   "new": "It is about 10% longer"
+  },
+  "permit_q14_a3": {
+   "old": "Depends only on brake age",
+   "new": "It is at least four times longer"
+  },
+  "permit_q15_a0": {
+   "old": "Brake hard and hold the pedal down",
+   "new": "Brake hard and hold the pedal down until the car stops"
+  },
+  "permit_q15_a1": {
+   "old": "Steer sharply the opposite way to counter it, then straighten up fast",
+   "new": "Steer sharply the other way, then straighten up fast"
+  },
+  "permit_q16_a0": {
+   "old": "Swerve sharply",
+   "new": "Swerve sharply into the other lane to go around it"
+  },
+  "permit_q16_a2": {
+   "old": "Speed up to pass before it",
+   "new": "Speed up to get past before it reaches your lane"
+  },
+  "permit_q16_a3": {
+   "old": "Flash your high beams and accelerate",
+   "new": "Flash your high beams and keep your speed"
+  },
+  "permit_q17_a2": {
+   "old": "Only after dark, never in daylight",
+   "new": "After dark, with almost none at dusk or dawn"
+  },
+  "permit_q17_a3": {
+   "old": "Only during the winter months",
+   "new": "In the winter months, when food is scarce"
+  },
+  "permit_q18_a2": {
+   "old": "Inside tunnels",
+   "new": "Roads just treated with salt"
+  },
+  "permit_q18_a3": {
+   "old": "Gravel roads",
+   "new": "Gravel and dirt back roads"
+  },
+  "permit_q19_a0": {
+   "old": "All year",
+   "new": "November 1 to April 15"
+  },
+  "permit_q19_a2": {
+   "old": "Only in January and February",
+   "new": "December 1 to March 31"
+  },
+  "permit_q19_a3": {
+   "old": "Never",
+   "new": "Whenever snow is in the forecast"
+  },
+  "permit_q20_a2": {
+   "old": "Install tire chains on the drive wheels",
+   "new": "Install tire chains or studded tires on the drive wheels from December through March"
+  },
+  "permit_q20_a3": {
+   "old": "Use only winter-rated windshield washer fluid",
+   "new": "Switch to winter-rated windshield washer fluid"
+  },
+  "permit_q22_a2": {
+   "old": "Construction zone",
+   "new": "A construction or work zone ahead"
+  },
+  "permit_q22_a3": {
+   "old": "Guide / direction",
+   "new": "Guide information, such as an exit"
+  },
+  "permit_q23_a1": {
+   "old": "Scenic route",
+   "new": "Scenic route ahead"
+  },
+  "permit_q23_a2": {
+   "old": "Hospital or medical services ahead",
+   "new": "Hospital services ahead"
+  },
+  "permit_q23_a3": {
+   "old": "Railroad",
+   "new": "Railroad crossing"
+  },
+  "permit_q24_q": {
+   "old": "A fluorescent yellow-green pentagon sign indicates:",
+   "new": "What does a five-sided, yellow-green sign mean?"
+  },
+  "permit_q24_a0": {
+   "old": "Hospital",
+   "new": "Bicycle route or shared bike lane"
+  },
+  "permit_q24_a2": {
+   "old": "Rest area",
+   "new": "Slow-moving vehicle"
+  },
+  "permit_q25_q": {
+   "old": "A green rectangular sign typically shows:",
+   "new": "What does a green rectangular sign usually show?"
+  },
+  "permit_q26_a0": {
+   "old": "Legal in Maine on rural roads",
+   "new": "Legal on rural roads where there is little traffic"
+  },
+  "permit_q26_a2": {
+   "old": "Only illegal for under-21 drivers",
+   "new": "Illegal for drivers under 21, but legal for adults"
+  },
+  "permit_q27_a0": {
+   "old": "Not at all",
+   "new": "It gets much faster"
+  },
+  "permit_q27_a1": {
+   "old": "By 0-10%, barely at all",
+   "new": "It hardly changes"
+  },
+  "permit_q27_a3": {
+   "old": "It improves",
+   "new": "It gets a bit faster"
+  },
+  "permit_q28_a0": {
+   "old": "Drink more coffee and continue",
+   "new": "Drink coffee or an energy drink and keep driving"
+  },
+  "permit_q29_a1": {
+   "old": "Coasting to stoplights",
+   "new": "Coasting up to red lights while in gear"
+  },
+  "permit_q29_a2": {
+   "old": "Jackrabbit starts and hard braking",
+   "new": "Very fast starts and hard braking"
+  },
+  "permit_q29_a3": {
+   "old": "Drafting behind trucks",
+   "new": "Driving at a steady 55 mph on the highway"
+  },
+  "permit_q30_q": {
+   "old": "Aerodynamic drag increases with speed:",
+   "new": "How does air drag on a car change as speed goes up?"
+  },
+  "permit_q30_a2": {
+   "old": "Not at all",
+   "new": "It stays about the same"
+  },
+  "permit_q30_a3": {
+   "old": "Only above 100 mph",
+   "new": "It drops as the car cuts through the air"
+  },
+  "permit_q32_a0": {
+   "old": "They use more gas on highways",
+   "new": "They use more gas at steady highway speeds"
+  },
+  "permit_q32_a2": {
+   "old": "City roads are smoother",
+   "new": "City roads are smoother and have less wind"
+  },
+  "permit_q32_a3": {
+   "old": "The battery only works at low speed, so the engine rests in town",
+   "new": "The tires roll more easily at low city speeds"
+  },
+  "permit_q33_q": {
+   "old": "Which of these is the LEAST effective way to save fuel?",
+   "new": "Which of these does NOT save fuel?"
+  },
+  "permit_q33_a1": {
+   "old": "Removing a roof rack you are not using from the car",
+   "new": "Removing a roof rack you are not using"
+  },
+  "permit_q33_a2": {
+   "old": "Idling with the AC off to \"warm up\" for 5 minutes",
+   "new": "Idling for 5 minutes to warm up the engine"
+  },
+  "permit_q36_q": {
+   "old": "A Maine intermediate driver during the 270-day restriction period may NOT:",
+   "new": "During the 270-day intermediate license period in Maine, what is a new driver NOT allowed to do?"
+  },
+  "permit_q36_a0": {
+   "old": "Drive at any time of the day or night without limits",
+   "new": "Drive to school or work between 5 AM and midnight"
+  },
+  "permit_q36_a2": {
+   "old": "Drive on interstate highways under any circumstances",
+   "new": "Drive on interstate highways, even with a parent in the car"
+  },
+  "permit_q36_a3": {
+   "old": "Drive alone without a supervising licensed adult present at any time, day or night, for the full 270 days",
+   "new": "Drive alone: a licensed adult must ride in the front passenger seat for all of those 270 days"
+  },
+  "permit_q37_a0": {
+   "old": "Maximum legal speed",
+   "new": "How long to wait at a four-way stop"
+  },
+  "permit_q38_a2": {
+   "old": "Brake hard immediately to stop the car",
+   "new": "Brake hard right away to stop the car where it is"
+  },
+  "permit_q38_a3": {
+   "old": "Accelerate to climb the lip back onto the pavement before the car slows down",
+   "new": "Speed up to climb the edge back onto the pavement before you slow"
+  },
+  "permit_q40_a0": {
+   "old": "While changing lanes",
+   "new": "At the moment you start to change lanes"
+  },
+  "permit_q40_a2": {
+   "old": "Only if other cars are close behind you",
+   "new": "When another car is close behind you"
+  },
+  "permit_q40_a3": {
+   "old": "Never on empty roads",
+   "new": "After you have checked that the lane is clear, as you move over"
+  },
+  "permit_q42_a0": {
+   "old": "Always brake and turn at the same time to use all the grip",
+   "new": "Brake and turn together to use all the grip you have"
+  },
+  "permit_q42_a2": {
+   "old": "Drive only in circles",
+   "new": "Hold a steady speed through each curve"
+  },
+  "permit_q42_a3": {
+   "old": "Ignore ABS warnings",
+   "new": "Steer in smooth circles when the car slides"
+  },
+  "permit_q43_a0": {
+   "old": "In the rearview mirror only, to keep both hands on the wheel",
+   "new": "In the rearview mirror, to keep both hands on the wheel"
+  },
+  "permit_q43_a2": {
+   "old": "Straight ahead",
+   "new": "At the left side mirror"
+  },
+  "permit_q43_a3": {
+   "old": "At the side mirrors only",
+   "new": "At the backup camera screen, since it shows it all"
+  },
+  "permit_q44_a1": {
+   "old": "Move left to give them room",
+   "new": "Move left to give them room to pass on your right side"
+  },
+  "permit_q44_a3": {
+   "old": "Keep driving but slow down",
+   "new": "Keep driving, but slow down so that they can go around"
+  },
+  "permit_q45_a0": {
+   "old": "Follow it closely to get through the traffic it clears",
+   "new": "Follow it closely to get through traffic"
+  },
+  "permit_q46_q": {
+   "old": "Going from 15 MPG to 20 MPG saves MORE fuel than going from 35 to 50 MPG for the same distance. True or false?",
+   "new": "Over the same distance, which change saves the most fuel?"
+  },
+  "permit_q46_a0": {
+   "old": "True — MPG is non-linear",
+   "new": "From 15 MPG to 20 MPG"
+  },
+  "permit_q46_a1": {
+   "old": "False — higher MPG always saves more",
+   "new": "From 35 MPG to 50 MPG"
+  },
+  "permit_q46_a2": {
+   "old": "They save the same",
+   "new": "From 50 MPG to 70 MPG"
+  },
+  "permit_q46_a3": {
+   "old": "It depends on the vehicle weight",
+   "new": "From 25 MPG to 30 MPG"
+  },
+  "permit_q46_exp": {
+   "old": "TRUE. Over 10,000 miles: 15→20 MPG saves 167 gallons. 35→50 MPG saves only 86 gallons. This is the \"MPG illusion\" — switching from a gas-guzzler to mediocre saves more than mediocre to excellent.",
+   "new": "Over 10,000 miles: 15 to 20 MPG saves about 167 gallons. 35 to 50 MPG saves about 86. 25 to 30 saves about 67, and 50 to 70 saves about 57. The lower the MPG you start from, the more fuel each extra MPG saves."
+  },
+  "permit_q48_q": {
+   "old": "At an uncontrolled intersection (no signs, no lights), who has the right-of-way?",
+   "new": "At an uncontrolled intersection (no signs, no lights), who has the right-of-way when two vehicles arrive at about the same time?"
+  },
+  "permit_q48_a3": {
+   "old": "The first to honk",
+   "new": "The vehicle on the wider road"
+  },
+  "permit_q49_a2": {
+   "old": "Only the traffic queued up behind you",
+   "new": "Traffic that is waiting behind you in your own lane"
+  },
+  "permit_q49_a3": {
+   "old": "Pedestrians only, not oncoming vehicles",
+   "new": "Pedestrians in the crosswalk, but not oncoming cars"
+  },
+  "permit_q50_a0": {
+   "old": "Drive to the nearest gas station",
+   "new": "Drive to the nearest gas station, then check the oil"
+  },
+  "permit_q50_a3": {
+   "old": "Add water to the engine",
+   "new": "Add coolant to the radiator"
+  },
+  "permit_q51_a0": {
+   "old": "Your tires are worn out and need replacing very soon",
+   "new": "Your tires are worn and need replacing"
+  },
+  "permit_q51_a2": {
+   "old": "Your brakes are worn",
+   "new": "Your brake pads are worn"
+  },
+  "permit_q51_a3": {
+   "old": "Oil is low",
+   "new": "A tire is overinflated by a few PSI"
+  },
+  "permit_q52_a0": {
+   "old": "The radio",
+   "new": "The radio and the volume"
+  },
+  "permit_q52_a2": {
+   "old": "The AC temperature",
+   "new": "The heat or AC temperature"
+  },
+  "permit_q55_a2": {
+   "old": "Reverse to make room",
+   "new": "Back up into the space behind you to make room for it"
+  },
+  "permit_q55_a3": {
+   "old": "Ignore it until the light changes",
+   "new": "Stay where you are until the light turns green, even when there is clear room to move over to the right"
+  },
+  "permit_q56_a0": {
+   "old": "Immediately after it passes",
+   "new": "Right after it passes, before other cars fill the gap"
+  },
+  "permit_q56_a2": {
+   "old": "60 seconds exactly",
+   "new": "At least 60 seconds by the clock, whatever the traffic"
+  },
+  "permit_q56_a3": {
+   "old": "Until all of the surrounding traffic has resumed its normal speed",
+   "new": "Until the traffic around you has returned to its normal speed"
+  },
+  "permit_q57_a0": {
+   "old": "Stop in the travel lane immediately",
+   "new": "Stop in the travel lane at once, wherever you are"
+  },
+  "permit_q57_a3": {
+   "old": "Speed up to clear the area",
+   "new": "Speed up to clear the area before it reaches you"
+  },
+  "permit_q58_a0": {
+   "old": "Only at the car directly in front",
+   "new": "At the car directly in front of you"
+  },
+  "permit_q58_a2": {
+   "old": "Only at the speedometer",
+   "new": "About 2-3 seconds ahead of your hood"
+  },
+  "permit_q58_a3": {
+   "old": "Only in the mirrors",
+   "new": "Mostly at your mirrors and the gauges"
+  },
+  "permit_q60_a2": {
+   "old": "Pull over immediately",
+   "new": "Pull onto the shoulder right away and wait there until the rain stops"
+  },
+  "permit_q60_a3": {
+   "old": "Turn on hazard flashers and continue",
+   "new": "Turn on your hazard flashers and keep the same speed"
+  },
+  "permit_q61_a2": {
+   "old": "Speed up to beat the train",
+   "new": "Stop only if you can see or hear a train coming near"
+  },
+  "permit_q61_a3": {
+   "old": "Honk and proceed",
+   "new": "Cross slowly if no train is in sight on either side"
+  },
+  "permit_q62_a0": {
+   "old": "Stop the car faster on all road surfaces",
+   "new": "Stop the car in a shorter distance on ice"
+  },
+  "permit_q62_a2": {
+   "old": "Replace the handbrake",
+   "new": "Take the place of the parking brake on hills"
+  },
+  "permit_q62_a3": {
+   "old": "Prevent tire wear",
+   "new": "Keep the brake pads from wearing out early"
+  },
+  "permit_q63_a0": {
+   "old": "High beams",
+   "new": "High beams, to see farther ahead"
+  },
+  "permit_q63_a3": {
+   "old": "Parking lights only",
+   "new": "Parking lights, to cut the glare"
+  },
+  "permit_q65_a2": {
+   "old": "Force your way in at any speed",
+   "new": "Slow to about half the speed of traffic, then merge"
+  },
+  "permit_q65_a3": {
+   "old": "Use the shoulder to accelerate",
+   "new": "Use the shoulder as an extra lane to get up to speed"
+  },
+  "permit_q68_q": {
+   "old": "Hydroplaning is most likely to happen at speeds above:",
+   "new": "At about what speed can hydroplaning begin?"
+  },
+  "permit_q68_a1": {
+   "old": "25 mph on any wet road, regardless of tread depth",
+   "new": "About 20 mph on a wet road, even with new tires"
+  },
+  "permit_q68_a3": {
+   "old": "70 mph — below highway speed tires always grip",
+   "new": "Above 70 mph — below that, good tires keep their grip"
+  },
+  "permit_q69_a3": {
+   "old": "Speed up briefly to pull the car straight, then coast down to a gentle stop",
+   "new": "Speed up briefly to pull the car straight, then coast"
+  },
+  "permit_q71_q": {
+   "old": "In the \"four-second rule\" for following another car, the number is the minimum:",
+   "new": "In the \"four-second rule\" for following another car, what does the number measure?"
+  },
+  "permit_q71_a0": {
+   "old": "Distance in car lengths",
+   "new": "The distance in car lengths"
+  },
+  "permit_q71_a2": {
+   "old": "Brake-pad reaction time",
+   "new": "The brake-pad reaction time"
+  },
+  "permit_q72_a0": {
+   "old": "Swerve into the next lane immediately without checking mirrors",
+   "new": "Swerve into the next lane at once, without checking your mirrors"
+  },
+  "permit_q72_a2": {
+   "old": "Slam on the horn",
+   "new": "Trust the automatic emergency braking to stop the car in time"
+  },
+  "permit_q72_a3": {
+   "old": "Speed up and pass",
+   "new": "Tap the horn and stay close behind so they keep moving"
+  },
+  "permit_q74_a0": {
+   "old": "Stop completely until the lights stop flashing, as always",
+   "new": "Stop until the red lights stop flashing"
+  },
+  "permit_q74_a1": {
+   "old": "Slow down but continue past the bus",
+   "new": "Stop briefly, then drive past the bus"
+  },
+  "permit_q75_a2": {
+   "old": "Apply gentle pressure",
+   "new": "Press the pedal gently so that the wheels do not lock up"
+  },
+  "permit_q75_a3": {
+   "old": "Use the parking brake",
+   "new": "Pull the parking brake to help the car stop"
+  },
+  "permit_q76_a0": {
+   "old": "A speed-limit-free area on the highway",
+   "new": "A highway area with no posted speed limit"
+  },
+  "permit_q76_a2": {
+   "old": "A no-passing zone",
+   "new": "A stretch of road where passing is not allowed"
+  },
+  "permit_q76_a3": {
+   "old": "A school zone at night",
+   "new": "A school zone where phones may not be used"
+  },
+  "permit_q77_q": {
+   "old": "You can be charged with OUI (Operating Under Influence) in Maine for driving while impaired by:",
+   "new": "In Maine, which substances can lead to an OUI (operating under the influence) charge if they impair your driving?"
+  },
+  "permit_q77_a0": {
+   "old": "Alcohol only, since that is what OUI covers",
+   "new": "Alcohol alone; drugs and medicines fall under a different law"
+  },
+  "permit_q77_a3": {
+   "old": "Only when a breath test shows a BAC above 0.08",
+   "new": "Alcohol and marijuana, but not medicine from a pharmacy"
+  },
+  "permit_q78_a0": {
+   "old": "Always legal, as long as you keep both hands on the wheel while talking",
+   "new": "Legal if you keep both hands on the wheel while you talk"
+  },
+  "permit_q78_a2": {
+   "old": "Banned only for drivers under the age of 18",
+   "new": "Banned for drivers under 18, and legal for adults"
+  },
+  "permit_q78_a3": {
+   "old": "Banned only within posted school zones",
+   "new": "Banned in school and work zones, and legal elsewhere"
+  },
+  "permit_q79_q": {
+   "old": "When approaching a stopped emergency vehicle, tow truck, or roadside worker with lights flashing, Maine law says you must:",
+   "new": "An emergency vehicle or tow truck is stopped at the roadside with its lights flashing. What does Maine law require you to do?"
+  },
+  "permit_q79_a0": {
+   "old": "Continue at the posted speed past the scene",
+   "new": "Continue past the scene at the posted speed, staying in your lane"
+  },
+  "permit_q79_a3": {
+   "old": "Come to a complete stop until they wave you past",
+   "new": "Come to a complete stop in your lane and wait there until someone waves you past"
+  },
+  "permit_q81_a2": {
+   "old": "Nothing at all, and let the two insurance companies handle it between them",
+   "new": "Nothing; the two insurance companies will handle it"
+  },
+  "permit_q81_a3": {
+   "old": "Only exchange details if a police officer is present",
+   "new": "Details go to the police, not to the other driver"
+  },
+  "permit_q84_q": {
+   "old": "Tailgating (following too closely) is dangerous because:",
+   "new": "Why is tailgating (following too closely) dangerous?"
+  },
+  "permit_q84_a0": {
+   "old": "It saves fuel from drafting",
+   "new": "It makes your own brakes wear out sooner"
+  },
+  "permit_q84_a2": {
+   "old": "It makes the other driver go faster, which raises everyone's speed",
+   "new": "It makes the driver ahead speed up"
+  },
+  "permit_q84_a3": {
+   "old": "It only matters on highways",
+   "new": "It blocks the view in your rearview mirror"
+  },
+  "permit_q85_a0": {
+   "old": "Speed up to dry the brakes",
+   "new": "Speed up for a short distance to blow the brakes dry"
+  },
+  "permit_q85_a3": {
+   "old": "Pull over and wait 10 minutes",
+   "new": "Pull over and wait 10 minutes for the brakes to drain"
+  },
+  "permit_q86_q": {
+   "old": "Carbon monoxide from your car's exhaust is dangerous because:",
+   "new": "Why is carbon monoxide from a car's exhaust dangerous?"
+  },
+  "permit_q86_a2": {
+   "old": "It only affects diesel engines, which burn fuel less cleanly",
+   "new": "It comes mainly from diesel engines, which burn less cleanly"
+  },
+  "permit_q87_a0": {
+   "old": "Driving a small car",
+   "new": "You are driving a small, light car"
+  },
+  "permit_q87_a2": {
+   "old": "Driving during the day",
+   "new": "Traffic is light and the road is dry"
+  },
+  "permit_q87_a3": {
+   "old": "Driving well below the speed limit on an open highway",
+   "new": "You are driving well below the speed limit"
+  },
+  "permit_q88_a0": {
+   "old": "Ignore it, since cars always smell a little like gasoline after a fill-up",
+   "new": "Ignore it, since cars often smell of gasoline after a fill-up"
+  },
+  "permit_q88_a2": {
+   "old": "Speed up to blow the fumes out",
+   "new": "Speed up to blow the fumes out through the vents"
+  },
+  "permit_q88_a3": {
+   "old": "Turn on the AC to recirculate air",
+   "new": "Turn on the AC and set it to recirculate the air"
+  },
+  "permit_q89_a3": {
+   "old": "Worn brake pads, which always vibrate the steering wheel at speed",
+   "new": "Worn brake pads, which shake the steering wheel at speed"
+  },
+  "permit_q90_a0": {
+   "old": "A $100 fine and nothing beyond that",
+   "new": "A $100 fine, with no suspension for a first offense"
+  },
+  "permit_q90_a1": {
+   "old": "A written warning for a first offence, with no fine and no suspension",
+   "new": "A written warning for a first offense, with no fine and no suspension"
+  },
+  "permit_q90_a3": {
+   "old": "Loss of the vehicle registration only",
+   "new": "Loss of the vehicle registration, but you keep your driver's license"
+  },
+  "permit_q92_a0": {
+   "old": "Speed up to make it through",
+   "new": "Speed up so that you get through before it changes"
+  },
+  "permit_q92_a1": {
+   "old": "Cover the brake and be ready for it to change",
+   "new": "Hold your foot over the brake, ready to stop"
+  },
+  "permit_q92_a2": {
+   "old": "Honk to warn cross traffic",
+   "new": "Tap the horn to warn the cross traffic you are coming"
+  },
+  "permit_q97_q": {
+   "old": "Regenerative braking in electric and hybrid vehicles:",
+   "new": "What does regenerative braking do in an electric or hybrid car?"
+  },
+  "permit_q97_a3": {
+   "old": "Wears out the brake pads faster than normal",
+   "new": "Wears out the brake pads faster than in a normal car"
+  },
+  "permit_q99_a2": {
+   "old": "The GPS destination and the route it wants to take",
+   "new": "The GPS destination and the route that it wants you to take"
+  },
+  "permit_q99_a3": {
+   "old": "The fuel level and how far you can drive on it",
+   "new": "The fuel level and the range, because running out of fuel is the most common problem on the road"
+  },
+  "permit_q100_a3": {
+   "old": "Open the door and drag your foot to add friction to the road",
+   "new": "Shift into park right away so the transmission locks up"
+  },
+  "permit_q101_a0": {
+   "old": "Turn off the engine immediately",
+   "new": "Turn off the engine at once, before you do anything else"
+  },
+  "permit_q101_a3": {
+   "old": "Open the door and jump out",
+   "new": "Pump the gas pedal hard until it comes unstuck"
+  },
+  "permit_q102_a3": {
+   "old": "Keep your eyes closed and hold the wheel steady until the car stops",
+   "new": "Speed up so the wind pushes the hood back down"
+  },
+  "permit_q103_a0": {
+   "old": "Call 911 first",
+   "new": "Call 911 first, then wait inside the car with your seatbelt on until the rescuers arrive"
+  },
+  "permit_q103_a3": {
+   "old": "Try to start the engine",
+   "new": "Try to restart the engine and drive out of the water"
+  },
+  "permit_q104_a0": {
+   "old": "Driving at exactly the posted speed limit throughout the whole test route, even in bad weather",
+   "new": "Driving a few miles per hour under the posted limit on a clear, dry day"
+  },
+  "permit_q107_a2": {
+   "old": "Touching the curb with both of the right tires",
+   "new": "Touching the curb with both of the right tires, so the car cannot roll"
+  },
+  "permit_q107_a3": {
+   "old": "Anywhere between the two parked cars will do",
+   "new": "Anywhere between the two parked cars, as long as you are out of the lane"
+  },
+  "permit_q108_a2": {
+   "old": "Your speed in miles per hour, then halved",
+   "new": "Your speed in miles per hour, cut in half and counted in feet"
+  },
+  "permit_q108_a3": {
+   "old": "The length of two average cars end to end",
+   "new": "The length of two average cars parked end to end"
+  },
+  "permit_q109_a0": {
+   "old": "Mild speeding of a few miles per hour",
+   "new": "Speeding by a few miles per hour — you lose a little stopping room"
+  },
+  "permit_q109_a3": {
+   "old": "Driving one-handed while holding a drink",
+   "new": "Driving with one hand while holding a drink — a small loss of control"
+  },
+  "permit_q110_a2": {
+   "old": "Roll backward and try again",
+   "new": "Let the car roll back a little, then try again"
+  },
+  "permit_q110_a3": {
+   "old": "Shift to neutral",
+   "new": "Shift to neutral and hold the gas pedal down"
+  },
+  "permit_q111_q": {
+   "old": "Right-of-way at a T-intersection (no signs or signals):",
+   "new": "At a T-intersection with no signs or signals, what should you do?"
+  },
+  "permit_q111_a1": {
+   "old": "The car on the stem road always goes first",
+   "new": "Go first if you are the one turning"
+  },
+  "permit_q111_a2": {
+   "old": "The larger vehicle goes first",
+   "new": "Let the larger vehicle go first"
+  },
+  "permit_q111_a3": {
+   "old": "Whoever is going faster",
+   "new": "Go first if you are moving faster"
+  },
+  "permit_q112_a2": {
+   "old": "Slow traffic down before a sharp curve ahead",
+   "new": "Slow traffic down before a sharp curve or a stop sign that is coming up ahead"
+  },
+  "permit_q112_a3": {
+   "old": "Guide cyclists onto a safe riding line",
+   "new": "Guide cyclists onto a safe line at the edge of the road"
+  },
+  "permit_q113_a0": {
+   "old": "Directly behind the truck (drafting), where the truck blocks the wind for you",
+   "new": "Directly behind the truck, where it blocks the wind"
+  },
+  "permit_q113_a2": {
+   "old": "Beside the truck in the left lane",
+   "new": "Beside the truck in the left lane, level with the cab"
+  },
+  "permit_q113_a3": {
+   "old": "As close as possible to save fuel",
+   "new": "Just ahead of the truck's front bumper"
+  },
+  "permit_q114_q": {
+   "old": "In Maine, the earliest age at which the intermediate license restrictions can end is:",
+   "new": "In Maine, what is the youngest age at which the intermediate license limits can end?"
+  },
+  "permit_q114_a0": {
+   "old": "16 years old exactly",
+   "new": "On your 16th birthday"
+  },
+  "permit_q114_a2": {
+   "old": "17 years old exactly",
+   "new": "On your 17th birthday"
+  },
+  "permit_q114_a3": {
+   "old": "18 years old exactly",
+   "new": "On your 18th birthday"
+  },
+  "permit_q117_a0": {
+   "old": "Has no consequences",
+   "new": "It means the police must then let you drive home"
+  },
+  "permit_q117_a2": {
+   "old": "Is always the smart legal advice to follow",
+   "new": "It is your legal right, and carries no penalty"
+  },
+  "permit_q117_a3": {
+   "old": "Only matters if you fail it",
+   "new": "It leads to a penalty only if a court convicts you"
+  },
+  "permit_q120_q": {
+   "old": "Combining alcohol with sleep deprivation is dangerous because:",
+   "new": "Why is it dangerous to mix alcohol with too little sleep?"
+  },
+  "permit_q120_a2": {
+   "old": "It only matters at 0.08% BAC",
+   "new": "It becomes a problem once your BAC reaches 0.08%, and not before"
+  },
+  "permit_q120_a3": {
+   "old": "It only affects taller drivers",
+   "new": "A short nap before you drive clears the alcohol from your blood, so both problems go away"
+  },
+  "permit_q121_a0": {
+   "old": "Vitamin C or other daily supplements",
+   "new": "Vitamin C and other daily supplements, taken with a full meal"
+  },
+  "permit_q121_a3": {
+   "old": "Low-dose daily aspirin for heart health",
+   "new": "A low-dose aspirin, taken once a day to help protect the heart"
+  },
+  "permit_q122_q": {
+   "old": "Recreational marijuana is legal in Maine for adults 21+, but driving while impaired by marijuana is:",
+   "new": "Marijuana is legal in Maine for adults 21 and older. What is the law on driving while impaired by it?"
+  },
+  "permit_q122_a0": {
+   "old": "Legal if you have a medical card",
+   "new": "Legal if you have a medical marijuana card"
+  },
+  "permit_q122_a1": {
+   "old": "Legal as long as you can pass the officer's roadside breath test",
+   "new": "Legal if you pass a roadside breath test"
+  },
+  "permit_q122_a3": {
+   "old": "Only a fine",
+   "new": "A traffic ticket with a small fine"
+  },
+  "permit_q124_a0": {
+   "old": "Trust their judgment",
+   "new": "Trust their judgment; they know their own limits"
+  },
+  "permit_q124_a2": {
+   "old": "Drive slowly behind them as a backup",
+   "new": "Follow close behind them in your own car, as a safety backup"
+  },
+  "permit_q125_a0": {
+   "old": "Only once there is snow actually on the ground",
+   "new": "After the first snow has stayed on the ground for a full day"
+  },
+  "permit_q125_a2": {
+   "old": "Only if you regularly drive on dirt or unpaved roads, where the deeper tread helps in the mud",
+   "new": "When you drive mostly on dirt or unpaved roads, where the deeper tread helps in mud"
+  },
+  "permit_q125_a3": {
+   "old": "Never — modern all-season tires handle it fine",
+   "new": "There is no need: all-season tires handle a Maine winter"
+  },
+  "permit_q126_a0": {
+   "old": "Only the colour and styling of the sidewall lettering, which the makers change for marketing reasons",
+   "new": "Winter tires are harder and last longer, so they suit long highway trips better than driving on snow"
+  },
+  "permit_q126_a2": {
+   "old": "Winter tires are made only for trucks and SUVs",
+   "new": "Winter tires are made for trucks and SUVs, not cars"
+  },
+  "permit_q127_a0": {
+   "old": "No change — modern cars handle snow",
+   "new": "No change, since modern cars handle snow well"
+  },
+  "permit_q127_a1": {
+   "old": "About 10-20% below the posted limit",
+   "new": "About 10-20% below the posted speed limit"
+  },
+  "permit_q128_a2": {
+   "old": "Protect the engine by keeping the revs high and steady throughout, since low revs in snow let the engine stall and flood",
+   "new": "Keep the engine warm and stop it from stalling, so hold the revs high until the car moves"
+  },
+  "permit_q128_a3": {
+   "old": "Always work eventually, provided the vehicle has 4WD engaged",
+   "new": "Work in the end, as long as four-wheel drive is engaged"
+  },
+  "permit_q129_a0": {
+   "old": "Just a phone charger and a spare charging cable",
+   "new": "A phone charger and a spare cable, because help is a phone call away wherever you are in Maine"
+  },
+  "permit_q129_a3": {
+   "old": "Nothing — a call to roadside assistance covers it",
+   "new": "Nothing — a call to roadside assistance covers a breakdown"
+  },
+  "permit_q130_a2": {
+   "old": "A credit card or CD case",
+   "new": "Scraping a small viewing hole and letting the wipers do the rest"
+  },
+  "permit_q130_a3": {
+   "old": "Driving until it melts",
+   "new": "Driving off slowly and letting the heater melt it as you go"
+  },
+  "permit_q132_a3": {
+   "old": "Keep driving slowly and wait for the cabin heat to clear the glass, since the engine warms faster while moving",
+   "new": "Keep driving slowly and let the cabin heat clear the glass, since the engine warms faster on the move"
+  },
+  "permit_q134_q": {
+   "old": "Roads are typically MOST slippery when the air temperature is:",
+   "new": "At what air temperature are icy roads usually MOST slippery?"
+  },
+  "permit_q134_a2": {
+   "old": "Above 50°F",
+   "new": "Far below zero (-10°F or colder)"
+  },
+  "permit_q134_a3": {
+   "old": "During heavy snowfall only",
+   "new": "Well above freezing (40-45°F)"
+  },
+  "permit_q135_a2": {
+   "old": "It only forms overnight, never in daytime",
+   "new": "It forms at night and is gone soon after sunrise"
+  },
+  "permit_q135_a3": {
+   "old": "It melts faster and refreezes behind you as you drive over it",
+   "new": "It melts and refreezes behind you as you drive"
+  },
+  "permit_q136_a0": {
+   "old": "Stop where you are in the travel lane and put hazards on",
+   "new": "Stop where you are in the travel lane and put your hazard lights on right away"
+  },
+  "permit_q136_a3": {
+   "old": "Pull onto the shoulder and stop with all your lights off",
+   "new": "Pull onto the shoulder and stop with all of your lights switched off, so that drivers behind do not follow you off the road"
+  },
+  "permit_q137_a0": {
+   "old": "Only after the pedestrian is fully in your lane and has made eye contact with you, the driver",
+   "new": "After the pedestrian is fully in your lane and has made eye contact with you, the driver"
+  },
+  "permit_q137_a2": {
+   "old": "Only if a crossing guard is present",
+   "new": "When a crossing guard or a police officer is there to direct traffic"
+  },
+  "permit_q137_a3": {
+   "old": "Only during school hours",
+   "new": "During school hours, or when the crosswalk lights are flashing"
+  },
+  "permit_q138_a2": {
+   "old": "Honk so they wait for you",
+   "new": "Tap the horn so they wait for you to turn"
+  },
+  "permit_q138_a3": {
+   "old": "Continue if you have a green light",
+   "new": "Go ahead with the turn, because the green light is yours too"
+  },
+  "permit_q139_a3": {
+   "old": "Pass within about a foot of them so that they know to get out of the way; jaywalkers have no legal protection and the driver has no duty of care outside a marked crosswalk",
+   "new": "Hold your speed and steer around them, because outside a marked crosswalk a driver has no duty of care"
+  },
+  "permit_q140_q": {
+   "old": "When backing out of a driveway, the highest-risk pedestrian is:",
+   "new": "When you back out of a driveway, which person is most at risk?"
+  },
+  "permit_q140_a0": {
+   "old": "An adult walking along the sidewalk behind your car",
+   "new": "An adult walking along the sidewalk behind your car, who can see you"
+  },
+  "permit_q140_a3": {
+   "old": "No one — a backup camera removes the risk entirely",
+   "new": "No one — a backup camera removes the risk of hitting a person"
+  },
+  "permit_q141_q": {
+   "old": "On a residential street with children playing nearby (no posted limit change), Maine law expects you to:",
+   "new": "Children are playing near a residential street. The speed limit sign has not changed. What does Maine law expect you to do?"
+  },
+  "permit_q141_a0": {
+   "old": "Drive the posted limit, since that is exactly what the law allows on that street",
+   "new": "Drive the posted limit, since that is what the law allows"
+  },
+  "permit_q141_a2": {
+   "old": "Honk to alert the children",
+   "new": "Tap the horn as you pass and keep your speed"
+  },
+  "permit_q141_a3": {
+   "old": "Continue normally",
+   "new": "Keep your speed until a child steps into the road"
+  },
+  "permit_q142_a0": {
+   "old": "Slow down and pass the guard carefully",
+   "new": "Slow to a walking pace and pass behind the guard and the children"
+  },
+  "permit_q142_a3": {
+   "old": "Sound the horn before passing the crossing",
+   "new": "Stop, then go on as soon as the children are out of your own lane"
+  },
+  "permit_q143_a2": {
+   "old": "School is closed and the zone does not apply",
+   "new": "School is closed for the day, so the zone limit does not apply"
+  },
+  "permit_q143_a3": {
+   "old": "The same as any regular yellow traffic light",
+   "new": "The same as a regular yellow traffic light at an intersection"
+  },
+  "permit_q144_a0": {
+   "old": "A volunteer helping out at the crosswalk during school hours",
+   "new": "A crossing volunteer — slow down and follow their hand signals"
+  },
+  "permit_q144_a2": {
+   "old": "A construction worker directing traffic",
+   "new": "A road worker directing traffic — wait for their hand signal"
+  },
+  "permit_q144_a3": {
+   "old": "A tour guide leading a walking group",
+   "new": "A hiker with a walking stick — no special rule applies here"
+  },
+  "permit_q145_a0": {
+   "old": "Pass them in the next lane so that traffic keeps moving",
+   "new": "Pass slowly in the next lane so that traffic keeps moving, as long as you cannot see anyone in the crosswalk"
+  },
+  "permit_q145_a2": {
+   "old": "Sound the horn to encourage the front car to move on",
+   "new": "Sound the horn to tell the driver in front to move on"
+  },
+  "permit_q145_a3": {
+   "old": "Pass them on the right, where the lane ahead looks clear, keeping your speed down in case the pedestrian steps out",
+   "new": "Wait three seconds, then drive around the stopped car on whichever side is open, since the walker has had time"
+  },
+  "permit_q146_a0": {
+   "old": "From the front of the bus only, never behind",
+   "new": "From the front of the bus, where the driver can see them"
+  },
+  "permit_q146_a2": {
+   "old": "Only after the bus has pulled away again",
+   "new": "From the sidewalk, after the bus has pulled away"
+  },
+  "permit_q146_a3": {
+   "old": "Only from marked and designated waiting zones, where the driver can see them clearly",
+   "new": "From the far side of the street, after the bus has gone"
+  },
+  "permit_q149_a0": {
+   "old": "Pull over immediately at high speed",
+   "new": "Pull over at once, even at high speed, before the wheel locks"
+  },
+  "permit_q149_a2": {
+   "old": "Slam the brakes",
+   "new": "Brake as hard as you can in your lane until the car stops"
+  },
+  "permit_q149_a3": {
+   "old": "Take your hands off the wheel and let the car straighten itself, since fighting a heavy wheel at speed pulls you off line",
+   "new": "Loosen your grip so the car can straighten itself, then brake hard to stop where you are"
+  },
+  "permit_q151_a2": {
+   "old": "Stop driving immediately and have the vehicle towed to a shop",
+   "new": "Stop driving at once and have the car towed to a shop, because the regular brakes are about to fail too"
+  },
+  "permit_q152_a3": {
+   "old": "A sensor glitch that will clear itself after the next restart or two of the engine",
+   "new": "A sensor glitch that clears itself after a restart"
+  },
+  "permit_q153_a0": {
+   "old": "Stay inside the car and call 911 to report the stalled vehicle",
+   "new": "Stay in the car with your seatbelt on and call 911 to report the stall"
+  },
+  "permit_q153_a3": {
+   "old": "Drive forward through the crossing gates to get off the tracks",
+   "new": "Run straight down the tracks, away from the train, as fast as you can"
+  },
+  "permit_q155_a2": {
+   "old": "Keep going, since someone else has almost certainly called it in already",
+   "new": "Keep going, since someone else has surely phoned 911"
+  },
+  "permit_q156_a0": {
+   "old": "Always, because getting them clear of the vehicle is the first priority at any scene",
+   "new": "Right away, because getting them out of the car is the first priority"
+  },
+  "permit_q156_a3": {
+   "old": "Never, under any circumstance, even if the vehicle is burning",
+   "new": "At no time, even if the vehicle is on fire or in the water"
+  },
+  "permit_q160_q": {
+   "old": "You see another driver having a medical emergency (clutching chest, slumping). You should:",
+   "new": "You see another driver slump over the wheel in a medical emergency. What should you do?"
+  },
+  "permit_q160_a1": {
+   "old": "Horn to alert them, follow safely, call 911 with location; do not ram them",
+   "new": "Sound your horn, follow safely, call 911 with location; do not ram them"
+  },
+  "permit_q161_a3": {
+   "old": "Keep driving to the nearest fire station and ask them for help, since they can put it out faster than anyone you could call from the roadside",
+   "new": "Keep driving to the nearest fire station and ask the firefighters there to put the fire out for you"
+  },
+  "permit_q162_a0": {
+   "old": "Every 1,000 miles, regardless of oil type or driving conditions, as the old rule said",
+   "new": "About every 1,000 miles, the same as older engines on regular oil"
+  },
+  "permit_q162_a2": {
+   "old": "Once a year regardless of mileage or how the car is driven",
+   "new": "About every 50,000 miles, at the major service"
+  },
+  "permit_q162_a3": {
+   "old": "Never, as long as the oil warning light has not come on",
+   "new": "Only when the engine starts to sound rough"
+  },
+  "permit_q163_q": {
+   "old": "Coolant (antifreeze) flush interval is typically:",
+   "new": "How often does coolant (antifreeze) usually need to be changed?"
+  },
+  "permit_q164_a0": {
+   "old": "Normal break-in noise from new brake pads bedding in",
+   "new": "Normal noise from new brake pads wearing in — it goes away by itself after a few hundred miles of driving"
+  },
+  "permit_q164_a3": {
+   "old": "An engine problem that happens to show up under braking",
+   "new": "An engine problem that happens to show up when you brake hard"
+  },
+  "permit_q165_q": {
+   "old": "Car batteries typically last:",
+   "new": "How long does a car battery usually last?"
+  },
+  "permit_q166_q": {
+   "old": "Wiper blades should be replaced approximately:",
+   "new": "About how often should you replace wiper blades?"
+  },
+  "permit_q167_q": {
+   "old": "Engine air filter should be replaced approximately:",
+   "new": "About how often should you replace the engine air filter?"
+  },
+  "permit_q167_a0": {
+   "old": "At every single oil change, no matter the mileage",
+   "new": "At each oil change, since a filter cannot be reused once it is removed"
+  },
+  "permit_q167_a3": {
+   "old": "Only once, at the 100,000-mile major service",
+   "new": "One time in the life of the car, at the 100,000-mile major service"
+  },
+  "permit_q169_q": {
+   "old": "Transmission fluid in a typical automatic should be:",
+   "new": "How should you look after the transmission fluid in a typical automatic car?"
+  },
+  "permit_q169_a0": {
+   "old": "Never checked or changed for the life of the vehicle",
+   "new": "Change it only if the car stops shifting gears at all"
+  },
+  "permit_q169_a1": {
+   "old": "Checked annually and changed on the maker's schedule (30,000-100,000 miles)",
+   "new": "Check it yearly and change it on the maker's schedule (30,000-100,000 miles)"
+  },
+  "permit_q169_a2": {
+   "old": "Replaced every 1,000 miles along with the engine oil",
+   "new": "Replace it every 1,000 miles, along with the engine oil"
+  },
+  "permit_q169_a3": {
+   "old": "Topped off with ordinary motor oil whenever the level on the dipstick is low",
+   "new": "Top it off with ordinary motor oil when the dipstick reads low"
+  },
+  "permit_q171_a3": {
+   "old": "Wait until both bulbs have failed, then replace them together",
+   "new": "Wait until both bulbs have failed and then replace them together, so that the two beams match"
+  },
+  "permit_q172_q": {
+   "old": "Maine intermediate license curfew is in effect:",
+   "new": "When is the Maine intermediate license curfew in effect?"
+  },
+  "permit_q172_a0": {
+   "old": "From 10 PM until 5 AM every night",
+   "new": "From 10 PM until 5 AM, on school nights"
+  },
+  "permit_q172_a2": {
+   "old": "There is no curfew for intermediate drivers",
+   "new": "There is no curfew; the intermediate limits cover passengers and phones"
+  },
+  "permit_q172_a3": {
+   "old": "From 8 PM until 6 AM on every night of the week for the whole first year",
+   "new": "From 8 PM until 6 AM, each night, for the first year you hold the license"
+  },
+  "permit_q174_q": {
+   "old": "A Maine driver's ed program for teens requires approximately:",
+   "new": "About how much instruction does a Maine driver education course for teens include?"
+  },
+  "permit_q174_a0": {
+   "old": "No formal requirement at all beyond passing the road test and the written knowledge exam at the BMV",
+   "new": "There is no set amount; the school decides how many hours each student needs"
+  },
+  "permit_q174_a2": {
+   "old": "About 5 hours of combined instruction in total",
+   "new": "About 5 hours of classroom and driving time in total"
+  },
+  "permit_q174_a3": {
+   "old": "A full 100 hours of combined instruction in total",
+   "new": "A full 100 hours of classroom and driving time in total"
+  },
+  "permit_q175_q": {
+   "old": "A Maine intermediate driver violates the passenger, curfew, or mobile-device restriction. The restriction period:",
+   "new": "A Maine intermediate driver breaks the passenger, curfew, or phone rule. What happens to the restriction period?"
+  },
+  "permit_q175_a0": {
+   "old": "Is unaffected by any such violation",
+   "new": "Nothing changes for the period; you just pay a fine"
+  },
+  "permit_q175_a1": {
+   "old": "Is extended by another 270 days and can include fines/suspension",
+   "new": "It is extended by 270 more days, and the license is suspended"
+  },
+  "permit_q175_a2": {
+   "old": "Means a permanent licence suspension and a new road test before it is reinstated",
+   "new": "It ends, and the license is taken away forever"
+  },
+  "permit_q175_a3": {
+   "old": "Results in a written warning only",
+   "new": "It is extended by 30 days for each rule that was broken"
+  },
+  "permit_q176_a0": {
+   "old": "Anyone who currently holds a driver licence",
+   "new": "A driver who is 18 or older and holds a full license"
+  },
+  "permit_q176_a2": {
+   "old": "Only a parent or a legal guardian may do it",
+   "new": "A parent or legal guardian, and no other person"
+  },
+  "permit_q176_a3": {
+   "old": "Only a paid, state-certified driving instructor riding in the front passenger seat",
+   "new": "Only a paid, state-certified instructor, and no other person"
+  },
+  "permit_q178_a1": {
+   "old": "Road end",
+   "new": "A rest area with restrooms ahead"
+  },
+  "permit_q178_a2": {
+   "old": "Roundabout",
+   "new": "A roundabout ahead"
+  },
+  "permit_q179_q": {
+   "old": "A blue rectangular sign typically indicates:",
+   "new": "What does a blue rectangular sign usually tell you?"
+  },
+  "permit_q180_q": {
+   "old": "A brown rectangular sign typically indicates:",
+   "new": "What does a brown rectangular sign usually point to?"
+  },
+  "permit_q180_a0": {
+   "old": "The maximum posted speed limit on this roadway for cars, trucks, and motorcycles",
+   "new": "The posted speed limit for cars, trucks, and motorcycles"
+  },
+  "permit_q181_q": {
+   "old": "A snowmobile is approaching a public road in Maine. Before crossing, the operator must:",
+   "new": "A snowmobile comes to a public road in Maine. What must the rider do before crossing?"
+  },
+  "permit_q181_a2": {
+   "old": "Honk and proceed",
+   "new": "Slow down, and cross if no car is within sight"
+  },
+  "permit_q181_a3": {
+   "old": "Wait for a sled train to form",
+   "new": "Wait for other sleds, then cross together as a group"
+  },
+  "permit_q182_a0": {
+   "old": "Speed up to clear the crossing",
+   "new": "Speed up to clear the crossing before a sled arrives"
+  },
+  "permit_q182_a2": {
+   "old": "Honk and continue",
+   "new": "Flash your high beams and hold your speed"
+  },
+  "permit_q182_a3": {
+   "old": "Move into the oncoming lane to dodge any sled that comes out of the woods",
+   "new": "Move toward the center line to give sleds more room"
+  },
+  "permit_q183_a0": {
+   "old": "At any time and in either direction, since snowmobiles are exempt from road rules: they are registered as off-road machines and the traffic code only applies to licensed motor vehicles",
+   "new": "At any time and in either direction, since snowmobiles are registered as off-road machines and the traffic laws do not cover them"
+  },
+  "permit_q184_q": {
+   "old": "Every passenger vehicle registered in Maine must:",
+   "new": "What inspection does Maine require for a registered passenger vehicle?"
+  },
+  "permit_q184_a0": {
+   "old": "Pass an annual safety inspection at a licensed station and display the sticker",
+   "new": "A safety inspection every year at a licensed station, with the sticker displayed"
+  },
+  "permit_q184_a1": {
+   "old": "Pass an emissions test only, with no safety inspection required under state law",
+   "new": "An emissions test every year, with no safety inspection"
+  },
+  "permit_q184_a2": {
+   "old": "Be inspected once when first registered, and never again",
+   "new": "One inspection when it is first registered, and none after that"
+  },
+  "permit_q184_a3": {
+   "old": "Meet no inspection requirement at all under state law",
+   "new": "No inspection, unless the car is sold or involved in a crash"
+  },
+  "permit_q185_q": {
+   "old": "The fee for a standard Maine annual passenger-car safety inspection is approximately:",
+   "new": "About how much does a standard yearly Maine safety inspection cost for a car?"
+  },
+  "permit_q186_q": {
+   "old": "Before opening your driver-side door after parking on a street, you should:",
+   "new": "You have parked on a street. What should you do before you open the driver's door?"
+  },
+  "permit_q186_a0": {
+   "old": "Open the door quickly so that following traffic is not held up; a fast, decisive opening gives cyclists the clearest warning",
+   "new": "Open the door fast, so traffic behind is not held up"
+  },
+  "permit_q186_a1": {
+   "old": "Take a glance at the side mirror only, and then open the door",
+   "new": "Take a quick glance at the side mirror, and then open the door wide, since the mirror shows the whole lane"
+  },
+  "permit_q187_a0": {
+   "old": "Nothing, since passengers on the curb side are always perfectly safe",
+   "new": "Nothing: the curb side of a parked car is the safe side to get out on"
+  },
+  "permit_q187_a2": {
+   "old": "Police giving them a ticket",
+   "new": "A tall curb or a signpost that could scratch the bottom of the door"
+  },
+  "permit_q187_a3": {
+   "old": "A door alarm",
+   "new": "Traffic passing on the driver's side of the car"
+  },
+  "permit_q188_a1": {
+   "old": "Leave the scene quickly so that you cannot be blamed for the collision at all; wildlife strikes carry no reporting duty, and staying only invites a citation for the damage",
+   "new": "Leave the scene quickly, because wildlife strikes carry no reporting duty and staying can get you a ticket for the damage to your car"
+  },
+  "permit_q190_a0": {
+   "old": "Speed bumps installed by the town",
+   "new": "Speed bumps that the town installed to slow down traffic near homes"
+  },
+  "permit_q190_a2": {
+   "old": "Ordinary potholes from traffic wear",
+   "new": "Rumble strips that the state cut into the lane to wake up tired drivers"
+  },
+  "permit_q192_a2": {
+   "old": "A weak battery affecting the power steering pump",
+   "new": "A weak battery, which cannot power the electric steering pump well enough to keep the car straight"
+  },
+  "permit_q192_a3": {
+   "old": "A clogged air filter, which unbalances the engine",
+   "new": "A clogged air filter, which makes the engine run unevenly"
+  }
+ },
+ "orphaned_by_this_lane": []
+}

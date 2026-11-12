@@ -23777,10 +23777,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   useEffect(() => {
       const body = typeof document !== 'undefined' ? document.body : null;
       if (!body) return undefined;
-      const concealWorkspace = !isAppReady || (!hasSelectedMode && !shellDeepLinkTool && !lessonDeepLinkActive);
+      const concealWorkspace = !isAppReady || (!hasSelectedMode && !runTour && !shellDeepLinkTool && !lessonDeepLinkActive);
       body.classList.toggle('alloflow-workspace-concealed', concealWorkspace);
       return () => body.classList.remove('alloflow-workspace-concealed');
-  }, [isAppReady, hasSelectedMode, shellDeepLinkTool, lessonDeepLinkActive]);
+  }, [isAppReady, hasSelectedMode, runTour, shellDeepLinkTool, lessonDeepLinkActive]);
   const [shellDeepLinkApplied, setShellDeepLinkApplied] = useState(false);
   // Deep-link visitor banner (2026-08-16): a stranger arriving via /<tool-slug>
   // has zero context. One slim dismissible strip names the platform and offers
@@ -36989,7 +36989,7 @@ const parseTaggedContent = (text) => {
       probeHistory, surveyResponses, fidelityLog, sessionCounter,
       externalCBMScores, interventionLogs,
       setIsProcessing, setShowStorybookExportModal,
-      addToast, parseMarkdownToHTML, generateResourceHTML, rehydrateHistoryWithImages,
+      addToast, parseMarkdownToHTML, generateResourceHTML, generateFullPackHTML, rehydrateHistoryWithImages,
       prepareReadAloudArtifactAudio, prepareStorybookSummary, selectedVoice, voiceSpeed,
       leveledTextLanguage, outputLanguagePreference, nativeLanguageDefaultsVersion: 1, appLanguage: currentUiLanguage, currentUiLanguage,
       t,
@@ -45056,7 +45056,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
             </section>
           )}
           {guidedMode && guidedModeConfigReady && <div hidden={activeSidebarTab !== 'create'}><GuidedModeBanner GUIDED_STEPS={guidedActiveSteps} allGuidedSteps={GUIDED_STEPS} guidedSelectedIds={guidedSelectedIds} toggleGuidedStepId={toggleGuidedStepId} GUIDED_TOUR_MAP={GUIDED_TOUR_MAP} guidedStep={guidedStep} guidedEngaged={guidedEngaged} handleExitGuidedMode={handleExitGuidedMode} handleGuidedSkip={handleGuidedSkip} setGuidedStep={setGuidedStep} setShowGuidedTip={setShowGuidedTip} showGuidedTip={showGuidedTip} t={t} tourSteps={tourSteps} history={history} getDefaultTitle={getDefaultTitle} inputText={inputText} acceptedSourceText={sourceRecord?.inUse?.text} setInputText={setInputText} guidedCompletedIds={guidedCompletedIds} guidedSkippedIds={guidedSkippedIds} guidedCreatedHistoryIds={guidedLessonIds} guidedSourceResourceIds={guidedCreatedHistoryIds} guidedItemBelongs={guidedItemBelongs} guidedLessonScope={guidedLessonScope} hasEarlierGuidedResources={guidedCreatedHistoryIds.length > guidedLessonIds.length} wordSoundsHistory={wordSoundsHistory} currentUiLanguage={currentUiLanguage} markGuidedStepDone={markGuidedStepDone} resetGuidedProgress={resetGuidedProgress} guidedPresets={GUIDED_PRESETS} applyGuidedPreset={applyGuidedPreset} applyGuidedPlanToRemaining={applyGuidedPlanToRemaining} generateGuidedPlanFromGoal={generateGuidedPlanFromGoal} guidedPhases={GUIDED_PHASES} guidedDeliveryGroups={GUIDED_DELIVERY_GROUPS} openGuidedDocumentBuilder={() => openExportPreview('print', guidedPackageIds)} openGuidedDocumentReview={openGuidedDocumentReview} guidedDocumentKey={guidedDocumentKey} guidedDeliverySetting={guidedDeliverySetting} setGuidedDeliverySetting={setGuidedDeliverySetting} earlierExportResources={earlierGuidedResources} extraExportIds={guidedExtraIds} toggleExtraExportResource={toggleGuidedExtra} createGuidedHomeworkShare={createGuidedHomeworkShare} canCreateGuidedLearnerLink={!!guidedLearnerScope} creatingGuidedLearnerLink={guidedLinkCreating} guidedLiveSessionKey={activeSessionCode || ''} startGuidedLiveSession={() => setShowSessionStartOptions(true)} canPreviewGuidedStudentAssignment={!!guidedLearnerShare} previewGuidedStudentAssignment={previewGuidedStudentAssignment} guidedDeliveryEvidence={verifiedGuidedDeliveryEvidence} guidedPlanBrief={guidedPlanBrief} guidedAdvanceNotice={guidedAdvanceNotice} clearGuidedAdvanceNotice={() => setGuidedAdvanceNotice(null)} undoGuidedAutoAdvance={undoGuidedAutoAdvance} guidedNavigationUndo={guidedNavigationUndo} undoGuidedNavigation={undoGuidedNavigation} clearGuidedNavigationUndo={() => setGuidedNavigationUndo(null)} guidedStepCostNote={guidedStepCostNote} guidedSettingsSummary={guidedSettingsSummary} openUniversalSettings={openUniversalSettings} guidedStepError={guidedStepError} retryGuidedStep={retryGuidedStep} isGuidedRetrying={isProcessing || isGeneratingPersona || isGeneratingSource || isExtracting} openGuidedHistoryItem={handleRestoreView} guidedAutoAdvance={guidedAutoAdvance} setGuidedAutoAdvance={setGuidedAutoAdvance} handleCompleteGuidedMode={handleCompleteGuidedMode} handleGuidedJump={handleGuidedJump} focusGuidedTarget={focusGuidedTarget} processingProgress={processingProgress} generationStep={generationStep} guidedProviderProfile={String(ai?.backend || ai?.textBackend || ai?.provider || 'default')} guidedProgressSaveState={guidedProgressSaveState} retryGuidedProgressSave={retryGuidedProgressSave} openGuidedProjectBackup={history.length > 0 ? initiateSaveTeacherProject : null} /></div>}
-          {isTeacherMode && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} subtitle={isIndependentMode ? t('sidebar.ai_guide_sub_independent') : undefined} />}
+          {isTeacherMode && !guidedMode && <UDLGuideButton handleToggleShowUDLGuide={handleToggleShowUDLGuide} showUDLGuide={showUDLGuide} t={t} subtitle={isIndependentMode ? t('sidebar.ai_guide_sub_independent') : undefined} />}
           {isTeacherMode && <div
             id="sidebar-create-panel"
             role={isWide ? 'tabpanel' : undefined}
@@ -48715,7 +48715,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           guidedMode, so a pathway picked before the recovery decision was silently
           undone by the restore that followed. Return users decide about saved work
           first, then choose a pathway. */}
-      {isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.LaunchPadView && !lessonDeepLinkActive && React.createElement(window.AlloModules.LaunchPadView, {
+      {isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.LaunchPadView && !lessonDeepLinkActive && !runTour && React.createElement(window.AlloModules.LaunchPadView, {
           t, micBannerDismissed, _isCanvasEnv, micPermissionStatus, APP_CONFIG,
           requestMicPermission,
           enableVoiceAccess: enableGlobalVoiceAccess,
@@ -48730,7 +48730,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           companion: window.AlloModules.OnboardingCoach ? React.createElement(window.AlloModules.OnboardingCoach.OnboardingCoach, {
           t, setRunTour: (value) => { if (value) setTourStep(0); setRunTour(value); }, embedded: true,
           pickMode: function (key) {
-              const choices = { full: 'teacher_full', guided: 'teacher', learning_tools: 'student_explore', educator: 'specialist', student: 'student_explore', teacher: 'teacher', family: 'family', specialist: 'specialist' };
+              const choices = { full: 'teacher_full', guided: 'teacher', learning_tools: 'student_explore', educator: 'specialist', student: 'student_explore', teacher: 'teacher', family: 'family', specialist: 'specialist', adult: 'adult' };
               if (choices[key]) chooseLaunchRole(choices[key]);
           }
           }) : null
@@ -48782,7 +48782,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
       {isBotVisible && !_remediationMode && (
           <AlloBot
             ref={alloBotRef}
-            canPlayIntro={canPlayBotIntro && isBotVisible && hasSelectedRole}
+            canPlayIntro={canPlayBotIntro && isBotVisible && hasSelectedRole && !guidedMode}
             topic={sourceTopic || inputText || t('common.this_topic')}
             mood={isProcessing || isChatProcessing ? 'thinking' : 'idle'}
             generationType={isProcessing ? (alloGenerationType || activeView) : (isChatProcessing ? 'chat' : null)}

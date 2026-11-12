@@ -32,7 +32,7 @@ describe('Circuit lesson navigation',()=>{
 
   it('offers the chooser on a new bench without loading a circuit or moving focus',async()=>{
     await mount({components:[]});
-    expect(chooser().open).toBe(true);expect(chooser().querySelectorAll('.circuit-lesson-cards button')).toHaveLength(3);
+    expect(chooser().open).toBe(true);expect(chooser().querySelectorAll('.circuit-lesson-cards button')).toHaveLength(5);
     expect(latest._circuit.components).toEqual([]);expect(latest._circuit.undo).toEqual([]);
     expect(host.contains(document.activeElement)).toBe(false);
     expect(host.querySelector('.circuit-lesson-progress').getAttribute('data-active')).not.toBe('true');

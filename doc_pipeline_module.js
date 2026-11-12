@@ -47157,11 +47157,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   // place; a teacher copy keeps them, labelled. A KWL without the flags is unchanged.
   const _kwlHasTeacherExamples = (data) => !!(data && data.structureType === 'KWL Chart' && Array.isArray(data.branches)
       && data.branches.some(b => b && b.teacherExample === true));
-  const _kwlExportBranches = (data, isTeacher) => {
-      if (!_kwlHasTeacherExamples(data)) return data ? data.branches : undefined;
-      const branches = data.branches;
-      const tx =(key, fallback) => { const v = typeof t === 'function' ? t(key) : ''; return v && v !== key ? v : fallback; };
+  const _kwlExportBranches = (data, isTeacher, labelT) => {
+      const tFn = typeof labelT === 'function' ? labelT : t;
+      const tx =(key, fallback) => { const v = typeof tFn === 'function' ? tFn(key) : ''; return v && v !== key ? v : fallback; };
       const prompts = [['kwl_prompt_know', 'What do you already know?'], ['kwl_prompt_want', 'What do you want to know?'], ['kwl_prompt_learned', 'What did you learn?']];
+      if (!_kwlHasTeacherExamples(data)) {
+          const isKwl = !!(data && data.structureType === 'KWL Chart' && Array.isArray(data.branches));
+          if (!isKwl || isTeacher) return data ? data.branches : undefined;
+          // An empty K, W or L column is where the student writes: give it its prompt and space.
+          return data.branches.map((b, i) => {
+              if (!b || (Array.isArray(b.items) && b.items.length)) return b;
+              const prompt = prompts[i] || prompts[0];
+              return { ...b, items: [], items_en: [], kwlNote: tx('outline.' + prompt[0], prompt[1]), kwlPrompt: true };
+          });
+      }
+      const branches = data.branches;
       return branches.map((b, i) => {
           if (!b) return b;
           const items = Array.isArray(b.items) ? b.items : [];
@@ -47171,7 +47181,49 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           return { ...b, items: [], items_en: [], kwlNote: tx('outline.' + prompt[0], prompt[1]), kwlPrompt: true };
       });
   };
+  const _documentLanguageMap = {'English':'en','Spanish':'es','Spanish (Latin America)':'es','Spanish (Castilian)':'es','French':'fr','French (Canadian)':'fr','German':'de','Italian':'it','Portuguese':'pt','Portuguese (Brazil)':'pt-BR','Portuguese (Angola)':'pt','Chinese':'zh','Chinese (Simplified)':'zh-CN','Chinese (Traditional)':'zh-TW','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Bengali':'bn','Punjabi':'pa','Tamil':'ta','Urdu':'ur','Farsi':'fa','Pashto':'ps','Dari':'fa-AF','Hebrew':'he','Greek':'el','Latin':'la','Indonesian':'id','Thai':'th','Lao':'lo','Khmer':'km','Burmese':'my','Nepali':'ne','Vietnamese':'vi','Tagalog':'tl','Haitian Creole':'ht','Somali':'so','Swahili':'sw','Hausa':'ha','Yoruba':'yo','Igbo':'ig','Amharic':'am','Tigrinya':'ti','Lingala':'ln','Kinyarwanda':'rw','Kirundi':'rn','Acholi':'ach','Karen':'ksw','Chin (Hakha)':'cnh','Chin (Falam)':'cfm','Hmong':'hmn','Polish':'pl','Ukrainian':'uk','Maay Maay':'ymm','Marshallese':'mh','Turkish':'tr','Gujarati':'gu','Marathi':'mr','Malayalam':'ml','Dutch':'nl','Kannada':'kn','Esperanto':'eo','Mandarin':'zh','Malay':'ms','Mongolian':'mn'};
+  // A typed-in language the map lacks asks the host's speech helper, which
+  // answers English for names it does not know; that is not evidence.
+  const _exportLangTag = (name) => {
+      if (_documentLanguageMap[name]) return _documentLanguageMap[name];
+      try {
+          const resolve = window.AlloModules?.ModuleScopeExtras?.getSpeechLangCode || window.getSpeechLangCode;
+          const tag = typeof resolve === 'function' && name ? String(resolve(name) || '') : '';
+          if (/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(tag) && !/^en(?:-|$)/i.test(tag)) return tag;
+      } catch (_) {}
+      return 'en';
+  };
+  // Student-facing export labels follow the DOCUMENT language when it differs from the
+  // app language; a label the catalog lacks falls back to the app language.
+  // Each language's labels are a small file (export_labels/<tag>.js) fetched the
+  // first time an export needs it; the preview refreshes when it lands.
+  const _hostLabelT = (key, params) => t(key, params);
+  const _labelFilesAsked = new Set();
+  const _exportLabelT = () => {
+      const docTag = _exportLangTag(leveledTextLanguage || currentUiLanguage);
+      const base = (tag) => String(tag || 'en').toLowerCase().split('-')[0];
+      if (base(docTag) === base(_exportLangTag(currentUiLanguage))) return _hostLabelT;
+      const all = (typeof window !== 'undefined' && window.AlloModules?.ExportLabels) || {};
+      const labels = all[docTag] || all[base(docTag)];
+      if (!labels) {
+          try {
+              const tags = window.AlloModules?.ExportRuntimeCopy?.labelTags || [];
+              const file = tags.includes(docTag) ? docTag : (tags.includes(base(docTag)) ? base(docTag) : '');
+              if (file && !_labelFilesAsked.has(file) && typeof window.__alloLoadPlugin === 'function') {
+                  _labelFilesAsked.add(file);
+                  Promise.resolve(window.__alloLoadPlugin('export_labels/' + file + '.js')).then((ok) => { if (ok && window.AlloModules?.ExportLabels?.[file]) updateExportPreview(); }, () => {});
+              }
+          } catch (_) {}
+          return _hostLabelT;
+      }
+      return (key, params) => {
+          const value = labels[key];
+          if (typeof value !== 'string' || /[<>]/.test(value)) return t(key, params);
+          return params && typeof params === 'object' ? value.replace(/\{(\w+)\}/g, (m, name) => (params[name] != null ? params[name] : m)) : value;
+      };
+  };
   const generateResourceHTML = (item, isTeacher, responses = {}, config = null) => {
+      const t = isTeacher ? _hostLabelT : _exportLabelT();
       const cfg = config || exportConfig;
       const studentReadingText = value => {
           if (isTeacher || typeof value !== 'string') return value;
@@ -47184,12 +47236,31 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       };
       const readingContract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
       const originalReading = !!readingContract?.isSupportedOriginal?.(item);
-      const readingRoleLabel = ['analysis', 'simplified'].includes(item.type) ? readingContract?.getReadingRoleLabel?.(item) || '' : '';
+      // A student copy shows a reading's role only when the teacher set one.
+      const readingRoleLabel = ['analysis', 'simplified'].includes(item.type) ? (() => {
+          const role = readingContract?.getInstructionalText?.(item)?.role;
+          const key = role === 'primary' ? 'simplified.role_main_reading' : role === 'supplemental' ? 'simplified.role_supporting_reading' : isTeacher ? 'simplified.role_not_designated' : '';
+          if (!key) return '';
+          const v = t(key);
+          return typeof v === 'string' && v.trim() && v !== key ? v : readingContract?.getReadingRoleLabel?.(item) || '';
+      })() : '';
       // Escape raw AI/teacher text before it goes into the document body, so a stray < & >
       // displays as text instead of garbling or injecting markup (WCAG 4.1.1). Use ONLY for
       // plain-text fields interpolated directly — never for fields rendered via parseMarkdownToHTML.
       const _escTxt = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
-      const _resourceIdJson = JSON.stringify(String(item.id == null ? '' : item.id)).replace(/</g, '\\u003c');
+      // Escaped UI label with an English fallback; {name} placeholders filled from vars.
+      const _uiRaw = (key, fallback, vars) => { let v; try { v = t(key); } catch (_) {} const s = typeof v === 'string' && v.trim() && v !== key ? v : fallback; return String(s).replace(/\{(\w+)\}/g, (m, n) => (vars && vars[n] != null ? vars[n] : m)); };
+      const _uiL = (key, fallback, vars) => _escTxt(_uiRaw(key, fallback, vars));
+      // Paper answer space sized to the task: each extra part, an explain/why/compare prompt,
+      // a long prompt or listed success criteria add lines (capped at 10).
+      const _answerLines = (prompt, criteriaCount, base) => {
+          const text = String(prompt || '');
+          const parts = Math.max((text.match(/\?/g) || []).length, (text.match(/(?:^|\s)\(?(?:[a-d]|[1-4])[.)]\s/g) || []).length, 1);
+          const depth = /\b(explain|why|how|compare|contrast|describe|justify|evidence|support)\b/i.test(text) ? 1 : 0;
+          const length = text.length > 220 ? 2 : (text.length > 120 ? 1 : 0);
+          return Math.min(10, base + (parts - 1) * 2 + depth + length + Math.min(3, Number(criteriaCount) || 0));
+      };
+      const _resourceIdJson =JSON.stringify(String(item.id == null ? '' : item.id)).replace(/</g, '\\u003c');
       const studentSourceExcerptsHTML = value => {
           if (isTeacher || typeof value !== 'string') return '';
           const api = window.AlloModules?.StudentSources || window.AlloModules?.TextPipelineHelpers?.studentSources;
@@ -47267,7 +47338,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // number is visible rather than an aria-label, because it has to survive
       // being printed on paper and it is what the answer key counts against.
       const _clozeBlank = (n) =>
-          `<span class="alloflow-cloze-blank" style="display:inline-block;min-width:120px;border-bottom:1.5px solid #475569;margin:0 5px;text-align:center;line-height:1.5;"><span style="font-size:0.72em;font-weight:700;color:#64748b;">${n}</span></span>`;
+          `<span class="alloflow-cloze-blank" style="display:inline-block;min-width:120px;border-bottom:1.5px solid #475569;margin:0 5px;text-align:center;line-height:1.5;"><span style="font-size:max(12px, 0.72em);font-weight:700;color:#64748b;">${n}</span></span>`;
       const _clozeBuild = (passageHtml, glossary) => {
           const answers = [];
           if (!passageHtml || !Array.isArray(glossary) || glossary.length === 0) return { html: passageHtml, answers };
@@ -47445,12 +47516,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       if (originalReading) tv.label = 'Original with supports';
       // flex-wrap + min-width:0 so the title and its "(meta)" tag drop to a second
       // line instead of running past the card edge when the reader turns text up.
-      const enhancedHeader = `<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${tv.color};background:${tv.bg};display:flex;align-items:center;flex-wrap:wrap;min-width:0;gap:8px;"><span aria-hidden="true" style="font-size:1.3em;">${tv.icon}</span> ${_escTxt(title)}${item.meta ? ` <span style="font-weight:normal;font-size:0.8em;color:#475569;overflow-wrap:anywhere;">(${_escTxt(item.meta)})</span>` : ''}</h2>`;
+      // Subtitles are design notes for the teacher ("the soil card is the trap", "Educator review
+      // draft"), so the student copy leaves them out; the teacher copy keeps them.
+      const _metaShown = (isTeacher || (cfg && cfg.audience === 'teacher')) ? String(item.meta || '').trim() : '';
+      const enhancedHeader = `<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${tv.color};background:${tv.bg};display:flex;align-items:center;flex-wrap:wrap;min-width:0;gap:8px;"><span aria-hidden="true" style="font-size:1.3em;">${tv.icon}</span> ${_escTxt(title)}${_metaShown ? ` <span style="font-weight:normal;font-size:0.8em;color:#475569;overflow-wrap:anywhere;">(${_escTxt(_metaShown)})</span>` : ''}</h2>`;
       if (item.type === 'directions') {
           const data = item.data && typeof item.data === 'object' && !Array.isArray(item.data) ? item.data : {};
           const body = typeof item.data === 'string' ? item.data : (typeof data.body === 'string' ? data.body : '');
           const label = (key, fallback) => { const value = t(key); return value && value !== key ? value : fallback; };
-          const goals = (Array.isArray(data.objectives) ? data.objectives : []).filter(goal => goal && typeof goal.label === 'string' && goal.label.trim());
+          // Game and XP goals are met inside the app; a downloaded or printed student copy cannot track them.
+          const appOnlyGoal = goal => !isTeacher && !(cfg && cfg.audience === 'teacher') && (goal.kind === 'game' || goal.kind === 'xp');
+          const goals = (Array.isArray(data.objectives) ? data.objectives : []).filter(goal => goal && typeof goal.label === 'string' && goal.label.trim() && !appOnlyGoal(goal));
           const board = data.choiceBoard && data.choiceBoard.enabled === true ? data.choiceBoard : null;
           const choices = board && Array.isArray(board.choices) ? board.choices.filter(choice => choice && typeof choice.label === 'string' && choice.label.trim()) : [];
           const goalHtml = goals.length ? '<section><h3>' + _escTxt(label('directions.goals_heading', 'Your goals')) + '</h3><ul style="list-style:none;padding-left:0;">' + goals.map(goal => '<li style="margin:8px 0;"><span aria-hidden="true">&#x2610; </span>' + _escTxt(goal.label) + '</li>').join('') + '</ul></section>' : '';
@@ -47500,7 +47576,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           }
           // Reading passage. Tagged data-ka-readable so the HTML export's
           // download-time read-aloud step can convert it into inline sentence-karaoke.
-          const _passageHtml = parseMarkdownToHTML(studentReadingText(item.data));
+          // Most passages open with their own "# Title"; the section heading already shows it once.
+          const _readingText = (() => {
+              const raw = studentReadingText(item.data);
+              if (typeof raw !== 'string') return raw;
+              const first = raw.match(/^\s*#{1,3}[ \t]+([^\n]+)(?:\r?\n|$)/);
+              if (!first) return raw;
+              const norm = (value) => String(value || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+              const heading = norm(first[1]), sectionTitle = norm(title);
+              return heading && sectionTitle && (heading === sectionTitle || sectionTitle.includes(heading) || heading.includes(sectionTitle)) ? raw.slice(first[0].length) : raw;
+          })();
+          const _passageHtml = parseMarkdownToHTML(_readingText);
           const _readingRoleHtml = readingRoleLabel ? '<p class="reading-role">' + _escTxt(readingRoleLabel) + '</p>' : '';
           if (_clozeIsOn) {
               const _built = _clozeBuild(_passageHtml, _clozeGlossaryFor(item));
@@ -47513,7 +47599,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   ${enhancedHeader}
                   ${_readingRoleHtml}
                   <p style="margin:0 4px 12px;padding:8px 12px;background:#f8fafc;border-left:3px solid #94a3b8;font-size:0.92em;color:#334155;">${_escTxt(t('export.cloze_instructions') || 'Fill in each blank with the correct word from the word bank.')}</p>
-                  <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:2.4;color:#1e293b;padding:8px 4px;">${_built.html}</div>
+                  <div class="alloflow-own-font" style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:2.4;color:#1e293b;padding:8px 4px;">${_built.html}</div>
                   ${_clozeWordBankHTML(_built.answers)}
               </div>
               ${sourceExcerptsHTML}
@@ -47527,7 +47613,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               <div class="section" id="${_escTxt(item.id)}" data-ka-readable style="border-left:4px solid #2563eb;border-radius:12px;">
                   ${enhancedHeader}
                   ${_readingRoleHtml}
-                  <div style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${_passageHtml}</div>
+                  <div class="alloflow-own-font" style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${_passageHtml}</div>
                   ${_adaptedHelpHtml}
               </div>
               ${sourceExcerptsHTML}
@@ -47719,7 +47805,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           //     (renders translations on the flip side instead of definitions)
           const glossaryMode = cfg.glossaryDisplayMode || 'table';
           const _glossTranslationText = (gItem, lang) => { const value = _glossTranslation(gItem, lang); return value.usable ? value.spoken : ''; };
-          const _glossPicture = (gItem, style) => gItem.image ? `<img loading="lazy" src="${_escTxt(gItem.image)}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} style="${style}"/>` : '';
+          const _glossPicture = (gItem, style) => gItem.image ? `<img${isWorksheet ? '' : ' loading="lazy"'} src="${_escTxt(gItem.image)}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} style="${style}"/>` : '';
           if (glossaryMode === 'bilingual') {
               // Term, definition, then one column per chosen language (all by default).
               const allLanguages = [];
@@ -47782,7 +47868,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     .alloflow-word-wall-card img { max-width:100%; max-height:9em; object-fit:contain; }
                     .alloflow-word-wall-term { margin:0; font-size:clamp(2.25rem,7vw,4.5rem); font-weight:800; line-height:1.1; color:#064e3b; overflow-wrap:anywhere; hyphens:auto; }
                     .alloflow-word-wall-def { margin:0; font-size:1.15em; line-height:1.35; color:#1e293b; overflow-wrap:anywhere; }
-                    .alloflow-word-wall-credit { margin:0; font-size:0.7em; color:#475569; overflow-wrap:anywhere; }
+                    .alloflow-word-wall-credit { margin:0; font-size:max(12px, 0.7em); color:#475569; overflow-wrap:anywhere; }
                     @media print {
                       .alloflow-word-wall-section { padding:0 !important; border:0 !important; break-inside:auto !important; }
                       .alloflow-word-wall-page { grid-template-columns:minmax(0,1fr); gap:0.18in; margin:0; break-inside:avoid; page-break-inside:avoid; break-after:page; page-break-after:always; }
@@ -47843,8 +47929,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       ${item.data.map((gItem, idx) => {
                           const translationsHtml = _glossTranslations(gItem).map(value => `<div style="margin-top:4px;font-size:0.85em;"><strong>${_escTxt(value.lang)}:</strong> <span${_glossLangAttrs(value.lang)}>${_escTxt(value.spoken)}</span></div>`).join('');
                           const imageHtml = gItem.image
-                              ? `<img loading="lazy" src="${_escTxt(gItem.image)}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
-                                + (_glossCredit(gItem) ? `<div class="alloflow-glossary-card-credit" style="margin:-4px 0 8px;font-size:0.7em;line-height:1.3;color:#475569;overflow-wrap:anywhere;">${_escTxt(_glossCredit(gItem))}</div>` : '')
+                              ? `<img${isWorksheet ? '' : ' loading="lazy"'} src="${_escTxt(gItem.image)}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} style="max-width: 100%; max-height: 80px; object-fit: contain; border-radius: 6px; margin-bottom: 8px;"/>`
+                                + (_glossCredit(gItem) ? `<div class="alloflow-glossary-card-credit" style="margin:-4px 0 8px;font-size:max(12px, 0.7em);line-height:1.3;color:#475569;overflow-wrap:anywhere;">${_escTxt(_glossCredit(gItem))}</div>` : '')
                               : '';
                           // For language-cards mode, the "back" emphasizes translations; the def is collapsed beneath.
                           const backContent = showTranslations
@@ -47857,7 +47943,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                       <strong style="font-size:1.15em; color:#1e293b; line-height:1.3;">${_glossTermHtml(gItem)}</strong>
                                       ${gItem.term_en && gItem.term_en !== gItem.term ? `<div${_glossLangAttrs('English')} style="font-size:0.8em; color:#64748b; margin-top:4px;">(${_escTxt(gItem.term_en)})</div>` : ''}
                                   </div>
-                                  <div class="alloflow-glossary-card-fold" aria-hidden="true" style="border-top:2px dashed #cbd5e1; padding:3px 0; text-align:center; font-family:monospace; font-size:0.65em; color:#64748b; letter-spacing:0.1em; background:#f8fafc;">${_escTxt(_gl('glossary.export_fold_hint', '▼ fold here / click to flip ▼'))}</div>
+                                  <div class="alloflow-glossary-card-fold" aria-hidden="true" style="border-top:2px dashed #cbd5e1; padding:3px 0; text-align:center; font-family:monospace; font-size:max(12px, 0.65em); color:#64748b; letter-spacing:0.1em; background:#f8fafc;">${_escTxt(_gl('glossary.export_fold_hint', '▼ fold here / click to flip ▼'))}</div>
                                   <div class="alloflow-glossary-card-back" style="padding:14px; background:#f8fafc; min-height:90px;">
                                       ${backContent}
                                   </div>
@@ -47912,7 +47998,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // mode disables it (paper printout should show everything flat).
           const _glossarySelfTest = (cfg.glossarySelfTest === true && !isWorksheet);
           const _hideCell = (content) => _glossarySelfTest && content
-              ? `<details class="alloflow-glossary-cell"><summary style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#ecfdf5;color:#065f46;font-size:0.78em;font-weight:600;border:1px solid #6ee7b7;border-radius:9999px;outline-offset:2px;"><span class="alloflow-glossary-caret" aria-hidden="true">▶</span>${_escTxt(_gl('glossary.export_reveal', 'Reveal'))}</summary><div style="margin-top:6px;">${content}</div></details>`
+              ? `<details class="alloflow-glossary-cell"><summary style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:#ecfdf5;color:#065f46;font-size:max(12px, 0.78em);font-weight:600;border:1px solid #6ee7b7;border-radius:9999px;outline-offset:2px;"><span class="alloflow-glossary-caret" aria-hidden="true">▶</span>${_escTxt(_gl('glossary.export_reveal', 'Reveal'))}</summary><div style="margin-top:6px;">${content}</div></details>`
               : content;
           // Glossary image size: configurable via cfg.glossaryImageSize.
           // Small/medium/large/xl map to 40 / 64 / 96 / 140 px square caps.
@@ -47937,7 +48023,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     .alloflow-glossary-section { container-type: inline-size; }
                     .alloflow-glossary-section table { border-collapse: separate; border-spacing: 0; border-radius: 10px; overflow: hidden; box-shadow: 0 1px 3px rgba(0,0,0,0.04); }
                     .alloflow-glossary-section thead tr { background: linear-gradient(180deg, #ecfdf5, #d1fae5) !important; }
-                    .alloflow-glossary-section thead th { color: #047857 !important; border-bottom: 2px solid #6ee7b7 !important; font-size: 0.78rem !important; padding: 0.65rem 1rem !important; }
+                    .alloflow-glossary-section thead th { color: #047857 !important; border-bottom: 2px solid #6ee7b7 !important; font-size: max(12px, 0.78rem) !important; padding: 0.65rem 1rem !important; }
                     .alloflow-glossary-section tbody tr { background-color: #ffffff !important; transition: background-color 0.15s ease, box-shadow 0.15s ease; }
                     .alloflow-glossary-section tbody tr:nth-child(even) { background-color: #f0fdf4 !important; }
                     .alloflow-glossary-section tbody tr:hover { background-color: #ecfdf5 !important; box-shadow: inset 3px 0 0 #10b981; }
@@ -47965,7 +48051,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       .alloflow-glossary-section tbody tr > td:first-child { border-top: 0 !important; }
                       .alloflow-glossary-section tbody td[data-gloss-label]::before {
                         content: attr(data-gloss-label) ": ";
-                        display: block; font-size: 0.72em; font-weight: 700;
+                        display: block; font-size: max(12px, 0.72em); font-weight: 700;
                         text-transform: uppercase; letter-spacing: 0.04em;
                         color: #047857; margin-bottom: 0.2em;
                       }
@@ -47982,7 +48068,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         .alloflow-glossary-section thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); }
                         .alloflow-glossary-section tbody tr { margin: 0 0 0.75em 0; border: 1.5px solid #6ee7b7; border-radius: 10px; overflow: hidden; }
                         .alloflow-glossary-section tbody td { border: 0 !important; border-top: 1px solid #d1fae5 !important; padding: 0.6em 0.75em !important; }
-                        .alloflow-glossary-section tbody td[data-gloss-label]::before { content: attr(data-gloss-label) ": "; display: block; font-size: 0.72em; font-weight: 700; text-transform: uppercase; color: #047857; }
+                        .alloflow-glossary-section tbody td[data-gloss-label]::before { content: attr(data-gloss-label) ": "; display: block; font-size: max(12px, 0.72em); font-weight: 700; text-transform: uppercase; color: #047857; }
                       }
                     }
                     /* Printed glossaries always use the table grid — paper width
@@ -48003,7 +48089,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     <div class="alloflow-glossary-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
                         <button type="button" class="alloflow-glossary-reveal-all" data-glossary-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;border-radius:9999px;cursor:pointer;">▾ ${_escTxt(_gl('glossary.export_reveal_all', 'Reveal all'))}</button>
                         <button type="button" class="alloflow-glossary-hide-all-tbl" data-glossary-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;">▸ ${_escTxt(_gl('glossary.export_hide_all', 'Hide all'))}</button>
-                        <span style="font-size:11px;color:#64748b;font-style:italic;">${_escTxt(_gl('glossary.export_selftest_help', 'Self-test: try to recall each definition, then reveal to check.'))}</span>
+                        <span style="font-size:12px;color:#64748b;font-style:italic;">${_escTxt(_gl('glossary.export_selftest_help', 'Self-test: try to recall each definition, then reveal to check.'))}</span>
                     </div>
                   ` : ''}
                   ${(() => {
@@ -48026,7 +48112,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <tbody>
                       ${item.data.map(gItem => `
                       <tr>
-                          ${hasAnyImages ? `<td data-gloss-label="${_lblImage}" class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img loading="lazy" src="${_escTxt(gItem.image)}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} />` : ''}</td>` : ''}
+                          ${hasAnyImages ? `<td data-gloss-label="${_lblImage}" class="gloss-img-cell" style="text-align: center; vertical-align: middle;">${gItem.image ? `<img${isWorksheet ? '' : ' loading="lazy"'} src="${_escTxt(gItem.image)}" alt="${_escTxt(glossaryExportImageAlt(gItem))}"${glossaryExportImageAlt(gItem) ? '' : ' role="presentation"'} />` : ''}</td>` : ''}
                           <td data-gloss-label="${_lblTerm}" style="text-align: ${align}">
                             <strong class="gloss-term">${_glossTermHtml(gItem)}</strong>
                           </td>
@@ -48142,7 +48228,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           `;
       } else if (item.type === 'outline') {
           const { main, main_en, structureType } = item.data;
-          const branches = _kwlExportBranches(item.data, isTeacher);
+          const branches = _kwlExportBranches(item.data, isTeacher, t);
           const type = structureType || 'Structured Outline';
           // Project the palace the way MemoryPalace.buildPalace does, so the
           // handout matches the walk the student actually learned: an image THEY
@@ -48258,6 +48344,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                        text up. Unconditional here; a no-op when there is room. */
                     .venn-visual-viewport { max-width: 100%; overflow-x: auto; overflow-y: visible; -webkit-overflow-scrolling: touch; }
                     .venn-print-wrapper .venn-visual { min-width: 720px; }
+                    /* On screen the fixed geometry shrinks to the space it has (the fit
+                       script sets --venn-fit); below a readable size it becomes three
+                       stacked panels. Print keeps its own scale. */
+                    @media screen {
+                      .venn-print-wrapper .venn-visual { zoom: var(--venn-fit, 1); }
+                      .venn-stacked .venn-visual { zoom: 1; min-width: 0 !important; width: auto !important; height: auto !important; display: flex; flex-direction: column; gap: 14px; }
+                      .venn-stacked .venn-visual > div { position: static !important; width: auto !important; transform: none !important; }
+                      .venn-stacked .venn-visual > div:nth-child(1) { order: 1; }
+                      .venn-stacked .venn-visual > div:nth-child(3) { order: 2; background: #f5f3ff; border: 4px solid #a78bfa; border-radius: 18px; padding: 16px; box-sizing: border-box; }
+                      .venn-stacked .venn-visual > div:nth-child(2) { order: 3; }
+                      .venn-stacked .venn-visual > div > div:first-child:not([role="heading"]) { padding-left: 0 !important; padding-right: 0 !important; }
+                      .venn-stacked [data-venn-circle] { width: auto !important; height: auto !important; border-radius: 18px !important; padding: 16px !important; }
+                    }
                     html[data-alloflow-theme="dark"] .venn-print-wrapper { background: #f8fafc !important; color: #0f172a !important; }
                     @media print {
                       .venn-print-wrapper { page-break-inside: avoid; break-inside: avoid; padding: 12px 0; }
@@ -48273,7 +48372,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       ${main_en ? `<div style="font-size:1em; background:transparent; color:#475569; font-style:italic; margin-top:6px;">(${main_en})</div>` : ''}
                       <div style="display: inline-flex; align-items: center; gap: 8px; margin-top: 12px;">
                         <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#fb7185;"></span>
-                        <span class="venn-compare-label" style="font-size: 0.7em; font-weight: 700; background:transparent; color:#475569; text-transform: uppercase; letter-spacing: 0.08em;">Compare and Contrast</span>
+                        <span class="venn-compare-label" style="font-size: max(12px, 0.7em); font-weight: 700; background:transparent; color:#475569; text-transform: uppercase; letter-spacing: 0.08em;">Compare and Contrast</span>
                         <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#60a5fa;"></span>
                       </div>
                   </div>
@@ -48289,7 +48388,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ${setA.title_en ? `<div style="font-size:0.85em; background:transparent; color:#9f1239; margin-top:6px; font-style: italic;">(${setA.title_en})</div>` : ''}
                           </div>
                           <!-- Circle Body — solid fill so backdrop never bleeds through; radial gradient adds soft depth -->
-                          <div data-venn-circle="A" style="width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle at 30% 35%, #ffe4e6 0%, #fecdd3 100%); border: 4px solid #fb7185; box-sizing: border-box; padding: 60px 140px 40px 50px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 12px 28px -8px rgba(244,63,94,0.28); z-index: 1; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                          <div data-venn-circle="A" style="width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle at 30% 35%, #ffe4e6 0%, #fecdd3 100%); border: 4px solid #fb7185; box-sizing: border-box; padding: 60px 174px 40px 44px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 12px 28px -8px rgba(244,63,94,0.28); z-index: 1; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
                               <ul style="list-style: none; padding: 0; margin: 0; width: 100%;">
                                   ${renderListA(setA.items, setA.items_en, 8)}
                               </ul>
@@ -48305,7 +48404,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ${setB.title_en ? `<div style="font-size:0.85em; background:transparent; color:#1e40af; margin-top:6px; font-style: italic;">(${setB.title_en})</div>` : ''}
                           </div>
                           <!-- Circle Body -->
-                          <div data-venn-circle="B" style="width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle at 70% 35%, #dbeafe 0%, #bfdbfe 100%); border: 4px solid #60a5fa; box-sizing: border-box; padding: 60px 50px 40px 140px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 12px 28px -8px rgba(59,130,246,0.28); z-index: 2; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
+                          <div data-venn-circle="B" style="width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle at 70% 35%, #dbeafe 0%, #bfdbfe 100%); border: 4px solid #60a5fa; box-sizing: border-box; padding: 60px 44px 40px 174px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 12px 28px -8px rgba(59,130,246,0.28); z-index: 2; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
                               <ul style="list-style: none; padding: 0; margin: 0; width: 100%;">
                                   ${renderListB(setB.items, setB.items_en, 8)}
                               </ul>
@@ -48625,6 +48724,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   .flowchart-print-wrapper { -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 24px 16px; border-radius: 16px; }
                   .flowchart-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
                   .flowchart-step { page-break-inside: avoid; break-inside: avoid; }
+                  .flow-kids { display: flex; justify-content: center; width: 100%; }
+                  .flow-kid { --flow-line: linear-gradient(currentColor, currentColor); --flow-x: left; --flow-w: 100%; position: relative; flex: 1 1 0; min-width: 0; max-width: 176px; box-sizing: border-box; padding: 14px 8px; display: flex;
+                    background: var(--flow-line) center top / 2px 14px no-repeat, var(--flow-line) center bottom / 2px 14px no-repeat, var(--flow-line) var(--flow-x) top / var(--flow-w) 2px no-repeat, var(--flow-line) var(--flow-x) bottom / var(--flow-w) 2px no-repeat; }
+                  .flow-kid:first-child { --flow-x: right; --flow-w: calc(50% + 1px); }
+                  .flow-kid:last-child { --flow-x: left; --flow-w: calc(50% + 1px); }
                   @media print {
                     .flowchart-print-wrapper { padding: 12px; }
                     .flowchart-print-wrapper .flowchart-step { box-shadow: none !important; }
@@ -48645,16 +48749,16 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     ? `<div style="position: relative; width: 130px; height: 130px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center;">` +
                       `<div aria-hidden="true" style="position: absolute; inset: 0; top:0; left:0; right:0; bottom:0; background: ${c.soft}; border: 2px solid ${c.border}; transform: rotate(45deg); border-radius: 4px; z-index: 1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>` +
                       `<div style="position: relative; z-index: 2; text-align: center; width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center;">` +
-                      `<span style="font-weight: bold; font-size: 0.75rem; color: ${c.accent}; line-height: 1.25; word-wrap: break-word;">${idx + 1}. ${b.title}</span>` +
-                      `${b.title_en ? `<span style="font-size: 0.65rem; color: ${c.accent}; opacity: 0.85; line-height: 1.25; margin-top: 4px;">(${b.title_en})</span>` : ''}` +
+                      `<span style="font-weight: bold; font-size: max(12px, 0.75rem); color: ${c.accent}; line-height: 1.25; word-wrap: break-word;">${idx + 1}. ${b.title}</span>` +
+                      `${b.title_en ? `<span style="font-size: max(12px, 0.65rem); color: ${c.accent}; opacity: 0.85; line-height: 1.25; margin-top: 4px;">(${b.title_en})</span>` : ''}` +
                       `</div></div>`
                     : `<div style="background: ${c.bg}; border: 2px solid ${c.border}; border-radius: 8px; padding: 16px; text-align: center; width: 256px; min-height: 60px; display: flex; flex-direction: column; justify-content: center; z-index: 10; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">` +
                       `<span style="font-weight: bold; font-size: 0.875rem; color: ${c.accent};">${idx + 1}. ${b.title}</span>` +
-                      `${b.title_en ? `<span style="font-size: 0.75rem; color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${b.title_en})</span>` : ''}` +
+                      `${b.title_en ? `<span style="font-size: max(12px, 0.75rem); color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${b.title_en})</span>` : ''}` +
                       `</div>`}
-                                  ${hasBranches ? `<div style="display: flex; justify-content: center; gap: 16px; margin-top: 8px; width: 100%; position: relative; align-items: stretch;"><div aria-hidden="true" style="position: absolute; top: 0; left: 40px; right: 40px; height: 16px; border-top: 2px solid ${c.border}; border-left: 2px solid ${c.border}; border-right: 2px solid ${c.border}; border-radius: 12px 12px 0 0;"></div>
-                                      ${b.items.map((item, k) => `<div style="display: flex; flex-direction: column; align-items: center; padding-top: 16px; flex: 1; max-width: 150px;"><div style="background: white; border: 1px solid ${c.border}; padding: 8px; border-radius: 4px; font-size: 0.75rem; color: ${c.accent}; text-align: center; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); width: 100%; height: 100%; flex: 1; display: flex; flex-direction: column; justify-content: center;">${item}${b.items_en?.[k] ? `<div style="font-size: 0.65rem; color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${b.items_en[k]})</div>` : ''}</div></div>`).join('')}</div>` : `
-                                      ${b.items && b.items.length === 1 && b.items[0] ? `<div style="margin-top: 8px; background: ${c.bg}; color: ${c.accent}; font-size: 0.75rem; padding: 4px 12px; border-radius: 9999px; border: 1px solid ${c.border};">${b.items[0]} ${b.items_en?.[0] ? `<span style="opacity: 0.85;">(${b.items_en[0]})</span>` : ''}</div>` : ''}`}
+                                  ${hasBranches ? `<div aria-hidden="true" style="width: 2px; height: 12px; background: ${c.border};${isDecision ? ' margin-top: 10px;' : ''}"></div><div class="flow-kids">
+                                      ${b.items.map((item, k) => `<div class="flow-kid" style="color: ${c.border};"><div style="background: white; border: 1px solid ${c.border}; padding: 8px; border-radius: 4px; font-size: max(12px, 0.75rem); color: ${c.accent}; text-align: center; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); width: 100%; box-sizing: border-box; flex: 1; min-width: 0; overflow-wrap: break-word; display: flex; flex-direction: column; justify-content: center;">${item}${b.items_en?.[k] ? `<div style="font-size: max(12px, 0.65rem); color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${b.items_en[k]})</div>` : ''}</div></div>`).join('')}</div>` : `
+                                      ${b.items && b.items.length === 1 && b.items[0] ? `<div style="margin-top: 8px; background: ${c.bg}; color: ${c.accent}; font-size: max(12px, 0.75rem); padding: 4px 12px; border-radius: 9999px; border: 1px solid ${c.border};">${b.items[0]} ${b.items_en?.[0] ? `<span style="opacity: 0.85;">(${b.items_en[0]})</span>` : ''}</div>` : ''}`}
                               </div>`;
                       }).join('')}
                       <div aria-hidden="true" style="height: 32px; width: 3px; background: #475569;"></div><div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; font-size: 0.85em; font-weight: bold; padding: 10px 28px; border-radius: 9999px; border: 2px solid #475569; box-shadow: 0 4px 8px -2px rgba(0,0,0,0.2); letter-spacing: 0.04em; text-transform: uppercase;">${t('organizer.labels.end')}</div></div></div></div>`;
@@ -48671,6 +48775,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     <style>
                       .ce-print-wrapper { page-break-inside: avoid; -webkit-print-color-adjust: exact; print-color-adjust: exact; background: white; padding: 28px 20px; border-radius: 16px; }
                       .ce-print-wrapper * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+                      .ce-print-wrapper .ce-card { min-width: 0; overflow-wrap: anywhere; }
+                      @media screen and (max-width: 560px) { .ce-print-wrapper { padding: 16px 12px; } .ce-pair { flex-direction: column; gap: 6px !important; } .ce-pair > div[aria-hidden="true"] { align-self: center; } .ce-pair > div[aria-hidden="true"] svg { transform: rotate(90deg); } }
                       .ce-pair { page-break-inside: avoid; break-inside: avoid; }
                       @media print {
                         .ce-print-wrapper { padding: 12px; }
@@ -48682,7 +48788,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       <div style="text-align:center; margin-bottom: 28px;">
                         <h3 style="margin:0; font-size: 1.7em; color: #1e293b; font-weight: 800; letter-spacing: -0.01em;">${main}</h3>
                         ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:6px;">(${main_en})</div>` : ''}
-                        <div style="display:inline-flex; align-items:center; gap:8px; margin-top:10px; font-size:0.7em; font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.08em;">
+                        <div style="display:inline-flex; align-items:center; gap:8px; margin-top:10px; font-size:max(12px, 0.7em); font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.08em;">
                           <span>${causeLabel}</span>
                           <span aria-hidden="true" style="color:#64748b;">&rarr;</span>
                           <span>${effectLabel}</span>
@@ -48702,8 +48808,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               }).join('');
                           return `<div class="ce-pair" role="group" aria-label="Cause and effect pair ${i + 1} of ${total}" style="display: flex; align-items: stretch; gap: 14px;">
                             <div class="ce-card" style="flex: 1; background: linear-gradient(135deg, ${c.bg} 0%, white 100%); border: 2px solid ${c.border}; padding: 16px 18px; border-radius: 12px; box-shadow: 0 2px 6px -2px rgba(0,0,0,0.08); position:relative;">
-                              <div style="display:inline-flex; align-items:center; gap:6px; background:${c.border}; color:white; font-weight:800; font-size:0.7em; text-transform:uppercase; letter-spacing:0.08em; padding:3px 10px; border-radius:999px; margin-bottom:10px;">
-                                <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:white; color:${c.accent}; font-weight:800; display:inline-flex; align-items:center; justify-content:center; font-size:0.75em;">${i + 1}</span>
+                              <div style="display:inline-flex; align-items:center; gap:6px; background:${c.border}; color:white; font-weight:800; font-size:max(12px, 0.7em); text-transform:uppercase; letter-spacing:0.08em; padding:3px 10px; border-radius:999px; margin-bottom:10px;">
+                                <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:white; color:${c.accent}; font-weight:800; display:inline-flex; align-items:center; justify-content:center; font-size:max(12px, 0.75em);">${i + 1}</span>
                                 ${causeLabel}
                               </div>
                               <div style="color: ${c.accent}; font-weight: 700; font-size:0.98em; line-height:1.3;">${b.title}</div>
@@ -48715,7 +48821,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               </svg>
                             </div>
                             <div class="ce-card" style="flex: 1.3; background: linear-gradient(135deg, ${c.soft} 0%, white 100%); border: 2px solid ${c.border}; padding: 16px 18px; border-radius: 12px; box-shadow: 0 2px 6px -2px rgba(0,0,0,0.08); position:relative;">
-                              <div style="display:inline-flex; align-items:center; gap:6px; background:${c.accent}; color:white; font-weight:800; font-size:0.7em; text-transform:uppercase; letter-spacing:0.08em; padding:3px 10px; border-radius:999px; margin-bottom:10px;">
+                              <div style="display:inline-flex; align-items:center; gap:6px; background:${c.accent}; color:white; font-weight:800; font-size:max(12px, 0.7em); text-transform:uppercase; letter-spacing:0.08em; padding:3px 10px; border-radius:999px; margin-bottom:10px;">
                                 ${effectLabel}${effectItems.length > 1 ? `s (${effectItems.length})` : ''}
                               </div>
                               ${effectsHtml}
@@ -48749,7 +48855,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     </style>
                     <div class="ps-print-wrapper" style="max-width: 860px; margin: 0 auto;">
                       <div class="ps-card" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 2px solid #fca5a5; border-left: 6px solid #dc2626; padding: 22px 26px; margin-bottom: 24px; border-radius: 14px; box-shadow: 0 4px 10px -2px rgba(220,38,38,0.15); position: relative;">
-                        <div style="display:inline-flex; align-items:center; gap:8px; background:#dc2626; color:white; font-weight:800; font-size:0.7em; text-transform:uppercase; letter-spacing:0.1em; padding:4px 12px; border-radius:999px; margin-bottom:12px;">
+                        <div style="display:inline-flex; align-items:center; gap:8px; background:#dc2626; color:white; font-weight:800; font-size:max(12px, 0.7em); text-transform:uppercase; letter-spacing:0.1em; padding:4px 12px; border-radius:999px; margin-bottom:12px;">
                           <span aria-hidden="true">!</span> ${problemLabel}
                         </div>
                         <h3 style="margin: 0; color: #7f1d1d; font-size: 1.4em; font-weight: 800; line-height:1.3;">${main}</h3>
@@ -48767,7 +48873,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         ${psSolutions.map((b, i) => `<div class="ps-card" style="background: linear-gradient(135deg, #f0fdf4 0%, white 100%); border: 2px solid #86efac; border-left: 5px solid #16a34a; padding: 16px 18px; border-radius: 12px; box-shadow: 0 2px 6px -2px rgba(22,163,74,0.12); position:relative;">
                           <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:8px;">
                             <span style="display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:24px; height:24px; border-radius:50%; background:#16a34a; color:white; font-weight:800; font-size:0.85em;">${i + 1}</span>
-                            <h4 style="color: #166534; margin: 0; font-size:1em; font-weight:700; line-height:1.3;">${b.title}${b.title_en ? `<div style="color: #16a34a; font-size: 0.78em; margin-top:2px; font-style:italic; font-weight:normal;">(${b.title_en})</div>` : ''}</h4>
+                            <h4 style="color: #166534; margin: 0; font-size:1em; font-weight:700; line-height:1.3;">${b.title}${b.title_en ? `<div style="color: #16a34a; font-size: max(12px, 0.78em); margin-top:2px; font-style:italic; font-weight:normal;">(${b.title_en})</div>` : ''}</h4>
                           </div>
                           <ul style="margin: 0; padding: 0; list-style: none; color: #14532d;">
                             ${(b.items || []).map((it, k) => {
@@ -48779,7 +48885,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         </div>`).join('')}
                       </div>
                       ${psOutcome ? `<div class="ps-card" style="margin-top: 22px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px solid #93c5fd; border-left: 6px solid #2563eb; padding: 20px 24px; border-radius: 14px; box-shadow: 0 3px 8px -2px rgba(37,99,235,0.15);">
-                        <div style="display:inline-flex; align-items:center; gap:8px; background:#2563eb; color:white; font-weight:800; font-size:0.7em; text-transform:uppercase; letter-spacing:0.1em; padding:4px 12px; border-radius:999px; margin-bottom:10px;">
+                        <div style="display:inline-flex; align-items:center; gap:8px; background:#2563eb; color:white; font-weight:800; font-size:max(12px, 0.7em); text-transform:uppercase; letter-spacing:0.1em; padding:4px 12px; border-radius:999px; margin-bottom:10px;">
                           ${psOutcome.title || 'Outcome'}
                         </div>
                         ${psOutcome.title_en ? `<div style="color: #1e40af; font-style: italic; font-size:0.85em; margin-bottom:8px;">(${psOutcome.title_en})</div>` : ''}
@@ -48818,7 +48924,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     <div role="img" aria-label="T-Chart comparing ${left.title} and ${right.title}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; max-width: 800px; margin: 0 auto; border: 2px solid #cbd5e1; border-radius: 12px; overflow: hidden; background: white;">
                       <div style="padding: 20px; border-right: 2px solid #cbd5e1; background: linear-gradient(to bottom, rgba(207, 250, 254, 0.3), white);">
                         <h4 style="margin: 0 0 12px 0; padding: 10px; background: #cffafe; color: #155e75; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; border-radius: 8px; border: 1px solid #67e8f9; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                          ${left.title}${left.title_en ? `<div style="font-size: 0.75em; font-weight: normal; opacity: 0.85; text-transform: none; letter-spacing: normal;">(${left.title_en})</div>` : ''}
+                          ${left.title}${left.title_en ? `<div style="font-size: max(12px, 0.75em); font-weight: normal; opacity: 0.85; text-transform: none; letter-spacing: normal;">(${left.title_en})</div>` : ''}
                         </h4>
                         <ul style="list-style: none; padding: 0; margin: 0; color: #155e75;">
                           ${renderTChartItems(left.items, left.items_en, '#22d3ee')}
@@ -48826,7 +48932,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       </div>
                       <div style="padding: 20px; background: linear-gradient(to bottom, rgba(224, 231, 255, 0.3), white);">
                         <h4 style="margin: 0 0 12px 0; padding: 10px; background: #e0e7ff; color: #3730a3; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; border-radius: 8px; border: 1px solid #a5b4fc; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                          ${right.title}${right.title_en ? `<div style="font-size: 0.75em; font-weight: normal; opacity: 0.85; text-transform: none; letter-spacing: normal;">(${right.title_en})</div>` : ''}
+                          ${right.title}${right.title_en ? `<div style="font-size: max(12px, 0.75em); font-weight: normal; opacity: 0.85; text-transform: none; letter-spacing: normal;">(${right.title_en})</div>` : ''}
                         </h4>
                         <ul style="list-style: none; padding: 0; margin: 0; color: #3730a3;">
                           ${renderTChartItems(right.items, right.items_en, '#818cf8')}
@@ -48859,7 +48965,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       return `<div style="background: white; border: 2px solid #ddd6fe; border-radius: 12px; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid;">
                         <div style="background: linear-gradient(to right, #ede9fe, #fae8ff); padding: 10px 14px; border-bottom: 2px solid #ddd6fe;">
                           <div style="color: #581c87; font-weight: 800; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em;">${branch.title || `Category ${bi + 1}`}</div>
-                          ${branch.title_en ? `<div style="font-size: 0.75em; color: #7c3aed; font-style: italic;">(${branch.title_en})</div>` : ''}
+                          ${branch.title_en ? `<div style="font-size: max(12px, 0.75em); color: #7c3aed; font-style: italic;">(${branch.title_en})</div>` : ''}
                         </div>
                         <ul style="list-style: none; padding: 12px; margin: 0;">${items || '<li style="font-style: italic; color: #64748b; font-size: 0.85em; text-align: center;">No causes</li>'}</ul>
                       </div>`;
@@ -48880,7 +48986,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           <polygon points="${TAIL_X},${SPINE_Y - 20} ${TAIL_X + 30},${SPINE_Y} ${TAIL_X},${SPINE_Y + 20}" fill="#a78bfa" opacity="0.5" />
                           <line x1="${TAIL_X + 30}" y1="${SPINE_Y}" x2="${HEAD_X}" y2="${SPINE_Y}" stroke="#7c3aed" stroke-width="6" stroke-linecap="round" />
                           <rect x="${HEAD_X}" y="${SPINE_Y - 40}" width="120" height="80" rx="12" fill="#7c3aed" />
-                          <text x="${HEAD_X + 60}" y="${SPINE_Y + 5}" text-anchor="middle" fill="white" font-weight="800" font-size="11" font-family="Inter, sans-serif">${(main || 'Effect').slice(0, 16)}</text>
+                          ${(() => { const lines = []; let cur = ''; String(main || 'Effect').split(' ').filter(Boolean).forEach((w) => { if (cur && (cur + ' ' + w).length > 13) { lines.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w; }); if (cur) lines.push(cur); const shown = lines.slice(0, 5); if (lines.length > 5) shown[4] = shown[4] + '…'; const size = shown.some((l) => l.length > 14) ? 8 : 10; const y0 = SPINE_Y + 4 - (shown.length - 1) * 6; return `<text text-anchor="middle" fill="white" font-weight="800" font-size="${size}" font-family="Inter, sans-serif">${shown.map((l, i) => `<tspan x="${HEAD_X + 60}" y="${y0 + i * 12}">${l}</tspan>`).join('')}</text>`; })()}
                           ${boneSvg}
                         </svg>
                       </div>
@@ -48893,17 +48999,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   const rightBranches = branches.slice(half);
                   const renderBranchCard = (b, side) => {
                       const lineStyle = side === 'left'
-                        ? 'position: absolute; top: 50%; right: -43px; width: 40px; height: 2px; background: #99f6e4;'
-                        : 'position: absolute; top: 50%; left: -43px; width: 40px; height: 2px; background: #99f6e4;';
+                        ? 'position: absolute; top: 50%; inset-inline-end: -43px; width: 40px; height: 2px; background: #99f6e4;'
+                        : 'position: absolute; top: 50%; inset-inline-start: -43px; width: 40px; height: 2px; background: #99f6e4;';
                       const itemsHtml = (b.items || []).map((it, i) => {
                           const text = typeof it === 'object' ? (it.text || '') : String(it);
                           return `<li style="margin: 2px 0; font-size: 0.85em; color: #134e4a;">${text}${b.items_en?.[i] ? ` <span style="color: #5eead4; font-style: italic;">(${b.items_en[i]})</span>` : ''}</li>`;
                       }).join('');
-                      return `<div style="background: white; border: 3px solid #99f6e4; padding: 14px; border-radius: 16px; text-align: ${side === 'left' ? 'right' : 'left'}; min-width: 180px; max-width: 240px; position: relative; -webkit-print-color-adjust: exact; print-color-adjust: exact;">` +
+                      return `<div class="allo-hub-card" style="background: white; border: 3px solid #99f6e4; padding: 14px; border-radius: 16px; text-align: start; min-width: 0; width: 100%; max-width: 240px; box-sizing: border-box; position: relative; -webkit-print-color-adjust: exact; print-color-adjust: exact;">` +
                           `<div style="color: #134e4a; font-weight: 800;">${b.title}</div>` +
                           (b.title_en ? `<div style="font-size: 0.8em; color: #14b8a6; font-style: italic;">(${b.title_en})</div>` : '') +
-                          (itemsHtml ? `<ul style="list-style: none; padding: 0; margin: 6px 0 0 0; ${side === 'left' ? 'text-align: right;' : 'text-align: left;'}">${itemsHtml}</ul>` : '') +
-                          `<div style="${lineStyle}"></div></div>`;
+                          (itemsHtml ? `<ul style="list-style: none; padding: 0; margin: 6px 0 0 0; text-align: start;">${itemsHtml}</ul>` : '') +
+                          `<div class="allo-hub-link" aria-hidden="true" style="${lineStyle}"></div></div>`;
                   };
                   innerContent = `
                     <style>
@@ -48913,15 +49019,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         .cmap-print-wrapper { page-break-inside: avoid; break-inside: avoid; }
                       }
                     </style>
-                    <div class="cmap-print-wrapper" role="img" aria-label="Concept map: ${main}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin: 0 auto; padding: 20px;">
-                      <div style="display: flex; flex-direction: column; gap: 20px; align-items: flex-end; flex: 1;">
+                    <div class="cmap-print-wrapper allo-hub-map" role="img" aria-label="Concept map: ${main}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin: 0 auto; padding: 20px;">
+                      <div class="allo-hub-col" style="display: flex; flex-direction: column; gap: 20px; align-items: flex-end; flex: 1; min-width: 0;">
                         ${leftBranches.map(b => renderBranchCard(b, 'left')).join('')}
                       </div>
-                      <div style="width: 200px; height: 200px; border-radius: 50%; background: linear-gradient(135deg, #14b8a6, #059669); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15); border: 5px solid #ccfbf1; flex-shrink: 0; z-index: 2;">
-                        <h3 style="margin: 0; font-size: 1.2em;">${main}</h3>
+                      <div class="allo-hub-center" style="width: 200px; height: 200px; box-sizing: border-box; border-radius: 50%; background: linear-gradient(135deg, #14b8a6, #059669); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15); border: 5px solid #ccfbf1; flex-shrink: 0; z-index: 2;">
+                        <h3 style="margin: 0; font-size: 1.2em; color: inherit;">${main}</h3>
                         ${main_en ? `<div style="font-size: 0.8em; opacity: 0.85; margin-top: 5px;">(${main_en})</div>` : ''}
                       </div>
-                      <div style="display: flex; flex-direction: column; gap: 20px; align-items: flex-start; flex: 1;">
+                      <div class="allo-hub-col" style="display: flex; flex-direction: column; gap: 20px; align-items: flex-start; flex: 1; min-width: 0;">
                         ${rightBranches.map(b => renderBranchCard(b, 'right')).join('')}
                       </div>
                     </div>`;
@@ -48938,18 +49044,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   const total = branches.length;
                   const renderBranch = (b, side, globalIdx) => {
                       const c = _pairColor(globalIdx);
-                      const connectorPos = side === 'left' ? `right: -43px;` : `left: -43px;`;
-                      const itemAlign = side === 'left' ? 'right' : 'left';
+                      const connectorPos = side === 'left' ? `inset-inline-end: -43px;` : `inset-inline-start: -43px;`;
                       const itemsHtml = (b.items || []).map((it, k) => {
                           const text = typeof it === 'object' ? (it.text || '') : String(it);
                           const trans = b.items_en?.[k];
                           return `<li style="margin: 3px 0; font-size: 0.82em; color: ${c.accent}; line-height: 1.35;">${text}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${trans})</em>` : ''}</li>`;
                       }).join('');
-                      return `<div class="mindmap-branch" role="group" aria-label="Mind map branch ${globalIdx + 1} of ${total}: ${b.title}" style="background: linear-gradient(135deg, ${c.bg} 0%, white 100%); border: 3px solid ${c.border}; padding: 14px 18px; border-radius: 18px; text-align: ${itemAlign}; min-width: 180px; max-width: 240px; position: relative; box-shadow: 0 3px 8px -2px rgba(0,0,0,0.08);">
+                      return `<div class="mindmap-branch allo-hub-card" role="group" aria-label="Mind map branch ${globalIdx + 1} of ${total}: ${b.title}" style="background: linear-gradient(135deg, ${c.bg} 0%, white 100%); border: 3px solid ${c.border}; padding: 14px 18px; border-radius: 18px; text-align: start; min-width: 0; width: 100%; max-width: 240px; box-sizing: border-box; position: relative; box-shadow: 0 3px 8px -2px rgba(0,0,0,0.08);">
                           <div style="color: ${c.accent}; font-weight: 800; font-size: 0.95em; line-height: 1.25;">${b.title}</div>
-                          ${b.title_en ? `<div style="font-size: 0.78em; color: ${c.accent}; opacity: 0.8; font-style: italic; margin-top: 2px;">(${b.title_en})</div>` : ''}
+                          ${b.title_en ? `<div style="font-size: max(12px, 0.78em); color: ${c.accent}; opacity: 0.8; font-style: italic; margin-top: 2px;">(${b.title_en})</div>` : ''}
                           ${itemsHtml ? `<ul style="list-style: none; padding: 0; margin: 8px 0 0 0; border-top: 1px solid ${c.soft}; padding-top: 8px;">${itemsHtml}</ul>` : ''}
-                          <div aria-hidden="true" style="position: absolute; top: 50%; ${connectorPos} width: 40px; height: 3px; background: ${c.border}; border-radius: 2px;"></div>
+                          <div class="allo-hub-link" aria-hidden="true" style="position: absolute; top: 50%; ${connectorPos} width: 40px; height: 3px; background: ${c.border}; border-radius: 2px;"></div>
                         </div>`;
                   };
                   innerContent = `
@@ -48963,15 +49068,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       }
                     </style>
                     <div class="mindmap-print-wrapper">
-                      <div role="img" aria-label="Mind map: ${main}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin: 0 auto;">
-                        <div style="display: flex; flex-direction: column; gap: 22px; align-items: flex-end; flex: 1;">
+                      <div class="allo-hub-map" role="img" aria-label="Mind map: ${main}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin: 0 auto;">
+                        <div class="allo-hub-col" style="display: flex; flex-direction: column; gap: 22px; align-items: flex-end; flex: 1; min-width: 0;">
                           ${leftBranches.map((b, i) => renderBranch(b, 'left', i)).join('')}
                         </div>
-                        <div style="width: 210px; height: 210px; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #818cf8 0%, #6366f1 50%, #4f46e5 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 24px; box-shadow: 0 12px 28px -6px rgba(99,102,241,0.45), inset 0 -8px 20px rgba(30,27,75,0.25); border: 5px solid #eef2ff; flex-shrink: 0; z-index: 2;">
-                          <h3 style="margin: 0; font-size: 1.25em; font-weight: 800; line-height: 1.2; text-shadow: 0 1px 2px rgba(30,27,75,0.3);">${main}</h3>
-                          ${main_en ? `<div style="font-size: 0.78em; opacity: 0.9; margin-top: 6px; font-style: italic;">(${main_en})</div>` : ''}
+                        <div class="allo-hub-center" style="width: 210px; height: 210px; box-sizing: border-box; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #818cf8 0%, #6366f1 50%, #4f46e5 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 24px; box-shadow: 0 12px 28px -6px rgba(99,102,241,0.45), inset 0 -8px 20px rgba(30,27,75,0.25); border: 5px solid #eef2ff; flex-shrink: 0; z-index: 2;">
+                          <h3 style="margin: 0; font-size: 1.25em; font-weight: 800; line-height: 1.2; color: inherit; text-shadow: 0 1px 2px rgba(30,27,75,0.3);">${main}</h3>
+                          ${main_en ? `<div style="font-size: max(12px, 0.78em); opacity: 0.9; margin-top: 6px; font-style: italic;">(${main_en})</div>` : ''}
                         </div>
-                        <div style="display: flex; flex-direction: column; gap: 22px; align-items: flex-start; flex: 1;">
+                        <div class="allo-hub-col" style="display: flex; flex-direction: column; gap: 22px; align-items: flex-start; flex: 1; min-width: 0;">
                           ${rightBranches.map((b, i) => renderBranch(b, 'right', half + i)).join('')}
                         </div>
                       </div>
@@ -48994,27 +49099,27 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     <div class="palace-print-wrapper" style="max-width: 860px; margin: 0 auto;">
                       <div style="text-align: center; margin-bottom: 26px;">
                         <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%); color: white; padding: 20px 40px; border-radius: 18px; display: inline-block; box-shadow: 0 8px 20px -4px rgba(30,27,75,0.4);">
-                          <h3 style="margin: 0; font-size: 1.45em; font-weight: 800;">&#127963; ${main}</h3>
+                          <h3 style="margin: 0; font-size: 1.45em; font-weight: 800; color: inherit;">&#127963; ${main}</h3>
                           ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 5px; font-style: italic;">(${main_en})</div>` : ''}
                         </div>
-                        <div style="font-size: 0.72em; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 10px;">Memory Palace &mdash; walk the rooms in order, picture each image vividly</div>
+                        <div style="font-size: max(12px, 0.72em); font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 10px;">Memory Palace &mdash; walk the rooms in order, picture each image vividly</div>
                       </div>
                       <div style="display: flex; flex-direction: column; gap: 14px;">
                         ${(() => { let locusNo = 0; const _rooms = _palaceRooms(); return _rooms.map((room, i) => {
                           const c = _pairColor(i);
                           return `<div class="palace-room" role="group" aria-label="Room ${i + 1} of ${_rooms.length}: ${room.title}" style="background: linear-gradient(135deg, ${c.bg} 0%, white 70%); border: 2px solid ${c.border}; border-left-width: 8px; border-radius: 12px; padding: 14px 18px; box-shadow: 0 4px 10px -3px rgba(0,0,0,0.12); text-align: left;">
                             <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
-                              <span style="font-size: 0.68em; font-weight: 800; color: white; background: ${c.border}; padding: 2px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">Room ${i + 1}</span>
+                              <span style="font-size: max(12px, 0.68em); font-weight: 800; color: white; background: ${c.border}; padding: 2px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">Room ${i + 1}</span>
                               <span style="font-weight: 800; color: ${c.accent}; font-size: 1.05em;">${room.title}</span>
                               ${room.title_en ? `<em style="font-size: 0.8em; color: ${c.accent}; opacity: 0.8;">(${room.title_en})</em>` : ''}
-                              ${room.mine ? `<span style="font-size: 0.62em; font-weight: 800; color: ${c.accent}; border: 1px solid ${c.border}; padding: 1px 7px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">Yours</span>` : ''}
+                              ${room.mine ? `<span style="font-size: max(12px, 0.62em); font-weight: 800; color: ${c.accent}; border: 1px solid ${c.border}; padding: 1px 7px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">Yours</span>` : ''}
                             </div>
                             <ol style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
                               ${room.loci.map((l) => {
                                 locusNo += 1;
                                 const mn = l.mnemonic;
                                 return `<li style="display: flex; gap: 10px; align-items: flex-start;">
-                                  <span aria-hidden="true" style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: ${c.border}; color: white; font-size: 0.75em; font-weight: 800; display: flex; align-items: center; justify-content: center;">${locusNo}</span>
+                                  <span aria-hidden="true" style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: ${c.border}; color: white; font-size: max(12px, 0.75em); font-weight: 800; display: flex; align-items: center; justify-content: center;">${locusNo}</span>
                                   <span style="color: ${c.accent};"><strong>${l.text}</strong>${l.trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${l.trans})</em>` : ''}${mn ? `<br><em style="font-size: 0.9em; opacity: 0.85;">${l.ownImage ? 'Your picture' : 'Picture this'}: ${mn}</em>` : ''}</span>
                                 </li>`;
                               }).join('')}
@@ -49022,7 +49127,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           </div>`;
                         }).join(''); })()}
                       </div>
-                      <div style="text-align: center; font-size: 0.75em; color: #64748b; margin-top: 14px; font-style: italic;">In the app, this palace is a walkable 3D space. On paper: cover the items, walk the numbers in order, and recall what lives at each locus.</div>
+                      <div style="text-align: center; font-size: max(12px, 0.75em); color: #64748b; margin-top: 14px; font-style: italic;">In the app, this palace is a walkable 3D space. On paper: cover the items, walk the numbers in order, and recall what lives at each locus.</div>
                     </div>`;
               } else if (type === '3D Concept Space') {
                   // 2D print projection of the 3D concept space: each strand renders
@@ -49043,10 +49148,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     <div class="cspace-print-wrapper" style="max-width: 860px; margin: 0 auto;">
                       <div style="text-align: center; margin-bottom: 26px;">
                         <div style="background: linear-gradient(135deg, #312e81 0%, #4338ca 60%, #6366f1 100%); color: white; padding: 20px 40px; border-radius: 18px; display: inline-block; box-shadow: 0 8px 20px -4px rgba(49,46,129,0.4);">
-                          <h3 style="margin: 0; font-size: 1.45em; font-weight: 800;">${main}</h3>
+                          <h3 style="margin: 0; font-size: 1.45em; font-weight: 800; color: inherit;">${main}</h3>
                           ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 5px; font-style: italic;">(${main_en})</div>` : ''}
                         </div>
-                        <div style="font-size: 0.72em; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 10px;">3D Concept Space &mdash; each strand is a depth plane</div>
+                        <div style="font-size: max(12px, 0.72em); font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 10px;">3D Concept Space &mdash; each strand is a depth plane</div>
                       </div>
                       <div style="display: flex; flex-direction: column; gap: 14px;">
                         ${branches.map((b, i) => {
@@ -49054,7 +49159,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           const inset = Math.min(i * 22, 88);
                           return `<div class="cspace-plane" role="group" aria-label="Depth plane ${i + 1} of ${branches.length}: ${b.title}" style="margin-left: ${inset}px; margin-right: ${Math.max(0, 88 - inset)}px; background: linear-gradient(135deg, ${c.bg} 0%, white 70%); border: 2px solid ${c.border}; border-left-width: 8px; border-radius: 12px; padding: 12px 18px; box-shadow: 0 4px 10px -3px rgba(0,0,0,0.12); text-align: left;">
                             <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
-                              <span style="font-size: 0.68em; font-weight: 800; color: white; background: ${c.border}; padding: 2px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">Plane ${i + 1}</span>
+                              <span style="font-size: max(12px, 0.68em); font-weight: 800; color: white; background: ${c.border}; padding: 2px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">Plane ${i + 1}</span>
                               <span style="font-weight: 800; color: ${c.accent}; font-size: 1.05em;">${b.title}</span>
                               ${b.title_en ? `<em style="font-size: 0.8em; color: ${c.accent}; opacity: 0.8;">(${b.title_en})</em>` : ''}
                             </div>
@@ -49062,13 +49167,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ${(b.items || []).map((it, k) => {
                                 const text = typeof it === 'object' ? (it.text || '') : String(it);
                                 const trans = b.items_en?.[k];
-                                return `<li style="font-size: 0.85em; font-weight: 600; color: ${c.accent}; background: white; border: 1.5px solid ${c.soft}; border-radius: 999px; padding: 4px 12px;">${text}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${trans})</em>` : ''}</li>`;
+                                return `<li style="margin: 0; font-size: 0.85em; font-weight: 600; color: ${c.accent}; background: white; border: 1.5px solid ${c.soft}; border-radius: 999px; padding: 4px 12px;">${text}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${trans})</em>` : ''}</li>`;
                               }).join('')}
                             </ul>
                           </div>`;
                         }).join('')}
                       </div>
-                      <div style="text-align: center; font-size: 0.75em; color: #64748b; margin-top: 14px; font-style: italic;">In the app, this organizer is an orbitable 3D space: left &rarr; right = sequence, higher = more abstract, depth = strand.</div>
+                      <div style="text-align: center; font-size: max(12px, 0.75em); color: #64748b; margin-top: 14px; font-style: italic;">In the app, this organizer is an orbitable 3D space: left &rarr; right = sequence, higher = more abstract, depth = strand.</div>
                     </div>`;
               } else {
                   // Generic fallback: pair-coded branch cards rotating through
@@ -49086,7 +49191,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     </style>
                     <div class="outline-print-wrapper" style="max-width: 900px; margin: 0 auto; text-align: center;">
                       <div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #4338ca 100%); color: white; padding: 22px 44px; border-radius: 18px; display: inline-block; margin-bottom: 28px; box-shadow: 0 8px 20px -4px rgba(79,70,229,0.35); position: relative;">
-                        <h3 style="margin: 0; font-size: 1.5em; font-weight: 800; letter-spacing: -0.01em; text-shadow: 0 1px 2px rgba(30,27,75,0.25);">${main}</h3>
+                        <h3 style="margin: 0; font-size: 1.5em; font-weight: 800; letter-spacing: -0.01em; color: inherit; text-shadow: 0 1px 2px rgba(30,27,75,0.25);">${main}</h3>
                         ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 6px; font-style: italic;">(${main_en})</div>` : ''}
                       </div>
                       <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 16px;">
@@ -49094,8 +49199,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           const c = _pairColor(i);
                           return `<div class="outline-card" style="flex: 1; min-width: 220px; max-width: 320px; background: white; border: 2px solid ${c.border}; border-radius: 12px; overflow: hidden; text-align: left; box-shadow: 0 3px 8px -2px rgba(0,0,0,0.08);">
                             <div style="background: linear-gradient(135deg, ${c.bg} 0%, ${c.soft} 100%); padding: 12px 16px; font-weight: 800; color: ${c.accent}; text-align: center; border-bottom: 2px solid ${c.border}; font-size: 0.95em; letter-spacing: -0.01em;">
-                              ${b.title}${b.title_en ? `<div style="font-weight: normal; font-size: 0.78em; color: ${c.accent}; opacity: 0.8; margin-top: 3px; font-style: italic;">(${b.title_en})</div>` : ''}
-                            </div>${b.kwlNote ? `<p style="margin: 12px 18px 0; font-size: 0.85em; font-weight: 700; color: #334155;">${_escTxt(b.kwlNote)}</p>${b.kwlPrompt ? '<div aria-hidden="true" style="margin: 10px 18px 14px; height: 7.5em; background: repeating-linear-gradient(transparent, transparent 2.4em, #94a3b8 2.4em, #94a3b8 2.5em);"></div>' : ''}` : ''}
+                              ${b.title}${b.title_en ? `<div style="font-weight: normal; font-size: max(12px, 0.78em); color: ${c.accent}; opacity: 0.8; margin-top: 3px; font-style: italic;">(${b.title_en})</div>` : ''}
+                            </div>${b.kwlNote ? `<p style="margin: 12px 18px 0; font-size: 0.85em; font-weight: 700; color: #334155;">${_escTxt(b.kwlNote)}</p>${b.kwlPrompt ? (isWorksheet ? '<div aria-hidden="true" style="margin: 10px 18px 14px; height: 7.5em; background: repeating-linear-gradient(transparent, transparent 2.4em, #94a3b8 2.4em, #94a3b8 2.5em);"></div>' : `<textarea class="interactive-textarea alloflow-response-input" rows="5" data-allo-response-key="${_escTxt(String(item.id || 'outline') + ':kwl:' + i)}" data-allo-response-type="free-response" data-allo-question="${_escTxt(b.kwlNote)}" aria-label="${_escTxt(b.kwlNote)}" style="display:block; box-sizing:border-box; width:calc(100% - 36px); margin: 10px 18px 14px;"></textarea>`) : ''}` : ''}
                             <ul style="padding: 14px 18px; margin: 0; list-style: none; color: ${c.accent};">
                               ${(b.items || []).map((it, k) => {
                                 const text = typeof it === 'object' ? (it.text || '') : String(it);
@@ -49225,10 +49330,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <style>
                     html[data-alloflow-theme="dark"] details.diagram-text-fallback { background:#0f172a !important;border-color:#475569 !important;color:#fff !important; }
                     html[data-alloflow-theme="dark"] details.diagram-text-fallback summary { color:#bfdbfe !important; }
+                    @media print { details.diagram-text-fallback:not([open]) { display:none !important; } }
                     html[data-alloflow-theme="dark"] .diagram-text-fallback-body,html[data-alloflow-theme="dark"] .diagram-text-fallback-body p,html[data-alloflow-theme="dark"] .diagram-text-fallback-body h4,html[data-alloflow-theme="dark"] .diagram-text-fallback-body li,html[data-alloflow-theme="dark"] .diagram-text-fallback-body strong,html[data-alloflow-theme="dark"] .diagram-text-fallback-body em { color:#fff !important; }
                   </style>
                   <details class="diagram-text-fallback" data-diagram-auto-open="large-text" style="margin-top:1rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.5rem 0.75rem;">
-                      <summary style="cursor:pointer;font-weight:700;color:#475569;font-size:0.9rem;">📋 View as text</summary>
+                      <summary style="cursor:pointer;font-weight:700;color:#475569;font-size:0.9rem;padding:6px 0;"><span aria-hidden="true">📋 </span>${_uiL('export.view_as_text', 'View as text')}</summary>
                       <div class="diagram-text-fallback-body" style="margin-top:0.5rem;color:#1e293b;font-size:0.95rem;line-height:1.5;">
                           <p style="margin:0 0 0.5rem 0;font-weight:700;">${escape(main)}${main_en ? ` <em style="color:#64748b;font-size:0.9em;font-weight:normal;">(${escape(main_en)})</em>` : ''}</p>
                           ${body}
@@ -49236,10 +49342,38 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   </details>
               `;
           })();
+          // Concept map + mind map: draw each branch's line all the way to the
+          // hub. Without script the short stubs beside the cards remain.
+          const _hubLinesScript = innerContent.indexOf('allo-hub-map') < 0 ? '' : `<script>(function(){ if (window.__alloHubLines) return; window.__alloHubLines = true;
+                    var NS = 'http://www.w3.org/2000/svg';
+                    function draw(){ var maps = document.querySelectorAll('.allo-hub-map'), m, i, map, hub, svg, cards, mr, hr, cr, hx, line;
+                      for (m = 0; m < maps.length; m++) { map = maps[m]; hub = map.querySelector('.allo-hub-center'); if (!hub) continue;
+                        svg = map.querySelector('svg.allo-hub-lines');
+                        if (!svg) { svg = document.createElementNS(NS, 'svg'); svg.setAttribute('class', 'allo-hub-lines'); svg.setAttribute('aria-hidden', 'true'); svg.setAttribute('focusable', 'false'); svg.setAttribute('preserveAspectRatio', 'none'); map.insertBefore(svg, map.firstChild); }
+                        while (svg.firstChild) svg.removeChild(svg.firstChild);
+                        map.classList.remove('allo-hub-drawn');
+                        if (getComputedStyle(map).flexDirection === 'column') continue;
+                        mr = map.getBoundingClientRect(); hr = hub.getBoundingClientRect(); if (!mr.width || !mr.height || !hr.width) continue;
+                        svg.setAttribute('viewBox', '0 0 ' + mr.width + ' ' + mr.height); hx = hr.left + hr.width / 2;
+                        cards = map.querySelectorAll('.allo-hub-card');
+                        for (i = 0; i < cards.length; i++) { cr = cards[i].getBoundingClientRect(); if (!cr.width) continue;
+                          line = document.createElementNS(NS, 'line');
+                          line.setAttribute('x1', (cr.left + cr.width / 2 < hx ? cr.right : cr.left) - mr.left); line.setAttribute('y1', cr.top + cr.height / 2 - mr.top);
+                          line.setAttribute('x2', hx - mr.left); line.setAttribute('y2', hr.top + hr.height / 2 - mr.top);
+                          line.setAttribute('stroke', getComputedStyle(cards[i]).borderTopColor); line.setAttribute('stroke-width', '3'); line.setAttribute('stroke-linecap', 'round');
+                          svg.appendChild(line); }
+                        map.classList.add('allo-hub-drawn'); } }
+                    var timer; function later(){ clearTimeout(timer); timer = setTimeout(draw, 80); }
+                    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', draw); else draw();
+                    window.addEventListener('load', draw); window.addEventListener('resize', later); window.addEventListener('beforeprint', draw); window.addEventListener('afterprint', later);
+                    try { window.matchMedia('print').addEventListener('change', draw); } catch (e) {}
+                    try { var ro = new ResizeObserver(later), all = document.querySelectorAll('.allo-hub-map'), k; for (k = 0; k < all.length; k++) ro.observe(all[k]); } catch (e) {}
+                  })();</script>`;
           return `
               <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${innerContent}
+                  ${_hubLinesScript}
                   ${_textFallback}
               </div>
           `;
@@ -49358,7 +49492,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               return `
                   <figure class="vp-panel" style="margin:0;background:#fff;border:1px solid #e5e7eb;border-radius:8px;overflow:visible;${_vpPad}">
                       <div class="vp-image-wrap" style="position:relative;">
-                          ${_imgUrl ? `<img loading="lazy" src="${_vpEsc(_imgUrl)}" alt="${_vpEsc(panel.decorative ? '' : ((_vpImageOv[idx] ? (panel.altHash && window.AlloModules?.AltText?.hashImage?.(_vpImageOv[idx]) === panel.altHash ? panel.alt : '') : panel.alt) || _cap || 'Panel ' + (idx + 1)))}"${panel.decorative ? ' role="presentation"' : ''} style="width:100%;height:auto;display:block;" />${_animated ? '<p style="margin:6px 0 0;font-size:0.85em;color:#475569;">' + _vpEsc(_animNote) + '</p>' : ''}` : '<div style="padding:32px;text-align:center;color:#64748b;">(no image)</div>'}
+                          ${_imgUrl ? `<img${isWorksheet ? '' : ' loading="lazy"'} src="${_vpEsc(_imgUrl)}" alt="${_vpEsc(panel.decorative ? '' : ((_vpImageOv[idx] ? (panel.altHash && window.AlloModules?.AltText?.hashImage?.(_vpImageOv[idx]) === panel.altHash ? panel.alt : '') : panel.alt) || _cap || 'Panel ' + (idx + 1)))}"${panel.decorative ? ' role="presentation"' : ''} style="width:100%;height:auto;display:block;" />${_animated ? '<p style="margin:6px 0 0;font-size:0.85em;color:#475569;">' + _vpEsc(_animNote) + '</p>' : ''}` : '<div style="padding:32px;text-align:center;color:#64748b;">(no image)</div>'}
                           ${_svgHtml}
                           ${_aiLabelHtml}
                           ${_userLabelHtml}
@@ -49373,12 +49507,31 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const _indices = (_vpOrder && _vpOrder.length === _vpPlan.panels.length)
                   ? _vpOrder
                   : _vpPlan.panels.map((_, i) => i);
-              const _panelsHtml = _indices
-                  .map((i) => _vpPlan.panels[i] ? _vpRenderPanel(_vpPlan.panels[i], i) : '')
-                  .join('');
-              const _gridCols = _vpPlan.panels.length === 1 ? 1 : 2;
+              // A plan may reuse one picture (same image, same labels) for every
+              // panel. Show that picture once, with each panel's caption under
+              // it, instead of a grid of identical copies.
+              const _panelList = [];
+              const _panelHeads = [];
+              _indices.forEach((i) => {
+                  const html = _vpPlan.panels[i] ? _vpRenderPanel(_vpPlan.panels[i], i) : '';
+                  if (!html) return;
+                  const capAt = html.indexOf('<figcaption');
+                  const head = capAt < 0 ? html.slice(0, html.lastIndexOf('</figure>')) : html.slice(0, capAt);
+                  const seen = head.indexOf('<img ') < 0 ? -1 : _panelHeads.indexOf(head);
+                  if (seen < 0) { _panelHeads.push(head); _panelList.push(html); return; }
+                  if (capAt < 0) return;
+                  const cap = html.slice(capAt, html.lastIndexOf('</figcaption>'));
+                  const capInner = cap.slice(cap.indexOf('>') + 1);
+                  if (!capInner.trim() || _panelList[seen].indexOf('>' + capInner + '<') >= 0) return;
+                  const extra = '<div style="margin-top:8px;">' + capInner + '</div>';
+                  const closeAt = _panelList[seen].lastIndexOf(_panelList[seen].indexOf('</figcaption>') >= 0 ? '</figcaption>' : '</figure>');
+                  _panelList[seen] = _panelList[seen].slice(0, closeAt) + extra + _panelList[seen].slice(closeAt);
+              });
+              const _panelsHtml = _panelList.join('');
+              const _gridCols = _panelList.length <= 1 ? 1 : 2;
               const _printReadingLayout = _indices.some(i => _vpPlan.panels[i] && _vpIsStructuredCaption(_vpCaptionText(_vpCaptionOv[i] !== undefined ? _vpCaptionOv[i] : _vpPlan.panels[i].caption)));
-              const _planTitle = _vpPlan.title ? `<p style="text-align:center;font-weight:600;color:#334155;margin:0 0 12px;">${_vpEsc(_vpPlan.title)}</p>` : '';
+              const _vpSameTitle = (a, b) => String(a || '').trim().toLowerCase() === String(b || '').trim().toLowerCase();
+              const _planTitle = _vpPlan.title && !_vpSameTitle(_vpPlan.title, title) ? `<p style="text-align:center;font-weight:600;color:#334155;margin:0 0 12px;">${_vpEsc(_vpPlan.title)}</p>` : '<div aria-hidden="true" style="height:12px;"></div>';
               _vpBody = `${_planTitle}<div class="vp-grid" data-vp-print-layout="${_printReadingLayout ? 'reading' : 'default'}" style="display:grid;grid-template-columns:repeat(${_gridCols},minmax(0,1fr));gap:14px;">${_panelsHtml}</div>`;
           } else if (item.data.imageUrl) {
               _vpBody = _vpRenderPanel(
@@ -49392,7 +49545,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   <style>
-                      .vp-label { position:absolute; transform:translate(-50%,-50%); background:rgba(255,255,255,0.92); color:#1e293b; border:1px solid #6366f1; border-radius:4px; padding:2px 6px; font-size:12px; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.12); white-space:nowrap; z-index:3; pointer-events:none; }
+                      .vp-label { position:absolute; transform:translate(calc(-50% + var(--vp-dx, 0px)),-50%); background:rgba(255,255,255,0.92); color:#1e293b; border:1px solid #6366f1; border-radius:4px; padding:2px 6px; font-size:12px; font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,0.12); width:max-content; max-width:100%; box-sizing:border-box; text-align:center; z-index:3; pointer-events:none; }
+                      @media screen and (max-width: 560px) { .vp-grid { grid-template-columns:minmax(0,1fr) !important; } }
                       .vp-label-user { border-color:#10b981; background:rgba(236,253,245,0.95); }
                       @media print {
                           .alloflow-resource-wrap ~ .alloflow-resource-wrap:has(.vp-grid[data-vp-print-layout="reading"]) { break-before:page; page-break-before:always; }
@@ -49404,6 +49558,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       }
                   </style>
                   ${_vpBody}
+                  <script>(function(){ if (window.__alloVpFit) return; window.__alloVpFit = true;
+                    function fit(){ var labels = document.querySelectorAll('.vp-label'), i, el, panel, p, r, dx;
+                      for (i = 0; i < labels.length; i++) labels[i].style.setProperty('--vp-dx', '0px');
+                      for (i = 0; i < labels.length; i++) { el = labels[i]; panel = el.closest('.section') || el.closest('.vp-panel'); if (!panel) continue;
+                        p = panel.getBoundingClientRect(); r = el.getBoundingClientRect(); if (!r.width || !p.width) continue; dx = 0;
+                        if (r.right > p.right - 8) dx = p.right - 8 - r.right;
+                        if (r.left + dx < p.left + 8) dx = p.left + 8 - r.left;
+                        if (dx) el.style.setProperty('--vp-dx', Math.round(dx) + 'px'); } }
+                    var timer; function later(){ clearTimeout(timer); timer = setTimeout(fit, 80); }
+                    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fit); else fit();
+                    window.addEventListener('load', fit); window.addEventListener('resize', later);
+                    document.addEventListener('load', later, true);
+                    try { window.matchMedia('print').addEventListener('change', fit); } catch (e) {}
+                  })();</script>
               </div>
           `;
       } else if (item.type === 'quiz') {
@@ -49495,7 +49663,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               }
               return -1;
           };
-          const hasSelfCheckableQuestions = quizQuestions.some((q) => !q?.type || q.type === 'mcq');
+          const hasCheckableFill = !quizGraded && quizQuestions.some((q) => q && q.type === 'fill-blank' && typeof q.expectedFill === 'string' && q.expectedFill.trim());
+          const hasSelfCheckableQuestions = hasCheckableFill || quizQuestions.some((q) => !q?.type || q.type === 'mcq');
           // Classify this resource's actual rendered formats, rather than the
           // other quizzes in a packet. Missing types retain legacy MCQ behavior.
           const quizQuestionTypes = quizQuestions.map(q => q.type === 'shortAnswer' ? 'short-answer' : (q.type || 'mcq'));
@@ -49555,14 +49724,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               </div>`;
                           }
                           if (itemType === 'fill-blank') {
+                              // Practice copies only: graded and assessment exports never carry the answer.
+                              const fillAnswers = quizGraded || isTeacher || isWorksheet ? [] : [q.expectedFill].concat(Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : []).filter(v => typeof v === 'string' && v.trim());
+                              const fillAttr = fillAnswers.length ? ` data-fill-answers="${_escTxt(fillAnswers.map(v => encodeURIComponent(v.trim())).join('|'))}"` : '';
+                              const fillFeedback = fillAnswers.length ? `<p id="${controlIdBase}_feedback" class="alloflow-quiz-feedback" hidden data-correct-label="${_qL('export.quiz_feedback_correct', 'Correct')}" data-review-label="${_qL('export.quiz_feedback_review', 'Review needed')}" data-unanswered-label="${_qL('export.quiz_feedback_unanswered', 'Unanswered')}" style="margin:0.5rem 0;font-weight:700;"></p>` : '';
                               return `
-                              <div class="question" data-item-type="fill-blank"${questionGroupAttrs}>
+                              <div class="question" data-item-type="fill-blank"${fillAttr}${questionGroupAttrs}>
                                   ${stem}
                                   <div style="margin:0.5rem 0;">
                                       ${isWorksheet
                                           ? `<span style="font-weight:700;">${_qL('output.quiz_answer', 'Answer')}:</span> ${fillableBlank(260)}`
                                           : `<label id="${controlIdBase}_fill_label" for="${controlIdBase}_fill" class="alloflow-response-label">${_qL('output.quiz_answer', 'Answer')}</label><input id="${controlIdBase}_fill" type="text" class="interactive-blank alloflow-response-input" data-allo-response-key="${responseKeyAttr}:fill" aria-labelledby="${controlIdBase}_fill_label ${questionId}"${responseDescription} placeholder="${_qL('placeholders.missing_word', 'Type the missing word…')}" style="width:100%;max-width:300px;padding:6px 10px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem"/>`}
                                   </div>
+                                  ${fillFeedback}
                                   ${isTeacher && q.expectedFill ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${_escQuiz(q.expectedFill)}${Array.isArray(q.acceptableAlternatives) && q.acceptableAlternatives.length > 0 ? ' <span style="font-weight:normal;font-style:italic">(also: ' + q.acceptableAlternatives.map(_escTxt).join(', ') + ')</span>' : ''}</p>` : ''}
                               </div>`;
                           }
@@ -49571,7 +49745,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               <div class="question" data-item-type="short-answer"${questionGroupAttrs}>
                                   ${stem}
                                   ${isWorksheet
-                                      ? ruledLines(3)
+                                      ? ruledLines(_answerLines(q.question, Array.isArray(q.studentCriteria) ? q.studentCriteria.length : 0, 3))
                                       : `<textarea class="interactive-textarea alloflow-response-input" data-allo-response-key="${responseKeyAttr}:short" aria-labelledby="${questionId}"${responseDescription} placeholder="${_qL('export.quiz_short_placeholder', 'Type your 1-2 sentence response…')}" rows="3" style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>`}
                                   ${isTeacher && q.expectedAnswer ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: <span style="font-weight:normal">${_escQuiz(q.expectedAnswer)}</span></p>` : ''}
                               </div>`;
@@ -49723,9 +49897,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       }).join('')}
                       ${quizGraded ? `<p class="alloflow-graded-note" style="margin:1rem 0;font-weight:700;color:#1e293b">${_escTxt(quizGradedNote)}</p>` : isTeacher || isWorksheet ? '' : `
                           <div class="quiz-controls" style="margin:1rem 0;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
-                              ${hasSelfCheckableQuestions ? `<button type="button" class="quiz-check-btn" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem"><span aria-hidden="true">🎯 </span>${_qL('export.quiz_check_mcq', 'Check multiple-choice answers')}</button>` : '<button type="button" class="quiz-check-btn" hidden disabled></button>'}
+                              ${hasSelfCheckableQuestions ? `<button type="button" class="quiz-check-btn" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem"><span aria-hidden="true">🎯 </span>${hasCheckableFill ? _qL('export.quiz_check_answers', 'Check my answers') : _qL('export.quiz_check_mcq', 'Check multiple-choice answers')}</button>` : '<button type="button" class="quiz-check-btn" hidden disabled></button>'}
                               <button type="button" class="quiz-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem"><span aria-hidden="true">↻ </span>${_qL('export.quiz_reset', 'Reset responses')}</button>
-                              <div class="quiz-results" role="status" aria-live="polite" aria-atomic="true" data-answer-changed-label="${_qL('export.quiz_answer_changed', 'An answer changed. Check your answers again for an updated result.')}" data-reset-label="${_qL('export.quiz_responses_cleared', 'Responses cleared.')}" style="font-size:0.95rem;font-weight:700;color:#1e293b;margin-left:0.5rem"></div>
+                              <div class="quiz-results" role="status" aria-live="polite" aria-atomic="true" data-answer-changed-label="${_qL('export.quiz_answer_changed', 'An answer changed. Check your answers again for an updated result.')}" data-reset-confirm-label="${_uiL('export.quiz_reset_confirm', 'This clears all your answers in this quiz. Press “{button}” again to confirm.', { button: _uiRaw('export.quiz_reset', 'Reset responses') })}" data-reset-label="${_qL('export.quiz_responses_cleared', 'Responses cleared.')}" style="font-size:0.95rem;font-weight:700;color:#1e293b;margin-left:0.5rem"></div>
                           </div>
                       `}
                       ${reflectionHtml ? `<h3>${t('output.quiz_reflection')}</h3>${reflectionHtml}` : ''}
@@ -49852,7 +50026,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           ${item.data.map((faq, i) => `
                               <div role="article" style="margin-bottom:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;page-break-inside:avoid;">
                                   <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
-                                      <span aria-hidden="true" style="background:#0891b2;color:white;font-weight:800;font-size:11px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span>
+                                      <span aria-hidden="true" style="background:#0891b2;color:white;font-weight:800;font-size:12px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span>
                                       <h3 style="font-weight:700;color:#0e7490;margin:0;font-size:1em;">${faq.question}</h3>
                                   </div>
                                   ${faq.question_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 0 0 8px 34px; font-style: italic;">(${faq.question_en})</p>` : ''}
@@ -49868,15 +50042,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               <div class="section alloflow-faq-section" id="${_escTxt(item.id)}" data-faq-section="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   <div class="alloflow-faq-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-                      <button type="button" class="alloflow-faq-expand" data-faq-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfeff;color:#155e75;border:1px solid #a5f3fc;border-radius:9999px;cursor:pointer;">▾ Show all</button>
-                      <button type="button" class="alloflow-faq-collapse" data-faq-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;">▸ Hide all</button>
-                      <span style="font-size:11px;color:#475569;font-style:italic;">Tap a question to reveal its answer.</span>
+                      <button type="button" class="alloflow-faq-expand" data-faq-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfeff;color:#155e75;border:1px solid #a5f3fc;border-radius:9999px;cursor:pointer;"><span aria-hidden="true">▾ </span>${_uiL('ui_common.show_all', 'Show all')}</button>
+                      <button type="button" class="alloflow-faq-collapse" data-faq-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;"><span aria-hidden="true">▸ </span>${_uiL('ui_common.hide_all', 'Hide all')}</button>
+                      <span style="font-size:12px;color:#475569;font-style:italic;">${_uiL('export.faq_tap_hint', 'Tap a question to reveal its answer.')}</span>
                   </div>
                   <div class="quiz-box">
                       ${item.data.map((faq, i) => `
                           <details class="alloflow-faq-item" style="margin-bottom:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:0;page-break-inside:avoid;">
                               <summary style="list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:flex-start;gap:10px;outline-offset:2px;">
-                                  <span aria-hidden="true" style="background:#0891b2;color:white;font-weight:800;font-size:11px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span>
+                                  <span aria-hidden="true" style="background:#0891b2;color:white;font-weight:800;font-size:12px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span>
                                   <h3 style="font-weight:700;color:#0e7490;margin:0;font-size:1em;flex:1;">${faq.question}</h3>
                                   <span class="alloflow-faq-caret" aria-hidden="true" style="color:#64748b;font-size:12px;flex-shrink:0;transition:transform 0.2s;">▼</span>
                               </summary>
@@ -49995,7 +50169,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       return `
                           <div class="alloflow-mindmap-spoke" role="listitem" style="border:2px solid ${color}; border-radius:50%; background:${color}11; min-height:120px; aspect-ratio:1.4 / 1; display:flex; align-items:center; justify-content:center; padding:14px; text-align:center; break-inside:avoid; page-break-inside:avoid;">
                               <div>
-                                  <div style="font-size:0.7em; text-transform:uppercase; letter-spacing:0.05em; color:${color}; font-weight:bold;">${_escTxt(_bsL('export.activity_idea_number', 'Idea {n}').replace('{n}', idx + 1))}</div>
+                                  <div style="font-size:max(12px, 0.7em); text-transform:uppercase; letter-spacing:0.05em; color:${color}; font-weight:bold;">${_escTxt(_bsL('export.activity_idea_number', 'Idea {n}').replace('{n}', idx + 1))}</div>
                                   <div style="margin-top:6px; border-bottom:1.5px solid ${color}99; min-height:1.6em; min-width:120px;"></div>
                               </div>
                           </div>
@@ -50003,7 +50177,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   }
                   return `
                       <div class="alloflow-mindmap-spoke" role="listitem" data-spoke-idx="${idx}" tabindex="0" style="border:2px solid ${color}; border-radius:18px; background:${color}11; padding:14px; cursor:pointer; transition:box-shadow 0.15s; break-inside:avoid; page-break-inside:avoid;">
-                          <div style="font-size:0.7em; text-transform:uppercase; letter-spacing:0.05em; color:${color}; font-weight:bold; margin-bottom:4px;">${_escTxt(_bsL('export.activity_idea_number', 'Idea {n}').replace('{n}', idx + 1))}</div>
+                          <div style="font-size:max(12px, 0.7em); text-transform:uppercase; letter-spacing:0.05em; color:${color}; font-weight:bold; margin-bottom:4px;">${_escTxt(_bsL('export.activity_idea_number', 'Idea {n}').replace('{n}', idx + 1))}</div>
                           <div style="font-weight:bold; color:#1e293b; line-height:1.3;">${_escTxt(idea.title || '')}</div>
                           <div class="alloflow-mindmap-detail" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed ${color}55; font-size:0.9em; color:#475569; text-align:left;">
                               ${typeof idea.description === 'string' && idea.description ? `<p style="margin:0 0 6px 0;"><strong>${_escTxt(_bsL('export.activity_idea_label', 'Activity'))}:</strong> ${_escTxt(idea.description)}</p>` : ''}
@@ -50054,7 +50228,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     .alloflow-brainstorm-grid .grid { gap: 1rem; }
                     .alloflow-brainstorm-grid .alloflow-bs-card { position: relative; border: 1px solid #e2e8f0; border-top-width: 4px; border-radius: 12px; background: #fff; padding: 1.1rem 1.25rem 1.25rem; box-shadow: 0 1px 3px rgba(15,23,42,0.05); transition: transform 0.18s ease, box-shadow 0.18s ease; break-inside: avoid; page-break-inside: avoid; }
                     .alloflow-brainstorm-grid .alloflow-bs-card:hover { border-color: #cbd5e1; box-shadow: 0 6px 18px rgba(15,23,42,0.12); }
-                    .alloflow-brainstorm-grid .alloflow-bs-badge { display: inline-flex; align-items: center; gap: 6px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 9px; border-radius: 9999px; margin-bottom: 8px; }
+                    .alloflow-brainstorm-grid .alloflow-bs-badge { display: inline-flex; align-items: center; gap: 6px; font-size: max(12px, 0.68rem); font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; padding: 3px 9px; border-radius: 9999px; margin-bottom: 8px; }
                     .alloflow-brainstorm-grid .alloflow-bs-title { margin: 0 0 10px 0; font-size: 1.05em; font-weight: 700; color: #0f172a; line-height: 1.3; letter-spacing: -0.01em; }
                     .alloflow-brainstorm-grid .alloflow-bs-row { margin: 6px 0; font-size: 0.92em; line-height: 1.5; color: #334155; }
                     .alloflow-brainstorm-grid .alloflow-bs-row strong { color: #1e293b; }
@@ -50092,7 +50266,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   return `
                   <li style="margin-bottom:15px; font-size: 1.1em; break-inside: avoid;">
                       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:5px;">
-                          <span class="alloflow-frame-num" style="background:#4f46e5;color:white;font-weight:800;font-size:11px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${idx+1}</span>
+                          <span class="alloflow-frame-num" style="background:#4f46e5;color:white;font-weight:800;font-size:12px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${idx+1}</span>
                           <div>
                               ${i.text}
                               ${i.text_en ? `<span style="font-size:0.8em; color:#666; margin-left: 5px;">(${i.text_en})</span>` : ''}
@@ -50162,17 +50336,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   ` : ''}
                   ${(isTeacher && _mathHideSolution) ? `
                     <div class="alloflow-math-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-                        <button type="button" class="alloflow-math-reveal-all" data-math-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;border-radius:9999px;cursor:pointer;">▾ Show all solutions</button>
-                        <button type="button" class="alloflow-math-hide-all" data-math-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;">▸ Hide all solutions</button>
-                        <span style="font-size:11px;color:#64748b;font-style:italic;">Try the problem first, then reveal the steps.</span>
+                        <button type="button" class="alloflow-math-reveal-all" data-math-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;border-radius:9999px;cursor:pointer;"><span aria-hidden="true">▾ </span>${_uiL('export.math_show_all', 'Show all solutions')}</button>
+                        <button type="button" class="alloflow-math-hide-all" data-math-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;"><span aria-hidden="true">▸ </span>${_uiL('export.math_hide_all', 'Hide all solutions')}</button>
+                        <span style="font-size:12px;color:#64748b;font-style:italic;">${_uiL('export.math_try_first', 'Try the problem first, then reveal the steps.')}</span>
                     </div>
                   ` : ''}
                   <div style="background:#f8fafc; padding:20px; border:1px solid #e2e8f0; border-radius:8px;">
                       ${problems.map((p, i) => `
-                          <div style="margin-bottom: 30px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 20px; page-break-inside: avoid;">
-                              <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                          <div class="alloflow-math-problem" style="margin-bottom: 30px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 20px; page-break-inside: avoid;">
+                              <div class="alloflow-math-question" style="display: flex; gap: 10px; margin-bottom: 15px;">
                                   <span style="font-weight: bold; color: #475569; font-size: 1.1em;">${i + 1}.</span>
-                                  <div style="font-size:1.2em; font-family:'Times New Roman', serif; font-weight:bold; color:#1e293b;">
+                                  <div class="alloflow-own-font" style="font-size:1.2em; font-family:'Times New Roman', serif; font-weight:bold; color:#1e293b;">
                                       ${formatMath(p.question)}
                                   </div>
                               </div>
@@ -50181,7 +50355,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   <details class="alloflow-math-solution" style="margin-left:25px;">
                                       <summary style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:#ecfdf5;color:#065f46;font-size:0.85em;font-weight:700;border:1px solid #6ee7b7;border-radius:9999px;outline-offset:2px;">
                                           <span class="alloflow-math-caret" aria-hidden="true">▶</span>
-                                          Show solution
+                                          ${_uiL('export.math_show_solution', 'Show solution')}
                                       </summary>
                                       <div style="margin-top:12px;">
                                           ${p.steps && p.steps.length > 0 ? `
@@ -50234,13 +50408,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   <!-- Student Worksheet View -->
                                   ${isWorksheet
                                       ? `<div style="margin-left:25px; border:1px solid #cbd5e1; border-radius:8px; background:white; padding:14px 16px;">
-                                            ${ruledLines(4, 'Show your work:')}
+                                            ${ruledLines(4, _uiRaw('stem.physics.label_show_work', 'Show your work').trim() + ':')}
                                             <div style="margin-top:14px; display:flex; align-items:center; gap:10px;">
-                                                <span style="font-size:0.8em; text-transform:uppercase; font-weight:bold; color:#475569;">Answer:</span>
+                                                <span style="font-size:0.8em; text-transform:uppercase; font-weight:bold; color:#475569;">${_uiL('export.answer_label', 'Answer:')}</span>
                                                 ${fillableBlank(180)}
                                             </div>
                                          </div>`
-                                      : `<div style="margin-left: 25px; min-height: 150px; border: 1px solid #cbd5e1; border-radius: 8px; background: white;"></div>`}
+                                      : `<div style="margin-left:25px; border:1px solid #cbd5e1; border-radius:8px; background:white; padding:12px 14px;">
+                                            <label class="alloflow-response-label" for="${_escTxt(String(item.id || 'math') + '-p' + i + '-work')}" style="display:block; font-weight:600; margin-bottom:4px;">${_uiL('stem.physics.label_show_work', 'Show your work').trim()}</label>
+                                            <textarea id="${_escTxt(String(item.id || 'math') + '-p' + i + '-work')}" class="interactive-textarea alloflow-response-input" rows="5" data-allo-response-key="${_escTxt(String(item.id || 'math') + ':math:' + i + ':work')}" data-allo-response-type="free-response" data-allo-question="${_escTxt((i + 1) + '. ' + String(p.question || p.problem || ''))}" style="width:100%; box-sizing:border-box;"></textarea>
+                                            <div style="margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                                                <label for="${_escTxt(String(item.id || 'math') + '-p' + i + '-answer')}" style="font-weight:bold; color:#475569;">${_uiL('export.answer_label', 'Answer:')}</label>
+                                                <input type="text" id="${_escTxt(String(item.id || 'math') + '-p' + i + '-answer')}" class="interactive-blank alloflow-response-input" data-allo-response-key="${_escTxt(String(item.id || 'math') + ':math:' + i + ':answer')}" data-allo-response-type="free-response" style="min-width:12em; flex:1;">
+                                            </div>
+                                         </div>`}
                               `}
                           </div>
                       `).join('')}
@@ -50307,17 +50488,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       ${_tlInteractive ? `<input type="hidden" class="alloflow-tl-response" data-allo-response-key="${_escTxt((item.id || 'timeline') + ':timeline-order')}" data-allo-response-type="timeline-order" data-allo-part-label="Event order" data-allo-question="${_escTxt(title || 'Timeline')}" aria-label="Student order for ${_escTxt(title || 'timeline')}" value="">` : ''}
                       ${_tlPresentation.map(({ te, originalIndex, responseId }, idx) => `
                           <div class="alloflow-tl-strip"${_tlCanSelfCheck ? ` data-original-index="${originalIndex}"` : ''} data-initial-index="${idx}" data-tl-response-id="${responseId}" data-strip-idx="${idx}" role="listitem" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px dashed #94a3b8;border-radius:8px;margin-bottom:10px;background:white;break-inside:avoid;page-break-inside:avoid;">
-                              <div class="alloflow-tl-scissor" style="font-family:monospace;font-size:0.75em;color:#64748b;min-width:28px;" aria-hidden="true">✂ ${idx + 1}</div>
+                              <div class="alloflow-tl-scissor" style="font-family:monospace;font-size:max(12px, 0.75em);color:#64748b;min-width:28px;" aria-hidden="true">✂ ${idx + 1}</div>
                               ${_tlInteractive ? `<div class="alloflow-tl-arrows" style="display:flex;flex-direction:column;gap:2px;">
-                                  <button type="button" class="alloflow-tl-up" aria-label="Move event up" title="Move up" style="width:24px;height:20px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:4px;cursor:pointer;font-size:11px;line-height:1;color:#475569;padding:0;">▲</button>
-                                  <button type="button" class="alloflow-tl-down" aria-label="Move event down" title="Move down" style="width:24px;height:20px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:4px;cursor:pointer;font-size:11px;line-height:1;color:#475569;padding:0;">▼</button>
+                                  <button type="button" class="alloflow-tl-up" aria-label="Move event up" title="Move up" style="width:24px;height:20px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:4px;cursor:pointer;font-size:12px;line-height:1;color:#475569;padding:0;">▲</button>
+                                  <button type="button" class="alloflow-tl-down" aria-label="Move event down" title="Move down" style="width:24px;height:20px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:4px;cursor:pointer;font-size:12px;line-height:1;color:#475569;padding:0;">▼</button>
                               </div>` : ''}
                               ${te.image ? `<img src="${te.image}" alt="${String(te.alt || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"${te.decorative ? ' role="presentation"' : ''} style="width:${_tlImgPx}px;height:${_tlImgPx}px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;flex-shrink:0;" />` : ''}
                               <div style="flex:1;font-size:1em;line-height:1.5;color:#1e293b;">
                                   ${te.event}
                                   ${te.event_en ? `<div style="color:#64748b;font-size:0.85em;margin-top:4px;font-style:italic;">${te.event_en}</div>` : ''}
                               </div>
-                              <div style="border:1px solid #cbd5e1;border-radius:6px;padding:6px 10px;font-size:0.75em;color:#64748b;text-align:center;min-width:80px;background:#f8fafc;">date:<br/><span style="display:inline-block;border-bottom:1.5px solid #475569;height:1.2em;min-width:60px;margin-top:2px;"></span></div>
+                              <div style="border:1px solid #cbd5e1;border-radius:6px;padding:6px 10px;font-size:max(12px, 0.75em);color:#64748b;text-align:center;min-width:80px;background:#f8fafc;">date:<br/><span style="display:inline-block;border-bottom:1.5px solid #475569;height:1.2em;min-width:60px;margin-top:2px;"></span></div>
                           </div>
                       `).join('')}
                   </div>
@@ -50409,14 +50590,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const _csCanSelfCheck = cfg.assessmentMode !== true;
 
           const categoryCardsHtml = `
-              <div class="alloflow-cs-categories" data-cs-section="${_escTxt(item.id)}" style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;" role="list" aria-label="Sorting categories">
+              <div class="alloflow-cs-categories" data-cs-section="${_escTxt(item.id)}" style="display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 20px;" role="list" aria-label="${_uiL('a11y.sorting_categories', 'Sorting categories')}">
                   ${categories.map((cat, catIdx) => {
                       const catColor = catColors[catIdx % catColors.length];
                       return `
                           <div role="listitem" class="alloflow-cs-dropzone" data-category-id="${_escTxt(cat.id)}" data-category-label="${_escTxt(cat.label)}" data-category-color="${catColor}" style="flex: 1; min-width: 160px; border: 2px solid ${catColor}; border-radius: 12px; background: ${catColor}11; padding: 14px 12px; text-align: center; break-inside: avoid; page-break-inside: avoid;">
-                              <div class="alloflow-cs-category-kicker" style="font-size: 0.7em; text-transform: uppercase; letter-spacing: 0.05em; color: ${catColor}; font-weight: bold; margin-bottom: 4px;">Category</div>
+                              <div class="alloflow-cs-category-kicker" style="font-size: max(12px, 0.7em); text-transform: uppercase; letter-spacing: 0.05em; color: ${catColor}; font-weight: bold; margin-bottom: 4px;">${_uiL('export.cs_category', 'Category')}</div>
                               <div class="alloflow-cs-category-label" style="font-size: 1.05em; font-weight: bold; color: #1e293b;">${_escTxt(cat.label)}</div>
-                              ${(cfg.conceptSortInteractive !== false && !isWorksheet) ? `<button type="button" class="alloflow-cs-place-btn" data-place-for="${_escTxt(cat.id)}" disabled style="margin-top:8px;padding:7px 10px;background:#4f46e5;color:#fff;border:0;border-radius:6px;font-weight:700;cursor:pointer;">Place selected item in ${_escTxt(cat.label)}</button>` : ''}
+                              ${(cfg.conceptSortInteractive !== false && !isWorksheet) ? `<button type="button" class="alloflow-cs-place-btn" data-place-for="${_escTxt(cat.id)}" disabled style="margin-top:8px;padding:7px 10px;background:#4f46e5;color:#fff;border:0;border-radius:6px;font-weight:700;cursor:pointer;">${_uiL('export.cs_place_in', 'Place selected item in {category}', { category: cat.label })}</button>` : ''}
                               <div class="alloflow-cs-dropzone-target" data-dropzone-for="${_escTxt(cat.id)}" style="margin-top: 10px; min-height: 36px; border: 2px dashed transparent; border-radius: 6px; transition: border-color 0.15s; display: none;"></div>
                           </div>
                       `;
@@ -50426,22 +50607,23 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 
           const instructionsHtml = `
               <div style="background: #fefce8; border-left: 4px solid #eab308; padding: 12px 16px; border-radius: 4px; margin-bottom: 20px; font-size: 0.9em; color: #713f12; break-inside: avoid; page-break-inside: avoid;">
-                  ${(cfg.conceptSortInteractive !== false && !isWorksheet) ? '<strong>How to use:</strong> Select an item, then choose the named Place button in a category. Keyboard users can press Enter or Space on both controls.' : '<strong>How to use:</strong> Write a category beside each item, or cut and sort the strips into the matching categories shown here.'}${hasAnyImage ? ' Some strips include pictures. Use the written information to decide where each belongs.' : ''}
+                  ${(cfg.conceptSortInteractive !== false && !isWorksheet) ? '<strong>' + _uiL('glossary.export_howto_label', 'How to use:') + '</strong> ' + _uiL('export.cs_howto_interactive', 'Select an item, then choose the named Place button in a category. Keyboard users can press Enter or Space on both controls.') : '<strong>' + _uiL('glossary.export_howto_label', 'How to use:') + '</strong> ' + _uiL('export.cs_howto_paper', 'Write a category beside each item, or cut and sort the strips into the matching categories shown here.')}${hasAnyImage ? ' ' + _uiL('export.cs_howto_pictures', 'Some strips include pictures. Use the written information to decide where each belongs.') : ''}
               </div>
           `;
 
           const stripsHtml = `
-              <div role="list" aria-label="Sortable items" class="alloflow-cs-strips" data-cs-section="${_escTxt(item.id)}">
+              <div role="list" aria-label="${_uiL('a11y.sortable_items', 'Sortable items')}" class="alloflow-cs-strips" data-cs-section="${_escTxt(item.id)}">
                   ${sortItems.map((ci, idx) => {
                       const imageHtml = ci.image
                           ? `<div class="alloflow-cs-image-frame" style="flex-shrink:0;width:${_csImgPx}px;height:${_csImgPx}px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:4px;box-sizing:border-box;overflow:hidden;"><img class="alloflow-cs-image" src="${ci.image}" alt="" style="display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;border:0;border-radius:4px;box-shadow:none;box-sizing:border-box;"/></div>`
                           : '';
                       return `
                           <div role="listitem" class="alloflow-cs-strip" data-strip-idx="${idx}" data-category-id="${ci.categoryId || ''}" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 2px dashed #94a3b8; border-radius: 8px; margin-bottom: 10px; background: white; break-inside: avoid; page-break-inside: avoid;">
-                              <div class="alloflow-cs-scissor" style="font-family: monospace; font-size: 0.75em; color: #64748b; min-width: 28px;" aria-hidden="true">✂ ${idx + 1}</div>
+                              <div class="alloflow-cs-scissor" style="font-family: monospace; font-size: max(12px, 0.75em); color: #64748b; min-width: 28px;" aria-hidden="true">✂ ${idx + 1}</div>
                               ${imageHtml}
                               <div class="alloflow-cs-item-text" style="flex: 1; min-width: 0; font-size: 1em; line-height: 1.5; color: #1e293b; overflow-wrap: anywhere;">${ci.content}</div>
-                              ${!isTeacher && !isWorksheet ? `<select hidden class="alloflow-cs-response" data-allo-response-key="${_escTxt((item.id || 'concept-sort') + ':concept-sort:' + idx + ':category')}" data-allo-response-type="concept-sort" data-allo-part-label="Category" data-allo-question="Concept sort item ${idx + 1}" aria-label="Category placement for concept sort item ${idx + 1}"><option value="">Not sorted</option>${categories.map(cat => `<option value="${_escTxt(cat.id)}">${_escTxt(cat.label)}</option>`).join('')}</select>` : ''}
+                              ${!isTeacher && !(cfg.conceptSortInteractive !== false && !isWorksheet) ? `<div class="alloflow-cs-write" aria-hidden="true" style="flex: 0 1 9rem; min-width: 6rem; align-self: flex-end; font-size: max(12px, 0.75em); color: #475569;">${_uiL('export.cs_category', 'Category')}<div style="border-bottom: 1.5px solid #64748b; height: 1.6em;"></div></div>` : ''}
+                              ${!isTeacher && !isWorksheet ? `<select hidden class="alloflow-cs-response" data-allo-response-key="${_escTxt((item.id || 'concept-sort') + ':concept-sort:' + idx + ':category')}" data-allo-response-type="concept-sort" data-allo-part-label="${_uiL('export.cs_category', 'Category')}" data-allo-question="${_uiL('export.cs_item_n', 'Concept sort item {n}', { n: idx + 1 })}" aria-label="${_uiL('export.cs_item_placement', 'Category placement for concept sort item {n}', { n: idx + 1 })}"><option value="">${_uiL('export.cs_not_sorted', 'Not sorted')}</option>${categories.map(cat => `<option value="${_escTxt(cat.id)}">${_escTxt(cat.label)}</option>`).join('')}</select>` : ''}
                           </div>
                       `;
                   }).join('')}
@@ -50450,7 +50632,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 
           const answerKeyHtml = `
               <div class="alloflow-cs-answer-key" style="margin-top: 28px; padding-top: 20px; border-top: 2px dashed #cbd5e1; break-inside: avoid; page-break-before: always;">
-                  <h3 style="margin: 0 0 12px 0; font-size: 1.05em; color: #334155;">Answer Key (teacher reference)</h3>
+                  <h3 style="margin: 0 0 12px 0; font-size: 1.05em; color: #334155;">${_uiL('export.cs_answer_key', 'Answer Key (teacher reference)')}</h3>
                   <div style="display: flex; flex-wrap: wrap; gap: 12px;">
                       ${categories.map((cat, catIdx) => {
                           const catItems = sortItems.filter(i => i.categoryId === cat.id);
@@ -50469,9 +50651,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           `;
 
           const interactiveControlsHtml = (cfg.conceptSortInteractive !== false && !isWorksheet) ? `
-              <div class="alloflow-cs-controls" data-cs-section="${_escTxt(item.id)}" style="display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 6px; align-items:center;">
-                  ${_csCanSelfCheck ? '<button type="button" class="alloflow-cs-check-btn" style="padding:8px 16px; background:#4f46e5; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9em;">🎯 Check my sort</button>' : ''}
-                  <button type="button" class="alloflow-cs-reset-btn" style="padding:8px 16px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.85em;">↻ Reset</button>
+              <div class="alloflow-cs-controls" data-cs-section="${_escTxt(item.id)}" data-cs-copy-score="${_uiL('export.cs_score', '{correct} of {total} correct')}" data-cs-copy-review="${_uiL('export.cs_to_review', '{n} to review')}" data-cs-copy-unsorted="${_uiL('export.cs_unsorted', '{n} unsorted')}" data-cs-copy-selected="${_uiL('export.cs_selected', 'Selected {item}. Choose a category.')}" data-cs-copy-placed="${_uiL('export.cs_placed', 'Placed {item} in {category}.')}" data-cs-copy-select-aria="${_uiL('export.cs_select_aria', 'Select sortable item: {item}')}" data-cs-copy-selected-aria="${_uiL('export.cs_selected_aria', 'Selected sortable item: {item}')}" style="display:flex; gap:8px; flex-wrap:wrap; margin:14px 0 6px; align-items:center;">
+                  ${_csCanSelfCheck ? '<button type="button" class="alloflow-cs-check-btn" style="padding:8px 16px; background:#4f46e5; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:0.9em;"><span aria-hidden="true">🎯 </span>' + _uiL('export.cs_check', 'Check my sort') + '</button>' : ''}
+                  <button type="button" class="alloflow-cs-reset-btn" style="padding:8px 16px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; font-weight:600; cursor:pointer; font-size:0.85em;"><span aria-hidden="true">↻ </span>${_uiL('ui_common.reset', 'Reset')}</button>
                   <div class="alloflow-cs-results" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.95em; font-weight:700; color:#1e293b; margin-left:0.5rem;"></div>
               </div>
           ` : '';
@@ -50479,41 +50661,41 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${instructionsHtml}
-                  ${categoryCardsHtml}
-                  ${interactiveControlsHtml}
-                  ${stripsHtml}
+                  ${interactiveControlsHtml ? stripsHtml + categoryCardsHtml + interactiveControlsHtml : categoryCardsHtml + stripsHtml}
                   ${isTeacher ? answerKeyHtml : ''}
               </div>
           `;
       } else if (item.type === 'dbq') {
           const docs = item.data.documents || [];
           const rubric = item.data.rubric || [];
+          // The free-response suffix is what lets the Submission Inbox offer AI grading for these answers.
+          const dbqField = (key, label, rows = 2) => (!isTeacher && !isWorksheet) ? `<textarea class="interactive-textarea alloflow-response-input" rows="${rows}" data-allo-response-key="${_escTxt((item.id || 'dbq') + ':dbq:' + key + ':free-response')}" data-allo-response-type="free-response" data-allo-part-label="${key === 'essay' ? _uiL('dbq.essay_tab', 'Essay') : _uiL('checkpoint.answer', 'Answer')}" data-allo-question="${_escTxt(label)}" aria-label="${_escTxt(label)}" style="width:100%; box-sizing:border-box; margin-top:6px;"></textarea>` : '';
           return `
               <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
-                  ${item.data.historicalContext ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:20px;"><strong>Historical Context:</strong><br/>${_escTxt(item.data.historicalContext)}</div>` : ''}
-                  ${docs.map(doc => `
+                  ${item.data.historicalContext ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:20px;"><strong>${item.data.contextLabel ? _escTxt(String(item.data.contextLabel)) : ((item.data.isFictional === true || /\bfictional\b/i.test(String(item.meta || ''))) ? _uiL('dbq.context', 'Context') : _uiL('dbq.historical_context', 'Historical Context'))}:</strong><br/>${_escTxt(item.data.historicalContext)}</div>` : ''}
+                  ${docs.map((doc, di) => `
                       <div style="border:2px solid #e2e8f0;border-radius:8px;margin-bottom:20px;overflow:hidden;">
                           <div style="background:#f8fafc;padding:12px;border-bottom:1px solid #e2e8f0;">
-                              <strong style="font-size:1.1em;">${_escTxt(doc.title || 'Document ' + doc.id)}</strong>
-                              ${doc.source ? `<div style="font-size:0.85em;color:#64748b;margin-top:4px;font-style:italic;">Source: ${_escTxt(doc.source)}</div>` : ''}
+                              <strong style="font-size:1.1em;">${doc.title ? _escTxt(doc.title) : _uiL('dbq.document_label', 'Document {id}', { id: doc.id })}</strong>
+                              ${doc.source ? `<div style="font-size:0.85em;color:#64748b;margin-top:4px;font-style:italic;">${_uiL('dbq.source_prefix_verbatim', 'Source:')} ${_escTxt(doc.source)}</div>` : ''}
                           </div>
                           <div style="padding:16px;">
                               <div style="background:#fefce8;border-left:4px solid #eab308;padding:12px;border-radius:4px;margin-bottom:12px;font-size:0.95em;line-height:1.6;">${_escTxt(doc.excerpt || '')}</div>
-                              ${doc.sourcingQuestions?.length > 0 ? `<div style="margin-bottom:8px;"><strong style="color:#7c3aed;font-size:0.85em;">Sourcing Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.sourcingQuestions.map(q => `<li style="margin-bottom:4px;break-inside:avoid;">${_escTxt(q)}${isWorksheet ? ruledLines(2) : ''}</li>`).join('')}</ol></div>` : ''}
-                              ${doc.analysisQuestions?.length > 0 ? `<div><strong style="color:#2563eb;font-size:0.85em;">Analysis Questions:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.analysisQuestions.map(q => `<li style="margin-bottom:4px;break-inside:avoid;">${_escTxt(q)}${isWorksheet ? ruledLines(2) : ''}</li>`).join('')}</ol></div>` : ''}
+                              ${doc.sourcingQuestions?.length > 0 ? `<div style="margin-bottom:8px;"><strong style="display:block;break-after:avoid;page-break-after:avoid;color:#7c3aed;font-size:max(12px, 0.85em);">${_uiL('dbq.sourcing_questions', 'Sourcing Questions')}:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.sourcingQuestions.map((q, qi) => `<li style="margin-bottom:4px;break-inside:avoid;">${_escTxt(q)}${isWorksheet ? ruledLines(_answerLines(q, 0, 2)) : ''}${dbqField(di + ':sourcing:' + qi, q)}</li>`).join('')}</ol></div>` : ''}
+                              ${doc.analysisQuestions?.length > 0 ? `<div><strong style="display:block;break-after:avoid;page-break-after:avoid;color:#2563eb;font-size:max(12px, 0.85em);">${_uiL('dbq.analysis_questions', 'Analysis Questions')}:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.analysisQuestions.map((q, qi) => `<li style="margin-bottom:4px;break-inside:avoid;">${_escTxt(q)}${isWorksheet ? ruledLines(_answerLines(q, 0, 2)) : ''}${dbqField(di + ':analysis:' + qi, q)}</li>`).join('')}</ol></div>` : ''}
                           </div>
                       </div>
                   `).join('')}
-                  ${item.data.synthesisPrompt ? `<div class="alloflow-dbq-synthesis${isWorksheet ? ' alloflow-dbq-synthesis-worksheet' : ''}" style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;break-inside:${isWorksheet ? 'auto' : 'avoid'};page-break-inside:${isWorksheet ? 'auto' : 'avoid'};"><strong style="font-size:1.1em;color:#166534;">📝 Synthesis Essay Prompt:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${_escTxt(item.data.synthesisPrompt)}</p>${isWorksheet ? `<div style="margin-top:16px;">${ruledLines(12, 'Your essay:')}</div>` : ''}</div>` : ''}
-                  ${rubric.length > 0 ? `<div class="alloflow-dbq-rubric-wrap" style="margin-top:20px;break-inside:avoid;"><strong>Rubric:</strong><style>.alloflow-dbq-rubric-wrap table{word-break:break-word;}@media (max-width:600px){.alloflow-dbq-rubric-wrap table{font-size:0.7em;}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:4px !important;}}@media print{.alloflow-dbq-rubric-wrap table{font-size:0.72em;}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:5px 6px !important;}}</style><table style="width:100%;border-collapse:collapse;margin-top:8px;font-size:0.85em;table-layout:fixed;"><tr><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f1f5f9;text-align:left;width:22%;">Criteria</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fef2f2;text-align:center;">⭐ 1</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fefce8;text-align:center;">⭐⭐ 2</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f0fdf4;text-align:center;">⭐⭐⭐ 3</th><th scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#eff6ff;text-align:center;">⭐⭐⭐⭐ 4</th></tr>${rubric.map(r => `<tr><td style="border:1px solid #e2e8f0;padding:8px;font-weight:bold;">${_escTxt(r.criteria)}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['1'] || '')}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['2'] || '')}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['3'] || '')}</td><td style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['4'] || '')}</td></tr>`).join('')}</table></div>` : ''}
-                  ${isTeacher && item.data.teacherNotes ? `<div class="teacher-view" data-allo-teacher-only="1" style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;margin-top:16px;font-size:0.85em;color:#6b21a8;"><strong>Teacher Notes:</strong> ${_escTxt(item.data.teacherNotes)}</div>` : ''}
+                  ${item.data.synthesisPrompt ? `<div class="alloflow-dbq-synthesis${isWorksheet ? ' alloflow-dbq-synthesis-worksheet' : ''}" style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;break-inside:${isWorksheet ? 'auto' : 'avoid'};page-break-inside:${isWorksheet ? 'auto' : 'avoid'};"><strong style="font-size:1.1em;color:#166534;"><span aria-hidden="true">📝 </span>${_uiL('dbq.synthesis_prompt', 'Synthesis Essay Prompt')}:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${_escTxt(item.data.synthesisPrompt)}</p>${item.data.thesisStarter ? `<p class="alloflow-dbq-thesis-starter" style="margin:8px 0 0;font-style:italic;color:#1e293b;"><strong>${_uiL('ui_common.thesis_starter', 'Thesis starter')}:</strong> ${_escTxt(item.data.thesisStarter)}</p>` : ''}${isWorksheet ? `<div style="margin-top:16px;">${ruledLines(12, _uiRaw('export.dbq_your_essay', 'Your essay:'))}</div>` : ''}${dbqField('essay', item.data.synthesisPrompt, 8)}</div>` : ''}
+                  ${rubric.length > 0 ? `<div class="alloflow-dbq-rubric-wrap" style="margin-top:20px;break-inside:avoid;"><strong>${_uiL('dbq.rubric_tab', 'Rubric')}:</strong><style>.alloflow-dbq-rubric-wrap table{word-break:break-word;}@media screen and (max-width:600px){.alloflow-dbq-rubric-wrap table,.alloflow-dbq-rubric-wrap tbody,.alloflow-dbq-rubric-wrap tr,.alloflow-dbq-rubric-wrap td{display:block;width:auto !important;}.alloflow-dbq-rubric-wrap table{font-size:0.95em !important;}.alloflow-dbq-rubric-wrap tr.alloflow-dbq-rubric-head{position:absolute;width:1px !important;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;}.alloflow-dbq-rubric-wrap tr.alloflow-dbq-rubric-row{margin-top:10px;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;}.alloflow-dbq-rubric-wrap td{border:0 !important;border-top:1px solid #e2e8f0 !important;padding:8px 10px !important;font-size:1em !important;}.alloflow-dbq-rubric-wrap td:first-child{border-top:0 !important;background:#f1f5f9;}.alloflow-dbq-rubric-wrap td[data-level]::before{content:attr(data-level);display:block;font-weight:700;font-size:0.85em;margin-bottom:2px;}}@media print{.alloflow-dbq-rubric-wrap table{font-size:max(12px, 0.72em);}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:5px 6px !important;}}</style><table role="table" style="width:100%;border-collapse:collapse;margin-top:8px;font-size:max(12px, 0.85em);table-layout:fixed;"><tr role="row" class="alloflow-dbq-rubric-head"><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f1f5f9;text-align:left;width:22%;">${_uiL('ui_common.criteria', 'Criteria')}</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fef2f2;text-align:center;">⭐ 1</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fefce8;text-align:center;">⭐⭐ 2</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f0fdf4;text-align:center;">⭐⭐⭐ 3</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#eff6ff;text-align:center;">⭐⭐⭐⭐ 4</th></tr>${rubric.map(r => `<tr role="row" class="alloflow-dbq-rubric-row"><td role="cell" style="border:1px solid #e2e8f0;padding:8px;font-weight:bold;">${_escTxt(r.criteria)}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 1 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['1'] || '')}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 2 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['2'] || '')}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 3 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['3'] || '')}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 4 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['4'] || '')}</td></tr>`).join('')}</table></div>` : ''}
+                  ${isTeacher && item.data.teacherNotes ? `<div class="teacher-view" data-allo-teacher-only="1" style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;margin-top:16px;font-size:0.85em;color:#6b21a8;"><strong>${_uiL('dbq.teacher_notes', 'Teacher Notes')}:</strong> ${_escTxt(item.data.teacherNotes)}</div>` : ''}
               </div>
           `;
       } else if (item.type === 'gemini-bridge') {
           return `
               <div class="section" id="${_escTxt(item.id)}">
-                  <h2 class="resource-header" role="heading" aria-level="2">${_escTxt(title)} (${_escTxt(item.meta)})</h2>
+                  <h2 class="resource-header" role="heading" aria-level="2">${_escTxt(title)}${_metaShown ? ` (${_escTxt(_metaShown)})` : ''}</h2>
                   <div style="background: #1e293b; color: #cbd5e1; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.9em; white-space: pre-wrap;">${_escTxt(item.data)}</div>
                   <p style="font-size: 0.8em; color: #666; margin-top: 5px; font-style: italic;">${t('bridge.generated_desc')}</p>
               </div>
@@ -50529,7 +50711,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         }).join('');
         return `
             <div class="section" id="${_escTxt(item.id)}">
-                <h2 class="resource-header" role="heading" aria-level="2">${_escTxt(title)} (${_escTxt(item.meta)})</h2>
+                <h2 class="resource-header" role="heading" aria-level="2">${_escTxt(title)}${_metaShown ? ` (${_escTxt(_metaShown)})` : ''}</h2>
                 <!-- Metrics Grid -->
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
                     <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; text-align: center;">
@@ -50557,7 +50739,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 <div style="line-height: 1.8; font-family: serif; font-size: 1.1em; background: white; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
                     ${heatmapHtml}
                 </div>
-                <div style="margin-top: 10px; font-size: 0.75em; color: #64748b; text-align: center;">
+                <div style="margin-top: 10px; font-size: max(12px, 0.75em); color: #64748b; text-align: center;">
                     Key: <span style="color:#15803d; font-weight:bold;">Correct</span> | <span style="color:#b45309; border-bottom: 2px dotted #f59e0b;">Hesitation</span> | <span style="color:#b91c1c; text-decoration: line-through;">Missed/Error</span>
                 </div>
             </div>
@@ -50646,7 +50828,7 @@ function projectStudentGuideData(data, mode) {
                               <div class="lesson-plan-translation-label" dir="auto" style="
                                   font-weight: 800;           /* Extra Bold */
                                   text-transform: uppercase;
-                                  font-size: 0.75rem;
+                                  font-size: max(12px, 0.75rem);
                                   letter-spacing: 0.05em;
                                   color: #475569;             /* Slate 600 */
                                   margin-bottom: 8px;
@@ -50695,20 +50877,21 @@ function projectStudentGuideData(data, mode) {
               return `<li style="margin-bottom:10px;break-inside:avoid;"><strong>${exportEsc(meta && meta.name ? meta.name : tool.id)}</strong>${rationale ? `<div>${renderBilingualField(rationale)}</div>` : ''}${activity ? `<div style="font-style:italic;">${renderBilingualField(activity)}</div>` : ''}</li>`;
           }).join('');
           const stemToolsHtml = stemToolRows ? `<section${guideTeacherOnly} style="margin-top:20px;padding:20px;border:1px solid #a7f3d0;border-radius:8px;background:#ecfdf5;" data-export-stem-tools="true"><h3 style="margin:0 0 12px;color:#065f46;">${exportEsc(legacyLabel('lesson_plan.stem_tools_header', 'Recommended STEAM Lab Tools'))}</h3><ul style="margin:0;padding-left:24px;">${stemToolRows}</ul></section>` : '';
+          const planHas = value => !!String(renderBilingualField(value) || '').replace(/<[^>]*>/g, '').trim();
           let extensionsHtml = '';
           if (extensions && (!Array.isArray(extensions) || extensions.length > 0)) {
               if (Array.isArray(extensions)) {
                   extensionsHtml = extensions.map(ext => `
                     <div style="background: #f8fafc; padding: 15px; border: 1px solid #e2e8f0; border-radius: 8px; margin-bottom: 15px;">
-                        <h5 style="margin: 0 0 10px 0; color: #312e81; font-size: 1em;">
+                        <div role="heading" aria-level="4" style="margin: 0 0 10px 0; color: #312e81; font-size: 1em; font-weight: 700;">
                             ${renderBilingualField(typeof ext === 'string' ? "Extension Idea" : ext.title)}
-                        </h5>
+                        </div>
                         <div style="font-size: 0.9em; color: #334155;">
                             ${renderBilingualField(typeof ext === 'string' ? ext : ext.description)}
                         </div>
                         ${ext.guide ? `
                             <div${guideTeacherOnly} style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e2e8f0;">
-                                <h6 style="margin: 0 0 5px 0; text-transform: uppercase; font-size: 0.75em; color: #475569;">${t('lesson_plan.teacher_guide')}</h6>
+                                <h6 style="margin: 0 0 5px 0; text-transform: uppercase; font-size: max(12px, 0.75em); color: #475569;">${t('lesson_plan.teacher_guide')}</h6>
                                 <div style="font-size: 0.9em;">${renderBilingualField(ext.guide, '', '')}</div>
                             </div>
                         ` : ''}
@@ -50729,7 +50912,7 @@ function projectStudentGuideData(data, mode) {
           return `
               <div class="section${!learnerGuideCopy && !_docIsStudentGuide(item) ? ' alloflow-teacher-plan' : ''}" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
-                  ${learnerGuideCopy && !['study', 'family'].includes(learnerGuideMode) ? '<p role="status">This learner copy includes structured tasks and learning goals. Teacher narrative sections are omitted because separate learner text was not recorded.</p>' : ''}
+                  ${learnerGuideCopy && !['study', 'family'].includes(learnerGuideMode) ? '<p role="status">' + _uiL('export.lesson_learner_copy_note', 'This learner copy includes structured tasks and learning goals. Teacher narrative sections are omitted because separate learner text was not recorded.') + '</p>' : ''}
                   <div class="alloflow-plan-body" style="background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
                       ${materialsNeeded && materialsNeeded.length > 0 ? `
                       <div style="margin-bottom: 20px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 15px;">
@@ -50757,39 +50940,39 @@ function projectStudentGuideData(data, mode) {
                               ${legacyList(objectives).map(o => `<li>${renderBilingualField(o)}</li>`).join('')}
                           </ul>
                       </div>
-                      <div style="margin-bottom: 20px;">
+                      ${planHas(hook) ? `<div style="margin-bottom: 20px;">
                           <h3 style="margin: 0 0 5px 0; color: #b45309; font-size: 0.9em; text-transform: uppercase;">
                               <span aria-hidden="true" style="margin-right:6px;">&#127907;</span>${renderHeader('hook')}
                           </h3>
                           <div>${renderBilingualField(hook)}</div>
-                      </div>
+                      </div>` : ''}
                       ${successCriteriaHtml}
-                      <div style="margin-bottom: 20px;">
+                      ${planHas(directInstruction) ? `<div style="margin-bottom: 20px;">
                           <h3 style="margin: 0 0 5px 0; color: #2563eb; font-size: 0.9em; text-transform: uppercase;">
                               <span aria-hidden="true" style="margin-right:6px;">&#128214;</span>${renderHeader('directInstruction')}
                           </h3>
                           <div>${renderBilingualField(directInstruction)}</div>
-                      </div>
-                      <div class="alloflow-plan-practice-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
-                          <div>
+                      </div>` : ''}
+                      <div class="alloflow-plan-practice-grid" style="display: ${planHas(guidedPractice) || planHas(independentPractice) ? 'grid' : 'none'}; grid-template-columns: ${planHas(guidedPractice) && planHas(independentPractice) ? '1fr 1fr' : '1fr'}; gap: 20px; margin-bottom: 20px;">
+                          ${planHas(guidedPractice) ? `<div>
                               <h3 style="margin: 0 0 5px 0; color: #0e7490; font-size: 0.9em; text-transform: uppercase;">
                                   <span aria-hidden="true" style="margin-right:6px;">&#128101;</span>${renderHeader('guidedPractice')}
                               </h3>
                               <div>${renderBilingualField(guidedPractice)}</div>
-                          </div>
-                          <div>
+                          </div>` : ''}
+                          ${planHas(independentPractice) ? `<div>
                               <h3 style="margin: 0 0 5px 0; color: #4f46e5; font-size: 0.9em; text-transform: uppercase;">
                                   <span aria-hidden="true" style="margin-right:6px;">&#9999;&#65039;</span>${renderHeader('independentPractice')}
                               </h3>
                               <div>${renderBilingualField(independentPractice)}</div>
-                          </div>
+                          </div>` : ''}
                       </div>
-                      <div>
+                      ${planHas(closure) ? `<div>
                           <h3 style="margin: 0 0 5px 0; color: #dc2626; font-size: 0.9em; text-transform: uppercase;">
                               <span aria-hidden="true" style="margin-right:6px;">&#127919;</span>${renderHeader('closure')}
                           </h3>
                           <div>${renderBilingualField(closure)}</div>
-                      </div>
+                      </div>` : ''}
                   </div>
                   ${legacySectionsHtml}
                   ${extensionsHtml}
@@ -50814,7 +50997,7 @@ function projectStudentGuideData(data, mode) {
               const statusBadge = (status) => {
                   const bg = status === 'Aligned' ? '#dcfce7' : status === 'Not Aligned' ? '#fee2e2' : '#fef3c7';
                   const fg = status === 'Aligned' ? '#166534' : status === 'Not Aligned' ? '#991b1b' : '#92400e';
-                  return `<span style="font-size:0.7em; font-weight:700; text-transform:uppercase; padding:3px 8px; background:${bg}; color:${fg}; border-radius:4px; white-space:nowrap;">${status || 'N/A'}</span>`;
+                  return `<span style="font-size:max(12px, 0.7em); font-weight:700; text-transform:uppercase; padding:3px 8px; background:${bg}; color:${fg}; border-radius:4px; white-space:nowrap;">${status || 'N/A'}</span>`;
               };
               const labelMap = { vocabulary: 'Vocab', engagement: 'Engagement', accessibility: 'Access', udl: 'UDL', accuracy: 'Accuracy' };
               const dimChips = ['vocabulary', 'engagement', 'accessibility', 'udl', 'accuracy'].map(dim => {
@@ -50823,14 +51006,14 @@ function projectStudentGuideData(data, mode) {
                   const pct = (o.perDimensionPercent || {})[dim] || 0;
                   const chipBg = dimData.status === 'Aligned' ? '#dcfce7' : dimData.status === 'Not Aligned' ? '#fee2e2' : '#fef3c7';
                   const chipFg = dimData.status === 'Aligned' ? '#166534' : dimData.status === 'Not Aligned' ? '#991b1b' : '#92400e';
-                  return `<span style="display:inline-block; margin:2px 4px 2px 0; padding:3px 10px; background:${chipBg}; color:${chipFg}; border-radius:999px; font-size:0.75em; font-weight:600;">${labelMap[dim] || dim} ${pct}%</span>`;
+                  return `<span style="display:inline-block; margin:2px 4px 2px 0; padding:3px 10px; background:${chipBg}; color:${chipFg}; border-radius:999px; font-size:max(12px, 0.75em); font-weight:600;">${labelMap[dim] || dim} ${pct}%</span>`;
               }).join('');
               const banner = `
                   <div style="background:${bgColor}; border:2px solid ${ringColor}; border-radius:12px; padding:16px; margin-bottom:20px; page-break-inside: avoid;">
                       <div style="display:flex; align-items:center; gap:20px;">
-                          <div style="flex-shrink:0; width:84px; height:84px; border-radius:50%; border:6px solid ${ringColor}; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:900; color:${textColor};" aria-label="Tier ${tierLetter}, score ${score}"><div style="font-size:1.55em; line-height:1;">${score}</div><div style="font-size:0.65em; letter-spacing:0.05em; opacity:0.8; margin-top:1px;">TIER ${tierLetter}</div></div>
+                          <div style="flex-shrink:0; width:84px; height:84px; border-radius:50%; border:6px solid ${ringColor}; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:900; color:${textColor};" aria-label="Tier ${tierLetter}, score ${score}"><div style="font-size:1.55em; line-height:1;">${score}</div><div style="font-size:max(12px, 0.65em); letter-spacing:0.05em; opacity:0.8; margin-top:1px;">TIER ${tierLetter}</div></div>
                           <div style="flex:1; min-width:0;">
-                              <div style="font-size:0.7em; font-weight:bold; text-transform:uppercase; letter-spacing:0.05em; color:${textColor}; opacity:0.7; margin-bottom:4px;">Curriculum Readiness Score</div>
+                              <div style="font-size:max(12px, 0.7em); font-weight:bold; text-transform:uppercase; letter-spacing:0.05em; color:${textColor}; opacity:0.7; margin-bottom:4px;">Curriculum Readiness Score</div>
                               <div style="font-size:1.1em; font-weight:900; color:${textColor}; margin-bottom:8px;">${o.label || ''}</div>
                               <div>${dimChips}</div>
                               ${o.blockingIssues && o.blockingIssues.length > 0 ? `
@@ -50842,7 +51025,7 @@ function projectStudentGuideData(data, mode) {
                                   </div>` : ''}
                           </div>
                       </div>
-                      ${o.notes ? `<div style="margin-top:8px; font-size:0.75em; font-style:italic; color:${textColor}; opacity:0.65;">${o.notes}</div>` : ''}
+                      ${o.notes ? `<div style="margin-top:8px; font-size:max(12px, 0.75em); font-style:italic; color:${textColor}; opacity:0.65;">${o.notes}</div>` : ''}
                   </div>`;
               const recList = (items) => items && items.length ? `
                   <div style="background:#fffbeb; border:1px solid #fde68a; padding:8px 10px; border-radius:6px; margin:8px 0; font-size:0.85em;">
@@ -50872,7 +51055,7 @@ function projectStudentGuideData(data, mode) {
                       </table>
                       ${recList(v.recommendations)}
                       ${llmBlock(v.llmReview, 'Literacy-coach review')}
-                      ${v.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${v.notes}</div>` : ''}
+                      ${v.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${v.notes}</div>` : ''}
                   </div>` : '';
               const e = comp.engagement;
               const engHTML = e ? `
@@ -50891,7 +51074,7 @@ function projectStudentGuideData(data, mode) {
                       </table>
                       ${recList(e.recommendations)}
                       ${llmBlock(e.llmReview, 'UDL + DOK review')}
-                      ${e.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${e.notes}</div>` : ''}
+                      ${e.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${e.notes}</div>` : ''}
                   </div>` : '';
               const ax = comp.accessibility;
               const accHTML = ax ? `
@@ -50910,7 +51093,7 @@ function projectStudentGuideData(data, mode) {
                       </table>
                       ${recList(ax.recommendations)}
                       ${llmBlock(ax.llmReview, 'Accessibility-specialist review')}
-                      ${ax.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${ax.notes}</div>` : ''}
+                      ${ax.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${ax.notes}</div>` : ''}
                   </div>` : '';
               const u = comp.udl;
               const renderPillar = (pillar, pillarTitle) => pillar ? `
@@ -50933,7 +51116,7 @@ function projectStudentGuideData(data, mode) {
                       ${renderPillar(u.engagement, 'Engagement')}
                       ${renderPillar(u.actionExpression, 'Action & Expression')}
                       ${u.overallNarrative ? `<div style="background:#eef2ff; border:1px solid #c7d2fe; padding:8px 10px; border-radius:6px; margin:8px 0; font-size:0.85em; color:#3730a3;"><strong>UDL synthesis (AI):</strong> ${u.overallNarrative}</div>` : ''}
-                      ${u.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${u.notes}</div>` : ''}
+                      ${u.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${u.notes}</div>` : ''}
                   </div>` : '';
               const acc = comp.accuracy;
               const accCounts = (acc && acc.accuracyRatingCounts) || { high: 0, medium: 0, low: 0 };
@@ -50953,7 +51136,7 @@ function projectStudentGuideData(data, mode) {
                       </table>
                       ${recList(acc.recommendations)}
                       ${llmBlock(acc.llmReview, 'Fact-checker review')}
-                      ${acc.notes ? `<div style="font-size:0.75em; font-style:italic; color:#64748b;">${acc.notes}</div>` : ''}
+                      ${acc.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${acc.notes}</div>` : ''}
                   </div>` : '';
               return `
                   <div style="margin-top:24px; padding-top:16px; border-top:3px solid #6366f1;">
@@ -50969,7 +51152,7 @@ function projectStudentGuideData(data, mode) {
           })();
           return `
               <div class="section" id="${_escTxt(item.id)}">
-                  <h2 class="resource-header" role="heading" aria-level="2">${_escTxt(title)} (${_escTxt(item.meta)})</h2>
+                  <h2 class="resource-header" role="heading" aria-level="2">${_escTxt(title)}${_metaShown ? ` (${_escTxt(_metaShown)})` : ''}</h2>
                   ${reports.map(report => `
                       <div style="margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
                           <div style="background: ${report.overallDetermination === 'Pass' ? '#f0fdf4' : '#fef2f2'}; padding: 15px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
@@ -51020,46 +51203,70 @@ function projectStudentGuideData(data, mode) {
           // summary if the student has requested feedback on this entry.
           const tt = (item.data && item.data.templateType) || 'cornell-notes';
           const d = item.data || {};
-          const ttLabel = ({ 'cornell-notes': 'Cornell Notes', 'lab-report': 'Lab Report', 'reading-response': 'Reading Response', 'double-entry': 'Double-Entry Journal', 'guided-notes': 'Guided Notes', 'q-and-a': 'Q&A Study Notes' })[tt] || 'Note';
+          const NL = (k, f, vars) => _uiRaw('note_taking.' + k, f, vars);
+          const XL = (k, f, vars) => _uiRaw('export.' + k, f, vars);
+          const ttLabel = ({ 'cornell-notes': NL('heading_cornell', 'Cornell Notes'), 'lab-report': NL('heading_lab', 'Lab Report'), 'reading-response': NL('heading_reading_response', 'Reading Response'), 'double-entry': NL('heading_double_entry', 'Double-Entry Journal'), 'guided-notes': NL('heading_guided', 'Guided Notes'), 'q-and-a': NL('heading_qa', 'Q&A Study Notes') })[tt] || 'Note';
           const ttIcon = ({ 'cornell-notes': '📓', 'lab-report': '🧪', 'reading-response': '📖', 'double-entry': '✍️', 'guided-notes': '📝', 'q-and-a': '❓' })[tt] || '📝';
           const ttColor = ({ 'cornell-notes': '#4f46e5', 'lab-report': '#0284c7', 'reading-response': '#7c3aed', 'double-entry': '#e11d48', 'guided-notes': '#059669', 'q-and-a': '#0891b2' })[tt] || '#475569';
           const feedbackCount = d.feedbackCount || 0;
           const feedbackScore = d.prevFeedbackScore || 0;
           const escapeHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-          const cornellWritingSpace = (kind) => `<div data-cornell-writing-space="${kind}" aria-hidden="true" style="height:96px; min-height:96px;">${'<div style="height:24px; box-sizing:border-box; border-bottom:1px solid #cbd5e1;"></div>'.repeat(4)}</div>`;
+          // 32px lines, like quiz answer lines; long cue guidance gets a taller notes cell.
+          const cornellWritingSpace = (kind, lines = 4) => `<div data-cornell-writing-space="${kind}" aria-hidden="true" style="min-height:${lines * 32}px;">${'<div style="height:32px; box-sizing:border-box; border-bottom:1px solid #cbd5e1;"></div>'.repeat(lines)}</div>`;
           // Worksheet copies print an empty section as its label plus writing lines,
           // so a fresh sheet has room to write instead of leaving the section out.
-          const noteWritingSection = (label, color, lines = 4) => `<div data-note-writing-space="true" style="background:${color}; border-radius:6px; padding:10px; margin-bottom:8px; break-inside:avoid; page-break-inside:avoid;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#334155; margin-bottom:4px;">${escapeHtml(label)}</div>${ruledLines(lines)}</div>`;
+          const noteWritingSection = (label, color, lines = 4) => `<div data-note-writing-space="true" style="background:${color}; border-radius:6px; padding:10px; margin-bottom:8px; break-inside:avoid; page-break-inside:avoid;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#334155; margin-bottom:4px;">${escapeHtml(label)}</div>${ruledLines(lines)}</div>`;
+          // On-screen student copies: a template nobody has written in yet gets typing
+          // fields in place of its empty parts. They use the shared response contract, so
+          // they autosave and travel with "Save my answers" like quiz responses. A template
+          // that already holds writing keeps the read-only rendering used for review.
+          const noteTypable = !isTeacher && !isWorksheet;
+          const noteText = (v) => typeof v === 'string' && v.trim() !== '';
+          const noteField = (key, label, rows = 3) => `<textarea class="interactive-textarea alloflow-response-input" rows="${rows}" data-allo-response-key="${_escTxt((item.id || 'note-taking') + ':note:' + key)}" data-allo-response-type="free-response" data-allo-part-label="${_escTxt(NL('notes_column', 'Notes'))}" data-allo-question="${_escTxt(label)}" aria-label="${_escTxt(label)}" style="width:100%; box-sizing:border-box;"></textarea>`;
+          const noteTypingSection = (label, color, key, rows = 3) => `<div data-note-typing-space="true" style="background:${color}; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#334155; margin-bottom:4px;">${escapeHtml(label)}</div>${noteField(key, label, rows)}</div>`;
           const renderRows = () => {
               if (tt === 'cornell-notes') {
                   const cues = Array.isArray(d.cues) ? d.cues : [];
                   const notes = Array.isArray(d.notes) ? d.notes : [];
-                  const rowCount = Math.max(cues.length, notes.length, 1);
+                  const cornellTypable = noteTypable && !notes.some(n => n && noteText(n.text)) && !noteText(d.summary);
+                  const cornellEmpty = cornellTypable && !cues.some(c => c && (noteText(c.text) || noteText(c.guidance)));
+                  const rowCount = cornellEmpty ? 4 : Math.max(cues.length, notes.length, 1);
                   const rowsHtml = Array.from({ length: rowCount }).map((_, i) => {
                       const cue = (cues[i] && cues[i].text) || '';
                       const note = (notes[i] && notes[i].text) || '';
                       const guidance = cues[i] && typeof cues[i].guidance === 'string' ? cues[i].guidance : '';
+                      if (cornellEmpty) return `<tr><td class="alloflow-note-cue" style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:35%; background:#f8fafc;">${noteField('cue:' + i, XL('note_cue_n', 'Cue or question {n}', { n: i + 1 }), 2)}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${noteField('notes:' + i, NL('notes_row_n', 'Notes for row {n}', { n: i + 1 }), 3)}</td></tr>`;
                       if (!cue.trim() && !note.trim() && !guidance.trim() && !isWorksheet) return '';
                       const guidanceHtml = guidance.trim() ? `<p data-cornell-print-guidance="true" style="margin:6px 0 0; font-size:0.85em; line-height:1.5; font-weight:normal; white-space:pre-wrap;">${escapeHtml(guidance)}</p>` : '';
-                      const noteHtml = isWorksheet && !note.trim() ? cornellWritingSpace('notes') : escapeHtml(note);
-                      return `<tr style="break-inside:avoid; page-break-inside:avoid;"><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:35%; background:#f8fafc;"><strong style="font-size:0.85em;">${escapeHtml(cue)}</strong>${guidanceHtml}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; white-space:pre-wrap;">${noteHtml}</td></tr>`;
+                      const noteHtml = cornellTypable ? noteField('notes:' + i, cue.trim() ? XL('note_notes_for', 'Notes for: {cue}', { cue: cue.trim() }) : NL('notes_row_n', 'Notes for row {n}', { n: i + 1 }), 3) : isWorksheet && !note.trim() ? cornellWritingSpace('notes', Math.min(10, 4 + Math.ceil(Math.max(0, guidance.trim().length - 90) / 90))) : escapeHtml(note);
+                      return `<tr style="break-inside:avoid; page-break-inside:avoid;"><td class="alloflow-note-cue" style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:35%; background:#f8fafc;"><strong style="font-size:0.85em;">${escapeHtml(cue)}</strong>${guidanceHtml}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; white-space:pre-wrap;">${noteHtml}</td></tr>`;
                   }).filter(Boolean).join('');
                   const summary = d.summary || '';
-                  const summaryHtml = String(summary).trim() || (!isWorksheet && summary) ? `<div style="background:#ecfdf5; border-left:4px solid #10b981; padding:12px; border-radius:6px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#065f46; margin-bottom:4px;">Summary</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(summary)}</div></div>` : isWorksheet ? `<section data-cornell-summary-space="true" aria-label="Summary" style="margin-top:12px; border:1px solid #cbd5e1; border-radius:6px; padding:10px; break-inside:avoid; page-break-inside:avoid;"><h3 style="margin:0 0 6px; font-size:0.85em;">Summary</h3>${cornellWritingSpace('summary')}</section>` : '<div style="font-size:0.85em; color:#475569; font-style:italic;">No summary written yet.</div>';
-                  return `<table style="width:100%; border-collapse:collapse; margin-bottom:12px;"><thead><tr><th scope="col" style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">Cues / Questions</th><th scope="col" style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">Notes</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="2" style="border:1px solid #cbd5e1; padding:12px; text-align:center; color:#64748b; font-style:italic;">No rows filled in yet.</td></tr>'}</tbody></table>${summaryHtml}`;
+                  const summaryHtml = String(summary).trim() || (!isWorksheet && summary) ? `<div style="background:#ecfdf5; border-left:4px solid #10b981; padding:12px; border-radius:6px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#065f46; margin-bottom:4px;">${escapeHtml(NL('summary_title', 'Summary'))}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(summary)}</div></div>` : isWorksheet ? `<section data-cornell-summary-space="true" aria-label="${_escTxt(NL('summary_title', 'Summary'))}" style="margin-top:12px; border:1px solid #cbd5e1; border-radius:6px; padding:10px; break-inside:avoid; page-break-inside:avoid;"><h3 style="margin:0 0 6px; font-size:0.85em;">${escapeHtml(NL('summary_title', 'Summary'))}</h3>${cornellWritingSpace('summary')}</section>` : cornellTypable ? noteTypingSection(NL('summary_title', 'Summary'), '#ecfdf5', 'summary', 4) : '<div style="font-size:0.85em; color:#475569; font-style:italic;">' + escapeHtml(XL('note_no_summary', 'No summary written yet.')) + '</div>';
+                  return `<style>@media screen and (max-width:600px){.alloflow-cornell-table,.alloflow-cornell-table tbody,.alloflow-cornell-table tr,.alloflow-cornell-table td{display:block;width:auto !important;}.alloflow-cornell-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);}.alloflow-cornell-table tr{margin-bottom:8px;}}</style><table class="alloflow-cornell-table" style="width:100%; border-collapse:collapse; margin-bottom:12px;"><thead><tr><th scope="col" style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">${escapeHtml(NL('cues_column', 'Cues / Questions'))}</th><th scope="col" style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">${escapeHtml(NL('notes_column', 'Notes'))}</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="2" style="border:1px solid #cbd5e1; padding:12px; text-align:center; color:#64748b; font-style:italic;">' + escapeHtml(XL('note_no_rows', 'No rows filled in yet.')) + '</td></tr>'}</tbody></table>${summaryHtml}`;
               }
               if (tt === 'lab-report') {
                   const materials = (Array.isArray(d.materials) ? d.materials : []).map(m => (m && m.text || '').trim()).filter(Boolean);
                   const procedure = (Array.isArray(d.procedure) ? d.procedure : []).map(p => (p && p.text || '').trim()).filter(Boolean);
-                  const section = (label, body, color) => typeof body === 'string' && body.trim() ? `<div style="background:${color}; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#334155; margin-bottom:4px;">${label}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(body)}</div></div>` : isWorksheet ? noteWritingSection(label, color) : '';
+                  const labTypable = noteTypable && ![d.hypothesis, d.data, d.analysis, d.conclusion].some(noteText);
+                  const section = (en, body, color, k) => { const label = NL(k, en); return typeof body === 'string' && body.trim() ? `<div style="background:${color}; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#334155; margin-bottom:4px;">${escapeHtml(label)}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(body)}</div></div>` : isWorksheet ? noteWritingSection(label, color) : labTypable ? noteTypingSection(label, color, 'lab:' + en.toLowerCase().replace(/[^a-z]+/g, '-')) : ''; };
+                  if (labTypable && !materials.length && !procedure.length) return [
+                      section('Research Question', d.question, '#eff6ff', 'research_question'),
+                      section('Hypothesis', d.hypothesis, '#faf5ff', 'hypothesis'),
+                      noteTypingSection(NL('materials', 'Materials'), '#fffbeb', 'lab:materials'),
+                      noteTypingSection(NL('procedure', 'Procedure'), '#ecfdf5', 'lab:procedure', 5),
+                      section('Data / Observations', d.data, '#eef2ff', 'data_observations'),
+                      section('Analysis (CER)', d.analysis, '#fef2f2', 'analysis_label'),
+                      section('Conclusion', d.conclusion, '#f8fafc', 'conclusion'),
+                  ].join('');
                   return [
-                      section('Research Question', d.question, '#eff6ff'),
-                      section('Hypothesis', d.hypothesis, '#faf5ff'),
-                      materials.length ? `<div style="background:#fffbeb; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#92400e; margin-bottom:4px;">Materials</div><ul style="margin:0; padding-left:20px;">${materials.map(m => `<li style="font-size:0.95em; color:#1e293b;">${escapeHtml(m)}</li>`).join('')}</ul></div>` : isWorksheet ? noteWritingSection('Materials', '#fffbeb', 3) : '',
-                      procedure.length ? `<div style="background:#ecfdf5; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#065f46; margin-bottom:4px;">Procedure</div><ol style="margin:0; padding-left:20px;">${procedure.map(s => `<li style="font-size:0.95em; color:#1e293b; margin-bottom:2px;">${escapeHtml(s)}</li>`).join('')}</ol></div>` : isWorksheet ? noteWritingSection('Procedure', '#ecfdf5', 5) : '',
-                      section('Data / Observations', d.data, '#eef2ff'),
-                      section('Analysis (CER)', d.analysis, '#fef2f2'),
-                      section('Conclusion', d.conclusion, '#f8fafc'),
+                      section('Research Question', d.question, '#eff6ff', 'research_question'),
+                      section('Hypothesis', d.hypothesis, '#faf5ff', 'hypothesis'),
+                      materials.length ?`<div style="background:#fffbeb; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#92400e; margin-bottom:4px;">${escapeHtml(NL('materials', 'Materials'))}</div><ul style="margin:0; padding-left:20px;">${materials.map(m => `<li style="font-size:0.95em; color:#1e293b;">${escapeHtml(m)}</li>`).join('')}</ul></div>` : isWorksheet ? noteWritingSection(NL('materials', 'Materials'), '#fffbeb', 3) : '',
+                      procedure.length ? `<div style="background:#ecfdf5; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#065f46; margin-bottom:4px;">${escapeHtml(NL('procedure', 'Procedure'))}</div><ol style="margin:0; padding-left:20px;">${procedure.map(s => `<li style="font-size:0.95em; color:#1e293b; margin-bottom:2px;">${escapeHtml(s)}</li>`).join('')}</ol></div>` : isWorksheet ? noteWritingSection(NL('procedure', 'Procedure'), '#ecfdf5', 5) : '',
+                      section('Data / Observations', d.data, '#eef2ff', 'data_observations'),
+                      section('Analysis (CER)', d.analysis, '#fef2f2', 'analysis_label'),
+                      section('Conclusion', d.conclusion, '#f8fafc', 'conclusion'),
                   ].filter(Boolean).join('');
               }
               if (tt === 'reading-response') {
@@ -51067,13 +51274,14 @@ function projectStudentGuideData(data, mode) {
                   const pageRange = d.pageRange || '';
                   const conn = d.connection || {};
                   const meta = (author || pageRange) ? `<div style="font-size:0.85em; color:#64748b; margin-bottom:8px;">${escapeHtml(author)}${author && pageRange ? ' · ' : ''}${escapeHtml(pageRange)}</div>` : '';
-                  const sec = (label, body, color) => typeof body === 'string' && body.trim() ? `<div style="background:${color}; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#334155; margin-bottom:4px;">${escapeHtml(label)}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(body)}</div></div>` : isWorksheet ? noteWritingSection(label, color) : '';
+                  const readingTypable = noteTypable && ![d.favoriteLine, d.thinkings, conn.text, d.question].some(noteText);
+                  const sec = (label, body, color, key) => typeof body === 'string' && body.trim() ?`<div style="background:${color}; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#334155; margin-bottom:4px;">${escapeHtml(label)}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(body)}</div></div>` : isWorksheet ? noteWritingSection(label, color) : readingTypable ? noteTypingSection(label, color, 'reading:' + key) : '';
                   return [
                       meta,
-                      sec('Favorite Line or Passage', d.favoriteLine, '#fffbeb'),
-                      sec('What This Made Me Think About', d.thinkings, '#faf5ff'),
-                      sec(`Connection (${conn.type || 'text-to-self'})`, conn.text, '#eff6ff'),
-                      sec('One Question I Have', d.question, '#ecfdf5'),
+                      sec(NL('favorite_line', 'Favorite Line or Passage'), d.favoriteLine, '#fffbeb', 'favorite-line'),
+                      sec(NL('thinkings', 'What This Made Me Think About'), d.thinkings, '#faf5ff', 'thinking'),
+                      sec(NL('connection', 'Connection') + ' (' + ({ 'text-to-self': NL('text_to_self', 'Text to Self'), 'text-to-text': NL('text_to_text', 'Text to Text'), 'text-to-world': NL('text_to_world', 'Text to World') }[conn.type || 'text-to-self'] || conn.type) + ')', conn.text, '#eff6ff', 'connection'),
+                      sec(NL('one_question', 'One Question I Have'), d.question, '#ecfdf5', 'question'),
                   ].filter(Boolean).join('');
               }
               if (tt === 'double-entry') {
@@ -51081,25 +51289,36 @@ function projectStudentGuideData(data, mode) {
                   const pageRange = d.pageRange || '';
                   const meta = (author || pageRange) ? `<div style="font-size:0.85em; color:#64748b; margin-bottom:8px;">${escapeHtml(author)}${author && pageRange ? ' · ' : ''}${escapeHtml(pageRange)}</div>` : '';
                   const entries = (Array.isArray(d.entries) ? d.entries : []).filter(en => en && ((en.quote || '').trim() || (en.response || '').trim()));
-                  const rowsHtml = entries.map(en => `<tr><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:45%; background:#fff1f2; font-style:italic;">${escapeHtml((en.quote || '').trim())}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${escapeHtml((en.response || '').trim())}</td></tr>`).join('')
-                      || (isWorksheet ? Array.from({ length: 3 }, () => `<tr data-note-writing-space="true"><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:45%; background:#fff1f2;">${cornellWritingSpace('quote')}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${cornellWritingSpace('response')}</td></tr>`).join('') : '');
-                  return `${meta}<table style="width:100%; border-collapse:collapse; margin-bottom:12px;"><thead><tr><th scope="col" style="border:1px solid #cbd5e1; background:#ffe4e6; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">Quote / Passage</th><th scope="col" style="border:1px solid #cbd5e1; background:#ffe4e6; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">Response / Thinking</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="2" style="border:1px solid #cbd5e1; padding:12px; text-align:center; color:#64748b; font-style:italic;">No entries filled in yet.</td></tr>'}</tbody></table>`;
+                  // Planned-but-empty entries set how many blank rows to give (default 3, at most 12).
+                  const blankRows = Math.min(12, (Array.isArray(d.entries) ? d.entries.length : 0) || 3);
+                  // A title written as "left → right" names the two columns; any other title is a caption.
+                  const titleParts = String(d.title || '').split('→').map((part) => part.trim()).filter(Boolean);
+                  const columnHeads = titleParts.length === 2 ? titleParts : [NL('quote_column', 'Quote / Passage'), NL('response_column', 'Response / Thinking')];
+                  const caption = titleParts.length === 2 || !String(d.title || '').trim() ? '' : `<p style="margin:0 0 8px; font-weight:600; color:#334155;">${escapeHtml(String(d.title).trim())}</p>`;
+                  const entryTypable = noteTypable && !entries.some(en => noteText(en.response));
+                  const rowsHtml = entries.map((en, i) => `<tr><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:45%; background:#fff1f2; font-style:italic;">${escapeHtml((en.quote || '').trim())}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${entryTypable ? noteField('response:' + i, XL('note_response_to', 'Response to: {quote}', { quote: (en.quote || '').trim().slice(0, 80) }), 3) : escapeHtml((en.response || '').trim())}</td></tr>`).join('')
+                      || (entryTypable ? Array.from({ length: blankRows }, (_, i) => `<tr><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:45%; background:#fff1f2;">${noteField('quote:' + i, XL('note_quote_n', 'Quote or passage {n}', { n: i + 1 }), 3)}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${noteField('response:' + i, XL('note_response_thinking_n', 'Response or thinking {n}', { n: i + 1 }), 3)}</td></tr>`).join('') : '')
+                      || (isWorksheet ?Array.from({ length: blankRows }, () => `<tr data-note-writing-space="true"><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:45%; background:#fff1f2;">${cornellWritingSpace('quote')}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${cornellWritingSpace('response')}</td></tr>`).join('') : '');
+                  return `${meta}${caption}<table style="width:100%; border-collapse:collapse; margin-bottom:12px;"><thead><tr><th scope="col" style="border:1px solid #cbd5e1; background:#ffe4e6; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">${escapeHtml(columnHeads[0])}</th><th scope="col" style="border:1px solid #cbd5e1; background:#ffe4e6; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">${escapeHtml(columnHeads[1])}</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="2" style="border:1px solid #cbd5e1; padding:12px; text-align:center; color:#64748b; font-style:italic;">' + escapeHtml(XL('note_no_entries', 'No entries filled in yet.')) + '</td></tr>'}</tbody></table>`;
               }
               if (tt === 'guided-notes') {
                   const blanks = Array.isArray(d.blanks) ? d.blanks : [];
+                  const guidedTypable = noteTypable && !blanks.some(b => b && noteText(b.studentAnswer)) && !noteText(d.notesExtra);
                   const itemsHtml = blanks.map((b, i) => {
                       const ans = (b && b.studentAnswer || '').trim();
                       const filled = ans
                           ? `<strong style="color:#065f46;">${escapeHtml(ans)}</strong>`
+                          : guidedTypable
+                          ? `<input type="text" class="interactive-blank alloflow-response-input" data-allo-response-key="${_escTxt((item.id || 'note-taking') + ':note:blank:' + i)}" data-allo-response-type="free-response" data-allo-question="${_escTxt(XL('note_guided_n', 'Guided note {n}', { n: i + 1 }))}" aria-label="${_escTxt(XL('note_guided_missing_n', 'Missing words for guided note {n}', { n: i + 1 }))}" style="width:11em; max-width:100%; padding:4px 8px; border:1px solid #94a3b8; border-radius:6px; font:inherit;">`
                           : '<span style="color:#94a3b8;">________</span>';
                       return `<li style="font-size:0.95em; color:#1e293b; margin-bottom:4px;">${escapeHtml(b && b.before || '')}${filled}${escapeHtml(b && b.after || '')}</li>`;
                   }).join('');
                   const blanksBlock = blanks.length
                       ? `<ol style="margin:0 0 8px; padding-left:20px;">${itemsHtml}</ol>`
-                      : '<div style="font-size:0.85em; color:#64748b; font-style:italic;">No guided-note blanks for this entry.</div>';
+                      : '<div style="font-size:0.85em; color:#64748b; font-style:italic;">' + escapeHtml(XL('note_no_blanks', 'No guided-note blanks for this entry.')) + '</div>';
                   const own = (d.notesExtra || '').trim()
-                      ? `<div style="background:#eef2ff; border-radius:6px; padding:10px; margin-top:8px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#3730a3; margin-bottom:4px;">My Own Notes</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(d.notesExtra)}</div></div>`
-                      : '';
+                      ? `<div style="background:#eef2ff; border-radius:6px; padding:10px; margin-top:8px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#3730a3; margin-bottom:4px;">${escapeHtml(NL('own_notes', 'My Own Notes'))}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(d.notesExtra)}</div></div>`
+                      : guidedTypable ? noteTypingSection(NL('own_notes', 'My Own Notes'), '#eef2ff', 'own-notes', 4) : '';
                   return blanksBlock + own;
               }
               if (tt === 'q-and-a') {
@@ -51108,28 +51327,29 @@ function projectStudentGuideData(data, mode) {
                   if (isWorksheet) {
                       const asked = pairs.filter(p => (p.question || '').trim());
                       return asked.length
-                          ? asked.map((p, i) => `<div data-note-writing-space="true" style="background:#ecfeff; border-radius:6px; padding:10px; margin-bottom:8px; break-inside:avoid; page-break-inside:avoid;"><div style="font-size:0.9em; font-weight:bold; color:#155e75; margin-bottom:4px;">Q${i + 1}. ${escapeHtml(p.question.trim())}</div>${ruledLines(3)}</div>`).join('')
-                          : noteWritingSection('Q&A Study Notes', '#ecfeff', 8);
+                          ? asked.map((p, i) => `<div data-note-writing-space="true" style="background:#ecfeff; border-radius:6px; padding:10px; margin-bottom:8px; break-inside:avoid; page-break-inside:avoid;"><div style="font-size:0.9em; font-weight:bold; color:#155e75; margin-bottom:4px;">${escapeHtml(NL('q_n', 'Q{n}', { n: i + 1 }))}. ${escapeHtml(p.question.trim())}</div>${ruledLines(3)}</div>`).join('')
+                          : noteWritingSection(NL('heading_qa', 'Q&A Study Notes'), '#ecfeff', 8);
                   }
-                  const pairsHtml = pairs.map((p, i) => `<div style="background:#ecfeff; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:0.9em; font-weight:bold; color:#155e75; margin-bottom:4px;">Q${i + 1}. ${escapeHtml((p.question || '').trim())}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${(p.answer || '').trim() ? escapeHtml(p.answer.trim()) : '<span style="color:#94a3b8; font-style:italic;">No answer written yet.</span>'}</div></div>`).join('');
-                  return pairsHtml || '<div style="font-size:0.85em; color:#64748b; font-style:italic;">No question-and-answer pairs yet.</div>';
+                  const qaTypable = noteTypable && !pairs.some(p => noteText(p.answer));
+                  const pairsHtml = pairs.map((p, i) => `<div style="background:#ecfeff; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:0.9em; font-weight:bold; color:#155e75; margin-bottom:4px;">${escapeHtml(NL('q_n', 'Q{n}', { n: i + 1 }))}. ${escapeHtml((p.question || '').trim())}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${(p.answer || '').trim() ? escapeHtml(p.answer.trim()) : qaTypable ? noteField('answer:' + i, XL('note_answer_to', 'Answer to: {question}', { question: (p.question || '').trim().slice(0, 120) }), 3) :'<span style="color:#94a3b8; font-style:italic;">' + escapeHtml(NL('no_answer_yet', 'No answer written yet.')) + '</span>'}</div></div>`).join('');
+                  return pairsHtml || '<div style="font-size:0.85em; color:#64748b; font-style:italic;">' + escapeHtml(XL('note_no_pairs', 'No question-and-answer pairs yet.')) + '</div>';
               }
               return '<div style="font-size:0.85em; color:#64748b; font-style:italic;">Unknown note-taking template.</div>';
           };
           const feedbackBadge = feedbackCount > 0
-              ? `<div style="margin-top:12px; padding:8px 12px; background:#f5f3ff; border-left:4px solid #8b5cf6; border-radius:4px; font-size:0.85em; color:#5b21b6;"><strong>AI Feedback:</strong> Student requested feedback ${feedbackCount}× on this entry${feedbackScore > 0 ? ` (best score: ${feedbackScore}/28 internal rubric)` : ''}. Their last attempt earned XP.</div>`
-              : `<div style="margin-top:12px; padding:8px 12px; background:#f1f5f9; border-left:4px solid #94a3b8; border-radius:4px; font-size:0.85em; color:#475569; font-style:italic;">Student has not requested AI feedback on this entry.</div>`;
+              ? `<div style="margin-top:12px; padding:8px 12px; background:#f5f3ff; border-left:4px solid #8b5cf6; border-radius:4px; font-size:0.85em; color:#5b21b6;"><strong>${escapeHtml(XL('note_ai_feedback', 'AI Feedback:'))}</strong> ${escapeHtml(XL('note_feedback_requested', 'Student requested feedback {count}× on this entry{score}. Their last attempt earned XP.', { count: feedbackCount, score: feedbackScore > 0 ? XL('note_feedback_best', ' (best score: {score}/28 internal rubric)', { score: feedbackScore }) : '' }))}</div>`
+              : `<div style="margin-top:12px; padding:8px 12px; background:#f1f5f9; border-left:4px solid #94a3b8; border-radius:4px; font-size:0.85em; color:#475569; font-style:italic;">${escapeHtml(XL('note_feedback_none', 'Student has not requested AI feedback on this entry.'))}</div>`;
           const blankCornellWorksheet = tt === 'cornell-notes' && isWorksheet && !feedbackCount
               && !(Array.isArray(d.notes) ? d.notes : []).some(note => note && typeof note.text === 'string' && note.text.trim())
               && !(d.summary && String(d.summary).trim()) && !(d.connections && String(d.connections).trim());
           // Optional student-authored elaboration field (cross-template). Rendered
           // once here so it can't become a per-template export gap.
           const connectionsBlock = (d.connections && String(d.connections).trim())
-              ? `<div style="margin-top:10px; background:#f5f3ff; border-left:4px solid #8b5cf6; border-radius:4px; padding:10px;"><div style="font-size:0.75em; font-weight:bold; text-transform:uppercase; color:#5b21b6; margin-bottom:4px;">Connections &amp; Memory Hooks</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(d.connections)}</div></div>`
+              ? `<div style="margin-top:10px; background:#f5f3ff; border-left:4px solid #8b5cf6; border-radius:4px; padding:10px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#5b21b6; margin-bottom:4px;">${escapeHtml(XL('note_connections', 'Connections & Memory Hooks'))}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(d.connections)}</div></div>`
               : '';
           return `
               <div class="section" id="${_escTxt(item.id)}">
-                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${ttColor};">${ttIcon} ${_escTxt(title)} <span style="font-size:0.75em; font-weight:normal; color:#475569; margin-left:8px;">(${ttLabel})</span></h2>
+                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid ${ttColor};">${ttIcon} ${_escTxt(title)}${String(title || '').toLowerCase().includes(String(ttLabel || '').toLowerCase()) ? '' : ` <span style="font-size:max(12px, 0.75em); font-weight:normal; color:#475569; margin-left:8px;">(${_escTxt(ttLabel)})</span>`}</h2>
                   ${renderRows()}
                   ${connectionsBlock}
                   ${blankCornellWorksheet || !isTeacher || isWorksheet ? '' : feedbackBadge}
@@ -51315,10 +51535,10 @@ function projectStudentGuideData(data, mode) {
                   const cueMissing = !cue && !visualImage;
                   const pendingReview = !factsVerified;
                   if (pendingReview || cueMissing) {
-                      return '<article class="memory-aid-authoring-sheet' + (pendingReview ? ' memory-aid-review-pending' : ' memory-aid-cue-pending') + '" style="margin:0 0 18px;padding:16px;border:1px solid #fbbf24;border-radius:10px;background:#fffbeb;break-inside:avoid;page-break-inside:avoid;" aria-labelledby="' + titleId + '">'
-                          + '<p style="margin:0 0 4px;font-size:0.75em;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#92400e;">' + (pendingReview ? _maT('export_authoring_only_kicker', 'Authoring only · facts awaiting teacher review') : _maT('export_authoring_no_cue_kicker', 'Authoring only · create your cue first')) + '</p>'
+                      return '<article class="memory-aid-authoring-sheet' + (pendingReview ? ' memory-aid-review-pending' : ' memory-aid-cue-pending') + '" style="margin:0 0 18px;padding:16px;border:1px solid #fbbf24;border-radius:10px;background:#fffbeb;break-inside:auto;page-break-inside:auto;" aria-labelledby="' + titleId + '">'
+                          + '<p style="margin:0 0 4px;font-size:max(12px, 0.75em);font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#92400e;">' + _maT('practice_your_cue', 'Your memory cue') + '</p>'
                           + '<h3 id="' + titleId + '" style="margin:0;color:#78350f;">' + (index + 1) + '. ' + escapeHtml(c.target || _maT('memory_target', 'Memory target')) + '</h3>'
-                          + '<p role="note" style="margin:10px 0 0;padding:10px;border:1px solid #f59e0b;border-radius:7px;background:#fff;color:#78350f;"><strong>' + _maT('export_recall_unavailable_label', 'Recall practice is unavailable:') + '</strong> ' + (pendingReview ? _maT('export_recall_unavailable_note', 'These facts have not been marked teacher verified. You may create or revise the cue, but this sheet intentionally omits recall, confidence, and self-check fields until review is complete.') : _maT('export_no_cue_note', 'This card has no written or visual cue yet. Create your cue below; recall practice opens once a cue exists.')) + '</p>'
+                          + '<p role="note" style="margin:10px 0 0;padding:10px;border:1px solid #f59e0b;border-radius:7px;background:#fff;color:#78350f;">' + (pendingReview ? _maT('facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.') : _maT('export_no_cue_note', 'This card has no written or visual cue yet. Create your cue below; recall practice opens once a cue exists.')) + '</p>'
                           + '<section aria-labelledby="' + cueId + '" style="margin-top:12px;padding:12px;border:2px solid #fcd34d;border-radius:8px;background:#fff;">'
                           + '<h4 id="' + cueId + '" style="margin:0;color:#78350f;">' + _maT('export_current_cue_draft', 'Current cue draft') + '</h4>' + (cueMissing ? '<p style="margin:7px 0 0;color:#475569;">' + _maT('export_no_cue_yet', 'No cue yet. Create yours below.') + '</p>' : cueBody) + recallVisualHtml + '</section>'
                           + '<section role="group" aria-labelledby="' + authoringId + '" style="margin-top:12px;padding:12px;border:1px solid #94a3b8;border-radius:8px;background:#fff;">'
@@ -51327,7 +51547,7 @@ function projectStudentGuideData(data, mode) {
                           + ruledLines(6, _maT('export_memory_cue_draft_lines', 'Memory cue draft')) + '</section></article>';
                   }
                   return '<article class="memory-aid-recall-sheet" style="margin:0 0 18px;padding:16px;border:1px solid #67e8f9;border-radius:10px;background:#f0fdff;break-inside:avoid;page-break-inside:avoid;" aria-labelledby="' + titleId + '">'
-                      + '<p style="margin:0 0 4px;font-size:0.75em;font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#0e7490;">' + _maT('export_recall_kicker', 'Recall practice · facts hidden') + '</p>'
+                      + '<p style="margin:0 0 4px;font-size:max(12px, 0.75em);font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#0e7490;">' + _maT('export_recall_kicker', 'Recall practice · facts hidden') + '</p>'
                       + '<h3 id="' + titleId + '" style="margin:0;color:#164e63;">' + (index + 1) + '. ' + escapeHtml(c.target || _maT('memory_target', 'Memory target')) + '</h3>'
                       + '<p style="margin:8px 0 0;color:#334155;">' + _maT('export_recall_directions', 'Use only the cue, record what you remember, then ask your teacher for the checked facts. AI does not grade this practice.') + '</p>'
                       + '<section aria-labelledby="' + cueId + '" style="margin-top:12px;padding:12px;border:2px solid #a5f3fc;border-radius:8px;background:#ecfeff;">'
@@ -51396,7 +51616,7 @@ function projectStudentGuideData(data, mode) {
               return '<article style="margin:0 0 18px;padding:16px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;break-inside:avoid;page-break-inside:avoid;">'
                   + '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">'
                   + '<h3 style="margin:0;color:#0f172a;">' + (index + 1) + '. ' + escapeHtml(c.target || _maT('memory_target', 'Memory target')) + '</h3>'
-                  + '<div style="font-size:0.78em;color:#334155;">' + escapeHtml(typeLabels[c.type] || c.type || _maT('export_memory_aid_fallback', 'Memory aid')) + ' &middot; ' + escapeHtml(modeLabels[c.mode] || c.mode || _maT('mode_student_authored_compact', 'Student-authored')) + '</div></div>'
+                  + '<div style="font-size:max(12px, 0.78em);color:#334155;">' + escapeHtml(typeLabels[c.type] || c.type || _maT('export_memory_aid_fallback', 'Memory aid')) + ' &middot; ' + escapeHtml(modeLabels[c.mode] || c.mode || _maT('mode_student_authored_compact', 'Student-authored')) + '</div></div>'
                   + '<section style="margin-top:12px;padding:12px;border-left:4px solid #d97706;background:#fffbeb;border-radius:6px;"><h4 style="margin:0 0 6px;color:#78350f;">' + factsHeading + '</h4>'
                   + (facts ? '<ul style="margin:0;padding-left:22px;">' + facts + '</ul>' : '<div>' + _maT('export_no_facts', 'No facts were supplied.') + '</div>') + factsReviewNote + '</section>'
                   + hookHtml
@@ -51416,9 +51636,11 @@ function projectStudentGuideData(data, mode) {
                         : '<div style="min-height:48px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;white-space:pre-wrap;">' + (reasoning ? escapeHtml(reasoning) : '&nbsp;') + '</div>') + '</section>' : '')
                   + feedbackHtml + '</article>';
           }).join('');
+          // Export preflight counts these to remind the teacher before students see "still checking".
+          const factsPending = cards.filter((card) => card && typeof card === 'object' && !cardVerified(card)).length;
           return `
-              <div class="section memory-aid-export" id="${escapeHtml(String(item.id == null ? '' : item.id))}" style="background:#f8fffe;border:1px solid #99f6e4;border-radius:10px;padding:8px 14px 14px;">
-                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #0f766e;color:#134e4a;">&#129504; ${escapeHtml(title)} <span style="font-size:0.65em;font-weight:normal;color:#475569;margin-left:8px;">(${_maT('studio_name', 'Memory Aid Studio')})</span></h2>
+              <div class="section memory-aid-export" id="${escapeHtml(String(item.id == null ? '' : item.id))}"${factsPending ? ' data-allo-facts-pending="' + factsPending + '"' : ''} style="background:#f8fffe;border:1px solid #99f6e4;border-radius:10px;padding:8px 14px 14px;">
+                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #0f766e;color:#134e4a;">&#129504; ${escapeHtml(title)} <span style="font-size:max(12px, 0.65em);font-weight:normal;color:#475569;margin-left:8px;">(${_maT('studio_name', 'Memory Aid Studio')})</span></h2>
                   ${d.instructions ? '<p style="margin:0 0 14px;color:#334155;">' + escapeHtml(d.instructions) + '</p>' : ''}
                   ${cardsHtml || '<p>' + _maT('no_targets', 'No memory targets yet.') + '</p>'}
               </div>
@@ -51617,10 +51839,11 @@ function projectStudentGuideData(data, mode) {
           // saved response restore; a snapshot wins over it on purpose.
           const responseField = (key, label, text, longField) => {
               const value = String(text || '');
-              if (isWorksheet) return value.trim() ? pre(value) : ruledLines(longField ? 8 : 4);
-              return '<textarea class="interactive-textarea alloflow-response-input ace-field" rows="' + (longField ? 8 : 4) + '" data-allo-response-key="' + esc(itemId + ':applied:' + key) + '" data-allo-response-type="free-response" data-allo-question="' + esc(label) + '" aria-label="' + esc(label) + '">' + esc(value) + '</textarea>';
+              if (isWorksheet) return value.trim() ? pre(value) : ruledLines(longField === 'deliverable' ? 22 : longField === 'short' ? 2 : longField ? 8 : 4);
+              return '<textarea class="interactive-textarea alloflow-response-input ace-field" rows="' + (longField === 'deliverable' ? 14 : longField && longField !== 'short' ? 8 : 4) + '" data-allo-response-key="' + esc(itemId + ':applied:' + key) + '" data-allo-response-type="free-response" data-allo-question="' + esc(label) + '" aria-label="' + esc(label) + '">' + esc(value) + '</textarea>';
           };
-          const chips = [m.familyLabel && (m.familyLabel + (m.familyExample ? ': ' + m.familyExample : '')), m.agencyLabel, m.scopeLabel, m.selectionMode === 'auto' ? L.autoMatch : L.teacherSelected]
+          // Planning labels (family, AI agency, scope, selection) are for the teacher.
+          const chips = !isTeacher ? '' : [m.familyLabel && (m.familyLabel + (m.familyExample ? ': ' + m.familyExample : '')), m.agencyLabel, m.scopeLabel, m.selectionMode === 'auto' ? L.autoMatch : L.teacherSelected]
               .filter(Boolean).map((chip) => '<span class="ace-chip">' + esc(chip) + '</span>').join(' ');
           const briefHtml = '<section class="ace-panel ace-brief" aria-labelledby="' + esc(itemId) + '-brief"><h3 class="ace-h3" id="' + esc(itemId) + '-brief">' + esc(L.brief) + '</h3>'
               + (m.brief.context ? '<p class="ace-p ace-prewrap">' + esc(m.brief.context) + '</p>' : '')
@@ -51643,31 +51866,40 @@ function projectStudentGuideData(data, mode) {
               (m.supports.frameStarter || (m.supports.frameChoices || []).length) ? '<div class="ace-card"><h4 class="ace-h4">' + esc(L.frame) + '</h4>' + (m.supports.frameStarter ? '<p class="ace-p ace-prewrap">' + esc(m.supports.frameStarter) + '</p>' : '') + (listHtml(m.supports.frameChoices) ? '<ul class="ace-list">' + listHtml(m.supports.frameChoices) + '</ul>' : '') + '</div>' : '',
               (m.supports.coachPrompts || []).length ? '<div class="ace-card"><h4 class="ace-h4">' + esc(L.coach) + '</h4><ul class="ace-list">' + listHtml(m.supports.coachPrompts) + '</ul></div>' : '',
           ].filter(Boolean).join('');
-          const supportHtml = supportCards ? '<section class="ace-panel ace-supports"><h3 class="ace-h3">' + esc(L.supports) + '</h3>' + (m.agencyDescription ? '<p class="ace-muted">' + esc(m.agencyDescription) + '</p>' : '') + '<div class="ace-grid">' + supportCards + '</div></section>' : '';
+          const supportHtml = supportCards ? '<section class="ace-panel ace-supports"><h3 class="ace-h3">' + esc(L.supports) + '</h3>' + (isTeacher && m.agencyDescription ? '<p class="ace-muted">' + esc(m.agencyDescription) + '</p>' : '') + '<div class="ace-grid">' + supportCards + '</div></section>' : '';
           const sourcesHtml = (m.sourceRecords || []).length ? '<section class="ace-panel"><h3 class="ace-h3">' + esc(tx('applied_challenge.sources.heading','Saved outside sources')) + '</h3><p>' + esc(tx('applied_challenge.sources.boundary','Citation details are separate from your writing. A source-check note records your review; it does not verify a claim. Links are not opened by AI.')) + '</p>' + m.sourceRecords.map(source => '<article><h4 class="ace-h4"><a href="' + esc(source.url) + '" rel="noopener noreferrer">' + esc(source.title || source.url) + '</a></h4><p>' + esc(source.connectionLabel) + '</p><p>' + esc([source.author,source.publicationDate].filter(Boolean).join(' · ')) + '</p>' + (source.foundAt ? '<p>' + esc(tx('applied_challenge.sources.found','Found on') + ' ' + source.foundAt) + '</p>' : '') + '<p class="ace-p ace-prewrap">' + esc(source.reviewNote || tx('applied_challenge.sources.not_recorded','Source check not recorded')) + '</p></article>').join('') + '</section>' : '';
           const reasoningReferencesHtml = (m.reasoningReferences || []).length ? '<section class="ace-panel"><h3 class="ace-h3">' + esc(tx('applied_challenge.references.heading', 'Where I explained my reasoning')) + '</h3>' + m.reasoningReferences.map(ref => '<article><h4 class="ace-h4">' + esc(ref.label) + '</h4><p class="ace-p ace-prewrap">' + esc(ref.summary) + '</p></article>').join('') + '</section>' : '';
           const workspaceHtml = (m.phases || []).map((phase) => '<section class="ace-phase"><h4 class="ace-h4">' + esc(phase.label) + '</h4>'
               + (phase.prompt ? '<p class="ace-muted">' + esc(phase.prompt) + '</p>' : '')
-              + responseField(phase.id, phase.label, phase.text, phase.long) + '</section>').join('');
+              + responseField(phase.id, phase.label, phase.text, phase.id === 'response' ? 'deliverable' : phase.long) + '</section>').join('');
           const ledgerRows = m.evidenceLedger || [];
-          const ledgerRowHtml = (row, index) => '<div class="ace-ledger-row"><h5 class="ace-h5">' + esc(fill(L.row, index + 1)) + '</h5>'
+          const ledgerRowHtml = (row, index) => '<div class="ace-ledger-row"><h4 class="ace-h5">' + esc(fill(L.row, index + 1)) + '</h4>'
               + '<dl class="ace-dl">'
-              + '<dt>' + esc(L.claim) + '</dt><dd>' + (row ? esc(row.claim) : responseField('ledger-' + (index + 1) + '-claim', L.claim + ' ' + (index + 1), '', false)) + '</dd>'
-              + '<dt>' + esc(L.evidence) + '</dt><dd>' + (row ? esc(row.evidence) : responseField('ledger-' + (index + 1) + '-evidence', L.evidence + ' ' + (index + 1), '', false)) + '</dd>'
+              + '<dt>' + esc(L.claim) + '</dt><dd>' + (row ? esc(row.claim) : responseField('ledger-' + (index + 1) + '-claim', L.claim + ' ' + (index + 1), '', 'short')) + '</dd>'
+              + '<dt>' + esc(L.evidence) + '</dt><dd>' + (row ? esc(row.evidence) : responseField('ledger-' + (index + 1) + '-evidence', L.evidence + ' ' + (index + 1), '', 'short')) + '</dd>'
               + (row && row.sourceText ? '<dt>' + esc(tx('applied_challenge.export.source_fact', 'Linked lesson fact:')) + '</dt><dd>' + esc(row.sourceText) + '</dd>' : '')
               + (row ? '<dt>' + esc(L.status) + '</dt><dd><span class="ace-chip">' + esc(row.statusLabel) + '</span></dd>' : '')
-              + '<dt>' + esc(L.tradeoff) + '</dt><dd>' + (row ? esc(row.tradeoff) : responseField('ledger-' + (index + 1) + '-tradeoff', L.tradeoff + ' ' + (index + 1), '', false)) + '</dd>'
+              + '<dt>' + esc(L.tradeoff) + '</dt><dd>' + (row ? esc(row.tradeoff) : responseField('ledger-' + (index + 1) + '-tradeoff', L.tradeoff + ' ' + (index + 1), '', 'short')) + '</dd>'
               + '</dl></div>';
           const ledgerHtml = '<section class="ace-panel ace-ledger"><h3 class="ace-h3">' + esc(L.ledger) + '</h3><p class="ace-muted">' + esc(L.ledgerNote) + '</p>'
               + (ledgerRows.length ? ledgerRows.map(ledgerRowHtml).join('') : [null, null].map(ledgerRowHtml).join('')) + '</section>';
           const selfRows = m.selfCheck || [];
+          const selfKindCounts = {};
+          const selfRatingOptions = [['met', 'Met, and I can point to where'], ['partly', 'Partly met'], ['not-yet', 'Not yet']]
+              .map(([value, fallback]) => [value, tx('applied_challenge.self_check_rating.' + value, fallback)]);
           const selfCheckHtml = selfRows.length ? '<section class="ace-panel ace-feedback"><h3 class="ace-h3">' + esc(L.selfCheck) + '</h3><p class="ace-muted">' + esc(L.selfCheckNote) + '</p>'
-              + selfRows.map((row, index) => {
-                  const rowLabel = row.kindLabel + ' ' + (index + 1);
+              + selfRows.map((row) => {
+                  // Criteria and constraints are numbered separately (Criterion 1-4, Constraint 1-3).
+                  const kindCount = (selfKindCounts[row.kindLabel] = (selfKindCounts[row.kindLabel] || 0) + 1);
+                  const rowLabel = row.kindLabel + ' ' + kindCount;
                   const rated = row.rating && row.rating !== 'pending';
-                  return '<div class="ace-ledger-row"><h5 class="ace-h5">' + esc(rowLabel) + '</h5><p class="ace-p"><strong>' + esc(row.text) + '</strong></p><dl class="ace-dl">'
-                      + '<dt>' + esc(L.selfRating) + '</dt><dd>' + (rated ? '<span class="ace-chip">' + esc(row.ratingLabel) + '</span>' : (isWorksheet ? esc(row.ratingLabel) : '<span class="ace-chip">' + esc(row.ratingLabel) + '</span>')) + '</dd>'
-                      + '<dt>' + esc(L.selfWhere) + '</dt><dd>' + (row.note && row.note.trim() ? esc(row.note) : responseField('selfcheck-' + row.key, L.selfWhere + ' (' + rowLabel + ')', '', false)) + '</dd>'
+                  const ratingName = itemId + '-selfcheck-' + row.key;
+                  const ratingChoices = selfRatingOptions.map(([value, label]) => isWorksheet
+                      ? '<label class="alloflow-choice-label">' + fillableCircle() + esc(label) + '</label>'
+                      : '<label class="alloflow-choice-label"><input type="radio" name="' + esc(ratingName) + '" value="' + value + '" data-allo-response-key="' + esc(itemId + ':applied:selfcheck-' + row.key + ':rating') + '"> ' + esc(label) + '</label>').join(' ');
+                  return '<div class="ace-ledger-row"><h4 class="ace-h5">' + esc(rowLabel) + '</h4><p class="ace-p"><strong>' + esc(row.text) + '</strong></p><dl class="ace-dl">'
+                      + '<dt>' + esc(L.selfRating) + '</dt><dd>' + (rated ? '<span class="ace-chip">' + esc(row.ratingLabel) + '</span>' : (isWorksheet ? '<div>' : '<div role="radiogroup" aria-label="' + esc(L.selfRating + ' (' + rowLabel + ')') + '">') + ratingChoices + '</div>') + '</dd>'
+                      + '<dt>' + esc(L.selfWhere) + '</dt><dd>' + (row.note && row.note.trim() ? esc(row.note) : responseField('selfcheck-' + row.key, L.selfWhere + ' (' + rowLabel + ')', '', 'short')) + '</dd>'
                       + '</dl></div>';
               }).join('') + '</section>' : '';
           const teacherCommentHtml = m.teacherComment && m.teacherComment.text ? '<section class="ace-panel ace-brief"><h3 class="ace-h3">' + esc(L.teacherComment) + '</h3><p class="ace-p ace-prewrap">' + esc(m.teacherComment.text) + '</p></section>' : '';
@@ -51707,6 +51939,8 @@ function projectStudentGuideData(data, mode) {
               + '.applied-challenge-export .ace-phase{margin-top:10px;padding:12px;border:1px solid var(--ace-line);border-radius:8px;background:var(--ace-card);break-inside:avoid;}'
               + '.applied-challenge-export .ace-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:8px;}'
               + '.applied-challenge-export .ace-grid .ace-panel{margin-top:0;}'
+              // Paper: whole-panel avoid stranded headings and left pages ~half blank; only small units stay whole.
+              + '@media print{.applied-challenge-export .ace-panel{break-inside:auto;page-break-inside:auto;}.applied-challenge-export .ace-grid{display:block;}.applied-challenge-export .ace-grid>.ace-panel{margin-top:10px;break-inside:avoid;page-break-inside:avoid;}.applied-challenge-export h2,.applied-challenge-export .ace-h3,.applied-challenge-export .ace-h4,.applied-challenge-export .ace-h5{break-after:avoid;page-break-after:avoid;}}'
               + '.applied-challenge-export .ace-facts{background:var(--ace-facts);} .applied-challenge-export .ace-open{background:var(--ace-open);} .applied-challenge-export .ace-criteria{background:var(--ace-criteria);} .applied-challenge-export .ace-constraints{background:var(--ace-constraints);}'
               + '.applied-challenge-export .ace-supports{background:var(--ace-supports);} .applied-challenge-export .ace-ledger{background:var(--ace-ledger);} .applied-challenge-export .ace-stress{background:var(--ace-stress);} .applied-challenge-export .ace-cycles{background:var(--ace-cycles);} .applied-challenge-export .ace-feedback{background:var(--ace-feedback);}'
               + '.applied-challenge-export .ace-h3{margin:0 0 6px;font-size:1.1em;color:var(--ace-accent);} .applied-challenge-export .ace-h4{margin:0 0 6px;font-size:1em;color:var(--ace-accent);} .applied-challenge-export .ace-h5{margin:0 0 4px;font-size:0.9em;color:var(--ace-accent);}'
@@ -51722,13 +51956,13 @@ function projectStudentGuideData(data, mode) {
               + 'html[data-alloflow-theme="hc"] .applied-challenge-export .ace-panel,html[data-alloflow-theme="hc"] .applied-challenge-export .ace-card,html[data-alloflow-theme="hc"] .applied-challenge-export .ace-phase{border-width:2px;}'
               + '</style>';
           return '\n              <div class="section applied-challenge-export" id="' + esc(itemId) + '">' + aceStyle
-              + '<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #c2410c;">&#127919; ' + title + ' <span style="font-size:0.65em;font-weight:normal;margin-left:8px;">(' + esc(L.studio) + ')</span></h2>'
-              + '<div class="ace-chips">' + chips + '</div>'
+              + '<h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #c2410c;">&#127919; ' + title + ' <span style="font-size:max(12px, 0.65em);font-weight:normal;margin-left:8px;">' + (isTeacher ? '(' + esc(L.studio) + ')' : '') + '</span></h2>'
+              + (chips ? '<div class="ace-chips">' + chips + '</div>' : '')
               + (m.visual?.image && m.visual?.alt ? '<figure><img src="' + esc(m.visual.image) + '" alt="' + esc(m.visual.alt) + '" style="max-width:100%;max-height:360px;object-fit:contain"><figcaption>' + esc(m.visual.purpose) + '</figcaption></figure>' : '')
               + (m.instructions ? '<p class="ace-p">' + esc(m.instructions) + '</p>' : '')
-              + (m.fitReason ? '<p class="ace-p ace-boundary"><strong>' + esc(L.whyFit) + '</strong> ' + esc(m.fitReason) + '</p>' : '')
+              + (isTeacher && m.fitReason ? '<p class="ace-p ace-boundary"><strong>' + esc(L.whyFit) + '</strong> ' + esc(m.fitReason) + '</p>' : '')
               + briefHtml + supportHtml
-              + '<h3 class="ace-h3" style="margin-top:16px;">' + esc(L.workspace) + '</h3><p class="ace-muted">' + esc(L.workspaceNote) + '</p>'
+              + '<h3 class="ace-h3" style="margin-top:16px;">' + esc(L.workspace) + '</h3>' + (isWorksheet ? '' : '<p class="ace-muted">' + esc(L.workspaceNote) + '</p>')
               + workspaceHtml + reasoningReferencesHtml + sourcesHtml
               + (m.artifactUrl || m.artifactDescription ? '<section class="ace-panel"><h3 class="ace-h3">' + esc(tx('applied_challenge.artifact.heading', 'Linked work and explanation')) + '</h3>' + (m.artifactUrl ? '<p><a href="' + esc(m.artifactUrl) + '" rel="noopener noreferrer">' + esc(m.artifactUrl) + '</a></p>' : '') + para('', m.artifactDescription) + '</section>' : '')
               + selfCheckHtml + ledgerHtml + stressHtml + cyclesHtml + feedbackHtml + teacherCommentHtml
@@ -51746,7 +51980,7 @@ function projectStudentGuideData(data, mode) {
           const _acType = Object.prototype.hasOwnProperty.call(_acView, chartType) ? { label: _acView[chartType].label, layout: _acView[chartType].layout } : _acLocal[chartType] ? { label: _acLocal[chartType][0], layout: _acLocal[chartType][1] } : { label: 'Reference', layout: 'reference' };
           const layout = ['process', 'comparison', 'concept-map', 'grid'].includes(_acType.layout) ? _acType.layout : 'reference';
           const escapeHtml = (s) => String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-          const typeLabel = escapeHtml(_acType.label || 'Reference');
+          const typeLabel = escapeHtml(_uiRaw('anchor_chart.type_' + String(chartType).replace(/-/g, '_'), _acType.label || 'Reference'));
           const _acMk = [
               { hex: '#c53030', soft: 'rgba(197,48,48,0.08)', ink: '#7b1d1d' },
               { hex: '#2b6cb0', soft: 'rgba(43,108,176,0.08)', ink: '#1a3f6b' },
@@ -51761,13 +51995,13 @@ function projectStudentGuideData(data, mode) {
           const _acFontImport = config && config.readerWebFonts === true
               ? "<style>@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand&family=Caveat:wght@400;600&display=swap');</style>"
               : '';
-          const _acCaption = (layout === 'process' && sections.length > 1) ? 'Follow the steps in order &#8595;'
-              : (layout === 'comparison' && sections.length > 1) ? 'Compare side by side &#8596;'
-              : (layout === 'concept-map') ? 'Central idea branches into&#8230;' : '';
+          const _acCaption = (layout === 'process' && sections.length > 1) ? _uiL('export.ac_follow_steps', 'Follow the steps in order') + ' &#8595;'
+              : (layout === 'comparison' && sections.length > 1) ? _uiL('export.ac_compare', 'Compare side by side') + ' &#8596;'
+              : (layout === 'concept-map') ? _uiL('export.ac_branches', 'Central idea branches into') + '&#8230;' : '';
           const _acCaptionHtml = _acCaption ? ('<div style="text-align:center;font-family:' + _acBF + ';font-size:0.95em;color:#a16207;font-style:italic;margin-bottom:10px;">' + _acCaption + '</div>') : '';
           const _acCard = (s, i) => {
               const bullets = Array.isArray(s && s.bullets) ? s.bullets : [];
-              const label = (s && s.label) || ('Section ' + (i + 1));
+              const label = (s && s.label) || _uiRaw('export.ac_section_n', 'Section {n}', { n: i + 1 });
               const icon = (s && (s.iconUrl || s.icon)) || '';
               const _iconAlt = s && typeof s.iconAlt === 'string' ? s.iconAlt.trim() : '';
               const m = _acMk[i % _acMk.length];
@@ -51779,7 +52013,7 @@ function projectStudentGuideData(data, mode) {
               const _bulletsHtml = bullets.length
                   ? ('<ul style="margin:6px 0 0;padding-left:2px;list-style:none;">' + bullets.map(b => '<li style="display:flex;align-items:flex-start;gap:8px;margin-bottom:3px;"><span style="color:' + m.hex + ';font-weight:bold;line-height:1.3;">&#8226;</span><span style="font-family:' + _acBF + ';font-size:1.15em;color:#2d3748;line-height:1.3;">' + escapeHtml(b) + '</span></li>').join('') + '</ul>')
                   : ('<div style="font-family:' + _acBF + ';font-size:0.95em;color:#9ca3af;font-style:italic;">(empty)</div>');
-              return '<div style="position:relative;border-left:6px solid ' + m.hex + ';background:linear-gradient(180deg,' + m.soft + ' 0%,rgba(255,255,255,0.85) 60%);box-shadow:0 1px 0 rgba(0,0,0,0.04),0 2px 8px rgba(0,0,0,0.06);transform:rotate(' + rot + 'deg);border-radius:6px;padding:14px 14px 14px 18px;margin-bottom:' + _mb + ';break-inside:avoid;page-break-inside:avoid;">' + _badge
+              return '<div class="alloflow-anchor-card" style="position:relative;border-left:6px solid ' + m.hex + ';background:linear-gradient(180deg,' + m.soft + ' 0%,rgba(255,255,255,0.85) 60%);box-shadow:0 1px 0 rgba(0,0,0,0.04),0 2px 8px rgba(0,0,0,0.06);transform:rotate(' + rot + 'deg);border-radius:6px;padding:14px 14px 14px 18px;margin-bottom:' + _mb + ';break-inside:avoid;page-break-inside:avoid;">' + _badge
                   + '<div style="font-family:' + _acTF + ';font-size:1.4em;color:' + m.ink + ';letter-spacing:0.02em;line-height:1.1;">' + _iconHtml + escapeHtml(label) + '</div>'
                   + _bulletsHtml + '</div>';
           };
@@ -51797,12 +52031,12 @@ function projectStudentGuideData(data, mode) {
           }
           const annotations = Array.isArray(d.annotations) ? d.annotations : [];
           const annotationsHtml = annotations.length > 0
-              ? ('<div style="margin-top:14px;padding:10px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:4px;"><div style="font-size:0.75em;font-weight:bold;text-transform:uppercase;color:#92400e;margin-bottom:6px;">Critique Mode &#8212; Student Annotations (' + annotations.length + ')</div><ul style="margin:0;padding-left:18px;">' + annotations.slice(0, 12).map(a => '<li style="font-family:' + _acBF + ';font-size:1em;color:#1e293b;margin-bottom:3px;"><strong>' + escapeHtml(a.kind || 'note') + ':</strong> ' + escapeHtml(a.text || '') + '</li>').join('') + '</ul>' + (annotations.length > 12 ? ('<div style="font-size:0.75em;color:#92400e;margin-top:4px;font-style:italic;">&#8230; and ' + (annotations.length - 12) + ' more.</div>') : '') + '</div>')
+              ? ('<div style="margin-top:14px;padding:10px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:4px;"><div style="font-size:max(12px, 0.75em);font-weight:bold;text-transform:uppercase;color:#92400e;margin-bottom:6px;">Critique Mode &#8212; Student Annotations (' + annotations.length + ')</div><ul style="margin:0;padding-left:18px;">' + annotations.slice(0, 12).map(a => '<li style="font-family:' + _acBF + ';font-size:1em;color:#1e293b;margin-bottom:3px;"><strong>' + escapeHtml(a.kind || 'note') + ':</strong> ' + escapeHtml(a.text || '') + '</li>').join('') + '</ul>' + (annotations.length > 12 ? ('<div style="font-size:max(12px, 0.75em);color:#92400e;margin-top:4px;font-style:italic;">&#8230; and ' + (annotations.length - 12) + ' more.</div>') : '') + '</div>')
               : '';
           return `
               ${_acFontImport}
               <div class="section" id="${_escTxt(item.id)}" style="background:#fffdf7;border:1px solid #f0e6d2;border-radius:10px;padding:8px 14px 14px;">
-                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #f59e0b;font-family:${_acTF};color:#7a4a1e;font-size:1.5em;">&#128203; ${_escTxt(title)} <span style="font-size:0.6em;font-weight:normal;color:#795548;margin-left:8px;font-family:system-ui,sans-serif;">(Anchor Chart &#8212; ${typeLabel})</span></h2>
+                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #f59e0b;font-family:${_acTF};color:#7a4a1e;font-size:1.5em;">&#128203; ${_escTxt(title)} <span style="font-size:max(12px, 0.6em);font-weight:normal;color:#795548;margin-left:8px;font-family:system-ui,sans-serif;">(${_uiL('sidebar.tool_anchor_chart', 'Anchor Chart')} &#8212; ${typeLabel})</span></h2>
                   ${_acCaptionHtml}
                   ${sectionsHtml}
                   ${annotationsHtml}
@@ -51833,7 +52067,7 @@ function projectStudentGuideData(data, mode) {
     minimal: {
       name: 'Minimalist', emoji: '✨', wcagLevel: 'AA',
       promptInstructions: 'STYLE PREFERENCE: Minimalist — lots of whitespace, thin sans-serif font, muted grays, one accent color (#6366f1), hairline borders, understated elegance.',
-      cssVars: { bodyFont: "'Georgia', serif", headingColor: '#111827', accentColor: '#6b7280', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: 'transparent', headerBg: '#ffffff', headerText: '#111827', extraCSS: 'h1 { font-size: 2rem; font-weight: 300; letter-spacing: -0.02em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; } .section { border: none; padding-bottom: 3rem; } .resource-header { background: none; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.1em; color: #4b5563; }' },
+      cssVars: { bodyFont: "'Georgia', serif", headingColor: '#111827', accentColor: '#6b7280', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: 'transparent', headerBg: '#ffffff', headerText: '#111827', extraCSS: 'h1 { font-size: 2rem; font-weight: 300; letter-spacing: -0.02em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; } .section { border: none; padding-bottom: 3rem; } .resource-header { background: none; font-size: max(12px, 0.75rem); text-transform: uppercase; letter-spacing: 0.1em; color: #4b5563; }' },
     },
     highContrast: {
       name: 'High Contrast', emoji: '◼️', wcagLevel: 'AAA',
@@ -51921,6 +52155,7 @@ function projectStudentGuideData(data, mode) {
       return '<a' + (before + after).replace(/\s(?:target|rel)="[^"]*"/gi, '') + ' href="#' + id + '">' + label + '</a>';
   });
   const generateFullPackHTML = (historyItems, topic, isWorksheet = false, responses = {}, config = null) => {
+      const t = (config || exportConfig || {}).audience === 'teacher' ? _hostLabelT : _exportLabelT();
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
       if (historyItems.every(item => item.type === 'memory-aid' && item.data && item.data.memoryAidExportPreset === 'no-hints')) { const label = typeof t === 'function' && t('memory_aid.practice_kicker'); topic = label && label !== 'memory_aid.practice_kicker' ? label : 'Recall practice'; }
       const cfg = { ...(config || exportConfig), isWorksheet };
@@ -51955,7 +52190,13 @@ function projectStudentGuideData(data, mode) {
         'fluency-record': { icon: '🎙️', color: '#0d9488', bg: '#f0fdfa', label: 'Fluency Record' },
         'timeline': { icon: '📅', color: '#4338ca', bg: '#eef2ff', label: 'Timeline' },
         'concept-sort': { icon: '🧩', color: '#6d28d9', bg: '#f5f3ff', label: 'Concept Sort' },
+        'note-taking': { icon: '📝', color: '#4f46e5', bg: '#eef2ff', label: 'Notes' },
+        'anchor-chart': { icon: '📌', color: '#b45309', bg: '#fffbeb', label: 'Anchor Chart' },
+        'memory-aid': { icon: '🧠', color: '#7e22ce', bg: '#faf5ff', label: 'Memory Aid' },
+        'applied-challenge': { icon: '🛠️', color: '#0f766e', bg: '#f0fdfa', label: 'Applied Challenge' },
+        'directions': { icon: '🧭', color: '#0369a1', bg: '#f0f9ff', label: 'Directions' },
       };
+      const _typeLabelKeys = { 'simplified': 'roster.type_adapted_text', 'analysis': 'meta.analysis_standard', 'glossary': 'roster.type_glossary', 'quiz': 'roster.type_quiz', 'outline': 'export.type_outline', 'faq': 'roster.type_faq', 'sentence-frames': 'roster.type_frames', 'image': 'export.type_image', 'math': 'stem.tools_menu.math', 'dbq': 'dbq.default_title', 'lesson-plan': 'tour.lesson_plan_title', 'udl-advice': 'export.type_udl_advice', 'brainstorm': 'roster.type_brainstorm', 'fluency-record': 'export.type_fluency_record', 'timeline': 'export.type_timeline', 'concept-sort': 'roster.type_concept_sort', 'note-taking': 'note_taking.notes_column', 'anchor-chart': 'sidebar.tool_anchor_chart', 'memory-aid': 'export.type_memory_aid', 'applied-challenge': 'export.type_applied_challenge', 'directions': 'export.type_directions' };
       const _willRenderForCtx = (item, isTeacher) => {
         const toggleMap = {
           'lesson-plan': 'includeLessonPlan', 'simplified': 'includeSimplified', 'outline': 'includeOutline',
@@ -52047,12 +52288,14 @@ function projectStudentGuideData(data, mode) {
         if (!html) return '';
         const tv = { ...(_typeVisualsTOC[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: 'Resource' }) };
         if (readingContract?.isSupportedOriginal?.(item)) tv.label = 'Original with supports';
+        const _pillKey = readingContract?.isSupportedOriginal?.(item) ? 'analysis.form_supported' : _typeLabelKeys[item.type];
+        if (_pillKey) { const v = t(_pillKey); if (typeof v === 'string' && v.trim() && v !== _pillKey) tv.label = v; }
         // Marker pill above each section — number + type label. aria-hidden
         // because the same info is in the section header (heading) below.
         const marker = `<div class="alloflow-section-marker" aria-hidden="true" style="display:flex;align-items:center;gap:10px;margin:36px 0 -4px 4px;page-break-after:avoid;break-after:avoid;">
           <span style="display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;background:${tv.color};color:white;font-weight:800;font-size:13px;flex-shrink:0;box-shadow:0 1px 3px rgba(0,0,0,0.12);">${idx + 1}</span>
-          <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:${tv.bg};color:${tv.color};border:1px solid ${tv.color}33;border-radius:9999px;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">
-            <span>${tv.icon}</span>${tv.label || item.type}
+          <span style="display:inline-flex;align-items:center;gap:6px;padding:4px 12px;background:${tv.bg};color:${tv.color};border:1px solid ${tv.color}33;border-radius:9999px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;">
+            <span>${tv.icon}</span>${_escTxt(tv.label || item.type)}
           </span>
         </div>`;
         const terminator = idx < total - 1
@@ -52063,7 +52306,7 @@ function projectStudentGuideData(data, mode) {
         // clutter or repeating it in the teacher-key appendix. It is hidden in
         // normal HTML and revealed only by the worksheet-scoped print rules.
         const continuationStrip = isWorksheet && !_teacherGuideOnly && !isTeacher && idx > 0
-          ? `<div class="alloflow-worksheet-continuation" role="group" aria-label="Worksheet continuation identification">
+          ? `<div class="alloflow-worksheet-continuation" role="group" aria-label="${_escTxt((() => { const v = t('export.worksheet_continuation_aria'); return typeof v === 'string' && v.trim() && v !== 'export.worksheet_continuation_aria' ? v : 'Worksheet continuation identification'; })())}">
               <span class="alloflow-worksheet-continuation-field"><strong>${_escTxt(t('export.name_label'))}:</strong><span class="alloflow-worksheet-continuation-line" aria-hidden="true"></span></span>
               <span class="alloflow-worksheet-continuation-field"><strong>${_escTxt(t('export.date_label'))}:</strong><span class="alloflow-worksheet-continuation-line" aria-hidden="true"></span></span>
               <span class="alloflow-worksheet-continuation-topic"><strong>${_escTxt(t('export.topic'))}:</strong> ${_escTxt(topic || t('export.default_lesson_title'))}</span>
@@ -52088,7 +52331,7 @@ function projectStudentGuideData(data, mode) {
                 const tv = _typeVisualsTOC[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: 'Resource' };
                 const title = item.title || getDefaultTitle(item.type);
                 return `<li style="display:flex;align-items:center;gap:10px;padding:8px 4px;border-bottom:1px dashed #cbd5e1;">
-                  <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:${tv.color};color:white;font-weight:700;font-size:11px;flex-shrink:0;">${i + 1}</span>
+                  <span aria-hidden="true" style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:50%;background:${tv.color};color:white;font-weight:700;font-size:12px;flex-shrink:0;">${i + 1}</span>
                   <span aria-hidden="true" style="font-size:1.05em;flex-shrink:0;">${tv.icon}</span>
                   <a href="#${_escAttr(item.id)}" style="color:#1e293b;text-decoration:none;font-weight:600;font-size:0.94rem;line-height:1.35;flex:1;">${_escTxt(title)}</a>
                 </li>`;
@@ -52288,19 +52531,7 @@ function projectStudentGuideData(data, mode) {
           ? teacherCopyLabel : 'Teacher resources: ';
       const studentTitlePrefix = _teacherGuideOnly ? teacherTitlePrefix : isWorksheet ? '' : t('export.student_copy');
       const lessonTopic = topic || t('export.default_lesson_title');
-      const _documentLanguageMap = {'English':'en','Spanish':'es','Spanish (Latin America)':'es','Spanish (Castilian)':'es','French':'fr','French (Canadian)':'fr','German':'de','Italian':'it','Portuguese':'pt','Portuguese (Brazil)':'pt-BR','Portuguese (Angola)':'pt','Chinese':'zh','Chinese (Simplified)':'zh-CN','Chinese (Traditional)':'zh-TW','Japanese':'ja','Korean':'ko','Arabic':'ar','Russian':'ru','Hindi':'hi','Bengali':'bn','Punjabi':'pa','Tamil':'ta','Urdu':'ur','Farsi':'fa','Pashto':'ps','Dari':'fa-AF','Hebrew':'he','Greek':'el','Latin':'la','Indonesian':'id','Thai':'th','Lao':'lo','Khmer':'km','Burmese':'my','Nepali':'ne','Vietnamese':'vi','Tagalog':'tl','Haitian Creole':'ht','Somali':'so','Swahili':'sw','Hausa':'ha','Yoruba':'yo','Igbo':'ig','Amharic':'am','Tigrinya':'ti','Lingala':'ln','Kinyarwanda':'rw','Kirundi':'rn','Acholi':'ach','Karen':'ksw','Chin (Hakha)':'cnh','Chin (Falam)':'cfm','Hmong':'hmn','Polish':'pl','Ukrainian':'uk','Maay Maay':'ymm','Marshallese':'mh','Turkish':'tr','Gujarati':'gu','Marathi':'mr','Malayalam':'ml','Dutch':'nl','Kannada':'kn','Esperanto':'eo','Mandarin':'zh','Malay':'ms','Mongolian':'mn'};
-      // A typed-in language the map lacks asks the host's speech helper, which
-      // answers English for names it does not know; that is not evidence.
-      const _documentLanguage = (() => {
-          const name = leveledTextLanguage || currentUiLanguage;
-          if (_documentLanguageMap[name]) return _documentLanguageMap[name];
-          try {
-              const resolve = window.AlloModules?.ModuleScopeExtras?.getSpeechLangCode || window.getSpeechLangCode;
-              const tag = typeof resolve === 'function' && name ? String(resolve(name) || '') : '';
-              if (/^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/.test(tag) && !/^en(?:-|$)/i.test(tag)) return tag;
-          } catch (_) {}
-          return 'en';
-      })();
+      const _documentLanguage = _exportLangTag(leveledTextLanguage || currentUiLanguage);
       // Dedicated Memory Aid print presets contain no interactive learner runtime.
       // In particular, an autosave identity dialog must never cover a printed sheet.
       if (historyItems.every(item => item.type === 'memory-aid' && ['study', 'recall', 'no-hints', 'teacher'].includes(item.data && item.data.memoryAidExportPreset))) {
@@ -52321,6 +52552,9 @@ function projectStudentGuideData(data, mode) {
           saveWorkTitle: 'Save your work', saveWorkDescription: 'Enter a name or nickname so your teacher can identify this submission.', saveWorkConfirm: 'Save work', saveAnswersTitle: 'Save your answers', saveAnswersDescription: 'Enter a name or nickname so your teacher can identify this answer file.', saveAnswersConfirm: 'Save answers', cancel: 'Cancel', saveMyAnswers: 'Save my answers', savedAnswers: 'Saved! Send the file to your teacher', saveErrorPrefix: 'Could not save your answers: ',
           saveToolsLabel: 'Save and submit your work', doneTitle: 'Done with your work?', answerFileDescription: 'Save a file of your answers and send it to your teacher.', answerFileHelp: 'Saves a .json file your teacher opens in AlloFlow.', encryptedMailboxDescription: 'Send your encrypted work directly to your teacher’s Class Mailbox. If sending fails, an encrypted file downloads instead.', encryptedFileDescription: 'Save an encrypted file with your answers and send it to your teacher.', encryptionHelp: 'Your responses are encrypted with your class key. Only your teacher can open them.', saveMyWork: 'Save my work', saving: 'Saving…', savedDownload: 'Saved — download started', saveAgain: 'Save my work again', saveUnavailable: 'Save unavailable (key missing)', encryptionUnavailable: 'Encryption is not available in this browser. Use a newer browser to save submissions.', sending: 'Sending to your teacher…', sent: 'Sent to your teacher', sentToTeacher: 'Your encrypted work was sent to your teacher', sendAgain: 'Send my work again', mailboxFallback: 'Could not reach your teacher’s Class Mailbox. An encrypted file will download instead; send that file to your teacher.', workSaveErrorPrefix: 'Could not save your work: ',
           skipToContent: 'Skip to content', readingToolsLabel: 'Reading and annotation tools', toolsLabel: 'Tools', accessibilityInfoLabel: 'Accessibility information', accessibilityTitle: 'Accessibility features', accessibilityDescription: 'This document includes semantic structure, heading hierarchy, table headers, landmarks, language metadata, logical reading order, and print-optimized layout. This is not an independently validated WCAG or PDF/UA conformance claim; verify it with an accessibility checker before relying on it for compliance. Created with AlloFlow.', submissionFor: 'Submission for {name}', worksheetLabel: 'Worksheet', savedLabel: 'Saved', encryptedClassKey: 'Encrypted with class key', encryptedFileHelp: 'This file contains encrypted responses. Open it in AlloFlow (Document Builder → Import submissions) with the matching class key file to decrypt it.', resourceIdLabel: 'Resource ID', printLinksTitle: 'Web links for this resource',
+          rtTheme: "Theme", rtLight: "Light", rtDark: "Dark", rtSepia: "Sepia", rtHighContrast: "High Contrast", rtThemeAria: "Reading theme", rtLightTitle: "Light (teacher default)", rtDarkTitle: "Dark mode", rtSepiaTitle: "Sepia (warm, low-glare)", rtHcTitle: "High Contrast (WCAG AAA)", rtFont: "Font", rtFontAria: "Font family", rtFontAlways: "Always available", rtFontInternet: "Needs internet", rtFontThisDoc: "This document", rtFontDocument: "Document font ({font})", rtFontOriginal: "Original", rtFontSans: "Sans", rtFontReadable: "Readable (Verdana)", rtFontHumanist: "Humanist (Tahoma)", rtFontSerif: "Serif (Georgia)", rtFontBookSerif: "Book serif (Palatino)", rtFontRounded: "Rounded (Trebuchet)", rtFontDyslexia: "Dyslexia-friendly (Comic Sans)", rtFontMono: "Monospace", rtText: "Text", rtTextAria: "Text display", rtSmaller: "Smaller text", rtResetSize: "Back to normal text size", rtLarger: "Larger text", rtSpacing: "Spacing", rtLineSpacing: "Line spacing", rtLineSpacingTitle: "Cycle line spacing", rtLetter: "Letter", rtLetterSpacing: "Letter spacing", rtLetterSpacingTitle: "Cycle letter spacing", rtGuide: "Guide", rtGuideAria: "Reading guide", rtOff: "Off", rtLine: "Line", rtFocus: "Focus", rtGuideOffTitle: "Turn reading guide off", rtGuideLineTitle: "Line reader follows your pointer", rtGuideFocusTitle: "Focus mask follows your pointer", rtAnnotate: "Annotate", rtAnnoAria: "Annotations", rtNote: "Note", rtHighlight: "Highlight", rtVoice: "Voice", rtDraw: "Draw", rtUndo: "Undo", rtEraseMine: "Erase my marks", rtList: "List", rtSaveMine: "Save mine", rtNoteTitle: "Add a sticky note", rtHighlightTitle: "Highlight text", rtVoiceTitle: "Voice note: click to start recording (max 60s, stays on your device)", rtDrawTitle: "Draw: press and drag to draw freehand on the page", rtUndoTitle: "Undo last annotation (Ctrl/Cmd+Z)", rtEraseMineTitle: "Erase everything you have marked on this page. Your teacher's marks stay.", rtListTitle: "Show all annotations", rtSaveMineTitle: "Download my annotations as JSON", rtPen: "Pen:", rtSize: "Size:", rtThin: "Thin", rtMedium: "Medium", rtThick: "Thick", rtThinTitle: "Thin pen", rtMediumTitle: "Medium pen", rtThickTitle: "Thick pen", rtPenRed: "Red pen", rtPenBlue: "Blue pen", rtPenGreen: "Green pen", rtPenYellow: "Yellow pen", rtPenBlack: "Black pen", rtNoteColor: "Note color:", rtNoteYellow: "Yellow note", rtNoteGreen: "Green note", rtNoteBlue: "Blue note", rtNotePink: "Pink note", rtHighlightColor: "Highlight color:", rtHlYellow: "Yellow highlight", rtHlGreen: "Green highlight", rtHlBlue: "Blue highlight", rtHlPink: "Pink highlight", rtNoReadAloud: "Browser read-aloud is not available here.", rtAnnoSaveFailed: "Could not save annotations. Try a different browser.", rtMicDenied: "Microphone access was denied. Allow microphone access in your browser settings to record voice notes.", rtNoAnnotations: "No annotations to save yet — add a note or highlight first.", rtVoiceTooLong: "Voice note too long to save (over 500KB). Try a shorter clip.", rtVoiceUnsupportedBrowser: "Voice recording is not supported in this browser.", rtVoiceUnsupportedDevice: "Voice recording is not supported on this device.", rtVoiceEmpty: "Voice recording was empty.",
+          rtReadAloud: "Read aloud", rtStopReadAloud: "Stop read aloud", rtTeacherNote: "Teacher note", rtYourNote: "Your note", rtCloseNote: "Close note", rtStickyNote: "Sticky note: {content}", rtStickyNoteFrom: "Sticky note from {author}: {content}", rtEmptyNote: "(empty)", rtVoiceNote: "Voice note", rtVoiceNoteFrom: "Voice note from {author}", rtTeacherVoiceNote: "Teacher voice note", rtCloseVoiceNote: "Close voice note", rtDrawing: "Drawing", rtDrawingFrom: "Drawing from {author}", rtTeacherFeedback: "Teacher feedback", rtYou: "You", rtEraseNothing: "Nothing to erase yet. Your highlights, notes and drawings will show up here.", rtEraseOne: "Erase your 1 mark on this page. Your teacher’s marks stay.", rtEraseCount: "Erase all {count} of your own marks on this page. Your teacher’s marks stay.", rtNoteToolActive: "Note tool active. Press Enter here to add a note.", rtHighlightToolActive: "Highlight tool active. Select text, then press Enter to highlight it.", rtSaveNote: "Save note", rtSaveClose: "Save and close", rtDeleteNote: "Delete note", rtDelete: "Delete", rtNoteContent: "Note content", rtRemoveAnnoTitle: "Remove all of your annotations?", rtRemoveAnnoOne: "This will permanently remove 1 note, highlight, sticker, or voice note. Teacher annotations will stay.", rtRemoveAnnoMany: "This will permanently remove {count} notes, highlights, stickers, and voice notes. Teacher annotations will stay.", rtRemoveAnnoConfirm: "Remove my annotations", rtConfirmTitle: "Please confirm", rtContinue: "Continue", rtCharLimit: "Character limit reached. Edit your response to make room for more text.",
+          rtDownloadRequested: "Download requested — check your Downloads", rtDownloadFramedHelp: "If no file appeared, this page may be inside a system that blocks downloads. Open it in its own tab, then save again.", rtOpenInOwnTab: "Open this page in its own tab", rtNoStorage: "This browser will not keep your work on this device. Use Save my answers before you close the page.",
           readAloudUnavailable: 'Read-aloud audio wasn’t available for this passage. The passage text is still available below.', readAloudPartial: 'Audio is available for {ready} of {total} sentences. Read the text for the missing portions.'
         },
         es: {
@@ -52328,6 +52562,9 @@ function projectStudentGuideData(data, mode) {
           saveWorkTitle: 'Guardar tu trabajo', saveWorkDescription: 'Escribe un nombre o apodo para que tu docente pueda identificar esta entrega.', saveWorkConfirm: 'Guardar trabajo', saveAnswersTitle: 'Guardar tus respuestas', saveAnswersDescription: 'Escribe un nombre o apodo para que tu docente pueda identificar este archivo de respuestas.', saveAnswersConfirm: 'Guardar respuestas', cancel: 'Cancelar', saveMyAnswers: 'Guardar mis respuestas', savedAnswers: '¡Guardado! Envía el archivo a tu docente', saveErrorPrefix: 'No se pudieron guardar tus respuestas: ',
           saveToolsLabel: 'Guardar y entregar tu trabajo', doneTitle: '¿Terminaste tu trabajo?', answerFileDescription: 'Guarda un archivo con tus respuestas y envíalo a tu docente.', answerFileHelp: 'Guarda un archivo .json que tu docente abre en AlloFlow.', encryptedMailboxDescription: 'Envía tu trabajo cifrado directamente al buzón de clase de tu docente. Si el envío falla, se descargará un archivo cifrado.', encryptedFileDescription: 'Guarda un archivo cifrado con tus respuestas y envíalo a tu docente.', encryptionHelp: 'Tus respuestas se cifran con la clave de la clase. Solo tu docente puede abrirlas.', saveMyWork: 'Guardar mi trabajo', saving: 'Guardando…', savedDownload: 'Guardado — se inició la descarga', saveAgain: 'Volver a guardar mi trabajo', saveUnavailable: 'No se puede guardar (falta la clave)', encryptionUnavailable: 'El cifrado no está disponible en este navegador. Usa un navegador más reciente para guardar entregas.', sending: 'Enviando a tu docente…', sent: 'Enviado a tu docente', sentToTeacher: 'Tu trabajo cifrado se envió a tu docente', sendAgain: 'Volver a enviar mi trabajo', mailboxFallback: 'No se pudo acceder al buzón de clase de tu docente. Se descargará un archivo cifrado; envíaselo a tu docente.', workSaveErrorPrefix: 'No se pudo guardar tu trabajo: ',
           skipToContent: 'Saltar al contenido', readingToolsLabel: 'Herramientas de lectura y anotación', toolsLabel: 'Herramientas', accessibilityInfoLabel: 'Información de accesibilidad', accessibilityTitle: 'Funciones de accesibilidad', accessibilityDescription: 'Este documento incluye estructura semántica, jerarquía de encabezados, encabezados de tabla, regiones, metadatos de idioma, orden lógico de lectura y un diseño optimizado para impresión. Esto no constituye una declaración de conformidad WCAG o PDF/UA validada de forma independiente; compruébalo con una herramienta de accesibilidad antes de usarlo como prueba de conformidad. Creado con AlloFlow.', submissionFor: 'Entrega de {name}', worksheetLabel: 'Hoja de trabajo', savedLabel: 'Guardado', encryptedClassKey: 'Cifrado con la clave de la clase', encryptedFileHelp: 'Este archivo contiene respuestas cifradas. Ábrelo en AlloFlow (Generador de documentos → Importar entregas) con el archivo de clave de clase correspondiente para descifrarlo.', resourceIdLabel: 'ID del recurso', printLinksTitle: 'Enlaces web de este recurso',
+          rtTheme: "Tema", rtLight: "Claro", rtDark: "Oscuro", rtSepia: "Sepia", rtHighContrast: "Contraste alto", rtThemeAria: "Tema de lectura", rtLightTitle: "Claro (predeterminado del profesor)", rtDarkTitle: "Modo oscuro", rtSepiaTitle: "Sepia (cálido, bajo brillo)", rtHcTitle: "Alto contraste (WCAG AAA)", rtFont: "Fuente", rtFontAria: "Familia tipográfica", rtFontAlways: "Siempre disponibles", rtFontInternet: "Necesitan internet", rtFontThisDoc: "Este documento", rtFontDocument: "Fuente del documento ({font})", rtFontOriginal: "Original", rtFontSans: "Sin serifa", rtFontReadable: "Legible (Verdana)", rtFontHumanist: "Humanista (Tahoma)", rtFontSerif: "Con serifa (Georgia)", rtFontBookSerif: "Serifa de libro (Palatino)", rtFontRounded: "Redondeada (Trebuchet)", rtFontDyslexia: "Apta para dislexia (Comic Sans)", rtFontMono: "Monoespaciada", rtText: "Texto", rtTextAria: "Presentación del texto", rtSmaller: "Texto más pequeño", rtResetSize: "Volver al tamaño normal del texto", rtLarger: "Texto más grande", rtSpacing: "Espaciado", rtLineSpacing: "Espaciado de líneas", rtLineSpacingTitle: "Cambiar el espaciado de líneas", rtLetter: "Letras", rtLetterSpacing: "Espaciado de letras", rtLetterSpacingTitle: "Cambiar el espaciado de letras", rtGuide: "Guía", rtGuideAria: "Guía de lectura", rtOff: "Apagada", rtLine: "Línea", rtFocus: "Enfoque", rtGuideOffTitle: "Apagar la guía de lectura", rtGuideLineTitle: "La línea de lectura sigue tu puntero", rtGuideFocusTitle: "La máscara de enfoque sigue tu puntero", rtAnnotate: "Anotar", rtAnnoAria: "Anotaciones", rtNote: "Nota", rtHighlight: "Resaltado", rtVoice: "Voz", rtDraw: "Dibujar", rtUndo: "Deshacer", rtEraseMine: "Borrar mis marcas", rtList: "Lista", rtSaveMine: "Guardar las mías", rtNoteTitle: "Añadir una nota adhesiva", rtHighlightTitle: "Resaltar texto", rtVoiceTitle: "Nota de voz: clic para grabar (máx 60s, se guarda localmente)", rtDrawTitle: "Dibujar: presiona y arrastra para dibujar a mano alzada en la página", rtUndoTitle: "Deshacer última anotación (Ctrl/Cmd+Z)", rtEraseMineTitle: "Borra todo lo que marcaste en esta página. Las marcas de tu profesor se quedan.", rtListTitle: "Mostrar todas las anotaciones", rtSaveMineTitle: "Descargar mis anotaciones como JSON", rtPen: "Lápiz:", rtSize: "Grosor:", rtThin: "Fino", rtMedium: "Medio", rtThick: "Grueso", rtThinTitle: "Lápiz fino", rtMediumTitle: "Lápiz medio", rtThickTitle: "Lápiz grueso", rtPenRed: "Lápiz rojo", rtPenBlue: "Lápiz azul", rtPenGreen: "Lápiz verde", rtPenYellow: "Lápiz amarillo", rtPenBlack: "Lápiz negro", rtNoteColor: "Color de la nota:", rtNoteYellow: "Nota amarilla", rtNoteGreen: "Nota verde", rtNoteBlue: "Nota azul", rtNotePink: "Nota rosa", rtHighlightColor: "Color del resaltado:", rtHlYellow: "Resaltado amarillo", rtHlGreen: "Resaltado verde", rtHlBlue: "Resaltado azul", rtHlPink: "Resaltado rosa", rtNoReadAloud: "La lectura en voz alta del navegador no está disponible aquí.", rtAnnoSaveFailed: "No se pudieron guardar las anotaciones. Prueba con otro navegador.", rtMicDenied: "Se negó el acceso al micrófono. Permite el acceso al micrófono en la configuración de tu navegador para grabar notas de voz.", rtNoAnnotations: "Todavía no hay anotaciones para guardar: primero añade una nota o un resaltado.", rtVoiceTooLong: "La nota de voz es demasiado larga para guardarla (más de 500KB). Prueba con una grabación más corta.", rtVoiceUnsupportedBrowser: "Este navegador no permite grabar voz.", rtVoiceUnsupportedDevice: "Este dispositivo no permite grabar voz.", rtVoiceEmpty: "La grabación de voz estaba vacía.",
+          rtReadAloud: "Leer en voz alta", rtStopReadAloud: "Dejar de leer en voz alta", rtTeacherNote: "Nota del profesor", rtYourNote: "Tu nota", rtCloseNote: "Cerrar nota", rtStickyNote: "Nota adhesiva: {content}", rtStickyNoteFrom: "Nota adhesiva de {author}: {content}", rtEmptyNote: "(vacía)", rtVoiceNote: "Nota de voz", rtVoiceNoteFrom: "Nota de voz de {author}", rtTeacherVoiceNote: "Nota de voz del profesor", rtCloseVoiceNote: "Cerrar nota de voz", rtDrawing: "Dibujo", rtDrawingFrom: "Dibujo de {author}", rtTeacherFeedback: "Comentarios del profesor", rtYou: "Tú", rtEraseNothing: "Todavía no hay nada que borrar. Tus resaltados, notas y dibujos aparecerán aquí.", rtEraseOne: "Borrar tu única marca en esta página. Las marcas de tu profesor se quedan.", rtEraseCount: "Borrar tus {count} marcas en esta página. Las marcas de tu profesor se quedan.", rtNoteToolActive: "Herramienta de nota activada. Presiona Enter aquí para añadir una nota.", rtHighlightToolActive: "Herramienta de resaltado activada. Selecciona texto y luego presiona Enter para resaltarlo.", rtSaveNote: "Guardar nota", rtSaveClose: "Guardar y cerrar", rtDeleteNote: "Eliminar nota", rtDelete: "Eliminar", rtNoteContent: "Contenido de la nota", rtRemoveAnnoTitle: "¿Quitar todas tus anotaciones?", rtRemoveAnnoOne: "Esto quitará para siempre 1 nota, resaltado, sticker o nota de voz. Las anotaciones del profesor se quedarán.", rtRemoveAnnoMany: "Esto quitará para siempre {count} notas, resaltados, stickers y notas de voz. Las anotaciones del profesor se quedarán.", rtRemoveAnnoConfirm: "Quitar mis anotaciones", rtConfirmTitle: "Por favor, confirma", rtContinue: "Continuar", rtCharLimit: "Llegaste al límite de caracteres. Edita tu respuesta para que quepa más texto.",
+          rtDownloadRequested: "Descarga solicitada: revisa tu carpeta de Descargas", rtDownloadFramedHelp: "Si no apareció ningún archivo, es posible que esta página esté dentro de un sistema que bloquea las descargas. Ábrela en una pestaña aparte y vuelve a guardar.", rtOpenInOwnTab: "Abrir esta página en una pestaña aparte", rtNoStorage: "Este navegador no conservará tu trabajo en este dispositivo. Usa “Guardar mis respuestas” antes de cerrar la página.",
           readAloudUnavailable: 'El audio de lectura en voz alta no estuvo disponible para este pasaje. El texto del pasaje sigue disponible abajo.', readAloudPartial: 'Hay audio disponible para {ready} de {total} oraciones. Lee el texto de las partes que faltan.'
         },
         fr: {
@@ -52335,6 +52572,9 @@ function projectStudentGuideData(data, mode) {
           saveWorkTitle: 'Enregistrer votre travail', saveWorkDescription: 'Saisissez un nom ou un pseudonyme pour que votre enseignant puisse identifier ce travail.', saveWorkConfirm: 'Enregistrer le travail', saveAnswersTitle: 'Enregistrer vos réponses', saveAnswersDescription: 'Saisissez un nom ou un pseudonyme pour que votre enseignant puisse identifier ce fichier de réponses.', saveAnswersConfirm: 'Enregistrer les réponses', cancel: 'Annuler', saveMyAnswers: 'Enregistrer mes réponses', savedAnswers: 'Enregistré ! Envoyez le fichier à votre enseignant', saveErrorPrefix: 'Impossible d’enregistrer vos réponses : ',
           saveToolsLabel: 'Enregistrer et remettre votre travail', doneTitle: 'Vous avez terminé votre travail ?', answerFileDescription: 'Enregistrez un fichier de vos réponses et envoyez-le à votre enseignant.', answerFileHelp: 'Enregistre un fichier .json que votre enseignant ouvre dans AlloFlow.', encryptedMailboxDescription: 'Envoyez votre travail chiffré directement à la boîte de classe de votre enseignant. En cas d’échec, un fichier chiffré sera téléchargé.', encryptedFileDescription: 'Enregistrez un fichier chiffré avec vos réponses et envoyez-le à votre enseignant.', encryptionHelp: 'Vos réponses sont chiffrées avec la clé de votre classe. Seul votre enseignant peut les ouvrir.', saveMyWork: 'Enregistrer mon travail', saving: 'Enregistrement…', savedDownload: 'Enregistré — téléchargement lancé', saveAgain: 'Enregistrer à nouveau mon travail', saveUnavailable: 'Enregistrement indisponible (clé manquante)', encryptionUnavailable: 'Le chiffrement n’est pas disponible dans ce navigateur. Utilisez un navigateur plus récent pour enregistrer vos travaux.', sending: 'Envoi à votre enseignant…', sent: 'Envoyé à votre enseignant', sentToTeacher: 'Votre travail chiffré a été envoyé à votre enseignant', sendAgain: 'Envoyer à nouveau mon travail', mailboxFallback: 'Impossible de joindre la boîte de classe de votre enseignant. Un fichier chiffré sera téléchargé à la place ; envoyez-le à votre enseignant.', workSaveErrorPrefix: 'Impossible d’enregistrer votre travail : ',
           skipToContent: 'Aller au contenu', readingToolsLabel: 'Outils de lecture et d’annotation', toolsLabel: 'Outils', accessibilityInfoLabel: 'Informations sur l’accessibilité', accessibilityTitle: 'Fonctions d’accessibilité', accessibilityDescription: 'Ce document comprend une structure sémantique, une hiérarchie de titres, des en-têtes de tableau, des régions, des métadonnées de langue, un ordre de lecture logique et une mise en page optimisée pour l’impression. Il ne s’agit pas d’une déclaration de conformité WCAG ou PDF/UA validée indépendamment ; vérifiez-la avec un outil d’accessibilité avant de vous y fier comme preuve de conformité. Créé avec AlloFlow.', submissionFor: 'Travail de {name}', worksheetLabel: 'Feuille de travail', savedLabel: 'Enregistré', encryptedClassKey: 'Chiffré avec la clé de la classe', encryptedFileHelp: 'Ce fichier contient des réponses chiffrées. Ouvrez-le dans AlloFlow (Générateur de documents → Importer les travaux) avec le fichier de clé de classe correspondant pour le déchiffrer.', resourceIdLabel: 'ID de la ressource', printLinksTitle: 'Liens Web de cette ressource',
+          rtTheme: "Thème", rtLight: "Clair", rtDark: "Sombre", rtSepia: "Sépia", rtHighContrast: "Contraste élevé", rtThemeAria: "Thème de lecture", rtLightTitle: "Clair (défaut enseignant)", rtDarkTitle: "Mode sombre", rtSepiaTitle: "Sépia (chaud, faible éblouissement)", rtHcTitle: "Contraste élevé (WCAG AAA)", rtFont: "Police", rtFontAria: "Famille de police", rtFontAlways: "Toujours disponibles", rtFontInternet: "Internet requis", rtFontThisDoc: "Ce document", rtFontDocument: "Police du document ({font})", rtFontOriginal: "Originale", rtFontSans: "Sans empattement", rtFontReadable: "Lisible (Verdana)", rtFontHumanist: "Humaniste (Tahoma)", rtFontSerif: "Avec empattement (Georgia)", rtFontBookSerif: "Empattement livre (Palatino)", rtFontRounded: "Arrondie (Trebuchet)", rtFontDyslexia: "Adaptée à la dyslexie (Comic Sans)", rtFontMono: "Chasse fixe", rtText: "Texte", rtTextAria: "Affichage du texte", rtSmaller: "Texte plus petit", rtResetSize: "Revenir à la taille de texte normale", rtLarger: "Texte plus grand", rtSpacing: "Espacement", rtLineSpacing: "Espacement des lignes", rtLineSpacingTitle: "Changer l'espacement des lignes", rtLetter: "Lettres", rtLetterSpacing: "Espacement des lettres", rtLetterSpacingTitle: "Changer l'espacement des lettres", rtGuide: "Guide", rtGuideAria: "Guide de lecture", rtOff: "Désactivé", rtLine: "Ligne", rtFocus: "Concentration", rtGuideOffTitle: "Désactiver le guide de lecture", rtGuideLineTitle: "La ligne de lecture suit votre pointeur", rtGuideFocusTitle: "Le masque de concentration suit votre pointeur", rtAnnotate: "Annoter", rtAnnoAria: "Annotations", rtNote: "Note", rtHighlight: "Surligner", rtVoice: "Voix", rtDraw: "Dessiner", rtUndo: "Annuler", rtEraseMine: "Effacer mes marques", rtList: "Liste", rtSaveMine: "Enregistrer les miennes", rtNoteTitle: "Ajouter une note adhésive", rtHighlightTitle: "Surligner le texte", rtVoiceTitle: "Note vocale : cliquez pour enregistrer (max 60 s, reste sur votre appareil)", rtDrawTitle: "Dessiner : appuyez et faites glisser pour dessiner à main levée sur la page", rtUndoTitle: "Annuler la dernière annotation (Ctrl/Cmd+Z)", rtEraseMineTitle: "Effacez tout ce que vous avez marqué sur cette page. Les marques de votre enseignant restent.", rtListTitle: "Afficher toutes les annotations", rtSaveMineTitle: "Télécharger mes annotations en JSON", rtPen: "Stylo :", rtSize: "Taille :", rtThin: "Fin", rtMedium: "Moyen", rtThick: "Épais", rtThinTitle: "Stylo fin", rtMediumTitle: "Stylo moyen", rtThickTitle: "Stylo épais", rtPenRed: "Stylo rouge", rtPenBlue: "Stylo bleu", rtPenGreen: "Stylo vert", rtPenYellow: "Stylo jaune", rtPenBlack: "Stylo noir", rtNoteColor: "Couleur de la note :", rtNoteYellow: "Note jaune", rtNoteGreen: "Note verte", rtNoteBlue: "Note bleue", rtNotePink: "Note rose", rtHighlightColor: "Couleur du surlignage :", rtHlYellow: "Surlignage jaune", rtHlGreen: "Surlignage vert", rtHlBlue: "Surlignage bleu", rtHlPink: "Surlignage rose", rtNoReadAloud: "La lecture à voix haute du navigateur n'est pas disponible ici.", rtAnnoSaveFailed: "Impossible d'enregistrer les annotations. Essayez un autre navigateur.", rtMicDenied: "L'accès au microphone a été refusé. Autorisez le microphone dans les paramètres de votre navigateur pour enregistrer des notes vocales.", rtNoAnnotations: "Aucune annotation à enregistrer pour l'instant — ajoutez d'abord une note ou un surlignage.", rtVoiceTooLong: "Note vocale trop longue pour être enregistrée (plus de 500KB). Essayez un extrait plus court.", rtVoiceUnsupportedBrowser: "L'enregistrement vocal ne fonctionne pas dans ce navigateur.", rtVoiceUnsupportedDevice: "L'enregistrement vocal ne fonctionne pas sur cet appareil.", rtVoiceEmpty: "L'enregistrement vocal était vide.",
+          rtReadAloud: "Lire à voix haute", rtStopReadAloud: "Arrêter la lecture à voix haute", rtTeacherNote: "Note de l’enseignant", rtYourNote: "Votre note", rtCloseNote: "Fermer la note", rtStickyNote: "Note adhésive : {content}", rtStickyNoteFrom: "Note adhésive de {author} : {content}", rtEmptyNote: "(vide)", rtVoiceNote: "Note vocale", rtVoiceNoteFrom: "Note vocale de {author}", rtTeacherVoiceNote: "Note vocale de l’enseignant", rtCloseVoiceNote: "Fermer la note vocale", rtDrawing: "Dessin", rtDrawingFrom: "Dessin de {author}", rtTeacherFeedback: "Commentaires de l’enseignant", rtYou: "Vous", rtEraseNothing: "Rien à effacer pour l’instant. Vos surlignages, notes et dessins apparaîtront ici.", rtEraseOne: "Effacer votre seule marque sur cette page. Les marques de votre enseignant restent.", rtEraseCount: "Effacer vos {count} marques sur cette page. Les marques de votre enseignant restent.", rtNoteToolActive: "Outil Note activé. Appuyez sur Entrée ici pour ajouter une note.", rtHighlightToolActive: "Outil Surligner activé. Sélectionnez du texte, puis appuyez sur Entrée pour le surligner.", rtSaveNote: "Enregistrer la note", rtSaveClose: "Enregistrer et fermer", rtDeleteNote: "Supprimer la note", rtDelete: "Supprimer", rtNoteContent: "Contenu de la note", rtRemoveAnnoTitle: "Supprimer toutes vos annotations ?", rtRemoveAnnoOne: "Cela supprimera définitivement 1 note, surlignage, autocollant ou note vocale. Les annotations de l’enseignant resteront.", rtRemoveAnnoMany: "Cela supprimera définitivement {count} notes, surlignages, autocollants et notes vocales. Les annotations de l’enseignant resteront.", rtRemoveAnnoConfirm: "Supprimer mes annotations", rtConfirmTitle: "Veuillez confirmer", rtContinue: "Continuer", rtCharLimit: "Limite de caractères atteinte. Modifiez votre réponse pour faire de la place.",
+          rtDownloadRequested: "Téléchargement demandé — vérifiez vos Téléchargements", rtDownloadFramedHelp: "Si aucun fichier n’est apparu, cette page se trouve peut-être dans un système qui bloque les téléchargements. Ouvrez-la dans un onglet à part, puis enregistrez de nouveau.", rtOpenInOwnTab: "Ouvrir cette page dans un onglet à part", rtNoStorage: "Ce navigateur ne conservera pas votre travail sur cet appareil. Utilisez « Enregistrer mes réponses » avant de fermer la page.",
           readAloudUnavailable: 'L’audio de lecture à voix haute n’était pas disponible pour ce passage. Le texte du passage reste disponible ci-dessous.', readAloudPartial: 'L’audio est disponible pour {ready} phrases sur {total}. Lisez le texte des parties manquantes.'
         },
         pt: {
@@ -52342,6 +52582,9 @@ function projectStudentGuideData(data, mode) {
           saveWorkTitle: 'Salvar seu trabalho', saveWorkDescription: 'Digite um nome ou apelido para que seu professor possa identificar esta entrega.', saveWorkConfirm: 'Salvar trabalho', saveAnswersTitle: 'Salvar suas respostas', saveAnswersDescription: 'Digite um nome ou apelido para que seu professor possa identificar este arquivo de respostas.', saveAnswersConfirm: 'Salvar respostas', cancel: 'Cancelar', saveMyAnswers: 'Salvar minhas respostas', savedAnswers: 'Salvo! Envie o arquivo ao seu professor', saveErrorPrefix: 'Não foi possível salvar suas respostas: ',
           saveToolsLabel: 'Salvar e enviar seu trabalho', doneTitle: 'Terminou seu trabalho?', answerFileDescription: 'Salve um arquivo com suas respostas e envie-o ao seu professor.', answerFileHelp: 'Salva um arquivo .json que seu professor abre no AlloFlow.', encryptedMailboxDescription: 'Envie seu trabalho criptografado diretamente para a caixa da turma do seu professor. Se o envio falhar, um arquivo criptografado será baixado.', encryptedFileDescription: 'Salve um arquivo criptografado com suas respostas e envie-o ao seu professor.', encryptionHelp: 'Suas respostas são criptografadas com a chave da turma. Somente seu professor pode abri-las.', saveMyWork: 'Salvar meu trabalho', saving: 'Salvando…', savedDownload: 'Salvo — download iniciado', saveAgain: 'Salvar meu trabalho novamente', saveUnavailable: 'Não é possível salvar (chave ausente)', encryptionUnavailable: 'A criptografia não está disponível neste navegador. Use um navegador mais recente para salvar envios.', sending: 'Enviando ao seu professor…', sent: 'Enviado ao seu professor', sentToTeacher: 'Seu trabalho criptografado foi enviado ao seu professor', sendAgain: 'Enviar meu trabalho novamente', mailboxFallback: 'Não foi possível acessar a caixa da turma do seu professor. Um arquivo criptografado será baixado; envie-o ao seu professor.', workSaveErrorPrefix: 'Não foi possível salvar seu trabalho: ',
           skipToContent: 'Ir para o conteúdo', readingToolsLabel: 'Ferramentas de leitura e anotação', toolsLabel: 'Ferramentas', accessibilityInfoLabel: 'Informações de acessibilidade', accessibilityTitle: 'Recursos de acessibilidade', accessibilityDescription: 'Este documento inclui estrutura semântica, hierarquia de títulos, cabeçalhos de tabela, regiões, metadados de idioma, ordem lógica de leitura e layout otimizado para impressão. Esta não é uma declaração de conformidade WCAG ou PDF/UA validada de forma independente; verifique-a com uma ferramenta de acessibilidade antes de usá-la como prova de conformidade. Criado com AlloFlow.', submissionFor: 'Envio de {name}', worksheetLabel: 'Folha de atividades', savedLabel: 'Salvo', encryptedClassKey: 'Criptografado com a chave da turma', encryptedFileHelp: 'Este arquivo contém respostas criptografadas. Abra-o no AlloFlow (Gerador de documentos → Importar envios) com o arquivo de chave da turma correspondente para descriptografá-lo.', resourceIdLabel: 'ID do recurso', printLinksTitle: 'Links da Web deste recurso',
+          rtTheme: "Tema", rtLight: "Claro", rtDark: "Escuro", rtSepia: "Sépia", rtHighContrast: "Alto contraste", rtThemeAria: "Tema de leitura", rtLightTitle: "Claro (padrão do professor)", rtDarkTitle: "Modo escuro", rtSepiaTitle: "Sépia (quente, baixo brilho)", rtHcTitle: "Alto contraste (WCAG AAA)", rtFont: "Fonte", rtFontAria: "Família da fonte", rtFontAlways: "Sempre disponíveis", rtFontInternet: "Precisam de internet", rtFontThisDoc: "Este documento", rtFontDocument: "Fonte do documento ({font})", rtFontOriginal: "Original", rtFontSans: "Sem serifa", rtFontReadable: "Legível (Verdana)", rtFontHumanist: "Humanista (Tahoma)", rtFontSerif: "Com serifa (Georgia)", rtFontBookSerif: "Serifa de livro (Palatino)", rtFontRounded: "Arredondada (Trebuchet)", rtFontDyslexia: "Amigável para dislexia (Comic Sans)", rtFontMono: "Monoespaçada", rtText: "Texto", rtTextAria: "Exibição do texto", rtSmaller: "Texto menor", rtResetSize: "Voltar ao tamanho normal do texto", rtLarger: "Texto maior", rtSpacing: "Espaçamento", rtLineSpacing: "Espaçamento de linhas", rtLineSpacingTitle: "Alternar espaçamento de linhas", rtLetter: "Letras", rtLetterSpacing: "Espaçamento de letras", rtLetterSpacingTitle: "Alternar espaçamento de letras", rtGuide: "Guia", rtGuideAria: "Guia de leitura", rtOff: "Desligado", rtLine: "Linha", rtFocus: "Foco", rtGuideOffTitle: "Desligar guia de leitura", rtGuideLineTitle: "A linha de leitura segue o seu ponteiro", rtGuideFocusTitle: "A máscara de foco segue o seu ponteiro", rtAnnotate: "Anotar", rtAnnoAria: "Anotações", rtNote: "Nota", rtHighlight: "Destacar", rtVoice: "Voz", rtDraw: "Desenhar", rtUndo: "Desfazer", rtEraseMine: "Apagar minhas marcas", rtList: "Lista", rtSaveMine: "Salvar as minhas", rtNoteTitle: "Adicionar uma nota adesiva", rtHighlightTitle: "Destacar texto", rtVoiceTitle: "Nota de voz: clique para começar a gravar (máx 60s, fica no seu dispositivo)", rtDrawTitle: "Desenhar: pressione e arraste para desenhar à mão livre na página", rtUndoTitle: "Desfazer última anotação (Ctrl/Cmd+Z)", rtEraseMineTitle: "Apaga tudo o que você marcou nesta página. As marcas do seu professor continuam.", rtListTitle: "Mostrar todas as anotações", rtSaveMineTitle: "Baixar minhas anotações como JSON", rtPen: "Caneta:", rtSize: "Espessura:", rtThin: "Fina", rtMedium: "Média", rtThick: "Grossa", rtThinTitle: "Caneta fina", rtMediumTitle: "Caneta média", rtThickTitle: "Caneta grossa", rtPenRed: "Caneta vermelha", rtPenBlue: "Caneta azul", rtPenGreen: "Caneta verde", rtPenYellow: "Caneta amarela", rtPenBlack: "Caneta preta", rtNoteColor: "Cor da nota:", rtNoteYellow: "Nota amarela", rtNoteGreen: "Nota verde", rtNoteBlue: "Nota azul", rtNotePink: "Nota rosa", rtHighlightColor: "Cor do destaque:", rtHlYellow: "Destaque amarelo", rtHlGreen: "Destaque verde", rtHlBlue: "Destaque azul", rtHlPink: "Destaque rosa", rtNoReadAloud: "A leitura em voz alta do navegador não está disponível aqui.", rtAnnoSaveFailed: "Não foi possível salvar as anotações. Tente outro navegador.", rtMicDenied: "O acesso ao microfone foi negado. Permita o acesso ao microfone nas configurações do navegador para gravar notas de voz.", rtNoAnnotations: "Ainda não há anotações para salvar — adicione uma nota ou um destaque primeiro.", rtVoiceTooLong: "Nota de voz longa demais para salvar (mais de 500KB). Tente um clipe mais curto.", rtVoiceUnsupportedBrowser: "A gravação de voz não é compatível com este navegador.", rtVoiceUnsupportedDevice: "A gravação de voz não é compatível com este dispositivo.", rtVoiceEmpty: "A gravação de voz estava vazia.",
+          rtReadAloud: "Ler em voz alta", rtStopReadAloud: "Parar a leitura em voz alta", rtTeacherNote: "Nota do professor", rtYourNote: "Sua nota", rtCloseNote: "Fechar nota", rtStickyNote: "Nota adesiva: {content}", rtStickyNoteFrom: "Nota adesiva de {author}: {content}", rtEmptyNote: "(vazia)", rtVoiceNote: "Nota de voz", rtVoiceNoteFrom: "Nota de voz de {author}", rtTeacherVoiceNote: "Nota de voz do professor", rtCloseVoiceNote: "Fechar nota de voz", rtDrawing: "Desenho", rtDrawingFrom: "Desenho de {author}", rtTeacherFeedback: "Comentários do professor", rtYou: "Você", rtEraseNothing: "Ainda não há nada para apagar. Seus destaques, notas e desenhos vão aparecer aqui.", rtEraseOne: "Apagar sua única marca nesta página. As marcas do seu professor continuam.", rtEraseCount: "Apagar todas as suas {count} marcas nesta página. As marcas do seu professor continuam.", rtNoteToolActive: "Ferramenta de nota ativa. Pressione Enter aqui para adicionar uma nota.", rtHighlightToolActive: "Ferramenta de destaque ativa. Selecione o texto e pressione Enter para destacá-lo.", rtSaveNote: "Salvar nota", rtSaveClose: "Salvar e fechar", rtDeleteNote: "Excluir nota", rtDelete: "Excluir", rtNoteContent: "Conteúdo da nota", rtRemoveAnnoTitle: "Remover todas as suas anotações?", rtRemoveAnnoOne: "Isso vai remover para sempre 1 nota, destaque, figurinha ou nota de voz. As anotações do professor vão continuar.", rtRemoveAnnoMany: "Isso vai remover para sempre {count} notas, destaques, figurinhas e notas de voz. As anotações do professor vão continuar.", rtRemoveAnnoConfirm: "Remover minhas anotações", rtConfirmTitle: "Confirme, por favor", rtContinue: "Continuar", rtCharLimit: "Limite de caracteres atingido. Edite sua resposta para caber mais texto.",
+          rtDownloadRequested: "Download solicitado — confira sua pasta Downloads", rtDownloadFramedHelp: "Se nenhum arquivo apareceu, esta página pode estar dentro de um sistema que bloqueia downloads. Abra-a em uma aba separada e salve de novo.", rtOpenInOwnTab: "Abrir esta página em uma aba separada", rtNoStorage: "Este navegador não vai guardar seu trabalho neste dispositivo. Use “Salvar minhas respostas” antes de fechar a página.",
           readAloudUnavailable: 'O áudio de leitura em voz alta não estava disponível para esta passagem. O texto da passagem continua disponível abaixo.', readAloudPartial: 'O áudio está disponível para {ready} de {total} frases. Leia o texto das partes que faltam.'
         },
         ar: {
@@ -52349,6 +52592,9 @@ function projectStudentGuideData(data, mode) {
           saveWorkTitle: 'حفظ عملك', saveWorkDescription: 'أدخل اسمًا أو اسمًا مستعارًا ليتمكن المعلم من التعرّف على هذا التسليم.', saveWorkConfirm: 'حفظ العمل', saveAnswersTitle: 'حفظ إجاباتك', saveAnswersDescription: 'أدخل اسمًا أو اسمًا مستعارًا ليتمكن المعلم من التعرّف على ملف الإجابات هذا.', saveAnswersConfirm: 'حفظ الإجابات', cancel: 'إلغاء', saveMyAnswers: 'حفظ إجاباتي', savedAnswers: 'تم الحفظ! أرسل الملف إلى معلمك', saveErrorPrefix: 'تعذّر حفظ إجاباتك: ',
           saveToolsLabel: 'حفظ عملك وتسليمه', doneTitle: 'هل انتهيت من عملك؟', answerFileDescription: 'احفظ ملفًا يتضمن إجاباتك وأرسله إلى معلمك.', answerFileHelp: 'يحفظ ملف .json يفتحه معلمك في AlloFlow.', encryptedMailboxDescription: 'أرسل عملك المشفّر مباشرة إلى صندوق بريد الصف الخاص بمعلمك. إذا فشل الإرسال، فسيتم تنزيل ملف مشفّر بدلًا منه.', encryptedFileDescription: 'احفظ ملفًا مشفّرًا يتضمن إجاباتك وأرسله إلى معلمك.', encryptionHelp: 'إجاباتك مشفّرة بمفتاح الصف. لا يمكن فتحها إلا من قِبل معلمك.', saveMyWork: 'حفظ عملي', saving: 'جارٍ الحفظ…', savedDownload: 'تم الحفظ — بدأ التنزيل', saveAgain: 'حفظ عملي مرة أخرى', saveUnavailable: 'الحفظ غير متاح (المفتاح مفقود)', encryptionUnavailable: 'التشفير غير متاح في هذا المتصفح. استخدم متصفحًا أحدث لحفظ التسليمات.', sending: 'جارٍ الإرسال إلى معلمك…', sent: 'تم الإرسال إلى معلمك', sentToTeacher: 'تم إرسال عملك المشفّر إلى معلمك', sendAgain: 'إرسال عملي مرة أخرى', mailboxFallback: 'تعذّر الوصول إلى صندوق بريد الصف الخاص بمعلمك. سيتم تنزيل ملف مشفّر بدلًا منه؛ أرسله إلى معلمك.', workSaveErrorPrefix: 'تعذّر حفظ عملك: ',
           skipToContent: 'الانتقال إلى المحتوى', readingToolsLabel: 'أدوات القراءة والتعليق', toolsLabel: 'الأدوات', accessibilityInfoLabel: 'معلومات إمكانية الوصول', accessibilityTitle: 'ميزات إمكانية الوصول', accessibilityDescription: 'يتضمن هذا المستند بنية دلالية وتسلسلًا هرميًا للعناوين ورؤوس جداول ومعالم وبيانات وصفية للغة وترتيب قراءة منطقيًا وتخطيطًا محسّنًا للطباعة. لا يُعد هذا ادعاءً بالتوافق مع WCAG أو PDF/UA تم التحقق منه بصورة مستقلة؛ تحقّق منه باستخدام أداة لإمكانية الوصول قبل الاعتماد عليه كدليل على التوافق. أُنشئ باستخدام AlloFlow.', submissionFor: 'تسليم {name}', worksheetLabel: 'ورقة العمل', savedLabel: 'تم الحفظ', encryptedClassKey: 'مشفّر بمفتاح الصف', encryptedFileHelp: 'يحتوي هذا الملف على إجابات مشفّرة. افتحه في AlloFlow (منشئ المستندات ← استيراد التسليمات) باستخدام ملف مفتاح الصف المطابق لفك تشفيره.', resourceIdLabel: 'معرّف المورد', printLinksTitle: 'روابط الويب لهذا المورد',
+          rtTheme: "السمة", rtLight: "فاتح", rtDark: "داكن", rtSepia: "بني داكن", rtHighContrast: "تباين عالٍ", rtThemeAria: "سمة القراءة", rtLightTitle: "فاتح (افتراضي المعلم)", rtDarkTitle: "الوضع الداكن", rtSepiaTitle: "بني داكن (دافئ، انعكاس منخفض)", rtHcTitle: "تباين عالٍ (WCAG AAA)", rtFont: "الخط", rtFontAria: "عائلة الخط", rtFontAlways: "متاحة دائمًا", rtFontInternet: "تحتاج إلى الإنترنت", rtFontThisDoc: "هذا المستند", rtFontDocument: "خط المستند ({font})", rtFontOriginal: "الأصلي", rtFontSans: "بدون زوائد", rtFontReadable: "سهل القراءة (Verdana)", rtFontHumanist: "إنساني (Tahoma)", rtFontSerif: "بزوائد (Georgia)", rtFontBookSerif: "خط كتب بزوائد (Palatino)", rtFontRounded: "مستدير (Trebuchet)", rtFontDyslexia: "مناسب لعسر القراءة (Comic Sans)", rtFontMono: "أحادي المسافة", rtText: "النص", rtTextAria: "عرض النص", rtSmaller: "نص أصغر", rtResetSize: "العودة إلى حجم النص العادي", rtLarger: "نص أكبر", rtSpacing: "التباعد", rtLineSpacing: "تباعد الأسطر", rtLineSpacingTitle: "تغيير تباعد الأسطر", rtLetter: "الأحرف", rtLetterSpacing: "تباعد الأحرف", rtLetterSpacingTitle: "تغيير تباعد الأحرف", rtGuide: "الدليل", rtGuideAria: "دليل القراءة", rtOff: "إيقاف", rtLine: "مسطرة", rtFocus: "تركيز", rtGuideOffTitle: "إيقاف دليل القراءة", rtGuideLineTitle: "مسطرة القراءة تتبع مؤشرك", rtGuideFocusTitle: "قناع التركيز يتبع مؤشرك", rtAnnotate: "تعليق", rtAnnoAria: "التعليقات", rtNote: "ملاحظة", rtHighlight: "تمييز", rtVoice: "صوت", rtDraw: "رسم", rtUndo: "تراجع", rtEraseMine: "مسح علاماتي", rtList: "القائمة", rtSaveMine: "حفظ تعليقاتي", rtNoteTitle: "إضافة ملاحظة ملصقة", rtHighlightTitle: "تمييز النص", rtVoiceTitle: "ملاحظة صوتية: انقر للبدء بالتسجيل (بحد أقصى 60 ثانية، تبقى على جهازك)", rtDrawTitle: "رسم: اضغط واسحب للرسم الحر على الصفحة", rtUndoTitle: "تراجع عن آخر تعليق (Ctrl/Cmd+Z)", rtEraseMineTitle: "يمسح كل ما وضعته من علامات في هذه الصفحة. علامات معلمك تبقى.", rtListTitle: "عرض جميع التعليقات", rtSaveMineTitle: "تنزيل تعليقاتي كـ JSON", rtPen: "القلم:", rtSize: "السماكة:", rtThin: "رفيع", rtMedium: "متوسط", rtThick: "سميك", rtThinTitle: "قلم رفيع", rtMediumTitle: "قلم متوسط", rtThickTitle: "قلم سميك", rtPenRed: "قلم أحمر", rtPenBlue: "قلم أزرق", rtPenGreen: "قلم أخضر", rtPenYellow: "قلم أصفر", rtPenBlack: "قلم أسود", rtNoteColor: "لون الملاحظة:", rtNoteYellow: "ملاحظة صفراء", rtNoteGreen: "ملاحظة خضراء", rtNoteBlue: "ملاحظة زرقاء", rtNotePink: "ملاحظة وردية", rtHighlightColor: "لون التظليل:", rtHlYellow: "تظليل أصفر", rtHlGreen: "تظليل أخضر", rtHlBlue: "تظليل أزرق", rtHlPink: "تظليل وردي", rtNoReadAloud: "القراءة بصوت عالٍ من المتصفح غير متاحة هنا.", rtAnnoSaveFailed: "تعذّر حفظ التعليقات. جرّب متصفحًا آخر.", rtMicDenied: "تم رفض الوصول إلى الميكروفون. اسمح بالوصول إلى الميكروفون من إعدادات متصفحك لتسجيل الملاحظات الصوتية.", rtNoAnnotations: "لا توجد تعليقات للحفظ بعد. أضف ملاحظة أو تظليلًا أولًا.", rtVoiceTooLong: "الملاحظة الصوتية أطول من أن تُحفظ (أكثر من 500KB). جرّب مقطعًا أقصر.", rtVoiceUnsupportedBrowser: "التسجيل الصوتي غير مدعوم في هذا المتصفح.", rtVoiceUnsupportedDevice: "التسجيل الصوتي غير مدعوم على هذا الجهاز.", rtVoiceEmpty: "كان التسجيل الصوتي فارغًا.",
+          rtReadAloud: "القراءة بصوت عالٍ", rtStopReadAloud: "إيقاف القراءة بصوت عالٍ", rtTeacherNote: "ملاحظة المعلم", rtYourNote: "ملاحظتك", rtCloseNote: "إغلاق الملاحظة", rtStickyNote: "ملاحظة ملصقة: {content}", rtStickyNoteFrom: "ملاحظة ملصقة من {author}: {content}", rtEmptyNote: "(فارغة)", rtVoiceNote: "ملاحظة صوتية", rtVoiceNoteFrom: "ملاحظة صوتية من {author}", rtTeacherVoiceNote: "ملاحظة صوتية من المعلم", rtCloseVoiceNote: "إغلاق الملاحظة الصوتية", rtDrawing: "رسم", rtDrawingFrom: "رسم من {author}", rtTeacherFeedback: "ردّ المعلم", rtYou: "أنت", rtEraseNothing: "لا يوجد شيء لمسحه بعد. سيظهر هنا ما تضعه من تمييز وملاحظات ورسومات.", rtEraseOne: "امسح علامتك الوحيدة في هذه الصفحة. علامات معلمك تبقى.", rtEraseCount: "امسح كل علاماتك في هذه الصفحة وعددها {count}. علامات معلمك تبقى.", rtNoteToolActive: "أداة الملاحظة مفعّلة. اضغط Enter هنا لإضافة ملاحظة.", rtHighlightToolActive: "أداة التمييز مفعّلة. حدّد نصًا، ثم اضغط Enter لتمييزه.", rtSaveNote: "حفظ الملاحظة", rtSaveClose: "حفظ وإغلاق", rtDeleteNote: "حذف الملاحظة", rtDelete: "حذف", rtNoteContent: "نص الملاحظة", rtRemoveAnnoTitle: "هل تريد إزالة كل تعليقاتك؟", rtRemoveAnnoOne: "سيؤدي هذا إلى إزالة ملاحظة أو تمييز أو ملصق أو ملاحظة صوتية واحدة نهائيًا. ستبقى تعليقات المعلم.", rtRemoveAnnoMany: "سيؤدي هذا إلى إزالة {count} من الملاحظات والتمييزات والملصقات والملاحظات الصوتية نهائيًا. ستبقى تعليقات المعلم.", rtRemoveAnnoConfirm: "إزالة تعليقاتي", rtConfirmTitle: "يرجى التأكيد", rtContinue: "متابعة", rtCharLimit: "وصلت إلى الحد الأقصى للأحرف. عدّل إجابتك لتترك مساحة لنص إضافي.",
+          rtDownloadRequested: "تم طلب التنزيل — تحقّق من مجلد التنزيلات", rtDownloadFramedHelp: "إذا لم يظهر أي ملف، فقد تكون هذه الصفحة داخل نظام يمنع التنزيلات. افتحها في علامة تبويب مستقلة، ثم احفظ مرة أخرى.", rtOpenInOwnTab: "افتح هذه الصفحة في علامة تبويب مستقلة", rtNoStorage: "لن يحتفظ هذا المتصفح بعملك على هذا الجهاز. استخدم «حفظ إجاباتي» قبل أن تغلق الصفحة.",
           readAloudUnavailable: 'لم يكن صوت القراءة متاحًا لهذا المقطع. لا يزال نص المقطع متاحًا أدناه.', readAloudPartial: 'الصوت متاح لـ {ready} من أصل {total} جملة. اقرأ النص للأجزاء المفقودة.'
         },
         zh: {
@@ -52356,6 +52602,9 @@ function projectStudentGuideData(data, mode) {
           saveWorkTitle: '保存你的学习内容', saveWorkDescription: '请输入姓名或昵称，以便老师识别这份提交。', saveWorkConfirm: '保存学习内容', saveAnswersTitle: '保存你的答案', saveAnswersDescription: '请输入姓名或昵称，以便老师识别此答案文件。', saveAnswersConfirm: '保存答案', cancel: '取消', saveMyAnswers: '保存我的答案', savedAnswers: '已保存！请将文件发送给老师', saveErrorPrefix: '无法保存你的答案：',
           saveToolsLabel: '保存并提交你的学习内容', doneTitle: '完成学习内容了吗？', answerFileDescription: '保存答案文件并将其发送给老师。', answerFileHelp: '保存一个可由老师在 AlloFlow 中打开的 .json 文件。', encryptedMailboxDescription: '将加密后的学习内容直接发送到老师的班级邮箱。如果发送失败，系统会改为下载加密文件。', encryptedFileDescription: '保存含有答案的加密文件并发送给老师。', encryptionHelp: '你的答案使用班级密钥加密，只有老师可以打开。', saveMyWork: '保存我的学习内容', saving: '正在保存…', savedDownload: '已保存 — 已开始下载', saveAgain: '再次保存我的学习内容', saveUnavailable: '无法保存（缺少密钥）', encryptionUnavailable: '此浏览器不支持加密。请使用较新的浏览器保存提交内容。', sending: '正在发送给老师…', sent: '已发送给老师', sentToTeacher: '加密后的学习内容已发送给老师', sendAgain: '再次发送我的学习内容', mailboxFallback: '无法连接到老师的班级邮箱。系统将改为下载加密文件；请将该文件发送给老师。', workSaveErrorPrefix: '无法保存你的学习内容：',
           skipToContent: '跳到内容', readingToolsLabel: '阅读和批注工具', toolsLabel: '工具', accessibilityInfoLabel: '无障碍信息', accessibilityTitle: '无障碍功能', accessibilityDescription: '本文档包含语义结构、标题层级、表头、页面区域、语言元数据、合理的阅读顺序以及打印优化布局。这并非经过独立验证的 WCAG 或 PDF/UA 合规声明；在将其作为合规依据之前，请使用无障碍检查工具进行验证。由 AlloFlow 创建。', submissionFor: '{name} 的提交', worksheetLabel: '学习单', savedLabel: '已保存', encryptedClassKey: '已使用班级密钥加密', encryptedFileHelp: '此文件包含加密答案。请在 AlloFlow 中使用匹配的班级密钥文件打开它（文档生成器 → 导入提交内容）以进行解密。', resourceIdLabel: '资源 ID', printLinksTitle: '此资源的网页链接',
+          rtTheme: "主题", rtLight: "浅色", rtDark: "深色", rtSepia: "棕褐色", rtHighContrast: "高对比度", rtThemeAria: "阅读主题", rtLightTitle: "浅色(教师默认)", rtDarkTitle: "深色模式", rtSepiaTitle: "棕褐色(温暖,低眩光)", rtHcTitle: "高对比度(WCAG AAA)", rtFont: "字体", rtFontAria: "字体系列", rtFontAlways: "始终可用", rtFontInternet: "需要联网", rtFontThisDoc: "本文档", rtFontDocument: "文档字体({font})", rtFontOriginal: "原始", rtFontSans: "无衬线", rtFontReadable: "易读(Verdana)", rtFontHumanist: "人文体(Tahoma)", rtFontSerif: "衬线(Georgia)", rtFontBookSerif: "书籍衬线(Palatino)", rtFontRounded: "圆润(Trebuchet)", rtFontDyslexia: "适合阅读障碍(Comic Sans)", rtFontMono: "等宽体", rtText: "文字", rtTextAria: "文字显示", rtSmaller: "缩小文字", rtResetSize: "恢复正常文字大小", rtLarger: "放大文字", rtSpacing: "间距", rtLineSpacing: "行距", rtLineSpacingTitle: "切换行距", rtLetter: "字距", rtLetterSpacing: "字母间距", rtLetterSpacingTitle: "切换字母间距", rtGuide: "导读", rtGuideAria: "阅读导读", rtOff: "关闭", rtLine: "横线", rtFocus: "聚焦", rtGuideOffTitle: "关闭阅读导读", rtGuideLineTitle: "阅读横线会跟随您的指针", rtGuideFocusTitle: "聚焦遮罩会跟随您的指针", rtAnnotate: "批注", rtAnnoAria: "批注", rtNote: "笔记", rtHighlight: "高亮", rtVoice: "语音", rtDraw: "绘画", rtUndo: "撤销", rtEraseMine: "擦除我的标记", rtList: "列表", rtSaveMine: "保存我的", rtNoteTitle: "添加便利贴", rtHighlightTitle: "高亮文本", rtVoiceTitle: "语音笔记：点击开始录音(最多 60 秒,保存在您的设备上)", rtDrawTitle: "绘画：按住并拖动,在页面上自由绘画", rtUndoTitle: "撤消上一个注释 (Ctrl/Cmd+Z)", rtEraseMineTitle: "擦除您在本页做的所有标记。老师的标记会保留。", rtListTitle: "显示所有注释", rtSaveMineTitle: "将我的注释下载为 JSON", rtPen: "画笔：", rtSize: "粗细：", rtThin: "细", rtMedium: "中", rtThick: "粗", rtThinTitle: "细画笔", rtMediumTitle: "中等画笔", rtThickTitle: "粗画笔", rtPenRed: "红色画笔", rtPenBlue: "蓝色画笔", rtPenGreen: "绿色画笔", rtPenYellow: "黄色画笔", rtPenBlack: "黑色画笔", rtNoteColor: "笔记颜色：", rtNoteYellow: "黄色笔记", rtNoteGreen: "绿色笔记", rtNoteBlue: "蓝色笔记", rtNotePink: "粉色笔记", rtHighlightColor: "高亮颜色：", rtHlYellow: "黄色高亮", rtHlGreen: "绿色高亮", rtHlBlue: "蓝色高亮", rtHlPink: "粉色高亮", rtNoReadAloud: "此处无法使用浏览器的朗读功能。", rtAnnoSaveFailed: "无法保存注释。请换一个浏览器试试。", rtMicDenied: "麦克风权限被拒绝。请在浏览器设置中允许使用麦克风,才能录制语音笔记。", rtNoAnnotations: "还没有可保存的注释——请先添加一条笔记或高亮。", rtVoiceTooLong: "语音笔记太长,无法保存(超过 500KB)。请录一段短一点的。", rtVoiceUnsupportedBrowser: "此浏览器不支持录音。", rtVoiceUnsupportedDevice: "此设备不支持录音。", rtVoiceEmpty: "录音是空的。",
+          rtReadAloud: "朗读", rtStopReadAloud: "停止朗读", rtTeacherNote: "老师的笔记", rtYourNote: "您的笔记", rtCloseNote: "关闭笔记", rtStickyNote: "便利贴：{content}", rtStickyNoteFrom: "来自{author}的便利贴：{content}", rtEmptyNote: "（空）", rtVoiceNote: "语音笔记", rtVoiceNoteFrom: "来自{author}的语音笔记", rtTeacherVoiceNote: "老师的语音笔记", rtCloseVoiceNote: "关闭语音笔记", rtDrawing: "绘画", rtDrawingFrom: "来自{author}的绘画", rtTeacherFeedback: "老师的反馈", rtYou: "您", rtEraseNothing: "还没有可擦除的内容。您的高亮、笔记和绘画会显示在这里。", rtEraseOne: "擦除您在本页的 1 个标记。老师的标记会保留。", rtEraseCount: "擦除您在本页的全部 {count} 个标记。老师的标记会保留。", rtNoteToolActive: "笔记工具已开启。在这里按 Enter 键添加笔记。", rtHighlightToolActive: "高亮工具已开启。选中文字，然后按 Enter 键将其高亮。", rtSaveNote: "保存笔记", rtSaveClose: "保存并关闭", rtDeleteNote: "删除笔记", rtDelete: "删除", rtNoteContent: "笔记内容", rtRemoveAnnoTitle: "要移除您的所有批注吗？", rtRemoveAnnoOne: "这将永久移除 1 条笔记、高亮、贴纸或语音笔记。老师的批注会保留。", rtRemoveAnnoMany: "这将永久移除 {count} 条笔记、高亮、贴纸和语音笔记。老师的批注会保留。", rtRemoveAnnoConfirm: "移除我的批注", rtConfirmTitle: "请确认", rtContinue: "继续", rtCharLimit: "已达到字数上限。请修改您的回答，留出空间写更多内容。",
+          rtDownloadRequested: "已请求下载——请查看“下载”文件夹", rtDownloadFramedHelp: "如果没有出现文件，此页面可能位于会阻止下载的系统中。请在单独的标签页中打开，然后再保存一次。", rtOpenInOwnTab: "在单独的标签页中打开此页面", rtNoStorage: "此浏览器不会在这台设备上保留你的作业。关闭页面前，请使用“保存我的答案”。",
           readAloudUnavailable: '此段落无法提供朗读音频。段落文字仍显示在下方。', readAloudPartial: '共 {total} 句，其中 {ready} 句有音频。请阅读缺少音频部分的文字。'
         }
       };
@@ -52379,6 +52628,7 @@ function projectStudentGuideData(data, mode) {
         ...(_runtimeCopyEntry && Object.keys(_runtimeCopyEntry).length ? _runtimeCopyEntry
           : (_runtimeCopyCatalog[_runtimeLanguage] || _plainCopy(_loadedCopy[_runtimeLanguage]))),
       };
+      const _rt = (key) => _escAttr(_runtimeCopy[key]);
       // Four independently mixed 32-bit lanes form a deterministic 128-bit
       // content identity. It is based on resource content, not rendered body
       // length or generation date, so unrelated equal-length exports cannot
@@ -52499,7 +52749,7 @@ function projectStudentGuideData(data, mode) {
           <p style="margin:0 0 12px 0;font-size:1.05rem;color:#166534;font-weight:700;">${_runtimeCopy.doneTitle}</p>
           <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">${_mailboxTarget ? _runtimeCopy.encryptedMailboxDescription : _runtimeCopy.encryptedFileDescription}</p>
           <button type="button" id="alloflow-save-submission-btn" style="padding:10px 22px;background:#15803d;color:white;border:none;border-radius:8px;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 1px 4px rgba(21,128,61,0.22);">📝 ${_runtimeCopy.saveMyWork}</button>
-          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">🔐 ${_runtimeCopy.encryptionHelp}</p>
+          <p style="margin:12px 0 0 0;font-size:max(12px, 0.75rem);color:#475569;">🔐 ${_runtimeCopy.encryptionHelp}</p>
         </div>
       ` : '';
       // Click handler — appended inside the existing DOMContentLoaded block.
@@ -52642,14 +52892,15 @@ function projectStudentGuideData(data, mode) {
                             };
                             var safeName = filePart(nickname, 'student');
                             var safeTitle = filePart(payload.docTitle, 'worksheet');
-                            var dateStr = new Date().toISOString().slice(0, 10);
+                            var dateStr = (function (d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })(new Date());
                             var docSuffix = payload.documentId ? '-' + payload.documentId.slice(0, 8) : '';
                             a.href = url2;
                             a.download = safeName + '-' + safeTitle + docSuffix + '-' + dateStr + '.alloflow.html';
                             document.body.appendChild(a);
                             a.click();
                             setTimeout(function() { URL.revokeObjectURL(url2); if (a.parentNode) a.parentNode.removeChild(a); }, 200);
-                            btn.textContent = '✓ ' + window.__alloflowText('savedDownload', 'Saved — download started');
+                            if (window.__alloflowIsFramed && window.__alloflowIsFramed()) { btn.textContent = window.__alloflowText('rtDownloadRequested', 'Download requested — check your Downloads'); window.__alloflowDownloadHelp(btn); }
+                            else btn.textContent = '✓ ' + window.__alloflowText('savedDownload', 'Saved — download started');
                             setTimeout(function() { btn.disabled = false; btn.textContent = '📝 ' + window.__alloflowText('saveAgain', 'Save my work again'); }, 1500);
                             }
                         } catch (e) {
@@ -52739,7 +52990,7 @@ function projectStudentGuideData(data, mode) {
         notes: 'Legacy artifacts remain role=unspecified. Replacement authorization is recorded only when its source is educator.',
       };
       const _teacherTextAccessNotice = _textAccessManifest.warningCodes.length > 0
-        ? `<div role="note" style="margin:12px 0 20px;padding:12px 14px;background:#fffbeb;border:1px solid #f59e0b;border-radius:10px;color:#78350f;"><strong>Text-access review:</strong> Some adapted readings are missing their matching source or main lesson text, or need educator confirmation. Review each reading pair and its assigned roles before sharing.</div>`
+        ? `<div role="note" style="margin:12px 0 20px;padding:12px 14px;background:#fffbeb;border:1px solid #f59e0b;border-radius:10px;color:#78350f;"><strong>${_escTxt((() => { const v = t('export.text_access_review_label'); return typeof v === 'string' && v.trim() && v !== 'export.text_access_review_label' ? v : 'Text-access review:'; })())}</strong> ${_escTxt((() => { const v = t('export.text_access_review_body'); return typeof v === 'string' && v.trim() && v !== 'export.text_access_review_body' ? v : 'Some adapted readings are missing their matching source or main lesson text, or need educator confirmation. Review each reading pair and its assigned roles before sharing.'; })())}</div>`
         : '';
       const _objectProfileManifest = {
         kind: 'alloflow.interactive-object-profile',
@@ -52779,6 +53030,7 @@ function projectStudentGuideData(data, mode) {
           ${_readerExportCss}
           h1, h2, h3 { color: ${theme.headingColor}; }
           h1 { font-size: 1.75rem; font-weight: 800; margin-bottom: 0.25rem; }
+          h1, h2.resource-header { overflow-wrap: anywhere; }
           /* NO overflow:hidden here. It used to be set so the 12px radius clipped
              children, but it also silently cut off anything wider than the card —
              with no scrollbar and no reflow. A glossary table at the reader's 175%
@@ -52838,6 +53090,7 @@ function projectStudentGuideData(data, mode) {
              so PDFs render images at full intended size. */
           img { max-width: 100%; max-height: 90vh; height: auto; border: 1px solid ${theme.cardBorder}; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
           .math-symbol { font-family: "Times New Roman", serif; display: inline-block; }
+          html[data-rt-font-set] .math-symbol, html[data-rt-font-set] .alloflow-own-font { font-family: inherit !important; }
           .math-fraction {
               display: inline-flex;
               flex-direction: column;
@@ -52924,6 +53177,7 @@ function projectStudentGuideData(data, mode) {
              columns without forcing horizontal scrolling. */
           .quiz-box .mcq-label { flex-wrap: wrap; }
           .quiz-box .mcq-label > span { min-width: 0; overflow-wrap: anywhere; }
+          .quiz-box .mcq-label > span:not(.alloflow-print-bubble) { flex: 1 1 12rem; }
           .quiz-box .mcq-label > img { min-width: 0; max-width: 100% !important; }
           .quiz-box input.alloflow-response-input, .quiz-box .alloflow-response-select { box-sizing: border-box; min-width: 0; max-width: 100%; }
           .mcq-label:hover { background-color: #f1f5f9; border-color: #cbd5e1; }
@@ -52936,7 +53190,6 @@ function projectStudentGuideData(data, mode) {
              persistent indigo accent so students can scan back and see what
              they already picked. WCAG 1.4.11 (Non-text Contrast). */
           .mcq-label:has(input[type="radio"]:checked) { background-color: #eef2ff; border-color: #4f46e5; font-weight: 600; }
-          .mcq-label:has(input[type="radio"]:checked)::before { content: "✓"; color: #4f46e5; font-weight: 700; margin-right: 2px; }
           .mcq-label input[type="radio"] { width: 18px; height: 18px; accent-color: #4f46e5; flex-shrink: 0; }
           .quiz-box input[type="radio"], .quiz-box input[type="checkbox"] { width: 24px; height: 24px; flex-shrink: 0; }
           /* Quiz options list: parallel focus-visible state for plain <li>
@@ -52966,8 +53219,20 @@ function projectStudentGuideData(data, mode) {
           .cmap-print-wrapper li,
           .mindmap-print-wrapper li,
           .outline-print-wrapper li {
-            overflow-wrap: anywhere;
-            hyphens: auto;
+            overflow-wrap: break-word;
+            hyphens: manual;
+          }
+          .allo-hub-map { position: relative; }
+          .allo-hub-lines { position: absolute; left: 0; top: 0; width: 100%; height: 100%; pointer-events: none; z-index: 0; overflow: visible; }
+          .allo-hub-card { z-index: 1; }
+          .allo-hub-drawn .allo-hub-link { display: none; }
+          @media screen and (max-width: 820px) {
+            .allo-hub-lines { display: none; }
+            .allo-hub-map { flex-direction: column !important; align-items: stretch !important; gap: 14px !important; padding: 8px !important; }
+            .allo-hub-map > .allo-hub-center { order: -1; align-self: center; }
+            .allo-hub-col { align-items: stretch !important; flex: none !important; gap: 12px !important; }
+            .allo-hub-card { max-width: none !important; }
+            .allo-hub-link { display: none !important; }
           }
           @media (max-width: 820px) {
             .flowchart-print-wrapper,
@@ -52994,6 +53259,7 @@ function projectStudentGuideData(data, mode) {
           @media (forced-colors: active) { .section { border: 2px solid CanvasText; } th { border: 1px solid CanvasText; } }
           @media print {
             body { padding: 0; margin: 0; font-size: 11.5pt; line-height: 1.5; }
+            .alloflow-export-prompt-overlay { display: none !important; }
             /* Orphans/widows control — keeps a single word from being orphaned
                on a new line at the top of a printed page, or stranded at the
                bottom. Particularly important for dyslexic readers, who lose
@@ -53028,6 +53294,27 @@ function projectStudentGuideData(data, mode) {
             .resource-header { background: #f5f5f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
             .interactive-textarea { border: 1px solid #94a3b8; background-image: linear-gradient(#c0c0c0 1px, transparent 1px); break-inside: avoid; min-height: 100px; }
             .allo-ta-counter { display: none; } /* counter is interactive-only */
+            /* The decorative end-of-section mark could land alone on a page; headings and the name strip already separate sections. */
+            .alloflow-section-terminator { display: none !important; }
+            /* Concept map: drawn lines follow screen geometry and cross on paper; use the card-side stubs. */
+            .allo-hub-lines { display: none !important; }
+            .allo-hub-drawn .allo-hub-link { display: block !important; }
+            .allo-hub-map { gap: 28px !important; }
+            .allo-hub-map > .allo-hub-center { width: 150px !important; height: 150px !important; flex-shrink: 0; padding: 10px !important; }
+            .allo-hub-map > .allo-hub-center h3 { font-size: 0.95em !important; line-height: 1.2 !important; overflow-wrap: anywhere; }
+            .allo-hub-card { max-width: none !important; }
+            .alloflow-math-problem { margin-bottom: 12px !important; padding-bottom: 10px !important; }
+            .alloflow-math-question { margin-bottom: 8px !important; }
+            /* The name strip and section badge belong to the section below them, never alone at a page foot. */
+            .alloflow-worksheet-continuation, .alloflow-section-marker { break-after: avoid !important; page-break-after: avoid !important; }
+            .alloflow-storage-note, #alloflow-download-help { display: none !important; }
+            /* Anchor charts: tighter card spacing so a last short card does not take a page alone. */
+            .alloflow-anchor-card { margin-bottom: 8px !important; padding: 9px 12px 9px 16px !important; box-shadow: none !important; }
+            /* A textarea prints only its visible rows; the runtime adds a full copy before printing. */
+            textarea.alloflow-print-mirrored { display: none !important; }
+            .alloflow-print-answer { display: block; white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid #94a3b8; border-radius: 4px; padding: 6px 8px; margin: 4px 0; min-height: 2.5em; break-inside: auto; }
+            textarea { resize: none; } textarea::placeholder { color: transparent; }
+            .quiz-check-btn, .quiz-reset-btn { display: none !important; }
             .interactive-blank { border-bottom: 1px solid #333; }
             .alloflow-response-group, .alloflow-numeric-response, .alloflow-ruled-response:not(.alloflow-ruled-response-long) { break-inside: avoid; page-break-inside: avoid; }
             .worksheet-header { border: none; padding: 0; margin-bottom: 30px; }
@@ -53062,7 +53349,7 @@ function projectStudentGuideData(data, mode) {
             .alloflow-print-link-reference.alloflow-has-links { display: block !important; page-break-inside: auto; break-inside: auto; }
             .alloflow-print-link-reference li { overflow-wrap: anywhere; word-break: break-word; margin-bottom: 0.35rem; }
           }
-          .a11y-badge { break-inside: avoid; page-break-inside: avoid; margin-top: 2rem; padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: 0.75rem; color: #166534; }
+          .a11y-badge { break-inside: avoid; page-break-inside: avoid; margin-top: 2rem; padding: 12px 16px; background: #f0fdf4; border: 1px solid #bbf7d0; border-radius: 8px; font-size: max(12px, 0.75rem); color: #166534; }
           .a11y-badge strong { display: block; margin-bottom: 4px; }
           .alloflow-print-link-reference { display: none; margin-top: 2rem; padding-top: 1rem; border-top: 1px solid #94a3b8; font-size: 0.82rem; }
           /* Tier 1 visual structure (May 13 2026): TOC + section markers +
@@ -53090,6 +53377,11 @@ function projectStudentGuideData(data, mode) {
              Sepia / High Contrast at any time, persisted in localStorage.
              The teacher-chosen exportTheme is the baseline (Light = no
              override). Print rule hides the toolbar on paper output. */
+          html.alloflow-ink-measuring *, html.alloflow-ink-measuring *::before, html.alloflow-ink-measuring *::after { transition: none !important; }
+          /* Contents links and skip links must land below the sticky tools bar, whose
+             height changes with its open state; the tray script keeps the variable current. */
+          @media screen { html { scroll-padding-top: var(--alloflow-tools-h, 0px); } }
+          .alloflow-toc a { display: block; padding: 10px 0; margin: -8px 0; }
           .alloflow-reading-tools-shell { position: sticky; top: 0; z-index: 9999; font-family: system-ui, -apple-system, sans-serif; }
           .alloflow-tools-toggle { display: flex; width: 100%; align-items: center; justify-content: space-between; gap: 10px; padding: 5px 12px; background: rgba(255,255,255,0.97); color: #1e293b; border: 0; border-bottom: 1px solid #cbd5e1; font: 700 12px system-ui,-apple-system,sans-serif; cursor: pointer; }
           .alloflow-tools-toggle:focus-visible { outline: 2px solid #6366f1; outline-offset: -2px; }
@@ -53100,7 +53392,7 @@ function projectStudentGuideData(data, mode) {
           .alloflow-reading-tools-shell:not(.expanded) .alloflow-tools-panel { display: none; }
           .alloflow-reading-tools { background: rgba(255,255,255,0.96); border-bottom: 1px solid #e2e8f0; padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); font-family: system-ui, -apple-system, sans-serif; font-size: 13px; }
           .alloflow-reading-tools-group { display: inline-flex; gap: 0; align-items: stretch; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; overflow: hidden; }
-          .alloflow-reading-tools-label { font-size: 10px; font-weight: 700; color: #556070; text-transform: uppercase; letter-spacing: 0.06em; padding: 0 10px; align-self: center; background: #f1f5f9; border-right: 1px solid #cbd5e1; }
+          .alloflow-reading-tools-label { font-size: 11px; font-weight: 700; color: #556070; text-transform: uppercase; letter-spacing: 0.06em; padding: 0 10px; align-self: center; background: #f1f5f9; border-right: 1px solid #cbd5e1; }
           .alloflow-rt-select { min-width: 150px; max-width: 220px; border: 0; background: transparent; color: #334155; padding: 6px 28px 6px 10px; font: 600 12px system-ui,-apple-system,sans-serif; cursor: pointer; }
           .alloflow-rt-select:focus-visible { outline: 2px solid #6366f1; outline-offset: -2px; }
           .alloflow-rt-btn { padding: 6px 12px; font-size: 12px; font-weight: 600; background: transparent; color: #334155; border: 0; border-left: 1px solid #cbd5e1; cursor: pointer; transition: background 0.15s, color 0.15s; font-family: inherit; }
@@ -53112,7 +53404,7 @@ function projectStudentGuideData(data, mode) {
           .alloflow-rt-btn:disabled:hover { background: transparent; }
           /* Current text size, so a reader can see the step change and can tell
              the end of the scale from a dead button. */
-          .alloflow-rt-readout { padding: 6px 8px; font: 700 11px/1 system-ui,-apple-system,sans-serif; color: #334155; background: #eef2ff; border-left: 1px solid #cbd5e1; align-self: stretch; display: flex; align-items: center; min-width: 44px; justify-content: center; font-variant-numeric: tabular-nums; }
+          .alloflow-rt-readout { padding: 6px 8px; font: 700 12px/1 system-ui,-apple-system,sans-serif; color: #334155; background: #eef2ff; border-left: 1px solid #cbd5e1; align-self: stretch; display: flex; align-items: center; min-width: 44px; justify-content: center; font-variant-numeric: tabular-nums; }
           html[data-alloflow-theme="dark"] .alloflow-rt-readout { background: #312e81; color: #e0e7ff; border-left-color: #475569; }
           html[data-alloflow-theme="sepia"] .alloflow-rt-readout { background: #ede0c4; color: #5b4636; border-left-color: #d4c5a0; }
           html[data-alloflow-theme="hc"] .alloflow-rt-readout { background: #ffffff; color: #000000; border-left: 2px solid #000000; }
@@ -53153,9 +53445,9 @@ function projectStudentGuideData(data, mode) {
           }
           /* Real page-box margins repeat on every sheet; body padding does not reliably
              repeat after browser page fragmentation and can leave later pages edge-clipped. */
-          @page { margin: ${_printPageMargin}; }
+          @page { margin: ${_printPageMargin}; @bottom-right { content: counter(page) " / " counter(pages); font: 9pt system-ui, sans-serif; color: #475569; } }
           /* Skip-to-content link: reveal it when keyboard-focused. The link is hidden via an inline left:-9999px, so this override needs !important to beat the inline style. */
-          a.sr-only:focus { position: fixed !important; left: 8px !important; top: 8px !important; width: auto !important; height: auto !important; padding: 8px 14px !important; overflow: visible !important; background: #1e293b; color: #ffffff; border-radius: 6px; z-index: 100000; font: 600 14px/1.2 system-ui, -apple-system, sans-serif; }
+          a.sr-only:focus { clip: auto !important; clip-path: none !important; position: fixed !important; left: 8px !important; top: 8px !important; width: auto !important; height: auto !important; padding: 8px 14px !important; overflow: visible !important; background: #1e293b; color: #ffffff; border-radius: 6px; z-index: 100000; font: 600 14px/1.2 system-ui, -apple-system, sans-serif; }
 
           /* ─── Annotation color pickers (Tier 1 parity with in-app) ─── */
           .alloflow-anno-colors { display: none; align-items: center; gap: 6px; padding: 6px 12px 8px; border-bottom: 1px solid #e2e8f0; background: #fafbfc; }
@@ -53168,7 +53460,7 @@ function projectStudentGuideData(data, mode) {
           .alloflow-draw-active, .alloflow-draw-active * { -webkit-user-select: none; user-select: none; }
           .alloflow-draw-active { touch-action: none; cursor: crosshair; }
           #alloflow-draw-surface { position: absolute; inset: 0; pointer-events: none; z-index: 45; overflow: visible; }
-          .alloflow-anno-colors-label { font-size: 10px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
+          .alloflow-anno-colors-label { font-size: 11px; font-weight: 700; color: #64748b; text-transform: uppercase; letter-spacing: 0.06em; }
           .alloflow-anno-swatch { width: 22px; height: 22px; border-radius: 6px; cursor: pointer; transition: border-color 0.12s, box-shadow 0.12s; padding: 0; }
           .alloflow-anno-swatch:hover { border-color: #4f46e5; box-shadow: 0 0 0 2px #4f46e5; }
           .alloflow-anno-swatch[aria-pressed="true"] { border-color: #4f46e5; box-shadow: 0 0 0 2px #4f46e5; }
@@ -53178,9 +53470,12 @@ function projectStudentGuideData(data, mode) {
             .alloflow-tools-panel { display: none; max-height: 68vh; overflow: auto; background: rgba(255,255,255,0.98); border-bottom: 1px solid #cbd5e1; box-shadow: 0 8px 18px rgba(15,23,42,0.12); }
             .alloflow-reading-tools-shell.expanded .alloflow-tools-panel { display: block; }
             .alloflow-reading-tools { position: static; flex-direction: column; align-items: stretch; gap: 8px; border-bottom: 0; box-shadow: none; }
-            .alloflow-reading-tools-group { width: 100%; overflow-x: auto; }
-            .alloflow-reading-tools-label { min-width: 78px; }
-            .alloflow-rt-btn { white-space: nowrap; }
+            /* Every control stays on screen: a row wraps instead of scrolling sideways,
+               which hid High Contrast, Draw and Save with nothing to show they existed. */
+            .alloflow-reading-tools-group { display: flex; width: 100%; flex-wrap: wrap; overflow: hidden; }
+            .alloflow-reading-tools-label { min-width: 78px; align-self: stretch; display: flex; align-items: center; }
+            .alloflow-rt-btn { white-space: nowrap; flex: 1 1 auto; min-height: 40px; box-shadow: 0 -1px 0 #cbd5e1; }
+            .alloflow-rt-select { flex: 1 1 0; min-width: 150px; max-width: none; min-height: 40px; }
             .alloflow-anno-colors { position: static; overflow-x: auto; flex-wrap: nowrap; }
             .alloflow-anno-sb { top: auto; right: 0; left: 0; bottom: 0; width: auto; max-height: 72vh; border-radius: 16px 16px 0 0; box-shadow: 0 -10px 28px rgba(15,23,42,0.22); }
             .export-header { padding: 22px 20px !important; }
@@ -53189,8 +53484,8 @@ function projectStudentGuideData(data, mode) {
 
           /* ─── Inline note editor (Tier 1: replaces prompt()) ─── */
           .alloflow-note-editor { position: absolute; min-width: 200px; max-width: 280px; border-radius: 8px; box-shadow: 0 4px 14px rgba(15,23,42,0.18); z-index: 56; font-family: system-ui, -apple-system, sans-serif; pointer-events: auto; }
-          .alloflow-note-editor-header { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 4px 8px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; border-radius: 6px 6px 0 0; }
-          .alloflow-note-editor-btn { background: rgba(255,255,255,0.75); border: 0; padding: 1px 6px; border-radius: 3px; font-weight: 700; cursor: pointer; font-size: 10px; }
+          .alloflow-note-editor-header { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 4px 8px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; border-radius: 6px 6px 0 0; }
+          .alloflow-note-editor-btn { background: rgba(255,255,255,0.75); border: 0; padding: 1px 6px; border-radius: 3px; font-weight: 700; cursor: pointer; font-size: 12px; }
           .alloflow-note-editor-btn:hover { background: rgba(255,255,255,1); }
           .alloflow-note-editor textarea { width: 100%; min-height: 60px; padding: 6px 8px; font-size: 12px; resize: vertical; border: 0; background: transparent; outline: 2px solid transparent; outline-offset: 2px; font-family: inherit; box-sizing: border-box; } .alloflow-note-editor textarea:focus-visible { outline: 2px solid #4f46e5; outline-offset: 2px; }
 
@@ -53212,7 +53507,7 @@ function projectStudentGuideData(data, mode) {
           .alloflow-anno-pill:hover { background: #e2e8f0; }
           .alloflow-anno-pill.active { background: #4f46e5; color: white; }
           .alloflow-anno-sb-list { overflow-y: auto; flex: 1; padding: 4px; margin: 0; list-style: none; }
-          .alloflow-anno-empty { padding: 20px 12px; text-align: center; font-size: 11px; color: #6b7280; font-style: italic; }
+          .alloflow-anno-empty { padding: 20px 12px; text-align: center; font-size: 12px; color: #6b7280; font-style: italic; }
           .alloflow-anno-item { display: flex; align-items: stretch; justify-content: space-between; gap: 4px; padding: 2px 4px; margin-bottom: 2px; border-radius: 6px; transition: background 0.12s; border-left: 2px solid transparent; }
           .alloflow-anno-item.teacher { background: rgba(238,242,255,0.6); border-left-color: #818cf8; }
           .alloflow-anno-item.teacher:hover { background: #e0e7ff; }
@@ -53220,8 +53515,8 @@ function projectStudentGuideData(data, mode) {
           .alloflow-anno-item.student:hover { background: #fef3c7; }
           .alloflow-anno-item-body { appearance: none; flex: 1; min-width: 0; min-height: 44px; width: 100%; border: 0; border-radius: 6px; padding: 6px; background: transparent; color: inherit; cursor: pointer; text-align: left; font: inherit; }
           .alloflow-anno-item-text { display: block; font-weight: 500; color: #1e293b; font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-          .alloflow-anno-item-meta { display: block; font-size: 10px; color: #64748b; margin-top: 2px; }
-          .alloflow-anno-item-del { background: transparent; border: 0; color: #6b7280; cursor: pointer; padding: 4px; border-radius: 6px; font-size: 11px; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+          .alloflow-anno-item-meta { display: block; font-size: 12px; color: #64748b; margin-top: 2px; }
+          .alloflow-anno-item-del { background: transparent; border: 0; color: #6b7280; cursor: pointer; padding: 4px; border-radius: 6px; font-size: 12px; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
           .alloflow-anno-item-del:hover { color: #dc2626; background: #ffffff; }
           .alloflow-anno-sb-close:focus-visible, .alloflow-anno-pill:focus-visible, .alloflow-anno-item-body:focus-visible, .alloflow-anno-item-del:focus-visible { outline: 3px solid #4338ca; outline-offset: 2px; }
           /* absolute, not fixed: the open note belongs to the page, not to the
@@ -53229,7 +53524,7 @@ function projectStudentGuideData(data, mode) {
           .alloflow-note-popover { position: absolute; z-index: 100000; width: min(340px, calc(100% - 24px)); max-height: min(420px, calc(100vh - 32px)); overflow: auto; background: #ffffff; color: #1e293b; border: 1px solid #cbd5e1; border-radius: 10px; box-shadow: 0 14px 34px rgba(15,23,42,0.24); font-family: system-ui,-apple-system,sans-serif; }
           .alloflow-note-popover-header { display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 8px 12px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; font-size: 12px; font-weight: 800; color: #334155; }
           .alloflow-note-popover-body { padding: 12px; font-size: 14px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
-          .alloflow-note-popover-meta { padding: 0 12px 12px; font-size: 11px; color: #64748b; }
+          .alloflow-note-popover-meta { padding: 0 12px 12px; font-size: 12px; color: #64748b; }
           .alloflow-note-popover-close { border: 0; background: transparent; color: #64748b; border-radius: 6px; padding: 4px; cursor: pointer; font-weight: 800; min-width: 44px; min-height: 44px; display: inline-flex; align-items: center; justify-content: center; }
           .alloflow-note-popover-close:hover { color: #dc2626; background: #ffffff; }
           .alloflow-note-popover-close:focus-visible, .alloflow-anno-note:focus-visible { outline: 3px solid #4338ca !important; outline-offset: 3px; }
@@ -53354,6 +53649,10 @@ function projectStudentGuideData(data, mode) {
           html[data-alloflow-theme="dark"] .alloflow-tl-controls .alloflow-tl-check-btn { background: #4f46e5 !important; color: white !important; }
           html[data-alloflow-theme="dark"] .alloflow-tl-controls .alloflow-tl-reset-btn { background: #0f172a !important; color: #cbd5e1 !important; border-color: #334155 !important; }
           html[data-alloflow-theme="dark"] .alloflow-tl-results { color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-anchor-card { background-color: #fffdf8 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-note-cue { background: #1e293b !important; color: #e2e8f0 !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] [data-note-typing-space] { background: #0f172a !important; border: 1px solid #334155; }
+          html[data-alloflow-theme="dark"] [data-note-typing-space] > div:first-child { color: #cbd5e1 !important; }
           html[data-alloflow-theme="dark"] .alloflow-cs-strip { background: #1e293b !important; border-color: #475569 !important; color: #ffffff !important; }
           html[data-alloflow-theme="dark"] .alloflow-cs-strip:hover { border-color: #6366f1 !important; }
           html[data-alloflow-theme="dark"] .alloflow-cs-controls button { background: #334155 !important; color: #cbd5e1 !important; border-color: #475569 !important; }
@@ -53698,7 +53997,10 @@ function projectStudentGuideData(data, mode) {
             body[data-alloflow-output="worksheet"] .alloflow-worksheet-continuation-topic {
               flex: 2 1 240px;
               overflow-wrap: anywhere;
-            }
+            }${cfg.worksheetPagePerActivity ? `
+            /* Teacher option: each later student activity starts a new sheet (keeps the name strip with its activity). */
+            body[data-alloflow-output="worksheet"] .alloflow-resource-wrap:has(> .alloflow-worksheet-continuation) { break-before: page; page-break-before: always; }
+            body[data-alloflow-output="worksheet"] .alloflow-resource-wrap:has(> .alloflow-worksheet-continuation) > .alloflow-section-marker { margin-top: 4px !important; }` : ''}
             body[data-alloflow-output="worksheet"] :is(
               .venn-print-wrapper, .flowchart-print-wrapper, .ce-print-wrapper,
               .ps-print-wrapper, .tchart-print-wrapper, .fishbone-print-wrapper,
@@ -53830,7 +54132,7 @@ function projectStudentGuideData(data, mode) {
         </style>
       </head>
       <body${isWorksheet ? ' data-alloflow-output="worksheet"' : ''}${_teacherGuideOnly ? ' data-alloflow-teacher-print="compact"' : ''}${_wordWallEconomy ? ' data-alloflow-word-wall-print="economical"' : ''}>
-        <a href="#main-export-content" class="sr-only" style="position:absolute;left:-9999px;top:auto;width:1px;height:1px;overflow:hidden;z-index:100;">${_runtimeCopy.skipToContent}</a>
+        <a href="#main-export-content" class="sr-only" style="position:absolute;left:0;top:0;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;z-index:100;">${_runtimeCopy.skipToContent}</a>
         ${_brandHeaderHTML}
         <aside class="alloflow-reading-tools-shell expanded" aria-label="${_runtimeCopy.readingToolsLabel}">
         <noscript><style>.alloflow-reading-tools-shell{display:none !important;}</style></noscript>
@@ -53839,82 +54141,82 @@ function projectStudentGuideData(data, mode) {
         </button>
         <div id="alloflow-tools-panel" class="alloflow-tools-panel">
         <div class="alloflow-reading-tools">
-          <div class="alloflow-reading-tools-group" role="group" aria-label="Reading theme">
-            <span class="alloflow-reading-tools-label">Theme</span>
-            <button type="button" class="alloflow-rt-btn" data-rt-theme="light" aria-pressed="true" title="Light (teacher default)">☀ Light</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-theme="dark" aria-pressed="false" title="Dark mode">\u{1F319} Dark</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-theme="sepia" aria-pressed="false" title="Sepia (warm, low-glare)">\u{1F4DC} Sepia</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-theme="hc" aria-pressed="false" title="High Contrast (WCAG AAA)">◼ High Contrast</button>
+          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtThemeAria')}">
+            <span class="alloflow-reading-tools-label">${_rt('rtTheme')}</span>
+            <button type="button" class="alloflow-rt-btn" data-rt-theme="light" aria-pressed="true" title="${_rt('rtLightTitle')}">☀ ${_rt('rtLight')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-theme="dark" aria-pressed="false" title="${_rt('rtDarkTitle')}">\u{1F319} ${_rt('rtDark')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-theme="sepia" aria-pressed="false" title="${_rt('rtSepiaTitle')}">\u{1F4DC} ${_rt('rtSepia')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-theme="hc" aria-pressed="false" title="${_rt('rtHcTitle')}">◼ ${_rt('rtHighContrast')}</button>
           </div>
-          <div class="alloflow-reading-tools-group" role="group" aria-label="Font family">
-            <span class="alloflow-reading-tools-label">Font</span>
-            <select class="alloflow-rt-select" data-rt-font aria-label="Font family">
-              <optgroup label="Always available">
-                <option value="original">Original</option>
-                <option value="system">Sans</option>
-                <option value="readable">Readable (Verdana)</option>
-                <option value="humanist">Humanist (Tahoma)</option>
-                <option value="serif">Serif (Georgia)</option>
-                <option value="bookserif">Book serif (Palatino)</option>
-                <option value="rounded">Rounded (Trebuchet)</option>
-                <option value="dyslexic">Dyslexia-friendly (Comic Sans)</option>
-                <option value="mono">Monospace</option>
-              </optgroup>${_readerWebFontOptions}
+          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtFontAria')}">
+            <span class="alloflow-reading-tools-label">${_rt('rtFont')}</span>
+            <select class="alloflow-rt-select" data-rt-font aria-label="${_rt('rtFontAria')}">
+              <optgroup label="${_rt('rtFontAlways')}">
+                <option value="original">${_rt('rtFontOriginal')}</option>
+                <option value="system">${_rt('rtFontSans')}</option>
+                <option value="readable">${_rt('rtFontReadable')}</option>
+                <option value="humanist">${_rt('rtFontHumanist')}</option>
+                <option value="serif">${_rt('rtFontSerif')}</option>
+                <option value="bookserif">${_rt('rtFontBookSerif')}</option>
+                <option value="rounded">${_rt('rtFontRounded')}</option>
+                <option value="dyslexic">${_rt('rtFontDyslexia')}</option>
+                <option value="mono">${_rt('rtFontMono')}</option>
+              </optgroup>${_readerWebFontOptions.replace('label="This document"', () => 'label="' + _rt('rtFontThisDoc') + '"').replace('label="Needs internet"', () => 'label="' + _rt('rtFontInternet') + '"').replace(/>Document font \(([^<]*)\)</, (m, font) => '>' + _rt('rtFontDocument').replace('{font}', () => font) + '<')}
             </select>
           </div>
-          <div class="alloflow-reading-tools-group" role="group" aria-label="Text display">
-            <span class="alloflow-reading-tools-label">Text</span>
-            <button type="button" class="alloflow-rt-btn" data-rt-text="smaller" title="Smaller text" aria-label="Smaller text">A-</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-text="reset" title="Back to normal text size" aria-label="Back to normal text size">A</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-text="larger" title="Larger text" aria-label="Larger text">A+</button>
+          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtTextAria')}">
+            <span class="alloflow-reading-tools-label">${_rt('rtText')}</span>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="smaller" title="${_rt('rtSmaller')}" aria-label="${_rt('rtSmaller')}">A-</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="reset" title="${_rt('rtResetSize')}" aria-label="${_rt('rtResetSize')}">A</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="larger" title="${_rt('rtLarger')}" aria-label="${_rt('rtLarger')}">A+</button>
             <span class="alloflow-rt-readout" data-rt-text-readout role="status" aria-live="polite">100%</span>
-            <button type="button" class="alloflow-rt-btn" data-rt-text="spacing" title="Cycle line spacing" aria-label="Line spacing">Spacing</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-text="letter" title="Cycle letter spacing" aria-label="Letter spacing">Letter</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="spacing" title="${_rt('rtLineSpacingTitle')}" aria-label="${_rt('rtLineSpacing')}">${_rt('rtSpacing')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="letter" title="${_rt('rtLetterSpacingTitle')}" aria-label="${_rt('rtLetterSpacing')}">${_rt('rtLetter')}</button>
           </div>
-          <div class="alloflow-reading-tools-group" role="group" aria-label="Reading guide">
-            <span class="alloflow-reading-tools-label">Guide</span>
-            <button type="button" class="alloflow-rt-btn" data-rt-guide="off" aria-pressed="true" title="Turn reading guide off">Off</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-guide="line" aria-pressed="false" title="Line reader follows your pointer">Line</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-guide="focus" aria-pressed="false" title="Focus mask follows your pointer">Focus</button>
+          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtGuideAria')}">
+            <span class="alloflow-reading-tools-label">${_rt('rtGuide')}</span>
+            <button type="button" class="alloflow-rt-btn" data-rt-guide="off" aria-pressed="true" title="${_rt('rtGuideOffTitle')}">${_rt('rtOff')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-guide="line" aria-pressed="false" title="${_rt('rtGuideLineTitle')}">${_rt('rtLine')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-guide="focus" aria-pressed="false" title="${_rt('rtGuideFocusTitle')}">${_rt('rtFocus')}</button>
           </div>
-          <div class="alloflow-reading-tools-group" role="group" aria-label="Annotations">
-            <span class="alloflow-reading-tools-label">Annotate</span>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno="off" aria-pressed="true" title="Off">✖ Off</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno="note" aria-pressed="false" title="Add a sticky note">\u{1F4DD} Note</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno="highlight" aria-pressed="false" title="Highlight text">\u{1F58D} Highlight</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno="voice" aria-pressed="false" title="Voice note: click to start recording (max 60s, stays on your device)">\u{1F3A4} Voice</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno="draw" aria-pressed="false" title="Draw: press and drag to draw freehand on the page">\u{270F}️ Draw</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno-undo disabled style="opacity:0.4;cursor:not-allowed;" title="Undo last annotation (Ctrl/Cmd+Z)">\u{21A9} Undo</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno-clear="mine" disabled title="Erase everything you have marked on this page. Your teacher's marks stay.">\u{1F9F9} Erase my marks</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno-list aria-expanded="false" aria-controls="alloflow-annotation-sidebar" title="Show all annotations">\u{1F4CB} List</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno-download title="Download my annotations as JSON">\u{2B07} Save mine</button>
+          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtAnnoAria')}">
+            <span class="alloflow-reading-tools-label">${_rt('rtAnnotate')}</span>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="off" aria-pressed="true" title="${_rt('rtOff')}">✖ ${_rt('rtOff')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="note" aria-pressed="false" title="${_rt('rtNoteTitle')}">\u{1F4DD} ${_rt('rtNote')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="highlight" aria-pressed="false" title="${_rt('rtHighlightTitle')}">\u{1F58D} ${_rt('rtHighlight')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="voice" aria-pressed="false" title="${_rt('rtVoiceTitle')}">\u{1F3A4} ${_rt('rtVoice')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="draw" aria-pressed="false" title="${_rt('rtDrawTitle')}">\u{270F}️ ${_rt('rtDraw')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno-undo disabled style="opacity:0.4;cursor:not-allowed;" title="${_rt('rtUndoTitle')}">\u{21A9} ${_rt('rtUndo')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno-clear="mine" disabled title="${_rt('rtEraseMineTitle')}">\u{1F9F9} ${_rt('rtEraseMine')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno-list aria-expanded="false" aria-controls="alloflow-annotation-sidebar" title="${_rt('rtListTitle')}">\u{1F4CB} ${_rt('rtList')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno-download title="${_rt('rtSaveMineTitle')}">\u{2B07} ${_rt('rtSaveMine')}</button>
           </div>
         </div>
         <div class="alloflow-anno-colors alloflow-anno-colors-draw">
-          <span class="alloflow-anno-colors-label">Pen:</span>
-          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="red" aria-label="Red pen" aria-pressed="true" style="background:#dc2626;border:2px solid #dc2626;"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="blue" aria-label="Blue pen" aria-pressed="false" style="background:#2563eb;border:2px solid #2563eb;"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="green" aria-label="Green pen" aria-pressed="false" style="background:#16a34a;border:2px solid #16a34a;"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="yellow" aria-label="Yellow pen" aria-pressed="false" style="background:#ca8a04;border:2px solid #ca8a04;"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="black" aria-label="Black pen" aria-pressed="false" style="background:#111827;border:2px solid #111827;"></button>
-          <span class="alloflow-anno-colors-label" style="border-left:1px solid #cbd5e1;padding-left:10px;">Size:</span>
-          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="2" aria-pressed="false" title="Thin pen">Thin</button>
-          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="4" aria-pressed="true" title="Medium pen">Medium</button>
-          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="8" aria-pressed="false" title="Thick pen">Thick</button>
+          <span class="alloflow-anno-colors-label">${_rt('rtPen')}</span>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="red" aria-label="${_rt('rtPenRed')}" aria-pressed="true" style="background:#dc2626;border:2px solid #dc2626;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="blue" aria-label="${_rt('rtPenBlue')}" aria-pressed="false" style="background:#2563eb;border:2px solid #2563eb;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="green" aria-label="${_rt('rtPenGreen')}" aria-pressed="false" style="background:#16a34a;border:2px solid #16a34a;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="yellow" aria-label="${_rt('rtPenYellow')}" aria-pressed="false" style="background:#ca8a04;border:2px solid #ca8a04;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="black" aria-label="${_rt('rtPenBlack')}" aria-pressed="false" style="background:#111827;border:2px solid #111827;"></button>
+          <span class="alloflow-anno-colors-label" style="border-left:1px solid #cbd5e1;padding-left:10px;">${_rt('rtSize')}</span>
+          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="2" aria-pressed="false" title="${_rt('rtThinTitle')}">${_rt('rtThin')}</button>
+          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="4" aria-pressed="true" title="${_rt('rtMediumTitle')}">${_rt('rtMedium')}</button>
+          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="8" aria-pressed="false" title="${_rt('rtThickTitle')}">${_rt('rtThick')}</button>
         </div>
         <div class="alloflow-anno-colors alloflow-anno-colors-note">
-          <span class="alloflow-anno-colors-label">Note color:</span>
-          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="yellow" aria-label="Yellow note" aria-pressed="true" style="background:#fef9c3;border:2px solid #facc15;"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="green" aria-label="Green note" aria-pressed="false" style="background:#dcfce7;border:2px solid #4ade80;"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="blue" aria-label="Blue note" aria-pressed="false" style="background:#dbeafe;border:2px solid #60a5fa;"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="pink" aria-label="Pink note" aria-pressed="false" style="background:#fce7f3;border:2px solid #f472b6;"></button>
+          <span class="alloflow-anno-colors-label">${_rt('rtNoteColor')}</span>
+          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="yellow" aria-label="${_rt('rtNoteYellow')}" aria-pressed="true" style="background:#fef9c3;border:2px solid #facc15;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="green" aria-label="${_rt('rtNoteGreen')}" aria-pressed="false" style="background:#dcfce7;border:2px solid #4ade80;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="blue" aria-label="${_rt('rtNoteBlue')}" aria-pressed="false" style="background:#dbeafe;border:2px solid #60a5fa;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="pink" aria-label="${_rt('rtNotePink')}" aria-pressed="false" style="background:#fce7f3;border:2px solid #f472b6;"></button>
         </div>
         <div class="alloflow-anno-colors alloflow-anno-colors-hl">
-          <span class="alloflow-anno-colors-label">Highlight color:</span>
-          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="yellow" aria-label="Yellow highlight" aria-pressed="true" style="background:rgba(250,204,21,0.40);border:2px solid rgba(202,138,4,0.55);"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="green" aria-label="Green highlight" aria-pressed="false" style="background:rgba(74,222,128,0.38);border:2px solid rgba(22,163,74,0.55);"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="blue" aria-label="Blue highlight" aria-pressed="false" style="background:rgba(96,165,250,0.36);border:2px solid rgba(37,99,235,0.55);"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="pink" aria-label="Pink highlight" aria-pressed="false" style="background:rgba(244,114,182,0.36);border:2px solid rgba(219,39,119,0.55);"></button>
+          <span class="alloflow-anno-colors-label">${_rt('rtHighlightColor')}</span>
+          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="yellow" aria-label="${_rt('rtHlYellow')}" aria-pressed="true" style="background:rgba(250,204,21,0.40);border:2px solid rgba(202,138,4,0.55);"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="green" aria-label="${_rt('rtHlGreen')}" aria-pressed="false" style="background:rgba(74,222,128,0.38);border:2px solid rgba(22,163,74,0.55);"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="blue" aria-label="${_rt('rtHlBlue')}" aria-pressed="false" style="background:rgba(96,165,250,0.36);border:2px solid rgba(37,99,235,0.55);"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="pink" aria-label="${_rt('rtHlPink')}" aria-pressed="false" style="background:rgba(244,114,182,0.36);border:2px solid rgba(219,39,119,0.55);"></button>
         </div>
         </div>
         </aside>
@@ -53948,6 +54250,54 @@ function projectStudentGuideData(data, mode) {
                 return Object.prototype.hasOwnProperty.call(replacements, name) ? String(replacements[name]) : match;
               });
             };
+            // Printing shows a textarea's visible rows only, so print a full copy of each typed answer.
+            (function () {
+              function clearAnswerCopies() {
+                Array.prototype.forEach.call(document.querySelectorAll('.alloflow-print-answer'), function (node) { node.remove(); });
+                Array.prototype.forEach.call(document.querySelectorAll('.alloflow-print-mirrored'), function (node) { node.classList.remove('alloflow-print-mirrored'); });
+                // Fold-outs opened only for printing (FAQ answers) close again.
+                Array.prototype.forEach.call(document.querySelectorAll('details[data-alloflow-print-opened]'), function (node) { node.removeAttribute('data-alloflow-print-opened'); node.open = false; });
+              }
+              function copyAnswers() {
+                clearAnswerCopies();
+                Array.prototype.forEach.call(document.querySelectorAll('details.alloflow-faq-item:not([open])'), function (node) { node.setAttribute('data-alloflow-print-opened', ''); node.open = true; });
+                Array.prototype.forEach.call(document.querySelectorAll('img[loading="lazy"]'), function (img) { img.loading = 'eager'; });
+                Array.prototype.forEach.call(document.querySelectorAll('textarea'), function (ta) {
+                  if (!ta.value || !ta.value.trim() || ta.closest('.alloflow-note-editor, .alloflow-export-prompt-overlay, .alloflow-anno-confirm-backdrop')) return;
+                  var copy = document.createElement('div');
+                  copy.className = 'alloflow-print-answer';
+                  copy.setAttribute('aria-hidden', 'true');
+                  copy.textContent = ta.value;
+                  ta.classList.add('alloflow-print-mirrored');
+                  ta.insertAdjacentElement('afterend', copy);
+                });
+              }
+              window.addEventListener('beforeprint', copyAnswers);
+              window.addEventListener('afterprint', clearAnswerCopies);
+            })();
+            // A sandboxed frame (an LMS) can block a download with no error, so a framed page never
+            // claims the file was saved; it points to opening the page in its own tab instead.
+            window.__alloflowIsFramed = function () { try { return window.self !== window.top; } catch (e) { return true; } };
+            window.__alloflowDownloadHelp = function (near) {
+              if (!window.__alloflowIsFramed() || !near || !near.parentNode) return;
+              var help = document.getElementById('alloflow-download-help');
+              if (!help) {
+                help = document.createElement('p');
+                help.id = 'alloflow-download-help';
+                help.setAttribute('role', 'status');
+                help.style.cssText = 'margin:8px 0 0;font-size:max(12px,0.9em);color:inherit;';
+                var helpText = document.createElement('span');
+                helpText.textContent = window.__alloflowText('rtDownloadFramedHelp', 'If no file appeared, this page may be inside a system that blocks downloads. Open it in its own tab, then save again.') + ' ';
+                help.appendChild(helpText);
+                if (/^(https?|file):/i.test(String(window.location.href))) {
+                  var ownTab = document.createElement('a');
+                  ownTab.href = window.location.href; ownTab.target = '_blank'; ownTab.rel = 'noopener';
+                  ownTab.textContent = window.__alloflowText('rtOpenInOwnTab', 'Open this page in its own tab');
+                  help.appendChild(ownTab);
+                }
+              }
+              near.parentNode.insertBefore(help, near.nextSibling);
+            };
             window.__alloflowNotify = function (message, type) {
               try {
                 if (window.AlloFlowUX && typeof window.AlloFlowUX.toast === 'function') {
@@ -53963,7 +54313,7 @@ function projectStudentGuideData(data, mode) {
                 notice.setAttribute('aria-live', isError ? 'assertive' : 'polite');
                 notice.setAttribute('aria-atomic', 'true');
                 notice.textContent = String(message || '');
-                notice.style.cssText = 'position:fixed;left:50%;bottom:24px;transform:translateX(-50%);max-width:min(36rem,calc(100vw - 32px));padding:12px 18px;border-radius:10px;background:' + (isError ? '#991b1b' : '#1e293b') + ';color:#fff;font:600 14px/1.45 system-ui,sans-serif;box-shadow:0 8px 24px rgba(15,23,42,.35);z-index:100001;';
+                notice.style.cssText = 'position:fixed;left:16px;right:16px;bottom:24px;margin:0 auto;box-sizing:border-box;width:fit-content;max-width:min(36rem,calc(100vw - 32px));padding:12px 18px;border-radius:10px;background:' + (isError ? '#991b1b' : '#1e293b') + ';color:#fff;font:600 14px/1.45 system-ui,sans-serif;box-shadow:0 8px 24px rgba(15,23,42,.35);z-index:100001;';
                 document.body.appendChild(notice);
                 setTimeout(function () { try { notice.remove(); } catch (e) {} }, 6000);
               } catch (e) {}
@@ -53979,6 +54329,7 @@ function projectStudentGuideData(data, mode) {
                   return { el: el, hadInert: el.hasAttribute('inert'), ariaHidden: el.getAttribute('aria-hidden') };
                 });
                 var overlay = document.createElement('div');
+                overlay.className = 'alloflow-export-prompt-overlay';
                 overlay.setAttribute('role', 'presentation');
                 overlay.style.cssText = 'position:fixed;inset:0;z-index:100002;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:20px;';
                 var dialog = document.createElement('div');
@@ -53987,7 +54338,7 @@ function projectStudentGuideData(data, mode) {
                 dialog.className = 'alloflow-export-prompt';
                 dialog.setAttribute('aria-labelledby', idBase + '-title');
                 dialog.setAttribute('aria-describedby', idBase + '-description ' + idBase + '-error');
-                dialog.style.cssText = 'width:min(32rem,100%);background:#fff;color:#0f172a;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.4);font-family:system-ui,sans-serif;';
+                dialog.style.cssText = 'box-sizing:border-box;width:min(32rem,100%);max-height:calc(100vh - 40px);overflow:auto;background:#fff;color:#0f172a;border-radius:14px;padding:22px;box-shadow:0 24px 64px rgba(0,0,0,.4);font-family:system-ui,sans-serif;';
                 var title = document.createElement('h2');
                 title.id = idBase + '-title';
                 title.textContent = String(options.title || 'Enter information');
@@ -54014,7 +54365,7 @@ function projectStudentGuideData(data, mode) {
                 error.hidden = true;
                 error.style.cssText = 'margin:8px 0 0;color:#991b1b;font-weight:700;';
                 var actions = document.createElement('div');
-                actions.style.cssText = 'display:flex;justify-content:flex-end;gap:10px;margin-top:20px;';
+                actions.style.cssText = 'display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;margin-top:20px;';
                 var cancel = document.createElement('button');
                 cancel.type = 'button';
                 cancel.textContent = String(options.cancelLabel || 'Cancel');
@@ -54027,7 +54378,12 @@ function projectStudentGuideData(data, mode) {
                 form.appendChild(label); form.appendChild(input); form.appendChild(error); form.appendChild(actions);
                 dialog.appendChild(title); dialog.appendChild(description); dialog.appendChild(form); overlay.appendChild(dialog);
                 document.body.appendChild(overlay);
-                blocked.forEach(function (entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+                // Markers let a copy of this live page (Builder download/package) undo the block.
+                blocked.forEach(function (entry) {
+                  if (!entry.hadInert) entry.el.setAttribute('data-alloflow-prompt-inert', '');
+                  entry.el.setAttribute('data-alloflow-prompt-aria', entry.ariaHidden == null ? '-' : entry.ariaHidden);
+                  entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true');
+                });
                 var settled = false;
                 function finish(value) {
                   if (settled) return;
@@ -54037,6 +54393,7 @@ function projectStudentGuideData(data, mode) {
                   blocked.forEach(function (entry) {
                     if (!entry.hadInert) entry.el.removeAttribute('inert');
                     if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden'); else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+                    entry.el.removeAttribute('data-alloflow-prompt-inert'); entry.el.removeAttribute('data-alloflow-prompt-aria');
                   });
                   try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
                   resolve(value);
@@ -54091,6 +54448,30 @@ function projectStudentGuideData(data, mode) {
                 // one-time workspace used when a learner declines autosave.
                 if (window.__alloflowPrintExport === true) {
                   workspacePromise = Promise.resolve(publish('', false));
+                  return workspacePromise;
+                }
+                // The teacher's Builder preview runs this page too; it is not a learner session.
+                var inBuilderPreview = false;
+                try { inBuilderPreview = !!(window.frameElement && window.frameElement.id === 'document-builder-preview'); } catch (e) {}
+                if (inBuilderPreview) {
+                  workspacePromise = Promise.resolve(publish('', false));
+                  return workspacePromise;
+                }
+                // Private browsing or a sandboxed frame can refuse storage. Autosave would then keep
+                // nothing, so it is not offered and the page says how to keep the work.
+                var storageWorks = false;
+                try { window.localStorage.setItem('alloflow-storage-probe', '1'); window.localStorage.removeItem('alloflow-storage-probe'); storageWorks = true; } catch (e) {}
+                if (!storageWorks) {
+                  workspacePromise = Promise.resolve(publish('', false));
+                  try {
+                    var storageNote = document.createElement('p');
+                    storageNote.className = 'alloflow-storage-note';
+                    storageNote.setAttribute('role', 'status');
+                    storageNote.style.cssText = 'margin:8px auto;max-width:900px;padding:10px 14px;border:2px solid #b45309;border-radius:8px;background:#fffbeb;color:#78350f;font-weight:600;';
+                    storageNote.textContent = window.__alloflowText('rtNoStorage', 'This browser will not keep your work on this device. Use Save my answers before you close the page.');
+                    var storageHost = document.querySelector('main') || document.body;
+                    storageHost.insertBefore(storageNote, storageHost.firstChild);
+                  } catch (e) {}
                   return workspacePromise;
                 }
                 var linkedNickname = '';
@@ -54151,7 +54532,14 @@ function projectStudentGuideData(data, mode) {
             };
             var CONTROLS = 'textarea, select, button, input:not([type]), input[type="text"], input[type="number"], input[type="search"], input[type="email"], input[type="url"], input[type="tel"]';
             var CHROME = 'svg, script, style, .ka-on, .alloflow-reading-tools-shell, .alloflow-anno-sb, .alloflow-note-popover, .alloflow-note-editor, .alloflow-anno-confirm-backdrop';
+            // A color or background that is still fading reads as its OLD value, so the
+            // check would ink text against the previous theme's surface (glossary rows
+            // went dark-on-dark). Transitions are held off for the length of the check.
             function inkGuard() {
+              root.classList.add('alloflow-ink-measuring');
+              try { inkScan(); } finally { root.classList.remove('alloflow-ink-measuring'); }
+            }
+            function inkScan() {
               var marked = document.querySelectorAll('[data-allo-ink]');
               for (var m = 0; m < marked.length; m++) marked[m].removeAttribute('data-allo-ink');
               var active = root.getAttribute('data-alloflow-theme');
@@ -54273,7 +54661,38 @@ function projectStudentGuideData(data, mode) {
                 } catch (e) { setExpanded(true, false); }
               }
               toggle.addEventListener('click', function () { setExpanded(!shell.classList.contains('expanded'), true); });
+              var syncBarHeight = function () {
+                document.documentElement.style.setProperty('--alloflow-tools-h', (shell.offsetHeight ? shell.offsetHeight + 8 : 0) + 'px');
+              };
+              syncBarHeight();
+              if (typeof ResizeObserver === 'function') new ResizeObserver(syncBarHeight).observe(shell);
+              else window.addEventListener('resize', syncBarHeight);
             }
+          })();
+        </script>
+        <script>
+          // Venn diagrams are drawn at a fixed 720px. Fit each one to its box: shrink
+          // while the labels stay readable, otherwise stack the three regions.
+          (function () {
+            function fit(viewport) {
+              var visual = viewport.querySelector('.venn-visual');
+              var wide = viewport.clientWidth;
+              if (!visual || !wide) return;
+              var scale = Math.min(1, wide / 720);
+              var stacked = scale < 0.72;
+              viewport.classList.toggle('venn-stacked', stacked);
+              if (stacked || scale >= 1) visual.style.removeProperty('--venn-fit');
+              else visual.style.setProperty('--venn-fit', String(Math.floor(scale * 1000) / 1000));
+            }
+            function start() {
+              var viewports = document.querySelectorAll('.venn-visual-viewport');
+              for (var i = 0; i < viewports.length; i++) {
+                fit(viewports[i]);
+                if (typeof ResizeObserver === 'function') new ResizeObserver((function (v) { return function () { fit(v); }; })(viewports[i])).observe(viewports[i]);
+              }
+              if (viewports.length && typeof ResizeObserver !== 'function') window.addEventListener('resize', function () { for (var j = 0; j < viewports.length; j++) fit(viewports[j]); });
+            }
+            if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start); else start();
           })();
         </script>
         <script>
@@ -54345,6 +54764,8 @@ function projectStudentGuideData(data, mode) {
               }
               // A font or spacing chosen here replaces the exporter's reading settings.
               document.documentElement.toggleAttribute('data-rt-custom', st.l !== 0 || st.c !== 0 || (st.f !== 'original' && st.f !== 'document'));
+              // Blocks with their own face (passage, math) give way to a font the reader picked.
+              document.documentElement.toggleAttribute('data-rt-font-set', !!FONTS[st.f]);
               var fontSel = document.querySelector('[data-rt-font]');
               if (fontSel && fontSel.value !== st.f) fontSel.value = st.f;
               var largeText = (SCALES[st.s] || 1) >= 1.3;
@@ -54523,7 +54944,7 @@ function projectStudentGuideData(data, mode) {
               if (!btn) return;
               btn.textContent = label;
               btn.setAttribute('aria-pressed', pressed ? 'true' : 'false');
-              btn.setAttribute('aria-label', label.replace(/[^\w\s-]/g, '').trim() || 'Read aloud');
+              btn.setAttribute('aria-label', label.replace(/[^\w\s-]/g, '').trim() || (window.__alloflowText ? window.__alloflowText('rtReadAloud', 'Read aloud') : 'Read aloud'));
             }
             function findAudioBox(id) {
               var boxes = document.querySelectorAll('.allo-ka-audios');
@@ -54544,7 +54965,7 @@ function projectStudentGuideData(data, mode) {
               stopBtn.type = 'button';
               stopBtn.className = 'allo-ka-stop';
               stopBtn.setAttribute('data-ka-for', id);
-              stopBtn.setAttribute('aria-label', 'Stop read aloud');
+              stopBtn.setAttribute('aria-label', (window.__alloflowText ? window.__alloflowText('rtStopReadAloud', 'Stop read aloud') : 'Stop read aloud'));
               stopBtn.style.cssText = btn.style.cssText || '';
               stopBtn.style.marginLeft = '8px';
               stopBtn.textContent = "\u23F9 Stop";
@@ -54604,7 +55025,7 @@ function projectStudentGuideData(data, mode) {
                 var text = (sp.textContent || '').trim();
                 if (!text) { step(state, i + 1); return; }
                 if (!window.speechSynthesis || typeof SpeechSynthesisUtterance === 'undefined') {
-                  window.__alloflowNotify('Browser read-aloud is not available here.', 'error');
+                  window.__alloflowNotify((window.__alloflowText ? window.__alloflowText('rtNoReadAloud', 'Browser read-aloud is not available here.') : 'Browser read-aloud is not available here.'), 'error');
                   stop();
                   return;
                 }
@@ -55136,8 +55557,8 @@ function projectStudentGuideData(data, mode) {
             }
             function buildTitle(a) {
               var parts = [];
-              if (a.author === 'teacher') parts.push('Teacher feedback');
-              else if (a.author === 'student') parts.push(a.authorName || 'You');
+              if (a.author === 'teacher') parts.push((window.__alloflowText ? window.__alloflowText('rtTeacherFeedback', 'Teacher feedback') : 'Teacher feedback'));
+              else if (a.author === 'student') parts.push(a.authorName || (window.__alloflowText ? window.__alloflowText('rtYou', 'You') : 'You'));
               if (a.createdAt) {
                 try {
                   var d = new Date(a.createdAt);
@@ -55171,11 +55592,11 @@ function projectStudentGuideData(data, mode) {
               header.className = 'alloflow-note-popover-header';
               var label = document.createElement('span');
               label.id = 'alloflow-annotation-note-title';
-              label.textContent = a && a.author === 'teacher' ? 'Teacher note' : 'Your note';
+              label.textContent = a && a.author === 'teacher' ? (window.__alloflowText ? window.__alloflowText('rtTeacherNote', 'Teacher note') : 'Teacher note') : (window.__alloflowText ? window.__alloflowText('rtYourNote', 'Your note') : 'Your note');
               var close = document.createElement('button');
               close.type = 'button';
               close.className = 'alloflow-note-popover-close';
-              close.setAttribute('aria-label', 'Close note');
+              close.setAttribute('aria-label', (window.__alloflowText ? window.__alloflowText('rtCloseNote', 'Close note') : 'Close note'));
               close.textContent = '×';
               close.addEventListener('click', function (ev) { ev.stopPropagation(); closeNotePopover(true); });
               header.appendChild(label);
@@ -55310,7 +55731,8 @@ function projectStudentGuideData(data, mode) {
                 note.style.cssText = 'appearance:none;position:absolute;top:' + (a.y - 22) + 'px;left:' + (a.x - 22) + 'px;width:44px;height:44px;padding:0;background:' + palette.fill + ';border:2px solid ' + palette.border + ';color:' + palette.text + ';border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;z-index:50;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.15);touch-action:none;';
                 note.textContent = '📝';
                 note.title = (a.content ? '"' + a.content + '" — ' : '') + buildTitle(a);
-                note.setAttribute('aria-label', 'Sticky note: ' + (a.content || '(empty)') + ' from ' + buildTitle(a));
+                var noteBody = a.content || (window.__alloflowText ? window.__alloflowText('rtEmptyNote', '(empty)') : '(empty)'), noteWho = buildTitle(a);
+                note.setAttribute('aria-label', noteWho ? (window.__alloflowText ? window.__alloflowText('rtStickyNoteFrom', 'Sticky note from {author}: {content}', { author: noteWho, content: noteBody }) : 'Sticky note from ' + noteWho + ': ' + noteBody) : (window.__alloflowText ? window.__alloflowText('rtStickyNote', 'Sticky note: {content}', { content: noteBody }) : 'Sticky note: ' + noteBody));
                 note.setAttribute('aria-haspopup', 'dialog');
                 note.setAttribute('aria-expanded', 'false');
                 note.setAttribute('aria-controls', 'alloflow-annotation-note-popover');
@@ -55349,7 +55771,8 @@ function projectStudentGuideData(data, mode) {
                 voiceWrap.title = buildTitle(a) + (dur ? ' • ' + dur : '');
                 voiceWrap.setAttribute('role', 'button');
                 voiceWrap.setAttribute('tabindex', '0');
-                voiceWrap.setAttribute('aria-label', 'Voice note from ' + buildTitle(a) + (dur ? ', ' + dur : ''));
+                var voiceWho = buildTitle(a);
+                voiceWrap.setAttribute('aria-label', (voiceWho ? (window.__alloflowText ? window.__alloflowText('rtVoiceNoteFrom', 'Voice note from {author}', { author: voiceWho }) : 'Voice note from ' + voiceWho) : (window.__alloflowText ? window.__alloflowText('rtVoiceNote', 'Voice note') : 'Voice note')) + (dur ? ', ' + dur : ''));
                 var collapsed = document.createElement('div');
                 collapsed.style.cssText = 'width:28px;height:28px;background:white;border:2px solid ' + accent + ';color:' + accent + ';border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.15);';
                 collapsed.textContent = '🎤';
@@ -55365,13 +55788,13 @@ function projectStudentGuideData(data, mode) {
                       expanded = document.createElement('div');
                       expanded.style.cssText = 'min-width:240px;max-width:320px;background:white;border:2px solid ' + accent + ';border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,0.15);padding:0;';
                       var hdr = document.createElement('div');
-                      hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;background:' + accent + ';color:white;font-size:10px;font-weight:bold;text-transform:uppercase;letter-spacing:0.04em;border-radius:6px 6px 0 0;';
-                      hdr.innerHTML = '<span>🎤 ' + (isT ? 'Teacher voice note' : esc(a.authorName || 'Voice note')) + (dur ? ' • ' + dur : '') + '</span>';
+                      hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;gap:6px;padding:4px 8px;background:' + accent + ';color:white;font-size:12px;font-weight:bold;text-transform:uppercase;letter-spacing:0.04em;border-radius:6px 6px 0 0;';
+                      hdr.innerHTML = '<span>🎤 ' + (isT ? esc((window.__alloflowText ? window.__alloflowText('rtTeacherVoiceNote', 'Teacher voice note') : 'Teacher voice note')) : esc(a.authorName || (window.__alloflowText ? window.__alloflowText('rtVoiceNote', 'Voice note') : 'Voice note'))) + (dur ? ' • ' + dur : '') + '</span>';
                       var closeBtn = document.createElement('button');
                       closeBtn.type = 'button';
                       closeBtn.textContent = '✓';
-                      closeBtn.style.cssText = 'background:rgba(255,255,255,0.7);border:0;color:' + accent + ';padding:1px 6px;border-radius:3px;font-weight:bold;cursor:pointer;font-size:10px;';
-                      closeBtn.setAttribute('aria-label', 'Close voice note');
+                      closeBtn.style.cssText = 'background:rgba(255,255,255,0.7);border:0;color:' + accent + ';padding:1px 6px;border-radius:3px;font-weight:bold;cursor:pointer;font-size:12px;';
+                      closeBtn.setAttribute('aria-label', (window.__alloflowText ? window.__alloflowText('rtCloseVoiceNote', 'Close voice note') : 'Close voice note'));
                       closeBtn.addEventListener('click', function (ev) { ev.stopPropagation(); togglePlayer(); });
                       hdr.appendChild(closeBtn);
                       expanded.appendChild(hdr);
@@ -55444,7 +55867,8 @@ function projectStudentGuideData(data, mode) {
                 pathEl.setAttribute('stroke-linejoin', 'round');
                 svg.appendChild(pathEl);
                 svg.setAttribute('role', 'img');
-                svg.setAttribute('aria-label', 'Drawing from ' + (buildTitle(a) || 'a reader'));
+                var drawWho = buildTitle(a);
+                svg.setAttribute('aria-label', drawWho ? (window.__alloflowText ? window.__alloflowText('rtDrawingFrom', 'Drawing from {author}', { author: drawWho }) : 'Drawing from ' + drawWho) : (window.__alloflowText ? window.__alloflowText('rtDrawing', 'Drawing') : 'Drawing'));
                 return svg;
               }
               return null;
@@ -55486,8 +55910,8 @@ function projectStudentGuideData(data, mode) {
               var n = studentAnno.length;
               btn.disabled = n === 0;
               btn.title = n === 0
-                ? 'Nothing to erase yet. Your highlights, notes and drawings will show up here.'
-                : 'Erase all ' + n + ' of your own marks on this page. Your teacher’s marks stay.';
+                ? (window.__alloflowText ? window.__alloflowText('rtEraseNothing', 'Nothing to erase yet. Your highlights, notes and drawings will show up here.') : 'Nothing to erase yet. Your highlights, notes and drawings will show up here.')
+                : (n === 1 ? (window.__alloflowText ? window.__alloflowText('rtEraseOne', 'Erase your 1 mark on this page. Your teacher’s marks stay.') : 'Erase your 1 mark on this page. Your teacher’s marks stay.') : (window.__alloflowText ? window.__alloflowText('rtEraseCount', 'Erase all {count} of your own marks on this page. Your teacher’s marks stay.', { count: n }) : 'Erase all ' + n + ' of your own marks on this page. Your teacher’s marks stay.'));
             }
 
             // Re-anchor and redraw after anything that reflows the document.
@@ -55571,8 +55995,8 @@ function projectStudentGuideData(data, mode) {
               if (mode === 'note' || mode === 'highlight') {
                 host.setAttribute('tabindex', '0');
                 host.setAttribute('aria-label', mode === 'note'
-                  ? 'Note tool active. Press Enter here to add a note.'
-                  : 'Highlight tool active. Select text, then press Enter to highlight it.');
+                  ? (window.__alloflowText ? window.__alloflowText('rtNoteToolActive', 'Note tool active. Press Enter here to add a note.') : 'Note tool active. Press Enter here to add a note.')
+                  : (window.__alloflowText ? window.__alloflowText('rtHighlightToolActive', 'Highlight tool active. Select text, then press Enter to highlight it.') : 'Highlight tool active. Select text, then press Enter to highlight it.'));
               } else {
                 host.removeAttribute('tabindex');
                 host.removeAttribute('aria-label');
@@ -55694,8 +56118,8 @@ function projectStudentGuideData(data, mode) {
                     '<div class="alloflow-voice-bar" style="height:100%;background:#dc2626;width:0%;transition:width 0.2s;"></div>' +
                   '</div>' +
                   '<div style="display:flex;justify-content:flex-end;gap:6px;margin-top:8px;">' +
-                    '<button type="button" data-rt-voice-cancel style="padding:4px 10px;border:0;border-radius:4px;font-size:11px;font-weight:bold;background:#f1f5f9;color:#334155;cursor:pointer;">Cancel</button>' +
-                    '<button type="button" data-rt-voice-stop style="padding:4px 12px;border:0;border-radius:4px;font-size:11px;font-weight:bold;background:#dc2626;color:white;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">' +
+                    '<button type="button" data-rt-voice-cancel style="padding:4px 10px;border:0;border-radius:4px;font-size:12px;font-weight:bold;background:#f1f5f9;color:#334155;cursor:pointer;">Cancel</button>' +
+                    '<button type="button" data-rt-voice-stop style="padding:4px 12px;border:0;border-radius:4px;font-size:12px;font-weight:bold;background:#dc2626;color:white;cursor:pointer;display:inline-flex;align-items:center;gap:4px;">' +
                       '<span style="display:inline-block;width:8px;height:8px;background:white;"></span> Stop' +
                     '</button>' +
                   '</div>' +
@@ -55729,7 +56153,7 @@ function projectStudentGuideData(data, mode) {
             function startVoiceAt(x, y) {
               if (voiceRec) return; // already recording
               if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-                window.__alloflowNotify('Voice recording is not supported in this browser.', 'error');
+                window.__alloflowNotify((window.__alloflowText ? window.__alloflowText('rtVoiceUnsupportedBrowser', 'Voice recording is not supported in this browser.') : 'Voice recording is not supported in this browser.'), 'error');
                 return;
               }
               snapshot();
@@ -55757,7 +56181,7 @@ function projectStudentGuideData(data, mode) {
                   studentAnno = studentAnno.filter(function (a) { return a && a.id !== id; });
                   saveStudent();
                   render();
-                  window.__alloflowNotify('Voice recording is not supported on this device.', 'error');
+                  window.__alloflowNotify((window.__alloflowText ? window.__alloflowText('rtVoiceUnsupportedDevice', 'Voice recording is not supported on this device.') : 'Voice recording is not supported on this device.'), 'error');
                   return;
                 }
                 voiceChunks = [];
@@ -55771,7 +56195,7 @@ function projectStudentGuideData(data, mode) {
                 studentAnno = studentAnno.filter(function (a) { return a && a.id !== id; });
                 saveStudent();
                 render();
-                window.__alloflowNotify('Microphone access was denied. Allow microphone access in your browser settings to record voice notes.', 'error');
+                window.__alloflowNotify((window.__alloflowText ? window.__alloflowText('rtMicDenied', 'Microphone access was denied. Allow microphone access in your browser settings to record voice notes.') : 'Microphone access was denied. Allow microphone access in your browser settings to record voice notes.'), 'error');
               });
             }
 
@@ -55791,7 +56215,7 @@ function projectStudentGuideData(data, mode) {
                       cleanupVoice();
                       saveStudent();
                       render();
-                      window.__alloflowNotify('Voice note too long to save (over 500KB). Try a shorter clip.', 'error');
+                      window.__alloflowNotify((window.__alloflowText ? window.__alloflowText('rtVoiceTooLong', 'Voice note too long to save (over 500KB). Try a shorter clip.') : 'Voice note too long to save (over 500KB). Try a shorter clip.'), 'error');
                       return;
                     }
                     if (!b64) {
@@ -55800,7 +56224,7 @@ function projectStudentGuideData(data, mode) {
                       cleanupVoice();
                       saveStudent();
                       render();
-                      window.__alloflowNotify('Voice recording was empty.', 'error');
+                      window.__alloflowNotify((window.__alloflowText ? window.__alloflowText('rtVoiceEmpty', 'Voice recording was empty.') : 'Voice recording was empty.'), 'error');
                       return;
                     }
                     // Attach audio to the placeholder.
@@ -55880,22 +56304,22 @@ function projectStudentGuideData(data, mode) {
               saveBtn.className = 'alloflow-note-editor-btn';
               saveBtn.style.color = palette.text;
               saveBtn.textContent = '✓';
-              saveBtn.setAttribute('aria-label', 'Save note');
-              saveBtn.title = 'Save & close';
+              saveBtn.setAttribute('aria-label', (window.__alloflowText ? window.__alloflowText('rtSaveNote', 'Save note') : 'Save note'));
+              saveBtn.title = (window.__alloflowText ? window.__alloflowText('rtSaveClose', 'Save and close') : 'Save and close');
               var delBtn = document.createElement('button');
               delBtn.type = 'button';
               delBtn.className = 'alloflow-note-editor-btn';
               delBtn.style.color = palette.text;
               delBtn.textContent = '✕';
-              delBtn.setAttribute('aria-label', 'Delete note');
-              delBtn.title = 'Delete';
+              delBtn.setAttribute('aria-label', (window.__alloflowText ? window.__alloflowText('rtDeleteNote', 'Delete note') : 'Delete note'));
+              delBtn.title = (window.__alloflowText ? window.__alloflowText('rtDelete', 'Delete') : 'Delete');
               btns.appendChild(saveBtn);
               btns.appendChild(delBtn);
               hdr.appendChild(btns);
               editor.appendChild(hdr);
               var ta = document.createElement('textarea');
               ta.placeholder = 'Type your note…';
-              ta.setAttribute('aria-label', 'Note content');
+              ta.setAttribute('aria-label', (window.__alloflowText ? window.__alloflowText('rtNoteContent', 'Note content') : 'Note content'));
               ta.style.color = palette.text;
               editor.appendChild(ta);
               // Stop click propagation so clicks inside editor don't drop a new note
@@ -56170,7 +56594,7 @@ function projectStudentGuideData(data, mode) {
                 dialog.setAttribute('aria-describedby', 'alloflow-anno-confirm-description');
                 var title = document.createElement('h2');
                 title.id = 'alloflow-anno-confirm-title';
-                title.textContent = String((options && options.title) || 'Please confirm');
+                title.textContent = String((options && options.title) || (window.__alloflowText ? window.__alloflowText('rtConfirmTitle', 'Please confirm') : 'Please confirm'));
                 var description = document.createElement('p');
                 description.id = 'alloflow-anno-confirm-description';
                 description.textContent = String((options && options.description) || '');
@@ -56179,11 +56603,11 @@ function projectStudentGuideData(data, mode) {
                 var cancel = document.createElement('button');
                 cancel.type = 'button';
                 cancel.className = 'alloflow-anno-confirm-btn alloflow-anno-confirm-cancel';
-                cancel.textContent = String((options && options.cancelLabel) || 'Cancel');
+                cancel.textContent = String((options && options.cancelLabel) || (window.__alloflowText ? window.__alloflowText('cancel', 'Cancel') : 'Cancel'));
                 var confirm = document.createElement('button');
                 confirm.type = 'button';
                 confirm.className = 'alloflow-anno-confirm-btn alloflow-anno-confirm-delete';
-                confirm.textContent = String((options && options.confirmLabel) || 'Continue');
+                confirm.textContent = String((options && options.confirmLabel) || (window.__alloflowText ? window.__alloflowText('rtContinue', 'Continue') : 'Continue'));
                 actions.appendChild(cancel);
                 actions.appendChild(confirm);
                 dialog.appendChild(title);
@@ -56191,7 +56615,12 @@ function projectStudentGuideData(data, mode) {
                 dialog.appendChild(actions);
                 overlay.appendChild(dialog);
                 document.body.appendChild(overlay);
-                blocked.forEach(function (entry) { entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true'); });
+                // Markers let a copy of this live page (Builder download/package) undo the block.
+                blocked.forEach(function (entry) {
+                  if (!entry.hadInert) entry.el.setAttribute('data-alloflow-prompt-inert', '');
+                  entry.el.setAttribute('data-alloflow-prompt-aria', entry.ariaHidden == null ? '-' : entry.ariaHidden);
+                  entry.el.setAttribute('inert', ''); entry.el.setAttribute('aria-hidden', 'true');
+                });
                 var settled = false;
                 function finish(accepted) {
                   if (settled) return;
@@ -56201,6 +56630,7 @@ function projectStudentGuideData(data, mode) {
                   blocked.forEach(function (entry) {
                     if (!entry.hadInert) entry.el.removeAttribute('inert');
                     if (entry.ariaHidden == null) entry.el.removeAttribute('aria-hidden'); else entry.el.setAttribute('aria-hidden', entry.ariaHidden);
+                    entry.el.removeAttribute('data-alloflow-prompt-inert'); entry.el.removeAttribute('data-alloflow-prompt-aria');
                   });
                   try { if (opener && opener.isConnected && typeof opener.focus === 'function') opener.focus(); } catch (e) {}
                   resolve(accepted === true);
@@ -56223,7 +56653,7 @@ function projectStudentGuideData(data, mode) {
             // teacher (manual workflow — student saves, emails/uploads file).
             function downloadStudentAnno() {
               if (studentAnno.length === 0) {
-                window.__alloflowNotify('No annotations to save yet — add a note or highlight first.', 'error');
+                window.__alloflowNotify((window.__alloflowText ? window.__alloflowText('rtNoAnnotations', 'No annotations to save yet — add a note or highlight first.') : 'No annotations to save yet — add a note or highlight first.'), 'error');
                 return;
               }
               var payload = {
@@ -56243,7 +56673,7 @@ function projectStudentGuideData(data, mode) {
                 document.body.removeChild(link);
                 setTimeout(function () { try { URL.revokeObjectURL(url); } catch (e) {} }, 1000);
               } catch (e) {
-                window.__alloflowNotify('Could not save annotations. Try a different browser.', 'error');
+                window.__alloflowNotify((window.__alloflowText ? window.__alloflowText('rtAnnoSaveFailed', 'Could not save annotations. Try a different browser.') : 'Could not save annotations. Try a different browser.'), 'error');
               }
             }
 
@@ -56297,9 +56727,11 @@ function projectStudentGuideData(data, mode) {
                 if (studentAnno.length === 0) { updateClearBtnState(); return; }
                 var shouldClear = await askAnnotationConfirmation({
                   opener: clearBtn,
-                  title: 'Remove all of your annotations?',
-                  description: 'This will permanently remove ' + studentAnno.length + (studentAnno.length === 1 ? ' note, highlight, sticker, or voice note. ' : ' notes, highlights, stickers, and voice notes. ') + 'Teacher annotations will stay.',
-                  confirmLabel: 'Remove my annotations'
+                  title: (window.__alloflowText ? window.__alloflowText('rtRemoveAnnoTitle', 'Remove all of your annotations?') : 'Remove all of your annotations?'),
+                  description: studentAnno.length === 1
+                    ? (window.__alloflowText ? window.__alloflowText('rtRemoveAnnoOne', 'This will permanently remove 1 note, highlight, sticker, or voice note. Teacher annotations will stay.') : 'This will permanently remove 1 note, highlight, sticker, or voice note. Teacher annotations will stay.')
+                    : (window.__alloflowText ? window.__alloflowText('rtRemoveAnnoMany', 'This will permanently remove {count} notes, highlights, stickers, and voice notes. Teacher annotations will stay.', { count: studentAnno.length }) : 'This will permanently remove ' + studentAnno.length + ' notes, highlights, stickers, and voice notes. Teacher annotations will stay.'),
+                  confirmLabel: (window.__alloflowText ? window.__alloflowText('rtRemoveAnnoConfirm', 'Remove my annotations') : 'Remove my annotations')
                 });
                 if (shouldClear) {
                   snapshot();
@@ -56392,7 +56824,7 @@ function projectStudentGuideData(data, mode) {
         <main id="main-export-content" role="main">
         <div class="export-header" style="background:${_headerColors.bg};color:${_headerColors.fg};padding:28px 36px;border-radius:${theme.borderRadius || '14px'};margin-bottom:28px;box-shadow:0 4px 12px rgba(0,0,0,0.1);">
           <h1 class="export-title" style="color:${_headerColors.fg};margin:0 0 6px 0;font-size:1.85rem;letter-spacing:-0.02em;">${studentTitlePrefix}${_escTxt(lessonTopic)}</h1>
-          ${!isWorksheet ? `<p class="export-meta" style="color:${_headerColors.fg};opacity:1;font-size:0.9rem;margin:0;"><strong>${topicLabel}:</strong> ${_escTxt(lessonTopic)} &bull; ${dateLabel} ${new Date().toLocaleDateString()}</p>` : ''}
+          ${!isWorksheet ? `<p class="export-meta" style="color:${_headerColors.fg};opacity:1;font-size:0.9rem;margin:0;">${dateLabel} ${new Date().toLocaleDateString()}</p>` : ''}
           ${_teacherGuideOnly ? `<p class="alloflow-teacher-print-attribution">${_escTxt(t('output.generated_via'))}</p>` : ''}
           ${_wordWallEconomy ? `<p class="alloflow-word-wall-print-attribution">${_escTxt(t('output.generated_via'))}</p>` : ''}
         </div>
@@ -56413,8 +56845,9 @@ function projectStudentGuideData(data, mode) {
           <h2>${_runtimeCopy.printLinksTitle}</h2><ol></ol>
         </section>
         <div class="a11y-badge" role="note" aria-label="${_runtimeCopy.accessibilityInfoLabel}">
-          <strong>♿ ${_runtimeCopy.accessibilityTitle}</strong>
+          <details><summary><strong>♿ ${_runtimeCopy.accessibilityTitle}</strong></summary>
           ${_runtimeCopy.accessibilityDescription}
+          </details>
         </div>
         </main>
         <aside class="alloflow-export-save-tools" aria-label="${_runtimeCopy.saveToolsLabel}">
@@ -56423,7 +56856,7 @@ function projectStudentGuideData(data, mode) {
           <p style="margin:0 0 12px 0;font-size:1.05rem;color:#3730a3;font-weight:700;">${_runtimeCopy.doneTitle}</p>
           <p style="margin:0 0 16px 0;font-size:0.9rem;color:#475569;">${_runtimeCopy.answerFileDescription}</p>
           <button type="button" id="alloflow-savejson-btn" style="padding:10px 22px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:700;font-size:0.95rem;cursor:pointer;box-shadow:0 1px 4px rgba(79,70,229,0.22);">&#128190; ${_runtimeCopy.saveMyAnswers}</button>
-          <p style="margin:12px 0 0 0;font-size:0.75rem;color:#475569;">${_runtimeCopy.answerFileHelp}</p>
+          <p style="margin:12px 0 0 0;font-size:max(12px, 0.75rem);color:#475569;">${_runtimeCopy.answerFileHelp}</p>
         </div>
         </aside>
         <footer class="alloflow-export-footer" role="contentinfo" style="text-align:center;color:#475569;font-size:0.8rem;margin-top:3rem;padding:24px 0;border-top:1px solid #e2e8f0;">
@@ -56719,18 +57152,17 @@ function projectStudentGuideData(data, mode) {
                         }
                     } catch (e) { /* private mode / quota */ }
                     // ── Character counter ──
-                    const max = parseInt(tx.getAttribute('maxlength') || '', 10) || _DEFAULT_MAX;
+                    // Essay-size boxes (8+ rows, the DBQ synthesis) hold ~2,000 words; short answers keep 1,500 characters.
+                    const max = parseInt(tx.getAttribute('maxlength') || '', 10) || ((Number(tx.getAttribute('rows')) >= 8 || tx.closest('.alloflow-dbq-synthesis')) ? 12000 : _DEFAULT_MAX);
                     if (!tx.getAttribute('maxlength')) tx.setAttribute('maxlength', String(max));
                     const counter = document.createElement('div');
                     const isQuizResponse = !!tx.closest('.quiz-box');
                     counter.className = 'allo-ta-counter';
-                    // A live count on every keystroke competes with typing echo.
-                    // Quiz fields describe the count on focus and announce only
-                    // reaching the limit through a separate persistent status.
-                    if (!isQuizResponse) counter.setAttribute('aria-live', 'polite');
-                    counter.style.cssText = 'font-size:' + (isQuizResponse ? '0.85rem' : '11px') + ';color:inherit;text-align:right;margin-top:2px;font-variant-numeric:tabular-nums';
+                    // A live count on every keystroke competes with typing echo, so every
+                    // field describes the count on focus and announces only reaching the limit.
+                    counter.style.cssText = 'font-size:' + (isQuizResponse ? '0.85rem' : '12px') + ';color:inherit;text-align:right;margin-top:2px;font-variant-numeric:tabular-nums';
                     let limitNotice = null;
-                    if (isQuizResponse) {
+                    {
                         counter.id = 'allo-quiz-response-counter-' + idx;
                         const descriptions = (tx.getAttribute('aria-describedby') || '').split(/\\s+/).filter(Boolean);
                         if (!descriptions.includes(counter.id)) descriptions.push(counter.id);
@@ -56747,7 +57179,7 @@ function projectStudentGuideData(data, mode) {
                         const pct = len / max;
                         counter.textContent = len + ' / ' + max + (isQuizResponse || len > 0 ? ' characters' : '');
                         counter.style.color = isQuizResponse ? 'inherit' : pct > 0.9 ? '#dc2626' : pct > 0.75 ? '#a16207' : '#475569';
-                        if (limitNotice) limitNotice.textContent = len >= max ? 'Character limit reached. Edit your response to make room for more text.' : '';
+                        if (limitNotice) limitNotice.textContent = len >= max ? (window.__alloflowText ? window.__alloflowText('rtCharLimit', 'Character limit reached. Edit your response to make room for more text.') : 'Character limit reached. Edit your response to make room for more text.') : '';
                     };
                     if (tx.nextElementSibling && tx.nextElementSibling.classList && tx.nextElementSibling.classList.contains('allo-ta-counter')) tx.nextElementSibling.remove();
                     tx.parentNode.insertBefore(counter, tx.nextSibling);
@@ -56782,7 +57214,10 @@ function projectStudentGuideData(data, mode) {
                     const resetBtn = quiz.querySelector('.quiz-reset-btn');
                     const resultsEl = quiz.querySelector('.quiz-results');
                     if (!checkBtn || !resetBtn || !resultsEl) return;
-                    const questions = quiz.querySelectorAll('.question[data-correct]');
+                    const questions = quiz.querySelectorAll('.question[data-correct], .question[data-fill-answers]');
+                    // Fill-ins compare without case, extra spaces, or punctuation around the answer.
+                    const fillNorm = (value) => String(value == null ? '' : value).toLowerCase().replace(/\\s+/g, ' ').replace(/^[\\s.,;:!?'"()\\[\\]-]+|[\\s.,;:!?'"()\\[\\]-]+$/g, '');
+                    const fillAccepted = (q) => String(q.getAttribute('data-fill-answers') || '').split('|').map((part) => { try { return fillNorm(decodeURIComponent(part)); } catch (e) { return ''; } }).filter(Boolean);
                     let hasChecked = false;
                     const clearQuestionFeedback = (q) => {
                         q.style.borderLeft = '';
@@ -56801,8 +57236,8 @@ function projectStudentGuideData(data, mode) {
                         resultsEl.textContent = '';
                     };
                     quiz.addEventListener('change', (event) => {
-                        if (!hasChecked || !event.target.matches('input[type="radio"]')) return;
-                        const question = event.target.closest('.question[data-correct]');
+                        if (!hasChecked || !event.target.matches('input[type="radio"], .interactive-blank')) return;
+                        const question = event.target.closest('.question[data-correct], .question[data-fill-answers]');
                         if (!question || !quiz.contains(question)) return;
                         // A previous result describes the old answer. Clear only
                         // this item's feedback and keep focus on the edited choice.
@@ -56843,6 +57278,16 @@ function projectStudentGuideData(data, mode) {
                             }
                         };
                         questions.forEach((q) => {
+                            if (q.hasAttribute('data-fill-answers')) {
+                                const accepted = fillAccepted(q);
+                                const blank = q.querySelector('.interactive-blank');
+                                const typed = fillNorm(blank && blank.value);
+                                q.style.paddingLeft = '0.6rem';
+                                if (!typed) { q.style.borderLeft = '4px solid #94a3b8'; q.removeAttribute('aria-invalid'); _setQuizGlyph(q, 'skipped'); skipped++; }
+                                else if (accepted.indexOf(typed) !== -1) { q.style.borderLeft = '4px solid #16a34a'; q.removeAttribute('aria-invalid'); _setQuizGlyph(q, 'correct'); correct++; }
+                                else { q.style.borderLeft = '4px solid #dc2626'; q.setAttribute('aria-invalid', 'true'); _setQuizGlyph(q, 'wrong'); wrong++; }
+                                return;
+                            }
                             const target = parseInt(q.getAttribute('data-correct'), 10);
                             const checked = q.querySelector('input[type="radio"]:checked');
                             // Reset prior state first so re-clicking Check redraws cleanly.
@@ -56871,7 +57316,17 @@ function projectStudentGuideData(data, mode) {
                         hasChecked = true;
                         resultsEl.textContent = parts.join(' · ');
                     });
+                    let resetArmedAt = 0;
                     resetBtn.addEventListener('click', () => {
+                        // Reset erases written answers too, so the first press only explains that;
+                        // no window.confirm, which sandboxed LMS frames can block outright.
+                        const hasWork = Array.from(quiz.querySelectorAll('[data-allo-response-key]')).some((control) => (control.type === 'radio' || control.type === 'checkbox') ? control.checked : String(control.value || '').trim());
+                        if (hasWork && !(resetArmedAt && Date.now() - resetArmedAt < 6000)) {
+                            resetArmedAt = Date.now();
+                            resultsEl.textContent = resultsEl.getAttribute('data-reset-confirm-label') || 'This clears all your answers in this quiz. Press Reset again to confirm.';
+                            return;
+                        }
+                        resetArmedAt = 0;
                         // Clear every response type, then fire change so the
                         // shared autosave contract removes the stored value too.
                         quiz.querySelectorAll('[data-allo-response-key]').forEach((control) => {
@@ -57036,6 +57491,7 @@ function projectStudentGuideData(data, mode) {
                         '.alloflow-cs-dropzone-target.alloflow-cs-has-strips { display: block !important; border-color: rgba(148,163,184,0.3) !important; }' +
                         '.alloflow-cs-strip.alloflow-cs-correct { border-color: #16a34a !important; background: #f0fdf4 !important; }' +
                         '.alloflow-cs-strip.alloflow-cs-wrong { border-color: #dc2626 !important; background: #fef2f2 !important; }' +
+                        '@media screen { .alloflow-cs-scissor { display: none !important; } }' +
                         '@media print {' +
                         '  .alloflow-cs-controls, .alloflow-cs-place-btn { display: none !important; }' +
                         '  .alloflow-cs-dropzone-target { display: none !important; }' +
@@ -57050,8 +57506,17 @@ function projectStudentGuideData(data, mode) {
                         var resultsEl = ctrl.querySelector('.alloflow-cs-results');
                         if (!stripsContainer || !categoriesContainer || !resetBtn) return;
                         var selectedStrip = null;
+                        var csCopy = function(name, fallback, vars) {
+                            var text = ctrl.getAttribute('data-cs-copy-' + name) || fallback;
+                            Object.keys(vars || {}).forEach(function(k) { text = text.split('{' + k + '}').join(String(vars[k])); });
+                            return text;
+                        };
+                        var labelStrip = function(s, on) {
+                            var item = ((s.querySelector('.alloflow-cs-item-text') || s).textContent || 'item').trim();
+                            s.setAttribute('aria-label', on ? csCopy('selected-aria', 'Selected sortable item: {item}', { item: item }) : csCopy('select-aria', 'Select sortable item: {item}', { item: item }));
+                        };
                         var clearSelection = function() {
-                            if (selectedStrip) { selectedStrip.classList.remove('alloflow-cs-selected'); selectedStrip.setAttribute('aria-selected', 'false'); }
+                            if (selectedStrip) { selectedStrip.classList.remove('alloflow-cs-selected'); labelStrip(selectedStrip, false); }
                             selectedStrip = null;
                             categoriesContainer.querySelectorAll('.alloflow-cs-dropzone').forEach(function(z) { z.classList.remove('alloflow-cs-droptarget'); });
                             categoriesContainer.querySelectorAll('.alloflow-cs-place-btn').forEach(function(b) { b.disabled = true; });
@@ -57088,18 +57553,17 @@ function projectStudentGuideData(data, mode) {
                         };
                         var wireStrip = function(s) {
                             s.setAttribute('tabindex', '0');
-                            s.setAttribute('aria-selected', 'false');
-                            s.setAttribute('aria-label', 'Select sortable item: ' + ((s.querySelector('.alloflow-cs-item-text') || s).textContent || 'item').trim());
+                            labelStrip(s, false);
                             var pick = function() {
                                 clearMarks();
                                 if (selectedStrip === s) { clearSelection(); return; }
                                 clearSelection();
                                 selectedStrip = s;
                                 s.classList.add('alloflow-cs-selected');
-                                s.setAttribute('aria-selected', 'true');
+                                labelStrip(s, true);
                                 categoriesContainer.querySelectorAll('.alloflow-cs-dropzone').forEach(function(z) { z.classList.add('alloflow-cs-droptarget'); });
                                 categoriesContainer.querySelectorAll('.alloflow-cs-place-btn').forEach(function(b) { b.disabled = false; });
-                                resultsEl.textContent = 'Selected ' + ((s.querySelector('.alloflow-cs-item-text') || s).textContent || 'item').trim() + '. Choose a category.';
+                                resultsEl.textContent = csCopy('selected', 'Selected {item}. Choose a category.', { item: ((s.querySelector('.alloflow-cs-item-text') || s).textContent || 'item').trim() });
                             };
                             s.addEventListener('click', pick);
                             s.addEventListener('keydown', function(e) {
@@ -57120,8 +57584,13 @@ function projectStudentGuideData(data, mode) {
                                 target.appendChild(selectedStrip);
                                 target.classList.add('alloflow-cs-has-strips');
                                 setResponse(selectedStrip, categoryId);
+                                var placedStrip = selectedStrip;
                                 clearSelection();
-                                resultsEl.textContent = 'Placed ' + itemLabel + ' in ' + categoryLabel + '.';
+                                resultsEl.textContent = csCopy('placed', 'Placed {item} in {category}.', { item: itemLabel, category: categoryLabel });
+                                // Clearing the selection disables the Place button that had focus; continue at the
+                                // next unsorted card (or the placed one) instead of losing focus to the page.
+                                var nextFocus = stripsContainer.querySelector('.alloflow-cs-strip') || placedStrip;
+                                if (nextFocus && typeof nextFocus.focus === 'function') { try { nextFocus.focus(); } catch (focusErr) {} }
                             };
                             if (placeBtn) placeBtn.addEventListener('click', function(e) { e.stopPropagation(); placeSelected(); });
                             z.addEventListener('click', function(e) {
@@ -57143,9 +57612,9 @@ function projectStudentGuideData(data, mode) {
                                 else { s.classList.add('alloflow-cs-wrong'); wrong++; }
                             });
                             var total = correct + wrong + skipped;
-                            var parts = [correct + ' of ' + total + ' correct'];
-                            if (wrong > 0) parts.push(wrong + ' to review');
-                            if (skipped > 0) parts.push(skipped + ' unsorted');
+                            var parts = [csCopy('score', '{correct} of {total} correct', { correct: correct, total: total })];
+                            if (wrong > 0) parts.push(csCopy('review', '{n} to review', { n: wrong }));
+                            if (skipped > 0) parts.push(csCopy('unsorted', '{n} unsorted', { n: skipped }));
                             resultsEl.textContent = parts.join(' · ');
                         });
                         resetBtn.addEventListener('click', function() {
@@ -57373,10 +57842,11 @@ function projectStudentGuideData(data, mode) {
                             var safeNick = filePart(nick, 'student');
                             var safeDoc = filePart(String(document.title || 'worksheet').split('—')[0], 'worksheet');
                             var docSuffix = payload.documentId ? '-' + payload.documentId.slice(0, 8) : '';
-                            a.download = safeNick + '-' + safeDoc + '-answers' + docSuffix + '-' + new Date().toISOString().slice(0, 10) + '.json';
+                            a.download = safeNick + '-' + safeDoc + '-answers' + docSuffix + '-' + (function (d) { return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0'); })(new Date()) + '.json';
                             document.body.appendChild(a); a.click();
                             setTimeout(function() { if (a.parentNode) a.parentNode.removeChild(a); URL.revokeObjectURL(a.href); }, 200);
-                            pbtn.textContent = window.__alloflowText('savedAnswers', 'Saved! Send the file to your teacher');
+                            if (window.__alloflowIsFramed && window.__alloflowIsFramed()) { pbtn.textContent = window.__alloflowText('rtDownloadRequested', 'Download requested — check your Downloads'); window.__alloflowDownloadHelp(pbtn); }
+                            else pbtn.textContent = window.__alloflowText('savedAnswers', 'Saved! Send the file to your teacher');
                             setTimeout(function() { pbtn.textContent = window.__alloflowText('saveMyAnswers', 'Save my answers'); }, 2600);
                         } catch (e) { window.__alloflowNotify(window.__alloflowText('saveErrorPrefix', 'Could not save your answers: ') + e.message, 'error'); }
                     });
@@ -57405,6 +57875,7 @@ function projectStudentGuideData(data, mode) {
       if (cfg.assessmentMode === true) {
         _packHtml = _packHtml
           .replace(/ data-correct="\d+"/g, ' data-correct=""')
+          .replace(/ data-fill-answers="[^"]*"/g, '')
           .replace(/(<div[^>]*class="alloflow-cs-strip"[^>]*?) data-category-id="[^"]*"/g, '$1 data-category-id=""')
           .replace(/<\/head>/i, '<style>.quiz-controls{display:none !important}.alloflow-cs-controls{display:none !important}</style></head>');
       }

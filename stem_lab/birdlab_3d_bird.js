@@ -1026,7 +1026,10 @@
       // Compress the body and hocks above the planted feet; never translate
       // the foot pads or root to fake the preparatory crouch or landing impact.
       var recoil = strokeAt(phase - 0.3) * amplitude * open * 0.0023;
-      upperBody.rotation.x = fold * 0.53 - compression * 0.15;
+      // A perched red-tail sits upright with the tail hanging; the extra lift is
+      // taken back out of the head so its authored gaze and scan stay as before.
+      var perchLift = fold * 0.25;
+      upperBody.rotation.x = fold * 0.53 + perchLift - compression * 0.15;
       upperBody.position.y = -fold * 0.008 - compression * 0.030 + recoil;
       // The controller already eases its look-and-hold targets. Sampling them
       // directly keeps a scrubbed pose identical to playback at the same time.
@@ -1192,7 +1195,7 @@
       // Folding restores the exact authored perch neck and scanning pose.
       // This spatial blend is sampled directly; pausing and seeking do not
       // accumulate a spring, lag or quaternion history.
-      headRestPose.setFromEuler(headEuler.set(-headBodyPitch * 0.68 - upperBody.rotation.x * 0.58 - state.gazePitch,
+      headRestPose.setFromEuler(headEuler.set(-headBodyPitch * 0.68 - (upperBody.rotation.x - perchLift) * 0.58 - perchLift - state.gazePitch,
         state.headYaw, -headBodyBank * 0.48 * open, 'XYZ'));
       head.quaternion.slerp(headRestPose, smooth(0, 1, fold));
       head.position.y = 0.068 + compression * 0.006 - recoil * 0.60;

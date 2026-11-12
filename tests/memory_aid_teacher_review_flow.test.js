@@ -425,7 +425,8 @@ describe('fun-fact provenance and the student worksheet', () => {
     const item = { id: 'ma-nocue', type: 'memory-aid', title: 'Matter', data: { instructions: 'x', reflectionLevel: 'quick', reasoningRequired: false, cards: [noCue] } };
     const sheet = p.generateFullPackHTML([item], 'Memory', true, {}, { includeTeacherKey: false, annotations: [] });
     expect(sheet).toContain('memory-aid-cue-pending');
-    expect(sheet).toContain('create your cue first');
+    // 2026-11-11: the kicker reads "Your memory cue"; the note carries the instruction.
+    expect(sheet).toContain('Create your cue below');
     expect(sheet).not.toContain('memory-aid-recall-sheet');
     expect(sheet).not.toContain('No accessible recall cue is available yet');
     const withCue = p.generateFullPackHTML([{ ...item, data: { ...item.data, cards: [{ ...noCue, studentDraft: 'A solid is a statue.' }] } }], 'Memory', true, {}, { includeTeacherKey: false, annotations: [] });

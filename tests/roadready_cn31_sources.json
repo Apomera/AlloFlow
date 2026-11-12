@@ -1,0 +1,2211 @@
+{
+ "note": "Round 31 lane_content. Each new Road Ready string, its English, and the source ids that back it ([] = no fact: a title, label, pointer or tip). If the test fails here, a sentence changed: read the source again, then update \"en\". Quotes are verbatim; work/sources.cjs checks each one against the saved source file. Round 32 lane_words reworded the provisional-license sentences (29-A sec. 2472(1) and (2) re-read 2026-11-10).",
+ "checked": "2026-11-10",
+ "strings": {
+  "guide_lic_title": {
+   "en": "Your License, Step by Step",
+   "src": []
+  },
+  "guide_lic_lead": {
+   "en": "A Maine license comes in steps. Each step has its own rules. This guide follows a driver who starts before age 18.",
+   "src": []
+  },
+  "guide_lic_s1_title": {
+   "en": "Step 1: Learner's permit",
+   "src": []
+  },
+  "guide_lic_s1_a": {
+   "en": "You can apply for a permit at age 15.",
+   "src": [
+    "permit15"
+   ]
+  },
+  "guide_lic_s1_b": {
+   "en": "If you are under 18, you must finish a driver education course first.",
+   "src": [
+    "drivered"
+   ]
+  },
+  "guide_lic_s1_c": {
+   "en": "You take a written test and a vision check.",
+   "src": [
+    "permit15",
+    "permitVision"
+   ]
+  },
+  "guide_lic_s1_d": {
+   "en": "A licensed driver must ride with you. That driver must be at least 20 and must have held a license for 2 years.",
+   "src": [
+    "supervisor"
+   ]
+  },
+  "guide_lic_s1_e": {
+   "en": "You may not use a phone while you drive.",
+   "src": [
+    "permitPhone"
+   ]
+  },
+  "guide_lic_s1_f": {
+   "en": "Before the road test you must hold the permit for 6 months. You must also drive 70 hours. At least 10 of those hours must be at night.",
+   "src": [
+    "hours"
+   ]
+  },
+  "guide_lic_s1_g": {
+   "en": "A permit lasts 2 years. You cannot renew it.",
+   "src": [
+    "permit2y"
+   ]
+  },
+  "guide_lic_s2_title": {
+   "en": "Step 2: Intermediate license (the first 270 days)",
+   "src": [
+    "i_270"
+   ]
+  },
+  "guide_lic_s2_intro": {
+   "en": "You must be at least 16 to get a license. If you are under 18, it starts as an intermediate license. For 270 days you may not:",
+   "src": [
+    "age16",
+    "intermediate",
+    "i_270"
+   ]
+  },
+  "guide_lic_s2_a": {
+   "en": "Carry passengers who are not close family. This is allowed only when a licensed driver who is at least 20 sits beside you.",
+   "src": [
+    "i_pass",
+    "supervisor"
+   ]
+  },
+  "guide_lic_s2_b": {
+   "en": "Drive between midnight and 5 a.m.",
+   "src": [
+    "i_night"
+   ]
+  },
+  "guide_lic_s2_c": {
+   "en": "Use a phone or other handheld device while you drive.",
+   "src": [
+    "i_phone"
+   ]
+  },
+  "guide_lic_s2_n1": {
+   "en": "If you break one of these rules, the rules last 270 more days. That can run past your 18th birthday.",
+   "src": [
+    "i_extend"
+   ]
+  },
+  "guide_lic_s2_n2": {
+   "en": "Your license is also suspended: 60 days the first time, 180 days the second time, and 1 year after that.",
+   "src": [
+    "i_susp",
+    "i_susp2",
+    "i_susp3"
+   ]
+  },
+  "guide_lic_s2_n3": {
+   "en": "The fine is $250 to $500.",
+   "src": [
+    "i_fine"
+   ]
+  },
+  "guide_lic_s3_title": {
+   "en": "Step 3: Provisional license",
+   "src": [
+    "prov2y"
+   ]
+  },
+  "guide_lic_s3_intro": {
+   "en": "The end of the 270 days is not the end of the steps. A first license you get before age 21 is also a provisional license. The Maine manual says it is provisional for 2 years. Maine law says 2 years or until you turn 21, whichever comes later. The 2 years start on the day the license is issued.",
+   "src": [
+    "prov2y",
+    "provAfter270",
+    "prov21",
+    "provManual2y"
+   ]
+  },
+  "guide_lic_s3_a": {
+   "en": "In those 2 years, a conviction for a moving violation suspends your license.",
+   "src": [
+    "provMove"
+   ]
+  },
+  "guide_lic_s3_b": {
+   "en": "First time: 30 days.",
+   "src": [
+    "prov30"
+   ]
+  },
+  "guide_lic_s3_c": {
+   "en": "Second time: 180 days.",
+   "src": [
+    "prov180"
+   ]
+  },
+  "guide_lic_s3_d": {
+   "en": "Third time or more: 1 year.",
+   "src": [
+    "prov1y"
+   ]
+  },
+  "guide_lic_s3_e": {
+   "en": "You must finish a driver improvement course before the suspension can end.",
+   "src": [
+    "provCourse"
+   ]
+  },
+  "guide_lic_s3_n1": {
+   "en": "The law says \"moving motor vehicle violation\". That section of the law does not list them. If you get a ticket, ask the BMV or the court what it means for your license.",
+   "src": [
+    "provMove"
+   ]
+  },
+  "guide_lic_s3_n2": {
+   "en": "Until you turn 21 you may not drive with any alcohol in your body. The suspension for a first offense is 1 year.",
+   "src": [
+    "zeroAlc",
+    "zeroAlc1y"
+   ]
+  },
+  "guide_lic_s4_title": {
+   "en": "Demerit points",
+   "src": []
+  },
+  "guide_lic_s4_intro": {
+   "en": "Maine also keeps a count of points. You get points when you are convicted of certain traffic offenses.",
+   "src": [
+    "points"
+   ]
+  },
+  "guide_lic_s4_a": {
+   "en": "At 6 points the state sends you a warning.",
+   "src": [
+    "points6_12"
+   ]
+  },
+  "guide_lic_s4_b": {
+   "en": "At 12 points or more your license is suspended.",
+   "src": [
+    "points6_12"
+   ]
+  },
+  "guide_lic_s4_c": {
+   "en": "Points are erased when they are one year old.",
+   "src": [
+    "pointsYear"
+   ]
+  },
+  "guide_lic_s4_d": {
+   "en": "Each calendar year with no convictions and no suspensions earns one credit point. You can hold up to four.",
+   "src": [
+    "pointsCredit"
+   ]
+  },
+  "guide_lic_s4_e": {
+   "en": "An approved driver improvement course takes 3 points off. This works once in 12 months.",
+   "src": [
+    "pointsCourse",
+    "pointsCourseOnce"
+   ]
+  },
+  "guide_lic_s4_n1": {
+   "en": "Points and the 2-year rule are separate. In your first 2 years, one moving violation can suspend your license even when you have few points.",
+   "src": [
+    "provMove",
+    "prov30",
+    "points6_12"
+   ]
+  },
+  "guide_lic_s5_title": {
+   "en": "What the knowledge test is like",
+   "src": []
+  },
+  "guide_lic_s5_a": {
+   "en": "The test has 30 questions. You must get at least 24 right.",
+   "src": [
+    "test30"
+   ]
+  },
+  "guide_lic_s5_b": {
+   "en": "The questions cover the rules of the road, signs, people walking and on bikes, the OUI laws and distracted driving.",
+   "src": [
+    "testTopics"
+   ]
+  },
+  "guide_lic_s5_c": {
+   "en": "You can take a free vision check on the same visit.",
+   "src": [
+    "testVision"
+   ]
+  },
+  "guide_lic_s5_d": {
+   "en": "The test fee is $35.",
+   "src": [
+    "testFee"
+   ]
+  },
+  "guide_lic_go_language": {
+   "en": "Open: Test and manual in your language",
+   "src": []
+  },
+  "guide_lic_s6_title": {
+   "en": "What the road test is like",
+   "src": []
+  },
+  "guide_lic_s6_a": {
+   "en": "An examiner rides with you and watches how you control the car.",
+   "src": [
+    "roadWhat"
+   ]
+  },
+  "guide_lic_s6_b": {
+   "en": "You drive forward and backward, turn left and right, and stay in your lane.",
+   "src": [
+    "roadWhat"
+   ]
+  },
+  "guide_lic_s6_c": {
+   "en": "The test includes parallel parking and backing up in a straight line.",
+   "src": [
+    "roadPark"
+   ]
+  },
+  "guide_lic_s6_d": {
+   "en": "The examiner also watches how you react to other people, signs and signals.",
+   "src": [
+    "roadReact"
+   ]
+  },
+  "guide_lic_s6_e": {
+   "en": "You will not be asked to do anything illegal or unusual.",
+   "src": [
+    "roadLegal"
+   ]
+  },
+  "guide_lic_s6_f": {
+   "en": "Bring your permit, your appointment notice and a licensed driver. Bring a car that is registered and inspected.",
+   "src": [
+    "roadBring"
+   ]
+  },
+  "guide_lic_s6_refuse_intro": {
+   "en": "The examiner may refuse to start the test if:",
+   "src": [
+    "refuse"
+   ]
+  },
+  "guide_lic_s6_r1": {
+   "en": "The inspection sticker has expired.",
+   "src": [
+    "refuseSticker"
+   ]
+  },
+  "guide_lic_s6_r2": {
+   "en": "There is no free front seat for the examiner, or a seat is loose.",
+   "src": [
+    "refuseSeat"
+   ]
+  },
+  "guide_lic_s6_r3": {
+   "en": "The car is not ready for the weather. One example is no snow tires in snow.",
+   "src": [
+    "refuseWeather"
+   ]
+  },
+  "guide_lic_s6_r4": {
+   "en": "The glove box does not stay shut.",
+   "src": [
+    "refuseGlove"
+   ]
+  },
+  "guide_lic_s6_r5": {
+   "en": "A door does not work.",
+   "src": [
+    "refuseDoor"
+   ]
+  },
+  "guide_lic_s6_r6": {
+   "en": "You will not take a pet out of the car.",
+   "src": [
+    "refusePet"
+   ]
+  },
+  "guide_lic_s6_n1": {
+   "en": "If you do not pass, the BMV tells you why and what to practice.",
+   "src": [
+    "roadFail"
+   ]
+  },
+  "guide_lic_go_tracker": {
+   "en": "Open: GDL Stage Tracker (see your own dates)",
+   "src": []
+  },
+  "guide_link_ages": {
+   "en": "Maine BMV: license rules by age",
+   "src": []
+  },
+  "guide_link_suspensions": {
+   "en": "Maine BMV: intermediate and provisional suspensions",
+   "src": []
+  },
+  "guide_link_exam": {
+   "en": "Maine BMV: the license exam",
+   "src": []
+  },
+  "guide_lic_sources": {
+   "en": "Sources: Maine Driver's License Manual (Rev. 4/24), sections 1 and Appendix A. Maine BMV pages on license ages, suspensions, exams and fees. Maine law, Title 29-A, sections 1304, 1311 and 2472.",
+   "src": []
+  },
+  "guide_lic_q1": {
+   "en": "You get your first license at 16. For how long can one moving violation suspend it under the provisional rule?",
+   "src": []
+  },
+  "guide_lic_q1_a": {
+   "en": "For 2 years",
+   "src": [
+    "prov2y"
+   ]
+  },
+  "guide_lic_q1_b": {
+   "en": "For 270 days",
+   "src": []
+  },
+  "guide_lic_q1_c": {
+   "en": "For 1 year",
+   "src": []
+  },
+  "guide_lic_q1_d": {
+   "en": "Until age 18",
+   "src": []
+  },
+  "guide_lic_q1_why": {
+   "en": "The 270 days are the intermediate rules. The suspension rule for moving violations lasts 2 years from the day the license is issued. The law keeps the name \"provisional\" until you turn 21.",
+   "src": [
+    "i_270",
+    "prov2y",
+    "prov21",
+    "provMove2y"
+   ]
+  },
+  "guide_lic_q2": {
+   "en": "At how many demerit points is a Maine license suspended?",
+   "src": []
+  },
+  "guide_lic_q2_a": {
+   "en": "At 12 points",
+   "src": [
+    "points6_12"
+   ]
+  },
+  "guide_lic_q2_b": {
+   "en": "At 6 points",
+   "src": []
+  },
+  "guide_lic_q2_c": {
+   "en": "At 9 points",
+   "src": []
+  },
+  "guide_lic_q2_d": {
+   "en": "At 15 points",
+   "src": []
+  },
+  "guide_lic_q2_why": {
+   "en": "A warning comes at 6 points. The suspension comes at 12 points or more.",
+   "src": [
+    "points6_12"
+   ]
+  },
+  "guide_lic_q3": {
+   "en": "The knowledge test has 30 questions. How many must you get right?",
+   "src": [
+    "test30"
+   ]
+  },
+  "guide_lic_q3_a": {
+   "en": "24 or more",
+   "src": [
+    "test30"
+   ]
+  },
+  "guide_lic_q3_b": {
+   "en": "18 or more",
+   "src": []
+  },
+  "guide_lic_q3_c": {
+   "en": "21 or more",
+   "src": []
+  },
+  "guide_lic_q3_d": {
+   "en": "12 or more",
+   "src": []
+  },
+  "guide_lic_q3_why": {
+   "en": "You need at least 24 right answers out of 30.",
+   "src": [
+    "test30"
+   ]
+  },
+  "guide_stop_title": {
+   "en": "If You Are Pulled Over",
+   "src": []
+  },
+  "guide_stop_lead": {
+   "en": "A traffic stop can feel stressful. These steps come from the Maine driver's manual. They help you and the officer stay safe.",
+   "src": []
+  },
+  "guide_stop_s1_title": {
+   "en": "When you see the lights or hear the siren",
+   "src": []
+  },
+  "guide_stop_s1_a": {
+   "en": "Signal. Then move to the right side of the road.",
+   "src": [
+    "signal100",
+    "stopRight"
+   ]
+  },
+  "guide_stop_s1_b": {
+   "en": "Stop in a safe spot.",
+   "src": [
+    "stopRight"
+   ]
+  },
+  "guide_stop_s1_c": {
+   "en": "You must stop. It is a crime to refuse to stop for an officer in uniform.",
+   "src": [
+    "stopMust"
+   ]
+  },
+  "guide_stop_s2_title": {
+   "en": "While you wait",
+   "src": []
+  },
+  "guide_stop_s2_a": {
+   "en": "Stay in the car unless the officer asks you to get out.",
+   "src": [
+    "stopStay"
+   ]
+  },
+  "guide_stop_s2_b": {
+   "en": "Turn off the engine. Turn on your hazard lights.",
+   "src": [
+    "stopEngine"
+   ]
+  },
+  "guide_stop_s2_c": {
+   "en": "At night, turn on the light inside the car. Then the officer can see inside.",
+   "src": [
+    "stopEngine"
+   ]
+  },
+  "guide_stop_s2_d": {
+   "en": "Roll down your window so you can talk.",
+   "src": [
+    "stopEngine"
+   ]
+  },
+  "guide_stop_s2_e": {
+   "en": "Keep your seat belt on. Ask your passengers to do the same.",
+   "src": [
+    "stopCalm"
+   ]
+  },
+  "guide_stop_s2_f": {
+   "en": "Keep your hands on the steering wheel. Stay calm.",
+   "src": [
+    "stopCalm"
+   ]
+  },
+  "guide_stop_s3_title": {
+   "en": "When the officer talks to you",
+   "src": []
+  },
+  "guide_stop_s3_a": {
+   "en": "The officer may ask for your license, your insurance card or the car's registration.",
+   "src": [
+    "stopPapers"
+   ]
+  },
+  "guide_stop_s3_b": {
+   "en": "Say where they are. Then reach for them slowly, with one hand on the wheel.",
+   "src": [
+    "stopPapers"
+   ]
+  },
+  "guide_stop_s3_c": {
+   "en": "You must show your license when an officer asks for it.",
+   "src": [
+    "licShow"
+   ]
+  },
+  "guide_stop_s3_d": {
+   "en": "You may show your license and proof of insurance on a phone. That does not let the officer look at other things on the phone.",
+   "src": [
+    "licPhone",
+    "insPhone"
+   ]
+  },
+  "guide_stop_s3_e": {
+   "en": "Answer the officer's questions. Give your correct name, address and date of birth if asked. Refusing can be a crime.",
+   "src": [
+    "stopAnswer",
+    "nameAddr"
+   ]
+  },
+  "guide_stop_s3_f": {
+   "en": "Never try to drive away. Many deadly crashes come from police chases.",
+   "src": [
+    "stopRun"
+   ]
+  },
+  "guide_stop_s3_n1": {
+   "en": "A tip from Road Ready, not from the manual: if you do not understand something, say so in a calm voice.",
+   "src": []
+  },
+  "guide_stop_s4_title": {
+   "en": "If you get a ticket",
+   "src": []
+  },
+  "guide_stop_s4_a": {
+   "en": "In your first 2 years with a license, a conviction for a moving violation suspends the license. The first time, it is for 30 days.",
+   "src": [
+    "provMove",
+    "prov30"
+   ]
+  },
+  "guide_stop_go_license": {
+   "en": "Open: Your License, Step by Step",
+   "src": []
+  },
+  "guide_stop_s5_title": {
+   "en": "If talking under stress is hard for you",
+   "src": []
+  },
+  "guide_stop_s5_a": {
+   "en": "Some autistic drivers and drivers with ADHD keep a printed card in the glove box. The Neurodivergent Driver Guide has sample words for the card.",
+   "src": []
+  },
+  "guide_stop_go_nd": {
+   "en": "Open: Neurodivergent Driver Guide",
+   "src": []
+  },
+  "guide_link_manual": {
+   "en": "Maine BMV: the driver's manual",
+   "src": []
+  },
+  "guide_stop_sources": {
+   "en": "Sources: Maine Driver's License Manual (Rev. 4/24), \"Police/Traffic Stops\", page 10-9. Maine law, Title 29-A, sections 105, 1408, 1601, 2414 and 2472.",
+   "src": []
+  },
+  "guide_stop_q1": {
+   "en": "A police car behind you turns on its lights. What do you do first?",
+   "src": []
+  },
+  "guide_stop_q1_a": {
+   "en": "Move right and stop in a safe spot",
+   "src": [
+    "stopRight"
+   ]
+  },
+  "guide_stop_q1_b": {
+   "en": "Brake hard and stop in your own lane",
+   "src": []
+  },
+  "guide_stop_q1_c": {
+   "en": "Speed up to find a parking lot ahead",
+   "src": []
+  },
+  "guide_stop_q1_d": {
+   "en": "Wait until you hear the siren as well",
+   "src": []
+  },
+  "guide_stop_q1_why": {
+   "en": "The manual says to move to the right side of the road and make sure you are in a safe spot.",
+   "src": [
+    "stopRight"
+   ]
+  },
+  "guide_stop_q2": {
+   "en": "You are stopped and waiting. Where should your hands be?",
+   "src": []
+  },
+  "guide_stop_q2_a": {
+   "en": "On the steering wheel",
+   "src": [
+    "stopCalm"
+   ]
+  },
+  "guide_stop_q2_b": {
+   "en": "Reaching into the glove box",
+   "src": []
+  },
+  "guide_stop_q2_c": {
+   "en": "Resting out of the window",
+   "src": []
+  },
+  "guide_stop_q2_d": {
+   "en": "Tucked under your seat belt",
+   "src": []
+  },
+  "guide_stop_q2_why": {
+   "en": "The manual says to keep your hands on the steering wheel. Reach for papers only after you say where they are.",
+   "src": [
+    "stopCalm",
+    "stopPapers"
+   ]
+  },
+  "guide_stop_q3": {
+   "en": "The officer asks for your license. It is in your bag. What do you do?",
+   "src": []
+  },
+  "guide_stop_q3_a": {
+   "en": "Say where it is, then reach slowly",
+   "src": [
+    "stopPapers"
+   ]
+  },
+  "guide_stop_q3_b": {
+   "en": "Grab it fast to save the officer time",
+   "src": []
+  },
+  "guide_stop_q3_c": {
+   "en": "Get out of the car to look for it",
+   "src": []
+  },
+  "guide_stop_q3_d": {
+   "en": "Tell the officer to find it in the bag",
+   "src": []
+  },
+  "guide_stop_q3_why": {
+   "en": "Tell the officer where the papers are. Then reach slowly with one hand on the wheel.",
+   "src": [
+    "stopPapers"
+   ]
+  },
+  "guide_ins_title": {
+   "en": "Insurance and Paperwork Basics",
+   "src": []
+  },
+  "guide_ins_lead": {
+   "en": "Three papers go with every drive. This guide says what they are, what insurance does, and what to do after a crash.",
+   "src": []
+  },
+  "guide_ins_s1_title": {
+   "en": "What to carry",
+   "src": []
+  },
+  "guide_ins_s1_a": {
+   "en": "Your license or permit. You must have it with you when you drive.",
+   "src": [
+    "licCarry"
+   ]
+  },
+  "guide_ins_s1_b": {
+   "en": "The car's registration. An officer who stops you can ask to see it. If you cannot show it, the officer may hold the car.",
+   "src": [
+    "regShow",
+    "regImpound",
+    "regImpound2"
+   ]
+  },
+  "guide_ins_s1_c": {
+   "en": "Proof of insurance. This can be an insurance card, a letter from the insurer or the policy.",
+   "src": [
+    "insForms"
+   ]
+  },
+  "guide_ins_s1_d": {
+   "en": "You may show your license and your proof of insurance on a phone.",
+   "src": [
+    "licCarry",
+    "insPhone"
+   ]
+  },
+  "guide_ins_s1_e": {
+   "en": "The car you drive must be insured even when you do not own it. Check before you borrow a car.",
+   "src": [
+    "insNotOwner"
+   ]
+  },
+  "guide_ins_s2_title": {
+   "en": "What liability insurance is",
+   "src": []
+  },
+  "guide_ins_s2_a": {
+   "en": "Liability insurance pays for harm you cause to other people and to their property.",
+   "src": [
+    "insWhat"
+   ]
+  },
+  "guide_ins_s2_b": {
+   "en": "Maine law says every owner and every driver must have it.",
+   "src": [
+    "insMust"
+   ]
+  },
+  "guide_ins_s2_c": {
+   "en": "The law sets the smallest amounts: $50,000 for one person who is hurt, $100,000 for one crash with more than one person hurt, and $25,000 for property.",
+   "src": [
+    "insMin"
+   ]
+  },
+  "guide_ins_s2_d": {
+   "en": "Every Maine policy also has uninsured motorist cover. It protects you if a driver with no insurance hurts you.",
+   "src": [
+    "insUM"
+   ]
+  },
+  "guide_ins_s2_e": {
+   "en": "You must show proof of insurance to register a car.",
+   "src": [
+    "insRegister"
+   ]
+  },
+  "guide_ins_s3_title": {
+   "en": "If you drive without insurance",
+   "src": []
+  },
+  "guide_ins_s3_a": {
+   "en": "An officer who stops you for a moving violation must ask for proof of insurance.",
+   "src": [
+    "insAsk"
+   ]
+  },
+  "guide_ins_s3_b": {
+   "en": "If you cannot show proof, the law treats that as a sign that you have no insurance.",
+   "src": [
+    "insPrima"
+   ]
+  },
+  "guide_ins_s3_c": {
+   "en": "Driving with no insurance is a traffic infraction. The fine is $100 to $500.",
+   "src": [
+    "insFine"
+   ]
+  },
+  "guide_ins_s3_d": {
+   "en": "The state also suspends your license until you prove you are insured. It can suspend the registration of a car you own.",
+   "src": [
+    "insSusp",
+    "insSuspReg",
+    "insSuspUntil"
+   ]
+  },
+  "guide_ins_s3_e": {
+   "en": "You will also have to file a form called an SR-22. It comes from an insurer and proves you are covered.",
+   "src": [
+    "insSR22",
+    "insSR22cert"
+   ]
+  },
+  "guide_ins_s3_f": {
+   "en": "Did you cause crash damage with no insurance? Then your license and registration are suspended. They stay suspended until you file proof of insurance.",
+   "src": [
+    "insCrashNoIns"
+   ]
+  },
+  "guide_ins_s3_g": {
+   "en": "It is a crime to show a fake or changed insurance card.",
+   "src": [
+    "insFake"
+   ]
+  },
+  "guide_ins_s3_n1": {
+   "en": "Were you insured, but the card was at home? Show the court proof that you were insured that day. The court must then dismiss the charge.",
+   "src": [
+    "insDismiss"
+   ]
+  },
+  "guide_ins_s4_title": {
+   "en": "After a crash",
+   "src": []
+  },
+  "guide_ins_s4_a": {
+   "en": "Stop at once. Stay at the scene.",
+   "src": [
+    "crashStop",
+    "crashStay"
+   ]
+  },
+  "guide_ins_s4_b": {
+   "en": "Help anyone who is hurt. Call 911 if someone is injured.",
+   "src": [
+    "crashHelp",
+    "crashAmb"
+   ]
+  },
+  "guide_ins_s4_c": {
+   "en": "Give the other driver your name, your address and your plate number.",
+   "src": [
+    "crashGive"
+   ]
+  },
+  "guide_ins_s4_d": {
+   "en": "Show your license and your proof of insurance if they ask.",
+   "src": [
+    "crashShow",
+    "crashShowIns"
+   ]
+  },
+  "guide_ins_s4_e": {
+   "en": "Report the crash to the police right away if anyone is hurt or killed, or if the damage looks like $2,000 or more.",
+   "src": [
+    "crashReport",
+    "crashReportNow"
+   ]
+  },
+  "guide_ins_s4_f": {
+   "en": "Write down the other driver's name, address, plate number and insurance company.",
+   "src": [
+    "crashWrite",
+    "crashWrite2"
+   ]
+  },
+  "guide_ins_s4_g": {
+   "en": "Tell the police what happened. Give just the facts.",
+   "src": [
+    "crashFacts"
+   ]
+  },
+  "guide_ins_s4_n1": {
+   "en": "If you hit a parked car and cannot find the owner, leave a note with your name and address where the owner will see it.",
+   "src": [
+    "crashParked"
+   ]
+  },
+  "guide_ins_go_postcrash": {
+   "en": "Open: Post-Crash Protocol (the full steps)",
+   "src": []
+  },
+  "guide_ins_sources": {
+   "en": "Sources: Maine Driver's License Manual (Rev. 4/24), \"Insuring Your Motor Vehicle\" and \"Accidents\". Maine law, Title 29-A, sections 105, 402, 1408, 1601, 1605, 2251 and 2252.",
+   "src": []
+  },
+  "guide_ins_q1": {
+   "en": "What does liability insurance pay for?",
+   "src": []
+  },
+  "guide_ins_q1_a": {
+   "en": "Harm you cause to other people and their property",
+   "src": [
+    "insWhat"
+   ]
+  },
+  "guide_ins_q1_b": {
+   "en": "Repairs to your own car after any kind of crash",
+   "src": []
+  },
+  "guide_ins_q1_c": {
+   "en": "Your traffic fines and court costs after a ticket",
+   "src": []
+  },
+  "guide_ins_q1_d": {
+   "en": "Gas, oil changes and other yearly upkeep costs",
+   "src": []
+  },
+  "guide_ins_q1_why": {
+   "en": "Liability means what you owe others. It covers harm to other people and their property.",
+   "src": [
+    "insWhat"
+   ]
+  },
+  "guide_ins_q2": {
+   "en": "You are in a crash. No one is hurt. When must you report it to the police?",
+   "src": []
+  },
+  "guide_ins_q2_a": {
+   "en": "If damage looks like $2,000 or more",
+   "src": [
+    "crashReport"
+   ]
+  },
+  "guide_ins_q2_b": {
+   "en": "Only if the other driver asks you to",
+   "src": []
+  },
+  "guide_ins_q2_c": {
+   "en": "Only if both cars have to be towed",
+   "src": []
+  },
+  "guide_ins_q2_d": {
+   "en": "Never, if both drivers agree to skip it",
+   "src": []
+  },
+  "guide_ins_q2_why": {
+   "en": "A crash with an injury, a death or about $2,000 or more in damage must be reported right away.",
+   "src": [
+    "crashReport",
+    "crashReportNow"
+   ]
+  },
+  "guide_ins_q3": {
+   "en": "You have insurance, but the card was at home when you were stopped. What does the law allow?",
+   "src": []
+  },
+  "guide_ins_q3_a": {
+   "en": "Show the court proof you were insured",
+   "src": [
+    "insDismiss"
+   ]
+  },
+  "guide_ins_q3_b": {
+   "en": "Pay the officer a fee at the roadside",
+   "src": []
+  },
+  "guide_ins_q3_c": {
+   "en": "Use a card from another driver",
+   "src": []
+  },
+  "guide_ins_q3_d": {
+   "en": "Nothing: only car owners need insurance",
+   "src": []
+  },
+  "guide_ins_q3_why": {
+   "en": "If you show proof that you were insured that day, the court must dismiss the charge.",
+   "src": [
+    "insDismiss"
+   ]
+  },
+  "guide_road_title": {
+   "en": "Slow Vehicles and Lane Lines",
+   "src": []
+  },
+  "guide_road_lead": {
+   "en": "Maine roads are shared with tractors, horses and mopeds. The lines on the road tell you when you may pass them.",
+   "src": []
+  },
+  "guide_road_s1_title": {
+   "en": "The slow-moving vehicle triangle",
+   "src": []
+  },
+  "guide_road_s1_a": {
+   "en": "Look for an orange and red triangle on the back of a vehicle.",
+   "src": [
+    "smv"
+   ]
+  },
+  "guide_road_s1_b": {
+   "en": "It means the vehicle travels slower than 25 mph.",
+   "src": [
+    "smv"
+   ]
+  },
+  "guide_road_s1_c": {
+   "en": "You see these most often on country roads.",
+   "src": [
+    "smvRural"
+   ]
+  },
+  "guide_road_s1_d": {
+   "en": "Use caution. Pass only when you are sure it is safe.",
+   "src": [
+    "smv"
+   ]
+  },
+  "guide_road_s2_title": {
+   "en": "Farm machines, horses and mopeds",
+   "src": []
+  },
+  "guide_road_s2_a": {
+   "en": "Farm machines may cross the road or drive on state highways. Pass with care. The driver may not see or hear you.",
+   "src": [
+    "farm"
+   ]
+  },
+  "guide_road_s2_b": {
+   "en": "Horse riders and horse-drawn vehicles have the same right to the road as you.",
+   "src": [
+    "horseRight"
+   ]
+  },
+  "guide_road_s2_c": {
+   "en": "Do not use your horn or rev the engine near an animal. It may scare the animal and cause a crash.",
+   "src": [
+    "horseHorn"
+   ]
+  },
+  "guide_road_s2_d": {
+   "en": "It is against the law to scare an animal on purpose on or near a public road.",
+   "src": [
+    "horseLaw"
+   ]
+  },
+  "guide_road_s2_e": {
+   "en": "Watch for slow vehicles that turn left into fields and driveways.",
+   "src": [
+    "horseLeft"
+   ]
+  },
+  "guide_road_s2_f": {
+   "en": "Scooters and mopeds travel much slower than motorcycles.",
+   "src": [
+    "moped"
+   ]
+  },
+  "guide_road_s2_g": {
+   "en": "When you pass a bicycle, leave at least 3 feet of space.",
+   "src": [
+    "bike3"
+   ]
+  },
+  "guide_road_go_bike": {
+   "en": "Open: Cyclist and Moto Awareness",
+   "src": []
+  },
+  "guide_road_s3_title": {
+   "en": "Yellow lines",
+   "src": []
+  },
+  "guide_road_s3_intro": {
+   "en": "Yellow lines divide traffic that goes in opposite directions.",
+   "src": [
+    "yellow"
+   ]
+  },
+  "guide_road_s3_a": {
+   "en": "Broken yellow line on your side: you may pass when no cars are coming.",
+   "src": [
+    "yellowBroken"
+   ]
+  },
+  "guide_road_s3_b": {
+   "en": "Solid yellow line on your side: do not pass.",
+   "src": [
+    "yellowSolid"
+   ]
+  },
+  "guide_road_s3_c": {
+   "en": "Solid lines on both sides: no one may pass.",
+   "src": [
+    "yellowSolid",
+    "yellowBoth"
+   ]
+  },
+  "guide_road_s3_d": {
+   "en": "You must finish a pass before a no-passing zone begins.",
+   "src": [
+    "passFinish"
+   ]
+  },
+  "guide_road_s3_e": {
+   "en": "A yellow pennant sign on the left that says NO PASSING ZONE means the same. So does a white DO NOT PASS sign on the right.",
+   "src": [
+    "passSigns"
+   ]
+  },
+  "guide_road_s4_title": {
+   "en": "White lines",
+   "src": []
+  },
+  "guide_road_s4_intro": {
+   "en": "White lines divide lanes that go in the same direction.",
+   "src": [
+    "white"
+   ]
+  },
+  "guide_road_s4_a": {
+   "en": "Broken white line: you may change lanes when it is safe.",
+   "src": [
+    "white"
+   ]
+  },
+  "guide_road_s4_b": {
+   "en": "Solid white line: the lanes have different uses. Stay in your lane if you can.",
+   "src": [
+    "white"
+   ]
+  },
+  "guide_road_s5_title": {
+   "en": "The shared center left-turn lane",
+   "src": []
+  },
+  "guide_road_s5_intro": {
+   "en": "Some busy streets have a lane in the middle that is only for left turns. Drivers from both directions may use it.",
+   "src": [
+    "center",
+    "centerSign"
+   ]
+  },
+  "guide_road_s5_a": {
+   "en": "Check your mirrors and the vehicles ahead.",
+   "src": [
+    "centerHow"
+   ]
+  },
+  "guide_road_s5_b": {
+   "en": "Signal left. Check your left blind spot.",
+   "src": [
+    "centerHow"
+   ]
+  },
+  "guide_road_s5_c": {
+   "en": "Steer smoothly into the center lane.",
+   "src": [
+    "centerHow"
+   ]
+  },
+  "guide_road_s5_d": {
+   "en": "Make your left turn when traffic is clear.",
+   "src": [
+    "centerHow"
+   ]
+  },
+  "guide_road_s5_n1": {
+   "en": "Do not drive along this lane. Do not use it to pass.",
+   "src": [
+    "centerSign"
+   ]
+  },
+  "guide_road_s5_n2": {
+   "en": "A car that comes the other way may enter the same lane. Look ahead before you move in.",
+   "src": [
+    "centerSign"
+   ]
+  },
+  "guide_road_s5_n3": {
+   "en": "You may also use it in a two-part left turn out of a driveway. Wait in the center lane until you can join traffic safely.",
+   "src": [
+    "centerTwoPart"
+   ]
+  },
+  "guide_road_sources": {
+   "en": "Sources: Maine Driver's License Manual (Rev. 4/24), pages 6-7 to 6-12, 7-7 and 10-5 to 10-11. Maine law, Title 29-A, section 2051. The manual does not cover electric bikes or electric scooters, so this guide does not either.",
+   "src": []
+  },
+  "guide_road_q1": {
+   "en": "A vehicle ahead has an orange and red triangle on the back. What does it tell you?",
+   "src": []
+  },
+  "guide_road_q1_a": {
+   "en": "It travels slower than 25 mph",
+   "src": [
+    "smv"
+   ]
+  },
+  "guide_road_q1_b": {
+   "en": "It carries a load that may spill",
+   "src": []
+  },
+  "guide_road_q1_c": {
+   "en": "It is about to make a wide turn",
+   "src": []
+  },
+  "guide_road_q1_d": {
+   "en": "It has the right of way over you",
+   "src": []
+  },
+  "guide_road_q1_why": {
+   "en": "The triangle marks a slow-moving vehicle: one that travels slower than 25 mph.",
+   "src": [
+    "smv"
+   ]
+  },
+  "guide_road_q2": {
+   "en": "The yellow center line on your side is solid. What does it mean?",
+   "src": []
+  },
+  "guide_road_q2_a": {
+   "en": "Do not pass here",
+   "src": [
+    "yellowSolid"
+   ]
+  },
+  "guide_road_q2_b": {
+   "en": "Pass with care",
+   "src": []
+  },
+  "guide_road_q2_c": {
+   "en": "Left turns only",
+   "src": []
+  },
+  "guide_road_q2_d": {
+   "en": "One-way traffic",
+   "src": []
+  },
+  "guide_road_q2_why": {
+   "en": "A solid yellow line on your side means you should not pass.",
+   "src": [
+    "yellowSolid"
+   ]
+  },
+  "guide_road_q3": {
+   "en": "What is a shared center turn lane for?",
+   "src": []
+  },
+  "guide_road_q3_a": {
+   "en": "Left turns, from either direction",
+   "src": [
+    "centerSign"
+   ]
+  },
+  "guide_road_q3_b": {
+   "en": "Passing slow cars when it is clear",
+   "src": []
+  },
+  "guide_road_q3_c": {
+   "en": "Driving straight in heavy traffic",
+   "src": []
+  },
+  "guide_road_q3_d": {
+   "en": "Parking for a short delivery stop",
+   "src": []
+  },
+  "guide_road_q3_why": {
+   "en": "The lane is for left turns only. It is not for through traffic or for passing.",
+   "src": [
+    "centerSign"
+   ]
+  },
+  "guide_lang_title": {
+   "en": "Test and Manual in Your Language",
+   "src": []
+  },
+  "guide_lang_lead": {
+   "en": "You do not have to take the knowledge test in English. The Maine BMV offers the test and the manual in other languages.",
+   "src": [
+    "langTest",
+    "langManual"
+   ]
+  },
+  "guide_lang_s1_title": {
+   "en": "The knowledge test",
+   "src": []
+  },
+  "guide_lang_s1_intro": {
+   "en": "The BMV computer test comes in these languages:",
+   "src": [
+    "langTest"
+   ]
+  },
+  "guide_lang_l_arabic": {
+   "en": "Arabic",
+   "src": [
+    "langTest",
+    "langManualAr"
+   ]
+  },
+  "guide_lang_l_canadian_french": {
+   "en": "Canadian French",
+   "src": [
+    "langTest"
+   ]
+  },
+  "guide_lang_l_english": {
+   "en": "English",
+   "src": [
+    "langTest"
+   ]
+  },
+  "guide_lang_l_french": {
+   "en": "French",
+   "src": [
+    "langTest",
+    "langManualFr"
+   ]
+  },
+  "guide_lang_l_lingala": {
+   "en": "Lingala",
+   "src": [
+    "langTest"
+   ]
+  },
+  "guide_lang_l_portuguese": {
+   "en": "Portuguese",
+   "src": [
+    "langTest",
+    "langManualPt"
+   ]
+  },
+  "guide_lang_l_somali": {
+   "en": "Somali",
+   "src": [
+    "langTest",
+    "langManualSo"
+   ]
+  },
+  "guide_lang_l_spanish": {
+   "en": "Spanish",
+   "src": [
+    "langTest",
+    "langManualEs"
+   ]
+  },
+  "guide_lang_l_swahili": {
+   "en": "Swahili",
+   "src": [
+    "langTest"
+   ]
+  },
+  "guide_lang_s2_title": {
+   "en": "If your language is not on the list",
+   "src": []
+  },
+  "guide_lang_s2_a": {
+   "en": "The BMV gives you an interpreter for the written test.",
+   "src": [
+    "langInterp"
+   ]
+  },
+  "guide_lang_s2_b": {
+   "en": "The interpreter is free.",
+   "src": [
+    "langInterp"
+   ]
+  },
+  "guide_lang_s2_c": {
+   "en": "Write the language you need on the exam application form.",
+   "src": [
+    "langForm"
+   ]
+  },
+  "guide_lang_s2_d": {
+   "en": "It can take 4 weeks or more to book a test with an interpreter. Apply early.",
+   "src": [
+    "langWeeks"
+   ]
+  },
+  "guide_lang_s3_title": {
+   "en": "The driver's manual",
+   "src": []
+  },
+  "guide_lang_s3_intro": {
+   "en": "The BMV publishes the manual in English and in these languages:",
+   "src": [
+    "langManual"
+   ]
+  },
+  "guide_lang_s3_n1": {
+   "en": "Use the link below to get the manual. It goes to the BMV page, which always has the newest copy.",
+   "src": []
+  },
+  "guide_lang_s4_title": {
+   "en": "Questions",
+   "src": []
+  },
+  "guide_lang_s4_a": {
+   "en": "Call the BMV exam office at 207-624-9000, extension 52119.",
+   "src": [
+    "langPhone"
+   ]
+  },
+  "guide_link_exam_lang": {
+   "en": "Maine BMV: license exam and interpreter program",
+   "src": []
+  },
+  "guide_link_manual_lang": {
+   "en": "Maine BMV: the manual in other languages",
+   "src": []
+  },
+  "guide_lang_sources": {
+   "en": "Sources: Maine BMV pages \"Drivers License Exam\" (License Exam Interpreter Program) and \"Driver License Manual and Maine Motorist Handbook and Study Guide\", read on November 10, 2026.",
+   "src": []
+  },
+  "guide_lang_q1": {
+   "en": "Your language is not one of the test languages. What does the BMV offer?",
+   "src": []
+  },
+  "guide_lang_q1_a": {
+   "en": "An interpreter for the written test",
+   "src": [
+    "langInterp"
+   ]
+  },
+  "guide_lang_q1_b": {
+   "en": "A shorter test with fewer questions",
+   "src": []
+  },
+  "guide_lang_q1_c": {
+   "en": "A test you can take from your home",
+   "src": []
+  },
+  "guide_lang_q1_d": {
+   "en": "A license with no written test at all",
+   "src": []
+  },
+  "guide_lang_q1_why": {
+   "en": "The BMV provides an interpreter for the written test when its system does not have your language.",
+   "src": [
+    "langInterp"
+   ]
+  },
+  "guide_lang_q2": {
+   "en": "What does the BMV interpreter cost you?",
+   "src": []
+  },
+  "guide_lang_q2_a": {
+   "en": "Nothing. It is free.",
+   "src": [
+    "langInterp"
+   ]
+  },
+  "guide_lang_q2_b": {
+   "en": "The full test fee",
+   "src": []
+  },
+  "guide_lang_q2_c": {
+   "en": "A fee for each hour",
+   "src": []
+  },
+  "guide_lang_q2_d": {
+   "en": "Half of the test fee",
+   "src": []
+  },
+  "guide_lang_q2_why": {
+   "en": "The BMV says the interpreter is provided at no cost to you.",
+   "src": [
+    "langForm"
+   ]
+  },
+  "guide_lang_q3": {
+   "en": "How long can it take to book a test with an interpreter?",
+   "src": []
+  },
+  "guide_lang_q3_a": {
+   "en": "4 weeks or more",
+   "src": [
+    "langWeeks"
+   ]
+  },
+  "guide_lang_q3_b": {
+   "en": "About 2 full days",
+   "src": []
+  },
+  "guide_lang_q3_c": {
+   "en": "About 1 full week",
+   "src": []
+  },
+  "guide_lang_q3_d": {
+   "en": "Up to 1 full year",
+   "src": []
+  },
+  "guide_lang_q3_why": {
+   "en": "The BMV says it may take 4 weeks or more. It depends on when an interpreter is free.",
+   "src": [
+    "langWeeks"
+   ]
+  },
+  "feature_license_guide": {
+   "en": "Your License, Step by Step",
+   "src": []
+  },
+  "feature_license_guide_desc": {
+   "en": "Permit, first license, the 2-year provisional rule, points and the two tests.",
+   "src": []
+  },
+  "feature_pulled_over": {
+   "en": "If You Are Pulled Over",
+   "src": []
+  },
+  "feature_pulled_over_desc": {
+   "en": "What to do at a traffic stop, step by step.",
+   "src": []
+  },
+  "feature_insurance_basics": {
+   "en": "Insurance and Paperwork Basics",
+   "src": []
+  },
+  "feature_insurance_basics_desc": {
+   "en": "What to carry, what insurance does and what to do after a crash.",
+   "src": []
+  },
+  "feature_slow_vehicles": {
+   "en": "Slow Vehicles and Lane Lines",
+   "src": []
+  },
+  "feature_slow_vehicles_desc": {
+   "en": "Tractors, horses, yellow lines and the center turn lane.",
+   "src": []
+  },
+  "feature_language_help": {
+   "en": "Test and Manual in Your Language",
+   "src": []
+  },
+  "feature_language_help_desc": {
+   "en": "The BMV test languages, free interpreters and the translated manual.",
+   "src": [
+    "langTest",
+    "langInterp",
+    "langManual"
+   ]
+  },
+  "language_help_heading": {
+   "en": "Language help",
+   "src": []
+  },
+  "language_help_body": {
+   "en": "You can take the Maine permit test in several languages. The BMV also gives free interpreters.",
+   "src": [
+    "langTest",
+    "langInterp"
+   ]
+  },
+  "language_help_open": {
+   "en": "See the languages and how to ask",
+   "src": []
+  },
+  "nd_open_pulled_over": {
+   "en": "Steps for every driver: If You Are Pulled Over",
+   "src": []
+  },
+  "gdl_stage_provisional": {
+   "en": "Provisional license",
+   "src": [
+    "prov2y"
+   ]
+  },
+  "gdl_stage_provisional_desc": {
+   "en": "The 270-day rules have ended. Your license is still provisional. The 2-year rule lasts through {date}. Until then, a conviction for a moving violation suspends your license: 30 days the first time, 180 days the second time, and 1 year after that. If you turn 21 after that date, the law keeps the name \"provisional\" until your 21st birthday.",
+   "src": [
+    "i_270",
+    "provMove",
+    "prov30",
+    "prov180",
+    "prov1y",
+    "prov21",
+    "provMove2y"
+   ]
+  },
+  "gdl_stage_after": {
+   "en": "Two years since your first license",
+   "src": []
+  },
+  "gdl_stage_after_desc": {
+   "en": "The 2-year suspension rule for new drivers covered your first 2 years. That time has passed. Demerit points and every traffic law still apply. If you are under 21, the law still calls your license provisional, and you still may not drive with any alcohol in your body.",
+   "src": [
+    "provMove",
+    "points",
+    "zeroAlc",
+    "prov21"
+   ]
+  },
+  "gdl_dates_title": {
+   "en": "Your license dates",
+   "src": []
+  },
+  "gdl_dates_restrict_until": {
+   "en": "The 270-day rules can end on {date}. Days left: {n}.",
+   "src": [
+    "i_270"
+   ]
+  },
+  "gdl_dates_restrict_ended": {
+   "en": "The 270-day rules ended on {date}, unless they were extended.",
+   "src": [
+    "i_270",
+    "i_extend"
+   ]
+  },
+  "gdl_dates_prov_until": {
+   "en": "The 2-year rule for new drivers lasts through {date}. Days left: {n}.",
+   "src": [
+    "prov2y",
+    "provMove",
+    "provMove2y"
+   ]
+  },
+  "gdl_dates_prov_ended": {
+   "en": "The 2-year rule for new drivers ended on {date}.",
+   "src": [
+    "provMove",
+    "provMove2y"
+   ]
+  },
+  "gdl_dates_note": {
+   "en": "These dates count from the license date you entered. If you are convicted of breaking a 270-day rule, those rules last 270 more days. Maine law also calls a first license provisional until age 21, when that comes later than the 2-year date.",
+   "src": [
+    "i_extend",
+    "prov21"
+   ]
+  },
+  "gdl_dates_empty": {
+   "en": "Enter the date of your first license above. You will see when the 270-day rules and the 2-year rule for new drivers end.",
+   "src": []
+  },
+  "gdl_dates_open_guide": {
+   "en": "Read: Your License, Step by Step",
+   "src": []
+  },
+  "guide_ui_back": {
+   "en": "Back to the menu",
+   "src": []
+  },
+  "guide_ui_check_title": {
+   "en": "Check yourself",
+   "src": []
+  },
+  "guide_ui_check_note": {
+   "en": "Three quick questions. Try them before you look back. No score is saved.",
+   "src": []
+  },
+  "guide_ui_mark_right": {
+   "en": "Right answer",
+   "src": []
+  },
+  "guide_ui_mark_yours": {
+   "en": "Your answer",
+   "src": []
+  },
+  "guide_ui_right": {
+   "en": "Yes.",
+   "src": []
+  },
+  "guide_ui_wrong": {
+   "en": "Not this one. The answer is: {answer}.",
+   "src": []
+  },
+  "guide_ui_retry": {
+   "en": "Clear my answers",
+   "src": []
+  },
+  "guide_ui_more_title": {
+   "en": "Read the official pages",
+   "src": []
+  },
+  "guide_ui_new_tab": {
+   "en": "(opens in a new tab)",
+   "src": []
+  },
+  "guide_ui_disclaimer": {
+   "en": "This is a study guide, not legal advice. Laws and fees change. The BMV and the law itself have the final word.",
+   "src": []
+  },
+  "guide_lic_s3_n3": {
+   "en": "So two things have different end dates. The suspension rule for moving violations ends 2 years after your license date. The no-alcohol rule lasts until you turn 21.",
+   "src": [
+    "provMove2y",
+    "zeroAlc"
+   ]
+  }
+ },
+ "sources": {
+  "permit15": {
+   "from": "Maine BMV, \"How to Obtain a License\", read 2026-11-10",
+   "quote": "To obtain a permit, you must be at least 15 years old and need to complete a written driving exam"
+  },
+  "drivered": {
+   "from": "29-A M.R.S. sec. 1304",
+   "quote": "a person who is 15 years of age or older and has not attained 18 years of age must complete a course in driver education before applying for a learner's permit"
+  },
+  "permitVision": {
+   "from": "Maine BMV, \"How to Obtain a License\", read 2026-11-10",
+   "quote": "Once you arrive for your written exam, you will be given a free vision screening"
+  },
+  "supervisor": {
+   "from": "29-A M.R.S. sec. 1304",
+   "quote": "accompanied by a licensed operator who: (1) Has held a valid license for at least 2 years; (2) Is at least 20 years of age; (3) Is occupying a seat beside the driver"
+  },
+  "permitPhone": {
+   "from": "Maine BMV, \"License Age Restrictions\", read 2026-11-10",
+   "quote": "prohibited from using a cellular phone while operating with a permit"
+  },
+  "hours": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "held a learner's permit for 6 months from the date of issue of the learner's permit and must complete a minimum of 70 hours of driving, including 10 hours of night driving"
+  },
+  "permit2y": {
+   "from": "Maine BMV, \"How to Obtain a License\", read 2026-11-10",
+   "quote": "permits are not renewable and only last for two years"
+  },
+  "age16": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Be at least 16 years of age and have completed an approved driver education course"
+  },
+  "intermediate": {
+   "from": "Maine BMV, \"Graduated Drivers License\", read 2026-11-10",
+   "quote": "If a license is issued to a person younger than age 18, that person will receive an \" Intermediate License \""
+  },
+  "i_pass": {
+   "from": "29-A M.R.S. sec. 1311",
+   "quote": "Carry passengers other than immediate family members unless accompanied by a licensed operator who meets the requirements of section 1304, subsection 1, paragraph E"
+  },
+  "i_night": {
+   "from": "29-A M.R.S. sec. 1311",
+   "quote": "Operate a motor vehicle between the hours of 12 a.m. and 5 a.m."
+  },
+  "i_phone": {
+   "from": "29-A M.R.S. sec. 1311",
+   "quote": "Operate a motor vehicle on a public way while using, manipulating, talking into or otherwise interacting with a handheld electronic device or mobile telephone"
+  },
+  "i_270": {
+   "from": "29-A M.R.S. sec. 1311",
+   "quote": "the license restrictions in subsection 1 are in effect for a period of 270 days from license issuance"
+  },
+  "i_extend": {
+   "from": "29-A M.R.S. sec. 1311",
+   "quote": "must have the license restrictions in subsection 1 extended for an additional period of 270 days. The additional period of license restrictions may extend beyond the person's 18th birthday"
+  },
+  "i_susp": {
+   "from": "29-A M.R.S. sec. 1311",
+   "quote": "For 60 days on the first offense"
+  },
+  "i_susp2": {
+   "from": "29-A M.R.S. sec. 1311",
+   "quote": "For 180 days on the 2nd offense"
+  },
+  "i_susp3": {
+   "from": "29-A M.R.S. sec. 1311",
+   "quote": "For one year on the 3rd or subsequent offense"
+  },
+  "i_fine": {
+   "from": "29-A M.R.S. sec. 1311",
+   "quote": "a fine of not less than $250 and not more than $500 may be adjudged"
+  },
+  "prov2y": {
+   "from": "29-A M.R.S. sec. 2472",
+   "quote": "A license issued to a person who has not yet attained the age of 21 years is a provisional license for a period of 2 years following the date of issue"
+  },
+  "provAfter270": {
+   "from": "Maine BMV, \"License Age Restrictions\", read 2026-11-10",
+   "quote": "The intermediate restrictions (A, B and C above) do not apply after 270 days, but a conviction for any moving violation during the two year provisional license term will still result in license suspension"
+  },
+  "provMove": {
+   "from": "29-A M.R.S. sec. 2472",
+   "quote": "is convicted or adjudicated of a moving motor vehicle violation that occurred within 2 years from the date of issue of a juvenile provisional license, the Secretary of State shall suspend the license"
+  },
+  "prov30": {
+   "from": "29-A M.R.S. sec. 2472",
+   "quote": "For 30 days on the 1st offense"
+  },
+  "prov180": {
+   "from": "29-A M.R.S. sec. 2472",
+   "quote": "For 180 days on the 2nd offense"
+  },
+  "prov1y": {
+   "from": "29-A M.R.S. sec. 2472",
+   "quote": "For one year on the 3rd or subsequent offense"
+  },
+  "provCourse": {
+   "from": "29-A M.R.S. sec. 2472",
+   "quote": "shall complete a driver improvement program approved by the Secretary of State before the suspension may be terminated"
+  },
+  "zeroAlc": {
+   "from": "29-A M.R.S. sec. 2472",
+   "quote": "includes the condition that the person not operate a motor vehicle with an alcohol level of more than 0.00 grams"
+  },
+  "zeroAlc1y": {
+   "from": "29-A M.R.S. sec. 2472",
+   "quote": "One year for a first offense"
+  },
+  "points": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "assigning demerit points for persons convicted of certain motor vehicle traffic offenses"
+  },
+  "points6_12": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Once certain point levels are reached (currently 6 points), a warning is issued by the Secretary of State, and if the point total reaches 12 points or more the driver's license will be suspended"
+  },
+  "pointsYear": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Points will be erased from a driver's record when they become one year old"
+  },
+  "pointsCredit": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "awards one point for each calendar year free of convictions or suspensions. One is permitted to accumulate up to four violation free credit points"
+  },
+  "pointsCourse": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "improvement course will deduct three points from a driver's point total"
+  },
+  "pointsCourseOnce": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "points will be deducted only once in any twelve-month period"
+  },
+  "test30": {
+   "from": "Maine BMV, \"Drivers License Exam\" (maine.gov/sos/bmv/driver-licenses-and-ids/car-license/drivers-license-exam), read 2026-11-10",
+   "quote": "The knowledge test consists of 30 questions, and you must answer a minimum of 24 correctly to pass the test"
+  },
+  "testTopics": {
+   "from": "Maine BMV, \"Drivers License Exam\" (maine.gov/sos/bmv/driver-licenses-and-ids/car-license/drivers-license-exam), read 2026-11-10",
+   "quote": "the rules of the road, the meaning of various signs, pedestrian and bicycle safety, an awareness of Maine' s operating under the influence laws, and the dangers associated with distracted driving"
+  },
+  "testVision": {
+   "from": "Maine BMV, \"Drivers License Exam\" (maine.gov/sos/bmv/driver-licenses-and-ids/car-license/drivers-license-exam), read 2026-11-10",
+   "quote": "You may take a vision test at no fee when you appear for your written examination"
+  },
+  "testFee": {
+   "from": "Maine BMV, \"Drivers License and Examination Fees\" (saved 2026-11-09)",
+   "quote": "Class C and Motorcycle Permit Examination (Written Test) $35"
+  },
+  "roadWhat": {
+   "from": "Maine BMV, \"Drivers License Exam\" (maine.gov/sos/bmv/driver-licenses-and-ids/car-license/drivers-license-exam), read 2026-11-10",
+   "quote": "A driver's license examiner will assess your ability to maintain control of your vehicle at all times, whether it be driving forward or backward, maintaining your proper lane position, turning left or right or driving straight ahead"
+  },
+  "roadPark": {
+   "from": "Maine BMV, \"Drivers License Exam\" (maine.gov/sos/bmv/driver-licenses-and-ids/car-license/drivers-license-exam), read 2026-11-10",
+   "quote": "The test includes a parallel parking and straight-line backing up requirement"
+  },
+  "roadReact": {
+   "from": "Maine BMV, \"Drivers License Exam\" (maine.gov/sos/bmv/driver-licenses-and-ids/car-license/drivers-license-exam), read 2026-11-10",
+   "quote": "You will also be judged on how well you observe and react to other drivers and pedestrians, as well as traffic signs, signals, and conditions"
+  },
+  "roadLegal": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "You will not be asked to do anything that is extraordinary or illegal"
+  },
+  "roadBring": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Bring your learners permit and appointment notice with you to that scheduled appointment. Drivers must furnish their own vehicle, properly registered (bring registration) and inspected, for the road test. You must be accompanied by a licensed operator"
+  },
+  "refuse": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "The examiner may refuse the road test for"
+  },
+  "refuseSticker": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "inspection sticker has expired"
+  },
+  "refuseSeat": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Front seats not available for examiner or are not properly secured to the floor of the vehicle"
+  },
+  "refuseWeather": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Vehicle improperly equipped (for climatic conditions) e.g. snow treads or chains"
+  },
+  "refuseGlove": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Glove compartment not properly secured"
+  },
+  "refuseDoor": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Examinations will not be given if vehicles do not pass the regular examination criteria, or if any doors are inoperative"
+  },
+  "refusePet": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Applicant refuses to remove pets from vehicle"
+  },
+  "roadFail": {
+   "from": "Maine BMV, \"Drivers License Exam\" (maine.gov/sos/bmv/driver-licenses-and-ids/car-license/drivers-license-exam), read 2026-11-10",
+   "quote": "we will give you information about why you were not successful and what you need to practice before your next test"
+  },
+  "signal100": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Always signal what you intend to do at least 100 feet before making a change"
+  },
+  "stopRight": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Move to the right side of the road. Make sure you are in a safe spot"
+  },
+  "stopMust": {
+   "from": "29-A M.R.S. sec. 2414",
+   "quote": "A person commits a Class E crime if that person fails or refuses to stop a motor vehicle on request or signal of a uniformed law enforcement officer"
+  },
+  "stopStay": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Stay in the vehicle unless asked to get out"
+  },
+  "stopEngine": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Turn off your engine. Turn on your hazard flashers. At night, turn on your inside lights so the officer can see inside the vehicle. Roll down your window so that you and the officer can talk"
+  },
+  "stopCalm": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Remain calm. Keep your safety belt fastened. Ask your passenger(s) to do the same. Keep your hands on the steering wheel"
+  },
+  "stopPapers": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "The officer may ask for your license, insurance card or vehicle registration. Tell the officer where they are located and reach for them slowly with one hand on the wheel"
+  },
+  "stopAnswer": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Answer the officer's questions"
+  },
+  "stopRun": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Never try to run from the law. Many fatal crashes result from police chases"
+  },
+  "licShow": {
+   "from": "29-A M.R.S. sec. 1408",
+   "quote": "On demand of a law enforcement officer, the licensee must produce the license or an electronic version of the license for inspection"
+  },
+  "licCarry": {
+   "from": "29-A M.R.S. sec. 1408",
+   "quote": "must have the license in immediate possession when operating a motor vehicle. Possession may be in electronic form"
+  },
+  "licPhone": {
+   "from": "29-A M.R.S. sec. 1408",
+   "quote": "The use of a portable electronic device to provide license information does not constitute consent for a law enforcement officer to access other contents of the portable electronic device"
+  },
+  "insPhone": {
+   "from": "29-A M.R.S. sec. 1601",
+   "quote": "Evidence of liability insurance or financial responsibility may be in electronic form, including the display of an image on a portable electronic device"
+  },
+  "nameAddr": {
+   "from": "29-A M.R.S. sec. 105",
+   "quote": "the person intentionally fails or refuses upon request to give the person's correct name, address or date of birth to a law enforcement officer"
+  },
+  "regShow": {
+   "from": "29-A M.R.S. sec. 105",
+   "quote": "may demand and inspect the driver's license, certificate of registration, permits and the identification numbers of the motor vehicle"
+  },
+  "regImpound": {
+   "from": "29-A M.R.S. sec. 105",
+   "quote": "When a motor vehicle is operated by a person not able to produce a certificate of registration"
+  },
+  "regImpound2": {
+   "from": "29-A M.R.S. sec. 105",
+   "quote": "an officer may impound and hold that vehicle"
+  },
+  "insForms": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Acceptable forms of evidence of insurance include: a motor vehicle insurance card, a letter from an insurance company or agent showing that the vehicle is covered by a liability insurance policy, an insurance binder or an insurance policy"
+  },
+  "insNotOwner": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Any vehicle you are operating must be insured even though you are not the owner. Therefore, you should verify and carry evidence of insurance in the vehicle"
+  },
+  "insWhat": {
+   "from": "29-A M.R.S. sec. 1605",
+   "quote": "satisfy the judgment in an action to recover damages: (1) To property or for bodily injury, including death; (2) Accidentally sustained during the term of the policy by a person other than the insured"
+  },
+  "insMust": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Maine law requires every owner and operator of a motor vehicle to maintain motor vehicle liability insurance and to present evidence upon request of a law enforcement officer"
+  },
+  "insMin": {
+   "from": "29-A M.R.S. sec. 1605",
+   "quote": "(1) For damage to property, $25,000; (2) For injury to or death of any one person, $50,000; (3) For one accident resulting in injury to or death of more than one person, $100,000"
+  },
+  "insUM": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "By law, all automobile liability policies written in Maine include \"uninsured motorist\" coverage. This protects the insured for bodily injury damages"
+  },
+  "insRegister": {
+   "from": "29-A M.R.S. sec. 402",
+   "quote": "A person may not register a vehicle unless the person satisfies the Secretary of State that the vehicle is covered by a liability insurance policy"
+  },
+  "insAsk": {
+   "from": "29-A M.R.S. sec. 1601",
+   "quote": "When a law enforcement officer stops an operator for a moving violation or the operator is involved in an accident that must be reported under section 2251 , the officer shall request the operator to produce evidence of liability insurance or financial responsibility"
+  },
+  "insPrima": {
+   "from": "29-A M.R.S. sec. 1601",
+   "quote": "this failure is prima facie evidence that the person is uninsured and in violation of this section"
+  },
+  "insFine": {
+   "from": "29-A M.R.S. sec. 1601",
+   "quote": "Violation of this section is a traffic infraction, for which a forfeiture of not less than $100 and not more than $500 may be assessed"
+  },
+  "insSusp": {
+   "from": "29-A M.R.S. sec. 1601",
+   "quote": "the Secretary of State shall suspend: A. The license of that person"
+  },
+  "insSuspReg": {
+   "from": "29-A M.R.S. sec. 1601",
+   "quote": "The registration of a vehicle owned by that person"
+  },
+  "insSuspUntil": {
+   "from": "29-A M.R.S. sec. 1601",
+   "quote": "The suspension continues until that person provides proof of financial responsibility to the Secretary of State"
+  },
+  "insSR22": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "you will be required to file proof of financial responsibility through an SR-22 insurance certificate or face suspension of your license and registration privileges"
+  },
+  "insSR22cert": {
+   "from": "29-A M.R.S. sec. 1605",
+   "quote": "By filing with the Secretary of State a certificate from an insurance or surety company"
+  },
+  "insCrashNoIns": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "If you are responsible for accident damage and do not have liability insurance, license and registration must be suspended until proof of insurance is filed with the Secretary of State"
+  },
+  "insFake": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "It is a crime to display evidence of insurance that is fictitious or altered"
+  },
+  "insDismiss": {
+   "from": "29-A M.R.S. sec. 1601",
+   "quote": "that person presents to the court at the time of trial satisfactory evidence of liability insurance or financial responsibility that was in effect at the time of the alleged violation, the court must dismiss the complaint"
+  },
+  "crashStop": {
+   "from": "29-A M.R.S. sec. 2252",
+   "quote": "shall immediately stop the vehicle at the scene of the accident"
+  },
+  "crashStay": {
+   "from": "29-A M.R.S. sec. 2252",
+   "quote": "The operator shall remain at the scene and provide"
+  },
+  "crashHelp": {
+   "from": "29-A M.R.S. sec. 2252",
+   "quote": "The operator shall render reasonable assistance to an injured person"
+  },
+  "crashAmb": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Stop your car at once and render all possible aid to any injured people and send for an ambulance if needed"
+  },
+  "crashGive": {
+   "from": "29-A M.R.S. sec. 2252",
+   "quote": "A. The operator's name and address; B. The registration number of the operator's vehicle"
+  },
+  "crashShow": {
+   "from": "29-A M.R.S. sec. 2252",
+   "quote": "An opportunity to examine the driver's license"
+  },
+  "crashShowIns": {
+   "from": "29-A M.R.S. sec. 2252",
+   "quote": "Evidence of liability insurance or financial responsibility as required by section 1601"
+  },
+  "crashReport": {
+   "from": "29-A M.R.S. sec. 2251",
+   "quote": "\"reportable accident\" means an accident on a public way or a place where public traffic may reasonably be anticipated, resulting in bodily injury or death to a person or apparent property damage of $2,000 or more"
+  },
+  "crashReportNow": {
+   "from": "29-A M.R.S. sec. 2251",
+   "quote": "A reportable accident must be reported immediately by the quickest means of communication"
+  },
+  "crashWrite": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Record the other driver's information"
+  },
+  "crashWrite2": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Insurance company name"
+  },
+  "crashFacts": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Give the police information about the accident at the time of the accident. Give just the facts"
+  },
+  "crashParked": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "If a parked car is damaged, try to find the owner. If the owner can't be found leave a note in a place where the owner can find it"
+  },
+  "smv": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "A fluorescent or reflective orange and red triangle displayed on the rear indicates that the vehicle is moving less than 25 mph. Use caution when you see a slow-moving vehicle and be sure it is safe before you pass"
+  },
+  "smvRural": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Watch for slow moving vehicles, especially in rural areas"
+  },
+  "farm": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Watch for farm equipment moving across the road or driving on state highways in rural areas. Pass with care. Remember that the driver may not see or hear your vehicle"
+  },
+  "horseRight": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "They have the same right to the roadway as a motorist does"
+  },
+  "horseHorn": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Do not use your horn or \"rev\" the engine when near an animal as this may scare them and cause a crash"
+  },
+  "horseLaw": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "It is against the law to purposefully frighten any animal being ridden, driven, or led on or near a public way"
+  },
+  "horseLeft": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Watch out for left turns into fields and driveways"
+  },
+  "moped": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Remember that scooters and mopeds travel at much lower speeds than motorcycles"
+  },
+  "bike3": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Maine law requires that there be at least three feet of space between the right side of your vehicle and the bicycle as you pass"
+  },
+  "yellow": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Yellow road markings divide lanes of traffic going in opposite directions"
+  },
+  "yellowBroken": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "You may pass if there is a broken center line on your side of the road. Pass only if there are no oncoming cars in the passing lanes"
+  },
+  "yellowSolid": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "You should not pass when there is a solid center line on your side of the road"
+  },
+  "yellowBoth": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "passing prohibited in both"
+  },
+  "passFinish": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Maine law requires that you complete a pass before you reach the beginning of a no passing zone"
+  },
+  "passSigns": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "You may not pass where a yellow pennant NO PASSING ZONE sign appears on the left of the road or a rectangular white (regulatory) DO NOT PASS sign appears on the right of the road"
+  },
+  "white": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "Solid white lines painted on the roadway separate lanes of traffic going in the same direction that have different uses. They also discourage changing lanes. Broken white lines simply indicate multiple lanes going in the same direction and they allow safe lane changes"
+  },
+  "center": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "there is a shared left turn lane located in the middle of the roadway"
+  },
+  "centerSign": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "This sign marks a lane that is only for left turning vehicles. It is not for through traffic or for passing other vehicles. Traffic travelling in either direction may use this lane"
+  },
+  "centerHow": {
+   "from": "Maine Driver's License Manual, Rev. 4/24 (manual.txt)",
+   "quote": "When using a shared left turn lane check your mirrors and for vehicles ahead, signal left and check your left blind spot. Steer smoothly into the shared left turn lane, when traffic is clear, make your left turn"
+  },
+  "centerTwoPart": {
+   "from": "29-A M.R.S. sec. 2051",
+   "quote": "As part of a 2-part turn when the vehicle turning left from a driveway or entrance uses the 2-way traffic lane until the travel lane in the direction the vehicle is proceeding can be entered safely by the vehicle"
+  },
+  "langTest": {
+   "from": "Maine BMV, \"Drivers License Exam\" (maine.gov/sos/bmv/driver-licenses-and-ids/car-license/drivers-license-exam), read 2026-11-10",
+   "quote": "The BMV digital testing system provides the basic knowledge test in 8 languages: Arabic, Canadian French, English, French, Lingala, Portuguese, Somali, Spanish, and Swahili"
+  },
+  "langInterp": {
+   "from": "Maine BMV, \"Drivers License Exam\" (maine.gov/sos/bmv/driver-licenses-and-ids/car-license/drivers-license-exam), read 2026-11-10",
+   "quote": "If the applicant speaks a language our system does not provide, the BMV will provide a free interpreter for the written test"
+  },
+  "langForm": {
+   "from": "Maine BMV, \"Drivers License Exam\" (maine.gov/sos/bmv/driver-licenses-and-ids/car-license/drivers-license-exam), read 2026-11-10",
+   "quote": "Applicants should identify what specific language services they need when taking the basic knowledge test to earn their Class C driving permit on the newly modified exam application form, and an interpreter will be provided at no cost to the applicant"
+  },
+  "langWeeks": {
+   "from": "Maine BMV, \"Drivers License Exam\" (maine.gov/sos/bmv/driver-licenses-and-ids/car-license/drivers-license-exam), read 2026-11-10",
+   "quote": "Scheduling for an applicant that requires an interpreter may take 4 weeks or more, depending on interpreter availability"
+  },
+  "langManual": {
+   "from": "Maine BMV, \"Driver License Manual and Maine Motorist Handbook and Study Guide\" page, read 2026-11-10",
+   "quote": "The Maine Driver's License Manual and Motorist Handbook and Study Guide are available in the various formats and languages below"
+  },
+  "langManualAr": {
+   "from": "Maine BMV, \"Driver License Manual and Maine Motorist Handbook and Study Guide\" page, read 2026-11-10",
+   "quote": "Arabic Word | PDF"
+  },
+  "langManualFr": {
+   "from": "Maine BMV, \"Driver License Manual and Maine Motorist Handbook and Study Guide\" page, read 2026-11-10",
+   "quote": "French Word | PDF"
+  },
+  "langManualPt": {
+   "from": "Maine BMV, \"Driver License Manual and Maine Motorist Handbook and Study Guide\" page, read 2026-11-10",
+   "quote": "Portuguese Word | PDF"
+  },
+  "langManualSo": {
+   "from": "Maine BMV, \"Driver License Manual and Maine Motorist Handbook and Study Guide\" page, read 2026-11-10",
+   "quote": "Somali Word | PDF"
+  },
+  "langManualEs": {
+   "from": "Maine BMV, \"Driver License Manual and Maine Motorist Handbook and Study Guide\" page, read 2026-11-10",
+   "quote": "Spanish Word | PDF"
+  },
+  "langPhone": {
+   "from": "Maine BMV, \"Drivers License Exam\" (maine.gov/sos/bmv/driver-licenses-and-ids/car-license/drivers-license-exam), read 2026-11-10",
+   "quote": "call the Examination Section at 207-624-9000, ext. 52119"
+  },
+  "prov21": {
+   "from": "29-A M.R.S. sec. 2472",
+   "quote": "is a provisional license for a period of 2 years following the date of issue or until the holder attains 21 years of age, whichever occurs last"
+  },
+  "provManual2y": {
+   "from": "Maine Driver's License Manual (Rev. 4/24), section 1",
+   "quote": "The first license issued to a new applicant under 21 years of age is provisional for a period of two years"
+  },
+  "provMove2y": {
+   "from": "29-A M.R.S. sec. 2472",
+   "quote": "convicted or adjudicated of a moving motor vehicle violation that occurred within 2 years from the date of issue of a juvenile provisional license"
+  }
+ }
+}

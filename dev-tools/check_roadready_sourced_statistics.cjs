@@ -94,7 +94,10 @@ const CLAIMS = [
     label: 'texting crash-risk multiplier',
     re: /put it near (\d{2})×/,
     min: 20, max: 25,
-    source: 'Virginia Tech Transportation Institute naturalistic driving: ~23x for texting',
+    source: 'Virginia Tech Transportation Institute naturalistic driving: 23.2x for texting. ' +
+      'NOTE (round-30 content review): that figure comes from a study of HEAVY-TRUCK drivers, not ' +
+      'car drivers. The number is pinned as published; the wording around it is on the list for ' +
+      'the owner to qualify.',
   },
   {
     label: 'Maine cyclist passing distance (§2070(1-A))',
@@ -410,10 +413,323 @@ const CLAIMS = [
   },
   {
     label: 'Maine standard inspection fee (§1751)',
-    re: /inspection fee by statute at about \$(\d{2}\.\d{2})/,
+    // Reworded in round 30: it used to read "by statute at about $12.50",
+    // which hid that the figure is a CAP and that Cumberland County differs.
+    re: /caps the standard inspection fee at \$(\d{2}\.\d{2}) \(29-A §1751\)/,
     min: 12.5, max: 12.5,
-    source: 'Maine 29-A §1751(2): the basic inspection fee may not exceed $12.50 (higher in ' +
-      'Cumberland County for enhanced tests), payable whether or not the vehicle passes.',
+    source: 'Maine 29-A §1751(3-A)(A), read 2026-11-09: "For inspections performed under ' +
+      'subsection 2, the fee may not be more than $12.50". "The inspection fee is payable ' +
+      'whether the vehicle passes inspection or not."',
+  },
+  {
+    label: 'Maine enhanced (Cumberland County) inspection fee, 1996+ vehicles (§1751)',
+    re: /up to \$(\d{2}\.\d{2}) for 1996 and newer models/,
+    min: 18.5, max: 18.5,
+    source: 'Maine 29-A §1751(2-A): "a motor vehicle that is required to be registered in ' +
+      'Cumberland County ... must have an annual enhanced inspection." §1751(3-A)(C): "For ' +
+      'inspections of 1996 and subsequent model vehicles performed under subsection 2-A, the ' +
+      'fee may not be more than $18.50" ($15.50 for pre-1996 models under (B)).',
+  },
+  // ── Round 30 (2026-11-09): statutes the corrected tool now cites. Each was
+  // fetched from legislature.maine.gov on 2026-11-09 and is in force (none is
+  // marked REPEALED). Text saved with the round at lane_facts/work/statutes/.
+  {
+    label: 'Maine post-crash duty: name AND address (§2252, §2255)',
+    // The tool told teens to withhold their home address. That is the reverse
+    // of the law, and failing to give it is a crime. Presence check on the
+    // whole duty sentence, citation included.
+    re: /your name and address, your plate number, and your license and insurance if they ask\. Maine law requires this \(29-A §2252 and §2255\)/,
+    min: null, max: null,
+    source: 'Maine 29-A §2252(2) (injury or death): "The operator shall remain at the scene and ' +
+      'provide ... A. The operator\'s name and address; B. The registration number of the ' +
+      'operator\'s vehicle; C. An opportunity to examine the driver\'s license if ... so requests ' +
+      'and the license is available; and D. Evidence of liability insurance or financial ' +
+      'responsibility ... if ... so requests." §2255(2) (property damage) lists the same four ' +
+      'items for the property owner.',
+  },
+  {
+    label: 'Maine post-crash: leaving the scene is a crime (§2252(4), §2255(3))',
+    re: /Stay at the scene\. Leaving a crash is a crime in Maine\./,
+    min: null, max: null,
+    source: 'Maine 29-A §2252(1): the operator "shall immediately stop the vehicle at the scene"; ' +
+      '§2252(4): "A person commits a Class D crime if that person fails to comply with this ' +
+      'section, except that a person commits a traffic infraction if that person fails to comply ' +
+      'with subsection 2, paragraph D." §2255(3): "A person commits a Class E crime if that ' +
+      'person fails to comply with this section" (same paragraph D exception). The tool states ' +
+      'no class or fine, so there is no number to pin: verified, presence check only.',
+  },
+  {
+    label: 'Maine intermediate-licence passenger rule (§1311)',
+    re: /may not carry passengers who are not immediate family unless a qualified licensed adult supervises \(29-A §1311\)/,
+    min: null, max: null,
+    source: 'Maine 29-A §1311(1): "A person under 18 years of age who has been issued a driver\'s ' +
+      'license may not: A. Carry passengers other than immediate family members unless accompanied ' +
+      'by a licensed operator who meets the requirements of section 1304, subsection 1, paragraph ' +
+      'E". The restriction runs 270 days from licence issuance (§1311(2)). The tool states no ' +
+      'number in this sentence: presence check.',
+  },
+  {
+    label: 'Maine roundabout: no more than 2 exits in the outside lane (§2053(6)(D))',
+    re: /may not travel past (two) exits in the outside lane \(29-A §2053\)/,
+    min: null, max: null,
+    source: 'Maine 29-A §2053(6)(D): the operator "May not travel in a traffic circle, roundabout ' +
+      'or rotary beyond 2 exit points in the outside lane". (6)(A): yield to a vehicle already ' +
+      'within it. (6)(E): obey signs and pavement markings. The Maine manual adds: choose the ' +
+      'right-most lane if leaving within two exits, "follow the lane lines", "Signal your exit". ' +
+      'The capture is the word "two"; the regex itself pins it.',
+  },
+  {
+    label: 'Maine uncontrolled intersection: yield to the vehicle on your right (§2053(3))',
+    re: /yield to the car on your right \(29-A §2053\)/,
+    min: null, max: null,
+    source: 'Maine 29-A §2053(3): "The operator of a vehicle at intersecting public ways has the ' +
+      'right-of-way over a vehicle on the operator\'s left, and must yield right-of-way to one on ' +
+      'its right". There is NO T-intersection rule in the statute or the manual; the tool used to ' +
+      'teach "the car on the through road always goes first".',
+  },
+  {
+    label: 'Maine narrow road: stop and let the other pass, no uphill priority (§2053(1))',
+    re: /must stop at a reasonable time and a convenient place to let the other pass \(29-A §2053\)/,
+    min: null, max: null,
+    source: 'Maine 29-A §2053(1): "When it is unsafe or difficult to pass without interference, an ' +
+      'operator must stop at a reasonable time and convenient place, to allow the other to pass." ' +
+      'Uphill-has-priority is a California rule the tool used to present as Maine law.',
+  },
+  {
+    label: 'Maine under-21 first refusal, OUI drill explanation (§2472(4))',
+    re: /a first refusal = automatic (\d{2})-month suspension \(29-A §2472/,
+    min: 18, max: 18,
+    source: 'Maine 29-A §2472(4): for a person under 21 "the suspension is: A. Eighteen months for ' +
+      'the first refusal; and B. Thirty months for a 2nd or subsequent refusal." The drill driver ' +
+      'is 19; the tool used to give the adult 275 days here.',
+  },
+  {
+    label: 'Maine under-21 first refusal, OUI drill keyed option (§2472(4))',
+    re: /Automatic (\d{2})-month license suspension/,
+    min: 18, max: 18,
+    source: 'Maine 29-A §2472(4)(A): eighteen months. BMV OUI page: "1st Provisional (refusal) 18 Months".',
+  },
+  {
+    label: 'Maine adult first refusal quoted beside the under-21 figure (§2521)',
+    re: /it is (\d{3}) days for drivers 21 and over/,
+    min: 275, max: 275,
+    source: 'Maine 29-A §2521 / BMV OUI page: "1st (refusal) 275 Days" for drivers 21 and over.',
+  },
+  {
+    label: 'Maine implied-consent fact card carries the under-21 figure (§2472(4))',
+    re: /275-day license suspension \((\d{2}) months if you are under 21\)/,
+    min: 18, max: 18,
+    source: 'Maine 29-A §2472(4)(A). The card serves teen drivers; the adult figure alone misled them.',
+  },
+  {
+    label: 'Maine provisional licence: first moving-violation suspension (§2472(2))',
+    re: /a moving-violation conviction suspends it for (\d{2}) days \(\d{3} days for a second, \d year for a third\)/,
+    min: 30, max: 30,
+    source: 'Maine 29-A §2472(2): "the Secretary of State shall suspend the license: A. For 30 days ' +
+      'on the 1st offense; B. For 180 days on the 2nd offense; and C. For one year on the 3rd or ' +
+      'subsequent offense." BMV: the licence is provisional for two years following issuance.',
+  },
+  {
+    label: 'Maine provisional licence: second moving-violation suspension (§2472(2))',
+    re: /suspends it for \d{2} days \((\d{3}) days for a second, \d year for a third\)/,
+    min: 180, max: 180,
+    source: 'Maine 29-A §2472(2)(B): 180 days on the 2nd offense.',
+  },
+  {
+    label: 'Maine provisional licence: third moving-violation suspension (§2472(2))',
+    re: /suspends it for \d{2} days \(\d{3} days for a second, (\d) year for a third\)/,
+    min: 1, max: 1,
+    source: 'Maine 29-A §2472(2)(C): one year on the 3rd or subsequent offense.',
+  },
+  {
+    label: 'Maine permit: driver education COMPLETED before applying (§1304(1)(A))',
+    re: /you must COMPLETE a driver education course before you apply/,
+    min: null, max: null,
+    source: 'Maine 29-A §1304(1)(A): "a person who is 15 years of age or older and has not attained ' +
+      '18 years of age must complete a course in driver education before applying for a ' +
+      'learner\'s permit." The tool used to say "with driver\'s ed enrollment".',
+  },
+  {
+    label: 'Maine permit: supervised hours before a licence (§1304(1)(H))',
+    re: /log (\d{2}) hours of supervised driving, \d{2} of them at night/,
+    min: 70, max: 70,
+    source: 'Maine 29-A §1304(1)(H): "(1) A period of 6 months has passed from the date the person ' +
+      'was issued a learner\'s permit; and (2) The person has completed a minimum of 70 hours of ' +
+      'driving, including 10 hours of night driving". There is NO "no violations" condition.',
+  },
+  {
+    label: 'Maine permit: night hours within the supervised hours (§1304(1)(H))',
+    re: /log \d{2} hours of supervised driving, (\d{2}) of them at night/,
+    min: 10, max: 10,
+    source: 'Maine 29-A §1304(1)(H)(2): including 10 hours of night driving.',
+  },
+  {
+    label: 'Maine work zones: only SPEEDING fines double (§2075(2))',
+    re: /Maine doubles the fine for SPEEDING in a posted work zone/,
+    min: null, max: null,
+    source: 'Maine 29-A §2075(2): "The penalty for a violation of this subsection is a fine equal ' +
+      'to twice the amount of the fine ... for a similar speeding violation under section 2073", ' +
+      'and only where the limit is posted on standard black and white signs. Ignoring a flagger ' +
+      'or cutting through barrels is a violation but not a doubled-fine one.',
+  },
+  {
+    label: 'Maine school bus: duty to stop starts when it HAS STOPPED with red lights (§2308(2))',
+    re: /has stopped with its red lights flashing \(29-A §2308\)/,
+    min: null, max: null,
+    source: 'Maine 29-A §2308(2): "on meeting or overtaking a school bus from either direction when ' +
+      'the bus has stopped with its red lights flashing to receive or discharge passengers, shall ' +
+      'stop the vehicle before reaching the school bus." Passing a moving bus showing yellow is ' +
+      'not "passing a school bus" under this section; preparing to stop is still the advice.',
+  },
+  {
+    label: 'Maine move-over: a careful and prudent speed, no stated mph (§2070(8)(B))',
+    re: /(?:otherwise|if not,) slow to a careful, prudent speed/,
+    min: null, max: null,
+    source: 'Maine 29-A §2070(8)(B): "pass the stationary vehicle at a careful and prudent speed ' +
+      'reasonable for passing the vehicle safely." The statute sets no number; the tool used to ' +
+      'key "slow to about 45 mph".',
+  },
+  {
+    label: 'Maine interstate ceiling (§2073(1))',
+    re: /never more than (\d{2}) mph in Maine/,
+    min: 75, max: 75,
+    source: 'Maine 29-A §2073(1): the commissioner "may not set maximums that exceed 60 miles per ' +
+      'hour or, on the interstate system or other divided controlled-access highways, 75 miles ' +
+      'per hour." The tool used to say interstates are "65-70 mph in Maine".',
+  },
+  // ── Round 30: Maine Driver's License Manual (Rev 4/24) figures the tool now teaches.
+  {
+    label: 'Maine manual minimum following distance, seconds (permit answer)',
+    re: /'Seconds \((\d)-second rule minimum\)'/,
+    min: 4, max: 4,
+    source: 'Maine Driver\'s License Manual Rev 4/24, "Space in Front": "Keep at least 4 seconds ' +
+      'between your car and the vehicle in front." "You are following too close if you pass that ' +
+      'point before counting 4 seconds." The tool taught 3 seconds (and 2 in two questions).',
+  },
+  {
+    label: 'Maine manual minimum following distance is attributed to the manual',
+    re: /Four seconds is the minimum on dry roads \(Maine manual\)/,
+    min: null, max: null,
+    source: 'Maine Driver\'s License Manual Rev 4/24: "Keep at least 4 seconds". Rain 5 s and snow ' +
+      '6 s are Road Ready\'s own ladder (the manual says only "A four plus second following ' +
+      'distance may be needed during adverse conditions") and the tool says so.',
+  },
+  {
+    label: 'Maine manual low-beam sight distance',
+    re: /only about (\d{3}) feet ahead \(Maine driver's manual\)/,
+    min: 250, max: 250,
+    source: 'Maine Driver\'s License Manual Rev 4/24: "Headlights will let you see clearly only ' +
+      'about 250 feet ahead. Therefore, if you drive faster than about 50 mph on a dark road, you ' +
+      'are really \'driving blind.\'" The tool said 350 ft. check_roadready_night_vision_model ' +
+      'pins the screen constant and the 48 mph ceiling the model derives from it.',
+  },
+  {
+    label: 'Maine manual visual lead, low end',
+    re: /look (\d{2}) to \d{2} seconds ahead/,
+    min: 20, max: 20,
+    source: 'Maine Driver\'s License Manual Rev 4/24: "to keep looking 20 to 30 seconds ahead." ' +
+      'The tool taught 12-15 seconds (a Smith System figure).',
+  },
+  {
+    label: 'Maine manual visual lead, high end',
+    re: /look \d{2} to (\d{2}) seconds ahead/,
+    min: 30, max: 30,
+    source: 'Maine Driver\'s License Manual Rev 4/24: "Looking 20 to 30 seconds ahead also helps you".',
+  },
+  {
+    label: 'Maine manual hydroplaning onset, low end',
+    re: /as low as (\d{2}) to \d{2} mph \(Maine driver/,
+    min: 30, max: 30,
+    source: 'Maine Driver\'s License Manual Rev 4/24: "In most cars, hydroplaning may begin at ' +
+      'speeds as low as 30 to 40 MPH ... In a bad rainstorm, the tires may lose all contact with ' +
+      'the road at 50 to 60 MPH." The tool said 45 mph in three places and 35 in a fourth.',
+  },
+  {
+    label: 'Maine manual hydroplaning onset, high end',
+    re: /as low as \d{2} to (\d{2}) mph \(Maine driver/,
+    min: 40, max: 40,
+    source: 'Maine Driver\'s License Manual Rev 4/24: "as low as 30 to 40 MPH".',
+  },
+  {
+    label: 'Maine manual slippery-road speeds',
+    re: /packed snow, slow down to half speed; ice, slow to a crawl/,
+    min: null, max: null,
+    source: 'Maine Driver\'s License Manual Rev 4/24: "Wet road: Slow down 5 to 10 mph. Packed ' +
+      'snow: Slow down to half speed. Ice: Slow to a crawl."',
+  },
+  {
+    label: 'Maine manual sinking-car escape route',
+    re: /The window is the best way out/,
+    min: null, max: null,
+    source: 'Maine Driver\'s License Manual Rev 4/24: "The best escape route is through a window, ' +
+      'because water pressure makes it hard to open a door. If your car has power windows, open ' +
+      'them as soon as possible". The keyed answer used to say "window or door".',
+  },
+  {
+    label: 'Maine manual moose collision peak months',
+    re: /Moose collisions peak in May and June/,
+    min: null, max: null,
+    source: 'Maine Driver\'s License Manual Rev 4/24: "May and June are Peak Moose Collision ' +
+      'Months!"; "moose and deer are most active between dusk and dawn".',
+  },
+  {
+    label: 'Maine BMV knowledge test length',
+    re: /real Maine knowledge test has (\d{2}) questions and you need \d{2} right to pass/,
+    min: 30, max: 30,
+    source: 'Maine BMV driver\'s license exam page (saved 2026-11-09): "The knowledge test consists ' +
+      'of 30 questions, and you must answer a minimum of 24 correctly to pass the test." The ' +
+      'tool\'s own practice test is 20 questions and must not be called the BMV format.',
+  },
+  {
+    label: 'Maine BMV knowledge test pass mark',
+    re: /real Maine knowledge test has \d{2} questions and you need (\d{2}) right to pass/,
+    min: 24, max: 24,
+    source: 'Maine BMV driver\'s license exam page: "a minimum of 24 correctly".',
+  },
+  {
+    label: 'Maine BMV Examination Section extension',
+    re: /207-624-9000, ext\. (\d{5})/,
+    min: 52119, max: 52119,
+    source: 'Maine BMV driver\'s license exam page: "call the Examination Section at ' +
+      '207-624-9000, ext. 52119". The page lists no accommodations; the tool says to ASK.',
+  },
+  // ── Round 30: other sourced figures the corrections introduced.
+  {
+    label: 'Operation Lifesaver freight-train stopping distance, football fields',
+    re: /needs more than a mile to stop: the length of (\d{2}) football fields \(Operation Lifesaver\)/,
+    min: 18, max: 18,
+    source: 'Operation Lifesaver, oli.org/safety-near-trains/track-safety-basics (read 2026-11-09): ' +
+      '"It takes the average freight train traveling 55 mph more than a mile - the length of 18 ' +
+      'football fields - to stop." The tool used to add an 18,000-ton figure whose arithmetic was wrong.',
+  },
+  {
+    label: 'US DOE idling break-even, seconds',
+    re: /idling for more than about (\d{2}) seconds wastes more \(U\.S\. Department of Energy\)/,
+    min: 10, max: 10,
+    source: 'energy.gov FOTW #1239 (2022-05-23): "Idling an Engine for as Little as 10 Seconds Will ' +
+      'Use More Fuel than Stopping and Restarting the Vehicle." The tool keyed 30 seconds.',
+  },
+  {
+    label: 'tyre under-inflation fuel penalty per PSI',
+    re: /every 1 PSI low ≈ (0\.\d)% MPG loss, up to about \d% \(fueleconomy\.gov\)/,
+    min: 0.2, max: 0.2,
+    source: 'fueleconomy.gov "Keeping Your Vehicle in Shape" (read 2026-11-09): "Under-inflated ' +
+      'tires can lower gas mileage by about 0.2% for every 1 psi drop in the average pressure of ' +
+      'all tires"; "up to 3% in some cases". The tool said 0.3% and, elsewhere, 3-10%.',
+  },
+  {
+    label: 'tyre under-inflation fuel penalty, ceiling',
+    re: /every 1 PSI low ≈ 0\.\d% MPG loss, up to about (\d)% \(fueleconomy\.gov\)/,
+    min: 3, max: 3,
+    source: 'fueleconomy.gov: "You can improve your gas mileage by 0.6% on average - up to 3% in some cases".',
+  },
+  {
+    label: 'cetirizine is not presented as non-drowsy',
+    re: /Cetirizine \(Zyrtec\) is not one of them: its label warns that drowsiness may occur/,
+    min: null, max: null,
+    source: 'Zyrtec Drug Facts label (DailyMed, NIH, read 2026-11-09): "When using this product ' +
+      'drowsiness may occur ... be careful when driving a motor vehicle or operating machinery". ' +
+      'The tool used to list Zyrtec as a non-drowsy option.',
   },
   {
     label: 'Maine dealer used-car inspection-sticker age',
@@ -425,11 +741,12 @@ const CLAIMS = [
       'in §1751.',
   },
   {
-    label: 'Maine studded-tire season start month (§1919)',
-    re: /Maine allows studded tires Oct (\d) – May 1/,
+    label: 'Maine studded-tire ban starts May 1 (§1919)',
+    re: /Maine law bans studded tires from May (\d) to October 1 \(29-A §1919\)/,
     min: 1, max: 1,
-    source: 'Maine 29-A §1919: studs are PROHIBITED from May 1 to Oct 1, so the legal window is ' +
-      'Oct 1 - May 1. Retractable studs may be fitted year-round but not extended in that window.',
+    source: 'Maine 29-A §1919(1), read 2026-11-10: "from the first day of May to the first day of October, a ' +
+      'person may not operate a vehicle with tires having metal studs". Both named days are inside the ban, so the tool ' +
+      'says October 2 to April 30 (it used to say Oct 1 - May 1). Retractable studs may be fitted year-round but not extended in that window.',
   },
   {
     label: 'car purchase as a share of four-year ownership cost',
@@ -464,18 +781,11 @@ const CLAIMS = [
   },
   {
     label: 'all-season rubber stiffening threshold',
-    re: /All-season rubber starts stiffening below about (\d{2})°F/,
+    re: /A common rule of thumb is to switch when days stay below about (\d{2})°F/,
     min: 45, max: 45,
-    source: 'Industry standard 7°C / 45°F — the point where a winter tire begins to out-grip an ' +
+    source: 'Round 32: no primary source was read for this figure, so the tool now calls it a rule of thumb. Was: Industry standard 7°C / 45°F — the point where a winter tire begins to out-grip an ' +
       'all-season. The tool previously said "below 20°F", which understated the window by 25°F ' +
       'AND contradicted the 45°F figure it states in three other places.',
-  },
-  {
-    label: 'winter-tire stopping distance on packed snow at 30 mph',
-    re: /a winter tire stops in roughly (\d{2}) ft/,
-    min: 55, max: 65,
-    source: 'Winter tire ~59 ft on packed snow at 30 mph; an all-season needs ~30 ft more. The ' +
-      'tool previously claimed winter tires "halve your stopping distance", which overstates it.',
   },
   {
     label: 'NWS depth that carries away most cars',
@@ -490,22 +800,6 @@ const CLAIMS = [
     min: 60, max: 66,
     source: 'CSU/CIRA study of 2,461 US flood fatality records 1996-2023: 63% vehicle-related. ' +
       'NWS states "over half". The tool previously claimed 80%.',
-  },
-  {
-    label: 'left-turn share of CROSSING-PATH crashes',
-    re: /about (\d{2})% of CROSSING-PATH crashes/,
-    min: 50, max: 56,
-    source: 'NHTSA DOT HS 811 366: ~53.1% of crossing-path crashes occur at or just after a left ' +
-      'turn. This is NOT the left-turn share of all intersection crashes — the tool previously ' +
-      'presented it as such, which overstates it several-fold.',
-  },
-  {
-    label: 'FMCSA loaded tractor-trailer stopping distance at 65 mph',
-    re: /about (\d{3}) ft to stop from 65 mph/,
-    min: 500, max: 550,
-    source: 'FMCSA: ~525 ft for a loaded 80,000 lb tractor-trailer vs ~316 ft for a car at 65 mph ' +
-      '(~66% farther). The tool previously said "40% more", which also contradicted its own ' +
-      'sedan-vs-school-bus figures (200 ft vs 480 ft at 55 mph = 140% more).',
   },
   {
     label: 'SUV single-vehicle rollover risk, upper bound',
@@ -540,6 +834,111 @@ const CLAIMS = [
     re: /\d{2} hours of classroom \+ (\d{2}) hours behind-the-wheel/,
     min: 10, max: 10,
     source: 'Maine BMV: 30 classroom hours + 10 behind-the-wheel for teen driver education',
+  },
+  // Round 32 (2026-11-10), lane_words: sources read this session.
+  {
+    label: 'CDC NIOSH: hours awake compared with 0.05% BAC',
+    re: /being awake for (\d{2}) hours is similar to having a BAC of 0\.05%/,
+    min: 17, max: 17,
+    source: 'CDC NIOSH work-hour training, module 3 (read 2026-11-10): "Being awake for 17 hours is similar to having a BAC of 0.05%."',
+  },
+  {
+    label: 'CDC NIOSH: hours awake compared with 0.10% BAC',
+    re: /being awake for (\d{2}) hours is similar to a BAC of 0\.10%/,
+    min: 24, max: 24,
+    source: 'CDC NIOSH work-hour training, module 3: "Being awake for 24 hours is similar to having a BAC of 0.10%."',
+  },
+  {
+    label: 'IIHS roundabout conversions: injury-crash reduction, low end',
+    re: /found (\d{2})% to 80% fewer injury crashes/,
+    min: 72, max: 72,
+    source: 'IIHS roundabouts topic page (read 2026-11-10): "Studies of intersections in the United States converted from traffic signals or stop signs to roundabouts have found reductions in injury crashes of 72%-80% and reductions in all crashes of 35%-47%". The tool used to say "fatal crashes by 90%".',
+  },
+  {
+    label: 'IIHS roundabout conversions: injury-crash reduction, high end',
+    re: /found 72% to (\d{2})% fewer injury crashes/,
+    min: 80, max: 80,
+    source: 'IIHS roundabouts topic page: 72%-80% fewer injury crashes.',
+  },
+  {
+    label: 'fueleconomy.gov aggressive-driving penalty, highway low end',
+    re: /by roughly (\d{2})% to 30% at highway speeds and 10% to 40% in stop-and-go traffic/,
+    min: 15, max: 15,
+    source: 'fueleconomy.gov/feg/driveHabits.jsp (read 2026-11-10): "It can lower your gas mileage by roughly 15% to 30% at highway speeds and 10% to 40% in stop-and-go traffic."',
+  },
+  {
+    label: 'Maine provisional licence: the statute\'s "whichever occurs last" is stated (§2472(1))',
+    re: /Maine law says 2 years or until you turn 21, whichever comes later/,
+    min: null, max: null,
+    source: 'Maine 29-A §2472(1), read 2026-11-10: "is a provisional license for a period of 2 years following the date of issue or until the holder attains 21 years of age, whichever occurs last." The manual and the BMV page say two years; the guide states both.',
+  },
+  {
+    label: 'Maine manual: stop at least 10 feet from a white cane or guide dog',
+    re: /stop at least (\d{2}) feet away and wait until the person is out of danger/,
+    min: 10, max: 10,
+    source: 'Maine Driver\'s License Manual Rev 4/24: "If you see anyone in the roadway with a white cane or guide dog, stop at least 10 feet away and wait until the person is out of danger."',
+  },
+  {
+    label: 'texting multiplier is attributed to a truck-driver study',
+    re: /a Virginia Tech study of truck drivers put it near 23×/,
+    min: null, max: null,
+    source: 'VTTI release 2009-07 (vtx.vt.edu/articles/2009/07/2009-571.html, read 2026-11-10), commercial vehicle study: "Text messaging made the risk of crash or near-crash event 23.2 times as high as non-distracted driving".',
+  },
+  // yl36 (round 36): traffic-light yellow and red clearance from the approach speed (rrYellowSeconds,
+  // rrRedClearanceSeconds). The ITE kinematic terms as the FHWA Signal Timing Manual prints them.
+  {
+    label: 'yellow timing: perception-reaction time t (ITE)',
+    re: /var RR_YELLOW_REACTION_SEC = ([\d.]+);/,
+    min: 1.0, max: 1.0,
+    source: 'FHWA Signal Timing Manual (FHWA-HOP-08-024) ch. 5, Equation 5-2: "the values of t = 1.0 s, a = 10 ft/s2, and Lv = 20 ft are often cited". CDOT 2024 Equation 1: "t = Perception-reaction time (seconds); set at 1.0 seconds."',
+  },
+  {
+    label: 'yellow timing: deceleration a in ft/s2 (ITE)',
+    re: /var RR_YELLOW_DECEL_FTPS2 = ([\d.]+);/,
+    min: 10, max: 10,
+    source: 'FHWA Signal Timing Manual Equation 5-2 (a = 10 ft/s2); CDOT 2024 Equation 1: "a = Deceleration rate (ft/sec2); set at 10 ft/sec2".',
+  },
+  {
+    label: 'red clearance: vehicle length Lv in ft (ITE)',
+    re: /var RR_RED_CLEAR_VEHICLE_FT = ([\d.]+);/,
+    min: 20, max: 20,
+    source: 'FHWA Signal Timing Manual Equation 5-2 (Lv = 20 ft); CDOT 2024 Equation 2: "L = Length of vehicle; set at 20 feet".',
+  },
+  {
+    label: 'yellow timing: 1.47 ft/s per mph and the grade term 2(a + 32.2g)',
+    re: /var v = 1\.47 \* Math\.max\(0, Number\(speedLimitMph\) \|\| 0\);[\s\S]{0,200}RR_YELLOW_REACTION_SEC \+ v \/ \(2 \* \(RR_YELLOW_DECEL_FTPS2 \+ 32\.2 \* g\)\)/,
+    min: null, max: null,
+    source: 'FHWA Signal Timing Manual Equation 5-2: CP = [t + 1.47v / 2(a + 32.2g)] + [(W + Lv) / 1.47v], g = percent grade / 100, uphill positive.',
+  },
+  {
+    label: 'yellow timing: MUTCD minimum yellow in seconds',
+    re: /return Math\.max\((\d), Math\.min\(\d, rrHalfSecondUp\(y\)\)\);/,
+    min: 3, max: 3,
+    source: 'MUTCD 11th Edition (Dec 2023) Section 4F.17 par. 13: "A yellow change interval should have a minimum duration of 3 seconds, and a maximum duration of 6 seconds."',
+  },
+  {
+    label: 'yellow timing: MUTCD maximum yellow in seconds',
+    re: /return Math\.max\(\d, Math\.min\((\d), rrHalfSecondUp\(y\)\)\);/,
+    min: 6, max: 6,
+    source: 'MUTCD 11th Edition Section 4F.17 par. 13 (see the entry above).',
+  },
+  {
+    label: 'red clearance: MUTCD maximum in seconds',
+    re: /return Math\.max\(1, Math\.min\((\d), rrHalfSecondUp\(r\)\)\);/,
+    min: 6, max: 6,
+    source: 'MUTCD 11th Edition Section 4F.17 par. 13: "a red clearance interval should have a duration not exceeding 6 seconds".',
+  },
+  {
+    label: 'yellow and red clearance rounded UP to the nearest half second (MaineDOT)',
+    re: /return Math\.ceil\(seconds \* (2) - 1e-9\) \/ 2;/,
+    min: 2, max: 2,
+    source: 'MaineDOT Traffic Analysis Guidelines, Traffic Signal Design and Operation (rev. 2 Aug 2020; file dated Aug 2025), item 8: "Yellow and Red clearance intervals shall be rounded up to the nearest half second."',
+  },
+  {
+    label: 'every streamed light takes its yellow from rrSignalTiming',
+    re: /yellowDur: isFlagger \? 2 : sigTiming \? sigTiming\.yellowDur : 3,/,
+    min: null, max: null,
+    source: 'yl36: the light builder in updateThreeScene; a hand-typed yellow here is what this lane removed (3 s on 40 mph roads).',
   },
 ];
 
@@ -614,8 +1013,35 @@ if (!fatalWindow) {
 
 // The tool must not reassert the retired figures anywhere.
 const RETIRED = [
+  // Round 32 (2026-11-10): corrected or unsourced figures removed by lane_words.
+  { re: /Oct 1 ?[–-] ?May 1|October 1 to May 1/, note: 'the retired studded-tire window (29-A §1919 bans May 1 through October 1)' },
+  { re: /70,000\+ moose/, note: 'the retired moose population figure (no current source; MDIFW: about 76,000 in 2012)' },
+  { re: /stops in roughly 59 ft/, note: 'the retired winter-tire stopping figure (no primary source)' },
+  { re: /% of CROSSING-PATH crashes/, note: 'the retired left-turn crash share (source not readable in round 32)' },
+  { re: /fatal crashes by 90%/, note: 'the retired roundabout figure (IIHS: 72%-80% fewer injury crashes)' },
+  { re: /about 525 ft to stop from 65 mph/, note: 'the retired FMCSA truck figure (source not readable in round 32)' },
+  { re: /Slow down by at least 10 mph/, note: 'the retired rain answer (Maine manual: slow down 5 to 10 mph)' },
+  { re: /Wait for water to equalize \(/, note: 'the retired flood-card advice to wait (Maine manual: get out through a window as soon as possible)' },
+  { re: /can void your injury claim|Insurance adjusters screenshot/, note: 'retired insurance folklore on the post-crash card' },
   { re: /500[–-]700 reported moose/, note: 'the retired 500-700 collisions-per-year figure' },
   { re: /averages 3[–-]5 fatal moose crashes annually/, note: 'the retired "3-5 fatal annually" figure' },
+  // Round 30 (2026-11-09): facts the content review found wrong against primary sources.
+  { re: /NOT your home address/, note: 'the retired advice to withhold your address after a crash (29-A §2252 requires it)' },
+  { re: /\(3-second rule minimum\)|3-second following rule|Use the 3-second rule/, note: 'the retired 3-second following rule (Maine manual: at least 4 seconds)' },
+  { re: /"2-second rule" for following distance|The two-second rule should be increased/, note: 'the retired 2-second following rule (Maine manual: at least 4 seconds)' },
+  { re: /Low beams illuminate ~350 ft|about 350 feet with low beams|Low beams reach about 350 feet/, note: 'the retired 350 ft low-beam range (Maine manual: about 250 feet)' },
+  { re: /12-15 seconds ahead down the road/, note: 'the retired 12-15 second visual lead (Maine manual: 20 to 30 seconds)' },
+  { re: /Automatic 275-day license suspension — often worse/, note: 'the retired adult refusal figure in the under-21 drill (§2472(4): 18 months)' },
+  { re: /doubled-fine traffic violation|usually with doubled fines in work zones/, note: 'the retired claim that all work-zone fines double (§2075(2): speeding only)' },
+  { re: /In Maine this counts as passing a school bus/, note: 'the retired claim that passing a moving bus on yellow is "passing a school bus" (§2308(2))' },
+  { re: /with driver\\'s ed enrollment|6 months with NO violations|6 months \(no violations\)/, note: 'a retired permit condition (§1304: driver ed COMPLETED; 6 months + 70 hours, no "no violations" rule)' },
+  { re: /full unrestricted at about 16 years and 9 months|You have a full Maine driver/, note: 'the retired "full licence" wording (§2472: provisional for 2 years)' },
+  { re: /Hydroplaning risk above 45 mph|Hydroplane risk peaks at 45\+ mph|slow to 45 or below/, note: 'a retired 45 mph hydroplaning threshold (Maine manual: as low as 30 to 40 mph)' },
+  { re: /18,000 tons/, note: 'the retired 18,000-ton freight-train figure' },
+  { re: /through road always goes first|Car going UPHILL has right-of-way/, note: 'a retired right-of-way rule that is not Maine law (§2053)' },
+  { re: /slow to about 45 mph/, note: 'the retired invented move-over speed (§2070(8)(B): careful and prudent)' },
+  { re: /65-70 mph in Maine/, note: 'the retired "65-70 mph" interstate claim (§2073: up to 75, lower where posted)' },
+  { re: /Non-drowsy options \(Claritin, Zyrtec\)/, note: 'the retired claim that Zyrtec is non-drowsy' },
 ];
 for (const r of RETIRED) {
   if (r.re.test(src)) errors.push(r.note + ' is back in the source');

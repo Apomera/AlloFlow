@@ -546,8 +546,9 @@ describe('quiz parity across HTML and printable worksheet exports', { timeout: 6
     const recallSheets = Array.from(section.querySelectorAll('.memory-aid-recall-sheet'));
 
     expect(pending).not.toBeNull();
-    expect(pending.textContent).toContain('Authoring only · facts awaiting teacher review');
-    expect(pending.textContent).toContain('Recall practice is unavailable');
+    // 2026-11-11: student wording on paper (was "Authoring only · facts awaiting teacher review").
+    expect(pending.textContent).toContain('Your teacher is still checking these facts');
+    expect(pending.textContent).toContain('Recall practice opens when they finish');
     expect(pending.textContent).toContain('A statue stays shaped; a guest fits the room.');
     expect(pending.textContent).toContain('Revise the statue comparison in your own words.');
     expect(pending.textContent).not.toContain('PRIVATE CHECKED FACT');

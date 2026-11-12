@@ -84,7 +84,7 @@ describe('What sets saved lesson lamp current', () => {
   });
 
   it('keeps very small positive modeled current and exact fractional bar width instead of imposing a visible minimum', async () => {
-    await synthetic(point(1e-9, .02), point(2e-9, .02)); expect(snapshot().map(row => row.base)).toEqual(['0.00100 µA', '0.00200 µA']); expect(snapshot().map(row => row.actual)).toEqual(['0.00100 µA', '0.00200 µA']);
+    await synthetic(point(1e-9, .02), point(2e-9, .02)); expect(snapshot().map(row => row.base)).toEqual(['1.00 nA', '2.00 nA']); expect(snapshot().map(row => row.actual)).toEqual(['1.00 nA', '2.00 nA']);
     expect(width(cards()[0], 'base')).toBeCloseTo(1e-9 / .02 * 100, 12); expect(width(cards()[1], 'base')).toBeCloseTo(2e-9 / .02 * 100, 12); expect(width(cards()[0], 'base')).toBeGreaterThan(0); expect(snapshot().every(row => row.limiting === 'base')).toBe(true);
   });
 

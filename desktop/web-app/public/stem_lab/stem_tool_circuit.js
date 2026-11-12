@@ -2,7 +2,7 @@
 // stem_tool_circuit.js - Circuit Builder Plugin (Enhanced v2)
 // Interactive series & parallel circuit builder with Ohm's Law,
 // 7 component types (resistor, bulb, switch, LED, ammeter, voltmeter, capacitor),
-// electron animation, 10 challenges, quiz, presets, badges, AI tutor,
+// electron animation, 17 challenges (4 design-to-a-spec), quiz, presets, badges, AI tutor,
 // Kirchhoff's Laws panel, grade-band content, sound effects & snapshots.
 // ═══════════════════════════════════════════
 
@@ -48,7 +48,8 @@ window.StemLab = window.StemLab || {
     });
     var rows = components.map(function(c) {
       return { component: c, resistance: circuitResistance(c), current: 0, voltage: 0, power: 0,
-        blocked: (c.type === 'switch' && !c.closed) || c.type === 'capacitor' || (c.type === 'led' && c.reversed),
+        // An unscrewed bulb or a removed LED leaves an empty socket: an open gap, like an open switch.
+        blocked: (c.type === 'switch' && !c.closed) || c.type === 'capacitor' || (c.type === 'led' && c.reversed) || ((c.type === 'bulb' || c.type === 'led') && !!c.unscrewed),
         forward: c.type === 'led' ? circuitForwardVoltage(c) : 0 };
     });
     var blockers = rows.filter(function(r) { return r.blocked; });
@@ -107,11 +108,19 @@ window.StemLab = window.StemLab || {
         if(!!x.reversed!==!!y.reversed) out.push(name+' LED polarity reversed');
         if(circuitForwardVoltage(x)!==circuitForwardVoltage(y)) out.push(name+' LED forward voltage: '+circuitForwardVoltage(x)+' → '+circuitForwardVoltage(y)+' V');
       }
+      if((x.type==='bulb'||x.type==='led')&&!!x.unscrewed!==!!y.unscrewed) out.push(name+' '+x.type+': '+(y.unscrewed?(x.type==='bulb'?'unscrewed':'taken out'):(x.type==='bulb'?'screwed back in':'put back')));
       return out;
     };
     // Minimum edit alignment keeps a removed middle part from appearing to change
     // every following part. IDs can change when a saved preset is reloaded.
     var aa=a.components,bb=b.components,cost=Array.from({length:aa.length+1},function(){return [];});
+    // Moving one part is one change. Without this, a move reads as every part between the two places changing type.
+    var sig=function(c){return c.type+'|'+(['resistor','bulb','capacitor'].indexOf(c.type)!==-1?c.value:'')+'|'+(c.type==='switch'?!!c.closed:'')+'|'+(c.type==='led'?!!c.reversed+'/'+circuitForwardVoltage(c):'')+'|'+((c.type==='bulb'||c.type==='led')&&!!c.unscrewed);};
+    if(aa.length===bb.length&&aa.length>1){
+      var sa=aa.map(sig),target=bb.map(sig).join('\n');
+      if(sa.join('\n')!==target)for(var p=0;p<sa.length;p++)for(var q=0;q<sa.length;q++){if(p===q)continue;var trial=sa.slice(),item=trial.splice(p,1)[0];trial.splice(q,0,item);
+        if(trial.join('\n')===target){changes.push('part '+(p+1)+' '+aa[p].type+': moved to position '+(q+1));return {changes:changes,controlled:changes.length===1,unchanged:false};}}
+    }
     for(var i=0;i<=aa.length;i++)cost[i][0]=i;
     for(var j=0;j<=bb.length;j++)cost[0][j]=j;
     for(i=1;i<=aa.length;i++)for(j=1;j<=bb.length;j++)cost[i][j]=Math.min(
@@ -145,13 +154,63 @@ window.StemLab = window.StemLab || {
     })) return null;
     return {voltage:s.voltage,capacitance:caps[0].value,resistance:s.components.reduce(function(sum,c){return sum+(c.type==='capacitor'?0:circuitResistance(c));},0)};
   }
+  // Amps to 3 significant figures for worked sums (toFixed(3) left 4.5 mA as 0.005, so 0.005 × 3000 ≠ the 4.5 V shown).
+  function circuitAmps(value) { return Number.isFinite(value) ? String(Number(value.toPrecision(3))) : '—'; }
   function circuitCurrentText(value) {
     if(value===0) return '0 A';
     var magnitude=Math.abs(value);
+    if(magnitude<9.995e-10) return (value*1e12).toPrecision(3)+' pA';
+    if(magnitude<9.995e-7) return (value*1e9).toPrecision(3)+' nA';
     if(magnitude<0.0009995) return (value*1e6).toPrecision(3)+' µA';
     if(magnitude<0.999995) return (value*1000).toFixed(2)+' mA';
     return value.toFixed(3)+' A';
   }
+  // Total resistance for readouts: an open path (no current) is infinite, but a real large value, such as a voltmeter in series, shows its size so it agrees with the nanoamps that still flow.
+  function circuitTotalRText(totalR, current, ohms, open) {
+    if(!(current>0)||!(totalR<1e11))return open;
+    if(totalR>=1e8){var giga=totalR>=1e9,words=/ohm/.test(ohms);return Number((totalR/(giga?1e9:1e6)).toPrecision(3))+(giga?(words?' gigaohms':' GΩ'):(words?' megaohms':' MΩ'));}
+    return totalR.toFixed(1)+ohms;
+  }
+  // Each starting example keeps its own explanation, so notes written for one never sit under another example's question.
+  // Importing a design file keeps the current notes (the file deliberately carries no student writing).
+  function circuitNetworkSwapNotes(old, next) {
+    var from=old.loadedExample||'bridge',to=next.loadedExample||'bridge';
+    if(from===to||to==='custom-design')return next;
+    var notes=Object.assign({},old.reflections&&typeof old.reflections==='object'&&!Array.isArray(old.reflections)?old.reflections:{});
+    notes[from]=typeof old.reflection==='string'?old.reflection:'';
+    return Object.assign({},next,{reflections:notes,reflection:typeof notes[to]==='string'?notes[to]:''});
+  }
+  window.StemLab.circuitNetworkSwapNotes=circuitNetworkSwapNotes;
+  function circuitNarrowScreen(){try{return !!(window.matchMedia&&window.matchMedia('(max-width: 600px)').matches);}catch(e){return false;}}
+  function circuitCoarsePointer(){try{return !!(window.matchMedia&&window.matchMedia('(pointer: coarse)').matches);}catch(e){return false;}}
+  // Ebers-Moll labels any forward VBE as active; below 1 µA the transistor is effectively off.
+  function circuitBjtWeak(row){return !!row&&row.bjtRegion==='Forward active'&&Number.isFinite(row.current)&&Math.abs(row.current)<1e-6;}
+  // One rescue for buttons that disable or remove themselves when pressed (Undo at the start, Next at the end, Center view, Reveal).
+  // Otherwise focus sits on a dead control or falls to the page. data-focus-fallback wins; else the nearest usable control beside it.
+  function circuitFocusRescue(doc) {
+    if(!doc||!doc.addEventListener)return function(){};
+    var PANELS='#circuit-build-panel,#circuit-reference-panel',FOCUSABLE='button,[href],input,select,textarea,summary,[tabindex]:not([tabindex="-1"])';
+    var usable=function(el){return !!el&&el.isConnected&&!el.disabled&&el.getAttribute('aria-disabled')!=='true'&&!el.closest('[hidden],[inert],[aria-hidden="true"]');};
+    var onClick=function(e){
+      var btn=e.target&&e.target.closest?e.target.closest('button'):null,panel=btn&&btn.closest(PANELS);
+      if(!panel)return;
+      var scopes=[btn.parentElement,btn.parentElement&&btn.parentElement.parentElement].filter(Boolean).map(function(s){return [].slice.call(s.querySelectorAll(FOCUSABLE));});
+      var fallback=btn.getAttribute('data-focus-fallback');
+      setTimeout(function(){
+        var active=doc.activeElement;
+        if((active&&active!==btn&&active!==doc.body)||usable(btn))return;
+        var target=fallback?doc.querySelector(fallback):null;
+        for(var s=0;!target&&s<scopes.length;s++){var list=scopes[s],at=list.indexOf(btn);if(at<0)continue;for(var d=1;d<list.length&&!target;d++){if(usable(list[at+d]))target=list[at+d];else if(usable(list[at-d]))target=list[at-d];}}
+        if(!target&&panel.isConnected)target=panel;
+        if(!target)return;
+        if(!target.matches(FOCUSABLE)&&!target.hasAttribute('tabindex'))target.setAttribute('tabindex','-1');
+        try{target.focus({preventScroll:false});}catch(err){target.focus();}
+      },80);
+    };
+    doc.addEventListener('click',onClick,true);
+    return function(){doc.removeEventListener('click',onClick,true);};
+  }
+  window.StemLab.circuitTotalRText=circuitTotalRText;
   window.StemLab.circuitExperimentDiff=circuitExperimentDiff;
   window.StemLab.circuitRCResponse=circuitRCResponse;
   window.StemLab.circuitRCParameters=circuitRCParameters;
@@ -166,7 +225,15 @@ window.StemLab = window.StemLab || {
       reason:'Each branch still has 9 V across 100 Ω and carries 90 mA. The source supplies both branch currents: 180 mA in total.',reflect:'Explain why the original branch current stays the same while source current changes.'},
     {id:'loop',title:'Complete the loop',concept:'Switches',question:'Close the switch in this series bulb circuit. What happens to the current?',choices:['It starts flowing','It stays at zero','Only the switch carries current'],answer:0,
       before:{mode:'series',voltage:9,components:[{type:'bulb',value:100,id:1},{type:'switch',closed:false,id:2}]},after:{mode:'series',voltage:9,components:[{type:'bulb',value:100,id:1},{type:'switch',closed:true,id:2}]},
-      reason:'Closing the switch completes a conducting loop. The same current passes through the bulb and the switch; charge is not used up by the bulb.',reflect:'Describe what the bulb transfers and what continues around the loop.'}
+      reason:'Closing the switch completes a conducting loop. The same current passes through the bulb and the switch; charge is not used up by the bulb.',reflect:'Describe what the bulb transfers and what continues around the loop.'},
+    // Tests the used-up idea with the reading itself: same loop, ammeter moved from before the bulb to after it.
+    {id:'used',title:'Is current used up?',concept:'Series current',question:'The ammeter sits before the bulb. Move it to after the bulb, in the same series loop. What will it read?',choices:['Less: the bulb used some up','The same','More'],answer:1,
+      before:{mode:'series',voltage:9,components:[{type:'ammeter',value:0,id:1},{type:'bulb',value:100,id:2}]},after:{mode:'series',voltage:9,components:[{type:'bulb',value:100,id:2},{type:'ammeter',value:0,id:1}]},
+      reason:'A series loop has one path, so the same current passes every point: about 90 mA before the bulb and after it. The bulb transfers energy, and nearly all of the 9 V drops across it, but it does not use up charge.',reflect:'Use both ammeter readings to explain what the bulb uses up and what it does not.'},
+    // Two equal bulbs in series: double the resistance, half the current, a quarter of the power in each bulb.
+    {id:'bulbs',title:'Add a second bulb',concept:'Series bulbs',question:'Add a second identical bulb in series with the first, on the same 9 V. What happens to the first bulb?',choices:['It gets brighter','It stays the same','It gets dimmer'],answer:2,
+      before:{mode:'series',voltage:9,components:[{type:'bulb',value:100,id:1}]},after:{mode:'series',voltage:9,components:[{type:'bulb',value:100,id:1},{type:'bulb',value:100,id:2}]},
+      reason:'Two bulbs in series double the resistance, so the current halves from 90 mA to 45 mA. Each bulb now has 4.5 V across it and transfers a quarter of the power it did alone, so both glow dimmer.',reflect:'Use both current readings to explain why each bulb is dimmer.'}
   ];
   function circuitLessonResult(id, choice) {
     var lesson=CIRCUIT_LESSONS.find(function(l){return l.id===id;});
@@ -201,7 +268,7 @@ window.StemLab = window.StemLab || {
     if(!s.components.length)return result('empty','Start with a question','Load the starter, choose a guided experiment, or add a resistor from the parts shelf.');
     if(s.voltage===0)return result('off','The source is switched off','At 0 V there is no source-driven current in this steady-state model. Raise the supply to test the circuit.');
     if(s.isShort){index=find(function(c){return c.type==='ammeter'||(c.type==='switch'&&c.closed);});return result('short','A very low resistance path','The ideal source predicts a very large current. In parallel, a closed switch or ammeter creates its own branch across the supply. Add a load in series or remove that branch.','warning');}
-    if(s.ledOvercurrent){index=s.rows.findIndex(function(r){return r.component.type==='led'&&r.current>.020;});return result('led-high','The LED needs current limiting','This LED exceeds the illustrative 20 mA rating. Reduce voltage or use resistance in the same series path. A separate parallel resistor cannot protect it.','warning');}
+    if(s.ledOvercurrent){index=s.rows.findIndex(function(r){return r.component.type==='led'&&r.current>.020;});return result('led-high','The LED needs current limiting',s.mode==='parallel'?'This LED exceeds the illustrative 20 mA rating. In Simple parallel every part is its own branch, so nothing here can limit its current. Lower the voltage, or build it with a series resistor in Mixed circuits.':'This LED exceeds the illustrative 20 mA rating. Reduce voltage or use resistance in the same series path. A separate parallel resistor cannot protect it.','warning');}
     if(s.mode==='series') {
       index=find(function(c){return c.type==='switch'&&!c.closed;});
       if(index>=0)return result('switch-open','The loop has a gap','The open switch interrupts this series path, so every part carries zero current. Inspect the switch and close it to test your prediction.');
@@ -255,6 +322,7 @@ window.StemLab = window.StemLab || {
     props.React.useEffect(function(){if(pendingResultFocus.current&&resultRef.current){pendingResultFocus.current=false;resultRef.current.focus();}else if(pendingQuestionFocus.current&&questionRef.current){pendingQuestionFocus.current=false;questionRef.current.focus();}});
     var __alloT=circuitToolT(props);
     var tested=lesson&&trial&&trial.id===lesson.id, before=tested?solveCircuit(trial.before):null,after=tested?solveCircuit(trial.after):null;
+    var reasonState=props.React.useState({}),reasonShown=reasonState[0],setReasonShown=reasonState[1],wrote=!!(d.lessonExplanation||'').trim(),showReason=!!(lesson&&reasonShown[lesson.id]&&wrote);
     var changed=tested&&!circuitExperimentDiff(trial.after,d).unchanged,beforeOnBench=tested&&circuitExperimentDiff(trial.before,d).unchanged;
     var currentScale=tested?Math.max(before.current,after.current):0,currentDelta=tested?after.current-before.current:0;
     var resultTitle=!tested?'':before.current===0&&after.current>0?__alloT('stem.circuit.lesson_current_starts','Current starts flowing'):currentDelta>0?__alloT('stem.circuit.lesson_current_increased','Current increased'):currentDelta<0?__alloT('stem.circuit.lesson_current_decreased','Current decreased'):__alloT('stem.circuit.lesson_current_unchanged','Current stayed the same');
@@ -303,7 +371,8 @@ window.StemLab = window.StemLab || {
           h('div',{className:'circuit-evidence-heading'},
             h('div',null,h('span',{className:'circuit-eyebrow'},__alloT('stem.circuit.lesson_observed_result','OBSERVED RESULT')),h('h3',{id:'circuit-lesson-result',ref:resultRef,tabIndex:-1,'aria-describedby':'circuit-lesson-result-summary'},resultTitle)),
             h('p',{className:'circuit-evidence-delta'},h('span',null,__alloT('stem.circuit.lesson_current_change','Change in current')),h('strong',null,(currentDelta>0?'+':'')+circuitCurrentText(currentDelta)))),
-          h('p',{id:'circuit-lesson-result-summary'},h('strong',null,trial.correct?'Your prediction matches the evidence.':'Use this result to revise your prediction.'),' '+lesson.reason),
+          h('p',{id:'circuit-lesson-result-summary',tabIndex:-1},h('strong',null,trial.correct?'Your prediction matches the evidence.':'Use this result to revise your prediction.'),' '+(showReason?__alloT('stem.circuit.active_model_explanation','The model’s explanation: ')+lesson.reason:__alloT('stem.circuit.active_reason_after_writing','Explain the change in your own words below, then compare with the model’s explanation.'))),
+          wrote&&!showReason&&h('button',{type:'button','data-lesson-compare':'true',onClick:function(){var next=Object.assign({},reasonShown);next[lesson.id]=true;setReasonShown(next);setTimeout(function(){var p=document.getElementById('circuit-lesson-result-summary');if(p)p.focus();},0);}},__alloT('stem.circuit.active_compare_model','Compare with the model’s explanation')),
           h('div',{className:'circuit-comparison circuit-evidence-chart','aria-describedby':'circuit-evidence-scale'},[
             {stage:'before',label:__alloT('stem.circuit.lesson_before_current','Before · source current'),solved:before,circuit:trial.before},
             {stage:'after',label:__alloT('stem.circuit.lesson_after_current','After · source current'),solved:after,circuit:trial.after}
@@ -324,7 +393,7 @@ window.StemLab = window.StemLab || {
           h('p',{id:'circuit-lesson-prompt',className:'circuit-help'},lesson.reflect),
           h('textarea',{id:'circuit-lesson-explanation','aria-describedby':'circuit-lesson-prompt',rows:2,maxLength:1000,value:d.lessonExplanation||'',placeholder:'I observed… This happened because…',onChange:function(e){saveLesson({lessonExplanation:e.target.value});}}),
           h('p',{className:'circuit-help'},'Your explanation is kept with this experiment. You can add to it after trying another question.'),
-          h('div',{className:'circuit-lesson-next'},next?h(props.React.Fragment,null,h('strong',null,'Keep investigating'),h('p',null,'Explore '+next.concept.toLowerCase()+' with a different circuit.'),h('div',{className:'circuit-action-row'},h('button',{type:'button',onClick:function(){openLesson(next.id,true);}},'Next: '+next.title))):h(props.React.Fragment,null,h('strong',null,'All three experiments tested'),h('p',null,'Revisit your saved evidence, or use Plan an investigation to test your own question by changing one circuit setting.'))),
+          h('div',{className:'circuit-lesson-next'},next?h(props.React.Fragment,null,h('strong',null,'Keep investigating'),h('p',null,'Explore '+next.concept.toLowerCase()+' with a different circuit.'),h('div',{className:'circuit-action-row'},h('button',{type:'button',onClick:function(){openLesson(next.id,true);}},'Next: '+next.title))):h(props.React.Fragment,null,h('strong',null,'All guided experiments tested'),h('p',null,'Revisit your saved evidence, or use Plan an investigation to test your own question by changing one circuit setting.'))),
           h('p',{className:'circuit-help'},'Trying again starts a new prediction and replaces this experiment’s saved evidence. Your explanation stays so you can revise it.'),
           h('div',{className:'circuit-action-row'},h('button',{type:'button',onClick:function(){pendingResultFocus.current=false;pendingQuestionFocus.current=true;saveLesson(Object.assign({},JSON.parse(JSON.stringify(lesson.before)),{lessonChoice:null,lessonTrial:null}));}},'Try this experiment again'),
             h('button',{type:'button',onClick:function(){
@@ -454,6 +523,12 @@ window.StemLab = window.StemLab || {
         h('span',{className:'circuit-help'},'Hold the source voltage fixed to compare the effect.')));
   }
   // Row value box: edits stay a draft until Enter/blur, so clearing the field never applies 1 and typing adds one undo step.
+  // One polite announcement once readings stop changing (a slider drag used to re-read every card at every step).
+  function CircuitSettledStatus(props) {
+    var React = props.React, st = React.useState(props.text), said = st[0], setSaid = st[1];
+    React.useEffect(function() { var id = setTimeout(function() { setSaid(props.text); }, 800); return function() { clearTimeout(id); }; }, [props.text]);
+    return React.createElement('p', { className: 'sr-only', role: 'status', 'aria-live': 'polite', 'data-circuit-settled-status': 'true' }, said);
+  }
   function CircuitRowValueInput(props) {
     var React=props.React,h=React.createElement;
     var draftState=React.useState(String(props.value)),draft=draftState[0],setDraft=draftState[1];
@@ -1466,7 +1541,7 @@ window.StemLab = window.StemLab || {
     var known=function(values){return reactive.every(function(p){return Number.isFinite(values[p.id]);});},states=statesOf(initial),stateScale=Object.assign({},states),diodeVoltages=initial.diodeVoltages;
     if(!known(states))return fail('The starting state is undetermined. Define capacitor voltage, inductor current, and timed op-amp output before running.');
     Object.keys(stateScale).forEach(function(id){stateScale[id]=Math.abs(stateScale[id]);});
-    var timedAmps=design.components.filter(circuitNetworkTimedOpAmp),fastStep=timedAmps.reduce(function(dt,p){return Math.min(dt,1/(32*Math.PI*circuitNetworkOpAmpTiming(p).gbw));},plan.maxStep),frames=[circuitNetworkSnapshot(initial,0)],time=0,dt=fastStep,maxError=0,history=circuitNetworkIntegrationHistory(initial),restart='startup',storage=reactive.filter(function(p){return !circuitNetworkTimedOpAmp(p);});
+    var timedAmps=design.components.filter(circuitNetworkTimedOpAmp),fastStep=timedAmps.reduce(function(dt,p){return Math.min(dt,1/(32*Math.PI*circuitNetworkOpAmpTiming(p).gbw));},plan.maxStep),frames=[circuitNetworkSnapshot(initial,0)],time=0,dt=fastStep,probedAt=null,maxError=0,history=circuitNetworkIntegrationHistory(initial),restart='startup',storage=reactive.filter(function(p){return !circuitNetworkTimedOpAmp(p);});
     if(!reactive.length&&!plan.sources.length&&!switchPlan.events.length){frames.push(circuitNetworkSnapshot(initial,duration));return {ok:true,design:design,duration:duration,frames:frames,events:[],steps:0,rejected:0,maxError:0,integration:integration,integrationSteps:integrationSteps,message:'This resistive network is constant in time. Add a capacitor or inductor to explore stored energy.'};}
     while(time<duration){
       if(steps+rejected>=4000)return fail(CIRCUIT_NETWORK_STEP_LIMIT+' Shorten the time window, lower the signal frequency, or reduce extreme component-value ratios. No incomplete trace is shown.');
@@ -1474,6 +1549,10 @@ window.StemLab = window.StemLab || {
       var switchEvent=switchPlan.events[switchIndex],boundary=Math.min(eventIndex<plan.events.length?plan.events[eventIndex]:duration,switchEvent?switchEvent.time:duration),endTime=Math.min(time+dt,boundary,duration);if(boundary-endTime<duration*1e-12)endTime=boundary;if(boundary===duration&&duration-endTime<duration*1e-12)endTime=duration;dt=endTime-time;
       if(!(dt>duration*1e-12)||time+dt===time)return fail('The response cannot meet its numerical tolerance at this time scale. Shorten the time window or reduce extreme component-value ratios.');
       var restartReason=restart||(!storage.every(function(p){return Number.isFinite(history[p.id]);})?'unknown_history':null),trap=integration==='trapezoidal'&&storage.length>0&&!restartReason,method=trap?'trapezoidal':'backward-euler',secondOrder=trap&&!timedAmps.length;
+      // A step far longer than the fastest response passes step doubling (both estimates land on the settled value) and
+      // draws a fake slow ramp. At startup and after a switch, compare a tiny step with this one; if the tiny one already
+      // does most of the change, the response is fast, so start tiny and let the step grow.
+      if((restart==='startup'||restart==='switch_event')&&probedAt!==time&&storage.length){probedAt=time;var probeDt=duration*1e-6;if(dt>probeDt*100){var pBig=solveNetworkCircuit(design,{dt:dt,states:states,history:history,integration:'backward-euler',time:endTime,switchStates:switchStates,diodeVoltages:diodeVoltages,opampCache:opampCache}),pSmall=solveNetworkCircuit(design,{dt:probeDt,states:states,history:history,integration:'backward-euler',time:time+probeDt,switchStates:switchStates,diodeVoltages:diodeVoltages,opampCache:opampCache});if(pBig.ok&&pSmall.ok){var vBig=statesOf(pBig),vSmall=statesOf(pSmall);if(storage.some(function(p){var dBig=Math.abs(vBig[p.id]-states[p.id]),dSmall=Math.abs(vSmall[p.id]-states[p.id]);return dBig>0&&dSmall>.5*dBig;})){dt=probeDt;endTime=time+dt;}}}}
       var full=solveNetworkCircuit(design,{dt:dt,states:states,history:history,integration:method,time:endTime,switchStates:switchStates,diodeVoltages:diodeVoltages,opampCache:opampCache}),half=solveNetworkCircuit(design,{dt:dt/2,states:states,history:history,integration:method,time:time+dt/2,switchStates:switchStates,diodeVoltages:diodeVoltages,opampCache:opampCache}),middle=statesOf(half);
       if(!full.ok||!half.ok||!known(middle))return fail((!full.ok?full.message:!half.ok?half.message:'')+' The time-step equations could not be solved reliably. Check return paths and reduce extreme component-value ratios.');
       // Without stored state or semiconductor iteration, both end-time solves
@@ -1897,6 +1976,12 @@ window.StemLab = window.StemLab || {
   }
   window.StemLab.circuitNetworkOrbitFlow=circuitNetworkOrbitFlow;
   window.StemLab.circuitNetworkOrbitTrail=circuitNetworkOrbitTrail;
+  // Generator screen: two periods of the source's own waveform (phase, duty, offset), dot at the snapshot time.
+  function circuitNetworkOrbitScreen(view,p,time){
+    var wave=circuitNetworkWaveform(p);if(!wave||wave.shape==='dc')return;var low=wave.shape==='pulse'?p.value:p.value-wave.amplitude,high=p.value+wave.amplitude,c=view.map.image,w=c.width,h=c.height,y=function(v){return h/2-(v-(low+high)/2)/((high-low)/2||1)*h*.32;},key=JSON.stringify(wave)+'|'+p.value;
+    if(view.key!==key){view.key=key;var g=c.getContext('2d');g.fillStyle='#06261f';g.fillRect(0,0,w,h);g.strokeStyle='rgba(125,255,190,.2)';g.lineWidth=1;for(var x=16;x<w;x+=16){g.beginPath();g.moveTo(x,0);g.lineTo(x,h);g.stroke();}g.beginPath();g.moveTo(0,h/2);g.lineTo(w,h/2);g.stroke();g.strokeStyle='#8dffc0';g.lineWidth=4;g.beginPath();for(var i=0;i<=w;i++){var py=y(circuitNetworkSourceValue(p,i/w*2/wave.frequency));if(i)g.lineTo(i,py);else g.moveTo(i,py);}g.stroke();view.map.needsUpdate=true;}
+    var timed=Number.isFinite(time);view.marker.visible=timed;if(timed){var u=(((time*wave.frequency)%2)+2)%2/2;view.marker.position.set(-.22+.32*u,.424,-.12+.24*y(circuitNetworkSourceValue(p,time))/h);}
+  }
   // Presentation only: a soft studio so metal leads and plastic bodies read as real materials.
   function circuitNetworkOrbitStudio(T,renderer){
     var paint=function(w,h,fn){var c=document.createElement('canvas');c.width=w;c.height=h;fn(c.getContext('2d'),w,h);var t=new T.CanvasTexture(c);t.encoding=T.sRGBEncoding;return t;};
@@ -1929,29 +2014,30 @@ window.StemLab = window.StemLab || {
       var extent=Math.max(model.width,model.depth);key.shadow.camera.left=key.shadow.camera.bottom=-extent;key.shadow.camera.right=key.shadow.camera.top=extent;key.shadow.camera.far=40+extent;key.shadow.camera.updateProjectionMatrix();
       var grid=new T.Group();grid.name='surface-grid';content.add(grid);var gridMat=new T.LineBasicMaterial({color:'#9fd0c4',transparent:true,opacity:.11});for(var x=-4;x<=4;x+=.4){var g=new T.BufferGeometry().setFromPoints([new T.Vector3(x,.018,-model.depth/2+.08),new T.Vector3(x,.018,model.depth/2-.25)]);grid.add(new T.Line(g,gridMat));}for(var z=-model.depth/2+.12;z<model.depth/2-.2;z+=.4){var g=new T.BufferGeometry().setFromPoints([new T.Vector3(-4,.018,z),new T.Vector3(4,.018,z)]);grid.add(new T.Line(g,gridMat));}
       [-1,1].forEach(function(a){[-1,1].forEach(function(b){var x=a*(model.width/2-.2),z=b*(model.depth/2-.2)-.1;cylinder(content,.08,.07,metal,x,.045,z);box(content,[.10,.006,.018],dark,x,.083,z);cylinder(content,.11,.21,dark,x,-.23,z);});});
-      model.parts.forEach(function(part,i){var row=s.rows[i],p=row.component,group=new T.Group();group.position.copy(vector(part.center));group.userData={kind:'part',id:p.id};content.add(group);var body,bandMaterials=[],selection=ring(group,.62,.018,material('#ffdc8a',.25,.38),0,.03,0);selection.scale.y=.55;selection.material.transparent=true;var shell=new T.Group();shell.scale.setScalar(1.25);group.add(shell);var wave=p.type==='voltage'&&p.waveform&&p.waveform.shape!=='dc'&&p.waveform.amplitude>0?p.waveform.shape:'';var fx=p.bjt?.44:.56,z0=p.bjt?-.58:-.3,z1=p.bjt?.38:.3;group.add(new T.LineLoop(new T.BufferGeometry().setFromPoints([[-fx,z0],[fx,z0],[fx,z1],[-fx,z1]].map(function(q){return new T.Vector3(q[0],.021,q[1]);})),silk));
+      model.parts.forEach(function(part,i){var row=s.rows[i],p=row.component,group=new T.Group();group.position.copy(vector(part.center));group.userData={kind:'part',id:p.id};content.add(group);var body,bandMaterials=[],selection=ring(group,.62,.018,material('#ffdc8a',.25,.38),0,.03,0);selection.scale.y=.55;selection.material.transparent=true;var shell=new T.Group();shell.scale.setScalar(1.25);group.add(shell);var screen=null,charge=null,hot=null,field=null,face=null,bjtTag=null,band=null;var wave=p.type==='voltage'&&p.waveform&&p.waveform.shape!=='dc'&&p.waveform.amplitude>0?p.waveform.shape:'';var fx=p.bjt?.44:.56,z0=p.bjt?-.58:-.3,z1=p.bjt?.38:.3;group.add(new T.LineLoop(new T.BufferGeometry().setFromPoints([[-fx,z0],[fx,z0],[fx,z1],[-fx,z1]].map(function(q){return new T.Vector3(q[0],.021,q[1]);})),silk));
         [-1,1].forEach(function(sign){cylinder(group,.065,.04,gold,sign*.49,.035,0);tube(group,[[sign*.49,.04,0],[sign*.49,.20,0],[sign*.31,.20,0]],metal,.026);});
-        if(p.bjt){cylinder(group,.065,.04,gold,0,.035,-.49);tube(group,[[0,.04,-.49],[0,.2,-.49],[0,.2,-.31],[0,.2,-.15]],metal,.026);body=dshape(shell,.21,.42,material('#1d2329',.04,.42),0,.08,0);box(shell,[.24,.16,.006],material(p.bjt.polarity==='pnp'?'#5a3f58':'#2f4c5e',.05,.5),0,.34,.107);[-1,1].forEach(function(sign){tube(group,[[sign*.31,.2,0],[sign*.21,.2,0]],metal,.026);});var kind=label(group,p.bjt.polarity.toUpperCase(),0,.7,.03,.48);kind.set(kind.initial);}
-        else if(p.type==='resistor'){body=lathe(shell,[[0,-.31],[.1,-.31],[.138,-.295],[.148,-.25],[.136,-.195],[.118,-.165],[.118,.165],[.136,.195],[.148,.25],[.138,.295],[.1,.31],[0,.31]],material('#dbb982',.03,.5),0,.22,0);circuitNetworkResistorBands(p.value).forEach(function(color,j){var mat=material(color,.02,.45);bandMaterials.push(mat);cylinder(shell,.122,.04,mat,[-.13,-.07,-.01,.12][j],.22,0,'x');});}
-        else if(p.type==='diode'){body=lathe(shell,[[0,-.305],[.07,-.302],[.104,-.288],[.12,-.26],[.12,.26],[.104,.288],[.07,.302],[0,.305]],material(p.diode&&p.diode.model==='zener'?'#6f527c':'#273644',.15,.35),0,.22,0);cylinder(shell,.122,.065,metal,.22,.22,0,'x');}
-        else if(p.type==='capacitor'){body=lathe(shell,[[0,-.05],[.17,-.05],[.196,-.034],[.205,0],[.196,.034],[.17,.05],[0,.05]],material('#d4862f',.02,.55),0,.28,0,'z');}
-        else if(p.type==='inductor'){body=cylinder(shell,.073,.61,dark,0,.22,0,'x');var winding=Array.from({length:193},function(_,j){var phase=j/192*Math.PI*12;return [-.31+.62*j/192,.22+.12*Math.cos(phase),.12*Math.sin(phase)];});winding.unshift([-.31,.20,0]);winding.push([.31,.20,0]);tube(shell,winding,material('#d79b55',.6,.32),.026);}
+        if(p.bjt){cylinder(group,.065,.04,gold,0,.035,-.49);tube(group,[[0,.04,-.49],[0,.2,-.49],[0,.2,-.31],[0,.2,-.15]],metal,.026);body=dshape(shell,.21,.42,material('#1d2329',.04,.42),0,.08,0);face=box(shell,[.24,.16,.006],material(p.bjt.polarity==='pnp'?'#5a3f58':'#2f4c5e',.05,.5),0,.34,.107);[-1,1].forEach(function(sign){tube(group,[[sign*.31,.2,0],[sign*.21,.2,0]],metal,.026);});var kind=label(group,p.bjt.polarity.toUpperCase(),0,.7,.03,.78);kind.set(kind.initial);bjtTag=kind;}
+        else if(p.type==='resistor'){hot=label(group,'',0,.92,0,.9);hot.object.visible=false;hot.halo=mesh(shell,new T.SphereGeometry(.2,20,14),new T.MeshBasicMaterial({color:'#ff4d1a',transparent:true,opacity:.2,depthWrite:false}),0,.22,0);hot.halo.scale.set(2,1,1);hot.halo.castShadow=hot.halo.receiveShadow=false;hot.halo.raycast=function(){};hot.halo.visible=false;body=lathe(shell,[[0,-.31],[.1,-.31],[.138,-.295],[.148,-.25],[.136,-.195],[.118,-.165],[.118,.165],[.136,.195],[.148,.25],[.138,.295],[.1,.31],[0,.31]],material('#dbb982',.03,.5),0,.22,0);circuitNetworkResistorBands(p.value).forEach(function(color,j){var mat=material(color,.02,.45);bandMaterials.push(mat);cylinder(shell,.122,.04,mat,[-.13,-.07,-.01,.12][j],.22,0,'x');});}
+        else if(p.type==='diode'){body=lathe(shell,[[0,-.305],[.07,-.302],[.104,-.288],[.12,-.26],[.12,.26],[.104,.288],[.07,.302],[0,.305]],material(p.diode&&p.diode.model==='zener'?'#6f527c':'#273644',.15,.35),0,.22,0);band=cylinder(shell,.122,.065,material('#cfd6da',.6,.3),.22,.22,0,'x');}
+        else if(p.type==='capacitor'){body=lathe(shell,[[0,-.05],[.17,-.05],[.196,-.034],[.205,0],[.196,.034],[.17,.05],[0,.05]],material('#d4862f',.02,.55),0,.28,0,'z');charge=mesh(shell,new T.CylinderGeometry(.18,.18,.104,32),new T.MeshBasicMaterial({color:'#9bf0d6',toneMapped:false,transparent:true,opacity:.85}),0,.28,0);charge.rotation.x=Math.PI/2;charge.castShadow=false;charge.visible=false;}
+        else if(p.type==='inductor'){body=cylinder(shell,.073,.61,dark,0,.22,0,'x');var winding=Array.from({length:193},function(_,j){var phase=j/192*Math.PI*12;return [-.31+.62*j/192,.22+.12*Math.cos(phase),.12*Math.sin(phase)];});winding.unshift([-.31,.20,0]);winding.push([.31,.20,0]);tube(shell,winding,material('#d79b55',.6,.32),.026);field=new T.Group();field.position.y=.22;shell.add(field);var fieldMat=new T.MeshBasicMaterial({color:'#8fc7ff',transparent:true,opacity:.4,depthWrite:false,toneMapped:false}),line=[];for(var q=0;q<=8;q++)line.push(new T.Vector3(-.6+1.2*q/8,0,0));for(var q=1;q<24;q++){var ang=q/24*Math.PI;line.push(new T.Vector3(.6*Math.cos(ang),.34*Math.sin(ang),0));}var loopGeometry=new T.TubeGeometry(new T.CatmullRomCurve3(line,true,'centripetal'),96,.008,6,true);[0,1,-1,2,-2].forEach(function(n){var loop=new T.Mesh(loopGeometry,fieldMat);loop.rotation.x=n*Math.PI/3;loop.raycast=function(){};field.add(loop);});field.userData.mat=fieldMat;field.visible=false;}
         else if(p.type==='switch'){body=box(shell,[.62,.1,.3],dark,0,.08,0);[-1,1].forEach(function(sign){cylinder(shell,.055,.08,gold,sign*.23,.17,0);});var pivot=new T.Group();pivot.position.set(-.23,.22,0);shell.add(pivot);box(pivot,[.46,.045,.055],metal,.23,0,0);pivot.userData.lever=true;}
         else if(p.type==='wire'){body=tube(group,[[-.31,.2,0],[-.18,.37,0],[.18,.37,0],[.31,.2,0]],metal,.035).mesh;}
         else if(p.type==='voltage'&&!wave){var ink=material('#e9eef2',0,.6);body=cylinder(shell,.15,.5,material('#2b3440',.25,.4),0,.22,0,'x');cylinder(shell,.152,.13,material('#c98a2e',.4,.38),-.185,.22,0,'x');cylinder(shell,.06,.05,metal,-.275,.22,0,'x');cylinder(shell,.14,.02,metal,.255,.22,0,'x');box(shell,[.07,.006,.018],ink,-.06,.371,0);box(shell,[.018,.006,.07],ink,-.06,.371,0);box(shell,[.07,.006,.018],ink,.15,.371,0);}
-        else if(p.type==='voltage'){body=rounded(shell,[.62,.34,.4],.05,material('#2e3a46',.2,.42),0,.24,0);box(shell,[.32,.008,.24],new T.MeshBasicMaterial({toneMapped:false,map:studio.paint(128,80,function(g,w,h){g.fillStyle='#06261f';g.fillRect(0,0,w,h);g.strokeStyle='rgba(125,255,190,.2)';g.lineWidth=1;for(var x=16;x<w;x+=16){g.beginPath();g.moveTo(x,0);g.lineTo(x,h);g.stroke();}g.beginPath();g.moveTo(0,h/2);g.lineTo(w,h/2);g.stroke();g.strokeStyle='#8dffc0';g.lineWidth=4;g.beginPath();for(var i=0;i<=w;i++){var u=i/w*2%1,v=wave==='sine'?Math.sin(u*2*Math.PI):wave==='triangle'?1-4*Math.abs(u-.5):u<.5?1:-1,y=h/2-v*h*.32;if(i)g.lineTo(i,y);else g.moveTo(i,y);}g.stroke();})}),-.06,.414,0);cylinder(shell,.05,.05,metal,.2,.435,-.05);cylinder(shell,.032,.02,material('#d64545',.1,.4),-.26,.42,.12);cylinder(shell,.032,.02,material('#15191d',.1,.4),.26,.42,.12);}
+        else if(p.type==='voltage'){body=rounded(shell,[.62,.34,.4],.05,material('#2e3a46',.2,.42),0,.24,0);var screenMap=studio.paint(128,80,function(){});box(shell,[.32,.008,.24],new T.MeshBasicMaterial({toneMapped:false,map:screenMap}),-.06,.414,0);var marker=mesh(shell,new T.SphereGeometry(.018,10,8),new T.MeshBasicMaterial({color:'#ffffff',toneMapped:false}),0,.424,0);marker.castShadow=false;marker.visible=false;screen={map:screenMap,key:'',marker:marker};cylinder(shell,.05,.05,metal,.2,.435,-.05);cylinder(shell,.032,.02,material('#d64545',.1,.4),-.26,.42,.12);cylinder(shell,.032,.02,material('#15191d',.1,.4),.26,.42,.12);}
         else {body=rounded(shell,[.62,p.type==='opamp'?.24:.30,.36],.06,material(p.type==='opamp'?'#384f66':p.control?'#80659b':p.type==='current'?'#388fa0':'#98657b',.22,.4),0,.23,0);if(p.type==='opamp'){cylinder(shell,.028,.008,dark,-.22,.354,-.1);}if(p.type==='opamp')[-.20,0,.20].forEach(function(x){[-1,1].forEach(function(sign){box(shell,[.045,.04,.17],metal,x,.15,sign*.24);});});else{var face=box(shell,[.46,.009,.22],material('#203647',.18,.45),0,.386,0);box(shell,[.10,.009,.02],gold,-.12,.395,0);if(circuitNetworkVoltageOutput(p))box(shell,[.02,.009,.10],gold,-.12,.396,0);box(shell,[.10,.009,.02],gold,.12,.395,0);}}
-        if(p.type==='capacitor'||p.type==='switch')[-1,1].forEach(function(sign){tube(group,[[sign*.31,.2,0],[sign*(p.type==='capacitor'?.16:.23),.2,0]],metal,.026);});body.material=body.material.clone();var caption=label(group,circuitNetworkLabel(p),0,p.bjt?.95:p.type==='capacitor'?.8:.7,0,.62);caption.set(caption.initial);var terminals=circuitNetworkTerminals(p).map(function(t,j){var item=label(group,t.name,j===2?0:j===0?-.56:.56,.48,j===2?-.6:.24,.26);item.set(t.name);return item.object;});var energyGroup=new T.Group();energyGroup.position.set(.5,.06,.3);group.add(energyGroup);var energyFrame=box(energyGroup,[.10,.44,.10],material('#2b4555',.15,.4),0,.22,0),energyFill=box(energyGroup,[.055,1,.112],material(p.type==='capacitor'?'#9bf0d6':'#d4b7ff',.15,.35),0,.04,0);energyFrame.castShadow=false;
+        if(p.type==='capacitor'||p.type==='switch')[-1,1].forEach(function(sign){tube(group,[[sign*.31,.2,0],[sign*(p.type==='capacitor'?.16:.23),.2,0]],metal,.026);});body.material=body.material.clone();var caption=label(group,circuitNetworkLabel(p),0,p.bjt?.95:p.type==='capacitor'?.8:.7,0,p.type==='diode'||p.type==='opamp'||p.type==='switch'?.82:.62);caption.set(caption.initial);var terminals=circuitNetworkTerminals(p).map(function(t,j){var item=label(group,t.name,j===2?0:j===0?-.56:.56,.48,j===2?-.6:.24,.26);item.set(t.name);return item.object;});var energyGroup=new T.Group();energyGroup.position.set(.5,.06,.3);group.add(energyGroup);var energyFrame=box(energyGroup,[.10,.44,.10],material('#2b4555',.15,.4),0,.22,0),energyFill=box(energyGroup,[.055,1,.112],material(p.type==='capacitor'?'#9bf0d6':'#d4b7ff',.15,.35),0,.04,0);energyFrame.castShadow=false;
         var routes=part.paths.map(function(route,j){var m=material('#64bba4',.03,.34),wire=tube(content,route.points,m,.021),arrow=mesh(content,new T.ConeGeometry(.055,.14,12),material('#eaf8df',.05,.4)),position=wire.curve.getPointAt(.68),tangent=wire.curve.getTangentAt(.68);arrow.position.copy(position);var length=wire.curve.getLength(),trail=new T.InstancedMesh(trailGeometry,trailMaterial,circuitNetworkOrbitTrail(length,1,0).length);trail.instanceMatrix.setUsage(T.DynamicDrawUsage);trail.frustumCulled=false;trail.raycast=function(){};trail.userData={currentTrail:true,part:p.id,terminal:route.terminal};content.add(trail);var halo=new T.InstancedMesh(haloGeometry,haloMaterial,trail.count);halo.instanceMatrix.setUsage(T.DynamicDrawUsage);halo.frustumCulled=false;halo.raycast=function(){};halo.visible=false;content.add(halo);return {material:m,wire:wire.mesh,arrow:arrow,tangent:tangent,node:route.node,terminal:j,curve:wire.curve,length:length,trail:trail,halo:halo,direction:0};});
         var sense=new T.Group();content.add(sense);part.sense.forEach(function(points){var geometry=new T.BufferGeometry().setFromPoints(points.map(vector)),line=new T.Line(geometry,new T.LineDashedMaterial({color:'#d5b5ff',dashSize:.09,gapSize:.07}));line.computeLineDistances();sense.add(line);});
-        var tone=body.material.color;partViews[p.id]={group:group,body:body,dark:tone.r+tone.g+tone.b<.15,selection:selection,caption:caption,terminals:terminals,bands:bandMaterials,routes:routes,sense:sense,energyGroup:energyGroup,energyFill:energyFill,pivot:p.type==='switch'?shell.children.find(function(c){return c.userData.lever;}):null};
+        var tone=body.material.color;partViews[p.id]={group:group,body:body,screen:screen,charge:charge,hot:hot,field:field,face:face,bjtTag:bjtTag,band:band,dark:tone.r+tone.g+tone.b<.15,selection:selection,caption:caption,terminals:terminals,bands:bandMaterials,routes:routes,sense:sense,energyGroup:energyGroup,energyFill:energyFill,pivot:p.type==='switch'?shell.children.find(function(c){return c.userData.lever;}):null};
       });
       model.nodes.forEach(function(node){var group=new T.Group();group.position.copy(vector(node.position));group.userData={kind:'node',id:node.id};content.add(group);var socket=cylinder(group,.16,.09,dark,0,.06,0),post=cylinder(group,.085,.10,gold,0,.115,0),potential=ring(group,.153,.026,material('#9ab9c9',.35,.38),0,.115,0),red=ring(group,.23,.017,material('#ffb39e',.2,.42),0,.035,0),black=ring(group,.27,.017,material('#d2dce9',.2,.42),0,.035,0),caption=label(group,node.id,0,.38,0,.58);caption.set(node.id);nodeViews[node.id]={group:group,potential:potential,red:red,black:black,caption:caption};});
       canvas.dataset.orbitParts=String(model.parts.length);canvas.dataset.orbitNodes=String(model.nodes.length);canvas.dataset.orbitRoutesClear=String(model.parts.every(function(p){return p.paths.every(function(r){return r.clear;});}));resize();
     };
     var update=function(s,options){if(disposed)return;delete canvas.dataset.orbitReady;lastSolved=s;lastOptions=options;var next=JSON.stringify(s.design.components.map(function(p){return [p.id,p.type,p.a,p.b,p.control,p.bjt&&[p.bjt.base,p.bjt.polarity],p.diode&&p.diode.model,p.waveform&&p.waveform.amplitude>0&&p.waveform.shape];})),rebuild=next!==topology;if(rebuild){topology=next;build(s);}var selected=options.selected,inspecting=options.inspectedNode!=null;trailCount=0;renderer.shadowMap.needsUpdate=true;
       var ratio=Math.min(window.devicePixelRatio||1,options.lightweight?1:1.5);if(renderer.getPixelRatio()!==ratio){delete canvas.dataset.orbitReady;renderer.setPixelRatio(ratio);}renderer.shadowMap.enabled=!options.lightweight;controls.enabled=options.drag===true;canvas.style.touchAction=options.drag?'none':'pan-y';content.getObjectByName('surface-grid').visible=options.grid!==false;
-      s.rows.forEach(function(row){var p=row.component,v=partViews[p.id],chosen=selected===p.id,energy=circuitNetworkEnergyReading(row,options.energyReference),flow=circuitNetworkOrbitFlow(s.ok?row:null);v.selection.visible=chosen||hovered===p.id;v.selection.material.opacity=chosen?1:.45;v.terminals.forEach(function(t){t.visible=chosen;});v.caption.object.visible=options.labels!==false||chosen;v.body.material.emissive.set(chosen&&!v.dark?'#795828':'#000000');v.body.material.emissiveIntensity=chosen?.24:0;v.bands.forEach(function(mat,j){mat.color.set(circuitNetworkResistorBands(p.value)[j]).convertSRGBToLinear();});if(v.pivot){v.pivot.userData.goal=row.closed?0:.80;if(rebuild||options.calm)v.pivot.rotation.z=v.pivot.userData.goal;}v.sense.visible=chosen||inspecting&&p.control&&(p.control.positive===options.inspectedNode||p.control.negative===options.inspectedNode);v.energyGroup.visible=options.overlay==='energy'&&!!energy;v.energyFill.visible=!!energy&&energy.fraction!=null&&energy.fraction>0;v.energyFill.scale.y=energy&&energy.fraction!=null?.4*energy.fraction:0;v.energyFill.position.y=.02+.2*(energy&&energy.fraction||0);
+      var peakCurrent=s.rows.reduce(function(m,r){return Number.isFinite(r.current)?Math.max(m,Math.abs(r.current)):m;},0);
+      s.rows.forEach(function(row){var p=row.component,v=partViews[p.id],chosen=selected===p.id,energy=circuitNetworkEnergyReading(row,options.energyReference),flow=circuitNetworkOrbitFlow(s.ok?row:null);v.selection.visible=chosen||hovered===p.id;v.selection.material.opacity=chosen?1:.45;v.terminals.forEach(function(t){t.visible=chosen;});v.caption.object.visible=options.labels!==false||chosen;v.body.material.emissive.set(chosen&&!v.dark?'#795828':'#000000');v.body.material.emissiveIntensity=chosen?.24:0;if(v.screen)circuitNetworkOrbitScreen(v.screen,p,s.time);if(v.field){var flux=peakCurrent>0&&Number.isFinite(row.current)?Math.abs(row.current)/peakCurrent:0;v.field.visible=flux>.02;v.field.userData.mat.opacity=.12+.55*flux;}if(p.type==='switch')v.caption.set(circuitNetworkLabel(p)+(row.closed?' · closed':' · open'));if(p.type==='diode'){var bias=s.ok?circuitNetworkDiodeStatus(row):'',word2=bias==='Forward biased'?'forward':bias==='Reverse biased'?'reverse':/breakdown/i.test(bias)?'breakdown':'';v.caption.set(circuitNetworkLabel(p)+(word2?' · '+word2:''));v.band.material.color.set(word2==='forward'?'#3ddc97':'#cfd6da').convertSRGBToLinear();v.band.material.metalness=word2==='forward'?.1:.6;v.band.material.emissive.set(word2==='forward'?'#1f9e67':'#000000').convertSRGBToLinear();v.band.material.emissiveIntensity=word2==='forward'?.6:0;}if(p.type==='opamp'){var out=s.ok?row.opampRegion:'',word3=out==='upper'?'upper limit':out==='lower'?'lower limit':out==='slew-up'||out==='slew-down'?'slewing':'';v.caption.set(circuitNetworkLabel(p)+(word3?' · '+word3:''));if(word3&&!chosen){v.body.material.emissive.set(word3==='slewing'?'#8a5fb0':'#c77a2a').convertSRGBToLinear();v.body.material.emissiveIntensity=.3;}}if(v.bjtTag){var region=row.bjtRegion,weak=circuitBjtWeak(row),tint=weak?'#46505c':{'Cutoff / leakage':'#46505c','Forward active':'#2f8a5e','Saturation':'#b0662a','Reverse active':'#76529a'}[region],word=weak?'barely on':{'Cutoff / leakage':'off','Forward active':'active','Saturation':'saturated','Reverse active':'reverse'}[region];v.bjtTag.set(p.bjt.polarity.toUpperCase()+(word?' · '+word:''));v.face.material.color.set(tint||(p.bjt.polarity==='pnp'?'#5a3f58':'#2f4c5e')).convertSRGBToLinear();v.face.material.emissive.set(tint||'#000000').convertSRGBToLinear();v.face.material.emissiveIntensity=tint?.35:0;}if(v.charge){var held=row.voltage==null?0:Math.min(1,Math.abs(row.voltage)/(options.voltageScale||1)),k=Math.sqrt(held);v.charge.visible=held>.02;v.charge.scale.set(k,1,k);}if(v.hot){var heat=Number.isFinite(row.power)&&row.power>.25?Math.min(1,(row.power-.25)/.5):-1;v.hot.object.visible=v.hot.halo.visible=heat>=0;if(heat>=0){v.hot.halo.material.opacity=.16+.2*heat;v.body.material.emissive.set('#ff3a00');v.body.material.emissiveIntensity=.4+.8*heat;v.hot.set(Number(row.power.toPrecision(2))+' W · over ¼ W');}}v.bands.forEach(function(mat,j){mat.color.set(circuitNetworkResistorBands(p.value)[j]).convertSRGBToLinear();});if(v.pivot){v.pivot.userData.goal=row.closed?0:.80;if(rebuild||options.calm)v.pivot.rotation.z=v.pivot.userData.goal;}v.sense.visible=chosen||inspecting&&p.control&&(p.control.positive===options.inspectedNode||p.control.negative===options.inspectedNode);v.energyGroup.visible=options.overlay==='energy'&&!!energy;v.energyFill.visible=!!energy&&energy.fraction!=null&&energy.fraction>0;v.energyFill.scale.y=energy&&energy.fraction!=null?.4*energy.fraction:0;v.energyFill.position.y=.02+.2*(energy&&energy.fraction||0);
         v.routes.forEach(function(route){var terminalCurrent=s.ok?circuitNetworkTerminalCurrent(row,route.terminal):null,node=s.nodes.find(function(n){return n.id===route.node;}),hit=route.node===options.inspectedNode,dim=inspecting?!hit:options.emphasis&&!chosen,color=options.overlay==='voltage'?circuitNetworkPotentialColor(node&&node.voltage,options.voltageScale||1):terminalCurrent==null?'#99a8b6':chosen?'#e2c784':Math.abs(terminalCurrent)<1e-12?'#65838f':'#70c8ae';route.material.color.set(color).convertSRGBToLinear();if(dim)route.material.color.multiplyScalar(.3);var direction=terminalCurrent!=null&&Math.abs(terminalCurrent)>1e-12?Math.sign(terminalCurrent):0;route.direction=direction;route.magnitude=direction?Math.abs(terminalCurrent):0;route.trail.visible=direction!==0&&!dim&&options.flow!=='off'&&(options.flow==='all'||chosen);route.halo.visible=route.trail.visible;if(route.trail.visible)trailCount+=route.trail.count;route.arrow.visible=direction!==0&&!dim;route.arrow.quaternion.setFromUnitVectors(new T.Vector3(0,1,0),route.tangent.clone().multiplyScalar(direction||1));});
       });
       s.nodes.forEach(function(node){var v=nodeViews[node.id];if(!v)return;v.potential.material.color.set(circuitNetworkPotentialColor(node.voltage,options.voltageScale||1)).convertSRGBToLinear();v.red.visible=options.probe.red===node.id;v.black.visible=options.probe.black===node.id;v.caption.set(node.id+(v.red.visible?' R':'')+(v.black.visible?' K':''));v.caption.object.visible=options.labels!==false||v.red.visible||v.black.visible||options.inspectedNode===node.id;});
@@ -2042,13 +2128,13 @@ window.StemLab = window.StemLab || {
     var content=h('section',{className:'circuit-network-orbit','data-expanded':expanded,'data-timed':sampleIndex>=0,'aria-label':__alloT('stem.circuit.orbitable_3d_circuit_board','Orbitable 3D circuit board')},
       h('div',{className:'circuit-network-orbit-heading'},h('div',null,h('span',{className:'circuit-eyebrow'},expanded?'EXPANDED CIRCUIT WORKSPACE':'STEP AROUND THE CIRCUIT'),h('h4',null,'Explore the board in 3D')),h('div',{className:'circuit-network-orbit-heading-actions'},h('span',{className:'circuit-network-orbit-badge'},props.solved.time==null?'DC snapshot':'t = '+circuitTimeText(props.solved.time)+(props.solved.side?' · '+props.solved.side:'')),h('button',{type:'button',ref:expanded?closeButton:expandButton,'data-orbit-expand':true,'aria-expanded':expanded,'aria-controls':dialogId,onClick:function(){resizeView(!expanded);}},expanded?'Return to workbench':'Expand 3D workspace'))),expandNotice[0]&&h('p',{className:'circuit-help',role:'status'},expandNotice[0]),
       h('div',{className:'circuit-network-orbit-workspace'},
-        h('div',{className:'circuit-network-orbit-stage'},h('div',{className:'circuit-network-orbit-presets',role:'group','aria-label':__alloT('stem.circuit.3d_camera_presets','3D camera presets')},h('label',null,'Camera view',h('select',{'aria-label':__alloT('stem.circuit.3d_camera_view','3D camera view'),value:preset?preset[0]:'custom',onChange:function(e){var next=presets.find(function(p){return p[0]===e.target.value;});if(next)pose({azimuth:next[2],elevation:next[3]});}},h('option',{value:'custom',disabled:true},'Custom view'),presets.map(function(p){return h('option',{key:p[0],value:p[0]},p[1]);}))),h('button',{type:'button',onClick:reset},'Fit whole board'),h('button',{type:'button',disabled:!selected||!ready||!!error,onClick:focus},'Focus selected in 3D')),h('div',{className:'circuit-network-orbit-viewport'},h('canvas',{key:attempt[0],ref:canvasRef,tabIndex:0,role:'img','aria-label':__alloT('stem.circuit.orbitable_circuit_scene_arrow_keys_rotate_an','Orbitable circuit scene. Arrow keys rotate and tilt; Shift plus arrows pan; plus and minus zoom; Home fits the board; F focuses the selected component. Components and probes are also available in the controls below.'),onKeyDown:function(e){if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();nudge(e.key,e.shiftKey);}else if(e.key==='+'||e.key==='='||e.key==='-'){e.preventDefault();pose({zoom:camera.zoom+(e.key==='-'?-.15:.15)});}else if(e.key==='Home'){e.preventDefault();reset();}else if(e.key==='f'||e.key==='F'){e.preventDefault();focus();}},style:{visibility:error?'hidden':'visible'}}),(!ready||error)&&h('div',{className:'circuit-network-orbit-status',role:'status'},h('strong',null,error?'3D view unavailable':'Preparing the 3D board…'),h('p',null,error||'Loading the graphics engine. Your circuit and readings stay available.'),error&&h('button',{type:'button',onClick:function(){errorState[1]('');attempt[1](function(n){return n+1;});}},'Retry 3D graphics'),h('button',{type:'button',onClick:props.fallback},'Use projected board'))),sampleIndex>=0&&h('div',{className:'circuit-network-orbit-timeline',role:'group','aria-label':__alloT('stem.circuit.3d_simulation_time','3D simulation time')},h('div',null,h('strong',null,'Simulation snapshot'),h('output',null,circuitTimeText(props.solved.time)+(props.solved.side?' · '+props.solved.side:'')+' · sample '+(sampleIndex+1)+' / '+frames.length)),h('label',null,h('span',{className:'sr-only'},'3D calculated sample'),h('input',{type:'range','aria-label':__alloT('stem.circuit.3d_calculated_sample','3D calculated sample'),min:0,max:frames.length-1,step:1,value:sampleIndex,'aria-valuetext':circuitTimeText(props.solved.time)+(props.solved.side?' '+props.solved.side+' switching':'')+', sample '+(sampleIndex+1)+' of '+frames.length,onChange:function(e){seekSample(Number(e.target.value));}})),h('div',{className:'circuit-network-orbit-time-actions'},h('button',{type:'button',disabled:sampleIndex===0,onClick:function(){seekSample(sampleIndex-1);}},'Previous 3D sample'),h('button',{type:'button','aria-pressed':!!props.runPlaying,onClick:props.toggleRun},props.runPlaying?'Pause 3D response':'Play 3D response'),h('button',{type:'button',disabled:sampleIndex>=frames.length-1,onClick:function(){seekSample(sampleIndex+1);}},'Next 3D sample')),h('p',null,'One step is one calculated sample. Time gaps vary; before/after switch samples share a time.'),!sideSignal&&h(CircuitNetworkOrbitSignal,{React:React,t:props.t,run:props.run,solved:props.solved,selected:selected,held:props.held,metric:raw.signal,change:function(metric){change({signal:metric});},seek:props.seek})),h('p',{className:'circuit-network-orbit-stage-hint'},'Click a component or use the selector. Arrow keys rotate and tilt; + / − zoom. F focuses your selection.')),
+        h('div',{className:'circuit-network-orbit-stage'},h('div',{className:'circuit-network-orbit-presets',role:'group','aria-label':__alloT('stem.circuit.3d_camera_presets','3D camera presets')},h('label',null,'Camera view',h('select',{'aria-label':__alloT('stem.circuit.3d_camera_view','3D camera view'),value:preset?preset[0]:'custom',onChange:function(e){var next=presets.find(function(p){return p[0]===e.target.value;});if(next)pose({azimuth:next[2],elevation:next[3]});}},h('option',{value:'custom',disabled:true},'Custom view'),presets.map(function(p){return h('option',{key:p[0],value:p[0]},p[1]);}))),h('button',{type:'button',onClick:reset},'Fit whole board'),h('button',{type:'button',disabled:!selected||!ready||!!error,onClick:focus},'Focus selected in 3D')),h('div',{className:'circuit-network-orbit-viewport'},h('canvas',{key:attempt[0],ref:canvasRef,tabIndex:0,role:'img','aria-label':__alloT('stem.circuit.orbitable_circuit_scene_arrow_keys_rotate_an','Orbitable circuit scene. Arrow keys rotate and tilt; Shift plus arrows pan; plus and minus zoom; Home fits the board; F focuses the selected component. Components and probes are also available in the controls below.'),onKeyDown:function(e){if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key)){e.preventDefault();nudge(e.key,e.shiftKey);}else if(e.key==='+'||e.key==='='||e.key==='-'){e.preventDefault();pose({zoom:camera.zoom+(e.key==='-'?-.15:.15)});}else if(e.key==='Home'){e.preventDefault();reset();}else if(e.key==='f'||e.key==='F'){e.preventDefault();focus();}},style:{visibility:error?'hidden':'visible'}}),(!ready||error)&&h('div',{className:'circuit-network-orbit-status',role:'status'},h('strong',null,error?'3D view unavailable':'Preparing the 3D board…'),h('p',null,error||'Loading the graphics engine. Your circuit and readings stay available.'),error&&h('button',{type:'button',onClick:function(){errorState[1]('');attempt[1](function(n){return n+1;});}},'Retry 3D graphics'),h('button',{type:'button',onClick:props.fallback},'Use projected board'))),sampleIndex>=0&&h('div',{className:'circuit-network-orbit-timeline',role:'group','aria-label':__alloT('stem.circuit.3d_simulation_time','3D simulation time')},h('div',null,h('strong',null,'Simulation snapshot'),h('output',{'aria-live':'off'},circuitTimeText(props.solved.time)+(props.solved.side?' · '+props.solved.side:'')+' · sample '+(sampleIndex+1)+' / '+frames.length)),h('label',null,h('span',{className:'sr-only'},'3D calculated sample'),h('input',{type:'range','aria-label':__alloT('stem.circuit.3d_calculated_sample','3D calculated sample'),min:0,max:frames.length-1,step:1,value:sampleIndex,'aria-valuetext':circuitTimeText(props.solved.time)+(props.solved.side?' '+props.solved.side+' switching':'')+', sample '+(sampleIndex+1)+' of '+frames.length,onChange:function(e){seekSample(Number(e.target.value));}})),h('div',{className:'circuit-network-orbit-time-actions'},h('button',{type:'button',disabled:sampleIndex===0,onClick:function(){seekSample(sampleIndex-1);}},'Previous 3D sample'),h('button',{type:'button','aria-pressed':!!props.runPlaying,onClick:props.toggleRun},props.runPlaying?'Pause 3D response':'Play 3D response'),h('button',{type:'button',disabled:sampleIndex>=frames.length-1,onClick:function(){seekSample(sampleIndex+1);}},'Next 3D sample')),h('p',null,'One step is one calculated sample. Time gaps vary; before/after switch samples share a time.'),!sideSignal&&h(CircuitNetworkOrbitSignal,{React:React,t:props.t,run:props.run,solved:props.solved,selected:selected,held:props.held,metric:raw.signal,change:function(metric){change({signal:metric});},seek:props.seek})),h('p',{className:'circuit-network-orbit-stage-hint'},'Click a component or use the selector. Arrow keys rotate and tilt; + / − zoom. F focuses your selection.')),
         h('div',{className:'circuit-network-orbit-tools'},h('div',{className:'circuit-network-orbit-selectors'},h('label',null,'Selected component',h('select',{'aria-label':__alloT('stem.circuit.3d_selected_component','3D selected component'),value:selected?selected.component.id:'',onChange:function(e){props.select(Number(e.target.value));}},props.solved.rows.map(function(row){return h('option',{key:row.component.id,value:row.component.id},row.label+' · '+CIRCUIT_NETWORK_TYPES[row.component.type].name);}))),h('label',null,props.inspectedNode!=null?'Inspect node':'Place '+props.lead+' probe',h('select',{'aria-label':__alloT('stem.circuit.3d_node_action','3D node action'),value:'',onChange:function(e){if(e.target.value)props.place(e.target.value);}},h('option',{value:''},'Choose a named node'),props.solved.nodes.filter(function(n){return n.used;}).map(function(n){return h('option',{key:n.id,value:n.id},'Node '+n.id);})))),h('div',{className:'circuit-network-orbit-layer'},h('label',null,'Scene layer',h('select',{'aria-label':__alloT('stem.circuit.3d_scene_layer','3D scene layer'),value:props.overlay==='voltage'?'voltage':props.overlay==='energy'?'energy':'current',onChange:function(e){props.setLayer(e.target.value);}},h('option',{value:'current'},'Current directions'),h('option',{value:'voltage'},'Node voltages'),h('option',{value:'energy'},'Stored energy'))),props.overlay==='voltage'&&h('div',{className:'circuit-network-orbit-layer-legend','aria-label':__alloT('stem.circuit.3d_node_voltage_color_scale','3D node voltage color scale')},h('div',{'aria-hidden':true,className:'circuit-network-orbit-voltage-ramp',style:{background:'linear-gradient(90deg,'+circuitNetworkPotentialColor(-1,1)+','+circuitNetworkPotentialColor(0,1)+','+circuitNetworkPotentialColor(1,1)+')'}}),h('div',null,h('span',null,circuitPreciseVoltageText(-(props.voltageScale||1))),h('span',null,'0 V'),h('span',null,'+'+circuitPreciseVoltageText(props.voltageScale||1))),h('p',null,'Node voltage relative to 0. '+(props.run&&props.run.ok?'Fixed scale across the whole run. ':'')+'Gray means undetermined.')),props.overlay==='energy'&&h('p',{className:'circuit-network-orbit-layer-note'},'Capacitor and inductor gauges share one scale: '+(props.energyReference&&props.energyReference.hasKnown?'0 J to '+circuitNetworkEnergyText(props.energyReference.maximum):'no determined stored-energy readings')+'.')),h(CircuitNetworkOrbitMeter,{React:React,t:props.t,solved:props.solved,probe:props.probe,held:props.held,selected:selected,lead:props.lead,inspecting:props.inspectedNode!=null,setProbes:props.setProbes,open:raw.probesOpen===true,toggle:function(open){change({probesOpen:open});},playing:props.runPlaying}),sideSignal&&h(CircuitNetworkOrbitSignal,{React:React,t:props.t,run:props.run,solved:props.solved,selected:selected,held:props.held,metric:raw.signal,change:function(metric){change({signal:metric});},seek:props.seek}),selected&&selected.component.bjt&&h('details',{className:'circuit-network-bjt-orbit'},h('summary',null,'Transistor currents · '+(selected.bjtRegion||'Undetermined')),h(CircuitNetworkBJTReadout,{React:React,t:props.t,row:selected})),h('div',{className:'circuit-network-orbit-flow-controls',role:'group','aria-label':__alloT('stem.circuit.current_trail_controls','Current trail controls')},h('label',null,'Current trails',h('select',{'aria-label':__alloT('stem.circuit.3d_current_trails','3D current trails'),value:flowMode,onChange:function(e){change({flow:e.target.value});}},h('option',{value:'selected'},'Selected branch'),h('option',{value:'all'},'All visible branches'),h('option',{value:'off'},'Off'))),h('button',{type:'button',disabled:!ready||!!error||motionBlocked||flowMode==='off'||!flowAvailable,'aria-pressed':flowPlaying,onClick:function(){motion[1](!flowPlaying);}},flowPlaying?'Pause current trails':'Play current trails'),h('button',{type:'button',disabled:!ready||!!error||flowMode==='off'||!flowAvailable||flowPlaying,onClick:function(){if(engine.current)engine.current.step();}},'Step current trails'),props.motionPaused&&!reduced[0]&&h('button',{type:'button',onClick:props.resumeMotion},'Resume circuit motion')),h('p',{className:'circuit-network-orbit-flow-note'},reduced[0]?'Reduced motion is on. Use Step current trails to trace the direction. ':props.motionPaused?'Circuit motion is paused. Step through the trails, or resume motion to enable playback. ':flowPlaying?'Trails are playing at the displayed snapshot. ':'Trails are paused. ', 'Dots mark conventional-current direction on the leads. A larger glow marks more current, compared with the largest current on the board. Dot speed and spacing do not represent current magnitude or electron speed. Trail controls do not advance simulation time.'),h('details',{className:'circuit-network-orbit-camera-details',open:raw.cameraControls===true,onToggle:function(e){var open=e.currentTarget.open;if(open!==(raw.cameraControls===true))change({cameraControls:open});}},h('summary',null,'Camera & display'),h('div',{className:'circuit-network-orbit-camera-readings'},h('output',{'aria-label':__alloT('stem.circuit.3d_camera_position','3D camera position')},Math.round(camera.azimuth)+'° around · '+Math.round(camera.elevation)+'° above · '+Math.round(camera.zoom*100)+'%'),h('span',null,raw.drag===true?'Drag controls on':'Drag controls off · page scrolling available')),h('div',{className:'circuit-network-orbit-navigation',role:'group','aria-label':__alloT('stem.circuit.3d_camera_navigation','3D camera navigation')},h('button',{type:'button',onClick:function(){nudge('ArrowLeft');}},'Rotate left'),h('button',{type:'button',onClick:function(){nudge('ArrowRight');}},'Rotate right'),h('button',{type:'button',disabled:camera.elevation>=85,onClick:function(){nudge('ArrowUp');}},'Tilt up'),h('button',{type:'button',disabled:camera.elevation<=15,onClick:function(){nudge('ArrowDown');}},'Tilt down'),h('button',{type:'button',disabled:camera.zoom>=3,onClick:function(){pose({zoom:camera.zoom+.2});}},'Zoom 3D in'),h('button',{type:'button',disabled:camera.zoom<=.65,onClick:function(){pose({zoom:camera.zoom-.2});}},'Zoom 3D out')),h('div',{className:'circuit-network-orbit-options',role:'group','aria-label':__alloT('stem.circuit.3d_scene_options','3D scene options')},h('button',{type:'button','aria-pressed':raw.drag===true,onClick:function(){change({drag:raw.drag!==true});}},'Drag to orbit'),h('button',{type:'button','aria-pressed':raw.labels!==false,onClick:function(){change({labels:raw.labels===false});}},'3D labels'),h('button',{type:'button','aria-pressed':raw.lightweight===true,onClick:function(){change({lightweight:raw.lightweight!==true});}},'Lightweight rendering')),h('p',{className:'circuit-help'},raw.drag===true?'Drag to rotate; wheel or pinch to zoom; right-drag or two-finger drag to pan. Turn off Drag to orbit to scroll the page normally.':'Click a package to select it, or a node to place the active probe or inspect connections. Enable Drag to orbit for mouse/touch camera gestures. Camera buttons and keyboard controls work without gestures.')),selected&&h('div',{className:'circuit-network-orbit-flow-reading','data-flow-status':flow.status,'data-power-status':flow.powerStatus},
         h('div',{className:'circuit-network-orbit-flow-title'},h('span',{className:'circuit-eyebrow'},'READ THE SELECTED BRANCH'),h('strong',null,selected.label+' · '+CIRCUIT_NETWORK_TYPES[selected.component.type].name)),
         h('div',{className:'circuit-network-orbit-flow-metrics'},h('div',null,h('span',null,'Terminal map'),h('strong',null,'A = node '+selected.component.a),h('strong',null,'B = node '+selected.component.b),h('small',null,'A/B badges label this part’s terminals.')),
           h('div',null,h('span',null,selected.component.bjt?'Collector current IC':'Conventional current'),h('strong',null,flow.current==null?'Undetermined':circuitCurrentText(flow.current)),h('small',null,flow.status==='unknown'?'No direction is inferred from an unknown current.':flow.status==='zero'?'Zero current at this snapshot.':flow.status==='small'?'At or below the 1 pA trail threshold.':selected.component.bjt?(flow.direction>0?'Into collector C':'Out of collector C'):flow.direction>0?'A → component → B':'B → component → A')),
           h('div',null,h('span',null,'Signed power · P = VI'),h('strong',null,flow.power==null?'Undetermined':circuitPowerText(flow.power)),h('small',null,flow.powerStatus==='absorbing'?'Absorbing electrical energy':flow.powerStatus==='delivering'?'Delivering electrical energy':flow.powerStatus==='zero'?'Zero net power at this snapshot':'Power is not determined.'))),
-        h('p',null,(selected.component.bjt?'V(C) − V(E) = ':'V(A) − V(B) = ')+(Number.isFinite(selected.voltage)?circuitPreciseVoltageText(selected.voltage):'undetermined')+(selected.component.bjt?'. Positive IC enters the collector. Each lead uses its own terminal current. ':'. Positive I enters terminal A; negative I reverses direction. ')+(selected.component.type==='capacitor'?'The trails stop at the capacitor terminals; they do not depict charge crossing the dielectric.':selected.component.type==='inductor'?'An inductor can return stored energy while its current keeps the same direction.':'A negative current is a direction, not a simulation error.'))),h('p',{className:'circuit-help'},'Solid packages, leads, and shadows show depth. Wire colors, current arrows, switch positions, and energy gauges follow the same calculated snapshot as the scope. Only named nodes connect; crossings do not. Packages and pin shapes are illustrative, not hardware pinouts or a physical breadboard model.'))));
+        h('p',null,(selected.component.bjt?'V(C) − V(E) = ':'V(A) − V(B) = ')+(Number.isFinite(selected.voltage)?circuitPreciseVoltageText(selected.voltage):'undetermined')+(selected.component.bjt?'. Positive IC enters the collector. Each lead uses its own terminal current. ':'. Positive I enters terminal A; negative I reverses direction. ')+(selected.component.type==='capacitor'?'The trails stop at the capacitor terminals; they do not depict charge crossing the dielectric.':selected.component.type==='inductor'?'An inductor can return stored energy while its current keeps the same direction.':'A negative current is a direction, not a simulation error.')+(selected.component.type==='capacitor'?' The bright patch on the 3D capacitor grows with its voltage, as stored charge does (Q = CV).':selected.component.type==='inductor'?' The blue loops around the 3D coil brighten with its current, compared with the largest current on the board: the magnetic field is proportional to current, and the stored energy is ½LI².':selected.component.type==='diode'?' On the 3D board its label adds forward, reverse or breakdown, and the cathode band glows while it is forward biased.':selected.component.type==='opamp'?' On the 3D board its label and a warm glow show when the output is pinned at a limit, and a violet glow while it is slewing.':'')+(selected.component.type==='resistor'&&Number.isFinite(selected.power)&&selected.power>.25?' It dissipates '+Number(selected.power.toPrecision(2))+' W, more than the ¼ W rating of a typical small resistor. A real one would overheat, so it would need a higher power rating or a larger resistance.':''))),h('p',{className:'circuit-help'},'Solid packages, leads, and shadows show depth. Wire colors, current arrows, switch positions, and energy gauges follow the same calculated snapshot as the scope. Only named nodes connect; crossings do not. Packages and pin shapes are illustrative, not hardware pinouts or a physical breadboard model.'))));
     return h(React.Fragment,null,!expanded&&content,h('dialog',{ref:dialogRef,id:dialogId,className:'circuit-network-orbit-dialog','aria-label':__alloT('stem.circuit.expanded_3d_circuit_workspace','Expanded 3D circuit workspace'),onCancel:function(e){e.preventDefault();e.stopPropagation();resizeView(false);},onClose:function(){if(dialogRef.current&&!dialogRef.current.open)expandedState[1](false);},onKeyDown:function(e){if(e.key==='Escape')e.stopPropagation();}},expanded&&content));
   }
   function CircuitNetworkCameraControls(props){
@@ -2114,7 +2200,7 @@ window.StemLab = window.StemLab || {
         props.grid!==false&&Array.from({length:20},function(_,i){var x=60+i*40;return h('polyline',{key:'gx'+i,points:points([[x,40],[x,height-60]]),fill:'none',stroke:'#80aab3',opacity:.13});}),props.grid!==false&&Array.from({length:Math.floor((height-90)/40)},function(_,i){var y=50+i*40;return h('polyline',{key:'gy'+i,points:points([[50,y],[850,y]]),fill:'none',stroke:'#80aab3',opacity:.13});}),(inspecting?s.design.components.flatMap(function(p){return p.control&&p.control.source==null?['positive','negative'].flatMap(function(input,i){return p.control[input]===props.inspectedNode&&(geometry.sense[p.id]||[])[i]?[{id:p.id,route:geometry.sense[p.id][i]}]:[];}):[];}):(geometry.sense[props.selected]||[]).map(function(r){return {id:props.selected,route:r};})).map(function(item,i){return h('path',{key:'sense-'+i,'data-network-sense':item.id,d:circuitNetworkRoundedPath(item.route.points),fill:'none',stroke:'#cfb2f0',strokeWidth:2,strokeDasharray:'3 7',opacity:.9});}),routes.filter(function(r){return !r.props['data-route-priority'];}).concat(routes.filter(function(r){return r.props['data-route-priority']&&Number(r.key)!==props.selected;}),routes.filter(function(r){return r.props['data-route-priority']&&Number(r.key)===props.selected;})),arrows,bodies.sort(function(a,b){return a.depth-b.depth;}).map(function(b){return b.element;}),
         s.nodes.filter(function(n){return n.used;}).map(function(node){var p=project(layout.nodes[node.id][0],layout.nodes[node.id][1]);return h('g',{key:node.id},inspecting&&props.inspectedNode===node.id&&h('circle',{'data-inspected-node':node.id,cx:p[0],cy:p[1],r:34,fill:'none',stroke:'#9ddff5',strokeWidth:2}),(props.probe.red===node.id||props.probe.black===node.id)&&h('circle',{'data-probe-collar':node.id,cx:p[0],cy:p[1],r:30,fill:'none',stroke:props.probe.red===node.id?'#f5cdb3':'#b5c4da',strokeWidth:2,strokeDasharray:props.probe.red===node.id?undefined:'4 3'}),h('circle',{cx:p[0],cy:p[1],r:22,fill:'#071722',stroke:circuitNetworkPotentialColor(node.voltage,scale),strokeWidth:3}),h('circle',{cx:p[0],cy:p[1],r:7,fill:'#ccdfdc'}));})),
       s.rows.map(function(row,i){var c=layout.centers[i],p=project(c.x,c.y+24,0),energy=energyMode?circuitNetworkEnergyReading(row,props.energyReference):null;return h('button',{type:'button',key:row.component.id,className:'circuit-network-part','data-component-id':row.component.id,'data-kind':row.component.type,'data-energy-label':!!energy,'aria-label':'Select '+row.label+' · '+CIRCUIT_NETWORK_TYPES[row.component.type].name.toLowerCase()+' · '+(row.component.bjt?circuitNetworkTerminals(row.component).map(function(t){return t.name+' node '+t.node;}).join(', '):row.component.a+' to '+row.component.b),'aria-pressed':row.component.id===props.selected,style:{left:(p[0]/9)+'%',top:(p[1]/height*100)+'%'},onClick:function(){props.select(row.component.id);}},h('strong',null,row.label),h('span',{style:energy?{color:energy.color}:undefined},energy?circuitNetworkEnergyText(energy.energy):row.component.opamp?circuitNetworkOpAmpStatus(row):circuitNetworkValue(row.component,row.closed)),energy&&h('span',{className:'circuit-network-energy-label-track','aria-hidden':true},h('span',{style:{width:((energy.fraction||0)*100)+'%',background:energy.color}})));}),
-      s.nodes.filter(function(n){return n.used;}).map(function(node){var p=project(layout.nodes[node.id][0],layout.nodes[node.id][1]),red=props.probe.red===node.id,black=props.probe.black===node.id;return h('button',{type:'button',key:node.id,className:'circuit-network-node','data-node-id':node.id,'data-inspected':inspecting&&props.inspectedNode===node.id,'aria-pressed':inspecting?props.inspectedNode===node.id:undefined,'aria-label':inspecting?'Inspect node '+node.id:'Place '+props.lead+' probe on node '+node.id,'data-red':red,'data-black':black,style:{left:(p[0]/9)+'%',top:(p[1]/height*100)+'%'},onClick:function(){props.place(node.id);}},h('strong',null,node.id+(red?' R':'')+(black?' K':'')),h('span',null,node.voltage==null?(s.ok?'floating':'unknown'):circuitPreciseVoltageText(node.voltage)));})));
+      s.nodes.filter(function(n){return n.used;}).map(function(node){var p=project(layout.nodes[node.id][0],layout.nodes[node.id][1]),red=props.probe.red===node.id,black=props.probe.black===node.id;return h('button',{type:'button',key:node.id,className:'circuit-network-node','data-node-id':node.id,'data-inspected':inspecting&&props.inspectedNode===node.id,'aria-pressed':inspecting?props.inspectedNode===node.id:undefined,'aria-label':(inspecting?'Inspect node '+node.id:'Place '+props.lead+' probe on node '+node.id)+(node.voltage!=null?', '+circuitPreciseVoltageText(node.voltage):'')+(red?', red probe here':'')+(black?', black probe here':''),'data-red':red,'data-black':black,style:{left:(p[0]/9)+'%',top:(p[1]/height*100)+'%'},onClick:function(){props.place(node.id);}},h('strong',null,node.id+(red?' R':'')+(black?' K':'')),h('span',null,node.voltage==null?(s.ok?'floating':'unknown'):circuitPreciseVoltageText(node.voltage)));})));
   }
   // The board dock reads the same calculated frames as the full scope. Its
   // overview does not resample or change the electrical model.
@@ -2143,7 +2229,7 @@ window.StemLab = window.StemLab || {
     var __alloT=circuitToolT(props);if(!n)return null;
     return h('section',{className:'circuit-network-node-inspector','aria-label':__alloT('stem.circuit.node_connection_inspector','Node connection inspector')},
       h('div',{className:'circuit-network-node-heading'},h('div',null,h('span',{className:'circuit-eyebrow'},'TRACE ONE JUNCTION'),h('h4',null,'Where does the current go?')),h('button',{type:'button',onClick:props.close},'Finish inspecting')),
-      h('div',{className:'circuit-network-node-controls'},h('label',null,'Inspected node',h('select',{'aria-label':__alloT('stem.circuit.inspected_network_node','Inspected network node'),value:n.id,onChange:function(e){props.inspect(e.target.value);}},s.nodes.filter(function(node){return node.used;}).map(function(node){return h('option',{key:node.id,value:node.id},node.id==='0'?'0 · reference':'Node '+node.id);}))),h('div',{className:'circuit-network-node-potential'},h('span',null,'Voltage relative to 0'),h('output',{'aria-label':__alloT('stem.circuit.inspected_node_voltage','Inspected node voltage')},n.voltage==null?'Undetermined':circuitPreciseVoltageText(n.voltage))),h('span',{className:'circuit-network-time-badge'},props.timed?circuitTimeText(s.time||0)+(s.side?' · '+s.side+' switching':''):'DC equilibrium')),
+      h('div',{className:'circuit-network-node-controls'},h('label',null,'Inspected node',h('select',{'aria-label':__alloT('stem.circuit.inspected_network_node','Inspected network node'),value:n.id,onChange:function(e){props.inspect(e.target.value);}},s.nodes.filter(function(node){return node.used;}).map(function(node){return h('option',{key:node.id,value:node.id},node.id==='0'?'0 · reference':'Node '+node.id);}))),h('div',{className:'circuit-network-node-potential'},h('span',null,'Voltage relative to 0'),h('output',{'aria-label':__alloT('stem.circuit.inspected_node_voltage','Inspected node voltage'),'aria-live':props.timed?'off':'polite'},n.voltage==null?'Undetermined':circuitPreciseVoltageText(n.voltage))),h('span',{className:'circuit-network-time-badge'},props.timed?circuitTimeText(s.time||0)+(s.side?' · '+s.side+' switching':''):'DC equilibrium')),
       h('p',{className:'circuit-help'},'Cyan arrows enter node '+n.id+'; amber arrows leave it. Gray means zero or undetermined current; the terminal list distinguishes them.'+(n.senses.length?' Purple dashed lines are voltage-sensing inputs.':'')+(props.overlay==='voltage'?' Wire colors show node voltage; arrow colors show flow direction.':'')),
       h('dl',{className:'circuit-network-node-balance'},[['Current entering',n.incoming],['Current leaving',n.outgoing],['Leaving − entering',n.residual]].map(function(r){return h('div',{key:r[0]},h('dt',null,r[0]),h('dd',null,format(r[1])));})),
       !n.known&&h('p',{className:'circuit-network-node-notice'},'Some branch currents are undetermined. Their totals and balance cannot be calculated; known terminal readings remain available.'),
@@ -2486,8 +2572,9 @@ window.StemLab = window.StemLab || {
   function CircuitNetworkBJTReadout(props){
     var h=props.React.createElement,row=props.row,p=row.component,m=p.bjt,known=Number.isFinite(row.current)&&Number.isFinite(row.baseCurrent)&&Number.isFinite(row.emitterCurrent),format=function(value,fn){return Number.isFinite(value)?fn(value):'Undetermined';},region=row.bjtRegion||'Undetermined',explanation=region==='Forward active'?'The base–emitter junction is forward biased and base–collector is not. Collector current is approximately βF times base current when leakage is negligible.':region==='Saturation'?'Both junctions are forward biased. While base–collector bias stays small, IC is still close to βF × IB; as it grows (toward about 0.4 V for silicon), the surrounding circuit limits collector current and IC/IB falls below βF.':region==='Reverse active'?'The base–collector junction is forward biased. Collector and emitter exchange their roles, with the configured reverse gain βR.':region==='Cutoff / leakage'?'Neither junction is forward biased. Only the model’s small leakage currents remain.':'Resolve the circuit to inspect transistor bias and terminal currents.';
     var __alloT=circuitToolT(props);
-    return h('section',{className:'circuit-network-bjt-reading','aria-label':__alloT('stem.circuit.transistor_operating_point','Transistor operating point'),'data-bjt-region':region},h('div',{className:'circuit-network-bjt-heading'},h('strong',null,row.label+' · '+m.polarity.toUpperCase()),h('span',null,region)),h('p',{className:'circuit-help'},explanation),
-      h('div',{className:'circuit-network-bjt-terminals'},circuitNetworkTerminals(p).map(function(t,j){var current=circuitNetworkTerminalCurrent(row,j);return h('div',{key:t.key,'data-bjt-terminal':t.name},h('strong',null,t.name+' · '+(j===0?'Collector':j===1?'Emitter':'Base')),h('span',null,'Node '+t.node),h('output',{'data-bjt-current':t.name},format(current,circuitCurrentText)),h('small',null,current==null?'Undetermined':current===0?'Zero current':current>0?'Into transistor':'Out of transistor'));})),
+    return h('section',{className:'circuit-network-bjt-reading','aria-label':__alloT('stem.circuit.transistor_operating_point','Transistor operating point'),'data-bjt-region':region},h('div',{className:'circuit-network-bjt-heading'},h('strong',null,row.label+' · '+m.polarity.toUpperCase()),h('span',null,region+(circuitBjtWeak(row)?' · '+__alloT('stem.circuit.bjt_weak_tag','barely conducting'):''))),
+      circuitBjtWeak(row)&&h('p',{className:'circuit-help','data-bjt-weak':'true'},__alloT('stem.circuit.bjt_weak_note','The collector current is only {ic}, so this transistor is effectively off. Regions follow junction polarity, so any forward VBE counts as active, but a silicon transistor needs VBE near 0.6 to 0.7 V to carry useful current. On the 3D board its face stays grey.').replace('{ic}',circuitCurrentText(Math.abs(row.current)))),h('p',{className:'circuit-help'},explanation+' On the 3D board the transistor’s face shows this region: grey when off, green when active, orange when saturated, purple when reverse active.'),
+      h('div',{className:'circuit-network-bjt-terminals'},circuitNetworkTerminals(p).map(function(t,j){var current=circuitNetworkTerminalCurrent(row,j);return h('div',{key:t.key,'data-bjt-terminal':t.name},h('strong',null,t.name+' · '+(j===0?'Collector':j===1?'Emitter':'Base')),h('span',null,'Node '+t.node),h('output',{'aria-live':'off','data-bjt-current':t.name},format(current,circuitCurrentText)),h('small',null,current==null?'Undetermined':current===0?'Zero current':current>0?'Into transistor':'Out of transistor'));})),
       h('dl',{className:'circuit-network-bjt-junctions'},[['VBE · base − emitter',row.bjtVBE,circuitPreciseVoltageText],['VBC · base − collector',row.bjtVBC,circuitPreciseVoltageText],['VCE · collector − emitter',row.voltage,circuitPreciseVoltageText],['Total absorbed power',row.power,circuitPowerText]].map(function(v){return h('div',{key:v[0]},h('dt',null,v[0]),h('dd',null,format(v[1],v[2])));})),
       h('p',{className:'circuit-help'},'All three signed currents enter the transistor: IC + IB + IE = '+(known?circuitCurrentText(row.current+row.baseCurrent+row.emitterCurrent):'undetermined')+'. Power includes both collector and base drive: VCE × IC + VBE × IB.'),
       h('p',{className:'circuit-help'},'The shared waveform shows VCE and collector current IC. Bias regions follow junction polarity, not a fixed 0.6 V turn-on threshold.'));
@@ -2551,8 +2638,8 @@ window.StemLab = window.StemLab || {
     var held=React.useMemo(function(){return circuitNetworkHeld(run,state.boardReference);},[run,state.boardReference]),holdNotice=React.useState({reference:null,text:''});
     var energyReference=React.useMemo(function(){return circuitNetworkEnergyReference(d,timed?(run.ok?run.frames:[]):dc.ok?[dc]:[]);},[timed,run,dc]);
     var voltageScale=React.useMemo(function(){return (timed&&run.ok?run.frames:[dc]).reduce(function(max,frame){return frame.nodes.reduce(function(value,node){return node.voltage==null?value:Math.max(value,Math.abs(node.voltage));},max);},1);},[timed,run,dc]);
-    var patch=function(values,electrical,wholeDesign){var priorValues={components:state.components};Object.keys(values).forEach(function(k){priorValues[k]=state[k];});var merge=electrical&&!wholeDesign&&circuitUndoMerge(undoGesture,circuitEditKey(priorValues,values));if(electrical||values.analysis!=null||values.duration!=null||values.integration!=null){setPlaying(false);values=Object.assign({},values,{time:0,timeSide:null});}ctx.setToolData(function(prev){var old=prev._circuitNetwork||{},next=Object.assign({},old,values);if(electrical){var before=circuitNetworkDesign(old),after=circuitNetworkDesign(next);next.components=after.components;if(wholeDesign||JSON.stringify(before)!==JSON.stringify(after)){if(!merge||!(old.undo||[]).length)next.undo=(old.undo||[]).slice(-29).concat([wholeDesign?circuitNetworkHistoryState(old):before]);next.redo=[];}}return Object.assign({},prev,{_circuitNetwork:next});});};
-    var history=function(key){setPlaying(false);undoGesture.current=null;ctx.setToolData(function(prev){var old=prev._circuitNetwork||{},stack=old[key]||[];if(!stack.length)return prev;var next=Object.assign({},old,stack[stack.length-1],{time:0,timeSide:null,boardReference:null});next[key]=stack.slice(0,-1);next[key==='undo'?'redo':'undo']=(old[key==='undo'?'redo':'undo']||[]).slice(-29).concat([circuitNetworkHistoryState(old)]);return Object.assign({},prev,{_circuitNetwork:next});});};
+    var patch=function(values,electrical,wholeDesign){var priorValues={components:state.components};Object.keys(values).forEach(function(k){priorValues[k]=state[k];});var merge=electrical&&!wholeDesign&&circuitUndoMerge(undoGesture,circuitEditKey(priorValues,values));if(electrical||values.analysis!=null||values.duration!=null||values.integration!=null){setPlaying(false);values=Object.assign({},values,{time:0,timeSide:null});}ctx.setToolData(function(prev){var old=prev._circuitNetwork||{},next=circuitNetworkSwapNotes(old,Object.assign({},old,values));if(electrical){var before=circuitNetworkDesign(old),after=circuitNetworkDesign(next);next.components=after.components;if(wholeDesign||JSON.stringify(before)!==JSON.stringify(after)){if(!merge||!(old.undo||[]).length)next.undo=(old.undo||[]).slice(-29).concat([wholeDesign?circuitNetworkHistoryState(old):before]);next.redo=[];}}return Object.assign({},prev,{_circuitNetwork:next});});};
+    var history=function(key){setPlaying(false);undoGesture.current=null;ctx.setToolData(function(prev){var old=prev._circuitNetwork||{},stack=old[key]||[];if(!stack.length)return prev;var next=circuitNetworkSwapNotes(old,Object.assign({},old,stack[stack.length-1],{time:0,timeSide:null,boardReference:null}));next[key]=stack.slice(0,-1);next[key==='undo'?'redo':'undo']=(old[key==='undo'?'redo':'undo']||[]).slice(-29).concat([circuitNetworkHistoryState(old)]);return Object.assign({},prev,{_circuitNetwork:next});});};
     React.useEffect(function(){if(!playing||!timed||!run.ok)return;var from=circuitNumber(state.time,0,0,run.duration),started=performance.now();
       var advance=function(){if(document.hidden){setPlaying(false);return;}var time=Math.min(run.duration,from+(performance.now()-started)/6000*run.duration);ctx.setToolData(function(prev){return Object.assign({},prev,{_circuitNetwork:Object.assign({},prev._circuitNetwork,{time:time,timeSide:null})});});if(time>=run.duration)setPlaying(false);};
       var hidden=function(){if(document.hidden)setPlaying(false);},timer=setInterval(advance,125);document.addEventListener('visibilitychange',hidden);return function(){clearInterval(timer);document.removeEventListener('visibilitychange',hidden);};
@@ -2569,8 +2656,11 @@ window.StemLab = window.StemLab || {
     var example=CIRCUIT_NETWORK_EXAMPLES.find(function(p){return p.id===(state.exampleId||'bridge');})||CIRCUIT_NETWORK_EXAMPLES[0],loaded=CIRCUIT_NETWORK_EXAMPLES.find(function(p){return p.id===(state.loadedExample||'bridge');});
     return h('section',{'data-circuit-builder-root':'true',className:'circuit-active-root circuit-network-root',ref:rootRef,'aria-label':__alloT('stem.circuit.connected_circuit_workbench','Connected circuit workbench')},
       h('header',{className:'circuit-active-hero'},h('span',{className:'circuit-eyebrow'},'CONNECTED NETWORKS · DC + TIME'),h('h2',null,'Build beyond branches.'),h('p',null,'Connect components through shared nodes. Explore bridges, rectifiers, amplifiers, feedback, and shared loads. Watch stored energy and switch events change the response over time.')),
-      h('div',{className:'circuit-network-examples'},h('label',null,'Start an investigation',h('select',{'aria-label':__alloT('stem.circuit.connected_circuit_example','Connected circuit example'),value:example.id,onChange:function(e){patch({exampleId:e.target.value});}},CIRCUIT_NETWORK_EXAMPLES.map(function(p){return h('option',{key:p.id,value:p.id},p.name);}))),h('button',{type:'button',onClick:function(){patch({components:example.components,loadedExample:example.id,scopeSource:example.scopeSource||0,scopeSpectrum:example.scopeSpectrum||state.scopeSpectrum,analysis:example.duration?'time':'dc',duration:example.duration||.5,integration:example.integration||circuitNetworkIntegration(state),selected:example.selected||(example.duration?example.components[example.components.length-1].id:example.components[0].id),probeRed:example.probeRed|| (example.duration?example.components[example.components.length-1].a:example.id==='bridge'?'B':'A'),probeBlack:example.probeBlack|| (example.duration?example.components[example.components.length-1].b:example.id==='bridge'?'C':'0')},true);}},'Load network example'),h('button',{type:'button',disabled:!(state.undo||[]).length,onClick:function(){history('undo');}},'Undo network edit'),h('button',{type:'button',disabled:!(state.redo||[]).length,onClick:function(){history('redo');}},'Redo network edit')),
+      h('div',{className:'circuit-network-examples'},h('label',null,'Start an investigation',h('select',{'aria-label':__alloT('stem.circuit.connected_circuit_example','Connected circuit example'),value:example.id,onChange:function(e){patch({exampleId:e.target.value});}},CIRCUIT_NETWORK_EXAMPLES.map(function(p){return h('option',{key:p.id,value:p.id},p.name);}))),h('button',{type:'button',onClick:function(){patch({components:example.components,loadedExample:example.id,scopeSource:example.scopeSource||0,scopeSpectrum:example.scopeSpectrum||state.scopeSpectrum,analysis:example.duration?'time':'dc',duration:example.duration||.5,integration:example.integration||circuitNetworkIntegration(state),selected:example.selected||(example.duration?example.components[example.components.length-1].id:example.components[0].id),probeRed:example.probeRed|| (example.duration?example.components[example.components.length-1].a:example.id==='bridge'?'B':'A'),probeBlack:example.probeBlack|| (example.duration?example.components[example.components.length-1].b:example.id==='bridge'?'C':'0')},true,true);}},'Load network example'),h('button',{type:'button',disabled:!(state.undo||[]).length,onClick:function(){history('undo');}},'Undo network edit'),h('button',{type:'button',disabled:!(state.redo||[]).length,onClick:function(){history('redo');}},'Redo network edit')),
       h(CircuitNetworkFileTools,{React:React,t:cktT,state:state,load:function(design){patch(Object.assign({},design,{boardReference:null,scopeSource:0,loadedExample:'custom-design'}),true,true);holdNotice[1]({reference:null,text:''});}}),
+      loaded&&h('div',{className:'circuit-network-brief','data-network-brief':loaded.id},
+        h('p',{className:'circuit-network-question'},h('strong',null,'Starting example · '+loaded.name+': '),loaded.question),
+        h('label',{className:'circuit-active-reflection'},__alloT('stem.circuit.network_prediction_label','Your prediction, before you change anything'),h('textarea',{'aria-label':__alloT('stem.circuit.network_prediction_aria','Prediction for this example'),'data-network-prediction':loaded.id,rows:2,maxLength:1000,value:(state.predictions&&typeof state.predictions[loaded.id]==='string')?state.predictions[loaded.id]:'',placeholder:__alloT('stem.circuit.network_prediction_placeholder','What do you expect to see, and why?'),onChange:function(e){var next=Object.assign({},state.predictions&&typeof state.predictions==='object'?state.predictions:{});next[loaded.id]=e.target.value;patch({predictions:next});}}))),
       h('div',{className:'circuit-network-mode',role:'group','aria-label':__alloT('stem.circuit.connected_analysis_mode','Connected analysis mode')},h('button',{type:'button','aria-pressed':!timed,onClick:function(){patch({analysis:'dc'});}},'DC equilibrium'),h('button',{type:'button','aria-pressed':timed,onClick:function(){patch({analysis:'time'});}},'Time response'),h('span',null,timed?'Starting energy + signals + switch events → response':'DC levels only · capacitors open · inductors shorted')),
       h('div',{className:'circuit-network-status','data-ok':s.ok,role:'status','aria-live':playing?'off':'polite'},h('strong',null,!s.ok?'Check the connections':s.floating.length||s.ambiguous.length?'Some readings are undetermined':'Network solved'),h('p',null,!s.ok?s.message:timed?run.message:s.message)),
       timed&&h(CircuitNetworkIntegrationControls,{React:React,t:cktT,run:run,patch:patch}),
@@ -2609,7 +2699,7 @@ window.StemLab = window.StemLab || {
         h('p',null,(timed?'Snapshot at '+circuitTimeText(s.time||0)+'. ':'')+'Positive power means a component absorbs energy. Negative power means it supplies energy. A source may absorb power when another source drives current into it. Capacitors and inductors can store energy and return it later; absorbed power is not always heat.'),
         h('details',null,h('summary',null,'Node voltages and current balance'),h('div',{className:'circuit-network-table-scroll',role:'region',tabIndex:0,'aria-label':__alloT('stem.circuit.node_voltage_and_current_balance_table','Node voltage and current balance table')},h('table',null,h('caption',null,'Currents leaving each node add to zero for a solved network.'),h('thead',null,h('tr',null,h('th',{scope:'col'},'Node'),h('th',{scope:'col'},'Voltage relative to 0'),h('th',{scope:'col'},'Net current leaving'))),h('tbody',null,s.nodes.filter(function(n){return n.used;}).map(function(n){var balance=s.balances.find(function(b){return b.id===n.id;});return h('tr',{key:n.id},h('th',{scope:'row'},n.id),h('td',null,measurement(n.voltage,circuitPreciseVoltageText)),h('td',null,measurement(balance.current,circuitCurrentText)));}))))),
         h('details',null,h('summary',null,'All component measurements'),h('div',{className:'circuit-network-table-scroll',role:'region',tabIndex:0,'aria-label':__alloT('stem.circuit.connected_component_measurements','Connected component measurements')},h('table',null,h('caption',null,'Two-terminal parts use A → B. Transistors report VCE, collector current IC, and total power including base drive; their inspector and CSV include all three terminal currents.'),h('thead',null,h('tr',null,['Part','A → B','Voltage','Current','Power'].map(function(label){return h('th',{key:label,scope:'col'},label);}))),h('tbody',null,s.rows.map(function(row){return h('tr',{key:row.component.id},h('th',{scope:'row'},row.label),h('td',null,row.component.bjt?'C '+row.component.a+' · B '+row.component.bjt.base+' · E '+row.component.b:row.component.a+' → '+row.component.b),h('td',null,measurement(row.voltage,circuitPreciseVoltageText)),h('td',null,measurement(row.current,circuitCurrentText)),h('td',null,measurement(row.power,circuitPowerText)));}))))),
-        loaded&&h('p',{className:'circuit-network-question'},h('strong',null,'Starting example · '+loaded.name+': '),loaded.question),h('label',{className:'circuit-active-reflection'},'Explain using the readings',h('textarea',{'aria-label':__alloT('stem.circuit.connected_circuit_explanation','Connected circuit explanation'),rows:3,maxLength:4000,value:state.reflection||'',placeholder:__alloT('stem.circuit.predict_a_change_test_it_then_explain_the_vo','Predict a change, test it, then explain the voltage and current evidence.'),onChange:function(e){patch({reflection:e.target.value});}})),h('p',{role:'status',className:'circuit-help'},downloadMessage)),
+        h('label',{className:'circuit-active-reflection'},loaded?__alloT('stem.circuit.network_explain_for','Explain using the readings · {name}').replace('{name}',loaded.name):'Explain using the readings',h('textarea',{'aria-label':__alloT('stem.circuit.connected_circuit_explanation','Connected circuit explanation'),rows:3,maxLength:4000,value:state.reflection||'',placeholder:__alloT('stem.circuit.predict_a_change_test_it_then_explain_the_vo','Predict a change, test it, then explain the voltage and current evidence.'),onChange:function(e){patch({reflection:e.target.value});}})),h('p',{role:'status',className:'circuit-help'},downloadMessage)),
       h('details',{className:'circuit-active-panel circuit-model-details'},h('summary',null,'Connected-network model and limits'),h('p',null,'This workspace solves arbitrary connections among up to 16 resistors, capacitors, inductors, diodes, bipolar transistors, independent and controlled voltage/current sources, wires, and switches on 8 named nodes. Node 0 is the voltage reference. The connection menus define the circuit; the board views are visual maps, not an electrically modeled breadboard.'),h('p',null,'The solver enforces current conservation at every node and the voltage of each ideal source simultaneously. Floating circuits retain known internal voltage differences without inventing their voltage relative to 0. Redundant ideal paths may have known voltages but undetermined individual currents. Inconsistent constraints hide the calculated readings until you fix the connections.'),h('p',null,'Time response uses adaptive step doubling with selectable backward Euler or trapezoidal integration for capacitors and inductors. Backward Euler remains the default and handles startup, source corners, switch events, and unknown complementary history before trapezoidal resumes. Timed op-amp output always uses backward Euler; mixed runs use a conservative first-order error estimate. Pure trapezoidal RLC steps use the second-order Richardson factor of three. Relative local state tolerance is 0.002% of the largest state magnitude encountered, plus 0.1 µV for capacitor or op-amp voltage, or 0.1 nA for inductor current; this is not a bound on total accumulated error. Invalid starting constraints and calculations exceeding 4000 attempted steps show a diagnostic without a partial trace. Sine, triangle, and finite-edge pulse voltage/current sources are supported. DC equilibrium uses the configured DC level alone; it does not compute the average or RMS of a waveform. Voltage DC level and peak amplitude are each limited to 24 V in magnitude, and current level and amplitude to 100 mA, so their sum may exceed those individual settings. Frequency: 0.01 Hz–100 kHz; the calculation also limits the number of visible cycles. Each switch supports up to 8 scheduled actions from 1 µs to 60 s. Simultaneous actions across switches are applied together; capacitor voltage and inductor current carry through unchanged. An event with incompatible ideal constraints stops the run without a partial trace. Initial/DC switch settings remain separate from the state at the scope cursor. Generic silicon and Schottky diodes use bounded nonlinear iteration with exponential forward conduction and reverse leakage. A generic Zener option adds a continuous piecewise-linear reverse-breakdown branch with a configurable 1.8–24 V knee and 1–1000 Ω slope resistance. The knee marks model onset, not a rated voltage at a datasheet test current. Failed convergence hides the readings. All three diode presets optionally include a 0–1000 Ω internal series resistance, stored to 0.001 Ω precision. Terminal voltage includes I × Rs; the junction equation and terminal conductance are solved together. Forward iteration limits track the internal junction voltage when Rs is present. Diode capacitance, recovery, temperature variation, heating, damage, soft breakdown knees, and noise are not modeled; include external current-limiting resistance where needed. VCVS, VCCS, CCCS, and CCVS ideal controlled sources are supported. Voltage controls draw no input current; current controls sense a chosen voltage-output source branch. Gains are signed and output power is supplied by the ideal source. These four ideal source families do not model supply rails, saturation, bandwidth, or source limits. The separate finite-gain op-amp model clamps its output between configured limits relative to its output reference. Up to four op-amps are checked across their output regions; ambiguous operating points and inconsistent constraints stop the run. Optional op-amp timing uses a dominant pole with time constant A/(2π × GBW), a symmetric slew limit, and a configured starting output that remains continuous through switching. DC equilibrium ignores timing and the starting output. This output state is not counted as stored capacitor or inductor energy. Op-amp input current, output impedance/current limit, physical supplies, common-mode restrictions, offset, additional poles, and overload-storage recovery are not modeled. Generic NPN and PNP transistors now use a reciprocal Ebers–Moll model with configurable forward/reverse gain and transport saturation current. Base current loads the network; all three terminal currents and base-drive power are included. The fixed thermal voltage is 25.85 mV. The transistor model has no Early effect, charge storage, junction capacitance, breakdown, variable temperature, or package pinout model. It is memoryless within the RLC time solver. Nonlinear feedback can have multiple operating points; this bounded Newton solve does not establish uniqueness or latch state. General MOSFET and digital models remain future work. Mixed circuits retains its existing passive time/AC experiments, and Active electronics retains its NPN and sensor models. Resistance: 1 Ω–1 MΩ; source voltage: −24–24 V; source current: −100–100 mA. Capacitance: 0.001–1,000,000 µF; inductance: 0.001–1,000,000 mH. Extreme combinations may exceed numerical limits. No wire resistance, source limits, heating, or device damage is modeled.')));
   }
 
@@ -2689,6 +2779,9 @@ window.StemLab = window.StemLab || {
     var span=function(r){if(r.start===r.end)return 'At '+format(r.start);var digits=2;while(digits<6&&Number(r.start.toFixed(digits))===Number(r.end.toFixed(digits)))digits++;if(Number(r.start.toFixed(digits))===Number(r.end.toFixed(digits)))return 'Near '+format(r.example);return '≈ '+Number(r.start.toFixed(digits))+'–'+Number(r.end.toFixed(digits))+(s.sensor?' / 100':' V');};
     var reasons={cutoff:'The base drive stays above 0.70 V throughout this input range.',active:'The circuit has no active-region interval in this input range.',saturated:'Even the strongest input keeps β × IB below the lamp-current limit. Try less base resistance, more gain, or a higher lamp resistance.'};
     var descriptions={cutoff:'No base current, so no lamp current.',active:'Base current sets lamp current: IC = β × IB.',saturated:'The supply and lamp resistance set the current limit.'};
+    if(props.predicting)return h('section',{className:'circuit-active-regions','data-predicting':'true','aria-label':__alloT('stem.circuit.operating_region_explorer','Operating region explorer')},
+      h('div',{className:'circuit-region-heading'},h('div',null,h('span',{className:'circuit-eyebrow'},'READ THE SHAPE'),h('h4',{id:props.headingId||uid+'-heading',ref:props.headingRef,tabIndex:-1},'Explore the operating regions'))),
+      h('p',{className:'circuit-help'},__alloT('stem.circuit.active_predict_first','Predict first: choose an outcome in the experiment above, then test it. The region notes come back after your test.')));
     return h('section',{className:'circuit-active-regions','aria-label':__alloT('stem.circuit.operating_region_explorer','Operating region explorer')},
       h('div',{className:'circuit-region-heading'},h('div',null,h('span',{className:'circuit-eyebrow'},'READ THE SHAPE'),h('h4',{id:props.headingId||uid+'-heading',ref:props.headingRef,tabIndex:-1},'Explore the operating regions')),h('span',{className:'circuit-region-live',role:'status','data-region':s.region},'Now: '+(map.regions.find(function(r){return r.id===s.region;}) || { label: s.region }).label)),
       h('p',{className:'circuit-help'},'The shaded graph bands describe the live circuit. Choose a region to try an input inside it; the board, meter, and notebook all use that operating point.'+' '+__alloT('stem.circuit.region_example_precision','Example values are rounded; each button applies the calculated value.')),
@@ -2745,8 +2838,10 @@ window.StemLab = window.StemLab || {
     state=state||{};
     var lesson=CIRCUIT_ACTIVE_LESSONS.find(function(item){return item.id===id;});if(!lesson)return state;
     var records=circuitActiveLessonRecords(state),record=records[id],target=null;
+    // The last tested attempt stays visible after a restart. It lives outside lessonRecords, so saved files keep their v1 record shape.
+    var previous=state.lessonPrevious&&typeof state.lessonPrevious==='object'&&!Array.isArray(state.lessonPrevious)?state.lessonPrevious:{},savedPrevious=false;
     if(action==='select'){}
-    else if(action==='start'){record={choice:null,tested:false,explanation:''};records[id]=record;target=circuitActiveDesign(lesson.before);}
+    else if(action==='start'){if(record&&record.tested){savedPrevious=true;previous=Object.assign({},previous);previous[id]={choice:record.choice,explanation:String(record.explanation||record.reasoning||'').slice(0,4000)};}record={choice:null,tested:false,explanation:''};records[id]=record;target=circuitActiveDesign(lesson.before);}
     else if(action==='predict'){
       if(!record||record.tested||['more','same','less'].indexOf(value)<0)return state;
       record.choice=value;
@@ -2763,6 +2858,7 @@ window.StemLab = window.StemLab || {
     }else return state;
     if(target&&(action==='baseline'||action==='result')&&circuitActiveComparison({version:1,design:target},state).unchanged)target=null;
     var next=Object.assign({},state,target||{},{lessonId:id,lessonRecords:records,challenge:record?{id:id,choice:record.choice,tested:record.tested}:null});
+    if(savedPrevious)next.lessonPrevious=previous;
     if(target){var before=circuitActiveDesign(state);if(JSON.stringify(before)!==JSON.stringify(target)){next.undo=(state.undo||[]).slice(-29).concat([before]);next.redo=[];}}
     return next;
   }
@@ -3402,7 +3498,7 @@ function CircuitActiveLessonTrace(props) {
     sensor:t('stem.circuit.trace_sensor_question','How does the connected divider junction voltage help explain the changes in base current and lamp current?')
   };
   var reading=function(row,value,signed){
-    var text=(signed&&value>0?'+':'')+row.format(value),parts=text.match(/^(.*?)( ?)([µm]?[AV])$/);
+    var text=(signed&&value>0?'+':'')+row.format(value),parts=text.match(/^(.*?)( ?)([pnµm]?[AV])$/);
     return parts?h(React.Fragment,null,h('span',{className:'circuit-trace-reading-magnitude'},parts[1]),parts[2],h('span',{className:'circuit-trace-reading-unit'},parts[3])):text;
   };
   return h('details',{className:'circuit-active-lesson-trace'},
@@ -3642,6 +3738,7 @@ function CircuitActiveLessonLab(props) {
   var selected=state.lessonId||(state.challenge&&state.challenge.id)||'gain';
   if(ids.indexOf(selected)<0)selected='gain';
   var lesson=circuitActiveLesson(selected),record=records[selected]||null,tested=!!(record&&record.tested);
+  var lastTry=state.lessonPrevious&&typeof state.lessonPrevious==='object'&&state.lessonPrevious[selected]&&typeof state.lessonPrevious[selected]==='object'?state.lessonPrevious[selected]:null;
   var journey=circuitActiveLessonJourney(state,selected),map=circuitActiveLessonMap(state),revealState=React.useState(null),revealed=revealState[0]===selected&&journey.explanationSaved;
   var done=ids.filter(function(id){return records[id]&&records[id].tested;}).length;
   var next=ids.find(function(id){return !records[id]||!records[id].tested;});
@@ -3699,6 +3796,9 @@ function CircuitActiveLessonLab(props) {
     record&&!tested&&h('p',{role:'status',className:'circuit-active-lesson-bench-note circuit-plan-bench-note'},replayNote),
     !record?h('div',{className:'circuit-active-lesson-start'},h('p',{id:uid+'-start-help'},t('stem.circuit.active_lesson_start_help','Start loads this experiment’s baseline. Undo restores your previous circuit; your investigation notebook stays saved.')),h('button',{type:'button',className:'circuit-active-lesson-primary',onClick:function(){act(selected,'start',undefined,'question');}},t('stem.circuit.start_transistor_prediction','Start transistor prediction'))):h(React.Fragment,null,
       !tested?h(React.Fragment,null,
+        lastTry&&['more','same','less'].indexOf(lastTry.choice)>=0&&h('details',{className:'circuit-active-lesson-previous','data-active-previous':selected},h('summary',null,t('stem.circuit.active_previous_title','Your last attempt at this experiment')),
+          h('p',null,t('stem.circuit.active_previous_choice','You predicted: {choice}.').replace('{choice}',choiceText(lastTry.choice))),
+          String(lastTry.explanation||'').trim()?h('p',{className:'circuit-active-lesson-previous-text'},t('stem.circuit.active_previous_wrote','You wrote:')+' '+String(lastTry.explanation)):null),
         h('fieldset',{className:'circuit-active-lesson-predictions'},
           h('legend',null,t('stem.circuit.active_predict_lamp_current','Predict the lamp current')),
           h('p',{id:uid+'-prediction-help',className:'circuit-prediction-help'},t('stem.circuit.active_prediction_compare_start','Compared with the starting circuit.')),
@@ -3738,7 +3838,7 @@ function CircuitActiveLessonLab(props) {
       h(CircuitActiveLessonExplanationGuide,{React:React,t:props.t,lessonId:selected,tested:tested}),
       tested&&journey.explanationSaved&&(revealed?h('div',{className:'circuit-active-lesson-model-reason',role:'status'},h('strong',null,t('stem.circuit.active_model_explanation','The model’s explanation: ')),t('stem.circuit.active_lesson_'+selected+'_reason',lesson.reason)):h('button',{type:'button',className:'circuit-active-lesson-compare',onClick:function(){revealState[1](selected);}},t('stem.circuit.active_compare_model','Compare with the model’s explanation'))),
       tested&&(next?h('div',{className:'circuit-active-lesson-next circuit-active-lesson-continuation','data-continuation-mode':'next','data-next-lesson-id':next},h('button',{type:'button',className:'circuit-active-lesson-primary circuit-continuation-action',onClick:function(){select(next);}},t('stem.circuit.active_next_experiment','Next experiment: {title}').replace('{title}',t('stem.circuit.active_lesson_'+next+'_title',circuitActiveLesson(next).title)))):h('div',{className:'circuit-active-lesson-next circuit-active-lesson-continuation','data-continuation-mode':'all-tested'},h('p',{className:'circuit-active-lesson-help',role:'status'},t('stem.circuit.active_all_tested','All three experiments tested. Your evidence stays saved.')+' '+t('stem.circuit.continuation_inquiry_help','Open your existing notebook to plan a question and keep your own readings.')),h('button',{type:'button',className:'circuit-continuation-plan-investigation',disabled:typeof props.onOpenNotebook!=='function',onClick:function(){if(typeof props.onOpenNotebook==='function')props.onOpenNotebook();}},t('stem.circuit.continuation_inquiry_action','Plan my own investigation')))),
-      h('details',{className:'circuit-active-lesson-retry'},h('summary',null,t('stem.circuit.active_retry_disclosure','Start this experiment again')),h('div',{className:'circuit-active-lesson-retry-body'},h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_retry_help','Starting again replaces this experiment’s saved prediction, result, and explanation, and loads its baseline. Your investigation notebook stays saved.')),h('button',{type:'button',onClick:function(){act(selected,'start',undefined,'question');}},t('stem.circuit.start_transistor_prediction','Start transistor prediction'))))));
+      h('details',{className:'circuit-active-lesson-retry'},h('summary',null,t('stem.circuit.active_retry_disclosure','Start this experiment again')),h('div',{className:'circuit-active-lesson-retry-body'},h('p',{className:'circuit-active-lesson-help'},t('stem.circuit.active_retry_help2','Starting again replaces this experiment’s prediction, result, and explanation, and loads its baseline. Your last attempt stays visible so you can compare. Your investigation notebook stays saved.')),h('button',{type:'button',onClick:function(){act(selected,'start',undefined,'question');}},t('stem.circuit.start_transistor_prediction','Start transistor prediction'))))));
 }
 
   function CircuitActiveNodeExplorer(props) {
@@ -3989,6 +4089,7 @@ function CircuitActiveLessonLab(props) {
     React.useEffect(function(){var pending=measurementPending.current;if(!pending||probe.red!==pending.probeRed||probe.black!==pending.probeBlack)return;measurementPending.current=null;revealSection(meterHeadingRef);},[measurement,probe.red,probe.black]);
     var comparison=circuitActiveComparison(state.reference,d);
     var regionMap=React.useMemo(function(){return circuitActiveRegions(d);},[d.project,d.supply,d.baseResistance,d.loadResistance,d.dividerResistance,d.beta]);
+    var activeRecord=state.lessonId?circuitActiveLessonRecords(state)[state.lessonId]:null,predicting=!!(activeRecord&&!activeRecord.tested);
     var status={cutoff:['Cutoff','The base drive is at or below the model’s 0.70 V turn-on. No base or lamp current flows.'],active:['Active region','Base current controls lamp current. IC = β × IB while the load still allows more current.'],saturated:['Saturation','The load sets the current limit. More base drive cannot increase lamp current here.']}[s.region];
     var range=function(label,key,min,max,step,format){return h(CircuitActiveControl,{React:React,t:cktT,key:key,field:key,label:label,min:min,max:max,step:step,value:d[key],format:format,onChange:function(value){var v={};v[key]=value;patch(v,true);}});};
     var selectNode=function(lead,key){return h('label',null,lead,h('select',{'aria-label':lead,value:probe[key],onChange:function(e){var v={};v[key==='red'?'probeRed':'probeBlack']=e.target.value;patch(v);}},Object.keys(s.nodes).map(function(node){return h('option',{key:node,value:node},({supply:'VCC · supply',drive:s.sensor?'D · divider junction':'VIN · input',base:'B · base',collector:'C · collector',emitter:'E · common return'})[node]);})));};
@@ -4007,7 +4108,7 @@ function CircuitActiveLessonLab(props) {
       h('section',{className:'circuit-active-panel'},h(CircuitActiveEditHistory,{React:React,t:cktT,state:state,design:d,restore:history,headingProps:workspaceHeading('input')}),
         s.sensor?range('Relative light level','light',0,100,1,function(v){return v+' / 100';}):range('Input voltage (V)','input',0,5,.01,function(v){return v.toFixed(2)+' V';}),
         h('div',{className:'circuit-active-quick'},(s.sensor?[[0,'Dark'],[50,'Mid light'],[100,'Bright']]:[[0,'Input off'],[1,'Input 1 V'],[3.3,'Input 3.3 V']]).map(function(p){return h('button',{type:'button',key:p[1],onClick:function(){patch(s.sensor?{light:p[0]}:{input:p[0]},true);}},p[1]);})),
-        h('div',{className:'circuit-active-state','data-region':s.region},h('strong',null,status[0]),h('p',null,status[1])),
+        h('div',{className:'circuit-active-state','data-region':s.region,'data-predicting':predicting?'true':undefined},h('strong',null,status[0]),h('p',null,predicting?__alloT('stem.circuit.active_predict_first','Predict first: choose an outcome in the experiment above, then test it. The region notes come back after your test.'):status[1])),
         h(CircuitActiveLiveReadings,{React:React,t:cktT,solved:s}),workspaceReturn('input')),
       h('section',{className:'circuit-active-panel'},h('div',{className:'circuit-active-toolbar'},h('h3',workspaceHeading('connections'),h('bdi',{dir:'auto'},__alloT('stem.circuit.workbench_heading_connections','02 · Follow the connections'))),h('div',{role:'group','aria-label':__alloT('stem.circuit.active_circuit_view','Active circuit view')},h('button',{type:'button','aria-pressed':solid,onClick:function(){patch({view:'3d'});}},'3D experiment board'),h('button',{type:'button','aria-pressed':!solid,onClick:function(){patch({view:'schematic'});}},'NPN schematic'))),
         h('div',{className:'circuit-active-probe-placement',role:'group','aria-label':__alloT('stem.circuit.choose_probe_to_place','Choose probe to place')},h('span',null,'Place a probe on the board'),['red','black'].map(function(lead){return h('button',{type:'button',key:lead,'data-lead':lead,'aria-pressed':(state.placeLead==='black'?'black':'red')===lead,onClick:function(){patch({placeLead:lead});}},'Place '+lead+' probe');})),
@@ -4019,7 +4120,7 @@ function CircuitActiveLessonLab(props) {
       h('section',{className:'circuit-active-panel'},h('div',{className:'circuit-active-toolbar'},h('h3',workspaceHeading('response'),h('bdi',{dir:'auto'},__alloT('stem.circuit.workbench_heading_response','03 · Discover the response'))),h('button',{type:'button',onClick:download},'Export active sweep CSV')),
         h(CircuitActiveReference,{React:React,t:cktT,comparison:comparison,capture:function(){patch({reference:{version:1,design:circuitActiveDesign(d)}});},restore:function(){if(comparison)patch(comparison.before.design,true);},clear:function(){patch({reference:null});}}),
         h('p',null,'Each point is a settled DC solution. Follow the dot as you change '+(s.sensor?'the light level':'the input voltage')+'. The dashed line is the lamp-current limit at saturation.'),
-        h(CircuitActiveResponseGraph,{React:React,t:cktT,solved:s,map:regionMap,comparison:comparison,reference:state.reference,onChange:function(value){patch(s.sensor?{light:value}:{input:value},true);}}),h('div',{className:'circuit-notebook-record-actions circuit-notebook-graph-actions'},h('button',{type:'button',disabled:observations.length>=8&&recordedIndex<0,onClick:record},recordedIndex>=0?'Open saved operating point':'Record operating point'),h('button',{type:'button',onClick:openNotebook},'Open investigation notebook'),h('span',null,observations.length+'/8 recorded')),h('p',{className:'circuit-help',role:'status'},state.notebookOpen?'':state.investigationNotice||''),h('p',{className:'circuit-help'},'This graph sweeps the input; it does not show time or switching speed. CSV export saves the live circuit and its settings. Focus and use arrow keys to scroll on a narrow screen.'),h('p',{role:'status',className:'circuit-help'},downloadMessage),h(CircuitActiveRegionGuide,{React:React,t:cktT,solved:s,map:regionMap,headingRef:regionsHeadingRef,headingId:navigationId+'-regions',tuningId:navigationId+'-tuning',tune:function(){revealSection(tuningRef);},explore:function(value){patch(s.sensor?{light:value}:{input:value},true);}}),workspaceReturn('response')),
+        h(CircuitActiveResponseGraph,{React:React,t:cktT,solved:s,map:regionMap,comparison:comparison,reference:state.reference,onChange:function(value){patch(s.sensor?{light:value}:{input:value},true);}}),h('div',{className:'circuit-notebook-record-actions circuit-notebook-graph-actions'},h('button',{type:'button',disabled:observations.length>=8&&recordedIndex<0,onClick:record},recordedIndex>=0?'Open saved operating point':'Record operating point'),h('button',{type:'button',onClick:openNotebook},'Open investigation notebook'),h('span',null,observations.length+'/8 recorded')),h('p',{className:'circuit-help',role:'status'},state.notebookOpen?'':state.investigationNotice||''),h('p',{className:'circuit-help'},'This graph sweeps the input; it does not show time or switching speed. CSV export saves the live circuit and its settings. Focus and use arrow keys to scroll on a narrow screen.'),h('p',{role:'status',className:'circuit-help'},downloadMessage),h(CircuitActiveRegionGuide,{React:React,t:cktT,solved:s,map:regionMap,predicting:predicting,headingRef:regionsHeadingRef,headingId:navigationId+'-regions',tuningId:navigationId+'-tuning',tune:function(){revealSection(tuningRef);},explore:function(value){patch(s.sensor?{light:value}:{input:value},true);}}),workspaceReturn('response')),
       h('section',{className:'circuit-active-panel circuit-active-reason'},h('h3',workspaceHeading('explain'),h('bdi',{dir:'auto'},__alloT('stem.circuit.workbench_heading_explain','04 · Explain what changes'))),
         h('p',null,'Emitter current = collector + base = '+circuitCurrentText(s.collectorCurrent)+' + '+circuitCurrentText(s.baseCurrent)+' = '+circuitCurrentText(s.emitterCurrent)+'.'),
         h('p',null,'Lamp drop '+circuitPreciseVoltageText(s.loadVoltage)+' + transistor drop '+circuitPreciseVoltageText(s.collectorVoltage)+' = supply '+circuitPreciseVoltageText(d.supply)+'.'),
@@ -4219,7 +4320,7 @@ function CircuitActiveLessonLab(props) {
     };
     var label=function(x,y,z,text,color,part) {
       var p=project(x,y,z);
-      labels.push({part:!!part,index:activePart,node:h('text',{x:p[0],y:p[1],textAnchor:'middle',fill:color||'#dbeafe',fontSize:focus?13:10.5,fontWeight:600,letterSpacing:.3,paintOrder:'stroke',stroke:'#0b1c2a',strokeWidth:3,strokeLinejoin:'round'},text)});
+      labels.push({part:!!part,index:activePart,node:h('text',{className:'circuit-scene-label','data-closeup':focus?'true':undefined,x:p[0],y:p[1],textAnchor:'middle',fill:color||'#dbeafe',fontSize:focus?13:10.5,fontWeight:600,letterSpacing:.3,paintOrder:'stroke',stroke:'#0b1c2a',strokeWidth:3,strokeLinejoin:'round'},text)});
     };
     var shadeNotLit=function(hex){var n=parseInt(hex.slice(1),16);return '#'+[n>>16,(n>>8)&255,n&255].map(function(v){return Math.round(v*.55+22).toString(16).padStart(2,'0');}).join('');};
     // Glow follows power (same rule as the schematic), so brighter bulbs look brighter.
@@ -4282,7 +4383,7 @@ function CircuitActiveLessonLab(props) {
         wire([[-220,70,48],[-180,151,8],[235,151,8],[235,-145,8]],'#60a5fa');
         solved.branches.forEach(function(branch){
           var first=positions[branch.indices[0]],last=positions[branch.indices[branch.indices.length-1]],active=selectedRow&&selectedRow.branch===branch.id;
-          label(-125,first.y-28,3,'BRANCH '+branch.name,'#b8d8de');
+          var branchRow=solved.rows[branch.indices[0]],branchCurrent=branchRow&&Number.isFinite(branchRow.current)&&!solved.isShort?Math.abs(branchRow.current):null;label(-125,first.y-28,3,'BRANCH '+branch.name+(branchCurrent==null?'':branchCurrent<1e-12?' · no current':' · '+circuitCurrentText(branchCurrent)),'#b8d8de');
           var incoming=[[-150,first.y,8],[first.x-35,first.y,8]],outgoing=[[last.x+35,last.y,8],[235,last.y,8]];
           wire(incoming,'#fb7185');wire(outgoing,'#60a5fa');
           cylinder(-150,first.y,8,3.5,1,'#e9b1ba');cylinder(235,last.y,8,3.5,1,'#9fc7e9');
@@ -4355,6 +4456,7 @@ function CircuitActiveLessonLab(props) {
           });
         }
         label(p.x,p.y-23,6,c.value+' Ω','#f3debb',true);
+        if(props.powerWarnings&&!solved.isShort&&r.power>.25){var heat=Math.min(1,(r.power-.25)/.5),heatAt=project(p.x-1,p.y,30);push([heatAt],h('ellipse',{'data-resistor-hot':Number(r.power.toPrecision(2)),cx:heatAt[0],cy:heatAt[1],rx:(26+8*heat)*sceneScale,ry:(13+4*heat)*sceneScale,fill:'#ff5a1f',opacity:.24+.22*heat}));label(p.x,p.y-23,28,Number(r.power.toPrecision(2))+' W · over ¼ W','#ffb08a',true);}
       } else if(c.type==='bulb') {
         cylinder(p.x,p.y,4,16,5,'#516876');
         cylinder(p.x,p.y,9,10,15,'#b9a97e');
@@ -4470,7 +4572,8 @@ function CircuitActiveLessonLab(props) {
           solved.rows.map(function(row,i){
             if(d.sceneLabels===false||(focus&&i!==selectedIndex))return null;
             var p=positions[i],height=row.component.type==='bulb'?(focus?90:120):row.component.type==='capacitor'?(focus?70:95):row.component.type==='led'?(focus?60:85):(focus?45:75);
-            var anchor=project(p.x,p.y,height);
+            // On phones the 26 px pins cover the value labels just above each part, so they sit a little higher.
+            var anchor=project(p.x,p.y,height+(circuitNarrowScreen()?40:0));
             if(anchor[0]<12||anchor[0]>628||anchor[1]<12||anchor[1]>398)return null;
             return h('button',{key:i,type:'button',className:'circuit-scene-pin','aria-label':__alloFill(__alloT('stem.circuit.a11y_select_in_3d_scene', 'Select {value1} {value2} in 3D scene'), { value1: row.component.type, value2: (i+1) }),'aria-pressed':selectedIndex===i,
               title:(i+1)+'. '+row.component.type+' · '+circuitCurrentText(row.current),
@@ -4610,6 +4713,7 @@ function CircuitActiveLessonLab(props) {
     circStyle.textContent += '\n[data-circuit-motion=paused] *,[data-circuit-motion=paused] *::before,[data-circuit-motion=paused] *::after {animation-play-state:paused!important;transition:none!important}';
     circStyle.textContent += '\n.circuit-start-guide{margin:16px 0;border:1px solid #4e7c86;border-radius:14px;background:#0d2a36;color:#e2f4f5;overflow:hidden}.circuit-start-guide>summary{padding:13px 16px;min-height:48px;font-size:14px;color:#b2f3df}.circuit-start-guide>summary>span{display:block;margin:5px 0 0 17px;color:#d1e4e9;font-size:12px;font-weight:400}.circuit-start-body{border-top:1px solid #3c626d;padding:16px}.circuit-start-body h3{margin:0 0 8px;font-size:19px;font-weight:750;color:#f0fdfa}.circuit-start-body>p{font-size:13px;line-height:1.65}.circuit-start-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;padding:0;margin:16px 0;list-style:none}.circuit-start-steps li{border-left:2px solid #6ec8b6;padding-left:10px;min-width:0}.circuit-start-steps strong{display:block;color:#b2f3df;font-size:13px}.circuit-start-steps span{display:block;margin-top:5px;font-size:12px;line-height:1.6;color:#d1e4e9}[data-circuit-builder-root] .circuit-start-guide .circuit-action-row button{min-height:44px}[data-circuit-builder-root] .circuit-start-guide [data-circuit-start-experiment]{background:#b2f3df;border-color:#b2f3df;color:#113b36}@media(max-width:540px){.circuit-start-steps{grid-template-columns:1fr;gap:12px}.circuit-start-body{padding:12px}.circuit-start-guide .circuit-action-row>button{width:100%}}';
     circStyle.textContent += "\n[data-circuit-builder-root] .circuit-time-lab{margin:18px 0;padding:16px;border:1px solid #4b6580;border-radius:14px;background:linear-gradient(135deg,#17243a,#092d36);color:#e2e8f0}\n[data-circuit-builder-root] .circuit-time-lab>summary{color:#a5f3fc;font-size:15px}\n[data-circuit-builder-root] .circuit-time-lab svg{width:100%;height:auto;margin:12px 0}\n[data-circuit-builder-root] .circuit-time-slider{display:block;font-size:13px;color:#e2e8f0;margin:12px 0}\n[data-circuit-builder-root] .circuit-time-slider input{display:block;width:100%;accent-color:#fbbf24;min-height:36px;margin:5px 0}\n[data-circuit-builder-root] .circuit-part-picker{padding:0 12px}\n[data-circuit-builder-root] #circuit-inspector-value{max-width:120px;padding:8px;border:1px solid #527286;border-radius:8px;background:#071520;color:#f1f5f9}\n[data-circuit-builder-root] [data-circuit-comparison] ul{padding-left:18px;list-style:disc;margin-top:6px}\n";
+    circStyle.textContent += "\n[data-circuit-builder-root] .circuit-power-warning{margin:8px 0 0;padding:8px 10px;border-radius:10px;background:#3a2414;border:1px solid #b8622d;color:#ffe2cf;font-size:.8125rem;line-height:1.45}";
     circStyle.textContent += "\n/* Material bench presentation: scoped to the circuit tool. */\n[data-circuit-builder-root] {background:radial-gradient(ellipse at 8% 0%,#122b3a 0%,#081521 46%)!important;border-color:#2a4355!important;box-shadow:0 20px 65px #02091355!important}\n[data-circuit-builder-root] [data-circuit-bench] {padding:12px 0 18px;border-bottom:1px solid #263e50;margin-bottom:18px}\n[data-circuit-builder-root] #circuit-bench-title {font-size:clamp(26px,3.4vw,36px);line-height:1.13;letter-spacing:-.045em;font-weight:750;margin:10px 0 12px;color:#f0f7fb}\n[data-circuit-builder-root] [data-circuit-bench]>.circuit-help {max-width:640px;line-height:1.75;color:#b8cbd8;font-size:13px}\n[data-circuit-builder-root] .circuit-eyebrow {font-size:10px;letter-spacing:.16em;color:#95e1d6;font-weight:750}\n[data-circuit-builder-root] .circuit-action-row button {border-color:#365568;background:linear-gradient(180deg,#173244,#102735);box-shadow:inset 0 1px #ffffff06;transition:background .15s,border-color .15s}\n[data-circuit-builder-root] .circuit-action-row button:hover:not(:disabled) {background:#204557;border-color:#6d9caa}[data-circuit-builder-root] .circuit-action-row button[aria-pressed=true]:hover:not(:disabled){background:#a5f3fc;color:#083344;border-color:#a5f3fc}\n[data-circuit-builder-root] .circuit-action-row button[aria-pressed=true] {background:#b2eee1;border-color:#b2eee1;color:#0b353b;box-shadow:0 2px 12px #5edec316}\n[data-circuit-builder-root] .circuit-lab-workflow {background:#102330;border-color:#294354;border-radius:14px;padding:16px}\n[data-circuit-builder-root] .circuit-step-heading h3 {font-size:18px;line-height:1.35;letter-spacing:-.02em}\n[data-circuit-builder-root] .circuit-model-chip {color:#c3d7e0;border-color:#3c5b6d;background:#132a38;font-size:10px}\n[data-circuit-builder-root] .circuit-guided-lab>summary {color:#d6e8ef;font-size:12px;line-height:1.7;padding-top:7px}\n[data-circuit-builder-root] .circuit-view-toolbar {border-color:#294354;padding-top:18px;margin-top:22px}\n[data-circuit-builder-root] .circuit-3d {border:1px solid #345566;border-radius:18px;box-shadow:0 16px 38px #02091455,inset 0 1px #ffffff08;background:#0a1b28;isolation:isolate}\n[data-circuit-builder-root] .circuit-scene-heading {display:flex;align-items:center;justify-content:space-between;gap:12px;padding:19px 20px 13px;background:linear-gradient(115deg,#122d3d,#0d2231)}\n[data-circuit-builder-root] .circuit-scene-heading h3 {font-size:20px;font-weight:650;letter-spacing:-.03em;line-height:1.3;margin-top:4px;color:#eef8fc}\n[data-circuit-builder-root] .circuit-scene-status {display:flex;align-items:center;gap:7px;font-size:11px;color:#b9cbd8;background:#102534;border:1px solid #345364;border-radius:30px;padding:7px 10px;white-space:nowrap}\n[data-circuit-builder-root] .circuit-scene-status>span {width:6px;height:6px;border-radius:50%;background:#94a3b8;flex:none}\n[data-circuit-builder-root] .circuit-scene-status[data-state=active] {color:#c1f3da;border-color:#386553}\n[data-circuit-builder-root] .circuit-scene-status[data-state=active]>span {background:#86efac;box-shadow:0 0 9px #86efac33}\n[data-circuit-builder-root] .circuit-scene-status[data-state=warning] {color:#fecaca;border-color:#7d4148}\n[data-circuit-builder-root] .circuit-scene-status[data-state=warning]>span {background:#fda4af}\n[data-circuit-builder-root] .circuit-scene-metrics {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid #294353;padding:0 20px 14px;background:#102635}\n[data-circuit-builder-root] .circuit-scene-metrics>div {padding:4px 16px;border-left:1px solid #2a4351;min-width:0}\n[data-circuit-builder-root] .circuit-scene-metrics>div:first-child {padding-left:0;border:0}\n[data-circuit-builder-root] .circuit-scene-metrics span {display:block;font-size:9px;letter-spacing:.13em;color:#a6bfcd;margin-bottom:6px}\n[data-circuit-builder-root] .circuit-scene-metrics strong {font-family:ui-monospace,SFMono-Regular,Consolas,monospace;display:block;font-size:clamp(14px,2.1vw,21px);font-weight:500;color:#e2f6fa;line-height:1.2;overflow-wrap:anywhere}\n[data-circuit-builder-root] .circuit-scene-metrics small {font:inherit;color:#9dbbca;font-size:.7em}\n[data-circuit-builder-root] .circuit-3d>svg {background:#081725}\n[data-circuit-builder-root] .circuit-camera {display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px 24px;padding:16px 20px;background:#102330;border-top:1px solid #294453;border-bottom:1px solid #294453}\n[data-circuit-builder-root] .circuit-camera label {min-width:0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;color:#bcd0dc;font-size:11px}\n[data-circuit-builder-root] .circuit-camera input {min-width:0;accent-color:#a5e8db}\n[data-circuit-builder-root] .circuit-camera-actions {grid-column:1/-1;display:flex;flex-wrap:wrap;gap:8px}\n[data-circuit-builder-root] .circuit-camera button {min-height:34px;background:#142f40;border-color:#385969;padding:6px 12px;font-size:11px;color:#d8eaf1}\n[data-circuit-builder-root] .circuit-camera button[aria-pressed=true] {background:#234a4d;color:#c5f6eb;border-color:#548782}\n[data-circuit-builder-root] .circuit-part-picker-heading {display:flex;justify-content:space-between;gap:8px;color:#aac2cf;font-size:9px;letter-spacing:.12em;padding:19px 20px 0}\n[data-circuit-builder-root] .circuit-part-picker-heading span {letter-spacing:0;color:#bed0dc;font-size:10px}\n[data-circuit-builder-root] .circuit-part-picker {display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:9px;padding:0 20px;margin:10px 0 12px}\n[data-circuit-builder-root] .circuit-part-picker button {position:relative;display:flex;gap:10px;align-items:center;text-align:left;min-height:65px;padding:10px 12px;border-radius:10px;background:#102735;border-color:#2e4c5d;min-width:0}\n[data-circuit-builder-root] .circuit-part-picker button[aria-pressed=true] {background:#193f47;border-color:#7ad4cb;color:#e6fffa;box-shadow:inset 0 0 0 1px #82d8cf22}\n[data-circuit-builder-root] .circuit-part-number {display:grid;place-items:center;flex:none;width:28px;height:28px;border-radius:8px;background:#233e4f;color:#c3d3df;font:11px ui-monospace,Consolas,monospace}\n[data-circuit-builder-root] .circuit-part-picker button[aria-pressed=true] .circuit-part-number {background:#b1ecdf;color:#123c40}\n[data-circuit-builder-root] .circuit-part-copy {display:grid;gap:4px;min-width:0}\n[data-circuit-builder-root] .circuit-part-copy strong {font-size:12px;font-weight:650;text-transform:capitalize;line-height:1.3}\n[data-circuit-builder-root] .circuit-part-copy small {font-size:11px;color:#bbd0db;font-weight:400;line-height:1.3}\n[data-circuit-builder-root] .circuit-3d>.circuit-help {padding:0 20px 16px;margin:0;color:#b6cbd6;font-size:11px;line-height:1.7}\n[data-circuit-builder-root] .circuit-part-inspector {border-color:#3c6470;background:linear-gradient(120deg,#173340,#102430);box-shadow:inset 3px 0 #85dbcf;padding:16px}\n[data-circuit-builder-root] .circuit-part-inspector>label {font-size:12px;color:#d8e9ef;font-weight:650;margin-right:8px}\n[data-circuit-builder-root] .circuit-part-inspector>p {color:#c7f4e8;font-size:13px;line-height:1.8}\n[data-circuit-builder-root] .circuit-comparison>div {background:#0c2130;border-color:#335363;border-radius:10px}\n[data-circuit-builder-root] .circuit-comparison strong {color:#b8ece2}\n[data-circuit-builder-root] .circuit-time-lab {background:linear-gradient(135deg,#142d3d,#11343b);border-color:#3c6070}\n@media(max-width:600px) {\n[data-circuit-builder-root] .circuit-scene-heading {padding:15px 13px 12px;align-items:flex-start;flex-wrap:wrap}\n[data-circuit-builder-root] .circuit-scene-heading h3 {font-size:19px}\n[data-circuit-builder-root] .circuit-scene-status {padding:5px 8px;font-size:10px}\n[data-circuit-builder-root] .circuit-scene-metrics {padding:0 13px 13px}\n[data-circuit-builder-root] .circuit-scene-metrics>div {padding:3px 8px}\n[data-circuit-builder-root] .circuit-scene-metrics strong {font-size:14px}\n[data-circuit-builder-root] .circuit-camera {padding:13px;gap:8px 15px}\n[data-circuit-builder-root] .circuit-camera-actions {gap:6px}\n[data-circuit-builder-root] .circuit-camera button {padding:6px 10px}\n[data-circuit-builder-root] .circuit-part-picker-heading {padding:16px 13px 0}\n[data-circuit-builder-root] .circuit-part-picker {padding:0 13px;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}\n[data-circuit-builder-root] .circuit-part-picker button {padding:9px;gap:7px}\n[data-circuit-builder-root] .circuit-part-number {width:23px;height:27px}\n[data-circuit-builder-root] .circuit-3d>.circuit-help {padding:0 13px 14px}\n[data-circuit-builder-root] .circuit-part-inspector {padding:13px}\n}\n@media(prefers-reduced-motion:reduce) {[data-circuit-builder-root] .circuit-action-row button{transition:none}}\n";
     circStyle.textContent += "\n[data-circuit-builder-root] .circuit-parts-shelf{margin:14px 0 18px;padding:16px;background:#102633;border:1px solid #355261;border-radius:16px}\n[data-circuit-builder-root] .circuit-parts-shelf h3{font-size:16px;color:#ecf9fc;font-weight:700;margin:0 0 10px}\n[data-circuit-builder-root] .circuit-parts-shelf .circuit-supply-row{display:flex;align-items:center;gap:12px;border-bottom:1px solid #34515f;padding-bottom:12px;margin-bottom:12px}\n[data-circuit-builder-root] .circuit-supply-row input{min-width:40px;accent-color:#a5e8db;min-height:36px}\n[data-circuit-builder-root] .circuit-supply-row>span:first-child{font-size:12px;color:#d2e6ee}\n[data-circuit-builder-root] .circuit-supply-row>span:last-child{color:#b1eddf;font-size:18px;width:64px}\n[data-circuit-builder-root] .circuit-parts-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}\n[data-circuit-builder-root] .circuit-parts-grid button{display:block;text-align:left;min-height:66px;padding:10px;border:1px solid #456474;border-radius:10px;background:#163241;color:#e1f2f7;font-size:12px;line-height:1.4}\n[data-circuit-builder-root] .circuit-parts-grid button:hover{background:#254a58;border-color:#9ad4cf}\n[data-circuit-builder-root] .circuit-parts-grid button small{display:block;margin-top:5px;font-size:10px;line-height:1.4;color:#b9d2dd;font-weight:400}\n[data-circuit-builder-root] .circuit-parts-grid button[data-circuit-clear]{background:#322735;border-color:#735361;color:#f5d6dc}\n[data-circuit-builder-root] .circuit-parts-grid>span{grid-column:1/-1;font-size:11px}\n[data-circuit-builder-root] .circuit-lessons{margin:14px 0;padding:14px 16px;border:1px solid #4b687a;border-radius:14px;background:linear-gradient(130deg,#152f42,#182b3a);color:#dbeaf2}\n[data-circuit-builder-root] .circuit-lessons>summary{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;list-style:none;font-size:14px;min-height:32px}\n[data-circuit-builder-root] .circuit-lessons>summary::before{content:'+';font-size:20px;color:#a9eee0}\n[data-circuit-builder-root] .circuit-lessons[open]>summary::before{content:'−'}\n[data-circuit-builder-root] .circuit-lessons>summary>span{flex:1;min-width:150px}\n[data-circuit-builder-root] .circuit-lessons>summary small{font-size:10px;color:#bdd0de;font-weight:400}\n[data-circuit-builder-root] .circuit-lesson-cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}\n[data-circuit-builder-root] .circuit-lesson-cards button{padding:14px 12px;text-align:left;background:#102431;border:1px solid #456171;border-radius:10px;color:#e1eff7;min-width:0}\n[data-circuit-builder-root] .circuit-lesson-cards strong{display:block;font-size:14px;line-height:1.4;margin-top:8px}\n[data-circuit-builder-root] .circuit-lesson-cards button[aria-pressed=true]{border-color:#a9e8d9;background:#214650}\n[data-circuit-builder-root] .circuit-learning-steps{list-style:none;display:flex;gap:8px;margin:18px 0;padding:0}\n[data-circuit-builder-root] .circuit-learning-steps li{flex:1;border-bottom:2px solid #476373;padding:8px 2px;font-size:12px;color:#b9cbd6}\n[data-circuit-builder-root] .circuit-learning-steps li[aria-current=step]{color:#c9fff0;border-color:#9eedcf;font-weight:700}\n[data-circuit-builder-root] .circuit-lesson-body fieldset{border:0;padding:0;margin:14px 0;min-width:0}\n[data-circuit-builder-root] .circuit-lesson-body legend{font-size:15px;line-height:1.6;font-weight:600}\n[data-circuit-builder-root] .circuit-lesson-evidence>p{font-size:13px;line-height:1.8;margin:14px 0;color:#d8ecef}\n[data-circuit-builder-root] .circuit-lesson-evidence .circuit-change-label{font:12px/1.6 system-ui;overflow-wrap:anywhere}\n[data-circuit-builder-root] .circuit-lesson-evidence>label{display:block;margin-top:18px;font-size:13px;font-weight:700}\n[data-circuit-builder-root] .circuit-lessons textarea{box-sizing:border-box;width:100%;padding:12px;resize:vertical;background:#081d2b;color:#e6f5fa;border:1px solid #628192;border-radius:9px;font-size:13px;line-height:1.6}\n[data-circuit-builder-root] .circuit-live-coach{padding:16px 18px;margin:12px 0 18px;border:1px solid #3a696b;border-radius:14px;background:linear-gradient(110deg,#173c42,#112c39);color:#d3e9ed}\n[data-circuit-builder-root] .circuit-live-coach[data-tone=warning]{background:#352c25;border-color:#97764d}\n[data-circuit-builder-root] .circuit-live-coach h3{margin:6px 0;font-size:18px;font-weight:650;color:#effcff;letter-spacing:-.02em}\n[data-circuit-builder-root] .circuit-live-coach p{font-size:13px;line-height:1.8;margin:6px 0}\n[data-circuit-builder-root] .circuit-live-coach>button{margin-top:8px;border:1px solid #7aabae;padding:7px 12px;border-radius:8px;color:#e1fcf4;background:#244852;font-size:12px}\n[data-circuit-builder-root] .circuit-reading-map{margin-top:12px;padding-top:12px;border-top:1px solid #41616c}\n[data-circuit-builder-root] .circuit-reading-map summary{font-size:12px;color:#cef0e7}\n[data-circuit-builder-root] .circuit-reading-map ul{list-style:none;padding:0;margin:12px 0;display:grid;gap:14px}\n[data-circuit-builder-root] .circuit-reading-label{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;font-size:12px}\n[data-circuit-builder-root] .circuit-reading-label strong{text-transform:capitalize}\n[data-circuit-builder-root] .circuit-reading-label span{font-variant-numeric:tabular-nums;color:#c8e9ee}\n[data-circuit-builder-root] .circuit-reading-track{height:7px;background:#071d29;border-radius:7px;overflow:hidden;margin:7px 0 4px}\n[data-circuit-builder-root] .circuit-reading-track span{display:block;height:100%;background:linear-gradient(90deg,#70bccc,#b3eed7);border-radius:7px}\n[data-circuit-builder-root] .circuit-reading-map small{font-size:10px;color:#bbd7de}\n[data-circuit-builder-root] .circuit-concept-key{border-top:1px solid #41616c;padding-top:8px}\n[data-circuit-builder-root] .circuit-concept-key p{font-size:11px}\n@media(max-width:600px){[data-circuit-builder-root] .circuit-parts-grid{grid-template-columns:repeat(2,minmax(0,1fr))}[data-circuit-builder-root] .circuit-lesson-cards{grid-template-columns:1fr}[data-circuit-builder-root] .circuit-lesson-cards button{padding:11px;display:flex;align-items:center;gap:12px}[data-circuit-builder-root] .circuit-lesson-cards strong{margin:0;font-size:12px}[data-circuit-builder-root] .circuit-lesson-cards .circuit-eyebrow{max-width:90px;font-size:9px}[data-circuit-builder-root] .circuit-parts-shelf,[data-circuit-builder-root] .circuit-lessons,[data-circuit-builder-root] .circuit-live-coach{padding:13px}}\n";
     circStyle.textContent += '[data-circuit-builder-root] .circuit-lesson-body fieldset button:disabled{opacity:1;color:#c5dce5}[data-circuit-builder-root] .circuit-lesson-body fieldset button:disabled[aria-pressed=true]{color:#0b353b}';
@@ -4623,6 +4727,7 @@ function CircuitActiveLessonLab(props) {
     circStyle.textContent += "\n[data-circuit-builder-root] .circuit-image-help{padding:0 20px 14px;margin-top:-4px;color:#b9ced9;font-size:11px;line-height:1.7}\n[data-circuit-builder-root] .circuit-image-help p{margin:0}\n[data-circuit-builder-root] .circuit-image-help p[role=status]:not(:empty){color:#d1efdf;margin-top:4px}\n@media(max-width:600px){[data-circuit-builder-root] .circuit-image-help{padding:0 13px 13px}}\n";
     circStyle.textContent += "\n[data-circuit-builder-root] .circuit-probe-panel{margin:0 20px 16px;padding:12px 15px;border:1px solid #596478;border-radius:12px;background:linear-gradient(120deg,#1b2c40,#122d39);color:#d7e7ef}\n[data-circuit-builder-root] .circuit-probe-panel>summary{font-size:13px;font-weight:650;color:#e2edf9;cursor:pointer;line-height:24px}\n[data-circuit-builder-root] .circuit-probe-panel>summary>span{font-size:10px;font-weight:400;color:#b8d0df;margin-left:12px;display:inline-block}\n[data-circuit-builder-root] .circuit-probe-panel>p{font-size:12px;line-height:1.7;margin:10px 0;color:#c1d5e2}\n[data-circuit-builder-root] .circuit-probe-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:12px 0}\n[data-circuit-builder-root] .circuit-probe-controls label{display:grid;gap:6px;min-width:0;font-size:11px;color:#edc9d3}\n[data-circuit-builder-root] .circuit-probe-controls label+label{color:#d2e0ed}\n[data-circuit-builder-root] .circuit-probe-controls select{width:100%;min-width:0;min-height:38px;border:1px solid #5d7b90;background:#0f2434;color:#e2edf5;border-radius:7px;padding:6px;font-size:12px}\n[data-circuit-builder-root] .circuit-probe-display{background:#071a26;border:1px solid #3e6475;border-radius:9px;padding:14px}\n[data-circuit-builder-root] .circuit-probe-display>span{font-size:11px;color:#b7d7df;display:block}\n[data-circuit-builder-root] .circuit-probe-display>strong{display:block;color:#bef1dd;font:500 27px/1.5 ui-monospace,Consolas,monospace;overflow-wrap:anywhere}\n[data-circuit-builder-root] .circuit-probe-display>p{font-size:12px;line-height:1.7;color:#c1d7df;margin:3px 0 0}\n[data-circuit-builder-root] .circuit-probe-panel .circuit-action-row button{font-size:11px;min-height:36px}\n[data-circuit-builder-root] .circuit-probe-panel>.circuit-probe-tip{font-size:11px;margin-bottom:0}\n@media(max-width:600px){[data-circuit-builder-root] .circuit-probe-panel{margin:0 13px 13px;padding:11px}[data-circuit-builder-root] .circuit-probe-controls{gap:8px}[data-circuit-builder-root] .circuit-probe-controls select{font-size:11px}}\n";
     circStyle.textContent += '[data-circuit-builder-root] .circuit-probe-controls>div{display:grid;gap:6px;min-width:0}[data-circuit-builder-root] .circuit-probe-controls>div+div label{color:#d2e0ed}';
+    circStyle.textContent += "[data-circuit-builder-root] [data-circuit-add-component][aria-disabled=true]{opacity:.55;cursor:not-allowed}@media (max-width:600px){[data-circuit-builder-root] .circuit-scene-label{font-size:16px}[data-circuit-builder-root] .circuit-scene-label[data-closeup]{font-size:19px}}";
     circStyle.textContent += "[data-circuit-builder-root] .circuit-drag-handle{cursor:grab;touch-action:none;user-select:none;min-width:24px;min-height:28px;padding:2px 4px;border:1px solid transparent;border-radius:6px;background:transparent;color:#a3b4c4;font-size:17px;line-height:1}[data-circuit-builder-root] .circuit-drag-handle:hover{color:#f1f5f9;border-color:#475569}[data-circuit-builder-root] .circuit-drag-handle:active{cursor:grabbing}[data-circuit-builder-root] .circuit-move-btn{min-width:28px;min-height:28px;padding:0 6px;border:1px solid #475569;border-radius:6px;background:#0f172a;color:#cbd5e1;font-size:11px;line-height:1}[data-circuit-builder-root] .circuit-move-btn:hover:not(:disabled){background:#1e293b;color:#ffffff}[data-circuit-builder-root] .circuit-move-btn:disabled{opacity:.45;cursor:default}[data-circuit-builder-root] [data-circuit-dragging=true]{opacity:.55}[data-circuit-builder-root] [data-circuit-drop-target=true]{outline:2px dashed #facc15;outline-offset:2px}[data-circuit-builder-root] .circuit-drag-handle:focus-visible,[data-circuit-builder-root] .circuit-move-btn:focus-visible{outline:3px solid #facc15;outline-offset:2px}";
     circStyle.textContent += "[data-circuit-builder-root] .circuit-frame-bar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;background:linear-gradient(110deg,#183444,#102332);border-block:1px solid #476777;color:#e6f4fa}[data-circuit-builder-root] .circuit-frame-mode,[data-circuit-builder-root] .circuit-frame-zoom{display:flex;align-items:center;gap:4px}[data-circuit-builder-root] .circuit-frame-bar button{min-height:36px;padding:6px 12px;border:1px solid #668796;border-radius:8px;background:#122b3b;color:#e6f4fa;font-size:12px;font-weight:600}[data-circuit-builder-root] .circuit-frame-bar button[aria-pressed=true]{background:#baeeda;border-color:#baeeda;color:#143f42}[data-circuit-builder-root] .circuit-frame-bar button:disabled{opacity:.48;cursor:default}[data-circuit-builder-root] .circuit-frame-zoom span{min-width:48px;text-align:center;font:600 12px ui-monospace,monospace}[data-circuit-builder-root] .circuit-frame-center{margin-left:auto}[data-circuit-builder-root] .circuit-scene-viewport[data-drag-mode=pan]{cursor:move}[data-circuit-builder-root] .circuit-position-controls{margin:0 18px 12px;padding:12px 14px;background:#122b3b;border:1px solid #527486;border-radius:10px;color:#dcecf5;font-size:12px}[data-circuit-builder-root] .circuit-position-controls summary{cursor:pointer;font-weight:600}[data-circuit-builder-root] .circuit-position-controls summary span{display:inline-block;margin-left:12px;font-weight:400;color:#b8d0dd}[data-circuit-builder-root] .circuit-position-controls>div{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px}[data-circuit-builder-root] .circuit-position-controls label{display:flex;align-items:center;gap:10px;flex:1;min-width:220px}[data-circuit-builder-root] .circuit-position-controls input{width:100%;accent-color:#8ee1c5}[data-circuit-builder-root] .circuit-frame-bar button:focus-visible,[data-circuit-builder-root] .circuit-position-controls :focus-visible{outline:3px solid #facc15;outline-offset:3px}@media(max-width:600px){[data-circuit-builder-root] .circuit-frame-bar{gap:8px;padding:10px}[data-circuit-builder-root] .circuit-frame-bar button{padding:6px 10px}[data-circuit-builder-root] .circuit-position-controls{margin-inline:12px}}";
     circStyle.textContent += "[data-circuit-builder-root].circuit-workspace-switch{max-width:896px;margin:0 auto 14px;padding:10px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;background:#0b2232;border:1px solid #456675;border-radius:14px;color:#c9deeb;font-size:12px}[data-circuit-builder-root].circuit-workspace-switch button{padding:10px 16px;border:1px solid #6a8997;border-radius:9px;background:#132d3c;color:#eaf5fb;font-weight:700}[data-circuit-builder-root].circuit-workspace-switch button[aria-pressed=true]{background:#b5efd9;border-color:#b5efd9;color:#143d38}[data-circuit-builder-root].circuit-workspace-switch span{margin-left:auto}[data-circuit-builder-root].circuit-mixed-root{max-width:896px;margin:auto;color:#e6f2f8;background:#081b28;padding:20px;border:1px solid #3e6073;border-radius:20px}[data-circuit-builder-root] .circuit-mixed-hero{padding:8px 4px 20px}[data-circuit-builder-root] .circuit-mixed-hero h2{font-size:30px;line-height:1.2;font-weight:800;margin:12px 0}[data-circuit-builder-root] .circuit-mixed-hero p{font-size:14px;line-height:1.7;color:#c4d9e5}[data-circuit-builder-root] .circuit-mixed-controls{padding:14px;border:1px solid #436477;border-radius:14px;background:#102d3b;margin-bottom:18px}[data-circuit-builder-root] .circuit-mixed-controls>label{display:flex;align-items:center;gap:15px;font-size:13px}[data-circuit-builder-root] .circuit-mixed-controls input{flex:1;min-width:80px;accent-color:#99e5ce}[data-circuit-builder-root].circuit-mixed-root select{max-width:100%;padding:9px;background:#0b2535;border:1px solid #7193a4;border-radius:8px;color:#e5f3fa;font-size:13px}[data-circuit-builder-root] .circuit-mixed-connections{margin-top:20px;padding:16px;border:1px solid #416477;border-radius:16px;background:#102735}[data-circuit-builder-root] .circuit-mixed-connections h3,[data-circuit-builder-root] .circuit-mixed-evidence h3{font-size:20px;font-weight:750}[data-circuit-builder-root] .circuit-mixed-branch{margin-top:14px;padding:14px;background:linear-gradient(120deg,#143947,#102b39);border:1px solid #4f7685;border-radius:12px}[data-circuit-builder-root] .circuit-mixed-branch-heading{display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;font-size:13px;margin-bottom:15px}[data-circuit-builder-root] .circuit-mixed-branch-heading span{color:#c1dce7;font:12px ui-monospace,monospace}[data-circuit-builder-root] .circuit-mixed-path{display:flex;align-items:center;gap:8px;overflow-x:auto;padding:4px 0 10px}[data-circuit-builder-root] .circuit-mixed-path button{position:relative;flex:1;min-width:105px;padding:12px 8px;border:1px solid #688b9b;border-radius:10px;background:#0a2232;color:#deedf4;text-align:center}[data-circuit-builder-root] .circuit-mixed-path button[aria-pressed=true]{border-color:#afeed7;background:#23504d;box-shadow:0 0 0 2px #9ce5ca22}[data-circuit-builder-root] .circuit-mixed-path button>*{display:block;font-size:12px;line-height:1.8}[data-circuit-builder-root] .circuit-mixed-path small{color:#b9e2ef}[data-circuit-builder-root] .circuit-mixed-terminal{flex-shrink:0;font:700 11px ui-monospace,monospace;color:#d4e6ef}[data-circuit-builder-root] .circuit-mixed-evidence{padding:20px;margin-top:18px;background:linear-gradient(110deg,#153c40,#102d3a);border:1px solid #5d938c;border-radius:16px}[data-circuit-builder-root] .circuit-mixed-evidence p{font-size:13px;line-height:1.8;margin-top:10px;color:#d2e7ee}[data-circuit-builder-root] .circuit-mixed-readings{margin:12px;padding:12px;border:1px solid #557888;border-radius:12px;color:#d7eaf4;font-size:13px}[data-circuit-builder-root] .circuit-mixed-readings>summary{min-height:24px}[data-circuit-builder-root] .circuit-mixed-scroll{overflow-x:auto;border:1px solid #527586;border-radius:16px}[data-circuit-builder-root] .circuit-mixed-schematic svg{display:block;min-width:760px;width:100%;height:auto}@media(max-width:600px){[data-circuit-builder-root].circuit-mixed-root{padding:12px}[data-circuit-builder-root] .circuit-mixed-hero h2{font-size:25px}[data-circuit-builder-root] .circuit-mixed-connections{padding:10px}[data-circuit-builder-root] .circuit-mixed-branch{padding:10px}[data-circuit-builder-root].circuit-workspace-switch span{width:100%;margin-left:0}}";
@@ -6555,7 +6660,7 @@ function CircuitActiveLessonLab(props) {
     { id: 'challengeChamp', icon: '\uD83C\uDFC6', name: 'Challenge Champ', desc: 'Complete 5 circuit challenges', check: function(u) { return u.challengesDone >= 5; } },
     { id: 'quizAce', icon: '\u26A1', name: 'Ohm Ace', desc: 'Score 5+ on Ohm\'s Law quiz', check: function(u) { return u.quizScore >= 5; } },
     { id: 'quizStreak', icon: '\uD83D\uDD25', name: 'Hot Streak', desc: 'Get 3 quiz answers in a row', check: function(u) { return u.quizStreak >= 3; } },
-    { id: 'shortCircuitSurvivor', icon: '\u26A0\uFE0F', name: 'Short Survivor', desc: 'Trigger a short circuit', check: function(u) { return u.shortTriggered; } },
+    { id: 'shortCircuitSurvivor', icon: '\u26A0\uFE0F', name: 'Short Fixer', desc: 'Find and fix a short circuit', check: function(u) { return u.shortFixed; } },
     { id: 'presetExplorer', icon: '\uD83D\uDCCB', name: 'Preset Explorer', desc: 'Load 3 different preset circuits', check: function(u) { return u.presetsLoaded >= 3; } }
   ];
 
@@ -6593,6 +6698,7 @@ function CircuitActiveLessonLab(props) {
         { type: 'led', value: 40, id: 1, ledColor: '#ef4444' },
         { type: 'led', value: 40, id: 2, ledColor: '#22c55e' },
         { type: 'led', value: 40, id: 3, ledColor: '#3b82f6' },
+        { type: 'resistor', value: 220, id: 4 },
         { type: 'switch', value: 0, id: 4, closed: true }
       ]
     }
@@ -6609,16 +6715,26 @@ function CircuitActiveLessonLab(props) {
     { label: 'Power = 1W', target: 1, type: 'power', unit: 'W' },
     { label: 'Total R = 500\u03A9', target: 500, type: 'resistance', unit: '\u03A9' },
     { label: 'Get 3A current', target: 3, type: 'current', unit: 'A' },
-    { label: 'Power = 100W', target: 100, type: 'power', unit: 'W' }
+    { label: 'Power = 100W', target: 100, type: 'power', unit: 'W' },
+    // Design to a spec: the battery and parts are fixed, so the resistor has to be worked out with Ohm's law in reverse.
+    { id: 'spec_led', label: 'LED at 15 mA from 9 V', target: 0.015, type: 'spec', measure: 'current', unit: 'A', supply: 9, mode: 'series', parts: { led: 1, resistor: 1 }, plan: true },
+    { id: 'spec_25ma', label: '25 mA from 5 V', target: 0.025, type: 'spec', measure: 'current', unit: 'A', supply: 5, mode: 'series', parts: { resistor: 1 }, plan: true },
+    { id: 'spec_parallel', label: '30 mA from 6 V in two equal branches', target: 0.03, type: 'spec', measure: 'current', unit: 'A', supply: 6, mode: 'parallel', parts: { resistor: 2 }, equal: true, plan: true },
+    { id: 'spec_divider', label: '4 V from a 12 V divider', target: 4, type: 'spec', measure: 'second_voltage', unit: 'V', supply: 12, mode: 'series', parts: { resistor: 2 }, maxCurrent: 0.1 },
+    // Classroom-sized reading targets: currents a real LED or small resistor circuit carries, and power below a ¼ W resistor rating.
+    { label: 'Get 50 mA current', target: 0.05, type: 'current', unit: 'A' },
+    { label: 'Total R = 1 kΩ', target: 1000, type: 'resistance', unit: 'Ω' },
+    { label: 'Power = 0.1 W', target: 0.1, type: 'power', unit: 'W' }
   ];
 
   // Saved challenges use their electrical target, so older display labels remain valid.
   function circuitChallengeIndex(challenge) {
-    return CHALLENGES.findIndex(function(ch){return !!challenge&&ch.type===challenge.type&&ch.target===challenge.target;});
+    return CHALLENGES.findIndex(function(ch){return !!challenge&&ch.type===challenge.type&&ch.target===challenge.target&&(ch.id||'')===(challenge.id||'');});
   }
-  function circuitChallengeReading(solved, challenge) {
+  function circuitChallengeReading(solved, challenge, t) {
     var index=circuitChallengeIndex(challenge);
     if(index<0)return null;
+    if(CHALLENGES[index].type==='spec')return circuitSpecReading(solved,CHALLENGES[index],index,t);
     var ch=CHALLENGES[index],format=ch.type==='current'?circuitCurrentText:ch.type==='power'?circuitPowerText:circuitActiveResistanceText;
     var actual=ch.type==='current'?solved.current:ch.type==='power'?solved.power:solved.totalR;
     var empty=!solved.components.length,short=!empty&&!!solved.isShort,open=!empty&&!short&&ch.type==='resistance'&&!(solved.totalR<1e8);
@@ -6631,7 +6747,8 @@ function CircuitActiveLessonLab(props) {
       lowerText:format(ch.target*.95),upperText:format(ch.target*1.05),
       differenceText:short?'Add resistance to the low-resistance path first.':open?'Close the path to measure total resistance.':!valid?'Add a component to compare readings.':difference===0?'At the goal':format(Math.abs(difference))+(difference<0?' below the goal':' above the goal')};
   }
-  function circuitChallengeHint(solved, reading) {
+  function circuitChallengeHint(solved, reading, t) {
+    if(reading.challenge&&reading.challenge.type==='spec')return circuitSpecHint(solved,reading,t);
     if(reading.empty)return 'Add a resistor to start, then adjust its resistance and the supply.';
     if(reading.onTarget)return 'This reading is within the target range. Check target to save this completion.';
     if(solved.isShort)return 'This layout has a very low-resistance path. Add a resistor in that path before tuning the target.';
@@ -6643,27 +6760,142 @@ function CircuitActiveLessonLab(props) {
     if(ch.type==='resistance')return reading.actual>ch.target?'Lower a resistor value to reduce total resistance.'+(solved.mode==='parallel'?' Adding another resistor branch also reduces it.':''):'Raise a resistor value to increase total resistance.'+(solved.mode==='series'?' Adding another series resistor also increases it.':'');
     return 'At a fixed positive supply, '+(reading.actual>ch.target?'raise total resistance to reduce':'lower total resistance to increase')+' the '+(ch.type==='current'?'source current':'source power')+'. Change one setting and compare the reading.';
   }
-  function circuitChallengeAttempt(state, index, attempt) {
+  function circuitChallengeAttempt(state, index, attempt, t) {
     var ch=CHALLENGES[index];
     if(!ch)return state;
-    var reading=circuitChallengeReading(solveCircuit(state),ch),done=Object.assign({},state.challengesDoneSet||{});
+    var reading=circuitChallengeReading(solveCircuit(state),ch,t),done=Object.assign({},state.challengesDoneSet||{});
     var outcome=!reading.onTarget?'retry':done[index]?'already':'completed';
     if(outcome==='completed')done[index]=true;
     return Object.assign({},state,{challenge:ch,challengesDoneSet:done,
       challengesDone:CHALLENGES.filter(function(_,i){return !!done[i];}).length,
       challengeCheck:{attempt:attempt,index:index,outcome:outcome,actualText:reading.actualText,
-        message:outcome==='completed'?'Target completed at '+reading.actualText+'. Completion saved.':outcome==='already'?'This target is already completed. Your current reading is '+reading.actualText+'.':reading.empty?'Add a component before checking this target.':'Current reading: '+reading.actualText+'. '+reading.differenceText+'. Keep tuning and check again.'}});
+        message:ch.type==='spec'?circuitSpecMessage(state,ch,reading,outcome,t):outcome==='completed'?'Target completed at '+reading.actualText+'. Completion saved.':outcome==='already'?'This target is already completed. Your current reading is '+reading.actualText+'.':reading.empty?'Add a component before checking this target.':'Current reading: '+reading.actualText+'. '+reading.differenceText+'. Keep tuning and check again.'}});
+  }
+  // Design-to-a-spec wording, read at render time so it follows the chosen language.
+  function circuitSpecText(ch, t) {
+    var __alloT=typeof t==='function'?t:function(key,fallback){return fallback;};
+    if(ch.id==='spec_led')return {label:__alloT('stem.circuit.spec_led_label','LED at 15 mA from 9 V'),
+      brief:__alloT('stem.circuit.spec_led_brief','A red LED is rated for about 20 mA, so aim a little lower: 15 mA. With a 9 V battery, choose the one resistor that sets that current.'),
+      parts:__alloT('stem.circuit.spec_led_parts','One red LED and one resistor'),
+      method:__alloT('stem.circuit.spec_led_method','Check your working: the LED uses about 2 V, so the resistor gets the rest of the 9 V. Divide that voltage by the current in amps (15 mA = 0.015 A).')};
+    if(ch.id==='spec_25ma')return {label:__alloT('stem.circuit.spec_25ma_label','25 mA from 5 V'),
+      brief:__alloT('stem.circuit.spec_25ma_brief','A 5 V supply, like a USB port, and one resistor. Choose the resistor that lets 25 mA flow.'),
+      parts:__alloT('stem.circuit.spec_25ma_parts','One resistor'),
+      method:__alloT('stem.circuit.spec_25ma_method','Check your working: R = V ÷ I, with the current in amps (25 mA = 0.025 A).')};
+    if(ch.id==='spec_parallel')return {label:__alloT('stem.circuit.spec_parallel_label','30 mA from 6 V in two equal branches'),
+      brief:__alloT('stem.circuit.spec_parallel_brief','Two equal resistors in parallel on a 6 V supply. Choose their value so the battery supplies 30 mA in total.'),
+      parts:__alloT('stem.circuit.spec_parallel_parts','Two resistors'),
+      method:__alloT('stem.circuit.spec_parallel_method','Check your working: each branch has the full 6 V across it and carries half of the 30 mA. Use R = V ÷ I for one branch.')};
+    return {label:__alloT('stem.circuit.spec_divider_label','4 V from a 12 V divider'),
+      brief:__alloT('stem.circuit.spec_divider_brief','Two resistors in series on 12 V. Choose values so the second resistor has 4 V across it, and keep the current at 100 mA or less.'),
+      parts:__alloT('stem.circuit.spec_divider_parts','Two resistors'),method:''};
+  }
+  // A spec target measures the source current, or the voltage across the second resistor on the bench.
+  function circuitSpecMeasure(solved, ch) {
+    if(ch.measure!=='second_voltage')return solved.current;
+    var rs=solved.rows.filter(function(r){return r.component.type==='resistor';});
+    return rs.length>1&&rs[1].voltage!=null?rs[1].voltage:NaN;
+  }
+  function circuitSpecReading(solved, ch, index, t) {
+    var __alloT=typeof t==='function'?t:function(key,fallback){return fallback;};
+    var text=circuitSpecText(ch,t),counts={},extra=0,parts=solved.components;
+    // Meters and switches may be added freely; any other part, or an LED that is not red, breaks the spec.
+    parts.forEach(function(c){if(c.type==='ammeter'||c.type==='voltmeter'||c.type==='switch')return;if(ch.parts[c.type]&&(c.type!=='led'||(c.ledColor||'#ef4444')==='#ef4444'))counts[c.type]=(counts[c.type]||0)+1;else extra++;});
+    var partsOk=!extra&&Object.keys(ch.parts).every(function(k){return counts[k]===ch.parts[k];});
+    var resistors=parts.filter(function(c){return c.type==='resistor';});
+    var reqs=[
+      {id:'supply',ok:solved.voltage===ch.supply,text:__alloT('stem.circuit.spec_req_supply','Battery at {v} V').replace('{v}',String(ch.supply)),
+        fix:__alloT('stem.circuit.spec_fix_supply','Set the power supply to {v} V. It is at {now} V.').replace('{v}',String(ch.supply)).replace('{now}',String(solved.voltage))},
+      {id:'mode',ok:solved.mode===ch.mode,text:ch.mode==='series'?__alloT('stem.circuit.spec_req_series','Series connection'):__alloT('stem.circuit.spec_req_parallel','Parallel connection'),
+        fix:ch.mode==='series'?__alloT('stem.circuit.spec_fix_series','Choose Series at the top of the bench.'):__alloT('stem.circuit.spec_fix_parallel','Choose Parallel at the top of the bench.')},
+      {id:'parts',ok:partsOk,text:text.parts,fix:__alloT('stem.circuit.spec_fix_parts','Use only these parts: {parts}. Meters and switches are allowed.').replace('{parts}',text.parts)}
+    ];
+    if(ch.equal)reqs.push({id:'equal',ok:resistors.length===2&&resistors[0].value===resistors[1].value,text:__alloT('stem.circuit.spec_req_equal','Both resistors set to the same value'),fix:__alloT('stem.circuit.spec_fix_equal','Give both resistors the same value.')});
+    if(ch.maxCurrent){var maxText=Number((ch.maxCurrent*1000).toPrecision(3))+' mA';
+      reqs.push({id:'max_current',ok:solved.current<=ch.maxCurrent,text:__alloT('stem.circuit.spec_req_max_current','Current at {max} or less').replace('{max}',maxText),
+        fix:__alloT('stem.circuit.spec_fix_max_current','The current is {now}. Use larger resistors to bring it to {max} or less.').replace('{now}',circuitCurrentText(solved.current)).replace('{max}',maxText)});}
+    var setupOk=reqs.every(function(r){return r.ok;}),actual=circuitSpecMeasure(solved,ch);
+    var empty=!parts.length,short=!empty&&!!solved.isShort,open=!empty&&!short&&!!solved.isOpen;
+    var valid=setupOk&&!empty&&!short&&!open&&Number.isFinite(actual),difference=actual-ch.target,onTarget=valid&&Math.abs(difference)<ch.target*.05;
+    var format=ch.unit==='V'?circuitPreciseVoltageText:circuitCurrentText,firstFix=(reqs.filter(function(r){return !r.ok;})[0]||{}).fix;
+    return {index:index,challenge:ch,reqs:reqs,setupOk:setupOk,actual:actual,empty:empty,short:short,open:open,onTarget:onTarget,
+      status:short?'Short circuit':!setupOk&&!empty?__alloT('stem.circuit.spec_status_setup','Check the setup'):open?'Open circuit':!valid?'Build a circuit':onTarget?'In range':difference<0?'Below target':'Above target',
+      actualText:empty?'No components':short?'Short circuit':open?'Open circuit (no path)':Number.isFinite(actual)?format(actual):'—',
+      goalText:format(ch.target),lowerText:format(ch.target*.95),upperText:format(ch.target*1.05),
+      differenceText:empty?'Add a component to compare readings.':short?'Add resistance to the low-resistance path first.':!setupOk?firstFix:open?__alloT('stem.circuit.spec_open','Complete the path so current can flow.'):!valid?'Add a component to compare readings.':difference===0?'At the goal':format(Math.abs(difference))+(difference<0?' below the goal':' above the goal')};
+  }
+  function circuitSpecHint(solved, reading, t) {
+    var __alloT=typeof t==='function'?t:function(key,fallback){return fallback;};
+    var ch=reading.challenge,parts=solved.components;
+    if(reading.empty)return __alloT('stem.circuit.spec_hint_empty','Add the parts in the checklist, then set the resistor values. Work the value out first if you can.');
+    if(reading.onTarget)return 'This reading is within the target range. Check target to save this completion.';
+    if(reading.short)return 'This layout has a very low-resistance path. Add a resistor in that path before tuning the target.';
+    if(!reading.setupOk)return (reading.reqs.filter(function(r){return !r.ok;})[0]||{}).fix;
+    if(parts.some(function(c){return c.type==='led'&&c.reversed;}))return __alloT('stem.circuit.spec_hint_led_reversed','The LED faces the wrong way, so it blocks the current. Select it and choose LED reversed — restore polarity.');
+    if(parts.some(function(c){return c.type==='led'&&c.unscrewed;}))return __alloT('stem.circuit.spec_hint_led_out','The LED is taken out, so its socket is a gap. Select it and choose Put the LED back.');
+    if(parts.some(function(p){return p.type==='switch'&&!p.closed;}))return 'Close the open switch to make a conducting path, then check the reading again.';
+    if(reading.open)return __alloT('stem.circuit.spec_open','Complete the path so current can flow.');
+    var high=reading.actual>ch.target;
+    if(ch.measure==='second_voltage')return high?__alloT('stem.circuit.spec_hint_divider_high','The second resistor has too much of the 12 V. In series, each resistor gets the same share of the voltage as its share of the total resistance, so make the second one smaller or the first one larger.'):__alloT('stem.circuit.spec_hint_divider_low','The second resistor has too little of the 12 V. In series, each resistor gets the same share of the voltage as its share of the total resistance, so make the second one larger or the first one smaller.');
+    if(ch.equal)return high?__alloT('stem.circuit.spec_hint_parallel_high','Too much current. Raise both resistor values by the same amount.'):__alloT('stem.circuit.spec_hint_parallel_low','Too little current. Lower both resistor values by the same amount.');
+    return high?__alloT('stem.circuit.spec_hint_current_high','Too much current. Use a larger resistor.'):__alloT('stem.circuit.spec_hint_current_low','Too little current. Use a smaller resistor.');
+  }
+  // What the model gives for a planned resistor value, so the plan check uses the same numbers as the bench.
+  function circuitSpecPlanReading(ch, value) {
+    if(typeof ch==='string')ch=CHALLENGES.filter(function(c){return c.id===ch;})[0];
+    if(!ch||!ch.plan||!(value>=1&&value<=10000))return null;
+    var comps=[],id=1;
+    if(ch.parts.led)comps.push({type:'led',value:40,id:id++,ledColor:'#ef4444'});
+    for(var i=0;i<(ch.parts.resistor||0);i++)comps.push({type:'resistor',value:value,id:id++});
+    var actual=circuitSpecMeasure(solveCircuit({mode:ch.mode,voltage:ch.supply,components:comps}),ch);
+    return {value:value,actual:actual,ok:Math.abs(actual-ch.target)<ch.target*.05,high:actual>ch.target};
+  }
+  function circuitSpecMessage(state, ch, reading, outcome, t) {
+    var __alloT=typeof t==='function'?t:function(key,fallback){return fallback;};
+    var plan=ch.plan&&state.challengePlans&&state.challengePlans[ch.id],planned=plan?circuitSpecPlanReading(ch,plan.value):null;
+    if(outcome==='completed')return 'Target completed at '+reading.actualText+'. Completion saved.'+(planned&&planned.ok?' '+__alloT('stem.circuit.spec_done_planned','Your calculated value was on target too.'):'');
+    if(outcome==='already')return 'This target is already completed. Your current reading is '+reading.actualText+'.';
+    if(reading.empty)return 'Add a component before checking this target.';
+    if(!reading.setupOk)return __alloT('stem.circuit.spec_check_setup','Not yet. Check the setup: {fix}').replace('{fix}',reading.differenceText);
+    return 'Current reading: '+reading.actualText+'. '+reading.differenceText.replace(/\.$/,'')+'. Keep tuning and check again.';
   }
   window.StemLab.circuitChallengeIndex=circuitChallengeIndex;
+  window.StemLab.circuitSpecPlanReading=circuitSpecPlanReading;
   window.StemLab.circuitChallengeReading=circuitChallengeReading;
   window.StemLab.circuitChallengeHint=circuitChallengeHint;
   window.StemLab.circuitChallengeAttempt=circuitChallengeAttempt;
 
   function CircuitChallengePanel(props) {
-    var React=props.React,h=React.createElement,state=props.state,done=state.challengesDoneSet||{},t=circuitToolT(props);
+    var React=props.React,h=React.createElement,state=props.state,done=state.challengesDoneSet||{},t=circuitToolT(props),__alloT=t;
     var selected=circuitChallengeIndex(state.challenge);if(selected<0)selected=0;
-    var reading=circuitChallengeReading(props.solved,CHALLENGES[selected]);
+    var reading=circuitChallengeReading(props.solved,CHALLENGES[selected],t);
     var pending=React.useRef(null),sequence=React.useRef(0),feedback=state.challengeCheck;
+    var spec=CHALLENGES[selected].type==='spec'?CHALLENGES[selected]:null,specText=spec?circuitSpecText(spec,t):null,plans=state.challengePlans||{};
+    var draftState=React.useState({}),drafts=draftState[0],setDrafts=draftState[1],planErrorState=React.useState(null),planError=planErrorState[0],setPlanError=planErrorState[1];
+    var draft=spec?(Object.prototype.hasOwnProperty.call(drafts,spec.id)?drafts[spec.id]:plans[spec.id]?String(plans[spec.id].value):''):'';
+    var planned=spec&&plans[spec.id]?circuitSpecPlanReading(spec,plans[spec.id].value):null,planErr=!!(spec&&planError&&planError.id===spec.id);
+    var planText=!spec||!spec.plan?'':planErr?planError.text:!planned?__alloT('stem.circuit.spec_plan_none','Work it out on paper, then test your value here before you build.'):
+      (planned.ok?__alloT('stem.circuit.spec_plan_ok','With {r} Ω the model gives {reading}, inside the target range. Now build it and check.'):(planned.high?__alloT('stem.circuit.spec_plan_high','With {r} Ω the model gives {reading}, above the target range.'):__alloT('stem.circuit.spec_plan_low','With {r} Ω the model gives {reading}, below the target range.'))+' '+specText.method).replace('{r}',String(planned.value)).replace('{reading}',circuitCurrentText(planned.actual));
+    // The setup button disappears once used, so focus moves to the checklist it just ticked.
+    var specFocus=function(selector){setTimeout(function(){var el=document.querySelector(selector);if(!el)return;if(!el.hasAttribute('tabindex'))el.setAttribute('tabindex','-1');el.focus();},40);};
+    var setUp=function(){
+      if(!spec||typeof props.setToolData!=='function')return;
+      props.setToolData(function(prev){var prior=prev&&prev._circuit||{};return Object.assign({},prev,{_circuit:Object.assign({},prior,{voltage:spec.supply,mode:spec.mode})});});
+      specFocus('[data-spec-reqs="'+spec.id+'"]');
+    };
+    var testPlan=function(){
+      if(!spec)return;
+      var raw=String(draft).trim(),value=Number(raw);
+      if(!raw||!Number.isFinite(value)||value<1||value>10000){setPlanError({id:spec.id,text:__alloT('stem.circuit.spec_plan_range','Enter a resistance from 1 to 10000 Ω.')});return;}
+      setPlanError(null);
+      if(typeof props.setToolData!=='function')return;
+      props.setToolData(function(prev){var prior=prev&&prev._circuit||{},next=Object.assign({},prior.challengePlans||{});next[spec.id]={value:value};return Object.assign({},prev,{_circuit:Object.assign({},prior,{challengePlans:next})});});
+    };
+    var targetButton=function(ch,index){return h('button',{
+        key:index,type:'button','data-circuit-target':index,'aria-pressed':selected===index,
+        onClick:function(){props.select(ch);},
+        className:'min-h-11 px-3 py-2 rounded-lg text-xs font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 '+(selected===index?'bg-amber-900/40 border-amber-300 text-amber-100':'bg-slate-900 border-slate-600 text-slate-200 hover:bg-slate-800')
+      },h('span',null,ch.type==='spec'?circuitSpecText(ch,t).label:ch.label),done[index]&&h('span',{className:'circuit-target-saved'},' · Saved'));};
     // Reward only a committed new completion. The updater stays pure under React
     // StrictMode; the pending guard also prevents double clicks before a render.
     React.useEffect(function(){
@@ -6681,26 +6913,39 @@ function CircuitActiveLessonLab(props) {
       var attempt=++sequence.current;pending.current=attempt;
       props.setToolData(function(prev){
         var prior=prev&&prev._circuit||{};
-        return Object.assign({},prev,{_circuit:circuitChallengeAttempt(prior,selected,attempt)});
+        return Object.assign({},prev,{_circuit:circuitChallengeAttempt(prior,selected,attempt,t)});
       });
     };
     var count=CHALLENGES.filter(function(_,i){return !!done[i];}).length;
     return h('section',{className:'circuit-targets mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md','aria-labelledby':'circuit-challenges-title'},
       h('h3',{id:'circuit-challenges-title',className:'text-sm font-bold text-amber-200 mb-2'},t('stem.circuit.circuit_challenges_title','Circuit Challenges')),
       h('p',{className:'text-xs text-slate-200 mb-3'},'Choose a target, tune your circuit, then check your reading. '+count+' of '+CHALLENGES.length+' completions saved.'),
-      h('div',{className:'circuit-target-choices flex flex-wrap gap-2',role:'group','aria-label':t('stem.circuit.choose_circuit_target','Choose a circuit target')},CHALLENGES.map(function(ch,index){return h('button',{
-        key:index,type:'button','data-circuit-target':index,'aria-pressed':selected===index,
-        onClick:function(){props.select(ch);},
-        className:'min-h-11 px-3 py-2 rounded-lg text-xs font-bold border transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 '+(selected===index?'bg-amber-900/40 border-amber-300 text-amber-100':'bg-slate-900 border-slate-600 text-slate-200 hover:bg-slate-800')
-      },h('span',null,ch.label),done[index]&&h('span',{className:'circuit-target-saved'},' · Saved'));})),
+      h('p',{className:'circuit-target-group-title text-xs font-bold text-amber-100 mb-1'},__alloT('stem.circuit.target_group_reading','Hit a reading: change anything you like')),
+      h('div',{className:'circuit-target-choices flex flex-wrap gap-2',role:'group','aria-label':t('stem.circuit.choose_circuit_target','Choose a circuit target')},CHALLENGES.map(function(ch,index){return ch.type==='spec'?null:targetButton(ch,index);})),
+      h('p',{className:'circuit-target-group-title text-xs font-bold text-amber-100 mt-3 mb-1'},__alloT('stem.circuit.target_group_spec','Design to a spec: the battery and parts are set, so calculate first')),
+      h('div',{className:'circuit-target-choices circuit-spec-choices flex flex-wrap gap-2',role:'group','aria-label':__alloT('stem.circuit.choose_spec_target','Choose a design-to-a-spec target')},CHALLENGES.map(function(ch,index){return ch.type==='spec'?targetButton(ch,index):null;})),
       h('div',{className:'circuit-target-panel mt-3 rounded-lg border border-slate-600 bg-slate-950 p-3','data-target-state':reading.onTarget?'met':reading.empty?'empty':'tuning',role:'region','aria-label':t('stem.circuit.active_circuit_target','Active circuit target')},
-        h('h4',{className:'text-sm font-bold text-amber-200'},CHALLENGES[selected].label),
+        h('h4',{className:'text-sm font-bold text-amber-200'},spec?specText.label:CHALLENGES[selected].label),
+        spec&&h('p',{className:'mt-2 text-sm text-slate-200','data-spec-brief':spec.id},specText.brief),
+        spec&&h('ul',{className:'circuit-spec-reqs mt-2 text-sm list-none pl-0','data-spec-reqs':spec.id,'aria-label':__alloT('stem.circuit.spec_reqs_label','Setup checklist')},reading.reqs.map(function(r){return h('li',{key:r.id,'data-spec-req':r.id,'data-ok':r.ok?'true':'false',className:r.ok?'text-emerald-200':'text-amber-100'},
+          h('span',{'aria-hidden':'true'},r.ok?'✓ ':'○ '),r.text,h('span',{className:'sr-only'},' ('+(r.ok?__alloT('stem.circuit.spec_req_met','done'):__alloT('stem.circuit.spec_req_unmet','not yet'))+')'));})),
+        spec&&!(reading.reqs[0].ok&&reading.reqs[1].ok)&&h('button',{type:'button','data-spec-setup':spec.id,onClick:setUp,className:'mt-2 min-h-11 rounded-lg border border-amber-300 px-3 py-2 text-sm font-bold text-amber-100 hover:bg-amber-900/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300'},
+          (spec.mode==='series'?__alloT('stem.circuit.spec_setup_series','Set the battery to {v} V, series'):__alloT('stem.circuit.spec_setup_parallel','Set the battery to {v} V, parallel')).replace('{v}',String(spec.supply))),
+        spec&&spec.plan&&h('div',{className:'circuit-spec-plan mt-3 rounded-lg border border-slate-700 p-3','data-spec-plan':spec.id},
+          h('label',{htmlFor:'circuit-spec-plan-'+spec.id,className:'block text-sm font-bold text-amber-100'},spec.equal?__alloT('stem.circuit.spec_plan_each','Calculate first: what value should each resistor have? (Ω)'):__alloT('stem.circuit.spec_plan_one','Calculate first: what resistor value do you need? (Ω)')),
+          h('div',{className:'mt-1 flex flex-wrap gap-2 items-center'},
+            h('input',{id:'circuit-spec-plan-'+spec.id,type:'number',min:1,max:10000,step:'any',inputMode:'decimal',value:draft,'aria-describedby':'circuit-spec-plan-result-'+spec.id,
+              onChange:function(e){var v=e.target.value;setDrafts(function(prev){var next=Object.assign({},prev);next[spec.id]=v;return next;});},
+              onKeyDown:function(e){if(e.key==='Enter'){e.preventDefault();testPlan();}},
+              className:'w-28 min-h-11 rounded-lg border border-slate-500 bg-slate-900 px-2 text-white'}),
+            h('button',{type:'button','data-spec-plan-test':spec.id,onClick:testPlan,className:'min-h-11 rounded-lg border border-amber-300 px-3 py-2 text-sm font-bold text-amber-100 hover:bg-amber-900/40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300'},__alloT('stem.circuit.spec_plan_test','Test my calculation'))),
+          h('p',{id:'circuit-spec-plan-result-'+spec.id,role:'status','data-spec-plan-result':planErr?'error':planned?(planned.ok?'ok':'off'):'none',className:'mt-2 text-sm '+(planned&&planned.ok&&!planErr?'text-emerald-200':'text-slate-200')},planText)),
         h('dl',{className:'mt-3 text-sm',style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(150px,1fr))',gap:'.75rem'}},
           h('div',null,h('dt',{className:'text-xs text-slate-300'},'Current reading'),h('dd',{'data-target-reading':true,className:'font-bold text-white'},reading.actualText)),
           h('div',null,h('dt',{className:'text-xs text-slate-300'},'Goal'),h('dd',{'data-target-goal':true,className:'font-bold text-white'},reading.goalText))),
         h('p',{'data-target-range':true,className:'mt-2 text-xs text-slate-300'},'Less than 5% from the goal: strictly between '+reading.lowerText+' and '+reading.upperText+'.'),
         h('p',{'data-target-live-status':true,className:'mt-3 text-sm font-bold '+(reading.onTarget?'text-emerald-200':'text-amber-200')},reading.status+' · '+reading.differenceText),
-        h('p',{'data-target-hint':true,className:'mt-2 text-sm text-slate-200'},circuitChallengeHint(props.solved,reading)),
+        h('p',{'data-target-hint':true,className:'mt-2 text-sm text-slate-200'},circuitChallengeHint(props.solved,reading,t)),
         h('p',{'data-target-saved-status':true,className:'mt-2 text-xs text-slate-300'},done[selected]?'Completion saved. Changing the circuit keeps this achievement.':'Completion not saved yet.'),
         h('button',{type:'button',onClick:check,disabled:reading.empty,className:'mt-3 min-h-11 rounded-lg border border-amber-300 bg-amber-300 px-4 py-2 text-sm font-bold text-slate-950 hover:bg-amber-200 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300'},'Check target'),
         h('p',{role:'status','aria-live':'polite',className:'mt-2 text-sm text-slate-200'},feedback&&feedback.index===selected?'Last check: '+feedback.message:'')));
@@ -6714,56 +6959,57 @@ function CircuitActiveLessonLab(props) {
         var V = [3, 5, 6, 9, 12, 24][Math.floor(Math.random() * 6)];
         var R = [10, 20, 50, 100, 200, 500][Math.floor(Math.random() * 6)];
         var I = V / R;
-        return { q: 'A ' + V + 'V battery drives current through a ' + R + '\u03A9 resistor. What is the current?', a: parseFloat(I.toFixed(3)), unit: 'A', formula: 'I = V/R = ' + V + '/' + R + ' = ' + I.toFixed(3) + 'A', m: [R / V, V * R / 1000, V / R * 10, V / R / 10] };
+        return { q: 'A ' + V + 'V battery drives current through a ' + R + '\u03A9 resistor. What is the current?', a: parseFloat(I.toFixed(3)), unit: 'A', formula: 'I = V/R = ' + V + '/' + R + ' = ' + I.toFixed(3) + 'A', m: [R / V, V * R / 1000, V / R * 10, V / R / 10], mw: ['You divided R by V. Current is V ÷ R.', 'You multiplied V by R. Current is V ÷ R, not V × R.', 'The decimal point moved. Redo the division and check the units.', 'The decimal point moved. Redo the division and check the units.'] };
       },
       // Type 2: Find voltage (V = IR)
       function() {
-        var I = [0.1, 0.2, 0.5, 1, 2, 3][Math.floor(Math.random() * 6)];
         var R = [10, 20, 50, 100, 200][Math.floor(Math.random() * 5)];
+        var Is = [0.01, 0.02, 0.05, 0.1, 0.2, 0.5, 1, 2].filter(function(c) { var v = c * R; return v >= 1 && v <= 24; });
+        var I = Is[Math.floor(Math.random() * Is.length)];
         var V = I * R;
-        return { q: 'A current of ' + I + 'A flows through a ' + R + '\u03A9 resistor. What voltage is required?', a: parseFloat(V.toFixed(1)), unit: 'V', formula: 'V = IR = ' + I + '\u00D7' + R + ' = ' + V.toFixed(1) + 'V', m: [R / I, I + R, I * R / 10, I * R * 10] };
+        return { q: 'A current of ' + I + 'A flows through a ' + R + '\u03A9 resistor. What voltage is required?', a: parseFloat(V.toFixed(1)), unit: 'V', formula: 'V = IR = ' + I + '\u00D7' + R + ' = ' + V.toFixed(1) + 'V', m: [R / I, I + R, I * R / 10, I * R * 10], mw: ['You divided R by I. Voltage is I × R.', 'You added I and R. Voltage is I × R.', 'The decimal point moved. Redo the multiplication and check the units.', 'The decimal point moved. Redo the multiplication and check the units.'] };
       },
       // Type 3: Find resistance (R = V/I)
       function() {
         var V = [6, 9, 12, 24][Math.floor(Math.random() * 4)];
         var I = [0.1, 0.2, 0.5, 1, 2][Math.floor(Math.random() * 5)];
         var R = V / I;
-        return { q: 'A ' + V + 'V source pushes ' + I + 'A of current. What is the resistance?', a: parseFloat(R.toFixed(1)), unit: '\u03A9', formula: 'R = V/I = ' + V + '/' + I + ' = ' + R.toFixed(1) + '\u03A9', m: [V * I, I / V, V + I, V - I] };
+        return { q: 'A ' + V + 'V source pushes ' + I + 'A of current. What is the resistance?', a: parseFloat(R.toFixed(1)), unit: '\u03A9', formula: 'R = V/I = ' + V + '/' + I + ' = ' + R.toFixed(1) + '\u03A9', m: [V * I, I / V, V + I, V - I], mw: ['V × I gives power in watts, not resistance. Resistance is V ÷ I.', 'You divided I by V. Resistance is V ÷ I.', 'You added V and I. Resistance is V ÷ I.', 'You subtracted. Resistance is V ÷ I.'] };
       },
       // Type 4: Find power (P = IV)
       function() {
         var V = [6, 9, 12][Math.floor(Math.random() * 3)];
         var I = [0.5, 1, 2, 3][Math.floor(Math.random() * 4)];
         var P = V * I;
-        return { q: 'A ' + V + 'V circuit draws ' + I + 'A. What is the power consumed?', a: parseFloat(P.toFixed(1)), unit: 'W', formula: 'P = IV = ' + I + '\u00D7' + V + ' = ' + P.toFixed(1) + 'W', m: [V / I, V + I, I * V * I, V * V / I] };
+        return { q: 'A ' + V + 'V circuit draws ' + I + 'A. What is the power consumed?', a: parseFloat(P.toFixed(1)), unit: 'W', formula: 'P = IV = ' + I + '\u00D7' + V + ' = ' + P.toFixed(1) + 'W', m: [V / I, V + I, I * V * I, V * V / I], mw: ['V ÷ I gives resistance, not power. Power is V × I.', 'You added V and I. Power is V × I.', 'You multiplied by the current twice. Power is V × I.', 'V² ÷ I is not a power rule. Power is V × I.'] };
       },
       // Type 5: Series total resistance
       function() {
         var Ra = [50, 100, 200][Math.floor(Math.random() * 3)];
         var Rb = [50, 100, 200][Math.floor(Math.random() * 3)];
         var Rtot = Ra + Rb;
-        return { q: 'Two resistors (' + Ra + '\u03A9 and ' + Rb + '\u03A9) are in series. What is the total resistance?', a: parseFloat(Rtot.toFixed(1)), unit: '\u03A9', formula: 'R_total = R1 + R2 = ' + Ra + ' + ' + Rb + ' = ' + Rtot + '\u03A9', m: [Ra * Rb / (Ra + Rb), (Ra + Rb) / 2, Math.abs(Ra - Rb), Math.max(Ra, Rb)] };
+        return { q: 'Two resistors (' + Ra + '\u03A9 and ' + Rb + '\u03A9) are in series. What is the total resistance?', a: parseFloat(Rtot.toFixed(1)), unit: '\u03A9', formula: 'R_total = R1 + R2 = ' + Ra + ' + ' + Rb + ' = ' + Rtot + '\u03A9', m: [Ra * Rb / (Ra + Rb), (Ra + Rb) / 2, Math.abs(Ra - Rb), Math.max(Ra, Rb)], mw: ['That is the parallel rule. In series the resistances add.', 'You averaged them. In series the resistances add.', 'You subtracted. In series the resistances add.', 'You kept only the larger one. In series both add.'] };
       },
       // Type 6: Parallel total resistance
       function() {
         var Ra = [100, 200, 300][Math.floor(Math.random() * 3)];
         var Rb = [100, 200, 300][Math.floor(Math.random() * 3)];
         var Rpar = (Ra * Rb) / (Ra + Rb);
-        return { q: 'Two resistors (' + Ra + '\u03A9 and ' + Rb + '\u03A9) are in parallel. What is the total resistance?', a: parseFloat(Rpar.toFixed(1)), unit: '\u03A9', formula: 'R = (R1\u00D7R2)/(R1+R2) = (' + Ra + '\u00D7' + Rb + ')/(' + Ra + '+' + Rb + ') = ' + Rpar.toFixed(1) + '\u03A9', m: [Ra + Rb, (Ra + Rb) / 2, Math.min(Ra, Rb), Math.max(Ra, Rb)] };
+        return { q: 'Two resistors (' + Ra + '\u03A9 and ' + Rb + '\u03A9) are in parallel. What is the total resistance?', a: parseFloat(Rpar.toFixed(1)), unit: '\u03A9', formula: 'R = (R1\u00D7R2)/(R1+R2) = (' + Ra + '\u00D7' + Rb + ')/(' + Ra + '+' + Rb + ') = ' + Rpar.toFixed(1) + '\u03A9', m: [Ra + Rb, (Ra + Rb) / 2, Math.min(Ra, Rb), Math.max(Ra, Rb)], mw: ['You added them, which is the series rule. Two parallel paths give less resistance than either one.', 'You averaged them. Two parallel paths give less resistance than either one.', 'You kept the smaller one. A second path lowers the total below even that.', 'You kept the larger one. A second path lowers the total below either resistor.'] };
       },
       // Type 7: Power from R (P = V^2/R)
       function() {
         var V = [6, 9, 12][Math.floor(Math.random() * 3)];
         var R = [10, 20, 50, 100][Math.floor(Math.random() * 4)];
         var P = (V * V) / R;
-        return { q: 'A ' + V + 'V source is connected to a ' + R + '\u03A9 resistor. What power is dissipated?', a: parseFloat(P.toFixed(1)), unit: 'W', formula: 'P = V\u00B2/R = ' + V + '\u00B2/' + R + ' = ' + P.toFixed(1) + 'W', m: [V / R, 2 * V / R, V * V / R / 10, V * V / R * 10] };
+        return { q: 'A ' + V + 'V source is connected to a ' + R + '\u03A9 resistor. What power is dissipated?', a: parseFloat(P.toFixed(1)), unit: 'W', formula: 'P = V\u00B2/R = ' + V + '\u00B2/' + R + ' = ' + P.toFixed(1) + 'W', m: [V / R, 2 * V / R, V * V / R / 10, V * V / R * 10], mw: ['V ÷ R gives current, not power. Power is V² ÷ R.', '2V ÷ R is not a power rule. Power is V² ÷ R.', 'The decimal point moved. Redo the division and check the units.', 'The decimal point moved. Redo the division and check the units.'] };
       },
       // Type 8: Find current from power (I = P/V)
       function() {
         var V = [6, 9, 12, 24][Math.floor(Math.random() * 4)];
         var P = [6, 12, 24, 36, 48][Math.floor(Math.random() * 5)];
         var I = P / V;
-        return { q: 'A ' + P + 'W device runs on ' + V + 'V. How much current does it draw?', a: parseFloat(I.toFixed(3)), unit: 'A', formula: 'I = P/V = ' + P + '/' + V + ' = ' + I.toFixed(3) + 'A', m: [V / P, P / V / 2, P / (V * V), P / V * 2] };
+        return { q: 'A ' + P + 'W device runs on ' + V + 'V. How much current does it draw?', a: parseFloat(I.toFixed(3)), unit: 'A', formula: 'I = P/V = ' + P + '/' + V + ' = ' + I.toFixed(3) + 'A', m: [V / P, P / V / 2, P / (V * V), P / V * 2], mw: ['You divided V by P. Current is P ÷ V.', 'You halved it. Current is P ÷ V.', 'P ÷ V² is not current. Current is P ÷ V.', 'You doubled it. Current is P ÷ V.'] };
       }
     ];
 
@@ -6782,12 +7028,14 @@ function CircuitActiveLessonLab(props) {
     for (var _qj = 1; _qAbove.length < 3 - _qNeedBelow + Math.max(0, _qNeedBelow - _qBelow.length); _qj++) _qAdd((_qAnswer + _qj) / _qScale);
     var _qPick = _qBelow.slice(0, _qNeedBelow).concat(_qAbove.slice(0, 3 - Math.min(_qNeedBelow, _qBelow.length)));
     var wrong1 = _qPick[0] / _qScale, wrong2 = _qPick[1] / _qScale, wrong3 = _qPick[2] / _qScale;
-    var opts = [gen.a, wrong1, wrong2, wrong3];
+    var opts = [gen.a, wrong1, wrong2, wrong3], _qWhy = {};
+    (gen.m || []).forEach(function(v, i) { var u = Math.round(v * _qScale); if (gen.mw && gen.mw[i] && !(u in _qWhy)) _qWhy[u] = gen.mw[i]; });
     for (var oi = opts.length - 1; oi > 0; oi--) {
       var swap = Math.floor(Math.random() * (oi + 1)), held = opts[oi];
       opts[oi] = opts[swap]; opts[swap] = held;
     }
-    return { text: gen.q, answer: gen.a, unit: gen.unit, formula: gen.formula, opts: opts, answered: false };
+    var whyFor = {}; opts.forEach(function(o) { var w = _qWhy[Math.round(o * _qScale)]; if (w && o !== gen.a) whyFor[String(o)] = w; });
+    return { text: gen.q, answer: gen.a, unit: gen.unit, formula: gen.formula, opts: opts, why: whyFor, answered: false };
   }
   window.StemLab.circuitOhmQuestion = makeOhmQuestion;
 
@@ -7100,8 +7348,8 @@ function CircuitActiveLessonLab(props) {
           var solved = React.useMemo(function(){return solveCircuit(d);},[d.components,d.mode,d.voltage]);
           // Keep static solid geometry out of animation-only React updates.
           var spatialView = React.useMemo(function(){
-            return d.benchView==='3d'?h(CircuitBench3D,{React:React,t:cktT,solved:solved,state:d,update:upd,updateMany:updMulti}):null;
-          },[React,cktT,solved,d.benchView,d.cameraYaw,d.cameraTilt,d.cameraZoom,d.cameraPanX,d.cameraPanY,d.cameraDragMode,d.sceneLabels,d.sceneCloseup,d.sceneCurrent,d.sceneCompare,d.sceneProbes,d.probeRed,d.probeBlack,d.probePractice,d.selectedPart,ctx.setToolData]);
+            return d.benchView==='3d'?h(CircuitBench3D,{React:React,t:cktT,solved:solved,state:d,update:upd,updateMany:updMulti,powerWarnings:band==='g68'||band==='g912'}):null;
+          },[React,cktT,solved,band,d.benchView,d.cameraYaw,d.cameraTilt,d.cameraZoom,d.cameraPanX,d.cameraPanY,d.cameraDragMode,d.sceneLabels,d.sceneCloseup,d.sceneCurrent,d.sceneCompare,d.sceneProbes,d.probeRed,d.probeBlack,d.probePractice,d.selectedPart,ctx.setToolData]);
 
           var mode = solved.mode;
           var components = solved.components;
@@ -7123,6 +7371,8 @@ function CircuitActiveLessonLab(props) {
           var aiContext = React.useRef(null);
           aiContext.current = { key: aiContextKey, grade: band };
           var aiChangedMessage = __alloT('stem.circuit.ai_request_changed', 'The circuit or question changed. Ask again for the current circuit.');
+          // Keep keyboard focus on a usable control when a pressed button disables or removes itself.
+          React.useEffect(function() { return circuitFocusRescue(document); }, []);
           React.useEffect(function() {
             aiMounted.current = true;
             // A saved busy flag has no corresponding request after a remount.
@@ -7191,6 +7441,7 @@ function CircuitActiveLessonLab(props) {
               quizScore: ohmScore,
               quizStreak: ohmStreak,
               shortTriggered: shortTriggered,
+              shortFixed: !!d.shortFixed,
               presetsLoaded: presetsLoaded
             };
             if (extra) {
@@ -7262,7 +7513,10 @@ function CircuitActiveLessonLab(props) {
           if (isShort && !shortTriggered) {
             updMulti({ shortTriggered: true });
             circuitSound('shortCircuit');
-            checkBadges(getBadgeUpdates({ shortTriggered: true }));
+          }
+          if (!isShort && shortTriggered && !d.shortFixed) {
+            updMulti({ shortFixed: true });
+            checkBadges(getBadgeUpdates({ shortFixed: true }));
           }
 
           // Check series/parallel badges (inline, no useEffect)
@@ -7328,9 +7582,13 @@ function CircuitActiveLessonLab(props) {
 
           // ── Remove component ──
           var performRemoveComponent = function(idx) {
+            var gone = components[idx], adjacent = components[idx + 1] || components[idx - 1];
             var newComps = components.filter(function(_, j) { return j !== idx; });
             upd('components', newComps);
             circuitSound('removeComp');
+            // The focused remove button leaves with its row; hand focus on only if nothing else took it.
+            setTimeout(function() { var a = document.activeElement; if (a && a !== document.body && a.isConnected) return; var next = document.querySelector(adjacent ? '[data-circuit-remove-id="' + adjacent.id + '"]' : '#circuit-parts-heading'); if (next && next.focus) next.focus(); }, 0);
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.circuit.sr_part_removed', 'Removed {part}. {n} parts left.').replace('{part}', gone && gone.type ? gone.type : 'part').replace('{n}', String(newComps.length)));
           };
           var removeComponent = function(idx) {
             // Confirm only when removing from a substantial circuit (5+ components),
@@ -7586,12 +7844,12 @@ function CircuitActiveLessonLab(props) {
           var benchStats = [
             { label: __alloT('stem.circuit.stat_parts', 'Parts'), value: String(components.length), hint: mode + ' circuit' },
             { label: __alloT('stem.circuit.stat_voltage', 'Voltage'), value: voltage + 'V', hint: __alloT('stem.circuit.stat_voltage_hint', 'battery source') },
-            { label: __alloT('stem.circuit.stat_current', 'Current'), value: current.toFixed(3) + 'A', hint: isShort ? __alloT('stem.circuit.stat_current_too_high', 'too high') : __alloT('stem.circuit.stat_current_live_flow', 'live flow') },
+            { label: __alloT('stem.circuit.stat_current', 'Current'), value: circuitCurrentText(current), hint: isShort ? __alloT('stem.circuit.stat_current_too_high', 'too high') : __alloT('stem.circuit.stat_current_live_flow', 'live flow') },
             { label: __alloT('stem.circuit.badges', 'Badges'), value: earnedBadgeCount + '/' + BADGES.length, hint: challengeProgress + ' challenges' }
           ];
           var benchRoutes = [
             { title: __alloT('stem.circuit.route_load_starter', 'Load Starter Circuit'), icon: '\uD83D\uDD34', note: __alloT('stem.circuit.route_load_starter_note', 'LED + resistor baseline'), action: function() { loadPreset(CIRCUIT_PRESETS[0]); }, tone: '#f97316' },
-            { title: __alloT('stem.circuit.route_open_presets', 'Open Presets'), icon: '\uD83D\uDCCB', note: __alloT('stem.circuit.route_open_presets_note', 'Voltage dividers, meters, short demo'), action: function() { upd('showPresets', true); setTimeout(function() { var panel=document.getElementById('circuit-presets-panel'); if(panel) panel.scrollIntoView({block:'start'}); },0); }, tone: '#facc15' },
+            { title: __alloT('stem.circuit.route_open_presets', 'Open Presets'), icon: '\uD83D\uDCCB', note: __alloT('stem.circuit.route_open_presets_note2', 'LED, voltage divider, parallel bulbs, meters'), action: function() { upd('showPresets', true); setTimeout(function() { var panel=document.getElementById('circuit-presets-panel'); if(panel) panel.scrollIntoView({block:'start'}); },0); }, tone: '#facc15' },
             { title: __alloT('stem.circuit.route_advanced_sim', 'Advanced Simulator'), icon: '\uD83D\uDD0C', note: __alloT('stem.circuit.route_advanced_sim_note', 'CircuitJS meters and real-world challenges'), action: function() { if (typeof ctx.setToolData === 'function') ctx.setToolData(function(prev) { var cur = Object.assign({}, (prev && prev._circuitShelf) || {}); cur.returnTool = 'circuit'; var next = Object.assign({}, prev); next._circuitShelf = cur; return next; }); if (typeof setStemLabTab === 'function') setStemLabTab('explore'); if (typeof setStemLabTool === 'function') { setStemLabTool('circuitShelf'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.circuit.sr_opening_circuit_shelf_advanced_simulator', 'Opening Circuit Shelf advanced simulator.')); } else if (typeof addToast === 'function') addToast('Advanced simulator is not available right now.', 'info'); }, tone: '#fb923c' },
             { title: __alloT('stem.circuit.route_try_target', 'Try a Target'), icon: '\uD83C\uDFAF', note: challengeProgress + '/' + CHALLENGES.length + ' solved', action: function() { updMulti({ challenge: CHALLENGES[0], challengesOpen: true }); window.setTimeout(function(){var target=document.querySelector('[data-circuit-target="0"]');if(target){if(typeof target.scrollIntoView==='function')target.scrollIntoView({behavior:_prefersReducedMotion?'auto':'smooth',block:'center'});target.focus({preventScroll:true});}},0); if (typeof addToast === 'function') addToast('Target ready: ' + CHALLENGES[0].label, 'info'); }, tone: '#34d399' },
             { title: band === 'g68' || band === 'g912' ? __alloT('stem.circuit.route_show_laws', 'Show Laws') : __alloT('stem.circuit.route_ask_tutor', 'Ask Tutor'), icon: band === 'g68' || band === 'g912' ? '\u2696' : '\uD83E\uDD16', note: band === 'g68' || band === 'g912' ? __alloT('stem.circuit.route_kirchhoff_support', 'Kirchhoff support') : __alloT('stem.circuit.route_circuit_hint', 'Get a circuit hint'), action: function() { if (band === 'g68' || band === 'g912') upd('showKirchhoff', true); else upd('showAI', true); }, tone: '#a78bfa' }
@@ -7630,46 +7888,46 @@ function CircuitActiveLessonLab(props) {
                 h('input', {
                   type: 'range', 'aria-label': __alloT('stem.circuit.aria_voltage_slider', 'Voltage slider'), min: 0, max: 24, step: 0.5,
                   value: voltage,
-                  'aria-valuetext': voltage + ' volts. ' + (current === 0 ? 'No source current flows.' : ((isShort ? 'Short circuit! ' : '') + 'Total resistance ' + (totalR >= 1e8 ? 'infinite (open path)' : totalR.toFixed(1) + ' ohms') + ', current ' + current.toFixed(3) + ' amps.')),
+                  'aria-valuetext': voltage + ' volts. ' + (current === 0 ? 'No source current flows.' : ((isShort ? 'Short circuit! ' : '') + 'Total resistance ' + circuitTotalRText(totalR, current, ' ohms', 'infinite (open path)') + ', current ' + circuitCurrentText(current) + '.')),
                   onChange: function(e) { upd('voltage', parseFloat(e.target.value)); },
                   className: 'flex-1 accent-yellow-500 bg-slate-800 rounded-lg h-1.5 appearance-none cursor-pointer'
                 }),
                 h('span', { className: 'font-bold text-yellow-500 w-12 text-right font-mono' }, voltage + 'V')
               ),h('div', { className: 'circuit-parts-grid' },
-              h('button', { 'data-circuit-add-component': 'resistor', 'aria-label': __alloT('stem.circuit.comp_resistor', 'Resistor'),
-                disabled: components.length >= 8, onClick: function() { addComponent('resistor', 100); },
+              h('button', { type: 'button', 'data-circuit-add-component': 'resistor', 'aria-disabled': components.length >= 8 ? 'true' : undefined,
+                onClick: function() { addComponent('resistor', 100); },
                 className: 'px-3 py-1.5 bg-yellow-950/20 hover:bg-yellow-500/20 text-yellow-400 font-bold rounded-lg text-xs border border-yellow-500/30 hover:border-yellow-400 transition-all glow-button active:scale-[0.97]'
-              }, '\u2795 ' + __alloT('stem.circuit.comp_resistor', 'Resistor'), h('small', null, "Limit current · 100 Ω")),
+              }, h('span', { 'aria-hidden': 'true' }, '\u2795 '), h('span', { className: 'sr-only' }, __alloT('stem.circuit.sr_add_part', 'Add') + ' '), __alloT('stem.circuit.comp_resistor', 'Resistor'), h('span', { className: 'sr-only' }, ', '), h('small', null, "Limit current · 100 Ω")),
 
-              h('button', { 'aria-label': __alloT('stem.circuit.comp_bulb', 'Bulb'),
-                disabled: components.length >= 8, onClick: function() { addComponent('bulb', 50); },
+              h('button', { type: 'button', 'data-circuit-add-component': 'bulb', 'aria-disabled': components.length >= 8 ? 'true' : undefined,
+                onClick: function() { addComponent('bulb', 50); },
                 className: 'px-3 py-1.5 bg-amber-950/20 hover:bg-amber-500/20 text-amber-300 font-bold rounded-lg text-xs border border-amber-500/30 hover:border-amber-400 transition-all glow-button active:scale-[0.97]'
-              }, '\uD83D\uDCA1 ' + __alloT('stem.circuit.comp_bulb', 'Bulb'), h('small', null, "See energy transfer · 50 Ω")),
+              }, h('span', { 'aria-hidden': 'true' }, '\uD83D\uDCA1 '), h('span', { className: 'sr-only' }, __alloT('stem.circuit.sr_add_part', 'Add') + ' '), __alloT('stem.circuit.comp_bulb', 'Bulb'), h('span', { className: 'sr-only' }, ', '), h('small', null, "See energy transfer · 50 Ω")),
 
-              h('button', { 'aria-label': __alloT('stem.circuit.comp_switch', 'Switch'),
-                disabled: components.length >= 8, onClick: function() { addComponent('switch', 0, { closed: true }); },
+              h('button', { type: 'button', 'data-circuit-add-component': 'switch', 'aria-disabled': components.length >= 8 ? 'true' : undefined,
+                onClick: function() { addComponent('switch', 0, { closed: true }); },
                 className: 'px-3 py-1.5 bg-emerald-950/20 hover:bg-emerald-500/20 text-emerald-400 font-bold rounded-lg text-xs border border-emerald-500/30 hover:border-emerald-400 transition-all glow-button active:scale-[0.97]'
-              }, '\uD83D\uDD18 ' + __alloT('stem.circuit.comp_switch', 'Switch'), h('small', null, "Open or close a path")),
+              }, h('span', { 'aria-hidden': 'true' }, '\uD83D\uDD18 '), h('span', { className: 'sr-only' }, __alloT('stem.circuit.sr_add_part', 'Add') + ' '), __alloT('stem.circuit.comp_switch', 'Switch'), h('span', { className: 'sr-only' }, ', '), h('small', null, "Open or close a path")),
 
-              h('button', { 'aria-label': __alloT('stem.circuit.comp_led', 'LED'),
-                disabled: components.length >= 8, onClick: function() { addComponent('led', 40, { ledColor: '#ef4444' }); },
+              h('button', { type: 'button', 'data-circuit-add-component': 'led', 'aria-disabled': components.length >= 8 ? 'true' : undefined,
+                onClick: function() { addComponent('led', 40, { ledColor: '#ef4444' }); },
                 className: 'px-3 py-1.5 bg-rose-950/20 hover:bg-rose-500/20 text-rose-300 font-bold rounded-lg text-xs border border-rose-500/30 hover:border-rose-400 transition-all glow-button active:scale-[0.97]'
-              }, '\uD83D\uDD34 ' + __alloT('stem.circuit.comp_led', 'LED'), h('small', null, "One direction · add series R")),
+              }, h('span', { 'aria-hidden': 'true' }, '\uD83D\uDD34 '), h('span', { className: 'sr-only' }, __alloT('stem.circuit.sr_add_part', 'Add') + ' '), __alloT('stem.circuit.comp_led', 'LED'), h('span', { className: 'sr-only' }, ', '), h('small', null, "One direction · add series R")),
 
-              h('button', { 'aria-label': __alloT('stem.circuit.comp_ammeter', 'Ammeter'),
-                disabled: components.length >= 8, onClick: function() { addComponent('ammeter', 0); },
+              h('button', { type: 'button', 'data-circuit-add-component': 'ammeter', 'aria-disabled': components.length >= 8 ? 'true' : undefined,
+                onClick: function() { addComponent('ammeter', 0); },
                 className: 'px-3 py-1.5 bg-cyan-950/20 hover:bg-cyan-500/20 text-cyan-300 font-bold rounded-lg text-xs border border-cyan-500/30 hover:border-cyan-400 transition-all glow-button active:scale-[0.97]'
-              }, '\u26A1 ' + __alloT('stem.circuit.comp_ammeter', 'Ammeter'), h('small', null, "Measure current · in series")),
+              }, h('span', { 'aria-hidden': 'true' }, '\u26A1 '), h('span', { className: 'sr-only' }, __alloT('stem.circuit.sr_add_part', 'Add') + ' '), __alloT('stem.circuit.comp_ammeter', 'Ammeter'), h('span', { className: 'sr-only' }, ', '), h('small', null, "Measure current · in series")),
 
-              h('button', { 'aria-label': __alloT('stem.circuit.comp_voltmeter', 'Voltmeter'),
-                disabled: components.length >= 8, onClick: function() { addComponent('voltmeter', 0); },
+              h('button', { type: 'button', 'data-circuit-add-component': 'voltmeter', 'aria-disabled': components.length >= 8 ? 'true' : undefined,
+                onClick: function() { addComponent('voltmeter', 0); },
                 className: 'px-3 py-1.5 bg-orange-950/20 hover:bg-orange-500/20 text-orange-400 font-bold rounded-lg text-xs border border-orange-500/30 hover:border-orange-400 transition-all glow-button active:scale-[0.97]'
-              }, '\uD83D\uDD0B ' + __alloT('stem.circuit.comp_voltmeter', 'Voltmeter'), h('small', null, "Measure voltage · across")),
+              }, h('span', { 'aria-hidden': 'true' }, '\uD83D\uDD0B '), h('span', { className: 'sr-only' }, __alloT('stem.circuit.sr_add_part', 'Add') + ' '), __alloT('stem.circuit.comp_voltmeter', 'Voltmeter'), h('span', { className: 'sr-only' }, ', '), h('small', null, "Measure voltage · across")),
 
-              h('button', { 'aria-label': __alloT('stem.circuit.comp_capacitor', 'Capacitor'),
-                disabled: components.length >= 8, onClick: function() { addComponent('capacitor', 100); },
+              h('button', { type: 'button', 'data-circuit-add-component': 'capacitor', 'aria-disabled': components.length >= 8 ? 'true' : undefined,
+                onClick: function() { addComponent('capacitor', 100); },
                 className: 'px-3 py-1.5 bg-sky-950/20 hover:bg-sky-500/20 text-sky-400 font-bold rounded-lg text-xs border border-sky-500/30 hover:border-sky-400 transition-all glow-button active:scale-[0.97]'
-              }, '\u2E28 ' + __alloT('stem.circuit.comp_capacitor', 'Capacitor'), h('small', null, "Store charge · 100 µF")),
+              }, h('span', { 'aria-hidden': 'true' }, '\u2E28 '), h('span', { className: 'sr-only' }, __alloT('stem.circuit.sr_add_part', 'Add') + ' '), __alloT('stem.circuit.comp_capacitor', 'Capacitor'), h('span', { className: 'sr-only' }, ', '), h('small', null, "Store charge · 100 µF")),
 
               h('button', { 'data-circuit-clear': 'true', 'aria-label': __alloT('stem.circuit.comp_clear', 'Clear'),
                 onClick: clearComponents,
@@ -7679,7 +7937,7 @@ function CircuitActiveLessonLab(props) {
               components.length > 0 && h('span', { className: 'self-center text-xs text-slate-300 ml-auto font-mono' }, components.length + ' / 8 parts' + (components.length >= 8 ? ' · bench full' : ''))
             )); };
           var renderSchematic = function() { return h('div', { className: 'circuit-schematic relative', hidden: d.benchView === '3d', tabIndex: 0, role: 'region', 'aria-label': __alloT('stem.circuit.schematic_scroll_region', 'Circuit schematic'), style:{maxWidth:'100%',overflowX:'auto'} },
-              h('p', {className:'circuit-help'}, 'Schematic: scroll sideways on small screens. Exact measurements are available in Inspect part.' + (components.length > 1 ? ' ' + __alloT('stem.circuit.schematic_drag_hint', 'Drag a part along the wire to move it, or click one to inspect it; readings do not change with position.') : '')),
+              h('p', {className:'circuit-help'}, 'Schematic: scroll sideways on small screens. Exact measurements are available in Inspect part.' + (components.length > 1 ? ' ' + (circuitCoarsePointer() ? (mode === 'series' ? __alloT('stem.circuit.schematic_touch_hint_series', 'To move a part on a touch screen, use its ⠇ handle or the Earlier and Later buttons in the parts list. Tap a part to inspect it; readings do not change with position.') : __alloT('stem.circuit.schematic_touch_hint_parallel', 'To move a part on a touch screen, use its ⠇ handle or the Up and Down buttons in the parts list. Tap a part to inspect it; readings do not change with position.')) : __alloT('stem.circuit.schematic_drag_hint', 'Drag a part along the wire to move it, or click one to inspect it; readings do not change with position.')) : '')),
               h('svg', {
                 viewBox: '0 0 ' + W + ' ' + H,
                 className: 'w-full rounded-xl border transition-all ' + (isShort ? 'bg-red-950/20 border-red-500/50 shadow-lg shadow-red-500/10' : 'bg-slate-900 border-slate-800 shadow-inner'),
@@ -7866,7 +8124,7 @@ function CircuitActiveLessonLab(props) {
                           ? h('g', null,
                               h('circle', { cx: cx, cy: 75, r: 15, fill: '#0f172a', stroke: '#06b6d4', strokeWidth: 2 }),
                               h('text', { x: cx, y: 79, textAnchor: 'middle', style: { fontSize: '12px', fontWeight: '900', fontFamily: 'monospace' }, fill: '#06b6d4' }, 'A'),
-                              current > 0.001 && h('text', { x: cx, y: 66, textAnchor: 'middle', style: { fontSize: '6px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#22d3ee' }, current.toFixed(3) + 'A')
+                              current > 0.001 && h('text', { x: cx, y: 66, textAnchor: 'middle', style: { fontSize: '6px', fontWeight: 'bold', fontFamily: 'monospace' }, fill: '#22d3ee' }, circuitAmps(current) + 'A')
                             )
 
                           : comp.type === 'voltmeter'
@@ -8262,7 +8520,7 @@ function CircuitActiveLessonLab(props) {
                     var live=circuitSnapshot(prior),diff=circuitExperimentDiff(saved.circuit,live),key=circuitInvestigationComparisonKey(saved.circuit,live);
                     if(diff.unchanged||list.some(function(o){return o&&o.before&&o.after&&circuitInvestigationComparisonKey(o.before,o.after)===key;}))return prev;
                     var delta=solveCircuit(live).current-solveCircuit(saved.circuit).current;
-                    var entry={before:saved.circuit,after:live,prediction:saved.prediction,delta:delta,explanation:prior.explanation||'',changes:diff.changes,controlled:diff.controlled,comparisonKey:key};
+                    var entry={before:saved.circuit,after:live,prediction:saved.prediction||prior.prediction||'',delta:delta,explanation:prior.explanation||'',changes:diff.changes,controlled:diff.controlled,comparisonKey:key};
                     return Object.assign({},prev,{_circuit:Object.assign({},prior,{observations:list.concat([entry]),experimentResult:{delta:delta,comparisonKey:key},evidenceNotice:'Comparison recorded. Add or revise its explanation below.'})});
                   });}},'Record comparison'),
                   h('span',{className:'circuit-help'},!components.length?'Start with a circuit below.':!snapshot?'Save a baseline before making your change.':sameCircuit?'Baseline saved. Now change one variable.':alreadyRecorded?'This comparison is already in your notebook. Revise its explanation below.':notebookFull?'The notebook is full: eight trials saved. Remove a trial before recording another.':comparison&&comparison.controlled?'One variable changed. Record the evidence.':'Multiple variables changed. Record an observation, then repeat with one change to test a cause.')),
@@ -8297,9 +8555,9 @@ function CircuitActiveLessonLab(props) {
                   h('summary',null,__alloT('stem.circuit.guided_investigations','Guided investigations')),
                   h('div',{className:'circuit-action-row'},[
                     {label:'1. Share the voltage',mode:'series',voltage:12,components:[{type:'resistor',value:200,id:1},{type:'resistor',value:100,id:2}]},
-                    {label:'2. Add another path',mode:'parallel',voltage:9,components:[{type:'resistor',value:100,id:1},{type:'resistor',value:100,id:2}]},
-                    {label:'3. Control the loop',mode:'series',voltage:9,components:[{type:'bulb',value:100,id:1},{type:'switch',closed:false,id:2}]}
-                  ].map(function(p){return h('button',{key:p.label,type:'button',onClick:function(){updMulti({mode:p.mode,voltage:p.voltage,components:p.components,experimentResult:null});}},p.label);})))
+                    {label:'2. Add another path',lesson:'paths'},
+                    {label:'3. Control the loop',lesson:'loop'}
+                  ].map(function(p){return h('button',{key:p.label,type:'button',onClick:function(){if(p.lesson){var patch=circuitLessonStart(d,p.lesson);if(!patch)return;updMulti(patch);setTimeout(function(){var q=document.getElementById('circuit-lesson-question');if(q){if(q.scrollIntoView)q.scrollIntoView({block:'center'});q.focus();}},60);return;}updMulti({mode:p.mode,voltage:p.voltage,components:p.components,experimentResult:null});}},p.label);})))
               ),
               );
             experimentParts={activities:workflowSection,files:h(CircuitFileTools,{React:React,t:cktT,state:d,updateMany:updMulti})};
@@ -8315,7 +8573,7 @@ function CircuitActiveLessonLab(props) {
                   h('button',{type:'button',disabled:!(d.undo||[]).length,onClick:function(){travelHistory('undo');}},'Undo'),
                   h('button',{type:'button',disabled:!(d.redo||[]).length,onClick:function(){travelHistory('redo');}},'Redo'),
                   h('button',{type:'button','aria-pressed':!!d.pauseMotion,onClick:function(){upd('pauseMotion',!d.pauseMotion);}},d.pauseMotion?'Resume motion':'Pause motion'))),
-                h('p',{className:'circuit-help'},mode==='series'?'One continuous path: every part carries the same current.':'Each part is a separate branch across the battery. A switch here controls only its own branch.')),
+                h('p',{className:'circuit-help'},mode==='series'?'One continuous path: every part carries the same current. Removing a part joins the wires; to test a missing bulb, select it and choose Unscrew.':'Each part is a separate branch across the battery. A switch is a branch by itself here, so closing it connects the battery straight across: a short circuit. To switch one bulb on and off, use Mixed circuits.')),
               spatialView,
               d.benchView!=='3d'&&h('section',{className:'circuit-schematic-frame','aria-labelledby':'circuit-diagram-title'},
                 h('div',{className:'circuit-diagram-heading'},
@@ -8333,12 +8591,16 @@ function CircuitActiveLessonLab(props) {
                   h('div',null,h('dt',null,'Voltage across'),h('dd',null,circuitPreciseVoltageText(selected.voltage))),
                   h('div',null,h('dt',null,'Current through'),h('dd',null,circuitCurrentText(selected.current))),
                   h('div',null,h('dt',null,'Power transferred'),h('dd',null,circuitPowerText(selected.power)))),
+                selected&&selected.component.type==='resistor'&&(band==='g68'||band==='g912')&&!solved.isShort&&selected.power>.25&&h('p',{className:'circuit-power-warning',role:'note'},__alloT('stem.circuit.resistor_over_rating','This resistor turns {watts} W into heat, more than the ¼ W rating of a typical small resistor. A real one would get hot enough to burn, so use a larger resistance or a resistor rated for more power.').replace('{watts}',String(Number(selected.power.toPrecision(2))))),
                 selected&&['resistor','bulb','capacitor'].indexOf(selected.component.type)!==-1&&h(CircuitValueEditor,{
                   key:selectedIndex+'-'+selected.component.id+'-'+selected.component.type,React:React,t:cktT,value:selected.component.value,
                   label:selected.component.type==='capacitor'?'Capacitance (µF)':'Resistance (Ω)',
                   unit:selected.component.type==='capacitor'?'µF':'Ω',quantity:selected.component.type==='capacitor'?'capacitance':'resistance',
                   onApply:function(value){upd('components',components.map(function(c,i){return i===selectedIndex?Object.assign({},c,{value:value}):c;}));}}),
                 selected&&selected.component.type==='switch'&&h('button',{type:'button',onClick:function(){toggleSwitch(selected.component.id);}},selected.component.closed?'Open selected switch':'Close selected switch'),
+                selected&&(selected.component.type==='bulb'||selected.component.type==='led')&&h('button',{type:'button','data-circuit-unscrew':'true','aria-pressed':selected.component.unscrewed?'true':'false',onClick:function(){var out=!selected.component.unscrewed,kind=selected.component.type;upd('components',components.map(function(c,i){return i===selectedIndex?Object.assign({},c,{unscrewed:out}):c;}));if(typeof announceToSR==='function')announceToSR(kind==='bulb'?(out?__alloT('stem.circuit.sr_bulb_unscrewed','Bulb unscrewed. Its socket is now an open gap.'):__alloT('stem.circuit.sr_bulb_back','Bulb screwed back in.')):(out?__alloT('stem.circuit.sr_led_out','LED taken out. Its socket is now an open gap.'):__alloT('stem.circuit.sr_led_back','LED put back.')));}},
+                  selected.component.type==='bulb'?(selected.component.unscrewed?__alloT('stem.circuit.screw_bulb_in','Screw the bulb back in'):__alloT('stem.circuit.unscrew_bulb','Unscrew this bulb')):(selected.component.unscrewed?__alloT('stem.circuit.put_led_back','Put the LED back'):__alloT('stem.circuit.take_led_out','Take this LED out'))),
+                selected&&selected.component.unscrewed&&h('p',{className:'circuit-help','data-circuit-unscrewed-note':'true'},mode==='series'?__alloT('stem.circuit.unscrewed_series','The empty socket is a gap in the only path, so no current flows anywhere in the loop. The full supply voltage now sits across the gap.'):__alloT('stem.circuit.unscrewed_parallel','The empty socket breaks only its own branch. The other branches still have the full supply voltage, so they stay lit.')),
                 selected&&selected.component.type==='led'&&h('button',{type:'button',onClick:function(){upd('components',components.map(function(c,i){return i===selectedIndex?Object.assign({},c,{reversed:!c.reversed}):c;}));}},selected.component.reversed?'LED reversed — restore polarity':'Reverse LED polarity'),
                 components.length>1&&h('div',{className:'circuit-action-row circuit-inspector-order','aria-label':__alloT('stem.circuit.move_the_selected_part','Move the selected part')},
                   h('button',{type:'button',disabled:selectedIndex===0,onClick:function(){moveComponent(selectedIndex,selectedIndex-1);}},mode==='series'?__alloT('stem.circuit.move_earlier_loop','Move earlier in the loop'):__alloT('stem.circuit.move_up_branch','Move up a branch')),
@@ -8379,14 +8641,14 @@ function CircuitActiveLessonLab(props) {
               isShort && h('span', { className: 'px-2 py-0.5 bg-red-950/60 text-red-400 text-[0.625rem] font-black rounded-full border border-red-500/30 animate-pulse motion-reduce:animate-none' }, '\u26A0 ' + __alloT('stem.circuit.short_circuit_banner', 'SHORT CIRCUIT!')),
 
               // Badge toggle
-              h('button', { 'aria-label': __alloT('stem.circuit.badges', 'Badges'),
-                onClick: function() { upd('showBadges', !showBadges); },
+              h('button', { 'aria-label': __alloT('stem.circuit.badges', 'Badges'), 'aria-expanded': showBadges ? 'true' : 'false', 'aria-controls': 'circuit-badges-panel',
+                onClick: function() { upd('showBadges', !showBadges); if (!showBadges) setTimeout(function() { var p = document.getElementById('circuit-badges-panel'); if (p) p.focus(); }, 40); },
                 className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showBadges ? 'bg-amber-950/40 text-amber-400 border border-amber-600/40' : 'transition-colors bg-slate-900/60 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
               }, '\uD83C\uDFC5 ' + __alloT('stem.circuit.badges', 'Badges')),
 
               // AI toggle (hidden when ctx hands no usable callGemini)
-              typeof callGemini === 'function' && h('button', { 'aria-label': __alloT('stem.circuit.ai_tutor', 'AI Tutor'),
-                onClick: function() { upd('showAI', !showAI); },
+              typeof callGemini === 'function' && h('button', { 'aria-label': __alloT('stem.circuit.ai_tutor', 'AI Tutor'), 'aria-expanded': showAI ? 'true' : 'false', 'aria-controls': 'circuit-ai-panel',
+                onClick: function() { upd('showAI', !showAI); if (!showAI) setTimeout(function() { var p = document.getElementById('circuit-ai-panel'); if (p) p.focus(); }, 40); },
                 className: 'px-2.5 py-1 text-xs rounded-lg transition-all font-semibold ' + (showAI ? 'bg-blue-950/40 text-blue-400 border border-blue-600/40' : 'transition-colors bg-slate-900/60 text-slate-300 border border-slate-800 hover:bg-slate-800 hover:text-white active:scale-[0.97]')
               }, '\uD83E\uDD16 ' + __alloT('stem.circuit.ai_tutor', 'AI Tutor')),
 
@@ -8518,10 +8780,11 @@ function CircuitActiveLessonLab(props) {
             // ══════════════════════════════════════
             h(CircuitTimeLab,{React:React,t:cktT,state:d,update:upd,updateMany:updMulti,loadStarter:function(){updMulti({mode:'series',voltage:9,components:[{id:1,type:'resistor',value:1000},{id:2,type:'capacitor',value:1000}],rcTime:0,rcPhase:'charge',showTimeLab:true});}}),
 
-            h('div', { className: 'circuit-readouts mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2', role: 'status', 'aria-live': 'polite' },
+            h(CircuitSettledStatus, { React: React, text: isShort ? __alloT('stem.circuit.short_circuit_banner', 'SHORT CIRCUIT!') : __alloT('stem.circuit.sr_readout_summary', 'Total resistance {r}, current {i}, power {p}.').replace('{r}', circuitTotalRText(totalR, current, ' \u03A9', '\u221E')).replace('{i}', circuitCurrentText(current)).replace('{p}', circuitPowerText(power)) }),
+            h('div', { className: 'circuit-readouts mt-4 grid grid-cols-2 sm:grid-cols-4 gap-2' },
               [
                 { label: __alloT('stem.circuit.readout_mode', 'Mode'), val: mode, color: 'slate', icon: mode === 'series' ? '\u2192' : '\u2261', textCls: 'text-slate-300', valCls: 'text-slate-200', borderCls: 'border-slate-800 bg-slate-900/40' },
-                { label: __alloT('stem.circuit.readout_resistance', 'Resistance'), val: totalR >= 1e8 ? '\u221E' : totalR.toFixed(1) + '\u03A9', color: 'yellow', icon: '\u2AE8', textCls: 'text-yellow-400/80', valCls: 'text-yellow-400', borderCls: 'border-yellow-500/20 bg-yellow-950/10' },
+                { label: __alloT('stem.circuit.readout_resistance', 'Resistance'), val: circuitTotalRText(totalR, current, '\u03A9', '\u221E'), color: 'yellow', icon: '\u2AE8', textCls: 'text-yellow-400/80', valCls: 'text-yellow-400', borderCls: 'border-yellow-500/20 bg-yellow-950/10' },
                 { label: __alloT('stem.circuit.stat_current', 'Current'), val: circuitCurrentText(current), color: 'blue', icon: '\u26A1', textCls: 'text-blue-400/80', valCls: 'text-blue-400', borderCls: 'border-blue-500/20 bg-blue-950/10' },
                 { label: __alloT('stem.circuit.readout_power', 'Power'), val: circuitPowerText(power), color: 'red', icon: '\uD83D\uDD25', textCls: 'text-rose-300', valCls: 'text-rose-400', borderCls: 'border-rose-500/20 bg-rose-950/10' }
               ].map(function(m) {
@@ -8530,7 +8793,7 @@ function CircuitActiveLessonLab(props) {
                   key: m.label,
                   className: 'text-center p-3 rounded-xl border backdrop-blur-sm transition-all ' + (isSh ? 'bg-red-950/20 border-red-500/40 short-active-flash' : m.borderCls)
                 },
-                  h('p', { className: 'text-[0.625rem] font-bold uppercase tracking-wider mb-1 ' + (isSh ? 'text-red-400' : m.textCls) }, m.icon + ' ' + m.label),
+                  h('p', { className: 'text-[0.625rem] font-bold uppercase tracking-wider mb-1 ' + (isSh ? 'text-red-400' : m.textCls) }, h('span', { 'aria-hidden': 'true' }, m.icon + ' '), m.label),
                   h('p', { className: 'text-sm font-black font-mono ' + (isSh ? 'text-red-300' : m.valCls) }, m.val)
                 );
               })
@@ -8597,10 +8860,10 @@ function CircuitActiveLessonLab(props) {
             components.length > 0 && !noLoadPath && h('div', { className: 'mt-3 bg-slate-900/40 border border-cyan-500/20 rounded-xl p-3 backdrop-blur-md' },
               h('p', { className: 'text-[0.6875rem] font-bold text-cyan-300 uppercase tracking-wider mb-1.5' }, '\uD83E\uDDE0 ' + __alloT('stem.circuit.mental_model_checks', 'Mental-model checks')),
               h('ul', { className: 'space-y-1 text-[0.6875rem] text-slate-300 leading-snug list-disc list-inside marker:text-cyan-500' },
-                h('li', null, h('b', { className: 'text-cyan-300' }, __alloT('stem.circuit.mmc_electrons_bold', 'Electrons crawl; the signal races. ')), __alloT('stem.circuit.mmc_electrons_body', 'The glowing dots move fast for visibility, but real electrons drift at only about 0.1 mm/s. The electric field that pushes them travels near light speed, so every bulb lights essentially the instant you connect the battery.')),
+                h('li', null, h('b', { className: 'text-cyan-300' }, __alloT('stem.circuit.mmc_electrons_bold', 'Electrons crawl; the signal races. ')), __alloT('stem.circuit.mmc_electrons_body2', 'The glowing dots move fast for visibility, but real electrons drift slowly, usually less than a millimetre per second; the drift panel works it out for this circuit. The electric field that pushes them travels near light speed, so every bulb lights essentially the instant you connect the battery.')),
                 mode === 'series'
                   ? h('li', null, h('b', { className: 'text-cyan-300' }, __alloT('stem.circuit.mmc_series_bold', 'Current is not used up. ')), 'The very same ' + current.toFixed(3) + ' A flows through every component in series \u2014 an ammeter reads the same value before AND after each bulb. Energy gets spent along the way; charge does not.')
-                  : h('li', null, h('b', { className: 'text-cyan-300' }, __alloT('stem.circuit.mmc_parallel_bold', 'A parallel branch LOWERS total resistance. ')), 'Adding paths gives charge more ways to flow, so total current rises. Total R (' + (totalR >= 1e8 ? '\u221E' : totalR.toFixed(1) + '\u03A9') + ') is always smaller than the smallest single branch \u2014 counter-intuitive but true.'),
+                  : h('li', null, h('b', { className: 'text-cyan-300' }, __alloT('stem.circuit.mmc_parallel_bold', 'A parallel branch LOWERS total resistance. ')), 'Adding paths gives charge more ways to flow, so total current rises. Total R (' + circuitTotalRText(totalR, current, '\u03A9', '\u221E') + ') is always smaller than the smallest single branch \u2014 counter-intuitive but true.'),
                 h('li', null, h('b', { className: 'text-cyan-300' }, __alloT('stem.circuit.mmc_battery_bold', 'The battery sets voltage, not current. ')), 'It holds ' + voltage + ' V steady; the ' + current.toFixed(3) + ' A you read is whatever Ohm\'s law gives for the resistance you built. Lower the resistance and the current climbs \u2014 the battery does not "decide" the current.')
               )
             ),
@@ -8630,11 +8893,11 @@ function CircuitActiveLessonLab(props) {
                       ? h('span', { className: 'text-yellow-400 w-40 font-mono font-bold' }, mode === 'series' ? '\u26A0 ' + __alloT('stem.circuit.connect_voltmeters_parallel', 'connect voltmeters in parallel') : '\u27A1 ' + voltage.toFixed(1) + 'V (reads voltage)')
                       : isIdealParallelBranch ? h('span', { className: 'text-red-400 w-40 font-mono font-bold' }, '\u26A0 ' + __alloT('stem.circuit.short_branch', 'short branch (~0 \u03A9)')) : h(React.Fragment, null,
                           h('span', { className: 'text-cyan-300 w-20 font-mono' }, circuitVoltageText(compV, 2)),
-                          h('span', { className: 'text-emerald-400 w-20 font-mono' }, compI.toFixed(3) + 'A'),
+                          h('span', { className: 'text-emerald-400 w-20 font-mono' }, circuitCurrentText(compI)),
                           h('span', { className: 'text-rose-400 w-20 font-mono font-bold' }, compP.toFixed(2) + 'W')
                         ),
 
-                    comp.type === 'bulb' && h('span', { className: 'text-yellow-400 ml-auto' }, compP > 10 ? '\uD83D\uDD06' : compP > 3 ? '\uD83D\uDCA1' : '\uD83D\uDD05'),
+                    comp.type === 'bulb' && h('span', { className: 'text-yellow-400 ml-auto', 'aria-hidden': 'true' }, Math.sqrt(Math.max(0, compP) / 2) >= 0.7 ? '\uD83D\uDD06' : Math.sqrt(Math.max(0, compP) / 2) >= 0.25 ? '\uD83D\uDCA1' : '\uD83D\uDD05'),
                     comp.type === 'switch' && h('span', { className: 'ml-auto ' + (comp.closed ? 'text-emerald-400' : 'text-red-400') }, comp.closed ? '\u2705 ' + __alloT('stem.circuit.status_closed', 'Closed') : '\u274C ' + __alloT('stem.circuit.status_open', 'Open')),
                     comp.type === 'led' && h('span', { className: 'ml-auto', style: { color: comp.ledColor || '#ef4444' } }, compI > 0.005 ? '\u2B50 ' + __alloT('stem.circuit.status_lit', 'Lit') : '\u26AB ' + __alloT('stem.circuit.status_off', 'Off')),
                     comp.type === 'capacitor' && h('span', { className: 'text-sky-400 ml-auto font-mono text-[0.625rem]' }, comp.value + '\u00B5F (blocks DC)')
@@ -8669,21 +8932,21 @@ function CircuitActiveLessonLab(props) {
               }).filter(function(s) { return s.p > 1e-6; });
               var totP = segs.reduce(function(a, s) { return a + s.p; }, 0) || power || 1e-6;
               // Real-world equivalence for the delivered power
-              var eq = power < 0.05 ? 'about a digital watch (' + (power * 1000).toFixed(0) + ' mW)'
-                : power < 0.5 ? __alloT('stem.circuit.eq_hearing_aid', 'a hearing-aid battery load')
-                : power < 3 ? __alloT('stem.circuit.eq_led_nightlight', 'a small LED night-light')
-                : power < 10 ? __alloT('stem.circuit.eq_phone_charger', 'a phone fast-charger')
+              var eq = power < 0.05 ? __alloT('stem.circuit.eq_indicator_led', 'a small indicator LED or less')
+                : power < 0.5 ? __alloT('stem.circuit.eq_led_nightlight', 'a small LED night-light')
+                : power < 3 ? __alloT('stem.circuit.eq_bike_light', 'an LED bike light')
+                : power < 10 ? __alloT('stem.circuit.eq_basic_charger', 'a basic 5–10 W phone charger')
                 : power < 40 ? __alloT('stem.circuit.eq_desk_lamp', 'a bright desk lamp')
                 : power < 100 ? __alloT('stem.circuit.eq_laptop', 'a laptop under load')
                 : __alloT('stem.circuit.eq_appliance', 'a household appliance');
               return h('div', { className: 'circuit-card mt-4 bg-slate-900/40 border border-rose-500/25 rounded-xl p-4 backdrop-blur-md' },
                 h('p', { className: 'text-[0.6875rem] font-bold text-rose-400 uppercase tracking-wider mb-1' }, '🔥 ' + __alloT('stem.circuit.energy_budget_title', 'Energy budget — where the power goes')),
                 h('p', { className: 'text-[0.6875rem] text-slate-300 mb-2 leading-snug' },
-                  __alloT('stem.circuit.energy_budget_intro', 'The battery pours out '), h('b', { className: 'text-rose-300' }, 'P = V×I = ' + power.toFixed(2) + ' W'),
+                  __alloT('stem.circuit.energy_budget_intro', 'The battery pours out '), h('b', { className: 'text-rose-300' }, 'P = V×I = ' + circuitPowerText(power)),
                   ' (like ' + eq + '). Every load turns its share into heat or light — and the shares must add back up to the total. Energy is transferred to light and heat; charge is conserved.'),
                 // Segmented power bar
                 h('div', { className: 'flex w-full h-7 rounded-lg overflow-hidden border border-slate-700', role: 'img', 'aria-label': 'Power split: ' + segs.map(function(s){ return s.name + ' ' + (s.p/totP*100).toFixed(0) + ' percent'; }).join(', ') },
-                  segs.length === 0 ? h('div', { className: 'flex-1 flex items-center justify-center text-[0.625rem] text-slate-500' }, __alloT('stem.circuit.no_dissipating_load', 'no dissipating load'))
+                  segs.length === 0 ? h('div', { className: 'flex-1 flex items-center justify-center text-[0.625rem] text-slate-300' }, __alloT('stem.circuit.no_dissipating_load', 'no dissipating load'))
                   : segs.map(function(s, i) {
                       var pct = s.p / totP * 100;
                       return h('div', { key: i, style: { width: pct + '%', background: s.col + '33', borderRight: i < segs.length - 1 ? '1px solid rgba(15,23,42,0.6)' : 'none' }, className: 'flex flex-col items-center justify-center overflow-hidden' },
@@ -8693,8 +8956,8 @@ function CircuitActiveLessonLab(props) {
                     })
                 ),
                 h('div', { className: 'flex justify-between mt-1.5 text-[0.625rem]' },
-                  h('span', { className: 'text-slate-500' }, mode === 'series' ? __alloT('stem.circuit.dissipate_series_note', 'Biggest resistor dissipates the most (P = I²R, same I)') : __alloT('stem.circuit.dissipate_parallel_note', 'Smallest resistor dissipates the most (P = V²/R, same V)')),
-                  h('span', { className: 'font-mono font-bold text-rose-300' }, 'Σ = ' + totP.toFixed(2) + ' W')
+                  h('span', { className: 'text-slate-300' }, mode === 'series' ? __alloT('stem.circuit.dissipate_series_note', 'Biggest resistor dissipates the most (P = I²R, same I)') : __alloT('stem.circuit.dissipate_parallel_note', 'Smallest resistor dissipates the most (P = V²/R, same V)')),
+                  h('span', { className: 'font-mono font-bold text-rose-300' }, 'Σ = ' + circuitPowerText(totP))
                 )
               );
             })(),
@@ -8718,7 +8981,7 @@ function CircuitActiveLessonLab(props) {
               function lane(y, label, sub) {
                 return h('g', null,
                   h('text', { x: 4, y: y - 12, fontSize: 9, fontWeight: 700, fill: '#cbd5e1' }, label),
-                  h('text', { x: 356, y: y - 12, fontSize: 8, fill: '#64748b', textAnchor: 'end' }, sub),
+                  h('text', { x: 356, y: y - 12, fontSize: 9, fill: '#b6c9d6', textAnchor: 'end' }, sub),
                   h('rect', { x: 4, y: y - 8, width: 352, height: 16, rx: 8, fill: 'rgba(15,23,42,0.7)', stroke: 'rgba(100,116,139,0.4)' })
                 );
               }
@@ -8731,7 +8994,7 @@ function CircuitActiveLessonLab(props) {
                   h('g', { className: reduced ? '' : 'circ-signal-pulse' },
                     h('rect', { x: 4, y: 24, width: 16, height: 16, rx: 8, fill: '#22d3ee', opacity: 0.9, filter: 'drop-shadow(0 0 5px #22d3ee)' })
                   ),
-                  lane(84, '🔵 ' + __alloT('stem.circuit.lane_electrons_label', 'Actual electrons'), '≈ ' + (vDriftMm < 0.1 ? vDriftMm.toFixed(3) : vDriftMm.toFixed(2)) + ' mm/s'),
+                  lane(84, '🔵 ' + __alloT('stem.circuit.lane_electrons_label', 'Actual electrons'), '≈ ' + (vDriftMm < 0.1 ? String(Number(vDriftMm.toPrecision(2))) : vDriftMm.toFixed(2)) + ' mm/s'),
                   // slow drifting electrons
                   [0, 1, 2, 3, 4, 5].map(function(k) {
                     return h('g', { key: k, className: reduced ? '' : 'circ-electron-drift', style: reduced ? {} : { animationDelay: (-k * 1.0) + 's' } },
@@ -8749,7 +9012,7 @@ function CircuitActiveLessonLab(props) {
                     h('p', { className: 'text-sm font-black font-mono text-blue-300' }, '~' + driftTime)
                   )
                 ),
-                h('p', { className: 'text-[0.625rem] text-slate-500 italic mt-1.5 leading-snug' }, 'Drift speed computed from your ' + current.toFixed(3) + ' A through an assumed 1 mm² copper wire (v = I ÷ n·A·e). Turn up the voltage and the electrons speed up — but they never come close to the signal.')
+                h('p', { className: 'text-[0.625rem] text-slate-300 italic mt-1.5 leading-snug' }, 'Drift speed computed from your ' + current.toFixed(3) + ' A through an assumed 1 mm² copper wire (v = I ÷ n·A·e). Turn up the voltage and the electrons speed up — but they never come close to the signal.')
               );
             })(),
 
@@ -8771,7 +9034,7 @@ function CircuitActiveLessonLab(props) {
               return h('div', { className: 'circuit-card mt-4 bg-slate-900/40 border border-amber-500/25 rounded-xl p-4 backdrop-blur-md' },
                 h('p', { className: 'text-[0.6875rem] font-bold text-amber-400 uppercase tracking-wider mb-1' }, '📏 How big is ' + current.toFixed(3) + ' A, really?'),
                 h('p', { className: 'text-[0.6875rem] text-slate-300 mb-3 leading-snug' }, 'Current spans an enormous range — this ladder is logarithmic (each step is 10× bigger). Your circuit sits here compared with things you know.'),
-                h('svg', { viewBox: '0 0 360 78', width: '100%', role: 'img', 'aria-label': __alloFill(__alloT('stem.circuit.a11y_logarithmic_current_ladder_from_a_microamp_to_1', 'Logarithmic current ladder from a microamp to 100 kiloamps. Your circuit draws {value1} amps, between {value2} and larger loads.'), { value1: current.toFixed(3), value2: (function(){ var below=marks[0].label; marks.forEach(function(m){ if (m.a <= current) below = m.label; }); return below; })() })},
+                h('svg', { viewBox: '0 0 360 106', width: '100%', role: 'img', 'aria-label': __alloFill(__alloT('stem.circuit.a11y_logarithmic_current_ladder_from_a_microamp_to_1', 'Logarithmic current ladder from a microamp to 100 kiloamps. Your circuit draws {value1} amps, between {value2} and larger loads.'), { value1: current.toFixed(3), value2: (function(){ var below=marks[0].label; marks.forEach(function(m){ if (m.a <= current) below = m.label; }); return below; })() })},
                   h('defs', null,
                     h('linearGradient', { id: 'circAmpGrad', x1: 0, y1: 0, x2: 1, y2: 0 },
                       h('stop', { offset: '0%', stopColor: '#0891b2' }),
@@ -8779,11 +9042,13 @@ function CircuitActiveLessonLab(props) {
                       h('stop', { offset: '100%', stopColor: '#ef4444' }))),
                   h('rect', { x: 6, y: 30, width: 348, height: 8, rx: 4, fill: 'url(#circAmpGrad)', opacity: 0.65 }),
                   marks.map(function(m, i) {
-                    var x = 6 + frac(m.a) * 348;
+                    // Three label rows: neighbouring marks sit only 28-36 units apart, so one row overlapped.
+                    var x = 6 + frac(m.a) * 348, row = 54 + (i % 3) * 18, anchor = i === 0 ? 'start' : i === marks.length - 1 ? 'end' : 'middle';
                     return h('g', { key: i },
                       h('line', { x1: x, y1: 27, x2: x, y2: 41, stroke: '#475569', strokeWidth: 1 }),
-                      h('text', { x: x, y: 54, fontSize: 7.5, fill: '#94a3b8', textAnchor: i === 0 ? 'start' : i === marks.length - 1 ? 'end' : 'middle' }, m.label),
-                      h('text', { x: x, y: 64, fontSize: 6.5, fill: '#64748b', textAnchor: i === 0 ? 'start' : i === marks.length - 1 ? 'end' : 'middle' }, m.a >= 1000 ? (m.a / 1000) + 'kA' : m.a >= 1 ? m.a + 'A' : (m.a * 1000) + 'mA')
+                      i % 3 ? h('line', { x1: x, y1: 41, x2: x, y2: row - 9, stroke: '#334155', strokeWidth: 1, strokeDasharray: '2 2' }) : null,
+                      h('text', { x: x, y: row, fontSize: 8.5, fill: '#cbd5e1', textAnchor: anchor }, m.label),
+                      h('text', { x: x, y: row + 9, fontSize: 8, fill: '#b6c9d6', textAnchor: anchor }, m.a >= 1000 ? (m.a / 1000) + 'kA' : m.a >= 1 ? m.a + 'A' : (m.a * 1000) + 'mA')
                     );
                   }),
                   // "you are here" pointer
@@ -8811,7 +9076,7 @@ function CircuitActiveLessonLab(props) {
                   var compV = reading(comp).voltage;
                   if (comp.type === 'ammeter' || comp.type === 'voltmeter') return null;
                   return h('div', { key: comp.id, className: 'flex items-center gap-2 text-xs font-mono text-slate-300' },
-                    h('span', null, 'V' + (i + 1) + (comp.type === 'led' ? ' = Vf + I × r = ' + circuitForwardVoltage(comp) + ' + ' : ' = I × R = ') + current.toFixed(3) + ' × ' + compR.toFixed(1) + ' = ' + circuitVoltageText(compV, 2))
+                    h('span', null, 'V' + (i + 1) + (comp.type === 'led' ? ' = Vf + I × r = ' + circuitForwardVoltage(comp) + ' + ' : ' = I × R = ') + circuitAmps(current) + ' A × ' + compR.toFixed(1) + ' = ' + circuitVoltageText(compV, 2))
                   );
                 }),
                 h('div', { className: 'border-t border-indigo-500/20 mt-2 pt-2' },
@@ -8881,10 +9146,10 @@ function CircuitActiveLessonLab(props) {
             (function() {
               return h('div', { className: 'mt-4 bg-blue-950/10 border border-blue-500/20 p-4 rounded-xl backdrop-blur-md' },
                 h('div', { className: 'flex items-center gap-2 mb-3' },
-                  h('button', { onClick: function() { var q = makeOhmQuestion(); upd('ohmQuiz', q); },
+                  h('button', { onClick: function() { var q = makeOhmQuestion(); if (ohmQuiz && !ohmQuiz.answered) updMulti({ ohmQuiz: q, ohmTried: (d.ohmTried || 0) + 1, ohmStreak: 0 }); else upd('ohmQuiz', q); },
                     className: 'px-3 py-1.5 rounded-lg text-xs font-bold transition-all ' + (ohmQuiz ? 'bg-blue-900/40 text-blue-300 border border-blue-800' : 'transition-colors bg-blue-600 text-white hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-[0.97]')
                   }, ohmQuiz ? '\uD83D\uDD04 ' + __alloT('stem.circuit.next_question', 'Next Question') : '\u26A1 ' + __alloT('stem.circuit.ohm_law_quiz', 'Ohm\'s Law Quiz')),
-                  ohmScore > 0 && h('span', { className: 'text-xs font-bold text-emerald-400' }, '\u2B50 ' + ohmScore + ' correct'),
+                  (ohmScore > 0 || (d.ohmTried || 0) > 0) && h('span', { className: 'text-xs font-bold text-emerald-400' }, '\u2B50 ' + ohmScore + ' of ' + Math.max(ohmScore, d.ohmTried || 0) + ' correct'),
                   ohmStreak > 1 && h('span', { className: 'text-xs font-bold text-orange-400 animate-pulse motion-reduce:animate-none' }, '\uD83D\uDD25 ' + ohmStreak + ' streak')
                 ),
 
@@ -8900,6 +9165,7 @@ function CircuitActiveLessonLab(props) {
                           var newStreak = correct ? ohmStreak + 1 : 0;
                           updMulti({
                             ohmQuiz: Object.assign({}, ohmQuiz, { answered: true, chosen: opt }),
+                            ohmTried: (d.ohmTried || 0) + 1,
                             ohmScore: newScore,
                             ohmStreak: newStreak
                           });
@@ -8926,7 +9192,8 @@ function CircuitActiveLessonLab(props) {
                   ohmQuiz.chosen === ohmQuiz.answer ? '\u2705 ' + __alloT('stem.circuit.quiz_correct', 'Correct!') : '\u274C Answer: ' + ohmQuiz.answer + ohmQuiz.unit,
                   h('p', {
                     className: 'text-xs font-normal mt-1 ' + (ohmQuiz.chosen === ohmQuiz.answer ? 'text-emerald-500' : 'text-red-500')
-                  }, '\uD83D\uDD0D ' + ohmQuiz.formula)
+                  }, '\uD83D\uDD0D ' + ohmQuiz.formula),
+                  ohmQuiz.chosen !== ohmQuiz.answer && h('p', { className: 'text-xs font-normal mt-1 text-red-300', 'data-quiz-mistake': 'true' }, ohmQuiz.why && ohmQuiz.why[String(ohmQuiz.chosen)] ? ohmQuiz.why[String(ohmQuiz.chosen)] : 'That value does not match a rule. Follow the working above step by step.')
                 )
               );
             })(),
@@ -8936,19 +9203,19 @@ function CircuitActiveLessonLab(props) {
             // ══════════════════════════════════════
             // Badge panel (collapsible)
             // ══════════════════════════════════════
-            showBadges && h('div', { className: 'mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md' },
+            showBadges && h('div', { id: 'circuit-badges-panel', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.circuit.badges', 'Badges'), className: 'mt-4 bg-amber-950/10 border border-amber-500/20 p-4 rounded-xl backdrop-blur-md' },
               h('p', { className: 'text-[0.6875rem] font-bold text-amber-400 uppercase tracking-wider mb-2' }, '\uD83C\uDFC5 ' + __alloT('stem.circuit.badges', 'Badges') + ' (' + Object.keys(badges).length + '/' + BADGES.length + ')'),
               h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 gap-2' },
                 BADGES.map(function(b) {
                   var earned = badges[b.id];
                   return h('div', {
                     key: b.id,
-                    className: 'flex items-center gap-2.5 p-2 rounded-lg border text-xs ' + (earned ? 'bg-slate-950/60 border-amber-500/30 text-amber-300' : 'bg-slate-900/20 border-slate-900 opacity-40')
+                    className: 'flex items-center gap-2.5 p-2 rounded-lg border text-xs ' + (earned ? 'bg-slate-950/60 border-amber-500/30 text-amber-300' : 'bg-slate-900/40 border-dashed border-slate-700 text-slate-300')
                   },
                     h('span', { className: 'text-base' }, earned ? b.icon : '\uD83D\uDD12'),
                     h('div', null,
-                      h('p', { className: 'font-bold ' + (earned ? 'text-amber-300' : 'text-slate-500') }, b.name),
-                      h('p', { className: 'text-[0.625rem] ' + (earned ? 'text-amber-400/80' : 'text-slate-600') }, __alloT('stem.circuit.' + (b.id) + '_desc', b.desc))
+                      h('p', { className: 'font-bold ' + (earned ? 'text-amber-300' : 'text-slate-200') }, b.name, earned ? null : h('span', { className: 'sr-only' }, ' (' + __alloT('stem.circuit.badge_locked_sr', 'not earned yet') + ')')),
+                      h('p', { className: 'text-[0.625rem] ' + (earned ? 'text-amber-400/80' : 'text-slate-300') }, __alloT('stem.circuit.' + (b.id) + '_desc', b.desc))
                     )
                   );
                 })
@@ -8958,7 +9225,7 @@ function CircuitActiveLessonLab(props) {
             // ══════════════════════════════════════
             // AI Tutor panel (collapsible)
             // ══════════════════════════════════════
-            showAI && typeof callGemini === 'function' && h('div', { className: 'mt-4 bg-blue-950/10 border border-blue-500/20 p-4 rounded-xl backdrop-blur-md' },
+            showAI && typeof callGemini === 'function' && h('div', { id: 'circuit-ai-panel', tabIndex: -1, role: 'region', 'aria-label': __alloT('stem.circuit.ai_tutor', 'AI Tutor'), className: 'mt-4 bg-blue-950/10 border border-blue-500/20 p-4 rounded-xl backdrop-blur-md' },
               h('p', { className: 'text-[0.6875rem] font-bold text-blue-400 uppercase tracking-wider mb-2' }, '\uD83E\uDD16 ' + __alloT('stem.circuit.ai_circuit_tutor', 'AI Circuit Tutor')),
               h('div', { className: 'flex gap-2' },
                 h('input', {
@@ -9011,16 +9278,16 @@ function CircuitActiveLessonLab(props) {
                   h('p', { className: 'text-xs text-violet-400 font-mono mt-1' }, '\u2211 I_in = \u2211 I_out'),
                   mode === 'parallel' && components.length > 0 && h('div', { className: 'mt-2 bg-violet-950/20 rounded p-2 border border-violet-900/30' },
                     h('p', { className: 'text-[0.625rem] font-bold text-violet-300 mb-1' }, __alloT('stem.circuit.your_circuit_label', 'Your circuit:')),
-                    h('p', { className: 'text-[0.625rem] text-slate-300 font-mono' }, 'Total current from source: ' + current.toFixed(3) + 'A'),
+                    h('p', { className: 'text-[0.625rem] text-slate-300 font-mono' }, 'Total current from source: ' + circuitAmps(current) + ' A'),
                     h('p', { className: 'text-[0.625rem] text-slate-300 font-mono mt-0.5' }, 'Branch currents: ' + components.map(function(c, i) {
                       var cR = getCompR(c);
                       var cI = reading(c).current;
-                      return 'I' + (i + 1) + '=' + cI.toFixed(3) + 'A';
+                      return 'I' + (i + 1) + '=' + circuitAmps(cI) + ' A';
                     }).join(' + ')),
                     (function() {
                       var branchSum = 0;
                       components.forEach(function(c) { branchSum += reading(c).current; });
-                      return h('p', { className: 'text-[0.625rem] font-bold text-violet-300 font-mono mt-1' }, 'Sum of branch currents: ' + branchSum.toFixed(3) + 'A ' + (Math.abs(branchSum - current) < 0.001 ? '\u2705' : ''));
+                      return h('p', { className: 'text-[0.625rem] font-bold text-violet-300 font-mono mt-1' }, 'Sum of branch currents: ' + circuitAmps(branchSum) + ' A ' + (Math.abs(branchSum - current) <= 1e-9 + 1e-6 * Math.abs(current) ? '\u2705' : ''));
                     })()
                   )
                 ),
@@ -9036,7 +9303,7 @@ function CircuitActiveLessonLab(props) {
                       if (c.type === 'ammeter' || c.type === 'voltmeter') return null;
                       var cR = getCompR(c);
                       var cV = reading(c).voltage;
-                      return h('p', { key: c.id, className: 'text-[0.625rem] text-slate-300 font-mono' }, 'V' + (i + 1) + ' = ' + (c.type === 'led' ? circuitForwardVoltage(c) + ' + ' : '') + current.toFixed(3) + ' × ' + cR.toFixed(1) + ' = ' + circuitVoltageText(cV, 2));
+                      return h('p', { key: c.id, className: 'text-[0.625rem] text-slate-300 font-mono' }, 'V' + (i + 1) + ' = ' + (c.type === 'led' ? circuitForwardVoltage(c) + ' + ' : '') + circuitAmps(current) + ' A × ' + cR.toFixed(1) + ' = ' + circuitVoltageText(cV, 2));
                     }),
                     (function() {
                       var vSum = 0;
@@ -9071,7 +9338,7 @@ function CircuitActiveLessonLab(props) {
                 h('div', { className: 'w-2 h-2 rounded-full bg-emerald-400 animate-pulse motion-reduce:animate-none' }),
                 h('span', { className: 'text-[0.625rem] font-bold text-emerald-400 uppercase tracking-wider font-mono' }, __alloT('stem.circuit.signal_sketch_label', 'Signal sketch · illustrative')),
                 h('span', { className: 'ml-auto text-[0.625rem] text-slate-300 font-mono' },
-                  voltage.toFixed(1) + 'V  ' + circuitCurrentText(current) + '  ' + (totalR >= 1e8 ? '\u221E' : totalR.toFixed(1) + '\u03A9'))
+                  voltage.toFixed(1) + 'V  ' + circuitCurrentText(current) + '  ' + circuitTotalRText(totalR, current, '\u03A9', '\u221E'))
               ),
               h('canvas', { role: 'img', tabIndex: 0, 'aria-label': __alloT('stem.circuit.aria_oscilloscope', 'Illustrative voltage, current, and capacitor charge sketch, not calculated time samples. Use the mixed workbench oscilloscope for measurements.'),
                 ref: function(canvas) {
@@ -9213,7 +9480,7 @@ function CircuitActiveLessonLab(props) {
                 led: {
                   icon: '\uD83D\uDD34', name: __alloT('stem.circuit.comp_led', 'LED'), color: '#f43f5e',
                   how: __alloT('stem.circuit.physics_led_how', 'A semiconductor diode that emits photons when electrons drop from a high energy band to a low one. Different materials produce different colors.'),
-                  equation: 'V_forward \u2248 1.8-3.3V (varies by color)',
+                  equation: 'V_forward \u2248 2.0-3.2V (varies by color)',
                   analogy: __alloT('stem.circuit.physics_led_analogy', 'Like a one-way door with a light - electrons can only go one direction, and they release light as they pass.')
                 },
                 ammeter: {
@@ -9270,7 +9537,7 @@ function CircuitActiveLessonLab(props) {
                     onClick: function() { callTTS(physics.name + '. ' + physics.how + ' ' + physics.analogy); },
                     className: 'transition-colors mt-2 text-[0.625rem] text-yellow-500 hover:text-yellow-400 font-bold'
                   }, '\uD83D\uDD0A ' + __alloT('stem.circuit.read_aloud', 'Read aloud')) : null
-                ) : h('p', { className: 'text-[0.625rem] text-slate-500 italic' }, __alloT('stem.circuit.tap_component_hint', 'Tap a component above to learn how it works inside!'))
+                ) : h('p', { className: 'text-[0.625rem] text-slate-300 italic' }, __alloT('stem.circuit.tap_component_hint', 'Tap a component above to learn how it works inside!'))
               );
             })(),
 
@@ -9338,7 +9605,7 @@ function CircuitActiveLessonLab(props) {
               typeof callTTS === 'function' && h('button', { 'aria-label': __alloT('stem.circuit.read_aloud_btn', 'Read Aloud'),
                 onClick: function() {
                   var summary = 'Circuit Builder: ' + mode + ' mode, ' + voltage + ' volts, ' +
-                    components.length + ' components. Total resistance ' + (totalR >= 1e8 ? 'infinite, the path is open' : totalR.toFixed(1) + ' ohms') + '. ' +
+                    components.length + ' components. Total resistance ' + circuitTotalRText(totalR, current, ' ohms', 'infinite, the path is open') + '. ' +
                     'Current ' + current.toFixed(3) + ' amps. Power ' + power.toFixed(2) + ' watts.';
                   if (isShort) summary += ' Warning: short circuit detected!';
                   if (isOpen) summary += ' Circuit is open, no current flowing.';
@@ -9393,6 +9660,8 @@ function CircuitActiveLessonLab(props) {
       var d2 = (labToolData && labToolData.circuit) || {};
       var workspaceTab = d2.workspaceTab || 'build';
       var expSection = ({ famouscirc: 'patterns', standards: 'connectors' })[d2.expSection] || d2.expSection || null;
+      // Focus a reference target after React has drawn it (headings get tabIndex -1 only when focused here).
+      function circuitRefFocus(selector) { setTimeout(function() { var el = null; selector.split(',').some(function(s) { el = document.querySelector(s.trim()); return !!el; }); if (!el) return; if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1'); try { el.focus({ preventScroll: false }); } catch (e) { el.focus(); } }, 40); }
       function setExp(patch) {
         setLabToolData(function(prev) {
           var prior = (prev && prev.circuit) || {};
@@ -9463,7 +9732,7 @@ function CircuitActiveLessonLab(props) {
         { name: 'Resistor', symbol: '⏛', units: 'Ω (ohms)', role: 'Limits current, drops voltage, divides voltage. Most common passive component.', colors: 'Color bands: Black=0, Brown=1, Red=2, Orange=3, Yellow=4, Green=5, Blue=6, Violet=7, Gray=8, White=9.' },
         { name: 'Capacitor', symbol: '||', units: 'F (farads)', role: 'Stores charge. Blocks DC, passes AC. Filtering, timing, energy storage.', colors: 'Common sizes: µF (10⁻⁶), nF (10⁻⁹), pF (10⁻¹²). Electrolytic caps polarized.' },
         { name: 'Inductor', symbol: '⌇', units: 'H (henries)', role: 'Stores energy in magnetic field. Resists current changes. Filtering, transformers, motors.', colors: 'Common sizes: mH, µH, nH. Coil of wire, often on a ferrite core.' },
-        { name: 'Diode', symbol: '▷|', units: 'V_f (forward voltage)', role: 'One-way valve for current. Conducts when V > V_f (~0.7 V for Si, 0.3 V for Ge).', colors: 'LED V_f varies by color: red ~1.8 V, green ~2.1 V, blue ~3.2 V, white ~3.0 V.' },
+        { name: 'Diode', symbol: '▷|', units: 'V_f (forward voltage)', role: 'One-way valve for current. Conducts when V > V_f (~0.7 V for Si, 0.3 V for Ge).', colors: 'LED V_f varies by color. This lab uses red 2.0 V, yellow 2.1 V, green 2.2 V, blue and white 3.2 V; real LEDs vary by a few tenths of a volt.' },
         { name: 'Transistor (BJT)', symbol: '3 terminals', units: 'β (gain)', role: 'Current amplifier. Small base current controls large collector current. NPN or PNP.', colors: 'Common: 2N3904 (NPN), 2N3906 (PNP). β often 100-300.' },
         { name: 'Transistor (MOSFET)', symbol: '3 terminals + gate', units: 'V_GS threshold', role: 'Voltage amplifier. Gate voltage controls drain-source current. Very high input impedance.', colors: 'Dominant in modern ICs. Logic levels: V_GS > V_threshold turns on.' },
         { name: 'Op-amp', symbol: '▷', units: 'gain (often 10⁵+)', role: 'High-gain differential amplifier. With feedback, makes amplifiers, filters, comparators.', colors: 'Iconic: 741, LM358, TL072. Modern rail-to-rail: MCP6022.' },
@@ -9557,7 +9826,7 @@ function CircuitActiveLessonLab(props) {
             h('div', { className: 'text-[0.6875rem] text-amber-700 mt-0.5' }, __alloT('stem.circuit.reference_library_subtitle', 'Interactive references — pick a topic below to explore.'))
           ),
           expSection && h('button', {
-            onClick: function() { setExp({ expSection: null }); },
+            onClick: function() { var was = expSection; setExp({ expSection: null }); circuitRefFocus('[data-ref-tab="' + was + '"], #circuit-reference-panel'); },
             className: 'transition-colors px-3 py-1 rounded-md text-xs font-bold bg-white border border-amber-300 text-amber-700 hover:bg-amber-100 active:scale-[0.97]'
           }, '✕ ' + __alloT('stem.circuit.close_section', 'Close section'))
         );
@@ -9633,11 +9902,12 @@ function CircuitActiveLessonLab(props) {
         var hiddenCount = TAB_GROUPS.reduce(function(n, g) { return n + g.tabs.length; }, 0) - shownGroups.reduce(function(n, g) { return n + g.tabs.length; }, 0);
         function renderBtn(s, accent) {
           var active = expSection === s.id;
+          var open = function() { setExp({ expSection: s.id }); circuitRefFocus('#circuit-reference-section h4, #circuit-reference-section h3, #circuit-reference-section'); };
           return h('button', {
             key: s.id, type: 'button', 'aria-pressed': active,
-            onClick: function() { setExp({ expSection: active ? null : s.id }); },
+            'data-ref-tab': s.id, onClick: function() { if (active) setExp({ expSection: null }); else open(); },
             className: 'px-2 py-1 rounded-md text-[0.6875rem] font-bold border transition-colors active:scale-[0.97] ' + (active ? 'bg-' + accent + '-600 text-white border-' + accent + '-700' : 'bg-white text-slate-700 border-slate-300 hover:bg-' + accent + '-50 hover:border-' + accent + '-300')
-          }, s.icon + ' ' + s.label);
+          }, h('span', { 'aria-hidden': 'true' }, s.icon + ' '), s.label);
         }
         return h('div', { className: 'mb-3 p-2 rounded-lg bg-slate-50 border border-slate-200 flex flex-col gap-1.5' },
           shownGroups.map(function(g) {
@@ -9937,6 +10207,7 @@ function CircuitActiveLessonLab(props) {
                   type: 'button',
                   disabled: stg.picked == null || stg.revealed,
                   'aria-disabled': stg.picked == null || stg.revealed ? 'true' : 'false',
+                  'data-focus-fallback': '[data-circuit-poe-evidence="' + scenario.id + '"]',
                   onClick: function() {
                     if (stg.picked == null || stg.revealed) return;
                     updatePoeStage(scenario.id, { picked: stg.picked, revealed: true, revision: '', reason: '', complete: false });
@@ -9946,7 +10217,7 @@ function CircuitActiveLessonLab(props) {
                 stg.revealed && h('span', { role: 'status', className: 'text-[0.6875rem] ' + (scenario.answerIndex === stg.picked ? 'text-green-700 font-bold' : 'text-amber-800 font-bold') },
                   scenario.answerIndex === stg.picked ? 'Evidence supported your estimate' : 'The model produced a different result')
               ),
-              stg.revealed && h('div', { className: 'mt-2 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[0.6875rem] text-slate-700 leading-relaxed' },
+              stg.revealed && h('div', { 'data-circuit-poe-evidence': scenario.id, tabIndex: -1, className: 'mt-2 p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 text-[0.6875rem] text-slate-700 leading-relaxed' },
                 h('strong', { className: 'text-amber-900' }, 'Evidence and reasoning: '), __alloT('stem.circuit.' + (scenario.id) + '_explanation', scenario.explanation),
                 h('div', {className:'mt-2'},h('button', {type:'button','aria-label':__alloFill(__alloT('stem.circuit.a11y_try_this_circuit', 'Try this circuit: {value1}'), { value1: scenario.title }),'data-circuit-poe-try':scenario.id,onClick:function(){tryScenario(scenario);},className:'rounded-md bg-cyan-800 px-3 py-2 text-xs font-bold text-white focus:ring-2 focus:ring-cyan-500 focus:outline-none'},'Try this circuit'),
                   h('p', {className:'mt-1'},'Opens this example in Simple circuits. Undo restores your previous build; your notebook and lesson progress stay saved.'))),
@@ -10093,6 +10364,46 @@ function CircuitActiveLessonLab(props) {
         }
       ];
 
+      // Why each answer is right or wrong, so every pick teaches (it used to say nothing until the end).
+      var FAIL_DX_WHY = {
+        d1: {
+          voltage_too_low: '9 V is more than the 2 V the LED needs, and the LED flashed, so it did get enough voltage.',
+          overcurrent_burnout: 'Right: nothing in the loop limited the current.',
+          battery_dead: 'A flat battery would not make the LED flash brightly first. It stays dark after reconnecting, so the LED itself failed.',
+          wires_disconnected: 'It stays dark even after reconnecting, so the connection is not the problem. The LED itself failed.',
+          current_drops: 'For the same resistance, more voltage pushes more current, not less (I = V ÷ R).',
+          current_rises: 'Right: with nothing in series to take the extra 7 V, the current climbs far past 20 mA.',
+          current_constant: 'The current is not fixed. It depends on the voltage and the resistance (I = V ÷ R).',
+          fuse: 'A fuse breaks the circuit only after too much current has flowed, and a 20 mA LED usually fails first. A resistor limits the current every time.',
+          resistor: 'Right: a series resistor takes the extra voltage and limits the current.',
+          'switch': 'A switch only turns the circuit on or off. When it is on, nothing limits the current.'
+        },
+        d2: {
+          mismatched_resistance: 'Right: the two bulbs have different resistances.',
+          farther_from_battery: 'In a series loop the same current passes through every part. Current is not used up along the way, so position does not change brightness.',
+          wrong_polarity: 'A filament bulb works either way round. It has no polarity.',
+          bulb_dying: 'A worn filament glows normally until it breaks, and then both bulbs would go dark. Look for a difference between the two bulbs.',
+          voltage_splits_by_R: 'Right: the same current through more resistance needs more voltage (V = I × R).',
+          voltage_equal: 'Equal voltages happen in parallel. In series the voltage is shared in proportion to resistance.',
+          voltage_inverse: 'That is backwards. With the same current, more resistance takes more voltage (V = I × R).',
+          B_more_power: 'In series there is only one current, so it cannot favour either bulb. With the same current, lower resistance means less power (P = I²R).',
+          B_lower_power: 'Right: same current, lower resistance, so less power. Bulb B is dimmer.',
+          same_power: 'They would glow the same only if their resistances matched. Bulb B is dimmer, so they do not.'
+        },
+        d3: {
+          short_circuit: 'Right: a reading near 0 Ω across the bulb points to a path around it.',
+          open_circuit: 'A break would read open, with no continuity, but the meter shows continuity everywhere.',
+          low_battery: 'A flat battery cannot make the bulb’s terminals read near 0 Ω. That reading points to the wiring.',
+          bulb_burnt: 'A burnt-out filament reads open (very high resistance), not near 0 Ω.',
+          current_through_bulb: 'Something across the bulb has less resistance than its filament, so most of the current takes that easier path instead.',
+          current_bypassing: 'Right: the current takes the lower-resistance path around the bulb.',
+          no_current: 'The meter shows a complete path, so current can flow. It just goes around the bulb.',
+          higher_R: 'A bare wire has far less resistance than a filament, not more.',
+          much_lower_R: 'Right: the stray wire has almost no resistance, so nearly all the current takes it.',
+          same_R: 'A wire’s resistance is tiny compared with a filament’s, so the split is very uneven.'
+        }
+      };
+
       function renderFailDxSection() {
         var state = d2.failDx || { cases: {}, score: 0, depthBonus: 0 };
         function setFD(patch) {
@@ -10102,86 +10413,82 @@ function CircuitActiveLessonLab(props) {
             return Object.assign({}, prev, { circuit: Object.assign({}, prior, { failDx: st }) });
           });
         }
+        // Score and bonus come from the cases, so trying a case again replaces its result instead of adding to it.
+        // A first-try diagnosis and reasoning through both follow-ups both earn a full case and the same bonus.
+        function caseBonus(st) { return typeof st.bonus === 'number' ? st.bonus : st.firstTryCorrect ? 2 : st.resolved ? 1 : 0; }
+        var cases = state.cases || {};
+        var totalScore = FAIL_DX_CASES.filter(function(c) { return cases[c.id] && cases[c.id].resolved; }).length;
+        var totalBonus = FAIL_DX_CASES.reduce(function(n, c) { return n + (cases[c.id] ? caseBonus(cases[c.id]) : 0); }, 0);
+        function focusLater(selector) { setTimeout(function() { var el = document.querySelector(selector); if (el) el.focus(); }, 40); }
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-1' }, '🛠 Why did it fail? — Socratic diagnostics'),
           h('p', { className: 'text-[0.75rem] text-slate-700 mb-3 leading-relaxed' },
-            'Three broken circuits. Diagnose the root cause. If you’re wrong, you don’t get the answer — you get two follow-up questions that build the missing reasoning step by step, then the explanation. Right on the first try? Bonus points + the explanation.'),
+            'Three broken circuits. Diagnose the root cause. Every answer tells you why it is right or wrong. If your first diagnosis is off, two follow-up questions build the missing reasoning step by step. Reasoning it through earns the same credit as a first-try answer.'),
           FAIL_DX_CASES.map(function(c, idx) {
-            var st = state.cases[c.id] || { depth: 0, picks: [], resolved: false, firstTryCorrect: false };
-            var depth = st.depth || 0;
-            var picks = st.picks || [];
+            var st = cases[c.id] || { depth: 0, picks: [], resolved: false, firstTryCorrect: false };
+            var depth = st.depth || 0, picks = st.picks || [], why = FAIL_DX_WHY[c.id] || {};
             var currentQ = depth === 0 ? c.q0 : (depth === 1 ? c.q1 : c.q2);
-            var isAtFinal = st.resolved;
+            var tried = (st.tried || []);
+            function labelOf(id) { var all = c.q0.options.concat(c.q1.options, c.q2.options); for (var i = 0; i < all.length; i++) if (all[i].id === id) return all[i].label; return id; }
+            function save(next) { var all = Object.assign({}, cases); all[c.id] = next; setFD({ cases: all }); focusLater(next.resolved ? '[data-faildx-result="' + c.id + '"]' : '[data-faildx-q="' + c.id + '"]'); }
             function handlePick(optionId) {
-              var newPicks = picks.concat([{ depth: depth, picked: optionId }]);
-              var newCases = Object.assign({}, state.cases);
+              if (tried.indexOf(optionId) >= 0) return;
+              var newPicks = picks.concat([{ depth: depth, picked: optionId }]), base = { picks: newPicks, last: why[optionId] || '', lastId: optionId };
               if (depth === 0) {
-                if (optionId === c.rootCause) {
-                  newCases[c.id] = { depth: 0, picks: newPicks, resolved: true, firstTryCorrect: true };
-                  setFD({ cases: newCases, score: (state.score || 0) + 1, depthBonus: (state.depthBonus || 0) + 2 });
-                } else {
-                  newCases[c.id] = { depth: 1, picks: newPicks, resolved: false, firstTryCorrect: false };
-                  setFD({ cases: newCases });
-                }
+                if (optionId === c.rootCause) save(Object.assign(base, { depth: 0, resolved: true, firstTryCorrect: true, bonus: 2, lastOk: true, tried: [] }));
+                else save(Object.assign(base, { depth: 1, resolved: false, firstTryCorrect: false, bonus: 0, lastOk: false, tried: [] }));
               } else if (depth === 1) {
-                if (optionId === c.q1CorrectId) {
-                  newCases[c.id] = { depth: 2, picks: newPicks, resolved: false, firstTryCorrect: false };
-                } else {
-                  newCases[c.id] = { depth: 2, picks: newPicks, resolved: false, firstTryCorrect: false };
-                }
-                setFD({ cases: newCases });
+                var right1 = optionId === c.q1CorrectId;
+                save(Object.assign(base, { depth: 2, resolved: false, firstTryCorrect: false, bonus: right1 ? 1 : 0, lastOk: right1, tried: [] }));
               } else {
-                if (optionId === c.q2CorrectId) {
-                  newCases[c.id] = { depth: 2, picks: newPicks, resolved: true, firstTryCorrect: false };
-                  setFD({ cases: newCases, score: (state.score || 0) + 0.5, depthBonus: (state.depthBonus || 0) + 1 });
-                } else {
-                  newCases[c.id] = { depth: 2, picks: newPicks, resolved: true, firstTryCorrect: false };
-                  setFD({ cases: newCases });
-                }
+                var right2 = optionId === c.q2CorrectId, firstGo = tried.length === 0;
+                if (right2) save(Object.assign(base, { depth: 2, resolved: true, firstTryCorrect: false, bonus: (st.bonus || 0) + (firstGo ? 1 : 0), lastOk: true, tried: tried }));
+                else save(Object.assign(base, { depth: 2, resolved: false, firstTryCorrect: false, bonus: st.bonus || 0, lastOk: false, tried: tried.concat([optionId]) }));
               }
             }
-            return h('div', { key: c.id, className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
+            function retry() { var all = Object.assign({}, cases); delete all[c.id]; setFD({ cases: all }); focusLater('[data-faildx-q="' + c.id + '"]'); }
+            return h('div', { key: c.id, 'data-faildx-case': c.id, className: 'mb-4 p-3 rounded-lg bg-slate-50 border border-slate-200' },
               h('div', { className: 'flex items-baseline gap-2 mb-1' },
                 h('span', { className: 'text-[0.625rem] font-mono text-amber-700 font-bold' }, '#' + (idx + 1)),
                 h('span', { className: 'text-[0.75rem] font-black text-slate-800' }, c.title)
               ),
               h('div', { className: 'text-[0.6875rem] text-slate-700 italic mb-2' }, h('strong', null, 'Observed: '), c.symptom),
-              !isAtFinal && h('div', null,
-                depth > 0 && h('div', { className: 'mb-1 text-[0.625rem] uppercase tracking-wider text-amber-700 font-bold' }, 'Scaffold question ' + depth + ' of 2'),
-                h('div', { className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, currentQ.ask),
+              st.last ? h('p', { role: 'status', 'data-faildx-feedback': st.lastOk ? 'right' : 'wrong', className: 'mb-2 text-[0.6875rem] leading-relaxed ' + (st.lastOk ? 'text-emerald-800' : 'text-rose-800') },
+                h('strong', null, (st.lastOk ? '✓ ' : '✗ ') + labelOf(st.lastId) + ': '), st.last) : null,
+              !st.resolved && h('div', null,
+                depth > 0 && h('div', { className: 'mb-1 text-[0.625rem] uppercase tracking-wider text-amber-700 font-bold' }, 'Follow-up question ' + depth + ' of 2'),
+                h('p', { 'data-faildx-q': c.id, tabIndex: -1, className: 'text-[0.6875rem] font-bold text-slate-700 mb-1' }, currentQ.ask),
                 h('div', { className: 'flex flex-wrap gap-1 mb-2' },
                   currentQ.options.map(function(opt) {
+                    var no = tried.indexOf(opt.id) >= 0;
                     return h('button', {
-                      key: opt.id,
+                      key: opt.id, type: 'button', 'aria-disabled': no ? 'true' : undefined,
                       onClick: function() { handlePick(opt.id); },
-                      className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold border bg-white text-slate-600 border-slate-300 hover:bg-amber-50 hover:border-amber-300 focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]'
-                    }, opt.label);
+                      className: 'transition-colors px-2 py-1 rounded text-[0.6875rem] font-bold border ' + (no ? 'bg-slate-100 text-slate-500 border-dashed border-rose-300 cursor-default' : 'bg-white text-slate-700 border-slate-300 hover:bg-amber-50 hover:border-amber-300') + ' focus:ring-2 focus:ring-amber-400 focus:outline-none active:scale-[0.97]'
+                    }, opt.label, no ? ' (not this one)' : '');
                   })
-                ),
-                depth > 0 && h('p', { className: 'text-[0.625rem] text-amber-700 italic' }, '(Your previous answer triggered this follow-up. The next reveal will explain.)')
+                )
               ),
-              isAtFinal && h('div', null,
+              st.resolved && h('div', null,
                 h('div', { className: 'p-2 rounded bg-amber-50 border-l-4 border-l-amber-400 mb-2' },
-                  h('div', { className: 'text-[0.75rem] font-black text-amber-900 mb-1' },
-                    st.firstTryCorrect ? '✓ First-try diagnosis correct! (+1 case score, +2 depth bonus)' : 'Resolved after ' + picks.length + ' attempts (+ partial credit)'
+                  h('p', { 'data-faildx-result': c.id, tabIndex: -1, className: 'text-[0.75rem] font-black text-amber-900 mb-1' },
+                    st.firstTryCorrect ? '✓ First-try diagnosis correct (+1 case, +2 bonus)' : '✓ Diagnosed by reasoning it through (+1 case, +' + caseBonus(st) + ' bonus)'
                   ),
                   h('p', { className: 'text-[0.6875rem] text-slate-700 leading-relaxed' }, h('strong', null, 'Root cause + reasoning: '), c.finalExplanation)
                 ),
-                h('div', { className: 'text-[0.625rem] text-slate-500 italic' },
-                  'Your reasoning path: ' + picks.map(function(p) { return p.picked; }).join(' → ')
-                )
+                h('p', { className: 'text-[0.6875rem] text-slate-700 mb-1' }, h('strong', null, 'Your reasoning path: '), picks.map(function(p) { return labelOf(p.picked); }).join(' → ')),
+                h('button', { type: 'button', 'data-faildx-retry': c.id, onClick: retry, className: 'px-2 py-1 rounded text-[0.6875rem] font-bold border border-slate-300 bg-white text-slate-700 hover:bg-slate-100' }, 'Try this case again')
               )
             );
           }),
           h('div', { className: 'mt-3 p-2 rounded bg-slate-100 border border-slate-200 text-[0.6875rem] text-slate-700 flex items-center gap-2 flex-wrap' },
-            h('span', null, '🎯'),
-            h('strong', null, 'Case score: ' + (state.score || 0).toFixed(1) + ' / ' + FAIL_DX_CASES.length),
-            h('strong', { className: 'ml-2 text-amber-700' }, 'Depth bonus: +' + (state.depthBonus || 0)),
-            h('span', { className: 'text-slate-500 ml-2 italic' }, 'Multi-step reveals — wrong answers earn follow-up questions, not just corrections.')
+            h('span', { 'aria-hidden': 'true' }, '🎯'),
+            h('strong', null, 'Cases diagnosed: ' + totalScore + ' / ' + FAIL_DX_CASES.length),
+            h('strong', { className: 'ml-2 text-amber-800' }, 'Reasoning bonus: +' + totalBonus),
+            h('span', { className: 'text-slate-600 ml-2 italic' }, 'Each follow-up you answer correctly adds a point, the same as a first-try diagnosis.')
           )
         );
       }
-
       function renderGlossarySection() {
         return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-4 shadow-sm' },
           h('h4', { className: 'text-sm font-black text-slate-800 mb-2' }, '📖 Circuit glossary'),
@@ -10251,7 +10558,7 @@ function CircuitActiveLessonLab(props) {
 
       var SEMICONDUCTORS = [
         { device: 'Diode', symbol: '▷|', behavior: 'Conducts in one direction (anode → cathode); blocks the other.', use: 'Rectifiers, signal demodulation, reverse-polarity protection. ~0.7 V forward drop (Si).' },
-        { device: 'LED (light-emitting diode)', symbol: '▷| with arrows', behavior: 'Diode that emits photons when forward biased. Voltage drop depends on color (red ~1.8 V, blue ~3.3 V).', use: 'Indicators, lighting, displays.' },
+        { device: 'LED (light-emitting diode)', symbol: '▷| with arrows', behavior: 'Diode that emits photons when forward biased. Voltage drop depends on color (this lab: red 2.0 V, blue 3.2 V; real parts vary a little).', use: 'Indicators, lighting, displays.' },
         { device: 'Zener diode', symbol: '▷ǁ', behavior: 'Breaks down at a specific reverse voltage (Vz). Used in reverse mode.', use: 'Voltage references, regulation.' },
         { device: 'Schottky diode', symbol: '▷| with hooks', behavior: 'Metal-semiconductor junction. Low forward drop (~0.3 V), fast switching.', use: 'High-efficiency rectifiers, RF.' },
         { device: 'BJT (NPN)', symbol: 'three terminals', behavior: 'Base current controls collector→emitter current. Active when V_BE ≈ 0.7 V.', use: 'Amplifiers, switches. Current gain (β or h_FE) typically 50-300.' },
@@ -10641,16 +10948,18 @@ function CircuitActiveLessonLab(props) {
           dangerous: { label: 'Dangerous', color: '#f87171', bg: '#2a0a0a', border: '#dc2626', desc: '>25 W in a small resistor will smoke or fail. Redesign to limit current.' }
         })[state];
         // SVG: linear I vs R curve at current V
-        var rs = [];
-        for (var r = 1; r <= 1000; r += 25) { rs.push(r); }
+        // The current axis runs to a round value above both this reading and the curve at 26 Ω (it used to stop at 1.2 A).
+        var iTop = (function(x) { var e = Math.pow(10, Math.floor(Math.log10(x))); return [1, 2, 2.5, 5, 10].map(function(m) { return m * e; }).filter(function(v) { return v >= x; })[0]; })(Math.max(1e-6, current * 1.25, iq.voltage / 26));
+        var rs = [1, 2, 3, 5, 7, 10, 15, 20];
+        for (var r = 26; r <= 1000; r += 25) { rs.push(r); }
         var pts = rs.map(function(r) {
           var i = iq.voltage / r;
           var x = (r / 1000) * 280 + 30;
-          var y = 130 - Math.min(120, i * 100);
+          var y = 130 - Math.min(120, i / iTop * 120);
           return x + ',' + y;
         }).join(' ');
         var hereX = (Math.min(1000, iq.resistance) / 1000) * 280 + 30;
-        var hereY = 130 - Math.min(120, current * 100);
+        var hereY = 130 - Math.min(120, current / iTop * 120);
         return h('div', { className: 'rounded-xl p-4', style: { background: sm.bg, border: '1px solid ' + sm.border, color: '#e8f0f5' } },
           h('h3', { style: { margin: '0 0 4px', fontSize: 15, fontWeight: 800, color: sm.color, textTransform: 'uppercase', letterSpacing: 1 } }, '🔬 Ohm Inquiry — V/I/R/P Discovery'),
           h('p', { style: { margin: '0 0 8px', fontSize: 11, opacity: 0.85, lineHeight: 1.4 } }, 'Set voltage and resistance, then observe where dissipation moves from harmless to component-damaging. The safety band updates live; record a hypothesis or pattern you notice.'),
@@ -10671,8 +10980,8 @@ function CircuitActiveLessonLab(props) {
           h('svg', { width: '100%', height: 160, viewBox: '0 0 320 160', role: 'img', 'aria-label': __alloFill(__alloT('stem.circuit.a11y_ohm_inquiry_current_versus_resistance_graph_at', 'Ohm inquiry current-versus-resistance graph at {value1} volts. Current decreases as resistance increases. Current point: {value2} ohms, {value3} amps, {value4} watts; dissipation state: {value5}.'), { value1: iq.voltage, value2: iq.resistance, value3: current.toFixed(3), value4: power.toFixed(3), value5: sm.label }), style: { background: 'var(--allo-stem-deeper, #0a0a1a)', borderRadius: 6, marginBottom: 10 } },
             h('line', { x1: 30, y1: 130, x2: 310, y2: 130, stroke: '#1e293b' }),
             h('line', { x1: 30, y1: 10, x2: 30, y2: 130, stroke: '#1e293b' }),
-            [0, 250, 500, 750, 1000].map(function(r, i) { return h('text', { key: 'rx' + i, x: 30 + (r / 1000) * 280, y: 145, fill: '#64748b', fontSize: 8, textAnchor: 'middle' }, r + 'Ω'); }),
-            [0, 0.3, 0.6, 0.9, 1.2].map(function(i, j) { return h('text', { key: 'iy' + j, x: 24, y: 132 - i * 100, fill: '#64748b', fontSize: 8, textAnchor: 'end' }, i + 'A'); }),
+            [0, 250, 500, 750, 1000].map(function(r, i) { return h('text', { key: 'rx' + i, x: 30 + (r / 1000) * 280, y: 145, fill: '#94a3b8', fontSize: 8, textAnchor: 'middle' }, r + 'Ω'); }),
+            [0, 0.25, 0.5, 0.75, 1].map(function(k, j) { return h('text', { key: 'iy' + j, 'data-ohm-axis': j, x: 24, y: 132 - k * 120, fill: '#94a3b8', fontSize: 8, textAnchor: 'end' }, Number((k * iTop).toPrecision(2)) + 'A'); }),
             h('polyline', { points: pts, fill: 'none', stroke: sm.color, strokeWidth: 1.5, opacity: 0.7 }),
             h('circle', { cx: hereX, cy: hereY, r: 5, fill: sm.color, stroke: '#fff', strokeWidth: 1 }),
             h('text', { x: hereX + 8, y: hereY - 4, fill: sm.color, fontSize: 10, fontWeight: 700 }, '↘ now'),
@@ -10699,9 +11008,9 @@ function CircuitActiveLessonLab(props) {
             iq.log.slice(-5).map(function(e, i) { return h('div', { key: i }, e.t + '  ' + e.state + ' · V' + e.V + ' R' + e.R + ' I' + e.I + ' P' + e.P); })
           ),
           h('label', { htmlFor: 'circuit-ohm-hypothesis', style: { display: 'block', fontSize: 11, fontWeight: 700, opacity: 0.85, marginBottom: 4 } }, 'Your hypothesis (which moves dissipation fastest — voltage or resistance? In which direction?)'),
-          h('textarea', { id: 'circuit-ohm-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'e.g., doubling voltage quadruples power; halving resistance also quadruples — wait, does it?', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: 'var(--allo-stem-deeper, #0a0a1a)', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
-          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: 'var(--allo-stem-deeper, #0a0a1a)', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
-          iq.stuckRevealed && h('div', { style: { padding: 10, borderRadius: 6, background: 'var(--allo-stem-deeper, #0a0a1a)', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
+          h('textarea', { id: 'circuit-ohm-hypothesis', value: iq.hypothesis, onChange: function(e) { setIQ({ hypothesis: e.target.value }); }, rows: 2, placeholder: 'When I doubled ___, the power ___.', style: { width: '100%', padding: 6, borderRadius: 6, border: '1px solid ' + sm.border, background: 'var(--allo-stem-deeper, #0a0a1a)', color: '#e8f0f5', fontSize: 11, marginBottom: 10, resize: 'vertical' } }),
+          !iq.stuckRevealed && h('button', { onClick: function() { setIQ({ stuckRevealed: true }); circuitRefFocus('[data-iq-stuck]'); }, style: { padding: '6px 10px', fontSize: 11, fontWeight: 700, borderRadius: 6, border: '1px solid #1e293b', background: 'var(--allo-stem-deeper, #0a0a1a)', color: sm.color, cursor: 'pointer', marginBottom: 10 } }, "🤔 I'm stuck — show open questions"),
+          iq.stuckRevealed && h('div', { 'data-iq-stuck': 'true', style: { padding: 10, borderRadius: 6, background: 'var(--allo-stem-deeper, #0a0a1a)', border: '1px dashed ' + sm.border, fontSize: 11, marginBottom: 10, lineHeight: 1.5 } },
             h('div', { style: { fontWeight: 700, color: sm.color, marginBottom: 4 } }, 'Open questions (no answer key)'),
             h('ul', { style: { margin: 0, paddingLeft: 16 } },
               h('li', null, 'P = V²/R and P = I²R both express power. When does each form make intuition easier?'),
@@ -11435,7 +11744,7 @@ function CircuitActiveLessonLab(props) {
       ];
 
       var ACTUATORS = [
-        { actuator: 'LED', purpose: 'Visual indicator', notes: 'Forward voltage 1.8-3.3 V. Always use current-limit resistor.' },
+        { actuator: 'LED', purpose: 'Visual indicator', notes: 'Forward voltage about 2.0-3.2 V by color (this lab: red 2.0, blue and white 3.2 V). Always use current-limit resistor.' },
         { actuator: 'Buzzer (piezo)', purpose: 'Audio alert', notes: 'Active buzzer = built-in oscillator. Passive needs driving frequency.' },
         { actuator: 'Speaker', purpose: 'Audio output', notes: 'Needs amplifier for most volumes. Impedance matters (typically 4-8 Ω).' },
         { actuator: 'DC motor', purpose: 'Continuous rotation', notes: 'Speed via PWM. Direction via H-bridge.' },
@@ -11685,7 +11994,7 @@ function CircuitActiveLessonLab(props) {
       var __circuitExpansions = h('div', { id: 'circuit-reference-panel', role: 'tabpanel', 'aria-labelledby': 'circuit-workspace-tab-reference', tabIndex: 0, className: 'mt-4 max-w-3xl mx-auto' },
         expHeader(),
         expTabBar(),
-        expSection && h('div', { className: 'mt-2' }, renderActiveSection())
+        expSection && h('div', { id: 'circuit-reference-section', className: 'mt-2' }, renderActiveSection())
       );
 
       return h(React.Fragment, null,

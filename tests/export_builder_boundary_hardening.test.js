@@ -354,7 +354,8 @@ describe('Document Builder export boundary hardening', () => {
     const manifest = zip.files.get('imsmanifest.xml');
     const xml = new DOMParser().parseFromString(manifest, 'application/xml');
     expect(xml.querySelector('parsererror')).toBeNull();
-    const resourceIds = Array.from(xml.getElementsByTagNameNS('*', 'resource'), (node) => node.getAttribute('identifier'));
+    // The package profile JSON is listed as its own resource.
+    const resourceIds = Array.from(xml.getElementsByTagNameNS('*', 'resource'), (node) => node.getAttribute('identifier')).filter((id) => id !== 'RES-alloflow-object-profile');
     const itemIds = Array.from(xml.getElementsByTagNameNS('*', 'item'), (node) => node.getAttribute('identifier'));
     expect(resourceIds).toHaveLength(2);
     expect(new Set(resourceIds).size).toBe(2);
@@ -368,9 +369,9 @@ describe('Document Builder export boundary hardening', () => {
 
   it('locks QTI and IMS package language metadata to the active document language', () => {
     const source = readFileSync('export_source.jsx', 'utf8');
-    expect(source).toContain('<lom:string language="${_escapeExportText(exportLang)}">${title}</lom:string>');
+    expect(source).toContain('<lom:langstring xml:lang="${_escapeExportText(exportLang)}">${title}</lom:langstring>');
     expect(source).toContain('<html lang="${_escapeExportText(exportLang)}" dir="${exportDir}">');
-    expect(source).not.toContain('<lom:string language="en">${manifestTitle}</lom:string>');
+    expect(source).not.toContain('<lom:langstring xml:lang="en">${manifestTitle}</lom:langstring>');
     expect(source).not.toContain('correctIndex !== -1 ? `OPT_${correctIndex}` : "OPT_0"');
   });
   it('builds an accessible H5P Single Choice Set from the selected quiz', async () => {

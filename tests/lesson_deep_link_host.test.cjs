@@ -151,6 +151,6 @@ test('all host copies share routing handlers, selectedSlug wiring, and the recov
     assert.match(text, /selectedSlug: communityCatalogLessonSlug/);
     assert.match(text, /loadProjectFromJson: handleImportCatalogLesson/);
     assert.match(text, /onClose=\{closeCommunityCatalog\}.*accessibleModal=\{true\}/);
-    assert.match(text, /isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.LaunchPadView && !lessonDeepLinkActive && React.createElement/);
+    assert.match(text, /isAppReady && canvasRecoveryDecisionMade && !hasSelectedMode && !shellDeepLinkTool && window.AlloModules && window.AlloModules.LaunchPadView && !lessonDeepLinkActive && !runTour && React.createElement/);
   }
 });

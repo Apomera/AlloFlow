@@ -66,7 +66,8 @@ const WATCHED = {
     uses: (body) => /[^\w.$]h\s*\(\s*['"]/.test(body),          // h('div', ...)
     // Rebinding createElement — directly, or passed down as props.h / opts.h /
     // ctx.h — is the same value under the same name. Not a shadow worth naming.
-    wrong: (init) => !/createElement|\b(?:props|opts|ctx|p)\s*\.\s*(?:env\s*\.\s*)?h\b/.test(init)
+    // A helper that takes the environment itself (`function part(env) { var h = env.h; ... }`) is the same case.
+    wrong: (init) => !/createElement|\b(?:props|opts|ctx|p|env)\s*\.\s*(?:env\s*\.\s*)?h\b/.test(init)
   }
 };
 
@@ -105,6 +106,10 @@ const FIXTURES = [
     "function counterOnly() {\n  var n = 0;\n  for (var t = 0; t < 10; t++) { n += t; }\n  return n;\n}\n" },
   { name: 'house idiom (h passed through a component environment)', flag: false, src:
     "var h = React.createElement;\nfunction inner(props) {\n  var h = props.env.h;\n  return h('div', null, 'ok');\n}\n" },
+  { name: 'house idiom (helper takes the environment and reads env.h)', flag: false, src:
+    "var h = React.createElement;\nfunction part(env) {\n  var h = env.h, P = env.P;\n  return h('div', null, 'ok');\n}\n" },
+  { name: 'live h (a node read off an unrelated object is still a shadow)', flag: true, src:
+    "var h = React.createElement;\nfunction inner(box) {\n  var h = box.height;\n  return h('div', null, 'bad');\n}\n" },
   { name: 'live h (DOM element shadowing createElement)', flag: true, src:
     "var h = React.createElement;\nfunction inner() {\n  var h = document.getElementById('panel');\n  return h('div', null, 'bad');\n}\n" },
   { name: 'house idiom (h rebound to createElement in a nested IIFE)', flag: false, src:

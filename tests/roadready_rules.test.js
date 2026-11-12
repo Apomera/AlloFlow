@@ -97,6 +97,7 @@ const PERMIT_CATEGORIES = [
   'signs',
   'gdl',
   'dui',
+  'distracted',
   'winter',
   'pedestrian',
   'emergency',
@@ -118,19 +119,19 @@ const UNIVERSAL_RULE_PILLARS = {
   pedestrian: ['Marked crosswalk: Maine §2056', 'WHITE or METALLIC CANE or GUIDE DOG', 'Never pass a vehicle stopped at a crosswalk'],
   emergency: ['pull to the RIGHT curb and stop', 'Move Over', 'Disabled vehicle on the shoulder'],
   railroad: ['Never drive around lowered gates', 'Stuck on tracks', '45'],
-  speedAndFollowing: ['reasonable and prudent', '3-second following rule', 'Posted special speed zones'],
+  speedAndFollowing: ['reasonable and prudent', '4-second following rule', 'Posted special speed zones'],
 };
 
 const DRIVING_SCENARIOS = [
   { id: 'residential', speedLimit: 25, phrases: ['Watch for kids', 'driveways'] },
   { id: 'suburban', speedLimit: 40, phrases: ['traffic lights', 'turn lanes'] },
-  { id: 'highway', speedLimit: 65, phrases: ['Practice merging', '3-second following distance'] },
+  { id: 'highway', speedLimit: 65, phrases: ['Practice merging', '4-second following distance'] },
   { id: 'roundabout', speedLimit: 25, phrases: ['Yield to traffic already in the circle', 'Keep moving unless safety requires a stop'] },
   { id: 'rural', speedLimit: 50, phrases: ['moose', 'deer', 'cyclists'] },
   { id: 'parking', speedLimit: 10, phrases: ['Parallel Parking', 'road-test maneuver'] },
   { id: 'night', speedLimit: 40, phrases: ['Night Driving', 'Do not overdrive'] },
   { id: 'fog', speedLimit: 30, phrases: ['Low beams only', 'Slow WAY down'] },
-  { id: 'rain', speedLimit: 45, phrases: ['Hydroplaning risk', 'Headlights on when wipers are in constant use'] },
+  { id: 'rain', speedLimit: 45, phrases: ['Hydroplaning can begin', 'Headlights on when wipers are in constant use'] },
   { id: 'snow', speedLimit: 35, phrases: ['Snow-covered road', 'Gentle inputs only'] },
   { id: 'construction', speedLimit: 35, phrases: ['flagger and cones', 'Posted construction-speed fines can double'] },
   { id: 'school_zone', speedLimit: 15, phrases: ['Maine §2074: 15 mph during recess', 'crossing guard'] },
@@ -526,7 +527,7 @@ describe('RoadReady rules-of-road content', () => {
 
   it('marks Maine §2074 school-zone speed as 15 mph during active periods', () => {
     const src = readRoadReady('stem_lab/stem_tool_roadready.js');
-    const block = src.match(/\{ q: 'The speed limit in a Maine school zone during active school-zone times is typically:'[\s\S]*?category: 'pedestrian' \}/)?.[0];
+    const block = src.match(/\{ q: 'What is the usual speed limit in a Maine school zone during active school-zone times\?'[\s\S]*?category: 'pedestrian' \}/)?.[0];
 
     expect(block).toBeTruthy();
     expect(block).toContain("a: ['15 mph',");
@@ -535,7 +536,7 @@ describe('RoadReady rules-of-road content', () => {
     expect(block).toContain('during recess, school opening/closing windows, flashing school-zone signs during opening/closing hours, or locally designated active times');
     expect(block).not.toContain('when children are present is typically');
 
-    const flashingBlock = src.match(/\{ q: 'A flashing yellow light at a school zone means:'[\s\S]*?category: 'pedestrian' \}/)?.[0];
+    const flashingBlock = src.match(/\{ q: 'What does a flashing yellow light at a school zone mean\?'[\s\S]*?category: 'pedestrian' \}/)?.[0];
     expect(flashingBlock).toBeTruthy();
     expect(flashingBlock).toContain('active school-zone speed limit (15 mph in Maine) is in effect');
     expect(flashingBlock).toContain('Maine §2074 sets the school-zone speed at 15 mph during active periods');
@@ -567,7 +568,7 @@ describe('RoadReady rules-of-road content', () => {
   it('does not teach entering a red-light intersection for emergency vehicles', () => {
     for (const relPath of ROADREADY_FILES) {
       const src = readRoadReady(relPath);
-      const block = src.match(/\{ q: 'You are stopped at a red light when an ambulance with sirens approaches from behind\. You should:'[\s\S]*?category: 'emergency' \}/)?.[0];
+      const block = src.match(/\{ q: 'You are stopped at a red light when an ambulance with sirens approaches from behind\. What should you do\?'[\s\S]*?category: 'emergency' \}/)?.[0];
       const scenario = src.match(/id: 'intersection_clear'[\s\S]*?id: 'oncoming_divided'/)?.[0];
 
       expect(block).toBeTruthy();
@@ -588,7 +589,7 @@ describe('RoadReady rules-of-road content', () => {
   it('does not teach a Maine divided-highway exception for approaching emergency vehicles', () => {
     for (const relPath of ROADREADY_FILES) {
       const src = readRoadReady(relPath);
-      const permitBlock = src.match(/\{ q: 'An emergency vehicle is approaching on a divided highway from the OPPOSITE direction\. You must:'[\s\S]*?category: 'emergency' \}/)?.[0];
+      const permitBlock = src.match(/\{ q: 'An emergency vehicle is approaching on a divided highway from the OPPOSITE direction\. What must you do\?'[\s\S]*?category: 'emergency' \}/)?.[0];
       const scenario = src.match(/id: 'oncoming_divided'[\s\S]*?id: 'oncoming_undivided'/)?.[0];
 
       expect(permitBlock).toBeTruthy();
@@ -626,8 +627,8 @@ describe('RoadReady rules-of-road content', () => {
   it('uses current Maine under-21 zero-tolerance alcohol wording', () => {
     for (const relPath of ROADREADY_FILES) {
       const src = readRoadReady(relPath);
-      const adultLimitBlock = src.match(/\{ q: 'In Maine, the legal BAC limit for drivers 21 and older is:'[\s\S]*?category: 'dui' \}/)?.[0];
-      const under21Block = src.match(/\{ q: 'In Maine, the BAC limit for drivers UNDER 21 is:'[\s\S]*?category: 'dui' \}/)?.[0];
+      const adultLimitBlock = src.match(/\{ q: 'In Maine, what is the legal BAC limit for drivers 21 and older\?'[\s\S]*?category: 'dui' \}/)?.[0];
+      const under21Block = src.match(/\{ q: 'In Maine, what is the BAC limit for drivers UNDER 21\?'[\s\S]*?category: 'dui' \}/)?.[0];
       const lookbackBlock = src.match(/\{ q: 'For Maine OUI penalty escalation, prior OUI offenses are counted within what lookback period\?'[\s\S]*?category: 'dui' \}/)?.[0];
       const zeroToleranceScenario = src.match(/id: 'zero_tolerance'[\s\S]*?id: 'weed_legal'/)?.[0];
       const firstOffenseScenario = src.match(/id: 'first_offense'[\s\S]*?\}\s*\]\s*\}\);/m)?.[0];
@@ -693,7 +694,7 @@ describe('RoadReady rules-of-road content', () => {
     for (const relPath of ROADREADY_FILES) {
       const src = readRoadReady(relPath);
       const alcoholBlock = src.match(/\{ q: 'What percentage of all traffic deaths in the US involve alcohol\?'[\s\S]*?category: 'dui' \}/)?.[0];
-      const drowsyBlock = src.match(/\{ q: 'Drowsy driving is comparable in danger to:'[\s\S]*?category: 'dui' \}/)?.[0];
+      const drowsyBlock = src.match(/\{ q: 'Drowsy driving is about as dangerous as which of these\?'[\s\S]*?category: 'dui' \}/)?.[0];
 
       expect(alcoholBlock).toBeTruthy();
       expect(alcoholBlock).toContain('about 30% of U.S. traffic crash fatalities involve drunk drivers');
@@ -776,7 +777,7 @@ describe('RoadReady rules-of-road content', () => {
   it('uses current Maine headlight and high-beam dimming wording from section 2067', () => {
     for (const relPath of ROADREADY_FILES) {
       const src = readRoadReady(relPath);
-      const headlightQuestion = src.match(/\{ q: 'Maine law requires headlights to be on:'[\s\S]*?category: 'general' \}/)?.[0];
+      const headlightQuestion = src.match(/\{ q: 'When does Maine law require you to turn on your headlights\?'[\s\S]*?category: 'general' \}/)?.[0];
 
       expect(src).toContain('Required sunset to sunrise; when rain, fog, snow, or other conditions make people/vehicles not discernible 1,000 ft ahead; and when windshield wipers are in constant use.');
       expect(src).toContain('Headlights on when wipers are in constant use or visibility is reduced.');
@@ -787,7 +788,7 @@ describe('RoadReady rules-of-road content', () => {
       expect(src).toContain('Use high beams only when clear; Maine §2067 requires dimming within 500 ft of oncoming traffic and within 300 ft when following another vehicle.');
 
       expect(headlightQuestion).toBeTruthy();
-      expect(headlightQuestion).toContain('When windshield wipers are in constant use');
+      expect(headlightQuestion).toContain('From sunset to sunrise, and whenever your wipers are in constant use');
       expect(headlightQuestion).toContain('Maine §2067 requires headlights from sunset to sunrise');
       expect(headlightQuestion).toContain('visibility is under 1,000 ft');
       expect(headlightQuestion).toContain('windshield wipers are in constant use');
@@ -811,7 +812,7 @@ describe('RoadReady rules-of-road content', () => {
       expect(catalog.required_when_wipers_on).toBe(' required when wipers are in constant use or visibility is under 1,000 ft');
       expect(catalog.high_beams_are_on_remember_to_dim_for_).toBe('High beams are on. Maine requires dimming for oncoming traffic and when following another vehicle.');
       expect(catalog.dim_high_beams_within_500_ft_of_oncomi).toBe('• Maine §2067: dim high beams within 500 ft of oncoming traffic or 300 ft when following another vehicle.');
-      expect(catalog.rain_desc).toBe('Wet pavement. Friction drops ~40%. Hydroplaning risk above 45 mph. Headlights on when wipers are in constant use or visibility is reduced.');
+      expect(catalog.rain_desc).toBe('Wet pavement. Friction drops ~40%. Hydroplaning can begin at 30 to 40 mph. Headlights on when wipers are in constant use or visibility is reduced.');
       expect(catalog.night_content).toContain('Use high beams only when clear');
       expect(catalog.night_content).toContain('within 500 ft of oncoming traffic and within 300 ft when following another vehicle');
 
@@ -896,9 +897,9 @@ describe('RoadReady rules-of-road content', () => {
   it('uses current Maine handheld-phone and snow/ice wording', () => {
     for (const relPath of ROADREADY_FILES) {
       const src = readRoadReady(relPath);
-      const snowQuestion = src.match(/\{ q: 'Before driving in winter, Maine law requires you to:'[\s\S]*?category: 'winter' \}/)?.[0];
-      const textingQuestion = src.match(/\{ q: 'Texting while driving is:'[\s\S]*?category: 'dui' \}/)?.[0];
-      const phoneQuestion = src.match(/\{ q: 'Cell phone use while driving in Maine is:'[\s\S]*?category: 'dui' \}/)?.[0];
+      const snowQuestion = src.match(/\{ q: 'Before you drive in winter, what does Maine law require you to do\?'[\s\S]*?category: 'winter' \}/)?.[0];
+      const textingQuestion = src.match(/\{ q: 'Is texting while driving legal in Maine\?'[\s\S]*?category: 'distracted' \}/)?.[0];
+      const phoneQuestion = src.match(/\{ q: 'What is the rule for cell phone use while driving in Maine\?'[\s\S]*?category: 'distracted' \}/)?.[0];
 
       expect(src).toContain("First offense: $50; hands-free only for drivers 18+ who are not on a learner\\'s permit or intermediate license.");
       expect(src).toContain('no mobile-device use while driving, including hands-free or GPS input');
@@ -987,9 +988,9 @@ describe('RoadReady rules-of-road content', () => {
     for (const relPath of ROADREADY_FILES) {
       const src = readRoadReady(relPath);
       const markedCrosswalkQuestion = src.match(/\{ q: 'At a marked crosswalk in Maine, when must a driver yield to a pedestrian\?'[\s\S]*?category: 'pedestrian' \}/)?.[0];
-      const outsideCrosswalkQuestion = src.match(/\{ q: 'If a pedestrian is crossing outside a marked crosswalk in Maine, a driver should:'[\s\S]*?category: 'pedestrian' \}/)?.[0];
-      const visualImpairmentQuestion = src.match(/\{ q: 'A pedestrian carrying a white cane \(sometimes with a red tip\) is signaling:'[\s\S]*?category: 'pedestrian' \}/)?.[0];
-      const crossingGuardQuestion = src.match(/\{ q: 'Approaching a school crossing where a crossing guard holds up a stop paddle, you must:'[\s\S]*?category: 'pedestrian' \}/)?.[0];
+      const outsideCrosswalkQuestion = src.match(/\{ q: 'A pedestrian is crossing outside a marked crosswalk in Maine\. What should a driver do\?'[\s\S]*?category: 'pedestrian' \}/)?.[0];
+      const visualImpairmentQuestion = src.match(/\{ q: 'A pedestrian is carrying a white cane \(sometimes with a red tip\)\. What does the cane tell you, and what should you do\?'[\s\S]*?category: 'pedestrian' \}/)?.[0];
+      const crossingGuardQuestion = src.match(/\{ q: 'You approach a school crossing where a crossing guard holds up a stop paddle\. What must you do\?'[\s\S]*?category: 'pedestrian' \}/)?.[0];
 
       expect(markedCrosswalkQuestion).toBeTruthy();
       expect(markedCrosswalkQuestion).toContain('shows visible intent to enter the marked crosswalk');
@@ -998,7 +999,7 @@ describe('RoadReady rules-of-road content', () => {
       expect(outsideCrosswalkQuestion).toContain('pedestrian generally yields outside marked crosswalks');
       expect(outsideCrosswalkQuestion).toContain('drivers must exercise due care');
       expect(visualImpairmentQuestion).toBeTruthy();
-      expect(visualImpairmentQuestion).toContain('Visual impairment — yield, stop as needed, and give room');
+      expect(visualImpairmentQuestion).toContain('Visual impairment — stop, wait, and give room');
       expect(visualImpairmentQuestion).toContain('A white or metallic cane, with or without a red tip, or a guide/personal care dog');
       expect(visualImpairmentQuestion).toContain('Maine §2056 requires drivers to yield');
       expect(visualImpairmentQuestion).toContain('$50-$1,000 fine');

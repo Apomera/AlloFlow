@@ -4130,6 +4130,104 @@
       });
       return any ? out : null;
     }
+    // Road Ready keeps progress and settings only. Never the name, plate, GDL
+    // dates, pledge, reflections or anything else a student typed (those stay in
+    // the file the student downloads). Every field has its own shape; map keys
+    // and ids come from fixed lists, because a key can hold a name as easily as
+    // a value can; no saved string has whitespace. Checked on save AND restore.
+    // tests/roadready_ps32_host_persist.test.js pins the lists against the tool.
+    var _RR_BADGES = ['first_drive', 'no_crash', 'eco_warrior', 'safety_star', 'a_plus', 'permit_pass', 'night_owl', 'winter_warrior', 'hypermiler', 'full_stop', 'signal_perfect', 'park_master', 'three_point', 'speed_discipline', 'moose_dodge', 'five_scenarios', 'emergency_yield', 'ten_drives', 'hazard_ace', 'night_drive', 'all_weather', 'first_landmark', 'five_landmarks', 'ten_landmarks', 'school_hero', 'emergency_response', 'maine_explorer', 'civic_scholar', 'safe_return', 'bus_respect', 'first_challenge', 'five_challenges', 'biome_tourist', 'pretrip_pro', 'daily_streak_3', 'daily_streak_7', 'daily_streak_30', 'peer_pro', 'road_test_pass', 'defensive_drill', 'logbook_starter', 'logbook_ten_hr', 'maintenance_master', 'moose_safe', 'moose_avoided', 'emg_ready', 'bus_safe', 'rail_ready', 'winter_ready', 'zone_wise', 'gdl_scholar'];
+    var _RR_SCENARIOS = ['residential', 'suburban', 'highway', 'roundabout', 'rural', 'parking', 'night', 'fog', 'rain', 'snow', 'construction', 'school_zone', 'downtown', 'dawn'];
+    var _RR_WEATHERS = ['clear', 'rain', 'snow', 'fog'];
+    var _RR_TRIPS = ['lighthouse_loop', 'school_run', 'civic_tour', 'errand_run', 'emergency_route'];
+    var _RR_PRETRIP = ['tire_psi','tire_tread', 'tire_damage', 'tire_spare', 'lights_head', 'lights_brake', 'lights_signal', 'lights_reverse', 'lights_plate', 'fluid_oil', 'fluid_coolant', 'fluid_brake', 'fluid_washer', 'fluid_trans', 'wiper_blades', 'glass_crack', 'mirror_adjust', 'defog', 'safe_belts', 'safe_airbag', 'safe_horn', 'safe_kit', 'safe_papers', 'seat_pos', 'mirror_drive', 'belt_on', 'pbrake', 'walk_around'];
+    var _RR_DAY = /^\d{4}-\d{2}-\d{2}$/;
+    function _rrNum(v, lo, hi) { return typeof v === 'number' && isFinite(v) && v >= lo && v <= hi ? v : undefined; }
+    function _rrBool(v) { return typeof v === 'boolean' ? v : undefined; }
+    function _rrOneOf(list) { return function (v) { return typeof v === 'string' && list.indexOf(v) !== -1 ? v : undefined; }; }
+    // A map whose keys must be in `ids`; `each` cleans one value.
+    function _rrIdMap(v, ids, each) {
+      if (!_mpPlain(v)) return undefined;
+      var out = {};
+      ids.forEach(function (id) {
+        if (!Object.prototype.hasOwnProperty.call(v, id)) return;
+        var c = each(v[id]);
+        if (c !== undefined) out[id] = c;
+      });
+      return out;
+    }
+    // A record of numbers: { field: [lo, hi] }. Anything else in it is left out.
+    function _rrNums(v, spec) {
+      var out = {};
+      if (_mpPlain(v)) Object.keys(spec).forEach(function (f) { var n = _rrNum(v[f], spec[f][0], spec[f][1]); if (n !== undefined) out[f] = n; });
+      return out;
+    }
+    function _rrFlag(x) { return x === true || (typeof x === 'number' && isFinite(x) && x > 0) ? true : undefined; }
+    function _rrDayOf(ms) {
+      if (_rrNum(ms, 1, 8.64e15) === undefined) return undefined;
+      var dt = new Date(ms), p = function (n) { return (n < 10 ? '0' : '') + n; };
+      var key = dt.getFullYear() + '-' + p(dt.getMonth() + 1) + '-' + p(dt.getDate());
+      return _RR_DAY.test(key) ? key : undefined;
+    }
+    // One logbook line: which course, how long, the two scores and the day.
+    // No event text, no clock time, no vehicle or weather words.
+    function _rrLogLine(j) {
+      if (!_mpPlain(j)) return undefined;
+      var out = _rrNums(j, { durationSec: [0, 86400], safetyScore: [0, 100], efficiencyScore: [0, 100] });
+      var sid = _rrOneOf(_RR_SCENARIOS)(j.scenarioId) || _rrOneOf(_RR_SCENARIOS)(j.scenario);
+      if (sid) out.scenario = sid;
+      var day = typeof j.day === 'string' && _RR_DAY.test(j.day) ? j.day : (_rrDayOf(j.endedAt) || _rrDayOf(j.startedAt));
+      if (day) out.day = day;
+      if (j.qualifyingSession === false) out.qualifyingSession = false;
+      return out.durationSec === undefined ? undefined : out;
+    }
+    var _ROAD_READY_SAVED = {
+      badges: function (v) { return _rrIdMap(v, _RR_BADGES, _rrFlag); },
+      scenariosDriven: function (v) { return _rrIdMap(v, _RR_SCENARIOS, function (x) { return x ? _rrNums(x, { bestSafety: [0, 100], lastSafety: [0, 100], driveCount: [0, 1e6] }) : undefined; }); },
+      weathersDriven: function (v) { return _rrIdMap(v, _RR_WEATHERS, _rrFlag); },
+      completedTrips: function (v) { return _rrIdMap(v, _RR_TRIPS, function (x) { return x ? _rrNums(x, { timeSec: [0, 86400] }) : undefined; }); },
+      preTripChecks: function (v) { return _rrIdMap(v, _RR_PRETRIP, function (x) { return x === true ? true : undefined; }); },
+      totalDrives: function (v) { var n = _rrNum(v, 0, 1e6); return n === undefined ? undefined : Math.floor(n); },
+      rideshareTotal: function (v) { return _mpPlain(v) ? _rrNums(v, { rides: [0, 1e6], earnings: [0, 1e7] }) : undefined; },
+      tourCompleted: function (v) { return v === true ? true : undefined; },
+      reducedMotion: _rrBool, calmDrive: _rrBool, realMirrors: _rrBool, rideAlong: _rrBool, instructorVoice: _rrBool,
+      hudPreset: _rrOneOf(['driver', 'science', 'instructor', 'calm']),
+      hudTextScale: function (v) { return _rrNum(v, 1, 1.35); },
+      gfxQuality: _rrOneOf(['auto', 'high', 'medium', 'low']),
+      // A colour from the palette or the colour picker: always #rrggbb.
+      carColor: function (v) { return typeof v === 'string' && /^#[0-9a-f]{6}$/i.test(v) ? v : undefined; },
+      // Flashcard tallies by bank index (the keys are numbers, not question text).
+      permitFlashHistory: function (v) {
+        return _mpMap(v, /^\d{1,4}$/, function (x) { return _mpPlain(x) ? _rrNums(x, { correct: [0, 1e6], wrong: [0, 1e6] }) : undefined; });
+      },
+      // Permit mastery by question id (bank index; never question text): only how many times it was right.
+      permitMastery: function (v) {
+        return _mpMap(v, /^\d{1,4}$/, function (x) { return _mpPlain(x) ? _rrNums(x, { correctCount: [1, 1e6] }) : (x === true ? {} : undefined); });
+      },
+      dailyChallenge: function (v) {
+        if (!_mpPlain(v) || typeof v.date !== 'string' || !_RR_DAY.test(v.date)) return undefined;
+        return { date: v.date, done: v.done === true, streak: Math.floor(_rrNum(v.streak, 0, 100000) || 0) };
+      },
+      logbook: function (v) {
+        if (!Array.isArray(v)) return undefined;
+        var lines = [];
+        v.slice(-100).forEach(function (j) { var c = _rrLogLine(j); if (c) lines.push(c); });
+        return lines;
+      }
+    };
+    function _rrSaved(bucket) {
+      if (!_mpPlain(bucket)) return null;
+      var out = {}, any = false;
+      Object.keys(_ROAD_READY_SAVED).forEach(function (f) {
+        if (!Object.prototype.hasOwnProperty.call(bucket, f)) return;
+        var c;
+        try { c = _ROAD_READY_SAVED[f](bucket[f]); } catch (_) { c = undefined; }
+        // Nothing earned yet is not worth a key: {} and [] stay out.
+        if (c === undefined || (typeof c === 'object' && Object.keys(c).length === 0)) return;
+        out[f] = c; any = true;
+      });
+      return any ? out : null;
+    }
     function _mpPlain(v) { return !!v && typeof v === 'object' && Object.prototype.toString.call(v) === '[object Object]'; }
     function _mpCount(v) { return typeof v === 'number' && isFinite(v) && v >= 0 && v <= 1e9; }
     function _mpMap(v, re, each) {
@@ -4207,6 +4305,8 @@
       Object.keys(_MATH_PROGRESS_SAVED).concat('_stemProgressPending').forEach(function (k) { delete _parsedForHydration[k]; });
       var _coral = _crSaved(_parsedForHydration.coralReef);
       if (_coral) _parsedForHydration.coralReef = _coral; else delete _parsedForHydration.coralReef;
+      var _road = _rrSaved(_parsedForHydration.roadReady);
+      if (_road) _parsedForHydration.roadReady = _road; else delete _parsedForHydration.roadReady;
       return _stemRestoreMathProgress(Object.assign({}, prev, _parsedForHydration, { _persisted: true }), parsed);
     }
     function _stemApplyPendingProgress(prev) {
@@ -4255,6 +4355,8 @@
           }
           var _coralSave = _crSaved(labToolData.coralReef);
           if (_coralSave) _toSave.coralReef = _coralSave;
+          var _roadSave = _rrSaved(labToolData.roadReady);
+          if (_roadSave) _toSave.roadReady = _roadSave;
           // Progress still waiting for its bucket counts as that tool's state.
           var _pend = _mpPlain(labToolData._stemProgressPending) ? labToolData._stemProgressPending : {};
           Object.keys(_MATH_PROGRESS_SAVED).forEach(function (k) {
@@ -4268,10 +4370,12 @@
     }
     function _createStemAutosave() {
       var key = 'alloflow_stemlab_v2';
-      var keys = _STEM_SAVED_KEYS.concat(['flightSim', 'beehive', 'kitchenLab', 'coralReef', '_stemProgressPending'], Object.keys(_MATH_PROGRESS_SAVED));
+      var keys = _STEM_SAVED_KEYS.concat(['flightSim', 'beehive', 'kitchenLab', 'coralReef', 'roadReady', '_stemProgressPending'], Object.keys(_MATH_PROGRESS_SAVED));
       var previousRefs = null, pending = null, timer = null, disposed = false;
       var lastSaved = null;
       try { lastSaved = localStorage.getItem(key); } catch (_) {}
+      // Road Ready tells the student what this device keeps only when a saver that keeps it is running.
+      try { window.__alloStemSavesRoadReady = true; } catch (_) {}
       function flush() {
         if (timer !== null) { clearTimeout(timer); timer = null; }
         if (!pending) return;
@@ -4283,7 +4387,10 @@
             lastSaved = encoded;
           }
           pending = null;
-        } catch (_) {}
+        } catch (_) {
+          // A failed write: Road Ready must not tell the student this device keeps the progress.
+          try { window.__alloStemSaveWriteFailed = true; } catch (_e) {}
+        }
       }
       function onVisibility() { if (document.hidden) flush(); }
       window.addEventListener('pagehide', flush);
@@ -9102,8 +9209,29 @@
                 count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowPlayLab', 'playlab.state.v1'), 'playCatalog'), 13); } },
               { id: 'roadReady', icon: '🚗', label: t('stem.roadready.permit_mastery') || 'Permit Mastery',
                 color: '#fbbf24', accent: 'rgba(251,191,36,0.15)',
-                slot: '__alloflowRoadReady', lsKey: 'roadReady.permitMastery.v1', total: 185,
-                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowRoadReady', 'roadReady.permitMastery.v1'), 'permitMastery'), 185); } },
+                slot: '__alloflowRoadReady', lsKey: 'roadReady.permitMastery.v1',
+                // 257 = 261 permit questions, 4 retired (tests/roadready_ps32_atlas.test.js
+                // pins it against the tool). Once the tool has run, its own live
+                // number replaces this just below the table.
+                total: 257,
+                count: function () {
+                  var total = this.total, clamp = function (n) { return _atlasClamp(n, total); };
+                  var slot = null, stored = null, bank = null;
+                  try { slot = window.__alloflowRoadReady || null; } catch (e) {}
+                  // Before the tool has run there is only the device copy, and that
+                  // key holds the mastery map itself (not a state object around it).
+                  if (!slot) {
+                    try { stored = JSON.parse(localStorage.getItem('roadReady.permitMastery.v1') || 'null'); } catch (e) {}
+                    // Saves keyed by question id ('12') count those keys; an older save keyed by text counts all.
+                    var ids = stored && typeof stored === 'object' && !Array.isArray(stored) ? Object.keys(stored).filter(function (k) { return /^\d{1,4}$/.test(k); }).length : 0;
+                    return clamp(ids || _atlasMapCount(stored));
+                  }
+                  try { bank = window.__alloflowRoadReadyBank || null; } catch (e) {}
+                  // The tool counts the saved answers that still match a live
+                  // question. That count is for one mastery map: use it only for that map.
+                  var live = bank && typeof bank === 'object' && bank.of && bank.of === slot.permitMastery ? Number(bank.mastered) : NaN;
+                  return clamp(isFinite(live) && live >= 0 ? live : _atlasMapCount(slot, 'permitMastery'));
+                } },
               { id: 'assessmentLiteracy', icon: '🔍', label: t('stem.tools_menu.junk_science') || 'Junk-Science',
                 color: '#c026d3', accent: 'rgba(192,38,211,0.15)',
                 slot: '__alloflowAssessmentLiteracy', lsKey: 'assessmentLiteracy.state.v1', total: 15,
@@ -9117,6 +9245,14 @@
                 slot: '__alloflowAquacultureLab', lsKey: 'aquacultureLab.state.v1', total: 5,
                 count: function () { var s = _readSlot('__alloflowAquacultureLab', 'aquacultureLab.state.v1'); return _atlasClamp(s && typeof s.droppersDeployed === 'number' ? s.droppersDeployed : 0, 5); } }
             ];
+            // Road Ready's permit bank changes size between releases: show the
+            // tool's own live total when it has published one.
+            _atlasEntries.forEach(function (e) {
+              var n = NaN;
+              if (e.id !== 'roadReady') return;
+              try { n = Number((window.__alloflowRoadReadyBank || {}).total); } catch (err) {}
+              if (isFinite(n) && n >= 1) e.total = Math.floor(n);
+            });
             var _atlasActive = _atlasEntries.map(function (e) { return Object.assign({}, e, { current: e.count() }); }).filter(function (e) { return e.current > 0; });
             var _atlasTotal = _atlasActive.reduce(function (s, e) { return s + e.current; }, 0);
             return /*#__PURE__*/React.createElement("div", {

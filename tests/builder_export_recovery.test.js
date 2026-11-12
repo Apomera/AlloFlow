@@ -11,6 +11,10 @@ function callback(name, bindings) {
   return new Function(...Object.keys(bindings), 'return (' + source.slice(fn.start, fn.end) + ');')(...Object.values(bindings));
 }
 
+// runPackageExport calls this file-level helper; lift the real one so the IMS path runs as shipped.
+const helperStart = source.indexOf('function _removeStudentPackageTeacherSections(root) {');
+const removeTeacherSections = new Function(source.slice(helperStart, source.indexOf('\nfunction ', helperStart + 10)) + '\nreturn _removeStudentPackageTeacherSections;')();
+
 beforeAll(() => loadAlloModule('export_handlers_module.js'));
 afterEach(() => { vi.restoreAllMocks(); window.localStorage.clear(); });
 
@@ -92,8 +96,8 @@ describe('Builder recovery and export coordination', () => {
     const onExportSuccess = vi.fn();
     const handleExportIMS = result === 'throw' ? vi.fn().mockRejectedValue(new Error('Packaging failed')) : vi.fn().mockResolvedValue(false);
     const run = callback('runPackageExport', {
-      ...b, altExportBusy: '', handleExportIMS, handleExportQTI: null, handleExportH5P: null,
-      addToast: vi.fn(), onExportSuccess, getCleanBuilderDocument: () => ({ html: '<p>Latest edit</p>', title: 'Draft' }),
+      ...b, _removeStudentPackageTeacherSections: removeTeacherSections, altExportBusy: '', handleExportIMS, handleExportQTI: null, handleExportH5P: null,
+      addToast: vi.fn(), onExportSuccess, getCleanBuilderDocument: () => ({ html: '<p>Latest edit</p>', title: 'Draft' }), exportConfig: {},
     });
     await run('ims');
     expect(handleExportIMS).toHaveBeenCalledWith({ liveHtml: '<p>Latest edit</p>', liveTitle: 'Draft' });

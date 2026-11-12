@@ -127,6 +127,9 @@ describe('Assessment export accessibility', () => {
     doc.querySelector('.quiz-check-btn').click();
     expect(doc.querySelector('.quiz-results').textContent).toBe('2 of 3 correct · 1 unanswered');
     expect(questions[1].querySelector('.alloflow-quiz-feedback').textContent).toBe('Correct');
+    // 2026-11-11: the first press only warns; the second clears.
+    doc.querySelector('.quiz-reset-btn').click();
+    expect(doc.querySelectorAll('input:checked').length).toBeGreaterThan(0);
     doc.querySelector('.quiz-reset-btn').click();
     expect(doc.querySelectorAll('input:checked')).toHaveLength(0);
     expect(doc.querySelector('.quiz-results').textContent).toBe('Responses cleared.');

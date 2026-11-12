@@ -857,6 +857,8 @@
   // mode key, action kind, or forbidden phrase.
   // ───────────────────────────────────────────────────────────────────────
   var MODE_KEYS_ALLOW = new Set(['full', 'guided', 'learning_tools', 'educator']);
+  // Role-first Launch Pad doors (the host's pickMode maps each to a door).
+  var ROLE_KEYS_ALLOW = new Set(['teacher', 'full', 'student', 'family', 'specialist', 'adult']);
   var LINK_KEYS_ALLOW = new Set(['ai_backend_settings']);
   var ACTION_KINDS_ALLOW = new Set(['pick_mode', 'start_tour', 'open_link', 'open_help']);
   var BLOCKED_REASONS_ALLOW = new Set([
@@ -893,7 +895,8 @@
     return null;
   }
 
-  function validateCoachResponse(raw, meta) {
+  function validateCoachResponse(raw, meta, layout) {
+    var pickKeys = layout === 'roles' ? ROLE_KEYS_ALLOW : MODE_KEYS_ALLOW;
     var out = { answer: '', actions: [], blocked: false, meta: meta || {} };
     var parsed = _safeJsonParse(raw);
     if (!parsed || typeof parsed !== 'object') {
@@ -911,7 +914,7 @@
     }
     if (hallucinated) {
       out.answer =
-        "I'm not sure that's a feature I know about. Try one of the four modes on this screen — " +
+        "I'm not sure that's a feature I know about. Try one of the options on this screen — " +
         "or click \"Start the tour\" and I will walk you through what's actually there.";
       out.actions = [{ kind: 'start_tour', key: '', label: '' }];
       out.meta.validatorReplaced = true;
@@ -926,7 +929,7 @@
       var c = rawActions[j];
       if (!c || typeof c !== 'object' || !c.kind || !ACTION_KINDS_ALLOW.has(c.kind)) { dropped++; continue; }
       var key = (typeof c.key === 'string') ? c.key : '';
-      if (c.kind === 'pick_mode' && !MODE_KEYS_ALLOW.has(key)) { dropped++; continue; }
+      if (c.kind === 'pick_mode' && !pickKeys.has(key)) { dropped++; continue; }
       if (c.kind === 'open_link' && !LINK_KEYS_ALLOW.has(key)) { dropped++; continue; }
       var sig = c.kind + ':' + key;
       if (seen[sig]) { dropped++; continue; }
@@ -1001,6 +1004,49 @@
     '=== END CATALOG ===',
   ].join('\n');
 
+  // Role-first Launch Pad (host passes layout "roles"). Same Learning Hub tiles.
+  var COACH_CATALOG_ROLES = [
+    '=== ALLOFLOW GROUNDED CATALOG (v 2026-11, role-first Launch Pad) ===',
+    '',
+    '## The Launch Pad doors (exhaustive — these are the ONLY choices on this screen)',
+    '1. Teacher (key: "teacher") — Create and adapt lessons. Opens Guided Mode, a step-by-step',
+    '   lesson path. Best for brand-new users. A link under it, "Open the full workspace',
+    '   instead" (key: "full"), opens every tool at once. Best for confident users.',
+    '2. Student (key: "student") — Join a class with the 5-character class code a teacher',
+    '   shared, or explore on your own with a private codename. Exploring opens the Learning',
+    '   Hub (tiles below).',
+    '3. Family (key: "family") — For parents and caregivers supporting a child\'s reading at',
+    '   home: stories, word lists, and simpler versions.',
+    '4. Professional tools (key: "specialist") — Opens Educator Hub with BehaviorLens and',
+    '   Report Writer, for school psychologists, counselors and other support professionals.',
+    '5. Learn independently (key: "adult") — A link below the doors, for adults studying on',
+    '   their own (adult education, licensure prep).',
+    'If the school set an access code, every door except Student asks for it first.',
+    '',
+    COACH_CATALOG.slice(COACH_CATALOG.indexOf('## The Learning Hub tiles'), COACH_CATALOG.indexOf('## The 2 Educator Tools')).trim(),
+    '',
+    '## The 2 Educator Hub tools (behind Professional tools)',
+    '- BehaviorLens: Behavior observation and FBA-BIP support.',
+    '- Report Writer: Clinical/educational report drafting.',
+    '',
+    '## Allowed navigation actions',
+    '- pick_mode: opens one of the doors {teacher, full, student, family, specialist, adult}.',
+    '- start_tour: tours the workspace, then returns to this Launch Pad.',
+    '- open_link: currently only "ai_backend_settings" is allowed.',
+    '- open_help: opens the static help cards (this same panel without the chat).',
+    '',
+    '## What AlloFlow DOES NOT have (refuse if asked about any of these)',
+    '- No "Beginner" or "Advanced" mode, and no "Full AlloFlow", "Learning Tools" or',
+    '  "Educator Tools" cards on this screen — only the doors above.',
+    '- No keyboard shortcuts like Ctrl+K, slash commands.',
+    '- No "SuperTutor", "AI assistant button", "Help menu" dropdown.',
+    '- No account/login/signup screen.',
+    '- No mobile app — web only.',
+    '- No version-history features; do not reference past versions.',
+    '',
+    '=== END CATALOG ===',
+  ].join('\n');
+
   // ───────────────────────────────────────────────────────────────────────
   // System prompt builder. Returns a single string that's the entirety of
   // the prompt sent to Gemini (system + grounding + screen + history + Q).
@@ -1018,6 +1064,7 @@
     var screen = input.screen || null;
     var recent = Array.isArray(input.recent) ? input.recent : [];
     var lang = getLang() || 'English';
+    var roles = input.layout === 'roles';
 
     var historyBlock = '';
     if (recent.length) {
@@ -1052,15 +1099,16 @@
       'You are AlloBot, the AlloFlow onboarding coach. You help 0-familiarity users (often new',
       'teachers, parents, or students) pick the right mode for their first session. Be warm,',
       'brief, and concrete. The user interface language is: ' + lang + '. Reply in that language',
-      'where natural, but keep "Full AlloFlow", "Guided Mode", "Learning Tools", and "Educator',
-      'Tools" untranslated — the host renders chip labels via i18n.',
+      roles ? 'where natural. Name doors exactly as the screen shows them — the host renders chip labels via i18n.'
+        : 'where natural, but keep "Full AlloFlow", "Guided Mode", "Learning Tools", and "Educator',
+      roles ? '' : 'Tools" untranslated — the host renders chip labels via i18n.',
       '',
       '## CRITICAL — grounding (repeated):',
       'You may ONLY reference features in the GROUNDED CATALOG below. If a feature, button,',
       'mode, shortcut, or screen is not in the catalog, IT DOES NOT EXIST. Do not guess.',
       'Do not extrapolate. Do not say "there might be a button for that." Do not invent UI.',
       '',
-      COACH_CATALOG,
+      roles ? COACH_CATALOG_ROLES : COACH_CATALOG,
       '',
       '## Uncertainty rule',
       'When you do not know if AlloFlow has something the user is asking for, say:',
@@ -1074,12 +1122,13 @@
       '',
       '## Action chips',
       'Suggest 0-3 chips. Use ONLY these (anything else is dropped):',
-      '  - { "kind": "pick_mode", "key": "full" | "guided" | "learning_tools" | "educator" }',
+      roles ? '  - { "kind": "pick_mode", "key": "teacher" | "full" | "student" | "family" | "specialist" | "adult" }'
+        : '  - { "kind": "pick_mode", "key": "full" | "guided" | "learning_tools" | "educator" }',
       '  - { "kind": "start_tour", "key": "" }',
       '  - { "kind": "open_link", "key": "ai_backend_settings" }',
       '  - { "kind": "open_help", "key": "" }',
-      'Suggest pick_mode chips only when you are CONFIDENT about the mode. Suggest educator',
-      'only if the user has identified as a teacher / clinician / school psychologist in this',
+      'Suggest pick_mode chips only when you are CONFIDENT about the mode. Suggest ' + (roles ? 'specialist' : 'educator'),
+      'only if the user has identified as a ' + (roles ? 'school psychologist / counselor / support professional' : 'teacher / clinician / school psychologist') + ' in this',
       'conversation. STEAM Lab is for science/math. StoryForge is for narrative writing. SEL Hub',
       'is for social-emotional learning. These are three distinct tools; do not conflate them.',
       '',
@@ -1148,6 +1197,7 @@
     var screen = (input.screen === undefined) ? null : input.screen;
     var recent = Array.isArray(input.recent) ? input.recent : null;
     var signal = input.signal || null;
+    var layout = input.layout === 'roles' ? 'roles' : 'modes';
     var traceId = _newTraceId();
 
     // Gate 1: consent
@@ -1221,6 +1271,7 @@
       question: outboundQuestion,
       screen: screen,
       recent: recent,
+      layout: layout,
     });
 
     // Abort timeout — captive-portal-style stalls would otherwise hang.
@@ -1285,7 +1336,7 @@
       traceId: traceId,
       scrubbed: scan.flags.length ? { count: scan.flags.length, patterns: scan.flags.map(function (f) { return f.pattern; }) } : undefined,
       contextDropped: contextDropped || undefined,
-    });
+    }, layout);
     validated.remaining = Math.max(0, COACH_CAP - _coachUsed);
 
     // Record turn-pair in the buffer (only successful, non-blocked answers).

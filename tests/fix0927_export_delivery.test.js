@@ -111,8 +111,12 @@ function builderPackageExport(scope) {
   const names = Object.keys(scope);
   return new Function('React', ...names, vepSource.slice(start, end) + '\nreturn runPackageExport;')({ useCallback: (fn) => fn }, ...names.map((name) => scope[name]));
 }
+// runPackageExport calls this file-level helper; lift the real one so the IMS path runs as shipped.
+const vepHelperStart = vepSource.indexOf('function _removeStudentPackageTeacherSections(root) {');
+const _removeStudentPackageTeacherSections = new Function(vepSource.slice(vepHelperStart, vepSource.indexOf('\nfunction ', vepHelperStart + 10)) + '\nreturn _removeStudentPackageTeacherSections;')();
 const builderScope = (overrides) => ({
-  altExportBusy: '', addToast: vi.fn(), t: () => '', onExportSuccess: vi.fn(),
+  _removeStudentPackageTeacherSections,
+  altExportBusy: '', addToast: vi.fn(), t: () => '', onExportSuccess: vi.fn(), exportConfig: {},
   beginAlternativeExport: () => true, finishAlternativeExport: () => {},
   qtiAssessments: [{ key: 'q', item: { type: 'quiz' } }], selectedQtiKey: 'q', h5pActivities: [], selectedH5PKey: '',
   handleExportQTI: vi.fn(async () => undefined), handleExportH5P: vi.fn(async () => true), handleExportIMS: vi.fn(async () => true),

@@ -1690,6 +1690,7 @@ const COMPANION_ASSET_DIRS = [
     'life_skills_transit',
     'apps_script/educator_evaluation_share',
     'apps_script/school_rewards',
+    'export_labels',
     'timeline_studio',
     'verapdf',
     'zoom_gallery'
