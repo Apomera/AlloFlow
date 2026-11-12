@@ -27,7 +27,9 @@ describe('Bike Lab accessibility', () => {
     const text = source();
     expect(text).toContain("role: 'img', 'aria-label': 'Bike fit diagram showing saddle height '");
     expect(text).toContain("var signalLabels = { left_straight:");
-    expect(text.match(/Object\.assign\(\{\}, common, \{ 'aria-label': signalLabels\[kind\] \}\)/g)).toHaveLength(5);
+    // The pictures are named by what the arm is doing. A name like "for a right turn" would answer the question.
+    expect(text).toContain("h('div', { role: 'img', 'aria-label': signalLabels[kind] || 'Rider seen from behind' }, armPoseSvg(kind))");
+    expect(text.slice(text.indexOf('var signalLabels = {'), text.indexOf('armPoseSvg(kind))'))).not.toMatch(/for a (left|right) turn|slowing or stopping/);
     expect(text).toContain("role: 'img', 'aria-label': 'Bicycle parts diagram. Selected part: '");
     expect(text).toContain('Use the Parts by category buttons to select a part.');
   });
@@ -44,7 +46,7 @@ describe('Bike Lab accessibility', () => {
 
   it('provides a semantic subview heading and a described, keyboard-discoverable ride canvas', () => {
     const text = source();
-    expect(text).toContain("h('h1', { className: 'font-black text-slate-800 text-lg' }, props.title)");
+    expect(text).toContain("h('h1', { className: 'font-black text-slate-800 text-lg', tabIndex: -1, 'data-bikelab-view-title': 'true' }, props.title)"); // focus lands here on entering a view
     expect(text).toContain("id: 'bikelab-ride-canvas-description', className: 'sr-only'");
     expect(text).toContain("role: 'img', tabIndex: 0, 'data-bikelab-canvas': 'true'");
     expect(text).toContain("width: '100%', height: 'auto', aspectRatio: '900 / 440'");
