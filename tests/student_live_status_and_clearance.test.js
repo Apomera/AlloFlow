@@ -63,7 +63,7 @@ describe('student live-session status lives in the header', () => {
     const site = anti.indexOf('liveStatus={!isTeacherMode && !activeSessionCode &&');
     expect(site).toBeGreaterThan(0);
     const props = anti.slice(site, anti.indexOf('} : null}', site));
-    for (const field of ['nickname: studentNickname', 'aiConfigured: studentAiConfigured', 'aiSetupAllowed: studentAiSetupAllowed', 'connection: liveSessionConnectionState.status', 'hostState: liveHostConnectionState', 'retryConnection: retryLiveSessionConnection', 'leave: leaveLiveSession', 'changeCodename: () => setShowStudentWelcome(true)']) {
+    for (const field of ['nickname: studentNickname', 'aiConfigured: studentAiConfigured', 'aiSetupAllowed: studentAiSetupAllowed', 'connection: liveSessionConnectionState.status', 'hostState: liveHostConnectionState', 'retryConnection: retryLiveSessionConnection', 'leave: leaveLiveSession', 'changeCodename: () => setShowStudentEntry(true)']) {
       expect(props).toContain(field);
     }
   });
@@ -170,7 +170,7 @@ describe('homework-mode students get the same header status control (2026-09-14)
   const header = read('view_header_source.jsx');
   it('the fixed homework strip is gone and liveStatus carries mode: homework for the assignment entry types', () => {
     expect(anti).not.toContain("t('mailbox.homework_ready') || 'Homework ready ·'");
-    expect(anti).toContain("liveStatus={!isTeacherMode && !activeSessionCode && ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(window.__alloQrStudentMode?.type) ? { mode: 'homework', nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, changeCodename: () => setShowStudentWelcome(true) } : !isTeacherMode && activeSessionCode ? {");
+    expect(anti).toContain("liveStatus={!isTeacherMode && !activeSessionCode && ['assignment', 'assignment-pack', 'assignment-pack-hosted'].includes(window.__alloQrStudentMode?.type) ? { mode: 'homework', nickname: studentNickname, aiConfigured: studentAiConfigured, aiSetupAllowed: studentAiSetupAllowed, changeCodename: () => setShowStudentEntry(true) } : !isTeacherMode && activeSessionCode ? {");
     expect(anti.match(/studentNickname \? 'Change codename' : 'Set codename'/g)).toBeNull();
     expect(read('desktop/web-app/src/AlloFlowANTI.txt')).toBe(anti);
   });
