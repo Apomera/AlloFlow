@@ -588,7 +588,7 @@
       tally.push(['Number right', 'of ' + paper.items.length]);
     }
     score.push(limit ? 'If the check is stopped before the time is up and before the last ' + noun + ', there is no score.' : 'If the check is stopped before the last ' + noun + ', there is no score.');
-    var note = 'The numbers are the ones the learner sees on screen' + (samples ? '. In the results file the samples come first, so ' + noun + ' 1 is item_n ' + (samples + 1) + '.' : ' and in the results file.');
+    var note = 'The numbers are the ones the learner sees on screen' + (samples ? '. In the results file the samples are numbered first, so ' + noun + ' 1 here is item ' + (samples + 1) + ' there.' : ' and in the results file.');
     return { give: give, score: score, tally: tally, note: note };
   }
   // A worked example of digits correct, counted by the file's own scoring of one item.

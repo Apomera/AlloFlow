@@ -1227,13 +1227,13 @@ describe('the paper copy', () => {
       give: ['Do the 2 samples first, with the learner, and say each answer. Samples do not count.', 'Then start a clock for 1 minute. When the time is up, the learner stops.'],
       score: ['A question is right when the circled number is the bigger one, the one in the key.', 'The score is the number of questions right, leaving out the samples.',
         'If the learner finishes before the time is up, the score is still the number right.', 'If the check is stopped before the time is up and before the last question, there is no score.'],
-      tally: 'Number right of 25', note: 'The numbers are the ones the learner sees on screen. In the results file the samples come first, so question 1 is item_n 3.',
+      tally: 'Number right of 25', note: 'The numbers are the ones the learner sees on screen. In the results file the samples are numbered first, so question 1 here is item 3 there.',
     },
     missing_number: {
       give: ['Do the sample first, with the learner, and say the answer. Samples do not count.', 'Then start a clock for 2 minutes. When the time is up, the learner stops.', 'The learner may skip a problem, as on screen.'],
       score: ['A problem is right when the number written is the one in the key.', 'The score is the number of problems right, leaving out the samples.',
         'If the learner finishes before the time is up, the score is still the number right.', 'If the check is stopped before the time is up and before the last problem, there is no score.'],
-      tally: 'Number right of 25', note: 'The numbers are the ones the learner sees on screen. In the results file the samples come first, so problem 1 is item_n 2.',
+      tally: 'Number right of 25', note: 'The numbers are the ones the learner sees on screen. In the results file the samples are numbered first, so problem 1 here is item 2 there.',
     },
     math_computation: {
       give: ['Do the sample first, with the learner, and say the answer. Samples do not count.', 'Then start a clock for 2 minutes. When the time is up, the learner stops.', 'The learner may skip a problem, as on screen.',
@@ -1243,7 +1243,7 @@ describe('the paper copy', () => {
         'If the time ran out: score = digits correct ' + DIVIDE + ' 2 (the minutes), rounded to a whole number.',
         'If every problem was finished early: score = digits correct ' + String.fromCharCode(0xD7) + ' 60 ' + DIVIDE + ' seconds used, rounded to a whole number. Under 20 seconds, there is no score.',
         'If the check is stopped before the time is up and before the last problem, there is no score.'],
-      tally: 'Digits correct Seconds used, if finished early Score digits correct per minute', note: 'The numbers are the ones the learner sees on screen. In the results file the samples come first, so problem 1 is item_n 2.',
+      tally: 'Digits correct Seconds used, if finished early Score digits correct per minute', note: 'The numbers are the ones the learner sees on screen. In the results file the samples are numbered first, so problem 1 here is item 2 there.',
     },
   };
 
