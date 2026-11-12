@@ -1,0 +1,155 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data: https://globalsymbols.com https://api.openverse.org https://thumb.wikimedia.org https://upload.wikimedia.org; connect-src https://globalsymbols.com https://api.openverse.org https://commons.wikimedia.org https://thumb.wikimedia.org https://upload.wikimedia.org; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<!-- This is the one Packets page that may contact other websites: the five hosts named in the rule above, and only after the switch on the page is turned on. -->
+<title>Find a picture</title>
+<meta name="description" content="Add a picture for a word: your own file, or one with an open license from a public collection. A picture you choose is kept in this browser, on this device. Runs without AI. No accounts.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-pictures.css">
+<script src="packets-page.js" defer></script>
+<script src="packets_my_words.js" defer></script>
+<script src="packets-pictures.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <a class="top-link" href="packets-make.html">Make a practice file</a>
+  </div>
+</header>
+
+<details class="proof">
+  <summary class="wrap">
+    <span class="proof-line">This page runs without AI. No account. It can search three named websites for pictures, and only after you turn that on.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap proof-body">
+    <ul>
+      <li id="proof-reach">This page, unlike the other Packets pages, can reach other websites. The other pages cannot connect to any other website. This one can connect to the five addresses listed here, and to nothing else: the rule below names them, and the browser refuses everything the rule does not name.</li>
+      <li id="proof-hosts">Global Symbols: <code>globalsymbols.com</code>. Openverse: <code>api.openverse.org</code>. Wikimedia Commons: <code>commons.wikimedia.org</code>, with its picture files at <code>thumb.wikimedia.org</code> and <code>upload.wikimedia.org</code>.</li>
+      <li id="proof-when">Nothing is sent when the page opens, and nothing is sent while <strong>Search for pictures online</strong> is off. A search starts only when you press <strong>Search</strong>.</li>
+      <li id="proof-sent">A search sends only the word you search for to those three services. Then the browser asks them for the pictures it shows. Nothing about your students, your other words or your files is sent. No cookies are sent, and no account is used.</li>
+      <li id="proof-ip">Like any web request, each one carries your IP address and your browser type to that service. The browser also tells the service which website asked: this site's address, not the page and not what is on it. Each service keeps its own records, under its own privacy policy.</li>
+      <li>A picture from your device is read in this browser and is not uploaded.</li>
+      <li>A picture you choose is made small (256 pixels at most) and kept, with its credit, in this browser's storage for this site (IndexedDB), on this device only. <strong>Remove</strong> and <strong>Remove all</strong> delete it.</li>
+      <li>The switch is remembered only if you turn on <strong>Keep this on, on this device</strong>. That one setting is then kept in this browser's local storage. On a shared computer, leave it off.</li>
+      <li id="proof-licenses">Only pictures that state a license that allows copying with credit are shown: public domain, CC0, CC BY and CC BY-SA. Pictures labeled as not for commercial use or as not to be changed are left out, and so are pictures with no stated license.</li>
+      <li id="proof-made">Pictures and symbol sets labeled as made with AI are left out. A picture that is not labeled that way cannot be told apart.</li>
+      <li>This page runs without AI. It searches, lists and copies, and nothing else.</li>
+      <li id="proof-files">This page loads seven files, all from this site: the page itself, two stylesheets (<code>packets.css</code>, <code>packets-pictures.css</code>), three scripts (<code>packets-page.js</code>, <code>packets_my_words.js</code>, <code>packets-pictures.js</code>) and the icon in the browser tab. It loads no fonts and no trackers. Pictures from the three services are loaded only after a search.</li>
+      <li>There are no cookies and nothing to sign in to.</li>
+      <li>Like any website, the server that sends these files can see that your browser asked for them. It does not see your word: the part of an address after the # sign is never sent.</li>
+    </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+
+<main id="main" class="finder">
+  <div class="wrap">
+    <h1>Find a picture</h1>
+    <p class="finder-lead">Add a picture for a word. Use your own file, or search public collections for one with an open license.</p>
+    <noscript><p class="note note-problem">This page needs JavaScript. Nothing is sent anywhere.</p></noscript>
+    <p id="said" class="sr-only" role="status" aria-live="polite"></p>
+    <p id="not-keeping" class="note note-problem" hidden><strong>This browser is not keeping your words.</strong> A picture you choose here cannot be saved. This can happen in a private window, or when site data is blocked.</p>
+
+    <div class="field word-field">
+      <label for="word">Word</label>
+      <input type="text" id="word" maxlength="24" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="word-hint">
+      <span class="hint" id="word-hint">One word, 2 to 24 letters.</span>
+    </div>
+
+    <section id="saved" class="saved" aria-labelledby="saved-title" hidden>
+      <img id="saved-picture" class="saved-picture" alt="" width="96" height="96">
+      <div>
+        <h2 id="saved-title" tabindex="-1">Saved</h2>
+        <p id="saved-line" role="status"></p>
+        <p id="saved-credit" class="hint"></p>
+        <p class="saved-go"><a class="btn btn-primary" href="packets-make.html">Back to the maker</a></p>
+      </div>
+    </section>
+
+    <section id="device" class="source" aria-labelledby="device-title">
+      <h2 id="device-title">From my device</h2>
+      <p class="source-about" id="device-about">A picture you made, or one you have the right to use and pass on. It is read in this browser and is not uploaded.</p>
+      <p class="source-go"><button type="button" class="btn" id="choose" aria-describedby="device-about">Choose a picture file</button></p>
+      <input type="file" id="file" accept="image/*" aria-label="A picture file from this device" hidden>
+      <p id="device-said" class="source-said"></p>
+    </section>
+
+    <section id="online" class="source" aria-labelledby="online-title">
+      <h2 id="online-title">Search online</h2>
+      <label class="keep-switch"><input type="checkbox" id="online-on" role="switch" aria-describedby="online-about"> Search for pictures online</label>
+      <p class="source-about" id="online-about">Only the word you search for is sent to the services named here. Nothing about your students is sent.</p>
+      <ul class="plain-list services" id="services">
+        <li><strong>Global Symbols</strong>: symbol sets made for communication and teaching.</li>
+        <li><strong>Openverse</strong>: photos and drawings with open licenses, from many collections.</li>
+        <li><strong>Wikimedia Commons</strong>: the picture collection behind Wikipedia.</li>
+      </ul>
+      <div id="online-more" hidden>
+        <label class="keep-switch keep-quiet"><input type="checkbox" id="online-keep"> Keep this on, on this device</label>
+        <p class="source-go"><button type="button" class="btn btn-primary" id="search">Search</button></p>
+      </div>
+      <p id="online-said" class="source-said"></p>
+    </section>
+
+    <section id="results" aria-labelledby="results-title" hidden>
+      <h2 id="results-title" tabindex="-1">Pictures</h2>
+      <p class="note" id="look">These pictures come from public collections. Nobody has checked them for you. Look at each one before you use it.</p>
+      <section class="group" id="group-globalsymbols" aria-labelledby="title-globalsymbols">
+        <h3 id="title-globalsymbols">Global Symbols</h3>
+        <p class="group-said" id="said-globalsymbols"></p>
+        <ul class="pics" id="pics-globalsymbols"></ul>
+      </section>
+      <section class="group" id="group-openverse" aria-labelledby="title-openverse">
+        <h3 id="title-openverse">Openverse</h3>
+        <p class="hint">This search uses Openverse. This page is not endorsed or certified by Openverse.</p>
+        <p class="group-said" id="said-openverse"></p>
+        <ul class="pics" id="pics-openverse"></ul>
+      </section>
+      <section class="group" id="group-commons" aria-labelledby="title-commons">
+        <h3 id="title-commons">Wikimedia Commons</h3>
+        <p class="group-said" id="said-commons"></p>
+        <ul class="pics" id="pics-commons"></ul>
+      </section>
+    </section>
+
+    <section id="mine" class="mine" aria-labelledby="mine-title">
+      <div class="mine-head">
+        <div>
+          <h2 id="mine-title" tabindex="-1">My pictures</h2>
+          <p id="mine-line" class="mine-line">No pictures yet.</p>
+        </div>
+        <p><button type="button" class="btn btn-small" id="remove-all" hidden>Remove all</button></p>
+      </div>
+      <p id="remove-all-ask" class="note" hidden>
+        <span id="remove-all-line">Remove every picture from this device?</span>
+        <button type="button" class="btn btn-small" id="remove-all-yes">Remove all pictures</button>
+        <button type="button" class="btn btn-small" id="remove-all-no">Keep them</button>
+      </p>
+      <ul id="mine-list" class="mine-list"></ul>
+    </section>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

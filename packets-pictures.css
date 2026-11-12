@@ -1,0 +1,78 @@
+/* What "Find a picture" (packets-pictures.html) needs beyond packets.css: the word box, the two ways to
+   add a picture, the groups of results and the list of saved pictures. Colors, fonts, buttons, notes and
+   the header come from packets.css. This stylesheet loads nothing. */
+
+.finder { padding: clamp(1.5rem, 4vw, 2.75rem) 0 4rem; }
+.finder h1 { font-size: clamp(1.8rem, 1.4rem + 1.8vw, 2.5rem); letter-spacing: -0.024em; }
+.finder-lead { margin-top: 0.6rem; max-width: 42rem; color: var(--muted); font-size: 1.125rem; }
+
+.word-field { margin-top: 1.75rem; max-width: 22rem; }
+.word-field input[type="text"] { font-size: 1.25rem; font-weight: 600; }
+.word-field .hint { margin-top: 0.3rem; }
+
+/* One way to add a picture: a card with a title, one line about it and one control */
+.source { margin-top: 1.5rem; padding: clamp(1.1rem, 3.5vw, 1.75rem); max-width: 50rem; background: var(--surface); border: 1px solid var(--line); border-radius: var(--radius); }
+.source h2 { font-size: clamp(1.25rem, 1.1rem + 0.7vw, 1.5rem); letter-spacing: -0.015em; }
+.source-about { margin-top: 0.4rem; max-width: 42rem; color: var(--muted); }
+.source-go { margin-top: 0.9rem; }
+.source-said { margin-top: 0.75rem; font-weight: 600; color: var(--ink); }
+.source-said:empty { display: none; }
+.services { margin-top: 0.75rem; }
+.services li { color: var(--text); }
+.services li + li { margin-top: 0.3rem; }
+
+.keep-switch { display: inline-flex; align-items: center; gap: 0.7rem; min-height: 2.75rem; margin-top: 0.6rem; font-weight: 700; color: var(--ink); cursor: pointer; }
+.keep-switch input { flex: none; width: 1.4rem; height: 1.4rem; margin: 0; accent-color: var(--accent); }
+.keep-quiet { margin-top: 0.9rem; font-weight: 600; }
+
+/* The picture that was just saved */
+.saved { display: flex; flex-wrap: wrap; align-items: flex-start; gap: 1rem 1.25rem; margin-top: 1.5rem; padding: clamp(1.1rem, 3.5vw, 1.5rem); max-width: 50rem; background: var(--accent-soft); border: 2px solid var(--accent); border-radius: var(--radius); }
+.saved > div { flex: 1 1 14rem; min-width: 0; }
+.saved h2 { font-size: 1.25rem; }
+.saved p { margin-top: 0.3rem; }
+.saved .hint { overflow-wrap: anywhere; }
+.saved-go { padding-top: 0.5rem; }
+.saved-picture { flex: none; width: 6rem; height: 6rem; object-fit: contain; background: #ffffff; border: 1px solid var(--line-strong); border-radius: 8px; }
+
+/* Results: one group for each service, each picture with its credit and one button */
+#results { margin-top: 2.5rem; }
+#results > h2 { padding-bottom: 0.6rem; border-bottom: 2px solid var(--ink); font-size: clamp(1.45rem, 1.25rem + 0.9vw, 1.8rem); letter-spacing: -0.018em; overflow-wrap: anywhere; }
+.group { margin-top: 1.75rem; }
+.group h3 { font-size: 1.2rem; }
+.group-said { margin-top: 0.3rem; color: var(--muted); }
+.group-said:empty { display: none; }
+.pics { display: grid; grid-template-columns: repeat(auto-fill, minmax(9.5rem, 1fr)); gap: 0.75rem; margin-top: 0.75rem; }
+.pics:empty { display: none; }
+.pic { display: flex; flex-direction: column; gap: 0.2rem; min-width: 0; padding: 0.6rem; background: var(--surface); border: 1px solid var(--line-strong); border-radius: 8px; }
+.pic img { display: block; width: 100%; height: auto; aspect-ratio: 1 / 1; object-fit: contain; background: #ffffff; border-radius: 4px; }
+.pic-title { margin-top: 0.3rem; font-weight: 700; color: var(--ink); line-height: 1.3; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.pic-by, .pic-license { font-size: 0.875rem; line-height: 1.35; color: var(--muted); overflow-wrap: anywhere; }
+.pic-by { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; }
+.pic-license { font-weight: 600; color: var(--ink); }
+.pic .btn { margin-top: auto; width: 100%; min-height: 2.75rem; padding: 0.35rem 0.5rem; font-size: 0.9375rem; }
+.pic .pic-license { padding-bottom: 0.5rem; }
+.pic.is-busy { opacity: 0.6; }
+
+/* My pictures */
+.mine { margin-top: 3rem; }
+.mine-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0.5rem 1.5rem; padding-bottom: 0.6rem; border-bottom: 2px solid var(--ink); }
+.mine-head h2 { font-size: clamp(1.45rem, 1.25rem + 0.9vw, 1.8rem); letter-spacing: -0.018em; }
+.mine-line { margin-top: 0.2rem; color: var(--muted); }
+.mine-list li { display: grid; grid-template-columns: 4rem minmax(0, 1fr); gap: 0.25rem 1rem; align-items: center; padding: 0.75rem 0; border-bottom: 1px solid var(--line); }
+.mine-list img { grid-row: span 2; width: 4rem; height: 4rem; object-fit: contain; background: #ffffff; border: 1px solid var(--line-strong); border-radius: 8px; }
+.mine-word { font-size: 1.125rem; font-weight: 700; color: var(--ink); overflow-wrap: anywhere; }
+.mine-credit { font-size: 0.875rem; color: var(--muted); overflow-wrap: anywhere; }
+.mine-list .btn { grid-column: 2; justify-self: start; }
+
+@media (min-width: 40rem) {
+  .mine-list li { grid-template-columns: 4rem minmax(0, 1fr) auto; }
+  .mine-list .btn { grid-column: 3; grid-row: 1 / span 2; }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .pic { transition: border-color 0.12s ease, opacity 0.12s ease; }
+}
+
+@media (forced-colors: active) {
+  .saved { border-width: 3px; }
+}
