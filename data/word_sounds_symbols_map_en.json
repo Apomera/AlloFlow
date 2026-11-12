@@ -19,7 +19,7 @@
  "fields": "word; file (in data/vendor/mulberry/symbols; empty when none is used); status; note; candidates (the files a reviewer can choose from, when there is more than one)",
  "counts": {
   "usableWords": 6944,
-  "usableWithRecording": 989,
+  "usableWithRecording": 6700,
   "matched": 1137,
   "auto": 1047,
   "reviewed": 0,
@@ -27,43 +27,43 @@
   "rejected": 8,
   "viaPlural": 195,
   "symbolsVendored": 988,
-  "packetWords": 288,
-  "packetSymbols": 287,
+  "packetWords": 1037,
+  "packetSymbols": 853,
   "byStage": {
    "K early": {
     "usable": 202,
     "withPicture": 46,
     "ambiguous": 8,
-    "recorded": 146,
-    "recordedWithPicture": 40
+    "recorded": 194,
+    "recordedWithPicture": 46
    },
    "K late": {
     "usable": 214,
     "withPicture": 47,
     "ambiguous": 8,
-    "recorded": 156,
-    "recordedWithPicture": 41
+    "recorded": 206,
+    "recordedWithPicture": 47
    },
    "G1 early": {
     "usable": 874,
     "withPicture": 196,
     "ambiguous": 22,
-    "recorded": 362,
-    "recordedWithPicture": 93
+    "recorded": 846,
+    "recordedWithPicture": 196
    },
    "G1 late": {
     "usable": 2619,
     "withPicture": 477,
     "ambiguous": 48,
-    "recorded": 621,
-    "recordedWithPicture": 171
+    "recorded": 2557,
+    "recordedWithPicture": 477
    },
    "G2": {
     "usable": 5006,
     "withPicture": 825,
     "ambiguous": 73,
-    "recorded": 886,
-    "recordedWithPicture": 257
+    "recorded": 4884,
+    "recordedWithPicture": 821
    }
   }
  },

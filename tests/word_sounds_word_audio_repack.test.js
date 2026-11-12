@@ -242,12 +242,15 @@ describe('what it refuses', () => {
 });
 
 describe('the generator and a regrouped store', () => {
-  it('the generator does NOT read a regrouped store: it sees no words, so its --resume would voice them all again', () => {
+  it('the generator refuses a regrouped store (it would see no words and voice them all again) and says to run --per-letter first', () => {
     const dir = newStore();
     repackTool.repack(dir, quiet);
-    const opened = generator.openStore(dir, { freeBytes: () => 50 * GIB });
-    expect(opened.count()).toBe(0);
-    expect(opened.has('cat')).toBe(false);
+    const before = snapshot(dir);
+    expect(() => generator.openStore(dir, { freeBytes: () => 50 * GIB })).toThrow(/regrouped into small files \(a-01\.json, b-01\.json, b-02\.json, \.\.\.\).*repack_word_sounds_word_audio\.cjs --per-letter --store /);
+    expect(snapshot(dir)).toEqual(before);
+    // Back in one file per first letter, it opens again.
+    repackTool.repack(dir, { perLetter: true, ...quiet });
+    expect(generator.openStore(dir, { freeBytes: () => 50 * GIB }).count()).toBe(WORDS.length);
   });
 
   it('--per-letter gives back the layout the generator reads: it resumes, adds words, and the store regroups again', () => {

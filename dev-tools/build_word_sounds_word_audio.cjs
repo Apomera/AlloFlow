@@ -464,6 +464,8 @@ function atomicWrite(file, data, options = {}) {
 
 const shardOf = word => (/^[a-z]/.test(word) ? word.charAt(0) : '_');
 const SHARD_FILE = /^([a-z_])\.json$/;
+// The small files of dev-tools/repack_word_sounds_word_audio.cjs (s-01.json ...): not read here.
+const REGROUPED_FILE = /^[a-z_]-\d{2,3}\.json$/;
 
 // Opens (and, on flush, makes) the store folder. Shards are the record: the index is rebuilt from them.
 function openStore(dir, options = {}) {
@@ -476,6 +478,13 @@ function openStore(dir, options = {}) {
   // failed: word -> why its clip was refused. otherForm: word -> the text form used when it was not the store's own.
   let failed = Object.create(null), otherForm = Object.create(null), started = null, dirtyIndex = false;
   if (fsx.existsSync(dir)) {
+    // A regrouped store would look empty here, and --resume would voice every word again.
+    const regrouped = fsx.readdirSync(dir).filter(name => REGROUPED_FILE.test(name)).sort();
+    if (regrouped.length) {
+      throw new Error('The store ' + dir + ' is regrouped into small files (' + regrouped.slice(0, 3).join(', ') + (regrouped.length > 3 ? ', ...' : '') +
+        '), which this tool does not read. Run node dev-tools/repack_word_sounds_word_audio.cjs --per-letter' + (path.resolve(dir) === DEFAULT_OUT ? '' : ' --store ' + dir) +
+        ' first, then regroup again after this run.');
+    }
     for (const name of fsx.readdirSync(dir)) {
       const hit = SHARD_FILE.exec(name);
       if (!hit) continue;

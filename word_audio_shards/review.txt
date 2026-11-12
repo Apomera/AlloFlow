@@ -1,0 +1,240 @@
+Word Sounds word audio: words for a person to review
+Written by dev-tools/build_word_sounds_word_audio.cjs on 2026-11-12T08:02:24.256Z.
+Tab-separated: stage, word, note. Unless a section says otherwise, its words have no clip in this store.
+
+== Voiced but failed the automatic checks, twice: 0 ==
+
+== IN the store, but voiced from the second text form after the first try failed a check (listen to these first): 2 ==
+	exchanged	period
+	tube	period
+
+== Held back, the sound dictionary has more than one pronunciation: the voice may say the other one: 108 ==
+G1 early	bass	b a s | b ay s
+G1 early	paths	p a dh z | p a th s
+G1 late	putting	p u t i ng | p oo_short t i ng
+G1 late	lives	l i v z | l ie v z
+G1 late	stronger	s t r o ng er | s t r o ng g er
+G1 late	record	r schwa k or d | r e k er d | r i k or d
+G1 late	address	a d r e s | schwa d r e s
+G1 late	rattling	r a t l i ng | r a t schwa l i ng
+G1 late	emerald	e m r schwa l d | e m er r schwa l d
+G1 late	direct	d ir e k t | d ie r e k t | d i r e k t
+G1 late	records	r schwa k or d z | r e k er d z | r i k or d z
+G2	because	b i k aw z | b i k u z | b i k schwa z
+G2	without	w i th ow t | w i dh ow t
+G2	read	r e d | r ee d
+G2	wind	w ie n d | w i n d
+G2	sometimes	s schwa m t ie m z | s u m t ie m z
+G2	tears	t air z | t ear z
+G2	lead	l e d | l ee d
+G2	houses	h ow s schwa z | h ow s i z
+G2	leaped	l e p t | l ee p t
+G2	tear	t air | t ear
+G2	subject	s schwa b j e k t | s u b j i k t
+G2	upright	schwa p r ie t | u p r ie t
+G2	accept	a k s e p t | schwa k s e p t
+G2	concrete	k schwa n k r ee t | k o n k r ee t
+G2	suspect	s schwa s p e k t | s u s p e k t
+G2	accent	schwa k s e n t | a k s e n t
+G2	retired	r i t ie r d | r ee t ie er d | r ee t ie r d
+G2	bows	b ow z | b oa z
+G2	recess	r i s e s | r ee s e s
+G2	firing	f ie r i ng | f ie er r i ng
+G2	bowing	b oa i ng | b ow i ng
+G2	advised	a d v ie z d | schwa d v ie z d
+G2	suspects	s schwa s p e k t s | s u s p e k t s
+G2	lawyer	l aw y er | l oy er
+G2	mainland	m ay n l a n d | m ay n l schwa n d
+G2	whew	w oo | h y oo
+G2	update	schwa p d ay t | u p d ay t
+G3+	really	r i l ee | r ee l ee
+G3+	different	d i f er schwa n t | d i f r schwa n t
+G3+	yourself	y er s e l f | y oo_short r s e l f | y or s e l f
+G3+	direction	d ir e k sh schwa n | d ee r e k sh i n | d ie r e k sh i n | d i r e k sh i n
+G3+	corridor	k or schwa d er | k or i d er
+G3+	opposite	o p schwa z schwa t | o p z schwa t
+G3+	adventure	a d v e n ch ur | schwa d v e n ch ur
+G3+	yours	y oo_short r z | y or z | y er z
+G3+	narrow	n e r oa | n a r oa
+G3+	camera	k a m er schwa | k a m r schwa
+G3+	desperate	d e s p r i t | d e s p er i t
+G3+	president	p r e z schwa d e n t | p r e z i d schwa n t
+G3+	difference	d i f er schwa n s | d i f r schwa n s
+G3+	directions	d ir e k sh schwa n z | d ee r e k sh i n z | d ie r e k sh i n z | d i r e k sh i n z
+G3+	director	d ir e k t er | d ie r e k t er | d ee r e k t er | d i r e k t er
+G3+	miserable	m i z er schwa b schwa l | m i z r schwa b schwa l
+G3+	route	r oo t | r ow t
+G3+	vehicle	v ee h i k schwa l | v ee i k schwa l
+G3+	cameras	k a m er schwa z | k a m r schwa z
+G3+	yourselves	y oo_short r s e l v z | y or s e l v z
+G3+	aisle	ie l | ie schwa l
+G3+	separate	s e p er ay t | s e p er i t | s e p r schwa t
+G3+	accepted	a k s e p t e d | schwa k s e p t e d
+G3+	syrup	s er schwa p | s i r schwa p
+G3+	miniature	m i n ee schwa ch oo_short r | m i n i ch oo_short r
+G3+	difficulty	d i f schwa k schwa l t ee | d i f i k u l t ee
+G3+	corridors	k or i d er z | k or schwa d er z
+G3+	wrestling	r e s l i ng | r e s schwa l i ng
+G3+	conference	k o n f er schwa n s | k o n f r schwa n s
+G3+	forbidden	f or b i d schwa n | f er r b i d schwa n
+G3+	miserably	m i z er schwa b l ee | m i z r schwa b l ee
+G3+	average	a v er i j | a v r schwa j | a v r i j
+G3+	vehicles	v ee h i k schwa l z | v ee i k schwa l z
+G3+	directed	d ir e k t e d | d ie r e k t e d | d i r e k t e d
+G3+	journalist	j er n schwa l schwa s t | j er n schwa l i s t
+G3+	chestnut	ch e s n u t | ch e s t n u t
+G3+	foliage	f oa l i j | f oa l ee i j
+G3+	fisherman	f i sh er m a n | f i sh er m schwa n
+G3+	essential	e s e n sh schwa l | ee s e n sh schwa l
+G3+	translated	t r a n z l ay t e d | t r a n s l ay t e d
+G3+	duet	d oo e t | d y oo e t
+no stage	especially	schwa s p e sh l ee | schwa s p e sh schwa l ee
+no stage	strength	s t r e ng k th | s t r e ng th
+no stage	trembling	t r e m b schwa l i ng | t r e m b l i ng
+no stage	length	l e ng k th | l e ng th
+no stage	anxious	a ng k sh schwa s | a ng sh schwa s
+no stage	struggling	s t r u g schwa l i ng | s t r u g l i ng
+no stage	restaurant	r e s t er aw n t | r e s t r aw n t
+no stage	government	g u v er m schwa n t | g u v er n m schwa n t
+no stage	giggling	g i g schwa l i ng | g i g l i ng
+no stage	valuable	v a l y schwa b schwa l | v a l y oo b schwa l
+no stage	tumbling	t u m b schwa l i ng | t u m b l i ng
+no stage	circling	s ir k schwa l i ng | s ir k l i ng
+no stage	rumbling	r u m b schwa l i ng | r u m b l i ng
+no stage	awfully	aw f l ee | aw f schwa l ee
+no stage	dazzling	d a z schwa l i ng | d a z l i ng
+no stage	twinkling	t w i ng k schwa l i ng | t w i ng k l i ng
+no stage	bubbling	b u b schwa l i ng | b u b l i ng
+no stage	stumbling	s t u m b schwa l i ng | s t u m b l i ng
+no stage	scrambling	s k r a m b schwa l i ng | s k r a m b l i ng
+no stage	paddling	p a d schwa l i ng | p a d l i ng
+no stage	crumbling	k r u m b schwa l i ng | k r u m b l i ng
+no stage	tissue	t i s y oo | t i sh oo
+no stage	elaborate	i l a b r schwa t | i l a b er ay t
+no stage	elementary	e l schwa m e n t r ee | e l schwa m e n t er r ee | e l schwa m e n ch r ee
+no stage	rippling	r i p schwa l i ng | r i p l i ng
+no stage	grumbling	g r u m b schwa l i ng | g r u m b l i ng
+no stage	cycling	s ie k schwa l i ng | s ie k l i ng
+no stage	scribbling	s k r i b schwa l i ng | s k r i b l i ng
+no stage	nibbling	n i b schwa l i ng | n i b l i ng
+
+== Held back, dropped from the first word bank by its 2026-08-23 cull: 91 ==
+K early	vat	rare
+K early	wit	adult
+K early	gig	rare
+K early	wed	archaic
+K early	fen	archaic
+K early	kin	archaic
+K early	yen	rare
+G1 early	grim	adult
+G1 early	smug	adult
+G1 early	stench	rare
+G1 early	brisk	adult
+G1 early	fret	rare
+G1 early	bliss	adult
+G1 early	bluff	adult
+G1 early	scam	adult
+G1 early	glen	archaic
+G1 early	scram	archaic
+G1 early	sham	archaic
+G1 early	slat	rare
+G1 early	flan	rare
+G1 early	spam	obsolete
+G1 early	stat	rare
+G1 early	whet	archaic
+G1 late	sake	adult
+G1 late	blonde	adult
+G1 late	humbug	archaic
+G1 late	frail	adult
+G1 late	bleak	adult
+G1 late	prone	adult
+G1 late	submit	adult
+G1 late	drake	rare
+G1 late	permit	adult
+G1 late	commit	adult
+G1 late	mishap	adult
+G1 late	stow	archaic
+G1 late	cassette	obsolete
+G1 late	blunder	adult
+G1 late	burlap	rare
+G1 late	emit	adult
+G1 late	drape	rare
+G1 late	cadet	adult
+G1 late	sedan	rare
+G1 late	shindig	archaic
+G1 late	bigwig	adult
+G1 late	bellhop	adult
+G2	slight	adult
+G2	estate	adult
+G2	vice	adult
+G2	plight	rare
+G2	transmit	adult
+G2	solstice	rare
+G2	confide	adult
+G2	drugstore	sensitivity
+G2	backdrop	adult
+G2	insight	adult
+G2	entice	adult
+G2	pore	adult
+G2	writ	archaic
+G2	namesake	adult
+G2	milestone	adult
+G2	novice	adult
+G2	brunette	adult
+G2	splice	rare
+G2	homespun	archaic
+G2	crackpot	adult
+G2	airmail	obsolete
+G2	retail	adult
+G2	bootstrap	adult
+G2	omit	adult
+G3+	sacrifice	adult
+G3+	paradise	sensitivity
+G3+	cardigan	obsolete
+G3+	telegram	rare
+G3+	overrun	adult
+G3+	licorice	mismatch
+G3+	prejudice	adult
+G3+	diplomat	adult
+G3+	anagram	rare
+G3+	armistice	archaic
+G3+	oversight	adult
+G3+	bayonet	archaic
+G3+	artifice	adult
+G3+	copyright	adult
+G3+	overdone	adult
+G3+	acquit	adult
+G3+	firebug	sensitivity
+G3+	histogram	rare
+G3+	milligram	rare
+G3+	minaret	rare
+no stage	silhouette	rare
+choices	swig	sensitivity
+
+== Held back, on the blocklist: 23 ==
+choices	crazy	
+choices	gun	
+choices	spat	
+choices	grave	
+choices	combat	
+choices	snot	
+choices	kidnap	
+choices	pub	
+choices	superman	
+choices	shotgun	
+choices	cocktail	
+choices	thug	
+choices	gob	
+choices	sod	
+choices	nun	
+choices	sin	
+choices	gin	
+choices	hon	
+choices	zen	
+choices	prig	
+choices	jackpot	
+choices	psalm	
+choices	whig	
+
+== Held back, letters only, one letter, or not 2 to 10 plain letters with a vowel: 1 ==
+choices	i	
