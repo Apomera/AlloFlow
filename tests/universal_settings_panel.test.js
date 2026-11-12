@@ -111,7 +111,9 @@ describe('universal settings panel — wiring', () => {
     const mounts = anti.match(/window\.AlloModules\.UniversalSettingsPanel && React\.createElement/g) || [];
     expect(mounts.length).toBe(1);
     const at = anti.indexOf('window.AlloModules.UniversalSettingsPanel && React.createElement');
-    const tile = anti.indexOf('id="tour-tool-analysis"');
+    // First tool tile, whichever it is (Analysis left the accordion in the 10-30 Source redesign).
+    const tile = anti.search(/id="(?:ui|tour)-tool-(?!finder")[a-z-]+"/);
+    expect(tile, 'an accordion tile exists').toBeGreaterThan(-1);
     expect(at, 'mounts before the first accordion tile').toBeLessThan(tile);
     const mountBlock = anti.slice(at, anti.indexOf('})}', at));
     for (const p of ['handleFindStandards', 'handleUseResolvedStandard', 'setGradeLevel', 'setLeveledTextLanguage', 'setDokLevel', 'setUseEmojis', 'setTargetStandards']) {

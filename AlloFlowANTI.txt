@@ -40450,7 +40450,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
               if (!isCurrentEntry()) return;
               warnLog('Hosted homework load failed:', e);
               if (isCurrentEntry()) setSharedHostedActivity(null);
-              if (isCurrentEntry()) { setStudentHomeworkLoadFailed(true); addToast('Could not load this homework from the class mailbox. Ask your teacher for a new QR.', 'error'); }
+              if (isCurrentEntry()) { setStudentHomeworkLoadFailed(true); setWorkspacePane('preview'); addToast('Could not load this homework from the class mailbox. Ask your teacher for a new QR.', 'error'); }
           }
       };
       load();

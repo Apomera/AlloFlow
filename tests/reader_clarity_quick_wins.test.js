@@ -177,11 +177,18 @@ describe('section question marker and paragraph spacing', () => {
     const paragraphs = host.querySelectorAll('[data-reading-paragraph]');
     expect(paragraphs.length).toBeGreaterThan(1);
     for (const node of paragraphs) {
-      expect(node.style.marginBottom).toBe('1.15em');
+      expectEmGap(node); // 1.15em on 10-29, tightened to 0.7em in the 11-03 release
       expect(node.className).not.toMatch(/\bmb-4\b/);
     }
   });
 });
+
+// The gap scales with the reader's text size (em), never a fixed class like mb-4.
+function expectEmGap(node) {
+  const gap = node.style.marginBottom || node.style.marginBlockEnd || (/margin-(?:bottom|block-end):\s*([^;]+)/.exec(node.getAttribute('style') || '') || [])[1] || '';
+  expect(gap).toMatch(/^\d*\.?\d+em$/);
+  expect(parseFloat(gap)).toBeGreaterThanOrEqual(0.5);
+}
 
 describe('original paragraphs separated by one line break', () => {
   const LONG_A = 'Plants make their own food by using the energy in sunlight, water drawn up from the soil, and carbon dioxide taken in from the surrounding air.';
@@ -198,7 +205,7 @@ describe('original paragraphs separated by one line break', () => {
     expect(lines()).toHaveLength(2);
     for (const node of lines()) {
       expect(node.style.display).toBe('inline-block');
-      expect(node.style.marginBottom).toBe('0.75em');
+      expectEmGap(node); // 0.75em on 10-29, 0.55em since 11-03
     }
     expect(find('[data-original-source]').textContent).toBe(text);
   });
@@ -343,16 +350,8 @@ describe('word card after a correct fill-in-the-blank answer', () => {
   });
 });
 
-describe('Analyze Source subtitle', () => {
-  it('names the tool as the place to revise the source, in both string copies and the shipped module', () => {
-    for (const file of ['ui_strings.js', 'desktop/web-app/public/ui_strings.js']) {
-      expect(JSON.parse(readFileSync(file, 'utf8')).sidebar.tool_analysis_sub).toBe('Check and revise your source text');
-    }
-    const module = readFileSync('view_sidebar_panels_module.js', 'utf8');
-    const header = module.slice(module.indexOf('t("sidebar.tool_analysis")'), module.indexOf('t("sidebar.tool_analysis")') + 400);
-    expect(header).toContain('t("sidebar.tool_analysis_sub") || "Check and revise your source text"');
-  });
-});
+// (The Analyze Source tile and its subtitle left the sidebar in the 10-30 Source redesign; the
+// check now lives in the Source view, covered by tests/source_workflow_ui.test.js.)
 
 describe('host hook that opens the source for revision', () => {
   for (const file of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {

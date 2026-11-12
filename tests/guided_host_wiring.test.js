@@ -135,7 +135,8 @@ describe('Guided Mode host wiring', () => {
     expect(effect).toContain('current.phase !== following.phase');
     expect(effect).toContain('setGuidedCreatedHistoryIds');
     expect(app).toContain("const _guidedDeliveryAdvanceRef = useRef('')");
-    expect(app).toContain("['exportCreated', 'shareCreated', 'liveStarted'].filter");
+    // Print/LMS and live routes pick their own evidence; the other routes keep the three-key list.
+    expect(app).toContain("['exportCreated', 'shareCreated', 'liveStarted']).filter(key => guidedDeliveryEvidence?.[key]");
     expect(app).toContain("guidedActiveSteps[guidedStep]?.id !== 'package-deliver'");
     expect(dispatcher).not.toContain('typeToGuidedId');
     expect(dispatcher).not.toMatch(/setTimeout\([^)]*setGuidedStep/);

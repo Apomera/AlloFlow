@@ -170,14 +170,14 @@ describe('source actions use progressive disclosure without changing source scop
     expect(more).toBeTruthy(); expect(more.open).toBe(false);
     expect(host.querySelector('#tour-upload-source').closest('details')).toBeNull();
     expect(host.querySelector('textarea').closest('details')).toBeNull();
-    expect(more.textContent).toContain('Books');
+    expect(more.textContent).toContain('Reading catalog'); // the Books button, renamed 11-09
     expect(captured.mock.calls.at(-1)[0]).toMatchObject(scope);
   });
   it('keeps the complete source action row in the full workspace', () => {
     window.AlloModules = {};
     render(Shell, shellProps());
     expect(host.querySelector('details[data-help-key="source_more_options"]')).toBeNull();
-    expect(button('Books')).toBeTruthy();
+    expect(button('Reading catalog')).toBeTruthy();
   });
   it('opens a Family tool only on an explicit adult action, without generating', () => {
     window.AlloModules = {};

@@ -49,7 +49,8 @@ describe('the student waiting screen', () => {
     const block = getBlock();
     expect(block).toContain("data-student-homework-retry onClick={() => window.location.reload()}");
     expect(block).toContain('Check your connection, then try again.');
-    expect(anti).toContain("if (isCurrentEntry()) { setStudentHomeworkLoadFailed(true); addToast('Could not load this homework");
+    // On a phone the message is on the Preview tab; students land on Tools, so the failure switches tabs.
+    expect(anti).toContain("if (isCurrentEntry()) { setStudentHomeworkLoadFailed(true); setWorkspacePane('preview'); addToast('Could not load this homework");
     expect(anti).toMatch(/setStudentHomeworkLoadFailed\(false\);\s+addToast\('Homework loaded: '/);
   });
 });

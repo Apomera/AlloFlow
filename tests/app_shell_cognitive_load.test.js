@@ -81,7 +81,7 @@ describe('AlloFlow focused workspace shell', () => {
   });
 
   it('uses an editorial source-first empty state with restrained secondary routes', () => {
-    expect(app).toContain("t('common.ready') || 'Workspace ready'");
+    expect(app).toContain("(t('input.empty_eyebrow') || 'Start here')");
     expect(app).toContain("t('tools.source') || 'Source Material'");
     expect(app).toContain('{isTeacherMode && !guidedMode && (');
     expect(app).toContain("].filter(a => a.key !== 'write').map((a) => {");

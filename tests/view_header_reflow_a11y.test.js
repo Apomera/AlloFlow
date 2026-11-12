@@ -60,7 +60,9 @@ describe('header narrow-viewport reflow', () => {
   it('wraps source-panel actions instead of clipping Generate and Books', () => {
     // The input surface is shipped through SidebarPanels after extraction.
     const panel = fs.readFileSync('view_sidebar_panels_source.jsx', 'utf8');
-    expect(panel.includes('flex flex-wrap items-center justify-end gap-2 max-w-full min-w-0')).toBe(true);
+    // Since the 10-30 Source redesign the actions are an auto-fit grid: buttons drop to the next row, none overflow.
+    expect(panel).toContain('.allo-source-action-grid{display:grid;min-width:0;');
+    expect(panel).toContain('grid-template-columns:repeat(auto-fit,minmax(min(100%,8rem),1fr))');
   });
   it('keeps the deployment mirror synchronized', () => {
     expect(builder).toContain("desktop/web-app', 'public', 'view_header_module.js");

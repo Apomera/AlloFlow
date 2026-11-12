@@ -195,9 +195,12 @@ describe('auto-continue canonical verification', () => {
   });
 
   it('lets only the most recently selected project publish asynchronously loaded state', () => {
+    // The loader is one function shared by the Open PDF project button and the Educator tools card.
+    const projectLoaderStart = loaderSource.indexOf('const openPdfProjectFile = (file) => {');
+    expect(projectLoaderStart).toBeGreaterThan(-1);
     const projectLoader = loaderSource.slice(
-      loaderSource.lastIndexOf('const file = e.target.files?.[0]; if (!file) return;', loaderStart),
-      loaderEnd,
+      projectLoaderStart,
+      loaderSource.indexOf('window.__alloOpenPdfProjectFile = openPdfProjectFile', projectLoaderStart),
     );
     expect(src).toContain('const pdfProjectLoadEpochRef = useRef(0);');
     expect(projectLoader).toContain('const _projectLoadEpoch = ++pdfProjectLoadEpochRef.current;');

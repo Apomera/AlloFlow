@@ -566,7 +566,7 @@ describe('the Source view: one editor that says what is in use', () => {
     expect(v.props.handleGenerate).not.toHaveBeenCalled();
     act(() => q(v.el, '[data-source-check-details]').click());
     expect(v.props.openAnalysis).toHaveBeenCalledWith(check);
-    expect(q(v.el, '[data-source-run-check]').textContent).toBe('Run the check again');
+    expect(q(v.el, '[data-source-run-check]').textContent).toBe('Analyze again');
   });
 
   it('keeps the web accuracy setting next to the check', () => {

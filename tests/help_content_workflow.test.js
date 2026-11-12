@@ -59,7 +59,9 @@ describe('Help Mode on real classroom controls',()=>{
   expect(button.getAttribute('aria-expanded')).toBe('false');expect(host.querySelector('#guided-step-picker')).toBeNull();
  });
  it('explains Next without advancing, then permits normal navigation after Help Mode ends',()=>{
-  const h=guided(),show=helpMode(),button=host.querySelector('[data-help-key="guided_next_step"]');
+  // Analysis counts as done only with a check of this exact passage, not a saved completion flag.
+  const check={id:'check-1',type:'analysis',data:{originalText:'A source passage.',readingLevel:{range:'Grade 4-5'},concepts:['a']}};
+  const h=guided({history:[check]}),show=helpMode(),button=host.querySelector('[data-help-key="guided_next_step"]');
   act(()=>button.click());expect(show).toHaveBeenCalledWith(button,'Continue to the next step',help.guided_next_step);expect(h.next).not.toHaveBeenCalled();
   document.removeEventListener('click',helpHandler,true);helpHandler=null;act(()=>button.click());expect(h.next).toHaveBeenCalledWith(false);
  });
