@@ -1,0 +1,4 @@
+# Maps historical author identities to canonical ones for git log / shortlog / blame.
+# Format: Canonical Name <canonical@email> Old Name <old@email>
+Tyler Despain <tyler@physher.com> Hubby <hubby@Ramatra.local>
+Tyler Despain <tyler@physher.com> Tyler <tyler@physher.com>
