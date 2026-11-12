@@ -360,6 +360,7 @@
     show('save', false);
     show('after-save', false);
     show('build-problem', false);
+    clearPaper();
   }
   function making(text) {
     show('making', true);
@@ -419,6 +420,8 @@
     show('summary', true);
     if (fileUrl) { $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl); show('try', true); }
     show('save', true);
+    // The paper copy comes from the same lesson. If it cannot be drawn, there is no print button; the file is unchanged.
+    try { drawPaper(todo.lesson); } catch (_) { clearPaper(); }
     setText('making-said', 'The file is ready: ' + count(items, item) + ', ' + fileSize(built.bytes) + '.');
   }
   function saveFile() {
@@ -436,6 +439,253 @@
     show('after-code', built.coded);
     show('after-save', true);
     $('after-save').focus();
+  }
+
+  // ---------------------------------------------------------------------------
+  // The paper copy: the same check on paper, for a learner with no device
+  // ---------------------------------------------------------------------------
+  // It is drawn from the lesson the file is made from, each item through the loader's own prepare step (the step that
+  // seals it into the file), so the problems, their order and the answers are the file's. It is never shown on screen:
+  // while a file is ready, printing the page prints it and nothing else (packets-check-print.css).
+  // Sizes are in millimeters. A sheet holds what fits inside the print margins on the smaller of US Letter and A4
+  // (180 mm across, 255 mm down on Letter), so either paper gives the same pages. The heights of the boxes are the ones
+  // in packets-check-print.css: change them together.
+  var PAPER = { across: 180, down: 238, page: 8, turn: 8, stack: 36, tall: 44, line: 18, pair: 24 };
+  // What the learner reads on paper: the file's own directions, with the word for paper (tap and type become circle and write).
+  var PAPER_HOW = { quantity_discrimination: 'Circle the bigger number.', missing_number: 'Write the missing number.', math_computation: 'Write the answer to each one.' };
+  var DIVIDE = String.fromCharCode(0xF7);
+  var BLANK = /_{2,}/;
+  var paperOn = false;
+
+  var fill = function (text, values) { return String(text).replace(/\{(\w+)\}/g, function (all, key) { return has(values, key) ? String(values[key]) : all; }); };
+  // A time in the file's own words: "1 minute", "2 minutes", "90 seconds".
+  function fileTime(seconds) {
+    var words = loader.CHECK_LABELS, n = Math.round(seconds);
+    if (n % 60 === 0) return n === 60 ? words.check_one_minute : fill(words.check_minutes, { n: n / 60 });
+    return fill(words.check_seconds, { n: n });
+  }
+  // The check as the file holds it: the samples (the practice questions) and the scored items, in order, each with its answer.
+  function paperOf(lesson) {
+    var block = lesson.blocks[0], adapter = loader.CHECK_ADAPTERS[block.activity], check = lesson.check || {};
+    var rows = block.items.map(function (raw, i) {
+      var made = adapter && typeof adapter.prepare === 'function' ? adapter.prepare(raw || {}, {}) : null;
+      if (!made || !made.item) throw new Error('item ' + (i + 1) + ' cannot be printed');
+      return Object.assign({ practice: !!(raw && raw.practice) }, made.item);
+    });
+    return { kind: block.activity, title: lesson.title, limit: Number(lesson.timeLimitS) > 0 ? Number(lesson.timeLimitS) : null, skip: !!check.allowSkip, unit: check.scoreUnit,
+      samples: rows.filter(function (row) { return row.practice; }), items: rows.filter(function (row) { return !row.practice; }) };
+  }
+  // About how wide a run of text is, in ems of the numeral size.
+  function ems(text) {
+    var n = 0;
+    String(text).split('').forEach(function (ch) { n += /[0-9]/.test(ch) ? 0.56 : ch === ' ' ? 0.3 : 0.64; });
+    return n;
+  }
+  // One item on paper: a pair of numbers, a stacked problem (a division in its bracket) or a line, and the width it needs.
+  // A stacked problem that takes more than one line of working (two numbers of two or more digits multiplied, a division
+  // by a number of two or more digits or with an answer of two or more digits) gets a taller box.
+  function shapeOf(kind, row) {
+    if (kind === 'quantity_discrimination') return { shape: 'pair', mm: 34 };
+    if (row.display != null) {
+      var gap = BLANK.test(row.display);
+      return { shape: 'line', mm: ems(gap ? row.display.replace(BLANK, '') : row.display + ' = ') * 7.1 + (gap ? 16 : Math.max(16, ems(row.answer) * 7.1 + 6)) + 14 };
+    }
+    var a = String(row.a), b = String(row.b), divide = row.symbol === DIVIDE;
+    var tall = divide ? b.length > 1 || String(row.answer).replace('-', '').length > 1 : row.symbol === String.fromCharCode(0xD7) && Math.min(a.length, b.length) > 1;
+    var wide = divide ? ems(a) + ems(b) + 0.8 : Math.max(ems(a), ems(b), ems(row.answer)) + 1;
+    return { shape: 'stack', tall: tall, mm: wide * 7.8 + 12 };
+  }
+  // The columns of a list, and how many columns each item takes: a stacked problem or a pair takes one, a long line more.
+  // A list of lines has two columns at most, so that one line never runs into the next.
+  function layOut(kind, rows) {
+    var shapes = rows.map(function (row) { return shapeOf(kind, row); });
+    var boxes = shapes.filter(function (s) { return s.shape !== 'line'; });
+    var widest = Math.max.apply(null, (boxes.length ? boxes : shapes).map(function (s) { return s.mm; }));
+    var cols = Math.max(1, Math.min(boxes.length ? 5 : 2, Math.floor(PAPER.across / widest)));
+    shapes.forEach(function (s) { s.span = s.shape === 'line' && boxes.length ? Math.min(cols, Math.ceil(s.mm / (PAPER.across / cols))) : 1; });
+    return { cols: cols, shapes: shapes };
+  }
+  // The rows of a grid, as the browser places them: an item that does not fit in what is left of a row starts the next one.
+  function rowsOf(shapes, cols) {
+    var rows = [], row = null;
+    shapes.forEach(function (s, i) {
+      if (!row || row.used + s.span > cols) rows.push(row = { from: i, to: i, used: 0, mm: 0 });
+      row.to = i + 1;
+      row.used += s.span;
+      row.mm = Math.max(row.mm, PAPER[s.tall ? 'tall' : s.shape]);
+    });
+    return rows;
+  }
+  // The sheets: as many rows as fit, never part of an item. The first sheet also holds the title, the name line, the
+  // directions and the samples.
+  function sheetsOf(rows, firstRoom) {
+    var sheets = [[]], room = firstRoom;
+    rows.forEach(function (row) {
+      var sheet = sheets[sheets.length - 1];
+      if (row.mm > room && sheet.length) { sheets.push(sheet = []); room = PAPER.down - PAPER.page - PAPER.turn; }
+      sheet.push(row);
+      room -= row.mm;
+    });
+    return sheets;
+  }
+  function paperItem(row, label, shape) {
+    var item = el('li', 'pi pi-' + shape.shape + (shape.tall ? ' pi-tall' : '') + (shape.span > 1 ? ' wide-' + shape.span : ''));
+    item.appendChild(el('span', 'pn', label));
+    var box;
+    if (shape.shape === 'pair') {
+      box = el('span', 'pp');
+      box.appendChild(el('span', 'pp-n', String(row.left)));
+      box.appendChild(el('span', 'pp-n', String(row.right)));
+    } else if (shape.shape === 'line') {
+      // "__ + 8 = 14" as written, with a line to write on for the blank. A line with no blank ends "= ____".
+      box = el('span', 'pl');
+      var parts = String(row.display).split(/(_{2,})/).filter(Boolean);
+      if (!BLANK.test(row.display)) parts.push(' = ', '__');
+      parts.forEach(function (part) { box.appendChild(BLANK.test(part) ? el('span', row.answer.length > 3 ? 'pblank pblank-wide' : 'pblank') : doc.createTextNode(part)); });
+    } else if (row.symbol === DIVIDE) {
+      box = el('span', 'pdv');
+      box.appendChild(el('span', 'pdv-by', String(row.b)));
+      box.appendChild(el('span', 'pdv-in', String(row.a)));
+    } else {
+      box = el('span', 'ps');
+      box.appendChild(el('span', 'ps-a', String(row.a)));
+      box.appendChild(el('span', 'ps-op', row.symbol));
+      box.appendChild(el('span', 'ps-b', String(row.b)));
+    }
+    item.appendChild(box);
+    return item;
+  }
+  // How the paper is given and scored. Each sentence says what the file does (word_sounds_take_home_loader.js:
+  // checkScore, and the score halves of the check adapters); none adds a rule of its own.
+  function teacherWords(paper) {
+    var noun = paper.kind === 'quantity_discrimination' ? 'question' : 'problem';
+    var samples = paper.samples.length, limit = paper.limit, rate = paper.unit === 'digits_correct_per_minute';
+    var minus = paper.samples.concat(paper.items).some(function (row) { return /^-/.test(row.answer); });
+    var give = [], score = [], tally = [];
+    if (samples) give.push((samples === 1 ? 'Do the sample first, with the learner, and say the answer.' : 'Do the ' + samples + ' samples first, with the learner, and say each answer.') + ' Samples do not count.');
+    give.push(limit ? (samples ? 'Then start a clock for ' : 'Start a clock for ') + fileTime(limit) + '. When the time is up, the learner stops.' : 'There is no clock. The learner may take as long as needed.');
+    if (paper.skip) give.push('The learner may skip a ' + noun + ', as on screen.');
+    if (rate && limit) give.push('If the learner finishes every ' + noun + ' before the time is up, write down the number of seconds used.');
+    if (rate) {
+      score.push('Compare each answer with the key one place at a time: ones with ones, tens with tens, and so on. Each digit that matches is 1 digit correct.');
+      var example = digitExample(paper);
+      if (example) score.push(example);
+      score.push('A ' + noun + ' left blank gets 0.' + (minus ? ' So does an answer with the wrong sign.' : ''));
+      score.push('Add up the digits correct' + (samples ? ', leaving out the samples.' : '.'));
+      if (!limit) score.push('With no clock there is no score in digits correct per minute.');
+      else {
+        score.push(limit === 60 ? 'If the time ran out: the score is the number of digits correct, because the time is 1 minute.'
+          : 'If the time ran out: score = digits correct ' + DIVIDE + ' ' + (limit / 60) + ' (the minutes), rounded to a whole number.');
+        score.push('If every ' + noun + ' was finished early: score = digits correct ' + String.fromCharCode(0xD7) + ' 60 ' + DIVIDE + ' seconds used, rounded to a whole number. Under 20 seconds, there is no score.');
+      }
+      tally.push(['Digits correct', '']);
+      if (limit) tally.push(['Seconds used, if finished early', '']);
+      tally.push(['Score', 'digits correct per minute']);
+    } else {
+      score.push(noun === 'question' ? 'A question is right when the circled number is the bigger one, the one in the key.' : 'A problem is right when the number written is the one in the key.');
+      score.push('The score is the number of ' + noun + 's right' + (samples ? ', leaving out the samples.' : '.'));
+      if (limit) score.push('If the learner finishes before the time is up, the score is still the number right.');
+      tally.push(['Number right', 'of ' + paper.items.length]);
+    }
+    score.push(limit ? 'If the check is stopped before the time is up and before the last ' + noun + ', there is no score.' : 'If the check is stopped before the last ' + noun + ', there is no score.');
+    var note = 'The numbers are the ones the learner sees on screen' + (samples ? '. In the results file the samples come first, so ' + noun + ' 1 is item_n ' + (samples + 1) + '.' : ' and in the results file.');
+    return { give: give, score: score, tally: tally, note: note };
+  }
+  // A worked example of digits correct, counted by the file's own scoring of one item.
+  function digitExample(paper) {
+    var adapter = loader.CHECK_ADAPTERS.math_computation;
+    var row = paper.items.filter(function (item) { return /^[0-9]{2,}$/.test(item.answer); })[0];
+    if (!row || !adapter || typeof adapter.score !== 'function') return '';
+    var key = row.answer, wrote = key.slice(0, -1) + ((Number(key.charAt(key.length - 1)) + 1) % 10);
+    var got = adapter.score(row, key, wrote).digitsCorrect;
+    return 'For example, if the key says ' + key + ' and the learner wrote ' + wrote + ', that is ' + count(got, 'digit') + ' correct.';
+  }
+  function clearPaper() {
+    paperOn = false;
+    doc.body.classList.remove('paper-on');
+    show('print', false);
+    show('print-note', false);
+    var learner = $('paper-learner');
+    if (!learner) return;
+    while (learner.children.length > 1) learner.removeChild(learner.lastElementChild);
+    ['paper-page-1', 'paper-title', 'paper-how', 'paper-time', 'paper-samples', 'paper-items-1', 'paper-turn-1', 'paper-key-title', 'paper-give', 'paper-score', 'paper-tally', 'paper-key-note', 'paper-key']
+      .forEach(function (id) { setText(id, ''); });
+    setText('paper-answers-title', 'Answers');
+    $('paper-answers').className = '';
+  }
+  function drawPaper(lesson) {
+    clearPaper();
+    var paper = paperOf(lesson), learner = $('paper-learner');
+    var all = paper.samples.concat(paper.items), plan = layOut(paper.kind, all);
+    var sampleShapes = plan.shapes.slice(0, paper.samples.length), itemShapes = plan.shapes.slice(paper.samples.length);
+    var how = PAPER_HOW[paper.kind] + (plan.cols > 1 ? ' Go across each row.' : '') + (paper.skip ? ' If you get stuck, go on to the next one.' : '');
+    // The first sheet: the page line, the title (about 50 characters to a line), the name line, the directions (about 70 to a
+    // line), the time, the samples and the start line. The rest of the sheet is for the problems.
+    var head = PAPER.page + 12 * Math.ceil(paper.title.length / 50) + 15 + 8 * Math.ceil(how.length / 70) + 12 + 10
+      + (paper.samples.length ? 12 + rowsOf(sampleShapes, plan.cols).reduce(function (sum, row) { return sum + row.mm; }, 0) : 0);
+    var sheets = sheetsOf(rowsOf(itemShapes, plan.cols), PAPER.down - PAPER.turn - head);
+    setText('paper-title', paper.title);
+    setText('paper-how', how);
+    setText('paper-time', paper.limit ? fill(loader.CHECK_LABELS.check_ready_timed, { time: fileTime(paper.limit) }) : loader.CHECK_LABELS.check_ready_untimed);
+    show('paper-samples-part', paper.samples.length > 0);
+    $('paper-samples').className = 'paper-items paper-samples cols-' + plan.cols;
+    paper.samples.forEach(function (row, i) { $('paper-samples').appendChild(paperItem(row, 'Sample', sampleShapes[i])); });
+    sheets.forEach(function (rows, n) {
+      var list = n ? el('ol', '') : $('paper-items-1'), page = n ? el('p', 'paper-page') : $('paper-page-1'), turn = n ? el('p', 'paper-turn') : $('paper-turn-1');
+      list.className = 'paper-items cols-' + plan.cols;
+      if (sheets.length > 1) page.textContent = 'Page ' + (n + 1) + ' of ' + sheets.length;
+      if (n < sheets.length - 1) turn.textContent = 'Go on to the next page.';
+      rows.forEach(function (row) {
+        for (var i = row.from; i < row.to; i++) list.appendChild(paperItem(paper.items[i], String(i + 1), itemShapes[i]));
+      });
+      if (!n) return;
+      var sheet = el('section', 'paper-sheet');
+      sheet.appendChild(page);
+      sheet.appendChild(list);
+      sheet.appendChild(turn);
+      learner.appendChild(sheet);
+    });
+    // An odd number of learner pages gets a blank one, so that printed on both sides the answers are not on the back of a learner page.
+    if (sheets.length % 2) {
+      var blank = el('section', 'paper-sheet paper-empty');
+      blank.appendChild(el('p', 'paper-empty-line', 'This page is blank on purpose, so that the teacher page starts on a sheet of its own.'));
+      learner.appendChild(blank);
+    }
+    // The teacher page.
+    var words = teacherWords(paper);
+    setText('paper-key-title', 'Teacher page: ' + paper.title);
+    words.give.forEach(function (text) { $('paper-give').appendChild(el('li', '', text)); });
+    words.score.forEach(function (text) { $('paper-score').appendChild(el('li', '', text)); });
+    words.tally.forEach(function (row) {
+      var field = el('span', 'paper-field', row[0] + ' ');
+      field.appendChild(el('span', 'paper-fill'));
+      if (row[1]) field.appendChild(doc.createTextNode(' ' + row[1]));
+      $('paper-tally').appendChild(field);
+    });
+    setText('paper-key-note', words.note);
+    var longest = Math.max.apply(null, all.map(function (row) { return String(row.word).length; }));
+    var keyCols = longest <= 12 ? 3 : longest <= 22 ? 2 : 1;
+    $('paper-key').className = 'paper-key key-cols-' + keyCols;
+    // The key stays on the teacher page while it fits under the directions (about 70 mm, in rows of 6.6 mm). A longer
+    // one starts a sheet of its own, under its own heading.
+    var apart = Math.ceil(all.length / keyCols) * 6.6 > 70;
+    $('paper-answers').className = apart ? 'paper-apart' : '';
+    setText('paper-answers-title', apart ? 'Answers: ' + paper.title : 'Answers');
+    all.forEach(function (row, i) {
+      var line = el('li', '');
+      line.appendChild(el('span', 'kn', row.practice ? 'Sample' : String(i - paper.samples.length + 1)));
+      line.appendChild(el('span', 'kw', String(row.word)));
+      line.appendChild(el('span', 'ka', row.answer));
+      $('paper-key').appendChild(line);
+    });
+    paperOn = true;
+    doc.body.classList.add('paper-on');
+    show('print', true);
+    show('print-note', true);
+  }
+  function printPaper() {
+    if (!paperOn) return;
+    try { window.print(); } catch (_) { /* the browser's own print menu still prints the paper copy */ }
   }
 
   // ---------------------------------------------------------------------------
@@ -511,6 +761,7 @@
     $('f-code').addEventListener('input', function () { drawCode(); if (!codeProblem()) setText('step-2-problem', ''); });
     $('code-show').addEventListener('click', function () { showCode(this.getAttribute('aria-pressed') !== 'true'); });
     $('save').addEventListener('click', saveFile);
+    $('print').addEventListener('click', printPaper);
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
       state = defaults();

@@ -10,6 +10,7 @@
 <meta name="description" content="Make a math check in three steps: a short set of problems in one small file. The file is put together in your browser. Runs without AI. No accounts.">
 <link rel="icon" type="image/svg+xml" href="packets-mark.svg">
 <link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-check-print.css">
 <script src="packets-page.js" defer></script>
 <script src="psychometric_math_probes.js" defer></script>
 <script src="word_sounds_take_home_loader.js" defer></script>
@@ -40,7 +41,7 @@
       <li>Nothing is generated when you make a file or when a learner uses it. The ready checks are fixed sets of problems, and the answers to your own problems are worked out by plain arithmetic.</li>
       <li>The file is put together in this browser tab. Your choices, the problems you type and the teacher code are not sent anywhere. The page's scripts ask the network for nothing, and the rule below tells the browser to refuse them if they tried.</li>
       <li>There are no cookies and nothing to sign in to.</li>
-      <li>This page loads <span id="file-count">eight</span> files, all from this site: the page itself, one stylesheet, five scripts and the icon in the browser tab. They are the same files whatever you choose, and each is named near the top of the page's source. It loads no fonts, no trackers and nothing from another site. Try it opens this site's preview page in a new tab.</li>
+      <li>This page loads <span id="file-count">nine</span> files, all from this site: the page itself, two stylesheets (one is only for printing), five scripts and the icon in the browser tab. They are the same files whatever you choose, and each is named near the top of the page's source. It loads no fonts, no trackers and nothing from another site. Try it opens this site's preview page in a new tab.</li>
       <li>Like any website, the server that sends these files can see that your browser asked for them. It receives nothing else.</li>
       <li>On this device the page keeps your last choices. It never keeps the teacher code. The button that removes your choices is under About this page, at the bottom.</li>
     </ul>
@@ -217,7 +218,9 @@
       <div class="actions">
         <button type="button" class="btn" id="back-3">Back</button>
         <a class="btn push" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
+        <button type="button" class="btn" id="print" aria-describedby="print-note" hidden>Print a paper copy</button>
         <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
+        <p class="actions-note" id="print-note" hidden>For a learner with no device: the same problems in the same order, on paper. The answers and how to score them are on a teacher page, on a sheet of its own.</p>
       </div>
 
       <div id="after-save" class="next" tabindex="-1" hidden>
@@ -258,5 +261,41 @@
     <p><a href="./">More from AlloFlow</a></p>
   </div>
 </footer>
+
+<!-- The paper copy. Never shown on screen: while a file is ready, packets-check-print.css prints this and nothing else.
+     packets-check.js fills it from the lesson the file is made from. -->
+<div id="paper" class="paper" hidden>
+  <div id="paper-learner">
+    <section class="paper-sheet" aria-labelledby="paper-title">
+      <p class="paper-page" id="paper-page-1"></p>
+      <h2 class="paper-title" id="paper-title"></h2>
+      <p class="paper-who"><span class="paper-field">Name or code name <span class="paper-fill"></span></span><span class="paper-field paper-field-short">Date <span class="paper-fill"></span></span></p>
+      <p class="paper-how" id="paper-how"></p>
+      <p class="paper-time" id="paper-time"></p>
+      <div id="paper-samples-part">
+        <h3 class="paper-sub">Samples. These do not count.</h3>
+        <ol class="paper-items paper-samples" id="paper-samples"></ol>
+      </div>
+      <h3 class="paper-sub">Start when your teacher says.</h3>
+      <ol class="paper-items" id="paper-items-1"></ol>
+      <p class="paper-turn" id="paper-turn-1"></p>
+    </section>
+  </div>
+  <section class="paper-sheet paper-teacher" aria-labelledby="paper-key-title">
+    <h2 class="paper-title" id="paper-key-title"></h2>
+    <p class="paper-keep">For the teacher. Keep this page away from the learner.</p>
+    <h3 class="paper-sub">How to give it</h3>
+    <ol class="paper-steps" id="paper-give"></ol>
+    <h3 class="paper-sub">How to score it: the same way the file does</h3>
+    <ul class="paper-steps" id="paper-score"></ul>
+    <p class="paper-tally" id="paper-tally"></p>
+    <div id="paper-answers">
+      <h3 class="paper-sub" id="paper-answers-title">Answers</h3>
+      <p class="paper-key-note" id="paper-key-note"></p>
+      <ol class="paper-key" id="paper-key"></ol>
+    </div>
+    <p class="paper-caution">Scores on paper and on screen may differ, so do not mix them until they have been compared.</p>
+  </section>
+</div>
 </body>
 </html>

@@ -10,6 +10,7 @@ import { JSDOM } from 'jsdom';
 const read = (file) => readFileSync(file, 'utf8');
 const PAGE = 'packets-check.html';
 const SCRIPT = 'packets-check.js';
+const PRINT_CSS = 'packets-check-print.css';
 const NAME = 'AlloFlow Packets';
 const KEY = 'alloflow-packets-check/1';
 const ADDRESS = 'https://packets.test/site/packets-check.html';
@@ -113,9 +114,9 @@ describe('the page as files', () => {
       }
     }
     expect(doc.querySelectorAll('form, iframe, object, embed, img, audio, video, base')).toHaveLength(0);
-    // The page's look is the shared stylesheet: one stylesheet, and nothing in it comes from elsewhere.
-    expect([...doc.querySelectorAll('link[rel="stylesheet"]')].map((link) => link.getAttribute('href'))).toEqual(['packets.css']);
-    expect(read('packets.css')).not.toMatch(/@import|url\(|@font-face/i);
+    // The page's look is the shared stylesheet, and one more for the paper copy only. Nothing in either comes from elsewhere.
+    expect([...doc.querySelectorAll('link[rel="stylesheet"]')].map((link) => link.getAttribute('href'))).toEqual(['packets.css', PRINT_CSS]);
+    for (const file of ['packets.css', PRINT_CSS]) expect(read(file), file).not.toMatch(/@import|url\(|@font-face/i);
   });
 
   it('carries the rule that tells the browser to refuse everything else, before anything is loaded', () => {
@@ -138,9 +139,10 @@ describe('the page as files', () => {
     expect(source).not.toMatch(/fetch\s*\(|XMLHttpRequest|WebSocket|EventSource|sendBeacon|\beval\s*\(|new\s+Function|\bimport\s*\(|\.\s*cookie\b|getUserMedia|serviceWorker|\bcaches\b|indexedDB|sessionStorage/);
     // It never touches the address of the page: nothing typed can end up in a link or in the history.
     expect(source).not.toMatch(/\blocation\b|\bhistory\b|pushState|replaceState|searchParams/);
-    // It makes nothing that loads: the only elements it creates are text, the choices, and the link that hands over the file.
+    // It makes nothing that loads: the only elements it creates are text, the choices, the sheets of the paper copy, and
+    // the link that hands over the file.
     const made = new Set([...source.matchAll(/\b(?:el|createElement)\('(\w+)'/g)].map((m) => m[1]));
-    expect([...made].sort()).toEqual(['a', 'dd', 'dt', 'input', 'label', 'li', 'span']);
+    expect([...made].sort()).toEqual(['a', 'dd', 'dt', 'input', 'label', 'li', 'ol', 'p', 'section', 'span']);
     expect(source.match(/createElement\(/g)).toHaveLength(2);
     expect(source).not.toMatch(/innerHTML|outerHTML|insertAdjacentHTML|document\.write|\.src\s*=|setAttribute\('(?:src|action|srcset)'/);
     // The one address it sets is the preview page with the built file's own blob address after the #.
@@ -263,8 +265,8 @@ describe('the page as files', () => {
     for (const step of doc.querySelectorAll('section.sheet')) expect(step.querySelectorAll('.btn-primary').length, step.id).toBe(1);
     expect(read('packets.css')).toMatch(/@media \(max-width: 29\.99rem\) \{\s*\.actions \.btn-primary \{ flex: 1 1 100%; \}/);
     expect(read('packets.css')).toMatch(/prefers-reduced-motion/);
-    // Every class the page and its script use is one the shared stylesheet has: the page brings no look of its own.
-    const css = read('packets.css');
+    // Every class the page and its script use is one the shared stylesheet has, or (the paper copy) the print stylesheet.
+    const css = read('packets.css') + read(PRINT_CSS);
     const used = new Set([...doc.querySelectorAll('[class]')].flatMap((node) => [...node.classList]));
     for (const quoted of read(SCRIPT).match(/el\('\w+', '[\w -]+'/g) || []) for (const name of /, '([\w -]+)'/.exec(quoted)[1].split(' ')) used.add(name);
     for (const name of [...used, 'is-on', 'is-done', 'is-ok', 'is-out', 'w', 's']) expect(css.includes('.' + name), 'class ' + name).toBe(true);
@@ -323,10 +325,11 @@ describe('the page as files', () => {
 
   it('the sizes and the count of files it states are the real ones', () => {
     const doc = parse(PAGE);
-    // The page itself, the stylesheet, the icon and the scripts.
+    // The page itself, the two stylesheets, the icon and the scripts.
     const files = new Set([PAGE, ...[...doc.querySelectorAll('link[href], script[src]')].map((node) => node.getAttribute('href') || node.getAttribute('src'))]);
-    expect(files.size).toBe(8);
-    expect(squash(doc.querySelector('details.proof').textContent)).toContain('This page loads eight files, all from this site: the page itself, one stylesheet, five scripts and the icon in the browser tab.');
+    expect(files.size).toBe(9);
+    expect(doc.querySelectorAll('link[rel="stylesheet"]')).toHaveLength(2);
+    expect(squash(doc.querySelector('details.proof').textContent)).toContain('This page loads nine files, all from this site: the page itself, two stylesheets (one is only for printing), five scripts and the icon in the browser tab.');
     const megabytes = SCRIPTS.reduce((sum, file) => sum + statSync(file).size, 0) / 1e6;
     expect(doc.getElementById('loading').textContent).toContain('Getting the problem sets, about 0.5 MB.');
     expect(megabytes).toBeGreaterThan(0.4);
@@ -358,6 +361,9 @@ function openPage(options = {}) {
   w.URL.revokeObjectURL = () => {};
   w.HTMLAnchorElement.prototype.click = function () { page.downloads.push({ name: this.getAttribute('download'), href: this.getAttribute('href') }); };
   w.HTMLElement.prototype.scrollIntoView = function () {};
+  // jsdom has no printer: a print is counted, with what the print stylesheet would print at that moment.
+  page.prints = [];
+  w.print = () => { page.prints.push(d.body.classList.contains('paper-on')); };
   for (const [key, value] of Object.entries(options.storage || {})) w.localStorage.setItem(key, value);
   // The page's own scripts, in the order the page names them: what the page does not load, the run does not have.
   for (const script of d.querySelectorAll('script[src]')) {
@@ -1117,5 +1123,306 @@ describe('what the page keeps, and how it copes', () => {
     expect(page.seen('build-problem')).toBe(false);
     expect(page.built()).toBe(direct('quantity_discrimination', 'K', 'A').html);
     page.dom.window.close();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The paper copy: the same check on paper, from the lesson the file is made from
+// ---------------------------------------------------------------------------
+const CODEC = TH.checkCodec(TH.sha256);
+const DIVIDE = String.fromCharCode(0xF7);
+// The items as the built file holds them, in order: the label the paper should give each, the problem as the file writes
+// it, the answer unscrambled from the file, and how the paper shows the problem (a line with no blank gets "= __").
+function fileItems(html) {
+  const lesson = lessonOf(html), salt = lesson.check.salt;
+  let n = 0;
+  return lesson.blocks[0].items.map((item) => ({ practice: !!item.practice, label: item.practice ? 'Sample' : String(++n), word: item.word,
+    answer: CODEC.unscramble(item.key, salt, item.id), printed: item.display != null && !/_{2,}/.test(item.display) ? item.word + ' = __' : item.word }));
+}
+// One printed item, read back from what is on the paper: its label and the problem its boxes show.
+function printedItem(li) {
+  const label = li.querySelector('.pn').textContent;
+  if (li.classList.contains('pi-pair')) return [label, [...li.querySelectorAll('.pp-n')].map((n) => n.textContent).join(' or ')];
+  if (li.classList.contains('pi-line')) return [label, [...li.querySelector('.pl').childNodes].map((n) => (n.nodeType === 3 ? n.textContent : n.classList.contains('pblank') ? '__' : '?')).join('')];
+  if (li.querySelector('.pdv')) return [label, li.querySelector('.pdv-in').textContent + ' ' + DIVIDE + ' ' + li.querySelector('.pdv-by').textContent];
+  return [label, li.querySelector('.ps-a').textContent + ' ' + li.querySelector('.ps-op').textContent + ' ' + li.querySelector('.ps-b').textContent];
+}
+function paperOn(page) {
+  const learner = page.$('paper-learner');
+  return {
+    samples: [...page.$('paper-samples').querySelectorAll('.pi')].map(printedItem),
+    items: [...learner.querySelectorAll('.paper-items:not(.paper-samples) .pi')].map(printedItem),
+    sheets: [...learner.querySelectorAll('.paper-sheet:not(.paper-empty)')],
+    blank: learner.querySelectorAll('.paper-empty').length,
+    key: [...page.$('paper-key').children].map((li) => [...li.children].map((n) => n.textContent)),
+    give: [...page.$('paper-give').children].map((li) => li.textContent),
+    score: [...page.$('paper-score').children].map((li) => li.textContent),
+    tally: squash(page.$('paper-tally').textContent),
+  };
+}
+// Digits correct as the teacher page tells a person to count them: one place at a time from the ones, each digit that
+// matches is 1; a blank gets 0, and so does an answer with the wrong sign.
+function byPlace(key, wrote) {
+  if (wrote === '' || key.startsWith('-') !== wrote.startsWith('-')) return 0;
+  const k = key.replace('-', ''), w = wrote.replace('-', '');
+  let n = 0;
+  for (let i = 1; i <= k.length; i++) if (i <= w.length && k[k.length - i] === w[w.length - i]) n++;
+  return n;
+}
+// The file's directions with the word for paper: tap and type become circle and write.
+const onPaper = (directions) => directions.replace(/^Tap /, 'Circle ').replace(/^Type /, 'Write ');
+
+describe('the paper copy', () => {
+  it('as files: one button beside Save, a copy hidden on screen and printed alone, black on white, sized as the script lays it out', () => {
+    const doc = parse(PAGE);
+    const paper = doc.getElementById('paper');
+    expect(paper.hidden).toBe(true);
+    expect(paper.parentNode).toBe(doc.body);
+    expect(paper.closest('main')).toBeNull();
+    expect(paper.querySelectorAll('button, input, select, textarea, a, img, svg')).toHaveLength(0);
+    // The learner's lines and the caution are fixed words; the rest is filled from the lesson.
+    expect(squash(paper.querySelector('.paper-who').textContent)).toBe('Name or code name Date');
+    expect(paper.querySelector('.paper-caution').textContent).toBe('Scores on paper and on screen may differ, so do not mix them until they have been compared.');
+    expect(paper.querySelector('.paper-keep').textContent).toBe('For the teacher. Keep this page away from the learner.');
+    expect([...paper.querySelectorAll('h3')].map((node) => node.textContent)).toEqual(['Samples. These do not count.', 'Start when your teacher says.', 'How to give it', 'How to score it: the same way the file does', 'Answers']);
+    // One button, beside saving the file, with a line that says what it prints. No settings.
+    const actions = doc.getElementById('save').parentNode;
+    expect([...actions.querySelectorAll('button, a')].map((node) => node.id)).toEqual(['back-3', 'try', 'print', 'save']);
+    const button = doc.getElementById('print');
+    expect([button.textContent, button.className, button.hidden, button.getAttribute('aria-describedby')]).toEqual(['Print a paper copy', 'btn', true, 'print-note']);
+    expect(doc.getElementById('print-note').textContent).toBe('For a learner with no device: the same problems in the same order, on paper. The answers and how to score them are on a teacher page, on a sheet of its own.');
+    expect(doc.getElementById('step-3').querySelectorAll('input, select, textarea')).toHaveLength(0);
+
+    // Everything in the print stylesheet is for print: the screen is untouched.
+    const css = read(PRINT_CSS);
+    expect(css.slice(0, css.indexOf('@media print {')).replace(/\/\*[\s\S]*?\*\//g, '').trim()).toBe('');
+    expect(css.match(/@media/g)).toHaveLength(1);
+    expect(css).toContain('body.paper-on > :not(#paper) { display: none !important; }');
+    expect(css).toContain('body.paper-on > #paper[hidden] { display: block !important; }');
+    // Black, white and one gray for the lines of the key. No color, no picture, no font from anywhere.
+    expect([...new Set(css.match(/#[0-9a-f]{3,8}\b/gi))].sort()).toEqual(['#000000', '#808080', '#ffffff']);
+    expect(css).not.toMatch(/rgb|hsl|color-mix|background-image|box-shadow|@font-face|@import|url\(/i);
+    // An item never splits across two pages, and the teacher page starts on a new one.
+    expect(css).toMatch(/\.pi \{[^}]*break-inside: avoid;/);
+    expect(css).toMatch(/\.paper-teacher \{[^}]*break-before: page;/);
+    expect(css).toMatch(/@page \{ margin: 12mm 15mm; \}/);
+    // The heights the script lays the sheets out with are the heights of the boxes, and a sheet fits on Letter and on A4.
+    const PAPER = new Function('return ' + /var PAPER = (\{[^}]*\});/.exec(read(SCRIPT))[1])();
+    const height = (selector) => Number(new RegExp(selector.replace(/\./g, '\\.') + ' \\{(?:[^}]*;)?\\s*height: ([\\d.]+)mm').exec(css)[1]);
+    expect([height('.pi-stack'), height('.pi-tall'), height('.pi-line'), height('.pi-pair'), height('.paper-page'), height('.paper-turn')]).toEqual([PAPER.stack, PAPER.tall, PAPER.line, PAPER.pair, PAPER.page, PAPER.turn]);
+    expect(PAPER.across).toBeLessThanOrEqual(Math.min(215.9, 210) - 2 * 15);
+    expect(PAPER.down).toBeLessThan(Math.min(279.4, 297) - 2 * 12);
+    for (const text of [css, read(SCRIPT)]) expect(BRITISH.exec(text)).toBeNull();
+    expect(NOT_SAID.exec(css.replace(/@media print/, ''))).toBeNull();
+    // It prints by asking the browser, once, and opens nothing: no new window, no popup.
+    const source = read(SCRIPT);
+    expect(source.match(/\.print\(/g)).toEqual(['.print(']);
+    expect(source).toContain('try { window.print(); }');
+    expect(source).not.toMatch(/\bopen\s*\(|showModalDialog|_blank/);
+  });
+
+  // The teacher page for each kind, word for word.
+  const TEACHER = {
+    quantity_discrimination: {
+      give: ['Do the 2 samples first, with the learner, and say each answer. Samples do not count.', 'Then start a clock for 1 minute. When the time is up, the learner stops.'],
+      score: ['A question is right when the circled number is the bigger one, the one in the key.', 'The score is the number of questions right, leaving out the samples.',
+        'If the learner finishes before the time is up, the score is still the number right.', 'If the check is stopped before the time is up and before the last question, there is no score.'],
+      tally: 'Number right of 25', note: 'The numbers are the ones the learner sees on screen. In the results file the samples come first, so question 1 is item_n 3.',
+    },
+    missing_number: {
+      give: ['Do the sample first, with the learner, and say the answer. Samples do not count.', 'Then start a clock for 2 minutes. When the time is up, the learner stops.', 'The learner may skip a problem, as on screen.'],
+      score: ['A problem is right when the number written is the one in the key.', 'The score is the number of problems right, leaving out the samples.',
+        'If the learner finishes before the time is up, the score is still the number right.', 'If the check is stopped before the time is up and before the last problem, there is no score.'],
+      tally: 'Number right of 25', note: 'The numbers are the ones the learner sees on screen. In the results file the samples come first, so problem 1 is item_n 2.',
+    },
+    math_computation: {
+      give: ['Do the sample first, with the learner, and say the answer. Samples do not count.', 'Then start a clock for 2 minutes. When the time is up, the learner stops.', 'The learner may skip a problem, as on screen.',
+        'If the learner finishes every problem before the time is up, write down the number of seconds used.'],
+      score: ['Compare each answer with the key one place at a time: ones with ones, tens with tens, and so on. Each digit that matches is 1 digit correct.',
+        'For example, if the key says 49 and the learner wrote 40, that is 1 digit correct.', 'A problem left blank gets 0.', 'Add up the digits correct, leaving out the samples.',
+        'If the time ran out: score = digits correct ' + DIVIDE + ' 2 (the minutes), rounded to a whole number.',
+        'If every problem was finished early: score = digits correct ' + String.fromCharCode(0xD7) + ' 60 ' + DIVIDE + ' seconds used, rounded to a whole number. Under 20 seconds, there is no score.',
+        'If the check is stopped before the time is up and before the last problem, there is no score.'],
+      tally: 'Digits correct Seconds used, if finished early Score digits correct per minute', note: 'The numbers are the ones the learner sees on screen. In the results file the samples come first, so problem 1 is item_n 2.',
+    },
+  };
+
+  it.each([['quantity_discrimination', 'K', 'A'], ['missing_number', '1', 'B'], ['math_computation', '3', 'C']])(
+    '%s, grade %s, version %s: the paper has the file\'s items in the file\'s order, and the key has the file\'s answers', async (id, grade, version) => {
+      const page = openPage();
+      page.choose('check', id);
+      page.$('next-1').click();
+      page.choose('grade', grade);
+      page.choose('version', version);
+      expect(page.seen('print')).toBe(false);
+      page.$('next-2').click();
+      await page.made();
+      const html = page.built(), file = fileItems(html), manifest = manifestOf(html);
+      expect(page.seen('print') && page.seen('print-note') && page.seen('save')).toBe(true);
+      expect(page.d.body.classList.contains('paper-on')).toBe(true);
+      const paper = paperOn(page);
+      // The learner sheet: the file's title, its samples, then its scored items, numbered as on screen.
+      expect(page.$('paper-title').textContent).toBe(manifest.title);
+      expect(paper.samples).toEqual(file.filter((row) => row.practice).map((row) => [row.label, row.printed]));
+      expect(paper.items).toEqual(file.filter((row) => !row.practice).map((row) => [row.label, row.printed]));
+      expect([paper.samples.length, paper.items.length]).toEqual([manifest.check.practiceItems, manifest.check.items]);
+      // The answers the file holds are the arithmetic of the problem set, and the key has them, in the same order and numbering.
+      const lesson = PC.lessonFromMathForm({ bank: BANK, measure: id, grade, form: version });
+      expect(file.map((row) => row.answer)).toEqual(lesson.blocks[0].items.map((raw) => String(expected(raw))));
+      expect(paper.key).toEqual(file.map((row) => [row.label, row.word, row.answer]));
+      // Each kind is laid out as it is written on paper.
+      const kinds = new Set([...page.$('paper-learner').querySelectorAll('.pi')].map((li) => (li.querySelector('.pdv') ? 'divide' : li.className.split(' ')[1])));
+      expect([...kinds].sort()).toEqual({ quantity_discrimination: ['pi-pair'], missing_number: ['pi-line'], math_computation: ['divide', 'pi-stack'] }[id]);
+      // The directions are the file's, with the word for paper, and the time is said in the file's words.
+      const directions = TH.CHECK_ADAPTERS[id].labels[id + '_directions'];
+      expect(page.$('paper-how').textContent.startsWith(onPaper(directions))).toBe(true);
+      expect(page.$('paper-how').textContent).toBe(onPaper(directions) + ' Go across each row.' + (lesson.check.allowSkip ? ' If you get stuck, go on to the next one.' : ''));
+      expect(page.$('paper-time').textContent).toBe(TH.CHECK_LABELS.check_ready_timed.replace('{time}', minutes(manifest.check.timeLimitS)));
+      // Sheets: numbered when there is more than one, each but the last full rows only, an even count before the teacher page.
+      const cols = Number(/cols-(\d)/.exec(page.$('paper-items-1').className)[1]);
+      const n = paper.sheets.length;
+      expect(paper.sheets.map((sheet) => sheet.querySelector('.paper-page').textContent)).toEqual(n > 1 ? paper.sheets.map((_, i) => 'Page ' + (i + 1) + ' of ' + n) : ['']);
+      expect(paper.sheets.map((sheet) => sheet.querySelector('.paper-turn').textContent)).toEqual(paper.sheets.map((_, i) => (i < n - 1 ? 'Go on to the next page.' : '')));
+      paper.sheets.slice(0, -1).forEach((sheet) => expect(sheet.querySelectorAll('.paper-items:not(.paper-samples) .pi').length % cols).toBe(0));
+      expect((n + paper.blank) % 2).toBe(0);
+      expect(paper.blank).toBe(n % 2);
+      // The teacher page.
+      expect(page.$('paper-key-title').textContent).toBe('Teacher page: ' + manifest.title);
+      // 25 answers fit under the directions: the key stays on the teacher page.
+      expect([page.$('paper-answers').className, page.$('paper-answers-title').textContent]).toEqual(['', 'Answers']);
+      expect({ give: paper.give, score: paper.score, tally: paper.tally, note: page.$('paper-key-note').textContent }).toEqual(TEACHER[id]);
+      // The file's own Get ready screen says the same time and the same directions, with the word for the screen.
+      const run = play(html);
+      run.d.getElementById('learner-name').value = 'BlueHeron7';
+      run.button('Next').click();
+      lesson.blocks[0].items.filter((raw) => raw.practice).forEach((raw) => { run.answer(raw); run.q('[data-practice-next]').click(); });
+      expect(run.heading()).toBe('Get ready');
+      expect(run.text()).toContain(page.$('paper-time').textContent);
+      expect(run.text()).toContain(directions);
+      run.close();
+      // The button prints the page, and what prints is the paper copy.
+      page.$('print').click();
+      expect(page.prints).toEqual([true]);
+      expect(page.asked).toEqual([]);
+      page.wordsAreRight();
+      // Going back takes the paper copy away with the file: nothing stale can print.
+      page.$('back-3').click();
+      expect(page.seen('print') || page.seen('print-note')).toBe(false);
+      expect(page.d.body.classList.contains('paper-on')).toBe(false);
+      expect([page.$('paper-items-1').children.length, page.$('paper-samples').children.length, page.$('paper-key').children.length, page.$('paper-learner').children.length]).toEqual([0, 0, 0, 1]);
+      expect(page.$('paper-title').textContent + page.$('paper-give').textContent + page.$('paper-score').textContent).toBe('');
+      page.dom.window.close();
+    });
+
+  it('my own problems: the same list on paper, stacked, in a bracket or on a line, with the answers the file holds', async () => {
+    const page = openPage();
+    await page.own('7+8, 12-5, 6x4, 20/4, 3 + 4 + 5 = 12, 345 x 12, 3 - 8');
+    page.set('f-title', 'Facts to 20');
+    page.$('next-2').click();
+    await page.made();
+    const html = page.built(), file = fileItems(html), paper = paperOn(page);
+    expect(page.$('paper-title').textContent).toBe('Facts to 20');
+    expect(paper.samples).toEqual([]);
+    expect(page.$('paper-samples-part').hidden).toBe(true);
+    expect(paper.items).toEqual(file.map((row) => [row.label, row.printed]));
+    expect(paper.key).toEqual(file.map((row) => [row.label, row.word, row.answer]));
+    expect(file.map((row) => row.answer)).toEqual(['15', '7', '24', '5', '12', '4140', '-5']);
+    expect(paper.items[4]).toEqual(['5', '3 + 4 + 5 = __']);
+    const kinds = [...page.$('paper-learner').querySelectorAll('.pi')].map((li) => (li.querySelector('.pdv') ? 'divide' : li.className.split(' ')[1]));
+    expect(kinds).toEqual(['pi-stack', 'pi-stack', 'pi-stack', 'divide', 'pi-line', 'pi-stack', 'pi-stack']);
+    expect(page.$('paper-how').textContent).toBe('Write the answer to each one. Go across each row. If you get stuck, go on to the next one.');
+    expect(paper.give).toEqual(['Start a clock for 2 minutes. When the time is up, the learner stops.', 'The learner may skip a problem, as on screen.',
+      'If the learner finishes every problem before the time is up, write down the number of seconds used.']);
+    // One answer is below zero, so the page says what the file does with a wrong sign. The example is the first two-digit answer.
+    expect(paper.score).toContain('A problem left blank gets 0. So does an answer with the wrong sign.');
+    expect(paper.score).toContain('For example, if the key says 15 and the learner wrote 16, that is 1 digit correct.');
+    expect(paper.score).toContain('Add up the digits correct.');
+    expect(page.$('paper-key-note').textContent).toBe('The numbers are the ones the learner sees on screen and in the results file.');
+    page.$('print').click();
+    expect(page.prints).toEqual([true]);
+    page.wordsAreRight();
+
+    // No clock and no skip: the file's score is a count, and the paper says so.
+    page.$('back-3').click();
+    page.choose('time', '0');
+    page.$('f-skip').click();
+    page.$('next-2').click();
+    await page.made();
+    const calm = paperOn(page);
+    expect(calm.items).toEqual(fileItems(page.built()).map((row) => [row.label, row.printed]));
+    expect(page.$('paper-time').textContent).toBe(TH.CHECK_LABELS.check_ready_untimed);
+    expect(page.$('paper-how').textContent).toBe('Write the answer to each one. Go across each row.');
+    expect(calm.give).toEqual(['There is no clock. The learner may take as long as needed.']);
+    expect(calm.score).toEqual(['A problem is right when the number written is the one in the key.', 'The score is the number of problems right.', 'If the check is stopped before the last problem, there is no score.']);
+    expect(calm.tally).toBe('Number right of 7');
+    expect(page.asked).toEqual([]);
+    page.dom.window.close();
+  });
+
+  it('a long list runs over several sheets: each numbered, every row whole, every problem once and in order', async () => {
+    const page = openPage();
+    await page.own(Array.from({ length: 60 }, (_, i) => (i + 2) + ' x ' + ((i % 9) + 2)).join('\n'));
+    page.$('next-2').click();
+    await page.made();
+    const paper = paperOn(page), file = fileItems(page.built());
+    expect(paper.items).toEqual(file.map((row) => [row.label, row.printed]));
+    expect(paper.key.map((row) => row[0])).toEqual(Array.from({ length: 60 }, (_, i) => String(i + 1)));
+    const n = paper.sheets.length, cols = Number(/cols-(\d)/.exec(page.$('paper-items-1').className)[1]);
+    expect(n).toBeGreaterThan(2);
+    expect(paper.sheets.map((sheet) => sheet.querySelector('.paper-page').textContent)).toEqual(paper.sheets.map((_, i) => 'Page ' + (i + 1) + ' of ' + n));
+    paper.sheets.slice(0, -1).forEach((sheet) => expect(sheet.querySelectorAll('.pi').length % cols).toBe(0));
+    expect((n + paper.blank) % 2).toBe(0);
+    // Sixty answers do not fit under the directions: the key starts a sheet of its own, with the title on it.
+    expect([page.$('paper-answers').className, page.$('paper-answers-title').textContent]).toEqual(['paper-apart', 'Answers: Math check']);
+    expect(read(PRINT_CSS)).toMatch(/\.paper-apart \{ break-before: page;/);
+    page.$('back-3').click();
+    expect([page.$('paper-answers').className, page.$('paper-answers-title').textContent]).toEqual(['', 'Answers']);
+    page.dom.window.close();
+  });
+
+  it('the teacher page scores the paper the way the file scores the screen', () => {
+    // Digits correct: the file's own scoring of one item, against the rule as the teacher page words it.
+    const score = TH.CHECK_ADAPTERS.math_computation.score;
+    for (const [key, wrote] of [['63', '68'], ['63', '63'], ['63', '36'], ['7', '17'], ['126', '26'], ['3304', '3314'], ['100', '1000'], ['5', ''], ['-5', '5'], ['5', '-5'], ['-12', '-13']]) {
+      expect(score({}, key, wrote).digitsCorrect, key + ' / ' + wrote).toBe(byPlace(key, wrote));
+    }
+    // The rate: digits correct over the minutes, the time capped at the limit; finished early, over the seconds used.
+    const meta = { measure: 'math_dcpm', scoreUnit: 'digits_correct_per_minute', timeLimitS: 120, scoringVersion: 3 };
+    const digits = (...counts) => counts.map((d) => ({ practice: false, attempted: true, correct: false, digitsCorrect: d, digitsPossible: 2 }));
+    for (const total of [0, 1, 3, 37, 38]) expect(TH.checkScore(meta, digits(total), { elapsedMs: 120000, completion: 'time' }).score).toBe(Math.round(total / 2));
+    for (const seconds of [20, 45, 90, 119]) expect(TH.checkScore(meta, digits(37), { elapsedMs: seconds * 1000, completion: 'complete' }).score).toBe(Math.round(37 * 60 / seconds));
+    expect(TH.checkScore(meta, digits(37), { elapsedMs: 19900, completion: 'complete' })).toMatchObject({ score: null, noScoreReason: 'too_fast' });
+    expect(TH.checkScore(meta, digits(37), { elapsedMs: 60000, completion: 'ended_early' })).toMatchObject({ score: null, noScoreReason: 'ended_early' });
+    // Samples are left out.
+    expect(TH.checkScore(meta, [{ practice: true, attempted: true, correct: true, digitsCorrect: 9, digitsPossible: 9 }, ...digits(4)], { elapsedMs: 120000, completion: 'time' }).score).toBe(2);
+    // A count: the number right, whether the learner finished early or the time ran out; stopped early, no score.
+    const counted = { measure: 'quantity_discrimination', scoreUnit: 'items_correct', timeLimitS: 60, scoringVersion: 1 };
+    const marks = [true, false, true, true].map((correct) => ({ practice: false, attempted: true, correct, digitsCorrect: null, digitsPossible: null }));
+    expect(TH.checkScore(counted, marks, { elapsedMs: 30000, completion: 'complete' }).score).toBe(3);
+    expect(TH.checkScore(counted, marks, { elapsedMs: 60000, completion: 'time' }).score).toBe(3);
+    expect(TH.checkScore(counted, marks, { elapsedMs: 30000, completion: 'ended_early' }).score).toBeNull();
+    // Right means the bigger number, or the number in the key.
+    expect(['9', '2', ''].map((chosen) => TH.CHECK_ADAPTERS.quantity_discrimination.score({}, '9', chosen).correct)).toEqual([true, false, false]);
+    expect(['6', '7', ''].map((typed) => TH.CHECK_ADAPTERS.missing_number.score({}, '6', typed).correct)).toEqual([true, false, false]);
+
+    // And a whole run of a file: a skip, a right answer, an answer one off, then the time runs out. The paper rule gives the file's score.
+    const html = direct('math_computation', '3', 'C').html, lesson = PC.lessonFromMathForm({ bank: BANK, measure: 'math_computation', grade: '3', form: 'C' });
+    const key = fileItems(html).filter((row) => !row.practice).map((row) => row.answer);
+    const run = play(html);
+    run.start(lesson);
+    run.tick(300);
+    run.q('[data-skip]').click();
+    run.answer(scored(lesson)[1]);
+    run.answer(scored(lesson)[2], false);
+    run.tick(120000);
+    run.d.dispatchEvent(new run.w.Event('visibilitychange'));
+    expect(run.heading()).toBe('You finished. Thank you.');
+    run.q('[data-save-json]').click();
+    const result = JSON.parse(run.saved[run.saved.length - 1].body);
+    const total = byPlace(key[0], '') + byPlace(key[1], key[1]) + byPlace(key[2], String(Number(key[2]) + 1));
+    expect(result.score).toMatchObject({ completion: 'time', digitsCorrect: total, score: Math.round(total / 2) });
+    // The results file counts the sample: problem 1 of the paper is item_n 2, as the teacher page says.
+    expect(result.items.filter((item) => !item.practice)[0]).toMatchObject({ n: 2, word: fileItems(html)[1].word });
+    run.close();
   });
 });

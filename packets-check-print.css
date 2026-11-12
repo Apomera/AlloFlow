@@ -1,0 +1,94 @@
+/* The paper copy of a check (packets-check.html, step 3, "Print a paper copy"). On screen it is never shown.
+   While a file is ready (body.paper-on), printing the page prints the paper copy and nothing else: black on white,
+   no color, sized to fit inside these margins on both US Letter and A4. packets-check.js lays the sheets out in
+   millimeters with the heights below (its PAPER numbers): change them together. */
+@media print {
+  @page { margin: 12mm 15mm; }
+
+  body.paper-on { background: #ffffff; color: #000000; font-size: 12pt; line-height: 1.3; }
+  body.paper-on > :not(#paper) { display: none !important; }
+  body.paper-on > #paper[hidden] { display: block !important; }
+
+  .paper { font-family: var(--font); color: #000000; background: #ffffff; }
+  .paper h2, .paper h3 { color: #000000; }
+  .paper-sheet { break-after: page; page-break-after: always; }
+  .paper-teacher { break-before: page; page-break-before: always; break-after: auto; page-break-after: auto; }
+
+  /* The learner sheet */
+  .paper-page { height: 8mm; margin: 0; font-size: 10pt; text-align: right; }
+  .paper-title { margin: 0 0 4mm; font-size: 18pt; line-height: 1.2; }
+  .paper-who { display: flex; gap: 8mm; align-items: flex-end; height: 10mm; margin: 0 0 5mm; font-size: 13pt; }
+  .paper-field { display: flex; flex: 2 1 0; gap: 2mm; align-items: flex-end; white-space: nowrap; }
+  .paper-field-short { flex: 1 1 0; }
+  .paper-fill { display: inline-block; flex: 1 1 auto; min-width: 22mm; height: 7mm; border-bottom: 0.3mm solid #000000; }
+  .paper-how { margin: 0; font-size: 14pt; line-height: 1.35; }
+  .paper-time { margin: 1mm 0 5mm; font-size: 14pt; font-weight: 700; }
+  .paper-sub { height: 7mm; margin: 0 0 1mm; font-size: 12pt; line-height: 1.3; }
+  .paper-turn { height: 8mm; margin: 0; padding-top: 2mm; font-size: 12pt; font-weight: 700; text-align: right; }
+  .paper-page:empty, .paper-turn:empty, .paper-key-note:empty { display: none; }
+
+  .paper-items { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); margin: 0; padding: 0; }
+  .paper-items.paper-samples { margin-bottom: 4mm; }
+  .cols-1 { grid-template-columns: minmax(0, 1fr); }
+  .cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
+  .wide-2 { grid-column: span 2; }
+  .wide-3 { grid-column: span 3; }
+  .wide-4 { grid-column: span 4; }
+  .wide-5 { grid-column: span 5; }
+
+  /* One item. Its box has a fixed height, so an item never splits across two pages. */
+  .pi { overflow: hidden; break-inside: avoid; page-break-inside: avoid; padding: 1.5mm 2mm 0; font-variant-numeric: tabular-nums lining-nums; }
+  .pi-stack { display: flex; flex-direction: column; align-items: center; height: 36mm; }
+  .pi-tall { height: 44mm; }
+  .pi-line { display: flex; gap: 3mm; align-items: center; height: 18mm; }
+  .pi-pair { display: flex; flex-direction: column; height: 24mm; padding: 1.5mm 3mm 0; }
+  .pn { align-self: flex-start; min-width: 7mm; font-size: 10pt; font-weight: 700; line-height: 1.3; white-space: nowrap; }
+
+  /* A stacked problem: the numbers right-aligned, the sign on the left, a line, then room for the answer. */
+  .ps { display: inline-grid; grid-template-columns: auto auto; margin-top: 1mm; font-size: 22pt; line-height: 1.15; }
+  .ps-a { grid-column: 2; text-align: right; }
+  .ps-op { grid-column: 1; padding-right: 2.5mm; border-bottom: 0.6mm solid #000000; }
+  .ps-b { grid-column: 2; text-align: right; border-bottom: 0.6mm solid #000000; }
+
+  /* A division in its bracket, with room above the bar for the answer. */
+  .pdv { display: inline-flex; align-items: flex-start; margin-top: 11mm; font-size: 22pt; line-height: 1.15; }
+  .pdv-by { padding: 0.8mm 1.5mm 0 0; }
+  .pdv-in { padding: 0.8mm 1mm 0 2mm; border-top: 0.6mm solid #000000; border-left: 0.6mm solid #000000; border-top-left-radius: 3mm; }
+
+  /* A line: "__ + 8 = 14" as written, with a line to write on for the blank. */
+  .pl { font-size: 20pt; line-height: 1.2; white-space: nowrap; }
+  .pblank { display: inline-block; width: 16mm; height: 0.9em; margin: 0 1.5mm; vertical-align: baseline; border-bottom: 0.6mm solid #000000; }
+  .pblank-wide { width: 30mm; }
+
+  /* Two numbers in a box: circle the bigger one. */
+  .pp { display: flex; justify-content: space-around; align-items: center; height: 17mm; margin-top: 0.5mm; border: 0.3mm solid #000000; border-radius: 2mm; font-size: 26pt; line-height: 1; }
+  .pp-n { padding: 0 2mm; }
+
+  .paper-empty-line { margin-top: 30mm; font-size: 11pt; text-align: center; }
+
+  /* The teacher page */
+  .paper-teacher { font-size: 11pt; line-height: 1.35; }
+  .paper-teacher .paper-sub { height: auto; margin: 4mm 0 1.5mm; }
+  .paper-keep { margin: 0 0 2mm; font-weight: 700; }
+  .paper-steps { margin: 0; padding-left: 6mm; list-style: disc; }
+  ol.paper-steps { list-style: decimal; }
+  .paper-steps li { margin: 0 0 1mm; }
+  .paper-tally { display: flex; flex-wrap: wrap; gap: 3mm 8mm; margin: 3mm 0 0; }
+  .paper-tally .paper-field { flex: 0 0 auto; align-items: flex-end; }
+  .paper-tally .paper-fill { flex: 0 0 auto; width: 22mm; height: 6mm; }
+  .paper-apart { break-before: page; page-break-before: always; }
+  .paper-teacher .paper-apart .paper-sub { margin-top: 0; font-size: 14pt; }
+  .paper-key-note { margin: 0 0 2mm; font-size: 10pt; }
+  .paper-key { margin: 0 0 4mm; padding: 0; column-gap: 8mm; font-variant-numeric: tabular-nums lining-nums; }
+  .key-cols-1 { columns: 1; }
+  .key-cols-2 { columns: 2; }
+  .key-cols-3 { columns: 3; }
+  .paper-key li { display: flex; gap: 2mm; padding: 0.5mm 0; border-bottom: 0.2mm solid #808080; break-inside: avoid; page-break-inside: avoid; }
+  .kn { flex: 0 0 13mm; font-weight: 700; }
+  .kw { flex: 1 1 auto; }
+  .ka { flex: 0 0 auto; font-weight: 700; }
+  .paper-caution { margin: 0; padding: 2mm 3mm; border: 0.4mm solid #000000; font-weight: 700; break-inside: avoid; }
+}
