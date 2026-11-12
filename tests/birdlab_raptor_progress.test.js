@@ -163,6 +163,7 @@ describe('Bird Lab 3D saved progress', () => {
     expect(survey.querySelector('[data-birdlab-survey-season="winter"]').textContent).toBe('Winter: 2 birds · American tree sparrow, Dark-eyed junco');
     await click(survey.querySelector('[data-birdlab-survey-choice="darkEyedJunco"]'));
     expect(survey.textContent).toContain('lives here all year');
+    expect(survey.textContent).toContain('Farther south, juncos only visit in winter.');
     await click(survey.querySelector('[data-birdlab-survey-choice="americanTreeSparrow"]'));
     expect(p.woodland.surveyAnswer).toBe('americanTreeSparrow');
     expect(p.awards.map(a => a[0])).toEqual(['3d-season-survey']);
@@ -195,6 +196,10 @@ describe('Raptor Lab rewards and flight comparison', () => {
     const claim = { claim: 'Heavier wings dove faster for me.', evidence: 'Peregrine 180 mph, red-tail 90 mph.', reasoning: 'More weight per wing area falls faster.' };
     const three = renderTool('raptorHunt', { raptorHunt: { activeSection: 'hub', selectedSpecies: 'peregrine', speciesBests: { ...bests, broadWinged: { flights: 1, bestSpeedMph: 70, bestAltitudeM: 500, bestCatches: 0 } }, flightClaim: claim } });
     expect(three).toContain('data-raptor-flight-compare="3"');
+    // Neighbouring points alternate label sides, and two-word names keep their family word.
+    expect((three.match(/data-raptor-compare-label="(above|below)"/g) || []).map(s => s.split('"')[1])).toEqual(['above', 'below', 'above']);
+    const eagle = renderTool('raptorHunt', { raptorHunt: { activeSection: 'hub', selectedSpecies: 'peregrine', speciesBests: { baldEagle: bests.redTail } } });
+    expect(eagle).toMatch(/data-raptor-compare-label="above">Bald Eagle</);
     expect(three).toContain('Your flights by species');
     expect(saveTag(three)).not.toBe('');
     expect(saveTag(three)).not.toMatch(/\sdisabled(="")?[\s>]/);

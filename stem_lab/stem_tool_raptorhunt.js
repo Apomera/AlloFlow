@@ -14944,9 +14944,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 h('text', { x: (L + W - R) / 2, y: H - 8, fill: '#cbd5e1', fontSize: 12, textAnchor: 'middle' }, 'Wing loading (kg/m²): more weight per area of wing →'),
                 h('text', { x: 14, y: (T + H - B) / 2, fill: '#cbd5e1', fontSize: 12, textAnchor: 'middle', transform: 'rotate(-90 14 ' + ((T + H - B) / 2) + ')' }, METRICS[metric][0] + (METRICS[metric][1] ? ' (' + METRICS[metric][1] + ')' : '')),
                 [0, .5, 1].map(function(f) { var v = Math.round(yMax / 1.15 * f); return h('text', { key: f, x: L - 6, y: py(v) + 4, fill: '#94a3b8', fontSize: 10, textAnchor: 'end' }, v); }),
-                rows.map(function(r) { var v = Number(r.best[metric]) || 0; return h('g', { key: r.id, 'data-raptor-compare-point': r.id },
+                rows.map(function(r, i) { var v = Number(r.best[metric]) || 0, below = i % 2 === 1 && py(v) < H - B - 22; return h('g', { key: r.id, 'data-raptor-compare-point': r.id },
                   h('circle', { cx: px(r.wl), cy: py(v), r: 6, fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 1.5 }),
-                  h('text', { x: px(r.wl), y: py(v) - 10, fill: '#f1f5f9', fontSize: 10, textAnchor: 'middle' }, r.name.replace(/ (Hawk|Falcon|Eagle|Owl)$/, ''))); })),
+                  h('text', { x: px(r.wl), y: below ? py(v) + 19 : py(v) - 10, fill: '#f1f5f9', fontSize: 10, textAnchor: 'middle', 'data-raptor-compare-label': below ? 'below' : 'above' }, r.name.replace(/ (Hawk|Falcon)$/, ''))); })),
               h('table', { className: 'text-xs text-slate-200 w-full mt-2', 'data-raptor-compare-table': 'true' },
                 h('caption', { className: 'text-left text-slate-300 mb-1' }, 'Your flights by species'),
                 h('thead', null, h('tr', null, ['Species', 'Wing loading (kg/m²)', 'Aspect ratio', 'Flights', 'Best speed (mph)', 'Best height (m)', 'Most catches'].map(function(c) { return h('th', { key: c, scope: 'col', className: 'text-left pr-2' }, c); }))),
@@ -19696,7 +19696,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             tailLength: 0.66, fanScale: 0.82, headScale: 1.0
           };
           return {
-            kind: 'eagle', spanScale: 1.46, wingDepth: 0.64, sweep: -0.26,
+            kind: 'eagle', spanScale: 1.46, wingDepth: 0.74, sweep: -0.26,
             tipWidth: 0.58, primaryFingers: 5, tailWidth: 0.72,
             tailLength: 0.72, fanScale: 0.68, headScale: 1.05
           };
@@ -19828,9 +19828,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var positions=[],colors=[],indices=[],uvs=[];
           var halfSpan=wingSpan*(silhouetteProfile.primaryFingers>0?0.84:1);
           var featherRange=silhouetteProfile.primaryFingers>0?0.80:0.94;
-          var halfWidth=halfSpan*featherRange/featherCount*0.64;
+          var halfWidth=halfSpan*featherRange/featherCount*0.72;
           var stations=[0,0.24,0.48,0.70,0.87,0.96,1];
-          var widths=[0.58,0.92,1,0.95,0.76,0.40,0.07];
+          var widths=[0.58,0.92,1,1,0.96,0.78,0.07];
           for(var feather=0;feather<featherCount;feather++){
             var centerU=0.04+(feather+0.5)/featherCount*featherRange,base=positions.length/3;
             var tint=new THREE.Color(wingColor).convertSRGBToLinear().multiplyScalar(0.97+Math.sin(feather*2.399)*0.025+centerU*0.035);

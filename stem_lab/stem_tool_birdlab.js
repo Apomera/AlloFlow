@@ -918,7 +918,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('birdLab'))) {
           h('p', { className: 'birdlab-3d-predict-question' }, h('strong', null, 'Use your survey: '), 'which bird did you find only in winter?'),
           h('div', { className: 'birdlab-3d-predict-choices', role: 'group', 'aria-label': 'The winter-only bird' }, ['darkEyedJunco', 'americanTreeSparrow', 'chickadee'].map(function(id) {
             return h('button', { key: id, type: 'button', 'data-birdlab-survey-choice': id, disabled: surveyGuess === id, onClick: function() { answer(id); } }, residentSpecies(id).name); })),
-          surveyGuess ? h('p', { className: 'birdlab-3d-hint', role: 'status' }, 'Check your survey: the ' + residentSpecies(surveyGuess).name.toLowerCase().replace(/^black-capped /, '') + ' lives here all year. Look for a bird in your winter row and in no other.') : null) : null,
+          surveyGuess ? h('p', { className: 'birdlab-3d-hint', role: 'status' }, 'Check your survey: the ' + residentSpecies(surveyGuess).name.toLowerCase().replace(/^black-capped /, '') + ' lives here all year. ' + (surveyGuess === 'darkEyedJunco' ? 'This is a northern woodland, where juncos nest. Farther south, juncos only visit in winter. ' : '') + 'Look for a bird in your winter row and in no other.') : null) : null,
         solved ? h('p', { className: 'birdlab-3d-hint', 'data-birdlab-survey-solved': 'true' }, 'Right: American tree sparrows nest in the far north and spend only the winter here. Chipping sparrows, hermit thrushes and towhees do the opposite.') : null,
         !ask && !solved ? h('p', { className: 'birdlab-3d-hint' }, 'Record birds in at least two seasons, including winter, to answer the survey question.') : null);
     }

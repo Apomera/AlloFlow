@@ -106,7 +106,8 @@
           var base = { r: tint.r + (warmGray.r - tint.r) * warm, g: tint.g + (warmGray.g - tint.g) * warm, b: tint.b + (warmGray.b - tint.b) * warm };
           var tintAt = { r: (base.r + (pale.r - base.r) * belly) * fleck,
             g: (base.g + (pale.g - base.g) * belly) * fleck, b: (base.b + (pale.b - base.b) * belly) * fleck };
-          vertex(builder, Math.cos(theta) * width, yAt + ny * depth, zAt, tintAt, u, row / rows);
+          var haunch = coat === 'body' ? Math.exp(-Math.pow((zAt + .004) / .030, 2)) * Math.exp(-Math.pow((ny + .30) / .45, 2)) : 0;
+          vertex(builder, Math.cos(theta) * width * (1 + haunch * 0.34), yAt + ny * depth - haunch * depth * 0.14, zAt, tintAt, u, row / rows);
         }
       }
       for (var ring = 0; ring < rows; ring++) for (var edge = 0; edge < sides; edge++) {
@@ -146,9 +147,9 @@
     var torso = new THREE.Group(); torso.name = 'squirrel-torso'; torso.position.set(0, .085, -.065); animal.add(torso);
     var bodyData = data();
     contour(bodyData, [
-      [-.049, .010, 0, 0], [-.033, .011, .036, .035], [-.010, .009, .052, .047],
-      [.018, .007, .052, .049], [.050, .005, .042, .043], [.080, .007, .037, .039],
-      [.108, .013, .039, .042], [.130, .024, .031, .035], [.148, .030, .024, .027], [.168, .031, 0, 0]
+      [-.052, .007, 0, 0], [-.038, .009, .040, .040], [-.014, .009, .055, .054],
+      [.016, .010, .054, .053], [.048, .009, .042, .045], [.078, .007, .037, .040],
+      [.106, .011, .039, .044], [.128, .022, .033, .037], [.146, .029, .026, .030], [.166, .031, 0, 0]
     ], gray, true, 'body');
     mesh(bodyData, 'squirrel-body-fur', torso);
     var head = new THREE.Group(); head.name = 'squirrel-head'; torso.add(head);
@@ -194,14 +195,16 @@
     for (var tr = 0; tr <= tailRows; tr++) {
       var t = tr / tailRows, cy = .245 * t + .024 * Math.sin(Math.PI * t), cz = -.137 * Math.sin(Math.PI * t * .93);
       var dy = .245 + .024 * Math.PI * Math.cos(Math.PI * t), dz = -.137 * Math.PI * .93 * Math.cos(Math.PI * t * .93), length = Math.hypot(dy, dz);
-      var width = tr === tailRows ? 0 : .004 * (1 - t) + .039 * Math.pow(Math.sin(Math.PI * t), .70);
+      var width = tr === tailRows ? 0 : .004 * (1 - t) + 0.046 * Math.pow(Math.sin(Math.PI * t), .70);
       for (var ts = 0; ts <= tailSides; ts++) {
         var theta = ts / tailSides * TAU, fuzz = 1 + .035 * Math.sin(tr * 12.7 + ts * 6.3);
         var radial = width * fuzz, ny = -dz / length, nz = dy / length;
         var shade = .83 + .20 * Math.abs(Math.cos(theta)) + .08 * Math.sin(tr * 5 + ts * 3.2);
         var tailEdge = Math.pow(Math.abs(Math.cos(theta)), 1.6), tailWarm = .40 * (1 - tailEdge);
-        shade *= 1 - tailEdge * .38;
+        shade *= 1 - tailEdge * .22;
         var tailColor = { r: (gray.r + (warmGray.r - gray.r) * tailWarm) * shade, g: (gray.g + (warmGray.g - gray.g) * tailWarm) * shade, b: (gray.b + (warmGray.b - gray.b) * tailWarm) * shade };
+        var tailFrost = Math.pow(tailEdge, 2.2) * 0.45;
+        tailColor = { r: tailColor.r + (pale.r - tailColor.r) * tailFrost, g: tailColor.g + (pale.g - tailColor.g) * tailFrost, b: tailColor.b + (pale.b - tailColor.b) * tailFrost };
         // The plume is flattened side to side, wider than it is deep.
         vertex(tailData, Math.cos(theta) * radial * 1.22, cy + Math.sin(theta) * radial * .82 * ny,
           cz + Math.sin(theta) * radial * .82 * nz, tailColor, ts / tailSides, t);
@@ -222,7 +225,7 @@
       var hairSpan = Math.hypot(hairDy, hairDz), tyAxis = hairDy / hairSpan, tzAxis = hairDz / hairSpan;
       var ox = Math.cos(hairAngle), oy = Math.sin(hairAngle) * -tzAxis, oz = Math.sin(hairAngle) * tyAxis;
       var lateral = Math.pow(Math.abs(ox), 1.4), vary = .5 + .5 * Math.sin(hairRing * 7.5 + hairSide * 12.3);
-      var hairLength = (.0015 + .016 * lateral + .004 * vary * lateral) * (.55 + .45 * Math.sin(Math.PI * Math.min(1, hairT * 1.08)));
+      var hairLength = (.0015 + .016 * lateral + .004 * vary * lateral) * (.55 + .45 * Math.sin(Math.PI * Math.min(1, hairT * 1.08))) * 0.42;
       var tipX = hx + ox * hairLength, tipY = hy + (oy + tyAxis * 1.25) * hairLength, tipZ = hz + (oz + tzAxis * 1.25) * hairLength;
       var banded = { r: gray.r * .55, g: gray.g * .55, b: gray.b * .54 };
       var hairFirst = tailData.positions.length / 3;
@@ -416,7 +419,7 @@
     function rod(mesh, a, b, radius) {
       mesh.position.copy(a).add(b).multiplyScalar(.5); direction.copy(b).sub(a);
       // Slight overlap hides the pinched sphere tips at elbows and ankles.
-      mesh.scale.set(radius, direction.length() * .5 + .004, radius * .9);
+      mesh.scale.set(radius, direction.length() * .5 + 0.004, radius * .9);
       if (direction.lengthSq() > 1e-12) mesh.quaternion.setFromUnitVectors(axis, direction.normalize());
     }
     function footToLocal(world, out) {
@@ -717,7 +720,7 @@
         knee.copy(hips).addScaledVector(direction, along / distance);
         var yz = Math.max(.00001, Math.hypot(direction.y, direction.z)), bendSide = leg.front ? 1 : -1;
         knee.y += -direction.z / yz * bend * bendSide; knee.z += direction.y / yz * bend * bendSide;
-        rod(leg.upper, hips, knee, leg.front ? .015 : .024); rod(leg.lower, knee, target, leg.front ? .0078 : .0095);
+        rod(leg.upper, hips, knee, leg.front ? 0.02 : 0.03); rod(leg.lower, knee, target, leg.front ? 0.0092 : 0.0112);
         leg.paw.position.copy(target); leg.paw.rotation.set((leg.front ? pawPitch : 0) + swingFlex, angle(leg.worldYaw - heading), 0);
       }
       if (action.kind === 'handle' && elapsed > action.duration - .10) seedConsumed = true;

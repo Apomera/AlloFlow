@@ -752,7 +752,7 @@
             lateral += featherTurn * Math.sin(PI * v);
             var ph = phi + lateral, nx = Math.cos(ph), ny = Math.sin(ph);
             var lift = .00018 + Math.sin(PI * v) * .00022 + v * .00010;
-            lift += exposed * (v * v * .00028 + Math.sin(PI * v) * (1 - across * across) * .00012);
+            lift += exposed * (v * v * .00028 + Math.sin(PI * v) * (1 - across * across) * .00012) * (grouse ? 1 : 1 - 0.75 * smooth((-ny - .10) / .60));
             var colorFront = smooth((zr - .74) / .26);
             var colorNy = ny * (1 - colorFront + colorFront * radial);
             var c = frontBreastTint(mix(back, breast, smooth((.35 - colorNy) * .9)), zr);
@@ -853,13 +853,27 @@
       var rearBelly = smooth(-bodyData.p[torsoVertex + 2] / p.body[2]);
       bodyData.p[torsoVertex] *= 1 - belly * rearBelly * .08;
       bodyData.p[torsoVertex + 1] *= 1 - belly * (grouse ? .035 : .08);
+      if (!grouse) {
+        var sagX = Math.abs(bodyData.p[torsoVertex]) - p.stance, sagZ = bodyData.p[torsoVertex + 2] - .004;
+        var sag = Math.exp(-(sagX * sagX) / (2 * Math.pow(p.body[0] * 0.42, 2)) - (sagZ * sagZ) / (2 * Math.pow(p.body[2] * 0.26, 2)));
+        bodyData.p[torsoVertex + 1] -= p.body[1] * 0.17 * sag * smooth((-bodyData.p[torsoVertex + 1] / p.body[1] - 0.4) / .5);
+      }
+      if (1 && !grouse && !dove) {
+        // E. The rear third tapers toward the tail root (vent curving up more than the
+        // rump), so the tail leaves a tapered body instead of a round one.
+        var rearT = smooth((-bodyData.p[torsoVertex + 2] / p.body[2] - .30) / .70), rootY = p.tailY - p.bodyY;
+        var towardRoot = bodyData.p[torsoVertex + 1] < rootY ? 0.62 : 0.24;
+        bodyData.p[torsoVertex + 1] += (rootY - bodyData.p[torsoVertex + 1]) * rearT * towardRoot;
+        bodyData.p[torsoVertex] *= 1 - rearT * 0.3;
+        bodyData.p[torsoVertex + 2] -= rearT * rearT * p.body[2] * 0.18;
+      }
     }
     // Tapered thigh tracts merge into the belly instead of appearing as two
     // bare oval pieces beneath it. Their contour feathers share this mesh and
     // narrow toward the exposed tarsi, with the roots hidden inside the torso.
     for (var side = -1; side <= 1; side += 2) {
       var thighX = side * p.stance, thighY = -p.body[1] * .64, thighZ = .004;
-      var thighRx = p.body[0] * .31, thighRy = p.body[1] * .43, thighRz = p.body[2] * .225;
+      var thighRx = p.body[0] * (grouse ? .31 : 0.22), thighRy = p.body[1] * .43, thighRz = p.body[2] * (grouse ? .225 : 0.19);
       var thighBase = bodyData.p.length, thighTint = bluebird ? mix(pale, breast, .06) : mix(breast, back, .18);
       bodyData.kind = 0; bodyData.seed = side < 0 ? 2200 : 2400;
       ellipsoid(bodyData, thighX, thighY, thighZ, thighRx - .00055, thighRy - .00055, thighRz - .00055,
@@ -893,6 +907,22 @@
         for (var ty = 0; ty < thighSteps; ty++) for (var tx = 0; tx < 2; tx++) {
           var tq = thighOffset + ty * 3 + tx; quad(bodyData, tq, tq + 1, tq + 3, tq + 4);
         }
+      }
+    }
+    // Upper (rump-coloured) and under (vent-coloured) tail coverts grow from the rump
+    // skin over the tail root, so they ride with the body while the tail fans beneath.
+    if (!grouse && !dove) {
+      var upperCovert = bodyColor(.30, -PI / 2), underCovert = bodyColor(.80, -PI / 2);
+      var rootY = p.tailY - p.bodyY, rootZ = p.tailZ - p.bodyZ;
+      for (var tcv = 0; tcv < 14; tcv++) {
+        var below = tcv >= 7, coverFactor = ((tcv % 7) / 6 - .5) * 2, coverTint = below ? underCovert : upperCovert;
+        var coverLength = p.tailLength * (below ? 0.48 : 0.36) * (1 - Math.abs(coverFactor) * .22) * (.96 + noise(tcv, 3) * .08);
+        var coverRoot = coverFactor * .0029;
+        bodyData.kind = 5; bodyData.seed = 300 + tcv;
+        vane(bodyData, coverRoot, rootY + (below ? -.0034 : .0030 - Math.abs(coverFactor) * .0006), rootZ + .007,
+          coverRoot * 1.15, rootY + (below ? -.0056 : .0002), rootZ - coverLength, p.tailWidth * (below ? 1.05 : 1.12),
+          (function (c, s) { return function (v) { return shade(c, .92 + v * .07 + s); }; })(coverTint, (noise(tcv, 11) - .5) * .05),
+          high ? 7 : 4, high ? 3 : 2, below ? -.0007 : .0009);
       }
     }
     mesh(body, 'woodland-body-plumage', bodyData, plumage);
@@ -1456,6 +1486,9 @@
         return mix(c, pale, smooth((v - .94) * 10) * .045);
       };
     }
+    // Perching birds fold the wing snug along the upper side; grouse and dove keep their broad fold.
+    var snugFold = !grouse && !dove;
+    var restUpright = hopper ? 0 : robin ? -0.3 : thrush ? -0.24 : 0;
     function makeWing(parent) {
       var open = data(), closed = data(), flex = [], layers = [], scale = p.wing;
       function feather(kind, index, a, b, ca, cb, width, bend) {
@@ -1572,9 +1605,11 @@
       // beyond the rump while coverts wrap from the back down the flank.
       for (var fv = 0; fv < closed.p.length; fv += 3) {
         var originalX = closed.p[fv] / scale;
-        var angle = .12 + clamp((originalX + .002) / .040, 0, 1) * 1.86;
+        var angle = .12 + clamp((originalX + .002) / .040, 0, 1) * (snugFold ? 1.7 : 1.86);
         var worldZ = p.shoulder[2] + closed.p[fv + 2];
         var alongBody = (worldZ - p.bodyZ) / (p.body[2] * 1.23);
+        var tipMeet = snugFold ? smooth((-alongBody - .50) / .55) * 0.75 : 0;
+        angle += (0.62 - angle) * tipMeet;
         var radial = Math.sqrt(Math.max(.12, 1 - alongBody * alongBody));
         // The far wing's dorsal edge must meet the actual back. Extending the
         // broad flank envelope across that ridge exposed a raised dark ribbon
@@ -1584,7 +1619,7 @@
         var trueAlong = (worldZ - p.bodyZ) / p.body[2];
         var torsoRadial = Math.sqrt(Math.max(.08, 1 - trueAlong * trueAlong));
         radial += (torsoRadial - radial) * dorsalSeat;
-        var featherLayer = (.0026 + layers[fv / 3]) * (1 - dorsalSeat * .88) - dorsalSeat * .00065;
+        var featherLayer = (.0026 * (1 - (snugFold ? smooth((angle - 1.25) / .45) * 0.75 : 0)) + layers[fv / 3] * (snugFold ? 1.6 : 1) * (1 + tipMeet * 0)) * (1 - dorsalSeat * .88) - dorsalSeat * .00065;
         closed.p[fv] = Math.sin(angle) * (p.body[0] + featherLayer) * radial - p.shoulder[0];
         closed.p[fv + 1] = p.bodyY + Math.cos(angle) * (p.body[1] + featherLayer) * radial - p.shoulder[1];
       }
@@ -1864,7 +1899,8 @@
       // same continuous wingbeat, never an independent decorative oscillation.
       var cardinalAir = cardinal ? unfold * effort * (1 - landing) * (flightTuck >= 0 ? flightTuck : 1) : 0;
       var flightLean = cardinal ? .10 * launchLoad - .09 * landing * unfold + .05 * landingLoad + .022 * cardinalAir * Math.sin(beat - .25) : 0;
-      var cardinalLean = hopLean + flightLean;
+      var restLean = restUpright * (1 - unfold) * (1 - peck) * (1 - walking * .55), leaning = hopper || restUpright !== 0;
+      var cardinalLean = hopLean + flightLean + restLean;
       var cardinalDrop = cardinal ? -.005 * launchLoad - .004 * landingLoad + .0008 * cardinalAir * Math.sin(beat - .50) : 0;
       body.position.set(walkX, p.bodyY - peck * .004 + walkY, p.bodyZ);
       body.rotation.set(.08 * unfold - transition * .07 + peck * .09, 0, -Math.sin(bank) * unfold * .015);
@@ -1872,6 +1908,12 @@
       head.position.set(Math.sin(yaw) * (grouse ? .004 : .0025), p.headY - peck * (tune ? tune.peckDrop : grouse ? .153 : jay ? .100 : cardinal ? .0765 : .0937) - flight * .013,
         p.headZ + peck * (tune ? tune.peckForward : grouse ? .068 : cardinal ? .034 : .048) + flight * .013);
       head.rotation.set(pitch * (1 - peck) + peck * 1.16 - flight * .05, yaw, -Math.sin(bank) * flight * .07);
+      if (restLean !== 0) {
+        body.rotation.x += restLean;
+        var restHeadY = p.headY - p.bodyY, restHeadZ = p.headZ - p.bodyZ;
+        head.position.y += restHeadY * (Math.cos(restLean) - 1) - restHeadZ * Math.sin(restLean);
+        head.position.z += restHeadY * Math.sin(restLean) + restHeadZ * (Math.cos(restLean) - 1);
+      }
       if (hopper && hopPhase >= 0) {
         body.rotation.x += hopLean;
         head.position.y += hopHeadY; head.position.z += hopHeadZ;
@@ -1924,7 +1966,7 @@
       var neckPos = neckMesh.geometry.attributes.position.array;
       var lowerY = p.neckBase[0] - peck * .005 - (1 - peck) * (grouse ? .009 : .006) + walkY;
       var lowerZ = p.neckBase[1] - (1 - peck) * (grouse ? .008 : .005);
-      if (hopper && cardinalLean !== 0) {
+      if (leaning && cardinalLean !== 0) {
         var neckHopY = lowerY - p.bodyY, neckHopZ = lowerZ - p.bodyZ;
         lowerY = p.bodyY + neckHopY * Math.cos(cardinalLean) - neckHopZ * Math.sin(cardinalLean);
         lowerZ = p.bodyZ + neckHopY * Math.sin(cardinalLean) + neckHopZ * Math.cos(cardinalLean);
@@ -1948,12 +1990,14 @@
       if (neckChanged) for (var neckIndex = 0, no = 0; neckIndex < neckProfile.length; neckIndex += 7, no += 3) {
         var nt = neckProfile[neckIndex], sine = neckProfile[neckIndex + 4], cosine = neckProfile[neckIndex + 5];
         var eased = neckProfile[neckIndex + 6], radius = p.neckWidth * (1.17 - eased * .59) + neckProfile[neckIndex + 3];
+        if (snugFold) radius *= 1 + 0.55 * Math.max(0, -neckProfile[neckIndex + 2]) * eased * (1 - flight * .4) * (1 - preen);
+        if (snugFold) radius *= 1 + 0.3 * eased * (1 - preen);
         if (preen > 0) radius *= 1 - preen * .17 * sine;
         var ncy = lowerY + ndy * nt + archY * sine, ncz = lowerZ + ndz * nt + archZ * sine;
         var tangentY = ndy + archY * PI * cosine, tangentZ = ndz + archZ * PI * cosine;
         var tangentLength = Math.sqrt(Math.max(1e-12, tangentY * tangentY + tangentZ * tangentZ));
         var transverse = neckProfile[neckIndex + 2] * radius * (1 - nt * .08);
-        neckPos[no] = neckProfile[neckIndex + 1] * radius + walkX * (1 - eased) + upperX * eased;
+        neckPos[no] = neckProfile[neckIndex + 1] * radius * (snugFold ? 1 + 0.3 * (1 - eased) * (1 - preen) : 1) + walkX * (1 - eased) + upperX * eased;
         if (preen > 0) neckPos[no] -= preenSide * p.neckWidth * .30 * preen * sine;
         neckPos[no + 1] = ncy - transverse * tangentZ / tangentLength;
         neckPos[no + 2] = ncz + transverse * tangentY / tangentLength;
@@ -1966,7 +2010,7 @@
         group.position.set(sign * p.shoulder[0] + walkX, p.shoulder[1] + walkY, p.shoulder[2]);
         group.rotation.set(unfold * (.030 + recovery * effort * .040), -sign * unfold * recovery * effort * .045,
           sign * (stroke + unfold * .045 + Math.sin(bank) * unfold * sign * .055));
-        if (hopper && cardinalLean !== 0) {
+        if (leaning && cardinalLean !== 0) {
           var shoulderY = p.shoulder[1] - p.bodyY, shoulderZ = p.shoulder[2] - p.bodyZ;
           group.position.y = p.bodyY + walkY + shoulderY * Math.cos(cardinalLean) - shoulderZ * Math.sin(cardinalLean);
           group.position.z = p.bodyZ + shoulderY * Math.sin(cardinalLean) + shoulderZ * Math.cos(cardinalLean);
@@ -2137,6 +2181,12 @@
         tail.position.z = p.bodyZ + tailHopY * Math.sin(cardinalLean) + tailHopZ * Math.cos(cardinalLean);
         tail.rotation.x += hopTail - .085 * launchLoad + .05 * landingLoad - .020 * cardinalAir * Math.sin(beat - .15);
       }
+      if (!hopper && restLean !== 0) {
+        var restTailY = p.tailY - p.bodyY, restTailZ = p.tailZ - p.bodyZ;
+        tail.position.y = p.bodyY + walkY + restTailY * Math.cos(restLean) - restTailZ * Math.sin(restLean);
+        tail.position.z = p.bodyZ + restTailY * Math.sin(restLean) + restTailZ * Math.cos(restLean);
+        tail.rotation.x += restLean * 0.8;
+      }
       var tailSpread = .055 + fan * (tune ? tune.fan : grouse ? .91 : jay ? .36 : cardinal ? .32 : .48) + unfold * (.13 + effort * recovery * .035) + transition * .105;
       if (hopper) tailSpread += hopPlant * .065;
       if (cardinal) tailSpread += landingSettle * .035;
@@ -2236,7 +2286,7 @@
           var wx = body.position.x + (f === 0 ? -1 : 1) * p.stance - feet[f].position.x;
           var wy = body.position.y - .010 - feet[f].position.y;
           var wz = .002 - feet[f].position.z;
-          if (hopper && cardinalLean !== 0) {
+          if (leaning && cardinalLean !== 0) {
             wy = body.position.y - .010 * Math.cos(cardinalLean) - .012 * Math.sin(cardinalLean) - feet[f].position.y;
             wz = body.position.z - .010 * Math.sin(cardinalLean) + .012 * Math.cos(cardinalLean) - feet[f].position.z;
           }
