@@ -22,6 +22,7 @@
   var MAX_ITEMS = 600;               // one result
   var MAX_SESSIONS = 5000;           // one page
   var MIN_GROUP = 5;                 // learners needed before a "middle of this group" is shown
+  var MIN_GROUP_HALF = 10;           // learners needed before its "middle half" is shown too (from 5 it moves with one learner)
   var NO_NAME = 'No name typed';
   var COLUMNS = ['format', 'session_id', 'packet_id', 'packet_version', 'form', 'mode', 'learner', 'started_local', 'finished_local', 'duration_s',
     'item_n', 'item_id', 'activity', 'activity_title', 'scored', 'word', 'target', 'responses', 'correct', 'first_try', 'tries', 'time_ms', 'supports', 'flag'];
@@ -761,7 +762,7 @@
       if (values.length < MIN_GROUP) return;
       var mid = middle(values);
       middles.push({ key: row.key, seriesKey: row.series.key, label: row.series.label, form: row.form, unitName: row.series.unitName,
-        n: mid.n, median: mid.median, q1: mid.q1, q3: mid.q3, min: mid.min, max: mid.max });
+        n: mid.n, median: mid.median, q1: mid.n >= MIN_GROUP_HALF ? mid.q1 : null, q3: mid.n >= MIN_GROUP_HALF ? mid.q3 : null, min: mid.min, max: mid.max });
     });
     var suggestions = [];
     for (var i = 0; i < learners.length; i++) {
@@ -831,7 +832,7 @@
 
   var api = {
     VERSION: VERSION, FORMAT: FORMAT, BUNDLE_KIND: BUNDLE_KIND, BUNDLE_VERSION: BUNDLE_VERSION, MAX_BYTES: MAX_BYTES, MAX_FILES: MAX_FILES, MAX_ITEMS: MAX_ITEMS,
-    MAX_SESSIONS: MAX_SESSIONS, MIN_GROUP: MIN_GROUP, NO_NAME: NO_NAME, COLUMNS: COLUMNS.slice(), PROBE_COLUMNS: PROBE_COLUMNS.slice(), SUMMARY_COLUMNS: SUMMARY_COLUMNS.slice(),
+    MAX_SESSIONS: MAX_SESSIONS, MIN_GROUP: MIN_GROUP, MIN_GROUP_HALF: MIN_GROUP_HALF, NO_NAME: NO_NAME, COLUMNS: COLUMNS.slice(), PROBE_COLUMNS: PROBE_COLUMNS.slice(), SUMMARY_COLUMNS: SUMMARY_COLUMNS.slice(),
     STRANDS: STRANDS.map(function (row) { return row.slice(); }), OTHER_STRAND: OTHER_STRAND.slice(), ACTIVITIES: ACTIVITIES, MEASURES: MEASURES, UNITS: UNITS,
     MEASURE_UNITS: MEASURE_UNITS, REASONS: REASONS,
     read: read, refuse: refuse, parseCsv: parseCsv, readCsv: readCsv, readJson: readJson, finish: finish, fnv1a: fnv1a, sha256: sha256, stamp: stamp, csvCell: csvCell,

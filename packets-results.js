@@ -372,11 +372,11 @@
       var card = el('div', 'middle');
       add(card, el('p', 'middle-name', mid.label + (mid.form ? ', form ' + mid.form : '')), el('p', 'middle-label', 'Middle of this group (n = ' + mid.n + ')'),
         add(el('p', 'middle-value'), el('span', 'middle-number', String(mid.median)), doc.createTextNode(' ' + mid.unitName)),
-        el('p', 'middle-range', 'Middle half: ' + mid.q1 + ' to ' + mid.q3 + '. Lowest ' + mid.min + ', highest ' + mid.max + '.'));
+        el('p', 'middle-range', (mid.q1 !== null ? 'Middle half: ' + mid.q1 + ' to ' + mid.q3 + '. ' : '') + 'Lowest ' + mid.min + ', highest ' + mid.max + '.'));
       row.appendChild(card);
     });
     add(host, row, el('p', 'honest', HONEST),
-      el('p', 'hint', 'Each learner counts once, with the latest score on that form. The middle score is the median. The middle half leaves out the lowest quarter and the highest quarter of these scores.'));
+      el('p', 'hint', 'Each learner counts once, with the latest score on that form. The middle score is the median. From 10 learners the middle half is shown too: it leaves out the lowest quarter and the highest quarter of these scores.'));
   }
   function groupColumns() {
     var columns = [
@@ -564,7 +564,7 @@
     add(card, add(el('div', 'measure-head'), title, el('p', 'measure-unit', sentence(series.unitName))),
       el('p', 'measure-latest', latest ? 'Latest: ' + valueText(latest.value, series.percent) + ', ' + showDate(latest.date) + '.' : 'No score yet.'));
     var mid = series.formKey ? model.middles.filter(function (row) { return row.key === series.formKey; })[0] : null;
-    if (mid) add(card, el('p', 'measure-middle', 'Middle of this group on ' + (mid.form ? 'form ' + mid.form : 'this form') + ' (n = ' + mid.n + '): ' + mid.median + '. Middle half: ' + mid.q1 + ' to ' + mid.q3 + '.'));
+    if (mid) add(card, el('p', 'measure-middle', 'Middle of this group on ' + (mid.form ? 'form ' + mid.form : 'this form') + ' (n = ' + mid.n + '): ' + mid.median + '. ' + (mid.q1 !== null ? 'Middle half: ' + mid.q1 + ' to ' + mid.q3 + '.' : 'Lowest ' + mid.min + ', highest ' + mid.max + '.')));
     var goalKey = learner.key + '\n' + series.key;
     var holder = el('div', 'measure-chart');
     var goalLine = el('p', 'goal-line');

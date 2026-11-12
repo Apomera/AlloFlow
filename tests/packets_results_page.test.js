@@ -521,8 +521,14 @@ describe('the reader: adding up', () => {
     const values = model.learners.map((row) => row.forms['check\tmath_dcpm\tmath-computation-g2\tA']).sort((a, b) => a - b);
     expect(values).toEqual([5, 6, 8, 10, 10]);
     expect(model.middles).toEqual([{ key: 'check\tmath_dcpm\tmath-computation-g2\tA', seriesKey: 'check\tmath_dcpm\tmath-computation-g2', label: 'Math Fluency (grade 2)', form: 'A',
-      unitName: 'digits correct per minute', n: 5, median: 8, q1: 6, q3: 10, min: 5, max: 10 }]);
+      unitName: 'digits correct per minute', n: 5, median: 8, q1: null, q3: null, min: 5, max: 10 }]);
     expect(reader.MIN_GROUP).toBe(5);
+    // The middle half moves with one learner in a group this small, so it waits for ten.
+    expect(reader.MIN_GROUP_HALF).toBe(10);
+    for (const [i, learner] of ['Owl1', 'Owl2', 'Owl3', 'Owl4', 'Owl5'].entries()) sessions.push(await one(csvOf(check({ learner, sid: 'm-ten-' + i, elapsedS: 70 + i * 10 }))));
+    const ten = reader.addUp(sessions, {}).middles[0];
+    expect([ten.n, ten.q1 !== null, ten.q3 !== null, ten.q1 <= ten.median && ten.median <= ten.q3]).toEqual([10, true, true, true]);
+    expect(ten).toEqual(Object.assign({}, ten, reader.middle(reader.addUp(sessions, {}).learners.map((row) => row.forms['check\tmath_dcpm\tmath-computation-g2\tA']).filter((v) => v !== undefined))));
   });
 
   it('writes the summary with the stated columns, one row for each result, quoted as the results files are', async () => {
@@ -957,7 +963,7 @@ describe('the page as files', () => {
     expect([...new Set(sessions.map((s) => s.title))]).toEqual(['Math Fluency check (2A)', 'Short vowels', 'Math Fluency check (2B)']);
     const model = reader.addUp(sessions, {});
     expect(model.learners.map((row) => [row.label, row.count])).toEqual([['BlueHeron7', 4], ['GoldFinch5', 1], ['GrayOwl4', 1], ['GreenTurtle2', 1], ['RedFox3', 1]]);
-    expect(model.middles.map((row) => [row.label, row.form, row.n, row.median, row.q1, row.q3])).toEqual([['Math Fluency (grade 2)', 'A', 5, 9, 8, 12]]);
+    expect(model.middles.map((row) => [row.label, row.form, row.n, row.median, row.q1, row.q3])).toEqual([['Math Fluency (grade 2)', 'A', 5, 9, null, null]]);
     expect(model.suggestions).toEqual([]);
     expect(block).not.toMatch(/[^\x20-\x7E\r\n]/);
   });
@@ -1254,7 +1260,7 @@ describe('the page: from files to results', () => {
     expect(page.$('sample-note').textContent).toBe('These are sample results. The code names and the scores are made up.');
     expect(page.$('results-line').textContent).toBe('8 results from 5 learners. Oct 6 to Oct 27, 2026.');
     const card = page.$('middles').querySelector('.middle');
-    expect([...card.children].map((node) => node.textContent)).toEqual(['Math Fluency (grade 2), form A', 'Middle of this group (n = 5)', '9 digits correct per minute', 'Middle half: 8 to 12. Lowest 5, highest 16.']);
+    expect([...card.children].map((node) => node.textContent)).toEqual(['Math Fluency (grade 2), form A', 'Middle of this group (n = 5)', '9 digits correct per minute', 'Lowest 5, highest 16.']);
     expect(page.$('middles').querySelectorAll('.middle')).toHaveLength(1);
     expect(page.$('middles').querySelector('.honest').textContent).toBe(HONEST);
     expect(page.rows().map((row) => [row[0], row[1], row[row.length - 1]])).toEqual([['BlueHeron7also written Blue Heron 7', '4', '10form B'], ['GoldFinch5', '1', '5form A'], ['GrayOwl4', '1', '9form A'],
@@ -1262,7 +1268,7 @@ describe('the page: from files to results', () => {
     // In the learner's own view the group's middle on that form stands beside the learner's score, as a description.
     page.view('learner');
     page.learner('GrayOwl4');
-    expect(page.measure('Math Fluency (grade 2)').querySelector('.measure-middle').textContent).toBe('Middle of this group on form A (n = 5): 9. Middle half: 8 to 12.');
+    expect(page.measure('Math Fluency (grade 2)').querySelector('.measure-middle').textContent).toBe('Middle of this group on form A (n = 5): 9. Lowest 5, highest 16.');
     expect(page.table(page.measure('Math Fluency (grade 2)').querySelector('table'))[0][3]).toBe('Left the page for more than 3 seconds (14 seconds away in all)');
     page.learner('BlueHeron7');
     expect(page.measure('Math Fluency (grade 2)').querySelectorAll('.chart-point')).toHaveLength(2);
@@ -1286,6 +1292,12 @@ describe('the page: from files to results', () => {
     expect(page.$('middles').children).toHaveLength(0);
     await page.drop([page.file(csvOf(check({ learner: 'GrayOwl4', sid: 'four-4', elapsedS: 120 })), 'four-4.csv')]);
     expect(page.$('middles').querySelector('.middle-label').textContent).toBe('Middle of this group (n = 5)');
+    expect(page.$('middles').querySelector('.middle-range').textContent).not.toContain('Middle half');
+    // From ten learners on the form, the middle half is shown as well.
+    const more = ['Wren1', 'Wren2', 'Wren3', 'Wren4', 'Wren5'].map((learner, i) => page.file(csvOf(check({ learner, sid: 'ten-' + i, elapsedS: 60 + i * 12 })), 'ten-' + i + '.csv'));
+    expect(await page.drop(more)).toBe('5 files read.');
+    expect(page.$('middles').querySelector('.middle-label').textContent).toBe('Middle of this group (n = 10)');
+    expect(page.$('middles').querySelector('.middle-range').textContent).toMatch(/^Middle half: [0-9.]+ to [0-9.]+\. Lowest [0-9.]+, highest [0-9.]+\.$/);
     page.dom.window.close();
   });
 });
