@@ -6231,8 +6231,9 @@ let getContentDirection = (n) => 'ltr';
 const applyUiDocumentLanguage = (languageName) => {
     if (typeof document === 'undefined' || !document.documentElement) return;
     const currentLanguage = String(languageName || 'English');
+    // WCAG 3.1.1: stubs are en/ltr until it lands; its hook reapplies.
+    try { if (!/^english$/i.test(currentLanguage) && window.__alloPromoteModule) window.__alloPromoteModule('ModuleScopeExtras'); } catch (_) {}
     document.documentElement.dir = isRtlLang(currentLanguage) ? 'rtl' : 'ltr';
-    // Keep <html lang> synchronized with the UI language for WCAG 3.1.1.
     try {
         const bcp47 = (typeof getSpeechLangCode === 'function' ? getSpeechLangCode(currentLanguage) : null) || 'en-US';
         document.documentElement.lang = bcp47.split('-')[0];
