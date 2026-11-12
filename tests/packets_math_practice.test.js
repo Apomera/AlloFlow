@@ -329,7 +329,8 @@ describe('the file', () => {
         packet: { form: '', mode: 'practice' }, what: 'A practice activity in one file. It runs in a browser with no internet connection.' });
       expect(manifestOf(html)).not.toHaveProperty('check');
       for (const part of ['kit.check=', 'kit.sha=', 'kit.codec=', 'check_teacher', 'check_about', 'takeHomeCheck', 'Teacher code', '.timebar', '.pad{', 'takeHomePictures']) expect(html, part).not.toContain(part);
-      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(70000);
+      // Re-pinned 2026-11-12: every file now carries the reading tools and the engine fixes of that day (+15.8 KB; about 54.6 KB before).
+      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(75000);
       expect(lessonOf(html)).toMatchObject({ mode: 'practice', audio: {}, images: {}, submit: null });
       // Its answers are the arithmetic of its facts.
       for (const it of lessonOf(html).blocks[0].items) {
@@ -685,7 +686,7 @@ describe('the page as files', () => {
     const order = squash(doc.getElementById('order-line').textContent);
     expect(order).toBe('The sets and their order follow a common teaching order, not a standard. Addition: ' + adds.join(', ') + '. Multiplication: '
       + MP.FAMILIES.filter((f) => f.op === 'mul').map((f) => f.name.toLowerCase()).join(', ') + '.');
-    expect(squash(doc.getElementById('plan-line').textContent)).toContain('So 8 of every 12 cards are facts the learner knows.');
+    expect(squash(doc.getElementById('plan-line').textContent)).toContain('So 8 of every 12 cards are facts the student knows.');
   });
 });
 
@@ -713,9 +714,9 @@ describe('the page, run in jsdom with the scripts it names', () => {
     page.choose('method', 'rehearsal');
     expect(page.seen('panel-known')).toBe(true);
     expect(page.ticks()).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((k) => ['7 ' + X + ' ' + k, k !== 8]));
-    expect(page.$('known-hint').textContent).toBe('Chosen from the teaching order: a fact is chosen when it, or its turnaround, is in a set that comes earlier. Change the choices to fit the learner.');
+    expect(page.$('known-hint').textContent).toBe('Chosen from the teaching order: a fact is chosen when it, or its turnaround, is in a set that comes earlier. Change the choices to fit the student.');
     expect(page.$('known-line').textContent).toBe('New fact in this file: 7 ' + X + ' 8.');
-    expect(page.$('known-sub').textContent).toBe('12 cards. 8 are facts the learner knows.');
+    expect(page.$('known-sub').textContent).toBe('12 cards. 8 are facts the student knows.');
     page.tick('7 ' + X + ' 6', false);
     expect(page.$('known-line').textContent).toBe('New facts in this file: 7 ' + X + ' 6 and 7 ' + X + ' 8.');
     expect(JSON.parse(page.w.localStorage.getItem(KEY)).known['mul-7']).toEqual(['mul:7:1', 'mul:7:2', 'mul:7:3', 'mul:7:4', 'mul:7:5', 'mul:7:7', 'mul:7:9', 'mul:7:10']);
@@ -725,7 +726,7 @@ describe('the page, run in jsdom with the scripts it names', () => {
     const rows = page.rows();
     expect(rows.Facts).toBe('Multiplication: ' + X + ' 7. 10 facts.');
     expect(rows.How).toMatch(/^Rehearsal with known facts\. New facts: 7 × 6 and 7 × 8\. Known facts: .+\.$/);
-    expect(rows.Cards).toBe('24 cards. 16 are facts the learner knows. Each new fact is asked 4 times, and shown with its answer the first time.');
+    expect(rows.Cards).toBe('24 cards. 16 are facts the student knows. Each new fact is asked 4 times, and shown with its answer the first time.');
     expect(rows.Clock).toBe('None.');
     expect(rows.File).toMatch(/^math-facts-mul-7-rehearsal\.html, \d+ KB\.$/);
     expect(page.$('try').getAttribute('href')).toMatch(/^packets-try\.html#blob:/);
@@ -753,7 +754,7 @@ describe('the page, run in jsdom with the scripts it names', () => {
     page.choose('set', 'add-0-1');
     page.$('next-1').click();
     page.choose('method', 'rehearsal');
-    expect(page.$('known-hint').textContent).toBe('+ 0 and + 1 comes first in the order, so none are chosen yet. Choose the facts the learner already knows.');
+    expect(page.$('known-hint').textContent).toBe('+ 0 and + 1 comes first in the order, so none are chosen yet. Choose the facts the student already knows.');
     expect(page.$('known-line').textContent).toBe('Rehearsal needs at least 3 facts the learner already knows. None are chosen.');
     page.$('next-2').click();
     expect([page.seen('step-2'), page.$('step-2-problem').textContent]).toEqual([true, 'Rehearsal needs at least 3 facts the learner already knows. None are chosen.']);
@@ -764,7 +765,7 @@ describe('the page, run in jsdom with the scripts it names', () => {
     expect(page.seen('panel-known')).toBe(false);
     page.$('next-2').click();
     await page.made();
-    expect(page.rows().How).toBe('Cover, copy, compare. Every fact once, in a mixed order, so the learner cannot just count on.');
+    expect(page.rows().How).toBe('Cover, copy, compare. Every fact once, in a mixed order, so the student cannot just count on.');
     expect(page.rows().Cards).toBe('20 cards. Each one starts with the fact and its answer.');
     expect(page.built()).toBe(build({ mode: 'ccc', factSet: 'add-0-1' }).html);
     // A set from the doubles on: known facts come from the set before, and the page says which.
@@ -773,7 +774,7 @@ describe('the page, run in jsdom with the scripts it names', () => {
     page.choose('set', 'add-doubles');
     page.$('next-1').click();
     page.choose('method', 'rehearsal');
-    expect(page.$('known-sub').textContent).toBe('36 cards. 24 are facts the learner knows. Only 1 fact is chosen, so 3 + 0 and 0 + 1 from + 0 and + 1, the set before, are used as known facts too. 5 more new facts wait for another file: 5 + 5, 6 + 6, 7 + 7, 8 + 8 and 9 + 9.');
+    expect(page.$('known-sub').textContent).toBe('36 cards. 24 are facts the student knows. Only 1 fact is chosen, so 3 + 0 and 0 + 1 from + 0 and + 1, the set before, are used as known facts too. 5 more new facts wait for another file: 5 + 5, 6 + 6, 7 + 7, 8 + 8 and 9 + 9.');
     page.wordsAreRight();
     expect(page.asked).toEqual([]);
   });
@@ -804,6 +805,17 @@ describe('the page, run in jsdom with the scripts it names', () => {
     page.wordsAreRight();
   });
 
+  it('a typed fact with a decimal says "Whole numbers only."', async () => {
+    const page = openPage();
+    page.choose('kind', 'own');
+    const box = page.$('f-facts');
+    box.value = '2.5 + 1\n7 x 8';
+    box.dispatchEvent(new page.w.Event('input', { bubbles: true }));
+    await page.until(() => page.$('own-list').children.length === 2, 'the typed facts');
+    expect([...page.$('own-list').children].map((li) => [li.className, li.querySelector('.s').textContent])).toEqual([['is-out', 'Whole numbers only.'], ['is-ok', 'Ready. The answer is 56.']]);
+    expect(page.$('facts-hint').textContent).toContain('Whole numbers only.');
+  });
+
   it('says what is missing when a part of the page did not load', () => {
     const dom = new JSDOM(read(PAGE), { runScripts: 'outside-only', url: 'https://packets.test/site/' + PAGE });
     opened.push(dom.window);
@@ -815,12 +827,15 @@ describe('the page, run in jsdom with the scripts it names', () => {
 });
 
 describe('the front door', () => {
-  it('links to the page from the math card, in one short line', () => {
+  it('gives math fact practice its own entry on the math card, beside the math check, and names its builder', () => {
     const doc = parse('packets.html');
-    const card = doc.querySelector('.card-also').closest('.card');
-    expect(card.querySelector('h2 a').getAttribute('href')).toBe('packets-check.html');
-    expect([...card.querySelectorAll('a')].map((a) => [a.getAttribute('href'), a.textContent])).toEqual([['packets-check.html', 'Make a math check'], [PAGE, 'Or make math fact practice']]);
+    const card = doc.querySelector('.card-pair');
+    expect(card.querySelector('h2').textContent).toBe('Make math fact practice or a math check');
+    expect([...card.querySelectorAll('a')].map((a) => [a.getAttribute('href'), a.textContent])).toEqual([[PAGE, 'Math fact practice'], ['packets-check.html', 'A math check']]);
     expect(doc.querySelectorAll('.cards > .card')).toHaveLength(4);
     expect(existsSync(PAGE)).toBe(true);
+    // Listed with the other builders on the front door and in the guide for school IT.
+    for (const file of ['packets.html', 'packets-it.html']) expect(read(file), file).toContain('<code>packet_math_practice_builder.js</code>');
+    expect(doc.getElementById('today').textContent).toContain('math fact practice');
   });
 });

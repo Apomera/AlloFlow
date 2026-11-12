@@ -257,6 +257,8 @@
   function checkPart(part) {
     var out = function (says) { return { text: part, ok: false, says: says }; };
     var parsed, problem, given = null, raw, made;
+    // A number with a decimal point ("2.5 + 1") is a problem, with a number this check does not take.
+    if (/\d\.\d|(?:^|[^\d])\.\d/.test(part)) return out('Whole numbers only.');
     try { parsed = builder.parseProblems(part); } catch (error) { return out(reason(error)); }
     if (parsed.length !== 1) return out('This is not a problem.');
     problem = parsed[0];
@@ -299,7 +301,7 @@
   function drawOwnPanel() {
     if ($('f-problems').value !== state.problems) $('f-problems').value = state.problems;
     if ($('f-title').value !== state.title) $('f-title').value = state.title;
-    setText('title-hint', 'The learner sees it at the top of the file. Left empty, it is "' + fallbackTitle + '".');
+    setText('title-hint', 'The student sees it at the top of the file. Left empty, it is "' + fallbackTitle + '".');
     drawRadios('times', 'time', TIME_CHOICES.map(function (seconds) { return [String(seconds), seconds ? minutes(seconds) : 'No clock']; }), String(state.time), 'time-hint', function (value) {
       state.time = Number(value);
       remember();
@@ -400,7 +402,7 @@
     try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
     // "question" for Quantity Discrimination, "problem" for every other check and for the teacher's own list.
     var item = todo.own ? 'problem' : todo.row.item;
-    var skip = todo.lesson.check.allowSkip ? 'The learner may skip a ' + item + '.' : 'There is no skip button.';
+    var skip = todo.lesson.check.allowSkip ? 'The student may skip a ' + item + '.' : 'There is no skip button.';
     var score = check.scoreUnit === 'digits_correct_per_minute' ? 'The score is digits correct per minute.' : 'The score is the number of ' + item + 's correct.';
     var rows = [['Check', todo.own ? OWN_NAME : todo.row.name]];
     if (todo.own) rows.push(['Title', result.manifest.title]);
@@ -562,10 +564,10 @@
     var samples = paper.samples.length, limit = paper.limit, rate = paper.unit === 'digits_correct_per_minute';
     var minus = paper.samples.concat(paper.items).some(function (row) { return /^-/.test(row.answer); });
     var give = [], score = [], tally = [];
-    if (samples) give.push((samples === 1 ? 'Do the sample first, with the learner, and say the answer.' : 'Do the ' + samples + ' samples first, with the learner, and say each answer.') + ' Samples do not count.');
-    give.push(limit ? (samples ? 'Then start a clock for ' : 'Start a clock for ') + fileTime(limit) + '. When the time is up, the learner stops.' : 'There is no clock. The learner may take as long as needed.');
-    if (paper.skip) give.push('The learner may skip a ' + noun + ', as on screen.');
-    if (rate && limit) give.push('If the learner finishes every ' + noun + ' before the time is up, write down the number of seconds used.');
+    if (samples) give.push((samples === 1 ? 'Do the sample first, with the student, and say the answer.' : 'Do the ' + samples + ' samples first, with the student, and say each answer.') + ' Samples do not count.');
+    give.push(limit ? (samples ? 'Then start a clock for ' : 'Start a clock for ') + fileTime(limit) + '. When the time is up, the student stops.' : 'There is no clock. The student may take as long as needed.');
+    if (paper.skip) give.push('The student may skip a ' + noun + ', as on screen.');
+    if (rate && limit) give.push('If the student finishes every ' + noun + ' before the time is up, write down the number of seconds used.');
     if (rate) {
       score.push('Compare each answer with the key one place at a time: ones with ones, tens with tens, and so on. Each digit that matches is 1 digit correct.');
       var example = digitExample(paper);
@@ -584,11 +586,11 @@
     } else {
       score.push(noun === 'question' ? 'A question is right when the circled number is the bigger one, the one in the key.' : 'A problem is right when the number written is the one in the key.');
       score.push('The score is the number of ' + noun + 's right' + (samples ? ', leaving out the samples.' : '.'));
-      if (limit) score.push('If the learner finishes before the time is up, the score is still the number right.');
+      if (limit) score.push('If the student finishes before the time is up, the score is still the number right.');
       tally.push(['Number right', 'of ' + paper.items.length]);
     }
     score.push(limit ? 'If the check is stopped before the time is up and before the last ' + noun + ', there is no score.' : 'If the check is stopped before the last ' + noun + ', there is no score.');
-    var note = 'The numbers are the ones the learner sees on screen' + (samples ? '. In the results file the samples are numbered first, so ' + noun + ' 1 here is item ' + (samples + 1) + ' there.' : ' and in the results file.');
+    var note = 'The numbers are the ones the student sees on screen' + (samples ? '. In the results file the samples are numbered first, so ' + noun + ' 1 here is item ' + (samples + 1) + ' there.' : ' and in the results file.');
     return { give: give, score: score, tally: tally, note: note };
   }
   // A worked example of digits correct, counted by the file's own scoring of one item.
@@ -598,7 +600,7 @@
     if (!row || !adapter || typeof adapter.score !== 'function') return '';
     var key = row.answer, wrote = key.slice(0, -1) + ((Number(key.charAt(key.length - 1)) + 1) % 10);
     var got = adapter.score(row, key, wrote).digitsCorrect;
-    return 'For example, if the key says ' + key + ' and the learner wrote ' + wrote + ', that is ' + count(got, 'digit') + ' correct.';
+    return 'For example, if the key says ' + key + ' and the student wrote ' + wrote + ', that is ' + count(got, 'digit') + ' correct.';
   }
   function clearPaper() {
     paperOn = false;
@@ -696,7 +698,7 @@
     if (state.check === OWN) { drawOwn(); if (ownStop) return ownStop; }
     else if (!gradeNow()) return 'Choose a grade to go on.';
     var stop = codeProblem();
-    if (stop) { $('code-box').open = true; return stop + ' Make it longer, or leave it empty for no code.'; }
+    if (stop) return stop + ' Make it longer, or leave it empty for no code.';
     return '';
   }
   function goTo(wanted, quiet) {
@@ -767,7 +769,6 @@
       state = defaults();
       $('f-code').value = '';
       showCode(false);
-      $('code-box').open = false;
       goTo(1, true);
       setText('forget-said', 'Done. The page is back to how it started.');
     });

@@ -26,7 +26,8 @@ const NEW_FILES = [PAGE, ...SCRIPTS, 'packets-results.css'];
 const NAME = 'AlloFlow Packets';
 const CSP = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; form-action 'none'; base-uri 'none'";
 const PROOF_LINE = 'This page runs without AI. No account. Your files are read in this browser and are not uploaded.';
-const HONEST = 'This compares learners in these files with each other. It is not a published benchmark. Compare only results gathered the same way.';
+// 2026-11-12: "student" on a teacher's page, and the line no longer names a benchmark, even to say there is none.
+const HONEST = 'This compares students in these files with each other. It does not compare them with any published scores. Compare only results gathered the same way.';
 const STORE_KEY = 'alloflow-packets-results/1';
 const SAMPLES = 'tests/fixtures/packets_results/';
 const BOM = String.fromCharCode(0xFEFF);
@@ -983,8 +984,14 @@ describe('the page as files', () => {
     for (const file of NEW_FILES) expect(JUDGING.exec(read(file)), file).toBeNull();
     const script = read('packets-results.js');
     expect(script).toContain("var HONEST = '" + HONEST + "';");
-    expect(script.match(/benchmark/gi)).toHaveLength(1);
-    expect(NEW_FILES.filter((file) => file !== 'packets-results.js').map(read).join('\n')).not.toMatch(/benchmark/i);
+    expect(NEW_FILES.map(read).join('\n')).not.toMatch(/benchmark/i);
+    // One of a unit reads as one (2026-11-12): "1 digit correct per minute", "1 item correct".
+    expect(script).toContain("function unitFor(value, unitName) { return Number(value) === 1 ? String(unitName).replace(/^digits /, 'digit ').replace(/^items /, 'item ') : unitName; }");
+    // The group view is not a landmark of its own: its table is the one region named "The group" (axe: landmark-unique).
+    expect(parse().getElementById('view-group').tagName).toBe('DIV');
+    expect(script).toContain("scroll.setAttribute('aria-labelledby', 'group-title');");
+    // A teacher's page says "student"; "learner" stays only as a technical name (the CSV column, the view's value).
+    expect(parse().body.textContent).not.toMatch(/\blearners?\b/i);
     expect(script).toContain("var GOAL_NOTE = 'Goal typed by the teacher';");
     for (const file of NEW_FILES) expect(BRITISH.exec(read(file)), file).toBeNull();
     expect(parse().body.textContent).not.toContain('!');
@@ -1159,7 +1166,7 @@ describe('the page: from files to results', () => {
     expect(said).toBe('8 files read, 3 need a look.');
     expect(page.state()).toBe('state-check');
     expect(page.d.activeElement).toBe(page.$('check-title'));
-    expect(page.$('check-line').textContent).toBe('6 results counted, from 2 learners. Look through the points below, then show the results.');
+    expect(page.$('check-line').textContent).toBe('6 results counted, from 2 students. Look through the points below, then show the results.');
     const groups = [...page.$('check-body').querySelectorAll('.check-group')].map((group) => [group.querySelector('h3').textContent, [...group.querySelectorAll('li')].map((item) => [...item.children].map((part) => part.textContent))]);
     expect(groups).toEqual([
       ['Not results files', [['Short-vowels.html', 'This is a web page, not a results file. It may be the practice file itself. The results file is the one a student saves at the end.']]],
@@ -1168,13 +1175,13 @@ describe('the page: from files to results', () => {
     page.$('show-results').click();
     expect(page.state()).toBe('state-results');
     expect(page.d.activeElement).toBe(page.$('results-title'));
-    expect(page.$('results-line').textContent).toBe('6 results from 2 learners. Nov 3 to Nov 17, 2026.');
+    expect(page.$('results-line').textContent).toBe('6 results from 2 students. Nov 3 to Nov 17, 2026.');
     expect(page.$('open-check').textContent).toBe('Check what was read (3)');
     expect(page.seen('sample-note')).toBe(false);
     // The group: one row for each learner, the latest value of each measure.
     expect(page.seen('view-group') && !page.seen('view-learner')).toBe(true);
     const head = [...page.$('group-table').querySelectorAll('thead tr')].map((row) => [...row.children].map((cell) => cell.textContent));
-    expect(head).toEqual([['Learner', 'Results', 'Last date', 'Practice: latest first-try percent', 'Checks: latest score'], ['Hearing sounds', 'Spelling', 'Math Fluency (grade 2)digits correct per minute']]);
+    expect(head).toEqual([['Student', 'Results', 'Last date', 'Practice: latest first-try percent', 'Checks: latest score'], ['Hearing sounds', 'Spelling', 'Math Fluency (grade 2)digits correct per minute']]);
     expect(page.rows()).toEqual([['BlueHeron7', '3', 'Nov 17, 2026', '75%3 of 4', '100%1 of 1', '8form A'], ['RedFox3', '3', 'Nov 17, 2026', '25%1 of 4', '0%0 of 1', '7form A']]);
     // Two learners: nothing is said about the middle of a group.
     expect(page.$('middles').textContent).toBe('');
@@ -1192,12 +1199,12 @@ describe('the page: from files to results', () => {
     const sorter = (label) => [...page.$('group-table').querySelectorAll('.sort')].find((node) => node.querySelector('.sort-name').textContent === label);
     const names = () => page.rows().map((row) => row[0]);
     const sortOf = (label) => sorter(label).closest('th').getAttribute('aria-sort');
-    expect([names(), sortOf('Learner'), sortOf('Spelling')]).toEqual([['BlueHeron7', 'RedFox3'], 'ascending', 'none']);
-    sorter('Learner').click();
-    expect([names(), sortOf('Learner')]).toEqual([['RedFox3', 'BlueHeron7'], 'descending']);
-    expect(page.d.activeElement).toBe(sorter('Learner'));
+    expect([names(), sortOf('Student'), sortOf('Spelling')]).toEqual([['BlueHeron7', 'RedFox3'], 'ascending', 'none']);
+    sorter('Student').click();
+    expect([names(), sortOf('Student')]).toEqual([['RedFox3', 'BlueHeron7'], 'descending']);
+    expect(page.d.activeElement).toBe(sorter('Student'));
     sorter('Hearing sounds').click();
-    expect([names(), sortOf('Hearing sounds'), sortOf('Learner')]).toEqual([['BlueHeron7', 'RedFox3'], 'descending', 'none']);
+    expect([names(), sortOf('Hearing sounds'), sortOf('Student')]).toEqual([['BlueHeron7', 'RedFox3'], 'descending', 'none']);
     sorter('Hearing sounds').click();
     expect([names(), sortOf('Hearing sounds')]).toEqual([['RedFox3', 'BlueHeron7'], 'ascending']);
     expect(page.$('said').textContent).toBe('Sorted by Hearing sounds, low to high.');
@@ -1329,15 +1336,15 @@ describe('the page: from files to results', () => {
     expect(await page.drop(files)).toBe('4 files read, 1 needs a look.');
     expect(page.state()).toBe('state-check');
     const groups = () => [...page.$('check-body').querySelectorAll('.check-group h3')].map((node) => node.textContent);
-    expect(groups()).toEqual(['One learner, written two ways?']);
+    expect(groups()).toEqual(['One student, written two ways?']);
     expect(page.$('check-body').querySelector('.pair-names').textContent).toBe('BlueHeren7 (1 result) and BlueHeron7 (2 results)');
-    expect(page.$('check-line').textContent).toBe('4 results counted, from 3 learners. Look through the points below, then show the results.');
+    expect(page.$('check-line').textContent).toBe('4 results counted, from 3 students. Look through the points below, then show the results.');
     const buttons = () => [...page.$('check-body').querySelectorAll('button')];
-    expect(buttons().map((node) => node.textContent)).toEqual(['These are the same learner', 'These are different learners']);
-    expect(buttons()[0].getAttribute('aria-label')).toBe('BlueHeren7 and BlueHeron7: these are the same learner');
+    expect(buttons().map((node) => node.textContent)).toEqual(['These are the same student', 'These are different students']);
+    expect(buttons()[0].getAttribute('aria-label')).toBe('BlueHeren7 and BlueHeron7: these are the same student');
     buttons()[0].click();
-    expect(page.$('said').textContent).toBe('BlueHeren7 and BlueHeron7 are counted as one learner.');
-    expect(groups()).toEqual(['Counted as one learner']);
+    expect(page.$('said').textContent).toBe('BlueHeren7 and BlueHeron7 are counted as one student.');
+    expect(groups()).toEqual(['Counted as one student']);
     expect(page.$('check-body').querySelector('.pair-names').textContent).toBe('BlueHeren7 is counted with BlueHeron7.');
     page.$('show-results').click();
     expect(page.rows().map((row) => row.slice(0, 2))).toEqual([['BlueHeron7also written blue heron 7, BlueHeren7', '3'], ['BlueHeron8', '1']]);
@@ -1347,9 +1354,9 @@ describe('the page: from files to results', () => {
     // It can be undone, and "different learners" is remembered: the question does not come back.
     page.$('open-check').click();
     ask(buttons(), 'Count them apart again').click();
-    expect(groups()).toEqual(['One learner, written two ways?']);
-    ask(buttons(), 'These are different learners').click();
-    expect(page.$('said').textContent).toBe('BlueHeren7 and BlueHeron7 stay two learners.');
+    expect(groups()).toEqual(['One student, written two ways?']);
+    ask(buttons(), 'These are different students').click();
+    expect(page.$('said').textContent).toBe('BlueHeren7 and BlueHeron7 stay two students.');
     expect(page.$('check-body').textContent).toBe('Nothing needs a look.');
     page.$('show-results').click();
     page.view('group');
@@ -1366,7 +1373,7 @@ describe('the page: from files to results', () => {
     expect(page.$('said').textContent).toBe('8 files read.');
     expect(page.seen('sample-note')).toBe(true);
     expect(page.$('sample-note').textContent).toBe('These are sample results. The code names and the scores are made up.');
-    expect(page.$('results-line').textContent).toBe('8 results from 5 learners. Oct 6 to Oct 27, 2026.');
+    expect(page.$('results-line').textContent).toBe('8 results from 5 students. Oct 6 to Oct 27, 2026.');
     const card = page.$('middles').querySelector('.middle');
     expect([...card.children].map((node) => node.textContent)).toEqual(['Math Fluency (grade 2), form A', 'Middle of this group (n = 5)', '9 digits correct per minute', 'Lowest 5, highest 16.']);
     expect(page.$('middles').querySelectorAll('.middle')).toHaveLength(1);
@@ -1385,7 +1392,7 @@ describe('the page: from files to results', () => {
     expect(page.$('keep').disabled).toBe(true);
     expect(page.$('keep-said').textContent).toBe('Sample results are not kept.');
     await page.drop([page.file(csvOf(A1), nameOf(A1))]);
-    expect([page.$('results-line').textContent, page.seen('sample-note'), page.$('keep').disabled]).toEqual(['1 result from 1 learner. Nov 3, 2026.', false, false]);
+    expect([page.$('results-line').textContent, page.seen('sample-note'), page.$('keep').disabled]).toEqual(['1 result from 1 student. Nov 3, 2026.', false, false]);
     expect(page.d.body.textContent).not.toContain('Middle of this group');
     expect(page.stored()).toEqual({ local: 0, session: 0, cookie: '' });
     page.dom.window.close();
@@ -1420,9 +1427,9 @@ describe('the page: math fact practice', () => {
     const groups = [...page.$('check-body').querySelectorAll('.check-group')].map((group) => [group.querySelector('h3').textContent, [...group.querySelectorAll('li')].map((item) => [...item.children].map((part) => part.textContent))]);
     expect(groups).toEqual([['The same result more than once', [[nameOf(rehearsal, 'json'), 'The same result as ' + nameOf(rehearsal) + '.']]]]);
     page.$('show-results').click();
-    expect(page.$('results-line').textContent).toBe('2 results from 1 learner. Nov 10 to Nov 12, 2026.');
+    expect(page.$('results-line').textContent).toBe('2 results from 1 student. Nov 10 to Nov 12, 2026.');
     const head = [...page.$('group-table').querySelectorAll('thead tr')].map((row) => [...row.children].map((cell) => cell.textContent));
-    expect(head).toEqual([['Learner', 'Results', 'Last date', 'Practice: latest first-try percent'], ['Math facts']]);
+    expect(head).toEqual([['Student', 'Results', 'Last date', 'Practice: latest first-try percent'], ['Math facts']]);
     const cell = page.$('group-table').querySelector('tbody td:last-child');
     expect([...cell.children].map((node) => [node.className, node.textContent])).toEqual([['cell-value', '75%'], ['cell-sub', '9 of 12'], ['cell-sub', 'new facts 2 of 4']]);
     expect(page.$('middles').textContent).toBe('');
@@ -1504,7 +1511,7 @@ describe('the page: take it with you', () => {
     const page = openPage();
     const files = EIGHT(page).concat([page.file(csvOf(practice({ learner: 'RedFux3', sid: 'b-4', day: '2026-11-18' })), 'typo.csv')]);
     expect(await page.drop(files)).toBe('9 files read, 4 need a look.');
-    ask([...page.$('check-body').querySelectorAll('button')], 'These are the same learner').click();
+    ask([...page.$('check-body').querySelectorAll('button')], 'These are the same student').click();
     page.$('show-results').click();
     page.view('learner');
     page.learner('BlueHeron7');
@@ -1534,7 +1541,7 @@ describe('the page: take it with you', () => {
     again.learner('RedFox3');
     expect(again.table(again.measure('Math Fluency (grade 2)').querySelector('table'))[1][3]).toContain('this file was changed after it was saved');
     again.$('open-check').click();
-    expect([...again.$('check-body').querySelectorAll('.check-group h3')].map((node) => node.textContent)).toEqual(['Changed after saving', 'Counted as one learner']);
+    expect([...again.$('check-body').querySelectorAll('.check-group h3')].map((node) => node.textContent)).toEqual(['Changed after saving', 'Counted as one student']);
     // The same results dropped again as files are counted once.
     again.$('show-results').click();
     expect(await again.drop([again.file(csvOf(A1), nameOf(A1)), again.file(csvOf(A2), nameOf(A2))])).toBe('2 files read, 2 need a look.');
@@ -1572,7 +1579,7 @@ describe('the page: take it with you', () => {
     page.$('forget').click();
     expect(page.stored()).toEqual({ local: 0, session: 0, cookie: '' });
     expect([page.$('keep').checked, page.seen('forget'), page.$('keep-said').textContent]).toEqual([false, false, 'Removed from this device. The results stay on this page until you close it.']);
-    expect(page.$('results-line').textContent).toBe('7 results from 2 learners. Nov 3 to Nov 19, 2026.');
+    expect(page.$('results-line').textContent).toBe('7 results from 2 students. Nov 3 to Nov 19, 2026.');
     // Turning the switch off removes it as well.
     page.$('keep').click();
     expect(page.stored().local).toBe(1);
@@ -1584,7 +1591,7 @@ describe('the page: take it with you', () => {
     // A page that finds kept results opens them, with the switch on. Start over clears the page and the device.
     const later = openPage({ before: (w) => w.localStorage.setItem(STORE_KEY, stored) });
     expect(later.state()).toBe('state-results');
-    expect([later.$('results-line').textContent, later.$('keep').checked, later.$('said').textContent]).toEqual(['7 results from 2 learners. Nov 3 to Nov 19, 2026.', true, 'Opened the results kept on this device.']);
+    expect([later.$('results-line').textContent, later.$('keep').checked, later.$('said').textContent]).toEqual(['7 results from 2 students. Nov 3 to Nov 19, 2026.', true, 'Opened the results kept on this device.']);
     later.$('start-over').click();
     expect(later.seen('start-over-ask')).toBe(true);
     later.$('start-over-no').click();
@@ -1660,7 +1667,7 @@ describe('the page: files that are not what they seem', () => {
     Object.defineProperty(input, 'files', { configurable: true, value: [page.file(csvOf(A1), nameOf(A1))] });
     input.dispatchEvent(new page.w.Event('change', { bubbles: true }));
     await page.until(() => page.state() === 'state-results', 'the chosen file');
-    expect(page.$('results-line').textContent).toBe('1 result from 1 learner. Nov 3, 2026.');
+    expect(page.$('results-line').textContent).toBe('1 result from 1 student. Nov 3, 2026.');
     page.dom.window.close();
   });
 });

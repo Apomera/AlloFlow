@@ -17,7 +17,7 @@ const ADDRESS = 'https://packets.test/site/packets-check.html';
 const RULE = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'";
 const SCRIPTS = ['packets-page.js', 'psychometric_math_probes.js', 'word_sounds_take_home_loader.js', 'packet_check_builder.js', 'packets-check.js'];
 // Said on every page that makes or shows a check, word for word.
-const WHAT_A_CHECK_IS = 'A check to see how a learner is doing. It is not for a grade and it is not a standardized test.';
+const WHAT_A_CHECK_IS = 'A check to see how a student is doing. It is not for a grade and it is not a standardized test.';
 const PROOF_LINE = 'This page runs without AI. No account. Nothing you choose leaves your device.';
 // Every sentence on the page that holds the word AI. Each says that none runs.
 const ALLOWED_AI_SENTENCES = ['Runs without AI.', 'This page runs without AI.', 'Run AI.'];
@@ -171,10 +171,10 @@ describe('the page as files', () => {
     expect(read('packets-try.js')).toContain("frame.setAttribute('sandbox', 'allow-scripts allow-downloads')");
     // That page serves this maker too: it calls a check "the file", never a practice file, and leads back here when a preview is gone.
     const preview = parse('packets-try.html');
-    expect(preview.querySelector('.try-bar p').textContent).toBe('This is the file a learner gets. Nothing you do here is kept. Close this tab to go back to the maker.');
+    expect(preview.querySelector('.try-bar p').textContent).toBe('This is the file a student gets. Nothing you do here is kept. Close this tab to go back to the maker.');
     expect([...preview.querySelectorAll('#try-problem a')].map((a) => [a.textContent, a.getAttribute('href')])).toContainEqual(['Make a math check', PAGE]);
-    expect(read('packets-try.js')).toContain("frame.title = 'The file a learner gets'");
-    expect((read('packets-try.js').match(/'[^'\n]*'/g) || []).join('\n')).not.toMatch(/practice|student/i);
+    expect(read('packets-try.js')).toContain("frame.title = 'The file a student gets'");
+    expect((read('packets-try.js').match(/'[^'\n]*'/g) || []).join('\n')).not.toMatch(/practice|learner/i);
   });
 
   it('says "AI" only to say there is none, and says "Runs without AI"', () => {
@@ -286,13 +286,16 @@ describe('the page as files', () => {
     // The button that forgets the choices is there, and only there.
     expect([...about.querySelectorAll('button')].map((button) => button.id)).toEqual(['forget']);
     expect(squash(about.textContent)).toContain('The teacher code is never kept: it is gone when you close or reload this page.');
-    // The teacher code waits behind a closed disclosure, with what it is and what it is not.
+    // The teacher code is open on step 2 (2026-11-12), not behind a disclosure: one plain line says why to set one, then what it is
+    // and what it is not. What the line says is the file's own behavior: with no code, the finish screen has a button for the teacher.
     const code = doc.getElementById('code-box');
-    expect(code.hasAttribute('open')).toBe(false);
+    expect(code.tagName).toBe('DIV');
+    expect(code.querySelector('details, summary')).toBeNull();
     expect(code.closest('#step-2')).toBeTruthy();
-    expect(code.querySelector('summary').textContent).toBe('Teacher code (optional)');
+    expect(doc.querySelector('label[for="f-code"]').textContent).toBe('Teacher code (optional)');
+    expect(doc.getElementById('code-why').textContent).toBe('Set one if you can. Without a code, a student who finishes can open the answers screen.');
     expect(doc.getElementById('code-about').textContent).toBe('The answers screen inside the file opens only with this code. It is a lock on the screen, not secret writing.');
-    expect(doc.getElementById('f-code').getAttribute('aria-describedby')).toBe('code-about code-hint');
+    expect(doc.getElementById('f-code').getAttribute('aria-describedby')).toBe('code-why code-about code-hint');
     expect(doc.getElementById('f-code').getAttribute('autocomplete')).toBe('off');
     expect(doc.getElementById('f-code').getAttribute('maxlength')).toBe('64');
     // The code is hidden as it is typed, and the box is laid out as the page's text boxes are.
@@ -306,11 +309,11 @@ describe('the page as files', () => {
     expect(doc.getElementById('can-title').textContent).toBe('A check file can:');
     expect(doc.getElementById('cannot-title').textContent).toBe('A check file cannot:');
     expect(lists['can-title']).toEqual([
-      'Give one try for each problem, with no hints. After the practice questions, the learner is not shown right or wrong.',
-      "Run a clock on the learner's device. The clock keeps going when the learner leaves the page, and it does not give time back.",
-      "Save a results file to that device when the learner presses the save button. The results file shows right and wrong and the expected answers: it is the teacher's record.",
+      'Give one try for each problem, with no hints. After the practice questions, the student is not shown right or wrong.',
+      "Run a clock on the student's device. The clock keeps going when the student leaves the page, and it does not give time back.",
+      "Save a results file to that device when the student presses the save button. The results file shows right and wrong and the expected answers: it is the teacher's record.",
     ]);
-    expect(lists['cannot-title'][0]).toBe('Run AI. Nothing is generated when you make a file or when a learner uses it.');
+    expect(lists['cannot-title'][0]).toBe('Run AI. Nothing is generated when you make a file or when a student uses it.');
     expect(lists['cannot-title']).toContain('Keep its answers secret. The answers are scrambled in the file, so they cannot be read just by opening it. This stops casual looking, not a determined person.');
     expect(lists['cannot-title']).toContain('Make the teacher code more than a lock. The code keeps the answers screen inside the file closed. It is a lock on the screen, not secret writing.');
     // What the page says about a check file is what the file says about itself, and what the loader does.
@@ -319,7 +322,12 @@ describe('the page as files', () => {
       "check_ready_one_try: 'You get one try for each one. You cannot go back.'", "check_about_clock: 'The clock uses the time on this device. It keeps going when you leave the page.'",
       "save_csv: 'Save results as a spreadsheet file (CSV)'", '(?:^#|&)learner=', "check_teacher_open: 'For the teacher: show results'"]) expect(loaderSource, text).toContain(text);
     expect(doc.getElementById('after-save').textContent).toContain('#learner=CodeName');
-    expect(doc.getElementById('after-save').querySelector('a').getAttribute('href')).toBe('packets-results.html');
+    // The code-name tip waits in one closed box; step 3 links to Add up results by its name; the save button is the file's main one.
+    const tip = doc.getElementById('learner-tip');
+    expect(tip.tagName === 'DETAILS' && !tip.hasAttribute('open') && tip.contains(doc.querySelector('#after-save code'))).toBe(true);
+    expect(tip.querySelector('summary').textContent).toBe("Fill in a student's code name for them");
+    expect([...doc.querySelectorAll('#after-save ol a')].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([['Add up results', 'packets-results.html']]);
+    expect(squash(doc.getElementById('after-save').querySelector('ol').textContent)).toContain('presses the main button at the end, Save results as a spreadsheet file (CSV).');
     expect(squash(doc.getElementById('after-save').querySelector('ol').textContent)).toContain('In AlloFlow: Class Analytics, Add take-home results.');
   });
 
@@ -334,13 +342,14 @@ describe('the page as files', () => {
     expect(doc.getElementById('loading').textContent).toContain('Getting the problem sets, about 0.5 MB.');
     expect(megabytes).toBeGreaterThan(0.4);
     expect(megabytes).toBeLessThan(0.6);
-    // "About 90 KB": every ready check, and a list of the teacher's own, with and without a teacher code.
-    expect(doc.getElementById('size-note').textContent).toBe('A check file has no sound, so there is nothing to download. About 90 KB.');
+    // "About 110 KB": every ready check, and a list of the teacher's own, with and without a teacher code.
+    // Re-pinned 2026-11-12 from about 90 KB: every file now carries the reading tools (about 17 KB in a check).
+    expect(doc.getElementById('size-note').textContent).toBe('A check file has no sound, so there is nothing to download. About 110 KB.');
     const sizes = READY.flatMap((id) => formsOf(id).map(({ grade, form }) => Buffer.byteLength(direct(id, grade, form).html, 'utf8')));
     sizes.push(Buffer.byteLength(direct('math_computation', '5', 'A', { teacherCode: 'tulip-47' }).html, 'utf8'));
     sizes.push(Buffer.byteLength(PC.buildCheckPacket({ lesson: PC.lessonFromMathProblems({ problems: PC.parseProblems('7+8') }), loader: TH }).html, 'utf8'));
     expect(sizes).toHaveLength(6 + 9 + 18 + 2);
-    for (const bytes of sizes) expect(Math.abs(bytes - 90000), bytes + ' bytes').toBeLessThan(10000);
+    for (const bytes of sizes) expect(Math.abs(bytes - 110000), bytes + ' bytes').toBeLessThan(10000);
   });
 });
 
@@ -442,7 +451,7 @@ describe('step 1: the four cards, held against the problem sets', () => {
     ['quantity_discrimination', 'Quantity Discrimination', 'Tap the bigger of two numbers.', '1 minute. Kindergarten and grade 1.'],
     ['missing_number', 'Missing Number', 'Type the number that is missing from a number sentence, like __ + 8 = 14.', '2 minutes. Kindergarten to grade 2.'],
     ['math_computation', 'Math Fluency', 'Add, subtract, multiply or divide, a different mix for each grade.', '2 minutes. Kindergarten to grade 5. Scored by digits correct per minute.'],
-    ['own', 'My own problems', 'Type the problems. Every learner gets the same ones.', ''],
+    ['own', 'My own problems', 'Type the problems. Every student gets the same ones.', ''],
   ];
   const cardsOf = (doc) => [...doc.querySelectorAll('#checks label')].map((label) => [label.querySelector('input').value, label.querySelector('.choice-name').textContent, label.querySelector('.choice-line').textContent]);
 
@@ -557,7 +566,7 @@ describe('step 2, a ready check: grade and version', () => {
       page.$('back-2').click();
       expect(page.seen('step-1')).toBe(true);
     }
-    expect(page.$('version-hint').textContent).toBe('Three versions of the same kind, so a learner does not see the same one twice in a row.');
+    expect(page.$('version-hint').textContent).toBe('Three versions of the same kind, so a student does not see the same one twice in a row.');
     expect(PC.MEASURES.quantity_discrimination.practice.length + PC.MEASURES.missing_number.practice.length + PC.MEASURES.math_computation.practice.length).toBe(4);
     expect(page.asked).toEqual([]);
     page.dom.window.close();
@@ -609,7 +618,7 @@ describe('a ready check, from the choice to a file that runs', () => {
       // The summary: check, grade, version, problems, time, practice first, the answers screen and the file with its size.
       const bytes = page.files[page.files.length - 1].size;
       expect(page.files[page.files.length - 1].type).toBe('text/html');
-      expect(Math.abs(bytes - 90000)).toBeLessThan(10000);
+      expect(Math.abs(bytes - 110000)).toBeLessThan(10000);
       const size = Math.round(bytes / 1000) + ' KB';
       const time = minutes(data.timeLimit).replace(/^./, (c) => c.toUpperCase());
       // What there is to answer has the check's own word: "questions" for Quantity Discrimination, "problems" for the others.
@@ -621,7 +630,7 @@ describe('a ready check, from the choice to a file that runs', () => {
       expect(rows.Check).toBe(PC.MEASURES[id].name);
       expect(rows.Grade).toBe(gradeName(grade));
       expect(rows.Version).toBe(version);
-      expect(rows[Nouns]).toMatch(new RegExp('^25\\. (?:[A-Z][a-z, ]+\\. )?Numbers up to \\d+\\. ' + (lesson.check.allowSkip ? 'The learner may skip a ' + noun + '\\.' : 'There is no skip button\\.') + '$'));
+      expect(rows[Nouns]).toMatch(new RegExp('^25\\. (?:[A-Z][a-z, ]+\\. )?Numbers up to \\d+\\. ' + (lesson.check.allowSkip ? 'The student may skip a ' + noun + '\\.' : 'There is no skip button\\.') + '$'));
       expect(rows.Time).toBe(time + '. The clock does not stop and does not give time back. '
         + (manifest.check.scoreUnit === 'digits_correct_per_minute' ? 'The score is digits correct per minute.' : 'The score is the number of ' + noun + 's correct.'));
       // No line of the summary calls a Quantity Discrimination item a problem, and none calls another check's a question (the practice questions apart).
@@ -701,8 +710,8 @@ describe('my own problems', () => {
     expect(page.options('time')).toEqual([['0', 'No clock'], ['60', '1 minute'], ['120', '2 minutes'], ['180', '3 minutes'], ['300', '5 minutes']]);
     expect(page.chosen('time')).toBe('120');
     expect(page.$('f-skip').checked).toBe(true);
-    expect(squash(page.$('f-skip').closest('label').textContent)).toBe('Learners may skip a problem');
-    expect(page.$('title-hint').textContent).toBe('The learner sees it at the top of the file. Left empty, it is "Math check".');
+    expect(squash(page.$('f-skip').closest('label').textContent)).toBe('Students may skip a problem');
+    expect(page.$('title-hint').textContent).toBe('The student sees it at the top of the file. Left empty, it is "Math check".');
     page.set('f-problems', text);
     await page.until(() => page.typed().length === 6, 'the six problems');
     const minus = String.fromCharCode(0x2212), times = String.fromCharCode(0xD7), divide = String.fromCharCode(0xF7);
@@ -723,7 +732,7 @@ describe('my own problems', () => {
     const size = Math.round(page.files[page.files.length - 1].size / 1000) + ' KB';
     expect(page.$('summary-facts').textContent).toBe('6 problems. 2 minutes. ' + size + '.');
     expect(page.rows()).toEqual({ Check: 'My own problems', Title: 'Facts to 20',
-      Problems: '6: 7 + 8, 12 ' + minus + ' 5, 6 ' + times + ' 4, 20 ' + divide + ' 4, 9 ' + divide + ' 3, 4 ' + times + ' 4. The learner may skip a problem.',
+      Problems: '6: 7 + 8, 12 ' + minus + ' 5, 6 ' + times + ' 4, 20 ' + divide + ' 4, 9 ' + divide + ' 3, 4 ' + times + ' 4. The student may skip a problem.',
       Time: '2 minutes. The clock does not stop and does not give time back. The score is digits correct per minute.', 'Practice first': 'None.',
       'Answers screen': 'Opens with one button when the check is finished. No teacher code is set.', File: 'facts-to-20.html, ' + size + '.' });
     page.$('save').click();
@@ -766,7 +775,10 @@ describe('my own problems', () => {
     expect(rows['seven plus eight']).toEqual({ ok: false, says: 'This is not a problem. Write it like 7+8, or like 3 + 4 + 5 = 12.' });
     expect(rows['10000+1']).toEqual({ ok: false, says: 'Both numbers must be whole numbers from 0 to 9999.' });
     expect(rows['5/0']).toEqual({ ok: false, says: '5 ' + divide + ' 0 divides by 0.' });
-    for (const typed of ['2^3', '3 + 4 + 5 = twelve', '1.5+2']) expect(rows[typed], typed).toEqual({ ok: false, says: 'This is not a problem. Write it like 7+8, or like 3 + 4 + 5 = 12.' });
+    for (const typed of ['2^3', '3 + 4 + 5 = twelve']) expect(rows[typed], typed).toEqual({ ok: false, says: 'This is not a problem. Write it like 7+8, or like 3 + 4 + 5 = 12.' });
+    // A decimal is a problem with a number the check does not take: the page says so in three words (2026-11-12).
+    expect(rows['1.5+2']).toEqual({ ok: false, says: 'Whole numbers only.' });
+    expect(page.$('problems-hint').textContent).toContain('Whole numbers only.');
     // Each reason is the builder's own sentence for that line.
     expect(() => PC.parseProblems('seven plus eight')).toThrow('Problem 1: "seven plus eight" is not a problem. Write it like 7+8, or like 3 + 4 + 5 = 12.');
     expect(() => PC.lessonFromMathProblems({ problems: PC.parseProblems('10000+1') })).toThrow('Problem 1: both numbers must be whole numbers from 0 to 9999.');
@@ -865,7 +877,8 @@ describe('the teacher code', () => {
     page.choose('check', 'quantity_discrimination');
     page.$('next-1').click();
     page.choose('grade', '1');
-    expect(page.$('code-box').open).toBe(false);
+    // The box is on screen at step 2, with nothing to open first.
+    expect(page.seen('code-box') && page.seen('f-code')).toBe(true);
     expect(page.$('code-line').textContent).toBe('No code: the answers screen opens with one button when the check is finished.');
     page.set('f-code', 'abc');
     expect(page.$('code-line').textContent).toBe('The teacher code needs 4 or more characters.');
@@ -873,8 +886,8 @@ describe('the teacher code', () => {
     page.$('next-2').click();
     expect(page.seen('step-2') && !page.seen('step-3')).toBe(true);
     expect(page.$('step-2-problem').textContent).toBe('The teacher code needs 4 or more characters. Make it longer, or leave it empty for no code.');
-    // The closed box opens so that the reason is beside the code.
-    expect(page.$('code-box').open).toBe(true);
+    // The reason is also beside the code, in the box's own status line.
+    expect(page.$('code-line').textContent).toBe('The teacher code needs 4 or more characters.');
     expect(page.files).toEqual([]);
     // Spaces around a code do not count, as in the builder.
     page.set('f-code', '  abc  ');
@@ -1182,15 +1195,16 @@ describe('the paper copy', () => {
     expect(paper.querySelectorAll('button, input, select, textarea, a, img, svg')).toHaveLength(0);
     // The learner's lines and the caution are fixed words; the rest is filled from the lesson.
     expect(squash(paper.querySelector('.paper-who').textContent)).toBe('Name or code name Date');
-    expect(paper.querySelector('.paper-caution').textContent).toBe('Scores on paper and on screen may differ, so do not mix them until they have been compared.');
-    expect(paper.querySelector('.paper-keep').textContent).toBe('For the teacher. Keep this page away from the learner.');
+    // The caution says who would compare the two, and what to do until then (2026-11-12).
+    expect(paper.querySelector('.paper-caution').textContent).toBe('Scores on paper and on screen may differ. The AlloFlow team has not yet compared them. Until it has, keep paper scores and screen scores apart.');
+    expect(paper.querySelector('.paper-keep').textContent).toBe('For the teacher. Keep this page away from the student.');
     expect([...paper.querySelectorAll('h3')].map((node) => node.textContent)).toEqual(['Samples. These do not count.', 'Start when your teacher says.', 'How to give it', 'How to score it: the same way the file does', 'Answers']);
     // One button, beside saving the file, with a line that says what it prints. No settings.
     const actions = doc.getElementById('save').parentNode;
     expect([...actions.querySelectorAll('button, a')].map((node) => node.id)).toEqual(['back-3', 'try', 'print', 'save']);
     const button = doc.getElementById('print');
     expect([button.textContent, button.className, button.hidden, button.getAttribute('aria-describedby')]).toEqual(['Print a paper copy', 'btn', true, 'print-note']);
-    expect(doc.getElementById('print-note').textContent).toBe('For a learner with no device: the same problems in the same order, on paper. The answers and how to score them are on a teacher page, on a sheet of its own.');
+    expect(doc.getElementById('print-note').textContent).toBe('For a student with no device: the same problems in the same order, on paper. The answers and how to score them are on a teacher page, on a sheet of its own.');
     expect(doc.getElementById('step-3').querySelectorAll('input, select, textarea')).toHaveLength(0);
 
     // Everything in the print stylesheet is for print: the screen is untouched.
@@ -1224,26 +1238,26 @@ describe('the paper copy', () => {
   // The teacher page for each kind, word for word.
   const TEACHER = {
     quantity_discrimination: {
-      give: ['Do the 2 samples first, with the learner, and say each answer. Samples do not count.', 'Then start a clock for 1 minute. When the time is up, the learner stops.'],
+      give: ['Do the 2 samples first, with the student, and say each answer. Samples do not count.', 'Then start a clock for 1 minute. When the time is up, the student stops.'],
       score: ['A question is right when the circled number is the bigger one, the one in the key.', 'The score is the number of questions right, leaving out the samples.',
-        'If the learner finishes before the time is up, the score is still the number right.', 'If the check is stopped before the time is up and before the last question, there is no score.'],
-      tally: 'Number right of 25', note: 'The numbers are the ones the learner sees on screen. In the results file the samples are numbered first, so question 1 here is item 3 there.',
+        'If the student finishes before the time is up, the score is still the number right.', 'If the check is stopped before the time is up and before the last question, there is no score.'],
+      tally: 'Number right of 25', note: 'The numbers are the ones the student sees on screen. In the results file the samples are numbered first, so question 1 here is item 3 there.',
     },
     missing_number: {
-      give: ['Do the sample first, with the learner, and say the answer. Samples do not count.', 'Then start a clock for 2 minutes. When the time is up, the learner stops.', 'The learner may skip a problem, as on screen.'],
+      give: ['Do the sample first, with the student, and say the answer. Samples do not count.', 'Then start a clock for 2 minutes. When the time is up, the student stops.', 'The student may skip a problem, as on screen.'],
       score: ['A problem is right when the number written is the one in the key.', 'The score is the number of problems right, leaving out the samples.',
-        'If the learner finishes before the time is up, the score is still the number right.', 'If the check is stopped before the time is up and before the last problem, there is no score.'],
-      tally: 'Number right of 25', note: 'The numbers are the ones the learner sees on screen. In the results file the samples are numbered first, so problem 1 here is item 2 there.',
+        'If the student finishes before the time is up, the score is still the number right.', 'If the check is stopped before the time is up and before the last problem, there is no score.'],
+      tally: 'Number right of 25', note: 'The numbers are the ones the student sees on screen. In the results file the samples are numbered first, so problem 1 here is item 2 there.',
     },
     math_computation: {
-      give: ['Do the sample first, with the learner, and say the answer. Samples do not count.', 'Then start a clock for 2 minutes. When the time is up, the learner stops.', 'The learner may skip a problem, as on screen.',
-        'If the learner finishes every problem before the time is up, write down the number of seconds used.'],
+      give: ['Do the sample first, with the student, and say the answer. Samples do not count.', 'Then start a clock for 2 minutes. When the time is up, the student stops.', 'The student may skip a problem, as on screen.',
+        'If the student finishes every problem before the time is up, write down the number of seconds used.'],
       score: ['Compare each answer with the key one place at a time: ones with ones, tens with tens, and so on. Each digit that matches is 1 digit correct.',
-        'For example, if the key says 49 and the learner wrote 40, that is 1 digit correct.', 'A problem left blank gets 0.', 'Add up the digits correct, leaving out the samples.',
+        'For example, if the key says 49 and the student wrote 40, that is 1 digit correct.', 'A problem left blank gets 0.', 'Add up the digits correct, leaving out the samples.',
         'If the time ran out: score = digits correct ' + DIVIDE + ' 2 (the minutes), rounded to a whole number.',
         'If every problem was finished early: score = digits correct ' + String.fromCharCode(0xD7) + ' 60 ' + DIVIDE + ' seconds used, rounded to a whole number. Under 20 seconds, there is no score.',
         'If the check is stopped before the time is up and before the last problem, there is no score.'],
-      tally: 'Digits correct Seconds used, if finished early Score digits correct per minute', note: 'The numbers are the ones the learner sees on screen. In the results file the samples are numbered first, so problem 1 here is item 2 there.',
+      tally: 'Digits correct Seconds used, if finished early Score digits correct per minute', note: 'The numbers are the ones the student sees on screen. In the results file the samples are numbered first, so problem 1 here is item 2 there.',
     },
   };
 
@@ -1331,13 +1345,13 @@ describe('the paper copy', () => {
     const kinds = [...page.$('paper-learner').querySelectorAll('.pi')].map((li) => (li.querySelector('.pdv') ? 'divide' : li.className.split(' ')[1]));
     expect(kinds).toEqual(['pi-stack', 'pi-stack', 'pi-stack', 'divide', 'pi-line', 'pi-stack', 'pi-stack']);
     expect(page.$('paper-how').textContent).toBe('Write the answer to each one. Go across each row. If you get stuck, go on to the next one.');
-    expect(paper.give).toEqual(['Start a clock for 2 minutes. When the time is up, the learner stops.', 'The learner may skip a problem, as on screen.',
-      'If the learner finishes every problem before the time is up, write down the number of seconds used.']);
+    expect(paper.give).toEqual(['Start a clock for 2 minutes. When the time is up, the student stops.', 'The student may skip a problem, as on screen.',
+      'If the student finishes every problem before the time is up, write down the number of seconds used.']);
     // One answer is below zero, so the page says what the file does with a wrong sign. The example is the first two-digit answer.
     expect(paper.score).toContain('A problem left blank gets 0. So does an answer with the wrong sign.');
-    expect(paper.score).toContain('For example, if the key says 15 and the learner wrote 16, that is 1 digit correct.');
+    expect(paper.score).toContain('For example, if the key says 15 and the student wrote 16, that is 1 digit correct.');
     expect(paper.score).toContain('Add up the digits correct.');
-    expect(page.$('paper-key-note').textContent).toBe('The numbers are the ones the learner sees on screen and in the results file.');
+    expect(page.$('paper-key-note').textContent).toBe('The numbers are the ones the student sees on screen and in the results file.');
     page.$('print').click();
     expect(page.prints).toEqual([true]);
     page.wordsAreRight();
@@ -1352,7 +1366,7 @@ describe('the paper copy', () => {
     expect(calm.items).toEqual(fileItems(page.built()).map((row) => [row.label, row.printed]));
     expect(page.$('paper-time').textContent).toBe(TH.CHECK_LABELS.check_ready_untimed);
     expect(page.$('paper-how').textContent).toBe('Write the answer to each one. Go across each row.');
-    expect(calm.give).toEqual(['There is no clock. The learner may take as long as needed.']);
+    expect(calm.give).toEqual(['There is no clock. The student may take as long as needed.']);
     expect(calm.score).toEqual(['A problem is right when the number written is the one in the key.', 'The score is the number of problems right.', 'If the check is stopped before the last problem, there is no score.']);
     expect(calm.tally).toBe('Number right of 7');
     expect(page.asked).toEqual([]);

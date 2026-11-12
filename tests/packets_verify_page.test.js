@@ -896,7 +896,13 @@ describe('the pages as files', () => {
       expect([...doc.querySelectorAll('footer a')].map((node) => node.textContent)).toEqual(['More from AlloFlow']);
       expect(doc.querySelector('.brand').getAttribute('href')).toBe('packets.html');
     }
-    expect([parse(PAGE).title, parse(GUIDE).title]).toEqual(['Check a file', 'For school IT: check a packet in ten minutes']);
+    // One name for the page everywhere (2026-11-12): "Look inside a file", never "Check a file" (a check is a kind of packet).
+    expect([parse(PAGE).title, parse(GUIDE).title]).toEqual(['Look inside a file', 'For school IT: check a packet in ten minutes']);
+    expect(parse(PAGE).querySelector('h1').textContent).toBe('Look inside a file');
+    for (const file of readdirSync('.').filter((name) => /^packets[\w-]*\.(?:html|js)$/.test(name))) {
+      expect(read(file), file).not.toContain('Check a file');
+      for (const link of /\.html$/.test(file) ? parse(file).querySelectorAll('a[href="packets-verify.html"]') : []) expect(link.textContent, file).toBe('Look inside a file');
+    }
     expect([parse(PAGE).querySelector('.top-link').getAttribute('href'), parse(GUIDE).querySelector('.top-link').getAttribute('href')]).toEqual([GUIDE, PAGE]);
     for (const file of [CORE, SCRIPT, STYLES]) expect(read(file), file).not.toContain(NAME);
     // Only what packets.css lacks: the colors and the fonts are its own, used by name. Outside the print sheet no color is written out.
@@ -970,8 +976,10 @@ describe('the guide for school IT', () => {
     expect(text('h2')).toEqual(['Where the data goes', 'Check it yourself', 'The facts, for a privacy review', 'Known limits']);
     const flow = text('section[aria-labelledby="flow-title"] li');
     expect(flow.length).toBe(6);
-    expect(flow[2]).toBe("The learner opens the file in a browser. The learner's place, answers and the time on each item are kept in that browser's local storage, on that device.");
-    expect(flow[3]).toBe('At the end the learner presses a button to save a results file to the device: CSV for a spreadsheet, or JSON. Saving sends nothing.');
+    expect(flow[2]).toBe("The student opens the file in a browser. The student's place, answers and the time on each item are kept in that browser's local storage, on that device.");
+    expect(flow[3]).toBe('At the end the student presses one button to save a results file to the device: CSV, for a spreadsheet. JSON and a copy to paste are under Other ways to save. Saving sends nothing.');
+    // A teacher's page says "student"; "learner" stays only where a technical name is quoted (#learner=, the CSV column).
+    expect(doc.body.textContent.replace(/#learner=\w*/g, '')).not.toMatch(/\blearners?\b/i);
     expect(doc.querySelector('section[aria-labelledby="flow-title"] a').getAttribute('href')).toBe('packets-results.html');
   });
 
@@ -987,7 +995,10 @@ describe('the guide for school IT', () => {
     expect(policy).toMatch(/script-src 'sha256-[A-Za-z0-9+/=]+'/);
     expect(F.practice).toContain('<meta http-equiv="Content-Security-Policy" content="');
     // What the guide says a search finds is what a search finds: one use of location, http only in http-equiv, no open( and no <form.
-    expect(steps[4]).toContain("the code uses location once, to read the learner's code name after # in the file's own address, and http appears only in http-equiv");
+    expect(steps[4]).toContain("the code uses location once, to read the student's code name after # in the file's own address, and http appears only in http-equiv");
+    // "One script that runs, plus one data block": a real file has exactly those two scripts.
+    expect(steps[3]).toContain('The file has one script that runs, plus one data block.');
+    for (const file of [F.practice, F.check]) expect([...new JSDOM(file).window.document.querySelectorAll('script')].map((node) => node.type || 'code').sort()).toEqual(['application/json', 'code']);
     for (const file of [F.practice, F.check, F.coded]) {
       expect(file.split('location').length - 1).toBe(1);
       expect(file).toContain("String(win.location.hash || '')");
@@ -1001,7 +1012,7 @@ describe('the guide for school IT', () => {
     expect(m.stores[0].key).toBe('alloflow-take-home:' + m.packet.id + ':' + m.packet.version);
     expect(m.stores[0].until).toBe('Start over or Practice again');
     expect(manifestOf(F.check).stores[0].until).toBe('the browser storage is cleared; Start over keeps only the learner label and the count of tries');
-    expect(steps[6]).toContain("A check keeps the learner's label and a count of tries after Start over, so clear a check in the browser.");
+    expect(steps[6]).toContain("A check keeps the student's label and a count of tries after Start over, so clear a check in the browser.");
     expect(doc.querySelector('section[aria-labelledby="steps-title"] a').getAttribute('href')).toBe(PAGE);
   });
 
@@ -1011,13 +1022,24 @@ describe('the guide for school IT', () => {
       'Accounts, cookies, analytics', 'How long it is kept', 'License and code']);
     for (const cell of doc.querySelectorAll('.facts-table th')) expect(cell.getAttribute('scope')).toBe('row');
     const fact = Object.fromEntries(rows);
-    // The label a learner types is asked for in these words, and may be left out.
-    expect(fact['What is collected']).toContain('A label the learner types (a code name or a first name; it can be left blank)');
+    // The label a student types is asked for in these words, and may be left out.
+    expect(fact['What is collected']).toContain('A label the student types (a code name or a first name; it can be left blank)');
     expect([loader.DEFAULT_LABELS.learner_label, loader.DEFAULT_LABELS.name_prompt_skip]).toEqual(['Your code name or first name', 'Continue without a name']);
+    // Everything a results file records is named (2026-11-12), and each is a column or a trailer cell the file really writes.
+    expect(fact['What is collected']).toBe('A label the student types (a code name or a first name; it can be left blank). For each item: each answer, the number of tries, the time on the item, '
+      + 'how often each help was used (a count for each, such as hearing a word again, and the reading tools: bigger text, contrast, spacing, reading focus and the magnifier), '
+      + 'and a note when an item was skipped, ran out of time or was open when the file was opened again. The start and finish times from the device clock, with its offset from UTC, '
+      + 'and a random session number. A check also records the seconds the page was hidden, the try number, and whether the page was left for more than 3 seconds, reloaded, '
+      + 'or had its clock set back. Nothing else: no email address, no account, no details of the device or the browser, no location.');
+    const loaderText = read('word_sounds_take_home_loader.js');
+    for (const column of ["'session_id'", "'learner'", "'started_local'", "'finished_local'", "'responses'", "'tries'", "'time_ms'", "'supports'", "'flag'"]) expect(loaderText, column).toContain(column);
+    for (const piece of ["kv('hidden_s'", "kv('attempt'", 'c.flags.left_the_page = 1', 'c.flags.reloaded = 1', 'c.flags.clock_changed = 1', "rec.flag = 'skipped'", "rec.flag = 'time_up'", "rec.flag = 'resumed'", 'getTimezoneOffset()']) {
+      expect(loaderText, piece).toContain(piece);
+    }
     // "No details of the device or the browser": the script of a file reads none.
     for (const file of [F.practice, F.check]) expect(scriptOf(file)).not.toMatch(/userAgent|\.platform\b|geolocation|deviceMemory|hardwareConcurrency|navigator\.language|screen\.(?:width|height)/);
     // The mailbox kind is said plainly, with the three ways to recognize it.
-    expect(fact['The class mailbox kind']).toContain('How to recognize one: the report on Check a file starts "This file can send results to one place", the policy\'s connect-src names script.google.com, and About this file says so.');
+    expect(fact['The class mailbox kind']).toContain('How to recognize one: the report on Look inside a file starts "This file can send results to one place", the policy\'s connect-src names script.google.com, and About this file says so.');
     expect(ONE_PLACE.startsWith('This file can send results to one place')).toBe(true);
     expect(loader.DEFAULT_LABELS.about_mailbox).toContain("your results go to your teacher's class mailbox at {host}");
     expect(cspOf(F.mailbox)).toMatch(/connect-src https:\/\/script\.google\.com /);
@@ -1026,7 +1048,7 @@ describe('the guide for school IT', () => {
     expect(read('packet_check_builder.js').match(/submit[^,;]*/g)).toEqual(['submit: null }']);
     expect([lessonOf(F.practice).submit ?? null, lessonOf(F.check).submit ?? null]).toEqual([null, null]);
     expect(fact['License and code']).toContain('AGPL-3.0');
-    for (const file of ['word_sounds_packet_builder.js', 'packet_check_builder.js', 'word_sounds_take_home_loader.js', CORE]) {
+    for (const file of ['word_sounds_packet_builder.js', 'packet_math_practice_builder.js', 'packet_check_builder.js', 'word_sounds_take_home_loader.js', CORE]) {
       expect(fact['License and code']).toContain(file);
       expect(existsSync(file)).toBe(true);
     }
@@ -1056,7 +1078,7 @@ describe('the guide for school IT', () => {
     expect(fact["What this site's server can see"]).toBe('When someone uses these pages: ordinary web requests for the pages, their scripts and, on the maker page, the sound files, '
       + 'with what every web request carries, such as the IP address and the time. Most sound files are the same whatever is chosen. '
       + 'Some words have their sounds in small files of about 40 words each, and the maker page asks only for the ones it needs: the server can see which of those files were asked for, not which words. '
-      + 'Never the words or the choices, and never results. If a school puts a packet on its own web server, that server sees requests for the file and nothing the learner does in it.');
+      + 'Never the words or the choices, and never results. If a school puts a packet on its own web server, that server sees requests for the file and nothing the student does in it.');
     expect(require('../dev-tools/repack_word_sounds_word_audio.cjs').DEFAULT_MAX).toBe(40);
     expect(text('section[aria-labelledby="flow-title"] li')[0]).toContain('The maker page puts the file together in the browser. The words and the choices are not uploaded.');
     // Every address the maker asks for is in a fixed list in its own script, or is the word store's index, or is a file name that
@@ -1068,7 +1090,7 @@ describe('the guide for school IT', () => {
     expect([...new Set(maker.match(/window\.fetch\([\w.]+/g))].sort()).toEqual(['window.fetch(file.url', 'window.fetch(shard.url']);
     expect(maker).not.toMatch(/method\s*:|body\s*:|FormData|encodeURIComponent/);
     expect(parse('packets-results.html').querySelector('meta[http-equiv="Content-Security-Policy"]').getAttribute('content')).toContain("connect-src 'none'");
-    expect(fact['Accounts, cookies, analytics']).toContain("the maker page keeps the teacher's last choices and the sound files, the results page keeps results only if a switch is turned on, and this page and Check a file keep nothing");
+    expect(fact['Accounts, cookies, analytics']).toContain("the maker page keeps the teacher's last choices and the sound files, the results page keeps results only if a switch is turned on, and this page and Look inside a file keep nothing");
     // A teacher's own words (sounds, recording, picture): kept in the browser for this site, never uploaded; the microphone only on Record;
     // and the one page that can reach other sites, with its three services named. Each is true of the code.
     const squash = (value) => value.replace(/\s+/g, ' ').trim();
@@ -1093,8 +1115,14 @@ describe('the guide for school IT', () => {
     expect(limits.length).toBe(6);
     expect(limits[0]).toBe('A results file can be edited. The check value inside it finds accidental changes, not deliberate ones.');
     expect(manifestOf(F.practice).integrity).toContain('It detects accidental edits, not deliberate ones.');
-    expect(limits[1]).toBe("Times come from the clock of the learner's device.");
-    expect(limits[4]).toMatch(/^On an iPad, .* Reported, not yet tested by us\.$/);
+    expect(limits[1]).toBe("Times come from the clock of the student's device.");
+    expect(limits[2]).toBe('A packet is for practice and for checking progress. It is not a locked check: the answers travel inside the file so that it can score with no internet.');
+    // The previews: the same three, said the same way as the front door, and marked as reported.
+    expect(limits[4]).toBe('The previews in Google Drive, Google Classroom and the iPad Files app do not run the file: the file shows a note that asks the student to download it and open it in a browser. '
+      + "An iPad may need the file served from a web address, such as the school's learning platform. Reported, not yet tested by us.");
+    const front = [...parse('packets.html').querySelectorAll('#check li')].map((li) => li.textContent).find((line) => line.startsWith('Run inside a file preview.'));
+    expect(front).toContain('The previews in Google Drive, Google Classroom and the iPad Files app do not run the file.');
+    expect(front.endsWith('Reported, not yet tested by us.')).toBe(true);
     expect(doc.querySelector('.tested').textContent).toBe('Reported, not yet tested by us.');
     expect(limits[5]).toBe('The file has had no formal accessibility audit yet.');
     expect(limits[3]).toContain('it cannot prove that software is free of mistakes');
@@ -1156,7 +1184,7 @@ describe('the page: from a dropped file to its report', () => {
     const page = openPage();
     expect(page.$('reports').hidden).toBe(true);
     expect(page.$('report-list').children.length).toBe(0);
-    expect(page.d.title).toBe(NAME + ': Check a file');
+    expect(page.d.title).toBe(NAME + ': Look inside a file');
     expect(page.d.querySelector('[data-show-rule]').textContent).toBe(CSP);
     expect(page.stored()).toEqual({ local: 0, session: 0, cookie: '' });
     expect(page.reached).toEqual([]);

@@ -867,12 +867,14 @@ describe('the page as files: the one page that may reach other websites', () => 
       expect(node.getAttribute('tabindex')).toBe('-1');
       expect(node.matches('h2')).toBe(true);
     }
-    // The product name is written once; the header is the header of the results page, word for word.
+    // The product name is written once; the header's top row is the results page's, word for word. (Since 2026-11-12 each page's
+    // own "See the details" strip sits inside its header too, so that it is in a landmark; that part differs from page to page.)
     expect(read(PAGE).split(NAME).length - 1).toBe(1);
     expect(doc.getElementById('product-name').textContent).toBe(NAME);
     for (const file of [SCRIPT, STORE, STYLES]) expect(read(file), file).not.toContain(NAME);
     const results = new JSDOM(read('packets-results.html')).window.document;
-    expect(doc.querySelector('header.top').outerHTML).toBe(results.querySelector('header.top').outerHTML);
+    expect(doc.querySelector('header.top .top-row').outerHTML).toBe(results.querySelector('header.top .top-row').outerHTML);
+    expect([...doc.querySelector('header.top').children].map((node) => node.className)).toEqual(['wrap top-row', 'proof']);
     expect(doc.querySelector('footer.foot').outerHTML).toBe(results.querySelector('footer.foot').outerHTML);
     // Its own stylesheet takes colors, focus and motion from packets.css: no color of its own but white behind a picture.
     const styles = read(STYLES);

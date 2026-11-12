@@ -1,4 +1,4 @@
-// The checks behind "Check a file" (packets-verify.html).
+// The checks behind "Look inside a file" (packets-verify.html).
 // One plain script for a browser page (window.AlloPacketVerify) and for node (module.exports). No imports.
 // It never touches a page: it is given the bytes or the text of one file and gives back a plain report object.
 //
@@ -361,7 +361,7 @@
       why: 'Builds page markup from text. Packet code builds every element one at a time and never does this.', cls: LOOK },
     { id: 'local-storage', name: 'localStorage', re: /\blocalStorage\b/g },
     { id: 'file-save', name: 'A file made on the device (Blob)', re: /\bcreateObjectURL\b|\bnew\s+(?:\w+\s*\.\s*)?Blob\b/g, cls: EXPECTED,
-      why: 'Makes the results file on the device when the learner presses a save button. It needs no connection.' },
+      why: 'Makes the results file on the device when the student presses a save button. It needs no connection.' },
     { id: 'clipboard', name: 'clipboard', re: /\bclipboard\b/g },
   ];
   // An address that names another place: a scheme or none, then two slashes and a host. The scan lists these (rule "external").
@@ -414,7 +414,7 @@
           f.cls = EXPECTED;
           f.why = place === 'the policy line' ? 'The policy names it as a place the class mailbox may connect to.'
             : place === 'the manifest block' ? 'The file\'s own description repeats its policy, which names the class mailbox.'
-              : place === 'the data block' ? 'The class mailbox this file declares: results go to this address when the learner presses Send.'
+              : place === 'the data block' ? 'The class mailbox this file declares: results go to this address when the student presses Send.'
                 : 'One of the two addresses a class mailbox uses.';
         } else if (host === 'www.w3.org') {
           f.cls = LOOK;
@@ -433,12 +433,12 @@
         } else f.why = 'This call sends or fetches data over the network. A file with no class mailbox has none.' + (a.closed ? ' The policy would refuse it.' : '');
       } else if (f.id === 'local-storage') {
         var call = /^localStorage\s*\.\s*\w+\s*\(\s*([^,)]*)/.exec(text.substr(f.at, 200));
-        if (place === 'the manifest block') { f.cls = EXPECTED; f.why = 'The file\'s own description names where it keeps the learner\'s place.'; }
+        if (place === 'the manifest block') { f.cls = EXPECTED; f.why = 'The file\'s own description names where it keeps the student\'s place.'; }
         else if (place !== 'the code') { f.cls = LOOK; f.why = 'The word is in ' + place + ', not in the code.'; }
         else if (call && call[1].replace(/\s+/g, '') !== 'storageKey') { f.cls = LOOK; f.why = 'Uses the browser\'s storage under a name other than the one name a packet uses.'; }
-        else { f.cls = EXPECTED; f.why = 'Keeps the learner\'s place on this device, under the one name the file uses.'; }
+        else { f.cls = EXPECTED; f.why = 'Keeps the student\'s place on this device, under the one name the file uses.'; }
       } else if (f.id === 'clipboard') {
-        if (/^clipboard\s*\.\s*writeText\b/.test(text.substr(f.at, 40))) { f.cls = EXPECTED; f.why = 'Puts the results on the clipboard when the learner presses the copy button. It needs no connection.'; }
+        if (/^clipboard\s*\.\s*writeText\b/.test(text.substr(f.at, 40))) { f.cls = EXPECTED; f.why = 'Puts the results on the clipboard when the student presses the copy button. It needs no connection.'; }
         else { f.cls = LOOK; f.why = 'Uses the clipboard in a way other than writing the results to it.'; }
       } else if (f.id === 'eval' || f.id === 'new-function') {
         if (a.pinned && !a.builds) f.why += ' The policy would refuse it.';
@@ -895,7 +895,7 @@
       plain.saves.push('It says ' + savesRow.says);
       plain.saves.push((savesRow.verdict === AGREE ? 'The code agrees. ' : 'This page cannot tell whether the code agrees. ') + savesRow.shows);
     } else plain.saves.push(savesFile ? 'Its code makes files on the device with the browser\'s own save, which needs no connection.' : 'This page found no code that makes a file.');
-    if (scanned.some(function (f) { return f.id === 'clipboard' && f.cls === EXPECTED; })) plain.saves.push('It can also put the results on the clipboard when the learner presses the copy button.');
+    if (scanned.some(function (f) { return f.id === 'clipboard' && f.cls === EXPECTED; })) plain.saves.push('It can also put the results on the clipboard when the student presses the copy button.');
     if (mailbox) plain.saves.push('It can also send the results to the class mailbox. ' + (isObject(m.network) && m.network.when ? 'It says this happens ' + show(m.network.when, 120) + '. ' : '') + 'A scan cannot tell when code runs. The network tab of the browser can.');
     else if (closed) plain.saves.push('It sends nothing. A results file leaves the device only when a person passes it on.');
     if (typeof m.integrity === 'string') plain.saves.push('It says: ' + show(m.integrity, 300));

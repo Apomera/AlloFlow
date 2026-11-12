@@ -10,7 +10,9 @@
   var STORE_KEY = 'alloflow-packets-results/1';
   var MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   // The three lines that say what a comparison inside a group is, and is not.
-  var HONEST = 'This compares learners in these files with each other. It is not a published benchmark. Compare only results gathered the same way.';
+  var HONEST = 'This compares students in these files with each other. It does not compare them with any published scores. Compare only results gathered the same way.';
+  // "1 digit correct per minute", "1 item correct": the unit with one of it.
+  function unitFor(value, unitName) { return Number(value) === 1 ? String(unitName).replace(/^digits /, 'digit ').replace(/^items /, 'item ') : unitName; }
   var GOAL_NOTE = 'Goal typed by the teacher';
   // A note on a result, in plain words. The short codes come from the reader.
   var NOTES = {
@@ -279,7 +281,7 @@
     var body = $('check-body');
     body.textContent = '';
     var results = state.sessions.length;
-    setText('check-line', results ? count(results, 'result') + ' counted, from ' + count(model.learners.length, 'learner') + '. Look through the points below, then show the results.'
+    setText('check-line', results ? count(results, 'result') + ' counted, from ' + count(model.learners.length, 'student') + '. Look through the points below, then show the results.'
       : 'None of these files is a results file, so there is nothing to show yet.');
     if (state.notResults.length) add(body, checkGroup('Not results files', 'These files were not counted.',
       state.notResults.map(function (row) { return fileRow(row.file, row.why); })));
@@ -287,29 +289,29 @@
       state.duplicates.map(function (row) { return fileRow(row.file, 'The same result as ' + row.first + '.'); })));
     if (model.changed.length) add(body, checkGroup('Changed after saving', 'These files were changed after they were saved. They are still counted, and each one carries a note.',
       model.changed.map(function (s) { return fileRow(s.sourceFile, (s.learner || reader.NO_NAME) + ', ' + showDate(s.date) + '.'); })));
-    if (model.suggestions.length) add(body, checkGroup('One learner, written two ways?', 'These names are close. Nothing is put together unless you say so.',
+    if (model.suggestions.length) add(body, checkGroup('One student, written two ways?', 'These names are close. Nothing is put together unless you say so.',
       model.suggestions.map(function (row) {
         var item = el('li', 'pair');
         var line = add(el('p', 'pair-names'), el('strong', '', row.a.label), doc.createTextNode(' (' + count(row.a.count, 'result') + ') and '),
           el('strong', '', row.b.label), doc.createTextNode(' (' + count(row.b.count, 'result') + ')'));
-        var same = button('btn btn-small', 'These are the same learner');
-        var differ = button('btn btn-small', 'These are different learners');
-        same.setAttribute('aria-label', row.a.label + ' and ' + row.b.label + ': these are the same learner');
-        differ.setAttribute('aria-label', row.a.label + ' and ' + row.b.label + ': these are different learners');
+        var same = button('btn btn-small', 'These are the same student');
+        var differ = button('btn btn-small', 'These are different students');
+        same.setAttribute('aria-label', row.a.label + ' and ' + row.b.label + ': these are the same student');
+        differ.setAttribute('aria-label', row.a.label + ' and ' + row.b.label + ': these are different students');
         same.addEventListener('click', function () {
           // The name with fewer results joins the one with more.
           var from = row.a.count < row.b.count ? row.a : row.b, into = from === row.a ? row.b : row.a;
           state.merges[from.key] = into.key;
-          answered(from.label + ' and ' + into.label + ' are counted as one learner.');
+          answered(from.label + ' and ' + into.label + ' are counted as one student.');
         });
         differ.addEventListener('click', function () {
           state.apart[row.pair] = true;
-          answered(row.a.label + ' and ' + row.b.label + ' stay two learners.');
+          answered(row.a.label + ' and ' + row.b.label + ' stay two students.');
         });
         return add(item, line, add(el('p', 'pair-buttons'), same, differ));
       })));
     var merged = Object.keys(state.merges);
-    if (merged.length) add(body, checkGroup('Counted as one learner', 'You said these are the same learner.', merged.map(function (from) {
+    if (merged.length) add(body, checkGroup('Counted as one student', 'You said these are the same student.', merged.map(function (from) {
       var item = el('li', 'pair');
       var undo = button('btn btn-small', 'Count them apart again');
       var line = labelFor(from) + ' is counted with ' + labelFor(state.merges[from]) + '.';
@@ -332,7 +334,7 @@
   // State c: the results.
   function drawResults() {
     var range = dateRange(model.firstDate, model.lastDate);
-    setText('results-line', count(model.count, 'result') + ' from ' + count(model.learners.length, 'learner') + (range ? '. ' + range + '.' : '.'));
+    setText('results-line', count(model.count, 'result') + ' from ' + count(model.learners.length, 'student') + (range ? '. ' + range + '.' : '.'));
     var look = lookCount();
     show('open-check', look > 0 || Object.keys(state.merges).length > 0);
     setText('open-check', 'Check what was read' + (look ? ' (' + look + ')' : ''));
@@ -381,16 +383,16 @@
     model.middles.forEach(function (mid) {
       var card = el('div', 'middle');
       add(card, el('p', 'middle-name', mid.label + (mid.form ? ', form ' + mid.form : '')), el('p', 'middle-label', 'Middle of this group (n = ' + mid.n + ')'),
-        add(el('p', 'middle-value'), el('span', 'middle-number', String(mid.median)), doc.createTextNode(' ' + mid.unitName)),
+        add(el('p', 'middle-value'), el('span', 'middle-number', String(mid.median)), doc.createTextNode(' ' + unitFor(mid.median, mid.unitName))),
         el('p', 'middle-range', (mid.q1 !== null ? 'Middle half: ' + mid.q1 + ' to ' + mid.q3 + '. ' : '') + 'Lowest ' + mid.min + ', highest ' + mid.max + '.'));
       row.appendChild(card);
     });
     add(host, row, el('p', 'honest', HONEST),
-      el('p', 'hint', 'Each learner counts once, with the latest score on that form. The middle score is the median. From 10 learners the middle half is shown too: it leaves out the lowest quarter and the highest quarter of these scores.'));
+      el('p', 'hint', 'Each student counts once, with the latest score on that form. The middle score is the median. From 10 students the middle half is shown too: it leaves out the lowest quarter and the highest quarter of these scores.'));
   }
   function groupColumns() {
     var columns = [
-      { id: 'learner', label: 'Learner', value: function (row) { return row.label.toLowerCase(); } },
+      { id: 'learner', label: 'Student', value: function (row) { return row.label.toLowerCase(); } },
       { id: 'count', label: 'Results', number: true, value: function (row) { return row.count; } },
       { id: 'last', label: 'Last date', number: true, value: function (row) { return row.lastDate || null; } },
     ];
@@ -426,7 +428,7 @@
     var columns = groupColumns();
     var groups = [['practice', 'Practice: latest first-try percent'], ['checks', 'Checks: latest score']].filter(function (g) { return columns.some(function (c) { return c.group === g[0]; }); });
     var table = el('table', 'data');
-    add(table, el('caption', 'sr-only', 'One row for each learner. Press a column heading to sort by it.'));
+    add(table, el('caption', 'sr-only', 'One row for each student. Press a column heading to sort by it.'));
     var head = el('thead');
     var first = el('tr'), second = el('tr');
     var headCell = function (column, rows) {
@@ -461,7 +463,7 @@
       var name = el('th');
       name.scope = 'row';
       var open = button('btn btn-text name-link', learner.label);
-      open.setAttribute('aria-label', learner.label + ': show this learner');
+      open.setAttribute('aria-label', learner.label + ': show this student');
       open.addEventListener('click', function () { state.learner = learner.key; $('pick-learner').value = learner.key; state.view = 'learner'; drawView(); $('learner-title').focus(); });
       add(row, add(name, open, learner.labels.length > 1 ? el('span', 'cell-sub', 'also written ' + learner.labels.filter(function (l) { return l !== learner.label; }).join(', ')) : null),
         el('td', 'num', String(learner.count)), el('td', 'num', learner.lastDate ? showDate(learner.lastDate) : 'No date'));
@@ -480,7 +482,7 @@
     scroll.setAttribute('role', 'region');
     scroll.setAttribute('aria-labelledby', 'group-title');
     add(host, add(scroll, add(table, head, body)),
-      el('p', 'hint', 'Practice shows the share of answers that were right on the first try, in the latest result that has that skill. Checks show the latest score. Choose a name to see that learner over time.'));
+      el('p', 'hint', 'Practice shows the share of answers that were right on the first try, in the latest result that has that skill. Checks show the latest score. Choose a name to see that student over time.'));
   }
 
   // ---------------------------------------------------------------------------
@@ -595,7 +597,7 @@
       var width = holder.clientWidth;
       holder.textContent = '';
       add(holder, drawChart(series, goal, width) || el('p', 'hint', 'A chart is drawn when there are results from two dates.'));
-      goalLine.textContent = goal === null ? '' : GOAL_NOTE + ': ' + goal + (series.percent ? '%' : ' ' + series.unitName) + '.';
+      goalLine.textContent = goal === null ? '' : GOAL_NOTE + ': ' + goal + (series.percent ? '%' : ' ' + unitFor(goal, series.unitName)) + '.';
       goalLine.hidden = goal === null;
     };
     redraws.push(redraw);
@@ -655,7 +657,7 @@
       plainTable('Every result for ' + learner.label + ', in date order', ['Date', 'What', 'Result', 'Answered', 'Time taken', 'Notes'], learner.sessions.map(function (s) {
         var probe = s.mode === 'probe';
         var what = probe ? s.measureName + (s.form ? ', form ' + s.form : '') + (s.attempt ? ', try ' + s.attempt : '') : 'Practice: ' + s.title;
-        var result = probe ? (s.value === null ? 'No score' : s.value + ' ' + s.unitName) : s.summary.firstTryPct === null ? 'Not scored' : s.summary.firstTryPct + '% on the first try';
+        var result = probe ? (s.value === null ? 'No score' : s.value + ' ' + unitFor(s.value, s.unitName)) : s.summary.firstTryPct === null ? 'Not scored' : s.summary.firstTryPct + '% on the first try';
         var more = probe ? [] : newFactsLines(s.newFacts);
         return [showDate(s.date), what, more.length ? [result].concat(more) : result, s.summary.attempted + ' of ' + s.summary.given, timeTaken(s.durationS), sentence(notesOf(s).join('; '))];
       }), 'wide'));

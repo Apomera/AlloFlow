@@ -1,4 +1,4 @@
-// The "Check a file" page (packets-verify.html).
+// The "Look inside a file" page (packets-verify.html).
 // A file is read in this tab with the browser's file reader and handed, as bytes, to packets_verify_core.js,
 // which reads it as text and gives back a report. This script draws the report.
 // Nothing is sent: the page's rule (connect-src 'none') has the browser refuse every connection, and this

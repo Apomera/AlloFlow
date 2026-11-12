@@ -793,7 +793,9 @@ describe('the results of a check', () => {
     expect(rows[27]).toEqual(['#summary', file.sessionId, 'items_given=25', 'attempted=25', 'correct=23', 'first_try=23', 'accuracy_pct=92', 'attempt=1', 'title=Math Fluency check (3A)']);
     expect(file.lessonTitle).toBe('Math Fluency check (3A)');
     expect(rows[28]).toEqual(['#score', file.sessionId, 'measure=math_dcpm', 'score=' + Math.round(digits / (25 / 60)), 'score_unit=digits_correct_per_minute', 'digits_correct=' + digits, 'digits_possible=' + possible,
-      'items_correct=23', 'items_attempted=25', 'time_limit_s=120', 'elapsed_s=25', 'hidden_s=0', 'completion=complete', 'prorated=1', 'scoring_version=3', 'form_version=2', 'attempt=1', 'flags=']);
+      'items_correct=23', 'items_attempted=25', 'time_limit_s=120', 'elapsed_s=25', 'hidden_s=0', 'completion=complete', 'prorated=1', 'scoring_version=3', 'form_version=2', 'attempt=1', 'flags=',
+      // Re-pinned 2026-11-12: the last cell names the reading tools on during a scored item (none here); the row is outside the integrity value.
+      'tools_used=']);
     expect(rows[29]).toEqual(['#integrity', 'sha256', file.integrity.value, 'detects accidental edits, not deliberate ones']);
     // The digit columns add up to the score row.
     expect(rows.slice(1, 27).reduce((sum, r) => sum + Number(r[24]), 0)).toBe(digits);
@@ -813,8 +815,9 @@ describe('the results of a check', () => {
     await sealed(t);
     const file = t.saveJson();
     expect(file).toMatchObject({ kind: 'alloflow-take-home-result', schemaVersion: 3, learner: 'Ana', packet: { id: 'math-computation-g3', version: MC.revision, engine: 'alloflow-packet/1', form: 'A', mode: 'probe' } });
+    // Re-pinned 2026-11-12: "tools", the reading tools on during a scored item, comes last.
     expect(Object.keys(file.score)).toEqual(['measure', 'score', 'scoreUnit', 'digitsCorrect', 'digitsPossible', 'itemsCorrect', 'itemsAttempted', 'timeLimitS', 'elapsedS', 'hiddenS', 'completion', 'prorated',
-      'noScoreReason', 'scoringVersion', 'formVersion', 'attempt', 'flags']);
+      'noScoreReason', 'scoringVersion', 'formVersion', 'attempt', 'flags', 'tools']);
     expect(file.score).toMatchObject({ measure: 'math_dcpm', scoreUnit: 'digits_correct_per_minute', itemsCorrect: 23, itemsAttempted: 25, timeLimitS: 120, elapsedS: 9.2, hiddenS: 0, completion: 'complete',
       prorated: false, score: null, noScoreReason: 'too_fast', scoringVersion: 3, formVersion: 2, attempt: 1, flags: [] });
     expect(file.items[1]).toMatchObject({ n: 2, itemId: 'math_computation-0', word: '9 ' + String.fromCharCode(0xD7) + ' 7', target: '63', responses: ['63'], correct: true, firstTry: true, attempts: 1, done: true, ms: 2000,
@@ -995,7 +998,8 @@ describe('each measure plays to a saved file, on a real form', () => {
         '1', p.left + ' or ' + p.right, String(p.answer), String(miss ? Math.min(p.left, p.right) : p.answer), miss ? '0' : '1', miss ? '0' : '1', '1', '300', '', '', '', '']);
     });
     expect(pairs(rows[29])).toEqual({ measure: 'quantity_discrimination', score: '23', score_unit: 'items_correct', digits_correct: '', digits_possible: '', items_correct: '23', items_attempted: '25', time_limit_s: '60',
-      elapsed_s: '7.5', hidden_s: '0', completion: 'complete', prorated: '0', scoring_version: '1', form_version: '2', attempt: '1', flags: '' });
+      // Re-pinned 2026-11-12: tools_used, the reading tools on during a scored item (none here).
+      elapsed_s: '7.5', hidden_s: '0', completion: 'complete', prorated: '0', scoring_version: '1', form_version: '2', attempt: '1', flags: '', tools_used: '' });
   });
 
   it('Missing Number, grade 1 form A: 120 s, the typed number shows in the blank', () => {
@@ -1234,56 +1238,17 @@ describe('practice files are as they were', () => {
   const level = (html) => html.replace(/'sha256-[A-Za-z0-9+/=]+'/g, "'sha256-X'").replace(/"scriptSha256":"[0-9a-f]{64}"/, '"scriptSha256":"X"');
   const minus = (from, taken) => { const left = new Map(); taken.forEach((l) => left.set(l, (left.get(l) || 0) + 1)); return from.filter((l) => { const n = left.get(l) || 0; if (n) left.set(l, n - 1); return !n; }); };
 
-  // The file the loader made for these inputs before check mode (commit 49465de2af), kept as a fixture.
-  // The file made now differs from it in these lines and in nothing else. After a deliberate change to the
-  // practice player, renew this pin: save what practiceFile() returns as the fixture and empty the two lists.
-  //  1. The script changed, so its hash did, in the CSP and in the manifest (levelled out below).
-  //  2. packetCsv, which every file carries and the app reads results with: a check's two digit columns,
-  //     its try number in "#summary" and its "#score" row. All three are behind `probe`, false in a practice file.
-  //  3. takeHomeShell: seven places where a check's own flow takes over. `check` is null in a practice file,
-  //     so each is skipped; `out.summary || summarize()` is summarize(), because nothing has set a summary.
-  //  4. packetCsv, 2026-11-11: the title as the last "#summary" cell (three lines). This one is not behind
-  //     `probe`: a practice file's CSV now ends that row with title=<the lesson title>. The row is outside
-  //     the integrity value, so a file saved before still checks out (the played practice file below, and the
-  //     files saved on 11 November that tests/packets_results_page.test.js reads).
+  // The file the loader made for these inputs, kept as a fixture. The file made now differs from it in the listed
+  // lines and in nothing else. After a deliberate change to the practice player, renew this pin: save what
+  // practiceFile() returns as the fixture and empty the two lists.
+  // First made before check mode (commit 49465de2af); check mode then changed only lines skipped in a practice file,
+  // and packetCsv began to end "#summary" with the title (2026-11-11).
+  // Renewed 2026-11-12, deliberately: every file now carries the reading tools (takeHomeTools, their style rules
+  // and words), the CSV is the main save button, and "About this file" says what the results record. The file made
+  // with the loader before that change differed from this fixture in those additions only (14 lines changed, 237 added).
   const REMOVED = [
-    "        it.correct ? 1 : 0, it.firstTry ? 1 : 0, Number(it.attempts) || 0, Math.max(0, Math.round(Number(it.ms) || 0)), supports, text(it.flag)];",
-    "        renderItem();",
-    "      out.summary = summarize();",
   ];
   const ADDED = [
-    "    // A check (packet.mode \"probe\") has two more cells in every item row, after",
-    "    // \"flag\": digits_correct and digits_possible, each a whole number or empty",
-    "    // (item.digitsCorrect / item.digitsPossible; empty when null or absent).",
-    "    // The integrity value covers the item rows as written, so in a check it",
-    "    // covers these two cells too. The \"#score\" row is, like \"#summary\", not covered.",
-    "    var probe = text(packet.mode) === 'probe';",
-    "    var count = function (v) { return v == null || v === '' || !isFinite(Number(v)) ? '' : Math.max(0, Math.round(Number(v))); };",
-    "    if (probe) header.push('digits_correct', 'digits_possible');",
-    "        it.correct ? 1 : 0, it.firstTry ? 1 : 0, Number(it.attempts) || 0, Math.max(0, Math.round(Number(it.ms) || 0)), supports, text(it.flag)]",
-    "        .concat(probe ? [count(it.digitsCorrect), count(it.digitsPossible)] : []);",
-    "        // A check: the try number, and a \"#score\" row between the other two.",
-    "        var sc = probe && r.score && typeof r.score === 'object' ? r.score : null;",
-    "        var kv = function (k, v) { return k + '=' + (v == null ? '' : v === true ? 1 : v === false ? 0 : text(v)); };",
-    "        if (probe) tail[0].push(kv('attempt', sc && sc.attempt != null ? sc.attempt : 1));",
-    "        // The title the learner saw: the last \"#summary\" cell. That row is outside the integrity value.",
-    "        var title = text(r.lessonTitle).replace(/\\s+/g, ' ').trim().slice(0, 120);",
-    "        if (title) tail[0].push('title=' + title);",
-    "        if (sc) tail.splice(1, 0, ['#score', session, kv('measure', sc.measure), kv('score', sc.score), kv('score_unit', sc.scoreUnit), kv('digits_correct', sc.digitsCorrect),",
-    "          kv('digits_possible', sc.digitsPossible), kv('items_correct', sc.itemsCorrect), kv('items_attempted', sc.itemsAttempted), kv('time_limit_s', sc.timeLimitS),",
-    "          kv('elapsed_s', sc.elapsedS), kv('hidden_s', sc.hiddenS), kv('completion', sc.completion), kv('prorated', !!sc.prorated), kv('scoring_version', sc.scoringVersion),",
-    "          kv('form_version', sc.formVersion), kv('attempt', sc.attempt), kv('flags', Array.isArray(sc.flags) ? sc.flags.map(text).join(';') : '')]);",
-    "      if (check) texts = check.about(texts);",
-    "      if (check && check.resume(prior)) return;",
-    "        if (check) check.begin(prior); else renderItem();",
-    "      if (check) check.result(out);",
-    "      out.summary = out.summary || summarize();",
-    "      if (check) { check.finish({ send: sendButton, save: saveButton, csv: csvButton, copy: copyButton, about: info, status: fileStatus, copyBox: copyBox, note: closedNote || (sendButton ? L.send_note : L.not_sent) }); return; }",
-    "    // A check (lesson.mode 'probe') brings its own flow in kit.check; a practice file has none.",
-    "    var check = kit.check ? kit.check({ doc: doc, win: win, lesson: lesson, L: L, kit: kit, items: items, renders: renders, matches: matches, el: el, fmt: fmt, announce: announce,",
-    "      screen: screen, statusLine: statusLine, fresh: fresh, save: save, now: now, clockStart: clockStart, clockStop: clockStop, play: play, playAll: playAll, stop: stop,",
-    "      state: function (next) { if (next !== undefined) state = next; return state; }, results: function () { return resultFile(); },",
-    "      renderStart: function () { renderStart(); }, renderFinish: function () { renderFinish(); } }) : null;",
   ];
 
   it('byte for byte, but for the listed lines', () => {

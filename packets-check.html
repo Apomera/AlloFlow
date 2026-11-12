@@ -28,8 +28,6 @@
     </a>
     <a class="top-link" href="packets-results.html">Add up results</a>
   </div>
-</header>
-
 <details class="proof">
   <summary class="wrap wrap-narrow">
     <span class="proof-line">This page runs without AI. No account. Nothing you choose leaves your device.</span>
@@ -38,7 +36,7 @@
   </summary>
   <div class="wrap wrap-narrow proof-body">
     <ul>
-      <li>Nothing is generated when you make a file or when a learner uses it. The ready checks are fixed sets of problems, and the answers to your own problems are worked out by plain arithmetic.</li>
+      <li>Nothing is generated when you make a file or when a student uses it. The ready checks are fixed sets of problems, and the answers to your own problems are worked out by plain arithmetic.</li>
       <li>The file is put together in this browser tab. Your choices, the problems you type and the teacher code are not sent anywhere. The page's scripts ask the network for nothing, and the rule below tells the browser to refuse them if they tried.</li>
       <li>There are no cookies and nothing to sign in to.</li>
       <li>This page loads <span id="file-count">nine</span> files, all from this site: the page itself, two stylesheets (one is only for printing), five scripts and the icon in the browser tab. They are the same files whatever you choose, and each is named near the top of the page's source. It loads no fonts, no trackers and nothing from another site. Try it opens this site's preview page in a new tab.</li>
@@ -47,28 +45,29 @@
     </ul>
     <p id="can-title">A check file can:</p>
     <ul aria-labelledby="can-title">
-      <li>Give one try for each problem, with no hints. After the practice questions, the learner is not shown right or wrong.</li>
-      <li>Run a clock on the learner's device. The clock keeps going when the learner leaves the page, and it does not give time back.</li>
-      <li>Save a results file to that device when the learner presses the save button. The results file shows right and wrong and the expected answers: it is the teacher's record.</li>
+      <li>Give one try for each problem, with no hints. After the practice questions, the student is not shown right or wrong.</li>
+      <li>Run a clock on the student's device. The clock keeps going when the student leaves the page, and it does not give time back.</li>
+      <li>Save a results file to that device when the student presses the save button. The results file shows right and wrong and the expected answers: it is the teacher's record.</li>
     </ul>
     <p id="cannot-title">A check file cannot:</p>
     <ul aria-labelledby="cannot-title">
-      <li>Run AI. Nothing is generated when you make a file or when a learner uses it.</li>
+      <li>Run AI. Nothing is generated when you make a file or when a student uses it.</li>
       <li>Connect to the internet. The file tells the browser to refuse every connection, and the browser enforces it.</li>
       <li>Keep its answers secret. The answers are scrambled in the file, so they cannot be read just by opening it. This stops casual looking, not a determined person.</li>
       <li>Make the teacher code more than a lock. The code keeps the answers screen inside the file closed. It is a lock on the screen, not secret writing.</li>
-      <li>Stop a learner from starting over. A new start is saved as a new try, and the count of tries is kept only in that learner's browser.</li>
+      <li>Stop a student from starting over. A new start is saved as a new try, and the count of tries is kept only in that student's browser.</li>
     </ul>
     <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
       <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
     </p>
   </div>
 </details>
+</header>
 
 <main id="main" class="maker">
   <div class="wrap wrap-narrow">
     <h1>Make a math check</h1>
-    <p class="scope" id="what-a-check-is">A check to see how a learner is doing. It is not for a grade and it is not a standardized test.</p>
+    <p class="scope" id="what-a-check-is">A check to see how a student is doing. It is not for a grade and it is not a standardized test.</p>
 
     <nav aria-label="Steps">
       <ol class="steps">
@@ -112,7 +111,7 @@
           </label>
           <label class="choice"><input type="radio" name="check" value="own">
             <span class="choice-name">My own problems</span>
-            <span class="choice-line">Type the problems. Every learner gets the same ones.</span>
+            <span class="choice-line">Type the problems. Every student gets the same ones.</span>
           </label>
         </div>
       </fieldset>
@@ -134,7 +133,7 @@
         </fieldset>
         <fieldset class="block">
           <legend>Version</legend>
-          <p class="hint" id="version-hint">Three versions of the same kind, so a learner does not see the same one twice in a row.</p>
+          <p class="hint" id="version-hint">Three versions of the same kind, so a student does not see the same one twice in a row.</p>
           <div class="radios" id="versions"></div>
         </fieldset>
         <div class="result">
@@ -155,7 +154,7 @@
         </div>
         <div class="field block">
           <label for="f-title">Title</label>
-          <span class="hint" id="title-hint">The learner sees it at the top of the file.</span>
+          <span class="hint" id="title-hint">The student sees it at the top of the file.</span>
           <input type="text" id="f-title" maxlength="80" autocomplete="off" aria-describedby="title-hint">
         </div>
         <fieldset class="block">
@@ -164,30 +163,28 @@
           <div class="radios" id="times"></div>
         </fieldset>
         <div class="block">
-          <label class="radio"><input type="checkbox" id="f-skip" checked> <span>Learners may skip a problem</span></label>
+          <label class="radio"><input type="checkbox" id="f-skip" checked> <span>Students may skip a problem</span></label>
         </div>
       </div>
 
-      <div class="block">
-        <details class="why" id="code-box">
-          <summary>Teacher code (optional)</summary>
-          <div class="field">
-            <label for="f-code">Teacher code</label>
-            <span class="hint" id="code-about">The answers screen inside the file opens only with this code. It is a lock on the screen, not secret writing.</span>
-            <span class="hint" id="code-hint">4 or more characters. Leave it empty for no code. This page does not keep the code, so write it down.</span>
-            <input type="password" id="f-code" maxlength="64" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="code-about code-hint">
-            <div class="loosen">
-              <button type="button" class="btn btn-small" id="code-show" aria-pressed="false" aria-controls="f-code" aria-label="Show the teacher code">Show</button>
-            </div>
+      <div class="block" id="code-box">
+        <div class="field">
+          <label for="f-code">Teacher code (optional)</label>
+          <span class="hint" id="code-why">Set one if you can. Without a code, a student who finishes can open the answers screen.</span>
+          <span class="hint" id="code-about">The answers screen inside the file opens only with this code. It is a lock on the screen, not secret writing.</span>
+          <span class="hint" id="code-hint">4 or more characters. Leave it empty for no code. This page does not keep the code, so write it down.</span>
+          <input type="password" id="f-code" maxlength="64" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="code-why code-about code-hint">
+          <div class="loosen">
+            <button type="button" class="btn btn-small" id="code-show" aria-pressed="false" aria-controls="f-code" aria-label="Show the teacher code">Show</button>
           </div>
-          <p id="code-line" class="hint" role="status"></p>
-        </details>
+        </div>
+        <p id="code-line" class="hint" role="status"></p>
       </div>
 
       <div class="actions">
         <button type="button" class="btn" id="back-2">Back</button>
         <button type="button" class="btn btn-primary push" id="next-2">Next: make the file</button>
-        <p class="actions-note" id="size-note">A check file has no sound, so there is nothing to download. About 90 KB.</p>
+        <p class="actions-note" id="size-note">A check file has no sound, so there is nothing to download. About 110 KB.</p>
         <p id="step-2-problem" class="actions-note" role="alert"></p>
       </div>
     </section>
@@ -220,18 +217,21 @@
         <a class="btn push" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
         <button type="button" class="btn" id="print" aria-describedby="print-note" hidden>Print a paper copy</button>
         <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
-        <p class="actions-note" id="print-note" hidden>For a learner with no device: the same problems in the same order, on paper. The answers and how to score them are on a teacher page, on a sheet of its own.</p>
+        <p class="actions-note" id="print-note" hidden>For a student with no device: the same problems in the same order, on paper. The answers and how to score them are on a teacher page, on a sheet of its own.</p>
       </div>
 
       <div id="after-save" class="next" tabindex="-1" hidden>
         <h3>Saved. What to do next</h3>
         <ol>
-          <li>Send the file to your learners the way you send any file: your learning platform, a shared drive or a USB drive.</li>
-          <li>Each learner opens it in a browser, finishes the check and presses <strong id="csv-label">Save results as a spreadsheet file (CSV)</strong>. They hand that file back to you.</li>
-          <li>Add the results up on <a href="packets-results.html">the results page</a>, or open them in a spreadsheet. In AlloFlow: Class Analytics, Add take-home results.</li>
+          <li>Send the file to your students the way you send any file: your learning platform, a shared drive or a USB drive.</li>
+          <li>Each student opens it in a browser, finishes the check and presses the main button at the end, <strong id="csv-label">Save results as a spreadsheet file (CSV)</strong>. They hand that file back to you.</li>
+          <li>Add the results up on <a href="packets-results.html">Add up results</a>, or open them in a spreadsheet. In AlloFlow: Class Analytics, Add take-home results.</li>
         </ol>
         <p id="after-code" hidden>The answers screen inside the file opens with your teacher code. This page has not kept the code.</p>
-        <p>To fill in a learner's code name for them: when the file is on a website or a shared link, add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the learner's device.</p>
+        <details class="why" id="learner-tip">
+          <summary>Fill in a student's code name for them</summary>
+          <p>When the file is on a website or a shared link, add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
+        </details>
       </div>
     </section>
 
@@ -246,7 +246,7 @@
         </p>
         <h2 id="sources-title">Where the checks come from</h2>
         <ul id="sources">
-          <li>The three ready checks are the problem sets the AlloFlow app uses: fixed versions for each grade. Every learner who gets the same grade and version gets the same problems in the same order.</li>
+          <li>The three ready checks are the problem sets the AlloFlow app uses: fixed versions for each grade. Every student who gets the same grade and version gets the same problems in the same order.</li>
           <li>For your own problems, the answers are worked out in this tab by plain arithmetic. A division has to come out even.</li>
           <li>Math Fluency counts each correct digit in its place, the way the app does. Its score is digits correct per minute.</li>
         </ul>
@@ -283,7 +283,7 @@
   </div>
   <section class="paper-sheet paper-teacher" aria-labelledby="paper-key-title">
     <h2 class="paper-title" id="paper-key-title"></h2>
-    <p class="paper-keep">For the teacher. Keep this page away from the learner.</p>
+    <p class="paper-keep">For the teacher. Keep this page away from the student.</p>
     <h3 class="paper-sub">How to give it</h3>
     <ol class="paper-steps" id="paper-give"></ol>
     <h3 class="paper-sub">How to score it: the same way the file does</h3>
@@ -294,7 +294,7 @@
       <p class="paper-key-note" id="paper-key-note"></p>
       <ol class="paper-key" id="paper-key"></ol>
     </div>
-    <p class="paper-caution">Scores on paper and on screen may differ, so do not mix them until they have been compared.</p>
+    <p class="paper-caution">Scores on paper and on screen may differ. The AlloFlow team has not yet compared them. Until it has, keep paper scores and screen scores apart.</p>
   </section>
 </div>
 </body>

@@ -18,8 +18,10 @@ const PAGES = ['packets.html', 'packets-make.html', 'packets-try.html'];
 // packets-words.js is "Edit this word" on the maker page: the one script of these pages that may ask for the microphone (see below).
 const SCRIPTS = ['packets-page.js', 'packets-make.js', 'packets-try.js', 'packets-words.js'];
 const NEW_FILES = [...PAGES, ...SCRIPTS, 'packets.css', 'packets-words.css', 'packets-mark.svg'];
-// The sentences about the voices, word for word, in the "See the details" panel of both pages.
-const VOICES = 'Nothing is generated when you make a file or when a student uses it. The spoken sounds were recorded ahead of time with computer voices, including an AI voice.';
+// The sentences about the voices, word for word, in the "See the details" panel of both pages. Both voices are AI voices,
+// named (owner, 2026-11-12): the builder's credits name the same two (see "Machine-made recordings" below).
+const VOICES_SAID = 'The spoken sounds were recorded ahead of time with two AI voices (Kokoro and Google Gemini).';
+const VOICES = 'Nothing is generated when you make a file or when a student uses it. ' + VOICES_SAID;
 const NAME = 'AlloFlow Packets';
 const parse = (file) => new JSDOM(read(file)).window.document;
 const csp = (doc) => doc.querySelector('meta[http-equiv="Content-Security-Policy"]').getAttribute('content');
@@ -35,7 +37,7 @@ const ALLOWED_AI_SENTENCES = [
   'This page runs without AI.',                                                                  // the tagline, in the title, the description and the h1
   'This page runs without AI. No account. Nothing you choose leaves your device.',    // the proof line
   'Run AI.',                                                                 // a list item under "A practice file cannot"
-  'The spoken sounds were recorded ahead of time with computer voices, including an AI voice.',   // the voices, said exactly
+  VOICES_SAID,                                                               // the voices, said exactly
 ];
 // British spellings and usages that must not reach a US teacher.
 const BRITISH = /practis|standardis|licence|colour|\bmarking\b|\bmarked\b|\btick(?:ed|s)?\b|USB stick|\bwhilst\b|\bmaths\b|favour|behaviour|\bcentre\b/i;
@@ -156,10 +158,13 @@ describe('the pages as files', () => {
     // The headline stays, and the details say exactly how the voices were made, on both pages.
     expect(parse('packets.html').querySelector('h1').textContent).toBe('Practice and progress checks. Runs without AI. No accounts.');
     for (const file of ['packets.html', 'packets-make.html']) expect(parse(file).querySelector('details.proof .proof-body li').textContent, file).toBe(VOICES);
-    expect(parse('packets-make.html').getElementById('sources').textContent).toContain('recorded ahead of time with computer voices, including an AI voice');
+    expect(parse('packets-make.html').getElementById('sources').textContent).toContain(VOICES_SAID);
     // In the scripts the word appears in comments only: no line a visitor reads.
     for (const file of SCRIPTS) for (const line of read(file).split('\n')) if (/\bAI\b/.test(line)) expect(line.trim().startsWith('//'), file + ': ' + line).toBe(true);
-    expect(read('packets.html') + read('packets-make.html')).not.toMatch(/Gemini|ChatGPT|chatbot|generat(?:es|ive)|\bLLM\b/i);
+    // An AI product is named only where the voices are said; no other sentence names one.
+    expect((read('packets.html') + read('packets-make.html')).split(VOICES_SAID).join('')).not.toMatch(/Gemini|Kokoro|ChatGPT|chatbot|generat(?:es|ive)|\bLLM\b/i);
+    expect(read('word_sounds_packet_builder.js')).toContain("'Machine-made recordings: Kokoro-82M text-to-speech (voice af_heart)'");
+    expect(read('word_sounds_packet_builder.js')).toContain("'Machine-made recordings: Google Gemini text-to-speech, made ahead of time'");
   });
 
   it('keep the product name in one place on each page', () => {
@@ -277,28 +282,36 @@ describe('the pages as files', () => {
 
   it('the front door links only to what exists, and claims only what is true today', () => {
     const doc = parse('packets.html');
-    const cards = [...doc.querySelectorAll('.card')].map((card) => ({ title: card.querySelector('h2').textContent, link: card.querySelector('a')?.getAttribute('href') || null, text: card.textContent }));
-    expect(cards.map((card) => [card.title, card.link])).toEqual([['Make a practice file', 'packets-make.html'], ['Make a math check', 'packets-check.html'], ['Add up results', 'packets-results.html'],
-      ['Check it yourself', '#check']]);
-    expect(cards[0].text).toContain('Word Sounds: hearing sounds, letters and sounds, spelling, rhyme.');
-    expect(cards[1].text).toContain('Three ready checks, or your own problems. About 90 KB, no sound needed.');
+    const cards = [...doc.querySelectorAll('.card')].map((card) => ({ title: card.querySelector('h2').textContent, links: [...card.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('href')]), text: card.textContent }));
+    // One name for each maker, the name its own page gives itself (2026-11-12): Word Sounds practice, math fact practice, a math check.
+    expect(cards.map((card) => [card.title, card.links])).toEqual([
+      ['Make Word Sounds practice', [['Make Word Sounds practice', 'packets-make.html']]],
+      ['Make math fact practice or a math check', [['Math fact practice', 'packets-math-practice.html'], ['A math check', 'packets-check.html']]],
+      ['Add up results', [['Add up results', 'packets-results.html']]],
+      ['Check it yourself', [['Check it yourself', '#check']]]]);
+    expect([parse('packets-make.html').querySelector('h1').textContent, parse('packets-math-practice.html').querySelector('h1').textContent, parse('packets-check.html').querySelector('h1').textContent])
+      .toEqual(['Make Word Sounds practice', 'Make math fact practice', 'Make a math check']);
+    expect(cards[0].text).toContain('Hearing sounds, letters and sounds, spelling, rhyme.');
+    expect(cards[1].text).toContain('Feedback on every fact, for learning facts by heart.');
+    expect(cards[1].text).toContain('Three ready checks, or your own problems.');
+    expect(cards[1].text).toContain('Three steps each. No sound needed.');
     expect(cards[2].text).toContain('not uploaded');
+    expect(cards[2].text).toContain('each student over time');
     expect(doc.getElementById('check')).toBeTruthy();
     expect(doc.body.textContent).toContain('For practice and for checking progress. Not a standardized test.');
-    // Four equal cards, each a direct child of the grid and built the same way: a heading that is the card's one link, a line, a foot.
-    // packets.css stretches that link over the whole card (.card a::after). The two that make a file are filled; the two for what
-    // comes after are outlined. The math card has one more short line, "Or make math fact practice", whose link packets.css lifts
-    // above the stretched one and does not stretch (.card .card-also).
-    expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual(['card card-main', 'card card-main', 'card card-go', 'card card-go']);
+    // Four cards, each a direct child of the grid. Three are built the same way: a heading that is the card's one link, a line, a foot;
+    // packets.css stretches that link over the whole card (.card a::after). The math card names its two makers: a plain heading, then
+    // one link for each with its own line, not stretched (.card .card-links). The two that make a file are filled; the two for what
+    // comes after are outlined.
+    expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual(['card card-main', 'card card-main card-pair', 'card card-go', 'card card-go']);
     for (const card of doc.querySelectorAll('.card')) {
-      const also = card.querySelector('h2 > a').getAttribute('href') === 'packets-check.html';
-      expect([...card.children].map((node) => node.tagName + (node.className ? '.' + node.className : ''))).toEqual(also ? ['H2', 'P', 'P.card-also', 'P.card-foot'] : ['H2', 'P', 'P.card-foot']);
-      expect([...card.querySelectorAll('a')].map((a) => a.getAttribute('href'))).toEqual(also ? ['packets-check.html', 'packets-math-practice.html'] : [card.querySelector('h2 > a').getAttribute('href')]);
-      expect(card.querySelector('h2 > a')).toBeTruthy();
+      const pair = card.classList.contains('card-pair');
+      expect([...card.children].map((node) => node.tagName + (node.className ? '.' + node.className : ''))).toEqual(pair ? ['H2', 'UL.card-links', 'P.card-foot'] : ['H2', 'P', 'P.card-foot']);
+      expect(!!card.querySelector('h2 > a')).toBe(!pair);
     }
-    expect(doc.querySelector('.card-also').textContent).toBe('Or make math fact practice');
-    expect(read('packets.css')).toContain('.card .card-also a::after { content: none; }');
-    expect(doc.body.textContent).not.toContain('Or make a math check');
+    expect(read('packets.css')).toContain('.card .card-links a::after { content: none; }');
+    expect(read('packets.css')).not.toContain('card-also');
+    expect(doc.body.textContent).not.toContain('Or make');
     // One column on a phone, two by two from 44rem. The old three-column rule is gone.
     const css = read('packets.css');
     expect(css).toContain('.cards { display: grid; gap: 1rem; grid-template-columns: 1fr;');
@@ -306,7 +319,22 @@ describe('the pages as files', () => {
     expect(css.match(/\.cards \{/g)).toHaveLength(2);
     expect(css).not.toContain('1.15fr');
     const today = Object.fromEntries([...doc.querySelectorAll('#today h3')].map((heading) => [heading.textContent, heading.nextElementSibling.textContent]));
-    expect(today).toEqual({ 'Available today': 'Word Sounds practice files and math checks, with a results file for each student.', 'Being built': 'More words with recordings. Checks for reading skills.' });
+    expect(today).toEqual({ 'Available today': 'Word Sounds practice, math fact practice and math checks, with a results file for each student.', 'Being built': 'More words with recordings. Checks for reading skills.' });
+    // Every builder is named where the builders are listed, and each one exists.
+    const verify = doc.querySelector('.verify').textContent;
+    for (const file of ['word_sounds_packet_builder.js', 'packet_math_practice_builder.js', 'packet_check_builder.js', 'word_sounds_take_home_loader.js']) {
+      expect(verify, file).toContain(file);
+      expect(existsSync(file), file).toBe(true);
+    }
+    // The verify page has one name everywhere: "Look inside a file".
+    expect([...doc.querySelectorAll('a[href="packets-verify.html"]')].map((a) => a.textContent)).toEqual(['Look inside a file']);
+    // What the front door says: one button saves the results; a file preview does not run (as the IT guide says, reported, not yet tested).
+    expect(doc.getElementById('what').textContent).toContain('At the end the student presses one button, Save results as a spreadsheet file (CSV).');
+    const preview = [...doc.querySelectorAll('#check li')].find((li) => li.textContent.startsWith('Run inside a file preview.')).textContent;
+    expect(preview).toBe('Run inside a file preview. The previews in Google Drive, Google Classroom and the iPad Files app do not run the file. '
+      + 'The file then shows a note that asks the student to download it and open it in a browser. Reported, not yet tested by us.');
+    expect(doc.body.textContent).not.toMatch(/\bsecure\b|\btest\b(?<!standardized test)/i);
+    expect(doc.body.textContent).toContain('The file has one script that runs, plus one data block that describes the file.');
     expect(doc.body.textContent).not.toContain('!');
     // What the page says about the file is what the file says about itself.
     const loaderSource = read('word_sounds_take_home_loader.js');
@@ -533,7 +561,7 @@ describe('the maker, run with the real builder', () => {
     expect(page.$('not-offered').textContent).toContain('Not in this version: Word Families (not enough recorded sounds yet). ');
     expect(page.d.querySelector('input[value="letter_tracing"]').closest('label').querySelector('.choice-note').textContent).toBe('Practice only. It is not scored.');
     expect(page.d.querySelectorAll('.choice-note')).toHaveLength(1);
-    expect(page.w.document.title).toBe(NAME + ': Make a practice file, step 1 of 3');
+    expect(page.w.document.title).toBe(NAME + ': Make Word Sounds practice, step 1 of 3');
     // With nothing chosen the page says so and stays.
     for (const box of page.d.querySelectorAll('.strand input:checked')) box.click();
     page.$('next-1').click();
@@ -565,9 +593,21 @@ describe('the maker, run with the real builder', () => {
     // The stages are the builder's own rows, and a chosen stage shows what the builder says about its source.
     const stages = builder.stageList();
     expect(stages.map((row) => row.id)).toEqual(expect.arrayContaining(builder.STAGES));
+    // Fewer choices on screen (2026-11-12): the default curriculum's stages are in the list; another curriculum's (England's) wait
+    // behind "Other curricula", closed, and join the list when that box is checked. (jsdom's language is en-US.)
+    const usual = stages.filter((row) => row.isDefault !== false), others = stages.filter((row) => row.isDefault === false);
+    expect(others.map((row) => row.id)).toEqual(['Reception', 'Year 1', 'Year 2']);
+    expect([...page.$('f-stage').querySelectorAll('option')].map((option) => option.value)).toEqual(['', ...usual.map((row) => row.id)]);
+    expect([...page.$('f-stage').querySelectorAll('optgroup')].map((group) => group.label)).toEqual([...new Set(usual.map((row) => row.frameworkLabel))]);
+    page.$('next-1').click();
+    const other = page.$('stage-other');
+    expect(page.seen('stage-other') && !other.open).toBe(true);
+    expect(other.querySelector('summary').textContent).toBe('Other curricula');
+    expect(other.querySelector('label').textContent.trim()).toBe('Show England (National Curriculum) in the Stage list: Reception, Year 1 and Year 2');
+    expect(page.$('f-stage-other').checked).toBe(false);
+    page.$('f-stage-other').click();
     expect([...page.$('f-stage').querySelectorAll('option')].map((option) => option.value)).toEqual(['', ...stages.map((row) => row.id)]);
     expect([...page.$('f-stage').querySelectorAll('optgroup')].map((group) => group.label)).toEqual([...new Set(stages.map((row) => row.frameworkLabel))]);
-    page.$('next-1').click();
     expect(page.$('stage-hint').textContent).toBe('A stage keeps to the letter patterns taught by then.');
     expect(page.seen('stage-why')).toBe(false);
     for (const row of stages) {
@@ -1288,6 +1328,7 @@ describe('the maker: borderline words and the kindergarten line', () => {
     page.$('next-1').click();
     expect(page.seen('stage-k-note')).toBe(false);
     expect(page.$('f-stage').getAttribute('aria-describedby')).toBe('stage-hint');
+    page.$('f-stage-other').click();
     for (const row of stages) {
       page.set('f-stage', row.id);
       expect(page.seen('stage-k-note'), row.id).toBe(kinder.includes(row.id));
@@ -1307,6 +1348,69 @@ describe('the maker: borderline words and the kindergarten line', () => {
     // Kept with the other choices, the stage comes back with its line on the next visit.
     page.set('f-stage', 'K early');
     page.dom.window.close();
+  });
+
+  it('step 2 keeps fewer choices on screen: England\'s stages, the counts and the code-name tip wait behind closed boxes', async () => {
+    const SPELL = 'For spelling, choose a stage: your students then spell only patterns they have been taught.';
+    const page = await openMaker();
+    // Spelling with "Any stage": one short line suggests a stage, and it goes when a stage is chosen.
+    const spelling = [...page.d.querySelectorAll('.strand input')].find((box) => core.activityStrand(box.value) === 'spelling');
+    expect(spelling, 'a Spelling activity on offer').toBeTruthy();
+    for (const box of page.d.querySelectorAll('.strand input')) if (box.checked !== (box === spelling)) box.click();
+    page.$('next-1').click();
+    expect(page.seen('step-2')).toBe(true);
+    expect(page.seen('stage-spell-note')).toBe(true);
+    expect(page.$('stage-spell-note').textContent).toBe(SPELL);
+    expect(page.$('f-stage').getAttribute('aria-describedby')).toBe('stage-hint stage-spell-note');
+    page.set('f-stage', 'G1 early');
+    expect(page.seen('stage-spell-note')).toBe(false);
+    expect(page.$('f-stage').getAttribute('aria-describedby')).toBe('stage-hint');
+    page.set('f-stage', '');
+    // The words also matched but not offered: counted, behind "Why not more words?", closed.
+    await page.until(() => page.chips().length > 0, 'the words');
+    const why = page.$('pick-out-box');
+    expect(page.seen('pick-out-box') && !why.open).toBe(true);
+    expect(why.querySelector('summary').textContent).toBe('Why not more words?');
+    expect(why.contains(page.$('pick-out'))).toBe(true);
+    expect(page.$('pick-out').textContent).toMatch(/^Also matched, but not offered: /);
+    // England's stages: closed behind "Other curricula" for en-US; chosen and then taken away, the stage goes back to "Any stage".
+    expect(page.$('f-stage').querySelector('option[value="Year 1"]')).toBeNull();
+    page.$('f-stage-other').click();
+    page.set('f-stage', 'Year 1');
+    expect(page.$('f-stage').value).toBe('Year 1');
+    page.$('f-stage-other').click();
+    expect(page.$('f-stage').value).toBe('');
+    expect(page.$('f-stage').querySelector('option[value="Year 1"]')).toBeNull();
+    // The hint for typed words says what is true of names: lower-cased, many common first names are on the list, and a word the
+    // dictionary does not have can be given its sounds and a recording.
+    const hint = page.$('own-hint').textContent;
+    expect(hint).toContain('Many common first names are left out.');
+    expect(hint).toContain('A word the sound dictionary does not have can be used once you give it its sounds and a recording with Edit this word.');
+    expect(hint).not.toContain('including names');
+    page.choose('mode', 'own');
+    page.set('f-own', 'Maria Cat zorblat');
+    await page.until(() => page.$('own-list').children.length === 3, 'the checked words');
+    const rows = Object.fromEntries([...page.$('own-list').children].map((row) => [row.querySelector('.w').textContent, row.querySelector('.s').textContent]));
+    expect(Object.keys(rows)).toEqual(['maria', 'cat', 'zorblat']);
+    expect(wordlist.isBlocked('maria')).toBe(true);
+    expect(rows.maria).toMatch(/^Left out\. It is on the list of words this tool does not use\./);
+    expect(rows.cat).toBe('Ready. 3 sounds: k, a, t.');
+    expect(rows.zorblat).toBe('Not in the sound dictionary. Set its sounds to use it, or check the spelling.');
+    expect([...page.$('own-list').children][2].querySelector('button').textContent).toBe('Edit this word');
+    page.dom.window.close();
+    // A browser that says en-GB sees England's stages in the list from the start.
+    const british = await openMaker({ before: (w) => Object.defineProperty(w.navigator, 'language', { value: 'en-GB', configurable: true }) });
+    british.$('next-1').click();
+    expect(british.$('f-stage').querySelector('option[value="Year 1"]')).toBeTruthy();
+    expect(british.$('f-stage-other').checked).toBe(true);
+    british.dom.window.close();
+    // After saving: the code-name tip is one closed box, and step 3 of "What to do next" links to Add up results.
+    const doc = parse('packets-make.html');
+    const tip = doc.getElementById('learner-tip');
+    expect(tip.tagName === 'DETAILS' && !tip.hasAttribute('open') && tip.closest('#after-save')).toBeTruthy();
+    expect(tip.querySelector('summary').textContent).toBe("Fill in a student's code name for them");
+    expect([...doc.querySelectorAll('#after-save ol a')].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([['Add up results', 'packets-results.html']]);
+    expect(doc.querySelector('#after-save ol').textContent).toContain('presses the main button at the end, Save results as a spreadsheet file (CSV).');
   });
 });
 
@@ -1355,27 +1459,28 @@ describe('the two small scripts', () => {
     const frame = good.d.querySelector('iframe');
     expect(frame.getAttribute('sandbox')).toBe('allow-scripts allow-downloads');
     expect(frame.getAttribute('src')).toBe('blob:https://packets.test/copy');
-    expect(frame.getAttribute('title')).toBe('The file a learner gets');
+    expect(frame.getAttribute('title')).toBe('The file a student gets');
     expect(good.d.getElementById('try-problem').hidden).toBe(true);
     good.dom.window.close();
   });
 
-  it('the preview page serves both makers: it says "file" and "learner", and offers both makers when a preview is gone', () => {
+  it('the preview page serves all three makers: it says "file" and "student", and offers each maker when a preview is gone', () => {
     const doc = parse('packets-try.html');
     expect(doc.title).toBe('Try the file');
-    expect(doc.querySelector('.try-bar').textContent.replace(/\s+/g, ' ').trim()).toBe('Preview This is the file a learner gets. Nothing you do here is kept. Close this tab to go back to the maker.');
+    expect(doc.querySelector('.try-bar').textContent.replace(/\s+/g, ' ').trim()).toBe('Preview This is the file a student gets. Nothing you do here is kept. Close this tab to go back to the maker.');
     expect(doc.getElementById('try-wait').textContent).toBe('Opening the file.');
     const problem = doc.getElementById('try-problem');
     expect(problem.querySelector('h2').textContent).toBe('The preview is not here any more');
     expect(problem.querySelector('p').textContent).toBe('A preview lasts while the maker page stays open on the file it made. Go back to the maker and press Try it again. Or start a new file.');
-    // Both makers, as equals, in the order of the front door.
+    // The three makers, as equals, in the order of the front door, each under the name its own page gives itself.
     expect([...problem.querySelectorAll('a')].map((a) => [a.textContent, a.getAttribute('href'), a.className])).toEqual([
-      ['Make a practice file', 'packets-make.html', 'btn btn-primary'], ['Make a math check', 'packets-check.html', 'btn btn-primary']]);
+      ['Make Word Sounds practice', 'packets-make.html', 'btn btn-primary'], ['Make math fact practice', 'packets-math-practice.html', 'btn btn-primary'], ['Make a math check', 'packets-check.html', 'btn btn-primary']]);
     for (const a of problem.querySelectorAll('a')) expect(existsSync(a.getAttribute('href')), a.getAttribute('href')).toBe(true);
-    // Nothing a person reads or hears names one kind of file, or says "student": the two links above are the only exception.
+    // Nothing a person reads or hears names one kind of file: the three links above are the only exception. A teacher's page says
+    // "student" (2026-11-12), never "learner".
     const said = [doc.title, doc.querySelector('.try-bar').textContent, doc.getElementById('try-wait').textContent, problem.querySelector('h2').textContent, problem.querySelector('p').textContent,
       doc.querySelector('noscript').textContent, ...(read('packets-try.js').match(/'[^'\n]*'/g) || [])].join('\n');
-    expect(said).toContain('The file a learner gets');
-    expect(said).not.toMatch(/practice|math|check|student/i);
+    expect(said).toContain('The file a student gets');
+    expect(said).not.toMatch(/practice|math|check|learner/i);
   });
 });

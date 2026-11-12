@@ -74,8 +74,9 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 .brand svg { flex: none; width: 1.6rem; height: 1.6rem; color: var(--accent); }
 .top-link { font-size: 0.9375rem; font-weight: 600; min-height: 2.75rem; display: inline-flex; align-items: center; }
 
-/* The proof line: always on the page, opens the exact details */
-.proof { border-bottom: 1px solid var(--line); background: var(--bg); font-size: 0.9375rem; }
+/* The proof line: always on the page, opens the exact details. It sits inside the header (so it is in a landmark);
+   the header's own bottom line closes it. */
+.proof { border-top: 1px solid var(--line); background: var(--bg); font-size: 0.9375rem; }
 .proof summary { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.75rem; padding-top: 0.7rem; padding-bottom: 0.7rem; cursor: pointer; list-style: none; color: var(--ink); }
 .proof summary::-webkit-details-marker { display: none; }
 .proof-line { font-weight: 600; }
@@ -113,12 +114,16 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 .card-main h2, .card-main p, .card-main .card-foot { color: var(--on-accent); }
 .card-main:hover { background: var(--accent-dark); border-color: var(--accent-dark); box-shadow: none; }
 .card-later { background: transparent; border-style: dashed; }
-/* A second, smaller link in a card: lifted above the card's stretched link and not stretched itself. */
-.card .card-also { position: relative; z-index: 1; }
-.card .card-also a { font-weight: 600; text-decoration: underline; }
-.card .card-also a::after { content: none; }
-.card .card-also a:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
-.card-main .card-also, .card-main .card-also a, .card-main .card-also a:hover { color: var(--on-accent); }
+/* A card that names two makers: no stretched link and no hover fill; two plain links, each with its own line. */
+.card-pair:hover { background: var(--accent); border-color: var(--accent); }
+.card-pair:focus-within { outline: none; }
+.card-links { display: grid; gap: 0.75rem; }
+.card-links li, .card-links span { color: var(--on-accent); }
+.card-links span { display: block; }
+.card .card-links a { font-weight: 700; font-size: 1.125rem; text-decoration: underline; }
+.card .card-links a:hover { text-decoration-thickness: 2px; }
+.card .card-links a::after { content: none; }
+.card .card-links a:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
 .tag { display: inline-block; padding: 0.1rem 0.6rem; border: 1px solid var(--line-strong); border-radius: 999px; font-size: 0.8125rem; font-weight: 600; color: var(--ink); background: var(--surface); }
 
 .band { padding: clamp(2.5rem, 6vw, 4.5rem) 0; border-top: 1px solid var(--line); }

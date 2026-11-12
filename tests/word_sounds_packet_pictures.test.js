@@ -334,8 +334,11 @@ describe('the builder: pictures off', () => {
   // the first values (11854e18..., 168847 bytes and ed033f0d..., 53296 bytes): nothing else moved.
   const BEFORE = {
     // Re-pinned 2026-11-11: the file carries the core's Sound Sort list, which left out 18 blocked or borderline words (125 bytes).
-    all: { sha256: '1cc1dba8cb17bd273dd76446e4532db734d382349603a1c270bed054c055146c', bytes: 168961, items: 124 },
-    isolation: { sha256: '7b8d85cd11bf6925f41bf55556545b99f913a894530cf180b2d93cb88884bb5d', bytes: 53535, items: 5 },
+    // Re-pinned 2026-11-12: every file carries the reading tools, the CSV as the main save button and "About this file"'s
+    // list of what is recorded (+15761 bytes each); the loader before that change still gives 1cc1dba8.../168961 and
+    // 7b8d85cd.../53535, and the new files differ from those in these additions only (14 lines changed, the lesson unchanged).
+    all: { sha256: '3ce0be146cfb03ca64987641ebf5c6eea447dd7d57e0058eeee3902d5c05abbc', bytes: 184722, items: 124 },
+    isolation: { sha256: 'f41f66d93809ad725647dace8de60113fc45d9af12dccf3ddde4ceff78d2b973', bytes: 69296, items: 5 },
   };
   const CASES = { all: {}, isolation: { words: CVC.slice(0, 5), activities: ['isolation'], title: undefined } };
 

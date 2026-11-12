@@ -68,6 +68,9 @@
   var STAGE_HINT = 'A stage keeps to the letter patterns taught by then.';
   // The kindergarten rows of the default (US, Common Core) stage table: neither has sh, ch or th (see #stage-k-note).
   var K_STAGES = ['K early', 'K late'];
+  // The stages of a curriculum other than the default one (England's) wait behind "Other curricula" (#stage-other),
+  // unless the page's language or the browser's says that region, or a stage of theirs is the one chosen.
+  var STAGE_REGIONS = { 'england-nc': 'GB' };
   var TYPED_ONLY_SAID = 'Not offered by the picker. Used because you typed it.';
   // What a typed word needs before it can be used, and what it uses of the teacher's (see checkWord).
   var NEEDS_SOUNDS_SAID = 'Not in the sound dictionary. Set its sounds to use it, or check the spelling.';
@@ -92,7 +95,7 @@
   var productName = function () { var node = $('product-name'); return node ? String(node.textContent || '').trim() : ''; };
 
   var core, dictionary, wordlist, loader, builder;
-  var strands = [], order = [], heldBack = [], recordedOnly = [], stageRows = [];
+  var strands = [], order = [], heldBack = [], recordedOnly = [], stageRows = [], otherStageGroups = [], otherStagesOn = false;
   var state = null;
   var picked = null, pickTimer = 0, pickRun = 0;
   var ownRows = [], ownTimer = 0;
@@ -284,6 +287,8 @@
       if (!group) { group = { name: name, rows: [] }; groups.push(group); }
       group.rows.push(row);
     });
+    otherStageGroups = [];
+    var otherNames = [], otherStages = [];
     groups.forEach(function (group) {
       var box = group.name ? doc.createElement('optgroup') : stage;
       if (group.name) box.label = group.name;
@@ -292,20 +297,46 @@
         option.value = row.id;
         box.appendChild(option);
       });
-      if (box !== stage) stage.appendChild(box);
+      if (box === stage) return;
+      // Fewer choices on screen: another curriculum's stages are added to the list only when asked for.
+      if (group.rows.every(otherStage)) {
+        otherStageGroups.push(box);
+        otherNames.push(group.name);
+        group.rows.forEach(function (row) { otherStages.push(stageName(row.id).replace(/\s*\([^)]*\)$/, '')); });
+      } else stage.appendChild(box);
     });
+    show('stage-other', otherStageGroups.length > 0);
+    if (otherNames.length) setText('stage-other-line', 'Show ' + listed(otherNames) + ' in the Stage list: ' + listed(otherStages));
+    otherStagesOn = otherStageGroups.length > 0 && regionAsks();
+  }
+  function otherStage(row) { return !!row && row.isDefault === false; }
+  // The page's language, or the browser's first language, names a region whose curriculum is not the default one.
+  function regionAsks() {
+    var codes = [doc.documentElement.getAttribute('lang') || ''];
+    try { codes.push(String((window.navigator && window.navigator.language) || '')); } catch (_) {}
+    var regions = codes.map(function (code) { return code.trim().split('-').slice(1).join('-').toUpperCase(); }).filter(Boolean);
+    return stageRows.some(function (row) { return otherStage(row) && regions.indexOf(STAGE_REGIONS[row.framework]) >= 0; });
   }
   function syncPickControls() {
     $('f-sound').value = state.sound;
     $('f-position').value = state.position;
     $('f-position').disabled = !state.sound;
     $('f-shape').value = state.shape;
-    $('f-stage').value = state.stage;
+    var stage = $('f-stage'), others = otherStagesOn || otherStage(stageRow(state.stage));
+    otherStageGroups.forEach(function (group) {
+      if (others && group.parentNode !== stage) stage.appendChild(group);
+      if (!others && group.parentNode === stage) stage.removeChild(group);
+    });
+    if ($('f-stage-other')) $('f-stage-other').checked = others;
+    stage.value = state.stage;
     setText('stage-hint', stageLine(state.stage));
     // One more line for the two kindergarten rows of the Common Core table, and for no other stage. Its words are in the page.
     var kindergarten = K_STAGES.indexOf(state.stage) >= 0;
     show('stage-k-note', kindergarten);
-    $('f-stage').setAttribute('aria-describedby', kindergarten ? 'stage-hint stage-k-note' : 'stage-hint');
+    // Spelling with "Any stage": one short line that suggests a stage.
+    var spelling = !state.stage && state.activities.some(function (id) { return core.activityStrand(id) === 'spelling'; });
+    show('stage-spell-note', spelling);
+    stage.setAttribute('aria-describedby', ['stage-hint'].concat(kindergarten ? ['stage-k-note'] : [], spelling ? ['stage-spell-note'] : []).join(' '));
     setText('stage-why-text', stageWhy(state.stage));
     show('stage-why', !!stageWhy(state.stage));
   }
@@ -328,6 +359,7 @@
       setText('pick-line', 'The words could not be looked up.');
       setText('pick-sub', 'Change one choice above, or type your own words.');
       setText('pick-out', '');
+      show('pick-out-box', false);
       show('pick-removed', false);
       return;
     }
@@ -382,7 +414,9 @@
     if (reasons.britishSpellingOrWord) also.push(count(reasons.britishSpellingOrWord, 'British spelling or word', 'British spellings or words'));
     if (reasons.usedOnlyWhenTyped) also.push(count(reasons.usedOnlyWhenTyped, 'word') + ' used only when you type ' + (reasons.usedOnlyWhenTyped === 1 ? 'it' : 'them'));
     if (reasons.blocked + reasons.soundsLikeABlockedWord) also.push((reasons.blocked + reasons.soundsLikeABlockedWord) + ' on the list of words this tool does not use');
+    // The counts wait, closed, behind "Why not more words?".
     setText('pick-out', also.length ? 'Also matched, but not offered: ' + also.join(', ') + '.' : '');
+    show('pick-out-box', also.length > 0);
     if (fit > 0 && state.mode === 'pick') setText('step-2-problem', '');
     if (step === 2) soundsNote();
     if (fit < wanted) suggestLoosening(run, fit);
@@ -1173,7 +1207,7 @@
       tab.classList.toggle('is-done', n < step);
     });
     var name = productName();
-    doc.title = (name ? name + ': ' : '') + 'Make a practice file, step ' + step + ' of 3';
+    doc.title = (name ? name + ': ' : '') + 'Make Word Sounds practice, step ' + step + ' of 3';
     if (step === 1) syncActivities();
     if (step === 2) { drawWords(); soundsNote(); }
     if (step === 3) { drawLengths(); makeSoon(0); }
@@ -1201,6 +1235,11 @@
     $('f-position').addEventListener('change', function () { state.position = this.value; pickChanged(false); });
     $('f-shape').addEventListener('change', function () { state.shape = this.value; pickChanged(false); });
     $('f-stage').addEventListener('change', function () { state.stage = this.value; pickChanged(false); });
+    // "Other curricula": add or take away their stages. Taking them away while one is chosen goes back to "Any stage".
+    $('f-stage-other').addEventListener('change', function () {
+      otherStagesOn = this.checked;
+      if (!otherStagesOn && otherStage(stageRow(state.stage))) { state.stage = ''; pickChanged(false); } else syncPickControls();
+    });
     $('pick-restore').addEventListener('click', function () { state.removed = []; remember(); drawPick(); $('pick-line').focus(); });
     $('f-own').addEventListener('input', function () {
       state.own = this.value.slice(0, 4000);

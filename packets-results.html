@@ -7,7 +7,7 @@
 <meta name="referrer" content="no-referrer">
 <!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
 <title>Add up results</title>
-<meta name="description" content="Put the results files your students hand back on one page. See the group together and each learner over time. Your files are read in this browser and are not uploaded. Runs without AI. No accounts.">
+<meta name="description" content="Put the results files your students hand back on one page. See the group together and each student over time. Your files are read in this browser and are not uploaded. Runs without AI. No accounts.">
 <link rel="icon" type="image/svg+xml" href="packets-mark.svg">
 <link rel="stylesheet" href="packets.css">
 <link rel="stylesheet" href="packets-results.css">
@@ -24,10 +24,8 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
       <span id="product-name">AlloFlow Packets</span>
     </a>
-    <a class="top-link" href="packets-make.html">Make a practice file</a>
+    <a class="top-link" href="packets-make.html">Make Word Sounds practice</a>
   </div>
-</header>
-
 <details class="proof">
   <summary class="wrap">
     <span class="proof-line">This page runs without AI. No account. Your files are read in this browser and are not uploaded.</span>
@@ -50,12 +48,13 @@
     </p>
   </div>
 </details>
+</header>
 
 <main id="main" class="results">
   <div class="wrap">
     <p class="print-only print-head" id="print-head"></p>
     <h1>Add up results</h1>
-    <p class="results-lead">Put the results files your students hand back on this page. See the group together, and each learner over time.</p>
+    <p class="results-lead">Put the results files your students hand back on this page. See the group together, and each student over time.</p>
     <noscript><p class="note note-problem">This page needs JavaScript to read your files. Nothing is sent anywhere.</p></noscript>
     <p id="said" class="sr-only" role="status" aria-live="polite"></p>
 
@@ -103,20 +102,21 @@
         <legend class="sr-only">What to show</legend>
         <div class="switch">
           <label><input type="radio" name="view" value="group" checked> The group</label>
-          <label><input type="radio" name="view" value="learner"> One learner</label>
+          <label><input type="radio" name="view" value="learner"> One student</label>
         </div>
       </fieldset>
 
-      <section id="view-group" aria-labelledby="group-title">
+      <!-- Not a landmark of its own: the group's table is the region named "The group" (packets-results.js). -->
+      <div id="view-group">
         <h3 id="group-title" tabindex="-1">The group</h3>
         <div id="middles"></div>
         <div id="group-table"></div>
-      </section>
+      </div>
 
       <section id="view-learner" aria-labelledby="learner-title" hidden>
-        <h3 id="learner-title" tabindex="-1">One learner</h3>
+        <h3 id="learner-title" tabindex="-1">One student</h3>
         <div class="field learner-pick no-print">
-          <label for="pick-learner">Learner</label>
+          <label for="pick-learner">Student</label>
           <select id="pick-learner"></select>
         </div>
         <div id="learner-body"></div>
@@ -126,7 +126,7 @@
         <h3 id="take-title">Take it with you</h3>
         <div class="take-row">
           <button type="button" class="btn" id="print-group">Print the group</button>
-          <button type="button" class="btn" id="print-learner">Print this learner</button>
+          <button type="button" class="btn" id="print-learner">Print this student</button>
           <button type="button" class="btn" id="save-csv">Save a summary (CSV)</button>
           <button type="button" class="btn" id="save-bundle">Save all of this as one file</button>
         </div>

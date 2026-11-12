@@ -19,7 +19,7 @@
     if (!/^<!doctype html>/i.test(html) || html.indexOf('id="packet-manifest"') < 0) throw new Error('not a file from a maker');
     var frame = doc.createElement('iframe');
     frame.className = 'try-frame';
-    frame.title = 'The file a learner gets';
+    frame.title = 'The file a student gets';
     frame.setAttribute('sandbox', 'allow-scripts allow-downloads');
     frame.src = URL.createObjectURL(new Blob([html], { type: 'text/html' }));
     doc.getElementById('try-wait').hidden = true;

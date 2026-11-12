@@ -100,7 +100,8 @@ module.exports = {
     ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_sentence_picture_practice : ctx.L.read_sentence_matching_practice }));
     if (picture) ctx.root.appendChild(ctx.el('img', { class: 'picture', src: picture, alt: ctx.fmt(ctx.L.read_sentence_picture_clue, { word: item.target }) }));
     else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_sentence_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target.toLowerCase() })]));
-    ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:1.8rem;white-space:pre-wrap' }, [item.before, blank, item.after]));
+    // data-read: running text, where the shell's reading focus can go.
+    ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:1.8rem;white-space:pre-wrap', 'data-read': '' }, [item.before, blank, item.after]));
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.read_sentence_hear_instructions }),
     ]));

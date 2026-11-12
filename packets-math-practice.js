@@ -138,6 +138,8 @@
   function reason(error) { return capital(said(error).replace(/^Fact [^:]*: /, '').replace(/^".*" is not a fact\./, 'This is not a fact.')); }
   function checkPart(part, seen) {
     var parsed;
+    // A number with a decimal point ("2.5 + 1") is a fact, with a number this practice does not take.
+    if (/\d\.\d|(?:^|[^\d])\.\d/.test(part)) return { text: part, ok: false, says: 'Whole numbers only.' };
     try { parsed = builder.parseFacts(part); } catch (error) { return { text: part, ok: false, says: reason(error) }; }
     if (parsed.length !== 1) return { text: part, ok: false, says: 'This is not a fact.' };
     var f = parsed[0], key = builder.factKey(f), written;
@@ -204,9 +206,9 @@
     var marked = {};
     knownNow(pick).forEach(function (key) { marked[key] = true; });
     var first = pick.set && builder.knownByOrder(pick.set.id).length === 0 && pick.set.id === setsOf(pick.set.op)[0].id;
-    setText('known-hint', !pick.set ? 'Choose the facts the learner already knows. The others are new facts to learn.'
-      : first ? pick.set.name + ' comes first in the order, so none are chosen yet. Choose the facts the learner already knows.'
-        : 'Chosen from the teaching order: a fact is chosen when it, or its turnaround, is in a set that comes earlier. Change the choices to fit the learner.');
+    setText('known-hint', !pick.set ? 'Choose the facts the student already knows. The others are new facts to learn.'
+      : first ? pick.set.name + ' comes first in the order, so none are chosen yet. Choose the facts the student already knows.'
+        : 'Chosen from the teaching order: a fact is chosen when it, or its turnaround, is in a set that comes earlier. Change the choices to fit the student.');
     var host = $('known');
     host.textContent = '';
     pick.facts.forEach(function (fact) {
@@ -243,7 +245,7 @@
       return;
     }
     setText('known-line', 'New ' + (plan.newFacts.length === 1 ? 'fact' : 'facts') + ' in this file: ' + listed(plan.newFacts.map(word)) + '.');
-    var sub = [capital(count(plan.cards.length, 'card')) + '. ' + plan.cards.filter(function (c) { return c.role === 'known'; }).length + ' are facts the learner knows.'];
+    var sub = [capital(count(plan.cards.length, 'card')) + '. ' + plan.cards.filter(function (c) { return c.role === 'known'; }).length + ' are facts the student knows.'];
     if (plan.addedKnown.length) {
       var ticked = plan.knownFacts.length - plan.addedKnown.length;
       sub.push((ticked ? 'Only ' + count(ticked, 'fact is', 'facts are') + ' chosen' : 'No facts are chosen') + ', so ' + listed(plan.addedKnown.map(word)) + ' from ' + listed(plan.addedFrom)
@@ -315,13 +317,13 @@
     var cards = plan.cards.length, knownCards = plan.cards.filter(function (c) { return c.role === 'known'; }).length;
     var rows = [['Facts', pick.set ? pick.set.opName + ': ' + pick.set.name + '. ' + capital(count(pick.facts.length, 'fact')) + '.' : capital(count(pick.facts.length, 'fact')) + ': ' + pick.facts.map(word).join(', ') + '.']];
     if (plan.mode === 'ccc') {
-      rows.push(['How', plan.method + '. Every fact once, ' + (pick.set ? 'in a mixed order, so the learner cannot just count on.' : 'in the order you typed them.')]);
+      rows.push(['How', plan.method + '. Every fact once, ' + (pick.set ? 'in a mixed order, so the student cannot just count on.' : 'in the order you typed them.')]);
       rows.push(['Cards', capital(count(cards, 'card')) + '. Each one starts with the fact and its answer.']);
     } else {
       rows.push(['How', plan.method + '. New ' + (plan.newFacts.length === 1 ? 'fact' : 'facts') + ': ' + listed(plan.newFacts.map(word)) + '. Known facts: ' + listed(plan.knownFacts.map(word)) + '.']);
-      rows.push(['Cards', capital(count(cards, 'card')) + '. ' + knownCards + ' are facts the learner knows. Each new fact is asked 4 times, and shown with its answer the first time.']);
+      rows.push(['Cards', capital(count(cards, 'card')) + '. ' + knownCards + ' are facts the student knows. Each new fact is asked 4 times, and shown with its answer the first time.']);
     }
-    rows.push(['Feedback', 'Right or wrong after every answer. After a wrong answer the file shows the answer, the learner types it while looking, and then answers again from memory. Up to 3 tries from memory on each card.']);
+    rows.push(['Feedback', 'Right or wrong after every answer. After a wrong answer the file shows the answer, the student types it while looking, and then answers again from memory. Up to 3 tries from memory on each card.']);
     rows.push(['Clock', 'None.']);
     rows.push(['Title', result.lesson.title]);
     rows.push(['File', built.name + ', ' + fileSize(built.bytes) + '.']);

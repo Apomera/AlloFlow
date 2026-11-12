@@ -97,6 +97,29 @@
     // Shown only when the file is opened somewhere that does not run it (a Drive or Files preview).
     no_script: 'If the practice does not start, download this file and open it in Chrome, Edge or Safari.',
     audio_missing: 'This sound could not play.',
+    about_records: 'The results record your name or code name, each answer, the number of tries, the time on each item, how often each help was used (the reading tools too), the start and finish times with this device\'s time zone, and a random session number.',
+    more_saves: 'Other ways to save',
+    // Reading tools (every file): they change how the page looks, never the task.
+    tools_button: 'Reading tools',
+    tools_size: 'Text size',
+    tools_normal: 'Normal',
+    tools_size_1: 'Larger',
+    tools_size_2: 'Largest',
+    tools_colors: 'Colors',
+    tools_colors_0: 'Usual',
+    tools_colors_1: 'High contrast',
+    tools_colors_2: 'Soft',
+    tools_spacing: 'Spacing',
+    tools_spacing_1: 'Wider',
+    tools_focus: 'Reading focus',
+    tools_focus_hint: 'Tap a line, or use the up and down arrow keys on the text.',
+    tools_lens: 'Magnifier',
+    tools_lens_hint: 'Move it with the mouse, or drag the round handle. With the keyboard, go to the handle and use the arrow keys. Esc closes it.',
+    tools_lens_move: 'Move the magnifier',
+    tools_off: 'Off',
+    tools_on: 'On',
+    tools_reset: 'Reset',
+    tools_close: 'Close',
     ordinals: ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth'],
   };
 
@@ -189,6 +212,8 @@
     check_about_tries: 'It also keeps a count of how many times this check was started on this device.',
     check_about_scrambled: 'The answers are scrambled so they cannot be read by opening the file. This stops casual looking, not a determined person.',
     check_about_code: 'The teacher code keeps the answers screen closed. It is a lock on the screen, not secret writing: someone who knows how to read the file\'s code could still work the answers out.',
+    check_about_records: 'A check also records the seconds away from the page, the try number, and whether the page was left for more than 3 seconds, reloaded, or the device clock was set back.',
+    check_review_tools: 'Reading tools used: {tools}.',
   };
 
   function str(value) { return value == null ? '' : String(value); }
@@ -316,7 +341,9 @@
         if (sc) tail.splice(1, 0, ['#score', session, kv('measure', sc.measure), kv('score', sc.score), kv('score_unit', sc.scoreUnit), kv('digits_correct', sc.digitsCorrect),
           kv('digits_possible', sc.digitsPossible), kv('items_correct', sc.itemsCorrect), kv('items_attempted', sc.itemsAttempted), kv('time_limit_s', sc.timeLimitS),
           kv('elapsed_s', sc.elapsedS), kv('hidden_s', sc.hiddenS), kv('completion', sc.completion), kv('prorated', !!sc.prorated), kv('scoring_version', sc.scoringVersion),
-          kv('form_version', sc.formVersion), kv('attempt', sc.attempt), kv('flags', Array.isArray(sc.flags) ? sc.flags.map(text).join(';') : '')]);
+          kv('form_version', sc.formVersion), kv('attempt', sc.attempt), kv('flags', Array.isArray(sc.flags) ? sc.flags.map(text).join(';') : ''),
+          // The reading tools on during a scored item.
+          kv('tools_used', Array.isArray(sc.tools) ? sc.tools.map(text).join(';') : '')]);
         return String.fromCharCode(0xFEFF) + [header].concat(rows, tail).map(line).join('\r\n') + '\r\n';
       },
       tsv: function () {
@@ -1641,7 +1668,8 @@
         var picture = ctx.image(item.picture);
         var blanks = [];
         var lineNodes = [];
-        var storyBox = ctx.el('div', { role: 'group', 'aria-label': ctx.L.read_passage_story, class: 'letters', lang: 'en',
+        // data-read: running text, where the shell's reading focus can go.
+        var storyBox = ctx.el('div', { role: 'group', 'aria-label': ctx.L.read_passage_story, class: 'letters', lang: 'en', 'data-read': '',
           style: 'font-size:1.6rem;border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:12px 0' });
         item.lines.forEach(function (line) {
           var node;
@@ -1830,7 +1858,8 @@
         ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_sentence_picture_practice : ctx.L.read_sentence_matching_practice }));
         if (picture) ctx.root.appendChild(ctx.el('img', { class: 'picture', src: picture, alt: ctx.fmt(ctx.L.read_sentence_picture_clue, { word: item.target }) }));
         else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_sentence_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target.toLowerCase() })]));
-        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:1.8rem;white-space:pre-wrap' }, [item.before, blank, item.after]));
+        // data-read: running text, where the shell's reading focus can go.
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:1.8rem;white-space:pre-wrap', 'data-read': '' }, [item.before, blank, item.after]));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.read_sentence_hear_instructions }),
         ]));
@@ -2408,7 +2437,8 @@
         });
         drawSlots(false);
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.sentence_match_prompt }));
-        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:1.8rem', text: item.sentence }));
+        // data-read: running text, where the shell's reading focus can go.
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:1.8rem', 'data-read': '', text: item.sentence }));
         if (item.sequence.length > 1) ctx.root.appendChild(ctx.el('p', { class: 'muted', text: ctx.L.sentence_match_order_hint }));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.sentence_match_hear_instructions }),
@@ -4394,7 +4424,209 @@
     '.about ul{margin:0;padding-inline-start:20px}.about li{margin:8px 0;overflow-wrap:anywhere}',
     '.muted{color:var(--muted)}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}',
     '@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}',
+    // "hidden" wins over every display rule (a placed tile is an li.row: .row{display:flex} kept it on screen).
+    '[hidden]{display:none!important}summary{cursor:pointer;min-height:48px;padding:12px 0;font-weight:600}',
+    // Reading tools (takeHomeTools): attributes on <html> set the size, the colors (the variables above) and the spacing.
+    '[data-lt-size="1"]{font-size:125%}[data-lt-size="2"]{font-size:150%}[data-lt-size] body{font-size:1.125rem}[data-lt-size] button,[data-lt-size] .letters{overflow-wrap:anywhere}',
+    '[data-lt-colors="1"]{--bg:#000;--card:#000;--ink:#fff;--muted:#fff;--accent:#ffeb3b;--accent-ink:#000;--ok:#7dff8f;--ok-bg:#000;--warn:#ffeb3b;--warn-bg:#000;--line:#fff;--focus:#00e5ff}[data-lt-colors="1"] .card,[data-lt-colors="1"] .status{border:3px solid}',
+    '[data-lt-colors="2"]{--bg:#f4ead2;--card:#fdf6e3;--ink:#2a2216;--muted:#4d4230;--accent:#4b3f99;--accent-ink:#fff;--ok:#1f5e33;--ok-bg:#e4efd5;--warn:#7a4100;--warn-bg:#f8e2c0;--line:#bfae86;--focus:#a33f00}',
+    '[data-lt-spacing] main *{line-height:1.5!important;letter-spacing:.12em!important;word-spacing:.16em!important}[data-lt-spacing] main p{margin-bottom:2em!important}',
+    '.lt-bar{float:right;margin:0 0 8px 8px}[dir=rtl] .lt-bar{float:left}.lt-panel{clear:both}.lt-h,.lt-l{font-weight:700;margin:0;min-width:7em}@media (max-width:480px){.lt-g .lt-l{flex-basis:100%}}',
+    '.lt-g{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.lt-g p{flex-basis:100%;margin:0}.lt-panel [aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}',
+    '.lt-read{position:relative}.lt-shade,.lt-line{position:absolute;left:0;right:0;pointer-events:none}.lt-shade{top:0;bottom:0}.lt-line{outline:3px solid var(--accent);border-radius:6px}',
+    '.lt-lens{position:fixed;z-index:1;width:180px;height:180px;border:3px solid;border-radius:50%;overflow:hidden;pointer-events:none;background:var(--bg);box-shadow:0 4px 16px #0006}.lt-lens>main{position:absolute;left:0;top:0;margin:0;max-width:none;transform-origin:0 0}',
+    '.lt-grip{position:fixed;z-index:2;padding:0;border-radius:50%;background:var(--accent);color:var(--accent-ink);pointer-events:none}.lt-grip[data-touch]{pointer-events:auto;touch-action:none}',
+    '@media (forced-colors:active){[data-tool-group=colors]{display:none!important}.lt-line,.lt-panel [aria-pressed=true]{outline:3px solid Highlight}}@media print{.lt-bar,.lt-panel,.lt-lens{display:none!important}}',
   ].join('\n');
+
+  // ---------------------------------------------------------------------------
+  // Reading tools, in every file (practice, check, math facts): text size,
+  // colors, spacing, a reading focus over running text ([data-read]) and a
+  // magnifier. They change how the page looks, never the task, so no teacher
+  // setting turns them off. While an item is shown (item(rec)) each tool that is
+  // on counts once in rec.supports. o = { doc, win, L, el, page (<main>), app
+  // (#app), prefs, store(), save() }. Embedded with toString: it uses only o.
+  // ---------------------------------------------------------------------------
+  function takeHomeTools(o) {
+    var doc = o.doc, win = o.win, L = o.L, el = o.el, page = o.page, html = doc.documentElement;
+    var NAMES = { size: ['', 'textLarger', 'textLargest'], colors: ['', 'contrastHigh', 'contrastSoft'], spacing: ['', 'spacingWide'], focus: ['', 'readingFocus'], lens: ['', 'magnifier'] };
+    var KEYS = Object.keys(NAMES), p = {}, groups = {}, rec = null, text = null, at = 0, painted = '';
+    var clean = function (raw) {
+      KEYS.forEach(function (k) { var v = Math.floor(Number(raw && raw[k])) || 0; p[k] = v > 0 && v < NAMES[k].length ? v : 0; });
+    };
+    var showPanel = function (on) { panel.hidden = !on; aa.setAttribute('aria-expanded', String(on)); };
+    var back = function () { showPanel(false); aa.focus(); };
+    var group = function (k, title, names, hint) {
+      var g = groups[k] = { buttons: names.map(function (name, v) { return el('button', { type: 'button', 'data-tool': k + '-' + v, on: { click: function () { set(k, v); } }, text: name }); }) };
+      return (g.box = el('div', { class: 'lt-g', role: 'group', 'aria-labelledby': 'lt-' + k, 'data-tool-group': k },
+        [el('span', { id: 'lt-' + k, class: 'lt-l', text: title })].concat(g.buttons, [hint && el('p', { id: 'lt-' + k + '-hint', class: 'muted', text: hint })])));
+    };
+    var aa = el('button', { type: 'button', class: 'lt-aa', title: L.tools_button, 'aria-expanded': 'false', 'aria-controls': 'lt-panel', 'data-tools-open': '',
+      on: { click: function () { showPanel(panel.hidden); } } }, ['Aa', el('span', { class: 'sr', text: ' ' + L.tools_button })]);
+    var panel = el('section', { id: 'lt-panel', class: 'card lt-panel', 'aria-labelledby': 'lt-title', hidden: true, 'data-tools': '',
+      on: { keydown: function (e) { if (/^Esc/.test(e.key)) { e.preventDefault(); back(); } } } }, [
+      el('p', { id: 'lt-title', class: 'lt-h', text: L.tools_button }),
+      group('size', L.tools_size, [L.tools_normal, L.tools_size_1, L.tools_size_2]),
+      group('colors', L.tools_colors, [L.tools_colors_0, L.tools_colors_1, L.tools_colors_2]),
+      group('spacing', L.tools_spacing, [L.tools_normal, L.tools_spacing_1]),
+      group('focus', L.tools_focus, [L.tools_off, L.tools_on], L.tools_focus_hint),
+      group('lens', L.tools_lens, [L.tools_off, L.tools_on], L.tools_lens_hint),
+      el('div', { class: 'row' }, [
+        el('button', { type: 'button', 'data-tools-reset': '', on: { click: function () { clean(); apply(); o.store(); } }, text: L.tools_reset }),
+        el('button', { type: 'button', 'data-tools-close': '', on: { click: back }, text: L.tools_close })]),
+    ]);
+    // Magnifier: a copy of the page (no ids, names or tab stops; aria-hidden) at 2x, in a lens taps go through.
+    var grip = el('button', { type: 'button', class: 'lt-grip', hidden: true, 'aria-label': L.tools_lens_move, 'aria-describedby': 'lt-lens-hint', 'data-lens-grip': '' },
+      [el('span', { 'aria-hidden': 'true', text: String.fromCharCode(0x2725) })]);
+    var lens = el('div', { class: 'lt-lens', 'aria-hidden': 'true', hidden: true, 'data-lens': '' });
+    page.insertBefore(panel, page.firstChild);
+    page.insertBefore(el('div', { class: 'lt-bar' }, [aa, grip]), panel);
+    doc.body.appendChild(lens);
+    var P = null, touch = false, copy = null, queued = false, drag = null;
+    var place = function () {
+      queued = false;
+      if (!p.lens) return;
+      P = P || { x: win.innerWidth / 2, y: win.innerHeight / 2 };
+      if (!copy) {
+        copy = page.cloneNode(true);
+        copy.setAttribute('inert', '');
+        var all = copy.querySelectorAll('*'), from = page.querySelectorAll('canvas'), to = copy.querySelectorAll('canvas'), i;
+        for (i = 0; i < all.length; i++) {
+          all[i].removeAttribute('id'); all[i].removeAttribute('name');
+          if (/^(BUTTON|INPUT|SUMMARY)$/.test(all[i].tagName) || all[i].hasAttribute('tabindex')) all[i].setAttribute('tabindex', '-1');
+        }
+        for (i = 0; i < to.length; i++) { try { to[i].getContext('2d').drawImage(from[i], 0, 0); } catch (_) {} }
+        copy.querySelector('.lt-grip').remove();
+        lens.textContent = '';
+        lens.appendChild(copy);
+      }
+      var box = page.getBoundingClientRect(), y = P.y - (touch ? 120 : 0);
+      lens.style.left = P.x - 90 + 'px'; lens.style.top = y - 90 + 'px';
+      copy.style.width = box.width + 'px';
+      copy.style.transform = 'translate(' + (87 - 2 * (P.x - box.left)) + 'px,' + (87 - 2 * (P.y - box.top)) + 'px) scale(2)';
+      // Touch: the lens above the finger. Else the handle is on its edge, never under the mouse.
+      grip.style.left = P.x + (touch ? -24 : 40) + 'px'; grip.style.top = (touch ? P.y + 14 : y + 40) + 'px';
+      if (touch) grip.setAttribute('data-touch', ''); else grip.removeAttribute('data-touch');
+    };
+    var queue = function () {
+      if (queued || !p.lens) return;
+      queued = true;
+      if (win.requestAnimationFrame) win.requestAnimationFrame(place); else win.setTimeout(place, 16);
+    };
+    // Reading focus: one line in a band, the rest dimmed.
+    var shade = el('div', { class: 'lt-shade', 'aria-hidden': 'true' }), line = el('div', { class: 'lt-line', 'aria-hidden': 'true' });
+    var lines = function () {
+      var out = [], base = text.getBoundingClientRect(), range = doc.createRange(), walk = doc.createTreeWalker(text, 4), n, r, i, j, hit;
+      while ((n = walk.nextNode())) {
+        if (!/\S/.test(n.nodeValue) || n.parentNode.closest('.sr')) continue;
+        range.selectNodeContents(n);
+        for (r = range.getClientRects ? range.getClientRects() : [], i = 0; i < r.length; i++) {
+          var t = r[i].top - base.top, b = r[i].bottom - base.top;
+          for (hit = null, j = 0; j < out.length; j++) if (t < out[j].b - 4 && b > out[j].t + 4) hit = out[j];
+          if (hit) { hit.t = Math.min(hit.t, t); hit.b = Math.max(hit.b, b); } else if (b - t >= 4) out.push({ t: t, b: b });
+        }
+      }
+      return out.sort(function (x, y) { return x.t - y.t; });
+    };
+    var paint = function () {
+      var all = lines(), l = all[at = Math.max(0, Math.min(all.length - 1, at))], dim = 'rgba(0,0,0,.45)';
+      line.hidden = !l;
+      if (!l) { shade.style.background = 'none'; return; }
+      // A fifth of the text size around the letters, so a blank's underline is inside.
+      var pad = Math.round((parseFloat(win.getComputedStyle(text).fontSize) || 16) / 5), t = Math.max(0, Math.round(l.t) - pad), b = Math.round(l.b) + pad;
+      shade.style.background = 'linear-gradient(' + dim + ' ' + t + 'px,transparent ' + t + 'px,transparent ' + b + 'px,' + dim + ' ' + b + 'px)';
+      line.style.top = t + 'px'; line.style.height = b - t + 'px';
+      // The lens copy follows the band.
+      if (painted !== t + ',' + b) { painted = t + ',' + b; copy = null; queue(); }
+    };
+    var nearest = function (y) {
+      var top = text.getBoundingClientRect().top, gap = Infinity;
+      lines().forEach(function (l, i) { var d = Math.abs(top + (l.t + l.b) / 2 - y); if (d < gap) { gap = d; at = i; } });
+      paint();
+    };
+    var scan = function () {
+      var found = o.app.querySelector('[data-read]'), host = shade.parentNode, on;
+      if (found !== text) { text = found; at = 0; }
+      if (groups.focus.box.hidden !== !text) groups.focus.box.hidden = !text;
+      on = !!text && !!p.focus;
+      if (host && (!on || host !== text)) {
+        host.classList.remove('lt-read'); host.removeChild(shade); host.removeChild(line);
+        if (host.hasAttribute('data-lt-tab')) { host.removeAttribute('tabindex'); host.removeAttribute('data-lt-tab'); }
+      }
+      if (on && shade.parentNode !== text) {
+        text.classList.add('lt-read'); text.appendChild(shade); text.appendChild(line);
+        if (!text.hasAttribute('tabindex')) { text.setAttribute('tabindex', '0'); text.setAttribute('data-lt-tab', ''); }
+      }
+      if (on) paint();
+    };
+    // Each tool on while an item is shown counts once (colors not under forced colors).
+    var mark = function () {
+      if (!rec) return;
+      var s = rec.supports = rec.supports && typeof rec.supports === 'object' ? rec.supports : {}, changed = false, forced = false;
+      try { forced = win.matchMedia('(forced-colors: active)').matches; } catch (_) {}
+      [NAMES.size[p.size], forced ? '' : NAMES.colors[p.colors], NAMES.spacing[p.spacing], text ? NAMES.focus[p.focus] : '', NAMES.lens[p.lens]].forEach(function (n) {
+        if (n && !s[n]) { s[n] = 1; changed = true; }
+      });
+      if (changed) o.save();
+    };
+    var apply = function () {
+      ['size', 'colors', 'spacing'].forEach(function (k) { if (p[k]) html.setAttribute('data-lt-' + k, p[k]); else html.removeAttribute('data-lt-' + k); });
+      KEYS.forEach(function (k) { groups[k].buttons.forEach(function (b, v) { b.setAttribute('aria-pressed', String(v === p[k])); }); });
+      grip.hidden = lens.hidden = !p.lens;
+      copy = drag = null;
+      if (!p.lens) lens.textContent = '';
+      scan(); queue(); mark();
+    };
+    var set = function (k, v) { p[k] = v; apply(); o.store(); };
+    if (win.MutationObserver) new win.MutationObserver(function (list) {
+      if (!list.some(function (m) { return m.target !== shade && m.target !== line && m.target !== grip; })) return;
+      scan(); copy = null; queue();
+    }).observe(page, { childList: true, subtree: true, attributes: true, characterData: true });
+    doc.addEventListener('input', function () { copy = null; queue(); }, true);
+    var follow = function (e) { if (p.focus && text && text.contains(e.target)) nearest(e.clientY); };
+    doc.addEventListener('pointermove', function (e) {
+      if (drag && e.pointerId === drag.id) { P = { x: e.clientX + drag.x, y: e.clientY + drag.y }; queue(); }
+      else if (e.pointerType === 'mouse') { touch = false; P = { x: e.clientX, y: e.clientY }; queue(); follow(e); }
+    }, true);
+    doc.addEventListener('pointerdown', function (e) {
+      if (grip.contains(e.target)) return;
+      if (e.pointerType !== 'mouse') { touch = true; P = { x: e.clientX, y: e.clientY }; queue(); }
+      follow(e);
+    }, true);
+    grip.addEventListener('pointerdown', function (e) {
+      e.preventDefault();
+      drag = { id: e.pointerId, x: P.x - e.clientX, y: P.y - e.clientY };
+      try { grip.setPointerCapture(e.pointerId); } catch (_) {}
+    });
+    ['pointerup', 'pointercancel'].forEach(function (name) { grip.addEventListener(name, function () { drag = null; }); });
+    grip.addEventListener('focus', function () { touch = false; queue(); });
+    var STEP = { ArrowLeft: [-1, 0], ArrowRight: [1, 0], ArrowUp: [0, -1], ArrowDown: [0, 1] };
+    doc.addEventListener('keydown', function (e) {
+      var d = STEP[e.key], n = e.shiftKey ? 60 : 20;
+      if (e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey) return;
+      if (d && e.target === grip && P) {
+        touch = false;
+        P = { x: Math.max(0, Math.min(win.innerWidth, P.x + d[0] * n)), y: Math.max(0, Math.min(win.innerHeight, P.y + d[1] * n)) };
+        queue();
+      } else if (d && !d[0] && p.focus && text && e.target === text) { at += d[1]; paint(); }
+      else if (/^Esc/.test(e.key) && p.lens) { set('lens', 0); if (e.target === grip) aa.focus(); }
+      else return;
+      e.preventDefault();
+    });
+    win.addEventListener('scroll', queue, true);
+    win.addEventListener('resize', function () { copy = null; queue(); });
+    clean(o.prefs);
+    apply();
+    return {
+      item: function (r) { rec = r && !r.done ? r : null; scan(); mark(); },
+      // null: every tool at its first setting.
+      prefs: function () {
+        var out = null;
+        KEYS.forEach(function (k) { if (p[k]) (out = out || {})[k] = p[k]; });
+        return out;
+      },
+    };
+  }
 
   // ---------------------------------------------------------------------------
   // The player shell (runs INSIDE the downloaded file). Self-contained: it
@@ -4434,16 +4666,35 @@
       return { name: '', index: 0, startedAt: null, finishedAt: null, savedFile: null, sent: null,
         items: items.map(function (e) { return { itemId: e.item.id, activity: e.activity, responses: [], attempts: 0, firstTry: false, correct: false, done: false, supports: {} }; }) };
     };
-    var save = function () {
-      try { win.localStorage.setItem(storageKey, JSON.stringify(state)); storeOk = true; } catch (_) { storeOk = false; }
+    // The one storage item (put(null) removes it). It also keeps the reading tools: state.tools, or alone before Start.
+    var put = function (value) {
+      try {
+        if (value) win.localStorage.setItem(storageKey, JSON.stringify(value)); else win.localStorage.removeItem(storageKey);
+        storeOk = true;
+      } catch (_) { storeOk = false; }
     };
-    var load = function () {
+    var save = function () {
+      var kept = tools && state ? tools.prefs() : null;
+      if (kept) state.tools = kept; else if (state) delete state.tools;
+      put(state);
+    };
+    var stored = function () {
       try {
         var raw = win.localStorage.getItem(storageKey);
         var parsed = raw && JSON.parse(raw);
-        if (parsed && Array.isArray(parsed.items) && parsed.items.length === items.length) return parsed;
+        return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
       } catch (_) { storeOk = false; }
       return null;
+    };
+    var load = function () {
+      var parsed = stored();
+      return parsed && Array.isArray(parsed.items) && parsed.items.length === items.length ? parsed : null;
+    };
+    var storePrefs = function () {
+      if (state) { save(); return; }
+      var held = stored() || {}, kept = tools.prefs();
+      if (kept) held.tools = kept; else delete held.tools;
+      put(Object.keys(held).length ? held : null);
     };
     var uuid = function () {
       try { if (win.crypto && win.crypto.randomUUID) return win.crypto.randomUUID(); } catch (_) {}
@@ -4469,8 +4720,9 @@
       clock.ms += Math.max(0, t - clock.from); clock.from = t;
       clock.rec.ms = Math.round(clock.ms);
     };
-    var clockStart = function (rec) { clock = { rec: rec, ms: 0, from: doc.hidden ? null : now() }; };
-    var clockStop = function () { clockLap(); clock = null; };
+    // The item on the clock is the one the reading tools count for.
+    var clockStart = function (rec) { clock = { rec: rec, ms: 0, from: doc.hidden ? null : now() }; if (tools) tools.item(rec); };
+    var clockStop = function () { clockLap(); clock = null; if (tools) tools.item(null); };
     doc.addEventListener('visibilitychange', function () {
       if (!clock) return;
       if (doc.hidden) { clockLap(); clock.from = null; } else if (clock.from == null) clock.from = now();
@@ -4564,6 +4816,7 @@
         fmt(L.about_engine, { engine: m.engine || '' }),
         fmt(L.about_stores, { key: (m.stores && m.stores[0] && m.stores[0].key) || storageKey }),
         fmt(L.about_saves, { csv: (saves[0] && saves[0].file) || '.csv', json: (saves[1] && saves[1].file) || '.json' }),
+        L.about_records,
         net ? fmt(L.about_mailbox, { host: net }) : L.about_no_network,
         L.about_never,
         L.about_check,
@@ -4801,12 +5054,14 @@
         state.savedFile = name; save();
         if (!state.sent) { fileStatus.className = 'status ok'; fileStatus.textContent = fmt(L.saved_file, { file: name }); announce(fileStatus.textContent); }
       };
-      // Both files are named <lesson>__<learner or results>__<finish date>.
-      var saveButton = el('button', { class: state.sent ? '' : 'primary', type: 'button', 'data-save-json': '', on: { click: function () {
+      // Both files are named <lesson>__<learner or results>__<finish date>. The spreadsheet file is the
+      // main one (the one every page tells learners and teachers to use); the JSON and the copy are
+      // under "Other ways to save".
+      var saveButton = el('button', { type: 'button', 'data-save-json': '', on: { click: function () {
         var file = resultFile();
         saveAs(kit.csv(file).stem + '.json', JSON.stringify(file, null, 2), 'application/json');
       } }, text: L.save });
-      var csvButton = el('button', { type: 'button', 'data-save-csv': '', on: { click: function () {
+      var csvButton = el('button', { class: state.sent ? '' : 'primary', type: 'button', 'data-save-csv': '', on: { click: function () {
         var file = resultFile(), table = kit.csv(file);
         saveAs(table.stem + '.csv', table.text(file.integrity), 'text/csv;charset=utf-8');
       } }, text: L.save_csv });
@@ -4820,6 +5075,7 @@
           }, manual);
         } catch (_) { manual(); }
       } }, text: L.copy_tsv });
+      var more = el('details', { class: 'more-saves', 'data-more-saves': '' }, [el('summary', { text: L.more_saves }), el('div', { class: 'row' }, [saveButton, copyButton])]);
       var info = about();
       var sendButton = null;
       // The mailbox refuses sends after the teacher's closing date, so the
@@ -4848,8 +5104,10 @@
         if (state.sent) sendButton.setAttribute('aria-disabled', 'true');
       }
       var startOver = function () {
-        try { win.localStorage.removeItem(storageKey); } catch (_) {}
-        state = null; renderStart();
+        put(null);
+        state = null;
+        if (tools) storePrefs();
+        renderStart();
       };
       // Practice again throws this attempt away: ask first unless it was sent
       // or saved as a file. An in-page panel (window.confirm is unreliable in
@@ -4865,12 +5123,13 @@
         if (state.sent || state.savedFile) { startOver(); return; }
         confirmBox.hidden = false; confirmText.focus();
       } }, text: L.practice_again });
-      if (check) { check.finish({ send: sendButton, save: saveButton, csv: csvButton, copy: copyButton, about: info, status: fileStatus, copyBox: copyBox, note: closedNote || (sendButton ? L.send_note : L.not_sent) }); return; }
+      if (check) { check.finish({ send: sendButton, save: saveButton, csv: csvButton, copy: copyButton, more: more, about: info, status: fileStatus, copyBox: copyBox, note: closedNote || (sendButton ? L.send_note : L.not_sent) }); return; }
       screen(L.done_title, [
         el('div', { class: 'card' }, [
           el('p', { class: 'letters', text: fmt(L.done_summary, { first: s.firstTry, total: s.items }) }),
           s.afterRetry ? el('p', { text: fmt(L.done_retry, { retry: s.afterRetry }) }) : null,
-          el('div', { class: 'row' }, [sendButton, saveButton, csvButton, copyButton, againButton, info.button]),
+          el('div', { class: 'row' }, [sendButton, csvButton, againButton, info.button]),
+          more,
           confirmBox,
           fileStatus,
           copyBox,
@@ -4879,6 +5138,9 @@
         info.panel,
       ]);
     };
+    // The reading tools, before the check's flow: their keys come first.
+    var tools = kit.tools ? kit.tools({ doc: doc, win: win, L: L, el: el, page: doc.querySelector('main') || main.parentNode, app: main,
+      prefs: (stored() || {}).tools, store: function () { storePrefs(); }, save: function () { save(); } }) : null;
     // A check (lesson.mode 'probe') brings its own flow in kit.check; a practice file has none.
     var check = kit.check ? kit.check({ doc: doc, win: win, lesson: lesson, L: L, kit: kit, items: items, renders: renders, matches: matches, el: el, fmt: fmt, announce: announce,
       screen: screen, statusLine: statusLine, fresh: fresh, save: save, now: now, clockStart: clockStart, clockStop: clockStop, play: play, playAll: playAll, stop: stop,
@@ -5157,6 +5419,9 @@
       if (n % 60 === 0) return n === 60 ? L.check_one_minute : fmt(L.check_minutes, { n: n / 60 });
       return fmt(L.check_seconds, { n: n });
     };
+    // The reading tools' names in the supports (takeHomeTools), with the label words the teacher sees.
+    var TOOLS = { textLarger: ['tools_size', 'tools_size_1'], textLargest: ['tools_size', 'tools_size_2'], contrastHigh: ['tools_colors', 'tools_colors_1'],
+      contrastSoft: ['tools_colors', 'tools_colors_2'], spacingWide: ['tools_spacing', 'tools_spacing_1'], readingFocus: ['tools_focus'], magnifier: ['tools_lens'] };
     var answerOf = function (item) { return kit.codec.unscramble(item.key, meta.salt, item.id); };
     var markOf = function (entry, answer, response) {
       var scorer = kit.scorers && kit.scorers[entry.activity];
@@ -5451,6 +5716,7 @@
         out[0] = L.check_about_what;
         out.splice(1, 0, L.check_about, limitMs ? L.check_about_clock : '', L.check_about_scrambled, meta.lock ? L.check_about_code : '');
         out.splice(7, 0, L.check_about_tries);
+        out.splice(out.indexOf(L.about_records) + 1, 0, L.check_about_records);
         return out;
       },
       // Opening the file again. A finished check shows its finish screen: it
@@ -5507,6 +5773,10 @@
         });
         out.score = kit.score({ measure: meta.measure, scoreUnit: meta.scoreUnit, timeLimitS: lesson.timeLimitS, scoringVersion: meta.scoringVersion, formVersion: meta.formVersion }, rows,
           { elapsedMs: c.t0 ? (c.end || nowMs()) - c.t0 : 0, hiddenMs: c.hiddenMs, completion: c.completion, attempt: c.attempt, flags: Object.keys(c.flags).sort() });
+        // The reading tools that were on during a scored item, in the panel's order.
+        out.score.tools = Object.keys(TOOLS).filter(function (name) {
+          return out.items.some(function (it, i) { return !items[i].item.practice && it.supports && it.supports[name]; });
+        });
         // The fields older readers use.
         out.summary = { items: scoredTotal, done: out.score.itemsAttempted, firstTry: out.score.itemsCorrect, afterRetry: 0, missed: out.score.itemsAttempted - out.score.itemsCorrect, practised: practised };
       },
@@ -5530,6 +5800,7 @@
             r.prorated ? L.check_review_prorated : '',
             fmt(L.check_review_attempt, { n: r.attempt }),
             r.flags.length ? fmt(L.check_review_flags, { flags: r.flags.map(function (name) { return L['check_flag_' + name] || name; }).join('; ') }) : '',
+            r.tools && r.tools.length ? fmt(L.check_review_tools, { tools: r.tools.map(function (name) { return TOOLS[name].map(function (k) { return L[k]; }).join(': '); }).join('; ') }) : '',
             L.check_review_note,
           ];
           var body = f.items.map(function (it) {
@@ -5600,8 +5871,8 @@
             el('p', { class: 'letters', text: fmt(L.check_done_count, { done: answered, total: scoredTotal }) }),
             el('p', { text: fmt(L.check_done_time, { time: clockText(sc.elapsedS * 1000) }) }),
             el('p', { text: L.check_about }),
-            el('div', { class: 'row' }, [p.send, p.save, p.csv, p.copy, again, p.about.button]),
-            againBox, p.status, p.copyBox,
+            el('div', { class: 'row' }, [p.send, p.csv, again, p.about.button]),
+            p.more, againBox, p.status, p.copyBox,
             el('p', { class: 'muted', text: p.note }),
           ]),
           el('div', { class: 'card', 'data-teacher': '' }, teacher),
@@ -5645,9 +5916,9 @@
     var connect = mailbox ? 'https://script.google.com https://script.googleusercontent.com' : "'none'";
     // The mailbox code travels only in a file that has a mailbox. Line ends are
     // made \n because the browser reads them so, and the script is allowed by
-    // its exact hash.
+    // its exact hash. The reading tools go in every file, without their indentation (1 KB less).
     var script = ('\n(function(){"use strict";\nvar lesson=' + safeJson(lesson) + ';\nvar labels=' + safeJson(labels) + ';\nvar matches=' + (hasCore ? core.soundAnswerMatches.toString() : 'null')
-      + ';\nvar renders=' + renders + ';\nvar kit={csv:' + packetCsv.toString() + ',\nhash:' + hashText.toString() + ',\nmailbox:' + (mailbox ? takeHomeMailbox.toString() : 'null')
+      + ';\nvar renders=' + renders + ';\nvar kit={csv:' + packetCsv.toString() + ',\nhash:' + hashText.toString() + ',\ntools:' + takeHomeTools.toString().replace(/\n +/g, '\n') + ',\nmailbox:' + (mailbox ? takeHomeMailbox.toString() : 'null')
       + '};\n' + checkParts + pictureParts + '(' + takeHomeShell.toString() + ')(document,window,lesson,labels,matches,renders,kit);\n})();\n').replace(/\r\n?/g, '\n');
     var digest = sha256(script);
     var csp = "default-src 'none'; script-src " + (digest ? "'sha256-" + digest.base64 + "'" : "'unsafe-inline'") + "; style-src 'unsafe-inline'; media-src data: blob:; img-src data:"
@@ -5660,8 +5931,8 @@
       what: probe ? 'A check in one file: one try for each item, and no right or wrong shown to the learner. It runs in a browser with no internet connection.'
         : 'A practice activity in one file. It runs in a browser with no internet connection.',
       stores: [{ where: 'localStorage', key: 'alloflow-take-home:' + lesson.lessonId + ':' + lesson.revision,
-        holds: probe ? 'the learner label, the place reached, the answers given, the time on each item, the time limit clock and a count of tries (by a hash of the learner label)'
-          : 'the learner label, the place reached, the answers and the time on each item',
+        holds: probe ? 'the learner label, the place reached, each answer, the time on each item, how often each help and reading tool was used, the start time with its UTC offset, a session number, the reading tool settings, the clock, the seconds away, the flags and a count of tries (by a hash of the learner label)'
+          : 'the learner label, the place reached, each answer, the tries, the time on each item, how often each help and reading tool was used, the start and finish times with the UTC offset of the device, a random session number and the reading tool settings',
         until: probe ? 'the browser storage is cleared; Start over keeps only the learner label and the count of tries' : 'Start over or Practice again' }],
       saves: [{ file: stem + '.csv', format: 'alloflow-packet-result/1' }, { file: stem + '.json', format: RESULT_KIND + ' schemaVersion ' + RESULT_SCHEMA }],
       network: mailbox ? { sendsTo: 'script.google.com', what: 'the results, to the class mailbox of the teacher', when: 'only when the learner presses Send' } : 'none',
@@ -5767,7 +6038,9 @@
         completion: sc.completion === 'time' || sc.completion === 'ended_early' || sc.completion === 'complete' ? sc.completion : '', prorated: sc.prorated === true,
         noScoreReason: str(sc.noScoreReason).slice(0, 40), scoringVersion: whole(sc.scoringVersion),
         formVersion: typeof sc.formVersion === 'number' && Number.isFinite(sc.formVersion) ? sc.formVersion : str(sc.formVersion).slice(0, 20), attempt: whole(sc.attempt) || 1,
-        flags: (Array.isArray(sc.flags) ? sc.flags : []).slice(0, 8).map(function (f) { return str(f).slice(0, 40); }) };
+        flags: (Array.isArray(sc.flags) ? sc.flags : []).slice(0, 8).map(function (f) { return str(f).slice(0, 40); }),
+        // The reading tools on during a scored item (takeHomeTools).
+        tools: (Array.isArray(sc.tools) ? sc.tools : []).slice(0, 8).map(function (f) { return str(f).slice(0, 40); }) };
     }
     return { ok: true, integrity: integrity, result: result };
   }
@@ -5863,6 +6136,8 @@
     CHECK_ADAPTERS: CHECK_ADAPTERS, CHECK_LABELS: CHECK_LABELS, CHECK_ROUNDS: CHECK_ROUNDS, checkCodec: checkCodec, checkScore: checkScore, _check: takeHomeCheck,
     // Word pictures: when each activity shows one (see PICTURE_RULE), and the words for it.
     PICTURE_RULE: PICTURE_RULE, PICTURE_LABELS: PICTURE_LABELS, _pictures: takeHomePictures,
+    // Reading tools, in every file: see takeHomeTools.
+    _tools: takeHomeTools,
     // v1 name kept for callers built against the first release.
     buildFindSoundsHtml: buildHtml,
     _shell: takeHomeShell,

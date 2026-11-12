@@ -87,7 +87,8 @@ module.exports = {
     var picture = ctx.image(item.picture);
     var blanks = [];
     var lineNodes = [];
-    var storyBox = ctx.el('div', { role: 'group', 'aria-label': ctx.L.read_passage_story, class: 'letters', lang: 'en',
+    // data-read: running text, where the shell's reading focus can go.
+    var storyBox = ctx.el('div', { role: 'group', 'aria-label': ctx.L.read_passage_story, class: 'letters', lang: 'en', 'data-read': '',
       style: 'font-size:1.6rem;border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:12px 0' });
     item.lines.forEach(function (line) {
       var node;

@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
-<title>Make a practice file</title>
+<title>Make Word Sounds practice</title>
 <meta name="description" content="Make a Word Sounds practice file in three steps. The file is put together in your browser. Runs without AI. No accounts.">
 <link rel="icon" type="image/svg+xml" href="packets-mark.svg">
 <link rel="stylesheet" href="packets.css">
@@ -33,8 +33,6 @@
     </a>
     <a class="top-link" href="packets.html#check">What a practice file can and cannot do</a>
   </div>
-</header>
-
 <details class="proof">
   <summary class="wrap wrap-narrow">
     <span class="proof-line">This page runs without AI. No account. The words you choose are not uploaded.</span>
@@ -43,7 +41,7 @@
   </summary>
   <div class="wrap wrap-narrow proof-body">
     <ul>
-      <li>Nothing is generated when you make a file or when a student uses it. The spoken sounds were recorded ahead of time with computer voices, including an AI voice.</li>
+      <li>Nothing is generated when you make a file or when a student uses it. The spoken sounds were recorded ahead of time with two AI voices (Kokoro and Google Gemini).</li>
       <li>The practice file is put together in this browser tab. The page looks your words up in a word list and a sound dictionary that it has already loaded. Your words and your choices are not sent anywhere.</li>
       <li>There are no cookies and nothing to sign in to.</li>
       <li>The page loads files from this site only. At step 3 it gets the sound files, also from this site. Most are the same files whatever you choose. Some words have their sounds in small files of about 40 words each, and the page gets only the ones your words need.</li>
@@ -59,10 +57,11 @@
     </p>
   </div>
 </details>
+</header>
 
 <main id="main" class="maker">
   <div class="wrap wrap-narrow">
-    <h1>Make a practice file</h1>
+    <h1>Make Word Sounds practice</h1>
 
     <nav aria-label="Steps">
       <ol class="steps">
@@ -134,9 +133,14 @@
             <select id="f-stage" aria-describedby="stage-hint"><option value="">Any stage</option></select>
             <span class="hint" id="stage-hint">A stage keeps to the letter patterns taught by then.</span>
             <span class="hint" id="stage-k-note" hidden>Common Core places sh, ch and th in grade 1. Choose 'Any stage' to use them earlier.</span>
+            <span class="hint" id="stage-spell-note" hidden>For spelling, choose a stage: your students then spell only patterns they have been taught.</span>
             <details class="why" id="stage-why" hidden>
               <summary>Why<span class="sr-only"> this stage has these words</span></summary>
               <p id="stage-why-text"></p>
+            </details>
+            <details class="why" id="stage-other" hidden>
+              <summary>Other curricula</summary>
+              <label class="radio"><input type="checkbox" id="f-stage-other"> <span id="stage-other-line">Show the stages of other curricula in the list</span></label>
             </details>
           </div>
         </div>
@@ -147,14 +151,17 @@
           <ul id="pick-chips" class="chips" aria-label="Words in the list"></ul>
           <div id="pick-edit" class="word-edit" hidden></div>
           <p id="pick-removed" class="result-sub" hidden><span id="pick-removed-text"></span> <button type="button" class="btn btn-text btn-small" id="pick-restore">Put them back</button></p>
-          <p id="pick-out" class="result-sub"></p>
+          <details class="why" id="pick-out-box" hidden>
+            <summary>Why not more words?</summary>
+            <p id="pick-out" class="result-sub"></p>
+          </details>
         </div>
       </div>
 
       <div id="panel-own" hidden>
         <div class="field block">
           <label for="f-own">Your words</label>
-          <span class="hint" id="own-hint">Leave a space, a comma or a new line between words. Each word is checked as you type. Words you type, including names, are saved in the file and its results.</span>
+          <span class="hint" id="own-hint">Leave a space, a comma or a new line between words. Each word is checked as you type. A word the sound dictionary does not have can be used once you give it its sounds and a recording with Edit this word. Many common first names are left out. Words you type are saved in the file and its results.</span>
           <textarea id="f-own" rows="4" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="own-hint"></textarea>
         </div>
         <div class="result">
@@ -256,10 +263,13 @@
         <h3>Saved. What to do next</h3>
         <ol>
           <li>Send the file to your students the way you send any file: your learning platform, a shared drive or a USB drive.</li>
-          <li>Each student opens it in a browser, finishes it and presses <strong id="csv-label">Save results as a spreadsheet file (CSV)</strong>. They hand that file back to you.</li>
-          <li>Open the results file in a spreadsheet, or add it in AlloFlow (Class Analytics, Add take-home results).</li>
+          <li>Each student opens it in a browser, finishes it and presses the main button at the end, <strong id="csv-label">Save results as a spreadsheet file (CSV)</strong>. They hand that file back to you.</li>
+          <li>Add the results up on <a href="packets-results.html">Add up results</a>, or open them in a spreadsheet. In AlloFlow: Class Analytics, Add take-home results.</li>
         </ol>
-        <p>To fill in a student's code name for them: when the file is on a website or a shared link, add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
+        <details class="why" id="learner-tip">
+          <summary>Fill in a student's code name for them</summary>
+          <p>When the file is on a website or a shared link, add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
+        </details>
       </div>
     </section>
 
@@ -276,7 +286,7 @@
         </p>
         <h2 id="sources-title">Where the words and sounds come from</h2>
         <ul id="sources">
-          <li>The spoken sounds were recorded ahead of time with computer voices, including an AI voice. Each practice file lists its credits under About this file.</li>
+          <li>The spoken sounds were recorded ahead of time with two AI voices (Kokoro and Google Gemini). A word you record yourself in step 2 uses your recording. Each practice file lists its credits under About this file.</li>
         </ul>
       </div>
     </details>
