@@ -13,7 +13,7 @@ vi.setConfig({ testTimeout: 45000 });
 const THREE = createRequire(import.meta.url)('../vendor/three-r128/three.min.js');
 const SOURCE = readFileSync(process.env.REEF3D_EXPLORE_SOURCE || 'stem_lab/reef_3d_explore.js', 'utf8');
 const SPECIES_FILE = 'stem_lab/reef_3d_species.js', HAS_SPECIES = existsSync(SPECIES_FILE);
-const CONTROLLER_KEYS = ['cancelSwim', 'captureImage', 'checkFrame', 'clearFocus', 'dispose', 'findSpecies', 'focus', 'focusNext', 'focusPrevious', 'getState', 'lookAtFocused', 'lookCamera', 'resetCamera', 'resize', 'setInput', 'setLight', 'setMagnification', 'setPaused', 'setPhotoMode', 'setReducedMotion', 'setView', 'setVision', 'swimTo', 'zoomCamera'];
+const CONTROLLER_KEYS = ['cancelSwim', 'captureImage', 'checkFrame', 'clearFocus', 'dispose', 'findSpecies', 'focus', 'focusNext', 'focusPrevious', 'getState', 'lookAtFocused', 'lookCamera', 'preview', 'resetCamera', 'resize', 'setInput', 'setLight', 'setMagnification', 'setPaused', 'setPhotoMode', 'setReducedMotion', 'setView', 'setVision', 'swimTo', 'zoomCamera'];
 const STATE_KEYS = ['autoReason', 'buoyancy', 'diver', 'drawCalls', 'focused', 'frames', 'light', 'magnification', 'moments', 'navigation', 'nearby', 'paused', 'photoMode', 'quality', 'ready', 'reducedMotion', 'slow', 'triangles', 'view', 'vision'];
 const POP = [
   { id: 'clownfish', count: 4 }, { id: 'magnificent_anemone', count: 2 }, { id: 'blue_tang', count: 2 }, { id: 'brain_coral', count: 6 },
@@ -649,6 +649,27 @@ describe('Reef3DExplore focus, swimTo and picking', () => {
     t.step();
     expect(t.controller.getState().focused).toBeNull();
     expect(t.scene.getObjectByName('reef-explore-focus').visible).toBe(false);
+  });
+
+  // 2026-11-10: a Nearby row shows which organism it means without selecting it.
+  it('shows a preview ring on an organism without selecting it, and never over the selection', () => {
+    const t = runtime({ reducedMotion: true }), ring = () => t.scene.getObjectByName('reef-explore-preview'), [a, b] = census(t).map(o => o.uid);
+    t.controller.setPaused(true); t.step();
+    expect(ring().visible).toBe(false);
+    expect(t.controller.preview(a)).toBe(true);
+    t.step();
+    expect(ring().visible).toBe(true);
+    expect(t.controller.getState().focused, 'previewing is not selecting').toBeNull();
+    expect(ring().scale.x, 'a far or small organism still gets a ring big enough to see').toBeGreaterThan(0.05);
+    t.controller.focus(a); t.step();
+    expect(ring().visible, 'the selection ring takes over').toBe(false);
+    t.controller.preview(b); t.step();
+    expect(ring().visible).toBe(true);
+    expect(t.controller.preview('nope')).toBe(false);
+    t.step();
+    expect(ring().visible).toBe(false);
+    t.controller.preview(b); t.step(); t.controller.preview(null); t.step();
+    expect(ring().visible).toBe(false);
   });
 
   it('swims to an organism, ends within a few metres facing it, and then stops', () => {

@@ -16137,10 +16137,10 @@
     var prev = shown.current, keep = prev ? list.filter(function (m) { return momentId(m) === prev.id; })[0] : null;
     var fresh = list.filter(function (m) { return dive.current.kinds.indexOf(m.kind) < 0 && !(prev && m.kind === prev.kind); })[0];
     var pick = keep && fresh && !held.current && Date.now() - prev.since >= MOMENT_TURN_MS ? fresh : keep || fresh || list[0] || null;
-    var id = pick ? momentId(pick) : null;
+    var id = pick ? momentId(pick) : null, quiet = !!(env.d && env.d.momentsQuiet);
     var words = pick ? momentWords(env, pick, o.log || {}, o.TX) : null;
     React.useEffect(function () {
-      if (!id) { shown.current = null; return undefined; }
+      if (!id || quiet) { shown.current = null; return undefined; }
       if (!shown.current || shown.current.id !== id) shown.current = { id: id, kind: pick.kind, since: Date.now() };
       var kind = pick.kind, t = Date.now(), last = said.current[kind];
       // Politely, once per kind every 20 s, and never while the student is answering an identification.
@@ -16150,12 +16150,14 @@
       }
       var timer = setTimeout(function () { markSeen(kind); }, MOMENT_SEEN_MS);
       return function () { clearTimeout(timer); };
-    }, [id]);
+    }, [id, quiet]);
     return {
-      moment: pick, words: words,
+      moment: pick, words: words, quiet: quiet,
+      // Hide tucks the card into a small chip; it stays tucked, through new moments and later dives, until the chip is pressed.
+      open: function () { hidden.current = {}; liveEnv.current.set({ momentsQuiet: false }); },
       look: function () { if (!pick) return; markSeen(pick.kind); var c = live.current.ctl(); if (c && pick.uids && pick.uids[0]) c.focus(pick.uids[0]); },
       swim: function () { if (!pick) return; markSeen(pick.kind); var c = live.current.ctl(); if (c && pick.uids && pick.uids[0]) c.swimTo(pick.uids[0]); },
-      hide: function () { if (!pick) return; hidden.current[id] = true; shown.current = null; held.current = false; bump(function (n) { return n + 1; }); },
+      hide: function () { if (!pick) return; hidden.current[id] = true; shown.current = null; held.current = false; liveEnv.current.set({ momentsQuiet: true }); bump(function (n) { return n + 1; }); },
       hold: function (on) { held.current = !!on; }
     };
   }
@@ -16176,6 +16178,10 @@
     if (!m) return null;
     var reduce = !!(env.ctx && env.ctx.reduceMotion), small = { minHeight: 36, padding: '5px 11px', fontSize: 14 }, canAct = !!(m.uids && m.uids[0]);
     function hide() { r.hide(); toView(); }
+    if (r.quiet) return h('div', { className: 'crm-anchor', ref: keep },
+      h('style', null, LANE_CSS_I1 + '[data-coralreef-root] .crm-chip{position:absolute;left:10px;bottom:10px;display:inline-flex;align-items:center;gap:7px;box-shadow:0 4px 14px #00000040}'),
+      h('button', { type: 'button', className: 'crm-chip', 'data-moment-chip': m.kind, 'aria-label': __alloFill(__alloT('stem.coralreef.rm_chip_label', 'Show the reef moment: {title}'), w), style: btnStyle(P, false, small), onClick: r.open },
+        lineIcon(h, MOMENT_ICONS[m.kind], 16), __alloT('stem.coralreef.rm_chip', 'Reef moment')));
     return h('div', { className: 'crm-anchor', ref: keep },
       h('style', null, LANE_CSS_I1),
       h('div', { className: 'crm-card' + (reduce ? '' : ' crm-anim'), role: 'group', 'aria-labelledby': uid + '-t', 'data-reef-moment': m.kind, style: { borderColor: P.accent },
@@ -17099,6 +17105,10 @@
     var pr = React.useState(0), progress = pr[0], setProgress = pr[1];
     var vs = React.useState('natural'), vision = vs[0], setVision = vs[1];
     var ex = React.useState(false), expanded = ex[0], setExpanded = ex[1];
+    var diveFs = useDiveFullscreen(React, diveStageRef), full = diveFs.on;
+    var idp = React.useState(false), idWanted = idp[0], setIdPanel = idp[1];
+    var shp = React.useState(false), shotsWanted = shp[0], setShotsPanel = shp[1];
+    var nrp = React.useState(false), nearWanted = nrp[0], setNearPanel = nrp[1];
     var quality = d.diveQuality === 'low' || d.diveQuality === 'high' ? d.diveQuality : 'auto';
     var co = React.useState(false), cameraOn = co[0], setCameraOn = co[1];
     // The camera is first person; the student's own Mask view choice returns when it is put away.
@@ -17189,7 +17199,9 @@
       };
     }, [started ? siteKey : 'off', attempt]);
     React.useEffect(function () { if (ctlRef.current && status === 'ready') ctlRef.current.setView(view); }, [view, status]);
-    React.useEffect(function () { var c = ctlRef.current; if (c && status === 'ready' && typeof c.resize === 'function') c.resize(); }, [expanded, status]);
+    React.useEffect(function () { var c = ctlRef.current; if (c && status === 'ready' && typeof c.resize === 'function') c.resize(); }, [expanded, status, full]);
+    // Full screen shows only the view, so it ends with the dive; entering it puts the keys on the view.
+    React.useEffect(function () { if (!full) return; if (status !== 'ready') { diveFs.exit(); return; } var c = canvasRef.current; if (c && c.focus) { try { c.focus({ preventScroll: true }); } catch (e) { c.focus(); } } }, [full, status]);
     React.useEffect(function () { var c = ctlRef.current; if (c && status === 'ready' && typeof c.setVision === 'function') c.setVision(vision); }, [vision, status, siteKey, attempt]);
     function changeVision(mode) { if (['natural', 'vivid', 'fluorescence'].indexOf(mode) >= 0) setVision(mode); }
     var focused = snap && snap.focused ? snap.focused : null;
@@ -17242,7 +17254,7 @@
     var justRight = !!(focused && answer && answer.uid === focused.uid && answer.ok);
     React.useEffect(function () {
       if (!justRight) return;
-      var el = document.getElementById(revealId);
+      var el = (idWanted && full && document.getElementById(revealId + '-fs')) || document.getElementById(revealId);
       if (el && el.focus) { try { el.focus({ preventScroll: true }); } catch (e) { el.focus(); } }
     }, [justRight, focusKey]);
     var todo = snap && snap.nearby ? snap.nearby.filter(function (n) { return !log[n.speciesId]; }).length : 0;
@@ -17267,6 +17279,21 @@
         : lightOn ? __alloT('stem.coralreef.sr_light_on', 'Dive light on.') : __alloT('stem.coralreef.sr_light_off', 'Dive light off.'));
     }, [lightOn, canLight, status]);
     function toggleLight() { var next = !lightPref; env.set({ diveLight: next }); if (ctl() && typeof ctl().setLight === 'function') ctl().setLight(next); }
+    // The swim stick shows by itself on touch screens and in full screen; the choice made on the view is kept.
+    var stickOn = d.diveStick === 'on' || d.diveStick !== 'off' && (full || reefCoarsePointer());
+    // In full screen, Identify opens the same card on the view; it closes with full screen or when nothing is selected.
+    var idPanel = idWanted && full && status === 'ready' && !!focused;
+    var shotsPanel = shotsWanted && full && status === 'ready' && cam.on && !idPanel;
+    // The Nearby list on the view, in or out of full screen, so the preview ring shows beside the row.
+    var nearPanel = nearWanted && status === 'ready' && !idPanel && !shotsPanel;
+    React.useEffect(function () { if (!full) { setIdPanel(false); setShotsPanel(false); } }, [full]);
+    React.useEffect(function () {
+      if (!idPanel) return;
+      var box = document.querySelector('[data-dive-id-panel]'), first = box && (box.querySelector('.crf-choice:not([aria-disabled=true])') || box.querySelector('button'));
+      if (first && first.focus) { try { first.focus({ preventScroll: true }); } catch (e) { first.focus(); } }
+    }, [idPanel, focusKey]);
+    function closeIdPanel() { setIdPanel(false); var c = canvasRef.current; if (c && c.focus) { try { c.focus({ preventScroll: true }); } catch (e) { c.focus(); } } }
+    function identifyFromView() { if (full) { setShotsPanel(false); setNearPanel(false); setIdPanel(true); return; } setTimeout(function () { var el = document.getElementById('cr-focus-title'); if (el) { if (el.scrollIntoView) el.scrollIntoView({ block: 'start' }); if (el.focus) el.focus({ preventScroll: true }); } }, 80); }
     var siteIds = EXPLORE_SITES.map(function (s) { return s.id; }).concat(d.diveModelSite ? ['model'] : []);
     // The site grid and the species log change only with the tool's data, not with the dive's
     // progress and position updates, so those frequent renders reuse them.
@@ -17301,10 +17328,11 @@
         h('p', { style: { margin: '8px 0 0', fontWeight: 600 } }, __alloFill(__alloT('stem.coralreef.ex_log_count', 'Species log: {n} of {total} found.'), { n: found, total: total }), ' ',
           h('button', { type: 'button', style: btnStyle(P, false, { marginLeft: 6 }), onClick: function () { env.go('guide'); } }, __alloT('stem.coralreef.ex_open_guide', 'Open the species guide')))),
       studyId ? h(MarineObservationDock,{key:studyId,env:env,id:studyId,status:status,snap:snap,ctl:ctl(),onClose:closeObservation,onReturn:returnObservation}) : null,
-      h('section', { ref: diveStageRef, className: 'cr-dive-stage', style: cardStyle(P), 'aria-labelledby': 'cr-dive-title' },
+      h('section', { ref: diveStageRef, className: 'cr-dive-stage', 'data-dive-full': full && status === 'ready' ? diveFs.mode : undefined, 'data-dive-stick': status === 'ready' && stickOn && !idPanel ? 'true' : undefined, 'data-dive-id': idPanel ? 'true' : undefined, 'data-dive-near': nearPanel ? 'true' : undefined, 'data-dive-sel': status === 'ready' && (focused || snap && snap.navigation) ? 'true' : undefined, 'data-dive-cam': status === 'ready' && cam.on ? 'true' : undefined, style: cardStyle(P), 'aria-labelledby': 'cr-dive-title' },
         h('div', { style: { display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between', gap: '8px 14px', marginBottom: 12 } },
           h('h3', { id: 'cr-dive-title', ref:diveTitleRef, tabIndex:-1, style: Object.assign({}, h3Style(P), { margin: 0 }) }, ST[siteId].name),
-          status === 'ready' ? h('button', { type: 'button', 'aria-pressed': expanded ? 'true' : 'false', 'data-dive-expand': 'true', style: btnStyle(P, expanded), onClick: function () { setExpanded(!expanded); } }, __alloT('stem.coralreef.ex_expand_view', 'Expand view')) : null,
+          status === 'ready' ? h('button', { type: 'button', 'aria-pressed': expanded ? 'true' : 'false', 'data-dive-expand': 'true', style: btnStyle(P, expanded, { marginLeft: 'auto' }), onClick: function () { setExpanded(!expanded); } }, __alloT('stem.coralreef.ex_expand_view', 'Expand view')) : null,
+          status === 'ready' ? h('button', { type: 'button', 'data-dive-full-toggle': 'true', style: btnStyle(P, false), onClick: diveFs.toggle }, __alloT('stem.coralreef.ov_full', 'Full screen')) : null,
           status === 'ready' && vision !== 'natural' && ctl() && typeof ctl().setVision === 'function' ? h('span', { className: 'cr-vision-badge', 'data-reef-vision-badge': vision, 'aria-hidden': 'true' }, reefVisionName(__alloT, vision), ' · ', __alloT('stem.coralreef.ex_vision_illustrative', 'Illustrative view')) : null),
         !started ? h('div', { className: 'cr-hero' },
           h(ReefVista, { env: env }),
@@ -17315,17 +17343,27 @@
             h('div', { className: 'cr-hero-actions' }, h('button', { type: 'button', className: 'cr-primary', onClick: function () { reefSoundPrime(d); focusDiveTitle(); setStatus('loading'); setTimeout(focusDiveTitle, 0); } }, __alloT('stem.coralreef.ex_start', 'Start the dive'), reefIcon(h, 'arrow'))))) : null,
         // The HUD hangs from a zero-height anchor over the canvas top, so the canvas block stays as it is.
         status === 'ready' ? h(DiveHud, { env: env, snap: snap, todo: todo }) : null,
-        started ? h('div', { style: { position: 'relative' } },
+        started ? h('div', { className: 'cr-dive-view', style: { position: 'relative' } },
           h('canvas', { ref: canvasRef, className: expanded ? 'cr-dive-expanded' : undefined, tabIndex: status === 'ready' ? 0 : -1, role: 'application', 'aria-busy': status === 'loading' ? 'true' : 'false',
             'aria-label': __alloT('stem.coralreef.ex_canvas_label_light', '3D reef dive. W and S or the up and down arrows swim forward and back; A and D or left and right turn; R and F rise and sink; N moves to the next nearby organism; Enter swims to it; L switches the dive light on or off; Space pauses. The list below the view names what is nearby and which way it is.'),
             onKeyDown: cam.keyDown,
             style: { width: '100%', height: 440, display: status === 'error' ? 'none' : 'block', borderRadius: 10, background: '#0b3a4d', outlineOffset: 3 } }),
           status === 'ready' && cam.on ? h(ReefViewfinder, { env: env, cam: cam }) : null,
+          status === 'ready' ? h(DiveOverlay, { env: env, snap: snap, ctl: ctl, TX: TX, log: log, view: view, camOn: cam.on, canLight: canLight, lightPref: lightPref, onLight: toggleLight, fs: diveFs, stickOn: stickOn, moveLabels: moveLabels,
+            onView: function () { env.set({ diveView: view === 'first' ? 'third' : 'first' }); }, onStick: function () { env.set({ diveStick: stickOn ? 'off' : 'on' }); }, onIdentify: identifyFromView, onCloseId: function () { closeIdPanel(); setShotsPanel(false); setNearPanel(false); }, onNear: function () { setIdPanel(false); setShotsPanel(false); setNearPanel(!nearWanted); }, nearOn: nearPanel,
+            nearPanel: nearPanel ? h(NearbyList, { env: env, snap: snap, log: log, TX: TX, focusedUid: focusKey, ctl: ctl }) : null,
+            cam: cam, camReady: reefCameraReady(ctl()), onCamera: function () { if (cam.on) { setShotsPanel(false); cam.stop(); } else cam.start(); }, onShots: function () { setIdPanel(false); setNearPanel(false); setShotsPanel(!shotsWanted); },
+            shotsPanel: shotsPanel ? h(ReefCameraPanel, { env: env, cam: cam, ctl: ctl(), snap: snap, TX: TX, log: log, site: baseSite, siteId: siteId, focused: focused, canLight: canLight, lightOn: lightPref, onLight: toggleLight, key: 'fs-camera:' + siteKey + ':' + attempt }) : null,
+            idPanel: idPanel ? h(IdentifyCard, { env: env, focused: focused, snap: snap, log: log, TX: TX, answer: answer, revealId: revealId + '-fs', onChoose: identify,
+              onSwim: function () { setIdPanel(false); if (ctl()) ctl().swimTo(focused.uid); }, onNext: function () { if (ctl()) ctl().focusNext(); } }) : null }) : null,
           status === 'loading' ? h(DiveLoading, { env: env, value: progress, label: __alloT('stem.coralreef.ex_loading', 'Loading the reef...') }) : null) : null,
         status === 'ready' && !studyId && !cam.on ? h(ReefMomentCard, { env: env, r: moments, canvas: canvasRef }) : null,
         status === 'ready' && !studyId && reefCameraReady(ctl()) ? h(ReefCameraPanel, { env: env, cam: cam, ctl: ctl(), snap: snap, TX: TX, log: log, site: baseSite, siteId: siteId, focused: focused, canLight: canLight, lightOn: lightPref, onLight: toggleLight, key: 'camera:' + siteKey + ':' + attempt }) : null,
-        status === 'ready' ? h(DiveImageCapture, { env: env, ctl: ctl(), key: 'capture:' + siteKey + ':' + attempt }) : null,
-        status === 'ready' ? h(DiveNavigator, { env: env, snap: snap, ctl: ctl(), TX: TX }) : null,
+        // The view now carries its own controls, so the image save and the radar navigator fold away (remembered).
+        status === 'ready' ? h('details', { className: 'cr-dive-more', 'data-dive-more': 'true', open: !!d.diveToolsOpen, onToggle: function (e) { var open = e.currentTarget.open; if (open !== !!d.diveToolsOpen) env.set({ diveToolsOpen: open }); }, style: { marginTop: 12, border: '1px solid ' + P.border, borderRadius: 10, padding: '8px 12px' } },
+          h('summary', { style: { cursor: 'pointer', fontWeight: 700, minHeight: 32, padding: '4px 0' } }, __alloT('stem.coralreef.ov_more_tools', 'More dive tools: save an image, direction radar')),
+          h(DiveImageCapture, { env: env, ctl: ctl(), key: 'capture:' + siteKey + ':' + attempt }),
+          h(DiveNavigator, { env: env, snap: snap, ctl: ctl(), TX: TX })) : null,
         status === 'ready' && !studyId ? h(DiveHabitatTrail, { env: env, snap: snap, ctl: ctl(), key: 'trail:' + siteKey + ':' + attempt }) : null,
         status === 'error' ? h('div', { role: 'alert', style: cardStyle(P, { background: P.cardAlt }) },
           h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.coralreef.ex_error', 'The 3D dive could not start on this device. You can still learn every species in the species guide.')),
@@ -17668,6 +17706,199 @@
   // within 45 degrees of the heading; above or below means 1.5 m or more.
   var CUE_RISE_M = 1.5;
   var ICON_TORCH = 'M3 10h7l3-3h2v10h-2l-3-3H3zM18 8.5l3-1.5M18 12h3.5M18 15.5l3 1.5';
+
+  // ── Dive controls on the view, full screen and steady rows (2026-11-10) ──
+  // The dive sorts snap.nearby by distance on every report, so rows traded places about twice a
+  // second while the diver held still, and a press could land on a row that had just moved in.
+  // Rows now keep their places until the diver has swum on; new arrivals join at the end.
+  var NEARBY_RESORT_M = 1.5;
+  function reefSteadyNearby(memo, list, diver) {
+    var have = {}, at = diver && isFinite(diver.x) && isFinite(diver.z) ? { x: +diver.x, y: +diver.y || 0, z: +diver.z } : null;
+    list.forEach(function (n) { have[n.uid] = n; });
+    var moved = !memo.at || !at || Math.hypot(at.x - memo.at.x, at.y - memo.at.y, at.z - memo.at.z) > NEARBY_RESORT_M;
+    if (moved || !memo.order.length) { memo.order = list.map(function (n) { return n.uid; }); memo.at = at; return list.slice(); }
+    var kept = memo.order.filter(function (u) { return have[u]; }), seen = {};
+    kept.forEach(function (u) { seen[u] = 1; });
+    memo.order = kept.concat(list.filter(function (n) { return !seen[n.uid]; }).map(function (n) { return n.uid; }));
+    return memo.order.map(function (u) { return have[u]; });
+  }
+  // A touch screen wide enough for the stick beside the view (a narrow phone gets it in full screen).
+  function reefCoarsePointer() { try { return typeof window !== 'undefined' && !!window.matchMedia && window.matchMedia('(pointer: coarse) and (min-width: 600px)').matches; } catch (e) { return false; } }
+  // Full screen on the dive card itself. Where the browser refuses (an embedded frame without
+  // permission, older iPhones) the card fills the window instead, and Escape leaves it.
+  function useDiveFullscreen(React, ref) {
+    var st = React.useState(''), mode = st[0], setMode = st[1];
+    React.useEffect(function () {
+      function changed() {
+        var el = ref.current, on = !!el && (document.fullscreenElement === el || document.webkitFullscreenElement === el);
+        setMode(function (m) { return on ? 'native' : m === 'native' ? '' : m; });
+      }
+      document.addEventListener('fullscreenchange', changed); document.addEventListener('webkitfullscreenchange', changed);
+      return function () { document.removeEventListener('fullscreenchange', changed); document.removeEventListener('webkitfullscreenchange', changed); };
+    }, []);
+    React.useEffect(function () {
+      if (mode !== 'fill') return undefined;
+      function key(e) { if (e.key === 'Escape') setMode(''); }
+      document.addEventListener('keydown', key);
+      var root = document.documentElement, prior = root.style.overflow; root.style.overflow = 'hidden';
+      return function () { document.removeEventListener('keydown', key); root.style.overflow = prior; };
+    }, [mode]);
+    // Only the view is on screen, so the rest of the page leaves the tab order until full screen ends.
+    React.useEffect(function () {
+      if (!mode) return undefined;
+      var changed = [];
+      for (var node = ref.current; node && node.parentNode && node !== document.body; node = node.parentNode) {
+        Array.prototype.forEach.call(node.parentNode.children, function (sib) { if (sib !== node && !sib.inert && sib.tagName !== 'SCRIPT' && sib.tagName !== 'STYLE') { sib.inert = true; changed.push(sib); } });
+      }
+      return function () { changed.forEach(function (sib) { sib.inert = false; }); };
+    }, [mode]);
+    function enter() {
+      var el = ref.current; if (!el) return;
+      var req = el.requestFullscreen || el.webkitRequestFullscreen;
+      if (!req) { setMode('fill'); return; }
+      try { var p = req.call(el); if (p && p.then) p.then(function () { setMode('native'); }, function () { setMode('fill'); }); else setMode('native'); } catch (e) { setMode('fill'); }
+    }
+    function exit() {
+      var out = document.exitFullscreen || document.webkitExitFullscreen;
+      try { if (out && (document.fullscreenElement || document.webkitFullscreenElement)) out.call(document); } catch (e) {}
+      setMode('');
+    }
+    return { on: !!mode, mode: mode, enter: enter, exit: exit, toggle: function () { if (mode) exit(); else enter(); } };
+  }
+  var LANE_CSS_OV = [
+    '[data-coralreef-root] .cr-dive-stage[data-dive-full]{position:fixed!important;inset:0!important;z-index:2147483000;margin:0!important;padding:0!important;border:0!important;border-radius:0!important;max-width:none!important;width:auto!important;background:#04202b!important;overflow:hidden}',
+    '[data-coralreef-root] .cr-dive-stage[data-dive-full]>*{display:none!important}',
+    '[data-coralreef-root] .cr-dive-stage[data-dive-full]>.cr-dive-view,[data-coralreef-root] .cr-dive-stage[data-dive-full]>.crf-hud-anchor,[data-coralreef-root] .cr-dive-stage[data-dive-full]>.crm-anchor{display:block!important}',
+    '[data-coralreef-root][data-coralreef-root] .cr-dive-stage[data-dive-full] canvas[role=application]{height:100vh!important;height:100dvh!important;border-radius:0!important}',
+    '[data-coralreef-root] .cr-dive-stage .crf-hud{right:62px}',
+    '[data-coralreef-root] .cro{position:absolute;inset:0;pointer-events:none;z-index:2;overflow:hidden;border-radius:10px}',
+    '[data-coralreef-root] .cro>*{pointer-events:auto}',
+    '[data-coralreef-root] .cro-bar{position:absolute;right:8px;top:8px;display:flex;flex-direction:column;gap:6px}',
+    '[data-coralreef-root] .cro-btn{width:44px;height:44px;border-radius:50%;border:1.5px solid #ffffff59;background:#06222ed9;color:#f2fbfa;display:grid;place-items:center;cursor:pointer;padding:0;font:inherit}',
+    '[data-coralreef-root] .cro-btn[aria-pressed=true]{background:#d7f3ea;color:#07313d;border-color:#d7f3ea}',
+    '[data-coralreef-root] .cro-btn:disabled{opacity:.45;cursor:default}',
+    '[data-coralreef-root] .cro-btn:focus-visible,[data-coralreef-root] .cro-sel button:focus-visible{outline:3px solid #ffd166;outline-offset:2px}',
+    '[data-coralreef-root] .cro-sel{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);width:max-content;max-width:min(560px,calc(100% - 320px));display:flex;align-items:center;justify-content:center;gap:8px;padding:7px 10px;border-radius:14px;background:#06222ee6;color:#f2fbfa;border:1.5px solid #ffffff40;font-weight:600;line-height:1.3}',
+    '[data-coralreef-root] .cro-sel>span{min-width:0}','[data-coralreef-root] .cro-sel button{flex-shrink:0;white-space:nowrap;min-height:40px;padding:6px 14px;border-radius:10px;border:1.5px solid #d7f3ea;background:#d7f3ea;color:#07313d;font:inherit;font-weight:700;cursor:pointer}',
+    '[data-coralreef-root] .cro-sel button.cro-ghost{background:transparent;color:#f2fbfa;border-color:#ffffff73}',
+    '[data-coralreef-root] .cro-stick{position:absolute;left:14px;bottom:14px;width:124px;height:124px;border-radius:50%;background:#06222e8c;border:2px solid #ffffff59;touch-action:none;cursor:grab}',
+    '[data-coralreef-root] .cro-knob{position:absolute;left:50%;top:50%;width:52px;height:52px;margin:-26px 0 0 -26px;border-radius:50%;background:#d7f3eae6;border:2px solid #07313d;pointer-events:none}',
+    '[data-coralreef-root] .cro-rise{position:absolute;right:70px;bottom:14px;display:flex;flex-direction:column;gap:8px}',
+    '[data-coralreef-root] .cro-rise .cro-btn{width:56px;height:56px;touch-action:none}',
+    '[data-coralreef-root] .cr-dive-stage[data-dive-stick] .crm-card,[data-coralreef-root] .cr-dive-stage[data-dive-stick] .crm-chip{bottom:150px}',
+    '@media (max-width:640px){[data-coralreef-root] .cro-bar{right:6px;top:6px;gap:5px}[data-coralreef-root] .cro-bar .cro-btn{width:40px;height:40px}' +
+      '[data-coralreef-root] .cro-sel{left:8px;right:54px;bottom:8px;transform:none;width:auto;max-width:none;flex-wrap:wrap;justify-content:flex-start}[data-coralreef-root] .cro-sel>span{flex:1 1 100%}' +
+      '[data-coralreef-root] .cr-dive-stage[data-dive-stick] .cro-sel{bottom:128px}[data-coralreef-root] .cro-stick{left:8px;bottom:8px;width:108px;height:108px}[data-coralreef-root] .cro-rise{right:6px;bottom:8px}[data-coralreef-root] .cro-rise .cro-btn{width:50px;height:50px}' +
+      '[data-coralreef-root] .cr-dive-stage[data-dive-stick] .crm-card,[data-coralreef-root] .cr-dive-stage[data-dive-stick] .crm-chip{bottom:128px}[data-coralreef-root] .cr-dive-stage[data-dive-sel][data-dive-sel]>.crm-anchor,[data-coralreef-root] .cr-dive-stage[data-dive-sel] .crm-anchor{display:none!important}' +
+      '[data-coralreef-root][data-coralreef-root] .cr-dive-stage .crm-card{right:52px}}',
+    '[data-coralreef-root] .cro-panel{position:absolute;left:10px;top:50px;bottom:10px;width:min(420px,calc(100% - 80px));overflow:auto;overscroll-behavior:contain;box-sizing:border-box;padding:10px 14px 14px;border-radius:14px;border:1.5px solid var(--reef-accent);background:var(--reef-card);color:var(--reef-text);box-shadow:0 10px 28px #00000059;z-index:3}',
+    '[data-coralreef-root] .cro-panel-head{position:sticky;top:-10px;display:flex;align-items:center;justify-content:space-between;gap:10px;margin:-10px -14px 8px;padding:10px 14px;background:var(--reef-card);border-bottom:1px solid var(--reef-border);z-index:1}',
+    '[data-coralreef-root] .cro-panel-close{min-height:40px;padding:6px 12px;border-radius:10px;border:1.5px solid var(--reef-accent);background:var(--reef-alt);color:var(--reef-text);font:inherit;font-weight:700;cursor:pointer;white-space:nowrap}',
+    '[data-coralreef-root] .cro-panel-close:focus-visible{outline:3px solid #ffd166;outline-offset:2px}',
+    '[data-coralreef-root] .cr-dive-stage[data-dive-id] .crm-anchor{display:none!important}',
+    '[data-coralreef-root] .cro-panel[data-dive-near-panel]{bottom:auto;max-height:calc(100% - 60px)}[data-coralreef-root] .cro-panel[data-dive-near-panel] .crf-near{grid-template-columns:minmax(0,1fr)!important}',
+    '[data-coralreef-root] .cr-dive-stage[data-dive-near] .crm-anchor{display:none!important}[data-coralreef-root] .cr-dive-stage[data-dive-near] .cro-sel{left:auto;right:62px;transform:none;max-width:calc(100% - 520px)}',
+    '@media (max-width:900px){[data-coralreef-root] .cr-dive-stage[data-dive-near] .cro-sel{left:8px;right:54px;max-width:none;bottom:8px}[data-coralreef-root] .cro-panel[data-dive-near-panel]{max-height:calc(100% - 140px)}}',
+    '[data-coralreef-root] .cro-cam{position:absolute;left:50%;bottom:112px;transform:translateX(-50%);display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:14px;background:#06222ee6;border:1.5px solid #ffffff40;color:#f2fbfa;font-weight:700}',
+    '[data-coralreef-root] .cro-cam button{min-width:44px;min-height:40px;padding:6px 10px;border-radius:10px;border:1.5px solid #ffffff73;background:transparent;color:#f2fbfa;font:inherit;font-weight:700;cursor:pointer}',
+    '[data-coralreef-root] .cro-cam button[aria-pressed=true]{background:#d7f3ea;color:#07313d;border-color:#d7f3ea}[data-coralreef-root] .cro-cam button:disabled{opacity:.45;cursor:default}',
+    '[data-coralreef-root] .cro-cam button:focus-visible{outline:3px solid #ffd166;outline-offset:2px}[data-coralreef-root] .cro-shot:empty{display:none}[data-coralreef-root] .cro-shot{padding:0 4px;white-space:nowrap}',
+    '[data-coralreef-root] .cr-dive-stage[data-dive-cam] .cro-sel{bottom:166px}[data-coralreef-root] .cr-dive-stage[data-dive-cam]:not([data-dive-full]) .cro-sel{bottom:112px}',
+    '@media (max-width:640px){[data-coralreef-root] .cr-dive-stage[data-dive-cam] .cro-stick,[data-coralreef-root] .cr-dive-stage[data-dive-cam] .cro-rise{display:none}' +
+      '[data-coralreef-root] .cro-cam{left:8px;right:54px;transform:none;flex-wrap:wrap;bottom:112px}[data-coralreef-root] .cr-dive-stage[data-dive-cam] .cro-sel{bottom:180px}[data-coralreef-root] .cr-dive-stage[data-dive-cam]:not([data-dive-full]) .cro-sel{bottom:112px}}',
+    // The panel is narrower than the Look closer card, so its reveal stacks the picture above the facts.
+    '[data-coralreef-root] .cro-panel .crf-reveal{grid-template-columns:minmax(0,1fr);gap:12px}[data-coralreef-root] .cro-panel .crf-portrait{max-width:300px}',
+    '@media (max-width:560px){[data-coralreef-root] .cro-panel{left:6px;right:52px;width:auto;top:46px;bottom:6px}}',
+    // A short screen (a phone held sideways) sees the whole view, controls included.
+    '@media (max-height:520px){[data-coralreef-root][data-coralreef-root] .cr-dive-stage:not([data-dive-full]) canvas[role=application]{height:calc(100vh - 16px)!important;height:calc(100dvh - 16px)!important}}'
+  ].join('');
+  var ICON_FULL_IN = 'M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5', ICON_FULL_OUT = 'M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5';
+  var ICON_PAUSE = 'M8 5v14M16 5v14', ICON_PLAY = 'M7 5l12 7-12 7z', ICON_MASK = 'M3 9a3 3 0 0 1 3-3h12a3 3 0 0 1 3 3v3a4 4 0 0 1-4 4h-1.5L12 13l-2.5 3H8a4 4 0 0 1-4-4z';
+  var ICON_NEAR = 'M8 6h12M8 12h12M8 18h12M4 6h.01M4 12h.01M4 18h.01';
+  var ICON_STICK = 'M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 14a2 2 0 1 0 0-4 2 2 0 0 0 0 4z', ICON_UP = 'M12 19V5M6 11l6-6 6 6', ICON_DOWN = 'M12 5v14M6 13l6 6 6-6';
+  // Drag the pad: up and down swim forward and back, left and right turn. Pointer only; the keys
+  // on the view and the swim buttons below it do the same for keyboard and switch users.
+  function DiveStick(props) {
+    var React = props.React, h = props.h, knob = React.useRef(null), act = React.useRef(null), live = React.useRef(props); live.current = props;
+    function send(f, t) { var c = live.current.ctl(); if (c && typeof c.setInput === 'function') c.setInput({ forward: f, turn: t }); }
+    function dead(v) { return Math.abs(v) < 0.18 ? 0 : Math.max(-1, Math.min(1, (v - (v < 0 ? -0.18 : 0.18)) / 0.82)); }
+    function move(e) {
+      var a = act.current; if (!a || a.id !== e.pointerId) return;
+      var dx = (e.clientX - a.cx) / a.r, dy = (e.clientY - a.cy) / a.r, len = Math.hypot(dx, dy);
+      if (len > 1) { dx /= len; dy /= len; }
+      if (knob.current) knob.current.style.transform = 'translate(' + Math.round(dx * 36) + 'px,' + Math.round(dy * 36) + 'px)';
+      send(-dead(dy) || 0, dead(dx));
+    }
+    function up(e) {
+      var a = act.current; if (!a || e && e.pointerId !== undefined && a.id !== e.pointerId) return;
+      act.current = null; if (knob.current) knob.current.style.transform = ''; send(0, 0);
+    }
+    function down(e) {
+      if (e.button && e.pointerType !== 'touch') return;
+      var r = e.currentTarget.getBoundingClientRect();
+      act.current = { id: e.pointerId, cx: r.left + r.width / 2, cy: r.top + r.height / 2, r: Math.max(20, r.width / 2 - 12) };
+      try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {}
+      if (e.preventDefault) e.preventDefault();
+      move(e);
+    }
+    React.useEffect(function () {
+      function gone() { if (act.current) up(); }
+      window.addEventListener('blur', gone);
+      return function () { window.removeEventListener('blur', gone); if (act.current) { act.current = null; send(0, 0); } };
+    }, []);
+    return h('div', { className: 'cro-stick', 'data-dive-stick-pad': 'true', 'aria-hidden': 'true', title: props.label, onPointerDown: down, onPointerMove: move, onPointerUp: up, onPointerCancel: up, onLostPointerCapture: up },
+      h('span', { className: 'cro-knob', ref: knob }));
+  }
+  function DiveOverlay(props) {
+    var env = props.env, React = env.React, h = env.h, __alloT = env.t, __alloFill = env.fill, snap = props.snap || {}, ctl = props.ctl, TX = props.TX, log = props.log || {};
+    var rise = React.useRef(null);
+    function riseHold(v) {
+      function stop(e) { if (rise.current && (!e || e.pointerId === undefined || rise.current === e.pointerId)) { rise.current = null; var c = ctl(); if (c) c.setInput({ rise: 0 }); } }
+      return { onPointerDown: function (e) { if (e.button && e.pointerType !== 'touch') return; rise.current = e.pointerId; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (x) {} var c = ctl(); if (c) c.setInput({ rise: v }); },
+        onPointerUp: stop, onPointerCancel: stop, onLostPointerCapture: stop, onBlur: function () { stop(); },
+        // Keyboard and switch users: each press is one short burst.
+        onClick: function (e) { if (e.detail !== 0) return; var c = ctl(); if (!c) return; c.setInput({ rise: v }); setTimeout(function () { var k = ctl(); if (k) k.setInput({ rise: 0 }); }, 700); } };
+    }
+    var f = snap.focused || null, nav = snap.navigation || null, paused = !!snap.paused, panel = props.idPanel || props.shotsPanel || props.nearPanel || null, cam = props.cam, kind = props.idPanel ? 'id' : props.shotsPanel ? 'shots' : 'near';
+    var mag = [1, 2, 4, 8].indexOf(snap.magnification) >= 0 ? snap.magnification : 1, shot = cam && cam.last && cam.last.photo && Date.now() - cam.last.at < 5000 ? cam.last.photo : null;
+    var known = !!(f && log[f.speciesId] && TX[f.speciesId]), name = f ? known ? TX[f.speciesId].name : __alloT('stem.coralreef.ex_unknown_short', 'Not identified yet') : '';
+    function bar(key, icon, label, on, click, extra) {
+      return h('button', Object.assign({ key: key, type: 'button', className: 'cro-btn', 'data-dive-ov': key, title: label, 'aria-label': label, 'aria-pressed': on === null ? undefined : on ? 'true' : 'false', onClick: click }, extra || null), lineIcon(h, icon, 20));
+    }
+    return h('div', { className: 'cro', 'data-dive-overlay': 'true' },
+      h('style', null, LANE_CSS_OV),
+      h('div', { className: 'cro-bar', role: 'group', 'aria-label': __alloT('stem.coralreef.ov_group', 'Dive controls on the view') },
+        bar('full', props.fs.on ? ICON_FULL_OUT : ICON_FULL_IN, props.fs.on ? __alloT('stem.coralreef.ov_exit_full', 'Exit full screen') : __alloT('stem.coralreef.ov_full', 'Full screen'), null, props.fs.toggle),
+        bar('pause', paused ? ICON_PLAY : ICON_PAUSE, __alloT('stem.coralreef.ex_pause', 'Pause the reef'), paused, function () { var c = ctl(); if (c) c.setPaused(!paused); }),
+        bar('mask', ICON_MASK, __alloT('stem.coralreef.ex_mask_view', 'Mask view'), props.view === 'first', props.onView, { disabled: !!props.camOn }),
+        props.canLight ? bar('light', ICON_TORCH, __alloT('stem.coralreef.ex_light', 'Dive light'), !!props.lightPref, props.onLight) : null,
+        bar('near', ICON_NEAR, __alloT('stem.coralreef.ov_near', 'Nearby list'), !!props.nearOn, props.onNear),
+        props.camReady ? bar('camera', ICON_CAMERA, cam && cam.on ? __alloT('stem.coralreef.ph_stop', 'Put the camera away') : __alloT('stem.coralreef.ph_start', 'Start the camera'), !!(cam && cam.on), props.onCamera) : null,
+        bar('stick', ICON_STICK, __alloT('stem.coralreef.ov_stick', 'Touch swim controls'), !!props.stickOn, props.onStick)),
+      props.fs.on && cam && cam.on && !panel ? h('div', { className: 'cro-cam', role: 'group', 'aria-label': __alloT('stem.coralreef.nav_lens', 'Observation lens') },
+        [1, 2, 4, 8].map(function (n) { return h('button', { key: n, type: 'button', 'data-dive-ov': 'zoom-' + n, 'aria-pressed': mag === n ? 'true' : 'false', disabled: n > 1 && !!nav, onClick: function () { var c = ctl(); if (c && typeof c.setMagnification === 'function') c.setMagnification(n); } }, n + '×'); }),
+        h('button', { type: 'button', 'data-dive-ov': 'shots', 'aria-pressed': props.shotsPanel ? 'true' : 'false', onClick: props.onShots }, __alloT('stem.coralreef.ov_shots', 'Shot list')),
+        h('span', { role: 'status', 'aria-live': 'polite', className: 'cro-shot', 'data-dive-shot': shot ? shot.stars : undefined }, shot ? reefStarsWord(__alloT, __alloFill, shot.stars) : '')) : null,
+      panel ? h('div', { className: 'cro-panel', 'data-dive-id-panel': kind === 'id' ? 'true' : undefined, 'data-dive-shots-panel': kind === 'shots' ? 'true' : undefined, 'data-dive-near-panel': kind === 'near' ? 'true' : undefined, role: 'region',
+          'aria-label': kind === 'id' ? __alloT('stem.coralreef.ov_id_panel', 'Identify the selected organism') : kind === 'shots' ? __alloT('stem.coralreef.ov_shots', 'Shot list') : __alloT('stem.coralreef.ex_nearby', 'Nearby'),
+          onKeyDown: function (e) { if (e.key === 'Escape') { e.stopPropagation(); if (e.nativeEvent && e.nativeEvent.stopImmediatePropagation) e.nativeEvent.stopImmediatePropagation(); props.onCloseId(); } } },
+          h('div', { className: 'cro-panel-head' },
+            h('strong', null, kind === 'id' ? __alloT('stem.coralreef.ov_id_panel', 'Identify the selected organism') : kind === 'shots' ? __alloT('stem.coralreef.ov_shots', 'Shot list') : __alloT('stem.coralreef.ex_nearby', 'Nearby')),
+            h('button', { type: 'button', className: 'cro-panel-close', 'data-dive-ov': 'id-close', onClick: props.onCloseId }, __alloT('stem.coralreef.ov_id_close', 'Back to the dive'))),
+          panel) : null,
+      panel && kind !== 'near' ? null : nav ? h('div', { className: 'cro-sel', 'data-dive-selected': nav.uid, role: 'group', 'aria-label': __alloT('stem.coralreef.ov_sel_group', 'Selected organism') },
+          h('span', null, __alloFill(__alloT('stem.coralreef.ov_swimming', 'Swimming to: {name}'), { name: f && f.uid === nav.uid ? name : __alloT('stem.coralreef.ex_unknown_short', 'Not identified yet') })),
+          h('button', { type: 'button', 'data-dive-ov': 'stop', onClick: function () { var c = ctl(); if (c) c.cancelSwim(); } }, __alloT('stem.coralreef.ov_stop', 'Stop')))
+        : f ? h('div', { className: 'cro-sel', 'data-dive-selected': f.uid, role: 'group', 'aria-label': __alloT('stem.coralreef.ov_sel_group', 'Selected organism') },
+          h('span', null, __alloFill(__alloT('stem.coralreef.ov_selected', 'Selected: {name}, {m} m'), { name: name, m: Math.round(+f.distanceM || 0) })),
+          h('button', { type: 'button', 'data-dive-ov': 'swim', disabled: paused, onClick: function () { var c = ctl(); if (c) c.swimTo(f.uid); } }, __alloT('stem.coralreef.ex_swim', 'Swim to')),
+          !known && props.onIdentify ? h('button', { type: 'button', className: 'cro-ghost', 'data-dive-ov': 'identify', onClick: props.onIdentify }, __alloT('stem.coralreef.ov_identify', 'Identify')) : null,
+          h('button', { type: 'button', className: 'cro-ghost', 'data-dive-ov': 'clear', 'aria-label': __alloT('stem.coralreef.ov_clear', 'Clear selection'), onClick: function () { var c = ctl(); if (c) c.clearFocus(); } }, lineIcon(h, ICON_X, 16))) : null,
+      props.stickOn && !panel ? h(DiveStick, { React: React, h: h, ctl: ctl, label: __alloT('stem.coralreef.ov_stick_pad', 'Drag to swim and turn') }) : null,
+      props.stickOn && !panel ? h('div', { className: 'cro-rise', role: 'group', 'aria-label': __alloT('stem.coralreef.ov_rise_group', 'Rise and sink') },
+        h('button', Object.assign({ type: 'button', className: 'cro-btn', 'data-dive-ov': 'rise', title: props.moveLabels.up, 'aria-label': props.moveLabels.up }, riseHold(1)), lineIcon(h, ICON_UP, 22)),
+        h('button', Object.assign({ type: 'button', className: 'cro-btn', 'data-dive-ov': 'sink', title: props.moveLabels.down, 'aria-label': props.moveLabels.down }, riseHold(-1)), lineIcon(h, ICON_DOWN, 22))) : null);
+  }
   // The dive tip the light lets students test (shown the first time it is switched on).
   function redTip(__alloT) { return __alloT('stem.coralreef.tip_red', 'Where did the red go? Water soaks up red light first, so red fish look brown by about 10 m. A dive light brings the true colours back.'); }
   function hasCue(n) { return !!(n && typeof n.bearingDeg === 'number' && isFinite(n.bearingDeg)); }
@@ -17840,7 +18071,8 @@
   var NEAR_BAR_M = 8; // the dive lists organisms within about 8 m
   function NearbyList(props) {
     var env = props.env, React = env.React, h = env.h, P = env.P, __alloT = env.t, __alloFill = env.fill, TX = props.TX, log = props.log, ctl = props.ctl;
-    var list = props.snap && props.snap.nearby ? props.snap.nearby : [];
+    var steady = React.useRef({ order: [], at: null });
+    var list = reefSteadyNearby(steady.current, props.snap && props.snap.nearby ? props.snap.nearby : [], props.snap && props.snap.diver);
     var summary = React.useRef(null), focusedAction = React.useRef(null);
     var uid = 'cr-nearby-' + React.useId().replace(/:/g, '');
     // A live row may disappear between keyboard actions. Recover only its lost
@@ -17862,14 +18094,21 @@
     }, []);
     var unknownName = __alloT('stem.coralreef.ex_unknown_short', 'Not identified yet');
     var todo = list.filter(function (n) { return !(log[n.speciesId] && TX[n.speciesId]); }).length;
+    function show(uid) { var c = ctl && ctl(); if (c && typeof c.preview === 'function') c.preview(uid); }
+    function rowOf(e) { var r = e.target && e.target.closest ? e.target.closest('[data-nearby-uid]') : null; return r ? r.getAttribute('data-nearby-uid') : null; }
+    React.useEffect(function () { return function () { show(null); }; }, []);
     return h('div', { 'data-nearby-list': 'true', onFocusCapture: function (e) {
         if (e.target.closest && e.target.closest('[data-nearby-uid]')) focusedAction.current = e.target;
+        show(rowOf(e));
       }, onBlurCapture: function (e) {
         if (focusedAction.current === e.target && e.target.isConnected) focusedAction.current = null;
-      } },
+        show(null);
+      },
+      onPointerOver: function (e) { if (e.pointerType !== 'touch') show(rowOf(e)); }, onPointerLeave: function () { show(null); } },
       h('p', { ref: summary, tabIndex: -1, role: 'group', 'data-nearby-summary': 'true', 'aria-labelledby': uid + '-count', 'aria-describedby': uid + '-help', style: mutedStyle(P, { margin: '0 0 8px', fontSize: 14 }) },
         h('span', { id: uid + '-count' }, list.length ? __alloFill(__alloT('stem.coralreef.ex_near_summary', '{n} nearby, {k} still to identify.'), { n: list.length, k: todo }) : __alloT('stem.coralreef.ex_nothing_near', 'Nothing close by. Swim on to find more.'))),
-      h('p', { id: uid + '-help', style: mutedStyle(P, { margin: '0 0 8px', fontSize: 14 }) }, __alloT('stem.coralreef.ex_near_updates', 'This list updates as fish and the diver move. Pause the reef to explore it at your own pace.')),
+      h('p', { id: uid + '-help', style: mutedStyle(P, { margin: '0 0 8px', fontSize: 14 }) }, __alloT('stem.coralreef.ex_near_steady', 'Rows keep their places while you stay still, and re-sort by distance once you swim on. Pause the reef to explore at your own pace.'), ' ',
+        __alloT('stem.coralreef.ex_near_preview', 'Point at or Tab to a row and a pale blue ring shows which one it is in the view.')),
       list.length ? h('ul', { className: 'crf-near' }, list.map(function (n, index) {
         var known = !!(log[n.speciesId] && TX[n.speciesId]), name = known ? TX[n.speciesId].name : unknownName;
         var isFocus = props.focusedUid === n.uid, m = Math.round(n.distanceM), where = cueWords(__alloT, n), v = { n: index + 1, name: name, m: m, where: where };

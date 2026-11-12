@@ -201,17 +201,27 @@ describe('reef moment card', () => {
     expect(card(t).querySelector('[data-moment-hide]')).toBeTruthy();
   });
 
-  it('Hide puts the moment away until a different one comes, and returns focus to the view', async () => {
+  // 2026-11-10: Hide used to bring the card back for the next moment, so it kept popping up.
+  it('Hide tucks moments into a chip that stays a chip for new moments, until the chip is pressed', async () => {
     const t = await mountTool();
     const engine = await startDive(t);
+    const chip = () => t.host.querySelector('[data-moment-chip]');
     await show(engine, [M.cleaning]);
+    expect(chip()).toBeNull();
     await click(card(t).querySelector('[data-moment-hide]'));
     expect(card(t)).toBeNull();
     expect(document.activeElement && document.activeElement.tagName).toBe('CANVAS');
     await show(engine, [{ ...M.cleaning, distanceM: 2 }]);
     expect(card(t), 'the same moment stays hidden').toBeNull();
     await show(engine, [{ ...M.cleaning, distanceM: 2 }, M.turtle_breath]);
-    expect(card(t).getAttribute('data-reef-moment')).toBe('turtle_breath');
+    expect(card(t), 'a different moment does not reopen the card').toBeNull();
+    expect(chip().getAttribute('data-moment-chip')).toBe('turtle_breath');
+    expect(chip().getAttribute('aria-label')).toContain('Show the reef moment: ');
+    await show(engine, [M.grazing]);
+    expect(card(t), 'nor does the next one').toBeNull();
+    await click(chip());
+    expect(card(t), 'pressing the chip opens the card again').toBeTruthy();
+    expect(chip()).toBeNull();
   });
 
   it('stays on its moment while the keyboard is on it, and hands focus back to the view when it goes', async () => {

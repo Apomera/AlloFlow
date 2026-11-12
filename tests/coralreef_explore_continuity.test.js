@@ -95,11 +95,12 @@ describe('Nearby live-list focus continuity', () => {
     await emit(t.ctl, { nearby: [organism('c')] });
     expect(document.activeElement).toBe(before); expect(summary(t.host)).toBe(before); expect(row(t.host, 'c')).toBeTruthy();
   });
-  it('retains the same focused action when rows reorder and distance labels change', async () => {
+  // 2026-11-10: rows hold their places while the diver stays put (they used to trade places twice a second).
+  it('retains the same focused action and row place when distances change under a still diver', async () => {
     const t = await withNearby(), action = button(row(t.host, 'a'), 'Swim to'); await focus(action);
     await emit(t.ctl, { nearby: [organism('b', 2), organism('a', 7)] });
     expect(row(t.host, 'a').querySelectorAll('button')[1]).toBe(action); expect(document.activeElement).toBe(action);
-    expect(action.getAttribute('aria-label')).toContain('organism 2'); expect(action.getAttribute('aria-label')).toContain('7 m');
+    expect(action.getAttribute('aria-label')).toContain('organism 1'); expect(action.getAttribute('aria-label')).toContain('7 m');
   });
   it.each(['outside', 'another row'])('does not reclaim focus after the user moves to %s', async destination => {
     const t = await withNearby(); await focus(button(row(t.host, 'a'), 'Look'));

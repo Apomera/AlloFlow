@@ -1712,6 +1712,7 @@
     // autoReason: why 'auto' chose this tier (null when the student chose); slowW: the slow signal.
     var autoReason = options.quality === 'low' || options.quality === 'high' ? null : profileDevice().reason, slowW = slowWatch();
     var govPace = paceWatch();
+    var previewRing = null, previewUid = null;
     var floorMesh = null, bommieMesh = null, orgRoot = null, diver = null, bubbles = null, focusRing = null, mask = null, backdrop = null, surface = null, motes = null, sun = null, hemi = null;
     var shafts = [], U = null, snowU = null, plantMotions = [], fogNear = new T.Color(), fogFar = new T.Color(), topNear = new T.Color(), topFar = new T.Color(), lastWaterDepth = -1;
     var diverPos = new T.Vector3(), bearing = 0, speed = 0, vy = 0, turnRate = 0, bodyPitch = 0, bodyRoll = 0, kick = 0, swimEffort = 0, autopilot = null;
@@ -5805,6 +5806,10 @@
       }));
       focusRing = new T.Mesh(own(new T.RingGeometry(0.78, 1.18, 64, 1)), m);
       focusRing.name = 'reef-explore-focus'; focusRing.renderOrder = 900; focusRing.frustumCulled = false; focusRing.visible = false; scene.add(focusRing);
+      // A pale blue ring shows which organism a Nearby row means, without selecting it.
+      var pm = m.clone(); pm.uniforms = { opacity: { value: 1.0 }, color: { value: new T.Color(0.3, 0.86, 1.0) } }; own(pm);
+      previewRing = new T.Mesh(focusRing.geometry, pm);
+      previewRing.name = 'reef-explore-preview'; previewRing.renderOrder = 899; previewRing.frustumCulled = false; previewRing.visible = false; scene.add(previewRing);
     }
     function buildMask() {
       var m = own(new T.ShaderMaterial({
@@ -6381,6 +6386,9 @@
         // Through the camera a close ring would wash over the whole frame, so it stays faint.
         focusRing.material.uniforms.opacity.value = (reducedMotion ? 0.85 : 0.72 + 0.2 * Math.sin(visualTime * 2.6)) * (photoMode ? 0.35 : 1);
       }
+      var pv = previewRing && previewUid && previewUid !== focusedUid ? byUid[previewUid] : null;
+      if (previewRing) previewRing.visible = !!pv;
+      if (pv) { var pc = observationCenter(pv), perPx = 2 * Math.tan(camera.fov * Math.PI / 360) / Math.max(1, canvasH || canvas.height || 1), pr = Math.max(observationRadius(pv) * 1.15 + 0.12, camera.position.distanceTo(pc) * perPx * 28); previewRing.position.copy(pc); previewRing.scale.set(pr, pr, pr); previewRing.quaternion.copy(camera.quaternion); }
     }
 
     // ---- State ------------------------------------------------------------------------------
@@ -6760,6 +6768,12 @@
       var i = focusedUid ? list.indexOf(focusedUid) : -1, next = i < 0 ? list[0] : list[(i + step + list.length) % list.length];
       focus(next); return next;
     }
+    function preview(uid) {
+      if (disposed || !loaded) return false;
+      var next = uid && byUid[uid] ? uid : null;
+      if (next !== previewUid) { previewUid = next; refresh(); }
+      return !!next;
+    }
     function swimTo(uid) {
       if (disposed || !loaded) return false;
       var o = byUid[uid]; if (!o) return false;
@@ -6868,10 +6882,12 @@
         var context = typeof renderer.getContext === 'function' ? renderer.getContext() : null;
         if (context && typeof context.isContextLost === 'function' && context.isContextLost()) return null;
         // A photograph shows the reef, not the selection ring that helped aim it.
-        var ringShown = photoMode && focusRing && focusRing.visible;
+        var ringShown = photoMode && focusRing && focusRing.visible, previewShown = previewRing && previewRing.visible;
         if (ringShown) focusRing.visible = false;
+        if (previewShown) previewRing.visible = false;
         renderer.render(scene, camera);
         if (ringShown) focusRing.visible = true;
+        if (previewShown) previewRing.visible = true;
         if (disposed || contextLost || context && typeof context.isContextLost === 'function' && context.isContextLost()) return null;
         var data = canvas.toDataURL('image/png'), prefixLength = 22;
         // Reject empty/unsupported canvas results and malformed PNG encodings.
@@ -6955,7 +6971,7 @@
     controller = {
       lookCamera: lookCamera, lookAtFocused: lookAtFocused, zoomCamera: zoomCamera, setMagnification: setMagnification, resetCamera: resetCamera, captureImage: captureImage, setPhotoMode: setPhotoMode, checkFrame: checkFrame,
       setView: setView, setPaused: setPaused, setReducedMotion: setReducedMotion, setInput: setInput, focusNext: function () { return cycleFocus(1); }, focusPrevious: function () { return cycleFocus(-1); },
-      focus: focus, findSpecies: findSpecies, clearFocus: clearFocus, swimTo: swimTo, cancelSwim: cancelSwim, setLight: setLight, setVision: setVision, getState: snapshot, resize: resize, dispose: dispose
+      focus: focus, preview: preview, findSpecies: findSpecies, clearFocus: clearFocus, swimTo: swimTo, cancelSwim: cancelSwim, setLight: setLight, setVision: setVision, getState: snapshot, resize: resize, dispose: dispose
     };
 
     // ---- Picking ---------------------------------------------------------------------------------
@@ -7016,7 +7032,7 @@
     listen(canvas, 'pointerdown', function (event) {
       if (event.button && event.pointerType !== 'touch') return;
       var id = pid(event); pointers.set(id, { x: event.clientX, y: event.clientY });
-      press = pointers.size === 1 ? { id: id, x: event.clientX, y: event.clientY, t: now(), moved: 0 } : null;
+      press = pointers.size === 1 ? { id: id, x: event.clientX, y: event.clientY, t: now(), moved: 0, slop: event.pointerType === 'touch' ? 18 : 6 } : null;
       try { if (canvas.setPointerCapture && event.pointerId !== undefined) canvas.setPointerCapture(event.pointerId); } catch (ignore) {}
       try { if (canvas.focus) canvas.focus({ preventScroll: true }); } catch (ignore) {}
       if (pointers.size === 2) { var p = Array.from(pointers.values()); pinch = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); }
@@ -7026,11 +7042,11 @@
       var dx = event.clientX - old.x, dy = event.clientY - old.y; pointers.set(id, { x: event.clientX, y: event.clientY });
       if (pointers.size > 1) { var p = Array.from(pointers.values()), d = Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); if (pinch > 0 && d > 0) zoomBy(Math.log(pinch / d)); pinch = d; press = null; return; }
       if (press && press.id === id) press.moved += Math.abs(dx) + Math.abs(dy);
-      if (!press || press.moved > 6) { dragging = true; lookBy(dx, dy); }
+      if (!press || press.moved > press.slop) { dragging = true; lookBy(dx, dy); }
     });
     listen(canvas, 'pointerup', function (event) {
       var id = pid(event);
-      if (press && press.id === id && press.moved <= 6 && now() - press.t < 800) pick(event.clientX, event.clientY);
+      if (press && press.id === id && press.moved <= press.slop && now() - press.t < 800) pick(event.clientX, event.clientY);
       pointers.delete(id); press = null; pinch = 0; dragging = pointers.size > 0;
     });
     function pointerGone(event) { pointers.delete(pid(event)); press = null; pinch = 0; dragging = pointers.size > 0; }
