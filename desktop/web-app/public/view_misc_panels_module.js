@@ -2672,7 +2672,8 @@ function SourceGenPanel(props) {
     documentsOnly,
     setDocumentsOnly,
     generationStep,
-    inputText
+    inputText,
+    setUniversalGrade
   } = props;
   const [confirmReplace, setConfirmReplace] = React.useState(false);
   const replaceKeepRef = React.useRef(null);
@@ -2993,6 +2994,15 @@ function SourceGenPanel(props) {
   if (!showSourceGen) return null;
   const finderGrade = sourceLevel || gradeLevel;
   const sourceGradeMismatch = _getSourceGradeMismatch(sourceLevel, gradeLevel);
+  const gradeNote = (key, fallback) => {
+    const gradeName = (label) => {
+      const number = /^(\d{1,2})/.exec(label);
+      const key2 = label === "Kindergarten" ? "k" : label === "College" ? "college" : label === "Graduate Level" ? "grad" : number ? "g" + number[1] : "";
+      return key2 ? sourceText("input.level_options." + key2, label) : label;
+    };
+    const values = { source: gradeName(sourceGradeMismatch.sourceGrade), other: gradeName(sourceGradeMismatch.instructionalGrade) };
+    return String(sourceText(key, fallback, values)).replace(/\{(source|other)\}/g, (_, name) => values[name]);
+  };
   return /* @__PURE__ */ React.createElement("div", { "data-source-writer": true, className: "p-4 bg-violet-50/60 border-b border-violet-200 animate-in slide-in-from-top-2 space-y-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h3", { className: "text-sm font-bold text-violet-950" }, sourceText("input.write_source_heading", "Write a new source passage with AI")), /* @__PURE__ */ React.createElement("p", { "data-source-writer-intro": true, className: "mt-1 text-xs text-violet-900" }, existingSourceWords > 0 ? sourceText("input.write_source_intro_existing", "This writes new text from the topic below. It does not use your current source. To make resources from your own text, close this and open your source.") : sourceText("input.write_source_intro", "AI writes a new passage from the topic below. To use your own text instead, choose Paste or type your own text."))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { htmlFor: "allo-source-topic", className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.topic")), /* @__PURE__ */ React.createElement(
     "input",
     {
@@ -3030,13 +3040,13 @@ function SourceGenPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "Persuasive" }, t("input.tone_options.persuasive")),
     /* @__PURE__ */ React.createElement("option", { value: "Humorous" }, t("input.tone_options.humorous")),
     /* @__PURE__ */ React.createElement("option", { value: "Step-by-Step" }, t("input.tone_options.procedural"))
-  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, t("input.target_level")), /* @__PURE__ */ React.createElement(
+  )), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-medium text-indigo-900 mb-1" }, sourceText("wizard.grade_level", t("input.target_level"))), /* @__PURE__ */ React.createElement(
     "select",
     {
       value: sourceLevel,
       onChange: (e) => setSourceLevel(e.target.value),
       className: "w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300",
-      "aria-label": t("common.target_level")
+      "aria-label": sourceText("wizard.grade_level", t("common.target_level"))
     },
     /* @__PURE__ */ React.createElement("option", { value: "Kindergarten" }, t("input.level_options.k")),
     /* @__PURE__ */ React.createElement("option", { value: "1st Grade" }, t("input.level_options.g1")),
@@ -3053,15 +3063,23 @@ function SourceGenPanel(props) {
     /* @__PURE__ */ React.createElement("option", { value: "12th Grade" }, t("input.level_options.g12")),
     /* @__PURE__ */ React.createElement("option", { value: "College" }, t("input.level_options.college")),
     /* @__PURE__ */ React.createElement("option", { value: "Graduate Level" }, t("input.level_options.grad"))
-  ))), sourceGradeMismatch && /* @__PURE__ */ React.createElement("div", { role: "status", "data-source-grade-mismatch": "true", className: "rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-950" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("p", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("strong", null, "Check the instructional grade:"), " this source is set to ", sourceGradeMismatch.sourceGrade, ", while Universal Settings are ", sourceGradeMismatch.instructionalGrade, ". Generation and standards search in this panel use ", sourceGradeMismatch.sourceGrade, ". If this will be the primary grade-level text, align the two settings."), /* @__PURE__ */ React.createElement(
+  ))), sourceGradeMismatch && /* @__PURE__ */ React.createElement("div", { role: "status", "data-source-grade-mismatch": "true", className: "rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-800" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("p", { className: "min-w-0 flex-1" }, gradeNote("input.grade_differs_note", "This passage will be written for {source}. Your other tools are still set to {other}.")), typeof setUniversalGrade === "function" ? /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-source-grade-everywhere": "true",
+      onClick: () => setUniversalGrade(sourceLevel),
+      className: "shrink-0 rounded-md border border-slate-400 bg-white px-2.5 py-1.5 font-bold text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+    },
+    gradeNote("input.grade_use_everywhere", "Use {source} for everything")
+  ) : /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
       onClick: () => setSourceLevel(sourceGradeMismatch.instructionalGrade),
-      className: "shrink-0 rounded-md border border-amber-400 bg-white px-2.5 py-1.5 font-bold text-amber-950 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
+      className: "shrink-0 rounded-md border border-slate-400 bg-white px-2.5 py-1.5 font-bold text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
     },
-    "Use ",
-    sourceGradeMismatch.instructionalGrade
+    gradeNote("input.grade_use_other", "Use {other}")
   ))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 p-2 rounded-lg border border-slate-400" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-center mb-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs text-slate-600 font-bold flex items-center gap-1" }, /* @__PURE__ */ React.createElement(CheckCircle, { size: 12, className: "text-green-600" }), " ", isIndependentMode ? t("wizard.learning_goal_header") : t("standards.target_standard")), !isIndependentMode && /* @__PURE__ */ React.createElement("div", { className: "flex bg-white rounded-md border border-slate-400 p-0.5 shadow-sm" }, /* @__PURE__ */ React.createElement(
     "button",
     {

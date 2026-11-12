@@ -21398,6 +21398,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           // untouched K-12 default; the Quick Start wizard that follows still asks,
           // and a value the learner already set is left alone.
           setGradeLevel(prev => (prev === '5th Grade' ? 'College' : prev));
+          setSourceLevel(prev => (prev === '5th Grade' ? 'College' : prev));
           addToast(t('toasts.mode_independent_enabled'), "success");
           setIsAdventureStoryMode(false);
       } else {
@@ -26674,6 +26675,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [sourceTopic, setSourceTopic] = useState('');
   const [sourceTone, setSourceTone] = useState('Informative');
   const [sourceLevel, setSourceLevel] = useState('5th Grade');
+  const [gradeLevelChosen, setGradeLevelChosen] = useState(false);
+  const chooseGradeLevel = (value) => { setGradeLevelChosen(true); if (gradeLevel === sourceLevel) setSourceLevel(value); setGradeLevel(value); };
+  const chooseSourceLevel = (value) => { if (!gradeLevelChosen && gradeLevel === sourceLevel) setGradeLevel(value); setSourceLevel(value); };
+  const draftHydratedRef = useRef(false);
+  const gradePrefsLoadedRef = useRef(false);
   const [sourceVocabulary, setSourceVocabulary] = useState('');
   const [sourceLength, setSourceLength] = useState('250');
   const [sourceCustomInstructions, setSourceCustomInstructions] = useState('');
@@ -31114,10 +31120,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
   }, [playbackRate]);
   useEffect(() => {
+      if (!lzLoaded || isStorageDisabled || !gradePrefsLoadedRef.current || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode)) return;
+      const saveGrades = setTimeout(async () => {
+          try { await storageDB.set('allo_grade_prefs', { gradeLevel, sourceLevel, chosen: gradeLevelChosen }); }
+          catch (e) { warnLog("Grade preference save failed", e); }
+      }, 1000);
+      return () => clearTimeout(saveGrades);
+  }, [gradeLevel, sourceLevel, gradeLevelChosen, lzLoaded, isStorageDisabled, isTeacherMode, showStudentEntry, activeSessionCode]);
+  useEffect(() => {
       if (!lzLoaded || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode)) {
           setIsDraftSaving(false);
           return;
       }
+      if (!draftHydratedRef.current && !isStorageDisabled) { setIsDraftSaving(false); return; }
       const saveDraft = setTimeout(async () => {
           const draftData = {
               inputText,
@@ -31226,8 +31241,21 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                   }
               } catch (e) { warnLog("Draft Restoration Error", e); }
           }
+          if (!gradePrefsLoadedRef.current) {
+              try {
+                  const prefs = await storageDB.get('allo_grade_prefs');
+                  if (shouldStop()) return;
+                  const isGrade = value => typeof value === 'string' && value.length > 0 && value.length < 40;
+                  if (prefs && typeof prefs === 'object') {
+                      if (isGrade(prefs.gradeLevel)) setGradeLevel(prefs.gradeLevel);
+                      if (isGrade(prefs.sourceLevel)) setSourceLevel(prefs.sourceLevel);
+                      if (prefs.chosen === true) setGradeLevelChosen(true);
+                  }
+              } catch (e) { warnLog("Grade preference load error", e); }
+              gradePrefsLoadedRef.current = true;
+          }
       };
-      initLocalData();
+      initLocalData().finally(() => { if (!cancelled) draftHydratedRef.current = true; });
       return () => { cancelled = true; };
   }, [lzLoaded, isStorageDisabled, isTeacherMode, showStudentEntry, activeSessionCode, studentWorkSaveAttempt, selectedProfileId]);
   // Reading Ruler input lifecycle: pointer, touch and keyboard focus share one position.
@@ -38303,6 +38331,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       canvasRecoveryPendingSaveCountRef.current = 0;
       canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
       clearCanvasWorkspaceState();
+      setGradeLevel(gradeLevel); setSourceLevel(sourceLevel);
       // A new workspace needs setup even if the previous one completed or skipped it.
       try { safeRemoveItem('allo_wizard_completed'); } catch (_) {}
       setWizardInitialMode(null);
@@ -45055,7 +45084,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
     setIncludeSourceCitations, setInputText, setIsExtracting, setIsReadingLibraryOpen,
     setIsUrlSearchMode, setPdfAuditResult, setPdfFixResult, setPdfPageRange, setPendingPdfBase64,
     setPendingPdfFile, setSearchOptions, setShowSourceGen, setShowUrlInput, setSourceCustomInstructions,
-    setSourceLength, setSourceLevel, setSourceTone, setSourceTopic, setSourceVocabulary,
+    setSourceLength, setSourceLevel: chooseSourceLevel, setUniversalGrade: chooseGradeLevel, setSourceTone, setSourceTopic, setSourceVocabulary,
     setStandardInputValue, setTargetStandards, setUrlSearchQuery, setUrlToFetch, showSourceGen,
     showUrlInput, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone, sourceTopic,
     sourceVocabulary, standardInputValue, standardMode, startNewPdfAudit, suggestedStandards, t,
@@ -45137,7 +45166,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
     setEnableFactionResources, setExpandedTools, setExploreDifficulty, setFaqCount,
     setFaqCustomInstructions, setFillInTheBlank, setFrameCustomInstructions, setFrameType,
     setFullPackAddType, setFullPackTargetGroup, setGeneratedContent, setGlossaryCustomInstructions,
-    setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count, setGradeLevel, setHistory,
+    setGlossaryDefinitionLevel, setGlossaryTier2Count, setGlossaryTier3Count, setGradeLevel: chooseGradeLevel, setHistory,
     setImageStyle, setIncludeCharts, setIncludeEtymology, setIncludeTimelineVisuals, setInterestInput,
     setIsAdventureCloudEnabled, setIsAdventureStoryMode, setIsAutoConfigEnabled, setIsMathGraphEnabled,
     setIsPersonaFreeResponse, setIsSocialStoryMode, setIsToolCatalogExpanded, setIsToolCatalogHidden,

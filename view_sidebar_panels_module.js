@@ -3118,7 +3118,8 @@ function SourceInputPanel(props) {
     documentsOnly,
     setDocumentsOnly,
     generationStep,
-    inputText
+    inputText,
+    setUniversalGrade: props.setUniversalGrade
   }), sourceStatus === "empty" ? /* @__PURE__ */ React.createElement("div", { "data-source-ways-in": true, id: "tour-source-check", className: "p-4" }, /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-paste": true, onClick: () => openSource(true), className: "w-full min-h-11 rounded-xl bg-indigo-700 px-4 py-3 text-sm font-bold text-white hover:bg-indigo-800" }, panelText("sidebar.source_paste_or_type", "Paste or type your own text")), /* @__PURE__ */ React.createElement("p", { className: "m-0 mt-2 text-xs text-slate-600" }, panelText("sidebar.source_ways_in_hint_named", "Or start from Upload, Find online, Reading catalog or Write with AI above. Your text opens in the source view."))) : /* @__PURE__ */ React.createElement("div", { "data-source-summary": true, "data-help-key": "source_summary_card", "data-source-status": sourceStatus, className: "m-4 rounded-xl border border-slate-200 bg-white p-3 text-xs text-slate-800" }, /* @__PURE__ */ React.createElement("p", { className: "m-0 text-sm font-bold text-slate-900" }, sourceStatus === "in-use" ? inUse && inUse.version > 1 ? fillText(panelText("sidebar.source_summary_in_use_version", "Your source: in use, version {version}"), { version: inUse.version }) : panelText("sidebar.source_summary_in_use", "Your source: in use") : panelText("sidebar.source_summary_draft", "Your source: draft")), /* @__PURE__ */ React.createElement("p", { className: "m-0 mt-1 line-clamp-2 text-slate-700", "data-source-summary-first": true }, sourceTitle), /* @__PURE__ */ React.createElement("p", { className: "m-0 mt-1 text-slate-600" }, fillText(panelText("sidebar.source_summary_words", "{words} words"), { words: sourceWords })), /* @__PURE__ */ React.createElement("p", { id: "tour-source-check", "data-source-check-line": true, className: "m-0 mt-1 text-slate-700" }, sourceCheck ? SourceRecord.summary(sourceCheck, panelText) || panelText("source_view.check_done", "Checked.") : panelText("source_view.check_none", "Not checked yet.")), sourceRecord && typeof sourceRecord.pending === "string" && /* @__PURE__ */ React.createElement("p", { "data-source-lock-pending": true, role: "status", className: "m-0 mt-1 text-emerald-900" }, panelText("sidebar.source_pending_short", "Will be used when you finish editing.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-source-open": true, onClick: () => openSource(sourceStatus === "draft"), "aria-label": fillText(sourceStatus === "in-use" ? panelText("sidebar.source_open_named", "Open source: {title}") : panelText("sidebar.source_continue_named", "Continue editing: {title}"), { title: sourceTitle }), className: "mt-3 w-full min-h-11 rounded-lg bg-indigo-700 px-3 text-sm font-bold text-white hover:bg-indigo-800" }, sourceStatus === "in-use" ? panelText("sidebar.source_open", "Open source") : panelText("sidebar.source_continue", "Continue editing"))));
 }
 function GlossaryPanel(props) {
@@ -3184,7 +3185,19 @@ function GlossaryPanel(props) {
       className: `${SIDEBAR_PANEL_UI.control} py-1.5 pl-2 pr-8 focus-visible:border-sky-500 focus-visible:ring-sky-500/20`
     },
     /* @__PURE__ */ React.createElement("option", { value: "Same as Source Text" }, t("glossary.def_options.source")),
-    /* @__PURE__ */ React.createElement("option", { value: "Same as Global Level" }, t("glossary.def_options.global"), " (", gradeLevel, ")"),
+    /* @__PURE__ */ React.createElement("option", { value: "Same as Global Level" }, (() => {
+      const label = (key2, fallback) => {
+        try {
+          const value = t(key2);
+          return value && value !== key2 ? value : fallback;
+        } catch (_) {
+          return fallback;
+        }
+      };
+      const n = /^(\d{1,2})/.exec(String(gradeLevel || ""));
+      const key = gradeLevel === "Kindergarten" ? "k" : gradeLevel === "College" ? "college" : gradeLevel === "Graduate Level" ? "grad" : n ? "g" + n[1] : "";
+      return label("wizard.grade_level", t("glossary.def_options.global")) + " (" + (key ? label("grades." + key, gradeLevel) : gradeLevel) + ")";
+    })()),
     /* @__PURE__ */ React.createElement("option", { value: "Kindergarten" }, t("grades.k")),
     /* @__PURE__ */ React.createElement("option", { value: "1st Grade" }, t("grades.g1")),
     /* @__PURE__ */ React.createElement("option", { value: "2nd Grade" }, t("grades.g2")),
@@ -6493,7 +6506,8 @@ function SourceInputShellView(props) {
     sourceReplacement,
     setSourceReplacement,
     sourceRecord,
-    openSourceView
+    openSourceView,
+    setUniversalGrade: props.setUniversalGrade
   }), expandedTools.includes("source-input") && isParentMode && isTeacherMode && String(inputText || "").trim().length > 20 && typeof onFamilyAction === "function" && /* @__PURE__ */ React.createElement("div", { "data-help-key": "family_source_actions", role: "group", "aria-label": t("family_start.actions_label") || "Adapt this reading", className: "flex flex-wrap gap-2 border-t border-slate-200 p-3" }, [
     { kind: "simplified", label: t("family_start.simpler") || "Simpler text", Icon: FileText2 },
     { kind: "glossary", label: t("family_start.words") || "Word list", Icon: Globe2 },

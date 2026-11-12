@@ -2973,7 +2973,8 @@ function SourceInputPanel(props) {
           setSourceTone, setSourceTopic, setSourceVocabulary, setStandardInputValue, setTargetStandards,
           showSourceGen, sourceCustomInstructions, sourceLength, sourceLevel, sourceTone,
           sourceTopic, sourceVocabulary, standardInputValue, standardMode, studentInterests: props.studentInterests, suggestedStandards,
-          t, targetStandards, useOwnSources, setUseOwnSources, selectedOwnSourceIds, setSelectedOwnSourceIds, documentsOnly, setDocumentsOnly, generationStep, inputText
+          t, targetStandards, useOwnSources, setUseOwnSources, selectedOwnSourceIds, setSelectedOwnSourceIds, documentsOnly, setDocumentsOnly, generationStep, inputText,
+          setUniversalGrade: props.setUniversalGrade
                 })}
                 {sourceStatus === 'empty' ? (
                   <div data-source-ways-in id="tour-source-check" className="p-4">
@@ -3050,7 +3051,13 @@ function GlossaryPanel(props) {
                                 className={`${SIDEBAR_PANEL_UI.control} py-1.5 pl-2 pr-8 focus-visible:border-sky-500 focus-visible:ring-sky-500/20`}
                             >
                                 <option value="Same as Source Text">{t('glossary.def_options.source')}</option>
-                                <option value="Same as Global Level">{t('glossary.def_options.global')} ({gradeLevel})</option>
+                                <option value="Same as Global Level">{(() => {
+                                    // Same words as the grade controls, from strings every pack already translates.
+                                    const label = (key, fallback) => { try { const value = t(key); return value && value !== key ? value : fallback; } catch (_) { return fallback; } };
+                                    const n = /^(\d{1,2})/.exec(String(gradeLevel || ''));
+                                    const key = gradeLevel === 'Kindergarten' ? 'k' : gradeLevel === 'College' ? 'college' : gradeLevel === 'Graduate Level' ? 'grad' : n ? 'g' + n[1] : '';
+                                    return label('wizard.grade_level', t('glossary.def_options.global')) + ' (' + (key ? label('grades.' + key, gradeLevel) : gradeLevel) + ')';
+                                  })()}</option>
                                 <option value="Kindergarten">{t('grades.k')}</option>
                                 <option value="1st Grade">{t('grades.g1')}</option>
                                 <option value="2nd Grade">{t('grades.g2')}</option>
@@ -5791,7 +5798,8 @@ function SourceInputShellView(props) {
           sourceLevel, sourceTone, sourceTopic, sourceVocabulary, standardInputValue,
           standardMode, suggestedStandards, t, targetStandards, urlSearchQuery,
           urlToFetch, useOwnSources, setUseOwnSources, selectedOwnSourceIds, setSelectedOwnSourceIds, documentsOnly, setDocumentsOnly,
-          history, handleGenerate, isProcessing, sourceReplacement, setSourceReplacement, sourceRecord, openSourceView
+          history, handleGenerate, isProcessing, sourceReplacement, setSourceReplacement, sourceRecord, openSourceView,
+          setUniversalGrade: props.setUniversalGrade
             })}
             {expandedTools.includes('source-input') && isParentMode && isTeacherMode && String(inputText || '').trim().length > 20 && typeof onFamilyAction === 'function' && (
               <div data-help-key="family_source_actions" role="group" aria-label={t('family_start.actions_label') || 'Adapt this reading'} className="flex flex-wrap gap-2 border-t border-slate-200 p-3">

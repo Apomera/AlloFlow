@@ -3029,7 +3029,7 @@ function SourceGenPanel(props) {
     standardInputValue, standardMode, studentInterests, suggestedStandards, t,
     targetStandards, useOwnSources, setUseOwnSources,
     selectedOwnSourceIds, setSelectedOwnSourceIds, documentsOnly, setDocumentsOnly, generationStep,
-    inputText
+    inputText, setUniversalGrade
   } = props;
   // Writing a passage replaces the source text. When there already is one, say
   // so and wait for an explicit choice; Keep my text is the default.
@@ -3326,6 +3326,16 @@ function SourceGenPanel(props) {
   // in this same panel, so no second control is needed here.
   const finderGrade = sourceLevel || gradeLevel;
   const sourceGradeMismatch = _getSourceGradeMismatch(sourceLevel, gradeLevel);
+  const gradeNote = (key, fallback) => {
+    // Show the grade names the dropdown shows, in the app language.
+    const gradeName = (label) => {
+      const number = /^(\d{1,2})/.exec(label);
+      const key = label === 'Kindergarten' ? 'k' : label === 'College' ? 'college' : label === 'Graduate Level' ? 'grad' : number ? 'g' + number[1] : '';
+      return key ? sourceText('input.level_options.' + key, label) : label;
+    };
+    const values = { source: gradeName(sourceGradeMismatch.sourceGrade), other: gradeName(sourceGradeMismatch.instructionalGrade) };
+    return String(sourceText(key, fallback, values)).replace(/\{(source|other)\}/g, (_, name) => values[name]);
+  };
   return (
                   <div data-source-writer className="p-4 bg-violet-50/60 border-b border-violet-200 animate-in slide-in-from-top-2 space-y-3">
                       <div>
@@ -3375,12 +3385,12 @@ function SourceGenPanel(props) {
                             </select>
                           </div>
                           <div>
-                            <label className="block text-xs font-medium text-indigo-900 mb-1">{t('input.target_level')}</label>
+                            <label className="block text-xs font-medium text-indigo-900 mb-1">{sourceText('wizard.grade_level', t('input.target_level'))}</label>
                             <select
                               value={sourceLevel}
                               onChange={(e) => setSourceLevel(e.target.value)}
                               className="w-full text-sm p-2 border border-indigo-200 rounded-md focus:border-indigo-500 focus:ring-4 focus:ring-indigo-500/30 outline-none transition-shadow duration-300"
-                              aria-label={t('common.target_level')}
+                              aria-label={sourceText('wizard.grade_level', t('common.target_level'))}
                             >
                                 <option value="Kindergarten">{t('input.level_options.k')}</option>
                                 <option value="1st Grade">{t('input.level_options.g1')}</option>
@@ -3401,18 +3411,30 @@ function SourceGenPanel(props) {
                           </div>
                       </div>
                       {sourceGradeMismatch && (
-                        <div role="status" data-source-grade-mismatch="true" className="rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-[11px] leading-relaxed text-amber-950">
+                        <div role="status" data-source-grade-mismatch="true" className="rounded-lg border border-slate-300 bg-slate-50 px-3 py-2 text-xs leading-relaxed text-slate-800">
                           <div className="flex flex-wrap items-center justify-between gap-2">
                             <p className="min-w-0 flex-1">
-                              <strong>Check the instructional grade:</strong> this source is set to {sourceGradeMismatch.sourceGrade}, while Universal Settings are {sourceGradeMismatch.instructionalGrade}. Generation and standards search in this panel use {sourceGradeMismatch.sourceGrade}. If this will be the primary grade-level text, align the two settings.
+                              {gradeNote('input.grade_differs_note', 'This passage will be written for {source}. Your other tools are still set to {other}.')}
                             </p>
-                            <button
-                              type="button"
-                              onClick={() => setSourceLevel(sourceGradeMismatch.instructionalGrade)}
-                              className="shrink-0 rounded-md border border-amber-400 bg-white px-2.5 py-1.5 font-bold text-amber-950 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-500/40"
-                            >
-                              Use {sourceGradeMismatch.instructionalGrade}
-                            </button>
+                            {/* An older host passes no setter for the shared grade: offer the way back instead. */}
+                            {typeof setUniversalGrade === 'function' ? (
+                              <button
+                                type="button"
+                                data-source-grade-everywhere="true"
+                                onClick={() => setUniversalGrade(sourceLevel)}
+                                className="shrink-0 rounded-md border border-slate-400 bg-white px-2.5 py-1.5 font-bold text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                              >
+                                {gradeNote('input.grade_use_everywhere', 'Use {source} for everything')}
+                              </button>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => setSourceLevel(sourceGradeMismatch.instructionalGrade)}
+                                className="shrink-0 rounded-md border border-slate-400 bg-white px-2.5 py-1.5 font-bold text-slate-900 hover:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+                              >
+                                {gradeNote('input.grade_use_other', 'Use {other}')}
+                              </button>
+                            )}
                           </div>
                         </div>
                       )}
