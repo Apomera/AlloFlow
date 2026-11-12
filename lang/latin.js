@@ -1448,6 +1448,7 @@
   "live_connection": {
     "host_paused": "Conexio magistri suspensa est — locus tuus servatur dum AlloFlow iterum conectitur.",
     "host_stale": "Status magistri diu non recognitus est - sessio viva fortasse adhuc conexa est. Opus tuum in hoc instrumento manet.",
+    "host_stale_tab": "Iam diu nihil a machina magistri auditum est. Sessio viva fortasse adhuc coniuncta est. Opus tuum in hac scheda apertum manet.",
     "dismiss": "Dimitte",
     "dismiss_aria": "Dimitte monitum de statu magistri",
     "connecting": "Ad classem conectitur…",
@@ -1586,6 +1587,7 @@
   },
   "guided": {
     "indicator_title": "Guided modus",
+    "error_open_ai": "Optiones AI aperi",
     "step_of": "gradus {current} {total}",
     "back": "← Retrō",
     "skip": "proximus gradus →",
@@ -6101,6 +6103,9 @@
   },
   "input": {
     "empty_student_explore_open": "Instrumenta discendi aperi",
+    "empty_student_homework_failed_heading": "Hoc pensum aperiri non potuit",
+    "empty_desc_student_homework_failed": "Conexionem tuam inspice, deinde iterum tempta. Si adhuc non aperitur, a magistro tuo novum nexum vel novum signum QR pete.",
+    "empty_student_homework_retry": "Iterum tempta",
     "empty_desc_student_explore": "Elige instrumentum ad legendum, exercendum aut ludendum. Si magister tuus tibi tabulam dedit, hic eam aperire potes.",
     "empty_student_explore_heading": "Tua sponte explora",
     "empty_student_explore_eyebrow": "Tua sponte",

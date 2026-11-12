@@ -256,6 +256,7 @@
   "live_connection": {
     "host_paused": "Conexión de tu docente en pausa — guardamos tu lugar mientras AlloFlow se vuelve a conectar.",
     "host_stale": "La verificación del estado de tu docente no está actualizada: es posible que la sesión en vivo siga conectada. Tu trabajo se queda en este dispositivo.",
+    "host_stale_tab": "Hace un rato que no llega señal del dispositivo del maestro. Es posible que la sesión en vivo siga conectada. Tu trabajo sigue abierto en esta pestaña.",
     "dismiss": "Cerrar",
     "dismiss_aria": "Cerrar el aviso sobre el estado de tu docente",
     "connecting": "Conectando con la clase…",
@@ -2406,6 +2407,7 @@
   },
   "guided": {
     "indicator_title": "Modo Guiado",
+    "error_open_ai": "Abrir configuración de IA",
     "step_of": "Paso {current} de {total}",
     "back": "← Atrás",
     "skip": "Siguiente paso →",
@@ -3361,6 +3363,9 @@
   },
   "input": {
     "empty_student_explore_open": "Abrir herramientas de aprendizaje",
+    "empty_student_homework_failed_heading": "Esta tarea no se cargó",
+    "empty_desc_student_homework_failed": "Revisa tu conexión a internet y vuelve a intentarlo. Si todavía no se carga, pídele a tu maestro un enlace o un código QR nuevo.",
+    "empty_student_homework_retry": "Intentar de nuevo",
     "empty_desc_student_explore": "Elige una herramienta para leer, practicar o jugar. Si tu maestro te dio un archivo, puedes abrirlo aquí.",
     "empty_student_explore_heading": "Explora por tu cuenta",
     "empty_student_explore_eyebrow": "Por tu cuenta",

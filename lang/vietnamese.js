@@ -1508,6 +1508,7 @@
   "live_connection": {
     "host_paused": "Kết nối của giáo viên tạm dừng — vị trí của bạn được giữ nguyên trong khi AlloFlow kết nối lại.",
     "host_stale": "Thông tin trạng thái của giáo viên đã cũ - phiên trực tiếp có thể vẫn đang kết nối. Bài làm của bạn vẫn được lưu trên thiết bị này.",
+    "host_stale_tab": "Đã lâu chưa nhận được tín hiệu từ thiết bị của thầy cô. Buổi học trực tiếp có thể vẫn đang kết nối. Bài làm của em vẫn mở trong thẻ này.",
     "dismiss": "Đóng",
     "dismiss_aria": "Đóng cảnh báo trạng thái giáo viên",
     "connecting": "Đang kết nối với lớp…",
@@ -1649,6 +1650,7 @@
   },
   "guided": {
     "indicator_title": "Chế độ Hướng dẫn",
+    "error_open_ai": "Mở cài đặt AI",
     "step_of": "Bước {current} trên {total}",
     "back": "← Quay lại",
     "skip": "Bước tiếp →",
@@ -6170,6 +6172,9 @@
   },
   "input": {
     "empty_student_explore_open": "Mở công cụ học tập",
+    "empty_student_homework_failed_heading": "Bài tập về nhà này chưa mở được",
+    "empty_desc_student_homework_failed": "Hãy kiểm tra kết nối mạng rồi thử lại. Nếu vẫn chưa mở được, hãy xin thầy cô đường liên kết mới hoặc mã QR mới.",
+    "empty_student_homework_retry": "Thử lại",
     "empty_desc_student_explore": "Chọn một công cụ để đọc, luyện tập hoặc chơi. Nếu giáo viên đã đưa tệp cho bạn, bạn có thể mở tệp ở đây.",
     "empty_student_explore_heading": "Tự mình khám phá",
     "empty_student_explore_eyebrow": "Tự mình",

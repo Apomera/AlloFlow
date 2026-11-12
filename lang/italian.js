@@ -2697,6 +2697,7 @@
   "live_connection": {
     "host_paused": "Connessione dell'insegnante in pausa — il tuo punto resta salvato mentre AlloFlow si riconnette.",
     "host_stale": "Lo stato dell'insegnante non è aggiornato - la sessione dal vivo potrebbe essere ancora connessa. Il tuo lavoro resta su questo dispositivo.",
+    "host_stale_tab": "Il controllo dello stato dell'insegnante non è aggiornato - la sessione dal vivo potrebbe essere ancora connessa. Il tuo lavoro resta aperto in questa scheda.",
     "dismiss": "Chiudi",
     "dismiss_aria": "Chiudi l'avviso sullo stato dell'insegnante",
     "connecting": "Connessione alla classe…",
@@ -2835,6 +2836,7 @@
   },
   "guided": {
     "indicator_title": "Guided modalità",
+    "error_open_ai": "Apri le impostazioni dell'IA",
     "step_of": "passi {current} di {total}",
     "back": "← Indietro",
     "skip": "successivo passi →",
@@ -7356,6 +7358,9 @@
   },
   "input": {
     "empty_student_explore_open": "Apri strumenti di apprendimento",
+    "empty_student_homework_failed_heading": "Questo compito non si è caricato",
+    "empty_desc_student_homework_failed": "Controlla la connessione, poi riprova. Se ancora non si carica, chiedi all'insegnante un nuovo link o un nuovo codice QR.",
+    "empty_student_homework_retry": "Riprova",
     "empty_desc_student_explore": "Scegli uno strumento per leggere, esercitarti o giocare. Se il tuo insegnante ti ha dato un file, puoi aprirlo qui.",
     "empty_student_explore_heading": "Esplora in autonomia",
     "empty_student_explore_eyebrow": "In autonomia",

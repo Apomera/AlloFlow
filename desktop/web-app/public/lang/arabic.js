@@ -1508,6 +1508,7 @@
   "live_connection": {
     "host_paused": "اتصال المعلم متوقف مؤقتًا — نحتفظ بمكانك بينما يعيد AlloFlow الاتصال.",
     "host_stale": "فحص حالة المعلم قديم - قد تكون الجلسة المباشرة لا تزال متصلة. يبقى عملك على هذا الجهاز.",
+    "host_stale_tab": "فحص حالة المعلم قديم - ربما ما زالت الجلسة المباشرة متصلة. يبقى عملك مفتوحًا في علامة التبويب هذه.",
     "dismiss": "إغلاق",
     "dismiss_aria": "إغلاق تحذير حالة المعلم",
     "connecting": "جارٍ الاتصال بالصف…",
@@ -3655,6 +3656,7 @@
   },
   "guided": {
     "indicator_title": "الوضع الموجَّه",
+    "error_open_ai": "افتح إعدادات الذكاء الاصطناعي",
     "step_of": "الخطوة {current} من {total}",
     "back": "← رجوع",
     "skip": "الخطوة التالية →",
@@ -4585,6 +4587,9 @@
   },
   "input": {
     "empty_student_explore_open": "افتح أدوات التعلم",
+    "empty_student_homework_failed_heading": "لم يتم تحميل هذا الواجب",
+    "empty_desc_student_homework_failed": "تحقق من اتصالك بالإنترنت ثم حاول مرة أخرى. إذا لم يتم تحميله بعد ذلك، اطلب من معلمك رابطًا جديدًا أو رمز QR جديدًا.",
+    "empty_student_homework_retry": "حاول مرة أخرى",
     "empty_desc_student_explore": "اختر أداة للقراءة أو التدرب أو اللعب. إذا أعطاك معلمك ملفًا، يمكنك فتحه هنا.",
     "empty_student_explore_heading": "استكشف بمفردك",
     "empty_student_explore_eyebrow": "بمفردك",

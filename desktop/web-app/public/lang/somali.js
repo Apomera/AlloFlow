@@ -1508,6 +1508,7 @@
   "live_connection": {
     "host_paused": "Xiriirka macallinka waa la hakiyay — meeshaada waa laguu hayaa inta AlloFlow dib u xiriirayo.",
     "host_stale": "Hubinta xaaladda macallinka waa duugowday — kalfadhiga tooska ahi weli wuu ku xirnaan karaa. Shaqadaadu waxay ku jirtaa qalabkan.",
+    "host_stale_tab": "Muddo ayaan war ka helin qalabka macallinka. Fasalka tooska ah weli wuu ku xirnaan karaa. Shaqadaadu waxay ku sii furnaanaysaa tab-kan.",
     "dismiss": "Iska xir",
     "dismiss_aria": "Iska xir digniinta xaaladda macallinka",
     "connecting": "Waxaa lagu xirayaa fasalka…",
@@ -3611,6 +3612,7 @@
   },
   "guided": {
     "indicator_title": "Habka Hagidda",
+    "error_open_ai": "Fur dejinta AI",
     "step_of": "Tallaabada {current} ee {total}",
     "back": "← Dib",
     "skip": "Tallaabada Xigta →",
@@ -4585,6 +4587,9 @@
   },
   "input": {
     "empty_student_explore_open": "Fur qalabka waxbarashada",
+    "empty_student_homework_failed_heading": "Shaqadan guriga ma furmin",
+    "empty_desc_student_homework_failed": "Hubi internetkaaga, ka dibna isku day mar kale. Haddii ay weli furmi weydo, macallinkaaga weydii link cusub ama koodh QR cusub.",
+    "empty_student_homework_retry": "Isku day mar kale",
     "empty_desc_student_explore": "Dooro qalab aad ku akhrido, ku tababarato, ama ku ciyaarto. Haddii macallinkaagu ku siiyay fayl, halkan ayaad ka furi kartaa.",
     "empty_student_explore_heading": "Si madax-bannaan u sahami",
     "empty_student_explore_eyebrow": "Si madax-bannaan",

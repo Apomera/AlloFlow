@@ -1262,6 +1262,7 @@
   "live_connection": {
     "host_paused": "Ihuza ry'umwigisha ryahagaze gato — aho wari ugeze harazigamwe mu gihe AlloFlow isubira kwihuza.",
     "host_stale": "Amakuru ku mwigisha ni aya kera - inyigisho y'ako kanya irashobora kuba ikiri ihujwe. Ivyo wakoze biguma kuri iki gikoresho.",
+    "host_stale_tab": "Amakuru y'ukuntu umwigisha ahagaze arashaje - icigwa ca live gishobora kuba kigikora. Ivyo ukora biguma vyuguruye muri iyi tab.",
     "dismiss": "Ugara",
     "dismiss_aria": "Ugara imburi yerekeye umwigisha",
     "connecting": "Kwihuza n'ishuri…",
@@ -1390,6 +1391,7 @@
   },
   "guided": {
     "indicator_title": "Guided uburyo",
+    "error_open_ai": "Ugurura igenamiterere rya AI",
     "step_of": "intambwe {current} ca {total}",
     "back": "← Gusubira inyuma",
     "skip": "cikurikira intambwe →",
@@ -5867,6 +5869,9 @@
   },
   "input": {
     "placeholder": "Omeka ng'aha inyandiko y'integuro y'inyigisho, rungika inyandiko canke amashusho y'isomo, ifoto, ijwi canke videwo, canke ukoreshe 'Kora Inyandiko Shingiro'...",
+    "empty_student_homework_failed_heading": "Iki gikorwa co muhira nticugurutse",
+    "empty_desc_student_homework_failed": "Raba ko interineti yawe ikora, hanyuma usubire ugerageze. Nimba bibandanije kwanka, saba umwigisha wawe ihuza rishasha canke kode ya QR nshasha.",
+    "empty_student_homework_retry": "Subira ugerageze",
     "upload_tooltip": "Rungika inyandiko, amashusho ya PowerPoint ashobora guhindurwa, ifoto, ijwi canke videwo",
     "topic": "Ikiyago / Subject",
     "tone": "ijwi / imiterere",

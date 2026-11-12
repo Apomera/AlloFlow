@@ -1507,6 +1507,7 @@
   "live_connection": {
     "host_paused": "Koneksi guru terjeda — posisi Anda tetap disimpan selagi AlloFlow menyambung ulang.",
     "host_stale": "Status guru belum diperbarui - sesi langsung mungkin masih terhubung. Pekerjaan Anda tetap ada di perangkat ini.",
+    "host_stale_tab": "Pemeriksaan status guru sudah lama tidak diperbarui - sesi langsung mungkin masih terhubung. Pekerjaanmu tetap terbuka di tab ini.",
     "dismiss": "Tutup",
     "dismiss_aria": "Tutup peringatan status guru",
     "connecting": "Menghubungkan ke kelas…",
@@ -1645,6 +1646,7 @@
   },
   "guided": {
     "indicator_title": "Guided mode",
+    "error_open_ai": "Buka pengaturan AI",
     "step_of": "langkah {current} {total}",
     "back": "← Kembali",
     "skip": "berikutnya langkah →",
@@ -6166,6 +6168,9 @@
   },
   "input": {
     "empty_student_explore_open": "Buka alat belajar",
+    "empty_student_homework_failed_heading": "PR ini tidak berhasil dimuat",
+    "empty_desc_student_homework_failed": "Periksa koneksi internetmu, lalu coba lagi. Jika masih tidak bisa dimuat, minta tautan atau kode QR baru kepada gurumu.",
+    "empty_student_homework_retry": "Coba lagi",
     "empty_desc_student_explore": "Pilih alat untuk membaca, berlatih, atau bermain. Jika gurumu memberimu berkas, kamu bisa membukanya di sini.",
     "empty_student_explore_heading": "Jelajahi sendiri",
     "empty_student_explore_eyebrow": "Secara mandiri",

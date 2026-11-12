@@ -2695,6 +2695,7 @@
   "live_connection": {
     "host_paused": "Połączenie nauczyciela wstrzymane – zachowujemy Twoje miejsce, dopóki AlloFlow nie połączy się ponownie.",
     "host_stale": "Status nauczyciela jest nieaktualny – sesja na żywo może być nadal połączona. Twoja praca zostaje na tym urządzeniu.",
+    "host_stale_tab": "Od dłuższej chwili nie ma sygnału z urządzenia nauczyciela. Sesja na żywo może nadal być połączona. Twoja praca zostaje otwarta w tej karcie.",
     "dismiss": "Zamknij",
     "dismiss_aria": "Zamknij ostrzeżenie o statusie nauczyciela",
     "connecting": "Łączenie z klasą…",
@@ -2832,6 +2833,7 @@
   },
   "guided": {
     "indicator_title": "Tryb prowadzony",
+    "error_open_ai": "Otwórz ustawienia AI",
     "step_of": "Krok {current} z {total}",
     "back": "← Wstecz",
     "skip": "Następny krok →",
@@ -7353,6 +7355,9 @@
   },
   "input": {
     "empty_student_explore_open": "Otwórz narzędzia do nauki",
+    "empty_student_homework_failed_heading": "Ta praca domowa się nie wczytała",
+    "empty_desc_student_homework_failed": "Sprawdź połączenie z internetem i spróbuj ponownie. Jeśli nadal się nie wczytuje, poproś nauczyciela o nowy link lub kod QR.",
+    "empty_student_homework_retry": "Spróbuj ponownie",
     "empty_desc_student_explore": "Wybierz narzędzie, aby czytać, ćwiczyć lub grać. Jeśli nauczyciel dał ci plik, możesz otworzyć go tutaj.",
     "empty_student_explore_heading": "Odkrywaj samodzielnie",
     "empty_student_explore_eyebrow": "Samodzielnie",

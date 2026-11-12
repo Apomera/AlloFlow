@@ -2787,6 +2787,7 @@
   "live_connection": {
     "host_paused": "Connexion de l'enseignant en pause – votre place est conservée pendant qu'AlloFlow se reconnecte.",
     "host_stale": "Le statut de l'enseignant n'est plus à jour – la session en direct est peut-être toujours connectée. Votre travail reste sur cet appareil.",
+    "host_stale_tab": "La vérification de l'état de l'enseignant n'est plus à jour - la session en direct est peut-être encore connectée. Ton travail reste ouvert dans cet onglet.",
     "dismiss": "Fermer",
     "dismiss_aria": "Fermer l'avertissement sur le statut de l'enseignant",
     "connecting": "Connexion à la classe…",
@@ -4768,6 +4769,9 @@
   },
   "input": {
     "empty_student_explore_open": "Ouvrir les outils d'apprentissage",
+    "empty_student_homework_failed_heading": "Ce devoir ne s'est pas chargé",
+    "empty_desc_student_homework_failed": "Vérifie ta connexion, puis réessaie. Si le devoir ne se charge toujours pas, demande à ton enseignant un nouveau lien ou un nouveau code QR.",
+    "empty_student_homework_retry": "Réessayer",
     "empty_desc_student_explore": "Choisis un outil pour lire, t'entraîner ou jouer. Si ton enseignant t'a donné un fichier, tu peux l'ouvrir ici.",
     "empty_student_explore_heading": "Explore en autonomie",
     "empty_student_explore_eyebrow": "En autonomie",
@@ -4988,6 +4992,7 @@
   },
   "guided": {
     "indicator_title": "Mode guidé",
+    "error_open_ai": "Ouvrir les paramètres de l'IA",
     "step_of": "Étape {current} sur {total}",
     "back": "← Retour",
     "skip": "Étape suivante →",

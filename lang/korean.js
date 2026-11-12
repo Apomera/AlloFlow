@@ -1508,6 +1508,7 @@
   "live_connection": {
     "host_paused": "선생님 연결이 일시 중지되었습니다. AlloFlow가 다시 연결하는 동안 현재 위치는 그대로 유지됩니다.",
     "host_stale": "선생님 상태 정보가 오래되었습니다. 실시간 세션은 아직 연결되어 있을 수 있습니다. 작업 내용은 이 기기에 그대로 남아 있습니다.",
+    "host_stale_tab": "선생님 기기에서 한동안 소식이 없어요. 실시간 수업은 아직 연결되어 있을 수 있어요. 내가 한 것은 이 탭에 그대로 열려 있어요.",
     "dismiss": "닫기",
     "dismiss_aria": "선생님 상태 경고 닫기",
     "connecting": "수업에 연결하는 중…",
@@ -1646,6 +1647,7 @@
   },
   "guided": {
     "indicator_title": "안내 모드",
+    "error_open_ai": "AI 설정 열기",
     "step_of": "{total}단계 중 {current}단계",
     "back": "← 뒤로",
     "skip": "다음 단계 →",
@@ -6167,6 +6169,9 @@
   },
   "input": {
     "empty_student_explore_open": "학습 도구 열기",
+    "empty_student_homework_failed_heading": "숙제를 불러오지 못했어요",
+    "empty_desc_student_homework_failed": "인터넷 연결을 확인한 다음 다시 시도해 보세요. 그래도 열리지 않으면 선생님께 새 링크나 QR 코드를 달라고 하세요.",
+    "empty_student_homework_retry": "다시 시도",
     "empty_desc_student_explore": "읽기, 연습, 놀이를 위한 도구를 고르세요. 선생님께 받은 파일이 있다면 여기에서 열 수 있어요.",
     "empty_student_explore_heading": "스스로 탐험해 보세요",
     "empty_student_explore_eyebrow": "스스로 하기",

@@ -1508,6 +1508,7 @@
   "live_connection": {
     "host_paused": "የመምህሩ ግንኙነት ለጊዜው ቆሟል — AlloFlow እንደገና እስኪገናኝ ቦታዎ ተጠብቆ ይቆያል።",
     "host_stale": "የመምህሩ ሁኔታ ፍተሻ ጊዜው ያለፈበት ነው - የቀጥታ ክፍለ ጊዜው አሁንም ተገናኝቶ ሊሆን ይችላል። ሥራዎ በዚህ መሣሪያ ላይ ይቆያል።",
+    "host_stale_tab": "የመምህሩ ሁኔታ ፍተሻ የቆየ ነው - የቀጥታ ክፍለ ጊዜው አሁንም የተገናኘ ሊሆን ይችላል። ስራዎ በዚህ ትር ውስጥ ክፍት ሆኖ ይቆያል።",
     "dismiss": "ይዝጉ",
     "dismiss_aria": "የመምህሩን ሁኔታ ማስጠንቀቂያ ይዝጉ",
     "connecting": "ከክፍሉ ጋር በመገናኘት ላይ…",
@@ -1646,6 +1647,7 @@
   },
   "guided": {
     "indicator_title": "Guided ሁነታ",
+    "error_open_ai": "የAI ቅንብሮችን ክፈት",
     "step_of": "እርምጃ {current} የ {total}",
     "back": "← ተመለስ",
     "skip": "ቀጣይ እርምጃ →",
@@ -6167,6 +6169,9 @@
   },
   "input": {
     "empty_student_explore_open": "የመማሪያ መሳሪያዎችን ክፈት",
+    "empty_student_homework_failed_heading": "ይህ የቤት ስራ አልተከፈተም",
+    "empty_desc_student_homework_failed": "የኢንተርኔት ግንኙነትዎን ይፈትሹ፣ ከዚያ እንደገና ይሞክሩ። አሁንም ካልተከፈተ፣ አዲስ ሊንክ ወይም QR ኮድ እንዲሰጥዎ መምህርዎን ይጠይቁ።",
+    "empty_student_homework_retry": "እንደገና ይሞክሩ",
     "empty_desc_student_explore": "ለማንበብ፣ ለመለማመድ ወይም ለመጫወት መሳሪያ ይምረጡ። መምህርዎ ፋይል ከሰጠዎት እዚህ መክፈት ይችላሉ።",
     "empty_student_explore_heading": "በራስዎ ያስሱ",
     "empty_student_explore_eyebrow": "በራስዎ",

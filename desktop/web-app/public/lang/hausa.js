@@ -1508,6 +1508,7 @@
   "live_connection": {
     "host_paused": "An dakatar da haɗin malami — ana riƙe wurinka yayin da AlloFlow ke sake haɗawa.",
     "host_stale": "Binciken matsayin malami ya tsufa - zaman kai tsaye yana iya kasancewa a haɗe. Aikinka yana nan a wannan na'urar.",
+    "host_stale_tab": "Binciken halin malami ya tsufa - mai yiwuwa zaman kai tsaye yana haɗe har yanzu. Aikinka zai kasance a buɗe a wannan shafin.",
     "dismiss": "Rufe",
     "dismiss_aria": "Rufe gargaɗin matsayin malami",
     "connecting": "Ana haɗawa da ajin…",
@@ -1646,6 +1647,7 @@
   },
   "guided": {
     "indicator_title": "Guided yanayi",
+    "error_open_ai": "Buɗe saitunan AI",
     "step_of": "mataki {current} na {total}",
     "back": "← Komawa",
     "skip": "na gaba mataki →",
@@ -6167,6 +6169,9 @@
   },
   "input": {
     "empty_student_explore_open": "Buɗe kayan koyo",
+    "empty_student_homework_failed_heading": "Wannan aikin gida bai buɗe ba",
+    "empty_desc_student_homework_failed": "Duba haɗin intanet ɗinka, sannan ka sake gwadawa. Idan har yanzu bai buɗe ba, ka tambayi malaminka sabuwar hanyar haɗi ko sabuwar lambar QR.",
+    "empty_student_homework_retry": "Sake gwadawa",
     "empty_desc_student_explore": "Zaɓi kayan aiki don karatu, atisaye, ko wasa. Idan malaminka ya ba ka fayil, za ka iya buɗe shi a nan.",
     "empty_student_explore_heading": "Bincika da kanka",
     "empty_student_explore_eyebrow": "Da kanka",

@@ -1508,6 +1508,7 @@
   "live_connection": {
     "host_paused": "החיבור של המורה מושהה — שומרים על המקום שלך בזמן ש-AlloFlow מתחבר מחדש.",
     "host_stale": "בדיקת מצב המורה אינה עדכנית - ייתכן שהמפגש החי עדיין מחובר. העבודה שלך נשארת במכשיר הזה.",
+    "host_stale_tab": "בדיקת המצב של המורה לא מעודכנת - ייתכן שהשיעור החי עדיין מחובר. העבודה שלכם נשארת פתוחה בלשונית הזו.",
     "dismiss": "סגור",
     "dismiss_aria": "סגור את האזהרה על מצב המורה",
     "connecting": "מתחברים לכיתה…",
@@ -3675,6 +3676,7 @@
   },
   "guided": {
     "indicator_title": "מצב מודרך",
+    "error_open_ai": "פתיחת הגדרות AI",
     "step_of": "שלב {current} מתוך {total}",
     "back": "← חזרה",
     "skip": "השלב הבא →",
@@ -4605,6 +4607,9 @@
   },
   "input": {
     "empty_student_explore_open": "פתח כלי למידה",
+    "empty_student_homework_failed_heading": "שיעורי הבית האלה לא נטענו",
+    "empty_desc_student_homework_failed": "בדקו את החיבור לאינטרנט ונסו שוב. אם זה עדיין לא נטען, בקשו מהמורה קישור חדש או קוד QR חדש.",
+    "empty_student_homework_retry": "נסו שוב",
     "empty_desc_student_explore": "בחר כלי לקריאה, לתרגול או למשחק. אם המורה שלך נתן לך קובץ, אפשר לפתוח אותו כאן.",
     "empty_student_explore_heading": "חקור בעצמך",
     "empty_student_explore_eyebrow": "באופן עצמאי",

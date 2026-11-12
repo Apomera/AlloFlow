@@ -1508,6 +1508,7 @@
   "live_connection": {
     "host_paused": "Njikọ onye nkuzi kwụsịtụrụ — anyị na-echekwa ebe ị nọ ka AlloFlow na-ejikọ ọzọ.",
     "host_stale": "Nlele ọnọdụ onye nkuzi emeela ochie - nnọkọ ozugbo ahụ nwere ike ka jikọrọ. Ọrụ gị ka dị na ngwaọrụ a.",
+    "host_stale_tab": "Nlele ọnọdụ onye nkuzi emeela ochie - nnọkọ ndụ ahụ nwere ike ịka jikọọ. Ọrụ gị ga-anọgide na-emeghe na taabụ a.",
     "dismiss": "Mechie",
     "dismiss_aria": "Mechie ịdọ aka ná ntị gbasara ọnọdụ onye nkuzi",
     "connecting": "Na-ejikọ na klas…",
@@ -1646,6 +1647,7 @@
   },
   "guided": {
     "indicator_title": "Guided ọnọdụ",
+    "error_open_ai": "Mepee ntọala AI",
     "step_of": "nzọụkwụ {current} nke {total}",
     "back": "← Azụ",
     "skip": "na-esote nzọụkwụ →",
@@ -6167,6 +6169,9 @@
   },
   "input": {
     "empty_student_explore_open": "Meghee ngwa ọmụmụ",
+    "empty_student_homework_failed_heading": "Ọrụ ụlọ a emepeghị",
+    "empty_desc_student_homework_failed": "Lelee njikọ ịntanetị gị, wee nwaa ọzọ. Ọ bụrụ na ọ ka emepeghị, rịọ onye nkuzi gị maka njikọ ọhụrụ ma ọ bụ koodu QR ọhụrụ.",
+    "empty_student_homework_retry": "Nwaa ọzọ",
     "empty_desc_student_explore": "Họrọ ngwa ọrụ iji gụọ, mee omume, ma ọ bụ kpọọ egwu. Ọ bụrụ na onye nkuzi gị nyere gị faịlụ, ị nwere ike imeghe ya ebe a.",
     "empty_student_explore_heading": "Nyochaa n'onwe gị",
     "empty_student_explore_eyebrow": "N'onwe gị",

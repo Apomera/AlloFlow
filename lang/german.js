@@ -2753,6 +2753,7 @@
   "live_connection": {
     "host_paused": "Verbindung der Lehrkraft pausiert – deine Stelle bleibt erhalten, während AlloFlow die Verbindung wiederherstellt.",
     "host_stale": "Der Status der Lehrkraft ist nicht aktuell – die Live-Sitzung ist vielleicht noch verbunden. Deine Arbeit bleibt auf diesem Gerät.",
+    "host_stale_tab": "Die Statusprüfung der Lehrkraft ist veraltet - die Live-Sitzung ist vielleicht noch verbunden. Deine Arbeit bleibt in diesem Tab geöffnet.",
     "dismiss": "Schließen",
     "dismiss_aria": "Warnung zum Status der Lehrkraft schließen",
     "connecting": "Verbindung zur Klasse wird hergestellt…",
@@ -2890,6 +2891,7 @@
   },
   "guided": {
     "indicator_title": "Geführter Modus",
+    "error_open_ai": "KI-Einstellungen öffnen",
     "step_of": "Schritt {current} von {total}",
     "back": "← Zurück",
     "skip": "Nächster Schritt →",
@@ -7416,6 +7418,9 @@
   },
   "input": {
     "empty_student_explore_open": "Lernwerkzeuge öffnen",
+    "empty_student_homework_failed_heading": "Diese Hausaufgabe wurde nicht geladen",
+    "empty_desc_student_homework_failed": "Prüfe deine Verbindung und versuche es dann noch einmal. Wenn es immer noch nicht lädt, bitte deine Lehrkraft um einen neuen Link oder QR-Code.",
+    "empty_student_homework_retry": "Noch einmal versuchen",
     "empty_desc_student_explore": "Wähle ein Werkzeug zum Lesen, Üben oder Spielen. Wenn dir deine Lehrkraft eine Datei gegeben hat, kannst du sie hier öffnen.",
     "empty_student_explore_heading": "Entdecke auf eigene Faust",
     "empty_student_explore_eyebrow": "Auf eigene Faust",

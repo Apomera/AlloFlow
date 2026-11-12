@@ -1507,6 +1507,7 @@
   "live_connection": {
     "host_paused": "Öğretmenin bağlantısı duraklatıldı — AlloFlow yeniden bağlanırken kaldığın yer korunuyor.",
     "host_stale": "Öğretmen durum bilgisi güncel değil - canlı oturum hâlâ bağlı olabilir. Çalışmaların bu cihazda kalır.",
+    "host_stale_tab": "Öğretmenin cihazından bir süredir haber alınamadı. Canlı oturum hâlâ bağlı olabilir. Çalışman bu sekmede açık kalıyor.",
     "dismiss": "Kapat",
     "dismiss_aria": "Öğretmen durum uyarısını kapat",
     "connecting": "Sınıfa bağlanılıyor…",
@@ -1644,6 +1645,7 @@
   },
   "guided": {
     "indicator_title": "Rehberli Mod",
+    "error_open_ai": "Yapay zekâ ayarlarını aç",
     "step_of": "Adım {current} / {total}",
     "back": "← Geri",
     "skip": "Sonraki Adım →",
@@ -6176,6 +6178,9 @@
   },
   "input": {
     "empty_student_explore_open": "Öğrenme araçlarını aç",
+    "empty_student_homework_failed_heading": "Bu ödev yüklenemedi",
+    "empty_desc_student_homework_failed": "İnternet bağlantını kontrol et, sonra tekrar dene. Yine yüklenmezse öğretmeninden yeni bir bağlantı veya QR kodu iste.",
+    "empty_student_homework_retry": "Tekrar dene",
     "empty_desc_student_explore": "Okumak, alıştırma yapmak veya oynamak için bir araç seç. Öğretmenin sana bir dosya verdiyse burada açabilirsin.",
     "empty_student_explore_heading": "Kendi başına keşfet",
     "empty_student_explore_eyebrow": "Kendi başına",

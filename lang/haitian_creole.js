@@ -2700,6 +2700,7 @@
   "live_connection": {
     "host_paused": "Koneksyon pwofesè a an poz — n ap kenbe plas ou pandan AlloFlow ap rekonekte.",
     "host_stale": "Verifikasyon estati pwofesè a pa ajou - sesyon an dirèk la ka toujou konekte. Travay ou rete sou aparèy sa a.",
+    "host_stale_tab": "Verifikasyon estati pwofesè a pa ajou - sesyon an dirèk la ka toujou konekte. Travay ou rete louvri nan onglè sa a.",
     "dismiss": "Fèmen",
     "dismiss_aria": "Fèmen avètisman sou estati pwofesè a",
     "connecting": "N ap konekte ak klas la…",
@@ -4856,6 +4857,7 @@
   },
   "guided": {
     "indicator_title": "Mòd Gide",
+    "error_open_ai": "Louvri paramèt IA yo",
     "step_of": "Etap {current} sou {total}",
     "back": "← Retounen",
     "skip": "Pwochen Etap →",
@@ -6672,6 +6674,9 @@
   },
   "input": {
     "empty_student_explore_open": "Louvri zouti aprantisaj yo",
+    "empty_student_homework_failed_heading": "Devwa sa a pa chaje",
+    "empty_desc_student_homework_failed": "Tcheke koneksyon ou, epi eseye ankò. Si li toujou pa chaje, mande pwofesè ou yon nouvo lyen oswa yon nouvo kòd QR.",
+    "empty_student_homework_retry": "Eseye ankò",
     "empty_desc_student_explore": "Chwazi yon zouti pou li, pratike oswa jwe. Si pwofesè ou te ba ou yon fichye, ou ka louvri li isit la.",
     "empty_student_explore_heading": "Eksplore pou kont ou",
     "empty_student_explore_eyebrow": "Pou kont ou",

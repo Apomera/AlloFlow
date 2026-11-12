@@ -2770,6 +2770,7 @@
   "live_connection": {
     "host_paused": "老师的连接已暂停——AlloFlow 重新连接时会保留你的位置。",
     "host_stale": "老师状态检查已过时——实时课堂可能仍在连接中。你的作业会保留在这台设备上。",
+    "host_stale_tab": "老师的状态信息不是最新的，实时课堂可能仍然连接着。你的作业会一直在这个标签页中打开。",
     "dismiss": "关闭",
     "dismiss_aria": "关闭老师状态警告",
     "connecting": "正在连接班级…",
@@ -4917,6 +4918,7 @@
   },
   "guided": {
     "indicator_title": "引导模式",
+    "error_open_ai": "打开 AI 设置",
     "step_of": "第 {current} 步 / 共 {total} 步",
     "back": "← 返回",
     "skip": "下一步 →",
@@ -5847,6 +5849,9 @@
   },
   "input": {
     "empty_student_explore_open": "打开学习工具",
+    "empty_student_homework_failed_heading": "这份作业没有加载出来",
+    "empty_desc_student_homework_failed": "请检查网络连接，然后再试一次。如果还是打不开，请向老师要一个新的链接或二维码。",
+    "empty_student_homework_retry": "再试一次",
     "empty_desc_student_explore": "选择一个工具来阅读、练习或玩耍。如果老师给了你文件，可以在这里打开。",
     "empty_student_explore_heading": "自己探索吧",
     "empty_student_explore_eyebrow": "自主学习",

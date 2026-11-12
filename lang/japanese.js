@@ -2770,6 +2770,7 @@
   "live_connection": {
     "host_paused": "先生の接続が一時停止しています。AlloFlowが再接続するまで、あなたの進み具合はそのまま保たれます。",
     "host_stale": "先生の状態の確認が古くなっています。ライブセッションはまだつながっているかもしれません。あなたの作業はこの端末に残ります。",
+    "host_stale_tab": "先生の接続状況の確認が古くなっています。ライブセッションはまだつながっているかもしれません。あなたの作業はこのタブで開いたままです。",
     "dismiss": "閉じる",
     "dismiss_aria": "先生の状態に関する警告を閉じる",
     "connecting": "クラスに接続しています…",
@@ -4688,6 +4689,7 @@
   },
   "guided": {
     "indicator_title": "ガイドモード",
+    "error_open_ai": "AI設定を開く",
     "step_of": "ステップ {current}/{total}",
     "back": "← 戻る",
     "skip": "次のステップ →",
@@ -6447,6 +6449,9 @@
   },
   "input": {
     "empty_student_explore_open": "学習ツールを開く",
+    "empty_student_homework_failed_heading": "この宿題を読み込めませんでした",
+    "empty_desc_student_homework_failed": "インターネットの接続を確かめて、もう一度ためしてください。それでも読み込めないときは、先生に新しいリンクかQRコードをもらってください。",
+    "empty_student_homework_retry": "もう一度ためす",
     "empty_desc_student_explore": "読む、練習する、遊ぶためのツールを選びましょう。先生からファイルをもらった場合は、ここで開けます。",
     "empty_student_explore_heading": "自分で探検してみよう",
     "empty_student_explore_eyebrow": "自分で",

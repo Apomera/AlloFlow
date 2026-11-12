@@ -2691,6 +2691,7 @@
   "live_connection": {
     "host_paused": "Verbinding van de leraar gepauzeerd – je plek blijft bewaard terwijl AlloFlow opnieuw verbinding maakt.",
     "host_stale": "De status van de leraar is niet meer actueel – de live sessie kan nog steeds verbonden zijn. Je werk blijft op dit apparaat.",
+    "host_stale_tab": "De statuscontrole van de leraar is verouderd - de live sessie is misschien nog verbonden. Je werk blijft open in dit tabblad.",
     "dismiss": "Sluiten",
     "dismiss_aria": "Waarschuwing over de status van de leraar sluiten",
     "connecting": "Verbinden met de klas…",
@@ -2828,6 +2829,7 @@
   },
   "guided": {
     "indicator_title": "Begeleide Modus",
+    "error_open_ai": "AI-instellingen openen",
     "step_of": "Stap {current} van {total}",
     "back": "← Terug",
     "skip": "Volgende stap →",
@@ -7360,6 +7362,9 @@
   },
   "input": {
     "empty_student_explore_open": "Leertools openen",
+    "empty_student_homework_failed_heading": "Dit huiswerk is niet geladen",
+    "empty_desc_student_homework_failed": "Controleer je verbinding en probeer het opnieuw. Laadt het nog steeds niet? Vraag je leraar dan om een nieuwe link of QR-code.",
+    "empty_student_homework_retry": "Opnieuw proberen",
     "empty_desc_student_explore": "Kies een tool om te lezen, te oefenen of te spelen. Heeft je leraar je een bestand gegeven, dan kun je het hier openen.",
     "empty_student_explore_heading": "Ontdek op eigen houtje",
     "empty_student_explore_eyebrow": "Op eigen houtje",

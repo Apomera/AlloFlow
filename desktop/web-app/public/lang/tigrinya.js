@@ -1508,6 +1508,7 @@
   "live_connection": {
     "host_paused": "ርክብ መምህር ደው ኢሉ — AlloFlow ክሳብ ዳግማይ ዝራኸብ ቦታኻ ይተሓሎ ኣሎ።",
     "host_stale": "ሓበሬታ ኩነታት መምህር ኣረጊቱ - እቲ ቀጥታዊ ክፍለ-ግዜ ገና ተራኺቡ ክኸውን ይኽእል። ስራሕካ ኣብዚ መሳርሒ ይጸንሕ።",
+    "host_stale_tab": "ካብ መሳርሒ መምህር ንገለ እዋን ዝኾነ ሓበሬታ ኣይመጸን። እቲ ቀጥታዊ ክፍለ-ግዜ ገና ተራኺቡ ክህሉ ይኽእል እዩ። ስራሕካ ኣብዚ ታብ ክፉት ኮይኑ ይጸንሕ።",
     "dismiss": "ዕጾ",
     "dismiss_aria": "መጠንቀቕታ ኩነታት መምህር ዕጾ",
     "connecting": "ምስ ክፍሊ ይራኸብ ኣሎ…",
@@ -1646,6 +1647,7 @@
   },
   "guided": {
     "indicator_title": "Guided ኣገባብ",
+    "error_open_ai": "ናይ AI ምድላዋት ክፈት",
     "step_of": "ስጉምቲ {current} ናይ {total}",
     "back": "← ድሕሪት",
     "skip": "ቀጻሊ ስጉምቲ →",
@@ -6167,6 +6169,9 @@
   },
   "input": {
     "empty_student_explore_open": "መሳርሒታት ትምህርቲ ክፈት",
+    "empty_student_homework_failed_heading": "እዚ ዕዮ ገዛ ኣይተኸፍተን",
+    "empty_desc_student_homework_failed": "ኢንተርነትካ ርአ፣ ድሕሪኡ እንደገና ፈትን። ገና እንተ ዘይተኸፊቱ፣ ንመምህርካ ሓድሽ ሊንክ ወይ ሓድሽ ኮድ QR ሕተት።",
+    "empty_student_homework_retry": "እንደገና ፈትን",
     "empty_desc_student_explore": "ንምንባብ፣ ንምልምማድ ወይ ንምጽዋት መሳርሒ ምረጽ። መምህርካ ፋይል እንተሂቡካ፣ ኣብዚ ክትከፍቶ ትኽእል ኢኻ።",
     "empty_student_explore_heading": "ባዕልኻ ዳህስስ",
     "empty_student_explore_eyebrow": "ባዕልኻ",

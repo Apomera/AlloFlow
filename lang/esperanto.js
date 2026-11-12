@@ -2701,6 +2701,7 @@
   "live_connection": {
     "host_paused": "La konekto de la instruisto paŭzas — via loko restas konservita, dum AlloFlow rekonektiĝas.",
     "host_stale": "La stato de la instruisto ne estas freŝe kontrolita - la viva seanco eble ankoraŭ estas konektita. Via laboro restas en ĉi tiu aparato.",
+    "host_stale_tab": "La kontrolo de la instruista stato estas malfreŝa - la rekta sesio eble ankoraŭ estas konektita. Via laboro restas malfermita en ĉi tiu langeto.",
     "dismiss": "Fermi",
     "dismiss_aria": "Fermi la averton pri la stato de la instruisto",
     "connecting": "Konektiĝante al la klaso…",
@@ -2838,6 +2839,7 @@
   },
   "guided": {
     "indicator_title": "Gvidata Reĝimo",
+    "error_open_ai": "Malfermi AI-agordojn",
     "step_of": "Paŝo {current} el {total}",
     "back": "← Reen",
     "skip": "Sekva Paŝo →",
@@ -7370,6 +7372,9 @@
   },
   "input": {
     "empty_student_explore_open": "Malfermi lernilojn",
+    "empty_student_homework_failed_heading": "Ĉi tiu hejmtasko ne ŝargiĝis",
+    "empty_desc_student_homework_failed": "Kontrolu vian konekton, poste provu denove. Se ĝi ankoraŭ ne ŝargiĝas, petu de via instruisto novan ligilon aŭ QR-kodon.",
+    "empty_student_homework_retry": "Provu denove",
     "empty_desc_student_explore": "Elektu ilon por legi, ekzerci aŭ ludi. Se via instruisto donis al vi dosieron, vi povas malfermi ĝin ĉi tie.",
     "empty_student_explore_heading": "Esploru memstare",
     "empty_student_explore_eyebrow": "Memstare",

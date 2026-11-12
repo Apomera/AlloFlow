@@ -1508,6 +1508,7 @@
   "live_connection": {
     "host_paused": "Muunganisho wa mwalimu umesitishwa — tunahifadhi nafasi yako wakati AlloFlow inaunganisha upya.",
     "host_stale": "Hali ya mwalimu haijasasishwa kwa muda — huenda kipindi cha moja kwa moja bado kimeunganishwa. Kazi yako inabaki kwenye kifaa hiki.",
+    "host_stale_tab": "Hatujapata taarifa kutoka kwa kifaa cha mwalimu kwa muda. Huenda kipindi cha moja kwa moja bado kimeunganishwa. Kazi yako inabaki wazi kwenye kichupo hiki.",
     "dismiss": "Funga",
     "dismiss_aria": "Funga onyo kuhusu hali ya mwalimu",
     "connecting": "Inaunganisha na darasa…",
@@ -1646,6 +1647,7 @@
   },
   "guided": {
     "indicator_title": "Guided hali",
+    "error_open_ai": "Fungua mipangilio ya AI",
     "step_of": "hatua {current} ya {total}",
     "back": "← Rudi",
     "skip": "inayofuata hatua →",
@@ -6167,6 +6169,9 @@
   },
   "input": {
     "empty_student_explore_open": "Fungua zana za kujifunza",
+    "empty_student_homework_failed_heading": "Kazi hii ya nyumbani haikufunguka",
+    "empty_desc_student_homework_failed": "Angalia intaneti yako, kisha ujaribu tena. Ikiwa bado haifunguki, mwombe mwalimu wako kiungo kipya au msimbo mpya wa QR.",
+    "empty_student_homework_retry": "Jaribu tena",
     "empty_desc_student_explore": "Chagua zana ya kusoma, kufanya mazoezi, au kucheza. Kama mwalimu wako alikupa faili, unaweza kulifungua hapa.",
     "empty_student_explore_heading": "Chunguza mwenyewe",
     "empty_student_explore_eyebrow": "Kwa kujitegemea",

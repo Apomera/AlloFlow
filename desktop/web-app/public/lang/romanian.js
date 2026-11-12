@@ -1448,6 +1448,7 @@
   "live_connection": {
     "host_paused": "Conexiunea profesorului este în pauză – îți păstrăm locul cât timp AlloFlow se reconectează.",
     "host_stale": "Verificarea stării profesorului nu mai este actuală – sesiunea live poate fi încă conectată. Munca ta rămâne pe acest dispozitiv.",
+    "host_stale_tab": "De ceva timp nu a mai venit niciun semnal de la dispozitivul profesorului. Sesiunea live poate fi încă conectată. Lucrarea ta rămâne deschisă în această filă.",
     "dismiss": "Închide",
     "dismiss_aria": "Închide avertismentul despre starea profesorului",
     "connecting": "Se conectează la clasă…",
@@ -1586,6 +1587,7 @@
   },
   "guided": {
     "indicator_title": "Guided mod",
+    "error_open_ai": "Deschide setările AI",
     "step_of": "pas {current} de {total}",
     "back": "← Înapoi",
     "skip": "următor pas →",
@@ -6107,6 +6109,9 @@
   },
   "input": {
     "empty_student_explore_open": "Deschide instrumentele de învățare",
+    "empty_student_homework_failed_heading": "Această temă nu s-a încărcat",
+    "empty_desc_student_homework_failed": "Verifică conexiunea la internet, apoi încearcă din nou. Dacă tot nu se încarcă, cere-i profesorului tău un link nou sau un cod QR nou.",
+    "empty_student_homework_retry": "Încearcă din nou",
     "empty_desc_student_explore": "Alege un instrument ca să citești, să exersezi sau să te joci. Dacă profesorul ți-a dat un fișier, îl poți deschide aici.",
     "empty_student_explore_heading": "Explorează pe cont propriu",
     "empty_student_explore_eyebrow": "Pe cont propriu",

@@ -2770,6 +2770,7 @@
   "live_connection": {
     "host_paused": "老師的連線已暫停——AlloFlow 重新連線時會保留你的位置。",
     "host_stale": "老師狀態檢查已過時——即時課堂可能仍在連線中。你的作業會保留在這台裝置上。",
+    "host_stale_tab": "老師的狀態資訊不是最新的，即時課堂可能仍然連線中。你的作業會一直在這個分頁中開著。",
     "dismiss": "關閉",
     "dismiss_aria": "關閉老師狀態警告",
     "connecting": "正在連線到班級…",
@@ -4917,6 +4918,7 @@
   },
   "guided": {
     "indicator_title": "引導模式",
+    "error_open_ai": "開啟 AI 設定",
     "step_of": "第 {current} 步 / 共 {total} 步",
     "back": "← 返回",
     "skip": "下一步 →",
@@ -5847,6 +5849,9 @@
   },
   "input": {
     "empty_student_explore_open": "打開學習工具",
+    "empty_student_homework_failed_heading": "這份作業沒有載入成功",
+    "empty_desc_student_homework_failed": "請檢查網路連線，然後再試一次。如果還是無法載入，請向老師要新的連結或 QR 碼。",
+    "empty_student_homework_retry": "再試一次",
     "empty_desc_student_explore": "選擇一個工具來閱讀、練習或遊玩。如果老師給了你文件，可以在這裡打開。",
     "empty_student_explore_heading": "自己探索吧",
     "empty_student_explore_eyebrow": "自主學習",

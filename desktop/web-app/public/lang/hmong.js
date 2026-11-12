@@ -1506,6 +1506,7 @@
   "live_connection": {
     "host_paused": "Xib fwb txoj kev txuas nres ib pliag — tseem khaws koj qhov chaw thaum AlloFlow rov txuas.",
     "host_stale": "Kev kuaj xyuas xib fwb txoj xwm txheej qub lawm - lub rooj kawm ncaj qha tej zaum tseem txuas nyob. Koj tej hauj lwm nyob ntawm lub cuab yeej no.",
+    "host_stale_tab": "Kev kuaj xyuas tus xib fwb li xwm txheej twb qub lawm - tej zaum chav kawm nyob tam sim tseem txuas. Koj txoj haujlwm tseem qhib rau hauv daim tab no.",
     "dismiss": "Kaw",
     "dismiss_aria": "Kaw lus ceeb toom txog xib fwb txoj xwm txheej",
     "connecting": "Tab tom txuas rau chav kawm…",
@@ -1644,6 +1645,7 @@
   },
   "guided": {
     "indicator_title": "Guided hom",
+    "error_open_ai": "Qhib AI cov kev teeb tsa",
     "step_of": "cov theem {current} ntawm {total}",
     "back": "← Rov qab",
     "skip": "tom ntej cov theem →",
@@ -6165,6 +6167,9 @@
   },
   "input": {
     "empty_student_explore_open": "Qhib cov cuab yeej kawm",
+    "empty_student_homework_failed_heading": "Daim ntawv ua tom tsev no tsis qhib",
+    "empty_desc_student_homework_failed": "Saib koj txoj kev txuas internet, ces sim dua. Yog tseem tsis qhib, thov koj tus xib fwb muab ib txoj link tshiab los yog QR code tshiab.",
+    "empty_student_homework_retry": "Sim dua",
     "empty_desc_student_explore": "Xaiv ib qho cuab yeej los nyeem, xyaum, los yog ua si. Yog koj tus xib fwb muab ib cov ntaub ntawv rau koj, koj tuaj yeem qhib nws ntawm no.",
     "empty_student_explore_heading": "Tshawb nrhiav ntawm koj tus kheej",
     "empty_student_explore_eyebrow": "Ntawm koj tus kheej",

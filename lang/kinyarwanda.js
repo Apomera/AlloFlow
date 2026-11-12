@@ -1508,6 +1508,7 @@
   "live_connection": {
     "host_paused": "Ihuza rya mwarimu ryahagaze by'agateganyo — aho wari ugeze harabitswe mu gihe AlloFlow yongera kwihuza.",
     "host_stale": "Amakuru ku miterere ya mwarimu ntabwo ari mashya - isomo ririmo kuba rishobora kuba rikiri ku murongo. Ibyo wakoze biguma kuri iki gikoresho.",
+    "host_stale_tab": "Amakuru y'uko mwarimu ahagaze arashaje - isomo rya live rishobora kuba rigikora. Ibyo ukora biguma bifunguye muri iyi tab.",
     "dismiss": "Funga",
     "dismiss_aria": "Funga umuburo ku miterere ya mwarimu",
     "connecting": "Kwihuza n'ishuri…",
@@ -1646,6 +1647,7 @@
   },
   "guided": {
     "indicator_title": "Uburyo Buyobora",
+    "error_open_ai": "Fungura igenamiterere rya AI",
     "step_of": "intambwe {current} cya {total}",
     "back": "← Gusubira",
     "skip": "cyikurikira intambwe →",
@@ -6167,6 +6169,9 @@
   },
   "input": {
     "empty_student_explore_open": "Fungura ibikoresho byo kwiga",
+    "empty_student_homework_failed_heading": "Uyu mukoro wo mu rugo ntiwafungutse",
+    "empty_desc_student_homework_failed": "Reba niba interineti yawe ikora, hanyuma wongere ugerageze. Niba bikomeje kwanga, saba mwarimu wawe umuyoboro mushya cyangwa kode ya QR nshya.",
+    "empty_student_homework_retry": "Ongera ugerageze",
     "empty_desc_student_explore": "Hitamo igikoresho cyo gusoma, kwitoza, cyangwa gukina. Niba mwarimu wawe yaraguhaye dosiye, ushobora kuyifungura hano.",
     "empty_student_explore_heading": "Shakashaka ku giti cyawe",
     "empty_student_explore_eyebrow": "Ku giti cyawe",

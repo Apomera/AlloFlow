@@ -1508,6 +1508,7 @@
   "live_connection": {
     "host_paused": "Ìsopọ̀ olùkọ́ ti dúró díẹ̀ — a ń pa ibi tí o dé mọ́ nígbà tí AlloFlow ń tún sopọ̀.",
     "host_stale": "Ìròyìn ipò olùkọ́ ti pẹ́ - ìpàdé tààràtà náà ṣì lè wà ní ìsopọ̀. Iṣẹ́ rẹ wà lórí ẹ̀rọ yìí.",
+    "host_stale_tab": "Ó ti pẹ́ díẹ̀ tí a ti gbọ́ ohunkóhun láti ẹ̀rọ olùkọ́. Ó ṣeé ṣe kí ìpàdé ojú-ẹsẹ̀ ṣì wà ní ìsopọ̀. Iṣẹ́ rẹ ṣì wà ní ṣíṣí nínú táàbù yìí.",
     "dismiss": "Pa á tì",
     "dismiss_aria": "Pa ìkìlọ̀ ipò olùkọ́ tì",
     "connecting": "Ń sopọ̀ mọ́ kíláàsì…",
@@ -1646,6 +1647,7 @@
   },
   "guided": {
     "indicator_title": "Guided ọna",
+    "error_open_ai": "Ṣí àwọn ètò AI",
     "step_of": "igbesẹ {current} ti {total}",
     "back": "← Padà",
     "skip": "ti o tẹle igbesẹ →",
@@ -6167,6 +6169,9 @@
   },
   "input": {
     "empty_student_explore_open": "Ṣí àwọn irinṣẹ́ ẹ̀kọ́",
+    "empty_student_homework_failed_heading": "Iṣẹ́ àmúrelé yìí kò ṣí",
+    "empty_desc_student_homework_failed": "Ṣàyẹ̀wò íńtánẹ́ẹ̀tì rẹ, lẹ́yìn náà gbìyànjú lẹ́ẹ̀kan sí i. Tí kò bá ṣí síbẹ̀, béèrè lọ́wọ́ olùkọ́ rẹ fún líǹkì tuntun tàbí kóòdù QR tuntun.",
+    "empty_student_homework_retry": "Gbìyànjú lẹ́ẹ̀kan sí i",
     "empty_desc_student_explore": "Yan irinṣẹ́ kan láti kàwé, láti ṣe ìdánrawò, tàbí láti ṣeré. Bí olùkọ́ rẹ bá fún ọ ní faili, o lè ṣí i níbí.",
     "empty_student_explore_heading": "Ṣàwárí fúnra rẹ",
     "empty_student_explore_eyebrow": "Fúnra rẹ",

@@ -1506,6 +1506,7 @@
   "live_connection": {
     "host_paused": "Naka-pause ang koneksyon ng guro — itinatabi ang iyong puwesto habang muling kumokonekta ang AlloFlow.",
     "host_stale": "Luma na ang pagsusuri sa status ng guro — maaaring nakakonekta pa rin ang live na sesyon. Nananatili sa device na ito ang iyong gawa.",
+    "host_stale_tab": "Matagal nang walang balita mula sa device ng guro. Maaaring nakakonekta pa rin ang live na sesyon. Mananatiling bukas ang gawa mo sa tab na ito.",
     "dismiss": "Isara",
     "dismiss_aria": "Isara ang babala tungkol sa status ng guro",
     "connecting": "Kumokonekta sa klase…",
@@ -1644,6 +1645,7 @@
   },
   "guided": {
     "indicator_title": "Guided mode",
+    "error_open_ai": "Buksan ang mga setting ng AI",
     "step_of": "hakbang {current} ng {total}",
     "back": "← Bumalik",
     "skip": "susunod hakbang →",
@@ -6165,6 +6167,9 @@
   },
   "input": {
     "empty_student_explore_open": "Buksan ang mga tool sa pag-aaral",
+    "empty_student_homework_failed_heading": "Hindi nabuksan ang takdang-araling ito",
+    "empty_desc_student_homework_failed": "Tingnan ang iyong internet, tapos subukan ulit. Kung ayaw pa ring bumukas, humingi sa iyong guro ng bagong link o QR code.",
+    "empty_student_homework_retry": "Subukan ulit",
     "empty_desc_student_explore": "Pumili ng tool para magbasa, magsanay, o maglaro. Kung binigyan ka ng file ng iyong guro, mabubuksan mo ito rito.",
     "empty_student_explore_heading": "Tumuklas sa sarili mo",
     "empty_student_explore_eyebrow": "Sa sarili mo",

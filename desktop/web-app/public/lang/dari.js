@@ -2769,6 +2769,7 @@
   "live_connection": {
     "host_paused": "اتصال معلم متوقف شده است — تا AlloFlow دوباره وصل شود، جای شما حفظ می‌شود.",
     "host_stale": "بررسی وضعیت معلم کهنه است - ممکن است جلسهٔ زنده هنوز وصل باشد. کار شما روی همین دستگاه می‌ماند.",
+    "host_stale_tab": "بررسی وضعیت معلم کهنه شده است - شاید جلسهٔ زنده هنوز وصل باشد. کار شما در همین تب باز می‌ماند.",
     "dismiss": "بستن",
     "dismiss_aria": "بستن هشدار وضعیت معلم",
     "connecting": "در حال وصل شدن به صنف…",
@@ -4934,6 +4935,7 @@
   },
   "guided": {
     "indicator_title": "حالت راهنمایی‌شده",
+    "error_open_ai": "باز کردن تنظیمات هوش مصنوعی",
     "step_of": "گام {current} از {total}",
     "back": "← بازگشت",
     "skip": "گام بعدی →",
@@ -5864,6 +5866,9 @@
   },
   "input": {
     "empty_student_explore_open": "باز کردن ابزارهای یادگیری",
+    "empty_student_homework_failed_heading": "این کارخانگی باز نشد",
+    "empty_desc_student_homework_failed": "اتصال انترنت خود را ببینید، بعد دوباره کوشش کنید. اگر باز هم باز نشد، از معلم خود یک لینک نو یا کد QR بخواهید.",
+    "empty_student_homework_retry": "دوباره کوشش کنید",
     "empty_desc_student_explore": "یک ابزار را برای خواندن، تمرین یا بازی انتخاب کن. اگر معلمت فایلی به تو داده، می‌توانی آن را اینجا باز کنی.",
     "empty_student_explore_heading": "خودت کاوش کن",
     "empty_student_explore_eyebrow": "به طور مستقل",
