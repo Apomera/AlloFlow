@@ -3,6 +3,7 @@
 Follow the user's request, CLAUDE.md's technical guidance and .agent/workflows/alloflow-scope.md. This user-approved policy replaces the former coordination experiment.
 
 - Proceed with ordinary local implementation, testing, internal review and parallel subagents within the requested task. Coordinator approval or a bypass word is unnecessary.
+- Machine load: at most 3 background agents/subagents at once per session; ask the user before starting a 4th. Each agent runs at most one heavy job at a time (browser/Playwright sweep, full test suite, vitest over 2 workers). Many sessions share this laptop: if it is busy, wait, defer heavy runs (e.g. overnight) or ask.
 - Routine coordination messages with relevant chats in this project are authorized. Do not extend this to unrelated chats, external messages or new unrequested work.
 - Preserve other sessions' uncommitted changes. Re-read current files and relevant diffs before writing; apply narrow edits and preserve unrelated bytes.
 - Coordinate actual active overlapping writes directly. Use a brief handoff for a genuinely shared write, pause only the affected operation, and continue independent work in parallel.
