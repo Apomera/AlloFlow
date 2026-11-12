@@ -333,7 +333,8 @@ describe('the builder: pictures off', () => {
   // "#summary" cell (three lines, 239 bytes). With the loader as it was before that change these inputs still give
   // the first values (11854e18..., 168847 bytes and ed033f0d..., 53296 bytes): nothing else moved.
   const BEFORE = {
-    all: { sha256: '66b679c7f86f062c911aa8afd0ffc757149f1712bb73e1fe3051b32d436a4ba5', bytes: 169086, items: 124 },
+    // Re-pinned 2026-11-11: the file carries the core's Sound Sort list, which left out 18 blocked or borderline words (125 bytes).
+    all: { sha256: '1cc1dba8cb17bd273dd76446e4532db734d382349603a1c270bed054c055146c', bytes: 168961, items: 124 },
     isolation: { sha256: '7b8d85cd11bf6925f41bf55556545b99f913a894530cf180b2d93cb88884bb5d', bytes: 53535, items: 5 },
   };
   const CASES = { all: {}, isolation: { words: CVC.slice(0, 5), activities: ['isolation'], title: undefined } };

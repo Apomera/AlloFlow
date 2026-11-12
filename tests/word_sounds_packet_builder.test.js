@@ -724,8 +724,9 @@ describe('(k) answer choices come only from words with a clip, and a trial build
     for (const [, choice] of shown) expect(!!BANKS.kokoroWords[choice], choice).toBe(true);
     // The core's own list (the pool of these boards) holds words with no clip and blocked words: they are what is kept out.
     expect(core.knownWords.filter((word) => !BANKS.kokoroWords[word]).length).toBeGreaterThan(100);
+    // Since 2026-11-11 the core's own list leaves out blocked words (word_sounds_core.js NOT_OFFERED); the builder's filter still stands.
     const blockedInPool = core.knownWords.filter((word) => wordlist.isBlocked(word));
-    expect(blockedInPool.length).toBeGreaterThan(5);
+    expect(blockedInPool).toEqual([]);
     // With a clip for every word a blocked word could be said aloud: it is still never a choice, in any of the four activities with word choices.
     const many = pick({ shape: 'CVC', count: 120, requireClip: false }).words;
     const open = await build({ words: many, activities: ['sound_sort', 'blending', 'rhyming', 'word_families'], banks: { ...PAGE_BANKS, kokoroWords: everyWord }, seed: 1, length: 120 });
@@ -896,8 +897,8 @@ describe('(l) two kinds of unsuitable word: never used, and never offered but us
 
   it('no answer choice the builder invents is a soft word; a soft word among the choices is one the teacher gave', async () => {
     const CHOICES = ['blending', 'rhyming', 'word_families', 'sound_sort'];
-    // The pools the choices come from hold soft words (kick, pot, bar on the core's own list; jail, bet, bill on the app lists).
-    expect(core.knownWords.filter((word) => wordlist.get(word) && wordlist.get(word).soft).length).toBeGreaterThan(5);
+    // The app lists the choices come from hold soft words (jail, bet, bill); the core's own list left out kick, pot and bar on 2026-11-11.
+    expect(core.knownWords.filter((word) => wordlist.get(word) && wordlist.get(word).soft)).toEqual([]);
     expect(wordlist.rows().filter((row) => row.soft && row.known).length).toBeGreaterThan(20);
     expect(B.createPackLogic({ core, knownWords: [], seed: 1 }).PACK_COMMON_WORDS.filter((word) => wordlist.get(word).soft)).toEqual([]);
     const words = pick({ shape: 'CVC', count: 90, requireClip: false }).words;

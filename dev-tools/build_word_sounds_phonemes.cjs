@@ -78,7 +78,7 @@ function appWordLists(core) {
     rimeFamilies: flat(grab('RIME_FAMILIES')),
     compounds: [...core.compoundWords(), ...core.compoundPartWords(), ...core.syllableCountWords()],
     recordedBank: Object.keys(bank.words || {}),
-    coreWords: [...core.knownWords, ...(new Function('return ' + filler[1]))()],
+    coreWords: [...(core.edgeWords || core.knownWords), ...(new Function('return ' + filler[1]))()],
   };
 }
 
