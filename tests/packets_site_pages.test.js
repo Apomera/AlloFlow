@@ -15,8 +15,9 @@ const { dictionary, core, loader, wordlist, builder } = tool.loadParts();
 
 const read = (file) => readFileSync(file, 'utf8');
 const PAGES = ['packets.html', 'packets-make.html', 'packets-try.html'];
-const SCRIPTS = ['packets-page.js', 'packets-make.js', 'packets-try.js'];
-const NEW_FILES = [...PAGES, ...SCRIPTS, 'packets.css', 'packets-mark.svg'];
+// packets-words.js is "Edit this word" on the maker page: the one script of these pages that may ask for the microphone (see below).
+const SCRIPTS = ['packets-page.js', 'packets-make.js', 'packets-try.js', 'packets-words.js'];
+const NEW_FILES = [...PAGES, ...SCRIPTS, 'packets.css', 'packets-words.css', 'packets-mark.svg'];
 // The sentences about the voices, word for word, in the "See the details" panel of both pages.
 const VOICES = 'Nothing is generated when you make a file or when a student uses it. The spoken sounds were recorded ahead of time with computer voices, including an AI voice.';
 const NAME = 'AlloFlow Packets';
@@ -41,7 +42,8 @@ const BRITISH = /practis|standardis|licence|colour|\bmarking\b|\bmarked\b|\btick
 const STRICT = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; form-action 'none'; base-uri 'none'";
 const CSP = {
   'packets.html': STRICT,
-  'packets-make.html': STRICT.replace("img-src 'self';", "img-src 'self'; connect-src 'self';"),
+  // The maker shows a teacher's own picture and plays a recording, both held in the page as data: addresses. Nothing more.
+  'packets-make.html': STRICT.replace("img-src 'self';", "img-src 'self' data:; media-src data:; connect-src 'self';"),
   // The preview shows a built practice file, which carries its script and styles inside itself. A browser hands
   // this page's rule down to the framed file, so inline script and style must be allowed here, and only here.
   'packets-try.html': "default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src data: blob:; connect-src blob:; frame-src blob:; form-action 'none'; base-uri 'none'",
@@ -92,7 +94,11 @@ describe('the pages as files', () => {
       const at = head.findIndex((node) => node.getAttribute('http-equiv') === 'Content-Security-Policy');
       expect(head.slice(0, at).every((node) => node.tagName === 'META'), file).toBe(true);
     }
-    for (const file of ['packets.html', 'packets-make.html']) expect(CSP[file], file).not.toMatch(/unsafe|\*|data:|blob:|https?:/);
+    expect(CSP['packets.html']).not.toMatch(/unsafe|\*|data:|blob:|https?:/);
+    // The maker names no other website, runs no inline script, and allows data: only for its pictures and sounds.
+    expect(CSP['packets-make.html']).not.toMatch(/unsafe|\*|blob:|https?:|wss?:/);
+    expect(CSP['packets-make.html'].split('; ').filter((part) => /data:/.test(part))).toEqual(["img-src 'self' data:", 'media-src data:']);
+    expect(CSP['packets-make.html']).toContain("connect-src 'self'");
     // The loosened page loads one script, keeps nothing, and is reached only from the maker.
     const tryPage = parse('packets-try.html');
     expect([...tryPage.querySelectorAll('script')].map((script) => script.getAttribute('src'))).toEqual(['packets-try.js']);
@@ -103,7 +109,11 @@ describe('the pages as files', () => {
 
   it('load nothing from the shared site assets, which pull in fonts and icons from other hosts', () => {
     for (const file of PAGES) expect(read(file), file).not.toMatch(/shared\.css|site\.js|lucide|fonts\.g|unpkg|promo/i);
-    for (const file of SCRIPTS) expect(read(file), file).not.toMatch(/XMLHttpRequest|WebSocket|EventSource|sendBeacon|\beval\s*\(|new\s+Function|\bimport\s*\(|\.\s*cookie\b|getUserMedia|serviceWorker/);
+    for (const file of SCRIPTS) expect(read(file), file).not.toMatch(/XMLHttpRequest|WebSocket|EventSource|sendBeacon|\beval\s*\(|new\s+Function|\bimport\s*\(|\.\s*cookie\b|serviceWorker/);
+    // The microphone: only "Edit this word" may ask for it (when the teacher presses Record), and it fetches nothing.
+    for (const file of SCRIPTS.filter((name) => name !== 'packets-words.js')) expect(read(file), file).not.toMatch(/getUserMedia|MediaRecorder/);
+    expect(read('packets-words.js').match(/\bgetUserMedia\(/g)).toHaveLength(1);
+    expect(read('packets-words.js')).not.toMatch(/fetch|localStorage|sessionStorage|indexedDB|encodeURIComponent|body\s*:/);
     // The only requests the page scripts make: the sound files and the picture files (maker) and the built file in memory (preview).
     expect(read('packets-page.js')).not.toMatch(/fetch|localStorage/);
     expect(read('packets-make.js').match(/window\.fetch\(([^,)]+)/g)).toEqual(['window.fetch(file.url', 'window.fetch(file.url', 'window.fetch(shard.url']);
@@ -195,7 +205,9 @@ describe('the pages as files', () => {
       const doc = parse(file);
       expect(doc.querySelector('a.skip').getAttribute('href'), file).toBe('#main');
       expect(doc.querySelector('header') && doc.querySelector('main#main') && doc.querySelector('footer'), file).toBeTruthy();
-      expect(doc.querySelector('details.proof summary').textContent, file).toContain('This page runs without AI. No account. Nothing you choose leaves your device.');
+      // The maker's line changed on 2026-11-11 (owner): its sound files come in small groups of words, so "nothing leaves" was too strong.
+      expect(doc.querySelector('details.proof summary').textContent, file).toContain(file === 'packets-make.html' ? 'This page runs without AI. No account. The words you choose are not uploaded.'
+        : 'This page runs without AI. No account. Nothing you choose leaves your device.');
       expect([...doc.querySelectorAll('footer a')].map((link) => link.textContent), file).toEqual(['More from AlloFlow']);
     }
     expect(read('packets.css')).toMatch(/:focus-visible\s*\{[^}]*outline:\s*3px/);
@@ -274,14 +286,18 @@ describe('the pages as files', () => {
     expect(doc.getElementById('check')).toBeTruthy();
     expect(doc.body.textContent).toContain('For practice and for checking progress. Not a standardized test.');
     // Four equal cards, each a direct child of the grid and built the same way: a heading that is the card's one link, a line, a foot.
-    // packets.css stretches that link over the whole card (.card a::after), so a card can hold only one. The two that make a file are
-    // filled; the two for what comes after are outlined.
+    // packets.css stretches that link over the whole card (.card a::after). The two that make a file are filled; the two for what
+    // comes after are outlined. The math card has one more short line, "Or make math fact practice", whose link packets.css lifts
+    // above the stretched one and does not stretch (.card .card-also).
     expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual(['card card-main', 'card card-main', 'card card-go', 'card card-go']);
     for (const card of doc.querySelectorAll('.card')) {
-      expect([...card.children].map((node) => node.tagName + (node.className ? '.' + node.className : ''))).toEqual(['H2', 'P', 'P.card-foot']);
-      expect(card.querySelectorAll('a')).toHaveLength(1);
+      const also = card.querySelector('h2 > a').getAttribute('href') === 'packets-check.html';
+      expect([...card.children].map((node) => node.tagName + (node.className ? '.' + node.className : ''))).toEqual(also ? ['H2', 'P', 'P.card-also', 'P.card-foot'] : ['H2', 'P', 'P.card-foot']);
+      expect([...card.querySelectorAll('a')].map((a) => a.getAttribute('href'))).toEqual(also ? ['packets-check.html', 'packets-math-practice.html'] : [card.querySelector('h2 > a').getAttribute('href')]);
       expect(card.querySelector('h2 > a')).toBeTruthy();
     }
+    expect(doc.querySelector('.card-also').textContent).toBe('Or make math fact practice');
+    expect(read('packets.css')).toContain('.card .card-also a::after { content: none; }');
     expect(doc.body.textContent).not.toContain('Or make a math check');
     // One column on a phone, two by two from 44rem. The old three-column rule is gone.
     const css = read('packets.css');
@@ -306,7 +322,7 @@ describe('the pages as files', () => {
     for (const file of files) expect(Math.abs(statSync(file.url).size - file.bytes) / file.bytes, file.url).toBeLessThan(0.05);
     const scripts = [...parse('packets-make.html').querySelectorAll('script')].map((script) => script.getAttribute('src'));
     expect(scripts).toEqual(['packets-page.js', 'word_sounds_phonemes_en.js', 'word_sounds_core.js', 'word_sounds_wordlist_en.js', 'word_sounds_take_home_loader.js', 'word_sounds_packet_builder.js',
-      'word_sounds_symbols_en.js', 'packets-make.js']);
+      'word_sounds_symbols_en.js', 'packets_my_words.js', 'packets-words.js', 'packets-make.js']);
     // The picture index is small (it says which words have a picture); the drawings load only when a file is made with them.
     expect(statSync('word_sounds_symbols_en.js').size).toBeLessThan(40000);
     const megabytes = scripts.reduce((sum, file) => sum + statSync(file).size, 0) / 1e6;
@@ -320,7 +336,18 @@ describe('the pages as files', () => {
     const perFile = require('../dev-tools/repack_word_sounds_word_audio.cjs').DEFAULT_MAX;
     // What is still true, word for word: nothing chosen is sent.
     expect(bullets[1]).toBe('The practice file is put together in this browser tab. The page looks your words up in a word list and a sound dictionary that it has already loaded. Your words and your choices are not sent anywhere.');
-    expect(parse('packets-make.html').querySelector('details.proof .proof-line').textContent).toBe('This page runs without AI. No account. Nothing you choose leaves your device.');
+    expect(parse('packets-make.html').querySelector('details.proof .proof-line').textContent).toBe('This page runs without AI. No account. The words you choose are not uploaded.');
+    // What a teacher adds to a word, and the microphone, and the one page that reaches other sites, said in the details.
+    expect(bullets.slice(6)).toEqual([
+      "What you add to a word (its sounds, your recording, your picture) is kept in this browser's storage for this site. It is not uploaded. It goes only into the files you make. You can remove it under My words on this device, in step 2.",
+      'The microphone is used only when you press Record it yourself, and only until the recording stops. The recording stays on this device.',
+      'This page reaches only this site. One other page, Find a picture, can search Global Symbols, Openverse and Wikimedia Commons after you turn its search on there. It sends them the word you search for, and asks them for the pictures it shows.']);
+    // Each of those is true of the code: the store is IndexedDB on this site, the pictures page names exactly those three services, and the maker's rule names no other site.
+    expect(read('packets_my_words.js')).toContain("var DB_NAME = 'alloflow-packets-my-words';");
+    expect(read('packets_my_words.js')).not.toMatch(/fetch\s*\(|XMLHttpRequest|sendBeacon|WebSocket/);
+    expect(read('packets-pictures.js')).toContain("{ id: 'globalsymbols', name: 'Global Symbols' },\n    { id: 'openverse', name: 'Openverse' },\n    { id: 'commons', name: 'Wikimedia Commons' },");
+    expect(csp(parse('packets-make.html'))).not.toMatch(/https?:/);
+    expect(parse('packets-make.html').querySelector('details.proof').textContent).not.toContain('Nothing you choose leaves your device');
     // What changed: most sound files are the same for everyone; the small ones are asked for by need, and the server can see which.
     expect(bullets[3]).toBe('The page loads files from this site only. At step 3 it gets the sound files, also from this site. Most are the same files whatever you choose. '
       + 'Some words have their sounds in small files of about ' + perFile + ' words each, and the page gets only the ones your words need.');
@@ -603,7 +630,12 @@ describe('the maker, run with the real builder', () => {
     expect(page.$('pick-removed-text').textContent).toBe('You removed: ' + gone + '.');
     page.$('pick-restore').click();
     expect(page.chips()).toEqual(direct.words);
-    for (const button of page.$('pick-chips').querySelectorAll('button')) expect(button.getAttribute('aria-label')).toMatch(/^Remove \w+$/);
+    // Each chip has two buttons: "Edit this word" (closed) and Remove.
+    for (const chip of page.$('pick-chips').children) {
+      const word = chip.querySelector('span').textContent;
+      expect([...chip.querySelectorAll('button')].map((button) => [button.getAttribute('aria-label'), button.getAttribute('aria-expanded')])).toEqual([['Edit this word: ' + word, 'false'], ['Remove ' + word, null]]);
+    }
+    expect(page.seen('pick-edit')).toBe(false);
 
     // Few words fit: the page says so plainly and offers the one change that gives more.
     const fewAt = (stage) => builder.pickWords({ count: 10, targetSound: 'sh', position: 'first', shape: 'CVC', stage, exclude: recordedOnly }, { wordlist, core, dictionary, seed: 1 });
@@ -801,9 +833,13 @@ describe('the maker, run with the real builder', () => {
     expect(rows.cat).toEqual({ ok: true, text: 'Ready. 3 sounds: k, a, t.' });
     expect(rows.map.ok).toBe(true);
     expect(rows.gun).toEqual({ ok: false, text: 'Left out. It is on the list of words this tool does not use. That list is a first pass and can be too cautious.' });
-    expect(rows.fuzz).toEqual({ ok: false, text: 'No recording yet. It cannot be used in this version.' });
-    expect(rows.bail).toEqual({ ok: false, text: 'No recording yet. It cannot be used in this version.' });
-    expect(rows.blorp).toEqual({ ok: false, text: 'Not in the sound dictionary. Check the spelling.' });
+    expect(rows.fuzz).toEqual({ ok: false, text: 'No recording yet. Record it yourself, or choose another word.' });
+    expect(rows.bail).toEqual({ ok: false, text: 'No recording yet. Record it yourself, or choose another word.' });
+    expect(rows.blorp).toEqual({ ok: false, text: 'Not in the sound dictionary. Set its sounds to use it, or check the spelling.' });
+    // The words that a teacher can fix have "Edit this word" (closed); a blocked word and a word that is not a practice word do not.
+    const edits = Object.fromEntries([...page.$('own-list').children].map((row) => [row.querySelector('.w').textContent, row.querySelector('.e button')?.getAttribute('aria-expanded') ?? null]));
+    expect(edits).toEqual({ cat: 'false', gun: null, fuzz: 'false', blorp: 'false', bail: 'false', x1: null, map: 'false' });
+    expect(page.d.querySelectorAll('#own-list .wp')).toHaveLength(0);
     expect(rows.x1).toEqual({ ok: false, text: 'Not used. A practice word is 2 to 10 letters, letters only, with a vowel.' });
     expect(page.$('own-line').textContent).toBe('2 of 7 words can be used.');
     page.$('next-2').click();

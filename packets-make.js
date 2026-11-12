@@ -6,6 +6,11 @@
 // were asked for (each holds a few dozen words), never which words. With "Include pictures" checked the page
 // also gets the picture files, the same ones whatever words are chosen.
 // No AI runs here, and there is no account and no cookie. What it keeps on the device is listed under "About this page".
+// "Edit this word" (packets-words.js) lets a teacher give a word its sounds, a recording and a picture. That is kept
+// by packets_my_words.js in this browser's storage for this site; this page reads it back (getMany) just before it
+// makes a file and hands it to the builder as opts.own. None of it is sent anywhere. The microphone is asked for
+// only when the teacher presses Record. The page links to packets-pictures.html, the one page that can search
+// picture services; it never fetches anything from them itself.
 (function () {
   'use strict';
 
@@ -64,6 +69,11 @@
   // The kindergarten rows of the default (US, Common Core) stage table: neither has sh, ch or th (see #stage-k-note).
   var K_STAGES = ['K early', 'K late'];
   var TYPED_ONLY_SAID = 'Not offered by the picker. Used because you typed it.';
+  // What a typed word needs before it can be used, and what it uses of the teacher's (see checkWord).
+  var NEEDS_SOUNDS_SAID = 'Not in the sound dictionary. Set its sounds to use it, or check the spelling.';
+  var NEEDS_CLIP_SAID = 'No recording yet. Record it yourself, or choose another word.';
+  var EDIT_LABEL = 'Edit this word';
+  var PICTURES_PAGE = 'packets-pictures.html';
   var LENGTH_NAMES = { short: 'Short', regular: 'Regular', long: 'Long' };
 
   var doc = document;
@@ -313,6 +323,7 @@
     loosen.textContent = '';
     try { picked = pick(); } catch (error) {
       picked = null;
+      closePick(false);
       chips.textContent = '';
       setText('pick-line', 'The words could not be looked up.');
       setText('pick-sub', 'Change one choice above, or type your own words.');
@@ -330,7 +341,19 @@
     picked.words.forEach(function (word) {
       var item = el('li', 'chip');
       item.appendChild(el('span', '', word));
-      var remove = el('button', '', String.fromCharCode(215));
+      // "Edit this word": one panel under the list, for one word at a time. Without the panel script, no button.
+      if (wordPanel) {
+        var edit = el('button', 'chip-edit', String.fromCharCode(0x270E));
+        edit.type = 'button';
+        edit.title = EDIT_LABEL;
+        edit.setAttribute('aria-label', EDIT_LABEL + ': ' + word);
+        edit.setAttribute('aria-controls', 'pick-edit');
+        edit.setAttribute('aria-expanded', pickOpen && pickOpen.word === word ? 'true' : 'false');
+        edit.addEventListener('click', function () { togglePick(word); });
+        item.appendChild(edit);
+        if (pickOpen && pickOpen.word === word) item.classList.add('is-editing');
+      }
+      var remove = el('button', 'chip-remove', String.fromCharCode(215));
       remove.type = 'button';
       remove.setAttribute('aria-label', 'Remove ' + word);
       remove.addEventListener('click', function () {
@@ -338,13 +361,16 @@
         state.removed.push(word);
         remember();
         drawPick();
-        var buttons = $('pick-chips').querySelectorAll('button');
+        var buttons = $('pick-chips').querySelectorAll('button.chip-remove');
         var next = buttons[Math.min(at, buttons.length - 1)];
         if (next) next.focus(); else $('pick-restore').focus();
       });
       item.appendChild(remove);
       chips.appendChild(item);
     });
+    // The open panel stays while its word is listed.
+    if (pickOpen && picked.words.indexOf(pickOpen.word) < 0) closePick(false);
+    if (myWords && picked.words.some(needsEntry)) readMineSoon();
     show('pick-removed', state.removed.length > 0);
     setText('pick-removed-text', 'You removed: ' + state.removed.join(', ') + '.');
     setText('pick-restore', state.removed.length === 1 ? 'Put it back' : 'Put them back');
@@ -398,16 +424,28 @@
   function inWordStore(word) { var row = wordlist.get(word); return !!row && row.shards && !row.kokoro; }
   function canLoad(word) { var row = wordlist.get(word); return !!row && (row.kokoro || row.shards); }
 
+  // What the teacher added to a word on this device, as last read from packets_my_words.js (see readMine).
+  function mineOf(word) { return Object.prototype.hasOwnProperty.call(mine, word) ? mine[word] : null; }
+  // The teacher's sounds for a word, when every one is a sound of the dictionary (the builder checks the same).
+  function ownSoundsOf(word) {
+    var entry = mineOf(word), list = entry && entry.sounds && entry.sounds.sounds;
+    var labels = dictionary.labels || [];
+    return Array.isArray(list) && list.length && list.every(function (label) { return labels.indexOf(label) >= 0; }) ? list : null;
+  }
   // Each typed word, checked the way the builder will check it, with the reason in plain words.
+  // edit: the word may be given its sounds, a recording or a picture ("Edit this word").
   function checkWord(word) {
     if (wordlist.isBlocked(word)) return { word: word, ok: false, says: 'Left out. It is on the list of words this tool does not use. That list is a first pass and can be too cautious.' };
     if (!/^[a-z]+$/.test(word) || word.length < 2 || word.length > 10 || !/[aeiouy]/.test(word)) return { word: word, ok: false, says: 'Not used. A practice word is 2 to 10 letters, letters only, with a vowel.' };
-    var entry = core.dictionarySounds(word);
-    if (!entry) return { word: word, ok: false, says: 'Not in the sound dictionary. Check the spelling.' };
-    if (!canLoad(word)) return { word: word, ok: false, says: 'No recording yet. It cannot be used in this version.' };
+    var entry = core.dictionarySounds(word), mineSounds = ownSoundsOf(word), mineClip = !!(mineOf(word) && mineOf(word).clip);
+    var sounds = mineSounds || (entry ? entry.sounds : null);
+    if (!sounds) return { word: word, ok: false, edit: true, says: NEEDS_SOUNDS_SAID };
+    if (!canLoad(word) && !mineClip) return { word: word, ok: false, edit: true, says: NEEDS_CLIP_SAID };
     // A borderline word (the [soft] part of the word list's blocklist): the picker leaves it out, a teacher may type it.
-    if (wordlist.get(word).soft) return { word: word, ok: true, says: TYPED_ONLY_SAID };
-    return { word: word, ok: true, says: 'Ready. ' + count(entry.sounds.length, 'sound') + ': ' + entry.sounds.map(soundName).join(', ') + '.' };
+    var row = wordlist.get(word);
+    if (row && row.soft) return { word: word, ok: true, edit: true, says: TYPED_ONLY_SAID };
+    var uses = mineSounds && mineClip ? 'Uses your sounds and your recording. ' : mineClip ? 'Uses your recording. ' : mineSounds ? 'Uses your sounds. ' : '';
+    return { word: word, ok: true, edit: true, says: 'Ready. ' + uses + count(sounds.length, 'sound') + ': ' + sounds.map(soundName).join(', ') + '.' };
   }
   function typedWords() {
     var seen = {}, out = [];
@@ -423,13 +461,35 @@
     var words = typedWords(), list = $('own-list');
     var extra = Math.max(0, words.length - MAX_TYPED);
     ownRows = words.slice(0, MAX_TYPED).map(checkWord);
+    // An open panel is moved into the new list, and keeps the focus it had.
+    var focused = doc.activeElement, keepFocus = focused && Object.keys(ownOpen).some(function (word) { return ownOpen[word].root.contains(focused); }) ? focused : null;
     list.textContent = '';
     ownRows.forEach(function (row) {
       var item = el('li', row.ok ? 'is-ok' : 'is-out');
       item.appendChild(el('span', 'w', row.word));
       item.appendChild(el('span', 's', row.says));
+      if (row.edit && wordPanel) {
+        var open = !!ownOpen[row.word];
+        var cell = el('span', 'e');
+        var toggle = el('button', 'btn btn-text btn-small', EDIT_LABEL);
+        toggle.type = 'button';
+        toggle.setAttribute('aria-label', EDIT_LABEL + ': ' + row.word);
+        toggle.setAttribute('aria-controls', 'edit-own-' + row.word);
+        toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+        toggle.addEventListener('click', function () { toggleOwn(row.word); });
+        cell.appendChild(toggle);
+        item.appendChild(cell);
+        var spot = el('div', 'word-edit');
+        spot.id = 'edit-own-' + row.word;
+        spot.hidden = !open;
+        if (open) spot.appendChild(ownOpen[row.word].root);
+        item.appendChild(spot);
+      }
       list.appendChild(item);
     });
+    Object.keys(ownOpen).forEach(function (word) { if (!ownRows.some(function (row) { return row.word === word && row.edit; })) { ownOpen[word].destroy(); delete ownOpen[word]; } });
+    if (keepFocus && doc.body.contains(keepFocus)) keepFocus.focus();
+    if (myWords && ownRows.some(function (row) { return needsEntry(row.word); })) readMineSoon();
     var ready = ownRows.filter(function (row) { return row.ok; }).length;
     setText('own-line', !words.length ? 'Type or paste your words above.'
       : ready + ' of ' + count(ownRows.length, 'word') + ' can be used.' + (extra ? ' Only the first ' + MAX_TYPED + ' words are checked.' : ''));
@@ -461,6 +521,177 @@
     if ($('f-own').value !== state.own) $('f-own').value = state.own;
     drawOwn();
     drawPick();
+    drawMyWords();
+  }
+
+  // ---------------------------------------------------------------------------
+  // My words: what the teacher added to a word, kept by packets_my_words.js in this browser for this site
+  // ---------------------------------------------------------------------------
+  // myRows: the store's small rows (list), for the summary. mine: the whole entries of the words on the
+  // lists now, for the messages and the panels. Both are read again whenever the store says it changed.
+  var myWords = null, wordPanel = null, myRows = [], mine = {}, mineTried = {}, mineRun = 0, mineTimer = 0, clearing = false, cleared = '';
+  var ownOpen = {}, pickOpen = null;
+  function hasRow(word) { return myRows.some(function (row) { return row.word === word; }); }
+  // A listed word the store has something for, and that has not been read yet.
+  function needsEntry(word) { return hasRow(word) && !mineOf(word) && !mineTried[word]; }
+  function listedWords() {
+    var out = typedWords().slice(0, MAX_TYPED);
+    (picked ? picked.words : []).forEach(function (word) { if (out.indexOf(word) < 0) out.push(word); });
+    return out;
+  }
+  function readMineSoon() { clearTimeout(mineTimer); mineTimer = setTimeout(readMine, 0); }
+  function readMine() {
+    clearTimeout(mineTimer);
+    if (!myWords) return Promise.resolve();
+    var run = ++mineRun;
+    return myWords.list().then(function (rows) {
+      if (run !== mineRun) return null;
+      myRows = Array.isArray(rows) ? rows : [];
+      var words = listedWords().filter(hasRow);
+      mineTried = {};
+      words.forEach(function (word) { mineTried[word] = true; });
+      return myWords.getMany(words).then(function (found) {
+        if (run !== mineRun) return;
+        mine = found && typeof found === 'object' ? found : {};
+        mineChanged();
+      });
+    }).then(null, function () {});
+  }
+  function mineChanged() {
+    drawMyWords();
+    if (!state) return;
+    if (state.mode === 'own') drawOwn();
+    Object.keys(ownOpen).forEach(function (word) { ownOpen[word].update(mineOf(word)); });
+    if (pickOpen) pickOpen.update(mineOf(pickOpen.word));
+    if (step === 3) drawPictures();
+  }
+  function wordMade(row) {
+    var parts = [];
+    if (row.sounds) parts.push('sounds');
+    if (row.clip) parts.push('recording');
+    if (row.picture) parts.push(row.own ? 'your picture' : 'picture');
+    return parts.join(', ');
+  }
+  // The quiet summary in step 2: shown only when the store holds something.
+  function drawMyWords() {
+    var box = $('my-words');
+    if (!box) return;
+    var rows = myRows, list = $('my-words-list');
+    box.hidden = !myWords || (!rows.length && !cleared);
+    var bytes = rows.reduce(function (sum, row) { return sum + (Number(row.bytes) || 0); }, 0);
+    setText('my-words-line', 'My words on this device: ' + (rows.length ? count(rows.length, 'word') + ', ' + fileSize(bytes) : 'none') + '.');
+    list.textContent = '';
+    rows.forEach(function (row) {
+      var item = el('li');
+      item.appendChild(el('span', 'mw-word', row.word));
+      item.appendChild(el('span', 'mw-what', wordMade(row) + ', ' + fileSize(Number(row.bytes) || 1) + '.'));
+      var remove = el('button', 'btn btn-text btn-small', 'Remove');
+      remove.type = 'button';
+      remove.setAttribute('aria-label', 'Remove ' + row.word + ' from my words');
+      remove.addEventListener('click', function () {
+        var at = rows.indexOf(row);
+        myWords.remove(row.word).then(function () {
+          setText('my-words-said', 'Removed ' + row.word + '.');
+          return readMine();
+        }).then(function () {
+          var buttons = $('my-words-list').querySelectorAll('button');
+          var next = buttons[Math.min(at, buttons.length - 1)];
+          if (next) next.focus(); else $('my-words-line').focus();
+        });
+      });
+      item.appendChild(remove);
+      list.appendChild(item);
+    });
+    var clear = $('my-words-clear');
+    clear.hidden = !rows.length;
+    if (!rows.length) clearing = false;
+    clear.textContent = clearing ? 'Yes, remove all ' + count(rows.length, 'word') : 'Remove all my words';
+    show('my-words-keep', clearing && rows.length > 0);
+    if (cleared) setText('my-words-said', cleared);
+  }
+  function wireMyWords() {
+    $('my-words-clear').addEventListener('click', function () {
+      if (!clearing) { clearing = true; cleared = ''; setText('my-words-said', ''); drawMyWords(); return; }
+      clearing = false;
+      myWords.clear().then(function (n) {
+        cleared = 'Removed ' + count(n, 'word') + '.';
+        return readMine();
+      }).then(function () { drawMyWords(); $('my-words-line').focus(); });
+    });
+    $('my-words-keep').addEventListener('click', function () { clearing = false; drawMyWords(); $('my-words-clear').focus(); });
+  }
+
+  // The panels. A typed word's opens in its row; a picked word's opens under the list, one at a time.
+  function toggleOwn(word) {
+    if (ownOpen[word]) return closeOwn(word, true);
+    ownOpen[word] = wordPanel.open(doc.createElement('div'), word, { onClose: function () { closeOwn(word, true); } });
+    ownOpen[word].update(mineOf(word));
+    drawOwn();
+    ownOpen[word].focus();
+  }
+  function closeOwn(word, focus) {
+    if (!ownOpen[word]) return;
+    ownOpen[word].destroy();
+    delete ownOpen[word];
+    drawOwn();
+    if (focus) { var toggle = $('own-list').querySelector('button[aria-controls="edit-own-' + word + '"]'); if (toggle) toggle.focus(); }
+  }
+  function togglePick(word) {
+    var same = pickOpen && pickOpen.word === word;
+    closePick(false);
+    if (same) { focusChip(word); return; }
+    var spot = $('pick-edit');
+    pickOpen = wordPanel.open(spot, word, { onClose: function () { closePick(true); } });
+    pickOpen.update(mineOf(word));
+    spot.hidden = false;
+    markChips();
+    pickOpen.focus();
+  }
+  function closePick(focus) {
+    if (!pickOpen) return;
+    var word = pickOpen.word;
+    pickOpen.destroy();
+    pickOpen = null;
+    show('pick-edit', false);
+    markChips();
+    if (focus) focusChip(word);
+  }
+  function markChips() {
+    Array.prototype.forEach.call($('pick-chips').querySelectorAll('button.chip-edit'), function (button) {
+      var on = !!pickOpen && button.getAttribute('aria-label') === EDIT_LABEL + ': ' + pickOpen.word;
+      button.setAttribute('aria-expanded', on ? 'true' : 'false');
+      button.parentNode.classList.toggle('is-editing', on);
+    });
+  }
+  function focusChip(word) {
+    var button = $('pick-chips').querySelector('button.chip-edit[aria-label="' + EDIT_LABEL + ': ' + word + '"]');
+    if (button) button.focus();
+  }
+  // For the panel's Play: the word's recording from the sound files this page already uses (the word bank,
+  // or the word store's small file that holds it). The first time, that is the same download as step 3.
+  function bankNote(word) { return canLoad(word) ? 'bank' : ''; }
+  function bankClip(word, saying) {
+    if (!canLoad(word)) return Promise.resolve(null);
+    if (!sounds && !soundsSaved && typeof saying === 'function') saying(String(Math.round(SOUND_BYTES / 1e6)));
+    return getSounds(function () {}).then(function (banks) {
+      var clip = banks.kokoroWords && banks.kokoroWords[word];
+      if (typeof clip === 'string' && clip) return clip;
+      return getWordSounds([word], function () {}).then(function (clips) { return clips[word] || null; });
+    });
+  }
+  // What the builder is handed for these words: the store's entries, read now, in the store's own shape.
+  // The builder checks every part again (word_sounds_packet_builder.js, readOwn).
+  function ownFor(words) {
+    if (!myWords) return Promise.resolve(null);
+    return myWords.getMany(words).then(function (found) {
+      var own = {};
+      words.forEach(function (word) {
+        var entry = found && found[word];
+        if (!entry) return;
+        own[word] = { sounds: entry.sounds || null, clip: entry.clip || null, picture: entry.picture || null };
+      });
+      return Object.keys(own).length ? own : null;
+    }, function () { return null; });
   }
 
   // ---------------------------------------------------------------------------
@@ -680,21 +911,28 @@
     return picturesLoading;
   }
   // The box and its one line: how many of this file's words have a picture. inFile is what a finished file reports.
+  // A picture the teacher added to a word (My words) is used in place of its symbol.
+  function ownPicture(word) { var entry = mineOf(word); return !!(entry && entry.picture); }
   function drawPictures(inFile) {
     var box = $('f-pictures');
     if (!box) return;
     var words = chosenWords().slice(0, wordsFor(state.length));
-    var have = symbols ? words.filter(function (word) { return symbols.has(word); }).length : 0;
+    var theirs = words.filter(ownPicture).length;
+    var have = words.filter(function (word) { return ownPicture(word) || (!!symbols && symbols.has(word)); }).length;
     box.disabled = !have;
     box.checked = have > 0 && !picturesOff;
     box.parentNode.classList.toggle('is-on', box.checked);
     var n = inFile ? inFile.withPicture : have, of = inFile ? inFile.withPicture + inFile.withoutPicture : words.length;
-    setText('pictures-line', picturesNote || (symbols ? 'Pictures for ' + n + ' of ' + count(of, 'word') + '. Symbols: Mulberry.' : 'Pictures are not available right now.'));
+    var added = inFile ? inFile.teacher || 0 : theirs;
+    setText('pictures-line', picturesNote || (added ? 'Pictures for ' + n + ' of ' + count(of, 'word') + ': ' + added + ' you added' + (n > added ? ', ' + count(n - added, 'Mulberry symbol') + '.' : '.')
+      : symbols ? 'Pictures for ' + n + ' of ' + count(of, 'word') + '. Symbols: Mulberry.' : 'Pictures are not available right now.'));
   }
-  // Whether the file being made gets pictures: the box is checked and the drawings are here.
-  function picturesFor(run) {
+  // Whether the file being made gets pictures: the box is checked and the drawings are here. The drawings
+  // are fetched only when a word of the file shows a symbol (not when every picture is the teacher's).
+  function picturesFor(run, words) {
     var box = $('f-pictures');
-    if (!symbols || !box || !box.checked) return Promise.resolve(false);
+    if (!box || !box.checked) return Promise.resolve(false);
+    if (!symbols || !words.some(function (word) { return symbols.has(word) && !ownPicture(word); })) return Promise.resolve(words.some(ownPicture));
     if (!symbols.ready() && run === buildRun) making('Getting the pictures, about ' + megabytes(symbols.bytes) + ' MB.', null);
     return loadPictures().then(function (ready) { return !!ready; }, function () { return false; }).then(function (ready) {
       if (!ready) {
@@ -800,10 +1038,16 @@
         withWords.kokoroWords = {};
         Object.keys(clips).forEach(function (word) { withWords.kokoroWords[word] = clips[word]; });
         Object.keys(banks.kokoroWords).forEach(function (word) { withWords.kokoroWords[word] = banks.kokoroWords[word]; });
-        return picturesFor(run).then(function (pictures) {
+        return picturesFor(run, words).then(function (pictures) {
           if (run !== buildRun) return null;
-          return builder.buildPacket({ words: words, activities: activities, seed: seed(), title: title, core: core, dictionary: dictionary, banks: withWords, loader: loader,
-            wordlist: wordlist, toWav: toWav, picked: state.mode === 'pick' ? picked : null, pictures: pictures, symbols: pictures ? symbols : null });
+          // What the teacher added to these words, read from the store now (not from what the page showed).
+          return ownFor(words).then(function (own) {
+            if (run !== buildRun) return null;
+            var options = { words: words, activities: activities, seed: seed(), title: title, core: core, dictionary: dictionary, banks: withWords, loader: loader,
+              wordlist: wordlist, toWav: toWav, picked: state.mode === 'pick' ? picked : null, pictures: pictures, symbols: pictures && symbols && symbols.ready() ? symbols : null };
+            if (own) options.own = own;
+            return builder.buildPacket(options);
+          });
         });
       });
     }).then(function (result) {
@@ -844,6 +1088,12 @@
       lines.push((name ? name + ': ' : '') + (group.words.length ? group.words.join(', ') + ' (' + group.reason + ').' : group.reason + '.'));
     });
     if (whole.length) lines.push('Not in the file at all: ' + whole.join(', ') + '.');
+    // What the builder would not take of the teacher's own, and why.
+    var refused = result.manifest && result.manifest.own && Array.isArray(result.manifest.own.refused) ? result.manifest.own.refused : [];
+    refused.forEach(function (r) {
+      var what = r.part === 'sounds' ? 'Your sounds for ' + r.word + ' were' : r.part === 'clip' ? 'Your recording of ' + r.word + ' was' : 'Your picture for ' + r.word + ' was';
+      lines.push(what + ' not used: ' + r.reason + '.');
+    });
     return lines;
   }
   function drawList(id, lines) {
@@ -874,7 +1124,7 @@
     }));
     drawList('sum-out', out.length ? out : ['Nothing. Every word is in every activity you chose.']);
     // With pictures, the line under the box now counts the words that show one in this file.
-    if (manifest.pictures && manifest.pictures.symbols) drawPictures(manifest.pictures.counts);
+    if (manifest.pictures && (manifest.pictures.symbols || manifest.pictures.counts.teacher)) drawPictures(manifest.pictures.counts);
     show('summary', true);
     if (fileUrl) { $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl); show('try', true); }
     show('save', true);
@@ -974,6 +1224,9 @@
     $('save').addEventListener('click', saveFile);
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
+      // My words are not choices: they stay (they have their own Remove buttons in step 2). Their open panels close.
+      closePick(false);
+      Object.keys(ownOpen).forEach(function (word) { ownOpen[word].destroy(); delete ownOpen[word]; });
       state = defaults();
       picked = null;
       goTo(1, true);
@@ -1074,6 +1327,11 @@
       return { key: row.key, name: core.strandLabel(row.key), ids: core.activityIds().filter(function (id) { return offered.indexOf(id) >= 0 && core.activityStrand(id) === row.key; }) };
     }).filter(function (strand) { return strand.ids.length > 0; });
     order = [].concat.apply([], strands.map(function (strand) { return strand.ids; }));
+    // My words and "Edit this word" are extras: without their two scripts the page works as it did.
+    var store = window.AlloPacketMyWords, panels = window.AlloPacketWordPanel;
+    myWords = store && typeof store.getMany === 'function' && typeof store.list === 'function' && typeof store.put === 'function' ? store : null;
+    wordPanel = myWords && panels && typeof panels.create === 'function' ? panels.create({ store: myWords, core: core, wordlist: wordlist, symbols: symbols,
+      soundGroups: SOUND_GROUPS, soundName: soundName, bankClip: bankClip, bankNote: bankNote, playable: toWav, picturesPage: PICTURES_PAGE }) : null;
     drawPickControls();
     state = recall();
     if (loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_csv) setText('csv-label', loader.DEFAULT_LABELS.save_csv);
@@ -1081,6 +1339,12 @@
     listFiles();
     listSources();
     wire();
+    if (myWords) {
+      wireMyWords();
+      // Another tab (Find a picture) or this one changed the store: read it again.
+      if (typeof myWords.onChange === 'function') myWords.onChange(function () { readMine(); });
+      readMine();
+    }
     show('loading', false);
     goTo(1, true);
     checkSavedSounds();

@@ -113,6 +113,12 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 .card-main h2, .card-main p, .card-main .card-foot { color: var(--on-accent); }
 .card-main:hover { background: var(--accent-dark); border-color: var(--accent-dark); box-shadow: none; }
 .card-later { background: transparent; border-style: dashed; }
+/* A second, smaller link in a card: lifted above the card's stretched link and not stretched itself. */
+.card .card-also { position: relative; z-index: 1; }
+.card .card-also a { font-weight: 600; text-decoration: underline; }
+.card .card-also a::after { content: none; }
+.card .card-also a:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
+.card-main .card-also, .card-main .card-also a, .card-main .card-also a:hover { color: var(--on-accent); }
 .tag { display: inline-block; padding: 0.1rem 0.6rem; border: 1px solid var(--line-strong); border-radius: 999px; font-size: 0.8125rem; font-weight: 600; color: var(--ink); background: var(--surface); }
 
 .band { padding: clamp(2.5rem, 6vw, 4.5rem) 0; border-top: 1px solid var(--line); }

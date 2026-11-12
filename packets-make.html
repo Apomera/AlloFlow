@@ -3,13 +3,14 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'self'; form-action 'none'; base-uri 'none'">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; media-src data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
 <meta name="referrer" content="no-referrer">
 <!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
 <title>Make a practice file</title>
 <meta name="description" content="Make a Word Sounds practice file in three steps. The file is put together in your browser. Runs without AI. No accounts.">
 <link rel="icon" type="image/svg+xml" href="packets-mark.svg">
 <link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-words.css">
 <script src="packets-page.js" defer></script>
 <script src="word_sounds_phonemes_en.js" defer></script>
 <script src="word_sounds_core.js" defer></script>
@@ -17,6 +18,8 @@
 <script src="word_sounds_take_home_loader.js" defer></script>
 <script src="word_sounds_packet_builder.js" defer></script>
 <script src="word_sounds_symbols_en.js" defer></script>
+<script src="packets_my_words.js" defer></script>
+<script src="packets-words.js" defer></script>
 <script src="packets-make.js" defer></script>
 </head>
 <body>
@@ -34,7 +37,7 @@
 
 <details class="proof">
   <summary class="wrap wrap-narrow">
-    <span class="proof-line">This page runs without AI. No account. Nothing you choose leaves your device.</span>
+    <span class="proof-line">This page runs without AI. No account. The words you choose are not uploaded.</span>
     <span class="proof-open proof-open-closed">See the details</span>
     <span class="proof-open proof-open-opened">Hide the details</span>
   </summary>
@@ -46,6 +49,9 @@
       <li>The page loads files from this site only. At step 3 it gets the sound files, also from this site. Most are the same files whatever you choose. Some words have their sounds in small files of about 40 words each, and the page gets only the ones your words need.</li>
       <li>Like any website, the server that sends these files can see that your browser asked for them. That includes which of the small sound files were asked for, but not which words. It receives nothing else.</li>
       <li>On this device the page keeps your last choices and the sound files. The buttons that remove them are under About this page, at the bottom.</li>
+      <li>What you add to a word (its sounds, your recording, your picture) is kept in this browser's storage for this site. It is not uploaded. It goes only into the files you make. You can remove it under My words on this device, in step 2.</li>
+      <li>The microphone is used only when you press Record it yourself, and only until the recording stops. The recording stays on this device.</li>
+      <li>This page reaches only this site. One other page, Find a picture, can search Global Symbols, Openverse and Wikimedia Commons after you turn its search on there. It sends them the word you search for, and asks them for the pictures it shows.</li>
     </ul>
     <p>Every file this page loads: <span data-show-files>they are listed in the page's source, and all of them are on this site.</span></p>
     <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
@@ -139,6 +145,7 @@
           <p id="pick-sub" class="result-sub"></p>
           <div id="pick-loosen" class="loosen"></div>
           <ul id="pick-chips" class="chips" aria-label="Words in the list"></ul>
+          <div id="pick-edit" class="word-edit" hidden></div>
           <p id="pick-removed" class="result-sub" hidden><span id="pick-removed-text"></span> <button type="button" class="btn btn-text btn-small" id="pick-restore">Put them back</button></p>
           <p id="pick-out" class="result-sub"></p>
         </div>
@@ -155,6 +162,19 @@
           <ul id="own-list" class="checked" aria-label="Your words, checked"></ul>
         </div>
       </div>
+
+      <details id="my-words" class="my-words" hidden>
+        <summary id="my-words-line">My words on this device</summary>
+        <div class="my-words-body">
+          <p class="hint">What you added to a word: its sounds, a recording or a picture. It is kept in this browser for this site, and it is not uploaded.</p>
+          <ul id="my-words-list" class="my-words-list" aria-label="My words on this device"></ul>
+          <p class="row">
+            <button type="button" class="btn btn-small" id="my-words-clear">Remove all my words</button>
+            <button type="button" class="btn btn-small" id="my-words-keep" hidden>Keep them</button>
+            <span id="my-words-said" role="status"></span>
+          </p>
+        </div>
+      </details>
 
       <fieldset class="block">
         <legend>Version</legend>
@@ -248,6 +268,7 @@
       <div class="about-body">
         <h2 id="keeps-title">What this page keeps</h2>
         <p>Your last choices are kept in this browser so that the page opens the way you left it: the activities, how you chose the words, any words you typed, the version and the length. The sound files are kept too, so that they are not downloaded again. Nothing is kept anywhere else.</p>
+        <p>What you add to a word (its sounds, your recording, your picture) is kept in this browser's storage for this site, until you remove it under My words on this device, in step 2. It is not uploaded.</p>
         <p class="row">
           <button type="button" class="btn btn-small" id="forget">Forget my choices</button>
           <button type="button" class="btn btn-small" id="forget-sounds">Remove the saved sounds</button>

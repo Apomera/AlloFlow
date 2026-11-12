@@ -1,0 +1,69 @@
+/* "Edit this word" and "My words on this device" on the maker page (packets-words.js, packets-make.js).
+   Uses the tokens and the buttons of packets.css. Loads nothing. */
+
+/* The pencil on a chip of the picked list */
+.chip .chip-edit { font-size: 1.05rem; }
+.chip.is-editing { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); background: var(--accent-soft); }
+
+/* A typed word's row: the button sits under the message; the panel takes the whole row */
+.checked .e { grid-column: 2; }
+.checked .e .btn { min-height: 2.75rem; }
+.checked .word-edit { grid-column: 1 / -1; }
+
+/* The panel */
+.word-edit { margin-top: 0.75rem; }
+.wp { padding: 1rem; border: 1px solid var(--line-strong); border-radius: var(--radius); background: var(--bg); }
+.wp-head { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 0.25rem 1rem; }
+.wp-title { font-size: 1.125rem; overflow-wrap: anywhere; }
+.wp-warn { margin-top: 0.5rem; font-weight: 600; color: var(--ink); }
+.wp-part { margin-top: 1rem; padding-top: 0.85rem; border-top: 1px solid var(--line); }
+.wp-part h4 { margin: 0; font-size: 1rem; color: var(--ink); }
+.wp-line { margin-top: 0.4rem; max-width: 40rem; }
+.wp-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem; margin-top: 0.6rem; }
+.wp-said:empty, .wp-problem:empty { display: none; }
+.wp-said { margin-top: 0.5rem; font-weight: 600; color: var(--ink); max-width: 40rem; }
+.wp-problem { margin-top: 0.5rem; padding-left: 0.75rem; border-left: 4px solid var(--ink); font-weight: 600; color: var(--ink); }
+.wp-note { margin-top: 0.4rem; }
+
+/* How the word splits: letters over sounds */
+.wp-split { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-top: 0.5rem; }
+.wp-split li { display: inline-flex; flex-direction: column; align-items: center; min-width: 2.75rem; padding: 0.3rem 0.55rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); }
+.wp-letters { font-size: 1.25rem; font-weight: 700; color: var(--ink); line-height: 1.2; }
+.wp-sound { font-size: 0.875rem; color: var(--muted); }
+
+/* The sounds editor */
+.wp-editor { margin-top: 0.5rem; }
+.wp-picks { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.6rem; counter-reset: wp; }
+.wp-picks li { display: inline-flex; align-items: center; gap: 0.15rem; padding: 0.2rem 0.2rem 0.2rem 0.5rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); counter-increment: wp; max-width: 100%; }
+.wp-picks li::before { content: counter(wp); font-size: 0.8125rem; font-weight: 700; color: var(--muted); margin-right: 0.3rem; }
+.wp-picks select { min-height: 2.75rem; max-width: 13rem; padding: 0.3rem 0.4rem; border: 1px solid var(--line-strong); border-radius: 6px; background: var(--surface); color: var(--ink); }
+.wp-x { width: 2.75rem; padding: 0; border-color: transparent; background: none; font-size: 1.25rem; color: var(--muted); }
+.wp-x:disabled { opacity: 0.35; cursor: default; }
+.wp-field { margin-top: 0.9rem; max-width: 26rem; }
+
+/* The picture */
+.wp-picture { display: flex; flex-wrap: wrap; align-items: center; gap: 0.75rem; margin-top: 0.5rem; }
+.wp-picture img { width: 6rem; height: 6rem; object-fit: contain; padding: 4px; background: #ffffff; border: 1px solid var(--line); border-radius: 8px; }
+.wp-picture .wp-line { flex: 1 1 12rem; margin-top: 0; }
+.btn:disabled { opacity: 0.5; cursor: default; }
+
+/* My words on this device: one quiet, closed line in step 2, shown only when the store holds a word */
+.my-words { margin-top: 1.5rem; padding-top: 0.25rem; border-top: 1px solid var(--line); font-size: 0.9375rem; color: var(--muted); }
+.my-words > summary { width: fit-content; padding: 0.75rem 0.25rem 0.75rem 0; cursor: pointer; font-weight: 600; color: var(--muted); }
+.my-words > summary:hover, .my-words[open] > summary { color: var(--ink); }
+.my-words-body { padding-bottom: 0.5rem; }
+.my-words-list { margin-top: 0.5rem; border-top: 1px solid var(--line); }
+.my-words-list li { display: flex; flex-wrap: wrap; align-items: center; gap: 0 0.75rem; padding: 0.25rem 0; border-bottom: 1px solid var(--line); }
+.mw-word { font-weight: 700; color: var(--ink); min-width: 6rem; overflow-wrap: anywhere; }
+.mw-what { flex: 1 1 10rem; }
+.my-words .row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 0.75rem; }
+
+@media (max-width: 29.99rem) {
+  .checked .e { grid-column: 1 / -1; }
+  .wp { padding: 0.75rem; }
+  .wp-picks select { max-width: 11rem; }
+}
+
+@media (forced-colors: active) {
+  .chip.is-editing { border-width: 3px; }
+}

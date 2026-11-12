@@ -1069,6 +1069,21 @@ describe('the guide for school IT', () => {
     expect(maker).not.toMatch(/method\s*:|body\s*:|FormData|encodeURIComponent/);
     expect(parse('packets-results.html').querySelector('meta[http-equiv="Content-Security-Policy"]').getAttribute('content')).toContain("connect-src 'none'");
     expect(fact['Accounts, cookies, analytics']).toContain("the maker page keeps the teacher's last choices and the sound files, the results page keeps results only if a switch is turned on, and this page and Check a file keep nothing");
+    // A teacher's own words (sounds, recording, picture): kept in the browser for this site, never uploaded; the microphone only on Record;
+    // and the one page that can reach other sites, with its three services named. Each is true of the code.
+    const squash = (value) => value.replace(/\s+/g, ' ').trim();
+    expect(squash(fact['Accounts, cookies, analytics'])).toContain("What a teacher adds to a word on the maker page or on Find a picture (its sounds, a recording, a picture with its credit) is kept in that browser's storage for this site (IndexedDB) until the teacher removes it. It is not uploaded.");
+    expect(read('packets_my_words.js')).toMatch(/IndexedDB database 'alloflow-packets-my-words'/);
+    expect(text('section[aria-labelledby="flow-title"] li')[0]).toContain("What a teacher adds to a word there (its sounds, a recording, a picture) is kept in that browser's storage for this site and goes only into the files the teacher makes. The microphone is used only when the teacher presses Record.");
+    expect(squash(fact['What leaves the device, and when'])).toBe('Nothing, unless a person passes on a saved results file. There is one exception: the class mailbox kind of practice file, in the next row. '
+      + 'For teachers, one page of this site, Find a picture (packets-pictures.html), can search three picture services after the teacher turns its search on: Global Symbols, Openverse and Wikimedia Commons. '
+      + 'It sends them the word searched for and asks them for the pictures it shows. Every other page of this site reaches only this site.');
+    const reaches = (page) => (parse(page).querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') || '').match(/https?:\/\/[^\s;]+/g) || [];
+    for (const page of pages.filter((name) => name !== 'packets-pictures.html')) expect(reaches(page), page).toEqual([]);
+    expect([...new Set(reaches('packets-pictures.html').map((url) => url.replace(/^https:\/\//, '')))].sort()).toEqual(['api.openverse.org', 'commons.wikimedia.org', 'globalsymbols.com', 'thumb.wikimedia.org', 'upload.wikimedia.org']);
+    // The maker asks for the microphone in one script only, and only from the Record button.
+    expect(read('packets-make.js')).not.toMatch(/getUserMedia/);
+    expect(read('packets-words.js')).toMatch(/function record\(\) \{[\s\S]*?media\.getUserMedia\(/);
     expect(read('packets-make.js')).toMatch(/var STORE_KEY = 'alloflow-packets-maker\/1';\s+var SOUND_CACHE = /);
     expect(read('packets-results.html')).toContain('Nothing is kept on this device unless you turn on');
   });

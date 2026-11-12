@@ -147,6 +147,175 @@
   function svgDataUri(svg) { return 'data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(svg))); }
 
   // ---------------------------------------------------------------------------
+  // The teacher's own material (opts.own): a split into sounds, a recording, a picture, for some of
+  // the words. A page reads it from the device store (packets_my_words.js); the builder trusts none
+  // of it. Every part is checked here, and a part that fails is left out and listed (manifest.own.refused).
+  //
+  //   opts.own = { zayden: { sounds, spelling, clip, picture }, ... }      keys: the practice words
+  //     sounds    ['z', 'ay', 'd', 'schwa', 'n']: 1 to 24 labels, each one of the sound dictionary's
+  //               labels (dictionary.labels, else SOUND_LABELS). Also taken as { sounds, spelling }, the
+  //               store's shape. With sounds, a word that is not in the dictionary can be used.
+  //     spelling  optional, [{ text: 'z', size: 1 }, ...]: the letters for each sound (core.alignGraphemes
+  //               shape; size 2 = one spelling for two sounds, as x in box). The texts must spell the
+  //               word and the sizes must add up to the number of sounds. Without it the aligner splits.
+  //     clip      'data:audio/wav;base64,...' or { dataUri }: WAV or MP3 only, at most OWN_LIMITS.clipBytes,
+  //               and its first bytes must be what its type says. It is the word's recording in the file.
+  //     picture   { dataUri, credit }: PNG, JPEG or an SVG that passes svgRefusal, at most
+  //               OWN_LIMITS.pictureBytes, first bytes checked. credit is { own: true } (the teacher's own
+  //               file) or { title, author, license, licenseUrl, source, sourceUrl, resized } with an open
+  //               license (OPEN_LICENSE). Shown only with pictures: true, in place of the word's symbol.
+  //   A blocked word is refused before any of it is read, exactly as without it. Answer choices are taken
+  //   as before: a teacher's word is a choice only where it is itself a practice word.
+  //   With no opts.own (or none for these words) the file is byte for byte what it was before.
+  // ---------------------------------------------------------------------------
+  // The labels of word_sounds_phonemes_en.js (dictionary.labels); a test keeps the two the same.
+  var SOUND_LABELS = ['a', 'e', 'i', 'o', 'u', 'ay', 'ee', 'ie', 'oa', 'oo', 'oo_short', 'oy', 'ow', 'aw', 'ar', 'or', 'er', 'ir', 'ur', 'air', 'ear', 'schwa',
+    'b', 'ch', 'd', 'dh', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'ng', 'p', 'r', 's', 'sh', 't', 'th', 'v', 'w', 'y', 'z', 'zh'];
+  // The limits of packets_my_words.js (LIMITS there): a test keeps them the same.
+  var OWN_LIMITS = Object.freeze({ sounds: 24, clipBytes: 409600, pictureBytes: 204800 });
+  // The licenses a picture of the teacher's may carry into a file: public domain, CC0, CC BY, CC BY-SA
+  // (the ones packets-pictures.html shows). Anything else is refused.
+  var OPEN_LICENSE = /^(?:CC0|Public domain|CC BY(?:-SA)?(?: \d(?:\.\d)?)?(?: [a-z]{2,5})?)$/i;
+  var SHARE_ALIKE = /^CC BY-SA\b/i;
+  var OWN_PICTURE_LINE = 'Picture added by the teacher.';
+  var SHARE_ALIKE_NOTICE = [
+    'Pictures under a share-alike license',
+    '====================================',
+    '',
+    'Some pictures in this file were chosen by the teacher and are under a Creative Commons',
+    'Attribution-ShareAlike license (CC BY-SA). Each one is a separate work from the program in this file',
+    'and stays under its own license: you may copy and share it, and change it, as long as you give its',
+    'credit and share a changed picture under the same license. A picture marked "made smaller" was',
+    'resized to fit in this file. The credit for each one:',
+  ].join('\n');
+
+  function isPlainObject(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
+  // One line of plain text, the way packets_my_words.js keeps it: no control characters, single spaces.
+  function plainLine(value, max) {
+    return (typeof value === 'string' || typeof value === 'number' ? String(value) : '').replace(/[\x00-\x1f\x7f]+/g, ' ').replace(/\s+/g, ' ').trim().slice(0, max);
+  }
+  // A credit's words come from a picture service. In a file they are data, but "Check a file" reads every
+  // character of it: a title where a word such as open sits just before a bracket would read as code there. Brackets for parentheses,
+  // and no colon after a script or data scheme, keep the words and lose the likeness. In an address the
+  // same characters are written the other way an address may write them (%28, %29, %2E, %3A).
+  function creditText(value, max) {
+    return plainLine(value, max).replace(/[()]/g, function (p) { return p === '(' ? '[' : ']'; })
+      .replace(/\b(javascript|vbscript|livescript|data)\s*:/gi, '$1 -').replace(/\.(\s*cookie)\b/gi, ' $1');
+  }
+  function addressText(value) {
+    return plainLine(value, 500).replace(/^[a-z][a-z0-9+.-]*:\/*/i, '').replace(/[\s"'<>`]/g, '')
+      .replace(/[()]/g, function (p) { return p === '(' ? '%28' : '%29'; }).replace(/\b(javascript|vbscript|livescript|data):/gi, '$1%3A').replace(/\.(cookie)\b/gi, '%2E$1');
+  }
+  // creditLine of packets_my_words.js, the same sentence (a test compares the two), from cleaned words.
+  function creditLine(credit) {
+    if (!isPlainObject(credit)) return '';
+    if (credit.own === true) return OWN_PICTURE_LINE;
+    var bare = addressText;
+    var title = creditText(credit.title, 200).replace(/"/g, "'"), author = creditText(credit.author, 200), license = plainLine(credit.license, 60);
+    var licenseAt = bare(credit.licenseUrl), source = creditText(credit.source, 80), sourceAt = bare(credit.sourceUrl);
+    var parts = [];
+    if (title) parts.push('"' + title + '"' + (author ? ' by ' + author : ''));
+    else if (author) parts.push('Picture by ' + author);
+    else parts.push('Picture');
+    if (license) parts.push(license + (licenseAt ? ' (' + licenseAt + ')' : ''));
+    if (source || sourceAt) parts.push('from ' + (source || sourceAt) + (source && sourceAt ? ' (' + sourceAt + ')' : ''));
+    if (credit.resized === true) parts.push('made smaller');
+    return (parts.join(', ') + '.').replace(/\b[a-z][a-z0-9+.-]{1,12}:\/\/+/gi, '').replace(/\/{2,}/g, '/').replace(/\.\.$/, '.');
+  }
+
+  // A base64 data: address -> { type, bytes, head (its first bytes, as text) }, or null.
+  function readDataUri(uri) {
+    var text = typeof uri === 'string' ? uri : '';
+    var found = /^data:([a-z0-9.+\/-]+);base64,/i.exec(text.slice(0, 100));
+    if (!found) return null;
+    var body = text.slice(found[0].length);
+    if (!body || body.length % 4 !== 0 || !/^[A-Za-z0-9+\/]+={0,2}$/.test(body)) return null;
+    var head;
+    try { head = atob(body.slice(0, 24)); } catch (_) { return null; }
+    return { type: found[1].toLowerCase(), body: body, bytes: body.length / 4 * 3 - (body.slice(-2) === '==' ? 2 : body.slice(-1) === '=' ? 1 : 0), head: head };
+  }
+  var WAV_TYPES = /^audio\/(?:wav|x-wav|wave)$/, MP3_TYPES = /^audio\/(?:mpeg|mp3)$/;
+  function ownClipRefusal(uri) {
+    var got = readDataUri(uri);
+    if (!got || !/^audio\//.test(got.type)) return 'not a recording';
+    if (!WAV_TYPES.test(got.type) && !MP3_TYPES.test(got.type)) return 'not a WAV or MP3 recording';
+    if (got.bytes > OWN_LIMITS.clipBytes) return 'the recording is larger than ' + Math.round(OWN_LIMITS.clipBytes / 1024) + ' KB';
+    var head = got.head;
+    var wav = head.slice(0, 4) === 'RIFF' && head.slice(8, 12) === 'WAVE';
+    var mp3 = head.slice(0, 3) === 'ID3' || (head.charCodeAt(0) === 0xFF && (head.charCodeAt(1) & 0xE0) === 0xE0);
+    if (WAV_TYPES.test(got.type) ? !wav : !mp3) return 'the recording is not the kind of file its type says';
+    if (got.bytes < 64) return 'the recording is empty';
+    return '';
+  }
+  function ownPictureRefusal(picture) {
+    if (!isPlainObject(picture)) return 'not a picture';
+    var got = readDataUri(picture.dataUri);
+    if (!got || ['image/png', 'image/jpeg', 'image/svg+xml'].indexOf(got.type) < 0) return 'not a PNG, JPEG or SVG picture';
+    if (got.bytes > OWN_LIMITS.pictureBytes) return 'the picture is larger than ' + Math.round(OWN_LIMITS.pictureBytes / 1024) + ' KB';
+    var head = got.head;
+    if (got.type === 'image/png' && head.slice(0, 8) !== '\x89PNG\r\n\x1a\n') return 'the picture is not the kind of file its type says';
+    if (got.type === 'image/jpeg' && head.slice(0, 3) !== '\xFF\xD8\xFF') return 'the picture is not the kind of file its type says';
+    if (got.type === 'image/svg+xml') {
+      var svg;
+      try { svg = decodeURIComponent(escape(atob(got.body))); } catch (_) { return 'the drawing could not be read'; }
+      var why = svgRefusal(svg);
+      if (why) return 'the drawing holds ' + why;
+    }
+    var credit = picture.credit;
+    if (!isPlainObject(credit)) return 'the picture has no credit';
+    if (credit.own !== true && !OPEN_LICENSE.test(plainLine(credit.license, 60))) return 'the picture has no open license (public domain, CC0, CC BY or CC BY-SA)';
+    return '';
+  }
+  // opts.own, checked, for the words asked: { byWord: { word: { sounds, spelling, clip, picture } }, refused, words }.
+  function readOwn(given, asked, labels) {
+    var out = { byWord: {}, refused: [], words: [] };
+    if (!isPlainObject(given)) return out;
+    var inventory = Array.isArray(labels) && labels.length ? labels : SOUND_LABELS;
+    var refuse = function (word, part, reason) { out.refused.push({ word: word, part: part, reason: reason }); };
+    asked.forEach(function (word) {
+      if (out.byWord[word] || !own(given, word) || !isPlainObject(given[word])) return;
+      var entry = given[word], mine = {};
+      // Sounds, with their spelling: one part. The letters must spell the word.
+      var soundsGiven = Array.isArray(entry.sounds) ? { sounds: entry.sounds, spelling: entry.spelling } : isPlainObject(entry.sounds) ? entry.sounds : null;
+      if (soundsGiven) {
+        var list = Array.isArray(soundsGiven.sounds) ? soundsGiven.sounds : [];
+        var spelling = soundsGiven.spelling != null ? soundsGiven.spelling : entry.spelling;
+        if (!list.length || list.length > OWN_LIMITS.sounds || !list.every(function (s) { return typeof s === 'string' && inventory.indexOf(s) >= 0; })) {
+          refuse(word, 'sounds', 'not every sound is one this tool knows (1 to ' + OWN_LIMITS.sounds + ' sounds)');
+        } else if (spelling != null) {
+          var spelled = '', covered = 0, rows = [];
+          var fine = Array.isArray(spelling) && spelling.length > 0 && spelling.every(function (chunk) {
+            var text = typeof chunk === 'string' ? chunk : isPlainObject(chunk) ? chunk.text : null;
+            var size = isPlainObject(chunk) && chunk.size === 2 ? 2 : 1;
+            if (typeof text !== 'string' || !/^[a-z]{1,6}$/.test(text)) return false;
+            rows.push({ text: text, start: covered, size: size, at: spelled.length });
+            spelled += text; covered += size;
+            return true;
+          });
+          if (!fine || spelled !== word || covered !== list.length) refuse(word, 'sounds', 'the letters for each sound do not spell the word');
+          else { mine.sounds = list.slice(); mine.spelling = rows; }
+        } else mine.sounds = list.slice();
+      }
+      if (entry.clip != null) {
+        var clip = typeof entry.clip === 'string' ? entry.clip : isPlainObject(entry.clip) ? entry.clip.dataUri : null;
+        var noClip = ownClipRefusal(clip);
+        if (noClip) refuse(word, 'clip', noClip); else mine.clip = clip;
+      }
+      if (entry.picture != null) {
+        var noPicture = ownPictureRefusal(entry.picture);
+        if (noPicture) refuse(word, 'picture', noPicture);
+        else {
+          var credit = entry.picture.credit.own === true ? { own: true } : entry.picture.credit;
+          mine.picture = { uri: entry.picture.dataUri, own: credit.own === true, line: creditLine(credit), shareAlike: credit.own !== true && SHARE_ALIKE.test(plainLine(credit.license, 60)) };
+        }
+      }
+      out.words.push(word);
+      if (mine.sounds || mine.clip || mine.picture) out.byWord[word] = mine;
+    });
+    return out;
+  }
+
+  // ---------------------------------------------------------------------------
   // Seeded order
   // ---------------------------------------------------------------------------
   function mulberry32(seed) {
@@ -514,11 +683,12 @@
   function own(object, key) { return !!object && Object.prototype.hasOwnProperty.call(object, key); }
   function wordsOf(bank) { return bank && bank.words && typeof bank.words === 'object' && !bank.words.base64 ? bank.words : (bank || {}); }
 
-  var SOURCE_NAMES = { recorded: 'recorded', kokoro: 'Kokoro bank', spoken: 'spoken now' };
-  function createAudio(banks, speak, toWav, allowUnconverted) {
+  var SOURCE_NAMES = { recorded: 'recorded', kokoro: 'Kokoro bank', spoken: 'spoken now', teacher: 'teacher recording' };
+  // teacherWords: the teacher's own recordings of practice words (opts.own, checked). They come first.
+  function createAudio(banks, speak, toWav, allowUnconverted, teacherWords) {
     var b = banks || {}, gap = b.gapFill || {};
     var layers = {
-      words: [[b.words || {}, 'recorded'], [wordsOf(b.kokoroWords), 'kokoro']],
+      words: [[teacherWords || {}, 'teacher'], [b.words || {}, 'recorded'], [wordsOf(b.kokoroWords), 'kokoro']],
       phonemes: [[b.phonemes || {}, 'recorded'], [gap.phonemes || {}, 'kokoro']],
       isolation: [[b.isolation || {}, 'recorded'], [gap.isolation || {}, 'kokoro']],
       instructions: [[b.instructions || {}, 'recorded'], [gap.instructions || {}, 'kokoro']],
@@ -637,35 +807,47 @@
       except(null, id, adapters[id] ? 'this activity cannot be built without AI or a teacher yet' : 'unknown activity');
       return false;
     });
-    var audio = createAudio(opts.banks, opts.speak, opts.toWav, !!opts.allowUnconverted);
     var blocked = function (word) { return !!wordlist && typeof wordlist.isBlocked === 'function' && wordlist.isBlocked(word); };
     // A soft word (the blocklist file's [soft] sections: fight, ghost, kiss) is one the teacher may use by
     // typing it, and nobody else: never a word the builder puts into a file on its own.
     var softWord = function (word) { var row = wordlist && typeof wordlist.get === 'function' ? wordlist.get(word) : null; return !!row && row.soft === true; };
-    // Answer choices come from the app's own word lists. Blocked and soft words leave that pool, and so
-    // do words nobody can say aloud here (no clip in the banks handed in, and no speak), so a choice is
-    // never silent. A caller that loads clips on demand loads them for the practice words before it
-    // calls: the builder never invents a choice it would have to go and fetch.
-    var mayChoose = function (word) { return !blocked(word) && !softWord(word) && (typeof opts.speak === 'function' || audio.hasClip('words', core.packAudioKey(word))); };
+    // The teacher's own material, checked (see readOwn). A blocked word's is never read.
+    var mine = readOwn(opts.own, asked.filter(function (word) { return !blocked(word); }), opts.dictionary && opts.dictionary.labels);
+    var ownSounds = function (word) { return own(mine.byWord, word) && mine.byWord[word].sounds ? mine.byWord[word] : null; };
+    // The core, with the teacher's split in place of the dictionary's for their words: every part of the
+    // build that asks how a word sounds asks dictionarySounds (the aligner is given the sounds it is to align).
+    var soundCore = !mine.words.length ? core : Object.create(core, { dictionarySounds: { enumerable: true, value: function (word) {
+      var set = ownSounds(String(word == null ? '' : word).trim().toLowerCase());
+      return set ? { sounds: set.sounds.slice(), alternates: [], source: 'teacher' } : core.dictionarySounds(word);
+    } } });
     var known = opts.knownWords || (wordlist ? wordlist.rows().filter(function (row) { return row.known; }).map(function (row) { return row.word; }) : []);
     var probeLogic = createPackLogic({ core: core, knownWords: known, seed: seed });
-    var choicePool = Array.from(probeLogic.k2KnownWords()).filter(mayChoose);
-    // Sound Sort takes its choices from another list, the core's own (core.knownWords): once in the board
-    // logic, and again in the loader, which makes the board anew when it is handed none. Both are given a
-    // core whose list has passed the same rules. (Until 2026-11-11 that list was not filtered: most
-    // Sound Sort questions were lost to a choice with no clip, and a blocked word with a clip could be shown.)
-    var choiceCore = Object.create(core, { knownWords: { value: (core.knownWords || []).filter(mayChoose), enumerable: true } });
-    var logic = createPackLogic({ core: choiceCore, knownWords: choicePool, seed: seed });
     var limit = typeof opts.length === 'number' ? opts.length : LENGTHS[opts.length] || 40;
     var words = [];
     asked.forEach(function (word) {
       if (words.indexOf(word) >= 0) return;
       if (blocked(word)) return except(word, null, 'this word is on the blocklist');
-      if (logic.isUnusableAsPhonicsWord(word)) return except(word, null, 'not a usable practice word (letters only, 2 to 10 letters, with a vowel)');
-      if (!core.dictionarySounds(word)) return except(word, null, 'not in the sound dictionary');
+      if (probeLogic.isUnusableAsPhonicsWord(word)) return except(word, null, 'not a usable practice word (letters only, 2 to 10 letters, with a vowel)');
+      if (!soundCore.dictionarySounds(word)) return except(word, null, 'not in the sound dictionary');
       if (words.length >= limit) return except(word, null, 'over the length asked for (' + limit + ' words)');
       words.push(word);
     });
+    // The teacher's recordings of the practice words, and of no other word.
+    var teacherClips = {};
+    words.forEach(function (word) { if (own(mine.byWord, word) && mine.byWord[word].clip) teacherClips[core.packAudioKey(word)] = mine.byWord[word].clip; });
+    var audio = createAudio(opts.banks, opts.speak, opts.toWav, !!opts.allowUnconverted, teacherClips);
+    // Answer choices come from the app's own word lists. Blocked and soft words leave that pool, and so
+    // do words nobody can say aloud here (no clip in the banks handed in, and no speak), so a choice is
+    // never silent. A caller that loads clips on demand loads them for the practice words before it
+    // calls: the builder never invents a choice it would have to go and fetch.
+    var mayChoose = function (word) { return !blocked(word) && !softWord(word) && (typeof opts.speak === 'function' || audio.hasClip('words', core.packAudioKey(word))); };
+    var choicePool = Array.from(probeLogic.k2KnownWords()).filter(mayChoose);
+    // Sound Sort takes its choices from another list, the core's own (core.knownWords): once in the board
+    // logic, and again in the loader, which makes the board anew when it is handed none. Both are given a
+    // core whose list has passed the same rules. (Until 2026-11-11 that list was not filtered: most
+    // Sound Sort questions were lost to a choice with no clip, and a blocked word with a clip could be shown.)
+    var choiceCore = Object.create(soundCore, { knownWords: { value: (core.knownWords || []).filter(mayChoose), enumerable: true } });
+    var logic = createPackLogic({ core: choiceCore, knownWords: choicePool, seed: seed });
 
     var rows = [];
     var prepare = words.reduce(function (chain, word, index) {
@@ -676,14 +858,31 @@
         function (error) { except(word, null, 'this word could not be prepared (' + String((error && error.message) || error).slice(0, 120) + ')'); });
     }, Promise.resolve());
 
-    // pictures: true puts each word's symbol in the file, where `symbols` has one. Off (the default)
-    // leaves the rows without an image, and the file is what it was before pictures existed.
+    // pictures: true puts each word's symbol in the file, where `symbols` has one, or the teacher's own
+    // picture in its place. Off (the default) leaves the rows without an image, and the file is what it
+    // was before pictures existed.
     var wantPictures = opts.pictures === true && !!opts.symbols && typeof opts.symbols.get === 'function';
     var pictureFiles = {}, pictureRefused = [];
+    var teacherPicture = function (word) { return opts.pictures === true && own(mine.byWord, word) && mine.byWord[word].picture ? mine.byWord[word].picture : null; };
+    var ownPictureShown = {};
+    // The teacher's letters for each sound, where they gave them: Sound Mapping uses these, not the aligner's.
+    var spelledByTeacher = function (word) { var set = ownSounds(word); return set && set.spelling ? set.spelling : null; };
 
     return prepare.then(function () {
+      rows.forEach(function (row) {
+        var spelling = spelledByTeacher(row.word);
+        if (!spelling) return;
+        row.graphemes = spelling.map(function (chunk) { return chunk.text; });
+        if (spelling.some(function (chunk) { return chunk.size === 2; })) row.chipSpans = spelling.map(function (chunk) { return chunk.size; }); else delete row.chipSpans;
+        delete row._mappingNote;
+      });
       logic.compileActivityItems(rows);
+      rows.forEach(function (item) {
+        var picture = teacherPicture(item.word);
+        if (picture) { item.image = picture.uri; ownPictureShown[item.word] = picture; }
+      });
       if (wantPictures) rows.forEach(function (item) {
+        if (ownPictureShown[item.word]) return;
         var symbol = null;
         try { symbol = opts.symbols.get(item.word); } catch (_) { symbol = null; }
         if (!symbol || typeof symbol.svg !== 'string') return;
@@ -702,7 +901,8 @@
           if (shown.some(blocked)) { delete item.activityItems[id]; except(item.word, id, 'an answer choice is on the blocklist'); }
           else if (shown.some(function (word) { return softWord(word) && words.indexOf(word) < 0; })) { delete item.activityItems[id]; except(item.word, id, 'an answer choice is a word the picker does not offer'); }
         });
-        if (item.activityItems.mapping && suspectSplit(wordUnits(core, item.word, item.phonemes))) {
+        // A split the teacher gave is theirs to judge.
+        if (item.activityItems.mapping && !spelledByTeacher(item.word) && suspectSplit(wordUnits(core, item.word, item.phonemes))) {
           delete item.activityItems.mapping;
           except(item.word, 'mapping', 'the spelling split for this word needs checking');
         }
@@ -776,14 +976,33 @@
       var attributions = ATTRIBUTIONS.filter(function (line, index) { return index === 0 || (index === 1 ? bySource[SOURCE_NAMES.kokoro] || bySource[SOURCE_NAMES.spoken] : bySource[SOURCE_NAMES.recorded]); });
       // A word counts as having a picture when the file shows one for it: an activity that never
       // shows the word's picture does not carry it.
-      var withPicture = [], withoutPicture = [];
+      var withPicture = [], withoutPicture = [], withSymbol = [], withOwnPicture = [];
       if (opts.pictures === true) usedWords.forEach(function (word) {
-        var shown = wantPictures && lesson.blocks.some(function (block) { return block.items.some(function (item) { return item.wordPicture != null && String(item.word).toLowerCase() === word; }); });
+        var shown = (wantPictures || !!ownPictureShown[word]) && lesson.blocks.some(function (block) { return block.items.some(function (item) { return item.wordPicture != null && String(item.word).toLowerCase() === word; }); });
         (shown ? withPicture : withoutPicture).push(word);
+        if (shown) (ownPictureShown[word] ? withOwnPicture : withSymbol).push(word);
       });
-      if (withPicture.length) {
+      if (withSymbol.length) {
         attributions.push(pictureCredit());
         notices.push({ id: 'mulberry', name: MULBERRY_CREDIT.set, text: MULBERRY_NOTICE });
+      }
+      // The teacher's own material: which words carry it, in About this file, and each picture's credit.
+      var ownFacts = null, ownManifest = null;
+      if (mine.words.length) {
+        var setSounds = usedWords.filter(function (word) { return !!ownSounds(word); });
+        var recorded = usedWords.filter(function (word) { return clips.some(function (clip) { return clip.kind === 'word' && clip.key === core.packAudioKey(word) && clip.source === SOURCE_NAMES.teacher; }); });
+        var pictured = withOwnPicture.map(function (word) { var p = ownPictureShown[word]; return { word: word, credit: p.line, own: p.own, shareAlike: p.shareAlike }; });
+        if (setSounds.length) attributions.push('Sounds set by the teacher: ' + setSounds.join(', '));
+        if (recorded.length) attributions.push('Recorded by the teacher: ' + recorded.join(', '));
+        var theirs = pictured.filter(function (p) { return p.own; }).map(function (p) { return p.word; });
+        if (theirs.length) attributions.push('Pictures added by the teacher: ' + theirs.join(', '));
+        pictured.forEach(function (p) { if (!p.own) attributions.push('Picture for ' + p.word + ': ' + p.credit.replace(/\.$/, '')); });
+        // Share-alike pictures stay a separately licensed work, as the Mulberry symbols do.
+        var shareAlike = pictured.filter(function (p) { return p.shareAlike; });
+        if (shareAlike.length) notices.push({ id: 'share-alike', name: 'Pictures under a share-alike license', text: SHARE_ALIKE_NOTICE + '\n' + shareAlike.map(function (p) { return p.word + ': ' + p.credit; }).join('\n') });
+        var listed = pictured.map(function (p) { return { word: p.word, credit: p.credit }; });
+        if (setSounds.length || recorded.length || listed.length) ownFacts = { sounds: setSounds, recordings: recorded, pictures: listed };
+        ownManifest = { words: mine.words.slice(), sounds: setSounds, recordings: recorded, pictures: listed, refused: mine.refused.slice() };
       }
       var manifest = {
         kind: 'alloflow-packet-build-manifest', builder: VERSION, seed: seed, title: title,
@@ -800,6 +1019,7 @@
       };
       if (opts.picked && opts.picked.criteria && opts.picked.criteria.stage) manifest.stageNote = STAGE_NOTE;
       if (manifest.learnerLabel) manifest.openWith = '#learner=' + encodeURIComponent(manifest.learnerLabel);
+      if (ownManifest) manifest.own = ownManifest;
       // Only a packet asked for with pictures says anything about them.
       var pictureFacts = null;
       if (opts.pictures === true) {
@@ -807,7 +1027,14 @@
         pictureFacts = { set: MULBERRY_CREDIT.set, version: version, license: MULBERRY_CREDIT.license, wordsWithPicture: withPicture.length, wordsWithoutPicture: withoutPicture.length };
         manifest.pictures = { asked: true, symbols: wantPictures, set: MULBERRY_CREDIT.set, version: version, license: MULBERRY_CREDIT.license,
           withPicture: withPicture, withoutPicture: withoutPicture, counts: { withPicture: withPicture.length, withoutPicture: withoutPicture.length },
-          files: withPicture.reduce(function (acc, word) { acc[word] = pictureFiles[word] || ''; return acc; }, {}), refused: pictureRefused };
+          files: withSymbol.reduce(function (acc, word) { acc[word] = pictureFiles[word] || ''; return acc; }, {}), refused: pictureRefused };
+        // The teacher's pictures: counted apart, and the symbol set is named only when a symbol is shown.
+        if (withOwnPicture.length) {
+          manifest.pictures.teacher = withOwnPicture;
+          manifest.pictures.counts.teacher = withOwnPicture.length;
+          pictureFacts.wordsWithTeacherPicture = withOwnPicture.length;
+          if (!withSymbol.length) { delete pictureFacts.set; delete pictureFacts.version; delete pictureFacts.license; }
+        }
       }
       // noFile: everything but the file itself (trialBuild asks only which questions there would be).
       if (!lesson || opts.noFile === true) return { html: '', lesson: lesson, manifest: manifest, exceptions: exceptions, sha256: '' };
@@ -816,6 +1043,8 @@
         builder: { name: VERSION, seed: seed, ai: 'none', words: usedWords.length, items: manifest.items.total } };
       // The file itself changes only when it really holds a picture.
       if (pictureFacts && withPicture.length) extra.pictures = pictureFacts;
+      // And only when it really holds something of the teacher's.
+      if (ownFacts) extra.own = ownFacts;
       var credited = withCredits(html, extra);
       manifest.creditsInFile = credited.done;
       var digest = typeof loader.sha256 === 'function' ? loader.sha256(credited.html) : null;
@@ -1087,7 +1316,9 @@
     buildPacket: buildPacket, pickWords: pickWords, stageList: stageList, pcmToWavUri: pcmToWavUri,
     // Pictures: the credit and notice a file with pictures carries, and the test every symbol must pass.
     MULBERRY_CREDIT: MULBERRY_CREDIT, MULBERRY_NOTICE: MULBERRY_NOTICE, pictureCredit: pictureCredit, svgRefusal: svgRefusal,
-    _internals: { createPackLogic: createPackLogic, mulberry32: mulberry32, seedFor: seedFor, wordUnits: wordUnits, fitsStage: fitsStage, suspectSplit: suspectSplit, stageOf: stageOf, compileStages: compileStages, withCredits: withCredits, svgDataUri: svgDataUri },
+    // The teacher's own material (opts.own): what it may hold, and the credit sentence for a picture.
+    SOUND_LABELS: SOUND_LABELS.slice(), OWN_LIMITS: OWN_LIMITS, OPEN_LICENSE: OPEN_LICENSE, SHARE_ALIKE_NOTICE: SHARE_ALIKE_NOTICE, OWN_PICTURE_LINE: OWN_PICTURE_LINE, creditLine: creditLine,
+    _internals: { createPackLogic: createPackLogic, mulberry32: mulberry32, seedFor: seedFor, wordUnits: wordUnits, fitsStage: fitsStage, suspectSplit: suspectSplit, stageOf: stageOf, compileStages: compileStages, withCredits: withCredits, svgDataUri: svgDataUri, readOwn: readOwn },
   };
   if (root) root.AlloPacketBuilder = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

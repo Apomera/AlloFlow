@@ -53,7 +53,7 @@
     <section class="guide-section" aria-labelledby="flow-title">
       <h2 id="flow-title">Where the data goes</h2>
       <ol class="steps-list guide-two">
-        <li>A teacher makes the file on their own device: on the maker page of this site, or inside the AlloFlow app. The maker page puts the file together in the browser. The words and the choices are not uploaded.</li>
+        <li>A teacher makes the file on their own device: on the maker page of this site, or inside the AlloFlow app. The maker page puts the file together in the browser. The words and the choices are not uploaded. What a teacher adds to a word there (its sounds, a recording, a picture) is kept in that browser's storage for this site and goes only into the files the teacher makes. The microphone is used only when the teacher presses Record.</li>
         <li>The file reaches the learner by a channel the school already uses, such as its learning platform, email or a shared drive. These pages have no way to deliver a file.</li>
         <li>The learner opens the file in a browser. The learner's place, answers and the time on each item are kept in that browser's local storage, on that device.</li>
         <li>At the end the learner presses a button to save a results file to the device: CSV for a spreadsheet, or JSON. Saving sends nothing.</li>
@@ -94,7 +94,7 @@
           </tr>
           <tr>
             <th scope="row">What leaves the device, and when</th>
-            <td>Nothing, unless a person passes on a saved results file. There is one exception: the class mailbox kind of practice file, in the next row.</td>
+            <td>Nothing, unless a person passes on a saved results file. There is one exception: the class mailbox kind of practice file, in the next row. For teachers, one page of this site, Find a picture (<code>packets-pictures.html</code>), can search three picture services after the teacher turns its search on: Global Symbols, Openverse and Wikimedia Commons. It sends them the word searched for and asks them for the pictures it shows. Every other page of this site reaches only this site.</td>
           </tr>
           <tr>
             <th scope="row">The class mailbox kind</th>
@@ -106,7 +106,7 @@
           </tr>
           <tr>
             <th scope="row">Accounts, cookies, analytics</th>
-            <td>None on these pages: no sign-in, no cookies, no analytics or tracking scripts. Each page lists every file it loads under See the details. In the browser, the maker page keeps the teacher's last choices and the sound files, the results page keeps results only if a switch is turned on, and this page and Check a file keep nothing.</td>
+            <td>None on these pages: no sign-in, no cookies, no analytics or tracking scripts. Each page lists every file it loads under See the details. In the browser, the maker page keeps the teacher's last choices and the sound files, the results page keeps results only if a switch is turned on, and this page and Check a file keep nothing. What a teacher adds to a word on the maker page or on Find a picture (its sounds, a recording, a picture with its credit) is kept in that browser's storage for this site (IndexedDB) until the teacher removes it. It is not uploaded.</td>
           </tr>
           <tr>
             <th scope="row">How long it is kept</th>
