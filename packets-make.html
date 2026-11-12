@@ -151,6 +151,35 @@
           <ul id="pick-chips" class="chips" aria-label="Words in the list"></ul>
           <div id="pick-edit" class="word-edit" hidden></div>
           <p id="pick-removed" class="result-sub" hidden><span id="pick-removed-text"></span> <button type="button" class="btn btn-text btn-small" id="pick-restore">Put them back</button></p>
+          <details class="pick-list" id="pick-list">
+            <summary id="pick-list-line">Choose the words yourself</summary>
+            <div class="pick-list-body">
+              <p class="hint" id="pick-list-hint">The list has every word that fits the choices above, and the words you add. Check the ones you want. The file uses them in the order you check them.</p>
+              <div class="pick-list-tools">
+                <div class="field">
+                  <label for="f-find">Find a word</label>
+                  <input type="search" id="f-find" autocomplete="off" spellcheck="false" autocapitalize="none" maxlength="20">
+                </div>
+                <label class="radio"><input type="checkbox" id="f-only-pictures"> <span>Only words with a picture</span></label>
+              </div>
+              <div class="field">
+                <label for="f-add">Add your own words</label>
+                <span class="hint" id="add-hint">Leave a space or a comma between words. Each one is checked the way typed words are.</span>
+                <div class="add-row">
+                  <input type="text" id="f-add" autocomplete="off" spellcheck="false" autocapitalize="none" maxlength="200" aria-describedby="add-hint">
+                  <button type="button" class="btn btn-small" id="add-words">Add</button>
+                </div>
+              </div>
+              <p class="row pick-list-row">
+                <button type="button" class="btn btn-small" id="list-all">Choose all in the list</button>
+                <button type="button" class="btn btn-small" id="list-clear">Clear</button>
+                <button type="button" class="btn btn-small" id="list-again">Pick for me again</button>
+              </p>
+              <p id="list-said" class="result-sub list-said" role="status"></p>
+              <ul id="word-list" class="word-list" aria-label="Words to choose from"></ul>
+              <p id="list-more-row" class="list-more" hidden><button type="button" class="btn btn-small" id="list-more">Show more words</button> <span id="list-more-said"></span></p>
+            </div>
+          </details>
           <details class="why" id="pick-out-box" hidden>
             <summary>Why not more words?</summary>
             <p id="pick-out" class="result-sub"></p>
@@ -207,10 +236,18 @@
 
       <fieldset class="block">
         <legend>Length</legend>
-        <div class="radios radios-stack">
+        <p class="length-hand" id="length-hand" hidden></p>
+        <div class="radios radios-stack" id="length-radios">
           <label class="radio"><input type="radio" name="length" value="short"> <span>Short <span class="radio-sub" data-length="short"></span></span></label>
           <label class="radio"><input type="radio" name="length" value="regular" checked> <span>Regular <span class="radio-sub" data-length="regular"></span></span></label>
           <label class="radio"><input type="radio" name="length" value="long"> <span>Long <span class="radio-sub" data-length="long"></span></span></label>
+          <label class="radio"><input type="radio" name="length" value="custom"> <span>Custom <span class="radio-sub" data-length="custom"></span></span></label>
+        </div>
+        <div class="field count-field" id="count-field" hidden>
+          <label for="f-count">How many words</label>
+          <span class="hint" id="count-hint">From 1 to 40. A file has at most 40 questions in each activity, one for each word.</span>
+          <input type="number" id="f-count" min="1" max="40" step="1" inputmode="numeric" aria-describedby="count-hint count-said">
+          <span class="hint count-said" id="count-said" role="status"></span>
         </div>
       </fieldset>
 
@@ -221,7 +258,7 @@
       </div>
 
       <div class="block">
-        <label class="radio"><input type="checkbox" id="f-pictures" aria-describedby="pictures-line" disabled> <span>Include pictures</span></label>
+        <label class="radio"><input type="checkbox" id="f-pictures" aria-describedby="pictures-line"> <span>Include pictures</span></label>
         <span class="hint" id="pictures-line"></span>
       </div>
 
@@ -277,7 +314,7 @@
       <summary>About this page</summary>
       <div class="about-body">
         <h2 id="keeps-title">What this page keeps</h2>
-        <p>Your last choices are kept in this browser so that the page opens the way you left it: the activities, how you chose the words, any words you typed, the version and the length. The sound files are kept too, so that they are not downloaded again. Nothing is kept anywhere else.</p>
+        <p>Your last choices are kept in this browser so that the page opens the way you left it: the activities, how you chose the words, any words you typed or checked in the list, the version and the length. The sound files are kept too, so that they are not downloaded again. Nothing is kept anywhere else.</p>
         <p>What you add to a word (its sounds, your recording, your picture) is kept in this browser's storage for this site, until you remove it under My words on this device, in step 2. It is not uploaded.</p>
         <p class="row">
           <button type="button" class="btn btn-small" id="forget">Forget my choices</button>

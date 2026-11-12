@@ -817,17 +817,38 @@ describe('the maker, run with the real builder', () => {
     expect(page.built()).toBe(withPictures);
     expect(page.asked).toEqual(SOUND_URLS.concat(PICTURE_URLS));
 
-    // No word with a picture: the box cannot be checked, the line says none, and the file is the plain one.
+    // No word with a picture (owner, 2026-11-12: a greyed box with no reason looked broken): the box is never switched off.
+    // It starts unchecked, the line beside it says why there is no picture and what to do, and the file is the plain one.
     page.$('back-3').click();
     page.set('f-own', 'pig hen');
     await page.until(() => page.$('own-line').textContent === '2 of 2 words can be used.', 'two ready words');
     expect(['pig', 'hen'].map((word) => PICTURE_INDEX.has(word))).toEqual([false, false]);
     page.$('next-2').click();
-    expect(box.disabled).toBe(true);
-    expect(box.checked).toBe(false);
-    expect(page.$('pictures-line').textContent).toBe('Pictures for 0 of 2 words. Symbols: Mulberry.');
+    const NONE = 'None of these words has a picture yet. Add one with Edit this word in step 2, or choose words with pictures.';
+    // The box was clicked off and on above: the teacher's last choice (on) is kept.
+    expect(box.disabled).toBe(false);
+    expect(box.checked).toBe(true);
+    expect(page.$('pictures-line').textContent).toBe(NONE);
     await ready(page);
     expect(page.built()).not.toContain('Mulberry');
+    const plainNone = page.built();
+    // Clicked, it changes, and stays changed: unchecked, then checked again. The file stays the plain one, and the line still says why.
+    const was = box.checked;
+    box.click();
+    expect(box.checked).toBe(!was);
+    await page.until(() => !page.seen('summary'), 'the old file to go');
+    await ready(page);
+    expect(box.checked).toBe(!was);
+    box.click();
+    expect(box.checked).toBe(was);
+    await page.until(() => !page.seen('summary'), 'the old file to go');
+    await ready(page);
+    expect(box.checked).toBe(was);
+    expect(page.built()).toBe(plainNone);
+    expect(page.$('pictures-line').textContent).toBe(NONE);
+    // The box is a real checkbox inside its label (no overlay), so a tap on the words works in Safari too.
+    expect(box.closest('label.radio').firstElementChild).toBe(box);
+    expect(box.type).toBe('checkbox');
     expect(page.w.localStorage.length).toBe(1);
     expect(JSON.parse(page.w.localStorage.getItem('alloflow-packets-maker/1'))).not.toHaveProperty('pictures');
     page.dom.window.close();
@@ -972,7 +993,8 @@ describe('the maker, run with the real builder', () => {
     page.choose('version', 'C');
     await page.until(() => page.chips().length > 0, 'the ch words');
     const kept = JSON.parse(page.w.localStorage.getItem('alloflow-packets-maker/1'));
-    expect(kept).toEqual({ v: 1, activities: ['isolation', 'blending', 'segmentation'], mode: 'pick', sound: 'ch', position: 'any', shape: 'CVC', stage: '', own: '', version: 'C', length: 'regular' });
+    expect(kept).toEqual({ v: 1, activities: ['isolation', 'blending', 'segmentation'], mode: 'pick', sound: 'ch', position: 'any', shape: 'CVC', stage: '', own: '', version: 'C', length: 'regular',
+      count: 10, hand: false, chosen: [] });
     expect(page.w.localStorage.length).toBe(1);
     expect(page.d.cookie).toBe('');
     expect(page.$('about-page').open).toBe(false);
@@ -1411,6 +1433,301 @@ describe('the maker: borderline words and the kindergarten line', () => {
     expect(tip.querySelector('summary').textContent).toBe("Fill in a student's code name for them");
     expect([...doc.querySelectorAll('#after-save ol a')].map((a) => [a.textContent, a.getAttribute('href')])).toEqual([['Add up results', 'packets-results.html']]);
     expect(doc.querySelector('#after-save ol').textContent).toContain('presses the main button at the end, Save results as a spreadsheet file (CSV).');
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Choosing the words by hand, and any number of words (owner, 2026-11-12)
+// ---------------------------------------------------------------------------
+const KEY = 'alloflow-packets-maker/1';
+const RECORDED_ONLY = wordlist.rows().filter((row) => row.hasClip && !row.kokoro && !row.shards).map((row) => row.word);
+const pickedFor = (criteria, seed = 1) => builder.pickWords({ exclude: RECORDED_ONLY, ...criteria }, { wordlist, core, dictionary, seed });
+const openList = (page) => { const box = page.$('pick-list'); box.open = true; box.dispatchEvent(new page.w.Event('toggle')); };
+const listRows = (page) => [...page.$('word-list').querySelectorAll('li.wl')].map((row) => {
+  const box = row.querySelector('input[type="checkbox"]');
+  return { word: box.value, checked: box.checked, disabled: box.disabled, typed: row.classList.contains('is-typed'), facts: row.querySelector('.wl-facts').textContent, edit: !!row.querySelector('button.wl-edit') };
+});
+const find = async (page, text) => {
+  page.set('f-find', text);
+  await page.until(() => listRows(page).every((row) => row.word.includes(text)) && listRows(page).some((row) => row.word.includes(text)), 'the list to show ' + text);
+};
+const checkWordIn = async (page, word) => {
+  await find(page, word);
+  const box = [...page.$('word-list').querySelectorAll('input[type="checkbox"]')].find((node) => node.value === word);
+  box.click();
+  return box;
+};
+
+describe('the maker: choose the words yourself, and any number of words', () => {
+  it('the list is closed by default and holds every word that fits, A to Z, with its sounds and whether it has a picture', async () => {
+    const page = await openMaker();
+    page.$('next-1').click();
+    await page.until(() => page.chips().length > 0, 'the default words');
+    // The quick path is the same as before: the picker's ten words, and one closed box under them.
+    const direct = pickedFor({ count: 10, shape: 'CVC' });
+    expect(page.chips()).toEqual(direct.words);
+    const box = page.$('pick-list');
+    expect(box.tagName).toBe('DETAILS');
+    expect(box.open).toBe(false);
+    expect(box.querySelector('summary').textContent).toBe('Choose the words yourself');
+    expect(page.$('word-list').children).toHaveLength(0);
+    openList(page);
+    // Every word the picker would offer for these choices (CVC, any stage), A to Z; the first 100 are drawn, and the rest on request.
+    const pool = pickedFor({ count: 100000, shape: 'CVC' }).words.slice().sort();
+    expect(pool.length).toBe(direct.pool);
+    expect(pool.length).toBeGreaterThan(200);
+    expect(listRows(page).map((row) => row.word)).toEqual(pool.slice(0, 100));
+    expect(page.seen('list-more-row')).toBe(true);
+    expect(page.$('list-more-said').textContent).toBe('Showing 100 of ' + pool.length + '.');
+    expect(page.$('word-list').getAttribute('aria-label')).toBe('Words to choose from: ' + pool.length + ' words');
+    page.$('list-more').click();
+    expect(listRows(page).map((row) => row.word)).toEqual(pool.slice(0, 200));
+    expect(page.d.activeElement.value).toBe(pool[100]);
+    // Until a box changes, the boxes show the picker's words for the length chosen (Regular: 7 words with three activities).
+    const regular = direct.words.slice(0, 7);
+    expect(page.$('list-said').textContent).toBe('Chosen for you: the 7 words a Regular file uses. Check or uncheck a word to choose the words yourself.');
+    for (const row of listRows(page)) expect(row.checked, row.word).toBe(regular.includes(row.word));
+    // Each row: a real checkbox in its label, named by the word, described by its facts.
+    for (const node of page.$('word-list').querySelectorAll('li.wl')) {
+      const input = node.querySelector('input');
+      expect(input.closest('label').textContent.trim()).toBe(input.value);
+      expect(page.$(input.getAttribute('aria-describedby'))).toBe(node.querySelector('.wl-facts'));
+    }
+    // Search: letters in the word. The facts: its sounds, and a picture where the symbol index has one.
+    await find(page, 'cat');
+    const cat = listRows(page).find((row) => row.word === 'cat');
+    expect(cat.facts).toBe('3 sounds: k, a, t. Has a picture.');
+    for (const row of listRows(page)) expect(row.facts, row.word).toBe(core.dictionarySounds(row.word).sounds.length + ' sounds: ' + core.dictionarySounds(row.word).sounds.map((label) => ({ oo_short: 'short oo', dh: 'th (voiced)', schwa: 'schwa (uh)' })[label] || label).join(', ') + '.' + (PICTURE_INDEX.has(row.word) ? ' Has a picture.' : ''));
+    // Only words with a picture.
+    page.set('f-find', '');
+    page.$('f-only-pictures').click();
+    await page.until(() => listRows(page).length > 0 && listRows(page).every((row) => PICTURE_INDEX.has(row.word)), 'only words with a picture');
+    const withPicture = pool.filter((word) => PICTURE_INDEX.has(word));
+    expect(listRows(page).map((row) => row.word)).toEqual(withPicture.slice(0, 100));
+    expect(page.$('word-list').getAttribute('aria-label')).toBe('Words to choose from: ' + withPicture.length + ' of ' + pool.length + ' shown');
+    page.$('f-only-pictures').click();
+    // A filter above changes the list to the words that fit it.
+    page.set('f-sound', 'sh');
+    await page.until(() => listRows(page).length && listRows(page).every((row) => Array.from(dictionary.lookup(row.word)[0]).includes('sh')), 'the sh words');
+    expect(listRows(page).map((row) => row.word)).toEqual(pickedFor({ count: 100000, shape: 'CVC', targetSound: 'sh', position: 'any' }).words.slice().sort().slice(0, 100));
+    expect(page.$('word-list').querySelectorAll('button')).toHaveLength(0);
+    page.dom.window.close();
+  });
+
+  it('checked words and typed words make one list: the file has exactly those, in the order checked, and the same choices give the same file', async () => {
+    const page = await openMaker();
+    page.$('next-1').click();
+    await page.until(() => page.chips().length > 0, 'the default words');
+    openList(page);
+    const pool = pickedFor({ count: 100000, shape: 'CVC' }).words.slice().sort();
+    // Clear: nothing is chosen, the page says so and does not go on.
+    page.$('list-clear').click();
+    expect(page.chips()).toEqual([]);
+    expect(page.$('list-said').textContent).toBe('Every box is unchecked. No words are chosen. Check words in the list, or press Pick for me again.');
+    expect(page.$('pick-sub').textContent).toBe('No words are chosen yet. Open Choose the words yourself to check some, or press Pick for me again there.');
+    expect(listRows(page).some((row) => row.checked)).toBe(false);
+    page.$('next-2').click();
+    expect(page.seen('step-2')).toBe(true);
+    expect(page.$('step-2-problem').textContent).toBe('None of the words you chose can be used yet. Check words in Choose the words yourself, or press Pick for me again there.');
+    // Choose all: the first 40 in the list's order, and the page says how many were left out and why. A 41st is refused, in words.
+    page.$('list-all').click();
+    expect(page.chips()).toEqual(pool.slice(0, 40));
+    expect(page.$('list-said').textContent).toBe('Added 40 words, in the order of the list. A file has at most 40 words, so ' + (pool.length - 40) + ' other words were not added. You chose 40 words. The file uses all of them, in the order you checked them.');
+    const extra = [...page.$('word-list').querySelectorAll('input')].find((node) => !node.checked && !node.disabled);
+    extra.click();
+    expect(extra.checked).toBe(false);
+    expect(page.$('list-said').textContent).toMatch(/^A file has at most 40 words\. Uncheck one to add another\. /);
+    expect(page.chips()).toHaveLength(40);
+    page.$('list-clear').click();
+    // Three words checked, not in A to Z order.
+    const three = [pool[150], pool[3], pool[60]];
+    for (const word of three) expect((await checkWordIn(page, word)).checked).toBe(true);
+    expect(page.chips()).toEqual(three);
+    // Two typed words join the same list: a word the picker does not offer (shallow), and one it does (pin, typed again).
+    // A word with no recording and a blocked word are listed with their reasons, and cannot be checked.
+    expect(pool).not.toContain('shallow');
+    const typedPin = pool.includes('pin') && !three.includes('pin') ? 'pin' : pool.find((word) => !three.includes(word) && word.length === 3);
+    page.set('f-find', '');
+    page.set('f-add', 'Shallow ' + typedPin + ' fuzz gun');
+    page.$('add-words').click();
+    expect(page.$('f-add').value).toBe('');
+    expect(page.$('list-said').textContent).toBe('Added and checked: shallow, ' + typedPin + '. Not usable yet: fuzz. It joins your list once it has what the note beside it asks for. Not used: gun. The note beside each says why. '
+      + 'You chose 5 words. The file uses all of them, in the order you checked them.');
+    expect(page.chips()).toEqual([...three, 'shallow', typedPin]);
+    await page.until(() => listRows(page).length && listRows(page)[0].word === 'shallow', 'the typed words first');
+    const typed = listRows(page).slice(0, 4);
+    expect(typed.map((row) => [row.word, row.typed, row.checked, row.disabled, row.edit])).toEqual([
+      ['shallow', true, true, false, false], [typedPin, true, true, false, false], ['fuzz', true, false, true, true], ['gun', true, false, true, false]]);
+    expect(typed[0].facts).toMatch(/^You typed it\. Ready\. \d sounds: /);
+    expect(typed[2].facts).toBe('You typed it. No recording yet. Record it yourself, or choose another word.');
+    expect(typed[3].facts).toMatch(/^You typed it\. Left out\. It is on the list of words this tool does not use\./);
+    // A typed word is listed once, as typed, and they are the same words as in "Type my own words".
+    expect(listRows(page).filter((row) => row.word === typedPin)).toHaveLength(1);
+    expect(page.$('f-own').value).toBe('shallow ' + typedPin + ' fuzz gun');
+    expect(page.$('pick-sub').textContent).toBe('You chose 5 words yourself. The file uses all of them, in this order.');
+    expect(page.$('pick-list-line').textContent).toBe('Choose the words yourself: 5 words chosen');
+    // Unchecking a word takes it out; the chip's Remove does the same. Nothing takes its place.
+    const gone = three[1];
+    await checkWordIn(page, gone);
+    expect(page.chips()).toEqual([three[0], three[2], 'shallow', typedPin]);
+    page.d.querySelector('button[aria-label="Remove ' + typedPin + '"]').click();
+    expect(page.chips()).toEqual([three[0], three[2], 'shallow']);
+    await checkWordIn(page, typedPin);
+    await checkWordIn(page, gone);
+    const order = [three[0], three[2], 'shallow', typedPin, gone];
+    expect(page.chips()).toEqual(order);
+    // Each chosen word keeps "Edit this word".
+    for (const chip of page.$('pick-chips').children) expect(chip.querySelector('button.chip-edit').getAttribute('aria-label')).toBe('Edit this word: ' + chip.querySelector('span').textContent);
+    // Step 3: the count follows the selection, said in one line in place of the lengths.
+    page.$('next-2').click();
+    expect(page.seen('step-3')).toBe(true);
+    expect(page.seen('length-hand') && !page.seen('length-radios') && !page.seen('count-field')).toBe(true);
+    expect(page.$('length-hand').textContent).toBe('You chose 5 words yourself, so the file has all of them: about 15 questions, about 8 minutes. To set a length instead, go back to step 2 and press Pick for me again.');
+    expect(page.$('f-title').value).toBe('Word Sounds: chosen words, version A');
+    await ready(page);
+    expect(page.seen('summary')).toBe(true);
+    const html = page.built(), lesson = lessonOf(html), manifest = manifestOf(html);
+    // The builder is handed exactly these words in this order; every activity keeps the order (a word an activity cannot use is listed under Left out).
+    for (const block of lesson.blocks) { const got = block.items.map((item) => item.word); expect(got).toEqual(order.filter((word) => got.includes(word))); }
+    expect(lesson.blocks[0].items.map((item) => item.word)).toEqual(order);
+    expect(manifest.builder.words).toBe(5);
+    expect(page.$('sum-words').textContent).toBe('5 words: ' + order.join(', ') + '.');
+    expect(page.$('summary-facts').textContent).toMatch(new RegExp('^' + manifest.builder.items + ' questions\\. '));
+    expect(audit(html)).toEqual([]);
+    // Kept in this browser: the words, in order.
+    const kept = JSON.parse(page.w.localStorage.getItem(KEY));
+    expect(kept).toMatchObject({ hand: true, chosen: order, own: 'shallow ' + typedPin + ' fuzz gun' });
+    page.dom.window.close();
+    // The same choices on another visit: the same list, and byte for byte the same file.
+    const again = await openMaker({ before: (w) => w.localStorage.setItem(KEY, JSON.stringify(kept)) });
+    again.$('next-1').click();
+    await again.until(() => again.chips().length === 5, 'the kept words');
+    expect(again.chips()).toEqual(order);
+    again.$('next-2').click();
+    await ready(again);
+    expect(again.built()).toBe(html);
+    // Pick for me again: the picker's words come back, and so do the lengths.
+    again.$('back-3').click();
+    openList(again);
+    again.$('list-again').click();
+    expect(again.chips()).toEqual(pickedFor({ count: 10, shape: 'CVC' }).words);
+    expect(again.$('list-said').textContent).toBe('The page picks the words again. Chosen for you: the 7 words a Regular file uses. Check or uncheck a word to choose the words yourself.');
+    again.$('next-2').click();
+    expect(again.seen('length-radios') && !again.seen('length-hand')).toBe(true);
+    again.dom.window.close();
+  });
+
+  it('Custom: any number of words from 1 to 40, the estimates follow it, and above 40 the page says what it uses', async () => {
+    const page = await openMaker();
+    for (const box of page.d.querySelectorAll('.strand input')) if (box.checked !== ['isolation', 'blending'].includes(box.value)) box.click();
+    page.$('next-1').click();
+    await page.until(() => page.chips().length > 0, 'the default words');
+    page.$('next-2').click();
+    await ready(page);
+    // Four lengths: the three presets and Custom. Custom's field shows only when it is chosen.
+    expect([...page.d.querySelectorAll('input[name="length"]')].map((radio) => radio.value)).toEqual(['short', 'regular', 'long', 'custom']);
+    expect(page.seen('count-field')).toBe(false);
+    expect(page.d.querySelector('[data-length="custom"]').textContent).toBe('Choose the number of words, up to 40.');
+    expect(page.$('count-hint').textContent).toBe('From 1 to 40. A file has at most 40 questions in each activity, one for each word.');
+    expect(page.$('f-count').getAttribute('min')).toBe('1');
+    expect(page.$('f-count').getAttribute('max')).toBe('40');
+    expect(page.$('f-count').closest('.field').querySelector('label').getAttribute('for')).toBe('f-count');
+    page.choose('length', 'custom');
+    expect(page.seen('count-field')).toBe(true);
+    expect(page.$('f-count').value).toBe('10');
+    expect(page.d.querySelector('[data-length="custom"]').textContent).toBe('10 words, about 20 questions, about 10 minutes.');
+    await page.until(() => !page.seen('summary'), 'the old file to go');
+    await ready(page);
+    const words = (html) => lessonOf(html).blocks[0].items.map((item) => item.word);
+    const forCount = (n) => pickedFor({ count: n, shape: 'CVC' }).words;
+    expect(words(page.built())).toEqual(forCount(10));
+    // More than Long (15 words with two activities): the picker lists more, and the first words stay the same.
+    page.set('f-count', '33');
+    expect(page.d.querySelector('[data-length="custom"]').textContent).toBe('33 words, about 66 questions, about 33 minutes.');
+    expect(page.$('count-said').textContent).toBe('');
+    await page.until(() => page.seen('summary') && words(page.built()).length === 33, 'the 33-word file');
+    expect(words(page.built())).toEqual(forCount(33));
+    expect(forCount(33).slice(0, 10)).toEqual(forCount(10));
+    expect(lessonOf(page.built()).blocks.map((block) => block.items.length)).toEqual([33, 33]);
+    expect(page.$('summary-facts').textContent).toMatch(/^66 questions\. About 33 minutes\. /);
+    // Above 40: said, never silent; the file has 40.
+    page.set('f-count', '55');
+    expect(page.$('count-said').textContent).toBe('40 is the most, so the file uses 40 words.');
+    expect(page.d.querySelector('[data-length="custom"]').textContent).toBe('40 words, about 80 questions, about 40 minutes.');
+    await page.until(() => page.seen('summary') && words(page.built()).length === 40, 'the 40-word file');
+    expect(words(page.built())).toEqual(forCount(40));
+    // Not a number: said, and the file stays as it was.
+    page.set('f-count', '0');
+    expect(page.$('count-said').textContent).toBe('Type a whole number from 1 to 40.');
+    page.set('f-count', '2.5');
+    expect(page.$('count-said').textContent).toBe('Type a whole number from 1 to 40.');
+    expect(JSON.parse(page.w.localStorage.getItem(KEY))).toMatchObject({ length: 'custom', count: 40 });
+    page.$('f-count').dispatchEvent(new page.w.Event('blur'));
+    expect(page.$('f-count').value).toBe('40');
+    // Typed words: Custom takes the first of them, and says what was not needed.
+    page.$('back-3').click();
+    page.choose('mode', 'own');
+    page.set('f-own', 'cat map pig sun hen');
+    await page.until(() => page.$('own-line').textContent === '5 of 5 words can be used.', 'five ready words');
+    page.$('next-2').click();
+    page.set('f-count', '3');
+    expect(page.d.querySelector('[data-length="custom"]').textContent).toBe('3 words, about 6 questions, about 3 minutes.');
+    await page.until(() => page.seen('summary') && words(page.built()).length === 3, 'the 3-word file');
+    expect(words(page.built())).toEqual(['cat', 'map', 'pig']);
+    expect(page.$('sum-out').textContent).toBe('2 words not needed for a Custom file: sun, hen. A longer file uses more.');
+    page.set('f-count', '9');
+    expect(page.d.querySelector('[data-length="custom"]').textContent).toBe('5 words, about 10 questions, about 5 minutes. You have 5 words.');
+    page.dom.window.close();
+  });
+
+  it('Include pictures, with no picture among the words: usable, unchecked, and the reason beside it; the list can show only words with a picture', async () => {
+    const page = await openMaker({ pictures: true });
+    for (const box of page.d.querySelectorAll('.strand input')) if (box.checked !== (box.value === 'isolation')) box.click();
+    page.$('next-1').click();
+    page.choose('mode', 'own');
+    page.set('f-own', 'pig hen');
+    await page.until(() => page.$('own-line').textContent === '2 of 2 words can be used.', 'two ready words');
+    page.$('next-2').click();
+    const box = page.$('f-pictures');
+    expect(box.disabled).toBe(false);
+    expect(box.checked).toBe(false);
+    expect(page.$('pictures-line').textContent).toBe('None of these words has a picture yet. Add one with Edit this word in step 2, or choose words with pictures.');
+    await ready(page);
+    const plain = page.built();
+    // Checked anyway: it stays checked, the file is the plain one, and the picture files are not asked for (nothing would use them).
+    box.click();
+    expect(box.checked).toBe(true);
+    await page.until(() => !page.seen('summary'), 'the old file to go');
+    await ready(page);
+    expect(box.checked).toBe(true);
+    expect(page.built()).toBe(plain);
+    expect(page.asked.filter((url) => PICTURE_URLS.includes(url))).toEqual([]);
+    // Back in step 2: choose words in the list, only words with a picture. The box is then on its own, and the file has the pictures.
+    page.$('back-3').click();
+    page.choose('mode', 'pick');
+    await page.until(() => page.chips().length > 0, 'the picker');
+    openList(page);
+    page.$('list-clear').click();
+    page.$('f-only-pictures').click();
+    await page.until(() => listRows(page).length > 0 && listRows(page).every((row) => PICTURE_INDEX.has(row.word)), 'only words with a picture');
+    const two = listRows(page).slice(0, 2).map((row) => row.word);
+    for (const input of [...page.$('word-list').querySelectorAll('input')].slice(0, 2)) input.click();
+    expect(page.chips()).toEqual(two);
+    page.$('next-2').click();
+    expect(page.$('pictures-line').textContent).toBe('Pictures for 2 of 2 words. Symbols: Mulberry.');
+    await ready(page);
+    const shownItems = lessonOf(page.built()).blocks[0].items;
+    expect(shownItems.length).toBeGreaterThan(0);
+    expect(shownItems.every((item) => two.includes(item.word) && item.wordPicture != null)).toBe(true);
+    page.dom.window.close();
+    // The list of pictures did not load: said, in place of a dead box.
+    const bare = await openMaker({ sources: { 'word_sounds_symbols_en.js': '/* not loaded */' } });
+    bare.$('next-1').click();
+    await bare.until(() => bare.chips().length > 0, 'the default words');
+    bare.$('next-2').click();
+    expect(bare.$('f-pictures').disabled).toBe(false);
+    expect(bare.$('pictures-line').textContent).toBe('The list of pictures did not load, so only pictures you added can be used. Load the page again to get the list.');
+    bare.dom.window.close();
   });
 });
 

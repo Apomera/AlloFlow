@@ -548,4 +548,50 @@ describe('(c) the maker: "Edit this word", the store, and the file', () => {
     expect(page.says('fuzz')).toBe('Ready. Uses your recording. 3 sounds: f, u, z.');
     page.dom.window.close();
   });
+
+  it('Choose the words yourself: a word added there that needs its sounds or a recording has Edit this word in its row, and joins the list once it is ready', async () => {
+    const page = await openMaker();
+    page.$('next-1').click();
+    await page.until(() => page.$('pick-chips').children.length > 0, 'the chips');
+    const chips = () => [...page.$('pick-chips').children].map((chip) => chip.querySelector('span').textContent);
+    const list = page.$('pick-list');
+    list.open = true;
+    list.dispatchEvent(new page.w.Event('toggle'));
+    page.$('list-clear').click();
+    page.set('f-add', 'zayden, cat');
+    page.$('add-words').click();
+    expect(page.$('list-said').textContent).toBe('Added and checked: cat. Not usable yet: zayden. It joins your list once it has what the note beside it asks for. You chose 1 word. The file uses all of them, in the order you checked them.');
+    expect(chips()).toEqual(['cat']);
+    const row = (word) => [...page.$('word-list').querySelectorAll('li.wl')].find((node) => node.querySelector('input').value === word);
+    expect(row('zayden').querySelector('.wl-facts').textContent).toBe('You typed it. Not in the sound dictionary. Set its sounds to use it, or check the spelling.');
+    expect(row('zayden').querySelector('input').disabled).toBe(true);
+    // Edit this word opens in the row, closed by default, one at a time; closing it puts the focus back on its button.
+    const toggle = () => row('zayden').querySelector('button.wl-edit');
+    expect(toggle().textContent).toBe('Edit this word');
+    expect(toggle().getAttribute('aria-expanded')).toBe('false');
+    expect(page.$('word-list').querySelectorAll('.wp')).toHaveLength(0);
+    toggle().click();
+    expect(toggle().getAttribute('aria-expanded')).toBe('true');
+    expect(row('zayden').querySelector('.wp .wp-title').textContent).toBe('Edit this word: zayden');
+    expect(page.$(toggle().getAttribute('aria-controls')).contains(row('zayden').querySelector('.wp'))).toBe(true);
+    expect(page.d.activeElement).toBe(row('zayden').querySelector('.wp h3'));
+    row('zayden').querySelector('.wp-head button').click();
+    expect(page.$('word-list').querySelectorAll('.wp')).toHaveLength(0);
+    expect(page.d.activeElement).toBe(toggle());
+    // Its sounds, then a recording (here kept by the store as the panel would keep them): checked as soon as it is ready, at the end of the list.
+    await page.store.put('zayden', { sounds: ZAYDEN });
+    await page.until(() => /No recording yet/.test(row('zayden').querySelector('.wl-facts').textContent), 'the sounds');
+    expect(chips()).toEqual(['cat']);
+    await page.store.put('zayden', { sounds: ZAYDEN, clip: { dataUri: wav(500) } });
+    await page.until(() => chips().length === 2, 'zayden to join');
+    expect(chips()).toEqual(['cat', 'zayden']);
+    expect(row('zayden').querySelector('input').checked).toBe(true);
+    expect(row('zayden').querySelector('.wl-facts').textContent).toBe('You typed it. Ready. Uses your sounds and your recording. 5 sounds: z, ay, d, schwa (uh), n.');
+    // The file has both, and the teacher's recording.
+    page.$('next-2').click();
+    await page.until(() => page.seen('summary') || page.seen('build-problem'), 'the file');
+    expect(page.seen('summary')).toBe(true);
+    expect(page.$('sum-words').textContent).toBe('2 words: cat, zayden.');
+    page.dom.window.close();
+  });
 });

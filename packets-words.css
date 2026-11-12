@@ -58,7 +58,48 @@
 .mw-what { flex: 1 1 10rem; }
 .my-words .row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 0.75rem; }
 
+/* "Choose the words yourself": one closed box under the picked words; the list of every word that fits */
+.pick-list { margin-top: 1rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); }
+.pick-list > summary { display: flex; align-items: center; min-height: 3rem; padding: 0.5rem 1rem; cursor: pointer; font-weight: 600; color: var(--accent); }
+.pick-list > summary:hover { color: var(--accent-dark); }
+.pick-list[open] > summary { border-bottom: 1px solid var(--line); color: var(--ink); }
+.pick-list-body { padding: 0.75rem 1rem 1rem; }
+.pick-list-tools { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 0.75rem 1rem; margin-top: 0.75rem; }
+.pick-list-tools .field { flex: 1 1 14rem; }
+.pick-list .field { margin-top: 0.75rem; }
+.pick-list .field input[type="search"], .count-field input[type="number"] { display: block; width: 100%; min-height: 3rem; margin-top: 0.35rem; padding: 0.55rem 0.75rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; }
+.add-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.35rem; }
+.pick-list .add-row input[type="text"] { flex: 1 1 12rem; width: auto; min-width: 0; margin-top: 0; }
+.add-row .btn { min-height: 3rem; }
+.pick-list-row { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.9rem; }
+.list-said { margin-top: 0.75rem; color: var(--ink); }
+.word-list { margin-top: 0.75rem; border-top: 1px solid var(--line); }
+.wl { display: grid; grid-template-columns: minmax(6.5rem, 10rem) 1fr; align-items: center; gap: 0 0.75rem; padding: 0.15rem 0; border-bottom: 1px solid var(--line); }
+.wl-pick { display: flex; align-items: center; gap: 0.6rem; min-height: 2.75rem; padding: 0.2rem 0.4rem 0.2rem 0.2rem; border-radius: 6px; cursor: pointer; font-weight: 700; color: var(--ink); }
+.wl-pick input { flex: none; width: 1.25rem; height: 1.25rem; margin: 0; accent-color: var(--accent); }
+.wl-pick:focus-within { outline: 3px solid var(--accent); outline-offset: 0; }
+.wl-pick input:focus-visible { outline: none; }
+.wl-word { overflow-wrap: anywhere; }
+.wl-facts { font-size: 0.9375rem; color: var(--muted); }
+.wl.is-typed .wl-word::after { content: " (typed)"; font-weight: 400; color: var(--muted); }
+.wl.is-out .wl-word { color: var(--muted); }
+.wl.is-out .wl-pick { cursor: default; }
+.wl-edit { grid-column: 2; justify-self: start; }
+.wl .word-edit { grid-column: 1 / -1; margin-bottom: 0.75rem; }
+.wl-none { padding: 0.75rem 0; color: var(--muted); }
+.list-more { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 0.75rem; font-size: 0.9375rem; color: var(--muted); }
+
+/* Step 3: Custom's number, and the line that takes the lengths' place for words chosen by hand */
+.count-field { margin-top: 0.75rem; max-width: 22rem; }
+.count-said:empty { display: none; }
+.count-said { margin-top: 0.35rem; font-weight: 600; color: var(--ink); }
+.length-hand { margin-top: 0.5rem; padding: 0.75rem 1rem; border-left: 4px solid var(--accent); background: var(--accent-soft); max-width: 40rem; color: var(--ink); }
+
 @media (max-width: 29.99rem) {
+  .wl { grid-template-columns: 1fr; }
+  .wl-facts { padding: 0 0 0.4rem 2.05rem; }
+  .wl-edit { grid-column: 1; margin-left: 1.8rem; }
+  .pick-list-body { padding-left: 0.75rem; padding-right: 0.75rem; }
   .checked .e { grid-column: 1 / -1; }
   .wp { padding: 0.75rem; }
   .wp-picks select { max-width: 11rem; }

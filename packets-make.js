@@ -36,8 +36,13 @@
   var WORD_STORE_FORMAT = 'alloflow-word-audio-index/1';
   var WORD_FILE_NAME = /^[a-z0-9_][a-z0-9_-]*\.json$/;
   var WORD_SOUNDS_FAILED = 'The sounds for some of your words could not be downloaded. Check the connection, then try again. Your choices are still here.';
-  var MAX_WORDS = 40;        // the file holds at most 40 questions in one activity
+  // The most words a file can have: the loader makes at most 40 questions in one activity (MAX_ITEMS in
+  // word_sounds_take_home_loader.js), one for each word, and the builder takes at most 40 words when it is
+  // given no length. Custom and the words chosen by hand stop here, and the page says so where they do.
+  var MAX_WORDS = 40;
   var MAX_TYPED = 60;
+  var CUSTOM_WORDS = 10;     // what Custom starts at
+  var LIST_PAGE = 100;       // rows of "Choose the words yourself" drawn at a time (a pool can hold 6,000 words)
   var SEEDS = { A: 1, B: 2, C: 3 };
 
   // The usual set in each strand, and what a first visit starts with.
@@ -77,7 +82,11 @@
   var NEEDS_CLIP_SAID = 'No recording yet. Record it yourself, or choose another word.';
   var EDIT_LABEL = 'Edit this word';
   var PICTURES_PAGE = 'packets-pictures.html';
-  var LENGTH_NAMES = { short: 'Short', regular: 'Regular', long: 'Long' };
+  var LENGTH_NAMES = { short: 'Short', regular: 'Regular', long: 'Long', custom: 'Custom' };
+  var PRESETS = ['short', 'regular', 'long'];
+  // The line under "Include pictures" when no word of the file has one. The box stays usable: checked, it makes the plain file.
+  var NO_PICTURES_SAID = 'None of these words has a picture yet. Add one with Edit this word in step 2, or choose words with pictures.';
+  var NO_INDEX_SAID = 'The list of pictures did not load, so only pictures you added can be used. Load the page again to get the list.';
 
   var doc = document;
   var $ = function (id) { return doc.getElementById(id); };
@@ -103,8 +112,11 @@
 
   function defaults() {
     return { activities: FIRST_VISIT.slice(), mode: 'pick', sound: '', position: 'any', shape: 'CVC', stage: '', removed: [], own: '', version: 'A',
-      length: core && core.LESSON_LENGTHS[core.LESSON_LENGTH_DEFAULT] ? core.LESSON_LENGTH_DEFAULT : 'regular', title: '', titleEdited: false };
+      length: core && core.LESSON_LENGTHS[core.LESSON_LENGTH_DEFAULT] ? core.LESSON_LENGTH_DEFAULT : 'regular', title: '', titleEdited: false,
+      // count: Custom's number of words. hand: the teacher chose the words in the list; chosen: those words, in the order checked.
+      count: CUSTOM_WORDS, hand: false, chosen: [] };
   }
+  function wordCount(value) { var n = Number(value); return n >= 1 && n <= MAX_WORDS && Math.floor(n) === n ? n : 0; }
 
   // ---------------------------------------------------------------------------
   // What this page keeps: the last choices, in this browser only
@@ -112,7 +124,7 @@
   function remember() {
     try {
       window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, activities: state.activities, mode: state.mode, sound: state.sound, position: state.position,
-        shape: state.shape, stage: state.stage, own: state.own, version: state.version, length: state.length }));
+        shape: state.shape, stage: state.stage, own: state.own, version: state.version, length: state.length, count: state.count, hand: state.hand, chosen: state.chosen }));
     } catch (_) { /* a browser that cannot keep them still works */ }
   }
   function recall() {
@@ -127,7 +139,10 @@
     if (stageRow(saved.stage)) fresh.stage = saved.stage;
     if (typeof saved.own === 'string') fresh.own = saved.own.slice(0, 4000);
     if (SEEDS[saved.version]) fresh.version = saved.version;
-    if (LENGTH_NAMES[saved.length] && core.LESSON_LENGTHS[saved.length]) fresh.length = saved.length;
+    if (saved.length === 'custom' || (LENGTH_NAMES[saved.length] && core.LESSON_LENGTHS[saved.length])) fresh.length = saved.length;
+    if (wordCount(saved.count)) fresh.count = wordCount(saved.count);
+    if (saved.hand === true) fresh.hand = true;
+    if (Array.isArray(saved.chosen)) fresh.chosen = saved.chosen.filter(function (word, i, all) { return typeof word === 'string' && /^[a-z]{2,10}$/.test(word) && all.indexOf(word) === i; }).slice(0, MAX_WORDS);
     return fresh;
   }
 
@@ -205,14 +220,18 @@
   function seed() { return SEEDS[state.version] || 1; }
   function soundName(label) { return SOUND_NAMES[label] || label; }
   // How many words a file of this length uses: the app's lengths (10, 20, 30 questions) shared between the activities.
+  // Custom: the number the teacher typed, as words (1 to MAX_WORDS).
   function wordsFor(length) {
+    if (length === 'custom') return wordCount(state.count) || CUSTOM_WORDS;
     var row = core.LESSON_LENGTHS[length] || core.LESSON_LENGTHS.regular;
     return Math.max(1, Math.min(MAX_WORDS, Math.ceil(row.items / Math.max(1, state.activities.length))));
   }
+  // How many words the picker lists: enough for a Long file, or for Custom when that is more.
+  function pickTarget() { return Math.max(wordsFor('long'), state.length === 'custom' ? wordsFor('custom') : 0); }
   function criteria(change) {
     var now = { sound: state.sound, position: state.position, shape: state.shape, stage: state.stage };
     Object.keys(change || {}).forEach(function (key) { now[key] = change[key]; });
-    var asked = { count: wordsFor('long'), exclude: recordedOnly.concat(state.removed) };
+    var asked = { count: pickTarget(), exclude: recordedOnly.concat(state.removed) };
     if (now.sound) { asked.targetSound = now.sound; asked.position = now.position; }
     if (now.shape) asked.shape = now.shape;
     if (now.stage) asked.stage = now.stage;
@@ -363,14 +382,42 @@
       show('pick-removed', false);
       return;
     }
-    var fit = picked.pool, listed = picked.words.length, wanted = wordsFor('long');
+    var fit = picked.pool, listed = picked.words.length, wanted = pickTarget();
     setText('pick-line', fit === 0 ? 'No words fit these choices.' : fit < wanted ? 'Only ' + count(fit, 'word fits', 'words fit') + '.' : count(fit, 'word fits', 'words fit') + '.');
     var acts = count(state.activities.length || 1, 'activity', 'activities');
-    setText('pick-sub', fit === 0 ? 'Loosen one choice to get words.' : fit < wanted ? 'A Long file with your ' + acts + ' uses up to ' + count(wanted, 'word') + '. You can go on with these, or get more by loosening one choice.'
-      : fit > listed ? 'The list has ' + listed + ' of them: enough for a Long file with your ' + acts + '. Remove a word and another takes its place.'
+    var custom = wanted > wordsFor('long');
+    setText('pick-sub', fit === 0 ? 'Loosen one choice to get words.' : fit < wanted ? (custom ? 'Your Custom file uses ' + count(wanted, 'word') : 'A Long file with your ' + acts + ' uses up to ' + count(wanted, 'word')) + '. You can go on with these, or get more by loosening one choice.'
+      : fit > listed ? 'The list has ' + listed + ' of them: enough for ' + (custom ? 'your Custom file of ' + count(wanted, 'word') : 'a Long file with your ' + acts) + '. Remove a word and another takes its place.'
         : 'All of them are in the list.');
+    drawChips();
+    // What also matched and why it is not offered: counted, never dropped silently.
+    var reasons = picked.reasons, also = [];
+    var silent = reasons.noRecording + Math.max(0, reasons.excluded - state.removed.length);
+    if (reasons.notFamiliarEnough) also.push(count(reasons.notFamiliarEnough, 'less common word'));
+    if (silent) also.push(silent + ' with no recording yet');
+    if (reasons.britishSpellingOrWord) also.push(count(reasons.britishSpellingOrWord, 'British spelling or word', 'British spellings or words'));
+    if (reasons.usedOnlyWhenTyped) also.push(count(reasons.usedOnlyWhenTyped, 'word') + ' used only when you type ' + (reasons.usedOnlyWhenTyped === 1 ? 'it' : 'them'));
+    if (reasons.blocked + reasons.soundsLikeABlockedWord) also.push((reasons.blocked + reasons.soundsLikeABlockedWord) + ' on the list of words this tool does not use');
+    // The counts wait, closed, behind "Why not more words?".
+    setText('pick-out', also.length ? 'Also matched, but not offered: ' + also.join(', ') + '.' : '');
+    show('pick-out-box', also.length > 0);
+    if (state.mode === 'pick' && (state.hand ? handWords().length > 0 : fit > 0)) setText('step-2-problem', '');
+    if (step === 2) soundsNote();
+    drawWordList();
+    if (fit < wanted && !state.hand) suggestLoosening(run, fit);
+  }
+  // The row of chips: the picker's list, or, once the teacher chose words in the list, those words in the file's order.
+  function chipWords() { return state.hand ? handWords() : picked ? picked.words : []; }
+  function drawChips() {
+    syncPending();
+    var chips = $('pick-chips'), words = chipWords();
+    if (state.hand) {
+      setText('pick-sub', words.length ? 'You chose ' + count(words.length, 'word') + ' yourself. The file uses all of them, in this order.'
+        : 'No words are chosen yet. Open Choose the words yourself to check some, or press Pick for me again there.');
+    }
+    chips.setAttribute('aria-label', state.hand ? 'Your words, in the order of the file' : 'Words in the list');
     chips.textContent = '';
-    picked.words.forEach(function (word) {
+    words.forEach(function (word) {
       var item = el('li', 'chip');
       item.appendChild(el('span', '', word));
       // "Edit this word": one panel under the list, for one word at a time. Without the panel script, no button.
@@ -389,37 +436,25 @@
       remove.type = 'button';
       remove.setAttribute('aria-label', 'Remove ' + word);
       remove.addEventListener('click', function () {
-        var at = picked.words.indexOf(word);
-        state.removed.push(word);
+        var at = words.indexOf(word);
+        // A word the teacher chose leaves their list (nothing takes its place); a picked word is replaced by the next one.
+        if (state.hand) { state.chosen = state.chosen.filter(function (other) { return other !== word; }); listNote = ''; } else state.removed.push(word);
         remember();
         drawPick();
         var buttons = $('pick-chips').querySelectorAll('button.chip-remove');
         var next = buttons[Math.min(at, buttons.length - 1)];
-        if (next) next.focus(); else $('pick-restore').focus();
+        if (next) next.focus(); else if (state.hand) $('pick-line').focus(); else $('pick-restore').focus();
       });
       item.appendChild(remove);
       chips.appendChild(item);
     });
     // The open panel stays while its word is listed.
-    if (pickOpen && picked.words.indexOf(pickOpen.word) < 0) closePick(false);
-    if (myWords && picked.words.some(needsEntry)) readMineSoon();
-    show('pick-removed', state.removed.length > 0);
+    if (pickOpen && words.indexOf(pickOpen.word) < 0) closePick(false);
+    if (myWords && words.some(needsEntry)) readMineSoon();
+    show('pick-removed', !state.hand && state.removed.length > 0);
     setText('pick-removed-text', 'You removed: ' + state.removed.join(', ') + '.');
     setText('pick-restore', state.removed.length === 1 ? 'Put it back' : 'Put them back');
-    // What also matched and why it is not offered: counted, never dropped silently.
-    var reasons = picked.reasons, also = [];
-    var silent = reasons.noRecording + Math.max(0, reasons.excluded - state.removed.length);
-    if (reasons.notFamiliarEnough) also.push(count(reasons.notFamiliarEnough, 'less common word'));
-    if (silent) also.push(silent + ' with no recording yet');
-    if (reasons.britishSpellingOrWord) also.push(count(reasons.britishSpellingOrWord, 'British spelling or word', 'British spellings or words'));
-    if (reasons.usedOnlyWhenTyped) also.push(count(reasons.usedOnlyWhenTyped, 'word') + ' used only when you type ' + (reasons.usedOnlyWhenTyped === 1 ? 'it' : 'them'));
-    if (reasons.blocked + reasons.soundsLikeABlockedWord) also.push((reasons.blocked + reasons.soundsLikeABlockedWord) + ' on the list of words this tool does not use');
-    // The counts wait, closed, behind "Why not more words?".
-    setText('pick-out', also.length ? 'Also matched, but not offered: ' + also.join(', ') + '.' : '');
-    show('pick-out-box', also.length > 0);
-    if (fit > 0 && state.mode === 'pick') setText('step-2-problem', '');
-    if (step === 2) soundsNote();
-    if (fit < wanted) suggestLoosening(run, fit);
+    setText('pick-list-line', state.hand ? 'Choose the words yourself: ' + count(words.length, 'word') + ' chosen' : 'Choose the words yourself');
   }
   // When few words fit: try each choice set to "any", one at a time, and offer the ones that give more.
   function suggestLoosening(run, fit) {
@@ -430,7 +465,7 @@
     if (state.sound) tries.push({ change: { sound: '', position: 'any' }, label: 'Any sound' });
     var host = $('pick-loosen');
     var next = function () {
-      if (run !== pickRun) return;
+      if (run !== pickRun || state.hand) return;
       var option = tries.shift();
       if (!option) {
         if (!host.firstChild) setText('pick-sub', fit === 0 ? 'No single change gives any words. Change two of the choices above.' : 'No single change gives more words. You can go on with these.');
@@ -532,7 +567,249 @@
   }
   function chosenWords() {
     if (state.mode === 'own') return ownRows.filter(function (row) { return row.ok; }).map(function (row) { return row.word; });
+    if (state.hand) return handWords();
     return picked ? picked.words.slice() : [];
+  }
+  // The words of the file: the teacher's own list whole, or the first words of the list for the length chosen.
+  function fileWords() {
+    var words = chosenWords();
+    return state.mode === 'pick' && state.hand ? words : words.slice(0, wordsFor(state.length));
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step 2: "Choose the words yourself", the list behind one closed box
+  // ---------------------------------------------------------------------------
+  // The list: the words typed (each says so), then every word the picker would offer for the choices above, A to Z,
+  // with nothing taken out to make room. Checking a word adds it to the end of state.chosen: the file's order is
+  // the order of checking (the chips show it). Until the teacher changes a box, the boxes show the picker's words
+  // for the length chosen. Only LIST_PAGE rows are drawn at a time.
+  var listPool = [], listKey = null, listLimit = LIST_PAGE, listNote = '', listTimer = 0, listPanel = null, addPending = {}, myPictured = {};
+  function typedNow() { return typedWords().slice(0, MAX_TYPED); }
+  // A word can go in the file: it passes the typed-word checks, and a borderline word only when the teacher typed it.
+  function usable(word) {
+    var row = checkWord(word);
+    if (!row.ok) return false;
+    var listed = wordlist.get(word);
+    return !(listed && listed.soft) || typedNow().indexOf(word) >= 0;
+  }
+  function handWords() { return state.chosen.filter(usable).slice(0, MAX_WORDS); }
+  // The words with a box checked: the teacher's, or until then the picker's words for the length chosen.
+  function listChecked() { return state.hand ? state.chosen.slice() : (picked ? picked.words.slice(0, wordsFor(state.length)) : []); }
+  function startHand() {
+    if (state.hand) return;
+    state.hand = true;
+    state.chosen = listChecked();
+  }
+  function hasPicture(word) { return ownPicture(word) || !!myPictured[word] || (!!symbols && symbols.has(word)); }
+  // Every word the picker would offer now, A to Z (the picker's rules, not its count). Worked out again only when a choice changes.
+  function poolWords() {
+    var asked = criteria();
+    var key = JSON.stringify([asked.targetSound || '', asked.position || '', asked.shape || '', asked.stage || '']);
+    if (key !== listKey) {
+      listKey = key;
+      asked.count = 100000;
+      asked.exclude = recordedOnly.slice();
+      try { listPool = builder.pickWords(asked, { wordlist: wordlist, core: core, dictionary: dictionary, seed: 1 }).words.slice().sort(); } catch (_) { listPool = []; }
+    }
+    return listPool;
+  }
+  function listEntries() {
+    var seen = {}, out = [];
+    typedNow().forEach(function (word) { seen[word] = true; out.push({ word: word, typed: true }); });
+    var pool = poolWords(), inPool = {};
+    pool.forEach(function (word) { inPool[word] = true; });
+    // A word chosen under other choices stays listed, so that it can be unchecked here too.
+    state.chosen.forEach(function (word) { if (!seen[word] && !inPool[word]) { seen[word] = true; out.push({ word: word, earlier: true }); } });
+    pool.forEach(function (word) { if (!seen[word]) { seen[word] = true; out.push({ word: word }); } });
+    return out;
+  }
+  function findText() { return String(($('f-find') && $('f-find').value) || '').toLowerCase().replace(/[^a-z]/g, ''); }
+  function shownEntries() {
+    var find = findText(), onlyPictures = !!($('f-only-pictures') && $('f-only-pictures').checked);
+    return listEntries().filter(function (entry) { return (!find || entry.word.indexOf(find) >= 0) && (!onlyPictures || hasPicture(entry.word)); });
+  }
+  function soundsFact(word) {
+    var sounds = ownSoundsOf(word), entry = sounds ? null : core.dictionarySounds(word);
+    sounds = sounds || (entry ? entry.sounds : null);
+    return sounds ? count(sounds.length, 'sound') + ': ' + sounds.map(soundName).join(', ') + '.' : '';
+  }
+  function pictureFact(word) { return ownPicture(word) || myPictured[word] ? ' Your picture.' : symbols && symbols.has(word) ? ' Has a picture.' : ''; }
+  function listRow(entry, checked, index) {
+    var word = entry.word, info = entry.typed || entry.earlier ? checkWord(word) : null;
+    var ok = usable(word), on = checked.indexOf(word) >= 0;
+    var item = el('li', 'wl' + (entry.typed ? ' is-typed' : '') + (ok ? '' : ' is-out'));
+    var label = el('label', 'wl-pick');
+    var box = el('input');
+    box.type = 'checkbox';
+    box.value = word;
+    box.checked = on;
+    // A word that cannot be used is never offered; one already checked can still be unchecked.
+    box.disabled = !ok && !on;
+    var facts = el('span', 'wl-facts', (entry.typed ? 'You typed it. ' + info.says : entry.earlier ? 'Chosen with other choices above. ' + (ok ? soundsFact(word) : info.says) : soundsFact(word)) + pictureFact(word));
+    facts.id = 'wl-f-' + index;
+    box.setAttribute('aria-describedby', facts.id);
+    label.appendChild(box);
+    label.appendChild(el('span', 'wl-word', word));
+    item.appendChild(label);
+    item.appendChild(facts);
+    if (info && info.edit && !info.ok && wordPanel) {
+      var open = !!listPanel && listPanel.word === word;
+      var toggle = el('button', 'btn btn-text btn-small wl-edit', EDIT_LABEL);
+      toggle.type = 'button';
+      toggle.setAttribute('data-word', word);
+      toggle.setAttribute('aria-label', EDIT_LABEL + ': ' + word);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      toggle.addEventListener('click', function () { toggleListPanel(word); });
+      item.appendChild(toggle);
+      if (open) {
+        var spot = el('div', 'word-edit');
+        spot.appendChild(listPanel.panel.root);
+        item.appendChild(spot);
+        toggle.setAttribute('aria-controls', spot.id = 'edit-list-' + index);
+      }
+    }
+    return item;
+  }
+  // A word added in the list that could not be used yet is checked as soon as it can be (its sounds or recording set).
+  function syncPending() {
+    var typed = typedNow();
+    Object.keys(addPending).forEach(function (word) {
+      if (typed.indexOf(word) < 0 || !state.hand) { delete addPending[word]; return; }
+      if (!usable(word)) return;
+      delete addPending[word];
+      if (state.chosen.indexOf(word) < 0 && state.chosen.length < MAX_WORDS) state.chosen.push(word);
+    });
+  }
+  function drawListSaid() {
+    var words = state.hand ? handWords() : listChecked(), n = words.length, text;
+    if (!state.hand) text = 'Chosen for you: the ' + count(n, 'word') + ' a ' + LENGTH_NAMES[state.length] + ' file uses. Check or uncheck a word to choose the words yourself.';
+    else if (!n) text = 'No words are chosen. Check words in the list, or press Pick for me again.';
+    else text = 'You chose ' + count(n, 'word') + '. The file uses all of them, in the order you checked them.';
+    var unusable = state.hand ? state.chosen.filter(function (word) { return !usable(word); }) : [];
+    if (unusable.length) text += ' Not usable yet: ' + unusable.join(', ') + '. The note beside each says why.';
+    setText('list-said', (listNote ? listNote + ' ' : '') + text);
+  }
+  function drawWordList() {
+    var box = $('pick-list');
+    if (!box || !state || !box.open || state.mode !== 'pick') return;
+    syncPending();
+    var list = $('word-list'), shown = shownEntries(), checked = listChecked();
+    // The focus is put back on the same word's control after the redraw.
+    var focused = doc.activeElement, inPanel = listPanel && focused && listPanel.panel.root.contains(focused);
+    var focusWord = !inPanel && focused && list.contains(focused) ? (focused.value || focused.getAttribute('data-word')) : null, focusEdit = !!(focused && focused.classList && focused.classList.contains('wl-edit'));
+    list.textContent = '';
+    var rows = doc.createDocumentFragment();
+    shown.slice(0, listLimit).forEach(function (entry, index) { rows.appendChild(listRow(entry, checked, index)); });
+    list.appendChild(rows);
+    if (inPanel && doc.body.contains(focused)) focused.focus();
+    else if (focusWord) {
+      var again = Array.prototype.filter.call(list.querySelectorAll(focusEdit ? 'button.wl-edit' : 'input'), function (node) { return (node.value || node.getAttribute('data-word')) === focusWord; })[0];
+      if (again) again.focus();
+    }
+    var all = listEntries().length;
+    list.setAttribute('aria-label', shown.length === all ? 'Words to choose from: ' + count(all, 'word') : 'Words to choose from: ' + shown.length + ' of ' + all + ' shown');
+    show('list-more-row', shown.length > listLimit);
+    setText('list-more-said', shown.length > listLimit ? 'Showing ' + listLimit + ' of ' + shown.length + '.' : '');
+    if (!shown.length) list.appendChild(el('li', 'wl-none', all ? 'No word in the list matches. Clear the search, or the picture box.' : 'No words fit the choices above. Add your own words, or loosen one choice.'));
+    drawListSaid();
+  }
+  function listChanged(note) {
+    listNote = note || '';
+    remember();
+    drawPick();
+  }
+  function listToggle(box) {
+    var word = box.value;
+    startHand();
+    if (box.checked && state.chosen.indexOf(word) < 0) {
+      if (state.chosen.length >= MAX_WORDS) {
+        box.checked = false;
+        listNote = 'A file has at most ' + MAX_WORDS + ' words. Uncheck one to add another.';
+        drawListSaid();
+        return;
+      }
+      state.chosen.push(word);
+    }
+    if (!box.checked) state.chosen = state.chosen.filter(function (other) { return other !== word; });
+    listNote = '';
+    remember();
+    // The chips and the lines follow; the list itself is not drawn again, so the focus stays on the box.
+    drawChips();
+    drawListSaid();
+    if (handWords().length) setText('step-2-problem', '');
+    if (step === 2) soundsNote();
+  }
+  // "Add your own words": they join the typed words (the same ones as "Type my own words") and are checked when they can be used.
+  function addTyped() {
+    var field = $('f-add'), words = [];
+    String(field.value || '').toLowerCase().split(/[\s,;]+/).forEach(function (word) { if (word && words.indexOf(word) < 0) words.push(word); });
+    if (!words.length) { listNote = 'Type a word first.'; drawListSaid(); field.focus(); return; }
+    var typed = typedWords(), fresh = words.filter(function (word) { return typed.indexOf(word) < 0; });
+    if (fresh.length) state.own = (String(state.own || '').replace(/\s+$/, '') + (String(state.own || '').trim() ? ' ' : '') + fresh.join(' ')).slice(0, 4000);
+    if ($('f-own').value !== state.own) $('f-own').value = state.own;
+    startHand();
+    var added = [], waiting = [], refused = [], full = [];
+    words.forEach(function (word) {
+      if (state.chosen.indexOf(word) >= 0) return;
+      // A word that needs its sounds or a recording waits, and is checked once it has them. A blocked word never is.
+      if (!usable(word)) { if (checkWord(word).edit) { addPending[word] = true; waiting.push(word); } else refused.push(word); return; }
+      if (state.chosen.length >= MAX_WORDS) { full.push(word); return; }
+      state.chosen.push(word);
+      added.push(word);
+    });
+    field.value = '';
+    var said = [];
+    if (added.length) said.push('Added and checked: ' + added.join(', ') + '.');
+    if (waiting.length) said.push('Not usable yet: ' + waiting.join(', ') + '. ' + (waiting.length === 1 ? 'It joins' : 'They join') + ' your list once ' + (waiting.length === 1 ? 'it has' : 'they have') + ' what the note beside ' + (waiting.length === 1 ? 'it' : 'each') + ' asks for.');
+    if (refused.length) said.push('Not used: ' + refused.join(', ') + '. The note beside each says why.');
+    if (full.length) said.push('Not checked, because a file has at most ' + MAX_WORDS + ' words: ' + full.join(', ') + '.');
+    if (!said.length) said.push('Already in your list: ' + words.join(', ') + '.');
+    drawOwn();
+    listChanged(said.join(' '));
+  }
+  function toggleListPanel(word) {
+    if (listPanel && listPanel.word === word) return closeListPanel(true);
+    closeListPanel(false);
+    listPanel = { word: word, panel: wordPanel.open(doc.createElement('div'), word, { onClose: function () { closeListPanel(true); } }) };
+    listPanel.panel.update(mineOf(word));
+    drawWordList();
+    listPanel.panel.focus();
+  }
+  function closeListPanel(focus) {
+    if (!listPanel) return;
+    var word = listPanel.word;
+    listPanel.panel.destroy();
+    listPanel = null;
+    drawWordList();
+    if (!focus) return;
+    var button = Array.prototype.filter.call($('word-list').querySelectorAll('button.wl-edit'), function (node) { return node.getAttribute('data-word') === word; })[0];
+    if (button) button.focus();
+  }
+  function wireWordList() {
+    $('pick-list').addEventListener('toggle', function () { listLimit = LIST_PAGE; drawWordList(); });
+    $('word-list').addEventListener('change', function (event) { if (event.target && event.target.type === 'checkbox') listToggle(event.target); });
+    $('f-find').addEventListener('input', function () { clearTimeout(listTimer); listTimer = setTimeout(function () { listLimit = LIST_PAGE; drawWordList(); }, 150); });
+    $('f-only-pictures').addEventListener('change', function () { listLimit = LIST_PAGE; drawWordList(); });
+    $('add-words').addEventListener('click', addTyped);
+    $('f-add').addEventListener('keydown', function (event) { if (event.key === 'Enter') { event.preventDefault(); addTyped(); } });
+    $('list-all').addEventListener('click', function () {
+      startHand();
+      var add = shownEntries().map(function (entry) { return entry.word; }).filter(function (word) { return state.chosen.indexOf(word) < 0 && usable(word); });
+      var taken = add.slice(0, Math.max(0, MAX_WORDS - state.chosen.length));
+      state.chosen = state.chosen.concat(taken);
+      var left = add.length - taken.length;
+      listChanged(!add.length ? 'Every word in the list that can be used is already chosen.'
+        : ((taken.length ? 'Added ' + count(taken.length, 'word') + ', in the order of the list.' : '') + (left ? ' A file has at most ' + MAX_WORDS + ' words, so ' + count(left, 'other word') + (left === 1 ? ' was' : ' were') + ' not added.' : '')).trim());
+    });
+    $('list-clear').addEventListener('click', function () { startHand(); state.chosen = []; addPending = {}; listChanged('Every box is unchecked.'); });
+    $('list-again').addEventListener('click', function () { state.hand = false; state.chosen = []; addPending = {}; listChanged('The page picks the words again.'); });
+    $('list-more').addEventListener('click', function () {
+      var from = listLimit;
+      listLimit += LIST_PAGE;
+      drawWordList();
+      var next = $('word-list').querySelectorAll('input[type="checkbox"]')[from];
+      if (next) next.focus();
+    });
   }
   function syncMode() {
     Array.prototype.forEach.call(doc.querySelectorAll('input[name="mode"]'), function (radio) {
@@ -570,7 +847,7 @@
   function needsEntry(word) { return hasRow(word) && !mineOf(word) && !mineTried[word]; }
   function listedWords() {
     var out = typedWords().slice(0, MAX_TYPED);
-    (picked ? picked.words : []).forEach(function (word) { if (out.indexOf(word) < 0) out.push(word); });
+    (picked ? picked.words : []).concat(state ? state.chosen : []).forEach(function (word) { if (out.indexOf(word) < 0) out.push(word); });
     return out;
   }
   function readMineSoon() { clearTimeout(mineTimer); mineTimer = setTimeout(readMine, 0); }
@@ -581,6 +858,8 @@
     return myWords.list().then(function (rows) {
       if (run !== mineRun) return null;
       myRows = Array.isArray(rows) ? rows : [];
+      myPictured = {};
+      myRows.forEach(function (row) { if (row && row.picture) myPictured[row.word] = true; });
       var words = listedWords().filter(hasRow);
       mineTried = {};
       words.forEach(function (word) { mineTried[word] = true; });
@@ -595,8 +874,11 @@
     drawMyWords();
     if (!state) return;
     if (state.mode === 'own') drawOwn();
+    // A word the teacher chose or typed may be usable now (or no longer): the chips and the list follow.
+    else if (state.hand || ($('pick-list') && $('pick-list').open)) drawPick();
     Object.keys(ownOpen).forEach(function (word) { ownOpen[word].update(mineOf(word)); });
     if (pickOpen) pickOpen.update(mineOf(pickOpen.word));
+    if (listPanel) listPanel.panel.update(mineOf(listPanel.word));
     if (step === 3) drawPictures();
   }
   function wordMade(row) {
@@ -931,7 +1213,8 @@
   // Pictures: Mulberry Symbols (CC BY-SA 4.0), kept on this site. word_sounds_symbols_en.js, loaded with the
   // page, says which words have one. The drawings are in the files it names: the same files whatever words are
   // chosen, fetched only when a file is made with the box checked. A file made without them is the same file as before.
-  var symbols = null, picturesOff = false, picturesNote = '', picturesLoading = null;
+  // picturesChoice: '' until the teacher clicks the box (then it is on exactly when a word has a picture), 'on' or 'off' after.
+  var symbols = null, picturesChoice = '', picturesNote = '', picturesLoading = null;
   function loadPictures() {
     if (symbols.ready()) return Promise.resolve(true);
     if (!picturesLoading) {
@@ -947,19 +1230,23 @@
   // The box and its one line: how many of this file's words have a picture. inFile is what a finished file reports.
   // A picture the teacher added to a word (My words) is used in place of its symbol.
   function ownPicture(word) { var entry = mineOf(word); return !!(entry && entry.picture); }
+  // The box is never switched off: with no picture among the words it can still be checked (the file is then the
+  // plain one), and the line beside it says why there are none and what to do.
   function drawPictures(inFile) {
     var box = $('f-pictures');
     if (!box) return;
-    var words = chosenWords().slice(0, wordsFor(state.length));
+    var words = fileWords();
     var theirs = words.filter(ownPicture).length;
     var have = words.filter(function (word) { return ownPicture(word) || (!!symbols && symbols.has(word)); }).length;
-    box.disabled = !have;
-    box.checked = have > 0 && !picturesOff;
+    box.disabled = false;
+    box.checked = picturesChoice === 'on' || (picturesChoice === '' && have > 0);
     box.parentNode.classList.toggle('is-on', box.checked);
     var n = inFile ? inFile.withPicture : have, of = inFile ? inFile.withPicture + inFile.withoutPicture : words.length;
     var added = inFile ? inFile.teacher || 0 : theirs;
-    setText('pictures-line', picturesNote || (added ? 'Pictures for ' + n + ' of ' + count(of, 'word') + ': ' + added + ' you added' + (n > added ? ', ' + count(n - added, 'Mulberry symbol') + '.' : '.')
-      : symbols ? 'Pictures for ' + n + ' of ' + count(of, 'word') + '. Symbols: Mulberry.' : 'Pictures are not available right now.'));
+    setText('pictures-line', picturesNote || (picturesLoading && box.checked && symbols ? 'Getting the pictures, about ' + megabytes(symbols.bytes) + ' MB.'
+      : !n && words.length ? (symbols ? NO_PICTURES_SAID : NO_INDEX_SAID)
+        : added ? 'Pictures for ' + n + ' of ' + count(of, 'word') + ': ' + added + ' you added' + (n > added ? ', ' + count(n - added, 'Mulberry symbol') + '.' : '.')
+          : symbols ? 'Pictures for ' + n + ' of ' + count(of, 'word') + '. Symbols: Mulberry.' : NO_INDEX_SAID));
   }
   // Whether the file being made gets pictures: the box is checked and the drawings are here. The drawings
   // are fetched only when a word of the file shows a symbol (not when every picture is the teacher's).
@@ -968,12 +1255,14 @@
     if (!box || !box.checked) return Promise.resolve(false);
     if (!symbols || !words.some(function (word) { return symbols.has(word) && !ownPicture(word); })) return Promise.resolve(words.some(ownPicture));
     if (!symbols.ready() && run === buildRun) making('Getting the pictures, about ' + megabytes(symbols.bytes) + ' MB.', null);
-    return loadPictures().then(function (ready) { return !!ready; }, function () { return false; }).then(function (ready) {
+    var loading = loadPictures().then(function (ready) { return !!ready; }, function () { return false; });
+    drawPictures();
+    return loading.then(function (ready) {
       if (!ready) {
-        picturesOff = true;
+        picturesChoice = 'off';
         picturesNote = 'The pictures could not be downloaded, so this file has none. Check the box to try again.';
-        drawPictures();
       }
+      drawPictures();
       if (run === buildRun) making('Putting the file together.', null);
       return ready;
     });
@@ -982,6 +1271,7 @@
   function autoTitle() {
     var what = 'mixed words';
     if (state.mode === 'own') what = 'my words';
+    else if (state.hand) what = 'chosen words';
     else if (state.sound) what = soundName(state.sound).replace(/ \(.*\)$/, '') + ' words';
     else if (state.shape) what = state.shape + ' words';
     else if (state.stage) what = stageName(state.stage);
@@ -992,19 +1282,53 @@
     var stem = String(title).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
     return (stem || 'practice') + '.html';
   }
+  // The estimates are the builder's own rule: one question for each word in each activity (at most 40 in one
+  // activity), and the app's half a minute a question. A word that cannot be used in an activity makes it a little less.
+  function estimate(words, acts) {
+    var questions = words * acts;
+    return count(words, 'word') + ', about ' + count(questions, 'question') + ', about ' + count(Math.ceil(questions / 2), 'minute') + '.';
+  }
   function drawLengths() {
     var all = chosenWords().length, acts = Math.max(1, state.activities.length), before = -1, beforeName = '';
-    Object.keys(LENGTH_NAMES).forEach(function (length) {
-      var words = Math.min(all, wordsFor(length)), questions = words * acts;
-      var text = count(words, 'word') + ', about ' + count(questions, 'question') + ', about ' + count(Math.ceil(questions / 2), 'minute') + '.';
+    // Words chosen by hand: the file has all of them, and the lengths wait until the page picks again.
+    var hand = state.mode === 'pick' && state.hand;
+    show('length-hand', hand);
+    show('length-radios', !hand);
+    show('count-field', !hand && state.length === 'custom');
+    var questions = all * acts;
+    setText('length-hand', hand ? 'You chose ' + count(all, 'word') + ' yourself, so the file has all of them: about ' + count(questions, 'question') + ', about ' + count(Math.ceil(questions / 2), 'minute')
+      + '. To set a length instead, go back to step 2 and press Pick for me again.' : '');
+    PRESETS.forEach(function (length) {
+      var words = Math.min(all, wordsFor(length));
+      var text = estimate(words, acts);
       if (words === before) text += ' The same as ' + beforeName + ': you have ' + count(all, 'word') + '.';
       var node = doc.querySelector('[data-length="' + length + '"]');
       if (node) node.textContent = text;
       before = words;
       beforeName = LENGTH_NAMES[length];
     });
+    var custom = doc.querySelector('[data-length="custom"]'), want = wordsFor('custom');
+    if (custom) custom.textContent = state.length !== 'custom' ? 'Choose the number of words, up to ' + MAX_WORDS + '.'
+      : estimate(Math.min(all, want), acts) + (all < want ? ' You have ' + count(all, 'word') + '.' : '');
+    if (doc.activeElement !== $('f-count')) $('f-count').value = String(want);
     syncRadios('length', state.length);
     if (!state.titleEdited) $('f-title').value = autoTitle();
+  }
+  // Custom's number: a whole number from 1 to MAX_WORDS. Above it, the file uses MAX_WORDS and the line says so.
+  function countTyped(field) {
+    var raw = String(field.value || '').trim(), n = Number(raw);
+    if (!/^\d+$/.test(raw) || n < 1) { setText('count-said', 'Type a whole number from 1 to ' + MAX_WORDS + '.'); return; }
+    setText('count-said', n > MAX_WORDS ? MAX_WORDS + ' is the most, so the file uses ' + MAX_WORDS + ' words.' : '');
+    state.count = Math.min(MAX_WORDS, n);
+    state.length = 'custom';
+    remember();
+    lengthChanged(500);
+  }
+  // A new length may need more words from the picker (Custom above Long): it lists them first.
+  function lengthChanged(delay) {
+    if (state.mode === 'pick' && !state.hand) drawPick();
+    drawLengths();
+    makeSoon(delay);
   }
 
   function clearBuilt() {
@@ -1044,7 +1368,7 @@
     clearTimeout(buildTimer);
     clearBuilt();
     var run = buildRun;
-    var words = chosenWords().slice(0, wordsFor(state.length));
+    var words = fileWords();
     var activities = order.filter(function (id) { return state.activities.indexOf(id) >= 0; });
     var title = titleNow();
     if (!words.length || !activities.length) return problem('There is nothing to make yet. Choose at least one activity and one word.', 'change');
@@ -1078,7 +1402,7 @@
           return ownFor(words).then(function (own) {
             if (run !== buildRun) return null;
             var options = { words: words, activities: activities, seed: seed(), title: title, core: core, dictionary: dictionary, banks: withWords, loader: loader,
-              wordlist: wordlist, toWav: toWav, picked: state.mode === 'pick' ? picked : null, pictures: pictures, symbols: pictures && symbols && symbols.ready() ? symbols : null };
+              wordlist: wordlist, toWav: toWav, picked: state.mode === 'pick' && !state.hand ? picked : null, pictures: pictures, symbols: pictures && symbols && symbols.ready() ? symbols : null };
             if (own) options.own = own;
             return builder.buildPacket(options);
           });
@@ -1110,6 +1434,9 @@
   function leftOut(result, words) {
     var lines = [], chosen = chosenWords(), spare = chosen.slice(words.length);
     if (spare.length) lines.push(count(spare.length, 'word') + ' not needed for a ' + LENGTH_NAMES[state.length] + ' file: ' + spare.join(', ') + '.' + (state.length === 'long' ? '' : ' A longer file uses more.'));
+    // Words the teacher checked that cannot be used (yet): named, never dropped silently.
+    var unusable = state.mode === 'pick' && state.hand ? state.chosen.filter(function (word) { return !usable(word); }) : [];
+    if (unusable.length) lines.push('Chosen, but not used: ' + unusable.join(', ') + '. The note beside each word in step 2 says why.');
     var whole = [], groups = [], byKey = {};
     result.exceptions.forEach(function (e) {
       if (e.word && !e.activity && /no activity could be built/.test(e.reason)) { whole.push(e.word); return; }
@@ -1193,7 +1520,9 @@
       if (state.mode === 'own') drawOwn(); else drawPick();
       if (!chosenWords().length) {
         target = 2;
-        setText('step-2-problem', state.mode === 'own' ? 'None of your words can be used yet. The note beside each word says why.' : 'No words fit yet. Loosen one choice above, or type your own words.');
+        setText('step-2-problem', state.mode === 'own' ? 'None of your words can be used yet. The note beside each word says why.'
+          : state.hand ? 'None of the words you chose can be used yet. Check words in Choose the words yourself, or press Pick for me again there.'
+            : 'No words fit yet. Loosen one choice above, or type your own words.');
       }
     }
     if (target !== 3) { clearTimeout(buildTimer); clearBuilt(); show('making', false); }
@@ -1251,23 +1580,35 @@
       radio.addEventListener('change', function () { if (!radio.checked) return; state.version = radio.value; syncRadios('version', state.version); pickChanged(true); });
     });
     Array.prototype.forEach.call(doc.querySelectorAll('input[name="length"]'), function (radio) {
-      radio.addEventListener('change', function () { if (!radio.checked) return; state.length = radio.value; remember(); syncRadios('length', state.length); makeSoon(0); });
+      radio.addEventListener('change', function () { if (!radio.checked) return; state.length = radio.value; remember(); syncRadios('length', state.length); lengthChanged(0); });
     });
+    $('f-count').addEventListener('input', function () { countTyped(this); });
+    $('f-count').addEventListener('blur', function () { if (wordCount(Number(this.value)) !== state.count) { this.value = String(wordsFor('custom')); } });
+    wireWordList();
     $('f-title').addEventListener('input', function () {
       state.title = this.value;
       state.titleEdited = !!this.value.trim();
       makeSoon(700);
     });
     $('f-title').addEventListener('blur', function () { if (!state.titleEdited) this.value = autoTitle(); });
-    $('f-pictures').addEventListener('change', function () { picturesOff = !this.checked; picturesNote = ''; makeSoon(0); });
+    $('f-pictures').addEventListener('change', function () { picturesChoice = this.checked ? 'on' : 'off'; picturesNote = ''; makeSoon(0); });
     $('save').addEventListener('click', saveFile);
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
       // My words are not choices: they stay (they have their own Remove buttons in step 2). Their open panels close.
       closePick(false);
       Object.keys(ownOpen).forEach(function (word) { ownOpen[word].destroy(); delete ownOpen[word]; });
+      closeListPanel(false);
       state = defaults();
       picked = null;
+      // The list's own controls start over too.
+      $('pick-list').open = false;
+      $('f-find').value = '';
+      $('f-only-pictures').checked = false;
+      $('f-add').value = '';
+      listNote = '';
+      addPending = {};
+      setText('count-said', '');
       goTo(1, true);
       setText('forget-said', 'Done. The page is back to how it started.');
     });
