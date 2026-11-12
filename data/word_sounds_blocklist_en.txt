@@ -13,6 +13,15 @@
 # that sounds the same as one of its words or becomes one when its first or last sound is dropped
 # (gas -> ass). Swapping a sound and rhyme sets are NOT derived here: nearly every short word is one
 # swapped sound from something rude. The builder screens the answer choices it actually makes instead.
+#
+# Two kinds of entry (rule approved by the owner, 2026-11-11):
+#   - Every section but the [soft] ones: the word is never used. The picker never offers it, the builder
+#     never makes it an answer choice, and a word a teacher types is refused.
+#   - A section marked [soft]: a borderline word (fight, ghost, kiss, jail, bet). The picker never offers
+#     it and the builder never makes it an answer choice, but a teacher who TYPES it may use it; the
+#     maker then says "Not offered by the picker. Used because you typed it." A [soft] word is never
+#     used for [derive] sound-alike blocking, a section cannot be both, and a word cannot be in both
+#     kinds of section (the build stops and names it).
 # After editing: node dev-tools/build_word_sounds_wordlist.cjs
 
 ## profanity [derive]
@@ -194,3 +203,17 @@ prig
 yep yup nope nah yeah yea yo oi ow ouch oops whoops whoa ooh aah uh um huh hm hmm hee hoo tut ugh
 phew gee sis bro hon ya ing fi san st mr mrs ms mans est ly pre el von mac etc coz dunno lemme
 gimme gonna wanna gotta kinda sorta madame
+
+## borderline: never offered, usable when a teacher types the word [soft]
+# Fighting, crime and punishment
+fight kick punch slap smack whip strike battle army soldier enemy knife steal thief robber crime
+prison jail theft hunt
+# Scary stories, the body, romance
+ghost witch wizard vampire skeleton skull blood kiss bride flesh guts
+# A second meaning (drugs, drink, gambling, crude or adult), or a person's name
+crack pot weed bar inn bet dice pipe smoke pill lush tart bog strip bang cockpit swig jack bill
+mark rob grant
+# Unkind, or belief
+fool rude bless spirit temple
+# British words a US class does not use
+rubbish sweets lad mummy

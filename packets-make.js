@@ -1,7 +1,10 @@
 // The maker page (packets-make.html): three steps, then one practice file.
-// Everything happens in this tab. The only requests are for files on this site: the scripts the page
-// names, and (at step 3) the sound files listed in SOUND_FILES, the same ones whatever is chosen. With
-// "Include pictures" checked it also gets the picture files, again the same ones whatever words are chosen.
+// Everything happens in this tab. The only requests are for files on this site, and every one is a plain
+// GET that carries no word and no choice: the scripts the page names; at step 3 the sound files listed in
+// SOUND_FILES, the same ones whatever is chosen; and, for a word whose recording is in the word store, the
+// store's index and the small sound file that holds the word. So the server can see WHICH of those small files
+// were asked for (each holds a few dozen words), never which words. With "Include pictures" checked the page
+// also gets the picture files, the same ones whatever words are chosen.
 // No AI runs here, and there is no account and no cookie. What it keeps on the device is listed under "About this page".
 (function () {
   'use strict';
@@ -20,6 +23,14 @@
     { name: 'gapFill', url: 'audio_bank_kokoro.json', bytes: 99975 },
   ];
   var SOUND_BYTES = SOUND_FILES.reduce(function (sum, file) { return sum + file.bytes; }, 0);
+  // The word store: recordings made after the word bank above, cut into many files, with one index that says
+  // which file holds which word. The page gets the index, then only the files its practice words need. It
+  // follows the index and never works a file name out for itself. The word list (row.shards) says which words
+  // are in the store, and how large its largest file is, so a size can be stated before anything is fetched.
+  var WORD_STORE_INDEX = 'word_audio_shards/index.json';
+  var WORD_STORE_FORMAT = 'alloflow-word-audio-index/1';
+  var WORD_FILE_NAME = /^[a-z0-9_][a-z0-9_-]*\.json$/;
+  var WORD_SOUNDS_FAILED = 'The sounds for some of your words could not be downloaded. Check the connection, then try again. Your choices are still here.';
   var MAX_WORDS = 40;        // the file holds at most 40 questions in one activity
   var MAX_TYPED = 60;
   var SEEDS = { A: 1, B: 2, C: 3 };
@@ -27,10 +38,13 @@
   // The usual set in each strand, and what a first visit starts with.
   var USUAL = { syllables_rhyme: ['rhyming'], hearing_sounds: ['isolation', 'blending', 'segmentation'], letters_sounds: ['mapping'], spelling: ['missing_letter', 'spelling_bee'] };
   var FIRST_VISIT = USUAL.hearing_sounds;
-  // Activities the builder can make but this page does not offer yet. Measured on 2026-11-11 with the sound
-  // files above: of about 200 words, 13% got a Word Families question and 14% a Sound Sort question, because
-  // the answer choices and the word endings lack recordings. Take an id out of this list to offer it again.
-  var HELD_BACK = ['word_families', 'sound_sort'];
+  // Which activities the builder can make but this page holds back is worked out when the page opens, from
+  // the word list's recording flags (see heldBackBy). The rule: the builder makes a trial build of the first
+  // TRIAL_WORDS words this page lists when nothing is changed (three-sound words, version A), knowing only which
+  // words have a recording the page can load. An activity is held back when fewer than half of those words get a
+  // question in it and a missing recording is among the reasons. Measured on 2026-11-11: Word Families gets a
+  // question for about 15 words in 100, because most word endings (-ug, -ip) have no recording.
+  var TRIAL_WORDS = 16;
   var HELD_BACK_REASON = 'not enough recorded sounds yet';
   var CARD_NOTES = { letter_tracing: 'Practice only. It is not scored.' };
   // Sound label, then a word that has the sound (checked against the sound dictionary by the test).
@@ -47,6 +61,9 @@
   // Shape by sounds, then words of that shape (checked against the word list by the test).
   var SHAPES = [['CVC', 'cat, ship'], ['CCVC', 'frog, stop'], ['CVCC', 'lamp, fast'], ['CCVCC', 'stamp'], ['CV', 'go, she'], ['VC', 'at, in']];
   var STAGE_HINT = 'A stage keeps to the letter patterns taught by then.';
+  // The kindergarten rows of the default (US, Common Core) stage table: neither has sh, ch or th (see #stage-k-note).
+  var K_STAGES = ['K early', 'K late'];
+  var TYPED_ONLY_SAID = 'Not offered by the picker. Used because you typed it.';
   var LENGTH_NAMES = { short: 'Short', regular: 'Regular', long: 'Long' };
 
   var doc = document;
@@ -275,6 +292,10 @@
     $('f-shape').value = state.shape;
     $('f-stage').value = state.stage;
     setText('stage-hint', stageLine(state.stage));
+    // One more line for the two kindergarten rows of the Common Core table, and for no other stage. Its words are in the page.
+    var kindergarten = K_STAGES.indexOf(state.stage) >= 0;
+    show('stage-k-note', kindergarten);
+    $('f-stage').setAttribute('aria-describedby', kindergarten ? 'stage-hint stage-k-note' : 'stage-hint');
     setText('stage-why-text', stageWhy(state.stage));
     show('stage-why', !!stageWhy(state.stage));
   }
@@ -333,9 +354,11 @@
     if (reasons.notFamiliarEnough) also.push(count(reasons.notFamiliarEnough, 'less common word'));
     if (silent) also.push(silent + ' with no recording yet');
     if (reasons.britishSpellingOrWord) also.push(count(reasons.britishSpellingOrWord, 'British spelling or word', 'British spellings or words'));
+    if (reasons.usedOnlyWhenTyped) also.push(count(reasons.usedOnlyWhenTyped, 'word') + ' used only when you type ' + (reasons.usedOnlyWhenTyped === 1 ? 'it' : 'them'));
     if (reasons.blocked + reasons.soundsLikeABlockedWord) also.push((reasons.blocked + reasons.soundsLikeABlockedWord) + ' on the list of words this tool does not use');
     setText('pick-out', also.length ? 'Also matched, but not offered: ' + also.join(', ') + '.' : '');
     if (fit > 0 && state.mode === 'pick') setText('step-2-problem', '');
+    if (step === 2) soundsNote();
     if (fit < wanted) suggestLoosening(run, fit);
   }
   // When few words fit: try each choice set to "any", one at a time, and offer the ones that give more.
@@ -370,14 +393,20 @@
     setTimeout(next, 0);
   }
 
+  // Where a word's recording is, by the word list: in the word bank this page loads whole (row.kokoro), or in
+  // the word store, fetched a small file at a time (row.shards). A word with neither cannot be used here.
+  function inWordStore(word) { var row = wordlist.get(word); return !!row && row.shards && !row.kokoro; }
+  function canLoad(word) { var row = wordlist.get(word); return !!row && (row.kokoro || row.shards); }
+
   // Each typed word, checked the way the builder will check it, with the reason in plain words.
   function checkWord(word) {
     if (wordlist.isBlocked(word)) return { word: word, ok: false, says: 'Left out. It is on the list of words this tool does not use. That list is a first pass and can be too cautious.' };
     if (!/^[a-z]+$/.test(word) || word.length < 2 || word.length > 10 || !/[aeiouy]/.test(word)) return { word: word, ok: false, says: 'Not used. A practice word is 2 to 10 letters, letters only, with a vowel.' };
     var entry = core.dictionarySounds(word);
     if (!entry) return { word: word, ok: false, says: 'Not in the sound dictionary. Check the spelling.' };
-    var row = wordlist.get(word);
-    if (!row || !row.kokoro) return { word: word, ok: false, says: 'No recording yet. It cannot be used in this version.' };
+    if (!canLoad(word)) return { word: word, ok: false, says: 'No recording yet. It cannot be used in this version.' };
+    // A borderline word (the [soft] part of the word list's blocklist): the picker leaves it out, a teacher may type it.
+    if (wordlist.get(word).soft) return { word: word, ok: true, says: TYPED_ONLY_SAID };
     return { word: word, ok: true, says: 'Ready. ' + count(entry.sounds.length, 'sound') + ': ' + entry.sounds.map(soundName).join(', ') + '.' };
   }
   function typedWords() {
@@ -405,6 +434,7 @@
     setText('own-line', !words.length ? 'Type or paste your words above.'
       : ready + ' of ' + count(ownRows.length, 'word') + ' can be used.' + (extra ? ' Only the first ' + MAX_TYPED + ' words are checked.' : ''));
     if (ready && state.mode === 'own') setText('step-2-problem', '');
+    if (step === 2) soundsNote();
   }
   function chosenWords() {
     if (state.mode === 'own') return ownRows.filter(function (row) { return row.ok; }).map(function (row) { return row.word; });
@@ -519,8 +549,87 @@
     if (!soundsLoading) soundsLoading = loadSounds().then(function (got) { sounds = got; soundsLoading = null; return got; }, function (error) { soundsLoading = null; throw error; });
     return soundsLoading;
   }
+  // The word store. One index (word -> shard, shard -> file and size), then only the files that hold the practice
+  // words. Each file goes through readSoundFile, so it is saved, checked and read again exactly as the sound
+  // files above are. A file that does not arrive stops the build with WORD_SOUNDS_FAILED: never a silent word.
+  var wordStore = null, wordFiles = {}, wordClips = {};
+  function wordSoundsError(error) {
+    var failed = new Error('word sounds: ' + String((error && error.message) || error));
+    failed.wordSounds = true;
+    return failed;
+  }
+  function readWordStore(cache) {
+    if (wordStore) return Promise.resolve(wordStore);
+    return readSoundFile(cache, { url: WORD_STORE_INDEX, bytes: 1 }, function () {}).then(function (got) {
+      var index = got.data;
+      if (index.format !== WORD_STORE_FORMAT || !index.words || typeof index.words !== 'object' || !index.shards || typeof index.shards !== 'object') throw new Error(WORD_STORE_INDEX + ' is not a word store index');
+      wordStore = index;
+      return index;
+    });
+  }
+  // The files of the store that hold these words and are not here yet, as the index names them.
+  function wordFilesFor(index, words) {
+    var folder = WORD_STORE_INDEX.replace(/[^/]*$/, ''), byUrl = {}, list = [];
+    words.forEach(function (word) {
+      var key = Object.prototype.hasOwnProperty.call(index.words, word) ? index.words[word] : null;
+      var shard = typeof key === 'string' && Object.prototype.hasOwnProperty.call(index.shards, key) ? index.shards[key] : null;
+      // A word the index does not hold, or a name that is not a plain file name: the word stays without a clip, and the builder lists it.
+      if (!shard || typeof shard.file !== 'string' || !WORD_FILE_NAME.test(shard.file)) return;
+      var url = folder + shard.file;
+      if (!byUrl[url]) { byUrl[url] = { url: url, bytes: shard.bytes > 0 ? shard.bytes : 1, words: [] }; list.push(byUrl[url]); }
+      byUrl[url].words.push(word);
+    });
+    return list;
+  }
+  // Resolves to { word: clip } for those of these words whose recording is in the word store.
+  function getWordSounds(words, onProgress) {
+    var need = words.filter(function (word) { return inWordStore(word) && !wordClips[word]; });
+    var mine = function () {
+      var out = {};
+      words.forEach(function (word) { if (wordClips[word]) out[word] = wordClips[word]; });
+      return out;
+    };
+    if (!need.length) return Promise.resolve(mine());
+    return openCache().then(function (cache) {
+      return readWordStore(cache).then(function (index) {
+        var files = wordFilesFor(index, need);
+        var missing = files.filter(function (file) { return !wordFiles[file.url]; });
+        var total = missing.reduce(function (sum, file) { return sum + file.bytes; }, 0), done = 0;
+        return missing.reduce(function (chain, file) {
+          return chain.then(function () {
+            onProgress(done, total);
+            return readSoundFile(cache, file, function (got) { onProgress(Math.min(total, done + Math.min(got, file.bytes)), total); });
+          }).then(function (got) { done += file.bytes; wordFiles[file.url] = got.data; });
+        }, Promise.resolve()).then(function () {
+          files.forEach(function (file) {
+            file.words.forEach(function (word) { var clip = wordFiles[file.url][word]; if (typeof clip === 'string' && clip) wordClips[word] = clip; });
+          });
+          return mine();
+        });
+      });
+    }).then(null, function (error) { throw wordSoundsError(error); });
+  }
+  // The most the word store can add for the words now chosen: one file for each word that needs it, at the size
+  // of the store's largest file, and never more than the whole store. 0 = nothing; -1 = some, of a size not known.
+  function wordSoundsBound() {
+    var n = chosenWords().filter(function (word) { return inWordStore(word) && !wordClips[word]; }).length;
+    var audio = wordlist.meta && wordlist.meta.wordAudio;
+    if (!n) return 0;
+    if (!audio || !(audio.largestFileBytes > 0)) return -1;
+    return Math.min(n * audio.largestFileBytes, audio.bytes > 0 ? audio.bytes : Infinity);
+  }
+  // "0.3", "1.7", "12": rounded up, so that "up to about" stays true.
+  function megabytesUp(bytes) { return bytes >= 10e6 ? String(Math.ceil(bytes / 1e6)) : (Math.ceil(bytes / 1e5) / 10).toFixed(1); }
   function soundsNote() {
-    setText('sounds-note', soundsSaved ? 'The sounds are already on this device.' : 'The next step gets the sounds: about ' + Math.round(SOUND_BYTES / 1e6) + ' MB, one time.');
+    var more = wordSoundsBound();
+    var extra = more > 0 ? 'up to about ' + megabytesUp(more) + ' MB' : '';
+    if (soundsSaved) {
+      setText('sounds-note', !more ? 'The sounds are already on this device.'
+        : 'Most of the sounds are already on this device. ' + (extra ? 'These words need ' + extra + ' more.' : 'The next step gets the sounds for these words.'));
+    } else {
+      setText('sounds-note', 'The next step gets the sounds: about ' + Math.round(SOUND_BYTES / 1e6) + ' MB' +
+        (!more ? ', one time.' : ' one time, plus ' + (extra ? extra + ' for these words.' : 'the sounds for these words.')));
+    }
   }
   function checkSavedSounds() {
     openCache().then(function (cache) {
@@ -676,12 +785,26 @@
     }).then(function (banks) {
       if (run !== buildRun) return null;
       soundsNote();
-      wavCount = 0;
-      making('Putting the file together.', null);
-      return picturesFor(run).then(function (pictures) {
+      var saidWords = false;
+      return getWordSounds(words, function (bytes, total) {
+        if (run !== buildRun) return;
+        making('Getting the sounds for your words: ' + fileSize(total) + '.', total ? bytes / total : 0);
+        if (!saidWords) { saidWords = true; setText('making-said', 'Getting the sounds for your words, ' + fileSize(total) + '.'); }
+      }).then(function (clips) {
         if (run !== buildRun) return null;
-        return builder.buildPacket({ words: words, activities: activities, seed: seed(), title: title, core: core, dictionary: dictionary, banks: banks, loader: loader,
-          wordlist: wordlist, toWav: toWav, picked: state.mode === 'pick' ? picked : null, pictures: pictures, symbols: pictures ? symbols : null });
+        wavCount = 0;
+        making('Putting the file together.', null);
+        // The clips of this file's own words go in beside the word bank, in the shape the builder already reads.
+        var withWords = {};
+        Object.keys(banks).forEach(function (name) { withWords[name] = banks[name]; });
+        withWords.kokoroWords = {};
+        Object.keys(clips).forEach(function (word) { withWords.kokoroWords[word] = clips[word]; });
+        Object.keys(banks.kokoroWords).forEach(function (word) { withWords.kokoroWords[word] = banks.kokoroWords[word]; });
+        return picturesFor(run).then(function (pictures) {
+          if (run !== buildRun) return null;
+          return builder.buildPacket({ words: words, activities: activities, seed: seed(), title: title, core: core, dictionary: dictionary, banks: withWords, loader: loader,
+            wordlist: wordlist, toWav: toWav, picked: state.mode === 'pick' ? picked : null, pictures: pictures, symbols: pictures ? symbols : null });
+        });
       });
     }).then(function (result) {
       if (!result || run !== buildRun) return;
@@ -690,12 +813,14 @@
       if (run !== buildRun) return;
       var text = String((error && error.message) || error || '');
       if (!sounds) problem('The sounds could not be downloaded. Check the connection, then try again. Your choices are still here.', 'retry');
+      else if (error && error.wordSounds) problem(WORD_SOUNDS_FAILED, 'retry');
       else problem('The file could not be put together (' + (text || 'no reason was given') + '). Your choices are still here.', 'retry');
     });
   }
   function plainReason(reason) {
     var text = String(reason || '');
     if (/answer choice is on the blocklist/.test(text)) return 'an answer choice is on the list of words this tool does not use';
+    if (/answer choice is a word the picker does not offer/.test(text)) return 'an answer choice is a word the picker does not offer';
     if (/answer choice/.test(text)) return 'an answer choice has no recording yet';
     if (/could not be converted to WAV|WebM and no converter/.test(text)) return 'this browser could not prepare a recording';
     if (text === 'no recording for this word') return 'no recording yet';
@@ -857,6 +982,7 @@
     $('forget-sounds').addEventListener('click', function () {
       var done = function () {
         sounds = null; soundsLoading = null; soundsSaved = false;
+        wordStore = null; wordFiles = {}; wordClips = {};
         if (wavs) wavs.clear();
         soundsNote();
         setText('forget-said', 'Done. The sounds are downloaded again the next time a file is made.');
@@ -871,7 +997,9 @@
     Array.prototype.forEach.call(doc.querySelectorAll('link[href]'), function (link) { files.push(link.getAttribute('href')); });
     Array.prototype.forEach.call(doc.querySelectorAll('script[src]'), function (script) { files.push(script.getAttribute('src')); });
     var pictures = symbols ? ' When a file is made with pictures: ' + symbols.shards.map(function (shard) { return shard.url; }).join(', ') + '.' : '';
-    var text = files.join(', ') + '. At step 3: ' + SOUND_FILES.map(function (file) { return file.url; }).join(', ') + '.' + pictures + ' For Try it: ' + TRY_PAGE + ' and packets-try.js.';
+    // Named only when the word list says a word's recording is in the word store: otherwise the page never asks for it.
+    var store = wordlist.rows().some(function (row) { return row.shards && !row.kokoro; }) ? ' When a word needs it: ' + WORD_STORE_INDEX + ' and the small sound files it names.' : '';
+    var text = files.join(', ') + '. At step 3: ' + SOUND_FILES.map(function (file) { return file.url; }).join(', ') + '.' + store + pictures + ' For Try it: ' + TRY_PAGE + ' and packets-try.js.';
     Array.prototype.forEach.call(doc.querySelectorAll('[data-show-files]'), function (node) { node.textContent = text; });
   }
 
@@ -909,16 +1037,43 @@
     var pictureIndex = modules.WordSoundsSymbols;
     symbols = pictureIndex && typeof pictureIndex.has === 'function' && typeof pictureIndex.add === 'function' && Array.isArray(pictureIndex.shards) ? pictureIndex : null;
     var buildable = builder.SUPPORTED_ACTIVITIES.filter(function (id) { return loader.ADAPTERS[id] && core.ACTIVITY_SKILLS[id]; });
-    heldBack = buildable.filter(function (id) { return HELD_BACK.indexOf(id) >= 0; });
-    var offered = buildable.filter(function (id) { return HELD_BACK.indexOf(id) < 0; });
+    // The 15 words whose only recording is in the bank this page does not load.
+    recordedOnly = wordlist.rows().filter(function (row) { return row.hasClip && !row.kokoro && !row.shards; }).map(function (row) { return row.word; });
+    try { stageRows = typeof builder.stageList === 'function' ? builder.stageList() : []; } catch (_) { stageRows = []; }
+    if (!stageRows.length) stageRows = (builder.STAGES || []).map(function (id) { return { id: id, label: id, frameworkLabel: '', note: builder.STAGE_NOTE || '' }; });
+    // The page opens when the trial build has said which activities to hold back (well under a second).
+    heldBackBy(buildable).then(function (held) {
+      try { openPage(buildable, held); } catch (error) { stopped(error); }
+    });
+  }
+
+  // Which of these activities to hold back: see TRIAL_WORDS for the rule. The trial knows what this page can
+  // load: a practice word from the word bank or the word store, an answer choice from the word bank only (the
+  // builder takes its choices from the clips it is handed, and the page hands it the bank and the practice words).
+  // No trial (no word with a recording, or a builder that cannot run one) holds nothing back: step 3 then says,
+  // word by word, what was left out.
+  function heldBackBy(buildable) {
+    var trial = [];
+    try { trial = builder.pickWords({ count: TRIAL_WORDS, shape: 'CVC', exclude: recordedOnly }, { wordlist: wordlist, core: core, dictionary: dictionary, seed: SEEDS.A }).words; } catch (_) { trial = []; }
+    if (!trial.length || typeof builder.trialBuild !== 'function') return Promise.resolve([]);
+    var voiced = function (word) { var row = wordlist.get(word); return !!row && (row.kokoro || (row.shards && trial.indexOf(word) >= 0)); };
+    return Promise.resolve().then(function () {
+      return builder.trialBuild({ words: trial, activities: buildable, seed: SEEDS.A, core: core, loader: loader, wordlist: wordlist, voiced: voiced });
+    }).then(function (result) {
+      return buildable.filter(function (id) {
+        var got = result.byActivity[id];
+        return !!got && got.questions * 2 < result.words && got.noRecording > 0;
+      });
+    }, function () { return []; });
+  }
+
+  function openPage(buildable, held) {
+    heldBack = held;
+    var offered = buildable.filter(function (id) { return held.indexOf(id) < 0; });
     strands = core.SKILL_STRANDS.map(function (row) {
       return { key: row.key, name: core.strandLabel(row.key), ids: core.activityIds().filter(function (id) { return offered.indexOf(id) >= 0 && core.activityStrand(id) === row.key; }) };
     }).filter(function (strand) { return strand.ids.length > 0; });
     order = [].concat.apply([], strands.map(function (strand) { return strand.ids; }));
-    // The 15 words whose only recording is in the bank this page does not load.
-    recordedOnly = wordlist.rows().filter(function (row) { return row.hasClip && !row.kokoro; }).map(function (row) { return row.word; });
-    try { stageRows = typeof builder.stageList === 'function' ? builder.stageList() : []; } catch (_) { stageRows = []; }
-    if (!stageRows.length) stageRows = (builder.STAGES || []).map(function (id) { return { id: id, label: id, frameworkLabel: '', note: builder.STAGE_NOTE || '' }; });
     drawPickControls();
     state = recall();
     if (loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_csv) setText('csv-label', loader.DEFAULT_LABELS.save_csv);
@@ -931,9 +1086,10 @@
     checkSavedSounds();
   }
 
-  try { start(); } catch (error) {
+  function stopped(error) {
     show('loading', false);
     setText('load-problem-text', 'The page stopped while starting (' + String((error && error.message) || error) + '). Load the page again. Nothing has been lost.');
     show('load-problem', true);
   }
+  try { start(); } catch (error) { stopped(error); }
 })();

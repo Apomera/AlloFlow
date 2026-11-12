@@ -1051,11 +1051,22 @@ describe('the guide for school IT', () => {
       // Nothing to sign in with: no form to send, and no box for an email address.
       expect(other.querySelector('form, input[type="email"]'), page).toBeNull();
     }
-    // The maker asks this site for the same sound files whatever is chosen, and the results page can connect to nothing.
-    expect(fact["What this site's server can see"]).toContain('the sound files (the same files whatever is chosen)');
-    // Every address the maker asks for comes from a fixed list in its own script, never from the words or the choices.
-    expect(read('packets-make.js')).toMatch(/var SOUND_FILES = \[/);
-    expect([...new Set(read('packets-make.js').match(/window\.fetch\([\w.]+/g))].sort()).toEqual(['window.fetch(file.url', 'window.fetch(shard.url']);
+    // The maker asks this site for the same sound files whatever is chosen, except the small files of the word store, which it asks
+    // for by need: the server can see which of those were asked for, never a word. The results page can connect to nothing.
+    expect(fact["What this site's server can see"]).toBe('When someone uses these pages: ordinary web requests for the pages, their scripts and, on the maker page, the sound files, '
+      + 'with what every web request carries, such as the IP address and the time. Most sound files are the same whatever is chosen. '
+      + 'Some words have their sounds in small files of about 40 words each, and the maker page asks only for the ones it needs: the server can see which of those files were asked for, not which words. '
+      + 'Never the words or the choices, and never results. If a school puts a packet on its own web server, that server sees requests for the file and nothing the learner does in it.');
+    expect(require('../dev-tools/repack_word_sounds_word_audio.cjs').DEFAULT_MAX).toBe(40);
+    expect(text('section[aria-labelledby="flow-title"] li')[0]).toContain('The maker page puts the file together in the browser. The words and the choices are not uploaded.');
+    // Every address the maker asks for is in a fixed list in its own script, or is the word store's index, or is a file name that
+    // index gives (a plain name, in the store's folder). None is put together from a word or a choice, and every request is a GET.
+    const maker = read('packets-make.js');
+    expect(maker).toMatch(/var SOUND_FILES = \[/);
+    expect(maker).toContain("var WORD_STORE_INDEX = 'word_audio_shards/index.json';");
+    expect(maker).toContain("if (!shard || typeof shard.file !== 'string' || !WORD_FILE_NAME.test(shard.file)) return;");
+    expect([...new Set(maker.match(/window\.fetch\([\w.]+/g))].sort()).toEqual(['window.fetch(file.url', 'window.fetch(shard.url']);
+    expect(maker).not.toMatch(/method\s*:|body\s*:|FormData|encodeURIComponent/);
     expect(parse('packets-results.html').querySelector('meta[http-equiv="Content-Security-Policy"]').getAttribute('content')).toContain("connect-src 'none'");
     expect(fact['Accounts, cookies, analytics']).toContain("the maker page keeps the teacher's last choices and the sound files, the results page keeps results only if a switch is turned on, and this page and Check a file keep nothing");
     expect(read('packets-make.js')).toMatch(/var STORE_KEY = 'alloflow-packets-maker\/1';\s+var SOUND_CACHE = /);

@@ -7,6 +7,7 @@
 // Other flags: --sounds 3  --spelling a_e  --max-rank 4000  --any-word (no recording needed)  --title "..."  --learner "..."
 //   --length 10  --show-letters  --keep-webm (ship WebM clips as they are when ffmpeg is missing)
 // WebM clips are converted to WAV with ffmpeg when it is on PATH.
+// Words voiced into word_audio_shards/ are read too, by following that store's index (any file layout).
 const fs = require('node:fs');
 const path = require('node:path');
 const { execFileSync, spawnSync } = require('node:child_process');
@@ -29,9 +30,39 @@ function loadParts() {
   return { dictionary, core, loader, wordlist, builder };
 }
 
-function loadBanks() {
+// Every clip of the word-audio store (word_audio_shards/, made by dev-tools/build_word_sounds_word_audio.cjs), read by
+// following its index: index.words[word] names a shard, index.shards[shard].file names the file. No file name is
+// guessed, so the one-file-per-letter layout and the regrouped one (dev-tools/repack_word_sounds_word_audio.cjs)
+// read the same. No store = no clips. A file the index names that is missing or damaged is an error, never a gap.
+const SHARD_STORE = path.join(ROOT, 'word_audio_shards');
+function loadShardClips(dir = SHARD_STORE) {
+  const indexFile = path.join(dir, 'index.json');
+  if (!fs.existsSync(indexFile)) return {};
+  const index = JSON.parse(fs.readFileSync(indexFile, 'utf8').replace(/^﻿/, ''));
+  if (!index || index.format !== 'alloflow-word-audio-index/1' || !index.words || !index.shards) throw new Error('Not a word audio index (alloflow-word-audio-index/1): ' + indexFile);
+  const files = new Map(), clips = {};
+  for (const word of Object.keys(index.words)) {
+    const shard = index.shards[index.words[word]];
+    const name = shard && shard.file;
+    if (typeof name !== 'string' || !/^[a-z0-9_][a-z0-9_-]*\.json$/.test(name)) throw new Error('The word audio index names no usable file for "' + word + '": ' + indexFile);
+    if (!files.has(name)) {
+      try { files.set(name, JSON.parse(fs.readFileSync(path.join(dir, name), 'utf8'))); }
+      catch (error) { throw new Error('Could not read ' + path.join(dir, name) + ', which the word audio index names (' + error.message + ')'); }
+    }
+    const clip = files.get(name)[word];
+    if (typeof clip !== 'string' || !/^data:audio\//.test(clip)) throw new Error('The word audio index lists "' + word + '" in ' + name + ', and it is not there');
+    clips[word] = clip;
+  }
+  return clips;
+}
+
+// options.shards: the store folder to read too (default word_audio_shards/), or false for the bank files alone.
+// A word in both keeps the bank's clip.
+function loadBanks(options = {}) {
+  const kokoroWords = json('word_audio_kokoro_bank.json').words;
+  const shardClips = options.shards === false ? {} : loadShardClips(typeof options.shards === 'string' ? options.shards : SHARD_STORE);
   return { phonemes: json('audio_bank/phonemes.json'), isolation: json('audio_bank/isolation.json'), instructions: json('audio_bank/instructions.json'),
-    words: json('audio_bank/words.json'), kokoroWords: json('word_audio_kokoro_bank.json').words, gapFill: json('audio_bank_kokoro.json') };
+    words: json('audio_bank/words.json'), kokoroWords: Object.assign({}, shardClips, kokoroWords), gapFill: json('audio_bank_kokoro.json') };
 }
 
 function ffmpegOnPath() {
@@ -118,5 +149,5 @@ async function main(argv) {
   console.log(`Wrote ${out}: ${Math.round(Buffer.byteLength(result.html) / 1024)} KB, sha256 ${result.sha256}`);
 }
 
-module.exports = { loadParts, loadBanks, ffmpegOnPath, ffmpegToWav, summary };
+module.exports = { loadParts, loadBanks, loadShardClips, SHARD_STORE, ffmpegOnPath, ffmpegToWav, summary };
 if (require.main === module) main(process.argv.slice(2)).catch(error => { console.error(error.message); process.exitCode = 1; });

@@ -172,6 +172,10 @@
   // picture), the eSpeak rung, React state (reviewed syllable recordings and counts, the chosen
   // voice) and the three reading boards that need an AI sentence. Changed: shuffleForPack draws
   // from a generator seeded per word, and a row's id is its place in the list, not the clock.
+  // Changed 2026-11-11: a dictionary word the aligner cannot split (except, worried, chocolate: 73 of
+  // the picker's words) has no chipSpans, and "analysis.chipSpans.some" threw there; here it reads
+  // "(analysis.chipSpans || [])", so the word gets every board but Sound Mapping. The app's line
+  // (word_sounds_setup_source.jsx, preparePackWordAiFree) still throws: fix it the same way.
   // ---------------------------------------------------------------------------
   function createPackLogic(config) {
     const WS_CORE = config.core;
@@ -252,7 +256,7 @@
             syllableBlendingOptions: [],
             graphemes: source === 'dictionary' ? analysis.graphemes : [],
             // Sound Mapping: how many sound boxes each spelling chip covers (qu, x, the u of cute, le cover two).
-            chipSpans: source === 'dictionary' && analysis.chipSpans.some((n) => n === 2) ? analysis.chipSpans : undefined,
+            chipSpans: source === 'dictionary' && (analysis.chipSpans || []).some((n) => n === 2) ? analysis.chipSpans : undefined,
             rhymes: derived.rhymeWord ? [derived.rhymeWord] : [],
             rhymeWord: derived.rhymeWord,
             rhymePronunciation: derived.rhymeWord && derived.rhymePhonemes ? { word: derived.rhymeWord, phonemes: derived.rhymePhonemes } : undefined,
@@ -635,14 +639,23 @@
     });
     var audio = createAudio(opts.banks, opts.speak, opts.toWav, !!opts.allowUnconverted);
     var blocked = function (word) { return !!wordlist && typeof wordlist.isBlocked === 'function' && wordlist.isBlocked(word); };
-    // Answer choices come from the app's own word lists. Blocked words leave that pool, and so do
-    // words nobody can say aloud here (no clip and no speak), so a choice is never silent.
+    // A soft word (the blocklist file's [soft] sections: fight, ghost, kiss) is one the teacher may use by
+    // typing it, and nobody else: never a word the builder puts into a file on its own.
+    var softWord = function (word) { var row = wordlist && typeof wordlist.get === 'function' ? wordlist.get(word) : null; return !!row && row.soft === true; };
+    // Answer choices come from the app's own word lists. Blocked and soft words leave that pool, and so
+    // do words nobody can say aloud here (no clip in the banks handed in, and no speak), so a choice is
+    // never silent. A caller that loads clips on demand loads them for the practice words before it
+    // calls: the builder never invents a choice it would have to go and fetch.
+    var mayChoose = function (word) { return !blocked(word) && !softWord(word) && (typeof opts.speak === 'function' || audio.hasClip('words', core.packAudioKey(word))); };
     var known = opts.knownWords || (wordlist ? wordlist.rows().filter(function (row) { return row.known; }).map(function (row) { return row.word; }) : []);
     var probeLogic = createPackLogic({ core: core, knownWords: known, seed: seed });
-    var choicePool = Array.from(probeLogic.k2KnownWords()).filter(function (word) {
-      return !blocked(word) && (typeof opts.speak === 'function' || audio.hasClip('words', core.packAudioKey(word)));
-    });
-    var logic = createPackLogic({ core: core, knownWords: choicePool, seed: seed });
+    var choicePool = Array.from(probeLogic.k2KnownWords()).filter(mayChoose);
+    // Sound Sort takes its choices from another list, the core's own (core.knownWords): once in the board
+    // logic, and again in the loader, which makes the board anew when it is handed none. Both are given a
+    // core whose list has passed the same rules. (Until 2026-11-11 that list was not filtered: most
+    // Sound Sort questions were lost to a choice with no clip, and a blocked word with a clip could be shown.)
+    var choiceCore = Object.create(core, { knownWords: { value: (core.knownWords || []).filter(mayChoose), enumerable: true } });
+    var logic = createPackLogic({ core: choiceCore, knownWords: choicePool, seed: seed });
     var limit = typeof opts.length === 'number' ? opts.length : LENGTHS[opts.length] || 40;
     var words = [];
     asked.forEach(function (word) {
@@ -658,7 +671,9 @@
     var prepare = words.reduce(function (chain, word, index) {
       return chain.then(function () {
         return logic.preparePackWordAiFree({ word: word, index: index, batchWords: words, isEnglish: true, estimate: logic.estimatePackPhonemes });
-      }).then(function (row) { if (row && row.phonemeSource === 'dictionary') rows.push(row); else except(word, null, 'not in the sound dictionary'); });
+      }).then(function (row) { if (row && row.phonemeSource === 'dictionary') rows.push(row); else except(word, null, 'not in the sound dictionary'); },
+        // One word that cannot be prepared is left out and listed. It never stops the file.
+        function (error) { except(word, null, 'this word could not be prepared (' + String((error && error.message) || error).slice(0, 120) + ')'); });
     }, Promise.resolve());
 
     // pictures: true puts each word's symbol in the file, where `symbols` has one. Off (the default)
@@ -680,10 +695,12 @@
       rows.forEach(function (item) {
         item.activityItems = Object.fromEntries(Object.entries(item.activityItems || {}).filter(function (pair) { return activities.indexOf(pair[0]) >= 0; }));
         item._preparedActivities = activities;
-        // Last guard: a blocked word on a board removes that board.
+        // Last guard: a blocked word on a board removes that board. So does a soft word, unless it is one
+        // of the words the teacher gave (their own word may sit among the choices of another of their words).
         activities.forEach(function (id) {
-          var bad = boardWords(id, item.activityItems[id]).filter(blocked);
-          if (bad.length) { delete item.activityItems[id]; except(item.word, id, 'an answer choice is on the blocklist'); }
+          var shown = boardWords(id, item.activityItems[id]);
+          if (shown.some(blocked)) { delete item.activityItems[id]; except(item.word, id, 'an answer choice is on the blocklist'); }
+          else if (shown.some(function (word) { return softWord(word) && words.indexOf(word) < 0; })) { delete item.activityItems[id]; except(item.word, id, 'an answer choice is a word the picker does not offer'); }
         });
         if (item.activityItems.mapping && suspectSplit(wordUnits(core, item.word, item.phonemes))) {
           delete item.activityItems.mapping;
@@ -701,7 +718,7 @@
         } });
       };
       var lessonOptions = function (banks) {
-        return { core: core, banks: banks, isEnglish: true, showLetters: !!opts.showLetters, activities: activities, title: title,
+        return { core: choiceCore, banks: banks, isEnglish: true, showLetters: !!opts.showLetters, activities: activities, title: title,
           lessonId: 'pb-' + hex8(fnv1a(JSON.stringify([VERSION, String(seed), title, words, activities]))) };
       };
       if (!activities.length || !rows.length) return { wanted: wanted, lessonOptions: lessonOptions };
@@ -792,7 +809,8 @@
           withPicture: withPicture, withoutPicture: withoutPicture, counts: { withPicture: withPicture.length, withoutPicture: withoutPicture.length },
           files: withPicture.reduce(function (acc, word) { acc[word] = pictureFiles[word] || ''; return acc; }, {}), refused: pictureRefused };
       }
-      if (!lesson) return { html: '', lesson: null, manifest: manifest, exceptions: exceptions, sha256: '' };
+      // noFile: everything but the file itself (trialBuild asks only which questions there would be).
+      if (!lesson || opts.noFile === true) return { html: '', lesson: lesson, manifest: manifest, exceptions: exceptions, sha256: '' };
       var html = loader.buildHtml(lesson, { core: core, attributions: attributions });
       var extra = { attributions: attributions, notices: notices,
         builder: { name: VERSION, seed: seed, ai: 'none', words: usedWords.length, items: manifest.items.total } };
@@ -969,7 +987,8 @@
       var entry = core.dictionarySounds(word);
       return entry ? entry.sounds : null;
     };
-    var reasons = { fitsTheCriteria: 0, blocked: 0, soundsLikeABlockedWord: 0, oneDroppedSoundFromABlockedWord: 0, britishSpellingOrWord: 0, notFamiliarEnough: 0, noRecording: 0, excluded: 0 };
+    // usedOnlyWhenTyped: the blocklist file's [soft] words. The picker never returns one, whatever is asked.
+    var reasons = { fitsTheCriteria: 0, blocked: 0, soundsLikeABlockedWord: 0, oneDroppedSoundFromABlockedWord: 0, usedOnlyWhenTyped: 0, britishSpellingOrWord: 0, notFamiliarEnough: 0, noRecording: 0, excluded: 0 };
     var pool = [];
     wordlist.rows().forEach(function (row) {
       if (!/^[a-z]{2,10}$/.test(row.word) || !/[aeiouy]/.test(row.word)) return;
@@ -997,6 +1016,7 @@
       if (row.blocked) { reasons.blocked++; return; }
       if (row.nearBlocked) { reasons.soundsLikeABlockedWord++; return; }
       if (c.avoidDroppedSound && row.dropBlocked) { reasons.oneDroppedSoundFromABlockedWord++; return; }
+      if (row.soft) { reasons.usedOnlyWhenTyped++; return; }
       if (row.british && !allowBritish) { reasons.britishSpellingOrWord++; return; }
       if (!row.known && !(row.zipf >= minZipf && row.books >= minBooks) && !(maxRank > 0 && row.rank > 0 && row.rank <= maxRank)) { reasons.notFamiliarEnough++; return; }
       if (requireClip && !row.hasClip) { reasons.noRecording++; return; }
@@ -1022,8 +1042,47 @@
     return { words: order.slice(0, count), pool: pool.length, reasons: reasons, criteria: used };
   }
 
+  // ---------------------------------------------------------------------------
+  // trialBuild: which questions would these words get, knowing only WHICH words have a recording?
+  // ---------------------------------------------------------------------------
+  // For a page that must decide what to offer before it holds any sound file. input.voiced(word) says
+  // whether the word has a recording the caller can hand to buildPacket. The other clips (sounds,
+  // position questions, spoken instructions) are taken as present: they are fixed files, and
+  // tests/word_sounds_packet_builder.test.js compares a trial with a build from the real ones. It
+  // runs buildPacket itself, with stand-in clips and no file at the end, so the answer is the
+  // builder's own. -> { words, byActivity: { id: { questions, noRecording, other } } }: for each
+  // activity, the words that got a question, the words that lost it to a missing recording, and
+  // the words that lost it for another reason (no rhyme partner, no word family ...).
+  var RECORDING_REASON = /(?:^|; )(?:no recording for|the recording for) /;
+  function trialBuild(input) {
+    var opts = input || {};
+    var voiced = typeof opts.voiced === 'function' ? opts.voiced : function () { return false; };
+    var CLIP = 'data:audio/wav;base64,UklGRg==';
+    var standIn = function (has) {
+      var holds = function (key) { return typeof key === 'string' && !!has(key); };
+      return new Proxy({}, {
+        get: function (_, key) { return holds(key) ? CLIP : undefined; },
+        has: function (_, key) { return holds(key); },
+        getOwnPropertyDescriptor: function (_, key) { return holds(key) ? { value: CLIP, writable: true, enumerable: true, configurable: true } : undefined; },
+      });
+    };
+    var any = function () { return true; };
+    return buildPacket({ words: opts.words, activities: opts.activities, seed: opts.seed, core: opts.core, loader: opts.loader, wordlist: opts.wordlist,
+      knownWords: opts.knownWords, length: opts.length, noFile: true,
+      banks: { phonemes: standIn(any), isolation: standIn(any), instructions: standIn(any), kokoroWords: standIn(voiced) } }).then(function (result) {
+      var by = {};
+      result.manifest.activities.asked.forEach(function (id) { by[id] = { questions: result.manifest.items.byActivity[id] || 0, noRecording: 0, other: 0 }; });
+      result.exceptions.forEach(function (e) {
+        if (!e.word || !e.activity || !by[e.activity]) return;
+        by[e.activity][RECORDING_REASON.test(e.reason) ? 'noRecording' : 'other']++;
+      });
+      return { words: result.manifest.words.asked.filter(function (word, i, all) { return all.indexOf(word) === i; }).length, byActivity: by };
+    });
+  }
+
   var api = {
     VERSION: VERSION, SUPPORTED_ACTIVITIES: SUPPORTED.slice(), STAGES: STAGE_IDS.slice(), STAGE_NOTE: STAGE_NOTE,
+    trialBuild: trialBuild,
     DEFAULT_MAX_RANK: DEFAULT_MAX_RANK, DEFAULT_MIN_ZIPF: DEFAULT_MIN_ZIPF, DEFAULT_MIN_BOOKS: DEFAULT_MIN_BOOKS, CMUDICT_NOTICE: CMUDICT_NOTICE,
     buildPacket: buildPacket, pickWords: pickWords, stageList: stageList, pcmToWavUri: pcmToWavUri,
     // Pictures: the credit and notice a file with pictures carries, and the test every symbol must pass.

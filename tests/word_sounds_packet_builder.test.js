@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { readFileSync } from 'node:fs';
+import { afterAll, describe, expect, it } from 'vitest';
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
@@ -14,7 +16,8 @@ const wordlistTool = require('../dev-tools/build_word_sounds_wordlist.cjs');
 const phonemeTool = require('../dev-tools/build_word_sounds_phonemes.cjs');
 const { dictionary, core, loader, wordlist, builder } = tool.loadParts();
 const pronunciations = require('../word_sounds_pronunciations.js');
-const BANKS = tool.loadBanks();
+// The bank files alone: the word store (word_audio_shards/) grows, and these tests must not move with it.
+const BANKS = tool.loadBanks({ shards: false });
 const B = builder._internals;
 
 const coreSource = readFileSync('word_sounds_core.js', 'utf8');
@@ -285,7 +288,7 @@ describe('(e) pickWords', () => {
     }
     // Every word that fit is either in the pool or counted under exactly one reason.
     const { fitsTheCriteria, ...dropped } = one.reasons;
-    expect(Object.keys(dropped).sort()).toEqual(['blocked', 'britishSpellingOrWord', 'excluded', 'noRecording', 'notFamiliarEnough', 'oneDroppedSoundFromABlockedWord', 'soundsLikeABlockedWord']);
+    expect(Object.keys(dropped).sort()).toEqual(['blocked', 'britishSpellingOrWord', 'excluded', 'noRecording', 'notFamiliarEnough', 'oneDroppedSoundFromABlockedWord', 'soundsLikeABlockedWord', 'usedOnlyWhenTyped']);
     expect(fitsTheCriteria).toBe(one.pool + Object.values(dropped).reduce((sum, n) => sum + n, 0));
     expect(one.reasons.blocked).toBeGreaterThan(0);
   });
@@ -386,7 +389,8 @@ describe('(f) the word list and the blocklist', () => {
   });
 
   it('every blocklist entry is flagged, in the dictionary or not, and the file says it needs review', () => {
-    const sections = wordlistTool.readBlocklist();
+    // The [soft] sections are the other kind of entry (never offered, usable when typed): see (l).
+    const sections = wordlistTool.readBlocklist().filter((section) => !section.soft);
     const entries = sections.flatMap((section) => section.words);
     expect(entries.length).toBeGreaterThan(900);
     expect(sections.filter((section) => section.derive).length).toBeGreaterThanOrEqual(2);
@@ -686,7 +690,7 @@ describe('(i) the stage table is data, with its sources', () => {
 describe('(j) the dated additions to the blocklist', () => {
   const pick = (criteria, seed = 7) => builder.pickWords(criteria, { wordlist, core, dictionary, seed });
   it('names, word pieces and crude words found in the output are blocked; ordinary words are not', () => {
-    const sections = wordlistTool.readBlocklist();
+    const sections = wordlistTool.readBlocklist().filter((section) => !section.soft);
     const added = sections.filter((section) => /^2026-11-11 /.test(section.name));
     expect(added.length).toBeGreaterThanOrEqual(8);
     expect(added.every((section) => !section.derive)).toBe(true);
@@ -695,5 +699,242 @@ describe('(j) the dated additions to the blocklist', () => {
     for (const word of ['we', 'he', 'so', 'jack', 'kiss', 'fight', 'jail', 'ruby', 'may', 'march', 'will', 'rob', 'smoke', 'bar', 'hi', 'wow']) expect(wordlist.isBlocked(word) || wordlist.get(word).nearBlocked, word).toBe(false);
     const everything = pick({ count: 100000, requireClip: false }).words;
     for (const section of added) expect(section.words.filter((word) => everything.includes(word)), section.name).toEqual([]);
+  });
+});
+
+describe('(k) answer choices come only from words with a clip, and a trial build says what would be built', () => {
+  const pick = (criteria, seed = 1) => builder.pickWords(criteria, { wordlist, core, dictionary, seed });
+  // The bank a page has: the machine-made word bank and the fixed files, without the recorded word bank.
+  const PAGE_BANKS = { ...BANKS, words: undefined };
+  // A bank that holds a clip for every word there is: what the answer choices would be if recordings were no limit.
+  const wavFor = (key) => 'data:audio/wav;base64,' + Buffer.from('RIFF0000WAVE' + key).toString('base64');
+  const everyWord = new Proxy({}, { get: (_, key) => (typeof key === 'string' ? wavFor(key) : undefined), getOwnPropertyDescriptor: (_, key) => ({ value: wavFor(String(key)), writable: true, enumerable: true, configurable: true }) });
+  const shownIn = (lesson, activity) => lesson.blocks.filter((block) => block.activity === activity).flatMap((block) => block.items.flatMap((item) =>
+    (item.chips || item.choices || []).map((choice) => [item.word, String(choice.text).toLowerCase()])));
+
+  it('Sound Sort: no choice without a clip, so no question is lost to one; and no blocked word, even where every word has a clip', async () => {
+    // Forty words of the word bank (these banks hold no clip for a word of the word store).
+    const words = pick({ shape: 'CVC', count: 1e9 }).words.filter((word) => wordlist.get(word).kokoro).slice(0, 40);
+    expect(words).toHaveLength(40);
+    const built = await build({ words, activities: ['sound_sort'], banks: PAGE_BANKS, seed: 1 });
+    expect(built.exceptions.filter((e) => /no recording for the answer choice|on the blocklist/.test(e.reason))).toEqual([]);
+    expect(built.manifest.items.byActivity.sound_sort).toBeGreaterThanOrEqual(36);
+    const shown = shownIn(built.lesson, 'sound_sort');
+    expect(shown.length).toBeGreaterThan(150);
+    for (const [, choice] of shown) expect(!!BANKS.kokoroWords[choice], choice).toBe(true);
+    // The core's own list (the pool of these boards) holds words with no clip and blocked words: they are what is kept out.
+    expect(core.knownWords.filter((word) => !BANKS.kokoroWords[word]).length).toBeGreaterThan(100);
+    const blockedInPool = core.knownWords.filter((word) => wordlist.isBlocked(word));
+    expect(blockedInPool.length).toBeGreaterThan(5);
+    // With a clip for every word a blocked word could be said aloud: it is still never a choice, in any of the four activities with word choices.
+    const many = pick({ shape: 'CVC', count: 120, requireClip: false }).words;
+    const open = await build({ words: many, activities: ['sound_sort', 'blending', 'rhyming', 'word_families'], banks: { ...PAGE_BANKS, kokoroWords: everyWord }, seed: 1, length: 120 });
+    for (const activity of ['sound_sort', 'blending', 'rhyming', 'word_families']) {
+      const all = shownIn(open.lesson, activity);
+      expect(all.length, activity).toBeGreaterThan(60);
+      expect(all.filter(([, choice]) => wordlist.isBlocked(choice)), activity).toEqual([]);
+    }
+    expect(open.exceptions.filter((e) => /an answer choice is on the blocklist/.test(e.reason))).toEqual([]);
+    // The loader makes a Sound Sort board itself when it is handed none, from the core it is given. That core
+    // holds the filtered list too: with (for this test) every word of the core's list blocked, no board can be
+    // made from it, and the loader does not bring one back.
+    const strict = { rows: wordlist.rows, get: wordlist.get, meta: wordlist.meta, stages: wordlist.stages, isBlocked: (word) => wordlist.isBlocked(word) || core.knownWords.includes(word) };
+    const outside = many.filter((word) => !core.knownWords.includes(word)).slice(0, 12);
+    expect(outside).toHaveLength(12);
+    const shut = await build({ words: outside, activities: ['sound_sort', 'isolation'], banks: { ...PAGE_BANKS, kokoroWords: everyWord }, wordlist: strict, seed: 1 });
+    expect(shut.manifest.items.byActivity.isolation).toBe(12);
+    expect(shownIn(shut.lesson, 'sound_sort').filter(([, choice]) => core.knownWords.includes(choice))).toEqual([]);
+  }, 120000);
+
+  it('a dictionary word the aligner cannot split is built in every activity but Sound Mapping, and never stops the file', async () => {
+    const pool = pick({ count: 1e9, requireClip: false }).words;
+    const unsplit = pool.filter((word) => !Array.isArray(core.soundAnalysis(word, [...dictionary.lookup(word)[0]]).chipSpans));
+    // except, worried, chocolate ...: words the picker offers as soon as they have a recording.
+    expect(unsplit.length).toBeGreaterThan(40);
+    expect(unsplit).toEqual(expect.arrayContaining(['except', 'worried', 'chocolate']));
+    const activities = builder.SUPPORTED_ACTIVITIES.filter((id) => !['word_families', 'rhyming'].includes(id));
+    const built = await build({ words: ['cat', 'except', 'worried', 'chocolate'], activities, banks: { ...PAGE_BANKS, kokoroWords: everyWord }, seed: 1 });
+    expect(built.html.length).toBeGreaterThan(1000);
+    expect(built.manifest.words.used).toEqual(['cat', 'except', 'worried', 'chocolate']);
+    expect(built.exceptions.filter((e) => /could not be prepared/.test(e.reason))).toEqual([]);
+    for (const word of ['except', 'worried', 'chocolate']) {
+      expect(built.exceptions.filter((e) => e.word === word).map((e) => [e.activity, e.reason]), word).toEqual([['mapping', 'the spelling of this word does not map one sound at a time']]);
+      for (const block of built.lesson.blocks.filter((b) => b.activity !== 'mapping')) expect(block.items.some((item) => item.word === word), word + ' in ' + block.activity).toBe(true);
+    }
+    // Every such word, at once: none makes the build throw.
+    const all = await build({ words: unsplit, activities: ['isolation', 'blending', 'spelling_bee'], banks: { ...PAGE_BANKS, kokoroWords: everyWord }, seed: 1, length: unsplit.length });
+    expect(all.manifest.items.byActivity.isolation).toBeGreaterThanOrEqual(40);
+    expect(all.exceptions.filter((e) => /could not be prepared/.test(e.reason))).toEqual([]);
+    // A word whose preparation does throw, for a reason nobody foresaw, is left out and listed; the others are built.
+    const faulty = Object.create(core, { derivedAnswerSets: { value: (input) => { if (input.word === 'map') throw new Error('boom'); return core.derivedAnswerSets(input); } } });
+    const partly = await build({ words: ['cat', 'map', 'sun'], activities: ['isolation'], core: faulty });
+    expect(partly.manifest.words.used).toEqual(['cat', 'sun']);
+    expect(partly.exceptions).toEqual([{ word: 'map', activity: null, reason: 'this word could not be prepared (boom)' }]);
+  }, 120000);
+
+  it('trialBuild gives, from the recording flags alone, what a real build from the real sound files gives', async () => {
+    for (const criteria of [{ shape: 'CVC', count: 16 }, { count: 16 }, { stage: 'G2', count: 16 }]) {
+      // (A word of the sample whose recording is in the word store gets a stand-in clip below, as a page would have loaded it.)
+      const words = pick({ ...criteria, exclude: wordlist.rows().filter((row) => row.hasClip && !row.kokoro && !row.shards).map((row) => row.word) }).words;
+      const voiced = (word) => { const row = wordlist.get(word); return !!row && (row.kokoro || words.includes(word)); };
+      const wordBank = { ...BANKS.kokoroWords };
+      for (const word of words) if (!wordBank[word]) wordBank[word] = wavFor(word);
+      const real = await build({ words, activities: builder.SUPPORTED_ACTIVITIES, banks: { ...PAGE_BANKS, kokoroWords: wordBank }, seed: 1 });
+      const trial = await builder.trialBuild({ words, activities: builder.SUPPORTED_ACTIVITIES, seed: 1, core, loader, wordlist, voiced });
+      expect(trial.words).toBe(16);
+      expect(Object.keys(trial.byActivity)).toEqual(builder.SUPPORTED_ACTIVITIES);
+      for (const id of builder.SUPPORTED_ACTIVITIES) {
+        const lost = real.exceptions.filter((e) => e.activity === id && e.word);
+        const toARecording = lost.filter((e) => /no recording for/.test(e.reason)).length;
+        expect(trial.byActivity[id], JSON.stringify(criteria) + ' ' + id).toEqual({ questions: real.manifest.items.byActivity[id], noRecording: toARecording, other: lost.length - toARecording });
+        expect(trial.byActivity[id].questions + trial.byActivity[id].noRecording + trial.byActivity[id].other, id).toBe(16);
+      }
+    }
+    // It makes no file, and with no recording at all every word is lost to one.
+    const none = await builder.trialBuild({ words: ['cat', 'map'], activities: ['isolation', 'counting'], core, loader, wordlist, voiced: () => false });
+    expect(none).toEqual({ words: 2, byActivity: { isolation: { questions: 0, noRecording: 2, other: 0 }, counting: { questions: 0, noRecording: 2, other: 0 } } });
+    const fileless = await build({ noFile: true });
+    expect(fileless.html).toBe('');
+    expect(fileless.sha256).toBe('');
+    expect(fileless.manifest.items.total).toBe(5);
+    expect(fileless.lesson.blocks[0].items).toHaveLength(5);
+    expect(builderSource).not.toMatch(/fetch\s*\(|XMLHttpRequest/);
+  }, 120000);
+});
+
+describe('(l) two kinds of unsuitable word: never used, and never offered but usable when a teacher types it', () => {
+  const pick = (criteria, seed = 1) => builder.pickWords(criteria, { wordlist, core, dictionary, seed });
+  // The list the owner approved on 2026-11-11, word for word.
+  const SOFT = ('fight kick punch slap smack whip strike battle army soldier enemy knife steal thief robber crime prison jail theft hunt ghost witch wizard vampire skeleton skull blood '
+    + 'kiss bride flesh guts crack pot weed bar inn bet dice pipe smoke pill lush tart bog strip bang cockpit swig jack bill mark rob grant fool rude bless spirit temple rubbish sweets lad mummy').split(' ');
+  const wavFor = (key) => 'data:audio/wav;base64,' + Buffer.from('RIFF0000WAVE' + key).toString('base64');
+  const everyWord = new Proxy({}, { get: (_, key) => (typeof key === 'string' ? wavFor(key) : undefined), getOwnPropertyDescriptor: (_, key) => ({ value: wavFor(String(key)), writable: true, enumerable: true, configurable: true }) });
+  const shownIn = (lesson, activities) => lesson.blocks.filter((block) => activities.includes(block.activity)).flatMap((block) => block.items.flatMap((item) =>
+    (item.chips || item.choices || []).map((choice) => [block.activity, item.word, String(choice.text).toLowerCase()])));
+  const scratch = mkdtempSync(join(tmpdir(), 'ws-soft-words-'));
+  afterAll(() => { rmSync(scratch, { recursive: true, force: true }); });
+
+  it('the blocklist file marks them [soft], and the word list flags them soft and not blocked', () => {
+    const sections = wordlistTool.readBlocklist();
+    const soft = sections.filter((section) => section.soft), hard = sections.filter((section) => !section.soft);
+    expect(soft).toHaveLength(1);
+    expect(soft[0]).toMatchObject({ derive: false, soft: true });
+    expect(soft[0].words.slice().sort()).toEqual(SOFT.slice().sort());
+    expect(new Set(SOFT).size).toBe(62);
+    // None is left in a section of the other kind, and no section is both kinds.
+    expect(hard.flatMap((section) => section.words).filter((word) => SOFT.includes(word))).toEqual([]);
+    expect(sections.filter((section) => section.soft && section.derive)).toEqual([]);
+    expect(readFileSync('data/word_sounds_blocklist_en.txt', 'utf8')).toMatch(/A section marked \[soft\]: a borderline word/);
+    expect(wordlistTool.FLAGS.soft).toBe(256);
+    expect(wordlist.FLAGS.soft).toBe(256);
+    expect(Object.values(wordlistTool.FLAGS).sort((a, b) => a - b)).toEqual([1, 2, 4, 8, 16, 32, 64, 128, 256]);
+    for (const word of SOFT) {
+      expect(wordlist.get(word), word).toMatchObject({ soft: true, blocked: false, nearBlocked: false });
+      expect(wordlist.isBlocked(word), word).toBe(false);
+    }
+    expect(wordlist.rows().filter((row) => row.soft).map((row) => row.word).sort()).toEqual(SOFT.slice().sort());
+    expect(wordlist.meta).toMatchObject({ softEntries: 62 });
+    // A word that sounds like a soft word is not touched: only [derive] sections block sound-alikes.
+    for (const word of ['in', 'steel', 'which', 'bare', 'we', 'lads', 'kicks']) expect(wordlist.get(word), word).toMatchObject({ soft: false, blocked: false, nearBlocked: false });
+    expect(dictionary.lookup('inn')[0].join(' ')).toBe(dictionary.lookup('in')[0].join(' '));
+    expect(wordlist.get('gun')).toMatchObject({ blocked: true, soft: false });
+    expect(wordlist.get('ass')).toMatchObject({ blocked: true, soft: false });
+  });
+
+  it('the build refuses a blocklist file where a word is of both kinds, or a section has two marks; its summary counts the soft words', () => {
+    const real = readFileSync('data/word_sounds_blocklist_en.txt', 'utf8');
+    const both = join(scratch, 'both.txt');
+    writeFileSync(both, real + '\n## more [soft]\ngun cat\n');
+    expect(() => wordlistTool.build({ blocklist: both, shards: false })).toThrow(/in a \[soft\] section and in another section too \(keep one\): gun$/);
+    const twice = join(scratch, 'twice.txt');
+    writeFileSync(twice, real + '\n## more [soft] [derive]\ncat\n');
+    expect(() => wordlistTool.readBlocklist(twice)).toThrow(/more than one mark/);
+    // A soft word is never a [derive] word: with "cat" made soft (and "zzzq", which is not in the dictionary), nothing new is blocked as a sound-alike.
+    const extra = join(scratch, 'extra.txt');
+    writeFileSync(extra, real + '\n## more [soft]\nzzzq cat\n');
+    const built = wordlistTool.build({ blocklist: extra, shards: false });
+    expect(built.counts.soft).toBe(63);
+    expect(built.softTotal).toBe(64);
+    expect(built.softOutside).toEqual(['zzzq']);
+    expect(built.counts.nearBlocked).toBe(wordlist.rows().filter((row) => row.nearBlocked).length);
+    expect(built.counts.blocked).toBe(wordlist.rows().filter((row) => row.blocked).length);
+    const plain = wordlistTool.build({ shards: false });
+    expect(wordlistTool.summary(plain, wordlistTool.render(plain))).toMatch(/; soft list \(never offered, usable when typed\) 62 entries in 1 sections \(62 in the dictionary\); British list /);
+    expect(wordlistTool.summary(built, wordlistTool.render(built))).toContain('soft list (never offered, usable when typed) 64 entries in 2 sections (63 in the dictionary, outside it and so without effect: zzzq); ');
+    // --no-shards: the list as it is with no word store, whatever the store holds.
+    expect(plain.counts.shards).toBe(0);
+    expect(plain.wordAudio).toBeNull();
+    expect(wordlistTool.render(plain)).not.toContain('"wordAudio"');
+  }, 60000);
+
+  it('pickWords never returns a soft word, whatever is asked, and counts each under its own reason', () => {
+    const softRows = wordlist.rows().filter((row) => row.soft);
+    for (const criteria of [{ count: 1e9, requireClip: false }, { count: 1e9, requireClip: false, maxRank: 40000, british: true }, { count: 1e9 }, { shape: 'CVC', count: 1e9, requireClip: false }, { stage: 'G2', count: 1e9, requireClip: false }]) {
+      const got = pick(criteria);
+      expect(got.words.filter((word) => wordlist.get(word).soft), JSON.stringify(criteria)).toEqual([]);
+      expect(got.reasons.usedOnlyWhenTyped, JSON.stringify(criteria)).toBeGreaterThan(0);
+    }
+    // Asked for everything, every one of the 62 is counted there, and under no other reason.
+    expect(pick({ count: 1e9, requireClip: false }).reasons.usedOnlyWhenTyped).toBe(softRows.length);
+    expect(pick({ count: 1e9, requireClip: false, maxRank: 40000, british: true }).reasons.usedOnlyWhenTyped).toBe(62);
+    const cvc = pick({ shape: 'CVC', count: 1e9, requireClip: false });
+    expect(cvc.reasons.usedOnlyWhenTyped).toBe(softRows.filter((row) => row.shape === 'CVC').length);
+    for (const word of ['jail', 'bet', 'pot', 'kiss', 'jack', 'bill', 'rob']) expect(cvc.words, word).not.toContain(word);
+    // Words that were offered until now and are ordinary stay offered.
+    expect(pick({ count: 1e9, requireClip: false }).words).toEqual(expect.arrayContaining(['cat', 'ship', 'will', 'rose', 'horse', 'march', 'ruby']));
+  });
+
+  it('a soft word the teacher gives is built; a blocked word is refused exactly as before', async () => {
+    const built = await build({ words: ['cat', 'jail', 'gun', 'bet', 'damn', 'pot'], activities: ['isolation', 'blending', 'counting'] });
+    expect(built.manifest.words.used).toEqual(['cat', 'jail', 'bet', 'pot']);
+    expect(built.exceptions.filter((e) => e.activity === null)).toEqual([
+      { word: 'gun', activity: null, reason: 'this word is on the blocklist' }, { word: 'damn', activity: null, reason: 'this word is on the blocklist' }]);
+    for (const block of built.lesson.blocks) expect(block.items.map((item) => item.word), block.activity).toEqual(['cat', 'jail', 'bet', 'pot']);
+    expect(built.html).not.toMatch(/"gun"|"damn"/);
+    expect(built.exceptions.filter((e) => /does not offer/.test(e.reason))).toEqual([]);
+  });
+
+  it('no answer choice the builder invents is a soft word; a soft word among the choices is one the teacher gave', async () => {
+    const CHOICES = ['blending', 'rhyming', 'word_families', 'sound_sort'];
+    // The pools the choices come from hold soft words (kick, pot, bar on the core's own list; jail, bet, bill on the app lists).
+    expect(core.knownWords.filter((word) => wordlist.get(word) && wordlist.get(word).soft).length).toBeGreaterThan(5);
+    expect(wordlist.rows().filter((row) => row.soft && row.known).length).toBeGreaterThan(20);
+    expect(B.createPackLogic({ core, knownWords: [], seed: 1 }).PACK_COMMON_WORDS.filter((word) => wordlist.get(word).soft)).toEqual([]);
+    const words = pick({ shape: 'CVC', count: 90, requireClip: false }).words;
+    const open = await build({ words, activities: CHOICES, banks: { ...BANKS, words: undefined, kokoroWords: everyWord }, seed: 1, length: 90 });
+    const shown = shownIn(open.lesson, CHOICES);
+    expect(shown.length).toBeGreaterThan(400);
+    expect(shown.filter(([, , choice]) => wordlist.get(choice) && wordlist.get(choice).soft)).toEqual([]);
+    expect(open.exceptions.filter((e) => /does not offer|on the blocklist/.test(e.reason))).toEqual([]);
+    // With the real banks too.
+    const real = await build({ words: pick({ shape: 'CVC', count: 40 }).words, activities: CHOICES, seed: 1 });
+    expect(shownIn(real.lesson, CHOICES).filter(([, , choice]) => wordlist.get(choice) && wordlist.get(choice).soft)).toEqual([]);
+    // The teacher's own soft words may sit among the choices of their other words: nobody else's do.
+    const typed = ['bet', 'pot', 'bat', 'pet', 'bit', 'pit'];
+    const own = await build({ words: typed, activities: CHOICES, seed: 1 });
+    const softShown = shownIn(own.lesson, CHOICES).filter(([, , choice]) => wordlist.get(choice) && wordlist.get(choice).soft);
+    expect(softShown.length).toBeGreaterThan(0);
+    for (const [, , choice] of softShown) expect(['bet', 'pot'], choice).toContain(choice);
+  }, 120000);
+
+  it('the last guard: a soft word that reached a board from a list the builder does not filter takes the board out, and says so', async () => {
+    // For this test "sun" is soft. It is one of the builder's own common words, which fill out a rhyme or a word-family board.
+    const CHOICES = ['blending', 'rhyming', 'word_families', 'sound_sort'];
+    const words = ['hat', 'pin', 'bug', 'hop', 'net', 'sit'];
+    const stub = { rows: wordlist.rows, meta: wordlist.meta, stages: wordlist.stages, isBlocked: wordlist.isBlocked, get: (word) => (word === 'sun' ? { ...wordlist.get('sun'), soft: true } : wordlist.get(word)) };
+    const plain = await build({ words, activities: CHOICES });
+    const withSun = shownIn(plain.lesson, CHOICES).filter(([, , choice]) => choice === 'sun').map(([activity, word]) => word + '/' + activity);
+    expect(withSun.length).toBeGreaterThan(0);
+    const guarded = await build({ words, activities: CHOICES, wordlist: stub });
+    const taken = guarded.exceptions.filter((e) => e.reason === 'an answer choice is a word the picker does not offer');
+    expect(taken.length).toBeGreaterThan(0);
+    expect(taken.every((e) => words.includes(e.word) && CHOICES.includes(e.activity))).toBe(true);
+    expect(shownIn(guarded.lesson, CHOICES).filter(([, , choice]) => choice === 'sun')).toEqual([]);
+    // The board is gone from the file, not only listed: no question for that word in that activity.
+    for (const e of taken) expect(guarded.lesson.blocks.filter((block) => block.activity === e.activity).flatMap((block) => block.items).some((item) => item.word === e.word), e.word + '/' + e.activity).toBe(false);
+    // Typed by the teacher, the same word is theirs to use.
+    const typed = await build({ words: [...words, 'sun'], activities: CHOICES, wordlist: stub });
+    expect(typed.exceptions.filter((e) => /does not offer/.test(e.reason))).toEqual([]);
+    expect(typed.manifest.words.used).toContain('sun');
   });
 });

@@ -1,5 +1,7 @@
-import { describe, expect, it } from 'vitest';
-import { existsSync, readFileSync, statSync } from 'node:fs';
+import { afterAll, describe, expect, it } from 'vitest';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { createRequire } from 'node:module';
 import { TextDecoder, TextEncoder } from 'node:util';
 import { JSDOM } from 'jsdom';
@@ -312,6 +314,29 @@ describe('the pages as files', () => {
     expect(megabytes).toBeGreaterThan(1.5);
     expect(megabytes).toBeLessThan(2.5);
   });
+
+  it('the maker says exactly what the server can see, now that some sound files depend on the words', () => {
+    const bullets = [...parse('packets-make.html').querySelectorAll('details.proof .proof-body li')].map((item) => item.textContent);
+    const perFile = require('../dev-tools/repack_word_sounds_word_audio.cjs').DEFAULT_MAX;
+    // What is still true, word for word: nothing chosen is sent.
+    expect(bullets[1]).toBe('The practice file is put together in this browser tab. The page looks your words up in a word list and a sound dictionary that it has already loaded. Your words and your choices are not sent anywhere.');
+    expect(parse('packets-make.html').querySelector('details.proof .proof-line').textContent).toBe('This page runs without AI. No account. Nothing you choose leaves your device.');
+    // What changed: most sound files are the same for everyone; the small ones are asked for by need, and the server can see which.
+    expect(bullets[3]).toBe('The page loads files from this site only. At step 3 it gets the sound files, also from this site. Most are the same files whatever you choose. '
+      + 'Some words have their sounds in small files of about ' + perFile + ' words each, and the page gets only the ones your words need.');
+    expect(bullets[4]).toBe('Like any website, the server that sends these files can see that your browser asked for them. That includes which of the small sound files were asked for, but not which words. It receives nothing else.');
+    for (const file of PAGES) expect(read(file), file).not.toMatch(/the same files whatever (?:you choose|is chosen)\)?\.? ?(?:<\/li>|\))/);
+    // "Not sent" in the script: every request is a plain GET for a file. No address is put together from a word, and the only
+    // thing ever added to a request is the question "has this file changed?" for a copy already saved.
+    const source = read('packets-make.js');
+    expect(source.match(/window\.fetch\([^;\n]*/g)).toEqual(['window.fetch(file.url)', "window.fetch(file.url, { headers: tag ? { 'If-None-Match': tag } : { 'If-Modified-Since': dated } }).then(function (reply) {", 'window.fetch(shard.url).then(function (reply) {']);
+    expect(source).not.toMatch(/method\s*:|body\s*:|FormData|URLSearchParams|encodeURIComponent|\.search\b|[?&]\w+=/);
+    // A store file's address is the store's folder plus a name the index gives, and only a plain file name is taken.
+    expect(source).toContain("var WORD_STORE_INDEX = 'word_audio_shards/index.json';");
+    expect(source).toContain('var WORD_FILE_NAME = /^[a-z0-9_][a-z0-9_-]*\\.json$/;');
+    expect(source).toContain("var url = folder + shard.file;");
+    expect(source).toContain("if (!shard || typeof shard.file !== 'string' || !WORD_FILE_NAME.test(shard.file)) return;");
+  });
 });
 
 // ---------------------------------------------------------------------------
@@ -332,6 +357,30 @@ const PICTURE_INDEX = require('../word_sounds_symbols_en.js');
 const PICTURE_URLS = PICTURE_INDEX.shards.map((shard) => shard.url);
 const PICTURES = Object.fromEntries(PICTURE_URLS.map((url) => [url, read(url)]));
 const PICTURES_FAILED = 'The pictures could not be downloaded, so this file has none. Check the box to try again.';
+// The word store (word_audio_shards/), as a stand-in: one small file per first letter for exactly the words the repo's word list
+// says are in the store, so these tests hold however far the real store has got. With a word list that flags none, it is empty
+// and the page never asks for it. The tests of the store itself (further down) bring their own word list and files.
+const STORE_INDEX = 'word_audio_shards/index.json';
+const storeWord = (word) => { const row = wordlist.get(word); return !!row && row.shards && !row.kokoro; };
+const STAND_IN_STORE = (() => {
+  const words = wordlist.rows().filter((row) => row.shards && !row.kokoro).map((row) => row.word);
+  if (!words.length) return {};
+  const files = {}, index = { format: 'alloflow-word-audio-index/1', words: {}, shards: {} };
+  for (const word of words) { (files[word[0]] = files[word[0]] || { _meta: { format: 'alloflow-word-audio-shard/1', shard: word[0] } })[word] = tiny('store/' + word); index.words[word] = word[0]; }
+  const out = {};
+  for (const key of Object.keys(files)) { out['word_audio_shards/' + key + '.json'] = JSON.stringify(files[key]); index.shards[key] = { file: key + '.json', words: Object.keys(files[key]).length - 1, bytes: out['word_audio_shards/' + key + '.json'].length }; }
+  out[STORE_INDEX] = JSON.stringify(index);
+  return out;
+})();
+// What a page asks the stand-in store for when it makes a file of these words: the index, then one file for each first letter that needs one.
+const storeRequests = (words) => { const need = words.filter(storeWord); return need.length ? [STORE_INDEX, ...new Set(need.map((word) => 'word_audio_shards/' + word[0] + '.json'))] : []; };
+// The line under step 2, by the rule the page states: the fixed files, and at most one store file (the largest) for each word that needs one.
+const soundsNoteFor = (words) => {
+  const n = words.filter(storeWord).length, audio = wordlist.meta.wordAudio;
+  if (!n) return 'The next step gets the sounds: about 11 MB, one time.';
+  const bytes = Math.min(n * audio.largestFileBytes, audio.bytes);
+  return 'The next step gets the sounds: about 11 MB one time, plus up to about ' + (bytes >= 10e6 ? String(Math.ceil(bytes / 1e6)) : (Math.ceil(bytes / 1e5) / 10).toFixed(1)) + ' MB for these words.';
+};
 // A stand-in for the browser's audio decoder: any clip becomes a short buffer that depends on its bytes.
 class FakeOffline {
   constructor(channels, length, rate) { this.length = length; this.sampleRate = rate; this.destination = {}; this.played = null; }
@@ -355,16 +404,19 @@ const audit = (text) => FORBIDDEN.filter(([, pattern]) => pattern.test(text)).ma
 const manifestOf = (html) => JSON.parse(/<script type="application\/json" id="packet-manifest">(.*?)<\/script>/.exec(html)[1]);
 const lessonOf = (html) => JSON.parse(/var lesson=(.*);\nvar labels=/.exec(html)[1]);
 
-function openMaker(options = {}) {
+// options.sources: other text for a script the page names (a word list that flags words of a pretend word store).
+// options.store: the files of that store, by the address the page asks for. page.gone holds addresses that answer 404.
+// The page opens when its trial build is done (see TRIAL_WORDS in packets-make.js): the promise waits for that.
+async function openMaker(options = {}) {
   const dom = new JSDOM(read('packets-make.html'), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://packets.test/site/packets-make.html' });
   const w = dom.window, d = w.document;
-  const page = { dom, w, d, asked: [], files: [], downloads: [], offline: !!options.offline };
+  const page = { dom, w, d, asked: [], files: [], downloads: [], offline: !!options.offline, store: options.store || STAND_IN_STORE, gone: new Set() };
   w.TextEncoder = TextEncoder;
   w.TextDecoder = TextDecoder;
   w.fetch = async (url, init) => {
     page.asked.push(String(url));
     if (page.offline) throw new TypeError('Failed to fetch');
-    const body = SOUNDS[url] || (options.pictures && !page.noPictures ? PICTURES[url] : null);
+    const body = page.gone.has(url) ? null : SOUNDS[url] || page.store[url] || (options.pictures && !page.noPictures ? PICTURES[url] : null);
     if (init || !body) return { ok: false, status: 404, headers: { get: () => null }, text: async () => '' };
     return { ok: true, status: 200, headers: { get: () => null }, text: async () => body };
   };
@@ -376,7 +428,7 @@ function openMaker(options = {}) {
   w.HTMLElement.prototype.scrollIntoView = function () {};
   if (options.before) options.before(w);
   // The page's own scripts, in the order the page names them: what the page does not load, the test does not have.
-  for (const script of d.querySelectorAll('script[src]')) w.eval(read(script.getAttribute('src')));
+  for (const script of d.querySelectorAll('script[src]')) w.eval((options.sources && options.sources[script.getAttribute('src')]) || read(script.getAttribute('src')));
   page.$ = (id) => d.getElementById(id);
   page.seen = (id) => !page.$(id).hidden && !page.$(id).closest('[hidden]');
   page.set = (id, value) => { const node = page.$(id); node.value = value; node.dispatchEvent(new w.Event(node.tagName === 'SELECT' ? 'change' : 'input', { bubbles: true })); };
@@ -387,21 +439,52 @@ function openMaker(options = {}) {
     throw new Error('Timed out waiting for ' + what);
   };
   page.built = () => page.files[page.files.length - 1].body;
+  // While the trial build runs the page still shows its loading line, and has asked the site for nothing.
+  if (options.early) options.early(page);
+  await page.until(() => !page.seen('loading'), 'the page to open');
   return page;
 }
 const ready = (page) => page.until(() => page.seen('summary') || page.seen('build-problem'), 'the file or a problem');
 
 describe('the maker, run with the real builder', () => {
-  it('step 1 shows the app\'s strands and activity names, and only what the builder can make', () => {
-    const page = openMaker();
+  it('step 1 shows the app\'s strands and activity names, and only what the builder can make', async () => {
+    let early = null;
+    const page = await openMaker({ early: (opening) => { early = { loading: opening.seen('loading'), step1: opening.seen('step-1') }; } });
+    // Until its trial build is done the page shows the loading line, not a list that could still change.
+    expect(early).toEqual({ loading: true, step1: false });
     expect(page.seen('step-1') && !page.seen('loading') && !page.seen('load-problem')).toBe(true);
+    expect(page.asked).toEqual([]);
     const strands = [...page.d.querySelectorAll('.strand')].map((group) => ({ name: group.querySelector('h3').textContent, ids: [...group.querySelectorAll('input')].map((box) => box.value) }));
     const offered = strands.flatMap((strand) => strand.ids);
-    // Two activities the builder can make are held back by one constant until more of their sounds are recorded.
-    const held = ['word_families', 'sound_sort'];
-    expect(read('packets-make.js')).toContain("var HELD_BACK = ['word_families', 'sound_sort'];");
-    expect(builder.SUPPORTED_ACTIVITIES).toEqual(expect.arrayContaining(held));
+    // No list in the script says what is held back: the page works it out as it opens, from the word list's recording flags.
+    // The rule, applied here to a REAL build (the stand-in sound files have the real keys): of the first 16 words the page
+    // lists when nothing is changed, fewer than half get a question in the activity, and a missing recording is among the reasons.
+    const source = read('packets-make.js');
+    expect(source).not.toMatch(/HELD_BACK\s*=\s*\[/);
+    expect(source).toContain('var TRIAL_WORDS = 16;');
+    const recordedOnly = wordlist.rows().filter((row) => row.hasClip && !row.kokoro && !row.shards).map((row) => row.word);
+    const trialWords = builder.pickWords({ count: 16, shape: 'CVC', exclude: recordedOnly }, { wordlist, core, dictionary, seed: 1 }).words;
+    expect(trialWords).toHaveLength(16);
+    const sound = (url) => JSON.parse(SOUNDS[url]);
+    const wordBank = { ...sound(SOUND_URLS[3]).words };
+    for (const word of trialWords) if (!wordBank[word]) { expect(wordlist.get(word).shards, word).toBe(true); wordBank[word] = tiny('store/' + word); }
+    const real = await builder.buildPacket({ words: trialWords, activities: builder.SUPPORTED_ACTIVITIES, seed: 1, core, dictionary, wordlist, loader,
+      banks: { phonemes: sound(SOUND_URLS[0]), isolation: sound(SOUND_URLS[1]), instructions: sound(SOUND_URLS[2]), kokoroWords: wordBank, gapFill: sound(SOUND_URLS[4]) },
+      toWav: async (uri) => 'data:audio/wav;base64,' + Buffer.from('RIFF0000WAVE' + uri.slice(-40)).toString('base64') });
+    const lostToARecording = (id) => real.exceptions.filter((e) => e.activity === id && /no recording for/.test(e.reason)).length;
+    const held = builder.SUPPORTED_ACTIVITIES.filter((id) => real.manifest.items.byActivity[id] * 2 < trialWords.length && lostToARecording(id) > 0);
     expect([...offered].sort()).toEqual(builder.SUPPORTED_ACTIVITIES.filter((id) => !held.includes(id)).sort());
+    // What the page asked the builder (a trial that knows only which words have a recording) is what the real build gives.
+    const trial = await builder.trialBuild({ words: trialWords, activities: builder.SUPPORTED_ACTIVITIES, seed: 1, core, loader, wordlist,
+      voiced: (word) => { const row = wordlist.get(word); return !!row && (row.kokoro || (row.shards && trialWords.includes(word))); } });
+    expect(trial.words).toBe(16);
+    for (const id of builder.SUPPORTED_ACTIVITIES) expect(trial.byActivity[id], id).toMatchObject({ questions: real.manifest.items.byActivity[id], noRecording: lostToARecording(id) });
+    // Sound Sort is offered: its answer choices come only from words with a recording, so no question is lost to one.
+    expect(offered).toContain('sound_sort');
+    expect(trial.byActivity.sound_sort).toMatchObject({ noRecording: 0 });
+    expect(trial.byActivity.sound_sort.questions).toBeGreaterThanOrEqual(12);
+    // Every held-back activity is one the reason is true of.
+    for (const id of held) expect(trial.byActivity[id].noRecording, id).toBeGreaterThan(0);
     expect(strands.map((strand) => strand.name)).toEqual(core.SKILL_STRANDS.filter((row) => offered.some((id) => core.activityStrand(id) === row.key)).map((row) => row.name));
     for (const strand of strands) for (const id of strand.ids) expect(core.strandLabel(core.activityStrand(id)), id).toBe(strand.name);
     for (const box of page.d.querySelectorAll('.strand input')) {
@@ -416,7 +499,11 @@ describe('the maker, run with the real builder', () => {
     const and = (names) => names.slice(0, -1).join(', ') + ' and ' + names[names.length - 1];
     const cannotBuild = core.activityIds().filter((id) => !builder.SUPPORTED_ACTIVITIES.includes(id)).map((id) => core.ACTIVITY_SKILLS[id].name);
     expect(cannotBuild).toEqual(expect.arrayContaining(['Syllable Claps', 'Read & Match']));
-    expect(page.$('not-offered').textContent).toBe('Not in this version: Word Families and Sound Sort (not enough recorded sounds yet). ' + and(cannotBuild) + ' (they cannot be made from a word list alone yet).');
+    const heldNames = held.map((id) => core.ACTIVITY_SKILLS[id].name);
+    expect(page.$('not-offered').textContent).toBe('Not in this version: ' + (heldNames.length ? (heldNames.length > 1 ? and(heldNames) : heldNames[0]) + ' (not enough recorded sounds yet). ' : '')
+      + and(cannotBuild) + ' (they cannot be made from a word list alone yet).');
+    // Today that is Word Families: most word endings (-ug, -ip) have no recording.
+    expect(page.$('not-offered').textContent).toContain('Not in this version: Word Families (not enough recorded sounds yet). ');
     expect(page.d.querySelector('input[value="letter_tracing"]').closest('label').querySelector('.choice-note').textContent).toBe('Practice only. It is not scored.');
     expect(page.d.querySelectorAll('.choice-note')).toHaveLength(1);
     expect(page.w.document.title).toBe(NAME + ': Make a practice file, step 1 of 3');
@@ -430,10 +517,10 @@ describe('the maker, run with the real builder', () => {
     page.dom.window.close();
   });
 
-  it('the sounds and shapes it offers are real: each example word has the sound or the shape', () => {
-    const page = openMaker();
+  it('the sounds and shapes it offers are real: each example word has the sound or the shape', async () => {
+    const page = await openMaker();
     const sounds = [...page.$('f-sound').querySelectorAll('optgroup option')];
-    const recordedOnly = wordlist.rows().filter((row) => row.hasClip && !row.kokoro).map((row) => row.word);
+    const recordedOnly = wordlist.rows().filter((row) => row.hasClip && !row.kokoro && !row.shards).map((row) => row.word);
     // A sound is offered exactly when the picker has at least one word for it.
     for (const label of dictionary.labels) {
       const pool = builder.pickWords({ targetSound: label, exclude: recordedOnly }, { wordlist, core, dictionary, seed: 1 }).pool;
@@ -478,11 +565,12 @@ describe('the maker, run with the real builder', () => {
   });
 
   it('choose by sound: the words are listed, the file is built, and it holds nothing that could reach the network', async () => {
-    const page = openMaker();
+    const page = await openMaker();
     page.$('next-1').click();
     expect(page.seen('step-2')).toBe(true);
-    expect(page.$('sounds-note').textContent).toBe('The next step gets the sounds: about 11 MB, one time.');
-    const recordedOnly = wordlist.rows().filter((row) => row.hasClip && !row.kokoro).map((row) => row.word);
+    await page.until(() => page.chips().length > 0, 'the default words');
+    expect(page.$('sounds-note').textContent).toBe(soundsNoteFor(page.chips()));
+    const recordedOnly = wordlist.rows().filter((row) => row.hasClip && !row.kokoro && !row.shards).map((row) => row.word);
     expect(recordedOnly.length).toBeLessThan(30);
     const direct = builder.pickWords({ count: 10, targetSound: 'sh', position: 'first', shape: 'CVC', exclude: recordedOnly }, { wordlist, core, dictionary, seed: 1 });
     expect(direct.pool).toBeGreaterThan(10);
@@ -494,7 +582,8 @@ describe('the maker, run with the real builder', () => {
     await page.until(() => page.$('pick-line').textContent === direct.pool + ' words fit.', 'the sh words');
     expect(page.chips()).toEqual(direct.words);
     for (const word of page.chips()) {
-      expect(wordlist.get(word), word).toMatchObject({ blocked: false, nearBlocked: false, kokoro: true, shape: 'CVC' });
+      expect(wordlist.get(word), word).toMatchObject({ blocked: false, nearBlocked: false, soft: false, hasClip: true, shape: 'CVC' });
+      expect(wordlist.get(word).kokoro || wordlist.get(word).shards, word).toBe(true);
       expect(dictionary.lookup(word)[0][0], word).toBe('sh');
     }
     expect(page.$('pick-out').textContent).toBe('Also matched, but not offered: ' + direct.reasons.notFamiliarEnough + ' less common words, ' + direct.reasons.noRecording + ' with no recording yet, '
@@ -545,7 +634,8 @@ describe('the maker, run with the real builder', () => {
     // When a word has a picture the page also asks for the picture files. This page is not given them (see openMaker):
     // it says so under the box, leaves the box unchecked, and makes the plain file.
     const asksForPictures = used.some((word) => PICTURE_INDEX.has(word));
-    const askedOnce = asksForPictures ? SOUND_URLS.concat(PICTURE_URLS) : SOUND_URLS;
+    // A word whose recording is in the word store adds the store's index and the file that holds it (see "the maker and the word store").
+    const askedOnce = [...SOUND_URLS, ...storeRequests(used), ...(asksForPictures ? PICTURE_URLS : [])];
     expect(page.asked).toEqual(askedOnce);
     if (asksForPictures) expect(page.$('pictures-line').textContent).toBe(PICTURES_FAILED);
     expect(page.$('f-pictures').checked).toBe(false);
@@ -601,7 +691,7 @@ describe('the maker, run with the real builder', () => {
   });
 
   it('Include pictures: one box, on when a word has a picture; the file gets the drawings and their credit, or is the plain file', async () => {
-    const page = openMaker({ pictures: true });
+    const page = await openMaker({ pictures: true });
     for (const box of page.d.querySelectorAll('.strand input')) if (box.checked !== (box.value === 'isolation')) box.click();
     page.$('next-1').click();
     page.choose('mode', 'own');
@@ -671,7 +761,7 @@ describe('the maker, run with the real builder', () => {
     page.dom.window.close();
 
     // The picture files do not arrive: the page says so, the box goes off, the plain file is made. Checking the box tries again.
-    const poor = openMaker({ pictures: true });
+    const poor = await openMaker({ pictures: true });
     poor.noPictures = true;
     for (const one of poor.d.querySelectorAll('.strand input')) if (one.checked !== (one.value === 'isolation')) one.click();
     poor.$('next-1').click();
@@ -696,7 +786,7 @@ describe('the maker, run with the real builder', () => {
   });
 
   it('typed words: a blocked word is refused with its reason, a word with no recording says so, and neither is in the file', async () => {
-    const page = openMaker();
+    const page = await openMaker();
     page.$('next-1').click();
     page.choose('mode', 'own');
     expect(page.seen('panel-own') && !page.seen('panel-pick')).toBe(true);
@@ -738,7 +828,7 @@ describe('the maker, run with the real builder', () => {
   });
 
   it('an activity that cannot use a word says so in "Left out", in plain words', async () => {
-    const page = openMaker();
+    const page = await openMaker();
     for (const box of page.d.querySelectorAll('.strand input')) if (box.checked !== ['rhyming', 'isolation'].includes(box.value)) box.click();
     page.$('next-1').click();
     page.choose('mode', 'own');
@@ -765,7 +855,7 @@ describe('the maker, run with the real builder', () => {
   });
 
   it('never stops at an error: with no connection it says so and Try again works', async () => {
-    const page = openMaker({ offline: true });
+    const page = await openMaker({ offline: true });
     page.$('next-1').click();
     await page.until(() => page.chips().length > 0, 'the default words');
     page.$('next-2').click();
@@ -780,7 +870,7 @@ describe('the maker, run with the real builder', () => {
     page.dom.window.close();
 
     // A browser that cannot convert the recordings: a plain message, not a silent file.
-    const old = openMaker({ before: (w) => { delete w.OfflineAudioContext; } });
+    const old = await openMaker({ before: (w) => { delete w.OfflineAudioContext; } });
     old.$('next-1').click();
     await old.until(() => old.chips().length > 0, 'the default words');
     old.$('next-2').click();
@@ -800,7 +890,7 @@ describe('the maker, run with the real builder', () => {
   });
 
   it('keeps the last choices in this browser only, says what it keeps, and forgets them when asked', async () => {
-    const page = openMaker();
+    const page = await openMaker();
     page.$('next-1').click();
     page.set('f-sound', 'ch');
     page.choose('version', 'C');
@@ -821,6 +911,365 @@ describe('the maker, run with the real builder', () => {
     expect(page.$('f-sound').value).toBe('');
     expect(page.d.querySelector('input[name="version"]:checked').value).toBe('A');
     expect(page.asked).toEqual([]);
+    page.dom.window.close();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// The maker and the word store (word_audio_shards/): a pretend store, made with the generator's own store code,
+// and a word list built against it, so nothing here depends on how far the real store has got.
+// ---------------------------------------------------------------------------
+describe('the maker and the word store', () => {
+  const generator = require('../dev-tools/build_word_sounds_word_audio.cjs');
+  const repackTool = require('../dev-tools/repack_word_sounds_word_audio.cjs');
+  const wordlistTool = require('../dev-tools/build_word_sounds_wordlist.cjs');
+  const scratch = mkdtempSync(join(tmpdir(), 'packets-word-store-'));
+  afterAll(() => { rmSync(scratch, { recursive: true, force: true }); });
+  const INDEX = 'word_audio_shards/index.json';
+  const FAILED = 'The sounds for some of your words could not be downloaded. Check the connection, then try again. Your choices are still here.';
+  // Words the picker would offer if they had a recording, and that neither bank file holds: every twelfth, so several letters.
+  const candidates = builder.pickWords({ shape: 'CVC', count: 1e9, requireClip: false }, { wordlist, core, dictionary, seed: 1 }).words
+    .filter((word) => !wordlist.get(word).kokoro && !wordlist.get(word).recorded).sort();
+  const STORE_WORDS = candidates.filter((word, i) => i % 12 === 0);
+  const storeClip = (word) => generator.URI_PREFIX + Buffer.concat([Buffer.alloc(600, word.charCodeAt(0)), Buffer.from('store clip ' + word.padEnd(12, '.'))]).toString('base64');
+  const dir = join(scratch, 'word_audio_shards');
+  const made = generator.openStore(dir, { freeBytes: () => 50 * 1024 ** 3 });
+  for (const word of STORE_WORDS) made.add(word, storeClip(word));
+  made.flush();
+  const serve = () => Object.fromEntries(readdirSync(dir).filter((name) => name.endsWith('.json')).map((name) => ['word_audio_shards/' + name, read(join(dir, name))]));
+  const sourceFor = () => wordlistTool.render(wordlistTool.build({ shardIndex: join(dir, 'index.json') }));
+  const load = (source) => { const module = { exports: {} }; new Function('window', 'module', source)({}, module); return module.exports; };
+  // One file per first letter, as the generator leaves it; then regrouped into files of at most 4 words.
+  const LETTERS = { store: serve(), source: sourceFor() };
+  repackTool.repack(dir, { max: 4, retries: 0, sleep: () => {} });
+  const SMALL = { store: serve(), source: sourceFor() };
+  const index = JSON.parse(SMALL.store[INDEX]);
+  const flagged = load(SMALL.source);
+  const fileOf = (word, store = SMALL.store) => { const at = JSON.parse(store[INDEX]); return 'word_audio_shards/' + at.shards[at.words[word]].file; };
+  // Two words that share a file, one in another file, and one in a third.
+  const shared = Object.keys(index.shards).find((key) => index.shards[key].words >= 2);
+  const [W1, W2] = STORE_WORDS.filter((word) => index.words[word] === shared);
+  const [W3, W4] = [...new Set(STORE_WORDS.filter((word) => index.words[word] !== shared).map((word) => index.words[word]))].slice(0, 2).map((key) => STORE_WORDS.find((word) => index.words[word] === key));
+  const open = (kind, options = {}) => openMaker({ sources: { 'word_sounds_wordlist_en.js': kind.source }, store: { ...kind.store }, ...options });
+  const typeWords = async (page, words) => {
+    page.choose('mode', 'own');
+    page.set('f-own', words.join(' '));
+    await page.until(() => page.$('own-list').children.length === words.length && page.$('own-line').textContent.includes(' of ' + words.length + ' word'), 'the checked words');
+  };
+  const onlyIsolation = (page) => { for (const box of page.d.querySelectorAll('.strand input')) if (box.checked !== (box.value === 'isolation')) box.click(); };
+  const upTo = (bytes) => (bytes >= 10e6 ? String(Math.ceil(bytes / 1e6)) : (Math.ceil(bytes / 1e5) / 10).toFixed(1));
+
+  it('the pretend store is a real one, and the word list built against it flags its words and carries the size of its largest file', () => {
+    expect(STORE_WORDS.length).toBeGreaterThan(30);
+    expect(new Set(STORE_WORDS.map((word) => word[0])).size).toBeGreaterThan(8);
+    expect(repackTool.checkStore(dir)).toMatchObject({ ok: true, facts: { words: STORE_WORDS.length, layout: 'small files (4 words at most)' } });
+    expect(Object.keys(LETTERS.store).every((address) => /^word_audio_shards\/(?:index|[a-z])\.json$/.test(address))).toBe(true);
+    expect(Object.keys(SMALL.store).every((address) => /^word_audio_shards\/(?:index|[a-z]-\d\d)\.json$/.test(address))).toBe(true);
+    expect(flagged.rows().filter((row) => row.shards).map((row) => row.word).sort()).toEqual(STORE_WORDS);
+    for (const word of STORE_WORDS) expect(flagged.get(word), word).toMatchObject({ shards: true, kokoro: false, recorded: false, hasClip: true });
+    const sizes = Object.values(index.shards).map((shard) => shard.bytes);
+    expect(flagged.meta.wordAudio).toEqual({ files: sizes.length, bytes: sizes.reduce((a, b) => a + b, 0), largestFileBytes: Math.max(...sizes), mostWordsInAFile: 4 });
+    expect([W1, W2, W3, W4].every(Boolean) && new Set([fileOf(W1), fileOf(W2), fileOf(W3), fileOf(W4)]).size === 3).toBe(true);
+    // The word list in the repo says so only when it flags words of the store: then the page uses the store, and what
+    // the pages say about its files ("about 40 words each") has to be true of it. Regroup the store first, then make the word list.
+    const real = wordlist.meta.wordAudio;
+    expect(!!real).toBe(wordlist.rows().some((row) => row.shards));
+    if (real) expect(real.mostWordsInAFile, 'run node dev-tools/repack_word_sounds_word_audio.cjs, then node dev-tools/build_word_sounds_wordlist.cjs').toBeLessThanOrEqual(repackTool.DEFAULT_MAX);
+    expect(repackTool.DEFAULT_MAX).toBe(40);
+  });
+
+  it('a word of the store is accepted and built like any other: the page gets the index once, then only the files that hold its words', async () => {
+    const page = await open(SMALL);
+    expect(page.d.querySelector('[data-show-files]').textContent).toContain(' When a word needs it: word_audio_shards/index.json and the small sound files it names.');
+    for (const box of page.d.querySelectorAll('.strand input')) if (box.checked !== ['isolation', 'blending'].includes(box.value)) box.click();
+    page.$('next-1').click();
+    // Before anything is fetched the page says how much the sounds can be: the fixed files, and at most one store file for each word that needs one.
+    await page.until(() => page.chips().length > 0, 'the default words');
+    await typeWords(page, ['cat', W1, W2, W3]);
+    const rows = Object.fromEntries([...page.$('own-list').children].map((row) => [row.querySelector('.w').textContent, row.className + ': ' + row.querySelector('.s').textContent]));
+    for (const word of [W1, W2, W3]) expect(rows[word], word).toMatch(/^is-ok: Ready\. 3 sounds: /);
+    expect(page.$('own-line').textContent).toBe('4 of 4 words can be used.');
+    expect(page.$('sounds-note').textContent).toBe('The next step gets the sounds: about 11 MB one time, plus up to about ' + upTo(3 * flagged.meta.wordAudio.largestFileBytes) + ' MB for these words.');
+    expect(page.asked).toEqual([]);
+    page.$('next-2').click();
+    await ready(page);
+    expect(page.seen('summary') && !page.seen('build-problem')).toBe(true);
+    // The five sound files, the index, then one request for each file that holds one of the words: two files for three words.
+    const asksForPictures = ['cat', W1, W2, W3].some((word) => PICTURE_INDEX.has(word));
+    const wanted = [INDEX, fileOf(W1), fileOf(W3)];
+    expect(fileOf(W2)).toBe(fileOf(W1));
+    expect(page.asked).toEqual([...SOUND_URLS, ...wanted, ...(asksForPictures ? PICTURE_URLS : [])]);
+    expect(Object.keys(SMALL.store).length - wanted.length).toBeGreaterThan(8);
+    for (const address of page.asked) expect(address).toMatch(/^[\w./-]+\.json$/);
+    // What the builder was handed for those words is the store's own clip, in the shape of the word bank.
+    const html = page.built();
+    expect(audit(html)).toEqual([]);
+    const lesson = lessonOf(html);
+    expect(lesson.blocks.map((block) => block.activity)).toEqual(['isolation', 'blending']);
+    for (const block of lesson.blocks) expect(block.items.map((item) => item.word), block.activity).toEqual(['cat', W1, W2, W3]);
+    expect(Object.values(lesson.audio).every((uri) => /^data:audio\/wav;base64,/.test(uri))).toBe(true);
+    expect(page.$('sum-out').textContent).toBe('Nothing. Every word is in every activity you chose.');
+    const direct = await builder.buildPacket({ words: ['cat', W1, W2, W3], activities: ['isolation', 'blending'], seed: 1, title: 'Word Sounds: my words, version A', core, dictionary, wordlist: flagged, loader,
+      banks: { phonemes: JSON.parse(SOUNDS[SOUND_URLS[0]]), isolation: JSON.parse(SOUNDS[SOUND_URLS[1]]), instructions: JSON.parse(SOUNDS[SOUND_URLS[2]]), gapFill: JSON.parse(SOUNDS[SOUND_URLS[4]]),
+        kokoroWords: { ...JSON.parse(SOUNDS[SOUND_URLS[3]]).words, [W1]: storeClip(W1), [W2]: storeClip(W2), [W3]: storeClip(W3) } },
+      toWav: async (uri) => 'data:audio/wav;base64,' + Buffer.from('RIFF0000WAVE' + uri.slice(-40)).toString('base64') });
+    expect(direct.manifest.audio.list.filter((clip) => [W1, W2, W3].includes(clip.key)).map((clip) => [clip.key, clip.source])).toEqual(expect.arrayContaining([[W1, 'Kokoro bank'], [W2, 'Kokoro bank'], [W3, 'Kokoro bank']]));
+    expect(lesson.blocks.map((block) => block.items.map((item) => item.word))).toEqual(direct.lesson.blocks.map((block) => block.items.map((item) => item.word)));
+    // The builder invents no answer choice it would have to fetch: every choice is a word of the bank or one of the four.
+    const choices = new Set(lesson.blocks.find((block) => block.activity === 'blending').items.flatMap((item) => (item.choices || item.options || []).map((choice) => String(choice.text || choice.word || choice).toLowerCase())));
+    expect(choices.size).toBeGreaterThan(4);
+    for (const choice of choices) expect(flagged.get(choice).kokoro || ['cat', W1, W2, W3].includes(choice), choice).toBe(true);
+
+    // Another length: nothing is fetched again. Back at step 2 the note counts only what is still to get.
+    page.choose('length', 'short');
+    await page.until(() => !page.seen('summary'), 'the old file to go');
+    await ready(page);
+    expect(page.asked).toHaveLength(SOUND_URLS.length + wanted.length + (asksForPictures ? PICTURE_URLS.length : 0));
+    page.$('back-3').click();
+    expect(page.$('sounds-note').textContent).toBe('The sounds are already on this device.');
+    await typeWords(page, [W1, W4]);
+    expect(page.$('sounds-note').textContent).toBe('Most of the sounds are already on this device. These words need up to about ' + upTo(flagged.meta.wordAudio.largestFileBytes) + ' MB more.');
+    const before = page.asked.length;
+    page.$('next-2').click();
+    await ready(page);
+    expect(page.seen('summary')).toBe(true);
+    // One more file. The index is not asked for a second time.
+    expect(page.asked.slice(before).filter((address) => !PICTURE_URLS.includes(address))).toEqual([fileOf(W4)]);
+    expect(page.asked.filter((address) => address === INDEX)).toHaveLength(1);
+    for (const block of lessonOf(page.built()).blocks) expect(block.items.map((item) => item.word), block.activity).toEqual([W1, W4]);
+    // "Remove the saved sounds" forgets the store's files too: the next file gets them again.
+    page.$('forget-sounds').click();
+    await page.until(() => page.$('forget-said').textContent.startsWith('Done.'), 'the sounds to be forgotten');
+    const forgotten = page.asked.length;
+    page.$('retry').click();
+    await page.until(() => !page.seen('summary'), 'the old file to go');
+    await ready(page);
+    expect(page.asked.slice(forgotten).filter((address) => !PICTURE_URLS.includes(address))).toEqual([...SOUND_URLS, INDEX, fileOf(W1), fileOf(W4)]);
+    page.dom.window.close();
+  });
+
+  it('the picker offers the store\'s words, counts them as recorded, and a file made from its list holds them', async () => {
+    const recordedOnly = flagged.rows().filter((row) => row.hasClip && !row.kokoro && !row.shards).map((row) => row.word);
+    expect(recordedOnly).toEqual(wordlist.rows().filter((row) => row.recorded && !row.kokoro).map((row) => row.word));
+    // A sound and a place in the word for which the list on the page holds a word of the store.
+    const pickFor = (word, list) => builder.pickWords({ count: 10, targetSound: dictionary.lookup(word)[0][0], position: 'first', shape: 'CVC', exclude: recordedOnly }, { wordlist: list, core, dictionary, seed: 1 });
+    const chosen = STORE_WORDS.find((word) => pickFor(word, flagged).words.some((listed) => STORE_WORDS.includes(listed)));
+    expect(chosen, 'a store word whose first sound lists a store word').toBeTruthy();
+    const direct = pickFor(chosen, flagged), plain = pickFor(chosen, load(wordlistTool.render(wordlistTool.build({ shardIndex: join(scratch, 'no-such-index.json') }))));
+    const inStore = direct.words.filter((word) => STORE_WORDS.includes(word));
+    expect(direct.pool).toBeGreaterThan(plain.pool);
+    expect(plain.reasons.noRecording - direct.reasons.noRecording).toBe(direct.pool - plain.pool);
+    const page = await open(SMALL);
+    onlyIsolation(page);
+    page.$('next-1').click();
+    page.set('f-sound', dictionary.lookup(chosen)[0][0]);
+    page.set('f-position', 'first');
+    await page.until(() => page.$('pick-line').textContent === (direct.pool < 30 ? 'Only ' + direct.pool + ' words fit.' : direct.pool + ' words fit.'), 'the words for the sound');
+    // One activity: a Long file uses up to 30 words, so the list is longer than ten.
+    const listed = builder.pickWords({ count: 30, targetSound: dictionary.lookup(chosen)[0][0], position: 'first', shape: 'CVC', exclude: recordedOnly }, { wordlist: flagged, core, dictionary, seed: 1 }).words;
+    expect(page.chips()).toEqual(listed);
+    expect(listed.slice(0, 10)).toEqual(direct.words);
+    const needed = listed.filter((word) => STORE_WORDS.includes(word));
+    expect(needed.length).toBeGreaterThanOrEqual(inStore.length);
+    expect(page.$('sounds-note').textContent).toBe('The next step gets the sounds: about 11 MB one time, plus up to about ' + upTo(Math.min(needed.length * flagged.meta.wordAudio.largestFileBytes, flagged.meta.wordAudio.bytes)) + ' MB for these words.');
+    page.$('next-2').click();
+    page.choose('length', 'long');
+    await page.until(() => !page.seen('summary'), 'the file of another length to start');
+    await ready(page);
+    expect(page.seen('summary')).toBe(true);
+    const files = [...new Set(needed.map((word) => fileOf(word)))];
+    expect(page.asked.filter((address) => address.startsWith('word_audio_shards/'))).toEqual([INDEX, ...files]);
+    expect(lessonOf(page.built()).blocks[0].items.map((item) => item.word)).toEqual(listed);
+    page.dom.window.close();
+  });
+
+  it('follows the index, whatever the files are called: the store as the generator leaves it works the same', async () => {
+    const page = await open(LETTERS);
+    onlyIsolation(page);
+    page.$('next-1').click();
+    await typeWords(page, ['cat', W1, W2, W3]);
+    page.$('next-2').click();
+    await ready(page);
+    expect(page.seen('summary')).toBe(true);
+    const files = [...new Set([W1, W2, W3].map((word) => 'word_audio_shards/' + word[0] + '.json'))];
+    expect([W1, W2, W3].map((word) => fileOf(word, LETTERS.store))).toEqual([W1, W2, W3].map((word) => 'word_audio_shards/' + word[0] + '.json'));
+    expect(page.asked.filter((address) => address.startsWith('word_audio_shards/'))).toEqual([INDEX, ...files]);
+    expect(lessonOf(page.built()).blocks[0].items.map((item) => item.word)).toEqual(['cat', W1, W2, W3]);
+    // A store under names nobody planned for: the page asks for exactly what the index says.
+    const renamed = { ...SMALL.store };
+    const odd = JSON.parse(renamed[INDEX]);
+    const key = odd.words[W3], old = odd.shards[key].file;
+    odd.shards[key] = { ...odd.shards[key], file: 'part_7-x.json' };
+    renamed['word_audio_shards/part_7-x.json'] = renamed['word_audio_shards/' + old];
+    delete renamed['word_audio_shards/' + old];
+    renamed[INDEX] = JSON.stringify(odd);
+    const other = await open({ source: SMALL.source, store: renamed });
+    onlyIsolation(other);
+    other.$('next-1').click();
+    await typeWords(other, [W3]);
+    other.$('next-2').click();
+    await ready(other);
+    expect(other.asked.filter((address) => address.startsWith('word_audio_shards/'))).toEqual([INDEX, 'word_audio_shards/part_7-x.json']);
+    expect(lessonOf(other.built()).blocks[0].items.map((item) => item.word)).toEqual([W3]);
+    page.dom.window.close();
+    other.dom.window.close();
+  });
+
+  it('a file of the store that does not arrive stops the build with a plain message, and Try again works; no file is made without the sound', async () => {
+    for (const [name, breakIt, mendIt] of [
+      ['a sound file that is not there', (page) => page.gone.add(fileOf(W3)), (page) => page.gone.delete(fileOf(W3))],
+      ['no index', (page) => page.gone.add(INDEX), (page) => page.gone.delete(INDEX)],
+      ['an index of another kind', (page) => { page.store[INDEX] = JSON.stringify({ words: { [W1]: 'x' } }); }, (page) => { page.store[INDEX] = SMALL.store[INDEX]; }],
+      ['a sound file cut short', (page) => { page.store[fileOf(W1)] = SMALL.store[fileOf(W1)].slice(0, 300); }, (page) => { page.store[fileOf(W1)] = SMALL.store[fileOf(W1)]; }],
+    ]) {
+      const page = await open(SMALL);
+      onlyIsolation(page);
+      page.$('next-1').click();
+      await typeWords(page, ['cat', W1, W3]);
+      breakIt(page);
+      page.$('next-2').click();
+      await ready(page);
+      expect(page.seen('build-problem') && !page.seen('summary') && !page.seen('save') && !page.seen('try'), name).toBe(true);
+      expect(page.$('build-problem-text').textContent, name).toBe(FAILED);
+      expect(page.seen('retry'), name).toBe(true);
+      expect(page.files, name).toEqual([]);
+      mendIt(page);
+      page.$('retry').click();
+      await page.until(() => page.seen('summary'), 'the file after trying again (' + name + ')');
+      expect(lessonOf(page.built()).blocks[0].items.map((item) => item.word), name).toEqual(['cat', W1, W3]);
+      page.dom.window.close();
+    }
+  });
+
+  it('a word the store turns out not to hold is left out and listed, never silent; a file name that is not a plain name is never asked for', async () => {
+    // The word list says W1 is in the store; this store's index does not list it, and sends W3 to a name outside the folder.
+    const store = { ...SMALL.store };
+    const short = JSON.parse(store[INDEX]);
+    delete short.words[W1];
+    short.shards[short.words[W3]] = { ...short.shards[short.words[W3]], file: '../' + short.shards[short.words[W3]].file };
+    store[INDEX] = JSON.stringify(short);
+    const page = await open({ source: SMALL.source, store });
+    onlyIsolation(page);
+    page.$('next-1').click();
+    await typeWords(page, ['cat', W1, W2, W3]);
+    page.$('next-2').click();
+    await ready(page);
+    expect(page.seen('summary')).toBe(true);
+    expect(page.asked.filter((address) => address.startsWith('word_audio_shards/'))).toEqual([INDEX, fileOf(W2)]);
+    for (const address of page.asked) expect(address).not.toContain('..');
+    const lesson = lessonOf(page.built());
+    expect(lesson.blocks[0].items.map((item) => item.word)).toEqual(['cat', W2]);
+    const lines = [...page.$('sum-out').querySelectorAll('li')].map((line) => line.textContent);
+    expect(lines).toEqual(['Find Sounds: ' + W1 + ', ' + W3 + ' (no recording yet).', 'Not in the file at all: ' + W1 + ', ' + W3 + '.']);
+    expect(page.$('sum-activities').textContent).toContain('Find Sounds: 2 questions.');
+    page.dom.window.close();
+
+    // A word list that flags store words but does not say how the store is cut: the note gives no number it cannot stand behind.
+    const bare = await open({ source: SMALL.source.replace(/,"wordAudio":\{[^}]*\}/, ''), store: SMALL.store });
+    expect(SMALL.source).toMatch(/,"wordAudio":\{[^}]*\}/);
+    bare.$('next-1').click();
+    await typeWords(bare, ['cat', W1]);
+    expect(bare.$('sounds-note').textContent).toBe('The next step gets the sounds: about 11 MB one time, plus the sounds for these words.');
+    bare.dom.window.close();
+  });
+});
+
+// ---------------------------------------------------------------------------
+// Words the picker leaves to the teacher, and the line for kindergarten
+// ---------------------------------------------------------------------------
+describe('the maker: borderline words and the kindergarten line', () => {
+  const TYPED_ONLY = 'Not offered by the picker. Used because you typed it.';
+  const K_LINE = "Common Core places sh, ch and th in grade 1. Choose 'Any stage' to use them earlier.";
+
+  it('a borderline word is never in the picker\'s list and is counted there; typed by the teacher it is used, and the page says why', async () => {
+    const soft = wordlist.rows().filter((row) => row.soft).map((row) => row.word);
+    expect(soft).toEqual(expect.arrayContaining(['jail', 'bet', 'pot', 'kiss', 'ghost', 'fight']));
+    expect(wordlist.get('jail')).toMatchObject({ soft: true, blocked: false, kokoro: true });
+    expect(read('packets-make.js')).toContain("var TYPED_ONLY_SAID = '" + TYPED_ONLY + "';");
+    const page = await openMaker();
+    page.$('next-1').click();
+    // The list as the page first shows it: three-sound words, any stage.
+    const recordedOnly = wordlist.rows().filter((row) => row.hasClip && !row.kokoro && !row.shards).map((row) => row.word);
+    const direct = builder.pickWords({ count: 10, shape: 'CVC', exclude: recordedOnly }, { wordlist, core, dictionary, seed: 1 });
+    await page.until(() => page.$('pick-line').textContent === direct.pool + ' words fit.', 'the first list');
+    expect(page.chips()).toEqual(direct.words);
+    const typedOnly = direct.reasons.usedOnlyWhenTyped;
+    expect(typedOnly).toBeGreaterThan(5);
+    expect(typedOnly).toBe(wordlist.rows().filter((row) => row.soft && row.shape === 'CVC' && !row.nearBlocked).length);
+    const parts = [];
+    if (direct.reasons.notFamiliarEnough) parts.push(direct.reasons.notFamiliarEnough + ' less common words');
+    // The words whose only recording is in the bank this page does not load are counted with those that have none.
+    parts.push((direct.reasons.noRecording + direct.reasons.excluded) + ' with no recording yet');
+    if (direct.reasons.britishSpellingOrWord) parts.push(direct.reasons.britishSpellingOrWord + (direct.reasons.britishSpellingOrWord === 1 ? ' British spelling or word' : ' British spellings or words'));
+    parts.push(typedOnly + ' words used only when you type them');
+    parts.push((direct.reasons.blocked + direct.reasons.soundsLikeABlockedWord) + ' on the list of words this tool does not use');
+    expect(page.$('pick-out').textContent).toBe('Also matched, but not offered: ' + parts.join(', ') + '.');
+    // Every word the picker can list, in any version: none is a borderline word, though many of them have a recording.
+    for (const seed of [1, 2, 3]) expect(builder.pickWords({ count: 1e9, shape: 'CVC', exclude: recordedOnly }, { wordlist, core, dictionary, seed }).words.filter((word) => soft.includes(word))).toEqual([]);
+    expect(soft.filter((word) => wordlist.get(word).kokoro && wordlist.get(word).shape === 'CVC').length).toBeGreaterThan(5);
+    // Typed: used, with the one sentence. A blocked word is still refused.
+    page.choose('mode', 'own');
+    page.set('f-own', 'cat jail gun bet');
+    await page.until(() => page.$('own-list').children.length === 4, 'the checked words');
+    const rows = Object.fromEntries([...page.$('own-list').children].map((row) => [row.querySelector('.w').textContent, { text: row.querySelector('.s').textContent, ok: row.className === 'is-ok' }]));
+    expect(rows.jail).toEqual({ ok: true, text: TYPED_ONLY });
+    expect(rows.bet).toEqual({ ok: true, text: TYPED_ONLY });
+    expect(rows.cat).toEqual({ ok: true, text: 'Ready. 3 sounds: k, a, t.' });
+    expect(rows.gun).toEqual({ ok: false, text: 'Left out. It is on the list of words this tool does not use. That list is a first pass and can be too cautious.' });
+    expect(page.$('own-line').textContent).toBe('3 of 4 words can be used.');
+    page.$('next-2').click();
+    await ready(page);
+    expect(page.seen('summary')).toBe(true);
+    const lesson = lessonOf(page.built());
+    for (const block of lesson.blocks) expect(block.items.map((item) => item.word), block.activity).toEqual(['cat', 'jail', 'bet']);
+    expect(page.$('sum-words').textContent).toBe('3 words: cat, jail, bet.');
+    expect(JSON.stringify(lesson.blocks)).not.toContain('"gun"');
+    // No answer choice in the file is a borderline word the teacher did not type.
+    const choices = lesson.blocks.flatMap((block) => block.items.flatMap((item) => (item.choices || item.chips || []).map((choice) => String(choice.text).toLowerCase())));
+    expect(choices.length).toBeGreaterThan(10);
+    expect(choices.filter((choice) => soft.includes(choice) && !['jail', 'bet'].includes(choice))).toEqual([]);
+    page.dom.window.close();
+  });
+
+  it('with a kindergarten stage chosen, and with no other, one line says where sh, ch and th are placed', async () => {
+    const doc = parse('packets-make.html');
+    const note = doc.getElementById('stage-k-note');
+    expect(note.textContent).toBe(K_LINE);
+    expect(note.hidden && note.className === 'hint' && note.tagName === 'SPAN').toBe(true);
+    // Near the stage choice: right under the stage's own line, in the same field. The option it names is the page's own.
+    expect(note.previousElementSibling.id).toBe('stage-hint');
+    expect(note.closest('.field').querySelector('select').id).toBe('f-stage');
+    expect(doc.querySelector('#f-stage option[value=""]').textContent).toBe('Any stage');
+    expect(read('packets-make.js')).toContain("label: 'Any stage'");
+    expect(read('packets-make.html').split(K_LINE)).toHaveLength(2);
+    // The two kindergarten rows of the default (US, Common Core) table.
+    const stages = builder.stageList();
+    const kinder = stages.filter((row) => row.isDefault && /^K /.test(row.id)).map((row) => row.id);
+    expect(kinder).toEqual(['K early', 'K late']);
+    expect(read('packets-make.js')).toContain("var K_STAGES = ['K early', 'K late'];");
+    expect(stages.find((row) => row.id === 'K early').frameworkLabel).toMatch(/Common Core/);
+    const page = await openMaker();
+    page.$('next-1').click();
+    expect(page.seen('stage-k-note')).toBe(false);
+    expect(page.$('f-stage').getAttribute('aria-describedby')).toBe('stage-hint');
+    for (const row of stages) {
+      page.set('f-stage', row.id);
+      expect(page.seen('stage-k-note'), row.id).toBe(kinder.includes(row.id));
+      expect(page.$('f-stage').getAttribute('aria-describedby'), row.id).toBe(kinder.includes(row.id) ? 'stage-hint stage-k-note' : 'stage-hint');
+      expect(page.$('stage-k-note').textContent, row.id).toBe(K_LINE);
+    }
+    page.set('f-stage', 'K late');
+    expect(page.seen('stage-k-note')).toBe(true);
+    page.set('f-stage', '');
+    expect(page.seen('stage-k-note')).toBe(false);
+    expect(page.$('f-stage').getAttribute('aria-describedby')).toBe('stage-hint');
+    // What the line says is true of the picker: no kindergarten word is spelled with sh, ch or th; grade 1 has them; "Any stage" has them.
+    const digraph = (stage) => builder.pickWords({ ...(stage ? { stage } : {}), count: 1e9, requireClip: false }, { wordlist, core, dictionary, seed: 1 }).words.filter((word) => /sh|ch|th/.test(word));
+    for (const id of kinder) expect(digraph(id), id).toEqual([]);
+    expect(digraph('G1 early')).toEqual(expect.arrayContaining(['ship', 'chin', 'thin']));
+    expect(digraph('')).toEqual(expect.arrayContaining(['ship', 'chin', 'thin']));
+    // Kept with the other choices, the stage comes back with its line on the next visit.
+    page.set('f-stage', 'K early');
     page.dom.window.close();
   });
 });

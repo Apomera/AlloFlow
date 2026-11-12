@@ -43,8 +43,8 @@
       <li>Nothing is generated when you make a file or when a student uses it. The spoken sounds were recorded ahead of time with computer voices, including an AI voice.</li>
       <li>The practice file is put together in this browser tab. The page looks your words up in a word list and a sound dictionary that it has already loaded. Your words and your choices are not sent anywhere.</li>
       <li>There are no cookies and nothing to sign in to.</li>
-      <li>The page loads files from this site only. At step 3 it gets the sound files, also from this site. They are the same files whatever you choose.</li>
-      <li>Like any website, the server that sends these files can see that your browser asked for them. It receives nothing else.</li>
+      <li>The page loads files from this site only. At step 3 it gets the sound files, also from this site. Most are the same files whatever you choose. Some words have their sounds in small files of about 40 words each, and the page gets only the ones your words need.</li>
+      <li>Like any website, the server that sends these files can see that your browser asked for them. That includes which of the small sound files were asked for, but not which words. It receives nothing else.</li>
       <li>On this device the page keeps your last choices and the sound files. The buttons that remove them are under About this page, at the bottom.</li>
     </ul>
     <p>Every file this page loads: <span data-show-files>they are listed in the page's source, and all of them are on this site.</span></p>
@@ -127,6 +127,7 @@
             <label for="f-stage">Stage</label>
             <select id="f-stage" aria-describedby="stage-hint"><option value="">Any stage</option></select>
             <span class="hint" id="stage-hint">A stage keeps to the letter patterns taught by then.</span>
+            <span class="hint" id="stage-k-note" hidden>Common Core places sh, ch and th in grade 1. Choose 'Any stage' to use them earlier.</span>
             <details class="why" id="stage-why" hidden>
               <summary>Why<span class="sr-only"> this stage has these words</span></summary>
               <p id="stage-why-text"></p>
