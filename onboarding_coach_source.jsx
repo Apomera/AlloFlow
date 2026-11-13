@@ -735,7 +735,7 @@ function OnboardingCoach(props) {
                     </p>
                     <p style={{ margin: '3px 0 0', fontSize: '11px', color: '#92400e' }}>
                       {t('onboarding.tour_offer_desc') ||
-                        'I’ll walk you through the workspace before you pick a mode.'}
+                        'I’ll walk you through the workspace before you choose.'}
                     </p>
                   </div>
                   <button
@@ -1103,7 +1103,7 @@ function OnboardingCoach(props) {
                 textAlign: 'center', fontStyle: 'italic',
               }}>
                 {t('onboarding.panel_footer') ||
-                  'You can change modes any time. Just close this and click whichever card looks right.'}
+                  'You can change this any time from Start & setup at the top of the page.'}
               </p>
             </div>
           </div>

@@ -21,7 +21,15 @@ const sha256 = (data) => createHash('sha256').update(data).digest('hex');
 const SOURCE = JSON.parse(read('data/vendor/mulberry/source.json'));
 const MAP = JSON.parse(read('data/word_sounds_symbols_map_en.json'));
 const VENDORED = readdirSync('data/vendor/mulberry/symbols').sort();
-const symbols = symbolsTool.loadSymbols();
+const allSymbols = symbolsTool.loadSymbols();
+// The builder tests in this file pin what a file with Mulberry pictures is (2026-11-11), so they are handed the
+// Mulberry part of the index. OpenMoji, the second set (2026-11-12), and files with both sets are tested in
+// tests/word_sounds_packet_pictures_openmoji.test.js.
+const mulberryWord = (word) => allSymbols.has(word) && allSymbols.set(word) === 'mulberry';
+const symbols = Object.freeze({ ...allSymbols, has: mulberryWord, get: (word) => (mulberryWord(word) ? allSymbols.get(word) : null),
+  file: (word) => (mulberryWord(word) ? allSymbols.file(word) : null), words: () => allSymbols.words().filter(mulberryWord) });
+const omPath = (file) => 'data/vendor/openmoji/symbols/' + file.slice(symbolsTool.OM_PREFIX.length);
+const vendoredPath = (file) => (file.indexOf(symbolsTool.OM_PREFIX) === 0 ? omPath(file) : 'data/vendor/mulberry/symbols/' + file);
 const made = symbolsTool.compute({ parts });
 const entry = (word) => MAP.words.find((e) => e.word === word);
 
@@ -95,7 +103,7 @@ describe('the vendored symbols', () => {
     const lines = VENDORED.map((name) => sha256(readFileSync('data/vendor/mulberry/symbols/' + name)) + '  ' + name);
     expect(sha256(lines.join('\n') + '\n')).toBe(SOURCE.symbols.sha256);
     // Only what a word could use is kept: every vendored file is named by the map, and the map names no other.
-    const named = new Set(MAP.words.flatMap((e) => [e.file, ...(e.candidates || [])]).filter(Boolean));
+    const named = new Set(MAP.words.flatMap((e) => [e.file, ...(e.candidates || [])]).filter((file) => file && file.indexOf(symbolsTool.OM_PREFIX) !== 0));
     expect(VENDORED.filter((name) => !named.has(name))).toEqual([]);
     expect([...named].filter((name) => !VENDORED.includes(name))).toEqual([]);
   });
@@ -126,17 +134,22 @@ describe('the vendored symbols', () => {
       expect(!!e.file, e.word).toBe(e.status === 'auto' || e.status === 'reviewed');
       if (!e.file) expect((e.candidates || []).length, e.word).toBeGreaterThan(0);
       for (const file of [e.file, ...(e.candidates || [])].filter(Boolean)) {
+        // An OpenMoji picture (the second set) is tested in tests/word_sounds_packet_pictures_openmoji.test.js.
+        if (file.indexOf(symbolsTool.OM_PREFIX) === 0) { expect(existsSync(omPath(file)), file).toBe(true); continue; }
         const symbol = rows.get(file);
         expect(symbol, file).toBeTruthy();
         expect(existsSync('data/vendor/mulberry/symbols/' + file), file).toBe(true);
-        // Never a rated symbol, a flag, a map or a letter, and never a name of several words.
+        // Never a rated symbol, a flag, a map or a letter, and never a name of several words but by a rule that says so
+        // (joined: arm_chair is armchair; feeling faces, actions with an object and other names only ever wait for a person).
         expect(symbol.rated, file).toBe(false);
         expect(symbolsTool.SKIP_CATEGORIES, file).not.toContain(symbol.category);
-        expect(symbol.single, file).toBe(true);
+        if (!symbol.single) expect(['joined', 'feeling faces', 'action with an object', 'other name'], e.word + ' ' + file).toContain(e.kind);
+        if (!symbol.single && e.kind !== 'joined') expect(e.status, e.word + ' ' + file).not.toMatch(/^(?:auto|reviewed)$/);
         // A "kind of" symbol (hat_-_ladies) is only ever a candidate for a person.
         if (symbol.qualifier) expect(e.status, e.word + ' ' + file).toBe('ambiguous');
       }
-      if (e.status !== 'auto') continue;
+      // The new kinds (verb forms, joined names, spellings, OpenMoji) are tested in tests/word_sounds_packet_pictures_openmoji.test.js.
+      if (e.status !== 'auto' || e.kind) continue;
       const symbol = rows.get(e.file);
       const single = (/^plural of (\w+)/.exec(e.note) || [])[1];
       // The symbol is named the word itself, or the word's singular.
@@ -157,13 +170,20 @@ describe('the vendored symbols', () => {
     expect(entry('run')).toMatchObject({ file: 'run_,_to.svg', status: 'auto' });
     // Symbols of different kinds share the name: nothing is chosen.
     for (const word of ['watch', 'watches', 'cricket', 'tie', 'cut']) expect(entry(word), word).toMatchObject({ file: '', status: 'ambiguous' });
-    expect(entry('watch').candidates).toEqual(['watch.svg', 'watch_,_to.svg']);
-    // No symbol is named just "hat": the kinds of hat wait for a person. "can" has only a can opener: nothing at all.
+    // Since 2026-11-12 OpenMoji's emoji of the same name is one more choice for a person, never used on its own.
+    expect(entry('watch').candidates).toEqual(['watch.svg', 'watch_,_to.svg', 'openmoji/231A.svg']);
+    // No symbol is named just "hat": the kinds of hat wait for a person. "can" has only a can opener, never offered;
+    // the set's "tin" is offered to a person as another name for it.
     expect(entry('hat')).toMatchObject({ file: '', status: 'ambiguous', candidates: ['hat_-_ladies.svg', 'hat_-_mans.svg'] });
-    expect(entry('can')).toBeUndefined();
-    expect(entry('pig')).toBeUndefined();
+    expect(entry('can')).toMatchObject({ file: '', status: 'ambiguous', kind: 'other name', candidates: ['tin.svg'] });
+    // Mulberry has no pig: the picture is OpenMoji's.
+    expect(entry('pig')).toMatchObject({ set: 'openmoji', file: 'openmoji/1F416.svg', status: 'auto', kind: 'openmoji' });
     // The script author's doubts are held, with the reason; a plural follows its singular.
-    for (const word of Object.keys(symbolsTool.HELD)) if (entry(word)) expect(entry(word), word).toMatchObject({ file: '', status: 'ambiguous', note: 'held by the script author: ' + symbolsTool.HELD[word] });
+    // (Since 2026-11-12 the note may go on: "; more choices: ..." names what OpenMoji or another Mulberry name offers.)
+    for (const word of Object.keys(symbolsTool.HELD)) if (entry(word)) {
+      expect(entry(word), word).toMatchObject({ file: '', status: 'ambiguous' });
+      expect(entry(word).note.startsWith('held by the script author: ' + symbolsTool.HELD[word]), word).toBe(true);
+    }
     expect(entry('box').note).toContain('boxing');
     expect(entry('letters')).toMatchObject({ file: '', status: 'ambiguous' });
     for (const word of Object.keys(symbolsTool.REJECTED)) if (entry(word)) expect(entry(word), word).toMatchObject({ file: '', status: 'rejected' });
@@ -214,39 +234,42 @@ describe('the vendored symbols', () => {
 
   it('the page data holds exactly the used words that have a recording, each with its unchanged drawing', () => {
     const used = MAP.words.filter((e) => (e.status === 'auto' || e.status === 'reviewed') && wordlist.get(e.word).hasClip);
-    expect(symbols.words().sort()).toEqual(used.map((e) => e.word).sort());
-    expect(symbols.count).toBe(used.length);
-    expect(symbols.count).toBe(MAP.counts.packetWords);
-    expect(symbols.ready()).toBe(true);
+    expect(allSymbols.words().sort()).toEqual(used.map((e) => e.word).sort());
+    expect(allSymbols.count).toBe(used.length);
+    expect(allSymbols.count).toBe(MAP.counts.packetWords);
+    expect(allSymbols.ready()).toBe(true);
     for (const e of used) {
-      const got = symbols.get(e.word);
+      const got = allSymbols.get(e.word);
       expect(got.file, e.word).toBe(e.file);
-      // The drawing is the vendored file, with nothing changed but space at its ends.
-      expect(got.svg, e.word).toBe(read('data/vendor/mulberry/symbols/' + e.file).trim());
+      // The drawing is the vendored file, with nothing changed but space at its ends (and, in an OpenMoji file, between tags).
+      expect(got.set, e.word).toBe(e.set);
+      expect(got.svg, e.word).toBe(e.set === 'mulberry' ? read(vendoredPath(e.file)).trim() : symbolsTool.minifySvg(read(vendoredPath(e.file))));
       expect(builder.svgRefusal(got.svg), e.file).toBe('');
       expect(typeof got.label === 'string' && got.label.length > 0, e.word).toBe(true);
     }
-    for (const word of ['pig', 'watch', 'box', 'smoke', '']) expect(symbols.get(word), word).toBeNull();
-    expect(symbols.has('CAT ')).toBe(true);
+    for (const word of ['watch', 'box', 'smoke', 'hat', '']) expect(allSymbols.get(word), word).toBeNull();
+    expect(allSymbols.has('CAT ')).toBe(true);
     // The data files: listed with their real size and hash, about 1 MB each, and each says whose the drawings are.
-    expect(symbols.shards.length).toBe(made.shards.length);
+    expect(allSymbols.shards.length).toBe(made.shards.length);
     let total = 0;
-    for (const shard of symbols.shards) {
+    for (const shard of allSymbols.shards) {
       const text = read(shard.url);
       expect(shard.url).toMatch(/^word_sounds_symbols\/en-\d+\.json$/);
       expect(Buffer.byteLength(text), shard.url).toBe(shard.bytes);
       expect(sha256(text), shard.url).toBe(shard.sha256);
       expect(shard.bytes, shard.url).toBeLessThan(1200000);
       const data = JSON.parse(text);
-      expect(data.about, shard.url).toContain('Mulberry Symbols 3.6.1');
+      // One set to a data file (2026-11-12): each names its own.
+      expect(data.set, shard.url).toBe(shard.set);
+      expect(data.about, shard.url).toContain(shard.set === 'openmoji' ? 'OpenMoji 17.0.0' : 'Mulberry Symbols 3.6.1');
       expect(data.about, shard.url).toContain('Creative Commons Attribution-ShareAlike 4.0 International License (https://creativecommons.org/licenses/by-sa/4.0/)');
       expect(Object.keys(data.symbols).length, shard.url).toBe(shard.symbols);
       total += shard.bytes;
     }
-    expect(symbols.bytes).toBe(total);
-    expect(readdirSync('word_sounds_symbols').sort()).toEqual(symbols.shards.map((s) => s.url.split('/')[1]).sort());
-    expect(symbols.credit).toEqual({ set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/', url: 'https://mulberrysymbols.org', version: '3.6.1' });
-    expect(symbols.notice).toBe(read('data/vendor/mulberry/LICENSE.txt').trim());
+    expect(allSymbols.bytes).toBe(total);
+    expect(readdirSync('word_sounds_symbols').sort()).toEqual(allSymbols.shards.map((s) => s.url.split('/')[1]).sort());
+    expect(allSymbols.credit).toEqual({ set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0', licenseUrl: 'https://creativecommons.org/licenses/by-sa/4.0/', url: 'https://mulberrysymbols.org', version: '3.6.1' });
+    expect(allSymbols.notice).toBe(read('data/vendor/mulberry/LICENSE.txt').trim());
     // A drawing the index does not know is not taken in.
     const index = require('../word_sounds_symbols_en.js');
     expect(index.add({ symbols: { 'not-in-the-index.svg': '<svg xmlns="http://www.w3.org/2000/svg"></svg>' } })).toBe(0);
@@ -302,7 +325,7 @@ describe('an SVG is refused before it can reach a file', () => {
     expect(made.refused).toEqual({ 'half.svg': 'a style block that loads something', 'quarter.svg': 'a style block that loads something' });
     expect(entry('half')).toMatchObject({ file: '', status: 'rejected' });
     // Every vendored drawing that a word uses passes.
-    for (const e of MAP.words) if (e.file) expect(builder.svgRefusal(read('data/vendor/mulberry/symbols/' + e.file).trim()), e.file).toBe('');
+    for (const e of MAP.words) if (e.file) expect(builder.svgRefusal(symbolsTool.minifySvg(read(vendoredPath(e.file)))), e.file).toBe('');
   });
 
   it('at build time too: a bad drawing handed to the builder is left out and listed', async () => {
@@ -333,12 +356,34 @@ describe('the builder: pictures off', () => {
   // "#summary" cell (three lines, 239 bytes). With the loader as it was before that change these inputs still give
   // the first values (11854e18..., 168847 bytes and ed033f0d..., 53296 bytes): nothing else moved.
   const BEFORE = {
+    // Re-pinned 2026-11-13: the right-answer tick pops in without reduced motion (one style line, +182 bytes). The loader
+    // before that change still gives d1527ce8.../203072 and 4af49109.../84488.
+    // Re-pinned 2026-11-12 (late): the reading tools button sits on its own line instead of floating over the question
+    // (one style rule, -7 bytes each). The loader before that change still gives 3cd880c8.../198043 and 1a613cb8.../79459.
     // Re-pinned 2026-11-11: the file carries the core's Sound Sort list, which left out 18 blocked or borderline words (125 bytes).
     // Re-pinned 2026-11-12: every file carries the reading tools, the CSV as the main save button and "About this file"'s
     // list of what is recorded (+15761 bytes each); the loader before that change still gives 1cc1dba8.../168961 and
     // 7b8d85cd.../53535, and the new files differ from those in these additions only (14 lines changed, the lesson unchanged).
-    all: { sha256: '3ce0be146cfb03ca64987641ebf5c6eea447dd7d57e0058eeee3902d5c05abbc', bytes: 184722, items: 124 },
-    isolation: { sha256: 'f41f66d93809ad725647dace8de60113fc45d9af12dccf3ddde4ceff78d2b973', bytes: 69296, items: 5 },
+    // Re-pinned 2026-11-12: a check's results say mode "check" ("probe" before), and packetCsv, which every file carries,
+    // reads both (2 lines, +76 bytes each). The loader before that change still gives 3ce0be14.../184722 and f41f66d9.../69296.
+    // Re-pinned 2026-11-12: a file made for one student fills in the code name from its manifest (2 lines in the player,
+    // +187 bytes each; tests/packet_check_mode.test.js lists them). The loader before that change still gives 207d8e26.../184798 and 0df6cc41.../69372.
+    // Re-pinned 2026-11-12: each code name keeps its own progress on a shared device (the storage key ends with it; +130
+    // bytes each). The loader before that change still gives 56615dfc.../184985 and cf1b0327.../69559.
+    // Re-pinned 2026-11-12: on Open a practice file (packets-open.html) the player keeps its place and saves its results
+    // through that page, only when the storage refuses in a frame with #packet-store-snapshot there (13 lines in, 1 out:
+    // tests/packet_check_mode.test.js lists them), and the note for previews has a line for phones and tablets (+1664 bytes
+    // each). The loader before that change still gives df4227e3.../185115 and edd34771.../69689.
+    // Re-pinned 2026-11-12 (evening): every file carries Hear all and the reading tool "Read the choices when a question opens"
+    // (hearAllIn; Find Sounds, Break it Down, Sound Mapping, Blend Sounds, Rhyme Time, Word Families and Sound Sort ask for it),
+    // the "in all" progress line, the phone layout of a choice and the retry line brought into view (tests/packets_hear_all.test.js),
+    // with another job's accessibility fixes and Untimed cells of that day. The lessons are unchanged. The loader before still gives 2744399.../186779.
+    // Re-pinned 2026-11-12 (night): the look pass (style rules, feedback marks, progress bar, end-screen star and rows, four more
+    // colors; +5036 bytes each; C:/tmp/packets_build_1111/look/NOTES.md). The lessons are unchanged. The loader before still gives 8c64fd27.../198036.
+    all: { sha256: '203193b256ad1f050f16e047997ee53164cbcf4fb285294064c85066c7fdfa96', bytes: 203254, items: 124 },
+    // Re-pinned 2026-11-12 (evening), as "all" above; the loader before still gives b3221d74.../71353.
+    // Re-pinned 2026-11-12 (night), as "all" above; the loader before still gives 202974c1.../79452.
+    isolation: { sha256: 'dc61bb4c1420a147067096705ac866f246335b30eedd61fd3ced48cced53cbe9', bytes: 84670, items: 5 },
   };
   const CASES = { all: {}, isolation: { words: CVC.slice(0, 5), activities: ['isolation'], title: undefined } };
 

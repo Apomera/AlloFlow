@@ -28,6 +28,14 @@ tests/
 # dev-tools/ above: kept in Git/Codeberg, not served by alloflow-cdn.
 reports/
 
-# Mulberry symbol sources (988 SVGs, CC BY-SA 4.0) are build inputs for word_sounds_symbols/*.json;
+# Mulberry symbol sources (1,137 SVGs, CC BY-SA 4.0) are build inputs for word_sounds_symbols/*.json;
 # no page loads them. Kept in Git, not uploaded, to save the static-file budget.
 data/vendor/mulberry/symbols/
+
+# OpenMoji sources (122 SVGs, CC BY-SA 4.0), the second picture set, are build inputs for
+# word_sounds_symbols/*.json in the same way; no page loads them. Kept in Git, not uploaded.
+data/vendor/openmoji/symbols/
+
+# Vocabulary bank sources (filtered Wiktionary / WordNet extracts, ~19 MB) are build inputs for
+# packets_vocab/*.json (dev-tools/build_packets_vocab_bank.cjs); no page loads them. Kept in Git, not uploaded.
+data/vendor/vocab/

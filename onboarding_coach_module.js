@@ -703,7 +703,7 @@ function OnboardingCoach(props) {
             flexWrap: "wrap"
           }
         },
-        /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: "200px" } }, /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "13px", fontWeight: 700, color: "#78350f" } }, t("onboarding.tour_offer_title") || "Want me to show you around first?"), /* @__PURE__ */ React.createElement("p", { style: { margin: "3px 0 0", fontSize: "11px", color: "#92400e" } }, t("onboarding.tour_offer_desc") || "I\u2019ll walk you through the workspace before you pick a mode.")),
+        /* @__PURE__ */ React.createElement("div", { style: { flex: 1, minWidth: "200px" } }, /* @__PURE__ */ React.createElement("p", { style: { margin: 0, fontSize: "13px", fontWeight: 700, color: "#78350f" } }, t("onboarding.tour_offer_title") || "Want me to show you around first?"), /* @__PURE__ */ React.createElement("p", { style: { margin: "3px 0 0", fontSize: "11px", color: "#92400e" } }, t("onboarding.tour_offer_desc") || "I\u2019ll walk you through the workspace before you choose.")),
         /* @__PURE__ */ React.createElement(
           "button",
           {
@@ -1044,7 +1044,7 @@ function OnboardingCoach(props) {
         color: "#94a3b8",
         textAlign: "center",
         fontStyle: "italic"
-      } }, t("onboarding.panel_footer") || "You can change modes any time. Just close this and click whichever card looks right."))
+      } }, t("onboarding.panel_footer") || "You can change this any time from Start & setup at the top of the page."))
     )
   ), showConsent && /* @__PURE__ */ React.createElement(
     "div",

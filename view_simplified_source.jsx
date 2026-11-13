@@ -2992,6 +2992,8 @@
     var selectedVoice = props.selectedVoice;
     var voiceSpeed = props.voiceSpeed;
     var lineHeight = props.lineHeight;
+    // Paragraph gaps follow Line spacing: 0.7em / 0.55em at the 1.6 default, never under 0.5em.
+    var readingGap = function (offset) { return Math.max(0.5, Math.round(((Number(lineHeight) || 1.6) - offset) * 100) / 100) + 'em'; };
     var letterSpacing = props.letterSpacing;
     var readingTheme = props.readingTheme;
     var theme = props.theme;
@@ -6743,7 +6745,7 @@
         };
         var content = formatted ? simplifiedInline(block.text, renderLeaf, block.textStart) : renderLeaf(line, lineStart);
         var Tag = block.type === 'heading' ? simplifiedHeadingTag(block.level, headingLevels) : block.type === 'quote' ? 'blockquote' : 'span';
-        var markdownStyle = block.type === 'heading' ? { fontWeight: 750, fontSize: block === blocks[0] ? '1.55em' : block.level === 1 ? '1.4em' : block.level === 2 ? '1.25em' : '1.15em', marginBlock: '0.6em 0.3em' } : block.type === 'quote' ? { borderInlineStart: '3px solid #a5b4fc', paddingInlineStart: '1em' } : spaceSingleBreaks && line.trim() ? { display: 'inline-block', width: '100%', marginBottom: '0.55em' } : undefined;
+        var markdownStyle = block.type === 'heading' ? { fontWeight: 750, fontSize: block === blocks[0] ? '1.55em' : block.level === 1 ? '1.4em' : block.level === 2 ? '1.25em' : '1.15em', marginBlock: '0.6em 0.3em' } : block.type === 'quote' ? { borderInlineStart: '3px solid #a5b4fc', paddingInlineStart: '1em' } : spaceSingleBreaks && line.trim() ? { display: 'inline-block', width: '100%', marginBottom: readingGap(1.05) } : undefined;
         var isRelated = !!relatedRange && relatedRange.end > lineStart && relatedRange.start < lineStart + line.length;
         const explanationText = interactionMode === 'explain' ? (formatted ? plainReadingText(block.text) : line) : '';
         const explain = event => {
@@ -6933,7 +6935,7 @@
             if (block.type === 'heading') { style.fontWeight = 750; style.fontSize = paragraphIndex === 0 && block === blocks[0] ? '1.55em' : block.level === 1 ? '1.4em' : block.level === 2 ? '1.25em' : '1.15em'; style.marginBlock = '0.9em 0.45em'; }
             return <Tag key={key} style={style} className={block.type === 'quote' ? 'border-l-4 border-indigo-200 pl-4 my-3 italic' : block.type === 'p' ? 'my-1' : undefined}>{content}</Tag>;
           };
-          return <React.Fragment key={paragraphId}><div data-reading-paragraph={paragraphId} data-reading-focused={!!shouldFocus} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={getContentDirection(section.label)} {...lineFocusParagraphProps(paragraphId)} onMouseUp={isSelectionMode || interactionMode === 'define' ? handleTextMouseUp : undefined} style={{ marginBlockEnd: '0.7em' }} className={`rounded-xl transition-opacity motion-reduce:transition-none ${isLineFocusMode ? shouldFocus ? 'opacity-100 bg-slate-800 p-4 text-white' : 'opacity-20 blur-[1px]' : section.key === 'tgt' ? 'text-slate-700' : 'text-slate-800'}`}>{simplifiedNestLists(blocks, renderBlock)}</div>{section.key === 'mono' && renderSectionThink(paragraphId)}</React.Fragment>;
+          return <React.Fragment key={paragraphId}><div data-reading-paragraph={paragraphId} data-reading-focused={!!shouldFocus} data-reading-language={section.label} lang={simplifiedLanguageTag(section.label)} dir={getContentDirection(section.label)} {...lineFocusParagraphProps(paragraphId)} onMouseUp={isSelectionMode || interactionMode === 'define' ? handleTextMouseUp : undefined} style={{ marginBlockEnd: readingGap(0.9) }} className={`rounded-xl transition-opacity motion-reduce:transition-none ${isLineFocusMode ? shouldFocus ? 'opacity-100 bg-slate-800 p-4 text-white' : 'opacity-20 blur-[1px]' : section.key === 'tgt' ? 'text-slate-700' : 'text-slate-800'}`}>{simplifiedNestLists(blocks, renderBlock)}</div>{section.key === 'mono' && renderSectionThink(paragraphId)}</React.Fragment>;
         });
       });
       var sourceDirection = getContentDirection(readingLanguage);

@@ -83,6 +83,7 @@ module.exports = {
     var token = 0;
     var delivered = false;
     var busy = false;
+    var hear = null;
     var cards = [];
     var parts = [];
     var answerText = item.target;
@@ -93,6 +94,7 @@ module.exports = {
         if (lockChoose) c.choose.setAttribute('aria-disabled', 'true'); else c.choose.removeAttribute('aria-disabled');
         if (busy) c.listen.setAttribute('aria-disabled', 'true'); else c.listen.removeAttribute('aria-disabled');
       });
+      if (hear) { if (busy) hear.button.setAttribute('aria-disabled', 'true'); else hear.button.removeAttribute('aria-disabled'); }
       note.hidden = delivered || ctx.isDone();
     };
     var highlight = function (index) {
@@ -156,6 +158,10 @@ module.exports = {
       cards.push(card);
       list.appendChild(box);
     });
+    // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number, once the syllables are not playing.
+    hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ auto: false, ready: function () { return !busy; },
+      list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
+    if (hear) ctx.root.appendChild(hear.node);
     ctx.root.appendChild(list);
     setState();
     if (!ctx.isDone()) runSyllables(true);

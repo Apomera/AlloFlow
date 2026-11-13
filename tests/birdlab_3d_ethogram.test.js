@@ -58,6 +58,11 @@ describe('BirdLab ethogram', () => {
       expect(logButton().getAttribute('data-birdlab-log-behavior'), behavior).toBe(id);
     }
     await act(async () => see('blueJay', 'Blue jay', 'Mobbing the perched hawk'));
+    // Logging records the species, so it waits until the bird is named.
+    expect(logButton().disabled).toBe(true);
+    expect(logButton().textContent).toBe('Log behavior (name the bird first)');
+    expect(card().textContent).not.toContain('Blue jay');
+    await act(async () => host.querySelector('[data-birdlab-name-for-me]').click());
     expect(logButton().textContent).toBe('Log behavior: Mobbing');
     await act(async () => logButton().click());
     const mobbing = card().querySelector('[data-ethogram-category="mobbing"]');

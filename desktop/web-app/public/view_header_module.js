@@ -907,7 +907,7 @@ function HeaderBar(props) {
       className: "inline-flex items-center gap-1 rounded-xl border border-white/25 bg-white/10 px-2.5 py-0.5 text-[11px] font-bold text-white/90 hover:bg-white/20"
     },
     headerCollapsed ? t("common.more_information") || "More" : t("common.collapse") || "Less"
-  ))), headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "ml-auto min-w-0 flex items-center justify-end gap-1.5 sm:gap-2" }, /* @__PURE__ */ React.createElement("nav", { "aria-label": t("common.content_tabs") || "Primary navigation", className: "allo-premium-compact-nav flex min-w-0 items-center gap-1 overflow-x-auto overscroll-x-contain" }, latestLessonPlan && /* @__PURE__ */ React.createElement(
+  ))), headerCollapsed && /* @__PURE__ */ React.createElement("div", { className: "ml-auto min-w-0 flex flex-wrap items-center justify-end gap-1.5 sm:gap-2" }, /* @__PURE__ */ React.createElement("nav", { "aria-label": t("common.content_tabs") || "Primary navigation", className: "allo-premium-compact-nav flex min-w-0 items-center gap-1 overflow-x-auto overscroll-x-contain" }, latestLessonPlan && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",

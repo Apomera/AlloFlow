@@ -9981,6 +9981,14 @@ const _downloadBRF = (brf) => {
                       <span>{(() => { const v = t('export_preview.worksheet_page_per_activity'); return typeof v === 'string' && v.trim() && v !== 'export_preview.worksheet_page_per_activity' ? v : 'Start each activity on a new page'; })()}</span>
                     </label>
                   )}
+                  {exportPreviewMode === 'worksheet' && exportConfig.includeMath !== false && (history || []).some(item => item && item.type === 'math') && (
+                    <label className="flex items-center gap-2 mt-2 text-xs text-slate-700" htmlFor="alloflow-worksheet-math-compact">
+                      <input type="checkbox" id="alloflow-worksheet-math-compact" className="accent-indigo-600"
+                        checked={!!exportConfig.worksheetMathCompact}
+                        onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, worksheetMathCompact: e.target.checked }))} />
+                      <span>{(() => { const v = t('export_preview.worksheet_math_compact'); return typeof v === 'string' && v.trim() && v !== 'export_preview.worksheet_math_compact' ? v : 'Compact math: less room to show work'; })()}</span>
+                    </label>
+                  )}
                 </div>
 
                 {/* Word count + goal */}

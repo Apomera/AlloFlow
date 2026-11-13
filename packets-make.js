@@ -44,6 +44,12 @@
   var CUSTOM_WORDS = 10;     // what Custom starts at
   var LIST_PAGE = 100;       // rows of "Choose the words yourself" drawn at a time (a pool can hold 6,000 words)
   var SEEDS = { A: 1, B: 2, C: 3 };
+  var VERSIONS = ['A', 'B', 'C'];
+  // "Make one for each student": at most this many files in one .zip. Each file is a few megabytes, and the whole
+  // .zip is held in the tab's memory while it is made, which a phone or tablet may not have room for.
+  var MAX_STUDENTS = 40;
+  // The page of a picture license, named beside it in the sources list (the same table as packets-print-cards.js).
+  var LICENSE_DEEDS = { 'CC BY-SA 4.0': 'creativecommons.org/licenses/by-sa/4.0' };
 
   // The usual set in each strand, and what a first visit starts with.
   var USUAL = { syllables_rhyme: ['rhyming'], hearing_sounds: ['isolation', 'blending', 'segmentation'], letters_sounds: ['mapping'], spelling: ['missing_letter', 'spelling_bee'] };
@@ -114,7 +120,9 @@
     return { activities: FIRST_VISIT.slice(), mode: 'pick', sound: '', position: 'any', shape: 'CVC', stage: '', removed: [], own: '', version: 'A',
       length: core && core.LESSON_LENGTHS[core.LESSON_LENGTH_DEFAULT] ? core.LESSON_LENGTH_DEFAULT : 'regular', title: '', titleEdited: false,
       // count: Custom's number of words. hand: the teacher chose the words in the list; chosen: those words, in the order checked.
-      count: CUSTOM_WORDS, hand: false, chosen: [] };
+      count: CUSTOM_WORDS, hand: false, chosen: [],
+      // learner: a student's code name for the file (step 3). It is not kept: the next file is often for someone else.
+      learner: '' };
   }
   function wordCount(value) { var n = Number(value); return n >= 1 && n <= MAX_WORDS && Math.floor(n) === n ? n : 0; }
 
@@ -494,7 +502,17 @@
   function canLoad(word) { var row = wordlist.get(word); return !!row && (row.kokoro || row.shards); }
 
   // What the teacher added to a word on this device, as last read from packets_my_words.js (see readMine).
-  function mineOf(word) { return Object.prototype.hasOwnProperty.call(mine, word) ? mine[word] : null; }
+  // A part the store does not have comes from a file opened with "Open a file I made" (fromFile), until the teacher
+  // keeps it in My words or opens Edit this word for that word. The store's own part always comes first.
+  function mineOf(word) {
+    var stored = Object.prototype.hasOwnProperty.call(mine, word) ? mine[word] : null;
+    var file = Object.prototype.hasOwnProperty.call(fromFile, word) ? fromFile[word] : null;
+    if (!file) return stored;
+    var out = { word: word };
+    if (stored) Object.keys(stored).forEach(function (key) { out[key] = stored[key]; });
+    OWN_PARTS.forEach(function (part) { if (!out[part] && file[part]) out[part] = file[part]; });
+    return out;
+  }
   // The teacher's sounds for a word, when every one is a sound of the dictionary (the builder checks the same).
   function ownSoundsOf(word) {
     var entry = mineOf(word), list = entry && entry.sounds && entry.sounds.sounds;
@@ -770,6 +788,7 @@
   function toggleListPanel(word) {
     if (listPanel && listPanel.word === word) return closeListPanel(true);
     closeListPanel(false);
+    adoptFromFile(word);
     listPanel = { word: word, panel: wordPanel.open(doc.createElement('div'), word, { onClose: function () { closeListPanel(true); } }) };
     listPanel.panel.update(mineOf(word));
     drawWordList();
@@ -842,6 +861,8 @@
   // lists now, for the messages and the panels. Both are read again whenever the store says it changed.
   var myWords = null, wordPanel = null, myRows = [], mine = {}, mineTried = {}, mineRun = 0, mineTimer = 0, clearing = false, cleared = '';
   var ownOpen = {}, pickOpen = null;
+  // fromFile: { word: { sounds, clip, picture } } read back from a file opened with "Open a file I made" (see packets_reopen.js).
+  var fromFile = {}, OWN_PARTS = ['sounds', 'clip', 'picture'];
   function hasRow(word) { return myRows.some(function (row) { return row.word === word; }); }
   // A listed word the store has something for, and that has not been read yet.
   function needsEntry(word) { return hasRow(word) && !mineOf(word) && !mineTried[word]; }
@@ -938,8 +959,15 @@
   }
 
   // The panels. A typed word's opens in its row; a picked word's opens under the list, one at a time.
+  // Edit this word changes what the store keeps: a word's parts from an opened file are kept there first, so the
+  // panel shows and changes one entry. (A browser that keeps nothing leaves them where they are.)
+  function adoptFromFile(word) {
+    if (!myWords || !Object.prototype.hasOwnProperty.call(fromFile, word)) return;
+    keepFromFile([word]).then(function () { drawReopenKeep(); });
+  }
   function toggleOwn(word) {
     if (ownOpen[word]) return closeOwn(word, true);
+    adoptFromFile(word);
     ownOpen[word] = wordPanel.open(doc.createElement('div'), word, { onClose: function () { closeOwn(word, true); } });
     ownOpen[word].update(mineOf(word));
     drawOwn();
@@ -956,6 +984,7 @@
     var same = pickOpen && pickOpen.word === word;
     closePick(false);
     if (same) { focusChip(word); return; }
+    adoptFromFile(word);
     var spot = $('pick-edit');
     pickOpen = wordPanel.open(spot, word, { onClose: function () { closePick(true); } });
     pickOpen.update(mineOf(word));
@@ -997,17 +1026,20 @@
   }
   // What the builder is handed for these words: the store's entries, read now, in the store's own shape.
   // The builder checks every part again (word_sounds_packet_builder.js, readOwn).
+  // A part the store does not have may come from a file opened with "Open a file I made" (fromFile).
   function ownFor(words) {
-    if (!myWords) return Promise.resolve(null);
-    return myWords.getMany(words).then(function (found) {
+    var stored = myWords ? myWords.getMany(words).then(function (found) { return found && typeof found === 'object' ? found : {}; }, function () { return {}; }) : Promise.resolve({});
+    return stored.then(function (found) {
       var own = {};
       words.forEach(function (word) {
-        var entry = found && found[word];
-        if (!entry) return;
-        own[word] = { sounds: entry.sounds || null, clip: entry.clip || null, picture: entry.picture || null };
+        var entry = Object.prototype.hasOwnProperty.call(found, word) ? found[word] : null;
+        var file = Object.prototype.hasOwnProperty.call(fromFile, word) ? fromFile[word] : null;
+        if (!entry && !file) return;
+        var part = function (name) { return (entry && entry[name]) || (file && file[name]) || null; };
+        own[word] = { sounds: part('sounds'), clip: part('clip'), picture: part('picture') };
       });
       return Object.keys(own).length ? own : null;
-    }, function () { return null; });
+    });
   }
 
   // ---------------------------------------------------------------------------
@@ -1243,10 +1275,19 @@
     box.parentNode.classList.toggle('is-on', box.checked);
     var n = inFile ? inFile.withPicture : have, of = inFile ? inFile.withPicture + inFile.withoutPicture : words.length;
     var added = inFile ? inFile.teacher || 0 : theirs;
+    // Which symbol sets these words draw on (Mulberry first, OpenMoji only where Mulberry has none).
+    var setNames = { mulberry: 'Mulberry', openmoji: 'OpenMoji' }, sets = [];
+    words.forEach(function (word) {
+      if (!symbols || ownPicture(word) || !symbols.has(word)) return;
+      var set = typeof symbols.set === 'function' ? symbols.set(word) || 'mulberry' : 'mulberry';
+      if (sets.indexOf(set) < 0) sets.push(set);
+    });
+    sets.sort();
+    var setsSaid = (sets.length ? sets : ['mulberry']).map(function (set) { return setNames[set] || set; }).join(' and ');
     setText('pictures-line', picturesNote || (picturesLoading && box.checked && symbols ? 'Getting the pictures, about ' + megabytes(symbols.bytes) + ' MB.'
       : !n && words.length ? (symbols ? NO_PICTURES_SAID : NO_INDEX_SAID)
-        : added ? 'Pictures for ' + n + ' of ' + count(of, 'word') + ': ' + added + ' you added' + (n > added ? ', ' + count(n - added, 'Mulberry symbol') + '.' : '.')
-          : symbols ? 'Pictures for ' + n + ' of ' + count(of, 'word') + '. Symbols: Mulberry.' : NO_INDEX_SAID));
+        : added ? 'Pictures for ' + n + ' of ' + count(of, 'word') + ': ' + added + ' you added' + (n > added ? ', ' + count(n - added, 'symbol') + ' from ' + setsSaid + '.' : '.')
+          : symbols ? 'Pictures for ' + n + ' of ' + count(of, 'word') + '. Symbols: ' + setsSaid + '.' : NO_INDEX_SAID));
   }
   // Whether the file being made gets pictures: the box is checked and the drawings are here. The drawings
   // are fetched only when a word of the file shows a symbol (not when every picture is the teacher's).
@@ -1277,11 +1318,19 @@
     else if (state.stage) what = stageName(state.stage);
     return 'Word Sounds: ' + what + ', version ' + state.version;
   }
-  function titleNow() { return (state.titleEdited ? String(state.title || '').trim() : '') || autoTitle(); }
-  function fileName(title) {
-    var stem = String(title).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
-    return (stem || 'practice') + '.html';
+  // A title that ends with the version (", version B", as the page's own titles do) follows the version chosen.
+  var TITLE_VERSION = /, version [ABC]$/;
+  function titleNow() {
+    var typed = state.titleEdited ? String(state.title || '').trim() : '';
+    return typed ? typed.replace(TITLE_VERSION, ', version ' + state.version) : autoTitle();
   }
+  // The file's name: its title, then the student's code name when it has one (Practice__BlueHeron7.html).
+  function fileName(title, learner, ending) {
+    var stem = String(title).replace(/[^A-Za-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 60);
+    var code = String(learner || '').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+    return (stem || 'practice') + (code ? '__' + code : '') + (ending || '.html');
+  }
+  function codeNameNow() { return typeof builder.codeName === 'function' ? builder.codeName(state.learner) : ''; }
   // The estimates are the builder's own rule: one question for each word in each activity (at most 40 in one
   // activity), and the app's half a minute a question. A word that cannot be used in an activity makes it a little less.
   function estimate(words, acts) {
@@ -1313,6 +1362,17 @@
     if (doc.activeElement !== $('f-count')) $('f-count').value = String(want);
     syncRadios('length', state.length);
     if (!state.titleEdited) $('f-title').value = autoTitle();
+    else if (doc.activeElement !== $('f-title') && $('f-title').value !== titleNow()) $('f-title').value = state.title = titleNow();
+    syncCodeName();
+  }
+  // Step 3's code name: the field shows what was typed; the line under it, what the file will carry when that differs.
+  function syncCodeName() {
+    var field = $('f-code-name');
+    if (!field) return;
+    if (doc.activeElement !== field && field.value !== state.learner) field.value = state.learner;
+    if (state.learner && !$('code-box').open) $('code-box').open = true;
+    var clean = codeNameNow();
+    setText('code-name-said', state.learner.trim() && clean !== state.learner.trim() ? (clean ? 'The file uses: ' + clean + '. A code name keeps to letters, numbers, spaces and . _ -' : 'A code name needs a letter or a number.') : '');
   }
   // Custom's number: a whole number from 1 to MAX_WORDS. Above it, the file uses MAX_WORDS and the line says so.
   function countTyped(field) {
@@ -1340,6 +1400,8 @@
     show('save', false);
     show('after-save', false);
     show('build-problem', false);
+    // The files for each student follow the same choices: a change means making them again.
+    batchChanged();
   }
   function making(text, done) {
     show('making', true);
@@ -1363,6 +1425,35 @@
     show('fix-activities', fixes === 'change');
     show('build-problem', true);
     setText('making-said', text);
+  }
+  // The clips of a file's own words go in beside the word bank, in the shape the builder already reads.
+  function banksWith(banks, clips) {
+    var withWords = {};
+    Object.keys(banks).forEach(function (name) { withWords[name] = banks[name]; });
+    withWords.kokoroWords = {};
+    Object.keys(clips).forEach(function (word) { withWords.kokoroWords[word] = clips[word]; });
+    Object.keys(banks.kokoroWords).forEach(function (word) { withWords.kokoroWords[word] = banks.kokoroWords[word]; });
+    return withWords;
+  }
+  // What the builder is handed: the same for one file (make) and for one file per student (makeBatch).
+  // plan: { words, activities, seed, title, picked }.
+  function packetOptions(plan, withWords, pictures, own, learner) {
+    var options = { words: plan.words, activities: plan.activities, seed: plan.seed, title: plan.title, core: core, dictionary: dictionary, banks: withWords, loader: loader,
+      wordlist: wordlist, toWav: toWav, picked: plan.picked, pictures: pictures, symbols: pictures && symbols && symbols.ready() ? symbols : null };
+    if (own) options.own = own;
+    if (learner) options.learnerLabel = learner;
+    return options;
+  }
+  // The file a single make would give for another version (A, B or C): the version picks other words (unless the
+  // teacher chose them) and a title that ends with the version follows it.
+  function planFor(version) {
+    var keep = { version: state.version, picked: picked };
+    state.version = version;
+    try {
+      if (version !== keep.version && state.mode === 'pick' && !state.hand) picked = pick();
+      return { version: version, words: fileWords(), activities: order.filter(function (id) { return state.activities.indexOf(id) >= 0; }), seed: seed(), title: titleNow(),
+        picked: state.mode === 'pick' && !state.hand ? picked : null };
+    } finally { state.version = keep.version; picked = keep.picked; }
   }
   function make() {
     clearTimeout(buildTimer);
@@ -1390,21 +1481,14 @@
         if (run !== buildRun) return null;
         wavCount = 0;
         making('Putting the file together.', null);
-        // The clips of this file's own words go in beside the word bank, in the shape the builder already reads.
-        var withWords = {};
-        Object.keys(banks).forEach(function (name) { withWords[name] = banks[name]; });
-        withWords.kokoroWords = {};
-        Object.keys(clips).forEach(function (word) { withWords.kokoroWords[word] = clips[word]; });
-        Object.keys(banks.kokoroWords).forEach(function (word) { withWords.kokoroWords[word] = banks.kokoroWords[word]; });
+        var withWords = banksWith(banks, clips);
         return picturesFor(run, words).then(function (pictures) {
           if (run !== buildRun) return null;
           // What the teacher added to these words, read from the store now (not from what the page showed).
           return ownFor(words).then(function (own) {
             if (run !== buildRun) return null;
-            var options = { words: words, activities: activities, seed: seed(), title: title, core: core, dictionary: dictionary, banks: withWords, loader: loader,
-              wordlist: wordlist, toWav: toWav, picked: state.mode === 'pick' && !state.hand ? picked : null, pictures: pictures, symbols: pictures && symbols && symbols.ready() ? symbols : null };
-            if (own) options.own = own;
-            return builder.buildPacket(options);
+            return builder.buildPacket(packetOptions({ words: words, activities: activities, seed: seed(), title: title, picked: state.mode === 'pick' && !state.hand ? picked : null },
+              withWords, pictures, own, codeNameNow()));
           });
         });
       });
@@ -1474,7 +1558,7 @@
       return;
     }
     var blob = new Blob([result.html], { type: 'text/html' });
-    built = { html: result.html, name: fileName(manifest.title), bytes: blob.size };
+    built = { html: result.html, name: fileName(manifest.title, manifest.learnerLabel), bytes: blob.size };
     try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
     var total = manifest.items.total;
     setText('summary-facts', count(total, 'question') + '. About ' + count(Math.ceil(total / 2), 'minute') + '. ' + fileSize(built.bytes) + '.');
@@ -1490,6 +1574,7 @@
     if (fileUrl) { $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl); show('try', true); }
     show('save', true);
     setText('making-said', 'The file is ready: ' + count(total, 'question') + ', ' + fileSize(built.bytes) + '.');
+    drawBatch();
   }
   function saveFile() {
     if (!built) return;
@@ -1505,6 +1590,354 @@
     doc.body.removeChild(link);
     show('after-save', true);
     $('after-save').focus();
+  }
+  function saveBlob(url, name) {
+    var link = doc.createElement('a');
+    link.href = url;
+    link.download = name;
+    link.hidden = true;
+    doc.body.appendChild(link);
+    link.click();
+    doc.body.removeChild(link);
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step 3: "Make one for each student". One file for each code name, in one .zip file (packets_zip.js). The
+  // builder makes each version once; each student's file is that file with the code name put in its manifest
+  // (builder.withCodeName), which is exactly what a single make with that code name gives.
+  // ---------------------------------------------------------------------------
+  var batchRun = 0, batchBusy = false, batchFile = null;
+  // The code names typed, one on each line: cleaned the way a file carries them, each used once, at most MAX_STUDENTS.
+  function batchList() {
+    var field = $('f-batch-names'), seen = {}, out = { names: [], twice: [], unusable: [], over: 0 };
+    String((field && field.value) || '').split(/\r?\n/).forEach(function (line) {
+      if (!line.trim()) return;
+      var name = typeof builder.codeName === 'function' ? builder.codeName(line) : '';
+      if (!name) { out.unusable.push(line.trim().slice(0, 40)); return; }
+      var key = name.toLowerCase();
+      if (seen[key]) { if (out.twice.indexOf(name) < 0) out.twice.push(name); return; }
+      seen[key] = true;
+      if (out.names.length >= MAX_STUDENTS) { out.over++; return; }
+      out.names.push(name);
+    });
+    return out;
+  }
+  function batchRotates() { return !!($('f-batch-rotate') && $('f-batch-rotate').checked); }
+  function batchVersions(n) {
+    var out = [];
+    for (var i = 0; i < n; i++) out.push(batchRotates() ? VERSIONS[i % VERSIONS.length] : state.version);
+    return out;
+  }
+  // The line under the box: how many files, and how large they are in all, before anything is made.
+  function drawBatch() {
+    if (!$('batch') || batchBusy || !state) return;
+    var list = batchList(), n = list.names.length, parts = [];
+    if (!n) parts.push('Type or paste the code names, one on each line.');
+    else {
+      parts.push(count(n, 'file') + (built ? ', about ' + fileSize(n * built.bytes) + ' in all (' + fileSize(built.bytes) + ' each).' : '. The size shows here once the file above is ready.'));
+      parts.push(batchRotates() ? 'Versions A, B and C in turn.' : 'All version ' + state.version + '.');
+    }
+    if (list.over) parts.push('Not used: ' + count(list.over, 'more code name') + '. At most ' + MAX_STUDENTS + ' go in one .zip file, because a larger one is slow to make and to open, most of all on a phone or tablet. Make a second .zip file for the rest.');
+    if (list.twice.length) parts.push('Listed more than once, used once: ' + list.twice.join(', ') + '.');
+    if (list.unusable.length) parts.push('Not used, because a code name needs a letter or a number: ' + list.unusable.join(', ') + '.');
+    if (batchFile) parts = ['Ready: ' + count(batchFile.count, 'file') + ' in one .zip file, ' + fileSize(batchFile.bytes) + '.' + batchFile.note];
+    setText('batch-said', parts.join(' '));
+  }
+  function dropBatchFile() {
+    if (batchFile && batchFile.url) { try { URL.revokeObjectURL(batchFile.url); } catch (_) {} }
+    batchFile = null;
+    show('batch-save', false);
+  }
+  function batchDone() {
+    batchBusy = false;
+    show('batch-making', false);
+    show('batch-stop', false);
+    $('batch-make').disabled = false;
+  }
+  // A choice changed: files made for the old choices are put away, and a run that is still going stops.
+  function batchChanged() {
+    if (!$('batch') || (!batchBusy && !batchFile)) return;
+    var going = batchBusy;
+    batchRun++;
+    dropBatchFile();
+    batchDone();
+    setText('batch-problem', going ? 'Stopped, because a choice changed. Press Make the files again.' : 'A choice changed, so the .zip file was put away. Press Make the files again.');
+    drawBatch();
+  }
+  function makeBatch() {
+    var list = batchList(), zipKit = window.AlloPacketZip;
+    setText('batch-problem', '');
+    if (!list.names.length) { setText('batch-problem', 'Type at least one code name first.'); $('f-batch-names').focus(); return; }
+    if (!zipKit || typeof zipKit.create !== 'function' || typeof builder.withCodeName !== 'function' || typeof TextEncoder !== 'function') {
+      setText('batch-problem', 'This page could not load the part that makes .zip files. Load the page again.');
+      return;
+    }
+    var names = list.names, versions = batchVersions(names.length);
+    var needed = VERSIONS.filter(function (version) { return versions.indexOf(version) >= 0; });
+    var plans = {};
+    try { needed.forEach(function (version) { plans[version] = planFor(version); }); } catch (_) { setText('batch-problem', 'The words could not be looked up. Change one choice in step 2, then try again.'); return; }
+    if (!state.activities.length || needed.some(function (version) { return !plans[version].words.length; })) {
+      setText('batch-problem', 'There is nothing to make yet. Choose at least one activity and one word.');
+      return;
+    }
+    dropBatchFile();
+    var run = ++batchRun;
+    batchBusy = true;
+    $('batch-make').disabled = true;
+    show('batch-stop', true);
+    show('batch-making', true);
+    var steps = needed.length + 1;
+    var line = function (text, done) { setText('batch-line', text); $('batch-bar').value = Math.max(0, Math.min(100, Math.round(done * 100))); };
+    line(sounds ? 'Getting ready.' : 'Getting the sounds.', 0);
+    setText('batch-said', 'Making ' + count(names.length, 'file') + '.');
+    var bases = {};
+    getSounds(function () {}).then(function (banks) {
+      return needed.reduce(function (chain, version, i) {
+        return chain.then(function () {
+          if (run !== batchRun) return null;
+          var plan = plans[version];
+          line(needed.length > 1 ? 'Making version ' + version + ' (' + (i + 1) + ' of ' + needed.length + ').' : 'Making the file.', i / steps);
+          return getWordSounds(plan.words, function () {}).then(function (clips) {
+            return picturesFor(-1, plan.words).then(function (pictures) {
+              return ownFor(plan.words).then(function (own) {
+                if (run !== batchRun) return null;
+                return builder.buildPacket(packetOptions(plan, banksWith(banks, clips), pictures, own, ''));
+              });
+            });
+          }).then(function (result) {
+            if (!result || run !== batchRun) return;
+            if (!result.html) throw new Error(needed.length > 1 ? 'version ' + version + ' has no question' : 'no question could be made');
+            bases[version] = result;
+          });
+        });
+      }, Promise.resolve());
+    }).then(function () {
+      if (run !== batchRun) return null;
+      var zip = zipKit.create(), encoder = new TextEncoder(), used = {}, i = 0;
+      return new Promise(function (resolve, reject) {
+        var next = function () {
+          if (run !== batchRun) { resolve(null); return; }
+          try {
+            if (i >= names.length) { resolve(zip); return; }
+            var name = names[i], plan = plans[versions[i]];
+            var file = fileName(plan.title, name), again = 2;
+            while (used[file.toLowerCase()]) file = fileName(plan.title, name + '-' + again++);
+            used[file.toLowerCase()] = true;
+            zip.add(file, encoder.encode(builder.withCodeName(bases[versions[i]].html, name)));
+            i++;
+            line('Putting in the code names: ' + i + ' of ' + names.length + '.', (needed.length + i / names.length) / steps);
+            setTimeout(next, 0);
+          } catch (error) { reject(error); }
+        };
+        next();
+      });
+    }).then(function (zip) {
+      if (!zip || run !== batchRun) return;
+      var parts = zip.finish();
+      // A version that left words out says so: its own file, made above, lists which and why.
+      var short = needed.filter(function (version) { return bases[version].manifest.words.used.length < plans[version].words.length; });
+      // The .zip's name: the title, without its version when the files have several.
+      var zipTitle = needed.length > 1 ? titleNow().replace(TITLE_VERSION, '') : plans[needed[0]].title;
+      batchFile = { parts: parts, name: fileName(zipTitle, '', '__' + names.length + '-students.zip'), bytes: zip.bytes, count: names.length, url: '',
+        note: short.length ? ' Some words are left out of version ' + listed(short) + '. Make one file of that version above to see which, and why.' : '' };
+      batchDone();
+      show('batch-save', true);
+      drawBatch();
+      $('batch-save').focus();
+    }).catch(function (error) {
+      if (run !== batchRun) return;
+      batchDone();
+      var text = String((error && error.message) || error || '');
+      setText('batch-said', '');
+      setText('batch-problem', !sounds ? 'The sounds could not be downloaded. Check the connection, then try again. Your choices are still here.'
+        : error && error.wordSounds ? WORD_SOUNDS_FAILED : 'The files could not be put together (' + (text || 'no reason was given') + '). Your choices are still here.');
+    });
+  }
+  function saveBatch() {
+    if (!batchFile) return;
+    if (!batchFile.url) { try { batchFile.url = URL.createObjectURL(new Blob(batchFile.parts, { type: 'application/zip' })); } catch (_) { batchFile.url = ''; } }
+    if (!batchFile.url) { setText('batch-problem', 'This browser cannot save files from a page. Open this page in Chrome, Edge, Firefox or Safari.'); return; }
+    saveBlob(batchFile.url, batchFile.name);
+    setText('batch-said', 'Saved ' + batchFile.name + '. Open it to see the files. Each file\'s name ends with the student\'s code name. Send each student their own file.');
+  }
+  function wireBatch() {
+    if (!$('batch')) return;
+    var changed = function () { if (batchBusy) return; if (batchFile) { dropBatchFile(); setText('batch-problem', ''); } drawBatch(); };
+    $('f-batch-names').addEventListener('input', changed);
+    $('f-batch-rotate').addEventListener('change', function () { this.parentNode.classList.toggle('is-on', this.checked); changed(); });
+    $('batch').addEventListener('toggle', drawBatch);
+    $('batch-make').addEventListener('click', makeBatch);
+    $('batch-stop').addEventListener('click', function () {
+      batchRun++;
+      batchDone();
+      setText('batch-problem', 'Stopped. No .zip file was made.');
+      drawBatch();
+      $('batch-make').focus();
+    });
+    $('batch-save').addEventListener('click', saveBatch);
+  }
+
+  // ---------------------------------------------------------------------------
+  // "Open a file I made": the page fills itself in from a practice file made earlier (packets_reopen.js reads it,
+  // with packets_verify_core.js). The file is read in this tab only. Nothing in it is run.
+  // ---------------------------------------------------------------------------
+  var reopenKit = null;
+  function reopenEnv() {
+    return { verify: window.AlloPacketVerify, creditLine: builder.creditLine, codeName: builder.codeName, activities: order, wordSounds: core.activityIds(),
+      labels: dictionary.labels || builder.SOUND_LABELS || [], seeds: SEEDS };
+  }
+  function readBytes(file) {
+    if (file && typeof file.arrayBuffer === 'function') return file.arrayBuffer();
+    return new Promise(function (resolve, reject) {
+      try {
+        var reader = new FileReader();
+        reader.onload = function () { resolve(reader.result); };
+        reader.onerror = function () { reject(reader.error); };
+        reader.readAsArrayBuffer(file);
+      } catch (error) { reject(error); }
+    });
+  }
+  function reopenFile(file) {
+    if (!file || !reopenKit) return Promise.resolve();
+    setText('reopen-status', 'Reading the file.');
+    return readBytes(file).then(function (bytes) {
+      applyReopen(reopenKit.read(bytes, reopenEnv()), String(file.name || 'the file').slice(0, 120));
+    }).catch(function () { showReopen('This browser could not read the file.', [], null); });
+  }
+  function drawReopenKeep() { show('reopen-keep', !!myWords && Object.keys(fromFile).length > 0); }
+  function showReopen(line, items, page) {
+    setText('reopen-line', line);
+    var host = $('reopen-list');
+    host.textContent = '';
+    items.forEach(function (text) { host.appendChild(el('li', '', text)); });
+    host.hidden = !items.length;
+    var link = $('reopen-page');
+    if (page) { link.setAttribute('href', page.href); link.textContent = 'Open ' + page.name; }
+    link.hidden = !page;
+    setText('reopen-said', '');
+    drawReopenKeep();
+    show('reopen-note', true);
+    setText('reopen-status', line);
+    $('reopen-note').focus();
+  }
+  // Open panels close and the list's own controls start over (as with Forget my choices).
+  function closePanels() {
+    closePick(false);
+    Object.keys(ownOpen).forEach(function (word) { ownOpen[word].destroy(); delete ownOpen[word]; });
+    closeListPanel(false);
+    $('pick-list').open = false;
+    $('f-find').value = '';
+    $('f-only-pictures').checked = false;
+    $('f-add').value = '';
+    listNote = '';
+    addPending = {};
+    setText('count-said', '');
+  }
+  function applyReopen(result, name) {
+    if (!result.ok) { showReopen(result.why, [], result.page); return; }
+    clearTimeout(buildTimer);
+    clearBuilt();
+    closePanels();
+    var fresh = defaults();
+    fresh.activities = result.activities.slice();
+    // The words go in "Type my own words", in the order of the file.
+    fresh.mode = 'own';
+    fresh.own = result.words.join(' ');
+    fresh.version = SEEDS[result.version] ? result.version : 'A';
+    fresh.learner = result.learner || '';
+    state = fresh;
+    picked = null;
+    fromFile = result.own && typeof result.own === 'object' ? result.own : {};
+    var n = result.words.length;
+    var preset = ['regular', 'short', 'long'].filter(function (length) { return core.LESSON_LENGTHS[length] && wordsFor(length) === n; })[0];
+    state.length = preset || 'custom';
+    if (!preset) state.count = Math.max(1, Math.min(MAX_WORDS, n || CUSTOM_WORDS));
+    if (result.title && result.title !== autoTitle()) { state.title = result.title; state.titleEdited = true; }
+    picturesChoice = result.pictures ? 'on' : 'off';
+    picturesNote = '';
+    remember();
+    var items = [];
+    items.push(result.activities.length ? count(result.activities.length, 'activity', 'activities') + ': ' + listed(result.activities.map(core.activityLabel)) + '.' : 'No activity of the file is offered here. Choose one in step 1.');
+    items.push(n ? count(n, 'word') + ': ' + result.words.join(', ') + '. They are in step 2, under Type my own words, in the order of the file.' : 'No word could be read from the file. Choose the words in step 2.');
+    items.push('Version ' + state.version + '. Length: ' + (preset ? LENGTH_NAMES[preset] : 'Custom, ' + count(state.count, 'word')) + '. Pictures: ' + (result.pictures ? 'on' : 'off') + '.');
+    if (state.titleEdited) items.push('Title: ' + state.title + (/[.!?]$/.test(state.title) ? '' : '.'));
+    if (state.learner) items.push('Student\'s code name: ' + state.learner + '. It is in step 3. Clear it there to make a file anyone can use.');
+    var theirs = Object.keys(fromFile);
+    if (theirs.length) items.push('Your own sounds, recordings or pictures for ' + listed(theirs) + ' came with the file and go into the new file. '
+      + (myWords ? 'To use them in other files too, press Keep them in My words on this device.' : 'This browser cannot keep them after you close the page.'));
+    result.notes.forEach(function (note) { items.push(note); });
+    drawOwn();
+    if (myWords) readMine();
+    goTo(1, true);
+    showReopen('Filled in from ' + name + '. Change what you want, then make the new file in step 3.', items, null);
+  }
+  // Keep a word's parts from the file in My words: only the parts the store does not have already.
+  function keepFromFile(words) {
+    var kept = [], failed = [];
+    if (!myWords) return Promise.resolve({ kept: kept, failed: failed });
+    return words.reduce(function (chain, word) {
+      return chain.then(function () {
+        var file = Object.prototype.hasOwnProperty.call(fromFile, word) ? fromFile[word] : null;
+        if (!file) return null;
+        return myWords.get(word).then(function (stored) {
+          var patch = {};
+          OWN_PARTS.forEach(function (part) { if (file[part] && !(stored && stored[part])) patch[part] = file[part]; });
+          if (!Object.keys(patch).length) { delete fromFile[word]; return null; }
+          return myWords.put(word, patch).then(function () { delete fromFile[word]; kept.push(word); });
+        }).then(null, function (error) { failed.push(word + ' (' + String((error && error.message) || 'it could not be kept').replace(/\.$/, '') + ')'); });
+      });
+    }, Promise.resolve()).then(function () { return readMine(); }).then(function () { return { kept: kept, failed: failed }; });
+  }
+  function wireReopen() {
+    reopenKit = window.AlloPacketReopen;
+    var verify = window.AlloPacketVerify;
+    if (!reopenKit || typeof reopenKit.read !== 'function' || !verify || typeof verify.readParts !== 'function') { reopenKit = null; return; }
+    show('reopen', true);
+    $('reopen-choose').addEventListener('click', function () { $('reopen-file').click(); });
+    $('reopen-file').addEventListener('change', function () {
+      var file = this.files && this.files[0];
+      reopenFile(file).then(function () { $('reopen-file').value = ''; });
+    });
+    // A file dropped on the page (not on a picture box of Edit this word) is opened the same way.
+    var main = $('main'), zone = $('reopen');
+    var isFiles = function (event) { var types = event.dataTransfer && event.dataTransfer.types; return !!types && Array.prototype.indexOf.call(types, 'Files') >= 0; };
+    var ours = function (event) { return isFiles(event) && !(event.target && typeof event.target.closest === 'function' && event.target.closest('.word-edit, input[type="file"]')); };
+    main.addEventListener('dragover', function (event) {
+      if (!ours(event)) return;
+      event.preventDefault();
+      try { event.dataTransfer.dropEffect = 'copy'; } catch (_) {}
+      zone.classList.add('is-dropping');
+    });
+    main.addEventListener('dragleave', function (event) { if (!event.relatedTarget || !main.contains(event.relatedTarget)) zone.classList.remove('is-dropping'); });
+    main.addEventListener('drop', function (event) {
+      zone.classList.remove('is-dropping');
+      if (!ours(event)) return;
+      event.preventDefault();
+      reopenFile(event.dataTransfer.files && event.dataTransfer.files[0]);
+    });
+    $('reopen-close').addEventListener('click', function () { show('reopen-note', false); $('reopen-choose').focus(); });
+    $('reopen-keep').addEventListener('click', function () {
+      setText('reopen-said', 'Keeping them.');
+      keepFromFile(Object.keys(fromFile)).then(function (done) {
+        var said = [];
+        if (done.kept.length) said.push('Kept in My words on this device: ' + listed(done.kept) + '.');
+        if (done.failed.length) said.push('Not kept: ' + done.failed.join(', ') + '. They still go into the new file.');
+        if (!said.length) said.push('My words already had them.');
+        setText('reopen-said', said.join(' '));
+        drawReopenKeep();
+        if ($('reopen-keep').hidden) $('reopen-close').focus();
+      });
+    });
+    // A file handed over by "Change this file" on Open a practice file (packets-open.html, packets_handoff.js):
+    // taken once and deleted, then opened as if chosen here.
+    var handoff = window.AlloPacketHandoff;
+    if (handoff && typeof handoff.take === 'function' && window.location.hash === handoff.HASH) {
+      try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
+      handoff.take().then(function (file) {
+        if (file) reopenFile({ name: file.name, arrayBuffer: function () { return Promise.resolve(file.bytes); } });
+        else showReopen('The file is not here any more. Choose it with Open a file I made.', [], null);
+      }, function () { showReopen('This browser could not hand the file over. Choose it with Open a file I made.', [], null); });
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -1539,7 +1972,7 @@
     doc.title = (name ? name + ': ' : '') + 'Make Word Sounds practice, step ' + step + ' of 3';
     if (step === 1) syncActivities();
     if (step === 2) { drawWords(); soundsNote(); }
-    if (step === 3) { drawLengths(); makeSoon(0); }
+    if (step === 3) { drawLengths(); makeSoon(0); drawBatch(); }
     if (!quiet && !stayed) {
       var heading = $('step-' + step + '-title');
       if (heading) { heading.focus(); if (typeof heading.scrollIntoView === 'function') heading.scrollIntoView({ block: 'start' }); }
@@ -1591,8 +2024,20 @@
       makeSoon(700);
     });
     $('f-title').addEventListener('blur', function () { if (!state.titleEdited) this.value = autoTitle(); });
+    $('f-code-name').addEventListener('input', function () {
+      state.learner = this.value.slice(0, 40);
+      syncCodeName();
+      makeSoon(700);
+    });
+    wireBatch();
     $('f-pictures').addEventListener('change', function () { picturesChoice = this.checked ? 'on' : 'off'; picturesNote = ''; makeSoon(0); });
     $('save').addEventListener('click', saveFile);
+    // Print word cards (packets-print-cards.js): this file's words, title and picture choice, read when pressed.
+    // The drawings come through loadPictures, so they are fetched once for both.
+    var cards = window.AlloPacketPrintCards;
+    if (cards && typeof cards.wire === 'function') cards.wire($('print-cards'), function () {
+      return { words: chosenWords(), title: titleNow(), pictures: !!$('f-pictures').checked, symbols: symbols, loadPictures: symbols ? loadPictures : null, own: ownFor };
+    });
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
       // My words are not choices: they stay (they have their own Remove buttons in step 2). Their open panels close.
@@ -1609,6 +2054,10 @@
       listNote = '';
       addPending = {};
       setText('count-said', '');
+      // What came from an opened file, and the code names for each student, go too.
+      fromFile = {};
+      show('reopen-note', false);
+      if ($('f-batch-names')) $('f-batch-names').value = '';
       goTo(1, true);
       setText('forget-said', 'Done. The page is back to how it started.');
     });
@@ -1643,7 +2092,12 @@
     var lines = [], source = dictionary.source || {}, books = wordlist.meta && wordlist.meta.childBooks;
     if (source.name) lines.push('How each word sounds: ' + source.name + (source.license ? ' (' + source.license + ')' : '') + ', turned into sound labels by AlloFlow.');
     if (books && books.name) lines.push('How common a word is in children\'s books: ' + books.name + '. ' + (books.citation ? books.citation + ' ' : '') + (books.license ? 'License: ' + books.license + '.' : ''));
-    if (symbols && symbols.credit) lines.push('The pictures: ' + symbols.credit.set + ' by ' + symbols.credit.author + '. License: ' + symbols.credit.license + '. ' + symbols.credit.url);
+    var credits = symbols ? (symbols.credits ? Object.keys(symbols.credits).sort().map(function (key) { return symbols.credits[key]; }) : symbols.credit ? [symbols.credit] : []) : [];
+    credits.forEach(function (credit, i) {
+      // The license's own page, as packets-print-cards.js names it (setCredit), written without its scheme.
+      var deed = LICENSE_DEEDS[credit.license];
+      lines.push((i ? 'More pictures: ' : 'The pictures: ') + credit.set + ' by ' + credit.author + '. License: ' + credit.license + (deed ? ' (' + deed + ')' : '') + '. ' + credit.url);
+    });
     lines.forEach(function (line) { host.insertBefore(el('li', '', line), host.lastElementChild); });
   }
 
@@ -1719,6 +2173,7 @@
     listFiles();
     listSources();
     wire();
+    wireReopen();
     if (myWords) {
       wireMyWords();
       // Another tab (Find a picture) or this one changed the store: read it again.

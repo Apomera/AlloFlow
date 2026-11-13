@@ -194,9 +194,14 @@ module.exports = {
     var instructionSteps = function () { return item.instruction.map(function (id) { return { id: id, gap: 200 }; }); };
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: heading }));
     ctx.root.appendChild(ctx.el('p', { text: ctx.showLetters ? T('instruction_letters', { family: heading }) : T('instruction') }));
+    // Hear all words: the player's Hear all (ctx.hearAll), the words not found yet, each marked with its number.
+    var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ label: T('hear_all'), support: 'allWordListens', before: halt, auto: false,
+      ready: function () { return !ctx.isDone(); },
+      list: function () { return cards.map(function (c, i) { return c.found ? null : { box: c.box, n: i + 1, total: cards.length, say: function () { return ctx.play(c.chip.audio); } }; }); } }) : null;
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run(instructionSteps()); } }, text: ctx.L.hear_question }),
-      ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('allWordListens'); run(chipSteps(true)); } }, text: T('hear_all') }),
+      hear ? hear.button : ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('allWordListens'); run(chipSteps(true)); } }, text: T('hear_all') }),
+      hear ? hear.note : null,
     ]));
     ctx.root.appendChild(counter);
     ctx.root.appendChild(list);

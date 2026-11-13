@@ -1,0 +1,298 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<title>Make vocabulary practice</title>
+<meta name="description" content="Make vocabulary practice or a vocabulary check in three steps: type the words, check the questions, save one small file. The file is put together in your browser. Runs without AI. No accounts.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-make.css">
+<link rel="stylesheet" href="packets-vocab.css">
+<script src="packets-page.js" defer></script>
+<script src="word_sounds_take_home_loader.js" defer></script>
+<script src="packets_verify_core.js" defer></script>
+<script src="packets_zip.js" defer></script>
+<script src="packets_handoff.js" defer></script>
+<script src="packets_vocab_bank_en.js" defer></script>
+<script src="word_sounds_symbols_en.js" defer></script>
+<script src="word_sounds_packet_builder.js" defer></script>
+<script src="packets_vocab_media.js" defer></script>
+<script src="packet_vocab_builder.js" defer></script>
+<script src="packets-vocab.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap wrap-narrow top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <a class="top-link" href="packets-results.html">Add up results</a>
+  </div>
+<details class="proof">
+  <summary class="wrap wrap-narrow">
+    <span class="proof-line">This page runs without AI. No account. Nothing you choose leaves your device.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap wrap-narrow proof-body">
+    <ul>
+      <li>Nothing is generated when you make a file or when a student uses it. The meanings come from a word list that was prepared ahead of time from open dictionaries. Where they come from is under About this page.</li>
+      <li>The file is put together in this browser tab. Your words, your changes and the teacher code are not sent anywhere.</li>
+      <li>The page gets the word list from this site, all of it at once: the same files whatever words you type. For a file with recordings or pictures it also gets them from this site: the recordings of your words, and all the picture files, the same files whatever words you type. It asks the network for nothing else, and the rule below tells the browser to refuse anything else.</li>
+      <li>A word that is not in the word list can be looked up online, but not on this page: Look it up online opens a page of its own, which asks before it sends that one word to a free online dictionary.</li>
+      <li>There are no cookies and nothing to sign in to.</li>
+      <li>Like any website, the server that sends these files can see that your browser asked for them. It receives nothing else.</li>
+      <li>On this device the page keeps your last choices and your changes to the questions. The buttons that remove them are under About this page, at the bottom.</li>
+    </ul>
+    <p id="can-title">A file made here can:</p>
+    <ul aria-labelledby="can-title">
+      <li>Ask each question with four answers to choose from, in an order that is different for each question.</li>
+      <li>Read the word, the question and each answer aloud with the voice that is built into the student's device, when the student presses a button, or one after the other with Hear all. It uses only a voice that runs on the device. A word with a recording made ahead of time (a machine voice) plays that recording instead.</li>
+      <li>Show pictures, in picture questions you choose. They are in the file, with their credits.</li>
+      <li>Keep the student's place on that device, and save a results file to that device when the student presses the save button.</li>
+    </ul>
+    <p id="cannot-title">A file made here cannot:</p>
+    <ul aria-labelledby="cannot-title">
+      <li>Run AI. Nothing is generated when you make a file or when a student uses it.</li>
+      <li>Connect to the internet. The file tells the browser to refuse every connection, and the browser enforces it.</li>
+      <li>Keep its answers secret. In practice they are inside the file, so that it can say right or wrong with no internet. In a check they are scrambled, which stops casual looking, not a determined person.</li>
+    </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+</header>
+
+<main id="main" class="maker">
+  <div class="wrap wrap-narrow">
+    <h1>Make vocabulary practice</h1>
+    <p class="scope">Questions about what the words of a unit mean. Practice with feedback, or a short check.</p>
+
+    <div id="reopen" class="reopen" hidden>
+      <p class="reopen-row">
+        <button type="button" class="btn btn-text btn-small" id="reopen-choose" aria-describedby="reopen-hint">Open a file I made</button>
+        <span class="hint" id="reopen-hint">Start from a file you saved before, then change what you want. It is read on this device only.</span>
+      </p>
+      <input type="file" id="reopen-file" accept=".html,.htm,text/html" hidden aria-label="A file you made before">
+      <div id="reopen-note" class="note reopen-note" tabindex="-1" hidden>
+        <p id="reopen-line" class="reopen-line"></p>
+        <ul id="reopen-list"></ul>
+      </div>
+    </div>
+
+    <nav aria-label="Steps">
+      <ol class="steps">
+        <li><button type="button" class="step-tab" data-go="1" aria-current="step"><span class="step-n" aria-hidden="true">1</span><span class="step-label"><span class="sr-only">Step 1: </span>Your words</span></button></li>
+        <li><button type="button" class="step-tab" data-go="2"><span class="step-n" aria-hidden="true">2</span><span class="step-label"><span class="sr-only">Step 2: </span>Check the questions</span></button></li>
+        <li><button type="button" class="step-tab" data-go="3"><span class="step-n" aria-hidden="true">3</span><span class="step-label"><span class="sr-only">Step 3: </span>Make the file</span></button></li>
+      </ol>
+    </nav>
+
+    <noscript><p class="note note-problem">This page needs JavaScript to put the file together. Nothing is sent anywhere.</p></noscript>
+
+    <div id="loading" class="sheet">
+      <p class="count-line" role="status">Getting the parts of the page.</p>
+      <p class="hint">If this line is still here after a minute, load the page again.</p>
+    </div>
+
+    <div id="load-problem" class="sheet" hidden>
+      <p class="count-line">The page could not load all of its parts.</p>
+      <p class="sheet-intro" id="load-problem-text">Check the connection, then load the page again. Nothing has been lost.</p>
+      <p class="actions"><a class="btn btn-primary" href="packets-vocab.html">Load the page again</a></p>
+    </div>
+
+    <section id="step-1" class="sheet" aria-labelledby="step-1-title" hidden>
+      <p class="kicker">Step 1 of 3</p>
+      <h2 id="step-1-title" tabindex="-1">Your words</h2>
+      <p class="sheet-intro">Type or paste the words of the unit. Each word is looked up in the word list on this device.</p>
+      <div class="field block">
+        <label for="f-words">Words</label>
+        <span class="hint" id="words-hint">One word on each line, or commas between them. Up to 40 words.</span>
+        <textarea id="f-words" rows="7" maxlength="2400" spellcheck="true" autocapitalize="none" autocomplete="off" aria-describedby="words-hint"></textarea>
+      </div>
+      <p id="bank-line" class="hint" role="status"></p>
+      <div class="result">
+        <p id="words-line" class="result-line" role="status"></p>
+        <ul id="words-list" class="checked" aria-label="Your words, one by one"></ul>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary push" id="next-1">Next: check the questions</button>
+        <p id="step-1-problem" class="actions-note" role="alert"></p>
+      </div>
+    </section>
+
+    <section id="step-2" class="sheet" aria-labelledby="step-2-title" hidden>
+      <p class="kicker">Step 2 of 3</p>
+      <h2 id="step-2-title" tabindex="-1">Check the questions</h2>
+      <p class="sheet-intro">Each word has its right answer and 3 wrong answers. They are used as they are unless you change them. Change a meaning when your unit means another one, and swap a wrong answer that could also be right.</p>
+      <p class="hint" id="legend"><span class="v-mark">checked</span> This meaning was looked at when the word list was prepared. <span class="v-mark v-mark-not">not checked yet</span> Read these first.</p>
+      <p id="rows-line" class="result-line" role="status"></p>
+      <div id="rows" class="v-rows"></div>
+      <div class="actions">
+        <button type="button" class="btn" id="back-2">Back</button>
+        <button type="button" class="btn btn-primary push" id="next-2">Next: make the file</button>
+        <p class="actions-note">Your changes are kept on this device for next time. A file of vocabulary questions is about 100 KB. Recordings and pictures add to that: step 3 says how much.</p>
+        <p id="step-2-problem" class="actions-note" role="alert"></p>
+      </div>
+    </section>
+
+    <section id="step-3" class="sheet" aria-labelledby="step-3-title" hidden>
+      <p class="kicker">Step 3 of 3</p>
+      <h2 id="step-3-title" tabindex="-1">Make the file</h2>
+
+      <fieldset class="block">
+        <legend>Kinds of questions</legend>
+        <div class="choices" id="types"></div>
+      </fieldset>
+
+      <div id="picture-panel" class="block" hidden>
+        <h3 class="v-sub">Check the pictures</h3>
+        <p class="hint">Each word's picture comes first, then the 3 other pictures. A picture can show another meaning of a word. Leave out any word whose picture does not fit your unit.</p>
+        <p id="picture-line" class="hint" role="status"></p>
+        <div id="picture-rows" class="v-rows"></div>
+      </div>
+
+      <div id="blank-panel" class="block" hidden>
+        <h3 class="v-sub">Check the sentences</h3>
+        <p class="hint">The wrong answers are other words from your list, so that only one word fits. Swap a word that could also fit.</p>
+        <div id="blank-rows" class="v-rows"></div>
+      </div>
+
+      <fieldset class="block">
+        <legend>Practice or a check</legend>
+        <div class="choices" id="modes">
+          <label class="choice"><input type="radio" name="mode" value="practice">
+            <span class="choice-name">Practice</span>
+            <span class="choice-line">Right or wrong after each answer, and a second try after a wrong one.</span>
+          </label>
+          <label class="choice"><input type="radio" name="mode" value="check">
+            <span class="choice-name">A check</span>
+            <span class="choice-line">One try for each question. The student is not shown right or wrong. At the end you see the score.</span>
+          </label>
+        </div>
+      </fieldset>
+
+      <div class="block" id="code-panel" hidden>
+        <div class="field">
+          <label for="f-code">Teacher code (optional)</label>
+          <span class="hint" id="code-why">Without a code, the screen at the end shows only the score. With a code, it also shows each answer. It is a lock on the screen, not secret writing.</span>
+          <span class="hint" id="code-hint">4 or more characters. This page does not keep the code, so write it down.</span>
+          <input type="password" id="f-code" maxlength="64" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="code-why code-hint code-line">
+          <span class="hint" id="code-line" role="status"></span>
+        </div>
+      </div>
+
+      <div class="field block">
+        <label for="f-title">Title</label>
+        <span class="hint" id="title-hint">The student sees it at the top of the file. The results file's name starts with it. Leave it empty for a title made from the words.</span>
+        <input type="text" id="f-title" maxlength="80" autocomplete="off" aria-describedby="title-hint">
+      </div>
+
+      <details class="why code-box" id="more">
+        <summary>More choices</summary>
+        <div class="block">
+          <label class="radio"><input type="checkbox" id="f-read" aria-describedby="read-hint"> <span>Read aloud buttons</span></label>
+          <span class="hint" id="read-hint">The student can hear the word, the question and each answer, read by the voice built into their device, one at a time or all in turn with Hear all. Only a voice that runs on the device is used. Devices with no such voice show no buttons.</span>
+        </div>
+        <div class="block">
+          <label class="radio"><input type="checkbox" id="f-voices" aria-describedby="voices-hint voices-line"> <span>Recordings of the words</span></label>
+          <span class="hint" id="voices-hint">Many words have a recording made ahead of time, a machine voice, the same as in Word Sounds files. The file plays it for the word itself. The device voice reads the meanings and the questions. Recordings make the file bigger.</span>
+          <span class="hint" id="voices-line" role="status"></span>
+        </div>
+        <div class="field">
+          <label for="f-code-name">Student's code name</label>
+          <span class="hint" id="code-name-hint">Use a code name, not the student's real name. The file opens with it filled in. Leave it empty and each student types their own.</span>
+          <input type="text" id="f-code-name" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="none" aria-describedby="code-name-hint">
+        </div>
+      </details>
+
+      <div id="making" class="making" hidden>
+        <p id="making-line" class="making-line"></p>
+      </div>
+      <p id="making-said" class="sr-only" role="status"></p>
+
+      <div id="build-problem" class="note note-problem" hidden>
+        <p id="build-problem-text"></p>
+        <p><button type="button" class="btn btn-small" id="fix-rows">Check the questions</button></p>
+      </div>
+
+      <div id="summary" class="summary" hidden>
+        <h3>The file is ready</h3>
+        <p id="summary-facts" class="summary-facts"></p>
+        <dl id="summary-rows"></dl>
+      </div>
+
+      <div class="actions">
+        <button type="button" class="btn" id="back-3">Back</button>
+        <a class="btn push" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
+        <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
+      </div>
+
+      <div id="after-save" class="next" tabindex="-1" hidden>
+        <h3>Saved. What to do next</h3>
+        <ol>
+          <li>Send the file to your students the way you send any file: your learning platform, a shared drive or a USB drive.</li>
+          <li>Each student opens it in a browser, finishes it and presses the main button at the end, <strong id="csv-label">Save results as a spreadsheet file (CSV)</strong>. They hand that file back to you.</li>
+          <li>Add the results up on <a href="packets-results.html">Add up results</a>, or open them in a spreadsheet. In AlloFlow: Class Analytics, Add take-home results.</li>
+        </ol>
+        <p class="after-phone">On a phone or tablet, a student opens the file on <a href="packets-open.html">Open a practice file</a>: apomera.github.io/AlloFlow/packets-open.html.</p>
+      </div>
+
+      <details class="batch" id="batch">
+        <summary>Make one for each student</summary>
+        <div class="batch-body">
+          <p class="hint">One file for each student, with the student's code name filled in. They come in one .zip file. Each file is the same as the one above, made with that code name.</p>
+          <div class="field">
+            <label for="f-batch-names">Code names, one on each line</label>
+            <span class="hint" id="batch-names-hint">Use code names, not real names. At most 40 at a time.</span>
+            <textarea id="f-batch-names" rows="6" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
+          </div>
+          <p id="batch-said" class="result-sub" role="status"></p>
+          <p class="row batch-row">
+            <button type="button" class="btn" id="batch-make">Make the files</button>
+            <button type="button" class="btn" id="batch-save" hidden>Save the .zip file</button>
+          </p>
+          <p id="batch-problem" class="actions-note" role="alert"></p>
+        </div>
+      </details>
+    </section>
+
+    <details class="about" id="about-page">
+      <summary>About this page</summary>
+      <div class="about-body">
+        <h2 id="keeps-title">What this page keeps</h2>
+        <p>Your last choices are kept in this browser so that the page opens the way you left it: the words, the kinds of questions, practice or check, the title, Read aloud and Recordings of the words. The teacher code is never kept.</p>
+        <p>Your changes to the questions are kept too, so that the next file starts from them: the meaning you chose for a word, meanings and sentences you edited, wrong answers you swapped or edited, meanings you typed for words that are not in the word list, meanings you found with Look it up online, and words you left out of the picture questions. Nothing is kept anywhere else.</p>
+        <p class="row">
+          <button type="button" class="btn btn-small" id="forget">Forget my choices</button>
+          <button type="button" class="btn btn-small" id="forget-edits">Forget my changes to the questions</button>
+          <span id="forget-said" role="status"></span>
+        </p>
+        <h2 id="sources-title">Where the meanings come from</h2>
+        <ul id="sources">
+          <li>The meanings come from open dictionaries. They were shortened and cleaned up by a program when the word list was prepared, ahead of time. A file names its sources and their licenses under About this file.</li>
+          <li>Some meanings were checked when the word list was prepared. They show the word checked. Read the others before you give the file to students.</li>
+          <li>The wrong answers are meanings of other words: related words from the word list, or the other words of your list. Fill the blank uses only words from your list, because related words often fit the sentence too.</li>
+        </ul>
+        <ul id="credits"></ul>
+      </div>
+    </details>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap wrap-narrow foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

@@ -272,6 +272,8 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 .next li + li { margin-top: 0.45rem; }
 .next li::before { content: counter(n) "."; position: absolute; left: 0; font-weight: 700; color: var(--ink); }
 .next p { margin-top: 0.9rem; color: var(--muted); font-size: 0.9375rem; max-width: 40rem; }
+/* After the steps: where a phone or tablet opens the file (packets-open.html). */
+.next .after-phone { color: var(--text); overflow-wrap: anywhere; }
 
 /* "About this page": one quiet, closed block near the footer */
 .about { margin-top: 2.5rem; border-top: 1px solid var(--line); font-size: 0.9375rem; color: var(--muted); }

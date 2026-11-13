@@ -1,0 +1,48 @@
+/* What "Open a practice file" (packets-open.html) needs beyond packets.css: the place to choose the file, what
+   was found, and the running file, which takes the whole screen under a small bar. Phone first.
+   Colors, fonts, buttons and the header come from packets.css. Nothing is loaded from another site. */
+
+.opener { padding: clamp(1.25rem, 4vw, 2.5rem) 0 3rem; }
+.opener h1 { font-size: clamp(1.7rem, 1.35rem + 1.6vw, 2.3rem); letter-spacing: -0.022em; }
+.opener-lead { margin-top: 0.5rem; max-width: 38rem; color: var(--muted); font-size: 1.0625rem; }
+
+/* Choosing the file (the drop area of packets-verify.css, smaller) */
+.drop { display: flex; flex-direction: column; align-items: center; gap: 0.4rem; margin-top: 1.25rem; padding: clamp(1.25rem, 5vw, 2.5rem) 1rem; text-align: center; background: var(--surface); border: 2px dashed var(--line-strong); border-radius: 14px; }
+.drop h2 { font-size: clamp(1.3rem, 1.15rem + 0.7vw, 1.6rem); }
+.drop-sub { max-width: 28rem; color: var(--muted); }
+.drop-go { margin-top: 0.5rem; width: 100%; }
+.drop-go .btn { width: 100%; max-width: 20rem; }
+.drop-over { position: fixed; inset: 0; z-index: 20; display: flex; align-items: center; justify-content: center; margin: 0; padding: 1rem; text-align: center; font-size: 1.5rem; font-weight: 700; color: var(--ink); background: var(--accent-soft); border: 4px dashed var(--accent); pointer-events: none; }
+
+/* What was found */
+.found { margin-top: 1.25rem; padding: clamp(1.1rem, 4vw, 1.75rem); background: var(--surface); border: 1px solid var(--line-strong); border-left: 8px solid var(--accent); border-radius: var(--radius); }
+.found h2 { margin-top: 0.25rem; font-size: clamp(1.4rem, 1.2rem + 1vw, 1.9rem); letter-spacing: -0.016em; overflow-wrap: anywhere; }
+.found-line { margin-top: 0.4rem; color: var(--text); }
+.found-place { margin-top: 0.5rem; font-weight: 600; color: var(--ink); }
+.found-go { margin-top: 1rem; }
+.found-go .btn { width: 100%; max-width: 20rem; min-height: 3.5rem; font-size: 1.1875rem; }
+.found-more { display: flex; flex-wrap: wrap; align-items: center; gap: 0.25rem 1rem; margin-top: 0.75rem; }
+.found-more .hint { flex-basis: 100%; font-size: 0.875rem; color: var(--muted); }
+
+.open-how { margin-top: 2rem; }
+.open-how h2 { font-size: 1.25rem; }
+.open-how .plain-list { margin-top: 0.5rem; }
+.open-how .plain-list li { margin-top: 0.4rem; }
+.open-forget { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 1rem; margin-top: 1rem; }
+
+/* The running file: the whole screen, a small bar on top */
+body.is-running { overflow: hidden; }
+.run { position: fixed; inset: 0; z-index: 30; display: flex; flex-direction: column; background: var(--surface); }
+.run-bar { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.75rem; padding: 0.4rem max(0.75rem, env(safe-area-inset-right)) 0.4rem max(0.75rem, env(safe-area-inset-left)); padding-top: max(0.4rem, env(safe-area-inset-top)); background: var(--ink); color: #ffffff; font-size: 0.9375rem; }
+.run-title { flex: 1 1 8rem; min-width: 0; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.run-said { flex: 1 1 100%; order: 3; min-width: 0; overflow-wrap: anywhere; }
+.run-said:empty { display: none; }
+.run-bar .btn { min-height: 2.75rem; }
+.run-close { margin-left: auto; }
+.run-bar :focus-visible { outline-color: #ffffff; }
+.run-host { flex: 1 1 auto; display: flex; min-height: 0; }
+.run-frame { flex: 1 1 auto; width: 100%; height: 100%; min-height: 0; border: 0; background: var(--surface); }
+
+@media (min-width: 40rem) {
+  .run-said { flex: 0 1 auto; order: 0; }
+}

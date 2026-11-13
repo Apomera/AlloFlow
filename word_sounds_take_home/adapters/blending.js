@@ -120,9 +120,13 @@ module.exports = {
     });
     ctx.root.appendChild(ctx.el('p', { text: ctx.L.blending_prompt }));
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.blending_question }));
+    // Play all the words: the player's Hear all (ctx.hearAll), each choice marked with its number.
+    var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ label: ctx.L.blending_play_all, support: 'optionReplays', before: halt, auto: false,
+      list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('soundReplays'); run(soundSteps()); } }, text: ctx.L.blending_hear_sounds }),
-      ctx.el('button', { type: 'button', on: { click: function () { ctx.support('optionReplays'); run(optionSteps(600)); } }, text: ctx.L.blending_play_all }),
+      hear ? hear.button : ctx.el('button', { type: 'button', on: { click: function () { ctx.support('optionReplays'); run(optionSteps(600)); } }, text: ctx.L.blending_play_all }),
+      hear ? hear.note : null,
     ]));
     ctx.root.appendChild(list);
     // Opening sequence (word_sounds_module.js:16790-16845): instruction, each

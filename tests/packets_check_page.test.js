@@ -70,7 +70,7 @@ function expectNoWayOut(html) {
   const rule = ruleOf(html).split('; ');
   for (const part of ["default-src 'none'", "connect-src 'none'", "form-action 'none'", "base-uri 'none'", "object-src 'none'", "frame-src 'none'", "worker-src 'none'"]) expect(rule).toContain(part);
   expect(rule).toContain("script-src 'sha256-" + createHash('sha256').update(scriptOf(html), 'utf8').digest('base64') + "'");
-  expect(manifestOf(html)).toMatchObject({ kind: 'alloflow-packet-manifest', network: 'none', never: ['internet connection', 'microphone', 'camera', 'cookies', 'AI'], packet: { mode: 'probe' } });
+  expect(manifestOf(html)).toMatchObject({ kind: 'alloflow-packet-manifest', network: 'none', never: ['internet connection', 'microphone', 'camera', 'cookies', 'AI'], packet: { mode: 'check' } });
   expect(lessonOf(html)).toMatchObject({ audio: {}, images: {}, submit: null });
   // The preview page shows only a file that looks like this.
   expect(/^<!doctype html>/i.test(html) && html.includes('id="packet-manifest"')).toBe(true);
@@ -293,7 +293,8 @@ describe('the page as files', () => {
     expect(code.querySelector('details, summary')).toBeNull();
     expect(code.closest('#step-2')).toBeTruthy();
     expect(doc.querySelector('label[for="f-code"]').textContent).toBe('Teacher code (optional)');
-    expect(doc.getElementById('code-why').textContent).toBe('Set one if you can. Without a code, a student who finishes can open the answers screen.');
+    // Re-pinned 2026-11-12: without a code the screen at the end of the file shows only the score.
+    expect(doc.getElementById('code-why').textContent).toBe('Set one if you can. Without a code, the screen at the end shows only the score. With a code, it also shows each answer.');
     expect(doc.getElementById('code-about').textContent).toBe('The answers screen inside the file opens only with this code. It is a lock on the screen, not secret writing.');
     expect(doc.getElementById('f-code').getAttribute('aria-describedby')).toBe('code-why code-about code-hint');
     expect(doc.getElementById('f-code').getAttribute('autocomplete')).toBe('off');
@@ -339,17 +340,20 @@ describe('the page as files', () => {
     expect(doc.querySelectorAll('link[rel="stylesheet"]')).toHaveLength(2);
     expect(squash(doc.querySelector('details.proof').textContent)).toContain('This page loads nine files, all from this site: the page itself, two stylesheets (one is only for printing), five scripts and the icon in the browser tab.');
     const megabytes = SCRIPTS.reduce((sum, file) => sum + statSync(file).size, 0) / 1e6;
-    expect(doc.getElementById('loading').textContent).toContain('Getting the problem sets, about 0.5 MB.');
-    expect(megabytes).toBeGreaterThan(0.4);
-    expect(megabytes).toBeLessThan(0.6);
+    // Re-pinned 2026-11-12 from about 0.5 MB: the loader carries Hear all and the two picture activities of vocabulary files.
+    expect(doc.getElementById('loading').textContent).toContain('Getting the problem sets, about 0.6 MB.');
+    expect(megabytes).toBeGreaterThan(0.55);
+    expect(megabytes).toBeLessThan(0.7);
     // "About 110 KB": every ready check, and a list of the teacher's own, with and without a teacher code.
     // Re-pinned 2026-11-12 from about 90 KB: every file now carries the reading tools (about 17 KB in a check).
-    expect(doc.getElementById('size-note').textContent).toBe('A check file has no sound, so there is nothing to download. About 110 KB.');
+    // Re-pinned 2026-11-12 from about 110 KB: every file carries Hear all and the reading tool "Read the choices" (hearAllIn),
+    // and that day's accessibility fixes and the Untimed option (another job's).
+    expect(doc.getElementById('size-note').textContent).toBe('A check file has no sound, so there is nothing to download. About 120 KB.');
     const sizes = READY.flatMap((id) => formsOf(id).map(({ grade, form }) => Buffer.byteLength(direct(id, grade, form).html, 'utf8')));
     sizes.push(Buffer.byteLength(direct('math_computation', '5', 'A', { teacherCode: 'tulip-47' }).html, 'utf8'));
     sizes.push(Buffer.byteLength(PC.buildCheckPacket({ lesson: PC.lessonFromMathProblems({ problems: PC.parseProblems('7+8') }), loader: TH }).html, 'utf8'));
     expect(sizes).toHaveLength(6 + 9 + 18 + 2);
-    for (const bytes of sizes) expect(Math.abs(bytes - 110000), bytes + ' bytes').toBeLessThan(10000);
+    for (const bytes of sizes) expect(Math.abs(bytes - 120000), bytes + ' bytes').toBeLessThan(10000);
   });
 });
 
@@ -612,13 +616,14 @@ describe('a ready check, from the choice to a file that runs', () => {
       expect(html).toBe(PC.buildCheckPacket({ lesson, loader: TH }).html);
       expectNoWayOut(html);
       const data = setsOf(id)[grade][version], manifest = manifestOf(html);
-      expect(manifest.packet).toMatchObject({ id: PC.MEASURES[id].slug + '-g' + grade.toLowerCase(), form: version, mode: 'probe' });
+      expect(manifest.packet).toMatchObject({ id: PC.MEASURES[id].slug + '-g' + grade.toLowerCase(), form: version, mode: 'check' });
       expect(manifest.check).toMatchObject({ items: data.problems.length, practiceItems: PC.MEASURES[id].practice.length, timeLimitS: data.timeLimit, teacherCode: 'none' });
       expect(manifest.title).toBe(PC.MEASURES[id].name + ' check (' + grade + version + ')');
-      // The summary: check, grade, version, problems, time, practice first, the answers screen and the file with its size.
+      // The summary: check, grade, version, problems, time, practice first, the teacher screen and the file with its size.
       const bytes = page.files[page.files.length - 1].size;
       expect(page.files[page.files.length - 1].type).toBe('text/html');
-      expect(Math.abs(bytes - 110000)).toBeLessThan(10000);
+      // Re-pinned 2026-11-12 from 110000, with the page note ("About 120 KB", above): Hear all, and the Untimed and keyboard fixes of the player.
+      expect(Math.abs(bytes - 120000)).toBeLessThan(10000);
       const size = Math.round(bytes / 1000) + ' KB';
       const time = minutes(data.timeLimit).replace(/^./, (c) => c.toUpperCase());
       // What there is to answer has the check's own word: "questions" for Quantity Discrimination, "problems" for the others.
@@ -626,7 +631,7 @@ describe('a ready check, from the choice to a file that runs', () => {
       expect([id, noun]).toEqual([id, id === 'quantity_discrimination' ? 'question' : 'problem']);
       expect(page.$('summary-facts').textContent).toBe('25 ' + noun + 's. ' + time + '. ' + size + '.');
       const rows = page.rows();
-      expect(Object.keys(rows)).toEqual(['Check', 'Grade', 'Version', Nouns, 'Time', 'Practice first', 'Answers screen', 'File']);
+      expect(Object.keys(rows)).toEqual(['Check', 'Grade', 'Version', Nouns, 'Time', 'Practice first', 'Teacher screen', 'File']);
       expect(rows.Check).toBe(PC.MEASURES[id].name);
       expect(rows.Grade).toBe(gradeName(grade));
       expect(rows.Version).toBe(version);
@@ -638,7 +643,7 @@ describe('a ready check, from the choice to a file that runs', () => {
       expect(summaryText).not.toMatch(noun === 'question' ? /problem/i : /question/i);
       const practice = PC.MEASURES[id].practice.length;
       expect(rows['Practice first']).toBe(practice === 1 ? '1 practice question, not scored.' : practice + ' practice questions, not scored.');
-      expect(rows['Answers screen']).toBe('Opens with one button when the check is finished. No teacher code is set.');
+      expect(rows['Teacher screen']).toBe('Shows only the score, not each answer. No teacher code is set.');
       expect(rows.File).toBe(fileName + ', ' + size + '.');
       expect(page.$('making-said').textContent).toBe('The file is ready: 25 ' + noun + 's, ' + size + '.');
       // Try it opens the preview page with the file's address after the #; Save hands over the same file under the builder's name.
@@ -734,7 +739,7 @@ describe('my own problems', () => {
     expect(page.rows()).toEqual({ Check: 'My own problems', Title: 'Facts to 20',
       Problems: '6: 7 + 8, 12 ' + minus + ' 5, 6 ' + times + ' 4, 20 ' + divide + ' 4, 9 ' + divide + ' 3, 4 ' + times + ' 4. The student may skip a problem.',
       Time: '2 minutes. The clock does not stop and does not give time back. The score is digits correct per minute.', 'Practice first': 'None.',
-      'Answers screen': 'Opens with one button when the check is finished. No teacher code is set.', File: 'facts-to-20.html, ' + size + '.' });
+      'Teacher screen': 'Shows only the score, not each answer. No teacher code is set.', File: 'facts-to-20.html, ' + size + '.' });
     page.$('save').click();
     expect(page.downloads).toEqual([{ name: 'facts-to-20.html', href: 'blob:https://packets.test/' + page.files.length }]);
     page.wordsAreRight();
@@ -879,7 +884,7 @@ describe('the teacher code', () => {
     page.choose('grade', '1');
     // The box is on screen at step 2, with nothing to open first.
     expect(page.seen('code-box') && page.seen('f-code')).toBe(true);
-    expect(page.$('code-line').textContent).toBe('No code: the answers screen opens with one button when the check is finished.');
+    expect(page.$('code-line').textContent).toBe('No code: the screen at the end shows only the score, not each answer.');
     page.set('f-code', 'abc');
     expect(page.$('code-line').textContent).toBe('The teacher code needs 4 or more characters.');
     expect(() => direct('quantity_discrimination', '1', 'A', { teacherCode: 'abc' })).toThrow('The teacher code needs 4 or more characters.');
@@ -944,7 +949,7 @@ describe('the teacher code', () => {
     expect(lock.hash).toBe(codec.lockHash(CODE, lock.salt, lock.rounds));
     expect(lock.hash).not.toBe(codec.lockHash(CODE + '8', lock.salt, lock.rounds));
     expect(manifestOf(html).check.teacherCode).toMatch(/^set; kept only as a salted SHA-256 hash/);
-    expect(page.rows()['Answers screen']).toBe('Opens only with your teacher code.');
+    expect(page.rows()['Teacher screen']).toBe('Opens only with your teacher code. It shows the score and each answer.');
     page.$('save').click();
     expect(page.seen('after-code')).toBe(true);
     expect(page.$('after-code').textContent).toBe('The answers screen inside the file opens with your teacher code. This page has not kept the code.');
@@ -969,7 +974,7 @@ describe('the teacher code', () => {
     expect(again.$('f-code').value).toBe('');
     again.$('next-1').click();
     expect(again.$('f-problems').value).toBe('2+2, 3+3');
-    expect(again.$('code-line').textContent).toBe('No code: the answers screen opens with one button when the check is finished.');
+    expect(again.$('code-line').textContent).toBe('No code: the screen at the end shows only the score, not each answer.');
     again.dom.window.close();
 
     // In the file: the answers screen has no open button; it asks for the code, refuses a wrong one and opens with the right one.
@@ -990,11 +995,13 @@ describe('the teacher code', () => {
     expect(file.q('[data-review]')).toBeNull();
     await offer(CODE);
     expect(file.heading()).toBe('Results for the teacher');
-    expect(file.d.querySelectorAll('[data-review] tbody tr')).toHaveLength(2);
+    // The full review: each item with its expected answer.
+    expect([...file.d.querySelectorAll('[data-review] tbody tr')].map((tr) => [tr.children[1].textContent, tr.children[3].textContent, tr.children[4].textContent]))
+      .toEqual([['2 + 2', 'right', '4'], ['3 + 3', 'right', '6']]);
     file.close();
   });
 
-  it('with no code the file\'s answers screen opens with one button, as the page says', async () => {
+  it('with no code the file\'s teacher screen opens with one button and shows only the score, as the page says', async () => {
     const page = openPage();
     await page.own('2+2, 3+3');
     page.$('next-2').click();
@@ -1010,6 +1017,11 @@ describe('the teacher code', () => {
     expect(file.q('[data-teacher-open]').textContent).toBe('For the teacher: show results');
     file.q('[data-teacher-open]').click();
     expect(file.heading()).toBe('Results for the teacher');
+    expect(file.d.querySelectorAll('[data-review] table, [data-review] tr')).toHaveLength(0);
+    const said = [...file.d.querySelectorAll('[data-review] li')].map((li) => li.textContent);
+    expect(said).toContain('Items correct: 2 of 2 attempted (2 given).');
+    expect(said[said.length - 1]).toBe('To see each answer, make the check with a teacher code, or open the saved results file.');
+    expect(file.q('[data-review]').textContent).not.toMatch(/2 \+ 2|3 \+ 3|Expected|right|wrong/);
     file.close();
   });
 });

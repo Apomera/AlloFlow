@@ -218,6 +218,10 @@ module.exports = {
     ]));
     ctx.root.appendChild(boxList);
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [playBoxes, clearBtn]));
+    // Hear all (the player's ctx.hearAll): each sound still in the tray, in turn, marked with its number.
+    var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ before: halt, ready: function () { return !locked(); },
+      list: function () { return chipEls.map(function (c, ci) { return c.li.hidden ? null : { box: c.li, n: ci + 1, total: chipEls.length, say: function () { return ctx.play(item.chips[ci].audio); } }; }); } }) : null;
+    if (hear) ctx.root.appendChild(hear.node);
     ctx.root.appendChild(tray);
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [checkBtn]));
     draw();

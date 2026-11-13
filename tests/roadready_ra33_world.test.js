@@ -293,8 +293,8 @@ describe('Road Ready ra33: where a drive starts, and who is on the road', () => 
 describe('Road Ready ra33: a scenario can be marked "Ride-Along not ready"', () => {
   it('rideAlong: false on a scenario removes the Ride-Along option there, with a plain note; no scenario carries the flag unless the notes say so', () => {
     const flagged = RR.SCENARIOS.filter((s) => s.rideAlong === false).map((s) => s.id);
-    expect(flagged).toEqual(['suburban', 'highway', 'rural', 'night', 'fog', 'rain', 'construction']); // the round 33 sweep: see NOTES.md
-    for (const id of ['residential', 'snow', 'school_zone', 'downtown', 'dawn']) expect(RR.rideAlongSupportsScenario(id, false), id).toBe(true);
+    expect(flagged).toEqual(['construction']); // the round 33 sweep: see NOTES.md (sh40: suburban, highway, night, fog came off; ra41: rural, rain)
+    for (const id of ['residential', 'snow', 'school_zone', 'downtown', 'dawn', 'suburban', 'highway', 'night', 'fog', 'rural', 'rain']) expect(RR.rideAlongSupportsScenario(id, false), id).toBe(true);
     for (const id of flagged) expect(RR.rideAlongSupportsScenario(id, false), id).toBe(false);
     const rural = RR.SCENARIOS.find((s) => s.id === 'dawn');
     expect(RR.rideAlongSupportsScenario('dawn', false)).toBe(true);

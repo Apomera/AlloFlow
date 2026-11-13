@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 // Take-home checks in Class Analytics, 2026-11-11.
-// A check is a math measure done at home in one file (packet mode "probe"): Math Fluency, Missing Number,
+// A check is a math measure done at home in one file (packet mode "check"; "probe" before 2026-11-12): Math Fluency, Missing Number,
 // Quantity Discrimination, or a teacher's own problem set. The teacher drops its results file on
 // "Add take-home results"; the result is kept where the app keeps that measure, in the same shape, marked
 // home: true, and is never used for a benchmark, review group, risk level, growth rate or aimline.
@@ -167,6 +167,30 @@ describe('reading a check file', () => {
       'math-computation-g3-A_code2468': ['ok', 'math_dcpm', 21, 22, 25, 25, true, 'math-computation-g3'],
       'custom-facts-to-20': ['ok', 'math_dcpm', 15, 7, 8, 8, true, 'custom facts to 20'],
     });
+  });
+  // 2026-11-12: a check's results say mode "check"; the four files above, saved before, say "probe" and still read "ok".
+  it('a file saved now says mode "check"; the same file as saved before (mode "probe", its own value) reads the same and verifies', async () => {
+    const rows = PLAYED.mc.csv.slice(1).split('\r\n').filter((line) => line.startsWith('"alloflow-packet-result/1"'));
+    expect(rows).toHaveLength(26);
+    expect(rows.every((line) => line.split('","')[5] === 'check')).toBe(true);
+    const data = JSON.parse(PLAYED.mc.json);
+    expect(data.packet.mode).toBe('check');
+    // The value covers the item rows as written (SPEC.md), so the older file's value was made over rows that say "probe".
+    const prefix = [data.packet.id, data.packet.version, data.packet.form, data.sessionId].join('|') + '\n';
+    const older = rows.map((line) => line.split('","check","').join('","probe","'));
+    const value = (lines) => require('node:crypto').createHash('sha256').update(prefix + lines.join('\n'), 'utf8').digest('hex');
+    expect(value(rows)).toBe(data.integrity.value);
+    const oldCsv = PLAYED.mc.csv.split('","check","').join('","probe","').replace(data.integrity.value, value(older));
+    const oldJson = JSON.stringify({...data, packet: {...data.packet, mode: 'probe'}, integrity: {...data.integrity, value: value(older)}});
+    const now = await read(PLAYED.mc.csv, PLAYED.mc.csvName);
+    for (const [text, name] of [[oldCsv, 'old.csv'], [oldJson, 'old.json'], [PLAYED.mc.json, PLAYED.mc.jsonName]]) {
+      const s = await read(text, name);
+      expect([s.integrity, s.check.measure, s.check.score, s.check.digitsCorrect, s.check.digitsPossible], name).toEqual(['ok', 'math_dcpm', 21, 35, 38]);
+      expect(s.check).toEqual(now.check);
+      expect([s.acts, s.percent]).toEqual([{}, null]);
+    }
+    // The mode cell is covered: an old value on rows that say "check" reads as edited.
+    expect((await read(PLAYED.mc.csv.replace(data.integrity.value, value(older)), 'mixed.csv')).integrity).toBe('changed');
   });
   it('reads a check CSV whose header row was deleted: the two digit columns are still read and still checked', async () => {
     const s = await read(PLAYED.mc.csv.split('\r\n').slice(1).join('\r\n'), 'no-header.csv');
@@ -780,7 +804,7 @@ describe('Assessment Center: Save as a file for home', () => {
     const made = lastDownload();
     expect(made.name).toBe('math-computation-g3-B.html');
     const manifest = JSON.parse(/<script type="application\/json" id="packet-manifest">([\s\S]*?)<\/script>/.exec(made.html)[1]);
-    expect([manifest.packet.id, manifest.packet.form, manifest.packet.mode, manifest.check.measure, manifest.check.items]).toEqual(['math-computation-g3', 'B', 'probe', 'math_dcpm', 25]);
+    expect([manifest.packet.id, manifest.packet.form, manifest.packet.mode, manifest.check.measure, manifest.check.items]).toEqual(['math-computation-g3', 'B', 'check', 'math_dcpm', 25]);
     expect(manifest.check.teacherCode).toMatch(/^set; kept only as a salted SHA-256 hash/);
     expect(made.html).not.toContain('tulip-47');
     // Close puts the keyboard back on the action that opened the dialog.

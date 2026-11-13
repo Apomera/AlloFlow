@@ -2543,7 +2543,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // mistake in the round 33 acceptance sweep (5 seeds x 120 s; the table is in
   // the lane notes). Ride-Along is not offered there until it is clean. Take a
   // scenario off this list only with a clean sweep of it.
-  var RR_RIDEALONG_NOT_READY_IDS = ['suburban', 'highway', 'rural', 'night', 'fog', 'rain', 'construction'];
+  // sh40: suburban, highway, night and fog came off after the round 40 test drive
+  // (no scored mistakes; highway kept one unscored close-following note).
+  // ra41: rural and rain came off after the round 41 fixes and test drive (5/5 clean each).
+  var RR_RIDEALONG_NOT_READY_IDS = ['construction'];
   SCENARIOS.forEach(function(item) { if (RR_RIDEALONG_NOT_READY_IDS.indexOf(item.id) !== -1) item.rideAlong = false; });
 
   // A scenario is a short, observable practice mission rather than an
@@ -5815,6 +5818,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     if (startY == null || endY == null) return source.y;
     return Number(forwardSign) < 0 ? endY + RR_WORK_ZONE_TAPER_METERS : startY - RR_WORK_ZONE_TAPER_METERS;
   }
+  // rd42: a motorcycle is a motor vehicle and goes through a one-lane work zone as a car does.
+  // It rode its own lane through the cones instead (round 41 construction s5): it came level with
+  // a truck moving back into that lane at the end of the zone, each one's guard stopped it for the
+  // other, and the zone never emptied. On the closed side (+1) it now takes the car's path
+  // (workZoneOpposingLaneOffset); null when it is not on that side of a one-lane section.
+  function rrRiderWorkZoneLane(world, rider, station, laneMagnitude) {
+    if (!rider || rider.type !== 'motorcycle' || rider.crossStreet || Math.sin(Number(rider.heading) || 0) < 0 || !(world && world.profile && world.profile.workZone)) return null;
+    var section = workZoneSectionAt(world, station, 0);
+    return section ? workZoneOpposingLaneOffset(station, section, laneMagnitude) : null;
+  }
+  // rd42: and at the car's work-zone speed (ra33: 20 mph from 40 m before a section to 40 m after it),
+  // slowing to it at the AI's 3.5 m/s2 (signalDetectRange in updateTraffic). Infinity away from a zone.
+  function rrRiderWorkZoneSpeedCap(world, station, travelSign) {
+    if (!world || !world.profile || !world.profile.workZone || typeof world.getChunk !== 'function' || !isFinite(station)) return Infinity;
+    var sign = Number(travelSign) < 0 ? -1 : 1, zoneMps = 20 * MPH_TO_MS, cap = Infinity;
+    var index = Math.floor(station / CHUNK_SIZE);
+    for (var offset = -3; offset <= 3; offset++) {
+      var chunk = world.getChunk(index + offset);
+      if (!chunk || !chunk.workZone) continue;
+      var bounds = workZoneBoundsForChunk(index + offset);
+      var lo = bounds.opposingStopY - 40, hi = bounds.playerStopY + 40;
+      if ((sign > 0 ? station - hi : lo - station) > 0) continue; // already past it
+      cap = Math.min(cap, Math.sqrt(zoneMps * zoneMps + 2 * 3.5 * Math.max(0, sign > 0 ? lo - station : station - hi)));
+    }
+    return cap;
+  }
 
   // A modest crown drains water toward both shoulders. Divided highways use
   // a slightly gentler cross-slope, with the median as the shared high point.
@@ -6060,13 +6089,168 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
   // Guardrails belong on the outside of genuinely sharp bends. Compass heading
   // alone cannot identify a bend: a straight diagonal road has a large heading
   // but zero curvature.
-  var GUARDRAIL_CURVATURE_THRESHOLD = 0.055;
+  // rl42: "sharp" is the ra33 curve-sign note's: bends of 40 to 60 m radius. A rail
+  // starts where the bend is 60 m or tighter (GUARDRAIL_CURVATURE_THRESHOLD, 1/m)
+  // and runs on along the same bend while it stays 100 m or tighter, up to 12 m
+  // from the sharp part. The bend is read over 12 m (rrGuardrailBendAt), not 2 m.
+  var GUARDRAIL_CURVATURE_THRESHOLD = 1 / 60;
+  var RR_GUARDRAIL_RUN_CURVATURE = 1 / 100, RR_GUARDRAIL_RUN_REACH_METERS = 12;
+  // rl42: the bend (heading change per metre, signed as signedRoadCurvatureAt) over
+  // 12 m. The spline's heading takes a seeded step every metre, and the first draw of
+  // seededRandom(seed + y * 2654435761) moves on by about 2/3 of its range from one
+  // metre to the next: the steps repeat every 3 m, a zig-zag of up to +-0.075 rad on
+  // the winding roads around the real bend. Over 2 m (signedRoadCurvatureAt) the
+  // zig-zag passed the old 0.055 test on one metre in three: dashed rails, on bends of
+  // any radius. Over 12 m (four whole zig-zags) it cancels and the real bend is left.
+  function rrGuardrailBendAt(spline, worldY) {
+    if (!spline || typeof spline.headingAt !== 'function') return 0;
+    var delta = spline.headingAt(worldY + 6) - spline.headingAt(worldY - 6);
+    while (delta > Math.PI) delta -= Math.PI * 2;
+    while (delta < -Math.PI) delta += Math.PI * 2;
+    return Math.abs(delta) < 1e-9 ? 0 : delta / 12;
+  }
   function guardrailSideForRoad(spline, worldY) {
-    var curvature = signedRoadCurvatureAt(spline, worldY);
-    if (Math.abs(curvature) < GUARDRAIL_CURVATURE_THRESHOLD) return 0;
+    var curvature = rrGuardrailBendAt(spline, worldY);
+    if (Math.abs(curvature) < RR_GUARDRAIL_RUN_CURVATURE) return 0;
+    // rl42: on the gentler part of a bend, only within reach of its sharp part (walked
+    // metre by metre along the same bend, both ways).
+    for (var reachDir = -1, sharp = Math.abs(curvature) >= GUARDRAIL_CURVATURE_THRESHOLD; !sharp && reachDir <= 1; reachDir += 2) {
+      for (var reach = 1; reach <= RR_GUARDRAIL_RUN_REACH_METERS; reach++) {
+        var reachCurvature = rrGuardrailBendAt(spline, worldY + reachDir * reach);
+        if (reachCurvature * curvature <= 0 || Math.abs(reachCurvature) < RR_GUARDRAIL_RUN_CURVATURE) break;
+        if (Math.abs(reachCurvature) >= GUARDRAIL_CURVATURE_THRESHOLD) { sharp = true; break; }
+      }
+    }
+    if (!sharp) return 0;
     // Positive curvature turns toward the +perpendicular (driver-right) side,
     // so the outside rail is on the opposite side.
     return curvature > 0 ? -1 : 1;
+  }
+  // ra41: where the guardrail of one grid row stands: offset along the road's normal (mainRoadWorldPoint,
+  // as the road ribbon is), at the station whose rail point lies on the row's middle (a few fixed-point
+  // passes). The 3D rail and the guardrail cells both use it. Returns { x, y, station }.
+  function rrGuardrailRailPoint(spline, rowY, side, offset) {
+    var dir = side > 0 ? 1 : -1, world = { spline: spline }, mid = rowY + 0.5, station = mid, p = null;
+    for (var pass = 0; pass < 4; pass++) {
+      p = mainRoadWorldPoint(world, station, dir * offset);
+      station += mid - p.y;
+    }
+    p = mainRoadWorldPoint(world, station, dir * offset);
+    return { x: p.x, y: p.y, station: station };
+  }
+  // ra41: the guardrail cell of one grid row: the one holding the rail point, moved outward until no
+  // corner is inside the paved half width. By a world-X offset a cell reached 0.2 m onto the pavement on a
+  // bend (round 40 construction s2: Ride-Along pulling over hit it). No spline: the old X offset. { x, cell }.
+  function rrGuardrailCellAt(spline, centerX, rowY, side, offset, pavedHalfWidth) {
+    var dir = side > 0 ? 1 : -1;
+    if (!spline) {
+      var flatX = (Number(centerX) || 0) + dir * offset;
+      return { x: flatX, cell: dir > 0 ? Math.ceil(flatX) : Math.floor(flatX) };
+    }
+    var world = { spline: spline }, p = rrGuardrailRailPoint(spline, rowY, dir, offset);
+    var cell = Math.floor(p.x);
+    for (var step = 0; step < 4; step++) {
+      var inside = false;
+      for (var k = 0; k < 4; k++) {
+        if (mainRoadLocalPoint(world, cell + (k & 1), rowY + (k >> 1)).lateral * dir < pavedHalfWidth) inside = true;
+      }
+      if (!inside) break;
+      cell += dir;
+    }
+    return { x: p.x, cell: cell };
+  }
+  // rl42: the cells the rail line crosses in one grid row (from the row's start line, y, to
+  // its end line, y + 1), the inner one moved outward until no corner is nearer the road than
+  // pavedHalfWidth (rrGuardrailCellAt's test; generateChunk passes the rail line's own offset).
+  // Returns { inner, outer } (cell X, inner = nearer the road).
+  function rrGuardrailRowEnds(spline, rowY, side, offset, pavedHalfWidth) {
+    var dir = side > 0 ? 1 : -1, world = { spline: spline };
+    var a = rrGuardrailRailPoint(spline, rowY - 0.5, dir, offset).x, b = rrGuardrailRailPoint(spline, rowY + 0.5, dir, offset).x;
+    var inner = Math.floor(dir > 0 ? Math.min(a, b) : Math.max(a, b)), outer = Math.floor(dir > 0 ? Math.max(a, b) : Math.min(a, b));
+    for (var step = 0; step < 6; step++) {
+      var inside = false;
+      for (var k = 0; k < 4; k++) {
+        if (mainRoadLocalPoint(world, inner + (k & 1), rowY + (k >> 1)).lateral * dir < pavedHalfWidth) inside = true;
+      }
+      if (!inside) break;
+      inner += dir;
+    }
+    return { inner: inner, outer: (outer - inner) * dir > 0 ? outer : inner };
+  }
+  // rl42: the guardrail cells of one grid row, or null where no rail stands. Each row's run
+  // of cells reaches out to where the rows before and after it begin, so two rows of one
+  // rail always share a cell edge: no gap between them, not even a diagonal one, and
+  // nothing nearer the road than rrGuardrailRowEnds allows. { side, from, to, x, y } (cells
+  // from..to; x, y = the rail point on the row's middle, which both junction tests read).
+  // memo (optional): an object kept across the rows of one chunk, so each row is worked out once.
+  function rrGuardrailRowCells(spline, rowY, offset, pavedHalfWidth, memo) {
+    var cache = memo || {};
+    var sideAt = function(y) {
+      if (!Object.prototype.hasOwnProperty.call(cache, 's' + y)) cache['s' + y] = guardrailSideForRoad(spline, y);
+      return cache['s' + y];
+    };
+    var endsAt = function(y, s) {
+      if (!cache['e' + y]) cache['e' + y] = rrGuardrailRowEnds(spline, y, s, offset, pavedHalfWidth);
+      return cache['e' + y];
+    };
+    var side = sideAt(rowY);
+    if (!side) return null;
+    var own = endsAt(rowY, side), outer = own.outer;
+    for (var n = -1; n <= 1; n += 2) {
+      if (sideAt(rowY + n) !== side) continue;
+      var nextInner = endsAt(rowY + n, side).inner;
+      if ((nextInner - outer) * side > 0) outer = nextInner;
+    }
+    var mid = rrGuardrailRailPoint(spline, rowY, side, offset);
+    return { side: side, from: Math.min(own.inner, outer), to: Math.max(own.inner, outer), x: mid.x, y: mid.y };
+  }
+  // rl42: the 3D guardrail of one chunk in grid coordinates: what the renderer draws
+  // (ROADSIDE FURNITURE). A row has rail where its grid row holds guardrail cells
+  // (generateChunk) and its rail point is 1.1 m clear of every cross street (the
+  // renderer's visual clearance). Posts stand on even metres of station and at both ends
+  // of a run; a beam joins each post to the next. { posts: [{ x, y, station, side, end }],
+  // beams: [{ a, b, side, fromRow, toRow }] }.
+  function rrGuardrailRailPlan(world, chunkIndex, offset) {
+    var spline = world && world.spline, plan = { posts: [], beams: [] }, memo = {};
+    if (!spline || typeof world.getChunk !== 'function') return plan;
+    var rowSide = function(rowY) {
+      if (Object.prototype.hasOwnProperty.call(memo, rowY)) return memo[rowY];
+      var side = guardrailSideForRoad(spline, rowY);
+      if (side) {
+        var rowChunk = Math.floor(rowY / CHUNK_SIZE), cells = world.getChunk(rowChunk).cells;
+        var row = cells && cells[rowY - rowChunk * CHUNK_SIZE];
+        if (!row || row.indexOf(9) < 0) side = 0;
+      }
+      if (side) {
+        var mid = rrGuardrailRailPoint(spline, rowY, side, offset);
+        if (crossStreetCorridorAt(world, mid.x, mid.y, 1.1)) side = 0;
+      }
+      memo[rowY] = side;
+      return side;
+    };
+    // where the rail line crosses the start line of row lineY
+    var linePoint = function(lineY, side, end) {
+      var p = rrGuardrailRailPoint(spline, lineY - 0.5, side, offset);
+      return { x: p.x, y: p.y, station: p.station, side: side, end: !!end };
+    };
+    for (var y = chunkIndex * CHUNK_SIZE; y < (chunkIndex + 1) * CHUNK_SIZE; y++) {
+      var here = rowSide(y), before = rowSide(y - 1);
+      if (before && before !== here) plan.posts.push(linePoint(y, before, true));
+      if (!here || (before === here && positiveModulo(y, 2) !== 0)) continue;
+      var to = y + 1;
+      if (positiveModulo(to, 2) !== 0 && rowSide(to) === here) to++;
+      var start = linePoint(y, here, before !== here);
+      plan.posts.push(start);
+      plan.beams.push({ a: start, b: linePoint(to, here, rowSide(to) !== here), side: here, fromRow: y, toRow: to - 1 });
+    }
+    return plan;
+  }
+  // rl42: is there rail on `side` within 2 rows of gridY? railRows = { row: side } (the renderer fills it
+  // from rrGuardrailRailPlan's beams). Driveways and mailboxes are not placed there.
+  function rrGuardrailRowsNear(railRows, gridY, side) {
+    var row = Math.floor(gridY);
+    for (var d = -2; d <= 2; d++) if (railRows && railRows[row + d] === side) return true;
+    return false;
   }
 
   // Superelevation depends on curvature, never on absolute compass heading.
@@ -6395,6 +6579,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       if (Math.abs(riderRel.ahead) < (Number(vehicleLength) || 4.5) * 0.5 + 2.5 &&
           riderRel.lateralDifference * -sign > 0.8 && riderRel.lateralDifference * -sign < 3.2) return true;
     }
+    // sh40: (or a vehicle is on the shoulder where the car would stop, level with it: no room)
+    if (world && world.spline && (traffic || []).length) {
+      var shoulderAt = trafficRightShoulderOffset(roadProfileAt(world, mainRoadLocalPoint(world, car.x, car.y).longitudinal, world.profile), sign);
+      var onShoulder = (traffic || []).filter(function(o) { return o && !o.crossStreet; }).map(function(o) {
+        var s = vehicleFootprint(o.type); return { actor: o, length: s.length, width: s.width };
+      });
+      if (rrPullOverStripTaken(world, car, vehicleLength, shoulderAt - vehicleFootprint().width / 2,
+          shoulderAt + vehicleFootprint().width / 2, onShoulder, 0)) return true;
+    }
     var list = signals || [];
     for (var i = 0; i < list.length; i++) {
       var signal = list[i];
@@ -6435,6 +6628,81 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     }
     return false;
   }
+  // ra41: Ride-Along drives on through a junction within 22 m ahead or 9 m behind before it pulls
+  // over for an emergency vehicle (ra33). A pull-over already under way when that junction comes in
+  // (the line it follows 0.3 m or more from its lane toward the shoulder) is kept when the car can still finish
+  // the move and stop on the shoulder 1 m short of the stop line (as at a red light) at the hold's own
+  // rate, 0.45 x grip, for every junction in that window. Decided once per junction and emergency
+  // (state._emKeep), so the car does not swing in and out. Manual p. 10-9: "If you are at an
+  // intersection, get out of it before you pull over": being before it is not being in it. It used
+  // to drift back to its lane and stop there, short of the line (round 40 rain s1, -10 on green).
+  // Not in a work zone. Returns { ahead } (front bumper to the stop line, m) or null (drive on).
+  function rideAlongKeepPullOverAtJunction(world, car, carSize, signals, state, inWindow, profile, dt, weather, emergency) {
+    if (!state) return null;
+    if (!inWindow || state._emKeepFor !== emergency) { state._emKeep = null; state._emKeepFor = emergency; }
+    if (!inWindow || state._emKeep === false || !world || !world.spline || !car) return null;
+    var here = mainRoadLocalPoint(world, car.x, car.y), sign = mainRoadTravelSign(world, car);
+    var side = sign < 0 ? 1 : -1, v = Math.abs(Number(car.speed) || 0), length = (carSize && carSize.length) || 4.5;
+    // under way: the line the car follows (ras.pathOffset; the car lags it) has left the lane by 0.3 m
+    var nearest = null, list = signals || [], feasible = state.homeLane != null && !workZoneSectionAt(world, here.longitudinal, 4) &&
+      ((state.pathOffset != null ? state.pathOffset : here.lateral) - state.homeLane) * side >= 0.3;
+    // the move still to make (to Ride-Along's shoulder line, raShoulderOffset) and the road it takes at
+    // Ride-Along's emergency side rate, min(1.6, 0.2 + 0.25 v) m/s, from at least walking pace
+    var layout = roadLayoutFor(profile || {});
+    var shoulder = Math.max(layout.edgeLineOffset - 0.02, Math.min(Math.abs(trafficRightShoulderOffset(profile || {}, sign)),
+      layout.pavedHalfWidth - ((carSize && carSize.width) || 1.8) * 0.5 - 0.12));
+    var vMove = Math.max(v, 3 * MPH_TO_MS);
+    var moveRoad = Math.max(0, shoulder - here.lateral * side) * vMove / Math.min(1.6, 0.2 + 0.25 * vMove) + 2;
+    for (var i = 0; i < list.length; i++) {
+      var sig = list[i];
+      if (!sig || (sig.type !== 'light' && sig.type !== 'stop')) continue;
+      var sigAhead = (mainRoadLocalPoint(world, sig.x, sig.y).longitudinal - here.longitudinal) * sign;
+      if (!(sigAhead > -9 && sigAhead < 22)) continue;
+      var line = controlDistanceAhead(world, sig, car, length);
+      var room = line == null ? -1 : line - 1 - v * (Math.max(0, Number(dt) || 0) + 0.1);
+      if (state._emKeep == null && (!(room > 0) || v * v > 2 * 0.45 * frictionCoef(weather) * 9.81 * room || room < moveRoad)) feasible = false;
+      if (line == null || line < -0.3) { state._emKeep = false; return null; }
+      if (!nearest || line < nearest.ahead) nearest = { ahead: line };
+    }
+    if (state._emKeep == null) state._emKeep = !!nearest && feasible;
+    return state._emKeep ? nearest : null;
+  }
+  // sh40: the strip a driver moves across to pull over for an emergency vehicle (road-frame
+  // lateral from inner to outer, m) is taken when a body reaches 0.25 m into it (the following
+  // test's 0.25 m) and is level with the driver (half of each length + rrHeldAtControl's 2.5 m)
+  // or will be before the move is done (closing speed x moveSeconds, as rideAlongRiderBlocksPullOver).
+  // occupants: [{ actor, length, width }]. 29-A §2054(4): "as near as practicable to the right-hand curb".
+  function rrPullOverStripTaken(world, mover, moverLength, inner, outer, occupants, moveSeconds) {
+    var lo = Math.min(inner, outer), hi = Math.max(inner, outer);
+    if (!(hi - lo > 0.25) || !world || !world.spline || !mover) return false;
+    var list = occupants || [];
+    for (var i = 0; i < list.length; i++) {
+      var other = list[i] && list[i].actor;
+      if (!other || other === mover || other._hit) continue;
+      var rel = roadRelativeTarget(world, mover, other);
+      var half = (Number(list[i].width) || 0) / 2;
+      if (Math.min(hi, rel.target.lateral + half) - Math.max(lo, rel.target.lateral - half) < 0.25) continue;
+      var gaining = Math.abs(Number(other.speed) || 0) - Math.abs(Number(mover.speed) || 0);
+      var closing = Math.max(0, rel.ahead < 0 ? gaining : -gaining);
+      if (Math.abs(rel.ahead) < ((Number(moverLength) || 4.5) + (Number(list[i].length) || 0)) * 0.5 + 2.5 +
+          closing * Math.max(0, Number(moveSeconds) || 0)) return true;
+    }
+    return false;
+  }
+  // sh40: one step of an AI driver's emergency lane move (to the shoulder, or back to its lane).
+  // It moves no faster sideways than Ride-Along's emergency side rate, min(1.6, 0.2 + 0.25 v) m/s
+  // (a stopped car slid 2.6 m across in 0.5 s, into Ride-Along), and holds where it is while the
+  // strip it moves across is taken. Returns { offset, held }.
+  function trafficEmergencyLaneStep(world, vehicle, target, dt, occupants) {
+    var from = Number(vehicle.laneOffset) || 0;
+    var size = vehicleFootprint(vehicle.type);
+    var rate = Math.min(1.6, 0.2 + Math.abs(Number(vehicle.speed) || 0) * 0.25);
+    var side = target > from ? 1 : -1;
+    if (rrPullOverStripTaken(world, vehicle, size.length, from + side * size.width / 2,
+        target + side * size.width / 2, occupants, Math.abs(target - from) / rate)) return { offset: from, held: true };
+    var step = (target - from) * Math.min(1, dt * 1.5);
+    return { offset: from + Math.max(-rate * dt, Math.min(rate * dt, step)), held: false };
+  }
   // An AI driver's speed for holding the following gap behind a leader (tr32).
   // AI cars closed on the learner until 1.5 m from the bumper; they now keep the
   // gap the tool teaches (multiplier never below 1). gapMeters is bumper to bumper.
@@ -6442,6 +6710,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
     var desired = recommendedFollowingMeters(Math.max(0, Number(followerSpeedMps) || 0), weather,
       Math.max(1, Number(multiplier) || 1));
     return Math.max(0, Math.max(0, Number(leadSpeedMps) || 0) + ((Number(gapMeters) || 0) - desired) / 1.5);
+  }
+  // rd42: may an AI driver move into the lane at targetOffset now? Only if it keeps the following gap the
+  // tool teaches and scores (safeFollowingFeet: the tailgate check's seconds) to the vehicle it moves in
+  // behind, and leaves the same gap, at that vehicle's own speed, to the vehicle it moves in front of. It
+  // checked only for AI cars level with it (within 5 m) and never for the learner: round 41 highway s1, a
+  // driver moved in 47 m ahead of Ride-Along at 27 m/s (1.8 s) and the learner lost 3 points.
+  // others: [{ actor, length, width }] going the same way (the learner included). Bumper to bumper, on the road.
+  function rrLaneChangeGapClear(world, mover, moverSize, targetOffset, others, weather) {
+    var size = moverSize || vehicleFootprint(mover && mover.type);
+    for (var i = 0; i < (others || []).length; i++) {
+      var other = others[i];
+      if (!other || !other.actor || other.actor === mover) continue;
+      var rel = trafficRelativeRoadPosition(world, mover, other.actor);
+      if (!rel.sameCorridor || !rel.sameDirection || !rel.to) continue;
+      // in the target lane: the same body corridor the AI follows by (trafficFollowingControl)
+      if (Math.abs(rel.to.lateral - targetOffset) >= ((Number(other.width) || 1.8) + size.width) / 2 + 0.25) continue;
+      var centre = Math.abs(followingCenterDistance(world, mover, other.actor,
+        { eligible: true, ahead: rel.ahead, from: rel.from, to: rel.to }));
+      var bumper = centre - ((Number(other.length) || 4.5) + size.length) / 2;
+      var followerMps = rel.ahead > 0 ? Math.abs(Number(mover.speed) || 0) : Math.abs(Number(other.actor.speed) || 0);
+      if (!(bumper >= safeFollowingFeet(followerMps * MS_TO_MPH, weather) / FT_PER_M)) return false;
+    }
+    return true;
   }
   // Order of arrival at a stop sign includes the learner (manual: "the driver
   // reaching the intersection first gets to go first"). An AI driver who stopped
@@ -8332,22 +8623,39 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       isHighway: !!(profile && profile.highway)
     };
     var generatedGuardrailOffset = roadsideOffsetFor(guardrailLayoutSource, 0.25);
-    for (var gry = 2; gry < CHUNK_SIZE - 2; gry++) {
+    // rl42: every row of the chunk (rows 0, 1, 30 and 31 too: no gap where two chunks meet).
+    var guardrailMemo = {};
+    for (var gry = 0; gry < CHUNK_SIZE; gry++) {
       var guardrailWorldY = chunkBaseY + gry;
       var generatedGuardrailSide = guardrailSideForRoad(spline, guardrailWorldY);
       if (!generatedGuardrailSide) continue;
-      var guardrailWorldX = (spline ? spline.centerAt(guardrailWorldY) : roadCenters[gry]) +
-        generatedGuardrailSide * generatedGuardrailOffset;
-      var generatedGuardrailX = generatedGuardrailSide > 0
-        ? Math.ceil(guardrailWorldX) : Math.floor(guardrailWorldX);
-      if (generatedGuardrailX < 0 || generatedGuardrailX >= MAP_SIZE) continue;
+      // rl42: every cell the rail line crosses in this row, joined to the rows before and after it
+      // (rrGuardrailRowCells), none nearer the road than the rail line itself (0.25 m off the paved
+      // edge). Ride-Along stopped on its emergency shoulder line has its side 2 cm inside the paved
+      // edge, and on a bend a car's corners stand out a further length^2 / (8 x radius): 6 cm for a
+      // sedan on a 40 m bend. With cells right at the paved edge it touched them on the rail bends.
+      var guardrailCells = rrGuardrailRowCells(spline, guardrailWorldY, generatedGuardrailOffset,
+        generatedGuardrailOffset, guardrailMemo);
+      var guardrailWorldX = guardrailCells.x;
       if (intersectionPose) {
+        // rl42: at the rail point itself (x and y), the point the renderer's clearance test reads.
         var guardrailCrossLocal = crossStreetLocalPoint(
-          intersectionPose, guardrailWorldX, guardrailWorldY);
+          intersectionPose, guardrailWorldX, guardrailCells.y);
         if (Math.abs(guardrailCrossLocal.longitudinal) <= intersectionPose.length * 0.5 + 1.1 &&
             Math.abs(guardrailCrossLocal.lateral) <= intersectionPose.width * 0.5 + 1.1) continue;
       }
-      chunk.cells[gry][generatedGuardrailX] = 9;
+      for (var generatedGuardrailX = guardrailCells.from; generatedGuardrailX <= guardrailCells.to; generatedGuardrailX++) {
+        if (generatedGuardrailX < 0 || generatedGuardrailX >= MAP_SIZE) continue;
+        // rl42: and no corner of a cell on the cross street's own pavement.
+        for (var guardrailCorner = 0, guardrailOnCross = false; intersectionPose && guardrailCorner < 4; guardrailCorner++) {
+          var guardrailCornerLocal = crossStreetLocalPoint(intersectionPose,
+            generatedGuardrailX + (guardrailCorner & 1), guardrailWorldY + (guardrailCorner >> 1));
+          if (Math.abs(guardrailCornerLocal.longitudinal) <= intersectionPose.length * 0.5 &&
+              Math.abs(guardrailCornerLocal.lateral) <= intersectionPose.width * 0.5) guardrailOnCross = true;
+        }
+        if (guardrailOnCross) continue;
+        chunk.cells[gry][generatedGuardrailX] = 9;
+      }
     }
 
     // Store metadata for 3D rendering and signal placement
@@ -11044,7 +11352,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           s.state = 'yellow'; s._flaggerNextState = 'red'; s.timer = 0;
         } else if (s.state === 'red' && s.timer > s.redDur && !(s._zoneHold === 'committed' && s.timer < s.redDur + 20)) {
           s.state = 'yellow'; s._flaggerNextState = 'green'; s.timer = 0;
-        } else if (s.state === 'yellow' && s.timer > s.yellowDur && (s._zoneHold !== 'clearing' || s.timer > s.yellowDur + 30)) {
+        // rd42: the all-stop is never cut short. After 30 s it used to give the other side SLOW with
+        // drivers still in the one-lane section (round 41 construction s5: two directions in it at once).
+        } else if (s.state === 'yellow' && s.timer > s.yellowDur && s._zoneHold !== 'clearing') {
           s.state = s._flaggerNextState || 'red'; s._flaggerNextState = null; s.timer = 0;
         }
         return;
@@ -16193,6 +16503,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     length: vehicleFootprint(currentVehicle.id).length,
                     stopMeters: rideAlongComfortStopMeters(Math.abs(wzHoldCar.speed), currentScenario.weather) });
                 }
+                // rd42: a motorcycle obeys the flagger (rrRiderWorkZoneLane), so the flagger waits for it too.
+                (cyclistsRef.current || []).forEach(function(wzRider) {
+                  if (!wzRider || wzRider._hit || wzRider.crossStreet || wzRider._roundaboutState || wzRider.type !== 'motorcycle') return;
+                  var wzRiderSpeed = Math.abs(Number(wzRider.speed) || 0);
+                  wzHoldVehicles.push({ station: typeof wzRider._roadStation === 'number' ? wzRider._roadStation : mainRoadLocalPoint(wzHoldWorld, wzRider.x, wzRider.y).longitudinal,
+                    travelSign: Math.sin(wzRider.heading) >= 0 ? 1 : -1, speed: wzRiderSpeed, length: vulnerableRoadUserFootprint(wzRider).length,
+                    stopMeters: wzRiderSpeed * wzRiderSpeed / (2 * 3.5) + 2 });
+                });
                 (signalsRef.current || []).forEach(function(wzSignal) {
                   if (wzSignal && wzSignal.type === 'flagger') wzSignal._zoneHold = workZoneFlaggerHold(wzSignal, wzHoldVehicles);
                 });
@@ -17353,6 +17671,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var raEmSigAhead = (mainRoadLocalPoint(raWorld, raEmSig.x, raEmSig.y).longitudinal - raCurrent.longitudinal) * raSign;
                 if (raEmSigAhead > -9 && raEmSigAhead < 22 && Math.abs(raCurrent.lateral - raOuterLane) < raLayoutNow.laneWidth * 1.6) raEmJunction = true;
               }
+              // ra41: unless a pull-over under way can stop on the shoulder short of the stop line.
+              var raEmKeep = rideAlongKeepPullOverAtJunction(raWorld, car, raPlayerSize, raEmSignals, ras, raEmJunction,
+                raLiveProfile, dt, scn.weather, raEmergency);
+              if (raEmKeep) raEmJunction = false;
               if (raEmJunction && !ras.pulledOver) { raEmergencyHold = false; raEmergencyYield = false; }
             }
             var raShoulderOffset = trafficRightShoulderOffset(raLiveProfile, raSign);
@@ -17403,6 +17725,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // ra33: firmer than a routine stop (0.45 x grip; the hard-brake line is 0.74 x grip).
             if (raEmergencyHold) raStopBrake = raSpeedMph > (raOnShoulder ? 3 : 10) ? 0.45 * frictionCoef(scn.weather) / 1.05 : 0;
             if (raEmRiderBeside && raSpeedMph > 3) raStopBrake = Math.max(raStopBrake, 0.3 * frictionCoef(scn.weather) / 1.05);
+            // ra41: the pull-over kept before a junction stops 1 m short of its stop line.
+            if (raEmergencyHold && raEmKeep) {
+              var raEmKeepPlan = rideAlongStopPlan(raEmKeep.ahead, raSpeedMps, dt, scn.weather, 1.0);
+              raTarget = Math.min(raTarget, raEmKeepPlan.targetMph);
+              raStopBrake = Math.max(raStopBrake, raEmKeepPlan.brake);
+            }
             if (raNearestControl) {
               var raControl = raNearestControl.signal;
               var raControlAhead = raNearestControl.ahead;
@@ -17538,7 +17866,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 Math.max(1, raLaneWidth * 0.45) ||
                 // bk39: or its body reaches into the car's path (a van pulled over for an
                 // ambulance on a narrow shoulder, 0.1 m in the lane: round 39 lane s8 crash)
-                Math.abs(raTrafficRel.lateralDifference) < (raPlayerSize.width + tcSize.width) * 0.5;
+                Math.abs(raTrafficRel.lateralDifference) < (raPlayerSize.width + tcSize.width) * 0.5 ||
+                // sh40: or comes within 0.15 m of the car's side on the line it follows (the margin the AI keeps
+                // from the pavement edge; a truck pulled over on a one-lane road sat 0.03 m from it: round 40 dawn s2 crash)
+                (ras.pathOffset != null && Math.abs(raTrafficRel.target.lateral - ras.pathOffset) < (raPlayerSize.width + tcSize.width) * 0.5 + 0.15);
               // tr32: look for a leader out to the following gap itself (4 s is
               // 40 m at 22 mph; the 25 m plan distance held only about 2.5 s).
               if (raTrafficRel.ahead > 0 && raTrafficRel.ahead < Math.max(raPlanDistance,
@@ -17725,6 +18056,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             raHazardPathExtra = 0;
             var raCyclists = cyclistsRef.current || [];
             var raRiderPassMagnitude = null;
+            // ra41: an oncoming motorcycle is oncoming traffic too (it is in this list, not in the
+            // vehicles': round 40 rural s4, one came level as the car stood out toward the centre line).
+            for (var rmo = 0; rmo < raCyclists.length && raTwoLaneRoad && !raOncomingClose; rmo++) {
+              var raMoto = raCyclists[rmo];
+              if (!raMoto || raMoto._hit || raMoto.type !== 'motorcycle' || raMoto.crossStreet ||
+                  Math.cos((Number(raMoto.heading) || 0) - car.heading) >= -0.35) continue;
+              var raMotoRel = roadRelativeTarget(raWorld, car, raMoto);
+              if (raMotoRel.ahead > -4 && raMotoRel.ahead < Math.max(40, (raSpeedMps + Math.abs(Number(raMoto.speed) || 0)) * 5)) raOncomingClose = true;
+            }
             for (var rcy = 0; rcy < raCyclists.length; rcy++) {
               var raRider = raCyclists[rcy];
               if (!raRider || raRider._hit) continue;
@@ -17756,13 +18096,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var raRiderGapNow = raRiderRel.ahead - (raPlayerSize.length + raRiderSize.length) * 0.5;
                 if ((raOncomingClose || raRiderBend > 1 / 120 ||
                     workZoneSectionAt(raWorld, raCurrent.longitudinal + raSign * Math.min(60, raRiderRel.ahead + 30), 12)) &&
-                    (raRiderGapNow > raRiderDropBack || raRider._raNoPass)) {
+                    // ra41: or when the car is wholly behind the rider and no faster: it falls back without
+                    // braking (round 40 rural s5: it set off beside a rider, who drew ahead, and "finished"
+                    // that pass at 0.9 m as a car came the other way; hard brake).
+                    (raRiderGapNow > raRiderDropBack || raRider._raNoPass || (raRiderGapNow > 0 && raSpeedMps <= raRiderV))) {
                   raRiderPass = null;
                   raRider._raNoPass = true;
                 } else raRider._raNoPass = false;
               } else if (raRider) raRider._raNoPass = false;
+              // ra41: a rider behind the car's rear is no longer being passed: the car goes back to its
+              // lane line at once when that line is clear of the rider (0.3 m between the bodies, the
+              // "beside its path" test below). It kept the pass line 3 m longer, for a rider behind it
+              // (round 40 rural s4). 29-A 2070(1): back to the right "until safely clear of the passed vehicle".
+              var raRiderClearOfLane = raRiderPass != null && ras.homeLane != null &&
+                Math.abs(mainRoadLocalPoint(raWorld, raRider.x, raRider.y).lateral - ras.homeLane) - (raPlayerSize.width + raRiderSize.width) * 0.5 > 0.3;
               if (raRiderPass != null && Math.abs(raRiderRel.lat) < raRiderPathWidth + 1 &&
-                  raRiderRel.ahead > -(raPlayerSize.length + raRiderSize.length) * 0.5 - 3 &&
+                  raRiderRel.ahead > -(raPlayerSize.length + raRiderSize.length) * 0.5 - (raRiderClearOfLane ? 0 : 3) &&
                   raRiderRel.ahead < Math.max(raControlDistance, 40)) {
                 raRiderPassMagnitude = raRiderPassMagnitude == null ? raRiderPass : Math.min(raRiderPassMagnitude, raRiderPass);
                 // ra33: come down to "rider + 10 mph" before the rider, at the
@@ -19111,6 +19460,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
           var trafficRiders = (cyclistsRef.current || []).filter(function(rider) {
             return rider && !rider._hit && !rider._roundaboutState;
           });
+          // sh40: everything an emergency pull-over must not move onto (rrPullOverStripTaken).
+          var emStripList = null;
+          var emergencyStripOccupants = function() {
+            if (emStripList) return emStripList;
+            var learnerSize = vehicleFootprint(currentVehicle && currentVehicle.id);
+            emStripList = (carRef.current ? [{ actor: carRef.current, length: learnerSize.length, width: learnerSize.width }] : [])
+              .concat(traffic.filter(function(o) { return o && !o.crossStreet; }).map(function(o) {
+                var s = vehicleFootprint(o.type); return { actor: o, length: s.length, width: s.width }; }))
+              .concat(trafficRiders.map(function(r) { var s = vulnerableRoadUserFootprint(r); return { actor: r, length: s.length, width: s.width }; }))
+              .concat(peds.map(function(p) { return { actor: p, length: 0.56, width: 0.56 }; })); // the walker guard's 0.28 m radius
+            return emStripList;
+          };
           var guardTrafficRiderMotion = function(actor, previous) {
             if (!trafficRiders.length || actor._roundaboutState) return true;
             var size = vehicleFootprint(actor.type);
@@ -19628,6 +19989,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             // ── Yield to emergency vehicles: pull right + slow ──
             // When an emergency vehicle is active, every traffic car slows dramatically
             // and shifts its lane offset toward the right shoulder (outer edge).
+            t._emPullOverHeld = false;
             if (emergency && !emergency.responded) {
               var erel = aheadOf(emergency.x, emergency.y);
               // Curve-safe "on the same road" check: both AI and emergency project onto
@@ -19668,7 +20030,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                     t.blinker = 1; // right signal — pulling right
                   }
                   // Gradual pull-over (not instant snap)
-                  t.laneOffset += (pullOver - t.laneOffset) * Math.min(1, dt * 1.5);
+                  // sh40: not across a lane or onto a shoulder that is taken: stop in lane instead.
+                  var emPullStep = trafficEmergencyLaneStep(infiniteWorldRef.current, t, pullOver, dt, emergencyStripOccupants());
+                  t.laneOffset = emPullStep.offset;
+                  t._emPullOverHeld = emPullStep.held;
                 }
               } else if (t._emergencyPullOver) {
                 // The emergency vehicle has passed. Return to the exact authored
@@ -19678,7 +20043,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var returnLane = isFinite(t._emergencyHomeLaneOffset)
                   ? t._emergencyHomeLaneOffset
                   : nearestAuthoredTrafficLaneOffset(returnProfile, returnTravelSign, t.laneOffset);
-                t.laneOffset += (returnLane - t.laneOffset) * Math.min(1, dt * 1.5);
+                t.laneOffset = trafficEmergencyLaneStep(infiniteWorldRef.current, t, returnLane, dt, emergencyStripOccupants()).offset;
                 if (Math.abs(t.laneOffset - returnLane) < 0.1) {
                   t.laneOffset = returnLane;
                   t._emergencyPullOver = false;
@@ -19694,7 +20059,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 ? t._emergencyHomeLaneOffset
                 : nearestAuthoredTrafficLaneOffset(
                     returnProfilePost, returnTravelSignPost, t.laneOffset);
-              t.laneOffset += (returnLanePost - t.laneOffset) * Math.min(1, dt * 1.5);
+              t.laneOffset = trafficEmergencyLaneStep(infiniteWorldRef.current, t, returnLanePost, dt, emergencyStripOccupants()).offset;
               if (Math.abs(t.laneOffset - returnLanePost) < 0.1) {
                 t.laneOffset = returnLanePost;
                 t._emergencyPullOver = false;
@@ -20041,6 +20406,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             if (railStopDistance < Infinity) {
               targetSpeed = Math.min(targetSpeed, Math.sqrt(2 * 3.5 * Math.max(0, railStopDistance - 0.3)));
             }
+            // sh40: held in lane for an emergency vehicle (no room to pull over): stop there at 3.5 m/s2.
+            if (t._emPullOverHeld) targetSpeed = Math.min(targetSpeed, Math.max(0, t.speed - 3.5 * 0.5));
             t.speed += (targetSpeed - t.speed) * speedLerp;
             if (pedestrianControl.required) {
               t.speed = Math.min(t.speed, pedestrianControl.targetSpeed);
@@ -20223,6 +20590,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // Within ±5m ahead/behind along the curved road station?
                 if (Math.abs(pendingRel.ahead) < 5) stillBlocked = true;
               });
+              // rd42: and the move keeps the taught following gap both ways, the learner included (rrLaneChangeGapClear).
+              if (!stillBlocked && !rrLaneChangeGapClear(infiniteWorldRef.current, t, null, pOff,
+                  traffic.filter(function(o) { return o && !o.crossStreet; }).map(function(o) { return { actor: o, length: vehicleFootprint(o.type).length, width: vehicleFootprint(o.type).width }; })
+                    .concat(trafficRiders.filter(function(r) { return r.type === 'motorcycle'; }).map(function(r) { var rs = vulnerableRoadUserFootprint(r); return { actor: r, length: rs.length, width: rs.width }; }))
+                    .concat(playerCar ? [{ actor: playerCar, length: playerTrafficSize.length, width: playerTrafficSize.width }] : []),
+                  scn.weather)) stillBlocked = true;
               if (stillBlocked) {
                 t._pendingLaneOffset = null;
                 t._pendingLaneTimer = 0;
@@ -21832,7 +22205,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
             var speed = Math.max(0, Number(cy.speed) || 0), nearest = null;
             var range = Math.max(14, speed * 1.2 + speed * speed / 7 + vulnerableRoadUserFootprint(cy).length / 2 + 2);
             (signalsRef.current || []).forEach(function(signal) {
-              if (!signal || signal.type !== 'light') return;
+              // rd42: a motorcycle also stops at a flagger's STOP paddle, as a car does.
+              if (!signal || (signal.type !== 'light' && !(signal.type === 'flagger' && cy.type === 'motorcycle'))) return;
               var candidate = riderSignalDistance(cy, signal, range);
               if (!candidate || candidate.distance < -1e-6 || candidate.distance > range) return;
               if (!nearest || candidate.distance < nearest.distance) nearest = candidate;
@@ -21842,6 +22216,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               return { required: false, targetSpeed: Infinity };
             }
             var indication = trafficSignalIndication(nearest.signal, nearest.approachGroup);
+            if (nearest.signal.type === 'flagger') indication = flaggerStopsDirection(nearest.signal.state, nearest.travelSign) ? 'red' : 'green';
             var key = nearest.approachGroup + ':' + nearest.travelSign + ':' +
               String(nearest.signal._chunk == null ? '' : nearest.signal._chunk) + ':' + nearest.signal.x + ':' + nearest.signal.y;
             var stop = indication === 'red';
@@ -21998,6 +22373,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               if (cy._bikeLane === undefined) cy._bikeLane = riderLaneOff;
               else cy._bikeLane += (riderLaneOff - cy._bikeLane) *
                 (1 - Math.exp(-dt / 0.8));
+              // rd42: through a work zone a motorcycle keeps the car's path (tied to the road, as updateTraffic's detour).
+              var cyZoneLane = rrRiderWorkZoneLane(infiniteWorldRef.current, cy, cyStation, roadLayoutFor(cyProfile).laneCenters[0]);
+              if (cyZoneLane != null) cy._bikeLane = cyZoneLane;
               // Target heading aligned with spline tangent ± π/2
               var cyTargetHeading = (cyDirSign === 1) ? (Math.PI / 2 - cyTheta) : (-Math.PI / 2 - cyTheta);
               var cyDh = cyTargetHeading - cy.heading;
@@ -22006,6 +22384,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
               cy.heading += cyDh * (1 - Math.exp(-dt / 0.4));
               applyRiderFollowingControl(cy);
               cy.speed = Math.min(cy.speed, cySignalControl.targetSpeed);
+              if (cy.type === 'motorcycle') cy.speed = Math.min(cy.speed, rrRiderWorkZoneSpeedCap(infiniteWorldRef.current, cyStation, cyDirSign));
               cy.y += Math.sin(cy.heading) * cy.speed * dt;
               cy.x += Math.cos(cy.heading) * cy.speed * dt;
               // Lateral correction uses the same tangent/perpendicular frame as
@@ -22056,6 +22435,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 if (cyRespawnSide * cyTravelSign > 0) cyRespawnDistance = cyAheadMin + Math.random() * CHUNK_SIZE;
                 else cyRespawnDistance = Math.max(cyRespawnDistance, RR_SPAWN_BEHIND_MIN_METERS);
                 cy._roadStation = cyPlayerStation + cyRespawnSide * cyRespawnDistance;
+                // rd42: a motorcycle is not placed inside a one-lane work zone (nor is a car: respawnY, 8).
+                var cyRespawnZone = cy.type === 'motorcycle' ? workZoneSectionAt(infiniteWorldRef.current, cy._roadStation, 8) : null;
+                if (cyRespawnZone) cy._roadStation = cyRespawnSide > 0 ? cyRespawnZone.playerStopY + 9 : cyRespawnZone.opposingStopY - 9;
                 cy._bikeLane = vulnerableRoadUserLaneOffset(
                   roadProfileAt(infiniteWorldRef.current, cy._roadStation, null),
                   cy.type, cyRespawnDir, cy._bikeLane);
@@ -30056,24 +30438,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 var grMat = new T.MeshLambertMaterial({ color: 0xa8b0bc });
                 var grPostMat = new T.MeshLambertMaterial({ color: 0x4a4a52 });
                 var crackMat = new T.MeshBasicMaterial({ color: 0x16181c, transparent: true, opacity: 0.55 });
-                for (var grZ = chunkWorldZ + 2; grZ < chunkWorldZ + CHUNK_SIZE - 2; grZ += 2) {
-                  var grGridY = grZ - chunkWorldZ + chunkBY;
-                  var grHd = iw.spline.headingAt(grGridY);
-                  var grSide = guardrailSideForRoad(iw.spline, grGridY);
-                  if (!grSide) continue;
-                  var grCx = lookupCenterAtZ(grZ);
-                  if (visualCrossStreetClearanceAt(
-                    grCx + grSide * roadsideOffsetFor(chunk, 0.25), grZ, 1.1)) continue;
-                  var grHy = lookupHeightAtZ(grZ);
-                  var grPost = new T.Mesh(new T.BoxGeometry(0.08, 0.7, 0.08), grPostMat);
-                  grPost.position.set(grCx + grSide * roadsideOffsetFor(chunk, 0.25), grHy + 0.35, grZ);
+                // rl42: the rows that hold guardrail cells, as one rail (rrGuardrailRailPlan, the same
+                // rows a car hits): a post on every even metre and at both ends, and a beam from each
+                // post to the next along the rail line, at the road's height there. One post and one
+                // beam shape for the chunk; rrBatchChunk merges the meshes.
+                var grPlan = rrGuardrailRailPlan(iw, ci, roadsideOffsetFor(chunk, 0.25)), grRailRows = {};
+                var grPostGeo = new T.BoxGeometry(0.08, 1.0, 0.08), grBeamGeo = new T.BoxGeometry(0.06, 0.18, 1);
+                var grRenderAt = function(grPoint) {
+                  return { x: grPoint.x - MAP_SIZE / 2, h: iw.spline.heightAt(grPoint.station), z: grPoint.y - chunkBY + chunkWorldZ };
+                };
+                for (var grI = 0; grI < grPlan.posts.length; grI++) {
+                  var grQ = grRenderAt(grPlan.posts[grI]);
+                  // 1 m tall, the top 0.7 m above the road: the foot reaches the lowered grass.
+                  var grPost = new T.Mesh(grPostGeo, grPostMat);
+                  grPost.position.set(grQ.x, grQ.h + 0.2, grQ.z);
                   chunkGroup.add(grPost);
-                  var grRail = new T.Mesh(new T.BoxGeometry(0.06, 0.18, 2.0), grMat);
-                  grRail.position.set(grCx + grSide * roadsideOffsetFor(chunk, 0.25), grHy + 0.55, grZ);
+                }
+                for (var grJ = 0; grJ < grPlan.beams.length; grJ++) {
+                  var grA = grRenderAt(grPlan.beams[grJ].a), grB = grRenderAt(grPlan.beams[grJ].b);
+                  var grGridY = grPlan.beams[grJ].fromRow;
+                  var grSide = guardrailSideForRoad(iw.spline, grGridY);
+                  for (var grRow = grPlan.beams[grJ].fromRow; grRow <= grPlan.beams[grJ].toRow; grRow++) grRailRows[grRow] = grSide;
+                  var grSpan = Math.hypot(grB.x - grA.x, grB.z - grA.z);
+                  var grHd = Math.atan2(grB.x - grA.x, grB.z - grA.z);
+                  var grZ = grA.z, grCx = lookupCenterAtZ(grZ), grHy = grA.h;
+                  var grRail = new T.Mesh(grBeamGeo, grMat);
+                  grRail.position.set((grA.x + grB.x) / 2, (grA.h + grB.h) / 2 + 0.55, (grA.z + grB.z) / 2);
+                  grRail.scale.z = Math.hypot(grSpan, grB.h - grA.h);
                   // Follow the local tangent; otherwise every beam stays aligned
                   // north-south and forms a visible sawtooth across a curved road.
+                  // rl42: and the grade: turned about its own cross axis first (order YXZ).
+                  grRail.rotation.order = 'YXZ';
+                  grRail.rotation.x = -Math.atan2(grB.h - grA.h, grSpan);
                   grRail.rotation.y = grHd;
                   chunkGroup.add(grRail);
+                  // rl42: road marks by one beam in two (about as many as the dashed rail had; each is a draw call).
+                  if (positiveModulo(grPlan.beams[grJ].fromRow, 4) >= 2) continue;
                   // Crack on the outside wheel track — stress fractures form where
                   // tires track the tightest radius. Skip snow (covered anyway).
                   if (scn.weather !== 'snow' && furnRng() < 0.6) {
@@ -30474,6 +30874,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   for (var dwI = 0; dwI < dwCount; dwI++) {
                     var dwZ = chunkWorldZ + 4 + furnRng() * (CHUNK_SIZE - 8);
                     var dwSide = furnRng() < 0.5 ? -1 : 1;
+                    // rl42: no driveway where a guardrail runs on that side (within 2 m).
+                    if (rrGuardrailRowsNear(grRailRows, dwZ - chunkWorldZ + chunkBY, dwSide)) continue;
                     var dwCx = lookupCenterAtZ(dwZ);
                     var dwHy = lookupHeightAtZ(dwZ);
                     var dwOff = roadHalfW + 0.5;
@@ -30491,6 +30893,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                   for (var mbI = 0; mbI < mbCount; mbI++) {
                     var mbZ = chunkWorldZ + 4 + furnRng() * (CHUNK_SIZE - 8);
                     var mbSide = furnRng() < 0.5 ? -1 : 1;
+                    // rl42: a mailbox stands at a driveway: none where a guardrail runs on that side.
+                    if (rrGuardrailRowsNear(grRailRows, mbZ - chunkWorldZ + chunkBY, mbSide)) continue;
                     var mbCx = lookupCenterAtZ(mbZ);
                     var mbHy = lookupHeightAtZ(mbZ);
                     var mbPost = new T.Mesh(new T.CylinderGeometry(0.04, 0.04, 1.0, 5), mbPostMat);
@@ -32823,7 +33227,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                 // single lane and stood there for the whole drive.
                 if (isFlagger && workBounds) {
                   var wzNewFlagger = signalsRef.current[signalsRef.current.length - 1];
-                  var wzInside = (trafficRef.current || []).filter(function(wzCar) {
+                  // rd42: motorcycles too (they obey the flagger, rrRiderWorkZoneLane); round 42 construction s5 began with one inside, facing the go.
+                  var wzRoadUsers = (trafficRef.current || []).concat(typeof cyclistsRef !== 'undefined' && cyclistsRef.current ? cyclistsRef.current.filter(function(wzRider) {
+                    return wzRider && wzRider.type === 'motorcycle' && !wzRider._hit && !wzRider._roundaboutState; }) : []);
+                  var wzInside = wzRoadUsers.filter(function(wzCar) {
                     if (!wzCar || wzCar.crossStreet) return false;
                     var wzCarStation = typeof wzCar._roadStation === 'number' ? wzCar._roadStation
                       : mainRoadLocalPoint(iw, wzCar.x, wzCar.y).longitudinal;
@@ -32840,7 +33247,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       return typeof wzCar._roadStation === 'number' ? wzCar._roadStation
                         : mainRoadLocalPoint(iw, wzCar.x, wzCar.y).longitudinal;
                     };
-                    var wzQueueList = (trafficRef.current || []).filter(function(wzCar) {
+                    var wzQueueList = wzRoadUsers.filter(function(wzCar) {
                       if (!wzCar || wzCar.crossStreet || wzCar.heading < 0) return false;
                       var wzCarStation = wzQueueStationOf(wzCar);
                       return wzCarStation > workBounds.opposingStopY - 45 && wzCarStation < workBounds.playerStopY + 1;
@@ -32850,6 +33257,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
                       var wzQueuePoint = mainRoadWorldPoint(iw, wzQueueStation, -wzLane);
                       wzCar.x = wzQueuePoint.x; wzCar.y = wzQueuePoint.y; wzCar._roadStation = wzQueueStation;
                       wzCar.heading = Math.PI / 2 - wzQueuePoint.heading;
+                      // rd42: a motorcycle keeps the speed it rides at (updateCyclists reads _cruiseSpeed from its speed once)
+                      if (wzCar.type === 'motorcycle') { wzCar._cruiseSpeed = wzCar._cruiseSpeed > 0 ? wzCar._cruiseSpeed : Math.abs(Number(wzCar.speed) || 0); wzCar._bikeLane = -wzLane; }
                       wzCar.laneOffset = -wzLane; wzCar.speed = 0; wzCar._workZoneDetour = false;
                     });
                   }
@@ -46558,6 +46967,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       controlDistanceAhead: controlDistanceAhead, controlApproachDistanceMeters: controlApproachDistanceMeters,
       signedRoadCurvatureAt: signedRoadCurvatureAt, guardrailSideForRoad: guardrailSideForRoad,
       GUARDRAIL_CURVATURE_THRESHOLD: GUARDRAIL_CURVATURE_THRESHOLD,
+      RR_GUARDRAIL_RUN_CURVATURE: RR_GUARDRAIL_RUN_CURVATURE, RR_GUARDRAIL_RUN_REACH_METERS: RR_GUARDRAIL_RUN_REACH_METERS, rrGuardrailBendAt: rrGuardrailBendAt,
+      rrGuardrailRowEnds: rrGuardrailRowEnds, rrGuardrailRowCells: rrGuardrailRowCells, rrGuardrailRailPlan: rrGuardrailRailPlan, rrGuardrailRowsNear: rrGuardrailRowsNear,
       roadBankAngleAt: roadBankAngleAt,
       roadProfileAt: roadProfileAt, pedestrianCountForRoad: pedestrianCountForRoad,
       roadSurfacePoseAt: roadSurfacePoseAt, drivingRoadGrade: drivingRoadGrade, roadsideOffsetFor: roadsideOffsetFor,
@@ -46573,6 +46984,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       rideAlongSteerInput: rideAlongSteerInput, RR_RIDEALONG_GRIP_SHARE: RR_RIDEALONG_GRIP_SHARE,
       workZoneSectionAt: workZoneSectionAt, workZoneOpposingLaneOffset: workZoneOpposingLaneOffset,
       workZoneFlaggerHold: workZoneFlaggerHold, RR_WORK_ZONE_TAPER_METERS: RR_WORK_ZONE_TAPER_METERS,
+      rrRiderWorkZoneLane: rrRiderWorkZoneLane, rrRiderWorkZoneSpeedCap: rrRiderWorkZoneSpeedCap, rrLaneChangeGapClear: rrLaneChangeGapClear,
       RR_WORK_ZONE_HOLD_PAST_LINE_METERS: RR_WORK_ZONE_HOLD_PAST_LINE_METERS, rrTurnCrossesOncoming: rrTurnCrossesOncoming,
       rrTurnAcrossClearSeconds: rrTurnAcrossClearSeconds, rrTurnGapArrivalSeconds: rrTurnGapArrivalSeconds, rrTurnAcrossGapClear: rrTurnAcrossGapClear,
       rrCrossStreetStopLineOffset: rrCrossStreetStopLineOffset, rrClearSpawnStation: rrClearSpawnStation,
@@ -46624,6 +47036,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('roadReady'))) 
       advancePedestrianCrossing: advancePedestrianCrossing,
       rrCrosswalkStopMeters: rrCrosswalkStopMeters, rrPedestrianWaitStation: rrPedestrianWaitStation,
       rideAlongRiderHoldBack: rideAlongRiderHoldBack, rideAlongRiderBlocksPullOver: rideAlongRiderBlocksPullOver, rrSideIntrusionSpeed: rrSideIntrusionSpeed,
+      rrPullOverStripTaken: rrPullOverStripTaken, trafficEmergencyLaneStep: trafficEmergencyLaneStep,
+      rideAlongKeepPullOverAtJunction: rideAlongKeepPullOverAtJunction, rrGuardrailCellAt: rrGuardrailCellAt, rrGuardrailRailPoint: rrGuardrailRailPoint,
       trafficPedestrianControl: trafficPedestrianControl, guardTrafficPedestrianMotion: guardTrafficPedestrianMotion,
       spawnMotorcycles: spawnMotorcycles, spawnSignals: spawnSignals,
       trafficSignalIndication: trafficSignalIndication, updateSignals: updateSignals, maybeSpawnEmergency: maybeSpawnEmergency,

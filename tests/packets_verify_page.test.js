@@ -325,7 +325,11 @@ describe('the checks: no choice of activities trips the scan', () => {
     for (const set of [loader.ADAPTERS, loader.CHECK_ADAPTERS]) {
       for (const id of Object.keys(set)) {
         const source = String(set[id].render) + '\n' + String(set[id].score || '') + '\n' + JSON.stringify(set[id].labels || {});
-        expect(verify.scanSource(source, { closed: true }).filter((f) => f.cls !== EXPECTED).map((f) => f.name + ': ' + f.excerpt), id).toEqual([]);
+        // 2026-11-12: a vocabulary activity (vocab_*) reads aloud with the device's own voice; its files declare it (manifest
+        // speech), which the scan is told here. Without that declaration the speech engine is still not expected.
+        const speech = /^vocab_/.test(id);
+        if (speech) expect(verify.scanSource(source, { closed: true }).filter((f) => f.cls !== EXPECTED).map((f) => f.id), id).toContain('speech');
+        expect(verify.scanSource(source, { closed: true, speech }).filter((f) => f.cls !== EXPECTED).map((f) => f.name + ': ' + f.excerpt), id).toEqual([]);
         scanned++;
       }
     }
@@ -359,6 +363,12 @@ describe('the sample files of the page', () => {
     const practice = verify.verifyPacket(samples.practice.text), check = verify.verifyPacket(samples.check.text);
     expect([practice.headline, practice.script.verdict, practice.identity.mode, practice.identity.title]).toEqual([CLOSED, 'agree', 'practice', 'Sample practice file']);
     expect([check.headline, check.script.verdict, check.identity.mode, check.identity.title]).toEqual([CLOSED, 'agree', 'check', 'Sample check']);
+    // The sample check was made on 2026-11-11, when a check's manifest said mode "probe"; one made now says "check".
+    // Both are a check, and in both the manifest agrees with the data block. A manifest that says practice does not.
+    expect([manifestOf(samples.check.text).packet.mode, manifestOf(F.check).packet.mode]).toEqual(['probe', 'check']);
+    expect([check.claims.find((row) => row.id === 'identity').verdict, verify.verifyPacket(F.check).claims.find((row) => row.id === 'identity').verdict]).toEqual(['agree', 'agree']);
+    const saysPractice = verify.verifyPacket(changed(F.check, '"mode":"check"}', '"mode":"practice"}'));
+    expect([saysPractice.identity.mode, saysPractice.claims.find((row) => row.id === 'identity').verdict]).toEqual(['practice', 'differs']);
     expect(practice.identity.builder.name).toMatch(/^alloflow-packet-builder\//);
     // The files read back exactly as they were made: the hash in each policy was worked out by the loader that made it.
     expect(practice.script.sha256).toBe(manifestOf(samples.practice.text).scriptSha256);
@@ -1099,9 +1109,17 @@ describe('the guide for school IT', () => {
     expect(text('section[aria-labelledby="flow-title"] li')[0]).toContain("What a teacher adds to a word there (its sounds, a recording, a picture) is kept in that browser's storage for this site and goes only into the files the teacher makes. The microphone is used only when the teacher presses Record.");
     expect(squash(fact['What leaves the device, and when'])).toBe('Nothing, unless a person passes on a saved results file. There is one exception: the class mailbox kind of practice file, in the next row. '
       + 'For teachers, one page of this site, Find a picture (packets-pictures.html), can search three picture services after the teacher turns its search on: Global Symbols, Openverse and Wikimedia Commons. '
-      + 'It sends them the word searched for and asks them for the pictures it shows. Every other page of this site reaches only this site.');
+      + 'It sends them the word searched for and asks them for the pictures it shows. '
+      // 2026-11-12, deliberately: the vocabulary lookup page (packets-vocab-lookup.html, tests/packets_vocab_pictures.test.js).
+      + 'One more page, Look up a word online (packets-vocab-lookup.html), can send one word that is not in the vocabulary word list to the Free Dictionary API (api.dictionaryapi.dev), after the teacher allows it and presses Look it up. '
+      + 'Every other page of this site reaches only this site.');
     const reaches = (page) => (parse(page).querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') || '').match(/https?:\/\/[^\s;]+/g) || [];
-    for (const page of pages.filter((name) => name !== 'packets-pictures.html')) expect(reaches(page), page).toEqual([]);
+    // 2026-11-12: Open a practice file allows the class mailbox for the file it runs (and says so in the mailbox row); the page sends nothing.
+    for (const page of pages.filter((name) => name !== 'packets-pictures.html' && name !== 'packets-open.html' && name !== 'packets-vocab-lookup.html')) expect(reaches(page), page).toEqual([]);
+    // 2026-11-12: Look up a word online reaches the one dictionary it names, and not even this site.
+    expect(reaches('packets-vocab-lookup.html')).toEqual(['https://api.dictionaryapi.dev']);
+    expect(reaches('packets-open.html')).toEqual(['https://script.google.com', 'https://script.googleusercontent.com']);
+    expect(fact['The class mailbox kind']).toContain('Such a file can also send from Open a practice file (packets-open.html), the page that runs a file on a phone or tablet: that page\'s rule allows the class mailbox for the file it runs. The page itself sends nothing.');
     expect([...new Set(reaches('packets-pictures.html').map((url) => url.replace(/^https:\/\//, '')))].sort()).toEqual(['api.openverse.org', 'commons.wikimedia.org', 'globalsymbols.com', 'thumb.wikimedia.org', 'upload.wikimedia.org']);
     // The maker asks for the microphone in one script only, and only from the Record button.
     expect(read('packets-make.js')).not.toMatch(/getUserMedia/);

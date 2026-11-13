@@ -58,11 +58,11 @@ describe('Help in the compact header bar', () => {
     const src = anti();
     const a = src.indexOf('  // First-run help tip: only once a role is chosen');
     expect(a).toBeGreaterThan(src.indexOf('const [hasSelectedRole, setHasSelectedRole] = useState(false);'));
-    const body = src.slice(src.indexOf('useEffect(() => {', a), src.indexOf('}, [hasSelectedRole]);', a) + '}, [hasSelectedRole]);'.length);
+    const body = src.slice(src.indexOf('useEffect(() => {', a), src.indexOf('}, [hasSelectedRole, isGateOpen]);', a) + '}, [hasSelectedRole, isGateOpen]);'.length);
     vi.useFakeTimers();
     const store = {}; const shown = [];
-    const run = (hasSelectedRole) => { let cleanup; new Function('useEffect', 'hasSelectedRole', 'safeGetItem', 'safeSetItem', 'setShowHelpOnboarding', body)(
-      (fn) => { cleanup = fn(); }, hasSelectedRole, (k) => store[k], (k, v) => { store[k] = v; }, (v) => shown.push(v)); return cleanup; };
+    const run = (hasSelectedRole) => { let cleanup; new Function('useEffect', 'hasSelectedRole', 'isGateOpen', 'safeGetItem', 'safeSetItem', 'setShowHelpOnboarding', body)(
+      (fn) => { cleanup = fn(); }, hasSelectedRole, false, (k) => store[k], (k, v) => { store[k] = v; }, (v) => shown.push(v)); return cleanup; };
     run(false); vi.advanceTimersByTime(30000);
     expect(shown, 'no role yet: nothing shown, nothing marked seen').toEqual([]); expect(store.allo_help_onboarded).toBeUndefined();
     run(true); vi.advanceTimersByTime(4000); expect(shown).toEqual([true]);

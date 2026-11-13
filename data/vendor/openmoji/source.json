@@ -1,0 +1,58 @@
+{
+  "id": "openmoji",
+  "name": "OpenMoji",
+  "author": "the OpenMoji project (HfG Schwaebisch Gmuend and contributors)",
+  "language": "en",
+  "homepage": "https://openmoji.org",
+  "repository": "https://github.com/hfg-gmuend/openmoji",
+  "version": "17.0.0",
+  "release": "17.0.0 (published 2026-04-23)",
+  "commit": "f9fc506a3f913be9897ab0181d611d4c910a4104",
+  "url": "https://github.com/hfg-gmuend/openmoji/releases/download/17.0.0/openmoji-svg-color.zip",
+  "sha256": "59b0cd9f6fe033818fc02585cea42bea9fba5d68a4d3a3639bfe5d5cc3805689",
+  "bytes": 5383430,
+  "files": 4495,
+  "data": {
+    "file": "data/openmoji.json",
+    "url": "https://raw.githubusercontent.com/hfg-gmuend/openmoji/17.0.0/data/openmoji.json",
+    "what": "the release's table of every emoji (4,495 entries): emoji, hexcode, group, subgroups, annotation (its name), tags (Unicode CLDR keywords), openmoji_tags, openmoji_author, openmoji_date, skin tone fields, unicode, order. Not kept here (2.2 MB); openmoji-names.json is made from it.",
+    "sha256": "ab181dd523021dfbe2b98a13d96ab384b7b3014d17815261bc267fb39d9a211b",
+    "bytes": 2193231
+  },
+  "retrieved": "2026-11-12",
+  "license": "Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)",
+  "licenseShort": "CC BY-SA 4.0",
+  "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "attribution": "Emoji pictures designed by OpenMoji - the open-source emoji and icon project. License: CC BY-SA 4.0",
+  "attributionSuggested": "All emojis designed by OpenMoji – the open-source emoji and icon project. License: CC BY-SA 4.0",
+  "licenseStatement": "OpenMoji graphics are licensed under the Creative Commons Attribution-ShareAlike 4.0 International License (CC BY-SA 4.0). To view a copy of this license, visit https://creativecommons.org/licenses/by-sa/4.0/",
+  "licenseEvidence": "Checked 2026-11-12 in three places. (1) README.md in the repository at tag 17.0.0 (commit f9fc506a3f913be9897ab0181d611d4c910a4104, sha256 20ad1969e2dcf0a7ce0a7b6147927efa70126aced212fbb082d7236c2ce3fe7c), section License: \"OpenMoji graphics are licensed under the Creative Commons Share Alike License 4.0 (CC BY-SA 4.0)\" (the code of the project is LGPL-3.0; no code is used here). Its section Attribution Requirements: \"As an open source project, attribution is critical from a legal, practical and motivational perspective. Please give us credits! Common places for attribution are for example: to mention us in your project README, the 'About' section or the footer on a website/in mobile apps.\" and the suggestion \"All emojis designed by OpenMoji – the open-source emoji and icon project. License: CC BY-SA 4.0\" (with links to https://openmoji.org/ and https://creativecommons.org/licenses/by-sa/4.0/). (2) LICENSE.txt in the repository at that tag is the full text of Attribution-ShareAlike 4.0 International (kept here unchanged). (3) The project's site, https://openmoji.org/faq/: \"OpenMoji is published under the Creative Commons Share Alike License 4.0\"; \"You must give OpenMoji appropriate credit, and indicate if changes were made. You may do so in any reasonable manner, but not in any way that suggests the OpenMoji Project endorses you or your use.\"; \"If you remix, transform, or build upon the material, you must distribute your contributions under the same license\". The packets use the shorter wording in \"attribution\" because a file may hold Mulberry symbols too (\"All emojis\" would not be true of them); it names OpenMoji, the project and the license, as asked, and implies no endorsement.",
+  "licenseFiles": {
+    "LICENSE.txt": {
+      "what": "the full text of the license, from the repository at tag 17.0.0, unchanged (the same legal code as data/vendor/mulberry/CC-BY-SA-4.0.txt but for three blank lines)",
+      "sha256": "5e436ff8ffbb77d8607220e9bce20c8915d860010feeb6c1ebef5a85688e9b39"
+    }
+  },
+  "table": {
+    "file": "openmoji-names.json",
+    "what": "made by dev-tools/build_word_sounds_symbols.cjs --openmoji-from from data/openmoji.json (sha256 above): only the emoji named with one word and without a skin tone, and only hexcode, annotation, group, subgroups, unicode, tags, openmoji_tags and openmoji_author",
+    "sha256": "47a8c7dccac5f30538f7a896c8ece4251f5f72aa0be6581f709516e3d1f5aca7",
+    "bytes": 81055,
+    "count": 707
+  },
+  "symbols": {
+    "folder": "symbols",
+    "what": "The emoji files a Word Sounds word could use, and no others: every OpenMoji candidate of every matched word in data/word_sounds_symbols_map_en.json (used or held for review). Each file is the release's color SVG <hexcode>.svg, unchanged, byte for byte.",
+    "digest": "sha256 of the lines \"<sha256 of the file>  <file name>\\n\", sorted by file name (dev-tools/build_word_sounds_symbols.cjs, symbolsDigest)",
+    "count": 121,
+    "bytes": 401444,
+    "sha256": "f6cdb8aeadb63e06b11806860d5e170e23239f064b14a27869f900b2cb2534b9"
+  },
+  "matching": "OpenMoji is the second set: a word gets an OpenMoji picture only when no Mulberry symbol has its name (or its singular's), only by the emoji's own name (annotation): the emoji named exactly the word, or the word is the plain plural of that name and the emoji shows a thing. One emoji of the name: used (\"auto\"). Several: the one in Unicode is used when only one is, else a person chooses. The keywords (tags) are never used to match: they are loose (the pig is tagged \"bacon\", the yin yang \"difficult\", the oncoming fist \"absolutely\"). Where Mulberry holds a word for a person, OpenMoji's emoji of that name is added to the choices, never used on its own.",
+  "exclusions": "Never used, whatever the word (dev-tools/build_word_sounds_symbols.cjs: OPENMOJI_EXCLUDED_SUBGROUPS, OPENMOJI_EXCLUDED_TAGS, OPENMOJI_NOT_THE_WORD, OPENMOJI_ALLOWED; the review sheet lists them and every emoji they leave out): (1) flags of any kind and flag letters, unless the word is \"flag\"; (2) skin tones and hair parts, and every skin-tone variant (only the base emoji is in the table); (3) company logos; (4) screen and app icons, letters, numbers and keycaps, gender signs; (5) religious symbols and buildings, astrology signs, and anything whose keywords name a religion or a religious holiday (Christmas, Easter, Hanukkah, Diwali, Ramadan...); (6) flags and symbols of movements and causes, and anything whose keywords name politics, protest, voting or elections; (7) hand gestures (some are rude), other gestures, couples and kisses, except the handshake; (8) fantasy figures and costume faces (some are frightening or religious), except fairy, mermaid, merman, merperson, superhero, robot and alien; cursing, devil and skull faces; signs for a feeling that do not show the word; (9) medicines, needles, blood and medical scenes, emergency signs; (10) anything whose keywords name alcohol, tobacco or drugs (pills; not \"medicine\", which also tags the hospital), weapons (including the axe, bow and arrow, knife and sword), violence, death, crime, war, frightening things, romance or underwear, gambling, or rude things; (11) an emoji that is another word spelled the same (mate is the drink, led is a lamp, pick is a pickaxe) or a picture a child would not read as the word (lighter, wedding chapel, town (its drawing has a church with a cross), dizzy symbol, tablet, and the electronics symbols switch, motor, cable, wire, drone). Gendered variants: an emoji that is the man or woman form of another is used only when its own name is the word (mermaid, prince, princess); matching by exact name never picks one for a word that has no gender.",
+  "changes": "The vendored files are unchanged. The page data (word_sounds_symbols/en-<n>.json, with its index word_sounds_symbols_en.js) holds, as text, the drawings of the used words that have a recording, OpenMoji drawings in their own data file. The script passes each through a tidy-up that removes only the space between tags and at the ends (the OpenMoji files are indented); no drawing is redrawn, recolored, cropped or turned into pixels.",
+  "remake": "Download the zip (url above) and data/openmoji.json at the tag (data.url), check both sha256, unzip the zip into a folder beside openmoji.json (or into its subfolder x), then: node dev-tools/build_word_sounds_symbols.cjs --openmoji-from <that folder>. That remakes openmoji-names.json, copies the emoji files that are needed, updates \"symbols\" and \"table\" here, and re-makes the map, the index and the data files. Without it the script works from what is vendored here; --check fails when anything is out of date. The zip (5.4 MB) and the full table are not kept in the repo.",
+  "scope": "Pictures for single words in Word Sounds practice packets, when the teacher checks \"Include pictures\", for words Mulberry Symbols has no picture for. A packet embeds only the pictures of its own words, credits each set it uses under About this file, and carries each set's license notice in its manifest.",
+  "shareAlike": "The emoji stay a separately licensed work: they live in this folder and in their own data file in word_sounds_symbols/ under CC BY-SA 4.0, apart from the AGPL-3.0 program, and that data file says so in its first line. A packet with OpenMoji pictures is a collection of the program and the pictures; the pictures in it stay under CC BY-SA 4.0. Anyone who changes a drawing must share the changed drawing under the same license.",
+  "limitations": "OpenMoji is an emoji set: its pictures are small icons drawn for screens, mostly things, animals, food, places and people; it has few actions and no describing words. Matching is by the emoji's English name, written for emoji users, not for children learning to read: a name can be another word spelled the same (the exclusions list the ones found). The script author checked the exclusions against every emoji named like a usable word (2026-11-12) and looked at every used picture once; a reviewer has not yet looked at the used pictures (see the review sheet the script writes)."
+}

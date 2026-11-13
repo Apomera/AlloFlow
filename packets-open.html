@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- A practice file or a check runs on this page, in a sandboxed frame (packets-open.js). Such a file carries its
+     script and its styles inside itself, and a browser hands this page's rule down to the file it shows, so this
+     page has to allow inline script and style, as the preview page does. The file keeps its own stricter rule too.
+     connect-src: a file made in the AlloFlow app with a class mailbox sends results there when the student presses
+     Send; this page itself connects nowhere. frame-src blob: lets a file made before 2026-11-12 save its results
+     itself: WebKit checks that download against frame-src. --><meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; media-src data: blob:; frame-src blob:; form-action 'none'; base-uri 'none'; connect-src https://script.google.com https://script.googleusercontent.com">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<title>Open a practice file</title>
+<meta name="description" content="Do a practice file or a check on a phone or a tablet. Choose the file your teacher sent. It is read on this device and is not uploaded.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-open.css">
+<script src="packets-page.js" defer></script>
+<script src="packets_verify_core.js" defer></script>
+<script src="packets_handoff.js" defer></script>
+<script src="packets-open.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+  </div>
+<details class="proof">
+  <summary class="wrap">
+    <span class="proof-line">This page runs without AI. No account. The file you choose is not uploaded.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap proof-body">
+    <ul>
+      <li>The file you choose is read in this browser. It is not uploaded.</li>
+      <li>The file runs in a closed frame on this page. It cannot read or change anything else this site keeps in this browser.</li>
+      <li>To keep a student's place, this page keeps it in this browser's storage for this site, on this device only. Forget the places, below, removes them.</li>
+      <li>A file made in the AlloFlow app with a class mailbox can send its results to that mailbox (script.google.com) when the student presses Send. Files made on this site have no mailbox. Nothing else here connects anywhere.</li>
+      <li>This page loads eight files, all from this site: the page itself, two stylesheets (<code>packets.css</code>, <code>packets-open.css</code>), four scripts (<code>packets-page.js</code>, <code>packets_verify_core.js</code>, <code>packets_handoff.js</code>, <code>packets-open.js</code>) and the icon in the browser tab. It loads no fonts, no trackers and nothing from another site.</li>
+      <li>Like any website, the server that sends these files can see that your browser asked for them. It receives nothing else.</li>
+    </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+</header>
+
+<main id="main" class="opener">
+  <div class="wrap wrap-narrow">
+    <h1>Open a practice file</h1>
+    <p class="opener-lead">For a phone or a tablet. Choose the practice file or check your teacher sent. It runs here.</p>
+    <noscript><p class="note note-problem">This page needs JavaScript to open the file.</p></noscript>
+    <p id="said" class="sr-only" role="status" aria-live="polite"></p>
+
+    <section id="pick" aria-labelledby="pick-title">
+      <div id="drop" class="drop open-drop">
+        <h2 id="pick-title">Choose the file</h2>
+        <p class="drop-sub" id="pick-sub">The .html file your teacher sent. It is read on this device only.</p>
+        <p class="drop-go"><button type="button" class="btn btn-primary" id="choose" aria-describedby="pick-sub">Choose a file</button></p>
+        <input type="file" id="file" accept=".html,.htm,text/html" aria-label="The practice file or check" hidden>
+      </div>
+      <div id="problem" class="note note-problem" tabindex="-1" hidden>
+        <p id="problem-line"></p>
+        <p id="problem-more" hidden><a id="problem-link" href="packets-results.html">Add up results</a></p>
+      </div>
+    </section>
+
+    <section id="found" class="found" aria-labelledby="found-title" tabindex="-1" hidden>
+      <p class="kicker" id="found-kind"></p>
+      <h2 id="found-title"></h2>
+      <p id="found-line" class="found-line"></p>
+      <p id="place-line" class="found-place" hidden></p>
+      <p id="older-note" class="note" hidden>This file was made before this page could keep a student's place, so the place is lost when you close it. Finish it in one go, or ask your teacher for a new copy.</p>
+      <p class="found-go"><button type="button" class="btn btn-primary" id="start">Start</button></p>
+      <p class="found-more">
+        <button type="button" class="btn btn-text btn-small" id="another">Choose another file</button>
+        <button type="button" class="btn btn-text btn-small" id="change" aria-describedby="change-hint">Change this file</button>
+        <span class="hint" id="change-hint">For teachers: open it in the page that made it.</span>
+      </p>
+      <div id="change-note" class="note" tabindex="-1" hidden>
+        <p id="change-line"></p>
+        <p><a class="btn btn-small" id="change-link" href="packets.html">Open the maker</a></p>
+      </div>
+    </section>
+
+    <section class="open-how" aria-labelledby="how-title">
+      <h2 id="how-title">How it works</h2>
+      <ul class="plain-list">
+        <li>Your place is kept in this browser, on this device. Open the same file here again to go on.</li>
+        <li>At the end, press <strong>Save results as a spreadsheet file (CSV)</strong>. The results file goes to this device's downloads. Hand it in the way your teacher asks.</li>
+        <li>On a computer, the file also opens by itself in Chrome, Edge or Safari.</li>
+      </ul>
+      <p class="open-forget">
+        <button type="button" class="btn btn-small" id="forget">Forget the places kept on this device</button>
+        <span id="forget-said" role="status"></span>
+      </p>
+    </section>
+  </div>
+  <p id="drop-over" class="drop-over" aria-hidden="true" hidden>Drop the file to open it</p>
+</main>
+
+<div id="run" class="run" role="dialog" aria-modal="true" aria-labelledby="run-title" hidden>
+  <div class="run-bar">
+    <p class="run-title" id="run-title"></p>
+    <p class="run-said" id="run-said" role="status"></p>
+    <button type="button" class="btn btn-small run-again" id="run-again" hidden>Save it again</button>
+    <button type="button" class="btn btn-small run-close" id="run-close">Close</button>
+  </div>
+  <div class="run-host" id="run-host"></div>
+</div>
+
+<footer class="foot">
+  <div class="wrap foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

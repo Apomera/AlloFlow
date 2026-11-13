@@ -82,7 +82,8 @@ describe('four more woodland residents', () => {
     for (const id of Object.keys(WOODLAND)) {
       expect(birdlab.split(id + ': {name:').length, id).toBe(2);
       expect(birdlab.split('    ' + id + ': { sketch:').length, id).toBe(2);
-      expect(birdlab.split("      " + id + ":['").length, id).toBe(2);
+      // The three prompts are translated, so each starts with its translator call.
+      expect(birdlab.split("      " + id + ":[t('stem.birdlab.").length, id).toBe(2);
     }
   });
 });

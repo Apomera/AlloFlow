@@ -870,12 +870,14 @@
   // Forbidden phrases that indicate the LLM hallucinated UI that doesn't
   // exist. If any match, the answer is replaced with a soft refusal and
   // a start_tour chip — never echoed to the user.
+  // Ctrl+K, the Help menu, sign-up sheets and the Windows desktop download
+  // exist, so they are not listed (see COACH_CATALOG).
   var COACH_FORBIDDEN_PHRASES = [
-    /super\s*tutor/i, /ctrl\s*\+\s*k/i, /cmd\s*\+\s*k/i,
+    /super\s*tutor/i,
     /slash\s*command/i, /\/[a-z]+\s+command/i,
-    /help\s+menu/i, /sign\s*up/i, /create\s+an?\s+account/i,
+    /sign\s*up\s+(for|with)\s+(an?\s+|your\s+)?(free\s+)?(alloflow\s+|google\s+)?(account|alloflow|google)\b/i, /create\s+an?\s+account/i,
     /beginner\s+mode/i, /advanced\s+mode/i,
-    /mobile\s+app/i, /download.*app/i,
+    /mobile\s+app/i, /(phone|iphone|ipad|android|tablet)\s+app/i, /(app|play)\s+store/i,
     /api\s*key/i, /system\s*prompt/i,
   ];
 
@@ -955,6 +957,36 @@
   // defense is to make hallucination prompt-level forbidden + validator-
   // level catchable.
   // ───────────────────────────────────────────────────────────────────────
+  // Shared by both catalogs (both Launch Pad layouts draw the same extras).
+  var COACH_OPEN_LINK_LINE =
+    '- open_link: only "ai_backend_settings". It closes this panel; then tell the user to press\n' +
+    '  "AI Backend Settings" at the top right (not shown inside Gemini Canvas).';
+  var COACH_SCREEN_EXTRAS = [
+    '## Also on this screen (no chip except where named)',
+    '- Language menu (globe, top right): changes the interface language.',
+    '- AI Backend Settings (top right; not shown inside Gemini Canvas): picks which AI service',
+    '  AlloFlow uses. Chip: open_link "ai_backend_settings".',
+    '- Voice & device setup (optional, below the choices): turn on Voice Access, or download',
+    '  Whisper speech recognition and Kokoro read-aloud to this device.',
+    '- Report a problem (bottom of the screen).',
+  ].join('\n');
+  var COACH_WORKSPACE_ONLY = [
+    '## Only inside the workspace (after a choice above; NOT on this screen)',
+    '- Command palette: Ctrl+K (Cmd+K on Mac) or Ctrl+Shift+P opens a searchable list of commands.',
+    '- The "?" button in the top bar. For teachers, families and independent learners it opens the',
+    '  Help menu: "What does this do?" (Help Mode: click anything to learn what it does),',
+    '  "Take the app tour", and "Past tips and messages". For students it turns Help Mode on.',
+    '  The ? key also toggles Help Mode.',
+    '- Teachers, families and independent learners: the sidebar "AI Guide & Assistant" button',
+    '  (hidden while Guided Mode runs) and clicking AlloBot both open the AI Guide chat.',
+  ].join('\n');
+  var COACH_DOES_NOT_HAVE = [
+    '- No slash commands. No "SuperTutor".',
+    '- No account, login or sign-up screen.',
+    '- No phone, tablet or Mac app. AlloFlow runs in a web browser; a separate AlloFlow Desktop',
+    '  app for Windows is offered on the AlloFlow website, not from this screen.',
+    '- No version history of saved work (some tools have Undo); do not reference past AlloFlow versions.',
+  ].join('\n');
   var COACH_CATALOG = [
     '=== ALLOFLOW GROUNDED CATALOG (v 2026-06) ===',
     '',
@@ -990,16 +1022,16 @@
     '## Allowed navigation actions',
     '- pick_mode: routes to one of {full, guided, learning_tools, educator}.',
     '- start_tour: launches the existing tour walkthrough. Leaves user on LaunchPad after.',
-    '- open_link: currently only "ai_backend_settings" is allowed.',
+    COACH_OPEN_LINK_LINE,
     '- open_help: opens the static help cards (this same panel without the chat).',
+    '',
+    COACH_SCREEN_EXTRAS,
+    '',
+    COACH_WORKSPACE_ONLY,
     '',
     '## What AlloFlow DOES NOT have (refuse if asked about any of these)',
     '- No "Beginner" or "Advanced" mode — only the 4 above.',
-    '- No keyboard shortcuts like Ctrl+K, slash commands.',
-    '- No "SuperTutor", "AI assistant button", "Help menu" dropdown.',
-    '- No account/login/signup screen.',
-    '- No mobile app — web only.',
-    '- No version-history features; do not reference past versions.',
+    COACH_DOES_NOT_HAVE,
     '',
     '=== END CATALOG ===',
   ].join('\n');
@@ -1011,7 +1043,9 @@
     '## The Launch Pad doors (exhaustive — these are the ONLY choices on this screen)',
     '1. Teacher (key: "teacher") — Create and adapt lessons. Opens Guided Mode, a step-by-step',
     '   lesson path. Best for brand-new users. A link under it, "Open the full workspace',
-    '   instead" (key: "full"), opens every tool at once. Best for confident users.',
+    '   instead" (key: "full"), opens every tool at once. Best for confident users. If this',
+    '   device last used the full workspace, the door opens it and the link says "Start Guided',
+    '   Mode instead".',
     '2. Student (key: "student") — Join a class with the 5-character class code a teacher',
     '   shared, or explore on your own with a private codename. Exploring opens the Learning',
     '   Hub (tiles below).',
@@ -1022,6 +1056,8 @@
     '5. Learn independently (key: "adult") — A link below the doors, for adults studying on',
     '   their own (adult education, licensure prep).',
     'If the school set an access code, every door except Student asks for it first.',
+    '"Continue last workspace" appears above the doors when this device used AlloFlow in the',
+    'last 6 hours (not for students).',
     '',
     COACH_CATALOG.slice(COACH_CATALOG.indexOf('## The Learning Hub tiles'), COACH_CATALOG.indexOf('## The 2 Educator Tools')).trim(),
     '',
@@ -1032,17 +1068,17 @@
     '## Allowed navigation actions',
     '- pick_mode: opens one of the doors {teacher, full, student, family, specialist, adult}.',
     '- start_tour: tours the workspace, then returns to this Launch Pad.',
-    '- open_link: currently only "ai_backend_settings" is allowed.',
+    COACH_OPEN_LINK_LINE,
     '- open_help: opens the static help cards (this same panel without the chat).',
+    '',
+    COACH_SCREEN_EXTRAS,
+    '',
+    COACH_WORKSPACE_ONLY,
     '',
     '## What AlloFlow DOES NOT have (refuse if asked about any of these)',
     '- No "Beginner" or "Advanced" mode, and no "Full AlloFlow", "Learning Tools" or',
     '  "Educator Tools" cards on this screen — only the doors above.',
-    '- No keyboard shortcuts like Ctrl+K, slash commands.',
-    '- No "SuperTutor", "AI assistant button", "Help menu" dropdown.',
-    '- No account/login/signup screen.',
-    '- No mobile app — web only.',
-    '- No version-history features; do not reference past versions.',
+    COACH_DOES_NOT_HAVE,
     '',
     '=== END CATALOG ===',
   ].join('\n');
@@ -1113,8 +1149,9 @@
       '## Uncertainty rule',
       'When you do not know if AlloFlow has something the user is asking for, say:',
       '"I\\u2019m not sure AlloFlow has that — tell me what you\\u2019re trying to accomplish and I\\u2019ll suggest a mode."',
-      'Do NOT say "try the menu" or "look around" — there is no menu, and 0-familiarity users',
-      'will not know where to look.',
+      'Do NOT say "try the menu" or "look around" — 0-familiarity users will not know where to',
+      'look. Name the exact button. This chat runs on the Launch Pad before any workspace opens:',
+      'if something is only inside the workspace, say so plainly and name the choice that leads there.',
       '',
       '## Length',
       'Answers are AT MOST 3 sentences (cut at 600 characters). If you need more, ask ONE',

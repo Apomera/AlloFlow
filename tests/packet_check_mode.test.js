@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
-// Check packets (2026-11-11): the take-home shell in mode 'probe' (the visible word is "check"), the three math
-// check adapters and packet_check_builder.js. Format: C:\tmp\packets_build_1111\SPEC.md, "Reserved for probe packets".
+// Check packets (2026-11-11): the take-home shell with a lesson in mode 'probe' (an internal name; the results say mode
+// "check" since 2026-11-12, "probe" before), the three math check adapters and packet_check_builder.js.
+// Format: C:\tmp\packets_build_1111\SPEC.md, "Check packets".
 // Every screen test runs a REAL built file in jsdom, with the test holding both clocks (Date.now and performance.now).
 import { describe, it, expect, afterEach } from 'vitest';
 import { readFileSync, readdirSync } from 'node:fs';
@@ -127,7 +128,8 @@ describe('a check gives one try, no feedback and no way back', () => {
     expect(t.d.querySelectorAll('#app .right, #app .status.ok')).toHaveLength(0);
     expect([...t.d.querySelectorAll('#app .status')].filter((n) => !n.closest('[hidden]') && n.textContent.trim())).toEqual([]);
     // Nothing leads back, and there is no Next to wait for.
-    expect([...t.d.querySelectorAll('#app button')].filter((b) => !b.closest('[hidden]')).map((b) => b.textContent)).toEqual([String(scored(QD)[2].left), String(scored(QD)[2].right), 'Stop the check']);
+    // 2026-11-12: the reading tools ("Aa") sit right after the screen heading on every screen (tests/packets_a11y_static.test.js).
+    expect([...t.d.querySelectorAll('#app button')].filter((b) => !b.closest('[hidden]')).map((b) => b.textContent)).toEqual(['Aa Reading tools', String(scored(QD)[2].left), String(scored(QD)[2].right), 'Stop the check']);
     // Right and wrong are never written to the saved state: both answers look alike there too.
     const kept = t.state().items.slice(2, 4);
     expect(kept.map((r) => [r.done, r.attempts, r.correct, r.firstTry])).toEqual([[true, 1, false, false], [true, 1, false, false]]);
@@ -391,7 +393,9 @@ describe('the clock', () => {
     // No colour change, flashing or movement is styled for it.
     const css = /<style>([\s\S]*?)<\/style>/.exec(FILES.qd.html)[1];
     expect(css).toMatch(/\.timer\{[^}]*color:var\(--muted\)/);
-    expect(css).not.toMatch(/@keyframes|animation:(?!none)|transition:(?!none)|blink|\bred\b/);
+    // 2026-11-13 (Aaron): the one motion in any file is the right-answer tick popping in, guarded by reduced motion.
+    expect(css).toContain("@media (prefers-reduced-motion:no-preference){.choice.right::after{animation:lt-pop .25s ease-out}}@keyframes lt-pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}");
+    expect(css.replace("@media (prefers-reduced-motion:no-preference){.choice.right::after{animation:lt-pop .25s ease-out}}@keyframes lt-pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}", '')).not.toMatch(/@keyframes|animation:(?!none)|transition:(?!none)|blink|\bred\b/);
     // Reduced motion: no bar, and the text moves in 5-second steps.
     const still = open(FILES.qd.html, { calm: true });
     still.run(QD);
@@ -481,7 +485,19 @@ describe('the finish screen', () => {
 });
 
 describe('for the teacher', () => {
-  it('with no code, a clearly labelled button shows every item and the score', () => {
+  const NO_CODE_LINE = 'To see each answer, make the check with a teacher code, or open the saved results file.';
+  const reviewRows = (t) => [...t.d.querySelectorAll('[data-review] tbody tr')].map((tr) => [...tr.children].map((td) => td.textContent));
+  const reviewLines = (t) => [...t.d.querySelectorAll('[data-review] li')].map((li) => li.textContent);
+  const unlock = async (t, code) => {
+    const message = () => (t.q('[data-teacher] .status') || { textContent: '' }).textContent;
+    t.q('#teacher-code').value = code; t.q('[data-teacher-show]').click();
+    await until(() => !!t.q('[data-review]') || message() !== 'Checking the code...');
+    return message();
+  };
+
+  // 2026-11-12: every student with the same grade and version gets the same items, so a screen anyone can open must
+  // not show the key. Without a code it shows the score only; the saved results file still has every answer.
+  it('with no code, a clearly labelled button shows the score only: no answers and no right or wrong per item', () => {
     const t = open(FILES.mc.html);
     t.run(MC);
     t.playAll(MC, { wrong: [1], skip: [3] });
@@ -489,8 +505,52 @@ describe('for the teacher', () => {
     expect(t.q('[data-teacher-open]').textContent).toBe('For the teacher: show results');
     t.q('[data-teacher-open]').click();
     expect(t.heading()).toBe('Results for the teacher');
-    const rows = [...t.d.querySelectorAll('[data-review] tbody tr')].map((tr) => [...tr.children].map((td) => td.textContent));
+    expect(t.q('[data-review]').getAttribute('data-review')).toBe('score-only');
+    expect(t.d.querySelectorAll('#app table, #app th, #app td, #app tr')).toHaveLength(0);
+    const lines = reviewLines(t);
+    expect(lines[0]).toMatch(/^No score: every item was finished in under 20 seconds/);
+    expect(lines.slice(1)).toEqual(['Items correct: 23 of 25 attempted (25 given).', lines[2], 'Time used: 7.5 s. Time limit: 120 s.',
+      'Time with the page hidden or closed: 0 s.', 'Attempt 1 for this learner label on this device.', 'All times come from the clock of the learner device.', NO_CODE_LINE]);
+    expect(lines[2]).toMatch(/^Digits correct: \d+ of \d+ possible on the items attempted\.$/);
+    // No item, no answer and no right or wrong anywhere on the screen.
+    const screen = t.q('#app').textContent;
+    for (const word of ['Expected', 'Response', 'right', 'wrong', 'skipped', 'not reached', 'practice (not scored)']) expect(screen, word).not.toContain(word);
+    for (const p of scored(MC).slice(0, 6)) expect(screen).not.toContain(p.a + ' ' + p.symbol + ' ' + p.b);
+    t.button('Close the results').click();
+    expect(t.heading()).toBe('You finished. Thank you.');
+    expect(t.q('[data-review]')).toBeNull();
+    // The saved results file is unchanged: it records each expected answer and each right or wrong, for the teacher.
+    const file = t.saveJson();
+    expect(file.items.map((it) => it.target)).toEqual(raws(MC).map((p) => String(expected(p))));
+    expect(file.items.slice(1, 5).map((it) => [it.correct, it.flag || ''])).toEqual([[true, ''], [false, ''], [true, ''], [false, 'skipped']]);
+    // A check that ran out of time: the flags and the score, and still no item list.
+    const slow = open(FILES.qd.html);
+    slow.run(QD);
+    slow.answer(scored(QD)[0]);
+    slow.tick(60000); slow.show(false);
+    slow.q('[data-teacher-open]').click();
+    expect(slow.d.querySelectorAll('[data-review] tr')).toHaveLength(0);
+    expect(reviewLines(slow)[0]).toBe('Score: 1 items correct.');
+    expect(reviewLines(slow)).toContain('Items correct: 1 of 1 attempted (' + scored(QD).length + ' given).');
+    expect(reviewLines(slow).pop()).toBe(NO_CODE_LINE);
+  });
+
+  it('with a code, the screen asks for it: a wrong code is refused, the right one opens the full review', async () => {
+    const t = open(FILES.coded.html);
+    t.run(MC);
+    t.playAll(MC, { wrong: [1], skip: [3] });
+    expect(t.q('[data-teacher-open]')).toBeNull();
+    expect(t.q('label[for="teacher-code"]').textContent).toBe('Teacher code');
+    expect(t.q('#teacher-code').type).toBe('password');
+    expect(await unlock(t, 'tulip-48')).toBe('That code is not correct. Tries left before a 30-second wait: 4.');
+    expect(t.q('[data-review]')).toBeNull();
+    expect(t.q('#teacher-code').value).toBe('');
+    await unlock(t, 'tulip-47');
+    expect(t.heading()).toBe('Results for the teacher');
+    // As before 2026-11-12: every item with its response, right or wrong, and the expected answer.
+    expect(t.q('[data-review]').getAttribute('data-review')).toBe('');
     expect([...t.d.querySelectorAll('[data-review] thead th')].map((th) => th.textContent)).toEqual(['No.', 'Item', 'Response', 'Result', 'Expected', 'Time (s)']);
+    const rows = reviewRows(t);
     expect(rows).toHaveLength(26);
     const [s0, s1, s2, s3] = scored(MC);
     expect(rows[0]).toEqual(['1', '1 + 1', '2', 'practice (not scored)', '2', '0.3']);
@@ -498,46 +558,27 @@ describe('for the teacher', () => {
     expect(rows[2]).toEqual(['3', s1.a + ' ' + s1.symbol + ' ' + s1.b, String(s1.answer + 1), 'wrong', String(s1.answer), '0.3']);
     expect(rows[3].slice(2, 5)).toEqual([String(s2.answer), 'right', String(s2.answer)]);
     expect(rows[4]).toEqual(['5', s3.a + ' ' + s3.symbol + ' ' + s3.b, '', 'skipped', String(s3.answer), '0.3']);
-    const lines = [...t.d.querySelectorAll('[data-review] li')].map((li) => li.textContent);
+    const lines = reviewLines(t);
     expect(lines[0]).toMatch(/^No score: every item was finished in under 20 seconds/);
     expect(lines).toContain('Items correct: 23 of 25 attempted (25 given).');
-    expect(lines.some((l) => /^Digits correct: \d+ of \d+ possible on the items attempted\.$/.test(l))).toBe(true);
     expect(lines).toContain('Time used: 7.5 s. Time limit: 120 s.');
     expect(lines).toContain('Attempt 1 for this learner label on this device.');
-    t.button('Close the results').click();
-    expect(t.heading()).toBe('You finished. Thank you.');
-    expect(t.q('[data-review]')).toBeNull();
-    // A check that ran out of time shows which item it ended on and what was never reached.
-    const slow = open(FILES.qd.html);
-    slow.run(QD);
-    slow.answer(scored(QD)[0]);
-    slow.tick(60000); slow.show(false);
-    slow.q('[data-teacher-open]').click();
-    const results = [...slow.d.querySelectorAll('[data-review] tbody tr')].map((tr) => tr.children[3].textContent);
-    expect(results.slice(0, 5)).toEqual(['practice (not scored)', 'practice (not scored)', 'right', 'time ran out', 'not reached']);
-    expect(slow.d.querySelector('[data-review] li').textContent).toBe('Score: 1 items correct.');
-  });
-
-  it('with a code, the screen asks for it: a wrong code is refused, the right one opens it', async () => {
-    const t = open(FILES.coded.html);
-    t.run(MC);
-    t.playAll(MC);
-    expect(t.q('[data-teacher-open]')).toBeNull();
-    expect(t.q('label[for="teacher-code"]').textContent).toBe('Teacher code');
-    expect(t.q('#teacher-code').type).toBe('password');
-    const message = () => (t.q('[data-teacher] .status') || { textContent: '' }).textContent;
-    const offer = async (code) => { t.q('#teacher-code').value = code; t.q('[data-teacher-show]').click(); await until(() => !!t.q('[data-review]') || message() !== 'Checking the code...'); };
-    await offer('tulip-48');
-    expect(message()).toBe('That code is not correct. Tries left before a 30-second wait: 4.');
-    expect(t.q('[data-review]')).toBeNull();
-    expect(t.q('#teacher-code').value).toBe('');
-    await offer('tulip-47');
-    expect(t.heading()).toBe('Results for the teacher');
-    expect(t.d.querySelectorAll('[data-review] tbody tr')).toHaveLength(26);
+    expect(lines).not.toContain(NO_CODE_LINE);
     // Closed again, it asks again.
     t.button('Close the results').click();
     expect(t.q('[data-review]')).toBeNull();
     expect(t.q('#teacher-code').value).toBe('');
+  }, 60000);
+
+  it('with a code, a check that ran out of time shows which item it ended on and what was never reached', async () => {
+    const slow = open(pack(QD, { teacherCode: 'tulip-47' }).html);
+    slow.run(QD);
+    slow.answer(scored(QD)[0]);
+    slow.tick(60000); slow.show(false);
+    await unlock(slow, 'tulip-47');
+    const results = reviewRows(slow).map((row) => row[3]);
+    expect(results.slice(0, 5)).toEqual(['practice (not scored)', 'practice (not scored)', 'right', 'time ran out', 'not reached']);
+    expect(reviewLines(slow)[0]).toBe('Score: 1 items correct.');
   }, 60000);
 
   it('five wrong codes, then a 30 s wait that a reload does not clear', async () => {
@@ -782,7 +823,7 @@ describe('the results of a check', () => {
     expect(rows[0].slice(23)).toEqual(['flag', 'digits_correct', 'digits_possible']);
     const item = scored(MC);
     // format .. mode, then the item cells.
-    expect(rows[2].slice(0, 7)).toEqual(['alloflow-packet-result/1', file.sessionId, 'math-computation-g3', MC.revision, 'A', 'probe', 'Ana']);
+    expect(rows[2].slice(0, 7)).toEqual(['alloflow-packet-result/1', file.sessionId, 'math-computation-g3', MC.revision, 'A', 'check', 'Ana']);
     expect(rows[1].slice(10)).toEqual(['1', 'math_computation-p0', 'math_computation', 'Math Fluency', '0', '1 + 1', '2', '2', '1', '1', '1', '300', '', '', '', '']);
     expect(rows[2].slice(10)).toEqual(['2', 'math_computation-0', 'math_computation', 'Math Fluency', '1', '9 ' + String.fromCharCode(0xD7) + ' 7', '63', '63', '1', '1', '1', '1000', '', '', '2', '2']);
     expect(rows[4].slice(16)).toEqual([String(item[2].answer), String(item[2].answer + 1), '0', '0', '1', '1000', '', '', String(appDigits(item[2].answer, item[2].answer + 1)), String(String(item[2].answer).length)]);
@@ -814,7 +855,7 @@ describe('the results of a check', () => {
     const t = played();
     await sealed(t);
     const file = t.saveJson();
-    expect(file).toMatchObject({ kind: 'alloflow-take-home-result', schemaVersion: 3, learner: 'Ana', packet: { id: 'math-computation-g3', version: MC.revision, engine: 'alloflow-packet/1', form: 'A', mode: 'probe' } });
+    expect(file).toMatchObject({ kind: 'alloflow-take-home-result', schemaVersion: 3, learner: 'Ana', packet: { id: 'math-computation-g3', version: MC.revision, engine: 'alloflow-packet/1', form: 'A', mode: 'check' } });
     // Re-pinned 2026-11-12: "tools", the reading tools on during a scored item, comes last.
     expect(Object.keys(file.score)).toEqual(['measure', 'score', 'scoreUnit', 'digitsCorrect', 'digitsPossible', 'itemsCorrect', 'itemsAttempted', 'timeLimitS', 'elapsedS', 'hiddenS', 'completion', 'prorated',
       'noScoreReason', 'scoringVersion', 'formVersion', 'attempt', 'flags', 'tools']);
@@ -826,10 +867,26 @@ describe('the results of a check', () => {
     expect(JSON.stringify(file)).not.toContain('"shown"');
     const parsed = TH.parseResult(JSON.stringify(file));
     expect([parsed.ok, parsed.integrity]).toEqual([true, 'ok']);
+    // parseResult calls every check 'probe', whichever of the two values its file has.
     expect(parsed.result).toMatchObject({ mode: 'probe', form: 'A', sessionId: file.sessionId, learnerName: 'Ana', score: file.score });
     expect(parsed.result.items[1]).toMatchObject({ digitsCorrect: 2, digitsPossible: 2, correct: true, practice: null });
     expect(parsed.result.items[0]).toMatchObject({ digitsCorrect: null, digitsPossible: null, practice: 'practice' });
     expect(parsed.result.items[5]).toMatchObject({ flag: 'skipped', digitsCorrect: 0 });
+    // A file saved before 2026-11-12 says mode "probe", and its value was made over rows that say "probe" (SPEC.md:
+    // the mode cell is part of each item row). Made here from the CSV rows, not with the loader's own code.
+    const csvRows = parseCsv(t.saveCsv().body.slice(1)).slice(1, 27);
+    const quoteRow = (cells) => cells.map((c) => '"' + c.replace(/"/g, '""') + '"').join(',');
+    const valueOf = (mode) => createHash('sha256').update([file.packet.id, file.packet.version, 'A', file.sessionId].join('|') + '\n'
+      + csvRows.map((r) => quoteRow(r.slice(0, 5).concat(mode, r.slice(6)))).join('\n'), 'utf8').digest('hex');
+    expect(valueOf('check')).toBe(file.integrity.value);
+    const old = JSON.parse(JSON.stringify(file));
+    old.packet.mode = 'probe'; old.integrity.value = valueOf('probe');
+    expect(TH.parseResult(old)).toMatchObject({ ok: true, integrity: 'ok', result: { mode: 'probe', form: 'A', score: file.score } });
+    expect(TH.parseResult(old).result.items[1]).toMatchObject({ digitsCorrect: 2, digitsPossible: 2 });
+    expect(TH.resultsCsv(old).text(old.integrity).split('\r\n')[0].slice(1)).toBe(CHECK_HEADER);
+    // The mode is covered: the old value does not fit the new mode, nor the new value the old one.
+    expect(TH.parseResult({ ...old, packet: { ...old.packet, mode: 'check' } }).integrity).toBe('changed');
+    expect(TH.parseResult({ ...file, packet: { ...file.packet, mode: 'probe' } }).integrity).toBe('changed');
     // An edited digit cell or mark shows as "changed". The score block and the #summary row are outside the value.
     for (const edit of [(f) => { f.items[1].digitsCorrect = 1; }, (f) => { f.items[3].digitsPossible += 1; }, (f) => { f.items[3].correct = true; }, (f) => { f.packet.form = 'B'; }, (f) => { f.items[5].flag = ''; }]) {
       const copy = JSON.parse(JSON.stringify(file));
@@ -994,7 +1051,7 @@ describe('each measure plays to a saved file, on a real form', () => {
     const given = BANK.QUANTITY_DISCRIMINATION_PROBES.K.A.problems;
     rows.slice(3, 28).forEach((row, i) => {
       const p = given[i], miss = i === 3 || i === 11;
-      expect(row.slice(2, 7).concat(row.slice(10)), 'item ' + i).toEqual(['quantity-discrimination-gk', QD.revision, 'A', 'probe', 'Blue Heron', String(i + 3), 'quantity_discrimination-' + i, 'quantity_discrimination', 'Quantity Discrimination',
+      expect(row.slice(2, 7).concat(row.slice(10)), 'item ' + i).toEqual(['quantity-discrimination-gk', QD.revision, 'A', 'check', 'Blue Heron', String(i + 3), 'quantity_discrimination-' + i, 'quantity_discrimination', 'Quantity Discrimination',
         '1', p.left + ' or ' + p.right, String(p.answer), String(miss ? Math.min(p.left, p.right) : p.answer), miss ? '0' : '1', miss ? '0' : '1', '1', '300', '', '', '', '']);
     });
     expect(pairs(rows[29])).toEqual({ measure: 'quantity_discrimination', score: '23', score_unit: 'items_correct', digits_correct: '', digits_possible: '', items_correct: '23', items_attempted: '25', time_limit_s: '60',
@@ -1092,7 +1149,7 @@ describe('a teacher\'s own problems', () => {
     expect(file.items.map((i) => [i.target, i.correct, i.digitsCorrect, i.digitsPossible])).toEqual([['15', true, 2, 2], ['7', true, 1, 1], ['24', false, 1, 2], ['5', true, 1, 1]]);
     expect(file.score).toMatchObject({ measure: 'math_dcpm', score: Math.round(5 / (24 / 60)), prorated: true, elapsedS: 24, digitsCorrect: 5, digitsPossible: 6, itemsCorrect: 3, formVersion: 1 });
     const rows = parseCsv(t.saveCsv().body.slice(1));
-    expect(rows[1].slice(2, 6)).toEqual([OWN.lessonId, OWN.revision, 'custom', 'probe']);
+    expect(rows[1].slice(2, 6)).toEqual([OWN.lessonId, OWN.revision, 'custom', 'check']);
     expect(rows.map((r) => r[0]).slice(5)).toEqual(['#summary', '#score', '#integrity']);
     expect(TH.parseResult(file)).toMatchObject({ ok: true, integrity: 'ok', result: { mode: 'probe', form: 'custom' } });
   });
@@ -1152,7 +1209,7 @@ describe('the same inputs make the same bytes', () => {
     // A title of the caller's is content: it gives another revision, and so another place in storage.
     const named = pack(MC, { title: 'Friday facts' });
     expect(named.manifest.title).toBe('Friday facts');
-    expect(named.manifest.packet).toMatchObject({ id: 'math-computation-g3', form: 'A', mode: 'probe' });
+    expect(named.manifest.packet).toMatchObject({ id: 'math-computation-g3', form: 'A', mode: 'check' });
     expect(named.manifest.packet.version).not.toBe(FILES.mc.manifest.packet.version);
     expect(MC.title).toBe('Math Fluency check (3A)');
   });
@@ -1187,12 +1244,13 @@ describe('source check: a check file cannot send anything either', () => {
     expect(csp.split('; ')).toContain("script-src 'sha256-" + createHash('sha256').update(script, 'utf8').digest('base64') + "'");
     expect(script).not.toContain('\r');
     expect(manifest).toMatchObject({ kind: 'alloflow-packet-manifest', engine: 'alloflow-packet/1', network: 'none', never: ['internet connection', 'microphone', 'camera', 'cookies', 'AI'], csp,
-      packet: { mode: 'probe' }, check: { answers: 'scrambled (XOR with a SHA-256 keystream); this stops casual looking, not a determined person' } });
+      packet: { mode: 'check' }, check: { answers: 'scrambled (XOR with a SHA-256 keystream); this stops casual looking, not a determined person' } });
     expect(manifest.what).toMatch(/^A check in one file: one try for each item/);
     // It keeps one key in the browser, the one the manifest names.
     expect(manifest.stores).toHaveLength(1);
-    // Small: no sound, no pictures.
-    expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(120000);
+    // Small: no sound, no pictures. Re-pinned 2026-11-12 from 120000: every file carries Hear all and the reading tool
+    // "Read the choices" (hearAllIn), and that day's accessibility fixes and Untimed option (another job's); about 120.5 KB now.
+    expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(130000);
     expect(sealedOf(html)).toMatchObject({ audio: {}, images: {}, submit: null });
   });
 
@@ -1200,7 +1258,11 @@ describe('source check: a check file cannot send anything either', () => {
     expect(Object.keys(TH.CHECK_ADAPTERS).sort()).toEqual(readdirSync('word_sounds_take_home/check_adapters').filter((f) => /^[a-z_]+\.js$/.test(f)).map((f) => f.replace(/\.js$/, '')).sort());
     for (const id of Object.keys(TH.CHECK_ADAPTERS)) {
       const a = TH.CHECK_ADAPTERS[id];
-      expect(audit(a.render.toString() + a.score.toString() + JSON.stringify(a.labels)), id).toEqual([]);
+      // 2026-11-12, deliberately: the vocabulary activities (vocab_*) read aloud with the device's own voice
+      // (speechSynthesis, a voice that runs on the device only); their files say so in the manifest (speech), and
+      // tests/packet_vocab_adapter.test.js covers it. Every other rule holds for them, and every rule for the rest.
+      const allowed = /^vocab_/.test(id) ? ['speech engine'] : [];
+      expect(audit(a.render.toString() + a.score.toString() + JSON.stringify(a.labels)).filter((name) => !allowed.includes(name)), id).toEqual([]);
       // What is copied into the file stands alone.
       expect(a.render.toString() + a.score.toString()).not.toMatch(/\b(?:document|window|localStorage|globalThis)\b/);
     }
@@ -1235,7 +1297,8 @@ describe('practice files are as they were', () => {
     return TH.buildHtml(lesson, { core });
   };
   // The two places that hold the hash of the script.
-  const level = (html) => html.replace(/'sha256-[A-Za-z0-9+/=]+'/g, "'sha256-X'").replace(/"scriptSha256":"[0-9a-f]{64}"/, '"scriptSha256":"X"');
+  // 2026-11-12: and the line for phones and tablets in the note a preview shows (data-open-here, tests/packets_open_bridge.test.js).
+  const level = (html) => html.replace(/'sha256-[A-Za-z0-9+/=]+'/g, "'sha256-X'").replace(/"scriptSha256":"[0-9a-f]{64}"/, '"scriptSha256":"X"').replace(/<p data-no-script data-open-here>[^<]*<\/p>/, '');
   const minus = (from, taken) => { const left = new Map(); taken.forEach((l) => left.set(l, (left.get(l) || 0) + 1)); return from.filter((l) => { const n = left.get(l) || 0; if (n) left.set(l, n - 1); return !n; }); };
 
   // The file the loader made for these inputs, kept as a fixture. The file made now differs from it in the listed
@@ -1246,11 +1309,28 @@ describe('practice files are as they were', () => {
   // Renewed 2026-11-12, deliberately: every file now carries the reading tools (takeHomeTools, their style rules
   // and words), the CSV is the main save button, and "About this file" says what the results record. The file made
   // with the loader before that change differed from this fixture in those additions only (14 lines changed, 237 added).
-  const REMOVED = [
-  ];
+  // 2026-11-12, deliberately: a check's results now say mode "check" ("probe" before). packetCsv travels in every
+  // file, so its test for a check reads both values; a practice file behaves as before. These two lines only.
+  // Renewed 2026-11-12 (evening), deliberately, by the recipe above: the fixture is the file the loader makes now, and the
+  // two lists are empty. The old fixture differed from it in 16 lines out and 129 in (C:/tmp/packets_build_1111/ux_review/
+  // pin_diff.json): the lines the two lists named before (check mode says "check", a file made for one student, Open a
+  // practice file); Hear all and the reading tool "Read the choices when a question opens" (hearAllIn,
+  // tests/packets_hear_all.test.js), with Hear all in Find Sounds, the "in all" progress line, the phone layout of a
+  // choice and the retry line brought into view; and another job's accessibility fixes of that day (focus outline on
+  // pressed buttons, the reading tools placed after each heading, the Untimed cells of the CSV).
+  // 2026-11-12 (late), deliberately: the reading tools button sits on its own line, right-aligned, instead of floating
+  // over the first line of the question and a check's time bar (UX review item 7). One style line.
+  // Renewed 2026-11-12 (night), deliberately, by the recipe above, for the look pass (C:/tmp/packets_build_1111/look/NOTES.md):
+  // new style rules (helper-button tint, cards, two kinds of button, tick and feedback badges, progress bar, end-screen star
+  // and rows, four more colors with their dots), the feedback line's data-feedback/data-missed, the progress bar, the end
+  // screen's star and per-activity rows, and the colors group's seven choices. The old fixture differed from the new one in
+  // 19 lines out and 45 in (C:/tmp/packets_build_1111/look/pin_diff.json), the one "(late)" line above among them, and
+  // with the loader before this pass it differed in that line only. The lesson is unchanged. The two lists are empty.
+  // 2026-11-13 (Aaron), deliberately: the right-answer tick pops in once, only without reduced motion. One style line.
+  const REMOVED = [];
   const ADDED = [
+    "@media (prefers-reduced-motion:no-preference){.choice.right::after{animation:lt-pop .25s ease-out}}@keyframes lt-pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}",
   ];
-
   it('byte for byte, but for the listed lines', () => {
     const before = level(readFileSync('tests/fixtures/take_home_practice_file_before_check_mode.html', 'utf8')).split('\n');
     const now = level(practiceFile()).split('\n');

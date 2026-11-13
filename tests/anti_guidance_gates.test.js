@@ -56,7 +56,7 @@ describe('Guided Mode is not competed with', () => {
   it('defers (does not spend) the AlloBot intro while Guided Mode runs', () => {
     const line = lineWith('canPlayIntro={');
     const expr = line.slice(line.indexOf('canPlayIntro={') + 'canPlayIntro={'.length, line.lastIndexOf('}'));
-    const on = { canPlayBotIntro: true, isBotVisible: true, hasSelectedRole: true };
+    const on = { canPlayBotIntro: true, isBotVisible: true, hasSelectedRole: true, isGateOpen: false };
     expect(!!evalExpr(expr, { ...on, guidedMode: false })).toBe(true);
     expect(!!evalExpr(expr, { ...on, guidedMode: true })).toBe(false);
   });

@@ -50326,6 +50326,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // problem before checking. Print mode + worksheet mode show everything
           // flat.
           const _mathHideSolution = (cfg.mathHideSolution !== false && !isWorksheet);
+          // Teacher option for drill sets: half the paper work space (student worksheet only).
+          const _mathCompact = isWorksheet && !isTeacher && cfg.worksheetMathCompact === true;
           return `
               <div class="section alloflow-math-section" id="${_escTxt(item.id)}" data-math-section="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
@@ -50343,7 +50345,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   ` : ''}
                   <div style="background:#f8fafc; padding:20px; border:1px solid #e2e8f0; border-radius:8px;">
                       ${problems.map((p, i) => `
-                          <div class="alloflow-math-problem" style="margin-bottom: 30px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 20px; page-break-inside: avoid;">
+                          <div class="alloflow-math-problem${_mathCompact ? ' alloflow-math-compact' : ''}" style="margin-bottom: ${_mathCompact ? 14 : 30}px; border-bottom: 1px dashed #cbd5e1; padding-bottom: ${_mathCompact ? 10 : 20}px; page-break-inside: avoid;">
                               <div class="alloflow-math-question" style="display: flex; gap: 10px; margin-bottom: 15px;">
                                   <span style="font-weight: bold; color: #475569; font-size: 1.1em;">${i + 1}.</span>
                                   <div class="alloflow-own-font" style="font-size:1.2em; font-family:'Times New Roman', serif; font-weight:bold; color:#1e293b;">
@@ -50407,9 +50409,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               `) : `
                                   <!-- Student Worksheet View -->
                                   ${isWorksheet
-                                      ? `<div style="margin-left:25px; border:1px solid #cbd5e1; border-radius:8px; background:white; padding:14px 16px;">
-                                            ${ruledLines(4, _uiRaw('stem.physics.label_show_work', 'Show your work').trim() + ':')}
-                                            <div style="margin-top:14px; display:flex; align-items:center; gap:10px;">
+                                      ? `<div class="alloflow-math-work" style="margin-left:25px; border:1px solid #cbd5e1; border-radius:8px; background:white; padding:${_mathCompact ? '8px 12px' : '14px 16px'};">
+                                            ${ruledLines(_mathCompact ? 2 : 4, _uiRaw('stem.physics.label_show_work', 'Show your work').trim() + ':')}
+                                            <div style="margin-top:${_mathCompact ? '8px' : '14px'}; display:flex; align-items:center; gap:10px;">
                                                 <span style="font-size:0.8em; text-transform:uppercase; font-weight:bold; color:#475569;">${_uiL('export.answer_label', 'Answer:')}</span>
                                                 ${fillableBlank(180)}
                                             </div>
@@ -51539,23 +51541,23 @@ function projectStudentGuideData(data, mode) {
                           + '<p style="margin:0 0 4px;font-size:max(12px, 0.75em);font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#92400e;">' + _maT('practice_your_cue', 'Your memory cue') + '</p>'
                           + '<h3 id="' + titleId + '" style="margin:0;color:#78350f;">' + (index + 1) + '. ' + escapeHtml(c.target || _maT('memory_target', 'Memory target')) + '</h3>'
                           + '<p role="note" style="margin:10px 0 0;padding:10px;border:1px solid #f59e0b;border-radius:7px;background:#fff;color:#78350f;">' + (pendingReview ? _maT('facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.') : _maT('export_no_cue_note', 'This card has no written or visual cue yet. Create your cue below; recall practice opens once a cue exists.')) + '</p>'
-                          + '<section aria-labelledby="' + cueId + '" style="margin-top:12px;padding:12px;border:2px solid #fcd34d;border-radius:8px;background:#fff;">'
-                          + '<h4 id="' + cueId + '" style="margin:0;color:#78350f;">' + _maT('export_current_cue_draft', 'Current cue draft') + '</h4>' + (cueMissing ? '<p style="margin:7px 0 0;color:#475569;">' + _maT('export_no_cue_yet', 'No cue yet. Create yours below.') + '</p>' : cueBody) + recallVisualHtml + '</section>'
-                          + '<section role="group" aria-labelledby="' + authoringId + '" style="margin-top:12px;padding:12px;border:1px solid #94a3b8;border-radius:8px;background:#fff;">'
+                          + '<div role="group" aria-labelledby="' + cueId + '" style="margin-top:12px;padding:12px;border:2px solid #fcd34d;border-radius:8px;background:#fff;">'
+                          + '<h4 id="' + cueId + '" style="margin:0;color:#78350f;">' + _maT('export_current_cue_draft', 'Current cue draft') + '</h4>' + (cueMissing ? '<p style="margin:7px 0 0;color:#475569;">' + _maT('export_no_cue_yet', 'No cue yet. Create yours below.') + '</p>' : cueBody) + recallVisualHtml + '</div>'
+                          + '<div role="group" aria-labelledby="' + authoringId + '" style="margin-top:12px;padding:12px;border:1px solid #94a3b8;border-radius:8px;background:#fff;">'
                           + '<h4 id="' + authoringId + '" style="margin:0;color:#0f172a;">' + _maT('export_create_or_revise_cue', 'Create or revise your memory cue') + '</h4>'
                           + '<p style="margin:5px 0 0;color:#475569;font-size:0.9em;">' + escapeHtml(c.studentPrompt || _maT('export_authoring_prompt_default', 'Create or personalize a cue. Your teacher will verify the facts before you use it for recall practice.')) + '</p>'
-                          + ruledLines(6, _maT('export_memory_cue_draft_lines', 'Memory cue draft')) + '</section></article>';
+                          + ruledLines(6, _maT('export_memory_cue_draft_lines', 'Memory cue draft')) + '</div></article>';
                   }
                   return '<article class="memory-aid-recall-sheet" style="margin:0 0 18px;padding:16px;border:1px solid #67e8f9;border-radius:10px;background:#f0fdff;break-inside:avoid;page-break-inside:avoid;" aria-labelledby="' + titleId + '">'
                       + '<p style="margin:0 0 4px;font-size:max(12px, 0.75em);font-weight:800;text-transform:uppercase;letter-spacing:0.08em;color:#0e7490;">' + _maT('export_recall_kicker', 'Recall practice · facts hidden') + '</p>'
                       + '<h3 id="' + titleId + '" style="margin:0;color:#164e63;">' + (index + 1) + '. ' + escapeHtml(c.target || _maT('memory_target', 'Memory target')) + '</h3>'
                       + '<p style="margin:8px 0 0;color:#334155;">' + _maT('export_recall_directions', 'Use only the cue, record what you remember, then ask your teacher for the checked facts. AI does not grade this practice.') + '</p>'
-                      + '<section aria-labelledby="' + cueId + '" style="margin-top:12px;padding:12px;border:2px solid #a5f3fc;border-radius:8px;background:#ecfeff;">'
-                      + '<h4 id="' + cueId + '" style="margin:0;color:#155e75;">' + _maT('practice_your_cue', 'Your memory cue') + '</h4>' + cueBody + recallVisualHtml + '</section>'
-                      + '<section role="group" aria-labelledby="' + responseId + '" style="margin-top:12px;padding:12px;border:1px solid #94a3b8;border-radius:8px;background:#fff;">'
+                      + '<div role="group" aria-labelledby="' + cueId + '" style="margin-top:12px;padding:12px;border:2px solid #a5f3fc;border-radius:8px;background:#ecfeff;">'
+                      + '<h4 id="' + cueId + '" style="margin:0;color:#155e75;">' + _maT('practice_your_cue', 'Your memory cue') + '</h4>' + cueBody + recallVisualHtml + '</div>'
+                      + '<div role="group" aria-labelledby="' + responseId + '" style="margin-top:12px;padding:12px;border:1px solid #94a3b8;border-radius:8px;background:#fff;">'
                       + '<h4 id="' + responseId + '" style="margin:0;color:#0f172a;">' + _maT('practice_recall_question', 'What does the cue help you remember?') + '</h4>'
                       + '<p style="margin:5px 0 0;color:#475569;font-size:0.9em;">' + _maT('export_recall_write_note', 'Write everything you can retrieve before seeing the checked facts.') + '</p>'
-                      + ruledLines(6, _maT('export_recall_response_lines', 'Recall response')) + '</section>'
+                      + ruledLines(6, _maT('export_recall_response_lines', 'Recall response')) + '</div>'
                       + '<fieldset class="alloflow-response-group" style="margin-top:12px;padding:12px;border:1px solid #a5b4fc;border-radius:8px;background:#eef2ff;">'
                       + '<legend style="padding:0 5px;font-weight:800;color:#3730a3;">' + _maT('practice_confidence_question', 'How confident do you feel before checking?') + '</legend>'
                       + '<label class="alloflow-choice-label">' + fillableCircle() + _maT('confidence_not_sure_label', 'Not sure yet') + '</label>'
@@ -51845,7 +51847,7 @@ function projectStudentGuideData(data, mode) {
           // Planning labels (family, AI agency, scope, selection) are for the teacher.
           const chips = !isTeacher ? '' : [m.familyLabel && (m.familyLabel + (m.familyExample ? ': ' + m.familyExample : '')), m.agencyLabel, m.scopeLabel, m.selectionMode === 'auto' ? L.autoMatch : L.teacherSelected]
               .filter(Boolean).map((chip) => '<span class="ace-chip">' + esc(chip) + '</span>').join(' ');
-          const briefHtml = '<section class="ace-panel ace-brief" aria-labelledby="' + esc(itemId) + '-brief"><h3 class="ace-h3" id="' + esc(itemId) + '-brief">' + esc(L.brief) + '</h3>'
+          const briefHtml = '<section class="ace-panel ace-brief"><h3 class="ace-h3" id="' + esc(itemId) + '-brief">' + esc(L.brief) + '</h3>'
               + (m.brief.context ? '<p class="ace-p ace-prewrap">' + esc(m.brief.context) + '</p>' : '')
               + para(L.role, m.brief.role) + para(L.audience, m.brief.audience)
               + (m.brief.drivingQuestion ? '<p class="ace-p ace-question"><strong>' + esc(L.drivingQuestion) + '</strong> ' + esc(m.brief.drivingQuestion) + '</p>' : '')

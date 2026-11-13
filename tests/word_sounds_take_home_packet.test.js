@@ -392,6 +392,34 @@ describe('the learner label', () => {
     expect(open({ html, storage: a.storageDump() }).d.getElementById('learner-name').value).toBe('Ana');
     expect(open({ html, storage: a.storageDump(), hash: '#learner=Ben' }).d.getElementById('learner-name').value).toBe('Ben');
   });
+  it('keeps each code name its own progress, so students sharing a device never resume each other', () => {
+    const html = build();
+    const base = 'alloflow-take-home:' + JSON.parse(/var lesson=(.*);\nvar labels=/.exec(html)[1]).lessonId + ':';
+    // No code name given: one key for the file, as before.
+    const plain = open({ html });
+    plain.start('Zed');
+    expect(Object.keys(plain.storageDump()).map((k) => k.startsWith(base) && k.split(':').length)).toEqual([3]);
+    // Ana, from her link, answers the first item and stops.
+    const ana = open({ html, hash: '#learner=Ana' });
+    ana.start();
+    ana.pick(0); ana.next(0);
+    expect(Object.keys(ana.storageDump())).toEqual([expect.stringMatching(/:ana$/)]);
+    // Ben opens his own copy on the same device: no "Continue", his own name, a fresh start.
+    const ben = open({ html, storage: ana.storageDump(), hash: '#learner=Ben' });
+    expect(ben.button('Continue where I left off')).toBeUndefined();
+    expect(ben.d.getElementById('learner-name').value).toBe('Ben');
+    ben.start();
+    expect(ben.w.document.querySelector('#app h2').textContent).toMatch(/1 of 2/);
+    ben.pick(0, false);
+    // Ana comes back (her link, any case): her place is still there, Ben's is untouched.
+    const back = open({ html, storage: ben.storageDump(), hash: '#learner=ANA' });
+    expect(back.d.getElementById('learner-name').value).toBe('ANA');
+    back.button('Continue where I left off').click();
+    expect(back.w.document.querySelector('#app h2').textContent).toMatch(/2 of 2/);
+    const kept = ben.storageDump();
+    expect(Object.keys(kept).sort()).toEqual([expect.stringMatching(/:ana$/), expect.stringMatching(/:ben$/)]);
+    expect(JSON.parse(kept[Object.keys(kept).find((k) => k.endsWith(':ben'))]).items[0]).toMatchObject({ attempts: 1, done: false });
+  });
 });
 
 const cspOf = (html) => /<meta http-equiv="Content-Security-Policy" content="([^"]*)">/.exec(html)[1];

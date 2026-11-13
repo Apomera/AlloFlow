@@ -86,7 +86,7 @@ function asciiDigits(s) {
 }
 const hasNumber = (s, n) => new RegExp('(^|[^0-9])' + n + '([^0-9]|$)').test(asciiDigits(s));
 // Packs that spell the number as a word instead of digits.
-const NUMBER_WORDS = { latin: { 20: 'Viginti' } };
+const NUMBER_WORDS = { latin: { 20: 'Viginti', 23: 'Viginti tres' } };
 
 describe('Bird Lab life list in the Mastery Atlas', () => {
   it.each(HOSTS)('%s counts against every bird in BIRDS', (host) => {

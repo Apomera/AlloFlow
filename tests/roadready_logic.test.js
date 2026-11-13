@@ -485,9 +485,12 @@ describe('world-space simulation consistency', () => {
 describe('Ride-Along safety planning', () => {
   it('only advertises automatic driving on spline-backed road scenarios', () => {
     expect(RR.rideAlongSupportsScenario('residential', false)).toBe(true);
-    // ra33: the highway carries rideAlong: false until its acceptance sweep is clean (see the round 33 notes)
-    expect(RR.rideAlongSupportsScenario('highway', false)).toBe(false);
-    expect(RR.rideAlongSupportsScenario('highway', true)).toBe(true);
+    // ra33: a road on the not-ready list carries rideAlong: false until its acceptance sweep is clean
+    // (sh40: the highway came off the list; ra41: rural too; construction is still on it)
+    expect(RR.rideAlongSupportsScenario('highway', false)).toBe(true);
+    expect(RR.rideAlongSupportsScenario('rural', false)).toBe(true);
+    expect(RR.rideAlongSupportsScenario('construction', false)).toBe(false);
+    expect(RR.rideAlongSupportsScenario('construction', true)).toBe(true);
     expect(RR.rideAlongSupportsScenario('snow', false)).toBe(true);
     expect(RR.rideAlongSupportsScenario('parking', false)).toBe(false);
     expect(RR.rideAlongSupportsScenario('roundabout', false)).toBe(false);

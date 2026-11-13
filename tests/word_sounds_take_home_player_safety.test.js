@@ -70,7 +70,8 @@ function open({ labels, beforeParse, submit } = {}) {
 describe('a preview that does not run the file', () => {
   it('shows a plain note in #app, in the file language, and the player replaces it on start', () => {
     const html = build();
-    expect(html).toContain('<div id="app"><p data-no-script>If the practice does not start, download this file and open it in Chrome, Edge or Safari.</p></div>');
+    // 2026-11-12: a file in English also says where a phone or tablet runs it (tests/packets_open_bridge.test.js).
+    expect(html).toContain('<div id="app"><p data-no-script>If the practice does not start, download this file and open it in Chrome, Edge or Safari.</p><p data-no-script data-open-here>Phone or tablet? Open this file at apomera.github.io/AlloFlow/packets-open.html</p></div>');
     const still = new JSDOM(html);
     expect(still.window.document.getElementById('app').textContent).toContain('If the practice does not start');
     const run = open();

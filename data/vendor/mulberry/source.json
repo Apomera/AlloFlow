@@ -39,9 +39,9 @@
     "folder": "symbols",
     "what": "The symbol files a Word Sounds word could use, and no others: every candidate of every matched word in data/word_sounds_symbols_map_en.json (used, held for review or rejected). Each file is the release's EN-symbols/<name>.svg, unchanged, byte for byte. The other symbols of the release (flags, maps, multi-word names, words we do not use) are not kept.",
     "digest": "sha256 of the lines \"<sha256 of the file>  <file name>\\n\", sorted by file name (dev-tools/build_word_sounds_symbols.cjs, symbolsDigest)",
-    "count": 988,
-    "bytes": 6987247,
-    "sha256": "d63487dc0d1d8d197e9b6340023cd4f0d0e066cdee40ef8b7d18ff65bbe62545"
+    "count": 1137,
+    "bytes": 8357721,
+    "sha256": "7e2ed3035e3436d6d3e8cfb0c04b0bad95728602462c482db0e54eda16726637"
   },
   "changes": "The vendored symbol files are unchanged. The page data (word_sounds_symbols/en-<n>.json, with its index word_sounds_symbols_en.js) holds, as text, the drawings of the used words that have a recording. The script passes each through a tidy-up that may remove only an XML prolog, comments, metadata, editor data, the space between tags and space at the ends of the file; the 3.6.1 release files are already clean, so in practice nothing but a final line end is removed (the script reports how many files it changed). No drawing is redrawn, recolored, cropped or turned into pixels.",
   "remake": "Download the release zip (url above), check its sha256, unzip it, then: node dev-tools/build_word_sounds_symbols.cjs --from <the unzipped folder>. That copies the symbol files that are needed, updates \"symbols\" above, and re-makes data/word_sounds_symbols_map_en.json, word_sounds_symbols_en.js and word_sounds_symbols/en-<n>.json. Without --from the script re-makes the generated files from what is vendored here (enough unless new words need symbols that are not here yet); --check fails when anything is out of date. Run it again after recordings are added or the word list or its blocklist changes. The zip itself (52 MB) is not kept in the repo.",

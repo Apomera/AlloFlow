@@ -118,10 +118,10 @@ describe('sibling lanes and registries', () => {
 
   it('builder export titles cover the four studios', () => {
     const source = readFileSync(resolve(process.cwd(), 'export_source.jsx'), 'utf8');
-    // 2026-11-12: note-taking and anchor-chart use sidebar.* because every language pack holds the
-    // old tool description under their help_mode.* keys.
-    for (const [type, group] of [['note-taking', 'sidebar'], ['anchor-chart', 'sidebar'], ['memory-aid', 'help_mode'], ['applied-challenge', 'help_mode']]) {
-      expect(source).toContain(`case '${type}': return t('${group}.tool_${type.replace(/-/g, '_')}')`);
+    // 2026-11-12: sidebar.* names. help_mode.tool_* is the help-mode DESCRIPTION in every language
+    // pack (help_strings.js English); only ui_strings' English copy happened to hold the short name.
+    for (const type of ['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge']) {
+      expect(source).toContain(`case '${type}': return t('sidebar.tool_${type.replace(/-/g, '_')}')`);
     }
   });
 

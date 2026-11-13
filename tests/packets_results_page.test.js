@@ -62,10 +62,11 @@ function practice(over = {}) {
     }) };
 }
 // A math check of eight problems, scored by the check's own adapter and checkScore. Digits possible: 2 1 2 1 2 1 2 2.
+// mode: "check" as a check saves it since 2026-11-12; "probe" as it saved it before.
 const PROBLEMS = [[7, '+', 8], [12, '-', 5], [9, '+', 6], [15, '-', 7], [8, '+', 8], [14, '-', 6], [23, '+', 14], [36, '-', 12]];
 function check(over = {}) {
   const o = { sid: 'c7d2a9e4-1b60-4f3a-8e55-9a0c1d2e3f40', learner: 'BlueHeron7', day: '2026-11-17', time: '09:12:05', form: 'A', packetId: 'math-computation-g2', version: 'r5a3c2e10',
-    title: 'Math Fluency check (2A)', done: 8, wrong: {}, elapsedS: 96, hiddenS: 0, flags: [], attempt: 1, completion: '', ...over };
+    title: 'Math Fluency check (2A)', done: 8, wrong: {}, elapsedS: 96, hiddenS: 0, flags: [], attempt: 1, completion: '', mode: 'check', ...over };
   const adapter = loader.CHECK_ADAPTERS.math_computation;
   const completion = o.completion || (o.done < PROBLEMS.length ? 'time' : 'complete');
   const rows = [];
@@ -81,7 +82,7 @@ function check(over = {}) {
   });
   const startedLocal = wall(o.day, o.time), finishedLocal = wall(o.day, o.time, o.elapsedS + 12);
   const out = { kind: 'alloflow-take-home-result', schemaVersion: 3, player: 'alloflow-word-sounds-take-home/2', sessionId: o.sid,
-    packet: { id: o.packetId, version: o.version, engine: 'alloflow-packet/1', form: o.form, mode: 'probe' }, lessonId: o.packetId, revision: o.version, lessonTitle: o.title,
+    packet: { id: o.packetId, version: o.version, engine: 'alloflow-packet/1', form: o.form, mode: o.mode }, lessonId: o.packetId, revision: o.version, lessonTitle: o.title,
     activityTitles: { math_computation: 'Math Fluency' }, learner: o.learner, learnerName: o.learner, startedAt: utc(startedLocal), finishedAt: utc(finishedLocal), startedLocal, finishedLocal,
     durationMs: (o.elapsedS + 12) * 1000, timesAreFromTheLearnerDevice: true, items };
   out.score = loader.checkScore({ measure: 'math_dcpm', scoreUnit: 'digits_correct_per_minute', timeLimitS: 120, scoringVersion: 3, formVersion: 2 }, rows,
@@ -386,6 +387,29 @@ describe('the reader: a check', () => {
     const fromJson = await one(jsonOf(result), 'a.json');
     expect(fromJson.score).toEqual(s.score);
     expect([fromJson.value, fromJson.summary, fromJson.flags, fromJson.integrity]).toEqual([s.value, s.summary, s.flags, 'ok']);
+  });
+
+  // 2026-11-12: a check's results say mode "check"; files saved before say "probe". Both are a check, and each
+  // verifies with its own value: the mode cell is part of every item row the value covers.
+  it('reads a check whose file says "check" and one whose older file says "probe" the same way, and both verify', async () => {
+    const now = check({ wrong: { 3: 9 } }), before = check({ wrong: { 3: 9 }, mode: 'probe' });
+    expect(csvOf(now)).toContain('"A","check","BlueHeron7"');
+    expect(csvOf(before)).toContain('"A","probe","BlueHeron7"');
+    const got = [];
+    for (const result of [now, before]) for (const method of ['sha256', 'fnv1a']) {
+      got.push(await one(csvOf(result, method), nameOf(result)), await one(jsonOf(result, method), nameOf(result, 'json')));
+    }
+    for (const s of got) {
+      expect([s.integrity, s.mode, s.measure, s.value, s.attempt, s.summary.correct], s.sourceFile).toEqual(['ok', 'probe', 'math_dcpm', got[0].value, 1, 7]);
+      expect(s.items[3]).toMatchObject({ digitsCorrect: 0, digitsPossible: 1 });
+      expect(s.score).toEqual(got[0].score);
+    }
+    // The old value does not fit rows that say "check", nor the new value rows that say "probe".
+    const swap = (text, from, to) => text.split('"A","' + from + '",').join('"A","' + to + '",');
+    expect((await one(swap(csvOf(before), 'probe', 'check'))).integrity).toBe('changed');
+    expect((await one(swap(csvOf(now), 'check', 'probe'))).integrity).toBe('changed');
+    // A spreadsheet that capitalized the cell still reads it as a check.
+    expect((await one(swap(csvOf(now), 'check', 'Check'))).mode).toBe('probe');
   });
 
   it('when the time ran out, counts what was reached', async () => {

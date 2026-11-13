@@ -1,0 +1,101 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src https://api.dictionaryapi.dev; form-action 'none'; base-uri 'none'">
+<meta name="referrer" content="no-referrer">
+<!-- The product name is written once on this page, in #product-name. packets-page.js puts it in front of this title. -->
+<title>Look up a word online</title>
+<meta name="description" content="Find a meaning for a word that is not in the vocabulary word list, in a free online dictionary, after you allow it. Only the word is sent. Runs without AI. No accounts.">
+<link rel="icon" type="image/svg+xml" href="packets-mark.svg">
+<link rel="stylesheet" href="packets.css">
+<link rel="stylesheet" href="packets-make.css">
+<link rel="stylesheet" href="packets-vocab.css">
+<script src="packets-page.js" defer></script>
+<script src="packets-vocab-lookup.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to the main part</a>
+
+<header class="top">
+  <div class="wrap wrap-narrow top-row">
+    <a class="brand" href="packets.html">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
+      <span id="product-name">AlloFlow Packets</span>
+    </a>
+    <a class="top-link" href="packets-vocab.html">Make vocabulary practice</a>
+  </div>
+<details class="proof">
+  <summary class="wrap wrap-narrow">
+    <span class="proof-line">This page runs without AI. No account. It can send one word to one online dictionary, and only after you allow it.</span>
+    <span class="proof-open proof-open-closed">See the details</span>
+    <span class="proof-open proof-open-opened">Hide the details</span>
+  </summary>
+  <div class="wrap wrap-narrow proof-body">
+    <ul>
+      <li id="proof-reach">This page, unlike the vocabulary maker, can reach one other website: the Free Dictionary API, <code>api.dictionaryapi.dev</code>. Its meanings come from Wiktionary. The rule below names that one address, and the browser refuses everything else, this site included.</li>
+      <li id="proof-when">Nothing is sent when the page opens, and nothing is sent while <strong>Allow this page to look up words online</strong> is off. A lookup starts only when you press <strong>Look it up</strong>. The switch is not kept: it is off each time the page opens.</li>
+      <li id="proof-sent">A lookup sends only the word you typed. Nothing about your students, your other words or your files is sent. No cookies are sent, and no account is used.</li>
+      <li id="proof-ip">Like any web request, it carries your IP address and your browser type to that service. The service keeps its own records, under its own privacy policy.</li>
+      <li>The meaning you choose is kept in this browser, with your other changes to the vocabulary questions, on this device only. The vocabulary maker marks it "from the internet, not checked". Read it before you use it: it was not checked for students.</li>
+      <li>This page runs without AI. It looks up, lists and copies, and nothing else.</li>
+      <li>This page loads its own files from this site: the page, three stylesheets, two scripts (<code>packets-page.js</code>, <code>packets-vocab-lookup.js</code>) and the icon in the browser tab.</li>
+    </ul>
+    <p>The rule this page gives your browser. The browser refuses anything the rule does not allow:
+      <code class="rule-text" data-show-rule>It is the Content-Security-Policy line near the top of this page's source.</code>
+    </p>
+  </div>
+</details>
+</header>
+
+<main id="main" class="maker">
+  <div class="wrap wrap-narrow">
+    <h1>Look up a word online</h1>
+    <p class="scope">For a word that is not in the vocabulary word list. The meaning you choose goes into the vocabulary maker, where you can change it.</p>
+    <noscript><p class="note note-problem">This page needs JavaScript. Nothing is sent anywhere.</p></noscript>
+    <p id="not-keeping" class="note note-problem" hidden><strong>This browser is not keeping your changes.</strong> A meaning you choose here cannot reach the vocabulary maker. This can happen in a private window, or when site data is blocked.</p>
+
+    <section class="sheet" aria-labelledby="ask-title">
+      <h2 id="ask-title">The word</h2>
+      <div class="field">
+        <label for="word">Word</label>
+        <span class="hint" id="word-hint">One word or a short phrase, as it is in your list.</span>
+        <input type="text" id="word" maxlength="40" autocomplete="off" autocapitalize="none" spellcheck="false" aria-describedby="word-hint">
+      </div>
+      <div class="block">
+        <label class="radio"><input type="checkbox" id="online-on" role="switch" aria-describedby="online-about"> <span>Allow this page to look up words online</span></label>
+        <p class="hint" id="online-about">When you press Look it up, the word you typed is sent to the Free Dictionary API (api.dictionaryapi.dev), a free service whose meanings come from Wiktionary. Nothing else is sent: not your other words, not your students, not your files. Like any web request, it also carries your IP address.</p>
+      </div>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" id="look" aria-describedby="look-line">Look it up</button>
+        <p id="look-line" class="actions-note" role="status"></p>
+      </div>
+    </section>
+
+    <section id="found" class="sheet" aria-labelledby="found-title" hidden>
+      <h2 id="found-title" tabindex="-1">Meanings found</h2>
+      <p class="hint" id="found-about">From the internet, not checked. Choose one a student would understand. You can change its words in the vocabulary maker.</p>
+      <fieldset class="block">
+        <legend id="found-legend">Meanings of the word</legend>
+        <div id="meanings" class="radios radios-stack"></div>
+      </fieldset>
+      <div class="actions">
+        <button type="button" class="btn btn-primary" id="use">Use this meaning</button>
+        <p id="use-line" class="actions-note" role="status"></p>
+      </div>
+      <p id="credit" class="hint"></p>
+    </section>
+
+    <p class="actions"><a class="btn" id="back" href="packets-vocab.html">Back to the vocabulary maker</a></p>
+  </div>
+</main>
+
+<footer class="foot">
+  <div class="wrap wrap-narrow foot-row">
+    <p>Free to use. Open source, license AGPL-3.0.</p>
+    <p><a href="./">More from AlloFlow</a></p>
+  </div>
+</footer>
+</body>
+</html>

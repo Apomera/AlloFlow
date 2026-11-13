@@ -14926,7 +14926,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var rows = Object.keys(bests).map(function(id) { var sp = findSpecies(id); return sp ? { id: id, name: sp.name, wl: Number(sp.wingLoading) || 0, ar: Number(sp.aspectRatio) || 0, best: bests[id] } : null; }).filter(Boolean)
               .sort(function(a, b) { return a.wl - b.wl; });
             if (!rows.length) return null;
-            var METRICS = { bestSpeedMph: ['Best speed', 'mph'], bestAltitudeM: ['Best height', 'm'], bestCatches: ['Most catches in one flight', ''] };
+            var METRICS = { bestSpeedMph: [__alloT('stem.raptorhunt.best_speed', 'Best speed'), 'mph'], bestAltitudeM: [__alloT('stem.raptorhunt.best_height', 'Best height'), 'm'], bestCatches: [__alloT('stem.raptorhunt.most_catches_in_one_flight', 'Most catches in one flight'), ''] };
             var metric = METRICS[rh.compareMetric] ? rh.compareMetric : 'bestSpeedMph';
             var W = 520, H = 230, L = 48, R = 16, T = 16, B = 40;
             var xs = rows.map(function(r) { return r.wl; }), xMin = Math.min.apply(null, xs) - .5, xMax = Math.max.apply(null, xs) + .5;
@@ -14934,33 +14934,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var px = function(v) { return L + (v - xMin) / (xMax - xMin) * (W - L - R); }, py = function(v) { return H - B - v / yMax * (H - T - B); };
             var claim = rh.flightClaim || {}, ready = rows.length >= 3 && ['claim', 'evidence', 'reasoning'].every(function(k) { return String(claim[k] || '').trim().length >= 15; });
             function setClaim(key, value) { setRH(function(cur) { var next = Object.assign({}, cur.flightClaim || {}); next[key] = value; next.saved = false; return Object.assign({}, cur, { flightClaim: next }); }); }
-            return h('section', { className: 'rh-hub-card bg-slate-900/40 border border-slate-700/40 rounded-xl p-3', role: 'region', 'aria-label': 'Compare your flights', 'data-raptor-flight-compare': rows.length },
-              h('div', { className: 'text-xs font-bold text-cyan-200 mb-1' }, 'Compare your flights'),
-              h('p', { className: 'text-xs text-slate-300 mb-2' }, 'Each point is one species you have flown: its wing loading, and your best result with it. Fly more species to see whether wing shape predicts the result.'),
-              h('label', { className: 'text-xs text-slate-200 block mb-2' }, 'Show ', h('select', { value: metric, 'data-raptor-compare-metric': 'true', className: 'bg-slate-800 text-slate-100 rounded px-2 py-1 ml-1', onChange: function(event) { setRH({ compareMetric: event.target.value }); } },
+            return h('section', { className: 'rh-hub-card bg-slate-900/40 border border-slate-700/40 rounded-xl p-3', role: 'region', 'aria-label': __alloT('stem.raptorhunt.a11y_compare_your_flights', 'Compare your flights'), 'data-raptor-flight-compare': rows.length },
+              h('div', { className: 'text-xs font-bold text-cyan-200 mb-1' }, __alloT('stem.raptorhunt.a11y_compare_your_flights', 'Compare your flights')),
+              h('p', { className: 'text-xs text-slate-300 mb-2' }, __alloT('stem.raptorhunt.each_point_is_one_species_you_have_flown_its_wing_loading', 'Each point is one species you have flown: its wing loading, and your best result with it. Fly more species to see whether wing shape predicts the result.')),
+              h('label', { className: 'text-xs text-slate-200 block mb-2' }, __alloT('stem.raptorhunt.show', 'Show '), h('select', { value: metric, 'data-raptor-compare-metric': 'true', className: 'bg-slate-800 text-slate-100 rounded px-2 py-1 ml-1', onChange: function(event) { setRH({ compareMetric: event.target.value }); } },
                 Object.keys(METRICS).map(function(k) { return h('option', { key: k, value: k }, METRICS[k][0]); }))),
-              h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': METRICS[metric][0] + ' against wing loading for ' + rows.length + ' species. The table below lists the same values.', style: { width: '100%', maxWidth: W, height: 'auto' } },
+              h('svg', { viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': METRICS[metric][0] + __alloT('stem.raptorhunt.against_wing_loading_for', ' against wing loading for ') + rows.length + __alloT('stem.raptorhunt.species_the_table_below_lists_the_same_values', ' species. The table below lists the same values.'), style: { width: '100%', maxWidth: W, height: 'auto' } },
                 h('line', { x1: L, y1: H - B, x2: W - R, y2: H - B, stroke: '#94a3b8' }), h('line', { x1: L, y1: T, x2: L, y2: H - B, stroke: '#94a3b8' }),
-                h('text', { x: (L + W - R) / 2, y: H - 8, fill: '#cbd5e1', fontSize: 12, textAnchor: 'middle' }, 'Wing loading (kg/m²): more weight per area of wing →'),
+                h('text', { x: (L + W - R) / 2, y: H - 8, fill: '#cbd5e1', fontSize: 12, textAnchor: 'middle' }, __alloT('stem.raptorhunt.wing_loading_kg_m2_more_weight_per_area_of_wing', 'Wing loading (kg/m²): more weight per area of wing →')),
                 h('text', { x: 14, y: (T + H - B) / 2, fill: '#cbd5e1', fontSize: 12, textAnchor: 'middle', transform: 'rotate(-90 14 ' + ((T + H - B) / 2) + ')' }, METRICS[metric][0] + (METRICS[metric][1] ? ' (' + METRICS[metric][1] + ')' : '')),
                 [0, .5, 1].map(function(f) { var v = Math.round(yMax / 1.15 * f); return h('text', { key: f, x: L - 6, y: py(v) + 4, fill: '#94a3b8', fontSize: 10, textAnchor: 'end' }, v); }),
                 rows.map(function(r, i) { var v = Number(r.best[metric]) || 0, below = i % 2 === 1 && py(v) < H - B - 22; return h('g', { key: r.id, 'data-raptor-compare-point': r.id },
                   h('circle', { cx: px(r.wl), cy: py(v), r: 6, fill: '#fbbf24', stroke: '#0f172a', strokeWidth: 1.5 }),
                   h('text', { x: px(r.wl), y: below ? py(v) + 19 : py(v) - 10, fill: '#f1f5f9', fontSize: 10, textAnchor: 'middle', 'data-raptor-compare-label': below ? 'below' : 'above' }, r.name.replace(/ (Hawk|Falcon)$/, ''))); })),
               h('table', { className: 'text-xs text-slate-200 w-full mt-2', 'data-raptor-compare-table': 'true' },
-                h('caption', { className: 'text-left text-slate-300 mb-1' }, 'Your flights by species'),
-                h('thead', null, h('tr', null, ['Species', 'Wing loading (kg/m²)', 'Aspect ratio', 'Flights', 'Best speed (mph)', 'Best height (m)', 'Most catches'].map(function(c) { return h('th', { key: c, scope: 'col', className: 'text-left pr-2' }, c); }))),
+                h('caption', { className: 'text-left text-slate-300 mb-1' }, __alloT('stem.raptorhunt.your_flights_by_species', 'Your flights by species')),
+                h('thead', null, h('tr', null, [__alloT('stem.raptorhunt.species_2', 'Species'), __alloT('stem.raptorhunt.wing_loading_kg_m', 'Wing loading (kg/m²)'), __alloT('stem.raptorhunt.aspect_ratio', 'Aspect ratio'), __alloT('stem.raptorhunt.flights', 'Flights'), __alloT('stem.raptorhunt.best_speed_mph', 'Best speed (mph)'), __alloT('stem.raptorhunt.best_height_m', 'Best height (m)'), __alloT('stem.raptorhunt.most_catches', 'Most catches')].map(function(c) { return h('th', { key: c, scope: 'col', className: 'text-left pr-2' }, c); }))),
                 h('tbody', null, rows.map(function(r) { return h('tr', { key: r.id }, h('th', { scope: 'row', className: 'text-left pr-2 font-normal' }, r.name), h('td', null, r.wl.toFixed(1)), h('td', null, r.ar.toFixed(1)), h('td', null, r.best.flights || 0), h('td', null, r.best.bestSpeedMph || 0), h('td', null, r.best.bestAltitudeM || 0), h('td', null, r.best.bestCatches || 0)); }))),
               h('details', { className: 'mt-2', 'data-raptor-flight-claim': claim.saved ? 'saved' : 'open' },
-                h('summary', { className: 'text-xs font-bold text-amber-200 cursor-pointer', style: { minHeight: 44, display: 'flex', alignItems: 'center' } }, 'Explain what your flights show'),
-                h('p', { className: 'text-xs text-slate-300' }, 'Fly at least three species. Then answer: does wing loading predict your results?'),
-                [['claim', 'Claim: what pattern do you see?'], ['evidence', 'Evidence: which species and numbers show it?'], ['reasoning', 'Reasoning: what about the wings explains it?']].map(function(f) {
+                h('summary', { className: 'text-xs font-bold text-amber-200 cursor-pointer', style: { minHeight: 44, display: 'flex', alignItems: 'center' } }, __alloT('stem.raptorhunt.explain_what_your_flights_show', 'Explain what your flights show')),
+                h('p', { className: 'text-xs text-slate-300' }, __alloT('stem.raptorhunt.fly_at_least_three_species_then_answer_does_wing_loading', 'Fly at least three species. Then answer: does wing loading predict your results?')),
+                [['claim', __alloT('stem.raptorhunt.claim_what_pattern_do_you_see', 'Claim: what pattern do you see?')], ['evidence', __alloT('stem.raptorhunt.evidence_which_species_and_numbers_show_it', 'Evidence: which species and numbers show it?')], ['reasoning', __alloT('stem.raptorhunt.reasoning_what_about_the_wings_explains_it', 'Reasoning: what about the wings explains it?')]].map(function(f) {
                   return h('label', { key: f[0], className: 'block text-xs text-slate-200 mt-2' }, f[1], h('textarea', { value: claim[f[0]] || '', rows: 2, 'data-raptor-claim-field': f[0], className: 'block w-full bg-slate-800 text-slate-100 rounded p-2 mt-1', onChange: function(event) { setClaim(f[0], event.target.value); } }));
                 }),
                 h('button', { type: 'button', disabled: !ready || !!claim.saved, 'data-raptor-claim-save': 'true', className: 'mt-2 px-3 py-2 rounded-lg text-xs font-bold bg-amber-700 text-white disabled:opacity-50', style: { minHeight: 44 },
-                  onClick: function() { if (!ready) return; setRH(function(cur) { return Object.assign({}, cur, { flightClaim: Object.assign({}, cur.flightClaim || {}, { saved: true }) }); }); if (ctx.awardXP) ctx.awardXP('raptorFlightComparison', 15, 'Explained a flight comparison'); rhAnnounce('Your explanation is saved.'); } },
-                  claim.saved ? 'Explanation saved' : 'Save my explanation'),
-                !ready && h('p', { className: 'text-xs text-slate-400 mt-1' }, rows.length < 3 ? 'Fly ' + (3 - rows.length) + ' more species first.' : 'Write a sentence or more in each box.')));
+                  onClick: function() { if (!ready) return; setRH(function(cur) { return Object.assign({}, cur, { flightClaim: Object.assign({}, cur.flightClaim || {}, { saved: true }) }); }); if (ctx.awardXP) ctx.awardXP('raptorFlightComparison', 15, 'Explained a flight comparison'); rhAnnounce(__alloT('stem.raptorhunt.your_explanation_is_saved', 'Your explanation is saved.')); } },
+                  claim.saved ? __alloT('stem.raptorhunt.explanation_saved', 'Explanation saved') : __alloT('stem.raptorhunt.save_my_explanation', 'Save my explanation')),
+                !ready && h('p', { className: 'text-xs text-slate-400 mt-1' }, rows.length < 3 ? __alloT('stem.raptorhunt.fly', 'Fly ') + (3 - rows.length) + __alloT('stem.raptorhunt.more_species_first', ' more species first.') : __alloT('stem.raptorhunt.write_a_sentence_or_more_in_each_box', 'Write a sentence or more in each box.'))));
           })(),
           // ── NEW v0.11: Progress Tracker ──
           (function() {
@@ -16540,10 +16540,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                         ),
                         flightSummary && flightSummary.physics && (function() {
                           var p = flightSummary.physics;
-                          return h('section', { className: 'rh-flight-debrief-coach', role: 'group', 'aria-label': 'The physics of this flight', 'data-raptor-flight-physics': 'true' },
-                            h('div', { className: 'rh-flight-debrief-coach-head' }, 'The physics of this flight'),
-                            h('div', { className: 'rh-flight-debrief-coach-copy' }, 'Your ' + p.speciesName + ' has a wing loading of ' + p.wingLoading.toFixed(1) + ' kg/m² and an aspect ratio of ' + p.aspectRatio.toFixed(1) + ', so in this simulation it sinks about ' + p.glideSinkMps.toFixed(1) + ' m/s in a glide. This flight peaked at ' + flightSummary.maxSpeedMph + ' mph and ' + flightSummary.peakAltitudeM + ' m.'),
-                            h('div', { className: 'rh-flight-debrief-coach-next' }, 'Why? More weight on each square meter of wing (higher loading) sinks faster; long, narrow wings (higher aspect ratio) sink slower. Fly a species with a different wing shape, then compare them in Compare your flights on the hub.'));
+                          return h('section', { className: 'rh-flight-debrief-coach', role: 'group', 'aria-label': __alloT('stem.raptorhunt.a11y_the_physics_of_this_flight', 'The physics of this flight'), 'data-raptor-flight-physics': 'true' },
+                            h('div', { className: 'rh-flight-debrief-coach-head' }, __alloT('stem.raptorhunt.a11y_the_physics_of_this_flight', 'The physics of this flight')),
+                            h('div', { className: 'rh-flight-debrief-coach-copy' }, __alloT('stem.raptorhunt.your', 'Your ') + p.speciesName + __alloT('stem.raptorhunt.has_a_wing_loading_of', ' has a wing loading of ') + p.wingLoading.toFixed(1) + __alloT('stem.raptorhunt.kg_m2_and_an_aspect_ratio_of', ' kg/m² and an aspect ratio of ') + p.aspectRatio.toFixed(1) + __alloT('stem.raptorhunt.so_in_this_simulation_it_sinks_about', ', so in this simulation it sinks about ') + p.glideSinkMps.toFixed(1) + __alloT('stem.raptorhunt.m_s_in_a_glide_this_flight_peaked_at', ' m/s in a glide. This flight peaked at ') + flightSummary.maxSpeedMph + __alloT('stem.raptorhunt.mph_and', ' mph and ') + flightSummary.peakAltitudeM + ' m.'),
+                            h('div', { className: 'rh-flight-debrief-coach-next' }, __alloT('stem.raptorhunt.why_more_weight_on_each_square_meter_of_wing_higher_loading', 'Why? More weight on each square meter of wing (higher loading) sinks faster; long, narrow wings (higher aspect ratio) sink slower. Fly a species with a different wing shape, then compare them in Compare your flights on the hub.')));
                         })(),
                         flightSummary && flightSummary.debriefCoach && h('section', {
                           className: 'rh-flight-debrief-coach',
@@ -16933,12 +16933,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             var speciesFlown = Object.keys(rh.speciesBests || {}).length, missionWins = rh.missionWins || {};
             // Achievement definitions. Understanding first: investigating, comparing, explaining.
             var achievements = [
-              { id: 'fieldScientist', icon: '🔬', label: 'Field Scientist', desc: 'Review one guided investigation', cond: reviewedInvestigations >= 1 },
-              { id: 'leadInvestigator', icon: '📓', label: 'Lead Investigator', desc: 'Review all three guided investigations', cond: reviewedInvestigations >= 3 },
-              { id: 'thermalRider', icon: '🌀', label: 'Thermal Rider', desc: 'Complete Ride the Thermal', cond: !!missionWins.thermalKettle },
-              { id: 'comparativeFlyer', icon: '📊', label: 'Comparative Flyer', desc: 'Fly four different species, then compare them', cond: speciesFlown >= 4 },
-              { id: 'evidenceExplainer', icon: '💬', label: 'Evidence Explainer', desc: 'Save a claim, evidence and reasoning about your flights', cond: !!(rh.flightClaim && rh.flightClaim.saved) },
-              { id: 'quizScholar', icon: '🎓', label: 'Quiz Scholar', desc: '80%+ correct over at least 20 quiz answers', cond: quizTotal >= 20 && quizCorrect / quizTotal >= .8 },
+              { id: 'fieldScientist', icon: '🔬', label: __alloT('stem.raptorhunt.field_scientist', 'Field Scientist'), desc: __alloT('stem.raptorhunt.review_one_guided_investigation', 'Review one guided investigation'), cond: reviewedInvestigations >= 1 },
+              { id: 'leadInvestigator', icon: '📓', label: __alloT('stem.raptorhunt.lead_investigator', 'Lead Investigator'), desc: __alloT('stem.raptorhunt.review_all_three_guided_investigations', 'Review all three guided investigations'), cond: reviewedInvestigations >= 3 },
+              { id: 'thermalRider', icon: '🌀', label: __alloT('stem.raptorhunt.thermal_rider', 'Thermal Rider'), desc: __alloT('stem.raptorhunt.complete_ride_the_thermal', 'Complete Ride the Thermal'), cond: !!missionWins.thermalKettle },
+              { id: 'comparativeFlyer', icon: '📊', label: __alloT('stem.raptorhunt.comparative_flyer', 'Comparative Flyer'), desc: __alloT('stem.raptorhunt.fly_four_different_species_then_compare_them', 'Fly four different species, then compare them'), cond: speciesFlown >= 4 },
+              { id: 'evidenceExplainer', icon: '💬', label: __alloT('stem.raptorhunt.evidence_explainer', 'Evidence Explainer'), desc: __alloT('stem.raptorhunt.save_a_claim_evidence_and_reasoning_about_your_flights', 'Save a claim, evidence and reasoning about your flights'), cond: !!(rh.flightClaim && rh.flightClaim.saved) },
+              { id: 'quizScholar', icon: '🎓', label: __alloT('stem.raptorhunt.quiz_scholar', 'Quiz Scholar'), desc: '80%+ correct over at least 20 quiz answers', cond: quizTotal >= 20 && quizCorrect / quizTotal >= .8 },
               { id: 'firstCatch', icon: '🎯', label: __alloT('stem.raptorhunt.first_catch', 'First Catch'), desc: __alloT('stem.raptorhunt.catch_your_first_prey', 'Catch your first prey'), cond: allCatches >= 1 },
               { id: 'tenCatches', icon: '🏹', label: __alloT('stem.raptorhunt.ten_catches', 'Ten Catches'), desc: __alloT('stem.raptorhunt.catch_10_prey_total', 'Catch 10 prey total'), cond: allCatches >= 10 },
               { id: 'fiftyCatches', icon: '🦅', label: __alloT('stem.raptorhunt.apex_predator', 'Apex Predator'), desc: __alloT('stem.raptorhunt.catch_50_prey_total', 'Catch 50 prey total'), cond: allCatches >= 50 },
@@ -44016,7 +44016,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // Quests
           h('div', { className: 'space-y-2' },
             h('div', { className: 'text-sm font-bold text-amber-300' }, __alloT('stem.raptorhunt.quests', '🎯 Quests')),
-            h('p', { className: 'text-xs text-slate-300', 'data-raptor-quests-note': 'true' }, 'Suggested goals to aim for. The lab does not track quests; your badges and XP come from the hunt simulator, investigations, missions and the quiz.'),
+            h('p', { className: 'text-xs text-slate-300', 'data-raptor-quests-note': 'true' }, __alloT('stem.raptorhunt.suggested_goals_to_aim_for_the_lab_does_not_track_quests', 'Suggested goals to aim for. The lab does not track quests; your badges and XP come from the hunt simulator, investigations, missions and the quiz.')),
             ACHIEVEMENTS.quests.map(function(q, i) {
               return h('div', { key: i, className: 'bg-slate-800/40 border border-yellow-700/30 rounded-lg p-3' },
                 h('div', { className: 'flex items-baseline justify-between gap-2 mb-1' },

@@ -1,8 +1,9 @@
 // 2026-11-12 worksheet print pass:
 //   1. "Start each activity on a new page" (worksheet option) so a name strip never sits alone at a page foot.
 //   2. Right-to-left print: concept-map connector stubs point at the hub, and card text starts on the reading side.
-//   3. The anchor-chart type label used help_mode.tool_anchor_chart, which language packs still hold as the old
-//      tool description (a paragraph in every document language). It now uses sidebar.tool_anchor_chart.
+//   3. The anchor-chart type label used help_mode.tool_anchor_chart. Packs hold help_strings.js's tool
+//      DESCRIPTION under help_mode.* (only ui_strings' English has the short name), so every other
+//      language showed a paragraph. Labels and default titles now use sidebar.tool_*.
 //   4. The 150px printed hub fits its title.
 
 import { beforeAll, describe, expect, it } from 'vitest';
@@ -76,8 +77,10 @@ describe('anchor chart type label', () => {
     expect(doc.body.textContent).toContain('Anchor Chart');
     expect(doc.body.textContent).not.toContain('Creates a class reference chart');
     for (const file of ['doc_pipeline_source.jsx', 'export_source.jsx']) expect(readFileSync(file, 'utf8')).not.toContain('help_mode.tool_anchor_chart');
-    // Same stale-description problem in every pack for the note-taking default title.
-    expect(readFileSync('export_source.jsx', 'utf8')).not.toContain("t('help_mode.tool_note_taking')");
+    // help_mode.tool_* is a help DESCRIPTION outside English (help_strings.js), so no default title reads it.
+    for (const file of ['export_source.jsx', 'AlloFlowANTI.txt']) {
+      expect(readFileSync(file, 'utf8')).not.toMatch(/return t\('help_mode\.tool_(note_taking|anchor_chart|memory_aid|applied_challenge)'\)/);
+    }
   });
 
   it('every document-language label file has no paragraph standing in for a short label', () => {

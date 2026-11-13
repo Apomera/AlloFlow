@@ -9969,6 +9969,18 @@ ${pageCss}
       ), /* @__PURE__ */ React.createElement("span", null, (() => {
         const v = t("export_preview.worksheet_page_per_activity");
         return typeof v === "string" && v.trim() && v !== "export_preview.worksheet_page_per_activity" ? v : "Start each activity on a new page";
+      })())), exportPreviewMode === "worksheet" && exportConfig.includeMath !== false && (history || []).some((item) => item && item.type === "math") && /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 mt-2 text-xs text-slate-700", htmlFor: "alloflow-worksheet-math-compact" }, /* @__PURE__ */ React.createElement(
+        "input",
+        {
+          type: "checkbox",
+          id: "alloflow-worksheet-math-compact",
+          className: "accent-indigo-600",
+          checked: !!exportConfig.worksheetMathCompact,
+          onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, worksheetMathCompact: e.target.checked }))
+        }
+      ), /* @__PURE__ */ React.createElement("span", null, (() => {
+        const v = t("export_preview.worksheet_math_compact");
+        return typeof v === "string" && v.trim() && v !== "export_preview.worksheet_math_compact" ? v : "Compact math: less room to show work";
       })()))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 rounded-lg border border-slate-400 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold text-slate-600 uppercase" }, "Word Count"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-mono text-slate-600", "aria-live": "polite" }, wordCount.toLocaleString(), " words")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center gap-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-[11px] text-slate-600 shrink-0", htmlFor: "word-goal-input" }, "Goal:"), /* @__PURE__ */ React.createElement(
         "input",
         {

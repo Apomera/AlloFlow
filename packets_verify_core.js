@@ -35,6 +35,8 @@
   // ---------------------------------------------------------------------------
   var has = function (object, key) { return Object.prototype.hasOwnProperty.call(object, key); };
   var isObject = function (value) { return !!value && typeof value === 'object' && !Array.isArray(value); };
+  // A check: a manifest from 2026-11-12 says mode "check", an older one "probe"; the data block's lesson says "probe".
+  var isCheckMode = function (mode) { return mode === 'check' || mode === 'probe'; };
   // Anything from a file that is shown is first made a short plain string.
   function show(value, max) {
     var text = typeof value === 'string' ? value : typeof value === 'number' || typeof value === 'boolean' ? String(value) : '';
@@ -437,6 +439,10 @@
         else if (place !== 'the code') { f.cls = LOOK; f.why = 'The word is in ' + place + ', not in the code.'; }
         else if (call && call[1].replace(/\s+/g, '') !== 'storageKey') { f.cls = LOOK; f.why = 'Uses the browser\'s storage under a name other than the one name a packet uses.'; }
         else { f.cls = EXPECTED; f.why = 'Keeps the student\'s place on this device, under the one name the file uses.'; }
+      } else if (f.id === 'speech') {
+        // A vocabulary file (packet_vocab_builder.js) reads aloud with the device's own voice, and says so in its manifest.
+        if (a.speech && place === 'the code') { f.cls = EXPECTED; f.why = 'Reads the question and the answers aloud with the voice built into the device, when the student presses Read aloud. The file declares it, and uses only a voice that runs on the device. It needs no connection.'; }
+        else if (a.speech && place === 'the manifest block') { f.cls = EXPECTED; f.why = 'The file\'s own description names the speech engine it uses for Read aloud.'; }
       } else if (f.id === 'clipboard') {
         if (/^clipboard\s*\.\s*writeText\b/.test(text.substr(f.at, 40))) { f.cls = EXPECTED; f.why = 'Puts the results on the clipboard when the student presses the copy button. It needs no connection.'; }
         else { f.cls = LOOK; f.why = 'Uses the clipboard in a way other than writing the results to it.'; }
@@ -489,6 +495,62 @@
     report.result = 'refused';
     report.why = REFUSALS[report.refused](report.bytes);
     return report;
+  }
+
+  // The data block at the top of a packet's script: the lesson, as JSON, between "var lesson=" and ";\nvar labels=".
+  // { lesson, from, to } (offsets in the script text), or null.
+  function dataBlockIn(scriptText) {
+    var opened = /^\s*\(function\s*\(\)\s*\{\s*"use strict";\s*var lesson=/.exec(scriptText);
+    if (!opened) return null;
+    var endOfData = /;(?:\r\n|\r|\n)var labels=/g;
+    endOfData.lastIndex = opened[0].length;
+    var closedAt = endOfData.exec(scriptText);
+    if (!closedAt) return null;
+    var lesson = null;
+    try { lesson = JSON.parse(scriptText.slice(opened[0].length, closedAt.index)); } catch (error) { lesson = null; }
+    return isObject(lesson) ? { lesson: lesson, from: opened[0].length, to: closedAt.index } : null;
+  }
+
+  // ---------------------------------------------------------------------------
+  // readParts: the manifest and the data block of a file, read the way verifyPacket reads them, with no scan.
+  // For a page that fills itself in from a file made earlier (packets-make.html). Nothing in the file is run.
+  //   { ok, refused, kind: 'packet' | 'older' | 'results' | 'not_html' | 'not_packet', manifest, manifestError, lesson, generator }
+  // ---------------------------------------------------------------------------
+  function readParts(input) {
+    var out = { ok: false, refused: '', kind: 'not_packet', manifest: null, manifestError: false, lesson: null, generator: '' };
+    if (!Encoder || !Decoder) { out.refused = 'no_decoder'; return out; }
+    var bytes = null, text = null;
+    if (typeof input === 'string') text = input;
+    else if (input && typeof input.byteLength === 'number') bytes = input.buffer ? new Uint8Array(input.buffer, input.byteOffset || 0, input.byteLength) : new Uint8Array(input);
+    else { out.refused = 'unreadable'; return out; }
+    var size = text !== null ? text.length : bytes.length;
+    if (size > MAX_BYTES) { out.refused = 'too_big'; return out; }
+    if (!size) { out.refused = 'empty'; return out; }
+    if (bytes && ((bytes[0] === 0xFF && bytes[1] === 0xFE) || (bytes[0] === 0xFE && bytes[1] === 0xFF))) { out.kind = 'not_html'; return out; }
+    if (text === null) text = textOf(bytes);
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    var head = text.slice(0, 4000);
+    if ((/^\s*[{[]/.test(head) && text.indexOf('alloflow-take-home-result') >= 0) || (head.indexOf('alloflow-packet-result/1') >= 0 && head.indexOf('<') < 0)) { out.kind = 'results'; return out; }
+    if (text.indexOf('<') < 0) { out.kind = 'not_html'; return out; }
+    var starts = readMarkup(text).tags.filter(function (tag) { return !tag.closing; });
+    var attr = function (tag, name) { return name in tag.attrs ? String(tag.attrs[name]) : ''; };
+    var scripts = starts.filter(function (tag) { return tag.name === 'script'; });
+    out.generator = show(starts.filter(function (tag) { return tag.name === 'meta' && attr(tag, 'name').trim().toLowerCase() === 'generator'; }).map(function (tag) { return attr(tag, 'content'); })[0] || '', 120);
+    var manifestTag = scripts.filter(function (tag) { return attr(tag, 'id') === MANIFEST_ID; })[0];
+    var inline = scripts.filter(function (tag) { return tag !== manifestTag && !('src' in tag.attrs) && !/json/i.test(attr(tag, 'type')); })[0];
+    if (manifestTag) {
+      var manifest = null;
+      try { manifest = JSON.parse(text.slice(manifestTag.textFrom, manifestTag.textTo)); } catch (_) { manifest = null; }
+      if (isObject(manifest) && manifest.kind !== MANIFEST_KIND) return out;
+      out.manifest = isObject(manifest) ? manifest : null;
+      out.manifestError = !out.manifest;
+    }
+    var block = inline ? dataBlockIn(text.slice(inline.textFrom, inline.textTo)) : null;
+    out.lesson = block ? block.lesson : null;
+    if (!manifestTag && !(out.lesson && /^alloflow-take-home-lesson\//.test(String(out.lesson.schema || '')))) return out;
+    out.ok = true;
+    out.kind = manifestTag ? 'packet' : 'older';
+    return out;
   }
 
   // ---------------------------------------------------------------------------
@@ -673,17 +735,8 @@
 
     // --- The data block: the lesson, held as JSON at the top of the script ---
     var lesson = null, dataFrom = -1, dataTo = -1;
-    var opened = /^\s*\(function\s*\(\)\s*\{\s*"use strict";\s*var lesson=/.exec(scriptText);
-    if (opened) {
-      var endOfData = /;(?:\r\n|\r|\n)var labels=/g;
-      endOfData.lastIndex = opened[0].length;
-      var closedAt = endOfData.exec(scriptText);
-      if (closedAt) {
-        try { lesson = JSON.parse(scriptText.slice(opened[0].length, closedAt.index)); } catch (error) { lesson = null; }
-        if (!isObject(lesson)) lesson = null;
-        if (lesson) { dataFrom = inline[0].textFrom + opened[0].length; dataTo = inline[0].textFrom + closedAt.index; }
-      }
-    }
+    var block = dataBlockIn(scriptText);
+    if (block) { lesson = block.lesson; dataFrom = inline[0].textFrom + block.from; dataTo = inline[0].textFrom + block.to; }
     if (inline.length && !lesson) add('data-block', 'The data block is not where a packet keeps it', LOOK, 'A packet\'s script starts with its words, sounds and settings as one block of data. This page could not find that block, so some checks could not be made.', hashAt, 8);
     var L = lesson || {};
     var submit = isObject(L.submit) ? L.submit : null;
@@ -693,10 +746,10 @@
     (Array.isArray(L.blocks) ? L.blocks : []).forEach(function (block) { if (isObject(block) && Array.isArray(block.items)) block.items.forEach(function (item) { if (isObject(item)) items.push(item); }); });
     var lessonCheck = isObject(L.check) ? L.check : null;
     report.data = !lesson ? null : {
-      id: show(L.lessonId, 120), version: show(L.revision, 120), title: show(L.title, 200), mode: L.mode === 'probe' ? 'check' : 'practice', form: show(L.form, 60),
+      id: show(L.lessonId, 120), version: show(L.revision, 120), title: show(L.title, 200), mode: isCheckMode(L.mode) ? 'check' : 'practice', form: show(L.form, 60),
       storageName: 'alloflow-take-home:' + show(L.lessonId, 120) + ':' + show(L.revision, 120), items: items.length,
       mailboxAddress: show(address, 300), teacherCode: !!(lessonCheck && isObject(lessonCheck.lock)),
-      scrambled: L.mode === 'probe' ? items.length > 0 && items.every(function (item) { return typeof item.key === 'string' && !('answer' in item); }) : null,
+      scrambled: isCheckMode(L.mode) ? items.length > 0 && items.every(function (item) { return typeof item.key === 'string' && !('answer' in item); }) : null,
       timeLimitS: Number(L.timeLimitS) > 0 ? Number(L.timeLimitS) : null,
     };
     if (lesson && inline.length) report.script.codeSha256 = sha256OfText(oneLineEnd(text.slice(inline[0].textFrom, dataFrom)) + oneLineEnd(text.slice(dataTo, inline[0].textTo))).hex;
@@ -716,7 +769,8 @@
       for (var i = 0; i < spans.length; i++) if (at >= spans[i][0] && at < spans[i][1]) return spans[i][2];
       return 'the page markup';
     };
-    var scanned = scanSource(text, { where: where, mailbox: mailbox, closed: closed, older: older, pinned: pinned, builds: pinFact.builds });
+    var speech = isObject(m.speech) && m.speech.engine === 'speechSynthesis';
+    var scanned = scanSource(text, { where: where, mailbox: mailbox, closed: closed, older: older, pinned: pinned, builds: pinFact.builds, speech: speech });
     var inCode = function (id) { return scanned.filter(function (f) { return f.id === id && f.where === 'the code'; }); };
     var any = function (ids) { return scanned.some(function (f) { return ids.indexOf(f.id) >= 0; }); };
 
@@ -736,9 +790,9 @@
     if (manifest) {
       var packet = isObject(m.packet) ? m.packet : {};
       if (lesson) {
-        var sameId = String(packet.id) === String(L.lessonId) && String(packet.version) === String(L.revision) && (packet.mode === 'probe') === (L.mode === 'probe');
-        claim('identity', 'which packet it is', 'packet ' + show(packet.id, 80) + ', version ' + show(packet.version, 80) + ', ' + (packet.mode === 'probe' ? 'a check' : 'a practice file') + '.',
-          sameId ? 'The data block carries the same id, version and kind.' : 'The data block carries ' + report.data.id + ', version ' + report.data.version + ', ' + (L.mode === 'probe' ? 'a check' : 'a practice file') + '.', sameId ? AGREE : DIFFERS, LOOK);
+        var sameId = String(packet.id) === String(L.lessonId) && String(packet.version) === String(L.revision) && isCheckMode(packet.mode) === isCheckMode(L.mode);
+        claim('identity', 'which packet it is', 'packet ' + show(packet.id, 80) + ', version ' + show(packet.version, 80) + ', ' + (isCheckMode(packet.mode) ? 'a check' : 'a practice file') + '.',
+          sameId ? 'The data block carries the same id, version and kind.' : 'The data block carries ' + report.data.id + ', version ' + report.data.version + ', ' + (isCheckMode(L.mode) ? 'a check' : 'a practice file') + '.', sameId ? AGREE : DIFFERS, LOOK);
       }
       claim('policy', 'its policy', 'the manifest holds a copy of the policy.', m.csp === policyText ? 'The copy is the same as the policy line the browser reads.' : 'The copy differs from the policy line the browser reads.',
         typeof m.csp !== 'string' ? CANNOT : m.csp === policyText ? AGREE : DIFFERS);
@@ -779,6 +833,8 @@
         else if (thing === 'cookies') claim('never-cookies', 'never: ' + name, says, any(['cookie']) ? 'The code reads or sets cookies (see the scan).' : 'The scan found no cookie code.', any(['cookie']) ? DIFFERS : AGREE);
         else if (thing === 'AI') {
           var loads = any(['eval', 'new-function', 'import', 'import-scripts', 'speech']);
+          var voiced = speech && !any(['eval', 'new-function', 'import', 'import-scripts']);
+          if (closed && voiced) { claim('never-ai', 'never: ' + name, says, 'The file cannot connect to any service and has no way to load other code. It can use the speech voice built into the device for Read aloud; a scan cannot tell how that voice was made.', CANNOT); return; }
           claim('never-ai', 'never: ' + name, says, closed && !loads ? 'The file cannot connect to any service, and the scan found no speech engine and no way to load other code. A scan cannot show more than that.'
             : 'A scan cannot show this for a file that can connect to another computer or load other code.', closed && !loads ? AGREE : CANNOT);
         } else claim('never-other', 'never: ' + name, says, 'This page has no check for this.', CANNOT);
@@ -822,7 +878,7 @@
     report.identity = {
       engine: show(m.engine, 80), player: show(m.player || generator, 80), title: show(m.title != null ? m.title : L.title, 200),
       packetId: show(isObject(m.packet) ? m.packet.id : L.lessonId, 120), packetVersion: show(isObject(m.packet) ? m.packet.version : L.revision, 120),
-      form: show(isObject(m.packet) ? m.packet.form : L.form, 60), mode: declaredMode === 'probe' ? 'check' : 'practice', what: show(m.what, 400),
+      form: show(isObject(m.packet) ? m.packet.form : L.form, 60), mode: isCheckMode(declaredMode) ? 'check' : 'practice', what: show(m.what, 400),
       license: show(m.licence != null ? m.licence : m.license, 80),
       builder: builder ? { name: show(builder.name, 80), seed: show(builder.seed, 40), ai: show(builder.ai, 40), words: show(builder.words, 12), items: show(builder.items, 12) } : null,
     };
@@ -957,7 +1013,7 @@
   }
 
   var api = { MAX_BYTES: MAX_BYTES, LIMITS: LIMITS, HASH_LIMIT: HASH_LIMIT, HEADLINE: HEADLINE, CLASSES: [EXPECTED, UNEXPECTED, LOOK], VERDICTS: [AGREE, DIFFERS, CANNOT],
-    verifyPacket: verifyPacket, refusal: refusal, reportText: reportText, scanSource: scanSource, sha256: sha256, sizeText: sizeText };
+    verifyPacket: verifyPacket, readParts: readParts, refusal: refusal, reportText: reportText, scanSource: scanSource, sha256: sha256, sizeText: sizeText };
   root.AlloPacketVerify = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -165,16 +165,16 @@ describe('reading the CSV', () => {
     expect([s.id, s.done, s.percent, s.integrity, s.check]).toEqual(['th:later-1', 5, 60, 'ok', undefined]);
     expect(Object.keys(s.acts)).toEqual(['isolation', 'blending']);
   });
-  // Real checks (math, mode "probe") are in tests/class_analytics_take_home_checks.test.js.
-  it('a file in mode "probe" is a check, never Word Sounds practice: one this version does not know is not added', async () => {
-    const session = makeSession({mode: 'probe', sid: 'probe-1'});
+  // Real checks (math, mode "check"; "probe" before 2026-11-12) are in tests/class_analytics_take_home_checks.test.js.
+  it.each(['check', 'probe', 'Check'])('a file in mode "%s" is a check, never Word Sounds practice: one this version does not know is not added', async (mode) => {
+    const session = makeSession({mode, sid: 'check-1'});
     session.items.forEach((x, i) => { x.extra = [i + 3, 5]; });
     const text = csvOf(session, {extraHeader: ['digits_correct', 'digits_possible'],
-      extraTrailers: [['#score', 'probe-1', 'measure=math_dcpm', 'score=34', 'score_unit=digits_correct_per_minute']]});
-    const read = await AC.readFile(file(text, 'probe.csv'));
+      extraTrailers: [['#score', 'check-1', 'measure=math_dcpm', 'score=34', 'score_unit=digits_correct_per_minute']]});
+    const read = await AC.readFile(file(text, 'check.csv'));
     expect([read.sessions.length, read.reason]).toEqual([0, 'unknown_check']);
     // With no header row the two extra columns are still part of the saved row.
-    const bare = await AC.readFile(file(text.split('\r\n').slice(1).join('\r\n'), 'probe-no-header.csv'));
+    const bare = await AC.readFile(file(text.split('\r\n').slice(1).join('\r\n'), 'check-no-header.csv'));
     expect([bare.sessions.length, bare.reason]).toEqual([0, 'unknown_check']);
   });
   it('keeps two sessions apart when one file holds both', async () => {

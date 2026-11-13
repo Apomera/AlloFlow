@@ -104,7 +104,9 @@ const parseCsv = (text) => reader.parseCsv(text.charCodeAt(0) === 0xFEFF ? text.
 // ---------------------------------------------------------------------------
 describe('the two practice activities in the engine', () => {
   it('are built into the loader and its three mirrors from their files, beside the check activities the app never lists', () => {
-    expect(Object.keys(TH.CHECK_ADAPTERS).sort()).toEqual(['math_ccc', 'math_computation', 'math_rehearsal', 'missing_number', 'quantity_discrimination']);
+    // 2026-11-12: the three vocabulary activities (packet_vocab_builder.js) joined them; tests/packet_vocab_adapter.test.js covers them.
+    // 2026-11-12: and the two picture activities of vocabulary files (tests/packets_vocab_pictures.test.js).
+    expect(Object.keys(TH.CHECK_ADAPTERS).sort()).toEqual(['math_ccc', 'math_computation', 'math_rehearsal', 'missing_number', 'quantity_discrimination', 'vocab_blank', 'vocab_meaning', 'vocab_picture', 'vocab_picture_word', 'vocab_word']);
     expect(readdirSync('word_sounds_take_home/check_adapters').filter((f) => /^math_(ccc|rehearsal)\.js$/.test(f)).sort()).toEqual(['math_ccc.js', 'math_rehearsal.js']);
     for (const id of ['math_ccc', 'math_rehearsal']) {
       expect(TH.ADAPTERS[id], id).toBeUndefined();
@@ -330,7 +332,11 @@ describe('the file', () => {
       expect(manifestOf(html)).not.toHaveProperty('check');
       for (const part of ['kit.check=', 'kit.sha=', 'kit.codec=', 'check_teacher', 'check_about', 'takeHomeCheck', 'Teacher code', '.timebar', '.pad{', 'takeHomePictures']) expect(html, part).not.toContain(part);
       // Re-pinned 2026-11-12: every file now carries the reading tools and the engine fixes of that day (+15.8 KB; about 54.6 KB before).
-      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(75000);
+      // Re-pinned 2026-11-12: Hear all and the reading tool "Read the choices when a question opens" travel in every file
+      // (hearAllIn, about 4 KB; tests/packets_hear_all.test.js), with that day's accessibility fixes. The page said "About 80 KB".
+      // Re-pinned 2026-11-12 (night) from 85000: the look pass (style rules, the four new colors, the end-screen rows; +5.0 KB
+      // in every practice file; C:/tmp/packets_build_1111/look/NOTES.md). The page now says "About 85 KB".
+      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(90000);
       expect(lessonOf(html)).toMatchObject({ mode: 'practice', audio: {}, images: {}, submit: null });
       // Its answers are the arithmetic of its facts.
       for (const it of lessonOf(html).blocks[0].items) {
@@ -832,7 +838,8 @@ describe('the front door', () => {
     const card = doc.querySelector('.card-pair');
     expect(card.querySelector('h2').textContent).toBe('Make math fact practice or a math check');
     expect([...card.querySelectorAll('a')].map((a) => [a.getAttribute('href'), a.textContent])).toEqual([[PAGE, 'Math fact practice'], ['packets-check.html', 'A math check']]);
-    expect(doc.querySelectorAll('.cards > .card')).toHaveLength(4);
+    // Five cards since 2026-11-12: the vocabulary maker has one of its own.
+    expect(doc.querySelectorAll('.cards > .card')).toHaveLength(5);
     expect(existsSync(PAGE)).toBe(true);
     // Listed with the other builders on the front door and in the guide for school IT.
     for (const file of ['packets.html', 'packets-it.html']) expect(read(file), file).toContain('<code>packet_math_practice_builder.js</code>');

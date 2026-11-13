@@ -232,6 +232,10 @@ module.exports = {
     ]));
     ctx.root.appendChild(slotList);
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [clearBtn]));
+    // Hear all (the player's ctx.hearAll): each spelling still in the tray, in turn, marked with its number.
+    var hearing = typeof ctx.hearAll === 'function' ? ctx.hearAll({ ready: function () { return !locked(); },
+      list: function () { return chipEls.map(function (c, ci) { return c.li.hidden ? null : { box: c.li, n: ci + 1, total: chipEls.length, say: function () { var chip = item.chips[ci]; return chip.audios ? ctx.playAll(chip.audios) : ctx.play(chip.audio); } }; }); } }) : null;
+    if (hearing) ctx.root.appendChild(hearing.node);
     ctx.root.appendChild(tray);
     draw();
     return {

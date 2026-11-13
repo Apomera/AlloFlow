@@ -1,0 +1,59 @@
+{
+  "about": "Filtered extracts used to build the Packets vocabulary bank (packets_vocab_bank_en.js, packets_vocab/en-<n>.json) by dev-tools/build_packets_vocab_bank.cjs. Made by dev-tools/prepare_packets_vocab_vendor.cjs from the downloads below: only the entries for the words the bank can hold (unit words, NAWL, Word Sounds built-in words and the 10,000 most common Word Sounds words, plus their base forms). Not deployed (.assetsignore).",
+  "checking": "The bank's corrections (data/packets_vocab_curation_en.json) were checked and corrected with AI assistance on 2026-11-12; not reviewed by a person. A teacher can edit every item before a packet is made.",
+  "retrieved": "2026-11-12",
+  "sources": {
+    "simple_wiktionary": {
+      "name": "Simple English Wiktionary, kaikki.org wiktextract extract",
+      "url": "https://kaikki.org/dictionary/downloads/simple/simple-extract.jsonl.gz",
+      "homepage": "https://simple.wiktionary.org",
+      "download": { "file": "simple-extract.jsonl.gz", "bytes": 4726754, "sha256": "79afd871e342db3b87c3f2044ed21efa312e4c4ee006814b57c4cf4536ef70a1" },
+      "author": "Wiktionary contributors (extracted by Tatu Ylonen's wiktextract, kaikki.org)",
+      "license": "Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0); Wikimedia text is also available under the GFDL",
+      "licenseShort": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "licenseFile": "CC-BY-SA-4.0.txt",
+      "extract": { "file": "simple_wiktionary_en.json", "what": "word -> entries {pos, forms, senses: {g (first gloss), tags, cats (only labels the build acts on), ex, syn, ant, form_of}} for content parts of speech and form-of entries", "sha256": "12a228ba5f09220b91150f939706becbc99f21d2c0245bb9100853a5ee63fbc5" }
+    },
+    "wiktionary": {
+      "name": "English Wiktionary, kaikki.org post-processed English dictionary (enwiktionary dump 2026-10-01, extracted 2026-10-30)",
+      "url": "https://kaikki.org/dictionary/English/",
+      "homepage": "https://en.wiktionary.org",
+      "download": { "file": "the kaikki.org English JSONL (534 MB gz), streamed and filtered on 2026-11-12 to en_wikt_filtered.jsonl (68,858,410 bytes, sha256 9d3f2dc34bbe4e280b556efac9914824212ebddb4f5ad947daaacaa71c513d8f); the raw file was deleted", "sha256": "9d3f2dc34bbe4e280b556efac9914824212ebddb4f5ad947daaacaa71c513d8f" },
+      "author": "Wiktionary contributors (extracted by wiktextract, kaikki.org)",
+      "license": "Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0); also GFDL",
+      "licenseShort": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "licenseFile": "CC-BY-SA-4.0.txt",
+      "extract": { "file": "wiktionary_en.json", "what": "word -> entries {pos, forms, senses: up to 6 per entry, slang/old/rare/offensive-labelled senses dropped: {g (most specific gloss), ex (up to 2 usage examples, no quotations)} or {form_of}}", "sha256": "26eb99879cf2f651765a75685991faa25ea15d5102a7270d18c1068cfee57fac" }
+    },
+    "wordnet": {
+      "name": "Open English WordNet 2025 edition (WN-LMF XML)",
+      "url": "https://github.com/globalwordnet/english-wordnet/releases (english-wordnet-2025.xml.gz)",
+      "homepage": "https://en-word.net",
+      "download": { "file": "english-wordnet-2025.xml.gz", "bytes": 11363503, "sha256": "9ca6d1dcb75f822fdd66617f7d9da48142ace38dd544d6ad5e2feca1674ad3fe" },
+      "author": "the Open English WordNet team; based on Princeton WordNet 3.1 (Princeton University)",
+      "license": "Creative Commons Attribution 4.0 International (CC BY 4.0), with the Princeton WordNet License for the underlying data",
+      "licenseShort": "CC BY 4.0 + WordNet License",
+      "licenseUrl": "https://creativecommons.org/licenses/by/4.0/",
+      "licenseFile": ["CC-BY-4.0.txt", "OEWN_LICENSE.md", "WNDB_License.txt"],
+      "licenseFilesFrom": "OEWN_LICENSE.md and WNDB_License.txt are LICENSE.md and WNDB_License.txt from the main branch of github.com/globalwordnet/english-wordnet, unchanged (OEWN_LICENSE.md is identical to the LICENSE.md in the release); CC-BY-4.0.txt is https://creativecommons.org/licenses/by/4.0/legalcode.txt, unchanged",
+      "extract": { "file": "wordnet_en.json", "what": "lemmas (wanted words only) -> synset ids per pos; synsets of those words with gloss, members, examples (up to 3) and hypernym/similar/antonym/topic/attribute/pertainym links, plus the ancestors they need (names only); hyponyms are rebuilt from hypernyms", "sha256": "43adbba2b74c6bae1e274365eef923e019fcde1c179b372b5939e50903ba3057" }
+    },
+    "nawl": {
+      "name": "New Academic Word List 1.2 (Browne, Culligan & Phillips 2013)",
+      "url": "https://www.newgeneralservicelist.com/new-general-service-list-1 (NAWL_12_with_en_definitions.csv)",
+      "download": { "file": "NAWL_12_with_en_definitions.csv", "bytes": 71275, "sha256": "2eca6b402b2cd17a8a0ce79f0ab6880bef8af2f4dbab38d045321cecaa3284a4" },
+      "author": "Charles Browne, Brent Culligan and Joseph Phillips",
+      "license": "Creative Commons Attribution-ShareAlike 4.0 International (CC BY-SA 4.0)",
+      "licenseShort": "CC BY-SA 4.0",
+      "licenseUrl": "https://creativecommons.org/licenses/by-sa/4.0/",
+      "licenseFile": "CC-BY-SA-4.0.txt",
+      "extract": { "file": "wordlists_en.json (nawl)", "what": "the 959 headwords and their part of speech only (the list's definitions and translations are not used)" }
+    },
+    "wordlists": {
+      "name": "Word lists and familiarity",
+      "extract": { "file": "wordlists_en.json", "sha256": "cc00d07902bfaad960a4811dfc266d1089e426c1cdffbb00a901d9eecda441cd", "what": "unit: the hand-made K-8 unit list (86 words, AlloFlow); nawl; builtin and common: from word_sounds_wordlist_en.js; zipf: CYP-LEX children's-book frequency (CC BY 4.0, data/vendor/cyplex) for these words and their forms" }
+    }
+  }
+}

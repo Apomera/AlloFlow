@@ -1024,7 +1024,7 @@ function HeaderBar(props) {
               </div>}
             </div>
             {headerCollapsed && (
-              <div className="ml-auto min-w-0 flex items-center justify-end gap-1.5 sm:gap-2">
+              <div className="ml-auto min-w-0 flex flex-wrap items-center justify-end gap-1.5 sm:gap-2">
                 <nav aria-label={t('common.content_tabs') || 'Primary navigation'} className="allo-premium-compact-nav flex min-w-0 items-center gap-1 overflow-x-auto overscroll-x-contain">
                   {/* Jump to the generated lesson plan. The expanded header has carried
                       this button for a while, but collapsing the header hid it — which is

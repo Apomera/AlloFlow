@@ -101,7 +101,7 @@ function open(html, { storage = null } = {}) {
 }
 
 describe('every file carries the reading tools', () => {
-  it('practice, running text, a check and math facts: the same tools, "Check a file" finds nothing to look at, and the tools add under 15 KB', () => {
+  it('practice, running text, a check and math facts: the same tools, "Check a file" finds nothing to look at, and the tools add under 16.5 KB', () => {
     for (const [name, html] of Object.entries(FILES)) {
       expect(html, name).toContain('\ntools:function takeHomeTools(o) {\n');
       const r = verify.verifyPacket(html);
@@ -120,7 +120,8 @@ describe('every file carries the reading tools', () => {
     const style = /<style>([\s\S]*?)<\/style>/.exec(html)[1].split('\n').filter((rule) => /lt-|data-lt/.test(rule)).join('\n');
     const words = JSON.stringify(Object.fromEntries(Object.entries(TH.DEFAULT_LABELS).filter(([k]) => /^tools_/.test(k))));
     const bytes = Buffer.byteLength(fn) + Buffer.byteLength(style) + Buffer.byteLength(words);
-    expect(bytes).toBeLessThan(15000);
+    // Re-pinned 2026-11-12 (look pass) from 15000: the four new colors, their dots and their words (+1.4 KB; 14.4 KB before).
+    expect(bytes).toBeLessThan(16500);
     // The copy in the file is the loader's own function, without its indentation.
     expect(fn.slice('\ntools:'.length, -1)).toBe(TH._tools.toString().replace(/\n +/g, '\n'));
   });
@@ -136,13 +137,17 @@ describe('every file carries the reading tools', () => {
 });
 
 describe('the button and the panel', () => {
-  it('one "Aa" button before the title, outside the activity, opens a labelled panel of pressed-state buttons; Esc closes it', () => {
+  // 2026-11-12, deliberately (dev-tools/check_packets_a11y.cjs): "Aa" was the first thing in <main>, before the screen
+  // heading the file moves the focus to, so Tab never reached it (only Shift+Tab). Each screen now puts the bar and the
+  // panel right after its heading, before the activity.
+  it('one "Aa" button right after the screen heading, before the activity, opens a labelled panel of pressed-state buttons; Esc closes it', () => {
     const t = open(FILES.practice);
     const aa = t.q('[data-tools-open]');
-    const main = t.q('main');
-    expect(aa.closest('#app')).toBeNull();
-    expect(main.firstElementChild.className).toBe('lt-bar');
-    expect(main.firstElementChild.firstElementChild).toBe(aa);
+    const heading = t.q('#app > h2');
+    expect(heading.nextElementSibling.className).toBe('lt-bar');
+    expect(heading.nextElementSibling.firstElementChild).toBe(aa);
+    expect(heading.nextElementSibling.nextElementSibling.id).toBe('lt-panel');
+    expect(t.d.querySelectorAll('[data-tools-open]')).toHaveLength(1);
     expect(aa.textContent).toBe('Aa Reading tools');
     expect([aa.getAttribute('aria-expanded'), aa.getAttribute('aria-controls')]).toEqual(['false', 'lt-panel']);
     const panel = t.q('#lt-panel');
@@ -154,11 +159,17 @@ describe('the button and the panel', () => {
     const groups = [...panel.querySelectorAll('[role=group]')];
     expect(groups.map((g) => [g.getAttribute('data-tool-group'), t.d.getElementById(g.getAttribute('aria-labelledby')).textContent, [...g.querySelectorAll('button')].map((b) => b.textContent + '=' + b.getAttribute('aria-pressed'))])).toEqual([
       ['size', 'Text size', ['Normal=true', 'Larger=false', 'Largest=false']],
-      ['colors', 'Colors', ['Usual=true', 'High contrast=false', 'Soft=false']],
+      // 2026-11-12 (look pass), deliberately: four more colors a student may choose (Dark whatever the device says, Ocean,
+      // Sunny, Forest), in the same one group, each with a dot of its color.
+      ['colors', 'Colors', ['Usual=true', 'High contrast=false', 'Soft=false', 'Dark=false', 'Ocean=false', 'Sunny=false', 'Forest=false']],
       ['spacing', 'Spacing', ['Normal=true', 'Wider=false']],
       ['focus', 'Reading focus', ['Off=true', 'On=false']],
       ['lens', 'Magnifier', ['Off=true', 'On=false']],
+      // 2026-11-12, deliberately: "Read the choices when a question opens" (hearAllIn; tests/packets_hear_all.test.js). Off by
+      // default; shown in this Find Sounds file, whose opening does not play its sound choices.
+      ['choices', 'Read the choices when a question opens', ['Off=true', 'On=false']],
     ]);
+    expect(groups[5].hidden).toBe(false);
     // No running text on the start screen: the reading focus is not offered.
     expect(groups[3].hidden).toBe(true);
     t.tool('size', 1);
@@ -183,7 +194,10 @@ describe('the button and the panel', () => {
     expect(css).toMatch(/\.lt-lens\{position:fixed;[^}]*pointer-events:none/);
   });
 
-  it('the high-contrast and soft colors keep text at 4.5:1 or more, and the focus ring and borders at 3:1', () => {
+  // 2026-11-12 (look pass): the four new colors too (3 Dark, 4 Ocean, 5 Sunny, 6 Forest), the usual light and dark ones, and the
+  // pairs the new look uses: helper buttons on --soft, the tick and feedback badges (--card on --ok and --warn), text on a right
+  // choice (--ok-bg). A card's own border (--line) is 1.5:1 or more in every theme but high contrast, as the usual one is (1.6).
+  it('every color choice keeps text at 4.5:1 or more, and the focus ring and borders at 3:1', () => {
     const css = /<style>([\s\S]*?)<\/style>/.exec(FILES.practice)[1];
     const lum = (hex) => {
       const h = hex.replace('#', ''), full = h.length === 3 ? h.split('').map((c) => c + c).join('') : h;
@@ -191,11 +205,13 @@ describe('the button and the panel', () => {
       return 0.2126 * r + 0.7152 * g + 0.0722 * b;
     };
     const ratio = (a, b) => { const [x, y] = [lum(a), lum(b)].sort((m, n) => n - m); return (x + 0.05) / (y + 0.05); };
-    for (const v of ['1', '2']) {
-      const block = new RegExp('\\[data-lt-colors="' + v + '"\\]\\{([^}]*)\\}').exec(css)[1];
+    const blocks = { usual: /^:root\{([^}]*)\}/m.exec(css)[1], dark: /prefers-color-scheme:dark\)\{:root\{([^}]*)\}/.exec(css)[1] };
+    for (const v of ['1', '2', '3', '4', '5', '6']) blocks[v] = new RegExp('\\[data-lt-colors="' + v + '"\\]\\{([^}]*)\\}').exec(css)[1];
+    for (const [v, block] of Object.entries(blocks)) {
       const c = Object.fromEntries(block.split(';').map((d) => d.split(':')).map(([k, val]) => [k.replace('--', ''), val]));
-      for (const [fg, bg] of [['ink', 'card'], ['ink', 'bg'], ['muted', 'card'], ['accent-ink', 'accent'], ['ok', 'ok-bg'], ['warn', 'warn-bg'], ['ok', 'card']]) expect(ratio(c[fg], c[bg]), v + ' ' + fg + '/' + bg).toBeGreaterThanOrEqual(4.5);
-      for (const [fg, bg] of [['focus', 'bg'], ['focus', 'card'], ['accent', 'card'], ['line', 'card']]) expect(ratio(c[fg], c[bg]), v + ' ' + fg + '/' + bg).toBeGreaterThanOrEqual(v === '2' && fg === 'line' ? 1.5 : 3);
+      for (const [fg, bg] of [['ink', 'card'], ['ink', 'bg'], ['muted', 'card'], ['muted', 'bg'], ['accent-ink', 'accent'], ['ok', 'ok-bg'], ['warn', 'warn-bg'], ['ok', 'card'],
+        ['ink', 'soft'], ['ink', 'ok-bg'], ['card', 'ok'], ['card', 'warn']]) expect(ratio(c[fg], c[bg]), v + ' ' + fg + '/' + bg).toBeGreaterThanOrEqual(4.5);
+      for (const [fg, bg] of [['focus', 'bg'], ['focus', 'card'], ['focus', 'soft'], ['accent', 'card'], ['accent', 'soft'], ['line', 'card']]) expect(ratio(c[fg], c[bg]), v + ' ' + fg + '/' + bg).toBeGreaterThanOrEqual(v !== '1' && fg === 'line' ? 1.5 : 3);
     }
   });
 });
@@ -308,6 +324,34 @@ describe('what was used is recorded', () => {
     }
     t.q('[data-teacher-open]').click();
     expect(t.q('[data-review]').textContent).toContain('Reading tools used: Text size: Largest; Colors: Soft; Magnifier.');
+  });
+
+  // 2026-11-12 (look pass): the colors a student may choose are kept, recorded and named like the others.
+  it('Dark, Ocean, Sunny and Forest are kept in the storage item, counted in the supports and named on a check\'s teacher screen', () => {
+    const keyName = manifestOf(FILES.practice).stores[0].key;
+    const t = open(FILES.practice);
+    t.tool('colors', 4);
+    expect([t.html.getAttribute('data-lt-colors'), t.dump()[keyName].tools]).toEqual(['4', { colors: 4 }]);
+    t.d.getElementById('learner-name').value = 'Ana';
+    t.button('Start').click();
+    t.key('1', t.d.body);
+    t.button('Next').click();
+    t.tool('colors', 3);
+    t.key('3', t.d.body);
+    t.button('See my results').click();
+    expect(t.json().items.map((it) => it.supports)).toEqual([{ colorsOcean: 1 }, { colorsOcean: 1, colorsDark: 1 }]);
+    const again = open(FILES.practice, { storage: { [keyName]: JSON.stringify({ tools: { colors: 6 } }) } });
+    expect([again.html.getAttribute('data-lt-colors'), again.q('[data-tool="colors-6"]').getAttribute('aria-pressed')]).toEqual(['6', 'true']);
+    expect(open(FILES.practice, { storage: { [keyName]: JSON.stringify({ tools: { colors: 7 } }) } }).html.hasAttribute('data-lt-colors')).toBe(false);
+    const c = open(FILES.check);
+    c.d.getElementById('learner-name').value = 'Ana';
+    c.button('Next').click();
+    c.q('[data-check-begin]').click();
+    c.tool('colors', 5);
+    [15, 7, 24, 5].forEach((n) => { c.tick(1500); String(n).split('').forEach((ch) => c.q('[data-key="' + ch + '"]').click()); c.q('[data-key="next"]').click(); });
+    expect(c.json().score.tools).toEqual(['colorsSunny']);
+    c.q('[data-teacher-open]').click();
+    expect(c.q('[data-review]').textContent).toContain('Reading tools used: Colors: Sunny.');
   });
 });
 
@@ -438,5 +482,58 @@ describe('the engine fixes of 2026-11-12', () => {
       const file = copy + '/word_sounds_take_home_loader.js';
       if (copy === 'desktop/web-app/public' || existsSync(file)) expect(read(file) === loader, file).toBe(true);
     }
+  });
+});
+
+// 2026-11-12 (look pass): the refreshed look of every file (C:/tmp/packets_build_1111/look/NOTES.md). Right and wrong are
+// said in words and with a mark, never by color alone; nothing moves (tests/packet_check_mode.test.js: the files are calm).
+describe('the look', () => {
+  it('a tick on the right choice and a badge on the feedback line; a quiet progress bar; no movement anywhere', () => {
+    const t = open(FILES.practice);
+    t.d.getElementById('learner-name').value = 'Ana';
+    t.button('Start').click();
+    const fb = t.q('#app [data-feedback]');
+    expect([fb.getAttribute('role'), fb.className, fb.textContent]).toEqual(['status', 'status', '']);
+    const bar = t.q('#app .progress');
+    expect([bar.getAttribute('aria-hidden'), bar.firstElementChild.style.width]).toEqual(['true', '50%']);
+    t.key('2', t.d.body);
+    expect([fb.className, fb.hasAttribute('data-missed'), fb.textContent]).toEqual(['status warn', false, TH.DEFAULT_LABELS.try_again]);
+    t.key('3', t.d.body);
+    expect([fb.className, fb.hasAttribute('data-missed')]).toEqual(['status warn', true]);
+    expect([...t.d.querySelectorAll('#app li.choice')].map((li) => li.className)).toEqual(['choice right', 'choice tried', 'choice tried', 'choice']);
+    t.button('Next').click();
+    expect(t.q('#app .progress span').style.width).toBe('100%');
+    t.key('3', t.d.body);
+    expect(t.q('#app [data-feedback]').className).toBe('status ok');
+    const css = /<style>([\s\S]*?)<\/style>/.exec(FILES.practice)[1];
+    expect(css).toContain('.choice.right::after{content:"\\2713";content:"\\2713"/""');
+    expect(css).toContain('[data-feedback].ok:not(:empty)::before{content:"\\2713";content:"\\2713"/""');
+    expect(css).toContain('[data-feedback].warn:not(:empty)::before{content:"\\21bb";content:"\\21bb"/""');
+    expect(css).toMatch(/@media \(forced-colors:active\)\{[^\n]*\.choice\.right::after,\.progress span\{forced-color-adjust:none;background:Highlight;color:HighlightText\}/);
+    // 2026-11-13 (Aaron): the right-answer tick pops in, only without reduced motion; nothing else moves.
+    for (const html of Object.values(FILES)) { const css = /<style>([\s\S]*?)<\/style>/.exec(html)[1]; expect(css).toContain("@media (prefers-reduced-motion:no-preference){.choice.right::after{animation:lt-pop .25s ease-out}}@keyframes lt-pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}"); expect(css.replace("@media (prefers-reduced-motion:no-preference){.choice.right::after{animation:lt-pop .25s ease-out}}@keyframes lt-pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}", '')).not.toMatch(/@keyframes|animation:(?!none)|transition:(?!none)/); }
+  });
+
+  it('the end screen: a star for finishing, the student\'s own results, and each activity\'s when there are several', () => {
+    const one = open(FILES.practice);
+    one.d.getElementById('learner-name').value = 'Ana';
+    one.button('Start').click();
+    one.key('1', one.d.body); one.button('Next').click(); one.key('3', one.d.body); one.button('See my results').click();
+    // Drawn by two style rules (clip-path), so the file names no address and carries no image.
+    const star = one.q('#app .hero .done-star');
+    expect([star.tagName, star.getAttribute('aria-hidden'), star.textContent]).toEqual(['SPAN', 'true', '']);
+    expect(one.q('#app .hero p.letters').textContent).toBe('Right on the first try: 2 of 2.');
+    expect(one.q('#app .tally')).toBeNull();
+    const t = open(FILES.reading);
+    t.d.getElementById('learner-name').value = 'Ana';
+    t.button('Start').click();
+    for (let n = 0; n < 40 && !t.button('See my results'); n++) {
+      if (t.button('Next')) { t.button('Next').click(); continue; }
+      t.key('1', t.d.body); t.key('2', t.d.body);
+    }
+    t.button('See my results').click();
+    const rows = [...t.q('#app .tally').children].map((li) => li.firstElementChild.textContent + ' | ' + li.lastElementChild.textContent);
+    expect(rows).toHaveLength(3);
+    for (const row of rows) expect(row).toMatch(/^.+ \| Right on the first try: \d of \d\.$/);
   });
 });

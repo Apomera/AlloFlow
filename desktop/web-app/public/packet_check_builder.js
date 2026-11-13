@@ -54,6 +54,9 @@
       .concat(spec.problems.map(function (p, i) { return Object.assign({}, p, { id: spec.activity + '-' + i }); }));
     var check = { measure: spec.measure, scoreUnit: spec.unit, scoringVersion: spec.scoringVersion, formVersion: spec.formVersion, allowSkip: !!spec.allowSkip };
     if (spec.grade) check.grade = spec.grade;
+    // Untimed (an accommodation): the form's clock is taken away. usualTimeLimitS is the form's own limit, so the
+    // results can say what was changed. A rate cannot be worked out without a clock.
+    if (spec.untimed) { check.untimed = true; check.usualTimeLimitS = spec.usualTimeLimitS; }
     var lesson = { schema: LESSON_SCHEMA, player: PLAYER, lessonId: spec.lessonId, revision: '', language: 'en', title: spec.title, showLetters: false,
       mode: 'probe', form: spec.form, timeLimitS: spec.timeLimitS || null, check: check, activityTitles: {},
       blocks: [{ activity: spec.activity, items: items }], feedback: { correct: [], retry: null }, audio: {}, images: {}, submit: null };
@@ -94,6 +97,8 @@
   // A fixed form of one of the three measures. bank = the parsed psychometric_math_probes.json.
   //   lessonFromMathForm({ bank, measure: 'math_computation', grade: '3', form: 'A' })
   // practice: false leaves the sample items out; an array gives your own.
+  // untimed: true is an accommodation: no clock, and the student does every item. The results say "untimed" and
+  // keep the form's own time limit; a rate (digits correct per minute) is not worked out without a clock.
   function lessonFromMathForm(input) {
     var o = input || {};
     var id = text(o.measure);
@@ -109,9 +114,11 @@
     var problems = Array.isArray(data.problems) ? data.problems : [];
     if (!problems.length || problems.length > MAX_PROBLEMS) throw new Error('Form ' + form + ' of ' + m.name + ' for grade ' + grade + ' has ' + problems.length + ' items; a check needs 1 to ' + MAX_PROBLEMS + '.');
     var version = Number(data.version);
-    return makeLesson({ lessonId: m.slug + '-g' + grade.toLowerCase(), title: m.name + ' check (' + grade + form + ')', form: form, activity: id, name: m.name,
+    var limit = Number(data.timeLimit) > 0 ? Number(data.timeLimit) : m.timeLimitS;
+    var untimed = o.untimed === true;
+    return makeLesson({ lessonId: m.slug + '-g' + grade.toLowerCase(), title: m.name + ' check (' + grade + form + (untimed ? ', untimed' : '') + ')', form: form, activity: id, name: m.name,
       measure: m.code, unit: m.unit, scoringVersion: m.scoringVersion, formVersion: Number.isInteger(version) && version > 0 ? version : 1,
-      timeLimitS: Number(data.timeLimit) > 0 ? Number(data.timeLimit) : m.timeLimitS, allowSkip: m.allowSkip, grade: grade,
+      timeLimitS: untimed ? null : limit, untimed: untimed, usualTimeLimitS: limit, allowSkip: m.allowSkip, grade: grade,
       practice: o.practice === false ? [] : Array.isArray(o.practice) ? o.practice : m.practice, problems: problems });
   }
 

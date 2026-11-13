@@ -1,0 +1,27 @@
+/* The maker page (packets-make.html): "Open a file I made" at the top, a student's code name and
+   "Make one for each student" in step 3. Colors come from packets.css. No address, no font, no image. */
+
+.reopen { margin: 0.25rem 0 1rem; }
+.reopen-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.15rem 0.5rem; }
+.reopen-row .btn-text { padding-left: 0; font-weight: 600; }
+.reopen-row .hint { flex: 1 1 16rem; }
+.reopen.is-dropping { outline: 3px dashed var(--accent); outline-offset: 6px; border-radius: 8px; }
+.reopen-note { margin-top: 0.5rem; }
+.reopen-line { font-weight: 600; color: var(--ink); }
+.reopen-note ul { margin: 0.4rem 0 0; padding-left: 1.25rem; }
+.reopen-note li { margin-top: 0.2rem; }
+.reopen-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 0.4rem; }
+.reopen-note .btn { margin: 0; }
+
+.code-box { margin-top: 1rem; }
+.code-box .field { margin-top: 0.5rem; max-width: 30rem; }
+
+.batch { margin-top: 1.75rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); }
+.batch > summary { display: flex; align-items: center; min-height: 3rem; padding: 0.5rem 1rem; cursor: pointer; font-weight: 600; color: var(--accent); }
+.batch > summary:hover { color: var(--accent-dark); }
+.batch-body { padding: 0 1rem 1rem; }
+.batch-body .field { margin-top: 0.75rem; max-width: 30rem; }
+.batch-body .why { margin-top: 0.5rem; }
+.batch-body .why .radio { margin-top: 0.25rem; }
+.batch-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 0.75rem; }
+.batch-body .making { margin-top: 0.75rem; padding-top: 0.75rem; }

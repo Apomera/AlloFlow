@@ -56,7 +56,8 @@
   var fallbackTitle = '';
   var buildTimer = 0, buildRun = 0, built = null, fileUrl = '';
 
-  function defaults() { return { check: '', grades: {}, version: '', problems: '', title: '', time: TIME_DEFAULT, skip: true }; }
+  // untimed (an accommodation) is for one student's file: it is not kept, so the page never opens with it on.
+  function defaults() { return { check: '', grades: {}, version: '', problems: '', title: '', time: TIME_DEFAULT, skip: true, untimed: false }; }
 
   // ---------------------------------------------------------------------------
   // What this page keeps: the last choices, in this browser only. Never the teacher code.
@@ -92,10 +93,10 @@
     if (x < 0 || y < 0) return x < 0 && y < 0 ? (a < b ? -1 : a > b ? 1 : 0) : x < 0 ? 1 : -1;
     return x - y;
   }
-  function formLesson(id, grade, version) {
-    var key = id + '|' + grade + '|' + version;
+  function formLesson(id, grade, version, untimed) {
+    var key = id + '|' + grade + '|' + version + (untimed ? '|untimed' : '');
     if (!has(lessons, key)) {
-      try { lessons[key] = builder.lessonFromMathForm({ bank: bank, measure: id, grade: grade, form: version }); } catch (_) { lessons[key] = null; }
+      try { lessons[key] = builder.lessonFromMathForm({ bank: bank, measure: id, grade: grade, form: version, untimed: !!untimed }); } catch (_) { lessons[key] = null; }
     }
     return lessons[key];
   }
@@ -223,16 +224,26 @@
   function drawFormLine() {
     var grade = gradeNow();
     if (!grade) { setText('form-line', 'Choose a grade.'); setText('form-sub', ''); return; }
-    var lesson = formLesson(state.check, grade, versionNow());
+    var lesson = formLesson(state.check, grade, versionNow(), state.untimed);
     var items = lesson.blocks[0].items, practice = items.length - scoredItems(lesson).length;
-    setText('form-line', count(scoredItems(lesson).length, readyRow(state.check).item) + '. ' + (lesson.timeLimitS ? capital(minutes(lesson.timeLimitS)) : 'No clock') + '. '
+    setText('form-line', count(scoredItems(lesson).length, readyRow(state.check).item) + '. ' + (lesson.timeLimitS ? capital(minutes(lesson.timeLimitS)) : state.untimed ? 'Untimed: no clock' : 'No clock') + '. '
       + (practice ? count(practice, 'practice question') + ' first.' : 'No practice questions.'));
     setText('form-sub', mixOf(lesson));
     setText('step-2-problem', '');
   }
+  function drawUntimed() {
+    var row = readyRow(state.check), box = $('f-untimed');
+    if (!row || !box) return;
+    box.checked = !!state.untimed;
+    box.parentNode.classList.toggle('is-on', box.checked);
+    if (box.checked) $('untimed-box').open = true;
+    setText('untimed-item', row.item);
+    show('untimed-rate', builder.MEASURES[row.id].unit === 'digits_correct_per_minute');
+  }
   function drawReady() {
     var row = readyRow(state.check);
     setText('ready-intro', row.name + '. ' + row.what);
+    drawUntimed();
     drawRadios('grades', 'grade', row.grades.map(function (grade) { return [grade, gradeWord(grade, true)]; }), gradeNow(), '', function (grade) {
       state.grades[row.id] = grade;
       remember();
@@ -324,7 +335,7 @@
   }
   function drawCode() {
     var stop = codeProblem();
-    setText('code-line', stop || (codeNow() ? 'The answers screen will ask for this code.' : 'No code: the answers screen opens with one button when the check is finished.'));
+    setText('code-line', stop || (codeNow() ? 'The answers screen will ask for this code.' : 'No code: the screen at the end shows only the score, not each answer.'));
   }
   // The box hides the code as it is typed: a class may be looking at the screen. "Show" lets the teacher read it
   // back. The button keeps its name and says, with aria-pressed, whether the code is shown.
@@ -351,7 +362,8 @@
       return { own: true, lesson: mine, name: fileStem(mine.title) + '.html', problems: ownRows.filter(function (row) { return row.ok; }).map(function (row) { return row.text; }) };
     }
     var row = readyRow(state.check), grade = gradeNow(), version = versionNow();
-    return { own: false, row: row, grade: grade, version: version, lesson: formLesson(row.id, grade, version), name: row.slug + '-g' + grade + '-' + version + '.html' };
+    return { own: false, row: row, grade: grade, version: version, untimed: !!state.untimed, lesson: formLesson(row.id, grade, version, state.untimed),
+      name: row.slug + '-g' + grade + '-' + version + (state.untimed ? '-untimed' : '') + '.html' };
   }
   function clearBuilt() {
     buildRun++;
@@ -408,9 +420,13 @@
     if (todo.own) rows.push(['Title', result.manifest.title]);
     else rows.push(['Grade', gradeWord(todo.grade, true)], ['Version', todo.version]);
     rows.push([capital(item) + 's', todo.own ? items + ': ' + todo.problems.join(', ') + '. ' + skip : items + '. ' + mixOf(todo.lesson) + ' ' + skip]);
-    rows.push(['Time', (limit ? capital(minutes(limit)) + '. The clock does not stop and does not give time back. ' : 'No clock. ') + score]);
+    var usual = todo.untimed && todo.lesson.check.usualTimeLimitS;
+    if (usual && check.scoreUnit === 'digits_correct_per_minute') score = 'There is no score per minute: the results show the digits and the ' + item + 's correct.';
+    rows.push(['Time', (limit ? capital(minutes(limit)) + '. The clock does not stop and does not give time back. '
+      : usual ? 'Untimed (an accommodation): no clock, the student does every ' + item + '. The usual time is ' + minutes(usual) + '. The results say "untimed" and are kept apart from timed results. '
+      : 'No clock. ') + score]);
     rows.push(['Practice first', practice ? count(practice, 'practice question') + ', not scored.' : 'None.']);
-    rows.push(['Answers screen', coded ? 'Opens only with your teacher code.' : 'Opens with one button when the check is finished. No teacher code is set.']);
+    rows.push(['Teacher screen', coded ? 'Opens only with your teacher code. It shows the score and each answer.' : 'Shows only the score, not each answer. No teacher code is set.']);
     rows.push(['File', built.name + ', ' + fileSize(built.bytes) + '.']);
     var host = $('summary-rows');
     host.textContent = '';
@@ -418,7 +434,7 @@
       host.appendChild(el('dt', '', row[0]));
       host.appendChild(el('dd', '', row[1]));
     });
-    setText('summary-facts', count(items, item) + '. ' + (limit ? capital(minutes(limit)) : 'No clock') + '. ' + fileSize(built.bytes) + '.');
+    setText('summary-facts', count(items, item) + '. ' + (limit ? capital(minutes(limit)) : usual ? 'Untimed' : 'No clock') + '. ' + fileSize(built.bytes) + '.');
     show('summary', true);
     if (fileUrl) { $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl); show('try', true); }
     show('save', true);
@@ -760,6 +776,7 @@
     });
     $('f-title').addEventListener('input', function () { state.title = this.value.slice(0, 80); remember(); });
     $('f-skip').addEventListener('change', function () { state.skip = this.checked; remember(); this.parentNode.classList.toggle('is-on', this.checked); });
+    $('f-untimed').addEventListener('change', function () { state.untimed = this.checked; this.parentNode.classList.toggle('is-on', this.checked); drawFormLine(); });
     $('f-code').addEventListener('input', function () { drawCode(); if (!codeProblem()) setText('step-2-problem', ''); });
     $('code-show').addEventListener('click', function () { showCode(this.getAttribute('aria-pressed') !== 'true'); });
     $('save').addEventListener('click', saveFile);

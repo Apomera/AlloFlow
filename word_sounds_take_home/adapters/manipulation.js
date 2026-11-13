@@ -130,6 +130,10 @@ module.exports = {
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run(instructionSteps(0)); } }, text: ctx.L.manipulation_hear_instruction }),
       ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
     ]));
+    // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number. The opening already plays them.
+    var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ before: halt, auto: false,
+      list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
+    if (hear) ctx.root.appendChild(hear.node);
     ctx.root.appendChild(list);
     // Opening sequence (word_sounds_module.js:16890-16937): the instruction,
     // 400 ms, then every choice in turn with 350 ms between.

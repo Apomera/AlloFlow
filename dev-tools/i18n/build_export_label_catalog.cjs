@@ -38,7 +38,7 @@ const usable = (key, value) => typeof value === 'string' && value.trim() && !/[<
 const NON_LATIN = new Set(['am', 'bn', 'el', 'fa', 'fa-AF', 'gu', 'he', 'hi', 'ja', 'km', 'kn', 'ko', 'lo', 'ml', 'mn', 'mr', 'my', 'ne', 'pa', 'ps', 'ru', 'ta', 'th', 'ti', 'uk', 'ur', 'zh', 'zh-TW', 'ar']);
 const KEEP_LATIN = new Set(['gemini', 'canvas', 'alloflow', 'cornell', 'steam', 'wcag', 'json', 'html', 'google', 'notebooklm', 'verdana', 'georgia', 'tahoma']);
 const garbled = (tag, key, value) => {
-  // A short label that came back as a paragraph is a stale pack entry (help_mode.tool_anchor_chart held the old tool description).
+  // A short label that comes back as a paragraph is another string under the same key (help_mode.tool_* = help_strings.js descriptions in packs).
   if (en[key].length <= 30 && String(value).length > Math.max(60, en[key].length * 4)) return true;
   const bare = String(value).replace(/\{\w+\}/g, ' ');
   if (/\b(the|and|your|with|found|below|this|that)\b/i.test(bare)) return true;

@@ -11,6 +11,8 @@
 <link rel="icon" type="image/svg+xml" href="packets-mark.svg">
 <link rel="stylesheet" href="packets.css">
 <link rel="stylesheet" href="packets-words.css">
+<link rel="stylesheet" href="packets-make.css">
+<link rel="stylesheet" href="packets-print-cards.css">
 <script src="packets-page.js" defer></script>
 <script src="word_sounds_phonemes_en.js" defer></script>
 <script src="word_sounds_core.js" defer></script>
@@ -20,6 +22,11 @@
 <script src="word_sounds_symbols_en.js" defer></script>
 <script src="packets_my_words.js" defer></script>
 <script src="packets-words.js" defer></script>
+<script src="packets_verify_core.js" defer></script>
+<script src="packets_reopen.js" defer></script>
+<script src="packets_handoff.js" defer></script>
+<script src="packets_zip.js" defer></script>
+<script src="packets-print-cards.js" defer></script>
 <script src="packets-make.js" defer></script>
 </head>
 <body>
@@ -62,6 +69,25 @@
 <main id="main" class="maker">
   <div class="wrap wrap-narrow">
     <h1>Make Word Sounds practice</h1>
+
+    <div id="reopen" class="reopen" hidden>
+      <p class="reopen-row">
+        <button type="button" class="btn btn-text btn-small" id="reopen-choose" aria-describedby="reopen-hint">Open a file I made</button>
+        <span class="hint" id="reopen-hint">Start from a practice file you saved before, then change what you want. You can also drop the file here. It is read on this device only.</span>
+      </p>
+      <input type="file" id="reopen-file" accept=".html,.htm,text/html" hidden aria-label="A practice file you made before">
+      <div id="reopen-note" class="note reopen-note" tabindex="-1" hidden>
+        <p id="reopen-line" class="reopen-line"></p>
+        <ul id="reopen-list"></ul>
+        <p class="row reopen-actions">
+          <a class="btn btn-small" id="reopen-page" href="packets.html" hidden>Open that page</a>
+          <button type="button" class="btn btn-small" id="reopen-keep" hidden>Keep them in My words on this device</button>
+          <button type="button" class="btn btn-text btn-small" id="reopen-close">Close this note</button>
+        </p>
+        <p id="reopen-said" role="status"></p>
+      </div>
+      <p id="reopen-status" class="sr-only" role="status"></p>
+    </div>
 
     <nav aria-label="Steps">
       <ol class="steps">
@@ -257,6 +283,16 @@
         <input type="text" id="f-title" maxlength="80" autocomplete="off" aria-describedby="title-hint">
       </div>
 
+      <details class="why code-box" id="code-box">
+        <summary>Put a student's code name in the file</summary>
+        <div class="field">
+          <label for="f-code-name">Student's code name</label>
+          <span class="hint" id="code-name-hint">Use a code name, not the student's real name. The file opens with it filled in. Leave it empty and each student types their own.</span>
+          <input type="text" id="f-code-name" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="none" aria-describedby="code-name-hint code-name-said">
+          <span class="hint" id="code-name-said" role="status"></span>
+        </div>
+      </details>
+
       <div class="block">
         <label class="radio"><input type="checkbox" id="f-pictures" aria-describedby="pictures-line"> <span>Include pictures</span></label>
         <span class="hint" id="pictures-line"></span>
@@ -292,6 +328,7 @@
 
       <div class="actions">
         <button type="button" class="btn" id="back-3">Back</button>
+        <button type="button" class="btn" id="print-cards" hidden>Print word cards</button>
         <a class="btn push" id="try" href="packets-try.html" target="_blank" rel="noopener" hidden>Try it <span class="sr-only">(opens in a new tab)</span></a>
         <button type="button" class="btn btn-primary" id="save" hidden>Save the file</button>
       </div>
@@ -303,11 +340,40 @@
           <li>Each student opens it in a browser, finishes it and presses the main button at the end, <strong id="csv-label">Save results as a spreadsheet file (CSV)</strong>. They hand that file back to you.</li>
           <li>Add the results up on <a href="packets-results.html">Add up results</a>, or open them in a spreadsheet. In AlloFlow: Class Analytics, Add take-home results.</li>
         </ol>
+        <p class="after-phone">On a phone or tablet, a student opens the file on <a href="packets-open.html">Open a practice file</a>: apomera.github.io/AlloFlow/packets-open.html.</p>
         <details class="why" id="learner-tip">
           <summary>Fill in a student's code name for them</summary>
           <p>When the file is on a website or a shared link, add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
         </details>
       </div>
+
+      <details class="batch" id="batch">
+        <summary>Make one for each student</summary>
+        <div class="batch-body">
+          <p class="hint">One file for each student, with the student's code name filled in. They come in one .zip file. Each file is the same as the one above, made with that code name.</p>
+          <div class="field">
+            <label for="f-batch-names">Code names, one on each line</label>
+            <span class="hint" id="batch-names-hint">Use code names, not real names. At most 40 at a time.</span>
+            <textarea id="f-batch-names" rows="6" maxlength="2400" spellcheck="false" autocapitalize="none" autocomplete="off" aria-describedby="batch-names-hint batch-said"></textarea>
+          </div>
+          <details class="why" id="batch-more">
+            <summary>More choices</summary>
+            <label class="radio"><input type="checkbox" id="f-batch-rotate" aria-describedby="batch-rotate-hint"> <span>Give students versions A, B and C in turn</span></label>
+            <span class="hint" id="batch-rotate-hint">The first student gets A, the second B, the third C, then A again. Students who sit together then have different files.</span>
+          </details>
+          <p id="batch-said" class="result-sub" role="status"></p>
+          <p class="row batch-row">
+            <button type="button" class="btn" id="batch-make">Make the files</button>
+            <button type="button" class="btn" id="batch-stop" hidden>Stop</button>
+            <button type="button" class="btn" id="batch-save" hidden>Save the .zip file</button>
+          </p>
+          <div id="batch-making" class="making" hidden>
+            <p id="batch-line" class="making-line"></p>
+            <progress id="batch-bar" max="100" value="0" aria-labelledby="batch-line"></progress>
+          </div>
+          <p id="batch-problem" class="actions-note" role="alert"></p>
+        </div>
+      </details>
     </section>
 
     <details class="about" id="about-page">

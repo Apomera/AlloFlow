@@ -55,6 +55,32 @@ describe('the student waiting screen', () => {
   });
 });
 
+describe('a student on a phone (one tab at a time)', () => {
+  it('every QR or link entry opens the Preview tab, where the waiting/loading message is', () => {
+    const entries = anti.match(/setIsStudentLinkMode\(true\);\n\s+setShowStudentEntry\(true\);\n\s+setWorkspacePane\('preview'\);/g) || [];
+    expect(entries.length, 'live join, assignment, #allo_pack, mailbox live, mailbox homework').toBe(5);
+    expect(anti).not.toMatch(/setIsStudentLinkMode\(true\);\n\s+setShowStudentEntry\(true\);\n(?!\s+setWorkspacePane\('preview'\))/);
+  });
+  it('the tab names are translated', () => {
+    expect(anti).not.toContain("{isTeacherMode ? 'Create' : 'Tools'}");
+    expect(anti).toContain("{isTeacherMode ? (t('sidebar.create_tab') || 'Create') : (t('glossary.tools_toggle') || 'Tools')}");
+    expect(anti).toContain("{t('blueprint.preview_step_short') || 'Preview'}");
+  });
+  it('a loading or failed homework screen does not say "Connected"', () => {
+    const cond = between(anti, "{(_alloStudentExploring || isTeacherMode", ") && <p className=\"text-xs font-bold uppercase").slice(1) + ')';
+    const shows = (s) => !!new Function('s', 'with (s) { return (' + cond + '); }')({ _alloStudentExploring: false, isTeacherMode: false, isIndependentMode: false, isStudentLinkMode: false, activeSessionCode: null, ...s });
+    expect(shows({ isStudentLinkMode: true })).toBe(false);
+    expect(shows({ isStudentLinkMode: true, activeSessionCode: 'AB123' })).toBe(true);
+    expect(shows({ isTeacherMode: true })).toBe(true);
+    expect(shows({ isStudentLinkMode: true, _alloStudentExploring: true })).toBe(true);
+  });
+  it('the header buttons wrap instead of spilling off the left edge (Join Class sat at x = -42 at 390 px)', () => {
+    for (const f of ['view_header_source.jsx', 'view_header_module.js', 'desktop/web-app/public/view_header_module.js']) {
+      expect(readFileSync(f, 'utf8'), f).toContain('ml-auto min-w-0 flex flex-wrap items-center justify-end gap-1.5 sm:gap-2');
+    }
+  });
+});
+
 describe('student messages say what is true', () => {
   it('an ended or closed session does not blame the connection', () => {
     const src = between(anti, 'const joinMessage = oldScript', 'setMbJoinStatus(joinMessage);');

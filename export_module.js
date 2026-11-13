@@ -89,9 +89,9 @@ const createExport = deps => {
       case 'anchor-chart':
         return t('sidebar.tool_anchor_chart') || 'Anchor Chart';
       case 'memory-aid':
-        return t('help_mode.tool_memory_aid') || 'Memory Aid Studio';
+        return t('sidebar.tool_memory_aid') || 'Memory Aid Studio';
       case 'applied-challenge':
-        return t('help_mode.tool_applied_challenge') || 'Applied Challenge Studio';
+        return t('sidebar.tool_applied_challenge') || 'Applied Challenge Studio';
       default:
         return t('common.resource') || 'Resource';
     }

@@ -26,8 +26,10 @@
   var NO_NAME = 'No name typed';
   var COLUMNS = ['format', 'session_id', 'packet_id', 'packet_version', 'form', 'mode', 'learner', 'started_local', 'finished_local', 'duration_s',
     'item_n', 'item_id', 'activity', 'activity_title', 'scored', 'word', 'target', 'responses', 'correct', 'first_try', 'tries', 'time_ms', 'supports', 'flag'];
-  // A check (mode "probe") has two more cells in every item row, after "flag".
+  // A check (mode "check"; files saved before 2026-11-12 say "probe") has two more cells in every item row, after "flag".
   var PROBE_COLUMNS = ['digits_correct', 'digits_possible'];
+  // Both file values are a check. Inside this reader (and in what it keeps on the device) a check is mode 'probe'.
+  function isCheckMode(value) { return value === 'check' || value === 'probe'; }
   var SUMMARY_COLUMNS = ['learner', 'date', 'measure', 'form', 'score', 'score_unit', 'accuracy_pct', 'first_try_pct', 'items_given', 'items_attempted',
     'duration_s', 'flags', 'session_id', 'packet_id', 'packet_version', 'integrity', 'source_file'];
   // Activity -> skill strand, with the English names. A copy of SKILL_STRANDS and ACTIVITY_SKILLS in
@@ -72,8 +74,20 @@
     math_ccc: ['Cover, copy, compare', 'math_facts'],
     math_rehearsal: ['Fact rehearsal', 'math_facts'],
   };
+  // Vocabulary questions (packet_vocab_builder.js, 2026-11-12), a group of their own like the math facts. A copy of
+  // _AC_VOCAB_STRANDS / _AC_VOCAB_ACTIVITIES in the dashboard: tests/packet_vocab_adapter.test.js compares them.
+  // A vocabulary check is a check here (its score is the number right); VOCAB_MEASURES names it.
+  var VOCAB_STRANDS = [['vocabulary', 'Vocabulary']];
+  var VOCAB_ACTIVITIES = {
+    vocab_meaning: ['Word to meaning', 'vocabulary'],
+    vocab_word: ['Meaning to word', 'vocabulary'],
+    vocab_blank: ['Fill the blank', 'vocabulary'],
+    vocab_picture: ['Word to picture', 'vocabulary'],
+    vocab_picture_word: ['Picture to word', 'vocabulary'],
+  };
+  var VOCAB_MEASURES = { vocab_items: 'Vocabulary check' };
   // Every group a practice result is counted in, in the order they are shown.
-  var GROUPS = STRANDS.concat(MATH_STRANDS, [OTHER_STRAND]);
+  var GROUPS = STRANDS.concat(MATH_STRANDS, VOCAB_STRANDS, [OTHER_STRAND]);
   // The check measures and their units, named as the check files name them (packet_check_builder.js
   // MEASURES, and check_unit_* in the take-home loader). The test compares these too.
   var MEASURES = { quantity_discrimination: 'Quantity Discrimination', missing_number: 'Missing Number', math_dcpm: 'Math Fluency' };
@@ -223,11 +237,12 @@
     if (own(ACTIVITIES, id)) return ACTIVITIES[id][0];
     if (title) return title;
     if (own(MATH_ACTIVITIES, id)) return MATH_ACTIVITIES[id][0];
+    if (own(VOCAB_ACTIVITIES, id)) return VOCAB_ACTIVITIES[id][0];
     if (!id || id === 'unknown') return 'Activity not recorded';
     var plain = String(id).replace(/_/g, ' ').trim();
     return plain.charAt(0).toUpperCase() + plain.slice(1);
   }
-  function strandOf(id) { return own(ACTIVITIES, id) ? ACTIVITIES[id][1] : own(MATH_ACTIVITIES, id) ? MATH_ACTIVITIES[id][1] : OTHER_STRAND[0]; }
+  function strandOf(id) { return own(ACTIVITIES, id) ? ACTIVITIES[id][1] : own(MATH_ACTIVITIES, id) ? MATH_ACTIVITIES[id][1] : own(VOCAB_ACTIVITIES, id) ? VOCAB_ACTIVITIES[id][1] : OTHER_STRAND[0]; }
   // A file that folds a few new facts in among known ones (math_rehearsal; any file whose item ids end
   // in -new or -known) is counted again for the new ones: most of its items are known facts, so the
   // overall first-try count says little about how the new ones are going.
@@ -268,7 +283,9 @@
       completion: completion === 'time' || completion === 'ended_early' || completion === 'complete' ? completion : '',
       prorated: sc.prorated === true || yes(sc.prorated), scoringVersion: whole(sc.scoringVersion, 999), formVersion: text(sc.formVersion, 20),
       attempt: Math.max(1, whole(sc.attempt, 9999) || 1),
-      flags: (Array.isArray(sc.flags) ? sc.flags : []).slice(0, 8).map(function (f) { return idOf(f, 40); }).filter(Boolean) };
+      flags: (Array.isArray(sc.flags) ? sc.flags : []).slice(0, 8).map(function (f) { return idOf(f, 40); }).filter(Boolean),
+      // Untimed (an accommodation): the JSON says untimed: true, the CSV "timing=untimed".
+      untimed: sc.untimed === true || yes(sc.untimed) || text(sc.timing, 20).toLowerCase() === 'untimed', usualTimeLimitS: number(sc.usualTimeLimitS) };
   }
   // "key=value" cells of a trailer row.
   function pairs(cells) {
@@ -285,7 +302,7 @@
     return cleanScore({ measure: kv.measure, score: kv.score, scoreUnit: kv.score_unit, digitsCorrect: kv.digits_correct, digitsPossible: kv.digits_possible,
       itemsCorrect: kv.items_correct, itemsAttempted: kv.items_attempted, timeLimitS: kv.time_limit_s, elapsedS: kv.elapsed_s, hiddenS: kv.hidden_s,
       completion: kv.completion, prorated: kv.prorated, scoringVersion: kv.scoring_version, formVersion: kv.form_version, attempt: kv.attempt,
-      flags: String(kv.flags || '').split(';') });
+      flags: String(kv.flags || '').split(';'), timing: kv.timing, usualTimeLimitS: kv.usual_time_limit_s });
   }
 
   // ---------------------------------------------------------------------------
@@ -341,7 +358,7 @@
       if (!own(groups, key)) {
         if (order.length >= 40) return;
         groups[key] = { source: 'csv', sid: text(get('session_id'), 80), learner: text(get('learner'), 60), packetId: text(get('packet_id'), 80),
-          packetVersion: text(get('packet_version'), 40), form: text(get('form'), 40), mode: text(get('mode'), 12) === 'probe' ? 'probe' : 'practice', title: '',
+          packetVersion: text(get('packet_version'), 40), form: text(get('form'), 40), mode: isCheckMode(text(get('mode'), 12).toLowerCase()) ? 'probe' : 'practice', title: '',
           stamps: [get('finished_local'), get('started_local')], startedLocal: text(get('started_local'), 40), finishedLocal: text(get('finished_local'), 40),
           startedText: text(get('started_local'), 40), durationS: whole(get('duration_s'), 864000),
           prefix: [get('packet_id'), get('packet_version'), get('form'), get('session_id')].join('|').slice(0, 600), items: [], lines: [], linesAll: [], integrity: null, score: null, attempt: null };
@@ -417,7 +434,7 @@
     if (!Array.isArray(data.items)) return { ok: false, reason: 'no_items' };
     var packet = data.packet && typeof data.packet === 'object' ? data.packet : {};
     var titles = data.activityTitles && typeof data.activityTitles === 'object' ? data.activityTitles : {};
-    var probe = packet.mode === 'probe';
+    var probe = isCheckMode(packet.mode);
     var learner = scalar(data.learner) || scalar(data.learnerName);
     var integrity = data.integrity && typeof data.integrity === 'object' ? { method: text(data.integrity.method, 12).toLowerCase(), value: text(data.integrity.value, 80).toLowerCase() } : null;
     var lines = null;
@@ -504,7 +521,7 @@
     var activity = firstScored ? firstScored.activity : '';
     // With no score line the measure is read from the activity; a score cannot be.
     s.measure = !probe ? 'practice' : (st && st.measure) || (activity === 'math_computation' ? 'math_dcpm' : activity) || 'check';
-    s.measureName = !probe ? 'Practice' : own(MEASURES, s.measure) ? MEASURES[s.measure] : (firstScored && firstScored.activityTitle) || activityName(s.measure, '');
+    s.measureName = !probe ? 'Practice' : own(MEASURES, s.measure) ? MEASURES[s.measure] : own(VOCAB_MEASURES, s.measure) ? VOCAB_MEASURES[s.measure] : (firstScored && firstScored.activityTitle) || activityName(s.measure, '');
     s.unit = st ? st.unit : probe && own(MEASURE_UNITS, s.measure) ? MEASURE_UNITS[s.measure] : '';
     s.unitName = !probe ? FIRST_TRY_UNIT : own(UNITS, s.unit) ? UNITS[s.unit] : s.unit.replace(/_/g, ' ');
     // Notes, as short codes. The page says each one in plain words.
@@ -538,6 +555,10 @@
         noScore: noScore, recounted: recounted, scoringVersion: st ? st.scoringVersion : null, formVersion: st ? st.formVersion : '', attempt: st ? st.attempt : s.attempt || 1,
         flags: st ? st.flags.slice() : [] };
       s.score.flags.forEach(function (flag) { if (flags.indexOf(flag) < 0) flags.push(flag); });
+      // Untimed (an accommodation): a fixed form with no time limit, said by the file or not. It is never put with
+      // timed results: it has its own series (seriesKey), so its own middle and goal.
+      s.untimed = !!st && (st.untimed || (own(MEASURES, s.measure) && s.form !== 'custom' && !/^math-custom-/.test(s.packetId) && limit === null));
+      if (s.untimed) { s.score.untimed = true; s.score.usualTimeLimitS = st.usualTimeLimitS; flags.push('untimed'); if (noScore === 'no_time_limit') noScore = 'untimed_no_rate'; s.score.noScore = noScore; }
       if (noScore) flags.push(noScore);
       if (prorated) flags.push('finished_early');
       if (recounted) flags.push('score_differs');
@@ -633,7 +654,7 @@
     if (!sid || !items.length) return null;
     var start = number(s.start);
     var date = /^\d{4}-\d{2}-\d{2}$/.test(scalar(s.date)) ? s.date : '';
-    var probe = s.mode === 'probe';
+    var probe = isCheckMode(s.mode);
     var packetId = text(s.packetId, 80);
     var integrity = ['ok', 'changed', 'absent', 'unchecked'].indexOf(s.integrity) >= 0 ? s.integrity : 'unchecked';
     var out = tally({ sessionId: sid, learner: text(s.learner, 60), packetId: packetId, packetVersion: text(s.packetVersion, 40), title: text(s.title, 80) || packetId,
@@ -717,7 +738,7 @@
 
   // A check's results over time belong together when the measure and the packet are the same
   // (forms A, B and C of one packet are one line). A group is compared on one form only.
-  function seriesKey(s) { return 'check\t' + s.measure + '\t' + s.packetId; }
+  function seriesKey(s) { return 'check\t' + s.measure + '\t' + s.packetId + (s.untimed ? '\tuntimed' : ''); }
   function formKey(s) { return seriesKey(s) + '\t' + s.form; }
   function setName(packetId, title) {
     var grade = /-g([0-9]{1,2}|k)$/i.exec(packetId);
@@ -775,7 +796,7 @@
         }
         var key = seriesKey(s), form = formKey(s);
         var series = checkByKey[key];
-        if (!series) checks.push(series = checkByKey[key] = { key: key, measure: s.measure, name: s.measureName, unit: s.unit, unitName: s.unitName, packetId: s.packetId, title: '', forms: [] });
+        if (!series) checks.push(series = checkByKey[key] = { key: key, measure: s.measure, name: s.measureName, unit: s.unit, unitName: s.unitName, packetId: s.packetId, title: '', forms: [], untimed: !!s.untimed });
         if (s.title && s.title !== s.packetId && !series.title) series.title = s.title;
         if (!series.unit && s.unit) { series.unit = s.unit; series.unitName = s.unitName; }
         if (series.forms.indexOf(s.form) < 0) series.forms.push(s.form);
@@ -787,7 +808,7 @@
     checks.forEach(function (series) {
       // A fixed form is named by its packet (the title in a file names one form); an own set by its title.
       series.set = setName(series.packetId, series.title);
-      series.label = series.name + (series.set ? ' (' + series.set + ')' : '');
+      series.label = series.name + (series.set ? ' (' + series.set + ')' : '') + (series.untimed ? ', untimed' : '');
       series.forms.sort();
     });
     learners.sort(function (a, b) { return a.label.toLowerCase() < b.label.toLowerCase() ? -1 : a.label.toLowerCase() > b.label.toLowerCase() ? 1 : 0; });
@@ -872,6 +893,7 @@
     MAX_SESSIONS: MAX_SESSIONS, MIN_GROUP: MIN_GROUP, MIN_GROUP_HALF: MIN_GROUP_HALF, NO_NAME: NO_NAME, COLUMNS: COLUMNS.slice(), PROBE_COLUMNS: PROBE_COLUMNS.slice(), SUMMARY_COLUMNS: SUMMARY_COLUMNS.slice(),
     STRANDS: STRANDS.map(function (row) { return row.slice(); }), OTHER_STRAND: OTHER_STRAND.slice(), ACTIVITIES: ACTIVITIES, MEASURES: MEASURES, UNITS: UNITS,
     MATH_STRANDS: MATH_STRANDS.map(function (row) { return row.slice(); }), MATH_ACTIVITIES: MATH_ACTIVITIES,
+    VOCAB_STRANDS: VOCAB_STRANDS.map(function (row) { return row.slice(); }), VOCAB_ACTIVITIES: VOCAB_ACTIVITIES, VOCAB_MEASURES: VOCAB_MEASURES,
     MEASURE_UNITS: MEASURE_UNITS, REASONS: REASONS,
     read: read, refuse: refuse, parseCsv: parseCsv, readCsv: readCsv, readJson: readJson, finish: finish, fnv1a: fnv1a, sha256: sha256, stamp: stamp, csvCell: csvCell,
     labelKey: labelKey, looksAlike: looksAlike, pairKey: pairKey, middle: middle, addUp: addUp, learnerSeries: learnerSeries, wrongAnswers: wrongAnswers,

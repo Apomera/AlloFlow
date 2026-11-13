@@ -17,8 +17,8 @@
 // with the file to be graded offline, so they can be read in its source: this
 // is for practice, not for tests.
 //
-// A lesson with mode 'probe' is a CHECK (one try, no feedback, an honest clock,
-// a teacher's screen): see takeHomeCheck. Its answers are scrambled, which
+// A lesson with mode 'probe' (an internal name; its results say mode "check")
+// is a CHECK (one try, no feedback, an honest clock, a teacher's screen): see takeHomeCheck. Its answers are scrambled, which
 // stops casual looking and nothing more; the same caution applies.
 (function (root) {
   'use strict';
@@ -33,6 +33,9 @@
   var FEEDBACK_CORRECT = ['fb_great_job', 'fb_nice', 'fb_correct'];
   var FEEDBACK_RETRY = 'fb_try_again_listen';
   var MAX_ITEMS = 40;
+  // Where a phone or tablet runs a saved file: shown with the note for previews that do not run it, in a file in
+  // English (another language: labels.open_here, '' for none).
+  var OPEN_HERE = 'Phone or tablet? Open this file at apomera.github.io/AlloFlow/packets-open.html';
 
   // Words the learner sees. Activity adapters add their own under their id
   // prefix (e.g. isolation_question). Translated through
@@ -109,6 +112,10 @@
     tools_colors_0: 'Usual',
     tools_colors_1: 'High contrast',
     tools_colors_2: 'Soft',
+    tools_colors_3: 'Dark',
+    tools_colors_4: 'Ocean',
+    tools_colors_5: 'Sunny',
+    tools_colors_6: 'Forest',
     tools_spacing: 'Spacing',
     tools_spacing_1: 'Wider',
     tools_focus: 'Reading focus',
@@ -120,6 +127,14 @@
     tools_on: 'On',
     tools_reset: 'Reset',
     tools_close: 'Close',
+    progress_all: 'Question {n} of {total} in all',
+    tools_choices: 'Read the choices when a question opens',
+    tools_choices_hint: 'Each answer choice is played or read aloud in turn. Press Stop, or choose an answer, to stop it.',
+    // "Hear all" (hearAllIn): plays or reads each answer choice in turn.
+    hear_all: 'Hear all',
+    hear_all_name: 'Hear all the choices, one at a time',
+    hear_all_stop: 'Stop',
+    hear_all_now: 'Choice {n} of {total}',
     ordinals: ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth'],
   };
 
@@ -179,6 +194,7 @@
     check_reason_ended_early: 'the check was stopped before the end',
     check_reason_too_fast: 'every item was finished in under 20 seconds, which is too fast to prorate to a full minute',
     check_reason_untimed: 'a rate needs a time limit',
+    check_review_untimed: 'Untimed (an accommodation): no clock. The usual time limit is {seconds} s. Do not compare this score with timed scores.',
     check_unit_items_correct: 'items correct',
     check_unit_digits_correct_per_minute: 'digits correct per minute',
     check_review_items: 'Items correct: {correct} of {attempted} attempted ({given} given).',
@@ -214,6 +230,8 @@
     check_about_code: 'The teacher code keeps the answers screen closed. It is a lock on the screen, not secret writing: someone who knows how to read the file\'s code could still work the answers out.',
     check_about_records: 'A check also records the seconds away from the page, the try number, and whether the page was left for more than 3 seconds, reloaded, or the device clock was set back.',
     check_review_tools: 'Reading tools used: {tools}.',
+    // The teacher's screen of a check made without a teacher code: the score only, never the answers.
+    check_review_no_code: 'To see each answer, make the check with a teacher code, or open the saved results file.',
   };
 
   function str(value) { return value == null ? '' : String(value); }
@@ -280,12 +298,12 @@
     };
     var header = ['format', 'session_id', 'packet_id', 'packet_version', 'form', 'mode', 'learner', 'started_local', 'finished_local', 'duration_s',
       'item_n', 'item_id', 'activity', 'activity_title', 'scored', 'word', 'target', 'responses', 'correct', 'first_try', 'tries', 'time_ms', 'supports', 'flag'];
-    // A check (packet.mode "probe") has two more cells in every item row, after
+    // A check (packet.mode "check"; files saved before 2026-11-12 say "probe") has two more cells in every item row, after
     // "flag": digits_correct and digits_possible, each a whole number or empty
     // (item.digitsCorrect / item.digitsPossible; empty when null or absent).
     // The integrity value covers the item rows as written, so in a check it
     // covers these two cells too. The "#score" row is, like "#summary", not covered.
-    var probe = text(packet.mode) === 'probe';
+    var probe = text(packet.mode) === 'check' || text(packet.mode) === 'probe';
     var count = function (v) { return v == null || v === '' || !isFinite(Number(v)) ? '' : Math.max(0, Math.round(Number(v))); };
     if (probe) header.push('digits_correct', 'digits_possible');
     var titles = r.activityTitles && typeof r.activityTitles === 'object' ? r.activityTitles : {};
@@ -343,7 +361,9 @@
           kv('elapsed_s', sc.elapsedS), kv('hidden_s', sc.hiddenS), kv('completion', sc.completion), kv('prorated', !!sc.prorated), kv('scoring_version', sc.scoringVersion),
           kv('form_version', sc.formVersion), kv('attempt', sc.attempt), kv('flags', Array.isArray(sc.flags) ? sc.flags.map(text).join(';') : ''),
           // The reading tools on during a scored item.
-          kv('tools_used', Array.isArray(sc.tools) ? sc.tools.map(text).join(';') : '')]);
+          kv('tools_used', Array.isArray(sc.tools) ? sc.tools.map(text).join(';') : '')]
+          // Untimed (an accommodation): two more cells, only then.
+          .concat(sc.untimed ? [kv('timing', 'untimed'), kv('usual_time_limit_s', sc.usualTimeLimitS)] : []));
         return String.fromCharCode(0xFEFF) + [header].concat(rows, tail).map(line).join('\r\n') + '\r\n';
       },
       tsv: function () {
@@ -441,6 +461,9 @@
         ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: ctx.L.hear_question }),
         ctx.el('button', { type: 'button', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
       ]));
+      // Hear all (ctx.hearAll): each sound in turn, marked with its number.
+      var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
+      if (hear) ctx.root.appendChild(hear.node);
       ctx.root.appendChild(list);
       return {
         // Called once the item is over (right, or missed twice): lock it and
@@ -578,9 +601,13 @@
         });
         ctx.root.appendChild(ctx.el('p', { text: ctx.L.blending_prompt }));
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.blending_question }));
+        // Play all the words: the player's Hear all (ctx.hearAll), each choice marked with its number.
+        var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ label: ctx.L.blending_play_all, support: 'optionReplays', before: halt, auto: false,
+          list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('soundReplays'); run(soundSteps()); } }, text: ctx.L.blending_hear_sounds }),
-          ctx.el('button', { type: 'button', on: { click: function () { ctx.support('optionReplays'); run(optionSteps(600)); } }, text: ctx.L.blending_play_all }),
+          hear ? hear.button : ctx.el('button', { type: 'button', on: { click: function () { ctx.support('optionReplays'); run(optionSteps(600)); } }, text: ctx.L.blending_play_all }),
+          hear ? hear.note : null,
         ]));
         ctx.root.appendChild(list);
         // Opening sequence (word_sounds_module.js:16790-16845): instruction, each
@@ -1049,6 +1076,10 @@
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run(instructionSteps(0)); } }, text: ctx.L.manipulation_hear_instruction }),
           ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
         ]));
+        // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number. The opening already plays them.
+        var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ before: halt, auto: false,
+          list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
+        if (hear) ctx.root.appendChild(hear.node);
         ctx.root.appendChild(list);
         // Opening sequence (word_sounds_module.js:16890-16937): the instruction,
         // 400 ms, then every choice in turn with 350 ms between.
@@ -1307,6 +1338,10 @@
         ]));
         ctx.root.appendChild(slotList);
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [clearBtn]));
+        // Hear all (the player's ctx.hearAll): each spelling still in the tray, in turn, marked with its number.
+        var hearing = typeof ctx.hearAll === 'function' ? ctx.hearAll({ ready: function () { return !locked(); },
+          list: function () { return chipEls.map(function (c, ci) { return c.li.hidden ? null : { box: c.li, n: ci + 1, total: chipEls.length, say: function () { var chip = item.chips[ci]; return chip.audios ? ctx.playAll(chip.audios) : ctx.play(chip.audio); } }; }); } }) : null;
+        if (hearing) ctx.root.appendChild(hearing.node);
         ctx.root.appendChild(tray);
         draw();
         return {
@@ -2025,6 +2060,10 @@
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run([{ id: item.promptAudio, gap: 200 }, { id: item.wordAudio }]); } }, text: ctx.L.hear_question }),
           ctx.el('button', { type: 'button', on: { click: function () { halt(); ctx.support('wordReplays'); ctx.play(item.wordAudio); } }, text: ctx.L.hear_word }),
         ]));
+        // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number. The opening already plays them.
+        var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ before: halt, auto: false,
+          list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
+        if (hear) ctx.root.appendChild(hear.node);
         ctx.root.appendChild(list);
         if (!ctx.isDone()) {
           run([{ id: item.promptAudio, gap: 200 }, { id: item.wordAudio, gap: 200 }].concat(item.choices.map(function (c, i) { return { id: c.audio, gap: 350, hi: i }; })));
@@ -2267,6 +2306,10 @@
         ]));
         ctx.root.appendChild(boxList);
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [playBoxes, clearBtn]));
+        // Hear all (the player's ctx.hearAll): each sound still in the tray, in turn, marked with its number.
+        var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ before: halt, ready: function () { return !locked(); },
+          list: function () { return chipEls.map(function (c, ci) { return c.li.hidden ? null : { box: c.li, n: ci + 1, total: chipEls.length, say: function () { return ctx.play(item.chips[ci].audio); } }; }); } }) : null;
+        if (hear) ctx.root.appendChild(hear.node);
         ctx.root.appendChild(tray);
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [checkBtn]));
         draw();
@@ -2664,9 +2707,14 @@
         var instructionSteps = function () { return item.instruction.map(function (id) { return { id: id, gap: 200 }; }); };
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: heading }));
         ctx.root.appendChild(ctx.el('p', { text: ctx.showLetters ? T('instruction_letters', { family: heading }) : T('instruction') }));
+        // Hear all words: the player's Hear all (ctx.hearAll), the words not found yet, each marked with its number.
+        var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ label: T('hear_all'), support: 'allWordListens', before: halt, auto: false,
+          ready: function () { return !ctx.isDone(); },
+          list: function () { return cards.map(function (c, i) { return c.found ? null : { box: c.box, n: i + 1, total: cards.length, say: function () { return ctx.play(c.chip.audio); } }; }); } }) : null;
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run(instructionSteps()); } }, text: ctx.L.hear_question }),
-          ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('allWordListens'); run(chipSteps(true)); } }, text: T('hear_all') }),
+          hear ? hear.button : ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('allWordListens'); run(chipSteps(true)); } }, text: T('hear_all') }),
+          hear ? hear.note : null,
         ]));
         ctx.root.appendChild(counter);
         ctx.root.appendChild(list);
@@ -2941,6 +2989,7 @@
         var token = 0;
         var delivered = false;
         var busy = false;
+        var hear = null;
         var cards = [];
         var parts = [];
         var answerText = item.target;
@@ -2951,6 +3000,7 @@
             if (lockChoose) c.choose.setAttribute('aria-disabled', 'true'); else c.choose.removeAttribute('aria-disabled');
             if (busy) c.listen.setAttribute('aria-disabled', 'true'); else c.listen.removeAttribute('aria-disabled');
           });
+          if (hear) { if (busy) hear.button.setAttribute('aria-disabled', 'true'); else hear.button.removeAttribute('aria-disabled'); }
           note.hidden = delivered || ctx.isDone();
         };
         var highlight = function (index) {
@@ -3014,6 +3064,10 @@
           cards.push(card);
           list.appendChild(box);
         });
+        // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number, once the syllables are not playing.
+        hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ auto: false, ready: function () { return !busy; },
+          list: function () { return cards.map(function (c, i) { return { box: c.box, say: function () { return ctx.play(item.choices[i].audio); } }; }); } }) : null;
+        if (hear) ctx.root.appendChild(hear.node);
         ctx.root.appendChild(list);
         setState();
         if (!ctx.isDone()) runSyllables(true);
@@ -3401,9 +3455,14 @@
         var instructionSteps = function () { return item.instruction.map(function (id) { return { id: id, gap: 200 }; }); };
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: heading }));
         ctx.root.appendChild(ctx.el('p', { text: ctx.showLetters ? T('instruction_letters', { family: heading }) : T('instruction') }));
+        // Hear all words: the player's Hear all (ctx.hearAll), the words not found yet, each marked with its number.
+        var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ label: T('hear_all'), support: 'allWordListens', before: halt, auto: false,
+          ready: function () { return !ctx.isDone(); },
+          list: function () { return cards.map(function (c, i) { return c.found ? null : { box: c.box, n: i + 1, total: cards.length, say: function () { return ctx.play(c.chip.audio); } }; }); } }) : null;
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); run(instructionSteps()); } }, text: ctx.L.hear_question }),
-          ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('allWordListens'); run(chipSteps(true)); } }, text: T('hear_all') }),
+          hear ? hear.button : ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.support('allWordListens'); run(chipSteps(true)); } }, text: T('hear_all') }),
+          hear ? hear.note : null,
         ]));
         ctx.root.appendChild(counter);
         ctx.root.appendChild(list);
@@ -4200,6 +4259,840 @@
     };
     return module.exports;
   })();
+  CHECK_ADAPTERS["vocab_blank"] = (function () {
+    var module = { exports: {} };
+    // Practice and check adapter: Fill the blank (vocab_blank). A sentence with ___ is shown; the choices are words.
+    // It is vocab_meaning.js apart from its id, its title and its words: see the notes there.
+    module.exports = {
+      id: 'vocab_blank',
+      title: 'Fill the blank',
+      labels: {
+        vocab_blank_intro: 'Read each sentence. Choose the word that fits.',
+        vocab_blank_directions: 'Read the sentence. Choose the word that fits in the blank.',
+        vocab_blank_question: 'Which word fits in the blank?',
+        vocab_blank_read: 'Read aloud',
+        vocab_blank_read_choice: 'Read choice {n} aloud',
+        vocab_blank_hear: 'Hear it',
+        vocab_blank_correct: 'Yes. That word fits.',
+        vocab_blank_retry: 'Not quite. Try once more.',
+        vocab_blank_missed: 'Here is the right answer.',
+        vocab_blank_practice_wrong: 'Not quite. Here is the right answer.',
+      },
+      // p: { word, ask, choices: [text, ...], answer: the right text, read: true | false, lang,
+      //   askAudio: the clip id of the word asked (optional), choiceAudio: [clip id or null, ...] (optional) }
+      // A clip id names a recording in lesson.audio: a word's own recorded voice, played in place of the device voice.
+      prepare: function (p) {
+        p = p || {};
+        var line = function (v, max) { return typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : ''; };
+        var clip = function (v) { return typeof v === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(v) ? v : ''; };
+        var word = line(p.word, 300), ask = line(p.ask, 300);
+        if (!word || !ask) return { missing: ['word'] };
+        if (!Array.isArray(p.choices) || p.choices.length < 2 || p.choices.length > 6) return { missing: ['choices'] };
+        var texts = p.choices.map(function (c) { return line(c, 300); });
+        var keys = texts.map(function (t) { return t.slice(0, 80); });
+        if (texts.some(function (t) { return !t; }) || keys.some(function (k, i) { return keys.indexOf(k) !== i; })) return { missing: ['different choices'] };
+        var answer = line(p.answer, 300).slice(0, 80);
+        if (!answer || keys.indexOf(answer) < 0) return { missing: ['an answer that is one of the choices'] };
+        var lang = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})?$/.test(String(p.lang || '')) ? String(p.lang) : 'en';
+        var heard = Array.isArray(p.choiceAudio) ? p.choiceAudio : [];
+        var item = { word: word, ask: ask, choices: texts.map(function (t, i) { var c = { text: t }; if (clip(heard[i])) c.audio = clip(heard[i]); return c; }), answer: answer, read: p.read === true, lang: lang };
+        if (clip(p.askAudio)) item.askAudio = clip(p.askAudio);
+        return { item: item };
+      },
+      render: function (item, ctx) {
+        var P = 'vocab_blank_';
+        var L = ctx.L;
+        var doc = ctx.root.ownerDocument;
+        var view = doc && doc.defaultView;
+        var synth = item.read && view && view.speechSynthesis && typeof view.SpeechSynthesisUtterance === 'function' ? view.speechSynthesis : null;
+        var lang = String(item.lang || 'en').toLowerCase();
+        var voice = function () {
+          var all = [];
+          try { all = synth.getVoices() || []; } catch (_) { all = []; }
+          var local = all.filter(function (v) { return v && v.localService === true; });
+          var match = function (v) { return String(v.lang || '').toLowerCase().replace('_', '-'); };
+          return local.filter(function (v) { return match(v) === lang || match(v).indexOf(lang + '-') === 0; })[0] || null;
+        };
+        if (synth) { try { synth.cancel(); synth.getVoices(); } catch (_) {} }
+        var readers = [];
+        // Says a text with the device voice; the Promise settles when it is over (or after a while, for a voice that never says so).
+        var say = function (text) {
+          return new Promise(function (resolve) {
+            var v = synth ? voice() : null;
+            if (!v) { resolve(false); return; }
+            var over = false, end = function () { if (!over) { over = true; resolve(true); } };
+            try {
+              synth.cancel();
+              var u = new view.SpeechSynthesisUtterance(text);
+              u.voice = v; u.lang = v.lang; u.rate = 0.9;
+              u.onend = end; u.onerror = end;
+              synth.speak(u);
+            } catch (_) { end(); }
+            view.setTimeout(end, 2000 + String(text).length * 130);
+          });
+        };
+        // iPad and iPhone speak only after a press has started the voice once: a silent start inside the press.
+        var wake = function () { if (!synth || !voice()) return; try { var u = new view.SpeechSynthesisUtterance(''); u.volume = 0; synth.speak(u); } catch (_) {} };
+        var hush = function () { if (synth) { try { synth.cancel(); } catch (_) {} } };
+        // A word with its own recorded voice plays that clip; any other text is read by the device voice.
+        var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(c.text); };
+        var sayAsk = function () {
+          var question = L[P + 'question'];
+          if (item.askAudio) { wake(); return ctx.play(item.askAudio).then(function () { return say(question); }); }
+          return say(item.ask.replace(/_{2,}/g, ', blank, ') + '. ' + question);
+        };
+        // A read button shows once it can be heard: a recorded clip, or a voice that runs on the device (voices can arrive a moment later).
+        var reader = function (run, attrs, label, clipped) {
+          var b = ctx.el('button', Object.assign({ type: 'button', hidden: true, on: { click: function () { ctx.support('readAloud'); hush(); run(); } } }, attrs), [label]);
+          readers.push({ b: b, clipped: !!clipped });
+          return b;
+        };
+        var hear = null;
+        var showReaders = function () {
+          var on = !!(synth && voice());
+          readers.forEach(function (r) { r.b.hidden = !item.read || !(on || r.clipped); });
+          if (hear) hear.button.hidden = hear.note.hidden = !item.read || !(on || item.choices.every(function (c) { return !!c.audio; }));
+        };
+        var ask = ctx.el('p', { class: 'letters', lang: item.lang || 'en', 'data-read': '', style: item.ask.length <= 30 ? 'font-size:2rem;margin:8px 0' : 'font-size:1.35rem;line-height:1.5;margin:8px 0', text: item.ask });
+        ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'margin:0', text: L[P + 'question'] }));
+        ctx.root.appendChild(ask);
+        var readRow = ctx.el('div', { class: 'row' }, [reader(sayAsk, { 'data-read-aloud': 'question' }, L[P + 'read'], !!item.askAudio)]);
+        ctx.root.appendChild(readRow);
+        var list = ctx.el('ul', { class: 'choices', style: 'grid-template-columns:1fr' });
+        var boxes = [], picks = [], tried = [];
+        var lock = function () { picks.forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); };
+        var pick = function (i) {
+          if (ctx.isDone() || tried[i]) return;
+          hush();
+          var response = item.choices[i].text.slice(0, 80);
+          if (ctx.check) {
+            var said = ctx.answer(response);
+            if (said !== 'ignored' && said !== 'time_up') { boxes[i].classList.add('picked'); lock(); }
+            return;
+          }
+          var out = ctx.answer(response, response === item.answer, { correctText: L[P + 'correct'], retryText: L[P + 'retry'], missedText: L[P + 'missed'] });
+          if (out === 'retry') { tried[i] = true; boxes[i].classList.add('tried'); picks[i].setAttribute('aria-disabled', 'true'); }
+        };
+        item.choices.forEach(function (c, i) {
+          var b = ctx.el('button', { type: 'button', lang: item.lang || 'en', 'data-choice': String(i + 1), style: 'flex:1 1 auto;text-align:start;font-size:1.2rem;line-height:1.4;min-height:56px',
+            on: { click: function () { pick(i); } } }, [ctx.el('span', { 'aria-hidden': 'true', style: 'font-weight:700;margin-inline-end:10px', text: String(i + 1) }), c.text]);
+          var box = ctx.el('li', { class: 'choice', style: 'flex-direction:row;align-items:center;flex-wrap:wrap' }, [b,
+            reader(function () { sayChoice(c); }, { 'data-read-aloud': 'choice-' + (i + 1), 'aria-label': ctx.fmt(L[P + 'read_choice'], { n: i + 1 }), style: 'min-height:48px;padding:6px 12px' }, L[P + 'hear'], !!c.audio)]);
+          boxes.push(box); picks.push(b); tried.push(false);
+          list.appendChild(box);
+        });
+        // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number. With the reading tool
+        // "Read the choices when a question opens" it starts by itself, once the student has pressed something.
+        hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ stop: hush, before: wake, ready: function () { return !hear.button.hidden && !ctx.isDone(); },
+          list: function () { return item.choices.map(function (c, i) { return { box: boxes[i], say: function () { return sayChoice(c); } }; }); } }) : null;
+        // In the row of Read aloud, so the buttons stay together.
+        if (hear) { readRow.appendChild(hear.button); readRow.appendChild(hear.note); }
+        ctx.root.appendChild(list);
+        showReaders();
+        if (synth) { try { if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', showReaders); } catch (_) {} }
+        // In a check the keys 1 to 9 pick a choice (in practice the player does this itself).
+        if (typeof ctx.keys === 'function') ctx.keys(function (key) {
+          var n = Number(key);
+          if (!(n >= 1 && n <= item.choices.length)) return false;
+          pick(n - 1);
+          return true;
+        });
+        return {
+          // Practice: the right choice is shown (a check's practice item passes the right answer).
+          reveal: function (answer) {
+            var key = typeof answer === 'string' ? answer : item.answer;
+            lock();
+            item.choices.forEach(function (c, i) { if (key != null && c.text.slice(0, 80) === key) { boxes[i].classList.add('right'); picks[i].style.opacity = '1'; } });
+          },
+        };
+      },
+      score: function (item, answer, response) {
+        var chosen = String(response == null ? '' : response);
+        return { correct: chosen !== '' && chosen === String(answer).slice(0, 80), digitsCorrect: null, digitsPossible: null };
+      },
+    };
+    return module.exports;
+  })();
+  CHECK_ADAPTERS["vocab_meaning"] = (function () {
+    var module = { exports: {} };
+    // Practice and check adapter: Word to meaning (vocab_meaning). Vocabulary multiple choice, made by
+    // packet_vocab_builder.js from the teacher's checked list (packets-vocab.html). Its two siblings,
+    // vocab_word.js (Meaning to word) and vocab_blank.js (Fill the blank), are the same code apart from
+    // the prefix of their labels and their words (tests/packet_vocab_adapter.test.js compares them).
+    // Item: { word, ask (the text shown: the word, a meaning, or a sentence with ___), choices: [{ text }]
+    // in the order shown, answer (the first 80 characters of the right choice), read, lang }; a word with its own
+    // recorded voice also has a clip id (askAudio, or audio on its choice), played in place of the device voice.
+    // A response is the first 80 characters of the chosen text, because the player keeps 80 of a response.
+    // Read aloud uses the device's own speech voice, and only a voice the device says runs on the device
+    // (localService), so nothing is sent; with no such voice, or no speech engine, the buttons are not shown.
+    // prepare runs when the file is built; render and score are copied into the file with toString and use
+    // only their arguments (the speech engine is reached through ctx.root).
+    module.exports = {
+      id: 'vocab_meaning',
+      title: 'Word to meaning',
+      labels: {
+        vocab_meaning_intro: 'Read each word. Choose what it means.',
+        vocab_meaning_directions: 'Read the word. Choose what it means.',
+        vocab_meaning_question: 'What does this word mean?',
+        vocab_meaning_read: 'Read aloud',
+        vocab_meaning_read_choice: 'Read choice {n} aloud',
+        vocab_meaning_hear: 'Hear it',
+        vocab_meaning_correct: 'Yes. That is what it means.',
+        vocab_meaning_retry: 'Not quite. Try once more.',
+        vocab_meaning_missed: 'Here is the right answer.',
+        vocab_meaning_practice_wrong: 'Not quite. Here is the right answer.',
+      },
+      // p: { word, ask, choices: [text, ...], answer: the right text, read: true | false, lang,
+      //   askAudio: the clip id of the word asked (optional), choiceAudio: [clip id or null, ...] (optional) }
+      // A clip id names a recording in lesson.audio: a word's own recorded voice, played in place of the device voice.
+      prepare: function (p) {
+        p = p || {};
+        var line = function (v, max) { return typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : ''; };
+        var clip = function (v) { return typeof v === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(v) ? v : ''; };
+        var word = line(p.word, 300), ask = line(p.ask, 300);
+        if (!word || !ask) return { missing: ['word'] };
+        if (!Array.isArray(p.choices) || p.choices.length < 2 || p.choices.length > 6) return { missing: ['choices'] };
+        var texts = p.choices.map(function (c) { return line(c, 300); });
+        var keys = texts.map(function (t) { return t.slice(0, 80); });
+        if (texts.some(function (t) { return !t; }) || keys.some(function (k, i) { return keys.indexOf(k) !== i; })) return { missing: ['different choices'] };
+        var answer = line(p.answer, 300).slice(0, 80);
+        if (!answer || keys.indexOf(answer) < 0) return { missing: ['an answer that is one of the choices'] };
+        var lang = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})?$/.test(String(p.lang || '')) ? String(p.lang) : 'en';
+        var heard = Array.isArray(p.choiceAudio) ? p.choiceAudio : [];
+        var item = { word: word, ask: ask, choices: texts.map(function (t, i) { var c = { text: t }; if (clip(heard[i])) c.audio = clip(heard[i]); return c; }), answer: answer, read: p.read === true, lang: lang };
+        if (clip(p.askAudio)) item.askAudio = clip(p.askAudio);
+        return { item: item };
+      },
+      render: function (item, ctx) {
+        var P = 'vocab_meaning_';
+        var L = ctx.L;
+        var doc = ctx.root.ownerDocument;
+        var view = doc && doc.defaultView;
+        var synth = item.read && view && view.speechSynthesis && typeof view.SpeechSynthesisUtterance === 'function' ? view.speechSynthesis : null;
+        var lang = String(item.lang || 'en').toLowerCase();
+        var voice = function () {
+          var all = [];
+          try { all = synth.getVoices() || []; } catch (_) { all = []; }
+          var local = all.filter(function (v) { return v && v.localService === true; });
+          var match = function (v) { return String(v.lang || '').toLowerCase().replace('_', '-'); };
+          return local.filter(function (v) { return match(v) === lang || match(v).indexOf(lang + '-') === 0; })[0] || null;
+        };
+        if (synth) { try { synth.cancel(); synth.getVoices(); } catch (_) {} }
+        var readers = [];
+        // Says a text with the device voice; the Promise settles when it is over (or after a while, for a voice that never says so).
+        var say = function (text) {
+          return new Promise(function (resolve) {
+            var v = synth ? voice() : null;
+            if (!v) { resolve(false); return; }
+            var over = false, end = function () { if (!over) { over = true; resolve(true); } };
+            try {
+              synth.cancel();
+              var u = new view.SpeechSynthesisUtterance(text);
+              u.voice = v; u.lang = v.lang; u.rate = 0.9;
+              u.onend = end; u.onerror = end;
+              synth.speak(u);
+            } catch (_) { end(); }
+            view.setTimeout(end, 2000 + String(text).length * 130);
+          });
+        };
+        // iPad and iPhone speak only after a press has started the voice once: a silent start inside the press.
+        var wake = function () { if (!synth || !voice()) return; try { var u = new view.SpeechSynthesisUtterance(''); u.volume = 0; synth.speak(u); } catch (_) {} };
+        var hush = function () { if (synth) { try { synth.cancel(); } catch (_) {} } };
+        // A word with its own recorded voice plays that clip; any other text is read by the device voice.
+        var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(c.text); };
+        var sayAsk = function () {
+          var question = L[P + 'question'];
+          if (item.askAudio) { wake(); return ctx.play(item.askAudio).then(function () { return say(question); }); }
+          return say(item.ask.replace(/_{2,}/g, ', blank, ') + '. ' + question);
+        };
+        // A read button shows once it can be heard: a recorded clip, or a voice that runs on the device (voices can arrive a moment later).
+        var reader = function (run, attrs, label, clipped) {
+          var b = ctx.el('button', Object.assign({ type: 'button', hidden: true, on: { click: function () { ctx.support('readAloud'); hush(); run(); } } }, attrs), [label]);
+          readers.push({ b: b, clipped: !!clipped });
+          return b;
+        };
+        var hear = null;
+        var showReaders = function () {
+          var on = !!(synth && voice());
+          readers.forEach(function (r) { r.b.hidden = !item.read || !(on || r.clipped); });
+          if (hear) hear.button.hidden = hear.note.hidden = !item.read || !(on || item.choices.every(function (c) { return !!c.audio; }));
+        };
+        var ask = ctx.el('p', { class: 'letters', lang: item.lang || 'en', 'data-read': '', style: item.ask.length <= 30 ? 'font-size:2rem;margin:8px 0' : 'font-size:1.35rem;line-height:1.5;margin:8px 0', text: item.ask });
+        ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'margin:0', text: L[P + 'question'] }));
+        ctx.root.appendChild(ask);
+        var readRow = ctx.el('div', { class: 'row' }, [reader(sayAsk, { 'data-read-aloud': 'question' }, L[P + 'read'], !!item.askAudio)]);
+        ctx.root.appendChild(readRow);
+        var list = ctx.el('ul', { class: 'choices', style: 'grid-template-columns:1fr' });
+        var boxes = [], picks = [], tried = [];
+        var lock = function () { picks.forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); };
+        var pick = function (i) {
+          if (ctx.isDone() || tried[i]) return;
+          hush();
+          var response = item.choices[i].text.slice(0, 80);
+          if (ctx.check) {
+            var said = ctx.answer(response);
+            if (said !== 'ignored' && said !== 'time_up') { boxes[i].classList.add('picked'); lock(); }
+            return;
+          }
+          var out = ctx.answer(response, response === item.answer, { correctText: L[P + 'correct'], retryText: L[P + 'retry'], missedText: L[P + 'missed'] });
+          if (out === 'retry') { tried[i] = true; boxes[i].classList.add('tried'); picks[i].setAttribute('aria-disabled', 'true'); }
+        };
+        item.choices.forEach(function (c, i) {
+          var b = ctx.el('button', { type: 'button', lang: item.lang || 'en', 'data-choice': String(i + 1), style: 'flex:1 1 auto;text-align:start;font-size:1.2rem;line-height:1.4;min-height:56px',
+            on: { click: function () { pick(i); } } }, [ctx.el('span', { 'aria-hidden': 'true', style: 'font-weight:700;margin-inline-end:10px', text: String(i + 1) }), c.text]);
+          var box = ctx.el('li', { class: 'choice', style: 'flex-direction:row;align-items:center;flex-wrap:wrap' }, [b,
+            reader(function () { sayChoice(c); }, { 'data-read-aloud': 'choice-' + (i + 1), 'aria-label': ctx.fmt(L[P + 'read_choice'], { n: i + 1 }), style: 'min-height:48px;padding:6px 12px' }, L[P + 'hear'], !!c.audio)]);
+          boxes.push(box); picks.push(b); tried.push(false);
+          list.appendChild(box);
+        });
+        // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number. With the reading tool
+        // "Read the choices when a question opens" it starts by itself, once the student has pressed something.
+        hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ stop: hush, before: wake, ready: function () { return !hear.button.hidden && !ctx.isDone(); },
+          list: function () { return item.choices.map(function (c, i) { return { box: boxes[i], say: function () { return sayChoice(c); } }; }); } }) : null;
+        // In the row of Read aloud, so the buttons stay together.
+        if (hear) { readRow.appendChild(hear.button); readRow.appendChild(hear.note); }
+        ctx.root.appendChild(list);
+        showReaders();
+        if (synth) { try { if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', showReaders); } catch (_) {} }
+        // In a check the keys 1 to 9 pick a choice (in practice the player does this itself).
+        if (typeof ctx.keys === 'function') ctx.keys(function (key) {
+          var n = Number(key);
+          if (!(n >= 1 && n <= item.choices.length)) return false;
+          pick(n - 1);
+          return true;
+        });
+        return {
+          // Practice: the right choice is shown (a check's practice item passes the right answer).
+          reveal: function (answer) {
+            var key = typeof answer === 'string' ? answer : item.answer;
+            lock();
+            item.choices.forEach(function (c, i) { if (key != null && c.text.slice(0, 80) === key) { boxes[i].classList.add('right'); picks[i].style.opacity = '1'; } });
+          },
+        };
+      },
+      score: function (item, answer, response) {
+        var chosen = String(response == null ? '' : response);
+        return { correct: chosen !== '' && chosen === String(answer).slice(0, 80), digitsCorrect: null, digitsPossible: null };
+      },
+    };
+    return module.exports;
+  })();
+  CHECK_ADAPTERS["vocab_picture"] = (function () {
+    var module = { exports: {} };
+    // Practice and check adapter: Word to picture (vocab_picture). "Which picture shows this word?": the word is
+    // shown, the choices are 4 pictures. Made by packet_vocab_builder.js for list words that have a picture in the
+    // Word Sounds picture set (word_sounds_symbols_en.js; each set is credited in the file by the builder). Its
+    // sibling vocab_picture_word.js (Picture to word: one picture, the choices are words) is the same code apart from
+    // the prefix of its labels and its words (tests/packets_vocab_pictures.test.js compares them).
+    // Item: { word, ask, image (the picture asked about, Picture to word only), choices: [{ text, image (Word to
+    // picture), audio (a word's own recorded voice, optional) }] in the order shown, answer (the first 80 characters of
+    // the right choice's word), read, lang, askAudio (optional) }. The pictures are lesson.images ids; a picture
+    // choice is named "Picture 1" until the question is over, so a screen reader does not give the answer away.
+    // Read aloud and Hear all work as in vocab_meaning.js: a recorded clip where the word has one, else only a voice
+    // that runs on the device. prepare runs when the file is built; render and score are copied into the file.
+    module.exports = {
+      id: 'vocab_picture',
+      title: 'Word to picture',
+      labels: {
+        vocab_picture_intro: 'Read each word. Choose the picture that shows it.',
+        vocab_picture_directions: 'Read the word. Choose the picture that shows it.',
+        vocab_picture_question: 'Which picture shows this word?',
+        vocab_picture_read: 'Read aloud',
+        vocab_picture_read_choice: 'Read choice {n} aloud',
+        vocab_picture_hear: 'Hear it',
+        vocab_picture_picture: 'Picture {n}',
+        vocab_picture_picture_of: 'Picture {n}: {word}',
+        vocab_picture_correct: 'Yes. That picture shows it.',
+        vocab_picture_retry: 'Not quite. Try once more.',
+        vocab_picture_missed: 'Here is the right answer.',
+        vocab_picture_practice_wrong: 'Not quite. Here is the right answer.',
+      },
+      // p: { word, ask, image (Picture to word), choices: [{ text, image, audio }], answer, read, lang, askAudio }
+      prepare: function (p) {
+        p = p || {};
+        var line = function (v, max) { return typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : ''; };
+        var id = function (v) { return typeof v === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(v) ? v : ''; };
+        var word = line(p.word, 300), ask = line(p.ask, 300);
+        if (!word || !ask) return { missing: ['word'] };
+        if (!Array.isArray(p.choices) || p.choices.length < 2 || p.choices.length > 6) return { missing: ['choices'] };
+        var given = p.choices.map(function (c) { return c && typeof c === 'object' ? c : { text: c }; });
+        var texts = given.map(function (c) { return line(c.text, 60); });
+        var keys = texts.map(function (t) { return t.slice(0, 80).toLowerCase(); });
+        if (texts.some(function (t) { return !t; }) || keys.some(function (k, i) { return keys.indexOf(k) !== i; })) return { missing: ['different choices'] };
+        var image = id(p.image);
+        // Each choice is a picture (Word to picture), or the question is (Picture to word): never both, never neither.
+        var pictures = given.map(function (c) { return id(c.image); });
+        var pictured = pictures.every(Boolean);
+        if (pictured === !!image || (!pictured && pictures.some(Boolean))) return { missing: ['pictures'] };
+        if (pictured && pictures.some(function (x, i) { return pictures.indexOf(x) !== i; })) return { missing: ['different pictures'] };
+        var answer = line(p.answer, 60).slice(0, 80);
+        if (!answer || texts.map(function (t) { return t.slice(0, 80); }).indexOf(answer) < 0) return { missing: ['an answer that is one of the choices'] };
+        var lang = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})?$/.test(String(p.lang || '')) ? String(p.lang) : 'en';
+        var item = { word: word, ask: ask, choices: given.map(function (c, i) {
+          var out = { text: texts[i] };
+          if (pictured) out.image = pictures[i];
+          if (id(c.audio)) out.audio = id(c.audio);
+          return out;
+        }), answer: answer, read: p.read === true, lang: lang };
+        if (image) item.image = image;
+        if (id(p.askAudio)) item.askAudio = id(p.askAudio);
+        return { item: item };
+      },
+      render: function (item, ctx) {
+        var P = 'vocab_picture_';
+        var L = ctx.L;
+        var doc = ctx.root.ownerDocument;
+        var view = doc && doc.defaultView;
+        var synth = item.read && view && view.speechSynthesis && typeof view.SpeechSynthesisUtterance === 'function' ? view.speechSynthesis : null;
+        var lang = String(item.lang || 'en').toLowerCase();
+        var pictured = !item.image;
+        var voice = function () {
+          var all = [];
+          try { all = synth.getVoices() || []; } catch (_) { all = []; }
+          var local = all.filter(function (v) { return v && v.localService === true; });
+          var match = function (v) { return String(v.lang || '').toLowerCase().replace('_', '-'); };
+          return local.filter(function (v) { return match(v) === lang || match(v).indexOf(lang + '-') === 0; })[0] || null;
+        };
+        if (synth) { try { synth.cancel(); synth.getVoices(); } catch (_) {} }
+        var readers = [];
+        var say = function (text) {
+          return new Promise(function (resolve) {
+            var v = synth ? voice() : null;
+            if (!v) { resolve(false); return; }
+            var over = false, end = function () { if (!over) { over = true; resolve(true); } };
+            try {
+              synth.cancel();
+              var u = new view.SpeechSynthesisUtterance(text);
+              u.voice = v; u.lang = v.lang; u.rate = 0.9;
+              u.onend = end; u.onerror = end;
+              synth.speak(u);
+            } catch (_) { end(); }
+            view.setTimeout(end, 2000 + String(text).length * 130);
+          });
+        };
+        var wake = function () { if (!synth || !voice()) return; try { var u = new view.SpeechSynthesisUtterance(''); u.volume = 0; synth.speak(u); } catch (_) {} };
+        var hush = function () { if (synth) { try { synth.cancel(); } catch (_) {} } };
+        var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(c.text); };
+        // Word to picture: the word (its clip, or the device voice), then the question. Picture to word: the question.
+        var sayAsk = function () {
+          var question = L[P + 'question'];
+          if (!pictured) return say(question);
+          if (item.askAudio) { wake(); return ctx.play(item.askAudio).then(function () { return say(question); }); }
+          return say(item.ask + '. ' + question);
+        };
+        var reader = function (run, attrs, label, clipped) {
+          var b = ctx.el('button', Object.assign({ type: 'button', hidden: true, on: { click: function () { ctx.support('readAloud'); hush(); run(); } } }, attrs), [label]);
+          readers.push({ b: b, clipped: !!clipped });
+          return b;
+        };
+        var hear = null;
+        var showReaders = function () {
+          var on = !!(synth && voice());
+          readers.forEach(function (r) { r.b.hidden = !item.read || !(on || r.clipped); });
+          if (hear) hear.button.hidden = hear.note.hidden = !item.read || !(on || item.choices.every(function (c) { return !!c.audio; }));
+        };
+        var picture = function (src, size) {
+          return ctx.el('img', { src: src || '', alt: '', style: 'display:block;margin:0 auto;width:' + size + 'px;height:' + size + 'px;max-width:100%;object-fit:contain;background:#fff;border-radius:10px;padding:6px' });
+        };
+        ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'margin:0', text: L[P + 'question'] }));
+        if (pictured) ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: item.lang || 'en', 'data-read': '', style: 'font-size:2rem;margin:8px 0', text: item.ask }));
+        // The picture asked about is named only when the question is over.
+        var shown = pictured ? null : picture(ctx.image(item.image), 180);
+        if (shown) ctx.root.appendChild(ctx.el('div', { style: 'margin:8px 0' }, [shown]));
+        var readRow = ctx.el('div', { class: 'row' }, [reader(sayAsk, { 'data-read-aloud': 'question' }, L[P + 'read'], pictured && !!item.askAudio)]);
+        ctx.root.appendChild(readRow);
+        var list = ctx.el('ul', { class: 'choices', style: pictured ? 'grid-template-columns:repeat(2,minmax(0,1fr))' : 'grid-template-columns:1fr' });
+        var boxes = [], picks = [], tried = [];
+        var lock = function () { picks.forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); };
+        var pick = function (i) {
+          if (ctx.isDone() || tried[i]) return;
+          hush();
+          var response = item.choices[i].text.slice(0, 80);
+          if (ctx.check) {
+            var said = ctx.answer(response);
+            if (said !== 'ignored' && said !== 'time_up') { boxes[i].classList.add('picked'); lock(); }
+            return;
+          }
+          var out = ctx.answer(response, response === item.answer, { correctText: L[P + 'correct'], retryText: L[P + 'retry'], missedText: L[P + 'missed'] });
+          if (out === 'retry') { tried[i] = true; boxes[i].classList.add('tried'); picks[i].setAttribute('aria-disabled', 'true'); }
+        };
+        item.choices.forEach(function (c, i) {
+          var number = ctx.el('span', { 'aria-hidden': 'true', style: 'font-weight:700;margin-inline-end:10px', text: String(i + 1) });
+          var b = pictured
+            ? ctx.el('button', { type: 'button', 'data-choice': String(i + 1), 'aria-label': ctx.fmt(L[P + 'picture'], { n: i + 1 }), style: 'flex:1 1 auto;width:100%;min-height:140px;padding:8px',
+              on: { click: function () { pick(i); } } }, [number, picture(ctx.image(c.image), 120)])
+            : ctx.el('button', { type: 'button', lang: item.lang || 'en', 'data-choice': String(i + 1), style: 'flex:1 1 auto;text-align:start;font-size:1.2rem;line-height:1.4;min-height:56px',
+              on: { click: function () { pick(i); } } }, [number, c.text]);
+          var box = ctx.el('li', { class: 'choice', style: pictured ? '' : 'flex-direction:row;align-items:center;flex-wrap:wrap' }, [b,
+            pictured ? null : reader(function () { sayChoice(c); }, { 'data-read-aloud': 'choice-' + (i + 1), 'aria-label': ctx.fmt(L[P + 'read_choice'], { n: i + 1 }), style: 'min-height:48px;padding:6px 12px' }, L[P + 'hear'], !!c.audio)]);
+          boxes.push(box); picks.push(b); tried.push(false);
+          list.appendChild(box);
+        });
+        // Hear all reads word choices only: reading the words of picture choices would give the answer away.
+        hear = !pictured && typeof ctx.hearAll === 'function' ? ctx.hearAll({ stop: hush, before: wake, ready: function () { return !hear.button.hidden && !ctx.isDone(); },
+          list: function () { return item.choices.map(function (c, i) { return { box: boxes[i], say: function () { return sayChoice(c); } }; }); } }) : null;
+        // In the row of Read aloud, so the buttons stay together.
+        if (hear) { readRow.appendChild(hear.button); readRow.appendChild(hear.note); }
+        ctx.root.appendChild(list);
+        showReaders();
+        if (synth) { try { if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', showReaders); } catch (_) {} }
+        if (typeof ctx.keys === 'function') ctx.keys(function (key) {
+          var n = Number(key);
+          if (!(n >= 1 && n <= item.choices.length)) return false;
+          pick(n - 1);
+          return true;
+        });
+        return {
+          // The question is over: the right choice is shown, and each picture is named.
+          reveal: function (answer) {
+            var key = typeof answer === 'string' ? answer : item.answer;
+            lock();
+            item.choices.forEach(function (c, i) {
+              if (pictured) picks[i].setAttribute('aria-label', ctx.fmt(L[P + 'picture_of'], { n: i + 1, word: c.text }));
+              if (key != null && c.text.slice(0, 80) === key) { boxes[i].classList.add('right'); picks[i].style.opacity = '1'; }
+            });
+            if (shown) shown.setAttribute('alt', item.word);
+          },
+        };
+      },
+      score: function (item, answer, response) {
+        var chosen = String(response == null ? '' : response);
+        return { correct: chosen !== '' && chosen === String(answer).slice(0, 80), digitsCorrect: null, digitsPossible: null };
+      },
+    };
+    return module.exports;
+  })();
+  CHECK_ADAPTERS["vocab_picture_word"] = (function () {
+    var module = { exports: {} };
+    // Practice and check adapter: Picture to word (vocab_picture_word). "Which word goes with this picture?": one
+    // picture is shown, the choices are words. It is vocab_picture.js apart from its id, its title and its words: see
+    // the notes there.
+    module.exports = {
+      id: 'vocab_picture_word',
+      title: 'Picture to word',
+      labels: {
+        vocab_picture_word_intro: 'Look at each picture. Choose the word that goes with it.',
+        vocab_picture_word_directions: 'Look at the picture. Choose the word that goes with it.',
+        vocab_picture_word_question: 'Which word goes with this picture?',
+        vocab_picture_word_read: 'Read aloud',
+        vocab_picture_word_read_choice: 'Read choice {n} aloud',
+        vocab_picture_word_hear: 'Hear it',
+        vocab_picture_word_picture: 'Picture {n}',
+        vocab_picture_word_picture_of: 'Picture {n}: {word}',
+        vocab_picture_word_correct: 'Yes. That is the word.',
+        vocab_picture_word_retry: 'Not quite. Try once more.',
+        vocab_picture_word_missed: 'Here is the right answer.',
+        vocab_picture_word_practice_wrong: 'Not quite. Here is the right answer.',
+      },
+      // p: { word, ask, image (Picture to word), choices: [{ text, image, audio }], answer, read, lang, askAudio }
+      prepare: function (p) {
+        p = p || {};
+        var line = function (v, max) { return typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : ''; };
+        var id = function (v) { return typeof v === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(v) ? v : ''; };
+        var word = line(p.word, 300), ask = line(p.ask, 300);
+        if (!word || !ask) return { missing: ['word'] };
+        if (!Array.isArray(p.choices) || p.choices.length < 2 || p.choices.length > 6) return { missing: ['choices'] };
+        var given = p.choices.map(function (c) { return c && typeof c === 'object' ? c : { text: c }; });
+        var texts = given.map(function (c) { return line(c.text, 60); });
+        var keys = texts.map(function (t) { return t.slice(0, 80).toLowerCase(); });
+        if (texts.some(function (t) { return !t; }) || keys.some(function (k, i) { return keys.indexOf(k) !== i; })) return { missing: ['different choices'] };
+        var image = id(p.image);
+        // Each choice is a picture (Word to picture), or the question is (Picture to word): never both, never neither.
+        var pictures = given.map(function (c) { return id(c.image); });
+        var pictured = pictures.every(Boolean);
+        if (pictured === !!image || (!pictured && pictures.some(Boolean))) return { missing: ['pictures'] };
+        if (pictured && pictures.some(function (x, i) { return pictures.indexOf(x) !== i; })) return { missing: ['different pictures'] };
+        var answer = line(p.answer, 60).slice(0, 80);
+        if (!answer || texts.map(function (t) { return t.slice(0, 80); }).indexOf(answer) < 0) return { missing: ['an answer that is one of the choices'] };
+        var lang = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})?$/.test(String(p.lang || '')) ? String(p.lang) : 'en';
+        var item = { word: word, ask: ask, choices: given.map(function (c, i) {
+          var out = { text: texts[i] };
+          if (pictured) out.image = pictures[i];
+          if (id(c.audio)) out.audio = id(c.audio);
+          return out;
+        }), answer: answer, read: p.read === true, lang: lang };
+        if (image) item.image = image;
+        if (id(p.askAudio)) item.askAudio = id(p.askAudio);
+        return { item: item };
+      },
+      render: function (item, ctx) {
+        var P = 'vocab_picture_word_';
+        var L = ctx.L;
+        var doc = ctx.root.ownerDocument;
+        var view = doc && doc.defaultView;
+        var synth = item.read && view && view.speechSynthesis && typeof view.SpeechSynthesisUtterance === 'function' ? view.speechSynthesis : null;
+        var lang = String(item.lang || 'en').toLowerCase();
+        var pictured = !item.image;
+        var voice = function () {
+          var all = [];
+          try { all = synth.getVoices() || []; } catch (_) { all = []; }
+          var local = all.filter(function (v) { return v && v.localService === true; });
+          var match = function (v) { return String(v.lang || '').toLowerCase().replace('_', '-'); };
+          return local.filter(function (v) { return match(v) === lang || match(v).indexOf(lang + '-') === 0; })[0] || null;
+        };
+        if (synth) { try { synth.cancel(); synth.getVoices(); } catch (_) {} }
+        var readers = [];
+        var say = function (text) {
+          return new Promise(function (resolve) {
+            var v = synth ? voice() : null;
+            if (!v) { resolve(false); return; }
+            var over = false, end = function () { if (!over) { over = true; resolve(true); } };
+            try {
+              synth.cancel();
+              var u = new view.SpeechSynthesisUtterance(text);
+              u.voice = v; u.lang = v.lang; u.rate = 0.9;
+              u.onend = end; u.onerror = end;
+              synth.speak(u);
+            } catch (_) { end(); }
+            view.setTimeout(end, 2000 + String(text).length * 130);
+          });
+        };
+        var wake = function () { if (!synth || !voice()) return; try { var u = new view.SpeechSynthesisUtterance(''); u.volume = 0; synth.speak(u); } catch (_) {} };
+        var hush = function () { if (synth) { try { synth.cancel(); } catch (_) {} } };
+        var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(c.text); };
+        // Word to picture: the word (its clip, or the device voice), then the question. Picture to word: the question.
+        var sayAsk = function () {
+          var question = L[P + 'question'];
+          if (!pictured) return say(question);
+          if (item.askAudio) { wake(); return ctx.play(item.askAudio).then(function () { return say(question); }); }
+          return say(item.ask + '. ' + question);
+        };
+        var reader = function (run, attrs, label, clipped) {
+          var b = ctx.el('button', Object.assign({ type: 'button', hidden: true, on: { click: function () { ctx.support('readAloud'); hush(); run(); } } }, attrs), [label]);
+          readers.push({ b: b, clipped: !!clipped });
+          return b;
+        };
+        var hear = null;
+        var showReaders = function () {
+          var on = !!(synth && voice());
+          readers.forEach(function (r) { r.b.hidden = !item.read || !(on || r.clipped); });
+          if (hear) hear.button.hidden = hear.note.hidden = !item.read || !(on || item.choices.every(function (c) { return !!c.audio; }));
+        };
+        var picture = function (src, size) {
+          return ctx.el('img', { src: src || '', alt: '', style: 'display:block;margin:0 auto;width:' + size + 'px;height:' + size + 'px;max-width:100%;object-fit:contain;background:#fff;border-radius:10px;padding:6px' });
+        };
+        ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'margin:0', text: L[P + 'question'] }));
+        if (pictured) ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: item.lang || 'en', 'data-read': '', style: 'font-size:2rem;margin:8px 0', text: item.ask }));
+        // The picture asked about is named only when the question is over.
+        var shown = pictured ? null : picture(ctx.image(item.image), 180);
+        if (shown) ctx.root.appendChild(ctx.el('div', { style: 'margin:8px 0' }, [shown]));
+        var readRow = ctx.el('div', { class: 'row' }, [reader(sayAsk, { 'data-read-aloud': 'question' }, L[P + 'read'], pictured && !!item.askAudio)]);
+        ctx.root.appendChild(readRow);
+        var list = ctx.el('ul', { class: 'choices', style: pictured ? 'grid-template-columns:repeat(2,minmax(0,1fr))' : 'grid-template-columns:1fr' });
+        var boxes = [], picks = [], tried = [];
+        var lock = function () { picks.forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); };
+        var pick = function (i) {
+          if (ctx.isDone() || tried[i]) return;
+          hush();
+          var response = item.choices[i].text.slice(0, 80);
+          if (ctx.check) {
+            var said = ctx.answer(response);
+            if (said !== 'ignored' && said !== 'time_up') { boxes[i].classList.add('picked'); lock(); }
+            return;
+          }
+          var out = ctx.answer(response, response === item.answer, { correctText: L[P + 'correct'], retryText: L[P + 'retry'], missedText: L[P + 'missed'] });
+          if (out === 'retry') { tried[i] = true; boxes[i].classList.add('tried'); picks[i].setAttribute('aria-disabled', 'true'); }
+        };
+        item.choices.forEach(function (c, i) {
+          var number = ctx.el('span', { 'aria-hidden': 'true', style: 'font-weight:700;margin-inline-end:10px', text: String(i + 1) });
+          var b = pictured
+            ? ctx.el('button', { type: 'button', 'data-choice': String(i + 1), 'aria-label': ctx.fmt(L[P + 'picture'], { n: i + 1 }), style: 'flex:1 1 auto;width:100%;min-height:140px;padding:8px',
+              on: { click: function () { pick(i); } } }, [number, picture(ctx.image(c.image), 120)])
+            : ctx.el('button', { type: 'button', lang: item.lang || 'en', 'data-choice': String(i + 1), style: 'flex:1 1 auto;text-align:start;font-size:1.2rem;line-height:1.4;min-height:56px',
+              on: { click: function () { pick(i); } } }, [number, c.text]);
+          var box = ctx.el('li', { class: 'choice', style: pictured ? '' : 'flex-direction:row;align-items:center;flex-wrap:wrap' }, [b,
+            pictured ? null : reader(function () { sayChoice(c); }, { 'data-read-aloud': 'choice-' + (i + 1), 'aria-label': ctx.fmt(L[P + 'read_choice'], { n: i + 1 }), style: 'min-height:48px;padding:6px 12px' }, L[P + 'hear'], !!c.audio)]);
+          boxes.push(box); picks.push(b); tried.push(false);
+          list.appendChild(box);
+        });
+        // Hear all reads word choices only: reading the words of picture choices would give the answer away.
+        hear = !pictured && typeof ctx.hearAll === 'function' ? ctx.hearAll({ stop: hush, before: wake, ready: function () { return !hear.button.hidden && !ctx.isDone(); },
+          list: function () { return item.choices.map(function (c, i) { return { box: boxes[i], say: function () { return sayChoice(c); } }; }); } }) : null;
+        // In the row of Read aloud, so the buttons stay together.
+        if (hear) { readRow.appendChild(hear.button); readRow.appendChild(hear.note); }
+        ctx.root.appendChild(list);
+        showReaders();
+        if (synth) { try { if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', showReaders); } catch (_) {} }
+        if (typeof ctx.keys === 'function') ctx.keys(function (key) {
+          var n = Number(key);
+          if (!(n >= 1 && n <= item.choices.length)) return false;
+          pick(n - 1);
+          return true;
+        });
+        return {
+          // The question is over: the right choice is shown, and each picture is named.
+          reveal: function (answer) {
+            var key = typeof answer === 'string' ? answer : item.answer;
+            lock();
+            item.choices.forEach(function (c, i) {
+              if (pictured) picks[i].setAttribute('aria-label', ctx.fmt(L[P + 'picture_of'], { n: i + 1, word: c.text }));
+              if (key != null && c.text.slice(0, 80) === key) { boxes[i].classList.add('right'); picks[i].style.opacity = '1'; }
+            });
+            if (shown) shown.setAttribute('alt', item.word);
+          },
+        };
+      },
+      score: function (item, answer, response) {
+        var chosen = String(response == null ? '' : response);
+        return { correct: chosen !== '' && chosen === String(answer).slice(0, 80), digitsCorrect: null, digitsPossible: null };
+      },
+    };
+    return module.exports;
+  })();
+  CHECK_ADAPTERS["vocab_word"] = (function () {
+    var module = { exports: {} };
+    // Practice and check adapter: Meaning to word (vocab_word). The meaning is shown; the choices are words.
+    // It is vocab_meaning.js apart from its id, its title and its words: see the notes there.
+    module.exports = {
+      id: 'vocab_word',
+      title: 'Meaning to word',
+      labels: {
+        vocab_word_intro: 'Read each meaning. Choose the word.',
+        vocab_word_directions: 'Read the meaning. Choose the word.',
+        vocab_word_question: 'Which word has this meaning?',
+        vocab_word_read: 'Read aloud',
+        vocab_word_read_choice: 'Read choice {n} aloud',
+        vocab_word_hear: 'Hear it',
+        vocab_word_correct: 'Yes. That is the word.',
+        vocab_word_retry: 'Not quite. Try once more.',
+        vocab_word_missed: 'Here is the right answer.',
+        vocab_word_practice_wrong: 'Not quite. Here is the right answer.',
+      },
+      // p: { word, ask, choices: [text, ...], answer: the right text, read: true | false, lang,
+      //   askAudio: the clip id of the word asked (optional), choiceAudio: [clip id or null, ...] (optional) }
+      // A clip id names a recording in lesson.audio: a word's own recorded voice, played in place of the device voice.
+      prepare: function (p) {
+        p = p || {};
+        var line = function (v, max) { return typeof v === 'string' ? v.replace(/\s+/g, ' ').trim().slice(0, max) : ''; };
+        var clip = function (v) { return typeof v === 'string' && /^[A-Za-z0-9_-]{1,40}$/.test(v) ? v : ''; };
+        var word = line(p.word, 300), ask = line(p.ask, 300);
+        if (!word || !ask) return { missing: ['word'] };
+        if (!Array.isArray(p.choices) || p.choices.length < 2 || p.choices.length > 6) return { missing: ['choices'] };
+        var texts = p.choices.map(function (c) { return line(c, 300); });
+        var keys = texts.map(function (t) { return t.slice(0, 80); });
+        if (texts.some(function (t) { return !t; }) || keys.some(function (k, i) { return keys.indexOf(k) !== i; })) return { missing: ['different choices'] };
+        var answer = line(p.answer, 300).slice(0, 80);
+        if (!answer || keys.indexOf(answer) < 0) return { missing: ['an answer that is one of the choices'] };
+        var lang = /^[a-z]{2,3}(?:-[A-Za-z0-9]{2,8})?$/.test(String(p.lang || '')) ? String(p.lang) : 'en';
+        var heard = Array.isArray(p.choiceAudio) ? p.choiceAudio : [];
+        var item = { word: word, ask: ask, choices: texts.map(function (t, i) { var c = { text: t }; if (clip(heard[i])) c.audio = clip(heard[i]); return c; }), answer: answer, read: p.read === true, lang: lang };
+        if (clip(p.askAudio)) item.askAudio = clip(p.askAudio);
+        return { item: item };
+      },
+      render: function (item, ctx) {
+        var P = 'vocab_word_';
+        var L = ctx.L;
+        var doc = ctx.root.ownerDocument;
+        var view = doc && doc.defaultView;
+        var synth = item.read && view && view.speechSynthesis && typeof view.SpeechSynthesisUtterance === 'function' ? view.speechSynthesis : null;
+        var lang = String(item.lang || 'en').toLowerCase();
+        var voice = function () {
+          var all = [];
+          try { all = synth.getVoices() || []; } catch (_) { all = []; }
+          var local = all.filter(function (v) { return v && v.localService === true; });
+          var match = function (v) { return String(v.lang || '').toLowerCase().replace('_', '-'); };
+          return local.filter(function (v) { return match(v) === lang || match(v).indexOf(lang + '-') === 0; })[0] || null;
+        };
+        if (synth) { try { synth.cancel(); synth.getVoices(); } catch (_) {} }
+        var readers = [];
+        // Says a text with the device voice; the Promise settles when it is over (or after a while, for a voice that never says so).
+        var say = function (text) {
+          return new Promise(function (resolve) {
+            var v = synth ? voice() : null;
+            if (!v) { resolve(false); return; }
+            var over = false, end = function () { if (!over) { over = true; resolve(true); } };
+            try {
+              synth.cancel();
+              var u = new view.SpeechSynthesisUtterance(text);
+              u.voice = v; u.lang = v.lang; u.rate = 0.9;
+              u.onend = end; u.onerror = end;
+              synth.speak(u);
+            } catch (_) { end(); }
+            view.setTimeout(end, 2000 + String(text).length * 130);
+          });
+        };
+        // iPad and iPhone speak only after a press has started the voice once: a silent start inside the press.
+        var wake = function () { if (!synth || !voice()) return; try { var u = new view.SpeechSynthesisUtterance(''); u.volume = 0; synth.speak(u); } catch (_) {} };
+        var hush = function () { if (synth) { try { synth.cancel(); } catch (_) {} } };
+        // A word with its own recorded voice plays that clip; any other text is read by the device voice.
+        var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(c.text); };
+        var sayAsk = function () {
+          var question = L[P + 'question'];
+          if (item.askAudio) { wake(); return ctx.play(item.askAudio).then(function () { return say(question); }); }
+          return say(item.ask.replace(/_{2,}/g, ', blank, ') + '. ' + question);
+        };
+        // A read button shows once it can be heard: a recorded clip, or a voice that runs on the device (voices can arrive a moment later).
+        var reader = function (run, attrs, label, clipped) {
+          var b = ctx.el('button', Object.assign({ type: 'button', hidden: true, on: { click: function () { ctx.support('readAloud'); hush(); run(); } } }, attrs), [label]);
+          readers.push({ b: b, clipped: !!clipped });
+          return b;
+        };
+        var hear = null;
+        var showReaders = function () {
+          var on = !!(synth && voice());
+          readers.forEach(function (r) { r.b.hidden = !item.read || !(on || r.clipped); });
+          if (hear) hear.button.hidden = hear.note.hidden = !item.read || !(on || item.choices.every(function (c) { return !!c.audio; }));
+        };
+        var ask = ctx.el('p', { class: 'letters', lang: item.lang || 'en', 'data-read': '', style: item.ask.length <= 30 ? 'font-size:2rem;margin:8px 0' : 'font-size:1.35rem;line-height:1.5;margin:8px 0', text: item.ask });
+        ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'margin:0', text: L[P + 'question'] }));
+        ctx.root.appendChild(ask);
+        var readRow = ctx.el('div', { class: 'row' }, [reader(sayAsk, { 'data-read-aloud': 'question' }, L[P + 'read'], !!item.askAudio)]);
+        ctx.root.appendChild(readRow);
+        var list = ctx.el('ul', { class: 'choices', style: 'grid-template-columns:1fr' });
+        var boxes = [], picks = [], tried = [];
+        var lock = function () { picks.forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); };
+        var pick = function (i) {
+          if (ctx.isDone() || tried[i]) return;
+          hush();
+          var response = item.choices[i].text.slice(0, 80);
+          if (ctx.check) {
+            var said = ctx.answer(response);
+            if (said !== 'ignored' && said !== 'time_up') { boxes[i].classList.add('picked'); lock(); }
+            return;
+          }
+          var out = ctx.answer(response, response === item.answer, { correctText: L[P + 'correct'], retryText: L[P + 'retry'], missedText: L[P + 'missed'] });
+          if (out === 'retry') { tried[i] = true; boxes[i].classList.add('tried'); picks[i].setAttribute('aria-disabled', 'true'); }
+        };
+        item.choices.forEach(function (c, i) {
+          var b = ctx.el('button', { type: 'button', lang: item.lang || 'en', 'data-choice': String(i + 1), style: 'flex:1 1 auto;text-align:start;font-size:1.2rem;line-height:1.4;min-height:56px',
+            on: { click: function () { pick(i); } } }, [ctx.el('span', { 'aria-hidden': 'true', style: 'font-weight:700;margin-inline-end:10px', text: String(i + 1) }), c.text]);
+          var box = ctx.el('li', { class: 'choice', style: 'flex-direction:row;align-items:center;flex-wrap:wrap' }, [b,
+            reader(function () { sayChoice(c); }, { 'data-read-aloud': 'choice-' + (i + 1), 'aria-label': ctx.fmt(L[P + 'read_choice'], { n: i + 1 }), style: 'min-height:48px;padding:6px 12px' }, L[P + 'hear'], !!c.audio)]);
+          boxes.push(box); picks.push(b); tried.push(false);
+          list.appendChild(box);
+        });
+        // Hear all (the player's ctx.hearAll): each choice in turn, marked with its number. With the reading tool
+        // "Read the choices when a question opens" it starts by itself, once the student has pressed something.
+        hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ stop: hush, before: wake, ready: function () { return !hear.button.hidden && !ctx.isDone(); },
+          list: function () { return item.choices.map(function (c, i) { return { box: boxes[i], say: function () { return sayChoice(c); } }; }); } }) : null;
+        // In the row of Read aloud, so the buttons stay together.
+        if (hear) { readRow.appendChild(hear.button); readRow.appendChild(hear.note); }
+        ctx.root.appendChild(list);
+        showReaders();
+        if (synth) { try { if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', showReaders); } catch (_) {} }
+        // In a check the keys 1 to 9 pick a choice (in practice the player does this itself).
+        if (typeof ctx.keys === 'function') ctx.keys(function (key) {
+          var n = Number(key);
+          if (!(n >= 1 && n <= item.choices.length)) return false;
+          pick(n - 1);
+          return true;
+        });
+        return {
+          // Practice: the right choice is shown (a check's practice item passes the right answer).
+          reveal: function (answer) {
+            var key = typeof answer === 'string' ? answer : item.answer;
+            lock();
+            item.choices.forEach(function (c, i) { if (key != null && c.text.slice(0, 80) === key) { boxes[i].classList.add('right'); picks[i].style.opacity = '1'; } });
+          },
+        };
+      },
+      score: function (item, answer, response) {
+        var chosen = String(response == null ? '' : response);
+        return { correct: chosen !== '' && chosen === String(answer).slice(0, 80), digitsCorrect: null, digitsPossible: null };
+      },
+    };
+    return module.exports;
+  })();
   // END GENERATED CHECK ADAPTERS
 
   // ---------------------------------------------------------------------------
@@ -4406,37 +5299,65 @@
   }
 
   var CSS = [
-    ':root{--bg:#f6f7fb;--card:#fff;--ink:#1d2433;--muted:#4a5468;--accent:#3d3aa8;--accent-ink:#fff;--ok:#1d6b3a;--ok-bg:#e3f4e9;--warn:#8a4b00;--warn-bg:#fff1dc;--line:#c9cede;--focus:#b54700}',
-    '@media (prefers-color-scheme:dark){:root{--bg:#141824;--card:#1f2535;--ink:#eef1f8;--muted:#b7bfd2;--accent:#a9a7ff;--accent-ink:#141824;--ok:#8fe0ab;--ok-bg:#163423;--warn:#ffc77a;--warn-bg:#3a2a12;--line:#3a4258;--focus:#ffb070}}',
+    // 2026-11-12 look pass: --soft tints the helper buttons; every theme below sets it too.
+    ':root{--bg:#f1f4fc;--card:#fff;--ink:#1d2433;--muted:#4a5468;--accent:#3d3aa8;--accent-ink:#fff;--ok:#1d6b3a;--ok-bg:#e3f4e9;--warn:#8a4b00;--warn-bg:#fff1dc;--line:#c9cede;--focus:#b54700;--soft:#eeeefb}',
+    '@media (prefers-color-scheme:dark){:root{--bg:#141824;--card:#1f2535;--ink:#eef1f8;--muted:#b7bfd2;--accent:#a9a7ff;--accent-ink:#141824;--ok:#8fe0ab;--ok-bg:#163423;--warn:#ffc77a;--warn-bg:#3a2a12;--line:#3a4258;--focus:#ffb070;--soft:#283048}}',
     '*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}',
-    'main{max-width:760px;margin:0 auto;padding:24px 16px 48px}h1{font-size:1.6rem;margin:0 0 12px}h2{font-size:1.3rem;margin:0 0 12px}',
-    '.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;margin:16px 0}',
-    'button{font:inherit;min-height:48px;min-width:48px;padding:10px 18px;border-radius:12px;border:2px solid var(--accent);background:var(--card);color:var(--ink);cursor:pointer}',
-    'button.primary{background:var(--accent);color:var(--accent-ink)}button:disabled,button[aria-disabled=true]{opacity:.55;cursor:not-allowed}',
-    'button[aria-pressed=true]{outline:3px solid var(--accent);outline-offset:2px}',
+    'main{max-width:760px;margin:0 auto;padding:24px 16px 48px}h1{font-size:1.6rem;margin:0 0 12px;line-height:1.25}h2{font-size:1.35rem;margin:0 0 12px;line-height:1.3}',
+    'h1::before{content:"";display:inline-block;width:.5em;height:.5em;margin-inline-end:.5em;border-radius:.12em;background:var(--accent);transform:rotate(45deg)}',
+    '.card{background:var(--card);border:1px solid var(--line);border-radius:20px;padding:20px;padding:clamp(16px,4vw,24px);margin:16px 0;box-shadow:0 6px 20px #1d243314}.card>:first-child,.card>div:first-child>:first-child{margin-top:0}',
+    'button{font:inherit;min-height:48px;min-width:48px;padding:10px 18px;border-radius:14px;border:2px solid var(--accent);background:var(--soft);color:var(--ink);cursor:pointer}',
+    'button.primary{background:var(--accent);color:var(--accent-ink);font-weight:700;box-shadow:inset 0 -3px 0 #0000002e}button:disabled,button[aria-disabled=true]{opacity:.55;cursor:not-allowed}.choice.right button{opacity:1}',
+    '@media (hover:hover){button:not(:disabled):not([aria-disabled=true]):hover{background-image:linear-gradient(#00000012,#00000012)}}',
+    'button[aria-pressed=true]{outline:3px solid var(--accent);outline-offset:2px}button[aria-pressed=true]:focus-visible{outline-color:var(--focus);outline-offset:4px}',
     ':focus-visible{outline:3px solid var(--focus);outline-offset:3px}h2[tabindex="-1"]:focus{outline:none}',
     '.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}.choices{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;list-style:none;padding:0;margin:16px 0}',
-    '.choice{border:2px solid var(--line);border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:8px}.choice.tried{border-style:dashed}.choice.right{border-color:var(--ok);background:var(--ok-bg)}.choice.solo{border-color:transparent}.choice.solo.tried{border-color:var(--line)}.choice.solo.right{border-color:var(--ok)}',
+    '.choice{position:relative;background:var(--card);border:2px solid var(--line);border-radius:16px;padding:10px;display:flex;flex-direction:column;gap:8px;box-shadow:0 3px 0 var(--line)}.choice.tried{border-style:dashed;box-shadow:none}.choice.right{border-color:var(--ok);background:var(--ok-bg);box-shadow:0 3px 0 var(--ok)}.choice.solo{border-color:transparent}.choice.solo.tried{border-color:var(--line)}.choice.solo.right{border-color:var(--ok)}.choice.solo:not(.right){box-shadow:none}',
     '.slots{display:flex;flex-wrap:wrap;gap:10px;list-style:none;padding:0;margin:16px 0}.slot{min-width:64px;min-height:64px;border:2px dashed var(--line);border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:1.4rem;font-weight:700}',
     '.picture{max-width:160px;max-height:160px;border-radius:12px}',
-    '.letters{font-size:1.5rem;font-weight:700}.status{min-height:1.5em;margin:12px 0;padding:8px 12px;border-radius:10px}.status.ok{background:var(--ok-bg);color:var(--ok)}.status.warn{background:var(--warn-bg);color:var(--warn)}',
+    '.letters{font-size:1.5rem;font-weight:700;line-height:1.3}.status{min-height:1.5em;margin:12px 0;padding:10px 14px;border-radius:12px}.status.ok{background:var(--ok-bg);color:var(--ok)}.status.warn{background:var(--warn-bg);color:var(--warn)}',
+    // Right and wrong say it in words and with a mark, not by color alone: a tick on the right choice, a badge on the feedback line.
+    '.choice.right::after,[data-feedback]:not(:empty)::before{flex:none;width:32px;height:32px;border-radius:50%;color:var(--card);font-weight:700;line-height:32px;text-align:center}',
+    '.choice.right::after{content:"\\2713";content:"\\2713"/"";position:absolute;top:-12px;inset-inline-end:-10px;background:var(--ok)}',
+    // The tick pops in once (0.25 s), only when the device has not asked for reduced motion; nothing else moves.
+    '@media (prefers-reduced-motion:no-preference){.choice.right::after{animation:lt-pop .25s ease-out}}@keyframes lt-pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}',
+    '[data-feedback]{display:flex;gap:12px;align-items:center;font-weight:600}[data-feedback]:empty{min-height:0;margin:0;padding:0}[data-feedback].ok:not(:empty)::before{content:"\\2713";content:"\\2713"/"";background:var(--ok)}',
+    '[data-feedback].warn:not(:empty)::before{content:"\\21bb";content:"\\21bb"/"";background:var(--warn)}[data-feedback][data-missed]:not(:empty)::before{content:"i";content:"i"/""}',
+    '.progress{height:10px;border-radius:5px;background:var(--line);overflow:hidden;margin:6px 0 0}.progress span{display:block;height:100%;background:var(--accent)}',
+    // The end screen: a star for finishing (whatever the score), and each activity's own result when there are several.
+    '.hero{text-align:center}.done-star{position:relative;display:block;width:84px;height:84px;margin:0 auto 8px;border-radius:50%;background:var(--soft)}',
+    '.done-star::before,.done-star::after{content:"";position:absolute;inset:11px;background:var(--ink);clip-path:polygon(50% 2%,62% 36%,98% 37%,69% 59%,80% 95%,50% 74%,20% 95%,31% 59%,2% 37%,38% 36%)}.done-star::after{inset:15px;background:#f6b400}',
+    '.tally{list-style:none;padding:0;margin:16px 0;display:grid;gap:8px}.tally li{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 12px;padding:10px 14px;border-radius:12px;background:var(--soft)}',
     'label{display:block;margin:12px 0 4px;font-weight:600}input{font:inherit;width:100%;max-width:360px;min-height:48px;padding:8px 12px;border-radius:10px;border:2px solid var(--line);background:var(--card);color:var(--ink)}',
     '.about ul{margin:0;padding-inline-start:20px}.about li{margin:8px 0;overflow-wrap:anywhere}',
     '.muted{color:var(--muted)}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}',
     '@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}',
     // "hidden" wins over every display rule (a placed tile is an li.row: .row{display:flex} kept it on screen).
     '[hidden]{display:none!important}summary{cursor:pointer;min-height:48px;padding:12px 0;font-weight:600}',
+    // Hear all: the choice being heard is outlined and shows its number. No movement, so nothing to turn off for reduced motion.
+    '[data-hearing]{position:relative;outline:4px solid var(--accent);outline-offset:2px}[data-hearing]::before{content:attr(data-hearing);position:absolute;top:-14px;inset-inline-start:-10px;min-width:30px;height:30px;padding:0 6px;border-radius:15px;background:var(--accent);color:var(--accent-ink);font-weight:700;line-height:30px;text-align:center}',
+    '@media (forced-colors:active){[data-hearing]{outline-color:Highlight}[data-hearing]::before{forced-color-adjust:none;background:Highlight;color:HighlightText}}.hear-now{min-height:1.5em;margin:0}[data-tool-group=choices] .lt-l,[data-tool-group=colors] .lt-l{flex-basis:100%}[data-hear-row]{margin:12px 0}',
+    // Phones: a choice's two buttons side by side (half the scrolling), and the next-step button across the card.
+    '@media (max-width:480px){.choice:not([style]){flex-direction:row;align-items:stretch}.choice:not([style])>button{flex:1 1 0;min-width:0}[data-next],[data-practice-next]{width:100%}}',
     // Reading tools (takeHomeTools): attributes on <html> set the size, the colors (the variables above) and the spacing.
     '[data-lt-size="1"]{font-size:125%}[data-lt-size="2"]{font-size:150%}[data-lt-size] body{font-size:1.125rem}[data-lt-size] button,[data-lt-size] .letters{overflow-wrap:anywhere}',
-    '[data-lt-colors="1"]{--bg:#000;--card:#000;--ink:#fff;--muted:#fff;--accent:#ffeb3b;--accent-ink:#000;--ok:#7dff8f;--ok-bg:#000;--warn:#ffeb3b;--warn-bg:#000;--line:#fff;--focus:#00e5ff}[data-lt-colors="1"] .card,[data-lt-colors="1"] .status{border:3px solid}',
-    '[data-lt-colors="2"]{--bg:#f4ead2;--card:#fdf6e3;--ink:#2a2216;--muted:#4d4230;--accent:#4b3f99;--accent-ink:#fff;--ok:#1f5e33;--ok-bg:#e4efd5;--warn:#7a4100;--warn-bg:#f8e2c0;--line:#bfae86;--focus:#a33f00}',
+    '[data-lt-colors="1"]{--bg:#000;--card:#000;--ink:#fff;--muted:#fff;--accent:#ffeb3b;--accent-ink:#000;--ok:#7dff8f;--ok-bg:#000;--warn:#ffeb3b;--warn-bg:#000;--line:#fff;--focus:#00e5ff;--soft:#000}[data-lt-colors="1"] .card,[data-lt-colors="1"] .status{border:3px solid}',
+    '[data-lt-colors="2"]{--bg:#f4ead2;--card:#fdf6e3;--ink:#2a2216;--muted:#4d4230;--accent:#4b3f99;--accent-ink:#fff;--ok:#1f5e33;--ok-bg:#e4efd5;--warn:#7a4100;--warn-bg:#f8e2c0;--line:#bfae86;--focus:#a33f00;--soft:#f6ebcf}',
+    // 2026-11-12: themes a student may choose (Dark whatever the device says, Ocean, Sunny, Forest); each passes AA in every state (tests/packets_learner_tools.test.js).
+    '[data-lt-colors="3"]{--bg:#141824;--card:#1f2535;--ink:#eef1f8;--muted:#b7bfd2;--accent:#a9a7ff;--accent-ink:#141824;--ok:#8fe0ab;--ok-bg:#163423;--warn:#ffc77a;--warn-bg:#3a2a12;--line:#3a4258;--focus:#ffb070;--soft:#283048;color-scheme:dark}',
+    '[data-lt-colors="4"]{--bg:#e3f1f8;--card:#fff;--ink:#0e2a3b;--muted:#3a5464;--accent:#0b5c86;--accent-ink:#fff;--ok:#17663a;--ok-bg:#e1f3e8;--warn:#8a4500;--warn-bg:#fff0da;--line:#a6c7d8;--focus:#b54700;--soft:#e2f1f9}',
+    '[data-lt-colors="5"]{--bg:#fff3d1;--card:#fffdf7;--ink:#2b2112;--muted:#594827;--accent:#a63f00;--accent-ink:#fff;--ok:#1b6636;--ok-bg:#e2f3e5;--warn:#8a3a00;--warn-bg:#ffe8c2;--line:#dcc386;--focus:#1f4fc4;--soft:#fff0c4}',
+    '[data-lt-colors="6"]{--bg:#e7f2e4;--card:#fbfef9;--ink:#17291b;--muted:#3e5342;--accent:#1f5f55;--accent-ink:#fff;--ok:#1b6331;--ok-bg:#dcf0dc;--warn:#844300;--warn-bg:#fdefd6;--line:#a9c7a6;--focus:#b54700;--soft:#e3f0e2}',
+    // Each color choice shows its color.
+    '[data-tool^=colors-]::before{content:"";display:inline-block;width:.8em;height:.8em;margin-inline-end:.4em;border-radius:50%;border:1px solid var(--ink);vertical-align:-.1em;background:linear-gradient(90deg,#fff 50%,#3d3aa8 50%)}[data-tool=colors-1]::before{background:linear-gradient(90deg,#000 50%,#ffeb3b 50%)}',
+    '[data-tool=colors-2]::before{background:#e8d6a8}[data-tool=colors-3]::before{background:#1f2535}[data-tool=colors-4]::before{background:#0b5c86}[data-tool=colors-5]::before{background:#f6b400}[data-tool=colors-6]::before{background:#1f5f55}',
     '[data-lt-spacing] main *{line-height:1.5!important;letter-spacing:.12em!important;word-spacing:.16em!important}[data-lt-spacing] main p{margin-bottom:2em!important}',
-    '.lt-bar{float:right;margin:0 0 8px 8px}[dir=rtl] .lt-bar{float:left}.lt-panel{clear:both}.lt-h,.lt-l{font-weight:700;margin:0;min-width:7em}@media (max-width:480px){.lt-g .lt-l{flex-basis:100%}}',
+    '.lt-bar{display:flex;justify-content:flex-end;margin:0 0 8px}.lt-panel{clear:both}.lt-h,.lt-l{font-weight:700;margin:0;min-width:7em}@media (max-width:480px){.lt-g .lt-l{flex-basis:100%}}',
     '.lt-g{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0}.lt-g p{flex-basis:100%;margin:0}.lt-panel [aria-pressed=true]{background:var(--accent);color:var(--accent-ink)}',
     '.lt-read{position:relative}.lt-shade,.lt-line{position:absolute;left:0;right:0;pointer-events:none}.lt-shade{top:0;bottom:0}.lt-line{outline:3px solid var(--accent);border-radius:6px}',
     '.lt-lens{position:fixed;z-index:1;width:180px;height:180px;border:3px solid;border-radius:50%;overflow:hidden;pointer-events:none;background:var(--bg);box-shadow:0 4px 16px #0006}.lt-lens>main{position:absolute;left:0;top:0;margin:0;max-width:none;transform-origin:0 0}',
     '.lt-grip{position:fixed;z-index:2;padding:0;border-radius:50%;background:var(--accent);color:var(--accent-ink);pointer-events:none}.lt-grip[data-touch]{pointer-events:auto;touch-action:none}',
-    '@media (forced-colors:active){[data-tool-group=colors]{display:none!important}.lt-line,.lt-panel [aria-pressed=true]{outline:3px solid Highlight}}@media print{.lt-bar,.lt-panel,.lt-lens{display:none!important}}',
+    '@media (forced-colors:active){[data-tool-group=colors]{display:none!important}.lt-line,.lt-panel [aria-pressed=true]{outline:3px solid Highlight}.choice.right::after,.progress span{forced-color-adjust:none;background:Highlight;color:HighlightText}}@media print{.lt-bar,.lt-panel,.lt-lens{display:none!important}}',
   ].join('\n');
 
   // ---------------------------------------------------------------------------
@@ -4449,7 +5370,7 @@
   // ---------------------------------------------------------------------------
   function takeHomeTools(o) {
     var doc = o.doc, win = o.win, L = o.L, el = o.el, page = o.page, html = doc.documentElement;
-    var NAMES = { size: ['', 'textLarger', 'textLargest'], colors: ['', 'contrastHigh', 'contrastSoft'], spacing: ['', 'spacingWide'], focus: ['', 'readingFocus'], lens: ['', 'magnifier'] };
+    var NAMES = { size: ['', 'textLarger', 'textLargest'], colors: ['', 'contrastHigh', 'contrastSoft', 'colorsDark', 'colorsOcean', 'colorsSunny', 'colorsForest'], spacing: ['', 'spacingWide'], focus: ['', 'readingFocus'], lens: ['', 'magnifier'], choices: ['', 'readChoices'] };
     var KEYS = Object.keys(NAMES), p = {}, groups = {}, rec = null, text = null, at = 0, painted = '';
     var clean = function (raw) {
       KEYS.forEach(function (k) { var v = Math.floor(Number(raw && raw[k])) || 0; p[k] = v > 0 && v < NAMES[k].length ? v : 0; });
@@ -4467,10 +5388,12 @@
       on: { keydown: function (e) { if (/^Esc/.test(e.key)) { e.preventDefault(); back(); } } } }, [
       el('p', { id: 'lt-title', class: 'lt-h', text: L.tools_button }),
       group('size', L.tools_size, [L.tools_normal, L.tools_size_1, L.tools_size_2]),
-      group('colors', L.tools_colors, [L.tools_colors_0, L.tools_colors_1, L.tools_colors_2]),
+      group('colors', L.tools_colors, [L.tools_colors_0, L.tools_colors_1, L.tools_colors_2, L.tools_colors_3, L.tools_colors_4, L.tools_colors_5, L.tools_colors_6]),
       group('spacing', L.tools_spacing, [L.tools_normal, L.tools_spacing_1]),
       group('focus', L.tools_focus, [L.tools_off, L.tools_on], L.tools_focus_hint),
       group('lens', L.tools_lens, [L.tools_off, L.tools_on], L.tools_lens_hint),
+      // Read the choices when a question opens (hearAllIn): shown only in a file whose choices can be read (o.choices).
+      group('choices', L.tools_choices, [L.tools_off, L.tools_on], L.tools_choices_hint),
       el('div', { class: 'row' }, [
         el('button', { type: 'button', 'data-tools-reset': '', on: { click: function () { clean(); apply(); o.store(); } }, text: L.tools_reset }),
         el('button', { type: 'button', 'data-tools-close': '', on: { click: back }, text: L.tools_close })]),
@@ -4480,7 +5403,8 @@
       [el('span', { 'aria-hidden': 'true', text: String.fromCharCode(0x2725) })]);
     var lens = el('div', { class: 'lt-lens', 'aria-hidden': 'true', hidden: true, 'data-lens': '' });
     page.insertBefore(panel, page.firstChild);
-    page.insertBefore(el('div', { class: 'lt-bar' }, [aa, grip]), panel);
+    var bar = el('div', { class: 'lt-bar' }, [aa, grip]);
+    page.insertBefore(bar, panel);
     doc.body.appendChild(lens);
     var P = null, touch = false, copy = null, queued = false, drag = null;
     var place = function () {
@@ -4564,7 +5488,7 @@
       if (!rec) return;
       var s = rec.supports = rec.supports && typeof rec.supports === 'object' ? rec.supports : {}, changed = false, forced = false;
       try { forced = win.matchMedia('(forced-colors: active)').matches; } catch (_) {}
-      [NAMES.size[p.size], forced ? '' : NAMES.colors[p.colors], NAMES.spacing[p.spacing], text ? NAMES.focus[p.focus] : '', NAMES.lens[p.lens]].forEach(function (n) {
+      [NAMES.size[p.size], forced ? '' : NAMES.colors[p.colors], NAMES.spacing[p.spacing], text ? NAMES.focus[p.focus] : '', NAMES.lens[p.lens], o.choices ? NAMES.choices[p.choices] : ''].forEach(function (n) {
         if (n && !s[n]) { s[n] = 1; changed = true; }
       });
       if (changed) o.save();
@@ -4615,10 +5539,14 @@
     });
     win.addEventListener('scroll', queue, true);
     win.addEventListener('resize', function () { copy = null; queue(); });
+    groups.choices.box.hidden = !o.choices;
     clean(o.prefs);
     apply();
     return {
       item: function (r) { rec = r && !r.done ? r : null; scan(); mark(); },
+      // Each screen puts the tools right after its heading, so Tab from the heading (where the focus goes) reaches them.
+      dock: function (h) { h.parentNode.insertBefore(bar, h.nextSibling); h.parentNode.insertBefore(panel, bar.nextSibling); },
+      autoRead: function () { return !!o.choices && p.choices === 1; },
       // null: every tool at its first setting.
       prefs: function () {
         var out = null;
@@ -4638,6 +5566,12 @@
     var storageKey = 'alloflow-take-home:' + lesson.lessonId + ':' + lesson.revision;
     var manifest = {};
     try { manifest = JSON.parse(doc.getElementById('packet-manifest').textContent) || {}; } catch (_) {}
+    // A teacher can hand out the file with the label filled in: file.html#learner=BlueHeron7, or made for one student
+    // (the code name in the manifest; the link's wins). Each code name keeps its own progress on a shared device.
+    var givenName = '';
+    try { var hashed = /(?:^#|&)learner=([^&]*)/.exec(String(win.location.hash || '')); if (hashed) givenName = decodeURIComponent(hashed[1]).trim().slice(0, 60); } catch (_) {}
+    if (!givenName && typeof manifest.learner === 'string') givenName = manifest.learner.trim().slice(0, 60);
+    if (givenName) storageKey += ':' + encodeURIComponent(givenName.toLowerCase());
     var sendNow = kit.mailbox ? kit.mailbox(win, lesson.submit) : null;
     var main = doc.getElementById('app');
     var live = doc.getElementById('live');
@@ -4666,12 +5600,22 @@
       return { name: '', index: 0, startedAt: null, finishedAt: null, savedFile: null, sent: null,
         items: items.map(function (e) { return { itemId: e.item.id, activity: e.activity, responses: [], attempts: 0, firstTry: false, correct: false, done: false, supports: {} }; }) };
     };
+    // Opened on the Packets site's "Open a practice file" page, the file runs in a sandboxed frame with no storage of its
+    // own. That page puts what it keeps for this file in #packet-store-snapshot, keeps each change it is sent and saves
+    // the results files. Used only when the storage refuses, in a frame, with that block there.
+    var link;
+    var linked = function () {
+      if (link !== undefined) return link;
+      link = null;
+      try { var snap = win.parent !== win && JSON.parse(doc.getElementById('packet-store-snapshot').textContent); if (snap && snap.kind === 'alloflow-packet-store' && snap.items && typeof snap.items === 'object') link = { items: snap.items, tell: function (message) { win.parent.postMessage(message, '*'); } }; } catch (_) {}
+      return link; };
     // The one storage item (put(null) removes it). It also keeps the reading tools: state.tools, or alone before Start.
     var put = function (value) {
       try {
         if (value) win.localStorage.setItem(storageKey, JSON.stringify(value)); else win.localStorage.removeItem(storageKey);
         storeOk = true;
       } catch (_) { storeOk = false; }
+      if (!storeOk && linked()) { storeOk = true; link.items[storageKey] = value ? JSON.stringify(value) : null; link.tell({ kind: 'alloflow-packet-store', key: storageKey, value: link.items[storageKey] }); }
     };
     var save = function () {
       var kept = tools && state ? tools.prefs() : null;
@@ -4680,7 +5624,7 @@
     };
     var stored = function () {
       try {
-        var raw = win.localStorage.getItem(storageKey);
+        var raw; try { raw = win.localStorage.getItem(storageKey); } catch (error) { if (!linked()) throw error; raw = typeof link.items[storageKey] === 'string' ? link.items[storageKey] : null; }
         var parsed = raw && JSON.parse(raw);
         return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
       } catch (_) { storeOk = false; }
@@ -4769,6 +5713,78 @@
         return chain.then(function () { return step(id); });
       }, Promise.resolve(step(list[0])));
     };
+    // Hear all (ctx.hearAll): one button that plays or reads each answer choice in turn. The choice being heard is
+    // outlined with its number, and the line beside the button says it (politely, to screen readers). Pressing the
+    // button again stops it, and so does any other button of the item, the keys 1-9, R and Esc, or a new screen. It
+    // starts by itself only with the reading tool "Read the choices" on, and only after the student has pressed
+    // something in this file: iPad and iPhone play sound only after a press. spec = { list: [{ box, say }] or a
+    // function giving it (say() starts one choice and returns a Promise for its end), label, name, support, before,
+    // stop (ends what say started), ready (false: not now), auto (false: the opening already reads the choices) }.
+    var pressed = false, hearNow = null;
+    ['pointerdown', 'keydown', 'click'].forEach(function (name) { doc.addEventListener(name, function () { pressed = true; }, true); });
+    var hearAllIn = function (area, support) {
+      return function (spec) {
+        var s = spec || {}, run = 0, on = false, owner = screenId;
+        var label = s.label || L.hear_all;
+        var icon = el('span', { 'aria-hidden': 'true' }), words = el('span', {});
+        var button = el('button', { type: 'button', 'data-hear-all': '', on: { click: function () { if (on) halt(); else start(true); } } }, [icon, words]);
+        // The button says what a press does now: Hear all, or Stop.
+        var paint = function () {
+          icon.textContent = String.fromCharCode(on ? 0x25A0 : 0x25B6) + ' ';
+          words.textContent = on ? L.hear_all_stop : label;
+          if (!on && (s.name || !s.label)) button.setAttribute('aria-label', s.name || L.hear_all_name); else button.removeAttribute('aria-label');
+        };
+        var note = el('p', { class: 'hear-now muted', 'aria-live': 'polite', 'data-hear-now': '' });
+        var clear = function () { var all = area.querySelectorAll('[data-hearing]'); for (var i = 0; i < all.length; i++) all[i].removeAttribute('data-hearing'); };
+        var halt = function () {
+          if (!on) return;
+          on = false; run++;
+          clear(); note.textContent = '';
+          paint();
+          try { if (s.stop) s.stop(); } catch (_) {}
+          stop();
+        };
+        var start = function (asked) {
+          if (on || owner !== screenId || !area.isConnected) return;
+          if (typeof s.ready === 'function' && !s.ready()) return;
+          var list = (typeof s.list === 'function' ? s.list() : s.list || []).filter(function (x) { return x && x.box && typeof x.say === 'function'; });
+          if (!list.length) return;
+          try { if (s.before) s.before(); } catch (_) {}
+          stop();
+          on = true;
+          var mine = ++run, i = 0;
+          if (asked && support) support(s.support || 'allChoiceListens');
+          paint();
+          var next = function () {
+            if (mine !== run) return;
+            if (owner !== screenId || !area.isConnected) { on = false; return; }
+            clear();
+            if (i >= list.length) { halt(); return; }
+            var entry = list[i++], n = entry.n || i;
+            entry.box.setAttribute('data-hearing', String(n));
+            note.textContent = fmt(L.hear_all_now, { n: n, total: entry.total || list.length });
+            var said;
+            try { said = entry.say(); } catch (_) { said = null; }
+            Promise.resolve(said).then(function () { if (mine === run) win.setTimeout(next, 450); });
+          };
+          // The first choice starts inside the press that asked for it (Safari).
+          next();
+        };
+        area.addEventListener('click', function (e) { var b = e.target && e.target.closest ? e.target.closest('button') : null; if (on && b && b !== button) halt(); }, true);
+        doc.addEventListener('keydown', function (e) { if (on && /^([1-9rR]|Esc|Escape)$/.test(String(e.key || ''))) halt(); }, true);
+        paint();
+        var made = { button: button, note: note, node: el('div', { class: 'row', 'data-hear-row': '' }, [button, note]), start: start, halt: halt, auto: s.auto !== false };
+        hearNow = made;
+        return made;
+      };
+    };
+    // After an item opens: with "Read the choices" on, its Hear all starts once the opening clips are over.
+    var autoHear = function (opening) {
+      var h = hearNow;
+      if (!h || !h.auto || !pressed || !tools || !tools.autoRead()) return;
+      if (!opening) { h.start(false); return; }
+      opening.then(function (ok) { if (ok !== false && hearNow === h) h.start(false); });
+    };
     var keyItem = null;
     // Keyboard on an item screen: 1-9 picks that answer choice (the answer
     // button of the nth li.choice the adapter drew), R plays the question again.
@@ -4799,10 +5815,12 @@
       stop();
       clockStop();
       keyItem = null;
+      hearNow = null;
       main.textContent = '';
       // hideHeading: the page title already shows it; screen readers still hear it.
       var h = el('h2', hideHeading ? { tabindex: '-1', class: 'sr', text: heading } : { tabindex: '-1', text: heading });
       main.appendChild(h);
+      if (tools && tools.dock) tools.dock(h);
       nodes.forEach(function (n) { if (n) main.appendChild(n); });
       h.focus();
     };
@@ -4814,7 +5832,7 @@
       var texts = [
         L.about_what,
         fmt(L.about_engine, { engine: m.engine || '' }),
-        fmt(L.about_stores, { key: (m.stores && m.stores[0] && m.stores[0].key) || storageKey }),
+        fmt(L.about_stores, { key: storageKey }),
         fmt(L.about_saves, { csv: (saves[0] && saves[0].file) || '.csv', json: (saves[1] && saves[1].file) || '.json' }),
         L.about_records,
         net ? fmt(L.about_mailbox, { host: net }) : L.about_no_network,
@@ -4838,9 +5856,7 @@
     var renderStart = function () {
       var prior = load();
       if (check && check.resume(prior)) return;
-      // A teacher can hand out the file with the label filled in: file.html#learner=BlueHeron7
-      var given = '';
-      try { var hashed = /(?:^#|&)learner=([^&]*)/.exec(String(win.location.hash || '')); if (hashed) given = decodeURIComponent(hashed[1]).trim().slice(0, 60); } catch (_) {}
+      var given = givenName;
       var nameInput = el('input', { id: 'learner-name', type: 'text', autocomplete: 'off', maxlength: '60' });
       var resumable = prior && prior.index > 0 && !prior.finishedAt;
       // No name: ask once (per opening of the file), gently; a name stays optional.
@@ -4890,9 +5906,10 @@
       var rec = state.items[state.index];
       var render = renders[entry.activity];
       var feedback = statusLine('', '');
+      feedback.setAttribute('data-feedback', '');
       var area = el('div', {});
       var handle = null;
-      var nextButton = el('button', { class: 'primary', type: 'button', hidden: true, on: { click: function () { state.index++; save(); renderItem(); } },
+      var nextButton = el('button', { class: 'primary', type: 'button', hidden: true, 'data-next': '', on: { click: function () { state.index++; save(); renderItem(); } },
         text: state.index === items.length - 1 ? L.finish : L.next });
       var finishPractice = function () {
         clockStop();
@@ -4913,6 +5930,7 @@
       var ctx = {
         root: area, el: el, fmt: fmt, L: L, item: item, matches: matches, showLetters: !!lesson.showLetters,
         play: play, playAll: playAll, stop: stop, announce: announce,
+        hearAll: hearAllIn(area, function (name) { ctx.support(name); }),
         image: function (id) { return (id && lesson.images && lesson.images[id]) || null; },
         ordinal: function (p) { return (L.ordinals && L.ordinals[p]) || String(p + 1); },
         support: function (name) { rec.supports[name] = (rec.supports[name] || 0) + 1; save(); },
@@ -4944,17 +5962,22 @@
           }
           if (rec.attempts < max) {
             feedback.className = 'status warn'; feedback.textContent = o.retryText || L.try_again;
+            // On a phone the line can be below the choices, out of sight: bring it just into view (no animation).
+            try { if (typeof feedback.scrollIntoView === 'function') feedback.scrollIntoView({ block: 'nearest' }); } catch (_) {}
             save();
             play(lesson.feedback.retry);
             return 'retry';
           }
-          feedback.className = 'status warn'; feedback.textContent = o.missedText || L.missed;
+          feedback.className = 'status warn'; feedback.textContent = o.missedText || L.missed; feedback.setAttribute('data-missed', '');
           finishItem(false);
           playAll(item.answerAudio || []);
           return 'missed';
         },
       };
+      // Where the student is in the whole file, when it has more than one activity.
       screen(fmt(L.item_of, { activity: activityTitle(entry.activity), n: entry.n, total: entry.total }), [
+        entry.total < items.length ? el('p', { class: 'muted', 'data-progress': '', style: 'margin:0', text: fmt(L.progress_all, { n: state.index + 1, total: items.length }) }) : null,
+        el('div', { class: 'progress', 'aria-hidden': 'true' }, [el('span', { style: 'width:' + Math.round(100 * (state.index + 1) / items.length) + '%' })]),
         el('div', { class: 'card' }, [area, feedback, nextButton]),
       ]);
       keyItem = { area: area, item: item, replay: function () { ctx.support('questionReplays'); } };
@@ -4967,7 +5990,7 @@
         rec.shown = true; rec.ms = 0;
         clockStart(rec);
         save();
-        playAll(item.introAudio || []);
+        autoHear(item.introAudio && item.introAudio.length ? playAll(item.introAudio) : null);
       }
     };
 
@@ -5045,6 +6068,8 @@
         text.focus();
       };
       var saveAs = function (name, body, type) {
+        // On the "Open a practice file" page, that page saves the file (see linked); the rest is as below.
+        if (link) { link.tell({ kind: 'alloflow-packet-save', name: name, type: type, text: body }); state.savedFile = name; save(); if (!state.sent) { fileStatus.className = 'status ok'; fileStatus.textContent = fmt(L.saved_file, { file: name }); announce(fileStatus.textContent); } return; }
         var a = el('a', { download: name });
         if (!('download' in a) || !win.Blob || !win.URL || !win.URL.createObjectURL) { showText(L.copy_results, body.charCodeAt(0) === 0xFEFF ? body.slice(1) : body); return; }
         var url = win.URL.createObjectURL(new win.Blob([body], { type: type }));
@@ -5124,10 +6149,18 @@
         confirmBox.hidden = false; confirmText.focus();
       } }, text: L.practice_again });
       if (check) { check.finish({ send: sendButton, save: saveButton, csv: csvButton, copy: copyButton, more: more, about: info, status: fileStatus, copyBox: copyBox, note: closedNote || (sendButton ? L.send_note : L.not_sent) }); return; }
+      // A star for finishing (drawn by the style rules), and each activity's own result when the file has several.
+      var at = 0, tally = lesson.blocks.map(function (b) {
+        var t = 0, f = 0;
+        b.items.forEach(function () { var r = state.items[at++]; if (r && !r.practice && b.activity !== 'letter_tracing') { t++; if (r.firstTry) f++; } });
+        return t ? el('li', {}, [el('b', { text: activityTitle(b.activity) }), el('span', { text: fmt(L.done_summary, { first: f, total: t }) })]) : null;
+      }).filter(Boolean);
       screen(L.done_title, [
         el('div', { class: 'card' }, [
-          el('p', { class: 'letters', text: fmt(L.done_summary, { first: s.firstTry, total: s.items }) }),
-          s.afterRetry ? el('p', { text: fmt(L.done_retry, { retry: s.afterRetry }) }) : null,
+          el('div', { class: 'hero' }, [el('span', { class: 'done-star', 'aria-hidden': 'true' }),
+            el('p', { class: 'letters', text: fmt(L.done_summary, { first: s.firstTry, total: s.items }) }),
+            s.afterRetry ? el('p', { text: fmt(L.done_retry, { retry: s.afterRetry }) }) : null]),
+          tally.length > 1 ? el('ul', { class: 'tally' }, tally) : null,
           el('div', { class: 'row' }, [sendButton, csvButton, againButton, info.button]),
           more,
           confirmBox,
@@ -5140,10 +6173,13 @@
     };
     // The reading tools, before the check's flow: their keys come first.
     var tools = kit.tools ? kit.tools({ doc: doc, win: win, L: L, el: el, page: doc.querySelector('main') || main.parentNode, app: main,
-      prefs: (stored() || {}).tools, store: function () { storePrefs(); }, save: function () { save(); } }) : null;
+      prefs: (stored() || {}).tools, store: function () { storePrefs(); }, save: function () { save(); },
+      // Read the choices: in a file whose choices are read by the device voice, or whose opening does not play its sound choices.
+      choices: lesson.blocks.some(function (b) { return /^(isolation|segmentation|mapping)$/.test(b.activity) || b.items.some(function (it) { return it.read === true; }); }) }) : null;
     // A check (lesson.mode 'probe') brings its own flow in kit.check; a practice file has none.
     var check = kit.check ? kit.check({ doc: doc, win: win, lesson: lesson, L: L, kit: kit, items: items, renders: renders, matches: matches, el: el, fmt: fmt, announce: announce,
       screen: screen, statusLine: statusLine, fresh: fresh, save: save, now: now, clockStart: clockStart, clockStop: clockStop, play: play, playAll: playAll, stop: stop,
+      hearAllIn: hearAllIn, autoHear: autoHear,
       state: function (next) { if (next !== undefined) state = next; return state; }, results: function () { return resultFile(); },
       renderStart: function () { renderStart(); }, renderFinish: function () { renderFinish(); } }) : null;
     renderStart();
@@ -5329,10 +6365,13 @@
       else { score = Math.round(digitsCorrect / Math.max(1 / 60, elapsed / 60)); prorated = early; }
     } else score = itemsCorrect;
     var tenth = function (ms) { return Math.round(Math.max(0, Number(ms) || 0) / 100) / 10; };
-    return { measure: String(m.measure || ''), score: score, scoreUnit: unit, digitsCorrect: hasDigits ? digitsCorrect : null, digitsPossible: hasDigits ? digitsPossible : null,
+    var out = { measure: String(m.measure || ''), score: score, scoreUnit: unit, digitsCorrect: hasDigits ? digitsCorrect : null, digitsPossible: hasDigits ? digitsPossible : null,
       itemsCorrect: itemsCorrect, itemsAttempted: itemsAttempted, timeLimitS: limit, elapsedS: tenth(elapsed * 1000), hiddenS: tenth(t.hiddenMs), completion: completion,
       prorated: prorated, noScoreReason: why, scoringVersion: Number(m.scoringVersion) || 1, formVersion: m.formVersion == null ? '' : m.formVersion,
       attempt: Math.max(1, Math.floor(Number(t.attempt)) || 1), flags: (Array.isArray(t.flags) ? t.flags : []).map(String) };
+    // Untimed (an accommodation): said in the score, with the form's usual limit, so no reader takes it for a timed result.
+    if (m.untimed === true && limit === null) { out.untimed = true; out.usualTimeLimitS = Number(m.usualTimeLimitS) > 0 ? Number(m.usualTimeLimitS) : null; }
+    return out;
   }
 
   // Seal a check for the file: every item goes through its adapter's prepare
@@ -5421,7 +6460,8 @@
     };
     // The reading tools' names in the supports (takeHomeTools), with the label words the teacher sees.
     var TOOLS = { textLarger: ['tools_size', 'tools_size_1'], textLargest: ['tools_size', 'tools_size_2'], contrastHigh: ['tools_colors', 'tools_colors_1'],
-      contrastSoft: ['tools_colors', 'tools_colors_2'], spacingWide: ['tools_spacing', 'tools_spacing_1'], readingFocus: ['tools_focus'], magnifier: ['tools_lens'] };
+      contrastSoft: ['tools_colors', 'tools_colors_2'], colorsDark: ['tools_colors', 'tools_colors_3'], colorsOcean: ['tools_colors', 'tools_colors_4'], colorsSunny: ['tools_colors', 'tools_colors_5'],
+      colorsForest: ['tools_colors', 'tools_colors_6'], spacingWide: ['tools_spacing', 'tools_spacing_1'], readingFocus: ['tools_focus'], magnifier: ['tools_lens'] };
     var answerOf = function (item) { return kit.codec.unscramble(item.key, meta.salt, item.id); };
     var markOf = function (entry, answer, response) {
       var scorer = kit.scorers && kit.scorers[entry.activity];
@@ -5546,6 +6586,7 @@
     var ctxFor = function (entry, rec, area, practice, answer) {
       return { root: area, el: el, fmt: fmt, L: L, item: entry.item, matches: api.matches, showLetters: !!lesson.showLetters, check: true, practice: practice,
         announce: api.announce, play: api.play, playAll: api.playAll, stop: api.stop,
+        hearAll: api.hearAllIn(area, function (name) { rec.supports[name] = (rec.supports[name] || 0) + 1; api.save(); }),
         image: function (id) { return (id && lesson.images && lesson.images[id]) || null; },
         support: function (name) { rec.supports[name] = (rec.supports[name] || 0) + 1; api.save(); },
         isDone: function () { return rec.done; },
@@ -5562,6 +6603,7 @@
       rec.shown = true; rec.ms = 0;
       api.clockStart(rec);
       api.save();
+      api.autoHear(null);
       return handle;
     };
 
@@ -5571,6 +6613,7 @@
       var entry = items[s.index], rec = s.items[s.index];
       var n = items.slice(0, s.index).filter(function (e) { return e.item.practice; }).length + 1;
       var area = el('div', {}), feedback = api.statusLine('', ''), handle = null;
+      feedback.setAttribute('data-feedback', '');
       var next = el('button', { class: 'primary', type: 'button', hidden: true, 'data-practice-next': '', on: { click: function () { s.index++; api.save(); route(); } }, text: L.next });
       var answer = function (response) {
         var cur = current;
@@ -5584,6 +6627,7 @@
         current = null;
         api.save();
         feedback.className = 'status ' + (mark.correct ? 'ok' : 'warn');
+        if (!mark.correct) feedback.setAttribute('data-missed', '');
         feedback.textContent = mark.correct ? L.check_practice_right : fmt(L[entry.activity + '_practice_wrong'] || L.check_practice_wrong, { answer: right });
         if (handle && typeof handle.reveal === 'function') { try { handle.reveal(right); } catch (_) {} }
         next.hidden = false;
@@ -5753,7 +6797,7 @@
       // and wrong are never written to the saved state.
       result: function (out) {
         var s = S(), c = C();
-        out.packet.form = String(lesson.form || ''); out.packet.mode = 'probe';
+        out.packet.form = String(lesson.form || ''); out.packet.mode = 'check';
         var rows = [], practised = 0;
         out.items.forEach(function (it, i) {
           var entry = items[i], rec = s.items[i];
@@ -5771,7 +6815,8 @@
           if (practice && attempted) practised++;
           rows.push({ practice: practice, attempted: attempted, correct: it.correct, digitsCorrect: it.digitsCorrect, digitsPossible: it.digitsPossible });
         });
-        out.score = kit.score({ measure: meta.measure, scoreUnit: meta.scoreUnit, timeLimitS: lesson.timeLimitS, scoringVersion: meta.scoringVersion, formVersion: meta.formVersion }, rows,
+        out.score = kit.score({ measure: meta.measure, scoreUnit: meta.scoreUnit, timeLimitS: lesson.timeLimitS, scoringVersion: meta.scoringVersion, formVersion: meta.formVersion,
+          untimed: meta.untimed === true, usualTimeLimitS: meta.usualTimeLimitS }, rows,
           { elapsedMs: c.t0 ? (c.end || nowMs()) - c.t0 : 0, hiddenMs: c.hiddenMs, completion: c.completion, attempt: c.attempt, flags: Object.keys(c.flags).sort() });
         // The reading tools that were on during a scored item, in the panel's order.
         out.score.tools = Object.keys(TOOLS).filter(function (name) {
@@ -5787,6 +6832,8 @@
         var file = api.results(), sc = file.score;
         var answered = file.items.filter(function (it) { return !it.practice && it.attempts > 0 && it.flag !== 'skipped'; }).length;
         var lock = meta.lock && meta.lock.hash ? meta.lock : null;
+        // Without a teacher code anyone can open this screen, so it shows the score only: no answers
+        // and no right or wrong per item. The saved results file still has them, for the teacher.
         var review = function () {
           var f = api.results(), r = f.score;
           var cell = function (v) { return el('td', { text: v == null ? '' : String(v) }); };
@@ -5798,20 +6845,23 @@
             fmt(L.check_review_time, { elapsed: r.elapsedS, limit: r.timeLimitS ? fmt(L.check_review_limit, { seconds: r.timeLimitS }) : L.check_review_no_limit }),
             fmt(L.check_review_hidden, { hidden: r.hiddenS }),
             r.prorated ? L.check_review_prorated : '',
+            r.untimed ? fmt(L.check_review_untimed, { seconds: r.usualTimeLimitS || '' }) : '',
             fmt(L.check_review_attempt, { n: r.attempt }),
             r.flags.length ? fmt(L.check_review_flags, { flags: r.flags.map(function (name) { return L['check_flag_' + name] || name; }).join('; ') }) : '',
             r.tools && r.tools.length ? fmt(L.check_review_tools, { tools: r.tools.map(function (name) { return TOOLS[name].map(function (k) { return L[k]; }).join(': '); }).join('; ') }) : '',
             L.check_review_note,
+            lock ? '' : L.check_review_no_code,
           ];
-          var body = f.items.map(function (it) {
+          var body = !lock ? [] : f.items.map(function (it) {
             var result = it.practice ? L.check_r_practice : it.flag === 'skipped' ? L.check_r_skipped : it.flag === 'time_up' ? L.check_r_time_up
               : !it.attempts ? L.check_r_not_reached : it.correct ? L.check_r_right : L.check_r_wrong;
             return el('tr', {}, [cell(it.n), cell(it.word), cell((it.responses || []).join(' | ')), cell(result), cell(it.target), cell(Math.round((Number(it.ms) || 0) / 100) / 10)]);
           });
           api.screen(L.check_review_title, [
-            el('div', { class: 'card', 'data-review': '' }, [
+            el('div', { class: 'card', 'data-review': lock ? '' : 'score-only' }, [
               el('ul', {}, lines.filter(Boolean).map(function (text) { return el('li', { text: text }); })),
-              el('div', { class: 'scroll' }, [el('table', { class: 'review' }, [
+              // A table wider than a phone scrolls sideways: the box takes the focus so the arrow keys can scroll it.
+              !lock ? null : el('div', { class: 'scroll', tabindex: '0', role: 'region', 'aria-label': L.check_review_title }, [el('table', { class: 'review' }, [
                 el('thead', {}, [el('tr', {}, [L.check_col_n, L.check_col_prompt, L.check_col_response, L.check_col_result, L.check_col_expected, L.check_col_time]
                   .map(function (text) { return el('th', { scope: 'col', text: text }); }))]),
                 el('tbody', {}, body),
@@ -5927,7 +6977,7 @@
     var stem = packetCsv({ lessonTitle: lesson.title, learner: 'LEARNER' }).stem + '__DATE';
     var manifest = {
       kind: 'alloflow-packet-manifest', engine: PACKET_ENGINE, player: PLAYER, title: lesson.title,
-      packet: { id: lesson.lessonId, version: lesson.revision, form: probe ? str(lesson.form) : '', mode: probe ? 'probe' : 'practice' },
+      packet: { id: lesson.lessonId, version: lesson.revision, form: probe ? str(lesson.form) : '', mode: probe ? 'check' : 'practice' },
       what: probe ? 'A check in one file: one try for each item, and no right or wrong shown to the learner. It runs in a browser with no internet connection.'
         : 'A practice activity in one file. It runs in a browser with no internet connection.',
       stores: [{ where: 'localStorage', key: 'alloflow-take-home:' + lesson.lessonId + ':' + lesson.revision,
@@ -5944,13 +6994,15 @@
       var all = lesson.blocks.reduce(function (list, b) { return list.concat(b.items); }, []);
       manifest.check = { measure: str(lesson.check.measure), scoreUnit: str(lesson.check.scoreUnit), scoringVersion: lesson.check.scoringVersion || 1, formVersion: lesson.check.formVersion == null ? '' : lesson.check.formVersion,
         timeLimitS: Number(lesson.timeLimitS) > 0 ? Number(lesson.timeLimitS) : null, items: all.filter(function (it) { return !it.practice; }).length, practiceItems: all.filter(function (it) { return it.practice; }).length,
-        clock: Number(lesson.timeLimitS) > 0 ? 'the clock of the device; it does not pause when the page is hidden' : 'no time limit',
+        clock: Number(lesson.timeLimitS) > 0 ? 'the clock of the device; it does not pause when the page is hidden'
+          : lesson.check.untimed === true ? 'no time limit: untimed (an accommodation); the usual time limit is ' + (Number(lesson.check.usualTimeLimitS) || '?') + ' seconds' : 'no time limit',
         answers: 'scrambled (XOR with a SHA-256 keystream); this stops casual looking, not a determined person',
         teacherCode: lesson.check.lock ? 'set; kept only as a salted SHA-256 hash (' + lesson.check.lock.rounds + ' rounds); it locks the review screen and is not encryption' : 'none' };
       labels.no_script = labels.check_no_script || labels.no_script;
     }
     // dir comes from the app (labels.dir) so Arabic, Farsi, Urdu, Hebrew... files read right to left.
     var dir = labels.dir === 'rtl' || labels.dir === 'ltr' ? ' dir="' + labels.dir + '"' : '';
+    var openHere = typeof labels.open_here === 'string' ? labels.open_here : /^en(?:-|$)/i.test(String(labels.lang || 'en')) ? OPEN_HERE : '';
     return '<!doctype html><html lang="' + escapeHtml(labels.lang || 'en') + '"' + dir + '><head><meta charset="utf-8">'
       + '<meta name="viewport" content="width=device-width,initial-scale=1">'
       + '<meta http-equiv="Content-Security-Policy" content="' + csp + '">'
@@ -5958,7 +7010,7 @@
       + '<title>' + escapeHtml(lesson.title) + '</title><style>' + CSS + (probe ? '\n' + CHECK_CSS : '') + '</style></head>'
       // #app holds a plain note for previews that do not run the file (Drive, Classroom, iPad Files);
       // the player replaces it as soon as it starts.
-      + '<body><main><h1>' + escapeHtml(lesson.title) + '</h1><div id="app"><p data-no-script>' + escapeHtml(labels.no_script) + '</p></div><p id="live" class="sr" aria-live="polite"></p></main>'
+      + '<body><main><h1>' + escapeHtml(lesson.title) + '</h1><div id="app"><p data-no-script>' + escapeHtml(labels.no_script) + '</p>' + (openHere ? '<p data-no-script data-open-here>' + escapeHtml(openHere) + '</p>' : '') + '</div><p id="live" class="sr" aria-live="polite"></p></main>'
       + '<script type="application/json" id="packet-manifest">' + safeJson(manifest) + '</script>'
       + '<script>' + script + '</script></body></html>';
   }
@@ -5985,8 +7037,8 @@
         if (value !== null) integrity = value && value === str(saved.value) ? 'ok' : 'changed';
       } catch (_) { integrity = 'changed'; }
     }
-    // A check (packet.mode "probe"): its items also carry digits, and the file a score block.
-    var probe = !!data.packet && typeof data.packet === 'object' && data.packet.mode === 'probe';
+    // A check (packet.mode "check", or "probe" in a file saved before 2026-11-12): its items also carry digits, and the file a score block.
+    var probe = !!data.packet && typeof data.packet === 'object' && (data.packet.mode === 'check' || data.packet.mode === 'probe');
     var whole = function (v) { return v == null || v === '' || !Number.isFinite(Number(v)) ? null : Math.max(0, Math.min(1000000, Math.round(Number(v)))); };
     var items = data.items.slice(0, 200).map(function (it) {
       return { ms: Math.max(0, Math.min(86400000, Math.round(Number(it && it.ms) || 0))), flag: str(it && it.flag).slice(0, 40), activity: str((it && it.activity) || (data.schemaVersion === 1 ? 'isolation' : '')).slice(0, 40), word: str(it && it.word).slice(0, 60),
@@ -6029,7 +7081,7 @@
       items.forEach(function (r, i) { var it = data.items[i] || {}; r.digitsCorrect = whole(it.digitsCorrect); r.digitsPossible = whole(it.digitsPossible); });
       var sc = data.score && typeof data.score === 'object' ? data.score : {};
       var num = function (v) { return v == null || v === '' || !Number.isFinite(Number(v)) ? null : Number(v); };
-      result.mode = 'probe';
+      result.mode = 'probe'; // the reader's name for a check (both file values read as one)
       result.form = str(data.packet.form).slice(0, 40);
       // The score as the file states it. It is not covered by the integrity
       // value; the items are, and the counts can be made again from them.
@@ -6041,6 +7093,7 @@
         flags: (Array.isArray(sc.flags) ? sc.flags : []).slice(0, 8).map(function (f) { return str(f).slice(0, 40); }),
         // The reading tools on during a scored item (takeHomeTools).
         tools: (Array.isArray(sc.tools) ? sc.tools : []).slice(0, 8).map(function (f) { return str(f).slice(0, 40); }) };
+      if (sc.untimed === true) { result.score.untimed = true; result.score.usualTimeLimitS = num(sc.usualTimeLimitS); }
     }
     return { ok: true, integrity: integrity, result: result };
   }

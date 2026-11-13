@@ -66,8 +66,9 @@
   ];
 
   // ---------------------------------------------------------------------------
-  // Pictures (only with pictures: true): Mulberry Symbols, vendored in data/vendor/mulberry and
-  // handed in as `symbols` (word_sounds_symbols_en.js). Nothing is fetched here.
+  // Pictures (only with pictures: true): Mulberry Symbols, vendored in data/vendor/mulberry, and OpenMoji
+  // (data/vendor/openmoji) for words Mulberry has none for, handed in as `symbols` (word_sounds_symbols_en.js).
+  // Nothing is fetched here.
   // ---------------------------------------------------------------------------
   // The credit holds what the app's MULBERRY_CREDIT holds (alt_text_source.jsx): set, author,
   // license and the two addresses, written out because a practice file has no links. The app adds
@@ -76,9 +77,38 @@
   // file, hold no web address at all, and their checks look for that scheme.
   var MULBERRY_CREDIT = { set: 'Mulberry Symbols', author: 'Steve Lee', license: 'CC BY-SA 4.0',
     licenseUrl: 'creativecommons.org/licenses/by-sa/4.0/', url: 'mulberrysymbols.org' };
-  function pictureCredit() {
+  // words (optional): named when the file also holds pictures of another set.
+  function pictureCredit(words) {
     var c = MULBERRY_CREDIT;
-    return 'Pictures: ' + c.set + ' by ' + c.author + ', ' + c.license + ' (' + c.licenseUrl + '), ' + c.url;
+    return (words && words.length ? 'Pictures for ' + words.join(', ') + ': ' : 'Pictures: ') + c.set + ' by ' + c.author + ', ' + c.license + ' (' + c.licenseUrl + '), ' + c.url;
+  }
+  // The second set, OpenMoji (data/vendor/openmoji), for words Mulberry has no symbol for. A symbol from it
+  // says so (symbol.set === 'openmoji'). Its credit and notice are in a file only when one of its pictures is,
+  // and name the words that show one. The wording follows the project's own suggestion ("All emojis designed
+  // by OpenMoji - the open-source emoji and icon project. License: CC BY-SA 4.0"), for the emoji only.
+  var OPENMOJI_CREDIT = { set: 'OpenMoji', author: 'the OpenMoji project', license: 'CC BY-SA 4.0',
+    licenseUrl: 'creativecommons.org/licenses/by-sa/4.0/', url: 'openmoji.org' };
+  function openMojiCredit(words) {
+    var c = OPENMOJI_CREDIT;
+    return 'Pictures for ' + words.join(', ') + ': designed by ' + c.set + ' - the open-source emoji and icon project. License: ' + c.license + ' (' + c.licenseUrl + '), ' + c.url;
+  }
+  function openMojiNotice(words, version) {
+    var title = OPENMOJI_CREDIT.set + (version ? ' ' + version : '');
+    return [
+      title,
+      new Array(title.length + 1).join('='),
+      '',
+      'Emoji pictures designed by OpenMoji - the open-source emoji and icon project. License: CC BY-SA 4.0',
+      '',
+      'OpenMoji graphics are licensed under the Creative Commons Attribution-ShareAlike 4.0 International License.',
+      '',
+      'To view a copy of this license, visit creativecommons.org/licenses/by-sa/4.0/',
+      '',
+      'The pictures in this file for ' + words.join(', ') + ' are from that set (openmoji.org). They are a separate',
+      'work from the program in this file and stay under that license (CC BY-SA 4.0): you may copy and share them,',
+      'and change them, as long as you give this credit and share changed pictures under the same license.',
+      'The drawings are unchanged but for the space between their parts. Each one is stored inside this file as text.',
+    ].join('\n');
   }
   // Down to the license address this is data/vendor/mulberry/LICENSE.txt, word for word but for the
   // scheme of that address; the rest says what this file does with the pictures. Share-alike: they
@@ -98,6 +128,10 @@
     'change them, as long as you give this credit and share changed pictures under the same license.',
     'The drawings are unchanged. Each one is stored inside this file as text.',
   ].join('\n');
+  // The same notice for a file that also holds OpenMoji pictures: it names the words whose pictures are Mulberry's.
+  function mulberryNotice(words) {
+    return words && words.length ? MULBERRY_NOTICE.replace('The pictures in this file are from that set', 'The pictures in this file for ' + words.join(', ') + ' are from that set') : MULBERRY_NOTICE;
+  }
   // Why an SVG may not go into a file, or '' when it may. The symbols are vendored and were tested
   // when their data file was made; this tests each one again as it is written into a packet. A
   // drawing shown through <img> cannot run script or load anything, so every test is a second lock.
@@ -786,6 +820,18 @@
     });
     return { html: html.slice(0, from) + safeJson(manifest) + html.slice(to), done: true };
   }
+  // A student's code name, as a file may carry it: letters (any language), digits, spaces, . _ and -, at most 40.
+  // Nothing else, so "Look inside a file" never reads a code name as code.
+  function codeName(value) {
+    return (typeof value === 'string' ? value : '').normalize('NFC').replace(/[^\p{L}\p{M}\p{N} ._-]+/gu, '').replace(/\s+/g, ' ').trim().slice(0, 40).trim();
+  }
+  // The file with a code name in its manifest (key "learner"), which the file fills in when it opens. Only the
+  // data block changes; the script and its hash do not. buildPacket ends with exactly this, so a file made for
+  // one student is this function applied to the file made with no name.
+  function withCodeName(html, name) {
+    var clean = codeName(name);
+    return clean ? withCredits(html, { learner: clean }).html : html;
+  }
 
   // ---------------------------------------------------------------------------
   // buildPacket
@@ -862,7 +908,7 @@
     // picture in its place. Off (the default) leaves the rows without an image, and the file is what it
     // was before pictures existed.
     var wantPictures = opts.pictures === true && !!opts.symbols && typeof opts.symbols.get === 'function';
-    var pictureFiles = {}, pictureRefused = [];
+    var pictureFiles = {}, pictureSets = {}, pictureRefused = [];
     var teacherPicture = function (word) { return opts.pictures === true && own(mine.byWord, word) && mine.byWord[word].picture ? mine.byWord[word].picture : null; };
     var ownPictureShown = {};
     // The teacher's letters for each sound, where they gave them: Sound Mapping uses these, not the aligner's.
@@ -890,6 +936,7 @@
         if (why) { pictureRefused.push({ word: item.word, file: String(symbol.file || ''), reason: why }); return; }
         item.image = svgDataUri(symbol.svg);
         pictureFiles[item.word] = String(symbol.file || '');
+        pictureSets[item.word] = symbol.set === 'openmoji' ? 'openmoji' : 'mulberry';
       });
       rows.forEach(function (item) {
         item.activityItems = Object.fromEntries(Object.entries(item.activityItems || {}).filter(function (pair) { return activities.indexOf(pair[0]) >= 0; }));
@@ -982,9 +1029,18 @@
         (shown ? withPicture : withoutPicture).push(word);
         if (shown) (ownPictureShown[word] ? withOwnPicture : withSymbol).push(word);
       });
-      if (withSymbol.length) {
-        attributions.push(pictureCredit());
-        notices.push({ id: 'mulberry', name: MULBERRY_CREDIT.set, text: MULBERRY_NOTICE });
+      // Each set is credited, and its notice carried, only when one of its pictures is in the file. A file
+      // with pictures of both sets names the words of each; a file with one set's is what it always was.
+      var withOpenMoji = withSymbol.filter(function (word) { return pictureSets[word] === 'openmoji'; });
+      var withMulberry = withSymbol.filter(function (word) { return pictureSets[word] !== 'openmoji'; });
+      var omVersion = opts.symbols && opts.symbols.credits && opts.symbols.credits.openmoji && /^[\w.]{1,16}$/.test(String(opts.symbols.credits.openmoji.version || '')) ? String(opts.symbols.credits.openmoji.version) : '';
+      if (withMulberry.length) {
+        attributions.push(withOpenMoji.length ? pictureCredit(withMulberry) : pictureCredit());
+        notices.push({ id: 'mulberry', name: MULBERRY_CREDIT.set, text: withOpenMoji.length ? mulberryNotice(withMulberry) : MULBERRY_NOTICE });
+      }
+      if (withOpenMoji.length) {
+        attributions.push(openMojiCredit(withOpenMoji));
+        notices.push({ id: 'openmoji', name: OPENMOJI_CREDIT.set, text: openMojiNotice(withOpenMoji, omVersion) });
       }
       // The teacher's own material: which words carry it, in About this file, and each picture's credit.
       var ownFacts = null, ownManifest = null;
@@ -1006,7 +1062,7 @@
       }
       var manifest = {
         kind: 'alloflow-packet-build-manifest', builder: VERSION, seed: seed, title: title,
-        learnerLabel: opts.learnerLabel ? String(opts.learnerLabel).trim().slice(0, 60) : '',
+        learnerLabel: codeName(opts.learnerLabel),
         packet: lesson ? { id: lesson.lessonId, version: lesson.revision } : null,
         words: { asked: asked, used: usedWords },
         activities: { asked: askedActivities, built: Object.keys(byActivity).filter(function (id) { return byActivity[id] > 0; }) },
@@ -1035,6 +1091,14 @@
           pictureFacts.wordsWithTeacherPicture = withOwnPicture.length;
           if (!withSymbol.length) { delete pictureFacts.set; delete pictureFacts.version; delete pictureFacts.license; }
         }
+        // OpenMoji pictures: named apart; the Mulberry fields stay only when a Mulberry picture is shown.
+        if (withOpenMoji.length) {
+          var omFacts = { set: OPENMOJI_CREDIT.set, version: omVersion, license: OPENMOJI_CREDIT.license };
+          manifest.pictures.openmoji = { set: omFacts.set, version: omVersion, license: omFacts.license, words: withOpenMoji };
+          manifest.pictures.counts.openmoji = withOpenMoji.length;
+          pictureFacts.openmoji = { set: omFacts.set, version: omVersion, license: omFacts.license, words: withOpenMoji.length };
+          if (!withMulberry.length) { delete pictureFacts.set; delete pictureFacts.version; delete pictureFacts.license; }
+        }
       }
       // noFile: everything but the file itself (trialBuild asks only which questions there would be).
       if (!lesson || opts.noFile === true) return { html: '', lesson: lesson, manifest: manifest, exceptions: exceptions, sha256: '' };
@@ -1047,8 +1111,10 @@
       if (ownFacts) extra.own = ownFacts;
       var credited = withCredits(html, extra);
       manifest.creditsInFile = credited.done;
-      var digest = typeof loader.sha256 === 'function' ? loader.sha256(credited.html) : null;
-      return { html: credited.html, lesson: lesson, manifest: manifest, exceptions: exceptions, sha256: digest ? digest.hex : '' };
+      // A student's code name goes in last, the way withCodeName adds it to a finished file.
+      var finished = withCodeName(credited.html, manifest.learnerLabel);
+      var digest = typeof loader.sha256 === 'function' ? loader.sha256(finished) : null;
+      return { html: finished, lesson: lesson, manifest: manifest, exceptions: exceptions, sha256: digest ? digest.hex : '' };
     });
   }
 
@@ -1314,8 +1380,11 @@
     trialBuild: trialBuild,
     DEFAULT_MAX_RANK: DEFAULT_MAX_RANK, DEFAULT_MIN_ZIPF: DEFAULT_MIN_ZIPF, DEFAULT_MIN_BOOKS: DEFAULT_MIN_BOOKS, CMUDICT_NOTICE: CMUDICT_NOTICE,
     buildPacket: buildPacket, pickWords: pickWords, stageList: stageList, pcmToWavUri: pcmToWavUri,
+    // A student's code name in a file (the file fills it in when it opens).
+    codeName: codeName, withCodeName: withCodeName,
     // Pictures: the credit and notice a file with pictures carries, and the test every symbol must pass.
-    MULBERRY_CREDIT: MULBERRY_CREDIT, MULBERRY_NOTICE: MULBERRY_NOTICE, pictureCredit: pictureCredit, svgRefusal: svgRefusal,
+    MULBERRY_CREDIT: MULBERRY_CREDIT, MULBERRY_NOTICE: MULBERRY_NOTICE, pictureCredit: pictureCredit, mulberryNotice: mulberryNotice, svgRefusal: svgRefusal,
+    OPENMOJI_CREDIT: OPENMOJI_CREDIT, openMojiCredit: openMojiCredit, openMojiNotice: openMojiNotice,
     // The teacher's own material (opts.own): what it may hold, and the credit sentence for a picture.
     SOUND_LABELS: SOUND_LABELS.slice(), OWN_LIMITS: OWN_LIMITS, OPEN_LICENSE: OPEN_LICENSE, SHARE_ALIKE_NOTICE: SHARE_ALIKE_NOTICE, OWN_PICTURE_LINE: OWN_PICTURE_LINE, creditLine: creditLine,
     _internals: { createPackLogic: createPackLogic, mulberry32: mulberry32, seedFor: seedFor, wordUnits: wordUnits, fitsStage: fitsStage, suspectSplit: suspectSplit, stageOf: stageOf, compileStages: compileStages, withCredits: withCredits, svgDataUri: svgDataUri, readOwn: readOwn },

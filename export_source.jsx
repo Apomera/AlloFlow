@@ -56,8 +56,8 @@ const createExport = (deps) => {
             case 'storyforge-submission': return '📖 Story Submission';
             case 'note-taking': return t('sidebar.tool_note_taking') || 'Note-Taking Templates';
             case 'anchor-chart': return t('sidebar.tool_anchor_chart') || 'Anchor Chart';
-            case 'memory-aid': return t('help_mode.tool_memory_aid') || 'Memory Aid Studio';
-            case 'applied-challenge': return t('help_mode.tool_applied_challenge') || 'Applied Challenge Studio';
+            case 'memory-aid': return t('sidebar.tool_memory_aid') || 'Memory Aid Studio';
+            case 'applied-challenge': return t('sidebar.tool_applied_challenge') || 'Applied Challenge Studio';
             default: return t('common.resource') || 'Resource';
         }
     };

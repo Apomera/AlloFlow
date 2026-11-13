@@ -1,0 +1,43 @@
+/* Make vocabulary practice (packets-vocab.html): the rows of the check screen. Colors come from packets.css.
+   No address, no font, no image file (pictures are drawn from data: addresses). One row for each word: the word, its right answer, its 3 wrong answers. */
+
+.v-rows { margin-top: 1rem; border-top: 1px solid var(--line); }
+.v-row { padding: 0.85rem 0; border-bottom: 1px solid var(--line); }
+.v-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.25rem 0.6rem; }
+.v-head h3 { font-size: 1.125rem; overflow-wrap: anywhere; }
+.v-pos { font-size: 0.875rem; color: var(--muted); }
+.v-mark { display: inline-block; padding: 0 0.45rem; border: 1px solid var(--line-strong); border-radius: 999px; font-size: 0.8125rem; font-weight: 600; color: var(--ink); background: var(--accent-soft); }
+.v-mark-not { background: var(--surface); color: var(--muted); border-style: dashed; }
+.v-sub { font-size: 1.0625rem; }
+.v-line { display: grid; grid-template-columns: 1fr auto; gap: 0.25rem 0.5rem; align-items: start; margin-top: 0.45rem; }
+.v-line .v-text { margin: 0; overflow-wrap: anywhere; }
+.v-line .v-tag { font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; color: var(--muted); }
+.v-right .v-text { font-weight: 600; color: var(--ink); }
+.v-word { font-weight: 700; color: var(--ink); margin-right: 0.35rem; }
+.v-wrong { margin: 0.25rem 0 0; padding: 0; list-style: none; }
+.v-wrong .v-text { color: var(--ink); }
+.v-tools { display: flex; flex-wrap: wrap; gap: 0.35rem; justify-content: flex-end; }
+.v-tools .btn { min-height: 2.5rem; padding: 0.25rem 0.75rem; font-size: 0.875rem; }
+.v-warn { grid-column: 1 / -1; margin: 0; font-size: 0.9375rem; font-weight: 600; color: var(--ink); border-left: 4px solid var(--ink); padding-left: 0.5rem; }
+.v-edit { grid-column: 1 / -1; display: grid; gap: 0.4rem; }
+.v-edit input, .v-edit textarea { display: block; width: 100%; min-height: 2.75rem; padding: 0.45rem 0.65rem; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--ink); font: inherit; }
+.v-edit textarea { min-height: 4.5rem; resize: vertical; }
+.v-edit .row { display: flex; flex-wrap: wrap; gap: 0.5rem; }
+.v-meanings { margin-top: 0.35rem; }
+.v-meanings > summary { min-height: 2.75rem; display: inline-flex; align-items: center; font-weight: 600; color: var(--accent); cursor: pointer; }
+.v-meanings .radios-stack .radio { font-weight: 400; }
+.v-own { margin-top: 0.45rem; }
+.v-out { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.9375rem; }
+@media (max-width: 29.99rem) {
+  .v-line { grid-template-columns: 1fr; }
+  .v-tools { justify-content: flex-start; }
+}
+
+/* Picture questions (2026-11-12): each word's picture, then the 3 others; white behind each drawing, as in a file. */
+.v-pics { display: flex; flex-wrap: wrap; gap: 0.5rem; margin-top: 0.45rem; }
+.v-pic { margin: 0; display: grid; justify-items: center; gap: 0.2rem; width: 5.5rem; font-size: 0.875rem; color: var(--ink); overflow-wrap: anywhere; text-align: center; }
+.v-pic img { width: 64px; height: 64px; object-fit: contain; background: #fff; border: 1px solid var(--line); border-radius: 8px; padding: 4px; }
+.v-pic-main img { border: 3px solid var(--accent); }
+.v-pic-main figcaption { font-weight: 700; }
+.choice.is-off { opacity: 0.75; }
+.choice.is-off input { cursor: not-allowed; }

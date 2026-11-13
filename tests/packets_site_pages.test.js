@@ -16,8 +16,12 @@ const { dictionary, core, loader, wordlist, builder } = tool.loadParts();
 const read = (file) => readFileSync(file, 'utf8');
 const PAGES = ['packets.html', 'packets-make.html', 'packets-try.html'];
 // packets-words.js is "Edit this word" on the maker page: the one script of these pages that may ask for the microphone (see below).
-const SCRIPTS = ['packets-page.js', 'packets-make.js', 'packets-try.js', 'packets-words.js'];
-const NEW_FILES = [...PAGES, ...SCRIPTS, 'packets.css', 'packets-words.css', 'packets-mark.svg'];
+const SCRIPTS = ['packets-page.js', 'packets-make.js', 'packets-try.js', 'packets-words.js', 'packets-print-cards.js'];
+// The vocabulary maker (2026-11-12) has its own page tests (tests/packets_vocab_page.test.js); its files are spelled the same way.
+const NEW_FILES = [...PAGES, ...SCRIPTS, 'packets.css', 'packets-words.css', 'packets-print-cards.css', 'packets-mark.svg',
+  'packets-vocab.html', 'packets-vocab.js', 'packets-vocab.css', 'packet_vocab_builder.js',
+  // Open a practice file (2026-11-12) has its own page tests (tests/packets_open_page.test.js); its files are spelled the same way.
+  'packets-open.html', 'packets-open.js', 'packets-open.css', 'packets_handoff.js'];
 // The sentences about the voices, word for word, in the "See the details" panel of both pages. Both voices are AI voices,
 // named (owner, 2026-11-12): the builder's credits name the same two (see "Machine-made recordings" below).
 const VOICES_SAID = 'The spoken sounds were recorded ahead of time with two AI voices (Kokoro and Google Gemini).';
@@ -30,6 +34,9 @@ const csp = (doc) => doc.querySelector('meta[http-equiv="Content-Security-Policy
 const ALLOWED_ADDRESSES = [
   { file: 'packets.html', url: 'https://github.com/Apomera/AlloFlow', why: 'a link (not a load) to the public source code, the same address index.html already links' },
   { file: 'packets-mark.svg', url: 'http://www.w3.org/2000/svg', why: 'the SVG namespace name, which an SVG file must carry; it is a name and is never fetched' },
+  // Open a practice file runs a file in a frame that takes this page's rule: a file made in the app with a class mailbox may send to it.
+  { file: 'packets-open.html', url: 'https://script.google.com', why: 'in the rule only: the class mailbox of a file made in the AlloFlow app' },
+  { file: 'packets-open.html', url: 'https://script.googleusercontent.com', why: 'in the rule only: where that class mailbox answers from' },
 ];
 // Every sentence on the pages that holds the word AI. Each says that none runs, or says exactly where one was used.
 const ALLOWED_AI_SENTENCES = [
@@ -263,20 +270,23 @@ describe('the pages as files', () => {
     const squash = (text) => text.replace(/\s+/g, ' ').trim();
     const home = parse('index.html');
     const homeLinks = [...home.querySelectorAll('a[href^="packets"]')];
-    expect(homeLinks.map((a) => [a.getAttribute('href'), a.textContent])).toEqual([['packets.html', 'Open ' + NAME]]);
+    // 2026-11-12 (Aaron): easier to find from the home page: a line under the hero's buttons, then the band.
+    expect(homeLinks.map((a) => [a.getAttribute('href'), a.textContent])).toEqual([['packets.html', 'Quick Practice & Checks →'], ['packets.html', 'Open ' + NAME]]);
+    expect(squash(homeLinks[0].closest('p').textContent)).toBe('Quick Practice & Checks → Make a practice file or a short check in your browser: word sounds, math facts, vocabulary. Runs without AI. No account.');
+    expect(homeLinks[0].closest('header')).toBeTruthy();
     const band = home.getElementById('homePackets');
-    expect(band.contains(homeLinks[0])).toBe(true);
-    expect(home.getElementById(band.getAttribute('aria-labelledby')).textContent).toBe('Just need practice files and progress checks?');
-    expect(squash(band.textContent)).toBe('Just need practice files and progress checks? ' + NAME + ' makes them in your browser. Runs without AI. No account. Open ' + NAME);
+    expect(band.contains(homeLinks[1])).toBe(true);
+    expect(home.getElementById(band.getAttribute('aria-labelledby')).textContent).toBe('Quick Practice & Checks');
+    expect(squash(band.textContent)).toBe('Quick Practice & Checks Just need a practice file or a short progress check? ' + NAME + ' makes them in your browser. Runs without AI. No account. Open ' + NAME);
     // One band of its own: after the entry paths, before the tool finder and the long sections, and in no navigation.
     expect([band.previousElementSibling.id, band.nextElementSibling.id]).toEqual(['homeEntryPaths', 'home-tool-finder']);
     expect(band.querySelectorAll('script, link, img, iframe, form')).toHaveLength(0);
     const tools = parse('tools.html');
     const toolLinks = [...tools.querySelectorAll('a[href^="packets"]')];
     expect(toolLinks.map((a) => [a.getAttribute('href'), a.textContent])).toEqual([['packets.html', NAME]]);
-    expect(squash(toolLinks[0].parentElement.textContent)).toBe('Looking for practice files and math checks that run without AI? ' + NAME + '.');
+    expect(squash(toolLinks[0].parentElement.textContent)).toBe('Quick Practice & Checks: practice files and short checks (word sounds, math facts, vocabulary) that run without AI. ' + NAME + '.');
     expect(toolLinks[0].closest('header.tool-finder-hero')).toBeTruthy();
-    for (const link of [homeLinks[0], toolLinks[0]]) expect(link.closest('nav, .nav-links, .mobile-nav, .noscript-nav, footer')).toBeNull();
+    for (const link of [...homeLinks, toolLinks[0]]) expect(link.closest('nav, .nav-links, .mobile-nav, .noscript-nav, footer')).toBeNull();
     expect(existsSync('packets.html')).toBe(true);
   });
 
@@ -287,6 +297,8 @@ describe('the pages as files', () => {
     expect(cards.map((card) => [card.title, card.links])).toEqual([
       ['Make Word Sounds practice', [['Make Word Sounds practice', 'packets-make.html']]],
       ['Make math fact practice or a math check', [['Math fact practice', 'packets-math-practice.html'], ['A math check', 'packets-check.html']]],
+      // 2026-11-12: the vocabulary maker, a third card that makes a file.
+      ['Make vocabulary practice', [['Make vocabulary practice', 'packets-vocab.html']]],
       ['Add up results', [['Add up results', 'packets-results.html']]],
       ['Check it yourself', [['Check it yourself', '#check']]]]);
     expect([parse('packets-make.html').querySelector('h1').textContent, parse('packets-math-practice.html').querySelector('h1').textContent, parse('packets-check.html').querySelector('h1').textContent])
@@ -295,15 +307,16 @@ describe('the pages as files', () => {
     expect(cards[1].text).toContain('Feedback on every fact, for learning facts by heart.');
     expect(cards[1].text).toContain('Three ready checks, or your own problems.');
     expect(cards[1].text).toContain('Three steps each. No sound needed.');
-    expect(cards[2].text).toContain('not uploaded');
-    expect(cards[2].text).toContain('each student over time');
+    expect(cards[2].text).toContain('Practice, or a short check.');
+    expect(cards[3].text).toContain('not uploaded');
+    expect(cards[3].text).toContain('each student over time');
     expect(doc.getElementById('check')).toBeTruthy();
     expect(doc.body.textContent).toContain('For practice and for checking progress. Not a standardized test.');
-    // Four cards, each a direct child of the grid. Three are built the same way: a heading that is the card's one link, a line, a foot;
+    // Five cards (four before the vocabulary maker, 2026-11-12), each a direct child of the grid. Four are built the same way: a heading that is the card's one link, a line, a foot;
     // packets.css stretches that link over the whole card (.card a::after). The math card names its two makers: a plain heading, then
-    // one link for each with its own line, not stretched (.card .card-links). The two that make a file are filled; the two for what
+    // one link for each with its own line, not stretched (.card .card-links). The three that make a file are filled; the two for what
     // comes after are outlined.
-    expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual(['card card-main', 'card card-main card-pair', 'card card-go', 'card card-go']);
+    expect([...doc.querySelectorAll('.cards > *')].map((node) => node.className)).toEqual(['card card-main', 'card card-main card-pair', 'card card-main', 'card card-go', 'card card-go']);
     for (const card of doc.querySelectorAll('.card')) {
       const pair = card.classList.contains('card-pair');
       expect([...card.children].map((node) => node.tagName + (node.className ? '.' + node.className : ''))).toEqual(pair ? ['H2', 'UL.card-links', 'P.card-foot'] : ['H2', 'P', 'P.card-foot']);
@@ -319,10 +332,10 @@ describe('the pages as files', () => {
     expect(css.match(/\.cards \{/g)).toHaveLength(2);
     expect(css).not.toContain('1.15fr');
     const today = Object.fromEntries([...doc.querySelectorAll('#today h3')].map((heading) => [heading.textContent, heading.nextElementSibling.textContent]));
-    expect(today).toEqual({ 'Available today': 'Word Sounds practice, math fact practice and math checks, with a results file for each student.', 'Being built': 'More words with recordings. Checks for reading skills.' });
+    expect(today).toEqual({ 'Available today': 'Word Sounds practice, math fact practice, math checks and vocabulary practice, with a results file for each student.', 'Being built': 'More words with recordings. Checks for reading skills.' });
     // Every builder is named where the builders are listed, and each one exists.
     const verify = doc.querySelector('.verify').textContent;
-    for (const file of ['word_sounds_packet_builder.js', 'packet_math_practice_builder.js', 'packet_check_builder.js', 'word_sounds_take_home_loader.js']) {
+    for (const file of ['word_sounds_packet_builder.js', 'packet_math_practice_builder.js', 'packet_check_builder.js', 'packet_vocab_builder.js', 'word_sounds_take_home_loader.js']) {
       expect(verify, file).toContain(file);
       expect(existsSync(file), file).toBe(true);
     }
@@ -350,7 +363,7 @@ describe('the pages as files', () => {
     for (const file of files) expect(Math.abs(statSync(file.url).size - file.bytes) / file.bytes, file.url).toBeLessThan(0.05);
     const scripts = [...parse('packets-make.html').querySelectorAll('script')].map((script) => script.getAttribute('src'));
     expect(scripts).toEqual(['packets-page.js', 'word_sounds_phonemes_en.js', 'word_sounds_core.js', 'word_sounds_wordlist_en.js', 'word_sounds_take_home_loader.js', 'word_sounds_packet_builder.js',
-      'word_sounds_symbols_en.js', 'packets_my_words.js', 'packets-words.js', 'packets-make.js']);
+      'word_sounds_symbols_en.js', 'packets_my_words.js', 'packets-words.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_handoff.js', 'packets_zip.js', 'packets-print-cards.js', 'packets-make.js']);
     // The picture index is small (it says which words have a picture); the drawings load only when a file is made with them.
     expect(statSync('word_sounds_symbols_en.js').size).toBeLessThan(40000);
     const megabytes = scripts.reduce((sum, file) => sum + statSync(file).size, 0) / 1e6;
@@ -767,14 +780,16 @@ describe('the maker, run with the real builder', () => {
     for (const box of page.d.querySelectorAll('.strand input')) if (box.checked !== (box.value === 'isolation')) box.click();
     page.$('next-1').click();
     page.choose('mode', 'own');
-    page.set('f-own', 'cat pig sun');
+    // fan: a word with no picture in either set (pig has had an OpenMoji picture since 2026-11-12).
+    page.set('f-own', 'cat fan sun');
     await page.until(() => page.$('own-line').textContent === '3 of 3 words can be used.', 'three ready words');
-    expect(['cat', 'pig', 'sun'].map((word) => PICTURE_INDEX.has(word))).toEqual([true, false, true]);
+    expect(['cat', 'fan', 'sun'].map((word) => PICTURE_INDEX.has(word))).toEqual([true, false, true]);
     expect(page.asked).toEqual([]);
     page.$('next-2').click();
     // One box at step 3, and its one line. It is on because a word has a picture.
     const box = page.$('f-pictures');
-    expect([...page.$('step-3').querySelectorAll('input[type="checkbox"]')]).toEqual([box]);
+    // (The other box of step 3, "Give students versions A, B and C in turn", is folded inside "Make one for each student".)
+    expect([...page.$('step-3').querySelectorAll('input[type="checkbox"]')].filter((node) => !node.closest('#batch'))).toEqual([box]);
     expect(box.closest('label').textContent.trim()).toBe('Include pictures');
     expect(box.getAttribute('aria-describedby')).toBe('pictures-line');
     expect(box.checked && !box.disabled).toBe(true);
@@ -787,7 +802,7 @@ describe('the maker, run with the real builder', () => {
     expect(audit(withPictures)).toEqual([]);
     expect(withPictures).not.toMatch(/<(?:iframe|object|embed|link|base|img|audio|video)\b/i);
     const lesson = lessonOf(withPictures);
-    expect(lesson.blocks[0].items.map((item) => [item.word, item.wordPicture != null])).toEqual([['cat', true], ['pig', false], ['sun', true]]);
+    expect(lesson.blocks[0].items.map((item) => [item.word, item.wordPicture != null])).toEqual([['cat', true], ['fan', false], ['sun', true]]);
     expect(Object.values(lesson.images).every((uri) => /^data:image\/svg\+xml;base64,/.test(uri))).toBe(true);
     expect(Object.values(lesson.images).map((uri) => Buffer.from(uri.split(',')[1], 'base64').toString('utf8')).sort())
       .toEqual(['cat.svg', 'sun.svg'].map((file) => read('data/vendor/mulberry/symbols/' + file).trim()).sort());
@@ -796,7 +811,7 @@ describe('the maker, run with the real builder', () => {
     expect(page.$('pictures-line').textContent).toBe('Pictures for 2 of 3 words. Symbols: Mulberry.');
     expect(page.$('summary-facts').textContent).toMatch(/^3 questions\. About 2 minutes\. \d+(?:\.\d)? (?:KB|MB)\.$/);
     // The page says where its pictures come from, and lists their files with the others it loads.
-    expect(page.$('sources').textContent).toContain('The pictures: Mulberry Symbols by Steve Lee. License: CC BY-SA 4.0.');
+    expect(page.$('sources').textContent).toContain('The pictures: Mulberry Symbols by Steve Lee. License: CC BY-SA 4.0 (creativecommons.org/licenses/by-sa/4.0).');
     expect(page.d.querySelector('[data-show-files]').textContent).toContain('When a file is made with pictures: ' + PICTURE_URLS.join(', ') + '.');
 
     // Unchecked: the plain file, smaller, the same one the builder makes when it is not asked for pictures.
@@ -820,9 +835,9 @@ describe('the maker, run with the real builder', () => {
     // No word with a picture (owner, 2026-11-12: a greyed box with no reason looked broken): the box is never switched off.
     // It starts unchecked, the line beside it says why there is no picture and what to do, and the file is the plain one.
     page.$('back-3').click();
-    page.set('f-own', 'pig hen');
+    page.set('f-own', 'fan hen');
     await page.until(() => page.$('own-line').textContent === '2 of 2 words can be used.', 'two ready words');
-    expect(['pig', 'hen'].map((word) => PICTURE_INDEX.has(word))).toEqual([false, false]);
+    expect(['fan', 'hen'].map((word) => PICTURE_INDEX.has(word))).toEqual([false, false]);
     page.$('next-2').click();
     const NONE = 'None of these words has a picture yet. Add one with Edit this word in step 2, or choose words with pictures.';
     // The box was clicked off and on above: the teacher's last choice (on) is kept.
@@ -859,7 +874,7 @@ describe('the maker, run with the real builder', () => {
     for (const one of poor.d.querySelectorAll('.strand input')) if (one.checked !== (one.value === 'isolation')) one.click();
     poor.$('next-1').click();
     poor.choose('mode', 'own');
-    poor.set('f-own', 'cat pig sun');
+    poor.set('f-own', 'cat fan sun');
     await poor.until(() => poor.$('own-line').textContent === '3 of 3 words can be used.', 'three ready words');
     poor.$('next-2').click();
     await ready(poor);
@@ -1685,7 +1700,7 @@ describe('the maker: choose the words yourself, and any number of words', () => 
     for (const box of page.d.querySelectorAll('.strand input')) if (box.checked !== (box.value === 'isolation')) box.click();
     page.$('next-1').click();
     page.choose('mode', 'own');
-    page.set('f-own', 'pig hen');
+    page.set('f-own', 'fan hen');
     await page.until(() => page.$('own-line').textContent === '2 of 2 words can be used.', 'two ready words');
     page.$('next-2').click();
     const box = page.$('f-pictures');

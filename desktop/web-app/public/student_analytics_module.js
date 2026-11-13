@@ -1297,18 +1297,32 @@ try {
     math_ccc: ['Cover, copy, compare', 'math_facts'],
     math_rehearsal: ['Fact rehearsal', 'math_facts']
   };
+  // Vocabulary questions from a take-home file (packet_vocab_builder.js, 2026-11-12): a group of
+  // their own, like the math facts. A copy of VOCAB_STRANDS / VOCAB_ACTIVITIES in
+  // packets_results_reader.js; tests/packet_vocab_adapter.test.js fails when they differ.
+  var _AC_VOCAB_STRANDS = [
+    ['vocabulary', 'Vocabulary']
+  ];
+  var _AC_VOCAB_ACTIVITIES = {
+    vocab_meaning: ['Word to meaning', 'vocabulary'],
+    vocab_word: ['Meaning to word', 'vocabulary'],
+    vocab_blank: ['Fill the blank', 'vocabulary'],
+    vocab_picture: ['Word to picture', 'vocabulary'],
+    vocab_picture_word: ['Picture to word', 'vocabulary']
+  };
   // The groups in the order shown; '' is "Other activities".
-  var _AC_WS_GROUP_KEYS = _AC_WS_STRANDS.concat(_AC_MATH_FACT_STRANDS).map(function(r) { return r[0]; }).concat(['']);
+  var _AC_WS_GROUP_KEYS = _AC_WS_STRANDS.concat(_AC_MATH_FACT_STRANDS, _AC_VOCAB_STRANDS).map(function(r) { return r[0]; }).concat(['']);
   var _AC_WS_SESSION_CAP = 60;
   function _acWsOwn(obj, key) { return !!obj && Object.prototype.hasOwnProperty.call(obj, key); }
   function _acWsStrandOf(id) {
-    return _acWsOwn(_AC_WS_ACTIVITIES, id) ? _AC_WS_ACTIVITIES[id][1] : _acWsOwn(_AC_MATH_FACT_ACTIVITIES, id) ? _AC_MATH_FACT_ACTIVITIES[id][1] : '';
+    return _acWsOwn(_AC_WS_ACTIVITIES, id) ? _AC_WS_ACTIVITIES[id][1] : _acWsOwn(_AC_MATH_FACT_ACTIVITIES, id) ? _AC_MATH_FACT_ACTIVITIES[id][1] : _acWsOwn(_AC_VOCAB_ACTIVITIES, id) ? _AC_VOCAB_ACTIVITIES[id][1] : '';
   }
   // The player's name for an activity. Pass no t for English (CSV files).
   function _acWsActivityName(t, id) {
     if (_acWsOwn(_AC_WS_ACTIVITIES, id)) return _acWsText(t, 'word_sounds.activity_' + id, _AC_WS_ACTIVITIES[id][0]);
     if (id === 'math_ccc') return _acWsText(t, 'class_analytics.th_mf_activity_ccc', 'Cover, copy, compare');
     if (id === 'math_rehearsal') return _acWsText(t, 'class_analytics.th_mf_activity_rehearsal', 'Fact rehearsal');
+    if (_acWsOwn(_AC_VOCAB_ACTIVITIES, id)) return _acWsText(t, 'class_analytics.th_vc_activity_' + id.slice(6), _AC_VOCAB_ACTIVITIES[id][0]);
     if (!id || id === 'unknown') return _acWsText(t, 'class_analytics.ws_activity_not_recorded', 'Activity not recorded');
     var plain = String(id).replace(/_/g, ' ').trim();
     return plain ? plain.charAt(0).toUpperCase() + plain.slice(1) : '';
@@ -1316,6 +1330,7 @@ try {
   function _acWsStrandName(t, key) {
     var row = _AC_WS_STRANDS.filter(function(r) { return r[0] === key; })[0];
     if (row) return _acWsText(t, 'word_sounds.strand_' + key, row[1]);
+    if (key === 'vocabulary') return _acWsText(t, 'class_analytics.th_vc_group', 'Vocabulary');
     return key === 'math_facts' ? _acWsText(t, 'class_analytics.th_mf_group', 'Math facts') : _acWsText(t, 'class_analytics.ws_other_activities', 'Other activities');
   }
   function _acWsNum(value) { var n = Number(value); return Number.isFinite(n) && n > 0 ? Math.floor(n) : 0; }
@@ -1533,13 +1548,14 @@ try {
         a.nm.forEach(function(word) { if (acts[id].nm.indexOf(word) < 0 && acts[id].nm.length < 8) acts[id].nm.push(word); });
       });
     });
-    var known = Object.keys(_AC_WS_ACTIVITIES).concat(Object.keys(_AC_MATH_FACT_ACTIVITIES));
+    var known = Object.keys(_AC_WS_ACTIVITIES).concat(Object.keys(_AC_MATH_FACT_ACTIVITIES), Object.keys(_AC_VOCAB_ACTIVITIES));
     order.sort(function(a, b) { return (known.indexOf(a) < 0 ? 99 : known.indexOf(a)) - (known.indexOf(b) < 0 ? 99 : known.indexOf(b)); });
     return _AC_WS_GROUP_KEYS.map(function(key) {
       var mine = order.filter(function(id) { return _acWsStrandOf(id) === key; });
       var total = { n: 0, g: 0, f: 0, fc: 0, c: 0, x: 0 };
       // Math fact practice is never flagged: a fact being learned is expected to be missed at first.
-      var practiceOnly = key === 'math_facts';
+      // Nor are vocabulary questions: the words of a unit being taught.
+      var practiceOnly = key === 'math_facts' || key === 'vocabulary';
       var activities = mine.map(function(id) {
         var a = acts[id];
         ['n', 'g', 'f', 'fc', 'c', 'x'].forEach(function(k) { total[k] += a[k]; });
@@ -2001,7 +2017,7 @@ try {
         groups[key] = { sid: _acThText(get('session_id'), 80), learner: _acThText(get('learner'), 60), packetId: _acThText(get('packet_id'), 80), title: '',
           stamps: [get('finished_local'), get('started_local')], startedText: _acThText(get('started_local'), 40),
           prefix: [get('packet_id'), get('packet_version'), get('form'), get('session_id')].join('|').slice(0, 600), items: [], lines: [], integrity: null,
-          mode: _acThText(get('mode'), 12).toLowerCase(), form: _acThText(get('form'), 20), score: null };
+          mode: _acThMode(get('mode')), form: _acThText(get('form'), 20), score: null };
         order.push(key);
       }
       var group = groups[key];
@@ -2025,6 +2041,12 @@ try {
     });
     return { ok: true, sessions: order.map(function(key) { return groups[key]; }) };
   }
+  // A results file's mode. A check says "check" (files saved before 2026-11-12
+  // say "probe"); both are a check, which this importer calls 'probe'.
+  function _acThMode(value) {
+    var mode = _acThText(value, 12).toLowerCase();
+    return mode === 'check' ? 'probe' : mode;
+  }
   // The take-home JSON, or a class mailbox copy of it, to one raw session.
   function _acThReadJson(data) {
     if (data && typeof data === 'object' && data.kind === 'alloflow-take-home-submission' && data.takeHomeResult && typeof data.takeHomeResult === 'object') data = data.takeHomeResult;
@@ -2042,8 +2064,8 @@ try {
     var rawItems = data.items.slice(0, _AC_TH_MAX_ITEMS).map(function(it) { return it && typeof it === 'object' ? it : {}; });
     var learner = _acThScalar(data.learner) || _acThScalar(data.learnerName);
     var lines = null;
-    // A check (packet.mode "probe") has two more cells in every row, after "flag".
-    var probe = _acThScalar(packet.mode) === 'probe';
+    // A check (packet.mode "check", or "probe" before 2026-11-12) has two more cells in every row, after "flag".
+    var probe = _acThMode(packet.mode) === 'probe';
     var integrity = data.integrity && typeof data.integrity === 'object' ? { method: _acThText(data.integrity.method, 12).toLowerCase(), value: _acThText(data.integrity.value, 80).toLowerCase() } : null;
     if (integrity && integrity.value) {
       // The same rows the CSV file holds, rebuilt with its rules.
@@ -2126,8 +2148,10 @@ try {
     var session = { id: 'th:' + sid.slice(0, 64), learner: raw.learner, title: raw.title || raw.packetId, start: start, date: _acLocalDate(start), dateFromFile: dateFromFile,
       given: raw.items.length, done: done, firstTryItems: graded, firstTryCorrect: firstTry, percent: graded ? Math.round(firstTry / graded * 100) : null,
       acts: stored, wrong: wrong, integrity: check };
-    // A check is a math result, never a Word Sounds session.
-    if (raw.mode === 'probe') {
+    // A check is a math result, never a Word Sounds session. A vocabulary check is not a math
+    // measure: it is kept with the take-home sessions, under Vocabulary (one try, so first try = right).
+    var vocabCheck = raw.mode === 'probe' && raw.items.length > 0 && raw.items.every(function(it) { return _acWsOwn(_AC_VOCAB_ACTIVITIES, it.activity); });
+    if (raw.mode === 'probe' && !vocabCheck) {
       session.check = _acCkFromRaw(raw, fileName);
       session.title = session.check.title || session.title;
       session.acts = {}; session.wrong = {}; session.firstTryItems = 0; session.firstTryCorrect = 0; session.percent = null;
@@ -2526,7 +2550,7 @@ try {
           preview.done ? _acWsText(t, 'class_analytics.th_close', 'Close') : _acWsText(t, 'class_analytics.th_cancel', 'Cancel'))));
   }
   // ── Take-home checks ──
-  // A check is a math measure done at home in one file (mode "probe"): Math
+  // A check is a math measure done at home in one file (mode "check"): Math
   // Fluency, Missing Number, Quantity Discrimination, or a teacher's own
   // problem set. Its result is kept where the app keeps that measure, in the
   // same shape, with home: true. A home result is shown, marked Take-home. It
@@ -2564,7 +2588,9 @@ try {
     var completion = _acThText(sc.completion, 20);
     return { measure: _acThText(sc.measure, 40), score: _acCkNumber(sc.score), unit: _acThText(sc.scoreUnit, 40), timeLimitS: _acCkNumber(sc.timeLimitS), elapsedS: _acCkNumber(sc.elapsedS),
       hiddenS: _acCkNumber(sc.hiddenS), completion: completion === 'complete' || completion === 'time' || completion === 'ended_early' ? completion : '',
-      scoringVersion: _acCkCount(sc.scoringVersion), formVersion: _acCkCount(sc.formVersion), attempt: _acCkCount(sc.attempt) || 1, flags: flags };
+      scoringVersion: _acCkCount(sc.scoringVersion), formVersion: _acCkCount(sc.formVersion), attempt: _acCkCount(sc.attempt) || 1, flags: flags,
+      // Untimed (an accommodation): JSON untimed: true, CSV "timing=untimed".
+      untimed: sc.untimed === true || /^(1|true|untimed)$/i.test(_acThText(sc.untimed, 8)) || /^untimed$/i.test(_acThText(sc.timing, 20)), usualTimeLimitS: _acCkNumber(sc.usualTimeLimitS) };
   }
   // The same from the CSV file's "#score" row: name=value cells.
   function _acCkScoreFromCells(cells) {
@@ -2576,7 +2602,8 @@ try {
     });
     var get = function(name) { return _acWsOwn(kv, 'k' + name) ? kv['k' + name] : ''; };
     return _acCkScoreFromJson({ measure: get('measure'), score: get('score'), scoreUnit: get('score_unit'), timeLimitS: get('time_limit_s'), elapsedS: get('elapsed_s'), hiddenS: get('hidden_s'),
-      completion: get('completion'), scoringVersion: get('scoring_version'), formVersion: get('form_version'), attempt: get('attempt'), flags: get('flags') ? get('flags').split(';') : [] });
+      completion: get('completion'), scoringVersion: get('scoring_version'), formVersion: get('form_version'), attempt: get('attempt'), flags: get('flags') ? get('flags').split(';') : [],
+      timing: get('timing'), usualTimeLimitS: get('usual_time_limit_s') });
   }
   // A raw check session to what the dashboard shows and keeps. The counts are
   // made again from the item rows, which the edit check covers. The time
@@ -2617,6 +2644,9 @@ try {
       else { score = Math.round(digitsCorrect / Math.max(1 / 60, elapsed / 60)); prorated = early; }
     } else score = correct;
     var custom = raw.form === 'custom' || /^math-custom-/.test(raw.packetId);
+    // Untimed (an accommodation): a fixed form with no time limit, said by the file or not. It is kept apart from
+    // timed results (its own group in _acCkOverTime) and is never compared with them.
+    var untimed = !!sc && (sc.untimed || (!custom && !!measure && limit === null));
     var grade = custom ? '' : ((/-g(k|[0-9]{1,2})$/i.exec(raw.packetId) || [])[1] || '').toUpperCase();
     // An older CSV file does not hold the title; the name it was saved under starts with it.
     var named = /^(.+?)__/.exec(_acThText(fileName, 120));
@@ -2626,7 +2656,8 @@ try {
       given: given, attempted: attempted, correct: correct, digitsCorrect: hasDigits ? digitsCorrect : null, digitsPossible: hasDigits ? digitsPossible : null,
       score: score, unit: unit, noScore: noScore, prorated: prorated, completion: completion, elapsedSeconds: sc ? sc.elapsedS : null, timeLimitSeconds: limit,
       hiddenSeconds: sc && sc.hiddenS > 0 ? sc.hiddenS : 0, flags: sc ? sc.flags : [], attempt: sc ? sc.attempt : 1,
-      recounted: !!(sc && sc.score !== null && score !== null && sc.score !== score), stated: sc ? sc.score : null };
+      recounted: !!(sc && sc.score !== null && score !== null && sc.score !== score), stated: sc ? sc.score : null,
+      untimed: untimed, usualTimeLimitSeconds: untimed && sc.usualTimeLimitS > 0 ? sc.usualTimeLimitS : null };
   }
   // The record that is kept: the app's own shape for the measure, plus the
   // home fields. name is the student it is added to.
@@ -2639,6 +2670,7 @@ try {
       timeLimitSeconds: c.timeLimitSeconds };
     if (session.dateFromFile) home.dateFromFile = true;
     if (c.noScore) home.noScore = c.noScore;
+    if (c.untimed) { home.untimed = true; home.usualTimeLimitSeconds = c.usualTimeLimitSeconds; }
     // Missing Number and Quantity Discrimination: the shape saveNumeracyResult writes.
     if (_AC_CK_MEASURES[c.measure].store === 'row') {
       return Object.assign({ student: name, type: c.measure }, counts, { grade: c.grade || null, form: c.form, formVersion: c.formVersion, elapsedSeconds: c.elapsedSeconds }, home);
@@ -2708,6 +2740,7 @@ try {
   }
   // What a result is listed under: the measure, or the title of a teacher's own problem set.
   function _acCkGroupName(t, c) {
+    if (c.untimed) return _acWsText(t, 'class_analytics.th_ck_untimed_name', '{name}, untimed', { name: _acCkGroupName(t, Object.assign({}, c, { untimed: false })) });
     return c.custom ? _acWsText(t, 'class_analytics.th_ck_custom_name', '{title} (your own problems)', { title: c.title || c.packetId || '' }) : _acCkMeasureName(t, c.measure);
   }
   function _acCkFormText(t, c) {
@@ -2740,6 +2773,7 @@ try {
     var notes = (Array.isArray(c.flags) ? c.flags : []).slice(0, 8).map(function(flag) { return _acCkFlagText(t, flag); });
     if (c.attempt > 1) notes.push(_acWsText(t, 'class_analytics.th_ck_note_attempt', 'Try {n} of this check on that device.', { n: c.attempt }));
     if (c.prorated) notes.push(_acWsText(t, 'class_analytics.th_ck_note_prorated', 'Every problem was finished early, so the rate uses the time taken.'));
+    if (c.untimed) notes.push(_acWsText(t, 'class_analytics.th_ck_note_untimed', 'Untimed (an accommodation): no clock. It is never compared with timed results.'));
     if (c.recounted) notes.push(_acWsText(t, 'class_analytics.th_ck_note_recounted', 'The file gave {stated} as the score. The score shown is worked out from the answers in the file.', { stated: c.stated }));
     return notes;
   }
@@ -2773,11 +2807,14 @@ try {
       } else return;
       // A record made in the app with no score is not a result to list.
       if (!home && score === null) return;
+      // Untimed (an accommodation): a group of its own, never listed with timed results.
+      var untimed = home && r.untimed === true;
+      if (untimed) { key += ':untimed'; info = Object.assign({}, info, { untimed: true }); }
       if (!_acWsOwn(groups, key)) { groups[key] = Object.assign({ key: key, rows: [] }, info); order.push(key); }
       if (info.custom && info.title && !groups[key].title) groups[key].title = info.title;
       groups[key].rows.push({ time: time, date: _acLocalDate(time), where: home ? 'th' : 'app', score: home && r.noScore ? null : score, unit: unit, attempted: num(r.total),
         custom: false, measure: info.measure, grade: r.grade == null ? '' : _acThText(String(r.grade), 4), form: info.custom ? '' : _acThText(r.form, 8), noScore: home && r.noScore ? _acThText(r.noScore, 20) : (score === null ? 'unknown' : ''),
-        flags: home && Array.isArray(r.flags) ? r.flags.filter(function(f) { return typeof f === 'string'; }) : [], attempt: home ? Number(r.attempt) || 1 : 1, prorated: r.prorated === true,
+        flags: home && Array.isArray(r.flags) ? r.flags.filter(function(f) { return typeof f === 'string'; }) : [], attempt: home ? Number(r.attempt) || 1 : 1, prorated: r.prorated === true, untimed: untimed,
         edited: home && r.integrity === 'changed', dateFromFile: home && r.dateFromFile === true });
     };
     [student.nickname || student.name, student.name].filter(function(name, i, all) { return typeof name === 'string' && name && all.indexOf(name) === i; }).forEach(function(name) {

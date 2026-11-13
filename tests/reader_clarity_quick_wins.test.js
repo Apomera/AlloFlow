@@ -181,11 +181,22 @@ describe('section question marker and paragraph spacing', () => {
       expect(node.className).not.toMatch(/\bmb-4\b/);
     }
   });
+
+  it('opens the paragraph gap with Line spacing (0.7em at the 1.6 default, never under 0.5em)', () => {
+    for (const [lineHeight, want] of [[undefined, '0.7em'], [1.6, '0.7em'], [2, '1.1em'], [2.5, '1.6em'], [1, '0.5em']]) {
+      mount({ generatedContent: adapted(SECTIONS), isTeacherMode: false, isZenMode: true, lineHeight });
+      const nodes = host.querySelectorAll('[data-reading-paragraph]');
+      expect(nodes.length).toBeGreaterThan(1);
+      for (const node of nodes) expect(gapOf(node), 'line spacing ' + lineHeight).toBe(want);
+      act(() => root.unmount()); host.remove(); root = null;
+    }
+  });
 });
 
 // The gap scales with the reader's text size (em), never a fixed class like mb-4.
+const gapOf = node => node.style.marginBottom || node.style.marginBlockEnd || (/margin-(?:bottom|block-end):\s*([^;]+)/.exec(node.getAttribute('style') || '') || [])[1] || '';
 function expectEmGap(node) {
-  const gap = node.style.marginBottom || node.style.marginBlockEnd || (/margin-(?:bottom|block-end):\s*([^;]+)/.exec(node.getAttribute('style') || '') || [])[1] || '';
+  const gap = gapOf(node);
   expect(gap).toMatch(/^\d*\.?\d+em$/);
   expect(parseFloat(gap)).toBeGreaterThanOrEqual(0.5);
 }
@@ -208,6 +219,15 @@ describe('original paragraphs separated by one line break', () => {
       expectEmGap(node); // 0.75em on 10-29, 0.55em since 11-03
     }
     expect(find('[data-original-source]').textContent).toBe(text);
+  });
+
+  it('opens single-break gaps with Line spacing too (0.55em at the default)', () => {
+    for (const [lineHeight, want] of [[undefined, '0.55em'], [2.5, '1.45em'], [1, '0.5em']]) {
+      mount({ generatedContent: originalOf(LONG_A + '\n' + LONG_B), isTeacherMode: false, isZenMode: true, lineHeight });
+      expect(lines()).toHaveLength(2);
+      for (const node of lines()) expect(gapOf(node), 'line spacing ' + lineHeight).toBe(want);
+      act(() => root.unmount()); host.remove(); root = null;
+    }
   });
 
   it('leaves short lines such as a poem as they are', () => {
