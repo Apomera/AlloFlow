@@ -10,13 +10,20 @@
 // word_sounds_module.js:20150-20155: choice.toLowerCase() ===
 // task.answer.toLowerCase(), then checkAnswer("correct"|"incorrect","correct"),
 // 2 tries.
+// 2026-11-13 parity: the app's sound-only choices are now cards (a tap plays and selects, a
+// large Check submits, a missed card is crossed out: 94704af0e4). The file keeps two buttons
+// per choice, Listen first, then Choose, in every activity, as Find Sounds always had them
+// (hear, then choose).
+// The task type is said plainly: "Take away a sound" / "Change a sound" (the app's card says
+// Phoneme Deletion / Phoneme Substitution).
 module.exports = {
   id: 'manipulation',
   title: 'Sound Swap',
   labels: {
     manipulation_prompt: 'Swap the sound to make a new word!',
-    manipulation_type_deletion: 'Phoneme Deletion',
-    manipulation_type_substitution: 'Phoneme Substitution',
+    // 2026-11-13: plain words for the student (the app's task card says Phoneme Deletion / Substitution).
+    manipulation_type_deletion: 'Take away a sound',
+    manipulation_type_substitution: 'Change a sound',
     manipulation_hear_instruction: 'Hear the instruction',
     manipulation_option_n: 'Option {n}',
     manipulation_listen: 'Listen',
@@ -118,7 +125,7 @@ module.exports = {
           });
           if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
         } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: choice.text }) : ctx.fmt(ctx.L.manipulation_option_n, { n: n })]);
-      var box = ctx.el('li', { class: 'choice' }, [choose, listen]);
+      var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
       cards.push({ box: box, choose: choose, right: right });
       list.appendChild(box);
     });
@@ -141,6 +148,8 @@ module.exports = {
       run(instructionSteps(400).concat(item.choices.map(function (c, i) { return { id: c.audio, gap: 350, hi: i }; })));
     }
     return {
+      // The R key: the instruction again.
+      replay: function () { run(instructionSteps(0)); },
       reveal: function () {
         halt();
         cards.forEach(function (c) {

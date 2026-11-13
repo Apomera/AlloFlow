@@ -122,6 +122,8 @@
     });
   }
   function answerOf(f) { return f.op === 'add' ? f.a + f.b : f.op === 'sub' ? f.a - f.b : f.op === 'mul' ? f.a * f.b : f.a / f.b; }
+  // A fact in a reason ("3 + 4"), with the signs the file shows (math_computation.js).
+  function sayFact(f) { return f.a + ' ' + (f.op === 'add' ? '+' : String.fromCharCode(f.op === 'sub' ? 0x2212 : f.op === 'mul' ? 0xD7 : 0xF7)) + ' ' + f.b; }
 
   // A fact as the take-home loader writes it ("7 × 8"), by the loader's own math check adapter.
   function factWord(f, loader) {
@@ -149,13 +151,15 @@
   //
   // Cover, copy, compare: every fact once, each card starting with the fact and its answer shown.
   // A fact family is given in a fixed mixed order (so a learner cannot just count on); a typed list
-  // keeps the teacher's order.
+  // keeps the teacher's order, but a fact is never right beside its turnaround (see apart).
   //
   // Rehearsal with known facts (STEPS = 3, MAX_NEW = 3, MIN_KNOWN = 3):
   //   new facts  = the facts not marked known, in the list's order; the first 3 are used.
   //   known      = the facts marked known, in a fixed mixed order. With fewer than 3, facts of the
   //                families before this one (the nearest first, each in a fixed mixed order) are added
-  //                until there are 3. A typed list has no family before it.
+  //                until there are 3. A typed list has no family before it. A known fact that is a new
+  //                fact turned around is not used (held); a known fact and its turnaround count as one
+  //                and take turns (pairs).
   //   each new fact gets one run: the new fact, then the next known fact; the new fact, then those
   //   2 known facts; the new fact, then those 3 known facts (new, known; new, known, known; new,
   //   known, known, known). The 3 known facts of a run are the next 3 in the known list, which
@@ -189,6 +193,8 @@
     if (mode === 'ccc') {
       var order = fam ? mixed(facts, 'ccc|' + fam.id) : facts;
       out.cards = order.map(function (f) { return { fact: f, role: '', study: true }; });
+      // A typed list keeps the teacher's order, except that a fact and its turnaround are moved apart (2026-11-13).
+      apart(out.cards);
       return out;
     }
     var known = {};
@@ -199,28 +205,53 @@
     if (!fresh.length) throw new Error('Every fact is chosen as known. Leave at least one out: that is the new fact to learn.');
     out.newFacts = fresh.slice(0, MAX_NEW);
     out.waiting = fresh.slice(MAX_NEW);
+    // 2026-11-13. A known fact that is a new fact turned around (4 + 3 for a new 3 + 4) would give the new one away: it is
+    // not used (held, with the new fact it would give away). A known fact and its own turnaround (1 + 9 and 9 + 1 in Make
+    // 10) are one known fact that takes turns: both are used, as the teacher chose, never in the same group of known
+    // cards, so never side by side; it counts once toward the 3 known facts a rehearsal needs.
+    var isNew = {};
+    out.newFacts.forEach(function (f) { isNew[keyOf(f)] = true; });
+    out.held = [];
+    out.pairs = [];
     var inFile = {};
     facts.forEach(function (f) { inFile[keyOf(f)] = true; });
-    var pool = mixed(knownFacts, 'known|' + facts.map(keyOf).join(',') + '|' + knownFacts.map(keyOf).join(','));
-    if (pool.length < MIN_KNOWN && fam) {
+    var slots = [], slotOf = {};
+    mixed(knownFacts, 'known|' + facts.map(keyOf).join(',') + '|' + knownFacts.map(keyOf).join(',')).forEach(function (f) {
+      var t = turnaround(f), tk = t ? keyOf(t) : '';
+      if (tk && isNew[tk]) { out.held.push({ fact: f, gives: t }); return; }
+      if (tk && tk !== keyOf(f) && slotOf[tk]) { slotOf[tk].facts.push(f); slotOf[keyOf(f)] = slotOf[tk]; out.pairs.push([slotOf[tk].facts[0], f]); return; }
+      var slot = { facts: [f], turn: 0 };
+      slots.push(slot);
+      slotOf[keyOf(f)] = slot;
+    });
+    out.chosenKnown = slots.length;
+    if (slots.length < MIN_KNOWN && fam) {
       earlier(fam).forEach(function (e) {
         var took = false;
         mixed(e.facts, 'from|' + e.id).forEach(function (f) {
-          if (pool.length >= MIN_KNOWN || inFile[keyOf(f)]) return;
+          // Not a fact whose turnaround is already in the file (2 × 10 beside 10 × 2): it is the same fact.
+          var t = turnaround(f);
+          if (slots.length >= MIN_KNOWN || inFile[keyOf(f)] || (t && inFile[keyOf(t)])) return;
           inFile[keyOf(f)] = true;
-          pool.push(f);
+          slots.push({ facts: [f], turn: 0 });
           out.addedKnown.push(f);
           took = true;
         });
         if (took) out.addedFrom.push(e.name);
       });
     }
-    if (pool.length < MIN_KNOWN) {
-      throw new Error('Rehearsal needs at least ' + MIN_KNOWN + ' facts the learner already knows. ' + (pool.length ? 'Only ' + pool.length + (pool.length === 1 ? ' is' : ' are') + ' chosen.' : 'None are chosen.'));
+    if (slots.length < MIN_KNOWN) {
+      var n = slots.length;
+      throw new Error('Rehearsal needs at least ' + MIN_KNOWN + ' facts the student already knows. ' + (!n ? 'None are chosen.' : out.pairs.length
+        ? 'Only ' + n + ' different ' + (n === 1 ? 'fact is' : 'facts are') + ' chosen: a fact and its turnaround (' + sayFact(out.pairs[0][0]) + ' and ' + sayFact(out.pairs[0][1]) + ') count as one.'
+        : 'Only ' + n + (n === 1 ? ' is' : ' are') + ' chosen.')
+        + out.held.map(function (h) { return ' ' + sayFact(h.fact) + ' is not used: it is the new fact ' + sayFact(h.gives) + ' turned around, so it would give it away.'; }).join(''));
     }
-    out.knownFacts = pool.slice();
-    var queue = pool.slice();
-    var take = function (n) { var got = queue.splice(0, n); queue = queue.concat(got); return got; };
+    out.knownFacts = [];
+    slots.forEach(function (s) { out.knownFacts = out.knownFacts.concat(s.facts); });
+    var queue = slots.slice();
+    // The next n known facts: a pair's two facts take turns, one for each time it is taken.
+    var take = function (n) { var got = queue.splice(0, n); queue = queue.concat(got); return got.map(function (s) { var f = s.facts[s.turn % s.facts.length]; s.turn++; return f; }); };
     var cards = out.cards;
     var run = function (f) {
       var window = take(STEPS);
@@ -238,7 +269,35 @@
       if (i > 0) review(out.newFacts[i - 1]);
     });
     review(out.newFacts[out.newFacts.length - 1]);
+    apart(cards);
     return out;
+  }
+  // Never the same fact or its turnaround twice in a row (as the app's Math Fluency practice): the answer is still in
+  // mind. Of two such cards the later one (in a rehearsal, the known one, so new facts stay where they are) swaps
+  // places with the nearest card of the same role, later ones first, that leaves fewer such pairs in the list.
+  // 2026-11-13.
+  function apart(cards) {
+    var same = function (x, y) { if (!x || !y) return false; var t = turnaround(x.fact); return keyOf(x.fact) === keyOf(y.fact) || (!!t && keyOf(t) === keyOf(y.fact)); };
+    var pairs = function (list) { var n = 0; for (var p = 1; p < list.length; p++) if (same(list[p], list[p - 1])) n++; return n; };
+    for (var round = 0, now = pairs(cards); now > 0 && round < cards.length; round++) {
+      var moved = false;
+      for (var i = 1; i < cards.length && !moved; i++) {
+        if (!same(cards[i], cards[i - 1])) continue;
+        var m = cards[i].role === 'new' ? i - 1 : i;
+        if (cards[m].role === 'new') continue;
+        var tries = [];
+        for (var j = m + 1; j < cards.length; j++) tries.push(j);
+        for (var k = m - 1; k >= 0; k--) tries.push(k);
+        for (var n = 0; n < tries.length && !moved; n++) {
+          if (cards[tries[n]].role !== cards[m].role) continue;
+          var trial = cards.slice(), t = trial[m]; trial[m] = trial[tries[n]]; trial[tries[n]] = t;
+          var left = pairs(trial);
+          if (left < now) { cards[tries[n]] = trial[tries[n]]; cards[m] = trial[m]; now = left; moved = true; }
+        }
+      }
+      if (!moved) break;
+    }
+    return cards;
   }
 
   // The lesson for a practice file. loader = AlloWordSoundsTakeHome (word_sounds_take_home_loader.js).

@@ -565,7 +565,8 @@ describe('the reader: hostile files', () => {
   it('writes formula-like text back out guarded', async () => {
     const s = await one(csvOf(practice({ learner: '=HYPERLINK("x")', sid: '+1', packetId: '@pkt' })), '-file.csv');
     const lines = reader.summaryCsv([{ learner: s.learner, session: s }]).split('\r\n');
-    expect(lines[1]).toBe('"\'=HYPERLINK(""x"")","2026-11-03","practice","","","","80","60","5","5","300","","\'+1","\'@pkt","r91b7d204","ok","\'-file.csv"');
+    // 2026-11-13: four columns appended (title, measure_name, accuracy_of_attempted_pct, active_s); the earlier cells are as before.
+    expect(lines[1]).toBe('"\'=HYPERLINK(""x"")","2026-11-03","practice","","","","80","60","5","5","300","","\'+1","\'@pkt","r91b7d204","ok","\'-file.csv","Short vowels","Practice","80",""');
   });
 });
 
@@ -644,10 +645,13 @@ describe('the reader: adding up', () => {
     const a = await one(csvOf(practice()), 'p.csv'), b = await one(csvOf(check({ wrong: { 3: 9 }, hiddenS: 14, flags: ['left_the_page'] })), 'c.csv');
     const text = reader.summaryCsv([{ learner: 'BlueHeron7', session: a }, { learner: 'BlueHeron7', session: b }]);
     expect(text.charCodeAt(0)).toBe(0xFEFF);
+    // 2026-11-13: the header is append only. Four columns after source_file: title, measure_name, accuracy_of_attempted_pct (correct / items
+    // attempted, the accuracy to read for a timed check; accuracy_pct keeps its meaning, correct / items given) and active_s (the time on the
+    // items, empty for a file saved before 2026-11-13).
     expect(text.slice(1).split('\r\n')).toEqual([
-      '"learner","date","measure","form","score","score_unit","accuracy_pct","first_try_pct","items_given","items_attempted","duration_s","flags","session_id","packet_id","packet_version","integrity","source_file"',
-      '"BlueHeron7","2026-11-03","practice","","","","80","60","5","5","300","","b3f1c2f0-7a55-4d0e-9c0b-0d0f6d1e52aa","ws-short-vowels","r91b7d204","ok","p.csv"',
-      '"BlueHeron7","2026-11-17","math_dcpm","A","8","digits_correct_per_minute","88","88","8","8","108","left_the_page;finished_early","c7d2a9e4-1b60-4f3a-8e55-9a0c1d2e3f40","math-computation-g2","r5a3c2e10","ok","c.csv"',
+      '"learner","date","measure","form","score","score_unit","accuracy_pct","first_try_pct","items_given","items_attempted","duration_s","flags","session_id","packet_id","packet_version","integrity","source_file","title","measure_name","accuracy_of_attempted_pct","active_s"',
+      '"BlueHeron7","2026-11-03","practice","","","","80","60","5","5","300","","b3f1c2f0-7a55-4d0e-9c0b-0d0f6d1e52aa","ws-short-vowels","r91b7d204","ok","p.csv","Short vowels","Practice","80",""',
+      '"BlueHeron7","2026-11-17","math_dcpm","A","8","digits_correct_per_minute","88","88","8","8","108","left_the_page;finished_early","c7d2a9e4-1b60-4f3a-8e55-9a0c1d2e3f40","math-computation-g2","r5a3c2e10","ok","c.csv","Math Fluency check (2A)","Math Fluency","88",""',
       '']);
   });
 
@@ -731,7 +735,13 @@ describe('parity with the dashboard importer (student_analytics_module.js)', () 
     expect(mine.sessions.length, name).toBe(theirs.sessions.length);
     mine.sessions.forEach((s, i) => {
       const t = theirs.sessions[i];
-      expect({ id: 'th:' + s.sessionId, learner: s.learner, title: s.title, start: s.start, date: s.date, dateFromFile: s.dateFromFile, given: s.summary.itemsInFile, done: s.summary.done, integrity: s.integrity }, name)
+      // 2026-11-13: in a check, Class Analytics leaves the sample questions (practice, never scored) out of the items given
+      // and done, as this page leaves them out of its own given.
+      const counted = s.mode === 'probe' ? s.items.filter((it) => !it.practice) : s.items;
+      // 2026-11-13: the reader's own summary.done leaves a check's sample question out too, so the two are compared as they are.
+      const done = s.summary.done;
+      if (s.mode === 'probe') expect(done, name).toBe(counted.filter((it) => it.attempted).length);
+      expect({ id: 'th:' + s.sessionId, learner: s.learner, title: s.title, start: s.start, date: s.date, dateFromFile: s.dateFromFile, given: counted.length, done: done, integrity: s.integrity }, name)
         .toEqual({ id: t.id, learner: t.learner, title: t.title, start: t.start, date: t.date, dateFromFile: t.dateFromFile, given: t.given, done: t.done, integrity: t.integrity });
       if (!t.check) {
         expect(s.mode, name).toBe('practice');
@@ -1011,9 +1021,10 @@ describe('the page as files', () => {
     expect(NEW_FILES.map(read).join('\n')).not.toMatch(/benchmark/i);
     // One of a unit reads as one (2026-11-12): "1 digit correct per minute", "1 item correct".
     expect(script).toContain("function unitFor(value, unitName) { return Number(value) === 1 ? String(unitName).replace(/^digits /, 'digit ').replace(/^items /, 'item ') : unitName; }");
-    // The group view is not a landmark of its own: its table is the one region named "The group" (axe: landmark-unique).
+    // The group view is not a landmark of its own (axe: landmark-unique). 2026-11-13: the group has two tables, checks and practice; each
+    // scrolls in a region named by its own heading ("Checks: latest score", "Practice: latest first-try percent"), so no two regions share a name.
     expect(parse().getElementById('view-group').tagName).toBe('DIV');
-    expect(script).toContain("scroll.setAttribute('aria-labelledby', 'group-title');");
+    expect(script).toContain("scroll.setAttribute('aria-labelledby', title.id);");
     // A teacher's page says "student"; "learner" stays only as a technical name (the CSV column, the view's value).
     expect(parse().body.textContent).not.toMatch(/\blearners?\b/i);
     expect(script).toContain("var GOAL_NOTE = 'Goal typed by the teacher';");
@@ -1204,9 +1215,13 @@ describe('the page: from files to results', () => {
     expect(page.seen('sample-note')).toBe(false);
     // The group: one row for each learner, the latest value of each measure.
     expect(page.seen('view-group') && !page.seen('view-learner')).toBe(true);
-    const head = [...page.$('group-table').querySelectorAll('thead tr')].map((row) => [...row.children].map((cell) => cell.textContent));
-    expect(head).toEqual([['Student', 'Results', 'Last date', 'Practice: latest first-try percent', 'Checks: latest score'], ['Hearing sounds', 'Spelling', 'Math Fluency (grade 2)digits correct per minute']]);
-    expect(page.rows()).toEqual([['BlueHeron7', '3', 'Nov 17, 2026', '75%3 of 4', '100%1 of 1', '8form A'], ['RedFox3', '3', 'Nov 17, 2026', '25%1 of 4', '0%0 of 1', '7form A']]);
+    // 2026-11-13: two tables, checks first, then practice (one table of 2524 px before, its check scores off a laptop's screen). Each starts
+    // with the student's name; the first also has Results and Last date.
+    const heads = [...page.$('group-table').querySelectorAll('table')].map((table) => [...table.querySelectorAll('thead tr')].map((row) => [...row.children].map((cell) => cell.textContent)));
+    expect(heads).toEqual([[['Student', 'Results', 'Last date', 'Math Fluency (grade 2)digits correct per minute']], [['Student', 'Hearing sounds', 'Spelling']]]);
+    expect([...page.$('group-table').querySelectorAll('h4')].map((node) => node.textContent)).toEqual(['Checks: latest score', 'Practice: latest first-try percent']);
+    expect(page.rows()).toEqual([['BlueHeron7', '3', 'Nov 17, 2026', '8form A'], ['RedFox3', '3', 'Nov 17, 2026', '7form A']]);
+    expect(page.table(page.$('group-table').querySelectorAll('table')[1])).toEqual([['BlueHeron7', '75%3 of 4', '100%1 of 1'], ['RedFox3', '25%1 of 4', '0%0 of 1']]);
     // Two learners: nothing is said about the middle of a group.
     expect(page.$('middles').textContent).toBe('');
     expect(page.d.body.textContent).not.toContain('Middle of this group');
@@ -1220,20 +1235,24 @@ describe('the page: from files to results', () => {
     const page = openPage();
     await page.drop(EIGHT(page));
     page.$('show-results').click();
-    const sorter = (label) => [...page.$('group-table').querySelectorAll('.sort')].find((node) => node.querySelector('.sort-name').textContent === label);
-    const names = () => page.rows().map((row) => row[0]);
-    const sortOf = (label) => sorter(label).closest('th').getAttribute('aria-sort');
+    // 2026-11-13: the checks and the practice are two tables, and each sorts on its own. "table" is 'checks' or 'practice'.
+    const sorter = (label, table = 'practice') => [...page.$('group-table').querySelectorAll('.sort[data-table="' + table + '"]')].find((node) => node.querySelector('.sort-name').textContent === label);
+    const names = (table = 'practice') => page.table(sorter('Student', table).closest('table')).map((row) => row[0]);
+    const sortOf = (label, table = 'practice') => sorter(label, table).closest('th').getAttribute('aria-sort');
     expect([names(), sortOf('Student'), sortOf('Spelling')]).toEqual([['BlueHeron7', 'RedFox3'], 'ascending', 'none']);
     sorter('Student').click();
     expect([names(), sortOf('Student')]).toEqual([['RedFox3', 'BlueHeron7'], 'descending']);
     expect(page.d.activeElement).toBe(sorter('Student'));
+    // The other table keeps its own order.
+    expect([names('checks'), sortOf('Student', 'checks')]).toEqual([['BlueHeron7', 'RedFox3'], 'ascending']);
     sorter('Hearing sounds').click();
     expect([names(), sortOf('Hearing sounds'), sortOf('Student')]).toEqual([['BlueHeron7', 'RedFox3'], 'descending', 'none']);
     sorter('Hearing sounds').click();
     expect([names(), sortOf('Hearing sounds')]).toEqual([['RedFox3', 'BlueHeron7'], 'ascending']);
     expect(page.$('said').textContent).toBe('Sorted by Hearing sounds, low to high.');
-    sorter('Math Fluency (grade 2)').click();
-    expect(names()).toEqual(['BlueHeron7', 'RedFox3']);
+    sorter('Math Fluency (grade 2)', 'checks').click();
+    expect([names('checks'), page.d.activeElement]).toEqual([['BlueHeron7', 'RedFox3'], sorter('Math Fluency (grade 2)', 'checks')]);
+    expect(names()).toEqual(['RedFox3', 'BlueHeron7']);
     for (const th of page.$('group-table').querySelectorAll('th')) expect(['col', 'colgroup', 'row']).toContain(th.getAttribute('scope'));
     page.dom.window.close();
   });
@@ -1282,7 +1301,8 @@ describe('the page: from files to results', () => {
       // The first file carries its title; the second was saved before files did, and shows its packet id.
       ['Nov 3, 2026', 'Practice: Short vowels', '60% on the first try', '5 of 5', '5 min', ''],
       ['Nov 10, 2026', 'Practice: ws-short-vowels', '80% on the first try', '5 of 5', '4 min', ''],
-      ['Nov 17, 2026', 'Math Fluency, form A, try 1', '8 digits correct per minute', '8 of 8', '1 min 48 s', 'Finished before the time was up, so the score is for the time used']]);
+      // 2026-11-13 (results review): a check's time is its own clock (96 s used), not the time the file was open (108 s).
+      ['Nov 17, 2026', 'Math Fluency, form A, try 1', '8 digits correct per minute', '8 of 8', '1 min 36 s', 'Finished before the time was up, so the score is for the time used']]);
     // The other learner: the check has two dates, and the changed file carries its notes and a ring on its dot.
     page.learner('RedFox3');
     const fox = page.measure('Math Fluency (grade 2)');
@@ -1453,7 +1473,9 @@ describe('the page: math fact practice', () => {
     page.$('show-results').click();
     expect(page.$('results-line').textContent).toBe('2 results from 1 student. Nov 10 to Nov 12, 2026.');
     const head = [...page.$('group-table').querySelectorAll('thead tr')].map((row) => [...row.children].map((cell) => cell.textContent));
-    expect(head).toEqual([['Student', 'Results', 'Last date', 'Practice: latest first-try percent'], ['Math facts']]);
+    // 2026-11-13: practice only is one table, under its own heading (the heading row inside the table is gone).
+    expect(head).toEqual([['Student', 'Results', 'Last date', 'Math facts']]);
+    expect([...page.$('group-table').querySelectorAll('h4')].map((node) => node.textContent)).toEqual(['Practice: latest first-try percent']);
     const cell = page.$('group-table').querySelector('tbody td:last-child');
     expect([...cell.children].map((node) => [node.className, node.textContent])).toEqual([['cell-value', '75%'], ['cell-sub', '9 of 12'], ['cell-sub', 'new facts 2 of 4']]);
     expect(page.$('middles').textContent).toBe('');
@@ -1497,14 +1519,17 @@ describe('the page: take it with you', () => {
     expect(saved.name).toMatch(/^results-summary__\d{4}-\d{2}-\d{2}\.csv$/);
     expect(saved.type).toBe('text/csv;charset=utf-8');
     expect(saved.body.charCodeAt(0)).toBe(0xFEFF);
+    // 2026-11-13: four columns appended (see "writes the summary with the stated columns"). The check stopped by time with 6 of 8 reached
+    // (b-2) shows why: accuracy_pct 75 counts the 2 not reached, accuracy_of_attempted_pct 100 is 6 of the 6 it reached. The second file
+    // was saved before files held their title, so its title is its packet id, as on the page.
     expect(saved.body.slice(1).split('\r\n')).toEqual([
-      '"learner","date","measure","form","score","score_unit","accuracy_pct","first_try_pct","items_given","items_attempted","duration_s","flags","session_id","packet_id","packet_version","integrity","source_file"',
-      '"BlueHeron7","2026-11-03","practice","","","","80","60","5","5","300","","a-1","ws-short-vowels","r91b7d204","ok","Short-vowels__BlueHeron7__2026-11-03.csv"',
-      '"BlueHeron7","2026-11-10","practice","","","","100","80","5","5","240","","a-2","ws-short-vowels","r91b7d204","ok","Short-vowels__BlueHeron7__2026-11-10.csv"',
-      '"BlueHeron7","2026-11-17","math_dcpm","A","8","digits_correct_per_minute","88","88","8","8","108","finished_early","a-3","math-computation-g2","r5a3c2e10","ok","Math-Fluency-check-2A__BlueHeron7__2026-11-17.csv"',
-      '"RedFox3","2026-11-03","practice","","","","80","20","5","5","300","","b-1","ws-short-vowels","r91b7d204","ok","Short-vowels__RedFox3__2026-11-03.csv"',
-      '"RedFox3","2026-11-10","math_dcpm","A","5","digits_correct_per_minute","75","100","8","6","132","","b-2","math-computation-g2","r5a3c2e10","ok","Math-Fluency-check-2A__RedFox3__2026-11-10.csv"',
-      '"RedFox3","2026-11-17","math_dcpm","A","7","digits_correct_per_minute","100","100","8","8","132","left_the_page;file_changed","b-3","math-computation-g2","r5a3c2e10","changed","Math-Fluency-check-2A__RedFox3__2026-11-17.csv"',
+      '"learner","date","measure","form","score","score_unit","accuracy_pct","first_try_pct","items_given","items_attempted","duration_s","flags","session_id","packet_id","packet_version","integrity","source_file","title","measure_name","accuracy_of_attempted_pct","active_s"',
+      '"BlueHeron7","2026-11-03","practice","","","","80","60","5","5","300","","a-1","ws-short-vowels","r91b7d204","ok","Short-vowels__BlueHeron7__2026-11-03.csv","Short vowels","Practice","80",""',
+      '"BlueHeron7","2026-11-10","practice","","","","100","80","5","5","240","","a-2","ws-short-vowels","r91b7d204","ok","Short-vowels__BlueHeron7__2026-11-10.csv","ws-short-vowels","Practice","100",""',
+      '"BlueHeron7","2026-11-17","math_dcpm","A","8","digits_correct_per_minute","88","88","8","8","108","finished_early","a-3","math-computation-g2","r5a3c2e10","ok","Math-Fluency-check-2A__BlueHeron7__2026-11-17.csv","Math Fluency check (2A)","Math Fluency","88",""',
+      '"RedFox3","2026-11-03","practice","","","","80","20","5","5","300","","b-1","ws-short-vowels","r91b7d204","ok","Short-vowels__RedFox3__2026-11-03.csv","Short vowels","Practice","80",""',
+      '"RedFox3","2026-11-10","math_dcpm","A","5","digits_correct_per_minute","75","100","8","6","132","","b-2","math-computation-g2","r5a3c2e10","ok","Math-Fluency-check-2A__RedFox3__2026-11-10.csv","Math Fluency check (2A)","Math Fluency","100",""',
+      '"RedFox3","2026-11-17","math_dcpm","A","7","digits_correct_per_minute","100","100","8","8","132","left_the_page;file_changed","b-3","math-computation-g2","r5a3c2e10","changed","Math-Fluency-check-2A__RedFox3__2026-11-17.csv","Math Fluency check (2A)","Math Fluency","100",""',
       '']);
     expect(page.$('take-said').textContent).toBe('Saved ' + saved.name + ': 6 rows, one for each result.');
     page.dom.window.close();

@@ -10,6 +10,8 @@
 //               (~17060, soundAnswerMatches on lowercased strings = equality for
 //               whole words). Default budget: 2 presentations (1 retry).
 //   audio       inst_spelling_bee bank clip ("listen to the word and spell it") and the word.
+// 2026-11-13 parity: as the app (b38ca18141), the tiles are letters only and the letters
+// decide: an apostrophe, hyphen or space need not be typed.
 module.exports = {
   id: 'orthography',
   title: 'Sight & Spell',
@@ -41,9 +43,12 @@ module.exports = {
     // A word with no a-z letter at all (another script) would get a tile bank of
     // only its own letters, which spells it out; report it instead.
     if (!/[a-z]/.test(word.toLowerCase())) return { missing: ['letters outside a-z'] };
+    // An apostrophe, hyphen or space is not a tile: the letters decide (wsSpellFixedChar / wsSpellSame, b38ca18141).
+    var letterRe = null;
+    try { letterRe = new RegExp('[\\p{L}\\p{M}\\p{N}]', 'u'); } catch (_) {}
     var extra = [];
     word.toLowerCase().split('').forEach(function (ch) {
-      if (!/[a-z]/.test(ch) && extra.indexOf(ch) < 0 && ch.trim()) extra.push(ch);
+      if (!/[a-z]/.test(ch) && extra.indexOf(ch) < 0 && ch.trim() && (letterRe ? letterRe.test(ch) : !/^['’\-.]$/.test(ch))) extra.push(ch);
     });
     return { item: { target: word.toLowerCase(), extraTiles: extra, wordAudio: wordAudio, promptAudio: prompt,
       introAudio: [prompt, wordAudio], answerAudio: [wordAudio] } };
@@ -51,7 +56,7 @@ module.exports = {
   render: function (item, ctx) {
     var lastSubmitted = null;
     var inputId = 'ortho-' + String(item.id || 'x').replace(/[^a-z0-9-]/gi, '');
-    var input = ctx.el('input', { id: inputId, type: 'text', autocomplete: 'off', autocorrect: 'off', autocapitalize: 'none', spellcheck: 'false',
+    var input = ctx.el('input', { id: inputId, type: 'text', dir: 'ltr', autocomplete: 'off', autocorrect: 'off', autocapitalize: 'none', spellcheck: 'false',
       maxlength: '40', style: 'font-size:1.6rem;font-weight:700;letter-spacing:.1em;text-transform:lowercase;text-align:center', on: {
         input: function () { lastSubmitted = null; },
         keydown: function (e) {
@@ -72,7 +77,9 @@ module.exports = {
       // OrthographyView ignores a resubmit of the same unchanged spelling.
       if (answer === lastSubmitted) { ctx.announce(ctx.L.orthography_same); return; }
       lastSubmitted = answer;
-      ctx.answer(answer, answer === item.target, {
+      // wsSpellSame: the letters decide, so "dont" spells "don't" and "icecream" spells "ice-cream".
+      var letters = function (text) { var re = null; try { re = new RegExp('[^\\p{L}\\p{M}\\p{N}]', 'gu'); } catch (_) {} return String(text || '').replace(re || /['’\- .]/g, ''); };
+      ctx.answer(answer, letters(item.target) ? letters(answer) === letters(item.target) : answer === item.target, {
         correctText: ctx.fmt(ctx.L.orthography_correct, { word: item.target }),
         missedText: ctx.fmt(ctx.L.orthography_missed, { word: item.target }),
       });

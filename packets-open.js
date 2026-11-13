@@ -144,6 +144,32 @@
     say(line);
   }
 
+  // 2026-11-13: a file's rule names its one script by its SHA-256, and a browser refuses a script that is not that
+  // one. A download cut short or a changed byte would start nothing but the file's own note for previews (which
+  // sends the student to this page). Such a file is called damaged here instead. A file whose rule names no hash
+  // (made where the hash could not be made) runs as before.
+  function scriptIntact(html, file) {
+    var rule = /<meta http-equiv="Content-Security-Policy" content="([^"]*)"/i.exec(html.slice(0, 20000));
+    var pin = rule && /script-src 'sha256-([A-Za-z0-9+/]+=*)'/.exec(rule[1]);
+    if (!pin) return Promise.resolve(true);
+    // The packet's one script is its only <script> with no attributes; the browser reads its line ends as \n.
+    var open = html.indexOf('<script>'), close = open < 0 ? -1 : html.indexOf('</script>', open);
+    if (close < 0) return Promise.resolve(false);
+    // Fast and usual: no CR in the script and nothing undecodable around it, so the script is the file's own bytes
+    // between the two tags (no copy; at 6x CPU this halves the time to read an 18 MB file). Else the exact way.
+    var enc = new TextEncoder(), all = new Uint8Array(file), cr = html.indexOf('\r', open), bytes;
+    var head = html.slice(0, open + 8), tail = html.slice(close), bad = String.fromCharCode(0xFFFD);
+    if ((cr < 0 || cr > close) && head.indexOf(bad) < 0 && tail.indexOf(bad) < 0) {
+      var from = (all[0] === 0xEF && all[1] === 0xBB && all[2] === 0xBF ? 3 : 0) + enc.encode(head).length;
+      bytes = all.subarray(from, all.length - enc.encode(tail).length);
+    } else bytes = enc.encode(html.slice(open + 8, close).replace(/\r\n?/g, '\n'));
+    var base64 = function (buffer) { var b = new Uint8Array(buffer), s = ''; for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s); };
+    var slow = function () { try { return verify.sha256(bytes).base64 === pin[1]; } catch (_) { return true; } };
+    var subtle = window.crypto && window.crypto.subtle;
+    if (!subtle || typeof subtle.digest !== 'function') return Promise.resolve(slow());
+    return Promise.resolve().then(function () { return subtle.digest('SHA-256', bytes); }).then(function (d) { return base64(d) === pin[1]; }, slow);
+  }
+
   function choose(file) {
     if (!file) return;
     show('problem', false);
@@ -155,14 +181,21 @@
       if (parts.refused === 'empty') { problem('This file is empty. Ask your teacher to send it again.'); return null; }
       if (parts.refused) { problem('This browser could not read the file.'); return null; }
       if (parts.kind === 'results') { problem('This is a results file, not a practice file. A teacher adds it up on Add up results.', { href: 'packets-results.html', name: 'Add up results' }); return null; }
-      if (!parts.ok || !parts.lesson) { problem('This is not a practice file or a check. Choose the .html file your teacher sent.'); return null; }
+      if (!parts.ok) { problem('This is not a practice file or a check. Choose the .html file your teacher sent.'); return null; }
       var html = new TextDecoder('utf-8').decode(bytes);
       if (html.charCodeAt(0) === 0xFEFF) html = html.slice(1);
-      var about = describe(parts);
-      current = { name: String(file.name || 'file.html').slice(0, 160), bytes: bytes, html: html, title: about.title || 'Practice file', kind: about.kind, base: about.base,
-        bridged: html.indexOf("getElementById('packet-store-snapshot')") >= 0, fingerprint: '', about: about };
-      return fingerprintOf(bytes).then(function (sum) { current.fingerprint = sum; drawFound(); });
+      return scriptIntact(html, bytes).then(function (intact) { return intact && parts.lesson ? html : null; }).then(function (whole) {
+        if (whole === null) { problem('This file is damaged, so it cannot run. Ask your teacher to send it again.'); return null; }
+        return found(file, bytes, parts, html);
+      });
     }).catch(function () { problem('This browser could not read the file.'); });
+  }
+
+  function found(file, bytes, parts, html) {
+    var about = describe(parts);
+    current = { name: String(file.name || 'file.html').slice(0, 160), bytes: bytes, html: html, title: about.title || 'Practice file', kind: about.kind, base: about.base,
+      bridged: html.indexOf("getElementById('packet-store-snapshot')") >= 0, fingerprint: '', about: about };
+    return fingerprintOf(bytes).then(function (sum) { current.fingerprint = sum; drawFound(); });
   }
 
   function drawFound() {
@@ -232,6 +265,8 @@
   }
 
   function note(text) { setText('run-said', text); }
+  // 2026-11-13: a download cannot be seen to finish (a browser may refuse it), so this says it is being saved, not that it was.
+  function saving(name) { return 'Your browser is saving ' + name + '. If nothing appears, press Save it again.'; }
 
   // A change of place, from the file. Only a plain object, as JSON, under one of the file's own names.
   function keep(data) {
@@ -277,7 +312,7 @@
     // Saved at once after a press in the file; otherwise only when the student presses Save it again.
     var pressed = !navigator.userActivation || navigator.userActivation.isActive;
     if (pressed) download(session.file);
-    note(pressed ? 'Results file: ' + name + '.' : 'Press Save it again to save ' + name + '.');
+    note(pressed ? saving(name) : 'Press Save it again to save ' + name + '.');
     show('run-again', true);
   }
 
@@ -325,7 +360,7 @@
     $('start').addEventListener('click', start);
     $('change').addEventListener('click', change);
     $('run-close').addEventListener('click', function () { stop(false); });
-    $('run-again').addEventListener('click', function () { if (session && session.file) { download(session.file); note('Results file: ' + session.file.name + '.'); } });
+    $('run-again').addEventListener('click', function () { if (session && session.file) { download(session.file); note(saving(session.file.name)); } });
     doc.addEventListener('keydown', function (event) { if (session && event.key === 'Escape' && doc.activeElement !== session.frame) stop(false); });
     window.addEventListener('popstate', function () { if (session) stop(true); });
     $('forget').addEventListener('click', function () {

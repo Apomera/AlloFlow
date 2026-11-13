@@ -1009,7 +1009,9 @@ describe('the maker, run with the real builder', () => {
     await page.until(() => page.chips().length > 0, 'the ch words');
     const kept = JSON.parse(page.w.localStorage.getItem('alloflow-packets-maker/1'));
     expect(kept).toEqual({ v: 1, activities: ['isolation', 'blending', 'segmentation'], mode: 'pick', sound: 'ch', position: 'any', shape: 'CVC', stage: '', own: '', version: 'C', length: 'regular',
-      count: 10, hand: false, chosen: [] });
+      // 2026-11-13: and which letters Letter Trace traces (capital, then lowercase, by default), and (later that day) how
+      // many choices a board shows (Choices: Medium by default; tests/packets_ws_fixes_2026_11_13b.test.js).
+      count: 10, hand: false, chosen: [], choices: 'medium', tracing: 'both' });
     expect(page.w.localStorage.length).toBe(1);
     expect(page.d.cookie).toBe('');
     expect(page.$('about-page').open).toBe(false);

@@ -8,10 +8,15 @@
 //   view        case "missing_letter" (~20028): the word's letters (uppercase),
 //               the hidden one shown as "?" or the chosen letter; letter buttons
 //               only SELECT; "Check Answer" submits; "Show word" reveals the word.
+//               An apostrophe, hyphen or space is shown plainly, not in a box
+//               (wsSpellFixedChar, b38ca18141), and is never the hidden one.
 //   grading     submitConstructionAnswer (~18887): trimmed, lowercased equality
 //               with correctLetter; the same unchanged answer is not resubmitted.
 //               checkAnswer default budget: 2 presentations (1 retry).
 //   audio       inst_missing_letter bank clip (INST_KEY_MAP ~16446); "Hear the word".
+// 2026-11-13 (owner): the letters, the choices and the sentence that names the
+// word are in the case the word is written (lowercase for a normal word, a name's
+// capital kept); the app shows capitals. Fixed characters as in the app.
 module.exports = {
   id: 'missing_letter',
   title: 'Missing Letter',
@@ -31,7 +36,8 @@ module.exports = {
   },
   prepare: function (w, env) {
     var board = w.activityItems && w.activityItems.missing_letter;
-    var word = String(env.word || '').toLowerCase();
+    var written = String(env.word || '');
+    var word = written.toLowerCase();
     if (!board) return { missing: ['board'] };
     // Same usability rule as the app's preparedMissingLetter.
     var letter = String(board.correctLetter == null ? '' : board.correctLetter).toLowerCase();
@@ -46,25 +52,34 @@ module.exports = {
     var prompt = env.bankClip('instructions', 'inst_missing_letter');
     if (!prompt) missing.push('question');
     if (missing.length) return { missing: missing };
-    var letters = word.split('');
+    // The letters as the word is written (lowercase if lower-casing changed its length).
+    var shown = written.length === word.length ? written : word;
+    var letters = shown.split('');
     letters[board.hiddenIndex] = '';
-    return { item: { letters: letters, hiddenIndex: board.hiddenIndex, options: choices, target: letter,
-      wordAudio: wordAudio, promptAudio: prompt, introAudio: [prompt, wordAudio], answerAudio: [wordAudio] } };
+    var item = { letters: letters, hiddenIndex: board.hiddenIndex, options: choices, target: letter,
+      wordAudio: wordAudio, promptAudio: prompt, introAudio: [prompt, wordAudio], answerAudio: [wordAudio] };
+    // The hidden letter is a capital (a name): the choices are shown as capitals too.
+    if (shown[board.hiddenIndex] !== letter && shown[board.hiddenIndex] === letter.toUpperCase()) item.capital = true;
+    return { item: item };
   },
   render: function (item, ctx) {
     var selected = '';
     var shownOnce = false;
-    var wordText = item.letters.map(function (l, i) { return i === item.hiddenIndex ? item.target : l; }).join('');
+    // An apostrophe, hyphen or space is part of the word, shown as it is, not a letter box.
+    var fixed = function (ch) { try { return !new RegExp('[\\p{L}\\p{M}\\p{N}_]', 'u').test(String(ch || '')); } catch (_) { return /^['’\- ]$/.test(String(ch || '')); } };
+    var cased = function (letter) { return item.capital ? String(letter).toUpperCase() : String(letter); };
+    var wordText = item.letters.map(function (l, i) { return i === item.hiddenIndex ? cased(item.target) : l; }).join('');
     var slots = item.letters.map(function (l, i) {
+      if (i !== item.hiddenIndex && fixed(l)) return ctx.el('li', { 'data-fixed': '', style: 'display:flex;align-items:center;font-size:1.4rem;font-weight:700' }, [l === ' ' ? ' ' : l]);
       return ctx.el('li', { class: 'slot', style: i === item.hiddenIndex ? 'border-style:dashed;border-color:var(--accent)' : 'border-style:solid' },
-        [i === item.hiddenIndex ? '?' : l.toUpperCase()]);
+        [i === item.hiddenIndex ? '?' : l]);
     });
     var srWord = ctx.el('p', { class: 'sr' });
     var updateWord = function (letter) {
-      slots[item.hiddenIndex].textContent = letter ? letter.toUpperCase() : '?';
+      slots[item.hiddenIndex].textContent = letter ? cased(letter) : '?';
       srWord.textContent = ctx.fmt(ctx.L.missing_letter_word_sr, { letters: item.letters.map(function (l, i) {
-        return i === item.hiddenIndex ? (letter ? letter.toUpperCase() : ctx.L.missing_letter_blank) : l.toUpperCase();
-      }).join(', ') });
+        return i === item.hiddenIndex ? (letter ? cased(letter) : ctx.L.missing_letter_blank) : l;
+      }).filter(function (l) { return String(l).trim(); }).join(', ') });
     };
     var shownWord = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(ctx.L.missing_letter_word_is, { word: wordText }) });
     var showButton = ctx.el('button', { type: 'button', 'aria-pressed': 'false', on: { click: function () {
@@ -81,8 +96,8 @@ module.exports = {
       if (ctx.isDone() || check.getAttribute('aria-disabled') === 'true') { if (!ctx.isDone() && !selected) ctx.announce(ctx.L.missing_letter_pick_first); return; }
       var answer = selected;
       var outcome = ctx.answer(answer, answer.trim().toLowerCase() === item.target, {
-        correctText: ctx.fmt(ctx.L.missing_letter_correct, { letter: item.target.toUpperCase() }),
-        missedText: ctx.fmt(ctx.L.missing_letter_missed, { letter: item.target.toUpperCase() }),
+        correctText: ctx.fmt(ctx.L.missing_letter_correct, { letter: cased(item.target) }),
+        missedText: ctx.fmt(ctx.L.missing_letter_missed, { letter: cased(item.target) }),
       });
       // A retry starts from an empty slot; choosing again counts as a new answer,
       // as an edit does in the app.
@@ -96,9 +111,9 @@ module.exports = {
     };
     var list = ctx.el('ul', { class: 'row', 'aria-label': ctx.L.missing_letter_choices, style: 'list-style:none;padding:0;margin:16px 0' });
     item.options.forEach(function (letter) {
-      var button = ctx.el('button', { type: 'button', 'aria-pressed': 'false', 'aria-label': ctx.fmt(ctx.L.missing_letter_choose, { letter: letter.toUpperCase() }),
+      var button = ctx.el('button', { type: 'button', 'aria-pressed': 'false', 'aria-label': ctx.fmt(ctx.L.missing_letter_choose, { letter: cased(letter) }),
         style: 'min-width:64px;min-height:64px;font-size:1.4rem;font-weight:700',
-        on: { click: function () { if (!ctx.isDone()) select(letter); } } }, [letter.toUpperCase()]);
+        on: { click: function () { if (!ctx.isDone()) select(letter); } } }, [cased(letter)]);
       var box = ctx.el('li', { class: 'choice solo', style: 'padding:6px' }, [button]);
       cards.push({ box: box, button: button, letter: letter });
       list.appendChild(box);
@@ -111,7 +126,8 @@ module.exports = {
       showButton,
     ]));
     ctx.root.appendChild(shownWord);
-    ctx.root.appendChild(ctx.el('ul', { class: 'slots', 'aria-hidden': 'true' }, slots));
+    // dir: the word's letters run left to right in a right-to-left page too.
+    ctx.root.appendChild(ctx.el('ul', { class: 'slots', 'aria-hidden': 'true', dir: 'ltr' }, slots));
     ctx.root.appendChild(srWord);
     ctx.root.appendChild(list);
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [check]));

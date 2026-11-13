@@ -12852,6 +12852,12 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             revealAnswers,
           }) => {
             const [foundWords, setFoundWords] = React.useState([]);
+            // A word that does not match is out after its first tap: marked,
+            // and a second tap costs no try (it used to count as another miss).
+            // With the budget of distractors + 1, the item now ends when every
+            // match is found, as in a practice file.
+            const [outWords, setOutWords] = React.useState([]);
+            const outWordsRef = React.useRef(new Set());
             const [shakenWord, setShakenWord] = React.useState(null);
             const [wrongFeedback, setWrongFeedback] = React.useState(null);
             const [isComplete, setIsComplete] = React.useState(false);
@@ -12924,8 +12930,10 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               clearBoardFeedback();
               lastOptionsKey.current = newKey;
               foundWordsRef.current = new Set();
+              outWordsRef.current = new Set();
               completedRef.current = false;
               setFoundWords([]);
+              setOutWords([]);
               setIsComplete(false);
               setShakenWord(null);
               setWrongFeedback(null);
@@ -12954,7 +12962,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               lastOptionsKey.current = "";
             }, []);
             const handleWordClick = (item) => {
-              if (foundWordsRef.current.has(item.text) || completedRef.current || isEditing) return;
+              if (foundWordsRef.current.has(item.text) || outWordsRef.current.has(item.text) || completedRef.current || isEditing) return;
               hearWord(item.text);
               if (item.isFamily) {
                 foundWordsRef.current.add(item.text);
@@ -12975,6 +12983,8 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                   }, 1200);
                 }
               } else {
+                outWordsRef.current.add(item.text);
+                setOutWords([...outWordsRef.current]);
                 if (wrongFeedbackTimerRef.current) clearTimeout(wrongFeedbackTimerRef.current);
                 setShakenWord(item.text);
                 setWrongFeedback(item.text);
@@ -13382,6 +13392,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                 (wordBank || []).map((item, idx) => {
                   const isFound = foundWords.includes(item.text);
                   const isShaking = shakenWord === item.text;
+                  const isOut = !item.isFamily && outWords.includes(item.text);
                   if (isFound) return null;
                   return /*#__PURE__*/ React.createElement(
                     "div",
@@ -13408,15 +13419,19 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                       {
                         onClick: () => handleWordClick(item),
                         "data-ws-bank-pick": "true",
-                        "aria-label": soundOnlyMode ? (ts("word_sounds.sr_option") || "Option") + " " + (idx + 1) : item.text,
+                        "aria-label": (soundOnlyMode ? (ts("word_sounds.sr_option") || "Option") + " " + (idx + 1) : item.text) +
+                          (isOut ? ", " + (ts("word_sounds.card_not_this_one") || "Not this one") : ""),
                         ...(revealAnswers && item.isFamily ? { "data-ws-card-state": "correct" } : {}),
-                        className: `px-5 py-3 rounded-xl text-lg font-bold shadow-sm border-b-4 transition-all hover:scale-105 active:scale-95 ${revealAnswers && item.isFamily ? "ws-card ws-card-small " + WS_CARD_CLASS.correct : isShaking ? "bg-red-100 border-red-300 text-red-700 animate-shake" : activeIndex === idx ? "bg-violet-200 border-violet-500 text-violet-800 scale-[1.05] ring-4 ring-violet-300 z-10" : "bg-white border-slate-200 text-slate-700 hover:border-violet-300 hover:text-violet-600"}`,
+                        ...(isOut ? { "data-ws-card-state": "wrong", "aria-disabled": "true" } : {}),
+                        className: `px-5 py-3 rounded-xl text-lg font-bold shadow-sm border-b-4 transition-all hover:scale-105 active:scale-95 ${revealAnswers && item.isFamily ? "ws-card ws-card-small " + WS_CARD_CLASS.correct : isShaking ? "bg-red-100 border-red-300 text-red-700 animate-shake" : isOut ? "ws-card ws-card-small " + WS_CARD_CLASS.wrong : activeIndex === idx ? "bg-violet-200 border-violet-500 text-violet-800 scale-[1.05] ring-4 ring-violet-300 z-10" : "bg-white border-slate-200 text-slate-700 hover:border-violet-300 hover:text-violet-600"}`,
                       },
                       soundOnlyMode ? "🔊" : item.text,
                       // The item ended with this word still to find.
                       revealAnswers && item.isFamily
                         ? React.createElement("span", { className: "ws-card-mark " + WS_CARD_MARK.correct[1], "data-ws-card-mark": "correct" }, React.createElement("span", { "aria-hidden": "true" }, WS_CARD_MARK.correct[0]))
-                        : null,
+                        : isOut && !isShaking
+                          ? React.createElement("span", { className: "ws-card-mark " + WS_CARD_MARK.wrong[1], "data-ws-card-mark": "wrong" }, React.createElement("span", { "aria-hidden": "true" }, WS_CARD_MARK.wrong[0]))
+                          : null,
                     ),
                   );
                 }),
@@ -13638,6 +13653,19 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       }, [wordSoundsLanguage]);
       // Direction of the lesson WORDS (not the interface): sound boxes and letters follow it.
       const wsWordDir = wsLangCaps.rtl ? "rtl" : "ltr";
+      // A name keeps its capital in a filled blank (Finish the Sentence, Read the Story): the word as the text writes
+      // it, when that is a capital after the start of a sentence (Sam). The chips stay lowercase: no capital gives the answer away.
+      const wsNameAsWritten = (text, word) => {
+        const w = String(word || "").trim(); const s = String(text || "");
+        if (!w) return "";
+        const re = new RegExp("(^|[^a-zA-Z])(" + w.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")(?=[^a-zA-Z]|$)", "gi");
+        let m;
+        while ((m = re.exec(s))) {
+          const lead = s.slice(0, m.index + m[1].length).replace(/\s+$/, "");
+          if (lead && !/[.!?]["\u201d']?$/.test(lead) && /^[A-Z]/.test(m[2])) return m[2];
+        }
+        return "";
+      };
       const wsActivityAvailableForLang = React.useCallback(
         (activityId) => {
           const prepared = runtimeSessionConfig.preparedActivities;
@@ -24217,7 +24245,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                         // A sentence-initial blank fills capitalized — the
                         // chips stay lowercase (word-bank convention), but
                         // the completed sentence should read correctly.
-                        rsSolved ? (rsBoard.before ? rsWord : rsWord.charAt(0).toUpperCase() + rsWord.slice(1)) : "____",
+                        rsSolved ? (wsNameAsWritten(rsBoard.sentence, rsWord) || (rsBoard.before ? rsWord : rsWord.charAt(0).toUpperCase() + rsWord.slice(1))) : "____",
                       ),
                       rsBoard.after ? /*#__PURE__*/ React.createElement("span", null, rsBoard.after) : null,
                     ),
@@ -24287,7 +24315,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               },
               // Sentence-initial blanks fill capitalized so the completed
               // story reads correctly.
-              rpSolved ? (capitalize ? rpWord.charAt(0).toUpperCase() + rpWord.slice(1) : rpWord) : "____",
+              rpSolved ? ((!capitalize && wsNameAsWritten(rpBoard && rpBoard.story, rpWord)) || (capitalize ? rpWord.charAt(0).toUpperCase() + rpWord.slice(1) : rpWord)) : "____",
             );
             return /*#__PURE__*/ React.createElement("div", { className: "flex flex-col items-center gap-5 p-4" },
               /*#__PURE__*/ React.createElement("p", { className: "text-xs font-semibold text-violet-600 uppercase tracking-wide" }, ts("word_sounds.read_passage_prompt") || "Read the story. Which word finishes it?"),

@@ -83,9 +83,17 @@ describe('Missing Number probe runs on the shipped bank items', () => {
 
     const items = banks.MISSING_NUMBER_PROBES['1'].A.problems;
     const setter = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    expect(items.some((item) => item.display.includes(' - ')), 'the form has subtraction items').toBe(true);
     items.forEach((item, i) => {
       const shown = document.querySelector('.text-3xl.mb-6.tracking-wider');
-      expect(shown && shown.textContent.replace(/\s+/g, ''), 'item ' + i).toBe(item.display.replace(/_{2,}/, '?').replace(/\s+/g, ''));
+      // 2026-11-13: the bank writes "-"; the runner shows U+2212 (as Math Fluency does), hidden from a screen
+      // reader, which reads the word "minus" instead.
+      const seen = shown && shown.cloneNode(true);
+      if (seen) seen.querySelectorAll('.sr-only').forEach((node) => node.remove());
+      expect(seen && seen.textContent.replace(/\s+/g, ''), 'item ' + i).toBe(item.display.replace(/_{2,}/, '?').replace(/-/g, '−').replace(/\s+/g, ''));
+      const signs = Array.from(shown.querySelectorAll('[data-math-sign]'));
+      expect(signs.map((s) => [s.textContent, s.getAttribute('aria-hidden'), s.nextElementSibling && s.nextElementSibling.className, s.nextElementSibling && s.nextElementSibling.textContent]), 'item ' + i)
+        .toEqual(item.display.includes(' - ') ? [['−', 'true', 'sr-only', 'minus']] : []);
       const input = document.querySelector('input[aria-label="Math probe answer"]');
       React.act(() => {
         setter.call(input, String(item.answer));

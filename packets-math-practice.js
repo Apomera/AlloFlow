@@ -146,7 +146,9 @@
     try { written = builder.factWord(f, loader); } catch (error) { return { text: part, ok: false, says: reason(error) }; }
     if (seen[key]) return { text: written.word, ok: false, says: 'Already in the list.' };
     seen[key] = true;
-    return { text: written.word, ok: true, fact: f, says: 'Ready. The answer is ' + written.answer + '.' };
+    // A fact and its turnaround (3 + 4, 4 + 3) are both kept: the file never puts them side by side. 2026-11-13.
+    var t = builder.turnaround(f), turned = t && builder.factKey(t) !== key && seen[builder.factKey(t)];
+    return { text: written.word, ok: true, fact: f, says: 'Ready. The answer is ' + written.answer + '.' + (turned ? ' ' + word(t) + ' is in the list too, turned around: the file keeps the two apart.' : '') };
   }
   function drawOwn() {
     clearTimeout(ownTimer);
@@ -246,10 +248,16 @@
     }
     setText('known-line', 'New ' + (plan.newFacts.length === 1 ? 'fact' : 'facts') + ' in this file: ' + listed(plan.newFacts.map(word)) + '.');
     var sub = [capital(count(plan.cards.length, 'card')) + '. ' + plan.cards.filter(function (c) { return c.role === 'known'; }).length + ' are facts the student knows.'];
+    // 2026-11-13: a known fact and its turnaround take turns as one; a known fact that is a new fact turned around is not used.
+    var pairs = plan.pairs || [], held = plan.held || [];
+    if (pairs.length) sub.push(capital(listed(pairs.map(function (p) { return word(p[0]) + ' and ' + word(p[1]); })))
+      + (pairs.length === 1 ? ' are the same fact turned around, so they take turns as one known fact and are never side by side.' : ': each pair is one fact turned around, so its two take turns as one known fact and are never side by side.'));
+    held.forEach(function (h) { sub.push(word(h.fact) + ' is not used as a known fact here: it is ' + word(h.gives) + ' turned around, a new fact in this file, so it would give it away.'); });
     if (plan.addedKnown.length) {
-      var ticked = plan.knownFacts.length - plan.addedKnown.length;
-      sub.push((ticked ? 'Only ' + count(ticked, 'fact is', 'facts are') + ' chosen' : 'No facts are chosen') + ', so ' + listed(plan.addedKnown.map(word)) + ' from ' + listed(plan.addedFrom)
-        + (plan.addedFrom.length === 1 ? ', the set before,' : ', the sets before,') + ' are used as known facts too.');
+      var ticked = plan.chosenKnown != null ? plan.chosenKnown : plan.knownFacts.length - plan.addedKnown.length;
+      var fewer = pairs.length || held.length ? (ticked === 1 ? ' different fact can be used' : ' different facts can be used') : (ticked === 1 ? ' fact is chosen' : ' facts are chosen');
+      sub.push((ticked ? 'Only ' + ticked + fewer : 'No facts are chosen') + ', so ' + listed(plan.addedKnown.map(word)) + ' from ' + listed(plan.addedFrom)
+        + (plan.addedFrom.length === 1 ? ', the set before,' : ', the sets before,') + (plan.addedKnown.length === 1 ? ' is used as a known fact too.' : ' are used as known facts too.'));
     }
     if (plan.waiting.length) sub.push(capital(count(plan.waiting.length, 'more new fact waits', 'more new facts wait')) + ' for another file: ' + listed(plan.waiting.map(word)) + '.');
     setText('known-sub', sub.join(' '));
@@ -317,7 +325,9 @@
     var cards = plan.cards.length, knownCards = plan.cards.filter(function (c) { return c.role === 'known'; }).length;
     var rows = [['Facts', pick.set ? pick.set.opName + ': ' + pick.set.name + '. ' + capital(count(pick.facts.length, 'fact')) + '.' : capital(count(pick.facts.length, 'fact')) + ': ' + pick.facts.map(word).join(', ') + '.']];
     if (plan.mode === 'ccc') {
-      rows.push(['How', plan.method + '. Every fact once, ' + (pick.set ? 'in a mixed order, so the student cannot just count on.' : 'in the order you typed them.')]);
+      var moved = plan.cards.map(function (c) { return builder.factKey(c.fact); }).join(',') !== pick.facts.map(builder.factKey).join(',');
+      rows.push(['How', plan.method + '. Every fact once, ' + (pick.set ? 'in a mixed order, so the student cannot just count on.'
+        : moved ? 'in the order you typed them, except that a fact is never right beside its turnaround.' : 'in the order you typed them.')]);
       rows.push(['Cards', capital(count(cards, 'card')) + '. Each one starts with the fact and its answer.']);
     } else {
       rows.push(['How', plan.method + '. New ' + (plan.newFacts.length === 1 ? 'fact' : 'facts') + ': ' + listed(plan.newFacts.map(word)) + '. Known facts: ' + listed(plan.knownFacts.map(word)) + '.']);

@@ -6,6 +6,13 @@
 // 16855-16888); graded at word_sounds_module.js:20348-20380: the designated
 // rhymeWord, or any other choice whose spelling rime (>= 2 letters) matches the
 // target's, then checkAnswer("correct"|"incorrect","correct"), 2 tries.
+// 2026-11-13 parity: the app's sound-only choices are now cards (a tap plays and selects, a
+// large Check submits, a missed card is crossed out: 94704af0e4). The file keeps two buttons
+// per choice, Listen first, then Choose, in every activity, as Find Sounds always had them
+// (hear, then choose).
+// Fewer choices: the app trims this board below Hard (WS_CORE.choiceLimit + trimChoices:
+// Easy 3, Medium 4). A packet does the same when made with Choices Easy or Medium
+// (word_sounds_packet_builder.js, choiceLevels); a board as built (All) is shown whole.
 
 // Words this export has shown prepare() so far (the app's pool is the whole
 // pack; prepare only sees one word, so later words cannot be consulted).
@@ -111,7 +118,7 @@ module.exports = {
           });
           if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
         } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: choice.text }) : ctx.fmt(ctx.L.rhyming_option_n, { n: n })]);
-      var box = ctx.el('li', { class: 'choice' }, [choose, listen]);
+      var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
       cards.push({ box: box, choose: choose, answer: choice.answer });
       list.appendChild(box);
     });
@@ -129,6 +136,8 @@ module.exports = {
       run([{ id: item.promptAudio, gap: 200 }, { id: item.wordAudio, gap: 200 }].concat(item.choices.map(function (c, i) { return { id: c.audio, gap: 350, hi: i }; })));
     }
     return {
+      // The R key: the question and the word again.
+      replay: function () { run([{ id: item.promptAudio, gap: 200 }, { id: item.wordAudio }]); },
       reveal: function () {
         halt();
         cards.forEach(function (c) {

@@ -11,8 +11,10 @@ afterEach(()=>{for(const m of mounts.splice(0)){act(()=>m.root.unmount());m.host
 function mount(extra={}){
  const start=source.indexOf('const WordFamiliesView = React.useMemo('),end=source.indexOf('const ts = React.useCallback(',start);
  const audioRunIdRef={current:0};
- const View=new Function('React','t','ts','isMountedRef','audioRunIdRef','isPlayingAudioRef','currentActiveAudio','fisherYatesShuffle','Volume2','Check','X',source.slice(start,end)+';return WordFamiliesView;')(
-  {...React,useMemo:fn=>fn()},key=>key,()=>'',{current:true},audioRunIdRef,{current:false},{current:null},a=>a,()=>null,()=>null,()=>null);
+ // The card styles a wrong word takes once it is out (2026-11-13), from the module's own table.
+ const cards=new Function(source.slice(source.indexOf('const WS_CARD_CLASS = {'),source.indexOf('const wsCardKeyDown ='))+';return [WS_CARD_CLASS,WS_CARD_MARK];')();
+ const View=new Function('React','t','ts','isMountedRef','audioRunIdRef','isPlayingAudioRef','currentActiveAudio','fisherYatesShuffle','Volume2','Check','X','WS_CARD_CLASS','WS_CARD_MARK',source.slice(start,end)+';return WordFamiliesView;')(
+  {...React,useMemo:fn=>fn()},key=>key,()=>'',{current:true},audioRunIdRef,{current:false},{current:null},a=>a,()=>null,()=>null,()=>null,...cards);
  const props={data:{family:'at',targetWord:'cat',options:['hat','bat'],distractors:['dog','sun']},onPlayAudio:vi.fn(async()=>{}),onCheckAnswer:vi.fn(),soundOnlyMode:false,...extra};
  const host=document.createElement('div');document.body.appendChild(host);const root=client.createRoot(host);const m={host,root,props,audioRunIdRef};mounts.push(m);
  m.render=patch=>{Object.assign(props,patch);act(()=>root.render(React.createElement(View,props)));};m.render({});
@@ -25,6 +27,14 @@ describe('Sound Sort and Word Families board lifecycle',()=>{
  it('retains distinct selections batched before React rerenders',async()=>{
   const m=mount();const hat=m.button('hat'),bat=m.button('bat');act(()=>{hat.click();bat.click();});await tick(1200);
   expect(m.props.onCheckAnswer).toHaveBeenCalledExactlyOnceWith('correct');
+ });
+ it('a wrong word is out after its first tap: a second tap costs no try (2026-11-13)',async()=>{
+  const m=mount();const dog=m.button('dog');act(()=>{dog.click();});await tick(1600);act(()=>{dog.click();dog.click();});await tick(1600);
+  expect(m.props.onCheckAnswer.mock.calls).toEqual([['incorrect']]);
+  expect([dog.getAttribute('aria-disabled'),dog.getAttribute('data-ws-card-state'),dog.getAttribute('aria-label')]).toEqual(['true','wrong','dog, Not this one']);
+  expect(m.button('sun').hasAttribute('aria-disabled')).toBe(false);
+  m.render({data:{family:'un',options:['sun'],distractors:['dog']}});
+  expect(m.button('dog').hasAttribute('aria-disabled'),'a new board starts with every word in').toBe(false);
  });
  it('does not submit twice when the final tile is tapped rapidly',async()=>{
   const m=mount({data:{family:'at',options:['hat'],distractors:['dog']}});const hat=m.button('hat');act(()=>{hat.click();hat.click();});await tick(1200);

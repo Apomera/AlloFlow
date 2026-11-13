@@ -283,7 +283,15 @@
     try { made = loader.CHECK_ADAPTERS.math_computation.prepare(raw, {}); } catch (_) { made = null; }
     if (!made || !made.item) return out('This cannot be used' + (made && made.missing ? ': it needs ' + made.missing.join(', ') : '') + '.');
     if (given != null && String(given) !== made.item.answer) return out(made.item.word + ' is ' + made.item.answer + ', not ' + given + '.');
-    return { text: made.item.word, ok: true, problem: problem, says: 'Ready. The answer ' + (problem.display != null ? 'you gave is ' : 'is ') + made.item.answer + '.' };
+    // An answer below 0 is shown with the minus sign the problems use (U+2212), not a hyphen (2026-11-13, teacher-journey pass).
+    return { text: made.item.word, ok: true, problem: problem, answer: made.item.answer, says: 'Ready. The answer ' + (problem.display != null ? 'you gave is ' : 'is ') + String(made.item.answer).replace(/^-/, '−') + '.' };
+  }
+  // Answers below 0 are allowed; the teacher is told, in case one was typed the wrong way round (3 - 5 for 5 - 3). 2026-11-13.
+  function belowZero(rows) {
+    var below = rows.filter(function (row) { return row.ok && /^-/.test(row.answer); });
+    if (!below.length) return '';
+    return (below.length === 1 ? below[0].text + ' has an answer below 0' : count(below.length, 'problem') + ' have an answer below 0 (' + listed(below.slice(0, 3).map(function (row) { return row.text; })) + (below.length > 3 ? ' and more' : '') + ')')
+      + ': the keypad in the file gets a minus key. Change ' + (below.length === 1 ? 'it' : 'them') + ' if that is not what you meant.';
   }
   function ownLesson() {
     return builder.lessonFromMathProblems({ title: state.title, problems: ownRows.filter(function (row) { return row.ok; }).map(function (row) { return row.problem; }),
@@ -306,6 +314,7 @@
     if (!parts.length) { line = 'Type or paste your problems above.'; ownStop = 'Type at least one problem to go on.'; }
     else if (bad) ownStop = count(bad, 'problem') + ' cannot be used. Change ' + (bad === 1 ? 'it' : 'them') + ' or take ' + (bad === 1 ? 'it' : 'them') + ' out to go on.';
     else { try { ownLesson(); } catch (error) { line = ownStop = said(error); } }
+    if (!ownStop && belowZero(ownRows)) line += ' ' + belowZero(ownRows);
     setText('own-line', line);
     if (!ownStop) setText('step-2-problem', '');
   }
@@ -474,6 +483,16 @@
   var DIVIDE = String.fromCharCode(0xF7);
   var BLANK = /_{2,}/;
   var paperOn = false;
+  // Numbers and signs as the file shows them on screen (math_computation.js, missing_number.js; 2026-11-13): the minus sign,
+  // times and divide, never a hyphen or an x, and a number of 10000 or more in groups of three with a narrow no-break space,
+  // which reads the same in every language (a comma is a decimal mark in many).
+  var GAP = String.fromCharCode(0x202F);
+  function shown(text) {
+    return String(text).replace(/(^|\s)-(?=\s|\d)/g, function (all, lead) { return lead + String.fromCharCode(0x2212); })
+      .replace(/([\d_]) [xX*] (?=[\d_])/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xD7) + ' '; })
+      .replace(/([\d_]) \/ (?=[\d_])/g, function (all, lead) { return lead + ' ' + DIVIDE + ' '; })
+      .replace(/\d{5,}/g, function (n) { return n.replace(/\B(?=(\d{3})+(?!\d))/g, GAP); });
+  }
 
   var fill = function (text, values) { return String(text).replace(/\{(\w+)\}/g, function (all, key) { return has(values, key) ? String(values[key]) : all; }); };
   // A time in the file's own words: "1 minute", "2 minutes", "90 seconds".
@@ -496,7 +515,7 @@
   // About how wide a run of text is, in ems of the numeral size.
   function ems(text) {
     var n = 0;
-    String(text).split('').forEach(function (ch) { n += /[0-9]/.test(ch) ? 0.56 : ch === ' ' ? 0.3 : 0.64; });
+    String(text).split('').forEach(function (ch) { n += /[0-9]/.test(ch) ? 0.56 : ch === ' ' || ch === GAP ? 0.3 : 0.64; });
     return n;
   }
   // One item on paper: a pair of numbers, a stacked problem (a division in its bracket) or a line, and the width it needs.
@@ -552,23 +571,23 @@
     var box;
     if (shape.shape === 'pair') {
       box = el('span', 'pp');
-      box.appendChild(el('span', 'pp-n', String(row.left)));
-      box.appendChild(el('span', 'pp-n', String(row.right)));
+      box.appendChild(el('span', 'pp-n', shown(row.left)));
+      box.appendChild(el('span', 'pp-n', shown(row.right)));
     } else if (shape.shape === 'line') {
-      // "__ + 8 = 14" as written, with a line to write on for the blank. A line with no blank ends "= ____".
+      // "__ + 8 = 14" as written (with the file's signs), with a line to write on for the blank. A line with no blank ends "= ____".
       box = el('span', 'pl');
-      var parts = String(row.display).split(/(_{2,})/).filter(Boolean);
+      var parts = shown(row.display).split(/(_{2,})/).filter(Boolean);
       if (!BLANK.test(row.display)) parts.push(' = ', '__');
       parts.forEach(function (part) { box.appendChild(BLANK.test(part) ? el('span', row.answer.length > 3 ? 'pblank pblank-wide' : 'pblank') : doc.createTextNode(part)); });
     } else if (row.symbol === DIVIDE) {
       box = el('span', 'pdv');
-      box.appendChild(el('span', 'pdv-by', String(row.b)));
-      box.appendChild(el('span', 'pdv-in', String(row.a)));
+      box.appendChild(el('span', 'pdv-by', shown(row.b)));
+      box.appendChild(el('span', 'pdv-in', shown(row.a)));
     } else {
       box = el('span', 'ps');
-      box.appendChild(el('span', 'ps-a', String(row.a)));
+      box.appendChild(el('span', 'ps-a', shown(row.a)));
       box.appendChild(el('span', 'ps-op', row.symbol));
-      box.appendChild(el('span', 'ps-b', String(row.b)));
+      box.appendChild(el('span', 'ps-b', shown(row.b)));
     }
     item.appendChild(box);
     return item;
@@ -636,7 +655,7 @@
     var paper = paperOf(lesson), learner = $('paper-learner');
     var all = paper.samples.concat(paper.items), plan = layOut(paper.kind, all);
     var sampleShapes = plan.shapes.slice(0, paper.samples.length), itemShapes = plan.shapes.slice(paper.samples.length);
-    var how = PAPER_HOW[paper.kind] + (plan.cols > 1 ? ' Go across each row.' : '') + (paper.skip ? ' If you get stuck, go on to the next one.' : '');
+    var how = PAPER_HOW[paper.kind] + (all.some(function (row) { return row.remainder; }) ? ' Leave out the remainder.' : '') + (plan.cols > 1 ? ' Go across each row.' : '') + (paper.skip ? ' If you get stuck, go on to the next one.' : '');
     // The first sheet: the page line, the title (about 50 characters to a line), the name line, the directions (about 70 to a
     // line), the time, the samples and the start line. The rest of the sheet is for the problems.
     var head = PAPER.page + 12 * Math.ceil(paper.title.length / 50) + 15 + 8 * Math.ceil(how.length / 70) + 12 + 10
@@ -692,8 +711,8 @@
     all.forEach(function (row, i) {
       var line = el('li', '');
       line.appendChild(el('span', 'kn', row.practice ? 'Sample' : String(i - paper.samples.length + 1)));
-      line.appendChild(el('span', 'kw', String(row.word)));
-      line.appendChild(el('span', 'ka', row.answer));
+      line.appendChild(el('span', 'kw', shown(row.word)));
+      line.appendChild(el('span', 'ka', shown(row.answer)));
       $('paper-key').appendChild(line);
     });
     paperOn = true;

@@ -213,6 +213,17 @@ describe('Packets vocabulary bank', () => {
     expect(bank.sense('no|n|1')).toBe(null);
   });
 
+  // 2026-11-13: an irregular form whose base word was trimmed out (algae, bred) gave head() a word with no entry,
+  // and senses() threw. Every form in the file now leads to a headword, or to nothing.
+  it('never sends an irregular form to a word that is not in the bank', () => {
+    const forms = [];
+    bank.shards.forEach((s) => { const d = JSON.parse(read(s.url)); if (d.forms) d.forms.split(',').forEach((x) => forms.push(x.split(' ')[0])); });
+    expect(forms.length).toBeGreaterThan(100);
+    const bad = forms.filter((f) => { try { const h = bank.head(f); bank.senses(f); return h !== null && !bank.words().includes(h); } catch (_) { return true; } });
+    expect(bad).toEqual([]);
+    expect(bank.senses('algae')).toEqual([]);
+  });
+
   it('applies the corrections file: school meaning first, wrong text fixed, rejects left out', () => {
     expect(bank.senses('cell')[0].def).toMatch(/living/i);
     expect(bank.senses('conductor')[0].def).toMatch(/electricity|heat/i);

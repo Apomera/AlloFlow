@@ -87,7 +87,7 @@
   .key-cols-2 { columns: 2; }
   .key-cols-3 { columns: 3; }
   .paper-key li { display: flex; gap: 2mm; padding: 0.5mm 0; border-bottom: 0.2mm solid #808080; break-inside: avoid; page-break-inside: avoid; }
-  .kn { flex: 0 0 13mm; font-weight: 700; }
+  .kn { flex: 0 0 15mm; font-weight: 700; }
   .kw { flex: 1 1 auto; }
   .ka { flex: 0 0 auto; font-weight: 700; }
   .paper-caution { margin: 0; padding: 2mm 3mm; border: 0.4mm solid #000000; font-weight: 700; break-inside: avoid; }

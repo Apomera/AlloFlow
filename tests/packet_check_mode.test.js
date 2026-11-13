@@ -327,7 +327,9 @@ describe('the clock', () => {
     const b = open(FILES.qd.html, { storage: a.storageDump(), clock: { t: 1, wall: a.time.wall + 600000, hidden: false } });
     expect(b.heading()).toBe('You finished. Thank you.');
     const file = b.saveJson();
-    expect(file.score).toMatchObject({ completion: 'time', elapsedS: 60, itemsAttempted: 1 });
+    // 2026-11-13 (engine fixes): the time ran out while the page was closed, so completion says so and there is no score.
+    expect(file.score).toMatchObject({ completion: 'time_up_away', score: null, noScoreReason: 'time_up_away', elapsedS: 60, itemsAttempted: 1 });
+    expect(file.score.flags).toContain('time_up_away');
     // Away from the page until the deadline, not beyond it.
     expect(file.score.hiddenS).toBeCloseTo(59.7, 1);
     expect(file.items[3].flag).toBe('time_up');
@@ -441,7 +443,8 @@ describe('the finish screen', () => {
     expect(shown).not.toContain('Right on the first try');
     const blob = t.saveCsv();
     expect(blob.name).toMatch(/^Math-Fluency-check-3A__Ana__\d{4}-\d{2}-\d{2}\.csv$/);
-    expect(t.text()).toContain('Saved as ' + blob.name + '.');
+    // 2026-11-13 (engine fixes): a download cannot be seen to finish, so the file says the browser is saving it.
+    expect(t.text()).toContain('Your browser is saving ' + blob.name + '.');
   });
 
   it('a finished check cannot be run again under its session id; Start over asks, mints a new id and counts the try', () => {
@@ -553,7 +556,8 @@ describe('for the teacher', () => {
     const rows = reviewRows(t);
     expect(rows).toHaveLength(26);
     const [s0, s1, s2, s3] = scored(MC);
-    expect(rows[0]).toEqual(['1', '1 + 1', '2', 'practice (not scored)', '2', '0.3']);
+    // 2026-11-13: the sample is of the form's own operation and size (2 × 3 for grade 3; tests/packets_math_vocab_fixes_2026_11_13b.test.js).
+    expect(rows[0]).toEqual(['1', '2 ' + String.fromCharCode(0xD7) + ' 3', '6', 'practice (not scored)', '6', '0.3']);
     expect(rows[1]).toEqual(['2', s0.a + ' ' + s0.symbol + ' ' + s0.b, String(s0.answer), 'right', String(s0.answer), '0.3']);
     expect(rows[2]).toEqual(['3', s1.a + ' ' + s1.symbol + ' ' + s1.b, String(s1.answer + 1), 'wrong', String(s1.answer), '0.3']);
     expect(rows[3].slice(2, 5)).toEqual([String(s2.answer), 'right', String(s2.answer)]);
@@ -636,7 +640,8 @@ describe('scrambled answers', () => {
     items.forEach((item, i) => {
       const answer = String(expected(raws(lesson)[i]));
       // Only what the screen draws, an id and the scrambled answer.
-      const allowed = { qd: ['id', 'word', 'left', 'right', 'key', 'practice'], mn: ['id', 'word', 'display', 'key', 'practice'], mc: ['id', 'word', 'a', 'b', 'symbol', 'key', 'practice'] }[id];
+      // 2026-11-13: shown, the problem as the screen shows it (the minus sign), when it differs from the form's text.
+      const allowed = { qd: ['id', 'word', 'left', 'right', 'key', 'practice'], mn: ['id', 'word', 'display', 'shown', 'key', 'practice'], mc: ['id', 'word', 'a', 'b', 'symbol', 'key', 'practice'] }[id];
       expect(Object.keys(item).filter((k) => !allowed.includes(k)), item.id).toEqual([]);
       // The same length whatever the answer, and not the answer's own bytes.
       expect(item.key).toMatch(/^[A-Za-z0-9+/]{16}$/);
@@ -824,14 +829,17 @@ describe('the results of a check', () => {
     const item = scored(MC);
     // format .. mode, then the item cells.
     expect(rows[2].slice(0, 7)).toEqual(['alloflow-packet-result/1', file.sessionId, 'math-computation-g3', MC.revision, 'A', 'check', 'Ana']);
-    expect(rows[1].slice(10)).toEqual(['1', 'math_computation-p0', 'math_computation', 'Math Fluency', '0', '1 + 1', '2', '2', '1', '1', '1', '300', '', '', '', '']);
+    // 2026-11-13: the grade 3 sample is 2 × 3.
+    expect(rows[1].slice(10)).toEqual(['1', 'math_computation-p0', 'math_computation', 'Math Fluency', '0', '2 ' + String.fromCharCode(0xD7) + ' 3', '6', '6', '1', '1', '1', '300', '', '', '', '']);
     expect(rows[2].slice(10)).toEqual(['2', 'math_computation-0', 'math_computation', 'Math Fluency', '1', '9 ' + String.fromCharCode(0xD7) + ' 7', '63', '63', '1', '1', '1', '1000', '', '', '2', '2']);
     expect(rows[4].slice(16)).toEqual([String(item[2].answer), String(item[2].answer + 1), '0', '0', '1', '1000', '', '', String(appDigits(item[2].answer, item[2].answer + 1)), String(String(item[2].answer).length)]);
     expect(rows[6].slice(16)).toEqual([String(item[4].answer), '', '0', '0', '1', '1000', '', 'skipped', '0', String(String(item[4].answer).length)]);
     // The trailer: summary (with the try), score, integrity last.
     const digits = item.reduce((sum, p, i) => sum + (i === 4 ? 0 : appDigits(p.answer, i === 2 ? p.answer + 1 : p.answer)), 0);
     const possible = item.reduce((sum, p) => sum + String(p.answer).length, 0);
-    expect(rows[27]).toEqual(['#summary', file.sessionId, 'items_given=25', 'attempted=25', 'correct=23', 'first_try=23', 'accuracy_pct=92', 'attempt=1', 'title=Math Fluency check (3A)']);
+    // 2026-11-13: then the time on the items (activeMs, the items' ms added up), a file saved from then on.
+    expect(file.activeMs).toBe(file.items.reduce((n, it) => n + it.ms, 0));
+    expect(rows[27]).toEqual(['#summary', file.sessionId, 'items_given=25', 'attempted=25', 'correct=23', 'first_try=23', 'accuracy_pct=92', 'attempt=1', 'title=Math Fluency check (3A)', 'active_s=' + Math.round(file.activeMs / 1000)]);
     expect(file.lessonTitle).toBe('Math Fluency check (3A)');
     expect(rows[28]).toEqual(['#score', file.sessionId, 'measure=math_dcpm', 'score=' + Math.round(digits / (25 / 60)), 'score_unit=digits_correct_per_minute', 'digits_correct=' + digits, 'digits_possible=' + possible,
       'items_correct=23', 'items_attempted=25', 'time_limit_s=120', 'elapsed_s=25', 'hidden_s=0', 'completion=complete', 'prorated=1', 'scoring_version=3', 'form_version=2', 'attempt=1', 'flags=',
@@ -1176,12 +1184,13 @@ describe('a teacher\'s own problems', () => {
 
   it('remainders only when the caller allows them; the answer is then the whole-number part', () => {
     const lesson = PC.lessonFromMathProblems({ problems: [{ a: 7, b: 2, op: 'div' }, { a: 9, b: 3, op: '/' }], allowRemainders: true, allowSkip: false, timeLimitS: 0 });
-    expect(raws(lesson)).toEqual([{ a: 7, b: 2, op: 'div', allowRemainder: true, id: 'math_computation-0' }, { a: 9, b: 3, op: 'div', id: 'math_computation-1' }]);
+    // 2026-11-13: every division of such a check is marked, so the student is told on each to leave out the remainder.
+    expect(raws(lesson)).toEqual([{ a: 7, b: 2, op: 'div', allowRemainder: true, id: 'math_computation-0' }, { a: 9, b: 3, op: 'div', allowRemainder: true, id: 'math_computation-1' }]);
     expect([lesson.timeLimitS, lesson.check.allowSkip, lesson.check.measure, lesson.check.scoreUnit]).toEqual([null, false, 'math_items', 'items_correct']);
     const sealed = sealedOf(pack(lesson).html);
     const codec = TH.checkCodec(TH.sha256);
     expect(sealed.blocks[0].items.map((item) => codec.unscramble(item.key, sealed.check.salt, item.id))).toEqual(['3', '3']);
-    expect(Object.keys(sealed.blocks[0].items[0])).toEqual(['id', 'word', 'a', 'b', 'symbol', 'key']);
+    expect(Object.keys(sealed.blocks[0].items[0])).toEqual(['id', 'word', 'a', 'b', 'symbol', 'remainder', 'key']);
     // The loader's own check says the same when it is handed such a problem directly.
     expect(TH.CHECK_ADAPTERS.math_computation.prepare({ a: 7, b: 2, op: 'div' })).toEqual({ missing: ['a division with no remainder'] });
     expect(TH.CHECK_ADAPTERS.math_computation.prepare({ a: 7, b: 8, op: 'add', answer: 16 })).toEqual({ missing: ['an answer that matches the problem'] });
@@ -1250,7 +1259,10 @@ describe('source check: a check file cannot send anything either', () => {
     expect(manifest.stores).toHaveLength(1);
     // Small: no sound, no pictures. Re-pinned 2026-11-12 from 120000: every file carries Hear all and the reading tool
     // "Read the choices" (hearAllIn), and that day's accessibility fixes and Untimed option (another job's); about 120.5 KB now.
-    expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(130000);
+    // Re-pinned 2026-11-13 from 130000 (about 129.7 KB): "Stop?" pauses the clock (L5, +1.7 KB with the shell's new
+    // lines), on top of that day's other passes.
+    // Re-pinned 2026-11-13 (engine fixes) from 135000: two tabs, honest saving, sound notes (+9.3 KB; QD 130.5 -> 139.9 KB).
+    expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(145000);
     expect(sealedOf(html)).toMatchObject({ audio: {}, images: {}, submit: null });
   });
 
@@ -1327,10 +1339,33 @@ describe('practice files are as they were', () => {
   // 19 lines out and 45 in (C:/tmp/packets_build_1111/look/pin_diff.json), the one "(late)" line above among them, and
   // with the loader before this pass it differed in that line only. The lesson is unchanged. The two lists are empty.
   // 2026-11-13 (Aaron), deliberately: the right-answer tick pops in once, only without reduced motion. One style line.
+  // Renewed 2026-11-13 (Word Sounds polish pass, C:/tmp/packets_build_1111/polish_ws/FINDINGS.md), deliberately, by the
+  // recipe above. The old fixture differed from the new one in 7 lines out and 15 in (polish_ws/pin_diff.json): the
+  // tick line above; the labels line (one new word, done_practice); the R key plays an
+  // activity's own opening again when its render gives replay() (keyItem.handle); the end screen counts practice
+  // (Letter Trace) as "Practice, not scored: {done} of {total} done." in its own row, and in place of "0 of 0" in a
+  // file of practice only. The lesson is unchanged. The two lists are empty.
+  // Renewed 2026-11-13 (second Word Sounds pass, C:/tmp/packets_build_1111/polish_ws2/), deliberately, by the recipe
+  // above. The old fixture differed from the new one in 6 lines out and 12 in (polish_ws2/pin_diff.json): Find Sounds
+  // names a sound like oo_short with letters on (ctx.sound); the keys 1-9 answer to a choice's data-key when it has one
+  // (Sound Counting with fewer numbers); a render's payoff() reads the text back after the praise; clockHold, which a
+  // check's "Stop?" uses to hold an item's time. The labels line is unchanged (the sound names travel only in a file
+  // that shows letters). The lesson is unchanged. The two lists are empty.
+  // Renewed 2026-11-13 (robustness pass, C:/tmp/packets_build_1111/robust/FINDINGS.txt), deliberately, by the recipe
+  // above. The old fixture differed from the new one in 6 lines out and 15 in (robust/pin_diff.json), and with the
+  // loader before this pass in none: one document key listener stops Hear all (hearStops; one for each Hear all kept
+  // every past screen alive), the storage note on every screen while the storage refuses (data-store-off; damaged
+  // JSON is not a refusal), activeMs in the results and active_s= last in "#summary" (the title comment no longer
+  // says "the last cell"). The labels line and the lesson are unchanged. The two lists are empty.
+  // Renewed 2026-11-13 (engine fixes, C:/tmp/packets_build_1111/engine2/STATUS.txt), deliberately, by the recipe above. The
+  // old fixture differed from the new one in 16 lines out and 122 in (engine2/pin_diff.json), and with the loader before this
+  // pass in none (engine2/repin.cjs): two tabs of one file (state.tab, state.ping, the two_tabs screen, Continue here, the
+  // guard before each write; the place read and written in two helpers), "Your browser is saving" after Save (saving_file), a sound that did not play said on the item
+  // (sound_failed) and a clip with no progress settling after 5 s, Hear all never left on Stop, #live cleared by screen(),
+  // the place read again at Start, primary buttons printed in the text color, and four new words in the labels line.
+  // The lesson is unchanged. The two lists are empty.
   const REMOVED = [];
-  const ADDED = [
-    "@media (prefers-reduced-motion:no-preference){.choice.right::after{animation:lt-pop .25s ease-out}}@keyframes lt-pop{from{transform:scale(.3);opacity:0}to{transform:none;opacity:1}}",
-  ];
+  const ADDED = [];
   it('byte for byte, but for the listed lines', () => {
     const before = level(readFileSync('tests/fixtures/take_home_practice_file_before_check_mode.html', 'utf8')).split('\n');
     const now = level(practiceFile()).split('\n');
@@ -1382,7 +1417,8 @@ describe('practice files are as they were', () => {
     // the value is made from the id line and the two item rows, and the file checks out under any title.
     const lines = saved[1].body.slice(1).split('\r\n');
     expect(d.querySelector('h1').textContent).toBe('Short a');
-    expect(lines[3]).toBe('"#summary","' + file.sessionId + '","items_given=2","attempted=2","correct=2","first_try=2","accuracy_pct=100","title=Short a"');
+    // 2026-11-13: then the time on the items (activeMs).
+    expect(lines[3]).toBe('"#summary","' + file.sessionId + '","items_given=2","attempted=2","correct=2","first_try=2","accuracy_pct=100","title=Short a","active_s=' + Math.round(file.activeMs / 1000) + '"');
     expect(parseCsv(saved[1].body.slice(1))[4].slice(0, 3)).toEqual(['#integrity', file.integrity.method, file.integrity.value]);
     expect(TH.resultsCsv(file).basis).toBe([file.packet.id, file.packet.version, '', file.sessionId].join('|') + '\n' + lines.slice(1, 3).join('\n'));
     expect([TH.parseResult(file).integrity, TH.parseResult({ ...file, lessonTitle: 'Another title' }).integrity, TH.parseResult({ ...file, lessonTitle: '' }).integrity]).toEqual(['ok', 'ok', 'ok']);

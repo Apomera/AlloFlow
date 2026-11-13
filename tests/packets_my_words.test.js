@@ -776,8 +776,9 @@ describe('the page as files: the one page that may reach other websites', () => 
     expect(strip.hasAttribute('open')).toBe(false);
     expect(strip.querySelector('.proof-line').textContent).toBe('This page runs without AI. No account. It can search three named websites for pictures, and only after you turn that on.');
     const said = (id) => doc.getElementById(id).textContent.replace(/\s+/g, ' ').trim();
-    // Unlike the other pages, it can reach other websites.
-    expect(said('proof-reach')).toBe('This page, unlike the other Packets pages, can reach other websites. The other pages cannot connect to any other website. This one can connect to the five addresses listed here, and to nothing else: the rule below names them, and the browser refuses everything the rule does not name.');
+    // Unlike most pages, it can reach other websites. 2026-11-13 (teacher-journey pass): Look up a word online and Open a practice file
+    // can reach one other site each (packets-it.html says which), so "the other pages cannot connect" was no longer true.
+    expect(said('proof-reach')).toBe('This page, unlike most Packets pages, can reach other websites. Most of the other pages cannot connect to any other website: the guide for school IT names the two that can, and what they send. This one can connect to the five addresses listed here, and to nothing else: the rule below names them, and the browser refuses everything the rule does not name.');
     // Every host in the rule is listed by name, and no other.
     expect([...doc.querySelectorAll('#proof-hosts code')].map((code) => code.textContent)).toEqual(ALL_HOSTS);
     expect(said('proof-hosts')).toBe('Global Symbols: globalsymbols.com. Openverse: api.openverse.org. Wikimedia Commons: commons.wikimedia.org, with its picture files at thumb.wikimedia.org and upload.wikimedia.org.');

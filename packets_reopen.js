@@ -12,6 +12,7 @@
 //     why: one plain sentence when the file cannot be used here, page: { href, name } (the page that makes it),
 //     teacherCode: true when a check had a teacher code (it cannot be read back),
 //     title, activities, words, version ('A' | 'B' | 'C' | ''), pictures, learner, items,
+//     tracing ('both' | 'capital' | 'lowercase'), choices ('easy' | 'medium' | 'all'),
 //     own: { word: { sounds: { sounds, spelling }, clip: { dataUri, source }, picture: { dataUri, credit } } },
 //     notes: plain sentences, each about something that could not be read back }
 //
@@ -166,6 +167,17 @@
       : 'The file was made with a version this page does not have, so version A is chosen. The new file will have a different mix.');
 
     out.pictures = isObject(lesson.pictures) && isObject(lesson.images) && Object.keys(lesson.images).length > 0;
+    // Letter Trace (2026-11-13): which letters its items trace. Capital and lowercase unless every item traces one kind.
+    var traced = [];
+    kept.filter(function (block) { return block.activity === 'letter_tracing'; }).forEach(function (block) {
+      block.items.forEach(function (item) { if (isObject(item) && Array.isArray(item.parts)) traced.push(item.parts.length === 1 && isObject(item.parts[0]) ? String(item.parts[0].kind || '') : 'both'); });
+    });
+    out.tracing = traced.length && traced.every(function (kind) { return kind === 'capital'; }) ? 'capital'
+      : traced.length && traced.every(function (kind) { return kind === 'lowercase'; }) ? 'lowercase' : 'both';
+    // Choices (2026-11-13): how many choices the boards show, as the maker's manifest says. A file made before it said
+    // so showed every choice.
+    var level = isObject(m.builder) ? m.builder.choices : null;
+    out.choices = level === 'easy' || level === 'medium' || level === 'all' ? level : 'all';
     if (typeof m.learner === 'string') out.learner = typeof e.codeName === 'function' ? e.codeName(m.learner) : m.learner.slice(0, 40);
 
     // The teacher's own sounds, recordings and pictures, for the words the manifest names.

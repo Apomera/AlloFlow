@@ -365,7 +365,13 @@
     { id: 'file-save', name: 'A file made on the device (Blob)', re: /\bcreateObjectURL\b|\bnew\s+(?:\w+\s*\.\s*)?Blob\b/g, cls: EXPECTED,
       why: 'Makes the results file on the device when the student presses a save button. It needs no connection.' },
     { id: 'clipboard', name: 'clipboard', re: /\bclipboard\b/g },
+    // 2026-11-13: a message to the page around the file. A packet sends one, to the "Open a practice file" page (see scanSource).
+    { id: 'post-message', name: 'postMessage', re: /\bpostMessage\b/g, cls: LOOK, why: 'Sends a message to another window or to the page around this one. A packet sends one only to the page it is opened in.' },
+    // 2026-11-13: a channel to other pages of the same site in this browser. A packet uses one to tell another copy of itself that it is open (see scanSource).
+    { id: 'broadcast-channel', name: 'BroadcastChannel', re: /\bBroadcastChannel\b/g, cls: LOOK, why: 'Talks to other pages of the same site open in this browser. A packet uses it only to tell another copy of itself, open in another tab, that it is open.' },
   ];
+  // Why the channel between two copies of one file is expected (rules broadcast-channel and post-message).
+  var TAB_WHY = 'When the same file is open in two tabs or windows of this browser, the copies tell each other, so only one goes on and keeps the student\'s place, and a check open in both is noted in its results. The channel is named after the file\'s own storage name and reaches only pages of the same site in this browser on this device. It needs no connection.';
   // An address that names another place: a scheme or none, then two slashes and a host. The scan lists these (rule "external").
   var ELSEWHERE = /^\s*(?:[a-z][a-z0-9+.-]*:)?\/\/\S/i;
   function excerptAt(text, at, length) {
@@ -437,12 +443,27 @@
         var call = /^localStorage\s*\.\s*\w+\s*\(\s*([^,)]*)/.exec(text.substr(f.at, 200));
         if (place === 'the manifest block') { f.cls = EXPECTED; f.why = 'The file\'s own description names where it keeps the student\'s place.'; }
         else if (place !== 'the code') { f.cls = LOOK; f.why = 'The word is in ' + place + ', not in the code.'; }
+        else if (a.tabBus && call && call[1].replace(/\s+/g, '') === 'busKey' && /^localStorage\s*\.\s*(?:setItem|removeItem)\b/.test(text.substr(f.at, 40))) {
+          f.cls = EXPECTED;
+          f.why = 'Tells another copy of this file, open in another tab or window on this device, that it is open, where the browser has no BroadcastChannel: a short message under the file\'s storage name with "|tab" added, set and removed at once, so nothing is kept under it.';
+        }
         else if (call && call[1].replace(/\s+/g, '') !== 'storageKey') { f.cls = LOOK; f.why = 'Uses the browser\'s storage under a name other than the one name a packet uses.'; }
         else { f.cls = EXPECTED; f.why = 'Keeps the student\'s place on this device, under the one name the file uses.'; }
       } else if (f.id === 'speech') {
         // A vocabulary file (packet_vocab_builder.js) reads aloud with the device's own voice, and says so in its manifest.
         if (a.speech && place === 'the code') { f.cls = EXPECTED; f.why = 'Reads the question and the answers aloud with the voice built into the device, when the student presses Read aloud. The file declares it, and uses only a voice that runs on the device. It needs no connection.'; }
         else if (a.speech && place === 'the manifest block') { f.cls = EXPECTED; f.why = 'The file\'s own description names the speech engine it uses for Read aloud.'; }
+      } else if (f.id === 'post-message') {
+        var before = text.slice(Math.max(0, f.at - 16), f.at).replace(/\s+/g, '');
+        // 2026-11-13: the message to another copy of this file (see tabBus in verifyPacket): one call, on the channel.
+        if (a.tabBus && place === 'the code' && /\bchannel\.$/.test(before)) { f.cls = EXPECTED; f.why = TAB_WHY; }
+        // The bridge of the "Open a practice file" page (takeHomeShell, linked() in the take-home loader): one call, in the code.
+        else if (a.bridge && place === 'the code' && /\bparent\.$/.test(before)) {
+          f.cls = EXPECTED;
+          f.why = 'Opened on the "Open a practice file" page, the file runs in a frame of that page with no storage of its own. It then hands its place and its results files to that page, which keeps them and saves them on this device. It does this only in a frame whose storage is refused, after that page has put its block (packet-store-snapshot) in the file. The file cannot see which page holds the frame. It needs no connection.';
+        }
+      } else if (f.id === 'broadcast-channel') {
+        if (a.tabBus && place === 'the code') { f.cls = EXPECTED; f.why = TAB_WHY; }
       } else if (f.id === 'clipboard') {
         if (/^clipboard\s*\.\s*writeText\b/.test(text.substr(f.at, 40))) { f.cls = EXPECTED; f.why = 'Puts the results on the clipboard when the student presses the copy button. It needs no connection.'; }
         else { f.cls = LOOK; f.why = 'Uses the clipboard in a way other than writing the results to it.'; }
@@ -770,7 +791,17 @@
       return 'the page markup';
     };
     var speech = isObject(m.speech) && m.speech.engine === 'speechSynthesis';
-    var scanned = scanSource(text, { where: where, mailbox: mailbox, closed: closed, older: older, pinned: pinned, builds: pinFact.builds, speech: speech });
+    var keyStated = /\bvar\s+storageKey\s*=\s*'alloflow-take-home:'\s*\+\s*lesson\.lessonId\s*\+\s*':'\s*\+\s*lesson\.revision\s*;/.test(scriptText) && (scriptText.match(/\bstorageKey\s*=(?!=)/g) || []).length === 1;
+    // Two copies of one file (the take-home loader, 2026-11-13): a copy that opens tells the others through a BroadcastChannel named
+    // after the storage name, or with none, through that name with "|tab" added, set and removed at once. Found exactly, like the
+    // bridge: one channel, one message on it, one such name. Any other use stays for a person to look at.
+    var tabBus = keyStated && (scriptText.match(/\bBroadcastChannel\b/g) || []).length === 2 && /\btypeof\s+win\.BroadcastChannel\s*===\s*'function'/.test(scriptText)
+      && /\bnew\s+win\.BroadcastChannel\(\s*'alloflow-take-home\|'\s*\+\s*storageKey\s*\)/.test(scriptText) && (scriptText.match(/\bchannel\s*\.\s*postMessage\b/g) || []).length === 1
+      && /\bchannel\.postMessage\(\s*message\s*\)/.test(scriptText) && (scriptText.match(/\bbusKey\s*=(?!=)/g) || []).length === 1 && /\bbusKey\s*=\s*storageKey\s*\+\s*'\|tab'\s*[,;]/.test(scriptText);
+    // The bridge to the "Open a practice file" page: one postMessage, to the parent, used only with that page's block.
+    var bridge = (scriptText.match(/\bpostMessage\b/g) || []).length === 1 + (tabBus ? 1 : 0) && /\bwin\.parent\s*!==\s*win\b/.test(scriptText)
+      && scriptText.indexOf("('packet-store-snapshot')") >= 0 && /\bwin\.parent\.postMessage\(\s*message\s*,\s*'\*'\s*\)/.test(scriptText);
+    var scanned = scanSource(text, { where: where, mailbox: mailbox, closed: closed, older: older, pinned: pinned, builds: pinFact.builds, speech: speech, bridge: bridge, tabBus: tabBus });
     var inCode = function (id) { return scanned.filter(function (f) { return f.id === id && f.where === 'the code'; }); };
     var any = function (ids) { return scanned.some(function (f) { return ids.indexOf(f.id) >= 0; }); };
 
@@ -781,10 +812,11 @@
       claims.push({ id: id, label: label, says: says, shows: shows, verdict: verdict });
       if (verdict === DIFFERS && flag !== false) add('claim-' + id, 'The file says one thing and shows another: ' + label, flag || UNEXPECTED, 'The file says: ' + says + ' ' + shows, manifestTags.length ? manifestTags[0].at : -1, manifestTags.length ? manifestTags[0].end - manifestTags[0].at : 0);
     };
-    var keyStated = /\bvar\s+storageKey\s*=\s*'alloflow-take-home:'\s*\+\s*lesson\.lessonId\s*\+\s*':'\s*\+\s*lesson\.revision\s*;/.test(scriptText) && (scriptText.match(/\bstorageKey\s*=(?!=)/g) || []).length === 1;
     var storageCalls = inCode('local-storage');
+    // The messages to another copy through storage (set and removed at once) are not where the file keeps anything.
+    var busCalls = storageCalls.filter(function (f) { return /"\|tab"/.test(f.why); }).length;
     var storageClean = storageCalls.length > 0 && storageCalls.every(function (f) { return f.cls === EXPECTED; }) && !any(['other-storage', 'cookie']);
-    var storageFacts = { places: storageCalls.length, name: lesson && keyStated ? report.data.storageName : '', clean: storageClean, stated: keyStated };
+    var storageFacts = { places: storageCalls.length - busCalls, name: lesson && keyStated ? report.data.storageName : '', clean: storageClean, stated: keyStated };
     report.storage = storageFacts;
     var savesFile = any(['file-save']) && /\bdownload\b/.test(scriptText);
     if (manifest) {
@@ -806,7 +838,9 @@
       else if (!lesson || !keyStated) claim('stores', 'what it keeps on the device', storeSays, 'This page could not find where the code sets the name it stores under.', CANNOT);
       else if (!storageClean) claim('stores', 'what it keeps on the device', storeSays, 'The code also uses storage in another way (see the scan).', DIFFERS);
       else if (store.key !== report.data.storageName) claim('stores', 'what it keeps on the device', storeSays, 'The code stores under the name ' + report.data.storageName + '.', DIFFERS);
-      else claim('stores', 'what it keeps on the device', storeSays, 'The code uses the browser\'s storage in ' + count(storageCalls.length, 'place') + ', each under that one name. The scan found no cookies and no other storage.', AGREE);
+      else claim('stores', 'what it keeps on the device', storeSays, 'The code uses the browser\'s storage in ' + count(storageCalls.length - busCalls, 'place') + ', each under that one name'
+        + (busCalls ? ', and in ' + count(busCalls, 'more place') + ' to tell another copy of this file that it is open (a message under that name with "|tab" added, set and removed at once)' : '')
+        + '. The scan found no cookies and no other storage.', AGREE);
 
       var saves = Array.isArray(m.saves) ? m.saves.filter(isObject) : [];
       var savesSays = saves.length ? 'it can save ' + count(saves.length, 'file') + ': ' + saves.map(function (row) { return show(row.file, 120) + ' (' + show(row.format, 80) + ')'; }).join(' and ') + '.' : 'nothing about what it saves.';
@@ -921,6 +955,8 @@
     var openLoads = LOADS.filter(function (load) { return factOf(load.id).open; });
     if (policyTag && !openLoads.length) plain.reach.push('It cannot load scripts, pictures, sounds, fonts or other pages from anywhere else. What it uses is inside the file.');
     openLoads.forEach(function (load) { if (policyTag) plain.reach.push('Its policy lets it load ' + load.what + ' from: ' + factOf(load.id).from.join(', ') + '.'); });
+    // 2026-11-13: a vocabulary file's Read aloud, said in plain words too (before, only the scan list named it).
+    if (scanned.some(function (f) { return f.id === 'speech' && f.where === 'the code' && f.cls === EXPECTED; })) plain.reach.push('It can read the words aloud with the voice built into the device, when the student presses Read aloud. It uses only a voice that runs on the device, so this needs no connection. A scan cannot tell how that voice was made.');
     if (report.script.verdict === AGREE) plain.reach.push('Its one script is pinned by a hash: the browser runs it only while it matches. This file\'s script matches the hash in its policy and the hash in its manifest.');
     else if (report.script.verdict === DIFFERS) plain.reach.push(report.script.note + ' The file was changed after it was made, or it was not saved whole.');
     else if (older && !pinned) plain.reach.push('Its script is not pinned by a hash. Older files were made this way.');
@@ -952,6 +988,8 @@
       plain.saves.push((savesRow.verdict === AGREE ? 'The code agrees. ' : 'This page cannot tell whether the code agrees. ') + savesRow.shows);
     } else plain.saves.push(savesFile ? 'Its code makes files on the device with the browser\'s own save, which needs no connection.' : 'This page found no code that makes a file.');
     if (scanned.some(function (f) { return f.id === 'clipboard' && f.cls === EXPECTED; })) plain.saves.push('It can also put the results on the clipboard when the student presses the copy button.');
+    if (tabBus && scanned.some(function (f) { return f.id === 'broadcast-channel' && f.cls === EXPECTED; })) plain.keeps.push('If the same file is open in two tabs or windows of this browser, the copies tell each other, so only one of them goes on and keeps the student\'s place. These messages stay in this browser on this device.');
+    if (scanned.some(function (f) { return f.id === 'post-message' && f.cls === EXPECTED && /\bparent\b|"Open a practice file"/.test(f.why); })) plain.saves.push('Opened on the "Open a practice file" page (for phones and tablets), it hands its place and its results files to that page, which keeps them and saves them on this device. Opened any other way, it keeps its own place and saves its own files.');
     if (mailbox) plain.saves.push('It can also send the results to the class mailbox. ' + (isObject(m.network) && m.network.when ? 'It says this happens ' + show(m.network.when, 120) + '. ' : '') + 'A scan cannot tell when code runs. The network tab of the browser can.');
     else if (closed) plain.saves.push('It sends nothing. A results file leaves the device only when a person passes it on.');
     if (typeof m.integrity === 'string') plain.saves.push('It says: ' + show(m.integrity, 300));

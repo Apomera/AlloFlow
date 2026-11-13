@@ -14,19 +14,35 @@ module.exports = {
   labels: {
     math_computation_directions: 'Type the answer to each one.',
     math_computation_label: '{problem}. Type the answer.',
+    math_computation_remainder: 'Leave out the remainder.',
   },
   // p: { a, b, op } with op add, sub, mul or div (the answer is worked out
   // here; a given answer that disagrees is refused), or { display, answer }.
   // A division must be exact unless p.allowRemainder is true; then the answer
-  // is the whole-number part.
+  // is the whole-number part, and the student is told to leave out the
+  // remainder (item.remainder, on every division of such a check).
+  // 2026-11-13: item.shown, when it differs from the plain text, is what the
+  // screen shows: a teacher's own problem with the signs of the others (the
+  // minus sign, times, divide), and a number of 10000 or more grouped in
+  // threes with a narrow no-break space, the same in every language and on the
+  // paper copy (packets-check.js). Worked out here, so the file carries no code
+  // for it; the screen reader label has the number without the spaces. The
+  // problem stays on one line (a long one gets a smaller size).
   prepare: function (p) {
     p = p || {};
     var whole = function (v) { return v != null && v !== '' && Number.isSafeInteger(Number(v)) && Math.abs(Number(v)) <= 99999999; };
+    var grouped = function (t) { return t.replace(/\d{5,}/g, function (n) { return n.replace(/\B(?=(\d{3})+(?!\d))/g, String.fromCharCode(0x202F)); }); };
     if (p.a == null && p.b == null && p.display != null) {
       var display = String(p.display).replace(/\s+/g, ' ').trim();
       if (!display || display.length > 40) return { missing: ['a problem of 1 to 40 characters'] };
       if (!whole(p.answer)) return { missing: ['a whole-number answer'] };
-      return { item: { word: display, display: display, answer: String(Number(p.answer)) } };
+      var own = { word: display, display: display, answer: String(Number(p.answer)) };
+      var signs = display.replace(/(^|\s)-(?=\s|\d)/g, function (all, lead) { return lead + String.fromCharCode(0x2212); })
+        .replace(/(\d) [xX*] (?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xD7) + ' '; }).replace(/(\d) \/ (?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xF7) + ' '; });
+      // said: the label's text (the signs, the plain numbers).
+      if (signs !== display) own.said = signs;
+      if (grouped(signs) !== display) own.shown = grouped(signs);
+      return { item: own };
     }
     if (!whole(p.a) || !whole(p.b)) return { missing: ['two whole numbers'] };
     var a = Number(p.a), b = Number(p.b);
@@ -37,12 +53,17 @@ module.exports = {
     var answer = p.op === 'add' ? a + b : p.op === 'sub' ? a - b : p.op === 'mul' ? a * b : Math.trunc(a / b);
     if (!whole(answer)) return { missing: ['an answer of 8 digits or fewer'] };
     if (p.answer != null && Number(p.answer) !== answer) return { missing: ['an answer that matches the problem'] };
-    return { item: { word: a + ' ' + symbol + ' ' + b, a: a, b: b, symbol: symbol, answer: String(answer) } };
+    var item = { word: a + ' ' + symbol + ' ' + b, a: a, b: b, symbol: symbol, answer: String(answer) };
+    if (grouped(item.word) !== item.word) item.shown = grouped(item.word) + ' =';
+    if (p.op === 'div' && p.allowRemainder === true) item.remainder = true;
+    return { item: item };
   },
   render: function (item, ctx) {
-    var problem = item.display || (item.a + ' ' + item.symbol + ' ' + item.b);
-    var pad = ctx.keypad({ label: ctx.fmt(ctx.L.math_computation_label, { problem: problem }), onNext: function (value) { ctx.answer(value); } });
-    ctx.root.appendChild(ctx.el('p', { class: 'prompt', 'aria-hidden': 'true', text: item.display ? problem : problem + ' =' }));
+    var problem = item.display || item.a + ' ' + item.symbol + ' ' + item.b, shown = item.shown || (item.display ? problem : problem + ' ='), n = shown.length;
+    var note = item.remainder ? ' ' + ctx.L.math_computation_remainder : '';
+    var pad = ctx.keypad({ label: ctx.fmt(ctx.L.math_computation_label, { problem: item.said || problem }) + note, onNext: function (value) { ctx.answer(value); } });
+    ctx.root.appendChild(ctx.el('p', { class: 'prompt', 'aria-hidden': 'true', style: 'white-space:nowrap;font-size:min(2.6rem,' + (137 / n | 0) + 'vw,' + (1130 / n | 0) + 'px)', text: shown }));
+    if (note) ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'text-align:center', text: note }));
     ctx.root.appendChild(pad.node);
     pad.focus();
     return {

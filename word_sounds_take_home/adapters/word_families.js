@@ -16,6 +16,11 @@
 // (WordFamiliesView.handleWordClick 10247-10277): all members found = correct
 // (checkAnswer(word, word)); a distractor tap is a wrong attempt; budget
 // maxAttempts = max(2, distractors + 1) (20740-20752, 17126-17134).
+// 2026-11-13 parity: the app's sound-only choices are now cards (a tap plays and selects, a
+// large Check submits, a missed card is crossed out: 94704af0e4). The file keeps two buttons
+// per choice, Listen first, then Choose, in every activity, as Find Sounds always had them
+// (hear, then choose).
+// The app does not trim a find-all board; neither does a packet.
 
 module.exports = {
   id: 'word_families',
@@ -24,6 +29,8 @@ module.exports = {
     word_families_heading_rime: '{rime} family',
     word_families_heading_rime_hidden: 'Sound Family',
     word_families_instruction: 'Tap each word to hear it. Find the ones that match!',
+    // 2026-11-13: without letters the choices say "Option 1": a tap on one chooses it, so "tap to hear" was wrong.
+    word_families_instruction_listen: 'Press Listen to hear each word. Then choose every one that is in the family.',
     word_families_instruction_letters: 'Find all words that match: {family}',
     word_families_found: '{found} of {total} found',
     word_families_listen: 'Listen',
@@ -144,7 +151,7 @@ module.exports = {
     var halt = function () { token++; mark(-1); };
     var heading = item.mode === 'rime'
       ? (ctx.showLetters ? T('heading_rime', { rime: '-' + item.rime }) : T('heading_rime_hidden'))
-      : (ctx.showLetters ? T('heading_' + item.mode, { sound: '/' + item.sound + '/' }) : T('heading_' + item.mode + '_hidden'));
+      : (ctx.showLetters ? T('heading_' + item.mode, { sound: typeof ctx.sound === 'function' ? ctx.sound(item.sound) : '/' + item.sound + '/' }) : T('heading_' + item.mode + '_hidden'));
     var counter = ctx.el('p', { class: 'muted', text: T('found', { found: 0, total: total }) });
     var memberText = item.chips.filter(function (c) { return c.member; }).map(function (c) { return c.text; }).join(', ');
     var list = ctx.el('ul', { class: 'choices' });
@@ -157,7 +164,7 @@ module.exports = {
       var choose = ctx.el('button', { type: 'button', class: 'primary',
         'aria-label': ctx.showLetters ? T('choose_word', { word: chip.text }) : T('choose_option', { n: n }),
         on: { click: function () {
-          if (ctx.isDone() || card.found) return;
+          if (ctx.isDone() || card.found || card.tried) return;
           halt();
           if (chip.member) {
             card.found = true;
@@ -174,15 +181,17 @@ module.exports = {
             }
             return;
           }
-          // A wrong tap costs one attempt; the chip stays on the board, as in
-          // the app (tapping it again costs another).
+          // A wrong tap costs one attempt. The chip stays on the board but cannot
+          // be chosen again (the app counts a second tap of it as another miss).
+          card.tried = true;
           box.classList.add('tried');
+          choose.setAttribute('aria-disabled', 'true');
           ctx.answer(chip.text, false, {
             retryText: ctx.showLetters ? T('no_match_word', { word: chip.text }) : T('no_match'),
             missedText: ctx.showLetters ? T('missed', { words: memberText }) : T('missed_no_letters'),
           });
         } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: chip.text }) : T('option_n', { n: n })]);
-      var box = ctx.el('li', { class: 'choice' }, [choose, listen]);
+      var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
       card.box = box; card.choose = choose;
       cards.push(card);
       list.appendChild(box);
@@ -193,7 +202,7 @@ module.exports = {
     };
     var instructionSteps = function () { return item.instruction.map(function (id) { return { id: id, gap: 200 }; }); };
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: heading }));
-    ctx.root.appendChild(ctx.el('p', { text: ctx.showLetters ? T('instruction_letters', { family: heading }) : T('instruction') }));
+    ctx.root.appendChild(ctx.el('p', { text: ctx.showLetters ? T('instruction_letters', { family: heading }) : (T('instruction_listen') || T('instruction')) }));
     // Hear all words: the player's Hear all (ctx.hearAll), the words not found yet, each marked with its number.
     var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ label: T('hear_all'), support: 'allWordListens', before: halt, auto: false,
       ready: function () { return !ctx.isDone(); },
@@ -207,6 +216,8 @@ module.exports = {
     ctx.root.appendChild(list);
     if (!ctx.isDone()) run(instructionSteps().concat(chipSteps(false)));
     return {
+      // The R key: the instruction again.
+      replay: function () { run(instructionSteps()); },
       reveal: function () {
         halt();
         cards.forEach(function (c) {

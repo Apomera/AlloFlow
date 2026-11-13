@@ -380,10 +380,36 @@ describe('the builder: pictures off', () => {
     // with another job's accessibility fixes and Untimed cells of that day. The lessons are unchanged. The loader before still gives 2744399.../186779.
     // Re-pinned 2026-11-12 (night): the look pass (style rules, feedback marks, progress bar, end-screen star and rows, four more
     // colors; +5036 bytes each; C:/tmp/packets_build_1111/look/NOTES.md). The lessons are unchanged. The loader before still gives 8c64fd27.../198036.
-    all: { sha256: '203193b256ad1f050f16e047997ee53164cbcf4fb285294064c85066c7fdfa96', bytes: 203254, items: 124 },
+    // Re-pinned 2026-11-13 (Word Sounds polish pass, C:/tmp/packets_build_1111/polish_ws/FINDINGS.md): Letter Trace traces the
+    // capital, then the lowercase (the word printed under the question), in school letter shapes drawn from stroke data (its render and each item's strokes), Missing
+    // Letter's wrong letters are drawn from the answer's kind (seeded) instead of a, b, c, the R key replays an activity's own
+    // opening, the end screen counts practice, Sound Sort and Word Families say to press Listen, word rows are dir=ltr, and three
+    // button words are in sentence case (+17477 bytes). The questions are the same 124. The loader and builder before still give 203193b2.../203254.
+    // Re-pinned 2026-11-13 (later): Letter Trace places each start dot, number and arrow clear of the others (its render,
+    // +2627 bytes; C:/tmp/packets_build_1111/polish_ws/dots/). "isolation" carries no Letter Trace and is unchanged.
+    // The loader before still gives d595989a.../220731.
+    // Re-pinned 2026-11-13 (second Word Sounds pass, C:/tmp/packets_build_1111/polish_ws2/): Listen before Choose in every
+    // pair, letters in the case the word is written and apostrophes, hyphens and spaces as fixed characters (Missing
+    // Letter, Spelling Bee, Word Scramble, Sight & Spell), Letter Trace's start tip, Syllable Claps and Sound Swap words,
+    // the read-back after a right answer, key numbers on pictures, Sound Counting's numbers from its board, the shell's
+    // sound names, data-key and "Stop?" hold, and the manifest's choices ("all": these inputs give no level); with the app
+    // helper's Missing Letter letters (createPackLogic, the same in setup; 0 bytes). +7481 bytes; the questions are the same 124.
+    // Re-pinned 2026-11-13 (robustness pass, C:/tmp/packets_build_1111/robust/FINDINGS.txt): one key listener for Hear all
+    // (the old one per button kept every past screen alive), the storage note on every screen while the storage refuses,
+    // activeMs and a last "#summary" cell active_s= (+1056 bytes; the shell and packetCsv only, the questions the same 124).
+    // The loader before this pass still gives 8905e7a4.../230839.
+    // Re-pinned 2026-11-13 (engine fixes, C:/tmp/packets_build_1111/engine2/STATUS.txt): two tabs of one file, "Your browser is
+    // saving", the sound-failed note and the 5 s clip watchdog, #live cleared, the print rule for primary buttons, four new
+    // words (+7038 bytes, the shell, labels and styles only; the questions the same 124). The loader before still gives 1a8ab60e.../231895.
+    all: { sha256: '1712492b71208253a9e989cb8f7775eba74b9f6f27f9f9863c309d103eaaa504', bytes: 238933, items: 124 },
     // Re-pinned 2026-11-12 (evening), as "all" above; the loader before still gives b3221d74.../71353.
     // Re-pinned 2026-11-12 (night), as "all" above; the loader before still gives 202974c1.../79452.
-    isolation: { sha256: 'dc61bb4c1420a147067096705ac866f246335b30eedd61fd3ced48cced53cbe9', bytes: 84670, items: 5 },
+    // Re-pinned 2026-11-13 (polish pass, as "all" above: the R key and the end screen's practice line, +977 bytes); the loader before still gives dc61bb4c.../84670.
+    // Re-pinned 2026-11-13 (second pass, as "all" above: Find Sounds' sound names with letters on, the shell's new lines and
+    // the manifest's choices, +778 bytes).
+    // Re-pinned 2026-11-13 (robustness pass, as "all" above, +1056 bytes); the loader before still gives 81767a93.../86425.
+    // Re-pinned 2026-11-13 (engine fixes, as "all" above, +7038 bytes); the loader before still gives 3ec8e31e.../87481.
+    isolation: { sha256: '87bce42c9bd9c17d7d9ce2b86166efcfd09ac7755515346505848144b16326a0', bytes: 94519, items: 5 },
   };
   const CASES = { all: {}, isolation: { words: CVC.slice(0, 5), activities: ['isolation'], title: undefined } };
 

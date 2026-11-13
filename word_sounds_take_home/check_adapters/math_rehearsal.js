@@ -87,9 +87,11 @@ module.exports = {
       else if (key === 'next') submit();
       else if (/^[0-9]$/.test(key)) set(v + key);
     };
+    // A key pressed with a mouse or a finger leaves the focus in the answer box, so Enter then sends the answer
+    // instead of pressing that key again. A key reached with Tab is still pressed with Enter.
     var keyButton = function (label, key, name) {
       return ctx.el('button', { type: 'button', 'data-key': key, 'aria-label': name || false, style: 'min-height:56px;font-size:1.5rem;font-weight:700;padding:6px',
-        on: { click: function () { press(key); } } }, [label]);
+        on: { mousedown: function (e) { e.preventDefault(); focusPad(); }, click: function () { press(key); } } }, [label]);
     };
     var keys = ctx.el('div', { role: 'group', 'aria-label': L.math_rehearsal_keys, style: 'display:grid;grid-template-columns:repeat(3,minmax(64px,96px));gap:10px;justify-content:center;margin:16px auto 0' },
       ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(function (d) { return keyButton(d, d); })

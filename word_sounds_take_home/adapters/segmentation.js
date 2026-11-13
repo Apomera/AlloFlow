@@ -14,6 +14,9 @@
 //           tries (:17130). A miss keeps the boxes and marks the wrong ones (:19349).
 //   audio   inst_segmentation then the word (INST_KEY_MAP :16453, :16847-16854);
 //           each chip plays its sound when picked or placed (:18239, :18294).
+// 2026-11-13: each tray chip has Listen first, then the sound to pick up (as every Listen +
+// Choose pair now). With letters on, a sound whose label is not letters shows a name
+// (ctx.sound: oo_short -> "short oo (book)"), else /a/.
 module.exports = {
   id: 'segmentation',
   title: 'Break it Down',
@@ -92,7 +95,9 @@ module.exports = {
     var picked = null;
     var errors = [];
     var token = 0;
-    var name = function (ci) { return ctx.showLetters ? '/' + item.chips[ci].label + '/' : ctx.fmt(L.sound_n, { n: ci + 1 }); };
+    // With letters on, a sound like oo_short shows its friendly name (ctx.sound).
+    var said = function (label) { return typeof ctx.sound === 'function' ? ctx.sound(label) : '/' + label + '/'; };
+    var name = function (ci) { return ctx.showLetters ? said(item.chips[ci].label) : ctx.fmt(L.sound_n, { n: ci + 1 }); };
     var locked = function () { return ctx.isDone(); };
     var halt = function () { token++; };
 
@@ -104,11 +109,11 @@ module.exports = {
         on: { click: function () { onChip(ci); } } }, [name(ci)]);
       var listen = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(L.listen_sound, { n: ci + 1 }) + (ctx.showLetters ? ' ' + name(ci) : ''),
         on: { click: function () { halt(); ctx.support('soundListens'); ctx.play(chip.audio); } } }, ['▶']);
-      var li = ctx.el('li', { class: 'row', style: 'gap:6px;border:2px solid var(--line);border-radius:14px;padding:6px' }, [pick, listen]);
+      var li = ctx.el('li', { class: 'row', style: 'gap:6px;border:2px solid var(--line);border-radius:14px;padding:6px' }, [listen, pick]);
       tray.appendChild(li);
       return { li: li, pick: pick };
     });
-    var boxList = ctx.el('ol', { class: 'slots', 'aria-label': L.segmentation_boxes });
+    var boxList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.segmentation_boxes });
     var boxEls = boxes.map(function (_, bi) {
       var btn = ctx.el('button', { type: 'button', class: 'slot', style: 'min-width:80px;min-height:80px;border-style:dashed;font-size:1.3rem;font-weight:700',
         on: { click: function () { onBox(bi); } } });
@@ -203,7 +208,7 @@ module.exports = {
       var outcome = ctx.answer(response, bad.length === 0, {
         correctText: L.segmentation_correct,
         retryText: L.segmentation_retry,
-        missedText: ctx.showLetters ? ctx.fmt(L.segmentation_missed, { sounds: item.sounds.map(function (s) { return '/' + s + '/'; }).join(' ') })
+        missedText: ctx.showLetters ? ctx.fmt(L.segmentation_missed, { sounds: item.sounds.map(said).join(' ') })
           : L.segmentation_missed_no_letters,
       });
       // A first miss keeps the boxes and marks the wrong ones (:19348-19350).

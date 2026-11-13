@@ -341,19 +341,24 @@ describe('the page as files', () => {
     expect(squash(doc.querySelector('details.proof').textContent)).toContain('This page loads nine files, all from this site: the page itself, two stylesheets (one is only for printing), five scripts and the icon in the browser tab.');
     const megabytes = SCRIPTS.reduce((sum, file) => sum + statSync(file).size, 0) / 1e6;
     // Re-pinned 2026-11-12 from about 0.5 MB: the loader carries Hear all and the two picture activities of vocabulary files.
-    expect(doc.getElementById('loading').textContent).toContain('Getting the problem sets, about 0.6 MB.');
-    expect(megabytes).toBeGreaterThan(0.55);
-    expect(megabytes).toBeLessThan(0.7);
+    // Re-pinned 2026-11-13 (release b) from about 0.6 MB: the engine carries two-tab, time-up-away and failed-sound handling.
+    expect(doc.getElementById('loading').textContent).toContain('Getting the problem sets, about 0.7 MB.');
+    expect(megabytes).toBeGreaterThan(0.65);
+    expect(megabytes).toBeLessThan(0.8);
     // "About 110 KB": every ready check, and a list of the teacher's own, with and without a teacher code.
     // Re-pinned 2026-11-12 from about 90 KB: every file now carries the reading tools (about 17 KB in a check).
     // Re-pinned 2026-11-12 from about 110 KB: every file carries Hear all and the reading tool "Read the choices" (hearAllIn),
     // and that day's accessibility fixes and the Untimed option (another job's).
-    expect(doc.getElementById('size-note').textContent).toBe('A check file has no sound, so there is nothing to download. About 120 KB.');
+    // Re-pinned 2026-11-13 from about 120 KB (129.9 KB at most before this pass): the timed check pauses at "Stop?" (the
+    // Word Sounds helper's), and the math and vocabulary fixes (one line and grouped numbers, the minus sign, remainders;
+    // tests/packets_math_vocab_fixes_2026_11_13b.test.js). About 130.3 KB at most now.
+    expect(doc.getElementById('size-note').textContent).toBe('A check file has no sound, so there is nothing to download. About 140 KB.');
     const sizes = READY.flatMap((id) => formsOf(id).map(({ grade, form }) => Buffer.byteLength(direct(id, grade, form).html, 'utf8')));
     sizes.push(Buffer.byteLength(direct('math_computation', '5', 'A', { teacherCode: 'tulip-47' }).html, 'utf8'));
     sizes.push(Buffer.byteLength(PC.buildCheckPacket({ lesson: PC.lessonFromMathProblems({ problems: PC.parseProblems('7+8') }), loader: TH }).html, 'utf8'));
     expect(sizes).toHaveLength(6 + 9 + 18 + 2);
-    for (const bytes of sizes) expect(Math.abs(bytes - 120000), bytes + ' bytes').toBeLessThan(10000);
+    // Re-centered 2026-11-13 (release b) on 140,000 with the page note: the engine grew about 7 KB.
+    for (const bytes of sizes) expect(Math.abs(bytes - 140000), bytes + ' bytes').toBeLessThan(10000);
   });
 });
 
@@ -623,7 +628,8 @@ describe('a ready check, from the choice to a file that runs', () => {
       const bytes = page.files[page.files.length - 1].size;
       expect(page.files[page.files.length - 1].type).toBe('text/html');
       // Re-pinned 2026-11-12 from 110000, with the page note ("About 120 KB", above): Hear all, and the Untimed and keyboard fixes of the player.
-      expect(Math.abs(bytes - 120000)).toBeLessThan(10000);
+      // Re-pinned 2026-11-13 from 120000, with the page note ("About 130 KB", above).
+      expect(Math.abs(bytes - 140000)).toBeLessThan(10000);
       const size = Math.round(bytes / 1000) + ' KB';
       const time = minutes(data.timeLimit).replace(/^./, (c) => c.toUpperCase());
       // What there is to answer has the check's own word: "questions" for Quantity Discrimination, "problems" for the others.
@@ -833,7 +839,8 @@ describe('my own problems', () => {
     await page.own('7 + 8 = 16, 7 + 8 = 15, 3 + 4 + 5 = 12, 3-8');
     const minus = String.fromCharCode(0x2212);
     expect(page.typed()).toEqual([[false, '7 + 8 = 16', '7 + 8 is 15, not 16.'], [true, '7 + 8', 'Ready. The answer is 15.'], [true, '3 + 4 + 5', 'Ready. The answer you gave is 12.'],
-      [true, '3 ' + minus + ' 8', 'Ready. The answer is -5.']]);
+      // 2026-11-13 (teacher-journey pass): an answer below 0 is written with the same minus sign as the problem.
+      [true, '3 ' + minus + ' 8', 'Ready. The answer is ' + minus + '5.']]);
     page.set('f-problems', '7 + 8 = 15, 3 + 4 + 5 = 12, 3-8');
     await page.until(() => page.typed().length === 3, 'the three problems');
     page.$('next-2').click();
@@ -1158,11 +1165,13 @@ const CODEC = TH.checkCodec(TH.sha256);
 const DIVIDE = String.fromCharCode(0xF7);
 // The items as the built file holds them, in order: the label the paper should give each, the problem as the file writes
 // it, the answer unscrambled from the file, and how the paper shows the problem (a line with no blank gets "= __").
+// 2026-11-13: the paper shows the signs the screen shows (the minus sign, never a hyphen; item.shown), in the key too.
+const signed = (text) => String(text).replace(/(^|\s)-(?=\s|\d)/g, (all, lead) => lead + String.fromCharCode(0x2212));
 function fileItems(html) {
   const lesson = lessonOf(html), salt = lesson.check.salt;
   let n = 0;
-  return lesson.blocks[0].items.map((item) => ({ practice: !!item.practice, label: item.practice ? 'Sample' : String(++n), word: item.word,
-    answer: CODEC.unscramble(item.key, salt, item.id), printed: item.display != null && !/_{2,}/.test(item.display) ? item.word + ' = __' : item.word }));
+  return lesson.blocks[0].items.map((item) => ({ practice: !!item.practice, label: item.practice ? 'Sample' : String(++n), word: signed(item.word),
+    answer: CODEC.unscramble(item.key, salt, item.id), printed: item.display != null && !/_{2,}/.test(item.display) ? signed(item.word) + ' = __' : signed(item.word) }));
 }
 // One printed item, read back from what is on the paper: its label and the problem its boxes show.
 function printedItem(li) {
@@ -1295,7 +1304,7 @@ describe('the paper copy', () => {
       // The answers the file holds are the arithmetic of the problem set, and the key has them, in the same order and numbering.
       const lesson = PC.lessonFromMathForm({ bank: BANK, measure: id, grade, form: version });
       expect(file.map((row) => row.answer)).toEqual(lesson.blocks[0].items.map((raw) => String(expected(raw))));
-      expect(paper.key).toEqual(file.map((row) => [row.label, row.word, row.answer]));
+      expect(paper.key).toEqual(file.map((row) => [row.label, row.word, signed(row.answer)]));
       // Each kind is laid out as it is written on paper.
       const kinds = new Set([...page.$('paper-learner').querySelectorAll('.pi')].map((li) => (li.querySelector('.pdv') ? 'divide' : li.className.split(' ')[1])));
       expect([...kinds].sort()).toEqual({ quantity_discrimination: ['pi-pair'], missing_number: ['pi-line'], math_computation: ['divide', 'pi-stack'] }[id]);
@@ -1351,7 +1360,7 @@ describe('the paper copy', () => {
     expect(paper.samples).toEqual([]);
     expect(page.$('paper-samples-part').hidden).toBe(true);
     expect(paper.items).toEqual(file.map((row) => [row.label, row.printed]));
-    expect(paper.key).toEqual(file.map((row) => [row.label, row.word, row.answer]));
+    expect(paper.key).toEqual(file.map((row) => [row.label, row.word, signed(row.answer)]));
     expect(file.map((row) => row.answer)).toEqual(['15', '7', '24', '5', '12', '4140', '-5']);
     expect(paper.items[4]).toEqual(['5', '3 + 4 + 5 = __']);
     const kinds = [...page.$('paper-learner').querySelectorAll('.pi')].map((li) => (li.querySelector('.pdv') ? 'divide' : li.className.split(' ')[1]));

@@ -18,6 +18,8 @@
 //           "correct") (:19681). Default budget 2 tries (:17130); a first miss stays
 //           on the board, editable.
 //   audio   instruction clip "mapping" (INST_KEY_MAP :16458); the word on request.
+// 2026-11-13: each tray chip has Listen first, then the spelling to pick up (as every Listen +
+// Choose pair now).
 module.exports = {
   id: 'mapping',
   title: 'Sound Mapping',
@@ -134,11 +136,11 @@ module.exports = {
         on: { click: function () { onChip(ci); } } }, [chip.text]);
       var listen = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(two ? L.mapping_listen_two : L.mapping_listen, { spelling: chip.text }),
         on: { click: function () { ctx.support('soundListens'); hear(ci); } } }, ['▶']);
-      var li = ctx.el('li', { class: 'row', style: 'gap:6px;border:2px solid var(--line);border-radius:14px;padding:6px' }, [pick, listen]);
+      var li = ctx.el('li', { class: 'row', style: 'gap:6px;border:2px solid var(--line);border-radius:14px;padding:6px' }, [listen, pick]);
       tray.appendChild(li);
       return { li: li, pick: pick };
     });
-    var slotList = ctx.el('ol', { class: 'slots', 'aria-label': L.mapping_slots });
+    var slotList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.mapping_slots });
     var slotEls = slots.map(function (_, si) {
       var btn = ctx.el('button', { type: 'button', class: 'slot', style: 'min-width:80px;min-height:80px;font-size:1.5rem;font-weight:700',
         on: { click: function () { onSlot(si); } } });

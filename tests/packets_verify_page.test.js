@@ -183,11 +183,12 @@ describe('the checks: a practice file', () => {
 
   it('lists what the scan found, with a line, a character and a short piece of the file', () => {
     const r = verify.verifyPacket(F.practice);
-    expect([...new Set(r.findings.map((f) => f.id))].sort()).toEqual(['clipboard', 'file-save', 'local-storage']);
+    // 2026-11-13 (results review): the scan also lists the one postMessage, the bridge to the "Open a practice file" page.
+    expect([...new Set(r.findings.map((f) => f.id))].sort()).toEqual(['clipboard', 'file-save', 'local-storage', 'post-message']);
     expect(r.findings.every((f) => f.cls === EXPECTED && f.why.length > 20 && f.excerpt.length > 10 && f.excerpt.length < 260)).toBe(true);
     const lines = F.practice.split('\n');
     for (const f of r.findings) {
-      const token = f.id === 'local-storage' ? 'localStorage' : f.id === 'clipboard' ? 'clipboard' : /^(?:createObjectURL|new )/;
+      const token = f.id === 'local-storage' ? 'localStorage' : f.id === 'clipboard' ? 'clipboard' : f.id === 'post-message' ? 'postMessage' : /^(?:createObjectURL|new )/;
       const at = lines[f.line - 1].slice(f.col - 1, f.col + 20);
       expect(typeof token === 'string' ? at.startsWith(token) : token.test(at), f.id + ' at ' + f.line + ':' + f.col + ' = ' + at).toBe(true);
     }
@@ -986,7 +987,16 @@ describe('the guide for school IT', () => {
     expect(text('h2')).toEqual(['Where the data goes', 'Check it yourself', 'The facts, for a privacy review', 'Known limits']);
     const flow = text('section[aria-labelledby="flow-title"] li');
     expect(flow.length).toBe(6);
-    expect(flow[2]).toBe("The student opens the file in a browser. The student's place, answers and the time on each item are kept in that browser's local storage, on that device.");
+    // 2026-11-13 (teacher-journey pass, asked by the results-review helper): the bridge of Open a practice file, said plainly,
+    // and true of packets-open.js: a sandbox with scripts and downloads only (no allow-same-origin), and two kinds of message kept.
+    expect(flow[2]).toBe("The student opens the file in a browser. The student's place, answers and the time on each item are kept in that browser's local storage, on that device. "
+      + 'On a phone or tablet the student opens it on Open a practice file (packets-open.html). There the file runs walled off in a sandboxed frame, on an origin of its own, '
+      + 'so it cannot read anything else this site keeps. It passes that page only two things, by postMessage: its own progress, which the page keeps in the browser\'s storage '
+      + 'for this site, and its results file, which the page saves to the device. Nothing is uploaded, except by the class mailbox kind of file, below.');
+    const openScript = read('packets-open.js');
+    expect(openScript).toContain("frame.setAttribute('sandbox', 'allow-scripts allow-downloads');");
+    expect(openScript).toContain('if (data.kind === STORE_KIND) keep(data);\n    else if (data.kind === SAVE_KIND) saveFor(data);\n  });');
+    expect(openScript).not.toMatch(/fetch\(|XMLHttpRequest|sendBeacon|WebSocket/);
     expect(flow[3]).toBe('At the end the student presses one button to save a results file to the device: CSV, for a spreadsheet. JSON and a copy to paste are under Other ways to save. Saving sends nothing.');
     // A teacher's page says "student"; "learner" stays only where a technical name is quoted (#learner=, the CSV column).
     expect(doc.body.textContent.replace(/#learner=\w*/g, '')).not.toMatch(/\blearners?\b/i);
@@ -1053,12 +1063,13 @@ describe('the guide for school IT', () => {
     expect(ONE_PLACE.startsWith('This file can send results to one place')).toBe(true);
     expect(loader.DEFAULT_LABELS.about_mailbox).toContain("your results go to your teacher's class mailbox at {host}");
     expect(cspOf(F.mailbox)).toMatch(/connect-src https:\/\/script\.google\.com /);
-    // "Files made on this site's maker page have no mailbox. Checks are made with no mailbox."
+    // "Files made on this site's maker pages have no mailbox. Checks are made with no mailbox."
     expect(read('word_sounds_packet_builder.js')).not.toMatch(/submit/);
     expect(read('packet_check_builder.js').match(/submit[^,;]*/g)).toEqual(['submit: null }']);
     expect([lessonOf(F.practice).submit ?? null, lessonOf(F.check).submit ?? null]).toEqual([null, null]);
     expect(fact['License and code']).toContain('AGPL-3.0');
-    for (const file of ['word_sounds_packet_builder.js', 'packet_math_practice_builder.js', 'packet_check_builder.js', 'word_sounds_take_home_loader.js', CORE]) {
+    // 2026-11-13 (teacher-journey pass): the vocabulary builder is named too.
+    for (const file of ['word_sounds_packet_builder.js', 'packet_math_practice_builder.js', 'packet_check_builder.js', 'packet_vocab_builder.js', 'word_sounds_take_home_loader.js', CORE]) {
       expect(fact['License and code']).toContain(file);
       expect(existsSync(file)).toBe(true);
     }
@@ -1085,9 +1096,11 @@ describe('the guide for school IT', () => {
     }
     // The maker asks this site for the same sound files whatever is chosen, except the small files of the word store, which it asks
     // for by need: the server can see which of those were asked for, never a word. The results page can connect to nothing.
-    expect(fact["What this site's server can see"]).toBe('When someone uses these pages: ordinary web requests for the pages, their scripts and, on the maker page, the sound files, '
-      + 'with what every web request carries, such as the IP address and the time. Most sound files are the same whatever is chosen. '
-      + 'Some words have their sounds in small files of about 40 words each, and the maker page asks only for the ones it needs: the server can see which of those files were asked for, not which words. '
+    // 2026-11-13 (teacher-journey pass): the vocabulary maker gets its word list (the same files for everyone) and the recordings of
+    // its words from the same word store, by need (packets_vocab_media.js), so the row names both makers.
+    expect(fact["What this site's server can see"]).toBe('When someone uses these pages: ordinary web requests for the pages, their scripts and, on the maker pages, the sound files and the vocabulary word list, '
+      + 'with what every web request carries, such as the IP address and the time. Most sound files are the same whatever is chosen, and so is the word list. '
+      + 'Some words have their sounds in small files of about 40 words each, and the Word Sounds and vocabulary makers ask only for the ones they need: the server can see which of those files were asked for, not which words. '
       + 'Never the words or the choices, and never results. If a school puts a packet on its own web server, that server sees requests for the file and nothing the student does in it.');
     expect(require('../dev-tools/repack_word_sounds_word_audio.cjs').DEFAULT_MAX).toBe(40);
     expect(text('section[aria-labelledby="flow-title"] li')[0]).toContain('The maker page puts the file together in the browser. The words and the choices are not uploaded.');
@@ -1100,7 +1113,9 @@ describe('the guide for school IT', () => {
     expect([...new Set(maker.match(/window\.fetch\([\w.]+/g))].sort()).toEqual(['window.fetch(file.url', 'window.fetch(shard.url']);
     expect(maker).not.toMatch(/method\s*:|body\s*:|FormData|encodeURIComponent/);
     expect(parse('packets-results.html').querySelector('meta[http-equiv="Content-Security-Policy"]').getAttribute('content')).toContain("connect-src 'none'");
-    expect(fact['Accounts, cookies, analytics']).toContain("the maker page keeps the teacher's last choices and the sound files, the results page keeps results only if a switch is turned on, and this page and Look inside a file keep nothing");
+    // 2026-11-13 (teacher-journey pass): four maker pages, each keeping its last choices.
+    expect(fact['Accounts, cookies, analytics']).toContain("each maker page keeps the teacher's last choices (the Word Sounds maker also keeps the sound files, and the vocabulary maker the teacher's changes to the questions), the results page keeps results only if a switch is turned on, Open a practice file keeps the place of each file it runs, and this page and Look inside a file keep nothing");
+    expect(read('packets_vocab_media.js')).not.toMatch(/caches\.|indexedDB|localStorage/);
     // A teacher's own words (sounds, recording, picture): kept in the browser for this site, never uploaded; the microphone only on Record;
     // and the one page that can reach other sites, with its three services named. Each is true of the code.
     const squash = (value) => value.replace(/\s+/g, ' ').trim();
@@ -1112,7 +1127,10 @@ describe('the guide for school IT', () => {
       + 'It sends them the word searched for and asks them for the pictures it shows. '
       // 2026-11-12, deliberately: the vocabulary lookup page (packets-vocab-lookup.html, tests/packets_vocab_pictures.test.js).
       + 'One more page, Look up a word online (packets-vocab-lookup.html), can send one word that is not in the vocabulary word list to the Free Dictionary API (api.dictionaryapi.dev), after the teacher allows it and presses Look it up. '
-      + 'Every other page of this site reaches only this site.');
+      + 'Every other page of this site reaches only this site. '
+      // 2026-11-13 (teacher-journey pass): the device voice of a vocabulary file is only ever one that runs on the device.
+      + 'A vocabulary file reads aloud only with a voice that runs on the device: it does not use a voice that sends the text to a speech service.');
+    expect(read('word_sounds_take_home_loader.js')).toContain('localService === true');
     const reaches = (page) => (parse(page).querySelector('meta[http-equiv="Content-Security-Policy"]')?.getAttribute('content') || '').match(/https?:\/\/[^\s;]+/g) || [];
     // 2026-11-12: Open a practice file allows the class mailbox for the file it runs (and says so in the mailbox row); the page sends nothing.
     for (const page of pages.filter((name) => name !== 'packets-pictures.html' && name !== 'packets-open.html' && name !== 'packets-vocab-lookup.html')) expect(reaches(page), page).toEqual([]);
@@ -1134,7 +1152,8 @@ describe('the guide for school IT', () => {
     expect(limits[0]).toBe('A results file can be edited. The check value inside it finds accidental changes, not deliberate ones.');
     expect(manifestOf(F.practice).integrity).toContain('It detects accidental edits, not deliberate ones.');
     expect(limits[1]).toBe("Times come from the clock of the student's device.");
-    expect(limits[2]).toBe('A packet is for practice and for checking progress. It is not a locked check: the answers travel inside the file so that it can score with no internet.');
+    // 2026-11-13 (teacher-journey pass): "not a locked check" read as a kind of check; said plainly instead.
+    expect(limits[2]).toBe('A packet is for practice and for checking progress. It cannot keep its answers secret: they travel inside the file so that it can score with no internet.');
     // The previews: the same three, said the same way as the front door, and marked as reported.
     expect(limits[4]).toBe('The previews in Google Drive, Google Classroom and the iPad Files app do not run the file: the file shows a note that asks the student to download it and open it in a browser. '
       + "An iPad may need the file served from a web address, such as the school's learning platform. Reported, not yet tested by us.");

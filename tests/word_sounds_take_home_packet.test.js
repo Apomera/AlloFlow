@@ -203,7 +203,8 @@ describe('a played session', () => {
     const blob = t.saveCsv();
     expect(blob.type).toBe('text/csv;charset=utf-8');
     expect(blob.name).toMatch(/^Short-a__Ana-B__\d{4}-\d{2}-\d{2}\.csv$/);
-    expect(t.d.getElementById('app').textContent).toContain('Saved as ' + blob.name + '.');
+    // 2026-11-13 (engine fixes): "Your browser is saving", not "Saved as": a download cannot be seen to finish.
+    expect(t.d.getElementById('app').textContent).toContain('Your browser is saving ' + blob.name + '.');
     expect(blob.body.charCodeAt(0)).toBe(0xFEFF);
     expect(blob.body.slice(1).split('\r\n')[0]).toBe(HEADER);
     const rows = parseCsv(blob.body.slice(1));
@@ -219,7 +220,9 @@ describe('a played session', () => {
     });
     // The title in the summary row is the heading at the top of the file, and the JSON's lessonTitle.
     expect([t.d.querySelector('h1').textContent, file.lessonTitle]).toEqual(['Short a', 'Short a']);
-    expect(rows[3]).toEqual(['#summary', file.sessionId, 'items_given=2', 'attempted=2', 'correct=2', 'first_try=2', 'accuracy_pct=100', 'title=Short a']);
+    // 2026-11-13: then the time on the items in seconds (activeMs, the items' ms added up).
+    expect(file.activeMs).toBe(file.items.reduce((n, it) => n + it.ms, 0));
+    expect(rows[3]).toEqual(['#summary', file.sessionId, 'items_given=2', 'attempted=2', 'correct=2', 'first_try=2', 'accuracy_pct=100', 'title=Short a', 'active_s=' + Math.round(file.activeMs / 1000)]);
     expect(rows[4]).toEqual(['#integrity', file.integrity.method, file.integrity.value, 'detects accidental edits, not deliberate ones']);
     // The value covers exactly the item rows as they sit in the file, after the id line.
     const itemLines = blob.body.slice(1).split('\r\n').slice(1, 3);

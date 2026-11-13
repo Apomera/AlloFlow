@@ -25,3 +25,8 @@
 .batch-body .why .radio { margin-top: 0.25rem; }
 .batch-row { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.75rem; margin-top: 0.75rem; }
 .batch-body .making { margin-top: 0.75rem; padding-top: 0.75rem; }
+
+/* Letter Trace: capital, lowercase or both (shown when Letter Trace is chosen); Choices (shown with an activity it changes). */
+.trace-cases, .choice-level { margin: 0.75rem 0 0; max-width: 30rem; }
+.choice-level .why ul { margin: 0.25rem 0 0; padding-left: 1.25rem; color: var(--muted); }
+.choice-level .why li { margin-top: 0.2rem; }

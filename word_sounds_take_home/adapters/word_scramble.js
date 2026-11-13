@@ -9,12 +9,16 @@
 //           box per letter, Clear, Check (enabled once the answer is not empty),
 //           "Play word", and a "Show word" support (:18774-18789; the word is
 //           otherwise hidden until answered, SMART_TEXT_VISIBILITY :7568).
+//           An apostrophe, hyphen or space is a fixed slot in the answer row, not a
+//           tile (wsSpellFixedChar, b38ca18141).
 //   grading submitConstructionAnswer (:18887-18902): trimmed, lowercased answer
-//           === trimmed, lowercased word; the same unchanged answer is not graded
-//           twice; checkAnswer("correct"|"incorrect","correct"). Default budget 2
-//           tries (:17130). A first miss clears the answer and frees every tile
-//           (checkScramble :19875-19880).
+//           === trimmed, lowercased word (on its letters: wsSpellSame); the same
+//           unchanged answer is not graded twice; checkAnswer("correct"|"incorrect",
+//           "correct"). Default budget 2 tries (:17130). A first miss clears the
+//           answer and frees every tile (checkScramble :19875-19880).
 //   audio   inst_word_scramble (INST_KEY_MAP :16449); the word only on request.
+// 2026-11-13 (owner): tiles and boxes show the letters in the case the word is written
+// (lowercase for a normal word, a name's capital kept); the app shows capitals.
 module.exports = {
   id: 'word_scramble',
   title: 'Word Scramble',
@@ -42,20 +46,26 @@ module.exports = {
     word_scramble_missed: 'The word is {word}. Listen.',
   },
   prepare: function (w, env) {
-    var word = String(env.word || '').trim().toLowerCase();
+    var written = String(env.word || '').trim();
+    var word = written.toLowerCase();
     if (!word) return { missing: ['word'] };
+    // wsSpellFixedChar: an apostrophe, hyphen or space is never a tile.
+    var letterRe = null;
+    try { letterRe = new RegExp('[\\p{L}\\p{M}\\p{N}_]', 'u'); } catch (_) {}
+    var isLetter = function (ch) { return letterRe ? letterRe.test(ch) : !/^['’\- .]$/.test(ch); };
     var board = w && w.activityItems && w.activityItems.word_scramble;
-    var letters = board && Array.isArray(board.letters) ? board.letters.map(function (l) { return String(l).toLowerCase(); }) : null;
+    var letters = board && Array.isArray(board.letters) ? board.letters.map(function (l) { return String(l).toLowerCase(); }).filter(isLetter) : null;
     // The board must be exactly this word's letters (one tile per letter).
-    if (letters && letters.slice().sort().join('\u0000') !== word.split('').sort().join('\u0000')) return { missing: ['board'] };
+    if (letters && letters.slice().sort().join('\u0000') !== word.split('').filter(isLetter).sort().join('\u0000')) return { missing: ['board'] };
     if (!letters) {
-      // scrambleWord (word_sounds_module.js:18916-18928), copied exactly.
+      // scrambleWord (word_sounds_module.js:18916-18928), copied exactly, then the tiles only.
       letters = word.split('');
       if (word.length > 2) {
         var seed = word.split('').reduce(function (a, c) { return a + c.charCodeAt(0); }, 0);
         for (var i = letters.length - 1; i > 0; i--) { var j = (seed + i) % (i + 1); var t = letters[i]; letters[i] = letters[j]; letters[j] = t; }
         if (letters.join('') === word) { var t2 = letters[0]; letters[0] = letters[1]; letters[1] = t2; }
       }
+      letters = letters.filter(isLetter);
     }
     var missing = [];
     var wordAudio = env.wordClip(env.word);
@@ -63,19 +73,46 @@ module.exports = {
     var prompt = env.bankClip('instructions', 'inst_word_scramble');
     if (!prompt) missing.push('question');
     if (missing.length) return { missing: missing };
-    return { item: { target: word, letters: letters, wordAudio: wordAudio, promptAudio: prompt,
-      introAudio: [prompt], answerAudio: [wordAudio] } };
+    var item = { target: word, letters: letters, wordAudio: wordAudio, promptAudio: prompt,
+      introAudio: [prompt], answerAudio: [wordAudio] };
+    // A word written with a capital (a name): how it is written.
+    if (written !== word && written.length === word.length) item.shown = written;
+    return { item: item };
   },
   render: function (item, ctx) {
     var L = ctx.L;
-    var n = item.target.length;
+    var target = String(item.target);
+    var written = item.shown && String(item.shown).length === target.length ? String(item.shown) : target;
+    var letterRe = null;
+    try { letterRe = new RegExp('[\\p{L}\\p{M}\\p{N}_]', 'u'); } catch (_) {}
+    var fixed = function (ch) { ch = String(ch || ''); return letterRe ? !letterRe.test(ch) : /^['’\- .]$/.test(ch); };
+    // The places of the word's letters (a fixed slot has no box).
+    var places = [];
+    for (var p = 0; p < target.length; p++) if (!fixed(target[p])) places.push(p);
+    var n = places.length;
     var boxes = [];
     for (var s = 0; s < n; s++) boxes.push(null);
+    // Each tile as it is written in the word: the s of "Sam" shows S.
+    var takenAt = [];
+    var shownOf = item.letters.map(function (letter) {
+      for (var k = 0; k < places.length; k++) {
+        var at = places[k];
+        if (takenAt.indexOf(at) < 0 && target[at] === letter) { takenAt.push(at); return written[at]; }
+      }
+      return String(letter);
+    });
     var picked = null;
     var lastSubmitted = null;
     var locked = function () { return ctx.isDone(); };
-    var up = function (ti) { return String(item.letters[ti]).toUpperCase(); };
+    var up = function (ti) { return shownOf[ti]; };
     var answerText = function () { return boxes.filter(function (x) { return x != null; }).map(function (ti) { return item.letters[ti]; }).join(''); };
+    // The whole word as placed, fixed slots in, once every box is full (the response); else the letters placed.
+    var placedWord = function () {
+      if (boxes.some(function (x) { return x == null; })) return answerText();
+      var k = 0;
+      return target.split('').map(function (ch) { return fixed(ch) ? ch : item.letters[boxes[k++]]; }).join('');
+    };
+    var own = function (text) { return String(text || '').split('').filter(function (ch) { return !fixed(ch); }).join(''); };
 
     var tray = ctx.el('ul', { class: 'row', 'aria-label': L.word_scramble_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:10px' });
     var tiles = item.letters.map(function (letter, ti) {
@@ -86,14 +123,17 @@ module.exports = {
       tray.appendChild(li);
       return { li: li, btn: btn };
     });
-    var boxList = ctx.el('ol', { class: 'slots', 'aria-label': L.word_scramble_boxes });
-    var boxEls = boxes.map(function (_, bi) {
+    var boxList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.word_scramble_boxes });
+    var boxEls = [];
+    target.split('').forEach(function (ch, i) {
+      if (fixed(ch)) { boxList.appendChild(ctx.el('li', { 'aria-hidden': 'true', 'data-fixed': '', style: 'display:flex;align-items:center;font-size:1.5rem;font-weight:700' }, [written[i] === ' ' ? ' ' : written[i]])); return; }
+      var bi = boxEls.length;
       var btn = ctx.el('button', { type: 'button', class: 'slot', style: 'min-width:60px;min-height:64px;font-size:1.5rem;font-weight:700',
         on: { click: function () { onBox(bi); } } });
       boxList.appendChild(ctx.el('li', {}, [btn]));
-      return btn;
+      boxEls.push(btn);
     });
-    var wordLine = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(L.word_scramble_word, { word: item.target }) });
+    var wordLine = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(L.word_scramble_word, { word: written }) });
     var showWord = ctx.el('button', { type: 'button', 'aria-pressed': 'false', on: { click: function () {
       if (locked()) return;
       var on = wordLine.hidden;
@@ -158,10 +198,11 @@ module.exports = {
       if (!answer) { ctx.announce(L.word_scramble_empty); return; }
       if (answer === lastSubmitted) { ctx.announce(L.word_scramble_same); return; }
       lastSubmitted = answer;
-      var outcome = ctx.answer(answer, answer === String(item.target).trim().toLowerCase(), {
-        correctText: ctx.fmt(L.word_scramble_correct, { word: item.target }),
+      // wsSpellSame: judged on the letters; "don't" is right with its apostrophe given.
+      var outcome = ctx.answer(placedWord(), answer === own(target).trim().toLowerCase(), {
+        correctText: ctx.fmt(L.word_scramble_correct, { word: written }),
         retryText: L.word_scramble_retry,
-        missedText: ctx.fmt(L.word_scramble_missed, { word: item.target }),
+        missedText: ctx.fmt(L.word_scramble_missed, { word: written }),
       });
       // A first miss clears the answer and frees every tile (checkScramble).
       if (outcome === 'retry') { clearAll(); draw(); if (tiles[0]) tiles[0].btn.focus(); }
@@ -186,7 +227,7 @@ module.exports = {
           var used = [];
           for (var i = 0; i < n; i++) {
             var hit = -1;
-            for (var ti = 0; ti < item.letters.length && hit < 0; ti++) if (used.indexOf(ti) < 0 && item.letters[ti] === item.target[i]) hit = ti;
+            for (var ti = 0; ti < item.letters.length && hit < 0; ti++) if (used.indexOf(ti) < 0 && item.letters[ti] === target[places[i]]) hit = ti;
             used.push(hit);
             boxes[i] = hit < 0 ? null : hit;
           }

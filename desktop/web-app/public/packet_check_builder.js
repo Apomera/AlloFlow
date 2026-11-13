@@ -81,11 +81,10 @@
     var a = Number(p.a), b = Number(p.b);
     var shown = a + ' ' + SIGNS[op] + ' ' + b;
     if (op === 'div' && b === 0) fail(shown + ' divides by 0.');
-    if (op === 'div' && a % b !== 0) {
-      if (!allowRemainders) fail(shown + ' has a remainder. Use a division that comes out even, or allow remainders.');
-      // With remainders allowed the answer is the whole-number part.
-      return { a: a, b: b, op: op, allowRemainder: true };
-    }
+    if (op === 'div' && a % b !== 0 && !allowRemainders) fail(shown + ' has a remainder. Use a division that comes out even, or allow remainders.');
+    // With remainders allowed the answer is the whole-number part, and every division of the check tells the student
+    // to leave out the remainder (2026-11-13), so the words are no clue to which ones have one.
+    if (op === 'div' && allowRemainders) return { a: a, b: b, op: op, allowRemainder: true };
     return { a: a, b: b, op: op };
   }
   function checkTimeLimit(value) {
@@ -94,9 +93,35 @@
     return Number(value);
   }
 
+  // The sample of a Math Fluency form (2026-11-13): one problem of the form's first operation, with numbers of as many
+  // digits as its first problem of that operation (16 + 2 gives 10 + 1; 9 x 7 gives 2 x 3; 95 / 5 = 19 gives 20 / 2), easy
+  // to work out, and never a problem of the form or the turnaround of one (1 + 1 is a problem of kindergarten form B).
+  // null when no such problem is found; the measure's own sample is used then.
+  function sampleFor(problems) {
+    var list = (problems || []).filter(function (p) { return p && own(SIGNS, OPS[text(p.op)] || '') && whole(p.a, 99999999) && whole(p.b, 99999999); });
+    if (!list.length) return null;
+    var first = list[0], op = OPS[text(first.op)];
+    var digits = function (n) { return String(Math.abs(Math.trunc(Number(n)))).length; };
+    var low = function (n) { return n <= 1 ? 1 : Math.pow(10, n - 1); };
+    var taken = {};
+    list.forEach(function (p) { var o2 = OPS[text(p.op)]; taken[o2 + ':' + Number(p.a) + ':' + Number(p.b)] = true; if (o2 === 'add' || o2 === 'mul') taken[o2 + ':' + Number(p.b) + ':' + Number(p.a)] = true; });
+    var la = digits(first.a), lb = digits(first.b), lq = op === 'div' && Number(first.b) ? digits(Number(first.a) / Number(first.b)) : 1;
+    var steps = [[0, 0], [0, 1], [1, 0], [1, 1], [0, -1], [-1, 0], [0, 2], [2, 0], [2, 1], [1, 2], [2, 2], [0, 3], [3, 0], [3, 3]];
+    for (var i = 0; i < steps.length; i++) {
+      var da = steps[i][0], db = steps[i][1], a, b;
+      if (op === 'add') { a = low(la) + da; b = low(lb) + db; }
+      else if (op === 'sub') { b = low(lb) + db; a = (la === 1 ? 2 : low(la) + low(lb)) + da + db; }
+      else if (op === 'mul') { a = (la === 1 ? 2 : low(la)) + da; b = (lb === 1 ? (la === 1 ? 3 : 2) : low(lb)) + db; }
+      else { b = (lb === 1 ? 2 : low(lb)) + db; a = b * ((lq === 1 ? 3 : low(lq)) + da); }
+      if (digits(a) !== la || digits(b) !== lb || taken[op + ':' + a + ':' + b]) continue;
+      return { a: a, b: b, op: op };
+    }
+    return null;
+  }
+
   // A fixed form of one of the three measures. bank = the parsed psychometric_math_probes.json.
   //   lessonFromMathForm({ bank, measure: 'math_computation', grade: '3', form: 'A' })
-  // practice: false leaves the sample items out; an array gives your own.
+  // practice: false leaves the sample items out; an array gives your own. Left out, Math Fluency's sample is sampleFor(the form).
   // untimed: true is an accommodation: no clock, and the student does every item. The results say "untimed" and
   // keep the form's own time limit; a rate (digits correct per minute) is not worked out without a clock.
   function lessonFromMathForm(input) {
@@ -116,10 +141,11 @@
     var version = Number(data.version);
     var limit = Number(data.timeLimit) > 0 ? Number(data.timeLimit) : m.timeLimitS;
     var untimed = o.untimed === true;
+    var sample = id === 'math_computation' ? sampleFor(problems) : null;
     return makeLesson({ lessonId: m.slug + '-g' + grade.toLowerCase(), title: m.name + ' check (' + grade + form + (untimed ? ', untimed' : '') + ')', form: form, activity: id, name: m.name,
       measure: m.code, unit: m.unit, scoringVersion: m.scoringVersion, formVersion: Number.isInteger(version) && version > 0 ? version : 1,
       timeLimitS: untimed ? null : limit, untimed: untimed, usualTimeLimitS: limit, allowSkip: m.allowSkip, grade: grade,
-      practice: o.practice === false ? [] : Array.isArray(o.practice) ? o.practice : m.practice, problems: problems });
+      practice: o.practice === false ? [] : Array.isArray(o.practice) ? o.practice : sample ? [sample] : m.practice, problems: problems });
   }
 
   // A teacher's own problems, as one fixed list: every learner gets the same problems in the same order.

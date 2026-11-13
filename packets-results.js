@@ -19,6 +19,9 @@
     left_the_page: 'left the page for more than 3 seconds',
     clock_changed: 'the device clock was set back',
     reloaded: 'the page was reloaded',
+    // 2026-11-13: two flags a check writes from today (word_sounds_take_home_loader.js).
+    time_up_away: 'the time ran out while the page was hidden or closed, so there is no score',
+    two_tabs: 'the check was open in two tabs or windows while it ran',
     stopped_early: 'stopped early, so there is no score',
     no_time_limit: 'no time limit, so there is no score per minute',
     too_fast: 'finished in under 20 seconds, so there is no score',
@@ -74,7 +77,9 @@
 
   function fresh() {
     return { screen: 'empty', sessions: [], byId: Object.create(null), notResults: [], duplicates: [], leftOut: 0, merges: Object.create(null), apart: Object.create(null),
-      asked: Object.create(null), goals: Object.create(null), sample: false, view: 'group', learner: '', sort: { by: 'learner', down: false }, keep: false };
+      asked: Object.create(null), goals: Object.create(null), sample: false, view: 'group', learner: '',
+      // Each table of the group sorts on its own (2026-11-13: checks and practice are two tables).
+      sort: { checks: { by: 'learner', down: false }, practice: { by: 'learner', down: false } }, keep: false };
   }
 
   // ---------------------------------------------------------------------------
@@ -97,10 +102,40 @@
     return showDate(first, first.slice(0, 4) === last.slice(0, 4)) + ' to ' + showDate(last);
   }
   function dayNumber(iso) { var m = /^(\d{4})-(\d{2})-(\d{2})/.exec(iso); return m ? Date.UTC(Number(m[1]), Number(m[2]) - 1, Number(m[3])) / 86400000 : 0; }
+  // 2026-11-13: hours and days are named (a file finished on another day read "2610 min 28 s").
   function timeTaken(seconds) {
     if (seconds === null || seconds === undefined) return '';
-    return seconds < 60 ? seconds + ' s' : Math.floor(seconds / 60) + ' min' + (seconds % 60 ? ' ' + seconds % 60 + ' s' : '');
+    if (seconds < 60) return seconds + ' s';
+    if (seconds < 3600) return Math.floor(seconds / 60) + ' min' + (seconds % 60 ? ' ' + seconds % 60 + ' s' : '');
+    var minutes = Math.floor(seconds / 60), hours = Math.floor(minutes / 60);
+    if (hours < 24) return hours + ' h' + (minutes % 60 ? ' ' + minutes % 60 + ' min' : '');
+    return count(Math.floor(hours / 24), 'day') + (hours % 24 ? ' ' + hours % 24 + ' h' : '');
   }
+  // The time a result took: a check's own clock (the time on the check, not the time the file was open),
+  // else start to finish. A file started on one day and finished on another says so.
+  // 2026-11-13: practice saved from today says its time on the items (activeS: each item from shown to done,
+  // time on another tab left out). That comes first; start to finish is under it when it says more.
+  function timeCell(s) {
+    var check = s.mode === 'probe' && s.score && s.score.elapsedS > 0;
+    var took = timeTaken(check ? Math.round(s.score.elapsedS) : s.durationS);
+    var began = /^\d{4}-\d{2}-\d{2}/.exec(s.startedLocal || '');
+    var days = !check && began && s.date && began[0] !== s.date ? 'started ' + showDate(began[0]) + ', finished ' + showDate(s.date) : '';
+    var span = s.durationS !== null && s.durationS !== undefined;
+    if (!check && s.activeS !== null && s.activeS !== undefined) {
+      var lines = [timeTaken(s.activeS) + ' on the items'];
+      if (days) lines.push((span ? 'open ' + took + ': ' : '') + days);
+      else if (span && s.durationS - s.activeS >= 60) lines.push(took + ' start to finish');
+      return lines.length > 1 ? lines : lines[0];
+    }
+    if (days) return [took, days];
+    return took;
+  }
+  // Why a check has no score, in a few words for a table cell.
+  var NO_SCORE_SHORT = { stopped_early: 'stopped early', too_fast: 'done in under 20 seconds', no_score_line: 'no score line', score_unreadable: 'score line unreadable',
+    no_time_limit: 'no time limit', untimed_no_rate: 'no clock', time_up_away: 'time ran out while away' };
+  function noScoreShort(code) { return own(NO_SCORE_SHORT, code) ? NO_SCORE_SHORT[code] : 'no score'; }
+  // A check's form as a teacher reads it: a letter, or nothing for a teacher's own set ("custom" in the file).
+  function formText(form) { return form && form !== 'custom' ? form : ''; }
   function valueText(value, percent) { return value === null || value === undefined ? 'No score' : value + (percent ? '%' : ''); }
   function sentence(text) { return text ? text.charAt(0).toUpperCase() + text.slice(1) : ''; }
   function notesOf(s) {
@@ -141,15 +176,22 @@
   function addSession(s, drop, fromFile) {
     var have = state.byId[s.sessionId];
     if (have) {
-      if (fromFile) { state.duplicates.push({ file: s.sourceFile, first: have.sourceFile }); drop.look++; }
-      // Of two copies of one result, the one that was not changed is the one kept.
-      if (have.integrity !== 'ok' && s.integrity === 'ok') { state.sessions[state.sessions.indexOf(have)] = s; state.byId[s.sessionId] = s; }
+      // Of two copies of one result, the one that was not changed is the one kept, and the list says which (2026-11-13).
+      var swap = have.integrity !== 'ok' && s.integrity === 'ok';
+      var note = swap && have.integrity === 'changed' ? ' That copy was changed after it was saved, so this one is counted.'
+        : !swap && s.integrity === 'changed' && have.integrity === 'ok' ? ' This copy was changed after it was saved; the one that was not is counted.' : '';
+      if (fromFile) { state.duplicates.push({ file: s.sourceFile, first: have.sourceFile, note: note }); drop.look++; }
+      if (swap) {
+        state.sessions[state.sessions.indexOf(have)] = s; state.byId[s.sessionId] = s;
+        // 2026-11-13: the changed copy was counted as "needs a look" when it came in; now it is listed only once, as a copy.
+        if (drop.changed && drop.changed[s.sessionId]) { drop.look--; delete drop.changed[s.sessionId]; }
+      }
       return;
     }
     if (state.sessions.length >= reader.MAX_SESSIONS) { state.leftOut++; return; }
     state.sessions.push(s);
     state.byId[s.sessionId] = s;
-    if (fromFile && s.integrity === 'changed') drop.look++;
+    if (fromFile && s.integrity === 'changed') { drop.look++; if (drop.changed) drop.changed[s.sessionId] = true; }
   }
   function takeBundle(bundle, drop) {
     bundle.sessions.forEach(function (s) { addSession(s, drop, false); });
@@ -165,7 +207,7 @@
   }
   function startDrop() {
     if (state.sample) { var keep = state.keep; state = fresh(); state.keep = keep; }
-    return { read: 0, look: 0 };
+    return { read: 0, look: 0, changed: Object.create(null) };
   }
   function finishDrop(drop) {
     changed();
@@ -288,7 +330,7 @@
     if (state.notResults.length) add(body, checkGroup('Not results files', 'These files were not counted.',
       state.notResults.map(function (row) { return fileRow(row.file, row.why); })));
     if (state.duplicates.length) add(body, checkGroup('The same result more than once', 'Each result is counted once.',
-      state.duplicates.map(function (row) { return fileRow(row.file, 'The same result as ' + row.first + '.'); })));
+      state.duplicates.map(function (row) { return fileRow(row.file, 'The same result as ' + row.first + '.' + (row.note || '')); })));
     if (model.changed.length) add(body, checkGroup('Changed after saving', 'These files were changed after they were saved. They are still counted, and each one carries a note.',
       model.changed.map(function (s) { return fileRow(s.sourceFile, (s.learner || reader.NO_NAME) + ', ' + showDate(s.date) + '.'); })));
     if (model.suggestions.length) add(body, checkGroup('One student, written two ways?', 'These names are close. Nothing is put together unless you say so.',
@@ -367,6 +409,8 @@
     $('learner-body').textContent = '';
     if (state.view === 'group') drawGroup(); else drawLearner();
     setPrintHead();
+    // A table measured while its view was hidden is measured again now it shows.
+    measureCues();
   }
   function setPrintHead() {
     var learner = learnerNamed(state.learner);
@@ -384,7 +428,7 @@
     var row = el('div', 'middles');
     model.middles.forEach(function (mid) {
       var card = el('div', 'middle');
-      add(card, el('p', 'middle-name', mid.label + (mid.form ? ', form ' + mid.form : '')), el('p', 'middle-label', 'Middle of this group (n = ' + mid.n + ')'),
+      add(card, el('p', 'middle-name', mid.label + (formText(mid.form) ? ', form ' + mid.form : '')), el('p', 'middle-label', 'Middle of this group (n = ' + mid.n + ')'),
         add(el('p', 'middle-value'), el('span', 'middle-number', String(mid.median)), doc.createTextNode(' ' + unitFor(mid.median, mid.unitName))),
         el('p', 'middle-range', (mid.q1 !== null ? 'Middle half: ' + mid.q1 + ' to ' + mid.q3 + '. ' : '') + 'Lowest ' + mid.min + ', highest ' + mid.max + '.'));
       row.appendChild(card);
@@ -392,30 +436,48 @@
     add(host, row, el('p', 'honest', HONEST),
       el('p', 'hint', 'Each student counts once, with the latest score on that form. The middle score is the median. From 10 students the middle half is shown too: it leaves out the lowest quarter and the highest quarter of these scores.'));
   }
+  // A check's cell: the latest result with a score (the one the middle of the group counts), its form, and a
+  // note when a later result has no score. With no scored result yet, the latest one and why it has none.
+  function checkCell(cell) {
+    if (!cell) return null;
+    var parts = [valueText(cell.value, false), formText(cell.form) ? 'form ' + cell.form : ''];
+    if (cell.value === null && cell.noScore) parts.push(cell.noScore === 'untimed_no_rate' ? 'no clock: ' + cell.correct + ' of ' + cell.attempted + ' right' : noScoreShort(cell.noScore));
+    if (cell.after) parts.push('Later, ' + showDate(cell.after.date, true) + ': no score (' + noScoreShort(cell.after.noScore) + ')');
+    return parts;
+  }
+  // The columns of the group's two tables (2026-11-13; one table of 2524 px before): checks first, then practice.
+  // Each starts with the student's name; the first one shown also has the number of results and the last date.
   function groupColumns() {
-    var columns = [
+    var base = [
       { id: 'learner', label: 'Student', value: function (row) { return row.label.toLowerCase(); } },
       { id: 'count', label: 'Results', number: true, value: function (row) { return row.count; } },
       { id: 'last', label: 'Last date', number: true, value: function (row) { return row.lastDate || null; } },
     ];
-    model.strands.forEach(function (strand) {
-      columns.push({ id: 's:' + strand[0], label: strand[1], group: 'practice', number: true, value: function (row) { var cell = row.strands[strand[0]]; return cell ? cell.value : null; },
+    var practice = model.strands.map(function (strand) {
+      return { id: 's:' + strand[0], label: strand[1], number: true, value: function (row) { var cell = row.strands[strand[0]]; return cell ? cell.value : null; },
         cell: function (row) {
           var cell = row.strands[strand[0]];
           if (!cell) return null;
           var nk = cell.newFacts;
           return [cell.value + '%', cell.firstTry + ' of ' + cell.graded].concat(nk && nk.items ? ['new facts ' + nk.firstTry + ' of ' + nk.items] : []);
-        } });
+        } };
     });
-    model.checks.forEach(function (series) {
-      columns.push({ id: 'c:' + series.key, label: series.label, sub: series.unitName, group: 'checks', number: true, value: function (row) { var cell = row.checks[series.key]; return cell ? cell.value : null; },
-        cell: function (row) { var cell = row.checks[series.key]; return cell ? [valueText(cell.value, false), cell.form ? 'form ' + cell.form : ''] : null; } });
+    var checks = model.checks.map(function (series) {
+      return { id: 'c:' + series.key, label: series.label, sub: series.unitName, number: true, value: function (row) { var cell = row.checks[series.key]; return cell ? cell.value : null; },
+        cell: function (row) { return checkCell(row.checks[series.key]); } };
     });
-    return columns;
+    var tables = [
+      { id: 'checks', title: 'Checks: latest score', columns: checks,
+        hint: 'Each check shows the latest result with a score, the one the middle of the group counts. A later result with no score is noted under it.' },
+      { id: 'practice', title: 'Practice: latest first-try percent', columns: practice,
+        hint: 'Practice shows the share of answers that were right on the first try, in the latest result that has that skill.' },
+    ].filter(function (table) { return table.columns.length; });
+    tables.forEach(function (table, i) { table.columns = (i ? base.slice(0, 1) : base).concat(table.columns); });
+    return tables;
   }
-  function sortedLearners(columns) {
-    var column = columns.filter(function (c) { return c.id === state.sort.by; })[0] || columns[0];
-    var turn = state.sort.down ? -1 : 1;
+  function sortedLearners(columns, sort) {
+    var column = columns.filter(function (c) { return c.id === sort.by; })[0] || columns[0];
+    var turn = column.id === sort.by && sort.down ? -1 : 1;
     return model.learners.slice().sort(function (a, b) {
       var x = column.value(a), y = column.value(b);
       // A learner with nothing in this column goes last, whichever way the column is sorted.
@@ -423,68 +485,82 @@
       return x < y ? -turn : x > y ? turn : 0;
     });
   }
+  // A box a table scrolls in, with a cue that shows when the table is wider than the box (2026-11-13).
+  // measureCues() says which boxes are wider, once they are on the page.
+  function scrollBox(extra) {
+    var scroll = el('div', 'table-scroll' + (extra ? ' ' + extra : ''));
+    scroll.tabIndex = 0;
+    scroll.setAttribute('role', 'region');
+    var cue = el('p', 'scroll-cue', 'More columns to the right: scroll this table sideways.');
+    cue.setAttribute('aria-hidden', 'true');
+    cue.hidden = true;
+    return add(scroll, cue);
+  }
+  function measureCues() {
+    Array.prototype.forEach.call(doc.querySelectorAll('#state-results .table-scroll'), function (box) {
+      var wide = box.scrollWidth > box.clientWidth + 2;
+      box.classList.toggle('is-wide', wide);
+      var cue = box.querySelector('.scroll-cue');
+      if (cue) cue.hidden = !wide;
+    });
+  }
   function drawGroup() {
     drawMiddles();
     var host = $('group-table');
     host.textContent = '';
-    var columns = groupColumns();
-    var groups = [['practice', 'Practice: latest first-try percent'], ['checks', 'Checks: latest score']].filter(function (g) { return columns.some(function (c) { return c.group === g[0]; }); });
-    var table = el('table', 'data');
-    add(table, el('caption', 'sr-only', 'One row for each student. Press a column heading to sort by it.'));
-    var head = el('thead');
-    var first = el('tr'), second = el('tr');
-    var headCell = function (column, rows) {
-      var th = el('th');
-      th.scope = 'col';
-      if (rows > 1) th.rowSpan = rows;
-      var on = state.sort.by === column.id;
-      th.setAttribute('aria-sort', on ? (state.sort.down ? 'descending' : 'ascending') : 'none');
-      var sorter = button('sort');
-      sorter.setAttribute('data-sort', column.id);
-      add(sorter, el('span', 'sort-name', column.label), column.sub ? el('span', 'sort-sub', column.sub) : null);
-      sorter.addEventListener('click', function () {
-        state.sort = { by: column.id, down: on ? !state.sort.down : !!column.number };
-        drawGroup();
-        Array.prototype.forEach.call($('group-table').querySelectorAll('.sort'), function (again) { if (again.getAttribute('data-sort') === column.id) again.focus(); });
-        say('Sorted by ' + column.label + ', ' + (column.number ? (state.sort.down ? 'high to low' : 'low to high') : (state.sort.down ? 'Z to A' : 'A to Z')) + '.');
+    var tables = groupColumns();
+    tables.forEach(function (spec, n) {
+      var sort = state.sort[spec.id];
+      var title = el('h4', 'group-sub', spec.title);
+      title.id = 'group-' + spec.id + '-title';
+      var table = el('table', 'data data-group-table');
+      add(table, el('caption', 'sr-only', spec.title + '. One row for each student. Press a column heading to sort by it.'));
+      var headRow = el('tr');
+      spec.columns.forEach(function (column) {
+        var th = el('th');
+        th.scope = 'col';
+        var on = sort.by === column.id;
+        th.setAttribute('aria-sort', on ? (sort.down ? 'descending' : 'ascending') : 'none');
+        var sorter = button('sort');
+        sorter.setAttribute('data-sort', column.id);
+        sorter.setAttribute('data-table', spec.id);
+        add(sorter, el('span', 'sort-name', column.label), column.sub ? el('span', 'sort-sub', column.sub) : null);
+        sorter.addEventListener('click', function () {
+          var next = state.sort[spec.id] = { by: column.id, down: on ? !sort.down : !!column.number };
+          drawGroup();
+          var again = $('group-table').querySelector('.sort[data-table="' + spec.id + '"][data-sort="' + column.id + '"]');
+          if (again) again.focus();
+          say('Sorted by ' + column.label + ', ' + (column.number ? (next.down ? 'high to low' : 'low to high') : (next.down ? 'Z to A' : 'A to Z')) + '.');
+        });
+        headRow.appendChild(add(th, sorter));
       });
-      return add(th, sorter);
-    };
-    columns.forEach(function (column) { if (!column.group) first.appendChild(headCell(column, groups.length ? 2 : 1)); });
-    groups.forEach(function (g) {
-      var th = el('th', 'data-group', g[1]);
-      th.scope = 'colgroup';
-      th.colSpan = columns.filter(function (c) { return c.group === g[0]; }).length;
-      first.appendChild(th);
-      columns.forEach(function (column) { if (column.group === g[0]) second.appendChild(headCell(column, 1)); });
-    });
-    add(head, first, groups.length ? second : null);
-    var body = el('tbody');
-    sortedLearners(columns).forEach(function (learner) {
-      var row = el('tr');
-      var name = el('th');
-      name.scope = 'row';
-      var open = button('btn btn-text name-link', learner.label);
-      open.setAttribute('aria-label', learner.label + ': show this student');
-      open.addEventListener('click', function () { state.learner = learner.key; $('pick-learner').value = learner.key; state.view = 'learner'; drawView(); $('learner-title').focus(); });
-      add(row, add(name, open, learner.labels.length > 1 ? el('span', 'cell-sub', 'also written ' + learner.labels.filter(function (l) { return l !== learner.label; }).join(', ')) : null),
-        el('td', 'num', String(learner.count)), el('td', 'num', learner.lastDate ? showDate(learner.lastDate) : 'No date'));
-      columns.forEach(function (column) {
-        if (!column.group) return;
-        var parts = column.cell(learner);
-        var td = el('td', 'num');
-        if (parts) parts.forEach(function (part, i) { if (part) add(td, el('span', i ? 'cell-sub' : 'cell-value', part)); });
-        else add(td, el('span', 'sr-only', 'No result'));
-        row.appendChild(td);
+      var body = el('tbody');
+      sortedLearners(spec.columns, sort).forEach(function (learner) {
+        var row = el('tr');
+        var name = el('th');
+        name.scope = 'row';
+        var open = button('btn btn-text name-link', learner.label);
+        open.setAttribute('aria-label', learner.label + ': show this student');
+        open.addEventListener('click', function () { state.learner = learner.key; $('pick-learner').value = learner.key; state.view = 'learner'; drawView(); $('learner-title').focus(); });
+        row.appendChild(add(name, open, learner.labels.length > 1 ? el('span', 'cell-sub', 'also written ' + learner.labels.filter(function (l) { return l !== learner.label; }).join(', ')) : null));
+        spec.columns.forEach(function (column) {
+          if (column.id === 'learner') return;
+          if (column.id === 'count') { row.appendChild(el('td', 'num', String(learner.count))); return; }
+          if (column.id === 'last') { row.appendChild(el('td', 'num', learner.lastDate ? showDate(learner.lastDate) : 'No date')); return; }
+          var parts = column.cell(learner);
+          var td = el('td', 'num');
+          if (parts) parts.forEach(function (part, i) { if (part) add(td, el('span', i ? 'cell-sub' : 'cell-value', part)); });
+          else add(td, el('span', 'sr-only', 'No result'));
+          row.appendChild(td);
+        });
+        body.appendChild(row);
       });
-      body.appendChild(row);
+      var scroll = scrollBox();
+      scroll.setAttribute('aria-labelledby', title.id);
+      add(host, title, add(scroll, add(table, add(el('thead'), headRow), body)),
+        el('p', 'hint', spec.hint + (n === tables.length - 1 ? ' Choose a name to see that student over time.' : '')));
     });
-    var scroll = el('div', 'table-scroll');
-    scroll.tabIndex = 0;
-    scroll.setAttribute('role', 'region');
-    scroll.setAttribute('aria-labelledby', 'group-title');
-    add(host, add(scroll, add(table, head, body)),
-      el('p', 'hint', 'Practice shows the share of answers that were right on the first try, in the latest result that has that skill. Checks show the latest score. Choose a name to see that student over time.'));
+    measureCues();
   }
 
   // ---------------------------------------------------------------------------
@@ -557,28 +633,33 @@
       + (goal === null ? '' : ' Dashed line: ' + GOAL_NOTE.charAt(0).toLowerCase() + GOAL_NOTE.slice(1) + '.')));
   }
   function plainTable(caption, heads, rows, size) {
-    var table = el('table', 'data data-small' + (size === 'wide' ? ' data-wide' : size === 'measure' ? ' data-measure' : ''));
+    // 2026-11-13: on a phone, "Every result" and a measure's table read as one card per row (packets-results.css,
+    // .data-cards): each cell carries its column's name. The roles keep it a table for a screen reader when the
+    // stylesheet changes how its rows are laid out.
+    var cards = size === 'wide' || size === 'measure';
+    var table = el('table', 'data data-small' + (size === 'wide' ? ' data-wide' : size === 'measure' ? ' data-measure' : '') + (cards ? ' data-cards' : ''));
+    var role = function (node, name) { if (cards) node.setAttribute('role', name); return node; };
+    role(table, 'table');
     add(table, el('caption', 'sr-only', caption));
-    var headRow = el('tr');
-    heads.forEach(function (text) { var th = el('th', '', text); th.scope = 'col'; headRow.appendChild(th); });
-    var body = el('tbody');
+    var headRow = role(el('tr'), 'row');
+    heads.forEach(function (text) { var th = role(el('th', '', text), 'columnheader'); th.scope = 'col'; headRow.appendChild(th); });
+    var body = role(el('tbody'), 'rowgroup');
     rows.forEach(function (cells) {
-      var row = el('tr');
+      var row = role(el('tr'), 'row');
       // A cell is text, or a list: its first line, then smaller lines under it.
       cells.forEach(function (text, i) {
         var lines = Array.isArray(text) ? text : [text];
-        var cell = el(i ? 'td' : 'th', '', lines[0]);
+        var cell = role(el(i ? 'td' : 'th', '', lines[0]), i ? 'cell' : 'rowheader');
         lines.slice(1).forEach(function (line) { add(cell, el('span', 'cell-sub', line)); });
         if (!i) cell.scope = 'row';
+        else if (cards) cell.setAttribute('data-label', heads[i]);
         row.appendChild(cell);
       });
       body.appendChild(row);
     });
-    var scroll = el('div', 'table-scroll' + (size === 'narrow' ? ' table-narrow' : ''));
-    scroll.tabIndex = 0;
-    scroll.setAttribute('role', 'region');
+    var scroll = scrollBox(size === 'narrow' ? 'table-narrow' : '');
     scroll.setAttribute('aria-label', caption);
-    return add(scroll, add(table, add(el('thead'), headRow), body));
+    return add(scroll, add(table, add(role(el('thead'), 'rowgroup'), headRow), body));
   }
   function drawMeasure(learner, series, n) {
     var card = el('section', 'measure');
@@ -590,7 +671,7 @@
     add(card, add(el('div', 'measure-head'), title, el('p', 'measure-unit', sentence(series.unitName))),
       el('p', 'measure-latest', latest ? 'Latest: ' + valueText(latest.value, series.percent) + ', ' + showDate(latest.date) + '.' : 'No score yet.'));
     var mid = series.formKey ? model.middles.filter(function (row) { return row.key === series.formKey; })[0] : null;
-    if (mid) add(card, el('p', 'measure-middle', 'Middle of this group on ' + (mid.form ? 'form ' + mid.form : 'this form') + ' (n = ' + mid.n + '): ' + mid.median + '. ' + (mid.q1 !== null ? 'Middle half: ' + mid.q1 + ' to ' + mid.q3 + '.' : 'Lowest ' + mid.min + ', highest ' + mid.max + '.')));
+    if (mid) add(card, el('p', 'measure-middle', 'Middle of this group on ' + (formText(mid.form) ? 'form ' + mid.form : 'this set') + ' (n = ' + mid.n + '): ' + mid.median + '. ' + (mid.q1 !== null ? 'Middle half: ' + mid.q1 + ' to ' + mid.q3 + '.' : 'Lowest ' + mid.min + ', highest ' + mid.max + '.')));
     var goalKey = learner.key + '\n' + series.key;
     var holder = el('div', 'measure-chart');
     var goalLine = el('p', 'goal-line');
@@ -629,7 +710,7 @@
     });
     var check = series.kind === 'check';
     var table = plainTable(series.name + ': each result', ['Date', sentence(series.unitName), 'Details', 'Notes'], series.points.map(function (p) {
-      var details = (check ? (p.form ? 'Form ' + p.form + ', ' : '') + (p.attempt ? 'try ' + p.attempt + '. ' : '') : '') + sentence(p.detail) + '.';
+      var details = sentence((check ? (formText(p.form) ? 'form ' + p.form + ', ' : '') + (p.attempt ? 'try ' + p.attempt + '. ' : '') : '') + sentence(p.detail)) + '.';
       var more = check ? [] : newFactsLines(p.newFacts);
       return [showDate(p.date), valueText(p.value, series.percent), more.length ? [details].concat(more) : details, sentence(notesOf(p.session).join('; '))];
     }), 'measure');
@@ -658,11 +739,14 @@
     add(body, el('h4', 'learner-sub', 'Every result, in date order'),
       plainTable('Every result for ' + learner.label + ', in date order', ['Date', 'What', 'Result', 'Answered', 'Time taken', 'Notes'], learner.sessions.map(function (s) {
         var probe = s.mode === 'probe';
-        var what = probe ? s.measureName + (s.form ? ', form ' + s.form : '') + (s.attempt ? ', try ' + s.attempt : '') : 'Practice: ' + s.title;
+        var what = probe ? s.measureName + (formText(s.form) ? ', form ' + s.form : '') + (s.attempt ? ', try ' + s.attempt : '') : 'Practice: ' + s.title;
         var result = probe ? (s.value === null ? 'No score' : s.value + ' ' + unitFor(s.value, s.unitName)) : s.summary.firstTryPct === null ? 'Not scored' : s.summary.firstTryPct + '% on the first try';
         var more = probe ? [] : newFactsLines(s.newFacts);
-        return [showDate(s.date), what, more.length ? [result].concat(more) : result, s.summary.attempted + ' of ' + s.summary.given, timeTaken(s.durationS), sentence(notesOf(s).join('; '))];
+        // Practice that is never scored (Letter Trace alone): how much was done, not "0 of 0".
+        var answered = !probe && !s.summary.given ? s.summary.done + ' done (practice, not scored)' : s.summary.attempted + ' of ' + s.summary.given;
+        return [showDate(s.date), what, more.length ? [result].concat(more) : result, answered, timeCell(s), sentence(notesOf(s).join('; '))];
       }), 'wide'));
+    measureCues();
   }
 
   // ---------------------------------------------------------------------------
@@ -779,7 +863,10 @@
       if (window.innerWidth === lastWidth) return;
       lastWidth = window.innerWidth;
       clearTimeout(settle);
-      settle = setTimeout(function () { if (state.screen === 'results' && state.view === 'learner') redraws.forEach(function (redraw) { redraw(); }); }, 150);
+      settle = setTimeout(function () {
+        if (state.screen === 'results' && state.view === 'learner') redraws.forEach(function (redraw) { redraw(); });
+        if (state.screen === 'results') measureCues();
+      }, 150);
     });
     if (openStored()) {
       changed();

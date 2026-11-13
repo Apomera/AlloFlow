@@ -260,7 +260,8 @@ describe('the builder: what a file holds', () => {
 
   it('refuses what it cannot make, with a plain reason', () => {
     const no = (input, message) => expect(() => MP.planMathPractice(input), JSON.stringify(input)).toThrow(message);
-    no({ mode: 'rehearsal', factSet: 'add-0-1' }, 'Rehearsal needs at least 3 facts the learner already knows. None are chosen.');
+    // 2026-11-13: the reason says "student", as the page does (it is shown on the page).
+    no({ mode: 'rehearsal', factSet: 'add-0-1' }, 'Rehearsal needs at least 3 facts the student already knows. None are chosen.');
     no({ mode: 'rehearsal', factSet: 'mul-2', known: ['mul:2:1'] }, 'Only 1 is chosen.');
     no({ mode: 'rehearsal', factSet: 'mul-8' }, 'Every fact is chosen as known. Leave at least one out: that is the new fact to learn.');
     no({ mode: 'rehearsal', facts: '7x8, 2x2, 3x3', known: ['mul:2:2', 'mul:3:3'] }, 'Only 2 are chosen.');
@@ -336,7 +337,9 @@ describe('the file', () => {
       // (hearAllIn, about 4 KB; tests/packets_hear_all.test.js), with that day's accessibility fixes. The page said "About 80 KB".
       // Re-pinned 2026-11-12 (night) from 85000: the look pass (style rules, the four new colors, the end-screen rows; +5.0 KB
       // in every practice file; C:/tmp/packets_build_1111/look/NOTES.md). The page now says "About 85 KB".
-      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(90000);
+      // Re-pinned 2026-11-13 (engine fixes, C:/tmp/packets_build_1111/engine2/STATUS.txt) from 90000: two tabs of one file, honest
+      // saving and the sound-failed note in every file (+7.0 KB; about 95.3 KB now). The page's "About 85 KB" is the makers' to update.
+      expect(Buffer.byteLength(html, 'utf8')).toBeLessThan(100000);
       expect(lessonOf(html)).toMatchObject({ mode: 'practice', audio: {}, images: {}, submit: null });
       // Its answers are the arithmetic of its facts.
       for (const it of lessonOf(html).blocks[0].items) {
@@ -761,9 +764,10 @@ describe('the page, run in jsdom with the scripts it names', () => {
     page.$('next-1').click();
     page.choose('method', 'rehearsal');
     expect(page.$('known-hint').textContent).toBe('+ 0 and + 1 comes first in the order, so none are chosen yet. Choose the facts the student already knows.');
-    expect(page.$('known-line').textContent).toBe('Rehearsal needs at least 3 facts the learner already knows. None are chosen.');
+    // 2026-11-13: "student", not "learner", in the reason the page shows.
+    expect(page.$('known-line').textContent).toBe('Rehearsal needs at least 3 facts the student already knows. None are chosen.');
     page.$('next-2').click();
-    expect([page.seen('step-2'), page.$('step-2-problem').textContent]).toEqual([true, 'Rehearsal needs at least 3 facts the learner already knows. None are chosen.']);
+    expect([page.seen('step-2'), page.$('step-2-problem').textContent]).toEqual([true, 'Rehearsal needs at least 3 facts the student already knows. None are chosen.']);
     for (const fact of ['0 + 0', '1 + 0', '2 + 0']) page.tick(fact, true);
     expect(page.$('known-line').textContent).toBe('New facts in this file: 3 + 0, 4 + 0 and 5 + 0.');
     expect(page.$('known-sub').textContent).toContain('14 more new facts wait for another file: 6 + 0, ');

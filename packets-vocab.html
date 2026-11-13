@@ -37,18 +37,18 @@
   </div>
 <details class="proof">
   <summary class="wrap wrap-narrow">
-    <span class="proof-line">This page runs without AI. No account. Nothing you choose leaves your device.</span>
+    <span class="proof-line">This page runs without AI. No account. The words you type are not uploaded.</span>
     <span class="proof-open proof-open-closed">See the details</span>
     <span class="proof-open proof-open-opened">Hide the details</span>
   </summary>
   <div class="wrap wrap-narrow proof-body">
     <ul>
-      <li>Nothing is generated when you make a file or when a student uses it. The meanings come from a word list that was prepared ahead of time from open dictionaries. Where they come from is under About this page.</li>
+      <li>Nothing is generated when you make a file or when a student uses it. The meanings come from a word list that was prepared ahead of time from open dictionaries. Some meanings were checked and corrected ahead of time with AI help, not by a person. The recordings of words were made ahead of time with an AI voice (Kokoro). Where they come from is under About this page.</li>
       <li>The file is put together in this browser tab. Your words, your changes and the teacher code are not sent anywhere.</li>
-      <li>The page gets the word list from this site, all of it at once: the same files whatever words you type. For a file with recordings or pictures it also gets them from this site: the recordings of your words, and all the picture files, the same files whatever words you type. It asks the network for nothing else, and the rule below tells the browser to refuse anything else.</li>
+      <li>The page gets the word list from this site, all of it at once: the same files whatever words you type. For a file with pictures it gets all the picture files from this site, also the same files whatever words you type. For a file with recordings it gets, from this site, the small files that hold the recordings of your words, about 40 words in each. It asks the network for nothing else, and the rule below tells the browser to refuse anything else.</li>
       <li>A word that is not in the word list can be looked up online, but not on this page: Look it up online opens a page of its own, which asks before it sends that one word to a free online dictionary.</li>
       <li>There are no cookies and nothing to sign in to.</li>
-      <li>Like any website, the server that sends these files can see that your browser asked for them. It receives nothing else.</li>
+      <li>Like any website, the server that sends these files can see that your browser asked for them. That includes which of the small recording files were asked for, but not which words. It receives nothing else.</li>
       <li>On this device the page keeps your last choices and your changes to the questions. The buttons that remove them are under About this page, at the bottom.</li>
     </ul>
     <p id="can-title">A file made here can:</p>
@@ -133,7 +133,7 @@
       <p class="kicker">Step 2 of 3</p>
       <h2 id="step-2-title" tabindex="-1">Check the questions</h2>
       <p class="sheet-intro">Each word has its right answer and 3 wrong answers. They are used as they are unless you change them. Change a meaning when your unit means another one, and swap a wrong answer that could also be right.</p>
-      <p class="hint" id="legend"><span class="v-mark">checked</span> This meaning was looked at when the word list was prepared. <span class="v-mark v-mark-not">not checked yet</span> Read these first.</p>
+      <p class="hint" id="legend"><span class="v-mark">checked</span> This meaning was checked with AI help when the word list was prepared, not by a person. <span class="v-mark v-mark-not">not checked yet</span> Read these first.</p>
       <p id="rows-line" class="result-line" role="status"></p>
       <div id="rows" class="v-rows"></div>
       <div class="actions">
@@ -239,11 +239,12 @@
       <div id="after-save" class="next" tabindex="-1" hidden>
         <h3>Saved. What to do next</h3>
         <ol>
-          <li>Send the file to your students the way you send any file: your learning platform, a shared drive or a USB drive.</li>
+          <li>Send the file to your students the way you send any file: your learning platform, a shared drive or a USB drive. From Google Drive or Google Classroom, a student downloads the file first: the preview there does not run it.</li>
           <li>Each student opens it in a browser, finishes it and presses the main button at the end, <strong id="csv-label">Save results as a spreadsheet file (CSV)</strong>. They hand that file back to you.</li>
           <li>Add the results up on <a href="packets-results.html">Add up results</a>, or open them in a spreadsheet. In AlloFlow: Class Analytics, Add take-home results.</li>
         </ol>
         <p class="after-phone">On a phone or tablet, a student opens the file on <a href="packets-open.html">Open a practice file</a>: apomera.github.io/AlloFlow/packets-open.html.</p>
+        <p id="after-code" hidden>The answers screen inside the file opens with your teacher code. This page has not kept the code.</p>
       </div>
 
       <details class="batch" id="batch">
@@ -279,7 +280,8 @@
         <h2 id="sources-title">Where the meanings come from</h2>
         <ul id="sources">
           <li>The meanings come from open dictionaries. They were shortened and cleaned up by a program when the word list was prepared, ahead of time. A file names its sources and their licenses under About this file.</li>
-          <li>Some meanings were checked when the word list was prepared. They show the word checked. Read the others before you give the file to students.</li>
+          <li>Some meanings were checked and corrected with AI help when the word list was prepared, not by a person. They show the word checked. Read the others first, and read every question before you give the file to students.</li>
+          <li>The recordings of words were made ahead of time with an AI voice (Kokoro). They come from the same store of recordings as Word Sounds practice.</li>
           <li>The wrong answers are meanings of other words: related words from the word list, or the other words of your list. Fill the blank uses only words from your list, because related words often fit the sentence too.</li>
         </ul>
         <ul id="credits"></ul>

@@ -71,12 +71,14 @@ function play(html, { voices = [{ lang: 'en-US', localService: true, name: 'On d
   const q = (selector) => d.querySelector(selector);
   const seen = (node) => !!node && !node.hidden && !node.closest('[hidden]');
   const button = (text) => [...d.querySelectorAll('#app button')].filter(seen).find((b) => b.textContent === text);
-  const choices = () => [...d.querySelectorAll('[data-choice]')].map((b) => b.textContent.replace(/^\d/, ''));
+  // What is seen: 2026-11-13, a blank's "blank" for screen readers (.sr) is left out.
+  const shown = (node) => { const copy = node.cloneNode(true); copy.querySelectorAll('.sr').forEach((n) => n.remove()); return copy.textContent; };
+  const choices = () => [...d.querySelectorAll('[data-choice]')].map((b) => shown(b).replace(/^\d/, ''));
   const pick = (text) => { time.t += 400; const i = choices().indexOf(text); if (i < 0) throw Error('no choice ' + text); q('[data-choice="' + (i + 1) + '"]').click(); };
   return { w, d, q, seen, button, choices, pick, saved, spoken,
     start: (name = 'Fox1') => { d.getElementById('learner-name').value = name; (button('Start') || button('Next')).click(); if (q('[data-check-begin]')) q('[data-check-begin]').click(); },
     heading: () => q('#app h2').textContent,
-    ask: () => q('[data-read]').textContent,
+    ask: () => shown(q('[data-read]')),
     status: () => q('#app .status').textContent,
     next: () => (button('Next') || button('See my results')).click(),
     csv: () => { q('[data-save-csv]').click(); return saved[saved.length - 1]; },
@@ -107,7 +109,8 @@ describe('the three vocabulary activities in the engine', () => {
     const plain = (a, part) => a[part].toString().split(a.id + '_').join('X_');
     for (const part of ['prepare', 'render', 'score']) for (const id of IDS.slice(1)) expect(plain(TH.CHECK_ADAPTERS[id], part), id + ' ' + part).toBe(plain(TH.CHECK_ADAPTERS.vocab_meaning, part));
     const names = (a) => Object.keys(a.labels).map((k) => k.slice(a.id.length + 1));
-    for (const id of IDS) expect(names(TH.CHECK_ADAPTERS[id]), id).toEqual(['intro', 'directions', 'question', 'read', 'read_choice', 'hear', 'correct', 'retry', 'missed', 'practice_wrong']);
+    // 2026-11-13: 'blank', the word a screen reader hears for ___ (tests/packets_math_vocab_fixes_2026_11_13b.test.js).
+    for (const id of IDS) expect(names(TH.CHECK_ADAPTERS[id]), id).toEqual(['intro', 'directions', 'question', 'read', 'read_choice', 'hear', 'correct', 'retry', 'missed', 'practice_wrong', 'blank']);
     for (const id of IDS) {
       const a = TH.CHECK_ADAPTERS[id];
       // What is copied into a file stands alone: the speech engine is reached through ctx.root, never a global.
@@ -220,8 +223,10 @@ describe('the builder drafts one question per word', () => {
     for (const w of bat.blank.wrong) expect(/^[aeiou]/i.test(w), w).toBe(false);
     const ancient = rows.find((r) => r.key === 'ancient');
     expect(ancient.blank.ask).toBe('We saw an ___ castle.');
-    expect(ancient.blank.why).toMatch(/^Fill the blank needs 3 other words from your list that can go after "an"/);
-    expect(V.blankSentence('The cat sat.', 'dog').why).toBe('The sentence does not have the word as it is written in your list. Edit the sentence.');
+    // 2026-11-13: the wrong words are of the same kind as the word (adjectives here), and a plain form of the word counts
+    // (tests/packets_math_vocab_fixes_2026_11_13b.test.js).
+    expect(ancient.blank.why).toMatch(/^Fill the blank needs 3 other adjectives from your list that can go after "an"/);
+    expect(V.blankSentence('The cat sat.', 'dog').why).toBe('The sentence does not have the word as it is written in your list, or with a plain ending like -s, -ed or -ing. Edit the sentence.');
     expect(V.blankSentence('A cat and a cat.', 'cat').why).toBe('The word is in the sentence more than once. Edit the sentence.');
     // The bank's "does not fit" words come first.
     expect(rows.find((r) => r.key === 'habitat').blank.wrong.slice(0, 2)).toEqual(['predator', 'camouflage']);
@@ -253,7 +258,9 @@ describe('a practice file', () => {
     expect(r.counts).toMatchObject({ notExpected: 0, look: 0 });
     expect(r.findings.filter((f) => f.id === 'speech').every((f) => f.cls === 'expected in this kind of file')).toBe(true);
     expect(r.claims.find((c) => c.id === 'never-ai').verdict).toBe('cannot tell');
-    expect(Buffer.byteLength(made.html)).toBeLessThan(120000);
+    // Raised 2026-11-13 (engine fixes, C:/tmp/packets_build_1111/engine2/STATUS.txt) from 120000: two tabs of one file, honest
+    // saving and the sound-failed note in the shell (+7 KB in every file; this file about 123.7 KB).
+    expect(Buffer.byteLength(made.html)).toBeLessThan(130000);
     // Every file carries the reading tools.
     expect(made.html).toContain('\ntools:function takeHomeTools(o) {\n');
   });
@@ -275,8 +282,10 @@ describe('a practice file', () => {
 
   it('mixes the order of the questions and of each question\'s choices, differently for each question', () => {
     const blocks = lesson.blocks.map((b) => b.activity);
-    expect(blocks).toEqual(IDS);
-    const meaning = lesson.blocks[0].items;
+    // 2026-11-13: Meaning to word comes first, so no meaning is shown as a choice before it is asked (the order is in
+    // tests/packets_math_vocab_fixes_2026_11_13b.test.js).
+    expect(blocks).toEqual(['vocab_word', 'vocab_meaning', 'vocab_blank']);
+    const meaning = lesson.blocks[1].items;
     expect(meaning.map((it) => it.word)).not.toEqual(made.rows.map((r) => r.word));
     const places = meaning.map((it) => it.choices.findIndex((c) => c.text.slice(0, 80) === it.answer));
     expect(new Set(places).size).toBeGreaterThan(1);
@@ -286,19 +295,20 @@ describe('a practice file', () => {
   it('plays: large text, right or wrong with a second try, Read aloud with a voice on the device only, and a results file with each answer', () => {
     const t = play(made.html);
     t.start();
-    expect(t.heading()).toBe('Word to meaning: 1 of 8');
+    // 2026-11-13: Meaning to word is asked first (see "mixes the order" above); Fill the blank has 6, adapt (a verb) has no 3 other verbs.
+    expect(t.heading()).toBe('Meaning to word: 1 of 8');
     const first = lesson.blocks[0].items[0];
-    expect(t.ask()).toBe(first.word);
+    expect(t.ask()).toBe(first.ask);
     expect(t.choices()).toEqual(first.choices.map((c) => c.text));
     // Read aloud: the question, then one choice, with the voice that runs on the device.
     t.q('[data-read-aloud="question"]').click();
     t.q('[data-read-aloud="choice-2"]').click();
-    expect(t.spoken).toEqual([[first.word + '. What does this word mean?', 'On device'], [first.choices[1].text, 'On device']]);
+    expect(t.spoken).toEqual([[first.ask.replace(/_{2,}/g, ', blank, ') + '. Which word has this meaning?', 'On device'], [first.choices[1].text, 'On device']]);
     const wrong = first.choices.find((c) => c.text.slice(0, 80) !== first.answer).text;
     t.pick(wrong);
     expect(t.status()).toBe('Not quite. Try once more.');
     t.pick(first.choices.find((c) => c.text.slice(0, 80) === first.answer).text);
-    expect(t.status()).toBe('Yes. That is what it means.');
+    expect(t.status()).toBe('Yes. That is the word.');
     t.next();
     // The rest right at once.
     lesson.blocks.forEach((b, bi) => b.items.forEach((it, i) => {
@@ -307,12 +317,12 @@ describe('a practice file', () => {
       t.next();
     }));
     const json = t.json();
-    expect(json.items[0]).toMatchObject({ itemId: first.id, activity: 'vocab_meaning', word: first.word, target: first.answer, responses: [wrong.slice(0, 80), first.answer], attempts: 2, correct: true, firstTry: false });
+    expect(json.items[0]).toMatchObject({ itemId: first.id, activity: 'vocab_word', word: first.word, target: first.answer, responses: [wrong.slice(0, 80), first.answer], attempts: 2, correct: true, firstTry: false });
     expect(json.items[0].supports).toMatchObject({ readAloud: 2 });
-    expect(json.summary.byActivity.map((a) => [a.activity, a.items, a.firstTry])).toEqual([['vocab_meaning', 8, 7], ['vocab_word', 8, 8], ['vocab_blank', 7, 7]]);
+    expect(json.summary.byActivity.map((a) => [a.activity, a.items, a.firstTry])).toEqual([['vocab_word', 8, 7], ['vocab_meaning', 8, 8], ['vocab_blank', 6, 6]]);
     const csv = t.csv();
     expect(csv.body).toContain('"alloflow-packet-result/1"');
-    expect(csv.body.split('\r\n')[1]).toContain('"' + first.id + '","vocab_meaning","Word to meaning","1","' + first.word + '"');
+    expect(csv.body.split('\r\n')[1]).toContain('"' + first.id + '","vocab_word","Meaning to word","1","' + first.word + '"');
   });
 
   it('shows no Read aloud button where the device has no speech engine, or only voices that need the internet', () => {
@@ -356,13 +366,14 @@ describe('a check file', () => {
 
   it('is a check: one try, a score of items right, no clock, a teacher code kept as a hash, and its answers scrambled', () => {
     expect(made.manifest.packet).toMatchObject({ mode: 'check', form: 'custom' });
-    expect(made.manifest.check).toMatchObject({ measure: 'vocab_items', scoreUnit: 'items_correct', timeLimitS: null, items: 16, practiceItems: 0 });
+    // 2026-11-13: one sample question first, not scored, as a math check has (tests/packets_math_vocab_fixes_2026_11_13b.test.js).
+    expect(made.manifest.check).toMatchObject({ measure: 'vocab_items', scoreUnit: 'items_correct', timeLimitS: null, items: 16, practiceItems: 1 });
     expect(made.manifest.check.teacherCode).toMatch(/^set; kept only as a salted SHA-256 hash/);
     expect(made.html).not.toContain('owl42');
     const items = sealed.blocks.flatMap((b) => b.items);
     expect(items.every((it) => typeof it.key === 'string' && !('answer' in it) && !('target' in it))).toBe(true);
     // Where the answer is the word, the word is not in the question's record, and its sense is not in its id.
-    for (const it of sealed.blocks[1].items) {
+    for (const it of sealed.blocks.find((b) => b.activity === 'vocab_word').items.filter((x) => !x.practice)) {
       expect(it.id).toMatch(/^vocab_word-\d\d$/);
       expect(made.rows.map((r) => r.word)).not.toContain(it.word);
       expect(it.word).toBe(it.ask.slice(0, 120));
@@ -376,9 +387,17 @@ describe('a check file', () => {
   it('plays with one try for each question and no right or wrong, and the results file carries the score', () => {
     const raw = make({ mode: 'check', teacherCode: 'owl42', title: 'Unit 3 check' }).lesson;
     const t = play(made.html);
-    t.start();
+    // 2026-11-13: the sample question comes first, with right or wrong, then "Get ready".
+    t.d.getElementById('learner-name').value = 'Fox1';
+    (t.button('Start') || t.button('Next')).click();
+    expect(t.heading()).toBe('Practice 1 of 1');
+    const [sample, ...all] = raw.blocks.flatMap((b) => b.items);
+    expect(sample.practice).toBe(true);
+    t.pick(sample.choices.find((c) => c === sample.answer));
+    expect(t.status()).toBe('Yes! That is right.');
+    t.q('[data-practice-next]').click();
+    t.q('[data-check-begin]').click();
     expect(t.heading()).toBe('Question 1 of 16');
-    const all = raw.blocks.flatMap((b) => b.items);
     all.forEach((it, i) => {
       const right = it.choices.find((c) => c.slice(0, 80) === it.answer.slice(0, 80));
       t.pick(i === 3 ? it.choices.find((c) => c !== right) : right);
@@ -386,8 +405,9 @@ describe('a check file', () => {
     const json = t.json();
     expect(json.packet.mode).toBe('check');
     expect(json.score).toMatchObject({ measure: 'vocab_items', score: 15, scoreUnit: 'items_correct', itemsAttempted: 16 });
-    expect(json.items[3]).toMatchObject({ correct: false, attempts: 1 });
-    expect(json.items.filter((it) => it.activity === 'vocab_word').every((it) => made.rows.some((r) => r.word === it.target))).toBe(true);
+    expect(json.items[4]).toMatchObject({ correct: false, attempts: 1 });
+    expect(json.items[0]).toMatchObject({ itemId: 'vocab_word-p0', practice: 'practice', target: 'chair' });
+    expect(json.items.filter((it) => it.activity === 'vocab_word' && !it.practice).every((it) => made.rows.some((r) => r.word === it.target))).toBe(true);
   });
 });
 
@@ -397,8 +417,16 @@ describe('a check file', () => {
 function played({ mode = 'practice', missFirst = false } = {}) {
   const f = make({ mode, title: mode === 'check' ? 'Unit 3 check' : 'Unit 3 words' });
   const t = play(f.html);
-  t.start();
-  const all = f.lesson.blocks.flatMap((b) => b.items);
+  // 2026-11-13: a check opens with a sample question (not scored): answered right, then Next and Start.
+  t.d.getElementById('learner-name').value = 'Fox1';
+  (t.button('Start') || t.button('Next')).click();
+  let all = f.lesson.blocks.flatMap((b) => b.items);
+  if (all[0].practice) {
+    t.pick(all[0].choices.find((c) => c === all[0].answer));
+    t.q('[data-practice-next]').click();
+    all = all.slice(1);
+  }
+  if (t.q('[data-check-begin]')) t.q('[data-check-begin]').click();
   all.forEach((it, i) => {
     const choices = it.choices.map((c) => (typeof c === 'string' ? c : c.text));
     const right = choices.find((c) => c.slice(0, 80) === it.answer.slice(0, 80));
@@ -415,7 +443,8 @@ describe('Add up results reads a vocabulary file', () => {
     for (const [text, name] of [[r.csv.body, r.csv.name], [r.json, 'x.json']]) {
       const s = (await reader.read(text, { name, lastModified: Date.UTC(2026, 10, 20) })).sessions[0];
       expect([s.mode, s.measure, s.title, s.integrity], name).toEqual(['practice', 'practice', 'Unit 3 words', 'ok']);
-      expect(s.byActivity.map((a) => [a.activity, a.name, a.strand, a.graded, a.firstTry])).toEqual([['vocab_meaning', 'Word to meaning', 'vocabulary', 8, 7], ['vocab_word', 'Meaning to word', 'vocabulary', 8, 8]]);
+      // 2026-11-13: Meaning to word is asked first.
+      expect(s.byActivity.map((a) => [a.activity, a.name, a.strand, a.graded, a.firstTry])).toEqual([['vocab_word', 'Meaning to word', 'vocabulary', 8, 7], ['vocab_meaning', 'Word to meaning', 'vocabulary', 8, 8]]);
       expect(s.byStrand.map((row) => [row.strand, row.name, row.firstTry, row.graded])).toEqual([['vocabulary', 'Vocabulary', 15, 16]]);
       const model = reader.addUp([s]);
       expect(model.strands).toEqual(reader.VOCAB_STRANDS);
@@ -470,8 +499,10 @@ describe('Class Analytics files a vocabulary file under "Vocabulary"', () => {
         expect(got.reason, mode + ' ' + name).toBe('');
         const s = got.sessions[0];
         expect(s.check, mode).toBeUndefined();
+        // 2026-11-13 (later): a check's sample question is practice before the scored items, never graded and no longer one
+        // of the items given (it read "17 given" for 16 scored): 16 in both kinds.
         expect([s.given, s.firstTryItems, s.firstTryCorrect, s.integrity], mode + ' ' + name).toEqual([16, 16, 15, 'ok']);
-        expect(Object.keys(s.acts)).toEqual(['vocab_meaning', 'vocab_word']);
+        expect(Object.keys(s.acts)).toEqual(['vocab_word', 'vocab_meaning']);
         sessions.push(s);
       }
       expect(sessions[0].id).toBe(sessions[1].id);

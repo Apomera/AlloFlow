@@ -7,6 +7,8 @@
 // (17169-17171). Graded at word_sounds_module.js:20808 ->
 // checkAnswer(choice, word): lower-cased, trimmed comparison
 // (17099-17113), 2 tries.
+// 2026-11-13: each picture shows the number of its key, 1-9 (the player's keys
+// choose the nth picture): file has / app lacks.
 
 // Pictures this export has seen so far, by the app's precedence. prepare()
 // receives one row; the manifest rides on the first row, which comes first.
@@ -64,11 +66,13 @@ module.exports = {
     var cards = [];
     var norm = function (s) { return String(s == null ? '' : s).toLowerCase().trim(); };
     var list = ctx.el('ul', { class: 'choices' });
-    item.choices.forEach(function (choice) {
+    item.choices.forEach(function (choice, i) {
       var right = norm(choice.text) === norm(item.target);
       var src = ctx.image(choice.image);
       var name = ctx.fmt(ctx.L.decoding_picture_of, { word: choice.text });
-      var pick = ctx.el('button', { type: 'button', 'aria-label': name, style: 'width:100%;display:flex;justify-content:center;background:#fff',
+      // The picture's number, the key 1-9 that chooses it (2026-11-13).
+      var number = i < 9 ? ctx.el('span', { 'aria-hidden': 'true', 'data-key-number': '', style: 'position:absolute;top:6px;inset-inline-start:6px;min-width:28px;height:28px;line-height:28px;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;text-align:center', text: String(i + 1) }) : null;
+      var pick = ctx.el('button', { type: 'button', 'aria-label': name, style: 'position:relative;width:100%;display:flex;justify-content:center;background:#fff',
         on: { click: function () {
           if (ctx.isDone() || pick.getAttribute('aria-disabled') === 'true') return;
           var outcome = ctx.answer(choice.text, right, {
@@ -76,14 +80,14 @@ module.exports = {
             missedText: ctx.fmt(ctx.L.decoding_missed, { word: item.printed }),
           });
           if (outcome !== 'correct') { box.classList.add('tried'); pick.setAttribute('aria-disabled', 'true'); }
-        } } }, [ctx.el('img', { class: 'picture', src: src || '', alt: '' })]);
+        } } }, [number, ctx.el('img', { class: 'picture', src: src || '', alt: '' })]);
       var box = ctx.el('li', { class: 'choice' }, [pick]);
       cards.push({ box: box, pick: pick, right: right });
       list.appendChild(box);
     });
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.decoding_prompt }));
     // The printed word, as the app shows it (CSS capitalize).
-    ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:3rem;text-transform:capitalize;margin:8px 0', text: item.printed }));
+    ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:3rem;text-transform:capitalize;margin:8px 0', text: item.printed }));
     if (item.prompt) {
       ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
         ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.decoding_hear_instructions }),

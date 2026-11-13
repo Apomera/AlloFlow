@@ -10,6 +10,10 @@
 // word_sounds_module.js:20848-20855 -> checkAnswer(choice, word): lower-cased,
 // trimmed comparison (17099-17113), 2 tries. Instruction and read-back clips
 // are packed by setup (5414-5422), read-back after a right answer (17301-17337).
+// 2026-11-13 parity: as in the app, a right answer is followed by the sentence read
+// back by itself (payoff, after the praise clip; the button stays). Choices print as
+// written, so a name keeps its capital; the app lower-cases its chips (word-bank
+// convention, word_sounds_module.js ~24217): file has / app lacks.
 
 var lib = { key: null, manifest: {}, rows: {} };
 function remember(w, env) {
@@ -99,9 +103,10 @@ module.exports = {
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.read_sentence_prompt }));
     ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_sentence_picture_practice : ctx.L.read_sentence_matching_practice }));
     if (picture) ctx.root.appendChild(ctx.el('img', { class: 'picture', src: picture, alt: ctx.fmt(ctx.L.read_sentence_picture_clue, { word: item.target }) }));
-    else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_sentence_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target.toLowerCase() })]));
+    else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_sentence_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target })]));
     // data-read: running text, where the shell's reading focus can go.
-    ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:1.8rem;white-space:pre-wrap', 'data-read': '' }, [item.before, blank, item.after]));
+    // dir: an English sentence keeps its full stop on the right in a right-to-left page.
+    ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:1.8rem;white-space:pre-wrap', 'data-read': '' }, [item.before, blank, item.after]));
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.read_sentence_hear_instructions }),
     ]));
@@ -114,7 +119,7 @@ module.exports = {
           if (ctx.isDone() || choose.getAttribute('aria-disabled') === 'true') return;
           var outcome = ctx.answer(option, right, { correctText: ctx.L.read_sentence_correct, missedText: ctx.fmt(ctx.L.read_sentence_missed, { word: item.target }) });
           if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
-        } } }, [ctx.el('span', { class: 'letters', lang: 'en', style: 'text-transform:lowercase', text: option })]);
+        } } }, [ctx.el('span', { class: 'letters', lang: 'en', text: option })]);
       var box = ctx.el('li', { class: 'choice' }, [choose]);
       cards.push({ box: box, choose: choose, right: right });
       list.appendChild(box);
@@ -122,6 +127,9 @@ module.exports = {
     ctx.root.appendChild(list);
     ctx.root.appendChild(after);
     return {
+      // After a right answer, once the praise is over, the sentence is read back by itself (the app's payoff). The
+      // button below stays to hear it again.
+      payoff: function () { if (item.sentenceAudio) ctx.play(item.sentenceAudio); },
       reveal: function () {
         // The blank fills with the word as written in the sentence.
         blank.textContent = item.answer;

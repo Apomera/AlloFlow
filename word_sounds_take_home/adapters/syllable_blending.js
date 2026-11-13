@@ -15,12 +15,16 @@
 // 20194-20195). Graded at 20197-20209: the chosen option equals the word
 // (trimmed, lower case) -> checkAnswer("correct"|"incorrect", "correct"),
 // default 2 attempts.
+// 2026-11-13 parity: the app's sound-only choices are now cards (a tap plays and selects, a
+// large Check submits, a missed card is crossed out: 94704af0e4). The file keeps two buttons
+// per choice, Listen first, then Choose, in every activity, as Find Sounds always had them
+// (hear, then choose).
 
 module.exports = {
   id: 'syllable_blending',
   title: 'Syllable Blending',
   labels: {
-    syllable_blending_prompt: 'Listen to the syllables and blend them together',
+    syllable_blending_prompt: 'Listen to the syllables and blend them together.',
     syllable_blending_play: 'Play the syllables',
     syllable_blending_listen_first: 'Listen to all the syllables first, then choose.',
     syllable_blending_option_n: 'Option {n}',
@@ -122,7 +126,7 @@ module.exports = {
       step();
     };
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.syllable_blending_prompt }));
-    var row = ctx.el('div', { class: 'row', 'aria-hidden': 'true' });
+    var row = ctx.el('div', { class: 'row', 'aria-hidden': 'true', dir: 'ltr' });
     item.syllables.forEach(function (syllable) {
       var p = ctx.el('span', { class: 'slot', text: ctx.showLetters ? syllable : '●' });
       parts.push(p);
@@ -153,7 +157,7 @@ module.exports = {
           });
           if (outcome !== 'correct') { card.tried = true; box.classList.add('tried'); setState(); }
         } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: choice.text }) : ctx.fmt(ctx.L.syllable_blending_option_n, { n: n })]);
-      var box = ctx.el('li', { class: 'choice' }, [choose, listen]);
+      var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
       card.box = box; card.choose = choose; card.listen = listen;
       cards.push(card);
       list.appendChild(box);
@@ -166,6 +170,8 @@ module.exports = {
     setState();
     if (!ctx.isDone()) runSyllables(true);
     return {
+      // The R key: the question and the syllables again (the choices wait for them, as on the button).
+      replay: function () { if (!ctx.isDone()) runSyllables(true); },
       reveal: function () {
         halt();
         cards.forEach(function (c) {

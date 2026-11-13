@@ -11,6 +11,9 @@
 // story and per-sentence clips are packed by setup (5423-5436); after a right
 // answer the app reads the story back line by line when the sentence split
 // matches the parts, else the whole-story clip (17301-17337).
+// 2026-11-13 parity: the file does that too, by itself once the praise clip is over
+// (payoff; the Hear the story button stays). Choices print as written, so a name
+// keeps its capital (the app lower-cases its chips: file has / app lacks).
 
 var SPLIT = /(?<=[.!?])\s+/;
 function pictureFor(text, env) {
@@ -88,7 +91,7 @@ module.exports = {
     var blanks = [];
     var lineNodes = [];
     // data-read: running text, where the shell's reading focus can go.
-    var storyBox = ctx.el('div', { role: 'group', 'aria-label': ctx.L.read_passage_story, class: 'letters', lang: 'en', 'data-read': '',
+    var storyBox = ctx.el('div', { role: 'group', 'aria-label': ctx.L.read_passage_story, class: 'letters', lang: 'en', dir: 'ltr', 'data-read': '',
       style: 'font-size:1.6rem;border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:12px 0' });
     item.lines.forEach(function (line) {
       var node;
@@ -106,7 +109,7 @@ module.exports = {
     ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.read_passage_prompt }));
     ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_passage_picture_practice : ctx.L.read_passage_matching_practice }));
     if (picture) ctx.root.appendChild(ctx.el('img', { class: 'picture', src: picture, alt: ctx.fmt(ctx.L.read_passage_picture_clue, { word: item.target }) }));
-    else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_passage_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target.toLowerCase() })]));
+    else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_passage_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target })]));
     ctx.root.appendChild(storyBox);
     ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
       ctx.el('button', { type: 'button', on: { click: function () { run++; mark(-1); ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.read_passage_hear_instructions }),
@@ -120,7 +123,7 @@ module.exports = {
           if (ctx.isDone() || choose.getAttribute('aria-disabled') === 'true') return;
           var outcome = ctx.answer(option, right, { correctText: ctx.L.read_passage_correct, missedText: ctx.fmt(ctx.L.read_passage_missed, { word: item.target }) });
           if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
-        } } }, [ctx.el('span', { class: 'letters', lang: 'en', style: 'text-transform:lowercase', text: option })]);
+        } } }, [ctx.el('span', { class: 'letters', lang: 'en', text: option })]);
       var box = ctx.el('li', { class: 'choice' }, [choose]);
       cards.push({ box: box, choose: choose, right: right });
       list.appendChild(box);
@@ -137,9 +140,10 @@ module.exports = {
         if (on) n.setAttribute('aria-current', 'true'); else n.removeAttribute('aria-current');
       });
     };
-    var readBack = function () {
+    // auto: the read-back after a right answer (not a help the student asked for).
+    var readBack = function (auto) {
       var mine = ++run;
-      ctx.support('storyReadBacks');
+      if (auto !== true) ctx.support('storyReadBacks');
       if (!item.readBackByLine) { mark(-1); ctx.play(item.readBack[0]); return; }
       var step = function (i) {
         if (mine !== run) return;
@@ -150,6 +154,8 @@ module.exports = {
       step(0);
     };
     return {
+      // After a right answer, once the praise is over, the story is read back line by line (the app's payoff).
+      payoff: function () { if (item.readBack && item.readBack.length) readBack(true); },
       reveal: function () {
         // Every blank fills with the word as written in its sentence.
         blanks.forEach(function (b) {
@@ -165,7 +171,7 @@ module.exports = {
           }
         });
         if (item.readBack && item.readBack.length && !after.childNodes.length) {
-          after.appendChild(ctx.el('button', { type: 'button', on: { click: readBack }, text: ctx.L.read_passage_hear_story }));
+          after.appendChild(ctx.el('button', { type: 'button', on: { click: function () { readBack(false); } }, text: ctx.L.read_passage_hear_story }));
         }
       },
     };

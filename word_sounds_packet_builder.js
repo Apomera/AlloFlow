@@ -370,6 +370,50 @@
   function seedFor(seed, word) { return fnv1a(String(seed == null ? '' : seed) + '|' + String(word)); }
   function hex8(n) { return ('0000000' + (n >>> 0).toString(16)).slice(-8); }
 
+  // Choices (2026-11-13, the maker's "Choices": easy, medium or all). Below Hard the app shows fewer choices, with the
+  // core's own functions: Find Sounds asks the first sound (Easy) or the first or last (Medium)
+  // (isolationPositions) and shows 3 or 4 sounds; Blend Sounds and Rhyme Time show 3 or 4 words (choiceLimit +
+  // trimChoices, as trimSoundChoices in word_sounds_module.js: the answer stays, far choices first, Medium keeps one
+  // near one); Sound Counting shows the count with two either side (Easy) or 1-8 (Medium) (countingChoices). All
+  // (and no level) leaves every board as built. Seeded by the version and the word, so a file is the same each time.
+  var CHOICE_LEVELS = ['easy', 'medium', 'all'];
+  function fewerChoices(boards, level, word, phonemes, core, seed) {
+    var trim = function (options, answer, same, closeness) {
+      var count = core.choiceLimit(level, options.length);
+      if (!(count < options.length)) return options;
+      return core.trimChoices({ options: options, answer: answer, count: count, difficulty: level, same: same, closeness: closeness });
+    };
+    var iso = boards.isolation;
+    var sounds = (Array.isArray(phonemes) ? phonemes : []).map(function (p) { return core.phonemeLabel(p, true); }).filter(Boolean);
+    if (iso && Array.isArray(iso.options) && iso.options.indexOf(iso.correctSound) >= 0) {
+      var allowed = sounds.length ? core.isolationPositions(level, sounds.length) : [0];
+      if (sounds.length && allowed.indexOf(iso.position) < 0) {
+        var position = allowed[seedFor(seed, 'isolation|' + word) % allowed.length];
+        var correct = sounds[position];
+        if (correct) {
+          // The same number of sounds, the new answer among them, in a seeded order.
+          var random = mulberry32(seedFor(seed, 'isolation-order|' + word));
+          var options = [correct].concat(iso.options.filter(function (o) { return o !== correct; })).slice(0, iso.options.length);
+          for (var i = options.length - 1; i > 0; i--) { var j = Math.floor(random() * (i + 1)); var t = options[i]; options[i] = options[j]; options[j] = t; }
+          iso = boards.isolation = { position: position, correctSound: correct, options: options };
+        }
+      }
+      // Two spellings of one sound count as the same choice (the app's soundSame).
+      var same = function (a, b) {
+        var x = String(a == null ? '' : a).toLowerCase().trim(), y = String(b == null ? '' : b).toLowerCase().trim();
+        return !!x && !!y && (x === y || core.soundAnswerMatches(x, y) || (typeof core.soundKey === 'function' && core.soundKey(x) === core.soundKey(y)));
+      };
+      iso.options = trim(iso.options, iso.correctSound, same, core.soundCloseness);
+    }
+    ['blending', 'rhyming'].forEach(function (id) {
+      var board = boards[id];
+      if (board && Array.isArray(board.options) && board.answer && board.options.indexOf(board.answer) >= 0) board.options = trim(board.options, board.answer, undefined, core.wordCloseness);
+    });
+    var counting = boards.counting;
+    var numbers = counting ? core.countingChoices(Number(counting.answer), level) : null;
+    if (numbers) counting.options = numbers;
+  }
+
   // ---------------------------------------------------------------------------
   // Copied from word_sounds_setup_source.jsx. Removed: every AI call (sentence, story, definition,
   // picture), the eSpeak rung, React state (reviewed syllable recordings and counts, the chosen
@@ -635,8 +679,10 @@
             if (letters.length > 1 && letters.join('') === word) [letters[0], letters[1]] = [letters[1], letters[0]];
             const hiddenIndex = word.length > 1 ? seed % word.length : 0;
             const correctLetter = word[hiddenIndex] || '';
+            const letterRank = (value) => [...(value + word)].reduce((hash, c) => Math.imul(hash ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
+            const vowelLetter = !!correctLetter && ('aeiou'.includes(correctLetter) || (correctLetter === 'y' && !/[aeiou]/.test(word)));
             const letterDistractorPool = packIsEnglish
-                ? 'abcdefghijklmnopqrstuvwxyz'.split('')
+                ? (vowelLetter ? 'aeiou' : 'bcdfghjklmnprstvwz').split('').sort((a, b) => (word.includes(a) - word.includes(b)) || (letterRank(a) - letterRank(b)))
                 : shuffleForPack(allPackLetters);
             const letterOptions = shuffleForPack([...new Set([correctLetter, ...letterDistractorPool.filter((value) => value !== correctLetter)])].slice(0, 4));
             const mode = item.soundSortMatches?.position || (seed % 2 === 0 ? 'first' : 'last');
@@ -842,6 +888,8 @@
     if (!core || typeof core.soundAnalysis !== 'function') return Promise.reject(new Error('buildPacket needs core (createWordSoundsCore)'));
     if (!loader || typeof loader.lessonFromPack !== 'function' || typeof loader.buildHtml !== 'function') return Promise.reject(new Error('buildPacket needs loader (AlloWordSoundsTakeHome)'));
     var seed = opts.seed == null ? 1 : opts.seed;
+    // How many choices a board shows (the maker's "Choices"): 'easy', 'medium' or 'all' (anything else: all).
+    var choiceLevel = CHOICE_LEVELS.indexOf(opts.choices) >= 0 ? opts.choices : 'all';
     var title = String(opts.title || 'Word Sounds practice').trim().slice(0, 120);
     var exceptions = [];
     var except = function (word, activity, reason) { exceptions.push({ word: word, activity: activity, reason: reason }); };
@@ -924,6 +972,11 @@
       });
       logic.compileActivityItems(rows);
       rows.forEach(function (item) {
+        var boards = item.activityItems || {};
+        // Letter Trace: capital and lowercase (the default), or one of them (opts.tracingCases).
+        if (boards.letter_tracing && (opts.tracingCases === 'capital' || opts.tracingCases === 'lowercase')) boards.letter_tracing.cases = opts.tracingCases;
+        // Fewer choices (opts.choices 'easy' or 'medium'; see fewerChoices).
+        if (choiceLevel !== 'all') fewerChoices(boards, choiceLevel, item.word, item.phonemes, core, seed);
         var picture = teacherPicture(item.word);
         if (picture) { item.image = picture.uri; ownPictureShown[item.word] = picture; }
       });
@@ -1062,6 +1115,8 @@
       }
       var manifest = {
         kind: 'alloflow-packet-build-manifest', builder: VERSION, seed: seed, title: title,
+        // How many choices the boards show (2026-11-13): 'easy', 'medium' or 'all'.
+        choices: choiceLevel,
         learnerLabel: codeName(opts.learnerLabel),
         packet: lesson ? { id: lesson.lessonId, version: lesson.revision } : null,
         words: { asked: asked, used: usedWords },
@@ -1104,7 +1159,8 @@
       if (!lesson || opts.noFile === true) return { html: '', lesson: lesson, manifest: manifest, exceptions: exceptions, sha256: '' };
       var html = loader.buildHtml(lesson, { core: core, attributions: attributions });
       var extra = { attributions: attributions, notices: notices,
-        builder: { name: VERSION, seed: seed, ai: 'none', words: usedWords.length, items: manifest.items.total } };
+        // choices: the maker's Choices, so "Open a file I made" can read it back (packets_reopen.js).
+        builder: { name: VERSION, seed: seed, ai: 'none', words: usedWords.length, items: manifest.items.total, choices: choiceLevel } };
       // The file itself changes only when it really holds a picture.
       if (pictureFacts && withPicture.length) extra.pictures = pictureFacts;
       // And only when it really holds something of the teacher's.
@@ -1377,6 +1433,8 @@
 
   var api = {
     VERSION: VERSION, SUPPORTED_ACTIVITIES: SUPPORTED.slice(), STAGES: STAGE_IDS.slice(), STAGE_NOTE: STAGE_NOTE,
+    // The maker's "Choices" (opts.choices), fewest first.
+    CHOICE_LEVELS: CHOICE_LEVELS.slice(),
     trialBuild: trialBuild,
     DEFAULT_MAX_RANK: DEFAULT_MAX_RANK, DEFAULT_MIN_ZIPF: DEFAULT_MIN_ZIPF, DEFAULT_MIN_BOOKS: DEFAULT_MIN_BOOKS, CMUDICT_NOTICE: CMUDICT_NOTICE,
     buildPacket: buildPacket, pickWords: pickWords, stageList: stageList, pcmToWavUri: pcmToWavUri,

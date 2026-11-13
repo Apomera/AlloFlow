@@ -8,6 +8,10 @@
 //               Default retry budget: 2 presentations (1 retry).
 //   audio       runInstructionSequence (~16446, ~16996): inst_counting bank clip,
 //               then the word.
+//   difficulty  the app shows fewer numbers below Hard (WS_CORE.countingChoices: Easy
+//               the count with two either side, Medium 1-8). A packet made with Easy or
+//               Medium carries those numbers in board.options; key n presses the button
+//               n (data-key). A board without them shows 1-10 and 11+, as before.
 module.exports = {
   id: 'counting',
   title: 'Sound Counting',
@@ -31,11 +35,18 @@ module.exports = {
     var prompt = env.bankClip('instructions', 'inst_counting');
     if (!prompt) missing.push('question');
     if (missing.length) return { missing: missing };
-    return { item: { target: target, wordAudio: wordAudio, promptAudio: prompt,
-      introAudio: [prompt, wordAudio], answerAudio: [wordAudio] } };
+    var item = { target: target, wordAudio: wordAudio, promptAudio: prompt,
+      introAudio: [prompt, wordAudio], answerAudio: [wordAudio] };
+    // Fewer numbers (countingChoices), when the board has them and the answer is among them.
+    var board = w.activityItems && w.activityItems.counting;
+    var full = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11+'];
+    var shown = board && Array.isArray(board.options) ? board.options.map(function (v) { return String(v); }) : null;
+    if (shown && shown.length >= 2 && shown.length < full.length && shown.indexOf(target) >= 0 &&
+      shown.every(function (v, i) { return full.indexOf(v) >= 0 && shown.indexOf(v) === i; })) item.values = shown;
+    return { item: item };
   },
   render: function (item, ctx) {
-    var values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11+'];
+    var values = item.values && item.values.length ? item.values : ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11+'];
     var countText = function (v) {
       return v === '11+' ? ctx.L.counting_sounds_more : v === '1' ? ctx.L.counting_sounds_one : ctx.fmt(ctx.L.counting_sounds_n, { n: v });
     };
@@ -52,7 +63,8 @@ module.exports = {
           });
           if (outcome !== 'correct') { box.classList.add('tried'); button.setAttribute('aria-disabled', 'true'); }
         } } }, [v]);
-      var box = ctx.el('li', { class: 'choice solo', style: 'padding:6px' }, [button]);
+      // data-key: the number key that presses it (the same as its label, also when fewer numbers are shown).
+      var box = ctx.el('li', { class: 'choice solo', style: 'padding:6px', 'data-key': /^[1-9]$/.test(v) ? v : false }, [button]);
       cards.push({ box: box, button: button, value: v });
       list.appendChild(box);
     });

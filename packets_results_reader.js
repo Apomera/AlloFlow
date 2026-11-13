@@ -30,8 +30,11 @@
   var PROBE_COLUMNS = ['digits_correct', 'digits_possible'];
   // Both file values are a check. Inside this reader (and in what it keeps on the device) a check is mode 'probe'.
   function isCheckMode(value) { return value === 'check' || value === 'probe'; }
+  // 2026-11-13: four columns appended (append only: every earlier column keeps its place and its meaning).
+  // accuracy_pct stays correct / items given (unreached items count); accuracy_of_attempted_pct is correct / items
+  // attempted, the one to read for a timed check. active_s is the time on the items, when the file has it.
   var SUMMARY_COLUMNS = ['learner', 'date', 'measure', 'form', 'score', 'score_unit', 'accuracy_pct', 'first_try_pct', 'items_given', 'items_attempted',
-    'duration_s', 'flags', 'session_id', 'packet_id', 'packet_version', 'integrity', 'source_file'];
+    'duration_s', 'flags', 'session_id', 'packet_id', 'packet_version', 'integrity', 'source_file', 'title', 'measure_name', 'accuracy_of_attempted_pct', 'active_s'];
   // Activity -> skill strand, with the English names. A copy of SKILL_STRANDS and ACTIVITY_SKILLS in
   // word_sounds_core.js (and of _AC_WS_STRANDS / _AC_WS_ACTIVITIES in the dashboard), which this page
   // does not load. tests/packets_results_page.test.js fails when the copies differ.
@@ -225,6 +228,45 @@
     if (!utc && (d.getMonth() !== Number(m[2]) - 1 || d.getDate() !== Number(m[3]))) return 0;
     return d.getFullYear() >= 2000 && d.getFullYear() <= 2100 ? d.getTime() : 0;
   }
+  // A spreadsheet that saved the file again may have rewritten its dates its own way: 11/16/2026 9:10 (US),
+  // 16/11/2026 09:10 or 16.11.2026 09:10 (Europe). Such a date is read only when the order is not in doubt: a
+  // number above 12, dots (day first), the finish date in the name the file was saved under, or the file's own
+  // duration fitting one order only (or both orders giving the same days). Otherwise 0, and the file's
+  // last-changed date stands in with its note. values: [finished, started, ...] as in raw.stamps.
+  var SHEET_DATE = /^(\d{1,2})([\/.\-])(\d{1,2})\2(\d{4}|\d{2})(?:[ T,]+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*([ap])\.?m\.?)?)?$/i;
+  function sheetParts(value) {
+    var m = SHEET_DATE.exec(text(value, 40));
+    if (!m) return null;
+    var hour = m[5] != null ? Number(m[5]) : 12;
+    if (m[8]) { if (hour < 1 || hour > 12) return null; hour = hour % 12 + (m[8].toLowerCase() === 'p' ? 12 : 0); }
+    return { a: Number(m[1]), b: Number(m[3]), dots: m[2] === '.', year: Number(m[4]) + (m[4].length === 2 ? 2000 : 0), hour: hour, minute: Number(m[6]) || 0, second: Number(m[7]) || 0 };
+  }
+  function sheetTime(p, dayFirst) {
+    var month = dayFirst ? p.b : p.a, day = dayFirst ? p.a : p.b;
+    if (p.hour > 23 || p.minute > 59 || p.second > 59) return 0;
+    var d = new Date(p.year, month - 1, day, p.hour, p.minute, p.second);
+    if (isNaN(d.getTime()) || d.getMonth() !== month - 1 || d.getDate() !== day) return 0;
+    return p.year >= 2000 && p.year <= 2100 ? d.getTime() : 0;
+  }
+  function sheetStamp(values, fileName, durationS) {
+    var parts = (values || []).map(sheetParts);
+    var found = parts.filter(Boolean);
+    if (!found.length) return 0;
+    var fits = [false, true].filter(function (dayFirst) { return found.every(function (p) { return sheetTime(p, dayFirst) > 0 && !(p.dots && !dayFirst); }); });
+    if (fits.length === 2 && !found.every(function (p) { return p.a === p.b; })) {
+      // The finish date in the saved name (<title>__<learner>__2026-11-16.csv), when the finish date is in the file.
+      var names = text(fileName, 120).match(/__\d{4}-\d{2}-\d{2}(?!\d)/g);
+      var named = names && parts[0] ? names[names.length - 1].slice(2) : '';
+      var byName = named ? fits.filter(function (dayFirst) { return localDate(sheetTime(parts[0], dayFirst)) === named; }) : [];
+      // Start to finish as the file states it (whole seconds; a spreadsheet drops the seconds, a clock change moves an hour).
+      var byDuration = parts[0] && parts[1] && durationS !== null && durationS !== undefined && durationS !== '' && isFinite(Number(durationS))
+        ? fits.filter(function (dayFirst) { return Math.abs((sheetTime(parts[0], dayFirst) - sheetTime(parts[1], dayFirst)) / 1000 - Number(durationS)) <= 3720; }) : fits;
+      fits = byName.length === 1 ? byName : byDuration.length === 1 ? byDuration : [];
+    }
+    if (fits.length < 1) return 0;
+    for (var i = 0; i < parts.length; i++) if (parts[i]) return sheetTime(parts[i], fits[0]);
+    return 0;
+  }
   function two(n) { return (n < 10 ? '0' : '') + n; }
   function localDate(ms) {
     var d = new Date(ms);
@@ -280,7 +322,8 @@
     return { measure: idOf(sc.measure, 40), score: score === null ? null : Math.max(0, Math.min(1000000, score)), unit: idOf(sc.scoreUnit != null ? sc.scoreUnit : sc.unit, 40),
       digitsCorrect: whole(sc.digitsCorrect), digitsPossible: whole(sc.digitsPossible), itemsCorrect: whole(sc.itemsCorrect) || 0, itemsAttempted: whole(sc.itemsAttempted) || 0,
       timeLimitS: number(sc.timeLimitS), elapsedS: Math.max(0, number(sc.elapsedS) || 0), hiddenS: Math.max(0, number(sc.hiddenS) || 0),
-      completion: completion === 'time' || completion === 'ended_early' || completion === 'complete' ? completion : '',
+      // time_up_away (2026-11-13): the time ran out while the page was hidden or closed. No score in any unit.
+      completion: completion === 'time' || completion === 'ended_early' || completion === 'complete' || completion === 'time_up_away' ? completion : '',
       prorated: sc.prorated === true || yes(sc.prorated), scoringVersion: whole(sc.scoringVersion, 999), formVersion: text(sc.formVersion, 20),
       attempt: Math.max(1, whole(sc.attempt, 9999) || 1),
       flags: (Array.isArray(sc.flags) ? sc.flags : []).slice(0, 8).map(function (f) { return idOf(f, 40); }).filter(Boolean),
@@ -391,6 +434,8 @@
       // A file saved from 2026-11-11 carries its lesson or check title in the summary row ("title=Short vowels").
       // An older file has none, and the packet id is shown. The row is outside the check value.
       group.title = counted && typeof counted.title === 'string' ? text(counted.title, 80) : '';
+      // From 2026-11-13 the row also says the time on the items ("active_s=252"); older files have none.
+      group.activeS = counted && typeof counted.active_s === 'string' ? whole(counted.active_s, 864000) : null;
       if (group.mode !== 'probe') return;
       group.score = stated ? scoreFromPairs(stated) : null;
       group.attempt = group.score ? group.score.attempt : counted && whole(counted.attempt, 9999) ? whole(counted.attempt, 9999) : null;
@@ -441,9 +486,10 @@
     if (integrity && integrity.value) { try { lines = writerLines(data, packet, titles, probe); } catch (_) { lines = null; } }
     var score = probe && data.score && typeof data.score === 'object' ? cleanScore(data.score) : null;
     var seconds = number(data.durationMs);
+    var active = number(data.activeMs);
     return { ok: true, sessions: [{ source: 'json', sid: text(data.sessionId, 80), learner: text(learner, 60), packetId: text(packet.id, 80) || text(data.lessonId, 80),
       packetVersion: text(packet.version, 40) || text(data.revision, 40), form: text(packet.form, 40), mode: probe ? 'probe' : 'practice',
-      title: text(data.lessonTitle, 80) || text(packet.title, 80),
+      title: text(data.lessonTitle, 80) || text(packet.title, 80), activeS: active === null ? null : whole(active / 1000, 864000),
       stamps: [data.finishedLocal, data.finishedAt, data.startedLocal, data.startedAt], startedLocal: text(data.startedLocal, 40), finishedLocal: text(data.finishedLocal, 40),
       startedText: text(data.startedLocal, 40) || text(data.startedAt, 40), durationS: seconds === null ? null : whole(seconds / 1000, 864000),
       prefix: [packet.id, packet.version, packet.form, data.sessionId].map(scalar).join('|').slice(0, 600),
@@ -476,7 +522,9 @@
         a = acts[it.activity] = { activity: it.activity, name: activityName(it.activity, it.activityTitle), strand: strandOf(it.activity), items: 0, graded: 0, correct: 0, firstTry: 0 };
         order.push(a);
       }
-      a.items++; done++;
+      a.items++;
+      // A check's sample question is practice before the scored items: not one of the items done (2026-11-13, as Class Analytics counts).
+      if (!(it.practice && s.mode === 'probe')) done++;
       if (it.practice) return;
       a.graded++; graded++;
       if (it.correct) { a.correct++; correct++; }
@@ -539,6 +587,7 @@
       var score = null, noScore = '', prorated = false;
       if (!st) noScore = 'no_score_line';
       else if (completion === 'ended_early') noScore = 'stopped_early';
+      else if (completion === 'time_up_away') noScore = 'time_up_away';
       else if (completion !== 'complete' && completion !== 'time') noScore = 'score_unreadable';
       else if (s.unit === 'digits_correct_per_minute') {
         var early = limit !== null && completion === 'complete' && elapsed < limit;
@@ -559,7 +608,7 @@
       // timed results: it has its own series (seriesKey), so its own middle and goal.
       s.untimed = !!st && (st.untimed || (own(MEASURES, s.measure) && s.form !== 'custom' && !/^math-custom-/.test(s.packetId) && limit === null));
       if (s.untimed) { s.score.untimed = true; s.score.usualTimeLimitS = st.usualTimeLimitS; flags.push('untimed'); if (noScore === 'no_time_limit') noScore = 'untimed_no_rate'; s.score.noScore = noScore; }
-      if (noScore) flags.push(noScore);
+      if (noScore && flags.indexOf(noScore) < 0) flags.push(noScore);
       if (prorated) flags.push('finished_early');
       if (recounted) flags.push('score_differs');
     }
@@ -576,6 +625,8 @@
   async function finish(raw, lastModified, fileName) {
     var start = 0;
     raw.stamps.forEach(function (value) { if (!start) start = stamp(value); });
+    // Dates a spreadsheet rewrote (11/16/2026 9:10), when the order of day and month is not in doubt (2026-11-13).
+    if (!start) start = sheetStamp(raw.stamps, fileName, raw.durationS);
     var dateFromFile = !start;
     // No date in the results: the file's own "last changed" time stands in, and the result says so.
     if (!start) { var changed = Number(lastModified); start = changed > 0 && isFinite(changed) ? changed : 0; }
@@ -601,7 +652,8 @@
     if (!title && named && raw.mode === 'probe' && (raw.form === 'custom' || /^math-custom-/.test(raw.packetId))) title = text(named[1].replace(/[-_]+/g, ' '), 80);
     return tally({ sessionId: sid.slice(0, 64), learner: raw.learner, packetId: raw.packetId, packetVersion: raw.packetVersion, title: title || raw.packetId,
       mode: raw.mode, form: raw.form, startedLocal: raw.startedLocal, finishedLocal: raw.finishedLocal, start: start, date: localDate(start), dateFromFile: dateFromFile,
-      durationS: raw.durationS, items: raw.items, stated: raw.score, attempt: raw.attempt, integrity: check, source: raw.source, sourceFile: text(fileName, 120) });
+      durationS: raw.durationS, activeS: raw.activeS === undefined ? null : raw.activeS, items: raw.items, stated: raw.score, attempt: raw.attempt, integrity: check, source: raw.source,
+      sourceFile: text(fileName, 120) });
   }
   function refuse(reason, name) {
     reason = own(REASONS, reason) ? reason : 'not_results';
@@ -659,7 +711,7 @@
     var integrity = ['ok', 'changed', 'absent', 'unchecked'].indexOf(s.integrity) >= 0 ? s.integrity : 'unchecked';
     var out = tally({ sessionId: sid, learner: text(s.learner, 60), packetId: packetId, packetVersion: text(s.packetVersion, 40), title: text(s.title, 80) || packetId,
       mode: probe ? 'probe' : 'practice', form: text(s.form, 40), startedLocal: text(s.startedLocal, 40), finishedLocal: text(s.finishedLocal, 40),
-      start: date && start !== null && start > 0 ? start : 0, date: date, dateFromFile: s.dateFromFile === true || !date, durationS: whole(s.durationS, 864000),
+      start: date && start !== null && start > 0 ? start : 0, date: date, dateFromFile: s.dateFromFile === true || !date, durationS: whole(s.durationS, 864000), activeS: whole(s.activeS, 864000),
       items: items, stated: probe && s.stated && typeof s.stated === 'object' ? cleanScore(s.stated) : null, attempt: whole(s.attempt, 9999), integrity: integrity,
       source: s.source === 'json' ? 'json' : 'csv', sourceFile: text(s.sourceFile, 120) });
     return out.summary.done > 0 ? out : null;
@@ -801,7 +853,14 @@
         if (!series.unit && s.unit) { series.unit = s.unit; series.unitName = s.unitName; }
         if (series.forms.indexOf(s.form) < 0) series.forms.push(s.form);
         if (!formByKey[form]) formsSeen.push(formByKey[form] = { key: form, series: series, form: s.form });
-        learner.checks[key] = { value: s.value, form: s.form, date: s.date, sessionId: s.sessionId, attempt: s.attempt, flags: s.flags };
+        // One rule for "latest" (2026-11-13): the latest result WITH a score, in the table as in the middle of the
+        // group (which takes it form by form). A later result with no score (a check stopped early) is kept as a note on
+        // that cell, "after". A learner with no scored result yet shows the latest result, with no score.
+        var cell = { value: s.value, form: s.form, date: s.date, sessionId: s.sessionId, attempt: s.attempt, flags: s.flags, noScore: s.score ? s.score.noScore : '',
+          correct: s.summary.correct, attempted: s.summary.attempted, after: null };
+        var had = learner.checks[key];
+        if (s.value !== null || !had || had.value === null) learner.checks[key] = cell;
+        else had.after = cell;
         if (s.value !== null) learner.forms[form] = s.value;
       });
     });
@@ -883,7 +942,8 @@
       var s = row.session, probe = s.mode === 'probe';
       var blank = function (value) { return value === null || value === undefined ? '' : value; };
       return [String(row.learner), s.date, s.measure, s.form, probe ? blank(s.value) : '', probe ? s.unit : '', blank(s.summary.accuracyPct), blank(s.summary.firstTryPct),
-        s.summary.given, s.summary.attempted, blank(s.durationS), s.flags.join(';'), s.sessionId, s.packetId, s.packetVersion, s.integrity, s.sourceFile];
+        s.summary.given, s.summary.attempted, blank(s.durationS), s.flags.join(';'), s.sessionId, s.packetId, s.packetVersion, s.integrity, s.sourceFile,
+        s.title, s.measureName, s.summary.attempted ? Math.round(s.summary.correct / s.summary.attempted * 100) : '', blank(s.activeS)];
     }));
     return String.fromCharCode(0xFEFF) + lines.map(function (cells) { return cells.map(csvCell).join(','); }).join('\r\n') + '\r\n';
   }
@@ -895,7 +955,7 @@
     MATH_STRANDS: MATH_STRANDS.map(function (row) { return row.slice(); }), MATH_ACTIVITIES: MATH_ACTIVITIES,
     VOCAB_STRANDS: VOCAB_STRANDS.map(function (row) { return row.slice(); }), VOCAB_ACTIVITIES: VOCAB_ACTIVITIES, VOCAB_MEASURES: VOCAB_MEASURES,
     MEASURE_UNITS: MEASURE_UNITS, REASONS: REASONS,
-    read: read, refuse: refuse, parseCsv: parseCsv, readCsv: readCsv, readJson: readJson, finish: finish, fnv1a: fnv1a, sha256: sha256, stamp: stamp, csvCell: csvCell,
+    read: read, refuse: refuse, parseCsv: parseCsv, readCsv: readCsv, readJson: readJson, finish: finish, fnv1a: fnv1a, sha256: sha256, stamp: stamp, sheetStamp: sheetStamp, csvCell: csvCell,
     labelKey: labelKey, looksAlike: looksAlike, pairKey: pairKey, middle: middle, addUp: addUp, learnerSeries: learnerSeries, wrongAnswers: wrongAnswers,
     summaryCsv: summaryCsv, makeBundle: makeBundle, readBundle: readBundle, cleanSession: cleanSession,
   };

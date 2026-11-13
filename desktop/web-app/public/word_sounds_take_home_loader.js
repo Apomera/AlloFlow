@@ -63,6 +63,13 @@
     done_title: 'You finished!',
     done_summary: 'Right on the first try: {first} of {total}.',
     done_retry: 'Right after trying again: {retry}.',
+    // 2026-11-13: practice that is not scored (Letter Trace), counted on the end screen.
+    done_practice: 'Practice, not scored: {done} of {total} done.',
+    // 2026-11-13: a sound whose label is not its letters, as shown with letters on (ctx.sound); others print /a/.
+    sound_name_oo_short: 'short oo (book)',
+    sound_name_dh: 'th (this)',
+    sound_name_zh: 'zh (vision)',
+    sound_name_schwa: 'uh (schwa)',
     save: 'Save my work as a file',
     send: 'Send my work to my teacher',
     sending: 'Sending...',
@@ -135,6 +142,12 @@
     hear_all_name: 'Hear all the choices, one at a time',
     hear_all_stop: 'Stop',
     hear_all_now: 'Choice {n} of {total}',
+    // 2026-11-13 (engine fixes): another copy of the file open on this device; a save the browser does not confirm
+    // (a download); a sound that did not play, said on screen too (audio_missing is the screen-reader line).
+    two_tabs: 'This file is already open in another tab or window. Use that one, or close it and press Continue here.',
+    continue_here: 'Continue here',
+    saving_file: 'Your browser is saving {file}. If nothing appears, press Save again or use Other ways to save.',
+    sound_failed: 'That sound did not play. Try again, or ask your teacher.',
     ordinals: ['first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth', 'eleventh', 'twelfth'],
   };
 
@@ -168,6 +181,8 @@
     check_stop_confirm: 'Do you want to stop now? You cannot come back to this check.',
     check_stop_yes: 'Yes, stop',
     check_stop_no: 'Keep going',
+    // 2026-11-13: shown in a timed check while "Stop?" is on screen: the clock is paused, the question hidden.
+    check_paused: 'The clock is stopped while you decide.',
     check_done_title: 'You finished. Thank you.',
     check_done_count: 'You answered {done} of {total}.',
     check_done_time: 'Time: {time}.',
@@ -209,6 +224,12 @@
     check_flag_left_the_page: 'left the page for more than 3 seconds',
     check_flag_clock_changed: 'the device clock was set back',
     check_flag_reloaded: 'the page was reloaded',
+    // 2026-11-13 (engine fixes): the check open in two tabs while it ran; the time ran out while the page was hidden or
+    // closed (no score then); the browser could not keep the count of tries.
+    check_flag_two_tabs: 'the check was open in two tabs or windows while it ran',
+    check_flag_time_up_away: 'the time ran out while the page was hidden or closed',
+    check_reason_time_up_away: 'the time ran out while the page was hidden or closed, so the student did not have the whole time',
+    check_flag_attempt_unknown: 'this browser could not keep the count of tries, so the attempt number may be wrong',
     check_review_note: 'All times come from the clock of the learner device.',
     check_col_n: 'No.',
     check_col_prompt: 'Item',
@@ -353,9 +374,11 @@
         var sc = probe && r.score && typeof r.score === 'object' ? r.score : null;
         var kv = function (k, v) { return k + '=' + (v == null ? '' : v === true ? 1 : v === false ? 0 : text(v)); };
         if (probe) tail[0].push(kv('attempt', sc && sc.attempt != null ? sc.attempt : 1));
-        // The title the learner saw: the last "#summary" cell. That row is outside the integrity value.
+        // The title the learner saw. That row is outside the integrity value.
         var title = text(r.lessonTitle).replace(/\s+/g, ' ').trim().slice(0, 120);
         if (title) tail[0].push('title=' + title);
+        // Then the time on the items, s (activeMs; files saved from 2026-11-13). duration_s spans days when a file is resumed.
+        if (r.activeMs != null && r.activeMs !== '' && isFinite(Number(r.activeMs))) tail[0].push('active_s=' + Math.max(0, Math.round(Number(r.activeMs) / 1000)));
         if (sc) tail.splice(1, 0, ['#score', session, kv('measure', sc.measure), kv('score', sc.score), kv('score_unit', sc.scoreUnit), kv('digits_correct', sc.digitsCorrect),
           kv('digits_possible', sc.digitsPossible), kv('items_correct', sc.itemsCorrect), kv('items_attempted', sc.itemsAttempted), kv('time_limit_s', sc.timeLimitS),
           kv('elapsed_s', sc.elapsedS), kv('hidden_s', sc.hiddenS), kv('completion', sc.completion), kv('prorated', !!sc.prorated), kv('scoring_version', sc.scoringVersion),
@@ -398,6 +421,10 @@
 
   // ---------------------------------------------------------------------------
   // Adapter: Find Sounds (isolation)
+  // 2026-11-13 parity: the app's sound cards play and select on a tap, then Check (94704af0e4); here each sound
+  // has Listen, then Choose (the order every Listen + Choose pair now has). Below Hard the app shows 3 (Easy) or 4
+  // (Medium) sounds and asks the first sound (Easy) or the first or last (Medium) (choiceLimit, trimChoices,
+  // isolationPositions); a packet made with Choices Easy or Medium has its board made that way by the builder.
   // ---------------------------------------------------------------------------
   var isolation = {
     id: 'isolation',
@@ -436,9 +463,11 @@
       var position = ctx.ordinal(item.position);
       var cards = [];
       var list = ctx.el('ul', { class: 'choices' });
+      // A friendly name for a sound like oo_short (ctx.sound); /a/ for the rest.
+      var said = function (label) { return typeof ctx.sound === 'function' ? ctx.sound(label) : '/' + label + '/'; };
       item.choices.forEach(function (choice, i) {
         var n = i + 1;
-        var shown = ctx.showLetters ? '/' + choice.label + '/' : ctx.fmt(ctx.L.sound_n, { n: n });
+        var shown = ctx.showLetters ? said(choice.label) : ctx.fmt(ctx.L.sound_n, { n: n });
         var listen = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(ctx.L.listen_sound, { n: n }),
           on: { click: function () { ctx.support('soundListens'); ctx.play(choice.audio); } } }, ['\u25B6 ', ctx.fmt(ctx.L.sound_n, { n: n })]);
         var choose = ctx.el('button', { type: 'button', class: 'primary',
@@ -447,7 +476,7 @@
             if (ctx.isDone() || choose.getAttribute('aria-disabled') === 'true') return;
             var outcome = ctx.answer(choice.label, ctx.matches(choice.label, item.target), {
               correctText: ctx.fmt(ctx.L.isolation_correct, { position: position }),
-              missedText: ctx.showLetters ? ctx.fmt(ctx.L.isolation_missed, { position: position, sound: '/' + item.target + '/' })
+              missedText: ctx.showLetters ? ctx.fmt(ctx.L.isolation_missed, { position: position, sound: said(item.target) })
                 : ctx.fmt(ctx.L.isolation_missed_no_letters, { position: position }),
             });
             if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
@@ -486,6 +515,13 @@
     // graded at word_sounds_module.js:19516-19523 (option.toLowerCase() ===
     // word.toLowerCase(), then checkAnswer("correct"|"incorrect","correct"),
     // default budget 2 tries, word_sounds_module.js:17130).
+    // 2026-11-13 parity: the app's sound-only choices are now cards (a tap plays and selects, a
+    // large Check submits, a missed card is crossed out: 94704af0e4). The file keeps two buttons
+    // per choice, Listen first, then Choose, in every activity, as Find Sounds always had them
+    // (hear, then choose).
+    // Fewer choices: the app trims this board below Hard (WS_CORE.choiceLimit + trimChoices:
+    // Easy 3, Medium 4). A packet does the same when made with Choices Easy or Medium
+    // (word_sounds_packet_builder.js, choiceLevels); a board as built (All) is shown whole.
     module.exports = {
       id: 'blending',
       title: 'Blend Sounds',
@@ -595,7 +631,7 @@
               });
               if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
             } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: shownWord }) : ctx.fmt(ctx.L.blending_option_n, { n: n })]);
-          var box = ctx.el('li', { class: 'choice' }, [choose, listen]);
+          var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
           cards.push({ box: box, choose: choose, right: String(choice.text).toLowerCase() === String(item.target).toLowerCase() });
           list.appendChild(box);
         });
@@ -616,6 +652,8 @@
           run([{ id: item.instruction, gap: 200 }].concat(soundSteps(), optionSteps(200)));
         }
         return {
+          // The R key: the sounds and the question again.
+          replay: function () { run(soundSteps()); },
           reveal: function () {
             halt();
             cards.forEach(function (c) {
@@ -643,6 +681,10 @@
     //               Default retry budget: 2 presentations (1 retry).
     //   audio       runInstructionSequence (~16446, ~16996): inst_counting bank clip,
     //               then the word.
+    //   difficulty  the app shows fewer numbers below Hard (WS_CORE.countingChoices: Easy
+    //               the count with two either side, Medium 1-8). A packet made with Easy or
+    //               Medium carries those numbers in board.options; key n presses the button
+    //               n (data-key). A board without them shows 1-10 and 11+, as before.
     module.exports = {
       id: 'counting',
       title: 'Sound Counting',
@@ -666,11 +708,18 @@
         var prompt = env.bankClip('instructions', 'inst_counting');
         if (!prompt) missing.push('question');
         if (missing.length) return { missing: missing };
-        return { item: { target: target, wordAudio: wordAudio, promptAudio: prompt,
-          introAudio: [prompt, wordAudio], answerAudio: [wordAudio] } };
+        var item = { target: target, wordAudio: wordAudio, promptAudio: prompt,
+          introAudio: [prompt, wordAudio], answerAudio: [wordAudio] };
+        // Fewer numbers (countingChoices), when the board has them and the answer is among them.
+        var board = w.activityItems && w.activityItems.counting;
+        var full = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11+'];
+        var shown = board && Array.isArray(board.options) ? board.options.map(function (v) { return String(v); }) : null;
+        if (shown && shown.length >= 2 && shown.length < full.length && shown.indexOf(target) >= 0 &&
+          shown.every(function (v, i) { return full.indexOf(v) >= 0 && shown.indexOf(v) === i; })) item.values = shown;
+        return { item: item };
       },
       render: function (item, ctx) {
-        var values = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11+'];
+        var values = item.values && item.values.length ? item.values : ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11+'];
         var countText = function (v) {
           return v === '11+' ? ctx.L.counting_sounds_more : v === '1' ? ctx.L.counting_sounds_one : ctx.fmt(ctx.L.counting_sounds_n, { n: v });
         };
@@ -687,7 +736,8 @@
               });
               if (outcome !== 'correct') { box.classList.add('tried'); button.setAttribute('aria-disabled', 'true'); }
             } } }, [v]);
-          var box = ctx.el('li', { class: 'choice solo', style: 'padding:6px' }, [button]);
+          // data-key: the number key that presses it (the same as its label, also when fewer numbers are shown).
+          var box = ctx.el('li', { class: 'choice solo', style: 'padding:6px', 'data-key': /^[1-9]$/.test(v) ? v : false }, [button]);
           cards.push({ box: box, button: button, value: v });
           list.appendChild(box);
         });
@@ -717,6 +767,8 @@
     // (17169-17171). Graded at word_sounds_module.js:20808 ->
     // checkAnswer(choice, word): lower-cased, trimmed comparison
     // (17099-17113), 2 tries.
+    // 2026-11-13: each picture shows the number of its key, 1-9 (the player's keys
+    // choose the nth picture): file has / app lacks.
 
     // Pictures this export has seen so far, by the app's precedence. prepare()
     // receives one row; the manifest rides on the first row, which comes first.
@@ -774,11 +826,13 @@
         var cards = [];
         var norm = function (s) { return String(s == null ? '' : s).toLowerCase().trim(); };
         var list = ctx.el('ul', { class: 'choices' });
-        item.choices.forEach(function (choice) {
+        item.choices.forEach(function (choice, i) {
           var right = norm(choice.text) === norm(item.target);
           var src = ctx.image(choice.image);
           var name = ctx.fmt(ctx.L.decoding_picture_of, { word: choice.text });
-          var pick = ctx.el('button', { type: 'button', 'aria-label': name, style: 'width:100%;display:flex;justify-content:center;background:#fff',
+          // The picture's number, the key 1-9 that chooses it (2026-11-13).
+          var number = i < 9 ? ctx.el('span', { 'aria-hidden': 'true', 'data-key-number': '', style: 'position:absolute;top:6px;inset-inline-start:6px;min-width:28px;height:28px;line-height:28px;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;text-align:center', text: String(i + 1) }) : null;
+          var pick = ctx.el('button', { type: 'button', 'aria-label': name, style: 'position:relative;width:100%;display:flex;justify-content:center;background:#fff',
             on: { click: function () {
               if (ctx.isDone() || pick.getAttribute('aria-disabled') === 'true') return;
               var outcome = ctx.answer(choice.text, right, {
@@ -786,14 +840,14 @@
                 missedText: ctx.fmt(ctx.L.decoding_missed, { word: item.printed }),
               });
               if (outcome !== 'correct') { box.classList.add('tried'); pick.setAttribute('aria-disabled', 'true'); }
-            } } }, [ctx.el('img', { class: 'picture', src: src || '', alt: '' })]);
+            } } }, [number, ctx.el('img', { class: 'picture', src: src || '', alt: '' })]);
           var box = ctx.el('li', { class: 'choice' }, [pick]);
           cards.push({ box: box, pick: pick, right: right });
           list.appendChild(box);
         });
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.decoding_prompt }));
         // The printed word, as the app shows it (CSS capitalize).
-        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:3rem;text-transform:capitalize;margin:8px 0', text: item.printed }));
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:3rem;text-transform:capitalize;margin:8px 0', text: item.printed }));
         if (item.prompt) {
           ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
             ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.decoding_hear_instructions }),
@@ -822,13 +876,95 @@
     //   board       activityItems.letter_tracing = { letter: word[0] } (setup), and the
     //               player traces the word's first letter; a board copied from another
     //               word is never used (the letter must be the word's first letter).
+    //   cases       the app traces the CAPITAL first, then the lowercase as a "Bonus!" part
+    //               (tracingPhase "upper" -> "lower", "Skip lowercase", fb_great_job +
+    //               now_try_lowercase between them). The file does the same; board.cases
+    //               ('both' default, 'capital', 'lowercase') is the maker's choice.
+    //   shapes      the app draws the glyph in "Comic Sans MS"/"Chalkboard SE" with a green
+    //               start dot. A device may have neither, so the file draws school letter
+    //               shapes from STROKES below (single-story a and g), with writing lines, a
+    //               green numbered start dot and an arrow for each stroke. A letter with no
+    //               strokes (not a-z) falls back to the font glyph.
+    //   checking    the app checks the letter region by region (an 8 x 8 grid), not just the
+    //               total ink; the file checks a 7 x 7 grid and ink far from the letter.
+    //               The app also weighs the start point (start 15%: within 35 px of the
+    //               green dot) and tips "Start at the green dot!". The file gives the same
+    //               tip, softly (2026-11-13): when the first stroke (longer than 24 px, as the
+    //               app counts strokes) starts more than 35 px from dot 1, it says "Start at
+    //               the green dot 1." and never fails the trace for it.
+    //   audio       trace_letter, the letter's name (letter_x), "for", the word, as the app's
+    //               opening; else inst_letter_tracing and the word. The bank names a-z only
+    //               (letter_a..letter_z): for any other first letter there is no "Hear the
+    //               letter" button at all (checked 2026-11-13).
     //   grading     none: letter_tracing is in WS_NON_GRADED_ACTIVITIES, so the file
     //               records it as practice ("traced" or "skipped"), never right or wrong.
     //   access      pointer events cover mouse, touch and pen; "Skip (not traced)" is the
     //               path for a student who cannot trace (2026-11-07 parity audit).
+
+    // School letter shapes (ball and stick). Units: top line y=0, middle line y=50, base
+    // line y=100, descenders to 145. Strokes are split by "|", in the order they are
+    // written. M x y / L x y: a line; E cx cy rx ry a0 a1: part of an ellipse from angle a0
+    // to a1 in degrees (0 = right, 90 = down; a1 < a0 goes counterclockwise); D x y: a dot.
+    // Only the strokes of the letters an item traces travel in the file.
+    var STROKES = {
+      a: 'E 22 75 22 25 -30 -390|M 44 50 L 44 100',
+      b: 'M 0 0 L 0 100|E 22 75 22 25 180 540',
+      c: 'E 22 75 22 25 -40 -320',
+      d: 'E 22 75 22 25 -30 -390|M 44 0 L 44 100',
+      e: 'M 2 75 L 44 75 E 22 75 22 25 0 -320',
+      f: 'E 34 14 13 14 -20 -180 L 21 100|M 6 50 L 40 50',
+      g: 'E 22 75 22 25 -30 -390|M 44 50 L 44 125 E 24 125 20 20 0 150',
+      h: 'M 0 0 L 0 100|M 0 72 E 22 72 22 22 180 360 L 44 100',
+      i: 'M 0 50 L 0 100|D 0 28',
+      j: 'M 24 50 L 24 125 E 6 125 18 18 0 160|D 24 28',
+      k: 'M 0 0 L 0 100|M 38 50 L 2 78 L 40 100',
+      l: 'M 0 0 L 0 100',
+      m: 'M 0 50 L 0 100|M 0 70 E 15 70 15 20 180 360 L 30 100|M 30 70 E 45 70 15 20 180 360 L 60 100',
+      n: 'M 0 50 L 0 100|M 0 72 E 21 72 21 22 180 360 L 42 100',
+      o: 'E 23 75 23 25 -70 -430',
+      p: 'M 0 50 L 0 145|E 22 75 22 25 180 540',
+      q: 'E 22 75 22 25 -30 -390|M 44 50 L 44 145',
+      r: 'M 0 50 L 0 100|M 0 74 E 20 74 20 22 180 310',
+      s: 'E 22 62.5 20 12.5 -20 -270 E 22 87.5 20 12.5 -90 160',
+      t: 'M 16 14 L 16 100|M 0 50 L 34 50',
+      u: 'M 0 50 L 0 78 E 21 78 21 22 180 0 L 42 50|M 42 50 L 42 100',
+      v: 'M 0 50 L 22 100 L 44 50',
+      w: 'M 0 50 L 15 100 L 30 50 L 45 100 L 60 50',
+      x: 'M 0 50 L 42 100|M 42 50 L 0 100',
+      y: 'M 0 50 L 22 100|M 44 50 L 8 145',
+      z: 'M 0 50 L 42 50 L 0 100 L 42 100',
+      A: 'M 30 0 L 0 100|M 30 0 L 60 100|M 11 64 L 49 64',
+      B: 'M 0 0 L 0 100|M 0 0 L 24 0 E 24 24 22 24 -90 90 L 0 48|M 0 48 L 28 48 E 28 74 24 26 -90 90 L 0 100',
+      C: 'E 45 50 45 50 -40 -320',
+      D: 'M 0 0 L 0 100|M 0 0 L 16 0 E 16 50 40 50 -90 90 L 0 100',
+      E: 'M 0 0 L 0 100|M 0 0 L 44 0|M 0 50 L 36 50|M 0 100 L 44 100',
+      F: 'M 0 0 L 0 100|M 0 0 L 44 0|M 0 50 L 36 50',
+      G: 'E 45 50 45 50 -40 -360 L 58 50',
+      H: 'M 0 0 L 0 100|M 50 0 L 50 100|M 0 50 L 50 50',
+      I: 'M 20 0 L 20 100|M 0 0 L 40 0|M 0 100 L 40 100',
+      J: 'M 40 0 L 40 74 E 20 74 20 26 0 165',
+      K: 'M 0 0 L 0 100|M 46 0 L 2 52 L 48 100',
+      L: 'M 0 0 L 0 100 L 42 100',
+      M: 'M 0 0 L 0 100|M 0 0 L 32 64 L 64 0 L 64 100',
+      N: 'M 0 0 L 0 100|M 0 0 L 52 100 L 52 0',
+      O: 'E 45 50 45 50 -90 -450',
+      P: 'M 0 0 L 0 100|M 0 0 L 24 0 E 24 26 24 26 -90 90 L 0 52',
+      Q: 'E 45 50 45 50 -90 -450|M 58 72 L 92 104',
+      R: 'M 0 0 L 0 100|M 0 0 L 24 0 E 24 26 24 26 -90 90 L 0 52|M 24 52 L 50 100',
+      S: 'E 42 25 38 25 -20 -270 E 42 75 38 25 -90 160',
+      T: 'M 26 0 L 26 100|M 0 0 L 52 0',
+      U: 'M 0 0 L 0 66 E 25 66 25 34 180 0 L 50 0',
+      V: 'M 0 0 L 26 100 L 52 0',
+      W: 'M 0 0 L 18 100 L 36 0 L 54 100 L 72 0',
+      X: 'M 0 0 L 52 100|M 52 0 L 0 100',
+      Y: 'M 0 0 L 26 50|M 52 0 L 26 50 L 26 100',
+      Z: 'M 0 0 L 52 0 L 0 100 L 52 100',
+    };
+
     module.exports = {
       id: 'letter_tracing',
       title: 'Letter Trace',
+      STROKES: STROKES,
       labels: {
         letter_tracing_question: 'Trace the letter {letter} with your finger, a pen or the mouse.',
         letter_tracing_canvas: 'Tracing area for the letter {letter}',
@@ -839,6 +975,23 @@
         letter_tracing_stay: 'Stay on the letter. Press Start again and trace inside its shape.',
         letter_tracing_traced: 'Nice tracing!',
         letter_tracing_skipped: 'Skipped. That is fine.',
+        // 2026-11-13: capital and lowercase, as the app traces them.
+        letter_tracing_capital: 'Trace the capital letter {letter}.',
+        letter_tracing_lowercase: 'Trace the lowercase letter {letter}.',
+        letter_tracing_tools: 'Use your finger, a pen or the mouse.',
+        letter_tracing_part: 'Part {n} of {total}',
+        letter_tracing_how_one: 'Start at the green dot. Follow the arrow.',
+        letter_tracing_how_more: 'Start at the green dot 1. Follow the arrow. Then do 2, and the next numbers in order.',
+        letter_tracing_canvas_capital: 'Tracing area for the capital letter {letter}',
+        letter_tracing_canvas_lowercase: 'Tracing area for the lowercase letter {letter}',
+        letter_tracing_hear_letter: 'Hear the letter',
+        letter_tracing_now_lowercase: 'Nice tracing! Now trace the lowercase letter {letter}.',
+        letter_tracing_skip_lowercase: 'Skip the lowercase letter',
+        // The app prints "for cat" beside the letter.
+        letter_tracing_word: 'The word: {word}',
+        // 2026-11-13: a tip, never a fail: the first stroke started far from the start dot.
+        letter_tracing_start_one: 'Start at the green dot.',
+        letter_tracing_start_more: 'Start at the green dot 1.',
       },
       prepare: function (w, env) {
         var word = String((w && (w.targetWord || w.word || w.term)) || '').trim();
@@ -846,97 +999,326 @@
         var board = w && w.activityItems && w.activityItems.letter_tracing;
         var letter = String((board && board.letter) || first).trim();
         if (!letter || !first || Array.from(letter).length !== 1 || letter.toLowerCase() !== first.toLowerCase()) return { missing: ['board'] };
+        var cases = board && (board.cases === 'capital' || board.cases === 'lowercase') ? board.cases : 'both';
+        var up = letter.toUpperCase(), low = letter.toLowerCase();
+        // A letter with no capital (or one that is two letters as a capital, like ß) is traced as it is.
+        var cased = up !== low && Array.from(up).length === 1 && Array.from(low).length === 1;
+        var part = function (text, kind) { return { letter: text, kind: kind, strokes: Object.prototype.hasOwnProperty.call(STROKES, text) ? STROKES[text] : null }; };
+        var parts = !cased ? [part(letter, '')] : cases === 'capital' ? [part(up, 'capital')] : cases === 'lowercase' ? [part(low, 'lowercase')] : [part(up, 'capital'), part(low, 'lowercase')];
         // Tracing is visual: the spoken instruction and the word are helpful, not required.
         var wordAudio = env.wordClip(word);
+        var named = /^[a-z]$/.test(low) ? env.bankClip('instructions', 'letter_' + low) : null;
+        var traceIt = env.bankClip('instructions', 'trace_letter');
         var prompt = env.bankClip('instructions', 'inst_letter_tracing');
         var intro = [];
-        if (prompt) intro.push(prompt);
+        if (traceIt && named) {
+          // The app's opening: "Trace the letter", its name, "for", the word.
+          intro.push(traceIt, named);
+          var forClip = env.bankClip('instructions', 'for');
+          if (forClip && wordAudio) intro.push(forClip);
+        } else if (prompt) intro.push(prompt);
         if (wordAudio) intro.push(wordAudio);
-        return { item: { target: letter.toLowerCase(), letter: letter, wordAudio: wordAudio, promptAudio: prompt,
-          introAudio: intro, answerAudio: wordAudio ? [wordAudio] : [] } };
+        var item = { target: low, letter: letter, parts: parts, wordAudio: wordAudio, promptAudio: (traceIt && named) ? traceIt : prompt,
+          introAudio: intro, answerAudio: wordAudio ? [wordAudio] : [] };
+        if (named) item.letterAudio = named;
+        if (parts.length > 1) { var next = env.bankClip('instructions', 'now_try_lowercase'); if (next) item.lowerAudio = next; }
+        return { item: item };
       },
       render: function (item, ctx) {
         var L = ctx.L;
         var doc = ctx.root.ownerDocument;
+        var win = doc.defaultView || {};
         var size = 280;
-        var wrap = ctx.el('div', { style: 'position:relative;width:' + size + 'px;height:' + size + 'px;max-width:100%;margin:12px auto;border:2px dashed var(--muted);border-radius:16px;touch-action:none' });
+        var k = Math.min(2, Math.max(1, Math.round(Number(win.devicePixelRatio) || 1)));
+        var px = size * k;
+        var parts = item.parts && item.parts.length ? item.parts : [{ letter: item.letter, kind: '', strokes: null }];
+        var at = 0;
+        var pen = 22; // the width of the student's line and of the guide
+        // A square that shrinks on a narrow phone (padding-top keeps it square without aspect-ratio).
+        var wrap = ctx.el('div', { 'data-trace-box': '', style: 'position:relative;width:' + size + 'px;max-width:100%;margin:12px auto;border:2px dashed var(--muted);border-radius:16px;background:#fff;overflow:hidden;touch-action:none' });
+        wrap.appendChild(ctx.el('div', { 'aria-hidden': 'true', style: 'padding-top:100%' }));
         var guide = doc.createElement('canvas');
-        var pen = doc.createElement('canvas');
-        [guide, pen].forEach(function (c) {
-          c.width = size; c.height = size;
+        var ink = doc.createElement('canvas');
+        [guide, ink].forEach(function (c) {
+          c.width = px; c.height = px;
           c.style.cssText = 'position:absolute;left:0;top:0;width:100%;height:100%;touch-action:none';
           wrap.appendChild(c);
         });
-        pen.setAttribute('role', 'img');
-        pen.setAttribute('aria-label', ctx.fmt(L.letter_tracing_canvas, { letter: item.letter }));
-        var font = 'bold ' + Math.round(size * 0.78) + 'px system-ui, sans-serif';
-        var paint = function (g, color) {
-          g.clearRect(0, 0, size, size);
-          g.fillStyle = color; g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle';
-          g.fillText(item.letter, size / 2, size * 0.54);
-        };
+        guide.setAttribute('aria-hidden', 'true');
+        ink.setAttribute('role', 'img');
+        ink.setAttribute('data-trace-pen', '');
         var gg = guide.getContext ? guide.getContext('2d') : null;
-        var pg = pen.getContext ? pen.getContext('2d') : null;
-        if (gg) paint(gg, 'rgba(100,116,139,0.35)');
+        var pg = ink.getContext ? ink.getContext('2d') : null;
+        // Each stroke as points in canvas units (CSS px), placed in the box.
+        var shape = null;
+        var parse = function (spec) {
+          return String(spec).split('|').map(function (s) {
+            var t = s.trim().split(/\s+/), pts = [], dot = false, i = 0;
+            while (i < t.length) {
+              var c = t[i++];
+              if (c === 'M' || c === 'L' || c === 'D') { pts.push([Number(t[i]), Number(t[i + 1])]); dot = c === 'D'; i += 2; }
+              else if (c === 'E') {
+                var cx = Number(t[i]), cy = Number(t[i + 1]), rx = Number(t[i + 2]), ry = Number(t[i + 3]), a0 = Number(t[i + 4]), a1 = Number(t[i + 5]);
+                i += 6;
+                var n = Math.max(8, Math.ceil(Math.abs(a1 - a0) / 6));
+                for (var j = 0; j <= n; j++) { var a = (a0 + (a1 - a0) * j / n) * Math.PI / 180; pts.push([cx + rx * Math.cos(a), cy + ry * Math.sin(a)]); }
+              } else break;
+            }
+            return { pts: pts, dot: dot };
+          }).filter(function (s) { return s.pts.length; });
+        };
+        var layout = function (part) {
+          if (!part.strokes) return null;
+          var strokes = parse(part.strokes);
+          var xs = [], ys = [];
+          strokes.forEach(function (s) { s.pts.forEach(function (p) { xs.push(p[0]); ys.push(p[1]); }); });
+          var minX = Math.min.apply(null, xs), maxX = Math.max.apply(null, xs);
+          // The part of the writing lines the letter uses (a short letter needs no room above the middle line, a letter
+          // with no tail none below the base line), as large as the box allows, at most 2.4 px a unit.
+          var top = Math.min(Math.min.apply(null, ys), 30) - 12, bottom = Math.max(Math.max.apply(null, ys), 100) + 12;
+          var s = Math.min(2.4, (size - 28) / (bottom - top), (size - 40) / Math.max(1, maxX - minX));
+          var ox = (size - (maxX - minX) * s) / 2 - minX * s, oy = (size - (bottom - top) * s) / 2 - top * s;
+          var put = function (p) { return [ox + p[0] * s, oy + p[1] * s]; };
+          return { y: function (v) { return oy + v * s; }, strokes: strokes.map(function (st) { return { dot: st.dot, pts: st.pts.map(put) }; }) };
+        };
+        var font = 'bold ' + Math.round(size * 0.7) + 'px "Comic Sans MS", "Chalkboard SE", "Andika", system-ui, sans-serif';
+        // Draws the letter: as strokes (school shapes), or as the font glyph for a letter with no strokes.
+        var paint = function (g, color, width) {
+          g.setTransform(k, 0, 0, k, 0, 0);
+          g.clearRect(0, 0, size, size);
+          g.fillStyle = color; g.strokeStyle = color; g.lineCap = 'round'; g.lineJoin = 'round';
+          if (!shape) {
+            g.font = font; g.textAlign = 'center'; g.textBaseline = 'middle';
+            g.fillText(parts[at].letter, size / 2, size * 0.54);
+            if (width) { g.lineWidth = width; g.strokeText(parts[at].letter, size / 2, size * 0.54); }
+            return;
+          }
+          g.lineWidth = width || pen;
+          shape.strokes.forEach(function (st) {
+            if (st.dot) { g.beginPath(); g.arc(st.pts[0][0], st.pts[0][1], (width || pen) / 2, 0, Math.PI * 2); g.fill(); return; }
+            g.beginPath(); g.moveTo(st.pts[0][0], st.pts[0][1]);
+            st.pts.slice(1).forEach(function (p) { g.lineTo(p[0], p[1]); });
+            g.stroke();
+          });
+        };
+        // Where a stroke is d px along its path, and which way it goes there.
+        var along = function (pts, d) {
+          var left = d;
+          for (var i = 1; i < pts.length; i++) {
+            var dx = pts[i][0] - pts[i - 1][0], dy = pts[i][1] - pts[i - 1][1], len = Math.sqrt(dx * dx + dy * dy);
+            if (!len) continue;
+            if (left <= len || i === pts.length - 1) { var f = Math.min(1, left / len); return { x: pts[i - 1][0] + dx * f, y: pts[i - 1][1] + dy * f, ux: dx / len, uy: dy / len }; }
+            left -= len;
+          }
+          return null;
+        };
+        var drawGuide = function () {
+          if (!gg) return;
+          paint(gg, 'rgba(100,116,139,0.32)', 0);
+          if (!shape) return;
+          // Writing lines behind the letter: top, a dashed middle, the base line.
+          gg.globalCompositeOperation = 'destination-over';
+          [[0, '#94a3b8', []], [50, '#94a3b8', [8, 7]], [100, '#475569', []]].forEach(function (row) {
+            gg.beginPath(); gg.setLineDash(row[2]); gg.lineWidth = 2; gg.strokeStyle = row[1];
+            gg.moveTo(8, shape.y(row[0])); gg.lineTo(size - 8, shape.y(row[0])); gg.stroke();
+          });
+          gg.globalCompositeOperation = 'source-over';
+          gg.setLineDash([]);
+          // A thin dashed line down the middle of each stroke, then a numbered start dot and an arrow.
+          gg.lineWidth = 2; gg.strokeStyle = '#64748b'; gg.setLineDash([5, 6]);
+          shape.strokes.forEach(function (st) {
+            if (st.dot) return;
+            gg.beginPath(); gg.moveTo(st.pts[0][0], st.pts[0][1]);
+            st.pts.slice(1).forEach(function (p) { gg.lineTo(p[0], p[1]); });
+            gg.stroke();
+          });
+          gg.setLineDash([]);
+          // 2026-11-13: no dot, number or arrow covers another. Dot 1 is at its real start. Each later stroke takes the
+          // cheapest place for its dot (its real start; a little way along the stroke; beside or behind the start, with
+          // a short line to it) that is 36 px from every earlier dot and 24 px from every earlier arrow, inside the box,
+          // and leaves room for its own arrow (24 px from other dots, 22 from its own, 21 from every arrow), best nearer its own dot
+          // than any other. Dots are drawn last, dot 1 on top. Guides only: the tracing check does not use them.
+          var R = 12, many = shape.strokes.length > 1, dots = [], arrows = [], all = [];
+          shape.strokes.forEach(function (st) { all = all.concat(st.pts); });
+          var mid = [all.reduce(function (n, q) { return n + q[0]; }, 0) / all.length, all.reduce(function (n, q) { return n + q[1]; }, 0) / all.length];
+          var lenOf = function (pts) { var t = 0; for (var i = 1; i < pts.length; i++) t += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]); return t; };
+          var gap = function (q, list) { return list.reduce(function (n, m) { return Math.min(n, Math.hypot(m[0] - q[0], m[1] - q[1])); }, Infinity); };
+          var inside = function (q) { return q[0] >= R + 2 && q[0] <= size - R - 2 && q[1] >= R + 2 && q[1] <= size - R - 2; };
+          var spots = function () { return dots.map(function (m) { return m.p; }); };
+          var arrowAt = function (st, len, p, from, lead) {
+            var others = spots(), heads = arrows.map(function (a) { return [a.x, a.y]; });
+            for (var c = lead ? 4 : from + 22; c <= len - 4; c += 2) {
+              var a = along(st.pts, c);
+              if (!a) break;
+              var q = [a.x, a.y];
+              if (gap(q, others) < 24 || gap(q, [p]) < 22 || gap(q, heads) < 21) continue;
+              var mine = Math.min(Math.hypot(q[0] - p[0], q[1] - p[1]), lead ? Math.hypot(q[0] - lead[0], q[1] - lead[1]) : Infinity);
+              return { a: a, extra: c - (lead ? 4 : from + 22), near: mine <= gap(q, others) };
+            }
+            return null;
+          };
+          shape.strokes.forEach(function (st, n) {
+            var start = st.pts[0], d = st.dot ? null : along(st.pts, 1), len = st.dot ? 0 : lenOf(st.pts), best = null;
+            var pick = function (p, cost, from, lead) {
+              if (n && (!inside(p) || gap(p, spots()) < 36 || gap(p, arrows.map(function (a) { return [a.x, a.y]; })) < 24)) return;
+              var arrow = st.dot ? { a: null, extra: 0, near: true } : arrowAt(st, len, p, from, lead);
+              if (!arrow) return;
+              var score = cost + arrow.extra * 0.5 + (arrow.near ? 0 : 50);
+              if (!best || score < best.score) best = { p: p, lead: lead, a: arrow.a, score: score };
+            };
+            pick(start, 0, 0, null);
+            if (n) {
+              if (d) for (var r = 24; r <= Math.min(72, len - 30); r += 4) { var o = along(st.pts, r); pick([o.x, o.y], r, r, null); }
+              // Beside the start (away from the middle of the letter costs less), or behind it.
+              var away = function (u) { return Math.hypot(start[0] + u[0] * 30 - mid[0], start[1] + u[1] * 30 - mid[1]); };
+              var dirs = d ? [[-d.uy, d.ux], [d.uy, -d.ux]].sort(function (u, v) { return away(v) - away(u); }).map(function (u, i) { return [u, i ? 16 : 10]; }).concat([[[-d.ux, -d.uy], 12]])
+                : [[[0, -1], 10], [[1, 0], 12], [[-1, 0], 12], [[0, 1], 16]];
+              dirs.forEach(function (u) { for (var r2 = 26; r2 <= 64; r2 += 4) pick([start[0] + u[0][0] * r2, start[1] + u[0][1] * r2], r2 + u[1], 0, start); });
+            }
+            // Nowhere fits (not seen in a-z, A-Z): the real start and an arrow 34 px along, as before.
+            if (!best) best = { p: start, lead: null, a: st.dot ? null : along(st.pts, 34) };
+            dots.push(best);
+            if (best.a) arrows.push(best.a);
+          });
+          // Short lines from moved dots to their real starts, then the arrows, then the dots.
+          dots.forEach(function (m) {
+            if (!m.lead) return;
+            gg.beginPath(); gg.lineWidth = 2; gg.strokeStyle = '#15803d'; gg.moveTo(m.lead[0], m.lead[1]); gg.lineTo(m.p[0], m.p[1]); gg.stroke();
+            gg.beginPath(); gg.arc(m.lead[0], m.lead[1], 4, 0, Math.PI * 2); gg.fillStyle = '#15803d'; gg.fill();
+          });
+          arrows.forEach(function (a) {
+            gg.beginPath(); gg.fillStyle = '#15803d';
+            gg.moveTo(a.x + a.ux * 10, a.y + a.uy * 10);
+            gg.lineTo(a.x - a.ux * 6 - a.uy * 8, a.y - a.uy * 6 + a.ux * 8);
+            gg.lineTo(a.x - a.ux * 6 + a.uy * 8, a.y - a.uy * 6 - a.ux * 8);
+            gg.closePath(); gg.fill();
+          });
+          // The dots, last first, so dot 1 is on top.
+          for (var n = dots.length - 1; n >= 0; n--) {
+            var p = dots[n].p;
+            gg.beginPath(); gg.arc(p[0], p[1], R, 0, Math.PI * 2); gg.fillStyle = '#15803d'; gg.fill();
+            gg.lineWidth = 2; gg.strokeStyle = '#fff'; gg.stroke();
+            if (many) { gg.fillStyle = '#fff'; gg.font = 'bold 14px system-ui, sans-serif'; gg.textAlign = 'center'; gg.textBaseline = 'middle'; gg.fillText(String(n + 1), p[0], p[1] + 1); }
+          }
+        };
         var drawing = false, last = null;
-        var at = function (e) {
-          var r = pen.getBoundingClientRect();
+        // The first stroke of a part (after Start again too): where it began and how long it is, for the start tip.
+        var first = null, firstDone = false;
+        var spot = function (e) {
+          var r = ink.getBoundingClientRect();
           return { x: (e.clientX - r.left) * size / (r.width || size), y: (e.clientY - r.top) * size / (r.height || size) };
         };
         var line = function (a, b) {
           if (!pg) return;
-          pg.strokeStyle = '#1d4ed8'; pg.lineWidth = size * 0.08; pg.lineCap = 'round'; pg.lineJoin = 'round';
+          pg.setTransform(k, 0, 0, k, 0, 0);
+          pg.strokeStyle = '#1d4ed8'; pg.lineWidth = pen; pg.lineCap = 'round'; pg.lineJoin = 'round';
           pg.beginPath(); pg.moveTo(a.x, a.y); pg.lineTo(b.x, b.y); pg.stroke();
         };
-        pen.addEventListener('pointerdown', function (e) {
+        var wipe = function () { first = null; firstDone = false; if (pg) { pg.setTransform(1, 0, 0, 1, 0, 0); pg.clearRect(0, 0, px, px); } };
+        ink.addEventListener('pointerdown', function (e) {
           if (ctx.isDone()) return;
-          drawing = true; last = at(e); line(last, last);
-          try { pen.setPointerCapture(e.pointerId); } catch (_) {}
+          drawing = true; last = spot(e); line(last, last);
+          if (!firstDone) first = { x: last.x, y: last.y, len: 0 };
+          try { ink.setPointerCapture(e.pointerId); } catch (_) {}
           e.preventDefault();
         });
-        pen.addEventListener('pointermove', function (e) {
+        ink.addEventListener('pointermove', function (e) {
           if (!drawing) return;
-          var p = at(e); line(last, p); last = p; e.preventDefault();
+          var p = spot(e);
+          if (first && !firstDone) first.len += Math.sqrt((p.x - last.x) * (p.x - last.x) + (p.y - last.y) * (p.y - last.y));
+          line(last, p); last = p; e.preventDefault();
         });
-        var stop = function () { drawing = false; last = null; };
-        pen.addEventListener('pointerup', stop);
-        pen.addEventListener('pointercancel', stop);
-        // How much of the letter the strokes cover, and how much ink lands well away from it
-        // (scribbling over the whole box is not tracing). Every 4th pixel is enough.
-        var measure = function () {
-          if (!gg || !pg) return { cover: 1, stray: 0 };
-          var mask = doc.createElement('canvas'); mask.width = size; mask.height = size;
-          var mg = mask.getContext('2d'); paint(mg, '#000');
-          var halo = doc.createElement('canvas'); halo.width = size; halo.height = size;
-          var hg = halo.getContext('2d'); paint(hg, '#000');
-          hg.lineWidth = size * 0.14; hg.lineJoin = 'round'; hg.strokeStyle = '#000'; hg.strokeText(item.letter, size / 2, size * 0.54);
-          var m = mg.getImageData(0, 0, size, size).data, hd = hg.getImageData(0, 0, size, size).data, p = pg.getImageData(0, 0, size, size).data;
-          var inside = 0, covered = 0, ink = 0, away = 0;
-          for (var i = 3; i < m.length; i += 16) {
-            if (m[i] > 128) { inside++; if (p[i] > 0) covered++; }
-            if (p[i] > 0) { ink++; if (hd[i] <= 128) away++; }
-          }
-          return { cover: inside ? covered / inside : 0, stray: ink ? away / ink : 0 };
+        // A stroke longer than 24 px is the first stroke (a tap is not); far from dot 1 (35 px, as the app), a tip.
+        var startTip = function () {
+          if (firstDone || !first || first.len <= 24) return;
+          firstDone = true;
+          var dot = shape && shape.strokes[0] && shape.strokes[0].pts[0];
+          if (!dot || Math.sqrt((first.x - dot[0]) * (first.x - dot[0]) + (first.y - dot[1]) * (first.y - dot[1])) <= 35) return;
+          note.textContent = shape.strokes.length > 1 ? (L.letter_tracing_start_more || '') : (L.letter_tracing_start_one || '');
         };
+        var stop = function () { if (drawing) startTip(); drawing = false; last = null; };
+        ink.addEventListener('pointerup', stop);
+        ink.addEventListener('pointercancel', stop);
+        // Region by region, as the app checks it: the share of the letter's 7 x 7 grid cells
+        // the strokes cover, and how much ink lands well away from the letter (scribbling over
+        // the whole box is not tracing). Every other pixel is enough.
+        var measure = function () {
+          if (!gg || !pg) return { done: 1, stray: 0 };
+          var mask = doc.createElement('canvas'); mask.width = px; mask.height = px;
+          var mg = mask.getContext('2d'); paint(mg, '#000', shape ? pen * 1.25 : 0);
+          var halo = doc.createElement('canvas'); halo.width = px; halo.height = px;
+          var hg = halo.getContext('2d'); paint(hg, '#000', shape ? pen * 2.6 : size * 0.14);
+          var m = mg.getImageData(0, 0, px, px).data, h = hg.getImageData(0, 0, px, px).data, p = pg.getImageData(0, 0, px, px).data;
+          var G = 7, cell = px / G, want = [], got = [], all = 0, away = 0;
+          for (var y = 0; y < px; y += 2 * k) {
+            for (var x = 0; x < px; x += 2 * k) {
+              var i = (y * px + x) * 4 + 3, c = Math.floor(y / cell) * G + Math.floor(x / cell), on = p[i] > 0;
+              if (m[i] > 128) { want[c] = (want[c] || 0) + 1; if (on) got[c] = (got[c] || 0) + 1; }
+              if (on) { all++; if (h[i] <= 128) away++; }
+            }
+          }
+          var cells = 0, covered = 0;
+          for (var c2 = 0; c2 < G * G; c2++) if ((want[c2] || 0) >= 6) { cells++; if ((got[c2] || 0) / want[c2] >= 0.35) covered++; }
+          return { done: cells ? covered / cells : 0, stray: all ? away / all : 0 };
+        };
+        var question = ctx.el('p', { class: 'letters', 'data-trace-question': '' });
+        var tools = ctx.el('p', { class: 'muted', style: 'margin:0', text: L.letter_tracing_tools || '' });
+        var stepLine = ctx.el('p', { class: 'muted', 'data-trace-part': '', style: 'margin:0' });
+        var how = ctx.el('p', { class: 'muted', 'data-trace-how': '' });
         var note = ctx.el('p', { class: 'letters', 'aria-live': 'polite' });
-        var hear = ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio || item.promptAudio); } }, text: ctx.L.hear_word });
-        var done = ctx.el('button', { type: 'button', class: 'primary', on: { click: function () {
+        var skipLower = ctx.el('button', { type: 'button', 'data-trace-skip-lowercase': '', hidden: true, on: { click: function () {
+          if (ctx.isDone()) return;
+          ctx.support('lowercaseSkipped');
+          ctx.practice('traced', L.letter_tracing_traced);
+        } }, text: L.letter_tracing_skip_lowercase });
+        var showPart = function () {
+          var part = parts[at];
+          shape = layout(part);
+          var named = { letter: part.letter };
+          question.textContent = part.kind === 'capital' ? ctx.fmt(L.letter_tracing_capital, named)
+            : part.kind === 'lowercase' ? ctx.fmt(L.letter_tracing_lowercase, named) : ctx.fmt(L.letter_tracing_question, named);
+          tools.hidden = !part.kind;
+          ink.setAttribute('aria-label', ctx.fmt(part.kind === 'capital' ? L.letter_tracing_canvas_capital : part.kind === 'lowercase' ? L.letter_tracing_canvas_lowercase : L.letter_tracing_canvas, named));
+          stepLine.textContent = parts.length > 1 ? ctx.fmt(L.letter_tracing_part, { n: at + 1, total: parts.length }) : '';
+          stepLine.hidden = parts.length < 2;
+          how.textContent = !shape ? '' : shape.strokes.length > 1 ? L.letter_tracing_how_more : L.letter_tracing_how_one;
+          how.hidden = !shape;
+          skipLower.hidden = !(at > 0 && part.kind === 'lowercase');
+          drawGuide();
+          wipe();
+        };
+        var buttons = [];
+        if (item.letterAudio) buttons.push(ctx.el('button', { type: 'button', on: { click: function () { ctx.support('letterReplays'); ctx.play(item.letterAudio); } }, text: L.letter_tracing_hear_letter }));
+        if (item.wordAudio || item.promptAudio) buttons.push(ctx.el('button', { type: 'button', class: 'primary', on: { click: function () { ctx.support('wordReplays'); ctx.play(item.wordAudio || item.promptAudio); } }, text: L.hear_word }));
+        var done = ctx.el('button', { type: 'button', class: 'primary', 'data-trace-done': '', on: { click: function () {
           if (ctx.isDone()) return;
           var m = measure();
           if (m.stray > 0.5) { note.textContent = L.letter_tracing_stay; return; }
-          if (m.cover < 0.45) { note.textContent = L.letter_tracing_more; return; }
+          if (m.done < 0.6) { note.textContent = L.letter_tracing_more; return; }
+          if (at < parts.length - 1) {
+            at++;
+            showPart();
+            note.textContent = ctx.fmt(L.letter_tracing_now_lowercase, { letter: parts[at].letter });
+            if (item.lowerAudio) ctx.play(item.lowerAudio);
+            return;
+          }
           note.textContent = '';
           ctx.practice('traced', L.letter_tracing_traced);
         } }, text: L.letter_tracing_done });
-        var clear = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; if (pg) pg.clearRect(0, 0, size, size); note.textContent = ''; } }, text: L.letter_tracing_clear });
+        var clear = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; wipe(); note.textContent = ''; } }, text: L.letter_tracing_clear });
         var skip = ctx.el('button', { type: 'button', on: { click: function () { if (ctx.isDone()) return; ctx.practice('skipped', L.letter_tracing_skipped); } }, text: L.letter_tracing_skip });
-        ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.fmt(L.letter_tracing_question, { letter: item.letter }) }));
-        if (item.wordAudio || item.promptAudio) ctx.root.appendChild(ctx.el('div', { class: 'row' }, [hear]));
+        ctx.root.appendChild(question);
+        if (item.word) ctx.root.appendChild(ctx.el('p', { class: 'letters', 'data-trace-word': '', style: 'font-size:1.25rem;margin:0 0 4px' }, String(L.letter_tracing_word || '{word}').split('{word}').reduce(function (out, bit, i) { if (i) out.push(ctx.el('span', { lang: 'en', dir: 'ltr', text: item.word })); if (bit) out.push(bit); return out; }, [])));
+        ctx.root.appendChild(tools);
+        ctx.root.appendChild(stepLine);
+        if (buttons.length) ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:8px' }, buttons));
+        ctx.root.appendChild(how);
         ctx.root.appendChild(wrap);
         ctx.root.appendChild(note);
-        ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:12px' }, [done, clear, skip]));
+        ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:12px' }, [done, clear, skipLower, skip]));
+        showPart();
         return {
-          reveal: function () { [done, clear, skip].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); },
+          reveal: function () { [done, clear, skipLower, skip].forEach(function (b) { b.setAttribute('aria-disabled', 'true'); }); },
         };
       },
     };
@@ -956,13 +1338,20 @@
     // word_sounds_module.js:20150-20155: choice.toLowerCase() ===
     // task.answer.toLowerCase(), then checkAnswer("correct"|"incorrect","correct"),
     // 2 tries.
+    // 2026-11-13 parity: the app's sound-only choices are now cards (a tap plays and selects, a
+    // large Check submits, a missed card is crossed out: 94704af0e4). The file keeps two buttons
+    // per choice, Listen first, then Choose, in every activity, as Find Sounds always had them
+    // (hear, then choose).
+    // The task type is said plainly: "Take away a sound" / "Change a sound" (the app's card says
+    // Phoneme Deletion / Phoneme Substitution).
     module.exports = {
       id: 'manipulation',
       title: 'Sound Swap',
       labels: {
         manipulation_prompt: 'Swap the sound to make a new word!',
-        manipulation_type_deletion: 'Phoneme Deletion',
-        manipulation_type_substitution: 'Phoneme Substitution',
+        // 2026-11-13: plain words for the student (the app's task card says Phoneme Deletion / Substitution).
+        manipulation_type_deletion: 'Take away a sound',
+        manipulation_type_substitution: 'Change a sound',
         manipulation_hear_instruction: 'Hear the instruction',
         manipulation_option_n: 'Option {n}',
         manipulation_listen: 'Listen',
@@ -1064,7 +1453,7 @@
               });
               if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
             } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: choice.text }) : ctx.fmt(ctx.L.manipulation_option_n, { n: n })]);
-          var box = ctx.el('li', { class: 'choice' }, [choose, listen]);
+          var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
           cards.push({ box: box, choose: choose, right: right });
           list.appendChild(box);
         });
@@ -1087,6 +1476,8 @@
           run(instructionSteps(400).concat(item.choices.map(function (c, i) { return { id: c.audio, gap: 350, hi: i }; })));
         }
         return {
+          // The R key: the instruction again.
+          replay: function () { run(instructionSteps(0)); },
           reveal: function () {
             halt();
             cards.forEach(function (c) {
@@ -1124,6 +1515,8 @@
     //           "correct") (:19681). Default budget 2 tries (:17130); a first miss stays
     //           on the board, editable.
     //   audio   instruction clip "mapping" (INST_KEY_MAP :16458); the word on request.
+    // 2026-11-13: each tray chip has Listen first, then the spelling to pick up (as every Listen +
+    // Choose pair now).
     module.exports = {
       id: 'mapping',
       title: 'Sound Mapping',
@@ -1240,11 +1633,11 @@
             on: { click: function () { onChip(ci); } } }, [chip.text]);
           var listen = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(two ? L.mapping_listen_two : L.mapping_listen, { spelling: chip.text }),
             on: { click: function () { ctx.support('soundListens'); hear(ci); } } }, ['▶']);
-          var li = ctx.el('li', { class: 'row', style: 'gap:6px;border:2px solid var(--line);border-radius:14px;padding:6px' }, [pick, listen]);
+          var li = ctx.el('li', { class: 'row', style: 'gap:6px;border:2px solid var(--line);border-radius:14px;padding:6px' }, [listen, pick]);
           tray.appendChild(li);
           return { li: li, pick: pick };
         });
-        var slotList = ctx.el('ol', { class: 'slots', 'aria-label': L.mapping_slots });
+        var slotList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.mapping_slots });
         var slotEls = slots.map(function (_, si) {
           var btn = ctx.el('button', { type: 'button', class: 'slot', style: 'min-width:80px;min-height:80px;font-size:1.5rem;font-weight:700',
             on: { click: function () { onSlot(si); } } });
@@ -1378,10 +1771,15 @@
     //   view        case "missing_letter" (~20028): the word's letters (uppercase),
     //               the hidden one shown as "?" or the chosen letter; letter buttons
     //               only SELECT; "Check Answer" submits; "Show word" reveals the word.
+    //               An apostrophe, hyphen or space is shown plainly, not in a box
+    //               (wsSpellFixedChar, b38ca18141), and is never the hidden one.
     //   grading     submitConstructionAnswer (~18887): trimmed, lowercased equality
     //               with correctLetter; the same unchanged answer is not resubmitted.
     //               checkAnswer default budget: 2 presentations (1 retry).
     //   audio       inst_missing_letter bank clip (INST_KEY_MAP ~16446); "Hear the word".
+    // 2026-11-13 (owner): the letters, the choices and the sentence that names the
+    // word are in the case the word is written (lowercase for a normal word, a name's
+    // capital kept); the app shows capitals. Fixed characters as in the app.
     module.exports = {
       id: 'missing_letter',
       title: 'Missing Letter',
@@ -1401,7 +1799,8 @@
       },
       prepare: function (w, env) {
         var board = w.activityItems && w.activityItems.missing_letter;
-        var word = String(env.word || '').toLowerCase();
+        var written = String(env.word || '');
+        var word = written.toLowerCase();
         if (!board) return { missing: ['board'] };
         // Same usability rule as the app's preparedMissingLetter.
         var letter = String(board.correctLetter == null ? '' : board.correctLetter).toLowerCase();
@@ -1416,25 +1815,34 @@
         var prompt = env.bankClip('instructions', 'inst_missing_letter');
         if (!prompt) missing.push('question');
         if (missing.length) return { missing: missing };
-        var letters = word.split('');
+        // The letters as the word is written (lowercase if lower-casing changed its length).
+        var shown = written.length === word.length ? written : word;
+        var letters = shown.split('');
         letters[board.hiddenIndex] = '';
-        return { item: { letters: letters, hiddenIndex: board.hiddenIndex, options: choices, target: letter,
-          wordAudio: wordAudio, promptAudio: prompt, introAudio: [prompt, wordAudio], answerAudio: [wordAudio] } };
+        var item = { letters: letters, hiddenIndex: board.hiddenIndex, options: choices, target: letter,
+          wordAudio: wordAudio, promptAudio: prompt, introAudio: [prompt, wordAudio], answerAudio: [wordAudio] };
+        // The hidden letter is a capital (a name): the choices are shown as capitals too.
+        if (shown[board.hiddenIndex] !== letter && shown[board.hiddenIndex] === letter.toUpperCase()) item.capital = true;
+        return { item: item };
       },
       render: function (item, ctx) {
         var selected = '';
         var shownOnce = false;
-        var wordText = item.letters.map(function (l, i) { return i === item.hiddenIndex ? item.target : l; }).join('');
+        // An apostrophe, hyphen or space is part of the word, shown as it is, not a letter box.
+        var fixed = function (ch) { try { return !new RegExp('[\\p{L}\\p{M}\\p{N}_]', 'u').test(String(ch || '')); } catch (_) { return /^['’\- ]$/.test(String(ch || '')); } };
+        var cased = function (letter) { return item.capital ? String(letter).toUpperCase() : String(letter); };
+        var wordText = item.letters.map(function (l, i) { return i === item.hiddenIndex ? cased(item.target) : l; }).join('');
         var slots = item.letters.map(function (l, i) {
+          if (i !== item.hiddenIndex && fixed(l)) return ctx.el('li', { 'data-fixed': '', style: 'display:flex;align-items:center;font-size:1.4rem;font-weight:700' }, [l === ' ' ? ' ' : l]);
           return ctx.el('li', { class: 'slot', style: i === item.hiddenIndex ? 'border-style:dashed;border-color:var(--accent)' : 'border-style:solid' },
-            [i === item.hiddenIndex ? '?' : l.toUpperCase()]);
+            [i === item.hiddenIndex ? '?' : l]);
         });
         var srWord = ctx.el('p', { class: 'sr' });
         var updateWord = function (letter) {
-          slots[item.hiddenIndex].textContent = letter ? letter.toUpperCase() : '?';
+          slots[item.hiddenIndex].textContent = letter ? cased(letter) : '?';
           srWord.textContent = ctx.fmt(ctx.L.missing_letter_word_sr, { letters: item.letters.map(function (l, i) {
-            return i === item.hiddenIndex ? (letter ? letter.toUpperCase() : ctx.L.missing_letter_blank) : l.toUpperCase();
-          }).join(', ') });
+            return i === item.hiddenIndex ? (letter ? cased(letter) : ctx.L.missing_letter_blank) : l;
+          }).filter(function (l) { return String(l).trim(); }).join(', ') });
         };
         var shownWord = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(ctx.L.missing_letter_word_is, { word: wordText }) });
         var showButton = ctx.el('button', { type: 'button', 'aria-pressed': 'false', on: { click: function () {
@@ -1451,8 +1859,8 @@
           if (ctx.isDone() || check.getAttribute('aria-disabled') === 'true') { if (!ctx.isDone() && !selected) ctx.announce(ctx.L.missing_letter_pick_first); return; }
           var answer = selected;
           var outcome = ctx.answer(answer, answer.trim().toLowerCase() === item.target, {
-            correctText: ctx.fmt(ctx.L.missing_letter_correct, { letter: item.target.toUpperCase() }),
-            missedText: ctx.fmt(ctx.L.missing_letter_missed, { letter: item.target.toUpperCase() }),
+            correctText: ctx.fmt(ctx.L.missing_letter_correct, { letter: cased(item.target) }),
+            missedText: ctx.fmt(ctx.L.missing_letter_missed, { letter: cased(item.target) }),
           });
           // A retry starts from an empty slot; choosing again counts as a new answer,
           // as an edit does in the app.
@@ -1466,9 +1874,9 @@
         };
         var list = ctx.el('ul', { class: 'row', 'aria-label': ctx.L.missing_letter_choices, style: 'list-style:none;padding:0;margin:16px 0' });
         item.options.forEach(function (letter) {
-          var button = ctx.el('button', { type: 'button', 'aria-pressed': 'false', 'aria-label': ctx.fmt(ctx.L.missing_letter_choose, { letter: letter.toUpperCase() }),
+          var button = ctx.el('button', { type: 'button', 'aria-pressed': 'false', 'aria-label': ctx.fmt(ctx.L.missing_letter_choose, { letter: cased(letter) }),
             style: 'min-width:64px;min-height:64px;font-size:1.4rem;font-weight:700',
-            on: { click: function () { if (!ctx.isDone()) select(letter); } } }, [letter.toUpperCase()]);
+            on: { click: function () { if (!ctx.isDone()) select(letter); } } }, [cased(letter)]);
           var box = ctx.el('li', { class: 'choice solo', style: 'padding:6px' }, [button]);
           cards.push({ box: box, button: button, letter: letter });
           list.appendChild(box);
@@ -1481,7 +1889,8 @@
           showButton,
         ]));
         ctx.root.appendChild(shownWord);
-        ctx.root.appendChild(ctx.el('ul', { class: 'slots', 'aria-hidden': 'true' }, slots));
+        // dir: the word's letters run left to right in a right-to-left page too.
+        ctx.root.appendChild(ctx.el('ul', { class: 'slots', 'aria-hidden': 'true', dir: 'ltr' }, slots));
         ctx.root.appendChild(srWord);
         ctx.root.appendChild(list);
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [check]));
@@ -1512,6 +1921,8 @@
     //               (~17060, soundAnswerMatches on lowercased strings = equality for
     //               whole words). Default budget: 2 presentations (1 retry).
     //   audio       inst_spelling_bee bank clip ("listen to the word and spell it") and the word.
+    // 2026-11-13 parity: as the app (b38ca18141), the tiles are letters only and the letters
+    // decide: an apostrophe, hyphen or space need not be typed.
     module.exports = {
       id: 'orthography',
       title: 'Sight & Spell',
@@ -1543,9 +1954,12 @@
         // A word with no a-z letter at all (another script) would get a tile bank of
         // only its own letters, which spells it out; report it instead.
         if (!/[a-z]/.test(word.toLowerCase())) return { missing: ['letters outside a-z'] };
+        // An apostrophe, hyphen or space is not a tile: the letters decide (wsSpellFixedChar / wsSpellSame, b38ca18141).
+        var letterRe = null;
+        try { letterRe = new RegExp('[\\p{L}\\p{M}\\p{N}]', 'u'); } catch (_) {}
         var extra = [];
         word.toLowerCase().split('').forEach(function (ch) {
-          if (!/[a-z]/.test(ch) && extra.indexOf(ch) < 0 && ch.trim()) extra.push(ch);
+          if (!/[a-z]/.test(ch) && extra.indexOf(ch) < 0 && ch.trim() && (letterRe ? letterRe.test(ch) : !/^['’\-.]$/.test(ch))) extra.push(ch);
         });
         return { item: { target: word.toLowerCase(), extraTiles: extra, wordAudio: wordAudio, promptAudio: prompt,
           introAudio: [prompt, wordAudio], answerAudio: [wordAudio] } };
@@ -1553,7 +1967,7 @@
       render: function (item, ctx) {
         var lastSubmitted = null;
         var inputId = 'ortho-' + String(item.id || 'x').replace(/[^a-z0-9-]/gi, '');
-        var input = ctx.el('input', { id: inputId, type: 'text', autocomplete: 'off', autocorrect: 'off', autocapitalize: 'none', spellcheck: 'false',
+        var input = ctx.el('input', { id: inputId, type: 'text', dir: 'ltr', autocomplete: 'off', autocorrect: 'off', autocapitalize: 'none', spellcheck: 'false',
           maxlength: '40', style: 'font-size:1.6rem;font-weight:700;letter-spacing:.1em;text-transform:lowercase;text-align:center', on: {
             input: function () { lastSubmitted = null; },
             keydown: function (e) {
@@ -1574,7 +1988,9 @@
           // OrthographyView ignores a resubmit of the same unchanged spelling.
           if (answer === lastSubmitted) { ctx.announce(ctx.L.orthography_same); return; }
           lastSubmitted = answer;
-          ctx.answer(answer, answer === item.target, {
+          // wsSpellSame: the letters decide, so "dont" spells "don't" and "icecream" spells "ice-cream".
+          var letters = function (text) { var re = null; try { re = new RegExp('[^\\p{L}\\p{M}\\p{N}]', 'gu'); } catch (_) {} return String(text || '').replace(re || /['’\- .]/g, ''); };
+          ctx.answer(answer, letters(item.target) ? letters(answer) === letters(item.target) : answer === item.target, {
             correctText: ctx.fmt(ctx.L.orthography_correct, { word: item.target }),
             missedText: ctx.fmt(ctx.L.orthography_missed, { word: item.target }),
           });
@@ -1627,6 +2043,9 @@
     // story and per-sentence clips are packed by setup (5423-5436); after a right
     // answer the app reads the story back line by line when the sentence split
     // matches the parts, else the whole-story clip (17301-17337).
+    // 2026-11-13 parity: the file does that too, by itself once the praise clip is over
+    // (payoff; the Hear the story button stays). Choices print as written, so a name
+    // keeps its capital (the app lower-cases its chips: file has / app lacks).
 
     var SPLIT = /(?<=[.!?])\s+/;
     function pictureFor(text, env) {
@@ -1704,7 +2123,7 @@
         var blanks = [];
         var lineNodes = [];
         // data-read: running text, where the shell's reading focus can go.
-        var storyBox = ctx.el('div', { role: 'group', 'aria-label': ctx.L.read_passage_story, class: 'letters', lang: 'en', 'data-read': '',
+        var storyBox = ctx.el('div', { role: 'group', 'aria-label': ctx.L.read_passage_story, class: 'letters', lang: 'en', dir: 'ltr', 'data-read': '',
           style: 'font-size:1.6rem;border:1px solid var(--line);border-radius:14px;padding:12px 16px;margin:12px 0' });
         item.lines.forEach(function (line) {
           var node;
@@ -1722,7 +2141,7 @@
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.read_passage_prompt }));
         ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_passage_picture_practice : ctx.L.read_passage_matching_practice }));
         if (picture) ctx.root.appendChild(ctx.el('img', { class: 'picture', src: picture, alt: ctx.fmt(ctx.L.read_passage_picture_clue, { word: item.target }) }));
-        else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_passage_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target.toLowerCase() })]));
+        else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_passage_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target })]));
         ctx.root.appendChild(storyBox);
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { run++; mark(-1); ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.read_passage_hear_instructions }),
@@ -1736,7 +2155,7 @@
               if (ctx.isDone() || choose.getAttribute('aria-disabled') === 'true') return;
               var outcome = ctx.answer(option, right, { correctText: ctx.L.read_passage_correct, missedText: ctx.fmt(ctx.L.read_passage_missed, { word: item.target }) });
               if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
-            } } }, [ctx.el('span', { class: 'letters', lang: 'en', style: 'text-transform:lowercase', text: option })]);
+            } } }, [ctx.el('span', { class: 'letters', lang: 'en', text: option })]);
           var box = ctx.el('li', { class: 'choice' }, [choose]);
           cards.push({ box: box, choose: choose, right: right });
           list.appendChild(box);
@@ -1753,9 +2172,10 @@
             if (on) n.setAttribute('aria-current', 'true'); else n.removeAttribute('aria-current');
           });
         };
-        var readBack = function () {
+        // auto: the read-back after a right answer (not a help the student asked for).
+        var readBack = function (auto) {
           var mine = ++run;
-          ctx.support('storyReadBacks');
+          if (auto !== true) ctx.support('storyReadBacks');
           if (!item.readBackByLine) { mark(-1); ctx.play(item.readBack[0]); return; }
           var step = function (i) {
             if (mine !== run) return;
@@ -1766,6 +2186,8 @@
           step(0);
         };
         return {
+          // After a right answer, once the praise is over, the story is read back line by line (the app's payoff).
+          payoff: function () { if (item.readBack && item.readBack.length) readBack(true); },
           reveal: function () {
             // Every blank fills with the word as written in its sentence.
             blanks.forEach(function (b) {
@@ -1781,7 +2203,7 @@
               }
             });
             if (item.readBack && item.readBack.length && !after.childNodes.length) {
-              after.appendChild(ctx.el('button', { type: 'button', on: { click: readBack }, text: ctx.L.read_passage_hear_story }));
+              after.appendChild(ctx.el('button', { type: 'button', on: { click: function () { readBack(false); } }, text: ctx.L.read_passage_hear_story }));
             }
           },
         };
@@ -1803,6 +2225,10 @@
     // word_sounds_module.js:20848-20855 -> checkAnswer(choice, word): lower-cased,
     // trimmed comparison (17099-17113), 2 tries. Instruction and read-back clips
     // are packed by setup (5414-5422), read-back after a right answer (17301-17337).
+    // 2026-11-13 parity: as in the app, a right answer is followed by the sentence read
+    // back by itself (payoff, after the praise clip; the button stays). Choices print as
+    // written, so a name keeps its capital; the app lower-cases its chips (word-bank
+    // convention, word_sounds_module.js ~24217): file has / app lacks.
 
     var lib = { key: null, manifest: {}, rows: {} };
     function remember(w, env) {
@@ -1892,9 +2318,10 @@
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.read_sentence_prompt }));
         ctx.root.appendChild(ctx.el('p', { class: 'muted', text: picture ? ctx.L.read_sentence_picture_practice : ctx.L.read_sentence_matching_practice }));
         if (picture) ctx.root.appendChild(ctx.el('img', { class: 'picture', src: picture, alt: ctx.fmt(ctx.L.read_sentence_picture_clue, { word: item.target }) }));
-        else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_sentence_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target.toLowerCase() })]));
+        else ctx.root.appendChild(ctx.el('p', {}, [ctx.L.read_sentence_word_hint + ' ', ctx.el('span', { class: 'letters', lang: 'en', text: item.target })]));
         // data-read: running text, where the shell's reading focus can go.
-        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:1.8rem;white-space:pre-wrap', 'data-read': '' }, [item.before, blank, item.after]));
+        // dir: an English sentence keeps its full stop on the right in a right-to-left page.
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:1.8rem;white-space:pre-wrap', 'data-read': '' }, [item.before, blank, item.after]));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.read_sentence_hear_instructions }),
         ]));
@@ -1907,7 +2334,7 @@
               if (ctx.isDone() || choose.getAttribute('aria-disabled') === 'true') return;
               var outcome = ctx.answer(option, right, { correctText: ctx.L.read_sentence_correct, missedText: ctx.fmt(ctx.L.read_sentence_missed, { word: item.target }) });
               if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
-            } } }, [ctx.el('span', { class: 'letters', lang: 'en', style: 'text-transform:lowercase', text: option })]);
+            } } }, [ctx.el('span', { class: 'letters', lang: 'en', text: option })]);
           var box = ctx.el('li', { class: 'choice' }, [choose]);
           cards.push({ box: box, choose: choose, right: right });
           list.appendChild(box);
@@ -1915,6 +2342,9 @@
         ctx.root.appendChild(list);
         ctx.root.appendChild(after);
         return {
+          // After a right answer, once the praise is over, the sentence is read back by itself (the app's payoff). The
+          // button below stays to hear it again.
+          payoff: function () { if (item.sentenceAudio) ctx.play(item.sentenceAudio); },
           reveal: function () {
             // The blank fills with the word as written in the sentence.
             blank.textContent = item.answer;
@@ -1946,6 +2376,13 @@
     // 16855-16888); graded at word_sounds_module.js:20348-20380: the designated
     // rhymeWord, or any other choice whose spelling rime (>= 2 letters) matches the
     // target's, then checkAnswer("correct"|"incorrect","correct"), 2 tries.
+    // 2026-11-13 parity: the app's sound-only choices are now cards (a tap plays and selects, a
+    // large Check submits, a missed card is crossed out: 94704af0e4). The file keeps two buttons
+    // per choice, Listen first, then Choose, in every activity, as Find Sounds always had them
+    // (hear, then choose).
+    // Fewer choices: the app trims this board below Hard (WS_CORE.choiceLimit + trimChoices:
+    // Easy 3, Medium 4). A packet does the same when made with Choices Easy or Medium
+    // (word_sounds_packet_builder.js, choiceLevels); a board as built (All) is shown whole.
 
     // Words this export has shown prepare() so far (the app's pool is the whole
     // pack; prepare only sees one word, so later words cannot be consulted).
@@ -2051,7 +2488,7 @@
               });
               if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
             } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: choice.text }) : ctx.fmt(ctx.L.rhyming_option_n, { n: n })]);
-          var box = ctx.el('li', { class: 'choice' }, [choose, listen]);
+          var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
           cards.push({ box: box, choose: choose, answer: choice.answer });
           list.appendChild(box);
         });
@@ -2069,6 +2506,8 @@
           run([{ id: item.promptAudio, gap: 200 }, { id: item.wordAudio, gap: 200 }].concat(item.choices.map(function (c, i) { return { id: c.audio, gap: 350, hi: i }; })));
         }
         return {
+          // The R key: the question and the word again.
+          replay: function () { run([{ id: item.promptAudio, gap: 200 }, { id: item.wordAudio }]); },
           reveal: function () {
             halt();
             cards.forEach(function (c) {
@@ -2102,6 +2541,9 @@
     //           tries (:17130). A miss keeps the boxes and marks the wrong ones (:19349).
     //   audio   inst_segmentation then the word (INST_KEY_MAP :16453, :16847-16854);
     //           each chip plays its sound when picked or placed (:18239, :18294).
+    // 2026-11-13: each tray chip has Listen first, then the sound to pick up (as every Listen +
+    // Choose pair now). With letters on, a sound whose label is not letters shows a name
+    // (ctx.sound: oo_short -> "short oo (book)"), else /a/.
     module.exports = {
       id: 'segmentation',
       title: 'Break it Down',
@@ -2180,7 +2622,9 @@
         var picked = null;
         var errors = [];
         var token = 0;
-        var name = function (ci) { return ctx.showLetters ? '/' + item.chips[ci].label + '/' : ctx.fmt(L.sound_n, { n: ci + 1 }); };
+        // With letters on, a sound like oo_short shows its friendly name (ctx.sound).
+        var said = function (label) { return typeof ctx.sound === 'function' ? ctx.sound(label) : '/' + label + '/'; };
+        var name = function (ci) { return ctx.showLetters ? said(item.chips[ci].label) : ctx.fmt(L.sound_n, { n: ci + 1 }); };
         var locked = function () { return ctx.isDone(); };
         var halt = function () { token++; };
 
@@ -2192,11 +2636,11 @@
             on: { click: function () { onChip(ci); } } }, [name(ci)]);
           var listen = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(L.listen_sound, { n: ci + 1 }) + (ctx.showLetters ? ' ' + name(ci) : ''),
             on: { click: function () { halt(); ctx.support('soundListens'); ctx.play(chip.audio); } } }, ['▶']);
-          var li = ctx.el('li', { class: 'row', style: 'gap:6px;border:2px solid var(--line);border-radius:14px;padding:6px' }, [pick, listen]);
+          var li = ctx.el('li', { class: 'row', style: 'gap:6px;border:2px solid var(--line);border-radius:14px;padding:6px' }, [listen, pick]);
           tray.appendChild(li);
           return { li: li, pick: pick };
         });
-        var boxList = ctx.el('ol', { class: 'slots', 'aria-label': L.segmentation_boxes });
+        var boxList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.segmentation_boxes });
         var boxEls = boxes.map(function (_, bi) {
           var btn = ctx.el('button', { type: 'button', class: 'slot', style: 'min-width:80px;min-height:80px;border-style:dashed;font-size:1.3rem;font-weight:700',
             on: { click: function () { onBox(bi); } } });
@@ -2291,7 +2735,7 @@
           var outcome = ctx.answer(response, bad.length === 0, {
             correctText: L.segmentation_correct,
             retryText: L.segmentation_retry,
-            missedText: ctx.showLetters ? ctx.fmt(L.segmentation_missed, { sounds: item.sounds.map(function (s) { return '/' + s + '/'; }).join(' ') })
+            missedText: ctx.showLetters ? ctx.fmt(L.segmentation_missed, { sounds: item.sounds.map(said).join(' ') })
               : L.segmentation_missed_no_letters,
           });
           // A first miss keeps the boxes and marks the wrong ones (:19348-19350).
@@ -2351,6 +2795,10 @@
     // (21046-21061). The instruction is word_sounds.sentence_match_prompt, packed
     // by setup (setup 5437-5443); after a right answer the app reads the sentence
     // back (word_sounds_module.js:17301-17337).
+    // 2026-11-13 parity: the file reads it back by itself too (payoff, after the praise
+    // clip; the button stays). A sentence that names a picture twice takes either tile of
+    // that word in either slot (before, the second tile was refused and the item could not
+    // be finished). The pictures carry their key numbers 1-9 (file has / app lacks).
 
     // Pictures this export has seen so far, by the app's precedence
     // (word_sounds_module.js:8139-8152). prepare() receives one row; the shared
@@ -2377,7 +2825,7 @@
       title: 'Picture the Sentence',
       labels: {
         sentence_match_prompt: 'Read the sentence. Match the pictures to it.',
-        sentence_match_order_hint: 'Place the pictures in the order they appear',
+        sentence_match_order_hint: 'Place the pictures in the order they appear.',
         sentence_match_slot_empty: 'Slot {n}, empty',
         sentence_match_slot_filled: 'Slot {n}: {word}. Tap to take it out.',
         sentence_match_picture_of: 'Picture of {word}',
@@ -2415,17 +2863,20 @@
           introAudio: [prompt], answerAudio: [] } };
       },
       render: function (item, ctx) {
+        // A slot holds a tile's place in the tray (not its word): a sentence that names a picture twice can be
+        // finished with either tile of that word (2026-11-13).
         var slots = item.sequence.map(function () { return null; });
         var imageOf = {};
         item.tiles.forEach(function (t) { imageOf[t.text] = ctx.image(t.image); });
         var tileCards = [];
         var slotButtons = [];
         var tray = ctx.el('ul', { class: 'choices' });
-        var slotRow = ctx.el('ul', { class: 'slots' });
+        var slotRow = ctx.el('ul', { class: 'slots', dir: 'ltr' });
         var after = ctx.el('div', { class: 'row' });
+        var wordIn = function (i) { return slots[i] == null ? null : item.tiles[slots[i]].text; };
         var drawSlots = function (right) {
           slotButtons.forEach(function (b, i) {
-            var word = slots[i];
+            var word = wordIn(i);
             b.textContent = '';
             b.appendChild(ctx.el('span', { 'aria-hidden': 'true', style: 'font-size:1rem;margin-inline-end:6px', text: String(i + 1) }));
             b.appendChild(word ? ctx.el('img', { src: imageOf[word] || '', alt: '', style: 'width:72px;height:72px' }) : ctx.el('span', { 'aria-hidden': 'true', text: '?' }));
@@ -2434,36 +2885,38 @@
             b.style.borderColor = right ? 'var(--ok)' : '';
             b.style.background = right ? 'var(--ok-bg)' : '';
           });
-          tileCards.forEach(function (c) {
-            var used = slots.indexOf(c.text) >= 0;
+          tileCards.forEach(function (c, ti) {
+            var used = slots.indexOf(ti) >= 0;
             if (used || c.tried || ctx.isDone()) c.pick.setAttribute('aria-disabled', 'true'); else c.pick.removeAttribute('aria-disabled');
             c.pick.style.opacity = used && !right ? '0.3' : '';
           });
         };
         var grade = function () {
-          if (slots.some(function (s) { return !s; })) return;
-          var ok = slots.every(function (w, i) { return w === item.sequence[i]; });
-          var response = slots.join(' ');
+          if (slots.some(function (s) { return s == null; })) return;
+          var ok = slots.every(function (ti, i) { return item.tiles[ti].text === item.sequence[i]; });
+          var response = slots.map(function (ti) { return item.tiles[ti].text; }).join(' ');
           var outcome = ctx.answer(response, ok, { correctText: ctx.L.sentence_match_correct, missedText: ctx.L.sentence_match_missed });
           if (outcome === 'retry') {
             // One-picture boards: that picture is out. The app clears the tray
             // for the retry (word_sounds_module.js:21053-21060).
-            if (item.sequence.length === 1) tileCards.forEach(function (c) { if (c.text === slots[0]) { c.tried = true; c.box.classList.add('tried'); } });
+            if (item.sequence.length === 1) { var out = tileCards[slots[0]]; out.tried = true; out.box.classList.add('tried'); }
             slots = item.sequence.map(function () { return null; });
             drawSlots(false);
           }
         };
-        item.tiles.forEach(function (tile) {
+        item.tiles.forEach(function (tile, ti) {
+          // The picture's number, the key 1-9 that chooses it.
+          var number = ti < 9 ? ctx.el('span', { 'aria-hidden': 'true', 'data-key-number': '', style: 'position:absolute;top:6px;inset-inline-start:6px;min-width:28px;height:28px;line-height:28px;border-radius:14px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:1rem;text-align:center', text: String(ti + 1) }) : null;
           var pick = ctx.el('button', { type: 'button', 'aria-label': ctx.fmt(ctx.L.sentence_match_picture_of, { word: tile.text }),
-            style: 'width:100%;display:flex;justify-content:center;background:#fff',
+            style: 'position:relative;width:100%;display:flex;justify-content:center;background:#fff',
             on: { click: function () {
-              if (ctx.isDone() || pick.getAttribute('aria-disabled') === 'true' || slots.indexOf(tile.text) >= 0) return;
+              if (ctx.isDone() || pick.getAttribute('aria-disabled') === 'true' || slots.indexOf(ti) >= 0) return;
               var at = slots.indexOf(null);
               if (at < 0) return;
-              slots[at] = tile.text;
+              slots[at] = ti;
               drawSlots(false);
               grade();
-            } } }, [ctx.el('img', { class: 'picture', src: imageOf[tile.text] || '', alt: '' })]);
+            } } }, [number, ctx.el('img', { class: 'picture', src: imageOf[tile.text] || '', alt: '' })]);
           var box = ctx.el('li', { class: 'choice' }, [pick]);
           tileCards.push({ text: tile.text, pick: pick, box: box, tried: false });
           tray.appendChild(box);
@@ -2471,7 +2924,7 @@
         item.sequence.forEach(function (_, i) {
           var b = ctx.el('button', { type: 'button', class: 'slot', style: 'border-style:dashed;min-width:96px;min-height:96px',
             on: { click: function () {
-              if (ctx.isDone() || !slots[i]) return;
+              if (ctx.isDone() || slots[i] == null) return;
               slots[i] = null;
               drawSlots(false);
             } } });
@@ -2481,7 +2934,7 @@
         drawSlots(false);
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.sentence_match_prompt }));
         // data-read: running text, where the shell's reading focus can go.
-        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', style: 'font-size:1.8rem', 'data-read': '', text: item.sentence }));
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', lang: 'en', dir: 'ltr', style: 'font-size:1.8rem', 'data-read': '', text: item.sentence }));
         if (item.sequence.length > 1) ctx.root.appendChild(ctx.el('p', { class: 'muted', text: ctx.L.sentence_match_order_hint }));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.prompt); } }, text: ctx.L.sentence_match_hear_instructions }),
@@ -2490,8 +2943,15 @@
         ctx.root.appendChild(tray);
         ctx.root.appendChild(after);
         return {
+          // After a right answer, once the praise is over, the sentence is read back by itself (the app's payoff).
+          payoff: function () { if (item.sentenceAudio) ctx.play(item.sentenceAudio); },
           reveal: function () {
-            slots = item.sequence.slice();
+            // Each slot shows a tile of its word (the first one not used yet).
+            var used = [];
+            slots = item.sequence.map(function (word) {
+              for (var k = 0; k < item.tiles.length; k++) if (item.tiles[k].text === word && used.indexOf(k) < 0) { used.push(k); return k; }
+              return null;
+            });
             drawSlots(true);
             tileCards.forEach(function (c) { if (item.sequence.indexOf(c.text) >= 0) c.box.classList.add('right'); });
             // The app's payoff: hear the finished sentence read back.
@@ -2519,6 +2979,11 @@
     // member tap marks it found, all members found = correct; a distractor tap is
     // a wrong attempt; find-all budget maxAttempts = max(2, distractors + 1)
     // (20494-20504, checkAnswer 17126-17134).
+    // 2026-11-13 parity: the app's sound-only choices are now cards (a tap plays and selects, a
+    // large Check submits, a missed card is crossed out: 94704af0e4). The file keeps two buttons
+    // per choice, Listen first, then Choose, in every activity, as Find Sounds always had them
+    // (hear, then choose).
+    // The app does not trim a find-all board; neither does a packet.
 
     // Words this export has shown prepare() so far (the app's pool is the whole
     // pack; prepare sees one word at a time).
@@ -2533,6 +2998,8 @@
         sound_sort_heading_first_hidden: 'Starts with the sound you hear',
         sound_sort_heading_last_hidden: 'Ends with the sound you hear',
         sound_sort_instruction: 'Tap each word to hear it. Find the ones that match!',
+        // 2026-11-13: without letters the choices say "Option 1": a tap on one chooses it, so "tap to hear" was wrong.
+        sound_sort_instruction_listen: 'Press Listen to hear each word. Then choose every one that matches.',
         sound_sort_instruction_letters: 'Find all words that match: {family}',
         sound_sort_found: '{found} of {total} found',
         sound_sort_listen: 'Listen',
@@ -2657,7 +3124,7 @@
         var halt = function () { token++; mark(-1); };
         var heading = item.mode === 'rime'
           ? (ctx.showLetters ? T('heading_rime', { rime: '-' + item.rime }) : T('heading_rime_hidden'))
-          : (ctx.showLetters ? T('heading_' + item.mode, { sound: '/' + item.sound + '/' }) : T('heading_' + item.mode + '_hidden'));
+          : (ctx.showLetters ? T('heading_' + item.mode, { sound: typeof ctx.sound === 'function' ? ctx.sound(item.sound) : '/' + item.sound + '/' }) : T('heading_' + item.mode + '_hidden'));
         var counter = ctx.el('p', { class: 'muted', text: T('found', { found: 0, total: total }) });
         var memberText = item.chips.filter(function (c) { return c.member; }).map(function (c) { return c.text; }).join(', ');
         var list = ctx.el('ul', { class: 'choices' });
@@ -2670,7 +3137,7 @@
           var choose = ctx.el('button', { type: 'button', class: 'primary',
             'aria-label': ctx.showLetters ? T('choose_word', { word: chip.text }) : T('choose_option', { n: n }),
             on: { click: function () {
-              if (ctx.isDone() || card.found) return;
+              if (ctx.isDone() || card.found || card.tried) return;
               halt();
               if (chip.member) {
                 card.found = true;
@@ -2687,15 +3154,17 @@
                 }
                 return;
               }
-              // A wrong tap costs one attempt; the chip stays on the board, as in
-              // the app (tapping it again costs another).
+              // A wrong tap costs one attempt. The chip stays on the board but cannot
+              // be chosen again (the app counts a second tap of it as another miss).
+              card.tried = true;
               box.classList.add('tried');
+              choose.setAttribute('aria-disabled', 'true');
               ctx.answer(chip.text, false, {
                 retryText: ctx.showLetters ? T('no_match_word', { word: chip.text }) : T('no_match'),
                 missedText: ctx.showLetters ? T('missed', { words: memberText }) : T('missed_no_letters'),
               });
             } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: chip.text }) : T('option_n', { n: n })]);
-          var box = ctx.el('li', { class: 'choice' }, [choose, listen]);
+          var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
           card.box = box; card.choose = choose;
           cards.push(card);
           list.appendChild(box);
@@ -2706,7 +3175,7 @@
         };
         var instructionSteps = function () { return item.instruction.map(function (id) { return { id: id, gap: 200 }; }); };
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: heading }));
-        ctx.root.appendChild(ctx.el('p', { text: ctx.showLetters ? T('instruction_letters', { family: heading }) : T('instruction') }));
+        ctx.root.appendChild(ctx.el('p', { text: ctx.showLetters ? T('instruction_letters', { family: heading }) : (T('instruction_listen') || T('instruction')) }));
         // Hear all words: the player's Hear all (ctx.hearAll), the words not found yet, each marked with its number.
         var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ label: T('hear_all'), support: 'allWordListens', before: halt, auto: false,
           ready: function () { return !ctx.isDone(); },
@@ -2720,6 +3189,8 @@
         ctx.root.appendChild(list);
         if (!ctx.isDone()) run(instructionSteps().concat(chipSteps(false)));
         return {
+          // The R key: the instruction again.
+          replay: function () { run(instructionSteps()); },
           reveal: function () {
             halt();
             cards.forEach(function (c) {
@@ -2748,11 +3219,16 @@
     //           :18870). The word is never printed (SMART_TEXT_VISIBILITY 'hidden', :7567).
     //           After a try, each box is marked right/wrong and "{count}/{total} letters
     //           correct" shows (:19691-19704, :19788-19794).
+    //           An apostrophe, hyphen or space is a fixed slot, filled in for the child,
+    //           with no box (wsSpellFixedChar / wsSpellAlign, b38ca18141).
     //   grading submitConstructionAnswer (:18887-18902): trimmed, lowercased typed
-    //           spelling === trimmed, lowercased word; the same unchanged spelling is not
+    //           spelling === trimmed, lowercased word (on its letters only when the word
+    //           has a fixed slot: wsSpellSame); the same unchanged spelling is not
     //           graded twice; checkAnswer("correct"|"incorrect","correct"). Default budget
     //           2 tries (:17130). A first miss keeps the spelling to fix.
     //   audio   inst_spelling_bee then the word (INST_KEY_MAP :16448, :16989-16995).
+    // 2026-11-13 (owner): the boxes show the letters as typed and the keys are lowercase;
+    // the answer line names the word as it is written. The app shows the boxes in capitals.
     module.exports = {
       id: 'spelling_bee',
       title: 'Spelling Bee',
@@ -2760,10 +3236,10 @@
         spelling_bee_question: 'Listen to the word, then type it.',
         spelling_bee_input: 'Type the word',
         spelling_bee_slow: 'Hear it slowly',
-        spelling_bee_check: 'Check Spelling',
+        spelling_bee_check: 'Check spelling',
         spelling_bee_first_letter: 'First letter hint',
-        spelling_bee_hint_vowels: 'Show Vowels',
-        spelling_bee_hint_more: 'Show More',
+        spelling_bee_hint_vowels: 'Show vowels',
+        spelling_bee_hint_more: 'Show more',
         spelling_bee_letters_correct: '{count}/{total} letters correct',
         spelling_bee_empty: 'Type the word first.',
         spelling_bee_same: 'Change your spelling, then check it again.',
@@ -2783,19 +3259,50 @@
         var prompt = env.bankClip('instructions', 'inst_spelling_bee');
         if (!prompt) missing.push('question');
         if (missing.length) return { missing: missing };
-        return { item: { target: word.toLowerCase(), wordAudio: wordAudio, promptAudio: prompt,
-          introAudio: [prompt, wordAudio], answerAudio: [wordAudio] } };
+        var item = { target: word.toLowerCase(), wordAudio: wordAudio, promptAudio: prompt,
+          introAudio: [prompt, wordAudio], answerAudio: [wordAudio] };
+        // A word written with a capital (a name): how it is written, for the answer line and the hints.
+        if (word !== item.target && word.length === item.target.length) item.shown = word;
+        return { item: item };
       },
       render: function (item, ctx) {
         var L = ctx.L;
-        var win = ctx.root.ownerDocument.defaultView;
         var word = String(item.target);
+        var written = item.shown && String(item.shown).length === word.length ? String(item.shown) : word;
+        // wsSpellFixedChar: not a letter, mark or digit (an apostrophe, hyphen or space).
+        var letterRe = null;
+        try { letterRe = new RegExp('[\\p{L}\\p{M}\\p{N}_]', 'u'); } catch (_) {}
+        var fixed = function (ch) { ch = String(ch || ''); return letterRe ? !letterRe.test(ch) : /^['’\- .]$/.test(ch); };
+        var hasFixed = word.split('').some(fixed);
+        var own = function (text) { return String(text || '').split('').filter(function (ch) { return !fixed(ch); }).join(''); };
+        var total = own(word).length || word.length;
+        // wsSpellAlign: typed letters go into the word's letter slots, and a fixed slot is filled as soon as the letters
+        // before it are in ("don" -> "don'"). "_" is a hint's place for a letter not typed yet.
+        var align = function (typed) {
+          var letters = own(typed).split(''), out = '', used = 0;
+          for (var i = 0; i < written.length; i++) {
+            var ch = written[i];
+            if (fixed(ch)) { if (used < letters.length || used > 0) out += ch; else break; }
+            else if (used < letters.length) out += letters[used++];
+            else break;
+          }
+          return out;
+        };
         var lastSubmitted = null;
+        var before = '';
         var inputId = 'bee-' + String(item.id || 'x').replace(/[^a-z0-9-]/gi, '');
         var input = ctx.el('input', { id: inputId, type: 'text', autocomplete: 'off', autocorrect: 'off', autocapitalize: 'none', spellcheck: 'false',
-          inputmode: 'text', maxlength: String(word.length || 20),
+          inputmode: 'text', dir: 'ltr', maxlength: String(word.length || 20),
           style: 'font-size:1.6rem;font-weight:700;letter-spacing:.1em;text-align:center', on: {
-            input: function () { lastSubmitted = null; draw(); },
+            input: function () {
+              if (hasFixed) {
+                var raw = value(), letters = own(raw);
+                // Backspace over a fixed slot takes the letter before it too, or the slot would come back at once.
+                if (raw.length < before.length && letters === own(before)) letters = letters.slice(0, -1);
+                input.value = align(letters);
+              }
+              before = value(); lastSubmitted = null; draw();
+            },
             keydown: function (e) {
               if (e.key !== 'Enter' || e.repeat || e.isComposing || e.keyCode === 229) return;
               e.preventDefault();
@@ -2803,47 +3310,49 @@
             },
           } });
         var value = function () { return String(input.value || ''); };
-        // One box per letter (aria-hidden: the count line below carries the result).
-        var boxes = word.split('').map(function () {
-          return ctx.el('span', { class: 'slot', style: 'min-width:48px;min-height:56px;text-transform:uppercase' });
+        var set = function (next) { input.value = next; before = next; lastSubmitted = null; draw(); };
+        // One box per letter (aria-hidden: the count line below carries the result); a fixed slot is shown as it is.
+        var boxes = written.split('').map(function (ch) {
+          return fixed(ch) ? ctx.el('span', { 'data-fixed': '', style: 'display:flex;align-items:center;font-size:1.4rem;font-weight:700' }, [ch === ' ' ? ' ' : ch])
+            : ctx.el('span', { class: 'slot', style: 'min-width:48px;min-height:56px' });
         });
-        var boxRow = ctx.el('div', { class: 'slots', 'aria-hidden': 'true' }, boxes);
+        var boxRow = ctx.el('div', { class: 'slots', 'aria-hidden': 'true', dir: 'ltr' }, boxes);
         var countLine = ctx.el('p', { hidden: true });
         var draw = function () {
           var typed = value();
           var shown = ctx.attempts() > 0;
           var right = 0;
           boxes.forEach(function (box, i) {
+            if (fixed(word[i])) return;
             var ch = typed[i] || '';
             var ok = shown && ch && ch.toLowerCase() === word[i];
             if (ok) right++;
-            box.textContent = ch ? ch.toUpperCase() : '_';
+            box.textContent = ch || '_';
             box.style.borderStyle = ch ? 'solid' : 'dashed';
             box.style.borderColor = shown && ch ? (ok ? 'var(--ok)' : 'var(--warn)') : 'var(--muted)';
             box.style.background = shown && ch ? (ok ? 'var(--ok-bg)' : 'var(--warn-bg)') : '';
           });
           countLine.hidden = !(shown && typed);
-          countLine.textContent = ctx.fmt(L.spelling_bee_letters_correct, { count: right, total: word.length });
+          countLine.textContent = ctx.fmt(L.spelling_bee_letters_correct, { count: right, total: total });
           moreBtn.textContent = typed.indexOf('_') >= 0 ? L.spelling_bee_hint_more : L.spelling_bee_hint_vowels;
         };
         var edit = function (next, clue) {
           if (ctx.isDone()) return;
           if (!next || next === value()) return;
           ctx.support(clue);
-          input.value = next;
-          lastSubmitted = null;
-          draw();
-          ctx.announce(ctx.fmt(L.spelling_bee_hint_used, { answer: next.toUpperCase().split('').join(' ') }));
+          set(next);
+          ctx.announce(ctx.fmt(L.spelling_bee_hint_used, { answer: next.split('').join(' ') }));
         };
         var submit = function () {
           if (ctx.isDone()) return;
           var answer = value().trim().toLowerCase();
-          if (!answer) { ctx.announce(L.spelling_bee_empty); return; }
+          if (!answer || (hasFixed && !own(answer))) { ctx.announce(L.spelling_bee_empty); return; }
           if (answer === lastSubmitted) { ctx.announce(L.spelling_bee_same); return; }
           lastSubmitted = answer;
-          ctx.answer(answer, answer === word.trim().toLowerCase(), {
-            correctText: ctx.fmt(L.spelling_bee_correct, { word: word }),
-            missedText: ctx.fmt(L.spelling_bee_missed, { word: word }),
+          // wsSpellSame: a word with a fixed slot is judged on its letters.
+          ctx.answer(answer, hasFixed ? own(answer) === own(word) : answer === word.trim().toLowerCase(), {
+            correctText: ctx.fmt(L.spelling_bee_correct, { word: written }),
+            missedText: ctx.fmt(L.spelling_bee_missed, { word: written }),
           });
           // A first miss keeps the spelling; the boxes now mark each letter.
           draw();
@@ -2851,20 +3360,23 @@
         // "Slow" plays the same recording at half speed, as playSpellingWord(0.5) does.
         var playSlow = function () { ctx.play(item.wordAudio, 0.5); };
         var firstBtn = ctx.el('button', { type: 'button', on: { click: function () {
-          edit((word[0] || '') + value().slice(1), 'spelling_first_letter');
+          // The first LETTER, after any fixed slot in front of it.
+          var at = 0;
+          while (at < written.length - 1 && fixed(written[at])) at++;
+          edit(hasFixed ? align(written.slice(0, at + 1) + value().slice(at + 1)) : (written[0] || '') + value().slice(1), 'spelling_first_letter');
         } }, text: L.spelling_bee_first_letter });
         // "Show Vowels", then "Show More" one letter at a time (:19846-19863).
         var moreBtn = ctx.el('button', { type: 'button', on: { click: function () {
           var current = value().toLowerCase();
-          var letters = word.split('');
+          var letters = written.split('');
           var isVowel = function (ch) { return 'aeiou'.indexOf(ch.toLowerCase()) >= 0; };
           var vowelsShown = letters.every(function (ch, i) { return !isVowel(ch) || current[i] === ch.toLowerCase(); });
-          var filled = letters.map(function (ch, i) { return isVowel(ch) || current[i] === ch.toLowerCase() ? ch : '_'; });
+          var filled = letters.map(function (ch, i) { return fixed(ch) || isVowel(ch) || current[i] === ch.toLowerCase() ? ch : '_'; });
           if (vowelsShown) { var nextBlank = filled.indexOf('_'); if (nextBlank >= 0) filled[nextBlank] = letters[nextBlank]; }
           edit(filled.join(''), vowelsShown ? 'spelling_more_letters' : 'spelling_vowels');
         } }, text: L.spelling_bee_hint_vowels });
         var checkBtn = ctx.el('button', { type: 'button', class: 'primary', on: { click: submit }, text: L.spelling_bee_check });
-        var answerLine = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(L.spelling_bee_answer, { word: word }) });
+        var answerLine = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(L.spelling_bee_answer, { word: written }) });
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: L.spelling_bee_question }));
         ctx.root.appendChild(ctx.el('div', { class: 'row' }, [
           ctx.el('button', { type: 'button', on: { click: function () { ctx.support('questionReplays'); ctx.play(item.promptAudio); } }, text: L.hear_question }),
@@ -2878,13 +3390,13 @@
         // On-screen letters for students without a keyboard (2026-11-07 parity audit). Typing still works.
         var letterKeys = 'abcdefghijklmnopqrstuvwxyz'.split('').map(function (ch) {
           return ctx.el('button', { type: 'button', style: 'min-width:44px;min-height:44px;font-weight:700', on: { click: function () {
-            if (ctx.isDone() || value().length >= (word.length || 20)) return;
-            input.value = value() + ch; lastSubmitted = null; draw();
+            if (ctx.isDone() || own(value()).length >= total) return;
+            set(hasFixed ? align(value() + ch) : value() + ch);
           } } }, [ch]);
         });
         var deleteKey = ctx.el('button', { type: 'button', 'aria-label': L.spelling_bee_delete, style: 'min-width:44px;min-height:44px', on: { click: function () {
           if (ctx.isDone() || !value()) return;
-          input.value = value().slice(0, -1); lastSubmitted = null; draw();
+          set(hasFixed ? align(own(value()).slice(0, -1)) : value().slice(0, -1));
         } } }, ['⌫']);
         ctx.root.appendChild(ctx.el('div', { class: 'row', role: 'group', 'aria-label': L.spelling_bee_letter_keys, style: 'flex-wrap:wrap;gap:4px;margin-top:8px' }, letterKeys.concat([deleteKey])));
         ctx.root.appendChild(ctx.el('div', { class: 'row', style: 'margin-top:12px' }, [checkBtn, firstBtn, moreBtn]));
@@ -2921,12 +3433,16 @@
     // 20194-20195). Graded at 20197-20209: the chosen option equals the word
     // (trimmed, lower case) -> checkAnswer("correct"|"incorrect", "correct"),
     // default 2 attempts.
+    // 2026-11-13 parity: the app's sound-only choices are now cards (a tap plays and selects, a
+    // large Check submits, a missed card is crossed out: 94704af0e4). The file keeps two buttons
+    // per choice, Listen first, then Choose, in every activity, as Find Sounds always had them
+    // (hear, then choose).
 
     module.exports = {
       id: 'syllable_blending',
       title: 'Syllable Blending',
       labels: {
-        syllable_blending_prompt: 'Listen to the syllables and blend them together',
+        syllable_blending_prompt: 'Listen to the syllables and blend them together.',
         syllable_blending_play: 'Play the syllables',
         syllable_blending_listen_first: 'Listen to all the syllables first, then choose.',
         syllable_blending_option_n: 'Option {n}',
@@ -3028,7 +3544,7 @@
           step();
         };
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: ctx.L.syllable_blending_prompt }));
-        var row = ctx.el('div', { class: 'row', 'aria-hidden': 'true' });
+        var row = ctx.el('div', { class: 'row', 'aria-hidden': 'true', dir: 'ltr' });
         item.syllables.forEach(function (syllable) {
           var p = ctx.el('span', { class: 'slot', text: ctx.showLetters ? syllable : '●' });
           parts.push(p);
@@ -3059,7 +3575,7 @@
               });
               if (outcome !== 'correct') { card.tried = true; box.classList.add('tried'); setState(); }
             } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: choice.text }) : ctx.fmt(ctx.L.syllable_blending_option_n, { n: n })]);
-          var box = ctx.el('li', { class: 'choice' }, [choose, listen]);
+          var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
           card.box = box; card.choose = choose; card.listen = listen;
           cards.push(card);
           list.appendChild(box);
@@ -3072,6 +3588,8 @@
         setState();
         if (!ctx.isDone()) runSyllables(true);
         return {
+          // The R key: the question and the syllables again (the choices wait for them, as on the button).
+          replay: function () { if (!ctx.isDone()) runSyllables(true); },
           reveal: function () {
             halt();
             cards.forEach(function (c) {
@@ -3107,6 +3625,7 @@
     //               hearing (resetSyllableCountDelivery(false) ~17092). Budget: 2.
     //   audio       inst_syllable_counting bank clip, else the pack clip of
     //               "How many syllables do you hear? Clap for each one"; then the word.
+    // 2026-11-13: the button says Check, as in every other activity (the app says Submit).
     module.exports = {
       id: 'syllable_counting',
       title: 'Syllable Claps',
@@ -3115,12 +3634,12 @@
         syllable_counting_tap: 'Tap to count syllables',
         syllable_counting_undo: 'Undo last tap',
         syllable_counting_reset: 'Reset',
-        syllable_counting_submit: 'Submit',
+        syllable_counting_submit: 'Check',
         syllable_counting_taps_one: 'You tapped {count} time.',
         syllable_counting_taps_other: 'You tapped {count} times.',
-        syllable_counting_wait_word: 'Hear the whole word before submitting.',
-        syllable_counting_wait_audio: 'Wait for the word to finish before submitting.',
-        syllable_counting_ready: 'Ready to submit.',
+        syllable_counting_wait_word: 'Hear the whole word before checking.',
+        syllable_counting_wait_audio: 'Wait for the word to finish before checking.',
+        syllable_counting_ready: 'Ready to check.',
         syllable_counting_tap_each: 'Tap once for each syllable you hear.',
         syllable_counting_correct: 'Yes! {word} has {count}.',
         syllable_counting_missed: '{word} has {count}. Listen again.',
@@ -3277,6 +3796,11 @@
     // (WordFamiliesView.handleWordClick 10247-10277): all members found = correct
     // (checkAnswer(word, word)); a distractor tap is a wrong attempt; budget
     // maxAttempts = max(2, distractors + 1) (20740-20752, 17126-17134).
+    // 2026-11-13 parity: the app's sound-only choices are now cards (a tap plays and selects, a
+    // large Check submits, a missed card is crossed out: 94704af0e4). The file keeps two buttons
+    // per choice, Listen first, then Choose, in every activity, as Find Sounds always had them
+    // (hear, then choose).
+    // The app does not trim a find-all board; neither does a packet.
 
     module.exports = {
       id: 'word_families',
@@ -3285,6 +3809,8 @@
         word_families_heading_rime: '{rime} family',
         word_families_heading_rime_hidden: 'Sound Family',
         word_families_instruction: 'Tap each word to hear it. Find the ones that match!',
+        // 2026-11-13: without letters the choices say "Option 1": a tap on one chooses it, so "tap to hear" was wrong.
+        word_families_instruction_listen: 'Press Listen to hear each word. Then choose every one that is in the family.',
         word_families_instruction_letters: 'Find all words that match: {family}',
         word_families_found: '{found} of {total} found',
         word_families_listen: 'Listen',
@@ -3405,7 +3931,7 @@
         var halt = function () { token++; mark(-1); };
         var heading = item.mode === 'rime'
           ? (ctx.showLetters ? T('heading_rime', { rime: '-' + item.rime }) : T('heading_rime_hidden'))
-          : (ctx.showLetters ? T('heading_' + item.mode, { sound: '/' + item.sound + '/' }) : T('heading_' + item.mode + '_hidden'));
+          : (ctx.showLetters ? T('heading_' + item.mode, { sound: typeof ctx.sound === 'function' ? ctx.sound(item.sound) : '/' + item.sound + '/' }) : T('heading_' + item.mode + '_hidden'));
         var counter = ctx.el('p', { class: 'muted', text: T('found', { found: 0, total: total }) });
         var memberText = item.chips.filter(function (c) { return c.member; }).map(function (c) { return c.text; }).join(', ');
         var list = ctx.el('ul', { class: 'choices' });
@@ -3418,7 +3944,7 @@
           var choose = ctx.el('button', { type: 'button', class: 'primary',
             'aria-label': ctx.showLetters ? T('choose_word', { word: chip.text }) : T('choose_option', { n: n }),
             on: { click: function () {
-              if (ctx.isDone() || card.found) return;
+              if (ctx.isDone() || card.found || card.tried) return;
               halt();
               if (chip.member) {
                 card.found = true;
@@ -3435,15 +3961,17 @@
                 }
                 return;
               }
-              // A wrong tap costs one attempt; the chip stays on the board, as in
-              // the app (tapping it again costs another).
+              // A wrong tap costs one attempt. The chip stays on the board but cannot
+              // be chosen again (the app counts a second tap of it as another miss).
+              card.tried = true;
               box.classList.add('tried');
+              choose.setAttribute('aria-disabled', 'true');
               ctx.answer(chip.text, false, {
                 retryText: ctx.showLetters ? T('no_match_word', { word: chip.text }) : T('no_match'),
                 missedText: ctx.showLetters ? T('missed', { words: memberText }) : T('missed_no_letters'),
               });
             } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: chip.text }) : T('option_n', { n: n })]);
-          var box = ctx.el('li', { class: 'choice' }, [choose, listen]);
+          var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
           card.box = box; card.choose = choose;
           cards.push(card);
           list.appendChild(box);
@@ -3454,7 +3982,7 @@
         };
         var instructionSteps = function () { return item.instruction.map(function (id) { return { id: id, gap: 200 }; }); };
         ctx.root.appendChild(ctx.el('p', { class: 'letters', text: heading }));
-        ctx.root.appendChild(ctx.el('p', { text: ctx.showLetters ? T('instruction_letters', { family: heading }) : T('instruction') }));
+        ctx.root.appendChild(ctx.el('p', { text: ctx.showLetters ? T('instruction_letters', { family: heading }) : (T('instruction_listen') || T('instruction')) }));
         // Hear all words: the player's Hear all (ctx.hearAll), the words not found yet, each marked with its number.
         var hear = typeof ctx.hearAll === 'function' ? ctx.hearAll({ label: T('hear_all'), support: 'allWordListens', before: halt, auto: false,
           ready: function () { return !ctx.isDone(); },
@@ -3468,6 +3996,8 @@
         ctx.root.appendChild(list);
         if (!ctx.isDone()) run(instructionSteps().concat(chipSteps(false)));
         return {
+          // The R key: the instruction again.
+          replay: function () { run(instructionSteps()); },
           reveal: function () {
             halt();
             cards.forEach(function (c) {
@@ -3496,12 +4026,16 @@
     //           box per letter, Clear, Check (enabled once the answer is not empty),
     //           "Play word", and a "Show word" support (:18774-18789; the word is
     //           otherwise hidden until answered, SMART_TEXT_VISIBILITY :7568).
+    //           An apostrophe, hyphen or space is a fixed slot in the answer row, not a
+    //           tile (wsSpellFixedChar, b38ca18141).
     //   grading submitConstructionAnswer (:18887-18902): trimmed, lowercased answer
-    //           === trimmed, lowercased word; the same unchanged answer is not graded
-    //           twice; checkAnswer("correct"|"incorrect","correct"). Default budget 2
-    //           tries (:17130). A first miss clears the answer and frees every tile
-    //           (checkScramble :19875-19880).
+    //           === trimmed, lowercased word (on its letters: wsSpellSame); the same
+    //           unchanged answer is not graded twice; checkAnswer("correct"|"incorrect",
+    //           "correct"). Default budget 2 tries (:17130). A first miss clears the
+    //           answer and frees every tile (checkScramble :19875-19880).
     //   audio   inst_word_scramble (INST_KEY_MAP :16449); the word only on request.
+    // 2026-11-13 (owner): tiles and boxes show the letters in the case the word is written
+    // (lowercase for a normal word, a name's capital kept); the app shows capitals.
     module.exports = {
       id: 'word_scramble',
       title: 'Word Scramble',
@@ -3529,20 +4063,26 @@
         word_scramble_missed: 'The word is {word}. Listen.',
       },
       prepare: function (w, env) {
-        var word = String(env.word || '').trim().toLowerCase();
+        var written = String(env.word || '').trim();
+        var word = written.toLowerCase();
         if (!word) return { missing: ['word'] };
+        // wsSpellFixedChar: an apostrophe, hyphen or space is never a tile.
+        var letterRe = null;
+        try { letterRe = new RegExp('[\\p{L}\\p{M}\\p{N}_]', 'u'); } catch (_) {}
+        var isLetter = function (ch) { return letterRe ? letterRe.test(ch) : !/^['’\- .]$/.test(ch); };
         var board = w && w.activityItems && w.activityItems.word_scramble;
-        var letters = board && Array.isArray(board.letters) ? board.letters.map(function (l) { return String(l).toLowerCase(); }) : null;
+        var letters = board && Array.isArray(board.letters) ? board.letters.map(function (l) { return String(l).toLowerCase(); }).filter(isLetter) : null;
         // The board must be exactly this word's letters (one tile per letter).
-        if (letters && letters.slice().sort().join('\u0000') !== word.split('').sort().join('\u0000')) return { missing: ['board'] };
+        if (letters && letters.slice().sort().join('\u0000') !== word.split('').filter(isLetter).sort().join('\u0000')) return { missing: ['board'] };
         if (!letters) {
-          // scrambleWord (word_sounds_module.js:18916-18928), copied exactly.
+          // scrambleWord (word_sounds_module.js:18916-18928), copied exactly, then the tiles only.
           letters = word.split('');
           if (word.length > 2) {
             var seed = word.split('').reduce(function (a, c) { return a + c.charCodeAt(0); }, 0);
             for (var i = letters.length - 1; i > 0; i--) { var j = (seed + i) % (i + 1); var t = letters[i]; letters[i] = letters[j]; letters[j] = t; }
             if (letters.join('') === word) { var t2 = letters[0]; letters[0] = letters[1]; letters[1] = t2; }
           }
+          letters = letters.filter(isLetter);
         }
         var missing = [];
         var wordAudio = env.wordClip(env.word);
@@ -3550,19 +4090,46 @@
         var prompt = env.bankClip('instructions', 'inst_word_scramble');
         if (!prompt) missing.push('question');
         if (missing.length) return { missing: missing };
-        return { item: { target: word, letters: letters, wordAudio: wordAudio, promptAudio: prompt,
-          introAudio: [prompt], answerAudio: [wordAudio] } };
+        var item = { target: word, letters: letters, wordAudio: wordAudio, promptAudio: prompt,
+          introAudio: [prompt], answerAudio: [wordAudio] };
+        // A word written with a capital (a name): how it is written.
+        if (written !== word && written.length === word.length) item.shown = written;
+        return { item: item };
       },
       render: function (item, ctx) {
         var L = ctx.L;
-        var n = item.target.length;
+        var target = String(item.target);
+        var written = item.shown && String(item.shown).length === target.length ? String(item.shown) : target;
+        var letterRe = null;
+        try { letterRe = new RegExp('[\\p{L}\\p{M}\\p{N}_]', 'u'); } catch (_) {}
+        var fixed = function (ch) { ch = String(ch || ''); return letterRe ? !letterRe.test(ch) : /^['’\- .]$/.test(ch); };
+        // The places of the word's letters (a fixed slot has no box).
+        var places = [];
+        for (var p = 0; p < target.length; p++) if (!fixed(target[p])) places.push(p);
+        var n = places.length;
         var boxes = [];
         for (var s = 0; s < n; s++) boxes.push(null);
+        // Each tile as it is written in the word: the s of "Sam" shows S.
+        var takenAt = [];
+        var shownOf = item.letters.map(function (letter) {
+          for (var k = 0; k < places.length; k++) {
+            var at = places[k];
+            if (takenAt.indexOf(at) < 0 && target[at] === letter) { takenAt.push(at); return written[at]; }
+          }
+          return String(letter);
+        });
         var picked = null;
         var lastSubmitted = null;
         var locked = function () { return ctx.isDone(); };
-        var up = function (ti) { return String(item.letters[ti]).toUpperCase(); };
+        var up = function (ti) { return shownOf[ti]; };
         var answerText = function () { return boxes.filter(function (x) { return x != null; }).map(function (ti) { return item.letters[ti]; }).join(''); };
+        // The whole word as placed, fixed slots in, once every box is full (the response); else the letters placed.
+        var placedWord = function () {
+          if (boxes.some(function (x) { return x == null; })) return answerText();
+          var k = 0;
+          return target.split('').map(function (ch) { return fixed(ch) ? ch : item.letters[boxes[k++]]; }).join('');
+        };
+        var own = function (text) { return String(text || '').split('').filter(function (ch) { return !fixed(ch); }).join(''); };
 
         var tray = ctx.el('ul', { class: 'row', 'aria-label': L.word_scramble_tray, style: 'list-style:none;padding:0;margin:16px 0;gap:10px' });
         var tiles = item.letters.map(function (letter, ti) {
@@ -3573,14 +4140,17 @@
           tray.appendChild(li);
           return { li: li, btn: btn };
         });
-        var boxList = ctx.el('ol', { class: 'slots', 'aria-label': L.word_scramble_boxes });
-        var boxEls = boxes.map(function (_, bi) {
+        var boxList = ctx.el('ol', { class: 'slots', dir: 'ltr', 'aria-label': L.word_scramble_boxes });
+        var boxEls = [];
+        target.split('').forEach(function (ch, i) {
+          if (fixed(ch)) { boxList.appendChild(ctx.el('li', { 'aria-hidden': 'true', 'data-fixed': '', style: 'display:flex;align-items:center;font-size:1.5rem;font-weight:700' }, [written[i] === ' ' ? ' ' : written[i]])); return; }
+          var bi = boxEls.length;
           var btn = ctx.el('button', { type: 'button', class: 'slot', style: 'min-width:60px;min-height:64px;font-size:1.5rem;font-weight:700',
             on: { click: function () { onBox(bi); } } });
           boxList.appendChild(ctx.el('li', {}, [btn]));
-          return btn;
+          boxEls.push(btn);
         });
-        var wordLine = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(L.word_scramble_word, { word: item.target }) });
+        var wordLine = ctx.el('p', { class: 'letters', hidden: true, text: ctx.fmt(L.word_scramble_word, { word: written }) });
         var showWord = ctx.el('button', { type: 'button', 'aria-pressed': 'false', on: { click: function () {
           if (locked()) return;
           var on = wordLine.hidden;
@@ -3645,10 +4215,11 @@
           if (!answer) { ctx.announce(L.word_scramble_empty); return; }
           if (answer === lastSubmitted) { ctx.announce(L.word_scramble_same); return; }
           lastSubmitted = answer;
-          var outcome = ctx.answer(answer, answer === String(item.target).trim().toLowerCase(), {
-            correctText: ctx.fmt(L.word_scramble_correct, { word: item.target }),
+          // wsSpellSame: judged on the letters; "don't" is right with its apostrophe given.
+          var outcome = ctx.answer(placedWord(), answer === own(target).trim().toLowerCase(), {
+            correctText: ctx.fmt(L.word_scramble_correct, { word: written }),
             retryText: L.word_scramble_retry,
-            missedText: ctx.fmt(L.word_scramble_missed, { word: item.target }),
+            missedText: ctx.fmt(L.word_scramble_missed, { word: written }),
           });
           // A first miss clears the answer and frees every tile (checkScramble).
           if (outcome === 'retry') { clearAll(); draw(); if (tiles[0]) tiles[0].btn.focus(); }
@@ -3673,7 +4244,7 @@
               var used = [];
               for (var i = 0; i < n; i++) {
                 var hit = -1;
-                for (var ti = 0; ti < item.letters.length && hit < 0; ti++) if (used.indexOf(ti) < 0 && item.letters[ti] === item.target[i]) hit = ti;
+                for (var ti = 0; ti < item.letters.length && hit < 0; ti++) if (used.indexOf(ti) < 0 && item.letters[ti] === target[places[i]]) hit = ti;
                 used.push(hit);
                 boxes[i] = hit < 0 ? null : hit;
               }
@@ -3785,9 +4356,11 @@
           else if (key === 'next') submit();
           else if (/^[0-9]$/.test(key)) set(v + key);
         };
+        // A key pressed with a mouse or a finger leaves the focus in the answer box, so Enter then sends the answer
+        // instead of pressing that key again. A key reached with Tab is still pressed with Enter.
         var keyButton = function (label, key, name) {
           return ctx.el('button', { type: 'button', 'data-key': key, 'aria-label': name || false, style: 'min-height:56px;font-size:1.5rem;font-weight:700;padding:6px',
-            on: { click: function () { press(key); } } }, [label]);
+            on: { mousedown: function (e) { e.preventDefault(); focusPad(); }, click: function () { press(key); } } }, [label]);
         };
         var keys = ctx.el('div', { role: 'group', 'aria-label': L.math_ccc_keys, style: 'display:grid;grid-template-columns:repeat(3,minmax(64px,96px));gap:10px;justify-content:center;margin:16px auto 0' },
           ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(function (d) { return keyButton(d, d); })
@@ -3896,19 +4469,35 @@
       labels: {
         math_computation_directions: 'Type the answer to each one.',
         math_computation_label: '{problem}. Type the answer.',
+        math_computation_remainder: 'Leave out the remainder.',
       },
       // p: { a, b, op } with op add, sub, mul or div (the answer is worked out
       // here; a given answer that disagrees is refused), or { display, answer }.
       // A division must be exact unless p.allowRemainder is true; then the answer
-      // is the whole-number part.
+      // is the whole-number part, and the student is told to leave out the
+      // remainder (item.remainder, on every division of such a check).
+      // 2026-11-13: item.shown, when it differs from the plain text, is what the
+      // screen shows: a teacher's own problem with the signs of the others (the
+      // minus sign, times, divide), and a number of 10000 or more grouped in
+      // threes with a narrow no-break space, the same in every language and on the
+      // paper copy (packets-check.js). Worked out here, so the file carries no code
+      // for it; the screen reader label has the number without the spaces. The
+      // problem stays on one line (a long one gets a smaller size).
       prepare: function (p) {
         p = p || {};
         var whole = function (v) { return v != null && v !== '' && Number.isSafeInteger(Number(v)) && Math.abs(Number(v)) <= 99999999; };
+        var grouped = function (t) { return t.replace(/\d{5,}/g, function (n) { return n.replace(/\B(?=(\d{3})+(?!\d))/g, String.fromCharCode(0x202F)); }); };
         if (p.a == null && p.b == null && p.display != null) {
           var display = String(p.display).replace(/\s+/g, ' ').trim();
           if (!display || display.length > 40) return { missing: ['a problem of 1 to 40 characters'] };
           if (!whole(p.answer)) return { missing: ['a whole-number answer'] };
-          return { item: { word: display, display: display, answer: String(Number(p.answer)) } };
+          var own = { word: display, display: display, answer: String(Number(p.answer)) };
+          var signs = display.replace(/(^|\s)-(?=\s|\d)/g, function (all, lead) { return lead + String.fromCharCode(0x2212); })
+            .replace(/(\d) [xX*] (?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xD7) + ' '; }).replace(/(\d) \/ (?=\d)/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xF7) + ' '; });
+          // said: the label's text (the signs, the plain numbers).
+          if (signs !== display) own.said = signs;
+          if (grouped(signs) !== display) own.shown = grouped(signs);
+          return { item: own };
         }
         if (!whole(p.a) || !whole(p.b)) return { missing: ['two whole numbers'] };
         var a = Number(p.a), b = Number(p.b);
@@ -3919,12 +4508,17 @@
         var answer = p.op === 'add' ? a + b : p.op === 'sub' ? a - b : p.op === 'mul' ? a * b : Math.trunc(a / b);
         if (!whole(answer)) return { missing: ['an answer of 8 digits or fewer'] };
         if (p.answer != null && Number(p.answer) !== answer) return { missing: ['an answer that matches the problem'] };
-        return { item: { word: a + ' ' + symbol + ' ' + b, a: a, b: b, symbol: symbol, answer: String(answer) } };
+        var item = { word: a + ' ' + symbol + ' ' + b, a: a, b: b, symbol: symbol, answer: String(answer) };
+        if (grouped(item.word) !== item.word) item.shown = grouped(item.word) + ' =';
+        if (p.op === 'div' && p.allowRemainder === true) item.remainder = true;
+        return { item: item };
       },
       render: function (item, ctx) {
-        var problem = item.display || (item.a + ' ' + item.symbol + ' ' + item.b);
-        var pad = ctx.keypad({ label: ctx.fmt(ctx.L.math_computation_label, { problem: problem }), onNext: function (value) { ctx.answer(value); } });
-        ctx.root.appendChild(ctx.el('p', { class: 'prompt', 'aria-hidden': 'true', text: item.display ? problem : problem + ' =' }));
+        var problem = item.display || item.a + ' ' + item.symbol + ' ' + item.b, shown = item.shown || (item.display ? problem : problem + ' ='), n = shown.length;
+        var note = item.remainder ? ' ' + ctx.L.math_computation_remainder : '';
+        var pad = ctx.keypad({ label: ctx.fmt(ctx.L.math_computation_label, { problem: item.said || problem }) + note, onNext: function (value) { ctx.answer(value); } });
+        ctx.root.appendChild(ctx.el('p', { class: 'prompt', 'aria-hidden': 'true', style: 'white-space:nowrap;font-size:min(2.6rem,' + (137 / n | 0) + 'vw,' + (1130 / n | 0) + 'px)', text: shown }));
+        if (note) ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'text-align:center', text: note }));
         ctx.root.appendChild(pad.node);
         pad.focus();
         return {
@@ -4050,9 +4644,11 @@
           else if (key === 'next') submit();
           else if (/^[0-9]$/.test(key)) set(v + key);
         };
+        // A key pressed with a mouse or a finger leaves the focus in the answer box, so Enter then sends the answer
+        // instead of pressing that key again. A key reached with Tab is still pressed with Enter.
         var keyButton = function (label, key, name) {
           return ctx.el('button', { type: 'button', 'data-key': key, 'aria-label': name || false, style: 'min-height:56px;font-size:1.5rem;font-weight:700;padding:6px',
-            on: { click: function () { press(key); } } }, [label]);
+            on: { mousedown: function (e) { e.preventDefault(); focusPad(); }, click: function () { press(key); } } }, [label]);
         };
         var keys = ctx.el('div', { role: 'group', 'aria-label': L.math_rehearsal_keys, style: 'display:grid;grid-template-columns:repeat(3,minmax(64px,96px));gap:10px;justify-content:center;margin:16px auto 0' },
           ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(function (d) { return keyButton(d, d); })
@@ -4161,26 +4757,43 @@
         missing_number_question: 'What number is missing?',
         missing_number_blank: 'blank',
         missing_number_label: '{problem}. Type the missing number.',
+        missing_number_minus: 'minus',
+        missing_number_times: 'times',
+        missing_number_divided: 'divided by',
       },
       // p: { display: "__ + 8 = 14", answer: 6 } as in the form bank.
+      // 2026-11-13: item.shown, when it differs from the form's text, is what the
+      // screen shows: the signs as Math Fluency shows them (the minus sign, times,
+      // divide, never a hyphen or an x), and a number of 10000 or more grouped in
+      // threes with a narrow no-break space (as math_computation.js and the paper
+      // copy). A screen reader hears the signs as words (the labels minus, times,
+      // divided). The problem stays on one line (a long one gets a smaller size).
       prepare: function (p) {
         p = p || {};
         var display = String(p.display == null ? '' : p.display).replace(/\s+/g, ' ').trim();
         if (!display || display.length > 40 || (display.match(/_{2,}/g) || []).length !== 1) return { missing: ['a problem with one blank written as __'] };
         if (p.answer == null || p.answer === '' || !Number.isSafeInteger(Number(p.answer)) || Math.abs(Number(p.answer)) > 99999999) return { missing: ['a whole-number answer'] };
-        return { item: { word: display, display: display, answer: String(Number(p.answer)) } };
+        var item = { word: display, display: display, answer: String(Number(p.answer)) };
+        var shown = display.replace(/(^|\s)-(?=\s|\d)/g, function (all, lead) { return lead + String.fromCharCode(0x2212); })
+          .replace(/([\d_]) [xX*] (?=[\d_])/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xD7) + ' '; }).replace(/([\d_]) \/ (?=[\d_])/g, function (all, lead) { return lead + ' ' + String.fromCharCode(0xF7) + ' '; })
+          .replace(/\d{5,}/g, function (n) { return n.replace(/\B(?=(\d{3})+(?!\d))/g, String.fromCharCode(0x202F)); });
+        if (shown !== display) item.shown = shown;
+        return { item: item };
       },
       render: function (item, ctx) {
+        var L = ctx.L, shown = item.shown || item.display, n = shown.length + 2;
+        var said = shown.split(String.fromCharCode(0x202F)).join('').replace(/_{2,}/, L.missing_number_blank).split(String.fromCharCode(0x2212)).join(L.missing_number_minus + ' ')
+          .split(String.fromCharCode(0xD7)).join(L.missing_number_times).split(String.fromCharCode(0xF7)).join(L.missing_number_divided).replace(/\s+/g, ' ');
         // The blank shows what is being typed.
         var blank = ctx.el('span', { class: 'blank', text: '?' });
-        var pieces = String(item.display).split(/(_{2,})/).filter(function (part) { return part !== ''; }).map(function (part) { return /^_{2,}$/.test(part) ? blank : part; });
+        var pieces = shown.split(/(_{2,})/).filter(function (part) { return part !== ''; }).map(function (part) { return /^_{2,}$/.test(part) ? blank : part; });
         var pad = ctx.keypad({
-          label: ctx.fmt(ctx.L.missing_number_label, { problem: String(item.display).replace(/_{2,}/, ctx.L.missing_number_blank) }),
+          label: ctx.fmt(L.missing_number_label, { problem: said }),
           onChange: function (value) { blank.textContent = value || '?'; },
           onNext: function (value) { ctx.answer(value); },
         });
-        ctx.root.appendChild(ctx.el('p', { class: 'letters', style: 'text-align:center', text: ctx.L.missing_number_question }));
-        ctx.root.appendChild(ctx.el('p', { class: 'prompt', 'aria-hidden': 'true' }, pieces));
+        ctx.root.appendChild(ctx.el('p', { class: 'letters', style: 'text-align:center', text: L.missing_number_question }));
+        ctx.root.appendChild(ctx.el('p', { class: 'prompt', 'aria-hidden': 'true', style: 'white-space:nowrap;font-size:min(2.6rem,' + (137 / n | 0) + 'vw,' + (1130 / n | 0) + 'px)' }, pieces));
         ctx.root.appendChild(pad.node);
         pad.focus();
         return {
@@ -4271,12 +4884,14 @@
         vocab_blank_directions: 'Read the sentence. Choose the word that fits in the blank.',
         vocab_blank_question: 'Which word fits in the blank?',
         vocab_blank_read: 'Read aloud',
-        vocab_blank_read_choice: 'Read choice {n} aloud',
+        // 2026-11-13: the name begins with the button's visible words, Hear it (WCAG 2.5.3 Label in Name).
+        vocab_blank_read_choice: 'Hear it: choice {n}',
         vocab_blank_hear: 'Hear it',
         vocab_blank_correct: 'Yes. That word fits.',
         vocab_blank_retry: 'Not quite. Try once more.',
         vocab_blank_missed: 'Here is the right answer.',
         vocab_blank_practice_wrong: 'Not quite. Here is the right answer.',
+        vocab_blank_blank: 'blank',
       },
       // p: { word, ask, choices: [text, ...], answer: the right text, read: true | false, lang,
       //   askAudio: the clip id of the word asked (optional), choiceAudio: [clip id or null, ...] (optional) }
@@ -4335,7 +4950,8 @@
         var wake = function () { if (!synth || !voice()) return; try { var u = new view.SpeechSynthesisUtterance(''); u.volume = 0; synth.speak(u); } catch (_) {} };
         var hush = function () { if (synth) { try { synth.cancel(); } catch (_) {} } };
         // A word with its own recorded voice plays that clip; any other text is read by the device voice.
-        var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(c.text); };
+        // A meaning written with a blank ("If something ___ it rots") is read with the word "blank", as the question is.
+        var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(c.text.replace(/_{2,}/g, ', blank, ')); };
         var sayAsk = function () {
           var question = L[P + 'question'];
           if (item.askAudio) { wake(); return ctx.play(item.askAudio).then(function () { return say(question); }); }
@@ -4353,7 +4969,10 @@
           readers.forEach(function (r) { r.b.hidden = !item.read || !(on || r.clipped); });
           if (hear) hear.button.hidden = hear.note.hidden = !item.read || !(on || item.choices.every(function (c) { return !!c.audio; }));
         };
-        var ask = ctx.el('p', { class: 'letters', lang: item.lang || 'en', 'data-read': '', style: item.ask.length <= 30 ? 'font-size:2rem;margin:8px 0' : 'font-size:1.35rem;line-height:1.5;margin:8px 0', text: item.ask });
+        var marked = function (text) {
+          return String(text).split(/(_{2,})/).filter(Boolean).map(function (part) { return /^_{2,}$/.test(part) ? ctx.el('span', {}, [ctx.el('span', { 'aria-hidden': 'true', text: part }), ctx.el('span', { class: 'sr', text: L[P + 'blank'] })]) : part; });
+        };
+        var ask = ctx.el('p', { class: 'letters', lang: item.lang || 'en', 'data-read': '', style: item.ask.length <= 30 ? 'font-size:2rem;margin:8px 0' : 'font-size:1.35rem;line-height:1.5;margin:8px 0' }, marked(item.ask));
         ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'margin:0', text: L[P + 'question'] }));
         ctx.root.appendChild(ask);
         var readRow = ctx.el('div', { class: 'row' }, [reader(sayAsk, { 'data-read-aloud': 'question' }, L[P + 'read'], !!item.askAudio)]);
@@ -4375,7 +4994,7 @@
         };
         item.choices.forEach(function (c, i) {
           var b = ctx.el('button', { type: 'button', lang: item.lang || 'en', 'data-choice': String(i + 1), style: 'flex:1 1 auto;text-align:start;font-size:1.2rem;line-height:1.4;min-height:56px',
-            on: { click: function () { pick(i); } } }, [ctx.el('span', { 'aria-hidden': 'true', style: 'font-weight:700;margin-inline-end:10px', text: String(i + 1) }), c.text]);
+            on: { click: function () { pick(i); } } }, [ctx.el('span', { 'aria-hidden': 'true', style: 'font-weight:700;margin-inline-end:10px', text: String(i + 1) })].concat(marked(c.text)));
           var box = ctx.el('li', { class: 'choice', style: 'flex-direction:row;align-items:center;flex-wrap:wrap' }, [b,
             reader(function () { sayChoice(c); }, { 'data-read-aloud': 'choice-' + (i + 1), 'aria-label': ctx.fmt(L[P + 'read_choice'], { n: i + 1 }), style: 'min-height:48px;padding:6px 12px' }, L[P + 'hear'], !!c.audio)]);
           boxes.push(box); picks.push(b); tried.push(false);
@@ -4389,7 +5008,8 @@
         if (hear) { readRow.appendChild(hear.button); readRow.appendChild(hear.note); }
         ctx.root.appendChild(list);
         showReaders();
-        if (synth) { try { if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', showReaders); } catch (_) {} }
+        // Voices that arrive later: one handler, the item on view's (a listener for each item kept every item alive).
+        if (synth) { try { synth.onvoiceschanged = showReaders; } catch (_) {} }
         // In a check the keys 1 to 9 pick a choice (in practice the player does this itself).
         if (typeof ctx.keys === 'function') ctx.keys(function (key) {
           var n = Number(key);
@@ -4427,6 +5047,8 @@
     // (localService), so nothing is sent; with no such voice, or no speech engine, the buttons are not shown.
     // prepare runs when the file is built; render and score are copied into the file with toString and use
     // only their arguments (the speech engine is reached through ctx.root).
+    // 2026-11-13: a blank (___) in the question or a choice is shown as a line, and a screen reader hears the
+    // word "blank" instead (marked in render; as Word Sounds does, a visually hidden .sr span).
     module.exports = {
       id: 'vocab_meaning',
       title: 'Word to meaning',
@@ -4435,12 +5057,14 @@
         vocab_meaning_directions: 'Read the word. Choose what it means.',
         vocab_meaning_question: 'What does this word mean?',
         vocab_meaning_read: 'Read aloud',
-        vocab_meaning_read_choice: 'Read choice {n} aloud',
+        // 2026-11-13: the name begins with the button's visible words, Hear it (WCAG 2.5.3 Label in Name).
+        vocab_meaning_read_choice: 'Hear it: choice {n}',
         vocab_meaning_hear: 'Hear it',
         vocab_meaning_correct: 'Yes. That is what it means.',
         vocab_meaning_retry: 'Not quite. Try once more.',
         vocab_meaning_missed: 'Here is the right answer.',
         vocab_meaning_practice_wrong: 'Not quite. Here is the right answer.',
+        vocab_meaning_blank: 'blank',
       },
       // p: { word, ask, choices: [text, ...], answer: the right text, read: true | false, lang,
       //   askAudio: the clip id of the word asked (optional), choiceAudio: [clip id or null, ...] (optional) }
@@ -4499,7 +5123,8 @@
         var wake = function () { if (!synth || !voice()) return; try { var u = new view.SpeechSynthesisUtterance(''); u.volume = 0; synth.speak(u); } catch (_) {} };
         var hush = function () { if (synth) { try { synth.cancel(); } catch (_) {} } };
         // A word with its own recorded voice plays that clip; any other text is read by the device voice.
-        var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(c.text); };
+        // A meaning written with a blank ("If something ___ it rots") is read with the word "blank", as the question is.
+        var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(c.text.replace(/_{2,}/g, ', blank, ')); };
         var sayAsk = function () {
           var question = L[P + 'question'];
           if (item.askAudio) { wake(); return ctx.play(item.askAudio).then(function () { return say(question); }); }
@@ -4517,7 +5142,10 @@
           readers.forEach(function (r) { r.b.hidden = !item.read || !(on || r.clipped); });
           if (hear) hear.button.hidden = hear.note.hidden = !item.read || !(on || item.choices.every(function (c) { return !!c.audio; }));
         };
-        var ask = ctx.el('p', { class: 'letters', lang: item.lang || 'en', 'data-read': '', style: item.ask.length <= 30 ? 'font-size:2rem;margin:8px 0' : 'font-size:1.35rem;line-height:1.5;margin:8px 0', text: item.ask });
+        var marked = function (text) {
+          return String(text).split(/(_{2,})/).filter(Boolean).map(function (part) { return /^_{2,}$/.test(part) ? ctx.el('span', {}, [ctx.el('span', { 'aria-hidden': 'true', text: part }), ctx.el('span', { class: 'sr', text: L[P + 'blank'] })]) : part; });
+        };
+        var ask = ctx.el('p', { class: 'letters', lang: item.lang || 'en', 'data-read': '', style: item.ask.length <= 30 ? 'font-size:2rem;margin:8px 0' : 'font-size:1.35rem;line-height:1.5;margin:8px 0' }, marked(item.ask));
         ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'margin:0', text: L[P + 'question'] }));
         ctx.root.appendChild(ask);
         var readRow = ctx.el('div', { class: 'row' }, [reader(sayAsk, { 'data-read-aloud': 'question' }, L[P + 'read'], !!item.askAudio)]);
@@ -4539,7 +5167,7 @@
         };
         item.choices.forEach(function (c, i) {
           var b = ctx.el('button', { type: 'button', lang: item.lang || 'en', 'data-choice': String(i + 1), style: 'flex:1 1 auto;text-align:start;font-size:1.2rem;line-height:1.4;min-height:56px',
-            on: { click: function () { pick(i); } } }, [ctx.el('span', { 'aria-hidden': 'true', style: 'font-weight:700;margin-inline-end:10px', text: String(i + 1) }), c.text]);
+            on: { click: function () { pick(i); } } }, [ctx.el('span', { 'aria-hidden': 'true', style: 'font-weight:700;margin-inline-end:10px', text: String(i + 1) })].concat(marked(c.text)));
           var box = ctx.el('li', { class: 'choice', style: 'flex-direction:row;align-items:center;flex-wrap:wrap' }, [b,
             reader(function () { sayChoice(c); }, { 'data-read-aloud': 'choice-' + (i + 1), 'aria-label': ctx.fmt(L[P + 'read_choice'], { n: i + 1 }), style: 'min-height:48px;padding:6px 12px' }, L[P + 'hear'], !!c.audio)]);
           boxes.push(box); picks.push(b); tried.push(false);
@@ -4553,7 +5181,8 @@
         if (hear) { readRow.appendChild(hear.button); readRow.appendChild(hear.note); }
         ctx.root.appendChild(list);
         showReaders();
-        if (synth) { try { if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', showReaders); } catch (_) {} }
+        // Voices that arrive later: one handler, the item on view's (a listener for each item kept every item alive).
+        if (synth) { try { synth.onvoiceschanged = showReaders; } catch (_) {} }
         // In a check the keys 1 to 9 pick a choice (in practice the player does this itself).
         if (typeof ctx.keys === 'function') ctx.keys(function (key) {
           var n = Number(key);
@@ -4598,7 +5227,8 @@
         vocab_picture_directions: 'Read the word. Choose the picture that shows it.',
         vocab_picture_question: 'Which picture shows this word?',
         vocab_picture_read: 'Read aloud',
-        vocab_picture_read_choice: 'Read choice {n} aloud',
+        // 2026-11-13: the name begins with the button's visible words, Hear it (WCAG 2.5.3 Label in Name).
+        vocab_picture_read_choice: 'Hear it: choice {n}',
         vocab_picture_hear: 'Hear it',
         vocab_picture_picture: 'Picture {n}',
         vocab_picture_picture_of: 'Picture {n}: {word}',
@@ -4735,7 +5365,8 @@
         if (hear) { readRow.appendChild(hear.button); readRow.appendChild(hear.note); }
         ctx.root.appendChild(list);
         showReaders();
-        if (synth) { try { if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', showReaders); } catch (_) {} }
+        // Voices that arrive later: one handler, the item on view's (a listener for each item kept every item alive).
+        if (synth) { try { synth.onvoiceschanged = showReaders; } catch (_) {} }
         if (typeof ctx.keys === 'function') ctx.keys(function (key) {
           var n = Number(key);
           if (!(n >= 1 && n <= item.choices.length)) return false;
@@ -4775,7 +5406,8 @@
         vocab_picture_word_directions: 'Look at the picture. Choose the word that goes with it.',
         vocab_picture_word_question: 'Which word goes with this picture?',
         vocab_picture_word_read: 'Read aloud',
-        vocab_picture_word_read_choice: 'Read choice {n} aloud',
+        // 2026-11-13: the name begins with the button's visible words, Hear it (WCAG 2.5.3 Label in Name).
+        vocab_picture_word_read_choice: 'Hear it: choice {n}',
         vocab_picture_word_hear: 'Hear it',
         vocab_picture_word_picture: 'Picture {n}',
         vocab_picture_word_picture_of: 'Picture {n}: {word}',
@@ -4912,7 +5544,8 @@
         if (hear) { readRow.appendChild(hear.button); readRow.appendChild(hear.note); }
         ctx.root.appendChild(list);
         showReaders();
-        if (synth) { try { if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', showReaders); } catch (_) {} }
+        // Voices that arrive later: one handler, the item on view's (a listener for each item kept every item alive).
+        if (synth) { try { synth.onvoiceschanged = showReaders; } catch (_) {} }
         if (typeof ctx.keys === 'function') ctx.keys(function (key) {
           var n = Number(key);
           if (!(n >= 1 && n <= item.choices.length)) return false;
@@ -4951,12 +5584,14 @@
         vocab_word_directions: 'Read the meaning. Choose the word.',
         vocab_word_question: 'Which word has this meaning?',
         vocab_word_read: 'Read aloud',
-        vocab_word_read_choice: 'Read choice {n} aloud',
+        // 2026-11-13: the name begins with the button's visible words, Hear it (WCAG 2.5.3 Label in Name).
+        vocab_word_read_choice: 'Hear it: choice {n}',
         vocab_word_hear: 'Hear it',
         vocab_word_correct: 'Yes. That is the word.',
         vocab_word_retry: 'Not quite. Try once more.',
         vocab_word_missed: 'Here is the right answer.',
         vocab_word_practice_wrong: 'Not quite. Here is the right answer.',
+        vocab_word_blank: 'blank',
       },
       // p: { word, ask, choices: [text, ...], answer: the right text, read: true | false, lang,
       //   askAudio: the clip id of the word asked (optional), choiceAudio: [clip id or null, ...] (optional) }
@@ -5015,7 +5650,8 @@
         var wake = function () { if (!synth || !voice()) return; try { var u = new view.SpeechSynthesisUtterance(''); u.volume = 0; synth.speak(u); } catch (_) {} };
         var hush = function () { if (synth) { try { synth.cancel(); } catch (_) {} } };
         // A word with its own recorded voice plays that clip; any other text is read by the device voice.
-        var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(c.text); };
+        // A meaning written with a blank ("If something ___ it rots") is read with the word "blank", as the question is.
+        var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(c.text.replace(/_{2,}/g, ', blank, ')); };
         var sayAsk = function () {
           var question = L[P + 'question'];
           if (item.askAudio) { wake(); return ctx.play(item.askAudio).then(function () { return say(question); }); }
@@ -5033,7 +5669,10 @@
           readers.forEach(function (r) { r.b.hidden = !item.read || !(on || r.clipped); });
           if (hear) hear.button.hidden = hear.note.hidden = !item.read || !(on || item.choices.every(function (c) { return !!c.audio; }));
         };
-        var ask = ctx.el('p', { class: 'letters', lang: item.lang || 'en', 'data-read': '', style: item.ask.length <= 30 ? 'font-size:2rem;margin:8px 0' : 'font-size:1.35rem;line-height:1.5;margin:8px 0', text: item.ask });
+        var marked = function (text) {
+          return String(text).split(/(_{2,})/).filter(Boolean).map(function (part) { return /^_{2,}$/.test(part) ? ctx.el('span', {}, [ctx.el('span', { 'aria-hidden': 'true', text: part }), ctx.el('span', { class: 'sr', text: L[P + 'blank'] })]) : part; });
+        };
+        var ask = ctx.el('p', { class: 'letters', lang: item.lang || 'en', 'data-read': '', style: item.ask.length <= 30 ? 'font-size:2rem;margin:8px 0' : 'font-size:1.35rem;line-height:1.5;margin:8px 0' }, marked(item.ask));
         ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'margin:0', text: L[P + 'question'] }));
         ctx.root.appendChild(ask);
         var readRow = ctx.el('div', { class: 'row' }, [reader(sayAsk, { 'data-read-aloud': 'question' }, L[P + 'read'], !!item.askAudio)]);
@@ -5055,7 +5694,7 @@
         };
         item.choices.forEach(function (c, i) {
           var b = ctx.el('button', { type: 'button', lang: item.lang || 'en', 'data-choice': String(i + 1), style: 'flex:1 1 auto;text-align:start;font-size:1.2rem;line-height:1.4;min-height:56px',
-            on: { click: function () { pick(i); } } }, [ctx.el('span', { 'aria-hidden': 'true', style: 'font-weight:700;margin-inline-end:10px', text: String(i + 1) }), c.text]);
+            on: { click: function () { pick(i); } } }, [ctx.el('span', { 'aria-hidden': 'true', style: 'font-weight:700;margin-inline-end:10px', text: String(i + 1) })].concat(marked(c.text)));
           var box = ctx.el('li', { class: 'choice', style: 'flex-direction:row;align-items:center;flex-wrap:wrap' }, [b,
             reader(function () { sayChoice(c); }, { 'data-read-aloud': 'choice-' + (i + 1), 'aria-label': ctx.fmt(L[P + 'read_choice'], { n: i + 1 }), style: 'min-height:48px;padding:6px 12px' }, L[P + 'hear'], !!c.audio)]);
           boxes.push(box); picks.push(b); tried.push(false);
@@ -5069,7 +5708,8 @@
         if (hear) { readRow.appendChild(hear.button); readRow.appendChild(hear.note); }
         ctx.root.appendChild(list);
         showReaders();
-        if (synth) { try { if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', showReaders); } catch (_) {} }
+        // Voices that arrive later: one handler, the item on view's (a listener for each item kept every item alive).
+        if (synth) { try { synth.onvoiceschanged = showReaders; } catch (_) {} }
         // In a check the keys 1 to 9 pick a choice (in practice the player does this itself).
         if (typeof ctx.keys === 'function') ctx.keys(function (key) {
           var n = Number(key);
@@ -5358,6 +5998,8 @@
     '.lt-lens{position:fixed;z-index:1;width:180px;height:180px;border:3px solid;border-radius:50%;overflow:hidden;pointer-events:none;background:var(--bg);box-shadow:0 4px 16px #0006}.lt-lens>main{position:absolute;left:0;top:0;margin:0;max-width:none;transform-origin:0 0}',
     '.lt-grip{position:fixed;z-index:2;padding:0;border-radius:50%;background:var(--accent);color:var(--accent-ink);pointer-events:none}.lt-grip[data-touch]{pointer-events:auto;touch-action:none}',
     '@media (forced-colors:active){[data-tool-group=colors]{display:none!important}.lt-line,.lt-panel [aria-pressed=true]{outline:3px solid Highlight}.choice.right::after,.progress span{forced-color-adjust:none;background:Highlight;color:HighlightText}}@media print{.lt-bar,.lt-panel,.lt-lens{display:none!important}}',
+    // 2026-11-13: printed with backgrounds off, a primary button's white words were all but invisible.
+    '@media print{button.primary{color:inherit;box-shadow:none}}',
   ].join('\n');
 
   // ---------------------------------------------------------------------------
@@ -5562,6 +6204,31 @@
   // `renders` maps activity id -> adapter.render, all embedded verbatim.
   // ---------------------------------------------------------------------------
   // `kit` = { csv: packetCsv, hash: hashText, mailbox: takeHomeMailbox | null }.
+  // 2026-11-13 (kept out of the function, so out of every file): ctx.sound(label) is a sound as shown with letters on
+  // (L.sound_name_<label>, else /label/); choices with data-key (Sound Counting with fewer numbers) answer to the key
+  // of their number; a render's payoff() runs after a right answer once the praise clip has ended, only after a press
+  // and on the same screen (the read-back of read_sentence, read_passage, sentence_match); clockHold(on) holds the
+  // item's time for a check's "Stop?".
+  // 2026-11-13 (robustness pass): one document key listener stops Hear all (hearStops, emptied by screen()); one for
+  // each Hear all button kept every past screen in memory (Chromium, a 481-item file: 28,271 DOM nodes at the end,
+  // pictures included, against about 250). A screen while the storage refuses says so (data-store-off). Results carry
+  // activeMs (the items' ms added up) and the CSV "#summary" an active_s= cell after title= (its last cell before).
+  // The bridge (linked) posts to win.parent with targetOrigin '*', on purpose: it reaches only the one page that frames
+  // the file (a nested frame cannot be the target), and that page chose the frame's sandbox and holds the file's bytes,
+  // so it could read the answers anyway (frame it with allow-same-origin, or change the file). A fixed list of origins
+  // would protect nothing and would stop the bridge on a school's own copy of packets-open.html and on test servers.
+  // 2026-11-13 (engine fixes, C:/tmp/packets_build_1111/engine2/): TWO TABS of one file (the same storage key, code name
+  // included). Only that one storage item and its 'storage' events: no BroadcastChannel, no second key and no second
+  // postMessage, so "Check a file" (packets_verify_core.js) still finds one name in storage and one message, the bridge's.
+  // Each copy has an id and a claim number (tab.n, one more than the stored one) and stamps the place it writes (state.tab).
+  // A copy that opens on a kept place asks (state.ping = its id) and holds its own writes for 400 ms or until the first
+  // press; an open copy answers by writing the place again without the question. An answer, or any write by another copy
+  // before this one has written, makes it wait: the two_tabs screen, no writes, no sound, no clock; Continue here writes a
+  // newer claim at once and reads the place (the others wait). Before every write a copy reads the stored stamp: a newer
+  // claim makes it wait (a phone that froze a tab and thawed it). A check taken over while it ran records the flag
+  // two_tabs. Nothing is shared where the storage refuses (the open page's frame). A SAVE says "Your browser is saving" (saving_file): a download
+  // cannot be seen to finish. A SOUND that does not play is said on the item too (sound_failed), and a clip with no
+  // progress for 5 s settles, so Hear all and an opening never stay stuck. screen() clears #live.
   function takeHomeShell(doc, win, lesson, L, matches, renders, kit) {
     var storageKey = 'alloflow-take-home:' + lesson.lessonId + ':' + lesson.revision;
     var manifest = {};
@@ -5609,11 +6276,24 @@
       link = null;
       try { var snap = win.parent !== win && JSON.parse(doc.getElementById('packet-store-snapshot').textContent); if (snap && snap.kind === 'alloflow-packet-store' && snap.items && typeof snap.items === 'object') link = { items: snap.items, tell: function (message) { win.parent.postMessage(message, '*'); } }; } catch (_) {}
       return link; };
+    // The one place the file keeps (every read and write of it is here).
+    var writePlace = function (text) { if (text != null) win.localStorage.setItem(storageKey, text); else win.localStorage.removeItem(storageKey); };
+    var readPlace = function () { return win.localStorage.getItem(storageKey); };
+    // Two tabs of this file: this copy's id and claim (n), whether it holds the file (owner) and has written since it opened.
+    var tab = { id: Math.random().toString(36).slice(2, 10) + Date.now().toString(36), n: 1, owner: true, wrote: false, opening: false, held: null, took: false };
+    var holderOf = function (raw) { var m = typeof raw === 'string' && /"tab":\{"id":"([0-9a-z]{1,40})","n":(\d{1,12})\}/.exec(raw); return m ? { id: m[1], n: Number(m[2]) } : null; };
+    var pingOf = function (raw) { var m = typeof raw === 'string' && /"ping":"([0-9a-z]{1,40})"/.exec(raw); return m ? m[1] : ''; };
+    var newer = function (h) { return !!h && h.id !== tab.id && h.n >= tab.n; };
     // The one storage item (put(null) removes it). It also keeps the reading tools: state.tools, or alone before Start.
     var put = function (value) {
+      // A copy that waits writes nothing; one that is opening holds its own writes a moment (another copy may answer).
+      if (!tab.owner) return;
+      if (tab.opening) { tab.held = { value: value }; return; }
       try {
-        if (value) win.localStorage.setItem(storageKey, JSON.stringify(value)); else win.localStorage.removeItem(storageKey);
-        storeOk = true;
+        if (newer(holderOf(readPlace()))) { waitHere(); return; }
+        if (value && Array.isArray(value.items)) { delete value.ping; value.tab = { id: tab.id, n: tab.n }; }
+        writePlace(value ? JSON.stringify(value) : null);
+        storeOk = true; tab.wrote = true;
       } catch (_) { storeOk = false; }
       if (!storeOk && linked()) { storeOk = true; link.items[storageKey] = value ? JSON.stringify(value) : null; link.tell({ kind: 'alloflow-packet-store', key: storageKey, value: link.items[storageKey] }); }
     };
@@ -5624,10 +6304,11 @@
     };
     var stored = function () {
       try {
-        var raw; try { raw = win.localStorage.getItem(storageKey); } catch (error) { if (!linked()) throw error; raw = typeof link.items[storageKey] === 'string' ? link.items[storageKey] : null; }
+        var raw; try { raw = readPlace(); } catch (error) { if (!linked()) { storeOk = false; return null; } raw = typeof link.items[storageKey] === 'string' ? link.items[storageKey] : null; }
         var parsed = raw && JSON.parse(raw);
         return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
-      } catch (_) { storeOk = false; }
+      } catch (_) {}
+      // Damaged JSON is not a refusal: the next save writes over it.
       return null;
     };
     var load = function () {
@@ -5667,9 +6348,10 @@
     // The item on the clock is the one the reading tools count for.
     var clockStart = function (rec) { clock = { rec: rec, ms: 0, from: doc.hidden ? null : now() }; if (tools) tools.item(rec); };
     var clockStop = function () { clockLap(); clock = null; if (tools) tools.item(null); };
+    var clockHold = function (on) { if (clock) { clockLap(); clock.held = on; clock.from = on || doc.hidden ? null : now(); } };
     doc.addEventListener('visibilitychange', function () {
       if (!clock) return;
-      if (doc.hidden) { clockLap(); clock.from = null; } else if (clock.from == null) clock.from = now();
+      if (doc.hidden) { clockLap(); clock.from = null; } else if (clock.from == null && !clock.held) clock.from = now();
     });
     // ONE audio element for every clip: iPad/iPhone Safari lets an element play
     // without a tap only after a tap has played it once, so a new element per
@@ -5677,18 +6359,31 @@
     // by another (playToken moved on) never settles.
     var playToken = 0;
     var stop = function () { playToken++; if (audioEl) { try { audioEl.pause(); } catch (_) {} } };
+    // A sound that did not play: said on the item too, until a sound plays on this screen.
+    var soundNote = null;
+    var soundFailed = function (bad) {
+      if (!bad) { if (soundNote && soundNote.parentNode) soundNote.parentNode.removeChild(soundNote); soundNote = null; return; }
+      announce(L.audio_missing);
+      if (soundNote && main.contains(soundNote)) return;
+      soundNote = el('p', { class: 'status warn', 'data-sound-failed': '', text: L.sound_failed });
+      var card = main.querySelector('.card'), line = card && card.querySelector('[data-feedback]');
+      if (line) line.parentNode.insertBefore(soundNote, line); else (card || main).appendChild(soundNote);
+    };
     // rate: optional playback speed (e.g. 0.5 for "Hear it slowly").
     var play = function (id, rate) {
       stop();
       var src = id && lesson.audio[id];
-      if (!src) return Promise.resolve(false);
+      if (!src || !tab.owner) return Promise.resolve(false);
       var mine = playToken;
       if (!audioEl) { try { audioEl = new win.Audio(); } catch (_) { return Promise.resolve(false); } }
       var a = audioEl;
       return new Promise(function (resolve) {
-        var settle = function (ok) { if (mine !== playToken) return; a.onended = a.onerror = null; resolve(ok); };
+        // A clip that neither ends nor fails (a stalled player) counts as not played after 5 s with no progress.
+        var dog = null, watch = function () { win.clearTimeout(dog); dog = win.setTimeout(function () { settle(false); }, 5000); };
+        var settle = function (ok) { win.clearTimeout(dog); if (mine !== playToken) return; a.onended = a.onerror = a.ontimeupdate = null; resolve(ok); };
         a.onended = function () { settle(true); };
         a.onerror = function () { settle(false); };
+        a.ontimeupdate = watch;
         var speed = rate > 0 ? rate : 1;
         var p;
         try {
@@ -5696,9 +6391,10 @@
           try { a.defaultPlaybackRate = speed; a.playbackRate = speed; } catch (_) {}
           p = a.play();
         } catch (_) { settle(false); return; }
+        watch();
         if (p && p.catch) p.catch(function () { settle(false); });
       }).then(function (ok) {
-        if (!ok && mine === playToken) announce(L.audio_missing);
+        if (mine === playToken) soundFailed(!ok);
         return ok;
       });
     };
@@ -5720,8 +6416,11 @@
     // something in this file: iPad and iPhone play sound only after a press. spec = { list: [{ box, say }] or a
     // function giving it (say() starts one choice and returns a Promise for its end), label, name, support, before,
     // stop (ends what say started), ready (false: not now), auto (false: the opening already reads the choices) }.
-    var pressed = false, hearNow = null;
-    ['pointerdown', 'keydown', 'click'].forEach(function (name) { doc.addEventListener(name, function () { pressed = true; }, true); });
+    // The keys 1-9, R and Esc stop the Hear all buttons of the screen on view (hearStops).
+    var pressed = false, hearNow = null, hearStops = [];
+    // A press also ends the moment an opening copy holds its writes (settle).
+    ['pointerdown', 'keydown', 'click'].forEach(function (name) { doc.addEventListener(name, function () { pressed = true; settle(); }, true); });
+    doc.addEventListener('keydown', function (e) { if (/^([1-9rR]|Esc|Escape)$/.test(String(e.key || ''))) hearStops.slice().forEach(function (halt) { halt(); }); }, true);
     var hearAllIn = function (area, support) {
       return function (spec) {
         var s = spec || {}, run = 0, on = false, owner = screenId;
@@ -5763,15 +6462,18 @@
             var entry = list[i++], n = entry.n || i;
             entry.box.setAttribute('data-hearing', String(n));
             note.textContent = fmt(L.hear_all_now, { n: n, total: entry.total || list.length });
-            var said;
+            var said, gone = false, cap = null;
+            var go = function () { if (gone) return; gone = true; win.clearTimeout(cap); if (mine === run) win.setTimeout(next, 450); };
             try { said = entry.say(); } catch (_) { said = null; }
-            Promise.resolve(said).then(function () { if (mine === run) win.setTimeout(next, 450); });
+            // A choice that fails, or never says it is over, does not leave the button on Stop.
+            cap = win.setTimeout(go, 20000);
+            Promise.resolve(said).then(go, go);
           };
           // The first choice starts inside the press that asked for it (Safari).
           next();
         };
         area.addEventListener('click', function (e) { var b = e.target && e.target.closest ? e.target.closest('button') : null; if (on && b && b !== button) halt(); }, true);
-        doc.addEventListener('keydown', function (e) { if (on && /^([1-9rR]|Esc|Escape)$/.test(String(e.key || ''))) halt(); }, true);
+        hearStops.push(function () { if (on) halt(); });
         paint();
         var made = { button: button, note: note, node: el('div', { class: 'row', 'data-hear-row': '' }, [button, note]), start: start, halt: halt, auto: s.auto !== false };
         hearNow = made;
@@ -5796,18 +6498,20 @@
       var key = String(e.key || ''), code = String(e.code || '');
       var digit = /^[1-9]$/.test(key) ? key : (/^(?:Digit|Numpad)([1-9])$/.exec(code) || [])[1];
       if (digit) {
-        var box = keyItem.area.querySelectorAll('li.choice')[Number(digit) - 1];
+        var a = keyItem.area, box = a.querySelector('li.choice[data-key]') ? a.querySelector('li.choice[data-key="' + digit + '"]') : a.querySelectorAll('li.choice')[Number(digit) - 1];
         var button = box && (box.querySelector('button.primary') || box.querySelector('button'));
         if (!button || button.disabled || button.getAttribute('aria-disabled') === 'true') return;
         e.preventDefault();
         button.click();
       } else if (key === 'r' || key === 'R' || (code === 'KeyR' && !/^[a-z]$/i.test(key))) {
         var it = keyItem.item;
+        // An activity that plays its own opening (Blend Sounds, Rhyme Time...) gives replay() to play it again.
+        var own = keyItem.handle && typeof keyItem.handle.replay === 'function' ? keyItem.handle.replay : null;
         var ids = it.introAudio && it.introAudio.length ? it.introAudio : [it.promptAudio || it.prompt];
-        if (!ids.filter(Boolean).length) return;
+        if (!own && !ids.filter(Boolean).length) return;
         e.preventDefault();
         keyItem.replay();
-        playAll(ids);
+        if (own) own(); else playAll(ids);
       }
     });
     var screen = function (heading, nodes, hideHeading) {
@@ -5815,16 +6519,83 @@
       stop();
       clockStop();
       keyItem = null;
-      hearNow = null;
+      hearNow = null; hearStops = [];
+      // The screen-reader line keeps nothing of the screen before (an announcement still to come is kept).
+      live.textContent = ''; soundNote = null;
       main.textContent = '';
       // hideHeading: the page title already shows it; screen readers still hear it.
       var h = el('h2', hideHeading ? { tabindex: '-1', class: 'sr', text: heading } : { tabindex: '-1', text: heading });
       main.appendChild(h);
       if (tools && tools.dock) tools.dock(h);
       nodes.forEach(function (n) { if (n) main.appendChild(n); });
+      // Storage refused or full: said on every screen until the finish screen, which says it itself.
+      if (!storeOk && !(state && state.finishedAt)) { var off = statusLine(L.saved_device_off, 'warn'); off.setAttribute('data-store-off', ''); main.appendChild(off); }
       h.focus();
     };
     var statusLine = function (text, tone) { return el('p', { class: 'status' + (tone ? ' ' + tone : ''), role: 'status', text: text }); };
+    // Two tabs (see the note above takeHomeShell): the screen of a copy that waits, Continue here, and the storage events.
+    var waitHere = function () {
+      tab.opening = false; tab.held = null;
+      if (!tab.owner) return;
+      tab.owner = false;
+      screen(lesson.title, [el('div', { class: 'card', 'data-two-tabs': '' }, [
+        el('p', { class: 'status warn', text: L.two_tabs }),
+        el('div', { class: 'row' }, [el('button', { class: 'primary', type: 'button', 'data-continue-here': '', on: { click: function () { takeOver(); } }, text: L.continue_here })]),
+      ])], true);
+      announce(L.two_tabs);
+    };
+    // Continue here: a newer claim, written at once (so the other copies wait), then the place as the others left it.
+    var takeOver = function () {
+      if (tab.owner) return;
+      var raw = null, o = null;
+      try { raw = readPlace(); o = raw && JSON.parse(raw); } catch (_) {}
+      tab.n = Math.max(tab.n, (holderOf(raw) || {}).n || 0) + 1;
+      tab.owner = true; tab.took = true;
+      if (o && Array.isArray(o.items)) { delete o.ping; put(o); }
+      state = null; renderStart(); tab.took = false;
+    };
+    // Still this copy's to write? (A newer claim by another copy, seen in the storage, makes it wait.)
+    var owned = function () {
+      if (!tab.owner) return false;
+      if (tab.opening) return true;
+      try { if (newer(holderOf(readPlace()))) { waitHere(); return false; } } catch (_) {}
+      return true;
+    };
+    var unping = function () {
+      try { var raw = readPlace(), o = pingOf(raw) === tab.id && JSON.parse(raw); if (o) { delete o.ping; writePlace(JSON.stringify(o)); } } catch (_) {}
+    };
+    var settle = function () {
+      if (!tab.opening) return;
+      tab.opening = false;
+      var held = tab.held; tab.held = null;
+      if (held && tab.owner) put(held.value); else if (tab.owner) unping();
+    };
+    var openTabs = function () {
+      var raw, o = null;
+      // No storage (or the open page's frame, which keeps nothing of its own): nothing is shared, nothing to ask.
+      try { raw = readPlace(); } catch (_) { return; }
+      tab.n = ((holderOf(raw) || {}).n || 0) + 1;
+      win.addEventListener('storage', function (e) {
+        if (e.key !== storageKey || e.newValue == null) return;
+        var ping = pingOf(e.newValue);
+        // A copy opening asks: an open copy answers by writing the place again, without the question.
+        if (ping && ping !== tab.id) {
+          if (!tab.owner || tab.opening) return;
+          if (state && tab.wrote) save();
+          else { try { var q = JSON.parse(e.newValue); delete q.ping; writePlace(JSON.stringify(q)); } catch (_) {} }
+          return;
+        }
+        // Another copy wrote: this one waits if it has not written since it opened, or the other's claim is newer.
+        if (tab.owner && !ping && (tab.opening || !tab.wrote || newer(holderOf(e.newValue)))) waitHere();
+      });
+      try { o = raw && JSON.parse(raw); } catch (_) {}
+      if (!o || typeof o !== 'object' || !Array.isArray(o.items)) return;
+      // A place is kept: ask whether another copy has the file open, and hold this copy's writes for the answer.
+      o.ping = tab.id;
+      try { writePlace(JSON.stringify(o)); } catch (_) { return; }
+      tab.opening = true;
+      win.setTimeout(settle, 400);
+    };
     var activityTitle = function (id) { return L[id + '_title'] || (lesson.activityTitles && lesson.activityTitles[id]) || id; };
     // "About this file": the manifest block, in plain words.
     var about = function () {
@@ -5854,6 +6625,7 @@
     };
 
     var renderStart = function () {
+      savingFile = '';
       var prior = load();
       if (check && check.resume(prior)) return;
       var given = givenName;
@@ -5870,6 +6642,9 @@
         ]),
       ]);
       var begin = function (keep) {
+        // The place as it is stored now: another copy of the file may have moved it on since this screen was drawn.
+        var latest = load();
+        if (latest) prior = latest;
         var typed = String(nameInput.value || (keep && prior ? prior.name : '') || '').trim();
         if (!typed && !namePrompted) {
           namePrompted = true; promptKeep = keep;
@@ -5933,6 +6708,7 @@
         hearAll: hearAllIn(area, function (name) { ctx.support(name); }),
         image: function (id) { return (id && lesson.images && lesson.images[id]) || null; },
         ordinal: function (p) { return (L.ordinals && L.ordinals[p]) || String(p + 1); },
+        sound: function (label) { return L['sound_name_' + label] || '/' + label + '/'; },
         support: function (name) { rec.supports[name] = (rec.supports[name] || 0) + 1; save(); },
         isDone: function () { return rec.done; },
         attempts: function () { return rec.attempts; },
@@ -5957,7 +6733,9 @@
             feedback.className = 'status ok'; feedback.textContent = o.correctText || L.correct;
             var praise = lesson.feedback.correct;
             finishItem(true);
-            play(praise.length ? praise[state.index % praise.length] : null);
+            var cheered = play(praise.length ? praise[state.index % praise.length] : null), mine = screenId;
+            // payoff(): the read-back, after the praise.
+            if (handle && handle.payoff && pressed) cheered.then(function () { if (mine === screenId) handle.payoff(); });
             return 'correct';
           }
           if (rec.attempts < max) {
@@ -5982,6 +6760,7 @@
       ]);
       keyItem = { area: area, item: item, replay: function () { ctx.support('questionReplays'); } };
       try { handle = render(item, ctx) || null; } catch (err) { area.appendChild(statusLine(L.audio_missing, 'warn')); }
+      keyItem.handle = handle;
       // Reopened on an answered item: show its outcome, do not ask again.
       if (rec.done) { if (rec.practice) finishPractice(); else finishItem(rec.correct); }
       else {
@@ -5996,7 +6775,7 @@
 
     // The integrity value detects accidental edits, not deliberate ones: FNV-1a
     // at once, replaced by SHA-256 when the browser has made it (renderFinish).
-    var sealed = null;
+    var sealed = null, savingFile = '';
     var resultFile = function () {
       var out = {
         kind: 'alloflow-take-home-result', schemaVersion: 3, player: lesson.player, sessionId: state.sessionId || '',
@@ -6006,6 +6785,8 @@
         startedLocal: state.startedLocal || (state.startedAt ? localIso(new Date(state.startedAt)) : ''),
         finishedLocal: state.finishedLocal || (state.finishedAt ? localIso(new Date(state.finishedAt)) : ''),
         durationMs: Math.max(0, Date.parse(state.finishedAt) - Date.parse(state.startedAt)) || 0, timesAreFromTheLearnerDevice: true,
+        // Time on the items (their ms, hidden time left out); durationMs spans days when a file is resumed.
+        activeMs: state.items.reduce(function (n, r) { return n + Math.max(0, Math.round(Number(r.ms) || 0)); }, 0),
         items: items.map(function (e, i) {
           var r = state.items[i];
           return { n: i + 1, itemId: e.item.id, activity: e.activity, word: e.item.word, target: e.item.target != null ? e.item.target : null,
@@ -6053,8 +6834,10 @@
       if (!state.finishedAt) { var ended = new Date(); state.finishedAt = ended.toISOString(); state.finishedLocal = localIso(ended); save(); }
       seal();
       var s = summarize();
-      var fileStatus = statusLine(state.sent ? fmt(L.sent, { receipt: state.sent }) : state.savedFile ? fmt(L.saved_file, { file: state.savedFile }) : (storeOk ? L.saved_device : L.saved_device_off),
-        state.sent || state.savedFile ? 'ok' : (storeOk ? '' : 'warn'));
+      // A download cannot be seen to finish: after Save the line says the browser is saving (this opening only).
+      var fileStatus = statusLine(state.sent ? fmt(L.sent, { receipt: state.sent }) : savingFile ? fmt(L.saving_file, { file: savingFile }) : (storeOk ? L.saved_device : L.saved_device_off),
+        state.sent ? 'ok' : (storeOk || savingFile ? '' : 'warn'));
+      var saying = function (name) { savingFile = name; if (!state.sent) { fileStatus.className = 'status'; fileStatus.textContent = fmt(L.saving_file, { file: name }); announce(fileStatus.textContent); } };
       // Older iPad Safari (before iOS 13) cannot download: show the results as
       // text to copy instead of a button that does nothing.
       var copyBox = el('div', { hidden: true, 'data-results-text': '' });
@@ -6069,7 +6852,7 @@
       };
       var saveAs = function (name, body, type) {
         // On the "Open a practice file" page, that page saves the file (see linked); the rest is as below.
-        if (link) { link.tell({ kind: 'alloflow-packet-save', name: name, type: type, text: body }); state.savedFile = name; save(); if (!state.sent) { fileStatus.className = 'status ok'; fileStatus.textContent = fmt(L.saved_file, { file: name }); announce(fileStatus.textContent); } return; }
+        if (link) { link.tell({ kind: 'alloflow-packet-save', name: name, type: type, text: body }); state.savedFile = name; save(); saying(name); return; }
         var a = el('a', { download: name });
         if (!('download' in a) || !win.Blob || !win.URL || !win.URL.createObjectURL) { showText(L.copy_results, body.charCodeAt(0) === 0xFEFF ? body.slice(1) : body); return; }
         var url = win.URL.createObjectURL(new win.Blob([body], { type: type }));
@@ -6077,7 +6860,7 @@
         doc.body.appendChild(a); a.click(); a.remove();
         win.setTimeout(function () { win.URL.revokeObjectURL(url); }, 60000);
         state.savedFile = name; save();
-        if (!state.sent) { fileStatus.className = 'status ok'; fileStatus.textContent = fmt(L.saved_file, { file: name }); announce(fileStatus.textContent); }
+        saying(name);
       };
       // Both files are named <lesson>__<learner or results>__<finish date>. The spreadsheet file is the
       // main one (the one every page tells learners and teachers to use); the JSON and the copy are
@@ -6151,14 +6934,18 @@
       if (check) { check.finish({ send: sendButton, save: saveButton, csv: csvButton, copy: copyButton, more: more, about: info, status: fileStatus, copyBox: copyBox, note: closedNote || (sendButton ? L.send_note : L.not_sent) }); return; }
       // A star for finishing (drawn by the style rules), and each activity's own result when the file has several.
       var at = 0, tally = lesson.blocks.map(function (b) {
-        var t = 0, f = 0;
-        b.items.forEach(function () { var r = state.items[at++]; if (r && !r.practice && b.activity !== 'letter_tracing') { t++; if (r.firstTry) f++; } });
-        return t ? el('li', {}, [el('b', { text: activityTitle(b.activity) }), el('span', { text: fmt(L.done_summary, { first: f, total: t }) })]) : null;
+        var t = 0, f = 0, pt = 0, pd = 0;
+        b.items.forEach(function () { var r = state.items[at++]; if (r && (r.practice || b.activity === 'letter_tracing')) { pt++; if (r.done) pd++; } else if (r) { t++; if (r.firstTry) f++; } });
+        // Practice (Letter Trace) has its own row: how many were done, never a score.
+        return t ? el('li', {}, [el('b', { text: activityTitle(b.activity) }), el('span', { text: fmt(L.done_summary, { first: f, total: t }) })])
+          : pt ? el('li', {}, [el('b', { text: activityTitle(b.activity) }), el('span', { text: fmt(L.done_practice, { done: pd, total: pt }) })]) : null;
       }).filter(Boolean);
+      var practiceTotal = state.items.filter(function (r, i) { return r.practice || (items[i] && items[i].activity === 'letter_tracing'); }).length;
       screen(L.done_title, [
         el('div', { class: 'card' }, [
           el('div', { class: 'hero' }, [el('span', { class: 'done-star', 'aria-hidden': 'true' }),
-            el('p', { class: 'letters', text: fmt(L.done_summary, { first: s.firstTry, total: s.items }) }),
+            // A file of practice only (Letter Trace) says how much was done, not "0 of 0".
+            el('p', { class: 'letters', text: s.items || !practiceTotal ? fmt(L.done_summary, { first: s.firstTry, total: s.items }) : fmt(L.done_practice, { done: s.practised, total: practiceTotal }) }),
             s.afterRetry ? el('p', { text: fmt(L.done_retry, { retry: s.afterRetry }) }) : null]),
           tally.length > 1 ? el('ul', { class: 'tally' }, tally) : null,
           el('div', { class: 'row' }, [sendButton, csvButton, againButton, info.button]),
@@ -6178,10 +6965,13 @@
       choices: lesson.blocks.some(function (b) { return /^(isolation|segmentation|mapping)$/.test(b.activity) || b.items.some(function (it) { return it.read === true; }); }) }) : null;
     // A check (lesson.mode 'probe') brings its own flow in kit.check; a practice file has none.
     var check = kit.check ? kit.check({ doc: doc, win: win, lesson: lesson, L: L, kit: kit, items: items, renders: renders, matches: matches, el: el, fmt: fmt, announce: announce,
-      screen: screen, statusLine: statusLine, fresh: fresh, save: save, now: now, clockStart: clockStart, clockStop: clockStop, play: play, playAll: playAll, stop: stop,
+      screen: screen, statusLine: statusLine, fresh: fresh, save: save, now: now, clockStart: clockStart, clockStop: clockStop, clockHold: clockHold, play: play, playAll: playAll, stop: stop,
       hearAllIn: hearAllIn, autoHear: autoHear,
+      // Two tabs: held() is false in a copy that waits (or should); took() while Continue here reads the place.
+      held: owned, took: function () { return tab.took; }, stored: function () { return storeOk; },
       state: function (next) { if (next !== undefined) state = next; return state; }, results: function () { return resultFile(); },
       renderStart: function () { renderStart(); }, renderFinish: function () { renderFinish(); } }) : null;
+    openTabs();
     renderStart();
     return { results: function () { return state && resultFile(); } };
   }
@@ -6266,6 +7056,8 @@
   var CHECK_CSS = [
     '.timer{display:flex;align-items:center;gap:12px;margin:0 0 12px;color:var(--muted);font-variant-numeric:tabular-nums}',
     '.timebar{flex:1;height:10px;border-radius:6px;background:var(--line);overflow:hidden}.timebar span{display:block;height:100%;background:var(--accent)}',
+    // 2026-11-13: under forced colors (Windows contrast themes) the bar kept no color at all; it is drawn as the progress bar is.
+    '@media (forced-colors:active){.timebar{border:1px solid CanvasText}.timebar span{forced-color-adjust:none;background:Highlight}}',
     '.prompt{font-size:2.6rem;font-weight:700;text-align:center;margin:8px 0 16px;overflow-wrap:anywhere}.blank{display:inline-block;min-width:1.6em;border-bottom:4px solid var(--accent);color:var(--accent)}',
     '.answer{display:block;margin:0 auto;text-align:center;font-size:2rem;font-weight:700;max-width:220px}',
     '.pad{display:grid;grid-template-columns:repeat(3,minmax(64px,96px));gap:10px;justify-content:center;margin:16px auto 0}.pad button{min-height:56px;font-size:1.5rem;font-weight:700;padding:6px}.pad .wide{grid-column:1/-1}',
@@ -6354,11 +7146,15 @@
       if (r.digitsPossible != null) { hasDigits = true; digitsCorrect += Number(r.digitsCorrect) || 0; digitsPossible += Number(r.digitsPossible) || 0; }
     });
     var completion = t.completion === 'time' || t.completion === 'ended_early' ? t.completion : 'complete';
+    // 2026-11-13: the time ran out while the page was hidden or closed (flag time_up_away): no score in any unit, and
+    // completion "time_up_away", which readers made before it read as no score.
+    var away = completion === 'time' && Array.isArray(t.flags) && t.flags.indexOf('time_up_away') >= 0;
     var raw = Math.max(0, Number(t.elapsedMs) || 0) / 1000;
     var elapsed = limit === null ? raw : completion === 'time' ? limit : Math.min(limit, raw);
     var early = limit !== null && completion === 'complete' && elapsed < limit;
     var score = null, prorated = false, why = '';
     if (completion === 'ended_early') why = 'ended_early';
+    else if (away) why = 'time_up_away';
     else if (unit === 'digits_correct_per_minute') {
       if (limit === null) why = 'untimed';
       else if (early && elapsed < 20) why = 'too_fast';
@@ -6366,7 +7162,7 @@
     } else score = itemsCorrect;
     var tenth = function (ms) { return Math.round(Math.max(0, Number(ms) || 0) / 100) / 10; };
     var out = { measure: String(m.measure || ''), score: score, scoreUnit: unit, digitsCorrect: hasDigits ? digitsCorrect : null, digitsPossible: hasDigits ? digitsPossible : null,
-      itemsCorrect: itemsCorrect, itemsAttempted: itemsAttempted, timeLimitS: limit, elapsedS: tenth(elapsed * 1000), hiddenS: tenth(t.hiddenMs), completion: completion,
+      itemsCorrect: itemsCorrect, itemsAttempted: itemsAttempted, timeLimitS: limit, elapsedS: tenth(elapsed * 1000), hiddenS: tenth(t.hiddenMs), completion: away ? 'time_up_away' : completion,
       prorated: prorated, noScoreReason: why, scoringVersion: Number(m.scoringVersion) || 1, formVersion: m.formVersion == null ? '' : m.formVersion,
       attempt: Math.max(1, Math.floor(Number(t.attempt)) || 1), flags: (Array.isArray(t.flags) ? t.flags : []).map(String) };
     // Untimed (an accommodation): said in the score, with the form's usual limit, so no reader takes it for a timed result.
@@ -6413,6 +7209,11 @@
     return copy;
   }
 
+  // 2026-11-13 (L5): "Stop?" pauses a check (the app's "End this session?", math_fluency_module.js, 232a83d3b3):
+  // pause(true) sets check.pausedFrom, holds the item's time (api.clockHold) and hides the question; tick() then
+  // neither counts down nor ends the time, and keys and answers are ignored. Keep going (or Esc) calls unpause:
+  // the deadline moves on by the pause and check.pausedMs adds it up, and the score's elapsed time leaves it out
+  // ("Yes, stop" ends it first). A page closed during it ends the pause at the last moment the page was seen.
   // The check flow (runs INSIDE the file, in place of the practice flow). Only
   // its argument is in scope: `api` is what takeHomeShell hands over, and
   // api.kit carries sha (SHA-256), codec (checkCodec), score (checkScore) and
@@ -6487,19 +7288,28 @@
       if (timerText) timerText.textContent = fmt(L.check_time_left, { time: clockText(shown * 1000) });
       if (timerBar) timerBar.style.width = Math.max(0, Math.min(100, shown * 100000 / limitMs)) + '%';
     };
+    // The time ran out while the page was away: hidden (hiddenFrom) or not running at all (a tick gap: asleep, frozen),
+    // for more than 3 s of the time.
+    var lastRun = 0;
+    var awayAtEnd = function (c, from) { return !!from && !!c.deadline && c.deadline - from > 3000; };
     var tick = function () {
       var s = S(), c = s && s.check;
       if (!c || c.phase !== 'run') return;
-      var t = nowMs();
+      // A copy of the file that waits (another tab holds it) runs no clock.
+      if (api.held && !api.held()) return;
+      var t = nowMs(), gap = lastRun && t - lastRun > 3000 ? lastRun : 0;
+      lastRun = t;
+      if (c.pausedFrom) { if (t - lastSave >= 2000) { lastSave = t; c.seen = t; api.save(); } return; }
       if (c.deadline) {
         var left = c.deadline - t;
-        if (left <= 0) { timeUp(); return; }
+        if (left <= 0) { timeUp(awayAtEnd(c, c.hiddenFrom || gap)); return; }
         paint(left);
         if (left <= 10000 && !warned) { warned = true; api.announce(L.check_time_10); }
       }
       if (t - lastSave >= 2000) { lastSave = t; c.seen = t; if (jumped) c.flags.clock_changed = 1; api.save(); }
     };
     var startTicker = function () { if (!ticker) ticker = win.setInterval(tick, 250); };
+    var unpause = function (c, at) { var held = Math.max(0, at - c.pausedFrom); if (c.deadline) c.deadline += held; c.pausedMs = (c.pausedMs || 0) + held; c.pausedFrom = null; };
 
     // Time with the page hidden does not stop the clock; it is added up, and
     // more than 3 s of it flags the session "left_the_page". Closing the page
@@ -6514,7 +7324,10 @@
     var noteShown = function () {
       var s = S(), c = s && s.check;
       if (!c || c.phase !== 'run' || !c.hiddenFrom) return;
-      c.hiddenMs = (Number(c.hiddenMs) || 0) + Math.max(0, nowMs() - c.hiddenFrom);
+      // Time away in the pause ("Stop?") is not counted: the clock was stopped. Nor is time after the deadline.
+      var t = nowMs();
+      if (!c.pausedFrom && c.deadline && t >= c.deadline && awayAtEnd(c, c.hiddenFrom)) c.flags.time_up_away = 1;
+      c.hiddenMs = (Number(c.hiddenMs) || 0) + Math.max(0, Math.min(t, c.pausedFrom || t, c.deadline || t) - c.hiddenFrom);
       c.hiddenFrom = null;
       if (c.hiddenMs > 3000) c.flags.left_the_page = 1;
       api.save();
@@ -6524,8 +7337,8 @@
 
     // Hardware keys on an item: the number pad, or the keys an activity asked for.
     doc.addEventListener('keydown', function (e) {
-      var cur = current;
-      if (!cur || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
+      var cur = current, sc = S() && S().check;
+      if (!cur || (sc && sc.pausedFrom) || e.defaultPrevented || e.ctrlKey || e.metaKey || e.altKey || e.repeat) return;
       var t = e.target, tag = t && t.tagName ? String(t.tagName).toUpperCase() : '';
       if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
       var key = String(e.key || '');
@@ -6566,7 +7379,8 @@
         else if (/^[0-9]$/.test(key)) set(v + key);
       };
       var button = function (label, key, name) {
-        return el('button', { type: 'button', 'data-key': key, 'aria-label': name || false, on: { click: function () { press(key); } } }, [label]);
+        // A key pressed with the mouse leaves the focus in the answer box, so Enter sends the answer (as Math Fluency's keypad, onMouseDown preventDefault). A key reached with Tab is still pressed with Enter or Space.
+        return el('button', { type: 'button', 'data-key': key, 'aria-label': name || false, on: { mousedown: function (e) { e.preventDefault(); try { input.focus(); } catch (_) {} }, click: function () { press(key); } } }, [label]);
       };
       var grid = el('div', { class: 'pad', role: 'group', 'aria-label': L.check_pad_keys }, ['1', '2', '3', '4', '5', '6', '7', '8', '9'].map(function (d) { return button(d, d); }).concat([
         minus ? button(String.fromCharCode(0x2212), 'minus', L.check_pad_minus) : el('span', {}),
@@ -6667,7 +7481,7 @@
       var s = S(), c = C();
       if (c.phase === 'run' || c.phase === 'done') return;
       var t = nowMs();
-      c.phase = 'run'; c.t0 = t; c.deadline = limitMs ? t + limitMs : null; c.seen = t; c.hiddenMs = 0; c.hiddenFrom = null;
+      c.phase = 'run'; c.t0 = t; c.deadline = limitMs ? t + limitMs : null; c.seen = t; c.hiddenMs = 0; c.hiddenFrom = null; c.pausedMs = 0; c.pausedFrom = null;
       // Tries are counted for each learner label on this device. The label is
       // kept as a hash, so no earlier name stays behind after Start over.
       var who = 't' + kit.hash(String(s.name || '').replace(/^\s+|\s+$/g, '').toLowerCase());
@@ -6675,6 +7489,8 @@
       c.attempt = (Number(s.tries[who]) || 0) + 1;
       s.tries[who] = c.attempt;
       api.save();
+      // Storage refused or full: the count of tries is not kept, so this try number may be wrong.
+      if (api.stored && !api.stored()) { c.flags.attempt_unknown = 1; api.save(); }
       startTicker();
       runItem();
       if (limitMs) api.announce(fmt(L.check_time_start, { time: timeWords(limitMs / 1000) }));
@@ -6682,7 +7498,7 @@
     // One try, no feedback, straight on to the next item, no way back.
     var record = function (response, skipped) {
       var s = S(), c = C(), cur = current;
-      if (!cur || cur.rec.done || c.phase !== 'run') return 'ignored';
+      if (!cur || cur.rec.done || c.phase !== 'run' || c.pausedFrom || (api.held && !api.held())) return 'ignored';
       if (c.deadline && nowMs() >= c.deadline) { timeUp(); return 'time_up'; }
       // A tap within a quarter second of a new item is the tail of a double tap, not an answer.
       if (api.now() - cur.at < 250) return 'ignored';
@@ -6716,22 +7532,34 @@
       var skip = meta.allowSkip ? el('div', { class: 'row', style: 'margin-top:16px;justify-content:center' }, [
         el('button', { type: 'button', 'data-skip': '', on: { click: function () { record(null, true); } }, text: L.check_skip })]) : null;
       var stopText = el('p', { id: 'check-stop-text', tabindex: '-1', style: 'margin:0 0 8px', text: L.check_stop_confirm });
-      var stopButton = el('button', { type: 'button', 'data-stop': '', on: { click: function () { stopBox.hidden = false; stopText.focus(); } }, text: L.check_stop });
-      var stopBox = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'check-stop-text', hidden: true, 'data-stop-confirm': '' }, [
+      var card = el('div', { class: 'card' }, [area, skip]);
+      var pause = function (on) {
+        var c2 = C();
+        if (c2.phase !== 'run' || !c2.pausedFrom === !on) return;
+        if (on) { c2.pausedFrom = c2.seen = nowMs(); api.stop(); } else unpause(c2, nowMs());
+        api.clockHold(on); card.hidden = on; api.save();
+        if (!on) tick();
+      };
+      var keep = function () { stopBox.hidden = true; pause(false); stopButton.focus(); };
+      var stopButton = el('button', { type: 'button', 'data-stop': '', on: { click: function () { pause(true); stopBox.hidden = false; stopText.focus(); } }, text: L.check_stop });
+      var stopBox = el('div', { class: 'status warn', role: 'group', 'aria-labelledby': 'check-stop-text', hidden: true, 'data-stop-confirm': '',
+        on: { keydown: function (e) { if (/^Esc/.test(e.key)) { e.preventDefault(); keep(); } } } }, [
         stopText,
+        limitMs ? el('p', { style: 'margin:0 0 8px', 'data-stop-paused': '', text: L.check_paused }) : null,
         el('div', { class: 'row' }, [
-          el('button', { type: 'button', class: 'primary', 'data-stop-no': '', on: { click: function () { stopBox.hidden = true; stopButton.focus(); } }, text: L.check_stop_no }),
+          el('button', { type: 'button', class: 'primary', 'data-stop-no': '', on: { click: keep }, text: L.check_stop_no }),
           el('button', { type: 'button', 'data-stop-yes': '', on: { click: function () { finishRun('ended_early'); } }, text: L.check_stop_yes }),
         ]),
       ]);
-      api.screen(fmt(L.check_item_of, { n: n, total: scoredTotal }), [timer, el('div', { class: 'card' }, [area, skip]), el('div', { class: 'row' }, [stopButton]), stopBox]);
+      api.screen(fmt(L.check_item_of, { n: n, total: scoredTotal }), [timer, card, el('div', { class: 'row' }, [stopButton]), stopBox]);
       current = { rec: rec, at: api.now(), keys: null, pad: null };
       show(entry, rec, ctxFor(entry, rec, area, false, function (response) { return record(response, false); }));
     };
     // At the deadline the item on screen ends unanswered.
-    var timeUp = function () {
+    var timeUp = function (away) {
       var s = S(), c = C();
       if (c.phase !== 'run') return;
+      if (away) c.flags.time_up_away = 1;
       var rec = s.items[s.index];
       if (rec && !rec.done) rec.flag = 'time_up';
       finishRun('time');
@@ -6740,6 +7568,7 @@
       var c = C();
       if (c.phase !== 'run') return;
       var t = nowMs();
+      if (c.pausedFrom) unpause(c, t);
       var end = completion === 'time' && c.deadline ? c.deadline : t;
       if (c.hiddenFrom) { c.hiddenMs = (Number(c.hiddenMs) || 0) + Math.max(0, Math.min(t, end) - c.hiddenFrom); c.hiddenFrom = null; }
       if (c.hiddenMs > 3000) c.flags.left_the_page = 1;
@@ -6776,12 +7605,19 @@
         if (c.seen && real < c.seen - 2000) c.flags.clock_changed = 1;
         // Never earlier than the last moment this check was seen running.
         anchor = { wall: Math.max(real, Number(c.seen) || 0), perf: api.now() };
+        var paused = !!c.pausedFrom;
+        if (c.pausedFrom) unpause(c, Number(c.seen) || c.pausedFrom);
         var t = nowMs();
-        c.hiddenMs = (Number(c.hiddenMs) || 0) + Math.max(0, Math.min(t, c.deadline || t) - (c.hiddenFrom || c.seen || t));
+        // Away from when the page was hidden or last seen running; a pause ended then, and time in it is not counted.
+        var from = c.hiddenFrom || c.seen || t;
+        if (paused) from = Math.max(from, Number(c.seen) || from);
+        if (c.deadline && t >= c.deadline && awayAtEnd(c, from)) c.flags.time_up_away = 1;
+        c.hiddenMs = (Number(c.hiddenMs) || 0) + Math.max(0, Math.min(t, c.deadline || t) - from);
         c.hiddenFrom = null;
         if (c.hiddenMs > 3000) c.flags.left_the_page = 1;
-        c.flags.reloaded = 1;
-        c.seen = t;
+        // Continue here in another tab is not a reload: the check was open in two tabs while it ran.
+        if (api.took && api.took()) c.flags.two_tabs = 1; else c.flags.reloaded = 1;
+        c.seen = t; lastRun = 0;
         api.save();
         startTicker();
         runItem();
@@ -6817,7 +7653,7 @@
         });
         out.score = kit.score({ measure: meta.measure, scoreUnit: meta.scoreUnit, timeLimitS: lesson.timeLimitS, scoringVersion: meta.scoringVersion, formVersion: meta.formVersion,
           untimed: meta.untimed === true, usualTimeLimitS: meta.usualTimeLimitS }, rows,
-          { elapsedMs: c.t0 ? (c.end || nowMs()) - c.t0 : 0, hiddenMs: c.hiddenMs, completion: c.completion, attempt: c.attempt, flags: Object.keys(c.flags).sort() });
+          { elapsedMs: c.t0 ? (c.end || nowMs()) - c.t0 - (c.pausedMs || 0) : 0, hiddenMs: c.hiddenMs, completion: c.completion, attempt: c.attempt, flags: Object.keys(c.flags).sort() });
         // The reading tools that were on during a scored item, in the panel's order.
         out.score.tools = Object.keys(TOOLS).filter(function (name) {
           return out.items.some(function (it, i) { return !items[i].item.practice && it.supports && it.supports[name]; });
@@ -6952,6 +7788,8 @@
     var labels = Object.assign({}, DEFAULT_LABELS, probe ? CHECK_LABELS : {}, pictured ? PICTURE_LABELS : {});
     used.forEach(function (id) { Object.assign(labels, adapters[id].labels || {}); labels[id + '_title'] = labels[id + '_title'] || adapters[id].title; });
     Object.assign(labels, opts.labels || {});
+    // A sound's name (ctx.sound) shows only with letters on: other files do not carry the words.
+    if (!lesson.showLetters) Object.keys(labels).forEach(function (k) { if (/^sound_name_/.test(k)) delete labels[k]; });
     var renders = '{' + used.map(function (id) { return JSON.stringify(id) + ':' + adapters[id].render.toString(); }).join(',\n') + '}';
     var pictureParts = pictured ? 'renders=(' + takeHomePictures.toString() + ')(renders,lesson.pictures.rule,labels);\n' : '';
     // A check carries its own flow, the SHA-256 that reads its answers and the
@@ -7077,6 +7915,8 @@
       learnerName: str(data.learnerName || data.learner).slice(0, 60), finishedAt: str(data.finishedAt).slice(0, 40), items: items, summary: summary, byActivity: byActivity,
       integrity: integrity, sessionId: str(data.sessionId).slice(0, 80), startedLocal: str(data.startedLocal).slice(0, 40), finishedLocal: str(data.finishedLocal).slice(0, 40),
       durationMs: Math.max(0, Math.round(Number(data.durationMs) || 0)) };
+    // Time on the items (files saved from 2026-11-13).
+    if (data.activeMs != null && data.activeMs !== '' && Number.isFinite(Number(data.activeMs))) result.activeMs = Math.max(0, Math.round(Number(data.activeMs)));
     if (probe) {
       items.forEach(function (r, i) { var it = data.items[i] || {}; r.digitsCorrect = whole(it.digitsCorrect); r.digitsPossible = whole(it.digitsPossible); });
       var sc = data.score && typeof data.score === 'object' ? data.score : {};
@@ -7087,7 +7927,8 @@
       // value; the items are, and the counts can be made again from them.
       result.score = { measure: str(sc.measure).slice(0, 40), score: num(sc.score), scoreUnit: str(sc.scoreUnit).slice(0, 40), digitsCorrect: whole(sc.digitsCorrect), digitsPossible: whole(sc.digitsPossible),
         itemsCorrect: whole(sc.itemsCorrect) || 0, itemsAttempted: whole(sc.itemsAttempted) || 0, timeLimitS: num(sc.timeLimitS), elapsedS: num(sc.elapsedS) || 0, hiddenS: num(sc.hiddenS) || 0,
-        completion: sc.completion === 'time' || sc.completion === 'ended_early' || sc.completion === 'complete' ? sc.completion : '', prorated: sc.prorated === true,
+        // time_up_away (2026-11-13): the time ran out while the page was hidden or closed; no score.
+        completion: /^(time|ended_early|complete|time_up_away)$/.test(str(sc.completion)) ? sc.completion : '', prorated: sc.prorated === true,
         noScoreReason: str(sc.noScoreReason).slice(0, 40), scoringVersion: whole(sc.scoringVersion),
         formVersion: typeof sc.formVersion === 'number' && Number.isFinite(sc.formVersion) ? sc.formVersion : str(sc.formVersion).slice(0, 20), attempt: whole(sc.attempt) || 1,
         flags: (Array.isArray(sc.flags) ? sc.flags : []).slice(0, 8).map(function (f) { return str(f).slice(0, 40); }),

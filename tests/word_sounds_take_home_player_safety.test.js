@@ -126,7 +126,8 @@ describe('the results file name', () => {
     expect(named.downloads[0]).toMatch(/^Short-a__Ana-Li__\d{4}-\d{2}-\d{2}\.json$/);
     expect(nameless.downloads[0]).toMatch(/^Short-a__results__\d{4}-\d{2}-\d{2}\.json$/);
     expect(named.downloads[0].slice(-15, -5)).toBe(named.stored().finishedLocal.slice(0, 10));
-    expect(nameless.d.getElementById('app').textContent).toContain('Saved as ' + nameless.downloads[0] + '.');
+    // 2026-11-13 (engine fixes): "Your browser is saving", not "Saved as": a download cannot be seen to finish.
+    expect(nameless.d.getElementById('app').textContent).toContain('Your browser is saving ' + nameless.downloads[0] + '.');
   });
 });
 

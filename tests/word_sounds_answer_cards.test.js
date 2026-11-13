@@ -386,28 +386,44 @@ describe('probes are unchanged', () => {
 });
 
 describe('find-all boards', () => {
-  it('Word Families marks the words still to find when the item ends on a miss', async () => {
+  // 2026-11-13 (from the AlloFlow Packets review, polish_ws F4): a word that does not belong is out after its
+  // first tap, marked "Not this one", and a second tap of it costs no try. Before, each tap of the same wrong word
+  // was another miss, so a double tap could end the item. With the budget of distractors + 1 the item now ends when
+  // every family word is found, as in a practice file.
+  it('Word Families: a wrong word is out after its first tap; a second tap costs no try', async () => {
     await mount({activity: 'word_families'});
     const tiles = () => [...container.querySelectorAll('[data-ws-bank-pick]')];
     expect(tiles().length).toBe(5); // hat, bat, mat + dog, sun
-    expect(container.querySelector('[data-ws-card-state="correct"]')).toBeNull();
-    // Find a word that does not belong, then keep choosing it until the item ends.
-    let foil = -1;
-    for (let i = 0; i < 5 && foil < 0; i++) {
-      const before = tiles().length;
-      await click(tiles()[i]);
-      if (tiles().length === before && current.feedback && current.feedback.isCorrect === false) foil = i;
-      else i--; // a found word left the bank: the same index is now the next tile
-      if (current.history.length) break;
+    expect(container.querySelector('[data-ws-card-state]')).toBeNull();
+    // Choose every tile once, in order (a found word leaves the bank; a wrong one stays, out).
+    let foils = 0;
+    for (let guard = 0; guard < 10 && current.history.length === 0; guard++) {
+      const next = tiles().find((t) => !t.hasAttribute('aria-disabled'));
+      if (!next) break;
+      const label = next.getAttribute('aria-label'), before = tiles().length;
+      await click(next);
+      if (tiles().length !== before) continue;
+      foils++;
+      expect(current.feedback && current.feedback.isCorrect, label).toBe(false);
+      await tick(1600); // the shake ends; the mark stays
+      // The same button (the bank keeps its keys). After a miss the words may be shown, so its name can change
+      // from "option n" to the word; either way it ends "Not this one".
+      const out = next;
+      expect(tiles(), label).toContain(out);
+      expect(out.getAttribute('aria-label'), label).toMatch(/, Not this one$/);
+      expect(out.getAttribute('data-ws-card-state'), label).toBe('wrong');
+      expect(out.getAttribute('aria-disabled'), label).toBe('true');
+      expect(out.querySelector('[data-ws-card-mark="wrong"]'), label).toBeTruthy();
+      const feedback = current.feedback, messages = JSON.stringify(current.history);
+      await click(out);
+      await click(out);
+      expect(current.feedback, label + ': tapped again, nothing new').toBe(feedback);
+      expect(JSON.stringify(current.history), label).toBe(messages);
     }
-    expect(foil).toBeGreaterThanOrEqual(0);
-    for (let k = 0; k < 6 && current.history.length === 0; k++) await click(tiles()[foil]);
-    expect(current.history.length).toBe(1);
-    expect(current.history[0].correct).toBe(false);
-    const marked = tiles().filter((tile) => tile.getAttribute('data-ws-card-state') === 'correct');
-    expect(marked.length, 'the family words not yet found').toBe(tiles().length - 2);
-    expect(marked.length).toBeGreaterThan(0);
-    expect(marked.every((tile) => tile.querySelector('[data-ws-card-mark="correct"]'))).toBe(true);
+    await tick(1500);
+    expect(foils, 'dog and sun').toBe(2);
+    expect(current.history).toHaveLength(1);
+    expect(current.history[0].correct).toBe(true);
   });
 });
 

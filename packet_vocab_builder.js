@@ -196,36 +196,190 @@
     }
     return best;
   }
-  // Fill the blank: the sentence with the word as a blank. The word must be in it once, as written in the list.
-  function blankSentence(sentence, word) {
-    var s = line(sentence), w = keyOf(word);
+  // ---------------------------------------------------------------------------
+  // Word forms (2026-11-13): the plain English endings, so a sentence may have "predators" for predator, and the
+  // wrong words can be written the same way ("habitats"). Only regular forms are made; a word that cannot be written
+  // in the form safely (an irregular verb, a word for a thing that cannot be counted...) is left out, never guessed.
+  // ---------------------------------------------------------------------------
+  var FORMS = { noun: ['s'], verb: ['s', 'ed', 'ing'], adjective: ['er', 'est'], '': ['s', 'ed', 'ing'] };
+  var IRREGULAR = {}, ODD_PLURAL = {}, ODD_ADJECTIVE = {};
+  // Verbs whose past is not made with -ed (and the same with a prefix: become, understand, overcome).
+  ('arise awake be bear beat begin bend bet bid bind bite bleed blow break breed bring build burn burst buy cast catch choose cling come cost creep cut deal dig dive do '
+    + 'draw dream drink drive eat fall feed feel fight find flee fling fly forbid forget forgive freeze get give go grind grow hang have hear hide hit hold hurt keep '
+    + 'kneel know lay lead lean leap learn leave lend let lie light lose make mean meet pay put quit read rid ride ring rise run say see seek sell send set sew shake '
+    + 'shed shine shoot show shrink shut sing sink sit slay sleep slide sling slit smell speak speed spell spend spill spin spit split spoil spread spring stand steal '
+    + 'stick sting stink stride strike string strive swear sweep swell swim swing take teach tear tell think throw thrust tread wake wear weave weep wet win wind wring write').split(' ').forEach(function (w) { IRREGULAR[w] = true; });
+  ('man woman child person mouse louse goose foot tooth ox sheep deer fish moose species series aircraft cactus fungus nucleus radius stimulus alga larva '
+    + 'bacterium datum medium criterion phenomenon analysis axis crisis hypothesis oasis thesis index appendix matrix vertex information '
+    + 'prey offspring salmon trout bison swine cattle police people news equipment furniture luggage advice homework evidence knowledge').split(' ').forEach(function (w) { ODD_PLURAL[w] = true; });
+  ('good bad far little many much well ill fun real right wrong just worth main live male female same').split(' ').forEach(function (w) { ODD_ADJECTIVE[w] = true; });
+  function irregular(base) {
+    return !!IRREGULAR[base] || ['be', 'for', 'fore', 'mis', 'out', 'over', 're', 'un', 'under', 'up', 'with'].some(function (p) { return base.length > p.length + 1 && base.indexOf(p) === 0 && !!IRREGULAR[base.slice(p.length)]; });
+  }
+  // The vowel sounds of a word, about (a silent last e is not one): stop 1, happy 2, visit 2.
+  function beats(w) { return (w.replace(/^y/, '').replace(/([^aeiouy])e$/, '$1').match(/[aeiouy]+/g) || []).length; }
+  // Which plain form of base a word is: '' (the word itself), 's', 'ed', 'ing', 'er' or 'est', or null. It reads the
+  // forms a sentence may have (volcanoes, leaves, stopped), more than inflect() makes.
+  function formOf(token, base, pos) {
+    var t = keyOf(token), b = keyOf(base);
+    if (!t || !b) return null;
+    if (t === b) return '';
+    var e = /e$/.test(b), d = b + b.charAt(b.length - 1), y = /[^aeiou]y$/.test(b) ? b.slice(0, -1) + 'i' : '';
+    var c = { s: [b + 's', b + 'es'], ed: [b + 'ed', e ? b + 'd' : '', d + 'ed'], ing: [b + 'ing', b.replace(/e$/, '') + 'ing', d + 'ing', /ie$/.test(b) ? b.slice(0, -2) + 'ying' : ''],
+      er: [b + 'er', e ? b + 'r' : '', d + 'er'], est: [b + 'est', e ? b + 'st' : '', d + 'est'] };
+    if (y) { c.s.push(y + 'es'); c.ed.push(y + 'ed'); c.er.push(y + 'er'); c.est.push(y + 'est'); }
+    if (/f$/.test(b)) c.s.push(b.slice(0, -1) + 'ves');
+    if (/fe$/.test(b)) c.s.push(b.slice(0, -2) + 'ves');
+    var allowed = own(FORMS, pos || '') ? FORMS[pos || ''] : [];
+    for (var i = 0; i < allowed.length; i++) if (c[allowed[i]].indexOf(t) >= 0) return allowed[i];
+    return null;
+  }
+  // A word in a form, made by the regular rules: '' when the word cannot be written in that form safely. def is the word's
+  // meaning: a noun gets -s only when its meaning is written for one thing ("A place where...", "An animal that...", "The
+  // natural place where..."), so "erosion" ("The loss of land") and "sand" ("Grains of rock") are never made plural.
+  var ONE_THING = /^(?:(?:an?|one|any|someone|somebody)\b|the (?:[a-z]+ ){0,2}(?:place|part|area|home|room|piece|person|animal|plant|building|group|unit|object|tool|line|path|hole|shape|side|edge|point|space|body)\b)/i;
+  function inflect(base, form, pos, def) {
+    var b = keyOf(base);
+    if (!b || /[^a-z]/.test(b)) return '';
+    if (!form) return b;
+    var cvc = /[^aeiou][aeiou][^aeiouwxy]$/.test(b) && !/qu/.test(b);
+    if (form === 's') {
+      if (pos === 'noun') {
+        if (ODD_PLURAL[b] || /(?:us|is|[^f]fe?|[^aeiou]o|man|ach|och)$/.test(b) || !ONE_THING.test(line(def))) return '';
+      } else if (pos !== 'verb' || b === 'be' || b === 'have') return '';
+      if (/[^aeiou]y$/.test(b)) return b.slice(0, -1) + 'ies';
+      if (/z$/.test(b)) return '';
+      if (/(?:s|x|ch|sh)$/.test(b)) return b + 'es';
+      if (/[^aeiou]o$/.test(b)) return b + 'es';
+      return b + 's';
+    }
+    if (form === 'ed' || form === 'ing') {
+      if (pos !== 'verb' || /c$/.test(b) || (form === 'ed' && irregular(b))) return '';
+      if (form === 'ed' && /e$/.test(b)) return b + 'd';
+      if (form === 'ed' && /[^aeiou]y$/.test(b)) return b.slice(0, -1) + 'ied';
+      if (form === 'ing' && b === 'be') return 'being';
+      if (form === 'ing' && /ie$/.test(b)) return b.slice(0, -2) + 'ying';
+      if (form === 'ing' && /[^eoy]e$/.test(b)) return b.slice(0, -1) + 'ing';
+      // stop, stopped; a longer word ending -er, -en or -on is not stressed there (gathered, happened); but visit, visited
+      // and admit, admitted hang on the stress, so any other longer one is left out.
+      if (cvc) return beats(b) === 1 ? b + b.charAt(b.length - 1) + form : /(?:[^f]er|en|on)$/.test(b) ? b + form : '';
+      return b + form;
+    }
+    if (form === 'er' || form === 'est') {
+      if (pos !== 'adjective' || ODD_ADJECTIVE[b]) return '';
+      if (/[^aeiou]y$/.test(b)) return beats(b) <= 2 ? b.slice(0, -1) + 'i' + form : '';
+      if (beats(b) !== 1) return '';
+      if (/e$/.test(b)) return b + form.slice(1);
+      return cvc ? b + b.charAt(b.length - 1) + form : b + form;
+    }
+    return '';
+  }
+  function headOf(bank, word) { try { return bank && typeof bank.head === 'function' ? bank.head(word) || null : null; } catch (_) { return null; } }
+  // A first capital stays a first capital: "Habitats" for a list typed "Habitat".
+  function withCase(out, like) { var c = text(like).charAt(0); return c && c !== c.toLowerCase() ? out.charAt(0).toUpperCase() + out.slice(1) : out; }
+  // What the bank says about a word, for writing it in a form: { base, pos, def } of the sense id given or of its first
+  // sense of that kind, or null when the bank does not have it.
+  function wordInfo(bank, word, pos, id) {
+    var s = id ? senseById(bank, id) : null;
+    if (!s || (pos && s.pos !== pos)) s = sensesOf(bank, word).filter(function (x) { return !pos || x.pos === pos; })[0] || null;
+    return s ? { base: keyOf(s.word), pos: line(s.pos, 20), def: line(s.def) } : null;
+  }
+  // A list row, for writing its word in a form. A word the bank does not have is only ever used as the teacher typed it.
+  function rowInfo(o) { return o.sense ? { base: keyOf(o.base || o.word), pos: o.pos || '', def: o.def } : { base: o.key, pos: o.pos || '', def: o.def, own: true }; }
+  // word, written in the form ('' for the word the meaning is for), or '' when it cannot be.
+  function inForm(word, info, form, bank) {
+    if (!info) return '';
+    if (!form) return info.own ? normalizeWord(word) : withCase(info.base, word);
+    if (info.own) return '';
+    var out = inflect(info.base, form, info.pos, info.def), h = out ? headOf(bank, out) : null;
+    return out && (!h || h === info.base) ? withCase(out, word) : '';
+  }
+
+  // Fill the blank: the sentence with the word as a blank. The word must be in it once, as written in the list or in a
+  // plain form of it (2026-11-13: "The deer watched for predators" works for predator; the answer is then "predators").
+  //   blankSentence(sentence, word, { bank, base, pos }) -> { ask, article, answer, form, why }
+  // base: the word the meaning is for (bank.head(word) when left out); pos: its kind (noun, verb...), which forms it may have.
+  function blankSentence(sentence, word, opts) {
+    var s = line(sentence), w = keyOf(word), o = opts || {};
     if (!s || !w) return { ask: '', why: 'There is no example sentence.' };
-    var esc = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), re;
-    try { re = new RegExp('(^|[^\\p{L}\\p{M}])(' + esc + ')(?![\\p{L}\\p{M}])', 'giu'); } catch (_) { re = new RegExp('(^|\\W)(' + esc + ')(?!\\w)', 'gi'); }
-    var found = s.match(re) || [];
-    if (!found.length) return { ask: '', why: 'The sentence does not have the word as it is written in your list. Edit the sentence.' };
+    var base = keyOf(o.base || headOf(o.bank, w) || w), pos = line(o.pos, 20), found = [], re;
+    if (/[ '’-]/.test(w)) {
+      // A word of more than one part ("food chain") is found as written.
+      var esc = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      try { re = new RegExp('(^|[^\\p{L}\\p{M}])(' + esc + ')(?![\\p{L}\\p{M}])', 'giu'); } catch (_) { re = new RegExp('(^|\\W)(' + esc + ')(?!\\w)', 'gi'); }
+      s.replace(re, function (m, before, at, offset) { found.push({ at: offset + before.length, text: at, form: base === w ? '' : null }); return m; });
+    } else {
+      try { re = /[\p{L}\p{M}]+/gu; } catch (_) { re = /[A-Za-z]+/g; }
+      s.replace(re, function (token, offset) {
+        var k = keyOf(token);
+        if (k === w) { found.push({ at: offset, text: token, form: formOf(w, base, pos) }); return token; }
+        var form = formOf(k, base, pos), h = form != null ? headOf(o.bank, k) : null;
+        if (form != null && (!h || h === base)) found.push({ at: offset, text: token, form: form });
+        return token;
+      });
+    }
+    if (!found.length) return { ask: '', why: 'The sentence does not have the word as it is written in your list, or with a plain ending like -s, -ed or -ing. Edit the sentence.' };
     if (found.length > 1) return { ask: '', why: 'The word is in the sentence more than once. Edit the sentence.' };
-    var article = '';
-    var ask = s.replace(re, function (m, before, at, offset) {
-      var lead = s.slice(0, offset + before.length);
-      var a = /(?:^|\s)(an?)\s+$/i.exec(lead);
-      article = a ? a[1].toLowerCase() : '';
-      return before + '___';
-    });
-    return { ask: ask, article: article, why: '' };
+    var f = found[0], a = /(?:^|\s)(an?)\s+$/i.exec(s.slice(0, f.at));
+    // The answer is the word as the sentence has it, with the list's first letter (a capital where the list has one).
+    var answer = keyOf(f.text) === w ? normalizeWord(word) : withCase(keyOf(f.text), word);
+    return { ask: s.slice(0, f.at) + '___' + s.slice(f.at + f.text.length), article: a ? a[1].toLowerCase() : '', answer: answer, form: f.form, why: '' };
   }
   function vowelStart(word) { return /^[aeiou]/i.test(line(word)); }
-  // Wrong words for a blank: only words from the teacher's list (the trial: related words often fit the sentence too).
-  // The bank's "does not fit" words first, then words of the same kind (noun, verb...), then the rest. After "a" the
-  // word must start with a consonant letter, after "an" with a vowel letter, so the article is not a clue.
-  function blankPool(row, rows, article) {
+  // Wrong words for a blank (2026-11-13: of the same kind as the word, noun with noun, and in the sentence's form).
+  //   1. Words from the teacher's list (the trial: related words often fit the sentence too), the bank's "does not fit"
+  //      words first, written in the sentence's form; a word that cannot be is left out.
+  //   2. When the list has too few: the bank's own words that do not fit this sentence (sense.blanks, checked for it and
+  //      already in its form), only while the sentence is the bank's own.
+  //   3. Words of the list whose kind is not known (a word the bank does not have), as typed, when no form is needed.
+  // After "a" the word must start with a consonant letter, after "an" with a vowel letter, so the article is not a clue.
+  function blankPool(row, rows, b, bank) {
+    var out = [], seen = {}, base = keyOf(row.base || row.word), form = b.form;
+    seen[row.key] = seen[keyOf(b.answer)] = true;
+    var add = function (w) {
+      var k = keyOf(w);
+      if (!k || seen[k] || (b.article === 'a' && vowelStart(w)) || (b.article === 'an' && !vowelStart(w))) return;
+      var h = headOf(bank, k);
+      if (h && h === base) return;
+      seen[k] = true;
+      out.push(normalizeWord(w));
+    };
     var fits = (row.sense && Array.isArray(row.sense.blanks) ? row.sense.blanks : []).map(keyOf);
     // A fixed mix for each word, so the same few list words are not the wrong answers everywhere.
     var others = mixed(rows.filter(function (o) { return o !== row && o.key !== row.key; }), 'blank|' + row.key);
-    if (article === 'a') others = others.filter(function (o) { return !vowelStart(o.word); });
-    if (article === 'an') others = others.filter(function (o) { return vowelStart(o.word); });
-    var rank = function (o) { return fits.indexOf(o.key) >= 0 ? 0 : row.pos && o.pos === row.pos ? 1 : 2; };
-    return others.map(function (o, i) { return { o: o, i: i }; }).sort(function (a, b) { return rank(a.o) - rank(b.o) || a.i - b.i; }).map(function (p) { return p.o.word; });
+    var written = function (o) { return form == null ? o.word : inForm(o.word, rowInfo(o), form, bank); };
+    var same = others.filter(function (o) { return !row.pos || o.pos === row.pos; }).map(function (o, i) { return { w: written(o), i: i }; }).filter(function (p) { return !!p.w; });
+    same.sort(function (x, y) { return (fits.indexOf(keyOf(x.w)) >= 0 ? 0 : 1) - (fits.indexOf(keyOf(y.w)) >= 0 ? 0 : 1) || x.i - y.i; }).forEach(function (p) { add(p.w); });
+    if (row.sense && row.example === line(row.sense.example)) (row.sense.blanks || []).forEach(function (w) {
+      // The curation chose these words for this sentence. One the bank has is used only when it has a meaning of the same kind.
+      if (!headOf(bank, w) || !row.pos || sensesOf(bank, w).some(function (s) { return s.pos === row.pos; })) add(w);
+    });
+    if (row.pos && !form) others.filter(function (o) { return !o.pos; }).forEach(function (o) { add(o.word); });
+    return out;
+  }
+  // Why a sentence has too few wrong words, in plain words.
+  function blankShort(row, b) {
+    var kind = row.pos ? row.pos + 's' : 'words';
+    var how = b.form ? ' that can be written like ' + b.answer : '';
+    return 'Fill the blank needs 3 other ' + kind + ' from your list' + how + (b.article ? (how ? ' and' : ' that') + ' can go after "' + b.article + '"' : '')
+      + '. Add words to the list' + (b.article || b.form ? ', or edit the sentence.' : '.');
+  }
+  // Meaning to word for a word typed in another form ("cats", with the meaning of "cat"): the wrong words are written the
+  // same way ("dogs") when every one of them can be; else the question asks for the word the meaning is for ("cat"), and
+  // step 2 says so. { answer, wrong: [word, ...], base: true when it asks for that word, form }. 2026-11-13.
+  function wordQuestion(row, bank) {
+    var plain = { answer: row.word, wrong: row.wrong.map(function (c) { return c.word; }), base: false, form: '' };
+    if (!row.base || !row.def || row.wrong.length < WRONG) return plain;
+    var form = formOf(row.word, row.base, row.pos);
+    if (form) {
+      var made = row.wrong.map(function (c) { var info = wordInfo(bank, c.word, '', c.id); return inForm(c.word, info, form, bank); });
+      var keys = made.map(keyOf).concat(row.key);
+      if (made.every(Boolean) && keys.every(function (k, i) { return keys.indexOf(k) === i; })) return { answer: row.word, wrong: made, base: false, form: form };
+    }
+    var back = row.wrong.map(function (c) { return inForm(c.word, wordInfo(bank, c.word, '', c.id), '', bank) || c.word; });
+    var answer = withCase(row.base, row.word), all = back.map(keyOf).concat(keyOf(answer));
+    if (!all.every(function (k, i) { return all.indexOf(k) === i; })) back = plain.wrong;
+    return { answer: answer, wrong: back, base: true, form: '' };
   }
 
   // The questions for a list, as the teacher's check screen shows them.
@@ -249,10 +403,12 @@
       var key = keyOf(word), mine = isObject(wordEdits[key]) ? wordEdits[key] : {};
       var senses = sensesOf(bank, word);
       var sense = senses.filter(function (s) { return s.id === mine.sense; })[0] || senses[0] || null;
-      var row = { word: word, key: key, inBank: senses.length > 0, senses: senses, sense: sense, own: !sense };
+      var row = { word: word, key: key, inBank: senses.length > 0, senses: senses, sense: sense, own: !sense, base: '' };
       if (sense) {
         var changed = isObject(senseEdits[sense.id]) ? senseEdits[sense.id] : {};
         row.senseId = sense.id;
+        // The word the meaning is written for, when the list has another form of it ("cats": the meaning of "cat").
+        if (line(sense.word, 60) && keyOf(sense.word) !== key) row.base = line(sense.word, 60);
         row.pos = line(sense.pos, 20);
         row.def = line(changed.def) || line(sense.def);
         row.example = changed.example != null ? line(changed.example) : line(sense.example);
@@ -280,15 +436,21 @@
       row.pool = row.def ? poolFor(row, rows, bank) : [];
       var kept = row.mine.wrongFor === row.senseId && Array.isArray(row.mine.wrong) ? row.mine.wrong.filter(function (c) { return isObject(c) && line(c.def) && line(c.word); }).slice(0, WRONG)
         .map(function (c) { return { id: line(c.id, 80), word: line(c.word, 60), def: line(c.def), from: c.from === 'list' ? 'list' : c.from === 'teacher' ? 'teacher' : 'bank' }; }) : [];
-      row.wrong = kept.length === WRONG ? kept : row.def ? balancedTrio(row.def, row.pool, row.key + '|' + row.senseId) : [];
+      // A word typed in another form ("cats"): the 3 are chosen from the candidates that can be written the same way, when
+      // there are 3, so Meaning to word can ask "cats" among "dogs", "owls"... (wordQuestion). 2026-11-13.
+      var form = row.base && row.def ? formOf(row.word, row.base, row.pos) : '';
+      var fit = form ? row.pool.filter(function (c) { return !!inForm(c.word, wordInfo(bank, c.word, '', c.id), form, bank); }) : [];
+      row.wrong = kept.length === WRONG ? kept : row.def ? balancedTrio(row.def, fit.length >= WRONG ? fit : row.pool, row.key + '|' + row.senseId) : [];
       row.problems = row.wrong.map(function (c) { return wrongProblem(row, c, bank, row.wrong); });
-      var b = blankSentence(row.example, row.word);
-      var bpool = b.ask ? blankPool(row, rows, b.article) : [];
+      row.wordAsk = wordQuestion(row, bank);
+      var b = blankSentence(row.example, row.word, { bank: bank, base: row.base || row.word, pos: row.pos });
+      var bpool = b.ask ? blankPool(row, rows, b, bank) : [];
       var bkept = row.mine.blankFor === row.senseId + '|' + b.ask && Array.isArray(row.mine.blank) ? row.mine.blank.map(function (w) { return normalizeWord(w); }).filter(Boolean).slice(0, WRONG) : [];
-      row.blank = { ask: b.ask, why: b.why, pool: bpool, wrong: bkept.length === WRONG ? bkept : bpool.slice(0, WRONG), problems: [] };
-      if (b.ask && bpool.length < WRONG) row.blank.why = 'Fill the blank needs 3 other words from your list that can go after "' + (b.article || 'the') + '". Add words to the list, or edit the sentence.';
+      row.blank = { ask: b.ask, why: b.why, answer: b.ask ? b.answer : row.word, form: b.ask ? b.form : '', pool: bpool, wrong: bkept.length === WRONG ? bkept : bpool.slice(0, WRONG), problems: [] };
+      if (b.ask && bpool.length < WRONG) row.blank.why = blankShort(row, b);
+      var itself = keyOf(row.base || row.word);
       row.blank.problems = row.blank.wrong.map(function (w, i) {
-        if (keyOf(w) === row.key) return 'This is the word itself.';
+        if (keyOf(w) === row.key || keyOf(w) === keyOf(row.blank.answer) || headOf(bank, w) === itself) return 'This is the word itself.';
         if (row.blank.wrong.some(function (x, j) { return j !== i && keyOf(x) === keyOf(w); })) return 'This word is listed twice.';
         return '';
       });
@@ -396,8 +558,8 @@
         var why = rowStop(row, t.id);
         if (why) { out.left.push({ word: row.word, type: t.id, why: why }); return; }
         if (t.id === 'meaning') out.items[t.id].push({ row: row, ask: row.word, answer: row.def, wrong: row.wrong.map(function (c) { return c.def; }) });
-        else if (t.id === 'word') out.items[t.id].push({ row: row, ask: row.def, answer: row.word, wrong: row.wrong.map(function (c) { return c.word; }) });
-        else if (t.id === 'blank') out.items[t.id].push({ row: row, ask: row.blank.ask, answer: row.word, wrong: row.blank.wrong.slice() });
+        else if (t.id === 'word') { var wq = row.wordAsk || wordQuestion(row, null); out.items[t.id].push({ row: row, ask: row.def, answer: wq.answer, wrong: wq.wrong.slice() }); }
+        else if (t.id === 'blank') out.items[t.id].push({ row: row, ask: row.blank.ask, answer: row.blank.answer || row.word, wrong: row.blank.wrong.slice() });
         else out.items[t.id].push({ row: row, ask: row.word, answer: row.word, wrong: row.pictureWrong.map(function (c) { return c.word; }) });
       });
     });
@@ -416,7 +578,45 @@
     });
     return out;
   }
+  // Word choices that differ only in a first capital give the answer away: a list typed "Habitat, Prey" has "Habitat"
+  // beside the word list's "lot" and "park". When the first letters are mixed, or the blank opens the sentence (force),
+  // every choice starts with a capital. Nothing is made lower case, so a name keeps its capital. 2026-11-13.
+  function alike(list, force) {
+    var upper = function (w) { return w.charAt(0) !== w.charAt(0).toLowerCase(); };
+    var caps = list.filter(upper).length;
+    if (!force && (caps === 0 || caps === list.length)) return list;
+    return list.map(function (w) { return w.charAt(0).toUpperCase() + w.slice(1); });
+  }
   var EXACT = { soundAnswerMatches: function (given, answer) { return String(given) === String(answer); } };
+  // The sample question a check opens with (2026-11-13), as a math check has one: shown first, with right or wrong, never
+  // scored. Easy everyday words; the first sample of the kind that shares no word with the list is used (a list word,
+  // or a form of one, would be met before it is asked), and none when both do.
+  var SAMPLES = {
+    word: [{ ask: 'A seat for one person, with a back and four legs', answer: 'chair', wrong: ['cloud', 'spoon', 'river'] },
+      { ask: 'A round fruit that grows on trees', answer: 'apple', wrong: ['shoe', 'pencil', 'cloud'] }],
+    meaning: [{ ask: 'apple', answer: 'A round fruit that grows on trees', wrong: ['A tool that cuts paper and cloth', 'A room in a house where people sleep', 'A big bird that cannot fly'] },
+      { ask: 'chair', answer: 'A seat for one person, with a back and four legs', wrong: ['A long, thin tool for writing', 'Water that falls from clouds', 'A small animal with long ears'] }],
+    blank: [{ ask: 'The ___ barked at the cat.', answer: 'dog', wrong: ['spoon', 'cloud', 'pencil'] },
+      { ask: 'I drink milk from a ___.', answer: 'cup', wrong: ['tree', 'shoe', 'road'] }],
+    picture: [{ ask: 'dog', answer: 'dog', wrong: ['cup', 'sun', 'tree'] }, { ask: 'cat', answer: 'cat', wrong: ['ball', 'hat', 'fish'] }],
+  };
+  SAMPLES.picword = SAMPLES.picture;
+  function sampleFor(id, rows, bank, imageOf) {
+    var listed = function (token) {
+      return (rows || []).some(function (r) {
+        // The token is a form of the list word (chair, chairs), or the list word a form of it (chairs, chair).
+        return [r.key, keyOf(r.base || r.word)].some(function (b) { return formOf(token, b, r.pos) != null || formOf(token, b, '') != null || formOf(b, token, '') != null || headOf(bank, token) === b; });
+      });
+    };
+    var found = (own(SAMPLES, id) ? SAMPLES[id] : []).filter(function (s) {
+      var words = contentWords([s.ask, s.answer].concat(s.wrong).join(' '));
+      if (words.some(listed)) return false;
+      return typeOf(id).pictures ? [s.answer].concat(s.wrong).every(function (w) { return !!imageOf(w); }) : true;
+    })[0];
+    if (!found) return null;
+    var word = id === 'meaning' || typeOf(id).pictures ? found.ask : found.answer;
+    return { sample: true, row: { key: 'sample', word: word, senseId: 'sample' }, ask: found.ask, answer: found.answer, wrong: found.wrong.slice() };
+  }
 
   // The lesson. lessonFromVocab({ loader, rows, types: ['meaning', 'word'], mode: 'practice' | 'check', title, readAloud })
   // Practice: feedback on every question, two tries, no clock. Check: one try, no feedback, a score (items correct),
@@ -457,21 +657,37 @@
       if (!own(pictured, keyOf(word))) pictured[keyOf(word)] = { word: line(word, 60), set: got.set === 'openmoji' ? 'openmoji' : 'mulberry' };
       return iid;
     };
-    types.forEach(function (id) {
+    // The order of the kinds (2026-11-13): with Word to meaning and Meaning to word both on, Meaning to word comes first.
+    // Its choices are words, so every meaning is asked before it is ever shown as a choice; Word to meaning then shows the
+    // meanings as choices, each one already asked. Word to meaning keeps the words in the order Meaning to word asked them,
+    // so a word's two questions are always a whole round apart, never side by side. The other kinds follow, as before.
+    var order = types.slice();
+    if (order.indexOf('meaning') >= 0 && order.indexOf('word') >= 0) { order.splice(order.indexOf('word'), 1); order.splice(order.indexOf('meaning'), 0, 'word'); }
+    var asked = {};
+    order.forEach(function (id) {
       var t = typeOf(id), adapter = loader.CHECK_ADAPTERS[t.activity];
       var list = mixed(q.items[id], 'order|' + id + '|' + all);
+      if (id === 'meaning' && asked.word) list = list.map(function (item, i) { return { item: item, at: own(asked.word, item.row.key) ? asked.word[item.row.key] : 1e6 + i }; })
+        .sort(function (x, y) { return x.at - y.at; }).map(function (p) { return p.item; });
       if (t.pictures) list = list.filter(function (item) {
         var ok = !!imageOf(item.answer) && item.wrong.every(function (w) { return !!imageOf(w); });
         if (!ok) q.left.push({ word: item.row.word, type: id, why: 'A picture could not be used.' });
         return ok;
       });
       if (!list.length) return;
-      var items = list.map(function (item, i) {
+      asked[id] = {};
+      list.forEach(function (item, i) { asked[id][item.row.key] = i; });
+      // A check opens with one sample question, not scored (as a math check does): see sampleFor.
+      var sample = check && !blocks.length ? sampleFor(id, rows, o.bank, imageOf) : null;
+      var made = (sample ? [sample] : []).concat(list).map(function (item, at) {
+        var i = sample ? at - 1 : at;
         var choices = mixed([item.answer].concat(item.wrong), 'choices|' + id + '|' + item.row.key + '|' + item.ask + '|' + item.wrong.join('|'));
         var n = (i < 9 ? '0' : '') + (i + 1);
         // The sense id travels in the item id, except where it would name the answer in a check (the word is the answer there).
-        var itemId = t.activity + '-' + n + (!check || id === 'meaning' ? '@' + item.row.senseId : '');
-        var raw = { id: itemId.slice(0, 80), word: check && id !== 'meaning' ? item.ask.slice(0, 120) : item.row.word, ask: item.ask, choices: choices, answer: item.answer, read: read, lang: 'en' };
+        var itemId = item.sample ? t.activity + '-p0' : t.activity + '-' + n + (!check || id === 'meaning' ? '@' + item.row.senseId : '');
+        // Word choices look alike: see alike(). The recordings and pictures are still found by the word itself.
+        var shown = id === 'word' || id === 'blank' || id === 'picword' ? alike(choices, id === 'blank' && /^_{2,}/.test(item.ask)) : choices;
+        var raw = { id: itemId.slice(0, 80), word: check && id !== 'meaning' ? item.ask.slice(0, 120) : item.row.word, ask: item.ask, choices: shown, answer: shown[choices.indexOf(item.answer)], read: read, lang: 'en' };
         if (id === 'meaning') { var heard = clipOf(item.row.word); if (heard) raw.askAudio = heard; }
         if (id === 'word' || id === 'blank') { var voiced = choices.map(clipOf); if (voiced.some(Boolean)) raw.choiceAudio = voiced; }
         if (id === 'picture') {
@@ -480,17 +696,18 @@
           var named = clipOf(item.row.word); if (named) raw.askAudio = named;
         }
         if (id === 'picword') {
-          raw.word = check ? 'Picture ' + (i + 1) : item.row.word;
+          raw.word = check ? (item.sample ? 'Sample picture' : 'Picture ' + (i + 1)) : item.row.word;
           raw.ask = 'picture';
           raw.image = imageOf(item.row.word);
-          raw.choices = choices.map(function (w) { var c = { text: w }, clip = clipOf(w); if (clip) c.audio = clip; return c; });
+          raw.choices = choices.map(function (w, k) { var c = { text: shown[k] }, clip = clipOf(w); if (clip) c.audio = clip; return c; });
         }
-        var made = adapter.prepare(raw);
-        if (!made || !made.item) throw new Error('The question for "' + item.row.word + '" (' + t.name + ') cannot be used: ' + (made && made.missing ? made.missing.join(', ') : 'no reason given') + '.');
+        if (item.sample) raw.practice = true;
+        var prepared = adapter.prepare(raw);
+        if (!prepared || !prepared.item) throw new Error('The question for "' + item.row.word + '" (' + t.name + ') cannot be used: ' + (prepared && prepared.missing ? prepared.missing.join(', ') : 'no reason given') + '.');
         // A check keeps the raw item: the loader prepares and seals it (its answer is scrambled there).
-        return check ? raw : Object.assign({ id: raw.id }, made.item, { target: made.item.answer });
+        return check ? raw : Object.assign({ id: raw.id }, prepared.item, { target: prepared.item.answer });
       });
-      blocks.push({ activity: t.activity, items: items });
+      blocks.push({ activity: t.activity, items: made });
       titles[t.activity] = adapter.title;
     });
     if (!blocks.length) throw new Error('No question can be made from this list yet.' + (q.left.length ? ' ' + q.left[0].word + ': ' + q.left[0].why : ''));
@@ -586,7 +803,9 @@
     }
     var html = loader.buildHtml(JSON.parse(JSON.stringify(lesson)), { core: check ? undefined : EXACT, teacherCode: check ? code || null : undefined, labels: labels, attributions: credits });
     var read = lesson.blocks.some(function (b) { return b.items.some(function (it) { return it.read === true; }); });
-    var recipe = { builder: VERSION, types: lesson.blocks.map(function (b) { return typeOf(b.activity).id; }), mode: check ? 'check' : 'practice', readAloud: read,
+    // The kinds in the page's order (the file may ask them in another: see lessonFromVocab).
+    var made = lesson.blocks.map(function (b) { return typeOf(b.activity).id; });
+    var recipe = { builder: VERSION, types: TYPES.map(function (t) { return t.id; }).filter(function (id) { return made.indexOf(id) >= 0; }), mode: check ? 'check' : 'practice', readAloud: read,
       words: rows.map(function (r) { return { word: r.word, sense: r.senseId }; }) };
     if (media.recorded.length) recipe.recordings = media.recorded.length;
     if (o.voices === false) recipe.voices = false;
@@ -637,7 +856,7 @@
 
   var api = { VERSION: VERSION, MAX_WORDS: MAX_WORDS, WRONG: WRONG, TYPES: TYPES.map(function (t) { return Object.assign({}, t); }), MEASURE: Object.assign({}, MEASURE),
     normalizeWord: normalizeWord, keyOf: keyOf, parseWords: parseWords, closeMeaning: closeMeaning, contentWords: contentWords, flat: flat, wrongProblem: wrongProblem,
-    balancedTrio: balancedTrio, blankSentence: blankSentence, draftRows: draftRows, swap: swap, rowStop: rowStop, questions: questions,
+    balancedTrio: balancedTrio, blankSentence: blankSentence, formOf: formOf, inflect: inflect, draftRows: draftRows, swap: swap, rowStop: rowStop, questions: questions,
     lessonFromVocab: lessonFromVocab, creditLines: creditLines, MIN_PICTURES: MIN_PICTURES, pictureCount: pictureCount, pictureWrong: pictureWrong, wordsToHear: wordsToHear, buildVocabPacket: buildVocabPacket, withCodeName: withCodeName, codeName: codeName, readBack: readBack, mixed: mixed };
   root.AlloPacketVocab = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;

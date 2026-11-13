@@ -77,6 +77,14 @@ th[aria-sort="ascending"] .sort-name::after { content: " \2191"; content: " \219
 th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \2193" / ""; color: var(--ink); font-weight: 700; }
 .name-link { min-height: 2.75rem; padding: 0; font-weight: 700; text-align: left; }
 #group-table .data tbody th { position: sticky; left: 0; min-width: 9rem; border-right: 1px solid var(--line); }
+/* 2026-11-13: the name column stays in view while a group table scrolls sideways, its heading too */
+#group-table .data thead th:first-child { position: sticky; left: 0; z-index: 2; border-right: 1px solid var(--line); }
+#group-table .data tbody th { z-index: 1; }
+.group-sub { margin: 1.75rem 0 0; font-size: 1.125rem; color: var(--ink); line-height: 1.2; }
+/* The cue that a table is wider than its box: a line at its top left, and a shade at the right edge that goes when the end is reached */
+.scroll-cue { position: sticky; left: 0; margin: 0; padding: 0.45rem 0.9rem; font-size: 0.875rem; font-weight: 600; color: var(--ink); background: var(--note); border-bottom: 1px solid var(--line); }
+.scroll-cue::after { content: " \2192"; content: " \2192" / ""; }
+.table-scroll.is-wide { background: linear-gradient(to left, var(--surface) 45%, rgba(255, 255, 255, 0)) right / 2.5rem 100% no-repeat local, radial-gradient(farthest-side at 100% 50%, rgba(20, 24, 60, 0.22), rgba(20, 24, 60, 0)) right / 1rem 100% no-repeat scroll, var(--surface); }
 
 /* One learner */
 .learner-line { margin-top: 1.25rem; font-size: 1.125rem; color: var(--ink); }
@@ -128,6 +136,20 @@ th[aria-sort="descending"] .sort-name::after { content: " \2193"; content: " \21
 
 @media (max-width: 29.99rem) {
   .take-row .btn, .results-tools .btn { flex: 1 1 100%; }
+}
+
+/* 2026-11-13: on a phone, Every result and a measure's table are one card per row, each cell named by its column,
+   so Time taken and Notes are in view without scrolling. The script gives these tables their roles (data-cards). */
+@media screen and (max-width: 39.99rem) {
+  .data-cards.data-wide { min-width: 0; }
+  .data-cards, .data-cards tbody, .data-cards tr, .data-cards th, .data-cards td { display: block; }
+  .data-cards thead { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; }
+  .data-cards tbody tr { padding: 0.65rem 0.9rem; border-bottom: 1px solid var(--line); }
+  .data-cards tbody tr:last-child { border-bottom: 0; }
+  .data-cards tbody th, .data-cards tbody td, .data-cards.data-measure td:nth-child(n) { min-width: 0; padding: 0.15rem 0; border: 0; white-space: initial; }
+  .data-cards tbody th { font-size: 1rem; background: none; }
+  .data-cards td[data-label]::before { content: attr(data-label) ": "; content: attr(data-label) ": " / ""; font-weight: 700; color: var(--muted); }
+  .data-cards td:empty { display: none; }
 }
 
 @media (min-width: 40rem) {

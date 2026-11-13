@@ -5,6 +5,13 @@
 // graded at word_sounds_module.js:19516-19523 (option.toLowerCase() ===
 // word.toLowerCase(), then checkAnswer("correct"|"incorrect","correct"),
 // default budget 2 tries, word_sounds_module.js:17130).
+// 2026-11-13 parity: the app's sound-only choices are now cards (a tap plays and selects, a
+// large Check submits, a missed card is crossed out: 94704af0e4). The file keeps two buttons
+// per choice, Listen first, then Choose, in every activity, as Find Sounds always had them
+// (hear, then choose).
+// Fewer choices: the app trims this board below Hard (WS_CORE.choiceLimit + trimChoices:
+// Easy 3, Medium 4). A packet does the same when made with Choices Easy or Medium
+// (word_sounds_packet_builder.js, choiceLevels); a board as built (All) is shown whole.
 module.exports = {
   id: 'blending',
   title: 'Blend Sounds',
@@ -114,7 +121,7 @@ module.exports = {
           });
           if (outcome !== 'correct') { box.classList.add('tried'); choose.setAttribute('aria-disabled', 'true'); }
         } } }, [ctx.showLetters ? ctx.el('span', { class: 'letters', text: shownWord }) : ctx.fmt(ctx.L.blending_option_n, { n: n })]);
-      var box = ctx.el('li', { class: 'choice' }, [choose, listen]);
+      var box = ctx.el('li', { class: 'choice' }, [listen, choose]);
       cards.push({ box: box, choose: choose, right: String(choice.text).toLowerCase() === String(item.target).toLowerCase() });
       list.appendChild(box);
     });
@@ -135,6 +142,8 @@ module.exports = {
       run([{ id: item.instruction, gap: 200 }].concat(soundSteps(), optionSteps(200)));
     }
     return {
+      // The R key: the sounds and the question again.
+      replay: function () { run(soundSteps()); },
       reveal: function () {
         halt();
         cards.forEach(function (c) {

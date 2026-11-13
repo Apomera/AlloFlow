@@ -212,6 +212,16 @@
       row.own ? el('span', 'v-mark v-mark-not', row.net ? (row.net.changed ? 'from the internet, changed by you' : 'from the internet, not checked') : 'not in the word list') : row.checked ? el('span', 'v-mark', 'checked') : el('span', 'v-mark v-mark-not', 'not checked yet'),
       row.edited && !row.own ? el('span', 'v-pos', 'you changed it') : null);
     box.appendChild(head);
+    // "cats" is looked up as "cat": the meaning is for that word, and the student sees the word as typed. 2026-11-13.
+    // 2026-11-13: in Meaning to word the wrong words are written the same way ("dogs"), or, when they cannot all be, the
+    // question asks for the word the meaning is for (builder.wordQuestion).
+    if (row.base) {
+      var asked = row.wordAsk || {};
+      box.appendChild(el('p', 'v-out', 'The meaning is for ' + row.base + '. Students see ' + row.word + ' as you typed it'
+        + (asked.base ? ', except in Meaning to word: there the answer is ' + asked.answer + ', because its wrong words cannot all be written like ' + row.word : '')
+        + '. To ask about ' + row.base + ', type ' + row.base + ' in step 1.'
+        + (asked.form && asked.wrong && asked.wrong.length ? ' In Meaning to word the wrong words are written the same way: ' + listed(asked.wrong) + '.' : '')));
+    }
     // The right answer.
     var right = el('div', 'v-line v-right');
     if (isEditing(row, 'def', 0) || (row.own && !row.def)) {
@@ -225,7 +235,8 @@
     box.appendChild(right);
     // A word the word list does not have: its meaning can be looked up online, on a page of its own (the only one that may).
     if (row.own) {
-      var look = el('a', 'btn btn-small', row.def ? 'Look it up online again' : 'Look it up online');
+      // "again" only after a lookup: a meaning the teacher typed was not looked up (2026-11-13, teacher-journey pass).
+      var look = el('a', 'btn btn-small', row.net ? 'Look it up online again' : 'Look it up online');
       look.href = LOOKUP_PAGE + '#word=' + encodeURIComponent(row.word);
       look.setAttribute('data-lookup', row.key);
       box.appendChild(add(el('p', 'v-own'), look, el('span', 'hint', ' Opens a page that sends only this word to a free online dictionary, after you allow it.')));
@@ -366,8 +377,9 @@
       var usable = rows.filter(function (r) { return !builder.rowStop(r, t.id); }).length;
       var note = t.id === 'blank' ? usable + ' of ' + count(rows.length, 'word') + ' have a sentence that works.'
         : !t.pictures ? usable + ' of ' + count(rows.length, 'word') + ' can be asked this way.'
-        : closed ? 'Only ' + pics.withPicture + ' of ' + count(rows.length, 'word') + ' have a picture. Picture questions need at least ' + pics.need + ', so that the other pictures are mostly words from your list.'
-        : usable + ' of ' + count(rows.length, 'word') + ' can be asked this way. ' + capital(count(pics.withPicture, 'word')) + ' have a picture.';
+        // 2026-11-13 (teacher-journey pass): "None of the 12 words" rather than "Only 0 of 12 words"; "1 word has".
+        : closed ? (pics.withPicture ? 'Only ' + pics.withPicture + ' of ' + count(rows.length, 'word') + ' have a picture.' : 'None of the ' + rows.length + ' words has a picture.') + ' Picture questions need at least ' + pics.need + ', so that the other pictures are mostly words from your list.'
+        : usable + ' of ' + count(rows.length, 'word') + ' can be asked this way. ' + capital(count(pics.withPicture, 'word')) + (pics.withPicture === 1 ? ' has' : ' have') + ' a picture.';
       add(label, box, el('span', 'choice-name', t.name), el('span', 'choice-line', t.line + (t.on ? '' : ' Off unless you choose it.')), el('span', 'choice-note', note));
       label.classList.toggle('is-on', box.checked);
       host.appendChild(label);
@@ -462,6 +474,8 @@
         add(line, el('p', 'v-text', row.blank.ask || row.example || 'No sentence.'), add(el('div', 'v-tools'), editButton(row, 'example', 0, 'Edit the sentence for ' + row.word)));
       }
       box.appendChild(line);
+      // The sentence has another form of the word ("predators"): that form is the answer, and the wrong words are written the same way. 2026-11-13.
+      if (row.blank.ask && row.blank.answer && builder.keyOf(row.blank.answer) !== row.key) box.appendChild(el('p', 'v-out', 'The sentence has ' + row.blank.answer + ', so the answer is ' + row.blank.answer + (row.blank.why ? '.' : ', and the wrong words are written the same way.')));
       if (!row.def) box.appendChild(el('p', 'v-out', 'Left out: it has no meaning yet (step 2).'));
       else if (row.blank.why) box.appendChild(el('p', 'v-out', 'Left out: ' + row.blank.why.charAt(0).toLowerCase() + row.blank.why.slice(1)));
       else {
@@ -577,16 +591,23 @@
     show('making', false);
     var blob = new Blob([result.html], { type: 'text/html' });
     var lesson = result.lesson;
-    built = { html: result.html, name: fileName(lesson.title, (state.codeName ? '__' + builder.codeName(state.codeName) : '') + '.html'), bytes: blob.size, lesson: lesson };
+    built = { html: result.html, name: fileName(lesson.title, (state.codeName ? '__' + builder.codeName(state.codeName) : '') + '.html'), bytes: blob.size, lesson: lesson,
+      coded: state.mode === 'check' && codeNow().length >= 4 };
     try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
     var q = builder.questions(rows, types);
-    var total = lesson.blocks.reduce(function (n, b) { return n + b.items.length; }, 0);
-    var kinds = lesson.blocks.map(function (b) { var t = builder.TYPES.filter(function (x) { return x.activity === b.activity; })[0]; return b.items.length + ' ' + t.name; });
-    var data = [['Questions', capital(count(total, 'question')) + ': ' + listed(kinds) + '. Each has 4 answers to choose from, in a mixed order.']];
+    // A check's sample question (2026-11-13) is not one of the questions: it is not scored.
+    var scored = function (b) { return b.items.filter(function (it) { return !it.practice; }).length; };
+    var samples = lesson.blocks.reduce(function (n, b) { return n + b.items.length - scored(b); }, 0);
+    var total = lesson.blocks.reduce(function (n, b) { return n + scored(b); }, 0);
+    var kinds = lesson.blocks.map(function (b) { var t = builder.TYPES.filter(function (x) { return x.activity === b.activity; })[0]; return scored(b) + ' ' + t.name; });
+    var data = [['Questions', capital(count(total, 'question')) + ': ' + listed(kinds) + '. Each has 4 answers to choose from, in a mixed order.'
+      + (lesson.blocks.length > 1 && types.indexOf('meaning') >= 0 && types.indexOf('word') >= 0 ? ' Meaning to word comes first, so no meaning is shown as a choice before it is asked.' : '')]];
     var left = q.left.map(function (l) { var t = builder.TYPES.filter(function (x) { return x.id === l.type; })[0]; return l.word + ' (' + t.name + '): ' + l.why; });
     data.push(['Left out', left.length ? left.join(' ') : 'Nothing.']);
     data.push(['How', state.mode === 'check' ? 'A check: one try for each question, no right or wrong shown, no clock. The score is the number right.' + (codeNow() ? ' The answers screen opens with your teacher code.' : ' With no teacher code the screen at the end shows only the score.')
       : 'Practice: right or wrong after each answer, and a second try after a wrong one. No clock.']);
+    // "practice question", as the math check page and the file itself ("Practice 1 of 1") call it (2026-11-13, teacher-journey pass).
+    if (state.mode === 'check') data.push(['Practice first', samples ? count(samples, 'practice question') + ', with right or wrong shown, not scored. Its words are not in your list.' : 'None: every practice question shares a word with your list.']);
     // The recordings in the file: how many words, and what they add to its size.
     var clips = Object.keys(lesson.audio || {}), clipBytes = clips.reduce(function (n, id) { return n + String(lesson.audio[id]).length; }, 0);
     var pictureIds = Object.keys(lesson.images || {}), pictureBytes = pictureIds.reduce(function (n, id) { return n + String(lesson.images[id]).length; }, 0);
@@ -625,6 +646,7 @@
     if (!url) { try { url = URL.createObjectURL(new Blob([built.html], { type: 'text/html' })); } catch (_) { url = ''; } }
     if (!url) return problem('This browser cannot save files from a page. Open this page in Chrome, Edge, Firefox or Safari.');
     download(url, built.name);
+    show('after-code', !!built.coded);
     show('after-save', true);
     $('after-save').focus();
   }
@@ -723,7 +745,7 @@
         if (r.example !== String(s.example || '').trim()) senseEdit(r.sense).example = r.example;
       }
       if (r.wrong.length === builder.WRONG) { w.wrong = r.wrong; w.wrongFor = r.own || !s ? 'own:' + key : r.sense; }
-      if (r.blank.length === builder.WRONG) { w.blank = r.blank; w.blankFor = (r.own || !s ? 'own:' + key : r.sense) + '|' + builder.blankSentence(r.example, r.word).ask; }
+      if (r.blank.length === builder.WRONG) { w.blank = r.blank; w.blankFor = (r.own || !s ? 'own:' + key : r.sense) + '|' + builder.blankSentence(r.example, r.word, { bank: bankState === 'ready' ? bank : null, pos: r.pos }).ask; }
     });
     keepEdits();
     remember();

@@ -17,7 +17,8 @@ module.exports = {
     vocab_picture_directions: 'Read the word. Choose the picture that shows it.',
     vocab_picture_question: 'Which picture shows this word?',
     vocab_picture_read: 'Read aloud',
-    vocab_picture_read_choice: 'Read choice {n} aloud',
+    // 2026-11-13: the name begins with the button's visible words, Hear it (WCAG 2.5.3 Label in Name).
+    vocab_picture_read_choice: 'Hear it: choice {n}',
     vocab_picture_hear: 'Hear it',
     vocab_picture_picture: 'Picture {n}',
     vocab_picture_picture_of: 'Picture {n}: {word}',
@@ -154,7 +155,8 @@ module.exports = {
     if (hear) { readRow.appendChild(hear.button); readRow.appendChild(hear.note); }
     ctx.root.appendChild(list);
     showReaders();
-    if (synth) { try { if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', showReaders); } catch (_) {} }
+    // Voices that arrive later: one handler, the item on view's (a listener for each item kept every item alive).
+    if (synth) { try { synth.onvoiceschanged = showReaders; } catch (_) {} }
     if (typeof ctx.keys === 'function') ctx.keys(function (key) {
       var n = Number(key);
       if (!(n >= 1 && n <= item.choices.length)) return false;

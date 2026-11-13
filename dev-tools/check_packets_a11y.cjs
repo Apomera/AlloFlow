@@ -514,13 +514,9 @@ function fileStates(gen) {
   checkFlow('check-mc', 'check MC (code)', 'tulip-47');
   checkFlow('check-own', 'check own');
   checkFlow('check-qd-untimed', 'check QD untimed');
-  // A vocabulary check has no practice items.
-  const vc = 'vocab-check';
-  f('vocab check: start', vc, async (p) => { await p.waitForSelector('#app h2'); });
-  const vItem = async (p) => { await file.start(p); for (let i = 0; i < 3 && await p.locator('[data-check-begin]').count(); i++) { await p.click('[data-check-begin]'); await wait(p, 200); } };
-  f('vocab check: a question', vc, vItem);
-  f('vocab check: the end', vc, async (p) => { await vItem(p); await file.answerOnce(p); await p.click('[data-stop]'); await p.click('[data-stop-yes]'); await wait(p, 300); });
-  f('vocab check: teacher screen', vc, async (p) => { await vItem(p); await file.answerOnce(p); await p.click('[data-stop]'); await p.click('[data-stop-yes]'); await wait(p, 300); await p.click('[data-teacher-open]'); await wait(p, 300); });
+  // A vocabulary check opens with a sample question (2026-11-13, packet_vocab_builder.js sampleFor), as a math check
+  // does: the same states, through it. (Before, it had no practice item: start, a question, the end, teacher screen.)
+  checkFlow('vocab-check', 'vocab check');
   return S;
 }
 

@@ -1247,7 +1247,7 @@ function HeaderBar(props) {
                     {helpMenu}
                     {showHelpOnboarding && !isHelpMode && (
                       <button type="button" onClick={dismissHelpOnboarding} aria-label={t('common.dismiss') || 'Dismiss help tip'} data-compact-help-tip=""
-                        className="absolute top-full right-0 mt-3 min-h-6 bg-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400" style={{ minWidth: '160px', textAlign: 'center' }}>
+                        className="absolute top-full right-0 mt-3 min-h-6 bg-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400" style={{ minWidth: '160px', textAlign: 'center', animationIterationCount: 3 }}>
                         <span aria-hidden="true" className="absolute -top-2 right-4 w-4 h-4 bg-indigo-600 rotate-45 border-l-2 border-t-2 border-indigo-400"></span>
                         <span><span aria-hidden="true">&#128161;</span> {t('header.click_for_help') || 'Click'} <strong>?</strong> {t('header.anytime_for_help') || 'anytime for help!'}</span>
                       </button>
@@ -1907,7 +1907,7 @@ function HeaderBar(props) {
                             aria-pressed={isHelpMode}
                             aria-haspopup={helpMenuAvailable ? 'true' : undefined}
                             aria-expanded={helpMenuAvailable ? showHelpMenu : undefined}
-                            className={`relative p-2 rounded-xl transition-colors ${isHelpMode ? 'bg-yellow-400 text-slate-900 shadow-md animate-pulse' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
+                            className={`relative p-2 rounded-xl transition-colors ${isHelpMode ? 'bg-yellow-400 text-slate-900 shadow-md' : 'hover:bg-white/10 text-white/70 hover:text-white'}`}
                             title={helpButtonLabel}
                             aria-label={helpButtonLabel}
                         >
@@ -1921,7 +1921,7 @@ function HeaderBar(props) {
                                 onClick={dismissHelpOnboarding}
                                 aria-label={t('common.dismiss') || 'Dismiss help tip'}
                                 className="absolute -bottom-14 right-0 min-h-6 bg-indigo-600 text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-lg cursor-pointer animate-bounce motion-reduce:animate-none z-[10999] whitespace-nowrap border-2 border-indigo-400 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-                                style={{ minWidth: '160px', textAlign: 'center' }}
+                                style={{ minWidth: '160px', textAlign: 'center', animationIterationCount: 3 }}
                             >
                                 <span aria-hidden="true" className="absolute -top-2 right-4 w-4 h-4 bg-indigo-600 rotate-45 border-l-2 border-t-2 border-indigo-400"></span>
                                 <span><span aria-hidden="true">&#128161;</span> {t('header.click_for_help') || 'Click'} <strong>?</strong> {t('header.anytime_for_help') || 'anytime for help!'}</span>

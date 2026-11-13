@@ -758,3 +758,16 @@ describe('Class Analytics: Add take-home results', () => {
     expect(thSessions(stored()[0]).map((s) => [s.df, AC.localDate(s.start)])).toEqual([[1, '2026-11-20']]);
   });
 });
+
+// 2026-11-13: a vocabulary check opens with one sample question (practice, never scored, item id <activity>-p0).
+// It is not one of the items given: 16 scored items read "16", not "17".
+describe('a check\'s sample question', () => {
+  it('is left out of the items given and done', async () => {
+    const item = (word, practice) => ({activity: 'vocab_meaning', word, target: 'x', responses: ['x'], correct: true, firstTry: true, practice, attempted: true});
+    const raw = {sid: 'c1', learner: 'Blue Heron', packetId: 'vocab-animal-homes', title: 'Animal homes', mode: 'probe', form: '',
+      stamps: ['2026-11-13T09:00:00-05:00'], startedText: '2026-11-13T09:00:00-05:00', prefix: '', lines: null, integrity: null,
+      items: [item('sample', true), ...['habitat', 'nest', 'den'].map((w) => item(w, false))]};
+    const session = await AC.session(raw, 0, 'animal-homes.json');
+    expect([session.given, session.done, session.firstTryItems]).toEqual([3, 3, 3]);
+  });
+});

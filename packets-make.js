@@ -63,6 +63,11 @@
   var TRIAL_WORDS = 16;
   var HELD_BACK_REASON = 'not enough recorded sounds yet';
   var CARD_NOTES = { letter_tracing: 'Practice only. It is not scored.' };
+  // Letter Trace: which letters a file traces (word_sounds_packet_builder.js, tracingCases).
+  var TRACE_CASES = ['both', 'capital', 'lowercase'];
+  // Choices: how many answers a board shows (word_sounds_packet_builder.js, opts.choices), and the activities it changes.
+  var CHOICE_LEVELS = ['easy', 'medium', 'all'];
+  var CHOICE_ACTIVITIES = ['isolation', 'blending', 'rhyming', 'counting'];
   // Sound label, then a word that has the sound (checked against the sound dictionary by the test).
   var SOUND_GROUPS = [
     ['Short vowels', [['a', 'cat'], ['e', 'bed'], ['i', 'pig'], ['o', 'dog'], ['u', 'sun']]],
@@ -122,7 +127,11 @@
       // count: Custom's number of words. hand: the teacher chose the words in the list; chosen: those words, in the order checked.
       count: CUSTOM_WORDS, hand: false, chosen: [],
       // learner: a student's code name for the file (step 3). It is not kept: the next file is often for someone else.
-      learner: '' };
+      learner: '',
+      // tracing: Letter Trace traces the capital, then the lowercase ('both'), or one of them.
+      tracing: 'both',
+      // choices: fewer answers to choose from ('easy'), 'medium' (the default) or 'all', as Word Sounds does by level.
+      choices: 'medium' };
   }
   function wordCount(value) { var n = Number(value); return n >= 1 && n <= MAX_WORDS && Math.floor(n) === n ? n : 0; }
 
@@ -132,7 +141,7 @@
   function remember() {
     try {
       window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, activities: state.activities, mode: state.mode, sound: state.sound, position: state.position,
-        shape: state.shape, stage: state.stage, own: state.own, version: state.version, length: state.length, count: state.count, hand: state.hand, chosen: state.chosen }));
+        shape: state.shape, stage: state.stage, own: state.own, version: state.version, length: state.length, count: state.count, hand: state.hand, chosen: state.chosen, choices: state.choices, tracing: state.tracing }));
     } catch (_) { /* a browser that cannot keep them still works */ }
   }
   function recall() {
@@ -150,6 +159,8 @@
     if (saved.length === 'custom' || (LENGTH_NAMES[saved.length] && core.LESSON_LENGTHS[saved.length])) fresh.length = saved.length;
     if (wordCount(saved.count)) fresh.count = wordCount(saved.count);
     if (saved.hand === true) fresh.hand = true;
+    if (TRACE_CASES.indexOf(saved.tracing) >= 0) fresh.tracing = saved.tracing;
+    if (CHOICE_LEVELS.indexOf(saved.choices) >= 0) fresh.choices = saved.choices;
     if (Array.isArray(saved.chosen)) fresh.chosen = saved.chosen.filter(function (word, i, all) { return typeof word === 'string' && /^[a-z]{2,10}$/.test(word) && all.indexOf(word) === i; }).slice(0, MAX_WORDS);
     return fresh;
   }
@@ -213,6 +224,10 @@
       box.checked = state.activities.indexOf(box.value) >= 0;
       box.parentNode.classList.toggle('is-on', box.checked);
     });
+    show('trace-cases-field', state.activities.indexOf('letter_tracing') >= 0);
+    if ($('f-trace-cases')) $('f-trace-cases').value = state.tracing;
+    show('choice-level-field', state.activities.some(function (id) { return CHOICE_ACTIVITIES.indexOf(id) >= 0; }));
+    if ($('f-choices')) $('f-choices').value = state.choices;
     var n = state.activities.length;
     setText('activity-count', n ? count(n, 'activity', 'activities') + ' chosen.' : 'No activity is chosen yet.');
     if (n) setText('step-1-problem', '');
@@ -1442,6 +1457,8 @@
       wordlist: wordlist, toWav: toWav, picked: plan.picked, pictures: pictures, symbols: pictures && symbols && symbols.ready() ? symbols : null };
     if (own) options.own = own;
     if (learner) options.learnerLabel = learner;
+    if (state.tracing !== 'both' && plan.activities.indexOf('letter_tracing') >= 0) options.tracingCases = state.tracing;
+    options.choices = CHOICE_LEVELS.indexOf(state.choices) >= 0 ? state.choices : 'medium';
     return options;
   }
   // The file a single make would give for another version (A, B or C): the version picks other words (unless the
@@ -1845,6 +1862,8 @@
     fresh.own = result.words.join(' ');
     fresh.version = SEEDS[result.version] ? result.version : 'A';
     fresh.learner = result.learner || '';
+    if (TRACE_CASES.indexOf(result.tracing) >= 0) fresh.tracing = result.tracing;
+    if (CHOICE_LEVELS.indexOf(result.choices) >= 0) fresh.choices = result.choices;
     state = fresh;
     picked = null;
     fromFile = result.own && typeof result.own === 'object' ? result.own : {};
@@ -1993,6 +2012,8 @@
     Array.prototype.forEach.call(doc.querySelectorAll('input[name="mode"]'), function (radio) {
       radio.addEventListener('change', function () { if (!radio.checked) return; state.mode = radio.value; remember(); drawWords(); });
     });
+    if ($('f-trace-cases')) $('f-trace-cases').addEventListener('change', function () { state.tracing = TRACE_CASES.indexOf(this.value) >= 0 ? this.value : 'both'; remember(); });
+    if ($('f-choices')) $('f-choices').addEventListener('change', function () { state.choices = CHOICE_LEVELS.indexOf(this.value) >= 0 ? this.value : 'medium'; remember(); });
     $('f-sound').addEventListener('change', function () { state.sound = this.value; if (!state.sound) state.position = 'any'; pickChanged(false); });
     $('f-position').addEventListener('change', function () { state.position = this.value; pickChanged(false); });
     $('f-shape').addEventListener('change', function () { state.shape = this.value; pickChanged(false); });

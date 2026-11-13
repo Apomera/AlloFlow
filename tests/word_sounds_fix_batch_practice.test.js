@@ -423,8 +423,22 @@ describe('8. the second-miss hint', () => {
     }
     expect(wrongText, 'a non-matching word on the board').toBeTruthy();
     expect(current.history, 'exploratory taps do not finish the item').toHaveLength(0);
-    const seen = current.messages.length;
-    await click(tiles().find((b) => b.textContent === wrongText)); await tick(50);
-    expect(current.messages.slice(seen)).toEqual(['So close! One more try!']);
+    // 2026-11-13: a wrong word is out after its first tap (aria-disabled); tapping it again says nothing and costs no try.
+    const out = tiles().filter((b) => b.getAttribute('aria-disabled') === 'true');
+    expect(out, 'the word just missed is out').toHaveLength(1);
+    const again = current.messages.length;
+    await click(out[0]); await tick(50);
+    expect(current.messages.slice(again)).toEqual([]);
+    // So the second miss is another word that does not match: choose the next tiles until one is not a match
+    // (a match found leaves the bank).
+    let secondMiss = null;
+    for (let guard = 0; guard < 4 && !secondMiss && current.history.length === 0; guard++) {
+      const next = tiles().find((b) => !b.hasAttribute('aria-disabled'));
+      if (!next) break;
+      const before = tiles().length, seen = current.messages.length;
+      await click(next); await tick(50);
+      if (tiles().length === before) secondMiss = current.messages.slice(seen);
+    }
+    expect(secondMiss).toEqual(['So close! One more try!']);
   });
 });

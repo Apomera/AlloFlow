@@ -6358,9 +6358,14 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                 const correctLetter = word[hiddenIndex] || '';
                 // Missing-letter distractors come from the pack's own script
                 // for non-English (a–z would offer Latin letters against a
-                // Spanish ñ or a non-Latin word).
+                // Spanish ñ or a non-Latin word). English: three letters of the
+                // answer's kind (vowels for a vowel), letters not in the word
+                // first, ranked by a hash of the word so each word has its own.
+                // (a–z in order gave pig i, a, b, c: the one vowel was the answer.)
+                const letterRank = (value) => [...(value + word)].reduce((hash, c) => Math.imul(hash ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
+                const vowelLetter = !!correctLetter && ('aeiou'.includes(correctLetter) || (correctLetter === 'y' && !/[aeiou]/.test(word)));
                 const letterDistractorPool = packIsEnglish
-                    ? 'abcdefghijklmnopqrstuvwxyz'.split('')
+                    ? (vowelLetter ? 'aeiou' : 'bcdfghjklmnprstvwz').split('').sort((a, b) => (word.includes(a) - word.includes(b)) || (letterRank(a) - letterRank(b)))
                     : shuffleForPack(allPackLetters);
                 const letterOptions = shuffleForPack([...new Set([correctLetter, ...letterDistractorPool.filter((value) => value !== correctLetter)])].slice(0, 4));
                 const mode = item.soundSortMatches?.position || (seed % 2 === 0 ? 'first' : 'last');

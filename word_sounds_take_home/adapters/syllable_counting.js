@@ -16,6 +16,7 @@
 //               hearing (resetSyllableCountDelivery(false) ~17092). Budget: 2.
 //   audio       inst_syllable_counting bank clip, else the pack clip of
 //               "How many syllables do you hear? Clap for each one"; then the word.
+// 2026-11-13: the button says Check, as in every other activity (the app says Submit).
 module.exports = {
   id: 'syllable_counting',
   title: 'Syllable Claps',
@@ -24,12 +25,12 @@ module.exports = {
     syllable_counting_tap: 'Tap to count syllables',
     syllable_counting_undo: 'Undo last tap',
     syllable_counting_reset: 'Reset',
-    syllable_counting_submit: 'Submit',
+    syllable_counting_submit: 'Check',
     syllable_counting_taps_one: 'You tapped {count} time.',
     syllable_counting_taps_other: 'You tapped {count} times.',
-    syllable_counting_wait_word: 'Hear the whole word before submitting.',
-    syllable_counting_wait_audio: 'Wait for the word to finish before submitting.',
-    syllable_counting_ready: 'Ready to submit.',
+    syllable_counting_wait_word: 'Hear the whole word before checking.',
+    syllable_counting_wait_audio: 'Wait for the word to finish before checking.',
+    syllable_counting_ready: 'Ready to check.',
     syllable_counting_tap_each: 'Tap once for each syllable you hear.',
     syllable_counting_correct: 'Yes! {word} has {count}.',
     syllable_counting_missed: '{word} has {count}. Listen again.',

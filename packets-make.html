@@ -115,6 +115,32 @@
       <h2 id="step-1-title" tabindex="-1">What to practice</h2>
       <p class="sheet-intro">Choose one or more activities. Each word from the next step is used in every activity you choose.</p>
       <div id="strands"></div>
+      <div class="field trace-cases" id="trace-cases-field" hidden>
+        <label for="f-trace-cases">Letter Trace: which letters to trace</label>
+        <select id="f-trace-cases" aria-describedby="trace-cases-hint">
+          <option value="both">Capital, then lowercase</option>
+          <option value="capital">Capital only</option>
+          <option value="lowercase">Lowercase only</option>
+        </select>
+        <span class="hint" id="trace-cases-hint">Students trace the first letter of each word, in school letter shapes.</span>
+      </div>
+      <div class="field choice-level" id="choice-level-field" hidden>
+        <label for="f-choices">Choices</label>
+        <select id="f-choices" aria-describedby="choice-level-hint">
+          <option value="easy">Easy: fewer choices</option>
+          <option value="medium">Medium</option>
+          <option value="all">All</option>
+        </select>
+        <span class="hint" id="choice-level-hint">How many answers to choose from. Medium matches Word Sounds.</span>
+        <details class="why" id="choice-level-why">
+          <summary>What each level does</summary>
+          <ul>
+            <li>Easy: 3 choices in Find Sounds, Blend Sounds and Rhyme Time; Find Sounds asks the first sound; Sound Counting shows the count with two numbers either side.</li>
+            <li>Medium: 4 choices; Find Sounds asks the first or last sound; Sound Counting shows 1 to 8.</li>
+            <li>All: every choice, any sound, and 1 to 11 or more.</li>
+          </ul>
+        </details>
+      </div>
       <p id="not-offered" class="aside-note"></p>
       <div class="actions">
         <p id="activity-count" class="count-line" role="status"></p>
@@ -336,7 +362,7 @@
       <div id="after-save" class="next" tabindex="-1" hidden>
         <h3>Saved. What to do next</h3>
         <ol>
-          <li>Send the file to your students the way you send any file: your learning platform, a shared drive or a USB drive.</li>
+          <li>Send the file to your students the way you send any file: your learning platform, a shared drive or a USB drive. From Google Drive or Google Classroom, a student downloads the file first: the preview there does not run it.</li>
           <li>Each student opens it in a browser, finishes it and presses the main button at the end, <strong id="csv-label">Save results as a spreadsheet file (CSV)</strong>. They hand that file back to you.</li>
           <li>Add the results up on <a href="packets-results.html">Add up results</a>, or open them in a spreadsheet. In AlloFlow: Class Analytics, Add take-home results.</li>
         </ol>
@@ -380,7 +406,7 @@
       <summary>About this page</summary>
       <div class="about-body">
         <h2 id="keeps-title">What this page keeps</h2>
-        <p>Your last choices are kept in this browser so that the page opens the way you left it: the activities, how you chose the words, any words you typed or checked in the list, the version and the length. The sound files are kept too, so that they are not downloaded again. Nothing is kept anywhere else.</p>
+        <p>Your last choices are kept in this browser so that the page opens the way you left it: the activities, how you chose the words, any words you typed or checked in the list, the version, the length, which letters Letter Trace traces and how many choices to show. The sound files are kept too, so that they are not downloaded again. Nothing is kept anywhere else.</p>
         <p>What you add to a word (its sounds, your recording, your picture) is kept in this browser's storage for this site, until you remove it under My words on this device, in step 2. It is not uploaded.</p>
         <p class="row">
           <button type="button" class="btn btn-small" id="forget">Forget my choices</button>

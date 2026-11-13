@@ -67,8 +67,21 @@ describe('Help in the compact header bar', () => {
     expect(shown, 'no role yet: nothing shown, nothing marked seen').toEqual([]); expect(store.allo_help_onboarded).toBeUndefined();
     run(true); vi.advanceTimersByTime(4000); expect(shown).toEqual([true]);
     vi.advanceTimersByTime(20000); expect(shown).toEqual([true, false]); expect(store.allo_help_onboarded).toBe('true');
+    // Seen once shown: someone who leaves after 5 s does not get the bouncing tip on every visit.
+    for (const k of Object.keys(store)) delete store[k]; shown.length = 0;
+    const cleanup = run(true); vi.advanceTimersByTime(5000); cleanup();
+    expect(shown).toEqual([true]); expect(store.allo_help_onboarded).toBe('true');
+    shown.length = 0; run(true); vi.advanceTimersByTime(30000); expect(shown, 'next visit: no tip').toEqual([]);
     vi.useRealTimers();
     expect(count(src, "safeGetItem('allo_help_onboarded') !== 'true'")).toBe(1);
+  });
+
+  it('the tip bounces three times, then holds still; help mode is a steady yellow, not a pulse', () => {
+    for (const f of ['view_header_source.jsx', 'view_header_module.js', 'desktop/web-app/public/view_header_module.js']) {
+      const src = readFileSync(f, 'utf8');
+      expect(count(src, 'animationIterationCount: 3'), f + ': both tip copies').toBe(2);
+      expect(src, f).not.toContain("bg-yellow-400 text-slate-900 shadow-md animate-pulse");
+    }
   });
 });
 const count = (s, a) => s.split(a).length - 1;

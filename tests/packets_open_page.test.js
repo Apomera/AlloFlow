@@ -46,7 +46,10 @@ await bank.load();
 const vocabRows = V.draftRows({ words: V.parseWords('habitat, predator, prey, cell').words, bank });
 const VOCAB_FILE = V.buildVocabPacket({ lesson: V.lessonFromVocab({ loader: TH, rows: vocabRows, types: ['meaning'], mode: 'practice' }), loader: TH, rows: vocabRows, bank }).html;
 // A file made before the place could be kept on this page: the same file without the code that reads the data block.
-const OLDER_FILE = WORDS_FILE.split("getElementById('packet-store-snapshot')").join("getElementById('x')");
+// 2026-11-13: its rule names its script's hash, as a file made then does (the page calls a file whose script its rule
+// does not name damaged: tests/packets_robustness_2026_11_13.test.js).
+const reseal = (html) => { const at = html.indexOf('<script>') + 8; const s = html.slice(at, html.indexOf('</script>', at)); return html.replace(/'sha256-[A-Za-z0-9+/=]+'/g, "'sha256-" + createHash('sha256').update(s, 'utf8').digest('base64') + "'"); };
+const OLDER_FILE = reseal(WORDS_FILE.split("getElementById('packet-store-snapshot')").join("getElementById('x')"));
 const KEY = 'alloflow-take-home:L-open-page:' + JSON.parse(/var lesson=(.*);\nvar labels=/.exec(WORDS_FILE)[1]).revision;
 const sha = (text) => createHash('sha256').update(text, 'utf8').digest('hex');
 
@@ -338,7 +341,8 @@ describe('running the file', () => {
     p.post({ kind: 'alloflow-packet-save', name: 'Short-a__Ana__2026-11-12.csv', type: 'text/csv;charset=utf-8', text: csv });
     expect(p.saved.map((s) => [s.name, s.blob.type])).toEqual([['Short-a__Ana__2026-11-12.csv', 'text/csv;charset=utf-8']]);
     expect(Buffer.from(await p.saved[0].blob.arrayBuffer()).toString('utf8')).toBe(csv);
-    expect(p.$('run-said').textContent).toBe('Results file: Short-a__Ana__2026-11-12.csv.');
+    // 2026-11-13 (engine fixes): the page cannot see a download finish either.
+    expect(p.$('run-said').textContent).toBe('Your browser is saving Short-a__Ana__2026-11-12.csv. If nothing appears, press Save it again.');
     expect(p.$('run-again').hidden).toBe(false);
     p.$('run-again').click();
     expect(p.saved).toHaveLength(2);

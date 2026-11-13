@@ -25,6 +25,16 @@
     var text = String(raw == null ? '' : raw);
     return ((/^\s*[-\u2212]/.test(text) ? '-' : '') + text.replace(/[^0-9]/g, '')).slice(0, 8);
   }
+  // Missing Number bank items write "-": show the signs Math Fluency shows
+  // (U+2212, U+00D7, U+00F7), each with its word for a screen reader.
+  var SA_MATH_SIGNS = { '-': ['\u2212', 'minus'], '\u2212': ['\u2212', 'minus'], '*': ['\u00d7', 'times'], '\u00d7': ['\u00d7', 'times'], '/': ['\u00f7', 'divided by'], '\u00f7': ['\u00f7', 'divided by'] };
+  var SA_SR_ONLY = { position: 'absolute', width: '1px', height: '1px', padding: 0, margin: '-1px', overflow: 'hidden', clip: 'rect(0,0,0,0)', whiteSpace: 'nowrap', border: 0 };
+  function saMathSign(R, token) {
+    var sign = SA_MATH_SIGNS[String(token)];
+    if (!sign) return token;
+    return [R.createElement('span', { key: 'sign', 'aria-hidden': 'true', 'data-math-sign': sign[1] }, sign[0]),
+      R.createElement('span', { key: 'word', className: 'sr-only', style: SA_SR_ONLY }, sign[1])];
+  }
 
   function saEscapeReportText(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
@@ -1055,6 +1065,20 @@ try {
     } catch (e) { return null; }
     return out;
   }
+  // The 50 screening records kept with a student between visits. The ones a
+  // teacher gave come first (benchmarks, tiers and aimlines read them), so
+  // results from home never push them out; home results fill the room that
+  // is left, newest first. The list keeps its order. (2026-11-13; before,
+  // the last 50 of both together were kept.)
+  function _acKeptScreening(list) {
+    if (!Array.isArray(list)) return [];
+    if (list.length <= 50) return list.slice();
+    var home = function(r) { return !!r && typeof r === 'object' && r.home === true; };
+    var supervised = list.filter(function(r) { return !home(r); }).slice(-50);
+    var room = 50 - supervised.length;
+    var fromHome = room > 0 ? list.filter(home).slice(-room) : [];
+    return list.filter(function(r) { return supervised.indexOf(r) >= 0 || fromHome.indexOf(r) >= 0; });
+  }
   function _acPersistableStudent(s) {
     var linked = s && s.linkedToRoster === true;
     return {
@@ -1069,7 +1093,7 @@ try {
       stats: s.stats || {},
       safetyFlags: Array.isArray(s.safetyFlags) ? s.safetyFlags.slice(0, 50) : [],
       lastSession: s.lastSession || null,
-      screeningHistory: Array.isArray(s.screeningHistory) ? s.screeningHistory.slice(-50) : [],
+      screeningHistory: _acKeptScreening(s.screeningHistory),
       data: _acTrimStudentData(s.data),
       restored: true
     };
@@ -1923,6 +1947,44 @@ try {
     if (!utc && (d.getMonth() !== Number(m[2]) - 1 || d.getDate() !== Number(m[3]))) return 0;
     return d.getFullYear() >= 2000 && d.getFullYear() <= 2100 ? d.getTime() : 0;
   }
+  // Dates a spreadsheet rewrote when it saved the file again: 11/16/2026 9:10
+  // (US), 16/11/2026 09:10 or 16.11.2026 09:10 (Europe). Read only when the
+  // order is not in doubt: a number above 12, dots (day first), the finish
+  // date in the saved file name, or the file's duration fitting one order
+  // only. Otherwise 0. The same rule as sheetStamp in packets_results_reader.js.
+  var _AC_TH_SHEET_DATE = /^(\d{1,2})([\/.\-])(\d{1,2})\2(\d{4}|\d{2})(?:[ T,]+(\d{1,2}):(\d{2})(?::(\d{2}))?(?:\s*([ap])\.?m\.?)?)?$/i;
+  function _acThSheetParts(value) {
+    var m = _AC_TH_SHEET_DATE.exec(_acThText(value, 40));
+    if (!m) return null;
+    var hour = m[5] != null ? Number(m[5]) : 12;
+    if (m[8]) { if (hour < 1 || hour > 12) return null; hour = hour % 12 + (m[8].toLowerCase() === 'p' ? 12 : 0); }
+    return { a: Number(m[1]), b: Number(m[3]), dots: m[2] === '.', year: Number(m[4]) + (m[4].length === 2 ? 2000 : 0), hour: hour, minute: Number(m[6]) || 0, second: Number(m[7]) || 0 };
+  }
+  function _acThSheetTime(p, dayFirst) {
+    var month = dayFirst ? p.b : p.a, day = dayFirst ? p.a : p.b;
+    if (p.hour > 23 || p.minute > 59 || p.second > 59) return 0;
+    var d = new Date(p.year, month - 1, day, p.hour, p.minute, p.second);
+    if (isNaN(d.getTime()) || d.getMonth() !== month - 1 || d.getDate() !== day) return 0;
+    return p.year >= 2000 && p.year <= 2100 ? d.getTime() : 0;
+  }
+  function _acThSheetStamp(values, fileName, durationS) {
+    var parts = (Array.isArray(values) ? values : []).map(_acThSheetParts);
+    var found = parts.filter(Boolean);
+    if (!found.length) return 0;
+    var fits = [false, true].filter(function(dayFirst) { return found.every(function(p) { return _acThSheetTime(p, dayFirst) > 0 && !(p.dots && !dayFirst); }); });
+    if (fits.length === 2 && !found.every(function(p) { return p.a === p.b; })) {
+      var names = _acThText(fileName, 120).match(/__\d{4}-\d{2}-\d{2}(?!\d)/g);
+      var named = names && parts[0] ? names[names.length - 1].slice(2) : '';
+      var byName = named ? fits.filter(function(dayFirst) { return _acLocalDate(_acThSheetTime(parts[0], dayFirst)) === named; }) : [];
+      var seconds = durationS === null || durationS === undefined || String(durationS).trim() === '' ? NaN : Math.max(0, Math.min(864000, Math.round(Number(durationS))));
+      var byDuration = parts[0] && parts[1] && Number.isFinite(seconds)
+        ? fits.filter(function(dayFirst) { return Math.abs((_acThSheetTime(parts[0], dayFirst) - _acThSheetTime(parts[1], dayFirst)) / 1000 - seconds) <= 3720; }) : fits;
+      fits = byName.length === 1 ? byName : byDuration.length === 1 ? byDuration : [];
+    }
+    if (fits.length < 1) return 0;
+    for (var i = 0; i < parts.length; i++) if (parts[i]) return _acThSheetTime(parts[i], fits[0]);
+    return 0;
+  }
   // The file's activity ids are the take-home activity ids, which are the
   // ids in _AC_WS_ACTIVITIES. Any other id is kept and shows under "Other
   // activities"; an unusable one becomes 'unknown'.
@@ -1957,6 +2019,22 @@ try {
       if (title === null && at > 0 && text.slice(0, at).toLowerCase().replace(/[^a-z0-9]+/g, '_') === 'title') title = _acThText(text.slice(at + 1), 80);
     });
     return title || '';
+  }
+  // The time on the items a file saved from 2026-11-13 carries in the same row
+  // ("active_s=252", whole seconds). null for an older file.
+  function _acThActiveFromCells(cells) {
+    var found = null;
+    (Array.isArray(cells) ? cells : []).forEach(function(cell) {
+      var text = _acThText(_acThUnguard(cell), 200);
+      var at = text.indexOf('=');
+      if (found === null && at > 0 && text.slice(0, at).toLowerCase().replace(/[^a-z0-9]+/g, '_') === 'active_s') found = text.slice(at + 1);
+    });
+    return _acThSeconds(found);
+  }
+  // Whole seconds from 0 to 10 days, or null.
+  function _acThSeconds(value) {
+    if ((typeof value !== 'number' && typeof value !== 'string') || String(value).trim() === '' || !Number.isFinite(Number(value))) return null;
+    return Math.max(0, Math.min(864000, Math.round(Number(value))));
   }
   // CSV rows to raw sessions (one per session_id). Columns are found by their
   // header names, in any order; columns this version does not know are ignored.
@@ -1997,14 +2075,20 @@ try {
     var lastScore = null;
     var titles = {};
     var lastTitle = '';
+    var actives = {};
+    var lastActive = null;
     rows.slice(headerAt + 1).forEach(function(row) {
       var first = _acThText(_acThUnguard(row[0]), 60);
       if (first.charAt(0) === '#') {
         if (first.toLowerCase() === '#integrity') integrity = { method: _acThText(row[1], 12).toLowerCase(), value: _acThText(row[2], 80).toLowerCase() };
         // A check's score line: "#score", session id, then name=value cells.
         else if (first.toLowerCase() === '#score') { lastScore = _acCkScoreFromCells(row.slice(2)); scores['k' + _acThText(_acThUnguard(row[1]), 80)] = lastScore; }
-        // The summary line: "#summary", session id, then name=value cells. Only its title is read.
-        else if (first.toLowerCase() === '#summary') { lastTitle = _acThTitleFromCells(row.slice(2)); titles['k' + _acThText(_acThUnguard(row[1]), 80)] = lastTitle; }
+        // The summary line: "#summary", session id, then name=value cells. Its title and time on the items are read.
+        else if (first.toLowerCase() === '#summary') {
+          var sumKey = 'k' + _acThText(_acThUnguard(row[1]), 80);
+          lastTitle = _acThTitleFromCells(row.slice(2)); titles[sumKey] = lastTitle;
+          lastActive = _acThActiveFromCells(row.slice(2)); actives[sumKey] = lastActive;
+        }
         return;
       }
       var rawCell = function(name) { return _acWsOwn(index, name) && row[index[name]] != null ? String(row[index[name]]) : ''; };
@@ -2015,7 +2099,7 @@ try {
       var key = 'k' + _acThText(get('session_id'), 80);
       if (!_acWsOwn(groups, key)) {
         groups[key] = { sid: _acThText(get('session_id'), 80), learner: _acThText(get('learner'), 60), packetId: _acThText(get('packet_id'), 80), title: '',
-          stamps: [get('finished_local'), get('started_local')], startedText: _acThText(get('started_local'), 40),
+          stamps: [get('finished_local'), get('started_local')], startedText: _acThText(get('started_local'), 40), seconds: get('duration_s'),
           prefix: [get('packet_id'), get('packet_version'), get('form'), get('session_id')].join('|').slice(0, 600), items: [], lines: [], integrity: null,
           mode: _acThMode(get('mode')), form: _acThText(get('form'), 20), score: null };
         order.push(key);
@@ -2038,6 +2122,7 @@ try {
       var g = groups[key];
       g.score = _acWsOwn(scores, 'k' + g.sid) ? scores['k' + g.sid] : order.length === 1 ? lastScore : null;
       g.title = _acWsOwn(titles, 'k' + g.sid) ? titles['k' + g.sid] : order.length === 1 ? lastTitle : '';
+      g.activeSeconds = _acWsOwn(actives, 'k' + g.sid) ? actives['k' + g.sid] : order.length === 1 ? lastActive : null;
     });
     return { ok: true, sessions: order.map(function(key) { return groups[key]; }) };
   }
@@ -2088,6 +2173,7 @@ try {
     }
     return { ok: true, sessions: [{ sid: _acThText(data.sessionId, 80), learner: _acThText(learner, 60), packetId: _acThText(packet.id, 80) || _acThText(data.lessonId, 80),
       title: _acThText(data.lessonTitle, 80) || _acThText(packet.title, 80),
+      activeSeconds: _acThSeconds(data.activeMs) === null ? null : _acThSeconds(Number(data.activeMs) / 1000),
       stamps: [data.finishedLocal, data.finishedAt, data.startedLocal, data.startedAt], startedText: _acThText(data.startedLocal, 40) || _acThText(data.startedAt, 40),
       prefix: [packet.id, packet.version, packet.form, data.sessionId].map(_acThScalar).join('|').slice(0, 600),
       items: rawItems.map(function(it) {
@@ -2103,7 +2189,9 @@ try {
     var acts = {};
     var wrong = {};
     var done = 0, graded = 0, firstTry = 0;
-    raw.items.forEach(function(it) {
+    // A check's sample question is practice before the scored items: it is not one of the items given.
+    var counted = raw.items.filter(function(it) { return !(raw.mode === 'probe' && it.practice); });
+    counted.forEach(function(it) {
       if (!it.attempted) return;
       var a = _acWsOwn(acts, it.activity) ? acts[it.activity] : null;
       if (!a) {
@@ -2132,6 +2220,8 @@ try {
     });
     var start = 0;
     raw.stamps.forEach(function(stamp) { if (!start) start = _acThStamp(stamp); });
+    // Dates a spreadsheet rewrote, when the order of day and month is not in doubt (2026-11-13).
+    if (!start) start = _acThSheetStamp(raw.stamps, fileName, raw.seconds);
     var dateFromFile = !start;
     if (!start) start = Number(lastModified) > 0 && Number.isFinite(Number(lastModified)) ? Number(lastModified) : Date.now();
     var check = 'absent';
@@ -2146,8 +2236,10 @@ try {
     var stored = {};
     Object.keys(acts).forEach(function(id) { stored[id] = _acWsActStored(acts[id]); });
     var session = { id: 'th:' + sid.slice(0, 64), learner: raw.learner, title: raw.title || raw.packetId, start: start, date: _acLocalDate(start), dateFromFile: dateFromFile,
-      given: raw.items.length, done: done, firstTryItems: graded, firstTryCorrect: firstTry, percent: graded ? Math.round(firstTry / graded * 100) : null,
+      given: counted.length, done: done, firstTryItems: graded, firstTryCorrect: firstTry, percent: graded ? Math.round(firstTry / graded * 100) : null,
       acts: stored, wrong: wrong, integrity: check };
+    // The time on the items (files saved from 2026-11-13), shown in the preview. Not kept: nothing reads it later.
+    if (raw.activeSeconds !== null && raw.activeSeconds !== undefined) session.activeSeconds = raw.activeSeconds;
     // A check is a math result, never a Word Sounds session. A vocabulary check is not a math
     // measure: it is kept with the take-home sessions, under Vocabulary (one try, so first try = right).
     var vocabCheck = raw.mode === 'probe' && raw.items.length > 0 && raw.items.every(function(it) { return _acWsOwn(_AC_VOCAB_ACTIVITIES, it.activity); });
@@ -2266,8 +2358,9 @@ try {
         var status = _acWsOwn(have, 'x' + session.id) ? 'added' : _acWsOwn(seen, 'x' + session.id) ? 'repeat' : 'new';
         seen['x' + session.id] = true;
         // A check with no score (stopped early, too fast, no score line) is left out unless the teacher asks for it.
+        // An untimed check (an accommodation) is added (2026-11-13): it has no rate by design, keeps its items right, and is listed in a group of its own.
         rows.push({ key: rows.length + ':' + session.id, file: read.name, session: session, status: status, labelKey: labelKey, match: match, choice: match.name,
-          skip: !!(session.check && session.check.noScore) });
+          skip: !!(session.check && session.check.noScore && !_acCkUntimedNoRate(session.check)) });
       }
     }
     return { rows: rows, others: others, names: names, leftOut: Math.max(0, all.length - _AC_TH_MAX_FILES) };
@@ -2446,6 +2539,13 @@ try {
       }, label),
       h('span', { className: 'text-xs text-slate-700' }, _acWsText(t, 'class_analytics.th_drop_hint', 'or drop the files here')));
   }
+  // "4 min 12 s on the items": the time on the items a file carries.
+  function _acThActiveText(t, seconds) {
+    var s = Math.max(0, Math.round(Number(seconds) || 0));
+    if (s < 60) return _acWsText(t, 'class_analytics.th_time_on_items_s', '{seconds} s on the items', { seconds: s });
+    if (s % 60 === 0) return _acWsText(t, 'class_analytics.th_time_on_items_m', '{minutes} min on the items', { minutes: s / 60 });
+    return _acWsText(t, 'class_analytics.th_time_on_items_min', '{minutes} min {seconds} s on the items', { minutes: Math.floor(s / 60), seconds: s % 60 });
+  }
   // What the files hold, before anything is added. One row per results file.
   function _acThPreviewPanel(h, t, preview, actions) {
     if (!preview) return null;
@@ -2489,10 +2589,13 @@ try {
             c ? h('td', { className: td, 'data-th-ck-measure': c.measure }, _acCkGroupName(t, c), h('span', { className: small }, _acCkFormText(t, c)))
               : h('td', { className: td }, s.title || '–'),
             h('td', { className: td + ' whitespace-nowrap' }, s.date,
-              s.dateFromFile ? h('span', { 'data-th-date-from-file': 'true', className: small + ' whitespace-normal' }, '⚠ ' + _acWsText(t, 'class_analytics.th_date_from_file', 'Date from the file, not from the results')) : null),
+              s.dateFromFile ? h('span', { 'data-th-date-from-file': 'true', className: small + ' whitespace-normal' }, '⚠ ' + _acWsText(t, 'class_analytics.th_date_from_file', 'Date from the file, not from the results')) : null,
+              // The time on the items, for practice saved from 2026-11-13 (a check's own clock is its time).
+              !c && s.activeSeconds != null ? h('span', { 'data-th-active': String(s.activeSeconds), className: small + ' whitespace-normal' }, _acThActiveText(t, s.activeSeconds)) : null),
             c ? h('td', { className: td }, c.attempted === c.given ? c.given : _acWsText(t, 'class_analytics.th_items_done_of', '{done} of {given} done', { done: c.attempted, given: c.given }))
               : h('td', { className: td }, s.done === s.given ? s.done : _acWsText(t, 'class_analytics.th_items_done_of', '{done} of {given} done', { done: s.done, given: s.given })),
-            c ? h('td', { className: td, 'data-th-ck-score': c.score === null ? 'none' : String(c.score) }, _acCkScoreText(t, c))
+            c ? h('td', { className: td, 'data-th-ck-score': c.score === null ? 'none' : String(c.score) }, _acCkScoreText(t, c),
+              _acCkUntimedNoRate(c) ? h('span', { 'data-th-ck-untimed-items': 'true', className: small }, _acWsText(t, 'class_analytics.th_ck_score_items', '{score} items correct ({tried} tried)', { score: c.correct, tried: c.attempted })) : null)
               : h('td', { className: td }, s.percent === null ? _acWsText(t, 'class_analytics.ws_practice_only', 'practice only')
               : _acWsText(t, 'class_analytics.ws_first_try_cell', '{percent}% ({correct} of {items})', { percent: s.percent, correct: s.firstTryCorrect, items: s.firstTryItems }),
                 _acMfSplitSpans(h, t, _acMfSplit(Object.keys(s.acts || {}).map(function(id) { return s.acts[id]; })), true)),
@@ -2500,7 +2603,7 @@ try {
               h('span', { className: small }, (s.integrity === 'changed' ? '⚠ ' : '') + _acThCheckText(t, s.integrity)),
               // The flags come first and carry the warning mark; the other notes are plain.
               c ? _acCkNotes(t, c).map(function(note, i) { return h('span', { key: i, 'data-th-ck-note': 'true', className: small }, (i < c.flags.length ? '⚠ ' : '') + note); }) : null,
-              c && c.noScore && open ? h('span', { 'data-th-ck-skipped': c.noScore, className: small + ' font-semibold' }, _acWsText(t, 'class_analytics.th_ck_skipped_why', 'It has no score, so it is skipped. Clear Skip to add it anyway.')) : null),
+              c && c.noScore && open && !_acCkUntimedNoRate(c) ? h('span', { 'data-th-ck-skipped': c.noScore, className: small + ' font-semibold' }, _acWsText(t, 'class_analytics.th_ck_skipped_why', 'It has no score, so it is skipped. Clear Skip to add it anyway.')) : null),
             h('td', { className: td }, open ? h('select', {
               'data-th-choice': 'true',
               'aria-label': _acWsText(t, 'class_analytics.th_choice_label', 'Student to add {file} to', { file: row.file }),
@@ -2569,6 +2672,8 @@ try {
   // The builder's name for a fixed form -> the measure its file reports.
   var _AC_CK_FORM_MEASURES = { math_computation: 'math_dcpm', missing_number: 'missing_number', quantity_discrimination: 'quantity_discrimination' };
   function _acCkIsHome(record) { return !!record && typeof record === 'object' && record.home === true; }
+  // An untimed Math Fluency check (an accommodation) has no rate by design; its items right are its result.
+  function _acCkUntimedNoRate(c) { return !!c && c.untimed === true && c.noScore === 'untimed'; }
   function _acCkStoreOf(measure) { return _acWsOwn(_AC_CK_MEASURES, measure) ? _AC_CK_MEASURES[measure].store : ''; }
   // A whole number or null, by the rule the take-home file uses for its digit cells.
   function _acCkCount(value) {
@@ -2587,7 +2692,7 @@ try {
     var flags = (Array.isArray(sc.flags) ? sc.flags : []).slice(0, 8).map(function(f) { return _acThText(f, 30).toLowerCase(); }).filter(function(f) { return /^[a-z_]+$/.test(f); });
     var completion = _acThText(sc.completion, 20);
     return { measure: _acThText(sc.measure, 40), score: _acCkNumber(sc.score), unit: _acThText(sc.scoreUnit, 40), timeLimitS: _acCkNumber(sc.timeLimitS), elapsedS: _acCkNumber(sc.elapsedS),
-      hiddenS: _acCkNumber(sc.hiddenS), completion: completion === 'complete' || completion === 'time' || completion === 'ended_early' ? completion : '',
+      hiddenS: _acCkNumber(sc.hiddenS), completion: completion === 'complete' || completion === 'time' || completion === 'ended_early' || completion === 'time_up_away' ? completion : '',
       scoringVersion: _acCkCount(sc.scoringVersion), formVersion: _acCkCount(sc.formVersion), attempt: _acCkCount(sc.attempt) || 1, flags: flags,
       // Untimed (an accommodation): JSON untimed: true, CSV "timing=untimed".
       untimed: sc.untimed === true || /^(1|true|untimed)$/i.test(_acThText(sc.untimed, 8)) || /^untimed$/i.test(_acThText(sc.timing, 20)), usualTimeLimitS: _acCkNumber(sc.usualTimeLimitS) };
@@ -2635,6 +2740,8 @@ try {
     var score = null, noScore = '', prorated = false;
     if (!sc) noScore = 'no_score_line';
     else if (completion === 'ended_early') noScore = 'ended_early';
+    // 2026-11-13: the time ran out while the page was hidden or closed. No score in any unit.
+    else if (completion === 'time_up_away') noScore = 'time_up_away';
     else if ((completion !== 'complete' && completion !== 'time') || sc.unit !== unit) noScore = 'unknown';
     else if (unit === 'digits_correct_per_minute') {
       var early = limit !== null && completion === 'complete' && elapsed < limit;
@@ -2752,6 +2859,7 @@ try {
     return reason === 'ended_early' ? _acWsText(t, 'class_analytics.th_ck_why_ended_early', 'the check was stopped before the end.')
       : reason === 'too_fast' ? _acWsText(t, 'class_analytics.th_ck_why_too_fast', 'every problem was finished in under 20 seconds, which is too fast to give a rate.')
       : reason === 'untimed' ? _acWsText(t, 'class_analytics.th_ck_why_untimed', 'it had no time limit, so there is no rate.')
+      : reason === 'time_up_away' ? _acWsText(t, 'class_analytics.th_ck_why_time_up_away', 'the time ran out while the page was hidden or closed.')
       : reason === 'no_score_line' ? _acWsText(t, 'class_analytics.th_ck_why_no_line', 'the score line is missing from the file.')
       : _acWsText(t, 'class_analytics.th_ck_why_unknown', 'the file does not say how the check ended.');
   }
@@ -2766,6 +2874,8 @@ try {
     return flag === 'left_the_page' ? _acWsText(t, 'class_analytics.th_ck_flag_left', 'The learner left the page for more than 3 seconds.')
       : flag === 'clock_changed' ? _acWsText(t, 'class_analytics.th_ck_flag_clock', 'The clock on the device was set back during the check.')
       : flag === 'reloaded' ? _acWsText(t, 'class_analytics.th_ck_flag_reloaded', 'The page was reloaded during the check.')
+      : flag === 'two_tabs' ? _acWsText(t, 'class_analytics.th_ck_flag_two_tabs', 'The check was open in two tabs or windows while it ran.')
+      : flag === 'time_up_away' ? _acWsText(t, 'class_analytics.th_ck_flag_time_up_away', 'The time ran out while the page was hidden or closed.')
       : _acWsText(t, 'class_analytics.th_ck_flag_other', 'The file notes: {flag}.', { flag: String(flag).replace(/_/g, ' ') });
   }
   // Things a teacher should know before reading the score, in plain words.
@@ -4953,7 +5063,7 @@ try {
       });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'Fluency_Assessments_' + new Date().toISOString().split('T')[0] + '.csv';
+      link.download = 'Fluency_Assessments_' + _acLocalDate(new Date()) + '.csv';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -5166,7 +5276,7 @@ try {
       });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'AlloFlow_Research_Export_CONFIDENTIAL_' + new Date().toISOString().split('T')[0] + '.csv';
+      link.download = 'AlloFlow_Research_Export_CONFIDENTIAL_' + _acLocalDate(new Date()) + '.csv';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -5195,7 +5305,7 @@ try {
       var blob = new Blob([csv], { type: 'text/csv' });
       var link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'AlloFlow_Session_Log_' + new Date().toISOString().split('T')[0] + '.csv';
+      link.download = 'AlloFlow_Session_Log_' + _acLocalDate(new Date()) + '.csv';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
       addToast && addToast(t('toasts.session_log_exported') + log.length + ' sessions)', 'success');
@@ -5237,7 +5347,7 @@ try {
       var blob = new Blob([csv], { type: 'text/csv' });
       var link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'AlloFlow_Survey_Responses_' + new Date().toISOString().split('T')[0] + '.csv';
+      link.download = 'AlloFlow_Survey_Responses_' + _acLocalDate(new Date()) + '.csv';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
       addToast && addToast(t('toasts.survey_responses_exported') + allResponses.length + ' responses)', 'success');
@@ -5277,7 +5387,7 @@ try {
       const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'AlloFlow_Study_Bundle_' + safeName + '_' + new Date().toISOString().split('T')[0] + '.json';
+      link.download = 'AlloFlow_Study_Bundle_' + safeName + '_' + _acLocalDate(new Date()) + '.json';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
       addToast && addToast(t('toasts.study_bundle_exported_re_import'), 'success');
@@ -5577,7 +5687,7 @@ try {
       const blob = new Blob([JSON.stringify(buildYearArchive(), null, 2)], { type: 'application/json' });
       const link = document.createElement('a');
       link.href = URL.createObjectURL(blob);
-      link.download = 'AlloFlow_Student_Records_Archive_CONFIDENTIAL_' + new Date().toISOString().split('T')[0] + '.json';
+      link.download = 'AlloFlow_Student_Records_Archive_CONFIDENTIAL_' + _acLocalDate(new Date()) + '.json';
       document.body.appendChild(link); link.click(); document.body.removeChild(link);
       URL.revokeObjectURL(link.href);
       addToast(t('toasts.year_archive_downloaded') || 'Year archive downloaded. Store it under your district records policy.', 'success');
@@ -6886,7 +6996,7 @@ try {
           });
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
-          link.download = 'Fidelity_Log_' + new Date().toISOString().split('T')[0] + '.csv';
+          link.download = 'Fidelity_Log_' + _acLocalDate(new Date()) + '.csv';
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
@@ -6914,7 +7024,7 @@ try {
           });
           const link = document.createElement('a');
           link.href = URL.createObjectURL(blob);
-          link.download = 'Survey_Responses_' + new Date().toISOString().split('T')[0] + '.csv';
+          link.download = 'Survey_Responses_' + _acLocalDate(new Date()) + '.csv';
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
@@ -7793,7 +7903,7 @@ try {
       const url = URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      link.download = `class_analytics_${new Date().toISOString().split('T')[0]}.csv`;
+      link.download = `class_analytics_${_acLocalDate(new Date())}.csv`;
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
@@ -10506,7 +10616,7 @@ try {
       (Array.isArray(problem.sequence) ? problem.sequence : String(problem.display || '').split(/\s+/).filter(Boolean)).map((item, i) => /*#__PURE__*/React.createElement("span", {
         key: i,
         className: `mx-1 ${/^_{2,}$/.test(String(item)) ? 'inline-block w-16 border-b-4 border-purple-400 text-purple-600' : ''}`
-      }, /^_{2,}$/.test(String(item)) ? mnProbeAnswer || '?' : item))), /*#__PURE__*/React.createElement("div", {
+      }, /^_{2,}$/.test(String(item)) ? mnProbeAnswer || '?' : saMathSign(React, item)))), /*#__PURE__*/React.createElement("div", {
         className: "flex items-center justify-center gap-3"
       }, /*#__PURE__*/React.createElement("input", {
         ref: mnProbeInputRef,

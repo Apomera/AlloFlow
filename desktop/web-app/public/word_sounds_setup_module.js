@@ -7325,7 +7325,9 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       if (letters.length > 1 && letters.join("") === word) [letters[0], letters[1]] = [letters[1], letters[0]];
       const hiddenIndex = word.length > 1 ? seed % word.length : 0;
       const correctLetter = word[hiddenIndex] || "";
-      const letterDistractorPool = packIsEnglish ? "abcdefghijklmnopqrstuvwxyz".split("") : shuffleForPack(allPackLetters);
+      const letterRank = (value) => [...value + word].reduce((hash, c) => Math.imul(hash ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261);
+      const vowelLetter = !!correctLetter && ("aeiou".includes(correctLetter) || correctLetter === "y" && !/[aeiou]/.test(word));
+      const letterDistractorPool = packIsEnglish ? (vowelLetter ? "aeiou" : "bcdfghjklmnprstvwz").split("").sort((a, b) => word.includes(a) - word.includes(b) || letterRank(a) - letterRank(b)) : shuffleForPack(allPackLetters);
       const letterOptions = shuffleForPack([.../* @__PURE__ */ new Set([correctLetter, ...letterDistractorPool.filter((value) => value !== correctLetter)])].slice(0, 4));
       const mode = item.soundSortMatches?.position || (seed % 2 === 0 ? "first" : "last");
       const soundBoard = packIsEnglish ? WS_CORE.buildSoundSort({

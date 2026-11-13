@@ -8,12 +8,14 @@ module.exports = {
     vocab_blank_directions: 'Read the sentence. Choose the word that fits in the blank.',
     vocab_blank_question: 'Which word fits in the blank?',
     vocab_blank_read: 'Read aloud',
-    vocab_blank_read_choice: 'Read choice {n} aloud',
+    // 2026-11-13: the name begins with the button's visible words, Hear it (WCAG 2.5.3 Label in Name).
+    vocab_blank_read_choice: 'Hear it: choice {n}',
     vocab_blank_hear: 'Hear it',
     vocab_blank_correct: 'Yes. That word fits.',
     vocab_blank_retry: 'Not quite. Try once more.',
     vocab_blank_missed: 'Here is the right answer.',
     vocab_blank_practice_wrong: 'Not quite. Here is the right answer.',
+    vocab_blank_blank: 'blank',
   },
   // p: { word, ask, choices: [text, ...], answer: the right text, read: true | false, lang,
   //   askAudio: the clip id of the word asked (optional), choiceAudio: [clip id or null, ...] (optional) }
@@ -72,7 +74,8 @@ module.exports = {
     var wake = function () { if (!synth || !voice()) return; try { var u = new view.SpeechSynthesisUtterance(''); u.volume = 0; synth.speak(u); } catch (_) {} };
     var hush = function () { if (synth) { try { synth.cancel(); } catch (_) {} } };
     // A word with its own recorded voice plays that clip; any other text is read by the device voice.
-    var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(c.text); };
+    // A meaning written with a blank ("If something ___ it rots") is read with the word "blank", as the question is.
+    var sayChoice = function (c) { return c.audio ? ctx.play(c.audio) : say(c.text.replace(/_{2,}/g, ', blank, ')); };
     var sayAsk = function () {
       var question = L[P + 'question'];
       if (item.askAudio) { wake(); return ctx.play(item.askAudio).then(function () { return say(question); }); }
@@ -90,7 +93,10 @@ module.exports = {
       readers.forEach(function (r) { r.b.hidden = !item.read || !(on || r.clipped); });
       if (hear) hear.button.hidden = hear.note.hidden = !item.read || !(on || item.choices.every(function (c) { return !!c.audio; }));
     };
-    var ask = ctx.el('p', { class: 'letters', lang: item.lang || 'en', 'data-read': '', style: item.ask.length <= 30 ? 'font-size:2rem;margin:8px 0' : 'font-size:1.35rem;line-height:1.5;margin:8px 0', text: item.ask });
+    var marked = function (text) {
+      return String(text).split(/(_{2,})/).filter(Boolean).map(function (part) { return /^_{2,}$/.test(part) ? ctx.el('span', {}, [ctx.el('span', { 'aria-hidden': 'true', text: part }), ctx.el('span', { class: 'sr', text: L[P + 'blank'] })]) : part; });
+    };
+    var ask = ctx.el('p', { class: 'letters', lang: item.lang || 'en', 'data-read': '', style: item.ask.length <= 30 ? 'font-size:2rem;margin:8px 0' : 'font-size:1.35rem;line-height:1.5;margin:8px 0' }, marked(item.ask));
     ctx.root.appendChild(ctx.el('p', { class: 'muted', style: 'margin:0', text: L[P + 'question'] }));
     ctx.root.appendChild(ask);
     var readRow = ctx.el('div', { class: 'row' }, [reader(sayAsk, { 'data-read-aloud': 'question' }, L[P + 'read'], !!item.askAudio)]);
@@ -112,7 +118,7 @@ module.exports = {
     };
     item.choices.forEach(function (c, i) {
       var b = ctx.el('button', { type: 'button', lang: item.lang || 'en', 'data-choice': String(i + 1), style: 'flex:1 1 auto;text-align:start;font-size:1.2rem;line-height:1.4;min-height:56px',
-        on: { click: function () { pick(i); } } }, [ctx.el('span', { 'aria-hidden': 'true', style: 'font-weight:700;margin-inline-end:10px', text: String(i + 1) }), c.text]);
+        on: { click: function () { pick(i); } } }, [ctx.el('span', { 'aria-hidden': 'true', style: 'font-weight:700;margin-inline-end:10px', text: String(i + 1) })].concat(marked(c.text)));
       var box = ctx.el('li', { class: 'choice', style: 'flex-direction:row;align-items:center;flex-wrap:wrap' }, [b,
         reader(function () { sayChoice(c); }, { 'data-read-aloud': 'choice-' + (i + 1), 'aria-label': ctx.fmt(L[P + 'read_choice'], { n: i + 1 }), style: 'min-height:48px;padding:6px 12px' }, L[P + 'hear'], !!c.audio)]);
       boxes.push(box); picks.push(b); tried.push(false);
@@ -126,7 +132,8 @@ module.exports = {
     if (hear) { readRow.appendChild(hear.button); readRow.appendChild(hear.note); }
     ctx.root.appendChild(list);
     showReaders();
-    if (synth) { try { if (typeof synth.addEventListener === 'function') synth.addEventListener('voiceschanged', showReaders); } catch (_) {} }
+    // Voices that arrive later: one handler, the item on view's (a listener for each item kept every item alive).
+    if (synth) { try { synth.onvoiceschanged = showReaders; } catch (_) {} }
     // In a check the keys 1 to 9 pick a choice (in practice the player does this itself).
     if (typeof ctx.keys === 'function') ctx.keys(function (key) {
       var n = Number(key);

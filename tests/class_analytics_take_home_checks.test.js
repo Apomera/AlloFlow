@@ -149,7 +149,8 @@ describe('reading a check file', () => {
     // The title too: the CSV carries it in its summary row, the JSON as lessonTitle.
     expect(json.check).toEqual(csv.check);
     expect([csv.title, json.title]).toEqual([LESSONS[id].title, LESSONS[id].title]);
-    expect(PLAYED[id].csv).toContain('"attempt=1","title=' + LESSONS[id].title + '"\r\n');
+    // 2026-11-13 (robustness pass): a file saved from then on ends the row with "active_s=" after the title.
+    expect(PLAYED[id].csv).toMatch(new RegExp('"attempt=1","title=' + LESSONS[id].title.replace(/[^\w ]/g, '\\$&') + '","active_s=[0-9]+"\r\n'));
   });
   it('reads the four saved sample files as they were saved on 11 November', async () => {
     const got = {};

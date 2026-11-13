@@ -41,7 +41,7 @@
   function head(word) {
     var k = key(word); if (!heads || !k) return null;
     if (own.call(heads, k)) return k;
-    if (own.call(forms, k)) return forms[k];
+    if (own.call(forms, k) && own.call(heads, forms[k])) return forms[k];
     var c = [];
     if (/ies$/.test(k)) c.push(k.slice(0, -3) + 'y');
     if (/(s|x|z|ch|sh|o)es$/.test(k)) c.push(k.slice(0, -2));

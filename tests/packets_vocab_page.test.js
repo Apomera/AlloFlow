@@ -26,7 +26,13 @@ const RULE = "default-src 'none'; script-src 'self'; style-src 'self'; img-src '
 const SCRIPTS = ['packets-page.js', 'word_sounds_take_home_loader.js', 'packets_verify_core.js', 'packets_zip.js', 'packets_handoff.js', BANK_FILE,
   'word_sounds_symbols_en.js', 'word_sounds_packet_builder.js', 'packets_vocab_media.js', 'packet_vocab_builder.js', SCRIPT];
 const BRITISH = /practis|standardis|licence|colour|\bmarking\b|\bmarked\b|\btick(?:ed|s)?\b|USB stick|\bwhilst\b|\bmaths\b|favour|behaviour|\bcentre\b/i;
-const ALLOWED_AI_SENTENCES = ['Runs without AI.', 'This page runs without AI.', 'This page runs without AI. No account. Nothing you choose leaves your device.', 'Run AI.'];
+const ALLOWED_AI_SENTENCES = ['Runs without AI.', 'This page runs without AI.', 'This page runs without AI. No account. Nothing you choose leaves your device.', 'Run AI.',
+  // 2026-11-13 (teacher-journey pass): where AI was used ahead of time, said plainly, as the Word Sounds pages name their AI voices.
+  // The word list's own note (packets_vocab_bank_en.js, checking) says its checking pass was done with AI assistance, not by a person.
+  'Some meanings were checked and corrected ahead of time with AI help, not by a person.',
+  'The recordings of words were made ahead of time with an AI voice (Kokoro).',
+  'This meaning was checked with AI help when the word list was prepared, not by a person.',
+  'Some meanings were checked and corrected with AI help when the word list was prepared, not by a person.'];
 const parse = (file) => new JSDOM(read(file)).window.document;
 const V = require('../packet_vocab_builder.js');
 const verify = require('../packets_verify_core.js');
@@ -248,7 +254,8 @@ describe('the maker, run with the stand-in word list', () => {
     expect(words()[0]).not.toBe(first[0]);
     expect(words().every((w) => p.$('f-words').value.includes(w))).toBe(true);
     await wait(300);
-    expect(p.$('summary-facts').textContent).toMatch(/^21 questions\./);
+    // 2026-11-13: 20, not 21: the wrong words of Fill the blank are of the same kind, and adapt (a verb) has no 3 other verbs.
+    expect(p.$('summary-facts').textContent).toMatch(/^20 questions\./);
 
     // A check, with a teacher code that is never kept.
     const check = p.d.querySelector('input[name="mode"][value="check"]');
@@ -264,7 +271,8 @@ describe('the maker, run with the stand-in word list', () => {
     expect([m.packet.mode, m.check.measure, /^set/.test(m.check.teacherCode)]).toEqual(['check', 'vocab_items', true]);
     expect(Object.values(Object.fromEntries(Object.entries(p.w.localStorage)))).not.toContain('owl42');
     expect(JSON.stringify({ ...p.w.localStorage })).not.toContain('owl42');
-    expect([...p.$('summary-rows').querySelectorAll('dt')].map((n) => n.textContent)).toEqual(['Questions', 'Left out', 'How', 'Read aloud', 'Title', 'File']);
+    // 2026-11-13: a check says it opens with a sample question.
+    expect([...p.$('summary-rows').querySelectorAll('dt')].map((n) => n.textContent)).toEqual(['Questions', 'Left out', 'How', 'Practice first', 'Read aloud', 'Title', 'File']);
   });
 
   it('makes one file for each student in one .zip, and opens a file it made', async () => {
