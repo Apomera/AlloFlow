@@ -620,7 +620,14 @@
   // with nothing taken out to make room. Checking a word adds it to the end of state.chosen: the file's order is
   // the order of checking (the chips show it). Until the teacher changes a box, the boxes show the picker's words
   // for the length chosen. Only LIST_PAGE rows are drawn at a time.
-  var listPool = [], listKey = null, listLimit = LIST_PAGE, listNote = '', listTimer = 0, listPanel = null, addPending = {}, myPictured = {};
+  var listPool = [], listKey = null, listLimit = LIST_PAGE, listNote = '', listTimer = 0, listPanel = null, addPending = {}, myPictured = {}, myNoPicture = {};
+  var previewOmit = {}, previewSeeds = {}, previewNoPicture = {}, previewOwnPic = {}, previewSession = null, inPreviewAction = false;
+  var REROLL_ACTS = ['isolation', 'segmentation', 'blending', 'decoding', 'rhyming', 'missing_letter', 'word_families', 'sound_sort'];
+  function resetPreview(stopSession) {
+    previewOmit = {};
+    previewSeeds = {};
+    if (stopSession && previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; }
+  }
   function typedNow() { return typedWords().slice(0, MAX_TYPED); }
   // A word can go in the file: it passes the typed-word checks, and a borderline word only when the teacher typed it.
   function usable(word) {
@@ -637,7 +644,7 @@
     state.hand = true;
     state.chosen = listChecked();
   }
-  function hasPicture(word) { return ownPicture(word) || !!myPictured[word] || (!!symbols && symbols.has(word)); }
+  function hasPicture(word) { return !noPicture(word) && (ownPicture(word) || !!myPictured[word] || (!!symbols && symbols.has(word))); }
   // Every word the picker would offer now, A to Z (the picker's rules, not its count). Worked out again only when a choice changes.
   function poolWords() {
     var asked = criteria();
@@ -670,7 +677,7 @@
     sounds = sounds || (entry ? entry.sounds : null);
     return sounds ? count(sounds.length, 'sound') + ': ' + sounds.map(soundName).join(', ') + '.' : '';
   }
-  function pictureFact(word) { return ownPicture(word) || myPictured[word] ? ' Your picture.' : symbols && symbols.has(word) ? ' Has a picture.' : ''; }
+  function pictureFact(word) { return noPicture(word) ? ' Picture off.' : ownPicture(word) || myPictured[word] ? ' Your picture.' : symbols && symbols.has(word) ? ' Has a picture.' : ''; }
   function listRow(entry, checked, index) {
     var word = entry.word, info = entry.typed || entry.earlier ? checkWord(word) : null;
     var ok = usable(word), on = checked.indexOf(word) >= 0;
@@ -899,7 +906,12 @@
       if (run !== mineRun) return null;
       myRows = Array.isArray(rows) ? rows : [];
       myPictured = {};
-      myRows.forEach(function (row) { if (row && row.picture) myPictured[row.word] = true; });
+      myNoPicture = {};
+      myRows.forEach(function (row) {
+        if (!row) return;
+        if (row.noPicture) myNoPicture[row.word] = true;
+        else if (row.picture) myPictured[row.word] = true;
+      });
       var words = listedWords().filter(hasRow);
       mineTried = {};
       words.forEach(function (word) { mineTried[word] = true; });
@@ -925,7 +937,8 @@
     var parts = [];
     if (row.sounds) parts.push('sounds');
     if (row.clip) parts.push('recording');
-    if (row.picture) parts.push(row.own ? 'your picture' : 'picture');
+    if (row.noPicture) parts.push('no picture');
+    else if (row.picture) parts.push(row.own ? 'your picture' : 'picture');
     return parts.join(', ');
   }
   // The quiet summary in step 2: shown only when the store holds something.
@@ -1053,9 +1066,10 @@
       words.forEach(function (word) {
         var entry = Object.prototype.hasOwnProperty.call(found, word) ? found[word] : null;
         var file = Object.prototype.hasOwnProperty.call(fromFile, word) ? fromFile[word] : null;
-        if (!entry && !file) return;
+        var off = !!previewNoPicture[word];
+        if (!entry && !file && !off) return;
         var part = function (name) { return (entry && entry[name]) || (file && file[name]) || null; };
-        own[word] = { sounds: part('sounds'), clip: part('clip'), picture: part('picture') };
+        own[word] = { sounds: part('sounds'), clip: part('clip'), picture: off ? { none: true } : part('picture') };
       });
       return Object.keys(own).length ? own : null;
     });
@@ -1280,7 +1294,8 @@
   }
   // The box and its one line: how many of this file's words have a picture. inFile is what a finished file reports.
   // A picture the teacher added to a word (My words) is used in place of its symbol.
-  function ownPicture(word) { var entry = mineOf(word); return !!(entry && entry.picture); }
+  function noPicture(word) { var entry = mineOf(word); return !!(entry && entry.picture && entry.picture.none) || !!myNoPicture[word] || !!previewNoPicture[word]; }
+  function ownPicture(word) { var entry = mineOf(word); return !!(entry && entry.picture && !entry.picture.none) && !previewNoPicture[word]; }
   // The box is never switched off: with no picture among the words it can still be checked (the file is then the
   // plain one), and the line beside it says why there are none and what to do.
   function drawPictures(inFile) {
@@ -1288,7 +1303,7 @@
     if (!box) return;
     var words = fileWords();
     var theirs = words.filter(ownPicture).length;
-    var have = words.filter(function (word) { return ownPicture(word) || (!!symbols && symbols.has(word)); }).length;
+    var have = words.filter(function (word) { return !noPicture(word) && (ownPicture(word) || (!!symbols && symbols.has(word))); }).length;
     var onlyPictures = !!($('f-only-pictures') && $('f-only-pictures').checked);
     box.disabled = false;
     // On when the teacher checked it, or before any click when the teacher filtered for words with pictures or most chosen words have one.
@@ -1299,7 +1314,7 @@
     // Which symbol sets these words draw on (Mulberry first, OpenMoji only where Mulberry has none).
     var setNames = { mulberry: 'Mulberry', openmoji: 'OpenMoji' }, sets = [];
     words.forEach(function (word) {
-      if (!symbols || ownPicture(word) || !symbols.has(word)) return;
+      if (!symbols || noPicture(word) || ownPicture(word) || !symbols.has(word)) return;
       var set = typeof symbols.set === 'function' ? symbols.set(word) || 'mulberry' : 'mulberry';
       if (sets.indexOf(set) < 0) sets.push(set);
     });
@@ -1315,7 +1330,7 @@
   function picturesFor(run, words) {
     var box = $('f-pictures');
     if (!box || !box.checked) return Promise.resolve(false);
-    if (!symbols || !words.some(function (word) { return symbols.has(word) && !ownPicture(word); })) return Promise.resolve(words.some(ownPicture));
+    if (!symbols || !words.some(function (word) { return !noPicture(word) && !ownPicture(word) && symbols.has(word); })) return Promise.resolve(words.some(ownPicture));
     if (!symbols.ready() && run === buildRun) making('Getting the pictures, about ' + megabytes(symbols.bytes) + ' MB.', null);
     var loading = loadPictures().then(function (ready) { return !!ready; }, function () { return false; });
     drawPictures();
@@ -1466,6 +1481,10 @@
     if (learner) options.learnerLabel = learner;
     if (state.tracing !== 'both' && plan.activities.indexOf('letter_tracing') >= 0) options.tracingCases = state.tracing;
     options.choices = CHOICE_LEVELS.indexOf(state.choices) >= 0 ? state.choices : 'medium';
+    if (!plan.clean) {
+      if (Object.keys(previewOmit).length) options.omitItems = previewOmit;
+      if (Object.keys(previewSeeds).length) options.itemSeeds = previewSeeds;
+    }
     return options;
   }
   // The file a single make would give for another version (A, B or C): the version picks other words (unless the
@@ -1486,10 +1505,13 @@
     var words = fileWords();
     var activities = order.filter(function (id) { return state.activities.indexOf(id) >= 0; });
     var title = titleNow();
-    if (!words.length || !activities.length) return problem('There is nothing to make yet. Choose at least one activity and one word.', 'change');
+    if (!words.length || !activities.length) {
+      problem('There is nothing to make yet. Choose at least one activity and one word.', 'change');
+      return Promise.resolve({ html: null, said: 'There is nothing to make yet.' });
+    }
     var said = false;
     making(sounds ? 'Putting the file together.' : soundsSaved ? 'Reading the sounds saved on this device.' : 'Getting the sounds.', null);
-    getSounds(function (bytes) {
+    return getSounds(function (bytes) {
       if (run !== buildRun || sounds) return;
       making('Getting the sounds: ' + megabytes(bytes) + ' of ' + megabytes(SOUND_BYTES) + ' MB. This happens one time.', bytes / SOUND_BYTES);
       if (!said) { said = true; setText('making-said', 'Getting the sounds, about ' + Math.round(SOUND_BYTES / 1e6) + ' MB. This happens one time.'); }
@@ -1517,14 +1539,16 @@
         });
       });
     }).then(function (result) {
-      if (!result || run !== buildRun) return;
+      if (!result || run !== buildRun) return { html: null, said: 'Could not update the file.' };
       drawResult(result, words);
+      return result.html && built ? { html: built.html, url: fileUrl } : { html: null, said: 'No question could be made.' };
     }).catch(function (error) {
-      if (run !== buildRun) return;
+      if (run !== buildRun) return { html: null, said: 'Cancelled.' };
       var text = String((error && error.message) || error || '');
       if (!sounds) problem('The sounds could not be downloaded. Check the connection, then try again. Your choices are still here.', 'retry');
       else if (error && error.wordSounds) problem(WORD_SOUNDS_FAILED, 'retry');
       else problem('The file could not be put together (' + (text || 'no reason was given') + '). Your choices are still here.', 'retry');
+      return { html: null, said: text || 'Could not put the file together.' };
     });
   }
   function plainReason(reason) {
@@ -1572,6 +1596,81 @@
     lines.forEach(function (line) { list.appendChild(el('li', '', line)); });
     host.appendChild(list);
   }
+  function describePreview(lesson) {
+    var out = [], blocks = lesson && Array.isArray(lesson.blocks) ? lesson.blocks : [];
+    var picOn = !!($('f-pictures') && $('f-pictures').checked);
+    blocks.forEach(function (block) {
+      var act = String(block.activity || '');
+      (Array.isArray(block.items) ? block.items : []).forEach(function (item) {
+        var word = String(item.word || item.target || '');
+        out.push({
+          itemId: String(item.id || ''),
+          activity: act,
+          word: word,
+          sample: false,
+          label: core.activityLabel(act) + (word ? ' — ' + word : ''),
+          canSwap: REROLL_ACTS.indexOf(act) >= 0,
+          canTogglePicture: !!(picOn && word && (ownPicture(word) || !!myPictured[word] || noPicture(word) || (!!symbols && symbols.has(word)))),
+          noPicture: !!(word && noPicture(word)),
+        });
+      });
+    });
+    return out;
+  }
+  function onPreviewAction(req) {
+    var act = req && req.action, item = req && req.item;
+    if (!item || !item.word) return { said: 'Nothing to change on this question.' };
+    var word = String(item.word), key = String(item.activity || '') + '|' + word.toLowerCase();
+    var rollback = null, saidAction = '', prep = Promise.resolve();
+    if (act === 'remove') {
+      if (!previewOmit[key]) { previewOmit[key] = true; rollback = function () { delete previewOmit[key]; }; }
+      saidAction = 'Removed from this file.';
+    } else if (act === 'swap') {
+      var prevSeed = previewSeeds[key];
+      previewSeeds[key] = (Number(prevSeed) || 0) + 1;
+      rollback = function () { if (prevSeed === undefined) delete previewSeeds[key]; else previewSeeds[key] = prevSeed; };
+      saidAction = 'Changed wrong answers.';
+    } else if (act === 'picture') {
+      var off = !noPicture(word), entry = mineOf(word);
+      if (off && entry && entry.picture && !entry.picture.none) previewOwnPic[word] = entry.picture;
+      var nextPic = off ? 'none' : (previewOwnPic[word] || null);
+      saidAction = off ? 'Picture left out.' : 'Picture included.';
+      if (myWords && typeof myWords.put === 'function') {
+        prep = myWords.put(word, { picture: nextPic }).then(function () {
+          if (off) {
+            mine[word] = Object.assign({}, mine[word] || {}, { picture: { none: true } });
+            myNoPicture[word] = true;
+            delete myPictured[word];
+          } else {
+            delete myNoPicture[word];
+            if (mine[word]) {
+              if (nextPic) { mine[word].picture = nextPic; myPictured[word] = true; }
+              else delete mine[word].picture;
+            }
+          }
+        }, function () {
+          if (off) previewNoPicture[word] = true; else delete previewNoPicture[word];
+        });
+      } else {
+        if (off) previewNoPicture[word] = true; else delete previewNoPicture[word];
+      }
+    } else {
+      return { said: 'Nothing changed.' };
+    }
+    inPreviewAction = true;
+    return prep.then(function () { return make(); }).then(function (res) {
+      inPreviewAction = false;
+      if (!res || !res.html) {
+        if (rollback) rollback();
+        return make().then(function () { return { said: (res && res.said) || 'Could not update the file with that change.' }; });
+      }
+      return { html: res.html, url: res.url, said: saidAction };
+    }, function (err) {
+      inPreviewAction = false;
+      if (rollback) rollback();
+      return { said: String((err && err.message) || 'Could not update the file.') };
+    });
+  }
   function drawResult(result, words) {
     show('making', false);
     var manifest = result.manifest, out = leftOut(result, words);
@@ -1597,7 +1696,15 @@
     // With pictures, the line under the box now counts the words that show one in this file.
     if (manifest.pictures && (manifest.pictures.symbols || manifest.pictures.counts.teacher)) drawPictures(manifest.pictures.counts);
     show('summary', true);
-    if (fileUrl) { $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl); show('try', true); }
+    if (fileUrl) {
+      $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl);
+      show('try', true);
+      var handoff = window.AlloPacketHandoff;
+      if (!inPreviewAction && handoff && typeof handoff.hostPreview === 'function') {
+        if (previewSession) previewSession.update({ url: fileUrl, html: built.html });
+        else previewSession = handoff.hostPreview({ url: fileUrl, html: built.html, describe: describePreview, onAction: onPreviewAction });
+      }
+    }
     show('save', true);
     setText('making-said', 'The file is ready: ' + count(total, 'question') + ', ' + fileSize(built.bytes) + '.');
     drawBatch();
@@ -1862,6 +1969,9 @@
   function applyReopen(result, name) {
     if (!result.ok) { showReopen(result.why, [], result.page); return; }
     clearTimeout(buildTimer);
+    resetPreview(true);
+    previewNoPicture = {};
+    previewOwnPic = {};
     clearBuilt();
     closePanels();
     var fresh = defaults();
@@ -1986,7 +2096,7 @@
             : 'No words fit yet. Loosen one choice above, or type your own words.');
       }
     }
-    if (target !== 3) { clearTimeout(buildTimer); clearBuilt(); show('making', false); }
+    if (target !== 3) { clearTimeout(buildTimer); resetPreview(true); clearBuilt(); show('making', false); }
     // Sent back to the step already on screen: the reason is announced and the focus stays where it is.
     var stayed = target !== wanted && target === step;
     step = target;
@@ -2070,6 +2180,9 @@
     });
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
+      resetPreview(true);
+      previewNoPicture = {};
+      previewOwnPic = {};
       // My words are not choices: they stay (they have their own Remove buttons in step 2). Their open panels close.
       closePick(false);
       Object.keys(ownOpen).forEach(function (word) { ownOpen[word].destroy(); delete ownOpen[word]; });

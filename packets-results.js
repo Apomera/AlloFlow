@@ -40,6 +40,10 @@
   };
   // Notes that say how to read a result. They do not put a ring on a chart dot.
   var QUIET = { finished_early: true, no_check_value: true, untimed: true, untimed_no_rate: true };
+  var TOOL_NAMES = { textLarger: 'larger text', textLargest: 'largest text', contrastHigh: 'high contrast',
+    contrastSoft: 'soft contrast', colorsDark: 'dark colors', colorsOcean: 'ocean colors', colorsSunny: 'sunny colors',
+    colorsForest: 'forest colors', spacingWide: 'wider spacing', readingFocus: 'reading focus line',
+    magnifier: 'magnifier', readChoices: 'read choices aloud' };
 
   var reader = window.AlloPacketResults;
   var doc = document;
@@ -140,10 +144,14 @@
   function valueText(value, percent) { return value === null || value === undefined ? 'No score' : value + (percent ? '%' : ''); }
   function sentence(text) { return text ? text.charAt(0).toUpperCase() + text.slice(1) : ''; }
   function notesOf(s) {
-    return s.flags.map(function (flag) {
+    var out = s.flags.map(function (flag) {
       if (flag === 'left_the_page' && s.score && s.score.hiddenS >= 1) return NOTES.left_the_page + ' (' + count(Math.round(s.score.hiddenS), 'second') + ' away in all)';
       return own(NOTES, flag) ? NOTES[flag] : flag.replace(/_/g, ' ');
     });
+    if (s.score && Array.isArray(s.score.tools) && s.score.tools.length) {
+      out.push('reading tools used: ' + s.score.tools.map(function (t) { return own(TOOL_NAMES, t) ? TOOL_NAMES[t] : t; }).join(', '));
+    }
+    return out;
   }
   function hasLoudNote(flags) { return flags.some(function (flag) { return !own(QUIET, flag); }); }
   // A practice file that folds new facts in among known ones (newFacts from the reader): how the new

@@ -416,3 +416,139 @@ describe('T6.4 — 4-copy mirror parity across app bundles', () => {
     expect(new Set(digests).size).toBe(1);
   });
 });
+
+describe('T6.5 — QuizView optional Quick Check mode (one tap, no retries)', () => {
+  const quizSrc = readFileSync('view_quiz_source.jsx', 'utf8');
+  const normalizeMatch = quizSrc.match(/function _quizNormalizeDeliverySettings\(raw\)\s*\{[\s\S]*?\n  \}/);
+  const normalizeDelivery = normalizeMatch
+    ? new Function(normalizeMatch[0] + '\nreturn _quizNormalizeDeliverySettings;')()
+    : null;
+
+  function makeQuizProps(overrides = {}) {
+    window.localStorage.clear();
+    const deliverySettings = overrides.deliverySettings || {};
+    delete overrides.deliverySettings;
+    return {
+      t: (k) => k,
+      isTeacherMode: false,
+      isParentMode: false,
+      isIndependentMode: false,
+      isPresentationMode: false,
+      isReviewGame: false,
+      isEditingQuiz: false,
+      showQuizAnswers: false,
+      isFactChecking: {},
+      escapeRoomState: { isActive: false },
+      handleQuizQuestionAction: vi.fn(),
+      generatedContent: {
+        id: 'quiz-qc-' + Math.random().toString(36).slice(2, 7),
+        data: {
+          title: 'Quick Check Sample',
+          deliverySettings,
+          questions: [
+            {
+              type: 'mcq',
+              question: 'Which planet is known as the Red Planet?',
+              options: ['Venus', 'Mars', 'Jupiter', 'Saturn'],
+              correctAnswer: 'Mars',
+              explanation: 'Mars looks reddish because of iron oxide on its surface.',
+              conceptLabel: 'planets',
+            },
+            {
+              type: 'mcq',
+              question: 'Which gas do plants absorb from air for photosynthesis?',
+              options: ['Nitrogen', 'Carbon dioxide', 'Helium', 'Argon'],
+              correctAnswer: 'Carbon dioxide',
+              explanation: 'Plants use carbon dioxide and water with light.',
+              conceptLabel: 'photosynthesis',
+            },
+          ],
+        },
+      },
+      ...overrides,
+    };
+  }
+
+  it('defaults quickCheckMode to false and supports toggling + preset reset in AssessmentDeliveryPanel', () => {
+    expect(normalizeDelivery).toBeTypeOf('function');
+    expect(normalizeDelivery({}).quickCheckMode).toBe(false);
+    expect(normalizeDelivery({ quickCheckMode: true }).quickCheckMode).toBe(true);
+
+    const onAction = vi.fn();
+    const { host } = mountElement(React.createElement(QuizView, makeQuizProps({
+      isTeacherMode: true,
+      handleQuizQuestionAction: onAction,
+    })));
+
+    const drawerToggle = host.querySelector('[data-assessment-settings-toggle]');
+    expect(drawerToggle).toBeTruthy();
+    act(() => { drawerToggle.click(); });
+
+    const customizeBtn = [...host.querySelectorAll('button')].find((b) => b.textContent.trim() === 'Customize');
+    expect(customizeBtn).toBeTruthy();
+    act(() => { customizeBtn.click(); });
+
+    const qcCheckbox = host.querySelector('[data-assessment-quick-check-toggle]');
+    expect(qcCheckbox).toBeTruthy();
+    expect(qcCheckbox.checked).toBe(false);
+    expect(qcCheckbox.closest('label').textContent).toContain('Quick Check mode (one tap, no retries)');
+
+    act(() => { qcCheckbox.click(); });
+    expect(onAction).toHaveBeenCalledWith(0, 'patch-assessment', expect.objectContaining({
+      deliverySettings: expect.objectContaining({ quickCheckMode: true, profile: 'custom' }),
+    }));
+
+    // 2026-11-14: Scope preset lookup inside #assessment-settings-panel because the drawer toggle also renders "Flexible access".
+    const flexiblePreset = [...host.querySelectorAll('#assessment-settings-panel button')].find((b) => b.textContent.includes('Flexible access'));
+    expect(flexiblePreset).toBeTruthy();
+    act(() => { flexiblePreset.click(); });
+    expect(onAction).toHaveBeenLastCalledWith(0, 'patch-assessment', expect.objectContaining({
+      deliverySettings: expect.objectContaining({ quickCheckMode: false, profile: 'flexible' }),
+    }));
+  });
+
+  it('locks each MCQ after one tap, suppresses immediate feedback during the attempt, and auto-advances when one-at-a-time', () => {
+    const onSubmitLive = vi.fn();
+    const { host } = mountElement(React.createElement(QuizView, makeQuizProps({
+      activeSessionCode: 'ROOM42',
+      sessionData: { quizState: { activityId: 'act-qc-1' } },
+      onSubmitLiveAnswer: onSubmitLive,
+      deliverySettings: { profile: 'custom', pacing: 'all-at-once', feedbackTiming: 'immediate', quickCheckMode: true },
+    })));
+
+    const q0 = host.querySelector('#assessment-question-0');
+    expect(q0).toBeTruthy();
+    const options0 = [...q0.querySelectorAll('[role="button"]')];
+    expect(options0).toHaveLength(4);
+    expect(options0[0].getAttribute('aria-disabled')).toBeNull();
+
+    // First tap: picks wrong answer 'Venus' (index 0); locks Q0 and suppresses immediate explanation/feedback.
+    act(() => { options0[0].click(); });
+    const afterFirst = [...host.querySelector('#assessment-question-0').querySelectorAll('[role="button"]')];
+    expect(afterFirst[0].getAttribute('aria-pressed')).toBe('true');
+    expect(afterFirst[1].getAttribute('aria-pressed')).toBe('false');
+    expect(afterFirst.every((el) => el.getAttribute('aria-disabled') === 'true')).toBe(true);
+    expect(host.querySelector('#assessment-question-0').textContent).not.toContain('iron oxide');
+    expect(onSubmitLive).toHaveBeenCalledTimes(1);
+
+    // Second tap on 'Mars' (index 1): ignored under Quick Check mode (no retries).
+    act(() => { afterFirst[1].click(); });
+    const afterRetry = [...host.querySelector('#assessment-question-0').querySelectorAll('[role="button"]')];
+    expect(afterRetry[0].getAttribute('aria-pressed')).toBe('true');
+    expect(afterRetry[1].getAttribute('aria-pressed')).toBe('false');
+    expect(onSubmitLive).toHaveBeenCalledTimes(1);
+  });
+
+  // 2026-11-14: Keep the one-at-a-time mount in its own test so #assessment-question-0 is unique in document.body.
+  it('auto-advances to the next question on one tap when pacing is one-at-a-time', () => {
+    const { host: hostOne } = mountElement(React.createElement(QuizView, makeQuizProps({
+      deliverySettings: { profile: 'custom', pacing: 'one-at-a-time', feedbackTiming: 'immediate', quickCheckMode: true },
+    })));
+    expect(hostOne.textContent).toContain('Question 1 of 2');
+    expect(hostOne.textContent).toContain('Red Planet');
+    const q1FirstOpts = [...hostOne.querySelector('#assessment-question-0').querySelectorAll('[role="button"]')];
+    act(() => { q1FirstOpts[1].click(); });
+    expect(hostOne.textContent).toContain('Question 2 of 2');
+    expect(hostOne.textContent).toContain('photosynthesis');
+  });
+});

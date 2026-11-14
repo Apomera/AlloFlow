@@ -60,6 +60,12 @@
   var wordsTimer = 0;
   // Recordings and pictures (packets_vocab_media.js, word_sounds_symbols_en.js, word_sounds_packet_builder.js).
   var media = null, symbols = null, art = null, pictureState = 'idle', heard = null;
+  var previewOmit = {}, previewSlot = {}, previewSession = null, inPreviewAction = false;
+  function resetPreview(stopSession) {
+    previewOmit = {};
+    previewSlot = {};
+    if (stopSession && previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; }
+  }
 
   function defaults() { return { words: '', types: ['meaning', 'word'], mode: 'practice', title: '', readAloud: true, voices: true, codeName: '' }; }
 
@@ -561,8 +567,10 @@
   }
   function codeNow() { return String($('f-code').value || '').trim(); }
   function buildWith(learner, types, clips) {
-    var lesson = builder.lessonFromVocab({ loader: loader, rows: rows, types: types, mode: state.mode, title: state.title, readAloud: state.readAloud,
-      voices: state.voices, clips: clips || null, pictures: pictureState === 'ready' ? symbols : null, art: art });
+    var vocabOpts = { loader: loader, rows: rows, types: types, mode: state.mode, title: state.title, readAloud: state.readAloud,
+      voices: state.voices, clips: clips || null, pictures: pictureState === 'ready' ? symbols : null, art: art };
+    if (Object.keys(previewOmit).length) vocabOpts.omitItems = previewOmit;
+    var lesson = builder.lessonFromVocab(vocabOpts);
     return builder.buildVocabPacket({ lesson: lesson, loader: loader, rows: rows, bank: bankState === 'ready' ? bank : null, teacherCode: state.mode === 'check' ? codeNow() : '', learner: learner || '', voices: state.voices });
   }
   function isPictureType(id) { return id === 'picture' || id === 'picword'; }
@@ -570,31 +578,151 @@
     clearTimeout(buildTimer);
     clearBuilt();
     var run = buildRun, types = typesNow(), notes = [];
-    if (!types.length) { problem('Choose at least one kind of question.'); return; }
+    if (!types.length) { problem('Choose at least one kind of question.'); return Promise.resolve({ html: null, said: 'Choose at least one kind of question.' }); }
     var code = codeNow();
-    if (state.mode === 'check' && code && code.length < 4) { show('making', false); setText('code-line', 'The teacher code needs 4 or more characters. Leave it empty for no code.'); return; }
+    if (state.mode === 'check' && code && code.length < 4) { show('making', false); setText('code-line', 'The teacher code needs 4 or more characters. Leave it empty for no code.'); return Promise.resolve({ html: null, said: 'The teacher code needs 4 or more characters.' }); }
     setText('code-line', '');
     // Picture questions wait for the pictures (getPictures makes the file again when they are here).
     if (types.some(isPictureType)) {
-      if (pictureState !== 'ready' && pictureState !== 'failed') { making('Getting the pictures.'); getPictures(); return; }
+      if (pictureState !== 'ready' && pictureState !== 'failed') { making('Getting the pictures.'); getPictures(); return Promise.resolve({ html: null, said: 'Getting the pictures.' }); }
       if (pictureState === 'failed') { types = types.filter(function (id) { return !isPictureType(id); }); notes.push('The pictures could not be downloaded, so the file has no picture questions.'); }
-      if (!types.length) { problem('The pictures could not be downloaded. Choose another kind of question, or load the page again.'); return; }
+      if (!types.length) { problem('The pictures could not be downloaded. Choose another kind of question, or load the page again.'); return Promise.resolve({ html: null, said: 'The pictures could not be downloaded.' }); }
     }
     var go = function (clips) {
-      if (run !== buildRun) return;
+      if (run !== buildRun) return { html: null, said: 'Cancelled.' };
       var result;
       try { result = buildWith(state.codeName, types, clips); } catch (error) {
-        problem('The file could not be put together (' + (said(error) || 'no reason was given') + '). Your words and changes are still here.');
-        return;
+        var msg = 'The file could not be put together (' + (said(error) || 'no reason was given') + '). Your words and changes are still here.';
+        problem(msg);
+        return { html: null, said: msg };
       }
       drawResult(result, types, notes);
+      return built && built.html ? { html: built.html, url: fileUrl } : { html: null, said: 'Could not update the file.' };
     };
     // Recordings made ahead of time, for the words the file says out loud (Read aloud on, recordings not turned off).
-    if (!state.readAloud || !state.voices || !media || typeof loader.portableAudio !== 'function') { go(null); return; }
+    if (!state.readAloud || !state.voices || !media || typeof loader.portableAudio !== 'function') return Promise.resolve(go(null));
     making('Getting the recordings.');
-    media.clips(builder.wordsToHear(rows, types), loader, function (text) { if (run === buildRun) making(text); }).then(go, function () {
+    return media.clips(builder.wordsToHear(rows, types), loader, function (text) { if (run === buildRun) making(text); }).then(go, function () {
       notes.push('The recordings could not be downloaded, so the device voice reads every word.');
-      go(null);
+      return go(null);
+    });
+  }
+  function rowForPreviewItem(lesson, t, item) {
+    var id = String((item && item.id) || '');
+    var senseAt = id.lastIndexOf('@');
+    if (senseAt >= 0) {
+      var sid = id.slice(senseAt + 1);
+      var bySense = rows.filter(function (r) { return r.senseId === sid; })[0];
+      if (bySense) return bySense;
+    }
+    var byWord = item && item.word ? rowOf(builder.keyOf(String(item.word))) : null;
+    if (byWord) return byWord;
+    var stem = String((item && (item.ask || item.word)) || '');
+    if (t && t.id === 'word') {
+      var byDef = rows.filter(function (r) { return r.def && r.def.slice(0, 120) === stem.slice(0, 120); })[0];
+      if (byDef) return byDef;
+    }
+    if (t && t.id === 'blank') {
+      var byBlank = rows.filter(function (r) { return r.blank && r.blank.ask.slice(0, 120) === stem.slice(0, 120); })[0];
+      if (byBlank) return byBlank;
+    }
+    if (t && t.id === 'picword' && item && item.image && lesson && lesson.images && symbols && pictureState === 'ready') {
+      var imgUri = lesson.images[item.image] || item.image;
+      var byImg = rows.filter(function (r) {
+        try {
+          var s = symbols.get(r.word);
+          return s && typeof s.svg === 'string' && ('data:image/svg+xml;base64,' + btoa(unescape(encodeURIComponent(s.svg)))) === imgUri;
+        } catch (_) { return false; }
+      })[0];
+      if (byImg) return byImg;
+    }
+    return null;
+  }
+  function describePreview(lesson) {
+    var out = [], blocks = lesson && Array.isArray(lesson.blocks) ? lesson.blocks : [];
+    blocks.forEach(function (block) {
+      var t = builder.TYPES.filter(function (x) { return x.activity === block.activity; })[0] || null;
+      (Array.isArray(block.items) ? block.items : []).forEach(function (item) {
+        var row = item.practice ? null : rowForPreviewItem(lesson, t, item);
+        var word = row ? row.word : String(item.word || '');
+        var typeId = t ? t.id : '';
+        out.push({
+          itemId: String(item.id || ''),
+          activity: String(block.activity || ''),
+          typeId: typeId,
+          rowKey: row ? row.key : (word ? builder.keyOf(word) : ''),
+          word: word,
+          sample: !!item.practice,
+          label: (t ? t.name + ' — ' : '') + (word || String(item.id || '')),
+          canSwap: !item.practice && !!row && (typeId === 'meaning' || typeId === 'word' || typeId === 'blank'),
+          canTogglePicture: !item.practice && !!row && !!(t && t.pictures),
+          noPicture: !!(row && edits.words[row.key] && edits.words[row.key].noPicture),
+        });
+      });
+    });
+    return out;
+  }
+  function onPreviewAction(req) {
+    var act = req && req.action, item = req && req.item;
+    if (!item || item.sample) return { said: 'Sample questions stay in checks.' };
+    var key = String(item.rowKey || ''), row = key ? rowOf(key) : null;
+    var rollback = null, saidAction = '';
+    if (act === 'remove') {
+      if (!key) return { said: 'This question could not be matched.' };
+      var omitKey = String(item.activity || '') + '|' + key;
+      if (!previewOmit[omitKey]) { previewOmit[omitKey] = true; rollback = function () { delete previewOmit[omitKey]; }; }
+      saidAction = 'Removed from this file.';
+    } else if (act === 'swap') {
+      if (!row) return { said: 'This word could not be matched.' };
+      var countSlots = builder.WRONG || 3;
+      var slotKey = item.typeId + '|' + key;
+      var startSlot = Number(previewSlot[slotKey]) || 0;
+      var usedSlot = -1, next = null;
+      for (var k = 0; k < countSlots; k++) {
+        var trySlot = (startSlot + k) % countSlots;
+        var candidate = builder.swap(row, trySlot, item.typeId === 'blank' ? 'blank' : undefined);
+        if (candidate) { usedSlot = trySlot; next = candidate; break; }
+      }
+      if (!next) return { said: 'No other wrong answers available for this word.' };
+      previewSlot[slotKey] = (usedSlot + 1) % countSlots;
+      if (item.typeId === 'blank') {
+        var e = wordEdit(key), prevBlank = e.blank ? e.blank.slice() : null, prevFor = e.blankFor;
+        var words = row.blank.wrong.slice(); words[usedSlot] = next;
+        e.blank = words; e.blankFor = row.senseId + '|' + row.blank.ask;
+        rollback = function () { if (prevBlank) { e.blank = prevBlank; e.blankFor = prevFor; } else { delete e.blank; delete e.blankFor; } keepEdits(); redraft(); };
+      } else {
+        var we = wordEdit(key), prevWrong = we.wrong ? we.wrong.slice() : null, prevWFor = we.wrongFor;
+        var list2 = row.wrong.slice(); list2[usedSlot] = next;
+        setWrong(row, list2);
+        rollback = function () { if (prevWrong) { we.wrong = prevWrong; we.wrongFor = prevWFor; } else { delete we.wrong; delete we.wrongFor; } keepEdits(); redraft(); };
+      }
+      keepEdits();
+      redraft();
+      saidAction = 'Changed wrong answers.';
+    } else if (act === 'picture') {
+      if (!key) return { said: 'This word could not be matched.' };
+      var wp = wordEdit(key), wasOff = !!wp.noPicture;
+      if (wasOff) delete wp.noPicture; else wp.noPicture = true;
+      keepEdits();
+      redraft();
+      drawPictureRows();
+      rollback = function () { if (wasOff) wp.noPicture = true; else delete wp.noPicture; keepEdits(); redraft(); drawPictureRows(); };
+      saidAction = wasOff ? 'Picture included.' : 'Picture left out.';
+    } else {
+      return { said: 'Nothing changed.' };
+    }
+    inPreviewAction = true;
+    return make().then(function (res) {
+      inPreviewAction = false;
+      if (!res || !res.html) {
+        if (rollback) rollback();
+        return make().then(function () { return { said: (res && res.said) || 'Could not update the file with that change.' }; });
+      }
+      return { html: res.html, url: res.url, said: saidAction };
+    }, function (err) {
+      inPreviewAction = false;
+      if (rollback) rollback();
+      return { said: String((err && err.message) || 'Could not update the file.') };
     });
   }
   function fileName(title, tail) {
@@ -643,7 +771,15 @@
     setText('size-warn', built.bytes >= LARGE_FILE_BYTES ? LARGE_FILE_SAID : '');
     show('size-warn', built.bytes >= LARGE_FILE_BYTES);
     show('summary', true);
-    if (fileUrl) { $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl); show('try', true); }
+    if (fileUrl) {
+      $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl);
+      show('try', true);
+      var handoff = window.AlloPacketHandoff;
+      if (!inPreviewAction && handoff && typeof handoff.hostPreview === 'function') {
+        if (previewSession) previewSession.update({ url: fileUrl, html: built.html });
+        else previewSession = handoff.hostPreview({ url: fileUrl, html: built.html, describe: describePreview, onAction: onPreviewAction });
+      }
+    }
     show('save', true);
     setText('making-said', 'The file is ready: ' + count(total, 'question') + ', ' + fileSize(built.bytes) + '.');
     drawBatch();
@@ -743,6 +879,7 @@
     if (bankState === 'loading') { reopenNote('The word list is still loading. Wait a moment, then open the file again.'); return; }
     var back = builder.readBack(parts);
     if (!back.ok) { reopenNote(parts.ok ? 'This file was not made on this page. Open it on the page that made it.' : 'This is not a file made with this page. Choose the .html file you saved in step 3.'); return; }
+    resetPreview(true);
     state.words = back.words.join('\n');
     if (back.types.length) state.types = back.types;
     state.mode = back.mode;
@@ -785,7 +922,7 @@
       stop = stopAtStep1();
       if (stop) { target = 1; setText('step-1-problem', stop); }
     }
-    if (target !== 3) { clearTimeout(buildTimer); clearBuilt(); show('making', false); }
+    if (target !== 3) { clearTimeout(buildTimer); resetPreview(true); clearBuilt(); show('making', false); }
     var stayed = target !== wanted && target === step;
     step = target;
     editing = null;
@@ -902,6 +1039,7 @@
     });
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
+      resetPreview(true);
       state = defaults();
       $('f-words').value = '';
       $('f-title').value = '';
@@ -911,6 +1049,7 @@
     });
     $('forget-edits').addEventListener('click', function () {
       try { window.localStorage.removeItem(EDITS_KEY); } catch (_) {}
+      resetPreview(true);
       edits = freshEdits();
       redraft();
       if (step === 2) drawRows();

@@ -374,9 +374,10 @@ describe('the pages as files', () => {
     // The picture index is small (it says which words have a picture); the drawings load only when a file is made with them.
     expect(statSync('word_sounds_symbols_en.js').size).toBeLessThan(40000);
     const megabytes = scripts.reduce((sum, file) => sum + statSync(file).size, 0) / 1e6;
-    expect(read('packets-make.html')).toContain('Getting the word lists, about 2 MB.');
-    expect(megabytes).toBeGreaterThan(1.5);
-    expect(megabytes).toBeLessThan(2.5);
+    // 2026-11-14: scripts grew from 2.49 MB to ~2.7 MB after expanding the phoneme/wordlist dictionary with vendored K-8 lexicons and regular inflections.
+    expect(read('packets-make.html')).toContain('Getting the word lists, about 3 MB.');
+    expect(megabytes).toBeGreaterThan(2.5);
+    expect(megabytes).toBeLessThan(3.5);
   });
 
   it('the maker says exactly what the server can see, now that some sound files depend on the words', () => {
@@ -679,8 +680,14 @@ describe('the maker, run with the real builder', () => {
       expect(wordlist.get(word).kokoro || wordlist.get(word).shards, word).toBe(true);
       expect(dictionary.lookup(word)[0][0], word).toBe('sh');
     }
-    expect(page.$('pick-out').textContent).toBe('Also matched, but not offered: ' + direct.reasons.notFamiliarEnough + ' less common words, ' + direct.reasons.noRecording + ' with no recording yet, '
-      + (direct.reasons.blocked + direct.reasons.soundsLikeABlockedWord) + ' on the list of words this tool does not use.');
+    // 2026-11-14 (expanded Kokoro voicing): all /sh/ initial CVC words now have recordings (noRecording === 0),
+    // so packets-make.js omits the "with no recording yet" clause when direct.reasons.noRecording === 0.
+    const alsoParts = [
+      direct.reasons.notFamiliarEnough + ' less common ' + (direct.reasons.notFamiliarEnough === 1 ? 'word' : 'words'),
+      ...(direct.reasons.noRecording ? [direct.reasons.noRecording + ' with no recording yet'] : []),
+      (direct.reasons.blocked + direct.reasons.soundsLikeABlockedWord) + ' on the list of words this tool does not use',
+    ];
+    expect(page.$('pick-out').textContent).toBe('Also matched, but not offered: ' + alsoParts.join(', ') + '.');
     expect(direct.reasons.britishSpellingOrWord || 0).toBe(0);
     // Another version is another mix of the same kind of words.
     page.choose('version', 'B');

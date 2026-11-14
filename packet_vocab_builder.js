@@ -700,6 +700,15 @@
       var list = mixed(q.items[id], 'order|' + id + '|' + all);
       if (id === 'meaning' && asked.word) list = list.map(function (item, i) { return { item: item, at: own(asked.word, item.row.key) ? asked.word[item.row.key] : 1e6 + i }; })
         .sort(function (x, y) { return x.at - y.at; }).map(function (p) { return p.item; });
+      if (o.omitItems) {
+        var omit = Object.create(null);
+        if (Array.isArray(o.omitItems)) o.omitItems.forEach(function (k) { if (k) omit[String(k)] = true; });
+        else Object.keys(o.omitItems).forEach(function (k) { if (o.omitItems[k]) omit[k] = true; });
+        list = list.filter(function (item) {
+          var key = item && item.row ? item.row.key : '';
+          return !omit[id + '|' + key] && !omit[t.activity + '|' + key];
+        });
+      }
       if (t.pictures) list = list.filter(function (item) {
         var ok = !!imageOf(item.answer) && item.wrong.every(function (w) { return !!imageOf(w); });
         if (!ok) q.left.push({ word: item.row.word, type: id, why: 'A picture could not be used.' });

@@ -83,6 +83,7 @@
     yourPicture: 'Your own picture.',
     pictureAlt: 'Your picture for {word}',
     symbol: 'A Mulberry symbol is used for this word when pictures are included.',
+    noPictureInFiles: 'No picture is used for this word in files you make.',
     noPicture: 'No picture yet.',
     usePicture: 'Use my own picture',
     pictureNote: 'Use only a picture you have the right to share.',
@@ -682,7 +683,9 @@
       function drawPicture(focusName) {
         var body = picturePart.inner;
         body.textContent = '';
-        var entry = state.entry, mine = entry && entry.picture;
+        var entry = state.entry, rawPic = entry && entry.picture;
+        var pictureNone = !!(rawPic && rawPic.none === true);
+        var mine = rawPic && !pictureNone ? rawPic : null;
         if (mine) {
           var figure = el('div', 'wp-picture');
           var image = el('img');
@@ -693,7 +696,7 @@
           var line = mine.credit && mine.credit.own === true ? TEXT.yourPicture : helper && typeof helper.creditLine === 'function' ? helper.creditLine(mine.credit) : '';
           figure.appendChild(el('p', 'wp-line', line));
           body.appendChild(figure);
-        } else body.appendChild(el('p', 'wp-line', env.symbols && typeof env.symbols.has === 'function' && env.symbols.has(word) ? TEXT.symbol : TEXT.noPicture));
+        } else body.appendChild(el('p', 'wp-line', pictureNone ? TEXT.noPictureInFiles : (env.symbols && typeof env.symbols.has === 'function' && env.symbols.has(word) ? TEXT.symbol : TEXT.noPicture)));
         var row = el('p', 'wp-row');
         var choose = button(TEXT.usePicture);
         choose.setAttribute('data-wp', 'use-picture');
@@ -708,7 +711,7 @@
         find.setAttribute('data-wp', 'find-picture');
         find.appendChild(el('span', 'sr-only', ' ' + TEXT.newTab));
         row.appendChild(find);
-        if (mine) {
+        if (mine || pictureNone) {
           var remove = button(TEXT.removePicture);
           remove.setAttribute('data-wp', 'remove-picture');
           remove.addEventListener('click', function () { put({ picture: null }, picturePart, TEXT.removedPicture).then(function () { drawPicture('use-picture'); }); });

@@ -295,11 +295,14 @@
     } else {
       var id = Object.keys(measures).filter(function (key) { return isObject(measures[key]) && measures[key].code === meta.measure; })[0] || '';
       if (!id) return elsewhere('other', out);
-      var grade = String(meta.grade || '').toUpperCase(), version = String(lesson.form || '').toUpperCase(), untimed = meta.untimed === true;
+      var rawForm = String(lesson.form || '').toUpperCase(), editedMatch = /^([A-Z0-9]+)-EDITED$/.exec(rawForm);
+      var grade = String(meta.grade || '').toUpperCase(), version = editedMatch ? editedMatch[1] : rawForm, untimed = meta.untimed === true, editedForm = !!editedMatch;
       out.check = { id: id, grade: grade, version: version, untimed: untimed, problems: '', time: 0, skip: true };
+      var baseTitle = editedForm ? title.replace(/\s+\(edited\)$/i, '') : title;
       // The title the builder gives this form, now or before 2026-11-13 ("Missing Number check (KA)"), is not the teacher's.
       var name = measures[id].name, made = typeof e.builder.formTitle === 'function' ? e.builder.formTitle(name, grade, version, untimed) : '';
-      out.title = title === made || title === name + ' check (' + grade + version + (untimed ? ', untimed' : '') + ')' ? '' : title;
+      out.title = baseTitle === made || baseTitle === name + ' check (' + grade + version + (untimed ? ', untimed' : '') + ')' ? '' : baseTitle;
+      if (editedForm) out.notes.push('Questions were removed from version ' + version + ' in Try it. Step 2 opens the full version ' + version + '.');
       if (untimed) out.notes.push('It is untimed, an accommodation for one student. Untimed is turned on in step 2.');
     }
     if (out.teacherCode) out.notes.push('A teacher code cannot be read back from a file. Set it again in step 2.');

@@ -1720,3 +1720,62 @@ describe('the page: files that are not what they seem', () => {
     page.dom.window.close();
   });
 });
+
+// ---------------------------------------------------------------------------
+// 2026-11-14 (T7 Decision D2): reading tools recorded on a check appear as a
+// quiet note in "Add up results" and Class Analytics (never a flag or dot ring).
+// ---------------------------------------------------------------------------
+describe('reading tools used on a check (T7 D2)', () => {
+  it('reads score.tools / tools_used cleanly, omits tools when absent, and surfaces a quiet note without a chart ring', async () => {
+    const clean = check({ sid: 'tools-none', day: '2026-11-10', elapsedS: 120 });
+    const withTools = check({ sid: 'tools-used', day: '2026-11-17', elapsedS: 120 });
+    withTools.score.tools = ['textLarger', 'readingFocus'];
+
+    const sNone = await one(csvOf(clean), nameOf(clean));
+    expect(sNone.score.tools).toBeUndefined();
+    expect(sNone.flags).toEqual([]);
+
+    const sCsv = await one(csvOf(withTools), nameOf(withTools));
+    const sJson = await one(jsonOf(withTools), nameOf(withTools, 'json'));
+    for (const s of [sCsv, sJson]) {
+      expect(s.score.tools).toEqual(['textLarger', 'readingFocus']);
+      expect(s.flags).toEqual([]);
+    }
+    const bundled = reader.readBundle(JSON.parse(JSON.stringify(reader.makeBundle({ sessions: [sNone, sCsv], savedLocal: '2026-11-20T08:00:00-05:00' }))));
+    expect(bundled.sessions[0].score.tools).toBeUndefined();
+    expect(bundled.sessions[1].score.tools).toEqual(['textLarger', 'readingFocus']);
+
+    const page = openPage();
+    expect(await page.drop([page.file(csvOf(clean), nameOf(clean)), page.file(csvOf(withTools), nameOf(withTools))])).toBe('2 files read.');
+    expect(page.state()).toBe('state-results');
+    page.view('learner');
+    const math = page.measure('Math Fluency (grade 2)');
+    expect(math.querySelectorAll('.chart-point')).toHaveLength(2);
+    expect(math.querySelectorAll('.chart-ring')).toHaveLength(0);
+    expect(page.table(math.querySelector('table')).map((row) => row[3])).toEqual(['', 'Reading tools used: larger text, reading focus line']);
+    const every = [...page.$('learner-body').querySelectorAll(':scope > .table-scroll table')].pop();
+    expect(page.table(every).map((row) => row[5])).toEqual(['', 'Reading tools used: larger text, reading focus line']);
+    page.dom.window.close();
+
+    const analytics = read('student_analytics_module.js');
+    const cut = (start, end) => {
+      const a = analytics.indexOf(start), b = analytics.indexOf(end, a + start.length);
+      if (a < 0 || b < 0) throw new Error('not found in the dashboard module: ' + start);
+      return analytics.slice(a, b);
+    };
+    const AC = new Function(cut('  function _acTrimStudentData(data) {', '  function _acRestoreImportedStudents(raw) {') + cut('  function _acWsSoundMastered(entry) {', '  async function _acCanonicalStudentName(')
+      + '\nreturn {readFile: _acThReadFile, record: _acCkRecord, overTime: _acCkOverTime, notes: _acCkNotes};')();
+    const impNone = await AC.readFile(new File([csvOf(clean)], nameOf(clean), { type: 'text/csv', lastModified: LAST_CHANGED }));
+    const impTools = await AC.readFile(new File([csvOf(withTools)], nameOf(withTools), { type: 'text/csv', lastModified: LAST_CHANGED }));
+    expect(impNone.sessions[0].check.tools).toEqual([]);
+    expect([impTools.sessions[0].check.tools, impTools.sessions[0].check.flags]).toEqual([['textLarger', 'readingFocus'], []]);
+    const recNone = AC.record(impNone.sessions[0], 'BlueHeron7');
+    const recTools = AC.record(impTools.sessions[0], 'BlueHeron7');
+    expect(recNone.tools).toBeUndefined();
+    expect([recTools.tools, recTools.flags]).toEqual([['textLarger', 'readingFocus'], []]);
+    const groups = AC.overTime({ name: 'BlueHeron7', screeningHistory: [] }, { BlueHeron7: [recNone, recTools] });
+    expect([groups[0].rows[0].tools, AC.notes(null, groups[0].rows[0])]).toEqual([[], []]);
+    expect([groups[0].rows[1].tools, groups[0].rows[1].flags, AC.notes(null, groups[0].rows[1])])
+      .toEqual([['textLarger', 'readingFocus'], [], ['Reading tools used: larger text, reading focus line.']]);
+  });
+});

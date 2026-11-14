@@ -226,6 +226,7 @@ describe('the maker page offers it folded, for the ready checks', () => {
     // 2026-11-14 (T1/makers2): defaults() also resets readyTitle and learner alongside untimed: false.
     expect(js).toContain("title: '', readyTitle: '', time: TIME_DEFAULT, skip: true, untimed: false, learner: '' };");
     expect(js).not.toMatch(/untimed: state\.untimed/);
-    expect(js).toContain("(state.untimed ? '-untimed' : '') + '.html'");
+    // 2026-11-14 (T4): ready check file name appends -edited when questions were removed in Try it.
+    expect(js).toContain("(state.untimed ? '-untimed' : '') + (edited ? '-edited' : '') + '.html'");
   });
 });

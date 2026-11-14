@@ -153,11 +153,12 @@ function pronunciationsOf(core, word) {
 }
 
 // Why a word without a clip is not voiced, or null. The order is the order of seriousness.
-function heldReason(word, parts, pronunciations) {
+function heldReason(word, parts, pronunciations, maxWordLen = 10) {
   const row = parts.wordlist.get(word);
   if (parts.wordlist.isBlocked(word)) return { reason: 'blocked', detail: '' };
   if (row && row.nearBlocked) return { reason: 'sounds-like-blocked', detail: '' };
-  if (!plainWord(word)) return { reason: 'not-a-word', detail: '' };
+  const wordOk = word.length <= 10 ? plainWord(word) : (/^[a-z]+$/.test(word) && /[aeiouy]/.test(word) && word.length <= maxWordLen);
+  if (!wordOk) return { reason: 'not-a-word', detail: '' };
   if (!row || row.notInDictionary || !pronunciations) return { reason: 'not-in-dictionary', detail: '' };
   if (pronunciations.distinct.length > 1) return { reason: 'pronunciations', detail: pronunciations.distinct.join(' | ') };
   if (parts.culled && parts.culled[word]) return { reason: 'culled', detail: String(parts.culled[word]) };
@@ -226,14 +227,25 @@ function readWordFile(file) {
 // "a person may decide" reasons are lifted: never a blocked word or a non-word.
 function applyOnlyList(work, parts, listed, includeReview) {
   const want = new Set(listed);
+  const maxWordLen = includeReview ? 20 : 10;
   const liftable = reason => includeReview && (reason === 'pronunciations' || reason === 'culled');
   const hasClip = parts.hasClip || (word => { const row = parts.wordlist.get(word); return !!row && (row.recorded || row.kokoro); });
   const entries = work.entries.filter(entry => want.has(entry.word));
   const held = [], skipped = { hasClip: [] };
   for (const item of work.held) {
     if (!want.has(item.word)) continue;
-    if (liftable(item.reason)) entries.push(Object.assign({}, item, { lifted: item.reason }));
-    else held.push(item);
+    let effectiveItem = item;
+    if (includeReview && item.reason === 'not-a-word' && /^[a-z]+$/.test(item.word) && item.word.length >= 2 && item.word.length <= maxWordLen) {
+      const pronunciations = pronunciationsOf(parts.core, item.word);
+      const recheck = heldReason(item.word, parts, pronunciations, maxWordLen);
+      if (!recheck) {
+        entries.push({ word: item.word, list: item.list, stage: item.stage, stageIndex: item.stageIndex, zipf: item.zipf, books: item.books, known: item.known, sounds: pronunciations ? pronunciations.sounds : item.sounds });
+        continue;
+      }
+      effectiveItem = Object.assign({}, item, recheck);
+    }
+    if (liftable(effectiveItem.reason)) entries.push(Object.assign({}, effectiveItem, { lifted: effectiveItem.reason }));
+    else held.push(effectiveItem);
   }
   const seen = new Set(entries.map(entry => entry.word).concat(held.map(item => item.word)));
   for (const word of listed) {
@@ -242,7 +254,7 @@ function applyOnlyList(work, parts, listed, includeReview) {
     const row = parts.wordlist.get(word) || {};
     const pronunciations = pronunciationsOf(parts.core, word);
     const entry = { word, list: 'listed', stage: 'listed', stageIndex: work.groups.length, zipf: row.zipf || 0, books: row.books || 0, known: !!row.known, sounds: pronunciations ? pronunciations.sounds : 0 };
-    const why = heldReason(word, parts, pronunciations);
+    const why = heldReason(word, parts, pronunciations, maxWordLen);
     if (why && !liftable(why.reason)) held.push(Object.assign(entry, why));
     else entries.push(why ? Object.assign(entry, { lifted: why.reason }) : entry);
   }
@@ -384,14 +396,14 @@ const GATES = Object.freeze({ minSeconds: 0.25, maxSeconds: 2.5, under: 0.28, ov
   maxClippedFraction: 0.0005, maxTailRatio: 0.02, minSourceTailSeconds: 0.06, minSourceLeadSeconds: 0.01, encodedDurationSlack: 0.08 });
 // The gentle trim and the loudness step: clips keep 90 ms more quiet, and a word at the end of a sentence is said
 // more softly (about 3 dB) before the loudness step evens it out, so only a far-too-quiet clip is refused here.
-const RECIPE_GATES = Object.freeze(Object.assign({}, GATES, { minRms: 0.02, offsetSeconds: 0.09 }));
+const RECIPE_GATES = Object.freeze(Object.assign({}, GATES, { minRms: 0.02, offsetSeconds: 0.09, maxSeconds: 3.4, over: 0.75 }));
 
 // The automatic checks on one trimmed clip. `trimmed` is what trimWav returned; `sounds` the word's sound count.
 function checkClip(trimmed, sounds, gates = GATES) {
   const m = measurePcm(trimmed.samples, trimmed.rate);
   const failures = [];
   const seconds = value => value.toFixed(2) + ' s';
-  if (m.durationSeconds < gates.minSeconds || m.durationSeconds > gates.maxSeconds) failures.push('duration ' + seconds(m.durationSeconds) + ' is outside 0.25 to 2.5 s');
+  if (m.durationSeconds < gates.minSeconds || m.durationSeconds > gates.maxSeconds) failures.push('duration ' + seconds(m.durationSeconds) + ' is outside ' + gates.minSeconds + ' to ' + gates.maxSeconds + ' s');
   else if (sounds > 0) {
     const expected = expectedSeconds(sounds) + (gates.offsetSeconds || 0);
     if (m.durationSeconds < expected - gates.under || m.durationSeconds > expected + gates.over) {

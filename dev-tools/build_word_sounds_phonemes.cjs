@@ -20,8 +20,38 @@ const OUTPUTS = [
   path.join(ROOT, 'word_sounds_phonemes_en.js'),
   path.join(ROOT, 'desktop/web-app/public/word_sounds_phonemes_en.js'),
 ];
-// Every app-list word is kept. Common words are added most frequent first.
+// Every app-list word is kept. Common words and attested lexicon words + inflections are added.
 const COMMON_WORD_LIMIT = 40000;
+const VOCAB_SHARDS = ['packets_vocab/en-1.json', 'packets_vocab/en-2.json'];
+const CYPLEX_WORDS = path.join(ROOT, 'data/vendor/cyplex/cyplex79_dictionary_words.tsv');
+const VOCAB_VENDOR = path.join(ROOT, 'data/vendor/vocab');
+const SUPPLEMENT_ARPABET = {
+  cartography: [['K', 'AA0', 'R', 'T', 'AA1', 'G', 'R', 'AH0', 'F', 'IY0']],
+  commensalism: [['K', 'AH0', 'M', 'EH1', 'N', 'S', 'AH0', 'L', 'IH2', 'Z', 'AH0', 'M']],
+  decomposer: [['D', 'IY2', 'K', 'AH0', 'M', 'P', 'OW1', 'Z', 'ER0']],
+  factorial: [['F', 'AE0', 'K', 'T', 'AO1', 'R', 'IY0', 'AH0', 'L']],
+  founds: [['F', 'AW1', 'N', 'D', 'Z']],
+  mitosis: [['M', 'AY0', 'T', 'OW1', 'S', 'IH0', 'S']],
+  omnivore: [['AA1', 'M', 'N', 'IH0', 'V', 'AO2', 'R']],
+  parasitism: [
+    ['P', 'EH1', 'R', 'AH0', 'S', 'AY2', 'T', 'IH0', 'Z', 'AH0', 'M'],
+    ['P', 'AE1', 'R', 'AH0', 'S', 'AY2', 'T', 'IH0', 'Z', 'AH0', 'M'],
+  ],
+  postgraduate: [
+    ['P', 'OW2', 'S', 'T', 'G', 'R', 'AE1', 'JH', 'AH0', 'W', 'AH0', 'T'],
+    ['P', 'OW2', 'S', 'T', 'G', 'R', 'AE1', 'JH', 'UW0', 'AH0', 'T'],
+  ],
+  reactant: [['R', 'IY0', 'AE1', 'K', 'T', 'AH0', 'N', 'T']],
+  refraction: [['R', 'IH0', 'F', 'R', 'AE1', 'K', 'SH', 'AH0', 'N']],
+  simile: [['S', 'IH1', 'M', 'AH0', 'L', 'IY0']],
+  subduction: [['S', 'AH0', 'B', 'D', 'AH1', 'K', 'SH', 'AH0', 'N']],
+  transpiration: [['T', 'R', 'AE2', 'N', 'S', 'P', 'ER0', 'EY1', 'SH', 'AH0', 'N']],
+  vacuole: [['V', 'AE1', 'K', 'Y', 'UW0', 'OW2', 'L']],
+};
+// Non-word abbreviations, initialisms, and romanization fragments with 0 CYP-LEX books.
+const PRUNE_ABBREVS = new Set(
+  'abd acc ala ane ast aug bae bt cac cea cit clo cyr dac dae dak dea duc eda ede edu ems fda feb ftp gib gil har hep hou hoy hr http hui hur hwa ise kao kew kos kuo kut lai lak lal lan leh lev lew lin lun mau mt mun nes nez nov nur oct oop ott pao pei php pia ppm qu ren roi rpm ru sgt sui sus sze tai tet tod tre tso tsu und ur vy wei wy'.split(' ')
+);
 // One character per sound label keeps the file small. Order is part of the format.
 const LABELS = ['a', 'e', 'i', 'o', 'u', 'ay', 'ee', 'ie', 'oa', 'oo', 'oo_short', 'oy', 'ow', 'aw', 'ar', 'or', 'er', 'ir', 'ur', 'air', 'ear', 'schwa',
   'b', 'ch', 'd', 'dh', 'f', 'g', 'h', 'j', 'k', 'l', 'm', 'n', 'ng', 'p', 'r', 's', 'sh', 't', 'th', 'v', 'w', 'y', 'z', 'zh'];
@@ -51,6 +81,9 @@ function readDictionary() {
     if (!/^[a-z][a-z']*$/.test(word)) continue;
     if (!entries.has(word)) entries.set(word, []);
     entries.get(word).push(pieces);
+  }
+  for (const [word, forms] of Object.entries(SUPPLEMENT_ARPABET)) {
+    if (!entries.has(word)) entries.set(word, forms);
   }
   return entries;
 }
@@ -82,6 +115,73 @@ function appWordLists(core) {
   };
 }
 
+function vendoredLexiconWords(dictionary) {
+  const words = new Set();
+  const stems = new Set();
+  const cleanWord = value => String(value || '').normalize('NFC').trim().toLowerCase();
+  const isCleanWord = w => /^[a-z]{2,}$/.test(w) && /[aeiouy]/.test(w) && !PRUNE_ABBREVS.has(w) && dictionary.has(w);
+  for (const rel of VOCAB_SHARDS) {
+    const shard = JSON.parse(fs.readFileSync(path.join(ROOT, rel), 'utf8'));
+    for (const row of shard.words || []) {
+      const w = cleanWord(Array.isArray(row) ? row[0] : row);
+      if (w && /^[a-z][a-z']*$/.test(w) && dictionary.has(w)) {
+        words.add(w);
+        if (/^[a-z]{3,}$/.test(w) && /[aeiouy]/.test(w)) stems.add(w);
+      }
+    }
+  }
+  if (fs.existsSync(CYPLEX_WORDS)) {
+    for (const line of fs.readFileSync(CYPLEX_WORDS, 'utf8').split(/\r?\n/)) {
+      if (!line || line.startsWith('#')) continue;
+      const parts = line.split('\t');
+      if (parts[0] === 'word') continue;
+      const w = cleanWord(parts[0]);
+      if (w && !PRUNE_ABBREVS.has(w) && dictionary.has(w)) words.add(w);
+    }
+  }
+  for (const name of ['simple_wiktionary_en.json', 'wiktionary_en.json', 'wordnet_en.json']) {
+    const file = path.join(VOCAB_VENDOR, name);
+    if (!fs.existsSync(file)) continue;
+    const data = JSON.parse(fs.readFileSync(file, 'utf8'));
+    for (const raw of Object.keys(data.words || data.entries || data)) {
+      const trimmed = String(raw || '').normalize('NFC').trim();
+      // Keep lowercase lexicon entries (skip capitalized proper nouns from Wiktionary/WordNet).
+      if (/^[a-z]{2,}$/.test(trimmed) && isCleanWord(trimmed)) words.add(trimmed);
+    }
+  }
+  const wordlistsFile = path.join(VOCAB_VENDOR, 'wordlists_en.json');
+  if (fs.existsSync(wordlistsFile)) {
+    const wl = JSON.parse(fs.readFileSync(wordlistsFile, 'utf8'));
+    for (const key of ['nawl', 'builtin', 'common']) {
+      const src = wl[key];
+      const list = Array.isArray(src) ? src : Object.keys(src || {});
+      for (const raw of list) {
+        const w = cleanWord(raw);
+        if (isCleanWord(w)) words.add(w);
+        if (/^[a-z]{3,}$/.test(w) && /[aeiouy]/.test(w)) stems.add(w);
+      }
+    }
+    for (const [raw, score] of Object.entries(wl.zipf || {})) {
+      const w = cleanWord(raw);
+      if (Number(score) >= 2.0 && isCleanWord(w)) words.add(w);
+      if (Number(score) >= 2.5 && /^[a-z]{4,}$/.test(w) && /[aeiouy]/.test(w)) stems.add(w);
+    }
+  }
+  for (const stem of stems) {
+    if (stem.length < 4 && !words.has(stem)) continue;
+    const derived = [
+      ...(!/(?:s|x|z|ch|sh|y|man|ss|us|is)$/.test(stem) ? [stem + 's'] : []),
+      ...(/(?:s|x|z|ch|sh)$/.test(stem) ? [stem + 'es'] : []),
+      ...(!stem.endsWith('e') && !stem.endsWith('y') ? [stem + 'ed', stem + 'ing', stem + 'est'] : []),
+      ...(stem.endsWith('e') && !/(?:ee|ye|oe)$/.test(stem) ? [stem + 'd', stem.slice(0, -1) + 'ing'] : []),
+      ...(stem.endsWith('y') && !/[aeiou]y$/.test(stem) ? [stem.slice(0, -1) + 'ies', stem.slice(0, -1) + 'ied', stem.slice(0, -1) + 'iest', stem.slice(0, -1) + 'ily'] : []),
+      stem + 'ly', stem + 'ness', stem + 'ment', stem + 'ful', stem + 'less',
+    ];
+    for (const form of derived) if (isCleanWord(form)) words.add(form);
+  }
+  return words;
+}
+
 function buildEntries() {
   const core = loadCore();
   const dictionary = readDictionary();
@@ -102,8 +202,14 @@ function buildEntries() {
   for (const raw of fs.readFileSync(COMMON, 'utf8').split(/\r?\n/)) {
     if (commonAdded >= COMMON_WORD_LIMIT) break;
     const word = clean(raw);
-    if (!word || wanted.has(word) || !dictionary.has(word)) continue;
+    if (!word || wanted.has(word) || PRUNE_ABBREVS.has(word) || (!/[aeiouy]/.test(word) && word !== 'nth') || !dictionary.has(word)) continue;
     wanted.add(word); commonAdded++;
+  }
+  for (const word of vendoredLexiconWords(dictionary)) {
+    if (!wanted.has(word)) {
+      wanted.add(word);
+      commonAdded++;
+    }
   }
   const labelSet = new Set(LABELS);
   const entries = new Map();

@@ -337,7 +337,9 @@
         var noClip = ownClipRefusal(clip);
         if (noClip) refuse(word, 'clip', noClip); else mine.clip = clip;
       }
-      if (entry.picture != null) {
+      if (entry.picture === 'none' || (isPlainObject(entry.picture) && entry.picture.none === true)) {
+        mine.noPicture = true;
+      } else if (entry.picture != null) {
         var noPicture = ownPictureRefusal(entry.picture);
         if (noPicture) refuse(word, 'picture', noPicture);
         else {
@@ -346,7 +348,7 @@
         }
       }
       out.words.push(word);
-      if (mine.sounds || mine.clip || mine.picture) out.byWord[word] = mine;
+      if (mine.sounds || mine.clip || mine.picture || mine.noPicture) out.byWord[word] = mine;
     });
     return out;
   }
@@ -495,6 +497,122 @@
     };
     return { pron: pron, sameSound: sameSound, rhymes: rhymes, lastRime: lastRime, homophones: homophones, maySound: maySound, mayRhyme: mayRhyme };
   }
+  var REROLL_SOUNDS = 'b d f g k l m n p r s t v w y z h j a e i o u sh ch th ng ar or er ee ay oa oo'.split(' ');
+  var REROLL_CHIPS = 's t m p k n r l b g f h d sh ch th a e i o u v z j w y'.split(' ');
+  function rerollActivityBoard(id, board, item, bump, ctx) {
+    if (!board || typeof board !== 'object') return;
+    var word = String(item.word || '').toLowerCase(), core = ctx.core, tools = ctx.tools;
+    var rng = mulberry32(seedFor(ctx.seed, 'reroll|' + id + '|' + word + '|' + bump));
+    var shuffle = function (list) {
+      var out = list.slice();
+      for (var i = out.length - 1; i > 0; i--) { var j = Math.floor(rng() * (i + 1)); var t = out[i]; out[i] = out[j]; out[j] = t; }
+      return out;
+    };
+    // Put candidates not currently shown first so each click surfaces fresh wrong answers when available.
+    var freshFirst = function (candidates, prev) {
+      var seen = {};
+      (prev || []).forEach(function (v) { seen[String(v).toLowerCase()] = true; });
+      return shuffle(candidates.filter(function (v) { return !seen[String(v).toLowerCase()]; }))
+        .concat(shuffle(candidates.filter(function (v) { return seen[String(v).toLowerCase()]; })));
+    };
+    var pickWords = function (candidates, count, prev, allow) {
+      var chosen = [];
+      freshFirst(candidates, prev).forEach(function (w) {
+        if (chosen.length >= count || !allow(w)) return;
+        if (chosen.some(function (u) { return tools.maySound(u, w); })) return;
+        chosen.push(w);
+      });
+      return chosen;
+    };
+    if (id === 'isolation' && Array.isArray(board.options) && board.correctSound) {
+      var wantIso = Math.max(1, board.options.length - 1);
+      var okSound = function (s) {
+        if (!s || core.soundAnswerMatches(s, board.correctSound) || soundOf(s) === soundOf(board.correctSound)) return false;
+        return core.phonemeBankCandidates(s).some(function (k) { return ctx.audio.hasClip('phonemes', k); });
+      };
+      var isoPool = [], seenS = {};
+      REROLL_SOUNDS.forEach(function (s) {
+        var norm = soundOf(s);
+        if (!seenS[norm] && okSound(s)) { seenS[norm] = true; isoPool.push(s); }
+      });
+      var prevIso = board.options.filter(function (o) { return o !== board.correctSound; });
+      var pickedIso = freshFirst(isoPool, prevIso).slice(0, wantIso);
+      if (pickedIso.length) board.options = shuffle([board.correctSound].concat(pickedIso));
+      return;
+    }
+    if (id === 'segmentation' && Array.isArray(board.chips)) {
+      var keep = board.chips.filter(function (c) { return !c.isDistractor; });
+      var wantSeg = board.chips.length - keep.length;
+      if (wantSeg < 1) return;
+      var wordSounds = (item.phonemes || []).map(function (p) { return core.phonemeLabel(p, true); }).filter(Boolean);
+      var prevSeg = board.chips.filter(function (c) { return c.isDistractor; }).map(function (c) { return c.phoneme; });
+      var segPool = REROLL_CHIPS.filter(function (s) {
+        return wordSounds.indexOf(s) < 0 && core.phonemeBankCandidates(s).some(function (k) { return ctx.audio.hasClip('phonemes', k); });
+      });
+      var pickedSeg = freshFirst(segPool, prevSeg).slice(0, wantSeg);
+      if (pickedSeg.length) {
+        board.chips = shuffle(keep.concat(pickedSeg.map(function (value, i) { return { id: 'distractor-' + i, phoneme: value, type: 'distractor', isDistractor: true }; })));
+      }
+      return;
+    }
+    if (id === 'blending' && Array.isArray(board.options) && board.answer) {
+      var wantBlend = Math.max(1, board.options.length - 1);
+      var prevBlend = board.options.filter(function (o) { return String(o).toLowerCase() !== String(board.answer).toLowerCase(); });
+      var pickedBlend = pickWords(ctx.pool, wantBlend, prevBlend, function (w) { return w !== word && !tools.maySound(w, board.answer); });
+      if (pickedBlend.length) board.options = shuffle([board.answer].concat(pickedBlend));
+      return;
+    }
+    if (id === 'decoding' && Array.isArray(board.choices)) {
+      var wantDec = Math.max(1, board.choices.length - 1);
+      var prevDec = board.choices.filter(function (o) { return String(o).toLowerCase() !== word; });
+      var pickedDec = pickWords(ctx.pool, wantDec, prevDec, function (w) { return w !== word && !tools.maySound(w, word); });
+      if (pickedDec.length) board.choices = shuffle([word].concat(pickedDec));
+      return;
+    }
+    if (id === 'rhyming' && Array.isArray(board.options) && board.answer) {
+      var wantRhyme = Math.max(1, board.options.length - 1), rime = spelledRime(word);
+      var prevRhyme = board.options.filter(function (o) { return o !== board.answer; });
+      var pickedRhyme = pickWords(ctx.pool, wantRhyme, prevRhyme, function (w) {
+        return w !== word && w !== board.answer && !tools.maySound(w, word) && !tools.maySound(w, board.answer) &&
+          !tools.mayRhyme(word, w) && !(rime.length >= 2 && spelledRime(w) === rime);
+      });
+      if (pickedRhyme.length) board.options = shuffle([board.answer].concat(pickedRhyme));
+      return;
+    }
+    if (id === 'missing_letter' && Array.isArray(board.options) && board.correctLetter) {
+      var at = board.hiddenIndex, ok = board.correctLetter, wantLet = Math.max(1, board.options.length - 1);
+      var vowel = 'aeiou'.indexOf(ok) >= 0 || (ok === 'y' && !/[aeiou]/.test(word));
+      var homo = tools.homophones(word);
+      var letPool = (vowel ? 'aeiou' : 'bcdfghjklmnprstvwz').split('').filter(function (o) {
+        return o !== ok && homo.indexOf(word.slice(0, at) + o + word.slice(at + 1)) < 0;
+      });
+      var prevLet = board.options.filter(function (o) { return o !== ok; });
+      var pickedLet = freshFirst(letPool, prevLet).slice(0, wantLet);
+      if (pickedLet.length) board.options = shuffle([ok].concat(pickedLet));
+      return;
+    }
+    if (id === 'word_families' && Array.isArray(board.distractors) && board.rime) {
+      var wantFam = board.distractors.length || 2;
+      var members = Array.isArray(board.options) ? board.options : [];
+      var pickedFam = pickWords(ctx.pool, wantFam, board.distractors, function (w) {
+        return w !== word && !w.endsWith(board.rime) && !members.some(function (m) { return tools.sameSound(m, w); });
+      });
+      if (pickedFam.length) board.distractors = pickedFam;
+      return;
+    }
+    if (id === 'sound_sort' && Array.isArray(board.distractors) && board.targetChar) {
+      var wantSort = board.distractors.length || 2, mode = board.mode === 'last' ? 'last' : 'first';
+      var key = core.soundKey(board.targetChar), optSet = (board.options || []).map(function (w) { return String(w).toLowerCase(); });
+      var pickedSort = [];
+      freshFirst(ctx.pool, board.distractors).forEach(function (w) {
+        if (pickedSort.length >= wantSort || w === word || optSet.indexOf(w) >= 0) return;
+        var s = core.edgeSound(w, mode);
+        if (s != null && core.soundKey(s) !== key && pickedSort.indexOf(w) < 0) pickedSort.push(w);
+      });
+      if (pickedSort.length) board.distractors = pickedSort;
+    }
+  }
+
   // Judges the boards of one word (item.activityItems, already only the activities asked) and changes them in place.
   // drop(activity, reason): the board is left out, with that reason.
   function oneRightAnswer(item, core, tools, drop) {
@@ -1138,8 +1256,16 @@
         var picture = teacherPicture(item.word);
         if (picture) { item.image = picture.uri; ownPictureShown[item.word] = picture; }
       });
+      var omitItems = {};
+      if (Array.isArray(opts.omitItems)) opts.omitItems.forEach(function (k) { if (typeof k === 'string' && k) omitItems[k.toLowerCase()] = true; });
+      else if (isPlainObject(opts.omitItems)) Object.keys(opts.omitItems).forEach(function (k) { if (opts.omitItems[k]) omitItems[String(k).toLowerCase()] = true; });
+      var itemSeeds = {};
+      if (isPlainObject(opts.itemSeeds)) Object.keys(opts.itemSeeds).forEach(function (k) {
+        var b = opts.itemSeeds[k];
+        if (b != null && b !== '' && b !== 0 && b !== false) itemSeeds[String(k).toLowerCase()] = String(b);
+      });
       if (wantPictures) rows.forEach(function (item) {
-        if (ownPictureShown[item.word]) return;
+        if (ownPictureShown[item.word] || (own(mine.byWord, item.word) && mine.byWord[item.word].noPicture)) return;
         var symbol = null;
         try { symbol = opts.symbols.get(item.word); } catch (_) { symbol = null; }
         if (!symbol || typeof symbol.svg !== 'string') return;
@@ -1150,11 +1276,17 @@
         pictureSets[item.word] = symbol.set === 'openmoji' ? 'openmoji' : 'mulberry';
       });
       var tools = answerTools(soundCore, wordlist);
+      var rerollCtx = Object.keys(itemSeeds).length ? { core: choiceCore, tools: tools, audio: audio, seed: seed, pool: choicePool.concat(words) } : null;
       // What oneRightAnswer left out. Spelling Bee and Sight & Spell need no board (they make the question from the word), so
       // the loader is handed their prepare() with these words refused (lessonFromPack's adapters option).
       var guarded = {};
       rows.forEach(function (item) {
         item.activityItems = Object.fromEntries(Object.entries(item.activityItems || {}).filter(function (pair) { return activities.indexOf(pair[0]) >= 0; }));
+        activities.forEach(function (id) {
+          var key = id + '|' + String(item.word || '').toLowerCase();
+          if (omitItems[key]) { delete item.activityItems[id]; guarded[key] = true; except(item.word, id, 'removed by the teacher'); }
+          else if (rerollCtx && own(itemSeeds, key) && item.activityItems[id]) rerollActivityBoard(id, item.activityItems[id], item, itemSeeds[key], rerollCtx);
+        });
         item._preparedActivities = activities;
         // One right answer on every board, judged by sound (see oneRightAnswer).
         oneRightAnswer(item, soundCore, tools, function (id, reason) { delete item.activityItems[id]; guarded[id + '|' + item.word] = true; except(item.word, id, reason); });

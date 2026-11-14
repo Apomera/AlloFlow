@@ -46,7 +46,7 @@
  "fields": "word; set (mulberry or openmoji: the set of the file used, when one is); file (a Mulberry file in data/vendor/mulberry/symbols, or \"openmoji/<code>.svg\", a file in data/vendor/openmoji/symbols; empty when none is used); status; kind (how it matched, when not by name); note; candidates (the files a reviewer can choose from, when there is more than one, from either set)",
  "counts": {
   "usableWords": 6944,
-  "usableWithRecording": 6700,
+  "usableWithRecording": 6944,
   "matched": 1762,
   "auto": 1475,
   "reviewed": 0,
@@ -127,11 +127,11 @@
     "rejected": 0
    }
   },
-  "packetWords": 1461,
-  "packetSymbols": 1002,
+  "packetWords": 1475,
+  "packetSymbols": 1010,
   "packetWordsBySet": {
-   "mulberry": 1307,
-   "openmoji": 154
+   "mulberry": 1319,
+   "openmoji": 156
   },
   "byStage": {
    "K early": {
@@ -140,7 +140,7 @@
     "mulberry": 51,
     "openmoji": 5,
     "ambiguous": 18,
-    "recorded": 194,
+    "recorded": 202,
     "recordedWithPicture": 56
    },
    "K late": {
@@ -149,7 +149,7 @@
     "mulberry": 52,
     "openmoji": 5,
     "ambiguous": 18,
-    "recorded": 206,
+    "recorded": 214,
     "recordedWithPicture": 57
    },
    "G1 early": {
@@ -158,7 +158,7 @@
     "mulberry": 210,
     "openmoji": 20,
     "ambiguous": 66,
-    "recorded": 846,
+    "recorded": 874,
     "recordedWithPicture": 230
    },
    "G1 late": {
@@ -167,8 +167,8 @@
     "mulberry": 573,
     "openmoji": 55,
     "ambiguous": 154,
-    "recorded": 2557,
-    "recordedWithPicture": 627
+    "recorded": 2619,
+    "recordedWithPicture": 628
    },
    "G2": {
     "usable": 5006,
@@ -176,8 +176,8 @@
     "mulberry": 1044,
     "openmoji": 113,
     "ambiguous": 242,
-    "recorded": 4884,
-    "recordedWithPicture": 1152
+    "recorded": 5006,
+    "recordedWithPicture": 1157
    },
    "G3+": {
     "usable": 6792,
@@ -185,8 +185,8 @@
     "mulberry": 1302,
     "openmoji": 154,
     "ambiguous": 276,
-    "recorded": 6578,
-    "recordedWithPicture": 1443
+    "recorded": 6792,
+    "recordedWithPicture": 1456
    }
   }
  },

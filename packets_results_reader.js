@@ -315,11 +315,20 @@
   }
   // The score as the file states it. It is not covered by the file's check value; the answers are,
   // and tally() counts them again and says when the two differ.
+  function cleanTools(list) {
+    var out = [];
+    (Array.isArray(list) ? list : []).forEach(function (v) {
+      var s = text(v, 40);
+      if (/^[A-Za-z][A-Za-z0-9_]{0,39}$/.test(s) && out.indexOf(s) < 0 && out.length < 12) out.push(s);
+    });
+    return out;
+  }
   function cleanScore(sc) {
     sc = sc && typeof sc === 'object' && !Array.isArray(sc) ? sc : {};
     var completion = text(sc.completion, 20);
     var score = number(sc.score);
-    return { measure: idOf(sc.measure, 40), score: score === null ? null : Math.max(0, Math.min(1000000, score)), unit: idOf(sc.scoreUnit != null ? sc.scoreUnit : sc.unit, 40),
+    var tools = cleanTools(sc.tools);
+    var out = { measure: idOf(sc.measure, 40), score: score === null ? null : Math.max(0, Math.min(1000000, score)), unit: idOf(sc.scoreUnit != null ? sc.scoreUnit : sc.unit, 40),
       digitsCorrect: whole(sc.digitsCorrect), digitsPossible: whole(sc.digitsPossible), itemsCorrect: whole(sc.itemsCorrect) || 0, itemsAttempted: whole(sc.itemsAttempted) || 0,
       timeLimitS: number(sc.timeLimitS), elapsedS: Math.max(0, number(sc.elapsedS) || 0), hiddenS: Math.max(0, number(sc.hiddenS) || 0),
       // time_up_away (2026-11-13): the time ran out while the page was hidden or closed. No score in any unit.
@@ -329,6 +338,8 @@
       flags: (Array.isArray(sc.flags) ? sc.flags : []).slice(0, 8).map(function (f) { return idOf(f, 40); }).filter(Boolean),
       // Untimed (an accommodation): the JSON says untimed: true, the CSV "timing=untimed".
       untimed: sc.untimed === true || yes(sc.untimed) || text(sc.timing, 20).toLowerCase() === 'untimed', usualTimeLimitS: number(sc.usualTimeLimitS) };
+    if (tools.length) out.tools = tools;
+    return out;
   }
   // "key=value" cells of a trailer row.
   function pairs(cells) {
@@ -345,7 +356,7 @@
     return cleanScore({ measure: kv.measure, score: kv.score, scoreUnit: kv.score_unit, digitsCorrect: kv.digits_correct, digitsPossible: kv.digits_possible,
       itemsCorrect: kv.items_correct, itemsAttempted: kv.items_attempted, timeLimitS: kv.time_limit_s, elapsedS: kv.elapsed_s, hiddenS: kv.hidden_s,
       completion: kv.completion, prorated: kv.prorated, scoringVersion: kv.scoring_version, formVersion: kv.form_version, attempt: kv.attempt,
-      flags: String(kv.flags || '').split(';'), timing: kv.timing, usualTimeLimitS: kv.usual_time_limit_s });
+      flags: String(kv.flags || '').split(';'), tools: kv.tools_used ? String(kv.tools_used).split(';') : [], timing: kv.timing, usualTimeLimitS: kv.usual_time_limit_s });
   }
 
   // ---------------------------------------------------------------------------
@@ -603,6 +614,7 @@
         itemsCorrect: correct, itemsAttempted: graded, timeLimitS: limit, elapsedS: st ? st.elapsedS : null, hiddenS: st ? st.hiddenS : 0, completion: completion, prorated: prorated,
         noScore: noScore, recounted: recounted, scoringVersion: st ? st.scoringVersion : null, formVersion: st ? st.formVersion : '', attempt: st ? st.attempt : s.attempt || 1,
         flags: st ? st.flags.slice() : [] };
+      if (st && Array.isArray(st.tools) && st.tools.length) s.score.tools = st.tools.slice();
       s.score.flags.forEach(function (flag) { if (flags.indexOf(flag) < 0) flags.push(flag); });
       // Untimed (an accommodation): a fixed form with no time limit, said by the file or not. It is never put with
       // timed results: it has its own series (seriesKey), so its own middle and goal.

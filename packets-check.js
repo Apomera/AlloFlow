@@ -59,6 +59,13 @@
   var ownRows = [], ownStop = '', ownTimer = 0;
   var fallbackTitle = '';
   var buildTimer = 0, buildRun = 0, built = null, fileUrl = '', batchFile = null, batchBusy = false;
+  var previewOmit = {}, previewOmitKey = '', previewSession = null, inPreviewAction = false;
+  function formEditKey(id, grade, version, untimed) { return id + '|' + grade + '|' + version + '|' + !!untimed; }
+  function resetPreview(stopSession) {
+    previewOmit = {};
+    previewOmitKey = '';
+    if (stopSession && previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; }
+  }
 
   // untimed (an accommodation) is for one student's file: it is not kept, so the page never opens with it on.
   // title: the title of your own problems; readyTitle (2026-11-13): a title for a ready check, empty for the builder's own.
@@ -224,6 +231,7 @@
   function drawVersions() {
     drawRadios('versions', 'version', versionsNow().map(function (version) { return [version, 'Version ' + version]; }), versionNow(), 'version-hint', function (version) {
       state.version = version;
+      resetPreview(false);
       remember();
       syncRadios('version', version);
       drawFormLine();
@@ -254,6 +262,7 @@
     drawUntimed();
     drawRadios('grades', 'grade', row.grades.map(function (grade) { return [grade, gradeWord(grade, true)]; }), gradeNow(), '', function (grade) {
       state.grades[row.id] = grade;
+      resetPreview(false);
       remember();
       syncRadios('grade', grade);
       drawVersions();
@@ -404,8 +413,20 @@
     }
     var row = readyRow(state.check), grade = gradeNow(), lesson = formLesson(row.id, grade, version, state.untimed);
     if (!lesson) throw new Error('there is no version ' + version + ' for this grade');
-    return { own: false, row: row, grade: grade, version: version, untimed: !!state.untimed, lesson: lesson, title: state.readyTitle,
-      name: row.slug + '-g' + grade + '-' + version + (state.untimed ? '-untimed' : '') + '.html' };
+    var key = formEditKey(row.id, grade, version, state.untimed);
+    var edited = version === versionNow() && previewOmitKey === key && Object.keys(previewOmit).length > 0;
+    var title = state.readyTitle;
+    if (edited) {
+      lesson = JSON.parse(JSON.stringify(lesson));
+      lesson.blocks = lesson.blocks.map(function (b) {
+        return Object.assign({}, b, { items: (b.items || []).filter(function (it) { return it.practice || !previewOmit[it.id]; }) });
+      });
+      lesson.form = version + '-edited';
+      if (!/ \(edited\)$/i.test(lesson.title)) lesson.title = lesson.title + ' (edited)';
+      if (title && !/ \(edited\)$/i.test(title)) title = title + ' (edited)';
+    }
+    return { own: false, row: row, grade: grade, version: version, untimed: !!state.untimed, edited: edited, lesson: lesson, title: title,
+      name: row.slug + '-g' + grade + '-' + version + (state.untimed ? '-untimed' : '') + (edited ? '-edited' : '') + '.html' };
   }
   function plan() { return planFor(state.check === OWN ? '' : versionNow()); }
   function buildFor(todo, learner) {
@@ -447,10 +468,97 @@
       todo = plan();
       result = buildFor(todo, state.learner);
     } catch (error) {
-      if (run === buildRun) problem('The file could not be put together (' + (said(error) || 'no reason was given') + '). Your choices are still here.');
-      return;
+      var msg = 'The file could not be put together (' + (said(error) || 'no reason was given') + '). Your choices are still here.';
+      if (run === buildRun) problem(msg);
+      return Promise.resolve({ html: null, said: said(error) || msg });
     }
     if (run === buildRun) drawResult(result, todo);
+    return Promise.resolve(built && built.html ? { html: built.html, url: fileUrl } : { html: null, said: 'Could not update the file.' });
+  }
+  function describePreview(lesson) {
+    var out = [], blocks = lesson && Array.isArray(lesson.blocks) ? lesson.blocks : [];
+    blocks.forEach(function (block) {
+      (Array.isArray(block.items) ? block.items : []).forEach(function (item) {
+        out.push({
+          itemId: String(item.id || ''),
+          activity: String(block.activity || ''),
+          word: String(item.word || item.display || ''),
+          sample: !!item.practice,
+          label: String(item.word || item.display || item.id || ''),
+          canSwap: false,
+          canTogglePicture: false,
+          noPicture: false,
+        });
+      });
+    });
+    return out;
+  }
+  function onPreviewAction(req) {
+    var item = req && req.item;
+    if (!req || req.action !== 'remove' || !item) return { said: 'Nothing changed.' };
+    if (item.sample) return { said: 'Practice questions stay in checks.' };
+    if (state.check === OWN) {
+      var targetOkIdx = req.index;
+      if (built && built.todo && built.todo.lesson && Array.isArray(built.todo.lesson.blocks) && built.todo.lesson.blocks[0]) {
+        var bItems = built.todo.lesson.blocks[0].items || [], countBefore = 0;
+        for (var j = 0; j < req.index && j < bItems.length; j++) if (!bItems[j].practice) countBefore++;
+        targetOkIdx = countBefore;
+      }
+      var parts = typedParts(), removeAt = -1, okSeen = 0;
+      for (var i = 0; i < ownRows.length; i++) {
+        if (!ownRows[i].ok) continue;
+        if (okSeen === targetOkIdx) { removeAt = i; break; }
+        okSeen++;
+      }
+      if (removeAt < 0) return { said: 'Could not find that problem.' };
+      if (ownRows.filter(function (r) { return r.ok; }).length <= 1) return { said: 'A check needs at least one problem.' };
+      var prevProblems = state.problems;
+      parts.splice(removeAt, 1);
+      state.problems = parts.join('\n');
+      $('f-problems').value = state.problems;
+      remember();
+      drawOwn();
+      inPreviewAction = true;
+      return make().then(function (res) {
+        inPreviewAction = false;
+        if (!res || !res.html) {
+          state.problems = prevProblems;
+          $('f-problems').value = prevProblems;
+          remember();
+          drawOwn();
+          return make().then(function () { return { said: (res && res.said) || 'Could not remove that problem.' }; });
+        }
+        return { html: res.html, url: res.url, said: 'Removed problem.' };
+      }, function (err) {
+        inPreviewAction = false;
+        return { said: said(err) || 'Could not remove that problem.' };
+      });
+    }
+    var row = readyRow(state.check), grade = gradeNow(), version = versionNow();
+    if (!row || !grade) return { said: 'No check is selected.' };
+    var key = formEditKey(row.id, grade, version, state.untimed);
+    var todoNow;
+    try { todoNow = plan(); } catch (err) { return { said: said(err) || 'Could not read the check.' }; }
+    var remaining = ((todoNow.lesson.blocks[0] && todoNow.lesson.blocks[0].items) || []).filter(function (it) { return !it.practice && it.id !== item.itemId; });
+    if (!remaining.length) return { said: 'A check needs at least one problem.' };
+    var prevKey = previewOmitKey, prevOmit = Object.assign({}, previewOmit);
+    if (previewOmitKey !== key) { previewOmit = {}; previewOmitKey = key; }
+    previewOmit[item.itemId] = true;
+    inPreviewAction = true;
+    return make().then(function (res) {
+      inPreviewAction = false;
+      if (!res || !res.html) {
+        previewOmitKey = prevKey;
+        previewOmit = prevOmit;
+        return make().then(function () { return { said: (res && res.said) || 'Could not remove that problem.' }; });
+      }
+      return { html: res.html, url: res.url, said: 'Removed problem.' };
+    }, function (err) {
+      inPreviewAction = false;
+      previewOmitKey = prevKey;
+      previewOmit = prevOmit;
+      return { said: said(err) || 'Could not remove that problem.' };
+    });
   }
   function drawResult(result, todo) {
     show('making', false);
@@ -485,7 +593,15 @@
     });
     setText('summary-facts', count(items, item) + '. ' + (limit ? capital(minutes(limit)) : usual ? 'Untimed' : 'No clock') + '. ' + fileSize(built.bytes) + '.');
     show('summary', true);
-    if (fileUrl) { $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl); show('try', true); }
+    if (fileUrl) {
+      $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl);
+      show('try', true);
+      var handoff = window.AlloPacketHandoff;
+      if (!inPreviewAction && handoff && typeof handoff.hostPreview === 'function') {
+        if (previewSession) previewSession.update({ url: fileUrl, html: built.html });
+        else previewSession = handoff.hostPreview({ url: fileUrl, html: built.html, describe: describePreview, onAction: onPreviewAction });
+      }
+    }
     show('save', true);
     // The paper copy comes from the same lesson, under the file's title. If it cannot be drawn, there is no print button.
     try { drawPaper(Object.assign({}, todo.lesson, { title: result.manifest.title || todo.lesson.title })); } catch (_) { clearPaper(); }
@@ -874,6 +990,7 @@
     if (!result.ok) { showReopen(result.why, [], result.page); return; }
     var got = result.check, items = [];
     clearTimeout(buildTimer);
+    resetPreview(true);
     clearBuilt();
     var fresh = defaults();
     fresh.grades = state.grades;
@@ -957,7 +1074,7 @@
       stop = stopAtStep2();
       if (stop) target = 2;
     }
-    if (target !== 3) { clearTimeout(buildTimer); clearBuilt(); show('making', false); }
+    if (target !== 3) { clearTimeout(buildTimer); resetPreview(true); clearBuilt(); show('making', false); }
     // Sent back to the step already on screen: the reason is announced and the focus stays where it is.
     var stayed = target !== wanted && target === step;
     step = target;
@@ -990,7 +1107,7 @@
       tab.addEventListener('click', function () { goTo(Number(tab.getAttribute('data-go'))); });
     });
     Array.prototype.forEach.call(doc.querySelectorAll('input[name="check"]'), function (radio) {
-      radio.addEventListener('change', function () { if (!radio.checked) return; state.check = radio.value; remember(); syncCheck(); });
+      radio.addEventListener('change', function () { if (!radio.checked) return; state.check = radio.value; resetPreview(false); remember(); syncCheck(); });
     });
     $('next-1').addEventListener('click', function () { goTo(2); });
     $('back-2').addEventListener('click', function () { goTo(1); });
@@ -1017,13 +1134,14 @@
     $('batch-make').addEventListener('click', makeBatch);
     $('batch-save').addEventListener('click', saveBatch);
     $('f-skip').addEventListener('change', function () { state.skip = this.checked; remember(); this.parentNode.classList.toggle('is-on', this.checked); });
-    $('f-untimed').addEventListener('change', function () { state.untimed = this.checked; this.parentNode.classList.toggle('is-on', this.checked); drawFormLine(); });
+    $('f-untimed').addEventListener('change', function () { state.untimed = this.checked; resetPreview(false); this.parentNode.classList.toggle('is-on', this.checked); drawFormLine(); });
     $('f-code').addEventListener('input', function () { drawCode(); if (!codeProblem()) setText('step-2-problem', ''); });
     $('code-show').addEventListener('click', function () { showCode(this.getAttribute('aria-pressed') !== 'true'); });
     $('save').addEventListener('click', saveFile);
     $('print').addEventListener('click', printPaper);
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
+      resetPreview(true);
       state = defaults();
       $('f-code').value = '';
       $('f-title').value = '';

@@ -44,6 +44,8 @@
   var step = 1;
   var ownRows = [], ownStop = '', ownTimer = 0;
   var buildTimer = 0, buildRun = 0, built = null, fileUrl = '', batchFile = null;
+  var previewSession = null, inPreviewAction = false;
+  function stopPreview() { if (previewSession) { try { previewSession.stop(); } catch (_) {} previewSession = null; } }
 
   // title (2026-11-13): the file's title, empty for the builder's own. learner: a student's code name for the file. It is
   // not kept: the next file is often for someone else.
@@ -349,10 +351,84 @@
       lesson = builder.lessonFromMathPractice(input);
       result = builder.buildMathPracticePacket({ lesson: lesson, loader: loader, title: state.title, learner: state.learner });
     } catch (error) {
-      if (run === buildRun) problem('The file could not be put together (' + (said(error) || 'no reason was given') + '). Your choices are still here.');
-      return;
+      var msg = 'The file could not be put together (' + (said(error) || 'no reason was given') + '). Your choices are still here.';
+      if (run === buildRun) problem(msg);
+      return Promise.resolve({ html: null, said: said(error) || msg });
     }
     if (run === buildRun) drawResult(result, pick, plan, lesson);
+    return Promise.resolve(built && built.html ? { html: built.html, url: fileUrl } : { html: null, said: 'Could not update the file.' });
+  }
+  function describePreview(lesson) {
+    var out = [], blocks = lesson && Array.isArray(lesson.blocks) ? lesson.blocks : [];
+    blocks.forEach(function (block) {
+      (Array.isArray(block.items) ? block.items : []).forEach(function (item) {
+        out.push({
+          itemId: String(item.id || ''),
+          activity: String(block.activity || ''),
+          word: String(item.word || ''),
+          sample: false,
+          label: String(item.word || item.id || ''),
+          canSwap: false,
+          canTogglePicture: false,
+          noPicture: false,
+        });
+      });
+    });
+    return out;
+  }
+  function onPreviewAction(req) {
+    if (!req || req.action !== 'remove') return { said: 'Nothing changed.' };
+    var pick, plan;
+    try {
+      pick = chosen();
+      if (!pick) return { said: 'No facts are chosen.' };
+      plan = planNow(pick, state.method);
+    } catch (err) {
+      return { said: said(err) || 'Could not read the current facts.' };
+    }
+    var card = plan.cards[req.index];
+    if (!card || !card.fact) return { said: 'Could not find that fact.' };
+    var dropKey = builder.factKey(card.fact);
+    var keptFacts = pick.facts.filter(function (f) { return builder.factKey(f) !== dropKey; });
+    if (!keptFacts.length) return { said: 'A file needs at least one fact.' };
+    var prevKind = state.kind, prevFacts = state.facts, hasPrevKnown = has(state.known, OWN), prevKnownOwn = hasPrevKnown ? state.known[OWN].slice() : null;
+    if (state.kind !== OWN) {
+      var keptKeys = {};
+      keptFacts.forEach(function (f) { keptKeys[builder.factKey(f)] = true; });
+      state.known[OWN] = knownNow(pick).filter(function (k) { return !!keptKeys[k]; });
+      state.kind = OWN;
+    } else if (hasPrevKnown) {
+      state.known[OWN] = state.known[OWN].filter(function (k) { return k !== dropKey; });
+    }
+    state.facts = keptFacts.map(word).join('\n');
+    $('f-facts').value = state.facts;
+    syncRadios('kind', state.kind);
+    show('panel-sets', false);
+    show('panel-own', true);
+    drawOwn();
+    remember();
+    drawTitle();
+    inPreviewAction = true;
+    return make().then(function (res) {
+      inPreviewAction = false;
+      if (!res || !res.html) {
+        state.kind = prevKind;
+        state.facts = prevFacts;
+        if (hasPrevKnown) state.known[OWN] = prevKnownOwn; else delete state.known[OWN];
+        $('f-facts').value = prevFacts;
+        syncRadios('kind', state.kind);
+        show('panel-sets', OPS.indexOf(state.kind) >= 0);
+        show('panel-own', state.kind === OWN);
+        drawOwn();
+        remember();
+        drawTitle();
+        return make().then(function () { return { said: (res && res.said) || 'Could not remove that fact.' }; });
+      }
+      return { html: res.html, url: res.url, said: 'Removed fact.' };
+    }, function (err) {
+      inPreviewAction = false;
+      return { said: said(err) || 'Could not remove that fact.' };
+    });
   }
   function drawResult(result, pick, plan, lesson) {
     show('making', false);
@@ -384,7 +460,15 @@
     });
     setText('summary-facts', capital(count(cards, 'card')) + '. No clock. ' + fileSize(built.bytes) + '.');
     show('summary', true);
-    if (fileUrl) { $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl); show('try', true); }
+    if (fileUrl) {
+      $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl);
+      show('try', true);
+      var handoff = window.AlloPacketHandoff;
+      if (!inPreviewAction && handoff && typeof handoff.hostPreview === 'function') {
+        if (previewSession) previewSession.update({ url: fileUrl, html: built.html });
+        else previewSession = handoff.hostPreview({ url: fileUrl, html: built.html, describe: describePreview, onAction: onPreviewAction });
+      }
+    }
     show('save', true);
     setText('making-said', 'The file is ready: ' + count(cards, 'card') + ', ' + fileSize(built.bytes) + '.');
     drawBatch();
@@ -487,6 +571,7 @@
     if (!result.ok) { showReopen(result.why, [], result.page); return; }
     var got = result.math, items = [];
     clearTimeout(buildTimer);
+    stopPreview();
     clearBuilt();
     var fresh = defaults();
     fresh.sets = state.sets;
@@ -554,7 +639,7 @@
       stop = stopAtStep2();
       if (stop) target = 2;
     }
-    if (target !== 3) { clearTimeout(buildTimer); clearBuilt(); show('making', false); }
+    if (target !== 3) { clearTimeout(buildTimer); stopPreview(); clearBuilt(); show('making', false); }
     // Sent back to the step already on screen: the reason is announced and the focus stays where it is.
     var stayed = target !== wanted && target === step;
     step = target;
@@ -605,6 +690,7 @@
     $('save').addEventListener('click', saveFile);
     $('forget').addEventListener('click', function () {
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
+      stopPreview();
       state = defaults();
       $('f-facts').value = '';
       $('f-title').value = '';

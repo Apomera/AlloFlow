@@ -254,6 +254,7 @@
     return credit;
   }
   function cleanPicture(value) {
+    if (value === 'none' || (isObject(value) && value.none === true)) return { none: true, made: isoDate(isObject(value) ? value.made : '') };
     if (!isObject(value) || typeof value.dataUri !== 'string') throw fail('bad_picture', 'The picture could not be read.');
     var type = dataUriType(value.dataUri), bytes = dataUriBytes(value.dataUri);
     if ((type !== 'image/png' && type !== 'image/jpeg' && type !== SVG_TYPE) || bytes <= 0) throw fail('bad_picture', 'The picture could not be read. It must be a PNG, a JPEG or an SVG drawing.');
@@ -269,9 +270,12 @@
 
   // The small row list() and usage() read.
   function rowOf(entry) {
-    var clipBytes = entry.clip ? entry.clip.bytes : 0, pictureBytes = entry.picture ? entry.picture.bytes : 0;
-    return { word: entry.word, updated: entry.updated, sounds: !!entry.sounds, clip: !!entry.clip, picture: !!entry.picture,
-      own: !!(entry.picture && entry.picture.credit && entry.picture.credit.own === true),
+    var clipBytes = entry.clip ? entry.clip.bytes : 0;
+    var pictureNone = !!(entry.picture && entry.picture.none === true);
+    var pictureBytes = entry.picture && !pictureNone ? entry.picture.bytes : 0;
+    return { word: entry.word, updated: entry.updated, sounds: !!entry.sounds, clip: !!entry.clip, picture: !!entry.picture && !pictureNone,
+      noPicture: pictureNone,
+      own: !!(entry.picture && !pictureNone && entry.picture.credit && entry.picture.credit.own === true),
       clipBytes: clipBytes, pictureBytes: pictureBytes, bytes: clipBytes + pictureBytes + (entry.sounds ? JSON.stringify(entry.sounds).length : 0) };
   }
 

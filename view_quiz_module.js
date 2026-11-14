@@ -1973,7 +1973,8 @@ function _quizNormalizeDeliverySettings(raw) {
     extensionMinutes: extension,
     warningMinutes: warning,
     allowFlagging: source.allowFlagging !== false,
-    showProgress: source.showProgress !== false
+    showProgress: source.showProgress !== false,
+    quickCheckMode: source.quickCheckMode === true
   };
 }
 // Graded: the teacher checks answers. Student copies arrive without keys
@@ -2178,7 +2179,8 @@ function AssessmentDeliveryPanel(p) {
       extensionMinutes: 5,
       warningMinutes: 2,
       allowFlagging: true,
-      showProgress: true
+      showProgress: true,
+      quickCheckMode: false
     }
   }, {
     id: 'focused',
@@ -2191,7 +2193,8 @@ function AssessmentDeliveryPanel(p) {
       extensionMinutes: 5,
       warningMinutes: 2,
       allowFlagging: true,
-      showProgress: true
+      showProgress: true,
+      quickCheckMode: false
     }
   }, {
     id: 'timed-practice',
@@ -2204,7 +2207,8 @@ function AssessmentDeliveryPanel(p) {
       extensionMinutes: 5,
       warningMinutes: 2,
       allowFlagging: true,
-      showProgress: true
+      showProgress: true,
+      quickCheckMode: false
     }
   }];
   function apply(next) {
@@ -2352,7 +2356,16 @@ function AssessmentDeliveryPanel(p) {
     onChange: function (e) {
       patch('showProgress', e.target.checked);
     }
-  }), "Show question progress"), /*#__PURE__*/React.createElement("p", {
+  }), "Show question progress"), /*#__PURE__*/React.createElement("label", {
+    className: "sm:col-span-2 inline-flex items-center gap-2 text-xs font-semibold text-slate-700"
+  }, /*#__PURE__*/React.createElement("input", {
+    type: "checkbox",
+    "data-assessment-quick-check-toggle": true,
+    checked: !!settings.quickCheckMode,
+    onChange: function (e) {
+      patch('quickCheckMode', e.target.checked);
+    }
+  }), "Quick Check mode (one tap, no retries)"), /*#__PURE__*/React.createElement("p", {
     className: "sm:col-span-2 lg:col-span-4 text-[11px] text-slate-600"
   }, "Timed assessments always support pause and extensions. Reaching zero opens the review screen; it never submits or deletes work automatically.")));
 }
@@ -11770,7 +11783,8 @@ function QuizViewContent(props) {
     feedbackReleased = feedbackReleased && !!releasedData;
   }
   var gradedMode = _quizIsGraded(assessmentData);
-  var deferFeedback = !isTeacherMode && !isParentMode && (deliverySettings.feedbackTiming !== 'immediate' || gradedMode);
+  var quickCheckActive = !isTeacherMode && !isParentMode && !isEditingQuiz && !isPresentationMode && !isReviewGame && deliverySettings.quickCheckMode === true;
+  var deferFeedback = !isTeacherMode && !isParentMode && (deliverySettings.feedbackTiming !== 'immediate' || gradedMode || deliverySettings.quickCheckMode === true);
   async function releaseAssessmentFeedback() {
     if (!isTeacherMode || props._assessmentPreview || feedbackReleaseBusy || typeof props.handleQuizQuestionAction !== 'function') return;
     setFeedbackReleaseBusy(true);
@@ -12094,6 +12108,7 @@ function QuizViewContent(props) {
   var studentMcqConfidence = mcqConfidenceState[0];
   var setStudentMcqConfidence = mcqConfidenceState[1];
   function selectMcqOption(qIdx, optIdx, optText, q) {
+    if (quickCheckActive && studentMcqAnswers[qIdx] !== undefined && studentMcqAnswers[qIdx] !== null) return;
     if (!deferFeedback) _quizRecordPracticeAttempt({
       draftNamespace: draftNamespace,
       questionIdx: qIdx,
@@ -12122,6 +12137,10 @@ function QuizViewContent(props) {
           timestamp: Date.now()
         });
       } catch (e) {}
+    }
+    if (quickCheckActive && deliverySettings.pacing === 'one-at-a-time') {
+      var totalQuestions = Array.isArray(assessmentData.questions) ? assessmentData.questions.length : 0;
+      if (qIdx + 1 < totalQuestions) goToAssessmentQuestion(qIdx + 1);
     }
   }
   function setMcqConfidence(qIdx, confidenceValue, q) {
@@ -12586,7 +12605,7 @@ function QuizViewContent(props) {
     });
   }
   var generatedContent = props.generatedContent;
-  var isFactChecking = props.isFactChecking;
+  var isFactChecking = props.isFactChecking || {};
   var showQuizAnswers = canFacilitateAssessment && !!props.showQuizAnswers;
   var leveledTextLanguage = props.leveledTextLanguage;
   var appId = props.appId;
@@ -15413,6 +15432,7 @@ function QuizViewContent(props) {
     role: !isEditingQuiz ? 'button' : undefined,
     tabIndex: !isEditingQuiz ? 0 : undefined,
     "aria-pressed": !isEditingQuiz ? studentMcqAnswers[i] === optIdx : undefined,
+    "aria-disabled": !isEditingQuiz && quickCheckActive && studentMcqAnswers[i] !== undefined && studentMcqAnswers[i] !== null ? true : undefined,
     onClick: !isEditingQuiz ? () => selectMcqOption(i, optIdx, opt, q) : undefined,
     onKeyDown: !isEditingQuiz ? e => {
       if (e.key === 'Enter' || e.key === ' ') {
@@ -15420,7 +15440,7 @@ function QuizViewContent(props) {
         selectMcqOption(i, optIdx, opt, q);
       }
     } : undefined,
-    className: `p-2 rounded-lg border text-sm relative group/option ${!isEditingQuiz ? 'cursor-pointer hover:bg-indigo-50/40 transition-colors motion-reduce:transition-none' : ''} ${showQuizAnswers && (isTeacherMode || isParentMode) && _quizAnswerMatches(opt, q.correctAnswer) ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : studentMcqAnswers[i] === optIdx ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-400' : 'bg-slate-50 border-slate-100'}`
+    className: `p-2 rounded-lg border text-sm relative group/option ${!isEditingQuiz && quickCheckActive && studentMcqAnswers[i] !== undefined && studentMcqAnswers[i] !== null ? 'cursor-not-allowed' + (studentMcqAnswers[i] !== optIdx ? ' opacity-60' : '') : !isEditingQuiz ? 'cursor-pointer hover:bg-indigo-50/40 transition-colors motion-reduce:transition-none' : ''} ${showQuizAnswers && (isTeacherMode || isParentMode) && _quizAnswerMatches(opt, q.correctAnswer) ? 'bg-green-50 border-green-200 ring-1 ring-green-200' : studentMcqAnswers[i] === optIdx ? 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-400' : 'bg-slate-50 border-slate-100'}`
   }, Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] && /*#__PURE__*/React.createElement("div", {
     className: "relative mb-2"
   }, /*#__PURE__*/React.createElement("img", {

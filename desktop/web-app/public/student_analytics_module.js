@@ -2690,10 +2690,11 @@ try {
   function _acCkScoreFromJson(sc) {
     if (!sc || typeof sc !== 'object' || Array.isArray(sc)) return null;
     var flags = (Array.isArray(sc.flags) ? sc.flags : []).slice(0, 8).map(function(f) { return _acThText(f, 30).toLowerCase(); }).filter(function(f) { return /^[a-z_]+$/.test(f); });
+    var tools = (Array.isArray(sc.tools) ? sc.tools : []).slice(0, 12).map(function(x) { return _acThText(x, 40); }).filter(function(x, i, all) { return /^[A-Za-z][A-Za-z0-9_]{0,39}$/.test(x) && all.indexOf(x) === i; });
     var completion = _acThText(sc.completion, 20);
     return { measure: _acThText(sc.measure, 40), score: _acCkNumber(sc.score), unit: _acThText(sc.scoreUnit, 40), timeLimitS: _acCkNumber(sc.timeLimitS), elapsedS: _acCkNumber(sc.elapsedS),
       hiddenS: _acCkNumber(sc.hiddenS), completion: completion === 'complete' || completion === 'time' || completion === 'ended_early' || completion === 'time_up_away' ? completion : '',
-      scoringVersion: _acCkCount(sc.scoringVersion), formVersion: _acCkCount(sc.formVersion), attempt: _acCkCount(sc.attempt) || 1, flags: flags,
+      scoringVersion: _acCkCount(sc.scoringVersion), formVersion: _acCkCount(sc.formVersion), attempt: _acCkCount(sc.attempt) || 1, flags: flags, tools: tools,
       // Untimed (an accommodation): JSON untimed: true, CSV "timing=untimed".
       untimed: sc.untimed === true || /^(1|true|untimed)$/i.test(_acThText(sc.untimed, 8)) || /^untimed$/i.test(_acThText(sc.timing, 20)), usualTimeLimitS: _acCkNumber(sc.usualTimeLimitS) };
   }
@@ -2708,7 +2709,7 @@ try {
     var get = function(name) { return _acWsOwn(kv, 'k' + name) ? kv['k' + name] : ''; };
     return _acCkScoreFromJson({ measure: get('measure'), score: get('score'), scoreUnit: get('score_unit'), timeLimitS: get('time_limit_s'), elapsedS: get('elapsed_s'), hiddenS: get('hidden_s'),
       completion: get('completion'), scoringVersion: get('scoring_version'), formVersion: get('form_version'), attempt: get('attempt'), flags: get('flags') ? get('flags').split(';') : [],
-      timing: get('timing'), usualTimeLimitS: get('usual_time_limit_s') });
+      tools: get('tools_used') ? get('tools_used').split(';') : [], timing: get('timing'), usualTimeLimitS: get('usual_time_limit_s') });
   }
   // A raw check session to what the dashboard shows and keeps. The counts are
   // made again from the item rows, which the edit check covers. The time
@@ -2762,7 +2763,7 @@ try {
       scoringVersion: sc ? sc.scoringVersion : null, packetId: raw.packetId, title: _acThText(title, 80) || (custom ? raw.packetId : ''),
       given: given, attempted: attempted, correct: correct, digitsCorrect: hasDigits ? digitsCorrect : null, digitsPossible: hasDigits ? digitsPossible : null,
       score: score, unit: unit, noScore: noScore, prorated: prorated, completion: completion, elapsedSeconds: sc ? sc.elapsedS : null, timeLimitSeconds: limit,
-      hiddenSeconds: sc && sc.hiddenS > 0 ? sc.hiddenS : 0, flags: sc ? sc.flags : [], attempt: sc ? sc.attempt : 1,
+      hiddenSeconds: sc && sc.hiddenS > 0 ? sc.hiddenS : 0, flags: sc ? sc.flags : [], tools: sc && Array.isArray(sc.tools) ? sc.tools : [], attempt: sc ? sc.attempt : 1,
       recounted: !!(sc && sc.score !== null && score !== null && sc.score !== score), stated: sc ? sc.score : null,
       untimed: untimed, usualTimeLimitSeconds: untimed && sc.usualTimeLimitS > 0 ? sc.usualTimeLimitS : null };
   }
@@ -2775,6 +2776,7 @@ try {
     var home = { date: new Date(session.start).toISOString(), timestamp: session.start, source: 'take_home_file', home: true, sessionId: String(session.id).replace(/^th:/, ''),
       packetId: c.packetId, title: c.title, completion: c.completion, hiddenSeconds: c.hiddenSeconds, flags: c.flags.slice(), attempt: c.attempt, integrity: session.integrity,
       timeLimitSeconds: c.timeLimitSeconds };
+    if (Array.isArray(c.tools) && c.tools.length) home.tools = c.tools.slice();
     if (session.dateFromFile) home.dateFromFile = true;
     if (c.noScore) home.noScore = c.noScore;
     if (c.untimed) { home.untimed = true; home.usualTimeLimitSeconds = c.usualTimeLimitSeconds; }
@@ -2879,6 +2881,11 @@ try {
       : flag === 'attempt_unknown' ? _acWsText(t, 'class_analytics.th_ck_flag_attempt_unknown', 'That browser could not keep the count of tries, so the try number may be wrong.')
       : _acWsText(t, 'class_analytics.th_ck_flag_other', 'The file notes: {flag}.', { flag: String(flag).replace(/_/g, ' ') });
   }
+  var _AC_CK_TOOL_LABELS = { textLarger: 'larger text', textLargest: 'largest text', contrastHigh: 'high contrast',
+    contrastSoft: 'soft contrast', colorsDark: 'dark colors', colorsOcean: 'ocean colors', colorsSunny: 'sunny colors',
+    colorsForest: 'forest colors', spacingWide: 'wider spacing', readingFocus: 'reading focus line',
+    magnifier: 'magnifier', readChoices: 'read choices aloud' };
+  function _acCkToolLabel(id) { return _acWsOwn(_AC_CK_TOOL_LABELS, id) ? _AC_CK_TOOL_LABELS[id] : String(id || ''); }
   // Things a teacher should know before reading the score, in plain words.
   function _acCkNotes(t, c) {
     var notes = (Array.isArray(c.flags) ? c.flags : []).slice(0, 8).map(function(flag) { return _acCkFlagText(t, flag); });
@@ -2886,6 +2893,7 @@ try {
     if (c.prorated) notes.push(_acWsText(t, 'class_analytics.th_ck_note_prorated', 'Every problem was finished early, so the rate uses the time taken.'));
     if (c.untimed) notes.push(_acWsText(t, 'class_analytics.th_ck_note_untimed', 'Untimed (an accommodation): no clock. It is never compared with timed results.'));
     if (c.recounted) notes.push(_acWsText(t, 'class_analytics.th_ck_note_recounted', 'The file gave {stated} as the score. The score shown is worked out from the answers in the file.', { stated: c.stated }));
+    if (Array.isArray(c.tools) && c.tools.length) notes.push(_acWsText(t, 'word_sounds.take_home_player_check_review_tools', 'Reading tools used: {tools}.', { tools: c.tools.slice(0, 12).map(_acCkToolLabel).join(', ') }));
     return notes;
   }
   // One student's results of every measure that has a take-home result, oldest
@@ -2925,7 +2933,9 @@ try {
       if (info.custom && info.title && !groups[key].title) groups[key].title = info.title;
       groups[key].rows.push({ time: time, date: _acLocalDate(time), where: home ? 'th' : 'app', score: home && r.noScore ? null : score, unit: unit, attempted: num(r.total),
         custom: false, measure: info.measure, grade: r.grade == null ? '' : _acThText(String(r.grade), 4), form: info.custom ? '' : _acThText(r.form, 8), noScore: home && r.noScore ? _acThText(r.noScore, 20) : (score === null ? 'unknown' : ''),
-        flags: home && Array.isArray(r.flags) ? r.flags.filter(function(f) { return typeof f === 'string'; }) : [], attempt: home ? Number(r.attempt) || 1 : 1, prorated: r.prorated === true, untimed: untimed,
+        flags: home && Array.isArray(r.flags) ? r.flags.filter(function(f) { return typeof f === 'string'; }) : [],
+        tools: home && Array.isArray(r.tools) ? r.tools.filter(function(x) { return typeof x === 'string'; }) : [],
+        attempt: home ? Number(r.attempt) || 1 : 1, prorated: r.prorated === true, untimed: untimed,
         edited: home && r.integrity === 'changed', dateFromFile: home && r.dateFromFile === true });
     };
     [student.nickname || student.name, student.name].filter(function(name, i, all) { return typeof name === 'string' && name && all.indexOf(name) === i; }).forEach(function(name) {

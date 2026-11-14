@@ -805,9 +805,10 @@ describe('(k) answer choices come only from words with a clip, and a trial build
 
 describe('(l) two kinds of unsuitable word: never used, and never offered but usable when a teacher types it', () => {
   const pick = (criteria, seed = 1) => builder.pickWords(criteria, { wordlist, core, dictionary, seed });
-  // The list the owner approved on 2026-11-11, word for word.
+  // The list the owner approved on 2026-11-11, plus 7 adult/slang/weapon words moved from review on 2026-11-14 (62 -> 69).
   const SOFT = ('fight kick punch slap smack whip strike battle army soldier enemy knife steal thief robber crime prison jail theft hunt ghost witch wizard vampire skeleton skull blood '
-    + 'kiss bride flesh guts crack pot weed bar inn bet dice pipe smoke pill lush tart bog strip bang cockpit swig jack bill mark rob grant fool rude bless spirit temple rubbish sweets lad mummy').split(' ');
+    + 'kiss bride flesh guts crack pot weed bar inn bet dice pipe smoke pill lush tart bog strip bang cockpit swig jack bill mark rob grant crackpot firebug humbug shindig bigwig drugstore bayonet '
+    + 'fool rude bless spirit temple rubbish sweets lad mummy').split(' ');
   const wavFor = (key) => 'data:audio/wav;base64,' + Buffer.from('RIFF0000WAVE' + key).toString('base64');
   const everyWord = new Proxy({}, { get: (_, key) => (typeof key === 'string' ? wavFor(key) : undefined), getOwnPropertyDescriptor: (_, key) => ({ value: wavFor(String(key)), writable: true, enumerable: true, configurable: true }) });
   const shownIn = (lesson, activities) => lesson.blocks.filter((block) => activities.includes(block.activity)).flatMap((block) => block.items.flatMap((item) =>
@@ -821,7 +822,8 @@ describe('(l) two kinds of unsuitable word: never used, and never offered but us
     expect(soft).toHaveLength(1);
     expect(soft[0]).toMatchObject({ derive: false, soft: true });
     expect(soft[0].words.slice().sort()).toEqual(SOFT.slice().sort());
-    expect(new Set(SOFT).size).toBe(62);
+    // 2026-11-14: expanded [soft] from 62 to 69 words (crackpot, firebug, humbug, shindig, bigwig, drugstore, bayonet).
+    expect(new Set(SOFT).size).toBe(69);
     // None is left in a section of the other kind, and no section is both kinds.
     expect(hard.flatMap((section) => section.words).filter((word) => SOFT.includes(word))).toEqual([]);
     expect(sections.filter((section) => section.soft && section.derive)).toEqual([]);
@@ -834,7 +836,8 @@ describe('(l) two kinds of unsuitable word: never used, and never offered but us
       expect(wordlist.isBlocked(word), word).toBe(false);
     }
     expect(wordlist.rows().filter((row) => row.soft).map((row) => row.word).sort()).toEqual(SOFT.slice().sort());
-    expect(wordlist.meta).toMatchObject({ softEntries: 62 });
+    // 2026-11-14: [soft] expanded from 62 to 69 entries.
+    expect(wordlist.meta).toMatchObject({ softEntries: 69 });
     // A word that sounds like a soft word is not touched: only [derive] sections block sound-alikes.
     for (const word of ['in', 'steel', 'which', 'bare', 'we', 'lads', 'kicks']) expect(wordlist.get(word), word).toMatchObject({ soft: false, blocked: false, nearBlocked: false });
     expect(dictionary.lookup('inn')[0].join(' ')).toBe(dictionary.lookup('in')[0].join(' '));
@@ -854,14 +857,15 @@ describe('(l) two kinds of unsuitable word: never used, and never offered but us
     const extra = join(scratch, 'extra.txt');
     writeFileSync(extra, real + '\n## more [soft]\nzzzq cat\n');
     const built = wordlistTool.build({ blocklist: extra, shards: false });
-    expect(built.counts.soft).toBe(63);
-    expect(built.softTotal).toBe(64);
+    // 2026-11-14: [soft] expanded from 62 to 69 real entries (+1 test soft 'cat' -> 70, + 'zzzq' -> 71 total).
+    expect(built.counts.soft).toBe(70);
+    expect(built.softTotal).toBe(71);
     expect(built.softOutside).toEqual(['zzzq']);
     expect(built.counts.nearBlocked).toBe(wordlist.rows().filter((row) => row.nearBlocked).length);
     expect(built.counts.blocked).toBe(wordlist.rows().filter((row) => row.blocked).length);
     const plain = wordlistTool.build({ shards: false });
-    expect(wordlistTool.summary(plain, wordlistTool.render(plain))).toMatch(/; soft list \(never offered, usable when typed\) 62 entries in 1 sections \(62 in the dictionary\); British list /);
-    expect(wordlistTool.summary(built, wordlistTool.render(built))).toContain('soft list (never offered, usable when typed) 64 entries in 2 sections (63 in the dictionary, outside it and so without effect: zzzq); ');
+    expect(wordlistTool.summary(plain, wordlistTool.render(plain))).toMatch(/; soft list \(never offered, usable when typed\) 69 entries in 1 sections \(69 in the dictionary\); British list /);
+    expect(wordlistTool.summary(built, wordlistTool.render(built))).toContain('soft list (never offered, usable when typed) 71 entries in 2 sections (70 in the dictionary, outside it and so without effect: zzzq); ');
     // --no-shards: the list as it is with no word store, whatever the store holds.
     expect(plain.counts.shards).toBe(0);
     expect(plain.wordAudio).toBeNull();
@@ -875,9 +879,9 @@ describe('(l) two kinds of unsuitable word: never used, and never offered but us
       expect(got.words.filter((word) => wordlist.get(word).soft), JSON.stringify(criteria)).toEqual([]);
       expect(got.reasons.usedOnlyWhenTyped, JSON.stringify(criteria)).toBeGreaterThan(0);
     }
-    // Asked for everything, every one of the 62 is counted there, and under no other reason.
+    // Asked for everything, every one of the 69 is counted there, and under no other reason.
     expect(pick({ count: 1e9, requireClip: false }).reasons.usedOnlyWhenTyped).toBe(softRows.length);
-    expect(pick({ count: 1e9, requireClip: false, maxRank: 40000, british: true }).reasons.usedOnlyWhenTyped).toBe(62);
+    expect(pick({ count: 1e9, requireClip: false, maxRank: 40000, british: true }).reasons.usedOnlyWhenTyped).toBe(69);
     const cvc = pick({ shape: 'CVC', count: 1e9, requireClip: false });
     expect(cvc.reasons.usedOnlyWhenTyped).toBe(softRows.filter((row) => row.shape === 'CVC').length);
     for (const word of ['jail', 'bet', 'pot', 'kiss', 'jack', 'bill', 'rob']) expect(cvc.words, word).not.toContain(word);

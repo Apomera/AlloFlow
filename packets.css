@@ -295,6 +295,11 @@ code { font-family: var(--mono); font-size: 0.9em; overflow-wrap: anywhere; }
 .try-page { display: flex; flex-direction: column; height: 100vh; height: 100dvh; background: var(--surface); }
 .try-bar { flex: none; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.1rem 0.75rem; padding: 0.6rem clamp(1rem, 4vw, 2rem); background: var(--ink); color: #ffffff; font-size: 0.9375rem; }
 .try-bar h1 { font-size: 0.9375rem; font-weight: 700; color: #ffffff; }
+.try-edit { flex: none; display: flex; flex-wrap: wrap; align-items: center; gap: 0.45rem 0.75rem; padding: 0.5rem clamp(1rem, 4vw, 2rem); background: var(--note); border-bottom: 1px solid var(--line-strong); color: var(--ink); font-size: 0.9375rem; }
+.try-edit[hidden] { display: none; }
+.try-edit-where { font-weight: 600; margin-right: 0.25rem; }
+.try-edit-actions { display: flex; flex-wrap: wrap; gap: 0.45rem; align-items: center; }
+.try-edit-said { color: var(--muted); font-size: 0.875rem; }
 .try-main { flex: 1 1 auto; display: flex; flex-direction: column; min-height: 0; }
 .try-frame { flex: 1 1 auto; width: 100%; min-height: 0; border: 0; background: var(--surface); }
 .try-problem { padding: 2rem clamp(1rem, 4vw, 2rem); max-width: 40rem; }
