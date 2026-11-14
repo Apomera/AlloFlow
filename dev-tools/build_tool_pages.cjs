@@ -152,11 +152,12 @@ function render(tool) {
 </head>
 <body>
 <a class="skip-link" href="#tool-main">Skip to content</a>
-<nav class="navbar" aria-label="Primary">
+<nav class="navbar navbar-compact" aria-label="Primary">
     <div class="navbar-inner">
         <a class="nav-logo" href="./">AlloFlow</a>
         <div class="nav-links" data-site-nav="primary">
             <a href="tools.html">Find a Tool</a>
+            <a href="packets.html">Quick Practice &amp; Checks</a>
             <a href="features.html">Features</a>
             <a href="manuals.html">Manuals</a>
         </div>

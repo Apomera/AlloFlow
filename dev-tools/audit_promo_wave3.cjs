@@ -18,7 +18,8 @@ const legacyPages = new Map([
     ['website/library.html', canonicalBase + 'library.html'],
     ['website/calculator.html', canonicalBase + 'calculator.html']
 ]);
-const expectedPrimary = ['tools.html', 'features.html', 'remediation.html', 'ways-to-use.html', 'for-districts.html', 'manuals.html', 'launch.html'];
+const expectedPrimary = ['tools.html', 'packets.html', 'features.html', 'remediation.html', 'ways-to-use.html', 'for-districts.html', 'manuals.html', 'launch.html'];
+const packetsLink = '<a href="packets.html">Quick Practice &amp; Checks</a>';
 const expectedImage = 'https://apomera.github.io/AlloFlow/assets/alloflow-social-preview.png';
 // The lesson library now publishes its catalog on the custom domain. Keep
 // checking exact URLs while the remaining promotional pages use GitHub Pages.
@@ -42,9 +43,13 @@ shellPages.forEach(function (file) {
     if (nav) {
         const hrefs = Array.from(nav[1].matchAll(/href="([^"]+)"/g), (match) => match[1]);
         check(JSON.stringify(hrefs) === JSON.stringify(expectedPrimary), `${file}: primary navigation order drifted (${hrefs.join(', ')})`);
+        check(nav[1].includes(packetsLink), `${file}: primary navigation is missing Quick Practice & Checks`);
     }
     check(html.includes('<!-- shared mobile nav:start -->'), `${file}: static mobile navigation marker missing`);
-    check(html.includes('class="noscript-nav"'), `${file}: no-JavaScript navigation missing`);
+    const mobileNav = html.match(/<div id="mobileNav"[^>]*>([\s\S]*?)<\/div>/);
+    check(mobileNav?.[1].includes(packetsLink), `${file}: mobile navigation is missing Quick Practice & Checks`);
+    const noscriptNav = html.match(/<noscript>\s*(?:<style>[^<]*<\/style>\s*)?<nav class="noscript-nav"[^>]*>([\s\S]*?)<\/nav>/);
+    check(noscriptNav?.[1].includes(packetsLink), `${file}: no-JavaScript navigation is missing Quick Practice & Checks`);
     check(html.includes('href="promotion-wave3.css"'), `${file}: promotion-wave3.css is not static`);
     check(html.includes('href="promotion-wave3-shell.css"'), `${file}: shell CSS is not static`);
     check(html.includes('class="footer-links footer-link-groups"'), `${file}: grouped footer navigation missing`);

@@ -22,7 +22,8 @@ describe('the front door says what each maker makes, at the sizes the makers sta
 
   it('the sizes on the front door cover the sizes each maker says', () => {
     const facts = squash(parse('packets.html').querySelector('.facts').textContent);
-    expect(facts).toBe('One file. Word Sounds practice is usually 1 to 4 MB; math files are about 85 to 130 KB; vocabulary files are about 100 KB, more with recordings. Works with no internet.');
+    // 2026-11-14 (T1 + R1): reconciled math sizes (95 to 140 KB) and Word Sounds built WAV sizes (usually 1 to 5 MB at 64 kbps).
+    expect(facts).toBe('One file. Word Sounds practice is usually 1 to 5 MB; math files are about 95 to 140 KB; vocabulary files are about 100 KB, more with recordings. Works with no internet.');
     const [low, high] = /math files are about (\d+) to (\d+) KB/.exec(facts).slice(1).map(Number);
     const kb = (file, id) => Number(/About (\d+) KB/.exec(parse(file).getElementById(id).textContent)[1]);
     for (const n of [kb('packets-check.html', 'size-note'), kb('packets-math-practice.html', 'size-note')]) expect(n >= low && n <= high, String(n)).toBe(true);
@@ -57,7 +58,8 @@ describe('the vocabulary maker is exact about what it fetches and where AI was u
 
   it('it says the meanings marked checked were checked with AI help, not by a person, as the word list itself records', () => {
     const bank = read('packets_vocab_bank_en.js');
-    expect(bank).toMatch(/checking: "Checked and corrected with AI assistance[^"]*Not reviewed by a person\."/);
+    // 2026-11-13: the science and social-studies pass updates the dates and puts the editing note last.
+    expect(bank).toMatch(/checking: "Checked and corrected with AI assistance on November 12 and 13, 2026[^"]*Not reviewed by a person\./);
     expect(squash(doc.getElementById('legend').textContent)).toBe('checked This meaning was checked with AI help when the word list was prepared, not by a person. not checked yet Read these first.');
     const sources = squash(doc.getElementById('sources').textContent);
     expect(sources).toContain('Some meanings were checked and corrected with AI help when the word list was prepared, not by a person.');

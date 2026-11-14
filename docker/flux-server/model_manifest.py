@@ -19,11 +19,18 @@ def model_record(model_id):
 
 def verify_snapshot(snapshot, record):
     root = Path(snapshot)
+    resolved_root = root.resolve()
+    allowed_roots = [resolved_root]
+    if resolved_root.parent.name == 'snapshots':
+        allowed_roots.append((resolved_root.parent.parent / 'blobs').resolve())
     for item in record['files']:
         relative = Path(item['path'])
         if relative.anchor or relative.is_absolute() or '..' in relative.parts or '\\' in item['path']:
             raise ValueError('Unsafe model manifest path')
         target = root / relative
+        resolved_target = target.resolve()
+        if not any(resolved_target.is_relative_to(base) for base in allowed_roots):
+            raise ValueError('Unsafe model manifest path')
         if not target.is_file() or target.stat().st_size != item['bytes']:
             raise ValueError('Model file missing or wrong size: ' + item['path'])
         digest = hashlib.sha256() if item.get('sha256') else hashlib.sha1()

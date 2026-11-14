@@ -5692,7 +5692,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
             if (!asset && typeof callTTS === 'function' && active()) {
                 let profile = null;
                 const voice = generationVoiceRef.current || undefined;
-                const source = await callTTS(word, voice, Number(ttsSpeed) || 1, { signal: options.signal, force: true,
+                const source = await callTTS(word, voice, Number(ttsSpeed) || 1, { signal: options.signal, force: true, word: true,
                     language: wordSoundsLanguage || 'English', allowProviderFallback: !/^(af_|am_|bf_|bm_)/i.test(String(voice || '')),
                     onResolvedProfile: value => { profile = value; } });
                 if (!active()) return null;
@@ -7182,6 +7182,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                      if (key) requiredTtsKeys.add(key);
                  });
                  setPrewarmTotal((prev) => prev + taskList.length);
+                 // Words and word choices get Kokoro's word recipe; syllable units and instruction parts do not.
+                 const notWordTasks = new Set(((boards.syllable_blending?.contentStatus === 'teacher_recorded' ? [] : boards.syllable_blending?.audioUnits) || []).map(unit => String(unit && unit.text)));
+                 if (WS_CORE.manipulationReady(boards.manipulation?.task)) addInstructionParts(notWordTasks, boards.manipulation.task.instruction);
                  const runTasks = async (list) => runGenerationTasks(list, async (text) => {
                      if (!isGenerationActive()) throw new Error('Generation canceled');
                      const key = normalizePackKey(text);
@@ -7205,6 +7208,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                           const src = await awaitGeneration(callTTS(text, voiceForTts, speedForTts, {
                               signal,
                               language: wordSoundsLanguage || 'English',
+                              word: !notWordTasks.has(text),
                               allowProviderFallback: !/^(af_|am_|bf_|bm_)/i.test(String(voiceForTts || '')),
                               onResolvedProfile: profile => { if (isGenerationActive()) resolvedProfile = profile; },
                           }));

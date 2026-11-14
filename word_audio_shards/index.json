@@ -1,802 +1,802 @@
 {
  "format": "alloflow-word-audio-index/1",
- "started": "2026-11-11T22:04:03.723Z",
- "updated": "2026-11-12T08:11:16.319Z",
- "engine": "kokoro-js@1.2.1 / onnx-community/Kokoro-82M-v1.0-ONNX (q8, wasm)",
+ "started": "2026-11-14T00:39:06.226Z",
+ "updated": "2026-11-14T09:10:06.904Z",
+ "engine": "kokoro-js@1.2.1 / onnx-community/Kokoro-82M-v1.0-ONNX (fp32, wasm)",
  "voice": "af_heart",
  "speed": 1,
  "language": "en-US",
  "source": "generated_speech",
- "post": "trim(1% peak, 30ms/60ms margins) + ramp(2ms/6ms) + ffmpeg libopus 48kbps mono webm",
- "textForm": "bare",
+ "post": "carrier \"Here is the word... {word}.\" then \"The word is... {word}.\" cut at the pause before the word (the bare word when no clean cut) + trim(0.3% peak, 60ms/120ms margins, 5ms/30ms fades) + loudness -20 LUFS over the word (BS.1770, true peak <= -1.5 dBTP) + ffmpeg libopus 64kbps mono webm",
+ "textForm": "carrier",
  "humanReviewed": false,
  "note": "Machine-made word clips for Word Sounds, in files of at most 40 words: alphabetical within a first letter, regrouped by dev-tools/repack_word_sounds_word_audio.cjs. Only the words of THIS store are listed: the recorded bank and word_audio_kokoro_bank.json keep their own. To use a word: read shards[words[word]].file and take its entry (a webm/opus data URI). Automatic checks passed; no person has listened.",
  "counts": {
   "words": 5711,
   "shards": 156,
-  "bytes": 36192512,
+  "bytes": 58176560,
   "failed": 0
  },
  "shards": {
   "a-01": {
    "file": "a-01.json",
    "words": 39,
-   "bytes": 259745
+   "bytes": 407670
   },
   "a-02": {
    "file": "a-02.json",
    "words": 39,
-   "bytes": 267698
+   "bytes": 415411
   },
   "a-03": {
    "file": "a-03.json",
    "words": 39,
-   "bytes": 253768
+   "bytes": 393117
   },
   "a-04": {
    "file": "a-04.json",
    "words": 39,
-   "bytes": 253327
+   "bytes": 388764
   },
   "a-05": {
    "file": "a-05.json",
    "words": 39,
-   "bytes": 260658
+   "bytes": 417747
   },
   "a-06": {
    "file": "a-06.json",
    "words": 39,
-   "bytes": 253098
+   "bytes": 394263
   },
   "a-07": {
    "file": "a-07.json",
    "words": 40,
-   "bytes": 257118
+   "bytes": 406479
   },
   "b-01": {
    "file": "b-01.json",
    "words": 39,
-   "bytes": 247666
+   "bytes": 402571
   },
   "b-02": {
    "file": "b-02.json",
    "words": 39,
-   "bytes": 241647
+   "bytes": 411440
   },
   "b-03": {
    "file": "b-03.json",
    "words": 40,
-   "bytes": 247816
+   "bytes": 411089
   },
   "b-04": {
    "file": "b-04.json",
    "words": 39,
-   "bytes": 247990
+   "bytes": 400415
   },
   "b-05": {
    "file": "b-05.json",
    "words": 40,
-   "bytes": 252450
+   "bytes": 415827
   },
   "b-06": {
    "file": "b-06.json",
    "words": 39,
-   "bytes": 239776
+   "bytes": 394709
   },
   "b-07": {
    "file": "b-07.json",
    "words": 40,
-   "bytes": 258618
+   "bytes": 428803
   },
   "b-08": {
    "file": "b-08.json",
    "words": 39,
-   "bytes": 242629
+   "bytes": 402618
   },
   "b-09": {
    "file": "b-09.json",
    "words": 40,
-   "bytes": 245585
+   "bytes": 403510
   },
   "c-01": {
    "file": "c-01.json",
    "words": 37,
-   "bytes": 227648
+   "bytes": 361465
   },
   "c-02": {
    "file": "c-02.json",
    "words": 37,
-   "bytes": 225468
+   "bytes": 366741
   },
   "c-03": {
    "file": "c-03.json",
    "words": 37,
-   "bytes": 234062
+   "bytes": 378051
   },
   "c-04": {
    "file": "c-04.json",
    "words": 38,
-   "bytes": 242238
+   "bytes": 392111
   },
   "c-05": {
    "file": "c-05.json",
    "words": 37,
-   "bytes": 231610
+   "bytes": 363811
   },
   "c-06": {
    "file": "c-06.json",
    "words": 37,
-   "bytes": 223514
+   "bytes": 363187
   },
   "c-07": {
    "file": "c-07.json",
    "words": 38,
-   "bytes": 231234
+   "bytes": 368591
   },
   "c-08": {
    "file": "c-08.json",
    "words": 37,
-   "bytes": 228269
+   "bytes": 365298
   },
   "c-09": {
    "file": "c-09.json",
    "words": 37,
-   "bytes": 249133
+   "bytes": 397978
   },
   "c-10": {
    "file": "c-10.json",
    "words": 37,
-   "bytes": 261068
+   "bytes": 423061
   },
   "c-11": {
    "file": "c-11.json",
    "words": 38,
-   "bytes": 238837
+   "bytes": 373546
   },
   "c-12": {
    "file": "c-12.json",
    "words": 37,
-   "bytes": 225813
+   "bytes": 359826
   },
   "c-13": {
    "file": "c-13.json",
    "words": 37,
-   "bytes": 234098
+   "bytes": 368215
   },
   "c-14": {
    "file": "c-14.json",
    "words": 38,
-   "bytes": 230949
+   "bytes": 367490
   },
   "d-01": {
    "file": "d-01.json",
    "words": 39,
-   "bytes": 245102
+   "bytes": 404311
   },
   "d-02": {
    "file": "d-02.json",
    "words": 39,
-   "bytes": 253083
+   "bytes": 420348
   },
   "d-03": {
    "file": "d-03.json",
    "words": 39,
-   "bytes": 263718
+   "bytes": 423887
   },
   "d-04": {
    "file": "d-04.json",
    "words": 39,
-   "bytes": 267075
+   "bytes": 432136
   },
   "d-05": {
    "file": "d-05.json",
    "words": 39,
-   "bytes": 245680
+   "bytes": 408425
   },
   "d-06": {
    "file": "d-06.json",
    "words": 39,
-   "bytes": 245665
+   "bytes": 409510
   },
   "d-07": {
    "file": "d-07.json",
    "words": 39,
-   "bytes": 237167
+   "bytes": 397680
   },
   "e-01": {
    "file": "e-01.json",
    "words": 37,
-   "bytes": 219176
+   "bytes": 345541
   },
   "e-02": {
    "file": "e-02.json",
    "words": 37,
-   "bytes": 247745
+   "bytes": 378782
   },
   "e-03": {
    "file": "e-03.json",
    "words": 37,
-   "bytes": 238148
+   "bytes": 372713
   },
   "e-04": {
    "file": "e-04.json",
    "words": 37,
-   "bytes": 260309
+   "bytes": 409570
   },
   "e-05": {
    "file": "e-05.json",
    "words": 38,
-   "bytes": 272762
+   "bytes": 447195
   },
   "f-01": {
    "file": "f-01.json",
    "words": 35,
-   "bytes": 222774
+   "bytes": 356243
   },
   "f-02": {
    "file": "f-02.json",
    "words": 36,
-   "bytes": 232437
+   "bytes": 374046
   },
   "f-03": {
    "file": "f-03.json",
    "words": 36,
-   "bytes": 221254
+   "bytes": 356691
   },
   "f-04": {
    "file": "f-04.json",
    "words": 35,
-   "bytes": 221879
+   "bytes": 354344
   },
   "f-05": {
    "file": "f-05.json",
    "words": 36,
-   "bytes": 220953
+   "bytes": 354530
   },
   "f-06": {
    "file": "f-06.json",
    "words": 36,
-   "bytes": 222298
+   "bytes": 355491
   },
   "f-07": {
    "file": "f-07.json",
    "words": 35,
-   "bytes": 224684
+   "bytes": 358557
   },
   "f-08": {
    "file": "f-08.json",
    "words": 36,
-   "bytes": 229541
+   "bytes": 365882
   },
   "f-09": {
    "file": "f-09.json",
    "words": 36,
-   "bytes": 227205
+   "bytes": 361938
   },
   "g-01": {
    "file": "g-01.json",
    "words": 37,
-   "bytes": 231281
+   "bytes": 387374
   },
   "g-02": {
    "file": "g-02.json",
    "words": 37,
-   "bytes": 235620
+   "bytes": 393037
   },
   "g-03": {
    "file": "g-03.json",
    "words": 38,
-   "bytes": 234809
+   "bytes": 379122
   },
   "g-04": {
    "file": "g-04.json",
    "words": 37,
-   "bytes": 234990
+   "bytes": 384307
   },
   "g-05": {
    "file": "g-05.json",
    "words": 37,
-   "bytes": 240920
+   "bytes": 403669
   },
   "g-06": {
    "file": "g-06.json",
    "words": 38,
-   "bytes": 230251
+   "bytes": 378032
   },
   "h-01": {
    "file": "h-01.json",
    "words": 35,
-   "bytes": 210963
+   "bytes": 348256
   },
   "h-02": {
    "file": "h-02.json",
    "words": 36,
-   "bytes": 212247
+   "bytes": 341804
   },
   "h-03": {
    "file": "h-03.json",
    "words": 35,
-   "bytes": 212129
+   "bytes": 341438
   },
   "h-04": {
    "file": "h-04.json",
    "words": 36,
-   "bytes": 216695
+   "bytes": 349616
   },
   "h-05": {
    "file": "h-05.json",
    "words": 35,
-   "bytes": 211697
+   "bytes": 337646
   },
   "h-06": {
    "file": "h-06.json",
    "words": 36,
-   "bytes": 217887
+   "bytes": 357128
   },
   "h-07": {
    "file": "h-07.json",
    "words": 36,
-   "bytes": 221202
+   "bytes": 356215
   },
   "i-01": {
    "file": "i-01.json",
    "words": 30,
-   "bytes": 216344
+   "bytes": 331025
   },
   "i-02": {
    "file": "i-02.json",
    "words": 31,
-   "bytes": 217048
+   "bytes": 329233
   },
   "i-03": {
    "file": "i-03.json",
    "words": 30,
-   "bytes": 223674
+   "bytes": 335931
   },
   "i-04": {
    "file": "i-04.json",
    "words": 31,
-   "bytes": 216262
+   "bytes": 324655
   },
   "j-01": {
    "file": "j-01.json",
    "words": 26,
-   "bytes": 158730
+   "bytes": 269699
   },
   "j-02": {
    "file": "j-02.json",
    "words": 27,
-   "bytes": 166801
+   "bytes": 279762
   },
   "k-01": {
    "file": "k-01.json",
    "words": 24,
-   "bytes": 138374
+   "bytes": 216611
   },
   "k-02": {
    "file": "k-02.json",
    "words": 25,
-   "bytes": 150670
+   "bytes": 244531
   },
   "l-01": {
    "file": "l-01.json",
    "words": 38,
-   "bytes": 237463
+   "bytes": 381740
   },
   "l-02": {
    "file": "l-02.json",
    "words": 39,
-   "bytes": 234214
+   "bytes": 372559
   },
   "l-03": {
    "file": "l-03.json",
    "words": 38,
-   "bytes": 231735
+   "bytes": 371872
   },
   "l-04": {
    "file": "l-04.json",
    "words": 39,
-   "bytes": 242514
+   "bytes": 378459
   },
   "l-05": {
    "file": "l-05.json",
    "words": 38,
-   "bytes": 236407
+   "bytes": 379088
   },
   "l-06": {
    "file": "l-06.json",
    "words": 39,
-   "bytes": 235676
+   "bytes": 384969
   },
   "m-01": {
    "file": "m-01.json",
    "words": 37,
-   "bytes": 247499
+   "bytes": 387040
   },
   "m-02": {
    "file": "m-02.json",
    "words": 37,
-   "bytes": 236340
+   "bytes": 374373
   },
   "m-03": {
    "file": "m-03.json",
    "words": 37,
-   "bytes": 241051
+   "bytes": 377004
   },
   "m-04": {
    "file": "m-04.json",
    "words": 37,
-   "bytes": 238474
+   "bytes": 379135
   },
   "m-05": {
    "file": "m-05.json",
    "words": 37,
-   "bytes": 227399
+   "bytes": 365996
   },
   "m-06": {
    "file": "m-06.json",
    "words": 37,
-   "bytes": 237315
+   "bytes": 371564
   },
   "m-07": {
    "file": "m-07.json",
    "words": 37,
-   "bytes": 242790
+   "bytes": 382975
   },
   "n-01": {
    "file": "n-01.json",
    "words": 35,
-   "bytes": 217580
+   "bytes": 351553
   },
   "n-02": {
    "file": "n-02.json",
    "words": 36,
-   "bytes": 229105
+   "bytes": 372794
   },
   "n-03": {
    "file": "n-03.json",
    "words": 36,
-   "bytes": 230137
+   "bytes": 370598
   },
   "o-01": {
    "file": "o-01.json",
    "words": 32,
-   "bytes": 209514
+   "bytes": 329803
   },
   "o-02": {
    "file": "o-02.json",
    "words": 32,
-   "bytes": 204956
+   "bytes": 318149
   },
   "o-03": {
    "file": "o-03.json",
    "words": 32,
-   "bytes": 207909
+   "bytes": 325826
   },
   "p-01": {
    "file": "p-01.json",
    "words": 37,
-   "bytes": 224120
+   "bytes": 355621
   },
   "p-02": {
    "file": "p-02.json",
    "words": 38,
-   "bytes": 241551
+   "bytes": 382004
   },
   "p-03": {
    "file": "p-03.json",
    "words": 37,
-   "bytes": 226978
+   "bytes": 356067
   },
   "p-04": {
    "file": "p-04.json",
    "words": 38,
-   "bytes": 236136
+   "bytes": 374717
   },
   "p-05": {
    "file": "p-05.json",
    "words": 37,
-   "bytes": 228527
+   "bytes": 359980
   },
   "p-06": {
    "file": "p-06.json",
    "words": 38,
-   "bytes": 230108
+   "bytes": 359113
   },
   "p-07": {
    "file": "p-07.json",
    "words": 37,
-   "bytes": 228607
+   "bytes": 357900
   },
   "p-08": {
    "file": "p-08.json",
    "words": 38,
-   "bytes": 246655
+   "bytes": 393016
   },
   "p-09": {
    "file": "p-09.json",
    "words": 37,
-   "bytes": 235187
+   "bytes": 364192
   },
   "p-10": {
    "file": "p-10.json",
    "words": 38,
-   "bytes": 250418
+   "bytes": 388227
   },
   "p-11": {
    "file": "p-11.json",
    "words": 37,
-   "bytes": 248796
+   "bytes": 392981
   },
   "p-12": {
    "file": "p-12.json",
    "words": 38,
-   "bytes": 224253
+   "bytes": 347338
   },
   "q-01": {
    "file": "q-01.json",
    "words": 19,
-   "bytes": 117138
+   "bytes": 179975
   },
   "r-01": {
    "file": "r-01.json",
    "words": 38,
-   "bytes": 238708
+   "bytes": 385261
   },
   "r-02": {
    "file": "r-02.json",
    "words": 39,
-   "bytes": 248021
+   "bytes": 403702
   },
   "r-03": {
    "file": "r-03.json",
    "words": 39,
-   "bytes": 267749
+   "bytes": 427150
   },
   "r-04": {
    "file": "r-04.json",
    "words": 39,
-   "bytes": 269636
+   "bytes": 436189
   },
   "r-05": {
    "file": "r-05.json",
    "words": 38,
-   "bytes": 260495
+   "bytes": 414360
   },
   "r-06": {
    "file": "r-06.json",
    "words": 39,
-   "bytes": 235761
+   "bytes": 379418
   },
   "r-07": {
    "file": "r-07.json",
    "words": 39,
-   "bytes": 240396
+   "bytes": 388157
   },
   "r-08": {
    "file": "r-08.json",
    "words": 39,
-   "bytes": 235448
+   "bytes": 371609
   },
   "s-01": {
    "file": "s-01.json",
    "words": 39,
-   "bytes": 247131
+   "bytes": 407700
   },
   "s-02": {
    "file": "s-02.json",
    "words": 39,
-   "bytes": 252377
+   "bytes": 422654
   },
   "s-03": {
    "file": "s-03.json",
    "words": 39,
-   "bytes": 251741
+   "bytes": 423282
   },
   "s-04": {
    "file": "s-04.json",
    "words": 40,
-   "bytes": 256549
+   "bytes": 420354
   },
   "s-05": {
    "file": "s-05.json",
    "words": 39,
-   "bytes": 242020
+   "bytes": 398017
   },
   "s-06": {
    "file": "s-06.json",
    "words": 39,
-   "bytes": 237803
+   "bytes": 392004
   },
   "s-07": {
    "file": "s-07.json",
    "words": 39,
-   "bytes": 238055
+   "bytes": 390776
   },
   "s-08": {
    "file": "s-08.json",
    "words": 40,
-   "bytes": 254250
+   "bytes": 415239
   },
   "s-09": {
    "file": "s-09.json",
    "words": 39,
-   "bytes": 247663
+   "bytes": 406080
   },
   "s-10": {
    "file": "s-10.json",
    "words": 39,
-   "bytes": 250125
+   "bytes": 409174
   },
   "s-11": {
    "file": "s-11.json",
    "words": 40,
-   "bytes": 249438
+   "bytes": 412387
   },
   "s-12": {
    "file": "s-12.json",
    "words": 39,
-   "bytes": 243275
+   "bytes": 392852
   },
   "s-13": {
    "file": "s-13.json",
    "words": 39,
-   "bytes": 255476
+   "bytes": 427397
   },
   "s-14": {
    "file": "s-14.json",
    "words": 39,
-   "bytes": 256035
+   "bytes": 432772
   },
   "s-15": {
    "file": "s-15.json",
    "words": 40,
-   "bytes": 258437
+   "bytes": 433422
   },
   "s-16": {
    "file": "s-16.json",
    "words": 39,
-   "bytes": 250341
+   "bytes": 419154
   },
   "s-17": {
    "file": "s-17.json",
    "words": 39,
-   "bytes": 244223
+   "bytes": 403268
   },
   "s-18": {
    "file": "s-18.json",
    "words": 39,
-   "bytes": 256475
+   "bytes": 423612
   },
   "s-19": {
    "file": "s-19.json",
    "words": 40,
-   "bytes": 259399
+   "bytes": 430600
   },
   "s-20": {
    "file": "s-20.json",
    "words": 39,
-   "bytes": 250393
+   "bytes": 399502
   },
   "s-21": {
    "file": "s-21.json",
    "words": 39,
-   "bytes": 262852
+   "bytes": 440709
   },
   "s-22": {
    "file": "s-22.json",
    "words": 40,
-   "bytes": 244845
+   "bytes": 404238
   },
   "t-01": {
    "file": "t-01.json",
    "words": 39,
-   "bytes": 236838
+   "bytes": 377351
   },
   "t-02": {
    "file": "t-02.json",
    "words": 39,
-   "bytes": 241183
+   "bytes": 379652
   },
   "t-03": {
    "file": "t-03.json",
    "words": 39,
-   "bytes": 243225
+   "bytes": 389802
   },
   "t-04": {
    "file": "t-04.json",
    "words": 39,
-   "bytes": 239285
+   "bytes": 383678
   },
   "t-05": {
    "file": "t-05.json",
    "words": 39,
-   "bytes": 233735
+   "bytes": 375980
   },
   "t-06": {
    "file": "t-06.json",
    "words": 39,
-   "bytes": 235479
+   "bytes": 378164
   },
   "t-07": {
    "file": "t-07.json",
    "words": 39,
-   "bytes": 243817
+   "bytes": 391694
   },
   "t-08": {
    "file": "t-08.json",
    "words": 39,
-   "bytes": 238930
+   "bytes": 374171
   },
   "t-09": {
    "file": "t-09.json",
    "words": 39,
-   "bytes": 234260
+   "bytes": 372657
   },
   "u-01": {
    "file": "u-01.json",
    "words": 32,
-   "bytes": 222012
+   "bytes": 347421
   },
   "u-02": {
    "file": "u-02.json",
    "words": 33,
-   "bytes": 213525
+   "bytes": 338694
   },
   "v-01": {
    "file": "v-01.json",
    "words": 32,
-   "bytes": 208482
+   "bytes": 336139
   },
   "v-02": {
    "file": "v-02.json",
    "words": 33,
-   "bytes": 220355
+   "bytes": 352364
   },
   "w-01": {
    "file": "w-01.json",
    "words": 34,
-   "bytes": 209784
+   "bytes": 334261
   },
   "w-02": {
    "file": "w-02.json",
    "words": 35,
-   "bytes": 220813
+   "bytes": 350754
   },
   "w-03": {
    "file": "w-03.json",
    "words": 35,
-   "bytes": 208879
+   "bytes": 332884
   },
   "w-04": {
    "file": "w-04.json",
    "words": 34,
-   "bytes": 205173
+   "bytes": 322114
   },
   "w-05": {
    "file": "w-05.json",
    "words": 35,
-   "bytes": 216683
+   "bytes": 336508
   },
   "w-06": {
    "file": "w-06.json",
    "words": 35,
-   "bytes": 215068
+   "bytes": 334293
   },
   "w-07": {
    "file": "w-07.json",
    "words": 35,
-   "bytes": 208968
+   "bytes": 329673
   },
   "y-01": {
    "file": "y-01.json",
    "words": 20,
-   "bytes": 115701
+   "bytes": 191138
   },
   "z-01": {
    "file": "z-01.json",
    "words": 3,
-   "bytes": 17869
+   "bytes": 28786
   }
  },
  "words": {
@@ -6513,8 +6513,8 @@
   "zoomed": "z-01"
  },
  "otherTextForm": {
-  "exchanged": "period",
-  "tube": "period"
+  "access": "carrier2",
+  "exchanged": "carrier2"
  },
  "failed": {}
 }

@@ -204,7 +204,7 @@
             const voice = context.selectedVoice || undefined;
             let resolvedProfile = null;
             const source = await boundedWait(context.callTTS(item.word, voice, typeof context.ttsSpeed === 'number' ? context.ttsSpeed : undefined, {
-              language,
+              language, word: true,
               allowProviderFallback: !/^(af_|am_|bf_|bm_)/i.test(String(voice || '')),
               signal: context.signal,
               onResolvedProfile: profile => { resolvedProfile = profile && typeof profile === 'object' ? profile : null; }

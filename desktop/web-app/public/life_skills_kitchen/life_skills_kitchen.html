@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
 <title>Life Skills 3D — Kitchen &amp; Food Safety Lab</title>
 <script src="../immersive_geometry/vendor/aframe.min.js"></script>
 <script>
@@ -615,9 +616,48 @@
     document.documentElement.setAttribute('data-theme', theme === 'light' || theme === 'contrast' ? theme : 'dark');
   }
   setTheme(params.get('theme'));
+  var verifiedOpenerOrigin = '';
+  function isTrustedOpenerOrigin(origin) {
+    if (!origin || origin === 'null') return false;
+    if (origin === window.location.origin) return true;
+    try {
+      var u = new URL(origin);
+      var host = u.hostname.toLowerCase();
+      if (u.protocol === 'http:' && (host === 'localhost' || host === '127.0.0.1' || host === '[::1]')) return true;
+      if (u.protocol !== 'https:') return false;
+      return host === 'localhost' || host === '127.0.0.1'
+        || host === 'alloflow-cdn.pages.dev' || host.endsWith('.alloflow-cdn.pages.dev')
+        || host === 'alloflow.org' || host.endsWith('.alloflow.org')
+        || host === 'alloflow.app' || host.endsWith('.alloflow.app')
+        || host === 'alloflow.com' || host.endsWith('.alloflow.com')
+        || host === 'alloflow.example' || host.endsWith('.alloflow.example')
+        || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(host)
+        || host.endsWith('.usercontent.goog')
+        || host.endsWith('.googleusercontent.com')
+        || host.endsWith('.idx.google.com')
+        || host.endsWith('.idx.google');
+    } catch (_) {
+      return false;
+    }
+  }
+  function resolveOpenerTargetOrigin() {
+    if (verifiedOpenerOrigin) return verifiedOpenerOrigin;
+    if (typeof document !== 'undefined' && document.referrer) {
+      try {
+        var refOrigin = new URL(document.referrer).origin;
+        if (refOrigin && refOrigin !== 'null') {
+          return isTrustedOpenerOrigin(refOrigin) ? refOrigin : '';
+        }
+      } catch (_) { return ''; }
+    }
+    return '*';
+  }
   function postToOpener(payload) {
     try {
-      if (window.opener && !window.opener.closed) window.opener.postMessage(Object.assign({ source: 'alloflow-life-kitchen-3d' }, payload), '*');
+      var targetOrigin = resolveOpenerTargetOrigin();
+      if (targetOrigin && window.opener && !window.opener.closed) {
+        window.opener.postMessage(Object.assign({ source: 'alloflow-life-kitchen-3d' }, payload), targetOrigin);
+      }
     } catch (ignore) {}
   }
   function say(message) {
@@ -853,8 +893,14 @@
     postProgressSnapshot(); postToOpener({ type: 'alloflow-life-kitchen-3d-reset' });
   });
   window.addEventListener('message', function (event) {
+    if (!window.opener || event.source !== window.opener) return;
+    if (event.origin && event.origin !== 'null') {
+      if (!isTrustedOpenerOrigin(event.origin)) return;
+      verifiedOpenerOrigin = event.origin;
+    }
     var data = event && event.data;
-    if (data && data.type === 'alloflow-theme-change') setTheme(data.theme);
+    if (!data || typeof data !== 'object') return;
+    if (data.type === 'alloflow-theme-change') setTheme(data.theme);
   });
   window.lifeSkillsKitchen3D = { activate: activateTask, focus: focusTask };
   function showSceneFallback() { if (sceneFallback) sceneFallback.style.display = 'block'; }

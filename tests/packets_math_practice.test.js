@@ -20,7 +20,8 @@ const PAGE = 'packets-math-practice.html';
 const SCRIPT = 'packets-math-practice.js';
 const KEY = 'alloflow-packets-math-practice/1';
 const RULE = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'";
-const SCRIPTS = ['packets-page.js', 'word_sounds_take_home_loader.js', 'packet_math_practice_builder.js', 'packets-math-practice.js'];
+// 2026-11-14 (T1/makers2): packets_verify_core.js, packets_reopen.js, packets_handoff.js and packets_zip.js added for reopen & batch .zip.
+const SCRIPTS = ['packets-page.js', 'word_sounds_take_home_loader.js', 'packet_math_practice_builder.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_handoff.js', 'packets_zip.js', 'packets-math-practice.js'];
 const X = String.fromCharCode(0xD7), MINUS = String.fromCharCode(0x2212), DIVIDE = String.fromCharCode(0xF7);
 
 // The loader as a page loads it, the builder, the "Check a file" core and the results reader.
@@ -617,7 +618,8 @@ function wordsOf(doc) {
     if (node.tagName === 'META' && node.getAttribute('name') === 'description') shown.push(node.getAttribute('content'));
   }
   // The one place the verb appears: the line shared with the other Packets pages when a part did not load.
-  return squash(shown.join(' \n ')).split('Check the connection').join('');
+  // 2026-11-14 (T1): #after-save also names "Open a practice file or check" (packets-open.html), not calling this file a check.
+  return squash(shown.join(' \n ')).split('Check the connection').join('').split('Open a practice file or check').join('');
 }
 function openPage(options = {}) {
   const dom = new JSDOM(read(PAGE), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://packets.test/site/' + PAGE });
@@ -662,9 +664,11 @@ describe('the page as files', () => {
     expect(head.slice(0, at).every((node) => node.tagName === 'META')).toBe(true);
     expect(doc.querySelector('meta[name="referrer"]').getAttribute('content')).toBe('no-referrer');
     expect([...doc.querySelectorAll('script')].map((s) => [s.getAttribute('src'), s.hasAttribute('defer'), s.textContent.trim()])).toEqual(SCRIPTS.map((src) => [src, true, '']));
-    expect([...doc.querySelectorAll('link')].map((l) => [l.getAttribute('rel'), l.getAttribute('href')])).toEqual([['icon', 'packets-mark.svg'], ['stylesheet', 'packets.css']]);
+    // 2026-11-14 (T1/makers2): packets-make.css added alongside packets.css for reopen, code-name and batch .zip controls.
+    expect([...doc.querySelectorAll('link')].map((l) => [l.getAttribute('rel'), l.getAttribute('href')])).toEqual([['icon', 'packets-mark.svg'], ['stylesheet', 'packets.css'], ['stylesheet', 'packets-make.css']]);
     expect(doc.querySelectorAll('style, form, iframe, object, embed, img, audio, video, base')).toHaveLength(0);
     for (const node of doc.querySelectorAll('*')) for (const attribute of node.attributes) expect(/^on|^style$/i.test(attribute.name), node.tagName + ' ' + attribute.name).toBe(false);
+    // 2026-11-14 (T1/makers2): #after-save prints the plain site text apomera.github.io/AlloFlow/packets-open.html (no scheme/fetch).
     for (const file of [PAGE, SCRIPT, 'packet_math_practice_builder.js']) expect(read(file).match(/(?:https?:)?\/\/[a-z0-9.-]+\.[a-z]{2,}[^\s"'<>)]*/gi) || [], file).toEqual([]);
     for (const node of doc.querySelectorAll('[href], [src]')) expect(node.getAttribute('href') || node.getAttribute('src')).toMatch(/^(?:#[\w-]+|\.\/|[\w.-]+(?:\/[\w.-]+)*(?:#[\w-]+)?)$/);
     for (const file of [SCRIPT, 'packet_math_practice_builder.js']) {
@@ -675,9 +679,10 @@ describe('the page as files', () => {
   it('"See the details" lists exactly what the page loads, and says it in plain American words', () => {
     const doc = parse(PAGE);
     const loads = 1 + doc.querySelectorAll('link').length + doc.querySelectorAll('script[src]').length;
-    expect(loads).toBe(7);
+    // 2026-11-14 (T1/makers2): 12 files (page + icon + 2 stylesheets + 8 scripts), and #order-line names subtraction and division too.
+    expect(loads).toBe(12);
     const items = [...doc.querySelectorAll('details.proof .proof-body > ul:first-child > li')].map((li) => squash(li.textContent));
-    expect(items[3]).toBe('This page loads seven files, all from this site: the page itself, one stylesheet, four scripts and the icon in the browser tab. They are the same files whatever you choose, and each is named near the top of the page\'s source. It loads no fonts, no trackers and nothing from another site. Try it opens this site\'s preview page in a new tab.');
+    expect(items[3]).toBe('This page loads twelve files, all from this site: the page itself, two stylesheets, eight scripts and the icon in the browser tab. They are the same files whatever you choose, and each is named near the top of the page\'s source. It loads no fonts, no trackers and nothing from another site. Try it opens this site\'s preview page in a new tab.');
     expect(squash(doc.querySelector('.proof-line').textContent)).toBe('This page runs without AI. No account. Nothing you choose leaves your device.');
     expect(squash(doc.querySelector('.foot').textContent)).toBe(squash(parse('packets-check.html').querySelector('.foot').textContent));
     expect(squash(doc.getElementById('when-line').textContent)).toBe('Accuracy first: use cover, copy, compare until the facts are right. Practice for speed comes later.');
@@ -694,7 +699,8 @@ describe('the page as files', () => {
     adds[adds.length - 1] = 'then the rest';
     const order = squash(doc.getElementById('order-line').textContent);
     expect(order).toBe('The sets and their order follow a common teaching order, not a standard. Addition: ' + adds.join(', ') + '. Multiplication: '
-      + MP.FAMILIES.filter((f) => f.op === 'mul').map((f) => f.name.toLowerCase()).join(', ') + '.');
+      + MP.FAMILIES.filter((f) => f.op === 'mul').map((f) => f.name.toLowerCase()).join(', ')
+      + '. Subtraction, the addition facts taken apart: − 0 and − 1, doubles, from 10, near doubles, then the rest within 10 and within 20. Division, the multiplication facts undone: ÷ 2, ÷ 10, ÷ 5, ÷ 1 and 0 ÷, squares, ÷ 3, ÷ 4, ÷ 9, ÷ 6, ÷ 7, ÷ 8.');
     expect(squash(doc.getElementById('plan-line').textContent)).toContain('So 8 of every 12 cards are facts the student knows.');
   });
 });
@@ -704,9 +710,11 @@ describe('the page, run in jsdom with the scripts it names', () => {
     const page = openPage();
     expect(page.seen('step-1') && !page.seen('loading') && !page.seen('load-problem')).toBe(true);
     expect(page.w.document.title).toBe(NAME + ': Make math fact practice, step 1 of 3');
-    expect(page.options('kind')).toEqual(['Addition', 'Multiplication', 'My own facts']);
+    // 2026-11-14 (T1/makers2): Subtraction and Division sets offered alongside Addition, Multiplication and My own facts;
+    // Title row is also included in summary-rows and stored in localStorage.
+    expect(page.options('kind')).toEqual(['Addition', 'Subtraction', 'Multiplication', 'Division', 'My own facts']);
     page.$('next-1').click();
-    expect(page.$('step-1-problem').textContent).toBe('Choose addition, multiplication or your own facts to go on.');
+    expect(page.$('step-1-problem').textContent).toBe('Choose the kind of facts to go on.');
     page.choose('kind', 'mul');
     expect(page.options('set')).toHaveLength(11);
     expect(page.options('set')[9]).toBe(X + ' 7 7 ' + X + ' 1 to 7 ' + X + ' 10. 10 facts.');
@@ -833,6 +841,36 @@ describe('the page, run in jsdom with the scripts it names', () => {
     const d = dom.window.document;
     expect([d.getElementById('loading').hidden, d.getElementById('load-problem').hidden]).toEqual([true, false]);
     expect(d.getElementById('load-problem-text').textContent).toBe('Missing: the part that makes math fact practice. Check the connection, then load the page again. Nothing has been lost.');
+  });
+
+  // 2026-11-14 (T1/makers2): subtraction and division sets build cleanly, and Open a file I made reads a saved math practice file back.
+  it('builds subtraction and division sets, and reopens a saved math practice file', async () => {
+    const subSet = MP.FAMILIES.find((f) => f.op === 'sub');
+    const divSet = MP.FAMILIES.find((f) => f.op === 'div');
+    expect(subSet && divSet).toBeTruthy();
+
+    const page = openPage();
+    page.choose('kind', 'sub');
+    page.choose('set', subSet.id);
+    page.$('next-1').click();
+    page.choose('method', 'ccc');
+    page.$('next-2').click();
+    await page.made();
+    const savedHtml = page.built();
+    expect(savedHtml).toBe(build({ mode: 'ccc', factSet: subSet.id }).html);
+
+    const fresh = openPage();
+    expect(fresh.seen('reopen')).toBe(true);
+    const input = fresh.$('reopen-file');
+    Object.defineProperty(input, 'files', { configurable: true, value: [new fresh.w.File([savedHtml], 'sub.html', { type: 'text/html' })] });
+    input.dispatchEvent(new fresh.w.Event('change', { bubbles: true }));
+    await fresh.until(() => fresh.seen('reopen-note'), 'reopen note');
+    expect(fresh.$('reopen-line').textContent).toContain('Filled in from sub.html.');
+    expect(fresh.d.querySelector('input[name="kind"]:checked').value).toBe('sub');
+    expect(fresh.d.querySelector('input[name="set"]:checked').value).toBe(subSet.id);
+
+    // Division set also builds cleanly.
+    expect(build({ mode: 'ccc', factSet: divSet.id }).lesson.blocks[0].items.length).toBe(divSet.facts.length);
   });
 });
 

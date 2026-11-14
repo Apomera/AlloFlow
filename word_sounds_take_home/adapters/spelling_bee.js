@@ -82,7 +82,7 @@ module.exports = {
     var before = '';
     var inputId = 'bee-' + String(item.id || 'x').replace(/[^a-z0-9-]/gi, '');
     var input = ctx.el('input', { id: inputId, type: 'text', autocomplete: 'off', autocorrect: 'off', autocapitalize: 'none', spellcheck: 'false',
-      inputmode: 'text', dir: 'ltr', maxlength: String(word.length || 20),
+      inputmode: 'none', dir: 'ltr', maxlength: String(word.length || 20),
       style: 'font-size:1.6rem;font-weight:700;letter-spacing:.1em;text-align:center', on: {
         input: function () {
           if (hasFixed) {

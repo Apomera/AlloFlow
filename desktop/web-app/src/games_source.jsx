@@ -7402,6 +7402,185 @@ const WordScrambleGame = React.memo(({ data, onClose, playSound, onScoreUpdate, 
   );
 });
 
+// ── Vocabulary Distractor Quality Checks (ported from Packets packet_vocab_builder.js) ──
+const VOCAB_STOP_WORDS = new Set((
+  'a an the of to and or in on at for with by from that which who whom is are was were be been being it its as this these those your you ' +
+  'they their them he she his her we our us something someone somebody thing things kind type sort way used use very can could may ' +
+  'not no do does did has have had one some any such so if when where than then into out up about over'
+).split(' '));
+
+function vocabCleanLine(value) {
+  return stripGameEmoji(String(value == null ? '' : value)).normalize('NFC').replace(/\s+/g, ' ').trim();
+}
+
+function vocabContentWords(value) {
+  return vocabCleanLine(value)
+    .toLowerCase()
+    .replace(/[’']/g, '')
+    .replace(/[^\p{L}\p{N}]+/gu, ' ')
+    .split(' ')
+    .filter(w => w && !VOCAB_STOP_WORDS.has(w))
+    .map(w => (w.length > 3 ? w.replace(/(?:es|s)$/, '') : w));
+}
+
+function vocabCloseMeaning(a, b) {
+  const lineA = vocabCleanLine(a).toLowerCase();
+  const lineB = vocabCleanLine(b).toLowerCase();
+  if (!lineA || !lineB) return false;
+  if (lineA === lineB) return true;
+  const x = vocabContentWords(a);
+  const y = vocabContentWords(b);
+  if (!x.length || !y.length) return false;
+  if (x.join(' ') === y.join(' ')) return true;
+  const setA = new Set(x);
+  const setB = new Set(y);
+  let inter = 0;
+  for (const w of setA) if (setB.has(w)) inter++;
+  const union = setA.size + setB.size - inter;
+  const small = Math.min(setA.size, setB.size);
+  return (union > 0 && inter / union >= 0.6) || (small >= 2 && inter === small);
+}
+
+function vocabHasWord(sentence, word) {
+  const w = vocabCleanLine(word).toLowerCase().replace(/’/g, "'");
+  if (!w) return false;
+  const esc = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  try {
+    return new RegExp('(^|[^\\p{L}\\p{M}])' + esc + '(?![\\p{L}\\p{M}])', 'iu').test(String(sentence == null ? '' : sentence));
+  } catch (_) {
+    return new RegExp('\\b' + esc + '\\b', 'i').test(String(sentence == null ? '' : sentence));
+  }
+}
+
+function vocabNamesWord(defs, word) {
+  const w = vocabCleanLine(word).toLowerCase().replace(/’/g, "'");
+  if (!w) return false;
+  const forms = [w, w + 's', w + 'es', w + 'd', w + 'ed', w + 'ing', w.replace(/e$/, '') + 'ing'];
+  return (Array.isArray(defs) ? defs : []).some(d => forms.some(f => vocabHasWord(d, f)));
+}
+
+function vocabSameFamily(a, b) {
+  const x = vocabCleanLine(a).toLowerCase().replace(/’/g, "'");
+  const y = vocabCleanLine(b).toLowerCase().replace(/’/g, "'");
+  if (!x || !y) return false;
+  if (x === y || x + 's' === y || y + 's' === x) return true;
+  const short = x.length <= y.length ? x : y;
+  const long = short === x ? y : x;
+  return short.length >= 3 && /^[a-z]+$/.test(long) && long.indexOf(short) === 0;
+}
+
+function vocabArticleOnset(text) {
+  const clean = vocabCleanLine(text).replace(/^[\s"'“”‘’([{-]+/, '');
+  const first = (clean.split(/\s+/)[0] || '').replace(/[^A-Za-z'-]/g, '');
+  if (!first || !/^[A-Za-z]/.test(first)) return '';
+  if (/^(?:hour|honest|honor|honour|heir)\b/i.test(first)) return 'vowel';
+  if (/^(?:unit|unif|unio|uniq|univ|unic|unis|use\b|used\b|user|usual|usurp|utensil|util|one\b|once\b|eu[a-z])/i.test(first)) return 'consonant';
+  return /^[aeiou]/i.test(first) ? 'vowel' : 'consonant';
+}
+
+function vocabBlankArticle(stem) {
+  const s = String(stem == null ? '' : stem);
+  const m = /(?:^|[^\p{L}\p{M}])(an?)\s+(?:_{2,}|\[blank\]|\(\s*\))/iu.exec(s);
+  return m ? m[1].toLowerCase() : '';
+}
+
+function vocabFnv32(seed) {
+  const str = String(seed == null ? '' : seed);
+  let h = 2166136261 >>> 0;
+  for (let i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h >>> 0;
+}
+
+function vocabBalancedPick(answerText, pool, count, getText, seed) {
+  const wantCount = Math.min(count, pool.length);
+  if (wantCount <= 0) return [];
+  if (pool.length <= wantCount) return pool.slice();
+  const top = pool.slice(0, 8);
+  if (top.length <= wantCount) return top.slice();
+  const size = vocabCleanLine(answerText).length || 1;
+  const readLen = item => vocabCleanLine(getText ? getText(item) : item).length;
+  if (wantCount === 3) {
+    const wantShorter = vocabFnv32(seed) % 4;
+    let best = null, bestScore = Infinity;
+    for (let i = 0; i < top.length; i++) {
+      for (let j = i + 1; j < top.length; j++) {
+        for (let k = j + 1; k < top.length; k++) {
+          const trio = [top[i], top[j], top[k]];
+          const shorter = trio.filter(c => readLen(c) < size).length;
+          const near = trio.reduce((n, c) => n + Math.abs(readLen(c) - size), 0);
+          const outlierPenalty = trio.reduce((n, c) => {
+            const len = readLen(c);
+            return n + ((len > size * 2.2 || len < size * 0.4) ? 4000 : 0);
+          }, 0);
+          const score = Math.abs(shorter - wantShorter) * 1000 + outlierPenalty + (i + j + k) * 10 + near / 10;
+          if (score < bestScore) { bestScore = score; best = trio; }
+        }
+      }
+    }
+    return best || top.slice(0, 3);
+  }
+  return top
+    .map((c, idx) => ({ c, idx, diff: Math.abs(readLen(c) - size) }))
+    .sort((a, b) => a.diff - b.diff || a.idx - b.idx)
+    .slice(0, wantCount)
+    .map(p => p.c);
+}
+
+function selectDetectiveDistractors(target, clue, candidateTerms, shuffleFn) {
+  const mixFn = typeof shuffleFn === 'function' ? shuffleFn : (arr => arr.slice());
+  const rawPool = (Array.isArray(candidateTerms) ? candidateTerms : []).filter(
+    term => term && !clue.accepted.has(term.key) && term.key !== target.key
+  );
+  if (!rawPool.length) return [];
+
+  // Hard filter: never offer a distractor whose meaning is a close-meaning paraphrase of the clue
+  // (a second right answer), unless every single candidate in a tiny 2-term glossary is close.
+  const nonSynonymPool = rawPool.filter(term =>
+    !(Array.isArray(term.defs) && term.defs.some(d => vocabCloseMeaning(clue.def, d))) &&
+    !(Array.isArray(target.defs) && Array.isArray(term.defs) && target.defs.some(td => term.defs.some(d => vocabCloseMeaning(td, d))))
+  );
+  const workingPool = nonSynonymPool.length > 0 ? nonSynonymPool : rawPool;
+  const wantCount = Math.min(3, workingPool.length);
+
+  const article = vocabBlankArticle(clue.def);
+  const targetOnset = vocabArticleOnset(target.term);
+  const targetFirst = vocabCleanLine(target.term).charAt(0);
+  const targetUpper = !!targetFirst && targetFirst !== targetFirst.toLowerCase();
+
+  const shuffled = mixFn(workingPool);
+  const strictClean = [];
+  const fallbackPool = [];
+
+  for (const cand of shuffled) {
+    const selfNamed = vocabNamesWord([clue.def], cand.term) || vocabNamesWord(cand.defs, target.term);
+    const family = vocabSameFamily(target.term, cand.term);
+    const articleMismatch = !!(article && targetOnset && vocabArticleOnset(cand.term) && vocabArticleOnset(cand.term) !== targetOnset);
+    if (selfNamed || family || articleMismatch) {
+      fallbackPool.push(cand);
+    } else {
+      strictClean.push(cand);
+    }
+  }
+
+  // Prefer matching initial capitalization when enough clean distractors exist.
+  const caseMatched = strictClean.filter(cand => {
+    const ch = vocabCleanLine(cand.term).charAt(0);
+    const isUpper = !!ch && ch !== ch.toLowerCase();
+    return isUpper === targetUpper;
+  });
+  const caseOther = strictClean.filter(cand => !caseMatched.includes(cand));
+  const rankedClean = [...caseMatched, ...caseOther];
+
+  if (rankedClean.length >= wantCount) {
+    return vocabBalancedPick(target.term, rankedClean, wantCount, c => c.term, 'detective|' + target.key + '|' + clue.key);
+  }
+  // Graceful small-pool fallback: keep all clean candidates and backfill up to wantCount.
+  return [...rankedClean, ...fallbackPool].slice(0, wantCount);
+}
+
 // Meaning-based retrieval with deliberate feedback and a separate practice pass.
 const DefinitionDetectiveGame = React.memo(({ data, onClose, onScoreUpdate, onGameComplete, playSound }) => {
   const { t } = useContext(LanguageContext);
@@ -7496,9 +7675,10 @@ const DefinitionDetectiveGame = React.memo(({ data, onClose, onScoreUpdate, onGa
     });
     return mix([...definitions.values()].map(clue => {
       const targets = [...terms.values()].filter(term => clue.accepted.has(term.key));
-      const distractors = mix([...terms.values()].filter(term => !clue.accepted.has(term.key))).slice(0, 3);
-      if (!distractors.length) return null;
+      if (!targets.length) return null;
       const target = mix(targets)[0];
+      const distractors = selectDetectiveDistractors(target, clue, [...terms.values()], mix);
+      if (!distractors.length) return null;
       return { key: clue.key, def: clue.def, target, choices: mix([target, ...distractors]) };
     }).filter(Boolean));
   };
@@ -8092,4 +8272,21 @@ window.AlloModules.GameTextUtils = {
   buildCrosswordWords,
   ensureGameHoverStyles,
   GAME_HOVER_CSS,
+  vocabCloseMeaning,
+  vocabArticleOnset,
+  vocabBlankArticle,
+  vocabBalancedPick,
+  selectDetectiveDistractors,
+};
+window.AlloModules.VocabDistractorChecks = {
+  vocabCleanLine,
+  vocabContentWords,
+  vocabCloseMeaning,
+  vocabHasWord,
+  vocabNamesWord,
+  vocabSameFamily,
+  vocabArticleOnset,
+  vocabBlankArticle,
+  vocabBalancedPick,
+  selectDetectiveDistractors,
 };

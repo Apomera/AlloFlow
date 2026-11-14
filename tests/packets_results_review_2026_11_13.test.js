@@ -270,7 +270,8 @@ describe('Look inside a file: what a file does, in plain words', () => {
       const post = r.findings.filter((x) => x.id === 'post-message');
       expect(post.map((x) => [x.cls, x.where])).toEqual([['expected in this kind of file', 'the code']]);
       expect(post[0].why).toContain('The file cannot see which page holds the frame.');
-      expect(r.plain.saves).toContain('Opened on the "Open a practice file" page (for phones and tablets), it hands its place and its results files to that page, which keeps them and saves them on this device. Opened any other way, it keeps its own place and saves its own files.');
+      // 2026-11-14 (T1): packets-open.html is now named "Open a practice file or check".
+      expect(r.plain.saves).toContain('Opened on the "Open a practice file or check" page (for phones and tablets), it hands its place and its results files to that page, which keeps them and saves them on this device. Opened any other way, it keeps its own place and saves its own files.');
     }
     // A message sent anywhere else is for a person to look at, and the plain line is not given.
     const odd = verify.verifyPacket(f.wsHtml.replace("win.parent.postMessage(message, '*')", "win.top.postMessage(message, '*')"));

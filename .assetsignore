@@ -39,3 +39,17 @@ data/vendor/openmoji/symbols/
 # Vocabulary bank sources (filtered Wiktionary / WordNet extracts, ~19 MB) are build inputs for
 # packets_vocab/*.json (dev-tools/build_packets_vocab_bank.cjs); no page loads them. Kept in Git, not uploaded.
 data/vendor/vocab/
+
+# QA/benchmark runs, Remotion video workspace, pending translation staging, and legacy migration
+# artifacts (~1,006 files total). Verified 0 runtime references across root HTML/JS and CDN loaders
+# (2026-11-14; keeps Cloudflare Pages static-asset count below the 85% / 17,000-file warning threshold;
+# mcp-testing/corpus/ and runs/2026-09-22-real-corpus/ remain uploaded for whitepaper.html links).
+test-output-spaceexplorer-visual/
+my-video/
+translations/pending/
+migration_sources/
+FLEET_2026-08-16/
+mcp-testing/runs/
+runs/2026-09-22-keyless-pilot/
+quality/eppp_provenance/
+--quiet/

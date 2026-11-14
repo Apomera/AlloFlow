@@ -550,7 +550,10 @@ service cloud.firestore {
         allow read: if isSignaling() && authed()
           && (isSessionHost() || (request.auth.uid == peerUid && participantParentOpen(code)));
         allow create: if isSignaling() && authed() && request.auth.uid == peerUid
-          && (isSessionHost() || participantParentOpen(code));
+          && (isSessionHost() || participantParentOpen(code))
+          && request.resource.data.expiresAt is timestamp
+          && request.resource.data.expiresAt > request.time
+          && request.resource.data.expiresAt <= request.time + duration.value(1, 'd');
         allow delete: if isSignaling() && authed()
           && (request.auth.uid == peerUid || isSessionHost());
         allow update: if isSignaling() && authed() && (
@@ -575,6 +578,9 @@ service cloud.firestore {
         function parentPath() {
           return /databases/$(database)/documents/artifacts/$(appId)/public/data/sessions/$(resource.data.parentId);
         }
+        function newParentPath() {
+          return /databases/$(database)/documents/artifacts/$(appId)/public/data/sessions/$(request.resource.data.parentId);
+        }
         function validCreate() {
           return authed()
             && request.resource.data.keys().hasAll([
@@ -585,6 +591,7 @@ service cloud.firestore {
             && request.resource.data.parentId.size() >= 5
             && request.resource.data.parentId.size() <= 80
             && request.resource.data.parentKind in ['live', 'assignment']
+            && (!exists(newParentPath()) || get(newParentPath()).data.hostId == request.auth.uid)
             && request.resource.data.createdAt is timestamp
             && request.resource.data.createdAt <= request.time
             && request.resource.data.expiresAt is timestamp
@@ -623,11 +630,19 @@ service cloud.firestore {
         function boardDoc() { return resource.data; }
         function isBoardHost() { return authed() && resource.data.hostId == request.auth.uid; }
 
-        // The config (prompt, policy) is readable by anyone who joined; the
+        // The config (prompt, policy) is readable by the host or while open; the
         // questions themselves are gated per-item below.
-        allow get: if authed();
+        allow get: if isBoardHost() || (
+          authed()
+          && resource.data.expiresAt is timestamp
+          && resource.data.expiresAt > request.time
+        );
         allow list: if false;
-        allow create: if authed() && request.resource.data.hostId == request.auth.uid;
+        allow create: if authed()
+          && request.resource.data.hostId == request.auth.uid
+          && request.resource.data.expiresAt is timestamp
+          && request.resource.data.expiresAt > request.time
+          && request.resource.data.expiresAt <= request.time + duration.value(31, 'd');
         allow update, delete: if isBoardHost();
 
         match /items/{itemId} {

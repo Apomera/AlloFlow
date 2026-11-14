@@ -4371,7 +4371,7 @@
         // Keep the shared TTS cache/API contract. Only this popup's wait is cancelled.
         var work = (async function () {
           var helpLanguage = language || generatedContent?.config?.language || leveledTextLanguage || 'English';
-          var url = recordingUrl || await callTTS(word, selectedVoice, voiceSpeed || 1, 2, helpLanguage);
+          var url = recordingUrl || await callTTS(word, selectedVoice, voiceSpeed || 1, key === 'phonics-word' ? { maxRetries: 2, language: helpLanguage, word: true } : 2, helpLanguage);
           if (token !== helpAudioTokenRef.current) { if (!recordingUrl) releaseHelpUrl(url);return; }
           if (!url && simplifiedStudentDeviceVoice(word, helpLanguage, voiceSpeed, function () { if (token === helpAudioTokenRef.current) stopHelpAudio(); })) {
             current.deviceVoice = true;clearTimeout(current.timer);current.timer = null;

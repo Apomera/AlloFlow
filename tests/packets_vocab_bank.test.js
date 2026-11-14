@@ -42,6 +42,7 @@ describe('Packets vocabulary bank', () => {
     expect(fetched.sort()).toEqual(bank.shards.map((s) => s.url).sort());
     expect(api.senses('habitat').length).toBeGreaterThan(0);
     expect(api.bytes).toBe(bank.shards.reduce((a, s) => a + s.bytes, 0));
+    expect(api.bytes).toBeLessThan(1_700_000);
     for (const s of bank.shards) {
       expect(statSync(s.url).size).toBe(s.bytes);
       expect(s.bytes).toBeLessThan(1024 * 1024);
@@ -62,7 +63,7 @@ describe('Packets vocabulary bank', () => {
         expect(typeof s.def).toBe('string');
         expect(s.def.length).toBeGreaterThan(3);
         expect(typeof s.example).toBe('string');
-        expect(['simple', 'wiktionary', 'wordnet']).toContain(s.source);
+        expect(['simple', 'wiktionary', 'wordnet', 'alloflow']).toContain(s.source);
         expect(typeof s.edited).toBe('boolean');
         expect(['good', 'fixed', '']).toContain(s.checked);
         expect(s.common).toBe(i + 1);
@@ -119,8 +120,9 @@ describe('Packets vocabulary bank', () => {
     for (const id of ['egg|n|2', 'female|n|1', 'male|n|1']) expect(wrong.has(id), id).toBe(false);
   });
 
-  it('keeps at least 4 wrong answers on the senses checked for young readers (the size trim never takes them)', () => {
-    const k3 = Object.entries(curation.words).filter(([, C]) => C.batch > 30).map(([w]) => w);
+  it('keeps at least 4 wrong answers on the senses from the earlier young-reader review', () => {
+    // 2026-11-13: batches 31–61 are the earlier K–3 review. Batch 62 checks the school meanings below.
+    const k3 = Object.entries(curation.words).filter(([, C]) => C.batch > 30 && C.batch <= 61).map(([w]) => w);
     expect(k3.length).toBeGreaterThan(400);
     const thin = k3.flatMap((w) => bank.senses(w).filter((s) => s.word === w && s.distractors.length < 4).map((s) => s.id));
     expect(thin).toEqual([]);
@@ -213,15 +215,64 @@ describe('Packets vocabulary bank', () => {
     expect(bank.sense('no|n|1')).toBe(null);
   });
 
-  // 2026-11-13: an irregular form whose base word was trimmed out (algae, bred) gave head() a word with no entry,
-  // and senses() threw. Every form in the file now leads to a headword, or to nothing.
+  // 2026-11-13: an irregular form whose base word was trimmed out gave head() a word with no entry.
+  // The school vocabulary pass adds algae as a headword and checks the targets in the forms table.
   it('never sends an irregular form to a word that is not in the bank', () => {
     const forms = [];
-    bank.shards.forEach((s) => { const d = JSON.parse(read(s.url)); if (d.forms) d.forms.split(',').forEach((x) => forms.push(x.split(' ')[0])); });
+    bank.shards.forEach((s) => { const d = JSON.parse(read(s.url)); if (d.forms) d.forms.split(',').forEach((x) => forms.push(x.split(' '))); });
     expect(forms.length).toBeGreaterThan(100);
-    const bad = forms.filter((f) => { try { const h = bank.head(f); bank.senses(f); return h !== null && !bank.words().includes(h); } catch (_) { return true; } });
-    expect(bad).toEqual([]);
-    expect(bank.senses('algae')).toEqual([]);
+    const headwords = new Set(words);
+    expect(forms.filter(([form, base]) => !headwords.has(base) || bank.head(form) !== base)).toEqual([]);
+    expect(bank.senses('algae')[0].def).toMatch(/grow in water/);
+  });
+
+  it('looks up attested comparatives and superlatives without guessing that -er nouns are verbs', () => {
+    for (const [form, head] of [
+      ['larger', 'large'], ['heavier', 'heavy'], ['heaviest', 'heavy'], ['faster', 'fast'], ['hardest', 'hard'],
+      ['happier', 'happy'], ['happiest', 'happy'], ['easier', 'easy'], ['easiest', 'easy'],
+      ['older', 'old'], ['oldest', 'old'], ['earliest', 'early'], ['angrier', 'angry'],
+    ]) {
+      expect(bank.head(form), form).toBe(head);
+    }
+    expect(bank.head('decomposers')).toBe('decomposer');
+    expect(bank.head('decomposed')).toBe('decompose');
+    expect(bank.head('recalculator')).toBeNull();
+    expect(bank.head('condenser')).toBeNull();
+    expect(bank.head('pollinator')).toBeNull();
+    const fallback = new Function('window', 'module', read('packets_vocab_bank_en.js'));
+    const root = {};
+    fallback(root, undefined);
+    for (const [i, shard] of bank.shards.entries()) {
+      const data = JSON.parse(read(shard.url));
+      data.words = data.words.map(([word, senses]) => [word === 'decomposer' ? 'placeholder' : word, senses]);
+      root.AlloVocabBank.add(data, i + 1);
+    }
+    expect(root.AlloVocabBank.head('decomposer')).toBeNull();
+  });
+
+  it('keeps the reviewed science and social-studies meanings first with their reviewed wrong answers', () => {
+    const unit = Object.entries(curation.words).filter(([, entry]) => entry.unit);
+    expect(unit.length).toBeGreaterThanOrEqual(350);
+    for (const [word, entry] of unit) {
+      const first = bank.senses(word)[0];
+      expect(bank.head(word), word).toBe(word);
+      expect(first, word).toMatchObject({ id: entry.order[0], pos: POS[entry.unit], checked: 'fixed' });
+      const reviewed = entry.senses[first.id].distractors;
+      expect(first.distractors.length, word).toBeGreaterThanOrEqual(4);
+      expect(first.distractors.filter((id) => !reviewed.includes(id)), word).toEqual([]);
+    }
+    for (const [word, meaning] of [
+      ['decomposer', /breaks down the remains/], ['consumer', /gets energy by feeding/], ['producer', /make its own food/],
+      ['herbivore', /plants/], ['carnivore', /other animals/], ['omnivore', /both plant and animal/],
+      ['biome', /climate/], ['symbiosis', /two different species/], ['chlorophyll', /absorbs light/],
+      ['federalism', /national government and states/], ['latitude', /north or south/],
+      ['thermometer', /temperature/], ['neutron', /no electric charge/], ['tundra', /treeless biome/],
+      ['pulley', /grooved wheel/], ['translucent', /some light pass through/], ['bill', /proposal for a law/],
+    ]) expect(bank.senses(word)[0].def, word).toMatch(meaning);
+    expect(bank.senses('consumer')[1].def).toMatch(/buys or uses goods/);
+    expect(bank.senses('producer')[1].def).toMatch(/makes goods or provides services/);
+    expect(bank.senses('plate')[1].def).toMatch(/moving slabs of rock/);
+    expect(bank.senses('branch')[1].def).toMatch(/parts of a government/);
   });
 
   it('applies the corrections file: school meaning first, wrong text fixed, rejects left out', () => {
@@ -245,6 +296,7 @@ describe('Packets vocabulary bank', () => {
     expect(sets).toMatch(/Simple English Wiktionary CC BY-SA 4\.0/);
     expect(sets).toMatch(/Open English WordNet 2025 CC BY 4\.0/);
     expect(sets).toMatch(/Princeton WordNet/);
+    expect(bank.senses('decomposer')[0].source).toBe('alloflow');
     bank.credits.forEach((c) => { expect(c.url).toMatch(/^https:\/\//); expect(c.deed).toMatch(/^https:\/\//); expect(c.author).toBeTruthy(); });
     expect(bank.checking).toMatch(/AI assistance/);
     expect(bank.checking).toMatch(/Not reviewed by a person/);

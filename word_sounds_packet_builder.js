@@ -22,6 +22,8 @@
   // The older rule (place in the reading-library frequency list, built from old books). It applies
   // only when the word list carries no child-book column, or when the caller passes maxRank.
   var DEFAULT_MAX_RANK = 4000;
+  // pickWords: the most common words first, mixed by the seed in runs of this many (see the end of pickWords).
+  var COMMON_BAND = 30;
 
   // The notice of data/vendor/cmudict/LICENSE, word for word: the sound labels come from CMUdict.
   var CMUDICT_NOTICE = [
@@ -412,6 +414,162 @@
     var counting = boards.counting;
     var numbers = counting ? core.countingChoices(Number(counting.answer), level) : null;
     if (numbers) counting.options = numbers;
+  }
+
+  // ---------------------------------------------------------------------------
+  // One right answer (2026-11-13, the answer audit: C:\tmp\packets_build_1111\answer_audit\RESULTS.txt). A file is heard:
+  // its choices are clips, not printed words. So after the boards are made (and trimmed by Choices) each one is judged
+  // by the sound dictionary: a wrong choice that sounds the same as the answer (sun, son), or rhymes with the word, in
+  // any way the dictionary says it (a recording says one of them: bow, read), or is
+  // graded right by the player's spelling rule (rolled, glowed: both end in -ed) is taken off; a Word Families board
+  // whose ending, said alone, is another sound (-own for down) is left out; a missing letter that spells a word that
+  // sounds the same (see: "sea") is swapped for another letter of its kind; a word that sounds like another word a child
+  // knows (bare, bear) gets no typed spelling, since hearing it cannot tell which spelling is meant. A board left with
+  // one choice is left out. Each change happens only where the dictionary says so; every other board is as it was.
+  // ---------------------------------------------------------------------------
+  var SAME_SOUND = { ir: 'er', ur: 'er' };   // the dictionary spells the sound of her three ways (bird, burn, her)
+  var GUARD_VOWELS = { a: 1, e: 1, i: 1, o: 1, u: 1, ay: 1, ee: 1, ie: 1, oa: 1, oo: 1, oo_short: 1, oy: 1, ow: 1, aw: 1, ar: 1, or: 1, er: 1, ir: 1, ur: 1, air: 1, ear: 1, schwa: 1 };
+  function soundOf(label) { var l = String(label == null ? '' : label); return own(SAME_SOUND, l) ? SAME_SOUND[l] : l; }
+  // The player's spelling rime (word_sounds_take_home/adapters/rhyming.js, rimeOf): from the last vowel letters on.
+  function spelledRime(word) {
+    var s = String(word || '').toLowerCase(), vowels = 'aeiou', start = s.length;
+    for (var i = s.length - 1; i >= 0; i--) {
+      if (vowels.indexOf(s[i]) >= 0) { while (i > 0 && vowels.indexOf(s[i - 1]) >= 0) i--; start = i; break; }
+    }
+    return s.slice(start);
+  }
+  var familiarTables = [];
+  function answerTools(core, wordlist) {
+    var prons = {};
+    var pron = function (word) {
+      var w = String(word == null ? '' : word).trim().toLowerCase();
+      if (own(prons, w)) return prons[w];
+      var entry = null;
+      try { entry = core.dictionarySounds(w); } catch (_) { entry = null; }
+      return (prons[w] = entry && Array.isArray(entry.sounds) && entry.sounds.length ? entry.sounds.map(soundOf) : null);
+    };
+    var key = function (word) { var p = pron(word); return p ? p.join(' ') : ''; };
+    var sameSound = function (a, b) { var x = key(a); return !!x && x === key(b); };
+    var vowelsAt = function (p) { var out = []; p.forEach(function (s, i) { if (own(GUARD_VOWELS, s)) out.push(i); }); return out; };
+    var rimeFrom = function (p, k) { var v = vowelsAt(p); return v.length >= k ? p.slice(v[v.length - k]).join(' ') : ''; };
+    var lastRime = function (word) { var p = pron(word); return p ? rimeFrom(p, 1) : ''; };
+    // A rhyme by sound: the sounds from the last vowel on, or from the one before it when both words are longer.
+    var rhymePair = function (x, y) {
+      if (!x || !y || x.join(' ') === y.join(' ')) return false;
+      var k = vowelsAt(x).length > 1 && vowelsAt(y).length > 1 ? 2 : 1;
+      var r = rimeFrom(x, k);
+      return !!r && r === rimeFrom(y, k);
+    };
+    var rhymes = function (a, b) { return rhymePair(pron(a), pron(b)); };
+    // Every way the dictionary says a word: a recording says one of them (bow, read, just), so a wrong choice is judged by all.
+    var every = {};
+    var pronsOf = function (word) {
+      var w = String(word == null ? '' : word).trim().toLowerCase();
+      if (own(every, w)) return every[w];
+      var entry = null;
+      try { entry = core.dictionarySounds(w); } catch (_) { entry = null; }
+      var list = entry && Array.isArray(entry.sounds) && entry.sounds.length ? [entry.sounds].concat(Array.isArray(entry.alternates) ? entry.alternates : []) : [];
+      return (every[w] = list.filter(function (p) { return Array.isArray(p) && p.length; }).map(function (p) { return p.map(soundOf); }));
+    };
+    var maySound = function (a, b) { return pronsOf(a).some(function (x) { return pronsOf(b).some(function (y) { return x.join(' ') === y.join(' '); }); }); };
+    var mayRhyme = function (a, b) { return pronsOf(a).some(function (x) { return pronsOf(b).some(function (y) { return rhymePair(x, y); }); }); };
+    // Words a child knows that sound like this one: the picker's familiar words (word_sounds_wordlist_en.js), never a
+    // blocked or British one (a soft word is still a word a child may type). Made once for each word list.
+    var familiar = null;
+    var homophones = function (word) {
+      if (!wordlist || typeof wordlist.rows !== 'function') return [];
+      if (!familiar) {
+        for (var t = 0; t < familiarTables.length; t++) if (familiarTables[t].wordlist === wordlist && familiarTables[t].core === core) familiar = familiarTables[t].byKey;
+        if (!familiar) {
+          familiar = {};
+          wordlist.rows().forEach(function (row) {
+            if (!row || row.blocked || row.nearBlocked || row.british || !(row.known || (row.zipf >= DEFAULT_MIN_ZIPF && row.books >= DEFAULT_MIN_BOOKS))) return;
+            var k = key(row.word);
+            if (k) (familiar[k] = familiar[k] || []).push(row.word);
+          });
+          familiarTables.push({ wordlist: wordlist, core: core, byKey: familiar });
+        }
+      }
+      var w = String(word || '').toLowerCase(), k = key(w);
+      return k && own(familiar, k) ? familiar[k].filter(function (x) { return x !== w; }) : [];
+    };
+    return { pron: pron, sameSound: sameSound, rhymes: rhymes, lastRime: lastRime, homophones: homophones, maySound: maySound, mayRhyme: mayRhyme };
+  }
+  // Judges the boards of one word (item.activityItems, already only the activities asked) and changes them in place.
+  // drop(activity, reason): the board is left out, with that reason.
+  function oneRightAnswer(item, core, tools, drop) {
+    var boards = item.activityItems || {};
+    var word = String(item.word || '').toLowerCase();
+    var quote = function (list) { return list.map(function (w) { return '"' + w + '"'; }).join(' and '); };
+    // Choices that are not the answer: off when bad(choice) or when they sound like a wrong choice already kept.
+    var keep = function (options, answer, bad) {
+      var kept = [];
+      options.forEach(function (o) {
+        var t = String(o).toLowerCase();
+        if (t === String(answer).toLowerCase()) { kept.push(o); return; }
+        if (bad(t)) return;
+        if (kept.some(function (k) { var u = String(k).toLowerCase(); return u !== String(answer).toLowerCase() && tools.maySound(u, t); })) return;
+        kept.push(o);
+      });
+      return kept;
+    };
+    var iso = boards.isolation;
+    if (iso && Array.isArray(iso.options)) {
+      var right = iso.correctSound, seen = {};
+      iso.options = iso.options.filter(function (o) {
+        var s = soundOf(o);
+        if (o !== right && (s === soundOf(right) || core.soundAnswerMatches(o, right))) return false;
+        if (own(seen, s) && o !== right) return false;
+        seen[s] = true;
+        return true;
+      });
+      if (iso.options.length < 2) drop('isolation', 'the sounds to choose from were one sound');
+    }
+    var blend = boards.blending;
+    if (blend && Array.isArray(blend.options)) {
+      blend.options = keep(blend.options, blend.answer, function (t) { return tools.maySound(t, blend.answer); });
+      if (blend.options.length < 2) drop('blending', 'every other word sounds the same as this one');
+    }
+    var rhyme = boards.rhyming;
+    if (rhyme && Array.isArray(rhyme.options) && rhyme.answer) {
+      var rime = spelledRime(word);
+      rhyme.options = keep(rhyme.options, rhyme.answer, function (t) {
+        return t === word || tools.maySound(t, word) || tools.maySound(t, rhyme.answer) || tools.mayRhyme(word, t) || (rime.length >= 2 && spelledRime(t) === rime);
+      });
+      if (rhyme.options.length < 2) drop('rhyming', 'every other word rhymes with it, or is spelled as if it did');
+    }
+    var family = boards.word_families;
+    if (family && Array.isArray(family.options)) {
+      // The family's sound: the ending as the file says it (the ending played as a word), else the sounds from the last vowel.
+      var mine = tools.pron(word), said = tools.pron(family.rime);
+      var tail = function (p, n) { return p && p.length >= n ? p.slice(p.length - n).join(' ') : ''; };
+      var heard = said ? said.join(' ') : tools.lastRime(word);
+      var endsLike = function (w) { var p = tools.pron(w); return !!p && !!heard && tail(p, heard.split(' ').length) === heard; };
+      if (mine && said && tail(mine, said.length) !== heard) drop('word_families', 'the ending -' + family.rime + ', said alone, does not sound like the end of "' + word + '"');
+      else if (heard) {
+        family.options = family.options.filter(endsLike);
+        family.distractors = (family.distractors || []).filter(function (d) { return !endsLike(d) && !family.options.some(function (m) { return tools.sameSound(m, d); }); });
+        if (!family.options.length) drop('word_families', 'no word of the family sounds like "' + word + '"');
+        else if (typeof core.validWordFamilyBoard === 'function' && !core.validWordFamilyBoard(family, word)) drop('word_families', 'every other word sounds like the family');
+      }
+    }
+    // Missing Letter: the app's letters (createPackLogic) can spell a word that sounds the same (see: "sea"). That letter
+    // is swapped for the next one of its kind that does not; the app's own Missing Letter still offers it.
+    var letter = boards.missing_letter;
+    if (letter && Array.isArray(letter.options) && letter.correctLetter) {
+      var at = letter.hiddenIndex, ok = letter.correctLetter;
+      var spells = function (o) { var other = word.slice(0, at) + o + word.slice(at + 1); return tools.homophones(word).indexOf(other) >= 0; };
+      var vowel = 'aeiou'.indexOf(ok) >= 0 || (ok === 'y' && !/[aeiou]/.test(word));
+      var spare = (vowel ? 'aeiou' : 'bcdfghjklmnprstvwz').split('').filter(function (o) { return o !== ok && letter.options.indexOf(o) < 0 && !spells(o); });
+      letter.options = letter.options.map(function (o) { return o !== ok && spells(o) ? spare.shift() || null : o; }).filter(Boolean);
+      if (letter.options.length < 2) drop('missing_letter', 'every other letter spells a word that sounds the same');
+    }
+    var same = (boards.spelling_bee || boards.orthography) ? tools.homophones(word) : [];
+    if (same.length) {
+      var why = 'it sounds the same as ' + quote(same.slice(0, 3)) + ', so a student who hears it cannot tell which spelling is meant';
+      if (boards.spelling_bee) drop('spelling_bee', why);
+      if (boards.orthography) drop('orthography', why);
+    }
   }
 
   // ---------------------------------------------------------------------------
@@ -991,9 +1149,15 @@
         pictureFiles[item.word] = String(symbol.file || '');
         pictureSets[item.word] = symbol.set === 'openmoji' ? 'openmoji' : 'mulberry';
       });
+      var tools = answerTools(soundCore, wordlist);
+      // What oneRightAnswer left out. Spelling Bee and Sight & Spell need no board (they make the question from the word), so
+      // the loader is handed their prepare() with these words refused (lessonFromPack's adapters option).
+      var guarded = {};
       rows.forEach(function (item) {
         item.activityItems = Object.fromEntries(Object.entries(item.activityItems || {}).filter(function (pair) { return activities.indexOf(pair[0]) >= 0; }));
         item._preparedActivities = activities;
+        // One right answer on every board, judged by sound (see oneRightAnswer).
+        oneRightAnswer(item, soundCore, tools, function (id, reason) { delete item.activityItems[id]; guarded[id + '|' + item.word] = true; except(item.word, id, reason); });
         // Last guard: a blocked word on a board removes that board. So does a soft word, unless it is one
         // of the words the teacher gave (their own word may sit among the choices of another of their words).
         activities.forEach(function (id) {
@@ -1018,8 +1182,15 @@
         } });
       };
       var lessonOptions = function (banks) {
-        return { core: choiceCore, banks: banks, isEnglish: true, showLetters: !!opts.showLetters, activities: activities, title: title,
+        var made = { core: choiceCore, banks: banks, isEnglish: true, showLetters: !!opts.showLetters, activities: activities, title: title,
           lessonId: 'pb-' + hex8(fnv1a(JSON.stringify([VERSION, String(seed), title, words, activities]))) };
+        var refused = activities.filter(function (id) { return Object.keys(guarded).some(function (k) { return k.indexOf(id + '|') === 0; }); });
+        if (refused.length) made.adapters = refused.reduce(function (acc, id) {
+          var base = adapters[id];
+          acc[id] = Object.assign({}, base, { prepare: function (w, env) { return own(guarded, id + '|' + String(env.word).toLowerCase()) ? { missing: ['one right answer'] } : base.prepare(w, env); } });
+          return acc;
+        }, {});
+        return made;
       };
       if (!activities.length || !rows.length) return { wanted: wanted, lessonOptions: lessonOptions };
       loader.lessonFromPack(rows, lessonOptions({ words: probe('words'), phonemes: probe('phonemes'), isolation: probe('isolation'), instructions: probe('instructions') }));
@@ -1340,7 +1511,7 @@
     };
     // usedOnlyWhenTyped: the blocklist file's [soft] words. The picker never returns one, whatever is asked.
     var reasons = { fitsTheCriteria: 0, blocked: 0, soundsLikeABlockedWord: 0, oneDroppedSoundFromABlockedWord: 0, usedOnlyWhenTyped: 0, britishSpellingOrWord: 0, notFamiliarEnough: 0, noRecording: 0, excluded: 0 };
-    var pool = [];
+    var pool = [], commonness = {};
     wordlist.rows().forEach(function (row) {
       if (!/^[a-z]{2,10}$/.test(row.word) || !/[aeiouy]/.test(row.word)) return;
       if (c.sounds > 0 && row.sounds !== c.sounds) return;
@@ -1373,13 +1544,24 @@
       if (requireClip && !row.hasClip) { reasons.noRecording++; return; }
       if (exclude[row.word]) { reasons.excluded++; return; }
       pool.push(row.word);
+      // How common the word is: its Zipf in the children's books (CYP-LEX), else its reading-library rank.
+      commonness[row.word] = hasChildBooks ? Number(row.zipf) || 0 : row.rank > 0 ? -row.rank : -1e9;
     });
     pool.sort();
     var random = mulberry32(seedFor(seed, 'pickWords'));
     var order = pool.slice();
-    for (var i = order.length - 1; i > 0; i--) {
-      var j = Math.floor(random() * (i + 1));
-      var swap = order[i]; order[i] = order[j]; order[j] = swap;
+    // 2026-11-13 (owner-approved, teacher-journey L3): the most common words first. The pool goes in order of how common
+    // each word is (A to Z among equals), then each run of COMMON_BAND words is mixed by the seed, so versions A, B and C
+    // differ while a file starts with the words children meet most ("had, red, cat" before "rig, rot"). mix: 'any' mixes
+    // the whole pool, as before.
+    var band = c.mix === 'any' ? order.length : COMMON_BAND;
+    if (band < order.length) order.sort(function (a, b) { return commonness[b] - commonness[a] || (a < b ? -1 : a > b ? 1 : 0); });
+    for (var from = 0; from < order.length; from += band) {
+      var to = Math.min(order.length, from + band);
+      for (var i = to - 1; i > from; i--) {
+        var j = from + Math.floor(random() * (i - from + 1));
+        var swap = order[i]; order[i] = order[j]; order[j] = swap;
+      }
     }
     var used = { count: count, sounds: c.sounds || null, shape: shape || null, targetSound: target || null, spellingPattern: spelling || null,
       position: target || spelling ? position : null, stage: stage ? stage.id : null, syllables: syllables || null,

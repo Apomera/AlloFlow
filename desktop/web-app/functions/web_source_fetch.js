@@ -45,9 +45,10 @@ const blockedIpv6 = new net.BlockList();
   ["240.0.0.0", 4],
 ].forEach(([address, prefix]) => blockedIpv4.addSubnet(address, prefix, "ipv4"));
 [
-  ["::", 128],
+  ["::", 96],
   ["::1", 128],
   ["::ffff:0:0", 96],
+  ["::ffff:0:0:0", 96],
   ["64:ff9b::", 96],
   ["64:ff9b:1::", 48],
   ["100::", 64],

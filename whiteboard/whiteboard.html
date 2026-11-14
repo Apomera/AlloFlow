@@ -872,6 +872,7 @@
       if (!d || typeof d !== 'object') return;
       if (imageSlot) {
         if (ev.origin !== slotHost || d.token !== imageSlot) return;
+        if (!isTrustedOpenerOrigin(ev.origin) && !isDeclaredCanvasOpener(ev.origin, declaredHost)) return;
         if (d.type === 'alloasset-ack' && !slotInitialized) {
           slotInitialized = true; openerOrigin = ev.origin; setLinked(true);
           var name = document.getElementById('nameInput'); if (name) name.value = String(d.title || 'Drawing').slice(0, 120);

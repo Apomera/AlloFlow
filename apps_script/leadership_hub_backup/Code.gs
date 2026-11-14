@@ -47,21 +47,39 @@ function lhbJson_(payload) {
     .setMimeType(ContentService.MimeType.JSON);
 }
 
-/** Run ONCE from the editor after pasting: mints the token shown to paste into AlloFlow. */
-function setup() {
-  var props = lhbProps_();
-  var token = props.getProperty(LHB_PROP_TOKEN);
-  if (!token) {
-    token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
-    props.setProperty(LHB_PROP_TOKEN, token);
-  }
-  var folder = lhbFolder_();
-  Logger.log('Leadership Hub backup token (paste into AlloFlow): ' + token);
-  Logger.log('Backup folder ready: ' + folder.getName() + ' (' + folder.getId() + ')');
-  return token;
+function lhbTimingSafeTokenEq(suppliedRaw, expectedRaw) {
+  var supplied = String(suppliedRaw || '');
+  var expected = String(expectedRaw || '');
+  if (!supplied || !expected) return false;
+  var d1 = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, supplied, Utilities.Charset.UTF_8);
+  var d2 = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, expected, Utilities.Charset.UTF_8);
+  if (d1.length !== d2.length) return false;
+  var diff = 0;
+  for (var i = 0; i < d1.length; i++) diff |= (d1[i] & 0xff) ^ (d2[i] & 0xff);
+  return diff === 0;
 }
 
-/** Run from the editor to invalidate a leaked token; run setup() again for a new one. */
+/** Run ONCE from the editor after pasting: mints the token stored in Script Properties. */
+function setup() {
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(5000)) throw new Error('Leadership Hub backup setup is busy. Retry.');
+  try {
+    var props = lhbProps_();
+    var token = props.getProperty(LHB_PROP_TOKEN);
+    if (!token) {
+      token = Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
+      props.setProperty(LHB_PROP_TOKEN, token);
+    }
+    var folder = lhbFolder_();
+    Logger.log('Leadership Hub backup token configured in Project Settings > Script Properties (' + LHB_PROP_TOKEN + ').');
+    Logger.log('Backup folder ready: ' + folder.getName() + ' (' + folder.getId() + ')');
+    return 'Setup complete. Copy ' + LHB_PROP_TOKEN + ' from Project Settings > Script Properties into AlloFlow.';
+  } finally {
+    lock.releaseLock();
+  }
+}
+
+/** Run from the editor to invalidate a leaked token; mints a fresh one in Script Properties. */
 function rotateToken() {
   lhbProps_().deleteProperty(LHB_PROP_TOKEN);
   return setup();
@@ -80,6 +98,11 @@ function lhbFolder_() {
 }
 
 function doPost(e) {
+  var cache = CacheService.getScriptCache();
+  var failCount = parseInt((cache && cache.get('lhb_auth_fail')) || '0', 10) || 0;
+  if (failCount >= 20) {
+    return lhbJson_({ ok: false, error: 'rate-limited' });
+  }
   var data;
   try {
     data = JSON.parse((e && e.postData && e.postData.contents) || '{}');
@@ -89,7 +112,10 @@ function doPost(e) {
   var props = lhbProps_();
   var token = props.getProperty(LHB_PROP_TOKEN);
   if (!token) return lhbJson_({ ok: false, error: 'not-set-up', hint: 'Run setup() in the script editor first.' });
-  if (String(data.token || '') !== token) return lhbJson_({ ok: false, error: 'bad-token' });
+  if (!lhbTimingSafeTokenEq(data.token, token)) {
+    if (cache) cache.put('lhb_auth_fail', String(failCount + 1), 60);
+    return lhbJson_({ ok: false, error: 'bad-token' });
+  }
 
   var action = String(data.action || '');
   if (action === 'ping') {

@@ -80,7 +80,7 @@ describe('Word Sounds device voice for student AI-off learners', () => {
   it('plays the on-device clip and skips the browser voice; never stores it or asks the cloud', async () => {
     const deps = legDeps();
     await expect(studentLeg()(deps)).resolves.toBe('blob:kokoro');
-    expect(deps.callTTS).toHaveBeenCalledWith('ship', 'af_heart', 1, { language: 'English', maxRetries: 0 });
+    expect(deps.callTTS).toHaveBeenCalledWith('ship', 'af_heart', 1, { language: 'English', maxRetries: 0, word: true });
     expect(deps.loadAndPlay).toHaveBeenCalledWith('blob:kokoro');
     expect(deps.wsSpeakDeviceVoice).not.toHaveBeenCalled();
     expect(between('          let onDeviceFailed = false;', '          if (playImmediately && !isPhoneme && ttsWholeWord && wsStudentDeviceVoiceOnly()')).not.toContain('saveAudioToStorage');

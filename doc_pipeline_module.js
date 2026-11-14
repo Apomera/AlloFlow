@@ -66,6 +66,68 @@ function _alloParsePreviewMarkdown(text) {
 }
 // END SHARED DIRECTIONS MARKDOWN
 
+function _alloParseGfmTableBlock(tableLines, cellFmt) {
+  const parseCells = (line) => {
+    let raw = String(line || '').trim();
+    if (raw.startsWith('|')) raw = raw.slice(1);
+    if (raw.endsWith('|')) raw = raw.slice(0, -1);
+    return raw.split('|').map((c) => c.trim());
+  };
+  if (!Array.isArray(tableLines) || tableLines.length < 2) return null;
+  const headers = parseCells(tableLines[0]);
+  const aligns = parseCells(tableLines[1]);
+  if (!headers.length || aligns.length < 1 || !aligns.every((a) => /^:?-{3,}:?$/.test(a))) return null;
+  const alignStyle = (i) => {
+    const tok = aligns[i] || '';
+    if (tok.startsWith(':') && tok.endsWith(':')) return 'text-align:center;';
+    if (tok.endsWith(':')) return 'text-align:right;';
+    return 'text-align:left;';
+  };
+  const _tblEsc = (v) => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  const fmt = typeof cellFmt === 'function' ? cellFmt : _tblEsc;
+  const thead = '<thead><tr>' + headers.map((h, i) => '<th scope="col" style="padding:8px 10px;border:1px solid #cbd5e1;background:#f8fafc;font-weight:700;' + alignStyle(i) + '">' + fmt(h) + '</th>').join('') + '</tr></thead>';
+  const rows = tableLines.slice(2).map((ln) => {
+    const cells = parseCells(ln);
+    return '<tr>' + headers.map((_, i) => '<td style="padding:8px 10px;border:1px solid #cbd5e1;' + alignStyle(i) + '">' + fmt(cells[i] || '') + '</td>').join('') + '</tr>';
+  }).join('');
+  return '<div style="overflow-x:auto;margin:12px 0;"><table class="alloflow-md-table" style="width:100%;border-collapse:collapse;font-size:0.95em;">' + thead + (rows ? '<tbody>' + rows + '</tbody>' : '') + '</table></div>';
+}
+
+function _alloParseDocDirectionsMarkdown(text) {
+  const s = String(text || '');
+  if (!/^\s*\|.+\|\s*$/m.test(s)) return _alloParsePreviewMarkdown(s);
+  const lines = s.replace(/\r\n?/g, '\n').split('\n');
+  const out = [];
+  let buf = [];
+  const flushBuf = () => {
+    if (!buf.length) return;
+    out.push(_alloParsePreviewMarkdown(buf.join('\n')));
+    buf = [];
+  };
+  for (let i = 0; i < lines.length; i++) {
+    const cur = lines[i];
+    const next = lines[i + 1] || '';
+    if (/^\s*\|.+\|\s*$/.test(cur) && /^\s*\|\s*:?-{3,}:?(?:\s*\|\s*:?-{3,}:?)*\s*\|?\s*$/.test(next)) {
+      flushBuf();
+      const tbl = [cur, next];
+      i += 2;
+      while (i < lines.length && /^\s*\|.+\|\s*$/.test(lines[i])) {
+        tbl.push(lines[i]);
+        i++;
+      }
+      i--;
+      const _cellEsc = (v) => String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      const rendered = _alloParseGfmTableBlock(tbl, (cell) => _cellEsc(cell).replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>').replace(/\*([^*]+)\*/g, '<em>$1</em>'));
+      if (rendered) out.push(rendered);
+      else out.push(_alloParsePreviewMarkdown(tbl.join('\n')));
+    } else {
+      buf.push(cur);
+    }
+  }
+  flushBuf();
+  return out.join('\n');
+}
+
 // doc_pipeline_source.jsx — PDF Accessibility Pipeline + Document Generation
 // Pure function extraction — no hooks, no React state, no render JSX.
 // All functions receive their dependencies as parameters.
@@ -47027,36 +47089,154 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   };
 
   // ── Document Generation (parseMarkdownToHTML, generateResourceHTML, etc.) ──
-  const parseMarkdownToHTML = (text) => {
+  const _renderChartBlock = (rawJson) => {
+      const escAttr = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+      let spec = null;
+      try { spec = JSON.parse(rawJson); } catch (_) { spec = null; }
+      if (!spec || typeof spec !== 'object') {
+          return '<div class="alloflow-inline-chart-fallback" style="border:1px solid #cbd5e1;border-radius:8px;padding:10px 14px;margin:14px 0;background:#f8fafc;font-size:0.9em;color:#475569;">' + escAttr(rawJson) + '</div>';
+      }
+      const chartType = String(spec.type || spec.chartType || 'bar').toLowerCase();
+      const title = String(spec.title || spec.caption || 'Data chart');
+      let points = [];
+      if (Array.isArray(spec.data) && spec.data.length) {
+          points = spec.data.map((d, i) => ({
+              label: String((d && (d.label ?? d.name ?? d.x ?? d.category)) ?? ('Item ' + (i + 1))),
+              value: Number((d && (d.value ?? d.y ?? d.count)) ?? 0)
+          }));
+      } else if (Array.isArray(spec.labels) && Array.isArray(spec.values)) {
+          points = spec.labels.map((l, i) => ({ label: String(l ?? ('Item ' + (i + 1))), value: Number(spec.values[i] ?? 0) }));
+      } else if (Array.isArray(spec.series) && spec.series[0] && Array.isArray(spec.series[0].values || spec.series[0].data)) {
+          const vals = spec.series[0].values || spec.series[0].data || [];
+          const lbls = Array.isArray(spec.labels) ? spec.labels : vals.map((_, i) => 'Item ' + (i + 1));
+          points = vals.map((v, i) => ({ label: String(lbls[i] ?? ('Item ' + (i + 1))), value: Number(v && typeof v === 'object' ? (v.value ?? v.y ?? 0) : v) }));
+      }
+      points = points.filter((p) => Number.isFinite(p.value));
+      if (!points.length) {
+          return '<div class="alloflow-inline-chart-fallback" style="border:1px solid #cbd5e1;border-radius:8px;padding:10px 14px;margin:14px 0;background:#f8fafc;font-size:0.9em;color:#475569;">' + escAttr(title) + '</div>';
+      }
+      const palette = ['#4f46e5', '#0891b2', '#059669', '#d97706', '#dc2626', '#7c3aed', '#0284c7', '#be185d'];
+      const unit = spec.unit ? ' ' + String(spec.unit) : '';
+      const xLabel = spec.xLabel ? String(spec.xLabel) : 'Category';
+      const yLabel = spec.yLabel ? String(spec.yLabel) : 'Value';
+      const summaryText = title + ': ' + points.map((p) => p.label + ' ' + p.value + unit).join(', ');
+      let svgHtml = '';
+      if (chartType === 'pie' || chartType === 'donut') {
+          const total = points.reduce((s, p) => s + Math.max(0, p.value), 0) || 1;
+          const cx = 110, cy = 100, r = 74, innerR = chartType === 'donut' ? 38 : 0;
+          let angle = -Math.PI / 2;
+          const slices = points.map((p, idx) => {
+              const frac = Math.max(0, p.value) / total;
+              const sweep = frac * Math.PI * 2;
+              const endAngle = angle + sweep;
+              const largeArc = sweep > Math.PI ? 1 : 0;
+              const x1 = (cx + r * Math.cos(angle)).toFixed(2), y1 = (cy + r * Math.sin(angle)).toFixed(2);
+              const x2 = (cx + r * Math.cos(endAngle)).toFixed(2), y2 = (cy + r * Math.sin(endAngle)).toFixed(2);
+              let d = '';
+              if (points.length === 1 || frac >= 0.9999) {
+                  d = 'M ' + cx + ' ' + (cy - r) + ' A ' + r + ' ' + r + ' 0 1 1 ' + (cx - 0.01) + ' ' + (cy - r) + ' Z';
+              } else if (innerR > 0) {
+                  const ix1 = (cx + innerR * Math.cos(endAngle)).toFixed(2), iy1 = (cy + innerR * Math.sin(endAngle)).toFixed(2);
+                  const ix2 = (cx + innerR * Math.cos(angle)).toFixed(2), iy2 = (cy + innerR * Math.sin(angle)).toFixed(2);
+                  d = 'M ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' L ' + ix1 + ' ' + iy1 + ' A ' + innerR + ' ' + innerR + ' 0 ' + largeArc + ' 0 ' + ix2 + ' ' + iy2 + ' Z';
+              } else {
+                  d = 'M ' + cx + ' ' + cy + ' L ' + x1 + ' ' + y1 + ' A ' + r + ' ' + r + ' 0 ' + largeArc + ' 1 ' + x2 + ' ' + y2 + ' Z';
+              }
+              angle = endAngle;
+              return '<path d="' + d + '" fill="' + palette[idx % palette.length] + '" stroke="#ffffff" stroke-width="2"><title>' + escAttr(p.label + ': ' + p.value + unit) + '</title></path>';
+          }).join('');
+          const legend = points.map((p, idx) => {
+              const ly = 26 + idx * 20;
+              const pct = Math.round((Math.max(0, p.value) / total) * 100);
+              return '<rect x="215" y="' + (ly - 10) + '" width="12" height="12" rx="2" fill="' + palette[idx % palette.length] + '"/><text x="233" y="' + ly + '" font-size="11" fill="currentColor">' + escAttr(p.label.slice(0, 22) + ' (' + pct + '%)') + '</text>';
+          }).join('');
+          const h = Math.max(200, 36 + points.length * 20);
+          svgHtml = '<svg role="img" aria-label="' + escAttr(summaryText) + '" viewBox="0 0 430 ' + h + '" style="width:100%;max-width:540px;height:auto;display:block;margin:0 auto;color:#1e293b;">' + slices + legend + '</svg>';
+      } else {
+          const w = 520, h = 230, padL = 52, padR = 20, padT = 22, padB = 46;
+          const plotW = w - padL - padR, plotH = h - padT - padB;
+          const maxV = Math.max(1, ...points.map((p) => p.value));
+          const minV = Math.min(0, ...points.map((p) => p.value));
+          const span = Math.max(1e-6, maxV - minV);
+          const zeroY = padT + plotH * (maxV / span);
+          const yTicks = [0, 0.5, 1].map((frac) => {
+              const val = minV + span * frac;
+              const py = padT + plotH * (1 - frac);
+              return '<line x1="' + padL + '" y1="' + py.toFixed(1) + '" x2="' + (w - padR) + '" y2="' + py.toFixed(1) + '" stroke="#cbd5e1" stroke-dasharray="3,3"/><text x="' + (padL - 6) + '" y="' + (py + 4).toFixed(1) + '" text-anchor="end" font-size="11" fill="currentColor">' + escAttr(Math.round(val * 100) / 100) + '</text>';
+          }).join('');
+          let shapes = '';
+          if (chartType === 'line') {
+              const coords = points.map((p, i) => {
+                  const px = padL + (points.length === 1 ? plotW / 2 : (i / (points.length - 1)) * plotW);
+                  const py = padT + plotH * ((maxV - p.value) / span);
+                  return { x: px, y: py, p, i };
+              });
+              shapes += '<polyline fill="none" stroke="#4f46e5" stroke-width="3" stroke-linejoin="round" stroke-linecap="round" points="' + coords.map((c) => c.x.toFixed(1) + ',' + c.y.toFixed(1)).join(' ') + '"/>';
+              shapes += coords.map((c) => '<circle cx="' + c.x.toFixed(1) + '" cy="' + c.y.toFixed(1) + '" r="4.5" fill="#4f46e5" stroke="#ffffff" stroke-width="1.5"><title>' + escAttr(c.p.label + ': ' + c.p.value + unit) + '</title></circle><text x="' + c.x.toFixed(1) + '" y="' + (h - 14) + '" text-anchor="middle" font-size="11" fill="currentColor">' + escAttr(c.p.label.slice(0, 12)) + '</text>').join('');
+          } else {
+              const slotW = plotW / points.length;
+              const barW = Math.min(52, slotW * 0.66);
+              shapes = points.map((p, i) => {
+                  const bx = padL + i * slotW + (slotW - barW) / 2;
+                  const py = padT + plotH * ((maxV - p.value) / span);
+                  const topY = Math.min(py, zeroY), bh = Math.max(2, Math.abs(zeroY - py));
+                  return '<rect x="' + bx.toFixed(1) + '" y="' + topY.toFixed(1) + '" width="' + barW.toFixed(1) + '" height="' + bh.toFixed(1) + '" rx="4" fill="' + palette[i % palette.length] + '"><title>' + escAttr(p.label + ': ' + p.value + unit) + '</title></rect><text x="' + (bx + barW / 2).toFixed(1) + '" y="' + Math.max(12, topY - 4).toFixed(1) + '" text-anchor="middle" font-size="10.5" font-weight="700" fill="currentColor">' + escAttr(p.value + unit) + '</text><text x="' + (bx + barW / 2).toFixed(1) + '" y="' + (h - 14) + '" text-anchor="middle" font-size="11" fill="currentColor">' + escAttr(p.label.slice(0, 12)) + '</text>';
+              }).join('');
+          }
+          svgHtml = '<svg role="img" aria-label="' + escAttr(summaryText) + '" viewBox="0 0 ' + w + ' ' + h + '" style="width:100%;max-width:560px;height:auto;display:block;margin:0 auto;color:#1e293b;">' + yTicks + '<line x1="' + padL + '" y1="' + zeroY.toFixed(1) + '" x2="' + (w - padR) + '" y2="' + zeroY.toFixed(1) + '" stroke="currentColor" stroke-width="1.2"/>' + shapes + '</svg>';
+      }
+      const tableHtml = '<table class="alloflow-chart-table" style="width:100%;max-width:560px;margin:10px auto 0;border-collapse:collapse;font-size:0.85em;"><thead><tr><th scope="col" style="padding:6px 8px;border:1px solid #cbd5e1;background:#f8fafc;text-align:left;">' + escAttr(xLabel) + '</th><th scope="col" style="padding:6px 8px;border:1px solid #cbd5e1;background:#f8fafc;text-align:right;">' + escAttr(yLabel) + '</th></tr></thead><tbody>' + points.map((p) => '<tr><td style="padding:5px 8px;border:1px solid #cbd5e1;">' + escAttr(p.label) + '</td><td style="padding:5px 8px;border:1px solid #cbd5e1;text-align:right;">' + escAttr(p.value + unit) + '</td></tr>').join('') + '</tbody></table>';
+      return '<figure class="alloflow-inline-chart" role="group" style="margin:16px 0;padding:14px;border:1px solid #cbd5e1;border-radius:10px;background:#ffffff;break-inside:avoid;page-break-inside:avoid;">' + svgHtml + '<figcaption style="text-align:center;font-weight:700;margin-top:8px;color:#334155;">' + escAttr(title) + '</figcaption>' + tableHtml + '</figure>';
+  };
+
+  const parseMarkdownToHTML = (text, opts = {}) => {
       if (!text) return '';
+      const headingOffset = Math.max(0, (Number(opts && opts.minHeadingLevel) || 1) - 1);
+      const headingLevel = (base) => Math.min(6, base + headingOffset);
       // Fix literal \n characters that sometimes come from AI responses or JSON parsing
-      let processedText = text.replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\"/g, '"');
+      let processedText = String(text).replace(/\\n\\n/g, '\n\n').replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\"/g, '"');
       // Strip JSON wrapper artifacts (e.g., ["\n\n...\n"] from malformed responses)
       if (processedText.startsWith('["') || processedText.startsWith('[ "')) {
         processedText = processedText.replace(/^\s*\[\s*"/, '').replace(/"\s*\]\s*$/, '');
       }
       processedText = processedText.replace(/\[[A-Z0-9-]+\]\s*"([^"]+)"[\s\S]*?\(resource:([a-zA-Z0-9]+)\)/g, '[$1](resource:$2)');
+      const chartTokens = [];
+      processedText = processedText.replace(/\[\[CHART:\s*(\{[\s\S]*?\})\s*\]\]/gi, (_, jsonBody) => {
+          const tok = '\u0000CHART' + chartTokens.length + '\u0000';
+          chartTokens.push(_renderChartBlock(jsonBody));
+          return '\n' + tok + '\n';
+      });
       const isRtl = isRtlLang(leveledTextLanguage);
       const align = isRtl ? 'right' : 'left';
-      // Restrict markdown-link hrefs to safe schemes (blocks javascript:/data: etc.) and escape
-      // the quote, since this HTML is written into a self-contained file a student opens locally.
-      // 'resource:' is kept for internal links. Link TEXT is left intact (it already carries
-      // <strong>/<em> from the inline-markdown passes above).
       const _safeMdUrl = (u) => { const v = String(u == null ? '' : u).trim(); return /^(https?:|mailto:|tel:|resource:|#|\/|\.)/i.test(v) ? v.replace(/"/g, '&quot;') : '#'; };
       const lines = processedText.split('\n');
       let html = '';
-      let inList = false;
+      let listType = null; // 'ul' | 'ol' | null
+      let inQuote = false;
       let inTable = false;
       let tableHeaderProcessed = false;
+      const closeList = () => { if (listType) { html += '</' + listType + '>'; listType = null; } };
+      const closeQuote = () => { if (inQuote) { html += '</blockquote>'; inQuote = false; } };
+      const closeTable = () => { if (inTable) { html += tableHeaderProcessed ? '</tbody></table>' : '</table>'; inTable = false; tableHeaderProcessed = false; } };
       lines.forEach(line => {
-          let content = line.trim();
+          const rawTrimmed = line.trim();
+          const chartMatch = rawTrimmed.match(/^\u0000CHART(\d+)\u0000$/);
+          if (chartMatch) {
+              closeList(); closeQuote(); closeTable();
+              html += chartTokens[Number(chartMatch[1])] || '';
+              return;
+          }
+          // Stash inline $...$ math before HTML escaping (avoid plain currency like "$10 to $20")
+          const mathTokens = [];
+          let content = rawTrimmed.replace(/(^|[^\\$])\$(?!\s)(?!\d+(?:[.,]\d+)?(?:\s|$))([^$\n]*?\S)\$/g, (_, prefix, expr) => {
+              const rendered = typeof processMathHTML === 'function' ? processMathHTML(expr) : ('<span class="math-symbol">' + String(expr).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;') + '</span>');
+              const tok = '\u0000MATH' + mathTokens.length + '\u0000';
+              mathTokens.push(rendered);
+              return prefix + tok;
+          });
           // M9 (2026-07-03): escape the raw text BEFORE the inline-markdown transforms add their own
-          // intentional HTML (<strong>/<em>/<a>). Without this a stray < & > in AI/teacher text garbles the
-          // export (WCAG 4.1.1) — every downstream interpolation (cells, headings, lists, paragraphs)
-          // derives from `content`, so escaping once here covers them all; the transforms emit safe tags after.
+          // intentional HTML (<strong>/<em>/<a>).
           content = content.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-          // Anchor emphasis to non-space-bordered runs so math ("2 * 3 * 4", "a * b") is NOT turned into
-          // "2 <em> 3 </em> 4"; only real *emphasis* / **bold** (no space just inside the markers) matches.
           content = content.replace(/\*\*(\S(?:.*?\S)?)\*\*/g, '<strong>$1</strong>');
           content = content.replace(/\*(\S(?:.*?\S)?)\*/g, '<em>$1</em>');
           content = content.replace(/\[(.*?)\]\((.*?)\)/g, (match, txt, url) => {
@@ -47080,9 +47260,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               }
               return `${prefix}<a href="${_safeMdUrl(cleanUrl)}" style="color: #2563eb; text-decoration: underline;" target="_blank" rel="noopener noreferrer">${displayText}</a>${punctuation}`;
           });
+          mathTokens.forEach((mathHtml, idx) => {
+              content = content.split('\u0000MATH' + idx + '\u0000').join(mathHtml);
+          });
           if (content.startsWith('|')) {
+              closeQuote();
               if (!inTable) {
-                  if (inList) { html += '</ul>'; inList = false; }
+                  closeList();
                   html += '<table style="width: 100%; border-collapse: collapse; margin: 1rem 0; border: 1px solid #ddd;">';
                   inTable = true;
                   tableHeaderProcessed = false;
@@ -47111,40 +47295,57 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               }
               return;
           }
-          if (inTable) {
-              html += '</tbody></table>';
-              inTable = false;
-              tableHeaderProcessed = false;
-          }
+          closeTable();
           if (!content) {
-              if (inList) { html += '</ul>'; inList = false; }
+              closeList(); closeQuote();
               html += '<div style="height: 10px;"></div>';
               return;
           }
-          if (content.startsWith('###')) {
-              if (inList) { html += '</ul>'; inList = false; }
-              html += `<h3 style="color: #2c3e50; margin-top: 15px; margin-bottom: 5px;">${content.replace(/^###\s*/, '')}</h3>`;
-          }
-          else if (content.startsWith('##')) {
-              if (inList) { html += '</ul>'; inList = false; }
-              html += `<h2 style="color: #2c3e50; margin-top: 20px; margin-bottom: 10px;">${content.replace(/^##\s*/, '')}</h2>`;
-          }
-          else if (content.startsWith('#')) {
-              if (inList) { html += '</ul>'; inList = false; }
-              html += `<h1 style="color: #2c3e50; margin-top: 24px; margin-bottom: 12px; font-size: 24pt; font-weight: 900;">${content.replace(/^#\s*/, '')}</h1>`;
-          }
-          else if (content.startsWith('- ') || content.startsWith('* ') || content.startsWith('• ')) {
-              if (!inList) { html += '<ul style="margin: 5px 0; padding-left: 20px;">'; inList = true; }
+          if (/^(?:-{3,}|\*{3,}|_{3,})$/.test(rawTrimmed)) {
+              closeList(); closeQuote();
+              html += '<hr style="border:0;border-top:1px solid #cbd5e1;margin:16px 0;">';
+          } else if (content.startsWith('####')) {
+              closeList(); closeQuote();
+              const lv = headingLevel(4);
+              html += `<h${lv} style="color: #2c3e50; margin-top: 12px; margin-bottom: 4px;">${content.replace(/^####\s*/, '')}</h${lv}>`;
+          } else if (content.startsWith('###')) {
+              closeList(); closeQuote();
+              const lv = headingLevel(3);
+              html += `<h${lv} style="color: #2c3e50; margin-top: 15px; margin-bottom: 5px;">${content.replace(/^###\s*/, '')}</h${lv}>`;
+          } else if (content.startsWith('##')) {
+              closeList(); closeQuote();
+              const lv = headingLevel(2);
+              html += `<h${lv} style="color: #2c3e50; margin-top: 20px; margin-bottom: 10px;">${content.replace(/^##\s*/, '')}</h${lv}>`;
+          } else if (content.startsWith('#')) {
+              closeList(); closeQuote();
+              const lv = headingLevel(1);
+              html += `<h${lv} style="color: #2c3e50; margin-top: 24px; margin-bottom: 12px; font-size: 24pt; font-weight: 900;">${content.replace(/^#\s*/, '')}</h${lv}>`;
+          } else if (/^>\s?/.test(rawTrimmed)) {
+              closeList();
+              if (!inQuote) {
+                  html += '<blockquote style="margin:12px 0;padding:8px 14px;border-left:4px solid #6366f1;background:#f8fafc;color:#334155;border-radius:0 8px 8px 0;">';
+                  inQuote = true;
+              }
+              html += `<p style="margin:4px 0;line-height:1.6;">${content.replace(/^&gt;\s?/, '')}</p>`;
+          } else if (/^\d+[.)]\s+/.test(rawTrimmed)) {
+              closeQuote();
+              if (listType === 'ul') closeList();
+              if (!listType) { html += '<ol style="margin: 5px 0; padding-left: 22px;">'; listType = 'ol'; }
+              html += `<li style="margin-bottom: 5px;">${content.replace(/^\d+[.)]\s+/, '')}</li>`;
+          } else if (content.startsWith('- ') || content.startsWith('* ') || content.startsWith('• ')) {
+              closeQuote();
+              if (listType === 'ol') closeList();
+              if (!listType) { html += '<ul style="margin: 5px 0; padding-left: 20px;">'; listType = 'ul'; }
               const listText = content.replace(/^[-*•]\s+/, '');
               html += `<li style="margin-bottom: 5px;">${listText}</li>`;
-          }
-          else {
-              if (inList) { html += '</ul>'; inList = false; }
+          } else {
+              closeList(); closeQuote();
               html += `<p style="margin-bottom: 10px;">${content}</p>`;
           }
       });
-      if (inList) html += '</ul>';
-      if (inTable) html += '</tbody></table>';
+      closeList();
+      closeQuote();
+      closeTable();
       return html;
   };
   // Study and Family Guides may go to learners; the shared rule lives in SessionTransport.
@@ -47222,9 +47423,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           return params && typeof params === 'object' ? value.replace(/\{(\w+)\}/g, (m, name) => (params[name] != null ? params[name] : m)) : value;
       };
   };
-  const generateResourceHTML = (item, isTeacher, responses = {}, config = null) => {
-      const t = isTeacher ? _hostLabelT : _exportLabelT();
+  const generateResourceHTML = (item, isTeacher, responses = {}, config = null, _outerT = t) => {
+      const _fallbackT = typeof _outerT === "function" ? _outerT : (k => k);
+      const t = isTeacher ? (typeof _hostLabelT === "function" ? _hostLabelT : _fallbackT) : (typeof _exportLabelT === "function" ? _exportLabelT() : _fallbackT);
       const cfg = config || exportConfig;
+      const _hasExplicitFontOverride = Boolean((cfg.fontId && cfg.fontId !== 'theme') || cfg.useAppFont || cfg.useReadingSettings);
+      const _ownFontInline = (fallbackFamily) => _hasExplicitFontOverride ? '' : `font-family:${fallbackFamily};`;
       const studentReadingText = value => {
           if (isTeacher || typeof value !== 'string') return value;
           const sources = window.AlloModules?.StudentSources || window.AlloModules?.TextPipelineHelpers?.studentSources;
@@ -47253,11 +47457,18 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const _uiL = (key, fallback, vars) => _escTxt(_uiRaw(key, fallback, vars));
       // Paper answer space sized to the task: each extra part, an explain/why/compare prompt,
       // a long prompt or listed success criteria add lines (capped at 10).
-      const _answerLines = (prompt, criteriaCount, base) => {
+      const _answerLines = (prompt, criteriaCount, base, expectedText = '') => {
           const text = String(prompt || '');
           const parts = Math.max((text.match(/\?/g) || []).length, (text.match(/(?:^|\s)\(?(?:[a-d]|[1-4])[.)]\s/g) || []).length, 1);
           const depth = /\b(explain|why|how|compare|contrast|describe|justify|evidence|support)\b/i.test(text) ? 1 : 0;
-          const length = text.length > 220 ? 2 : (text.length > 120 ? 1 : 0);
+          let effLen = text.length;
+          const exp = String(expectedText || '').trim();
+          if (exp) {
+            const cjkCount = (exp.match(/[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uac00-\ud7af]/g) || []).length;
+            const expEffLen = exp.length + Math.round(cjkCount * 1.2);
+            effLen = Math.max(effLen, expEffLen * 2);
+          }
+          const length = effLen > 220 ? 2 : (effLen > 120 ? 1 : 0);
           return Math.min(10, base + (parts - 1) * 2 + depth + length + Math.min(3, Number(criteriaCount) || 0));
       };
       const _resourceIdJson =JSON.stringify(String(item.id == null ? '' : item.id)).replace(/</g, '\\u003c');
@@ -47304,18 +47515,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // student can type on screen.
       const isWorksheet = cfg.isWorksheet === true;
       const _worksheetSpaceScale = ({ compact: 0.75, standard: 1, extended: 1.5 })[cfg.worksheetResponseSpace] || 1;
+      const _k2MidlineHtml = cfg.fontId === 'elementary'
+          ? '<div aria-hidden="true" style="position:absolute;left:0;right:0;top:50%;border-top:1px dashed #94a3b8;pointer-events:none;"></div>'
+          : '';
       const ruledLines = (numLines = 4, label = '') => {
           const lineCount = Math.max(1, Math.round(numLines * _worksheetSpaceScale));
           const lines = Array.from({length: lineCount}, () =>
-              '<div class="alloflow-ruled-line" style="border-bottom: 1px solid #64748b; height: 28px; margin-bottom: 4px; break-inside: avoid; page-break-inside: avoid;"></div>'
+              `<div class="alloflow-ruled-line" style="position: relative; border-bottom: 1px solid #64748b; min-height: max(28px, 1.85em); margin-bottom: 4px; break-inside: avoid; page-break-inside: avoid;">${_k2MidlineHtml}</div>`
           ).join('');
           const flowClass = lineCount > 6 ? ' alloflow-ruled-response-long' : '';
           return `<div class="alloflow-ruled-response${flowClass}" data-allo-print-response="lines" data-allo-print-lines="${lineCount}" style="margin-top: 8px; break-inside: ${lineCount > 6 ? 'auto' : 'avoid'}; page-break-inside: ${lineCount > 6 ? 'auto' : 'avoid'};">${label ? `<div class="alloflow-ruled-label" style="font-size: 0.85em; color: #475569; margin-bottom: 6px; font-weight: 600; break-after: avoid; page-break-after: avoid;">${_escTxt(label)}</div>` : ''}${lines}</div>`;
       };
       const fillableCircle = () =>
-          '<span class="alloflow-print-bubble" data-allo-print-response="choice" aria-hidden="true" style="display: inline-block; width: 14px; height: 14px; border: 2px solid #475569; border-radius: 50%; vertical-align: middle; margin-right: 6px; background: white;"></span>';
+          '<span class="alloflow-print-bubble" data-allo-print-response="choice" aria-hidden="true" style="display: inline-block; width: 18px; height: 18px; border: 2px solid #475569; border-radius: 50%; vertical-align: middle; margin-right: 6px; background: white;"></span>';
       const fillableSquare = () =>
-          '<span class="alloflow-print-box" data-allo-print-response="choice" aria-hidden="true" style="display: inline-block; width: 14px; height: 14px; border: 2px solid #475569; border-radius: 2px; vertical-align: middle; margin-right: 6px; background: white;"></span>';
+          '<span class="alloflow-print-box" data-allo-print-response="choice" aria-hidden="true" style="display: inline-block; width: 18px; height: 18px; border: 2px solid #475569; border-radius: 2px; vertical-align: middle; margin-right: 6px; background: white;"></span>';
       const fillableBlank = (widthPx = 150) =>
           `<span class="alloflow-print-blank" data-allo-print-response="blank" aria-hidden="true" style="display: inline-block; width: ${widthPx}px; max-width: 100%; border-bottom: 1.5px solid #475569; height: 1.4em; vertical-align: middle; margin: 0 4px;"></span>`;
       // ── Printable cloze (fill in the blanks) ──
@@ -47337,18 +47551,38 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // Fixed width, so the length of the line never gives the answer away. The
       // number is visible rather than an aria-label, because it has to survive
       // being printed on paper and it is what the answer key counts against.
+      const _clozeMaxPerTerm = Number(cfg.clozeMaxPerTerm) > 0 ? Math.floor(Number(cfg.clozeMaxPerTerm)) : 0;
       const _clozeBlank = (n) =>
-          `<span class="alloflow-cloze-blank" style="display:inline-block;min-width:120px;border-bottom:1.5px solid #475569;margin:0 5px;text-align:center;line-height:1.5;"><span style="font-size:max(12px, 0.72em);font-weight:700;color:#64748b;">${n}</span></span>`;
+          `<span class="alloflow-cloze-blank" style="display:inline-block;min-width:120px;max-width:100%;border-bottom:1.5px solid #475569;margin:0 0 0 4px;text-align:center;line-height:1.5;"><span style="font-size:max(12px, 0.72em);font-weight:700;color:#64748b;">${n}</span></span>`;
+      const _clozeNormalizePassage = (rawValue, sectionTitle) => {
+          let raw = typeof rawValue === 'string' ? rawValue : '';
+          if (!raw) return { mainText: raw, translationText: '' };
+          if (!isTeacher) {
+            raw = studentReadingText(raw);
+          } else {
+            const sources = typeof window !== 'undefined' && (window.AlloModules?.StudentSources || window.AlloModules?.TextPipelineHelpers?.studentSources);
+            if (typeof sources?.publicText === 'function') raw = sources.publicText(raw, item.studentSources);
+          }
+          const first = raw.match(/^\s*#{1,3}[ \t]+([^\n]+)(?:\r?\n|$)/);
+          if (first) {
+            const norm = (value) => String(value || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+            const heading = norm(first[1]), st = norm(sectionTitle);
+            if (heading && st && (heading === st || st.includes(heading) || heading.includes(st))) {
+              raw = raw.slice(first[0].length);
+            }
+          }
+          const splitMarker = /\r?\n---\s*ENGLISH TRANSLATION\s*---\r?\n/i;
+          const idx = raw.search(splitMarker);
+          if (idx !== -1) {
+            const m = raw.match(splitMarker);
+            return { mainText: raw.slice(0, idx), translationText: raw.slice(idx + m[0].length).trim() };
+          }
+          return { mainText: raw, translationText: '' };
+      };
       const _clozeBuild = (passageHtml, glossary) => {
           const answers = [];
           if (!passageHtml || !Array.isArray(glossary) || glossary.length === 0) return { html: passageHtml, answers };
-          // Same term map the on-screen cloze builds: the English term, plus the
-          // passage-language term when the lesson is not in English.
           const termMap = new Map();
-          // The passage-language spelling, in its own casing, per entry. The word
-          // bank offers THIS rather than the matched text: a term that happened to
-          // open a sentence was otherwise offered capitalised ("Мозг"), which reads
-          // as a different word and quietly hints at where it belongs.
           const canonicalByEntry = new Map();
           glossary.forEach(gItem => {
               if (!gItem || gItem.isSelected === false) return;
@@ -47365,9 +47599,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const sortedTerms = Array.from(termMap.keys()).sort((a, b) => b.length - a.length);
           if (sortedTerms.length === 0) return { html: passageHtml, answers };
           const escapeRegExp = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-          // CJK and Thai are written without word separators, so a boundary
-          // assertion would reject every legitimate match; those match as plain
-          // substrings instead.
           const NO_WORD_BREAK = /[぀-ヿ㐀-䶿一-鿿豈-﫿฀-๿]/;
           const boundaried = [];
           const substringy = [];
@@ -47377,28 +47608,25 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const branches = [];
               if (boundaried.length) branches.push(`(?<![\\p{L}\\p{N}])(?:${boundaried.join('|')})(?![\\p{L}\\p{N}])`);
               if (substringy.length) branches.push(`(?:${substringy.join('|')})`);
-              pattern = new RegExp(`(${branches.join('|')})`, 'giu');
+              pattern = new RegExp(`(${branches.join('|')})([.,;:!?'"\u201d\u2019)\\]]*)`, 'giu');
           } catch (_) {
-              // Lookbehind is unavailable on some older engines. Fall back to the
-              // ASCII boundary rather than losing the whole passage.
-              pattern = new RegExp(`\\b(${sortedTerms.map(escapeRegExp).join('|')})\\b`, 'gi');
+              pattern = new RegExp(`\\b(${sortedTerms.map(escapeRegExp).join('|')})\\b([.,;:!?'"\u201d\u2019)\\]]*)`, 'gi');
           }
-          // Rewrite TEXT only. Splitting on tags keeps attribute values (src,
-          // alt, style) out of the match, which a replace over the whole string
-          // would happily corrupt.
+          const termBlankCounts = new Map();
           const html = String(passageHtml).split(/(<[^>]*>)/).map(seg => {
               if (!seg || seg.charAt(0) === '<') return seg;
-              return seg.replace(pattern, (matched) => {
+              return seg.replace(pattern, (fullMatch, matched, punct) => {
                   const entry = termMap.get(String(matched).toLowerCase()) || null;
+                  const countKey = entry ? (entry.term ? String(entry.term).toLowerCase() : String(matched).toLowerCase()) : String(matched).toLowerCase();
+                  const seenCount = termBlankCounts.get(countKey) || 0;
+                  if (_clozeMaxPerTerm > 0 && seenCount >= _clozeMaxPerTerm) return fullMatch;
+                  termBlankCounts.set(countKey, seenCount + 1);
                   const english = entry && entry.term ? String(entry.term) : matched;
-                  // Which language did this occurrence come in? Answer from the
-                  // MATCHED TEXT, never from leveledTextLanguage: a Spanish passage
-                  // can legitimately still carry the English term, and keying that
-                  // blank to the Spanish word makes the printed sheet wrong.
                   const matchedEnglish = String(matched).toLowerCase() === english.toLowerCase();
                   const bank = matchedEnglish ? english : (canonicalByEntry.get(entry) || matched);
                   answers.push({ text: matched, term: english, bank });
-                  return _clozeBlank(answers.length);
+                  const blankSpan = _clozeBlank(answers.length);
+                  return punct ? `<span style="white-space:nowrap;">${blankSpan}${punct}</span>` : `<span style="white-space:nowrap;">${blankSpan}</span>`;
               });
           }).join('');
           return { html, answers };
@@ -47425,21 +47653,97 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       // term the English is kept beside it, which is the same support the
       // on-screen bank's "both" setting gives.
       const _clozeWordBankHTML = (answers) => {
-          const seen = new Set();
-          const chips = [];
+          const counts = new Map();
+          const labels = new Map();
           answers.forEach(a => {
               const word = String(a.bank || a.text);
               const key = word.toLowerCase();
-              if (seen.has(key)) return;
-              seen.add(key);
-              chips.push(key === String(a.term).toLowerCase() ? word : `${word} (${a.term})`);
+              counts.set(key, (counts.get(key) || 0) + 1);
+              if (!labels.has(key)) {
+                labels.set(key, key === String(a.term).toLowerCase() ? word : `${word} (${a.term})`);
+              }
+          });
+          const chips = Array.from(labels.entries()).map(([key, label]) => {
+              const cnt = counts.get(key) || 1;
+              return (_clozeMaxPerTerm > 1 && cnt > 1) ? `${label} (×${cnt})` : label;
           });
           if (chips.length === 0) return '';
           const ordered = _clozeShuffle(chips, chips.join('|'));
-          return `<div style="break-inside:avoid;margin:18px 0 8px;border:2px dashed #2563eb;border-radius:10px;background:#eff6ff;padding:12px 14px;">
+          return `<div class="alloflow-cloze-word-bank" style="break-inside:avoid;margin:12px 0 14px;border:2px dashed #2563eb;border-radius:10px;background:#eff6ff;padding:12px 14px;">
                   <div style="font-size:0.82em;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#1d4ed8;margin-bottom:8px;">${_escTxt(t('export.cloze_word_bank') || 'Word Bank')}</div>
-                  <div style="display:flex;flex-wrap:wrap;gap:8px;">${ordered.map(c => `<span style="display:inline-block;background:#ffffff;border:1px solid #93c5fd;border-radius:9999px;padding:4px 12px;font-size:0.95em;color:#1e293b;">${_escTxt(c)}</span>`).join('')}</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px;">${ordered.map(c => `<span style="display:inline-block;background:#ffffff;border:1px solid #93c5fd;border-radius:9999px;padding:4px 12px;font-size:0.95em;color:#1e293b;">☐ ${_escTxt(c)}</span>`).join('')}</div>
               </div>`;
+      };
+      const _inlineGlossaryFor = it => { const g = typeof cfg.__inlineGlossaryFor === 'function' ? cfg.__inlineGlossaryFor(it) : cfg.__clozeGlossary; return Array.isArray(g) ? g : []; };
+      const _annotateInlineGlossary = (passageHtml, glossary) => {
+          if (isWorksheet || isTeacher || originalReading || _clozeIsOn || cfg.clozeWorksheet === true || cfg.includeGlossary === false || !passageHtml || !Array.isArray(glossary) || glossary.length === 0) return passageHtml;
+          const termMap = new Map();
+          const labelMap = new Map();
+          glossary.forEach(gItem => {
+              if (!gItem || gItem.isSelected === false || !gItem.term) return;
+              const eng = String(gItem.term).trim();
+              if (eng.length < 2) return;
+              const rawDef = String(gItem.def || gItem.definition || '').trim();
+              let transWord = '';
+              let transInfo = '';
+              if (leveledTextLanguage !== 'English' && gItem.translations && gItem.translations[leveledTextLanguage]) {
+                  const rawTr = String(gItem.translations[leveledTextLanguage]).trim();
+                  transWord = (rawTr.includes(':') ? rawTr.split(':')[0] : rawTr).trim();
+                  transInfo = rawTr;
+              }
+              const infoParts = [];
+              if (eng) infoParts.push(eng);
+              if (transInfo && transInfo.toLowerCase() !== eng.toLowerCase()) infoParts.push(transInfo);
+              if (rawDef) infoParts.push(rawDef);
+              const infoText = infoParts.join(' — ');
+              if (!infoText) return;
+              termMap.set(eng.toLowerCase(), gItem);
+              labelMap.set(gItem, infoText);
+              if (transWord && transWord.length > 1) termMap.set(transWord.toLowerCase(), gItem);
+          });
+          const sortedTerms = Array.from(termMap.keys()).sort((a, b) => b.length - a.length);
+          if (sortedTerms.length === 0) return passageHtml;
+          const escapeRe = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+          const NO_WB = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\u0e00-\u0e7f]/;
+          const bound = [], sub = [];
+          sortedTerms.forEach(tm => { (NO_WB.test(tm) ? sub : bound).push(escapeRe(tm)); });
+          let pat;
+          try {
+              const br = [];
+              if (bound.length) br.push('(?<![\\p{L}\\p{N}])(?:' + bound.join('|') + ')(?![\\p{L}\\p{N}])');
+              if (sub.length) br.push('(?:' + sub.join('|') + ')');
+              pat = new RegExp('(' + br.join('|') + ')', 'giu');
+          } catch (_) {
+              pat = new RegExp('\\b(' + sortedTerms.map(escapeRe).join('|') + ')\\b', 'gi');
+          }
+          const usedEntries = new Set();
+          const skipTags = new Set(['a', 'button', 'h1', 'h2', 'h3', 'h4', 'h5', 'h6', 'svg', 'code', 'pre', 'figure', 'script', 'style', 'summary']);
+          const stack = [];
+          return String(passageHtml).split(/(<[^>]*>)/).map(seg => {
+              if (!seg) return seg;
+              if (seg.charAt(0) === '<') {
+                  const closeMatch = seg.match(/^<\/([a-z0-9]+)/i);
+                  if (closeMatch) {
+                      const tn = closeMatch[1].toLowerCase();
+                      const li = stack.lastIndexOf(tn);
+                      if (li !== -1) stack.splice(li, 1);
+                  } else if (!/^<\//.test(seg) && !/\/>\s*$/.test(seg)) {
+                      const openMatch = seg.match(/^<([a-z0-9]+)/i);
+                      if (openMatch && !['br', 'hr', 'img', 'input', 'meta', 'link'].includes(openMatch[1].toLowerCase())) {
+                          stack.push(openMatch[1].toLowerCase());
+                      }
+                  }
+                  return seg;
+              }
+              if (stack.some(t => skipTags.has(t))) return seg;
+              return seg.replace(pat, (fullMatch) => {
+                  const entry = termMap.get(String(fullMatch).toLowerCase());
+                  if (!entry || usedEntries.has(entry)) return fullMatch;
+                  usedEntries.add(entry);
+                  const info = labelMap.get(entry) || '';
+                  return `<button type="button" class="alloflow-inline-term" data-allo-term="${_escTxt(fullMatch)}" data-allo-def="${_escTxt(info)}" aria-expanded="false">${fullMatch}</button>`;
+              });
+          }).join('');
       };
       // Resource type filtering — configurable via export preview modal.
       // Teacher-only resources (analysis, udl-advice, brainstorm) handled separately
@@ -47461,6 +47765,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           if (!isTeacher && cfg[studentToggleKey] === false) return '';
           // teacher copy always shows these — fall through to render
       }
+      const title = item.title || (originalReading ? 'Original with supports' : getDefaultTitle(item.type));
       // Teacher copy traditionally hides student-facing resources to avoid duplication
       if (isTeacher) {
           // One exception: the cloze answer key exists ONLY in the teacher copy,
@@ -47470,7 +47775,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           if (item.type === 'simplified') {
               if (!_clozeIsOn) return '';
               const _keyGloss = _clozeGlossaryFor(item);
-              const _keyBuilt = _clozeBuild(parseMarkdownToHTML(item.data), _keyGloss);
+              const _keyNorm = _clozeNormalizePassage(item.data, title);
+              const _keyBuilt = _clozeBuild(parseMarkdownToHTML(_keyNorm.mainText), _keyGloss);
               const _keyTitle = _escTxt(t('export.cloze_answer_key') || 'Fill in the Blanks: Answer Key');
               if (_keyBuilt.answers.length === 0) {
                   // Say so rather than printing an empty key. A silent no-op here
@@ -47490,7 +47796,6 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           if (item.type === 'faq') return '';
           if (item.type === 'sentence-frames') return '';
       }
-      const title = item.title || (originalReading ? 'Original with supports' : getDefaultTitle(item.type));
       const isRtl = isRtlLang(leveledTextLanguage);
       const align = isRtl ? 'right' : 'left';
       // ── Visual enhancement: resource type icon + accent color ──
@@ -47531,7 +47836,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const choices = board && Array.isArray(board.choices) ? board.choices.filter(choice => choice && typeof choice.label === 'string' && choice.label.trim()) : [];
           const goalHtml = goals.length ? '<section><h3>' + _escTxt(label('directions.goals_heading', 'Your goals')) + '</h3><ul style="list-style:none;padding-left:0;">' + goals.map(goal => '<li style="margin:8px 0;"><span aria-hidden="true">&#x2610; </span>' + _escTxt(goal.label) + '</li>').join('') + '</ul></section>' : '';
           const choiceHtml = choices.length ? '<section><h3>' + _escTxt(board.title || label('directions.choice_board_title', 'Choose an activity')) + '</h3>' + (board.prompt ? '<p>' + _escTxt(board.prompt) + '</p>' : '') + '<ul>' + choices.map(choice => '<li style="margin:8px 0;"><strong>' + _escTxt(choice.label) + '</strong>' + (choice.description ? '<p>' + _escTxt(choice.description) + '</p>' : '') + '</li>').join('') + '</ul></section>' : '';
-          return '<section class="section" id="' + _escTxt(item.id) + '" data-ka-readable style="border-left:4px solid #d97706;border-radius:12px;padding:16px;overflow-wrap:anywhere;"><h2 class="resource-header">' + _escTxt(title) + '</h2>' + _alloParsePreviewMarkdown(body) + goalHtml + choiceHtml + '</section>';
+          const _dirParse = typeof _alloParseDocDirectionsMarkdown === 'function' ? _alloParseDocDirectionsMarkdown : _alloParsePreviewMarkdown;
+          return '<section class="section" id="' + _escTxt(item.id) + '" data-ka-readable style="border-left:4px solid #d97706;border-radius:12px;padding:16px;overflow-wrap:anywhere;"><h2 class="resource-header">' + _escTxt(title) + '</h2>' + _dirParse(body) + goalHtml + choiceHtml + '</section>';
       }
       if (item.type === 'simplified') {
           const sourceExcerptsHTML = studentSourceExcerptsHTML(item.data);
@@ -47577,30 +47883,30 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // Reading passage. Tagged data-ka-readable so the HTML export's
           // download-time read-aloud step can convert it into inline sentence-karaoke.
           // Most passages open with their own "# Title"; the section heading already shows it once.
-          const _readingText = (() => {
-              const raw = studentReadingText(item.data);
-              if (typeof raw !== 'string') return raw;
-              const first = raw.match(/^\s*#{1,3}[ \t]+([^\n]+)(?:\r?\n|$)/);
-              if (!first) return raw;
-              const norm = (value) => String(value || '').toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
-              const heading = norm(first[1]), sectionTitle = norm(title);
-              return heading && sectionTitle && (heading === sectionTitle || sectionTitle.includes(heading) || heading.includes(sectionTitle)) ? raw.slice(first[0].length) : raw;
-          })();
-          const _passageHtml = parseMarkdownToHTML(_readingText);
+          const _normPassage = _clozeNormalizePassage(item.data, title);
+          const _readingText = _normPassage.mainText;
+          const _rawPassageHtml = parseMarkdownToHTML(_readingText);
+          const _passageHtml = _clozeIsOn ? _rawPassageHtml : _annotateInlineGlossary(_rawPassageHtml, _inlineGlossaryFor(item));
+          const _translationHtml = _normPassage.translationText
+              ? `<div class="alloflow-bilingual-split" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;"><div>${_passageHtml}</div><div dir="ltr" style="border-left:2px solid #cbd5e1;padding-left:14px;color:#475569;"><div style="font-size:0.8em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;margin-bottom:6px;">${_uiL('output.english_translation', 'English Translation')}</div>${parseMarkdownToHTML(_normPassage.translationText)}</div></div>`
+              : _passageHtml;
           const _readingRoleHtml = readingRoleLabel ? '<p class="reading-role">' + _escTxt(readingRoleLabel) + '</p>' : '';
           if (_clozeIsOn) {
               const _built = _clozeBuild(_passageHtml, _clozeGlossaryFor(item));
-              // No term matched: fall back to the plain passage rather than
-              // handing out a "fill in the blanks" sheet with nothing to fill in.
-              // The teacher key says why, above.
               if (_built.answers.length > 0) {
+                  const _bankHtml = _clozeWordBankHTML(_built.answers);
+                  const _bankOnTop = cfg.clozeWordBankPosition === 'top';
+                  const _clozeTransHtml = _normPassage.translationText
+                      ? `<div class="alloflow-bilingual-split" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start;"><div>${_built.html}</div><div dir="ltr" style="border-left:2px solid #cbd5e1;padding-left:14px;color:#475569;"><div style="font-size:0.8em;font-weight:700;text-transform:uppercase;letter-spacing:0.05em;color:#64748b;margin-bottom:6px;">${_uiL('output.english_translation', 'English Translation')}</div>${parseMarkdownToHTML(_normPassage.translationText)}</div></div>`
+                      : _built.html;
                   return `
               <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid #2563eb;border-radius:12px;">
                   ${enhancedHeader}
                   ${_readingRoleHtml}
                   <p style="margin:0 4px 12px;padding:8px 12px;background:#f8fafc;border-left:3px solid #94a3b8;font-size:0.92em;color:#334155;">${_escTxt(t('export.cloze_instructions') || 'Fill in each blank with the correct word from the word bank.')}</p>
-                  <div class="alloflow-own-font" style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:2.4;color:#1e293b;padding:8px 4px;">${_built.html}</div>
-                  ${_clozeWordBankHTML(_built.answers)}
+                  ${_bankOnTop ? _bankHtml : ''}
+                  <div class="alloflow-own-font" style="${_ownFontInline("Georgia,'Times New Roman',serif")}font-size:1.05em;line-height:2.4;color:#1e293b;padding:8px 4px;">${_clozeTransHtml}</div>
+                  ${_bankOnTop ? '' : _bankHtml}
               </div>
               ${sourceExcerptsHTML}
           `;
@@ -47613,7 +47919,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               <div class="section" id="${_escTxt(item.id)}" data-ka-readable style="border-left:4px solid #2563eb;border-radius:12px;">
                   ${enhancedHeader}
                   ${_readingRoleHtml}
-                  <div class="alloflow-own-font" style="font-family:Georgia,'Times New Roman',serif;font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${_passageHtml}</div>
+                  <div class="alloflow-own-font" style="${_ownFontInline("Georgia,'Times New Roman',serif")}font-size:1.05em;line-height:1.9;color:#1e293b;padding:8px 4px;">${_translationHtml}</div>
                   ${_adaptedHelpHtml}
               </div>
               ${sourceExcerptsHTML}
@@ -47685,22 +47991,25 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               return Array.isArray(list) ? list.filter(entry => entry && typeof entry === 'object').map(entry => (
                   entry.translations && (typeof entry.translations !== 'object' || Array.isArray(entry.translations)) ? { ...entry, translations: {} } : entry)) : [];
           })() };
-          const wordSearchHtml = (isTeacher && cfg.includeTeacherKey !== false && cfg.assessmentMode !== true && item.gameData && item.gameData.grid) ? (() => {
-              let html = '';
-              if (item.gameData) {
-                  let gridHtml = `<div style="margin-top:20px; page-break-inside:avoid;"><h3>${t('glossary.word_search_key')}</h3><div style="display:inline-block; border:2px solid #333; padding:2px;">`;
-                  item.gameData.grid.forEach((row, r) => {
-                      gridHtml += '<div style="display:flex;">';
-                      row.forEach((char, c) => {
-                          const isSol = (item.gameData.solutions || []).includes(`${r}-${c}`);
-                          gridHtml += `<div style="width:20px; height:20px; display:flex; align-items:center; justify-content:center; border:1px solid #ccc; font-family:monospace; font-size:10px; ${isSol ? 'outline:2px solid #000; outline-offset:-2px; font-weight:bold;' : ''}">${_escTxt(char)}</div>`;
-                      });
-                      gridHtml += '</div>';
+          const wordSearchHtml = (item.gameData && item.gameData.grid && cfg.assessmentMode !== true && (!isTeacher || cfg.includeTeacherKey !== false)) ? (() => {
+              const showSolutions = isTeacher && cfg.includeTeacherKey !== false;
+              const wsHeading = showSolutions ? t('glossary.word_search_key') : _gl('glossary.word_search', 'Word Search');
+              const wsDir = item.gameData.isRtl ? 'rtl' : 'ltr';
+              let gridHtml = `<div class="alloflow-word-search" dir="${wsDir}" style="margin-top:20px; page-break-inside:avoid;"><h3>${_escTxt(wsHeading)}</h3><div style="display:inline-block; border:2px solid #333; padding:2px;">`;
+              item.gameData.grid.forEach((row, r) => {
+                  gridHtml += '<div style="display:flex;">';
+                  row.forEach((char, c) => {
+                      const isSol = showSolutions && (item.gameData.solutions || []).includes(`${r}-${c}`);
+                      gridHtml += `<div style="width:20px; height:20px; display:flex; align-items:center; justify-content:center; border:1px solid #ccc; font-family:monospace; font-size:10px; ${isSol ? 'outline:2px solid #000; outline-offset:-2px; font-weight:bold;' : ''}">${_escTxt(char)}</div>`;
                   });
-                  gridHtml += '</div></div>';
-                  html = gridHtml;
+                  gridHtml += '</div>';
+              });
+              gridHtml += '</div>';
+              if (!showSolutions && Array.isArray(item.gameData.words) && item.gameData.words.length > 0) {
+                  gridHtml += `<p dir="auto" style="margin-top:10px;font-size:0.9em;color:#334155;"><strong>${_escTxt(_gl('glossary.words_to_find', 'Words to find'))}:</strong> ${item.gameData.words.map(w => _escTxt(w)).join(' · ')}</p>`;
               }
-              return html;
+              gridHtml += '</div>';
+              return gridHtml;
           })() : '';
           // Student worksheet (display mode 'worksheet'): write each definition on lines, or
           // match numbered words to lettered definitions. The shuffle is seeded from the
@@ -47862,7 +48171,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               for (let i = 0; i < cards.length; i += perPage) pages.push(`<div class="alloflow-word-wall-page">${cards.slice(i, i + perPage).join('')}</div>`);
               return `
                   <style>
-                    @page { size:${['letter', 'legal', 'a4'].includes(cfg.pageSize) ? cfg.pageSize : 'letter'} ${cfg.pageOrientation === 'landscape' ? 'landscape' : 'portrait'}; }
+                    @page alloflow-word-wall-page { size:${['letter', 'legal', 'a4'].includes(cfg.pageSize) ? cfg.pageSize : 'letter'} ${cfg.pageOrientation === 'landscape' ? 'landscape' : 'portrait'}; }
+                    .alloflow-word-wall-sheet { page: alloflow-word-wall-page; }
                     .alloflow-word-wall-page { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,20em),1fr)); gap:16px; margin:0 0 16px; }
                     .alloflow-word-wall-card { box-sizing:border-box; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:0.4em; min-width:0; min-height:14em; padding:1.25em; border:3px solid #059669; border-radius:16px; background:#fff; text-align:center; break-inside:avoid; page-break-inside:avoid; overflow:visible; }
                     .alloflow-word-wall-card img { max-width:100%; max-height:9em; object-fit:contain; }
@@ -47882,7 +48192,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       .alloflow-word-wall-credit { font-size:9pt; line-height:1.3; color:#000; }
                     }
                   </style>
-                  <div class="section alloflow-word-wall-section" id="${_escTxt(item.id)}" style="border-left:4px solid #059669;border-radius:12px;">
+                  <div class="section alloflow-word-wall-section alloflow-word-wall-sheet" id="${_escTxt(item.id)}" style="border-left:4px solid #059669;border-radius:12px;">
                       ${enhancedHeader}
                       <div class="alloflow-word-wall" data-per-page="${perPage}" style="--wall-card-height:${wallCardHeight.toFixed(2)}in;--wall-term-size:${wallTermSize.toFixed(1)}pt;--wall-picture-height:${wallPictureHeight.toFixed(2)}in;">${pages.join('')}</div>
                       ${_glossCreditsHtml}
@@ -48311,7 +48621,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                // Color-coded item card per circle: light tint background + colored left border
                // so each item visually belongs to its circle even when scanned from a distance.
                const renderItem = (it, en, opts) => `<li style="margin-bottom: ${opts.mb}; font-size: ${opts.fs}; line-height: 1.4; background: ${opts.bg}; color: ${opts.text}; padding: ${opts.pad}; border-radius: 10px; border-left: 4px solid ${opts.accent}; box-shadow: 0 1px 2px rgba(0,0,0,0.04); text-align: center; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                       <span style="font-weight: 600;">${it}</span>${en ? `<br><span style="font-size:0.85em;opacity:0.8;font-style:italic;font-weight:normal;">(${en})</span>` : ''}
+                       <span style="font-weight: 600;">${_escTxt(it && typeof it === 'object' ? (it.text || it.label || '') : it)}</span>${en ? `<br><span style="font-size:0.85em;opacity:0.8;font-style:italic;font-weight:normal;">(${_escTxt(en)})</span>` : ''}
                     </li>`;
                const renderListA = (items, items_en, limit = 8) => items.slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: '0.9em', pad: '7px 12px', mb: '7px', bg: '#fff1f2', text: '#881337', accent: '#fb7185' })).join('');
                const renderListB = (items, items_en, limit = 8) => items.slice(0, limit).map((it, i) => renderItem(it, items_en?.[i], { fs: '0.9em', pad: '7px 12px', mb: '7px', bg: '#eff6ff', text: '#1e3a8a', accent: '#60a5fa' })).join('');
@@ -48735,30 +49045,30 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   }
                 </style>
                 <div class="flowchart-print-wrapper">
-                <div role="img" aria-label="Flow chart: ${main}" style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 700px; margin: 0 auto; font-family: sans-serif;">
-                      <div style="background: linear-gradient(135deg, white 0%, #f8fafc 100%); color: #1e293b; padding: 16px 40px; border-radius: 50px; text-align: center; border: 2px solid #475569; margin-bottom: 20px; box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.12); z-index: 20; position: relative;"><h3 style="margin:0; font-size:1.4em; font-weight: 800; letter-spacing: -0.01em;">${main}</h3>${main_en ? `<div style="font-size:0.85em; color:#64748b; font-weight: normal; margin-top:4px; font-style:italic;">(${main_en})</div>` : ''}</div>
+                <div role="img" aria-label="Flow chart: ${_escTxt(main)}" style="display: flex; flex-direction: column; align-items: center; width: 100%; max-width: 700px; margin: 0 auto; font-family: sans-serif;">
+                      <div style="background: linear-gradient(135deg, white 0%, #f8fafc 100%); color: #1e293b; padding: 16px 40px; border-radius: 50px; text-align: center; border: 2px solid #475569; margin-bottom: 20px; box-shadow: 0 4px 10px -2px rgba(0, 0, 0, 0.12); z-index: 20; position: relative;"><h3 style="margin:0; font-size:1.4em; font-weight: 800; letter-spacing: -0.01em;">${_escTxt(main)}</h3>${main_en ? `<div style="font-size:0.85em; color:#64748b; font-weight: normal; margin-top:4px; font-style:italic;">(${_escTxt(main_en)})</div>` : ''}</div>
                       <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                       ${branches.map((b, idx) => {
                           const c = _pairColor(idx);
-                          const isDecision = b.title.includes("?") || b.title.toLowerCase().includes("decision");
+                          const isDecision = String(b.title || '').includes("?") || String(b.title || '').toLowerCase().includes("decision");
                           const hasBranches = b.items && b.items.length > 1;
-                          const stepLabel = `Step ${idx + 1} of ${total}: ${b.title}`;
+                          const stepLabel = `Step ${idx + 1} of ${total}: ${b.title || ''}`;
                           return `<div aria-hidden="true" style="height: 32px; width: 3px; background: ${c.border};"></div><div aria-hidden="true" style="color: ${c.border}; font-size: 16px; line-height: 1; margin-top: -4px; margin-bottom: 4px;">&#9660;</div>
-                              <div class="flowchart-step" role="group" aria-label="${stepLabel}" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                              <div class="flowchart-step" role="group" aria-label="${_escTxt(stepLabel)}" style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                                   ${isDecision
                     ? `<div style="position: relative; width: 130px; height: 130px; margin-bottom: 16px; display: flex; align-items: center; justify-content: center;">` +
                       `<div aria-hidden="true" style="position: absolute; inset: 0; top:0; left:0; right:0; bottom:0; background: ${c.soft}; border: 2px solid ${c.border}; transform: rotate(45deg); border-radius: 4px; z-index: 1; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);"></div>` +
                       `<div style="position: relative; z-index: 2; text-align: center; width: 160px; display: flex; flex-direction: column; align-items: center; justify-content: center;">` +
-                      `<span style="font-weight: bold; font-size: max(12px, 0.75rem); color: ${c.accent}; line-height: 1.25; word-wrap: break-word;">${idx + 1}. ${b.title}</span>` +
-                      `${b.title_en ? `<span style="font-size: max(12px, 0.65rem); color: ${c.accent}; opacity: 0.85; line-height: 1.25; margin-top: 4px;">(${b.title_en})</span>` : ''}` +
+                      `<span style="font-weight: bold; font-size: max(12px, 0.75rem); color: ${c.accent}; line-height: 1.25; word-wrap: break-word;">${idx + 1}. ${_escTxt(b.title)}</span>` +
+                      `${b.title_en ? `<span style="font-size: max(12px, 0.65rem); color: ${c.accent}; opacity: 0.85; line-height: 1.25; margin-top: 4px;">(${_escTxt(b.title_en)})</span>` : ''}` +
                       `</div></div>`
                     : `<div style="background: ${c.bg}; border: 2px solid ${c.border}; border-radius: 8px; padding: 16px; text-align: center; width: 256px; min-height: 60px; display: flex; flex-direction: column; justify-content: center; z-index: 10; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">` +
-                      `<span style="font-weight: bold; font-size: 0.875rem; color: ${c.accent};">${idx + 1}. ${b.title}</span>` +
-                      `${b.title_en ? `<span style="font-size: max(12px, 0.75rem); color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${b.title_en})</span>` : ''}` +
+                      `<span style="font-weight: bold; font-size: 0.875rem; color: ${c.accent};">${idx + 1}. ${_escTxt(b.title)}</span>` +
+                      `${b.title_en ? `<span style="font-size: max(12px, 0.75rem); color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${_escTxt(b.title_en)})</span>` : ''}` +
                       `</div>`}
                                   ${hasBranches ? `<div aria-hidden="true" style="width: 2px; height: 12px; background: ${c.border};${isDecision ? ' margin-top: 10px;' : ''}"></div><div class="flow-kids">
-                                      ${b.items.map((item, k) => `<div class="flow-kid" style="color: ${c.border};"><div style="background: white; border: 1px solid ${c.border}; padding: 8px; border-radius: 4px; font-size: max(12px, 0.75rem); color: ${c.accent}; text-align: center; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); width: 100%; box-sizing: border-box; flex: 1; min-width: 0; overflow-wrap: break-word; display: flex; flex-direction: column; justify-content: center;">${item}${b.items_en?.[k] ? `<div style="font-size: max(12px, 0.65rem); color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${b.items_en[k]})</div>` : ''}</div></div>`).join('')}</div>` : `
-                                      ${b.items && b.items.length === 1 && b.items[0] ? `<div style="margin-top: 8px; background: ${c.bg}; color: ${c.accent}; font-size: max(12px, 0.75rem); padding: 4px 12px; border-radius: 9999px; border: 1px solid ${c.border};">${b.items[0]} ${b.items_en?.[0] ? `<span style="opacity: 0.85;">(${b.items_en[0]})</span>` : ''}</div>` : ''}`}
+                                      ${b.items.map((item, k) => `<div class="flow-kid" style="color: ${c.border};"><div style="background: white; border: 1px solid ${c.border}; padding: 8px; border-radius: 4px; font-size: max(12px, 0.75rem); color: ${c.accent}; text-align: center; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); width: 100%; box-sizing: border-box; flex: 1; min-width: 0; overflow-wrap: break-word; display: flex; flex-direction: column; justify-content: center;">${_escTxt(item)}${b.items_en?.[k] ? `<div style="font-size: max(12px, 0.65rem); color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${_escTxt(b.items_en[k])})</div>` : ''}</div></div>`).join('')}</div>` : `
+                                      ${b.items && b.items.length === 1 && b.items[0] ? `<div style="margin-top: 8px; background: ${c.bg}; color: ${c.accent}; font-size: max(12px, 0.75rem); padding: 4px 12px; border-radius: 9999px; border: 1px solid ${c.border};">${_escTxt(b.items[0])} ${b.items_en?.[0] ? `<span style="opacity: 0.85;">(${_escTxt(b.items_en[0])})</span>` : ''}</div>` : (isWorksheet ? `<div style="width:240px;margin-top:8px;">${ruledLines(2)}</div>` : '')}`}
                               </div>`;
                       }).join('')}
                       <div aria-hidden="true" style="height: 32px; width: 3px; background: #475569;"></div><div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; font-size: 0.85em; font-weight: bold; padding: 10px 28px; border-radius: 9999px; border: 2px solid #475569; box-shadow: 0 4px 8px -2px rgba(0,0,0,0.2); letter-spacing: 0.04em; text-transform: uppercase;">${t('organizer.labels.end')}</div></div></div></div>`;
@@ -48954,20 +49264,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       const endX = startX - 40;
                       const endY = isTop ? 60 : VIEW_H - 60;
                       const labelY = isTop ? endY - 8 : endY + 16;
-                      return `<g><line x1="${startX}" y1="${SPINE_Y}" x2="${endX}" y2="${endY}" stroke="#a78bfa" stroke-width="3" stroke-linecap="round" /><circle cx="${endX}" cy="${endY}" r="6" fill="#7c3aed" /><text x="${endX - 6}" y="${labelY}" text-anchor="end" fill="#5b21b6" font-weight="800" font-size="13" font-family="Inter, sans-serif">${b.title || `Category ${i + 1}`}</text></g>`;
+                      return `<g><line x1="${startX}" y1="${SPINE_Y}" x2="${endX}" y2="${endY}" stroke="currentColor" stroke-opacity="0.72" stroke-width="3" stroke-linecap="round" /><circle cx="${endX}" cy="${endY}" r="6" fill="currentColor" /><text x="${endX - 6}" y="${labelY}" text-anchor="end" fill="currentColor" font-weight="800" font-size="13" font-family="Inter, sans-serif">${_escTxt(b.title || `Category ${i + 1}`)}</text></g>`;
                   }).join('');
                   const cardsHtml = branches.map((branch, bi) => {
                       const items = (branch.items || []).map((it, k) => {
                           const text = typeof it === 'object' ? (it.text || '') : String(it);
                           const trans = branch.items_en?.[k];
-                          return `<li style="margin-bottom: 6px; padding: 6px 10px; background: #faf5ff; border-left: 3px solid #c4b5fd; border-radius: 6px; color: #5b21b6; font-size: 0.9em; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${text}${trans ? `<div style="font-style: italic; opacity: 0.75; font-size: 0.85em;">(${trans})</div>` : ''}</li>`;
+                          return `<li style="margin-bottom: 6px; padding: 6px 10px; background: #faf5ff; border-left: 3px solid #c4b5fd; border-radius: 6px; color: #5b21b6; font-size: 0.9em; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${_escTxt(text)}${trans ? `<div style="font-style: italic; opacity: 0.75; font-size: 0.85em;">(${_escTxt(trans)})</div>` : ''}</li>`;
                       }).join('');
-                      return `<div style="background: white; border: 2px solid #ddd6fe; border-radius: 12px; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid;">
+                      return `<div class="alloflow-fishbone-card" style="background: white; border: 2px solid #ddd6fe; border-radius: 12px; overflow: hidden; -webkit-print-color-adjust: exact; print-color-adjust: exact; page-break-inside: avoid;">
                         <div style="background: linear-gradient(to right, #ede9fe, #fae8ff); padding: 10px 14px; border-bottom: 2px solid #ddd6fe;">
-                          <div style="color: #581c87; font-weight: 800; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em;">${branch.title || `Category ${bi + 1}`}</div>
-                          ${branch.title_en ? `<div style="font-size: max(12px, 0.75em); color: #7c3aed; font-style: italic;">(${branch.title_en})</div>` : ''}
+                          <div style="color: #581c87; font-weight: 800; font-size: 0.85em; text-transform: uppercase; letter-spacing: 0.05em;">${_escTxt(branch.title || `Category ${bi + 1}`)}</div>
+                          ${branch.title_en ? `<div style="font-size: max(12px, 0.75em); color: #7c3aed; font-style: italic;">(${_escTxt(branch.title_en)})</div>` : ''}
                         </div>
-                        <ul style="list-style: none; padding: 12px; margin: 0;">${items || '<li style="font-style: italic; color: #64748b; font-size: 0.85em; text-align: center;">No causes</li>'}</ul>
+                        <ul style="list-style: none; padding: 12px; margin: 0;">${items || (isWorksheet ? `<li>${ruledLines(3)}</li>` : '<li style="font-style: italic; color: #64748b; font-size: 0.85em; text-align: center;">No causes</li>')}</ul>
                       </div>`;
                   }).join('');
                   innerContent = `
@@ -48978,15 +49288,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     </style>
                     <div class="fishbone-print-wrapper">
                       <div style="text-align:center; margin-bottom: 20px;">
-                        <h3 style="margin:0; font-size: 1.5em; color: #2c3e50; font-weight: 800;">${main}</h3>
-                        ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:4px;">(${main_en})</div>` : ''}
+                        <h3 style="margin:0; font-size: 1.5em; color: #2c3e50; font-weight: 800;">${_escTxt(main)}</h3>
+                        ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:4px;">(${_escTxt(main_en)})</div>` : ''}
                       </div>
-                      <div style="background: white; border: 2px solid #e9d5ff; border-radius: 12px; padding: 16px; margin-bottom: 20px;">
-                        <svg role="img" aria-label="Fishbone diagram for ${main}" viewBox="0 0 ${VIEW_W} ${VIEW_H}" style="width: 100%; height: auto; max-width: 900px;" xmlns="http://www.w3.org/2000/svg">
-                          <polygon points="${TAIL_X},${SPINE_Y - 20} ${TAIL_X + 30},${SPINE_Y} ${TAIL_X},${SPINE_Y + 20}" fill="#a78bfa" opacity="0.5" />
-                          <line x1="${TAIL_X + 30}" y1="${SPINE_Y}" x2="${HEAD_X}" y2="${SPINE_Y}" stroke="#7c3aed" stroke-width="6" stroke-linecap="round" />
-                          <rect x="${HEAD_X}" y="${SPINE_Y - 40}" width="120" height="80" rx="12" fill="#7c3aed" />
-                          ${(() => { const lines = []; let cur = ''; String(main || 'Effect').split(' ').filter(Boolean).forEach((w) => { if (cur && (cur + ' ' + w).length > 13) { lines.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w; }); if (cur) lines.push(cur); const shown = lines.slice(0, 5); if (lines.length > 5) shown[4] = shown[4] + '…'; const size = shown.some((l) => l.length > 14) ? 8 : 10; const y0 = SPINE_Y + 4 - (shown.length - 1) * 6; return `<text text-anchor="middle" fill="white" font-weight="800" font-size="${size}" font-family="Inter, sans-serif">${shown.map((l, i) => `<tspan x="${HEAD_X + 60}" y="${y0 + i * 12}">${l}</tspan>`).join('')}</text>`; })()}
+                      <div class="alloflow-fishbone-wrap" style="background: white; border: 2px solid #e9d5ff; border-radius: 12px; padding: 16px; margin-bottom: 20px; color: #5b21b6;">
+                        <svg class="alloflow-fishbone-svg" role="img" aria-label="Fishbone diagram for ${_escTxt(main)}" viewBox="0 0 ${VIEW_W} ${VIEW_H}" style="width: 100%; height: auto; max-width: 900px; color: inherit;" xmlns="http://www.w3.org/2000/svg">
+                          <polygon points="${TAIL_X},${SPINE_Y - 20} ${TAIL_X + 30},${SPINE_Y} ${TAIL_X},${SPINE_Y + 20}" fill="currentColor" opacity="0.45" />
+                          <line x1="${TAIL_X + 30}" y1="${SPINE_Y}" x2="${HEAD_X}" y2="${SPINE_Y}" stroke="currentColor" stroke-width="6" stroke-linecap="round" />
+                          <rect class="alloflow-fishbone-head" x="${HEAD_X}" y="${SPINE_Y - 40}" width="120" height="80" rx="12" fill="currentColor" />
+                          ${(() => { const lines = []; let cur = ''; String(main || 'Effect').split(' ').filter(Boolean).forEach((w) => { if (cur && (cur + ' ' + w).length > 13) { lines.push(cur); cur = w; } else cur = cur ? cur + ' ' + w : w; }); if (cur) lines.push(cur); const shown = lines.slice(0, 5); if (lines.length > 5) shown[4] = shown[4] + '…'; const size = shown.some((l) => l.length > 14) ? 8 : 10; const y0 = SPINE_Y + 4 - (shown.length - 1) * 6; return `<text class="alloflow-fishbone-head-text" text-anchor="middle" fill="white" font-weight="800" font-size="${size}" font-family="Inter, sans-serif">${shown.map((l, i) => `<tspan x="${HEAD_X + 60}" y="${y0 + i * 12}">${_escTxt(l)}</tspan>`).join('')}</text>`; })()}
                           ${boneSvg}
                         </svg>
                       </div>
@@ -49098,7 +49408,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     </style>
                     <div class="palace-print-wrapper" style="max-width: 860px; margin: 0 auto;">
                       <div style="text-align: center; margin-bottom: 26px;">
-                        <div style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%); color: white; padding: 20px 40px; border-radius: 18px; display: inline-block; box-shadow: 0 8px 20px -4px rgba(30,27,75,0.4);">
+                        <div class="alloflow-palace-header" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%); color: white; padding: 20px 40px; border-radius: 18px; display: inline-block; box-shadow: 0 8px 20px -4px rgba(30,27,75,0.4);">
                           <h3 style="margin: 0; font-size: 1.45em; font-weight: 800; color: inherit;">&#127963; ${main}</h3>
                           ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 5px; font-style: italic;">(${main_en})</div>` : ''}
                         </div>
@@ -49147,7 +49457,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     </style>
                     <div class="cspace-print-wrapper" style="max-width: 860px; margin: 0 auto;">
                       <div style="text-align: center; margin-bottom: 26px;">
-                        <div style="background: linear-gradient(135deg, #312e81 0%, #4338ca 60%, #6366f1 100%); color: white; padding: 20px 40px; border-radius: 18px; display: inline-block; box-shadow: 0 8px 20px -4px rgba(49,46,129,0.4);">
+                        <div class="alloflow-cspace-header" style="background: linear-gradient(135deg, #312e81 0%, #4338ca 60%, #6366f1 100%); color: white; padding: 20px 40px; border-radius: 18px; display: inline-block; box-shadow: 0 8px 20px -4px rgba(49,46,129,0.4);">
                           <h3 style="margin: 0; font-size: 1.45em; font-weight: 800; color: inherit;">${main}</h3>
                           ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 5px; font-style: italic;">(${main_en})</div>` : ''}
                         </div>
@@ -49191,22 +49501,23 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     </style>
                     <div class="outline-print-wrapper" style="max-width: 900px; margin: 0 auto; text-align: center;">
                       <div style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 50%, #4338ca 100%); color: white; padding: 22px 44px; border-radius: 18px; display: inline-block; margin-bottom: 28px; box-shadow: 0 8px 20px -4px rgba(79,70,229,0.35); position: relative;">
-                        <h3 style="margin: 0; font-size: 1.5em; font-weight: 800; letter-spacing: -0.01em; color: inherit; text-shadow: 0 1px 2px rgba(30,27,75,0.25);">${main}</h3>
-                        ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 6px; font-style: italic;">(${main_en})</div>` : ''}
+                        <h3 style="margin: 0; font-size: 1.5em; font-weight: 800; letter-spacing: -0.01em; color: inherit; text-shadow: 0 1px 2px rgba(30,27,75,0.25);">${_escTxt(main)}</h3>
+                        ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 6px; font-style: italic;">(${_escTxt(main_en)})</div>` : ''}
                       </div>
                       <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 16px;">
                         ${branches.map((b, i) => {
                           const c = _pairColor(i);
+                          const branchItems = Array.isArray(b.items) ? b.items : [];
                           return `<div class="outline-card" style="flex: 1; min-width: 220px; max-width: 320px; background: white; border: 2px solid ${c.border}; border-radius: 12px; overflow: hidden; text-align: left; box-shadow: 0 3px 8px -2px rgba(0,0,0,0.08);">
                             <div style="background: linear-gradient(135deg, ${c.bg} 0%, ${c.soft} 100%); padding: 12px 16px; font-weight: 800; color: ${c.accent}; text-align: center; border-bottom: 2px solid ${c.border}; font-size: 0.95em; letter-spacing: -0.01em;">
-                              ${b.title}${b.title_en ? `<div style="font-weight: normal; font-size: max(12px, 0.78em); color: ${c.accent}; opacity: 0.8; margin-top: 3px; font-style: italic;">(${b.title_en})</div>` : ''}
+                              ${_escTxt(b.title)}${b.title_en ? `<div style="font-weight: normal; font-size: max(12px, 0.78em); color: ${c.accent}; opacity: 0.8; margin-top: 3px; font-style: italic;">(${_escTxt(b.title_en)})</div>` : ''}
                             </div>${b.kwlNote ? `<p style="margin: 12px 18px 0; font-size: 0.85em; font-weight: 700; color: #334155;">${_escTxt(b.kwlNote)}</p>${b.kwlPrompt ? (isWorksheet ? '<div aria-hidden="true" style="margin: 10px 18px 14px; height: 7.5em; background: repeating-linear-gradient(transparent, transparent 2.4em, #94a3b8 2.4em, #94a3b8 2.5em);"></div>' : `<textarea class="interactive-textarea alloflow-response-input" rows="5" data-allo-response-key="${_escTxt(String(item.id || 'outline') + ':kwl:' + i)}" data-allo-response-type="free-response" data-allo-question="${_escTxt(b.kwlNote)}" aria-label="${_escTxt(b.kwlNote)}" style="display:block; box-sizing:border-box; width:calc(100% - 36px); margin: 10px 18px 14px;"></textarea>`) : ''}` : ''}
                             <ul style="padding: 14px 18px; margin: 0; list-style: none; color: ${c.accent};">
-                              ${(b.items || []).map((it, k) => {
+                              ${branchItems.length ? branchItems.map((it, k) => {
                                 const text = typeof it === 'object' ? (it.text || '') : String(it);
                                 const trans = b.items_en?.[k];
-                                return `<li style="display:flex; gap:8px; align-items:flex-start; margin-bottom: 6px; font-size:0.9em; line-height:1.4;"><span style="color:${c.border}; flex-shrink:0; margin-top:2px;" aria-hidden="true">&#9656;</span><span>${text}${trans ? ` <em style="color: ${c.accent}; opacity: 0.7; font-size: 0.9em;">(${trans})</em>` : ''}</span></li>`;
-                              }).join('')}
+                                return `<li style="display:flex; gap:8px; align-items:flex-start; margin-bottom: 6px; font-size:0.9em; line-height:1.4;"><span style="color:${c.border}; flex-shrink:0; margin-top:2px;" aria-hidden="true">&#9656;</span><span>${_escTxt(text)}${trans ? ` <em style="color: ${c.accent}; opacity: 0.7; font-size: 0.9em;">(${_escTxt(trans)})</em>` : ''}</span></li>`;
+                              }).join('') : (isWorksheet && !b.kwlPrompt ? `<li>${ruledLines(3, b.scaffoldPrompt || b.prompt || '')}</li>` : '')}
                             </ul>
                           </div>`;
                         }).join('')}
@@ -49333,7 +49644,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     @media print { details.diagram-text-fallback:not([open]) { display:none !important; } }
                     html[data-alloflow-theme="dark"] .diagram-text-fallback-body,html[data-alloflow-theme="dark"] .diagram-text-fallback-body p,html[data-alloflow-theme="dark"] .diagram-text-fallback-body h4,html[data-alloflow-theme="dark"] .diagram-text-fallback-body li,html[data-alloflow-theme="dark"] .diagram-text-fallback-body strong,html[data-alloflow-theme="dark"] .diagram-text-fallback-body em { color:#fff !important; }
                   </style>
-                  <details class="diagram-text-fallback" data-diagram-auto-open="large-text" style="margin-top:1rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.5rem 0.75rem;">
+                  <details class="diagram-text-fallback alloflow-keep-closed-print" data-diagram-auto-open="large-text" style="margin-top:1rem;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:0.5rem 0.75rem;">
                       <summary style="cursor:pointer;font-weight:700;color:#475569;font-size:0.9rem;padding:6px 0;"><span aria-hidden="true">📋 </span>${_uiL('export.view_as_text', 'View as text')}</summary>
                       <div class="diagram-text-fallback-body" style="margin-top:0.5rem;color:#1e293b;font-size:0.95rem;line-height:1.5;">
                           <p style="margin:0 0 0.5rem 0;font-weight:700;">${escape(main)}${main_en ? ` <em style="color:#64748b;font-size:0.9em;font-weight:normal;">(${escape(main_en)})</em>` : ''}</p>
@@ -49663,8 +49974,23 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               }
               return -1;
           };
+          const _resolveOptionListIdx = (opts, candidate) => {
+              if (!Array.isArray(opts) || !opts.length || candidate === undefined || candidate === null) return -1;
+              if (typeof candidate === 'number' && candidate >= 0 && candidate < opts.length) return candidate;
+              const s = String(candidate).trim();
+              if (/^[A-Za-z]$/.test(s)) {
+                  const idx = s.toUpperCase().charCodeAt(0) - 65;
+                  if (idx >= 0 && idx < opts.length) return idx;
+              }
+              const norm = (v) => String(v == null ? '' : v).trim().toLowerCase();
+              const target = norm(s);
+              return opts.findIndex((o) => norm(o) === target);
+          };
           const hasCheckableFill = !quizGraded && quizQuestions.some((q) => q && q.type === 'fill-blank' && typeof q.expectedFill === 'string' && q.expectedFill.trim());
-          const hasSelfCheckableQuestions = hasCheckableFill || quizQuestions.some((q) => !q?.type || q.type === 'mcq');
+          const hasCheckableMulti = !quizGraded && quizQuestions.some((q) => q && q.type === 'multi-select' && Array.isArray(q.correctAnswers) && q.correctAnswers.length > 0);
+          const hasCheckableNumeric = !quizGraded && quizQuestions.some((q) => q && q.type === 'numeric-response' && q.correctValue !== undefined && q.correctValue !== null && !Number.isNaN(Number(q.correctValue)));
+          const hasCheckableStructured = !quizGraded && quizQuestions.some((q) => q && (q.type === 'sequence-sense' || q.type === 'relation-mismatch' || q.type === 'answer-evidence'));
+          const hasSelfCheckableQuestions = hasCheckableFill || hasCheckableMulti || hasCheckableNumeric || hasCheckableStructured || quizQuestions.some((q) => !q?.type || q.type === 'mcq');
           // Classify this resource's actual rendered formats, rather than the
           // other quizzes in a packet. Missing types retain legacy MCQ behavior.
           const quizQuestionTypes = quizQuestions.map(q => q.type === 'shortAnswer' ? 'short-answer' : (q.type || 'mcq'));
@@ -49704,22 +50030,26 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           if (itemType === 'multi-select') {
                               const options = Array.isArray(q.options) ? q.options : [];
                               const correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
+                              const correctMultiIndices = correctAnswers.map((a) => _resolveOptionListIdx(options, a)).filter((idx) => idx >= 0).filter((v, idx, arr) => arr.indexOf(v) === idx).sort((a, b) => a - b);
+                              const multiAttr = !quizGraded && !isTeacher && !isWorksheet && correctMultiIndices.length ? ` data-correct-multi="${correctMultiIndices.join(',')}"` : '';
+                              const multiFeedback = multiAttr ? `<p id="${controlIdBase}_feedback" class="alloflow-quiz-feedback" hidden data-correct-label="${_qL('export.quiz_feedback_correct', 'Correct')}" data-review-label="${_qL('export.quiz_feedback_review', 'Review needed')}" data-unanswered-label="${_qL('export.quiz_feedback_unanswered', 'Unanswered')}" style="margin:0.5rem 0;font-weight:700;"></p>` : '';
                               return `
-                              <div class="question" data-item-type="multi-select"${questionGroupAttrs}>
+                              <div class="question" data-item-type="multi-select"${multiAttr}${questionGroupAttrs}>
                                   ${stem}
                                   <fieldset class="alloflow-response-group">
                                       <legend>${_qL('export.quiz_select_all', 'Select all that apply.')}</legend>
-                                      <div class="options">
+                                      <div class="options${options.length >= 2 && options.every(o => String(o || '').trim().length < 38) ? ' alloflow-options-2col' : ''}">
                                           ${options.map((opt, optIdx) => `
                                               <label class="mcq-label alloflow-choice-label">
                                                   ${isWorksheet
                                                       ? fillableSquare()
                                                       : `<input type="checkbox" name="${controlIdBase}_multi" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:multi">`}
-                                                  <span>${_escQuiz(opt)}</span>
+                                                  <span>${optIdx < 26 ? `<span class="alloflow-option-letter" style="font-weight:700;margin-inline-end:4px;">${String.fromCharCode(65 + optIdx)}.</span>` : ''}${_escQuiz(opt)}</span>${!isWorksheet && !isTeacher && optIdx < 9 ? `<kbd class="alloflow-keycap" aria-hidden="true">${optIdx + 1}</kbd>` : ''}
                                               </label>
                                           `).join('')}
                                       </div>
                                   </fieldset>
+                                  ${multiFeedback}
                                   ${isTeacher && correctAnswers.length ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${correctAnswers.map(_escTxt).join(', ')}</p>` : ''}
                               </div>`;
                           }
@@ -49785,8 +50115,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                   : misplacedPositions.length === 1
                                       ? 'item #' + (misplacedPositions[0] + 1) + ' is misplaced'
                                       : 'items #' + misplacedPositions.map((position) => position + 1).join(' and #') + (misplacedPositions.length === 2 && misplacedPositions[1] === misplacedPositions[0] + 1 ? ' are swapped (either counts)' : ' are out of place');
+                              const _seqPrincipleIdx = _resolveOptionListIdx(principleOpts, q.orderingPrinciple);
+                              const _seqKeyAttr = !quizGraded && !isTeacher && !isWorksheet ? ` data-sequence-key="${_escTxt(encodeURIComponent(JSON.stringify({ short: shortSequence, verdict: misplacedPositions.length === 0 ? 'yes' : 'no', items1: misplacedPositions.map((p) => p + 1), order: correctOrderNumbers, principleIdx: _seqPrincipleIdx })))}"` : '';
+                              const _seqFeedback = _seqKeyAttr ? `<p id="${controlIdBase}_feedback" class="alloflow-quiz-feedback" hidden data-correct-label="${_qL('export.quiz_feedback_correct', 'Correct')}" data-review-label="${_qL('export.quiz_feedback_review', 'Review needed')}" data-unanswered-label="${_qL('export.quiz_feedback_unanswered', 'Unanswered')}" style="margin:0.5rem 0;font-weight:700;"></p>` : '';
                               return `
-                              <div class="question" data-item-type="sequence-sense"${questionGroupAttrs}>
+                              <div class="question" data-item-type="sequence-sense"${_seqKeyAttr}${questionGroupAttrs}>
                                   ${stem}
                                   <p style="font-style:italic;color:#475569;font-size:0.9rem;margin:0.25rem 0;">${shortSequence ? _qL('export.quiz_sequence_compact_intro', 'Arrange the sequence and identify the ordering principle.') : _qL('export.quiz_sequence_intro', 'Below is a sequence — verify and explain.')}</p>
                                   <ol style="margin:0.5rem 0 0.75rem 1.5rem;">
@@ -49813,14 +50146,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                           ? `<strong style="font-size:0.9rem;">${shortSequence ? _qL('export.quiz_sequence_compact_principle', '2. Ordering principle:') : _qL('export.quiz_sequence_principle_print', '3. Ordering principle:')}</strong> <span style="color:#475569;">${principleOpts.map(_escTxt).join(' / ')}</span> ${fillableBlank(150)}`
                                           : `<label id="${controlIdBase}_sequence_principle_label" for="${controlIdBase}_sequence_principle" class="alloflow-response-label">${shortSequence ? _qL('export.quiz_sequence_compact_principle', '2. Ordering principle:') : _qL('export.quiz_sequence_principle', "3. What's the ordering principle?")}</label><select id="${controlIdBase}_sequence_principle" class="alloflow-response-select" data-allo-response-key="${responseKeyAttr}:sequence-principle"${labeledResponseAttrs(controlIdBase + '_sequence_principle_label')}><option value="">${_qL('export.quiz_choose_principle', 'Choose a principle')}</option>${principleOpts.map((opt, optIdx) => `<option value="${optIdx}">${_escQuiz(opt)}</option>`).join('')}</select>`}
                                   </div>
+                                  ${_seqFeedback}
                                   ${isTeacher ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${shortSequence ? '' : misplacedKey + ' · '}correct order: ${correctOrderNumbers} · principle: <em>${_escQuiz(q.orderingPrinciple || '')}</em></p>` : ''}
                               </div>`;
                           }
                           if (itemType === 'relation-mismatch') {
                               const pairs = Array.isArray(q.pairs) ? q.pairs : [];
                               const candidates = Array.isArray(q.candidatePartners) ? q.candidatePartners : [];
+                              const _wrongPairIdx = Number.isInteger(q.wrongPairIndex) ? q.wrongPairIndex : 0;
+                              const _partnerIdx = _resolveOptionListIdx(candidates, q.correctPartnerForWrong);
+                              const _relKeyAttr = !quizGraded && !isTeacher && !isWorksheet ? ` data-relation-key="${_escTxt(encodeURIComponent(JSON.stringify({ wrongPair: _wrongPairIdx, partner: _partnerIdx })))}"` : '';
+                              const _relFeedback = _relKeyAttr ? `<p id="${controlIdBase}_feedback" class="alloflow-quiz-feedback" hidden data-correct-label="${_qL('export.quiz_feedback_correct', 'Correct')}" data-review-label="${_qL('export.quiz_feedback_review', 'Review needed')}" data-unanswered-label="${_qL('export.quiz_feedback_unanswered', 'Unanswered')}" style="margin:0.5rem 0;font-weight:700;"></p>` : '';
                               return `
-                              <div class="question" data-item-type="relation-mismatch"${questionGroupAttrs}>
+                              <div class="question" data-item-type="relation-mismatch"${_relKeyAttr}${questionGroupAttrs}>
                                   ${stem}
                                   <p style="font-style:italic;color:#475569;font-size:0.9rem;margin:0.25rem 0;">${_qL('export.quiz_relation_intro', 'One of these pairs is wrong. Find it and pick the correct partner.')}</p>
                                   <table style="width:100%;border-collapse:collapse;margin:0.5rem 0;">
@@ -49833,6 +50171,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                       ${pairs.map((pair, pairIdx) => `<label class="alloflow-choice-label">${isWorksheet ? fillableCircle() : `<input type="radio" name="${controlIdBase}_wrong_pair" value="${pairIdx}" data-allo-response-key="${responseKeyAttr}:wrong-pair">`}${_qL('export.quiz_pair_number', 'Pair #{n}', pairIdx + 1)}</label>`).join('')}
                                   </fieldset>
                                   ${candidates.length > 0 ? `<fieldset class="alloflow-response-group"><legend>${_qL('export.quiz_correct_partner', 'Correct partner')}</legend>${candidates.map((candidate, candidateIdx) => `<label class="alloflow-choice-label">${isWorksheet ? fillableCircle() : `<input type="radio" name="${controlIdBase}_partner" value="${candidateIdx}" data-allo-response-key="${responseKeyAttr}:partner">`}${_escQuiz(candidate)}</label>`).join('')}</fieldset>` : ''}
+                                  ${_relFeedback}
                                   ${reasoningHtml}
                                   ${isTeacher ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: pair #${(Number.isInteger(q.wrongPairIndex) ? q.wrongPairIndex : 0) + 1} is wrong · correct partner: <em>${_escQuiz(q.correctPartnerForWrong || '')}</em></p>` : ''}
                               </div>`;
@@ -49840,8 +50179,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           if (itemType === 'answer-evidence') {
                               const answerOptions = Array.isArray(q.answerOptions) ? q.answerOptions : [];
                               const evidenceOptions = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
+                              const _aeAnsIdx = _resolveOptionListIdx(answerOptions, q.correctAnswer);
+                              const _aeEvIdx = _resolveOptionListIdx(evidenceOptions, q.correctEvidence);
+                              const _aeKeyAttr = !quizGraded && !isTeacher && !isWorksheet && (_aeAnsIdx >= 0 || _aeEvIdx >= 0) ? ` data-answer-evidence-key="${_escTxt(encodeURIComponent(JSON.stringify({ answer: _aeAnsIdx, evidence: _aeEvIdx })))}"` : '';
+                              const _aeFeedback = _aeKeyAttr ? `<p id="${controlIdBase}_feedback" class="alloflow-quiz-feedback" hidden data-correct-label="${_qL('export.quiz_feedback_correct', 'Correct')}" data-review-label="${_qL('export.quiz_feedback_review', 'Review needed')}" data-unanswered-label="${_qL('export.quiz_feedback_unanswered', 'Unanswered')}" style="margin:0.5rem 0;font-weight:700;"></p>` : '';
                               return `
-                              <div class="question" data-item-type="answer-evidence"${questionGroupAttrs}>
+                              <div class="question" data-item-type="answer-evidence"${_aeKeyAttr}${questionGroupAttrs}>
                                   ${stem}
                                   <fieldset class="alloflow-response-group">
                                       <legend>${_qL('export.quiz_choose_answer', 'Choose an answer')}</legend>
@@ -49851,6 +50194,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                       <legend>${q.evidencePrompt ? _escQuiz(q.evidencePrompt) : _qL('export.quiz_choose_evidence', 'Choose the best supporting evidence')}</legend>
                                       ${evidenceOptions.map((opt, optIdx) => `<label class="mcq-label alloflow-choice-label">${isWorksheet ? fillableCircle() : `<input type="radio" name="${controlIdBase}_evidence" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:evidence">`}<span>${_escQuiz(opt)}</span></label>`).join('')}
                                   </fieldset>
+                                  ${_aeFeedback}
                                   ${reasoningHtml}
                                   ${isTeacher ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${_escQuiz(q.correctAnswer ?? '')} · evidence: ${_escQuiz(q.correctEvidence ?? '')}</p>` : ''}
                               </div>`;
@@ -49858,14 +50202,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           if (itemType === 'numeric-response') {
                               const acceptedUnits = [q.unit, ...(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : [])].filter((value, idx, list) => value && list.indexOf(value) === idx);
                               const toleranceText = q.tolerance !== undefined && q.tolerance !== null ? ` ± ${_escTxt(q.tolerance)}` : '';
+                              const _numKeyAttr = !quizGraded && !isTeacher && !isWorksheet && q.correctValue !== undefined && q.correctValue !== null && !Number.isNaN(Number(q.correctValue)) ? ` data-numeric-key="${_escTxt(encodeURIComponent(JSON.stringify({ value: Number(q.correctValue), tolerance: q.tolerance != null && !Number.isNaN(Number(q.tolerance)) ? Number(q.tolerance) : 0, units: acceptedUnits })))}"` : '';
+                              const _numFeedback = _numKeyAttr ? `<p id="${controlIdBase}_feedback" class="alloflow-quiz-feedback" hidden data-correct-label="${_qL('export.quiz_feedback_correct', 'Correct')}" data-review-label="${_qL('export.quiz_feedback_review', 'Review needed')}" data-unanswered-label="${_qL('export.quiz_feedback_unanswered', 'Unanswered')}" style="margin:0.5rem 0;font-weight:700;"></p>` : '';
                               return `
-                              <div class="question" data-item-type="numeric-response"${questionGroupAttrs}>
+                              <div class="question" data-item-type="numeric-response"${_numKeyAttr}${questionGroupAttrs}>
                                   ${stem}
                                   <div class="alloflow-numeric-response">
                                       ${isWorksheet
                                           ? `<span style="font-weight:700;">${_qL('export.quiz_value', 'Value')}:</span> ${fillableBlank(130)} <span style="font-weight:700;">${_qL('common.unit', 'Unit')}:</span> ${fillableBlank(90)}`
                                           : `<label id="${controlIdBase}_number_label" for="${controlIdBase}_number" class="alloflow-response-label">${_qL('export.quiz_value', 'Value')}</label><input id="${controlIdBase}_number" type="number" step="any" inputmode="decimal" class="alloflow-response-input alloflow-response-input-short" data-allo-response-key="${responseKeyAttr}:number"${labeledResponseAttrs(controlIdBase + '_number_label')}><label id="${controlIdBase}_unit_label" for="${controlIdBase}_unit" class="alloflow-response-label">${_qL('common.unit', 'Unit')}</label><input id="${controlIdBase}_unit" type="text" class="alloflow-response-input alloflow-response-input-short" data-allo-response-key="${responseKeyAttr}:unit"${labeledResponseAttrs(controlIdBase + '_unit_label')}>`}
                                   </div>
+                                  ${_numFeedback}
                                   ${isTeacher && q.correctValue !== undefined && q.correctValue !== null ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${_escTxt(q.correctValue)}${toleranceText}${acceptedUnits.length ? ` ${acceptedUnits.map(_escTxt).join(' / ')}` : ''}</p>` : ''}
                               </div>`;
                           }
@@ -49878,26 +50225,26 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           <div class="question" data-item-type="mcq"${correctAttr}${questionGroupAttrs}>
                               ${stem}
                               ${q.imageUrl ? `<img src="${_escTxt(q.imageUrl)}" alt="${_escTxt(typeof q.imageAltText === 'string' ? q.imageAltText : q.question || 'Question image')}" style="max-width:100%;max-height:300px;object-fit:contain;border-radius:8px;border:1px solid #e2e8f0;margin:0.5rem 0;background:#f8fafc"/>` : ''}
-                              <div class="options" role="radiogroup" aria-label="${_qL('export.quiz_choices_for', 'Answer choices for question {n}', i + 1)}"${feedbackId ? ` aria-describedby="${feedbackId}"` : ''}>
+                              <div class="options${optsArr.length >= 2 && !(Array.isArray(q.optionImageUrls) && q.optionImageUrls.some(Boolean)) && optsArr.every(o => String(o || '').trim().length < 38) ? ' alloflow-options-2col' : ''}" role="radiogroup" aria-label="${_qL('export.quiz_choices_for', 'Answer choices for question {n}', i + 1)}"${feedbackId ? ` aria-describedby="${feedbackId}"` : ''}>
                                   ${optsArr.map((opt, optIdx) => `
                                       <label class="mcq-label">
                                           ${isWorksheet
                                               ? fillableCircle()
                                               : `<input type="radio" name="${controlIdBase}_mcq" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:mcq">`}
                                           ${Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] ? `<img src="${_escTxt(q.optionImageUrls[optIdx])}" alt="${_escTxt(typeof q.optionImageAltTexts?.[optIdx] === 'string' ? q.optionImageAltTexts[optIdx] : opt)}" style="display:block;max-width:140px;max-height:80px;object-fit:contain;border-radius:4px;border:1px solid #e2e8f0;margin-bottom:4px;background:#fff"/>` : ''}
-                                          <span>${_escQuiz(opt)} ${q.options_en && q.options_en[optIdx] ? `<span${quizTranslationAttrs} style="color:#888; font-size:0.9em;">(${_escQuiz(q.options_en[optIdx])})</span>` : ''}</span>
+                                          <span>${optIdx < 26 ? `<span class="alloflow-option-letter" style="font-weight:700;margin-inline-end:4px;">${String.fromCharCode(65 + optIdx)}.</span>` : ''}${_escQuiz(opt)} ${q.options_en && q.options_en[optIdx] ? `<span${quizTranslationAttrs} style="color:#888; font-size:0.9em;">(${_escQuiz(q.options_en[optIdx])})</span>` : ''}</span>${!isWorksheet && !isTeacher && optIdx < 9 ? `<kbd class="alloflow-keycap" aria-hidden="true">${optIdx + 1}</kbd>` : ''}
                                       </label>
                                   `).join('')}
                               </div>
                               ${feedbackId ? `<p id="${feedbackId}" class="alloflow-quiz-feedback" hidden data-correct-label="${_qL('export.quiz_feedback_correct', 'Correct')}" data-review-label="${_qL('export.quiz_feedback_review', 'Review needed')}" data-unanswered-label="${_qL('export.quiz_feedback_unanswered', 'Unanswered')}" style="margin:0.5rem 0;font-weight:700;"></p>` : ''}
-                              ${isTeacher ? `<p class="answer-key" style="color: #15803d; font-weight: bold; margin-top: 10px;">${t('output.quiz_answer')}: ${_escQuiz(q.correctAnswer ?? '')}</p>` : ''}
+                              ${isTeacher ? (() => { const _mcqLtr = correctIdx >= 0 && correctIdx < 26 ? String.fromCharCode(65 + correctIdx) : ''; const _rawAns = String(q.correctAnswer ?? ''); const _ansDisp = _mcqLtr && _rawAns.trim().toUpperCase() !== _mcqLtr ? `${_mcqLtr}. ${_escQuiz(_rawAns)}` : _escQuiz(_rawAns); return `<p class="answer-key" style="color: #15803d; font-weight: bold; margin-top: 10px;">${t('output.quiz_answer')}: ${_ansDisp}</p>`; })() : ''}
                               ${isTeacher && q.factCheck ? `<div style="background:#fffbeb; padding:10px; border:1px solid #fcd34d; border-radius:4px; font-size:0.9em; margin-top:10px; white-space: pre-line; color:#92400e;"><strong>AI Verification:</strong><br/>${parseMarkdownToHTML(q.factCheck)}</div>` : ''}
                           </div>
                       `;
                       }).join('')}
                       ${quizGraded ? `<p class="alloflow-graded-note" style="margin:1rem 0;font-weight:700;color:#1e293b">${_escTxt(quizGradedNote)}</p>` : isTeacher || isWorksheet ? '' : `
                           <div class="quiz-controls" style="margin:1rem 0;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
-                              ${hasSelfCheckableQuestions ? `<button type="button" class="quiz-check-btn" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem"><span aria-hidden="true">🎯 </span>${hasCheckableFill ? _qL('export.quiz_check_answers', 'Check my answers') : _qL('export.quiz_check_mcq', 'Check multiple-choice answers')}</button>` : '<button type="button" class="quiz-check-btn" hidden disabled></button>'}
+                              ${hasSelfCheckableQuestions ? `<button type="button" class="quiz-check-btn" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem"><span aria-hidden="true">🎯 </span>${(hasCheckableFill || hasCheckableMulti) ? _qL('export.quiz_check_answers', 'Check my answers') : _qL('export.quiz_check_mcq', 'Check multiple-choice answers')}</button>` : '<button type="button" class="quiz-check-btn" hidden disabled></button>'}
                               <button type="button" class="quiz-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem"><span aria-hidden="true">↻ </span>${_qL('export.quiz_reset', 'Reset responses')}</button>
                               <div class="quiz-results" role="status" aria-live="polite" aria-atomic="true" data-answer-changed-label="${_qL('export.quiz_answer_changed', 'An answer changed. Check your answers again for an updated result.')}" data-reset-confirm-label="${_uiL('export.quiz_reset_confirm', 'This clears all your answers in this quiz. Press “{button}” again to confirm.', { button: _uiRaw('export.quiz_reset', 'Reset responses') })}" data-reset-label="${_qL('export.quiz_responses_cleared', 'Responses cleared.')}" style="font-size:0.95rem;font-weight:700;color:#1e293b;margin-left:0.5rem"></div>
                           </div>
@@ -50027,11 +50374,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               <div role="article" style="margin-bottom:16px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:16px;page-break-inside:avoid;">
                                   <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:8px;">
                                       <span aria-hidden="true" style="background:#0891b2;color:white;font-weight:800;font-size:12px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span>
-                                      <h3 style="font-weight:700;color:#0e7490;margin:0;font-size:1em;">${faq.question}</h3>
+                                      <h3 style="font-weight:700;color:#0e7490;margin:0;font-size:1em;">${_escTxt(faq.question)}</h3>
                                   </div>
-                                  ${faq.question_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 0 0 8px 34px; font-style: italic;">(${faq.question_en})</p>` : ''}
-                                  <p style="margin:0 0 0 34px;color:#334155;line-height:1.7;">${faq.answer}</p>
-                                  ${faq.answer_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 4px 0 0 34px; font-style: italic;">(${faq.answer_en})</p>` : ''}
+                                  ${faq.question_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 0 0 8px 34px; font-style: italic;">(${_escTxt(faq.question_en)})</p>` : ''}
+                                  <p style="margin:0 0 0 34px;color:#334155;line-height:1.7;">${_escTxt(faq.answer)}</p>
+                                  ${faq.answer_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 4px 0 0 34px; font-style: italic;">(${_escTxt(faq.answer_en)})</p>` : ''}
                               </div>
                           `).join('')}
                       </div>
@@ -50051,13 +50398,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           <details class="alloflow-faq-item" style="margin-bottom:10px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:10px;padding:0;page-break-inside:avoid;">
                               <summary style="list-style:none;cursor:pointer;padding:14px 16px;display:flex;align-items:flex-start;gap:10px;outline-offset:2px;">
                                   <span aria-hidden="true" style="background:#0891b2;color:white;font-weight:800;font-size:12px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${i+1}</span>
-                                  <h3 style="font-weight:700;color:#0e7490;margin:0;font-size:1em;flex:1;">${faq.question}</h3>
+                                  <h3 style="font-weight:700;color:#0e7490;margin:0;font-size:1em;flex:1;">${_escTxt(faq.question)}</h3>
                                   <span class="alloflow-faq-caret" aria-hidden="true" style="color:#64748b;font-size:12px;flex-shrink:0;transition:transform 0.2s;">▼</span>
                               </summary>
-                              ${faq.question_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 0 16px 8px 50px; font-style: italic;">(${faq.question_en})</p>` : ''}
+                              ${faq.question_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 0 16px 8px 50px; font-style: italic;">(${_escTxt(faq.question_en)})</p>` : ''}
                               <div class="alloflow-faq-answer" style="padding:0 16px 14px 50px;color:#334155;line-height:1.7;">
-                                  <p style="margin:0;">${faq.answer}</p>
-                                  ${faq.answer_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 4px 0 0 0; font-style: italic;">(${faq.answer_en})</p>` : ''}
+                                  <p style="margin:0;">${_escTxt(faq.answer)}</p>
+                                  ${faq.answer_en ? `<p style="font-size: 0.9em; color: #64748b; margin: 4px 0 0 0; font-style: italic;">(${_escTxt(faq.answer_en)})</p>` : ''}
                               </div>
                           </details>
                       `).join('')}
@@ -50087,7 +50434,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <script>
                       (function() {
                           var sec = document.getElementById(${_resourceIdJson});
-                          if (!sec) return;
+                          if (!sec || sec.dataset.alloRuntimeBound === '1') return;
+                          sec.dataset.alloRuntimeBound = '1';
                           var items = sec.querySelectorAll('details.alloflow-faq-item');
                           var btnExpand = sec.querySelector('.alloflow-faq-expand');
                           var btnCollapse = sec.querySelector('.alloflow-faq-collapse');
@@ -50255,46 +50603,73 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               </div>
           `;
       } else if (item.type === 'sentence-frames') {
-          const { mode, items, text, text_en } = item.data;
+          const sfData = item.data && typeof item.data === 'object' ? item.data : {};
+          const { mode, items, text, text_en, wordBank, rubric } = sfData;
+          const sfWordBank = (Array.isArray(wordBank) ? wordBank : []).filter((w) => typeof w === 'string' && w.trim()).slice(0, 40);
+          const wordBankHtml = sfWordBank.length ? `<div class="alloflow-sf-wordbank" style="margin-bottom:16px;padding:12px 16px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;"><div style="font-size:0.8em;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:#92400e;margin-bottom:8px;">${_uiL('scaffolds.word_bank', 'Word bank')}</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${sfWordBank.map((w) => `<span style="display:inline-block;padding:4px 12px;border-radius:9999px;background:#ffffff;border:1px solid #fcd34d;color:#78350f;font-size:0.9em;font-weight:600;">${_escTxt(w.trim())}</span>`).join('')}</div></div>` : '';
+          const tierBadge = (tier) => {
+              const map = { emerging: ['#0369a1', '#e0f2fe', '#7dd3fc', 'scaffolds.tier_emerging', 'Emerging'], expanding: ['#6d28d9', '#f3e8ff', '#c4b5fd', 'scaffolds.tier_expanding', 'Expanding'], bridging: ['#047857', '#d1fae5', '#6ee7b7', 'scaffolds.tier_bridging', 'Bridging'] };
+              const cfgTier = map[String(tier || '').toLowerCase()];
+              if (!cfgTier) return '';
+              return `<span class="alloflow-sf-tier" style="display:inline-block;margin-bottom:4px;margin-right:6px;padding:2px 8px;border-radius:9999px;font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:${cfgTier[0]};background:${cfgTier[1]};border:1px solid ${cfgTier[2]};">${_uiL(cfgTier[3], cfgTier[4])}</span>`;
+          };
           let contentHtml = '';
           if (mode === 'list') {
-              contentHtml = `<ul style="list-style:none;padding:0;">${items.map((i, idx) => {
+              const safeItems = Array.isArray(items) ? items : [];
+              contentHtml = `<ul style="list-style:none;padding:0;">${safeItems.map((i, idx) => {
+                  const frameText = i && typeof i === 'object' ? (i.text || '') : String(i || '');
+                  const frameEn = i && typeof i === 'object' ? i.text_en : '';
                   const savedVal = responses[item.id]?.[idx] || '';
+                  const rKey = String(item.id || 'sf') + ':' + idx + ':sentence-frame';
                   const inputHtml = isWorksheet
                       ? ruledLines(2)
-                      : `<textarea class="interactive-textarea" style="height: 60px;border-left:3px solid #4f46e5;" aria-label="${i.text}" placeholder="${t('common.complete_sentence')}">${savedVal}</textarea>`;
+                      : `<textarea class="interactive-textarea alloflow-response-input" data-allo-response-key="${_escTxt(rKey)}" data-allo-response-type="sentence-frame" data-allo-question="${_escTxt(frameText)}" style="height: 60px;border-left:3px solid #4f46e5;" aria-label="${_escTxt(frameText)}" placeholder="${_escTxt(t('common.complete_sentence'))}">${_escTxt(savedVal)}</textarea>`;
                   return `
                   <li style="margin-bottom:15px; font-size: 1.1em; break-inside: avoid;">
                       <div style="display:flex;align-items:flex-start;gap:10px;margin-bottom:5px;">
                           <span class="alloflow-frame-num" style="background:#4f46e5;color:white;font-weight:800;font-size:12px;width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex-shrink:0;">${idx+1}</span>
                           <div>
-                              ${i.text}
-                              ${i.text_en ? `<span style="font-size:0.8em; color:#666; margin-left: 5px;">(${i.text_en})</span>` : ''}
+                              ${i && typeof i === 'object' && i.tier ? tierBadge(i.tier) : ''}
+                              ${_escTxt(frameText)}
+                              ${frameEn ? `<span style="font-size:0.8em; color:#666; margin-left: 5px;">(${_escTxt(frameEn)})</span>` : ''}
                           </div>
                       </div>
                       ${inputHtml}
                   </li>`;
               }).join('')}</ul>`;
           } else {
-              let pIdx = 0;
-              const filledText = text.replace(/\[.*?\]/g, (match) => {
-                   const savedVal = responses[item.id]?.[`paragraph-${pIdx}`] || '';
-                   pIdx++;
-                   return isWorksheet
-                       ? fillableBlank(150)
-                       : `<input aria-label="Fill in the blank" type="text" class="interactive-blank" placeholder="___________" value="${savedVal}">`;
-              });
+              // Keep numeric citations like [1] or Markdown links intact; convert [cue] and ___+ to blanks.
+              const blankRe = /(\[(?!\s*\d+(?:\s*[,;-]\s*\d+)*\s*\])[^\]\n]*\](?!\()|_{3,})/g;
+              const rawText = String(text || '');
+              const parts = rawText.split(blankRe);
+              const filledText = parts.map((part, pIndex) => {
+                  if (pIndex % 2 === 0) return _escTxt(part);
+                  const cue = part.startsWith('[') ? part.slice(1, -1).trim() : '';
+                  const legacyVal = responses[item.id]?.[`paragraph-${pIndex}`];
+                  const oldSeqIdx = (pIndex - 1) / 2;
+                  const savedVal = legacyVal !== undefined ? legacyVal : (responses[item.id]?.[`paragraph-${oldSeqIdx}`] || '');
+                  const rKey = String(item.id || 'sf') + ':paragraph-' + pIndex + ':sentence-frame';
+                  if (isWorksheet) {
+                      return fillableBlank(150) + (cue && !/^_+$/.test(cue) ? ` <span style="font-size:0.82em;color:#64748b;font-style:italic;">(${_escTxt(cue)})</span>` : '');
+                  }
+                  return `<input aria-label="${_escTxt(cue || 'Fill in the blank')}" type="text" class="interactive-blank alloflow-response-input" data-allo-response-key="${_escTxt(rKey)}" data-allo-response-type="sentence-frame" data-allo-question="${_escTxt(cue || 'Sentence frame blank')}" placeholder="${_escTxt(cue || '___________')}" value="${_escTxt(savedVal)}">`;
+              }).join('');
               contentHtml = `
                   <div style="line-height: 2.5; border: 1px solid #ddd; padding: 20px; border-radius: 8px; background: #fafafa;">
                       ${filledText}
                   </div>
-                  ${text_en ? `<div style="margin-top:20px; color:#666; font-style:italic;"><strong>Translation:</strong><br>${text_en}</div>` : ''}
+                  ${text_en ? `<div style="margin-top:20px; color:#666; font-style:italic;"><strong>Translation:</strong><br>${_escTxt(text_en)}</div>` : ''}
               `;
           }
+          const rubricHtml = (rubric && (isTeacher || !cfg.assessmentMode))
+              ? `<div class="alloflow-sf-rubric" style="margin-top:16px;padding:12px 16px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;"><div style="font-size:0.85em;font-weight:800;color:#334155;margin-bottom:6px;">${isIndependentMode ? _uiL('scaffolds.self_checklist', 'Self-Checklist') : _uiL('scaffolds.rubric', 'Grading Rubric')}</div>${typeof rubric === 'string' ? parseMarkdownToHTML(rubric, { minHeadingLevel: 3 }) : `<pre style="white-space:pre-wrap;margin:0;font-family:inherit;">${_escTxt(JSON.stringify(rubric, null, 2))}</pre>`}</div>`
+              : '';
           return `
               <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
+                  ${wordBankHtml}
                   ${contentHtml}
+                  ${rubricHtml}
               </div>
           `;
       } else if (item.type === 'math') {
@@ -50326,40 +50701,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           // problem before checking. Print mode + worksheet mode show everything
           // flat.
           const _mathHideSolution = (cfg.mathHideSolution !== false && !isWorksheet);
+          const _studentMathCollapsible = !isTeacher && !isWorksheet && !cfg.assessmentMode && cfg.includeAnswerKey === true;
+          const _mathPrintOpenAttr = cfg.mode === 'print' ? ' open' : '';
           // Teacher option for drill sets: half the paper work space (student worksheet only).
           const _mathCompact = isWorksheet && !isTeacher && cfg.worksheetMathCompact === true;
-          return `
-              <div class="section alloflow-math-section" id="${_escTxt(item.id)}" data-math-section="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
-                  ${enhancedHeader}
-                  ${graphData ? `
-                    <div style="text-align:center; margin:20px 0; padding:20px; background:white; border:1px solid #cbd5e1; border-radius:8px;">
-                        ${graphData}
-                    </div>
-                  ` : ''}
-                  ${(isTeacher && _mathHideSolution) ? `
-                    <div class="alloflow-math-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
-                        <button type="button" class="alloflow-math-reveal-all" data-math-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;border-radius:9999px;cursor:pointer;"><span aria-hidden="true">▾ </span>${_uiL('export.math_show_all', 'Show all solutions')}</button>
-                        <button type="button" class="alloflow-math-hide-all" data-math-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;"><span aria-hidden="true">▸ </span>${_uiL('export.math_hide_all', 'Hide all solutions')}</button>
-                        <span style="font-size:12px;color:#64748b;font-style:italic;">${_uiL('export.math_try_first', 'Try the problem first, then reveal the steps.')}</span>
-                    </div>
-                  ` : ''}
-                  <div style="background:#f8fafc; padding:20px; border:1px solid #e2e8f0; border-radius:8px;">
-                      ${problems.map((p, i) => `
-                          <div class="alloflow-math-problem${_mathCompact ? ' alloflow-math-compact' : ''}" style="margin-bottom: ${_mathCompact ? 14 : 30}px; border-bottom: 1px dashed #cbd5e1; padding-bottom: ${_mathCompact ? 10 : 20}px; page-break-inside: avoid;">
-                              <div class="alloflow-math-question" style="display: flex; gap: 10px; margin-bottom: 15px;">
-                                  <span style="font-weight: bold; color: #475569; font-size: 1.1em;">${i + 1}.</span>
-                                  <div class="alloflow-own-font" style="font-size:1.2em; font-family:'Times New Roman', serif; font-weight:bold; color:#1e293b;">
-                                      ${formatMath(p.question)}
-                                  </div>
-                              </div>
-                              ${isTeacher ? (_mathHideSolution ? `
-                                  <!-- Teacher Key View — collapsed solution -->
-                                  <details class="alloflow-math-solution" style="margin-left:25px;">
-                                      <summary style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:#ecfdf5;color:#065f46;font-size:0.85em;font-weight:700;border:1px solid #6ee7b7;border-radius:9999px;outline-offset:2px;">
-                                          <span class="alloflow-math-caret" aria-hidden="true">▶</span>
-                                          ${_uiL('export.math_show_solution', 'Show solution')}
-                                      </summary>
-                                      <div style="margin-top:12px;">
+          const _mathSolutionBodyHtml = (p) => `
                                           ${p.steps && p.steps.length > 0 ? `
                                           <h4 style="color:#475569; margin-bottom:10px; font-size: 0.9em; text-transform: uppercase;">${t('math.display.steps_header')}</h4>
                                           <ol style="padding-left:20px; color:#334155; margin-bottom: 15px;">
@@ -50379,33 +50725,43 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                           <div style="margin-top:10px; padding:10px; background:#fff7ed; border:1px solid #ffedd5; border-radius:8px; color:#9a3412; font-size:0.9em;">
                                               <strong>${t('math.display.connection_header')}:</strong> ${_escTxt(p.realWorld)}
                                           </div>
-                                          ` : ''}
-                                      </div>
+                                          ` : ''}`;
+          return `
+              <div class="section alloflow-math-section" id="${_escTxt(item.id)}" data-math-section="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+                  ${enhancedHeader}
+                  ${graphData ? `
+                    <div style="text-align:center; margin:20px 0; padding:20px; background:white; border:1px solid #cbd5e1; border-radius:8px;">
+                        ${graphData}
+                    </div>
+                  ` : ''}
+                  ${((isTeacher && _mathHideSolution) || _studentMathCollapsible) ? `
+                    <div class="alloflow-math-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+                        <button type="button" class="alloflow-math-reveal-all" data-math-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfdf5;color:#065f46;border:1px solid #6ee7b7;border-radius:9999px;cursor:pointer;"><span aria-hidden="true">▾ </span>${_uiL('export.math_show_all', 'Show all solutions')}</button>
+                        <button type="button" class="alloflow-math-hide-all" data-math-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;"><span aria-hidden="true">▸ </span>${_uiL('export.math_hide_all', 'Hide all solutions')}</button>
+                        <span style="font-size:12px;color:#64748b;font-style:italic;">${_uiL('export.math_try_first', 'Try the problem first, then reveal the steps.')}</span>
+                    </div>
+                  ` : ''}
+                  <div style="background:#f8fafc; padding:20px; border:1px solid #e2e8f0; border-radius:8px;">
+                      ${problems.map((p, i) => `
+                          <div class="alloflow-math-problem${_mathCompact ? ' alloflow-math-compact' : ''}" style="margin-bottom: ${_mathCompact ? 14 : 30}px; border-bottom: 1px dashed #cbd5e1; padding-bottom: ${_mathCompact ? 10 : 20}px; page-break-inside: avoid;">
+                              <div class="alloflow-math-question" style="display: flex; gap: 10px; margin-bottom: 15px;">
+                                  <span style="font-weight: bold; color: #475569; font-size: 1.1em;">${i + 1}.</span>
+                                  <div class="alloflow-own-font" style="font-size:1.2em; ${_ownFontInline("'Times New Roman', serif")} font-weight:bold; color:#1e293b;">
+                                      ${formatMath(p.question)}
+                                  </div>
+                              </div>
+                              ${isTeacher ? (_mathHideSolution ? `
+                                  <!-- Teacher Key View — collapsed solution -->
+                                  <details class="alloflow-math-solution"${_mathPrintOpenAttr} style="margin-left:25px;">
+                                      <summary style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:#ecfdf5;color:#065f46;font-size:0.85em;font-weight:700;border:1px solid #6ee7b7;border-radius:9999px;outline-offset:2px;">
+                                          <span class="alloflow-math-caret" aria-hidden="true">▶</span>
+                                          ${_uiL('export.math_show_solution', 'Show solution')}
+                                      </summary>
+                                      <div style="margin-top:12px;">${_mathSolutionBodyHtml(p)}</div>
                                   </details>
                               ` : `
                                   <!-- Teacher Key View — flat -->
-                                  <div style="margin-left: 25px;">
-                                      ${p.steps && p.steps.length > 0 ? `
-                                      <h4 style="color:#475569; margin-bottom:10px; font-size: 0.9em; text-transform: uppercase;">${t('math.display.steps_header')}</h4>
-                                      <ol style="padding-left:20px; color:#334155; margin-bottom: 15px;">
-                                          ${p.steps.map(s => `
-                                              <li style="margin-bottom:10px;">
-                                                  <div style="font-weight:500; margin-bottom:4px;">${_escTxt(s.explanation)}</div>
-                                                  ${s.latex ? `<div style="font-size:1.0em; color:#1e293b; background:white; display:inline-block; padding:4px 8px; border-radius:4px; border:1px solid #f1f5f9;">${formatMath(s.latex)}</div>` : ''}
-                                              </li>
-                                          `).join('')}
-                                      </ol>
-                                      ` : ''}
-                                      <div style="background:#f0fdf4; border:1px solid #bbf7d0; padding:15px; border-radius:8px; margin-top:10px;">
-                                          <div style="font-size:0.8em; text-transform:uppercase; font-weight:bold; color:#166534; margin-bottom:5px;">${t('math.display.answer_header')}</div>
-                                          <div style="font-size:1.2em; font-weight:bold; color:#14532d;">${formatMath(p.answer)}</div>
-                                      </div>
-                                      ${p.realWorld ? `
-                                      <div style="margin-top:10px; padding:10px; background:#fff7ed; border:1px solid #ffedd5; border-radius:8px; color:#9a3412; font-size:0.9em;">
-                                          <strong>${t('math.display.connection_header')}:</strong> ${_escTxt(p.realWorld)}
-                                      </div>
-                                      ` : ''}
-                                  </div>
+                                  <div style="margin-left: 25px;">${_mathSolutionBodyHtml(p)}</div>
                               `) : `
                                   <!-- Student Worksheet View -->
                                   ${isWorksheet
@@ -50423,12 +50779,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                                 <label for="${_escTxt(String(item.id || 'math') + '-p' + i + '-answer')}" style="font-weight:bold; color:#475569;">${_uiL('export.answer_label', 'Answer:')}</label>
                                                 <input type="text" id="${_escTxt(String(item.id || 'math') + '-p' + i + '-answer')}" class="interactive-blank alloflow-response-input" data-allo-response-key="${_escTxt(String(item.id || 'math') + ':math:' + i + ':answer')}" data-allo-response-type="free-response" style="min-width:12em; flex:1;">
                                             </div>
-                                         </div>`}
+                                         </div>
+                                         ${_studentMathCollapsible ? `<details class="alloflow-math-solution"${_mathPrintOpenAttr} style="margin-left:25px;margin-top:10px;"><summary style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:#ecfdf5;color:#065f46;font-size:0.85em;font-weight:700;border:1px solid #6ee7b7;border-radius:9999px;outline-offset:2px;"><span class="alloflow-math-caret" aria-hidden="true">▶</span> ${_uiL('export.math_show_solution', 'Show solution')}</summary><div style="margin-top:12px;">${_mathSolutionBodyHtml(p)}</div></details>` : ''}`}
                               `}
                           </div>
                       `).join('')}
                   </div>
-                  ${(isTeacher && _mathHideSolution) ? `
+                  ${((isTeacher && _mathHideSolution) || _studentMathCollapsible) ? `
                     <style>
                         .alloflow-math-section details summary::-webkit-details-marker { display: none; }
                         .alloflow-math-section details summary::marker { content: ''; }
@@ -50443,7 +50800,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     <script>
                         (function() {
                             var sec = document.getElementById(${_resourceIdJson});
-                            if (!sec) return;
+                            if (!sec || sec.dataset.alloRuntimeBound === '1') return;
+                            sec.dataset.alloRuntimeBound = '1';
                             var items = sec.querySelectorAll('details.alloflow-math-solution');
                             var btnShow = sec.querySelector('.alloflow-math-reveal-all');
                             var btnHide = sec.querySelector('.alloflow-math-hide-all');
@@ -50481,19 +50839,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   originalIndex,
                   responseId: _tlStableHash(`${item.id || 'timeline'}:${originalIndex}:${String(te?.event || '')}`).toString(36)
               }));
-              if (cfg.assessmentMode === true) {
-                  _tlPresentation = _tlPresentation.slice().sort((a, b) => _tlStableHash(`${item.id || ''}:${a.responseId}:assessment`) - _tlStableHash(`${item.id || ''}:${b.responseId}:assessment`));
-                  if (_tlPresentation.every((entry, index) => entry.originalIndex === index)) _tlPresentation.push(_tlPresentation.shift());
+              if (!isTeacher && (isWorksheet || cfg.assessmentMode)) {
+                  const _tlSeedTag = cfg.assessmentMode ? 'assessment' : 'student';
+                  _tlPresentation = _tlPresentation.slice().sort((a, b) => _tlStableHash(`${item.id || ''}:${a.responseId}:${_tlSeedTag}`) - _tlStableHash(`${item.id || ''}:${b.responseId}:${_tlSeedTag}`));
+                  if (_tlPresentation.length > 1 && _tlPresentation.every((entry, index) => entry.originalIndex === index)) _tlPresentation.push(_tlPresentation.shift());
               }
               const stripsHtml = `
-                  <div class="alloflow-tl-strips" data-tl-section="${_escTxt(item.id)}" role="list" aria-label="Timeline events to sequence" style="margin-top:8px;">
+                  <div class="alloflow-tl-strips alloflow-tl-cuttable alloflow-cutout-sheet" data-tl-section="${_escTxt(item.id)}" role="list" aria-label="Timeline events to sequence" style="margin-top:8px;">
                       ${_tlInteractive ? `<input type="hidden" class="alloflow-tl-response" data-allo-response-key="${_escTxt((item.id || 'timeline') + ':timeline-order')}" data-allo-response-type="timeline-order" data-allo-part-label="Event order" data-allo-question="${_escTxt(title || 'Timeline')}" aria-label="Student order for ${_escTxt(title || 'timeline')}" value="">` : ''}
                       ${_tlPresentation.map(({ te, originalIndex, responseId }, idx) => `
                           <div class="alloflow-tl-strip"${_tlCanSelfCheck ? ` data-original-index="${originalIndex}"` : ''} data-initial-index="${idx}" data-tl-response-id="${responseId}" data-strip-idx="${idx}" role="listitem" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px dashed #94a3b8;border-radius:8px;margin-bottom:10px;background:white;break-inside:avoid;page-break-inside:avoid;">
                               <div class="alloflow-tl-scissor" style="font-family:monospace;font-size:max(12px, 0.75em);color:#64748b;min-width:28px;" aria-hidden="true">✂ ${idx + 1}</div>
                               ${_tlInteractive ? `<div class="alloflow-tl-arrows" style="display:flex;flex-direction:column;gap:2px;">
-                                  <button type="button" class="alloflow-tl-up" aria-label="Move event up" title="Move up" style="width:24px;height:20px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:4px;cursor:pointer;font-size:12px;line-height:1;color:#475569;padding:0;">▲</button>
-                                  <button type="button" class="alloflow-tl-down" aria-label="Move event down" title="Move down" style="width:24px;height:20px;border:1px solid #cbd5e1;background:#f8fafc;border-radius:4px;cursor:pointer;font-size:12px;line-height:1;color:#475569;padding:0;">▼</button>
+                                  <button type="button" class="alloflow-tl-up" aria-label="Move event up" title="Move up" style="width:36px;height:36px;min-width:36px;min-height:36px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;cursor:pointer;font-size:13px;line-height:1;color:#475569;padding:0;">▲</button>
+                                  <button type="button" class="alloflow-tl-down" aria-label="Move event down" title="Move down" style="width:36px;height:36px;min-width:36px;min-height:36px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;cursor:pointer;font-size:13px;line-height:1;color:#475569;padding:0;">▼</button>
                               </div>` : ''}
                               ${te.image ? `<img src="${te.image}" alt="${String(te.alt || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"${te.decorative ? ' role="presentation"' : ''} style="width:${_tlImgPx}px;height:${_tlImgPx}px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;flex-shrink:0;" />` : ''}
                               <div style="flex:1;font-size:1em;line-height:1.5;color:#1e293b;">
@@ -50580,7 +50939,23 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           `;
       } else if (item.type === 'concept-sort') {
           const categories = item.data.categories || [];
-          const sortItems = item.data.items || [];
+          const rawSortItems = item.data.items || [];
+          const sortItems = !isTeacher ? rawSortItems.filter(ci => !ci || ci.categoryId !== '__uncategorized') : rawSortItems;
+          const _csStableHash = (value) => {
+              let h = 2166136261;
+              const str = String(value == null ? '' : value);
+              for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+              return h >>> 0;
+          };
+          let _csPresentation = sortItems.map((ci, originalIndex) => ({
+              ci,
+              originalIndex,
+              _hash: _csStableHash(`${item.id || 'cs'}:${originalIndex}:${String(ci?.content || '')}:${cfg.assessmentMode ? 'a' : 'w'}`)
+          }));
+          if (!isTeacher && (isWorksheet || cfg.assessmentMode) && _csPresentation.length > 1) {
+              _csPresentation = _csPresentation.slice().sort((a, b) => a._hash - b._hash);
+              if (_csPresentation.every((entry, index) => entry.originalIndex === index)) _csPresentation.push(_csPresentation.shift());
+          }
           // Darker category hues keep the small labels and answer-key headers
           // readable with either white text or a dark export surface (WCAG AA).
           const catColors = ['#b91c1c','#1d4ed8','#047857','#92400e','#6d28d9','#9d174d','#0e7490','#854d0e'];
@@ -50614,16 +50989,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           `;
 
           const stripsHtml = `
-              <div role="list" aria-label="${_uiL('a11y.sortable_items', 'Sortable items')}" class="alloflow-cs-strips" data-cs-section="${_escTxt(item.id)}">
-                  ${sortItems.map((ci, idx) => {
+              <div role="list" aria-label="${_uiL('a11y.sortable_items', 'Sortable items')}" class="alloflow-cs-strips alloflow-cs-cutout alloflow-cutout-sheet" data-cs-section="${_escTxt(item.id)}">
+                  ${_csPresentation.map(({ ci }, idx) => {
+                      const imgAlt = ci.imageAlt || ci.alt || ci.label || '';
                       const imageHtml = ci.image
-                          ? `<div class="alloflow-cs-image-frame" style="flex-shrink:0;width:${_csImgPx}px;height:${_csImgPx}px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:4px;box-sizing:border-box;overflow:hidden;"><img class="alloflow-cs-image" src="${ci.image}" alt="" style="display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;border:0;border-radius:4px;box-shadow:none;box-sizing:border-box;"/></div>`
+                          ? `<div class="alloflow-cs-image-frame" style="flex-shrink:0;width:${_csImgPx}px;height:${_csImgPx}px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:4px;box-sizing:border-box;overflow:hidden;"><img class="alloflow-cs-image" src="${_escTxt(ci.image)}" alt="${_escTxt(imgAlt)}" style="display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;border:0;border-radius:4px;box-shadow:none;box-sizing:border-box;"/></div>`
                           : '';
                       return `
-                          <div role="listitem" class="alloflow-cs-strip" data-strip-idx="${idx}" data-category-id="${ci.categoryId || ''}" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 2px dashed #94a3b8; border-radius: 8px; margin-bottom: 10px; background: white; break-inside: avoid; page-break-inside: avoid;">
+                          <div role="listitem" class="alloflow-cs-strip" data-strip-idx="${idx}" data-category-id="${_escTxt(ci.categoryId || '')}" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 2px dashed #94a3b8; border-radius: 8px; margin-bottom: 10px; background: white; break-inside: avoid; page-break-inside: avoid;">
                               <div class="alloflow-cs-scissor" style="font-family: monospace; font-size: max(12px, 0.75em); color: #64748b; min-width: 28px;" aria-hidden="true">✂ ${idx + 1}</div>
                               ${imageHtml}
-                              <div class="alloflow-cs-item-text" style="flex: 1; min-width: 0; font-size: 1em; line-height: 1.5; color: #1e293b; overflow-wrap: anywhere;">${ci.content}</div>
+                              <div class="alloflow-cs-item-text" style="flex: 1; min-width: 0; font-size: 1em; line-height: 1.5; color: #1e293b; overflow-wrap: anywhere;">${_escTxt(ci.content)}</div>
                               ${!isTeacher && !(cfg.conceptSortInteractive !== false && !isWorksheet) ? `<div class="alloflow-cs-write" aria-hidden="true" style="flex: 0 1 9rem; min-width: 6rem; align-self: flex-end; font-size: max(12px, 0.75em); color: #475569;">${_uiL('export.cs_category', 'Category')}<div style="border-bottom: 1.5px solid #64748b; height: 1.6em;"></div></div>` : ''}
                               ${!isTeacher && !isWorksheet ? `<select hidden class="alloflow-cs-response" data-allo-response-key="${_escTxt((item.id || 'concept-sort') + ':concept-sort:' + idx + ':category')}" data-allo-response-type="concept-sort" data-allo-part-label="${_uiL('export.cs_category', 'Category')}" data-allo-question="${_uiL('export.cs_item_n', 'Concept sort item {n}', { n: idx + 1 })}" aria-label="${_uiL('export.cs_item_placement', 'Category placement for concept sort item {n}', { n: idx + 1 })}"><option value="">${_uiL('export.cs_not_sorted', 'Not sorted')}</option>${categories.map(cat => `<option value="${_escTxt(cat.id)}">${_escTxt(cat.label)}</option>`).join('')}</select>` : ''}
                           </div>
@@ -50641,9 +51017,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           const catColor = catColors[catIdx % catColors.length];
                           return `
                               <div class="alloflow-cs-answer-card" style="flex: 1; min-width: 200px; border: 1px solid ${catColor}55; border-radius: 6px; overflow: hidden; break-inside: avoid; page-break-inside: avoid;">
-                                  <div class="alloflow-cs-answer-head" style="background: ${catColor}; color: white; font-size: 0.9em; font-weight: bold; padding: 8px 12px;">${cat.label}</div>
+                                  <div class="alloflow-cs-answer-head" style="background: ${catColor}; color: white; font-size: 0.9em; font-weight: bold; padding: 8px 12px;">${_escTxt(cat.label)}</div>
                                   <ul class="alloflow-cs-answer-items" style="margin: 0; padding: 10px 12px 10px 28px; color: #475569; font-size: 0.9em;">
-                                      ${catItems.map(ci => `<li style="margin-bottom: 4px;">${ci.content}</li>`).join('')}
+                                      ${catItems.map(ci => `<li style="margin-bottom: 4px;">${_escTxt(ci.content)}</li>`).join('')}
                                   </ul>
                               </div>
                           `;
@@ -50670,25 +51046,60 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'dbq') {
           const docs = item.data.documents || [];
           const rubric = item.data.rubric || [];
+          const corrobClaims = Array.isArray(item.data.corroborationClaims) ? item.data.corroborationClaims : [];
+          const corrobPrompts = Array.isArray(item.data.corroborationPrompts) ? item.data.corroborationPrompts : [];
           // The free-response suffix is what lets the Submission Inbox offer AI grading for these answers.
-          const dbqField = (key, label, rows = 2) => (!isTeacher && !isWorksheet) ? `<textarea class="interactive-textarea alloflow-response-input" rows="${rows}" data-allo-response-key="${_escTxt((item.id || 'dbq') + ':dbq:' + key + ':free-response')}" data-allo-response-type="free-response" data-allo-part-label="${key === 'essay' ? _uiL('dbq.essay_tab', 'Essay') : _uiL('checkpoint.answer', 'Answer')}" data-allo-question="${_escTxt(label)}" aria-label="${_escTxt(label)}" style="width:100%; box-sizing:border-box; margin-top:6px;"></textarea>` : '';
+          const dbqField = (key, label, rows = 2, ph = '') => (!isTeacher && !isWorksheet) ? `<textarea class="interactive-textarea alloflow-response-input" rows="${rows}" data-allo-response-key="${_escTxt((item.id || 'dbq') + ':dbq:' + key + ':free-response')}" data-allo-response-type="free-response" data-allo-part-label="${key === 'essay' ? _uiL('dbq.essay_tab', 'Essay') : _uiL('checkpoint.answer', 'Answer')}" data-allo-question="${_escTxt(label)}" aria-label="${_escTxt(label)}"${ph ? ` placeholder="${_escTxt(ph)}"` : ''} style="width:100%; box-sizing:border-box; margin-top:6px;"></textarea>` : '';
+          const happDefs = (doc) => [
+              { key: 'historical', label: _uiL('dbq.happ_historical', 'Historical Context'), prompt: (doc.happPrompts && doc.happPrompts.historical) || (doc.happ && doc.happ.historical) || _uiL('dbq.happ_historical_prompt', 'What was happening when this was created?') },
+              { key: 'audience', label: _uiL('dbq.happ_audience', 'Audience'), prompt: (doc.happPrompts && doc.happPrompts.audience) || (doc.happ && doc.happ.audience) || _uiL('dbq.happ_audience_prompt', 'Who was this written for?') },
+              { key: 'purpose', label: _uiL('dbq.happ_purpose', 'Purpose'), prompt: (doc.happPrompts && doc.happ.purpose) || (doc.happ && doc.happ.purpose) || _uiL('dbq.happ_purpose_prompt', 'Why was this created?') },
+              { key: 'pointOfView', label: _uiL('dbq.happ_point_of_view', 'Point of View'), prompt: (doc.happPrompts && doc.happPrompts.pointOfView) || (doc.happ && doc.happ.pointOfView) || _uiL('dbq.happ_point_of_view_prompt', 'What perspective does the author have?') }
+          ];
+          const corrobHtml = (corrobClaims.length > 0 || corrobPrompts.length > 0) ? `
+              <div class="alloflow-dbq-corroboration" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin-bottom:20px;">
+                  <strong style="display:block;font-size:1.05em;color:#065f46;margin-bottom:10px;"><span aria-hidden="true">🔗 </span>${_uiL('dbq.corroboration', 'Corroboration')}</strong>
+                  ${corrobClaims.map((c, ci) => {
+                      const claimLabel = c && typeof c === 'object' ? (c.claim || '') : String(c || '');
+                      return `<div style="background:#ffffff;border:1px solid #d1fae5;border-radius:6px;padding:12px;margin-bottom:10px;break-inside:avoid;">
+                          <div style="font-weight:700;color:#1e293b;">${_uiL('dbq.claim_n', 'Claim {n}', { n: ci + 1 })}: ${_escTxt(claimLabel)}</div>
+                          ${c && c.guideQuestion ? `<div style="font-size:0.88em;color:#059669;font-style:italic;margin-top:4px;">${_escTxt(c.guideQuestion)}</div>` : ''}
+                          ${isWorksheet ? ruledLines(3) : dbqField('corrob:' + ci, claimLabel)}
+                      </div>`;
+                  }).join('')}
+                  ${corrobPrompts.map((p, pi) => {
+                      const promptText = p && typeof p === 'object' ? (p.prompt || p.question || p.text || '') : String(p || '');
+                      return `<div style="background:#ffffff;border:1px solid #d1fae5;border-radius:6px;padding:12px;margin-bottom:10px;break-inside:avoid;">
+                          <div style="font-weight:600;color:#1e293b;">${_escTxt(promptText)}</div>
+                          ${isWorksheet ? ruledLines(_answerLines(promptText, 0, 2)) : dbqField('corrob-prompt:' + pi, promptText)}
+                      </div>`;
+                  }).join('')}
+              </div>` : '';
           return `
               <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${item.data.historicalContext ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:20px;"><strong>${item.data.contextLabel ? _escTxt(String(item.data.contextLabel)) : ((item.data.isFictional === true || /\bfictional\b/i.test(String(item.meta || ''))) ? _uiL('dbq.context', 'Context') : _uiL('dbq.historical_context', 'Historical Context'))}:</strong><br/>${_escTxt(item.data.historicalContext)}</div>` : ''}
-                  ${docs.map((doc, di) => `
+                  ${docs.map((doc, di) => {
+                      const imgSrc = doc.imageUrl || doc.image;
+                      const starters = Array.isArray(doc.sentenceStarters) ? doc.sentenceStarters.filter((s) => typeof s === 'string' && s.trim()) : [];
+                      const showHapp = !!(doc.happPrompts || doc.happ || item.data.includeHapp === true || item.data.happ === true);
+                      const happHtml = showHapp ? `<div class="alloflow-dbq-happ" style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:12px;margin:12px 0;"><strong style="display:block;color:#3730a3;font-size:max(12px,0.85em);margin-bottom:8px;">${_uiL('dbq.happ_heading', 'HAPP Source Analysis')}</strong><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">${happDefs(doc).map((h) => `<div style="background:#ffffff;border:1px solid #e0e7ff;border-radius:6px;padding:8px;"><div style="font-weight:700;font-size:0.85em;color:#4338ca;">${h.label}</div><div style="font-size:0.8em;color:#64748b;font-style:italic;margin-bottom:4px;">${_escTxt(h.prompt)}</div>${isWorksheet ? ruledLines(2) : dbqField(di + ':happ:' + h.key, (doc.title || 'Doc') + ' ' + h.label, 2, starters[0] || '')}</div>`).join('')}</div></div>` : '';
+                      return `
                       <div style="border:2px solid #e2e8f0;border-radius:8px;margin-bottom:20px;overflow:hidden;">
                           <div style="background:#f8fafc;padding:12px;border-bottom:1px solid #e2e8f0;">
                               <strong style="font-size:1.1em;">${doc.title ? _escTxt(doc.title) : _uiL('dbq.document_label', 'Document {id}', { id: doc.id })}</strong>
                               ${doc.source ? `<div style="font-size:0.85em;color:#64748b;margin-top:4px;font-style:italic;">${_uiL('dbq.source_prefix_verbatim', 'Source:')} ${_escTxt(doc.source)}</div>` : ''}
                           </div>
                           <div style="padding:16px;">
+                              ${imgSrc ? `<div style="margin-bottom:12px;text-align:center;"><img src="${_escTxt(imgSrc)}" alt="${_escTxt(doc.imageAltText || doc.title || 'Document visual')}" style="max-width:100%;max-height:320px;object-fit:contain;border-radius:6px;border:1px solid #cbd5e1;" /></div>` : ''}
                               <div style="background:#fefce8;border-left:4px solid #eab308;padding:12px;border-radius:4px;margin-bottom:12px;font-size:0.95em;line-height:1.6;">${_escTxt(doc.excerpt || '')}</div>
-                              ${doc.sourcingQuestions?.length > 0 ? `<div style="margin-bottom:8px;"><strong style="display:block;break-after:avoid;page-break-after:avoid;color:#7c3aed;font-size:max(12px, 0.85em);">${_uiL('dbq.sourcing_questions', 'Sourcing Questions')}:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.sourcingQuestions.map((q, qi) => `<li style="margin-bottom:4px;break-inside:avoid;">${_escTxt(q)}${isWorksheet ? ruledLines(_answerLines(q, 0, 2)) : ''}${dbqField(di + ':sourcing:' + qi, q)}</li>`).join('')}</ol></div>` : ''}
+                              ${happHtml}
+                              ${doc.sourcingQuestions?.length > 0 ? `<div style="margin-bottom:8px;"><strong style="display:block;break-after:avoid;page-break-after:avoid;color:#7c3aed;font-size:max(12px, 0.85em);">${_uiL('dbq.sourcing_questions', 'Sourcing Questions')}:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.sourcingQuestions.map((q, qi) => `<li style="margin-bottom:4px;break-inside:avoid;">${_escTxt(q)}${starters.length ? `<div style="font-size:0.85em;color:#6d28d9;font-style:italic;margin-top:3px;">${_uiL('dbq.try_starter', 'Try starting with:')} “${_escTxt(starters[qi % starters.length])}”</div>` : ''}${isWorksheet ? ruledLines(_answerLines(q, 0, 2)) : ''}${dbqField(di + ':sourcing:' + qi, q, 2, starters[qi % starters.length] || '')}</li>`).join('')}</ol></div>` : ''}
                               ${doc.analysisQuestions?.length > 0 ? `<div><strong style="display:block;break-after:avoid;page-break-after:avoid;color:#2563eb;font-size:max(12px, 0.85em);">${_uiL('dbq.analysis_questions', 'Analysis Questions')}:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.analysisQuestions.map((q, qi) => `<li style="margin-bottom:4px;break-inside:avoid;">${_escTxt(q)}${isWorksheet ? ruledLines(_answerLines(q, 0, 2)) : ''}${dbqField(di + ':analysis:' + qi, q)}</li>`).join('')}</ol></div>` : ''}
                           </div>
                       </div>
-                  `).join('')}
+                  `; }).join('')}
+                  ${corrobHtml}
                   ${item.data.synthesisPrompt ? `<div class="alloflow-dbq-synthesis${isWorksheet ? ' alloflow-dbq-synthesis-worksheet' : ''}" style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;break-inside:${isWorksheet ? 'auto' : 'avoid'};page-break-inside:${isWorksheet ? 'auto' : 'avoid'};"><strong style="font-size:1.1em;color:#166534;"><span aria-hidden="true">📝 </span>${_uiL('dbq.synthesis_prompt', 'Synthesis Essay Prompt')}:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${_escTxt(item.data.synthesisPrompt)}</p>${item.data.thesisStarter ? `<p class="alloflow-dbq-thesis-starter" style="margin:8px 0 0;font-style:italic;color:#1e293b;"><strong>${_uiL('ui_common.thesis_starter', 'Thesis starter')}:</strong> ${_escTxt(item.data.thesisStarter)}</p>` : ''}${isWorksheet ? `<div style="margin-top:16px;">${ruledLines(12, _uiRaw('export.dbq_your_essay', 'Your essay:'))}</div>` : ''}${dbqField('essay', item.data.synthesisPrompt, 8)}</div>` : ''}
                   ${rubric.length > 0 ? `<div class="alloflow-dbq-rubric-wrap" style="margin-top:20px;break-inside:avoid;"><strong>${_uiL('dbq.rubric_tab', 'Rubric')}:</strong><style>.alloflow-dbq-rubric-wrap table{word-break:break-word;}@media screen and (max-width:600px){.alloflow-dbq-rubric-wrap table,.alloflow-dbq-rubric-wrap tbody,.alloflow-dbq-rubric-wrap tr,.alloflow-dbq-rubric-wrap td{display:block;width:auto !important;}.alloflow-dbq-rubric-wrap table{font-size:0.95em !important;}.alloflow-dbq-rubric-wrap tr.alloflow-dbq-rubric-head{position:absolute;width:1px !important;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;}.alloflow-dbq-rubric-wrap tr.alloflow-dbq-rubric-row{margin-top:10px;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;}.alloflow-dbq-rubric-wrap td{border:0 !important;border-top:1px solid #e2e8f0 !important;padding:8px 10px !important;font-size:1em !important;}.alloflow-dbq-rubric-wrap td:first-child{border-top:0 !important;background:#f1f5f9;}.alloflow-dbq-rubric-wrap td[data-level]::before{content:attr(data-level);display:block;font-weight:700;font-size:0.85em;margin-bottom:2px;}}@media print{.alloflow-dbq-rubric-wrap table{font-size:max(12px, 0.72em);}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:5px 6px !important;}}</style><table role="table" style="width:100%;border-collapse:collapse;margin-top:8px;font-size:max(12px, 0.85em);table-layout:fixed;"><tr role="row" class="alloflow-dbq-rubric-head"><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f1f5f9;text-align:left;width:22%;">${_uiL('ui_common.criteria', 'Criteria')}</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fef2f2;text-align:center;">⭐ 1</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fefce8;text-align:center;">⭐⭐ 2</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f0fdf4;text-align:center;">⭐⭐⭐ 3</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#eff6ff;text-align:center;">⭐⭐⭐⭐ 4</th></tr>${rubric.map(r => `<tr role="row" class="alloflow-dbq-rubric-row"><td role="cell" style="border:1px solid #e2e8f0;padding:8px;font-weight:bold;">${_escTxt(r.criteria)}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 1 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['1'] || '')}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 2 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['2'] || '')}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 3 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['3'] || '')}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 4 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['4'] || '')}</td></tr>`).join('')}</table></div>` : ''}
                   ${isTeacher && item.data.teacherNotes ? `<div class="teacher-view" data-allo-teacher-only="1" style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;margin-top:16px;font-size:0.85em;color:#6b21a8;"><strong>${_uiL('dbq.teacher_notes', 'Teacher Notes')}:</strong> ${_escTxt(item.data.teacherNotes)}</div>` : ''}
@@ -50698,18 +51109,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           return `
               <div class="section" id="${_escTxt(item.id)}">
                   <h2 class="resource-header" role="heading" aria-level="2">${_escTxt(title)}${_metaShown ? ` (${_escTxt(_metaShown)})` : ''}</h2>
-                  <div style="background: #1e293b; color: #cbd5e1; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.9em; white-space: pre-wrap;">${_escTxt(item.data)}</div>
+                  <div class="alloflow-bridge-box" style="background: #1e293b; color: #cbd5e1; padding: 15px; border-radius: 6px; font-family: monospace; font-size: 0.9em; white-space: pre-wrap;">${_escTxt(item.data)}</div>
                   <p style="font-size: 0.8em; color: #666; margin-top: 5px; font-style: italic;">${t('bridge.generated_desc')}</p>
               </div>
           `;
       } else if (item.type === 'fluency-record') {
-        const { metrics, wordData, audioRecording, mimeType, feedback } = item.data;
-        const heatmapHtml = wordData.map(w => {
+        const { metrics = {}, wordData, audioRecording, mimeType, feedback } = item.data || {};
+        const _wordList = Array.isArray(wordData) ? wordData : [];
+        const heatmapHtml = _wordList.map(w => {
             let colorStyle = "color: #64748b;";
-            if (w.status === 'correct') colorStyle = "color: #15803d; font-weight: bold;";
-            else if (w.status === 'missed') colorStyle = "color: #b91c1c; text-decoration: line-through;";
-            else if (w.status === 'stumbled') colorStyle = "color: #b45309; border-bottom: 2px dotted #f59e0b;";
-            return `<span style="margin-right: 4px; ${colorStyle}">${w.word}</span>`;
+            if (w && w.status === 'correct') colorStyle = "color: #15803d; font-weight: bold;";
+            else if (w && w.status === 'missed') colorStyle = "color: #b91c1c; text-decoration: line-through;";
+            else if (w && w.status === 'stumbled') colorStyle = "color: #b45309; border-bottom: 2px dotted #f59e0b;";
+            return `<span style="margin-right: 4px; ${colorStyle}">${_escTxt(w && w.word)}</span>`;
         }).join('');
         return `
             <div class="section" id="${_escTxt(item.id)}">
@@ -50718,11 +51130,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
                     <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; text-align: center;">
                         <div style="font-size: 0.8em; text-transform: uppercase; color: #166534; font-weight: bold;">Accuracy</div>
-                        <div style="font-size: 2em; font-weight: 900; color: #15803d;">${metrics.accuracy}%</div>
+                        <div style="font-size: 2em; font-weight: 900; color: #15803d;">${_escTxt(metrics.accuracy)}%</div>
                     </div>
                     <div style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe; text-align: center;">
                         <div style="font-size: 0.8em; text-transform: uppercase; color: #1e40af; font-weight: bold;">Rate (WCPM)</div>
-                        <div style="font-size: 2em; font-weight: 900; color: #1e3a8a;">${metrics.wcpm}</div>
+                        <div style="font-size: 2em; font-weight: 900; color: #1e3a8a;">${_escTxt(metrics.wcpm)}</div>
                     </div>
                 </div>
                 <!-- Audio Player (omitted in worksheet/paper mode) -->
@@ -50730,13 +51142,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     ? ''
                     : (audioRecording ? `
                     <div style="margin-bottom: 20px; background: #f8fafc; padding: 10px; border-radius: 50px; border: 1px solid #e2e8f0;">
-                        <audio controls src="data:${mimeType};base64,${audioRecording}" style="width: 100%;"></audio>
+                        <audio controls src="data:${_escTxt(mimeType)};base64,${_escTxt(audioRecording)}" style="width: 100%;"></audio>
                     </div>
                 ` : '<p style="font-style:italic; color: #64748b;">No audio recording available.</p>')}
                 <!-- AI Feedback -->
-                <div style="background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fcd34d; margin-bottom: 20px; font-style: italic; color: #92400e;">
-                    <strong>AI Feedback:</strong> "${feedback}"
-                </div>
+                ${feedback ? `<div style="background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fcd34d; margin-bottom: 20px; font-style: italic; color: #92400e;">
+                    <strong>AI Feedback:</strong> "${_escTxt(feedback)}"
+                </div>` : ''}
                 <!-- Detailed Analysis View -->
                 <div style="line-height: 1.8; font-family: serif; font-size: 1.1em; background: white; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
                     ${heatmapHtml}
@@ -50816,7 +51228,7 @@ function projectStudentGuideData(data, mode) {
                       <div>
                           <!-- Target Language Content -->
                           <div class="lesson-plan-source" dir="${lessonTextDirection(sourceLanguage)}" style="margin-bottom: 16px; text-align: start;">
-                              ${parseMarkdownToHTML(targetLangText)}
+                              ${parseMarkdownToHTML(targetLangText, { minHeadingLevel: 4 })}
                           </div>
                           <!-- Recorded translation, or a neutral label for older saved plans. -->
                           <div class="lesson-plan-translation" dir="${lessonTextDirection(translationTarget)}" style="
@@ -50846,13 +51258,13 @@ function projectStudentGuideData(data, mode) {
                                   font-size: 0.95em;
                                   line-height: 1.6;
                               ">
-                                  ${parseMarkdownToHTML(translatedText)}
+                                  ${parseMarkdownToHTML(translatedText, { minHeadingLevel: 4 })}
                               </div>
                           </div>
                       </div>
                   `;
               }
-              return parseMarkdownToHTML(text);
+              return parseMarkdownToHTML(text, { minHeadingLevel: 4 });
           };
           // Preserve older plans that store their sequence as activities and assessmentIdeas.
           const legacyText = value => typeof value === 'string' || typeof value === 'number' ? String(value) : Array.isArray(value) ? value.map(legacyText).filter(Boolean).join('\n') : value && typeof value === 'object' ? legacyText(value.en || value.text || value.description || value.title || value.label || value.name) : '';
@@ -50880,6 +51292,23 @@ function projectStudentGuideData(data, mode) {
           }).join('');
           const stemToolsHtml = stemToolRows ? `<section${guideTeacherOnly} style="margin-top:20px;padding:20px;border:1px solid #a7f3d0;border-radius:8px;background:#ecfdf5;" data-export-stem-tools="true"><h3 style="margin:0 0 12px;color:#065f46;">${exportEsc(legacyLabel('lesson_plan.stem_tools_header', 'Recommended STEAM Lab Tools'))}</h3><ul style="margin:0;padding-left:24px;">${stemToolRows}</ul></section>` : '';
           const planHas = value => !!String(renderBilingualField(value) || '').replace(/<[^>]*>/g, '').trim();
+          const _lpPlannedTiming = (!learnerGuideCopy && Array.isArray(item.data?.timing)) ? item.data.timing.filter((st) => st && typeof st === 'object' && lessonFieldText(st.label).trim() && Number.isFinite(Number(st.minutes)) && Number(st.minutes) > 0) : [];
+          const _lpScripts = (!learnerGuideCopy && Array.isArray(item.data?.teachingScripts)) ? item.data.teachingScripts.filter((v) => v && Array.isArray(v.steps) && v.steps.length) : [];
+          const _lpScriptVer = _lpScripts.length ? _lpScripts[_lpScripts.length - 1] : null;
+          const _lpPhaseScriptHtml = (phase) => {
+              if (!_lpScriptVer) return '';
+              const matched = _lpScriptVer.steps.filter((st) => st && (phase === '_other' ? !['hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'].includes(st.phase) : st.phase === phase));
+              if (!matched.length) return '';
+              return `<ol class="alloflow-plan-script" data-allo-teacher-only="lesson-plan" style="margin:10px 0 0;padding-left:18px;border-left:3px solid #818cf8;">${matched.map((st) => {
+                  const mins = Number(st.minutes);
+                  const supports = [['studentDoes', 'Learners do'], ['possibleResponse', 'Possible response'], ['ifStruggling', 'If struggling'], ['ifReady', 'If ready']].filter(([k]) => lessonFieldText(st[k]).trim());
+                  return `<li style="margin-bottom:8px;break-inside:avoid;"><div style="font-weight:700;font-size:0.9em;color:#312e81;">${exportEsc(lessonFieldText(st.title || 'Step'))}${Number.isFinite(mins) && mins > 0 ? ` · ${mins} min` : ''}</div>${lessonFieldText(st.teacherSays).trim() ? `<div style="font-size:0.9em;margin-top:3px;"><strong>Say aloud:</strong> ${exportEsc(lessonFieldText(st.teacherSays))}</div>` : ''}${lessonFieldText(st.checkQuestion).trim() ? `<div style="font-size:0.9em;margin-top:2px;"><strong>Ask aloud:</strong> ${exportEsc(lessonFieldText(st.checkQuestion))}</div>` : ''}${supports.map(([k, lbl]) => `<div style="font-size:0.85em;color:#475569;margin-top:2px;"><strong>${lbl}:</strong> ${exportEsc(lessonFieldText(st[k]))}</div>`).join('')}</li>`;
+              }).join('')}</ol>`;
+          };
+          const _lpTimingSteps = (_lpScriptVer && Array.isArray(_lpScriptVer.steps) && _lpScriptVer.steps.every((st) => Number.isFinite(Number(st?.minutes)) && Number(st.minutes) > 0))
+              ? _lpScriptVer.steps.map((st) => ({ label: lessonFieldText(st.title || st.phase || 'Step'), minutes: Number(st.minutes) }))
+              : _lpPlannedTiming.map((st) => ({ label: lessonFieldText(st.label), minutes: Number(st.minutes) }));
+          const _lpTimingHtml = (!learnerGuideCopy && _lpTimingSteps.length) ? `<section class="alloflow-plan-timing" data-allo-teacher-only="lesson-plan" style="margin-top:16px;padding:12px 16px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;"><h3 style="margin:0 0 8px;font-size:0.9em;color:#3730a3;text-transform:uppercase;">${exportEsc(legacyLabel('lesson_plan.overview_timing', 'Phase timing'))}</h3><ol style="margin:0;padding-left:20px;font-size:0.9em;">${_lpTimingSteps.map((st) => `<li>${exportEsc(st.label)} · ${st.minutes} ${exportEsc(legacyLabel('lesson_plan.overview_minutes', 'minutes'))}</li>`).join('')}</ol></section>` : '';
           let extensionsHtml = '';
           if (extensions && (!Array.isArray(extensions) || extensions.length > 0)) {
               if (Array.isArray(extensions)) {
@@ -50946,36 +51375,38 @@ function projectStudentGuideData(data, mode) {
                           <h3 style="margin: 0 0 5px 0; color: #b45309; font-size: 0.9em; text-transform: uppercase;">
                               <span aria-hidden="true" style="margin-right:6px;">&#127907;</span>${renderHeader('hook')}
                           </h3>
-                          <div>${renderBilingualField(hook)}</div>
+                          <div>${renderBilingualField(hook)}${_lpPhaseScriptHtml('hook')}</div>
                       </div>` : ''}
                       ${successCriteriaHtml}
                       ${planHas(directInstruction) ? `<div style="margin-bottom: 20px;">
                           <h3 style="margin: 0 0 5px 0; color: #2563eb; font-size: 0.9em; text-transform: uppercase;">
                               <span aria-hidden="true" style="margin-right:6px;">&#128214;</span>${renderHeader('directInstruction')}
                           </h3>
-                          <div>${renderBilingualField(directInstruction)}</div>
+                          <div>${renderBilingualField(directInstruction)}${_lpPhaseScriptHtml('directInstruction')}</div>
                       </div>` : ''}
                       <div class="alloflow-plan-practice-grid" style="display: ${planHas(guidedPractice) || planHas(independentPractice) ? 'grid' : 'none'}; grid-template-columns: ${planHas(guidedPractice) && planHas(independentPractice) ? '1fr 1fr' : '1fr'}; gap: 20px; margin-bottom: 20px;">
                           ${planHas(guidedPractice) ? `<div>
                               <h3 style="margin: 0 0 5px 0; color: #0e7490; font-size: 0.9em; text-transform: uppercase;">
                                   <span aria-hidden="true" style="margin-right:6px;">&#128101;</span>${renderHeader('guidedPractice')}
                               </h3>
-                              <div>${renderBilingualField(guidedPractice)}</div>
+                              <div>${renderBilingualField(guidedPractice)}${_lpPhaseScriptHtml('guidedPractice')}</div>
                           </div>` : ''}
                           ${planHas(independentPractice) ? `<div>
                               <h3 style="margin: 0 0 5px 0; color: #4f46e5; font-size: 0.9em; text-transform: uppercase;">
                                   <span aria-hidden="true" style="margin-right:6px;">&#9999;&#65039;</span>${renderHeader('independentPractice')}
                               </h3>
-                              <div>${renderBilingualField(independentPractice)}</div>
+                              <div>${renderBilingualField(independentPractice)}${_lpPhaseScriptHtml('independentPractice')}</div>
                           </div>` : ''}
                       </div>
                       ${planHas(closure) ? `<div>
                           <h3 style="margin: 0 0 5px 0; color: #dc2626; font-size: 0.9em; text-transform: uppercase;">
                               <span aria-hidden="true" style="margin-right:6px;">&#127919;</span>${renderHeader('closure')}
                           </h3>
-                          <div>${renderBilingualField(closure)}</div>
+                          <div>${renderBilingualField(closure)}${_lpPhaseScriptHtml('closure')}</div>
                       </div>` : ''}
+                      ${_lpPhaseScriptHtml('_other')}
                   </div>
+                  ${_lpTimingHtml}
                   ${legacySectionsHtml}
                   ${extensionsHtml}
                   ${stemToolsHtml}
@@ -51016,29 +51447,29 @@ function projectStudentGuideData(data, mode) {
                           <div style="flex-shrink:0; width:84px; height:84px; border-radius:50%; border:6px solid ${ringColor}; display:flex; flex-direction:column; align-items:center; justify-content:center; font-weight:900; color:${textColor};" aria-label="Tier ${tierLetter}, score ${score}"><div style="font-size:1.55em; line-height:1;">${score}</div><div style="font-size:max(12px, 0.65em); letter-spacing:0.05em; opacity:0.8; margin-top:1px;">TIER ${tierLetter}</div></div>
                           <div style="flex:1; min-width:0;">
                               <div style="font-size:max(12px, 0.7em); font-weight:bold; text-transform:uppercase; letter-spacing:0.05em; color:${textColor}; opacity:0.7; margin-bottom:4px;">Curriculum Readiness Score</div>
-                              <div style="font-size:1.1em; font-weight:900; color:${textColor}; margin-bottom:8px;">${o.label || ''}</div>
+                              <div style="font-size:1.1em; font-weight:900; color:${textColor}; margin-bottom:8px;">${_escTxt(o.label || '')}</div>
                               <div>${dimChips}</div>
                               ${o.blockingIssues && o.blockingIssues.length > 0 ? `
                                   <div style="margin-top:8px; padding:6px 8px; background:white; border:1px solid #fca5a5; border-radius:4px; font-size:0.8em;">
                                       <strong style="color:#991b1b;">Blocking issues:</strong>
                                       <ul style="margin:4px 0 0 18px; color:#991b1b;">
-                                          ${o.blockingIssues.map(b => `<li><strong>${b.dimension}:</strong> ${b.issue}</li>`).join('')}
+                                          ${o.blockingIssues.map(b => `<li><strong>${_escTxt(b.dimension)}:</strong> ${_escTxt(b.issue)}</li>`).join('')}
                                       </ul>
                                   </div>` : ''}
                           </div>
                       </div>
-                      ${o.notes ? `<div style="margin-top:8px; font-size:max(12px, 0.75em); font-style:italic; color:${textColor}; opacity:0.65;">${o.notes}</div>` : ''}
+                      ${o.notes ? `<div style="margin-top:8px; font-size:max(12px, 0.75em); font-style:italic; color:${textColor}; opacity:0.65;">${_escTxt(o.notes)}</div>` : ''}
                   </div>`;
               const recList = (items) => items && items.length ? `
                   <div style="background:#fffbeb; border:1px solid #fde68a; padding:8px 10px; border-radius:6px; margin:8px 0; font-size:0.85em;">
                       <strong style="color:#92400e;">Heuristic recommendations:</strong>
-                      <ul style="margin:4px 0 0 18px; color:#92400e;">${items.slice(0, 5).map(r => `<li>${r}</li>`).join('')}</ul>
+                      <ul style="margin:4px 0 0 18px; color:#92400e;">${items.slice(0, 5).map(r => `<li>${_escTxt(r)}</li>`).join('')}</ul>
                   </div>` : '';
               const llmBlock = (review, label) => review ? `
                   <div style="background:#eef2ff; border:1px solid #c7d2fe; padding:8px 10px; border-radius:6px; margin:8px 0; font-size:0.85em; color:#3730a3;">
-                      <strong>${label} (AI):</strong>
-                      ${review.narrative ? `<p style="margin:4px 0;">${review.narrative}</p>` : ''}
-                      ${review.fixes && review.fixes.length ? `<div><em>Suggested fixes:</em><ul style="margin:4px 0 0 18px;">${review.fixes.slice(0, 5).map(f => `<li>${f}</li>`).join('')}</ul></div>` : ''}
+                      <strong>${_escTxt(label)} (AI):</strong>
+                      ${review.narrative ? `<p style="margin:4px 0;">${_escTxt(review.narrative)}</p>` : ''}
+                      ${review.fixes && review.fixes.length ? `<div><em>Suggested fixes:</em><ul style="margin:4px 0 0 18px;">${review.fixes.slice(0, 5).map(f => `<li>${_escTxt(f)}</li>`).join('')}</ul></div>` : ''}
                   </div>` : '';
               const v = comp.vocabulary;
               const vocabHTML = v ? `
@@ -51049,15 +51480,15 @@ function projectStudentGuideData(data, mode) {
                       </div>
                       <table style="width:100%; font-size:0.85em; border-collapse:collapse; margin-bottom:8px;">
                           <tr>
-                              <td style="padding:4px;"><strong>${v.totalWords}</strong> total words</td>
-                              <td style="padding:4px;"><strong>${v.tier2Count}</strong> Tier 2 (expected ~${v.expected && v.expected.tier2})</td>
-                              <td style="padding:4px;"><strong>${v.tier3Count}</strong> Tier 3 (expected ~${v.expected && v.expected.tier3})</td>
-                              <td style="padding:4px;"><strong>${v.glossaryTermsCount}</strong> glossary terms</td>
+                              <td style="padding:4px;"><strong>${_escTxt(v.totalWords)}</strong> total words</td>
+                              <td style="padding:4px;"><strong>${_escTxt(v.tier2Count)}</strong> Tier 2 (expected ~${_escTxt(v.expected && v.expected.tier2)})</td>
+                              <td style="padding:4px;"><strong>${_escTxt(v.tier3Count)}</strong> Tier 3 (expected ~${_escTxt(v.expected && v.expected.tier3)})</td>
+                              <td style="padding:4px;"><strong>${_escTxt(v.glossaryTermsCount)}</strong> glossary terms</td>
                           </tr>
                       </table>
                       ${recList(v.recommendations)}
                       ${llmBlock(v.llmReview, 'Literacy-coach review')}
-                      ${v.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${v.notes}</div>` : ''}
+                      ${v.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${_escTxt(v.notes)}</div>` : ''}
                   </div>` : '';
               const e = comp.engagement;
               const engHTML = e ? `
@@ -51068,15 +51499,15 @@ function projectStudentGuideData(data, mode) {
                       </div>
                       <table style="width:100%; font-size:0.85em; border-collapse:collapse; margin-bottom:8px;">
                           <tr>
-                              <td style="padding:4px;"><strong>${e.distinctTypeCount}</strong> distinct types</td>
-                              <td style="padding:4px;"><strong>${e.totalArtifacts}</strong> total artifacts</td>
+                              <td style="padding:4px;"><strong>${_escTxt(e.distinctTypeCount)}</strong> distinct types</td>
+                              <td style="padding:4px;"><strong>${_escTxt(e.totalArtifacts)}</strong> total artifacts</td>
                               <td style="padding:4px;"><strong>${Math.round((e.diversityScore || 0) * 100)}%</strong> diversity</td>
                               <td style="padding:4px;"><strong>${(e.multimodalCoverage && e.multimodalCoverage.present || []).length}/4</strong> modalities</td>
                           </tr>
                       </table>
                       ${recList(e.recommendations)}
                       ${llmBlock(e.llmReview, 'UDL + DOK review')}
-                      ${e.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${e.notes}</div>` : ''}
+                      ${e.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${_escTxt(e.notes)}</div>` : ''}
                   </div>` : '';
               const ax = comp.accessibility;
               const accHTML = ax ? `
@@ -51087,26 +51518,26 @@ function projectStudentGuideData(data, mode) {
                       </div>
                       <table style="width:100%; font-size:0.85em; border-collapse:collapse; margin-bottom:8px;">
                           <tr>
-                              <td style="padding:4px;"><strong>${ax.totalImages}</strong> images</td>
-                              <td style="padding:4px;"><strong>${ax.altCoveragePct === null ? 'n/a' : ax.altCoveragePct + '%'}</strong> alt-text coverage</td>
-                              <td style="padding:4px;"><strong>${ax.colorOnlyCount}</strong> color-only refs</td>
-                              <td style="padding:4px;"><strong>${ax.longestUnbrokenPassage}</strong> longest passage (words)</td>
+                              <td style="padding:4px;"><strong>${_escTxt(ax.totalImages)}</strong> images</td>
+                              <td style="padding:4px;"><strong>${ax.altCoveragePct === null ? 'n/a' : _escTxt(ax.altCoveragePct) + '%'}</strong> alt-text coverage</td>
+                              <td style="padding:4px;"><strong>${_escTxt(ax.colorOnlyCount)}</strong> color-only refs</td>
+                              <td style="padding:4px;"><strong>${_escTxt(ax.longestUnbrokenPassage)}</strong> longest passage (words)</td>
                           </tr>
                       </table>
                       ${recList(ax.recommendations)}
                       ${llmBlock(ax.llmReview, 'Accessibility-specialist review')}
-                      ${ax.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${ax.notes}</div>` : ''}
+                      ${ax.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${_escTxt(ax.notes)}</div>` : ''}
                   </div>` : '';
               const u = comp.udl;
               const renderPillar = (pillar, pillarTitle) => pillar ? `
-                  <div style="background:#f8fafc; border:1px solid #cbd5e1; padding:8px 10px; border-radius:6px; margin-bottom:6px; font-size:0.85em;">
+                  <div style="border-left:3px solid #6366f1; padding:6px 10px; margin-bottom:8px; background:#f8fafc; font-size:0.85em;">
                       <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                          <strong>${pillarTitle}</strong>
+                          <strong>${_escTxt(pillarTitle)}</strong>
                           ${statusBadge(pillar.status)}
                       </div>
-                      ${pillar.evidence ? `<div style="margin-bottom:2px;"><em>Evidence:</em> ${pillar.evidence}</div>` : ''}
-                      ${pillar.gaps ? `<div style="margin-bottom:2px;"><em>Gaps:</em> ${pillar.gaps}</div>` : ''}
-                      ${pillar.recommendation ? `<div><em>Recommendation:</em> ${pillar.recommendation}</div>` : ''}
+                      ${pillar.evidence ? `<div style="margin-bottom:2px;"><em>Evidence:</em> ${_escTxt(pillar.evidence)}</div>` : ''}
+                      ${pillar.gaps ? `<div style="margin-bottom:2px;"><em>Gaps:</em> ${_escTxt(pillar.gaps)}</div>` : ''}
+                      ${pillar.recommendation ? `<div><em>Recommendation:</em> ${_escTxt(pillar.recommendation)}</div>` : ''}
                   </div>` : '';
               const udlHTML = u ? `
                   <div style="border:1px solid #e2e8f0; border-radius:8px; padding:14px; margin-bottom:14px; background:white; page-break-inside: avoid;">
@@ -51117,8 +51548,8 @@ function projectStudentGuideData(data, mode) {
                       ${renderPillar(u.representation, 'Representation')}
                       ${renderPillar(u.engagement, 'Engagement')}
                       ${renderPillar(u.actionExpression, 'Action & Expression')}
-                      ${u.overallNarrative ? `<div style="background:#eef2ff; border:1px solid #c7d2fe; padding:8px 10px; border-radius:6px; margin:8px 0; font-size:0.85em; color:#3730a3;"><strong>UDL synthesis (AI):</strong> ${u.overallNarrative}</div>` : ''}
-                      ${u.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${u.notes}</div>` : ''}
+                      ${u.overallNarrative ? `<div style="background:#eef2ff; border:1px solid #c7d2fe; padding:8px 10px; border-radius:6px; margin:8px 0; font-size:0.85em; color:#3730a3;"><strong>UDL synthesis (AI):</strong> ${_escTxt(u.overallNarrative)}</div>` : ''}
+                      ${u.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${_escTxt(u.notes)}</div>` : ''}
                   </div>` : '';
               const acc = comp.accuracy;
               const accCounts = (acc && acc.accuracyRatingCounts) || { high: 0, medium: 0, low: 0 };
@@ -51130,15 +51561,15 @@ function projectStudentGuideData(data, mode) {
                       </div>
                       <table style="width:100%; font-size:0.85em; border-collapse:collapse; margin-bottom:8px;">
                           <tr>
-                              <td style="padding:4px;"><strong>${acc.totalAnalyses}</strong> analyses</td>
-                              <td style="padding:4px;"><strong>${acc.totalVerifiedFacts}</strong> verified facts</td>
-                              <td style="padding:4px;"><strong>${acc.totalDiscrepancies}</strong> discrepancies</td>
-                              <td style="padding:4px;"><strong>${accCounts.high}H/${accCounts.medium}M/${accCounts.low}L</strong> rating mix</td>
+                              <td style="padding:4px;"><strong>${_escTxt(acc.totalAnalyses)}</strong> analyses</td>
+                              <td style="padding:4px;"><strong>${_escTxt(acc.totalVerifiedFacts)}</strong> verified facts</td>
+                              <td style="padding:4px;"><strong>${_escTxt(acc.totalDiscrepancies)}</strong> discrepancies</td>
+                              <td style="padding:4px;"><strong>${_escTxt(accCounts.high)}H/${_escTxt(accCounts.medium)}M/${_escTxt(accCounts.low)}L</strong> rating mix</td>
                           </tr>
                       </table>
                       ${recList(acc.recommendations)}
                       ${llmBlock(acc.llmReview, 'Fact-checker review')}
-                      ${acc.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${acc.notes}</div>` : ''}
+                      ${acc.notes ? `<div style="font-size:max(12px, 0.75em); font-style:italic; color:#64748b;">${_escTxt(acc.notes)}</div>` : ''}
                   </div>` : '';
               return `
                   <div style="margin-top:24px; padding-top:16px; border-top:3px solid #6366f1;">
@@ -51159,38 +51590,38 @@ function projectStudentGuideData(data, mode) {
                       <div style="margin-bottom: 30px; border: 1px solid #e2e8f0; border-radius: 8px; overflow: hidden; page-break-inside: avoid;">
                           <div style="background: ${report.overallDetermination === 'Pass' ? '#f0fdf4' : '#fef2f2'}; padding: 15px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
                               <div>
-                                  <h3 style="margin: 0; font-size: 1.2em; color: #334155;">${report.standard}</h3>
-                                  <div style="font-size: 0.9em; color: #64748b;">${report.standardBreakdown.cognitiveDemand}</div>
+                                  <h3 style="margin: 0; font-size: 1.2em; color: #334155;">${_escTxt(report.standard)}</h3>
+                                  <div style="font-size: 0.9em; color: #64748b;">${_escTxt(report.standardBreakdown?.cognitiveDemand)}</div>
                               </div>
                               <div style="font-weight: bold; text-transform: uppercase; color: ${report.overallDetermination === 'Pass' ? '#15803d' : '#b91c1c'}; border: 2px solid currentColor; padding: 4px 10px; border-radius: 6px;">
-                                  ${report.overallDetermination}
+                                  ${_escTxt(report.overallDetermination)}
                               </div>
                           </div>
                           <div style="padding: 15px;">
                               <div style="margin-bottom: 15px;">
-                                  <h4 style="margin: 0 0 5px 0; color: #475569; font-size: 0.9em; text-transform: uppercase;">${t('alignment.text_alignment')}</h4>
+                                  <h4 style="margin: 0 0 5px 0; color: #475569; font-size: 0.9em; text-transform: uppercase;">${_escTxt(t('alignment.text_alignment'))}</h4>
                                   <div style="background: #f8fafc; padding: 10px; border-radius: 4px; font-size: 0.9em; border: 1px solid #e2e8f0;">
-                                      <strong>Status:</strong> ${report.analysis.textAlignment.status}<br/>
-                                      <strong>Evidence:</strong> "<em>${report.analysis.textAlignment.evidence}</em>"
+                                      <strong>Status:</strong> ${_escTxt(report.analysis?.textAlignment?.status)}<br/>
+                                      <strong>Evidence:</strong> "<em>${_escTxt(report.analysis?.textAlignment?.evidence)}</em>"
                                   </div>
                               </div>
                               <div style="margin-bottom: 15px;">
-                                  <h4 style="margin: 0 0 5px 0; color: #475569; font-size: 0.9em; text-transform: uppercase;">${t('alignment.activities_header')}</h4>
+                                  <h4 style="margin: 0 0 5px 0; color: #475569; font-size: 0.9em; text-transform: uppercase;">${_escTxt(t('alignment.activities_header'))}</h4>
                                   <div style="background: #f8fafc; padding: 10px; border-radius: 4px; font-size: 0.9em; border: 1px solid #e2e8f0;">
-                                      <strong>Status:</strong> ${report.analysis.activityAlignment?.status || "N/A"}<br/>
-                                      <strong>Evidence:</strong> "<em>${report.analysis.activityAlignment?.evidence || t('alignment.no_activities')}</em>"
+                                      <strong>Status:</strong> ${_escTxt(report.analysis?.activityAlignment?.status || "N/A")}<br/>
+                                      <strong>Evidence:</strong> "<em>${_escTxt(report.analysis?.activityAlignment?.evidence || t('alignment.no_activities'))}</em>"
                                   </div>
                               </div>
                               <div style="margin-bottom: 15px;">
-                                  <h4 style="margin: 0 0 5px 0; color: #475569; font-size: 0.9em; text-transform: uppercase;">${t('alignment.assessment')}</h4>
+                                  <h4 style="margin: 0 0 5px 0; color: #475569; font-size: 0.9em; text-transform: uppercase;">${_escTxt(t('alignment.assessment'))}</h4>
                                   <div style="background: #f8fafc; padding: 10px; border-radius: 4px; font-size: 0.9em; border: 1px solid #e2e8f0;">
-                                      <strong>Status:</strong> ${report.analysis.assessmentAlignment.status}<br/>
-                                      <strong>Evidence:</strong> "<em>${report.analysis.assessmentAlignment.evidence}</em>"
+                                      <strong>Status:</strong> ${_escTxt(report.analysis?.assessmentAlignment?.status)}<br/>
+                                      <strong>Evidence:</strong> "<em>${_escTxt(report.analysis?.assessmentAlignment?.evidence)}</em>"
                                   </div>
                               </div>
                               <div>
-                                  <h4 style="margin: 0 0 5px 0; color: #475569; font-size: 0.9em; text-transform: uppercase;">${t('alignment.recommendation')}</h4>
-                                  <p style="margin: 0; font-size: 0.9em; color: #334155;">${report.adminRecommendation}</p>
+                                  <h4 style="margin: 0 0 5px 0; color: #475569; font-size: 0.9em; text-transform: uppercase;">${_escTxt(t('alignment.recommendation'))}</h4>
+                                  <p style="margin: 0; font-size: 0.9em; color: #334155;">${_escTxt(report.adminRecommendation)}</p>
                               </div>
                           </div>
                       </div>
@@ -51312,7 +51743,7 @@ function projectStudentGuideData(data, mode) {
                           ? `<strong style="color:#065f46;">${escapeHtml(ans)}</strong>`
                           : guidedTypable
                           ? `<input type="text" class="interactive-blank alloflow-response-input" data-allo-response-key="${_escTxt((item.id || 'note-taking') + ':note:blank:' + i)}" data-allo-response-type="free-response" data-allo-question="${_escTxt(XL('note_guided_n', 'Guided note {n}', { n: i + 1 }))}" aria-label="${_escTxt(XL('note_guided_missing_n', 'Missing words for guided note {n}', { n: i + 1 }))}" style="width:11em; max-width:100%; padding:4px 8px; border:1px solid #94a3b8; border-radius:6px; font:inherit;">`
-                          : '<span style="color:#94a3b8;">________</span>';
+                          : (isWorksheet ? fillableBlank() : '<span style="color:#94a3b8;">________</span>');
                       return `<li style="font-size:0.95em; color:#1e293b; margin-bottom:4px;">${escapeHtml(b && b.before || '')}${filled}${escapeHtml(b && b.after || '')}</li>`;
                   }).join('');
                   const blanksBlock = blanks.length
@@ -51320,7 +51751,7 @@ function projectStudentGuideData(data, mode) {
                       : '<div style="font-size:0.85em; color:#64748b; font-style:italic;">' + escapeHtml(XL('note_no_blanks', 'No guided-note blanks for this entry.')) + '</div>';
                   const own = (d.notesExtra || '').trim()
                       ? `<div style="background:#eef2ff; border-radius:6px; padding:10px; margin-top:8px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#3730a3; margin-bottom:4px;">${escapeHtml(NL('own_notes', 'My Own Notes'))}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(d.notesExtra)}</div></div>`
-                      : guidedTypable ? noteTypingSection(NL('own_notes', 'My Own Notes'), '#eef2ff', 'own-notes', 4) : '';
+                      : guidedTypable ? noteTypingSection(NL('own_notes', 'My Own Notes'), '#eef2ff', 'own-notes', 4) : isWorksheet ? noteWritingSection(NL('own_notes', 'My Own Notes'), '#eef2ff', 4) : '';
                   return blanksBlock + own;
               }
               if (tt === 'q-and-a') {
@@ -51994,13 +52425,16 @@ function projectStudentGuideData(data, mode) {
           const _acJit = (key) => { let h = 0; key = String(key || 'x'); for (let i = 0; i < key.length; i++) h = (h * 31 + key.charCodeAt(i)) | 0; return (((Math.abs(h) % 21) - 10) / 10 * 0.9).toFixed(2); };
           const _acTF = "'Permanent Marker','Marker Felt','Comic Sans MS',cursive";
           const _acBF = "'Patrick Hand','Caveat','Bradley Hand','Comic Sans MS',cursive";
-          const _acFontImport = config && config.readerWebFonts === true
+          const _acTFStyle = _hasExplicitFontOverride ? '' : ('font-family:' + _acTF + ';');
+          const _acBFStyle = _hasExplicitFontOverride ? '' : ('font-family:' + _acBF + ';');
+          const _acFontImport = !_hasExplicitFontOverride && config && config.readerWebFonts === true
               ? "<style>@import url('https://fonts.googleapis.com/css2?family=Permanent+Marker&family=Patrick+Hand&family=Caveat:wght@400;600&display=swap');</style>"
               : '';
           const _acCaption = (layout === 'process' && sections.length > 1) ? _uiL('export.ac_follow_steps', 'Follow the steps in order') + ' &#8595;'
               : (layout === 'comparison' && sections.length > 1) ? _uiL('export.ac_compare', 'Compare side by side') + ' &#8596;'
               : (layout === 'concept-map') ? _uiL('export.ac_branches', 'Central idea branches into') + '&#8230;' : '';
-          const _acCaptionHtml = _acCaption ? ('<div style="text-align:center;font-family:' + _acBF + ';font-size:0.95em;color:#a16207;font-style:italic;margin-bottom:10px;">' + _acCaption + '</div>') : '';
+          const _acCaptionHtml = _acCaption ? ('<div class="alloflow-own-font" style="text-align:center;' + _acBFStyle + 'font-size:0.95em;color:#a16207;font-style:italic;margin-bottom:10px;">' + _acCaption + '</div>') : '';
+          const _acInteractive = !isTeacher && !!(d.interactive && d.interactive.armed === true);
           const _acCard = (s, i) => {
               const bullets = Array.isArray(s && s.bullets) ? s.bullets : [];
               const label = (s && s.label) || _uiRaw('export.ac_section_n', 'Section {n}', { n: i + 1 });
@@ -52010,18 +52444,22 @@ function projectStudentGuideData(data, mode) {
               const rot = _acJit((s && (s.id || s.label)) || ('s' + i));
               const _isImg = typeof icon === 'string' && /^(data:|https?:)/.test(icon);
               const _iconHtml = icon ? (_isImg ? ('<img src="' + escapeHtml(icon).replace(/"/g, '&quot;') + '" alt="' + escapeHtml(_iconAlt).replace(/"/g, '&quot;') + '" style="height:1.5em;width:auto;vertical-align:-0.35em;margin-right:6px;" />') : (escapeHtml(icon) + ' ')) : '';
-              const _badge = (layout === 'process') ? ('<div aria-hidden="true" style="position:absolute;top:-12px;left:-12px;z-index:6;width:30px;height:30px;border-radius:999px;background:' + m.hex + ';color:#fff;display:flex;align-items:center;justify-content:center;font-family:' + _acTF + ';font-size:15px;box-shadow:0 1px 3px rgba(0,0,0,0.3);">' + (i + 1) + '</div>') : '';
+              const _badge = (layout === 'process') ? ('<div aria-hidden="true" class="alloflow-own-font" style="position:absolute;top:-12px;left:-12px;z-index:6;width:30px;height:30px;border-radius:999px;background:' + m.hex + ';color:#fff;display:flex;align-items:center;justify-content:center;' + _acTFStyle + 'font-size:15px;box-shadow:0 1px 3px rgba(0,0,0,0.3);">' + (i + 1) + '</div>') : '';
               const _mb = (layout === 'process') ? '4px' : '12px';
-              const _bulletsHtml = bullets.length
-                  ? ('<ul style="margin:6px 0 0;padding-left:2px;list-style:none;">' + bullets.map(b => '<li style="display:flex;align-items:flex-start;gap:8px;margin-bottom:3px;"><span style="color:' + m.hex + ';font-weight:bold;line-height:1.3;">&#8226;</span><span style="font-family:' + _acBF + ';font-size:1.15em;color:#2d3748;line-height:1.3;">' + escapeHtml(b) + '</span></li>').join('') + '</ul>')
-                  : ('<div style="font-family:' + _acBF + ';font-size:0.95em;color:#9ca3af;font-style:italic;">(empty)</div>');
-              return '<div class="alloflow-anchor-card" style="position:relative;border-left:6px solid ' + m.hex + ';background:linear-gradient(180deg,' + m.soft + ' 0%,rgba(255,255,255,0.85) 60%);box-shadow:0 1px 0 rgba(0,0,0,0.04),0 2px 8px rgba(0,0,0,0.06);transform:rotate(' + rot + 'deg);border-radius:6px;padding:14px 14px 14px 18px;margin-bottom:' + _mb + ';break-inside:avoid;page-break-inside:avoid;">' + _badge
-                  + '<div style="font-family:' + _acTF + ';font-size:1.4em;color:' + m.ink + ';letter-spacing:0.02em;line-height:1.1;">' + _iconHtml + escapeHtml(label) + '</div>'
+              const _bulletsHtml = _acInteractive
+                  ? (bullets.length
+                      ? ('<ul style="margin:6px 0 0;padding-left:2px;list-style:none;">' + bullets.map((_, bIdx) => '<li style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:' + m.hex + ';font-weight:bold;line-height:1.3;">&#8226;</span>' + (isWorksheet ? fillableBlank(200) : ('<input type="text" class="interactive-blank alloflow-response-input alloflow-own-font" data-allo-response-key="' + _escTxt(String(item.id || 'ac') + ':ac:' + String((s && s.id) || i) + ':' + bIdx + ':free-response') + '" data-allo-response-type="free-response" data-allo-question="' + _escTxt(label + ' (' + (bIdx + 1) + ')') + '" aria-label="' + _escTxt(label + ' ' + (bIdx + 1)) + '" placeholder="' + _uiL('placeholders.type_answer_here', 'Type your answer...') + '" style="' + _acBFStyle + 'flex:1;min-width:140px;font-size:1.05em;">')) + '</li>').join('') + '</ul>')
+                      : ('<div class="alloflow-own-font" style="' + _acBFStyle + 'font-size:0.95em;color:#64748b;font-style:italic;">(' + _uiL('anchor_chart.section_left_blank', 'your teacher left this section blank') + ')</div>'))
+                  : (bullets.length
+                      ? ('<ul style="margin:6px 0 0;padding-left:2px;list-style:none;">' + bullets.map(b => '<li style="display:flex;align-items:flex-start;gap:8px;margin-bottom:3px;"><span style="color:' + m.hex + ';font-weight:bold;line-height:1.3;">&#8226;</span><span class="alloflow-own-font" style="' + _acBFStyle + 'font-size:1.15em;color:#2d3748;line-height:1.3;">' + escapeHtml(b) + '</span></li>').join('') + '</ul>')
+                      : ('<div class="alloflow-own-font" style="' + _acBFStyle + 'font-size:0.95em;color:#9ca3af;font-style:italic;">(empty)</div>'));
+              return '<div class="alloflow-anchor-card alloflow-own-font" style="position:relative;border-left:6px solid ' + m.hex + ';background:linear-gradient(180deg,' + m.soft + ' 0%,rgba(255,255,255,0.85) 60%);box-shadow:0 1px 0 rgba(0,0,0,0.04),0 2px 8px rgba(0,0,0,0.06);transform:rotate(' + rot + 'deg);border-radius:6px;padding:14px 14px 14px 18px;margin-bottom:' + _mb + ';break-inside:avoid;page-break-inside:avoid;">' + _badge
+                  + '<div class="alloflow-own-font" style="' + _acTFStyle + 'font-size:1.4em;color:' + m.ink + ';letter-spacing:0.02em;line-height:1.1;">' + _iconHtml + escapeHtml(label) + '</div>'
                   + _bulletsHtml + '</div>';
           };
           let sectionsHtml;
           if (sections.length === 0) {
-              sectionsHtml = '<div style="font-family:' + _acBF + ';font-size:0.95em;color:#64748b;font-style:italic;padding:12px;">No sections yet.</div>';
+              sectionsHtml = '<div class="alloflow-own-font" style="' + _acBFStyle + 'font-size:0.95em;color:#64748b;font-style:italic;padding:12px;">No sections yet.</div>';
           } else if (layout === 'comparison' || layout === 'concept-map' || layout === 'grid') {
               const _minw = layout === 'concept-map' ? '240px' : '220px';
               sectionsHtml = '<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(' + _minw + ',1fr));gap:14px;align-items:start;">' + sections.map((s, i) => _acCard(s, i)).join('') + '</div>';
@@ -52033,12 +52471,12 @@ function projectStudentGuideData(data, mode) {
           }
           const annotations = Array.isArray(d.annotations) ? d.annotations : [];
           const annotationsHtml = annotations.length > 0
-              ? ('<div style="margin-top:14px;padding:10px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:4px;"><div style="font-size:max(12px, 0.75em);font-weight:bold;text-transform:uppercase;color:#92400e;margin-bottom:6px;">Critique Mode &#8212; Student Annotations (' + annotations.length + ')</div><ul style="margin:0;padding-left:18px;">' + annotations.slice(0, 12).map(a => '<li style="font-family:' + _acBF + ';font-size:1em;color:#1e293b;margin-bottom:3px;"><strong>' + escapeHtml(a.kind || 'note') + ':</strong> ' + escapeHtml(a.text || '') + '</li>').join('') + '</ul>' + (annotations.length > 12 ? ('<div style="font-size:max(12px, 0.75em);color:#92400e;margin-top:4px;font-style:italic;">&#8230; and ' + (annotations.length - 12) + ' more.</div>') : '') + '</div>')
+              ? ('<div style="margin-top:14px;padding:10px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:4px;"><div style="font-size:max(12px, 0.75em);font-weight:bold;text-transform:uppercase;color:#92400e;margin-bottom:6px;">Critique Mode &#8212; Student Annotations (' + annotations.length + ')</div><ul style="margin:0;padding-left:18px;">' + annotations.slice(0, 12).map(a => '<li class="alloflow-own-font" style="' + _acBFStyle + 'font-size:1em;color:#1e293b;margin-bottom:3px;"><strong>' + escapeHtml(a.kind || 'note') + ':</strong> ' + escapeHtml(a.text || '') + '</li>').join('') + '</ul>' + (annotations.length > 12 ? ('<div style="font-size:max(12px, 0.75em);color:#92400e;margin-top:4px;font-style:italic;">&#8230; and ' + (annotations.length - 12) + ' more.</div>') : '') + '</div>')
               : '';
           return `
               ${_acFontImport}
               <div class="section" id="${_escTxt(item.id)}" style="background:#fffdf7;border:1px solid #f0e6d2;border-radius:10px;padding:8px 14px 14px;">
-                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #f59e0b;font-family:${_acTF};color:#7a4a1e;font-size:1.5em;">&#128203; ${_escTxt(title)} <span style="font-size:max(12px, 0.6em);font-weight:normal;color:#795548;margin-left:8px;font-family:system-ui,sans-serif;">(${_uiL('sidebar.tool_anchor_chart', 'Anchor Chart')} &#8212; ${typeLabel})</span></h2>
+                  <h2 class="resource-header alloflow-own-font" role="heading" aria-level="2" style="border-left:4px solid #f59e0b;${_acTFStyle}color:#7a4a1e;font-size:1.5em;">&#128203; ${_escTxt(title)} <span style="font-size:max(12px, 0.6em);font-weight:normal;color:#795548;margin-left:8px;font-family:system-ui,sans-serif;">(${_uiL('sidebar.tool_anchor_chart', 'Anchor Chart')} &#8212; ${typeLabel})</span></h2>
                   ${_acCaptionHtml}
                   ${sectionsHtml}
                   ${annotationsHtml}
@@ -52064,12 +52502,12 @@ function projectStudentGuideData(data, mode) {
     elementary: {
       name: 'Kid-Friendly', emoji: '🌈', wcagLevel: 'AA',
       promptInstructions: 'STYLE PREFERENCE: Kid-friendly — use rounded corners (border-radius: 12px), bright cheerful colors (teal, coral, purple), larger fonts (16px base), playful section cards with soft shadows, Comic Sans or Lexend font. Use #be185d for pink accents (WCAG AA compliant).',
-      cssVars: { bodyFont: "'Comic Sans MS', 'Lexend', sans-serif", headingColor: '#7c3aed', accentColor: '#be185d', bgColor: '#fefce8', cardBg: '#ffffff', cardBorder: '#fbbf24', headerBg: 'linear-gradient(135deg, #7c3aed, #be185d, #d97706)', headerText: '#ffffff', borderRadius: '16px', extraCSS: '.section { border-left: 5px solid #be185d; border-radius: 12px; padding: 1.5rem; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.06); } h2 { color: #7c3aed; } .resource-header { background: linear-gradient(135deg, #faf5ff, #fdf2f8); border-left: 4px solid #a855f7; }' },
+      cssVars: { bodyFont: "'Lexend', 'Comic Sans MS', sans-serif", headingColor: '#7c3aed', accentColor: '#be185d', bgColor: '#fefce8', cardBg: '#ffffff', cardBorder: '#fbbf24', headerBg: 'linear-gradient(135deg, #7c3aed, #be185d, #d97706)', headerText: '#ffffff', borderRadius: '16px', extraCSS: '.section { border-left: 5px solid #be185d; border-radius: 12px; padding: 1.5rem; background: white; box-shadow: 0 2px 8px rgba(0,0,0,0.06); } h2 { color: #7c3aed; } .resource-header { background: linear-gradient(135deg, #faf5ff, #fdf2f8); border-left: 4px solid #a855f7; }' },
     },
     minimal: {
       name: 'Minimalist', emoji: '✨', wcagLevel: 'AA',
       promptInstructions: 'STYLE PREFERENCE: Minimalist — lots of whitespace, thin sans-serif font, muted grays, one accent color (#6366f1), hairline borders, understated elegance.',
-      cssVars: { bodyFont: "'Georgia', serif", headingColor: '#111827', accentColor: '#6b7280', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: 'transparent', headerBg: '#ffffff', headerText: '#111827', extraCSS: 'h1 { font-size: 2rem; font-weight: 300; letter-spacing: -0.02em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; } .section { border: none; padding-bottom: 3rem; } .resource-header { background: none; font-size: max(12px, 0.75rem); text-transform: uppercase; letter-spacing: 0.1em; color: #4b5563; }' },
+      cssVars: { bodyFont: "'Inter', system-ui, -apple-system, sans-serif", headingColor: '#111827', accentColor: '#4f46e5', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: 'transparent', headerBg: '#ffffff', headerText: '#111827', extraCSS: 'h1 { font-size: 2rem; font-weight: 300; letter-spacing: -0.02em; border-bottom: 1px solid #e5e7eb; padding-bottom: 0.5rem; } .section { border: none; padding-bottom: 2rem; } .resource-header { background: none; font-size: max(12px, 0.75rem); text-transform: uppercase; letter-spacing: 0.1em; color: #4b5563; border-bottom: 1px solid #e5e7eb; }' },
     },
     highContrast: {
       name: 'High Contrast', emoji: '◼️', wcagLevel: 'AAA',
@@ -52083,8 +52521,8 @@ function projectStudentGuideData(data, mode) {
     },
     print: {
       name: 'Print Optimized', emoji: '🖨️', wcagLevel: 'AA',
-      promptInstructions: 'STYLE PREFERENCE: Print Optimized — use Times New Roman serif, pure black text on white, page-break-inside: avoid on sections, 12pt base font, optimized for physical printing with clean margins and no decorative elements.',
-      cssVars: { bodyFont: "'Times New Roman', serif", textColor: '#000000', headingColor: '#000000', accentColor: '#333333', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#cccccc', headerBg: '#ffffff', headerText: '#000000', extraCSS: 'body { font-size: 12pt; } .section { page-break-inside: avoid; } @media screen { body { max-width: 700px; } }' },
+      promptInstructions: 'STYLE PREFERENCE: Print Optimized — use Times New Roman serif, pure black text on white, clean section breaks, 12pt base font, optimized for physical printing with clean margins and no decorative elements.',
+      cssVars: { bodyFont: "'Times New Roman', serif", textColor: '#000000', headingColor: '#000000', accentColor: '#333333', bgColor: '#ffffff', cardBg: '#ffffff', cardBorder: '#cccccc', headerBg: '#ffffff', headerText: '#000000', extraCSS: 'body { font-size: 12pt; } @media screen { body { max-width: 700px; } }' },
     },
     dark: {
       name: 'Dark Mode', emoji: '🌙', wcagLevel: 'AA',
@@ -52161,6 +52599,42 @@ function projectStudentGuideData(data, mode) {
       if (historyItems.length === 0) return `<p>${t('export_status.no_content')}</p>`;
       if (historyItems.every(item => item.type === 'memory-aid' && item.data && item.data.memoryAidExportPreset === 'no-hints')) { const label = typeof t === 'function' && t('memory_aid.practice_kicker'); topic = label && label !== 'memory_aid.practice_kicker' ? label : 'Recall practice'; }
       const cfg = { ...(config || exportConfig), isWorksheet };
+      const RESOURCE_TYPE_TO_KEY = {
+        'simplified': 'includeSimplified', 'glossary': 'includeGlossary', 'quiz': 'includeQuiz',
+        'math': 'includeMath', 'sentence-frames': 'includeSentenceFrames', 'outline': 'includeOutline',
+        'timeline': 'includeTimeline', 'concept-sort': 'includeConceptSort', 'dbq': 'includeDbq',
+        'lesson-plan': 'includeLessonPlan', 'anchor-chart': 'includeAnchorChart',
+        'guided-notes': 'includeGuidedNotes', 'note-taking': 'includeNoteTaking',
+        'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
+        'directions': 'includeDirections', 'word-wall': 'includeWordWall',
+        'fluency-record': 'includeFluencyRecord', 'alignment-report': 'includeAlignmentReport',
+        'faq': 'includeFaq', 'analysis': 'includeAnalysis', 'udl-advice': 'includeUdlAdvice',
+        'brainstorm': 'includeBrainstorm'
+      };
+      if (Array.isArray(cfg.resourceOrder) && cfg.resourceOrder.length > 0) {
+        const _orderRank = new Map();
+        cfg.resourceOrder.forEach((k, i) => { if (!_orderRank.has(k)) _orderRank.set(k, i); });
+        historyItems = historyItems.map((it, origIdx) => ({ it, origIdx }))
+          .sort((a, b) => {
+            const ka = RESOURCE_TYPE_TO_KEY[a.it && a.it.type];
+            const kb = RESOURCE_TYPE_TO_KEY[b.it && b.it.type];
+            const ra = _orderRank.has(ka) ? _orderRank.get(ka) : Number.MAX_SAFE_INTEGER;
+            const rb = _orderRank.has(kb) ? _orderRank.get(kb) : Number.MAX_SAFE_INTEGER;
+            return ra !== rb ? ra - rb : a.origIdx - b.origIdx;
+          }).map(e => e.it);
+      }
+      if (Array.isArray(cfg.resourceItemOrder) && cfg.resourceItemOrder.length > 0) {
+        const _itemRank = new Map();
+        cfg.resourceItemOrder.forEach((id, i) => { const s = String(id); if (!_itemRank.has(s)) _itemRank.set(s, i); });
+        historyItems = historyItems.map((it, stepIdx) => ({ it, stepIdx }))
+          .sort((a, b) => {
+            const ia = a.it && a.it.id != null ? _itemRank.get(String(a.it.id)) : undefined;
+            const ib = b.it && b.it.id != null ? _itemRank.get(String(b.it.id)) : undefined;
+            const ra = ia !== undefined ? ia : Number.MAX_SAFE_INTEGER;
+            const rb = ib !== undefined ? ib : Number.MAX_SAFE_INTEGER;
+            return ra !== rb ? ra - rb : a.stepIdx - b.stepIdx;
+          }).map(e => e.it);
+      }
       const readingContract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
       if (readingContract?.ensureReadingSourcePairs) historyItems = readingContract.ensureReadingSourcePairs(historyItems);
       // Assessment mode (2026-07-01): a graded export must be student-safe end to end — suppress the
@@ -52230,9 +52704,10 @@ function projectStudentGuideData(data, mode) {
       // The cloze worksheet blanks each passage against the glossary of its own
       // unit/source (_alloRelatedClozeGlossary). Resolved here because
       // generateResourceHTML only ever sees one item.
+      const _packItemsAll = historyItems.slice();
+      cfg.__inlineGlossaryFor = (it) => _alloRelatedClozeGlossary(_packItemsAll, it);
       if (isWorksheet && cfg.clozeWorksheet === true) {
-        const _packItems = historyItems.slice();
-        cfg.__clozeGlossaryFor = (it) => _alloRelatedClozeGlossary(_packItems, it);
+        cfg.__clozeGlossaryFor = (it) => _alloRelatedClozeGlossary(_packItemsAll, it);
       }
       const _materializeRenderable = (items, isTeacher) => {
         return items
@@ -52315,13 +52790,29 @@ function projectStudentGuideData(data, mode) {
             </div>`
           : '';
         const rid = _escAttr(item && item.id ? item.id : ('resource-' + idx));
+        let wrappedHtml = String(html || '');
+        const leadingStylesMatch = wrappedHtml.match(/^\s*((?:<style(?:\s[^>]*)?>[\s\S]*?<\/style>\s*)+)/i);
+        if (leadingStylesMatch) {
+          const leadingStyles = leadingStylesMatch[1];
+          const afterStyle = wrappedHtml.slice(leadingStylesMatch[0].length);
+          const openSection = afterStyle.match(/^\s*(<(?:div|section)\b[^>]*class="[^"]*\bsection\b[^"]*"[^>]*>)/i);
+          if (openSection) {
+            wrappedHtml = openSection[1] + leadingStyles + afterStyle.slice(openSection[0].length);
+          } else {
+            const firstHeading = afterStyle.match(/^\s*<(?:h[1-6]\b|div\b[^>]*role="heading")/i);
+            const fallbackHeading = (!firstHeading && item && item.title) ? `<h2 class="resource-header" role="heading" aria-level="2">${_escTxt(item.title)}</h2>` : '';
+            wrappedHtml = `<div class="section" id="${rid}">${leadingStyles}${fallbackHeading}${afterStyle}</div>`;
+          }
+        }
         // A teacher lesson plan is teacher material: the student/teacher splitter drops it from STUDENT
         // files. Study and Family Guides stay; only their teacher-facing parts are marked inside.
         const teacherOnly = item && item.type === 'lesson-plan' && !_docIsStudentGuide(item) ? ' data-allo-teacher-only="lesson-plan"' : '';
-        return `<div class="alloflow-resource-wrap" data-alloflow-resource-id="${rid}"${teacherOnly} style="position:relative;">${continuationStrip}${marker}${html}${terminator}</div>`;
+        const rtype = _escAttr(item && item.type ? String(item.type) : '');
+        return `<div class="alloflow-resource-wrap" data-alloflow-resource-id="${rid}" data-alloflow-resource-type="${rtype}"${teacherOnly} style="position:relative;">${continuationStrip}${marker}${wrappedHtml}${terminator}</div>`;
       };
       const _buildTOC = (items, isTeacher) => {
         if (items.length < 2) return '';  // single-resource exports don't need a TOC
+        if (isWorksheet && cfg.includeTOC !== true && items.length < 4) return '';
         const tocTitle = isTeacher ? (t('export.teacher_toc') || 'Teacher Contents') : (t('export.toc') || 'Contents');
         return `
           <nav class="alloflow-toc" aria-label="${_escAttr(tocTitle)}" style="margin:0 0 36px;padding:22px 26px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:14px;break-inside:avoid;page-break-inside:avoid;">
@@ -52550,16 +53041,19 @@ function projectStudentGuideData(data, mode) {
       }
       const _runtimeCopyCatalog = {
         en: {
+          quizScoreCorrect: '{correct} of {total} correct', quizScoreReview: '{n} to review', quizScoreUnanswered: '{n} unanswered',
           workspaceTitle: 'Who is working on this resource?', workspaceDescription: 'Enter a name or nickname to keep autosaved answers and annotations separate on a shared device. You can also use this resource once without storing your work in this browser.', nameLabel: 'Name or nickname', continueAutosave: 'Continue with autosave', useOnce: 'Use once without autosave', requiredName: 'Enter a name or nickname.', oneTimeNotice: 'One-time session: browser autosave is off. You can still download your answers and annotations.',
           saveWorkTitle: 'Save your work', saveWorkDescription: 'Enter a name or nickname so your teacher can identify this submission.', saveWorkConfirm: 'Save work', saveAnswersTitle: 'Save your answers', saveAnswersDescription: 'Enter a name or nickname so your teacher can identify this answer file.', saveAnswersConfirm: 'Save answers', cancel: 'Cancel', saveMyAnswers: 'Save my answers', savedAnswers: 'Saved! Send the file to your teacher', saveErrorPrefix: 'Could not save your answers: ',
           saveToolsLabel: 'Save and submit your work', doneTitle: 'Done with your work?', answerFileDescription: 'Save a file of your answers and send it to your teacher.', answerFileHelp: 'Saves a .json file your teacher opens in AlloFlow.', encryptedMailboxDescription: 'Send your encrypted work directly to your teacher’s Class Mailbox. If sending fails, an encrypted file downloads instead.', encryptedFileDescription: 'Save an encrypted file with your answers and send it to your teacher.', encryptionHelp: 'Your responses are encrypted with your class key. Only your teacher can open them.', saveMyWork: 'Save my work', saving: 'Saving…', savedDownload: 'Saved — download started', saveAgain: 'Save my work again', saveUnavailable: 'Save unavailable (key missing)', encryptionUnavailable: 'Encryption is not available in this browser. Use a newer browser to save submissions.', sending: 'Sending to your teacher…', sent: 'Sent to your teacher', sentToTeacher: 'Your encrypted work was sent to your teacher', sendAgain: 'Send my work again', mailboxFallback: 'Could not reach your teacher’s Class Mailbox. An encrypted file will download instead; send that file to your teacher.', workSaveErrorPrefix: 'Could not save your work: ',
           skipToContent: 'Skip to content', readingToolsLabel: 'Reading and annotation tools', toolsLabel: 'Tools', accessibilityInfoLabel: 'Accessibility information', accessibilityTitle: 'Accessibility features', accessibilityDescription: 'This document includes semantic structure, heading hierarchy, table headers, landmarks, language metadata, logical reading order, and print-optimized layout. This is not an independently validated WCAG or PDF/UA conformance claim; verify it with an accessibility checker before relying on it for compliance. Created with AlloFlow.', submissionFor: 'Submission for {name}', worksheetLabel: 'Worksheet', savedLabel: 'Saved', encryptedClassKey: 'Encrypted with class key', encryptedFileHelp: 'This file contains encrypted responses. Open it in AlloFlow (Document Builder → Import submissions) with the matching class key file to decrypt it.', resourceIdLabel: 'Resource ID', printLinksTitle: 'Web links for this resource',
+          hudJumpSection: 'Jump to section', hudAllSections: 'All sections ({n})', hudStepMode: 'Step-by-step', hudStepModeTitle: 'Toggle between viewing all sections and one section at a time', hudPrevStep: 'Previous', hudNextStep: 'Next', hudPinReading: 'Pin reading', hudPinReadingTitle: 'Pin reading and glossary beside activities on wide screens', hudAnsweredCount: '{done} / {total} answered', hudAutosaveOn: 'Autosave: {name}', hudOneTimeMode: 'One-time session', hudPrint: 'Print', hudSaveJump: 'Save', savedLearnersLabel: 'Continue as a previous learner on this device:', unansweredSaveNotice: '{n} item(s) still unanswered. You can save now or click Cancel to finish first.', glossaryTermLabel: 'Glossary term definition', closeDefinition: 'Close definition',
           rtTheme: "Theme", rtLight: "Light", rtDark: "Dark", rtSepia: "Sepia", rtHighContrast: "High Contrast", rtThemeAria: "Reading theme", rtLightTitle: "Light (teacher default)", rtDarkTitle: "Dark mode", rtSepiaTitle: "Sepia (warm, low-glare)", rtHcTitle: "High Contrast (WCAG AAA)", rtFont: "Font", rtFontAria: "Font family", rtFontAlways: "Always available", rtFontInternet: "Needs internet", rtFontThisDoc: "This document", rtFontDocument: "Document font ({font})", rtFontOriginal: "Original", rtFontSans: "Sans", rtFontReadable: "Readable (Verdana)", rtFontHumanist: "Humanist (Tahoma)", rtFontSerif: "Serif (Georgia)", rtFontBookSerif: "Book serif (Palatino)", rtFontRounded: "Rounded (Trebuchet)", rtFontDyslexia: "Dyslexia-friendly (Comic Sans)", rtFontMono: "Monospace", rtText: "Text", rtTextAria: "Text display", rtSmaller: "Smaller text", rtResetSize: "Back to normal text size", rtLarger: "Larger text", rtSpacing: "Spacing", rtLineSpacing: "Line spacing", rtLineSpacingTitle: "Cycle line spacing", rtLetter: "Letter", rtLetterSpacing: "Letter spacing", rtLetterSpacingTitle: "Cycle letter spacing", rtGuide: "Guide", rtGuideAria: "Reading guide", rtOff: "Off", rtLine: "Line", rtFocus: "Focus", rtGuideOffTitle: "Turn reading guide off", rtGuideLineTitle: "Line reader follows your pointer", rtGuideFocusTitle: "Focus mask follows your pointer", rtAnnotate: "Annotate", rtAnnoAria: "Annotations", rtNote: "Note", rtHighlight: "Highlight", rtVoice: "Voice", rtDraw: "Draw", rtUndo: "Undo", rtEraseMine: "Erase my marks", rtList: "List", rtSaveMine: "Save mine", rtNoteTitle: "Add a sticky note", rtHighlightTitle: "Highlight text", rtVoiceTitle: "Voice note: click to start recording (max 60s, stays on your device)", rtDrawTitle: "Draw: press and drag to draw freehand on the page", rtUndoTitle: "Undo last annotation (Ctrl/Cmd+Z)", rtEraseMineTitle: "Erase everything you have marked on this page. Your teacher's marks stay.", rtListTitle: "Show all annotations", rtSaveMineTitle: "Download my annotations as JSON", rtPen: "Pen:", rtSize: "Size:", rtThin: "Thin", rtMedium: "Medium", rtThick: "Thick", rtThinTitle: "Thin pen", rtMediumTitle: "Medium pen", rtThickTitle: "Thick pen", rtPenRed: "Red pen", rtPenBlue: "Blue pen", rtPenGreen: "Green pen", rtPenYellow: "Yellow pen", rtPenBlack: "Black pen", rtNoteColor: "Note color:", rtNoteYellow: "Yellow note", rtNoteGreen: "Green note", rtNoteBlue: "Blue note", rtNotePink: "Pink note", rtHighlightColor: "Highlight color:", rtHlYellow: "Yellow highlight", rtHlGreen: "Green highlight", rtHlBlue: "Blue highlight", rtHlPink: "Pink highlight", rtNoReadAloud: "Browser read-aloud is not available here.", rtAnnoSaveFailed: "Could not save annotations. Try a different browser.", rtMicDenied: "Microphone access was denied. Allow microphone access in your browser settings to record voice notes.", rtNoAnnotations: "No annotations to save yet — add a note or highlight first.", rtVoiceTooLong: "Voice note too long to save (over 500KB). Try a shorter clip.", rtVoiceUnsupportedBrowser: "Voice recording is not supported in this browser.", rtVoiceUnsupportedDevice: "Voice recording is not supported on this device.", rtVoiceEmpty: "Voice recording was empty.",
           rtReadAloud: "Read aloud", rtStopReadAloud: "Stop read aloud", rtTeacherNote: "Teacher note", rtYourNote: "Your note", rtCloseNote: "Close note", rtStickyNote: "Sticky note: {content}", rtStickyNoteFrom: "Sticky note from {author}: {content}", rtEmptyNote: "(empty)", rtVoiceNote: "Voice note", rtVoiceNoteFrom: "Voice note from {author}", rtTeacherVoiceNote: "Teacher voice note", rtCloseVoiceNote: "Close voice note", rtDrawing: "Drawing", rtDrawingFrom: "Drawing from {author}", rtTeacherFeedback: "Teacher feedback", rtYou: "You", rtEraseNothing: "Nothing to erase yet. Your highlights, notes and drawings will show up here.", rtEraseOne: "Erase your 1 mark on this page. Your teacher’s marks stay.", rtEraseCount: "Erase all {count} of your own marks on this page. Your teacher’s marks stay.", rtNoteToolActive: "Note tool active. Press Enter here to add a note.", rtHighlightToolActive: "Highlight tool active. Select text, then press Enter to highlight it.", rtSaveNote: "Save note", rtSaveClose: "Save and close", rtDeleteNote: "Delete note", rtDelete: "Delete", rtNoteContent: "Note content", rtRemoveAnnoTitle: "Remove all of your annotations?", rtRemoveAnnoOne: "This will permanently remove 1 note, highlight, sticker, or voice note. Teacher annotations will stay.", rtRemoveAnnoMany: "This will permanently remove {count} notes, highlights, stickers, and voice notes. Teacher annotations will stay.", rtRemoveAnnoConfirm: "Remove my annotations", rtConfirmTitle: "Please confirm", rtContinue: "Continue", rtCharLimit: "Character limit reached. Edit your response to make room for more text.",
           rtDownloadRequested: "Download requested — check your Downloads", rtDownloadFramedHelp: "If no file appeared, this page may be inside a system that blocks downloads. Open it in its own tab, then save again.", rtOpenInOwnTab: "Open this page in its own tab", rtNoStorage: "This browser will not keep your work on this device. Use Save my answers before you close the page.",
           readAloudUnavailable: 'Read-aloud audio wasn’t available for this passage. The passage text is still available below.', readAloudPartial: 'Audio is available for {ready} of {total} sentences. Read the text for the missing portions.'
         },
         es: {
+          quizScoreCorrect: '{correct} de {total} correctas', quizScoreReview: '{n} por revisar', quizScoreUnanswered: '{n} sin responder',
           workspaceTitle: '¿Quién está trabajando en este recurso?', workspaceDescription: 'Escribe un nombre o apodo para mantener separadas las respuestas y anotaciones guardadas automáticamente en un dispositivo compartido. También puedes usar este recurso una vez sin guardar el trabajo en este navegador.', nameLabel: 'Nombre o apodo', continueAutosave: 'Continuar con guardado automático', useOnce: 'Usar una vez sin guardar', requiredName: 'Escribe un nombre o apodo.', oneTimeNotice: 'Sesión única: el guardado automático del navegador está desactivado. Aún puedes descargar tus respuestas y anotaciones.',
           saveWorkTitle: 'Guardar tu trabajo', saveWorkDescription: 'Escribe un nombre o apodo para que tu docente pueda identificar esta entrega.', saveWorkConfirm: 'Guardar trabajo', saveAnswersTitle: 'Guardar tus respuestas', saveAnswersDescription: 'Escribe un nombre o apodo para que tu docente pueda identificar este archivo de respuestas.', saveAnswersConfirm: 'Guardar respuestas', cancel: 'Cancelar', saveMyAnswers: 'Guardar mis respuestas', savedAnswers: '¡Guardado! Envía el archivo a tu docente', saveErrorPrefix: 'No se pudieron guardar tus respuestas: ',
           saveToolsLabel: 'Guardar y entregar tu trabajo', doneTitle: '¿Terminaste tu trabajo?', answerFileDescription: 'Guarda un archivo con tus respuestas y envíalo a tu docente.', answerFileHelp: 'Guarda un archivo .json que tu docente abre en AlloFlow.', encryptedMailboxDescription: 'Envía tu trabajo cifrado directamente al buzón de clase de tu docente. Si el envío falla, se descargará un archivo cifrado.', encryptedFileDescription: 'Guarda un archivo cifrado con tus respuestas y envíalo a tu docente.', encryptionHelp: 'Tus respuestas se cifran con la clave de la clase. Solo tu docente puede abrirlas.', saveMyWork: 'Guardar mi trabajo', saving: 'Guardando…', savedDownload: 'Guardado — se inició la descarga', saveAgain: 'Volver a guardar mi trabajo', saveUnavailable: 'No se puede guardar (falta la clave)', encryptionUnavailable: 'El cifrado no está disponible en este navegador. Usa un navegador más reciente para guardar entregas.', sending: 'Enviando a tu docente…', sent: 'Enviado a tu docente', sentToTeacher: 'Tu trabajo cifrado se envió a tu docente', sendAgain: 'Volver a enviar mi trabajo', mailboxFallback: 'No se pudo acceder al buzón de clase de tu docente. Se descargará un archivo cifrado; envíaselo a tu docente.', workSaveErrorPrefix: 'No se pudo guardar tu trabajo: ',
@@ -52570,6 +53064,7 @@ function projectStudentGuideData(data, mode) {
           readAloudUnavailable: 'El audio de lectura en voz alta no estuvo disponible para este pasaje. El texto del pasaje sigue disponible abajo.', readAloudPartial: 'Hay audio disponible para {ready} de {total} oraciones. Lee el texto de las partes que faltan.'
         },
         fr: {
+          quizScoreCorrect: '{correct} sur {total} correctes', quizScoreReview: '{n} à revoir', quizScoreUnanswered: '{n} sans réponse',
           workspaceTitle: 'Qui travaille sur cette ressource ?', workspaceDescription: 'Saisissez un nom ou un pseudonyme pour séparer les réponses et annotations enregistrées automatiquement sur un appareil partagé. Vous pouvez aussi utiliser cette ressource une seule fois sans enregistrer votre travail dans ce navigateur.', nameLabel: 'Nom ou pseudonyme', continueAutosave: 'Continuer avec l’enregistrement automatique', useOnce: 'Utiliser une fois sans enregistrer', requiredName: 'Saisissez un nom ou un pseudonyme.', oneTimeNotice: 'Session unique : l’enregistrement automatique du navigateur est désactivé. Vous pouvez toujours télécharger vos réponses et annotations.',
           saveWorkTitle: 'Enregistrer votre travail', saveWorkDescription: 'Saisissez un nom ou un pseudonyme pour que votre enseignant puisse identifier ce travail.', saveWorkConfirm: 'Enregistrer le travail', saveAnswersTitle: 'Enregistrer vos réponses', saveAnswersDescription: 'Saisissez un nom ou un pseudonyme pour que votre enseignant puisse identifier ce fichier de réponses.', saveAnswersConfirm: 'Enregistrer les réponses', cancel: 'Annuler', saveMyAnswers: 'Enregistrer mes réponses', savedAnswers: 'Enregistré ! Envoyez le fichier à votre enseignant', saveErrorPrefix: 'Impossible d’enregistrer vos réponses : ',
           saveToolsLabel: 'Enregistrer et remettre votre travail', doneTitle: 'Vous avez terminé votre travail ?', answerFileDescription: 'Enregistrez un fichier de vos réponses et envoyez-le à votre enseignant.', answerFileHelp: 'Enregistre un fichier .json que votre enseignant ouvre dans AlloFlow.', encryptedMailboxDescription: 'Envoyez votre travail chiffré directement à la boîte de classe de votre enseignant. En cas d’échec, un fichier chiffré sera téléchargé.', encryptedFileDescription: 'Enregistrez un fichier chiffré avec vos réponses et envoyez-le à votre enseignant.', encryptionHelp: 'Vos réponses sont chiffrées avec la clé de votre classe. Seul votre enseignant peut les ouvrir.', saveMyWork: 'Enregistrer mon travail', saving: 'Enregistrement…', savedDownload: 'Enregistré — téléchargement lancé', saveAgain: 'Enregistrer à nouveau mon travail', saveUnavailable: 'Enregistrement indisponible (clé manquante)', encryptionUnavailable: 'Le chiffrement n’est pas disponible dans ce navigateur. Utilisez un navigateur plus récent pour enregistrer vos travaux.', sending: 'Envoi à votre enseignant…', sent: 'Envoyé à votre enseignant', sentToTeacher: 'Votre travail chiffré a été envoyé à votre enseignant', sendAgain: 'Envoyer à nouveau mon travail', mailboxFallback: 'Impossible de joindre la boîte de classe de votre enseignant. Un fichier chiffré sera téléchargé à la place ; envoyez-le à votre enseignant.', workSaveErrorPrefix: 'Impossible d’enregistrer votre travail : ',
@@ -52580,6 +53075,7 @@ function projectStudentGuideData(data, mode) {
           readAloudUnavailable: 'L’audio de lecture à voix haute n’était pas disponible pour ce passage. Le texte du passage reste disponible ci-dessous.', readAloudPartial: 'L’audio est disponible pour {ready} phrases sur {total}. Lisez le texte des parties manquantes.'
         },
         pt: {
+          quizScoreCorrect: '{correct} de {total} corretas', quizScoreReview: '{n} para revisar', quizScoreUnanswered: '{n} sem resposta',
           workspaceTitle: 'Quem está trabalhando neste recurso?', workspaceDescription: 'Digite um nome ou apelido para manter separadas as respostas e anotações salvas automaticamente em um dispositivo compartilhado. Você também pode usar este recurso uma vez sem salvar o trabalho neste navegador.', nameLabel: 'Nome ou apelido', continueAutosave: 'Continuar com salvamento automático', useOnce: 'Usar uma vez sem salvar', requiredName: 'Digite um nome ou apelido.', oneTimeNotice: 'Sessão única: o salvamento automático do navegador está desativado. Você ainda pode baixar suas respostas e anotações.',
           saveWorkTitle: 'Salvar seu trabalho', saveWorkDescription: 'Digite um nome ou apelido para que seu professor possa identificar esta entrega.', saveWorkConfirm: 'Salvar trabalho', saveAnswersTitle: 'Salvar suas respostas', saveAnswersDescription: 'Digite um nome ou apelido para que seu professor possa identificar este arquivo de respostas.', saveAnswersConfirm: 'Salvar respostas', cancel: 'Cancelar', saveMyAnswers: 'Salvar minhas respostas', savedAnswers: 'Salvo! Envie o arquivo ao seu professor', saveErrorPrefix: 'Não foi possível salvar suas respostas: ',
           saveToolsLabel: 'Salvar e enviar seu trabalho', doneTitle: 'Terminou seu trabalho?', answerFileDescription: 'Salve um arquivo com suas respostas e envie-o ao seu professor.', answerFileHelp: 'Salva um arquivo .json que seu professor abre no AlloFlow.', encryptedMailboxDescription: 'Envie seu trabalho criptografado diretamente para a caixa da turma do seu professor. Se o envio falhar, um arquivo criptografado será baixado.', encryptedFileDescription: 'Salve um arquivo criptografado com suas respostas e envie-o ao seu professor.', encryptionHelp: 'Suas respostas são criptografadas com a chave da turma. Somente seu professor pode abri-las.', saveMyWork: 'Salvar meu trabalho', saving: 'Salvando…', savedDownload: 'Salvo — download iniciado', saveAgain: 'Salvar meu trabalho novamente', saveUnavailable: 'Não é possível salvar (chave ausente)', encryptionUnavailable: 'A criptografia não está disponível neste navegador. Use um navegador mais recente para salvar envios.', sending: 'Enviando ao seu professor…', sent: 'Enviado ao seu professor', sentToTeacher: 'Seu trabalho criptografado foi enviado ao seu professor', sendAgain: 'Enviar meu trabalho novamente', mailboxFallback: 'Não foi possível acessar a caixa da turma do seu professor. Um arquivo criptografado será baixado; envie-o ao seu professor.', workSaveErrorPrefix: 'Não foi possível salvar seu trabalho: ',
@@ -52590,6 +53086,7 @@ function projectStudentGuideData(data, mode) {
           readAloudUnavailable: 'O áudio de leitura em voz alta não estava disponível para esta passagem. O texto da passagem continua disponível abaixo.', readAloudPartial: 'O áudio está disponível para {ready} de {total} frases. Leia o texto das partes que faltam.'
         },
         ar: {
+          quizScoreCorrect: '{correct} من {total} صحيحة', quizScoreReview: '{n} للمراجعة', quizScoreUnanswered: '{n} بدون إجابة',
           workspaceTitle: 'من يعمل على هذا المورد؟', workspaceDescription: 'أدخل اسمًا أو اسمًا مستعارًا للفصل بين الإجابات والتعليقات المحفوظة تلقائيًا على جهاز مشترك. يمكنك أيضًا استخدام هذا المورد مرة واحدة من دون حفظ عملك في هذا المتصفح.', nameLabel: 'الاسم أو الاسم المستعار', continueAutosave: 'المتابعة مع الحفظ التلقائي', useOnce: 'الاستخدام مرة واحدة من دون حفظ', requiredName: 'أدخل اسمًا أو اسمًا مستعارًا.', oneTimeNotice: 'جلسة لمرة واحدة: الحفظ التلقائي في المتصفح متوقف. لا يزال بإمكانك تنزيل إجاباتك وتعليقاتك.',
           saveWorkTitle: 'حفظ عملك', saveWorkDescription: 'أدخل اسمًا أو اسمًا مستعارًا ليتمكن المعلم من التعرّف على هذا التسليم.', saveWorkConfirm: 'حفظ العمل', saveAnswersTitle: 'حفظ إجاباتك', saveAnswersDescription: 'أدخل اسمًا أو اسمًا مستعارًا ليتمكن المعلم من التعرّف على ملف الإجابات هذا.', saveAnswersConfirm: 'حفظ الإجابات', cancel: 'إلغاء', saveMyAnswers: 'حفظ إجاباتي', savedAnswers: 'تم الحفظ! أرسل الملف إلى معلمك', saveErrorPrefix: 'تعذّر حفظ إجاباتك: ',
           saveToolsLabel: 'حفظ عملك وتسليمه', doneTitle: 'هل انتهيت من عملك؟', answerFileDescription: 'احفظ ملفًا يتضمن إجاباتك وأرسله إلى معلمك.', answerFileHelp: 'يحفظ ملف .json يفتحه معلمك في AlloFlow.', encryptedMailboxDescription: 'أرسل عملك المشفّر مباشرة إلى صندوق بريد الصف الخاص بمعلمك. إذا فشل الإرسال، فسيتم تنزيل ملف مشفّر بدلًا منه.', encryptedFileDescription: 'احفظ ملفًا مشفّرًا يتضمن إجاباتك وأرسله إلى معلمك.', encryptionHelp: 'إجاباتك مشفّرة بمفتاح الصف. لا يمكن فتحها إلا من قِبل معلمك.', saveMyWork: 'حفظ عملي', saving: 'جارٍ الحفظ…', savedDownload: 'تم الحفظ — بدأ التنزيل', saveAgain: 'حفظ عملي مرة أخرى', saveUnavailable: 'الحفظ غير متاح (المفتاح مفقود)', encryptionUnavailable: 'التشفير غير متاح في هذا المتصفح. استخدم متصفحًا أحدث لحفظ التسليمات.', sending: 'جارٍ الإرسال إلى معلمك…', sent: 'تم الإرسال إلى معلمك', sentToTeacher: 'تم إرسال عملك المشفّر إلى معلمك', sendAgain: 'إرسال عملي مرة أخرى', mailboxFallback: 'تعذّر الوصول إلى صندوق بريد الصف الخاص بمعلمك. سيتم تنزيل ملف مشفّر بدلًا منه؛ أرسله إلى معلمك.', workSaveErrorPrefix: 'تعذّر حفظ عملك: ',
@@ -52600,6 +53097,7 @@ function projectStudentGuideData(data, mode) {
           readAloudUnavailable: 'لم يكن صوت القراءة متاحًا لهذا المقطع. لا يزال نص المقطع متاحًا أدناه.', readAloudPartial: 'الصوت متاح لـ {ready} من أصل {total} جملة. اقرأ النص للأجزاء المفقودة.'
         },
         zh: {
+          quizScoreCorrect: '答对 {correct} / {total} 题', quizScoreReview: '{n} 题待订正', quizScoreUnanswered: '{n} 题未作答',
           workspaceTitle: '谁在使用此资源？', workspaceDescription: '请输入姓名或昵称，以便在共用设备上分别保存自动保存的答案和批注。你也可以仅使用一次，而不在此浏览器中保存学习内容。', nameLabel: '姓名或昵称', continueAutosave: '继续并自动保存', useOnce: '仅使用一次，不保存', requiredName: '请输入姓名或昵称。', oneTimeNotice: '一次性会话：浏览器自动保存已关闭。你仍可下载答案和批注。',
           saveWorkTitle: '保存你的学习内容', saveWorkDescription: '请输入姓名或昵称，以便老师识别这份提交。', saveWorkConfirm: '保存学习内容', saveAnswersTitle: '保存你的答案', saveAnswersDescription: '请输入姓名或昵称，以便老师识别此答案文件。', saveAnswersConfirm: '保存答案', cancel: '取消', saveMyAnswers: '保存我的答案', savedAnswers: '已保存！请将文件发送给老师', saveErrorPrefix: '无法保存你的答案：',
           saveToolsLabel: '保存并提交你的学习内容', doneTitle: '完成学习内容了吗？', answerFileDescription: '保存答案文件并将其发送给老师。', answerFileHelp: '保存一个可由老师在 AlloFlow 中打开的 .json 文件。', encryptedMailboxDescription: '将加密后的学习内容直接发送到老师的班级邮箱。如果发送失败，系统会改为下载加密文件。', encryptedFileDescription: '保存含有答案的加密文件并发送给老师。', encryptionHelp: '你的答案使用班级密钥加密，只有老师可以打开。', saveMyWork: '保存我的学习内容', saving: '正在保存…', savedDownload: '已保存 — 已开始下载', saveAgain: '再次保存我的学习内容', saveUnavailable: '无法保存（缺少密钥）', encryptionUnavailable: '此浏览器不支持加密。请使用较新的浏览器保存提交内容。', sending: '正在发送给老师…', sent: '已发送给老师', sentToTeacher: '加密后的学习内容已发送给老师', sendAgain: '再次发送我的学习内容', mailboxFallback: '无法连接到老师的班级邮箱。系统将改为下载加密文件；请将该文件发送给老师。', workSaveErrorPrefix: '无法保存你的学习内容：',
@@ -52631,6 +53129,11 @@ function projectStudentGuideData(data, mode) {
           : (_runtimeCopyCatalog[_runtimeLanguage] || _plainCopy(_loadedCopy[_runtimeLanguage]))),
       };
       const _rt = (key) => _escAttr(_runtimeCopy[key]);
+      const _rtSafe = (key, fallback, vars) => {
+        let s = typeof _runtimeCopy[key] === 'string' && _runtimeCopy[key].trim() ? _runtimeCopy[key] : (fallback || '');
+        if (vars && typeof vars === 'object') s = String(s).replace(/\{(\w+)\}/g, (m, k) => (vars[k] != null ? String(vars[k]) : m));
+        return _escAttr(s);
+      };
       // Four independently mixed 32-bit lanes form a deterministic 128-bit
       // content identity. It is based on resource content, not rendered body
       // length or generation date, so unrelated equal-length exports cannot
@@ -52684,7 +53187,11 @@ function projectStudentGuideData(data, mode) {
                 <div class="header-item" style="flex: 1;">
                     <span class="label">${t('export.date_label')}:</span>
                     <div class="line"></div>
-                </div>
+                </div>${cfg.includeClassPeriod === true ? `
+                <div class="header-item" data-alloflow-worksheet-period style="flex: 1;">
+                    <span class="label">${(() => { const v = t('export.class_period_label'); return _escTxt(typeof v === 'string' && v.trim() && v !== 'export.class_period_label' ? v : 'Class / Period'); })()}:</span>
+                    <div class="line"></div>
+                </div>` : ''}
             </div>
             ${worksheetShowsScore ? `<div class="header-row" data-alloflow-worksheet-score style="margin-top: 20px;">
                 <div class="header-item" style="flex: 1;">
@@ -53007,6 +53514,112 @@ function projectStudentGuideData(data, mode) {
         })),
       };
       const _headerColors = _accessibleHeaderColors(theme.headerBg) || { bg: theme.headerBg, fg: theme.headerText || '#ffffff' };
+      const _hudSections = _studentEntries.map((entry, idx) => ({
+        id: String((entry.item && entry.item.id) || ('resource-' + idx)),
+        type: String((entry.item && entry.item.type) || ''),
+        title: String((entry.item && entry.item.title) || getDefaultTitle(entry.item && entry.item.type) || ('Section ' + (idx + 1)))
+      }));
+      const _hudHasSplit = !isWorksheet && _hudSections.length >= 2 && _hudSections.some(s => s.type === 'simplified' || s.type === 'glossary') && _hudSections.some(s => s.type !== 'simplified' && s.type !== 'glossary');
+      const _hudBarHtml = `
+        <div class="alloflow-hud-bar">
+          ${_hudSections.length >= 2 ? `<select id="alloflow-section-jump" class="alloflow-hud-select" aria-label="${_rtSafe('hudJumpSection', 'Jump to section')}"><option value="">${_rtSafe('hudAllSections', 'All sections ({n})', { n: _hudSections.length })}</option>${_hudSections.map((s, idx) => `<option value="${_escAttr(s.id)}">${idx + 1}. ${_escTxt(s.title)}</option>`).join('')}</select>` : ''}
+          ${_hudSections.length >= 2 ? `<button type="button" id="alloflow-step-toggle" class="alloflow-hud-btn" aria-pressed="false" title="${_rtSafe('hudStepModeTitle', 'Toggle between viewing all sections and one section at a time')}">${_rtSafe('hudStepMode', 'Step-by-step')}</button><span id="alloflow-step-pager" class="alloflow-step-pager" hidden><button type="button" id="alloflow-step-prev" class="alloflow-hud-btn">${_rtSafe('hudPrevStep', 'Previous')}</button><span id="alloflow-step-readout" class="alloflow-hud-pill" aria-live="polite">1 / ${_hudSections.length}</span><button type="button" id="alloflow-step-next" class="alloflow-hud-btn">${_rtSafe('hudNextStep', 'Next')}</button></span>` : ''}
+          ${_hudHasSplit ? `<button type="button" id="alloflow-split-toggle" class="alloflow-hud-btn alloflow-desktop-only" aria-pressed="false" title="${_rtSafe('hudPinReadingTitle', 'Pin reading and glossary beside activities on wide screens')}">${_rtSafe('hudPinReading', 'Pin reading')}</button>` : ''}
+          <span class="alloflow-hud-spacer" aria-hidden="true"></span>
+          <span id="alloflow-progress-badge" class="alloflow-hud-pill" hidden aria-live="polite"></span>
+          <span id="alloflow-learner-status" class="alloflow-hud-pill" hidden></span>
+          <button type="button" id="alloflow-hud-print" class="alloflow-hud-btn">${_rtSafe('hudPrint', 'Print')}</button>
+          <button type="button" id="alloflow-hud-save-jump" class="alloflow-hud-btn alloflow-hud-primary" hidden>${_rtSafe('hudSaveJump', 'Save')}</button>
+        </div>`;
+      const _readingToolsShellHtml = isWorksheet ? '' : `
+        <aside class="alloflow-reading-tools-shell expanded" aria-label="${_runtimeCopy.readingToolsLabel}">
+        <noscript><style>.alloflow-reading-tools-shell{display:none !important;}</style></noscript>
+        <button type="button" class="alloflow-tools-toggle" aria-expanded="true" aria-controls="alloflow-tools-panel">
+          <span>${_runtimeCopy.toolsLabel}</span><span class="alloflow-tools-toggle-icon" aria-hidden="true">▾</span>
+        </button>
+        ${_hudBarHtml}
+        <div id="alloflow-tools-panel" class="alloflow-tools-panel">
+        <div class="alloflow-reading-tools">
+          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtThemeAria')}">
+            <span class="alloflow-reading-tools-label">${_rt('rtTheme')}</span>
+            <button type="button" class="alloflow-rt-btn" data-rt-theme="light" aria-pressed="true" title="${_rt('rtLightTitle')}">☀ ${_rt('rtLight')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-theme="dark" aria-pressed="false" title="${_rt('rtDarkTitle')}">\u{1F319} ${_rt('rtDark')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-theme="sepia" aria-pressed="false" title="${_rt('rtSepiaTitle')}">\u{1F4DC} ${_rt('rtSepia')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-theme="hc" aria-pressed="false" title="${_rt('rtHcTitle')}">◼ ${_rt('rtHighContrast')}</button>
+          </div>
+          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtFontAria')}">
+            <span class="alloflow-reading-tools-label">${_rt('rtFont')}</span>
+            <select class="alloflow-rt-select" data-rt-font aria-label="${_rt('rtFontAria')}">
+              <optgroup label="${_rt('rtFontAlways')}">
+                <option value="original">${_rt('rtFontOriginal')}</option>
+                <option value="system">${_rt('rtFontSans')}</option>
+                <option value="readable">${_rt('rtFontReadable')}</option>
+                <option value="humanist">${_rt('rtFontHumanist')}</option>
+                <option value="serif">${_rt('rtFontSerif')}</option>
+                <option value="bookserif">${_rt('rtFontBookSerif')}</option>
+                <option value="rounded">${_rt('rtFontRounded')}</option>
+                <option value="dyslexic">${_rt('rtFontDyslexia')}</option>
+                <option value="mono">${_rt('rtFontMono')}</option>
+              </optgroup>${_readerWebFontOptions.replace('label="This document"', () => 'label="' + _rt('rtFontThisDoc') + '"').replace('label="Needs internet"', () => 'label="' + _rt('rtFontInternet') + '"').replace(/>Document font \(([^<]*)\)</, (m, font) => '>' + _rt('rtFontDocument').replace('{font}', () => font) + '<')}
+            </select>
+          </div>
+          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtTextAria')}">
+            <span class="alloflow-reading-tools-label">${_rt('rtText')}</span>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="smaller" title="${_rt('rtSmaller')}" aria-label="${_rt('rtSmaller')}">A-</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="reset" title="${_rt('rtResetSize')}" aria-label="${_rt('rtResetSize')}">A</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="larger" title="${_rt('rtLarger')}" aria-label="${_rt('rtLarger')}">A+</button>
+            <span class="alloflow-rt-readout" data-rt-text-readout role="status" aria-live="polite">100%</span>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="spacing" title="${_rt('rtLineSpacingTitle')}" aria-label="${_rt('rtLineSpacing')}">${_rt('rtSpacing')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-text="letter" title="${_rt('rtLetterSpacingTitle')}" aria-label="${_rt('rtLetterSpacing')}">${_rt('rtLetter')}</button>
+          </div>
+          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtGuideAria')}">
+            <span class="alloflow-reading-tools-label">${_rt('rtGuide')}</span>
+            <button type="button" class="alloflow-rt-btn" data-rt-guide="off" aria-pressed="true" title="${_rt('rtGuideOffTitle')}">${_rt('rtOff')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-guide="line" aria-pressed="false" title="${_rt('rtGuideLineTitle')}">${_rt('rtLine')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-guide="focus" aria-pressed="false" title="${_rt('rtGuideFocusTitle')}">${_rt('rtFocus')}</button>
+          </div>
+          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtAnnoAria')}">
+            <span class="alloflow-reading-tools-label">${_rt('rtAnnotate')}</span>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="off" aria-pressed="true" title="${_rt('rtOff')}">✖ ${_rt('rtOff')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="note" aria-pressed="false" title="${_rt('rtNoteTitle')}">\u{1F4DD} ${_rt('rtNote')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="highlight" aria-pressed="false" title="${_rt('rtHighlightTitle')}">\u{1F58D} ${_rt('rtHighlight')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="voice" aria-pressed="false" title="${_rt('rtVoiceTitle')}">\u{1F3A4} ${_rt('rtVoice')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno="draw" aria-pressed="false" title="${_rt('rtDrawTitle')}">\u{270F}️ ${_rt('rtDraw')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno-undo disabled style="opacity:0.4;cursor:not-allowed;" title="${_rt('rtUndoTitle')}">\u{21A9} ${_rt('rtUndo')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno-clear="mine" disabled title="${_rt('rtEraseMineTitle')}">\u{1F9F9} ${_rt('rtEraseMine')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno-list aria-expanded="false" aria-controls="alloflow-annotation-sidebar" title="${_rt('rtListTitle')}">\u{1F4CB} ${_rt('rtList')}</button>
+            <button type="button" class="alloflow-rt-btn" data-rt-anno-download title="${_rt('rtSaveMineTitle')}">\u{2B07} ${_rt('rtSaveMine')}</button>
+          </div>
+        </div>
+        <div class="alloflow-anno-colors alloflow-anno-colors-draw">
+          <span class="alloflow-anno-colors-label">${_rt('rtPen')}</span>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="red" aria-label="${_rt('rtPenRed')}" aria-pressed="true" style="background:#dc2626;border:2px solid #dc2626;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="blue" aria-label="${_rt('rtPenBlue')}" aria-pressed="false" style="background:#2563eb;border:2px solid #2563eb;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="green" aria-label="${_rt('rtPenGreen')}" aria-pressed="false" style="background:#16a34a;border:2px solid #16a34a;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="yellow" aria-label="${_rt('rtPenYellow')}" aria-pressed="false" style="background:#ca8a04;border:2px solid #ca8a04;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="black" aria-label="${_rt('rtPenBlack')}" aria-pressed="false" style="background:#111827;border:2px solid #111827;"></button>
+          <span class="alloflow-anno-colors-label" style="border-left:1px solid #cbd5e1;padding-left:10px;">${_rt('rtSize')}</span>
+          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="2" aria-pressed="false" title="${_rt('rtThinTitle')}">${_rt('rtThin')}</button>
+          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="4" aria-pressed="true" title="${_rt('rtMediumTitle')}">${_rt('rtMedium')}</button>
+          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="8" aria-pressed="false" title="${_rt('rtThickTitle')}">${_rt('rtThick')}</button>
+        </div>
+        <div class="alloflow-anno-colors alloflow-anno-colors-note">
+          <span class="alloflow-anno-colors-label">${_rt('rtNoteColor')}</span>
+          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="yellow" aria-label="${_rt('rtNoteYellow')}" aria-pressed="true" style="background:#fef9c3;border:2px solid #facc15;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="green" aria-label="${_rt('rtNoteGreen')}" aria-pressed="false" style="background:#dcfce7;border:2px solid #4ade80;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="blue" aria-label="${_rt('rtNoteBlue')}" aria-pressed="false" style="background:#dbeafe;border:2px solid #60a5fa;"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="pink" aria-label="${_rt('rtNotePink')}" aria-pressed="false" style="background:#fce7f3;border:2px solid #f472b6;"></button>
+        </div>
+        <div class="alloflow-anno-colors alloflow-anno-colors-hl">
+          <span class="alloflow-anno-colors-label">${_rt('rtHighlightColor')}</span>
+          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="yellow" aria-label="${_rt('rtHlYellow')}" aria-pressed="true" style="background:rgba(250,204,21,0.40);border:2px solid rgba(202,138,4,0.55);"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="green" aria-label="${_rt('rtHlGreen')}" aria-pressed="false" style="background:rgba(74,222,128,0.38);border:2px solid rgba(22,163,74,0.55);"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="blue" aria-label="${_rt('rtHlBlue')}" aria-pressed="false" style="background:rgba(96,165,250,0.36);border:2px solid rgba(37,99,235,0.55);"></button>
+          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="pink" aria-label="${_rt('rtHlPink')}" aria-pressed="false" style="background:rgba(244,114,182,0.36);border:2px solid rgba(219,39,119,0.55);"></button>
+        </div>
+        </div>
+        </aside>
+      `;
       const rawHtml = `
       <!DOCTYPE html>
       <html lang="${_documentLanguage}" dir="${direction}" data-alloflow-output="${isWorksheet ? 'worksheet' : 'interactive'}" data-alloflow-base-theme="${_baseReadingTheme}"${_baseReadingTheme === 'dark' ? ' data-alloflow-theme="dark"' : ''}>
@@ -53148,14 +53761,14 @@ function projectStudentGuideData(data, mode) {
             font-family: inherit;
             margin-top: 8px;
             resize: vertical;
-            min-height: 120px;
+            min-height: 7.5em;
             box-sizing: border-box;
-            line-height: 2rem;
+            line-height: 2em;
             background-color: #fff;
             background-image: linear-gradient(#e2e8f0 1px, transparent 1px);
-            background-size: 100% 2rem;
+            background-size: 100% 2em;
             background-attachment: local;
-            background-position: 0 1.9rem;
+            background-position: 0 1.9em;
             color: #334155;
             font-size: 1rem;
           }
@@ -53174,7 +53787,11 @@ function projectStudentGuideData(data, mode) {
           .alloflow-response-select { max-width: 100%; }
           .alloflow-numeric-response { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; margin: 0.6rem 0; }
           input.alloflow-response-input:focus, .alloflow-response-select:focus { outline: 2px solid #4f46e5; outline-offset: 2px; border-color: #4f46e5; }
-          .mcq-label { display: flex; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 6px; padding: 8px 12px; border-radius: 8px; transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s; border: 1px solid transparent; }
+          .mcq-label { display: flex; width: 100%; box-sizing: border-box; align-items: center; gap: 10px; cursor: pointer; margin-bottom: 8px; padding: 10px 14px; border-radius: 10px; transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s; border: 1.5px solid #cbd5e1; background: #ffffff; }
+          .alloflow-keycap { margin-inline-start: auto; flex-shrink: 0; font-size: 0.78em; font-weight: 700; padding: 1px 7px; border: 1px solid #94a3b8; border-radius: 5px; background: #f1f5f9; color: #334155; font-family: ui-monospace, SFMono-Regular, monospace; }
+          body[data-alloflow-output="worksheet"] .mcq-label { width: auto; background: transparent !important; border-color: transparent !important; padding: 6px 8px; }
+          body[data-alloflow-output="worksheet"] .alloflow-keycap { display: none !important; }
+          @media print { .mcq-label { background: transparent !important; border-color: transparent !important; padding: 4px 6px; } .alloflow-keycap { display: none !important; } }
           /* Image choices and translated labels must fit narrow assessment
              columns without forcing horizontal scrolling. */
           .quiz-box .mcq-label { flex-wrap: wrap; }
@@ -53287,7 +53904,11 @@ function projectStudentGuideData(data, mode) {
                before dd to approximate the desired pairing. */
             dt { page-break-after: avoid; break-after: avoid; }
             dd { page-break-before: avoid; break-before: avoid; }
-            .page-break { display: block; page-break-before: always; border: none; color: transparent; margin: 0; padding: 0; }
+            .page-break { display: block; page-break-before: right; break-before: right; border: none; color: transparent; margin: 0; padding: 0; }
+            .teacher-view { break-before: right; page-break-before: right; }
+            .alloflow-cutout-sheet, .alloflow-tl-cuttable, .alloflow-cs-cutout { break-before: right; page-break-before: right; break-after: right; page-break-after: right; }
+            .alloflow-options-2col { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 6px 16px; }
+            .alloflow-cspace-header, .alloflow-palace-header, .alloflow-bridge-box { background: #ffffff !important; color: #111827 !important; border: 1.5px solid #475569 !important; box-shadow: none !important; }
             .page-break:after { content: ""; }
             .section { page-break-inside: auto; break-inside: auto; border: 1px solid #ccc; box-shadow: none; margin-bottom: 1.5rem; }
             .resource-header, .card, .question, .reflection-block, figure, .flowchart-step, .mindmap-branch, .outline-card, .ps-card, .ce-pair { page-break-inside: avoid; break-inside: avoid; }
@@ -53311,7 +53932,7 @@ function projectStudentGuideData(data, mode) {
             .alloflow-worksheet-continuation, .alloflow-section-marker { break-after: avoid !important; page-break-after: avoid !important; }
             .alloflow-storage-note, #alloflow-download-help { display: none !important; }
             /* Anchor charts: tighter card spacing so a last short card does not take a page alone. */
-            .alloflow-anchor-card { margin-bottom: 8px !important; padding: 9px 12px 9px 16px !important; box-shadow: none !important; }
+            .alloflow-anchor-card { margin-bottom: 8px !important; padding: 9px 12px 9px 16px !important; box-shadow: none !important; transform: none !important; }
             /* A textarea prints only its visible rows; the runtime adds a full copy before printing. */
             textarea.alloflow-print-mirrored { display: none !important; }
             .alloflow-print-answer { display: block; white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid #94a3b8; border-radius: 4px; padding: 6px 8px; margin: 4px 0; min-height: 2.5em; break-inside: auto; }
@@ -53363,7 +53984,7 @@ function projectStudentGuideData(data, mode) {
           .alloflow-toc li { transition: background-color 0.12s; }
           .alloflow-toc li:hover { background-color: rgba(241,245,249,0.6); }
           @media print {
-            .alloflow-toc { background: #fff !important; border: 1.5px solid #cbd5e1 !important; page-break-after: always; break-after: page; }
+            .alloflow-toc { background: #fff !important; border: 1.5px solid #cbd5e1 !important;${cfg.tocOwnPage === true ? ' page-break-after: always; break-after: page;' : ''} }
             .alloflow-toc a { color: #1e293b !important; text-decoration: none; }
             .alloflow-section-marker { margin-top: 24px !important; }
             .alloflow-section-marker span:first-child { box-shadow: none !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
@@ -53673,6 +54294,14 @@ function projectStudentGuideData(data, mode) {
           html[data-alloflow-theme="dark"] .alloflow-cs-image-frame { background: #f8fafc !important; border-color: #94a3b8 !important; }
           html[data-alloflow-theme="dark"] .alloflow-cs-image { opacity: 1 !important; }
           html[data-alloflow-theme="dark"] .alloflow-cs-place-btn:disabled { color: #ffffff !important; opacity: 1; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-strip.alloflow-cs-selected, html[data-alloflow-theme="dark"] .alloflow-cs-strip.alloflow-cs-selected * { background: #312e81 !important; border-color: #818cf8 !important; color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-strip.alloflow-cs-selected { box-shadow: 0 0 0 3px #4f46e5 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-strip.alloflow-cs-correct, html[data-alloflow-theme="dark"] .alloflow-cs-strip.alloflow-cs-correct *, html[data-alloflow-theme="dark"] .alloflow-tl-strip.alloflow-tl-correct, html[data-alloflow-theme="dark"] .alloflow-tl-strip.alloflow-tl-correct * { background: #14532d !important; border-color: #22c55e !important; color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-cs-strip.alloflow-cs-wrong, html[data-alloflow-theme="dark"] .alloflow-cs-strip.alloflow-cs-wrong *, html[data-alloflow-theme="dark"] .alloflow-tl-strip.alloflow-tl-wrong, html[data-alloflow-theme="dark"] .alloflow-tl-strip.alloflow-tl-wrong * { background: #7f1d1d !important; border-color: #f87171 !important; color: #ffffff !important; }
+          html[data-alloflow-theme="dark"] .alloflow-fishbone-wrap, html[data-alloflow-theme="dark"] .alloflow-fishbone-card { background: #0f172a !important; border-color: #475569 !important; color: #e2e8f0 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-fishbone-head { fill: #4f46e5 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-inline-chart { background: #1e293b !important; border-color: #475569 !important; color: #f8fafc !important; }
+          html[data-alloflow-theme="dark"] .alloflow-inline-chart svg, html[data-alloflow-theme="dark"] .alloflow-inline-chart figcaption { color: #f8fafc !important; }
 
           /* ─── Sepia theme (warm, low-glare; popular for dyslexic readers) ─── */
           html[data-alloflow-theme="sepia"] { background: #f5ecd9 !important; }
@@ -53764,6 +54393,14 @@ function projectStudentGuideData(data, mode) {
           html[data-alloflow-theme="hc"] input.alloflow-response-input, html[data-alloflow-theme="hc"] .alloflow-response-select { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; }
           html[data-alloflow-theme="hc"] .alloflow-reading-tools-group { background: #ffffff; border: 2px solid #000000; }
           html[data-alloflow-theme="hc"] .alloflow-reading-tools-label { background: #ffffff; color: #000000; border-right: 2px solid #000000; }
+          html[data-alloflow-theme="hc"] .alloflow-cs-strip.alloflow-cs-selected, html[data-alloflow-theme="hc"] .alloflow-cs-strip.alloflow-cs-selected * { background: #ffff00 !important; border-color: #000000 !important; color: #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-cs-strip.alloflow-cs-selected { border: 3px solid #000000 !important; box-shadow: 0 0 0 3px #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-cs-strip.alloflow-cs-correct, html[data-alloflow-theme="hc"] .alloflow-cs-strip.alloflow-cs-correct *, html[data-alloflow-theme="hc"] .alloflow-tl-strip.alloflow-tl-correct, html[data-alloflow-theme="hc"] .alloflow-tl-strip.alloflow-tl-correct * { background: #e0ffe0 !important; border-color: #000000 !important; color: #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-cs-strip.alloflow-cs-wrong, html[data-alloflow-theme="hc"] .alloflow-cs-strip.alloflow-cs-wrong *, html[data-alloflow-theme="hc"] .alloflow-tl-strip.alloflow-tl-wrong, html[data-alloflow-theme="hc"] .alloflow-tl-strip.alloflow-tl-wrong * { background: #ffe0e0 !important; border-color: #000000 !important; color: #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-fishbone-wrap, html[data-alloflow-theme="hc"] .alloflow-fishbone-card, html[data-alloflow-theme="hc"] .alloflow-inline-chart { background: #ffffff !important; border: 2px solid #000000 !important; color: #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-fishbone-head { fill: #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-inline-chart svg, html[data-alloflow-theme="hc"] .alloflow-inline-chart figcaption { color: #000000 !important; }
+          @media (max-width: 640px) { .bilingual-container, .bilingual-grid { grid-template-columns: 1fr !important; } }
           html[data-alloflow-theme="hc"] .quiz-check-btn, html[data-alloflow-theme="hc"] .alloflow-cs-check-btn, html[data-alloflow-theme="hc"] .alloflow-tl-check-btn, html[data-alloflow-theme="hc"] .alloflow-frame-num { background: #000000 !important; color: #ffffff !important; border: 2px solid #000000 !important; }
           /* Overlays and dialogs (2026-10-25 overlay audit). Screen only: print resets the page. */
           @media screen {
@@ -53864,6 +54501,68 @@ function projectStudentGuideData(data, mode) {
           html[data-alloflow-theme="hc"] .alloflow-audio-downloads,
           html[data-alloflow-theme="hc"] .a11y-badge,
           html[data-alloflow-theme="hc"] footer[role="contentinfo"] { background: #ffffff !important; color: #000000 !important; border: 2px solid #000000 !important; box-shadow: none !important; }
+          @media screen {
+            .section p, [data-ka-readable] p { max-width: 68ch; }
+            .section:not(.alloflow-teacher-plan):not([style*="padding"]) > .resource-header { margin: -1.5rem -1.5rem 0; padding: 14px 1.5rem; border-radius: 11px 11px 0 0; }
+            @media (max-width: 720px) { .section:not(.alloflow-teacher-plan):not([style*="padding"]) > .resource-header { margin: -1rem -1rem 0; padding: 12px 1rem; } }
+            html[data-alloflow-split="1"] body { max-width: 1280px; }
+            .alloflow-split-columns { display: grid; grid-template-columns: minmax(340px, 1fr) minmax(420px, 1.15fr); gap: 24px; align-items: start; }
+            .alloflow-split-left { position: sticky; top: calc(var(--alloflow-tools-h, 0px) + 12px); max-height: calc(100vh - var(--alloflow-tools-h, 0px) - 24px); overflow-y: auto; min-width: 0; }
+            .alloflow-split-right { min-width: 0; }
+            @media (max-width: 1023px) { .alloflow-desktop-only { display: none !important; } .alloflow-split-columns { display: block; } .alloflow-split-left { position: static; max-height: none; overflow: visible; } }
+          }
+          .alloflow-hud-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 8px; padding: 6px 12px; background: #f8fafc; color: #0f172a; border-bottom: 1px solid #cbd5e1; font: 600 12px/1.3 system-ui, -apple-system, sans-serif; }
+          .alloflow-hud-select, .alloflow-hud-btn { min-height: 30px; padding: 4px 10px; border-radius: 7px; border: 1px solid #64748b; background: #ffffff; color: #0f172a; font: 600 12px/1.2 system-ui, -apple-system, sans-serif; cursor: pointer; }
+          .alloflow-hud-select { max-width: 220px; }
+          .alloflow-hud-btn:hover, .alloflow-hud-select:hover { background: #e2e8f0; }
+          .alloflow-hud-btn:focus-visible, .alloflow-hud-select:focus-visible { outline: 2px solid #4338ca; outline-offset: 2px; }
+          .alloflow-hud-btn[aria-pressed="true"], .alloflow-hud-primary { background: #4338ca; color: #ffffff; border-color: #3730a3; }
+          .alloflow-hud-btn[aria-pressed="true"]:hover, .alloflow-hud-primary:hover { background: #3730a3; color: #ffffff; }
+          .alloflow-step-pager { display: inline-flex; align-items: center; gap: 4px; }
+          .alloflow-step-pager[hidden], #alloflow-progress-badge[hidden], #alloflow-learner-status[hidden], #alloflow-hud-save-jump[hidden] { display: none !important; }
+          .alloflow-hud-spacer { flex: 1 1 auto; }
+          .alloflow-hud-pill { display: inline-flex; align-items: center; padding: 4px 10px; border-radius: 9999px; background: #e2e8f0; color: #0f172a; font-size: 12px; font-weight: 700; white-space: nowrap; }
+          .alloflow-resource-wrap[data-alloflow-step-hidden] { display: none; }
+          @media print { .alloflow-resource-wrap[data-alloflow-step-hidden] { display: block !important; } .alloflow-term-popover { display: none !important; } .alloflow-inline-term { border: 0 !important; padding: 0 !important; background: none !important; color: inherit !important; } }
+          .alloflow-inline-term { background: transparent; color: inherit; border: 0; border-bottom: 2px dotted #2563eb; padding: 0 1px; margin: 0; font: inherit; line-height: inherit; cursor: help; display: inline; text-align: inherit; }
+          .alloflow-inline-term:hover, .alloflow-inline-term:focus-visible { background: rgba(37,99,235,0.12); outline: 2px solid #2563eb; outline-offset: 1px; border-radius: 3px; }
+          .alloflow-term-popover { position: fixed; z-index: 100001; max-width: min(360px, calc(100vw - 24px)); background: #ffffff; color: #0f172a; border: 2px solid #2563eb; border-radius: 12px; padding: 12px 14px; box-shadow: 0 14px 36px rgba(15,23,42,0.22); font-size: 0.92rem; line-height: 1.5; }
+          .alloflow-term-popover-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
+          .alloflow-term-popover-title { font-weight: 800; color: #1e3a8a; font-size: 1rem; }
+          .alloflow-term-popover-close { min-width: 28px; min-height: 28px; border: 1px solid #64748b; border-radius: 6px; background: #f8fafc; color: #0f172a; font-weight: 700; cursor: pointer; }
+          html[data-alloflow-theme="dark"] .alloflow-hud-bar { background: #0f172a; color: #f8fafc; border-bottom-color: #475569; }
+          html[data-alloflow-theme="dark"] .alloflow-hud-btn, html[data-alloflow-theme="dark"] .alloflow-hud-select { background: #1e293b; color: #ffffff; border-color: #64748b; }
+          html[data-alloflow-theme="dark"] .alloflow-hud-btn:hover, html[data-alloflow-theme="dark"] .alloflow-hud-select:hover { background: #334155; }
+          html[data-alloflow-theme="dark"] .alloflow-hud-btn[aria-pressed="true"], html[data-alloflow-theme="dark"] .alloflow-hud-primary { background: #4338ca; color: #ffffff; border-color: #818cf8; }
+          html[data-alloflow-theme="dark"] .alloflow-hud-pill { background: #334155; color: #f8fafc; }
+          html[data-alloflow-theme="dark"] .mcq-label { background: #1e293b !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-keycap { background: #334155; color: #f8fafc; border-color: #64748b; }
+          html[data-alloflow-theme="dark"] .alloflow-inline-term { border-bottom-color: #93c5fd; }
+          html[data-alloflow-theme="dark"] .alloflow-term-popover { background: #1e293b; color: #f8fafc; border-color: #93c5fd; }
+          html[data-alloflow-theme="dark"] .alloflow-term-popover-title { color: #bfdbfe; }
+          html[data-alloflow-theme="dark"] .alloflow-term-popover-close { background: #0f172a; color: #ffffff; border-color: #64748b; }
+          html[data-alloflow-theme="sepia"] .alloflow-hud-bar { background: #f5ecd9; color: #4a3a2a; border-bottom-color: #c2b08a; }
+          html[data-alloflow-theme="sepia"] .alloflow-hud-btn, html[data-alloflow-theme="sepia"] .alloflow-hud-select { background: #fdf6e3; color: #4a3a2a; border-color: #8c7352; }
+          html[data-alloflow-theme="sepia"] .alloflow-hud-btn[aria-pressed="true"], html[data-alloflow-theme="sepia"] .alloflow-hud-primary { background: #4a3a2a; color: #fdf6e3; border-color: #4a3a2a; }
+          html[data-alloflow-theme="sepia"] .alloflow-hud-pill { background: #ede0c4; color: #4a3a2a; }
+          html[data-alloflow-theme="sepia"] .mcq-label { background: #fdf6e3 !important; border-color: #d4c5a0 !important; color: #5b4636 !important; }
+          html[data-alloflow-theme="sepia"] .mcq-label:hover { background: #f5ecd9 !important; }
+          html[data-alloflow-theme="sepia"] .mcq-label:has(input:checked) { background: #ede0c4 !important; border-color: #8c7352 !important; }
+          html[data-alloflow-theme="sepia"] .alloflow-keycap { background: #ede0c4; color: #4a3a2a; border-color: #8c7352; }
+          html[data-alloflow-theme="sepia"] .alloflow-inline-term { border-bottom-color: #1d4ed8; }
+          html[data-alloflow-theme="sepia"] .alloflow-term-popover { background: #fdf6e3; color: #4a3a2a; border-color: #8c7352; }
+          html[data-alloflow-theme="sepia"] .alloflow-term-popover-title { color: #4a3a2a; }
+          html[data-alloflow-theme="hc"] .alloflow-hud-bar { background: #ffffff; color: #000000; border-bottom: 2px solid #000000; }
+          html[data-alloflow-theme="hc"] .alloflow-hud-btn, html[data-alloflow-theme="hc"] .alloflow-hud-select { background: #ffffff; color: #000000; border: 2px solid #000000; }
+          html[data-alloflow-theme="hc"] .alloflow-hud-btn[aria-pressed="true"], html[data-alloflow-theme="hc"] .alloflow-hud-primary { background: #000000; color: #ffff00; border: 2px solid #000000; }
+          html[data-alloflow-theme="hc"] .alloflow-hud-pill { background: #ffffff; color: #000000; border: 2px solid #000000; }
+          html[data-alloflow-theme="hc"] .mcq-label { background: #ffffff !important; border: 2px solid #000000 !important; color: #000000 !important; }
+          html[data-alloflow-theme="hc"] .mcq-label:has(input:checked) { background: #ffff00 !important; color: #000000 !important; border-color: #000000 !important; }
+          html[data-alloflow-theme="hc"] .alloflow-keycap { background: #ffffff; color: #000000; border: 2px solid #000000; }
+          html[data-alloflow-theme="hc"] .alloflow-inline-term { border-bottom: 2px solid #0000ee; font-weight: 700; }
+          html[data-alloflow-theme="hc"] .alloflow-term-popover { background: #ffffff; color: #000000; border: 3px solid #000000; }
+          html[data-alloflow-theme="hc"] .alloflow-term-popover-title { color: #000000; }
+          html[data-alloflow-theme="hc"] .alloflow-term-popover-close { background: #000000; color: #ffffff; border: 2px solid #000000; }
           html[data-alloflow-theme="hc"] .alloflow-toc h2,
           html[data-alloflow-theme="hc"] .alloflow-toc a,
           html[data-alloflow-theme="hc"] .alloflow-toc li,
@@ -53966,6 +54665,21 @@ function projectStudentGuideData(data, mode) {
               background: #ffffff !important;
               color: #111827 !important;
               border-color: #64748b !important;
+            }
+            body[data-alloflow-output="worksheet"] .alloflow-options-2col {
+              display: grid;
+              grid-template-columns: repeat(2, minmax(0, 1fr));
+              gap: 6px 16px;
+            }
+            html:not([data-alloflow-theme="dark"]):not([data-alloflow-theme="hc"]) body[data-alloflow-output="worksheet"] :is(.alloflow-cspace-header, .alloflow-palace-header, .alloflow-bridge-box) {
+              background: #f8fafc !important;
+              color: #111827 !important;
+              border: 1.5px solid #475569 !important;
+              box-shadow: none !important;
+            }
+            @media (max-width: 640px) {
+              .alloflow-bilingual-split { grid-template-columns: 1fr !important; }
+              .alloflow-bilingual-split > div + div { border-left: 0 !important; padding-left: 0 !important; border-top: 2px solid #cbd5e1; padding-top: 12px; }
             }
             body[data-alloflow-output="worksheet"] .alloflow-worksheet-continuation {
               display: flex !important;
@@ -54136,92 +54850,7 @@ function projectStudentGuideData(data, mode) {
       <body${isWorksheet ? ' data-alloflow-output="worksheet"' : ''}${_teacherGuideOnly ? ' data-alloflow-teacher-print="compact"' : ''}${_wordWallEconomy ? ' data-alloflow-word-wall-print="economical"' : ''}>
         <a href="#main-export-content" class="sr-only" style="position:absolute;left:0;top:0;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;z-index:100;">${_runtimeCopy.skipToContent}</a>
         ${_brandHeaderHTML}
-        <aside class="alloflow-reading-tools-shell expanded" aria-label="${_runtimeCopy.readingToolsLabel}">
-        <noscript><style>.alloflow-reading-tools-shell{display:none !important;}</style></noscript>
-        <button type="button" class="alloflow-tools-toggle" aria-expanded="true" aria-controls="alloflow-tools-panel">
-          <span>${_runtimeCopy.toolsLabel}</span><span class="alloflow-tools-toggle-icon" aria-hidden="true">▾</span>
-        </button>
-        <div id="alloflow-tools-panel" class="alloflow-tools-panel">
-        <div class="alloflow-reading-tools">
-          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtThemeAria')}">
-            <span class="alloflow-reading-tools-label">${_rt('rtTheme')}</span>
-            <button type="button" class="alloflow-rt-btn" data-rt-theme="light" aria-pressed="true" title="${_rt('rtLightTitle')}">☀ ${_rt('rtLight')}</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-theme="dark" aria-pressed="false" title="${_rt('rtDarkTitle')}">\u{1F319} ${_rt('rtDark')}</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-theme="sepia" aria-pressed="false" title="${_rt('rtSepiaTitle')}">\u{1F4DC} ${_rt('rtSepia')}</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-theme="hc" aria-pressed="false" title="${_rt('rtHcTitle')}">◼ ${_rt('rtHighContrast')}</button>
-          </div>
-          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtFontAria')}">
-            <span class="alloflow-reading-tools-label">${_rt('rtFont')}</span>
-            <select class="alloflow-rt-select" data-rt-font aria-label="${_rt('rtFontAria')}">
-              <optgroup label="${_rt('rtFontAlways')}">
-                <option value="original">${_rt('rtFontOriginal')}</option>
-                <option value="system">${_rt('rtFontSans')}</option>
-                <option value="readable">${_rt('rtFontReadable')}</option>
-                <option value="humanist">${_rt('rtFontHumanist')}</option>
-                <option value="serif">${_rt('rtFontSerif')}</option>
-                <option value="bookserif">${_rt('rtFontBookSerif')}</option>
-                <option value="rounded">${_rt('rtFontRounded')}</option>
-                <option value="dyslexic">${_rt('rtFontDyslexia')}</option>
-                <option value="mono">${_rt('rtFontMono')}</option>
-              </optgroup>${_readerWebFontOptions.replace('label="This document"', () => 'label="' + _rt('rtFontThisDoc') + '"').replace('label="Needs internet"', () => 'label="' + _rt('rtFontInternet') + '"').replace(/>Document font \(([^<]*)\)</, (m, font) => '>' + _rt('rtFontDocument').replace('{font}', () => font) + '<')}
-            </select>
-          </div>
-          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtTextAria')}">
-            <span class="alloflow-reading-tools-label">${_rt('rtText')}</span>
-            <button type="button" class="alloflow-rt-btn" data-rt-text="smaller" title="${_rt('rtSmaller')}" aria-label="${_rt('rtSmaller')}">A-</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-text="reset" title="${_rt('rtResetSize')}" aria-label="${_rt('rtResetSize')}">A</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-text="larger" title="${_rt('rtLarger')}" aria-label="${_rt('rtLarger')}">A+</button>
-            <span class="alloflow-rt-readout" data-rt-text-readout role="status" aria-live="polite">100%</span>
-            <button type="button" class="alloflow-rt-btn" data-rt-text="spacing" title="${_rt('rtLineSpacingTitle')}" aria-label="${_rt('rtLineSpacing')}">${_rt('rtSpacing')}</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-text="letter" title="${_rt('rtLetterSpacingTitle')}" aria-label="${_rt('rtLetterSpacing')}">${_rt('rtLetter')}</button>
-          </div>
-          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtGuideAria')}">
-            <span class="alloflow-reading-tools-label">${_rt('rtGuide')}</span>
-            <button type="button" class="alloflow-rt-btn" data-rt-guide="off" aria-pressed="true" title="${_rt('rtGuideOffTitle')}">${_rt('rtOff')}</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-guide="line" aria-pressed="false" title="${_rt('rtGuideLineTitle')}">${_rt('rtLine')}</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-guide="focus" aria-pressed="false" title="${_rt('rtGuideFocusTitle')}">${_rt('rtFocus')}</button>
-          </div>
-          <div class="alloflow-reading-tools-group" role="group" aria-label="${_rt('rtAnnoAria')}">
-            <span class="alloflow-reading-tools-label">${_rt('rtAnnotate')}</span>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno="off" aria-pressed="true" title="${_rt('rtOff')}">✖ ${_rt('rtOff')}</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno="note" aria-pressed="false" title="${_rt('rtNoteTitle')}">\u{1F4DD} ${_rt('rtNote')}</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno="highlight" aria-pressed="false" title="${_rt('rtHighlightTitle')}">\u{1F58D} ${_rt('rtHighlight')}</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno="voice" aria-pressed="false" title="${_rt('rtVoiceTitle')}">\u{1F3A4} ${_rt('rtVoice')}</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno="draw" aria-pressed="false" title="${_rt('rtDrawTitle')}">\u{270F}️ ${_rt('rtDraw')}</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno-undo disabled style="opacity:0.4;cursor:not-allowed;" title="${_rt('rtUndoTitle')}">\u{21A9} ${_rt('rtUndo')}</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno-clear="mine" disabled title="${_rt('rtEraseMineTitle')}">\u{1F9F9} ${_rt('rtEraseMine')}</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno-list aria-expanded="false" aria-controls="alloflow-annotation-sidebar" title="${_rt('rtListTitle')}">\u{1F4CB} ${_rt('rtList')}</button>
-            <button type="button" class="alloflow-rt-btn" data-rt-anno-download title="${_rt('rtSaveMineTitle')}">\u{2B07} ${_rt('rtSaveMine')}</button>
-          </div>
-        </div>
-        <div class="alloflow-anno-colors alloflow-anno-colors-draw">
-          <span class="alloflow-anno-colors-label">${_rt('rtPen')}</span>
-          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="red" aria-label="${_rt('rtPenRed')}" aria-pressed="true" style="background:#dc2626;border:2px solid #dc2626;"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="blue" aria-label="${_rt('rtPenBlue')}" aria-pressed="false" style="background:#2563eb;border:2px solid #2563eb;"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="green" aria-label="${_rt('rtPenGreen')}" aria-pressed="false" style="background:#16a34a;border:2px solid #16a34a;"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="yellow" aria-label="${_rt('rtPenYellow')}" aria-pressed="false" style="background:#ca8a04;border:2px solid #ca8a04;"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-draw-color="black" aria-label="${_rt('rtPenBlack')}" aria-pressed="false" style="background:#111827;border:2px solid #111827;"></button>
-          <span class="alloflow-anno-colors-label" style="border-left:1px solid #cbd5e1;padding-left:10px;">${_rt('rtSize')}</span>
-          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="2" aria-pressed="false" title="${_rt('rtThinTitle')}">${_rt('rtThin')}</button>
-          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="4" aria-pressed="true" title="${_rt('rtMediumTitle')}">${_rt('rtMedium')}</button>
-          <button type="button" class="alloflow-rt-btn" data-rt-draw-width="8" aria-pressed="false" title="${_rt('rtThickTitle')}">${_rt('rtThick')}</button>
-        </div>
-        <div class="alloflow-anno-colors alloflow-anno-colors-note">
-          <span class="alloflow-anno-colors-label">${_rt('rtNoteColor')}</span>
-          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="yellow" aria-label="${_rt('rtNoteYellow')}" aria-pressed="true" style="background:#fef9c3;border:2px solid #facc15;"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="green" aria-label="${_rt('rtNoteGreen')}" aria-pressed="false" style="background:#dcfce7;border:2px solid #4ade80;"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="blue" aria-label="${_rt('rtNoteBlue')}" aria-pressed="false" style="background:#dbeafe;border:2px solid #60a5fa;"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-note-color="pink" aria-label="${_rt('rtNotePink')}" aria-pressed="false" style="background:#fce7f3;border:2px solid #f472b6;"></button>
-        </div>
-        <div class="alloflow-anno-colors alloflow-anno-colors-hl">
-          <span class="alloflow-anno-colors-label">${_rt('rtHighlightColor')}</span>
-          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="yellow" aria-label="${_rt('rtHlYellow')}" aria-pressed="true" style="background:rgba(250,204,21,0.40);border:2px solid rgba(202,138,4,0.55);"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="green" aria-label="${_rt('rtHlGreen')}" aria-pressed="false" style="background:rgba(74,222,128,0.38);border:2px solid rgba(22,163,74,0.55);"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="blue" aria-label="${_rt('rtHlBlue')}" aria-pressed="false" style="background:rgba(96,165,250,0.36);border:2px solid rgba(37,99,235,0.55);"></button>
-          <button type="button" class="alloflow-anno-swatch" data-rt-hl-color="pink" aria-label="${_rt('rtHlPink')}" aria-pressed="false" style="background:rgba(244,114,182,0.36);border:2px solid rgba(219,39,119,0.55);"></button>
-        </div>
-        </div>
-        </aside>
+        ${_readingToolsShellHtml}
         <div id="alloflow-reader-line" aria-hidden="true"></div>
         <div id="alloflow-reader-mask-top" class="alloflow-reader-mask" aria-hidden="true"></div>
         <div id="alloflow-reader-mask-bottom" class="alloflow-reader-mask" aria-hidden="true"></div>
@@ -54262,7 +54891,7 @@ function projectStudentGuideData(data, mode) {
               }
               function copyAnswers() {
                 clearAnswerCopies();
-                Array.prototype.forEach.call(document.querySelectorAll('details.alloflow-faq-item:not([open])'), function (node) { node.setAttribute('data-alloflow-print-opened', ''); node.open = true; });
+                Array.prototype.forEach.call(document.querySelectorAll('details:not([open]):not(.alloflow-keep-closed-print)'), function (node) { node.setAttribute('data-alloflow-print-opened', ''); node.open = true; });
                 Array.prototype.forEach.call(document.querySelectorAll('img[loading="lazy"]'), function (img) { img.loading = 'eager'; });
                 Array.prototype.forEach.call(document.querySelectorAll('textarea'), function (ta) {
                   if (!ta.value || !ta.value.trim() || ta.closest('.alloflow-note-editor, .alloflow-export-prompt-overlay, .alloflow-anno-confirm-backdrop')) return;
@@ -54378,7 +55007,36 @@ function projectStudentGuideData(data, mode) {
                 submit.style.cssText = 'min-height:44px;padding:9px 16px;border:2px solid #1d4ed8;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;cursor:pointer;';
                 actions.appendChild(cancel); actions.appendChild(submit);
                 form.appendChild(label); form.appendChild(input); form.appendChild(error); form.appendChild(actions);
-                dialog.appendChild(title); dialog.appendChild(description); dialog.appendChild(form); overlay.appendChild(dialog);
+                dialog.appendChild(title); dialog.appendChild(description);
+                if (options.notice) {
+                  var noticeBanner = document.createElement('div');
+                  noticeBanner.setAttribute('role', 'note');
+                  noticeBanner.style.cssText = 'margin:0 0 14px;padding:10px 12px;border:1.5px solid #d97706;border-radius:8px;background:#fffbeb;color:#78350f;font-size:0.92rem;font-weight:600;line-height:1.45;';
+                  noticeBanner.textContent = String(options.notice);
+                  dialog.appendChild(noticeBanner);
+                }
+                if (Array.isArray(options.savedProfiles) && options.savedProfiles.length > 0) {
+                  var profWrap = document.createElement('div');
+                  profWrap.className = 'alloflow-saved-profiles';
+                  profWrap.style.cssText = 'margin:0 0 14px;';
+                  var profLabel = document.createElement('p');
+                  profLabel.style.cssText = 'margin:0 0 8px;font-size:0.85rem;font-weight:700;color:#334155;';
+                  profLabel.textContent = window.__alloflowText('savedLearnersLabel', 'Continue as a previous learner on this device:');
+                  var profRow = document.createElement('div');
+                  profRow.style.cssText = 'display:flex;flex-wrap:wrap;gap:8px;';
+                  options.savedProfiles.forEach(function (profName) {
+                    var chip = document.createElement('button');
+                    chip.type = 'button';
+                    chip.className = 'alloflow-saved-profile-chip';
+                    chip.style.cssText = 'min-height:36px;padding:6px 12px;border:1.5px solid #4f46e5;border-radius:9999px;background:#eef2ff;color:#1e1b4b;font-weight:700;cursor:pointer;font-size:0.9rem;';
+                    chip.textContent = String(profName);
+                    chip.addEventListener('click', function () { input.value = String(profName); input.removeAttribute('aria-invalid'); finish(String(profName).trim()); });
+                    profRow.appendChild(chip);
+                  });
+                  profWrap.appendChild(profLabel); profWrap.appendChild(profRow);
+                  dialog.appendChild(profWrap);
+                }
+                dialog.appendChild(form); overlay.appendChild(dialog);
                 document.body.appendChild(overlay);
                 // Markers let a copy of this live page (Builder download/package) undo the block.
                 blocked.forEach(function (entry) {
@@ -54403,7 +55061,7 @@ function projectStudentGuideData(data, mode) {
                 function onKeyDown(event) {
                   if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); finish(null); return; }
                   if (event.key !== 'Tab') return;
-                  var focusable = [input, cancel, submit];
+                  var focusable = Array.prototype.slice.call(dialog.querySelectorAll('button:not([disabled]), input:not([disabled])'));
                   var first = focusable[0], last = focusable[focusable.length - 1];
                   if (!dialog.contains(document.activeElement)) { event.preventDefault(); first.focus(); return; }
                   if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
@@ -54448,7 +55106,7 @@ function projectStudentGuideData(data, mode) {
                 // Print/PDF preparation must never block on a learner prompt.
                 // It is a non-persistent rendering pass, so publish the same
                 // one-time workspace used when a learner declines autosave.
-                if (window.__alloflowPrintExport === true) {
+                if (window.__alloflowPrintExport === true || window.__alloflowBuilderPreview === true || document.documentElement.getAttribute('data-alloflow-output') === 'worksheet') {
                   workspacePromise = Promise.resolve(publish('', false));
                   return workspacePromise;
                 }
@@ -54484,7 +55142,30 @@ function projectStudentGuideData(data, mode) {
                 }
                 workspacePromise = new Promise(function (resolve) {
                   function chooseWorkspace() {
+                    var savedProfiles = [];
+                    try {
+                      var seenProfiles = Object.create(null);
+                      var respPfx = documentId ? ('allo-response:v2:' + documentId + ':u:') : '';
+                      var annoPfx = documentId ? ('alloflow-annotations:v2|' + documentId + '|u:') : '';
+                      for (var li = 0; documentId && li < window.localStorage.length; li++) {
+                        var sk = window.localStorage.key(li) || '';
+                        var rawNick = '';
+                        if (respPfx && sk.indexOf(respPfx) === 0) {
+                          var rest = sk.slice(respPfx.length);
+                          var ci = rest.indexOf(':');
+                          rawNick = ci >= 0 ? rest.slice(0, ci) : rest;
+                        } else if (annoPfx && sk.indexOf(annoPfx) === 0) {
+                          rawNick = sk.slice(annoPfx.length);
+                        }
+                        if (rawNick) {
+                          try { rawNick = decodeURIComponent(rawNick).trim().slice(0, 60); } catch (e) { rawNick = ''; }
+                          var lowNick = rawNick.toLowerCase();
+                          if (rawNick && !seenProfiles[lowNick]) { seenProfiles[lowNick] = true; savedProfiles.push(rawNick); }
+                        }
+                      }
+                    } catch (e) {}
                     window.__alloflowPrompt({
+                      savedProfiles: savedProfiles.slice(0, 6),
                       title: window.__alloflowText('workspaceTitle', 'Who is working on this resource?'),
                       description: window.__alloflowText('workspaceDescription', 'Enter a name or nickname to keep autosaved answers and annotations separate on a shared device. You can also use this resource once without storing your work in this browser.'),
                       label: window.__alloflowText('nameLabel', 'Name or nickname'),
@@ -54530,6 +55211,7 @@ function projectStudentGuideData(data, mode) {
             // it too (brand tints, custom styles), leaving aria-hidden decoration as designed.
             var INKS = {
               dark: { light: [248, 250, 252], dark: [15, 23, 42], 'link-light': [147, 197, 253], 'link-dark': [29, 78, 216] },
+              sepia: { light: [248, 250, 252], dark: [15, 23, 42], 'link-light': [147, 197, 253], 'link-dark': [29, 78, 216] },
               hc: { light: [255, 255, 255], dark: [0, 0, 0], 'link-light': [255, 255, 0], 'link-dark': [0, 0, 238] }
             };
             var CONTROLS = 'textarea, select, button, input:not([type]), input[type="text"], input[type="number"], input[type="search"], input[type="email"], input[type="url"], input[type="tel"]';
@@ -54546,17 +55228,38 @@ function projectStudentGuideData(data, mode) {
               for (var m = 0; m < marked.length; m++) marked[m].removeAttribute('data-allo-ink');
               var active = root.getAttribute('data-alloflow-theme');
               if (!document.body || typeof getComputedStyle !== 'function') return;
-              var hc = active === 'hc', inks = hc ? INKS.hc : INKS.dark, surfaces = new Map(), fades = new Map();
+              var hc = active === 'hc', inks = INKS[active] || INKS.dark, surfaces = new Map(), fades = new Map();
               function fade(el) {
                 if (!el || el.nodeType !== 1) return 1;
                 if (!fades.has(el)) { var o = parseFloat(getComputedStyle(el).opacity); fades.set(el, (isNaN(o) ? 1 : o) * fade(el.parentElement)); }
                 return fades.get(el);
               }
               function rgb(value) {
-                var s = String(value || ''), open = s.indexOf('(');
+                var s = String(value || '').trim();
+                var hm = /^#([0-9a-f]{3}|[0-9a-f]{6})$/i.exec(s);
+                if (hm) {
+                  var h = hm[1];
+                  if (h.length === 3) return [parseInt(h[0] + h[0], 16), parseInt(h[1] + h[1], 16), parseInt(h[2] + h[2], 16), 1];
+                  return [parseInt(h.slice(0, 2), 16), parseInt(h.slice(2, 4), 16), parseInt(h.slice(4, 6), 16), 1];
+                }
+                var open = s.indexOf('(');
                 if (open < 0) return null;
                 var p = s.slice(open + 1, s.indexOf(')')).split(',').map(parseFloat);
-                return p.length < 3 || isNaN(p[0]) ? null : [p[0], p[1], p[2], p.length > 3 ? p[3] : 1];
+                return p.length < 3 || isNaN(p[0]) ? null : [p[0], p[1], p[2], p.length > 3 && !isNaN(p[3]) ? p[3] : 1];
+              }
+              function gradientBg(bgImg, el) {
+                if (!bgImg || !/(?:linear|radial)-gradient\\(/i.test(bgImg)) return null;
+                var tokens = bgImg.match(/rgba?\\([^)]+\\)|#[0-9a-f]{3,6}\\b/gi);
+                if (!tokens || !tokens.length) return null;
+                var parentBg = surface(el.parentElement);
+                var sum = [0, 0, 0], count = 0;
+                for (var tIdx = 0; tIdx < tokens.length; tIdx++) {
+                  var col = rgb(tokens[tIdx]);
+                  if (!col || col[3] <= 0) continue;
+                  var resolved = col[3] < 1 ? over(col, parentBg || [255, 255, 255, 1]) : col;
+                  sum[0] += resolved[0]; sum[1] += resolved[1]; sum[2] += resolved[2]; count++;
+                }
+                return count ? [sum[0] / count, sum[1] / count, sum[2] / count, 1] : null;
               }
               function lum(c) {
                 var s = [c[0], c[1], c[2]].map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); });
@@ -54569,7 +55272,7 @@ function projectStudentGuideData(data, mode) {
                 if (surfaces.has(el)) return surfaces.get(el);
                 var cs = getComputedStyle(el), bg = rgb(cs.backgroundColor), out;
                 if (bg && bg[3] >= 1) out = bg;
-                else if (cs.backgroundImage && cs.backgroundImage !== 'none') out = null;
+                else if (cs.backgroundImage && cs.backgroundImage !== 'none') out = gradientBg(cs.backgroundImage, el);
                 else { out = surface(el.parentElement); if (out && bg && bg[3] > 0) out = over(bg, out); }
                 surfaces.set(el, out);
                 return out;
@@ -54623,9 +55326,10 @@ function projectStudentGuideData(data, mode) {
               if (typeof MutationObserver !== 'function') return;
               new MutationObserver(function (records) {
                 for (var r = 0; r < records.length; r++) {
+                  if (records[r].type === 'attributes') return inkSoon();
                   for (var a = 0; a < records[r].addedNodes.length; a++) if (records[r].addedNodes[a].nodeType === 1) return inkSoon();
                 }
-              }).observe(document.body, { childList: true, subtree: true });
+              }).observe(document.body, { childList: true, subtree: true, attributes: true, attributeFilter: ['class', 'data-selected'] });
             });
             var initial = null;
             try { initial = localStorage.getItem(KEY); } catch (e) {}
@@ -54946,7 +55650,7 @@ function projectStudentGuideData(data, mode) {
               if (!btn) return;
               btn.textContent = label;
               btn.setAttribute('aria-pressed', pressed ? 'true' : 'false');
-              btn.setAttribute('aria-label', label.replace(/[^\w\s-]/g, '').trim() || (window.__alloflowText ? window.__alloflowText('rtReadAloud', 'Read aloud') : 'Read aloud'));
+              btn.setAttribute('aria-label', (function(s) { try { return s.replace(/^[^\\p{L}\\p{N}]+/u, '').trim(); } catch (e) { return s.replace(/[^\\w\\s-]/g, '').trim(); } })(label) || (window.__alloflowText ? window.__alloflowText('rtReadAloud', 'Read aloud') : 'Read aloud'));
             }
             function findAudioBox(id) {
               var boxes = document.querySelectorAll('.allo-ka-audios');
@@ -56819,6 +57523,7 @@ function projectStudentGuideData(data, mode) {
                 reprojectAll();
               });
             });
+            window.__alloflowGetStudentAnnotations = function () { return Array.isArray(studentAnno) ? studentAnno.slice() : []; };
             }
             if (document.readyState === 'loading') { document.addEventListener('DOMContentLoaded', __annoInit); } else { __annoInit(); }
           })();
@@ -57084,7 +57789,15 @@ function projectStudentGuideData(data, mode) {
                             controls.slice(0, 60).forEach((choice) => {
                                 const label = choice.closest ? choice.closest('label') : null;
                                 const value = clean(choice.value, 120);
-                                const text = clean(label ? label.textContent : choice.getAttribute('aria-label'), 240);
+                                let rawLabelText = '';
+                                if (label) {
+                                    const clone = label.cloneNode(true);
+                                    clone.querySelectorAll('.alloflow-option-letter, .alloflow-keycap').forEach((n) => n.remove());
+                                    rawLabelText = clone.textContent;
+                                } else {
+                                    rawLabelText = choice.getAttribute('aria-label');
+                                }
+                                const text = clean(rawLabelText, 240);
                                 if (value && text) valueLabels[value] = text;
                             });
                         } else if (control.tagName === 'SELECT') {
@@ -57212,14 +57925,22 @@ function projectStudentGuideData(data, mode) {
                 // screen readers can identify each result and the score. Teachers see the answer key
                 // inline so this UI is only emitted for student-facing exports.
                 document.querySelectorAll('.quiz-box').forEach((quiz) => {
+                    if (quiz.dataset.alloRuntimeBound === '1') return;
+                    quiz.dataset.alloRuntimeBound = '1';
                     const checkBtn = quiz.querySelector('.quiz-check-btn');
                     const resetBtn = quiz.querySelector('.quiz-reset-btn');
                     const resultsEl = quiz.querySelector('.quiz-results');
                     if (!checkBtn || !resetBtn || !resultsEl) return;
-                    const questions = quiz.querySelectorAll('.question[data-correct], .question[data-fill-answers]');
+                    const qSelector = '.question[data-correct], .question[data-fill-answers], .question[data-correct-multi], .question[data-sequence-key], .question[data-relation-key], .question[data-answer-evidence-key], .question[data-numeric-key]';
+                    const questions = quiz.querySelectorAll(qSelector);
                     // Fill-ins compare without case, extra spaces, or punctuation around the answer.
                     const fillNorm = (value) => String(value == null ? '' : value).toLowerCase().replace(/\\s+/g, ' ').replace(/^[\\s.,;:!?'"()\\[\\]-]+|[\\s.,;:!?'"()\\[\\]-]+$/g, '');
                     const fillAccepted = (q) => String(q.getAttribute('data-fill-answers') || '').split('|').map((part) => { try { return fillNorm(decodeURIComponent(part)); } catch (e) { return ''; } }).filter(Boolean);
+                    const decodeKeyAttr = (q, attr) => {
+                        const raw = q.getAttribute(attr);
+                        if (!raw) return null;
+                        try { return JSON.parse(decodeURIComponent(raw)); } catch (e) { return null; }
+                    };
                     let hasChecked = false;
                     const clearQuestionFeedback = (q) => {
                         q.style.borderLeft = '';
@@ -57237,21 +57958,35 @@ function projectStudentGuideData(data, mode) {
                         hasChecked = false;
                         resultsEl.textContent = '';
                     };
-                    quiz.addEventListener('change', (event) => {
-                        if (!hasChecked || !event.target.matches('input[type="radio"], .interactive-blank')) return;
-                        const question = event.target.closest('.question[data-correct], .question[data-fill-answers]');
+                    const onQuizEdit = (event) => {
+                        if (!hasChecked || !event.target.matches('input, select, textarea, .interactive-blank')) return;
+                        const question = event.target.closest(qSelector);
                         if (!question || !quiz.contains(question)) return;
-                        // A previous result describes the old answer. Clear only
-                        // this item's feedback and keep focus on the edited choice.
                         clearQuestionFeedback(question);
                         resultsEl.textContent = resultsEl.getAttribute('data-answer-changed-label') || 'An answer changed. Check your answers again for an updated result.';
+                    };
+                    quiz.addEventListener('change', onQuizEdit);
+                    quiz.addEventListener('input', onQuizEdit);
+                    quiz.addEventListener('keydown', (e) => {
+                        if (e.ctrlKey || e.metaKey || e.altKey) return;
+                        var tgt = e.target;
+                        if (tgt && tgt.matches && tgt.matches('textarea, select, input[type="text"], input[type="number"], input[type="search"], input:not([type])')) return;
+                        var q = tgt && tgt.closest ? tgt.closest('.question[data-item-type="mcq"], .question[data-item-type="multi-select"]') : null;
+                        if (!q || !quiz.contains(q)) return;
+                        var idx = -1;
+                        if (e.key >= '1' && e.key <= '9') idx = Number(e.key) - 1;
+                        else if (/^[a-d]$/i.test(e.key)) idx = e.key.toLowerCase().charCodeAt(0) - 97;
+                        if (idx < 0) return;
+                        var inputs = q.querySelectorAll('.options input[type="radio"], .options input[type="checkbox"]');
+                        if (idx >= inputs.length) return;
+                        e.preventDefault();
+                        inputs[idx].click();
+                        inputs[idx].focus();
                     });
                     checkBtn.addEventListener('click', () => {
                         let correct = 0;
                         let wrong = 0;
                         let skipped = 0;
-                        // Glyph fallback so meaning reads without color (WCAG 1.4.1).
-                        // We use a small absolute-positioned badge on each question.
                         var _setQuizGlyph = function(q, kind) {
                             var existing = q.querySelector('.alloflow-quiz-glyph');
                             if (existing) existing.remove();
@@ -57264,8 +57999,6 @@ function projectStudentGuideData(data, mode) {
                             else if (kind === 'wrong') { glyph.textContent = '✗'; glyph.style.color = '#dc2626'; }
                             else if (kind === 'skipped') { glyph.textContent = '○'; glyph.style.color = '#94a3b8'; }
                             q.insertBefore(glyph, q.firstChild);
-                            // The glyph is decorative; the visible text is also
-                            // the radio group's description for assistive technology.
                             var feedback = q.querySelector('.alloflow-quiz-feedback');
                             if (feedback) {
                                 feedback.textContent = kind === 'correct' ? feedback.getAttribute('data-correct-label') || 'Correct'
@@ -57279,42 +58012,124 @@ function projectStudentGuideData(data, mode) {
                                 else group.removeAttribute('aria-invalid');
                             }
                         };
+                        const mark = (q, state) => {
+                            q.style.paddingLeft = '0.6rem';
+                            if (state === 'correct') { q.style.borderLeft = '4px solid #16a34a'; q.removeAttribute('aria-invalid'); _setQuizGlyph(q, 'correct'); correct++; }
+                            else if (state === 'wrong') { q.style.borderLeft = '4px solid #dc2626'; q.setAttribute('aria-invalid', 'true'); _setQuizGlyph(q, 'wrong'); wrong++; }
+                            else { q.style.borderLeft = '4px solid #94a3b8'; q.removeAttribute('aria-invalid'); _setQuizGlyph(q, 'skipped'); skipped++; }
+                        };
                         questions.forEach((q) => {
                             if (q.hasAttribute('data-fill-answers')) {
                                 const accepted = fillAccepted(q);
                                 const blank = q.querySelector('.interactive-blank');
                                 const typed = fillNorm(blank && blank.value);
-                                q.style.paddingLeft = '0.6rem';
-                                if (!typed) { q.style.borderLeft = '4px solid #94a3b8'; q.removeAttribute('aria-invalid'); _setQuizGlyph(q, 'skipped'); skipped++; }
-                                else if (accepted.indexOf(typed) !== -1) { q.style.borderLeft = '4px solid #16a34a'; q.removeAttribute('aria-invalid'); _setQuizGlyph(q, 'correct'); correct++; }
-                                else { q.style.borderLeft = '4px solid #dc2626'; q.setAttribute('aria-invalid', 'true'); _setQuizGlyph(q, 'wrong'); wrong++; }
+                                mark(q, !typed ? 'skipped' : (accepted.indexOf(typed) !== -1 ? 'correct' : 'wrong'));
+                                return;
+                            }
+                            if (q.hasAttribute('data-correct-multi')) {
+                                const targetList = String(q.getAttribute('data-correct-multi') || '').split(',').map((s) => s.trim()).filter(Boolean).sort();
+                                const picked = Array.from(q.querySelectorAll('input[type="checkbox"]:checked')).map((c) => String(c.value)).sort();
+                                if (!picked.length) mark(q, 'skipped');
+                                else mark(q, picked.length === targetList.length && picked.every((v, i) => v === targetList[i]) ? 'correct' : 'wrong');
+                                return;
+                            }
+                            if (q.hasAttribute('data-numeric-key')) {
+                                const key = decodeKeyAttr(q, 'data-numeric-key');
+                                const numEl = q.querySelector('input[data-allo-response-key$=":number"]');
+                                const unitEl = q.querySelector('input[data-allo-response-key$=":unit"]');
+                                const rawNum = numEl ? String(numEl.value || '').trim() : '';
+                                if (!rawNum || !key) { mark(q, 'skipped'); return; }
+                                const parsed = Number(rawNum);
+                                const valOk = !Number.isNaN(parsed) && Math.abs(parsed - Number(key.value)) <= (Number(key.tolerance) || 0) + 1e-9;
+                                const allowedUnits = Array.isArray(key.units) ? key.units.map((u) => fillNorm(u)).filter(Boolean) : [];
+                                let unitOk = true;
+                                if (allowedUnits.length > 0 && unitEl) {
+                                    const gotUnit = fillNorm(unitEl.value);
+                                    if (gotUnit) unitOk = allowedUnits.indexOf(gotUnit) !== -1;
+                                }
+                                mark(q, (valOk && unitOk) ? 'correct' : 'wrong');
+                                return;
+                            }
+                            if (q.hasAttribute('data-relation-key')) {
+                                const key = decodeKeyAttr(q, 'data-relation-key');
+                                const wrongChecked = q.querySelector('input[data-allo-response-key$=":wrong-pair"]:checked');
+                                const partnerInputs = q.querySelectorAll('input[data-allo-response-key$=":partner"]');
+                                const partnerChecked = q.querySelector('input[data-allo-response-key$=":partner"]:checked');
+                                if (!wrongChecked || (partnerInputs.length > 0 && !partnerChecked) || !key) { mark(q, 'skipped'); return; }
+                                const pairOk = parseInt(wrongChecked.value, 10) === key.wrongPair;
+                                const partnerOk = partnerInputs.length === 0 || key.partner < 0 || (partnerChecked && parseInt(partnerChecked.value, 10) === key.partner);
+                                mark(q, (pairOk && partnerOk) ? 'correct' : 'wrong');
+                                return;
+                            }
+                            if (q.hasAttribute('data-answer-evidence-key')) {
+                                const key = decodeKeyAttr(q, 'data-answer-evidence-key');
+                                const ansChecked = q.querySelector('input[data-allo-response-key$=":answer"]:checked');
+                                const evChecked = q.querySelector('input[data-allo-response-key$=":evidence"]:checked');
+                                if (!ansChecked || !evChecked || !key) { mark(q, 'skipped'); return; }
+                                const ansOk = key.answer < 0 || parseInt(ansChecked.value, 10) === key.answer;
+                                const evOk = key.evidence < 0 || parseInt(evChecked.value, 10) === key.evidence;
+                                mark(q, (ansOk && evOk) ? 'correct' : 'wrong');
+                                return;
+                            }
+                            if (q.hasAttribute('data-sequence-key')) {
+                                const key = decodeKeyAttr(q, 'data-sequence-key');
+                                const prinSelect = q.querySelector('select[data-allo-response-key$=":sequence-principle"], select[data-allo-response-key$=":principle"]');
+                                const prinRadio = q.querySelector('input[data-allo-response-key$=":sequence-principle"]:checked, input[data-allo-response-key$=":principle"]:checked');
+                                const prinVal = prinRadio ? String(prinRadio.value || '').trim() : (prinSelect ? String(prinSelect.value || '').trim() : '');
+                                const hasPrinControl = !!(prinSelect || q.querySelector('input[data-allo-response-key$=":sequence-principle"], input[data-allo-response-key$=":principle"]'));
+                                const orderInput = q.querySelector('input[data-allo-response-key$=":sequence-order"], input[data-allo-response-key$=":order"]');
+                                if (!key) { mark(q, 'skipped'); return; }
+                                const normOrderStr = (s) => String(s || '').replace(/[^0-9]+/g, ' ').trim();
+                                const targetOrd = normOrderStr(key.order);
+                                const ordVal = orderInput ? String(orderInput.value || '').trim() : '';
+                                const normOrd = normOrderStr(ordVal);
+                                let ok = true;
+                                if (key.short) {
+                                    if (!ordVal || (hasPrinControl && !prinVal)) { mark(q, 'skipped'); return; }
+                                    ok = (!targetOrd || normOrd === targetOrd) && (key.principleIdx < 0 || (prinVal !== '' && parseInt(prinVal, 10) === key.principleIdx));
+                                } else {
+                                    const verdictChecked = q.querySelector('input[data-allo-response-key$=":sequence-verdict"]:checked, input[data-allo-response-key$=":verdict"]:checked');
+                                    const seqItemInput = q.querySelector('input[data-allo-response-key$=":sequence-item"]');
+                                    const pickedItems = Array.from(q.querySelectorAll('input[data-allo-response-key$=":items"]:checked')).map((c) => parseInt(c.value, 10)).sort((a, b) => a - b);
+                                    if (!verdictChecked) { mark(q, 'skipped'); return; }
+                                    if (verdictChecked.value !== key.verdict) ok = false;
+                                    if (key.verdict === 'no') {
+                                        const expItems = (key.items1 || []).slice().sort((a, b) => a - b);
+                                        if (seqItemInput) {
+                                            const itemRaw = String(seqItemInput.value || '').trim();
+                                            if (itemRaw) {
+                                                const itemNum = parseInt(itemRaw, 10);
+                                                if (Number.isNaN(itemNum) || (expItems.length && expItems.indexOf(itemNum) === -1)) ok = false;
+                                            } else if (pickedItems.length) {
+                                                if (expItems.length && (pickedItems.length !== expItems.length || pickedItems.some((v, i) => v !== expItems[i]))) ok = false;
+                                            } else if (expItems.length && !ordVal) {
+                                                ok = false;
+                                            }
+                                        } else if (expItems.length && (pickedItems.length !== expItems.length || pickedItems.some((v, i) => v !== expItems[i]))) {
+                                            ok = false;
+                                        }
+                                        if (ordVal && targetOrd && normOrd !== targetOrd) ok = false;
+                                    }
+                                    if (key.principleIdx >= 0 && prinVal !== '' && parseInt(prinVal, 10) !== key.principleIdx) ok = false;
+                                }
+                                mark(q, ok ? 'correct' : 'wrong');
                                 return;
                             }
                             const target = parseInt(q.getAttribute('data-correct'), 10);
                             const checked = q.querySelector('input[type="radio"]:checked');
-                            // Reset prior state first so re-clicking Check redraws cleanly.
-                            q.style.paddingLeft = '0.6rem';
-                            if (!checked) {
-                                q.style.borderLeft = '4px solid #94a3b8';
-                                q.removeAttribute('aria-invalid');
-                                _setQuizGlyph(q, 'skipped');
-                                skipped++;
-                            } else if (parseInt(checked.value, 10) === target) {
-                                q.style.borderLeft = '4px solid #16a34a';
-                                q.removeAttribute('aria-invalid');
-                                _setQuizGlyph(q, 'correct');
-                                correct++;
-                            } else {
-                                q.style.borderLeft = '4px solid #dc2626';
-                                q.setAttribute('aria-invalid', 'true');
-                                _setQuizGlyph(q, 'wrong');
-                                wrong++;
-                            }
+                            if (!checked) mark(q, 'skipped');
+                            else if (parseInt(checked.value, 10) === target) mark(q, 'correct');
+                            else mark(q, 'wrong');
                         });
                         const total = questions.length;
-                        const parts = [correct + ' of ' + total + ' correct'];
-                        if (wrong > 0) parts.push(wrong + ' to review');
-                        if (skipped > 0) parts.push(skipped + ' unanswered');
+                        const fmtScore = function(key, fallback, vars) {
+                            var tmpl = (window.__alloflowText ? window.__alloflowText(key, fallback) : fallback);
+                            Object.keys(vars || {}).forEach(function(k) { tmpl = tmpl.split('{' + k + '}').join(String(vars[k])); });
+                            return tmpl;
+                        };
+                        const parts = [fmtScore('quizScoreCorrect', '{correct} of {total} correct', { correct: correct, total: total })];
+                        if (wrong > 0) parts.push(fmtScore('quizScoreReview', '{n} to review', { n: wrong }));
+                        if (skipped > 0) parts.push(fmtScore('quizScoreUnanswered', '{n} unanswered', { n: skipped }));
                         hasChecked = true;
                         resultsEl.textContent = parts.join(' · ');
                     });
@@ -57431,6 +58246,8 @@ function projectStudentGuideData(data, mode) {
                         '}';
                     document.head.appendChild(styleEl);
                     sections.forEach(function(section) {
+                      if (section.dataset.alloRuntimeBound === '1') return;
+                      section.dataset.alloRuntimeBound = '1';
                       var grid = section.querySelector('.alloflow-glossary-card-list');
                       if (!grid) return;
                       var cards = grid.querySelectorAll('.alloflow-glossary-card');
@@ -57500,6 +58317,8 @@ function projectStudentGuideData(data, mode) {
                         '}';
                     document.head.appendChild(csStyle);
                     sections.forEach(function(ctrl) {
+                        if (ctrl.dataset.alloRuntimeBound === '1') return;
+                        ctrl.dataset.alloRuntimeBound = '1';
                         var sectionId = ctrl.getAttribute('data-cs-section');
                         var stripsContainer = document.querySelector('.alloflow-cs-strips[data-cs-section="' + sectionId + '"]');
                         var categoriesContainer = document.querySelector('.alloflow-cs-categories[data-cs-section="' + sectionId + '"]');
@@ -57670,6 +58489,8 @@ function projectStudentGuideData(data, mode) {
                         '}';
                     document.head.appendChild(tlStyle);
                     sections.forEach(function(ctrl) {
+                        if (ctrl.dataset.alloRuntimeBound === '1') return;
+                        ctrl.dataset.alloRuntimeBound = '1';
                         var sectionId = ctrl.getAttribute('data-tl-section');
                         var container = document.querySelector('.alloflow-tl-strips[data-tl-section="' + sectionId + '"]');
                         if (!container) return;
@@ -57826,12 +58647,24 @@ function projectStudentGuideData(data, mode) {
                     var _pcollect = function() {
                         return typeof _collectAllResponses === 'function' ? _collectAllResponses() : {};
                     };
+                    var _countUnanswered = function() {
+                        var missing = 0;
+                        Object.keys(_responseGroups || {}).forEach(function(k) {
+                            var v = _responseValue(_responseGroups[k]);
+                            if (!v || !String(v).trim() || v === '[]') missing++;
+                        });
+                        return missing;
+                    };
                     pbtn.addEventListener('click', async function() {
                         var learnerWorkspace = window.__alloflowLearnerWorkspace;
                         var nick = learnerWorkspace && learnerWorkspace.persist ? learnerWorkspace.nickname : '';
-                        if (!nick) nick = await window.__alloflowPrompt({ title: window.__alloflowText('saveAnswersTitle', 'Save your answers'), description: window.__alloflowText('saveAnswersDescription', 'Enter a name or nickname so your teacher can identify this answer file.'), label: window.__alloflowText('nameLabel', 'Name or nickname'), confirmLabel: window.__alloflowText('saveAnswersConfirm', 'Save answers'), cancelLabel: window.__alloflowText('cancel', 'Cancel'), maxLength: 60, requiredMessage: window.__alloflowText('requiredName', 'Enter a name or nickname.') });
+                        var missingCount = _countUnanswered();
+                        var missingNotice = missingCount > 0 ? window.__alloflowText('unansweredSaveNotice', '{n} item(s) still unanswered. You can save now or click Cancel to finish first.', { n: missingCount }) : '';
+                        if (nick && missingNotice && typeof window.__alloflowNotify === 'function') window.__alloflowNotify(missingNotice, 'info');
+                        if (!nick) nick = await window.__alloflowPrompt({ title: window.__alloflowText('saveAnswersTitle', 'Save your answers'), description: window.__alloflowText('saveAnswersDescription', 'Enter a name or nickname so your teacher can identify this answer file.'), notice: missingNotice, label: window.__alloflowText('nameLabel', 'Name or nickname'), confirmLabel: window.__alloflowText('saveAnswersConfirm', 'Save answers'), cancelLabel: window.__alloflowText('cancel', 'Cancel'), maxLength: 60, requiredMessage: window.__alloflowText('requiredName', 'Enter a name or nickname.') });
                         if (!nick) return; nick = String(nick).trim().slice(0, 60); if (!nick) return;
-                        var payload = { schemaVersion: 3, storageVersion: 2, kind: 'alloflow-student-submission', documentId: _documentId, nickname: nick, docTitle: document.title || 'Worksheet', timestamp: new Date().toISOString(), responses: _pcollect(), responseManifest: _collectResponseManifest(), ...(identity.classId ? { classId: identity.classId } : {}), ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}), ...(identity.dueDate ? { dueDate: identity.dueDate } : {}) };
+                        var _savedAnnotations = typeof window.__alloflowGetStudentAnnotations === 'function' ? window.__alloflowGetStudentAnnotations() : [];
+                        var payload = { schemaVersion: 3, storageVersion: 2, kind: 'alloflow-student-submission', documentId: _documentId, nickname: nick, docTitle: document.title || 'Worksheet', timestamp: new Date().toISOString(), responses: _pcollect(), responseManifest: _collectResponseManifest(), annotations: _savedAnnotations, ...(identity.classId ? { classId: identity.classId } : {}), ...(identity.assignmentId ? { assignmentId: identity.assignmentId } : {}), ...(identity.dueDate ? { dueDate: identity.dueDate } : {}) };
                         try {
                             var blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
                             var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
@@ -57857,6 +58690,178 @@ function projectStudentGuideData(data, mode) {
                 // runtime has a listener. A single late signal lets sorting
                 // activities rebuild their visual state without a race.
                 try { window.dispatchEvent(new Event('alloflow-responses-restored')); } catch (e) {}
+                // ── Wave 2 HUD: Progress, Learner Status, Section Jump, Step-by-Step, Split-Pane, Inline Glossary ──
+                (function () {
+                    var progressEl = document.getElementById('alloflow-progress-badge');
+                    var statusEl = document.getElementById('alloflow-learner-status');
+                    var jumpEl = document.getElementById('alloflow-section-jump');
+                    var stepBtn = document.getElementById('alloflow-step-toggle');
+                    var stepPager = document.getElementById('alloflow-step-pager');
+                    var stepPrev = document.getElementById('alloflow-step-prev');
+                    var stepNext = document.getElementById('alloflow-step-next');
+                    var stepReadout = document.getElementById('alloflow-step-readout');
+                    var splitBtn = document.getElementById('alloflow-split-toggle');
+                    var printBtn = document.getElementById('alloflow-hud-print');
+                    var saveJumpBtn = document.getElementById('alloflow-hud-save-jump');
+                    if (statusEl && _learnerWorkspace) {
+                        statusEl.textContent = _learnerWorkspace.persist
+                            ? window.__alloflowText('hudAutosaveOn', 'Autosave: {name}', { name: _learnerWorkspace.nickname })
+                            : window.__alloflowText('hudOneTimeMode', 'One-time session');
+                        statusEl.hidden = false;
+                    }
+                    var updateProgress = function () {
+                        if (!progressEl) return;
+                        var keys = Object.keys(_responseGroups || {});
+                        if (keys.length === 0) { progressEl.hidden = true; return; }
+                        var done = 0;
+                        keys.forEach(function (k) {
+                            var v = _responseValue(_responseGroups[k]);
+                            if (v && String(v).trim() && v !== '[]') done++;
+                        });
+                        progressEl.textContent = window.__alloflowText('hudAnsweredCount', '{done} / {total} answered', { done: done, total: keys.length });
+                        progressEl.hidden = false;
+                    };
+                    updateProgress();
+                    document.addEventListener('input', updateProgress, true);
+                    document.addEventListener('change', updateProgress, true);
+                    document.addEventListener('click', function (e) {
+                        if (e.target && e.target.closest && e.target.closest('.quiz-reset-btn, .alloflow-cs-place-btn, .alloflow-cs-reset-btn, .alloflow-tl-arrows button, .alloflow-tl-reset-btn')) setTimeout(updateProgress, 20);
+                    }, true);
+                    if (printBtn) printBtn.addEventListener('click', function () { try { window.print(); } catch (e) {} });
+                    var subBtn = document.getElementById('alloflow-save-submission-btn');
+                    var jsonBtn = document.getElementById('alloflow-savejson-btn');
+                    var targetSave = subBtn || ((document.getElementById('alloflow-savejson-cta') && document.getElementById('alloflow-savejson-cta').style.display !== 'none') ? jsonBtn : null);
+                    if (saveJumpBtn && targetSave) {
+                        saveJumpBtn.hidden = false;
+                        saveJumpBtn.addEventListener('click', function () {
+                            try { targetSave.scrollIntoView({ behavior: 'smooth', block: 'center' }); targetSave.focus(); } catch (e) { targetSave.focus(); }
+                        });
+                    }
+                    var studentWraps = Array.prototype.slice.call(document.querySelectorAll('#main-export-content .alloflow-resource-wrap')).filter(function (w) { return !w.closest('.teacher-view'); });
+                    var splitCols = null;
+                    var splitPlaceholder = null;
+                    var setSplit = function (on) {
+                        var main = document.getElementById('main-export-content');
+                        if (!main || !splitBtn) return;
+                        if (!on && splitCols) {
+                            var origOrder = studentWraps;
+                            origOrder.forEach(function (w) {
+                                if (splitPlaceholder && splitPlaceholder.parentNode) splitPlaceholder.parentNode.insertBefore(w, splitPlaceholder);
+                                else main.appendChild(w);
+                            });
+                            if (splitPlaceholder && splitPlaceholder.parentNode) splitPlaceholder.parentNode.removeChild(splitPlaceholder);
+                            if (splitCols.parentNode) splitCols.parentNode.removeChild(splitCols);
+                            splitCols = null; splitPlaceholder = null;
+                            document.documentElement.removeAttribute('data-alloflow-split');
+                            splitBtn.setAttribute('aria-pressed', 'false');
+                            return;
+                        }
+                        if (on && !splitCols && studentWraps.length >= 2) {
+                            var leftItems = studentWraps.filter(function (w) { var tp = w.getAttribute('data-alloflow-resource-type'); return tp === 'simplified' || tp === 'glossary'; });
+                            var rightItems = studentWraps.filter(function (w) { var tp = w.getAttribute('data-alloflow-resource-type'); return tp !== 'simplified' && tp !== 'glossary'; });
+                            if (!leftItems.length || !rightItems.length) return;
+                            splitPlaceholder = document.createComment('alloflow-split-anchor');
+                            studentWraps[0].parentNode.insertBefore(splitPlaceholder, studentWraps[0]);
+                            splitCols = document.createElement('div');
+                            splitCols.className = 'alloflow-split-columns';
+                            var leftCol = document.createElement('div'); leftCol.className = 'alloflow-split-left';
+                            var rightCol = document.createElement('div'); rightCol.className = 'alloflow-split-right';
+                            leftItems.forEach(function (w) { w.removeAttribute('data-alloflow-step-hidden'); leftCol.appendChild(w); });
+                            rightItems.forEach(function (w) { rightCol.appendChild(w); });
+                            splitCols.appendChild(leftCol); splitCols.appendChild(rightCol);
+                            splitPlaceholder.parentNode.insertBefore(splitCols, splitPlaceholder);
+                            document.documentElement.setAttribute('data-alloflow-split', '1');
+                            splitBtn.setAttribute('aria-pressed', 'true');
+                        }
+                    };
+                    if (splitBtn) splitBtn.addEventListener('click', function () { setSplit(splitBtn.getAttribute('aria-pressed') !== 'true'); });
+                    var stepOn = false;
+                    var stepIdx = 0;
+                    var applyStep = function (nextOn, nextIdx) {
+                        stepOn = !!nextOn;
+                        stepIdx = Math.max(0, Math.min(studentWraps.length - 1, Number(nextIdx) || 0));
+                        if (stepOn && document.documentElement.hasAttribute('data-alloflow-split')) setSplit(false);
+                        studentWraps.forEach(function (w, i) {
+                            if (stepOn && i !== stepIdx) w.setAttribute('data-alloflow-step-hidden', '1');
+                            else w.removeAttribute('data-alloflow-step-hidden');
+                        });
+                        if (stepBtn) stepBtn.setAttribute('aria-pressed', stepOn ? 'true' : 'false');
+                        if (stepPager) stepPager.hidden = !stepOn;
+                        if (stepReadout) stepReadout.textContent = (stepIdx + 1) + ' / ' + studentWraps.length;
+                        if (stepPrev) stepPrev.disabled = stepIdx <= 0;
+                        if (stepNext) stepNext.disabled = stepIdx >= studentWraps.length - 1;
+                        if (jumpEl) jumpEl.value = stepOn ? (studentWraps[stepIdx].getAttribute('data-alloflow-resource-id') || '') : '';
+                    };
+                    if (stepBtn && studentWraps.length >= 2) stepBtn.addEventListener('click', function () { applyStep(!stepOn, stepIdx); });
+                    if (stepPrev) stepPrev.addEventListener('click', function () { applyStep(true, stepIdx - 1); });
+                    if (stepNext) stepNext.addEventListener('click', function () { applyStep(true, stepIdx + 1); });
+                    if (jumpEl) {
+                        jumpEl.addEventListener('change', function () {
+                            var targetId = jumpEl.value;
+                            if (!targetId) { applyStep(false, 0); return; }
+                            var foundIdx = studentWraps.findIndex(function (w) { return w.getAttribute('data-alloflow-resource-id') === targetId; });
+                            if (stepOn && foundIdx >= 0) applyStep(true, foundIdx);
+                            var targetEl = document.getElementById(targetId) || (foundIdx >= 0 ? studentWraps[foundIdx] : null);
+                            if (targetEl) { try { targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { targetEl.scrollIntoView(); } }
+                        });
+                    }
+                    window.addEventListener('beforeprint', function () {
+                        if (splitCols) setSplit(false);
+                        if (stepOn) applyStep(false, 0);
+                    });
+                    // Inline glossary popover runtime
+                    var activeTermBtn = null;
+                    var termPopover = null;
+                    var closePopover = function (restoreFocus) {
+                        if (activeTermBtn) { activeTermBtn.setAttribute('aria-expanded', 'false'); }
+                        var prev = activeTermBtn;
+                        activeTermBtn = null;
+                        if (termPopover) termPopover.hidden = true;
+                        if (restoreFocus && prev && prev.focus) { try { prev.focus(); } catch (e) {} }
+                    };
+                    document.addEventListener('click', function (e) {
+                        var tbtn = e.target && e.target.closest ? e.target.closest('.alloflow-inline-term') : null;
+                        if (tbtn) {
+                            if (activeTermBtn === tbtn && termPopover && !termPopover.hidden) { closePopover(false); return; }
+                            if (activeTermBtn) activeTermBtn.setAttribute('aria-expanded', 'false');
+                            activeTermBtn = tbtn;
+                            tbtn.setAttribute('aria-expanded', 'true');
+                            var hostMain = document.getElementById('main-export-content') || document.body;
+                            if (!termPopover) {
+                                termPopover = document.createElement('div');
+                                termPopover.id = 'alloflow-term-popover';
+                                termPopover.className = 'alloflow-term-popover';
+                                termPopover.setAttribute('role', 'dialog');
+                                termPopover.setAttribute('aria-modal', 'false');
+                                termPopover.setAttribute('aria-labelledby', 'alloflow-term-popover-title');
+                                var head = document.createElement('div'); head.className = 'alloflow-term-popover-head';
+                                var ttl = document.createElement('span'); ttl.id = 'alloflow-term-popover-title'; ttl.className = 'alloflow-term-popover-title';
+                                var cls = document.createElement('button'); cls.type = 'button'; cls.className = 'alloflow-term-popover-close'; cls.textContent = '✕';
+                                cls.setAttribute('aria-label', window.__alloflowText('closeDefinition', 'Close definition'));
+                                cls.addEventListener('click', function () { closePopover(true); });
+                                head.appendChild(ttl); head.appendChild(cls);
+                                var body = document.createElement('div'); body.className = 'alloflow-term-popover-body';
+                                termPopover.appendChild(head); termPopover.appendChild(body);
+                                hostMain.appendChild(termPopover);
+                            }
+                            termPopover.querySelector('#alloflow-term-popover-title').textContent = tbtn.getAttribute('data-allo-term') || tbtn.textContent || '';
+                            termPopover.querySelector('.alloflow-term-popover-body').textContent = tbtn.getAttribute('data-allo-def') || '';
+                            termPopover.hidden = false;
+                            var rect = tbtn.getBoundingClientRect();
+                            var vw = window.innerWidth || 800;
+                            var vh = window.innerHeight || 600;
+                            var left = Math.max(12, Math.min(vw - 372, rect.left));
+                            var top = rect.bottom + 8 + 140 > vh ? Math.max(12, rect.top - 130) : rect.bottom + 8;
+                            termPopover.style.left = left + 'px';
+                            termPopover.style.top = top + 'px';
+                            return;
+                        }
+                        if (termPopover && !termPopover.hidden && (!e.target || !termPopover.contains(e.target))) closePopover(false);
+                    });
+                    document.addEventListener('keydown', function (e) {
+                        if (e.key === 'Escape' && termPopover && !termPopover.hidden) { e.preventDefault(); closePopover(true); }
+                    });
+                })();
             });
         </script>
         ${_brandFooterHTML}
@@ -57878,6 +58883,7 @@ function projectStudentGuideData(data, mode) {
         _packHtml = _packHtml
           .replace(/ data-correct="\d+"/g, ' data-correct=""')
           .replace(/ data-fill-answers="[^"]*"/g, '')
+          .replace(/ data-(?:correct-multi|sequence-key|relation-key|answer-evidence-key|numeric-key)="[^"]*"/g, '')
           .replace(/(<div[^>]*class="alloflow-cs-strip"[^>]*?) data-category-id="[^"]*"/g, '$1 data-category-id=""')
           .replace(/<\/head>/i, '<style>.quiz-controls{display:none !important}.alloflow-cs-controls{display:none !important}</style></head>');
       }

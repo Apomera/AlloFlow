@@ -393,24 +393,53 @@
     window.__lastResult = r; // for headless tests
   });
 
+  function _isTrustedVeraOrigin(origin) {
+    const o = String(origin || '');
+    if (o === 'null') return true;
+    try {
+      if (window.location && window.location.origin && o === window.location.origin) return true;
+      const u = new URL(o);
+      const host = (u.hostname || '').toLowerCase();
+      if (/^(localhost|127\.0\.0\.1|\[::1\])$/.test(host)) return true;
+      if (u.protocol !== 'https:') return false;
+      return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
+        /\.pages\.dev$/.test(host) && /^alloflow/.test(host) ||
+        host === 'alloflow.app' || /\.alloflow\.app$/.test(host) ||
+        host === 'alloflow.com' || /\.alloflow\.com$/.test(host) ||
+        host === 'alloflow.org' || /\.alloflow\.org$/.test(host) ||
+        /\.(?:web\.app|firebaseapp\.com)$/.test(host) ||
+        /\.usercontent\.goog$/.test(host) || /\.idx\.google\.com$/.test(host);
+    } catch (_) {
+      return false;
+    }
+  }
+
+  function _isTrustedVeraSource(source) {
+    if (!source) return false;
+    return source === window.opener || (window.parent && window.parent !== window && source === window.parent);
+  }
+
   window.addEventListener('message', async (ev) => {
+    if (!_isTrustedVeraSource(ev.source) || !_isTrustedVeraOrigin(ev.origin)) return;
+    const replyTarget = ev.source || window.opener || window.parent;
+    const replyOrigin = ev.origin && ev.origin !== 'null' ? ev.origin : '*';
     const d = ev.data || {};
     if (d.type === 'verapdf-validate' && d.bytes && ready) {
       try {
         const r = await validateBytes(d.bytes);
         render(r); _lastBytes = d.bytes; _roOfferPreview();
-        (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-result', result: r }, '*');
+        replyTarget.postMessage({ type: 'verapdf-result', result: r }, replyOrigin);
       } catch (e) {
-        (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-result', error: String(e && (e.message || e)) }, '*');
+        replyTarget.postMessage({ type: 'verapdf-result', error: String(e && (e.message || e)) }, replyOrigin);
       }
     }
     // Closed-loop remediation: validate → repair → re-validate → loop, return the green (or best-effort) PDF.
     if (d.type === 'verapdf-remediate' && d.bytes && ready) {
       try {
         const r = await remediate(d.bytes, d.maxIters, { allowArtifact: !!d.allowArtifact }); // Artifact-wrap stays off unless the caller explicitly opts in
-        (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-remediate-result', result: r }, '*');
+        replyTarget.postMessage({ type: 'verapdf-remediate-result', result: r }, replyOrigin);
       } catch (e) {
-        (ev.source || window.opener || window.parent).postMessage({ type: 'verapdf-remediate-result', error: String(e && (e.message || e)) }, '*');
+        replyTarget.postMessage({ type: 'verapdf-remediate-result', error: String(e && (e.message || e)) }, replyOrigin);
       }
     }
   });

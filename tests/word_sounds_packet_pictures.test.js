@@ -401,7 +401,14 @@ describe('the builder: pictures off', () => {
     // Re-pinned 2026-11-13 (engine fixes, C:/tmp/packets_build_1111/engine2/STATUS.txt): two tabs of one file, "Your browser is
     // saving", the sound-failed note and the 5 s clip watchdog, #live cleared, the print rule for primary buttons, four new
     // words (+7038 bytes, the shell, labels and styles only; the questions the same 124). The loader before still gives 1a8ab60e.../231895.
-    all: { sha256: '1712492b71208253a9e989cb8f7775eba74b9f6f27f9f9863c309d103eaaa504', bytes: 238933, items: 124 },
+    // Re-pinned 2026-11-13 (answer audit, C:/tmp/packets_build_1111/answer_audit/RESULTS.txt): Break it Down grades the two
+    // chips of one sound (ur, er: murder) in either box (segmentation's render, +20 bytes); the questions are the same 124.
+    // The loader before still gives 1712492b.../238933.
+    // Re-pinned 2026-11-14 (T1 + @i18n P1/P2/P4, C:/tmp/packets_build_1111/T1/REPORT.txt): done_activity '{first} of {total}'
+    // in DEFAULT_LABELS and renderFinish (+62 bytes), 'Hear all' fallback shortened in blending/sound_sort/word_families (-36
+    // bytes), and inputmode:'none' in spelling_bee (+14 bytes; +40 bytes net); the questions are the same 124.
+    // The loader before still gives 02dc54de.../238953.
+    all: { sha256: '684e5d56d4d4f915d896807dfda0a37b2dcb5427d1cab4496ad261bcee2c5000', bytes: 238993, items: 124 },
     // Re-pinned 2026-11-12 (evening), as "all" above; the loader before still gives b3221d74.../71353.
     // Re-pinned 2026-11-12 (night), as "all" above; the loader before still gives 202974c1.../79452.
     // Re-pinned 2026-11-13 (polish pass, as "all" above: the R key and the end screen's practice line, +977 bytes); the loader before still gives dc61bb4c.../84670.
@@ -409,7 +416,9 @@ describe('the builder: pictures off', () => {
     // the manifest's choices, +778 bytes).
     // Re-pinned 2026-11-13 (robustness pass, as "all" above, +1056 bytes); the loader before still gives 81767a93.../86425.
     // Re-pinned 2026-11-13 (engine fixes, as "all" above, +7038 bytes); the loader before still gives 3ec8e31e.../87481.
-    isolation: { sha256: '87bce42c9bd9c17d7d9ce2b86166efcfd09ac7755515346505848144b16326a0', bytes: 94519, items: 5 },
+    // Re-pinned 2026-11-14 (T1 + @i18n P2, as "all" above: done_activity in DEFAULT_LABELS and renderFinish, +62 bytes);
+    // the loader before still gives 87bce42c.../94519.
+    isolation: { sha256: '9458991bb53240d69ac1f3522112d1533cc24177b5ff979f16383eee441271e1', bytes: 94581, items: 5 },
   };
   const CASES = { all: {}, isolation: { words: CVC.slice(0, 5), activities: ['isolation'], title: undefined } };
 

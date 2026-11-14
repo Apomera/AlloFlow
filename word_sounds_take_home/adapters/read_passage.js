@@ -63,8 +63,16 @@ module.exports = {
     // The player's gate (13137-13147).
     if (!story || !parts.some(function (p) { return p && !p.text; }) || raw.length < 2) return { missing: ['board'] };
     var options = [], seen = {};
-    raw.forEach(function (o) { var k = o.toLowerCase(); if (!seen[k]) { seen[k] = true; options.push(o); } });
-    if (!seen[lower] || options.length < 2) return { missing: ['board'] };
+    // One choice for each key, the same key render() grades with (2026-11-13, answer audit): "ice  cream" beside
+    // "ice cream" showed two choices that look the same, one of them graded wrong. The word's own spelling is kept.
+    var keyOf = function (s) { var t = String(s == null ? '' : s); try { t = t.normalize('NFC'); } catch (_) {} return t.toLowerCase().trim().replace(/\s+/g, ' '); };
+    var at = {};
+    raw.forEach(function (o) {
+      var k = keyOf(o);
+      if (!seen[k]) { seen[k] = true; at[k] = options.length; options.push(o); }
+      else if (o === word.trim() && k === keyOf(word)) options[at[k]] = o;
+    });
+    if (!seen[keyOf(word)] || options.length < 2) return { missing: ['board'] };
     var sentences = story.split(SPLIT).map(function (s) { return s.trim(); }).filter(Boolean);
     var aligned = sentences.length === parts.length;
     var lines = parts.map(function (p, i) {
@@ -86,7 +94,8 @@ module.exports = {
       readBack: readBack, readBackByLine: readBack.length > 1, introAudio: [prompt], answerAudio: [] } };
   },
   render: function (item, ctx) {
-    var norm = function (s) { return String(s == null ? '' : s).toLowerCase().trim(); };
+    // The key prepare() uses (2026-11-13): spaces or an accent written two ways are one choice.
+    var norm = function (s) { var t = String(s == null ? '' : s); try { t = t.normalize('NFC'); } catch (_) {} return t.toLowerCase().trim().replace(/\s+/g, ' '); };
     var picture = ctx.image(item.picture);
     var blanks = [];
     var lineNodes = [];

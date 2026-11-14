@@ -260,6 +260,11 @@ export class BugDigest extends DurableObject {
           for (const name of newNames) this.sql('INSERT INTO receipts (receipt, batch_id, discovered_at) VALUES (?, ?, ?)', name, batchId, now);
         }
         this.sql('UPDATE settings SET next_run = ?, last_scan = ?, last_error = NULL, scan_id = NULL, scan_started = NULL WHERE id = 1', nextNewYorkNine(Date.now()), Date.now());
+        const cutoff45 = now - 45 * 86400000;
+        const cutoff90 = now - 90 * 86400000;
+        this.sql('DELETE FROM receipts WHERE discovered_at < ?', cutoff45);
+        this.sql("DELETE FROM attempts WHERE batch_id IN (SELECT id FROM batches WHERE status IN ('accepted', 'failed') AND updated_at < ?)", cutoff90);
+        this.sql("DELETE FROM batches WHERE status IN ('accepted', 'failed') AND updated_at < ?", cutoff90);
       });
       return batchId ? this.deliver(batchId, scanId) : { ok: true, empty: true };
     } catch (_) {
@@ -269,10 +274,33 @@ export class BugDigest extends DurableObject {
   }
 }
 
+const AUTH_FAILURES = new Map();
+const AUTH_MAX_IPS = 2048;
+const AUTH_WINDOW_MS = 600000;
+const AUTH_MAX_FAILS = 15;
+
+function clientAuthIp(request) {
+  return (request.headers.get('CF-Connecting-IP') || 'local').split(',')[0].trim() || 'local';
+}
+
 export default {
   async fetch(request, env) {
     if (!env.ADMIN_TOKEN) return response(errorResult('Admin access is not configured.', 503));
-    if (!(await authorized(request, env.ADMIN_TOKEN))) return response(errorResult('Unauthorized.', 401));
+    const now = Date.now();
+    const ip = clientAuthIp(request);
+    const existing = AUTH_FAILURES.get(ip);
+    if (existing && now >= existing.resetAt) AUTH_FAILURES.delete(ip);
+    const current = AUTH_FAILURES.get(ip);
+    if (current && current.count >= AUTH_MAX_FAILS) {
+      return response(errorResult('Too many authentication attempts.', 429));
+    }
+    if (!(await authorized(request, env.ADMIN_TOKEN))) {
+      const next = current ? { count: current.count + 1, resetAt: current.resetAt } : { count: 1, resetAt: now + AUTH_WINDOW_MS };
+      if (!AUTH_FAILURES.has(ip) && AUTH_FAILURES.size >= AUTH_MAX_IPS) AUTH_FAILURES.delete(AUTH_FAILURES.keys().next().value);
+      AUTH_FAILURES.set(ip, next);
+      return response(errorResult('Unauthorized.', 401));
+    }
+    if (current) AUTH_FAILURES.delete(ip);
     const url = new URL(request.url);
     if (url.search) return response(errorResult('Query parameters are not accepted.'));
     try {

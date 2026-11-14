@@ -839,7 +839,25 @@ function eeCompensateShare_(file, educatorEmail) {
   return issues;
 }
 
+function eeWithLock_(fn) {
+  if (typeof LockService === 'undefined' || !LockService || typeof LockService.getScriptLock !== 'function') {
+    return fn();
+  }
+  var lock = LockService.getScriptLock();
+  if (!lock.tryLock(15000)) {
+    throw new Error('Another evaluation share operation is in progress. Wait a moment and try again.');
+  }
+  try { return fn(); }
+  finally { try { lock.releaseLock(); } catch (_) {} }
+}
+
 function shareEvaluationPacket(request) {
+  return eeWithLock_(function() {
+    return shareEvaluationPacketLocked_(request);
+  });
+}
+
+function shareEvaluationPacketLocked_(request) {
   request = request || {};
   if (!eeDriveApiReady_()) throw new Error('Drive API v3 is not ready. Nothing was shared. Run the deployment check and fix the Advanced Drive service.');
   var deployerEmail = eeRequireManagedOwner_();
@@ -960,6 +978,12 @@ function shareEvaluationPacket(request) {
 }
 
 function revokeEvaluationAccess(request) {
+  return eeWithLock_(function() {
+    return revokeEvaluationAccessLocked_(request);
+  });
+}
+
+function revokeEvaluationAccessLocked_(request) {
   request = request || {};
   eeRequireManagedOwner_();
   if (!eeDriveApiReady_()) throw new Error('Drive API v3 is required to prove that access was removed.');

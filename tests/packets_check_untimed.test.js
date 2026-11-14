@@ -92,8 +92,9 @@ describe('the builder: untimed: true takes the clock away and says what it took'
   it('no time limit, the usual one kept, a title that says it; a timed lesson is as before', () => {
     expect(QD.timeLimitS).toBe(60);
     expect(QD.check).not.toHaveProperty('untimed');
-    expect(QD.title).toBe('Quantity Discrimination check (KA)');
-    expect(QD_UNTIMED).toMatchObject({ timeLimitS: null, lessonId: QD.lessonId, form: 'A', title: 'Quantity Discrimination check (KA, untimed)' });
+    // 2026-11-14 (T1/makers2): PC.formTitle writes out the grade and version ("Quantity Discrimination, kindergarten, version A").
+    expect(QD.title).toBe('Quantity Discrimination, kindergarten, version A');
+    expect(QD_UNTIMED).toMatchObject({ timeLimitS: null, lessonId: QD.lessonId, form: 'A', title: 'Quantity Discrimination, kindergarten, version A, untimed' });
     expect(QD_UNTIMED.check).toMatchObject({ untimed: true, usualTimeLimitS: 60, measure: 'quantity_discrimination', scoreUnit: 'items_correct' });
     // A different revision: a different place in the browser's storage, so a timed try is never resumed untimed.
     expect(QD_UNTIMED.revision).not.toBe(QD.revision);
@@ -222,7 +223,8 @@ describe('the maker page offers it folded, for the ready checks', () => {
     expect(box.textContent).not.toMatch(/\b(?:tests?|assessments?|learners?)\b/i);
   });
   it('the choice is not kept between visits, and the file name says untimed', () => {
-    expect(js).toContain("untimed: false };");
+    // 2026-11-14 (T1/makers2): defaults() also resets readyTitle and learner alongside untimed: false.
+    expect(js).toContain("title: '', readyTitle: '', time: TIME_DEFAULT, skip: true, untimed: false, learner: '' };");
     expect(js).not.toMatch(/untimed: state\.untimed/);
     expect(js).toContain("(state.untimed ? '-untimed' : '') + '.html'");
   });

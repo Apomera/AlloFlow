@@ -163,7 +163,8 @@ describe('the pages as files', () => {
     const cannot = [...parse('packets.html').querySelectorAll('h3')].find((heading) => heading.textContent === 'A practice file cannot');
     expect(cannot.nextElementSibling.querySelector('li').textContent).toBe('Run AI. ' + VOICES);
     // The headline stays, and the details say exactly how the voices were made, on both pages.
-    expect(parse('packets.html').querySelector('h1').textContent).toBe('Practice and progress checks. Runs without AI. No accounts.');
+    // 2026-11-14 (T1): front-door headline updated to "Quick Practice & Checks. Runs without AI. No accounts."
+    expect(parse('packets.html').querySelector('h1').textContent).toBe('Quick Practice & Checks. Runs without AI. No accounts.');
     for (const file of ['packets.html', 'packets-make.html']) expect(parse(file).querySelector('details.proof .proof-body li').textContent, file).toBe(VOICES);
     expect(parse('packets-make.html').getElementById('sources').textContent).toContain(VOICES_SAID);
     // In the scripts the word appears in comments only: no line a visitor reads.
@@ -266,10 +267,10 @@ describe('the pages as files', () => {
     expect(parse('packets.html').querySelectorAll('details')).toHaveLength(1);
   });
 
-  it('the main site has one quiet way in from its home page and one from its tool finder, and neither claims more than the front door', () => {
+  it('the main site introduces Packets from its home page and tool finder and links to them in the menus', () => {
     const squash = (text) => text.replace(/\s+/g, ' ').trim();
     const home = parse('index.html');
-    const homeLinks = [...home.querySelectorAll('a[href^="packets"]')];
+    const homeLinks = [...home.querySelectorAll('main a[href^="packets"]')];
     // 2026-11-12 (Aaron): easier to find from the home page: a line under the hero's buttons, then the band.
     expect(homeLinks.map((a) => [a.getAttribute('href'), a.textContent])).toEqual([['packets.html', 'Quick Practice & Checks →'], ['packets.html', 'Open ' + NAME]]);
     expect(squash(homeLinks[0].closest('p').textContent)).toBe('Quick Practice & Checks → Make a practice file or a short check in your browser: word sounds, math facts, vocabulary. Runs without AI. No account.');
@@ -278,15 +279,21 @@ describe('the pages as files', () => {
     expect(band.contains(homeLinks[1])).toBe(true);
     expect(home.getElementById(band.getAttribute('aria-labelledby')).textContent).toBe('Quick Practice & Checks');
     expect(squash(band.textContent)).toBe('Quick Practice & Checks Just need a practice file or a short progress check? ' + NAME + ' makes them in your browser. Runs without AI. No account. Open ' + NAME);
-    // One band of its own: after the entry paths, before the tool finder and the long sections, and in no navigation.
+    // The band sits after the entry paths and before the tool finder.
     expect([band.previousElementSibling.id, band.nextElementSibling.id]).toEqual(['homeEntryPaths', 'home-tool-finder']);
     expect(band.querySelectorAll('script, link, img, iframe, form')).toHaveLength(0);
     const tools = parse('tools.html');
-    const toolLinks = [...tools.querySelectorAll('a[href^="packets"]')];
+    const toolLinks = [...tools.querySelectorAll('main a[href^="packets"]')];
     expect(toolLinks.map((a) => [a.getAttribute('href'), a.textContent])).toEqual([['packets.html', NAME]]);
     expect(squash(toolLinks[0].parentElement.textContent)).toBe('Quick Practice & Checks: practice files and short checks (word sounds, math facts, vocabulary) that run without AI. ' + NAME + '.');
     expect(toolLinks[0].closest('header.tool-finder-hero')).toBeTruthy();
-    for (const link of [...homeLinks, toolLinks[0]]) expect(link.closest('nav, .nav-links, .mobile-nav, .noscript-nav, footer')).toBeNull();
+    // 2026-11-13 (Aaron): the Packets front door is now in all three shared site menus.
+    for (const doc of [home, tools]) {
+      for (const menu of ['[data-site-nav="primary"]', '#mobileNav', 'noscript .noscript-nav']) {
+        const links = [...doc.querySelectorAll(`${menu} a[href^="packets"]`)];
+        expect(links.map((a) => [a.getAttribute('href'), a.textContent]), menu).toEqual([['packets.html', 'Quick Practice & Checks']]);
+      }
+    }
     expect(existsSync('packets.html')).toBe(true);
   });
 
@@ -443,11 +450,12 @@ const STAND_IN_STORE = (() => {
 // What a page asks the stand-in store for when it makes a file of these words: the index, then one file for each first letter that needs one.
 const storeRequests = (words) => { const need = words.filter(storeWord); return need.length ? [STORE_INDEX, ...new Set(need.map((word) => 'word_audio_shards/' + word[0] + '.json'))] : []; };
 // The line under step 2, by the rule the page states: the fixed files, and at most one store file (the largest) for each word that needs one.
+// 2026-11-14 (R1): word_audio_kokoro_bank.json grew to 10.19 MB at 64 kbps fp32, shifting SOUND_BYTES from ~11 MB to ~15 MB.
 const soundsNoteFor = (words) => {
   const n = words.filter(storeWord).length, audio = wordlist.meta.wordAudio;
-  if (!n) return 'The next step gets the sounds: about 11 MB, one time.';
+  if (!n) return 'The next step gets the sounds: about 15 MB, one time.';
   const bytes = Math.min(n * audio.largestFileBytes, audio.bytes);
-  return 'The next step gets the sounds: about 11 MB one time, plus up to about ' + (bytes >= 10e6 ? String(Math.ceil(bytes / 1e6)) : (Math.ceil(bytes / 1e5) / 10).toFixed(1)) + ' MB for these words.';
+  return 'The next step gets the sounds: about 15 MB one time, plus up to about ' + (bytes >= 10e6 ? String(Math.ceil(bytes / 1e6)) : (Math.ceil(bytes / 1e5) / 10).toFixed(1)) + ' MB for these words.';
 };
 // A stand-in for the browser's audio decoder: any clip becomes a short buffer that depends on its bytes.
 class FakeOffline {
@@ -568,10 +576,15 @@ describe('the maker, run with the real builder', () => {
     const cannotBuild = core.activityIds().filter((id) => !builder.SUPPORTED_ACTIVITIES.includes(id)).map((id) => core.ACTIVITY_SKILLS[id].name);
     expect(cannotBuild).toEqual(expect.arrayContaining(['Syllable Claps', 'Read & Match']));
     const heldNames = held.map((id) => core.ACTIVITY_SKILLS[id].name);
-    expect(page.$('not-offered').textContent).toBe('Not in this version: ' + (heldNames.length ? (heldNames.length > 1 ? and(heldNames) : heldNames[0]) + ' (not enough recorded sounds yet). ' : '')
+    const totalNotOffered = held.length + cannotBuild.length;
+    // 2026-11-14 (T1): #not-offered is folded into a closed <details> with a short count summary and full list inside.
+    expect(page.$('not-offered').tagName).toBe('DETAILS');
+    expect(page.$('not-offered').open).toBe(false);
+    expect(page.$('not-offered-summary').textContent).toBe(totalNotOffered + ' more ' + (totalNotOffered === 1 ? 'activity is' : 'activities are') + ' not in this version');
+    expect(page.$('not-offered-text').textContent).toBe('Not in this version: ' + (heldNames.length ? (heldNames.length > 1 ? and(heldNames) : heldNames[0]) + ' (not enough recorded sounds yet). ' : '')
       + and(cannotBuild) + ' (they cannot be made from a word list alone yet).');
     // Today that is Word Families: most word endings (-ug, -ip) have no recording.
-    expect(page.$('not-offered').textContent).toContain('Not in this version: Word Families (not enough recorded sounds yet). ');
+    expect(page.$('not-offered-text').textContent).toContain('Not in this version: Word Families (not enough recorded sounds yet). ');
     expect(page.d.querySelector('input[value="letter_tracing"]').closest('label').querySelector('.choice-note').textContent).toBe('Practice only. It is not scored.');
     expect(page.d.querySelectorAll('.choice-note')).toHaveLength(1);
     expect(page.w.document.title).toBe(NAME + ': Make Word Sounds practice, step 1 of 3');
@@ -716,9 +729,9 @@ describe('the maker, run with the real builder', () => {
     expect(page.d.querySelector('input[name="length"]:checked').value).toBe('regular');
     await ready(page);
     expect(page.seen('summary')).toBe(true);
-    // When a word has a picture the page also asks for the picture files. This page is not given them (see openMaker):
-    // it says so under the box, leaves the box unchecked, and makes the plain file.
-    const asksForPictures = used.some((word) => PICTURE_INDEX.has(word));
+    // When most words have a picture (or Only words with a picture is on), the page turns Include pictures on and asks for the
+    // picture files (2026-11-14, T1). This page is not given them (see openMaker): if asked, it says so under the box and leaves it unchecked.
+    const asksForPictures = used.filter((word) => PICTURE_INDEX.has(word)).length * 2 > used.length;
     // A word whose recording is in the word store adds the store's index and the file that holds it (see "the maker and the word store").
     const askedOnce = [...SOUND_URLS, ...storeRequests(used), ...(asksForPictures ? PICTURE_URLS : [])];
     expect(page.asked).toEqual(askedOnce);
@@ -1104,13 +1117,15 @@ describe('the maker and the word store', () => {
     const rows = Object.fromEntries([...page.$('own-list').children].map((row) => [row.querySelector('.w').textContent, row.className + ': ' + row.querySelector('.s').textContent]));
     for (const word of [W1, W2, W3]) expect(rows[word], word).toMatch(/^is-ok: Ready\. 3 sounds: /);
     expect(page.$('own-line').textContent).toBe('4 of 4 words can be used.');
-    expect(page.$('sounds-note').textContent).toBe('The next step gets the sounds: about 11 MB one time, plus up to about ' + upTo(3 * flagged.meta.wordAudio.largestFileBytes) + ' MB for these words.');
+    // 2026-11-14 (R1): fixed sound banks total ~14.5 MB ("about 15 MB") after 64 kbps fp32 re-voicing.
+    expect(page.$('sounds-note').textContent).toBe('The next step gets the sounds: about 15 MB one time, plus up to about ' + upTo(3 * flagged.meta.wordAudio.largestFileBytes) + ' MB for these words.');
     expect(page.asked).toEqual([]);
     page.$('next-2').click();
     await ready(page);
     expect(page.seen('summary') && !page.seen('build-problem')).toBe(true);
     // The five sound files, the index, then one request for each file that holds one of the words: two files for three words.
-    const asksForPictures = ['cat', W1, W2, W3].some((word) => PICTURE_INDEX.has(word));
+    // 2026-11-14 (T1): Include pictures turns on automatically only when most chosen words have a picture (or Only words with a picture is checked).
+    const asksForPictures = ['cat', W1, W2, W3].filter((word) => PICTURE_INDEX.has(word)).length * 2 > 4;
     const wanted = [INDEX, fileOf(W1), fileOf(W3)];
     expect(fileOf(W2)).toBe(fileOf(W1));
     expect(page.asked).toEqual([...SOUND_URLS, ...wanted, ...(asksForPictures ? PICTURE_URLS : [])]);
@@ -1186,7 +1201,8 @@ describe('the maker and the word store', () => {
     expect(listed.slice(0, 10)).toEqual(direct.words);
     const needed = listed.filter((word) => STORE_WORDS.includes(word));
     expect(needed.length).toBeGreaterThanOrEqual(inStore.length);
-    expect(page.$('sounds-note').textContent).toBe('The next step gets the sounds: about 11 MB one time, plus up to about ' + upTo(Math.min(needed.length * flagged.meta.wordAudio.largestFileBytes, flagged.meta.wordAudio.bytes)) + ' MB for these words.');
+    // 2026-11-14 (R1): fixed sound banks total ~14.5 MB ("about 15 MB") after 64 kbps fp32 re-voicing.
+    expect(page.$('sounds-note').textContent).toBe('The next step gets the sounds: about 15 MB one time, plus up to about ' + upTo(Math.min(needed.length * flagged.meta.wordAudio.largestFileBytes, flagged.meta.wordAudio.bytes)) + ' MB for these words.');
     page.$('next-2').click();
     page.choose('length', 'long');
     await page.until(() => !page.seen('summary'), 'the file of another length to start');
@@ -1284,7 +1300,8 @@ describe('the maker and the word store', () => {
     expect(SMALL.source).toMatch(/,"wordAudio":\{[^}]*\}/);
     bare.$('next-1').click();
     await typeWords(bare, ['cat', W1]);
-    expect(bare.$('sounds-note').textContent).toBe('The next step gets the sounds: about 11 MB one time, plus the sounds for these words.');
+    // 2026-11-14 (R1): fixed sound banks total ~14.5 MB ("about 15 MB") after 64 kbps fp32 re-voicing.
+    expect(bare.$('sounds-note').textContent).toBe('The next step gets the sounds: about 15 MB one time, plus the sounds for these words.');
     bare.dom.window.close();
   });
 });
@@ -1745,6 +1762,59 @@ describe('the maker: choose the words yourself, and any number of words', () => 
     expect(bare.$('f-pictures').disabled).toBe(false);
     expect(bare.$('pictures-line').textContent).toBe('The list of pictures did not load, so only pictures you added can be used. Load the page again to get the list.');
     bare.dom.window.close();
+  });
+
+  // 2026-11-14 (T1): Stage first in Step 2, Include pictures auto-on only when most words have a picture (or Only words with a picture), and >= 10 MB size warning.
+  it('places Stage first in step 2, auto-enables Include pictures only when most words have pictures, and warns on >= 10 MB files', async () => {
+    const makerDoc = parse('packets-make.html');
+    const step2Selects = [...makerDoc.querySelectorAll('#panel-pick .fields select')].map((s) => s.id);
+    expect(step2Selects).toEqual(['f-stage', 'f-sound', 'f-position', 'f-shape']);
+    expect(makerDoc.querySelector('header .top-link').textContent).toBe('Add up results');
+    expect(makerDoc.querySelector('header .top-link').getAttribute('href')).toBe('packets-results.html');
+
+    // Minority with picture (1 of 4): auto-off.
+    const usable = wordlist.rows().filter((r) => (r.kokoro || r.shards) && !r.borderline && /^[a-z]{3,5}$/.test(r.word)).map((r) => r.word);
+    const noPicWords = usable.filter((w) => !PICTURE_INDEX.has(w)).slice(0, 4);
+    const yesPicWords = usable.filter((w) => PICTURE_INDEX.has(w)).slice(0, 4);
+    expect(noPicWords.length).toBeGreaterThanOrEqual(3);
+    expect(yesPicWords.length).toBeGreaterThanOrEqual(3);
+
+    const page = await openMaker({ pictures: true });
+    for (const box of page.d.querySelectorAll('.strand input')) if (box.checked !== (box.value === 'isolation')) box.click();
+    page.$('next-1').click();
+    page.choose('mode', 'own');
+    page.set('f-own', [yesPicWords[0], noPicWords[0], noPicWords[1], noPicWords[2]].join(' '));
+    await page.until(() => page.$('own-line').textContent === '4 of 4 words can be used.', 'minority picture words');
+    page.$('next-2').click();
+    await ready(page);
+    expect(page.$('f-pictures').checked).toBe(false);
+    expect(page.$('size-warn').hidden).toBe(true);
+
+    // Majority with picture (3 of 4): auto-turns Include pictures on!
+    page.$('back-3').click();
+    page.set('f-own', [yesPicWords[0], yesPicWords[1], yesPicWords[2], noPicWords[0]].join(' '));
+    await page.until(() => page.$('own-line').textContent === '4 of 4 words can be used.', 'majority picture words');
+    page.$('next-2').click();
+    await ready(page);
+    expect(page.$('f-pictures').checked).toBe(true);
+
+    // >= 10 MB built file shows #size-warn with plain advice.
+    const realBuild = page.w.AlloPacketBuilder.buildPacket;
+    page.w.AlloPacketBuilder.buildPacket = async (opts) => {
+      const out = await realBuild(opts);
+      const huge = out.html + '<!--' + 'x'.repeat(10_100_000) + '-->';
+      return { ...out, html: huge, bytes: Buffer.byteLength(huge, 'utf8') };
+    };
+    try {
+      page.choose('length', 'short');
+      await page.until(() => !page.seen('summary'), 'rebuild start');
+      await ready(page);
+      expect(page.seen('size-warn')).toBe(true);
+      expect(page.$('size-warn').textContent).toContain('This file is over 10 MB');
+    } finally {
+      page.w.AlloPacketBuilder.buildPacket = realBuild;
+      page.dom.window.close();
+    }
   });
 });
 

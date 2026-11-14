@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
 <title>Life Skills 3D — Day-in-the-Life Capstone</title>
 <script src="../immersive_geometry/vendor/aframe.min.js"></script>
 <script>
@@ -497,7 +498,50 @@
     return { firstTry: counts.firstTry, selfCorrected: counts.selfCorrected, coached: counts.coached, contextTransfer: contextTransferCount(), procedurePractice: procedurePracticeCount(), recommendedTask: target ? target.id : '' };
   }
   function nextIndex() { var tasks = runTasks(); for (var i = 0; i < tasks.length; i++) if (!state.done[tasks[i].id]) return i; return tasks.length - 1; }
-  function postToOpener(payload) { try { if (window.opener && !window.opener.closed) window.opener.postMessage(Object.assign({ source: 'alloflow-life-capstone-3d' }, payload), '*'); } catch (_) {} }
+  var verifiedOpenerOrigin = '';
+  function isTrustedOpenerOrigin(origin) {
+    if (!origin || origin === 'null') return false;
+    if (origin === window.location.origin) return true;
+    try {
+      var u = new URL(origin);
+      var host = u.hostname.toLowerCase();
+      if (u.protocol === 'http:' && (host === 'localhost' || host === '127.0.0.1' || host === '[::1]')) return true;
+      if (u.protocol !== 'https:') return false;
+      return host === 'localhost' || host === '127.0.0.1'
+        || host === 'alloflow-cdn.pages.dev' || host.endsWith('.alloflow-cdn.pages.dev')
+        || host === 'alloflow.org' || host.endsWith('.alloflow.org')
+        || host === 'alloflow.app' || host.endsWith('.alloflow.app')
+        || host === 'alloflow.com' || host.endsWith('.alloflow.com')
+        || host === 'alloflow.example' || host.endsWith('.alloflow.example')
+        || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(host)
+        || host.endsWith('.usercontent.goog')
+        || host.endsWith('.googleusercontent.com')
+        || host.endsWith('.idx.google.com')
+        || host.endsWith('.idx.google');
+    } catch (_) {
+      return false;
+    }
+  }
+  function resolveOpenerTargetOrigin() {
+    if (verifiedOpenerOrigin) return verifiedOpenerOrigin;
+    if (typeof document !== 'undefined' && document.referrer) {
+      try {
+        var refOrigin = new URL(document.referrer).origin;
+        if (refOrigin && refOrigin !== 'null') {
+          return isTrustedOpenerOrigin(refOrigin) ? refOrigin : '';
+        }
+      } catch (_) { return ''; }
+    }
+    return '*';
+  }
+  function postToOpener(payload) {
+    try {
+      var targetOrigin = resolveOpenerTargetOrigin();
+      if (targetOrigin && window.opener && !window.opener.closed) {
+        window.opener.postMessage(Object.assign({ source: 'alloflow-life-capstone-3d' }, payload), targetOrigin);
+      }
+    } catch (_) {}
+  }
   function announce(message) { var live = document.getElementById('srStatus'); live.textContent = ''; window.setTimeout(function () { live.textContent = message; }, 20); }
   function setFeedback(message, tone) { state.feedback = message; state.tone = tone || ''; }
   function setView(view) {
@@ -792,6 +836,14 @@
   document.getElementById('resetButton').addEventListener('click', function () { state.missionFocus = requestedFocus; state.support = requestedSupport; state.mode = 'guided'; state.order = missionFor(state.missionFocus).order.slice(); state.challengeChoices = {}; state.contexts = {}; state.contextTransfers = {}; state.procedures = {}; state.procedureChoices = {}; state.procedureMistakes = {}; state.procedureTarget = ''; state.procedureStep = 0; state.procedureError = false; state.procedureWrongSlot = -1; state.procedureUsed3d = false; state.risk = {}; state.attempts = {}; state.hinted = {}; state.outcomes = {}; state.replayTarget = ''; state.replayFrom = ''; state.replayContextFrom = ''; state.debrief = { confidence: '', nextStep: '', teachBack: '' }; state.debriefDraft = ''; state.teachBackMessage = ''; state.done = {}; state.missteps = 0; state.hints = 0; state.activeIndex = 0; state.focused = state.order[0]; state.hintShown = false; setFeedback('Fresh adaptive mission. Choose the safer response for the highlighted station.'); saveState(); render(); renderScene(); postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-reset', missionFocus: state.missionFocus, support: state.support }); announce('Adaptive capstone mission reset.'); });
   document.querySelectorAll('[data-view]').forEach(function (button) { button.addEventListener('click', function () { setView(button.getAttribute('data-view')); }); });
   window.lifeSkillsCapstone = { focus: function (station, announceIt) { focus(station, announceIt); }, startChallenge: beginChallenge, startReplay: beginTargetedReplay, startProcedure: beginProcedure, chooseProcedureSlot: chooseProcedureSlot };
+  window.addEventListener('message', function (event) {
+    if (!window.opener || event.source !== window.opener) return;
+    if (event.origin && event.origin !== 'null') {
+      if (!isTrustedOpenerOrigin(event.origin)) return;
+      verifiedOpenerOrigin = event.origin;
+    }
+  });
+
   var activeTarget = state.procedureTarget || state.replayTarget; var first = activeTarget ? runTasks().findIndex(function (task) { return task.id === activeTarget; }) : nextIndex(); if (first < 0) first = nextIndex(); state.activeIndex = first; state.focused = runTasks()[first].id; state.hintShown = !!state.hinted[state.focused]; render(); renderScene(); postToOpener({ type: 'alloflow-life-capstone-3d-hello', mode: state.mode, missionFocus: state.missionFocus, support: state.support });
   postProgressSnapshot();
   if (!window.AFRAME) document.getElementById('scenePanel').classList.add('no-aframe');

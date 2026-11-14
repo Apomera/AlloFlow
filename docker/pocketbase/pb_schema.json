@@ -2,6 +2,11 @@
   {
     "name": "sessions",
     "type": "base",
+    "listRule": null,
+    "viewRule": "code != ''",
+    "createRule": "@request.auth.id != ''",
+    "updateRule": "@request.auth.id != ''",
+    "deleteRule": "@request.auth.id != ''",
     "schema": [
       { "name": "app_id", "type": "text", "required": true },
       { "name": "code", "type": "text", "required": true },
@@ -22,6 +27,11 @@
   {
     "name": "teacher_history",
     "type": "base",
+    "listRule": "@request.auth.id != '' && user_id = @request.auth.id",
+    "viewRule": "@request.auth.id != '' && user_id = @request.auth.id",
+    "createRule": "@request.auth.id != '' && @request.data.user_id = @request.auth.id",
+    "updateRule": "@request.auth.id != '' && user_id = @request.auth.id",
+    "deleteRule": "@request.auth.id != '' && user_id = @request.auth.id",
     "schema": [
       { "name": "app_id", "type": "text", "required": true },
       { "name": "user_id", "type": "text", "required": true },
@@ -34,6 +44,11 @@
   {
     "name": "session_assets",
     "type": "base",
+    "listRule": null,
+    "viewRule": "asset_id != ''",
+    "createRule": "@request.auth.id != ''",
+    "updateRule": "@request.auth.id != ''",
+    "deleteRule": "@request.auth.id != ''",
     "schema": [
       { "name": "app_id", "type": "text", "required": true },
       { "name": "asset_id", "type": "text", "required": true },
@@ -46,6 +61,11 @@
   {
     "name": "student_progress",
     "type": "base",
+    "listRule": "@request.auth.id != ''",
+    "viewRule": "@request.auth.id != ''",
+    "createRule": "session_code != '' && student_id != ''",
+    "updateRule": "@request.auth.id != ''",
+    "deleteRule": "@request.auth.id != ''",
     "schema": [
       { "name": "session_code", "type": "text", "required": true },
       { "name": "student_id", "type": "text", "required": true },
@@ -58,6 +78,11 @@
   {
     "name": "images",
     "type": "base",
+    "listRule": null,
+    "viewRule": "app_id != ''",
+    "createRule": "@request.auth.id != ''",
+    "updateRule": null,
+    "deleteRule": "@request.auth.id != ''",
     "schema": [
       { "name": "app_id", "type": "text" },
       { "name": "prompt", "type": "text" },

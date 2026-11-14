@@ -2,7 +2,9 @@
 
 function parseOrigin(value) {
   try {
-    return new URL(String(value || '')).origin;
+    const parsed = new URL(String(value || ''));
+    if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return '';
+    return (!parsed.origin || parsed.origin === 'null') ? '' : parsed.origin;
   } catch (_) {
     return '';
   }
@@ -15,9 +17,12 @@ function isSameOrigin(candidateUrl, trustedUrl) {
 }
 
 function getIpcSenderUrl(event) {
-  const frameUrl = event && event.senderFrame && event.senderFrame.url;
-  if (frameUrl) return String(frameUrl);
-  if (event && event.sender && typeof event.sender.getURL === 'function') {
+  if (!event || typeof event !== 'object') return '';
+  if ('senderFrame' in event && event.senderFrame !== undefined) {
+    if (!event.senderFrame || typeof event.senderFrame.url !== 'string') return '';
+    return event.senderFrame.url;
+  }
+  if (event.sender && typeof event.sender.getURL === 'function') {
     return String(event.sender.getURL() || '');
   }
   return '';

@@ -202,6 +202,7 @@ async function audit(page: Page, name: string) {
       }),
       targets: Array.from(group.querySelectorAll('[data-beehive-tools-grid] button')).map(el => { const box = el.getBoundingClientRect(); return { text: el.textContent, width: box.width, height: box.height }; }),
       columns: getComputedStyle(group.querySelector('[data-beehive-tools-grid]')!).gridTemplateColumns.split(' ').filter(track => parseFloat(track) > 0).length,
+      rows: new Set(Array.from(group.querySelectorAll('[data-beehive-tools-grid] button')).map(el => Math.round(el.getBoundingClientRect().top))).size,
       forcedAdjustments: window.matchMedia('(forced-colors: active)').matches ? [group, ...Array.from(group.querySelectorAll('*'))].map(el => getComputedStyle(el).forcedColorAdjust) : [],
       pageOverflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
     };
@@ -260,9 +261,13 @@ test('global tools and the full heading stay readable in every perspective and f
       const focus = await tool(page, 'quiz').evaluate(node => { const css = getComputedStyle(node); return { outline: css.outlineStyle, width: parseFloat(css.outlineWidth), ink: css.color, paper: css.backgroundColor }; });
       expect(focus.outline).not.toBe('none'); expect(focus.width).toBeGreaterThanOrEqual(2);
       const layout = await audit(page, name);
-      if (mode === 'wide') expect(layout.columns).toBe(6);
-      if (mode === 'mobile') expect(layout.columns).toBe(2);
-      if (mode === 'large') expect(layout.columns).toBe(1);
+      // Stage-first wraps the tools as a chip row (2026-11-13 play-first shell); overview keeps the grid.
+      if (focusLayout) { if (mode === 'wide') expect(layout.rows).toBe(1); }
+      else {
+        if (mode === 'wide') expect(layout.columns).toBe(6);
+        if (mode === 'mobile') expect(layout.columns).toBe(2);
+        if (mode === 'large') expect(layout.columns).toBe(1);
+      }
       if (mode === 'forced') expect(focus.ink).not.toBe(focus.paper);
       await capture(page, name); expect(await work(page)).toEqual(before); expect(await awards(page)).toEqual(beforeAwards);
     }

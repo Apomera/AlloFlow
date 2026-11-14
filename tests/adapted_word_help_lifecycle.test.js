@@ -24,7 +24,7 @@ describe('Adapted pronunciation is student controlled', () => {
   });
   it('preserves legacy pronunciation for other callers', async () => {
     vi.stubGlobal('Audio', function Audio() { this.play = vi.fn().mockResolvedValue(undefined); });
-    const f = fixture();await f.engine.handlePhonicsClick('agua');expect(f.callTTS).toHaveBeenCalledWith('agua', 'Kore', 1, 2, 'Spanish');
+    const f = fixture();await f.engine.handlePhonicsClick('agua');expect(f.callTTS).toHaveBeenCalledWith('agua', 'Kore', 1, { maxRetries: 2, language: 'Spanish', word: true }, 'Spanish');
     expect(f.state.phonicsData.audioUrl).toContain('word.wav');
   });
   it('does not reopen word help after dismissal during analysis', async () => {

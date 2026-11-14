@@ -83,6 +83,7 @@ const fs = require('fs');
 const os = require('os');
 const path = require('path');
 const readline = require('readline');
+const { StringDecoder } = require('string_decoder');
 const crypto = require('crypto');
 const http = require('http');
 const zlib = require('zlib');
@@ -2080,7 +2081,8 @@ const SCOREBOARD_COLUMNS = ['name', 'file', 'band', 'score', 'critical', 'seriou
 
 function scoreboardCsv(rows) {
   const cell = (v) => {
-    const s = v === null || v === undefined ? '' : String(v);
+    let s = v === null || v === undefined ? '' : String(v);
+    if (typeof v === 'string' && /^(?:[\t\r]|[ \t\r\n]*[=+\-@])/.test(s)) s = "'" + s;
     return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   const counts = (r) => (r.issueCounts || {});
@@ -5990,9 +5992,54 @@ function handleMessage(line) {
   return handleRequest(msg);
 }
 
-const rl = readline.createInterface({ input: process.stdin, terminal: false });
-rl.on('line', (line) => {
+const MAX_LINE_BYTES = MAX_LINE_CHARS * 2;
+const stdinDecoder = new StringDecoder('utf8');
+let stdinBuffer = '';
+let stdinBytes = 0;
+let stdinOversized = false;
+function dispatchStdinLine(rawLine) {
+  const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine;
   Promise.resolve().then(() => handleMessage(line)).catch((e) => log('unexpected error: ' + (e && e.message ? e.message : 'unknown')));
+}
+process.stdin.on('data', (chunk) => {
+  const text = Buffer.isBuffer(chunk) ? stdinDecoder.write(chunk) : String(chunk);
+  let start = 0;
+  while (start <= text.length) {
+    const nl = text.indexOf('\n', start);
+    if (nl === -1) {
+      const part = text.slice(start);
+      if (!stdinOversized) {
+        stdinBytes += Buffer.byteLength(part, 'utf8');
+        if (stdinBytes > MAX_LINE_BYTES) {
+          stdinOversized = true;
+          stdinBuffer = '';
+          sendError(null, -32600, 'Message too large');
+        } else {
+          stdinBuffer += part;
+        }
+      }
+      break;
+    }
+    const piece = text.slice(start, nl);
+    start = nl + 1;
+    if (stdinOversized) {
+      stdinOversized = false;
+      stdinBuffer = '';
+      stdinBytes = 0;
+      continue;
+    }
+    const totalBytes = stdinBytes + Buffer.byteLength(piece, 'utf8');
+    if (totalBytes > MAX_LINE_BYTES) {
+      stdinBuffer = '';
+      stdinBytes = 0;
+      sendError(null, -32600, 'Message too large');
+    } else {
+      const fullLine = stdinBuffer + piece;
+      stdinBuffer = '';
+      stdinBytes = 0;
+      dispatchStdinLine(fullLine);
+    }
+  }
 });
 // Every MCP host stops a stdio server with SIGTERM (Claude Desktop on quit, Claude Code at session
 // end, the test harness with child.kill()). Node's default is to exit on that signal, but Playwright
@@ -6011,7 +6058,14 @@ async function shutdown(reason) {
   process.exit(0);
 }
 for (const signal of ['SIGTERM', 'SIGINT', 'SIGHUP']) process.on(signal, () => { shutdown('received ' + signal); });
-rl.on('close', () => {
+process.stdin.on('end', () => {
+  const tail = stdinDecoder.end();
+  if (!stdinOversized) {
+    const finalLine = stdinBuffer + tail;
+    stdinBuffer = '';
+    stdinBytes = 0;
+    if (finalLine) dispatchStdinLine(finalLine);
+  }
   if (STDIO_KEEPALIVE) { log('stdin closed; HTTP transport keeps the server alive'); return; }
   shutdown('stdin closed');
 });
@@ -6070,43 +6124,52 @@ function startHttpTransport(port) {
     return bytes.length === tokenBytes.length && crypto.timingSafeEqual(bytes, tokenBytes);
   };
   const server = http.createServer((req, res) => {
+    if (req.headers && req.headers.host !== undefined && loopback && process.env.ALLOFLOW_MCP_HTTP_ALLOW_REMOTE !== '1'
+      && !/^(?:localhost|127\.0\.0\.1|\[::1\])(?::\d+)?$/i.test(String(req.headers.host))) {
+      res.writeHead(403, { 'Content-Type': 'text/plain; charset=utf-8', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' });
+      res.end('forbidden host');
+      return;
+    }
     let url;
     try { url = new URL(req.url, 'http://' + host); }
-    catch (_) { res.writeHead(400); res.end('invalid URL'); return; }
+    catch (_) { res.writeHead(400, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end('invalid URL'); return; }
     const pathToken = /^\/mcp\/([^/]+)$/.exec(url.pathname);
-    if (url.pathname !== '/mcp' && !pathToken) { res.writeHead(404); res.end('not found'); return; }
+    if (url.pathname !== '/mcp' && !pathToken) { res.writeHead(404, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end('not found'); return; }
     const origin = req.headers.origin;
     if (origin && !/^https?:\/\/(localhost|127\.0\.0\.1|\[::1\])(:\d+)?$/.test(origin) && process.env.ALLOFLOW_MCP_HTTP_ALLOW_REMOTE !== '1') {
-      res.writeHead(403); res.end('forbidden origin'); return;
+      res.writeHead(403, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end('forbidden origin'); return;
     }
     const auth = String(req.headers.authorization || '');
     const bearer = auth.startsWith('Bearer ') ? auth.slice(7).trim() : null;
     let decodedToken = null;
     try { if (pathToken) decodedToken = decodeURIComponent(pathToken[1]); }
-    catch (_) { res.writeHead(400); res.end('invalid token encoding'); return; }
+    catch (_) { res.writeHead(400, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end('invalid token encoding'); return; }
     if (!tokenOk(bearer) && !tokenOk(decodedToken)) {
-      res.writeHead(401, { 'WWW-Authenticate': 'Bearer' }); res.end('unauthorized'); return;
+      res.writeHead(401, { 'WWW-Authenticate': 'Bearer', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end('unauthorized'); return;
     }
     if (req.method === 'GET') {
-      if (!String(req.headers.accept || '').includes('text/event-stream')) { res.writeHead(405); res.end('GET requires Accept: text/event-stream'); return; }
-      res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache', Connection: 'keep-alive', 'Mcp-Session-Id': sessionId });
+      if (!String(req.headers.accept || '').includes('text/event-stream')) { res.writeHead(405, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end('GET requires Accept: text/event-stream'); return; }
+      if (SSE_CLIENTS.size >= 16) { res.writeHead(503, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end('too many active SSE streams'); return; }
+      res.writeHead(200, { 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache, no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer', Connection: 'keep-alive', 'Mcp-Session-Id': sessionId });
       res.write(': alloflow-remediation notifications\n\n');
       SSE_CLIENTS.add(res);
       req.on('close', () => SSE_CLIENTS.delete(res));
       return;
     }
-    if (req.method === 'DELETE') { res.writeHead(200, { 'Mcp-Session-Id': sessionId }); res.end(); return; }
-    if (req.method !== 'POST') { res.writeHead(405); res.end('method not allowed'); return; }
+    if (req.method === 'DELETE') { res.writeHead(200, { 'Mcp-Session-Id': sessionId, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end(); return; }
+    if (req.method !== 'POST') { res.writeHead(405, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end('method not allowed'); return; }
     let body = '';
+    let bodyBytes = 0;
     let tooLarge = false;
     // A letter whose UTF-8 bytes straddle two packets became two U+FFFD with `body += chunk` (2026-11-07).
     req.setEncoding('utf8');
-    req.on('data', (chunk) => { if (tooLarge) return; body += chunk; if (body.length > MAX_LINE_CHARS) { tooLarge = true; res.writeHead(413); res.end('payload too large'); req.destroy(); } });
+    req.on('data', (chunk) => { if (tooLarge) return; bodyBytes += Buffer.byteLength(chunk, 'utf8'); if (bodyBytes > MAX_LINE_BYTES || body.length + chunk.length > MAX_LINE_CHARS) { tooLarge = true; res.writeHead(413, { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end('payload too large'); req.destroy(); return; } body += chunk; });
     req.on('end', async () => {
       if (tooLarge) return;
       let parsed;
-      try { parsed = JSON.parse(body); } catch (_) { res.writeHead(400, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } })); return; }
+      try { parsed = JSON.parse(body); } catch (_) { res.writeHead(400, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32700, message: 'Parse error' } })); return; }
       const batch = Array.isArray(parsed);
+      if (batch && (parsed.length < 1 || parsed.length > 64)) { res.writeHead(400, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' }); res.end(JSON.stringify({ jsonrpc: '2.0', id: null, error: { code: -32600, message: 'Invalid batch size' } })); return; }
       const messages = batch ? parsed : [parsed];
       const replies = [];
       for (const msg of messages) {
@@ -6133,7 +6196,7 @@ function startHttpTransport(port) {
         }));
       }
       const results = (await Promise.all(replies)).filter(Boolean);
-      const headers = { 'Mcp-Session-Id': sessionId };
+      const headers = { 'Mcp-Session-Id': sessionId, 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff', 'Referrer-Policy': 'no-referrer' };
       if (!results.length) { res.writeHead(202, headers); res.end(); return; }
       headers['Content-Type'] = 'application/json';
       res.writeHead(200, headers);

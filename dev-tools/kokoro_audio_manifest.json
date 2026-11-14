@@ -2,6 +2,13 @@
  "engine": "kokoro-js@1.2.1 / Kokoro-82M-v1.0-ONNX q8",
  "voice": "af_heart",
  "generated": "2026-08-23",
+ "revoiced": {
+  "date": "2026-11-14T10:02:06.610Z",
+  "scope": "word_audio_kokoro_bank.json (category \"words\") only; the gap-bank clips (instructions, isolation, phonemes) are unchanged",
+  "engine": "kokoro-js@1.2.1 / onnx-community/Kokoro-82M-v1.0-ONNX (fp32, wasm)",
+  "post": "carrier \"Here is the word... {word}.\" then \"The word is... {word}.\" cut at the pause before the word (the bare word when no clean cut) + trim(0.3% peak, 60ms/120ms margins, 5ms/30ms fades) + loudness -20 LUFS over the word (BS.1770, true peak <= -1.5 dBTP) + ffmpeg libopus 64kbps mono webm",
+  "note": "The \"words\" entries below describe the 2026-08-23 clips (sha1, bytes, durMs, peak): those clips were replaced by a re-voicing with the owner-approved recipe. See word_audio_kokoro_bank.json _meta.revoiced."
+ },
  "cull": {
   "decidedBy": "Claude (Fable), per Aaron 2026-08-23; pending editorial review by Howorth/Wickerd",
   "criteria": "oral-vocabulary validity for K-2 phonemic awareness; see cull.mjs header",

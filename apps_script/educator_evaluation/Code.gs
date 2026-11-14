@@ -539,6 +539,14 @@ function sealNotificationOperationEntry_(raw) {
   return payload;
 }
 
+function timingSafeHashEq_(a, b) {
+  var left = String(a || ''), right = String(b || '');
+  if (!left || left.length !== right.length) return false;
+  var diff = 0;
+  for (var i = 0; i < left.length; i++) diff |= left.charCodeAt(i) ^ right.charCodeAt(i);
+  return diff === 0;
+}
+
 function readNotificationOperationJournal_() {
   var props = PropertiesService.getScriptProperties();
   if (props.getProperty('EE_NOTIFICATION_RECOVERY_MANUAL_REQUIRED')) return { version: 1, entries: [], ambiguous: true, unreadable: true };
@@ -550,12 +558,12 @@ function readNotificationOperationJournal_() {
     var entries = [], seen = {};
     for (var i = 0; i < parsed.entries.length; i++) {
       var sealed = sealNotificationOperationEntry_(parsed.entries[i]);
-      if (sealed.integrityHash !== String(parsed.entries[i].integrityHash || '') || seen[sealed.key]) throw new Error('entry integrity');
+      if (!timingSafeHashEq_(sealed.integrityHash, String(parsed.entries[i].integrityHash || '')) || seen[sealed.key]) throw new Error('entry integrity');
       seen[sealed.key] = true;
       entries.push(sealed);
     }
     var at = optionalTimestamp_(parsed.at), expected = hashText_(JSON.stringify({ version: 1, at: at, entries: entries }));
-    if (!at || expected !== String(parsed.integrityHash || '')) throw new Error('journal integrity');
+    if (!at || !timingSafeHashEq_(expected, String(parsed.integrityHash || ''))) throw new Error('journal integrity');
     return { version: 1, at: at, entries: entries, ambiguous: false, unreadable: false };
   } catch (journalErr) {
     try { props.setProperty('EE_NOTIFICATION_RECOVERY_MANUAL_REQUIRED', '1'); } catch (markerErr) {}
@@ -3667,11 +3675,11 @@ function readArtifactOperationJournal_() {
     var entries = [], seen = {};
     for (var i = 0; i < parsed.entries.length; i++) {
       var sealed = sealArtifactOperationEntry_(parsed.entries[i]);
-      if (sealed.integrityHash !== String(parsed.entries[i].integrityHash || '') || seen[sealed.key]) throw new Error('entry integrity');
+      if (!timingSafeHashEq_(sealed.integrityHash, String(parsed.entries[i].integrityHash || '')) || seen[sealed.key]) throw new Error('entry integrity');
       seen[sealed.key] = true; entries.push(sealed);
     }
     var at = optionalTimestamp_(parsed.at), expected = hashText_(JSON.stringify({ version: 1, at: at, entries: entries }));
-    if (!at || expected !== String(parsed.integrityHash || '')) throw new Error('journal integrity');
+    if (!at || !timingSafeHashEq_(expected, String(parsed.integrityHash || ''))) throw new Error('journal integrity');
     return { version: 1, at: at, entries: entries, ambiguous: false, unreadable: false };
   } catch (journalErr) {
     try { props.setProperty('EE_ARTIFACT_RECOVERY_MANUAL_REQUIRED', '1'); } catch (markerErr) {}
@@ -3735,7 +3743,7 @@ function artifactOperationJournalEntry_(kind, token, actor) {
     if (journal.entries[i].key === key) entry = journal.entries[i];
     else if (journal.entries[i].stage !== 'completed') throw artifactRecoveryRequiredError_();
   }
-  if (entry && (entry.reviewTokenHash !== hashText_(token) || entry.kind !== kind || entry.actorEmail !== actor.email)) throw eeError_('review_required', 'This artifact review is unavailable for the current administrator.');
+  if (entry && (!timingSafeHashEq_(entry.reviewTokenHash, hashText_(token)) || entry.kind !== kind || entry.actorEmail !== actor.email)) throw eeError_('review_required', 'This artifact review is unavailable for the current administrator.');
   if (entry && entry.stage === 'manual_review_required') throw eeError_('manual_recovery_required', 'This artifact operation is ambiguous and requires district IT review.');
   return entry;
 }

@@ -142,7 +142,20 @@ async function enforcePublicClientDiscoveryMetadata(
 function createStatelessHandler(env: PilotEnv) {
   const readiness = pilotReadiness(env);
   const config = readiness.configured ? getPilotConfig(env) : undefined;
-  const hostname = config ? new URL(config.origin).hostname : undefined;
+  let hostname = config ? new URL(config.origin).hostname : undefined;
+  if (!hostname && env.PUBLIC_ORIGIN) {
+    try {
+      const parsedOrigin = new URL(env.PUBLIC_ORIGIN);
+      const isLocal =
+        parsedOrigin.hostname === "localhost" ||
+        parsedOrigin.hostname === "127.0.0.1";
+      if (parsedOrigin.protocol === "https:" || isLocal) {
+        hostname = parsedOrigin.hostname;
+      }
+    } catch {
+      hostname = undefined;
+    }
+  }
   return createMcpHandler(createServer, {
     route: "/mcp",
     legacy: "stateless",

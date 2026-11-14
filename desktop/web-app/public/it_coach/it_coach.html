@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
 <title>AlloBot Screen Coach</title>
 <!--
   Standalone Screen Coach. Guides a person through ANY website they choose to
@@ -327,7 +328,7 @@
     return params.get('allo_bridge') || '';   // legacy: remove once builds have rolled
   })();
   function originFromUrl(url) {
-    try { var o = new URL(url).origin; return o && o !== 'null' ? o : ''; } catch (_) { return ''; }
+    try { var u = new URL(url); return (/^https?:$/i.test(u.protocol) && u.origin && u.origin !== 'null') ? u.origin : ''; } catch (_) { return ''; }
   }
   function isTrustedEducatorOpenerOrigin(origin) {
     try {

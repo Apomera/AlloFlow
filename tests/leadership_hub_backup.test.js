@@ -367,7 +367,7 @@ describe('the Apps Script itself (source pins — it cannot run in vitest)', () 
     expect(manifest.oauthScopes).toEqual(['https://www.googleapis.com/auth/drive.file']);
   });
   it('rejects without token, validates the payload format, and bounds size', () => {
-    expect(gs).toContain("String(data.token || '') !== token");
+    expect(gs).toContain('!lhbTimingSafeTokenEq(data.token, token)');
     expect(gs).toContain("payload.format !== LHB_FORMAT");
     expect(gs).toContain('LHB_MAX_BYTES');
   });

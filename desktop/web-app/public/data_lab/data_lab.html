@@ -56,8 +56,18 @@
   }
   window.applyAlloFlowTheme = applyAlloFlowTheme;
   applyAlloFlowTheme(new URLSearchParams(window.location.search).get('theme'));
+  function isTrustedThemeOrigin(origin) {
+    if (!origin || origin === 'null' || origin === window.location.origin) return true;
+    try {
+      var u = new URL(origin), h = u.hostname.toLowerCase();
+      if (u.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')) return true;
+      if (u.protocol !== 'https:') return false;
+      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(h) || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google') || h.endsWith('.run.app');
+    } catch (_) { return false; }
+  }
   window.addEventListener('message', function (event) {
-    if (window.opener && event.source !== window.opener) return;
+    if (!window.opener || event.source !== window.opener) return;
+    if (!isTrustedThemeOrigin(event.origin)) return;
     var data = event && event.data;
     if (!data || data.type !== 'alloflow-theme-change') return;
     applyAlloFlowTheme(data.theme);
@@ -1080,10 +1090,20 @@
   }
 
   // ── Opener handshake (AI bridge, Video Studio pattern) ──────────────
+  function isTrustedDataLabOpener(origin) {
+    if (!origin || origin === 'null' || origin === window.location.origin) return true;
+    try {
+      var u = new URL(origin), h = u.hostname.toLowerCase();
+      if (u.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')) return true;
+      if (u.protocol !== 'https:') return false;
+      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(h) || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google') || h.endsWith('.run.app');
+    } catch (_) { return false; }
+  }
   function toOpener(payload) {
     try {
-      var targetOrigin = openerOrigin && openerOrigin !== 'null' ? openerOrigin : '*';
-      if (window.opener && !window.opener.closed) { window.opener.postMessage(payload, targetOrigin); return true; }
+      var isHandshake = !!(payload && (payload.type === 'allodatalab-hello' || payload.type === 'allodatalab-closed'));
+      var targetOrigin = (openerOrigin && openerOrigin !== 'null') ? openerOrigin : ((isHandshake || openerOk) ? '*' : '');
+      if (targetOrigin && window.opener && !window.opener.closed) { window.opener.postMessage(payload, targetOrigin); return true; }
     } catch (_) {}
     return false;
   }
@@ -1091,10 +1111,10 @@
   window.addEventListener('message', function (event) {
     var data = event && event.data;
     if (!data || typeof data.type !== 'string') return;
-    var fromOpener = !!(window.opener && event.source === window.opener);
+    var fromOpener = !!(window.opener && event.source === window.opener && isTrustedDataLabOpener(event.origin));
     if (data.type === 'allodatalab-ready') {
       if (!fromOpener) return;
-      openerOrigin = event.origin || openerOrigin;
+      if (event.origin && event.origin !== 'null') openerOrigin = event.origin;
       openerOk = true;
       openerClosed = false;
       aiAvailable = Boolean(data.ai);

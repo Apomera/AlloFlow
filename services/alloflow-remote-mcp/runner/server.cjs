@@ -849,9 +849,12 @@ async function readJsonBody(req) {
 function bearerMatches(req, expectedToken) {
   const header = req.headers.authorization;
   if (typeof header !== 'string' || !header.startsWith('Bearer ')) return false;
-  const received = Buffer.from(header.slice(7), 'utf8');
-  const expected = Buffer.from(expectedToken, 'utf8');
-  return received.length === expected.length && crypto.timingSafeEqual(received, expected);
+  if (typeof expectedToken !== 'string' || !expectedToken) return false;
+  const given = header.slice(7);
+  if (!given) return false;
+  const received = crypto.createHash('sha256').update(given, 'utf8').digest();
+  const expected = crypto.createHash('sha256').update(expectedToken, 'utf8').digest();
+  return crypto.timingSafeEqual(received, expected);
 }
 
 function parseAllowedHosts(value) {
@@ -2028,6 +2031,8 @@ function createRunnerServer(options = {}) {
         status: 'succeeded',
         result: pendingResult,
       });
+      await fsp.rm(files.taggedPdf, { force: true }).catch(() => {});
+      await fsp.rm(files.report, { force: true }).catch(() => {});
       return pendingResult;
     } finally {
       await fsp.rm(files.input, { force: true }).catch(() => {});
@@ -2132,6 +2137,11 @@ function createRunnerServer(options = {}) {
             : {}),
         },
       }).catch(() => {});
+      if (!terminal.retryable) {
+        const cleanupPaths = store.pathsFor(spec.jobId);
+        await fsp.rm(cleanupPaths.taggedPdf, { force: true }).catch(() => {});
+        await fsp.rm(cleanupPaths.report, { force: true }).catch(() => {});
+      }
       throw terminal;
     } finally {
       clearTimeout(deadlineTimer);
@@ -2185,6 +2195,10 @@ function createRunnerServer(options = {}) {
       status: 'cancelled',
       error: { code: 'job_cancelled', retryable: false },
     });
+    const cancelPaths = store.pathsFor(jobId);
+    await fsp.rm(cancelPaths.input, { force: true }).catch(() => {});
+    await fsp.rm(cancelPaths.taggedPdf, { force: true }).catch(() => {});
+    await fsp.rm(cancelPaths.report, { force: true }).catch(() => {});
     sendJson(res, 200, {
       schema: RUN_SCHEMA,
       jobId,

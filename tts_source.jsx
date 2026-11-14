@@ -876,7 +876,7 @@ let piperLoadPromise = null;
     // model is loaded or saved on this device (waking a saved model is not a
     // download). Other languages use Piper only when that language's model is
     // already loaded. Anything else returns null: the device voice reads.
-    const _studentOnDeviceVoice = async (fn, text, voiceName, speed, languageValue, signal, streaming) => {
+    const _studentOnDeviceVoice = async (fn, text, voiceName, speed, languageValue, signal, streaming, word) => {
         const voice = String(voiceName || '').trim();
         const provider = String((getAiUserConfig() || {}).ttsProvider || 'auto');
         if (!voice || voice.toLowerCase() === 'browser' || provider === 'off' || provider === 'browser') return null;
@@ -898,7 +898,7 @@ let piperLoadPromise = null;
                 const kokoro = window._kokoroTTS;
                 if (!kokoro || !kokoro.ready) return null;
                 const speakFn = streaming && typeof kokoro.speakStreaming === 'function' ? kokoro.speakStreaming : kokoro.speak;
-                const url = await speakFn.call(kokoro, localText, voice, speed, { signal });
+                const url = await speakFn.call(kokoro, localText, voice, speed, word === true ? { signal, word: true } : { signal });
                 if (url) note('student-on-device-kokoro');
                 return url || null;
             }
@@ -927,7 +927,7 @@ let piperLoadPromise = null;
         if (_studentCloudTtsOff()) {
             const studentOpts = (maxRetriesOrOpts && typeof maxRetriesOrOpts === 'object') ? maxRetriesOrOpts : {};
             const studentVoice = _resolveRequestedVoice(voiceName);
-            const onDeviceUrl = await _studentOnDeviceVoice('calltts', text, studentVoice, speed, languageArg || studentOpts.language, studentOpts.signal || null, false);
+            const onDeviceUrl = await _studentOnDeviceVoice('calltts', text, studentVoice, speed, languageArg || studentOpts.language, studentOpts.signal || null, false, studentOpts.word === true);
             return onDeviceUrl || _studentDeviceVoiceRoute('calltts', studentVoice, text);
         }
         const _geminiModel = GEMINI_MODELS?.tts;
@@ -942,6 +942,9 @@ let piperLoadPromise = null;
         // broad cache-clear operation. Keep the previous URL until replacement
         // synthesis succeeds; _cacheSet then revokes it atomically.
         var _forceRefresh = _callOpts.force === true;
+        // word: true = one word (a word list item, a word to hear): Kokoro voices it with
+        // its word recipe (said in a sentence and cut out); other text is unaffected.
+        var _kokoroWordOpts = (kokoroOptions) => (_callOpts.word === true ? Object.assign({}, kokoroOptions || {}, { word: true }) : kokoroOptions);
         maxRetries = Math.max(0, Math.min(2, Math.floor(Number(maxRetries) || 0)));
         // When the caller omits the language, resolve it from app state the
         // same way callTTSDirect does — defaulting to 'English' made Kokoro
@@ -949,7 +952,9 @@ let piperLoadPromise = null;
         var _rawLanguage = languageArg || _callOpts.language || getLeveledTextLanguage() || getCurrentUiLanguage() || 'English';
         var _speechProfile = _normalizeTtsSpeechProfile(_rawLanguage, _callOpts.locale, _callOpts.dialect);
         var _language = _speechProfile.baseLanguage;
-        var _isEnglish = /^english$/i.test(_language);
+        // Word Sounds passes its language as a code ('en', 'en-US'): English too,
+        // or a Kokoro lesson voice returned no clip for a word without one.
+        var _isEnglish = /^english$/i.test(_language) || /^en(?:[-_][a-z0-9]{1,8})*$/i.test(_language);
         var _signal = _callOpts.signal || null;
         // Shared by one passage's sentences: { engine: null | 'kokoro' | 'fallback' }.
         var _kokoroLock = _callOpts.kokoroLock && typeof _callOpts.kokoroLock === 'object' ? _callOpts.kokoroLock : null;
@@ -1040,7 +1045,7 @@ let piperLoadPromise = null;
             try {
                 if (!window._kokoroTTS?.ready) await ensureKokoroTts(undefined, _signal);
                 if (!window._kokoroTTS?.ready) return null;
-                const localUrl = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), voiceName, speed, { signal: _signal, force: _forceRefresh });
+                const localUrl = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), voiceName, speed, _kokoroWordOpts({ signal: _signal, force: _forceRefresh }));
                 if (!localUrl) return null;
                 return _emitResolvedProfile(localUrl,
                     _resolutionProfile('local', 'kokoro-browser', null, _resolvedKokoroVoice(voiceName), 1));
@@ -1297,7 +1302,7 @@ let piperLoadPromise = null;
                         let kokoroTimer = null;
                         try {
                             const url = await Promise.race([
-                                window._kokoroTTS.speak(localTtsText, kokoroVoice, speed, kokoroSpeakOptions),
+                                window._kokoroTTS.speak(localTtsText, kokoroVoice, speed, _kokoroWordOpts(kokoroSpeakOptions)),
                                 new Promise((_, reject) => {
                                     kokoroTimer = setTimeout(() => {
                                         kokoroTimedOut = true;
@@ -1431,7 +1436,7 @@ let piperLoadPromise = null;
                     // Generic callTTS callers consume a single URL, so return a
                     // complete WAV instead of silently dropping later stream chunks.
                     // AlloBot keeps using callTTSDirect + chainPlay for true streaming.
-                    const kokoroUrl = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), voiceName, speed, { signal: _signal, force: _forceRefresh });
+                    const kokoroUrl = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), voiceName, speed, _kokoroWordOpts({ signal: _signal, force: _forceRefresh }));
                     if (kokoroUrl) {
                         _routeNote('kokoro', _kokoroPreferred ? 'kokoro voice selected' : 'keyless reroute');
                         if (_kokoroLock && !_kokoroLock.engine) _kokoroLock.engine = 'kokoro';
@@ -1454,7 +1459,7 @@ let piperLoadPromise = null;
                 // the CURRENT utterance to the cloud or the browser voice —
                 // which is what a learner actually hears.
                 try {
-                    const wokenUrl = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), voiceName, speed, { signal: _signal, force: _forceRefresh });
+                    const wokenUrl = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), voiceName, speed, _kokoroWordOpts({ signal: _signal, force: _forceRefresh }));
                     if (wokenUrl) {
                         _routeNote('kokoro', 'engine woken from on-device model');
                         if (_kokoroLock && !_kokoroLock.engine) _kokoroLock.engine = 'kokoro';
@@ -1570,7 +1575,7 @@ let piperLoadPromise = null;
                     if (!window._kokoroTTS?.ready) await ensureKokoroTts(undefined, _signal);
                     if (window._kokoroTTS?.ready) {
                         const localVoice = KOKORO_VOICE_PREFIX.test(voiceName) ? voiceName : 'af_heart';
-                        const url = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), localVoice, speed, { signal: _signal, force: _forceRefresh });
+                        const url = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), localVoice, speed, _kokoroWordOpts({ signal: _signal, force: _forceRefresh }));
                         if (url) return _emitResolvedProfile(url, _resolutionProfile('local', 'kokoro-browser', null, localVoice, 1, { fallbackFrom: 'gemini' }));
                     }
                 } catch (error) { if (_isAbortError(error)) throw error; }

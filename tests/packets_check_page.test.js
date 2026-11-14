@@ -15,7 +15,8 @@ const NAME = 'AlloFlow Packets';
 const KEY = 'alloflow-packets-check/1';
 const ADDRESS = 'https://packets.test/site/packets-check.html';
 const RULE = "default-src 'none'; script-src 'self'; style-src 'self'; img-src 'self'; connect-src 'none'; form-action 'none'; base-uri 'none'";
-const SCRIPTS = ['packets-page.js', 'psychometric_math_probes.js', 'word_sounds_take_home_loader.js', 'packet_check_builder.js', 'packets-check.js'];
+// 2026-11-14 (T1/makers2): packets_verify_core.js, packets_reopen.js, packets_handoff.js and packets_zip.js added for reopen & batch .zip.
+const SCRIPTS = ['packets-page.js', 'psychometric_math_probes.js', 'word_sounds_take_home_loader.js', 'packet_check_builder.js', 'packets_verify_core.js', 'packets_reopen.js', 'packets_handoff.js', 'packets_zip.js', 'packets-check.js'];
 // Said on every page that makes or shows a check, word for word.
 const WHAT_A_CHECK_IS = 'A check to see how a student is doing. It is not for a grade and it is not a standardized test.';
 const PROOF_LINE = 'This page runs without AI. No account. Nothing you choose leaves your device.';
@@ -114,9 +115,10 @@ describe('the page as files', () => {
       }
     }
     expect(doc.querySelectorAll('form, iframe, object, embed, img, audio, video, base')).toHaveLength(0);
-    // The page's look is the shared stylesheet, and one more for the paper copy only. Nothing in either comes from elsewhere.
-    expect([...doc.querySelectorAll('link[rel="stylesheet"]')].map((link) => link.getAttribute('href'))).toEqual(['packets.css', PRINT_CSS]);
-    for (const file of ['packets.css', PRINT_CSS]) expect(read(file), file).not.toMatch(/@import|url\(|@font-face/i);
+    // The page's look is the shared stylesheet, packets-make.css, and one more for the paper copy only. Nothing in them comes from elsewhere.
+    // 2026-11-14 (T1/makers2): packets-make.css added alongside packets.css and PRINT_CSS.
+    expect([...doc.querySelectorAll('link[rel="stylesheet"]')].map((link) => link.getAttribute('href'))).toEqual(['packets.css', 'packets-make.css', PRINT_CSS]);
+    for (const file of ['packets.css', 'packets-make.css', PRINT_CSS]) expect(read(file), file).not.toMatch(/@import|url\(|@font-face/i);
   });
 
   it('carries the rule that tells the browser to refuse everything else, before anything is loaded', () => {
@@ -132,24 +134,29 @@ describe('the page as files', () => {
     expect(doc.querySelector('meta[name="referrer"]').getAttribute('content')).toBe('no-referrer');
   });
 
-  it('loads five scripts by relative address and nothing from the shared site assets', () => {
+  it('loads nine scripts by relative address and nothing from the shared site assets', () => {
     expect([...parse(PAGE).querySelectorAll('script')].map((script) => script.getAttribute('src'))).toEqual(SCRIPTS);
     expect(read(PAGE)).not.toMatch(/shared\.css|site\.js|lucide|fonts\.g|unpkg|promo/i);
     const source = read(SCRIPT);
     expect(source).not.toMatch(/fetch\s*\(|XMLHttpRequest|WebSocket|EventSource|sendBeacon|\beval\s*\(|new\s+Function|\bimport\s*\(|\.\s*cookie\b|getUserMedia|serviceWorker|\bcaches\b|indexedDB|sessionStorage/);
-    // It never touches the address of the page: nothing typed can end up in a link or in the history.
-    expect(source).not.toMatch(/\blocation\b|\bhistory\b|pushState|replaceState|searchParams/);
+    // 2026-11-14 (T1/makers2): takeHanded() reads location.hash === '#open-file' and clears only that hash via replaceState;
+    // nothing typed can end up in a link or in the history.
+    const addrLines = source.split('\n').filter((l) => !l.trim().startsWith('//') && /\blocation\b|\bhistory\b|pushState|replaceState|searchParams/.test(l));
+    expect(addrLines).toEqual([
+      "    if (!reopenKit || !handoff || typeof handoff.take !== 'function' || window.location.hash !== handoff.HASH) return;",
+      "    try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}",
+    ]);
     // It makes nothing that loads: the only elements it creates are text, the choices, the sheets of the paper copy, and
     // the link that hands over the file.
     const made = new Set([...source.matchAll(/\b(?:el|createElement)\('(\w+)'/g)].map((m) => m[1]));
     expect([...made].sort()).toEqual(['a', 'dd', 'dt', 'input', 'label', 'li', 'ol', 'p', 'section', 'span']);
     expect(source.match(/createElement\(/g)).toHaveLength(2);
     expect(source).not.toMatch(/innerHTML|outerHTML|insertAdjacentHTML|document\.write|\.src\s*=|setAttribute\('(?:src|action|srcset)'/);
-    // The one address it sets is the preview page with the built file's own blob address after the #.
-    expect(source.match(/setAttribute\('href'[^)]*\)/g)).toEqual(["setAttribute('href', TRY_PAGE + '#' + fileUrl)"]);
+    // 2026-11-14 (T1/makers2): sets href only for the preview page blob and the reopen-page link to another maker on this site.
+    expect(source.match(/setAttribute\('href'[^)]*\)/g)).toEqual(["setAttribute('href', TRY_PAGE + '#' + fileUrl)", "setAttribute('href', page.href)"]);
     expect(source.match(/\.href\s*=[^;]*;/g)).toEqual(['.href = url;']);
     // The one thing it keeps is one key in this browser.
-    expect(source.match(/localStorage\.\w+\([^)]*/g)).toEqual(['localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, check: state.check, grades: state.grades, version: state.version,\n        problems: state.problems, title: state.title, time: state.time, skip: state.skip }',
+    expect(source.match(/localStorage\.\w+\([^)]*/g)).toEqual(['localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, check: state.check, grades: state.grades, version: state.version,\n        problems: state.problems, title: state.title, readyTitle: state.readyTitle, time: state.time, skip: state.skip }',
       "localStorage.getItem(STORE_KEY", 'localStorage.removeItem(STORE_KEY']);
     expect(source).toContain("var STORE_KEY = '" + KEY + "';");
     // The problem sets come from the globals the app's own file sets, under the names the builder asks for.
@@ -256,17 +263,18 @@ describe('the page as files', () => {
     expect([...doc.querySelectorAll('footer a')].map((link) => link.textContent)).toEqual(['More from AlloFlow']);
     expect([...doc.querySelectorAll('link[rel="icon"]')].map((link) => link.getAttribute('href'))).toEqual(['packets-mark.svg']);
     // A heading the page moves focus to is read out and shows no box; controls keep their outline.
-    for (const id of ['step-1-title', 'step-2-title', 'step-3-title', 'after-save']) expect(doc.getElementById(id).getAttribute('tabindex'), id).toBe('-1');
+    for (const id of ['step-1-title', 'step-2-title', 'step-3-title', 'after-save', 'reopen-note']) expect(doc.getElementById(id).getAttribute('tabindex'), id).toBe('-1');
     for (const node of doc.querySelectorAll('[tabindex="-1"]')) expect(node.matches('button, a, input, select, textarea, summary'), node.id).toBe(false);
     // Messages are announced: a reason that stops a step is an alert, and progress is a status.
-    for (const id of ['step-1-problem', 'step-2-problem']) expect(doc.getElementById(id).getAttribute('role'), id).toBe('alert');
-    for (const id of ['form-line', 'own-line', 'code-line', 'making-said', 'forget-said']) expect(doc.getElementById(id).getAttribute('role'), id).toBe('status');
+    for (const id of ['step-1-problem', 'step-2-problem', 'batch-problem']) expect(doc.getElementById(id).getAttribute('role'), id).toBe('alert');
+    for (const id of ['form-line', 'own-line', 'code-line', 'making-said', 'forget-said', 'code-name-said', 'batch-said']) expect(doc.getElementById(id).getAttribute('role'), id).toBe('status');
     // One primary button on each step; on a phone it takes the full width (packets.css).
     for (const step of doc.querySelectorAll('section.sheet')) expect(step.querySelectorAll('.btn-primary').length, step.id).toBe(1);
     expect(read('packets.css')).toMatch(/@media \(max-width: 29\.99rem\) \{\s*\.actions \.btn-primary \{ flex: 1 1 100%; \}/);
     expect(read('packets.css')).toMatch(/prefers-reduced-motion/);
-    // Every class the page and its script use is one the shared stylesheet has, or (the paper copy) the print stylesheet.
-    const css = read('packets.css') + read(PRINT_CSS);
+    // Every class the page and its script use is one the shared stylesheet, packets-make.css, or (the paper copy) the print stylesheet has.
+    // 2026-11-14 (T1/makers2): packets-make.css holds reopen, batch and code-box styles; about-page also names code names.
+    const css = read('packets.css') + read('packets-make.css') + read(PRINT_CSS);
     const used = new Set([...doc.querySelectorAll('[class]')].flatMap((node) => [...node.classList]));
     for (const quoted of read(SCRIPT).match(/el\('\w+', '[\w -]+'/g) || []) for (const name of /, '([\w -]+)'/.exec(quoted)[1].split(' ')) used.add(name);
     for (const name of [...used, 'is-on', 'is-done', 'is-ok', 'is-out', 'w', 's']) expect(css.includes('.' + name), 'class ' + name).toBe(true);
@@ -285,7 +293,7 @@ describe('the page as files', () => {
     expect([...about.querySelectorAll('h2')].map((heading) => heading.textContent)).toEqual(['What this page keeps', 'Where the checks come from']);
     // The button that forgets the choices is there, and only there.
     expect([...about.querySelectorAll('button')].map((button) => button.id)).toEqual(['forget']);
-    expect(squash(about.textContent)).toContain('The teacher code is never kept: it is gone when you close or reload this page.');
+    expect(squash(about.textContent)).toContain("The teacher code and a student's code name are never kept: they are gone when you close or reload this page.");
     // The teacher code is open on step 2 (2026-11-12), not behind a disclosure: one plain line says why to set one, then what it is
     // and what it is not. What the line says is the file's own behavior: with no code, the finish screen has a button for the teacher.
     const code = doc.getElementById('code-box');
@@ -293,10 +301,9 @@ describe('the page as files', () => {
     expect(code.querySelector('details, summary')).toBeNull();
     expect(code.closest('#step-2')).toBeTruthy();
     expect(doc.querySelector('label[for="f-code"]').textContent).toBe('Teacher code (optional)');
-    // Re-pinned 2026-11-12: without a code the screen at the end of the file shows only the score.
-    expect(doc.getElementById('code-why').textContent).toBe('Set one if you can. Without a code, the screen at the end shows only the score. With a code, it also shows each answer.');
-    expect(doc.getElementById('code-about').textContent).toBe('The answers screen inside the file opens only with this code. It is a lock on the screen, not secret writing.');
-    expect(doc.getElementById('f-code').getAttribute('aria-describedby')).toBe('code-why code-about code-hint');
+    // Re-pinned 2026-11-14 (T1/makers2): #code-why and #code-about were merged into one concise #code-why hint.
+    expect(doc.getElementById('code-why').textContent).toBe('Without a code, the screen at the end shows only the score. With a code, it also shows each answer. It is a lock on the screen, not secret writing.');
+    expect(doc.getElementById('f-code').getAttribute('aria-describedby')).toBe('code-why code-hint');
     expect(doc.getElementById('f-code').getAttribute('autocomplete')).toBe('off');
     expect(doc.getElementById('f-code').getAttribute('maxlength')).toBe('64');
     // The code is hidden as it is typed, and the box is laid out as the page's text boxes are.
@@ -334,17 +341,19 @@ describe('the page as files', () => {
 
   it('the sizes and the count of files it states are the real ones', () => {
     const doc = parse(PAGE);
-    // The page itself, the two stylesheets, the icon and the scripts.
+    // The page itself, the three stylesheets, the icon and the nine scripts.
+    // 2026-11-14 (T1/makers2): 14 files in all, and total script size is ~0.86 MB ("about 0.9 MB").
     const files = new Set([PAGE, ...[...doc.querySelectorAll('link[href], script[src]')].map((node) => node.getAttribute('href') || node.getAttribute('src'))]);
-    expect(files.size).toBe(9);
-    expect(doc.querySelectorAll('link[rel="stylesheet"]')).toHaveLength(2);
-    expect(squash(doc.querySelector('details.proof').textContent)).toContain('This page loads nine files, all from this site: the page itself, two stylesheets (one is only for printing), five scripts and the icon in the browser tab.');
+    expect(files.size).toBe(14);
+    expect(doc.querySelectorAll('link[rel="stylesheet"]')).toHaveLength(3);
+    expect(squash(doc.querySelector('details.proof').textContent)).toContain('This page loads fourteen files, all from this site: the page itself, three stylesheets (one is only for printing), nine scripts and the icon in the browser tab.');
     const megabytes = SCRIPTS.reduce((sum, file) => sum + statSync(file).size, 0) / 1e6;
     // Re-pinned 2026-11-12 from about 0.5 MB: the loader carries Hear all and the two picture activities of vocabulary files.
     // Re-pinned 2026-11-13 (release b) from about 0.6 MB: the engine carries two-tab, time-up-away and failed-sound handling.
-    expect(doc.getElementById('loading').textContent).toContain('Getting the problem sets, about 0.7 MB.');
-    expect(megabytes).toBeGreaterThan(0.65);
-    expect(megabytes).toBeLessThan(0.8);
+    // Re-pinned 2026-11-14 (T1/makers2) from about 0.7 MB: packets_verify_core.js, packets_reopen.js, packets_handoff.js and packets_zip.js added (~0.86 MB total).
+    expect(doc.getElementById('loading').textContent).toContain('Getting the problem sets, about 0.9 MB.');
+    expect(megabytes).toBeGreaterThan(0.8);
+    expect(megabytes).toBeLessThan(0.95);
     // "About 110 KB": every ready check, and a list of the teacher's own, with and without a teacher code.
     // Re-pinned 2026-11-12 from about 90 KB: every file now carries the reading tools (about 17 KB in a check).
     // Re-pinned 2026-11-12 from about 110 KB: every file carries Hear all and the reading tool "Read the choices" (hearAllIn),
@@ -456,9 +465,10 @@ const scored = (lesson) => lesson.blocks[0].items.filter((p) => !p.practice);
 
 describe('step 1: the four cards, held against the problem sets', () => {
   // The text of each card, as decided. The facts in it are worked out again below from psychometric_math_probes.json.
+  // 2026-11-14 (T1/makers2): the Missing Number example uses non-breaking spaces (\u00A0) so "__ + 8 = 14" never wraps mid-equation.
   const CARDS = [
     ['quantity_discrimination', 'Quantity Discrimination', 'Tap the bigger of two numbers.', '1 minute. Kindergarten and grade 1.'],
-    ['missing_number', 'Missing Number', 'Type the number that is missing from a number sentence, like __ + 8 = 14.', '2 minutes. Kindergarten to grade 2.'],
+    ['missing_number', 'Missing Number', 'Type the number that is missing from a number sentence, like __\u00a0+\u00a08\u00a0=\u00a014.', '2 minutes. Kindergarten to grade 2.'],
     ['math_computation', 'Math Fluency', 'Add, subtract, multiply or divide, a different mix for each grade.', '2 minutes. Kindergarten to grade 5. Scored by digits correct per minute.'],
     ['own', 'My own problems', 'Type the problems. Every student gets the same ones.', ''],
   ];
@@ -500,9 +510,9 @@ describe('step 1: the four cards, held against the problem sets', () => {
     }
     expect(PC.MEASURES.math_computation.unit).toBe('digits_correct_per_minute');
     expect([PC.MEASURES.quantity_discrimination.unit, PC.MEASURES.missing_number.unit]).toEqual(['items_correct', 'items_correct']);
-    // The example on the Missing Number card is a real problem: the first one of grade 1, version A.
+    // The example on the Missing Number card is a real problem: the first one of grade 1, version A (with non-breaking spaces).
     expect(BANK.MISSING_NUMBER_PROBES['1'].A.problems[0].display).toBe('__ + 8 = 14');
-    expect(shown.missing_number.line).toContain('like ' + BANK.MISSING_NUMBER_PROBES['1'].A.problems[0].display + '.');
+    expect(shown.missing_number.line).toContain('like ' + BANK.MISSING_NUMBER_PROBES['1'].A.problems[0].display.replace(/ /g, '\u00a0') + '.');
     // Quantity Discrimination is two numbers and the bigger one is the answer.
     for (const row of formsOf('quantity_discrimination')) for (const p of row.data.problems) expect(p.answer).toBe(Math.max(p.left, p.right));
     // Math Fluency: all four operations across the grades, and no two grades with the same mix.
@@ -623,8 +633,9 @@ describe('a ready check, from the choice to a file that runs', () => {
       const data = setsOf(id)[grade][version], manifest = manifestOf(html);
       expect(manifest.packet).toMatchObject({ id: PC.MEASURES[id].slug + '-g' + grade.toLowerCase(), form: version, mode: 'check' });
       expect(manifest.check).toMatchObject({ items: data.problems.length, practiceItems: PC.MEASURES[id].practice.length, timeLimitS: data.timeLimit, teacherCode: 'none' });
-      expect(manifest.title).toBe(PC.MEASURES[id].name + ' check (' + grade + version + ')');
-      // The summary: check, grade, version, problems, time, practice first, the teacher screen and the file with its size.
+      // 2026-11-14 (T1/makers2): PC.formTitle writes out the grade and version, and Title sits in summary-rows on step 3.
+      expect(manifest.title).toBe(PC.formTitle(PC.MEASURES[id].name, grade, version));
+      // The summary: check, grade, version, problems, time, practice first, the teacher screen, title and the file with its size.
       const bytes = page.files[page.files.length - 1].size;
       expect(page.files[page.files.length - 1].type).toBe('text/html');
       // Re-pinned 2026-11-12 from 110000, with the page note ("About 120 KB", above): Hear all, and the Untimed and keyboard fixes of the player.
@@ -637,10 +648,11 @@ describe('a ready check, from the choice to a file that runs', () => {
       expect([id, noun]).toEqual([id, id === 'quantity_discrimination' ? 'question' : 'problem']);
       expect(page.$('summary-facts').textContent).toBe('25 ' + noun + 's. ' + time + '. ' + size + '.');
       const rows = page.rows();
-      expect(Object.keys(rows)).toEqual(['Check', 'Grade', 'Version', Nouns, 'Time', 'Practice first', 'Teacher screen', 'File']);
+      expect(Object.keys(rows)).toEqual(['Check', 'Grade', 'Version', Nouns, 'Time', 'Practice first', 'Teacher screen', 'Title', 'File']);
       expect(rows.Check).toBe(PC.MEASURES[id].name);
       expect(rows.Grade).toBe(gradeName(grade));
       expect(rows.Version).toBe(version);
+      expect(rows.Title).toBe(manifest.title);
       expect(rows[Nouns]).toMatch(new RegExp('^25\\. (?:[A-Z][a-z, ]+\\. )?Numbers up to \\d+\\. ' + (lesson.check.allowSkip ? 'The student may skip a ' + noun + '\\.' : 'There is no skip button\\.') + '$'));
       expect(rows.Time).toBe(time + '. The clock does not stop and does not give time back. '
         + (manifest.check.scoreUnit === 'digits_correct_per_minute' ? 'The score is digits correct per minute.' : 'The score is the number of ' + noun + 's correct.'));
@@ -722,7 +734,8 @@ describe('my own problems', () => {
     expect(page.chosen('time')).toBe('120');
     expect(page.$('f-skip').checked).toBe(true);
     expect(squash(page.$('f-skip').closest('label').textContent)).toBe('Students may skip a problem');
-    expect(page.$('title-hint').textContent).toBe('The student sees it at the top of the file. Left empty, it is "Math check".');
+    // 2026-11-14 (T1/makers2): #title-hint sits on step 3 now and names the results file too; drawTitle() fills the fallback on step 3.
+    expect(page.$('title-hint').textContent).toBe("The student sees it at the top of the file. The results file's name starts with it.");
     page.set('f-problems', text);
     await page.until(() => page.typed().length === 6, 'the six problems');
     const minus = String.fromCharCode(0x2212), times = String.fromCharCode(0xD7), divide = String.fromCharCode(0xF7);
@@ -732,6 +745,7 @@ describe('my own problems', () => {
     page.set('f-title', 'Facts to 20');
     page.$('next-2').click();
     expect(page.seen('step-3')).toBe(true);
+    expect(page.$('title-hint').textContent).toBe('The student sees it at the top of the file. The results file\'s name starts with it. Left empty, it is "Math check".');
     await page.made();
     expect(page.seen('summary')).toBe(true);
     // The same bytes the builder gives for the same typed text.
@@ -742,10 +756,10 @@ describe('my own problems', () => {
     expect(manifestOf(html)).toMatchObject({ title: 'Facts to 20', packet: { form: 'custom' }, check: { measure: 'math_dcpm', scoreUnit: 'digits_correct_per_minute', items: 6, practiceItems: 0, timeLimitS: 120 } });
     const size = Math.round(page.files[page.files.length - 1].size / 1000) + ' KB';
     expect(page.$('summary-facts').textContent).toBe('6 problems. 2 minutes. ' + size + '.');
-    expect(page.rows()).toEqual({ Check: 'My own problems', Title: 'Facts to 20',
+    expect(page.rows()).toEqual({ Check: 'My own problems',
       Problems: '6: 7 + 8, 12 ' + minus + ' 5, 6 ' + times + ' 4, 20 ' + divide + ' 4, 9 ' + divide + ' 3, 4 ' + times + ' 4. The student may skip a problem.',
       Time: '2 minutes. The clock does not stop and does not give time back. The score is digits correct per minute.', 'Practice first': 'None.',
-      'Teacher screen': 'Shows only the score, not each answer. No teacher code is set.', File: 'facts-to-20.html, ' + size + '.' });
+      'Teacher screen': 'Shows only the score, not each answer. No teacher code is set.', Title: 'Facts to 20', File: 'facts-to-20.html, ' + size + '.' });
     page.$('save').click();
     expect(page.downloads).toEqual([{ name: 'facts-to-20.html', href: 'blob:https://packets.test/' + page.files.length }]);
     page.wordsAreRight();
@@ -890,8 +904,9 @@ describe('the teacher code', () => {
     page.$('next-1').click();
     page.choose('grade', '1');
     // The box is on screen at step 2, with nothing to open first.
+    // 2026-11-14 (T1/makers2): #code-line is empty when no code is typed because #code-why above already states what no code means.
     expect(page.seen('code-box') && page.seen('f-code')).toBe(true);
-    expect(page.$('code-line').textContent).toBe('No code: the screen at the end shows only the score, not each answer.');
+    expect(page.$('code-line').textContent).toBe('');
     page.set('f-code', 'abc');
     expect(page.$('code-line').textContent).toBe('The teacher code needs 4 or more characters.');
     expect(() => direct('quantity_discrimination', '1', 'A', { teacherCode: 'abc' })).toThrow('The teacher code needs 4 or more characters.');
@@ -961,8 +976,9 @@ describe('the teacher code', () => {
     expect(page.seen('after-code')).toBe(true);
     expect(page.$('after-code').textContent).toBe('The answers screen inside the file opens with your teacher code. This page has not kept the code.');
     // The code is in no storage, no address, no title and no text of the page: only in its box, until the page closes.
+    // 2026-11-14 (T1/makers2): stored state also includes readyTitle: ''.
     expect(page.kept()).not.toContain(CODE);
-    expect(JSON.parse(page.w.localStorage.getItem(KEY))).toEqual({ v: 1, check: 'own', grades: {}, version: '', problems: '2+2, 3+3', title: '', time: 120, skip: true });
+    expect(JSON.parse(page.w.localStorage.getItem(KEY))).toEqual({ v: 1, check: 'own', grades: {}, version: '', problems: '2+2, 3+3', title: '', readyTitle: '', time: 120, skip: true });
     expect(page.w.sessionStorage.length).toBe(0);
     expect(page.d.cookie).toBe('');
     expect(page.w.location.href).toBe(ADDRESS);
@@ -981,7 +997,7 @@ describe('the teacher code', () => {
     expect(again.$('f-code').value).toBe('');
     again.$('next-1').click();
     expect(again.$('f-problems').value).toBe('2+2, 3+3');
-    expect(again.$('code-line').textContent).toBe('No code: the screen at the end shows only the score, not each answer.');
+    expect(again.$('code-line').textContent).toBe('');
     again.dom.window.close();
 
     // In the file: the answers screen has no open button; it asks for the code, refuses a wrong one and opens with the right one.
@@ -1081,7 +1097,8 @@ describe('what the page keeps, and how it copes', () => {
     page.choose('time', '300');
     page.$('f-skip').click();
     await page.until(() => page.typed().length === 1, 'the one problem');
-    const kept = { v: 1, check: 'own', grades: { math_computation: '4' }, version: 'B', problems: '6x7', title: 'Sixes', time: 300, skip: false };
+    // 2026-11-14 (T1/makers2): stored state includes readyTitle: '', and f-title is filled when moving to step 3.
+    const kept = { v: 1, check: 'own', grades: { math_computation: '4' }, version: 'B', problems: '6x7', title: 'Sixes', readyTitle: '', time: 300, skip: false };
     expect(JSON.parse(page.w.localStorage.getItem(KEY))).toEqual(kept);
     expect(Object.keys(page.w.localStorage)).toEqual([KEY]);
     expect(page.d.cookie).toBe('');
@@ -1095,8 +1112,11 @@ describe('what the page keeps, and how it copes', () => {
     expect(next.seen('step-1')).toBe(true);
     expect(next.chosen('check')).toBe('own');
     next.$('next-1').click();
-    expect([next.$('f-problems').value, next.$('f-title').value, next.chosen('time'), next.$('f-skip').checked]).toEqual(['6x7', 'Sixes', '300', false]);
+    expect([next.$('f-problems').value, next.chosen('time'), next.$('f-skip').checked]).toEqual(['6x7', '300', false]);
     expect(next.typed()).toEqual([[true, '6 ' + String.fromCharCode(0xD7) + ' 7', 'Ready. The answer is 42.']]);
+    next.$('next-2').click();
+    expect(next.$('f-title').value).toBe('Sixes');
+    next.$('back-3').click();
     next.$('back-2').click();
     next.choose('check', 'math_computation');
     next.$('next-1').click();
@@ -1170,7 +1190,8 @@ const signed = (text) => String(text).replace(/(^|\s)-(?=\s|\d)/g, (all, lead) =
 function fileItems(html) {
   const lesson = lessonOf(html), salt = lesson.check.salt;
   let n = 0;
-  return lesson.blocks[0].items.map((item) => ({ practice: !!item.practice, label: item.practice ? 'Sample' : String(++n), word: signed(item.word),
+  // 2026-11-14 (T1/makers2): the paper copy calls ungraded items "Practice" (matching the screen's "Practice 1 of 1"), not "Sample".
+  return lesson.blocks[0].items.map((item) => ({ practice: !!item.practice, label: item.practice ? 'Practice' : String(++n), word: signed(item.word),
     answer: CODEC.unscramble(item.key, salt, item.id), printed: item.display != null && !/_{2,}/.test(item.display) ? signed(item.word) + ' = __' : signed(item.word) }));
 }
 // One printed item, read back from what is on the paper: its label and the problem its boxes show.
@@ -1219,14 +1240,15 @@ describe('the paper copy', () => {
     // The caution says who would compare the two, and what to do until then (2026-11-12).
     expect(paper.querySelector('.paper-caution').textContent).toBe('Scores on paper and on screen may differ. The AlloFlow team has not yet compared them. Until it has, keep paper scores and screen scores apart.');
     expect(paper.querySelector('.paper-keep').textContent).toBe('For the teacher. Keep this page away from the student.');
-    expect([...paper.querySelectorAll('h3')].map((node) => node.textContent)).toEqual(['Samples. These do not count.', 'Start when your teacher says.', 'How to give it', 'How to score it: the same way the file does', 'Answers']);
-    // One button, beside saving the file, with a line that says what it prints. No settings.
+    // 2026-11-14 (T1/makers2): paper copy uses "Practice. These do not count." and step 3 now holds title, code name and batch .zip inputs.
+    expect([...paper.querySelectorAll('h3')].map((node) => node.textContent)).toEqual(['Practice. These do not count.', 'Start when your teacher says.', 'How to give it', 'How to score it: the same way the file does', 'Answers']);
+    // One button, beside saving the file, with a line that says what it prints.
     const actions = doc.getElementById('save').parentNode;
     expect([...actions.querySelectorAll('button, a')].map((node) => node.id)).toEqual(['back-3', 'try', 'print', 'save']);
     const button = doc.getElementById('print');
     expect([button.textContent, button.className, button.hidden, button.getAttribute('aria-describedby')]).toEqual(['Print a paper copy', 'btn', true, 'print-note']);
     expect(doc.getElementById('print-note').textContent).toBe('For a student with no device: the same problems in the same order, on paper. The answers and how to score them are on a teacher page, on a sheet of its own.');
-    expect(doc.getElementById('step-3').querySelectorAll('input, select, textarea')).toHaveLength(0);
+    expect([...doc.getElementById('step-3').querySelectorAll('input, select, textarea')].map((n) => n.id)).toEqual(['f-title', 'f-code-name', 'f-batch-names', 'f-batch-rotate']);
 
     // Everything in the print stylesheet is for print: the screen is untouched.
     const css = read(PRINT_CSS);
@@ -1257,28 +1279,29 @@ describe('the paper copy', () => {
   });
 
   // The teacher page for each kind, word for word.
+  // 2026-11-14 (T1/makers2): teacher page says "practice question(s)" instead of "sample(s)", matching the screen.
   const TEACHER = {
     quantity_discrimination: {
-      give: ['Do the 2 samples first, with the student, and say each answer. Samples do not count.', 'Then start a clock for 1 minute. When the time is up, the student stops.'],
-      score: ['A question is right when the circled number is the bigger one, the one in the key.', 'The score is the number of questions right, leaving out the samples.',
+      give: ['Do the 2 practice questions first, with the student, and say each answer. Practice questions do not count.', 'Then start a clock for 1 minute. When the time is up, the student stops.'],
+      score: ['A question is right when the circled number is the bigger one, the one in the key.', 'The score is the number of questions right, leaving out the practice questions.',
         'If the student finishes before the time is up, the score is still the number right.', 'If the check is stopped before the time is up and before the last question, there is no score.'],
-      tally: 'Number right of 25', note: 'The numbers are the ones the student sees on screen. In the results file the samples are numbered first, so question 1 here is item 3 there.',
+      tally: 'Number right of 25', note: 'The numbers are the ones the student sees on screen. In the results file the practice questions are numbered first, so question 1 here is item 3 there.',
     },
     missing_number: {
-      give: ['Do the sample first, with the student, and say the answer. Samples do not count.', 'Then start a clock for 2 minutes. When the time is up, the student stops.', 'The student may skip a problem, as on screen.'],
-      score: ['A problem is right when the number written is the one in the key.', 'The score is the number of problems right, leaving out the samples.',
+      give: ['Do the practice question first, with the student, and say the answer. Practice questions do not count.', 'Then start a clock for 2 minutes. When the time is up, the student stops.', 'The student may skip a problem, as on screen.'],
+      score: ['A problem is right when the number written is the one in the key.', 'The score is the number of problems right, leaving out the practice questions.',
         'If the student finishes before the time is up, the score is still the number right.', 'If the check is stopped before the time is up and before the last problem, there is no score.'],
-      tally: 'Number right of 25', note: 'The numbers are the ones the student sees on screen. In the results file the samples are numbered first, so problem 1 here is item 2 there.',
+      tally: 'Number right of 25', note: 'The numbers are the ones the student sees on screen. In the results file the practice questions are numbered first, so problem 1 here is item 2 there.',
     },
     math_computation: {
-      give: ['Do the sample first, with the student, and say the answer. Samples do not count.', 'Then start a clock for 2 minutes. When the time is up, the student stops.', 'The student may skip a problem, as on screen.',
+      give: ['Do the practice question first, with the student, and say the answer. Practice questions do not count.', 'Then start a clock for 2 minutes. When the time is up, the student stops.', 'The student may skip a problem, as on screen.',
         'If the student finishes every problem before the time is up, write down the number of seconds used.'],
       score: ['Compare each answer with the key one place at a time: ones with ones, tens with tens, and so on. Each digit that matches is 1 digit correct.',
-        'For example, if the key says 49 and the student wrote 40, that is 1 digit correct.', 'A problem left blank gets 0.', 'Add up the digits correct, leaving out the samples.',
+        'For example, if the key says 49 and the student wrote 40, that is 1 digit correct.', 'A problem left blank gets 0.', 'Add up the digits correct, leaving out the practice questions.',
         'If the time ran out: score = digits correct ' + DIVIDE + ' 2 (the minutes), rounded to a whole number.',
         'If every problem was finished early: score = digits correct ' + String.fromCharCode(0xD7) + ' 60 ' + DIVIDE + ' seconds used, rounded to a whole number. Under 20 seconds, there is no score.',
         'If the check is stopped before the time is up and before the last problem, there is no score.'],
-      tally: 'Digits correct Seconds used, if finished early Score digits correct per minute', note: 'The numbers are the ones the student sees on screen. In the results file the samples are numbered first, so problem 1 here is item 2 there.',
+      tally: 'Digits correct Seconds used, if finished early Score digits correct per minute', note: 'The numbers are the ones the student sees on screen. In the results file the practice questions are numbered first, so problem 1 here is item 2 there.',
     },
   };
 
@@ -1459,5 +1482,33 @@ describe('the paper copy', () => {
     // The results file counts the sample: problem 1 of the paper is item_n 2, as the teacher page says.
     expect(result.items.filter((item) => !item.practice)[0]).toMatchObject({ n: 2, word: fileItems(html)[1].word });
     run.close();
+  });
+
+  // 2026-11-14 (T1/makers2): Open a file I made reads a saved ready check or custom check back into the maker.
+  it('reopens both a ready check and a custom check via Open a file I made', async () => {
+    const readyHtml = direct('missing_number', '1', 'B').html;
+    const ownHtml = PC.buildCheckPacket({ lesson: PC.lessonFromMathProblems({ title: 'Friday check', problems: PC.parseProblems('7+8, 12-5'), timeLimitS: 120, allowSkip: true }), loader: TH }).html;
+
+    const p1 = openPage();
+    expect(p1.seen('reopen')).toBe(true);
+    Object.defineProperty(p1.$('reopen-file'), 'files', { configurable: true, value: [new p1.w.File([readyHtml], 'mn1b.html', { type: 'text/html' })] });
+    p1.$('reopen-file').dispatchEvent(new p1.w.Event('change', { bubbles: true }));
+    await p1.until(() => p1.seen('reopen-note'), 'ready reopen note');
+    expect(p1.$('reopen-line').textContent).toContain('Filled in from mn1b.html.');
+    expect(p1.chosen('check')).toBe('missing_number');
+    p1.$('next-1').click();
+    expect([p1.chosen('grade'), p1.chosen('version')]).toEqual(['1', 'B']);
+    p1.dom.window.close();
+
+    const p2 = openPage();
+    Object.defineProperty(p2.$('reopen-file'), 'files', { configurable: true, value: [new p2.w.File([ownHtml], 'friday.html', { type: 'text/html' })] });
+    p2.$('reopen-file').dispatchEvent(new p2.w.Event('change', { bubbles: true }));
+    await p2.until(() => p2.seen('reopen-note'), 'own reopen note');
+    expect(p2.chosen('check')).toBe('own');
+    p2.$('next-1').click();
+    expect(p2.$('f-problems').value).toBe('7 + 8\n12 - 5');
+    p2.$('next-2').click();
+    expect(p2.$('f-title').value).toBe('Friday check');
+    p2.dom.window.close();
   });
 });

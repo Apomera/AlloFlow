@@ -8,7 +8,11 @@ const fs = require('node:fs');
 const path = require('node:path');
 
 const ROOT = path.resolve(__dirname, '..');
-const SOURCE_DIRS = ['src', 'stem_lab', 'sel_hub', 'catalog', 'services', 'desktop/web-app/functions'];
+const SOURCE_DIRS = [
+  'src', 'stem_lab', 'sel_hub', 'catalog', 'services', 'desktop/web-app/functions',
+  'apps_script', 'desktop/electron', 'desktop/runtime', 'desktop/mcp',
+  'docker', 'tts-server', 'whiteboard', 'allo_sheet', 'data_lab', 'access_lens', 'video_studio',
+];
 const SOURCE_EXTENSION = /\.(?:js|jsx|ts|tsx|cjs|mjs|py|gs)$/i;
 const EXCLUDED_DIRS = new Set([
   'node_modules', 'vendor', 'vendors', 'assets', 'media', 'public', 'build', 'dist',
@@ -16,8 +20,8 @@ const EXCLUDED_DIRS = new Set([
   'test', 'tests', 'fixtures',
 ]);
 // The largest current first-party sources (including ui_strings.js) exceed
-// 10 MiB. Scan those fully; anything beyond this bound is an explicit failure.
-const MAX_FILE_BYTES = 16 * 1024 * 1024;
+// 16 MiB. Scan those fully; anything beyond this bound is an explicit failure.
+const MAX_FILE_BYTES = 32 * 1024 * 1024;
 const PATTERNS = [
   { name: 'Google API key', regex: /AIza[0-9A-Za-z_-]{35}/g, severity: 'critical' },
   { name: 'AWS Access Key ID', regex: /AKIA[0-9A-Z]{16}/g, severity: 'critical' },

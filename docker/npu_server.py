@@ -10,7 +10,7 @@ Usage:
 Models auto-download from HuggingFace on first run (~0.5-2.5 GB each).
 """
 
-import argparse, math, os, time, uuid, traceback
+import argparse, hmac, math, os, time, uuid, traceback
 import threading
 from urllib.parse import urlsplit
 from flask import Flask, request, jsonify
@@ -45,6 +45,7 @@ _generation_lock = threading.Lock()
 _session = None
 _tokenizer = None
 _active_id = None
+_allow_model_swap = True
 
 
 class ContextLimitError(ValueError):
@@ -94,11 +95,20 @@ def request_too_large(_error):
 def guard_browser_origin():
     if not is_allowed_origin(request.headers.get("Origin")):
         return api_error("Browser origin is not allowed; configure ALLOFLOW_NPU_ALLOWED_ORIGINS for your school app.", 403)
+    if request.method != "OPTIONS" and request.path != "/health":
+        expected_token = os.environ.get("ALLOFLOW_NPU_API_TOKEN", "").strip()
+        if expected_token:
+            auth = request.headers.get("Authorization", "")
+            prefix = "Bearer "
+            if not auth.startswith(prefix) or not hmac.compare_digest(auth[len(prefix):].strip(), expected_token):
+                return api_error("Valid bearer token required.", 401)
 
 
 @app.after_request
 def add_cors_headers(response):
     response.vary.add("Origin")
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Cache-Control", "no-store")
     origin = request.headers.get("Origin")
     if origin and is_allowed_origin(origin):
         response.headers["Access-Control-Allow-Origin"] = origin
@@ -286,7 +296,13 @@ def chat_completions():
     t0 = time.time()
     try:
         # Unknown client aliases keep using the active model, as before.
-        if req_model and req_model in MODELS and req_model != _active_id:
+        if (
+            req_model
+            and req_model in MODELS
+            and req_model != _active_id
+            and _allow_model_swap
+            and os.environ.get("ALLOFLOW_NPU_DISABLE_MODEL_SWAP") != "1"
+        ):
             load_model(req_model)
         reply = generate(msgs, max_tok, temp)
         response_model = _active_id
@@ -325,12 +341,16 @@ def health():
 
 
 def main(argv=None):
+    global _allow_model_swap
     parser = argparse.ArgumentParser(description="AlloFlow NPU Server")
     parser.add_argument("--model", default="deepseek-r1-1.5b", choices=list(MODELS.keys()))
     parser.add_argument("--port", type=int, default=11435)
     parser.add_argument("--host", default="127.0.0.1",
                         help="Bind address (default: this computer only; use a LAN address to share)")
+    parser.add_argument("--no-model-swap", action="store_true",
+                        help="Lock the active model against runtime swap requests")
     args = parser.parse_args(argv)
+    _allow_model_swap = not args.no_model_swap
 
     print("""
     ╔══════════════════════════════════════════╗

@@ -28,7 +28,7 @@
 //    broad WordNet group. None may match ANY sense of the word (owner rule: "bat" the animal never gets "a
 //    stick used to hit a ball"): synonyms in any sense, the broader/narrower chain of every sense, similar
 //    adjectives, listed synonyms, the word family, text naming the word, or text too close to any of its
-//    senses are all removed. A wrong answer shows its word's common meaning only.
+//    senses are all removed. A wrong answer can use a less common, distinct meaning of its word.
 //  - Corrections in the curation file win over everything (order, text, rejects, distractor order).
 const fs = require('node:fs');
 const path = require('node:path');
@@ -53,7 +53,7 @@ const esc = (s) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 const P1 = { noun: 'n', verb: 'v', adj: 'a', adv: 'r', adjective: 'a', adverb: 'r', n: 'n', v: 'v', a: 'a', r: 'r' };
 const PNAME = { n: 'noun', v: 'verb', a: 'adjective', r: 'adverb' };
 const PSRC = { n: 'noun', v: 'verb', a: 'adj', r: 'adv' }; // pos names in the Wiktionary extracts
-const SRC = { simple: 's', wiktionary: 'w', wordnet: 'n' };
+const SRC = { simple: 's', wiktionary: 'w', wordnet: 'n', alloflow: 'a' };
 
 // ---- content safety (the trial's lists) -----------------------------------------------------------
 const HARD = /\b(sex|sexy|sexual|sexually|intercourse|naked|nude|nudity|genital\w*|penis|vagina|vulva|testicle\w*|scrotum|anus|prostitut\w*|porn\w*|rape\w*|raping|rapist|masturbat\w*|orgasm\w*|erotic\w*|condom\w*|cocaine|heroin|marijuana|cannabis|meth|narcotic\w*|drunk\w*|stoned|fuck\w*|shit\w*|bitch\w*|bastard\w*|whore\w*|slut\w*|cunt\w*|dick|cock|pussy|nigg\w*|negro\w*|fag\w*|retard(?:s|ed)?|dyke\w*|suicide\w*|torture\w*|lynch\w*|brothel\w*|lust(?:s|ful|y|ed|ing)?|seduc\w*|semen|sperm|ejaculat\w*|crotch|buttock\w*|bosom|nipple\w*|bra|underwear|pimp\w*|kinky|horny|arse|ass|asses|asshole\w*|piss\w*|wank\w*|bollock\w*|damn\w*|hell|crap\w*|mom's|your mom|spank\w*|master ?bait\w*|fart(?:s|ed|ing|y)?|butt|butts|bum|bums|pee|effeminate|blow ?jobs?|hand ?jobs?|boners?|dildo\w*|hookers?|tits|titties|boob\w*|jizz|cum|twat\w*|foreskin|clitor\w*|labia|pubic|pubes|anal|wet dream|make out|making out|69|hymen\w*)\b/i;
@@ -67,9 +67,11 @@ const SKIP_TAGS = /slang|informal|old, no longer used|obsolete|archaic|rare|date
 const safety = (t) => (HARD.test(t) ? 'hard' : SOFT.test(t) ? 'soft' : '');
 // a verb meaning written in the past (saw: "Looked at something with your eyes") only gets wrong answers written in
 // the past, and a "To ..." meaning none, so the form is no clue (2026-11-12)
-function pastForm(t) { const f = (String(t).match(/^[A-Za-z]+/) || [''])[0].toLowerCase(); const I = inputs(); const b = f && I.formBase.get(f); return !!b && /\bverb:[a-z -]*past/.test(I.formTag.get(b + '|' + f) || ''); }
+function pastForm(t) { const f = (String(t).match(/^[A-Za-z]+/) || [''])[0].toLowerCase(); if (!f || f === 'to') return false; const I = inputs(); const b = I.formBase.get(f); return (!!b && /\bverb:[a-z -]*past/.test(I.formTag.get(b + '|' + f) || '')) || I.pastWords.has(f); }
 
 // ---- inputs ---------------------------------------------------------------------------------------
+const FORM_OF = /\b(plural|past tense|past participle|present participle|participle|third[- ]person|simple past|comparative|superlative|gerund|-ing form|spelling|alternative|archaic|obsolete) (form |spelling )?of\b|\b(singular|plural|tense|participle|present|past|comparative|superlative|indicative|-ing)\b[\w ,-]{0,40}\b(form|tense|participle) of\b|^(a |an |the )?(form|plural|past) of\b|^(see|compare|short for|abbreviation|another (word|name|spelling|form) for|same as|alternative|misspelling)\b|→/i;
+function isFormEntry(e) { return (e.senses || []).every((s) => (s.form_of || []).length || FORM_OF.test(s.g || '')); }
 function readJson(f) { return JSON.parse(fs.readFileSync(f, 'utf8')); }
 let IN = null;
 function inputs() {
@@ -79,15 +81,28 @@ function inputs() {
   const wn = readJson(path.join(VENDOR, 'wordnet_en.json'));
   const lists = readJson(path.join(VENDOR, 'wordlists_en.json'));
   const curation = fs.existsSync(CURATION) ? readJson(CURATION) : { words: {} };
+  // The curation file also supplies the school-unit words absent from the source lists.
+  const unitWords = Object.entries(curation.words || {}).filter(([, entry]) => entry.unit);
+  for (const [word, entry] of unitWords) {
+    if (!P1[entry.unit]) throw new Error('Unknown unit part of speech for ' + word);
+  }
   for (const S of Object.values(wn.synsets)) { S.hy = []; for (const k of ['sim', 'ant', 'dom', 'attr', 'pert', 'ex', 'm']) S[k] = S[k] || []; S.d = S.d || ''; }
   for (const id of Object.keys(wn.synsets).sort()) for (const h of wn.synsets[id].h) if (wn.synsets[h]) wn.synsets[h].hy.push(id);
   const zipf = new Map(Object.entries(lists.zipf));
-  const common = new Set(lists.common);
-  // form -> base, from the forms tables of both Wiktionaries (first claim wins, Simple first)
-  const formBase = new Map(), formTag = new Map();
+  const common = new Set([...lists.common, ...unitWords.map(([w]) => w)]);
+  // form -> base, from the forms tables of both Wiktionaries (first lemma claim wins, Simple first;
+  // skip inflected-form entries such as "happier" or "ate" so they never shadow their own lemma)
+  const formBase = new Map(), formTag = new Map(), pastWords = new Set();
   const addForm = (f, b, t) => { if (!/^[a-z]+$/.test(f) || f === b) return; if (!formBase.has(f)) formBase.set(f, b); const k = b + '|' + f; formTag.set(k, (formTag.get(k) || '') + ' ' + t); };
-  for (const src of [simple, enw]) for (const w of Object.keys(src)) for (const e of src[w]) for (const [f, t] of e.forms || []) if (/plural|past|participle|third-person|comparative|superlative/.test(t)) addForm(f, w, e.pos + ':' + t);
-  IN = { simple, enw, wn, lists, curation, zipf, common, formBase, formTag };
+  for (const src of [simple, enw]) for (const w of Object.keys(src)) for (const e of src[w]) {
+    if (isFormEntry(e)) continue;
+    if ((e.forms || []).some(([f, t]) => /\b(canonical|positive|infinitive)\b/.test(t) && /^[a-z]+$/.test(f) && f !== w)) continue;
+    for (const [f, t] of e.forms || []) {
+      if (e.pos === 'verb' && /^[a-z]+$/.test(f) && /\bpast\b/.test(t)) pastWords.add(f);
+      if (/plural|past|participle|third-person|comparative|superlative/.test(t)) addForm(f, w, e.pos + ':' + t);
+    }
+  }
+  IN = { simple, enw, wn, lists, curation, unitWords, zipf, common, formBase, formTag, pastWords };
   return IN;
 }
 
@@ -133,10 +148,8 @@ function ruleBases(w) {
   if (/ied$/.test(w)) add(w.slice(0, -3) + 'y');
   if (/ed$/.test(w)) { add(w.slice(0, -2)); add(w.slice(0, -1)); if (/([bdgklmnprt])\1ed$/.test(w)) add(w.slice(0, -3)); }
   if (/ing$/.test(w)) { add(w.slice(0, -3)); add(w.slice(0, -3) + 'e'); if (/([bdgklmnprt])\1ing$/.test(w)) add(w.slice(0, -4)); }
-  if (/ier$/.test(w)) add(w.slice(0, -3) + 'y');
-  if (/iest$/.test(w)) add(w.slice(0, -4) + 'y');
-  if (/er$/.test(w)) { add(w.slice(0, -2)); add(w.slice(0, -1)); if (/([bdgklmnprt])\1er$/.test(w)) add(w.slice(0, -3)); }
-  if (/est$/.test(w)) { add(w.slice(0, -3)); add(w.slice(0, -2)); if (/([bdgklmnprt])\1est$/.test(w)) add(w.slice(0, -4)); }
+  // Comparatives and superlatives use the dictionary forms table.
+  // A guessed suffix can turn a noun like decomposer into a verb.
   return out;
 }
 
@@ -158,7 +171,6 @@ function readability0(text) {
 const nwords = (t) => (t.match(/[A-Za-z']+/g) || []).length;
 
 // ---- definition clean-up --------------------------------------------------------------------------
-const FORM_OF = /\b(plural|past tense|past participle|present participle|participle|third[- ]person|simple past|comparative|superlative|gerund|-ing form|spelling|alternative|archaic|obsolete) (form |spelling )?of\b|\b(singular|plural|tense|participle|present|past|comparative|superlative|indicative|-ing)\b[\w ,-]{0,40}\b(form|tense|participle) of\b|^(a |an |the )?(form|plural|past) of\b|^(see|compare|short for|abbreviation|another (word|name|spelling|form) for|same as|alternative|misspelling)\b|→/i;
 function firstSentence(t) { const m = t.match(/^(.+?[.!?])(\s+[A-Z(]|$)/); return m ? m[1] : t; }
 // third-person verb -> base (goes -> go), for "If something rots, it goes bad" -> "To go bad"
 const IRREG3 = { is: 'be', are: 'be', has: 'have', does: 'do', goes: 'go', was: 'be', were: 'be' };
@@ -364,7 +376,6 @@ function rng(seed) { let s = seed >>> 0; return () => { s = (Math.imul(s, 166452
 const byKey = (f) => (a, b) => { const x = f(a), y = f(b); return x < y ? -1 : x > y ? 1 : 0; };
 
 // ---- headwords ------------------------------------------------------------------------------------
-function isFormEntry(e) { return e.senses.every((s) => (s.form_of || []).length || FORM_OF.test(s.g || '')); }
 function baseOf(word) {
   const { simple, enw, formBase } = inputs();
   if ((simple[word] || []).some((e) => !isFormEntry(e))) return word;
@@ -374,7 +385,7 @@ function baseOf(word) {
   return formBase.get(word) || word;
 }
 function headwordPlan() {
-  const { lists } = inputs();
+  const { lists, unitWords } = inputs();
   const blocked = new Set(lists.blocked);
   const plan = new Map(); // word -> { lists:Set, pos:[given] , order }
   const put = (w, list, pos) => {
@@ -386,6 +397,7 @@ function headwordPlan() {
   for (const [w, p] of lists.nawl) put(w, 'nawl', p);
   const z = (w) => lists.zipf[w] || 0;
   for (const w of lists.builtin.slice().sort((a, b) => z(b) - z(a) || (a < b ? -1 : 1))) put(baseOf(w), 'builtin', null);
+  for (const [w, entry] of unitWords) put(w, 'unit', entry.unit);
   for (const w of lists.common) put(baseOf(w), 'common', null);
   return [...plan.values()];
 }
@@ -499,6 +511,7 @@ function build(opts) {
     }
     // every meaning the sources give (before the size cap and the checker's rejects): no wrong answer may match any
     const every = ss.map((s) => ({ def: s.def, syn: s.syn }));
+    if (C && C.unit) for (const v of Object.values(C.senses || {})) if (v.def && !every.some((s) => s.def === v.def)) every.push({ def: v.def, syn: [] });
     for (const e of inputs().simple[r.w] || []) for (const s of e.senses) if (s.g && !FORM_OF.test(s.g)) every.push({ def: s.g, syn: s.syn || [] });
     if (C) {
       const sv = C.senses || {};
@@ -548,7 +561,9 @@ function build(opts) {
   for (const e of entries) if (!e.checked && !(opts.blanksFor && opts.blanksFor.has(e.w))) {
     const per = {}; e.senses = e.senses.filter((s) => { per[s.p] = (per[s.p] || 0) + 1; return per[s.p] <= 2; }).slice(0, 3);
   }
-  const prio = (e) => (e.lists.has('unit') ? 0 : e.lists.has('nawl') ? 1 : e.lists.has('builtin') ? 2 : 3);
+  // Keep checked common words ahead of trimmable ones. A checked word near the
+  // tail should not pin every unchecked word that comes before it.
+  const prio = (e) => (e.lists.has('unit') ? 0 : e.lists.has('nawl') ? 1 : e.lists.has('builtin') ? 2 : e.checked ? 3 : 4);
   entries.sort((a, b) => prio(a) - prio(b) || 0);
   // rank inside a priority group: keep the plan order (lists are already ranked)
   const byWord = new Map();
@@ -715,7 +730,7 @@ function build(opts) {
 }
 
 // ---- output -----------------------------------------------------------------------------------------
-const ABOUT = 'Word meanings from Simple English Wiktionary and English Wiktionary (CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/), word families from Open English WordNet 2025 (CC BY 4.0) and Princeton WordNet 3.1 (WordNet License). Checked and corrected in part with AI assistance on 2026-11-12; a teacher can edit every item. This data stays under CC BY-SA 4.0. Made by dev-tools/build_packets_vocab_bank.cjs.';
+const ABOUT = 'Word meanings from Simple English Wiktionary and English Wiktionary (CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/) and AlloFlow school vocabulary, word families from Open English WordNet 2025 (CC BY 4.0) and Princeton WordNet 3.1 (WordNet License). Checked and corrected in part with AI assistance on November 12 and 13, 2026. Not reviewed by a person. A teacher can edit every item. This data stays under CC BY-SA 4.0. Made by dev-tools/build_packets_vocab_bank.cjs.';
 const CREDITS = [
   { set: 'Simple English Wiktionary', author: 'Wiktionary contributors', license: 'CC BY-SA 4.0', url: 'https://simple.wiktionary.org', deed: 'https://creativecommons.org/licenses/by-sa/4.0/' },
   { set: 'English Wiktionary', author: 'Wiktionary contributors', license: 'CC BY-SA 4.0', url: 'https://en.wiktionary.org', deed: 'https://creativecommons.org/licenses/by-sa/4.0/' },
@@ -723,7 +738,7 @@ const CREDITS = [
   { set: 'Princeton WordNet 3.1', author: 'Princeton University', license: 'WordNet License', url: 'https://wordnet.princeton.edu', deed: 'https://wordnet.princeton.edu/license-and-commercial-use' },
   { set: 'New Academic Word List 1.2 (word choice)', author: 'Charles Browne, Brent Culligan and Joseph Phillips', license: 'CC BY-SA 4.0', url: 'https://www.newgeneralservicelist.com', deed: 'https://creativecommons.org/licenses/by-sa/4.0/' },
 ];
-const CHECKING = 'Checked and corrected with AI assistance on 2026-11-12 (the words marked checked); a teacher can edit every item. Not reviewed by a person.';
+const CHECKING = 'Checked and corrected with AI assistance on November 12 and 13, 2026 (the meanings marked checked). Not reviewed by a person. A teacher can edit every item.';
 
 // US spelling for what students read (2026-11-12): the sources mix in British forms (colour, centre, theatre).
 // A fixed list of whole words only; a headword that is itself British keeps its own spelling.
@@ -753,7 +768,8 @@ function usSpell(text) {
 }
 
 function encode(made) {
-  const { entries, byWord } = made;
+  const { entries } = made;
+  const keptWords = new Set(entries.map((e) => e.w));
   // every sense gets a global number (order of entries, then senses): distractors refer to it
   const num = new Map(); let k = 0;
   for (const e of entries) for (const s of e.senses) num.set(s.id, k++);
@@ -767,8 +783,8 @@ function encode(made) {
   const { formBase } = inputs();
   const forms = [];
   for (const [f, b] of [...formBase.entries()].sort(byKey((x) => x[0]))) {
-    if (byWord.has(f) || !byWord.has(b)) continue;
-    const rb = ruleBases(f).find((x) => byWord.has(x));
+    if (keptWords.has(f) || !keptWords.has(b)) continue;
+    const rb = ruleBases(f).find((x) => keptWords.has(x));
     if (rb === b) continue;
     forms.push(f + ' ' + b);
   }
@@ -811,7 +827,7 @@ function indexText(enc) {
     "  'use strict';",
     '  var shards = ' + JSON.stringify(enc.files.map((f) => ({ url: f.url, bytes: f.bytes, sha256: f.sha256, words: f.words, senses: f.senses }))) + ';',
     '  var credits = ' + JSON.stringify(CREDITS) + ';',
-    "  var POS = { n: 'noun', v: 'verb', a: 'adjective', r: 'adverb' }, SRC = { s: 'simple', w: 'wiktionary', n: 'wordnet' };",
+    "  var POS = { n: 'noun', v: 'verb', a: 'adjective', r: 'adverb' }, SRC = { s: 'simple', w: 'wiktionary', n: 'wordnet', a: 'alloflow' };",
     '  var heads = null, all = [], byId = null, forms = {}, pending = null, got = {};',
     "  function key(w) { return String(w == null ? '' : w).trim().toLowerCase(); }",
     '  var own = Object.prototype.hasOwnProperty;',
@@ -852,10 +868,6 @@ function indexText(enc) {
     "    if (/ied$/.test(k)) c.push(k.slice(0, -3) + 'y');",
     '    if (/ed$/.test(k)) { c.push(k.slice(0, -2), k.slice(0, -1)); if (/([bdgklmnprt])\\1ed$/.test(k)) c.push(k.slice(0, -3)); }',
     "    if (/ing$/.test(k)) { c.push(k.slice(0, -3), k.slice(0, -3) + 'e'); if (/([bdgklmnprt])\\1ing$/.test(k)) c.push(k.slice(0, -4)); }",
-    "    if (/ier$/.test(k)) c.push(k.slice(0, -3) + 'y');",
-    "    if (/iest$/.test(k)) c.push(k.slice(0, -4) + 'y');",
-    '    if (/er$/.test(k)) { c.push(k.slice(0, -2), k.slice(0, -1)); if (/([bdgklmnprt])\\1er$/.test(k)) c.push(k.slice(0, -3)); }',
-    '    if (/est$/.test(k)) { c.push(k.slice(0, -3), k.slice(0, -2)); if (/([bdgklmnprt])\\1est$/.test(k)) c.push(k.slice(0, -4)); }',
     '    for (var i = 0; i < c.length; i++) if (c[i].length >= 2 && own.call(heads, c[i])) return c[i];',
     '    return null;',
     '  }',

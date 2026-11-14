@@ -79,7 +79,8 @@ describe('the page as a file', () => {
 
   it('has one h1, headings in order, a name for every control, landmarks, and the product name once', () => {
     expect(doc.querySelectorAll('h1')).toHaveLength(1);
-    expect(doc.querySelector('h1').textContent).toBe('Open a practice file');
+    // 2026-11-14 (T1): packets-open.html is named "Open a practice file or check" because it runs checks too.
+    expect(doc.querySelector('h1').textContent).toBe('Open a practice file or check');
     expect(read(PAGE).split(NAME).length - 1).toBe(1);
     expect(doc.getElementById('product-name').textContent).toBe(NAME);
     const levels = [...doc.querySelectorAll('h1, h2, h3')].map((n) => Number(n.tagName[1]));
@@ -368,31 +369,26 @@ describe('running the file', () => {
 });
 
 describe('Change this file', () => {
-  it('hands a Word Sounds or vocabulary file to its maker in this tab; the maker takes it once', async () => {
-    for (const [html, href] of [[WORDS_FILE, 'packets-make.html'], [VOCAB_FILE, 'packets-vocab.html']]) {
+  // 2026-11-14 (T1/makers2): all four makers (Word Sounds, vocabulary, math check, and math fact practice) can now reopen
+  // a saved file, so Change this file hands any of the four to its maker in this tab.
+  it('hands a Word Sounds, vocabulary, check or math fact practice file to its maker in this tab; the maker takes it once', async () => {
+    for (const [html, href] of [
+      [WORDS_FILE, 'packets-make.html'],
+      [VOCAB_FILE, 'packets-vocab.html'],
+      [CHECK_FILE, 'packets-check.html'],
+      [MATH_FILE, 'packets-math-practice.html'],
+    ]) {
       const p = await openPage();
       await p.choose(html, 'mine.html');
       p.$('change').click();
       // jsdom does not leave the page: it says it would have.
       for (let i = 0; i < 50 && !p.said.some((m) => /navigation/.test(m)); i++) await wait(10);
-      expect(p.said.some((m) => /navigation/.test(m))).toBe(true);
+      expect(p.said.some((m) => /navigation/.test(m)), href).toBe(true);
       expect(p.$('change-link').getAttribute('href')).toBe(href);
       const back = await p.w.AlloPacketHandoff.take();
       expect(back.name).toBe('mine.html');
       expect(new TextDecoder().decode(back.bytes)).toBe(html);
       expect(await p.w.AlloPacketHandoff.take()).toBeNull();
-    }
-  });
-
-  it('a check or math fact practice: the maker cannot open a saved file yet, and the page says so with a link', async () => {
-    for (const [html, line, href] of [[CHECK_FILE, 'Make a math check cannot open a saved file yet. To change this one, make it again there.', 'packets-check.html'],
-      [MATH_FILE, 'Make math fact practice cannot open a saved file yet. To change this one, make it again there.', 'packets-math-practice.html']]) {
-      const p = await openPage();
-      await p.choose(html);
-      p.$('change').click();
-      expect(p.$('change-line').textContent).toBe(line);
-      expect(p.$('change-link').getAttribute('href')).toBe(href);
-      expect(p.d.activeElement).toBe(p.$('change-note'));
     }
   });
 
@@ -419,7 +415,8 @@ describe('Change this file', () => {
 
 describe('where people are pointed to it', () => {
   it('the four makers say it after saving, and the front door says it twice, briefly', () => {
-    const LINE = 'On a phone or tablet, a student opens the file on Open a practice file: apomera.github.io/AlloFlow/packets-open.html.';
+    // 2026-11-14 (T1): packets-open.html is named "Open a practice file or check", and all four makers take handed files.
+    const LINE = 'On a phone or tablet, a student opens the file on Open a practice file or check: apomera.github.io/AlloFlow/packets-open.html.';
     for (const file of ['packets-make.html', 'packets-check.html', 'packets-vocab.html', 'packets-math-practice.html']) {
       const after = parse(file).getElementById('after-save');
       const p = after.querySelector('p.after-phone');
@@ -428,11 +425,15 @@ describe('where people are pointed to it', () => {
       expect(p.previousElementSibling.tagName).toBe('OL');
     }
     const door = parse('packets.html');
-    expect([...door.querySelectorAll('a[href="packets-open.html"]')].map((a) => a.textContent)).toEqual(['Open a practice file']);
-    expect(door.getElementById('what').textContent).toContain('On a phone or tablet, the student opens it on Open a practice file.');
-    // The makers that can open a file again take the handed file.
-    for (const file of ['packets-make.html', 'packets-vocab.html']) expect([...parse(file).querySelectorAll('script')].map((s) => s.getAttribute('src')), file).toContain('packets_handoff.js');
+    expect([...door.querySelectorAll('a[href="packets-open.html"]')].map((a) => a.textContent)).toEqual(['Open a practice file or check']);
+    expect(door.getElementById('what').textContent).toContain('On a phone or tablet, the student opens it on Open a practice file or check.');
+    // All four makers can open a file again and take the handed file.
+    for (const file of ['packets-make.html', 'packets-vocab.html', 'packets-check.html', 'packets-math-practice.html']) {
+      expect([...parse(file).querySelectorAll('script')].map((s) => s.getAttribute('src')), file).toContain('packets_handoff.js');
+    }
     expect(read('packets-make.js')).toContain('window.location.hash === handoff.HASH');
     expect(read('packets-vocab.js')).toContain('window.location.hash !== handoff.HASH');
+    expect(read('packets-check.js')).toContain('window.location.hash !== handoff.HASH');
+    expect(read('packets-math-practice.js')).toContain('window.location.hash !== handoff.HASH');
   });
 });

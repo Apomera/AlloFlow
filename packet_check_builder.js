@@ -64,6 +64,36 @@
     return stamp(lesson);
   }
 
+  // The value of a problem written with numbers and + - x / (and the other signs of OPS) and brackets, worked out with
+  // times and divide first; null when it holds anything else (words: then the stated answer is the teacher's to give).
+  // 2026-11-13 (answer audit): "3 + 4 + 5 = 13" and "2 + 3 x 4 = 20" were taken with the answer as typed.
+  function worked(display) {
+    var tokens = text(display).replace(/\s+/g, '').match(/\d+|[^\d]/g) || [], at = 0, mixed = { add: false, mul: false }, zero = false;
+    var sign = function (t) { return t === '(' || t === ')' ? t : own(OPS, t) ? OPS[t] : null; };
+    if (!tokens.length || tokens.some(function (t) { return !/^\d+$/.test(t) && !sign(t); })) return null;
+    var peek = function () { return at < tokens.length ? (/^\d+$/.test(tokens[at]) ? 'n' : sign(tokens[at])) : null; };
+    var atom = function () {
+      var k = peek();
+      if (k === 'sub') { at++; var v = atom(); return v === null ? null : -v; }
+      if (k === '(') { at++; var inner = sum(); if (peek() !== ')') return null; at++; return inner; }
+      if (k !== 'n') return null;
+      return Number(tokens[at++]);
+    };
+    var product = function () {
+      var v = atom();
+      while (v !== null && (peek() === 'mul' || peek() === 'div')) { var op = peek(); at++; var w = atom(); mixed.mul = true; if (op === 'div' && w === 0) zero = true; v = w === null || zero ? null : op === 'mul' ? v * w : v / w; }
+      return v;
+    };
+    var sum = function () {
+      var v = product();
+      while (v !== null && (peek() === 'add' || peek() === 'sub')) { var op = peek(); at++; var w = product(); mixed.add = true; v = w === null ? null : op === 'add' ? v + w : v - w; }
+      return v;
+    };
+    var value = sum();
+    if (zero) return { zero: true };
+    return value === null || at !== tokens.length || !isFinite(value) ? null : { value: value, mixed: mixed.add && mixed.mul && text(display).indexOf('(') < 0 };
+  }
+
   // One problem of a teacher's list -> { a, b, op } or { display, answer }, or an Error with a plain reason.
   function checkProblem(raw, n, allowRemainders) {
     var p = raw && typeof raw === 'object' ? raw : {};
@@ -73,6 +103,14 @@
       if (!display) fail('the problem is empty.');
       if (display.length > 40) fail('the problem is longer than 40 characters.');
       if (p.answer == null || p.answer === '' || typeof p.answer === 'boolean' || !Number.isSafeInteger(Number(p.answer)) || Math.abs(Number(p.answer)) > 99999999) fail('the answer must be a whole number.');
+      // A blank or a second = sign asks for something else than "type the answer" (2026-11-13, answer audit).
+      if (/_{2,}/.test(display)) fail('it has a blank (__). Write the whole problem, like 3 + 4 + 5 = 12.');
+      if (display.indexOf('=') >= 0) fail('write the problem with one = sign, before its answer.');
+      // A problem made only of numbers and signs must have the answer it states.
+      var got = worked(display);
+      if (got && got.zero) fail(display + ' divides by 0.');
+      if (got && Math.abs(got.value - Math.round(got.value)) > 1e-9) fail(display + ' does not come out to a whole number.');
+      if (got && Math.round(got.value) !== Number(p.answer)) fail(display + ' is ' + Math.round(got.value) + ', not ' + Number(p.answer) + '.' + (got.mixed ? ' Times and divide are worked out before plus and minus: use brackets, like (2 + 3) x 4.' : ''));
       return { display: display, answer: Number(p.answer) };
     }
     if (!whole(p.a, MAX_NUMBER) || !whole(p.b, MAX_NUMBER)) fail('both numbers must be whole numbers from 0 to ' + MAX_NUMBER + '.');
@@ -119,6 +157,14 @@
     return null;
   }
 
+  // The title of a fixed form, in words (2026-11-13, owner-approved): "Missing Number, kindergarten, version A",
+  // "Math Fluency, grade 3, version B, untimed". It was "Missing Number check (KA, untimed)": KA read as a code.
+  // The student sees it at the top of the file and the results file's name starts with it. Readers group results by
+  // the measure and the packet id (packets_results_reader.js seriesKey), never by this title.
+  function formTitle(name, grade, form, untimed) {
+    return name + ', ' + (grade === 'K' ? 'kindergarten' : 'grade ' + grade) + ', version ' + form + (untimed ? ', untimed' : '');
+  }
+
   // A fixed form of one of the three measures. bank = the parsed psychometric_math_probes.json.
   //   lessonFromMathForm({ bank, measure: 'math_computation', grade: '3', form: 'A' })
   // practice: false leaves the sample items out; an array gives your own. Left out, Math Fluency's sample is sampleFor(the form).
@@ -142,7 +188,7 @@
     var limit = Number(data.timeLimit) > 0 ? Number(data.timeLimit) : m.timeLimitS;
     var untimed = o.untimed === true;
     var sample = id === 'math_computation' ? sampleFor(problems) : null;
-    return makeLesson({ lessonId: m.slug + '-g' + grade.toLowerCase(), title: m.name + ' check (' + grade + form + (untimed ? ', untimed' : '') + ')', form: form, activity: id, name: m.name,
+    return makeLesson({ lessonId: m.slug + '-g' + grade.toLowerCase(), title: formTitle(m.name, grade, form, untimed), form: form, activity: id, name: m.name,
       measure: m.code, unit: m.unit, scoringVersion: m.scoringVersion, formVersion: Number.isInteger(version) && version > 0 ? version : 1,
       timeLimitS: untimed ? null : limit, untimed: untimed, usualTimeLimitS: limit, allowSkip: m.allowSkip, grade: grade,
       practice: o.practice === false ? [] : Array.isArray(o.practice) ? o.practice : sample ? [sample] : m.practice, problems: problems });
@@ -179,7 +225,7 @@
   }
 
   // The file. loader = AlloWordSoundsTakeHome (word_sounds_take_home_loader.js).
-  //   buildCheckPacket({ lesson, title, teacherCode, loader }) -> { html, manifest, sha256 }
+  //   buildCheckPacket({ lesson, title, teacherCode, loader, learner }) -> { html, manifest, sha256 }
   // teacherCode (4 or more characters) locks the "For the teacher" screen; it is kept in the file
   // only as a salted hash. It is a lock on a screen, not encryption.
   function buildCheckPacket(input) {
@@ -195,11 +241,34 @@
     if (code && code.length < 4) throw new Error('The teacher code needs 4 or more characters.');
     if (code.length > 64) throw new Error('The teacher code can have 64 characters at most.');
     var html = loader.buildHtml(lesson, { teacherCode: code || null, labels: o.labels || null });
+    // learner (2026-11-13): a student's code name, put in last, exactly as withCodeName adds it to a finished file.
+    if (o.learner) html = withCodeName(html, o.learner);
     var block = /<script type="application\/json" id="packet-manifest">([\s\S]*?)<\/script>/.exec(html);
     return { html: html, manifest: block ? JSON.parse(block[1]) : null, sha256: loader.sha256(html).hex };
   }
 
-  var api = { VERSION: VERSION, MEASURES: MEASURES, lessonFromMathForm: lessonFromMathForm, lessonFromMathProblems: lessonFromMathProblems, parseProblems: parseProblems, buildCheckPacket: buildCheckPacket };
+  // A student's code name, as a file may carry it: the rule of word_sounds_packet_builder.js codeName (letters of any
+  // language, digits, spaces, . _ and -, at most 40), so "Look inside a file" never reads one as code. 2026-11-13.
+  function codeName(value) {
+    var t = typeof value === 'string' ? value : '';
+    try { return t.normalize('NFC').replace(/[^\p{L}\p{M}\p{N} ._-]+/gu, '').replace(/\s+/g, ' ').trim().slice(0, 40).trim(); } catch (_) { return t.replace(/[^A-Za-z0-9 ._-]+/g, '').trim().slice(0, 40); }
+  }
+  // The file with the code name in its manifest (key "learner"), which the file fills in when it opens. Only the data
+  // block changes; the script and its hash do not, so one file per student is this applied to the file made with none.
+  function withCodeName(html, name) {
+    var clean = codeName(name), open = '<script type="application/json" id="packet-manifest">';
+    var at = clean ? html.indexOf(open) : -1;
+    if (at < 0) return html;
+    var from = at + open.length, to = html.indexOf('</script>', from), manifest;
+    try { manifest = JSON.parse(html.slice(from, to)); } catch (_) { return html; }
+    if (!manifest || typeof manifest !== 'object') return html;
+    manifest.learner = clean;
+    var json = JSON.stringify(manifest).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+    return html.slice(0, from) + json + html.slice(to);
+  }
+
+  var api = { VERSION: VERSION, MEASURES: MEASURES, formTitle: formTitle, lessonFromMathForm: lessonFromMathForm, lessonFromMathProblems: lessonFromMathProblems, parseProblems: parseProblems, buildCheckPacket: buildCheckPacket,
+    codeName: codeName, withCodeName: withCodeName };
   root.AlloPacketChecks = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

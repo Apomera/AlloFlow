@@ -586,6 +586,16 @@ main li a:not(.btn-primary):not(.btn-secondary) {
         display: none;
     }
 
+    .navbar-compact .navbar-inner,
+    .navbar-compact .nav-links {
+        flex-wrap: wrap;
+        gap: 8px 16px;
+    }
+
+    .navbar-compact .nav-links {
+        display: flex;
+    }
+
     .mobile-menu-btn {
         display: inline-flex;
     }
@@ -644,8 +654,10 @@ main li a:not(.btn-primary):not(.btn-secondary) {
     z-index: 200;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: safe center;
     gap: 24px;
+    overflow-y: auto;
+    padding: 76px 24px 36px;
 }
 
 .mobile-nav[hidden] {

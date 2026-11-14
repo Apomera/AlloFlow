@@ -446,7 +446,7 @@ describe('student AI off: prepared clip, then device voice for whole words only'
     expect(await h.callback('cat')).toMatchObject({ ok: true, status: 'ready' });
     expect(spoken.map(u => [u.text, u.lang])).toEqual([['cat', 'en-US']]);
     expect(h.env.callTTS).toHaveBeenCalledTimes(1);
-    expect(h.env.callTTS).toHaveBeenCalledWith('cat', 'Kore', 1, { language: 'en-US', maxRetries: 0 });
+    expect(h.env.callTTS).toHaveBeenCalledWith('cat', 'Kore', 1, { language: 'en-US', maxRetries: 0, word: true });
     expect(h.env.notifyAudioUnavailable).not.toHaveBeenCalled();
   });
   it('plays an on-device voice clip before the browser voice, without storing it', async () => {

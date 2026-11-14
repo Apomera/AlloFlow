@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
 <title>AlloFlow — Immersive Stretch Lab</title>
 <!--
   AlloFlow Immersive Geometry — "Stretch Lab" (WebXR companion window).
@@ -950,9 +951,17 @@ function loadLaunchState() {
     return launched;
   } catch (ignore) { return null; }
 }
+function isTrustedGeometryBridgeOrigin(u) {
+  if (!u || !u.origin || u.origin === 'null') return false;
+  if (u.origin === window.location.origin) return true;
+  var h = String(u.hostname || '').toLowerCase();
+  if (u.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')) return true;
+  if (u.protocol !== 'https:') return false;
+  return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(h) || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google') || h.endsWith('.run.app');
+}
 var SANDBOX_BRIDGE = null;
 try { var bridgeQuery = new URLSearchParams(window.location.search || ''), bridgeOrigin = new URL(bridgeQuery.get('parentOrigin'));
-  if (bridgeQuery.get('bridge') && /^https?:$/.test(bridgeOrigin.protocol)) SANDBOX_BRIDGE = { token:bridgeQuery.get('bridge'), origin:bridgeOrigin.origin, unit:['unit','cm','in','ft','m'].indexOf(bridgeQuery.get('bridgeUnit'))>=0?bridgeQuery.get('bridgeUnit'):'unit' };
+  if (bridgeQuery.get('bridge') && isTrustedGeometryBridgeOrigin(bridgeOrigin)) SANDBOX_BRIDGE = { token:bridgeQuery.get('bridge'), origin:bridgeOrigin.origin, unit:['unit','cm','in','ft','m'].indexOf(bridgeQuery.get('bridgeUnit'))>=0?bridgeQuery.get('bridgeUnit'):'unit' };
 } catch (ignore) {}
 var LAUNCH_WORKSPACE = null;
 try { LAUNCH_WORKSPACE = normalizeChoice(new URLSearchParams(window.location.search || '').get('workspace'), WORKSPACE_MODES, null); } catch (ignore) {}
@@ -960,10 +969,10 @@ var LAUNCH_STATE = loadLaunchState();
 var SAVED_STATE = LAUNCH_STATE || loadSavedState();
 if (SAVED_STATE && LAUNCH_WORKSPACE) SAVED_STATE.workspaceMode = LAUNCH_WORKSPACE;
 // A lesson payload initializes this visit once; refresh resumes autosaved work.
-if (LAUNCH_STATE || LAUNCH_WORKSPACE) {
+if (LAUNCH_STATE || LAUNCH_WORKSPACE || SANDBOX_BRIDGE) {
   try {
     var resumeUrl = new URL(window.location.href);
-    ['d','L','W','H','axis','mission','target','boundary','view','focus','precision','stick','quality','instructor','workspace','backdrop','grid','card','tint','surface','light','edges','angle','step'].forEach(function(key) { resumeUrl.searchParams.delete(key); });
+    ['d','L','W','H','axis','mission','target','boundary','view','focus','precision','stick','quality','instructor','workspace','backdrop','grid','card','tint','surface','light','edges','angle','step','bridge','parentOrigin','bridgeUnit'].forEach(function(key) { resumeUrl.searchParams.delete(key); });
     window.history.replaceState(window.history.state, '', resumeUrl.pathname + resumeUrl.search + resumeUrl.hash);
   } catch (ignore) { /* Some embedded browsers cannot replace history. */ }
 }

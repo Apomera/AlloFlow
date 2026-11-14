@@ -204,6 +204,8 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
 
         try:
             length = int(self.headers.get("Content-Length", 0))
+            if length < 0 or length > 262144:
+                return self._send_json(413 if length > 262144 else 400, {"error": "Request body exceeds maximum size"})
             body = json.loads(self.rfile.read(length)) if length else {}
 
             if not isinstance(body, dict):
@@ -216,8 +218,8 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
 
             if not text:
                 return self._send_json(400, {"error": "No input text"})
-            if not isinstance(text, str):
-                return self._send_json(400, {"error": "Input must be text"})
+            if not isinstance(text, str) or len(text) > 20000:
+                return self._send_json(400, {"error": "Input must be text up to 20000 characters"})
 
             if not ensure_voice(piper_voice):
                 # Fall back to the default voice if a specific one can't be fetched
@@ -265,8 +267,6 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             return self._send_json(200, {
                 "status": "ok",
                 "engine": "piper-tts",
-                "python": PIPER_PYTHON,
-                "voices_dir": VOICES_DIR,
                 "voices": list(VOICE_MAP.keys()),
             })
         self.send_response(404)

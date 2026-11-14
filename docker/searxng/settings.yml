@@ -4,7 +4,8 @@
 use_default_settings: true
 
 server:
-  secret_key: "alloflow2026searxng"
+  # Overridden in docker-compose.yml via SEARXNG_SECRET when set; replace before non-loopback deployment.
+  secret_key: "CHANGE_ME_GENERATE_WITH_OPENSSL_RAND_HEX_32"
   limiter: false
 
 search:

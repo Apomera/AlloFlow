@@ -766,14 +766,15 @@ async function handlePdSubmit(request, env, intake) {
     },
     pd_module: p.pd_module,
   };
-  // Time-sortable key (13-digit epoch) + slug, mirroring the bug key scheme. No TTL.
-  const id = `pd:${Date.now()}:${slug}:${(crypto.randomUUID && crypto.randomUUID().slice(0, 8)) || Math.floor(Math.random() * 1e9).toString(36)}`;
+  // Time-sortable key (13-digit epoch) + slug, mirroring the bug key scheme (30-day staging TTL).
+  const id = `pd:${Date.now()}:${slug}:${crypto.randomUUID().slice(0, 8)}`;
   try {
     await env.PD_SUBMISSIONS.put(id, JSON.stringify(record), {
+      expirationTtl: 30 * 24 * 60 * 60,
       metadata: { submitted_at: submittedAt, title: title, module_content_digest: moduleContentDigest, pii: piiFindings.length > 0, country: record.submitter.ip_country },
     });
-  } catch (e) {
-    return jsonResponse({ ok: false, error: 'Could not store submission: ' + e.message }, 502);
+  } catch (_) {
+    return jsonResponse({ ok: false, error: 'Could not store submission. Please try again.' }, 502);
   }
   return jsonResponse({ ok: true, id, slug, module_content_digest: moduleContentDigest, pii_findings_count: piiFindings.length }, 201);
 }
@@ -839,6 +840,19 @@ function handleBugInbox() {
   });
 }
 
+function sanitizeBugUrl(raw) {
+  if (!raw || typeof raw !== 'string') return '';
+  const trimmed = raw.trim();
+  if (!trimmed) return '';
+  try {
+    const parsed = new URL(trimmed);
+    if (parsed.protocol === 'http:' || parsed.protocol === 'https:') {
+      return `${parsed.origin}${parsed.pathname}`.slice(0, 500);
+    }
+  } catch (_) {}
+  return trimmed.split(/[?#]/)[0].slice(0, 500);
+}
+
 async function handleBugSubmit(request, env, intake) {
   if (!env.BUG_REPORTS) return bugResponse({ ok: false, error: 'Report storage is unavailable. Please try again later.' }, 503);
   const contentType = request.headers.get('Content-Type') || '';
@@ -850,7 +864,7 @@ async function handleBugSubmit(request, env, intake) {
   const err = validateBug(p);
   if (err) return bugResponse({ ok: false, error: err }, 400);
 
-  const piiFindings = scanForPii([p.what, p.steps].filter(Boolean).join('\n'));
+  const piiFindings = scanForPii([p.what, p.steps, p.url].filter(Boolean).join('\n'));
   const now = Date.now();
   const submittedAt = new Date(now).toISOString();
   const record = {
@@ -862,7 +876,7 @@ async function handleBugSubmit(request, env, intake) {
     what: (p.what || '').slice(0, 16000),
     steps: (p.steps || '').slice(0, 8000),
     browser: (p.browser || '').slice(0, 500),
-    url: (p.url || '').slice(0, 500),
+    url: sanitizeBugUrl(p.url),
     pii_scan: { ran_server_side: true, findings: piiFindings },
     submitter: {
       ip_country: request.cf?.country || null,
@@ -882,12 +896,44 @@ async function handleBugSubmit(request, env, intake) {
   return bugResponse({ ok: true, id, pii_findings_count: piiFindings.length }, 201);
 }
 
+const ADMIN_AUTH_MAX_FAILS = 15;
+const ADMIN_AUTH_WINDOW_SECONDS = 600;
+
+async function adminAuthRateKey(request, scope) {
+  const ipHash = await sha256Hex(submitClientIp(request));
+  return `adminfail:${scope}:${ipHash}`;
+}
+
+async function checkAdminAuthRateLimit(request, env, scope) {
+  if (!env.SUBMIT_RATE || typeof env.SUBMIT_RATE.get !== 'function' || typeof env.SUBMIT_RATE.put !== 'function') return false;
+  try {
+    const key = await adminAuthRateKey(request, scope);
+    const raw = await env.SUBMIT_RATE.get(key);
+    return (Number(raw) || 0) >= ADMIN_AUTH_MAX_FAILS;
+  } catch (_) {
+    return false;
+  }
+}
+
+async function recordAdminAuthFailure(request, env, scope) {
+  if (!env.SUBMIT_RATE || typeof env.SUBMIT_RATE.get !== 'function' || typeof env.SUBMIT_RATE.put !== 'function') return;
+  try {
+    const key = await adminAuthRateKey(request, scope);
+    const count = (Number(await env.SUBMIT_RATE.get(key)) || 0) + 1;
+    await env.SUBMIT_RATE.put(key, String(count), { expirationTtl: ADMIN_AUTH_WINDOW_SECONDS });
+  } catch (_) { /* best-effort throttle */ }
+}
+
 async function authorizeBugAdmin(request, env) {
   // A dedicated bug token never enables the unrelated PD/plugin readers.
   const expectedToken = env.BUG_REPORTS_ADMIN_TOKEN || env.ADMIN_TOKEN;
   if (!expectedToken) return bugResponse({ ok: false, error: 'Developer inbox access is not configured.' }, 501);
+  if (await checkAdminAuthRateLimit(request, env, 'bug')) {
+    return bugResponse({ ok: false, error: 'Too many authentication attempts.' }, 429);
+  }
   const authorization = (request.headers.get('Authorization') || '').match(/^Bearer\s+(\S+)$/i);
   if (!authorization || !(await timingSafeTokenEq(authorization[1], expectedToken))) {
+    await recordAdminAuthFailure(request, env, 'bug');
     return bugResponse({ ok: false, error: 'Unauthorized.' }, 401);
   }
   if (!env.BUG_REPORTS) return bugResponse({ ok: false, error: 'Report storage is unavailable. Please try again later.' }, 503);
@@ -940,16 +986,20 @@ async function handleBugList(request, env, url) {
 }
 
 async function handlePdList(request, env, url) {
-  if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pdSubmissions (or use `wrangler kv key list`).' }, 501);
-  if (!env.PD_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Missing PD_SUBMISSIONS KV binding.' }, 500);
+  if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pdSubmissions (or use `wrangler kv key list`).' }, 501, BUG_RESPONSE_HEADERS);
+  if (!env.PD_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Missing PD_SUBMISSIONS KV binding.' }, 500, BUG_RESPONSE_HEADERS);
+  if (await checkAdminAuthRateLimit(request, env, 'admin')) return jsonResponse({ ok: false, error: 'Too many authentication attempts.' }, 429, BUG_RESPONSE_HEADERS);
   const token = url.searchParams.get('token') || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
-  if (token !== env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
+  if (!token || !(await timingSafeTokenEq(token, env.ADMIN_TOKEN))) {
+    await recordAdminAuthFailure(request, env, 'admin');
+    return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401, BUG_RESPONSE_HEADERS);
+  }
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
   const listed = await env.PD_SUBMISSIONS.list({ prefix: 'pd:', limit });
   const keys = listed.keys.map(k => k.name).sort().reverse().slice(0, limit); // newest first
   const submissions = [];
   for (const k of keys) { const v = await env.PD_SUBMISSIONS.get(k); if (v) { try { submissions.push({ id: k, ...JSON.parse(v) }); } catch (_) {} } }
-  return jsonResponse({ ok: true, count: submissions.length, submissions });
+  return jsonResponse({ ok: true, count: submissions.length, submissions }, 200, BUG_RESPONSE_HEADERS);
 }
 
 // ── Tool Forge plugin submissions → Cloudflare KV (PRIVATE, not GitHub) ──
@@ -1051,22 +1101,27 @@ async function handlePluginSubmit(request, env, intake) {
     },
     source: pl.source,
   };
-  const id = `plugin:${Date.now()}:${slug}:${(crypto.randomUUID && crypto.randomUUID().slice(0, 8)) || Math.floor(Math.random() * 1e9).toString(36)}`;
+  const id = `plugin:${Date.now()}:${slug}:${crypto.randomUUID().slice(0, 8)}`;
   try {
     await env.PLUGIN_SUBMISSIONS.put(id, JSON.stringify(record), {
+      expirationTtl: BUG_REPORT_RETENTION_SECONDS,
       metadata: { submitted_at: submittedAt, id: pl.id, label: record.metadata.label, target: pl.target, pii: piiFindings.length > 0, country: record.submitter.ip_country },
     });
-  } catch (e) {
-    return jsonResponse({ ok: false, error: 'Could not store submission: ' + e.message }, 502);
+  } catch (_) {
+    return jsonResponse({ ok: false, error: 'Could not store submission. Please try again.' }, 502);
   }
   return jsonResponse({ ok: true, id, slug, pii_findings_count: piiFindings.length, structure_ok: structIssues.length === 0 }, 201);
 }
 
 async function handlePluginList(request, env, url) {
-  if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pluginSubmissions (or use `wrangler kv key list`).' }, 501);
-  if (!env.PLUGIN_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Missing PLUGIN_SUBMISSIONS KV binding.' }, 500);
+  if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pluginSubmissions (or use `wrangler kv key list`).' }, 501, BUG_RESPONSE_HEADERS);
+  if (!env.PLUGIN_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Missing PLUGIN_SUBMISSIONS KV binding.' }, 500, BUG_RESPONSE_HEADERS);
+  if (await checkAdminAuthRateLimit(request, env, 'admin')) return jsonResponse({ ok: false, error: 'Too many authentication attempts.' }, 429, BUG_RESPONSE_HEADERS);
   const token = url.searchParams.get('token') || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
-  if (!timingSafeEq(token, env.ADMIN_TOKEN)) return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
+  if (!token || !(await timingSafeTokenEq(token, env.ADMIN_TOKEN))) {
+    await recordAdminAuthFailure(request, env, 'admin');
+    return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401, BUG_RESPONSE_HEADERS);
+  }
   const limit = Math.min(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 200);
   const includeSource = url.searchParams.get('source') === '1'; // omit the (large) source unless explicitly requested
   const listed = await env.PLUGIN_SUBMISSIONS.list({ prefix: 'plugin:', limit });
@@ -1076,7 +1131,7 @@ async function handlePluginList(request, env, url) {
     const v = await env.PLUGIN_SUBMISSIONS.get(k);
     if (v) { try { const rec = JSON.parse(v); if (!includeSource) delete rec.source; submissions.push({ id: k, ...rec }); } catch (_) {} }
   }
-  return jsonResponse({ ok: true, count: submissions.length, submissions });
+  return jsonResponse({ ok: true, count: submissions.length, submissions }, 200, BUG_RESPONSE_HEADERS);
 }
 
 // PD completion credentials. Secure-by-default reviewed issuance requires BOTH
@@ -1580,7 +1635,7 @@ async function handlePdIssue(request, env) {
   if (boundedBody.status) return jsonResponse({ ok: false, error: boundedBody.error }, boundedBody.status);
   const rawBody = boundedBody.text;
   let p;
-  try { p = JSON.parse(rawBody); } catch (err) { return jsonResponse({ ok: false, error: 'Invalid JSON: ' + err.message }, 400); }
+  try { p = JSON.parse(rawBody); } catch (_) { return jsonResponse({ ok: false, error: 'Invalid JSON.' }, 400); }
 
   let payload, signingPrivateKey, signingPublicKey, keyId, reviewedIssuance = null, selfPacedIntake = null;
   if (isObject(p) && p.decision != null) {
@@ -1590,8 +1645,12 @@ async function handlePdIssue(request, env) {
     if (!env.PD_ISSUANCE_LEDGER || typeof env.PD_ISSUANCE_LEDGER.get !== 'function' || typeof env.PD_ISSUANCE_LEDGER.put !== 'function') {
       return jsonResponse({ ok: false, error: 'Reviewed credential issuance requires the private PD_ISSUANCE_LEDGER R2 binding.', code: 'issuance_ledger_required' }, 501);
     }
+    if (await checkAdminAuthRateLimit(request, env, 'pd_issuer')) return jsonResponse({ ok: false, error: 'Too many authentication attempts.' }, 429);
     const match = (request.headers.get('Authorization') || '').match(/^Bearer\s+(.+)$/i);
-    if (!match || !(await timingSafeTokenEq(match[1], env.PD_ISSUER_AUTH_TOKEN))) return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
+    if (!match || !(await timingSafeTokenEq(match[1], env.PD_ISSUER_AUTH_TOKEN))) {
+      await recordAdminAuthFailure(request, env, 'pd_issuer');
+      return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401);
+    }
     const keyConfig = pdReviewedKeyConfig(env);
     if (!keyConfig.ok) return jsonResponse({ ok: false, error: keyConfig.error, code: 'reviewed_key_configuration_invalid' }, 501);
     const err = validateReviewedDecision(p.decision);
@@ -1686,8 +1745,9 @@ function handlePdIssuerKey(env) {
 async function handlePdVerify(request, env) {
   const contentType = request.headers.get('Content-Type') || '';
   if (!contentType.toLowerCase().includes('application/json')) return jsonResponse({ ok: false, error: 'Content-Type must be application/json.' }, 415);
-  const rawBody = await request.text();
-  if (bodyTooLarge(rawBody)) return jsonResponse({ ok: false, error: `Body exceeds ${MAX_BODY_BYTES} bytes.` }, 413);
+  const boundedBody = await readBugBody(request);
+  if (boundedBody.status) return jsonResponse({ ok: false, error: boundedBody.error }, boundedBody.status);
+  const rawBody = boundedBody.text;
   let cred;
   const noAssurance = { reviewed: false, institutional: false };
   const invalid = (profile, reason, status = 200, error) => jsonResponse({
@@ -1695,7 +1755,7 @@ async function handlePdVerify(request, env) {
     ...(reason ? { reason } : {}), ...(error ? { error } : {}),
   }, status);
   try { const p = JSON.parse(rawBody); cred = (p && p.credential) || p; }
-  catch (err) { return invalid(null, 'invalid_json', 400, 'Invalid JSON: ' + err.message); }
+  catch (_) { return invalid(null, 'invalid_json', 400, 'Invalid JSON.'); }
   if (!isObject(cred) || !isObject(cred.payload) || !isNonBlank(cred.signature, 1000)) {
     return invalid(null, 'malformed_credential', 400, 'credential {payload, signature} required.');
   }
@@ -1804,13 +1864,41 @@ function sourceMetadataSafeUrl(value) {
   if (!safe) return '';
   try {
     const parsed = new URL(safe);
-    const hostname = parsed.hostname.toLowerCase();
+    const rawHost = parsed.hostname.toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '');
+    if (!rawHost) return '';
     if (parsed.username || parsed.password || (parsed.port && parsed.port !== '80' && parsed.port !== '443')) return '';
-    if (hostname === 'localhost' || hostname.endsWith('.local') || hostname.endsWith('.internal')) return '';
-    if (/^(127|10|0)\./.test(hostname) || /^192\.168\./.test(hostname) || /^169\.254\./.test(hostname)) return '';
-    const octets = hostname.match(/^172\.(\d{1,2})\./);
-    if (octets && Number(octets[1]) >= 16 && Number(octets[1]) <= 31) return '';
-    if (hostname === '::1' || hostname.startsWith('fc') || hostname.startsWith('fd')) return '';
+    if (
+      rawHost === 'localhost' ||
+      rawHost.endsWith('.localhost') ||
+      rawHost.endsWith('.local') ||
+      rawHost.endsWith('.internal') ||
+      rawHost === 'metadata.google' ||
+      rawHost.endsWith('.metadata.google')
+    ) return '';
+    // Block IPv6 loopback, unspecified, ULA (fc00::/7), link-local (fe80::/10), IPv4-mapped (::ffff:0:0/96), NAT64 (64:ff9b::/96), Teredo (2001:0::/32).
+    if (rawHost.includes(':')) {
+      if (
+        rawHost === '::1' ||
+        rawHost === '::' ||
+        /^(?:0+:){5}0*:[01]$/.test(rawHost) ||
+        /^(?:0+:){7}0*1?$/.test(rawHost) ||
+        /^f[cd][0-9a-f]{0,2}:/.test(rawHost) ||
+        /^fe[89ab][0-9a-f]?:/.test(rawHost) ||
+        rawHost.startsWith('::ffff:') ||
+        rawHost.startsWith('0:0:0:0:0:ffff:') ||
+        rawHost.startsWith('64:ff9b:') ||
+        /^2001:0*:/.test(rawHost)
+      ) return '';
+    }
+    if (/^(127|10|0)\./.test(rawHost) || /^192\.168\./.test(rawHost) || /^169\.254\./.test(rawHost)) return '';
+    const rfc1918 = rawHost.match(/^172\.(\d{1,3})\./);
+    if (rfc1918 && Number(rfc1918[1]) >= 16 && Number(rfc1918[1]) <= 31) return '';
+    const cgnat = rawHost.match(/^100\.(\d{1,3})\./);
+    if (cgnat && Number(cgnat[1]) >= 64 && Number(cgnat[1]) <= 127) return '';
+    const bench = rawHost.match(/^198\.(\d{1,3})\./);
+    if (bench && (Number(bench[1]) === 18 || Number(bench[1]) === 19)) return '';
+    // Reject non-dotted numeric/hex/octal IPv4 encodings (e.g. 2130706433, 0x7f000001).
+    if (/^(?:0x[0-9a-f]+|\d+)$/i.test(rawHost)) return '';
     return parsed.toString();
   } catch (_) {
     return '';
@@ -1986,6 +2074,9 @@ async function handleSourceMetadata(request, env, url) {
   const cache = caches.default;
   const cached = await cache.match(cacheKey);
   if (cached) return jsonResponse({ ...(await cached.json()), cached: true });
+
+  const refusal = await searchBudgetRefusal(request, env);
+  if (refusal) return jsonResponse({ ok: false, error: refusal }, 429);
 
   const fetched = await fetchSourceMetadataResponse(target);
   if (fetched.error) return jsonResponse({ ok: false, error: fetched.error }, 502);

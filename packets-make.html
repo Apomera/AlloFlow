@@ -38,7 +38,7 @@
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M12 3 3 7.5l9 4.5 9-4.5z"/><path d="m3 12 9 4.5 9-4.5"/><path d="m3 16.5 9 4.5 9-4.5"/></svg>
       <span id="product-name">AlloFlow Packets</span>
     </a>
-    <a class="top-link" href="packets.html#check">What a practice file can and cannot do</a>
+    <a class="top-link" href="packets-results.html">Add up results</a>
   </div>
 <details class="proof">
   <summary class="wrap wrap-narrow">
@@ -73,7 +73,7 @@
     <div id="reopen" class="reopen" hidden>
       <p class="reopen-row">
         <button type="button" class="btn btn-text btn-small" id="reopen-choose" aria-describedby="reopen-hint">Open a file I made</button>
-        <span class="hint" id="reopen-hint">Start from a practice file you saved before, then change what you want. You can also drop the file here. It is read on this device only.</span>
+        <span class="hint" id="reopen-hint">Start from a practice file you saved before.<span class="reopen-more"> Then change what you want. You can also drop the file here. It is read on this device only.</span></span>
       </p>
       <input type="file" id="reopen-file" accept=".html,.htm,text/html" hidden aria-label="A practice file you made before">
       <div id="reopen-note" class="note reopen-note" tabindex="-1" hidden>
@@ -131,7 +131,7 @@
           <option value="medium">Medium</option>
           <option value="all">All</option>
         </select>
-        <span class="hint" id="choice-level-hint">How many answers to choose from. Medium matches Word Sounds.</span>
+        <span class="hint" id="choice-level-hint">How many answers to choose from. Medium matches the AlloFlow app.</span>
         <details class="why" id="choice-level-why">
           <summary>What each level does</summary>
           <ul>
@@ -141,7 +141,10 @@
           </ul>
         </details>
       </div>
-      <p id="not-offered" class="aside-note"></p>
+      <details class="why aside-note" id="not-offered" hidden>
+        <summary id="not-offered-summary">Activities not in this version</summary>
+        <p id="not-offered-text"></p>
+      </details>
       <div class="actions">
         <p id="activity-count" class="count-line" role="status"></p>
         <button type="button" class="btn btn-primary push" id="next-1">Next: choose the words</button>
@@ -163,6 +166,21 @@
       <div id="panel-pick">
         <div class="fields">
           <div class="field">
+            <label for="f-stage">Stage</label>
+            <select id="f-stage" aria-describedby="stage-hint"><option value="">Any stage</option></select>
+            <span class="hint" id="stage-hint">A stage keeps to the letter patterns taught by then.</span>
+            <span class="hint" id="stage-k-note" hidden>Common Core places sh, ch and th in grade 1. Choose 'Any stage' to use them earlier.</span>
+            <span class="hint" id="stage-spell-note" hidden>For spelling, choose a stage: your students then spell only patterns they have been taught.</span>
+            <details class="why" id="stage-why" hidden>
+              <summary>Why<span class="sr-only"> this stage has these words</span></summary>
+              <p id="stage-why-text"></p>
+            </details>
+            <details class="why" id="stage-other" hidden>
+              <summary>Other curricula</summary>
+              <label class="radio"><input type="checkbox" id="f-stage-other"> <span id="stage-other-line">Show the stages of other curricula in the list</span></label>
+            </details>
+          </div>
+          <div class="field">
             <label for="f-sound">Sound</label>
             <select id="f-sound"><option value="">Any sound</option></select>
           </div>
@@ -179,21 +197,6 @@
             <label for="f-shape">Word shape</label>
             <select id="f-shape" aria-describedby="shape-hint"><option value="">Any shape</option></select>
             <span class="hint" id="shape-hint">C is a consonant sound. V is a vowel sound.</span>
-          </div>
-          <div class="field">
-            <label for="f-stage">Stage</label>
-            <select id="f-stage" aria-describedby="stage-hint"><option value="">Any stage</option></select>
-            <span class="hint" id="stage-hint">A stage keeps to the letter patterns taught by then.</span>
-            <span class="hint" id="stage-k-note" hidden>Common Core places sh, ch and th in grade 1. Choose 'Any stage' to use them earlier.</span>
-            <span class="hint" id="stage-spell-note" hidden>For spelling, choose a stage: your students then spell only patterns they have been taught.</span>
-            <details class="why" id="stage-why" hidden>
-              <summary>Why<span class="sr-only"> this stage has these words</span></summary>
-              <p id="stage-why-text"></p>
-            </details>
-            <details class="why" id="stage-other" hidden>
-              <summary>Other curricula</summary>
-              <label class="radio"><input type="checkbox" id="f-stage-other"> <span id="stage-other-line">Show the stages of other curricula in the list</span></label>
-            </details>
           </div>
         </div>
         <div class="result">
@@ -342,6 +345,7 @@
       <div id="summary" class="summary" hidden>
         <h3>The file is ready</h3>
         <p id="summary-facts" class="summary-facts"></p>
+        <p id="size-warn" class="note" hidden></p>
         <dl>
           <dt>Words</dt>
           <dd id="sum-words"></dd>
@@ -366,7 +370,7 @@
           <li>Each student opens it in a browser, finishes it and presses the main button at the end, <strong id="csv-label">Save results as a spreadsheet file (CSV)</strong>. They hand that file back to you.</li>
           <li>Add the results up on <a href="packets-results.html">Add up results</a>, or open them in a spreadsheet. In AlloFlow: Class Analytics, Add take-home results.</li>
         </ol>
-        <p class="after-phone">On a phone or tablet, a student opens the file on <a href="packets-open.html">Open a practice file</a>: apomera.github.io/AlloFlow/packets-open.html.</p>
+        <p class="after-phone">On a phone or tablet, a student opens the file on <a href="packets-open.html">Open a practice file or check</a>: apomera.github.io/AlloFlow/packets-open.html.</p>
         <details class="why" id="learner-tip">
           <summary>Fill in a student's code name for them</summary>
           <p>When the file is on a website or a shared link, add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>

@@ -106,45 +106,48 @@ function include(name) { if (String(name) !== 'Portal') throw srError_('denied',
 /** Run from the Apps Script editor as the managed account that will own the deployment. */
 function setupSchoolRewardsRepository(config) {
   config = object_(config);
-  var email = activeEmail_(), props = PropertiesService.getScriptProperties(), existing = configured_();
-  if (!existing) {
-    if (normalizeEmail_(Session.getEffectiveUser().getEmail()) !== email) throw srError_('denied', 'Initial setup must be run by the deployment owner.');
-  } else if (currentActor_().role !== 'admin') throw srError_('denied', 'Only an administrator can update setup.');
-  var domain = normalizeDomain_(config.allowedDomain || emailDomain_(email));
-  if (!domain || emailDomain_(email) !== domain) throw srError_('bad_config', 'Allowed domain must match the setup account.');
-  var adminEmail = normalizeEmail_(config.bootstrapAdmin || email);
-  if (!existing && adminEmail !== email) throw srError_('bad_config', 'The first administrator must be the setup account.');
-  var book;
-  if (!existing) {
-    var folder = DriveApp.createFolder('AlloFlow School Rewards Repository');
-    setPrivate_(folder);
-    book = SpreadsheetApp.create('AlloFlow School Rewards - Protected Ledger');
-    var file = DriveApp.getFileById(book.getId());
-    try { file.moveTo(folder); } catch (_) {}
-    setPrivate_(file);
-    props.setProperties({ SR_ALLOWED_DOMAIN: domain, SR_BOOTSTRAP_ADMIN: adminEmail, SR_FOLDER_ID: folder.getId(), SR_SPREADSHEET_ID: book.getId(), SR_SETUP_STATE: 'initializing' }, false);
-  } else {
-    if (domain !== props.getProperty('SR_ALLOWED_DOMAIN')) throw srError_('bad_config', 'Changing the domain requires a new reviewed deployment.');
-    book = book_();
-  }
-  if (existing) assertNoPendingClassLinkOperation_(book);
-  var priorSchemaVersion = existing ? number_(configMap_(book).schemaVersion) : SR_VERSION;
-  if (existing && !priorSchemaVersion) throw srError_('schema', 'The existing repository has no valid schema version. Run the reviewed migration path before reconfiguration.');
-  if (existing && priorSchemaVersion >= 6 && !mailDeliverySecret_(false)) throw srError_('mail_integrity', 'The mail delivery signing secret is unavailable. Restore the original Script Property before changing this repository.');
-  initializeSheets_(book);
-  if (!existing) mailDeliverySecret_(true);
-  if (existing && priorSchemaVersion >= 6) ensureMailSafetySweepTrigger_();
-  putConfig_(book, { service: SR_SERVICE, schemaVersion: priorSchemaVersion, allowedDomain: domain, schoolName: text_(config.schoolName, 160, 'School'), academicYear: text_(config.academicYear, 30, ''), webAppUrl: webAppUrl_(config.webAppUrl || ''), levelThresholds: normalizeLevelThresholds_(config.levelThresholds).join(',') });
-  upsertMemberRow_(book, { email: adminEmail, displayName: text_(config.adminDisplayName, 120, 'School Rewards Administrator'), role: 'admin', active: true });
-  (Array.isArray(config.members) ? config.members : []).forEach(function(member) { upsertMemberRow_(book, normalizeMember_(member, domain)); });
-  var students = Array.isArray(config.students) ? config.students : [];
-  if (students.length > 5000) throw srError_('bad_config', 'Student roster exceeds 5,000 records.');
-  students.forEach(function(student) { upsertStudentRow_(book, normalizeStudent_(student, domain, '')); });
-  if (!categories_(book).length && config.seedHowls !== false) seedHowlCategories_(book);
-  props.setProperty('SR_SETUP_STATE', 'ready');
-  appendAudit_({ event: existing ? 'REPOSITORY_RECONFIGURED' : 'REPOSITORY_CREATED', type: 'repository', id: 'repository', summary: existing ? 'Repository configuration reviewed' : 'School rewards repository created' }, { email: email, role: 'admin' });
-  if (!existing) ensureMailSafetySweepTrigger_();
-  return { ok: true, service: SR_SERVICE, version: SR_VERSION, repositoryVersion: priorSchemaVersion, spreadsheetId: book.getId(), folderId: props.getProperty('SR_FOLDER_ID'), allowedDomain: domain };
+  var email = activeEmail_();
+  return locked_(function() {
+    var props = PropertiesService.getScriptProperties(), existing = configured_();
+    if (!existing) {
+      if (normalizeEmail_(Session.getEffectiveUser().getEmail()) !== email) throw srError_('denied', 'Initial setup must be run by the deployment owner.');
+    } else if (currentActor_().role !== 'admin') throw srError_('denied', 'Only an administrator can update setup.');
+    var domain = normalizeDomain_(config.allowedDomain || emailDomain_(email));
+    if (!domain || emailDomain_(email) !== domain) throw srError_('bad_config', 'Allowed domain must match the setup account.');
+    var adminEmail = normalizeEmail_(config.bootstrapAdmin || email);
+    if (!existing && adminEmail !== email) throw srError_('bad_config', 'The first administrator must be the setup account.');
+    var book;
+    if (!existing) {
+      var folder = DriveApp.createFolder('AlloFlow School Rewards Repository');
+      setPrivate_(folder);
+      book = SpreadsheetApp.create('AlloFlow School Rewards - Protected Ledger');
+      var file = DriveApp.getFileById(book.getId());
+      try { file.moveTo(folder); } catch (_) {}
+      setPrivate_(file);
+      props.setProperties({ SR_ALLOWED_DOMAIN: domain, SR_BOOTSTRAP_ADMIN: adminEmail, SR_FOLDER_ID: folder.getId(), SR_SPREADSHEET_ID: book.getId(), SR_SETUP_STATE: 'initializing' }, false);
+    } else {
+      if (domain !== props.getProperty('SR_ALLOWED_DOMAIN')) throw srError_('bad_config', 'Changing the domain requires a new reviewed deployment.');
+      book = book_();
+    }
+    if (existing) assertNoPendingClassLinkOperation_(book);
+    var priorSchemaVersion = existing ? number_(configMap_(book).schemaVersion) : SR_VERSION;
+    if (existing && !priorSchemaVersion) throw srError_('schema', 'The existing repository has no valid schema version. Run the reviewed migration path before reconfiguration.');
+    if (existing && priorSchemaVersion >= 6 && !mailDeliverySecret_(false)) throw srError_('mail_integrity', 'The mail delivery signing secret is unavailable. Restore the original Script Property before changing this repository.');
+    initializeSheets_(book);
+    if (!existing) mailDeliverySecret_(true);
+    if (existing && priorSchemaVersion >= 6) ensureMailSafetySweepTrigger_();
+    putConfig_(book, { service: SR_SERVICE, schemaVersion: priorSchemaVersion, allowedDomain: domain, schoolName: text_(config.schoolName, 160, 'School'), academicYear: text_(config.academicYear, 30, ''), webAppUrl: webAppUrl_(config.webAppUrl || ''), levelThresholds: normalizeLevelThresholds_(config.levelThresholds).join(',') });
+    upsertMemberRow_(book, { email: adminEmail, displayName: text_(config.adminDisplayName, 120, 'School Rewards Administrator'), role: 'admin', active: true });
+    (Array.isArray(config.members) ? config.members : []).forEach(function(member) { upsertMemberRow_(book, normalizeMember_(member, domain)); });
+    var students = Array.isArray(config.students) ? config.students : [];
+    if (students.length > 5000) throw srError_('bad_config', 'Student roster exceeds 5,000 records.');
+    students.forEach(function(student) { upsertStudentRow_(book, normalizeStudent_(student, domain, '')); });
+    if (!categories_(book).length && config.seedHowls !== false) seedHowlCategories_(book);
+    props.setProperty('SR_SETUP_STATE', 'ready');
+    appendAudit_({ event: existing ? 'REPOSITORY_RECONFIGURED' : 'REPOSITORY_CREATED', type: 'repository', id: 'repository', summary: existing ? 'Repository configuration reviewed' : 'School rewards repository created' }, { email: email, role: 'admin' });
+    if (!existing) ensureMailSafetySweepTrigger_();
+    return { ok: true, service: SR_SERVICE, version: SR_VERSION, repositoryVersion: priorSchemaVersion, spreadsheetId: book.getId(), folderId: props.getProperty('SR_FOLDER_ID'), allowedDomain: domain };
+  });
 }
 
 /** One-time additive migration for existing schema-v3 repositories. */
@@ -1058,12 +1061,14 @@ var SR_REDACTION_PLAN = [
   ['Students', 'Id', { FirstName: 'Redacted', LastInitial: '', Grade: '', Homeroom: '', Active: false }],
   ['Ledger', 'StudentId', { Reason: SR_REDACTED_TEXT }],
   ['Receipts', 'StudentId', { RecipientEmail: '' }],
+  ['Statements', 'StudentId', { Error: '' }],
   ['Guardians', 'StudentId', { GuardianEmail: '', GuardianName: '', Relationship: '', Active: false }],
+  ['GuardianDigests', 'StudentId', { GuardianEmailHash: '', Error: '' }],
   ['PrintModels', 'OwnerStudentId', { Title: SR_REDACTED_TEXT, Description: '', CatalogTitle: '', CatalogDescription: '', CreatorLabel: '' }],
   ['PrintRequests', 'StudentId', { StudentNote: '', StaffReason: '' }],
   ['PrintAssets', 'OwnerStudentId', { FileName: '' }],
   ['PrintPublications', 'OwnerStudentId', { CatalogTitle: '', CatalogDescription: '', CreatorLabel: '' }],
-  ['MailOutbox', 'StudentId', { PayloadJson: '', ResolutionNote: '' }]
+  ['MailOutbox', 'StudentId', { PayloadJson: '', Error: '', ResolutionNote: '' }]
 ];
 // Every sheet that holds anything about one student, for answering a records
 // request. Balances, orders and holds carry only ids, amounts and dates.
@@ -1182,6 +1187,10 @@ function redactSchoolRewardsStudent(request) {
       var touched = redactSheetRows_(book, entry[0], entry[1], studentId, replacements);
       if (touched) { cleared[entry[0]] = touched; rows += touched; }
     });
+    if (book.getSheetByName('ClaimTokens')) {
+      var claimTouched = redactSheetRows_(book, 'ClaimTokens', 'ClaimedByStudentId', studentId, { Reason: SR_REDACTED_TEXT });
+      if (claimTouched) { cleared.ClaimTokens = claimTouched; rows += claimTouched; }
+    }
     // Stamped only when something actually changed, so running this twice is a
     // genuine no-op rather than a second audited edit.
     if (rows) redactSheetRows_(book, 'Students', 'Id', studentId, { UpdatedAt: now_() });

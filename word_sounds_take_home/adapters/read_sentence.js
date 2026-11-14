@@ -83,8 +83,15 @@ module.exports = {
     if (typeof text !== 'string' || !text.trim() || raw.length < 2) return { missing: ['board'] };
     // One choice per spelling (word_sounds_module.js:6378-6385).
     var distinct = {}, options = [];
-    raw.forEach(function (o) { var k = core.packAudioKey(o.normalize('NFC')); if (!distinct[k]) { distinct[k] = o; options.push(o); } });
-    var correct = distinct[core.packAudioKey(word.normalize('NFC'))];
+    // One choice for each recording key. For the answer's key the word's own spelling is kept (2026-11-13, answer audit):
+    // the first spelling was kept before, so a distractor written "ice  cream" stood for the answer and no choice was right.
+    var answerKey = core.packAudioKey(word.normalize('NFC'));
+    raw.forEach(function (o) {
+      var k = core.packAudioKey(o.normalize('NFC'));
+      if (!distinct[k]) { distinct[k] = o; options.push(o); }
+      else if (k === answerKey && o === word.trim() && distinct[k] !== o) { options[options.indexOf(distinct[k])] = o; distinct[k] = o; }
+    });
+    var correct = distinct[answerKey];
     if (options.length < 2 || !correct) return { missing: ['board'] };
     var parts = sentenceParts(core, text, board, word);
     if (!parts) return { missing: ['board'] };
@@ -95,7 +102,8 @@ module.exports = {
       picture: picture, prompt: prompt, sentenceAudio: env.packClip(text), introAudio: [prompt], answerAudio: [] } };
   },
   render: function (item, ctx) {
-    var norm = function (s) { return String(s == null ? '' : s).toLowerCase().trim(); };
+    // The key prepare() uses (2026-11-13): spaces or an accent written two ways are one choice.
+    var norm = function (s) { var t = String(s == null ? '' : s); try { t = t.normalize('NFC'); } catch (_) {} return t.toLowerCase().trim().replace(/\s+/g, ' '); };
     var picture = ctx.image(item.picture);
     var blank = ctx.el('span', { style: 'display:inline-block;min-width:4.5em;border-bottom:3px dashed var(--muted);text-align:center' }, [
       ctx.el('span', { 'aria-hidden': 'true', text: '\u00a0' }), ctx.el('span', { class: 'sr', text: ctx.L.read_sentence_blank })]);

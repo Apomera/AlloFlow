@@ -29,6 +29,19 @@
 //   --port N             the local port (default 17391)
 //   --no-keep-awake      do not ask Windows to stay awake during the run
 //
+// Another recipe (any of these needs --out: the store in the repo keeps the bank recipe, and a store holds one recipe):
+//   --recipe sentence    all of the below: fp32, "Here is the word... {word}." then "The word is... {word}.",
+//                        gentle trim, -20 LUFS, 48 kbps (a part given on its own wins)
+//   --dtype <q8|fp16|fp32>  the model's precision; anything but q8 runs the same engine files in a worker of this tool's own
+//   --carrier "<text>"   voice the word at the end of this sentence ({word} marks it) and cut it out at the pause;
+//                        Kokoro pauses after "..." (105 to 240 ms) but hardly after a comma, colon or full stop
+//   --carrier-retry "<text>"  a second sentence for words whose first cut is not clean; then the bare word
+//   --no-bare-fallback   with --carrier: a word with no clean cut fails instead of being voiced alone
+//   --bare-lengths <file>  with --carrier: earlier word lengths ({word: seconds}), so each word is not voiced alone too
+//   --trim gentle        silence under 0.3% of the peak; 60 ms / 120 ms margins; 5 ms / 30 ms fades
+//   --loudness <LUFS>    every clip to this loudness (BS.1770, over the word), true peak at most -1.5 dBTP
+//   --bitrate <kbps>     libopus bit rate (default 48)
+//
 // The store: <out>/<first letter>.json = { "_meta": {...}, "<word>": "data:audio/webm;base64,..." },
 // <out>/index.json = this store's words -> shard, counts, engine, voice, dates, and <out>/review.txt =
 // the words held back or failed, for a person. Shards are written whole to a temporary file in the
@@ -60,6 +73,10 @@ const ENGINE = Object.freeze({
   voice: 'af_heart', speed: 1, language: 'en-US', source: 'generated_speech',
   post: 'trim(1% peak, 30ms/60ms margins) + ramp(2ms/6ms) + ffmpeg libopus 48kbps mono webm',
 });
+const MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
+// q8 = model_quantized.onnx (88 MB, what the app plays); fp32 = model.onnx (310 MB), fp16 = model_fp16.onnx (155 MB).
+const DEFAULT_DTYPE = 'q8';
+const DTYPES = Object.freeze(['q8', 'fp16', 'fp32']);
 const SHARD_FORMAT = 'alloflow-word-audio-shard/1';
 const INDEX_FORMAT = 'alloflow-word-audio-index/1';
 const URI_PREFIX = 'data:audio/webm;base64,';
@@ -365,35 +382,274 @@ const expectedSeconds = sounds => 0.415 + 0.046 * sounds;
 // 0.089 to 0.103 rms (peak 0.38 to 0.69), 20 new ones 0.093 +/- 0.003. A clip far outside that is not like the bank.
 const GATES = Object.freeze({ minSeconds: 0.25, maxSeconds: 2.5, under: 0.28, over: 0.45, minPeak: 0.2, minRms: 0.05, maxRms: 0.16, minAudibleSeconds: 0.08,
   maxClippedFraction: 0.0005, maxTailRatio: 0.02, minSourceTailSeconds: 0.06, minSourceLeadSeconds: 0.01, encodedDurationSlack: 0.08 });
+// The gentle trim and the loudness step: clips keep 90 ms more quiet, and a word at the end of a sentence is said
+// more softly (about 3 dB) before the loudness step evens it out, so only a far-too-quiet clip is refused here.
+const RECIPE_GATES = Object.freeze(Object.assign({}, GATES, { minRms: 0.02, offsetSeconds: 0.09 }));
 
 // The automatic checks on one trimmed clip. `trimmed` is what trimWav returned; `sounds` the word's sound count.
-function checkClip(trimmed, sounds) {
+function checkClip(trimmed, sounds, gates = GATES) {
   const m = measurePcm(trimmed.samples, trimmed.rate);
   const failures = [];
   const seconds = value => value.toFixed(2) + ' s';
-  if (m.durationSeconds < GATES.minSeconds || m.durationSeconds > GATES.maxSeconds) failures.push('duration ' + seconds(m.durationSeconds) + ' is outside 0.25 to 2.5 s');
+  if (m.durationSeconds < gates.minSeconds || m.durationSeconds > gates.maxSeconds) failures.push('duration ' + seconds(m.durationSeconds) + ' is outside 0.25 to 2.5 s');
   else if (sounds > 0) {
-    const expected = expectedSeconds(sounds);
-    if (m.durationSeconds < expected - GATES.under || m.durationSeconds > expected + GATES.over) {
-      failures.push('duration ' + seconds(m.durationSeconds) + ' is not plausible for ' + sounds + ' sounds (' + seconds(Math.max(GATES.minSeconds, expected - GATES.under)) + ' to ' + seconds(expected + GATES.over) + ')');
+    const expected = expectedSeconds(sounds) + (gates.offsetSeconds || 0);
+    if (m.durationSeconds < expected - gates.under || m.durationSeconds > expected + gates.over) {
+      failures.push('duration ' + seconds(m.durationSeconds) + ' is not plausible for ' + sounds + ' sounds (' + seconds(Math.max(gates.minSeconds, expected - gates.under)) + ' to ' + seconds(expected + gates.over) + ')');
     }
   }
-  if (m.peak < GATES.minPeak || m.rms < GATES.minRms || m.audibleSeconds < GATES.minAudibleSeconds) failures.push('silent or much quieter than the bank (peak ' + m.peak.toFixed(3) + ', rms ' + m.rms.toFixed(3) + ')');
-  else if (m.rms > GATES.maxRms) failures.push('much louder than the bank (rms ' + m.rms.toFixed(3) + '; its clips are near 0.09)');
-  if (m.clippedFraction > GATES.maxClippedFraction || m.peak >= 0.999) failures.push('clipping (' + (m.clippedFraction * 100).toFixed(2) + '% of samples at full scale)');
-  if (m.peak > 0 && m.tailRms / m.peak > GATES.maxTailRatio) failures.push('the end is cut off (the last 30 ms are not quiet)');
-  else if (trimmed.sourceTailSilenceSeconds < GATES.minSourceTailSeconds) failures.push('the end is cut off (the voice stopped ' + Math.round(trimmed.sourceTailSilenceSeconds * 1000) + ' ms after the last sound)');
-  if (trimmed.sourceLeadSilenceSeconds < GATES.minSourceLeadSeconds) failures.push('the start is cut off (sound from the first sample)');
+  if (m.peak < gates.minPeak || m.rms < gates.minRms || m.audibleSeconds < gates.minAudibleSeconds) failures.push((gates === GATES ? 'silent or much quieter than the bank (peak ' : 'silent or far too quiet (peak ') + m.peak.toFixed(3) + ', rms ' + m.rms.toFixed(3) + ')');
+  else if (m.rms > gates.maxRms) failures.push('much louder than the bank (rms ' + m.rms.toFixed(3) + '; its clips are near 0.09)');
+  if (m.clippedFraction > gates.maxClippedFraction || m.peak >= 0.999) failures.push('clipping (' + (m.clippedFraction * 100).toFixed(2) + '% of samples at full scale)');
+  if (m.peak > 0 && m.tailRms / m.peak > gates.maxTailRatio) failures.push('the end is cut off (the last 30 ms are not quiet)');
+  else if (trimmed.sourceTailSilenceSeconds < gates.minSourceTailSeconds) failures.push('the end is cut off (the voice stopped ' + Math.round(trimmed.sourceTailSilenceSeconds * 1000) + ' ms after the last sound)');
+  if (trimmed.sourceLeadSilenceSeconds < gates.minSourceLeadSeconds) failures.push('the start is cut off (sound from the first sample)');
   return { ok: !failures.length, failures, measures: m };
 }
 
+// ---------------------------------------------------------------------------
+// The carrier recipe (--carrier, --trim gentle, --loudness): the word read at the end of a short
+// sentence after a comma, cut out at the pause; a gentler trim; every clip brought to one loudness.
+// Nothing here runs unless one of those options is given: the defaults above are untouched.
+// ---------------------------------------------------------------------------
+// gentle: silence is under 0.3% of the peak (about -50 dB); 60 ms kept before the first louder sample and
+// 120 ms after the last; 5 ms fade in and 30 ms fade out, both inside those kept margins.
+const GENTLE = Object.freeze({ floor: 0.003, beforeSeconds: 0.06, afterSeconds: 0.12, fadeInSeconds: 0.005, fadeOutSeconds: 0.03 });
+// The cut: frames of 10 ms every 5 ms; a frame is quiet under -40 dB of the take's loudest frame; the
+// pause before the word is the longest quiet stretch, at least 100 ms, with nothing else nearly as long.
+const CUT = Object.freeze({ frameSeconds: 0.01, hopSeconds: 0.005, quietDb: -40, minGapSeconds: 0.1, rivalRatio: 0.7, minRatio: 0.6, maxRatio: 1.8,
+  minPrefixSeconds: 0.25, minWordSeconds: 0.12, settleSeconds: 0.02, prefixTolerance: 0.3 });
+// Loudness: ITU-R BS.1770 K-weighted, gated over 400 ms blocks; measured over the word itself (first to last
+// louder sample), one block when the word is shorter than 400 ms. True peak: 4x oversampled.
+const LOUDNESS = Object.freeze({ target: -20, ceiling: -1.5, maxGainDb: 12 });
+const CARRIER_SLOT = '{word}';
+// Kokoro hardly pauses at a comma, colon or full stop (30 to 50 ms, often none: measured 2026-11-13);
+// after "..." it pauses 105 to 240 ms, which is what the cut needs.
+const RECIPES = Object.freeze({
+  sentence: Object.freeze({ dtype: 'fp32', carrier: 'Here is the word... {word}.', 'carrier-retry': 'The word is... {word}.', trim: 'gentle', loudness: '-20', bitrate: '48' }),
+});
+
+function readPcm(raw) {
+  assert(raw.length >= 46 && raw.toString('ascii', 0, 4) === 'RIFF' && raw.toString('ascii', 36, 40) === 'data', 'Expected loader PCM WAV');
+  assert(raw.readUInt16LE(20) === 1 && raw.readUInt16LE(22) === 1 && raw.readUInt16LE(34) === 16, 'Expected mono 16-bit PCM');
+  const rate = raw.readUInt32LE(24), length = Math.min(raw.readUInt32LE(40), raw.length - 44) >> 1;
+  const samples = new Float32Array(length);
+  for (let i = 0; i < length; i++) samples[i] = raw.readInt16LE(44 + i * 2) / 32768;
+  return { rate, samples };
+}
+function pcmToWav(samples, rate) {
+  const n = samples.length, wav = Buffer.alloc(44 + n * 2), ints = new Int16Array(n);
+  wav.write('RIFF', 0, 'ascii'); wav.writeUInt32LE(36 + n * 2, 4); wav.write('WAVEfmt ', 8, 'ascii');
+  wav.writeUInt32LE(16, 16); wav.writeUInt16LE(1, 20); wav.writeUInt16LE(1, 22); wav.writeUInt32LE(rate, 24); wav.writeUInt32LE(rate * 2, 28);
+  wav.writeUInt16LE(2, 32); wav.writeUInt16LE(16, 34); wav.write('data', 36, 'ascii'); wav.writeUInt32LE(n * 2, 40);
+  for (let i = 0; i < n; i++) { ints[i] = Math.max(-32768, Math.min(32767, Math.round(samples[i] * 32768))); wav.writeInt16LE(ints[i], 44 + i * 2); }
+  return { wav, samples: ints };
+}
+const peakOf = samples => { let peak = 0; for (let i = 0; i < samples.length; i++) { const a = Math.abs(samples[i]); if (a > peak) peak = a; } return peak; };
+
+// First and last sample at or over floor x peak, from a start index to an end index (exclusive).
+function soundEdges(samples, floorValue, from = 0, to = samples.length) {
+  let first = from, last = to - 1;
+  while (first < to && Math.abs(samples[first]) < floorValue) first++;
+  while (last >= first && Math.abs(samples[last]) < floorValue) last--;
+  return first < to && last >= first ? { first, last } : null;
+}
+
+// A piece of a take with the gentle margins and fades: what trimWav returns, so checkClip reads it the same way.
+function marginClip(samples, rate, first, last, limits = {}) {
+  const lower = limits.lower == null ? 0 : limits.lower, upper = limits.upper == null ? samples.length : limits.upper;
+  const start = Math.max(lower, first - Math.round(rate * GENTLE.beforeSeconds));
+  const end = Math.min(upper, last + 1 + Math.round(rate * GENTLE.afterSeconds));
+  const count = end - start, out = new Float32Array(count);
+  const fadeIn = Math.min(Math.round(rate * GENTLE.fadeInSeconds), Math.floor(count / 2), first - start);
+  const fadeOut = Math.min(Math.round(rate * GENTLE.fadeOutSeconds), Math.floor(count / 2), end - 1 - last);
+  for (let i = 0; i < count; i++) {
+    let gain = 1;
+    // Raised-cosine fades, only over the kept quiet: never over the word itself.
+    if (fadeIn > 0 && i < fadeIn) gain = 0.5 - 0.5 * Math.cos(Math.PI * i / fadeIn);
+    if (fadeOut > 0 && i >= count - fadeOut) gain = Math.min(gain, 0.5 - 0.5 * Math.cos(Math.PI * (count - 1 - i) / fadeOut));
+    out[i] = samples[start + i] * gain;
+  }
+  return { float: out, start, end, first, last, rate, sourceDurationSeconds: samples.length / rate, trimmedLeadingSeconds: start / rate, trimmedTrailingSeconds: (samples.length - end) / rate,
+    sourceLeadSilenceSeconds: (first - lower) / rate, sourceTailSilenceSeconds: (upper - 1 - last) / rate };
+}
+function asTrimmed(clip) { const { wav, samples } = pcmToWav(clip.float, clip.rate); return Object.assign({}, clip, { wav, samples }); }
+
+// --trim gentle on the bare word: the same kind of result as trimWav.
+function gentleTrim(raw) {
+  const { rate, samples } = readPcm(raw);
+  const peak = peakOf(samples);
+  assert(peak > 0, 'Silent source PCM');
+  const edges = soundEdges(samples, peak * GENTLE.floor);
+  return asTrimmed(marginClip(samples, rate, edges.first, edges.last));
+}
+
+// Quiet stretches of a take: 10 ms frames every 5 ms, quiet under quietDb of the loudest frame.
+function quietRuns(samples, rate) {
+  const size = Math.round(rate * CUT.frameSeconds), hop = Math.round(rate * CUT.hopSeconds);
+  const frames = Math.max(0, Math.floor((samples.length - size) / hop) + 1), rms = new Float64Array(frames);
+  let loudest = 0;
+  for (let f = 0; f < frames; f++) {
+    let sum = 0;
+    for (let i = f * hop, end = f * hop + size; i < end; i++) sum += samples[i] * samples[i];
+    rms[f] = Math.sqrt(sum / size);
+    if (rms[f] > loudest) loudest = rms[f];
+  }
+  const limit = loudest * Math.pow(10, CUT.quietDb / 20);
+  let firstLoud = -1, lastLoud = -1;
+  for (let f = 0; f < frames; f++) if (rms[f] >= limit) { if (firstLoud < 0) firstLoud = f; lastLoud = f; }
+  const runs = [];
+  for (let f = firstLoud + 1; f < lastLoud; f++) {
+    if (rms[f] >= limit) continue;
+    let g = f;
+    while (g + 1 < lastLoud && rms[g + 1] < limit) g++;
+    // Samples from the end of the last loud frame to the start of the next loud one.
+    const from = (f - 1) * hop + size, to = (g + 1) * hop;
+    runs.push({ from, to, seconds: Math.max(0, to - from) / rate });
+    f = g;
+  }
+  return { runs, speechFrom: firstLoud < 0 ? 0 : firstLoud * hop, speechTo: lastLoud < 0 ? samples.length : lastLoud * hop + size, frames, hop, size };
+}
+
+// Cuts the word out of a carrier take. `bareSeconds` is the bare word's sound (first to last louder sample),
+// `prefixSeconds` the usual time from the first sound to the pause for this carrier (optional). Returns
+// { ok, failures, clip (as gentleTrim), wordSeconds, ratio, gap, prefixSeconds }.
+function cutCarrier(raw, { bareSeconds = 0, prefixSeconds = 0 } = {}) {
+  const { rate, samples } = readPcm(raw);
+  const failures = [];
+  const peak = peakOf(samples);
+  if (!(peak > 0)) return { ok: false, failures: ['the take is silent'] };
+  const found = quietRuns(samples, rate);
+  const long = found.runs.filter(run => run.seconds >= CUT.minGapSeconds);
+  if (!long.length) return { ok: false, failures: ['no clear pause before the word (no quiet stretch of 100 ms)'], runs: found.runs };
+  const gap = long.reduce((best, run) => (run.seconds > best.seconds ? run : best), long[0]);
+  const rivals = long.filter(run => run !== gap && run.seconds >= gap.seconds * CUT.rivalRatio);
+  if (rivals.length) failures.push('two pauses look alike (' + Math.round(gap.seconds * 1000) + ' ms and ' + Math.round(rivals[0].seconds * 1000) + ' ms)');
+  const later = long.filter(run => run.from > gap.from);
+  if (later.length) failures.push('another pause after the cut (' + Math.round(later[0].seconds * 1000) + ' ms): the cut may hold more than the word');
+  const before = (gap.from - found.speechFrom) / rate;
+  if (before < CUT.minPrefixSeconds) failures.push('the pause comes too early (' + before.toFixed(2) + ' s after the first sound)');
+  if (prefixSeconds > 0 && Math.abs(before - prefixSeconds) > prefixSeconds * CUT.prefixTolerance) {
+    failures.push('the pause is not where this sentence puts it (' + before.toFixed(2) + ' s after the first sound, usually ' + prefixSeconds.toFixed(2) + ' s)');
+  }
+  // At the gentle floor (0.3% of the peak, about -50 dB) the sentence's sound fades out after gap.from, and
+  // the word's starts before gap.to (a breathy h or f, or the voicing before a b, is under -40 dB). In 5 ms
+  // windows across the pause: the sentence ends where the longest stretch wholly under the floor begins (its
+  // fading tail flickers around the floor before that), and everything after that stretch belongs to the
+  // word. The stretch must be 20 ms at least; the cut starts up to 20 ms into it, never before.
+  const floorValue = peak * GENTLE.floor, win = Math.max(1, Math.round(rate * 0.005)), needQuiet = Math.round(CUT.settleSeconds / 0.005);
+  const loudIn = (a, b) => { for (let i = Math.max(0, a); i < Math.min(samples.length, b); i++) if (Math.abs(samples[i]) >= floorValue) return true; return false; };
+  let best = null;
+  for (let at = gap.from, from = -1; at + win <= gap.to + win; at += win) {
+    const quiet = at + win <= gap.to && !loudIn(at, at + win);
+    if (quiet && from < 0) from = at;
+    if (!quiet && from >= 0) { if (!best || at - from > best.to - best.from) best = { from, to: at }; from = -1; }
+  }
+  if (!best || best.to - best.from < needQuiet * win) return { ok: false, failures: failures.concat(['the sentence runs into the word: no 20 ms under -50 dB in the pause']), gap };
+  const carrierEnd = best.from;
+  const after = soundEdges(samples, floorValue, best.to, samples.length);
+  if (!after) return { ok: false, failures: failures.concat(['nothing after the pause']), gap };
+  const own = { first: after.first, last: after.last };
+  const lower = Math.min(own.first, carrierEnd + Math.min(Math.round(rate * CUT.settleSeconds), Math.floor((best.to - best.from) / 2)));
+  const clip = marginClip(samples, rate, own.first, own.last, { lower });
+  const wordSeconds = (own.last + 1 - own.first) / rate;
+  if (wordSeconds < CUT.minWordSeconds) failures.push('the cut is too short (' + wordSeconds.toFixed(2) + ' s)');
+  const ratio = bareSeconds > 0 ? wordSeconds / bareSeconds : 0;
+  if (bareSeconds > 0 && (ratio < CUT.minRatio || ratio > CUT.maxRatio)) failures.push('the cut is ' + ratio.toFixed(2) + ' x the bare word (' + wordSeconds.toFixed(2) + ' s against ' + bareSeconds.toFixed(2) + ' s): outside 0.6 to 1.8');
+  // Carrier left in front of the word: anything louder than the floor between the cut's start and the word.
+  let remnant = 0;
+  for (let i = clip.start; i < own.first; i++) if (Math.abs(samples[i]) >= floorValue) remnant++;
+  if (remnant > Math.round(rate * 0.002)) failures.push('sound from the sentence is left in front of the word');
+  if (own.first - clip.start < Math.round(rate * 0.01)) failures.push('the pause leaves under 10 ms of quiet before the word');
+  return { ok: !failures.length, failures, clip: failures.length ? null : asTrimmed(clip), wordSeconds, ratio, gap: { seconds: gap.seconds, before }, beforeSeconds: (own.first - clip.start) / rate,
+    afterSeconds: (clip.end - 1 - own.last) / rate, runs: found.runs.length };
+}
+
+// BS.1770 K-weighting for any sample rate: libebur128's design (the analog prototype, bilinear with
+// prewarping), which gives the standard's own coefficients at 48 kHz and keeps 997 Hz right at 24 kHz.
+function kWeighted(samples, rate) {
+  const run = (input, b, a) => {
+    const out = new Float64Array(input.length);
+    let x1 = 0, x2 = 0, y1 = 0, y2 = 0;
+    for (let i = 0; i < input.length; i++) {
+      const x = input[i], y = b[0] * x + b[1] * x1 + b[2] * x2 - a[1] * y1 - a[2] * y2;
+      x2 = x1; x1 = x; y2 = y1; y1 = y; out[i] = y;
+    }
+    return out;
+  };
+  let K = Math.tan(Math.PI * 1681.974450955533 / rate);
+  const Q = 0.7071752369554196, Vh = Math.pow(10, 3.999843853973347 / 20), Vb = Math.pow(Vh, 0.4996667741545416), a0 = 1 + K / Q + K * K;
+  const shelf = run(samples, [(Vh + Vb * K / Q + K * K) / a0, 2 * (K * K - Vh) / a0, (Vh - Vb * K / Q + K * K) / a0], [1, 2 * (K * K - 1) / a0, (1 - K / Q + K * K) / a0]);
+  K = Math.tan(Math.PI * 38.13547087602444 / rate);
+  const Q2 = 0.5003270373238773, d = 1 + K / Q2 + K * K;
+  return run(shelf, [1, -2, 1], [1, 2 * (K * K - 1) / d, (1 - K / Q2 + K * K) / d]);
+}
+// Integrated loudness (LUFS) of samples[from..to): 400 ms blocks every 100 ms, -70 LUFS and -10 LU gates.
+// Shorter than one block: the whole stretch is the block. The filter runs over the whole clip first.
+function loudnessOf(samples, rate, from = 0, to = samples.length) {
+  const weighted = kWeighted(samples, rate);
+  const size = Math.round(rate * 0.4), step = Math.round(rate * 0.1), blocks = [];
+  const meanSquare = (a, b) => { let sum = 0; for (let i = a; i < b; i++) sum += weighted[i] * weighted[i]; return sum / Math.max(1, b - a); };
+  if (to - from <= size) blocks.push(meanSquare(from, to));
+  else for (let a = from; a + size <= to; a += step) blocks.push(meanSquare(a, a + size));
+  const lufs = z => -0.691 + 10 * Math.log10(z);
+  const absolute = blocks.filter(z => z > 0 && lufs(z) > -70);
+  if (!absolute.length) return -Infinity;
+  const mean = list => list.reduce((s, z) => s + z, 0) / list.length;
+  const gate = lufs(mean(absolute)) - 10;
+  const relative = absolute.filter(z => lufs(z) > gate);
+  return lufs(mean(relative.length ? relative : absolute));
+}
+// True peak (dBTP): the largest of the samples and a 4x windowed-sinc interpolation between them.
+function truePeakDb(samples) {
+  const taps = 16, phases = 4, kernel = [];
+  for (let p = 1; p < phases; p++) {
+    const row = [], t = p / phases;
+    for (let k = -taps + 1; k <= taps; k++) {
+      const x = k - t, sinc = x === 0 ? 1 : Math.sin(Math.PI * x) / (Math.PI * x);
+      const window = 0.5 + 0.5 * Math.cos(Math.PI * x / taps);
+      row.push(sinc * window);
+    }
+    kernel.push(row);
+  }
+  let peak = peakOf(samples);
+  for (let i = 0; i < samples.length - 1; i++) {
+    for (const row of kernel) {
+      let sum = 0;
+      for (let k = -taps + 1, j = 0; k <= taps; k++, j++) { const at = i + k; if (at >= 0 && at < samples.length) sum += samples[at] * row[j]; }
+      if (Math.abs(sum) > peak) peak = Math.abs(sum);
+    }
+  }
+  return 20 * Math.log10(Math.max(peak, 1e-9));
+}
+// One gain for the whole clip: to the target loudness, lowered when the true peak would pass the ceiling.
+function normalizeLoudness(trimmed, options = {}) {
+  const target = options.target == null ? LOUDNESS.target : options.target, ceiling = options.ceiling == null ? LOUDNESS.ceiling : options.ceiling;
+  const float = trimmed.float || Float32Array.from(trimmed.samples, v => v / 32768);
+  // Over the word: the clip's own first to last sample at the gentle floor (trimWav's clips do not say).
+  const edges = trimmed.first != null && trimmed.start != null ? { first: trimmed.first - trimmed.start, last: trimmed.last - trimmed.start } : soundEdges(float, peakOf(float) * GENTLE.floor);
+  const from = edges ? edges.first : 0, to = edges ? edges.last + 1 : float.length;
+  const before = loudnessOf(float, trimmed.rate, from, to);
+  const peakBefore = truePeakDb(float);
+  let gainDb = target - before, limited = false;
+  if (peakBefore + gainDb > ceiling) { gainDb = ceiling - peakBefore; limited = true; }
+  const failures = [];
+  if (!Number.isFinite(before)) failures.push('no loudness to measure');
+  else if (Math.abs(gainDb) > LOUDNESS.maxGainDb) failures.push('needs ' + gainDb.toFixed(1) + ' dB to reach ' + target + ' LUFS: not like the other clips');
+  const gain = Math.pow(10, (Number.isFinite(gainDb) ? gainDb : 0) / 20), out = new Float32Array(float.length);
+  for (let i = 0; i < float.length; i++) out[i] = float[i] * gain;
+  const { wav, samples } = pcmToWav(out, trimmed.rate);
+  return { ok: !failures.length, failures, wav, samples, float: out, gainDb, limited, loudnessBefore: before, loudnessAfter: before + gainDb, truePeakBefore: peakBefore, truePeakAfter: peakBefore + gainDb };
+}
+const carrierText = (template, word) => String(template).split(CARRIER_SLOT).join(word);
+
 // ffmpeg, as the syllable top-up ran it. Two small files in --work are reused for every word.
-function createEncoder(work) {
+function createEncoder(work, bitrate = 48) {
   const wavPath = path.join(work, 'clip-' + process.pid + '.wav'), outPath = path.join(work, 'clip-' + process.pid + '.webm');
   return {
     encode(wav) {
       fs.writeFileSync(wavPath, wav);
-      const result = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', wavPath, '-ac', '1', '-c:a', 'libopus', '-b:a', '48k', outPath],
+      const result = spawnSync('ffmpeg', ['-hide_banner', '-loglevel', 'error', '-y', '-i', wavPath, '-ac', '1', '-c:a', 'libopus', '-b:a', bitrate + 'k', outPath],
         { encoding: 'utf8', windowsHide: true, timeout: 120000 });
       if (result.status !== 0) throw new Error('ffmpeg failed: ' + String((result.error && result.error.message) || result.stderr || 'no message').trim());
       return fs.readFileSync(outPath);
@@ -473,7 +729,7 @@ function openStore(dir, options = {}) {
   const freeBytes = options.freeBytes || (() => freeBytesAt(dir));
   const minFree = options.minFreeBytes == null ? MIN_FREE_BYTES : options.minFreeBytes;
   const now = options.now || (() => new Date());
-  const meta = Object.assign({}, ENGINE, { textForm: options.textForm || DEFAULT_FORM });
+  const meta = Object.assign({}, options.meta || ENGINE, { textForm: options.textForm || DEFAULT_FORM });
   const shards = new Map();
   // failed: word -> why its clip was refused. otherForm: word -> the text form used when it was not the store's own.
   let failed = Object.create(null), otherForm = Object.create(null), started = null, dirtyIndex = false;
@@ -493,6 +749,12 @@ function openStore(dir, options = {}) {
       try { data = JSON.parse(fsx.readFileSync(file, 'utf8')); }
       catch (error) { throw new Error('Shard ' + file + ' is not readable JSON (' + error.message + '). Move it away before running: this tool will not write over it.'); }
       if (!data || typeof data !== 'object' || Array.isArray(data) || !data._meta || data._meta.format !== SHARD_FORMAT) throw new Error('Shard ' + file + ' is not a ' + SHARD_FORMAT + ' file. Move it away before running.');
+      // One store, one recipe: clips made another way (model, carrier, trim, loudness, bit rate) are not mixed in.
+      for (const key of ['engine', 'post']) {
+        if (typeof data._meta[key] === 'string' && data._meta[key] !== meta[key] && Object.keys(data).length > 1) {
+          throw new Error('Shard ' + file + ' was made with another recipe (' + key + ': "' + data._meta[key] + '"; this run: "' + meta[key] + '"). Use another --out, or the same options as that store.');
+        }
+      }
       const words = {};
       for (const word of Object.keys(data)) {
         if (word === '_meta') continue;
@@ -620,6 +882,8 @@ function createEngine(options) {
   const served = new Map([['/app/kokoro_tts_loader.js', 'kokoro_tts_loader.js'], ['/app/runtime_graph_delivery_policy.js', 'runtime_graph_delivery_policy.js'], ['/app/runtime_graph_host.js', 'runtime_graph_host.js']]);
   for (const id of manifest.graphs.kokoro.assets) served.set('/app/' + manifest.assets[id].path, manifest.assets[id].path);
   const lanes = Math.max(1, Math.min(4, options.lanes || 1));
+  // q8 goes through the app's loader, as it always has; any other model precision through directWorkerMain.
+  const dtype = options.dtype || DEFAULT_DTYPE, direct = dtype !== DEFAULT_DTYPE || !!options.direct;
   let server = null, context = null, pages = [], lastConsole = '';
   const state = { loadSeconds: 0, starts: 0, outside: new Set(), blocked: new Set(), modelFromDisk: 0, modelSaved: 0 };
 
@@ -715,6 +979,22 @@ function createEngine(options) {
         await page.goto(origin + '/app/');
         await page.addScriptTag({ url: '/app/runtime_graph_delivery_policy.js' });
         await page.addScriptTag({ url: '/app/runtime_graph_host.js' });
+        if (direct) {
+          await page.evaluate(async ({ graphs, source }) => {
+            window._alloInstallRuntimeGraphHost(graphs, window);
+            const worker = await window.__alloCreateVerifiedWorker('kokoro', source, { type: 'module' });
+            let seq = 0;
+            const pending = new Map();
+            worker.onmessage = ({ data }) => { const wait = pending.get(data.id); if (!wait) return; pending.delete(data.id); if (data.ok) wait.resolve(data); else wait.reject(new Error(data.error)); };
+            worker.onerror = event => { for (const wait of pending.values()) wait.reject(new Error('The voice worker failed: ' + (event.message || ''))); pending.clear(); };
+            window.__wsDirect = (type, extra) => new Promise((resolve, reject) => { const id = ++seq; pending.set(id, { resolve, reject }); worker.postMessage(Object.assign({ type, id }, extra || {})); });
+          }, { graphs: manifest, source: floatToWav.toString() + ';(' + directWorkerMain.toString() + ')();' });
+          // First use downloads the model (fp32: 310 MB) into this profile's browser cache.
+          const ready = await withTimeout(page.evaluate(input => window.__wsDirect('init', input).then(reply => ({ ms: reply.ms, outputs: reply.outputs })), { modelId: MODEL_ID, dtype }), 30 * 60000, 'Loading the voice model');
+          state.modelOutputs = ready.outputs;
+          pages.push(page);
+          continue;
+        }
         await page.evaluate(graphs => {
           window._alloInstallRuntimeGraphHost(graphs, window);
           window.AlloModules = window.AlloModules || {};
@@ -780,7 +1060,100 @@ function createEngine(options) {
   // One restart at a time: lanes that ask while one is under way wait for that one.
   let restarting = null;
   const restart = () => restarting || (restarting = (async () => { await stopBrowser(); await start(); })().finally(() => { restarting = null; }));
-  return { start, stop, synth, decodeCheck, restart, state, profileName, name: browserName, origin, lanes };
+  if (direct) {
+    // --dtype other than q8: the same verified engine module in a worker of this tool's own (the loader
+    // only offers q8). Each take also brings back the phoneme string the voice read, for the
+    // pronunciation check, and the model's own sound lengths when the model gives them.
+    const take = async (text, lane) => {
+      const got = await evaluate(lane, async input => {
+        const reply = await window.__wsDirect('generate', input);
+        const bytes = new Uint8Array(reply.wav);
+        let binary = '';
+        for (let offset = 0; offset < bytes.length; offset += 16384) binary += String.fromCharCode.apply(null, bytes.subarray(offset, offset + 16384));
+        return { wav: btoa(binary), phonemes: reply.phonemes, durations: reply.durations, ms: reply.ms };
+      }, { text, voice: ENGINE.voice, speed: ENGINE.speed }, options.wordTimeoutMs || 180000, 'Voicing "' + text + '"');
+      return { wav: Buffer.from(got.wav, 'base64'), phonemes: got.phonemes, durations: got.durations, ms: got.ms };
+    };
+    const phonemes = (texts, lane) => evaluate(lane, list => window.__wsDirect('phonemes', { texts: list }).then(reply => reply.out), texts, 600000, 'Reading phonemes');
+    return { start, stop, synth: async (text, lane) => (await take(text, lane)).wav, synthTake: take, phonemes, decodeCheck, restart, state, profileName, name: browserName, origin, lanes, dtype };
+  }
+  return { start, stop, synth, decodeCheck, restart, state, profileName, name: browserName, origin, lanes, dtype: 'q8' };
+}
+
+// Float samples -> 16-bit WAV, as the loader's worker writes them (float32ToWav in kokoro_tts_loader.js, its
+// 2 ms / 6 ms edge ramps included). Sent to the worker as source text, beside directWorkerMain.
+function floatToWav(samples, rate) {
+  const n = samples.length, buffer = new ArrayBuffer(44 + n * 2), view = new DataView(buffer);
+  const put = (offset, text) => { for (let i = 0; i < text.length; i++) view.setUint8(offset + i, text.charCodeAt(i)); };
+  put(0, 'RIFF'); view.setUint32(4, 36 + n * 2, true); put(8, 'WAVE'); put(12, 'fmt ');
+  view.setUint32(16, 16, true); view.setUint16(20, 1, true); view.setUint16(22, 1, true); view.setUint32(24, rate, true);
+  view.setUint32(28, rate * 2, true); view.setUint16(32, 2, true); view.setUint16(34, 16, true); put(36, 'data'); view.setUint32(40, n * 2, true);
+  const half = Math.floor(n / 2);
+  const fadeIn = n > 3 ? Math.min(Math.floor(rate * 0.002), half) : 0, fadeOut = n > 3 ? Math.min(Math.floor(rate * 0.006), half) : 0;
+  for (let i = 0, offset = 44; i < n; i++, offset += 2) {
+    let gain = 1;
+    if (fadeIn && i < fadeIn) gain = i / fadeIn;
+    if (fadeOut && i >= n - fadeOut) gain = Math.min(gain, (n - 1 - i) / fadeOut);
+    const s = Math.max(-1, Math.min(1, samples[i] * gain));
+    view.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+  }
+  return buffer;
+}
+
+// The worker of the --dtype path. It runs inside the verified 'kokoro' runtime (__alloRuntimeImport and
+// __alloRuntimeAssets come from runtime_graph_host.js), and turns the voice's float samples into WAV
+// exactly as the loader's worker does (float32ToWav in kokoro_tts_loader.js: 2 ms / 6 ms edge ramps,
+// 16-bit), so everything after the engine is the same for both paths.
+function directWorkerMain() {
+  /* global __alloRuntimeImport, __alloRuntimeAssets, floatToWav */
+  const MARK = { marker: 'phonemes-captured' };
+  let mod = null, tts = null;
+  const library = async () => {
+    if (mod) return mod;
+    mod = await __alloRuntimeImport('kokoro.module');
+    mod.__alloflowConfigureRuntime(__alloRuntimeAssets);
+    return mod;
+  };
+  async function phonemesOf(text, voice) {
+    const m = await library();
+    let captured = null;
+    const probe = new m.KokoroTTS(null, phonemes => { captured = phonemes; throw MARK; });
+    try { await probe.generate(text, { voice: voice || 'af_heart', speed: 1 }); } catch (error) { if (error !== MARK) throw error; }
+    return captured;
+  }
+  self.onmessage = async ({ data }) => {
+    try {
+      if (data.type === 'init') {
+        const m = await library();
+        const t0 = performance.now();
+        tts = await m.KokoroTTS.from_pretrained(data.modelId, { dtype: data.dtype, device: 'wasm' });
+        let outputs = [];
+        try { outputs = Array.from((tts.model.sessions && tts.model.sessions.model && tts.model.sessions.model.outputNames) || []); } catch (_) { /* unknown */ }
+        self.postMessage({ id: data.id, ok: true, ms: performance.now() - t0, outputs });
+      } else if (data.type === 'phonemes') {
+        const out = {};
+        for (const text of data.texts) out[text] = await phonemesOf(text, data.voice);
+        self.postMessage({ id: data.id, ok: true, out });
+      } else if (data.type === 'generate') {
+        if (!tts) throw new Error('Model not initialized');
+        const tokenizer = tts.tokenizer, model = tts.model;
+        let phonemes = null, outputs = null;
+        tts.tokenizer = (text, options) => { phonemes = text; return tokenizer(text, options); };
+        tts.model = inputs => model(inputs).then(out => { outputs = out; return out; });
+        const t0 = performance.now();
+        let audio;
+        try { audio = await tts.generate(data.text, { voice: data.voice, speed: data.speed }); }
+        finally { tts.tokenizer = tokenizer; tts.model = model; }
+        const samples = audio.audio instanceof Float32Array ? audio.audio : new Float32Array(audio.audio);
+        const wav = floatToWav(samples, audio.sampling_rate || 24000);
+        let durations = null;
+        if (outputs && outputs.durations && outputs.durations.data) durations = Array.from(outputs.durations.data, Number);
+        self.postMessage({ id: data.id, ok: true, wav, phonemes, durations, ms: performance.now() - t0 }, [wav]);
+      }
+    } catch (error) {
+      self.postMessage({ id: data.id, ok: false, error: String((error && error.stack) || error) });
+    }
+  };
 }
 
 // Windows: the browser's processes, by the profile folder in their command line. Sets each to
@@ -812,9 +1185,120 @@ function keepAwake() {
 // ---------------------------------------------------------------------------
 // The run
 // ---------------------------------------------------------------------------
+// The recipe options in use, or null for the bank's own recipe (every default).
+function recipeOf(options = {}) {
+  const dtype = options.dtype || DEFAULT_DTYPE, trim = options.trim || 'bank', bitrate = options.bitrate || 48;
+  const loudness = options.loudness == null ? null : Number(options.loudness);
+  if (dtype === DEFAULT_DTYPE && !options.carrier && trim === 'bank' && loudness == null && bitrate === 48) return null;
+  return { dtype, carrier: options.carrier || '', carrierRetry: options.carrierRetry || '', trim, loudness, ceiling: options.ceiling == null ? LOUDNESS.ceiling : Number(options.ceiling), bitrate };
+}
+// What the store's _meta and index say about how its clips were made: ENGINE itself for the bank recipe.
+function engineMeta(options = {}) {
+  const recipe = recipeOf(options);
+  if (!recipe) return ENGINE;
+  const steps = [];
+  if (recipe.carrier) steps.push('carrier "' + recipe.carrier + '"' + (recipe.carrierRetry ? ' then "' + recipe.carrierRetry + '"' : '') + ' cut at the pause before the word (the bare word when no clean cut)');
+  steps.push(recipe.trim === 'gentle' ? 'trim(0.3% peak, 60ms/120ms margins, 5ms/30ms fades)' : 'trim(1% peak, 30ms/60ms margins) + ramp(2ms/6ms)');
+  if (recipe.loudness != null) steps.push('loudness ' + recipe.loudness + ' LUFS over the word (BS.1770, true peak <= ' + recipe.ceiling + ' dBTP)');
+  steps.push('ffmpeg libopus ' + recipe.bitrate + 'kbps mono webm');
+  return Object.freeze(Object.assign({}, ENGINE, { engine: 'kokoro-js@1.2.1 / ' + MODEL_ID + ' (' + recipe.dtype + ', wasm)', post: steps.join(' + ') }));
+}
+
+// The words of a carrier take, from its phoneme string: what follows the carrier's own phonemes.
+function wordPhonemes(takePhonemes, prefixPhonemes) {
+  const text = String(takePhonemes || '');
+  const prefix = String(prefixPhonemes || '');
+  const rest = prefix && text.startsWith(prefix) ? text.slice(prefix.length) : text;
+  return rest.replace(/[.!?,;:…\s]+$/, '').replace(/^[.,;:…\s]+/, '').trim();
+}
+
+// Checks, loudness, encoding and the browser's own decode, for one trimmed clip of any recipe.
+async function finishClip(trimmed, entry, deps, options, lane, note) {
+  const checked = checkClip(trimmed, entry.sounds, options.trim === 'gentle' || options.loudness != null ? RECIPE_GATES : GATES);
+  if (!checked.ok) { note(checked.failures.join('; ')); return null; }
+  let wav = trimmed.wav, loud = null;
+  if (options.loudness != null) {
+    loud = normalizeLoudness(trimmed, { target: Number(options.loudness), ceiling: options.ceiling });
+    if (!loud.ok) { note(loud.failures.join('; ')); return null; }
+    wav = loud.wav;
+  }
+  const webm = deps.encode(wav);
+  if (webm.length < 800 || webm.length > 60000) { note('the encoded clip is ' + webm.length + ' bytes'); return null; }
+  const uri = URI_PREFIX + webm.toString('base64');
+  const peakFloor = GATES.minPeak * 0.6 * (loud ? Math.min(1, Math.pow(10, loud.gainDb / 20)) : 1);
+  if (typeof deps.engine.decodeCheck === 'function') {
+    let decoded = null;
+    try { decoded = await deps.engine.decodeCheck(uri, lane); } catch (error) { if (error instanceof EngineError && /longer than|not running/.test(error.message)) throw error; note('the browser could not decode the encoded clip'); return null; }
+    if (decoded.channels !== 1 || Math.abs(decoded.durationSeconds - checked.measures.durationSeconds) > GATES.encodedDurationSlack || decoded.peak < peakFloor) {
+      note('the encoded clip decodes to ' + decoded.durationSeconds.toFixed(2) + ' s, peak ' + decoded.peak.toFixed(3) + ', ' + decoded.channels + ' channel(s)');
+      return null;
+    }
+  }
+  return { ok: true, uri, bytes: webm.length, measures: Object.assign({}, checked.measures, { sourceDurationSeconds: trimmed.sourceDurationSeconds,
+    sourceLeadSilenceSeconds: trimmed.sourceLeadSilenceSeconds, sourceTailSilenceSeconds: trimmed.sourceTailSilenceSeconds },
+  loud ? { gainDb: loud.gainDb, loudness: loud.loudnessAfter, loudnessBefore: loud.loudnessBefore, truePeak: loud.truePeakAfter, peakLimited: loud.limited } : {}) };
+}
+
+// One word, carrier recipe: the word read at the end of the carrier sentence and cut out at the pause;
+// then the retry carrier; then (unless --no-bare-fallback) the bare word with the same trim and loudness,
+// written down as voiced from the other text form. A take is refused when the cut is not clean, when it
+// is far from the bare word's length, or when the voice read the word with other phonemes than alone.
+async function voiceWordCarrier(entry, deps, options, lane) {
+  const failures = [], word = entry.word;
+  const takeOf = text => (typeof deps.engine.synthTake === 'function' ? deps.engine.synthTake(text, lane) : deps.engine.synth(text, lane).then(wav => ({ wav, phonemes: null })));
+  const trimmer = options.trim === 'gentle' ? gentleTrim : trimWav;
+  let attempts = 0, bare = null;
+  const bareTake = async () => { if (!bare) { attempts++; bare = await takeOf(FORMS.bare(word)); } return bare; };
+  // The bare word's length (first to last louder sample): from a list of earlier lengths, or voiced now.
+  let bareSeconds = typeof deps.bareSeconds === 'function' ? Number(deps.bareSeconds(word)) || 0 : 0;
+  let barePhonemes = null;
+  if (!(bareSeconds > 0)) {
+    const take = await bareTake();
+    try { const g = gentleTrim(take.wav); bareSeconds = (g.last + 1 - g.first) / g.rate; } catch (_) { bareSeconds = 0; }
+  }
+  const templates = [options.carrier, options.carrierRetry].filter(Boolean);
+  for (let i = 0; i < templates.length; i++) {
+    const form = i ? 'carrier2' : 'carrier', note = problem => failures.push('try ' + (attempts) + ' (' + form + '): ' + problem);
+    attempts++;
+    const take = await takeOf(carrierText(templates[i], word));
+    const cut = (() => { try { return cutCarrier(take.wav, { bareSeconds, prefixSeconds: deps.prefixSeconds ? deps.prefixSeconds[i] || 0 : 0 }); } catch (error) { return { ok: false, failures: [error.message] }; } })();
+    if (!cut.ok) { note(cut.failures.join('; ')); continue; }
+    if (take.phonemes && deps.prefixPhonemes && deps.prefixPhonemes[i] != null) {
+      if (barePhonemes == null) barePhonemes = bare && bare.phonemes ? bare.phonemes : typeof deps.engine.phonemes === 'function' ? (await deps.engine.phonemes([word], lane))[word] : null;
+      const said = wordPhonemes(take.phonemes, deps.prefixPhonemes[i]);
+      if (barePhonemes != null && said !== String(barePhonemes).replace(/[.!?]+$/, '')) { note('read as /' + said + '/ in the sentence, /' + barePhonemes + '/ alone'); continue; }
+    }
+    const done = await finishClip(cut.clip, entry, deps, options, lane, note);
+    if (done) return Object.assign(done, { form, attempts, failures, retried: i > 0, cut: { wordSeconds: cut.wordSeconds, ratio: cut.ratio, gapSeconds: cut.gap.seconds, prefixSeconds: cut.gap.before } });
+  }
+  if (options.bareFallback !== false) {
+    const take = await bareTake();
+    const note = problem => failures.push('try ' + attempts + ' (bare): ' + problem);
+    let trimmed = null;
+    try { trimmed = trimmer(take.wav); } catch (error) { note(error.message); }
+    const done = trimmed && await finishClip(trimmed, entry, deps, options, lane, note);
+    if (done) return Object.assign(done, { form: 'bare', attempts, failures, retried: true });
+  }
+  return { ok: false, attempts, failures };
+}
+
 // One word: voice, trim, check; on a failed check, once more with the other text form. Returns
 // { ok, uri, bytes, measures, form, attempts, failures }. Engine trouble is thrown as EngineError.
 async function voiceWord(entry, deps, options, lane) {
+  if (options.carrier) return voiceWordCarrier(entry, deps, options, lane);
+  if ((options.trim && options.trim !== 'bank') || options.loudness != null) {
+    // The bare (or other) text form with the gentle trim and/or loudness: the same two tries as below.
+    const failures = [], forms = [options.form || DEFAULT_FORM, options.retryForm || RETRY_FORM[options.form || DEFAULT_FORM]];
+    for (let attempt = 0; attempt < 2; attempt++) {
+      const form = forms[attempt], note = problem => failures.push('try ' + (attempt + 1) + ' (' + form + '): ' + problem);
+      const raw = await deps.engine.synth(FORMS[form](entry.word), lane);
+      let trimmed;
+      try { trimmed = options.trim === 'gentle' ? gentleTrim(raw) : trimWav(raw); } catch (error) { note(error.message); continue; }
+      const done = await finishClip(trimmed, entry, deps, options, lane, note);
+      if (done) return Object.assign(done, { form, attempts: attempt + 1, failures });
+    }
+    return { ok: false, attempts: 2, failures };
+  }
   const failures = [];
   const forms = [options.form || DEFAULT_FORM, options.retryForm || RETRY_FORM[options.form || DEFAULT_FORM]];
   for (let attempt = 0; attempt < 2; attempt++) {
@@ -905,12 +1389,15 @@ async function run(todo, options, deps) {
       if (voiced.ok) {
         store.add(entry.word, voiced.uri, voiced.form);
         result.voiced++; sinceFlush++; failuresInARow = 0;
-        if (voiced.attempts > 1) result.retried++;
+        // Retried: voiced from the second text form (the carrier recipe also voices the bare word, which is not a retry).
+        if (voiced.retried != null ? voiced.retried : voiced.attempts > 1) result.retried++;
         result.clipBytes.push(voiced.bytes); result.clipSeconds.push(voiced.measures.durationSeconds);
         result.words.push({ word: entry.word, stage: entry.stage, sounds: entry.sounds, form: voiced.form, bytes: voiced.bytes, seconds: Number(((now() - t0) / 1000).toFixed(2)),
           durationSeconds: Number(voiced.measures.durationSeconds.toFixed(3)), peak: Number(voiced.measures.peak.toFixed(3)), rms: Number(voiced.measures.rms.toFixed(4)),
           leadSilenceSeconds: Number(voiced.measures.leadSilenceSeconds.toFixed(3)), tailSilenceSeconds: Number(voiced.measures.tailSilenceSeconds.toFixed(3)),
-          sourceTailSilenceSeconds: Number(voiced.measures.sourceTailSilenceSeconds.toFixed(3)), retriedBecause: voiced.failures.length ? voiced.failures : undefined });
+          sourceTailSilenceSeconds: Number(voiced.measures.sourceTailSilenceSeconds.toFixed(3)), retriedBecause: voiced.failures.length ? voiced.failures : undefined,
+          gainDb: voiced.measures.gainDb == null ? undefined : Number(voiced.measures.gainDb.toFixed(2)), peakLimited: voiced.measures.peakLimited || undefined,
+          cut: voiced.cut ? { wordSeconds: Number(voiced.cut.wordSeconds.toFixed(3)), ratio: Number(voiced.cut.ratio.toFixed(3)), gapSeconds: Number(voiced.cut.gapSeconds.toFixed(3)), prefixSeconds: Number(voiced.cut.prefixSeconds.toFixed(3)) } : undefined });
       } else if (voiced.engine) {
         // Not the word's fault: it is not written down as failed, so --resume voices it again.
         result.skipped++; engineTroubleInARow++;
@@ -955,13 +1442,14 @@ async function run(todo, options, deps) {
 
 function parseArgs(argv) {
   const args = {};
-  const flags = ['plan', 'dry', 'resume', 'retry-failed', 'include-review', 'no-keep-awake', 'verbose', 'help'];
+  const flags = ['plan', 'dry', 'resume', 'retry-failed', 'include-review', 'no-keep-awake', 'verbose', 'help', 'no-bare-fallback'];
   for (let i = 0; i < argv.length; i++) {
     const name = argv[i];
     if (!/^--[a-z-]+$/.test(name)) throw new Error('Unexpected argument: ' + name);
     const key = name.slice(2);
     if (flags.includes(key)) args[key] = true;
-    else if (['limit', 'stage', 'only-list', 'out', 'work', 'browser', 'form', 'recycle', 'port', 'lanes'].includes(key)) {
+    else if (['limit', 'stage', 'only-list', 'out', 'work', 'browser', 'form', 'recycle', 'port', 'lanes',
+      'recipe', 'dtype', 'carrier', 'carrier-retry', 'trim', 'loudness', 'bitrate', 'bare-lengths'].includes(key)) {
       if (i + 1 >= argv.length) throw new Error('Missing value for ' + name);
       args[key] = argv[++i];
     } else throw new Error('Unknown option: ' + name);
@@ -975,12 +1463,67 @@ function parseArgs(argv) {
     keepAwake: !args['no-keep-awake'], verbose: !!args.verbose, help: !!args.help, limit: number('limit', 0), stage: args.stage || '', onlyList: args['only-list'] || '',
     out: path.resolve(args.out || DEFAULT_OUT), work: path.resolve(args.work || DEFAULT_WORK), browser: args.browser || DEFAULT_BROWSER, form: args.form || DEFAULT_FORM,
     recycle: number('recycle', 500), port: number('port', DEFAULT_PORT), lanes: number('lanes', 1) };
+  // The recipe. --recipe sentence sets every part at once; a part given on its own wins over the recipe.
+  if (args.recipe != null && !RECIPES[args.recipe]) throw new Error('--recipe is one of ' + Object.keys(RECIPES).join(', '));
+  const preset = args.recipe ? RECIPES[args.recipe] : {};
+  const pick = (key, fallback) => (args[key] != null ? args[key] : preset[key] != null ? preset[key] : fallback);
+  Object.assign(options, { recipe: args.recipe || '', dtype: pick('dtype', DEFAULT_DTYPE), carrier: pick('carrier', ''), carrierRetry: pick('carrier-retry', ''), trim: pick('trim', 'bank'),
+    loudness: pick('loudness', null), bitrate: pick('bitrate', 48), bareLengths: args['bare-lengths'] ? path.resolve(args['bare-lengths']) : '', bareFallback: !args['no-bare-fallback'] });
+  if (!DTYPES.includes(options.dtype)) throw new Error('--dtype is one of ' + DTYPES.join(', '));
+  for (const [key, value] of [['carrier', options.carrier], ['carrier-retry', options.carrierRetry]]) {
+    if (value && String(value).split(CARRIER_SLOT).length !== 2) throw new Error('--' + key + ' needs ' + CARRIER_SLOT + ' once, for example "Here is the word... {word}."');
+  }
+  if (options.carrierRetry && !options.carrier) throw new Error('--carrier-retry needs --carrier');
+  if (!['bank', 'gentle'].includes(options.trim)) throw new Error('--trim is bank or gentle');
+  if (options.loudness != null) {
+    if (!/^-\d{1,2}(\.\d+)?$/.test(String(options.loudness))) throw new Error('--loudness is a target in LUFS, for example -20');
+    options.loudness = Number(options.loudness);
+  }
+  if (!/^\d+$/.test(String(options.bitrate)) || Number(options.bitrate) < 24 || Number(options.bitrate) > 128) throw new Error('--bitrate is 24 to 128 (kbps)');
+  options.bitrate = Number(options.bitrate);
+  // The store in the repo is the bank recipe's: another recipe writes only where it is told to.
+  if (recipeOf(options) && !args.out && !options.plan) throw new Error('A recipe other than the bank\'s (--recipe, --dtype, --carrier, --trim, --loudness, --bitrate) needs --out: the store in the repo is not mixed or replaced.');
   if (options.lanes < 1 || options.lanes > 4) throw new Error('--lanes is 1 to 4');
   if (!FORMS[options.form]) throw new Error('--form is one of ' + Object.keys(FORMS).join(', '));
   if (!['msedge', 'chrome', 'chromium'].includes(options.browser)) throw new Error('--browser is one of msedge, chrome, chromium');
   if (options.includeReview && !options.onlyList) throw new Error('--include-review needs --only-list: a person names the held words to voice');
   if (options.retryFailed && !options.resume) throw new Error('--retry-failed needs --resume');
   return options;
+}
+
+// --carrier: before the run, each carrier is voiced with three plain words. Where its pause falls (seconds
+// after the first sound) is then held against every take, and the phonemes it shares with all three are
+// "the carrier's own" (what wordPhonemes strips). A carrier without a clean cut on two of the three is refused.
+async function calibrateCarriers(engine, templates, log = () => {}) {
+  const words = ['man', 'sun', 'top'], prefixSeconds = [], prefixPhonemes = [];
+  for (const template of templates) {
+    const befores = [], strings = [];
+    for (const word of words) {
+      const take = typeof engine.synthTake === 'function' ? await engine.synthTake(carrierText(template, word), 0) : { wav: await engine.synth(carrierText(template, word), 0), phonemes: null };
+      const cut = cutCarrier(take.wav, {});
+      if (cut.ok) befores.push(cut.gap.before);
+      if (take.phonemes) strings.push(take.phonemes);
+    }
+    if (befores.length < 2) throw new Error('The carrier "' + template + '" gave a clean cut for ' + befores.length + ' of 3 test words: choose another (Kokoro pauses after "...", hardly at all after a comma).');
+    prefixSeconds.push(median(befores));
+    let common = strings.length === words.length ? strings[0] : '';
+    for (const text of strings.slice(1)) { let n = 0; while (n < common.length && n < text.length && common[n] === text[n]) n++; common = common.slice(0, n); }
+    common = common.slice(0, common.lastIndexOf(' ') + 1).trim();
+    prefixPhonemes.push(common || null);
+    log('Carrier "' + template + '": pause ' + prefixSeconds[prefixSeconds.length - 1].toFixed(2) + ' s after the first sound (' + befores.length + ' of 3 clean)' + (common ? '; its own phonemes /' + common + '/' : '; no phonemes from this engine'));
+  }
+  return { prefixSeconds, prefixPhonemes };
+}
+// --bare-lengths: earlier lengths of the bare words, so the carrier recipe need not voice each word twice.
+// Either { "word": seconds of sound } or a run summary of this tool ({ words: [{ word, durationSeconds }] },
+// clips with the bank's 30 + 60 ms margins).
+function readBareLengths(file) {
+  if (!file) return null;
+  const data = JSON.parse(stripMark(fs.readFileSync(file, 'utf8')));
+  const lengths = new Map();
+  if (data && Array.isArray(data.words)) { for (const row of data.words) if (row && row.word && row.durationSeconds > 0.15) lengths.set(clean(row.word), row.durationSeconds - 0.09); }
+  else if (data && typeof data === 'object') { for (const [word, seconds] of Object.entries(data)) if (Number(seconds) > 0) lengths.set(clean(word), Number(seconds)); }
+  return word => lengths.get(word) || 0;
 }
 
 function takeLock(dir) {
@@ -998,7 +1541,7 @@ function takeLock(dir) {
 
 async function main(argv) {
   const options = parseArgs(argv);
-  if (options.help) { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(3, 37).map(line => line.replace(/^\/\/ ?/, '')).join('\n')); return 0; }
+  if (options.help) { console.log(fs.readFileSync(__filename, 'utf8').split('\n').slice(3, 50).map(line => line.replace(/^\/\/ ?/, '')).join('\n')); return 0; }
   const parts = loadParts(ROOT);
   let work = buildWorkList(parts);
   const full = work;
@@ -1011,11 +1554,12 @@ async function main(argv) {
       '; ' + narrowed.held.length + ' held for review' + (narrowed.held.length ? ' (' + narrowed.held.map(item => item.word + ': ' + item.reason).slice(0, 12).join(', ') + (narrowed.held.length > 12 ? ', ...' : '') + ')' : '') +
       '; ' + narrowed.skipped.hasClip.length + ' already have a clip in a bank.';
   }
-  const store = openStore(options.out, { textForm: options.form });
+  const meta = engineMeta(options), textForm = options.carrier ? 'carrier' : options.form;
+  const store = openStore(options.out, { textForm, meta });
   const selection = selectWork(work, options, store);
   console.log(planText(full, selection));
   if (listNote) console.log(listNote);
-  console.log('Store: ' + options.out + ' (' + store.count() + ' words now). Text form: ' + options.form + '. Browser: ' + options.browser + '.');
+  console.log('Store: ' + options.out + ' (' + store.count() + ' words now). Text form: ' + textForm + '. Browser: ' + options.browser + '.' + (meta === ENGINE ? '' : ' Recipe: ' + meta.engine + '; ' + meta.post + '.'));
   if (options.plan) return 0;
 
   const free = freeBytesAt(options.out);
@@ -1062,8 +1606,10 @@ async function main(argv) {
     process.exit(1);
   });
   const awake = options.keepAwake ? keepAwake() : null;
-  const engine = createEngine({ root: ROOT, work: options.work, browser: options.browser, port: options.port, lanes: options.lanes, log, verbose: options.verbose });
-  const encoder = createEncoder(options.work);
+  const engine = createEngine({ root: ROOT, work: options.work, browser: options.browser, port: options.port, lanes: options.lanes, log, verbose: options.verbose, dtype: options.dtype });
+  const encoder = createEncoder(options.work, options.bitrate);
+  const recipe = { form: options.form, recycle: options.recycle, lanes: options.lanes, carrier: options.carrier, carrierRetry: options.carrierRetry, trim: options.trim, loudness: options.loudness, bareFallback: options.bareFallback };
+  const carrierDeps = {};
   const startedAt = new Date();
   log('Run started: ' + selection.todo.length + ' words to voice (' + process.argv.slice(2).join(' ') + '). Log: ' + logFile);
   let result = null, fatal = null;
@@ -1072,8 +1618,9 @@ async function main(argv) {
     const first = tendProcesses(engine.profileName);
     log('Voice ready in ' + engine.state.loadSeconds.toFixed(1) + ' s (' + options.browser + ', ' + options.lanes + (options.lanes > 1 ? ' lanes' : ' lane') + (first ? ', ' + first.processes + ' browser processes at below-normal priority' : '') +
       (engine.state.outside.size ? '; model fetched from ' + Array.from(engine.state.outside).join(', ') : '; no outside address was contacted') + ').');
-    result = await run(selection.todo, { form: options.form, recycle: options.recycle, lanes: options.lanes }, { engine, encode: wav => encoder.encode(wav), store, log,
-      stopRequested: () => stop, freeBytes: () => freeBytesAt(options.out), tend: () => tendProcesses(engine.profileName), review });
+    if (options.carrier) Object.assign(carrierDeps, await calibrateCarriers(engine, [options.carrier, options.carrierRetry].filter(Boolean), log), { bareSeconds: readBareLengths(options.bareLengths) });
+    result = await run(selection.todo, recipe, Object.assign({ engine, encode: wav => encoder.encode(wav), store, log,
+      stopRequested: () => stop, freeBytes: () => freeBytesAt(options.out), tend: () => tendProcesses(engine.profileName), review }, carrierDeps));
   } catch (error) { fatal = error; }
   try { await engine.stop(); } catch (_) { /* closing */ }
   encoder.close();
@@ -1081,7 +1628,7 @@ async function main(argv) {
   if (fatal && store.dirty()) { try { store.flush(review()); } catch (error) { log('Could not save: ' + error.message); } }
   const seconds = result ? result.seconds : [];
   const summary = { tool: 'dev-tools/build_word_sounds_word_audio.cjs', started: startedAt.toISOString(), finished: new Date().toISOString(), arguments: process.argv.slice(2),
-    out: options.out, work: options.work, log: logFile, browser: options.browser, engine: ENGINE, textForm: options.form, retryForm: RETRY_FORM[options.form],
+    out: options.out, work: options.work, log: logFile, browser: options.browser, engine: meta, textForm, retryForm: options.carrier ? (options.carrierRetry ? 'carrier2' : 'bare') : RETRY_FORM[options.form],
     stoppedBecause: fatal ? fatal.message : (result.stoppedBecause || 'finished the list'), modelLoadSeconds: Number(engine.state.loadSeconds.toFixed(1)),
     outsideAddresses: Array.from(engine.state.outside), blockedAddresses: Array.from(engine.state.blocked), modelReadFromDisk: engine.state.modelFromDisk, modelSavedToDisk: engine.state.modelSaved,
     counts: result ? { planned: result.planned, processed: result.processed, voiced: result.voiced, failed: result.failed, retried: result.retried, engineRestarts: result.engineRestarts, shardWrites: result.flushes,
@@ -1104,6 +1651,7 @@ async function main(argv) {
 module.exports = { ROOT, DEFAULT_OUT, DEFAULT_WORK, ENGINE, FORMS, RETRY_FORM, GATES, REASONS, SHARD_FORMAT, INDEX_FORMAT, URI_PREFIX, MIN_FREE_BYTES, SHARD_EVERY, LOG_EVERY,
   loadParts, clipLookup, readCull, buildWorkList, applyOnlyList, selectWork, planText, reviewText, readWordFile,
   trimWav, measurePcm, checkClip, expectedSeconds, createEncoder, measureEncoded,
+  MODEL_ID, DEFAULT_DTYPE, DTYPES, RECIPE_GATES, GENTLE, CUT, LOUDNESS, RECIPES, recipeOf, engineMeta, wordPhonemes, finishClip, voiceWordCarrier, calibrateCarriers, readBareLengths, floatToWav, readPcm, pcmToWav, gentleTrim, cutCarrier, quietRuns, kWeighted, loudnessOf, truePeakDb, normalizeLoudness, carrierText, directWorkerMain,
   LowDiskError, EngineError, freeBytesAt, atomicWrite, openStore, readIndexWords, shardOf,
   createEngine, tendProcesses, keepAwake, voiceWord, run, parseArgs, main };
 if (require.main === module) {

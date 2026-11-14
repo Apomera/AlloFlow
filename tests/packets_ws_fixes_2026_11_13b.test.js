@@ -130,7 +130,8 @@ describe('O2 Choices: Easy, Medium, All', () => {
     expect(html).toMatch(/<select id="f-choices"[^>]*>\s*<option value="easy">Easy: fewer choices<\/option>\s*<option value="medium">Medium<\/option>\s*<option value="all">All<\/option>/);
     expect(html).toContain('id="choice-level-field" hidden');
     // One short line under the field (a phone shows it whole); what each level does is folded away.
-    expect(html).toContain('<span class="hint" id="choice-level-hint">How many answers to choose from. Medium matches Word Sounds.</span>');
+    // 2026-11-14 (T1): renamed "Word Sounds" reference to "the AlloFlow app" so first-time teachers know what it refers to.
+    expect(html).toContain('<span class="hint" id="choice-level-hint">How many answers to choose from. Medium matches the AlloFlow app.</span>');
     expect(html).toMatch(/<details class="why" id="choice-level-why">\s*<summary>What each level does<\/summary>\s*<ul>\s*<li>Easy: 3 choices[^<]*<\/li>\s*<li>Medium: 4 choices[^<]*<\/li>\s*<li>All: every choice[^<]*<\/li>/);
     const js = readFileSync('packets-make.js', 'utf8');
     expect(js).toContain("var CHOICE_ACTIVITIES = ['isolation', 'blending', 'rhyming', 'counting'];");

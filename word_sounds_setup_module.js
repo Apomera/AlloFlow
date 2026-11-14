@@ -6625,6 +6625,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
       const source = await callTTS(word, voice, Number(ttsSpeed) || 1, {
         signal: options.signal,
         force: true,
+        word: true,
         language: wordSoundsLanguage || "English",
         allowProviderFallback: !/^(af_|am_|bf_|bm_)/i.test(String(voice || "")),
         onResolvedProfile: (value) => {
@@ -8073,6 +8074,8 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
           if (key) requiredTtsKeys.add(key);
         });
         setPrewarmTotal((prev) => prev + taskList.length);
+        const notWordTasks = new Set(((boards.syllable_blending?.contentStatus === "teacher_recorded" ? [] : boards.syllable_blending?.audioUnits) || []).map((unit) => String(unit && unit.text)));
+        if (WS_CORE.manipulationReady(boards.manipulation?.task)) addInstructionParts(notWordTasks, boards.manipulation.task.instruction);
         const runTasks = async (list) => runGenerationTasks(list, async (text) => {
           if (!isGenerationActive()) throw new Error("Generation canceled");
           const key = normalizePackKey(text);
@@ -8094,6 +8097,7 @@ const WordSoundsGenerator = React.memo(({ glossaryTerms, onStartGame, onClose, c
             const src = await awaitGeneration(callTTS(text, voiceForTts, speedForTts, {
               signal,
               language: wordSoundsLanguage || "English",
+              word: !notWordTasks.has(text),
               allowProviderFallback: !/^(af_|am_|bf_|bm_)/i.test(String(voiceForTts || "")),
               onResolvedProfile: (profile) => {
                 if (isGenerationActive()) resolvedProfile = profile;

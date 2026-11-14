@@ -23,6 +23,8 @@ import {
   isOpaqueId,
   jsonError,
   noStoreHeaders,
+  readBoundedBytes,
+  readBoundedText,
   sha256Base64Url,
 } from "./security";
 
@@ -505,13 +507,18 @@ async function geminiOutbound(
     if (
       request.method !== "POST" ||
       incoming.pathname !== expectedPath ||
+      incoming.search !== "" ||
       request.headers.get("Content-Type")?.split(";", 1)[0] !==
         "application/json" ||
       !request.body
     ) {
       throw new PilotError("model_request_denied", 403);
     }
-    contentLength(request, 20 * 1024 * 1024);
+    const bodyBytes = await readBoundedBytes(
+      request,
+      20 * 1024 * 1024,
+      new PilotError("model_request_too_large", 413),
+    );
 
     const upstream = await fetch(
       `https://generativelanguage.googleapis.com${expectedPath}`,
@@ -522,8 +529,9 @@ async function geminiOutbound(
           Accept: "application/json",
           "x-goog-api-key": env.GEMINI_API_KEY,
         },
-        body: request.body,
+        body: bodyBytes,
         redirect: "error",
+        signal: AbortSignal.timeout(90_000),
       },
     );
     const headers = noStoreHeaders({
@@ -614,8 +622,12 @@ export class RemediationContainer extends Container<PilotDeploymentEnv> {
         signal: AbortSignal.timeout(60_000),
       }),
     );
-    const body = await response.text();
-    if (!response.ok || body.length > 64 * 1024) {
+    const body = await readBoundedText(
+      response,
+      64 * 1024,
+      new PilotError("runner_not_ready", 503),
+    );
+    if (!response.ok) {
       throw new PilotError("runner_not_ready", 503);
     }
     try {

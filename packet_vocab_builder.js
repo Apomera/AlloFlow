@@ -158,6 +158,29 @@
     if (same.length) return 'Two wrong answers say almost the same thing.';
     return '';
   }
+  // Two words a student could take for one another (2026-11-13, the answer audit: C:\tmp\packets_build_1111\answer_audit):
+  // one word with two spellings (afterward, afterwards), a word inside a longer one (sun, sunlight; hall, hallway), or a
+  // meaning of one that names the other (photo: "A picture created by a camera"; seem: "To look like or appear to be").
+  // The bank's own wrong answers were checked against WordNet when it was built; the words of a teacher's list never
+  // were, and related words are what a unit list is made of.
+  function namesWord(defs, word, bank) {
+    var w = keyOf(word), h = keyOf(headOf(bank, w) || w);
+    return (defs || []).some(function (d) {
+      return [w, h].some(function (x) { return !!x && [x, x + 's', x + 'es', x + 'd', x + 'ed', x + 'ing', x.replace(/e$/, '') + 'ing'].some(function (f) { return hasWord(d, f); }); });
+    });
+  }
+  function sameFamily(a, b, bank) {
+    var x = keyOf(a), y = keyOf(b);
+    if (!x || !y) return false;
+    if (x === y || (headOf(bank, x) || x) === (headOf(bank, y) || y) || x + 's' === y || y + 's' === x) return true;
+    var short = x.length <= y.length ? x : y, long = short === x ? y : x;
+    return short.length >= 3 && /^[a-z]+$/.test(long) && long.indexOf(short) === 0;
+  }
+  function looksAlike(row, word, bank, defs) {
+    var mine = meaningsOf(bank, row.base || row.word, [row.def]), theirs = meaningsOf(bank, word, defs || []);
+    return sameFamily(row.base || row.word, word, bank) || sameFamily(row.word, word, bank) || namesWord(mine, word, bank) || namesWord(theirs, row.base || row.word, bank) ||
+      mine.some(function (m) { return theirs.some(function (d) { return closeMeaning(m, d); }); });
+  }
   // The candidates for a row's wrong answers, best first, one for each word: the bank's ranked wrong answers, then
   // the meanings of the other words in the list (the only ones a word the bank does not have can use).
   function poolFor(row, rows, bank) {
@@ -166,6 +189,8 @@
       var k = keyOf(cand.word);
       if (!k || seen[k] || k === row.key || !line(cand.def)) return;
       if (wrongProblem(row, cand, bank, out)) return;
+      // A word of the list that a student could take for this one (looksAlike).
+      if (cand.from === 'list' && looksAlike(row, cand.word, bank, [cand.def])) return;
       seen[k] = true;
       out.push(cand);
     };
@@ -336,11 +361,14 @@
   function blankPool(row, rows, b, bank) {
     var out = [], seen = {}, base = keyOf(row.base || row.word), form = b.form;
     seen[row.key] = seen[keyOf(b.answer)] = true;
-    var add = function (w) {
+    // After a or an every choice starts with the same kind of letter as the answer (a unified whole: then all with a vowel).
+    // listed: a word of the teacher's list, which must not be one a student could take for this one (looksAlike).
+    var add = function (w, listed) {
       var k = keyOf(w);
-      if (!k || seen[k] || (b.article === 'a' && vowelStart(w)) || (b.article === 'an' && !vowelStart(w))) return;
+      if (!k || seen[k] || (b.article && vowelStart(w) !== vowelStart(b.answer))) return;
       var h = headOf(bank, k);
       if (h && h === base) return;
+      if (sameFamily(base, k, bank) || (listed && looksAlike(row, k, bank, listed.def ? [listed.def] : []))) return;
       seen[k] = true;
       out.push(normalizeWord(w));
     };
@@ -348,20 +376,23 @@
     // A fixed mix for each word, so the same few list words are not the wrong answers everywhere.
     var others = mixed(rows.filter(function (o) { return o !== row && o.key !== row.key; }), 'blank|' + row.key);
     var written = function (o) { return form == null ? o.word : inForm(o.word, rowInfo(o), form, bank); };
-    var same = others.filter(function (o) { return !row.pos || o.pos === row.pos; }).map(function (o, i) { return { w: written(o), i: i }; }).filter(function (p) { return !!p.w; });
-    same.sort(function (x, y) { return (fits.indexOf(keyOf(x.w)) >= 0 ? 0 : 1) - (fits.indexOf(keyOf(y.w)) >= 0 ? 0 : 1) || x.i - y.i; }).forEach(function (p) { add(p.w); });
+    var same = others.filter(function (o) { return !row.pos || o.pos === row.pos; }).map(function (o, i) { return { w: written(o), i: i, o: o }; }).filter(function (p) { return !!p.w; });
+    same.sort(function (x, y) { return (fits.indexOf(keyOf(x.w)) >= 0 ? 0 : 1) - (fits.indexOf(keyOf(y.w)) >= 0 ? 0 : 1) || x.i - y.i; }).forEach(function (p) { add(p.w, p.o); });
     if (row.sense && row.example === line(row.sense.example)) (row.sense.blanks || []).forEach(function (w) {
       // The curation chose these words for this sentence. One the bank has is used only when it has a meaning of the same kind.
       if (!headOf(bank, w) || !row.pos || sensesOf(bank, w).some(function (s) { return s.pos === row.pos; })) add(w);
     });
-    if (row.pos && !form) others.filter(function (o) { return !o.pos; }).forEach(function (o) { add(o.word); });
+    if (row.pos && !form) others.filter(function (o) { return !o.pos; }).forEach(function (o) { add(o.word, o); });
     return out;
   }
   // Why a sentence has too few wrong words, in plain words.
   function blankShort(row, b) {
     var kind = row.pos ? row.pos + 's' : 'words';
     var how = b.form ? ' that can be written like ' + b.answer : '';
-    return 'Fill the blank needs 3 other ' + kind + ' from your list' + how + (b.article ? (how ? ' and' : ' that') + ' can go after "' + b.article + '"' : '')
+    // An answer whose first letter is not the article's kind (a unified whole) needs choices that start like it does.
+    var odd = !!b.article && vowelStart(b.answer) !== (b.article === 'an');
+    var after = odd ? ' start with a ' + (vowelStart(b.answer) ? 'vowel' : 'consonant') + ', as "' + b.answer + '" does after "' + b.article + '"' : ' can go after "' + b.article + '"';
+    return 'Fill the blank needs 3 other ' + kind + ' from your list' + how + (b.article ? (how ? ' and' : ' that') + after : '')
       + '. Add words to the list' + (b.article || b.form ? ', or edit the sentence.' : '.');
   }
   // Meaning to word for a word typed in another form ("cats", with the meaning of "cat"): the wrong words are written the
@@ -479,7 +510,7 @@
     var add = function (word, pos, from) {
       if (out.length >= WRONG) return;
       var k = keyOf(word), file = '';
-      if (!k || k === row.key || isGroupWord(word) || base(word) === base(row.word) || out.some(function (c) { return c.key === k; })) return;
+      if (!k || k === row.key || isGroupWord(word) || base(word) === base(row.word) || sameFamily(row.word, word, bank) || out.some(function (c) { return c.key === k; })) return;
       try { file = pics.has(word) ? String(pics.file(word) || '') : ''; } catch (_) { file = ''; }
       if (!file || files.indexOf(file) >= 0) return;
       var theirs = meaningsOf(bank, word, []);
@@ -737,6 +768,17 @@
         + (bare(c.deed) ? ' (' + bare(c.deed) + ')' : '') + (bare(c.url) ? '. Source: ' + bare(c.url) : '') + '.');
     });
     if (out.length) out.push('The meanings were shortened and cleaned up by a program when the word list was prepared. The teacher who made this file may have changed some of them.');
+    // How the meanings were checked, as the word list itself says (bank.checking: "Checked and corrected with AI assistance
+    // ... Not reviewed by a person."), so the file says it the way it says where its voice came from. Only the words of this
+    // file that the word list marks checked and the teacher did not change are named. 2026-11-13 (teacher-journey R1).
+    var listRows = (rows || []).filter(function (r) { return r.inBank && !r.own; });
+    var checking = bank && typeof bank.checking === 'string' ? bank.checking : '';
+    if (listRows.length && /\bAI\b/.test(checking) && /not reviewed by a person/i.test(checking)) {
+      var aiChecked = listRows.filter(function (r) { return r.checked && !r.edited; }).map(function (r) { return r.word; });
+      out.push(aiChecked.length ? 'Meanings checked and corrected with AI help when the word list was prepared: ' + aiChecked.join(', ') + '. No person has read each one.'
+        + (aiChecked.length < listRows.length ? ' The other meanings from the word list were not checked.' : '')
+        : 'The meanings from the word list in this file have not been checked.');
+    }
     if ((rows || []).some(function (r) { return r.own && r.def && !r.net; })) out.push('Meanings written by the teacher: ' + rows.filter(function (r) { return r.own && r.def && !r.net; }).map(function (r) { return r.word; }).join(', ') + '.');
     // Meanings the teacher found online (packets-vocab-lookup.html) and used as found.
     var found = (rows || []).filter(function (r) { return r.own && r.def && r.net; });

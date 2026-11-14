@@ -79,13 +79,77 @@ function choosePlainTextSource(formats, id) {
     : { mime: 'text/plain; charset=utf-8', url: 'https://www.gutenberg.org/cache/epub/' + id + '/pg' + id + '.txt' };
 }
 
+const MAX_GUTENBERG_TEXT_BYTES = 10 * 1024 * 1024; // 10 MiB ceiling for plain-text books
+const MAX_GUTENBERG_REDIRECTS = 3;
+
+function safeGutenbergTextUrl(rawUrl) {
+  try {
+    const parsed = new URL(String(rawUrl || ''));
+    if (parsed.protocol !== 'https:' || parsed.username || parsed.password || parsed.port) return '';
+    const host = parsed.hostname.toLowerCase().replace(/\.$/, '');
+    if (host !== 'gutenberg.org' && !host.endsWith('.gutenberg.org')) return '';
+    return parsed.toString();
+  } catch (_) {
+    return '';
+  }
+}
+
+async function readBoundedBuffer(res, maxBytes) {
+  const declared = Number.parseInt(res.headers.get('Content-Length') || '', 10);
+  if (Number.isFinite(declared) && declared > maxBytes) {
+    try { await res.body?.cancel(); } catch (_) {}
+    throw new Error('Book text exceeds maximum supported size.');
+  }
+  if (!res.body) {
+    const buf = await res.arrayBuffer();
+    if (buf.byteLength > maxBytes) throw new Error('Book text exceeds maximum supported size.');
+    return buf;
+  }
+  const reader = res.body.getReader();
+  const chunks = [];
+  let total = 0;
+  while (true) {
+    const { value, done } = await reader.read();
+    if (done) break;
+    total += value.byteLength;
+    if (total > maxBytes) {
+      try { await reader.cancel(); } catch (_) {}
+      throw new Error('Book text exceeds maximum supported size.');
+    }
+    chunks.push(value);
+  }
+  const out = new Uint8Array(total);
+  let offset = 0;
+  for (const chunk of chunks) { out.set(chunk, offset); offset += chunk.byteLength; }
+  return out.buffer;
+}
+
 async function fetchPlainText(source) {
   const mime = String(source.mime || '').toLowerCase();
-  const url = String(source.url || '');
-  const res = await fetch(url, { headers: { 'User-Agent': 'AlloFlow reading library import worker' } });
+  let current = safeGutenbergTextUrl(source.url);
+  if (!current) throw new Error('Unsupported Project Gutenberg text URL.');
+  const seen = new Set([current]);
+  let res = null;
+  for (let hop = 0; hop <= MAX_GUTENBERG_REDIRECTS; hop++) {
+    res = await fetch(current, {
+      method: 'GET',
+      redirect: 'manual',
+      headers: { 'User-Agent': 'AlloFlow reading library import worker' },
+      signal: AbortSignal.timeout(15000),
+    });
+    if (res.status < 300 || res.status >= 400) break;
+    const loc = res.headers.get('Location') || '';
+    try { await res.body?.cancel(); } catch (_) {}
+    if (hop === MAX_GUTENBERG_REDIRECTS) throw new Error('Too many redirects fetching Gutenberg text.');
+    let next = '';
+    try { next = safeGutenbergTextUrl(new URL(loc, current).toString()); } catch (_) { next = ''; }
+    if (!next || seen.has(next)) throw new Error('Invalid redirect fetching Gutenberg text.');
+    seen.add(next);
+    current = next;
+  }
   if (!res.ok) throw new Error('text HTTP ' + res.status);
-  const buf = await res.arrayBuffer();
-  const charset = /(?:iso-8859-1|latin-1|windows-1252)/i.test(mime) || /-8\.txt(?:$|\?)/i.test(url)
+  const buf = await readBoundedBuffer(res, MAX_GUTENBERG_TEXT_BYTES);
+  const charset = /(?:iso-8859-1|latin-1|windows-1252)/i.test(mime) || /-8\.txt(?:$|\?)/i.test(current)
     ? 'windows-1252' : 'utf-8';
   return new TextDecoder(charset).decode(buf);
 }

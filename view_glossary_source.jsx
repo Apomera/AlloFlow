@@ -15,6 +15,208 @@ function glossaryAiText(value) {
   return '';
 }
 
+// ── Flashcard Quiz Distractor Quality Checks (ported from Packets packet_vocab_builder.js) ──
+var GLOSSARY_STOP_WORDS = (function () {
+  var map = {};
+  ('a an the of to and or in on at for with by from that which who whom is are was were be been being it its as this these those your you '
+    + 'they their them he she his her we our us something someone somebody thing things kind type sort way used use very can could may '
+    + 'not no do does did has have had one some any such so if when where than then into out up about over').split(' ').forEach(function (w) { map[w] = true; });
+  return map;
+})();
+
+function glossaryCleanText(value) {
+  var s = String(value == null ? '' : value);
+  return (s.normalize ? s.normalize('NFC') : s).replace(/\s+/g, ' ').trim();
+}
+
+function glossaryContentWords(value) {
+  var s = glossaryCleanText(value).toLowerCase().replace(/[’']/g, '');
+  try { s = s.replace(/[^\p{L}\p{N}]+/gu, ' '); } catch (_) { s = s.replace(/[^a-z0-9]+/g, ' '); }
+  return s.split(' ').filter(function (w) { return w && !GLOSSARY_STOP_WORDS[w]; })
+    .map(function (w) { return w.length > 3 ? w.replace(/(?:es|s)$/, '') : w; });
+}
+
+function glossaryCloseMeaning(a, b) {
+  var la = glossaryCleanText(a).toLowerCase(), lb = glossaryCleanText(b).toLowerCase();
+  if (!la || !lb) return false;
+  if (la === lb) return true;
+  var x = glossaryContentWords(a), y = glossaryContentWords(b);
+  if (!x.length || !y.length) return false;
+  if (x.join(' ') === y.join(' ')) return true;
+  var A = {}, B = {}, inter = 0, union = 0;
+  x.forEach(function (w) { A[w] = true; });
+  y.forEach(function (w) { B[w] = true; });
+  Object.keys(A).forEach(function (w) { union++; if (B[w]) inter++; });
+  Object.keys(B).forEach(function (w) { if (!A[w]) union++; });
+  var small = Math.min(Object.keys(A).length, Object.keys(B).length);
+  return (union > 0 && inter / union >= 0.6) || (small >= 2 && inter === small);
+}
+
+function glossaryHasWord(sentence, word) {
+  var w = glossaryCleanText(word).toLowerCase().replace(/’/g, "'");
+  if (!w) return false;
+  var esc = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  try { return new RegExp('(^|[^\\p{L}\\p{M}])' + esc + '(?![\\p{L}\\p{M}])', 'iu').test(String(sentence == null ? '' : sentence)); }
+  catch (_) { return new RegExp('\\b' + esc + '\\b', 'i').test(String(sentence == null ? '' : sentence)); }
+}
+
+function glossaryArticleOnset(text) {
+  var clean = glossaryCleanText(text).replace(/^[\s"'“”‘’([{-]+/, '');
+  var first = (clean.split(/\s+/)[0] || '').replace(/[^A-Za-z'-]/g, '');
+  if (!first || !/^[A-Za-z]/.test(first)) return '';
+  if (/^(?:hour|honest|honor|honour|heir)\b/i.test(first)) return 'vowel';
+  if (/^(?:unit|unif|unio|uniq|univ|unic|unis|use\b|used\b|user|usual|usurp|utensil|util|one\b|once\b|eu[a-z])/i.test(first)) return 'consonant';
+  return /^[aeiou]/i.test(first) ? 'vowel' : 'consonant';
+}
+
+function glossaryBlankArticle(stem) {
+  var s = String(stem == null ? '' : stem);
+  var m;
+  try { m = /(?:^|[^\p{L}\p{M}])(an?)\s+(?:_{2,}|\[blank\]|\(\s*\))/iu.exec(s); }
+  catch (_) { m = /(?:^|\W)(an?)\s+(?:_{2,}|\[blank\]|\(\s*\))/i.exec(s); }
+  return m ? m[1].toLowerCase() : '';
+}
+
+function glossaryFnv32(seed) {
+  var str = String(seed == null ? '' : seed);
+  var h = 2166136261 >>> 0;
+  for (var i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h >>> 0;
+}
+
+function glossaryBalancedDistractors(answerText, pool, count, seed) {
+  var wantCount = Math.min(count, pool.length);
+  if (wantCount <= 0) return [];
+  if (pool.length <= wantCount) return pool.slice();
+  var top = pool.slice(0, 8);
+  if (top.length <= wantCount) return top.slice();
+  var size = glossaryCleanText(answerText).length || 1;
+  if (wantCount === 3) {
+    var wantShorter = glossaryFnv32(seed) % 4;
+    var best = null, bestScore = Infinity;
+    for (var i = 0; i < top.length; i++) {
+      for (var j = i + 1; j < top.length; j++) {
+        for (var k = j + 1; k < top.length; k++) {
+          var trio = [top[i], top[j], top[k]];
+          var shorter = trio.filter(function (c) { return glossaryCleanText(c).length < size; }).length;
+          var near = trio.reduce(function (n, c) { return n + Math.abs(glossaryCleanText(c).length - size); }, 0);
+          var outlier = trio.reduce(function (n, c) {
+            var len = glossaryCleanText(c).length;
+            return n + ((len > size * 2.2 || len < size * 0.4) ? 4000 : 0);
+          }, 0);
+          var score = Math.abs(shorter - wantShorter) * 1000 + outlier + (i + j + k) * 10 + near / 10;
+          if (score < bestScore) { bestScore = score; best = trio; }
+        }
+      }
+    }
+    return best || top.slice(0, 3);
+  }
+  return top.map(function (c, idx) { return { c: c, idx: idx, diff: Math.abs(glossaryCleanText(c).length - size) }; })
+    .sort(function (a, b) { return a.diff - b.diff || a.idx - b.idx; })
+    .slice(0, wantCount)
+    .map(function (p) { return p.c; });
+}
+
+function selectGlossaryFlashcardOptions(flashcardOptions, currentItem, allItems, flashcardCorrectAnswer, flashcardMode, flashcardLang, quizSelectedOption) {
+  if (!Array.isArray(flashcardOptions) || flashcardOptions.length <= 1) {
+    return Array.isArray(flashcardOptions) ? flashcardOptions : [];
+  }
+  if (!currentItem) return flashcardOptions;
+  var correctOption = typeof flashcardCorrectAnswer === 'function'
+    ? flashcardCorrectAnswer(currentItem, flashcardMode, flashcardLang)
+    : currentItem.def;
+  if (!correctOption || flashcardOptions.indexOf(correctOption) < 0) return flashcardOptions;
+
+  var wrongs = [];
+  var seen = {};
+  seen[correctOption] = true;
+  flashcardOptions.forEach(function (opt) {
+    if (typeof opt === 'string' && !seen[opt]) {
+      seen[opt] = true;
+      wrongs.push(opt);
+    }
+  });
+  if (!wrongs.length) return flashcardOptions;
+
+  var extraCandidates = [];
+  if (Array.isArray(allItems) && typeof flashcardCorrectAnswer === 'function') {
+    allItems.forEach(function (item) {
+      if (!item || item === currentItem) return;
+      var cand = flashcardCorrectAnswer(item, flashcardMode, flashcardLang);
+      if (typeof cand === 'string' && cand && cand !== 'Translation unavailable' && !seen[cand]) {
+        seen[cand] = true;
+        extraCandidates.push(cand);
+      }
+    });
+  }
+
+  var promptStem = currentItem.context || currentItem.sentence || '';
+  var article = glossaryBlankArticle(promptStem);
+  var correctOnset = glossaryArticleOnset(correctOption);
+  var termForms = [];
+  if (currentItem.term) {
+    var baseTerm = glossaryCleanText(currentItem.term).toLowerCase();
+    if (baseTerm) termForms = [baseTerm, baseTerm + 's', baseTerm + 'es', baseTerm + 'ed', baseTerm + 'ing'];
+  }
+
+  function isSynonym(opt) { return glossaryCloseMeaning(opt, correctOption); }
+  function isFlawed(opt) {
+    if (termForms.some(function (f) { return glossaryHasWord(opt, f); })) return true;
+    if (article && correctOnset && glossaryArticleOnset(opt) && glossaryArticleOnset(opt) !== correctOnset) return true;
+    return false;
+  }
+
+  var nonSynonymCurrent = wrongs.filter(function (w) { return !isSynonym(w); });
+  var cleanExtras = extraCandidates.filter(function (w) { return !isSynonym(w) && !isFlawed(w); });
+
+  // Fast-path: <= 3 wrong options in flashcardOptions and all of them are clean -> keep exact order.
+  if (wrongs.length <= 3 && nonSynonymCurrent.length === wrongs.length && wrongs.every(function (w) { return !isFlawed(w); })) {
+    return flashcardOptions;
+  }
+
+  var totalNonSynonym = nonSynonymCurrent.length + cleanExtras.length;
+  if (totalNonSynonym === 0) {
+    // Tiny 2-item glossary where the only distractor happens to overlap: fall back gracefully.
+    return flashcardOptions.slice(0, Math.min(4, flashcardOptions.length));
+  }
+
+  var wantWrong = Math.min(3, totalNonSynonym);
+  var cleanPool = nonSynonymCurrent.filter(function (w) { return !isFlawed(w); }).concat(cleanExtras);
+  var chosenWrongs;
+  if (cleanPool.length >= wantWrong) {
+    chosenWrongs = glossaryBalancedDistractors(correctOption, cleanPool, wantWrong, 'fc|' + (currentItem.term || '') + '|' + correctOption);
+  } else {
+    var fallback = nonSynonymCurrent.filter(function (w) { return cleanPool.indexOf(w) < 0; })
+      .concat(extraCandidates.filter(function (w) { return !isSynonym(w) && cleanPool.indexOf(w) < 0; }));
+    chosenWrongs = cleanPool.concat(fallback).slice(0, wantWrong);
+  }
+
+  if (quizSelectedOption && quizSelectedOption !== correctOption && chosenWrongs.indexOf(quizSelectedOption) < 0 && wrongs.indexOf(quizSelectedOption) >= 0) {
+    if (chosenWrongs.length >= wantWrong) chosenWrongs[chosenWrongs.length - 1] = quizSelectedOption;
+    else chosenWrongs.push(quizSelectedOption);
+  }
+
+  var extraReplacements = chosenWrongs.filter(function (w) { return flashcardOptions.indexOf(w) < 0; });
+  var extraIdx = 0;
+  var rebuilt = [];
+  flashcardOptions.forEach(function (opt) {
+    if (opt === correctOption || chosenWrongs.indexOf(opt) >= 0) {
+      if (rebuilt.indexOf(opt) < 0) rebuilt.push(opt);
+    } else if (extraIdx < extraReplacements.length) {
+      var rep = extraReplacements[extraIdx++];
+      if (rebuilt.indexOf(rep) < 0) rebuilt.push(rep);
+    }
+  });
+  while (extraIdx < extraReplacements.length) {
+    var tailRep = extraReplacements[extraIdx++];
+    if (rebuilt.indexOf(tailRep) < 0) rebuilt.push(tailRep);
+  }
+  return rebuilt;
+}
+
 // Use the canonical speech/export adapter when loaded, with a string-safe
 // fallback so the live view can open before the audio service finishes loading.
 function glossaryTranslationText(value) {
@@ -554,6 +756,17 @@ function getGlossaryImageAlt(item) {
     // ignored deck mode, so in the Language Deck no option ever highlighted and
     // the student's correct pick was painted red while the chime said correct.
     var flashcardCorrectAnswer = props.flashcardCorrectAnswer || window.flashcardCorrectAnswer;
+    var effectiveFlashcardOptions = React.useMemo(function () {
+      return selectGlossaryFlashcardOptions(
+        flashcardOptions,
+        generatedContent && Array.isArray(generatedContent.data) ? generatedContent.data[flashcardIndex] : null,
+        generatedContent && Array.isArray(generatedContent.data) ? generatedContent.data : null,
+        flashcardCorrectAnswer,
+        flashcardMode,
+        flashcardLang,
+        quizSelectedOption
+      );
+    }, [flashcardOptions, generatedContent, flashcardIndex, flashcardCorrectAnswer, flashcardMode, flashcardLang, quizSelectedOption]);
     var isInteractiveFlashcards = props.isInteractiveFlashcards;
     // Per-term generation state (objects keyed by index)
     var isGeneratingTermImage = props.isGeneratingTermImage;
@@ -2466,7 +2679,7 @@ var handleAddGlossaryTermAsTyped = props.handleAddGlossaryTermAsTyped;
                           return <span data-flashcard-term-text {...glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, item, 'term'))}>{item.term}</span>;
                         }
                         return <span data-flashcard-term-text {...glossaryLanguageAttrs(glossaryFieldLanguage(generatedContent, item, 'term'))}>{item.term}</span>;
-                      })()}</h2><h3 role="status" aria-live="polite" aria-atomic="true" data-flashcard-quiz-feedback="true" className={'text-xs font-bold mb-4 text-white/80 tracking-widest' + (flashcardFeedback === 'incorrect' ? ' normal-case text-sm text-white' : ' uppercase')}>{flashcardFeedback === 'correct' ? t('flashcards.correct_msg') : flashcardFeedback === 'incorrect' ? glossaryText('glossary.quiz_answer_was', 'Not quite. The answer is: {answer}', { answer: typeof flashcardCorrectAnswer === 'function' ? flashcardCorrectAnswer(generatedContent?.data[flashcardIndex], flashcardMode, flashcardLang) : generatedContent?.data[flashcardIndex]?.def }) : t('flashcards.select_match')}</h3><div className="flex flex-col gap-3 w-full  pr-1">{flashcardOptions.map((opt, idx) => {
+                      })()}</h2><h3 role="status" aria-live="polite" aria-atomic="true" data-flashcard-quiz-feedback="true" className={'text-xs font-bold mb-4 text-white/80 tracking-widest' + (flashcardFeedback === 'incorrect' ? ' normal-case text-sm text-white' : ' uppercase')}>{flashcardFeedback === 'correct' ? t('flashcards.correct_msg') : flashcardFeedback === 'incorrect' ? glossaryText('glossary.quiz_answer_was', 'Not quite. The answer is: {answer}', { answer: typeof flashcardCorrectAnswer === 'function' ? flashcardCorrectAnswer(generatedContent?.data[flashcardIndex], flashcardMode, flashcardLang) : generatedContent?.data[flashcardIndex]?.def }) : t('flashcards.select_match')}</h3><div className="flex flex-col gap-3 w-full  pr-1">{effectiveFlashcardOptions.map((opt, idx) => {
                         const isSelected = quizSelectedOption === opt;
                         const currentItem = generatedContent?.data[flashcardIndex];
                         const isCorrectAnswer = typeof flashcardCorrectAnswer === 'function' ? opt === flashcardCorrectAnswer(currentItem, flashcardMode, flashcardLang) : opt === currentItem.def;
@@ -3055,3 +3268,12 @@ var handleAddGlossaryTermAsTyped = props.handleAddGlossaryTermAsTyped;
             })()}<div className="allo-popover-solid absolute -top-2 left-6 w-4 h-4 bg-white border-t-2 border-l-2 border-emerald-200 transform rotate-45" /></div></>}</div></>;
   }
   GlossaryView.translationFingerprint = glossaryTranslationFingerprint;
+  GlossaryView.selectFlashcardOptions = selectGlossaryFlashcardOptions;
+  GlossaryView.vocabChecks = Object.freeze({
+    closeMeaning: glossaryCloseMeaning,
+    hasWord: glossaryHasWord,
+    articleOnset: glossaryArticleOnset,
+    blankArticle: glossaryBlankArticle,
+    balancedDistractors: glossaryBalancedDistractors,
+    selectFlashcardOptions: selectGlossaryFlashcardOptions
+  });

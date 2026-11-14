@@ -14,6 +14,8 @@
 //           tries (:17130). A miss keeps the boxes and marks the wrong ones (:19349).
 //   audio   inst_segmentation then the word (INST_KEY_MAP :16453, :16847-16854);
 //           each chip plays its sound when picked or placed (:18239, :18294).
+// 2026-11-13 (answer audit): ir and ur are the sound of er (the dictionary spells it three ways: murder is m ur d er),
+// so the two chips of one sound go in either box; before, only one order was right.
 // 2026-11-13: each tray chip has Listen first, then the sound to pick up (as every Listen +
 // Choose pair now). With letters on, a sound whose label is not letters shows a name
 // (ctx.sound: oo_short -> "short oo (book)"), else /a/.
@@ -55,7 +57,7 @@ module.exports = {
     var chips = board.chips.map(function (c) { return env.label(c && c.phoneme); });
     if (chips.length < sounds.length || chips.some(function (c) { return !c; })) return { missing: ['board'] };
     // Same local equivalence the grader uses: every expected sound needs its own chip.
-    var MAP = { 'ā': 'ay', 'ē': 'ee', 'ī': 'ie', 'ō': 'oa', 'ū': 'oo', 'ă': 'a', 'ĕ': 'e', 'ĭ': 'i', 'ŏ': 'o', 'ŭ': 'u', oi: 'oy', aw: 'au', ew: 'oo', oe: 'oa' };
+    var MAP = { 'ā': 'ay', 'ē': 'ee', 'ī': 'ie', 'ō': 'oa', 'ū': 'oo', 'ă': 'a', 'ĕ': 'e', 'ĭ': 'i', 'ŏ': 'o', 'ŭ': 'u', oi: 'oy', aw: 'au', ew: 'oo', oe: 'oa', ir: 'er', ur: 'er' };
     var norm = function (p) { var l = String(p || '').toLowerCase().trim(); return Object.prototype.hasOwnProperty.call(MAP, l) ? MAP[l] : l; };
     var free = chips.map(norm);
     for (var i = 0; i < sounds.length; i++) {
@@ -87,7 +89,7 @@ module.exports = {
     var win = ctx.root.ownerDocument.defaultView;
     var L = ctx.L;
     // word_sounds_module.js:19317-19336, copied exactly.
-    var MAP = { 'ā': 'ay', 'ē': 'ee', 'ī': 'ie', 'ō': 'oa', 'ū': 'oo', 'ă': 'a', 'ĕ': 'e', 'ĭ': 'i', 'ŏ': 'o', 'ŭ': 'u', oi: 'oy', aw: 'au', ew: 'oo', oe: 'oa' };
+    var MAP = { 'ā': 'ay', 'ē': 'ee', 'ī': 'ie', 'ō': 'oa', 'ū': 'oo', 'ă': 'a', 'ĕ': 'e', 'ĭ': 'i', 'ŏ': 'o', 'ŭ': 'u', oi: 'oy', aw: 'au', ew: 'oo', oe: 'oa', ir: 'er', ur: 'er' };
     var norm = function (p) { var l = String(p || '').toLowerCase().trim(); return Object.prototype.hasOwnProperty.call(MAP, l) ? MAP[l] : l; };
     var n = item.sounds.length;
     var boxes = [];

@@ -28,9 +28,16 @@
 .v-meanings .radios-stack .radio { font-weight: 400; }
 .v-own { margin-top: 0.45rem; }
 .v-out { margin: 0.4rem 0 0; color: var(--muted); font-size: 0.9375rem; }
+/* 2026-11-13 (teacher-journey L7): on a phone, each word's buttons (Edit, Swap, Change meaning, Undo) wait behind one
+   Change button, so 12 words are fewer screens. On a wider screen the buttons are always there and Change is not. */
+.v-change { display: none; }
 @media (max-width: 29.99rem) {
   .v-line { grid-template-columns: 1fr; }
   .v-tools { justify-content: flex-start; }
+  .v-head .v-change { display: inline-flex; margin-left: auto; }
+  .v-row:not(.is-changing) .v-tools, .v-row:not(.is-changing) .v-meanings, .v-row:not(.is-changing) .v-undo { display: none; }
+  .v-row:not(.is-changing) .v-wrong .v-line { margin-top: 0.2rem; }
+  .v-row:not(.is-changing) .v-own .hint { display: none; }
 }
 
 /* Picture questions (2026-11-12): each word's picture, then the 3 others; white behind each drawing, as in a file. */

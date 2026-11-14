@@ -55,11 +55,20 @@ module.exports = {
       return id;
     });
     if (missing.length) return { missing: missing };
+    // 2026-11-13 (answer audit): two words can share one picture (ask and asked, carry and carrying). A wrong choice
+    // that shows the answer's picture, or one already shown, is left off: two of the same picture cannot be told apart.
+    var answerPic = pics[choices.map(function (c) { return c.toLowerCase(); }).indexOf(target)];
+    var shown = [], kept = [];
+    choices.forEach(function (c, i) {
+      if (c.toLowerCase() !== target && (pics[i] === answerPic || shown.indexOf(pics[i]) >= 0)) return;
+      shown.push(pics[i]); kept.push({ text: c, image: pics[i] });
+    });
+    if (kept.length < 2) return { missing: ['the pictures to choose from are one picture'] };
     // The app speaks only its prompt text; setup does not prepare a clip for
     // it, so a pack that has one is a bonus, not a requirement.
     var prompt = env.packClip('Read the word, then tap its picture!');
     return { item: { target: word, printed: word, prompt: prompt,
-      choices: choices.map(function (c, i) { return { text: c, image: pics[i] }; }),
+      choices: kept,
       introAudio: prompt ? [prompt] : [], answerAudio: [] } };
   },
   render: function (item, ctx) {

@@ -1,12 +1,12 @@
 Word Sounds word audio: words for a person to review
-Written by dev-tools/build_word_sounds_word_audio.cjs on 2026-11-12T08:02:24.256Z.
+Written by dev-tools/build_word_sounds_word_audio.cjs on 2026-11-14T08:47:43.968Z.
 Tab-separated: stage, word, note. Unless a section says otherwise, its words have no clip in this store.
 
 == Voiced but failed the automatic checks, twice: 0 ==
 
 == IN the store, but voiced from the second text form after the first try failed a check (listen to these first): 2 ==
-	exchanged	period
-	tube	period
+	access	carrier2
+	exchanged	carrier2
 
 == Held back, the sound dictionary has more than one pronunciation: the voice may say the other one: 108 ==
 G1 early	bass	b a s | b ay s

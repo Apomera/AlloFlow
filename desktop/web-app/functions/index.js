@@ -89,28 +89,49 @@ async function verifyCaller(req) {
   return { uid: user.uid, appId: appCheck.appId };
 }
 
-async function enforceRateLimit(uid, scope = "search", limit = SEARCH_REQUESTS_PER_MINUTE) {
+function clientIpHash(req) {
+  const forwarded = String(req.get("X-Forwarded-For") || req.ip || "").split(",")[0].trim();
+  if (!forwarded) return "";
+  const salt = String(process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || "alloflow");
+  return crypto.createHash("sha256").update(salt + ":ip:" + forwarded).digest("hex");
+}
+
+async function enforceRateLimit(uid, scope = "search", limit = SEARCH_REQUESTS_PER_MINUTE, req = null) {
   const key = crypto.createHash("sha256").update(uid).digest("hex");
   const safeScope = String(scope || "request").replace(/[^a-z0-9_-]/gi, "_").slice(0, 32);
-  const ref = db.collection("_alloflowRateLimits").doc(safeScope + "_" + key);
+  const refs = [
+    { ref: db.collection("_alloflowRateLimits").doc(safeScope + "_" + key), max: limit },
+  ];
+  const ipKey = req ? clientIpHash(req) : "";
+  if (ipKey) {
+    // Classroom NAT allowance: 4x single-user ceiling per shared school IP.
+    refs.push({ ref: db.collection("_alloflowRateLimits").doc(safeScope + "_ip_" + ipKey), max: limit * 4 });
+  }
   const now = Date.now();
   await db.runTransaction(async (transaction) => {
-    const snapshot = await transaction.get(ref);
-    const record = snapshot.exists ? snapshot.data() : null;
-    const windowStart = record && Number(record.windowStart) || 0;
-    const count = record && Number(record.count) || 0;
-    if (now - windowStart < RATE_WINDOW_MS && count >= limit) {
-      const error = new Error("rate-limited");
-      error.status = 429;
-      throw error;
+    const snapshots = await Promise.all(refs.map((entry) => transaction.get(entry.ref)));
+    for (let i = 0; i < refs.length; i++) {
+      const record = snapshots[i].exists ? snapshots[i].data() : null;
+      const windowStart = record && Number(record.windowStart) || 0;
+      const count = record && Number(record.count) || 0;
+      if (now - windowStart < RATE_WINDOW_MS && count >= refs[i].max) {
+        const error = new Error("rate-limited");
+        error.status = 429;
+        throw error;
+      }
     }
-    const nextWindow = now - windowStart < RATE_WINDOW_MS ? windowStart : now;
-    const nextCount = now - windowStart < RATE_WINDOW_MS ? count + 1 : 1;
-    transaction.set(ref, {
-      windowStart: nextWindow,
-      count: nextCount,
-      expiresAt: admin.firestore.Timestamp.fromMillis(nextWindow + (10 * RATE_WINDOW_MS)),
-    });
+    for (let i = 0; i < refs.length; i++) {
+      const record = snapshots[i].exists ? snapshots[i].data() : null;
+      const windowStart = record && Number(record.windowStart) || 0;
+      const count = record && Number(record.count) || 0;
+      const nextWindow = now - windowStart < RATE_WINDOW_MS ? windowStart : now;
+      const nextCount = now - windowStart < RATE_WINDOW_MS ? count + 1 : 1;
+      transaction.set(refs[i].ref, {
+        windowStart: nextWindow,
+        count: nextCount,
+        expiresAt: admin.firestore.Timestamp.fromMillis(nextWindow + (10 * RATE_WINDOW_MS)),
+      });
+    }
   });
 }
 
@@ -160,7 +181,7 @@ exports.searchProxy = onRequest(
     let caller;
     try {
       caller = await verifyCaller(req);
-      await enforceRateLimit(caller.uid, "search", SEARCH_REQUESTS_PER_MINUTE);
+      await enforceRateLimit(caller.uid, "search", SEARCH_REQUESTS_PER_MINUTE, req);
     } catch (error) {
       const status = error && error.status || 401;
       if (status >= 500) console.error("[searchProxy] caller verification failed", error);
@@ -251,7 +272,7 @@ exports.sourceFetchProxy = onRequest(
     let caller;
     try {
       caller = await verifyCaller(req);
-      await enforceRateLimit(caller.uid, "source_fetch", SOURCE_FETCH_REQUESTS_PER_MINUTE);
+      await enforceRateLimit(caller.uid, "source_fetch", SOURCE_FETCH_REQUESTS_PER_MINUTE, req);
     } catch (error) {
       const status = error && error.status || 401;
       if (status >= 500) console.error("[sourceFetchProxy] caller verification failed", error);

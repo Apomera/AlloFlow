@@ -30,3 +30,6 @@
 .trace-cases, .choice-level { margin: 0.75rem 0 0; max-width: 30rem; }
 .choice-level .why ul { margin: 0.25rem 0 0; padding-left: 1.25rem; color: var(--muted); }
 .choice-level .why li { margin-top: 0.2rem; }
+
+/* 2026-11-13 (teacher-journey L12): on a phone the "Open a file I made" hint keeps its first sentence, so step 1 starts higher. */
+@media (max-width: 40rem) { .reopen-more { display: none; } }

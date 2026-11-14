@@ -534,6 +534,7 @@ describe('the look', () => {
     t.button('See my results').click();
     const rows = [...t.q('#app .tally').children].map((li) => li.firstElementChild.textContent + ' | ' + li.lastElementChild.textContent);
     expect(rows).toHaveLength(3);
-    for (const row of rows) expect(row).toMatch(/^.+ \| Right on the first try: \d of \d\.$/);
+    // 2026-11-14 (T1/P2): per-activity tally rows use the shorter done_activity '{first} of {total}' string.
+    for (const row of rows) expect(row).toMatch(/^.+ \| \d of \d$/);
   });
 });

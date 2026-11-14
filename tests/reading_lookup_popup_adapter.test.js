@@ -179,7 +179,7 @@ describe('lookup popup adapter integrated with the real engine', () => {
     expect(host.textContent).toContain('/bæŋk/'); expect(host.querySelector('[data-lookup-retry="phonics"]')).not.toBeNull();
     await click(host.querySelector('[data-word-help-audio="phonics-recording"]')); expect(players[0].src).toBe(dictionaryEntry.audio);
     await click(host.querySelector('[data-word-help-audio="phonics-word"]')); expect(players[0].pause).toHaveBeenCalled();
-    expect(f.callTTS).toHaveBeenCalledWith('bank', 'Kore', 1, 2, 'English');
+    expect(f.callTTS).toHaveBeenCalledWith('bank', 'Kore', 1, { maxRetries: 2, language: 'English', word: true }, 'English');
     await click(host.querySelector('[data-word-help-audio="phonics-context"]'));
     expect(f.callTTS).toHaveBeenLastCalledWith('The river bank is steep.', 'Kore', 1, 2, 'English');
   });

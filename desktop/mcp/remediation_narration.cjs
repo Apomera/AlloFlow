@@ -233,6 +233,7 @@ async function narrate(o) {
     const mp3Out=o.claimPath(title+'-'+mode+'-audio.mp3');
     const fd=fs.openSync(mp3Out,'w',0o600);try{for(const f of mp3s)fs.writeSync(fd,fs.readFileSync(f));fs.fsyncSync(fd);}finally{fs.closeSync(fd);}
     const htmlOut=o.claimPath(title+'-'+mode+'-readalong.html');
+    await page.route('**/*',r=>(/^(?:about|blob|data):/i.test(r.request().url())?r.continue():r.abort()));
     const player=await page.evaluate(({html,audio,mode,labels})=>{const doc=new DOMParser().parseFromString(html,'text/html');const section=doc.createElement('section');const label=doc.createElement('p');label.textContent=(mode==='accessible'?(labels?.playerAccessible||'Accessible narration'):(labels?.playerNatural||'Natural narration'))+' — '+(labels?.complete||'complete document');section.setAttribute('aria-label',label.textContent);if(!labels)section.lang='en';const player=doc.createElement('audio');player.controls=true;player.preload='none';player.src=audio;player.setAttribute('aria-label',label.textContent);section.append(label,player);doc.body.prepend(section);const csp=doc.createElement('meta');csp.httpEquiv='Content-Security-Policy';csp.content="default-src 'none'; img-src data:; style-src 'unsafe-inline'; media-src 'self' file:; font-src data:";doc.head.prepend(csp);return '<!doctype html>\n'+doc.documentElement.outerHTML;},{html:plan.html,audio:encodeURIComponent(path.basename(mp3Out)),mode,labels:Planner.LABELS[plan.lang.split('-')[0]]});
     atomic(htmlOut,player);
     const files={audioWav:wavOut,audioMp3:mp3Out,narratedHtml:htmlOut};
@@ -241,8 +242,8 @@ async function narrate(o) {
         const A=window.AlloModules;const N=A.DocumentNarrationExports;
         const pkg=A.AltFormatExports.epub(plan.html,{title:plan.title});
         // The OPF declares this active class; EPUB readers require its stylesheet.
-        pkg.files['OEBPS/content.xhtml']=pkg.files['OEBPS/content.xhtml'].replace('</head>', '<style type="text/css">.-epub-media-overlay-active{background-color:#ffea80;color:#111;}</style></head>');
-        pkg.files['OEBPS/content.xhtml']=pkg.files['OEBPS/content.xhtml'].replace(/<body[^>]*>[\s\S]*<\/body>/,'<body>'+plan.bodyHtml+'</body>');
+        pkg.files['OEBPS/content.xhtml']=pkg.files['OEBPS/content.xhtml'].replace('</head>', () => '<style type="text/css">.-epub-media-overlay-active{background-color:#ffea80;color:#111;}</style></head>');
+        pkg.files['OEBPS/content.xhtml']=pkg.files['OEBPS/content.xhtml'].replace(/<body[^>]*>[\s\S]*<\/body>/, () => '<body>'+plan.bodyHtml+'</body>');
         const present=plan.segments.map(()=>true);
         pkg.files['OEBPS/content.smil']=N.smil(plan.segments,durations,'mp3',present);
         const props=[];if(/<svg\b/i.test(plan.bodyHtml))props.push('svg');if(/<math\b/i.test(plan.bodyHtml))props.push('mathml');

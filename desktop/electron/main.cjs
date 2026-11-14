@@ -5,7 +5,7 @@ const crypto = require('crypto');
 const fs = require('fs');
 const os = require('os');
 const { spawn } = require('child_process');
-const { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, safeStorage, screen, shell } = require('electron');
+const { app, BrowserWindow, desktopCapturer, dialog, ipcMain, Menu, safeStorage, screen, session, shell } = require('electron');
 const runtime = require('../runtime/alloflow-desktop-runtime.cjs');
 const {
   applyAlloSheetRequestAuth,
@@ -439,23 +439,11 @@ async function waitForRuntime(url, timeoutMs = 30000) {
 }
 
 async function ensureRuntime() {
+  if (runtimeServer && runtimeServer.listening) {
+    return waitForRuntime(getCommandCenterUrl());
+  }
   for (let attempt = 0; attempt < MAX_PORT_ATTEMPTS; attempt += 1) {
     const port = DEFAULT_PORT + attempt;
-    const url = `http://${DEFAULT_HOST}:${port}`;
-
-    try {
-      const existingHealth = await fetchJson(url + '/api/health', 700);
-      if (isExpectedRuntime(existingHealth) && existingHealth.privateApiAuth === 'launch-token') {
-        await fetchJson(url + '/api/config', 700);
-        setRuntimePort(port);
-        logLine(`Using existing packaged runtime at ${url}`);
-        return existingHealth;
-      }
-      logLine(`Skipping runtime at ${url}; it belongs to ${existingHealth.dataDir || 'another process'}.`);
-    } catch (_) {
-      // No compatible runtime answered on this port, so try to bind it.
-    }
-
     const server = runtime.createServer();
     try {
       await new Promise((resolve, reject) => {
@@ -1098,9 +1086,22 @@ function createMainWindow() {
     }
     // In-app popup views (accessibility reports, print previews, export
     // windows) open via window.open with about:blank/blob:/data: URLs —
-    // allow those as child windows; real external links open in the browser.
+    // allow those as child windows without preload or subframe Node privileges.
     if (url === 'about:blank' || url.startsWith('blob:') || url.startsWith('data:')) {
-      return { action: 'allow' };
+      return {
+        action: 'allow',
+        overrideBrowserWindowOptions: {
+          autoHideMenuBar: true,
+          webPreferences: {
+            contextIsolation: true,
+            nodeIntegration: false,
+            sandbox: true,
+            nodeIntegrationInSubFrames: false,
+            webSecurity: true,
+            devTools: false,
+          },
+        },
+      };
     }
     openExternalIfSafe(url);
     return { action: 'deny' };
@@ -1121,25 +1122,40 @@ function createMainWindow() {
       });
       return;
     }
-    if (!isAllowedAlloSheetPopup(details && details.url)) return;
-    const companionOrigin = new URL(details.url).origin;
-    const childId = childWindow.webContents.id;
-    trustedAlloSheetWebContents.set(childId, companionOrigin);
-    childWindow.once('closed', () => {
-      trustedAlloSheetWebContents.delete(childId);
-      cachedAlloSheetPrivateAuth = null;
-    });
-    childWindow.webContents.setWindowOpenHandler(({ url }) => {
-      openExternalIfSafe(url);
+    if (isAllowedAlloSheetPopup(details && details.url)) {
+      const companionOrigin = new URL(details.url).origin;
+      const childId = childWindow.webContents.id;
+      trustedAlloSheetWebContents.set(childId, companionOrigin);
+      childWindow.once('closed', () => {
+        trustedAlloSheetWebContents.delete(childId);
+        cachedAlloSheetPrivateAuth = null;
+      });
+      childWindow.webContents.setWindowOpenHandler(({ url }) => {
+        openExternalIfSafe(url);
+        return { action: 'deny' };
+      });
+      childWindow.webContents.on('will-navigate', (event, url) => {
+        try {
+          const parsed = new URL(url);
+          if (parsed.origin === companionOrigin && parsed.pathname === '/app/allo_sheet/allo_sheet.html') return;
+        } catch (_) {}
+        event.preventDefault();
+        openExternalIfSafe(url);
+      });
+      return;
+    }
+    childWindow.webContents.setWindowOpenHandler(({ url: nextUrl }) => {
+      openExternalIfSafe(nextUrl);
       return { action: 'deny' };
     });
-    childWindow.webContents.on('will-navigate', (event, url) => {
+    childWindow.webContents.on('will-navigate', (event, nextUrl) => {
+      let commandOrigin = '';
       try {
-        const parsed = new URL(url);
-        if (parsed.origin === companionOrigin && parsed.pathname === '/app/allo_sheet/allo_sheet.html') return;
+        commandOrigin = getCommandCenterUrl() ? new URL(getCommandCenterUrl()).origin : '';
       } catch (_) {}
+      if (nextUrl === 'about:blank' || (commandOrigin && nextUrl.startsWith('blob:' + commandOrigin))) return;
       event.preventDefault();
-      openExternalIfSafe(url);
+      openExternalIfSafe(nextUrl);
     });
   });
 
@@ -1353,6 +1369,25 @@ const REMEDIATION_MIME_BY_EXT = Object.freeze({
   '.webp': 'image/webp',
 });
 const REMEDIATION_EXTS = new Set(Object.keys(REMEDIATION_MIME_BY_EXT));
+const MAX_REMEDIATION_READ_BYTES = 64 * 1024 * 1024;
+const approvedRemediationRoots = new Set();
+
+function isApprovedRemediationFile(filePath) {
+  if (typeof filePath !== 'string' || !filePath || approvedRemediationRoots.size === 0) return false;
+  try {
+    const lstat = fs.lstatSync(filePath);
+    if (lstat.isSymbolicLink() || !lstat.isFile()) return false;
+    if (lstat.size > MAX_REMEDIATION_READ_BYTES) return false;
+    const realTarget = fs.realpathSync(filePath);
+    for (const root of approvedRemediationRoots) {
+      const rel = path.relative(root, realTarget);
+      if (rel && !rel.startsWith('..') && !path.isAbsolute(rel)) return true;
+    }
+    return false;
+  } catch (_) {
+    return false;
+  }
+}
 
 handleTrustedIpc('remediation:select-folder', async () => {
   try {
@@ -1363,7 +1398,8 @@ handleTrustedIpc('remediation:select-folder', async () => {
     });
     if (result.canceled || !result.filePaths[0]) return { canceled: true };
 
-    const root = result.filePaths[0];
+    const root = fs.realpathSync(result.filePaths[0]);
+    approvedRemediationRoots.add(root);
     const files = [];
     const MAX_FILES = 1000; // safety cap
 
@@ -1375,6 +1411,7 @@ handleTrustedIpc('remediation:select-folder', async () => {
       for (const entry of entries) {
         if (files.length >= MAX_FILES) break;
         if (entry.name.startsWith('.')) continue; // skip hidden / dotfiles
+        if (typeof entry.isSymbolicLink === 'function' && entry.isSymbolicLink()) continue;
         const full = path.join(dir, entry.name);
         if (entry.isDirectory()) {
           if (entry.name === 'node_modules') continue;
@@ -1383,6 +1420,7 @@ handleTrustedIpc('remediation:select-folder', async () => {
           const ext = path.extname(entry.name).toLowerCase();
           let sizeBytes = 0;
           try { sizeBytes = fs.statSync(full).size; } catch (_) {}
+          if (sizeBytes > MAX_REMEDIATION_READ_BYTES) continue;
           files.push({ name: entry.name, path: full, relPath: path.relative(root, full), sizeBytes, mimeType: REMEDIATION_MIME_BY_EXT[ext] });
         }
       }
@@ -1397,18 +1435,18 @@ handleTrustedIpc('remediation:select-folder', async () => {
 });
 
 // Read one document (by absolute path) and return its base64 contents on
-// demand. Only paths with remediation-supported extensions are served — the
-// renderer never gets a generic read-any-file primitive from this bridge.
+// demand. Only paths inside user-selected folders with remediation-supported
+// extensions are served — the renderer never gets an arbitrary read primitive.
 handleTrustedIpc('remediation:read-file-base64', async (_event, filePath) => {
   try {
-    if (typeof filePath !== 'string' || !REMEDIATION_EXTS.has(path.extname(filePath).toLowerCase()) || !fs.existsSync(filePath)) {
+    if (typeof filePath !== 'string' || !REMEDIATION_EXTS.has(path.extname(filePath).toLowerCase()) || !fs.existsSync(filePath) || !isApprovedRemediationFile(filePath)) {
       return { error: 'File not found' };
     }
     const buf = fs.readFileSync(filePath);
     const mimeType = REMEDIATION_MIME_BY_EXT[path.extname(filePath).toLowerCase()];
     return { base64: buf.toString('base64'), sizeBytes: buf.length, mimeType };
   } catch (error) {
-    return { error: String((error && error.message) || error) };
+    return { error: 'Could not read selected file' };
   }
 });
 
@@ -1442,6 +1480,30 @@ app.whenReady().then(async () => {
   if (!hasSingleInstanceLock) return;
   configureDesktopSecretStorage();
   runtime.configurePrivateApiToken(PRIVATE_API_TOKEN);
+  const allowedPermissions = new Set(['media', 'clipboard-read', 'clipboard-sanitized-write', 'fullscreen']);
+  const isAllowedPermissionOrigin = (requestingUrl) => {
+    try {
+      const targetUrl = String(requestingUrl || '');
+      if (!targetUrl) return false;
+      const commandUrl = getCommandCenterUrl();
+      if (commandUrl && isSameOrigin(targetUrl, commandUrl)) return true;
+      const appOrigin = getBundledAppOrigin();
+      if (appOrigin && isSameOrigin(targetUrl, appOrigin)) return true;
+    } catch (_) {}
+    return false;
+  };
+  session.defaultSession.setPermissionCheckHandler((webContents, permission, requestingOrigin) => {
+    if (!allowedPermissions.has(permission)) return false;
+    return isAllowedPermissionOrigin(requestingOrigin || (webContents && webContents.getURL()));
+  });
+  session.defaultSession.setPermissionRequestHandler((webContents, permission, callback, details) => {
+    if (!allowedPermissions.has(permission)) {
+      callback(false);
+      return;
+    }
+    const candidate = (details && details.requestingUrl) || (webContents && webContents.getURL());
+    callback(isAllowedPermissionOrigin(candidate));
+  });
   prepareDesktopRuntimeHome();
   ensureFreshInstallSetupReset();
   logLine('Launching AlloFlow Desktop' + (DESKTOP_EDITION ? ` (${DESKTOP_EDITION} edition)` : ''));

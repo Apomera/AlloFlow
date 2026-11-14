@@ -62,6 +62,7 @@
     finish: 'See my results',
     done_title: 'You finished!',
     done_summary: 'Right on the first try: {first} of {total}.',
+    done_activity: '{first} of {total}',
     done_retry: 'Right after trying again: {retry}.',
     // 2026-11-13: practice that is not scored (Letter Trace), counted on the end screen.
     done_practice: 'Practice, not scored: {done} of {total} done.',
@@ -529,7 +530,7 @@
         blending_prompt: 'Blend these sounds together!',
         blending_question: 'Which word did you hear?',
         blending_hear_sounds: 'Hear the sounds',
-        blending_play_all: 'Play all the words',
+        blending_play_all: 'Hear all',
         blending_option_n: 'Option {n}',
         blending_listen: 'Listen',
         blending_listen_option: 'Listen to option {n}',
@@ -815,11 +816,20 @@
           return id;
         });
         if (missing.length) return { missing: missing };
+        // 2026-11-13 (answer audit): two words can share one picture (ask and asked, carry and carrying). A wrong choice
+        // that shows the answer's picture, or one already shown, is left off: two of the same picture cannot be told apart.
+        var answerPic = pics[choices.map(function (c) { return c.toLowerCase(); }).indexOf(target)];
+        var shown = [], kept = [];
+        choices.forEach(function (c, i) {
+          if (c.toLowerCase() !== target && (pics[i] === answerPic || shown.indexOf(pics[i]) >= 0)) return;
+          shown.push(pics[i]); kept.push({ text: c, image: pics[i] });
+        });
+        if (kept.length < 2) return { missing: ['the pictures to choose from are one picture'] };
         // The app speaks only its prompt text; setup does not prepare a clip for
         // it, so a pack that has one is a bonus, not a requirement.
         var prompt = env.packClip('Read the word, then tap its picture!');
         return { item: { target: word, printed: word, prompt: prompt,
-          choices: choices.map(function (c, i) { return { text: c, image: pics[i] }; }),
+          choices: kept,
           introAudio: prompt ? [prompt] : [], answerAudio: [] } };
       },
       render: function (item, ctx) {
@@ -2095,8 +2105,16 @@
         // The player's gate (13137-13147).
         if (!story || !parts.some(function (p) { return p && !p.text; }) || raw.length < 2) return { missing: ['board'] };
         var options = [], seen = {};
-        raw.forEach(function (o) { var k = o.toLowerCase(); if (!seen[k]) { seen[k] = true; options.push(o); } });
-        if (!seen[lower] || options.length < 2) return { missing: ['board'] };
+        // One choice for each key, the same key render() grades with (2026-11-13, answer audit): "ice  cream" beside
+        // "ice cream" showed two choices that look the same, one of them graded wrong. The word's own spelling is kept.
+        var keyOf = function (s) { var t = String(s == null ? '' : s); try { t = t.normalize('NFC'); } catch (_) {} return t.toLowerCase().trim().replace(/\s+/g, ' '); };
+        var at = {};
+        raw.forEach(function (o) {
+          var k = keyOf(o);
+          if (!seen[k]) { seen[k] = true; at[k] = options.length; options.push(o); }
+          else if (o === word.trim() && k === keyOf(word)) options[at[k]] = o;
+        });
+        if (!seen[keyOf(word)] || options.length < 2) return { missing: ['board'] };
         var sentences = story.split(SPLIT).map(function (s) { return s.trim(); }).filter(Boolean);
         var aligned = sentences.length === parts.length;
         var lines = parts.map(function (p, i) {
@@ -2118,7 +2136,8 @@
           readBack: readBack, readBackByLine: readBack.length > 1, introAudio: [prompt], answerAudio: [] } };
       },
       render: function (item, ctx) {
-        var norm = function (s) { return String(s == null ? '' : s).toLowerCase().trim(); };
+        // The key prepare() uses (2026-11-13): spaces or an accent written two ways are one choice.
+        var norm = function (s) { var t = String(s == null ? '' : s); try { t = t.normalize('NFC'); } catch (_) {} return t.toLowerCase().trim().replace(/\s+/g, ' '); };
         var picture = ctx.image(item.picture);
         var blanks = [];
         var lineNodes = [];
@@ -2298,8 +2317,15 @@
         if (typeof text !== 'string' || !text.trim() || raw.length < 2) return { missing: ['board'] };
         // One choice per spelling (word_sounds_module.js:6378-6385).
         var distinct = {}, options = [];
-        raw.forEach(function (o) { var k = core.packAudioKey(o.normalize('NFC')); if (!distinct[k]) { distinct[k] = o; options.push(o); } });
-        var correct = distinct[core.packAudioKey(word.normalize('NFC'))];
+        // One choice for each recording key. For the answer's key the word's own spelling is kept (2026-11-13, answer audit):
+        // the first spelling was kept before, so a distractor written "ice  cream" stood for the answer and no choice was right.
+        var answerKey = core.packAudioKey(word.normalize('NFC'));
+        raw.forEach(function (o) {
+          var k = core.packAudioKey(o.normalize('NFC'));
+          if (!distinct[k]) { distinct[k] = o; options.push(o); }
+          else if (k === answerKey && o === word.trim() && distinct[k] !== o) { options[options.indexOf(distinct[k])] = o; distinct[k] = o; }
+        });
+        var correct = distinct[answerKey];
         if (options.length < 2 || !correct) return { missing: ['board'] };
         var parts = sentenceParts(core, text, board, word);
         if (!parts) return { missing: ['board'] };
@@ -2310,7 +2336,8 @@
           picture: picture, prompt: prompt, sentenceAudio: env.packClip(text), introAudio: [prompt], answerAudio: [] } };
       },
       render: function (item, ctx) {
-        var norm = function (s) { return String(s == null ? '' : s).toLowerCase().trim(); };
+        // The key prepare() uses (2026-11-13): spaces or an accent written two ways are one choice.
+        var norm = function (s) { var t = String(s == null ? '' : s); try { t = t.normalize('NFC'); } catch (_) {} return t.toLowerCase().trim().replace(/\s+/g, ' '); };
         var picture = ctx.image(item.picture);
         var blank = ctx.el('span', { style: 'display:inline-block;min-width:4.5em;border-bottom:3px dashed var(--muted);text-align:center' }, [
           ctx.el('span', { 'aria-hidden': 'true', text: '\u00a0' }), ctx.el('span', { class: 'sr', text: ctx.L.read_sentence_blank })]);
@@ -2541,6 +2568,8 @@
     //           tries (:17130). A miss keeps the boxes and marks the wrong ones (:19349).
     //   audio   inst_segmentation then the word (INST_KEY_MAP :16453, :16847-16854);
     //           each chip plays its sound when picked or placed (:18239, :18294).
+    // 2026-11-13 (answer audit): ir and ur are the sound of er (the dictionary spells it three ways: murder is m ur d er),
+    // so the two chips of one sound go in either box; before, only one order was right.
     // 2026-11-13: each tray chip has Listen first, then the sound to pick up (as every Listen +
     // Choose pair now). With letters on, a sound whose label is not letters shows a name
     // (ctx.sound: oo_short -> "short oo (book)"), else /a/.
@@ -2582,7 +2611,7 @@
         var chips = board.chips.map(function (c) { return env.label(c && c.phoneme); });
         if (chips.length < sounds.length || chips.some(function (c) { return !c; })) return { missing: ['board'] };
         // Same local equivalence the grader uses: every expected sound needs its own chip.
-        var MAP = { 'ā': 'ay', 'ē': 'ee', 'ī': 'ie', 'ō': 'oa', 'ū': 'oo', 'ă': 'a', 'ĕ': 'e', 'ĭ': 'i', 'ŏ': 'o', 'ŭ': 'u', oi: 'oy', aw: 'au', ew: 'oo', oe: 'oa' };
+        var MAP = { 'ā': 'ay', 'ē': 'ee', 'ī': 'ie', 'ō': 'oa', 'ū': 'oo', 'ă': 'a', 'ĕ': 'e', 'ĭ': 'i', 'ŏ': 'o', 'ŭ': 'u', oi: 'oy', aw: 'au', ew: 'oo', oe: 'oa', ir: 'er', ur: 'er' };
         var norm = function (p) { var l = String(p || '').toLowerCase().trim(); return Object.prototype.hasOwnProperty.call(MAP, l) ? MAP[l] : l; };
         var free = chips.map(norm);
         for (var i = 0; i < sounds.length; i++) {
@@ -2614,7 +2643,7 @@
         var win = ctx.root.ownerDocument.defaultView;
         var L = ctx.L;
         // word_sounds_module.js:19317-19336, copied exactly.
-        var MAP = { 'ā': 'ay', 'ē': 'ee', 'ī': 'ie', 'ō': 'oa', 'ū': 'oo', 'ă': 'a', 'ĕ': 'e', 'ĭ': 'i', 'ŏ': 'o', 'ŭ': 'u', oi: 'oy', aw: 'au', ew: 'oo', oe: 'oa' };
+        var MAP = { 'ā': 'ay', 'ē': 'ee', 'ī': 'ie', 'ō': 'oa', 'ū': 'oo', 'ă': 'a', 'ĕ': 'e', 'ĭ': 'i', 'ŏ': 'o', 'ŭ': 'u', oi: 'oy', aw: 'au', ew: 'oo', oe: 'oa', ir: 'er', ur: 'er' };
         var norm = function (p) { var l = String(p || '').toLowerCase().trim(); return Object.prototype.hasOwnProperty.call(MAP, l) ? MAP[l] : l; };
         var n = item.sounds.length;
         var boxes = [];
@@ -3008,7 +3037,7 @@
         sound_sort_choose_option: 'Choose option {n}',
         sound_sort_choose_word: 'Choose {word}',
         sound_sort_option_n: 'Option {n}',
-        sound_sort_hear_all: 'Hear all words',
+        sound_sort_hear_all: 'Hear all',
         sound_sort_found_mark: '(found)',
         sound_sort_answer_mark: '(matches)',
         sound_sort_match: 'Yes, that one matches! {found} of {total} found.',
@@ -3292,7 +3321,7 @@
         var before = '';
         var inputId = 'bee-' + String(item.id || 'x').replace(/[^a-z0-9-]/gi, '');
         var input = ctx.el('input', { id: inputId, type: 'text', autocomplete: 'off', autocorrect: 'off', autocapitalize: 'none', spellcheck: 'false',
-          inputmode: 'text', dir: 'ltr', maxlength: String(word.length || 20),
+          inputmode: 'none', dir: 'ltr', maxlength: String(word.length || 20),
           style: 'font-size:1.6rem;font-weight:700;letter-spacing:.1em;text-align:center', on: {
             input: function () {
               if (hasFixed) {
@@ -3819,7 +3848,7 @@
         word_families_choose_option: 'Choose option {n}',
         word_families_choose_word: 'Choose {word}',
         word_families_option_n: 'Option {n}',
-        word_families_hear_all: 'Hear all words',
+        word_families_hear_all: 'Hear all',
         word_families_found_mark: '(found)',
         word_families_answer_mark: '(in the family)',
         word_families_match: 'Yes, that one is in the family! {found} of {total} found.',
@@ -5838,7 +5867,10 @@
       wordClip: function (text) { return addAudio(packUri(text) || bankUri(banks.words, core.packAudioKey(text))); },
       bankClip: function (category, key) { return addAudio(bankUri(banks[category], key)); },
       phonemeClip: function (label) {
-        var candidates = core.phonemeBankCandidates(label);
+        // 2026-11-13 (answer audit): the sound label y is the consonant of yes (the dictionary writes the vowel of happy
+        // as ee). The bank's table maps the SPELLING y to ee, so /y/ played the ee clip: yes, cute and use sounded
+        // /ee/, and /y/ beside /ee/ in Find Sounds were one sound. The bank's own y clip comes first for it.
+        var candidates = (isEnglish && String(label) === 'y' ? ['y'] : []).concat(core.phonemeBankCandidates(label));
         for (var i = 0; i < candidates.length; i++) { var uri = bankUri(banks.phonemes, candidates[i]); if (uri) return addAudio(uri); }
         return null;
       },
@@ -6937,7 +6969,7 @@
         var t = 0, f = 0, pt = 0, pd = 0;
         b.items.forEach(function () { var r = state.items[at++]; if (r && (r.practice || b.activity === 'letter_tracing')) { pt++; if (r.done) pd++; } else if (r) { t++; if (r.firstTry) f++; } });
         // Practice (Letter Trace) has its own row: how many were done, never a score.
-        return t ? el('li', {}, [el('b', { text: activityTitle(b.activity) }), el('span', { text: fmt(L.done_summary, { first: f, total: t }) })])
+        return t ? el('li', {}, [el('b', { text: activityTitle(b.activity) }), el('span', { text: fmt(L.done_activity || '{first} of {total}', { first: f, total: t }) })])
           : pt ? el('li', {}, [el('b', { text: activityTitle(b.activity) }), el('span', { text: fmt(L.done_practice, { done: pd, total: pt }) })]) : null;
       }).filter(Boolean);
       var practiceTotal = state.items.filter(function (r, i) { return r.practice || (items[i] && items[i].activity === 'letter_tracing'); }).length;

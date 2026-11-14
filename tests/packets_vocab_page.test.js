@@ -76,8 +76,11 @@ describe('the page as a file', () => {
   it('speaks plainly: American spelling, "student" and "check" in its own words, and AI only to say there is none', () => {
     for (const file of [PAGE, SCRIPT, 'packets-vocab.css', 'packet_vocab_builder.js']) expect(BRITISH.exec(read(file)), file).toBeNull();
     const visible = doc.body.textContent + ' ' + doc.title + ' ' + doc.querySelector('meta[name="description"]').getAttribute('content');
-    expect(visible).not.toMatch(/\blearners?\b|\btests?\b|\bquiz|\bassessment|\bexam\b|reviewed by|\bsecure\b/i);
-    const scriptWords = [...read(SCRIPT).matchAll(/'([^'\\]*(?:\\.[^'\\]*)*)'/g)].map((m) => m[1]).join(' ');
+    // 2026-11-14 (T1/makers2): #learner-tip quotes the URL hash literal "#learner=CodeName" / "#learner=BlueHeron7"
+    // (as packets_verify_page.test.js strips /#learner=\w*/g); visible prose itself still uses "student".
+    expect(visible.replace(/#learner=\w*/g, '')).not.toMatch(/\blearners?\b|\btests?\b|\bquiz|\bassessment|\bexam\b|reviewed by|\bsecure\b/i);
+    // 2026-11-14 (T1/makers2): strip // comment lines before matching single-quoted string literals so apostrophes in comments do not invert quote parity.
+    const scriptWords = [...read(SCRIPT).replace(/^\s*\/\/.*$/gm, '').matchAll(/'([^'\\]*(?:\\.[^'\\]*)*)'/g)].map((m) => m[1]).join(' ');
     expect(scriptWords).not.toMatch(/\blearners?\b|\btests?\b|\bquiz|\bassessment|reviewed by/i);
     const sentences = (text) => text.replace(/\s+/g, ' ').trim().split(/(?<=[.!?])\s+/).filter((s) => /\bAI\b/.test(s));
     const BLOCK = 'title, h1, h2, h3, p, li, summary, legend, label, button, dt, dd, option, span';
@@ -101,7 +104,7 @@ describe('the page as a file', () => {
 const opened = [];
 afterAll(() => { opened.forEach((w) => { try { w.close(); } catch (_) {} }); });
 const wait = (ms = 0) => new Promise((resolve) => setTimeout(resolve, ms));
-async function open({ storage = null, noBank = false } = {}) {
+async function open({ storage = null, noBank = false, before = null } = {}) {
   const saved = [];
   const dom = new JSDOM(read(PAGE), { runScripts: 'outside-only', pretendToBeVisual: true, url: 'https://site.test/packets-vocab.html' });
   const w = dom.window, d = w.document;
@@ -110,6 +113,7 @@ async function open({ storage = null, noBank = false } = {}) {
   w.URL.createObjectURL = (blob) => { saved.push(blob); return 'blob:file-' + saved.length; };
   w.URL.revokeObjectURL = () => {};
   w.HTMLAnchorElement.prototype.click = function () { saved[saved.length - 1].name = this.getAttribute('download'); };
+  if (before) before(w);
   if (storage) for (const [k, v] of Object.entries(storage)) w.localStorage.setItem(k, v);
   for (const src of SCRIPTS) {
     if (src === BANK_FILE) { if (!noBank) w.eval(read(FIXTURE)); continue; }
@@ -317,7 +321,43 @@ describe('the maker, run with the stand-in word list', () => {
     expect(p.w.localStorage.getItem(STORE_KEY)).toBeNull();
     expect(p.$('f-words').value).toBe('');
     expect(Object.keys({ ...p.w.localStorage }).every((k) => k === STORE_KEY || k === EDITS_KEY)).toBe(true);
-    expect(p.$('about-page').textContent).toContain('The teacher code is never kept.');
+    // 2026-11-14 (T1/makers2): about-page states that both the teacher code and a student's code name are never kept.
+    expect(p.$('about-page').textContent).toContain("The teacher code and a student's code name are never kept.");
+  });
+
+  // 2026-11-14 (T1 + @i18n P3): check mode description, screen-reader note on picture question types, and >= 10 MB size warning.
+  it('states check mode plainly, warns that picture questions cannot be answered with a screen reader, and warns on >= 10 MB files', async () => {
+    const doc = parse(PAGE);
+    const checkChoice = doc.querySelector('#modes input[value="check"]').closest('label').querySelector('.choice-line').textContent.replace(/\s+/g, ' ').trim();
+    expect(checkChoice).toBe('One try for each question. The student is not shown right or wrong. At the end the student sees the score.');
+    expect(doc.querySelector('#picture-panel .hint').textContent).toContain('Picture questions cannot be answered with a screen reader.');
+
+    const p = await open({ before: (w) => { w.fetch = async () => ({ ok: false, status: 404, text: async () => '' }); } });
+    await p.type(WORDS);
+    p.$('next-1').click();
+    p.$('next-2').click();
+    await wait(60);
+    for (const val of ['picture', 'picword']) {
+      const line = p.d.querySelector('#types input[value="' + val + '"]').closest('label').querySelector('.choice-line').textContent;
+      expect(line, val).toContain('Cannot be answered with a screen reader.');
+    }
+    expect(p.$('size-warn').hidden).toBe(true);
+    expect(p.$('size-warn').textContent).toBe('');
+
+    const realBuild = p.w.AlloPacketVocab.buildVocabPacket;
+    p.w.AlloPacketVocab.buildVocabPacket = (opts) => {
+      const out = realBuild(opts);
+      return { ...out, html: out.html + '<!--' + 'x'.repeat(10_100_000) + '-->' };
+    };
+    try {
+      const check = p.d.querySelector('input[name="mode"][value="check"]');
+      check.checked = true; p.fire(check, 'change');
+      await wait(80);
+      expect(p.$('size-warn').hidden).toBe(false);
+      expect(p.$('size-warn').textContent).toContain('This file is over 10 MB');
+    } finally {
+      p.w.AlloPacketVocab.buildVocabPacket = realBuild;
+    }
   });
 
   it('without the word list, says so and still works with meanings the teacher types', async () => {

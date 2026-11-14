@@ -9517,11 +9517,21 @@ const handlePrintResourceSheet = (item, options = {}) => {
           __d.addToast(__d.t('toasts.pop_up_blocked_allow_pop') || 'Allow pop-ups to open the printable sheet.', 'error');
           return true;
       }
+      try { win.__alloflowPrintExport = true; } catch (_) {}
       win.document.open();
       win.document.write(html);
       win.document.close();
       try { win.focus(); } catch (_) {}
-      setTimeout(() => { try { win.print(); } catch (_) {} }, 600);
+      const _triggerPrint = () => { try { win.print(); } catch (_) {} };
+      const _waitForPrintReady = window.AlloModules?.ExportHandlers?.waitForPrintReady;
+      if (typeof _waitForPrintReady === 'function') {
+          (async () => {
+              try { await _waitForPrintReady(win); } catch (_) {}
+              _triggerPrint();
+          })();
+      } else {
+          setTimeout(_triggerPrint, 600);
+      }
       return true;
   };
 const handleUpdateHavenRecognitionConfig = async (patch) => {

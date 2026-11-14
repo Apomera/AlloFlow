@@ -16,7 +16,7 @@ loaded by a page; the folder is listed in `.assetsignore`.
 - Build the bank: `node dev-tools/build_packets_vocab_bank.cjs` (`--check` fails when the committed output is stale; `--report` prints counts).
 - Corrections: `data/packets_vocab_curation_en.json` (per word: sense order, verdict good / fixed / reject, replacement text, chosen wrong answers, reason).
 
-**How the bank was checked.** The words and meanings come from Wiktionary and WordNet. The 86 unit words and
+**How the bank was checked.** The bank draws on Wiktionary, WordNet, and school meanings added for AlloFlow. The original 86 unit words and
 the 959 NAWL words were checked and corrected with AI assistance on 2026-11-12 (sense order, rejects, fixes,
 wrong answers); this was not a review by a person. A second pass, also checked and corrected with AI assistance
 on 2026-11-12 and not reviewed by a person, covered the 1,500 most common built-in Word Sounds content words (by
@@ -27,8 +27,14 @@ or slang one. Common past forms (saw, felt, left, fell, won ...) give their past
 past ("Looked at something with your eyes"), with wrong answers that are past forms too; no one wrong answer is
 used in more than about 1% of the checked lists. Meanings that defined a job, role or thing by gender (nurse: "A
 woman who...", butler, steward, dress) or said "he" for anyone were reworded neutrally in the same pass (words
-that are themselves gendered, such as king, queen, mother or actress, keep their meaning). Every other word is as the sources give it after automatic clean-up and safety filtering
-(`checked: ''`). A teacher can edit every item before a packet is made.
+that are themselves gendered, such as king, queen, mother or actress, keep their meaning).
+
+On November 13, 2026, a third pass covered 350 K–8 science and social-studies words (plus secondary school
+meanings on everyday words such as plate and branch). It put school meanings first, added missing meanings,
+and checked wrong answers against the word's other meanings. The work was checked and corrected with AI
+assistance and was not reviewed by a person. The pass overlaps earlier reviews, so the three counts cannot be
+added. Unchecked meanings (`checked: ''`) come from the sources after automatic clean-up and safety filtering.
+A teacher can edit every item before a packet is made.
 
 The bank's text stays under CC BY-SA 4.0; every packet that shows it carries the credits in
 `AlloVocabBank.credits`.

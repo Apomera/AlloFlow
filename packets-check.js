@@ -4,6 +4,8 @@
 // pictures, so there is nothing else to get. The page runs without AI, and there is no account and no cookie.
 // What it keeps on the device is listed under "About this page". The teacher code is never kept, and it is
 // never put in an address: it is read from its box when the file is made and handed to the builder.
+// 2026-11-13: a title for every check, a student's code name in the file, one file for each student in a .zip
+// (packets_zip.js) and "Open a file I made" (packets_reopen.js readCheck), as on the other makers.
 (function () {
   'use strict';
 
@@ -27,6 +29,8 @@
   var OP_WORDS = [['add', 'add'], ['sub', 'subtract'], ['mul', 'multiply'], ['div', 'divide']];
   var CODE_MIN = 4, CODE_MAX = 64;             // the builder's own limits; it has the last word when the file is made
   var MAX_TYPED = 4000;
+  var MAX_STUDENTS = 40;                       // "Make one for each student": files in one .zip, as on the other makers
+  var NBSP = String.fromCharCode(0xA0);
 
   var doc = document;
   var $ = function (id) { return doc.getElementById(id); };
@@ -54,18 +58,20 @@
   var step = 1;
   var ownRows = [], ownStop = '', ownTimer = 0;
   var fallbackTitle = '';
-  var buildTimer = 0, buildRun = 0, built = null, fileUrl = '';
+  var buildTimer = 0, buildRun = 0, built = null, fileUrl = '', batchFile = null, batchBusy = false;
 
   // untimed (an accommodation) is for one student's file: it is not kept, so the page never opens with it on.
-  function defaults() { return { check: '', grades: {}, version: '', problems: '', title: '', time: TIME_DEFAULT, skip: true, untimed: false }; }
+  // title: the title of your own problems; readyTitle (2026-11-13): a title for a ready check, empty for the builder's own.
+  // learner (2026-11-13): a student's code name for the file. It is not kept: the next file is often for someone else.
+  function defaults() { return { check: '', grades: {}, version: '', problems: '', title: '', readyTitle: '', time: TIME_DEFAULT, skip: true, untimed: false, learner: '' }; }
 
   // ---------------------------------------------------------------------------
-  // What this page keeps: the last choices, in this browser only. Never the teacher code.
+  // What this page keeps: the last choices, in this browser only. Never the teacher code or a code name.
   // ---------------------------------------------------------------------------
   function remember() {
     try {
       window.localStorage.setItem(STORE_KEY, JSON.stringify({ v: 1, check: state.check, grades: state.grades, version: state.version,
-        problems: state.problems, title: state.title, time: state.time, skip: state.skip }));
+        problems: state.problems, title: state.title, readyTitle: state.readyTitle, time: state.time, skip: state.skip }));
     } catch (_) { /* a browser that cannot keep them still works */ }
   }
   function recall() {
@@ -80,6 +86,7 @@
     if (typeof saved.version === 'string' && /^[A-Z]$/.test(saved.version)) fresh.version = saved.version;
     if (typeof saved.problems === 'string') fresh.problems = saved.problems.slice(0, MAX_TYPED);
     if (typeof saved.title === 'string') fresh.title = saved.title.slice(0, 80);
+    if (typeof saved.readyTitle === 'string') fresh.readyTitle = saved.readyTitle.slice(0, 80);
     if (TIME_CHOICES.indexOf(saved.time) >= 0) fresh.time = saved.time;
     if (typeof saved.skip === 'boolean') fresh.skip = saved.skip;
     return fresh;
@@ -138,8 +145,9 @@
       });
       limits.sort(function (a, b) { return a - b; });
       // The example in a card's text is a real problem: the first one of grade 1, version A, when there is one.
+      // Its spaces do not break (2026-11-13, teacher-journey L11): "__ + 8 = 14" stays on one line at any width.
       var shown = formLesson(card.id, '1', 'A') || formLesson(card.id, grades[0], versionsOf(card.id, grades[0])[0]);
-      var example = String(scoredItems(shown)[0].display || '');
+      var example = String(scoredItems(shown)[0].display || '').replace(/ /g, NBSP);
       var what = card.what.replace('{example}', function () { return example; });
       var time = limits.length > 1 ? minutes(limits[0]) + ' to ' + minutes(limits[limits.length - 1]) : minutes(limits[0]);
       out.push({ id: card.id, name: measure.name, slug: measure.slug, what: what, grades: grades, item: card.item || 'problem',
@@ -320,8 +328,6 @@
   }
   function drawOwnPanel() {
     if ($('f-problems').value !== state.problems) $('f-problems').value = state.problems;
-    if ($('f-title').value !== state.title) $('f-title').value = state.title;
-    setText('title-hint', 'The student sees it at the top of the file. Left empty, it is "' + fallbackTitle + '".');
     drawRadios('times', 'time', TIME_CHOICES.map(function (seconds) { return [String(seconds), seconds ? minutes(seconds) : 'No clock']; }), String(state.time), 'time-hint', function (value) {
       state.time = Number(value);
       remember();
@@ -342,9 +348,11 @@
     if (code.length > CODE_MAX) return 'The teacher code can have ' + CODE_MAX + ' characters at most.';
     return '';
   }
+  // The line under the box says only what the hints above do not (2026-11-13, teacher-journey L10): a problem with the
+  // code, or that the answers screen will ask for it. With no code it is empty: the hint already says what that means.
   function drawCode() {
     var stop = codeProblem();
-    setText('code-line', stop || (codeNow() ? 'The answers screen will ask for this code.' : 'No code: the screen at the end shows only the score, not each answer.'));
+    setText('code-line', stop || (codeNow() ? 'The answers screen will ask for this code.' : ''));
   }
   // The box hides the code as it is typed: a class may be looking at the screen. "Show" lets the teacher read it
   // back. The button keeps its name and says, with aria-pressed, whether the code is shown.
@@ -360,24 +368,54 @@
   // Step 3: make the file
   // ---------------------------------------------------------------------------
   // The name of the file: for a ready check the builder's own short name with the grade and the version, as the
-  // app names the same file; for a list of problems, its title.
+  // app names the same file; for a list of problems, its title. A student's code name comes last (...__BlueHeron7.html).
   function fileStem(title) {
     var stem = String(title == null ? '' : title).toLowerCase().replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 60);
     return stem || 'math-check';
   }
-  function plan() {
+  function withName(name, learner) {
+    var code = String(learner || '').replace(/[^\p{L}\p{N}]+/gu, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+    return code ? name.replace(/\.html$/, '__' + code + '.html') : name;
+  }
+  function codeNameNow() { return builder.codeName(state.learner); }
+  // The title field (2026-11-13): the title of your own problems, or a title for a ready check. Left empty, the check's own.
+  function titleFallback() {
+    if (state.check === OWN) return fallbackTitle;
+    var row = readyRow(state.check), grade = gradeNow();
+    return row && grade ? builder.formTitle(row.name, grade, versionNow(), !!state.untimed) : '';
+  }
+  function drawTitle() {
+    var field = $('f-title'), typed = state.check === OWN ? state.title : state.readyTitle;
+    if (field && field.value !== typed) field.value = typed;
+    setText('title-hint', 'The student sees it at the top of the file. The results file\'s name starts with it. Left empty, it is "' + titleFallback() + '".');
+  }
+  function syncCodeName() {
+    var field = $('f-code-name');
+    if (field && field.value !== state.learner) field.value = state.learner;
+    var clean = codeNameNow(), typed = String(state.learner || '').trim();
+    setText('code-name-said', typed && clean !== typed ? (clean ? 'The file will have: ' + clean + '. A code name keeps letters, digits, spaces, dots, dashes and underscores.' : 'A code name needs a letter or a number.') : '');
+    if (typed) $('code-name-box').open = true;
+  }
+  // One check, as one version of it: the version picks the problems of a ready check. Your own problems have no versions.
+  function planFor(version) {
     if (state.check === OWN) {
       var mine = ownLesson();
-      return { own: true, lesson: mine, name: fileStem(mine.title) + '.html', problems: ownRows.filter(function (row) { return row.ok; }).map(function (row) { return row.text; }) };
+      return { own: true, lesson: mine, version: '', name: fileStem(mine.title) + '.html', problems: ownRows.filter(function (row) { return row.ok; }).map(function (row) { return row.text; }) };
     }
-    var row = readyRow(state.check), grade = gradeNow(), version = versionNow();
-    return { own: false, row: row, grade: grade, version: version, untimed: !!state.untimed, lesson: formLesson(row.id, grade, version, state.untimed),
+    var row = readyRow(state.check), grade = gradeNow(), lesson = formLesson(row.id, grade, version, state.untimed);
+    if (!lesson) throw new Error('there is no version ' + version + ' for this grade');
+    return { own: false, row: row, grade: grade, version: version, untimed: !!state.untimed, lesson: lesson, title: state.readyTitle,
       name: row.slug + '-g' + grade + '-' + version + (state.untimed ? '-untimed' : '') + '.html' };
+  }
+  function plan() { return planFor(state.check === OWN ? '' : versionNow()); }
+  function buildFor(todo, learner) {
+    return builder.buildCheckPacket({ lesson: todo.lesson, title: todo.own ? '' : todo.title, teacherCode: codeNow(), loader: loader, learner: learner || '' });
   }
   function clearBuilt() {
     buildRun++;
     built = null;
     if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
+    dropBatchFile();
     show('summary', false);
     show('try', false);
     show('save', false);
@@ -407,7 +445,7 @@
     var run = buildRun, todo, result;
     try {
       todo = plan();
-      result = builder.buildCheckPacket({ lesson: todo.lesson, teacherCode: codeNow(), loader: loader });
+      result = buildFor(todo, state.learner);
     } catch (error) {
       if (run === buildRun) problem('The file could not be put together (' + (said(error) || 'no reason was given') + '). Your choices are still here.');
       return;
@@ -419,15 +457,15 @@
     var check = result.manifest.check, limit = check.timeLimitS, items = check.items, practice = check.practiceItems;
     var coded = check.teacherCode !== 'none';
     var blob = new Blob([result.html], { type: 'text/html' });
-    built = { html: result.html, name: todo.name, bytes: blob.size, coded: coded };
+    var learner = codeNameNow();
+    built = { html: result.html, name: withName(todo.name, learner), bytes: blob.size, coded: coded, title: result.manifest.title, todo: todo };
     try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
     // "question" for Quantity Discrimination, "problem" for every other check and for the teacher's own list.
     var item = todo.own ? 'problem' : todo.row.item;
     var skip = todo.lesson.check.allowSkip ? 'The student may skip a ' + item + '.' : 'There is no skip button.';
     var score = check.scoreUnit === 'digits_correct_per_minute' ? 'The score is digits correct per minute.' : 'The score is the number of ' + item + 's correct.';
     var rows = [['Check', todo.own ? OWN_NAME : todo.row.name]];
-    if (todo.own) rows.push(['Title', result.manifest.title]);
-    else rows.push(['Grade', gradeWord(todo.grade, true)], ['Version', todo.version]);
+    if (!todo.own) rows.push(['Grade', gradeWord(todo.grade, true)], ['Version', todo.version]);
     rows.push([capital(item) + 's', todo.own ? items + ': ' + todo.problems.join(', ') + '. ' + skip : items + '. ' + mixOf(todo.lesson) + ' ' + skip]);
     var usual = todo.untimed && todo.lesson.check.usualTimeLimitS;
     if (usual && check.scoreUnit === 'digits_correct_per_minute') score = 'There is no score per minute: the results show the digits and the ' + item + 's correct.';
@@ -436,6 +474,8 @@
       : 'No clock. ') + score]);
     rows.push(['Practice first', practice ? count(practice, 'practice question') + ', not scored.' : 'None.']);
     rows.push(['Teacher screen', coded ? 'Opens only with your teacher code. It shows the score and each answer.' : 'Shows only the score, not each answer. No teacher code is set.']);
+    rows.push(['Title', result.manifest.title]);
+    if (learner) rows.push(['Code name', learner + '. The file opens with it filled in.']);
     rows.push(['File', built.name + ', ' + fileSize(built.bytes) + '.']);
     var host = $('summary-rows');
     host.textContent = '';
@@ -447,25 +487,108 @@
     show('summary', true);
     if (fileUrl) { $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl); show('try', true); }
     show('save', true);
-    // The paper copy comes from the same lesson. If it cannot be drawn, there is no print button; the file is unchanged.
-    try { drawPaper(todo.lesson); } catch (_) { clearPaper(); }
+    // The paper copy comes from the same lesson, under the file's title. If it cannot be drawn, there is no print button.
+    try { drawPaper(Object.assign({}, todo.lesson, { title: result.manifest.title || todo.lesson.title })); } catch (_) { clearPaper(); }
     setText('making-said', 'The file is ready: ' + count(items, item) + ', ' + fileSize(built.bytes) + '.');
+    drawBatch();
   }
-  function saveFile() {
-    if (!built) return;
+  function download(url, name) {
     var link = doc.createElement('a');
-    var url = fileUrl;
-    if (!url) { try { url = URL.createObjectURL(new Blob([built.html], { type: 'text/html' })); } catch (_) { url = ''; } }
-    if (!url) return problem('This browser cannot save files from a page. Open this page in Chrome, Edge, Firefox or Safari.');
     link.href = url;
-    link.download = built.name;
+    link.download = name;
     link.hidden = true;
     doc.body.appendChild(link);
     link.click();
     doc.body.removeChild(link);
+  }
+  function saveFile() {
+    if (!built) return;
+    var url = fileUrl;
+    if (!url) { try { url = URL.createObjectURL(new Blob([built.html], { type: 'text/html' })); } catch (_) { url = ''; } }
+    if (!url) return problem('This browser cannot save files from a page. Open this page in Chrome, Edge, Firefox or Safari.');
+    download(url, built.name);
     show('after-code', built.coded);
     show('after-save', true);
     $('after-save').focus();
+  }
+
+  // ---------------------------------------------------------------------------
+  // Step 3: "Make one for each student" (2026-11-13, as on the Word Sounds and vocabulary makers). One file for each
+  // code name, in one .zip file (packets_zip.js). Each file is the one above with the code name in its manifest
+  // (builder.withCodeName), which is exactly what a single make with that code name gives. A ready check can give the
+  // students versions A, B and C in turn; each version is made once.
+  // ---------------------------------------------------------------------------
+  function batchList() {
+    var seen = {}, out = { names: [], twice: [], unusable: [], over: 0 };
+    String(($('f-batch-names') && $('f-batch-names').value) || '').split(/\r?\n/).forEach(function (line) {
+      if (!line.trim()) return;
+      var name = builder.codeName(line);
+      if (!name) { out.unusable.push(line.trim().slice(0, 40)); return; }
+      var key = name.toLowerCase();
+      if (seen[key]) { if (out.twice.indexOf(name) < 0) out.twice.push(name); return; }
+      seen[key] = true;
+      if (out.names.length >= MAX_STUDENTS) { out.over++; return; }
+      out.names.push(name);
+    });
+    return out;
+  }
+  function batchRotates() { return state.check !== OWN && !!($('f-batch-rotate') && $('f-batch-rotate').checked) && versionsNow().length > 1; }
+  // The version of each student's file: the one chosen for all, or the versions in turn from the one chosen.
+  function batchVersions(n) {
+    var versions = versionsNow(), start = Math.max(0, versions.indexOf(versionNow())), out = [];
+    for (var i = 0; i < n; i++) out.push(batchRotates() ? versions[(start + i) % versions.length] : '');
+    return out;
+  }
+  function drawBatch() {
+    show('batch-more', state.check !== OWN && versionsNow().length > 1);
+    if (batchBusy) return;
+    var list = batchList(), n = list.names.length, parts = [];
+    if (!n) parts.push('Type or paste the code names, one on each line.');
+    else parts.push(count(n, 'file') + (built ? ', about ' + fileSize(n * built.bytes) + ' in all.' : '. The size shows here once the file above is ready.'));
+    if (n && batchRotates()) parts.push('Versions ' + listed(versionsNow()) + ' in turn, starting with ' + versionNow() + '.');
+    if (list.over) parts.push('Not used: ' + count(list.over, 'more code name') + '. At most ' + MAX_STUDENTS + ' go in one .zip file.');
+    if (list.twice.length) parts.push('Listed more than once, used once: ' + list.twice.join(', ') + '.');
+    if (list.unusable.length) parts.push('Not used, because a code name needs a letter or a number: ' + list.unusable.join(', ') + '.');
+    if (batchFile) parts = ['Ready: ' + count(batchFile.count, 'file') + ' in one .zip file, ' + fileSize(batchFile.bytes) + '.'];
+    setText('batch-said', parts.join(' '));
+  }
+  function dropBatchFile() {
+    if (batchFile && batchFile.url) { try { URL.revokeObjectURL(batchFile.url); } catch (_) {} }
+    batchFile = null;
+    show('batch-save', false);
+  }
+  function makeBatch() {
+    setText('batch-problem', '');
+    dropBatchFile();
+    var list = batchList();
+    if (!list.names.length) { setText('batch-problem', 'Type at least one code name.'); return; }
+    if (!built) { setText('batch-problem', 'The file above is not ready yet.'); return; }
+    if (!window.AlloPacketZip || typeof window.AlloPacketZip.create !== 'function') { setText('batch-problem', 'This page could not load the part that makes .zip files. Load the page again.'); return; }
+    var versions = batchVersions(list.names.length), bases = {};
+    try {
+      var zip = window.AlloPacketZip.create(), encoder = new TextEncoder();
+      list.names.forEach(function (name, i) {
+        var version = versions[i];
+        if (!bases[version]) {
+          var todo = version ? planFor(version) : built.todo;
+          bases[version] = { html: buildFor(todo, '').html, name: todo.name };
+        }
+        zip.add(withName(bases[version].name, name), encoder.encode(builder.withCodeName(bases[version].html, name)));
+      });
+      var parts = zip.finish();
+      var todo0 = built.todo;
+      var stem = todo0.own ? fileStem(built.title) : todo0.row.slug + '-g' + todo0.grade + (versions[0] ? '' : '-' + todo0.version) + (todo0.untimed ? '-untimed' : '');
+      batchFile = { parts: parts, bytes: zip.bytes, count: list.names.length, name: stem + '__' + list.names.length + '-students.zip', url: '' };
+    } catch (error) { setText('batch-problem', 'The .zip file could not be made (' + said(error) + ').'); return; }
+    show('batch-save', true);
+    drawBatch();
+  }
+  function saveBatch() {
+    if (!batchFile) return;
+    if (!batchFile.url) { try { batchFile.url = URL.createObjectURL(new Blob(batchFile.parts, { type: 'application/zip' })); } catch (_) { batchFile.url = ''; } }
+    if (!batchFile.url) { setText('batch-problem', 'This browser cannot save files from a page.'); return; }
+    download(batchFile.url, batchFile.name);
+    setText('batch-said', 'Saved ' + batchFile.name + '. Each file\'s name ends with the student\'s code name. Send each student their own file.');
   }
 
   // ---------------------------------------------------------------------------
@@ -599,7 +722,8 @@
     var samples = paper.samples.length, limit = paper.limit, rate = paper.unit === 'digits_correct_per_minute';
     var minus = paper.samples.concat(paper.items).some(function (row) { return /^-/.test(row.answer); });
     var give = [], score = [], tally = [];
-    if (samples) give.push((samples === 1 ? 'Do the sample first, with the student, and say the answer.' : 'Do the ' + samples + ' samples first, with the student, and say each answer.') + ' Samples do not count.');
+    // "Practice", as the screen says ("Practice 1 of 1"), not "Samples" (2026-11-13, teacher-journey L9).
+    if (samples) give.push((samples === 1 ? 'Do the practice question first, with the student, and say the answer.' : 'Do the ' + samples + ' practice questions first, with the student, and say each answer.') + ' Practice questions do not count.');
     give.push(limit ? (samples ? 'Then start a clock for ' : 'Start a clock for ') + fileTime(limit) + '. When the time is up, the student stops.' : 'There is no clock. The student may take as long as needed.');
     if (paper.skip) give.push('The student may skip a ' + noun + ', as on screen.');
     if (rate && limit) give.push('If the student finishes every ' + noun + ' before the time is up, write down the number of seconds used.');
@@ -608,7 +732,7 @@
       var example = digitExample(paper);
       if (example) score.push(example);
       score.push('A ' + noun + ' left blank gets 0.' + (minus ? ' So does an answer with the wrong sign.' : ''));
-      score.push('Add up the digits correct' + (samples ? ', leaving out the samples.' : '.'));
+      score.push('Add up the digits correct' + (samples ? ', leaving out the practice questions.' : '.'));
       if (!limit) score.push('With no clock there is no score in digits correct per minute.');
       else {
         score.push(limit === 60 ? 'If the time ran out: the score is the number of digits correct, because the time is 1 minute.'
@@ -620,12 +744,12 @@
       tally.push(['Score', 'digits correct per minute']);
     } else {
       score.push(noun === 'question' ? 'A question is right when the circled number is the bigger one, the one in the key.' : 'A problem is right when the number written is the one in the key.');
-      score.push('The score is the number of ' + noun + 's right' + (samples ? ', leaving out the samples.' : '.'));
+      score.push('The score is the number of ' + noun + 's right' + (samples ? ', leaving out the practice questions.' : '.'));
       if (limit) score.push('If the student finishes before the time is up, the score is still the number right.');
       tally.push(['Number right', 'of ' + paper.items.length]);
     }
     score.push(limit ? 'If the check is stopped before the time is up and before the last ' + noun + ', there is no score.' : 'If the check is stopped before the last ' + noun + ', there is no score.');
-    var note = 'The numbers are the ones the student sees on screen' + (samples ? '. In the results file the samples are numbered first, so ' + noun + ' 1 here is item ' + (samples + 1) + ' there.' : ' and in the results file.');
+    var note = 'The numbers are the ones the student sees on screen' + (samples ? '. In the results file the practice questions are numbered first, so ' + noun + ' 1 here is item ' + (samples + 1) + ' there.' : ' and in the results file.');
     return { give: give, score: score, tally: tally, note: note };
   }
   // A worked example of digits correct, counted by the file's own scoring of one item.
@@ -666,7 +790,7 @@
     setText('paper-time', paper.limit ? fill(loader.CHECK_LABELS.check_ready_timed, { time: fileTime(paper.limit) }) : loader.CHECK_LABELS.check_ready_untimed);
     show('paper-samples-part', paper.samples.length > 0);
     $('paper-samples').className = 'paper-items paper-samples cols-' + plan.cols;
-    paper.samples.forEach(function (row, i) { $('paper-samples').appendChild(paperItem(row, 'Sample', sampleShapes[i])); });
+    paper.samples.forEach(function (row, i) { $('paper-samples').appendChild(paperItem(row, 'Practice', sampleShapes[i])); });
     sheets.forEach(function (rows, n) {
       var list = n ? el('ol', '') : $('paper-items-1'), page = n ? el('p', 'paper-page') : $('paper-page-1'), turn = n ? el('p', 'paper-turn') : $('paper-turn-1');
       list.className = 'paper-items cols-' + plan.cols;
@@ -710,7 +834,7 @@
     setText('paper-answers-title', apart ? 'Answers: ' + paper.title : 'Answers');
     all.forEach(function (row, i) {
       var line = el('li', '');
-      line.appendChild(el('span', 'kn', row.practice ? 'Sample' : String(i - paper.samples.length + 1)));
+      line.appendChild(el('span', 'kn', row.practice ? 'Practice' : String(i - paper.samples.length + 1)));
       line.appendChild(el('span', 'kw', shown(row.word)));
       line.appendChild(el('span', 'ka', shown(row.answer)));
       $('paper-key').appendChild(line);
@@ -723,6 +847,93 @@
   function printPaper() {
     if (!paperOn) return;
     try { window.print(); } catch (_) { /* the browser's own print menu still prints the paper copy */ }
+  }
+
+  // ---------------------------------------------------------------------------
+  // "Open a file I made" (2026-11-13): the page fills itself in from a check made earlier. packets_reopen.js reads it
+  // (readCheck, with packets_verify_core.js). The file is read in this tab only. Nothing in it is run.
+  // ---------------------------------------------------------------------------
+  var reopenKit = null;
+  function showReopen(line, items, page) {
+    setText('reopen-line', line);
+    var host = $('reopen-list');
+    host.textContent = '';
+    (items || []).forEach(function (text) { host.appendChild(el('li', '', text)); });
+    host.hidden = !(items && items.length);
+    var link = $('reopen-page');
+    if (page) { link.setAttribute('href', page.href); link.textContent = 'Open ' + page.name; }
+    link.hidden = !page;
+    show('reopen-note', true);
+    $('reopen-note').focus();
+  }
+  function nearestTime(seconds) {
+    if (!(seconds > 0)) return 0;
+    return TIME_CHOICES.filter(Boolean).reduce(function (best, t) { return Math.abs(t - seconds) < Math.abs(best - seconds) ? t : best; }, TIME_DEFAULT);
+  }
+  function applyReopen(result, name) {
+    if (!result.ok) { showReopen(result.why, [], result.page); return; }
+    var got = result.check, items = [];
+    clearTimeout(buildTimer);
+    clearBuilt();
+    var fresh = defaults();
+    fresh.grades = state.grades;
+    if (got.id === OWN) {
+      fresh.check = OWN;
+      fresh.problems = got.problems;
+      fresh.title = result.title;
+      fresh.time = nearestTime(got.time);
+      fresh.skip = got.skip;
+      var lines = got.problems ? got.problems.split('\n').length : 0;
+      items.push(OWN_NAME + ': ' + count(lines, 'problem') + '. They are in step 2.');
+      items.push('Time limit: ' + (fresh.time ? minutes(fresh.time) : 'no clock') + '. ' + (fresh.skip ? 'Students may skip a problem.' : 'No skip button.'));
+      if (got.time > 0 && got.time !== fresh.time) items.push('The file had a clock of ' + minutes(got.time) + '. This page offers ' + listed(TIME_CHOICES.filter(Boolean).map(minutes)) + ', so ' + minutes(fresh.time) + ' is chosen.');
+    } else {
+      var row = readyRow(got.id);
+      if (!row) { showReopen('This check is not offered on this page now.', [], null); return; }
+      fresh.check = got.id;
+      if (row.grades.indexOf(got.grade) >= 0) fresh.grades[got.id] = got.grade;
+      else items.push('The file is for ' + (got.grade ? gradeWord(got.grade, false) : 'a grade') + ', which this page does not offer now. Choose a grade in step 2.');
+      fresh.version = got.version;
+      fresh.untimed = got.untimed;
+      fresh.readyTitle = result.title;
+      items.push(row.name + (fresh.grades[got.id] ? ', ' + gradeWord(got.grade, false) : '') + ', version ' + got.version + (got.untimed ? ', untimed' : '') + '.');
+    }
+    fresh.learner = result.learner || '';
+    if (result.title) items.push('Title: ' + result.title + (/[.!?]$/.test(result.title) ? '' : '.'));
+    result.notes.forEach(function (note) { items.push(note); });
+    state = fresh;
+    $('f-code').value = '';
+    showCode(false);
+    remember();
+    goTo(1, true);
+    showReopen('Filled in from ' + name + '. Change what you want, then make the new file in step 3.', items, null);
+  }
+  function reopenText(text, name) {
+    if (!reopenKit) return;
+    applyReopen(reopenKit.readCheck(text, { verify: window.AlloPacketVerify, builder: builder, codeName: builder.codeName }), String(name || 'the file').slice(0, 120));
+  }
+  function wireReopen() {
+    $('reopen-choose').addEventListener('click', function () { $('reopen-file').click(); });
+    $('reopen-file').addEventListener('change', function () {
+      var file = this.files && this.files[0];
+      this.value = '';
+      if (!file) return;
+      if (file.size > 20 * 1024 * 1024) { showReopen('This file is too large to be a check made here.', [], null); return; }
+      var reader = new FileReader();
+      reader.onload = function () { reopenText(String(reader.result || ''), file.name); };
+      reader.onerror = function () { showReopen('This browser could not read the file.', [], null); };
+      reader.readAsText(file);
+    });
+  }
+  // A file handed over by "Change this file" on Open a practice file or check (packets-open.html, packets_handoff.js).
+  function takeHanded() {
+    var handoff = window.AlloPacketHandoff;
+    if (!reopenKit || !handoff || typeof handoff.take !== 'function' || window.location.hash !== handoff.HASH) return;
+    try { window.history.replaceState(null, '', window.location.href.split('#')[0]); } catch (_) {}
+    handoff.take().then(function (file) {
+      if (!file) { showReopen('The file is not here any more. Choose it with Open a file I made.', [], null); return; }
+      reopenText(new TextDecoder('utf-8').decode(file.bytes), file.name);
+    }, function () { showReopen('This browser could not hand the file over. Choose it with Open a file I made.', [], null); });
   }
 
   // ---------------------------------------------------------------------------
@@ -767,7 +978,7 @@
       drawCode();
       setText('step-2-problem', stop);
     }
-    if (step === 3) makeSoon(30);
+    if (step === 3) { drawTitle(); syncCodeName(); drawBatch(); makeSoon(30); }
     if (!quiet && !stayed) {
       var heading = $('step-' + step + '-title');
       if (heading) { heading.focus(); if (typeof heading.scrollIntoView === 'function') heading.scrollIntoView({ block: 'start' }); }
@@ -793,7 +1004,18 @@
       clearTimeout(ownTimer);
       ownTimer = setTimeout(drawOwn, 250);
     });
-    $('f-title').addEventListener('input', function () { state.title = this.value.slice(0, 80); remember(); });
+    // The title is in step 3 (2026-11-13): the file is made again as it is typed.
+    $('f-title').addEventListener('input', function () {
+      var typed = this.value.slice(0, 80);
+      if (state.check === OWN) state.title = typed; else state.readyTitle = typed;
+      remember();
+      if (step === 3) makeSoon(400);
+    });
+    $('f-code-name').addEventListener('input', function () { state.learner = this.value.slice(0, 40); syncCodeName(); if (step === 3) makeSoon(400); });
+    $('f-batch-names').addEventListener('input', function () { dropBatchFile(); setText('batch-problem', ''); drawBatch(); });
+    $('f-batch-rotate').addEventListener('change', function () { this.parentNode.classList.toggle('is-on', this.checked); dropBatchFile(); drawBatch(); });
+    $('batch-make').addEventListener('click', makeBatch);
+    $('batch-save').addEventListener('click', saveBatch);
     $('f-skip').addEventListener('change', function () { state.skip = this.checked; remember(); this.parentNode.classList.toggle('is-on', this.checked); });
     $('f-untimed').addEventListener('change', function () { state.untimed = this.checked; this.parentNode.classList.toggle('is-on', this.checked); drawFormLine(); });
     $('f-code').addEventListener('input', function () { drawCode(); if (!codeProblem()) setText('step-2-problem', ''); });
@@ -804,6 +1026,8 @@
       try { window.localStorage.removeItem(STORE_KEY); } catch (_) {}
       state = defaults();
       $('f-code').value = '';
+      $('f-title').value = '';
+      $('f-code-name').value = '';
       showCode(false);
       goTo(1, true);
       setText('forget-said', 'Done. The page is back to how it started.');
@@ -831,9 +1055,16 @@
     drawCards();
     state = recall();
     if (loader.DEFAULT_LABELS && loader.DEFAULT_LABELS.save_csv) setText('csv-label', loader.DEFAULT_LABELS.save_csv);
+    // "Open a file I made" and one file for each student are extras: without their scripts the page works as before.
+    var kit = window.AlloPacketReopen;
+    reopenKit = kit && typeof kit.readCheck === 'function' && window.AlloPacketVerify && typeof window.AlloPacketVerify.readParts === 'function' && typeof FileReader === 'function' ? kit : null;
     wire();
+    if (reopenKit) wireReopen();
+    show('reopen', !!reopenKit);
+    show('batch', !!(window.AlloPacketZip && typeof builder.withCodeName === 'function'));
     show('loading', false);
     goTo(1, true);
+    takeHanded();
   }
 
   try { start(); } catch (error) {

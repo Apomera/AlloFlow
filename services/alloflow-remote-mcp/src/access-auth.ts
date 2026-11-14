@@ -56,6 +56,7 @@ type StoredConsent = {
 type StoredAccessState = {
   oauthRequest: OAuthAuthorizationRequest;
   verifier: string;
+  nonce?: string;
 };
 
 type AccessTokenResponse = {
@@ -278,10 +279,12 @@ async function continueAuthorization(
 
   const state = randomToken();
   const verifier = randomToken(48);
+  const nonce = randomToken();
   const challenge = await sha256Base64Url(verifier);
   const accessState: StoredAccessState = {
     oauthRequest: stored.oauthRequest,
     verifier,
+    nonce,
   };
   await env.OAUTH_KV.put(
     stateKey("access", state),
@@ -295,6 +298,7 @@ async function continueAuthorization(
   destination.searchParams.set("response_type", "code");
   destination.searchParams.set("scope", "openid profile offline_access");
   destination.searchParams.set("state", state);
+  destination.searchParams.set("nonce", nonce);
   destination.searchParams.set("code_challenge", challenge);
   destination.searchParams.set("code_challenge_method", "S256");
   return new Response(null, {
@@ -431,6 +435,7 @@ export async function requireTransferPrincipal(
 async function verifyAccessIdToken(
   env: PilotEnv,
   idToken: string | undefined,
+  expectedNonce?: string,
 ): Promise<{ claims: JWTPayload; subject: string }> {
   if (!idToken) {
     throw new PilotError("institution_identity_invalid", 401);
@@ -444,9 +449,17 @@ async function verifyAccessIdToken(
       algorithms: ["RS256"],
       clockTolerance: 60,
       maxTokenAge: "1h",
+      requiredClaims: ["iss", "aud", "sub", "iat", "exp"],
     });
     claims = verified.payload;
   } catch {
+    throw new PilotError("institution_identity_invalid", 401);
+  }
+  if (
+    expectedNonce &&
+    (typeof claims.nonce !== "string" ||
+      !constantTimeEqual(claims.nonce, expectedNonce))
+  ) {
     throw new PilotError("institution_identity_invalid", 401);
   }
   return {
@@ -499,7 +512,11 @@ async function finishAuthorization(
   }
   const scopes = validateAuthRequest(stored.oauthRequest, config.origin);
   const token = await exchangeAccessCode(env, code, stored.verifier);
-  const { subject } = await verifyAccessIdToken(env, token.id_token);
+  const { subject } = await verifyAccessIdToken(
+    env,
+    token.id_token,
+    stored.nonce,
+  );
   const ownerId = await ownerIdFromSubject(env, subject);
   const expiresIn = safeExpiresIn(token.expires_in);
   const principal: PilotPrincipal = {

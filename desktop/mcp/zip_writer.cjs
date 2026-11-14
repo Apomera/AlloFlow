@@ -120,6 +120,20 @@ function makeZip(entries) {
 function zipFileMap(files, storeFirst) {
   const names = Object.keys(files || {});
   if (!names.length) throw new Error('zipFileMap: no files');
+  if (names.length > 65535) throw new Error('zipFileMap: too many files');
+  const seen = new Set();
+  for (const name of names) {
+    if (typeof name !== 'string' || !name || name.length > 1024 || name.startsWith('/')
+      || name.includes('\0') || name.includes('\\') || name.includes(':')) {
+      throw new Error('zipFileMap: unsafe archive entry path');
+    }
+    const segs = name.split('/');
+    if (segs.some((seg) => !seg || seg === '.' || seg === '..')) {
+      throw new Error('zipFileMap: invalid relative path segment');
+    }
+    if (seen.has(name)) throw new Error('zipFileMap: duplicate archive entry');
+    seen.add(name);
+  }
   const entries = [];
   if (storeFirst) {
     if (!names.includes(storeFirst)) throw new Error("zipFileMap: storeFirst '" + storeFirst + "' is not in the file map");

@@ -2876,6 +2876,7 @@ try {
       : flag === 'reloaded' ? _acWsText(t, 'class_analytics.th_ck_flag_reloaded', 'The page was reloaded during the check.')
       : flag === 'two_tabs' ? _acWsText(t, 'class_analytics.th_ck_flag_two_tabs', 'The check was open in two tabs or windows while it ran.')
       : flag === 'time_up_away' ? _acWsText(t, 'class_analytics.th_ck_flag_time_up_away', 'The time ran out while the page was hidden or closed.')
+      : flag === 'attempt_unknown' ? _acWsText(t, 'class_analytics.th_ck_flag_attempt_unknown', 'That browser could not keep the count of tries, so the try number may be wrong.')
       : _acWsText(t, 'class_analytics.th_ck_flag_other', 'The file notes: {flag}.', { flag: String(flag).replace(/_/g, ' ') });
   }
   // Things a teacher should know before reading the score, in plain words.
@@ -3002,7 +3003,7 @@ try {
   // practice file); the loader's own English otherwise.
   function _acCkFileLabels(t, loader, activity) {
     var labels = {};
-    var keys = Object.keys(loader.DEFAULT_LABELS || {}).concat(Object.keys(loader.CHECK_LABELS || {}));
+    var keys = Object.keys(loader.DEFAULT_LABELS || {}).concat(Object.keys(loader.CHECK_LABELS || {}), ['open_here']);
     var adapter = loader.CHECK_ADAPTERS && _acWsOwn(loader.CHECK_ADAPTERS, activity) ? loader.CHECK_ADAPTERS[activity] : null;
     if (adapter) keys = keys.concat(Object.keys(adapter.labels || {}), [activity + '_title']);
     keys.forEach(function(key) {

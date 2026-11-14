@@ -184,7 +184,7 @@ describe('Student word-help audio controls', () => {
     const props = mount({ phonicsData: phonics, callTTS, voiceSpeed: 0.8, selectedVoice: 'Aoede' });
     expect(callTTS).not.toHaveBeenCalled();expect(audioButton('phonics-word').textContent).toBe('Hear word');
     await clickAudio('phonics-word');
-    expect(callTTS).toHaveBeenCalledWith('agua', 'Aoede', 0.8, 2, 'Spanish');
+    expect(callTTS).toHaveBeenCalledWith('agua', 'Aoede', 0.8, { maxRetries: 2, language: 'Spanish', word: true }, 'Spanish');
     expect(props.stopPlayback).toHaveBeenCalled();expect(players[0].playbackRate).toBe(0.8);
     expect(audioButton('phonics-word').textContent).toBe('Stop audio');
     await clickAudio('phonics-word');expect(players[0].pause).toHaveBeenCalled();

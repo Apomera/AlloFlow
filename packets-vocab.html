@@ -79,7 +79,7 @@
     <div id="reopen" class="reopen" hidden>
       <p class="reopen-row">
         <button type="button" class="btn btn-text btn-small" id="reopen-choose" aria-describedby="reopen-hint">Open a file I made</button>
-        <span class="hint" id="reopen-hint">Start from a file you saved before, then change what you want. It is read on this device only.</span>
+        <span class="hint" id="reopen-hint">Start from a file you saved before.<span class="reopen-more"> Then change what you want. It is read on this device only.</span></span>
       </p>
       <input type="file" id="reopen-file" accept=".html,.htm,text/html" hidden aria-label="A file you made before">
       <div id="reopen-note" class="note reopen-note" tabindex="-1" hidden>
@@ -155,7 +155,7 @@
 
       <div id="picture-panel" class="block" hidden>
         <h3 class="v-sub">Check the pictures</h3>
-        <p class="hint">Each word's picture comes first, then the 3 other pictures. A picture can show another meaning of a word. Leave out any word whose picture does not fit your unit.</p>
+        <p class="hint">Each word's picture comes first, then the 3 other pictures. A picture can show another meaning of a word. Leave out any word whose picture does not fit your unit. Picture questions cannot be answered with a screen reader.</p>
         <p id="picture-line" class="hint" role="status"></p>
         <div id="picture-rows" class="v-rows"></div>
       </div>
@@ -175,7 +175,7 @@
           </label>
           <label class="choice"><input type="radio" name="mode" value="check">
             <span class="choice-name">A check</span>
-            <span class="choice-line">One try for each question. The student is not shown right or wrong. At the end you see the score.</span>
+            <span class="choice-line">One try for each question. The student is not shown right or wrong. At the end the student sees the score.</span>
           </label>
         </div>
       </fieldset>
@@ -196,6 +196,16 @@
         <input type="text" id="f-title" maxlength="80" autocomplete="off" aria-describedby="title-hint">
       </div>
 
+      <details class="why code-box" id="code-name-box">
+        <summary>Put a student's code name in the file</summary>
+        <div class="field">
+          <label for="f-code-name">Student's code name</label>
+          <span class="hint" id="code-name-hint">Use a code name, not the student's real name. The file opens with it filled in. Leave it empty and each student types their own.</span>
+          <input type="text" id="f-code-name" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="none" aria-describedby="code-name-hint code-name-said">
+          <span class="hint" id="code-name-said" role="status"></span>
+        </div>
+      </details>
+
       <details class="why code-box" id="more">
         <summary>More choices</summary>
         <div class="block">
@@ -206,11 +216,6 @@
           <label class="radio"><input type="checkbox" id="f-voices" aria-describedby="voices-hint voices-line"> <span>Recordings of the words</span></label>
           <span class="hint" id="voices-hint">Many words have a recording made ahead of time, a machine voice, the same as in Word Sounds files. The file plays it for the word itself. The device voice reads the meanings and the questions. Recordings make the file bigger.</span>
           <span class="hint" id="voices-line" role="status"></span>
-        </div>
-        <div class="field">
-          <label for="f-code-name">Student's code name</label>
-          <span class="hint" id="code-name-hint">Use a code name, not the student's real name. The file opens with it filled in. Leave it empty and each student types their own.</span>
-          <input type="text" id="f-code-name" maxlength="40" autocomplete="off" spellcheck="false" autocapitalize="none" aria-describedby="code-name-hint">
         </div>
       </details>
 
@@ -227,6 +232,7 @@
       <div id="summary" class="summary" hidden>
         <h3>The file is ready</h3>
         <p id="summary-facts" class="summary-facts"></p>
+        <p id="size-warn" class="note" hidden></p>
         <dl id="summary-rows"></dl>
       </div>
 
@@ -243,8 +249,12 @@
           <li>Each student opens it in a browser, finishes it and presses the main button at the end, <strong id="csv-label">Save results as a spreadsheet file (CSV)</strong>. They hand that file back to you.</li>
           <li>Add the results up on <a href="packets-results.html">Add up results</a>, or open them in a spreadsheet. In AlloFlow: Class Analytics, Add take-home results.</li>
         </ol>
-        <p class="after-phone">On a phone or tablet, a student opens the file on <a href="packets-open.html">Open a practice file</a>: apomera.github.io/AlloFlow/packets-open.html.</p>
+        <p class="after-phone">On a phone or tablet, a student opens the file on <a href="packets-open.html">Open a practice file or check</a>: apomera.github.io/AlloFlow/packets-open.html.</p>
         <p id="after-code" hidden>The answers screen inside the file opens with your teacher code. This page has not kept the code.</p>
+        <details class="why" id="learner-tip">
+          <summary>Fill in a student's code name for them</summary>
+          <p>When the file is on a website or a shared link, add <code>#learner=CodeName</code> to the end of the link, for example <code>#learner=BlueHeron7</code>. It stays on the student's device.</p>
+        </details>
       </div>
 
       <details class="batch" id="batch">
@@ -270,7 +280,7 @@
       <summary>About this page</summary>
       <div class="about-body">
         <h2 id="keeps-title">What this page keeps</h2>
-        <p>Your last choices are kept in this browser so that the page opens the way you left it: the words, the kinds of questions, practice or check, the title, Read aloud and Recordings of the words. The teacher code is never kept.</p>
+        <p>Your last choices are kept in this browser so that the page opens the way you left it: the words, the kinds of questions, practice or check, the title, Read aloud and Recordings of the words. The teacher code and a student's code name are never kept.</p>
         <p>Your changes to the questions are kept too, so that the next file starts from them: the meaning you chose for a word, meanings and sentences you edited, wrong answers you swapped or edited, meanings you typed for words that are not in the word list, meanings you found with Look it up online, and words you left out of the picture questions. Nothing is kept anywhere else.</p>
         <p class="row">
           <button type="button" class="btn btn-small" id="forget">Forget my choices</button>

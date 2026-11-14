@@ -4525,6 +4525,91 @@ function ExportPreviewView(props) {
   const [editorZoom, setEditorZoom] = React.useState(() => _readBuilderViewPreferences().zoom);
   const [editorZoomMode, setEditorZoomMode] = React.useState(() => _readBuilderViewPreferences().zoomMode);
   const [editorPageView, setEditorPageView] = React.useState(() => _readBuilderViewPreferences().pageView);
+  const [interactivePreviewMode, setInteractivePreviewMode] = React.useState(false);
+  const [builderViewFilter, setBuilderViewFilter] = React.useState('all');
+
+  React.useEffect(() => {
+    if (exportPreviewMode !== 'html' && interactivePreviewMode) {
+      setInteractivePreviewMode(false);
+    }
+  }, [exportPreviewMode, interactivePreviewMode]);
+
+  React.useEffect(() => {
+    if (!exportConfig?.includeTeacherKey && builderViewFilter !== 'all') {
+      setBuilderViewFilter('all');
+    }
+  }, [exportConfig?.includeTeacherKey, builderViewFilter]);
+
+  const applyLivePreviewOverlays = React.useCallback(() => {
+    const iframe = exportPreviewRef?.current;
+    const doc = iframe?.contentDocument;
+    if (!doc?.head) return;
+    const isInteractive = exportPreviewMode === 'html' && interactivePreviewMode;
+    try {
+      doc.designMode = isInteractive ? 'off' : 'on';
+      if (doc.body) doc.body.spellcheck = !isInteractive;
+    } catch (_) {}
+
+    const activeFilter = exportConfig?.includeTeacherKey ? builderViewFilter : 'all';
+    const existingFilterStyle = doc.getElementById('allo-builder-view-filter');
+    if (activeFilter === 'student') {
+      const style = existingFilterStyle || doc.createElement('style');
+      style.id = 'allo-builder-view-filter';
+      style.textContent = '.teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner{display:none!important;}';
+      if (!style.parentNode) doc.head.appendChild(style);
+    } else if (activeFilter === 'teacher') {
+      const style = existingFilterStyle || doc.createElement('style');
+      style.id = 'allo-builder-view-filter';
+      style.textContent = '.student-only,[data-allo-student-only]{display:none!important;}'
+        + 'body:has(.teacher-view,[data-allo-teacher-only],.answer-key) > :not(style):not(script):not(.teacher-view):not([data-allo-teacher-only]):not(.answer-key):not(.alloflow-teacher-copy-banner):not(:has(.teacher-view,[data-allo-teacher-only],.answer-key)),'
+        + 'body:has(.teacher-view,[data-allo-teacher-only],.answer-key) :has(> .teacher-view, > [data-allo-teacher-only], > .answer-key) > :not(style):not(script):not(.teacher-view):not([data-allo-teacher-only]):not(.answer-key):not(.alloflow-teacher-copy-banner):not(:has(.teacher-view,[data-allo-teacher-only],.answer-key)){display:none!important;}';
+      if (!style.parentNode) doc.head.appendChild(style);
+    } else if (existingFilterStyle) {
+      existingFilterStyle.remove();
+    }
+
+    const existingPaperStyle = doc.getElementById('allo-builder-paper-css');
+    if (exportPreviewMode === 'worksheet' || exportPreviewMode === 'print') {
+      const style = existingPaperStyle || doc.createElement('style');
+      style.id = 'allo-builder-paper-css';
+      const skipBodyBg = exportTheme === 'dark' || exportTheme === 'hc';
+      style.textContent = '@media screen{'
+        + (skipBodyBg
+          ? 'html{padding:18px 12px!important;}body{box-shadow:0 2px 12px rgba(15,23,42,0.28)!important;border-radius:6px!important;margin:0 auto!important;}'
+          : 'html{background:#e2e8f0!important;padding:18px 12px!important;}body{background:#ffffff!important;box-shadow:0 2px 12px rgba(15,23,42,0.12)!important;border-radius:6px!important;margin:0 auto!important;}')
+        + '.page-break,[data-allo-page-break]{border-top:2px dashed #94a3b8!important;margin:18px 0!important;position:relative!important;}'
+        + '}';
+      if (!style.parentNode) doc.head.appendChild(style);
+    } else if (existingPaperStyle) {
+      existingPaperStyle.remove();
+    }
+  }, [exportPreviewRef, exportPreviewMode, interactivePreviewMode, builderViewFilter, exportConfig?.includeTeacherKey, exportTheme]);
+
+  React.useEffect(() => {
+    try { window.__alloActiveExportConfig = exportConfig || {}; } catch (_) {}
+    const iframe = exportPreviewRef?.current;
+    if (!iframe) return;
+    iframe.__alloPendingLiveState = { mode: exportPreviewMode, theme: exportTheme, config: exportConfig };
+    iframe.__alloInteractivePreviewMode = !!(exportPreviewMode === 'html' && interactivePreviewMode);
+    iframe.__alloKeepEditsRollback = (lastState) => {
+      if (!lastState || typeof lastState !== 'object') return;
+      const rb = {
+        mode: lastState.mode,
+        theme: lastState.theme,
+        config: lastState.config,
+        until: Date.now() + 500,
+      };
+      iframe.__alloRollingBackState = rb;
+      if (lastState.mode && typeof setExportPreviewMode === 'function') setExportPreviewMode(lastState.mode);
+      if (lastState.theme && typeof setExportTheme === 'function') setExportTheme(lastState.theme);
+      if (lastState.config && typeof setExportConfigAndRefresh === 'function') setExportConfigAndRefresh(lastState.config);
+    };
+    applyLivePreviewOverlays();
+    iframe.addEventListener?.('alloflow-builder-document-written', applyLivePreviewOverlays);
+    return () => {
+      iframe.removeEventListener?.('alloflow-builder-document-written', applyLivePreviewOverlays);
+    };
+  }, [exportPreviewRef, exportPreviewMode, exportTheme, exportConfig, interactivePreviewMode, setExportPreviewMode, setExportTheme, setExportConfigAndRefresh, applyLivePreviewOverlays]);
   const [showNavigationPane, setShowNavigationPane] = React.useState(() => _readBuilderViewPreferences().navigationPane);
   const [navigationPaneTab, setNavigationPaneTab] = React.useState(() => _readBuilderViewPreferences().navigationTab);
   const [navigationPaneWidth, setNavigationPaneWidth] = React.useState(() => _readBuilderViewPreferences().navigationWidth);
@@ -5105,6 +5190,7 @@ function ExportPreviewView(props) {
           '[data-page-number-position="center"] [data-allo-page-number] { left:50%;transform:translateX(-50%); }',
           '[data-page-number-position="right"] [data-allo-page-number] { right:0; }',
           '@media screen { [data-allo-page-number]::after { content:"#"; } }',
+          '@media screen and (max-width: 720px) { body { padding: 16px !important; } }',
           '@media print { body { padding-top:.35in !important;padding-bottom:.35in !important;padding-left:0 !important;padding-right:0 !important; } [data-allo-page-header],[data-allo-page-footer] { position:fixed;left:0;right:0;margin:0;border-color:#94a3b8; } [data-allo-page-header] { top:0; } [data-allo-page-footer] { bottom:0; } [data-allo-page-break="1"],[data-allo-section-break] { height:0 !important;margin:0 !important;border:0 !important;background:none !important; } [data-allo-page-number]::after { content:counter(page); } }',
         ].join('\n');
       }
@@ -5123,7 +5209,7 @@ function ExportPreviewView(props) {
   }, [exportPreviewRef]);
 
   const applyPageMargin = React.useCallback((margin) => {
-    applyPageSetup({ ...pageSetup, margin }, { commit: true });
+    applyPageSetup({ ...pageSetup, margin });
   }, [applyPageSetup, pageSetup]);
 
   React.useEffect(() => {
@@ -7898,7 +7984,7 @@ function ExportPreviewView(props) {
     }
     _builderClearOpenPagePrompt(clone);
     // keepScripts: an LMS package carries the same page runtime as Download HTML.
-    clone.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css' + (options?.keepScripts ? '' : ',script:not([data-allo-citation-store])')).forEach((node) => node.remove());
+    clone.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css,#allo-builder-view-filter,#allo-builder-paper-css' + (options?.keepScripts ? '' : ',script:not([data-allo-citation-store])')).forEach((node) => node.remove());
     if (options?.forExport) clone.querySelectorAll(_BUILDER_CITATION_STORE_SELECTOR).forEach((node) => node.remove());
     clone.querySelectorAll('[contenteditable]').forEach((node) => node.removeAttribute('contenteditable'));
     clone.querySelectorAll('[data-allo-semantic-selected]').forEach((node) => node.removeAttribute('data-allo-semantic-selected'));
@@ -9609,11 +9695,36 @@ const _downloadBRF = (brf) => {
                       if (available.length === 0) return (
                         <p className="text-[11px] text-slate-600 italic px-1 py-2">No resources generated yet. Generate resources first, then choose which to include in your document.</p>
                       );
-                      return available.map(([key, label]) => {
+                      const baseOrder = Array.isArray(exportConfig.resourceOrder) && exportConfig.resourceOrder.length
+                        ? exportConfig.resourceOrder
+                        : available.map(([k]) => k);
+                      const orderedAvailable = [...available].sort((a, b) => {
+                        const ia = baseOrder.indexOf(a[0]);
+                        const ib = baseOrder.indexOf(b[0]);
+                        if (ia === -1 && ib === -1) return 0;
+                        if (ia === -1) return 1;
+                        if (ib === -1) return -1;
+                        return ia - ib;
+                      });
+                      const moveResourceRow = (idx, delta) => {
+                        const currentKeys = orderedAvailable.map(([k]) => k);
+                        const nextIdx = idx + delta;
+                        if (nextIdx < 0 || nextIdx >= currentKeys.length) return;
+                        const swapped = [...currentKeys];
+                        const tmp = swapped[idx];
+                        swapped[idx] = swapped[nextIdx];
+                        swapped[nextIdx] = tmp;
+                        const extras = Array.isArray(exportConfig.resourceOrder)
+                          ? exportConfig.resourceOrder.filter((k) => !swapped.includes(k))
+                          : [];
+                        setExportConfigAndRefresh(p => ({ ...p, resourceOrder: [...swapped, ...extras] }));
+                      };
+                      return orderedAvailable.map(([key, label], idx) => {
                         const isTeacherOnly = teacherOnlyDefault.has(key);
                         const tooltip = isTeacherOnly
                           ? 'Always included in teacher copy. Toggle to also include in student copy.'
                           : '';
+                        const isIncluded = _builderResourceIncluded(exportConfig, key);
                         // Cloze is a variant of the leveled text on paper, not a
                         // resource of its own, so it rides under that checkbox
                         // rather than adding a row to the list. It needs both a
@@ -9625,15 +9736,80 @@ const _downloadBRF = (brf) => {
                           && history.some(h => h && h.type === 'glossary');
                         return (
                           <React.Fragment key={key}>
-                          <label className="flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title={tooltip}>
-                            <input type="checkbox" checked={_builderResourceIncluded(exportConfig, key)} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded" />
-                            <span>{label}{isTeacherOnly && <span className="ml-1 text-[11px] text-indigo-700 font-bold">(also in student copy)</span>}</span>
-                          </label>
-                          {showCloze && (
-                            <label className="flex items-start gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5 ml-5" title={t("export_preview.accessibility.blanks_out_the_glossary_words_in_the_passage_and_adds_a_word") || "Blanks out the glossary words in the passage and adds a word bank. The answer key rides with the teacher copy."}>
-                              <input type="checkbox" checked={!!exportConfig.clozeWorksheet} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, clozeWorksheet: e.target.checked }))} className="rounded mt-0.5" />
-                              <span>✏️ Fill in the blanks<span className="block text-[11px] text-slate-600 leading-tight">Blanks the glossary words and adds a word bank.</span></span>
+                          <div className="flex items-center gap-1 rounded px-1 py-0.5 hover:bg-white">
+                            <label className="flex flex-1 min-w-0 items-center gap-2 text-xs text-slate-700 cursor-pointer" title={tooltip}>
+                              <input type="checkbox" checked={isIncluded} onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, [key]: e.target.checked }))} className="rounded shrink-0" />
+                              <span className="truncate">{label}{isTeacherOnly && <span className="ml-1 text-[11px] text-indigo-700 font-bold">(also in student copy)</span>}</span>
                             </label>
+                            {orderedAvailable.length > 1 && (
+                              <div className="flex items-center gap-0.5 shrink-0">
+                                <button type="button" onClick={() => moveResourceRow(idx, -1)} disabled={idx === 0}
+                                  className="w-6 h-6 inline-flex items-center justify-center rounded border border-slate-300 bg-white text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 disabled:opacity-30"
+                                  aria-label={t("export_preview.accessibility.move_section_up") || "Move section up"}
+                                  title={t("export_preview.accessibility.move_section_up") || "Move section up"}
+                                >↑</button>
+                                <button type="button" onClick={() => moveResourceRow(idx, 1)} disabled={idx === orderedAvailable.length - 1}
+                                  className="w-6 h-6 inline-flex items-center justify-center rounded border border-slate-300 bg-white text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 disabled:opacity-30"
+                                  aria-label={t("export_preview.accessibility.move_section_down") || "Move section down"}
+                                  title={t("export_preview.accessibility.move_section_down") || "Move section down"}
+                                >↓</button>
+                              </div>
+                            )}
+                          </div>
+                          {key === 'includeGlossary' && isIncluded && (
+                            <div className="ml-6 mb-1 flex flex-wrap gap-1" role="group" aria-label={t("export_preview.glossary_display_quick") || "Glossary display mode"}>
+                              {[['table', 'Table'], ['flash-cards', 'Cards'], ['word-wall', 'Word Wall'], ['worksheet', 'Worksheet']].map(([modeVal, modeLabel]) => {
+                                const active = (exportConfig.glossaryDisplayMode || 'table') === modeVal;
+                                return (
+                                  <button key={modeVal} type="button" aria-pressed={active}
+                                    onClick={() => setExportConfigAndRefresh(p => ({ ...p, glossaryDisplayMode: modeVal }))}
+                                    className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}
+                                  >{modeLabel}</button>
+                                );
+                              })}
+                            </div>
+                          )}
+                          {key === 'includeTimeline' && isIncluded && (
+                            <div className="ml-6 mb-1 flex flex-wrap gap-1" role="group" aria-label={t("export_preview.timeline_display_quick") || "Timeline display mode"}>
+                              {[['list', 'List'], ['cuttable-strips', 'Cuttable strips']].map(([modeVal, modeLabel]) => {
+                                const active = (exportConfig.timelineDisplayMode || 'list') === modeVal;
+                                return (
+                                  <button key={modeVal} type="button" aria-pressed={active}
+                                    onClick={() => setExportConfigAndRefresh(p => ({ ...p, timelineDisplayMode: modeVal }))}
+                                    className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}
+                                  >{modeLabel}</button>
+                                );
+                              })}
+                            </div>
+                          )}
+                          {key === 'includeConceptSort' && isIncluded && (
+                            <label className="ml-6 mb-1 flex items-center gap-1.5 text-[11px] text-slate-600 cursor-pointer">
+                              <input type="checkbox" checked={exportConfig.conceptSortInteractive !== false}
+                                onChange={(e) => setExportConfigAndRefresh(p => ({ ...p, conceptSortInteractive: e.target.checked }))}
+                                className="rounded" />
+                              <span>Interactive sorting</span>
+                            </label>
+                          )}
+                          {showCloze && (
+                            <div className="ml-5 mb-1">
+                              <label className="flex items-start gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title={t("export_preview.accessibility.blanks_out_the_glossary_words_in_the_passage_and_adds_a_word") || "Blanks out the glossary words in the passage and adds a word bank. The answer key rides with the teacher copy."}>
+                                <input type="checkbox" checked={!!exportConfig.clozeWorksheet} onChange={(e) => setExportConfigAndRefresh(p => e.target.checked ? ({ ...p, clozeWorksheet: true, clozeMaxPerTerm: p.clozeMaxPerTerm ?? 1, clozeWordBankPosition: p.clozeWordBankPosition || 'top' }) : ({ ...p, clozeWorksheet: false }))} className="rounded mt-0.5" />
+                                <span>✏️ Fill in the blanks<span className="block text-[11px] text-slate-600 leading-tight">Blanks the glossary words and adds a word bank.</span></span>
+                              </label>
+                              {exportConfig.clozeWorksheet && (
+                                <div className="ml-6 mt-1 flex flex-wrap gap-1" role="group" aria-label={t("export_preview.cloze_frequency_label") || "Blank frequency"}>
+                                  {[[1, '1 blank per word'], [0, 'All occurrences']].map(([val, lbl]) => {
+                                    const active = val === 0 ? exportConfig.clozeMaxPerTerm === 0 : (exportConfig.clozeMaxPerTerm ?? 1) === 1;
+                                    return (
+                                      <button key={val} type="button" aria-pressed={active}
+                                        onClick={() => setExportConfigAndRefresh(p => ({ ...p, clozeMaxPerTerm: val }))}
+                                        className={`px-1.5 py-0.5 rounded text-[10px] font-semibold border ${active ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-300 hover:bg-slate-50'}`}
+                                      >{lbl}</button>
+                                    );
+                                  })}
+                                </div>
+                              )}
+                            </div>
                           )}
                           </React.Fragment>
                         );
@@ -9832,7 +10008,7 @@ const _downloadBRF = (brf) => {
                   </p>
                 </div>
 
-                <details className="rounded-lg border border-slate-300 p-2" data-builder-appearance>
+                <details open className="rounded-lg border border-slate-300 p-2" data-builder-appearance>
                   <summary className="cursor-pointer text-xs font-bold text-slate-700">Appearance and page setup</summary>
                   <div className="mt-2 space-y-3">
                 {/* ── SECTION: Appearance ── */}
@@ -9861,19 +10037,34 @@ const _downloadBRF = (brf) => {
                     >🏷️ <strong>First time?</strong> Set up your school brand → colors, fonts, logo for branded exports</button>
                   )}
                   <div className="grid grid-cols-2 gap-1" role="radiogroup" aria-label={t("export_preview.accessibility.document_style") || "Document style"} onKeyDown={handleRadioGroupKeyDown}>
-                    {Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => (
-                      <button key={key} role="radio" aria-checked={exportTheme === key} tabIndex={exportTheme === key ? 0 : -1} onClick={() => setExportTheme(key)}
-                        className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}
-                      >{s.emoji} {s.name}</button>
-                    ))}
-                    {/* User brand profiles as selectable themes — clicking one applies its
-                        CSS vars via doc_pipeline_source.jsx:16325 BrandProfile fallback. */}
-                    {brandProfiles.map(p => (
-                      <button key={p.id} role="radio" aria-checked={exportTheme === p.id} tabIndex={exportTheme === p.id ? 0 : -1} onClick={() => setExportTheme(p.id)}
-                        className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === p.id ? 'bg-rose-600 text-white ring-2 ring-rose-300' : 'bg-white border border-rose-400 text-rose-700 hover:bg-rose-50'}`}
-                        title={t("export_preview.accessibility.school_brand_profile") || "School brand profile"}
-                      >🏷️ {p.name || 'Brand'}</button>
-                    ))}
+                    {(() => {
+                      const seedEntries = Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars);
+                      const hasKnownTheme = seedEntries.some(([key]) => exportTheme === key) || brandProfiles.some((p) => exportTheme === p.id);
+                      return (
+                        <>
+                          {seedEntries.map(([key, s], idx) => {
+                            const swatchColor = s.cssVars.accentColor || s.cssVars.headingColor || '#4f46e5';
+                            const tabIdx = (exportTheme === key || (!hasKnownTheme && idx === 0)) ? 0 : -1;
+                            return (
+                              <button key={key} role="radio" aria-checked={exportTheme === key} tabIndex={tabIdx} onClick={() => setExportTheme(key)}
+                                className={`flex items-center gap-1.5 text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? 'bg-indigo-600 text-white ring-2 ring-indigo-300' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}
+                              ><span aria-hidden="true" className="inline-block w-2.5 h-2.5 rounded-full shrink-0 border border-black/15" style={{ backgroundColor: swatchColor }} /><span>{s.emoji} {s.name}</span></button>
+                            );
+                          })}
+                          {/* User brand profiles as selectable themes — clicking one applies its
+                              CSS vars via doc_pipeline_source.jsx:16325 BrandProfile fallback. */}
+                          {brandProfiles.map((p, bIdx) => {
+                            const tabIdx = (exportTheme === p.id || (!hasKnownTheme && seedEntries.length === 0 && bIdx === 0)) ? 0 : -1;
+                            return (
+                              <button key={p.id} role="radio" aria-checked={exportTheme === p.id} tabIndex={tabIdx} onClick={() => setExportTheme(p.id)}
+                                className={`text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === p.id ? 'bg-rose-600 text-white ring-2 ring-rose-300' : 'bg-white border border-rose-400 text-rose-700 hover:bg-rose-50'}`}
+                                title={t("export_preview.accessibility.school_brand_profile") || "School brand profile"}
+                              >🏷️ {p.name || 'Brand'}</button>
+                            );
+                          })}
+                        </>
+                      );
+                    })()}
                   </div>
                 </div>
 
@@ -11337,7 +11528,7 @@ const _downloadBRF = (brf) => {
                         <div className="flex items-center gap-1" role="group" aria-label={t("export_preview.accessibility.page_margins") || "Page margins"}>
                           <span className="text-[10px] font-semibold text-slate-600">Margins</span>
                           {[['0.5in', 'Narrow'], ['1in', 'Normal'], ['1.5in', 'Wide']].map(([margin, label]) => (
-                            <button key={margin} type="button" onClick={() => applyPageSetup({ ...pageSetup, margin }, { commit: true })} aria-pressed={pageSetup.margin === margin} className={`h-7 rounded border px-2 text-[10px] font-bold ${pageSetup.margin === margin ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`} title={t("export_preview.accessibility.value1_margins_value2", { value1: (label), value2: (margin) }) || `${label} margins (${margin})`}>{label}</button>
+                            <button key={margin} type="button" onClick={() => applyPageSetup({ ...pageSetup, margin })} aria-pressed={pageSetup.margin === margin} className={`h-7 rounded border px-2 text-[10px] font-bold ${pageSetup.margin === margin ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`} title={t("export_preview.accessibility.value1_margins_value2", { value1: (label), value2: (margin) }) || `${label} margins (${margin})`}>{label}</button>
                           ))}
                         </div>
                         <span className="w-full text-[10px] text-slate-500" role="status" aria-live="polite">
@@ -11465,6 +11656,19 @@ const _downloadBRF = (brf) => {
                         <button type="button" onClick={() => { setEditorZoomMode('custom'); setEditorPageView((value) => !value); }} aria-pressed={editorPageView} className={`h-7 rounded px-2 text-[10px] font-bold ${editorPageView ? 'bg-indigo-700 text-white' : 'border border-slate-300 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`} title={editorPageView ? 'Switch to continuous editor view' : 'Switch to paper-like page view'}>{editorPageView ? 'Page view' : 'Continuous'}</button>
                         <button type="button" onClick={() => useEditorZoomPreset('fit-width')} aria-pressed={editorZoomMode === 'fit-width'} className={`h-7 rounded border px-2 text-[10px] font-bold ${editorZoomMode === 'fit-width' ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`}>Fit width</button>
                         <button type="button" onClick={() => useEditorZoomPreset('fit-page')} aria-pressed={editorZoomMode === 'fit-page'} className={`h-7 rounded border px-2 text-[10px] font-bold ${editorZoomMode === 'fit-page' ? 'border-indigo-700 bg-indigo-700 text-white' : 'border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`}>Fit page</button>
+                        {exportPreviewMode === 'html' && (
+                          <div className="flex items-center gap-0.5 rounded border border-slate-300 bg-white p-0.5" role="group" aria-label={t("export_preview.preview_interaction_mode") || "Preview interaction mode"}>
+                            <button type="button" onClick={() => setInteractivePreviewMode(false)} aria-pressed={!interactivePreviewMode} className={`h-6 rounded px-2 text-[10px] font-bold ${!interactivePreviewMode ? 'bg-indigo-700 text-white' : 'text-slate-700 hover:bg-indigo-50 hover:text-indigo-700'}`} title={t("export_preview.edit_text_mode_title") || "Focus the preview and edit text directly"}>✏️ Edit Text</button>
+                            <button type="button" onClick={() => setInteractivePreviewMode(true)} aria-pressed={interactivePreviewMode} className={`h-6 rounded px-2 text-[10px] font-bold ${interactivePreviewMode ? 'bg-emerald-700 text-white' : 'text-slate-700 hover:bg-emerald-50 hover:text-emerald-700'}`} title={t("export_preview.test_interactive_mode_title") || "Test interactive elements like quizzes and audio"}>▶️ Test Interactive</button>
+                          </div>
+                        )}
+                        {exportConfig?.includeTeacherKey === true && (
+                          <div className="flex items-center gap-0.5 rounded border border-slate-300 bg-white p-0.5" role="group" aria-label={t("export_preview.audience_filter_label") || "Preview audience filter"}>
+                            {[['all', 'All'], ['student', 'Student Copy'], ['teacher', 'Teacher Key']].map(([filterVal, filterLabel]) => (
+                              <button key={filterVal} type="button" onClick={() => setBuilderViewFilter(filterVal)} aria-pressed={builderViewFilter === filterVal} className={`h-6 rounded px-2 text-[10px] font-bold ${builderViewFilter === filterVal ? 'bg-slate-800 text-white' : 'text-slate-700 hover:bg-slate-100'}`}>{filterLabel}</button>
+                            ))}
+                          </div>
+                        )}
                         <span className="ml-auto text-[9px] text-slate-500" role="status" aria-live="polite">Left {paragraphLayout.leftIndent} in · First {paragraphLayout.firstLineIndent} in · Right {paragraphLayout.rightIndent} in · {editorZoomMode === 'custom' ? `${editorZoom}%` : `${editorZoomMode === 'fit-width' ? 'Fit width' : 'Fit page'} (${editorZoom}%)`}</span>
                       </div>
                     </div>
@@ -12566,6 +12770,27 @@ async function updateExportPreview(deps) {
     const iframe = exportPreviewRef.current;
     const doc = iframe.contentDocument || iframe.contentWindow?.document;
     if (!doc) return;
+    const _snapshotRenderState = () => {
+      const mode = deps.exportPreviewMode !== undefined ? deps.exportPreviewMode : iframe.__alloPendingLiveState?.mode;
+      const theme = deps.exportTheme !== undefined ? deps.exportTheme : iframe.__alloPendingLiveState?.theme;
+      const rawCfg = deps.exportConfig !== undefined ? deps.exportConfig : iframe.__alloPendingLiveState?.config;
+      const config = rawCfg && typeof rawCfg === 'object' ? { ...rawCfg } : rawCfg;
+      return { mode, theme, config };
+    };
+    const _rb = iframe.__alloRollingBackState;
+    if (_rb && _rb.until >= Date.now()) {
+      const _cur = _snapshotRenderState();
+      if (_cur.mode === _rb.mode && _cur.theme === _rb.theme && JSON.stringify(_cur.config ?? null) === JSON.stringify(_rb.config ?? null)) {
+        delete iframe.__alloRollingBackState;
+        return;
+      }
+    }
+    const _triggerKeepEditsRollback = () => {
+      const _rollback = typeof deps.onKeepEditsRollback === 'function' ? deps.onKeepEditsRollback : iframe.__alloKeepEditsRollback;
+      if (typeof _rollback === 'function' && iframe.__alloLastRenderedState) {
+        try { _rollback(iframe.__alloLastRenderedState); } catch (_) {}
+      }
+    };
     // Check the live dirty flag BEFORE generating replacement HTML. This avoids
     // expensive duplicate generation and ensures a cancelled refresh consumes no draft.
     // Multiple rapid setting changes share one confirmation; only the newest
@@ -12580,6 +12805,7 @@ async function updateExportPreview(deps) {
           const _dialogModule = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
           if (typeof _uxConfirm !== 'function' || typeof _dialogModule !== 'function') {
             addToast && addToast(t('toasts.builder_confirmation_unavailable') || 'Kept your manual edits because the confirmation dialog is not ready. Try again in a moment.', 'info');
+            _triggerKeepEditsRollback();
             return;
           }
 
@@ -12605,11 +12831,13 @@ async function updateExportPreview(deps) {
         if (exportPreviewRef.current !== iframe || iframe.__alloPreviewRefreshRequest !== _refreshRequest) return;
         if (!_proceed) {
           addToast && addToast(t('toasts.builder_edits_preserved') || 'Kept your manual edits - the preview was not re-rendered. Export or close the builder to save them, then change settings.', 'info');
+          _triggerKeepEditsRollback();
           return;
         }
       }
     } catch (_) {
       addToast && addToast(t('toasts.builder_edits_preserved') || 'Kept your manual edits because confirmation could not be completed.', 'info');
+      _triggerKeepEditsRollback();
       return;
     }
     let html;
@@ -12626,17 +12854,20 @@ async function updateExportPreview(deps) {
       const escapedMsg = msg.replace(/[<>&]/g, c => ({'<':'&lt;','>':'&gt;','&':'&amp;'}[c]));
       html = `<!DOCTYPE html><html><body data-allo-preview-error="1" style="font-family:system-ui;padding:2rem;color:#991b1b;background:#fef2f2"><h2>Preview error</h2><pre style="white-space:pre-wrap;font-size:12px">${escapedMsg}</pre><p style="font-size:12px;color:#7f1d1d;margin-top:1rem">If this persists, the CDN-loaded doc pipeline likely needs a redeploy with the latest fix.</p></body></html>`;
     }
+    try { if (iframe.contentWindow) iframe.contentWindow.__alloflowBuilderPreview = true; } catch (_) {}
     doc.open();
     doc.write(html);
     doc.close();
+    iframe.__alloLastRenderedState = _snapshotRenderState();
     iframe.dispatchEvent?.(new Event('alloflow-builder-document-written'));
 
     // Restoring a backup/version needs the same editor behavior as the first render.
     iframe.__alloInitializeBuilderDocument = (doc) => {
     // Initialize edit mode in the iframe doc directly here
     try {
-      doc.designMode = 'on';
-      if (doc.body) doc.body.spellcheck = true;
+      const _interactive = deps.interactivePreviewMode !== undefined ? !!deps.interactivePreviewMode : !!iframe.__alloInteractivePreviewMode;
+      doc.designMode = _interactive ? 'off' : 'on';
+      if (doc.body) doc.body.spellcheck = !_interactive;
       // Make preview images keyboard-reachable while editing. The marker lets
       // every serialization seam remove editor-only tabindex/key hints.
       const _wireBuilderCropImage = (img) => {

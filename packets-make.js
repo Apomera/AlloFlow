@@ -24,7 +24,7 @@
     { name: 'phonemes', url: 'audio_bank/phonemes.json', bytes: 592941 },
     { name: 'isolation', url: 'audio_bank/isolation.json', bytes: 605166 },
     { name: 'instructions', url: 'audio_bank/instructions.json', bytes: 3014825 },
-    { name: 'kokoroWords', url: 'word_audio_kokoro_bank.json', bytes: 6273683 },
+    { name: 'kokoroWords', url: 'word_audio_kokoro_bank.json', bytes: 10188478 },
     { name: 'gapFill', url: 'audio_bank_kokoro.json', bytes: 99975 },
   ];
   var SOUND_BYTES = SOUND_FILES.reduce(function (sum, file) { return sum + file.bytes; }, 0);
@@ -98,6 +98,8 @@
   // The line under "Include pictures" when no word of the file has one. The box stays usable: checked, it makes the plain file.
   var NO_PICTURES_SAID = 'None of these words has a picture yet. Add one with Edit this word in step 2, or choose words with pictures.';
   var NO_INDEX_SAID = 'The list of pictures did not load, so only pictures you added can be used. Load the page again to get the list.';
+  var LARGE_FILE_BYTES = 10e6;
+  var LARGE_FILE_SAID = 'This file is over 10 MB. Some email and school platforms block large files, and older phones open them slowly. Choose a shorter length, fewer words or uncheck Include pictures to make it smaller.';
 
   var doc = document;
   var $ = function (id) { return doc.getElementById(id); };
@@ -211,13 +213,15 @@
       group.appendChild(list);
       host.appendChild(group);
     });
-    // What is not offered, and the plain reason for each kind.
+    // What is not offered, and the plain reason for each kind, folded behind one line.
     var held = heldBack.map(core.activityEnglishName);
     var missing = core.activityIds().filter(function (id) { return order.indexOf(id) < 0 && heldBack.indexOf(id) < 0; }).map(core.activityEnglishName);
-    var parts = [];
+    var parts = [], notCount = held.length + missing.length;
     if (held.length) parts.push(listed(held) + ' (' + HELD_BACK_REASON + ').');
     if (missing.length) parts.push(listed(missing) + ' (' + (missing.length === 1 ? 'it' : 'they') + ' cannot be made from a word list alone yet).');
-    setText('not-offered', parts.length ? 'Not in this version: ' + parts.join(' ') : '');
+    setText('not-offered-summary', count(notCount, 'more activity is', 'more activities are') + ' not in this version');
+    setText('not-offered-text', parts.length ? 'Not in this version: ' + parts.join(' ') : '');
+    show('not-offered', parts.length > 0);
   }
   function syncActivities() {
     Array.prototype.forEach.call($('strands').querySelectorAll('input[type="checkbox"]'), function (box) {
@@ -823,7 +827,7 @@
     $('pick-list').addEventListener('toggle', function () { listLimit = LIST_PAGE; drawWordList(); });
     $('word-list').addEventListener('change', function (event) { if (event.target && event.target.type === 'checkbox') listToggle(event.target); });
     $('f-find').addEventListener('input', function () { clearTimeout(listTimer); listTimer = setTimeout(function () { listLimit = LIST_PAGE; drawWordList(); }, 150); });
-    $('f-only-pictures').addEventListener('change', function () { listLimit = LIST_PAGE; drawWordList(); });
+    $('f-only-pictures').addEventListener('change', function () { if (this.checked && picturesChoice === 'off') picturesChoice = ''; listLimit = LIST_PAGE; drawWordList(); });
     $('add-words').addEventListener('click', addTyped);
     $('f-add').addEventListener('keydown', function (event) { if (event.key === 'Enter') { event.preventDefault(); addTyped(); } });
     $('list-all').addEventListener('click', function () {
@@ -1285,8 +1289,10 @@
     var words = fileWords();
     var theirs = words.filter(ownPicture).length;
     var have = words.filter(function (word) { return ownPicture(word) || (!!symbols && symbols.has(word)); }).length;
+    var onlyPictures = !!($('f-only-pictures') && $('f-only-pictures').checked);
     box.disabled = false;
-    box.checked = picturesChoice === 'on' || (picturesChoice === '' && have > 0);
+    // On when the teacher checked it, or before any click when the teacher filtered for words with pictures or most chosen words have one.
+    box.checked = picturesChoice === 'on' || (picturesChoice === '' && ((onlyPictures && have > 0) || (words.length > 0 && have * 2 > words.length)));
     box.parentNode.classList.toggle('is-on', box.checked);
     var n = inFile ? inFile.withPicture : have, of = inFile ? inFile.withPicture + inFile.withoutPicture : words.length;
     var added = inFile ? inFile.teacher || 0 : theirs;
@@ -1411,6 +1417,7 @@
     built = null;
     if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
     show('summary', false);
+    show('size-warn', false);
     show('try', false);
     show('save', false);
     show('after-save', false);
@@ -1579,6 +1586,8 @@
     try { fileUrl = URL.createObjectURL(blob); } catch (_) { fileUrl = ''; }
     var total = manifest.items.total;
     setText('summary-facts', count(total, 'question') + '. About ' + count(Math.ceil(total / 2), 'minute') + '. ' + fileSize(built.bytes) + '.');
+    setText('size-warn', built.bytes >= LARGE_FILE_BYTES ? LARGE_FILE_SAID : '');
+    show('size-warn', built.bytes >= LARGE_FILE_BYTES);
     setText('sum-words', count(manifest.words.used.length, 'word') + ': ' + manifest.words.used.join(', ') + '.');
     drawList('sum-activities', manifest.activities.asked.map(function (id) {
       var n = manifest.items.byActivity[id] || 0;

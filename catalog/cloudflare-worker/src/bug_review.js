@@ -105,9 +105,39 @@ export async function handleBugReview(request, env, { respond, authorize }) {
     if (!/^application\/json(?:\s*;|$)/i.test(request.headers.get('Content-Type') || '')) {
       return respond({ ok: false, error: 'Content-Type must be application/json.' }, 415);
     }
-    let raw;
-    try { raw = await request.text(); } catch (_) { return respond({ ok: false, error: 'Could not read review.' }, 400); }
-    if (raw.length > BODY_LIMIT || new TextEncoder().encode(raw).length > BODY_LIMIT) return respond({ ok: false, error: 'Review body is too large.' }, 413);
+    const declared = request.headers.get('Content-Length');
+    if (declared != null) {
+      const trimmed = declared.trim();
+      if (!/^\d+$/.test(trimmed)) return respond({ ok: false, error: 'Invalid Content-Length.' }, 400);
+      if (Number(trimmed) > BODY_LIMIT) return respond({ ok: false, error: 'Review body is too large.' }, 413);
+    }
+    let raw = '';
+    if (request.body) {
+      let reader;
+      try {
+        reader = request.body.getReader();
+        const decoder = new TextDecoder('utf-8', { fatal: true, ignoreBOM: false });
+        const parts = [];
+        let total = 0;
+        while (true) {
+          const { value, done } = await reader.read();
+          if (done) break;
+          total += value.byteLength;
+          if (total > BODY_LIMIT) {
+            try { await reader.cancel(); } catch (_) { /* size refusal takes precedence */ }
+            return respond({ ok: false, error: 'Review body is too large.' }, 413);
+          }
+          parts.push(decoder.decode(value, { stream: true }));
+        }
+        parts.push(decoder.decode());
+        raw = parts.join('');
+      } catch (_) {
+        try { await reader?.cancel(); } catch (_) { /* never echo stream details */ }
+        return respond({ ok: false, error: 'Could not read review.' }, 400);
+      } finally {
+        reader?.releaseLock();
+      }
+    }
     try { payload = JSON.parse(raw); } catch (_) { return respond({ ok: false, error: 'Invalid JSON.' }, 400); }
     const error = validatePayload(payload);
     if (error) return respond({ ok: false, error }, 400);

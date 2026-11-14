@@ -31,6 +31,9 @@ COPY flux_server.py security.py image_backends.py model_manifest.py model-manife
 
 # Model weights are provisioned at runtime into /models; none are baked in.
 
+RUN groupadd -r appuser && useradd -r -g appuser -d /app -s /sbin/nologin appuser && mkdir -p /models && chown -R appuser:appuser /app /models
+USER appuser
+
 EXPOSE 7860
 
 HEALTHCHECK --interval=30s --timeout=10s --start-period=120s --retries=3 \

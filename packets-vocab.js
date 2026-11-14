@@ -19,6 +19,8 @@
   var MAX_TYPED = 2400;
   var MAX_STUDENTS = 40;
   var MAX_KEPT = 2000;     // words whose changes are kept; the oldest go first
+  var LARGE_FILE_BYTES = 10e6;
+  var LARGE_FILE_SAID = 'This file is over 10 MB. Some email and school platforms block large files, and older phones open them slowly. Choose fewer words, turn off Recordings of the words, or leave out picture questions to make it smaller.';
 
   var doc = document;
   var $ = function (id) { return doc.getElementById(id); };
@@ -51,6 +53,9 @@
   var editing = null;      // the one text box open on the check screens: { key, what: 'def' | 'example' | 'wrong', i }
   var focusAfter = '';     // a selector to focus once the rows are drawn again
   var openMenus = {};      // the words whose Change meaning menu is open, kept open when the rows are drawn again
+  // 2026-11-13 (teacher-journey L7): on a phone each word's buttons wait behind one Change button (packets-vocab.css);
+  // the words whose Change is open, kept open when the rows are drawn again. On a wider screen the buttons are always there.
+  var changing = {};
   var buildTimer = 0, buildRun = 0, built = null, fileUrl = '', batchFile = null;
   var wordsTimer = 0;
   // Recordings and pictures (packets_vocab_media.js, word_sounds_symbols_en.js, word_sounds_packet_builder.js).
@@ -207,10 +212,19 @@
   function drawRow(row) {
     var box = el('div', 'v-row');
     box.setAttribute('data-row', row.key);
+    var open = !!changing[row.key] || (!!editing && editing.key === row.key) || (row.own && !row.def);
+    box.classList.toggle('is-changing', open);
     var head = el('div', 'v-head');
+    var change = button('Change', 'btn-small v-change', function () {
+      if (changing[row.key]) delete changing[row.key]; else changing[row.key] = true;
+      var on = !!changing[row.key];
+      box.classList.toggle('is-changing', on);
+      change.setAttribute('aria-expanded', on ? 'true' : 'false');
+    }, 'Change the answers for ' + row.word);
+    change.setAttribute('aria-expanded', open ? 'true' : 'false');
     add(head, el('h3', '', row.word), row.pos ? el('span', 'v-pos', row.pos) : null,
       row.own ? el('span', 'v-mark v-mark-not', row.net ? (row.net.changed ? 'from the internet, changed by you' : 'from the internet, not checked') : 'not in the word list') : row.checked ? el('span', 'v-mark', 'checked') : el('span', 'v-mark v-mark-not', 'not checked yet'),
-      row.edited && !row.own ? el('span', 'v-pos', 'you changed it') : null);
+      row.edited && !row.own ? el('span', 'v-pos', 'you changed it') : null, change);
     box.appendChild(head);
     // "cats" is looked up as "cat": the meaning is for that word, and the student sees the word as typed. 2026-11-13.
     // 2026-11-13: in Meaning to word the wrong words are written the same way ("dogs"), or, when they cannot all be, the
@@ -322,7 +336,7 @@
         focusAfter = '[data-row="' + row.key + '"] h3';
         changed(row.key);
       });
-      box.appendChild(add(el('p', ''), undo));
+      box.appendChild(add(el('p', 'v-undo'), undo));
     }
     return box;
   }
@@ -380,7 +394,7 @@
         // 2026-11-13 (teacher-journey pass): "None of the 12 words" rather than "Only 0 of 12 words"; "1 word has".
         : closed ? (pics.withPicture ? 'Only ' + pics.withPicture + ' of ' + count(rows.length, 'word') + ' have a picture.' : 'None of the ' + rows.length + ' words has a picture.') + ' Picture questions need at least ' + pics.need + ', so that the other pictures are mostly words from your list.'
         : usable + ' of ' + count(rows.length, 'word') + ' can be asked this way. ' + capital(count(pics.withPicture, 'word')) + (pics.withPicture === 1 ? ' has' : ' have') + ' a picture.';
-      add(label, box, el('span', 'choice-name', t.name), el('span', 'choice-line', t.line + (t.on ? '' : ' Off unless you choose it.')), el('span', 'choice-note', note));
+      add(label, box, el('span', 'choice-name', t.name), el('span', 'choice-line', t.line + (t.on ? '' : ' Off unless you choose it.') + (t.pictures ? ' Cannot be answered with a screen reader.' : '')), el('span', 'choice-note', note));
       label.classList.toggle('is-on', box.checked);
       host.appendChild(label);
     });
@@ -526,6 +540,7 @@
     if (fileUrl) { try { URL.revokeObjectURL(fileUrl); } catch (_) {} fileUrl = ''; }
     dropBatch();
     show('summary', false);
+    show('size-warn', false);
     show('try', false);
     show('save', false);
     show('after-save', false);
@@ -625,6 +640,8 @@
     host.textContent = '';
     data.forEach(function (row) { host.appendChild(el('dt', '', row[0])); host.appendChild(el('dd', '', row[1])); });
     setText('summary-facts', capital(count(total, 'question')) + '. ' + (state.mode === 'check' ? 'A check.' : 'Practice.') + ' ' + fileSize(built.bytes) + '.');
+    setText('size-warn', built.bytes >= LARGE_FILE_BYTES ? LARGE_FILE_SAID : '');
+    show('size-warn', built.bytes >= LARGE_FILE_BYTES);
     show('summary', true);
     if (fileUrl) { $('try').setAttribute('href', TRY_PAGE + '#' + fileUrl); show('try', true); }
     show('save', true);
@@ -753,7 +770,7 @@
     var notes = [capital(count(back.words.length, 'word')) + ', ' + (back.mode === 'check' ? 'a check' : 'practice') + '.'];
     if (back.mode === 'check') notes.push('A check keeps its wrong answers sealed, so they come from your changes kept on this device, or from the word list.');
     if (back.teacherCode) notes.push('A teacher code cannot be read back from a file. Set it again in step 3.');
-    if (back.learner) notes.push('It was made for ' + back.learner + '. That code name is filled in under More choices.');
+    if (back.learner) { notes.push('It was made for ' + back.learner + '. That code name is filled in at step 3.'); $('code-name-box').open = true; }
     reopenNote('Opened ' + (back.title || 'the file') + '.', notes);
     goTo(1, true);
   }

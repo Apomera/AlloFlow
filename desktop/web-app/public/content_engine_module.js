@@ -3910,7 +3910,7 @@ FALLBACK MODE: Web search is unavailable. Do not invent citations, URLs, source 
               if (request.audioPlayback === 'reader') return;
               // Legacy callers retain eager pronunciation, owned by this session.
               try {
-                  const url = await callTTS(word, selectedVoice, voiceSpeed || 1, 2, request.language);
+                  const url = await callTTS(word, selectedVoice, voiceSpeed || 1, { maxRetries: 2, language: request.language, word: true }, request.language);
                   if (!isCurrent() || currentAttempt !== attempt) {
                       if (url?.startsWith('blob:') && !window.__alloTtsCacheOwnsUrl?.(url)) URL.revokeObjectURL(url);
                       return;

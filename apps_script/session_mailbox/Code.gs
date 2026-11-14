@@ -2419,7 +2419,11 @@ function assignmentActivitySummaryFor(cache, context, uid) {
   // Same persistence rule on the respondent read path, and BEFORE caching:
   // caching per-uid rows that retention is about to erase would hand out for
   // the cache TTL exactly what deleteAt promised was gone.
-  if (state.config.type === 'survey' && applySurveyRetention(state)) {
+  if (
+    (state.config.type === 'survey' && applySurveyRetention(state)) ||
+    (state.config.type === 'availability' && applyAvailabilityRetention(state)) ||
+    (state.config.type === 'signup' && applySignupRetention(state))
+  ) {
     writeAssignmentActivityState(state);
   }
   cacheAssignmentActivitySummary(cache, state);
@@ -2482,10 +2486,14 @@ function upsertAssignmentActivity(cache, p, admin) {
     if (!boardText) return out({ ok: false, e: 'bad-term' });
   } else if (context.config.type === 'signup') {
     if (availabilityIsClosed(context.config)) return out({ ok: false, e: 'poll-closed' });
+    var signupDeleteAt = Date.parse(context.config.deleteAt);
+    if (isFinite(signupDeleteAt) && Date.now() >= signupDeleteAt) return out({ ok: false, e: 'poll-closed' });
     signupClaims = normalizeSignupClaims(p.claims, context.config);
     if (!signupClaims) return out({ ok: false, e: 'bad-claims' });
   } else if (context.config.type === 'availability') {
     if (availabilityIsClosed(context.config)) return out({ ok: false, e: 'poll-closed' });
+    var availDeleteAt = Date.parse(context.config.deleteAt);
+    if (isFinite(availDeleteAt) && Date.now() >= availDeleteAt) return out({ ok: false, e: 'poll-closed' });
     pollPicks = normalizeAvailabilityPicks(p.picks, context.config);
     if (!pollPicks) return out({ ok: false, e: 'bad-picks' });
   } else if (context.config.type === 'rating') {
@@ -2665,11 +2673,25 @@ function getAssignmentActivityAdmin(cache, p) {
     }
     return out(surveySummary);
   }
-  if (context.config.type === 'signup') return out(buildSignupSummary(state, true));
+  if (context.config.type === 'signup') {
+    var signupErased = applySignupRetention(state);
+    var signupSummary = buildSignupSummary(state, true);
+    if (signupErased) {
+      writeAssignmentActivityState(state);
+      cacheAssignmentActivitySummary(cache, state);
+    }
+    return out(signupSummary);
+  }
   if (context.config.type === 'availability') {
     // The organizer is the audience for a scheduling poll, so rows come back
     // here. buildAvailabilitySummary still withholds them in anonymous mode.
-    return out(buildAvailabilitySummary(state, true));
+    var availErased = applyAvailabilityRetention(state);
+    var availSummary = buildAvailabilitySummary(state, true);
+    if (availErased) {
+      writeAssignmentActivityState(state);
+      cacheAssignmentActivitySummary(cache, state);
+    }
+    return out(availSummary);
   }
   if (context.config.type === 'question_board') {
     // The host sees every item regardless of status — that is the whole point
@@ -3328,10 +3350,11 @@ function deliverForm(p) {
 }
 
 function fetchPageBlockedHost(host) {
-  var h = String(host || '').toLowerCase().replace(/^\[|\]$/g, '');
-  if (!h || h === 'localhost' || /\.(local|internal|localhost)$/.test(h)) return true;
-  if (/^(127\.|10\.|0\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.)/.test(h)) return true;
-  if (h === '::1' || /^f[cd][0-9a-f]{2}:/.test(h) || /^fe80:/.test(h)) return true;
+  var h = String(host || '').toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '');
+  if (!h || h === 'localhost' || h === 'metadata.google' || /\.(local|internal|localhost|metadata\.google)$/.test(h)) return true;
+  if (/^(127\.|10\.|0\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|198\.1[89]\.)/.test(h)) return true;
+  if (h === '::1' || h === '::' || /^f[cd][0-9a-f]{0,2}:/.test(h) || /^fe[89ab][0-9a-f]?:/.test(h) || /^::ffff:/.test(h) || /^64:ff9b:/.test(h)) return true;
+  if (/^(?:0x[0-9a-f]+|\d+)$/i.test(h)) return true;
   return false;
 }
 

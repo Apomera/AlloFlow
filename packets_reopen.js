@@ -20,10 +20,14 @@
 // version (the builder's seed, in the manifest), whether it shows pictures, a student's code name, and the
 // teacher's own sounds, recordings and pictures for the words the manifest names. A teacher code is never in a
 // file (only a salted hash of it), and a word that got no question in any activity is not in the file at all.
+//
+// readCheck(input, env) and readMath(input, env) (2026-11-13) do the same for the math check maker (packets-check.html)
+// and the math fact practice maker (packets-math-practice.html): see each one below.
 (function (root) {
   'use strict';
 
   var PAGES = {
+    words: { href: 'packets-make.html', name: 'Make Word Sounds practice' },
     check: { href: 'packets-check.html', name: 'Make a math check' },
     math: { href: 'packets-math-practice.html', name: 'Make math fact practice' },
     vocab: { href: 'packets-vocab.html', name: 'Make vocabulary practice' },
@@ -227,7 +231,146 @@
     return out;
   }
 
-  var api = { read: read, wordOrder: wordOrder, creditOf: creditOf, PAGES: PAGES };
+  // ---------------------------------------------------------------------------
+  // 2026-11-13 (owner-approved): "Open a file I made" on the math check maker and the math fact practice maker.
+  // Each reads only what its own kind of file holds, the same way read() does (readParts, the two JSON blocks).
+  // ---------------------------------------------------------------------------
+  // The parts of a file, or the reason it is not one of ours, for the makers other than Word Sounds.
+  function partsFor(input, e, out) {
+    var no = function (kind, why, page) { out.kind = kind; out.why = why; out.page = page || null; return null; };
+    if (!e.verify || typeof e.verify.readParts !== 'function') return no('other', 'This page could not read the file. Load the page again.');
+    var parts = e.verify.readParts(input);
+    if (parts.refused === 'too_big') return no('other', 'This file is larger than 60 MB, so it is not a file made here.');
+    if (parts.refused === 'empty') return no('other', 'This file is empty.');
+    if (parts.refused) return no('other', 'This browser could not read the file.');
+    if (parts.kind === 'results') return no('results', 'This is a results file, not a file made here. Add up results reads it.', PAGES.results);
+    if (!parts.ok || !parts.lesson) return no('other', 'This is not a file made with this page. Choose the .html file you saved in step 3.');
+    var lesson = parts.lesson, m = parts.manifest || {}, packet = isObject(m.packet) ? m.packet : {};
+    var blocks = list(lesson.blocks).filter(function (block) { return isObject(block) && typeof block.activity === 'string' && Array.isArray(block.items); });
+    var check = packet.mode === 'check' || packet.mode === 'probe' || lesson.mode === 'probe';
+    var kind = blocks.length && blocks.every(function (block) { return /^vocab_/.test(block.activity); }) ? 'vocab'
+      : check ? 'check' : blocks.length && blocks.every(function (block) { return /^math_/.test(block.activity); }) ? 'math' : 'words';
+    return { parts: parts, lesson: lesson, manifest: m, blocks: blocks, kind: kind };
+  }
+  function elsewhere(kind, out) {
+    var said = { vocab: 'This is vocabulary practice or a vocabulary check. Make vocabulary practice makes it, and can open it again.',
+      check: 'This is a math check. Make a math check makes it, and can open it again.', math: 'This is math fact practice. Make math fact practice makes it, and can open it again.',
+      words: 'This is Word Sounds practice. Make Word Sounds practice makes it, and can open it again.' };
+    out.kind = kind; out.why = said[kind] || 'This file was not made on this page.'; out.page = PAGES[kind] || null;
+    return out;
+  }
+  function learnerOf(m, e) { return typeof m.learner === 'string' ? (typeof e.codeName === 'function' ? e.codeName(m.learner) : m.learner.slice(0, 40)) : ''; }
+  // A problem or a fact as a teacher types it: 12 - 5, 6 x 4, 20 / 4.
+  function typed(word) { return String(word || '').replace(/−/g, '-').replace(/×/g, 'x').replace(/÷/g, '/').replace(/[  ]/g, ''); }
+
+  // readCheck(input, env) -> { ok, kind, why, page, teacherCode, title, learner, notes,
+  //   check: { id ('quantity_discrimination' | 'missing_number' | 'math_computation' | 'own'), grade, version, untimed,
+  //            problems (one on each line), time (seconds, 0 = no clock), skip } }
+  // env: { verify: AlloPacketVerify, builder: AlloPacketChecks, codeName }. A check keeps its answers sealed and its
+  // teacher code only as a salted hash, so neither comes back: a problem written with its own answer (3 + 4 + 5 = 12)
+  // is named in a note, to be typed again.
+  function readCheck(input, env) {
+    var e = env || {};
+    var out = { ok: false, kind: 'other', why: '', page: null, teacherCode: false, title: '', learner: '', notes: [], check: null };
+    var got = partsFor(input, e, out);
+    if (!got) return out;
+    if (got.kind !== 'check') return elsewhere(got.kind, out);
+    var lesson = got.lesson, meta = isObject(lesson.check) ? lesson.check : {}, measures = e.builder && isObject(e.builder.MEASURES) ? e.builder.MEASURES : {};
+    out.teacherCode = isObject(meta.lock);
+    out.learner = learnerOf(got.manifest, e);
+    var title = String(lesson.title || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    if (lesson.form === 'custom') {
+      var block = got.blocks.filter(function (b) { return b.activity === 'math_computation'; })[0];
+      if (!block) return elsewhere('other', out);
+      var lines = [], stated = [];
+      block.items.forEach(function (item) {
+        if (!isObject(item) || item.practice) return;
+        if (typeof item.a === 'number' && typeof item.b === 'number' && typeof item.symbol === 'string') lines.push(typed(item.a + ' ' + item.symbol + ' ' + item.b));
+        else if (typeof item.display === 'string') stated.push(item.display);
+      });
+      out.check = { id: 'own', grade: '', version: '', untimed: false, problems: lines.join('\n'), time: Number(lesson.timeLimitS) > 0 ? Number(lesson.timeLimitS) : 0, skip: meta.allowSkip !== false };
+      out.title = title === 'Math check' ? '' : title;
+      if (stated.length) out.notes.push((stated.length === 1 ? 'One problem was' : stated.length + ' problems were') + ' written with its own answer, and a check keeps its answers sealed, so '
+        + (stated.length === 1 ? 'it' : 'they') + ' could not be read back: ' + listed(stated.map(typed)) + '. Type ' + (stated.length === 1 ? 'it' : 'them') + ' again with the answer, like 3 + 4 + 5 = 12.');
+    } else {
+      var id = Object.keys(measures).filter(function (key) { return isObject(measures[key]) && measures[key].code === meta.measure; })[0] || '';
+      if (!id) return elsewhere('other', out);
+      var grade = String(meta.grade || '').toUpperCase(), version = String(lesson.form || '').toUpperCase(), untimed = meta.untimed === true;
+      out.check = { id: id, grade: grade, version: version, untimed: untimed, problems: '', time: 0, skip: true };
+      // The title the builder gives this form, now or before 2026-11-13 ("Missing Number check (KA)"), is not the teacher's.
+      var name = measures[id].name, made = typeof e.builder.formTitle === 'function' ? e.builder.formTitle(name, grade, version, untimed) : '';
+      out.title = title === made || title === name + ' check (' + grade + version + (untimed ? ', untimed' : '') + ')' ? '' : title;
+      if (untimed) out.notes.push('It is untimed, an accommodation for one student. Untimed is turned on in step 2.');
+    }
+    if (out.teacherCode) out.notes.push('A teacher code cannot be read back from a file. Set it again in step 2.');
+    if (out.learner) out.notes.push('It was made for ' + out.learner + '. That code name is filled in at step 3.');
+    out.ok = true;
+    out.kind = 'check';
+    return out;
+  }
+
+  // readMath(input, env) -> { ok, kind, why, page, title, learner, notes,
+  //   math: { kind ('add' | 'sub' | 'mul' | 'div' | 'own'), set (a set's id), facts (one on each line), method ('ccc' | 'rehearsal'), known: [fact keys] } }
+  // env: { verify, builder: AlloPacketMathPractice, codeName }. A practice file holds its facts and their roles in the clear.
+  function readMath(input, env) {
+    var e = env || {};
+    var out = { ok: false, kind: 'other', why: '', page: null, teacherCode: false, title: '', learner: '', notes: [], math: null };
+    var got = partsFor(input, e, out);
+    if (!got) return out;
+    if (got.kind !== 'math') return elsewhere(got.kind, out);
+    var b = e.builder || {}, block = got.blocks[0], lesson = got.lesson;
+    var method = block.activity === 'math_rehearsal' ? 'rehearsal' : block.activity === 'math_ccc' ? 'ccc' : '';
+    var parse = function (word) { try { var f = b.parseFacts(typed(word)); return f.length === 1 ? f[0] : null; } catch (_) { return null; } };
+    if (!method || typeof b.parseFacts !== 'function' || typeof b.factKey !== 'function') return elsewhere('other', out);
+    var id = /^math-facts-(.+)-(?:ccc|rehearsal)$/.exec(String(lesson.lessonId || ''));
+    var set = id ? list(b.FAMILIES).filter(function (f) { return isObject(f) && f.id === id[1]; })[0] : null;
+    var facts = [], known = [], seen = {}, lost = 0;
+    var cards = block.items.filter(isObject);
+    // New facts first, in the order they come, then the known ones: the way the page lists a typed list for rehearsal.
+    ['new', '', 'known'].forEach(function (role) {
+      cards.forEach(function (item) {
+        if (String(item.role || '') !== role) return;
+        var f = parse(item.word);
+        if (!f) { if (role !== 'known') lost++; return; }
+        var key = b.factKey(f);
+        if (role === 'known' && known.indexOf(key) < 0) known.push(key);
+        if (!seen[key]) { seen[key] = true; facts.push(f); }
+      });
+    });
+    var inSet = set ? set.facts.map(b.factKey) : [];
+    var sign = { add: '+', sub: '-', mul: 'x', div: '/' };
+    // known: the facts chosen as known. null = the teaching order's own choice (knownByOrder). The file names only the
+    // known facts it uses, so they are the first of these that plan the same cards as the file: the teaching order's;
+    // every fact of the set but the new ones; or the known facts in the file (and a note).
+    var fileCards = cards.map(function (item) { var f = parse(item.word); return f ? b.factKey(f) : '?'; }).join(',');
+    var same = function (input) { try { return b.planMathPractice(input).cards.map(function (c) { return b.factKey(c.fact); }).join(',') === fileCards; } catch (_) { return false; } };
+    var newKeys = cards.filter(function (item) { return item.role === 'new'; }).map(function (item) { var f = parse(item.word); return f ? b.factKey(f) : ''; });
+    var picks = [];
+    if (method === 'rehearsal' && set) {
+      var rest = inSet.filter(function (k) { return newKeys.indexOf(k) < 0; });
+      var used = known.filter(function (k) { return inSet.indexOf(k) >= 0; });
+      if (same({ mode: method, factSet: set.id })) picks = null;
+      else if (same({ mode: method, factSet: set.id, known: used })) picks = used;
+      else if (same({ mode: method, factSet: set.id, known: rest })) picks = rest;
+      else { picks = used; out.notes.push('Check the facts chosen as known in step 2: the file does not say all of them.'); }
+    } else if (method === 'rehearsal') {
+      picks = known;
+      if (!same({ mode: method, facts: facts, known: known })) out.notes.push('The cards may come in another order than in the file.');
+    }
+    out.math = { kind: set ? set.op : 'own', set: set ? set.id : '', facts: set ? '' : facts.map(function (f) { return f.a + ' ' + sign[f.op] + ' ' + f.b; }).join('\n'), method: method, known: picks };
+    var title = String(lesson.title || '').replace(/\s+/g, ' ').trim().slice(0, 80);
+    var short = isObject(b.METHODS) && isObject(b.METHODS[method]) ? b.METHODS[method].short : '';
+    out.title = title === (set ? set.title : 'My math facts') + ': ' + short ? '' : title;
+    out.learner = learnerOf(got.manifest, e);
+    if (lost) out.notes.push(lost === 1 ? 'One card could not be read back.' : lost + ' cards could not be read back.');
+    if (!set && method === 'rehearsal') out.notes.push('Only the facts in the file come back. New facts that were waiting for another file are not in it: type them again.');
+    if (out.learner) out.notes.push('It was made for ' + out.learner + '. That code name is filled in at step 3.');
+    out.ok = true;
+    out.kind = 'math';
+    return out;
+  }
+
+  var api = { read: read, readCheck: readCheck, readMath: readMath, wordOrder: wordOrder, creditOf: creditOf, PAGES: PAGES };
   root.AlloPacketReopen = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

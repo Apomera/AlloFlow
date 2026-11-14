@@ -40,7 +40,7 @@ module.exports = {
     sound_sort_choose_option: 'Choose option {n}',
     sound_sort_choose_word: 'Choose {word}',
     sound_sort_option_n: 'Option {n}',
-    sound_sort_hear_all: 'Hear all words',
+    sound_sort_hear_all: 'Hear all',
     sound_sort_found_mark: '(found)',
     sound_sort_answer_mark: '(matches)',
     sound_sort_match: 'Yes, that one matches! {found} of {total} found.',

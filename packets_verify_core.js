@@ -365,7 +365,7 @@
     { id: 'file-save', name: 'A file made on the device (Blob)', re: /\bcreateObjectURL\b|\bnew\s+(?:\w+\s*\.\s*)?Blob\b/g, cls: EXPECTED,
       why: 'Makes the results file on the device when the student presses a save button. It needs no connection.' },
     { id: 'clipboard', name: 'clipboard', re: /\bclipboard\b/g },
-    // 2026-11-13: a message to the page around the file. A packet sends one, to the "Open a practice file" page (see scanSource).
+    // 2026-11-13: a message to the page around the file. A packet sends one, to the "Open a practice file or check" page (see scanSource).
     { id: 'post-message', name: 'postMessage', re: /\bpostMessage\b/g, cls: LOOK, why: 'Sends a message to another window or to the page around this one. A packet sends one only to the page it is opened in.' },
     // 2026-11-13: a channel to other pages of the same site in this browser. A packet uses one to tell another copy of itself that it is open (see scanSource).
     { id: 'broadcast-channel', name: 'BroadcastChannel', re: /\bBroadcastChannel\b/g, cls: LOOK, why: 'Talks to other pages of the same site open in this browser. A packet uses it only to tell another copy of itself, open in another tab, that it is open.' },
@@ -457,10 +457,10 @@
         var before = text.slice(Math.max(0, f.at - 16), f.at).replace(/\s+/g, '');
         // 2026-11-13: the message to another copy of this file (see tabBus in verifyPacket): one call, on the channel.
         if (a.tabBus && place === 'the code' && /\bchannel\.$/.test(before)) { f.cls = EXPECTED; f.why = TAB_WHY; }
-        // The bridge of the "Open a practice file" page (takeHomeShell, linked() in the take-home loader): one call, in the code.
+        // The bridge of the "Open a practice file or check" page (takeHomeShell, linked() in the take-home loader): one call, in the code.
         else if (a.bridge && place === 'the code' && /\bparent\.$/.test(before)) {
           f.cls = EXPECTED;
-          f.why = 'Opened on the "Open a practice file" page, the file runs in a frame of that page with no storage of its own. It then hands its place and its results files to that page, which keeps them and saves them on this device. It does this only in a frame whose storage is refused, after that page has put its block (packet-store-snapshot) in the file. The file cannot see which page holds the frame. It needs no connection.';
+          f.why = 'Opened on the "Open a practice file or check" page, the file runs in a frame of that page with no storage of its own. It then hands its place and its results files to that page, which keeps them and saves them on this device. It does this only in a frame whose storage is refused, after that page has put its block (packet-store-snapshot) in the file. The file cannot see which page holds the frame. It needs no connection.';
         }
       } else if (f.id === 'broadcast-channel') {
         if (a.tabBus && place === 'the code') { f.cls = EXPECTED; f.why = TAB_WHY; }
@@ -798,7 +798,7 @@
     var tabBus = keyStated && (scriptText.match(/\bBroadcastChannel\b/g) || []).length === 2 && /\btypeof\s+win\.BroadcastChannel\s*===\s*'function'/.test(scriptText)
       && /\bnew\s+win\.BroadcastChannel\(\s*'alloflow-take-home\|'\s*\+\s*storageKey\s*\)/.test(scriptText) && (scriptText.match(/\bchannel\s*\.\s*postMessage\b/g) || []).length === 1
       && /\bchannel\.postMessage\(\s*message\s*\)/.test(scriptText) && (scriptText.match(/\bbusKey\s*=(?!=)/g) || []).length === 1 && /\bbusKey\s*=\s*storageKey\s*\+\s*'\|tab'\s*[,;]/.test(scriptText);
-    // The bridge to the "Open a practice file" page: one postMessage, to the parent, used only with that page's block.
+    // The bridge to the "Open a practice file or check" page: one postMessage, to the parent, used only with that page's block.
     var bridge = (scriptText.match(/\bpostMessage\b/g) || []).length === 1 + (tabBus ? 1 : 0) && /\bwin\.parent\s*!==\s*win\b/.test(scriptText)
       && scriptText.indexOf("('packet-store-snapshot')") >= 0 && /\bwin\.parent\.postMessage\(\s*message\s*,\s*'\*'\s*\)/.test(scriptText);
     var scanned = scanSource(text, { where: where, mailbox: mailbox, closed: closed, older: older, pinned: pinned, builds: pinFact.builds, speech: speech, bridge: bridge, tabBus: tabBus });
@@ -989,7 +989,7 @@
     } else plain.saves.push(savesFile ? 'Its code makes files on the device with the browser\'s own save, which needs no connection.' : 'This page found no code that makes a file.');
     if (scanned.some(function (f) { return f.id === 'clipboard' && f.cls === EXPECTED; })) plain.saves.push('It can also put the results on the clipboard when the student presses the copy button.');
     if (tabBus && scanned.some(function (f) { return f.id === 'broadcast-channel' && f.cls === EXPECTED; })) plain.keeps.push('If the same file is open in two tabs or windows of this browser, the copies tell each other, so only one of them goes on and keeps the student\'s place. These messages stay in this browser on this device.');
-    if (scanned.some(function (f) { return f.id === 'post-message' && f.cls === EXPECTED && /\bparent\b|"Open a practice file"/.test(f.why); })) plain.saves.push('Opened on the "Open a practice file" page (for phones and tablets), it hands its place and its results files to that page, which keeps them and saves them on this device. Opened any other way, it keeps its own place and saves its own files.');
+    if (scanned.some(function (f) { return f.id === 'post-message' && f.cls === EXPECTED && /\bparent\b|"Open a practice file/.test(f.why); })) plain.saves.push('Opened on the "Open a practice file or check" page (for phones and tablets), it hands its place and its results files to that page, which keeps them and saves them on this device. Opened any other way, it keeps its own place and saves its own files.');
     if (mailbox) plain.saves.push('It can also send the results to the class mailbox. ' + (isObject(m.network) && m.network.when ? 'It says this happens ' + show(m.network.when, 120) + '. ' : '') + 'A scan cannot tell when code runs. The network tab of the browser can.');
     else if (closed) plain.saves.push('It sends nothing. A results file leaves the device only when a person passes it on.');
     if (typeof m.integrity === 'string') plain.saves.push('It says: ' + show(m.integrity, 300));

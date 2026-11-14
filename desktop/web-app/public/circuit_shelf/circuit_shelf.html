@@ -203,13 +203,41 @@
 
   // ── Opener AI bridge (Sim Shelf / Data Lab pattern) ──────────────────
   var pending = {};
+  var verifiedOpenerOrigin = '';
+  function isTrustedOrigin(origin) {
+    var o = String(origin || '');
+    if (!o || o === 'null') return false;
+    try {
+      if (window.location && window.location.origin && o === window.location.origin) return true;
+      var u = new URL(o);
+      var host = (u.hostname || '').toLowerCase();
+      if (/^(localhost|127\.0\.0\.1)$/.test(host)) return true;
+      if (u.protocol !== 'https:') return false;
+      return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
+             host === 'alloflow.org' || /\.alloflow\.org$/.test(host) ||
+             /\.usercontent\.goog$/.test(host);
+    } catch (_) { return false; }
+  }
+  function isTrustedOpenerMessage(event) {
+    if (!window.opener) return false;
+    if (!event || event.source !== window.opener) return false;
+    return isTrustedOrigin(event.origin);
+  }
   function toOpener(payload) {
-    try { if (window.opener && !window.opener.closed) { window.opener.postMessage(payload, '*'); return true; } } catch (_) {}
+    try {
+      if (!window.opener || window.opener.closed) return false;
+      var targetOrigin = verifiedOpenerOrigin || (payload && typeof payload.type === 'string' && /-hello$/.test(payload.type) ? '*' : '');
+      if (!targetOrigin) return false;
+      window.opener.postMessage(payload, targetOrigin);
+      return true;
+    } catch (_) {}
     return false;
   }
   window.addEventListener('message', function (event) {
+    if (!isTrustedOpenerMessage(event)) return;
     var data = event && event.data;
     if (!data || typeof data.type !== 'string') return;
+    verifiedOpenerOrigin = event.origin;
     if (data.type === 'alloccircuit-ready') { openerOk = true; aiAvailable = Boolean(data.ai); renderAiState(); return; }
     if (data.type === 'alloccircuit-ai-response' && data.id && pending[data.id]) {
       var entry = pending[data.id]; delete pending[data.id]; clearTimeout(entry.timer); entry.resolve(data);

@@ -3,6 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
 <title>AlloFlow Access Lens Camera</title>
 <!--
   Access Lens companion window.
@@ -86,6 +87,27 @@
   var verifiedOrigin = null;
   var pendingSend = false;
   var helloTimer = null;
+  function isTrustedOpenerOrigin(origin) {
+    if (!origin || origin === 'null') return true;
+    if (origin === window.location.origin) return true;
+    try {
+      var u = new URL(origin);
+      var host = u.hostname.toLowerCase();
+      if (u.protocol === 'http:' && (host === 'localhost' || host === '127.0.0.1' || host === '[::1]')) return true;
+      if (u.protocol !== 'https:') return false;
+      return host === 'localhost' || host === '127.0.0.1'
+        || host === 'alloflow-cdn.pages.dev' || host.endsWith('.alloflow-cdn.pages.dev')
+        || host === 'alloflow.org' || host.endsWith('.alloflow.org')
+        || host === 'alloflow.app' || host.endsWith('.alloflow.app')
+        || host === 'alloflow.com' || host.endsWith('.alloflow.com')
+        || host === 'alloflow.example' || host.endsWith('.alloflow.example')
+        || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(host)
+        || host.endsWith('.usercontent.goog')
+        || host.endsWith('.idx.google.com');
+    } catch (_) {
+      return false;
+    }
+  }
   // Carries no photo or nonce: just asks the opener to prove itself.
   function askOpener(type) { try { if (opener) opener.postMessage({ type: type }, '*'); } catch (_) {} }
 
@@ -212,10 +234,12 @@
     var d = ev.data || {};
     if (d.type === 'allolens-hello') {
       if (!nonce || d.nonce !== nonce) return;
+      if (!isTrustedOpenerOrigin(ev.origin)) return;
       verifiedOrigin = typeof ev.origin === 'string' && ev.origin ? ev.origin : 'null';
       if (pendingSend && lastDataUrl) sendPhoto();
       return;
     }
+    if (!isTrustedOpenerOrigin(ev.origin)) return;
     if (verifiedOrigin && verifiedOrigin !== 'null' && ev.origin !== verifiedOrigin) return;
     if (d.type === 'allolens-photo-ack') {
       if (ackTimer) { clearTimeout(ackTimer); ackTimer = null; }

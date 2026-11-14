@@ -4629,6 +4629,82 @@ function ExportPreviewView(props) {
   const [editorZoom, setEditorZoom] = React.useState(() => _readBuilderViewPreferences().zoom);
   const [editorZoomMode, setEditorZoomMode] = React.useState(() => _readBuilderViewPreferences().zoomMode);
   const [editorPageView, setEditorPageView] = React.useState(() => _readBuilderViewPreferences().pageView);
+  const [interactivePreviewMode, setInteractivePreviewMode] = React.useState(false);
+  const [builderViewFilter, setBuilderViewFilter] = React.useState("all");
+  React.useEffect(() => {
+    if (exportPreviewMode !== "html" && interactivePreviewMode) {
+      setInteractivePreviewMode(false);
+    }
+  }, [exportPreviewMode, interactivePreviewMode]);
+  React.useEffect(() => {
+    if (!exportConfig?.includeTeacherKey && builderViewFilter !== "all") {
+      setBuilderViewFilter("all");
+    }
+  }, [exportConfig?.includeTeacherKey, builderViewFilter]);
+  const applyLivePreviewOverlays = React.useCallback(() => {
+    const iframe = exportPreviewRef?.current;
+    const doc = iframe?.contentDocument;
+    if (!doc?.head) return;
+    const isInteractive = exportPreviewMode === "html" && interactivePreviewMode;
+    try {
+      doc.designMode = isInteractive ? "off" : "on";
+      if (doc.body) doc.body.spellcheck = !isInteractive;
+    } catch (_) {
+    }
+    const activeFilter = exportConfig?.includeTeacherKey ? builderViewFilter : "all";
+    const existingFilterStyle = doc.getElementById("allo-builder-view-filter");
+    if (activeFilter === "student") {
+      const style = existingFilterStyle || doc.createElement("style");
+      style.id = "allo-builder-view-filter";
+      style.textContent = ".teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner{display:none!important;}";
+      if (!style.parentNode) doc.head.appendChild(style);
+    } else if (activeFilter === "teacher") {
+      const style = existingFilterStyle || doc.createElement("style");
+      style.id = "allo-builder-view-filter";
+      style.textContent = ".student-only,[data-allo-student-only]{display:none!important;}body:has(.teacher-view,[data-allo-teacher-only],.answer-key) > :not(style):not(script):not(.teacher-view):not([data-allo-teacher-only]):not(.answer-key):not(.alloflow-teacher-copy-banner):not(:has(.teacher-view,[data-allo-teacher-only],.answer-key)),body:has(.teacher-view,[data-allo-teacher-only],.answer-key) :has(> .teacher-view, > [data-allo-teacher-only], > .answer-key) > :not(style):not(script):not(.teacher-view):not([data-allo-teacher-only]):not(.answer-key):not(.alloflow-teacher-copy-banner):not(:has(.teacher-view,[data-allo-teacher-only],.answer-key)){display:none!important;}";
+      if (!style.parentNode) doc.head.appendChild(style);
+    } else if (existingFilterStyle) {
+      existingFilterStyle.remove();
+    }
+    const existingPaperStyle = doc.getElementById("allo-builder-paper-css");
+    if (exportPreviewMode === "worksheet" || exportPreviewMode === "print") {
+      const style = existingPaperStyle || doc.createElement("style");
+      style.id = "allo-builder-paper-css";
+      const skipBodyBg = exportTheme === "dark" || exportTheme === "hc";
+      style.textContent = "@media screen{" + (skipBodyBg ? "html{padding:18px 12px!important;}body{box-shadow:0 2px 12px rgba(15,23,42,0.28)!important;border-radius:6px!important;margin:0 auto!important;}" : "html{background:#e2e8f0!important;padding:18px 12px!important;}body{background:#ffffff!important;box-shadow:0 2px 12px rgba(15,23,42,0.12)!important;border-radius:6px!important;margin:0 auto!important;}") + ".page-break,[data-allo-page-break]{border-top:2px dashed #94a3b8!important;margin:18px 0!important;position:relative!important;}}";
+      if (!style.parentNode) doc.head.appendChild(style);
+    } else if (existingPaperStyle) {
+      existingPaperStyle.remove();
+    }
+  }, [exportPreviewRef, exportPreviewMode, interactivePreviewMode, builderViewFilter, exportConfig?.includeTeacherKey, exportTheme]);
+  React.useEffect(() => {
+    try {
+      window.__alloActiveExportConfig = exportConfig || {};
+    } catch (_) {
+    }
+    const iframe = exportPreviewRef?.current;
+    if (!iframe) return;
+    iframe.__alloPendingLiveState = { mode: exportPreviewMode, theme: exportTheme, config: exportConfig };
+    iframe.__alloInteractivePreviewMode = !!(exportPreviewMode === "html" && interactivePreviewMode);
+    iframe.__alloKeepEditsRollback = (lastState) => {
+      if (!lastState || typeof lastState !== "object") return;
+      const rb = {
+        mode: lastState.mode,
+        theme: lastState.theme,
+        config: lastState.config,
+        until: Date.now() + 500
+      };
+      iframe.__alloRollingBackState = rb;
+      if (lastState.mode && typeof setExportPreviewMode === "function") setExportPreviewMode(lastState.mode);
+      if (lastState.theme && typeof setExportTheme === "function") setExportTheme(lastState.theme);
+      if (lastState.config && typeof setExportConfigAndRefresh === "function") setExportConfigAndRefresh(lastState.config);
+    };
+    applyLivePreviewOverlays();
+    iframe.addEventListener?.("alloflow-builder-document-written", applyLivePreviewOverlays);
+    return () => {
+      iframe.removeEventListener?.("alloflow-builder-document-written", applyLivePreviewOverlays);
+    };
+  }, [exportPreviewRef, exportPreviewMode, exportTheme, exportConfig, interactivePreviewMode, setExportPreviewMode, setExportTheme, setExportConfigAndRefresh, applyLivePreviewOverlays]);
   const [showNavigationPane, setShowNavigationPane] = React.useState(() => _readBuilderViewPreferences().navigationPane);
   const [navigationPaneTab, setNavigationPaneTab] = React.useState(() => _readBuilderViewPreferences().navigationTab);
   const [navigationPaneWidth, setNavigationPaneWidth] = React.useState(() => _readBuilderViewPreferences().navigationWidth);
@@ -5261,6 +5337,7 @@ function ExportPreviewView(props) {
           '[data-page-number-position="center"] [data-allo-page-number] { left:50%;transform:translateX(-50%); }',
           '[data-page-number-position="right"] [data-allo-page-number] { right:0; }',
           '@media screen { [data-allo-page-number]::after { content:"#"; } }',
+          "@media screen and (max-width: 720px) { body { padding: 16px !important; } }",
           '@media print { body { padding-top:.35in !important;padding-bottom:.35in !important;padding-left:0 !important;padding-right:0 !important; } [data-allo-page-header],[data-allo-page-footer] { position:fixed;left:0;right:0;margin:0;border-color:#94a3b8; } [data-allo-page-header] { top:0; } [data-allo-page-footer] { bottom:0; } [data-allo-page-break="1"],[data-allo-section-break] { height:0 !important;margin:0 !important;border:0 !important;background:none !important; } [data-allo-page-number]::after { content:counter(page); } }'
         ].join("\n");
       }
@@ -5280,7 +5357,7 @@ function ExportPreviewView(props) {
     return normalized;
   }, [exportPreviewRef]);
   const applyPageMargin = React.useCallback((margin) => {
-    applyPageSetup({ ...pageSetup, margin }, { commit: true });
+    applyPageSetup({ ...pageSetup, margin });
   }, [applyPageSetup, pageSetup]);
   React.useEffect(() => {
     applyPageSetup(pageSetup);
@@ -8005,7 +8082,7 @@ ${pageCss}
       _builderClearTrackedChangeTransientState(clone);
     }
     _builderClearOpenPagePrompt(clone);
-    clone.querySelectorAll(".allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css" + (options?.keepScripts ? "" : ",script:not([data-allo-citation-store])")).forEach((node) => node.remove());
+    clone.querySelectorAll(".allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css,#allo-builder-view-filter,#allo-builder-paper-css" + (options?.keepScripts ? "" : ",script:not([data-allo-citation-store])")).forEach((node) => node.remove());
     if (options?.forExport) clone.querySelectorAll(_BUILDER_CITATION_STORE_SELECTOR).forEach((node) => node.remove());
     clone.querySelectorAll("[contenteditable]").forEach((node) => node.removeAttribute("contenteditable"));
     clone.querySelectorAll("[data-allo-semantic-selected]").forEach((node) => node.removeAttribute("data-allo-semantic-selected"));
@@ -9740,11 +9817,101 @@ ${pageCss}
         const teacherOnlyDefault = /* @__PURE__ */ new Set(["includeAnalysis", "includeUdlAdvice", "includeBrainstorm"]);
         const available = _builderResourceOptions(history, t);
         if (available.length === 0) return /* @__PURE__ */ React.createElement("p", { className: "text-[11px] text-slate-600 italic px-1 py-2" }, "No resources generated yet. Generate resources first, then choose which to include in your document.");
-        return available.map(([key, label]) => {
+        const baseOrder = Array.isArray(exportConfig.resourceOrder) && exportConfig.resourceOrder.length ? exportConfig.resourceOrder : available.map(([k]) => k);
+        const orderedAvailable = [...available].sort((a, b) => {
+          const ia = baseOrder.indexOf(a[0]);
+          const ib = baseOrder.indexOf(b[0]);
+          if (ia === -1 && ib === -1) return 0;
+          if (ia === -1) return 1;
+          if (ib === -1) return -1;
+          return ia - ib;
+        });
+        const moveResourceRow = (idx, delta) => {
+          const currentKeys = orderedAvailable.map(([k]) => k);
+          const nextIdx = idx + delta;
+          if (nextIdx < 0 || nextIdx >= currentKeys.length) return;
+          const swapped = [...currentKeys];
+          const tmp = swapped[idx];
+          swapped[idx] = swapped[nextIdx];
+          swapped[nextIdx] = tmp;
+          const extras = Array.isArray(exportConfig.resourceOrder) ? exportConfig.resourceOrder.filter((k) => !swapped.includes(k)) : [];
+          setExportConfigAndRefresh((p) => ({ ...p, resourceOrder: [...swapped, ...extras] }));
+        };
+        return orderedAvailable.map(([key, label], idx) => {
           const isTeacherOnly = teacherOnlyDefault.has(key);
           const tooltip = isTeacherOnly ? "Always included in teacher copy. Toggle to also include in student copy." : "";
+          const isIncluded = _builderResourceIncluded(exportConfig, key);
           const showCloze = key === "includeSimplified" && exportPreviewMode === "worksheet" && exportConfig.includeSimplified && history.some((h) => h && h.type === "glossary");
-          return /* @__PURE__ */ React.createElement(React.Fragment, { key }, /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5", title: tooltip }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: _builderResourceIncluded(exportConfig, key), onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, [key]: e.target.checked })), className: "rounded" }), /* @__PURE__ */ React.createElement("span", null, label, isTeacherOnly && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[11px] text-indigo-700 font-bold" }, "(also in student copy)"))), showCloze && /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5 ml-5", title: t("export_preview.accessibility.blanks_out_the_glossary_words_in_the_passage_and_adds_a_word") || "Blanks out the glossary words in the passage and adds a word bank. The answer key rides with the teacher copy." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!exportConfig.clozeWorksheet, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, clozeWorksheet: e.target.checked })), className: "rounded mt-0.5" }), /* @__PURE__ */ React.createElement("span", null, "\u270F\uFE0F Fill in the blanks", /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 leading-tight" }, "Blanks the glossary words and adds a word bank."))));
+          return /* @__PURE__ */ React.createElement(React.Fragment, { key }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1 rounded px-1 py-0.5 hover:bg-white" }, /* @__PURE__ */ React.createElement("label", { className: "flex flex-1 min-w-0 items-center gap-2 text-xs text-slate-700 cursor-pointer", title: tooltip }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: isIncluded, onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, [key]: e.target.checked })), className: "rounded shrink-0" }), /* @__PURE__ */ React.createElement("span", { className: "truncate" }, label, isTeacherOnly && /* @__PURE__ */ React.createElement("span", { className: "ml-1 text-[11px] text-indigo-700 font-bold" }, "(also in student copy)"))), orderedAvailable.length > 1 && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 shrink-0" }, /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              type: "button",
+              onClick: () => moveResourceRow(idx, -1),
+              disabled: idx === 0,
+              className: "w-6 h-6 inline-flex items-center justify-center rounded border border-slate-300 bg-white text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 disabled:opacity-30",
+              "aria-label": t("export_preview.accessibility.move_section_up") || "Move section up",
+              title: t("export_preview.accessibility.move_section_up") || "Move section up"
+            },
+            "\u2191"
+          ), /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              type: "button",
+              onClick: () => moveResourceRow(idx, 1),
+              disabled: idx === orderedAvailable.length - 1,
+              className: "w-6 h-6 inline-flex items-center justify-center rounded border border-slate-300 bg-white text-[11px] font-bold text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 disabled:opacity-30",
+              "aria-label": t("export_preview.accessibility.move_section_down") || "Move section down",
+              title: t("export_preview.accessibility.move_section_down") || "Move section down"
+            },
+            "\u2193"
+          ))), key === "includeGlossary" && isIncluded && /* @__PURE__ */ React.createElement("div", { className: "ml-6 mb-1 flex flex-wrap gap-1", role: "group", "aria-label": t("export_preview.glossary_display_quick") || "Glossary display mode" }, [["table", "Table"], ["flash-cards", "Cards"], ["word-wall", "Word Wall"], ["worksheet", "Worksheet"]].map(([modeVal, modeLabel]) => {
+            const active = (exportConfig.glossaryDisplayMode || "table") === modeVal;
+            return /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                key: modeVal,
+                type: "button",
+                "aria-pressed": active,
+                onClick: () => setExportConfigAndRefresh((p) => ({ ...p, glossaryDisplayMode: modeVal })),
+                className: `px-1.5 py-0.5 rounded text-[10px] font-semibold border ${active ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"}`
+              },
+              modeLabel
+            );
+          })), key === "includeTimeline" && isIncluded && /* @__PURE__ */ React.createElement("div", { className: "ml-6 mb-1 flex flex-wrap gap-1", role: "group", "aria-label": t("export_preview.timeline_display_quick") || "Timeline display mode" }, [["list", "List"], ["cuttable-strips", "Cuttable strips"]].map(([modeVal, modeLabel]) => {
+            const active = (exportConfig.timelineDisplayMode || "list") === modeVal;
+            return /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                key: modeVal,
+                type: "button",
+                "aria-pressed": active,
+                onClick: () => setExportConfigAndRefresh((p) => ({ ...p, timelineDisplayMode: modeVal })),
+                className: `px-1.5 py-0.5 rounded text-[10px] font-semibold border ${active ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"}`
+              },
+              modeLabel
+            );
+          })), key === "includeConceptSort" && isIncluded && /* @__PURE__ */ React.createElement("label", { className: "ml-6 mb-1 flex items-center gap-1.5 text-[11px] text-slate-600 cursor-pointer" }, /* @__PURE__ */ React.createElement(
+            "input",
+            {
+              type: "checkbox",
+              checked: exportConfig.conceptSortInteractive !== false,
+              onChange: (e) => setExportConfigAndRefresh((p) => ({ ...p, conceptSortInteractive: e.target.checked })),
+              className: "rounded"
+            }
+          ), /* @__PURE__ */ React.createElement("span", null, "Interactive sorting")), showCloze && /* @__PURE__ */ React.createElement("div", { className: "ml-5 mb-1" }, /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5", title: t("export_preview.accessibility.blanks_out_the_glossary_words_in_the_passage_and_adds_a_word") || "Blanks out the glossary words in the passage and adds a word bank. The answer key rides with the teacher copy." }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: !!exportConfig.clozeWorksheet, onChange: (e) => setExportConfigAndRefresh((p) => e.target.checked ? { ...p, clozeWorksheet: true, clozeMaxPerTerm: p.clozeMaxPerTerm ?? 1, clozeWordBankPosition: p.clozeWordBankPosition || "top" } : { ...p, clozeWorksheet: false }), className: "rounded mt-0.5" }), /* @__PURE__ */ React.createElement("span", null, "\u270F\uFE0F Fill in the blanks", /* @__PURE__ */ React.createElement("span", { className: "block text-[11px] text-slate-600 leading-tight" }, "Blanks the glossary words and adds a word bank."))), exportConfig.clozeWorksheet && /* @__PURE__ */ React.createElement("div", { className: "ml-6 mt-1 flex flex-wrap gap-1", role: "group", "aria-label": t("export_preview.cloze_frequency_label") || "Blank frequency" }, [[1, "1 blank per word"], [0, "All occurrences"]].map(([val, lbl]) => {
+            const active = val === 0 ? exportConfig.clozeMaxPerTerm === 0 : (exportConfig.clozeMaxPerTerm ?? 1) === 1;
+            return /* @__PURE__ */ React.createElement(
+              "button",
+              {
+                key: val,
+                type: "button",
+                "aria-pressed": active,
+                onClick: () => setExportConfigAndRefresh((p) => ({ ...p, clozeMaxPerTerm: val })),
+                className: `px-1.5 py-0.5 rounded text-[10px] font-semibold border ${active ? "bg-indigo-600 text-white border-indigo-600" : "bg-white text-slate-600 border-slate-300 hover:bg-slate-50"}`
+              },
+              lbl
+            );
+          }))));
         });
       })())), (textAccessExportReview.missingSourceCount > 0 || textAccessExportReview.supplementalWithoutPrimary || textAccessExportReview.unspecifiedAdaptedWithoutPrimary || textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0) && /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-amber-300 bg-amber-50 p-2", role: "status", "aria-live": "polite" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] font-bold text-amber-950" }, "Text-access review before sharing"), textAccessExportReview.missingSourceCount > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-amber-900" }, textAccessExportReview.missingSourceCount, " adapted reading", textAccessExportReview.missingSourceCount === 1 ? "" : "s", " do not include a matching saved original. Include the matching source before sharing."), textAccessExportReview.supplementalWithoutPrimary && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-amber-900" }, "Some supporting readings do not include their matching main lesson text. Include that reading, or review the assigned roles before sharing."), textAccessExportReview.unspecifiedAdaptedWithoutPrimary && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-amber-900" }, "Some adapted readings have no assigned role or matching main lesson text in this selection. Review each reading pair before sharing."), textAccessExportReview.unauthorizedPrimaryAdaptationCount > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[11px] leading-snug text-amber-900" }, "An adapted reading is marked as the main lesson text without educator confirmation. Keep it supporting or confirm that designation before sharing."), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-[10px] text-amber-800" }, "This notice is advisory and does not make an IEP or legal-compliance determination.")), (() => {
         const skipped = getSkippedResources();
@@ -9835,7 +10002,7 @@ ${pageCss}
         if (name && name.trim()) saveExportPreset(name.trim());
       }, className: "mt-1.5 w-full px-2 py-1.5 border border-dashed border-slate-300 rounded-lg text-[11px] font-bold text-slate-600 hover:border-indigo-400 hover:text-indigo-600 hover:bg-indigo-50/50 transition-all" }, "+ Save Current as Preset")),
       /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Format"), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1", "data-help-key": "doc_builder_format", role: "radiogroup", "aria-label": t("export_preview.accessibility.export_format") || "Export format", onKeyDown: handleRadioGroupKeyDown, "aria-describedby": "doc-builder-format-help" }, [["print", "\u{1F4C4} PDF"], ["worksheet", "\u{1F4DD} Worksheet"], ["html", "\u{1F4BB} HTML"], ["slides", "\u{1F4CA} Slides"]].filter(([mode]) => !isRemediationDocument || mode !== "worksheet").map(([m, label]) => /* @__PURE__ */ React.createElement("button", { key: m, role: "radio", "aria-checked": exportPreviewMode === m, tabIndex: exportPreviewMode === m ? 0 : -1, onClick: () => setExportPreviewMode(m), className: `flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? "bg-indigo-600 text-white" : "bg-white border border-slate-400 text-slate-600 hover:bg-slate-100"}` }, label))), /* @__PURE__ */ React.createElement("p", { id: "doc-builder-format-help", className: "mt-1.5 text-[11px] leading-snug text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5", role: "status" }, isRemediationDocument ? "Exports use the document shown in the editor. PDF opens your print window; HTML opens as a web page; Slides creates an editable PowerPoint. Review the downloaded layout before sharing." : exportPreviewMode === "worksheet" ? t("export_preview.format_help_worksheet") || "A paper copy for students to write on. Answer boxes become ruled lines and answer choices become bubbles to fill in, and a name and date header is added. Opens your print window, where you can print it or save it as a PDF." : exportPreviewMode === "html" ? t("export_preview.format_help_html") || "One web page students open on a device. Highlighting, notes, drawing and typed answers all work, and save on that device." : exportPreviewMode === "slides" ? t("export_preview.format_help_slides") || "A PowerPoint file you can open in PowerPoint, Keynote or Google Slides." : t("export_preview.format_help_print") || "A finished copy to read or hand out, with everything shown as it is. Opens your print window, where you can print it or save it as a PDF. Pick Worksheet instead if students need blank lines to write on.")),
-      /* @__PURE__ */ React.createElement("details", { className: "rounded-lg border border-slate-300 p-2", "data-builder-appearance": true }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700" }, "Appearance and page setup"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Appearance", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Style"), setShowBrandProfileEditor && /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("details", { open: true, className: "rounded-lg border border-slate-300 p-2", "data-builder-appearance": true }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-xs font-bold text-slate-700" }, "Appearance and page setup"), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-3" }, /* @__PURE__ */ React.createElement("h3", { className: "text-[11px] font-black text-indigo-600 uppercase tracking-[2px] flex items-center gap-2" }, /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" }), "Appearance", /* @__PURE__ */ React.createElement("span", { className: "flex-1 h-px bg-indigo-100" })), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("span", null, "Style"), setShowBrandProfileEditor && /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -9854,33 +10021,43 @@ ${pageCss}
         "\u{1F3F7}\uFE0F ",
         /* @__PURE__ */ React.createElement("strong", null, "First time?"),
         " Set up your school brand \u2192 colors, fonts, logo for branded exports"
-      ), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1", role: "radiogroup", "aria-label": t("export_preview.accessibility.document_style") || "Document style", onKeyDown: handleRadioGroupKeyDown }, Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars).map(([key, s]) => /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          key,
-          role: "radio",
-          "aria-checked": exportTheme === key,
-          tabIndex: exportTheme === key ? 0 : -1,
-          onClick: () => setExportTheme(key),
-          className: `text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? "bg-indigo-600 text-white ring-2 ring-indigo-300" : "bg-white border border-slate-400 text-slate-600 hover:bg-slate-100"}`
-        },
-        s.emoji,
-        " ",
-        s.name
-      )), brandProfiles.map((p) => /* @__PURE__ */ React.createElement(
-        "button",
-        {
-          key: p.id,
-          role: "radio",
-          "aria-checked": exportTheme === p.id,
-          tabIndex: exportTheme === p.id ? 0 : -1,
-          onClick: () => setExportTheme(p.id),
-          className: `text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === p.id ? "bg-rose-600 text-white ring-2 ring-rose-300" : "bg-white border border-rose-400 text-rose-700 hover:bg-rose-50"}`,
-          title: t("export_preview.accessibility.school_brand_profile") || "School brand profile"
-        },
-        "\u{1F3F7}\uFE0F ",
-        p.name || "Brand"
-      )))), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Typography"), readingSettingsReady && /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 min-h-11 text-[11px] text-slate-700 mb-2 cursor-pointer", "data-export-reading-settings": true }, /* @__PURE__ */ React.createElement(
+      ), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-1", role: "radiogroup", "aria-label": t("export_preview.accessibility.document_style") || "Document style", onKeyDown: handleRadioGroupKeyDown }, (() => {
+        const seedEntries = Object.entries(STYLE_SEEDS).filter(([, s]) => s.cssVars);
+        const hasKnownTheme = seedEntries.some(([key]) => exportTheme === key) || brandProfiles.some((p) => exportTheme === p.id);
+        return /* @__PURE__ */ React.createElement(React.Fragment, null, seedEntries.map(([key, s], idx) => {
+          const swatchColor = s.cssVars.accentColor || s.cssVars.headingColor || "#4f46e5";
+          const tabIdx = exportTheme === key || !hasKnownTheme && idx === 0 ? 0 : -1;
+          return /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              key,
+              role: "radio",
+              "aria-checked": exportTheme === key,
+              tabIndex: tabIdx,
+              onClick: () => setExportTheme(key),
+              className: `flex items-center gap-1.5 text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === key ? "bg-indigo-600 text-white ring-2 ring-indigo-300" : "bg-white border border-slate-400 text-slate-600 hover:bg-slate-100"}`
+            },
+            /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true", className: "inline-block w-2.5 h-2.5 rounded-full shrink-0 border border-black/15", style: { backgroundColor: swatchColor } }),
+            /* @__PURE__ */ React.createElement("span", null, s.emoji, " ", s.name)
+          );
+        }), brandProfiles.map((p, bIdx) => {
+          const tabIdx = exportTheme === p.id || !hasKnownTheme && seedEntries.length === 0 && bIdx === 0 ? 0 : -1;
+          return /* @__PURE__ */ React.createElement(
+            "button",
+            {
+              key: p.id,
+              role: "radio",
+              "aria-checked": exportTheme === p.id,
+              tabIndex: tabIdx,
+              onClick: () => setExportTheme(p.id),
+              className: `text-[11px] font-bold py-1.5 px-2 rounded-lg transition-all ${exportTheme === p.id ? "bg-rose-600 text-white ring-2 ring-rose-300" : "bg-white border border-rose-400 text-rose-700 hover:bg-rose-50"}`,
+              title: t("export_preview.accessibility.school_brand_profile") || "School brand profile"
+            },
+            "\u{1F3F7}\uFE0F ",
+            p.name || "Brand"
+          );
+        }));
+      })())), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase mb-1.5" }, "Typography"), readingSettingsReady && /* @__PURE__ */ React.createElement("label", { className: "flex items-start gap-2 min-h-11 text-[11px] text-slate-700 mb-2 cursor-pointer", "data-export-reading-settings": true }, /* @__PURE__ */ React.createElement(
         "input",
         {
           type: "checkbox",
@@ -10945,7 +11122,7 @@ ${pageCss}
     }, className: "h-8 rounded px-2 text-[11px] font-bold text-slate-700 hover:bg-indigo-50 hover:text-indigo-700", "aria-label": t("export_preview.accessibility.insert_page_break") || "Insert page break", "aria-keyshortcuts": "Control+Enter", title: t("export_preview.accessibility.insert_page_break") || "Insert page break" }, "Page break"), /* @__PURE__ */ React.createElement("label", { className: "inline-flex items-center" }, /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, "Insert symbol"), /* @__PURE__ */ React.createElement("select", { defaultValue: "", onChange: (e) => {
       if (e.target.value) runEditorCommand("insertText", e.target.value);
       e.target.value = "";
-    }, className: "h-8 rounded border border-slate-300 bg-white px-1 text-[11px] text-slate-700", "aria-label": t("export_preview.accessibility.insert_symbol") || "Insert symbol" }, /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, "Symbol"), /* @__PURE__ */ React.createElement("option", { value: "\u2014" }, "Em dash \u2014"), /* @__PURE__ */ React.createElement("option", { value: "\u2013" }, "En dash \u2013"), /* @__PURE__ */ React.createElement("option", { value: "\xA9" }, "Copyright \xA9"), /* @__PURE__ */ React.createElement("option", { value: "\xB0" }, "Degree \xB0"), /* @__PURE__ */ React.createElement("option", { value: "\xB1" }, "Plus/minus \xB1"), /* @__PURE__ */ React.createElement("option", { value: "\u2192" }, "Arrow \u2192")))), tableContext.active ? /* @__PURE__ */ React.createElement("div", { id: "builder-table-context-tools", className: "flex flex-wrap items-center gap-1 rounded border border-emerald-300 bg-emerald-50 px-2 py-1", role: "toolbar", "aria-label": t("export_preview.accessibility.selected_table_tools") || "Selected table tools" }, /* @__PURE__ */ React.createElement("span", { id: "builder-table-context-heading", className: "mr-1 text-[10px] font-black uppercase tracking-wide text-emerald-800" }, "Selected table \xB7 ", tableContext.rows, " rows \xD7 ", tableContext.columns, " columns"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (e) => e.preventDefault(), onClick: () => editSelectedTable("add-row"), className: "h-7 rounded border border-emerald-500 bg-white px-2 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100" }, "Add row"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (e) => e.preventDefault(), onClick: () => editSelectedTable("add-column"), className: "h-7 rounded border border-emerald-500 bg-white px-2 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100" }, "Add column"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (e) => e.preventDefault(), onClick: () => editSelectedTable("remove-row"), disabled: tableContext.headerCell || tableContext.rows <= (tableContext.hasHeader ? 2 : 1), className: "h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40" }, "Remove row"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (e) => e.preventDefault(), onClick: () => editSelectedTable("remove-column"), disabled: tableContext.columns <= 1, className: "h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40" }, "Remove column")) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center rounded border border-dashed border-slate-300 px-2 py-1 text-[10px] text-slate-500" }, "Place the caret in a table to edit rows and columns."))), (toolSearchOpen || !ribbonCollapsed && activeRibbonTab === "layout") && /* @__PURE__ */ React.createElement("div", { id: "builder-ribbon-panel-layout", role: "tabpanel", "aria-labelledby": "builder-ribbon-tab-layout", className: "shrink-0 border-b border-slate-200 bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-stretch gap-2 px-2 py-1.5", role: "group", "aria-label": t("export_preview.accessibility.document_layout_tools") || "Document layout tools" }, /* @__PURE__ */ React.createElement("fieldset", { className: "flex min-w-72 flex-1 flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wider text-slate-600" }, "Page setup"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Paper size", /* @__PURE__ */ React.createElement("select", { value: pageSetup.size, onChange: (event) => applyPageSetup({ ...pageSetup, size: event.target.value }, { commit: true }), className: "h-7 rounded border border-slate-400 bg-white px-1.5 text-[11px] text-slate-700", "aria-label": t("export_preview.accessibility.paper_size") || "Paper size" }, /* @__PURE__ */ React.createElement("option", { value: "letter" }, "Letter (8.5 x 11 in)"), /* @__PURE__ */ React.createElement("option", { value: "legal" }, "Legal (8.5 x 14 in)"), /* @__PURE__ */ React.createElement("option", { value: "a4" }, "A4 (8.27 x 11.69 in)"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": t("export_preview.accessibility.page_orientation") || "Page orientation" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-semibold text-slate-600" }, "Orientation"), ["portrait", "landscape"].map((orientation) => /* @__PURE__ */ React.createElement("button", { key: orientation, type: "button", onClick: () => applyPageSetup({ ...pageSetup, orientation }, { commit: true }), "aria-pressed": pageSetup.orientation === orientation, className: `h-7 rounded border px-2 text-[10px] font-bold capitalize ${pageSetup.orientation === orientation ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}` }, orientation))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": t("export_preview.accessibility.page_margins") || "Page margins" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-semibold text-slate-600" }, "Margins"), [["0.5in", "Narrow"], ["1in", "Normal"], ["1.5in", "Wide"]].map(([margin, label]) => /* @__PURE__ */ React.createElement("button", { key: margin, type: "button", onClick: () => applyPageSetup({ ...pageSetup, margin }, { commit: true }), "aria-pressed": pageSetup.margin === margin, className: `h-7 rounded border px-2 text-[10px] font-bold ${pageSetup.margin === margin ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`, title: t("export_preview.accessibility.value1_margins_value2", { value1: label, value2: margin }) || `${label} margins (${margin})` }, label))), /* @__PURE__ */ React.createElement("span", { className: "w-full text-[10px] text-slate-500", role: "status", "aria-live": "polite" }, _BUILDER_PAGE_SIZES[pageSetup.size]?.label || "Letter", " \xB7 ", _builderPageDimensions(pageSetup).width, " x ", _builderPageDimensions(pageSetup).height, " in \xB7 ", pageSetup.margin, " margins")), /* @__PURE__ */ React.createElement("fieldset", { className: "flex min-w-80 flex-[1.35] flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1", "aria-describedby": "builder-page-elements-help" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wider text-slate-600" }, "Header & footer"), /* @__PURE__ */ React.createElement("label", { className: "flex min-w-44 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Header", /* @__PURE__ */ React.createElement("input", { value: pageElements.headerText, maxLength: 120, onChange: (event) => setPageElements((config) => ({ ...config, headerText: event.target.value })), placeholder: t("export_preview.accessibility.document_title") || "Document title", className: "h-7 min-w-24 flex-1 rounded border border-slate-400 bg-white px-1.5 text-[11px]", "aria-label": t("export_preview.accessibility.header_text") || "Header text" })), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, "Header alignment"), /* @__PURE__ */ React.createElement("select", { value: pageElements.headerAlignment, onChange: (event) => setPageElements((config) => ({ ...config, headerAlignment: event.target.value })), className: "h-7 rounded border border-slate-400 bg-white px-1 text-[11px]", "aria-label": t("export_preview.accessibility.header_alignment") || "Header alignment" }, /* @__PURE__ */ React.createElement("option", { value: "left" }, "Align left"), /* @__PURE__ */ React.createElement("option", { value: "center" }, "Center"), /* @__PURE__ */ React.createElement("option", { value: "right" }, "Align right"))), /* @__PURE__ */ React.createElement("label", { className: "flex min-w-44 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Footer", /* @__PURE__ */ React.createElement("input", { value: pageElements.footerText, maxLength: 160, onChange: (event) => setPageElements((config) => ({ ...config, footerText: event.target.value })), placeholder: t("export_preview.accessibility.optional_footer") || "Optional footer", className: "h-7 min-w-24 flex-1 rounded border border-slate-400 bg-white px-1.5 text-[11px]", "aria-label": t("export_preview.accessibility.footer_text") || "Footer text" })), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Page numbers", /* @__PURE__ */ React.createElement("select", { value: pageElements.pageNumbers, onChange: (event) => setPageElements((config) => ({ ...config, pageNumbers: event.target.value })), className: "h-7 rounded border border-slate-400 bg-white px-1 text-[11px]", "aria-label": t("export_preview.accessibility.page_numbers") || "Page numbers" }, /* @__PURE__ */ React.createElement("option", { value: "none" }, "None"), /* @__PURE__ */ React.createElement("option", { value: "left" }, "Bottom left"), /* @__PURE__ */ React.createElement("option", { value: "center" }, "Bottom center"), /* @__PURE__ */ React.createElement("option", { value: "right" }, "Bottom right"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyPageElements(), className: "h-7 rounded bg-indigo-700 px-2.5 text-[10px] font-bold text-white hover:bg-indigo-800" }, "Apply"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearPageElements, className: "h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-red-50 hover:text-red-700" }, "Clear"), /* @__PURE__ */ React.createElement("span", { id: "builder-page-elements-help", className: "w-full text-[10px] text-slate-500" }, "Headers and footers repeat on printed and PDF pages; automatic page numbers update during print.")), /* @__PURE__ */ React.createElement("fieldset", { className: "flex min-w-80 flex-[1.15] flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1", "aria-describedby": "builder-section-help" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wider text-slate-600" }, "Sections"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => jumpToDocumentSection(pageMetrics.activeSection - 1), disabled: pageMetrics.activeSection <= 0, className: "h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40", "aria-label": t("export_preview.accessibility.previous_section") || "Previous section" }, "\u2190"), /* @__PURE__ */ React.createElement("span", { className: "min-w-20 text-center text-[10px] font-bold text-slate-700", role: "status" }, "Section ", pageMetrics.activeSection + 1, " of ", pageMetrics.documentSections.length), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => jumpToDocumentSection(pageMetrics.activeSection + 1), disabled: pageMetrics.activeSection >= pageMetrics.documentSections.length - 1, className: "h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40", "aria-label": t("export_preview.accessibility.next_section") || "Next section" }, "\u2192"), /* @__PURE__ */ React.createElement("label", { className: "flex min-w-48 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Name", /* @__PURE__ */ React.createElement("input", { value: sectionNameDraft, maxLength: 80, onChange: (event) => setSectionNameDraft(event.target.value), onBlur: commitSectionName, onKeyDown: (event) => {
+    }, className: "h-8 rounded border border-slate-300 bg-white px-1 text-[11px] text-slate-700", "aria-label": t("export_preview.accessibility.insert_symbol") || "Insert symbol" }, /* @__PURE__ */ React.createElement("option", { value: "", disabled: true }, "Symbol"), /* @__PURE__ */ React.createElement("option", { value: "\u2014" }, "Em dash \u2014"), /* @__PURE__ */ React.createElement("option", { value: "\u2013" }, "En dash \u2013"), /* @__PURE__ */ React.createElement("option", { value: "\xA9" }, "Copyright \xA9"), /* @__PURE__ */ React.createElement("option", { value: "\xB0" }, "Degree \xB0"), /* @__PURE__ */ React.createElement("option", { value: "\xB1" }, "Plus/minus \xB1"), /* @__PURE__ */ React.createElement("option", { value: "\u2192" }, "Arrow \u2192")))), tableContext.active ? /* @__PURE__ */ React.createElement("div", { id: "builder-table-context-tools", className: "flex flex-wrap items-center gap-1 rounded border border-emerald-300 bg-emerald-50 px-2 py-1", role: "toolbar", "aria-label": t("export_preview.accessibility.selected_table_tools") || "Selected table tools" }, /* @__PURE__ */ React.createElement("span", { id: "builder-table-context-heading", className: "mr-1 text-[10px] font-black uppercase tracking-wide text-emerald-800" }, "Selected table \xB7 ", tableContext.rows, " rows \xD7 ", tableContext.columns, " columns"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (e) => e.preventDefault(), onClick: () => editSelectedTable("add-row"), className: "h-7 rounded border border-emerald-500 bg-white px-2 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100" }, "Add row"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (e) => e.preventDefault(), onClick: () => editSelectedTable("add-column"), className: "h-7 rounded border border-emerald-500 bg-white px-2 text-[10px] font-bold text-emerald-800 hover:bg-emerald-100" }, "Add column"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (e) => e.preventDefault(), onClick: () => editSelectedTable("remove-row"), disabled: tableContext.headerCell || tableContext.rows <= (tableContext.hasHeader ? 2 : 1), className: "h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40" }, "Remove row"), /* @__PURE__ */ React.createElement("button", { type: "button", onMouseDown: (e) => e.preventDefault(), onClick: () => editSelectedTable("remove-column"), disabled: tableContext.columns <= 1, className: "h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-red-50 hover:text-red-700 disabled:cursor-not-allowed disabled:opacity-40" }, "Remove column")) : /* @__PURE__ */ React.createElement("div", { className: "flex items-center rounded border border-dashed border-slate-300 px-2 py-1 text-[10px] text-slate-500" }, "Place the caret in a table to edit rows and columns."))), (toolSearchOpen || !ribbonCollapsed && activeRibbonTab === "layout") && /* @__PURE__ */ React.createElement("div", { id: "builder-ribbon-panel-layout", role: "tabpanel", "aria-labelledby": "builder-ribbon-tab-layout", className: "shrink-0 border-b border-slate-200 bg-white" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-stretch gap-2 px-2 py-1.5", role: "group", "aria-label": t("export_preview.accessibility.document_layout_tools") || "Document layout tools" }, /* @__PURE__ */ React.createElement("fieldset", { className: "flex min-w-72 flex-1 flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wider text-slate-600" }, "Page setup"), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Paper size", /* @__PURE__ */ React.createElement("select", { value: pageSetup.size, onChange: (event) => applyPageSetup({ ...pageSetup, size: event.target.value }, { commit: true }), className: "h-7 rounded border border-slate-400 bg-white px-1.5 text-[11px] text-slate-700", "aria-label": t("export_preview.accessibility.paper_size") || "Paper size" }, /* @__PURE__ */ React.createElement("option", { value: "letter" }, "Letter (8.5 x 11 in)"), /* @__PURE__ */ React.createElement("option", { value: "legal" }, "Legal (8.5 x 14 in)"), /* @__PURE__ */ React.createElement("option", { value: "a4" }, "A4 (8.27 x 11.69 in)"))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": t("export_preview.accessibility.page_orientation") || "Page orientation" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-semibold text-slate-600" }, "Orientation"), ["portrait", "landscape"].map((orientation) => /* @__PURE__ */ React.createElement("button", { key: orientation, type: "button", onClick: () => applyPageSetup({ ...pageSetup, orientation }, { commit: true }), "aria-pressed": pageSetup.orientation === orientation, className: `h-7 rounded border px-2 text-[10px] font-bold capitalize ${pageSetup.orientation === orientation ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}` }, orientation))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-1", role: "group", "aria-label": t("export_preview.accessibility.page_margins") || "Page margins" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-semibold text-slate-600" }, "Margins"), [["0.5in", "Narrow"], ["1in", "Normal"], ["1.5in", "Wide"]].map(([margin, label]) => /* @__PURE__ */ React.createElement("button", { key: margin, type: "button", onClick: () => applyPageSetup({ ...pageSetup, margin }), "aria-pressed": pageSetup.margin === margin, className: `h-7 rounded border px-2 text-[10px] font-bold ${pageSetup.margin === margin ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`, title: t("export_preview.accessibility.value1_margins_value2", { value1: label, value2: margin }) || `${label} margins (${margin})` }, label))), /* @__PURE__ */ React.createElement("span", { className: "w-full text-[10px] text-slate-500", role: "status", "aria-live": "polite" }, _BUILDER_PAGE_SIZES[pageSetup.size]?.label || "Letter", " \xB7 ", _builderPageDimensions(pageSetup).width, " x ", _builderPageDimensions(pageSetup).height, " in \xB7 ", pageSetup.margin, " margins")), /* @__PURE__ */ React.createElement("fieldset", { className: "flex min-w-80 flex-[1.35] flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1", "aria-describedby": "builder-page-elements-help" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wider text-slate-600" }, "Header & footer"), /* @__PURE__ */ React.createElement("label", { className: "flex min-w-44 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Header", /* @__PURE__ */ React.createElement("input", { value: pageElements.headerText, maxLength: 120, onChange: (event) => setPageElements((config) => ({ ...config, headerText: event.target.value })), placeholder: t("export_preview.accessibility.document_title") || "Document title", className: "h-7 min-w-24 flex-1 rounded border border-slate-400 bg-white px-1.5 text-[11px]", "aria-label": t("export_preview.accessibility.header_text") || "Header text" })), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "sr-only" }, "Header alignment"), /* @__PURE__ */ React.createElement("select", { value: pageElements.headerAlignment, onChange: (event) => setPageElements((config) => ({ ...config, headerAlignment: event.target.value })), className: "h-7 rounded border border-slate-400 bg-white px-1 text-[11px]", "aria-label": t("export_preview.accessibility.header_alignment") || "Header alignment" }, /* @__PURE__ */ React.createElement("option", { value: "left" }, "Align left"), /* @__PURE__ */ React.createElement("option", { value: "center" }, "Center"), /* @__PURE__ */ React.createElement("option", { value: "right" }, "Align right"))), /* @__PURE__ */ React.createElement("label", { className: "flex min-w-44 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Footer", /* @__PURE__ */ React.createElement("input", { value: pageElements.footerText, maxLength: 160, onChange: (event) => setPageElements((config) => ({ ...config, footerText: event.target.value })), placeholder: t("export_preview.accessibility.optional_footer") || "Optional footer", className: "h-7 min-w-24 flex-1 rounded border border-slate-400 bg-white px-1.5 text-[11px]", "aria-label": t("export_preview.accessibility.footer_text") || "Footer text" })), /* @__PURE__ */ React.createElement("label", { className: "flex items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Page numbers", /* @__PURE__ */ React.createElement("select", { value: pageElements.pageNumbers, onChange: (event) => setPageElements((config) => ({ ...config, pageNumbers: event.target.value })), className: "h-7 rounded border border-slate-400 bg-white px-1 text-[11px]", "aria-label": t("export_preview.accessibility.page_numbers") || "Page numbers" }, /* @__PURE__ */ React.createElement("option", { value: "none" }, "None"), /* @__PURE__ */ React.createElement("option", { value: "left" }, "Bottom left"), /* @__PURE__ */ React.createElement("option", { value: "center" }, "Bottom center"), /* @__PURE__ */ React.createElement("option", { value: "right" }, "Bottom right"))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => applyPageElements(), className: "h-7 rounded bg-indigo-700 px-2.5 text-[10px] font-bold text-white hover:bg-indigo-800" }, "Apply"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearPageElements, className: "h-7 rounded border border-slate-400 bg-white px-2 text-[10px] font-bold text-slate-700 hover:bg-red-50 hover:text-red-700" }, "Clear"), /* @__PURE__ */ React.createElement("span", { id: "builder-page-elements-help", className: "w-full text-[10px] text-slate-500" }, "Headers and footers repeat on printed and PDF pages; automatic page numbers update during print.")), /* @__PURE__ */ React.createElement("fieldset", { className: "flex min-w-80 flex-[1.15] flex-wrap items-center gap-1.5 rounded border border-slate-200 bg-slate-50 px-2 py-1", "aria-describedby": "builder-section-help" }, /* @__PURE__ */ React.createElement("legend", { className: "px-1 text-[10px] font-black uppercase tracking-wider text-slate-600" }, "Sections"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => jumpToDocumentSection(pageMetrics.activeSection - 1), disabled: pageMetrics.activeSection <= 0, className: "h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40", "aria-label": t("export_preview.accessibility.previous_section") || "Previous section" }, "\u2190"), /* @__PURE__ */ React.createElement("span", { className: "min-w-20 text-center text-[10px] font-bold text-slate-700", role: "status" }, "Section ", pageMetrics.activeSection + 1, " of ", pageMetrics.documentSections.length), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => jumpToDocumentSection(pageMetrics.activeSection + 1), disabled: pageMetrics.activeSection >= pageMetrics.documentSections.length - 1, className: "h-7 min-w-7 rounded border border-slate-300 bg-white px-1.5 text-[10px] font-bold text-slate-700 hover:bg-indigo-50 disabled:cursor-not-allowed disabled:opacity-40", "aria-label": t("export_preview.accessibility.next_section") || "Next section" }, "\u2192"), /* @__PURE__ */ React.createElement("label", { className: "flex min-w-48 flex-1 items-center gap-1 text-[10px] font-semibold text-slate-600" }, "Name", /* @__PURE__ */ React.createElement("input", { value: sectionNameDraft, maxLength: 80, onChange: (event) => setSectionNameDraft(event.target.value), onBlur: commitSectionName, onKeyDown: (event) => {
       if (event.key === "Enter") {
         event.preventDefault();
         event.currentTarget.blur();
@@ -10990,7 +11167,7 @@ ${pageCss}
     }, "aria-pressed": showNavigationPane && navigationPaneTab === "pages", "aria-controls": showNavigationPane ? "document-builder-navigation" : void 0, className: `h-7 rounded px-2 text-[10px] font-bold ${showNavigationPane && navigationPaneTab === "pages" ? "bg-slate-700 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}` }, "Pages"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
       setEditorZoomMode("custom");
       setEditorPageView((value) => !value);
-    }, "aria-pressed": editorPageView, className: `h-7 rounded px-2 text-[10px] font-bold ${editorPageView ? "bg-indigo-700 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`, title: editorPageView ? "Switch to continuous editor view" : "Switch to paper-like page view" }, editorPageView ? "Page view" : "Continuous"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => useEditorZoomPreset("fit-width"), "aria-pressed": editorZoomMode === "fit-width", className: `h-7 rounded border px-2 text-[10px] font-bold ${editorZoomMode === "fit-width" ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}` }, "Fit width"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => useEditorZoomPreset("fit-page"), "aria-pressed": editorZoomMode === "fit-page", className: `h-7 rounded border px-2 text-[10px] font-bold ${editorZoomMode === "fit-page" ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}` }, "Fit page"), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[9px] text-slate-500", role: "status", "aria-live": "polite" }, "Left ", paragraphLayout.leftIndent, " in \xB7 First ", paragraphLayout.firstLineIndent, " in \xB7 Right ", paragraphLayout.rightIndent, " in \xB7 ", editorZoomMode === "custom" ? `${editorZoom}%` : `${editorZoomMode === "fit-width" ? "Fit width" : "Fit page"} (${editorZoom}%)`)))), (toolSearchOpen || !ribbonCollapsed && activeRibbonTab === "expert") && /* @__PURE__ */ React.createElement("div", { id: "builder-ribbon-panel-expert", role: "tabpanel", "aria-labelledby": "builder-ribbon-tab-expert", className: "shrink-0" }, /* @__PURE__ */ React.createElement("p", { className: "bg-slate-900 px-3 py-1.5 text-[11px] leading-snug text-slate-300 border-b border-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-purple-200" }, "Expert Workbench."), " ", t("export_preview.workbench_help") || 'Describe a change in plain language and the assistant edits this document for you. For example: "make every heading a proper H2", "add alt text to the images", or "fix the color contrast in the table".'), /* @__PURE__ */ React.createElement("details", { open: true, className: "bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-600 group" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer px-2 py-1.5 flex items-center gap-2 list-none select-none hover:bg-slate-800/50" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block transition-transform group-open:rotate-90 text-slate-300 text-[10px]" }, "\u25B8"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-purple-200 font-bold shrink-0" }, isAgentRunning ? "\u{1F916} Agent" : "\u2328\uFE0F Command"), isAgentRunning && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-amber-300 animate-pulse motion-reduce:animate-none" }, "Running..."), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] text-slate-300" }, agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? "" : "s"}` : "idle")), /* @__PURE__ */ React.createElement("div", { className: "px-2 pb-1.5" }, /* @__PURE__ */ React.createElement("form", { className: "flex-1 flex gap-1", onSubmit: async (e) => {
+    }, "aria-pressed": editorPageView, className: `h-7 rounded px-2 text-[10px] font-bold ${editorPageView ? "bg-indigo-700 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`, title: editorPageView ? "Switch to continuous editor view" : "Switch to paper-like page view" }, editorPageView ? "Page view" : "Continuous"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => useEditorZoomPreset("fit-width"), "aria-pressed": editorZoomMode === "fit-width", className: `h-7 rounded border px-2 text-[10px] font-bold ${editorZoomMode === "fit-width" ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}` }, "Fit width"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => useEditorZoomPreset("fit-page"), "aria-pressed": editorZoomMode === "fit-page", className: `h-7 rounded border px-2 text-[10px] font-bold ${editorZoomMode === "fit-page" ? "border-indigo-700 bg-indigo-700 text-white" : "border-slate-400 bg-white text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}` }, "Fit page"), exportPreviewMode === "html" && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 rounded border border-slate-300 bg-white p-0.5", role: "group", "aria-label": t("export_preview.preview_interaction_mode") || "Preview interaction mode" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setInteractivePreviewMode(false), "aria-pressed": !interactivePreviewMode, className: `h-6 rounded px-2 text-[10px] font-bold ${!interactivePreviewMode ? "bg-indigo-700 text-white" : "text-slate-700 hover:bg-indigo-50 hover:text-indigo-700"}`, title: t("export_preview.edit_text_mode_title") || "Focus the preview and edit text directly" }, "\u270F\uFE0F Edit Text"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setInteractivePreviewMode(true), "aria-pressed": interactivePreviewMode, className: `h-6 rounded px-2 text-[10px] font-bold ${interactivePreviewMode ? "bg-emerald-700 text-white" : "text-slate-700 hover:bg-emerald-50 hover:text-emerald-700"}`, title: t("export_preview.test_interactive_mode_title") || "Test interactive elements like quizzes and audio" }, "\u25B6\uFE0F Test Interactive")), exportConfig?.includeTeacherKey === true && /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-0.5 rounded border border-slate-300 bg-white p-0.5", role: "group", "aria-label": t("export_preview.audience_filter_label") || "Preview audience filter" }, [["all", "All"], ["student", "Student Copy"], ["teacher", "Teacher Key"]].map(([filterVal, filterLabel]) => /* @__PURE__ */ React.createElement("button", { key: filterVal, type: "button", onClick: () => setBuilderViewFilter(filterVal), "aria-pressed": builderViewFilter === filterVal, className: `h-6 rounded px-2 text-[10px] font-bold ${builderViewFilter === filterVal ? "bg-slate-800 text-white" : "text-slate-700 hover:bg-slate-100"}` }, filterLabel))), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[9px] text-slate-500", role: "status", "aria-live": "polite" }, "Left ", paragraphLayout.leftIndent, " in \xB7 First ", paragraphLayout.firstLineIndent, " in \xB7 Right ", paragraphLayout.rightIndent, " in \xB7 ", editorZoomMode === "custom" ? `${editorZoom}%` : `${editorZoomMode === "fit-width" ? "Fit width" : "Fit page"} (${editorZoom}%)`)))), (toolSearchOpen || !ribbonCollapsed && activeRibbonTab === "expert") && /* @__PURE__ */ React.createElement("div", { id: "builder-ribbon-panel-expert", role: "tabpanel", "aria-labelledby": "builder-ribbon-tab-expert", className: "shrink-0" }, /* @__PURE__ */ React.createElement("p", { className: "bg-slate-900 px-3 py-1.5 text-[11px] leading-snug text-slate-300 border-b border-slate-700" }, /* @__PURE__ */ React.createElement("span", { className: "font-bold text-purple-200" }, "Expert Workbench."), " ", t("export_preview.workbench_help") || 'Describe a change in plain language and the assistant edits this document for you. For example: "make every heading a proper H2", "add alt text to the images", or "fix the color contrast in the table".'), /* @__PURE__ */ React.createElement("details", { open: true, className: "bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-600 group" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer px-2 py-1.5 flex items-center gap-2 list-none select-none hover:bg-slate-800/50" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block transition-transform group-open:rotate-90 text-slate-300 text-[10px]" }, "\u25B8"), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-purple-200 font-bold shrink-0" }, isAgentRunning ? "\u{1F916} Agent" : "\u2328\uFE0F Command"), isAgentRunning && /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-amber-300 animate-pulse motion-reduce:animate-none" }, "Running..."), /* @__PURE__ */ React.createElement("span", { className: "ml-auto text-[10px] text-slate-300" }, agentActivityLog.length > 0 ? `${agentActivityLog.length} event${agentActivityLog.length === 1 ? "" : "s"}` : "idle")), /* @__PURE__ */ React.createElement("div", { className: "px-2 pb-1.5" }, /* @__PURE__ */ React.createElement("form", { className: "flex-1 flex gap-1", onSubmit: async (e) => {
       e.preventDefault();
       if (!expertCommandInput.trim() || isAgentRunning) return;
       const cmd = expertCommandInput.trim();
@@ -11579,6 +11756,30 @@ async function updateExportPreview(deps) {
   const iframe = exportPreviewRef.current;
   const doc = iframe.contentDocument || iframe.contentWindow?.document;
   if (!doc) return;
+  const _snapshotRenderState = () => {
+    const mode = deps.exportPreviewMode !== void 0 ? deps.exportPreviewMode : iframe.__alloPendingLiveState?.mode;
+    const theme = deps.exportTheme !== void 0 ? deps.exportTheme : iframe.__alloPendingLiveState?.theme;
+    const rawCfg = deps.exportConfig !== void 0 ? deps.exportConfig : iframe.__alloPendingLiveState?.config;
+    const config = rawCfg && typeof rawCfg === "object" ? { ...rawCfg } : rawCfg;
+    return { mode, theme, config };
+  };
+  const _rb = iframe.__alloRollingBackState;
+  if (_rb && _rb.until >= Date.now()) {
+    const _cur = _snapshotRenderState();
+    if (_cur.mode === _rb.mode && _cur.theme === _rb.theme && JSON.stringify(_cur.config ?? null) === JSON.stringify(_rb.config ?? null)) {
+      delete iframe.__alloRollingBackState;
+      return;
+    }
+  }
+  const _triggerKeepEditsRollback = () => {
+    const _rollback = typeof deps.onKeepEditsRollback === "function" ? deps.onKeepEditsRollback : iframe.__alloKeepEditsRollback;
+    if (typeof _rollback === "function" && iframe.__alloLastRenderedState) {
+      try {
+        _rollback(iframe.__alloLastRenderedState);
+      } catch (_) {
+      }
+    }
+  };
   const _refreshRequest = (iframe.__alloPreviewRefreshRequest || 0) + 1;
   iframe.__alloPreviewRefreshRequest = _refreshRequest;
   try {
@@ -11589,6 +11790,7 @@ async function updateExportPreview(deps) {
         const _dialogModule = typeof window !== "undefined" && window.AlloModules && window.AlloModules.ConfirmDialog && window.AlloModules.ConfirmDialog.ConfirmDialog;
         if (typeof _uxConfirm !== "function" || typeof _dialogModule !== "function") {
           addToast && addToast(t("toasts.builder_confirmation_unavailable") || "Kept your manual edits because the confirmation dialog is not ready. Try again in a moment.", "info");
+          _triggerKeepEditsRollback();
           return;
         }
         let _requestedConfirmation = false;
@@ -11614,11 +11816,13 @@ async function updateExportPreview(deps) {
       if (exportPreviewRef.current !== iframe || iframe.__alloPreviewRefreshRequest !== _refreshRequest) return;
       if (!_proceed) {
         addToast && addToast(t("toasts.builder_edits_preserved") || "Kept your manual edits - the preview was not re-rendered. Export or close the builder to save them, then change settings.", "info");
+        _triggerKeepEditsRollback();
         return;
       }
     }
   } catch (_) {
     addToast && addToast(t("toasts.builder_edits_preserved") || "Kept your manual edits because confirmation could not be completed.", "info");
+    _triggerKeepEditsRollback();
     return;
   }
   let html;
@@ -11635,14 +11839,20 @@ async function updateExportPreview(deps) {
     const escapedMsg = msg.replace(/[<>&]/g, (c) => ({ "<": "&lt;", ">": "&gt;", "&": "&amp;" })[c]);
     html = `<!DOCTYPE html><html><body data-allo-preview-error="1" style="font-family:system-ui;padding:2rem;color:#991b1b;background:#fef2f2"><h2>Preview error</h2><pre style="white-space:pre-wrap;font-size:12px">${escapedMsg}</pre><p style="font-size:12px;color:#7f1d1d;margin-top:1rem">If this persists, the CDN-loaded doc pipeline likely needs a redeploy with the latest fix.</p></body></html>`;
   }
+  try {
+    if (iframe.contentWindow) iframe.contentWindow.__alloflowBuilderPreview = true;
+  } catch (_) {
+  }
   doc.open();
   doc.write(html);
   doc.close();
+  iframe.__alloLastRenderedState = _snapshotRenderState();
   iframe.dispatchEvent?.(new Event("alloflow-builder-document-written"));
   iframe.__alloInitializeBuilderDocument = (doc2) => {
     try {
-      doc2.designMode = "on";
-      if (doc2.body) doc2.body.spellcheck = true;
+      const _interactive = deps.interactivePreviewMode !== void 0 ? !!deps.interactivePreviewMode : !!iframe.__alloInteractivePreviewMode;
+      doc2.designMode = _interactive ? "off" : "on";
+      if (doc2.body) doc2.body.spellcheck = !_interactive;
       const _wireBuilderCropImage = (img) => {
         if (!img || img.hasAttribute("data-allo-crop-tabindex-added")) return;
         const hadTabindex = img.hasAttribute("tabindex");

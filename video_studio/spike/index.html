@@ -3,6 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' blob: data: 'unsafe-inline'; object-src 'none'; base-uri 'none'; form-action 'self'">
 <title>Storyboard Render Spike</title>
 <link rel="icon" href="data:,">
 <style>
@@ -60,7 +62,10 @@ const $ = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
 let controller = null;
 
-function row(k, v, good) { return '<tr><th scope="row">' + k + '</th><td class="' + (good === true ? 'ok' : good === false ? 'bad' : '') + '">' + v + '</td></tr>'; }
+function escHtml(s) {
+  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+function row(k, v, good) { return '<tr><th scope="row">' + escHtml(k) + '</th><td class="' + (good === true ? 'ok' : good === false ? 'bad' : '') + '">' + escHtml(v) + '</td></tr>'; }
 async function showSupport() {
   const s = await probeSupport();
   window.__support = s;
@@ -71,7 +76,7 @@ async function showSupport() {
     for (const c of Object.keys(s.audio)) h += row('Encode audio ' + c, String(s.audio[c]), s.audio[c] === true);
     h += row('MP4 subtitle codecs', (s.mp4Subtitle || []).join(', ') || 'none');
   }
-  $('support').innerHTML = h + '</table><p style="color:var(--muted);margin:6px 0 0">' + s.userAgent + '</p>';
+  $('support').innerHTML = h + '</table><p style="color:var(--muted);margin:6px 0 0">' + escHtml(s.userAgent) + '</p>';
 }
 
 async function run() {

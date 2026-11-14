@@ -19,9 +19,10 @@
     left_the_page: 'left the page for more than 3 seconds',
     clock_changed: 'the device clock was set back',
     reloaded: 'the page was reloaded',
-    // 2026-11-13: two flags a check writes from today (word_sounds_take_home_loader.js).
+    // 2026-11-13: three flags a check writes from today (word_sounds_take_home_loader.js).
     time_up_away: 'the time ran out while the page was hidden or closed, so there is no score',
     two_tabs: 'the check was open in two tabs or windows while it ran',
+    attempt_unknown: 'that browser could not keep the count of tries, so the try number may be wrong',
     stopped_early: 'stopped early, so there is no score',
     no_time_limit: 'no time limit, so there is no score per minute',
     too_fast: 'finished in under 20 seconds, so there is no score',

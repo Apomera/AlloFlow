@@ -1,4 +1,4 @@
-// "Open a practice file" (packets-open.html): a practice file or a check, run on a phone or a tablet, where a saved
+// "Open a practice file or check" (packets-open.html): a practice file or a check, run on a phone or a tablet, where a saved
 // .html file is shown as a preview that runs no script. The file is read in this tab (packets_verify_core.js,
 // readParts, tells a packet from anything else) and runs in a sandboxed frame: scripts and downloads only, no
 // allow-same-origin, so it runs on an origin of its own and cannot reach this site's storage (My words, the makers'
@@ -33,8 +33,8 @@
   var MAKERS = {
     words: { href: 'packets-make.html', name: 'Make Word Sounds practice', reopens: true },
     vocab: { href: 'packets-vocab.html', name: 'Make vocabulary practice', reopens: true },
-    math: { href: 'packets-math-practice.html', name: 'Make math fact practice', reopens: false },
-    check: { href: 'packets-check.html', name: 'Make a math check', reopens: false },
+    math: { href: 'packets-math-practice.html', name: 'Make math fact practice', reopens: true },
+    check: { href: 'packets-check.html', name: 'Make a math check', reopens: true },
   };
 
   var verify = null, handoff = null;

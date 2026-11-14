@@ -7228,6 +7228,188 @@ function _quizKeepUnchangedKeyChecks(original, repaired) {
     } : {}) : clean;
   });
 }
+var _QUIZ_STOP_WORDS = function () {
+  var map = {};
+  ('a an the of to and or in on at for with by from that which who whom is are was were be been being it its as this these those your you ' + 'they their them he she his her we our us something someone somebody thing things kind type sort way used use very can could may ' + 'not no do does did has have had one some any such so if when where than then into out up about over').split(' ').forEach(function (w) {
+    map[w] = true;
+  });
+  return map;
+}();
+function _quizCleanLine(value) {
+  var s = String(value == null ? '' : value);
+  return (s.normalize ? s.normalize('NFC') : s).replace(/\s+/g, ' ').trim();
+}
+function _quizContentWords(value) {
+  var s = _quizCleanLine(value).toLowerCase().replace(/[’']/g, '');
+  try {
+    s = s.replace(/[^\p{L}\p{N}]+/gu, ' ');
+  } catch (_) {
+    s = s.replace(/[^a-z0-9]+/g, ' ');
+  }
+  return s.split(' ').filter(function (w) {
+    return w && !_QUIZ_STOP_WORDS[w];
+  }).map(function (w) {
+    return w.length > 3 ? w.replace(/(?:es|s)$/, '') : w;
+  });
+}
+function _quizCloseMeaning(a, b) {
+  var la = _quizCleanLine(a).toLowerCase(),
+    lb = _quizCleanLine(b).toLowerCase();
+  if (!la || !lb) return false;
+  if (la === lb) return true;
+  var x = _quizContentWords(a),
+    y = _quizContentWords(b);
+  if (!x.length || !y.length) return false;
+  if (x.join(' ') === y.join(' ')) return true;
+  var A = {},
+    B = {},
+    inter = 0,
+    union = 0;
+  x.forEach(function (w) {
+    A[w] = true;
+  });
+  y.forEach(function (w) {
+    B[w] = true;
+  });
+  Object.keys(A).forEach(function (w) {
+    union++;
+    if (B[w]) inter++;
+  });
+  Object.keys(B).forEach(function (w) {
+    if (!A[w]) union++;
+  });
+  var small = Math.min(Object.keys(A).length, Object.keys(B).length);
+  return union > 0 && inter / union >= 0.6 || small >= 2 && inter === small;
+}
+function _quizHasWord(sentence, word) {
+  var w = _quizCleanLine(word).toLowerCase().replace(/’/g, "'");
+  if (!w) return false;
+  var esc = w.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  try {
+    return new RegExp('(^|[^\\p{L}\\p{M}])' + esc + '(?![\\p{L}\\p{M}])', 'iu').test(String(sentence == null ? '' : sentence));
+  } catch (_) {
+    return new RegExp('\\b' + esc + '\\b', 'i').test(String(sentence == null ? '' : sentence));
+  }
+}
+function _quizSameFamily(a, b) {
+  var x = _quizCleanLine(a).toLowerCase().replace(/’/g, "'");
+  var y = _quizCleanLine(b).toLowerCase().replace(/’/g, "'");
+  if (!x || !y) return false;
+  if (x === y || x + 's' === y || y + 's' === x) return true;
+  var short = x.length <= y.length ? x : y,
+    long = short === x ? y : x;
+  return short.length >= 3 && /^[a-z]+$/.test(long) && long.indexOf(short) === 0;
+}
+function _quizArticleOnset(text) {
+  var clean = _quizCleanLine(text).replace(/^[\s"'“”‘’([{-]+/, '');
+  var first = (clean.split(/\s+/)[0] || '').replace(/[^A-Za-z'-]/g, '');
+  if (!first || !/^[A-Za-z]/.test(first)) return '';
+  if (/^(?:hour|honest|honor|honour|heir)\b/i.test(first)) return 'vowel';
+  if (/^(?:unit|unif|unio|uniq|univ|unic|unis|use\b|used\b|user|usual|usurp|utensil|util|one\b|once\b|eu[a-z])/i.test(first)) return 'consonant';
+  return /^[aeiou]/i.test(first) ? 'vowel' : 'consonant';
+}
+function _quizBlankArticle(stem) {
+  var s = String(stem == null ? '' : stem);
+  var m;
+  try {
+    m = /(?:^|[^\p{L}\p{M}])(an?)\s+(?:_{2,}|\[blank\]|\(\s*\))/iu.exec(s);
+  } catch (_) {
+    m = /(?:^|\W)(an?)\s+(?:_{2,}|\[blank\]|\(\s*\))/i.exec(s);
+  }
+  return m ? m[1].toLowerCase() : '';
+}
+function _quizFnv32(seed) {
+  var str = String(seed == null ? '' : seed);
+  var h = 2166136261 >>> 0;
+  for (var i = 0; i < str.length; i++) {
+    h ^= str.charCodeAt(i);
+    h = Math.imul(h, 16777619) >>> 0;
+  }
+  return h >>> 0;
+}
+function _quizBalancedDistractors(answerText, pool, count, seed) {
+  var wantCount = Math.min(count, pool.length);
+  if (wantCount <= 0) return [];
+  if (pool.length <= wantCount) return pool.slice();
+  var top = pool.slice(0, 8);
+  if (top.length <= wantCount) return top.slice();
+  var size = _quizCleanLine(answerText).length || 1;
+  if (wantCount === 3) {
+    var wantShorter = _quizFnv32(seed) % 4;
+    var best = null,
+      bestScore = Infinity;
+    for (var i = 0; i < top.length; i++) {
+      for (var j = i + 1; j < top.length; j++) {
+        for (var k = j + 1; k < top.length; k++) {
+          var trio = [top[i], top[j], top[k]];
+          var shorter = trio.filter(function (c) {
+            return _quizCleanLine(c).length < size;
+          }).length;
+          var near = trio.reduce(function (n, c) {
+            return n + Math.abs(_quizCleanLine(c).length - size);
+          }, 0);
+          var outlier = trio.reduce(function (n, c) {
+            var len = _quizCleanLine(c).length;
+            return n + (len > size * 2.2 || len < size * 0.4 ? 4000 : 0);
+          }, 0);
+          var score = Math.abs(shorter - wantShorter) * 1000 + outlier + (i + j + k) * 10 + near / 10;
+          if (score < bestScore) {
+            bestScore = score;
+            best = trio;
+          }
+        }
+      }
+    }
+    return best || top.slice(0, 3);
+  }
+  return top.map(function (c, idx) {
+    return {
+      c: c,
+      idx: idx,
+      diff: Math.abs(_quizCleanLine(c).length - size)
+    };
+  }).sort(function (a, b) {
+    return a.diff - b.diff || a.idx - b.idx;
+  }).slice(0, wantCount).map(function (p) {
+    return p.c;
+  });
+}
+function _quizSelectVocabDistractors(correct, candidates, opts) {
+  var o = opts || {};
+  var maxCount = typeof o.count === 'number' && o.count > 0 ? o.count : 3;
+  var stem = String(o.stem || '');
+  var targetWord = String(o.targetWord || '');
+  var seed = String(o.seed || targetWord + '|' + correct);
+  var ans = _quizCleanLine(correct);
+  var seen = {};
+  if (ans) seen[ans.toLowerCase()] = true;
+  var unique = [];
+  (Array.isArray(candidates) ? candidates : []).forEach(function (c) {
+    var line = _quizCleanLine(typeof c === 'string' ? c : c && (c.text || c.def || c.word));
+    var key = line.toLowerCase();
+    if (!line || seen[key]) return;
+    seen[key] = true;
+    unique.push(line);
+  });
+  if (!unique.length) return [];
+  var nonSynonyms = unique.filter(function (c) {
+    return !_quizCloseMeaning(c, ans);
+  });
+  var working = nonSynonyms.length > 0 ? nonSynonyms : unique;
+  var wantCount = Math.min(maxCount, working.length);
+  var article = _quizBlankArticle(stem);
+  var expectedOnset = _quizArticleOnset(ans) || (article === 'an' ? 'vowel' : article === 'a' ? 'consonant' : '');
+  var clean = [];
+  var fallback = [];
+  working.forEach(function (c) {
+    var selfNamed = targetWord && _quizHasWord(c, targetWord);
+    var sameFam = !/\s/.test(ans) && !/\s/.test(c) && _quizSameFamily(ans, c);
+    var badArticle = !!(article && expectedOnset && _quizArticleOnset(c) && _quizArticleOnset(c) !== expectedOnset);
+    if (selfNamed || sameFam || badArticle) fallback.push(c);else clean.push(c);
+  });
+  if (clean.length >= wantCount) return _quizBalancedDistractors(ans, clean, wantCount, seed);
+  return clean.concat(fallback).slice(0, wantCount);
+}
 function _quizLengthRankIndex(options, keyIndex) {
   var lengths = options.map(function (option) {
     return _quizNormChoice(option).length;
@@ -7274,6 +7456,56 @@ function _quizAnswerCueIssues(questions, copy) {
       code: 'absolute-distractor',
       message: tr('quiz.key_quality.absolute_distractor', 'Absolute words (always, never, only, every) appear only in wrong options, which signals they are wrong.')
     });
+    var keyText = _quizCleanLine(options[keyIndex]);
+    if (_quizContentWords(keyText).length >= 2) {
+      var hasCloseDistractor = options.some(function (option, i) {
+        if (i === keyIndex) return false;
+        var wText = _quizCleanLine(option);
+        return wText.toLowerCase() !== keyText.toLowerCase() && _quizContentWords(wText).length >= 2 && _quizCloseMeaning(wText, keyText);
+      });
+      if (hasCloseDistractor) issues.push({
+        questionIdx: index,
+        severity: 'warning',
+        code: 'close-meaning-option',
+        message: tr('quiz.key_quality.close_meaning', 'A wrong option has nearly the same meaning as the correct answer, which can create two defensible keys.')
+      });
+    }
+    var stemArticle = _quizBlankArticle(q.question);
+    var keyOnset = stemArticle ? _quizArticleOnset(keyText) : '';
+    if (stemArticle && keyOnset) {
+      var hasArticleMismatch = options.some(function (option, i) {
+        if (i === keyIndex) return false;
+        var onset = _quizArticleOnset(option);
+        return !!onset && onset !== keyOnset;
+      });
+      if (hasArticleMismatch) issues.push({
+        questionIdx: index,
+        severity: 'warning',
+        code: 'article-cue-option',
+        message: tr('quiz.key_quality.article_cue', 'An "a" or "an" before the blank does not fit every option, so students can rule out wrong choices by grammar.')
+      });
+    }
+    if (options.length >= 3) {
+      var wrongLens = options.filter(function (_, i) {
+        return i !== keyIndex;
+      }).map(function (opt) {
+        return _quizCleanLine(opt).length;
+      }).filter(function (len) {
+        return len > 0;
+      });
+      if (wrongLens.length >= 2) {
+        var maxWrong = Math.max.apply(null, wrongLens),
+          minWrong = Math.min.apply(null, wrongLens);
+        if (keyText.length >= 24 && keyText.length >= maxWrong * 2.2 || minWrong >= 24 && keyText.length > 0 && keyText.length <= minWrong * 0.4) {
+          issues.push({
+            questionIdx: index,
+            severity: 'warning',
+            code: 'option-length-outlier',
+            message: tr('quiz.key_quality.length_outlier', 'The correct option stands out sharply in length from the wrong options. Make choices similar in length and detail.')
+          });
+        }
+      }
+    }
     var keyed = [[options, keyIndex]];
     if (type === 'answer-evidence' && Array.isArray(q.evidenceOptions)) {
       var evidenceKeys = _quizKeyIndexes(q.evidenceOptions, [q.correctEvidence]);
@@ -15505,6 +15737,10 @@ QuizView.keyQuality = Object.freeze({
   releaseKeyVersion: _quizReleaseKeyVersion,
   applyReleasedKeys: _quizApplyReleasedKeys,
   answerCueIssues: _quizAnswerCueIssues,
+  closeMeaning: _quizCloseMeaning,
+  articleOnset: _quizArticleOnset,
+  blankArticle: _quizBlankArticle,
+  selectVocabDistractors: _quizSelectVocabDistractors,
   auditAssessment: function (data, auditOptions) {
     return _quizAuditAssessment(_quizCanonicalContent({
       data: data

@@ -39,7 +39,7 @@ module.exports = {
     word_families_choose_option: 'Choose option {n}',
     word_families_choose_word: 'Choose {word}',
     word_families_option_n: 'Option {n}',
-    word_families_hear_all: 'Hear all words',
+    word_families_hear_all: 'Hear all',
     word_families_found_mark: '(found)',
     word_families_answer_mark: '(in the family)',
     word_families_match: 'Yes, that one is in the family! {found} of {total} found.',

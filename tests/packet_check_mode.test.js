@@ -442,7 +442,8 @@ describe('the finish screen', () => {
     // The practice finish line is not there.
     expect(shown).not.toContain('Right on the first try');
     const blob = t.saveCsv();
-    expect(blob.name).toMatch(/^Math-Fluency-check-3A__Ana__\d{4}-\d{2}-\d{2}\.csv$/);
+    // 2026-11-14 (T1/makers2): PC.formTitle writes out the grade and version ("Math Fluency, grade 3, version A").
+    expect(blob.name).toMatch(/^Math-Fluency-grade-3-version-A__Ana__\d{4}-\d{2}-\d{2}\.csv$/);
     // 2026-11-13 (engine fixes): a download cannot be seen to finish, so the file says the browser is saving it.
     expect(t.text()).toContain('Your browser is saving ' + blob.name + '.');
   });
@@ -839,8 +840,9 @@ describe('the results of a check', () => {
     const possible = item.reduce((sum, p) => sum + String(p.answer).length, 0);
     // 2026-11-13: then the time on the items (activeMs, the items' ms added up), a file saved from then on.
     expect(file.activeMs).toBe(file.items.reduce((n, it) => n + it.ms, 0));
-    expect(rows[27]).toEqual(['#summary', file.sessionId, 'items_given=25', 'attempted=25', 'correct=23', 'first_try=23', 'accuracy_pct=92', 'attempt=1', 'title=Math Fluency check (3A)', 'active_s=' + Math.round(file.activeMs / 1000)]);
-    expect(file.lessonTitle).toBe('Math Fluency check (3A)');
+    // 2026-11-14 (T1/makers2): PC.formTitle writes out the grade and version ("Math Fluency, grade 3, version A").
+    expect(rows[27]).toEqual(['#summary', file.sessionId, 'items_given=25', 'attempted=25', 'correct=23', 'first_try=23', 'accuracy_pct=92', 'attempt=1', 'title=Math Fluency, grade 3, version A', 'active_s=' + Math.round(file.activeMs / 1000)]);
+    expect(file.lessonTitle).toBe('Math Fluency, grade 3, version A');
     expect(rows[28]).toEqual(['#score', file.sessionId, 'measure=math_dcpm', 'score=' + Math.round(digits / (25 / 60)), 'score_unit=digits_correct_per_minute', 'digits_correct=' + digits, 'digits_possible=' + possible,
       'items_correct=23', 'items_attempted=25', 'time_limit_s=120', 'elapsed_s=25', 'hidden_s=0', 'completion=complete', 'prorated=1', 'scoring_version=3', 'form_version=2', 'attempt=1', 'flags=',
       // Re-pinned 2026-11-12: the last cell names the reading tools on during a scored item (none here); the row is outside the integrity value.
@@ -1049,7 +1051,8 @@ describe('the score: the app\'s proration rules', () => {
 
 describe('each measure plays to a saved file, on a real form', () => {
   it('Quantity Discrimination, kindergarten form A: 60 s, items correct', () => {
-    expect([QD.lessonId, QD.form, QD.timeLimitS, QD.title, QD.check]).toEqual(['quantity-discrimination-gk', 'A', 60, 'Quantity Discrimination check (KA)',
+    // 2026-11-14 (T1/makers2): PC.formTitle writes out "Quantity Discrimination, kindergarten, version A".
+    expect([QD.lessonId, QD.form, QD.timeLimitS, QD.title, QD.check]).toEqual(['quantity-discrimination-gk', 'A', 60, 'Quantity Discrimination, kindergarten, version A',
       { measure: 'quantity_discrimination', scoreUnit: 'items_correct', scoringVersion: 1, formVersion: BANK.QUANTITY_DISCRIMINATION_PROBES.K.A.version, allowSkip: false, grade: 'K' }]);
     const t = open(FILES.qd.html);
     t.run(QD, 'Blue Heron');
@@ -1220,7 +1223,8 @@ describe('the same inputs make the same bytes', () => {
     expect(named.manifest.title).toBe('Friday facts');
     expect(named.manifest.packet).toMatchObject({ id: 'math-computation-g3', form: 'A', mode: 'check' });
     expect(named.manifest.packet.version).not.toBe(FILES.mc.manifest.packet.version);
-    expect(MC.title).toBe('Math Fluency check (3A)');
+    // 2026-11-14 (T1/makers2): PC.formTitle writes out "Math Fluency, grade 3, version A".
+    expect(MC.title).toBe('Math Fluency, grade 3, version A');
   });
 });
 
@@ -1364,6 +1368,9 @@ describe('practice files are as they were', () => {
   // (sound_failed) and a clip with no progress settling after 5 s, Hear all never left on Stop, #live cleared by screen(),
   // the place read again at Start, primary buttons printed in the text color, and four new words in the labels line.
   // The lesson is unchanged. The two lists are empty.
+  // Renewed 2026-11-14 (T1 + @i18n P2, C:/tmp/packets_build_1111/T1/pin_diff.json), deliberately, by the recipe above:
+  // DEFAULT_LABELS adds done_activity ('{first} of {total}') and renderFinish uses it on per-activity .tally rows (2 lines
+  // out and 2 in). The lesson is unchanged. The two lists are empty.
   const REMOVED = [];
   const ADDED = [];
   it('byte for byte, but for the listed lines', () => {

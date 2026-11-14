@@ -19,7 +19,7 @@ module.exports = {
     blending_prompt: 'Blend these sounds together!',
     blending_question: 'Which word did you hear?',
     blending_hear_sounds: 'Hear the sounds',
-    blending_play_all: 'Play all the words',
+    blending_play_all: 'Hear all',
     blending_option_n: 'Option {n}',
     blending_listen: 'Listen',
     blending_listen_option: 'Listen to option {n}',

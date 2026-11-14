@@ -148,13 +148,14 @@ describe('Word Sounds setup passes its current voice and language', () => {
     const AsyncFunction = Object.getPrototypeOf(async function () {}).constructor;
     const issueRequest = new AsyncFunction(
       'generationVoiceRef', 'callTTS', 'text', 'speedForTts', 'wordSoundsLanguage',
-      'awaitGeneration', 'signal', 'isGenerationActive',
+      'awaitGeneration', 'signal', 'isGenerationActive', 'notWordTasks',
       SETUP_SOURCE.slice(start, end),
     );
     const requests = [];
     const voice = { current: 'Kore' };
     const record = async (...args) => { requests.push(args); return 'blob:prepared-test-audio'; };
-    const run = text => issueRequest(voice, record, text, 1, 'English', promise => promise, undefined, () => true);
+    // Words get Kokoro's word recipe; syllable units and instruction parts (notWordTasks) do not.
+    const run = text => issueRequest(voice, record, text, 1, 'English', promise => promise, undefined, () => true, new Set(['retry word']));
     await run('first word');
     voice.current = 'af_heart';
     await run('retry word');
@@ -163,5 +164,7 @@ describe('Word Sounds setup passes its current voice and language', () => {
     expect(requests[1][1]).toBe('af_heart');
     expect(requests[1][3].allowProviderFallback).toBe(false);
     expect(requests[1][3].language).toBe('English');
+    expect(requests[0][3].word).toBe(true);
+    expect(requests[1][3].word).toBe(false);
   });
 });

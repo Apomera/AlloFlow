@@ -115,7 +115,8 @@ async function validate(filePath,options={}) {
   const envTimeout=Number(process.env.ALLOFLOW_MCP_EPUB_VALIDATION_TIMEOUT_MS);
   const timeoutMs=Number.isSafeInteger(o.timeoutMs)&&o.timeoutMs>0?o.timeoutMs:Number.isSafeInteger(envTimeout)&&envTimeout>0?envTimeout:600000;
   const snapshot=path.join(scratch,'document.epub'),checks={},files={};
-  const env={...process.env};for(const key of ['GEMINI_API_KEY','GOOGLE_API_KEY','OPENAI_API_KEY'])delete env[key];
+  const env={...process.env};
+  for(const key of Object.keys(env)){if(/(?:API_KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE_KEY)/i.test(key)||['NODE_OPTIONS','JAVA_TOOL_OPTIONS','_JAVA_OPTIONS','JDK_JAVA_OPTIONS'].includes(key))delete env[key];}
   const signal=o.signal,log=o.onLog||(()=>{});
   const readJson=p=>{if(fs.statSync(p).size>64*1024*1024)throw Error('Validator report exceeded 64 MB.');return JSON.parse(fs.readFileSync(p,'utf8'));};
   const save=(role,name,source)=>{if(o.claimPath&&fs.existsSync(source)){const dest=o.claimPath(name);fs.copyFileSync(source,dest);files[role]=dest;}};

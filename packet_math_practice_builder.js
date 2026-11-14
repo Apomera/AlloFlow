@@ -30,7 +30,7 @@
   };
   var OPS = { add: 'add', '+': 'add', sub: 'sub', '-': 'sub', mul: 'mul', x: 'mul', X: 'mul', '*': 'mul', div: 'div', '/': 'div', ':': 'div' };
   OPS[String.fromCharCode(0x2212)] = 'sub'; OPS[String.fromCharCode(0xD7)] = 'mul'; OPS[String.fromCharCode(0xF7)] = 'div';
-  var OP_NAMES = { add: 'Addition', mul: 'Multiplication' };
+  var OP_NAMES = { add: 'Addition', sub: 'Subtraction', mul: 'Multiplication', div: 'Division' };
 
   function text(value) { return value == null ? '' : String(value); }
   function own(object, key) { return !!object && Object.prototype.hasOwnProperty.call(object, key); }
@@ -44,6 +44,14 @@
   function keyOf(f) { return f.op + ':' + f.a + ':' + f.b; }
   // The same fact with its two numbers swapped (3 + 7 for 7 + 3). Only + and × have one.
   function turnaround(f) { return f.op === 'add' || f.op === 'mul' ? fact(f.b, f.a, f.op) : null; }
+  // The other take-away of the same fact family (7 − 3 for 7 − 4; 56 ÷ 7 for 56 ÷ 8). Only − and ÷ have one; a fact
+  // that is its own (8 − 4, 0 ÷ 5) has none. Used only for which facts the teaching order counts as known (knownByOrder):
+  // a student who knows 14 ÷ 2 = 7 knows the fact family of 14 ÷ 7. 2026-11-13.
+  function related(f) {
+    if (f.op === 'sub') return f.a - f.b !== f.b ? fact(f.a, f.a - f.b, 'sub') : null;
+    if (f.op === 'div') return f.a > 0 && f.b > 0 && f.a / f.b !== f.b ? fact(f.a, f.a / f.b, 'div') : null;
+    return null;
+  }
   // A fixed mix of a list: the same seed text gives the same order (xorshift32 seeded by FNV-1a).
   function mixed(list, seed) {
     var s = parseInt(fnv(seed), 16) || 1;
@@ -82,10 +90,42 @@
     mul('mul-1-0', x + ' 1 and ' + x + ' 0', '1 ' + x + ' 1 to 1 ' + x + ' 10, and 0 ' + x + ' 1 to 0 ' + x + ' 10.', times(1).concat(times(0)));
     mul('mul-squares', 'Squares', 'A number times itself, 1 ' + x + ' 1 to 10 ' + x + ' 10.', range(1, 10).map(function (n) { return fact(n, n, 'mul'); }), 'Square facts');
     [3, 4, 9, 6, 7, 8].forEach(function (n) { mul('mul-' + n, x + ' ' + n, n + ' ' + x + ' 1 to ' + n + ' ' + x + ' 10.', times(n)); });
+    // 2026-11-13 (owner-approved): subtraction and division, as the related facts of the sets above, in the same
+    // order: each subtraction set takes apart the addition set of the same name (7 + 3 = 10 gives 10 − 3 and 10 − 7),
+    // each division set undoes a multiplication set (2 × 7 = 14 gives 14 ÷ 2). The app's Math Fluency practice sets are
+    // "within 10" and "within 20" for subtraction and "facts through 10" for division: the last two subtraction sets are
+    // within 10 and within 20, and the division sets together are every fact to 100 ÷ 10. Titles name the operation
+    // where a set's name is the same as an addition or multiplication set's, so results files never share a name.
+    var minus = String.fromCharCode(0x2212), divide = String.fromCharCode(0xF7);
+    var sub = function (id, name, line, facts, title) { rows.push({ id: id, op: 'sub', name: name, title: title || name + ' facts', line: line, facts: facts }); };
+    var div = function (id, name, line, facts, title) { rows.push({ id: id, op: 'div', name: name, title: title || name + ' facts', line: line, facts: facts }); };
+    sub('sub-0-1', minus + ' 0 and ' + minus + ' 1', 'Taking away 0 or 1, like 6 ' + minus + ' 0 and 7 ' + minus + ' 1.',
+      range(0, 9).map(function (n) { return fact(n, 0, 'sub'); }).concat(range(1, 10).map(function (n) { return fact(n, 1, 'sub'); })));
+    sub('sub-doubles', 'Doubles', 'A double taken apart, 2 ' + minus + ' 1 to 18 ' + minus + ' 9.', range(1, 9).map(function (n) { return fact(2 * n, n, 'sub'); }), 'Subtraction doubles facts');
+    sub('sub-from-10', 'From 10', 'Taking away from 10, 10 ' + minus + ' 1 to 10 ' + minus + ' 9.', range(1, 9).map(function (n) { return fact(10, n, 'sub'); }), 'Facts from 10');
+    var nearDown = [];
+    range(1, 8).forEach(function (n) { nearDown.push(fact(2 * n + 1, n, 'sub'), fact(2 * n + 1, n + 1, 'sub')); });
+    sub('sub-near-doubles', 'Near doubles', 'A near double taken apart, like 7 ' + minus + ' 3 and 7 ' + minus + ' 4.', nearDown, 'Subtraction near doubles facts');
+    // The rest: the two take-aways of each fact of "The rest, up to 9 + 9" (4 + 8 = 12 gives 12 − 4 and 12 − 8), split at 10.
+    var restDown = function (low) {
+      var out = [];
+      rest.filter(function (f) { return low ? f.a + f.b < 10 : f.a + f.b > 10; }).forEach(function (f) { out.push(fact(f.a + f.b, f.a, 'sub'), fact(f.a + f.b, f.b, 'sub')); });
+      return out.sort(function (p, q) { return p.a - q.a || p.b - q.b; });
+    };
+    sub('sub-rest-10', 'The rest, within 10', 'The other facts from numbers up to 10, like 8 ' + minus + ' 3.', restDown(true), 'Subtraction facts within 10');
+    sub('sub-rest-20', 'The rest, within 20', 'The other facts from 11 to 16, like 13 ' + minus + ' 5.', restDown(false), 'Subtraction facts within 20');
+    var over = function (n) { return range(1, 10).map(function (k) { return fact(n * k, n, 'div'); }); };
+    div('div-2', divide + ' 2', '2 ' + divide + ' 2 to 20 ' + divide + ' 2.', over(2));
+    div('div-10', divide + ' 10', '10 ' + divide + ' 10 to 100 ' + divide + ' 10.', over(10));
+    div('div-5', divide + ' 5', '5 ' + divide + ' 5 to 50 ' + divide + ' 5.', over(5));
+    div('div-1-0', divide + ' 1 and 0 ' + divide, '1 ' + divide + ' 1 to 10 ' + divide + ' 1, and 0 ' + divide + ' 1 to 0 ' + divide + ' 10.',
+      range(1, 10).map(function (k) { return fact(k, 1, 'div'); }).concat(range(1, 10).map(function (k) { return fact(0, k, 'div'); })));
+    div('div-squares', 'Squares', 'A square divided by its number, 1 ' + divide + ' 1 to 100 ' + divide + ' 10.', range(1, 10).map(function (n) { return fact(n * n, n, 'div'); }), 'Division square facts');
+    [3, 4, 9, 6, 7, 8].forEach(function (n) { div('div-' + n, divide + ' ' + n, n + ' ' + divide + ' ' + n + ' to ' + (10 * n) + ' ' + divide + ' ' + n + '.', over(n)); });
     return rows;
   })();
-  var ORDER = { add: FAMILIES.filter(function (f) { return f.op === 'add'; }).map(function (f) { return f.id; }),
-    mul: FAMILIES.filter(function (f) { return f.op === 'mul'; }).map(function (f) { return f.id; }) };
+  var ORDER = {};
+  ['add', 'sub', 'mul', 'div'].forEach(function (op) { ORDER[op] = FAMILIES.filter(function (f) { return f.op === op; }).map(function (f) { return f.id; }); });
   function family(id) {
     for (var i = 0; i < FAMILIES.length; i++) if (FAMILIES[i].id === id) return FAMILIES[i];
     return null;
@@ -135,12 +175,14 @@
   // The facts a learner knows by the teaching order: a fact of the family is ticked when it, or its
   // turnaround, is a fact of a family that comes earlier for the same operation (7 × 2, because
   // 2 × 7 is a fact of × 2). The first family of each operation has none.
+  // For − and ÷ (2026-11-13) the other take-away of the same fact counts as the turnaround does: 14 ÷ 7 is ticked in
+  // ÷ 7 because 14 ÷ 2 is a fact of ÷ 2, as 7 × 2 is ticked in × 7.
   function knownByOrder(familyId) {
     var fam = family(text(familyId));
     if (!fam) throw new Error('Unknown fact family "' + text(familyId) + '".');
     var seen = {};
     earlier(fam).forEach(function (e) { e.facts.forEach(function (f) { seen[keyOf(f)] = true; }); });
-    return fam.facts.filter(function (f) { var t = turnaround(f); return seen[keyOf(f)] || (t && seen[keyOf(t)]); }).map(keyOf);
+    return fam.facts.filter(function (f) { var t = turnaround(f) || related(f); return seen[keyOf(f)] || (t && seen[keyOf(t)]); }).map(keyOf);
   }
 
   // What a set of choices makes, without making it: the facts, and for rehearsal the new facts, the
@@ -339,7 +381,7 @@
     soundAnswerMatches: function (given, answer) { var t = String(given == null ? '' : given).trim(); return /^[0-9]+$/.test(t) && Number(t) === Number(answer); },
   };
 
-  // The file. buildMathPracticePacket({ lesson, loader, title, labels }) -> { html, manifest, sha256 }
+  // The file. buildMathPracticePacket({ lesson, loader, title, labels, learner }) -> { html, manifest, sha256 }
   // labels: the file's words in another language (the loader's keys); the start screen's line is the
   // activity's own (<activity>_intro).
   function buildMathPracticePacket(input) {
@@ -357,13 +399,35 @@
     var labels = Object.assign({}, o.labels || {});
     if (!labels.intro) labels.intro = labels[activity + '_intro'] || loader.CHECK_ADAPTERS[activity].labels[activity + '_intro'];
     var html = loader.buildHtml(lesson, { core: WHOLE_NUMBER_ANSWERS, labels: labels });
+    // learner (2026-11-13): a student's code name, put in last, exactly as withCodeName adds it to a finished file.
+    if (o.learner) html = withCodeName(html, o.learner);
     var block = /<script type="application\/json" id="packet-manifest">([\s\S]*?)<\/script>/.exec(html);
     return { html: html, manifest: block ? JSON.parse(block[1]) : null, sha256: loader.sha256(html).hex, lesson: lesson };
   }
 
+  // A student's code name, as a file may carry it: the rule of word_sounds_packet_builder.js codeName (letters of any
+  // language, digits, spaces, . _ and -, at most 40), so "Look inside a file" never reads one as code. 2026-11-13.
+  function codeName(value) {
+    var t = typeof value === 'string' ? value : '';
+    try { return t.normalize('NFC').replace(/[^\p{L}\p{M}\p{N} ._-]+/gu, '').replace(/\s+/g, ' ').trim().slice(0, 40).trim(); } catch (_) { return t.replace(/[^A-Za-z0-9 ._-]+/g, '').trim().slice(0, 40); }
+  }
+  // The file with the code name in its manifest (key "learner"), which the file fills in when it opens. Only the data
+  // block changes; the script and its hash do not, so one file per student is this applied to the file made with none.
+  function withCodeName(html, name) {
+    var clean = codeName(name), open = '<script type="application/json" id="packet-manifest">';
+    var at = clean ? html.indexOf(open) : -1;
+    if (at < 0) return html;
+    var from = at + open.length, to = html.indexOf('</script>', from), manifest;
+    try { manifest = JSON.parse(html.slice(from, to)); } catch (_) { return html; }
+    if (!manifest || typeof manifest !== 'object') return html;
+    manifest.learner = clean;
+    var json = JSON.stringify(manifest).replace(/</g, '\\u003c').replace(/>/g, '\\u003e').replace(/&/g, '\\u0026').replace(/\u2028/g, '\\u2028').replace(/\u2029/g, '\\u2029');
+    return html.slice(0, from) + json + html.slice(to);
+  }
+
   var api = { VERSION: VERSION, METHODS: METHODS, FAMILIES: FAMILIES.map(copyFamily), MAX_FACTS: MAX_FACTS, MAX_NEW: MAX_NEW, MIN_KNOWN: MIN_KNOWN, STEPS: STEPS,
-    factKey: keyOf, turnaround: turnaround, answerOf: answerOf, factWord: factWord, checkFact: checkFact, parseFacts: parseFacts, knownByOrder: knownByOrder,
-    planMathPractice: planMathPractice, lessonFromMathPractice: lessonFromMathPractice, buildMathPracticePacket: buildMathPracticePacket };
+    factKey: keyOf, turnaround: turnaround, related: related, answerOf: answerOf, factWord: factWord, checkFact: checkFact, parseFacts: parseFacts, knownByOrder: knownByOrder,
+    planMathPractice: planMathPractice, lessonFromMathPractice: lessonFromMathPractice, buildMathPracticePacket: buildMathPracticePacket, codeName: codeName, withCodeName: withCodeName };
   root.AlloPacketMathPractice = api;
   if (typeof module !== 'undefined' && module.exports) module.exports = api;
 })(typeof window !== 'undefined' ? window : globalThis);

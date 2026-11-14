@@ -148,17 +148,32 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
         
         try:
             length = int(self.headers.get("Content-Length", 0))
-            body = json.loads(self.rfile.read(length)) if length else {}
-            
-            text = body.get("input", "")
-            voice = body.get("voice", "alloy").lower()
-            speed = float(body.get("speed", 1.0))
-            
-            if not text:
-                self.send_response(400)
+            if length < 0 or length > 262144:
+                self.send_response(413 if length > 262144 else 400)
+                self.send_header("Content-Type", "application/json")
                 self._add_cors_headers()
                 self.end_headers()
-                self.wfile.write(b'{"error": "No input text"}')
+                self.wfile.write(b'{"error": "Request body exceeds maximum size"}')
+                return
+            body = json.loads(self.rfile.read(length)) if length else {}
+            if not isinstance(body, dict):
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json")
+                self._add_cors_headers()
+                self.end_headers()
+                self.wfile.write(b'{"error": "Expected a JSON object"}')
+                return
+            
+            text = body.get("input", "")
+            voice = str(body.get("voice", "alloy")).lower()
+            speed = float(body.get("speed", 1.0))
+            
+            if not isinstance(text, str) or not text.strip() or len(text) > 20000:
+                self.send_response(400)
+                self.send_header("Content-Type", "application/json")
+                self._add_cors_headers()
+                self.end_headers()
+                self.wfile.write(b'{"error": "Invalid or oversized input text"}')
                 return
             
             audio_data = generate_speech_sync(text, voice, speed, body.get("language"))
@@ -177,12 +192,19 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             self.end_headers()
             self.wfile.write(audio_data)
             
+        except (ValueError, TypeError):
+            self.send_response(400)
+            self.send_header("Content-Type", "application/json")
+            self._add_cors_headers()
+            self.end_headers()
+            self.wfile.write(b'{"error": "Invalid speech request"}')
         except Exception as e:
             print(f"[EdgeTTS] Error: {e}")
             self.send_response(500)
+            self.send_header("Content-Type", "application/json")
             self._add_cors_headers()
             self.end_headers()
-            self.wfile.write(json.dumps({"error": str(e)}).encode())
+            self.wfile.write(b'{"error": "Speech generation failed"}')
     
     def do_OPTIONS(self):
         """Handle CORS preflight."""

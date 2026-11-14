@@ -45,8 +45,14 @@ export async function guardClientRegistration(
   }
 
   try {
+    const rawIp = request.headers
+      .get("CF-Connecting-IP")
+      ?.split(",", 1)[0]
+      ?.trim();
+    const ipSegment =
+      rawIp && /^[A-Fa-f0-9:.]{2,64}$/u.test(rawIp) ? `:${rawIp}` : "";
     const { success } = await env.DCR_RATE_LIMITER.limit({
-      key: `dcr:${env.INSTITUTION_ID}:claude-public-client`,
+      key: `dcr:${env.INSTITUTION_ID}${ipSegment}:claude-public-client`,
     });
     return success
       ? undefined

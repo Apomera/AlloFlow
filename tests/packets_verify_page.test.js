@@ -908,7 +908,8 @@ describe('the pages as files', () => {
       expect(doc.querySelector('.brand').getAttribute('href')).toBe('packets.html');
     }
     // One name for the page everywhere (2026-11-12): "Look inside a file", never "Check a file" (a check is a kind of packet).
-    expect([parse(PAGE).title, parse(GUIDE).title]).toEqual(['Look inside a file', 'For school IT: check a packet in ten minutes']);
+    // 2026-11-14 (T1): packets-it.html also says "look inside a file" instead of "check a packet".
+    expect([parse(PAGE).title, parse(GUIDE).title]).toEqual(['Look inside a file', 'For school IT: look inside a file in ten minutes']);
     expect(parse(PAGE).querySelector('h1').textContent).toBe('Look inside a file');
     for (const file of readdirSync('.').filter((name) => /^packets[\w-]*\.(?:html|js)$/.test(name))) {
       expect(read(file), file).not.toContain('Check a file');
@@ -980,17 +981,18 @@ describe('the guide for school IT', () => {
   const text = (selector) => [...doc.querySelectorAll(selector)].map((node) => node.textContent.replace(/\s+/g, ' ').trim());
 
   it('says what a packet is in three sentences, and where the data goes in six steps', () => {
-    expect(doc.querySelector('h1').textContent).toBe('For school IT: check a packet in ten minutes');
+    // 2026-11-14 (T1): packets-it.html says "look inside a file" and "Open a practice file or check".
+    expect(doc.querySelector('h1').textContent).toBe('For school IT: look inside a file in ten minutes');
     const lead = doc.querySelector('.guide-lead').textContent;
     expect(lead.split(/(?<=\.)\s+/).length).toBe(3);
     expect(lead).toMatch(/^A packet is one HTML file /);
     expect(text('h2')).toEqual(['Where the data goes', 'Check it yourself', 'The facts, for a privacy review', 'Known limits']);
     const flow = text('section[aria-labelledby="flow-title"] li');
     expect(flow.length).toBe(6);
-    // 2026-11-13 (teacher-journey pass, asked by the results-review helper): the bridge of Open a practice file, said plainly,
+    // 2026-11-13 (teacher-journey pass, asked by the results-review helper): the bridge of Open a practice file or check, said plainly,
     // and true of packets-open.js: a sandbox with scripts and downloads only (no allow-same-origin), and two kinds of message kept.
     expect(flow[2]).toBe("The student opens the file in a browser. The student's place, answers and the time on each item are kept in that browser's local storage, on that device. "
-      + 'On a phone or tablet the student opens it on Open a practice file (packets-open.html). There the file runs walled off in a sandboxed frame, on an origin of its own, '
+      + 'On a phone or tablet the student opens it on Open a practice file or check (packets-open.html). There the file runs walled off in a sandboxed frame, on an origin of its own, '
       + 'so it cannot read anything else this site keeps. It passes that page only two things, by postMessage: its own progress, which the page keeps in the browser\'s storage '
       + 'for this site, and its results file, which the page saves to the device. Nothing is uploaded, except by the class mailbox kind of file, below.');
     const openScript = read('packets-open.js');
@@ -1114,7 +1116,8 @@ describe('the guide for school IT', () => {
     expect(maker).not.toMatch(/method\s*:|body\s*:|FormData|encodeURIComponent/);
     expect(parse('packets-results.html').querySelector('meta[http-equiv="Content-Security-Policy"]').getAttribute('content')).toContain("connect-src 'none'");
     // 2026-11-13 (teacher-journey pass): four maker pages, each keeping its last choices.
-    expect(fact['Accounts, cookies, analytics']).toContain("each maker page keeps the teacher's last choices (the Word Sounds maker also keeps the sound files, and the vocabulary maker the teacher's changes to the questions), the results page keeps results only if a switch is turned on, Open a practice file keeps the place of each file it runs, and this page and Look inside a file keep nothing");
+    // 2026-11-14 (T1): packets-open.html is named "Open a practice file or check".
+    expect(fact['Accounts, cookies, analytics']).toContain("each maker page keeps the teacher's last choices (the Word Sounds maker also keeps the sound files, and the vocabulary maker the teacher's changes to the questions), the results page keeps results only if a switch is turned on, Open a practice file or check keeps the place of each file it runs, and this page and Look inside a file keep nothing");
     expect(read('packets_vocab_media.js')).not.toMatch(/caches\.|indexedDB|localStorage/);
     // A teacher's own words (sounds, recording, picture): kept in the browser for this site, never uploaded; the microphone only on Record;
     // and the one page that can reach other sites, with its three services named. Each is true of the code.
@@ -1137,7 +1140,7 @@ describe('the guide for school IT', () => {
     // 2026-11-12: Look up a word online reaches the one dictionary it names, and not even this site.
     expect(reaches('packets-vocab-lookup.html')).toEqual(['https://api.dictionaryapi.dev']);
     expect(reaches('packets-open.html')).toEqual(['https://script.google.com', 'https://script.googleusercontent.com']);
-    expect(fact['The class mailbox kind']).toContain('Such a file can also send from Open a practice file (packets-open.html), the page that runs a file on a phone or tablet: that page\'s rule allows the class mailbox for the file it runs. The page itself sends nothing.');
+    expect(fact['The class mailbox kind']).toContain('Such a file can also send from Open a practice file or check (packets-open.html), the page that runs a file on a phone or tablet: that page\'s rule allows the class mailbox for the file it runs. The page itself sends nothing.');
     expect([...new Set(reaches('packets-pictures.html').map((url) => url.replace(/^https:\/\//, '')))].sort()).toEqual(['api.openverse.org', 'commons.wikimedia.org', 'globalsymbols.com', 'thumb.wikimedia.org', 'upload.wikimedia.org']);
     // The maker asks for the microphone in one script only, and only from the Record button.
     expect(read('packets-make.js')).not.toMatch(/getUserMedia/);

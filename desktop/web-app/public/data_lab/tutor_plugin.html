@@ -73,7 +73,7 @@
       for (var i = 0; i < reqs.length; i++) {
         var r = reqs[i];
         if (r && r.action === 'notify' && typeof r.resource === 'string' && /^component/.test(r.resource)) {
-          window.top.postMessage({ type: 'allodatalab-codap-component-changed' }, '*');
+          if (verifiedTopOrigin) window.top.postMessage({ type: 'allodatalab-codap-component-changed' }, verifiedTopOrigin);
           break;
         }
       }
@@ -353,10 +353,27 @@
   }
 
   // ── Requests from the Data Lab page (window.top) ───────────────────
+  function isTrustedTopOrigin(origin) {
+    var o = String(origin || '');
+    if (!o || o === 'null') return false;
+    try {
+      if (window.location && window.location.origin && o === window.location.origin) return true;
+      var u = new URL(o);
+      var host = (u.hostname || '').toLowerCase();
+      if (/^(localhost|127\.0\.0\.1|data-lab\.test)$/.test(host)) return true;
+      if (u.protocol !== 'https:') return false;
+      return host === 'alloflow-cdn.pages.dev' || /\.alloflow-cdn\.pages\.dev$/.test(host) ||
+             host === 'alloflow.org' || /\.alloflow\.org$/.test(host) ||
+             /\.usercontent\.goog$/.test(host);
+    } catch (_) { return false; }
+  }
+  var verifiedTopOrigin = '';
   window.addEventListener('message', function (event) {
     var data = event && event.data;
     if (!data || typeof data.type !== 'string') return;
     if (event.source !== window.top) return;
+    if (!isTrustedTopOrigin(event.origin)) return;
+    verifiedTopOrigin = event.origin;
     if (data.type === 'allodatalab-plugin-strings') {
       var incoming = data.strings && typeof data.strings === 'object' ? data.strings : {};
       Object.keys(STR).forEach(function (k) { if (typeof incoming[k] === 'string' && incoming[k].trim()) STR[k] = incoming[k].slice(0, 300); });
@@ -368,7 +385,7 @@
     if (data.type !== 'allodatalab-snapshot-request' && data.type !== 'allodatalab-create-dataset' && data.type !== 'allodatalab-graph-check' && data.type !== 'allodatalab-add-items') return;
     var requestId = typeof data.id === 'string' ? data.id.slice(0, 80) : '';
     if (!requestId) return;
-    var responseOrigin = event.origin && event.origin !== 'null' ? event.origin : '*';
+    var responseOrigin = event.origin;
     if (data.type === 'allodatalab-graph-check' || data.type === 'allodatalab-add-items') {
       var replyType = data.type === 'allodatalab-graph-check' ? 'allodatalab-graph-report' : 'allodatalab-items-added';
       registration

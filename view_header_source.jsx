@@ -2014,16 +2014,20 @@ function HeaderBar(props) {
                                       <h2 id="header-documents-dialog-title" className="text-xs font-black text-slate-800 flex items-center gap-1.5">{"\ud83d\udcc4"} {t('export_menu.section_documents') || 'Documents'}</h2>
                                       <button type="button" onClick={handleSetShowExportMenuToFalse} className="min-w-11 min-h-11 inline-flex items-center justify-center rounded-lg text-slate-600 hover:bg-slate-100 hover:text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600" aria-label={t('common.close') || 'Close'}><X size={18} aria-hidden="true" /></button>
                                     </div>
-                                    <button type="button" onClick={() => openExportPreview('print')} className="w-full px-3 py-2.5 bg-indigo-600 bg-gradient-to-r from-indigo-700 to-violet-700 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2 mb-1">{"\ud83d\udee0\ufe0f"} {t('export_menu.document_builder') || 'Document Builder'}</button>
+                                    <button type="button" onClick={() => openExportPreview('print')} className="w-full px-3 py-2 bg-indigo-600 bg-gradient-to-r from-indigo-700 to-violet-700 hover:from-indigo-700 hover:to-violet-700 text-white rounded-xl text-xs font-bold transition-all shadow-md hover:shadow-lg flex flex-col items-center justify-center gap-0.5 mb-1">
+                                        <span className="flex items-center gap-1.5">{"\ud83d\udee0\ufe0f"} {t('export_menu.document_builder') || 'Document Builder'}</span>
+                                        <span className="text-[10px] font-medium text-indigo-100">{t('export_menu.document_builder_subtitle') || 'Edit, style & preview all formats'}</span>
+                                    </button>
                                     {customExportCSS && <div className="text-[11px] text-green-600 font-medium px-2 mb-1">✓ {t('export_menu.custom_style_active') || 'Custom style active'}</div>}
                                     <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest px-2 pt-2 pb-1 border-t border-slate-100 mt-1">{"\ud83d\udcc4"} {t('export_menu.section_print') || 'Print & PDF'}</div>
                                     <button type="button"
                                         aria-label={t('header.open_doc_builder_pdf_aria') || 'Open Document Builder for PDF'}
                                         onClick={() => openExportPreview('print')}
-                                        className="flex items-center gap-2 w-full text-left px-3 py-2 rounded-lg hover:bg-green-50 text-green-700 text-xs font-bold transition-colors"
+                                        className="flex flex-col items-start w-full text-left px-3 py-2 rounded-lg hover:bg-green-50 text-green-700 text-xs font-bold transition-colors"
                                         data-help-key="export_pdf"
                                     >
-                                        <FileDown size={14} /> {t('export_menu.pdf_slash_print', { print: t('export_menu.print') }) || `PDF / ${t('export_menu.print')}`}
+                                        <span className="flex items-center gap-2"><FileDown size={14} /> {t('export_menu.pdf_slash_print', { print: t('export_menu.print') }) || `PDF / ${t('export_menu.print')}`}</span>
+                                        <span className="text-[10px] font-normal text-slate-600 pl-5">{t('export_menu.pdf_via_builder_sub') || 'Opens Builder ready to print or save PDF'}</span>
                                     </button>
                                     <button type="button"
                                         onClick={() => openExportPreview('worksheet')}

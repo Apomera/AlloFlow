@@ -49,11 +49,12 @@
       try { if (typeof safe.normalize === 'function') safe = safe.normalize('NFC'); } catch (_) {}
       safe = safe
         .replace(/[\u0000-\u001f\u007f-\u009f\u061c\u200e\u200f\u202a-\u202e\u2066-\u2069]/g, '')
-        .replace(/[\\/:*?"<>|#%&{}]+/g, ' ')
+        .replace(/[^\p{L}\p{M}\p{N}\s_-]+/gu, ' ')
         .replace(/\s+/g, ' ')
         .trim()
         .slice(0, 60)
         .replace(/[. ]+$/g, '');
+      if (!/[\p{L}\p{N}]/u.test(safe)) return '';
       if (/^(?:con|prn|aux|nul|com[1-9]|lpt[1-9])(?:\.|$)/i.test(safe)) safe = '_' + safe;
       return safe;
     };
@@ -66,6 +67,14 @@
       if (slug.length >= 3) return slug;
     } catch (_) { /* fall through to the generic name */ }
     return sanitize(fallback) || 'alloflow-export';
+  };
+
+  // Pre-load on-demand export locale bundle before synchronous pipeline calls
+  // trigger _exportLabelT. Failure/rejection never blocks export.
+  const _alloPreAwaitLocaleBundle = async (langHint) => {
+    if (typeof window !== 'undefined' && typeof window.__alloLoadLocaleBundle === 'function') {
+      try { await window.__alloLoadLocaleBundle(langHint); } catch (_) {}
+    }
   };
 
   // Printing can begin before web fonts or image decodes finish, which leaves
@@ -1199,21 +1208,12 @@
       const _body = root.querySelector('body') || root;
       if (!root.querySelector('#allo-ka-style')) {
         const _st = doc.createElement('style'); _st.id = 'allo-ka-style';
-        _st.textContent = '.allo-ka-passage .ka-s{transition:background-color .12s ease,box-shadow .12s ease;border-radius:3px;}.allo-ka-passage .ka-s.ka-on{background-color:#fde047;color:#1e293b;box-shadow:0 0 0 3px #fde047;}html[data-alloflow-theme="dark"] .allo-ka-passage .ka-s.ka-on{background-color:#ca8a04;color:#fff;box-shadow:0 0 0 3px #ca8a04;}.allo-ka-play:hover,.allo-ka-stop:hover{filter:brightness(1.08);}@media print{.allo-ka-bar{display:none !important;}}';
+        _st.textContent = '.allo-ka-passage .ka-s{cursor:pointer;transition:background-color .12s ease,box-shadow .12s ease;border-radius:3px;}.allo-ka-passage .ka-s:hover{background-color:rgba(253,224,71,.35);}.allo-ka-passage .ka-s.ka-on{background-color:#fde047;color:#1e293b;box-shadow:0 0 0 3px #fde047;}html[data-alloflow-theme="dark"] .allo-ka-passage .ka-s.ka-on{background-color:#ca8a04;color:#fff;box-shadow:0 0 0 3px #ca8a04;}.allo-ka-bar{display:flex;flex-wrap:wrap;align-items:center;gap:6px;}.allo-ka-controls{display:inline-flex;flex-wrap:wrap;align-items:center;gap:6px;}.allo-ka-play:hover,.allo-ka-stop:hover,.allo-ka-prev:hover,.allo-ka-next:hover{filter:brightness(1.08);}.allo-ka-count{font-size:.85em;font-weight:700;color:#334155;min-width:3.2em;text-align:center;font-variant-numeric:tabular-nums;}html[data-alloflow-theme="dark"] .allo-ka-count{color:#e2e8f0;}.allo-ka-speed{padding:6px 8px;border:1px solid #cbd5e1;border-radius:8px;background:#fff;color:#1e293b;font-weight:700;font-size:.85em;cursor:pointer;}@media print{.allo-ka-bar{display:none !important;}}';
         _head.appendChild(_st);
       }
       if (!root.querySelector('#allo-ka-script')) {
         const _sc = doc.createElement('script'); _sc.id = 'allo-ka-script';
-        _sc.textContent = `(function(){if(window.__alloKaBound)return;window.__alloKaBound=true;var active=null;function announce(m){var n=document.getElementById("allo-ka-live");if(!n){n=document.createElement("div");n.id="allo-ka-live";n.setAttribute("role","alert");n.setAttribute("aria-live","assertive");n.setAttribute("aria-atomic","true");n.style.cssText="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;";(document.body||document.documentElement).appendChild(n);}n.textContent="";setTimeout(function(){n.textContent=String(m||"");},0);}function setBtn(b,t,p){if(!b)return;b.textContent=t;b.setAttribute("aria-pressed",p?"true":"false");b.setAttribute("aria-label",t.replace(/[^\\w\\s-]/g,"").trim()||"Read aloud");}function findBox(id){var boxes=document.querySelectorAll(".allo-ka-audios");for(var i=0;i<boxes.length;i++){if((boxes[i].getAttribute("data-ka-for")||"")===String(id||""))return boxes[i];}return null;}function clearHi(s){for(var i=0;i<s.length;i++)s[i].classList.remove("ka-on");}function ensureStopButton(btn){if(!btn||!btn.parentNode)return null;var ex=btn.parentNode.querySelector(".allo-ka-stop");if(ex)return ex;var s=document.createElement("button");s.type="button";s.className="allo-ka-stop";s.textContent="Stop";s.style.cssText="margin-left:8px;padding:7px 12px;background:#475569;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.9em;";s.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();stop();});btn.parentNode.insertBefore(s,btn.nextSibling);return s;}function stop(){if(!active)return;try{if(active.mode==="browser"){if(window.speechSynthesis)window.speechSynthesis.cancel();active.utter=null;}else{var a=active.audios[active.idx];if(a){a.pause();a.onended=null;}}}catch(e){}clearHi(active.spans);setBtn(active.btn,"\\u{1F50A} Read aloud",false);if(active.stopBtn){try{active.stopBtn.remove();}catch(e){}}active=null;}function pause(){if(!active||active.paused)return;try{if(active.mode==="browser"){if(window.speechSynthesis)window.speechSynthesis.pause();}else{var a=active.audios[active.idx];if(a)a.pause();}}catch(e){}active.paused=true;setBtn(active.btn,"\\u25B6 Resume",true);}function resume(){if(!active||!active.paused)return;if(active.mode==="browser"){active.paused=false;setBtn(active.btn,"\\u23F8 Pause",true);try{if(window.speechSynthesis)window.speechSynthesis.resume();}catch(e){}return;}var a=active.audios[active.idx];if(!a){step(active,active.idx+1);return;}active.paused=false;setBtn(active.btn,"\\u23F8 Pause",true);var p=a.play();if(p&&p.catch)p.catch(function(){stop();});}function step(state,i){if(!active||active!==state)return;var count=state.mode==="browser"?state.spans.length:state.audios.length;if(i>=count){stop();return;}state.idx=i;state.paused=false;if(state.mode==="browser"){var sp=state.spans[i];if(!sp){step(state,i+1);return;}clearHi(state.spans);sp.classList.add("ka-on");var text=(sp.textContent||"").trim();if(!text){step(state,i+1);return;}if(!window.speechSynthesis||typeof SpeechSynthesisUtterance==="undefined"){announce("Browser read-aloud is not available here.");stop();return;}try{window.speechSynthesis.cancel();}catch(e){}var u=new SpeechSynthesisUtterance(text);state.utter=u;u.rate=1;u.onend=function(){if(active===state&&!state.paused)step(state,i+1);};u.onerror=function(){if(active===state)stop();};setBtn(state.btn,"\\u23F8 Pause",true);try{window.speechSynthesis.speak(u);}catch(e){stop();}return;}var a=state.audios[i];if(!a){step(state,i+1);return;}var sidx=a.getAttribute("data-ka-s");clearHi(state.spans);for(var k=0;k<state.spans.length;k++){if(sidx!==null&&state.spans[k].getAttribute("data-ka-s")===sidx)state.spans[k].classList.add("ka-on");}try{a.currentTime=0;}catch(e){}a.onended=function(){if(active===state&&!state.paused)step(state,i+1);};setBtn(state.btn,"\\u23F8 Pause",true);var p=a.play();if(p&&p.catch)p.catch(function(){stop();});}document.addEventListener("click",function(e){var stopBtn=e.target&&e.target.closest&&e.target.closest(".allo-ka-stop");if(stopBtn){e.preventDefault();stop();return;}var btn=e.target&&e.target.closest&&e.target.closest(".allo-ka-play");if(!btn)return;if(active&&active.btn===btn){if(active.paused)resume();else pause();return;}if(active)stop();var id=btn.getAttribute("data-ka-for");var sec=btn.closest(".section")||document;var spans=Array.prototype.slice.call(sec.querySelectorAll(".ka-s"));var mode=btn.getAttribute("data-ka-mode")||"embedded";var audios=[];if(mode==="browser"){if(!spans.length)return;}else{var box=findBox(id);audios=box?Array.prototype.slice.call(box.querySelectorAll("audio")):[];if(!audios.length||!spans.length)return;}active={mode:mode,audios:audios,spans:spans,idx:0,btn:btn,stopBtn:ensureStopButton(btn),paused:false,utter:null};step(active,0);});})();`;
-        // A sentence can span several preserved inline elements. Group its
-        // generated text fragments so browser speech still speaks/highlights
-        // one complete sentence; legacy one-span exports keep working too.
-        _sc.textContent = _sc.textContent
-          .replace('function clearHi(s){', 'function groupSpans(spans){var groups=[],map={};for(var i=0;i<spans.length;i++){var key=spans[i].getAttribute("data-ka-s");if(key===null)key="legacy-"+i;if(!Object.prototype.hasOwnProperty.call(map,key)){map[key]=groups.length;groups.push([]);}groups[map[key]].push(spans[i]);}return groups;}function clearHi(s){')
-          .replace('var count=state.mode==="browser"?state.spans.length:state.audios.length;', 'var count=state.mode==="browser"?state.groups.length:state.audios.length;')
-          .replace('var sp=state.spans[i];if(!sp){step(state,i+1);return;}clearHi(state.spans);sp.classList.add("ka-on");var text=(sp.textContent||"").trim();', 'var group=state.groups[i];if(!group||!group.length){step(state,i+1);return;}clearHi(state.spans);for(var g=0;g<group.length;g++)group[g].classList.add("ka-on");var text=(group[0].getAttribute("data-ka-text")||group.map(function(sp){return sp.textContent||"";}).join("")).trim();')
-          .replace('if(mode==="browser"){if(!spans.length)return;}else{', 'var groups=groupSpans(spans);if(mode==="browser"){if(!groups.length)return;}else{')
-          .replace('active={mode:mode,audios:audios,spans:spans,idx:0,', 'active={mode:mode,audios:audios,spans:spans,groups:groups,idx:0,');
+        _sc.textContent = `(function(){if(window.__alloKaBound)return;window.__alloKaBound=true;var active=null;function announce(m){var n=document.getElementById("allo-ka-live");if(!n){n=document.createElement("div");n.id="allo-ka-live";n.setAttribute("role","alert");n.setAttribute("aria-live","assertive");n.setAttribute("aria-atomic","true");n.style.cssText="position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0;";(document.body||document.documentElement).appendChild(n);}n.textContent="";setTimeout(function(){n.textContent=String(m||"");},0);}function setBtn(b,t,p){if(!b)return;b.textContent=t;b.setAttribute("aria-pressed",p?"true":"false");b.setAttribute("aria-label",t.replace(/[^\\w\\s-]/g,"").trim()||"Read aloud");}function findBox(id){var boxes=document.querySelectorAll(".allo-ka-audios");for(var i=0;i<boxes.length;i++){if((boxes[i].getAttribute("data-ka-for")||"")===String(id||""))return boxes[i];}return null;}function groupSpans(spans){var groups=[],map={};for(var i=0;i<spans.length;i++){var key=spans[i].getAttribute("data-ka-s");if(key===null)key="legacy-"+i;if(!Object.prototype.hasOwnProperty.call(map,key)){map[key]=groups.length;groups.push([]);}groups[map[key]].push(spans[i]);}return groups;}function clearHi(s){for(var i=0;i<s.length;i++)s[i].classList.remove("ka-on");}function scrollSentence(el){if(!el||!el.scrollIntoView)return;var rm=false;try{rm=!!(window.matchMedia&&window.matchMedia("(prefers-reduced-motion: reduce)").matches);}catch(e){}try{el.scrollIntoView({behavior:rm?"auto":"smooth",block:"nearest"});}catch(e){try{el.scrollIntoView({block:"nearest"});}catch(_){}}}function updateCount(bar,cur,total){if(!bar||!bar.querySelector)return;var c=bar.querySelector(".allo-ka-count");if(!c)return;var max=total!=null?total:(parseInt(c.getAttribute("data-ka-total"),10)||0);c.textContent=String(cur||0)+" / "+String(max);}function getRate(bar,state){if(bar&&bar.querySelector){var sel=bar.querySelector(".allo-ka-speed");if(sel){var v=parseFloat(sel.value);if(isFinite(v)&&v>0)return v;}}return(state&&state.rate)||1;}function ensureStopButton(btn){if(!btn||!btn.parentNode)return null;var ex=btn.parentNode.querySelector(".allo-ka-stop");if(ex)return ex;var s=document.createElement("button");s.type="button";s.className="allo-ka-stop";s.textContent="Stop";s.style.cssText="margin-left:2px;padding:7px 12px;background:#475569;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:.9em;";s.addEventListener("click",function(e){e.preventDefault();e.stopPropagation();stop();});btn.parentNode.insertBefore(s,btn.nextSibling);return s;}function createState(btn){var id=btn.getAttribute("data-ka-for");var bar=(btn.closest&&btn.closest(".allo-ka-bar"))||btn.parentNode;var sec=(btn.closest&&(btn.closest(".allo-ka-passage")||btn.closest(".section")))||document;var spans=Array.prototype.slice.call(sec.querySelectorAll(".ka-s"));var groups=groupSpans(spans);var mode=btn.getAttribute("data-ka-mode")||"embedded";var audios=[];if(mode==="browser"){if(!groups.length)return null;}else{var box=findBox(id);audios=box?Array.prototype.slice.call(box.querySelectorAll("audio")):[];if(!audios.length||!spans.length)return null;}return{mode:mode,audios:audios,spans:spans,groups:groups,total:groups.length,bar:bar,idx:0,rate:getRate(bar,null),btn:btn,stopBtn:ensureStopButton(btn),paused:false,utter:null};}function stop(){if(!active)return;try{if(active.mode==="browser"){if(window.speechSynthesis)window.speechSynthesis.cancel();active.utter=null;}else{var a=active.audios[active.idx];if(a){a.pause();a.onended=null;}}}catch(e){}clearHi(active.spans);updateCount(active.bar,0,active.total);setBtn(active.btn,"\\u{1F50A} Read aloud",false);if(active.stopBtn){try{active.stopBtn.remove();}catch(e){}}active=null;}function pause(){if(!active||active.paused)return;try{if(active.mode==="browser"){if(window.speechSynthesis)window.speechSynthesis.pause();}else{var a=active.audios[active.idx];if(a)a.pause();}}catch(e){}active.paused=true;setBtn(active.btn,"\\u25B6 Resume",true);}function resume(){if(!active||!active.paused)return;if(active.mode==="browser"){active.paused=false;setBtn(active.btn,"\\u23F8 Pause",true);try{if(window.speechSynthesis)window.speechSynthesis.resume();}catch(e){}return;}var a=active.audios[active.idx];if(!a){step(active,active.idx+1);return;}active.paused=false;setBtn(active.btn,"\\u23F8 Pause",true);try{a.playbackRate=active.rate||getRate(active.bar,active);}catch(e){}var p=a.play();if(p&&p.catch)p.catch(function(){stop();});}function stopPreviousAudio(state){try{if(state.mode==="browser"){if(window.speechSynthesis)window.speechSynthesis.cancel();}else{for(var j=0;j<state.audios.length;j++){state.audios[j].onended=null;if(!state.audios[j].paused)state.audios[j].pause();}}}catch(e){}}function step(state,i){if(!active||active!==state)return;if(i<0)i=0;var count=state.mode==="browser"?state.groups.length:state.audios.length;if(i>=count){stop();return;}stopPreviousAudio(state);state.idx=i;state.paused=false;state.rate=getRate(state.bar,state);if(state.mode==="browser"){var group=state.groups[i];if(!group||!group.length){step(state,i+1);return;}clearHi(state.spans);for(var g=0;g<group.length;g++)group[g].classList.add("ka-on");scrollSentence(group[0]);updateCount(state.bar,i+1,state.groups.length);var text=(group[0].getAttribute("data-ka-text")||group.map(function(sp){return sp.textContent||"";}).join("")).trim();if(!text){step(state,i+1);return;}if(!window.speechSynthesis||typeof SpeechSynthesisUtterance==="undefined"){announce("Browser read-aloud is not available here.");stop();return;}var u=new SpeechSynthesisUtterance(text);state.utter=u;u.rate=state.rate||1;u.onend=function(){if(active===state&&!state.paused)step(state,i+1);};u.onerror=function(){if(active===state)stop();};setBtn(state.btn,"\\u23F8 Pause",true);try{window.speechSynthesis.speak(u);}catch(e){stop();}return;}var a=state.audios[i];if(!a){step(state,i+1);return;}var sidx=a.getAttribute("data-ka-s");clearHi(state.spans);var firstHi=null;for(var k=0;k<state.spans.length;k++){if(sidx!==null&&state.spans[k].getAttribute("data-ka-s")===sidx){state.spans[k].classList.add("ka-on");if(!firstHi)firstHi=state.spans[k];}}if(firstHi)scrollSentence(firstHi);var disp=i+1;for(var gi=0;gi<state.groups.length;gi++){if(state.groups[gi].length&&state.groups[gi][0].getAttribute("data-ka-s")===sidx){disp=gi+1;break;}}updateCount(state.bar,disp,state.groups.length||count);try{a.currentTime=0;a.playbackRate=state.rate||1;}catch(e){}a.onended=function(){if(active===state&&!state.paused)step(state,i+1);};setBtn(state.btn,"\\u23F8 Pause",true);var p=a.play();if(p&&p.catch)p.catch(function(){stop();});}document.addEventListener("change",function(e){var sel=e.target&&e.target.closest&&e.target.closest(".allo-ka-speed");if(!sel)return;var rate=parseFloat(sel.value)||1;var bar=sel.closest&&sel.closest(".allo-ka-bar");if(!active||(bar&&active.bar!==bar))return;active.rate=rate;if(active.mode==="embedded"){var curA=active.audios[active.idx];if(curA){try{curA.playbackRate=rate;}catch(ex){}}}else if(!active.paused){step(active,active.idx);}});document.addEventListener("click",function(e){var stopBtn=e.target&&e.target.closest&&e.target.closest(".allo-ka-stop");if(stopBtn){e.preventDefault();stop();return;}var prevBtn=e.target&&e.target.closest&&e.target.closest(".allo-ka-prev");if(prevBtn){e.preventDefault();var pBar=prevBtn.closest&&prevBtn.closest(".allo-ka-bar");var pPlay=pBar&&pBar.querySelector(".allo-ka-play");if(!pPlay)return;if(active&&active.btn===pPlay){step(active,Math.max(0,active.idx-1));return;}if(active)stop();active=createState(pPlay);if(active)step(active,0);return;}var nextBtn=e.target&&e.target.closest&&e.target.closest(".allo-ka-next");if(nextBtn){e.preventDefault();var nBar=nextBtn.closest&&nextBtn.closest(".allo-ka-bar");var nPlay=nBar&&nBar.querySelector(".allo-ka-play");if(!nPlay)return;if(active&&active.btn===nPlay){step(active,active.idx+1);return;}if(active)stop();active=createState(nPlay);if(active)step(active,0);return;}var sp=e.target&&e.target.closest&&e.target.closest(".allo-ka-passage .ka-s");if(sp&&!(e.target.closest&&e.target.closest("a,button,input,select,textarea"))){var pas=sp.closest(".allo-ka-passage")||sp.closest(".section");var sBtn=pas&&pas.querySelector(".allo-ka-play");if(!sBtn)return;e.preventDefault();if(!active||active.btn!==sBtn){if(active)stop();active=createState(sBtn);if(!active)return;}var sAttr=sp.getAttribute("data-ka-s");var targetIdx=-1;if(active.mode==="browser"){for(var gi=0;gi<active.groups.length;gi++){if(active.groups[gi].indexOf(sp)!==-1||(sAttr!==null&&active.groups[gi][0]&&active.groups[gi][0].getAttribute("data-ka-s")===sAttr)){targetIdx=gi;break;}}}else{for(var ai=0;ai<active.audios.length;ai++){if(sAttr!==null&&active.audios[ai].getAttribute("data-ka-s")===sAttr){targetIdx=ai;break;}}if(targetIdx<0){announce("Audio is not available for this sentence.");return;}}step(active,targetIdx>=0?targetIdx:0);return;}var btn=e.target&&e.target.closest&&e.target.closest(".allo-ka-play");if(!btn)return;if(active&&active.btn===btn){if(active.paused)resume();else pause();return;}if(active)stop();active=createState(btn);if(active)step(active,0);});})();`;
         _body.appendChild(_sc);
       }
     } catch (e) { /* injection best-effort */ }
@@ -1237,12 +1237,36 @@
       sec.classList.add('allo-ka-passage');
       const forId = sec.id || ('ka' + si);
       const bar = doc.createElement('div'); bar.className = 'allo-ka-bar'; bar.setAttribute('data-ka-generated', 'true'); bar.style.cssText = 'margin:6px 0 10px;';
+      const controls = doc.createElement('div'); controls.className = 'allo-ka-controls';
+      const prevBtn = doc.createElement('button'); prevBtn.type = 'button'; prevBtn.className = 'allo-ka-prev';
+      prevBtn.setAttribute('aria-label', 'Previous sentence'); prevBtn.title = 'Previous sentence';
+      prevBtn.style.cssText = 'padding:6px 10px;background:#e2e8f0;color:#0f172a;border:1px solid #cbd5e1;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em;';
+      prevBtn.textContent = '\u23EE';
       const btn = doc.createElement('button'); btn.type = 'button'; btn.className = 'allo-ka-play'; btn.setAttribute('data-ka-for', forId);
       btn.setAttribute('data-ka-mode', mode);
       btn.setAttribute('aria-pressed', 'false');
       btn.style.cssText = 'padding:7px 16px;background:#0369a1;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em;';
       btn.textContent = '\u{1F50A} Read aloud';
-      bar.appendChild(btn);
+      const nextBtn = doc.createElement('button'); nextBtn.type = 'button'; nextBtn.className = 'allo-ka-next';
+      nextBtn.setAttribute('aria-label', 'Next sentence'); nextBtn.title = 'Next sentence';
+      nextBtn.style.cssText = 'padding:6px 10px;background:#e2e8f0;color:#0f172a;border:1px solid #cbd5e1;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em;';
+      nextBtn.textContent = '\u23ED';
+      const countEl = doc.createElement('span'); countEl.className = 'allo-ka-count';
+      countEl.setAttribute('data-ka-total', String(items.length));
+      countEl.textContent = '0 / ' + items.length;
+      const speedSel = doc.createElement('select'); speedSel.className = 'allo-ka-speed';
+      speedSel.setAttribute('aria-label', 'Playback speed'); speedSel.title = 'Playback speed';
+      [['0.75', '0.75\u00D7'], ['1', '1\u00D7'], ['1.25', '1.25\u00D7']].forEach(function(pair) {
+        const opt = doc.createElement('option'); opt.value = pair[0]; opt.textContent = pair[1];
+        if (pair[0] === '1') opt.selected = true;
+        speedSel.appendChild(opt);
+      });
+      controls.appendChild(prevBtn);
+      controls.appendChild(btn);
+      controls.appendChild(nextBtn);
+      controls.appendChild(countEl);
+      controls.appendChild(speedSel);
+      bar.appendChild(controls);
       let abox = null;
       if (mode === 'embedded') {
         abox = doc.createElement('span'); abox.className = 'allo-ka-audios'; abox.setAttribute('data-ka-generated', 'true'); abox.setAttribute('data-ka-for', forId); abox.setAttribute('hidden', '');
@@ -1250,7 +1274,7 @@
       const fe = sec.firstElementChild;
       if (fe && fe.nextSibling) sec.insertBefore(bar, fe.nextSibling); else sec.appendChild(bar);
       if (abox) sec.appendChild(abox);
-      const passage = { bar: bar, abox: abox, btn: btn, forId: forId, total: items.length, ready: 0 };
+      const passage = { bar: bar, controls: controls, abox: abox, btn: btn, forId: forId, total: items.length, ready: 0 };
       for (let k = 0; k < items.length; k++) {
         if (!abox) continue;
         audioJobs.push({ item: items[k], abox: abox, passage: passage });
@@ -1309,6 +1333,7 @@
         note.style.cssText = 'margin:7px 0 0;padding:8px 10px;border:2px solid #a16207;border-radius:8px;background:#fff7ed;color:#7c2d12;font-size:.88em;font-weight:650;line-height:1.4;';
         if (!passage.ready) {
           note.textContent = runtimeText('readAloudUnavailable', 'Read-aloud audio wasn\u2019t available for this passage. The passage text is still available below.');
+          try { if (passage.controls) passage.controls.remove(); } catch (e) {}
           try { if (passage.btn) passage.btn.remove(); } catch (e) {}
           try { if (passage.abox) passage.abox.remove(); } catch (e) {}
         } else {
@@ -1434,10 +1459,15 @@
       if (prior && prior.classList && prior.classList.contains('page-break')) prior.remove();
       section.remove();
     });
-    doc.querySelectorAll('.answer-key,.alloflow-teacher-copy-banner').forEach((node) => node.remove());
+    doc.querySelectorAll('.answer-key,.alloflow-teacher-copy-banner,.allo-block-controls,.allo-block-remove,del[data-allo-change-id],[data-allo-citation-store]').forEach((node) => node.remove());
+    doc.querySelectorAll('ins[data-allo-change-id]').forEach((node) => {
+      if (!node.parentNode) return;
+      while (node.firstChild) node.parentNode.insertBefore(node.firstChild, node);
+      node.remove();
+    });
     doc.querySelectorAll('.question[data-correct]').forEach((node) => node.setAttribute('data-correct', ''));
     doc.querySelectorAll('.question[data-fill-answers]').forEach((node) => node.removeAttribute('data-fill-answers'));
-    doc.querySelectorAll('.alloflow-cs-strip[data-category-id]').forEach((node) => node.setAttribute('data-category-id', ''));
+    doc.querySelectorAll('.alloflow-cs-strip[data-category-id],.alloflow-cs-item[data-category-id]').forEach((node) => node.setAttribute('data-category-id', ''));
     // A stale Builder iframe may still contain timeline answer metadata or
     // the canonical order. Remove both, then materialize a deterministic
     // non-canonical presentation that remains stable for the downloaded file.
@@ -1480,6 +1510,7 @@
   // teacher cannot accidentally share one mixed student/answer-key ZIP.
   const _alloDownloadSeparatedStudentTeacher = async (options) => {
     const opts = options || {};
+    await _alloPreAwaitLocaleBundle(opts.language || opts.documentLanguage);
     const copies = _alloSeparateStudentTeacherHtml(opts.htmlContent, opts.t);
     const htmlName = opts.htmlName || _alloExportFilename(opts.htmlContent, 'alloflow-export');
     const dateSuffix = new Date().toISOString().split('T')[0];
@@ -1539,6 +1570,7 @@
       if (_ans === null) return; // cancelled — abort the export entirely
       _readAloudMode = _ans;
     }
+    await _alloPreAwaitLocaleBundle((exportConfig && (exportConfig.documentLanguage || exportConfig.language)) || (deps && (deps.leveledTextLanguage || deps.currentUiLanguage || deps.language)));
     let htmlContent;
     let _audioAssets = [];
     let _readAloudApplied = false;
@@ -1566,10 +1598,21 @@
       // exports (2026-06-11; the live preview keeps its badges untouched).
       var _exClone = iframeDoc.documentElement.cloneNode(true);
       try {
-        var _exKill = _exClone.querySelectorAll('#a11y-inspect-css, #a11y-inspect-styles, #allo-builder-edit-css, .a11y-inspect-badge, [data-allo-crop-ui]');
+        var _exKill = _exClone.querySelectorAll('#a11y-inspect-css, #a11y-inspect-styles, #allo-builder-edit-css, #allo-builder-view-filter, #allo-builder-paper-css, .a11y-inspect-badge, .allo-block-controls, .allo-block-remove, [data-allo-crop-ui], [data-allo-citation-store], del[data-allo-change-id]');
         for (var _ki = 0; _ki < _exKill.length; _ki++) _exKill[_ki].remove();
+        var _exIns = _exClone.querySelectorAll('ins[data-allo-change-id]');
+        for (var _ii = 0; _ii < _exIns.length; _ii++) {
+          var _in = _exIns[_ii];
+          if (!_in.parentNode) continue;
+          while (_in.firstChild) _in.parentNode.insertBefore(_in.firstChild, _in);
+          _in.parentNode.removeChild(_in);
+        }
         var _exEd = _exClone.querySelectorAll('[contenteditable]');
         for (var _ei = 0; _ei < _exEd.length; _ei++) _exEd[_ei].removeAttribute('contenteditable');
+        var _exSem = _exClone.querySelectorAll('[data-allo-semantic-selected]');
+        for (var _si = 0; _si < _exSem.length; _si++) _exSem[_si].removeAttribute('data-allo-semantic-selected');
+        var _exPb = _exClone.querySelectorAll('[data-allo-page-break]');
+        for (var _pbi = 0; _pbi < _exPb.length; _pbi++) _exPb[_pbi].removeAttribute('data-allo-page-break');
         var _exAll = _exClone.querySelectorAll('*');
         for (var _ai = 0; _ai < _exAll.length; _ai++) {
           var _cl = _exAll[_ai].classList;
@@ -1784,6 +1827,7 @@
       if (addToast) addToast((t && t('export_status.pipeline_loading')) || 'Export tools still loading — please try again in a moment.', 'error');
       return;
     }
+    await _alloPreAwaitLocaleBundle((exportConfig && (exportConfig.documentLanguage || exportConfig.language)) || (deps && (deps.leveledTextLanguage || deps.currentUiLanguage || deps.language)));
     const isWorksheet = mode === 'worksheet';
     let htmlContent = generateFullPackHTML(getExportableHistory(), sourceTopic, isWorksheet, studentResponses, exportConfig);
     if (exportConfig && exportConfig.assessmentMode === true) {
@@ -2850,129 +2894,507 @@
     return lines;
   };
 
+  // Shared Contract A resource type -> exportConfig toggle key mapping
+  const _SLIDE_RESOURCE_TYPE_TO_KEY = {
+    'simplified': 'includeSimplified', 'glossary': 'includeGlossary', 'quiz': 'includeQuiz',
+    'math': 'includeMath', 'sentence-frames': 'includeSentenceFrames', 'outline': 'includeOutline',
+    'timeline': 'includeTimeline', 'concept-sort': 'includeConceptSort', 'dbq': 'includeDbq',
+    'lesson-plan': 'includeLessonPlan', 'anchor-chart': 'includeAnchorChart',
+    'guided-notes': 'includeGuidedNotes', 'note-taking': 'includeNoteTaking',
+    'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
+    'directions': 'includeDirections', 'word-wall': 'includeWordWall',
+    'fluency-record': 'includeFluencyRecord', 'alignment-report': 'includeAlignmentReport',
+    'faq': 'includeFaq', 'analysis': 'includeAnalysis', 'udl-advice': 'includeUdlAdvice',
+    'brainstorm': 'includeBrainstorm'
+  };
+
   // ── getSlidesPreviewHTML ─────────────────────────────────────────
   // Builds a deck of 16:9 slide HTML cards from the current export
   // history (simplified text, glossary, quiz, outline, etc.). Pure.
   const getSlidesPreviewHTML = (deps) => {
-    const { sourceTopic, gradeLevel, getExportableHistory, t } = deps || {};
+    const { sourceTopic, gradeLevel, getExportableHistory, t, exportConfig } = deps || {};
+    const _escSlide = function(v) {
+      return String(v == null ? '' : v)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    };
+    const _cleanText = function(v) {
+      return String(v == null ? '' : v).replace(/\*\*/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1').trim();
+    };
     const _maT = function(key, fallback) {
       const fullKey = 'memory_aid.' + key;
       try { const v = typeof t === 'function' ? t(fullKey) : ''; if (typeof v === 'string' && v && v !== fullKey) return v; } catch (_) {}
       return fallback;
     };
+    const activeCfg = exportConfig || (typeof window !== 'undefined' && window.__alloActiveExportConfig) || null;
+    const isAssessment = !!(activeCfg && activeCfg.assessmentMode === true);
+    const rawHistory = (typeof getExportableHistory === 'function' ? getExportableHistory() : []).filter(function(item) { return item && typeof item === 'object'; });
+    const resourceOrder = activeCfg && Array.isArray(activeCfg.resourceOrder) ? activeCfg.resourceOrder : [];
+    const itemOrder = activeCfg && Array.isArray(activeCfg.resourceItemOrder) ? activeCfg.resourceItemOrder : [];
+    const orderedHistory = rawHistory.map(function(item, origIdx) {
+      const key = _SLIDE_RESOURCE_TYPE_TO_KEY[item.type] || '';
+      const typeRank = key && resourceOrder.length ? resourceOrder.indexOf(key) : -1;
+      const itemId = item.id != null ? String(item.id) : '';
+      const itemRank = itemId && itemOrder.length ? itemOrder.indexOf(itemId) : -1;
+      return {
+        item: item,
+        origIdx: origIdx,
+        typeRank: typeRank >= 0 ? typeRank : Number.MAX_SAFE_INTEGER,
+        itemRank: itemRank >= 0 ? itemRank : Number.MAX_SAFE_INTEGER
+      };
+    }).sort(function(a, b) {
+      if (a.typeRank !== b.typeRank) return a.typeRank - b.typeRank;
+      if (a.itemRank !== b.itemRank) return a.itemRank - b.itemRank;
+      return a.origIdx - b.origIdx;
+    }).map(function(entry) { return entry.item; });
+
     const slides = [];
     const themeColor = '#4f46e5';
-    slides.push('<div class="slide"><div style="background:' + themeColor + ';color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;border-radius:8px"><h1 style="font-size:28px;margin:0;text-align:center;padding:0 20px">' + (sourceTopic || 'Untitled Presentation') + '</h1><p style="font-size:14px;opacity:0.8;margin-top:8px">' + gradeLevel + ' · ' + new Date().toLocaleDateString() + '</p></div></div>');
-    (typeof getExportableHistory === 'function' ? getExportableHistory() : []).forEach(function(item) {
-      const title = item.title || item.type;
-      if (item.type === 'simplified' && typeof item.data === 'string') {
-        const paragraphs = item.data.split(/\n{2,}/);
+    const _pushLineChunks = function(slideTitle, entries, perSlide) {
+      const limit = perSlide || 8;
+      let buf = ''; let count = 0;
+      entries.forEach(function(ent) {
+        if (!ent || !ent.text) return;
+        if (count >= limit && buf) {
+          slides.push('<div class="slide"><div class="slide-title">' + _escSlide(slideTitle) + '</div><div class="slide-body">' + buf + '</div></div>');
+          buf = ''; count = 0;
+        }
+        buf += ent.kind === 'h'
+          ? '<h3 style="color:' + themeColor + ';margin:8px 0 4px">' + _escSlide(ent.text) + '</h3>'
+          : '<p style="margin:4px 0;' + (ent.indent ? 'padding-left:' + (ent.indent * 14) + 'px;' : '') + '">' + _escSlide(ent.text) + '</p>';
+        count++;
+      });
+      if (buf) slides.push('<div class="slide"><div class="slide-title">' + _escSlide(slideTitle) + '</div><div class="slide-body">' + buf + '</div></div>');
+    };
+    const _safeTextVal = function(v, depth) {
+      if (typeof v === 'string' || typeof v === 'number') return String(v).trim();
+      if (v && typeof v === 'object' && !Array.isArray(v) && (depth || 0) <= 3) {
+        const keys = ['text', 'label', 'title', 'name', 'content', 'value', 'description', 'statement', 'en'];
+        for (let i = 0; i < keys.length; i++) {
+          const val = v[keys[i]];
+          if (val == null) continue;
+          const resolved = _safeTextVal(val, (depth || 0) + 1);
+          if (resolved) return resolved;
+        }
+      }
+      return '';
+    };
+
+    const metaLine = (gradeLevel ? _escSlide(gradeLevel) + ' &middot; ' : '') + _escSlide(new Date().toLocaleDateString());
+    slides.push('<div class="slide"><div style="background:' + themeColor + ';color:white;display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;border-radius:8px"><h1 style="font-size:28px;margin:0;text-align:center;padding:0 20px">' + _escSlide(sourceTopic || 'Untitled Presentation') + '</h1><p style="font-size:14px;opacity:0.85;margin-top:8px">' + metaLine + '</p></div></div>');
+
+    orderedHistory.forEach(function(item) {
+      const title = item.title || item.type || 'Resource';
+      const d = item.data;
+      if (item.type === 'simplified' && typeof d === 'string') {
+        const paragraphs = d.split(/\n{2,}/);
         let slideContent = ''; let charCount = 0;
         paragraphs.forEach(function(p) {
-          const clean = p.replace(/\*\*/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1').trim();
+          const clean = _cleanText(p);
           if (!clean) return;
           if (charCount + clean.length > 800 && slideContent) {
-            slides.push('<div class="slide"><div class="slide-title">' + title + '</div><div class="slide-body">' + slideContent + '</div></div>');
+            slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + '</div><div class="slide-body">' + slideContent + '</div></div>');
             slideContent = ''; charCount = 0;
           }
-          slideContent += '<p>' + clean + '</p>'; charCount += clean.length;
+          slideContent += '<p>' + _escSlide(clean) + '</p>'; charCount += clean.length;
         });
-        if (slideContent) slides.push('<div class="slide"><div class="slide-title">' + title + '</div><div class="slide-body">' + slideContent + '</div></div>');
-      } else if (item.type === 'glossary' && Array.isArray(item.data)) {
-        const TPS = 5;
-        for (let i = 0; i < item.data.length; i += TPS) {
-          const chunk = item.data.slice(i, i + TPS);
-          const rows = chunk.map(function(g) { return '<tr><td style="font-weight:700;color:' + themeColor + ';padding:6px 10px;border-bottom:1px solid #e2e8f0;width:30%">' + (g.term || '') + '</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0">' + (g.def || '') + '</td></tr>'; }).join('');
-          slides.push('<div class="slide"><div class="slide-title">' + title + (i > 0 ? ' (cont.)' : '') + '</div><div class="slide-body"><table style="width:100%;border-collapse:collapse;font-size:13px"><tbody>' + rows + '</tbody></table></div></div>');
-        }
-      } else if (item.type === 'quiz' && item.data && item.data.questions) {
-        item.data.questions.forEach(function(q, qi) {
-          const opts = (q.options || []).map(function(o, oi) { return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0"><span style="background:#e0e7ff;color:' + themeColor + ';width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0">' + String.fromCharCode(65 + oi) + '</span><span>' + o + '</span></div>'; }).join('');
-          slides.push('<div class="slide"><div class="slide-title">Question ' + (qi + 1) + '</div><div class="slide-body"><p style="font-size:16px;font-weight:600;margin-bottom:16px">' + (q.question || '') + '</p>' + opts + '</div></div>');
-        });
-      } else if (item.type === 'outline' || item.type === 'timeline') {
-        const text = typeof item.data === 'string' ? item.data : JSON.stringify(item.data);
-        const lines = text.split(/\n/).filter(function(l) { return l.trim(); });
-        let slideContent = ''; let count = 0;
-        lines.forEach(function(l) {
-          const clean = l.replace(/\*\*/g, '').replace(/^#+\s*/, '').trim();
-          if (!clean) return;
-          if (count >= 8 && slideContent) {
-            slides.push('<div class="slide"><div class="slide-title">' + title + '</div><div class="slide-body">' + slideContent + '</div></div>');
-            slideContent = ''; count = 0;
+        if (slideContent) slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + '</div><div class="slide-body">' + slideContent + '</div></div>');
+      } else if ((item.type === 'glossary' || item.type === 'word-wall') && (Array.isArray(d) || (d && typeof d === 'object' && Array.isArray(d.terms || d.items || d.words)))) {
+        const list = Array.isArray(d) ? d : (d.terms || d.items || d.words || []);
+        if (item.type === 'word-wall') {
+          const CPP = 4;
+          for (let i = 0; i < list.length; i += CPP) {
+            const chunk = list.slice(i, i + CPP);
+            const cardsHtml = chunk.map(function(w) {
+              const obj = w && typeof w === 'object' ? w : { term: String(w || '') };
+              const term = obj.term || obj.word || '';
+              const def = obj.def || obj.definition || obj.meaning || '';
+              return '<div style="border:2px solid #059669;border-radius:10px;padding:10px 12px;background:#f0fdf4"><div style="font-size:16px;font-weight:800;color:#065f46">' + _escSlide(term) + '</div>' + (def ? '<div style="font-size:12px;color:#334155;margin-top:4px">' + _escSlide(def) + '</div>' : '') + '</div>';
+            }).join('');
+            slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + (i > 0 ? ' (cont.)' : '') + '</div><div class="slide-body"><div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">' + cardsHtml + '</div></div></div>');
           }
-          const isHeading = l.trim().startsWith('#');
-          slideContent += isHeading ? '<h3 style="color:' + themeColor + ';margin:8px 0 4px">' + clean + '</h3>' : '<p style="margin:4px 0">' + clean + '</p>';
-          count++;
+        } else {
+          const TPS = 5;
+          for (let i = 0; i < list.length; i += TPS) {
+            const chunk = list.slice(i, i + TPS);
+            const rows = chunk.map(function(g) {
+              const obj = g && typeof g === 'object' ? g : { term: String(g || '') };
+              return '<tr><td style="font-weight:700;color:' + themeColor + ';padding:6px 10px;border-bottom:1px solid #e2e8f0;width:30%">' + _escSlide(obj.term || obj.word || '') + '</td><td style="padding:6px 10px;border-bottom:1px solid #e2e8f0">' + _escSlide(obj.def || obj.definition || obj.meaning || '') + '</td></tr>';
+            }).join('');
+            slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + (i > 0 ? ' (cont.)' : '') + '</div><div class="slide-body"><table style="width:100%;border-collapse:collapse;font-size:13px"><tbody>' + rows + '</tbody></table></div></div>');
+          }
+        }
+      } else if (item.type === 'quiz' && d && Array.isArray(d.questions)) {
+        d.questions.forEach(function(q, qi) {
+          const optArr = q && Array.isArray(q.options) ? q.options : (q && Array.isArray(q.answerOptions) ? q.answerOptions : []);
+          const opts = optArr.map(function(o, oi) {
+            const optText = typeof o === 'string' || typeof o === 'number' ? o : _safeTextVal(o);
+            return '<div style="display:flex;align-items:center;gap:8px;padding:6px 0"><span style="background:#e0e7ff;color:' + themeColor + ';width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:12px;flex-shrink:0">' + String.fromCharCode(65 + oi) + '</span><span>' + _escSlide(optText) + '</span></div>';
+          }).join('');
+          slides.push('<div class="slide"><div class="slide-title">' + _escSlide('Question ' + (qi + 1)) + '</div><div class="slide-body"><p style="font-size:16px;font-weight:600;margin-bottom:14px">' + _escSlide((q && (q.question || q.prompt)) || '') + '</p>' + (opts || '<p style="font-size:12px;color:#64748b;font-style:italic">Open-ended response</p>') + '</div></div>');
         });
-        if (slideContent) slides.push('<div class="slide"><div class="slide-title">' + title + '</div><div class="slide-body">' + slideContent + '</div></div>');
-      } else if (item.type === 'memory-aid' && item.data && typeof item.data === 'object') {
-        // Memory Aid Studio: never fall through to the raw-JSON catch-all. The
-        // resource object carries the private lesson source excerpt, the lesson
-        // snippet, base64 visuals and (on legacy copies) learner practice
-        // evidence, none of which belongs on a slide. One slide per memory
-        // target: cue first, then the facts labelled by teacher-review status
-        // through the module's shared rule (fail-safe: unverified if absent).
-        const esc = function(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+      } else if (item.type === 'math' && d) {
+        const probs = Array.isArray(d) ? d : (Array.isArray(d.problems) ? d.problems : (Array.isArray(d.questions) ? d.questions : []));
+        if (probs.length) {
+          const PPP = 3;
+          for (let i = 0; i < probs.length; i += PPP) {
+            const chunk = probs.slice(i, i + PPP);
+            const blocks = chunk.map(function(p, idx) {
+              const obj = p && typeof p === 'object' ? p : { question: String(p || '') };
+              const qText = obj.question || obj.problem || obj.prompt || obj.expression || '';
+              const hint = obj.hint || obj.visualModel || '';
+              return '<div style="padding:8px 12px;border:1px solid #cbd5e1;border-radius:8px;margin-bottom:8px;background:#f8fafc"><div style="font-weight:700;color:' + themeColor + ';font-size:12px">Problem ' + (i + idx + 1) + '</div><div style="font-size:14px;margin-top:2px">' + _escSlide(qText) + '</div>' + (hint ? '<div style="font-size:11px;color:#475569;margin-top:3px">' + _escSlide(hint) + '</div>' : '') + '</div>';
+            }).join('');
+            slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + (i > 0 ? ' (cont.)' : '') + '</div><div class="slide-body">' + blocks + '</div></div>');
+          }
+        } else {
+          const lines = (typeof d === 'string' ? d : summarizeResourceText(item, { maxChars: 1200 }).join('\n')).split(/\n/).filter(Boolean).map(function(tLine) { return { kind: 'p', text: _cleanText(tLine) }; });
+          _pushLineChunks(title, lines, 7);
+        }
+      } else if (item.type === 'sentence-frames' && d) {
+        const items = typeof d === 'object' ? (Array.isArray(d.items) ? d.items : (Array.isArray(d.frames) ? d.frames : [])) : [];
+        if (items.length) {
+          const FPP = 5;
+          for (let i = 0; i < items.length; i += FPP) {
+            const chunk = items.slice(i, i + FPP);
+            const rows = chunk.map(function(fr, idx) {
+              const obj = fr && typeof fr === 'object' ? fr : { text: String(fr || '') };
+              return '<li style="margin-bottom:8px"><strong>' + (i + idx + 1) + '.</strong> ' + _escSlide(obj.text || obj.frame || obj.content || '') + (obj.text_en ? ' <span style="color:#64748b;font-size:12px">(' + _escSlide(obj.text_en) + ')</span>' : '') + '</li>';
+            }).join('');
+            slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + (i > 0 ? ' (cont.)' : '') + '</div><div class="slide-body"><ul style="list-style:none;padding:0">' + rows + '</ul></div></div>');
+          }
+        } else {
+          const raw = typeof d === 'string' ? d : String(d.text || summarizeResourceText(item, { maxChars: 1000 }).join('\n') || '');
+          const lines = raw.split(/\n+/).filter(Boolean).map(function(tLine) { return { kind: 'p', text: _cleanText(tLine) }; });
+          _pushLineChunks(title, lines, 6);
+        }
+      } else if (item.type === 'outline') {
+        const entries = [];
+        if (typeof d === 'string') {
+          d.split(/\n/).forEach(function(l) {
+            const clean = _cleanText(l.replace(/^#+\s*/, ''));
+            if (clean) entries.push({ kind: l.trim().startsWith('#') ? 'h' : 'p', text: clean });
+          });
+        } else if (d && typeof d === 'object') {
+          const topMain = _safeTextVal(d.main || d.title || d.topic);
+          if (topMain) entries.push({ kind: 'h', text: topMain });
+          if (Array.isArray(d.sections)) {
+            d.sections.forEach(function(sec, si) {
+              if (!sec || typeof sec !== 'object') { const sTxt = _safeTextVal(sec); if (sTxt) entries.push({ kind: 'p', text: sTxt }); return; }
+              entries.push({ kind: 'h', text: sec.title || sec.label || sec.heading || ('Section ' + (si + 1)) });
+              const sub = sec.items || sec.bullets || sec.points || sec.lines || [];
+              (Array.isArray(sub) ? sub : [sec.content || sec.text]).forEach(function(pt) {
+                const txt = _safeTextVal(pt);
+                if (txt) entries.push({ kind: 'p', text: '\u2022 ' + txt, indent: 1 });
+              });
+            });
+          } else if (Array.isArray(d.branches)) {
+            d.branches.forEach(function(br, bi) {
+              if (!br || typeof br !== 'object') return;
+              entries.push({ kind: 'h', text: br.title || br.label || ('Branch ' + (bi + 1)) });
+              (Array.isArray(br.items) ? br.items : []).forEach(function(it) {
+                const txt = _safeTextVal(it);
+                if (txt) entries.push({ kind: 'p', text: '\u2022 ' + txt, indent: 1 });
+              });
+            });
+          } else if (d.fishbone) {
+            const fb = d.fishbone;
+            if (fb && typeof fb === 'object' && !Array.isArray(fb)) {
+              if (fb.effect || fb.problem || fb.head) entries.push({ kind: 'h', text: String(fb.effect || fb.problem || fb.head) });
+              const cats = Array.isArray(fb.categories) ? fb.categories : (Array.isArray(fb.causes) ? fb.causes : (Array.isArray(fb.bones) ? fb.bones : []));
+              cats.forEach(function(cat) {
+                if (!cat || typeof cat !== 'object') { const s = _safeTextVal(cat); if (s) entries.push({ kind: 'p', text: '\u2022 ' + s }); return; }
+                const cTitle = _safeTextVal(cat.category || cat.label || cat.title || cat.name);
+                if (cTitle) entries.push({ kind: 'h', text: cTitle });
+                (Array.isArray(cat.causes || cat.items) ? (cat.causes || cat.items) : []).forEach(function(c) {
+                  const s = _safeTextVal(c);
+                  if (s) entries.push({ kind: 'p', text: '\u2022 ' + s, indent: 1 });
+                });
+              });
+            } else if (Array.isArray(fb)) {
+              fb.forEach(function(c) { const s = _safeTextVal(c); if (s) entries.push({ kind: 'p', text: '\u2022 ' + s }); });
+            }
+          } else if (d.venn && typeof d.venn === 'object') {
+            [['left', 'Left / Set A'], ['shared', 'Shared'], ['both', 'Shared'], ['overlap', 'Shared'], ['right', 'Right / Set B']].forEach(function(pair) {
+              const val = d.venn[pair[0]];
+              if (!val) return;
+              const arr = Array.isArray(val) ? val : (Array.isArray(val.items) ? val.items : [val]);
+              const heading = (val && !Array.isArray(val) && (val.title || val.label)) || pair[1];
+              entries.push({ kind: 'h', text: heading });
+              arr.forEach(function(x) { const s = _safeTextVal(x); if (s) entries.push({ kind: 'p', text: '\u2022 ' + s, indent: 1 }); });
+            });
+          } else if (d.plotDiagram && typeof d.plotDiagram === 'object') {
+            const pd = d.plotDiagram;
+            if (Array.isArray(pd)) {
+              pd.forEach(function(st) { const s = _safeTextVal(st); if (s) entries.push({ kind: 'p', text: '\u2022 ' + s }); });
+            } else {
+              Object.keys(pd).forEach(function(k) {
+                const label = k.replace(/([a-z])([A-Z])/g, '$1 $2').replace(/^./, function(c) { return c.toUpperCase(); });
+                const val = pd[k];
+                if (Array.isArray(val)) {
+                  entries.push({ kind: 'h', text: label });
+                  val.forEach(function(x) { const s = _safeTextVal(x); if (s) entries.push({ kind: 'p', text: '\u2022 ' + s, indent: 1 }); });
+                } else {
+                  const s = _safeTextVal(val);
+                  if (s) entries.push({ kind: 'p', text: label + ': ' + s });
+                }
+              });
+            }
+          } else if (d.hierarchy && typeof d.hierarchy === 'object') {
+            const walkNode = function(node, depth) {
+              if (!node || depth > 4 || entries.length >= 40) return;
+              if (Array.isArray(node)) { node.forEach(function(n) { walkNode(n, depth); }); return; }
+              const txt = _safeTextVal(node);
+              if (txt) entries.push({ kind: depth === 0 ? 'h' : 'p', text: (depth > 0 ? '\u2022 ' : '') + txt, indent: Math.max(0, depth - 1) });
+              if (Array.isArray(node.children)) node.children.forEach(function(ch) { walkNode(ch, depth + 1); });
+            };
+            walkNode(d.hierarchy, 0);
+          }
+          if (!entries.length || (entries.length === 1 && entries[0].text === topMain)) {
+            summarizeResourceText(item, { maxChars: 1200 }).forEach(function(line) {
+              if (line && line !== topMain) entries.push({ kind: 'p', text: _cleanText(line) });
+            });
+          }
+        }
+        _pushLineChunks(title, entries, 8);
+      } else if (item.type === 'timeline') {
+        const events = Array.isArray(d) ? d : (d && typeof d === 'object' ? (Array.isArray(d.events) ? d.events : (Array.isArray(d.items) ? d.items : null)) : null);
+        if (events && events.length) {
+          const EPP = 4;
+          for (let i = 0; i < events.length; i += EPP) {
+            const chunk = events.slice(i, i + EPP);
+            const cardsHtml = chunk.map(function(ev) {
+              const obj = ev && typeof ev === 'object' ? ev : { title: String(ev || '') };
+              const when = obj.date || obj.year || obj.time || obj.period || obj.label || '';
+              const what = obj.title || obj.event || obj.heading || obj.name || '';
+              const desc = obj.description || obj.summary || obj.details || obj.text || obj.content || '';
+              return '<div style="border-left:3px solid ' + themeColor + ';padding:6px 10px;margin-bottom:8px;background:#f8fafc;border-radius:0 6px 6px 0">'
+                + (when ? '<div style="font-size:11px;font-weight:800;color:' + themeColor + '">' + _escSlide(when) + '</div>' : '')
+                + (what ? '<div style="font-size:14px;font-weight:700;color:#0f172a">' + _escSlide(what) + '</div>' : '')
+                + (desc ? '<div style="font-size:12px;color:#334155;margin-top:2px">' + _escSlide(desc) + '</div>' : '')
+                + '</div>';
+            }).join('');
+            slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + (i > 0 ? ' (cont.)' : '') + '</div><div class="slide-body">' + cardsHtml + '</div></div>');
+          }
+        } else {
+          const raw = typeof d === 'string' ? d : summarizeResourceText(item, { maxChars: 1200 }).join('\n');
+          const entries = raw.split(/\n/).filter(Boolean).map(function(l) { return { kind: l.trim().startsWith('#') ? 'h' : 'p', text: _cleanText(l.replace(/^#+\s*/, '')) }; });
+          _pushLineChunks(title, entries, 8);
+        }
+      } else if (item.type === 'concept-sort' && d && typeof d === 'object') {
+        const cats = Array.isArray(d.categories) ? d.categories : [];
+        const sortItems = Array.isArray(d.items) ? d.items : [];
+        const catBadges = cats.map(function(c) {
+          const label = typeof c === 'string' ? c : (c && (c.name || c.label || c.title)) || '';
+          return label ? '<span style="display:inline-block;padding:4px 10px;border-radius:999px;background:#e0e7ff;color:#3730a3;font-weight:700;font-size:12px">' + _escSlide(label) + '</span>' : '';
+        }).filter(Boolean).join('');
+        const IPP = 12;
+        const chunks = sortItems.length ? sortItems : [''];
+        for (let i = 0; i < chunks.length; i += IPP) {
+          const part = sortItems.length ? sortItems.slice(i, i + IPP) : [];
+          const chips = part.map(function(ci) {
+            const rawLabel = typeof ci === 'string' || typeof ci === 'number' ? String(ci) : (ci && (ci.content || ci.text || ci.label || ci.name || ci.term));
+            const label = typeof rawLabel === 'string' || typeof rawLabel === 'number' ? String(rawLabel) : _safeTextVal(rawLabel);
+            return label ? '<span style="display:inline-block;padding:5px 9px;border:1px solid #cbd5e1;border-radius:8px;background:#f8fafc;font-size:12px">' + _escSlide(label) + '</span>' : '';
+          }).filter(Boolean).join('');
+          slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + (i > 0 ? ' (cont.)' : '') + '</div><div class="slide-body">'
+            + (catBadges ? '<div style="display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px">' + catBadges + '</div>' : '')
+            + (chips ? '<div style="display:flex;flex-wrap:wrap;gap:6px">' + chips + '</div>' : '')
+            + '</div></div>');
+        }
+      } else if (item.type === 'dbq' && d && typeof d === 'object') {
+        if (d.historicalContext || d.essentialQuestion || d.prompt) {
+          slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + '</div><div class="slide-body">'
+            + (d.essentialQuestion || d.prompt ? '<p style="font-weight:700;color:' + themeColor + '">' + _escSlide(d.essentialQuestion || d.prompt) + '</p>' : '')
+            + (d.historicalContext ? '<p style="margin-top:8px">' + _escSlide(String(d.historicalContext).slice(0, 750)) + '</p>' : '')
+            + '</div></div>');
+        }
+        (Array.isArray(d.documents) ? d.documents.slice(0, 8) : []).forEach(function(doc, di) {
+          if (!doc || typeof doc !== 'object') return;
+          const docTitle = doc.title || ('Document ' + (doc.id || (di + 1)));
+          const body = String(doc.content || doc.excerpt || doc.text || '').slice(0, 650);
+          slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + ' &middot; ' + _escSlide(docTitle) + '</div><div class="slide-body">'
+            + (doc.source ? '<p style="font-size:12px;color:#475569;font-style:italic">Source: ' + _escSlide(doc.source) + '</p>' : '')
+            + (body ? '<p>' + _escSlide(body) + '</p>' : '')
+            + '</div></div>');
+        });
+      } else if (item.type === 'lesson-plan' && d && typeof d === 'object') {
+        const eq = _safeTextVal(d.essentialQuestion);
+        const objs = (Array.isArray(d.objectives) ? d.objectives : []).slice(0, 5).map(_safeTextVal).filter(Boolean);
+        const mats = (Array.isArray(d.materialsNeeded) ? d.materialsNeeded : []).slice(0, 6).map(_safeTextVal).filter(Boolean);
+        if (eq || objs.length || mats.length) {
+          slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + '</div><div class="slide-body">'
+            + (eq ? '<p style="font-weight:700;color:' + themeColor + '">' + _escSlide(eq) + '</p>' : '')
+            + (objs.length ? '<h3 style="margin-top:8px">Objectives</h3><ul style="margin:4px 0 0 18px">' + objs.map(function(o) { return '<li>' + _escSlide(o) + '</li>'; }).join('') + '</ul>' : '')
+            + (mats.length ? '<p style="margin-top:8px;font-size:12px;color:#475569"><strong>Materials:</strong> ' + _escSlide(mats.join(', ')) + '</p>' : '')
+            + '</div></div>');
+        }
+        const stages = [];
+        [['hook', 'Hook'], ['directInstruction', 'Direct Instruction'], ['guidedPractice', 'Guided Practice'], ['independentPractice', 'Independent Practice'], ['closure', 'Closure']].forEach(function(pair) {
+          const val = _safeTextVal(d[pair[0]]);
+          if (val) stages.push({ kind: 'p', text: pair[1] + ': ' + val.slice(0, 260) });
+        });
+        (Array.isArray(d.activities) ? d.activities.slice(0, 5) : []).forEach(function(act, ai) {
+          const txt = typeof act === 'string' ? act : [_safeTextVal(act && (act.title || act.name)), _safeTextVal(act && (act.description || act.text || act.studentTask || act.activity))].filter(Boolean).join(': ');
+          if (txt) stages.push({ kind: 'p', text: 'Activity ' + (ai + 1) + ' — ' + txt.slice(0, 220) });
+        });
+        if (stages.length) _pushLineChunks(title + ' · Sequence', stages, 5);
+      } else if (item.type === 'memory-aid' && d && typeof d === 'object') {
+        // Memory Aid Studio: never fall through to raw JSON or expose private
+        // source excerpts, base64 visuals, or learner practice evidence.
         const rules = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.MemoryAid && window.AlloModules.MemoryAid.exportRules) || null;
-        const cards = Array.isArray(item.data.cards) ? item.data.cards.slice(0, 8) : [];
-        const instructions = String(item.data.instructions || '').slice(0, 600);
-        if (instructions) slides.push('<div class="slide"><div class="slide-title">' + esc(title) + '</div><div class="slide-body"><p>' + esc(instructions) + '</p></div></div>');
+        const cards = Array.isArray(d.cards) ? d.cards.slice(0, 8) : [];
+        const instructions = String(d.instructions || '').slice(0, 600);
+        if (instructions) slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + '</div><div class="slide-body"><p>' + _escSlide(instructions) + '</p></div></div>');
         cards.forEach(function(card, ci) {
           const c = card && typeof card === 'object' ? card : {};
           const facts = (Array.isArray(c.essentialFacts) ? c.essentialFacts : []).slice(0, 10).map(function(f) { return String(f == null ? '' : f).slice(0, 600).trim(); }).filter(Boolean);
           const verified = !!(rules && typeof rules.isCardVerified === 'function' && rules.isCardVerified(c));
           const cueBlock = rules && typeof rules.cueBlock === 'function' ? rules.cueBlock(c) : null;
           const cue = c.cueNeedsReview ? '' : cueBlock ? cueBlock.cue : (rules && typeof rules.practiceCue === 'function' ? rules.practiceCue(c) : String(c.studentDraft || c.aiExample || c.scaffoldStarter || '').trim().slice(0, 6000));
-          slides.push('<div class="slide"><div class="slide-title">' + esc(title) + ' &middot; ' + (ci + 1) + '/' + cards.length + '</div><div class="slide-body">'
-            + '<p style="font-size:16px;font-weight:700">' + esc(c.target || _maT('memory_target', 'Memory target')) + '</p>'
-            + (cue ? '<p style="font-size:15px;font-weight:600;color:#0f766e;white-space:pre-wrap">' + esc(cue.slice(0, 700)) + '</p>' : '')
-            + (cueBlock && cueBlock.steps.length ? '<p style="margin-top:6px;font-size:13px;font-weight:700;color:#3730a3">' + esc(_maT('scaffold_heading', 'Build it with support')) + '</p><ol style="margin:2px 0 0 18px;font-size:13px">' + cueBlock.steps.map(function(s) { return '<li>' + esc(String(s).slice(0, 500)) + '</li>'; }).join('') + '</ol>' : '')
-            + (cueBlock && cueBlock.visualDescription ? '<p style="margin-top:6px;font-size:13px;color:#0f766e"><strong>' + esc(_maT('export_visual_cue_described', 'Picture cue, described:')) + '</strong> ' + esc(String(cueBlock.visualDescription).slice(0, 700)) + '</p>' : '')
-            + (cueBlock && cueBlock.prompts.length ? '<p style="margin-top:6px;font-size:13px;font-weight:700;color:#5b21b6">' + esc(_maT('coach_heading', 'Coach questions')) + '</p><ul style="margin:2px 0 0 18px;font-size:13px">' + cueBlock.prompts.map(function(p) { return '<li>' + esc(String(p).slice(0, 500)) + '</li>'; }).join('') + '</ul>' : '')
-            + '<p style="margin-top:8px;font-weight:700">' + (verified ? _maT('facts_student_heading', 'Facts to remember') : _maT('facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.')) + '</p>'
-            + (facts.length ? '<ul style="margin:4px 0 0 18px">' + facts.map(function(f) { return '<li>' + esc(f) + '</li>'; }).join('') + '</ul>' : '')
+          slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + ' &middot; ' + (ci + 1) + '/' + cards.length + '</div><div class="slide-body">'
+            + '<p style="font-size:16px;font-weight:700">' + _escSlide(c.target || _maT('memory_target', 'Memory target')) + '</p>'
+            + (cue ? '<p style="font-size:15px;font-weight:600;color:#0f766e;white-space:pre-wrap">' + _escSlide(cue.slice(0, 700)) + '</p>' : '')
+            + (cueBlock && cueBlock.steps.length ? '<p style="margin-top:6px;font-size:13px;font-weight:700;color:#3730a3">' + _escSlide(_maT('scaffold_heading', 'Build it with support')) + '</p><ol style="margin:2px 0 0 18px;font-size:13px">' + cueBlock.steps.map(function(s) { return '<li>' + _escSlide(String(s).slice(0, 500)) + '</li>'; }).join('') + '</ol>' : '')
+            + (cueBlock && cueBlock.visualDescription ? '<p style="margin-top:6px;font-size:13px;color:#0f766e"><strong>' + _escSlide(_maT('export_visual_cue_described', 'Picture cue, described:')) + '</strong> ' + _escSlide(String(cueBlock.visualDescription).slice(0, 700)) + '</p>' : '')
+            + (cueBlock && cueBlock.prompts.length ? '<p style="margin-top:6px;font-size:13px;font-weight:700;color:#5b21b6">' + _escSlide(_maT('coach_heading', 'Coach questions')) + '</p><ul style="margin:2px 0 0 18px;font-size:13px">' + cueBlock.prompts.map(function(p) { return '<li>' + _escSlide(String(p).slice(0, 500)) + '</li>'; }).join('') + '</ul>' : '')
+            + '<p style="margin-top:8px;font-weight:700">' + _escSlide(verified ? _maT('facts_student_heading', 'Facts to remember') : _maT('facts_pending_student_note', 'Your teacher is still checking these facts. Recall practice opens when they finish.')) + '</p>'
+            + (facts.length ? '<ul style="margin:4px 0 0 18px">' + facts.map(function(f) { return '<li>' + _escSlide(f) + '</li>'; }).join('') + '</ul>' : '')
             + (function() {
                 const connections = rules && typeof rules.activeConnections === 'function' ? rules.activeConnections(c) : [];
                 if (connections.length) return '<dl style="margin-top:8px;font-size:13px;color:#334155">' + connections.filter(function(row) { return facts[row.factIndex]; }).map(function(row) {
-                  return '<dt style="font-weight:700">' + esc(row.cue) + '</dt><dd>' + esc(facts[row.factIndex]) + (row.explanation ? ' ' + esc(row.explanation) : '') + '</dd>';
+                  return '<dt style="font-weight:700">' + _escSlide(row.cue) + '</dt><dd>' + _escSlide(facts[row.factIndex]) + (row.explanation ? ' ' + _escSlide(row.explanation) : '') + '</dd>';
                 }).join('') + '</dl>';
                 const customCue = !(rules && typeof rules.customCue === 'function') || rules.customCue(c);
-                return c.mapping && !c.cueNeedsReview && !customCue ? '<p style="margin-top:8px;font-size:13px;color:#334155"><em>' + esc(String(c.mapping).slice(0, 500)) + '</em></p>' : '';
+                return c.mapping && !c.cueNeedsReview && !customCue ? '<p style="margin-top:8px;font-size:13px;color:#334155"><em>' + _escSlide(String(c.mapping).slice(0, 500)) + '</em></p>' : '';
               })()
             + (function() {
                 const hook = rules && typeof rules.hookFact === 'function' ? rules.hookFact(c) : null;
                 if (!hook) return '';
-                // Carry the provenance the shared rule returns: an unattributed
-                // web claim must not sit under the facts heading with the same
-                // authority as the reviewed facts.
                 const source = hook.webVerified && hook.sourceUrl
-                  ? '<br><span style="font-size:11px;color:#78716c">' + _maT('hook_from_web_note', 'From the web. Check the source:') + ' <a href="' + esc(hook.sourceUrl) + '" style="color:#9a3412">' + esc(hook.sourceTitle || hook.sourceUrl) + '</a>' + (hook.sourceHost && hook.sourceTitle ? ' \u00b7 ' + esc(_maT('hook_source_host', 'goes to {host}').replace('{host}', hook.sourceHost)) : '') + '</span>'
-                  : '<br><span style="font-size:11px;color:#78716c">' + _maT('hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.') + '</span>';
-                return '<p style="margin-top:8px;font-size:13px;color:#9a3412"><strong>' + _maT('hook_heading', 'Did you know?') + '</strong> ' + esc(hook.text) + source + '</p>';
+                  ? '<br><span style="font-size:11px;color:#78716c">' + _escSlide(_maT('hook_from_web_note', 'From the web. Check the source:')) + ' <a href="' + _escSlide(hook.sourceUrl) + '" style="color:#9a3412">' + _escSlide(hook.sourceTitle || hook.sourceUrl) + '</a>' + (hook.sourceHost && hook.sourceTitle ? ' &middot; ' + _escSlide(_maT('hook_source_host', 'goes to {host}').replace('{host}', hook.sourceHost)) : '') + '</span>'
+                  : '<br><span style="font-size:11px;color:#78716c">' + _escSlide(_maT('hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.')) + '</span>';
+                return '<p style="margin-top:8px;font-size:13px;color:#9a3412"><strong>' + _escSlide(_maT('hook_heading', 'Did you know?')) + '</strong> ' + _escSlide(hook.text) + source + '</p>';
               })()
             + '</div></div>');
         });
-      } else if (item.type === 'anchor-chart' && item.data && Array.isArray(item.data.sections)) {
+      } else if (item.type === 'anchor-chart' && d && Array.isArray(d.sections)) {
         // Anchor chart: one slide per section (label + bullets); icons are skipped.
-        const esc = function(v) { return String(v == null ? '' : v).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
-        const sections = item.data.sections.slice(0, 12);
+        const sections = d.sections.slice(0, 12);
         sections.forEach(function(section, si) {
           const s = section && typeof section === 'object' ? section : {};
-          const bullets = (Array.isArray(s.bullets) ? s.bullets : []).map(function(b) { return typeof b === 'string' ? b : (b && b.text) || ''; }).filter(Boolean).slice(0, 8);
-          slides.push('<div class="slide"><div class="slide-title">' + esc(title) + ' &middot; ' + (si + 1) + '/' + sections.length + '</div><div class="slide-body">'
-            + '<p style="font-size:16px;font-weight:700">' + esc(s.label || ('Section ' + (si + 1))) + '</p>'
-            + (bullets.length ? '<ul style="margin:6px 0 0 18px">' + bullets.map(function(b) { return '<li>' + esc(b) + '</li>'; }).join('') + '</ul>' : '')
+          const bullets = (Array.isArray(s.bullets) ? s.bullets : []).map(function(b) { return typeof b === 'string' ? b : (b && (b.text || b.content || b.label)) || ''; }).filter(Boolean).slice(0, 8);
+          slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + ' &middot; ' + (si + 1) + '/' + sections.length + '</div><div class="slide-body">'
+            + '<p style="font-size:16px;font-weight:700">' + _escSlide(s.label || s.title || s.heading || ('Section ' + (si + 1))) + '</p>'
+            + (bullets.length ? '<ul style="margin:6px 0 0 18px">' + bullets.map(function(b) { return '<li>' + _escSlide(b) + '</li>'; }).join('') + '</ul>' : '')
             + '</div></div>');
         });
+      } else if ((item.type === 'note-taking' || item.type === 'guided-notes') && d && typeof d === 'object') {
+        const entries = [];
+        if (Array.isArray(d.cues) || Array.isArray(d.notes)) {
+          (Array.isArray(d.cues) ? d.cues : []).forEach(function(c) { const txt = _safeTextVal(c); if (txt) entries.push({ kind: 'h', text: txt }); });
+          (Array.isArray(d.notes) ? d.notes : []).forEach(function(n) { const txt = _safeTextVal(n); if (txt) entries.push({ kind: 'p', text: '\u2022 ' + txt, indent: 1 }); });
+        }
+        (Array.isArray(d.sections) ? d.sections : []).forEach(function(sec, si) {
+          if (!sec || typeof sec !== 'object') { const s = _safeTextVal(sec); if (s) entries.push({ kind: 'p', text: s }); return; }
+          entries.push({ kind: 'h', text: sec.heading || sec.title || sec.label || ('Section ' + (si + 1)) });
+          const inner = sec.prompts || sec.items || sec.bullets || sec.lines || [];
+          (Array.isArray(inner) ? inner : [sec.text || sec.content]).forEach(function(x) {
+            const s = _safeTextVal(x);
+            if (s) entries.push({ kind: 'p', text: '\u2022 ' + s, indent: 1 });
+          });
+        });
+        (Array.isArray(d.prompts || d.questions || d.items || d.blocks) ? (d.prompts || d.questions || d.items || d.blocks) : []).forEach(function(p) {
+          const s = _safeTextVal(p);
+          if (s) entries.push({ kind: 'p', text: '\u2022 ' + s });
+        });
+        if (typeof d.clozeText === 'string' && d.clozeText.trim()) entries.push({ kind: 'p', text: d.clozeText.trim().slice(0, 600) });
+        if (typeof d.summary === 'string' && d.summary.trim()) entries.push({ kind: 'p', text: 'Summary: ' + d.summary.trim().slice(0, 400) });
+        if (!entries.length) {
+          summarizeResourceText(item, { maxChars: 1200 }).forEach(function(l) { entries.push({ kind: 'p', text: _cleanText(l) }); });
+        }
+        _pushLineChunks(title, entries, 7);
+      } else if (item.type === 'applied-challenge' && d && typeof d === 'object') {
+        const brief = d.brief && typeof d.brief === 'object' ? d.brief : {};
+        const ws = d.workspace && typeof d.workspace === 'object' ? d.workspace : {};
+        const sup = d.supports && typeof d.supports === 'object' ? d.supports : {};
+        const facts = Array.isArray(brief.lockedLessonFacts) ? brief.lockedLessonFacts.map(_safeTextVal).filter(Boolean).slice(0, 6) : [];
+        let html = '';
+        if (brief.role) html += '<p><strong>Role:</strong> ' + _escSlide(brief.role) + '</p>';
+        if (brief.context) html += '<p>' + _escSlide(String(brief.context).slice(0, 600)) + '</p>';
+        if (brief.drivingQuestion) html += '<p style="font-weight:700;color:' + themeColor + '">' + _escSlide(String(brief.drivingQuestion).slice(0, 500)) + '</p>';
+        if (facts.length) html += '<ul style="margin:6px 0 0 18px">' + facts.map(function(f) { return '<li>' + _escSlide(f) + '</li>'; }).join('') + '</ul>';
+        if (ws.framing) html += '<p style="margin-top:6px">' + _escSlide(String(ws.framing).slice(0, 400)) + '</p>';
+        if (sup.phasePrompts && typeof sup.phasePrompts === 'object') {
+          Object.keys(sup.phasePrompts).slice(0, 4).forEach(function(pk) {
+            const pv = _safeTextVal(sup.phasePrompts[pk]);
+            if (pv) html += '<p style="font-size:12px;color:#334155">' + _escSlide(pv) + '</p>';
+          });
+        }
+        if (html) {
+          slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + '</div><div class="slide-body">' + html + '</div></div>');
+        } else {
+          const lines = summarizeResourceText(item, { maxChars: 1200 }).map(function(l) { return { kind: 'p', text: _cleanText(l) }; });
+          _pushLineChunks(title, lines, 7);
+        }
+      } else if (item.type === 'directions' && d) {
+        const entries = [];
+        const body = typeof d === 'string' ? d : (typeof d.body === 'string' ? d.body : '');
+        body.split(/\n+/).forEach(function(l) { const c = _cleanText(l.replace(/^#+\s*/, '')); if (c) entries.push({ kind: 'p', text: c }); });
+        if (d && typeof d === 'object' && Array.isArray(d.objectives)) {
+          entries.push({ kind: 'h', text: 'Goals' });
+          d.objectives.forEach(function(g) { if (g && g.label) entries.push({ kind: 'p', text: '\u2610 ' + g.label, indent: 1 }); });
+        }
+        if (d && typeof d === 'object' && d.choiceBoard && d.choiceBoard.enabled && Array.isArray(d.choiceBoard.choices)) {
+          entries.push({ kind: 'h', text: d.choiceBoard.title || 'Choice Board' });
+          d.choiceBoard.choices.forEach(function(ch) { if (ch && ch.label) entries.push({ kind: 'p', text: '\u2022 ' + ch.label + (ch.description ? ' — ' + ch.description : ''), indent: 1 }); });
+        }
+        _pushLineChunks(title, entries, 7);
+      } else if (item.type === 'fluency-record' && d && typeof d === 'object') {
+        const m = d.metrics && typeof d.metrics === 'object' ? d.metrics : {};
+        const words = (Array.isArray(d.wordData) ? d.wordData : []).map(function(w) { return w && w.word ? String(w.word) : ''; }).filter(Boolean).join(' ').slice(0, 500);
+        const metricBits = [];
+        if (m.accuracy != null) metricBits.push('Accuracy: ' + m.accuracy + '%');
+        if (m.wcpm != null || m.wpm != null) metricBits.push('Rate: ' + (m.wcpm != null ? m.wcpm : m.wpm) + ' WCPM');
+        if (m.totalWords != null) metricBits.push('Words: ' + m.totalWords);
+        slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + '</div><div class="slide-body">'
+          + (metricBits.length ? '<p style="font-weight:700;color:' + themeColor + '">' + _escSlide(metricBits.join('  ·  ')) + '</p>' : '')
+          + (words ? '<p style="margin-top:8px;font-family:serif">' + _escSlide(words) + '</p>' : '')
+          + '</div></div>');
+      } else if (item.type === 'alignment-report' && d && typeof d === 'object') {
+        const comp = d.comprehensive && d.comprehensive.overall ? d.comprehensive.overall : null;
+        const reports = Array.isArray(d.reports) ? d.reports.slice(0, 6) : [];
+        let bodyHtml = '';
+        if (comp && typeof comp.score === 'number') {
+          bodyHtml += '<p style="font-size:16px;font-weight:800;color:' + themeColor + '">Readiness Score: ' + _escSlide(comp.score) + '/100' + (comp.label ? ' — ' + _escSlide(comp.label) : '') + '</p>';
+        }
+        if (reports.length) {
+          bodyHtml += '<ul style="margin:8px 0 0 18px">' + reports.map(function(r) {
+            const label = r && (r.standard || r.title || r.dimension || r.name || 'Criterion');
+            const st = r && r.status ? ' [' + r.status + ']' : '';
+            const sum = r && r.summary ? ' — ' + r.summary : '';
+            return '<li><strong>' + _escSlide(label) + '</strong>' + _escSlide(st + String(sum).slice(0, 160)) + '</li>';
+          }).join('') + '</ul>';
+        }
+        if (bodyHtml) {
+          slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + '</div><div class="slide-body">' + bodyHtml + '</div></div>');
+        } else {
+          const lines = summarizeResourceText(item, { maxChars: 1200 }).map(function(l) { return { kind: 'p', text: _cleanText(l) }; });
+          _pushLineChunks(title, lines, 7);
+        }
       } else {
         // Object-shaped resources without a dedicated slide renderer go through
         // the deny-listed summarizer, never raw JSON (which leaked source
         // excerpts, learner evidence and base64 media onto slides).
-        const text = typeof item.data === 'string' ? item.data.substring(0, 1200) : summarizeResourceText(item, { maxChars: 1200 }).join('\n');
-        const clean = text.replace(/\*\*/g, '').replace(/\[(.*?)\]\(.*?\)/g, '$1').replace(/<[^>]*>/g, '');
-        slides.push('<div class="slide"><div class="slide-title">' + title + '</div><div class="slide-body"><p>' + clean.replace(/\n/g, '</p><p>') + '</p></div></div>');
+        const text = typeof d === 'string' ? d.substring(0, 1200) : summarizeResourceText(item, { maxChars: 1200 }).join('\n');
+        const clean = _cleanText(text);
+        const lines = clean.split(/\n/).filter(Boolean).map(function(l) { return { kind: 'p', text: l }; });
+        _pushLineChunks(title, lines, 8);
       }
+      void isAssessment;
     });
     if (slides.length <= 1) {
       slides.push('<div class="slide"><div style="display:flex;align-items:center;justify-content:center;height:100%;color:#94a3b8;font-size:14px;text-align:center"><div><div style="font-size:40px;margin-bottom:12px">📊</div>Generate content first, then preview as slides.<br><span style="font-size:12px">Each resource type becomes its own slide(s).</span></div></div></div>');
@@ -3254,7 +3676,8 @@
     getTextAccessSummary: _alloTextAccessSummary,
     getLessonContext,
     prepareLessonPlanExport,
-    handleCopyToClipboard
+    handleCopyToClipboard,
+    waitForPrintReady: _alloWaitForPrintReady
   };
   window.AlloModules.ExportHandlersModule = true;
   console.log('[ExportHandlersModule] 23 handlers registered (Phase P bundle)');

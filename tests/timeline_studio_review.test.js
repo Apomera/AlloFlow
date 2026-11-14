@@ -72,8 +72,8 @@ describe('companion window only listens to its opener', () => {
     expect(ok(undefined)).toBe(false);
   });
 
-  it('standalone use (no opener) still works, because it needs no messages', () => {
-    expect(htmlSrc).toContain('if (!window.opener) return true; // standalone: nothing sends messages');
+  it('standalone or framed use (no opener) refuses cross-origin postMessage injection', () => {
+    expect(htmlSrc).toContain('if (!window.opener) return false; // standalone or framed: refuse postMessage');
   });
 
   it('the studio ignores messages from windows it did not open, and replies only to its own', () => {

@@ -3631,7 +3631,7 @@ const WS_CORE = createWordSoundsCore();
     // before any old clip is discarded, and cancelled work never reaches state.
     const resolveWordSoundsReplacement = async (text, voice, language, callTTS, signal) => {
       let profile = null;
-      const src = await callTTS(text, voice || undefined, 1, { force: true, language: language || 'English', signal,
+      const src = await callTTS(text, voice || undefined, 1, { force: true, language: language || 'English', signal, word: true,
         allowProviderFallback: !/^(af_|am_|bf_|bm_)/i.test(String(voice || '')),
         onResolvedProfile: value => { profile = value; } });
       if (signal.aborted) throw new Error('Audio update cancelled');
@@ -4468,6 +4468,314 @@ const WS_CORE = createWordSoundsCore();
       tch: "M 100 90",    // top of 't' in "tch"
       dge: "M 120 100",   // top of 'd' in "dge"
     };
+
+    // School letter shapes (ball and stick, single-story a and g) brought from
+    // word_sounds_take_home/adapters/letter_tracing.js so the app draws the same
+    // writing lines, stroke guides, numbered start dots and directional arrows
+    // even on devices without Comic Sans MS / Chalkboard SE. Units: top line y=0,
+    // middle line y=50, base line y=100, descenders to 145. Digraphs and non-a-z
+    // letters fall back to the font + LETTER_SVG_PATHS anchor above.
+    const LETTER_TRACE_STROKES = {
+      a: "E 22 75 22 25 -30 -390|M 44 50 L 44 100",
+      b: "M 0 0 L 0 100|E 22 75 22 25 180 540",
+      c: "E 22 75 22 25 -40 -320",
+      d: "E 22 75 22 25 -30 -390|M 44 0 L 44 100",
+      e: "M 2 75 L 44 75 E 22 75 22 25 0 -320",
+      f: "E 34 14 13 14 -20 -180 L 21 100|M 6 50 L 40 50",
+      g: "E 22 75 22 25 -30 -390|M 44 50 L 44 125 E 24 125 20 20 0 150",
+      h: "M 0 0 L 0 100|M 0 72 E 22 72 22 22 180 360 L 44 100",
+      i: "M 0 50 L 0 100|D 0 28",
+      j: "M 24 50 L 24 125 E 6 125 18 18 0 160|D 24 28",
+      k: "M 0 0 L 0 100|M 38 50 L 2 78 L 40 100",
+      l: "M 0 0 L 0 100",
+      m: "M 0 50 L 0 100|M 0 70 E 15 70 15 20 180 360 L 30 100|M 30 70 E 45 70 15 20 180 360 L 60 100",
+      n: "M 0 50 L 0 100|M 0 72 E 21 72 21 22 180 360 L 42 100",
+      o: "E 23 75 23 25 -70 -430",
+      p: "M 0 50 L 0 145|E 22 75 22 25 180 540",
+      q: "E 22 75 22 25 -30 -390|M 44 50 L 44 145",
+      r: "M 0 50 L 0 100|M 0 74 E 20 74 20 22 180 310",
+      s: "E 22 62.5 20 12.5 -20 -270 E 22 87.5 20 12.5 -90 160",
+      t: "M 16 14 L 16 100|M 0 50 L 34 50",
+      u: "M 0 50 L 0 78 E 21 78 21 22 180 0 L 42 50|M 42 50 L 42 100",
+      v: "M 0 50 L 22 100 L 44 50",
+      w: "M 0 50 L 15 100 L 30 50 L 45 100 L 60 50",
+      x: "M 0 50 L 42 100|M 42 50 L 0 100",
+      y: "M 0 50 L 22 100|M 44 50 L 8 145",
+      z: "M 0 50 L 42 50 L 0 100 L 42 100",
+      A: "M 30 0 L 0 100|M 30 0 L 60 100|M 11 64 L 49 64",
+      B: "M 0 0 L 0 100|M 0 0 L 24 0 E 24 24 22 24 -90 90 L 0 48|M 0 48 L 28 48 E 28 74 24 26 -90 90 L 0 100",
+      C: "E 45 50 45 50 -40 -320",
+      D: "M 0 0 L 0 100|M 0 0 L 16 0 E 16 50 40 50 -90 90 L 0 100",
+      E: "M 0 0 L 0 100|M 0 0 L 44 0|M 0 50 L 36 50|M 0 100 L 44 100",
+      F: "M 0 0 L 0 100|M 0 0 L 44 0|M 0 50 L 36 50",
+      G: "E 45 50 45 50 -40 -360 L 58 50",
+      H: "M 0 0 L 0 100|M 50 0 L 50 100|M 0 50 L 50 50",
+      I: "M 20 0 L 20 100|M 0 0 L 40 0|M 0 100 L 40 100",
+      J: "M 40 0 L 40 74 E 20 74 20 26 0 165",
+      K: "M 0 0 L 0 100|M 46 0 L 2 52 L 48 100",
+      L: "M 0 0 L 0 100 L 42 100",
+      M: "M 0 0 L 0 100|M 0 0 L 32 64 L 64 0 L 64 100",
+      N: "M 0 0 L 0 100|M 0 0 L 52 100 L 52 0",
+      O: "E 45 50 45 50 -90 -450",
+      P: "M 0 0 L 0 100|M 0 0 L 24 0 E 24 26 24 26 -90 90 L 0 52",
+      Q: "E 45 50 45 50 -90 -450|M 58 72 L 92 104",
+      R: "M 0 0 L 0 100|M 0 0 L 24 0 E 24 26 24 26 -90 90 L 0 52|M 24 52 L 50 100",
+      S: "E 42 25 38 25 -20 -270 E 42 75 38 25 -90 160",
+      T: "M 26 0 L 26 100|M 0 0 L 52 0",
+      U: "M 0 0 L 0 66 E 25 66 25 34 180 0 L 50 0",
+      V: "M 0 0 L 26 100 L 52 0",
+      W: "M 0 0 L 18 100 L 36 0 L 54 100 L 72 0",
+      X: "M 0 0 L 52 100|M 52 0 L 0 100",
+      Y: "M 0 0 L 26 50|M 52 0 L 26 50 L 26 100",
+      Z: "M 0 0 L 52 0 L 0 100 L 52 100",
+    };
+    const normalizeLetterTraceCases = (value) =>
+      value === "capital" || value === "lowercase" ? value : "both";
+    const parseLetterTraceStrokes = (spec) => {
+      if (!spec) return [];
+      return String(spec).split("|").map((raw) => {
+        const tokens = raw.trim().split(/\s+/);
+        const pts = [];
+        let dot = false;
+        let i = 0;
+        while (i < tokens.length) {
+          const cmd = tokens[i++];
+          if (cmd === "M" || cmd === "L" || cmd === "D") {
+            pts.push([Number(tokens[i]), Number(tokens[i + 1])]);
+            dot = cmd === "D";
+            i += 2;
+          } else if (cmd === "E") {
+            const cx = Number(tokens[i]), cy = Number(tokens[i + 1]);
+            const rx = Number(tokens[i + 2]), ry = Number(tokens[i + 3]);
+            const a0 = Number(tokens[i + 4]), a1 = Number(tokens[i + 5]);
+            i += 6;
+            const steps = Math.max(8, Math.ceil(Math.abs(a1 - a0) / 6));
+            for (let j = 0; j <= steps; j++) {
+              const rad = ((a0 + ((a1 - a0) * j) / steps) * Math.PI) / 180;
+              pts.push([cx + rx * Math.cos(rad), cy + ry * Math.sin(rad)]);
+            }
+          } else {
+            break;
+          }
+        }
+        return { pts, dot };
+      }).filter((st) => st.pts.length > 0);
+    };
+    const layoutLetterTraceShape = (letter, size = 320) => {
+      const key = String(letter || "");
+      if (!Object.prototype.hasOwnProperty.call(LETTER_TRACE_STROKES, key)) return null;
+      const strokes = parseLetterTraceStrokes(LETTER_TRACE_STROKES[key]);
+      if (!strokes.length) return null;
+      const xs = [], ys = [];
+      strokes.forEach((st) => st.pts.forEach((p) => { xs.push(p[0]); ys.push(p[1]); }));
+      const minX = Math.min(...xs), maxX = Math.max(...xs);
+      const top = Math.min(Math.min(...ys), 30) - 12;
+      const bottom = Math.max(Math.max(...ys), 100) + 12;
+      const scale = Math.min(2.7, (size - 32) / (bottom - top), (size - 44) / Math.max(1, maxX - minX));
+      const ox = (size - (maxX - minX) * scale) / 2 - minX * scale;
+      const oy = (size - (bottom - top) * scale) / 2 - top * scale;
+      const put = (p) => [ox + p[0] * scale, oy + p[1] * scale];
+      return {
+        letter: key,
+        size,
+        y: (v) => oy + v * scale,
+        strokes: strokes.map((st) => ({ dot: st.dot, pts: st.pts.map(put) })),
+      };
+    };
+    const alongLetterTraceStroke = (pts, dist) => {
+      let left = dist;
+      for (let i = 1; i < pts.length; i++) {
+        const dx = pts[i][0] - pts[i - 1][0], dy = pts[i][1] - pts[i - 1][1];
+        const len = Math.hypot(dx, dy);
+        if (!len) continue;
+        if (left <= len || i === pts.length - 1) {
+          const f = Math.min(1, left / len);
+          return { x: pts[i - 1][0] + dx * f, y: pts[i - 1][1] + dy * f, ux: dx / len, uy: dy / len };
+        }
+        left -= len;
+      }
+      return null;
+    };
+    const solveLetterTraceGuides = (shape, size = 320) => {
+      if (!shape || !shape.strokes || !shape.strokes.length) return null;
+      const R = 12;
+      const many = shape.strokes.length > 1;
+      const dots = [], arrows = [];
+      let all = [];
+      shape.strokes.forEach((st) => { all = all.concat(st.pts); });
+      const mid = [
+        all.reduce((n, q) => n + q[0], 0) / all.length,
+        all.reduce((n, q) => n + q[1], 0) / all.length,
+      ];
+      const lenOf = (pts) => {
+        let total = 0;
+        for (let i = 1; i < pts.length; i++) total += Math.hypot(pts[i][0] - pts[i - 1][0], pts[i][1] - pts[i - 1][1]);
+        return total;
+      };
+      const gap = (q, list) => list.reduce((n, m) => Math.min(n, Math.hypot(m[0] - q[0], m[1] - q[1])), Infinity);
+      const inside = (q) => q[0] >= R + 2 && q[0] <= size - R - 2 && q[1] >= R + 2 && q[1] <= size - R - 2;
+      const spots = () => dots.map((m) => m.p);
+      const arrowAt = (st, len, p, from, lead) => {
+        const others = spots(), heads = arrows.map((a) => [a.x, a.y]);
+        for (let c = lead ? 4 : from + 22; c <= len - 4; c += 2) {
+          const a = alongLetterTraceStroke(st.pts, c);
+          if (!a) break;
+          const q = [a.x, a.y];
+          if (gap(q, others) < 24 || gap(q, [p]) < 22 || gap(q, heads) < 21) continue;
+          const mine = Math.min(Math.hypot(q[0] - p[0], q[1] - p[1]), lead ? Math.hypot(q[0] - lead[0], q[1] - lead[1]) : Infinity);
+          return { a, extra: c - (lead ? 4 : from + 22), near: mine <= gap(q, others) };
+        }
+        return null;
+      };
+      shape.strokes.forEach((st, n) => {
+        const start = st.pts[0];
+        const d = st.dot ? null : alongLetterTraceStroke(st.pts, 1);
+        const len = st.dot ? 0 : lenOf(st.pts);
+        let best = null;
+        const pick = (p, cost, from, lead) => {
+          if (n && (!inside(p) || gap(p, spots()) < 36 || gap(p, arrows.map((a) => [a.x, a.y])) < 24)) return;
+          const arrow = st.dot ? { a: null, extra: 0, near: true } : arrowAt(st, len, p, from, lead);
+          if (!arrow) return;
+          const score = cost + arrow.extra * 0.5 + (arrow.near ? 0 : 50);
+          if (!best || score < best.score) best = { p, lead, a: arrow.a, number: n + 1, score };
+        };
+        pick(start, 0, 0, null);
+        if (n) {
+          if (d) {
+            for (let r = 24; r <= Math.min(72, len - 30); r += 4) {
+              const o = alongLetterTraceStroke(st.pts, r);
+              if (o) pick([o.x, o.y], r, r, null);
+            }
+          }
+          const away = (u) => Math.hypot(start[0] + u[0] * 30 - mid[0], start[1] + u[1] * 30 - mid[1]);
+          const dirs = d
+            ? [[-d.uy, d.ux], [d.uy, -d.ux]].sort((u, v) => away(v) - away(u)).map((u, i) => [u, i ? 16 : 10]).concat([[[-d.ux, -d.uy], 12]])
+            : [[[0, -1], 10], [[1, 0], 12], [[-1, 0], 12], [[0, 1], 16]];
+          dirs.forEach((u) => {
+            for (let r2 = 26; r2 <= 64; r2 += 4) pick([start[0] + u[0][0] * r2, start[1] + u[0][1] * r2], r2 + u[1], 0, start);
+          });
+        }
+        if (!best) best = { p: start, lead: null, a: st.dot ? null : alongLetterTraceStroke(st.pts, 34), number: n + 1 };
+        dots.push(best);
+        if (best.a) arrows.push(best.a);
+      });
+      return { radius: R, many, dots, arrows };
+    };
+    const drawLetterTraceSchoolGuide = (ctx, mCtx, shape, width, height) => {
+      // 1. Scoring mask (broad red stroke matching student pen width).
+      mCtx.setLineDash([]);
+      mCtx.fillStyle = "#ff0000";
+      mCtx.strokeStyle = "#ff0000";
+      mCtx.lineWidth = 35;
+      mCtx.lineCap = "round";
+      mCtx.lineJoin = "round";
+      shape.strokes.forEach((st) => {
+        if (st.dot) {
+          mCtx.beginPath();
+          mCtx.arc(st.pts[0][0], st.pts[0][1], 18, 0, Math.PI * 2);
+          mCtx.fill();
+          return;
+        }
+        mCtx.beginPath();
+        mCtx.moveTo(st.pts[0][0], st.pts[0][1]);
+        st.pts.slice(1).forEach((p) => mCtx.lineTo(p[0], p[1]));
+        mCtx.stroke();
+      });
+      // 2. Writing lines behind the letter: top line (y=0), dashed midline (y=50), baseline (y=100).
+      [[0, "#cbd5e1", []], [50, "#cbd5e1", [8, 7]], [100, "#94a3b8", []]].forEach((row) => {
+        ctx.beginPath();
+        ctx.setLineDash(row[2]);
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = row[1];
+        ctx.moveTo(10, shape.y(row[0]));
+        ctx.lineTo(width - 10, shape.y(row[0]));
+        ctx.stroke();
+      });
+      // 3. Soft school letter track + thin dashed centerline.
+      ctx.setLineDash([]);
+      ctx.fillStyle = "rgba(100, 116, 139, 0.28)";
+      ctx.strokeStyle = "rgba(100, 116, 139, 0.28)";
+      ctx.lineWidth = 24;
+      ctx.lineCap = "round";
+      ctx.lineJoin = "round";
+      shape.strokes.forEach((st) => {
+        if (st.dot) {
+          ctx.beginPath();
+          ctx.arc(st.pts[0][0], st.pts[0][1], 12, 0, Math.PI * 2);
+          ctx.fill();
+          return;
+        }
+        ctx.beginPath();
+        ctx.moveTo(st.pts[0][0], st.pts[0][1]);
+        st.pts.slice(1).forEach((p) => ctx.lineTo(p[0], p[1]));
+        ctx.stroke();
+      });
+      ctx.lineWidth = 2;
+      ctx.strokeStyle = "#64748b";
+      ctx.setLineDash([5, 6]);
+      shape.strokes.forEach((st) => {
+        if (st.dot) return;
+        ctx.beginPath();
+        ctx.moveTo(st.pts[0][0], st.pts[0][1]);
+        st.pts.slice(1).forEach((p) => ctx.lineTo(p[0], p[1]));
+        ctx.stroke();
+      });
+      ctx.setLineDash([]);
+      // 4. Non-overlapping numbered start dots, lead lines and directional arrows.
+      const guides = solveLetterTraceGuides(shape, width);
+      if (!guides) return null;
+      guides.dots.forEach((m) => {
+        if (!m.lead) return;
+        ctx.beginPath();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#15803d";
+        ctx.moveTo(m.lead[0], m.lead[1]);
+        ctx.lineTo(m.p[0], m.p[1]);
+        ctx.stroke();
+        ctx.beginPath();
+        ctx.arc(m.lead[0], m.lead[1], 4, 0, Math.PI * 2);
+        ctx.fillStyle = "#15803d";
+        ctx.fill();
+      });
+      guides.arrows.forEach((a) => {
+        ctx.beginPath();
+        ctx.fillStyle = "#15803d";
+        ctx.moveTo(a.x + a.ux * 10, a.y + a.uy * 10);
+        ctx.lineTo(a.x - a.ux * 6 - a.uy * 8, a.y - a.uy * 6 + a.ux * 8);
+        ctx.lineTo(a.x - a.ux * 6 + a.uy * 8, a.y - a.uy * 6 - a.ux * 8);
+        ctx.closePath();
+        ctx.fill();
+      });
+      for (let n = guides.dots.length - 1; n >= 0; n--) {
+        const p = guides.dots[n].p;
+        ctx.beginPath();
+        ctx.arc(p[0], p[1], guides.radius, 0, Math.PI * 2);
+        ctx.fillStyle = "#15803d";
+        ctx.fill();
+        ctx.lineWidth = 2;
+        ctx.strokeStyle = "#ffffff";
+        ctx.stroke();
+        if (guides.many) {
+          ctx.fillStyle = "#ffffff";
+          ctx.font = "bold 14px system-ui, sans-serif";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(String(n + 1), p[0], p[1] + 1);
+        }
+      }
+      return guides;
+    };
+    if (typeof window !== "undefined") {
+      window.AlloModules = window.AlloModules || {};
+      window.AlloModules.WordSoundsLetterTrace = {
+        STROKES: LETTER_TRACE_STROKES,
+        parse: parseLetterTraceStrokes,
+        layout: layoutLetterTraceShape,
+        solveGuides: solveLetterTraceGuides,
+        drawSchoolGuide: drawLetterTraceSchoolGuide,
+        normalizeCases: normalizeLetterTraceCases,
+      };
+    }
 
     // ── Activity sub-views ──────────────────────────────────────────────
     // These live at MODULE scope on purpose. Defined inside WordSoundsModal
@@ -6811,9 +7119,15 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         ctx.clearRect(0, 0, width, height);
         mCtx.clearRect(0, 0, width, height);
         strokesRef.current = []; // reset captured strokes for the new letter/attempt
+        const schoolShape = layoutLetterTraceShape(letter, width);
+        if (schoolShape) {
+          drawLetterTraceSchoolGuide(ctx, mCtx, schoolShape, width, height);
+          const firstPt = schoolShape.strokes[0]?.pts?.[0];
+          setStartDotPos(firstPt ? { x: firstPt[0], y: firstPt[1] } : null);
+          return;
+        }
         // Multi-character graphemes (sh, ch, th, wh, ng, ck, ph, qu, igh,
-        // tch, dge) auto-scale the font down so the digraph/trigraph fits
-        // inside the 320×320 canvas. Single letters keep the original 200px.
+        // tch, dge) and non-a-z characters fall back to auto-scaled font rendering.
         const _wsFontPx = _wsTraceFontSize(letter);
         const font =
           'bold ' + _wsFontPx + 'px "Comic Sans MS", "Chalkboard SE", sans-serif';
@@ -6933,7 +7247,11 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         for (let i = 0; i < uData.length; i += 4) {
           const uAlpha = uData[i + 3];
           const mAlpha = mData[i + 3];
-          const isInk = uAlpha > 50 && uData[i] < 160 && uData[i + 1] < 160;
+          // User strokes are violet (#7c3aed: R=124, G=58, B=237), whereas
+          // writing lines (#cbd5e1/#94a3b8/#64748b) and start dots (#15803d)
+          // are slate or green (B - G <= 23). Checking B > G + 45 keeps guide
+          // lines and numbered start dots out of student ink counts.
+          const isInk = uAlpha > 50 && uData[i] < 160 && uData[i + 1] < 160 && uData[i + 2] > uData[i + 1] + 45;
           const isTarget = mAlpha > 50;
           if (isTarget) {
             totalTarget++;
@@ -6966,12 +7284,12 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         const totalInk = hits + outsideInk;
         const accuracy = totalInk > 0 ? hits / totalInk : 0;
         const coverage = hits / (totalTarget || 1); // for the "barely drawn" gate
-        // Stroke-derived signals. Digraphs/trigraphs are M-only anchors (no full
-        // path), so stroke order/count don't apply — they fall back to shape +
-        // neatness + start point only.
+        // Stroke-derived signals. School stroke guides provide exact multi-stroke
+        // geometry for a–z and A–Z; digraphs/trigraphs fall back to M-only anchors.
+        const schoolShape = layoutLetterTraceShape(letter, width);
         const svgPath =
           LETTER_SVG_PATHS[letter] || LETTER_SVG_PATHS[letter.toLowerCase()];
-        const hasFullPath = !!svgPath && /[LQ]/i.test(svgPath);
+        const hasFullPath = !!schoolShape || (!!svgPath && /[LQ]/i.test(svgPath));
         const strokes = (strokesRef.current || []).filter(
           (s) => s && s.length >= 3 && _wsStrokeLen(s) > 24,
         );
@@ -6982,11 +7300,13 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           const d = Math.hypot(f.x - startDotPos.x, f.y - startDotPos.y);
           startScore = d <= 35 ? 1 : d <= 70 ? 0.6 : 0.25;
         }
-        // Plausible number of strokes? (single letters only)
+        // Plausible number of strokes? (drawn strokes, excluding dot taps like i/j)
         let strokeCountScore = 1;
         let expectedStrokes = 0;
         if (hasFullPath) {
-          expectedStrokes = (svgPath.match(/M/g) || []).length || 1;
+          expectedStrokes = schoolShape
+            ? schoolShape.strokes.filter((s) => !s.dot).length || 1
+            : (svgPath.match(/M/g) || []).length || 1;
           const diff = Math.abs(strokes.length - expectedStrokes);
           strokeCountScore =
             diff === 0 ? 1 : diff === 1 ? 0.7 : diff === 2 ? 0.4 : 0.2;
@@ -6995,10 +7315,23 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         // same overall way as the reference path?
         let directionOff = false;
         if (hasFullPath && strokes.length) {
-          const pts = samplePathPoints(svgPath, 16);
-          if (pts.length > 1) {
-            const refDx = pts[pts.length - 1].x - pts[0].x;
-            const refDy = pts[pts.length - 1].y - pts[0].y;
+          let refPts = null;
+          if (schoolShape) {
+            const drawn = schoolShape.strokes.filter((s) => !s.dot && s.pts.length > 1);
+            if (drawn.length) {
+              const bestRef = drawn.reduce((a, b) => {
+                const lenA = a.pts.reduce((sum, p, idx) => (idx ? sum + Math.hypot(p[0] - a.pts[idx - 1][0], p[1] - a.pts[idx - 1][1]) : 0), 0);
+                const lenB = b.pts.reduce((sum, p, idx) => (idx ? sum + Math.hypot(p[0] - b.pts[idx - 1][0], p[1] - b.pts[idx - 1][1]) : 0), 0);
+                return lenB > lenA ? b : a;
+              }, drawn[0]);
+              refPts = bestRef.pts.map((p) => ({ x: p[0], y: p[1] }));
+            }
+          } else if (svgPath) {
+            refPts = samplePathPoints(svgPath, 16);
+          }
+          if (refPts && refPts.length > 1) {
+            const refDx = refPts[refPts.length - 1].x - refPts[0].x;
+            const refDy = refPts[refPts.length - 1].y - refPts[0].y;
             const longest = strokes.reduce(
               (a, b) => (_wsStrokeLen(b) > _wsStrokeLen(a) ? b : a),
               strokes[0],
@@ -7065,10 +7398,14 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         }
         // Not yet — one targeted, encouraging tip on the weakest thing.
         let tip;
-        if (startScore <= 0.6) tip = "Start at the green dot!";
+        if (startScore <= 0.6) {
+          tip = schoolShape && schoolShape.strokes.length > 1
+            ? "Start at the green dot 1!"
+            : "Start at the green dot!";
+        }
         else if (completeness < 0.55) tip = "Trace the whole letter!";
         else if (accuracy < 0.5) tip = "Try to stay on the lines!";
-        else if (directionOff) tip = "Follow the letter from the green dot.";
+        else if (directionOff) tip = "Follow the arrow from the green dot.";
         else tip = "Almost! Keep tracing.";
         setFeedback({ type: "neutral", emoji: "👆", size: "md", tip: tip });
         feedbackTimerRef.current = setTimeout(() => {
@@ -7256,7 +7593,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         ),
         /*#__PURE__*/ React.createElement(
           "div",
-          { className: "flex items-center justify-center gap-3 mb-6" },
+          { className: "flex items-center justify-center gap-3 mb-3" },
           /*#__PURE__*/ React.createElement(
             "span",
             {
@@ -7277,6 +7614,25 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
             ),
           ),
         ),
+        (() => {
+          const guideShape = layoutLetterTraceShape(letter, 320);
+          if (!guideShape) return null;
+          const multi = guideShape.strokes.length > 1;
+          const key = multi
+            ? "word_sounds.take_home_player_letter_tracing_how_more"
+            : "word_sounds.take_home_player_letter_tracing_how_one";
+          const raw = typeof ts === "function" ? ts(key) : "";
+          const text = raw && raw !== key && !String(raw).startsWith("word_sounds.")
+            ? raw
+            : (multi
+              ? "Start at the green dot 1. Follow the arrow. Then do 2, and the next numbers in order."
+              : "Start at the green dot. Follow the arrow.");
+          return /*#__PURE__*/ React.createElement(
+            "p",
+            { "data-ws-trace-how": "true", className: "text-sm text-slate-600 font-medium text-center max-w-sm mb-4 px-2" },
+            text,
+          );
+        })(),
         /*#__PURE__*/ React.createElement(
           "div",
           { className: "flex gap-4" },
@@ -10044,7 +10400,14 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
       }, [runtimeSessionConfig.studentLocked]);
       const audioCtxRef = React.useRef(null);
       const [playInstructions, setPlayInstructions] = React.useState(true);
-      const [tracingPhase, setTracingPhase] = React.useState("upper");
+      const [tracingCasesOverride, setTracingCasesOverride] = React.useState(() =>
+        runtimeSessionConfig?.tracingCases === "capital" || runtimeSessionConfig?.tracingCases === "lowercase"
+          ? runtimeSessionConfig.tracingCases
+          : null,
+      );
+      const [tracingPhase, setTracingPhase] = React.useState(() =>
+        runtimeSessionConfig?.tracingCases === "lowercase" ? "lower" : "upper",
+      );
       const lastTracingWord = React.useRef(null);
       const [isCelebrating, setIsCelebrating] = React.useState(false);
       const [mascotChoice, setMascotChoice] = React.useState(wsMascotChoice);
@@ -10800,6 +11163,9 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           String(currentWordSoundsWord || "").trim().toLowerCase()
           ? wordSoundsPhonemes?.activityItems
           : null;
+      const tracingCases = normalizeLetterTraceCases(
+        tracingCasesOverride || runtimeSessionConfig?.tracingCases || packForCurrentWord?.letter_tracing?.cases,
+      );
       // A prepared Missing Letter board is used only as a whole, and only when
       // its position exists in the displayed word, holds the stated letter,
       // and the choices offer that letter exactly once. Otherwise the board is
@@ -12225,7 +12591,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
               // Session language, not the ambient Leveled Text / UI language.
               let heardProfile = null;
               const ttsPromise = callTTS(text, voiceForTts, 1, {
-                language: wordSoundsLanguage || "English",
+                language: wordSoundsLanguage || "English", word: true,
                   allowProviderFallback: !/^(af_|am_|bf_|bm_)/i.test(String(voiceForTts || "")),
                 onResolvedProfile: (value) => { heardProfile = value; },
               });
@@ -12247,7 +12613,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
                 if (playImmediately && playbackStale()) return { ok: false, status: 'cancelled' };
                 let retryProfile = null;
                 const retryUrl = await callTTS(text, voiceForTts, 1, {
-                  language: wordSoundsLanguage || "English",
+                  language: wordSoundsLanguage || "English", word: true,
                   allowProviderFallback: !/^(af_|am_|bf_|bm_)/i.test(String(voiceForTts || "")),
                   onResolvedProfile: (value) => { retryProfile = value; },
                 });
@@ -12266,7 +12632,7 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           if (playImmediately && callTTS && voiceForTts && !isPhoneme && ttsWholeWord && wsStudentDeviceVoiceOnly() && !playbackStale()) {
             let onDeviceUrl = null;
             try {
-              onDeviceUrl = await callTTS(text, voiceForTts, 1, { language: wordSoundsLanguage || "English", maxRetries: 0 });
+              onDeviceUrl = await callTTS(text, voiceForTts, 1, { language: wordSoundsLanguage || "English", maxRetries: 0, word: true });
             } catch (e) {
               warnLog("On-device voice failed for word:", text, e?.message);
             }
@@ -17066,7 +17432,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           let profile = null;
           // The same request playback made, so this is a cache hit that also reports the voice used.
           Promise.resolve(callTTS(text, voice, 1, {
-            language: wordSoundsLanguage || "English", maxRetries: 0,
+            language: wordSoundsLanguage || "English", maxRetries: 0, word: true,
             allowProviderFallback: !/^(af_|am_|bf_|bm_)/i.test(String(voice || "")),
             onResolvedProfile: (value) => { profile = value; },
           })).then((clip) => { if (clip && profile && heardClipSinkRef.current) heardClipSinkRef.current(text, clip, profile); }).catch(() => {});
@@ -18064,7 +18430,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           currentWordSoundsWord !== lastTracingWord.current
         ) {
           lastTracingWord.current = currentWordSoundsWord;
-          setTracingPhase("upper");
+          setTracingPhase(tracingCases === "lowercase" ? "lower" : "upper");
         }
         if (
           ["segmentation", "blending"].includes(wordSoundsActivity) &&
@@ -21959,7 +22325,11 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
         if (!success || !canCompleteTracing() || tracingCompletionRef.current?.key === tracingViewKey) return;
         const completion = { key: tracingViewKey, formationScore };
         tracingCompletionRef.current = completion;
-        if (tracingPhase === "lower") {
+        const singleTracingPart =
+          (typeof tracingCases === "string" && tracingCases !== "both") ||
+          (!!currentWordSoundsWord &&
+            currentWordSoundsWord.charAt(0).toUpperCase() === currentWordSoundsWord.charAt(0).toLowerCase());
+        if (tracingPhase === "lower" || singleTracingPart) {
           // The shared grader owns the final celebration and scoring lock.
           checkAnswer("correct", "correct", { formationScore });
           return;
@@ -22065,23 +22435,67 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
       );
       const [usedScrambleIndices, setUsedScrambleIndices] = React.useState([]);
       const letterOptions = React.useMemo(() => {
-        if (preparedMissingLetter) return [...preparedMissingLetter.options];
-        const alphabet = "abcdefghijklmnopqrstuvwxyz";
-        const options = [correctLetter];
-        const seed = (currentWordSoundsWord || "")
-          .split("")
-          .reduce((a, c) => a + c.charCodeAt(0), 0);
-        let s = seed;
-        const nextRand = () => {
-          s = Math.sin(s + 1) * 10000;
-          return s - Math.floor(s);
+        const word = String(currentWordSoundsWord || "").toLowerCase();
+        const ok = String(correctLetter || "").toLowerCase();
+        // Same-length 1-letter-substitution familiar English homophones (derived from
+        // word_sounds_phonemes_en.js + word_sounds_wordlist_en.js), plus live phoneme lookup
+        // when loaded, so neither a non-teacher-edited board nor the player fallback offers
+        // a distractor letter that spells a word sounding identical (e.g. see -> "a" -> "sea").
+        const homophonePairs = "arc:ark,ascent:assent,beach:beech,berth:birth,brighten:brighton,cell:sell,cells:sells,cent:sent,claus:claws,coarse:course,creak:creek,cue:que,dais:days,dear:deer,disc:disk,do:du,drier:dryer,dual:duel,enquiry:inquiry,faint:feint,feat:feet,fir:fur,fireman:firemen,firs:furs,flea:flee,foul:fowl,groan:grown,hall:haul,hay:hey,heal:heel,healed:heeled,heals:heels,hide:hyde,horseman:horsemen,lessen:lesson,loch:lock,marry:merry,me:mi,meat:meet,meats:meets,ne:ni,parry:perry,peal:peel,peer:pier,rain:rein,rained:reined,rains:reins,read:reed,reads:reeds,real:reel,role:roll,roles:rolls,sea:see,seam:seem,seams:seems,seas:sees,sewing:sowing,sewn:sown,shoe:shoo,son:sun,sonny:sunny,sons:suns,stationary:stationery,steal:steel,tailor:taylor,te:ti,toad:toed,toe:tow,too:two,vain:vein,vary:very,warn:worn,weak:week,weakly:weekly";
+        const pairSet = new Set(homophonePairs.split(","));
+        const spellsHomophone = (ch) => {
+          if (!word || !ch || ch === ok || hiddenIndex < 0 || hiddenIndex >= word.length) return false;
+          const other = word.slice(0, hiddenIndex) + ch + word.slice(hiddenIndex + 1);
+          if (other === word) return false;
+          const key = word < other ? word + ":" + other : other + ":" + word;
+          if (pairSet.has(key)) return true;
+          try {
+            const pd = typeof window !== "undefined" && (window.AlloModules?.WordSoundsPhonemeData || (typeof window.createWordSoundsPhonemeData === "function" ? window.createWordSoundsPhonemeData() : null));
+            if (pd && typeof pd.lookup === "function") {
+              const pa = pd.lookup(word), pb = pd.lookup(other);
+              if (pa?.sounds?.length && pb?.sounds?.length && pa.sounds.join(" ") === pb.sounds.join(" ")) return true;
+            }
+          } catch (_) {}
+          return false;
         };
-        while (options.length < 4) {
-          const rand = alphabet[Math.floor(nextRand() * 26)];
-          if (!options.includes(rand)) options.push(rand);
+        const isVowel = "aeiou".includes(ok) || (ok === "y" && !/[aeiou]/.test(word));
+        const kindPool = isVowel ? "aeiou" : "bcdfghjklmnprstvwz";
+        if (preparedMissingLetter) {
+          if (packForCurrentWord?.missing_letter?.teacherEdited) return [...preparedMissingLetter.options];
+          if (!preparedMissingLetter.options.some((o) => o !== ok && spellsHomophone(o))) {
+            return [...preparedMissingLetter.options];
+          }
+          const spare = kindPool.split("").filter((o) => o !== ok && !preparedMissingLetter.options.includes(o) && !spellsHomophone(o));
+          const swapped = preparedMissingLetter.options.map((o) => (o !== ok && spellsHomophone(o) ? spare.shift() || null : o)).filter(Boolean);
+          return swapped.length >= 2 ? swapped : [...preparedMissingLetter.options];
         }
-        return options.sort(() => nextRand() - 0.5);
-      }, [correctLetter, currentWordSoundsWord, wordSoundsPhonemes]);
+        if (!ok) return [];
+        const fnv = (str) => {
+          let h = 2166136261;
+          for (let i = 0; i < str.length; i++) {
+            h ^= str.charCodeAt(i);
+            h = Math.imul(h, 16777619);
+          }
+          return h >>> 0;
+        };
+        const ranked = (list, tag) =>
+          [...new Set(list)].sort((a, b) => fnv(word + "|" + tag + "|" + a) - fnv(word + "|" + tag + "|" + b));
+        const inWord = new Set(Array.from(word));
+        let basePool;
+        if (/^[a-z]$/.test(ok)) {
+          const sameKind = kindPool.split("").filter((ch) => ch !== ok && !spellsHomophone(ch));
+          const outsideWord = ranked(sameKind.filter((ch) => !inWord.has(ch)), "out");
+          const insideWord = ranked(sameKind.filter((ch) => inWord.has(ch)), "in");
+          const restAlpha = ranked("abcdefghijklmnopqrstuvwxyz".split("").filter((ch) => ch !== ok && !sameKind.includes(ch) && !spellsHomophone(ch)), "rest");
+          basePool = [...outsideWord, ...insideWord, ...restAlpha];
+        } else {
+          const wordChars = Array.from(word).filter((ch) => ch !== ok && !wsSpellFixedChar(ch));
+          const fallbackAlpha = ranked("abcdefghijklmnopqrstuvwxyz".split("").filter((ch) => ch !== ok), "alpha");
+          basePool = [...ranked(wordChars, "wc"), ...fallbackAlpha];
+        }
+        const options = [ok, ...basePool.slice(0, 3)];
+        return ranked(options, "order");
+      }, [correctLetter, currentWordSoundsWord, wordSoundsPhonemes, hiddenIndex, preparedMissingLetter, packForCurrentWord]);
       // BEGIN WORD SOUNDS ANSWER CARDS (modal side)
       const cardsItemKey = `${advanceEpochRef.current}|${itemPresentation}|${wordSoundsActivity}|${currentWordSoundsWord}`;
       const liveAnswerCards = !isProbeMode && answerCards.key === cardsItemKey ? answerCards : { key: cardsItemKey, selected: null, wrong: [], revealed: false };
@@ -23826,14 +24240,48 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             const firstLetter = currentWordSoundsWord
               ? currentWordSoundsWord.charAt(0)
               : "a";
-            const isLowercaseBonus = tracingPhase === "lower";
-            const displayLetter = isLowercaseBonus
+            const hasDistinctCases =
+              firstLetter.toUpperCase() !== firstLetter.toLowerCase();
+            const isLowercasePhase =
+              tracingCases === "lowercase" ||
+              (tracingCases === "both" && tracingPhase === "lower");
+            const isLowercaseBonus =
+              hasDistinctCases && tracingCases === "both" && tracingPhase === "lower";
+            const displayLetter = isLowercasePhase
               ? firstLetter.toLowerCase()
               : firstLetter.toUpperCase();
             return /*#__PURE__*/ React.createElement(
               "div",
               { className: "space-y-6" },
               renderPrompt(),
+              hasDistinctCases && !isProbeMode && !isStudentLocked &&
+                /*#__PURE__*/ React.createElement(
+                "div",
+                { className: "flex items-center justify-center gap-2 text-sm text-slate-700" },
+                /*#__PURE__*/ React.createElement(
+                  "label",
+                  { htmlFor: "ws-tracing-cases", className: "font-semibold" },
+                  "Letters to trace:",
+                ),
+                /*#__PURE__*/ React.createElement(
+                  "select",
+                  {
+                    id: "ws-tracing-cases",
+                    "data-ws-tracing-cases": "true",
+                    value: tracingCases,
+                    disabled: submissionLockRef.current,
+                    onChange: (e) => {
+                      const nextMode = normalizeLetterTraceCases(e.target.value);
+                      setTracingCasesOverride(nextMode);
+                      setTracingPhase(nextMode === "lowercase" ? "lower" : "upper");
+                    },
+                    className: "min-h-11 rounded-xl border border-slate-300 bg-white px-3 py-1.5 text-sm font-semibold text-slate-800 shadow-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-violet-600",
+                  },
+                  /*#__PURE__*/ React.createElement("option", { value: "both" }, "Capital and lowercase"),
+                  /*#__PURE__*/ React.createElement("option", { value: "capital" }, "Capital only"),
+                  /*#__PURE__*/ React.createElement("option", { value: "lowercase" }, "Lowercase only"),
+                ),
+              ),
               isLowercaseBonus &&
                 /*#__PURE__*/ React.createElement(
                 "div",

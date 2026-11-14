@@ -536,7 +536,7 @@ function vendorAssetUrl(name) {
 async function installVendorRuntime(page, options) {
   const o = options || {};
   const bundle = loadVendorBundle();
-  const strict = process.env.ALLOFLOW_MCP_OFFLINE_ASSETS === '1';
+  const strict = process.env.ALLOFLOW_MCP_OFFLINE_ASSETS !== '0';
   const documentRuntime = loadDocumentRuntime();
   if (!documentRuntime.ok) throw new Error('Verified document runtime unavailable: ' + documentRuntime.error);
   await page.route('**/*', async (route) => {
@@ -557,8 +557,14 @@ async function installVendorRuntime(page, options) {
       return route.fulfill({ status: 200, contentType: runtimeFile.kind === 'wasm' ? 'application/wasm' : 'text/javascript; charset=utf-8',
         headers: { 'X-Content-Type-Options': 'nosniff', 'Cache-Control': 'no-store' }, body: runtimeFile.body });
     }
-    if (parsed.protocol === 'about:' || parsed.protocol === 'blob:' || parsed.protocol === 'data:' || parsed.hostname === '127.0.0.1') {
+    if (parsed.protocol === 'file:') {
+      return route.abort();
+    }
+    if (parsed.protocol === 'about:' || parsed.protocol === 'blob:' || parsed.protocol === 'data:') {
       return route.continue();
+    }
+    if (parsed.hostname === '127.0.0.1' || parsed.hostname === 'localhost' || parsed.hostname === '[::1]') {
+      return route.abort();
     }
     return strict ? route.abort() : route.continue();
   });
@@ -2670,8 +2676,15 @@ function createDriver(options) {
         }
       }
       const args = ['-jar', jarPath, '--format', 'json', '--flavour', 'ua1', '--maxfailuresdisplayed', '25', '--loglevel', '1', immutablePath];
+      const javaEnv = { ...process.env };
+      for (const k of Object.keys(javaEnv)) {
+        if (/(?:API_KEY|TOKEN|SECRET|PASSWORD|CREDENTIAL|PRIVATE_KEY)/i.test(k)
+          || ['NODE_OPTIONS', 'JAVA_TOOL_OPTIONS', '_JAVA_OPTIONS', 'JDK_JAVA_OPTIONS'].includes(k)) {
+          delete javaEnv[k];
+        }
+      }
       const result = await new Promise((resolve, reject) => {
-        const child = spawnProcess(javaBin, args, { stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
+        const child = spawnProcess(javaBin, args, { env: javaEnv, stdio: ['ignore', 'pipe', 'ignore'], windowsHide: true });
         let stdout = '';
         let timer = null;
         let forcedFinish = null;
@@ -3109,6 +3122,15 @@ function createDriver(options) {
       const page = await context.newPage();
       const pageErrors = [];
       page.on('pageerror', (e) => pageErrors.push(String(e).slice(0, 200)));
+      const strictOffline = process.env.ALLOFLOW_MCP_OFFLINE_ASSETS !== '0';
+      const allowedBootScripts = new Set([REACT_CDN, REACT_DOM_CDN, JSZIP_CDN]);
+      let networkLocked = false;
+      await page.route('**/*', (route) => {
+        const url = route.request().url();
+        if (/^(?:about|blob|data):/i.test(url)) return route.continue();
+        if (!networkLocked && !strictOffline && allowedBootScripts.has(url)) return route.continue();
+        return route.abort();
+      });
       await page.goto('about:blank');
       rlog('office export: loading React + JSZip + the export module');
       await page.addScriptTag({ url: REACT_CDN });
@@ -3120,6 +3142,7 @@ function createDriver(options) {
         () => !!(window.AlloModules && window.AlloModules.AccessibleOfficeExport && typeof window.AlloModules.AccessibleOfficeExport.build === 'function'),
         null, { timeout: 30000 }
       );
+      networkLocked = true;
       const out = await page.evaluate(async ({ html, title, format: fmt }) => {
         const res = await window.AlloModules.AccessibleOfficeExport.build({ html, title, format: fmt });
         if (!res || !res.blob) throw new Error('Office export returned no data');
@@ -3153,6 +3176,15 @@ function createDriver(options) {
     const page = await context.newPage();
     const pageErrors = [];
     page.on('pageerror', (e) => pageErrors.push(String(e).slice(0, 200)));
+    const strictOffline = process.env.ALLOFLOW_MCP_OFFLINE_ASSETS !== '0';
+    const allowedBootScripts = new Set([REACT_CDN, REACT_DOM_CDN]);
+    let networkLocked = false;
+    await page.route('**/*', (route) => {
+      const url = route.request().url();
+      if (/^(?:about|blob|data):/i.test(url)) return route.continue();
+      if (!networkLocked && !strictOffline && allowedBootScripts.has(url)) return route.continue();
+      return route.abort();
+    });
     await page.goto('about:blank');
     rlog(what + ': loading React + the view module');
     // React is not optional: the module destructures hooks at top level and throws without it.
@@ -3164,6 +3196,7 @@ function createDriver(options) {
       () => !!(window.AlloModules && window.AlloModules.AltFormatExports && typeof window.AlloModules.AltFormatExports.epub === 'function'),
       null, { timeout: 30000 }
     );
+    networkLocked = true;
     return { page, pageErrors };
   }
 
@@ -3539,6 +3572,7 @@ function createDriver(options) {
     const context = await b.newContext();
     try {
       const page = await context.newPage();
+      await page.route('**/*', (route) => (/^(?:about|blob|data):/i.test(route.request().url()) ? route.continue() : route.abort()));
       return await page.evaluate(({ src, args }) => (0, eval)('(' + src + ')')(...args), { src: AccessibleHtmlEdit.accessibleHtmlTool.toString(), args: [String(o.html || ''), o.mode, o.payload || {}] });
     } finally { try { await context.close(); } catch (_) {} }
   }
