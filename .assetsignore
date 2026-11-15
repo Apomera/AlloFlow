@@ -53,3 +53,36 @@ mcp-testing/runs/
 runs/2026-09-22-keyless-pilot/
 quality/eppp_provenance/
 --quiet/
+
+# Internal doc archives, build inputs, visual audit snapshots, and video spike/source trees
+# (~678 files total; preserves docs/teacher-guide/, services/alloflow-remote-mcp/, a11y-audit/,
+# test_prep/, export_labels/, mcp-testing/corpus/, and runs/2026-09-22-real-corpus/). Verified 0
+# runtime references across root HTML/JS and CDN loaders (2026-11-14; keeps Cloudflare Pages static-asset
+# count below the 85% / 17,000-file advisory threshold alongside the 31,973-word word_audio_shards/ set).
+Phoneme library/
+Instructions List/
+.codex-visual-pass/
+video_studio/spike/
+trailer/src/
+research/notebooklm_psychoeducational_fidelity/
+docs/audits/
+docs/allopack-quality-2026-09-08/
+docs/allopack-quality-2026-09-09/
+docs/allopack-quality-2026-09-10/
+docs/allopack-quality-2026-09-12/
+docs/allopack-quality-2026-09-13/
+docs/allopack-quality-2026-09-19/
+docs/allopack-quality-2026-10-04/
+docs/connected-escape-room-flow/
+docs/connected-escape-room-learning/
+docs/connected-escape-room-navigation/
+docs/connected-escape-room-pending/
+docs/connected-escape-room-portability/
+docs/connected-escape-room-solo-review/
+docs/connected-escape-room-refinements/
+docs/lesson-board-delivery-2026-09-19/
+docs/lesson-board-library/
+docs/lesson-board-return-guide-2026-09-19/
+docs/lesson-board-teacher-recovery-2026-09-19/
+docs/lesson-board-refinements/
+docs/lesson-board-implementation/

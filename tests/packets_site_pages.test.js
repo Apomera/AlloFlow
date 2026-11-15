@@ -920,21 +920,23 @@ describe('the maker, run with the real builder', () => {
     expect(page.seen('panel-own') && !page.seen('panel-pick')).toBe(true);
     expect(page.$('own-line').textContent).toBe('Type or paste your words above.');
     expect(wordlist.get('gun')).toMatchObject({ blocked: true });
-    expect(wordlist.get('fuzz')).toMatchObject({ blocked: false, hasClip: false });
+    // 2026-11-14 (R1-23K): all usable 2-10 letter dictionary words with a vowel now have a clip (fuzz is in word_audio_shards/); 9 words (bail, din, ...) are in the app's recorded bank only (kokoro: false, shards: false), so on the maker page they have no recording.
+    expect(wordlist.get('fuzz')).toMatchObject({ blocked: false, shards: true, hasClip: true });
+    expect(wordlist.get('din')).toMatchObject({ blocked: false, recorded: true, kokoro: false, shards: false });
     expect(wordlist.get('bail')).toMatchObject({ recorded: true, kokoro: false });
-    page.set('f-own', 'cat, Gun fuzz\nblorp bail x1 map cat');
+    page.set('f-own', 'cat, Gun din\nblorp bail x1 map cat');
     await page.until(() => page.$('own-list').children.length === 7, 'the checked words');
     const rows = Object.fromEntries([...page.$('own-list').children].map((row) => [row.querySelector('.w').textContent, { text: row.querySelector('.s').textContent, ok: row.className === 'is-ok' }]));
-    expect(Object.keys(rows)).toEqual(['cat', 'gun', 'fuzz', 'blorp', 'bail', 'x1', 'map']);
+    expect(Object.keys(rows)).toEqual(['cat', 'gun', 'din', 'blorp', 'bail', 'x1', 'map']);
     expect(rows.cat).toEqual({ ok: true, text: 'Ready. 3 sounds: k, a, t.' });
     expect(rows.map.ok).toBe(true);
     expect(rows.gun).toEqual({ ok: false, text: 'Left out. It is on the list of words this tool does not use. That list is a first pass and can be too cautious.' });
-    expect(rows.fuzz).toEqual({ ok: false, text: 'No recording yet. Record it yourself, or choose another word.' });
+    expect(rows.din).toEqual({ ok: false, text: 'No recording yet. Record it yourself, or choose another word.' });
     expect(rows.bail).toEqual({ ok: false, text: 'No recording yet. Record it yourself, or choose another word.' });
     expect(rows.blorp).toEqual({ ok: false, text: 'Not in the sound dictionary. Set its sounds to use it, or check the spelling.' });
     // The words that a teacher can fix have "Edit this word" (closed); a blocked word and a word that is not a practice word do not.
     const edits = Object.fromEntries([...page.$('own-list').children].map((row) => [row.querySelector('.w').textContent, row.querySelector('.e button')?.getAttribute('aria-expanded') ?? null]));
-    expect(edits).toEqual({ cat: 'false', gun: null, fuzz: 'false', blorp: 'false', bail: 'false', x1: null, map: 'false' });
+    expect(edits).toEqual({ cat: 'false', gun: null, din: 'false', blorp: 'false', bail: 'false', x1: null, map: 'false' });
     expect(page.d.querySelectorAll('#own-list .wp')).toHaveLength(0);
     expect(rows.x1).toEqual({ ok: false, text: 'Not used. A practice word is 2 to 10 letters, letters only, with a vowel.' });
     expect(page.$('own-line').textContent).toBe('2 of 7 words can be used.');
@@ -947,7 +949,7 @@ describe('the maker, run with the real builder', () => {
     expect(manifestOf(html).builder).toMatchObject({ words: 2, ai: 'none' });
     for (const block of lessonOf(html).blocks) expect(block.items.map((item) => item.word)).toEqual(['cat', 'map']);
     expect(page.$('sum-words').textContent).toBe('2 words: cat, map.');
-    for (const word of ['gun', 'fuzz', 'blorp', 'bail']) expect(JSON.stringify(lessonOf(html).blocks)).not.toContain('"' + word + '"');
+    for (const word of ['gun', 'din', 'blorp', 'bail']) expect(JSON.stringify(lessonOf(html).blocks)).not.toContain('"' + word + '"');
 
     // Only a blocked word: the page does not go on, and says why.
     page.$('back-3').click();
@@ -1589,22 +1591,23 @@ describe('the maker: choose the words yourself, and any number of words', () => 
     expect(pool).not.toContain('shallow');
     const typedPin = pool.includes('pin') && !three.includes('pin') ? 'pin' : pool.find((word) => !three.includes(word) && word.length === 3);
     page.set('f-find', '');
-    page.set('f-add', 'Shallow ' + typedPin + ' fuzz gun');
+    // 2026-11-14 (R1-23K): din is recorded-only (kokoro: false, shards: false), so it has no recording on the maker page.
+    page.set('f-add', 'Shallow ' + typedPin + ' din gun');
     page.$('add-words').click();
     expect(page.$('f-add').value).toBe('');
-    expect(page.$('list-said').textContent).toBe('Added and checked: shallow, ' + typedPin + '. Not usable yet: fuzz. It joins your list once it has what the note beside it asks for. Not used: gun. The note beside each says why. '
+    expect(page.$('list-said').textContent).toBe('Added and checked: shallow, ' + typedPin + '. Not usable yet: din. It joins your list once it has what the note beside it asks for. Not used: gun. The note beside each says why. '
       + 'You chose 5 words. The file uses all of them, in the order you checked them.');
     expect(page.chips()).toEqual([...three, 'shallow', typedPin]);
     await page.until(() => listRows(page).length && listRows(page)[0].word === 'shallow', 'the typed words first');
     const typed = listRows(page).slice(0, 4);
     expect(typed.map((row) => [row.word, row.typed, row.checked, row.disabled, row.edit])).toEqual([
-      ['shallow', true, true, false, false], [typedPin, true, true, false, false], ['fuzz', true, false, true, true], ['gun', true, false, true, false]]);
+      ['shallow', true, true, false, false], [typedPin, true, true, false, false], ['din', true, false, true, true], ['gun', true, false, true, false]]);
     expect(typed[0].facts).toMatch(/^You typed it\. Ready\. \d sounds: /);
     expect(typed[2].facts).toBe('You typed it. No recording yet. Record it yourself, or choose another word.');
     expect(typed[3].facts).toMatch(/^You typed it\. Left out\. It is on the list of words this tool does not use\./);
     // A typed word is listed once, as typed, and they are the same words as in "Type my own words".
     expect(listRows(page).filter((row) => row.word === typedPin)).toHaveLength(1);
-    expect(page.$('f-own').value).toBe('shallow ' + typedPin + ' fuzz gun');
+    expect(page.$('f-own').value).toBe('shallow ' + typedPin + ' din gun');
     expect(page.$('pick-sub').textContent).toBe('You chose 5 words yourself. The file uses all of them, in this order.');
     expect(page.$('pick-list-line').textContent).toBe('Choose the words yourself: 5 words chosen');
     // Unchecking a word takes it out; the chip's Remove does the same. Nothing takes its place.
@@ -1637,7 +1640,7 @@ describe('the maker: choose the words yourself, and any number of words', () => 
     expect(audit(html)).toEqual([]);
     // Kept in this browser: the words, in order.
     const kept = JSON.parse(page.w.localStorage.getItem(KEY));
-    expect(kept).toMatchObject({ hand: true, chosen: order, own: 'shallow ' + typedPin + ' fuzz gun' });
+    expect(kept).toMatchObject({ hand: true, chosen: order, own: 'shallow ' + typedPin + ' din gun' });
     page.dom.window.close();
     // The same choices on another visit: the same list, and byte for byte the same file.
     const again = await openMaker({ before: (w) => w.localStorage.setItem(KEY, JSON.stringify(kept)) });

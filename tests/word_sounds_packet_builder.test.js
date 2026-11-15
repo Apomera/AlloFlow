@@ -62,7 +62,7 @@ const withoutId = (rows) => rows.map((row) => { const copy = { ...row }; delete 
 
 const CVC = ['cat', 'dog', 'sun', 'pig', 'bed', 'hat', 'map', 'cup', 'pen', 'top'];
 const DIGRAPHS = ['ship', 'chop', 'thin', 'shop', 'chin', 'rich', 'much', 'fish', 'wish', 'bath'];
-// fuzz has no recording; blorp is not in the sound dictionary (the estimate path); the rest stretch the aligner.
+// fuzz is in word_audio_shards/ only (not in BANKS, which sets shards: false); blorp is not in the sound dictionary (the estimate path); the rest stretch the aligner.
 const MIXED = ['frog', 'lamp', 'quit', 'cube', 'jumped', 'table', 'fuzz', 'night', 'box', 'blorp'];
 
 // A stand-in converter: any clip becomes a tiny WAV-labelled clip that depends only on its bytes.
@@ -204,7 +204,9 @@ describe('(d) a word with no recording', () => {
     return out;
   };
   it('is an exception with a plain reason, and no item in the file is silent', async () => {
-    expect(wordlist.get('fuzz')).toMatchObject({ hasClip: false, blocked: false });
+    // 2026-11-14 (R1-23K): all usable 2-10 letter dictionary words with a vowel now have a clip (fuzz is in word_audio_shards/); BANKS here sets shards: false, so fuzz still has no recording in BANKS.
+    expect(wordlist.get('fuzz')).toMatchObject({ recorded: false, kokoro: false, shards: true, hasClip: true, blocked: false });
+    expect(BANKS.words.fuzz || BANKS.kokoroWords.fuzz).toBeUndefined();
     const built = await build({ words: ['cat', 'fuzz', 'map'], activities: ['isolation', 'blending', 'segmentation', 'counting', 'spelling_bee'] });
     expect(built.manifest.words).toEqual({ asked: ['cat', 'fuzz', 'map'], used: ['cat', 'map'] });
     const fuzz = built.exceptions.filter((e) => e.word === 'fuzz');

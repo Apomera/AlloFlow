@@ -1,10 +1,43 @@
 Word Sounds word audio: words for a person to review
-Written by dev-tools/build_word_sounds_word_audio.cjs on 2026-11-14T17:06:08.224Z.
+Written by dev-tools/build_word_sounds_word_audio.cjs on 2026-11-15T01:05:34.159Z.
 Tab-separated: stage, word, note. Unless a section says otherwise, its words have no clip in this store.
 
 == Voiced but failed the automatic checks, twice: 0 ==
 
-== IN the store, but voiced from the second text form after the first try failed a check (listen to these first): 3 ==
+== IN the store, but voiced from the second text form after the first try failed a check (listen to these first): 36 ==
+	accenting	carrier2
+	accentuated	bare
 	access	carrier2
+	accidently	carrier2
+	acidity	carrier2
+	actinide	carrier2
+	activating	bare
+	alcoves	carrier2
+	alkenes	carrier2
+	appetizing	carrier2
+	articulating	carrier2
+	ascertain	carrier2
+	ascertained	carrier2
+	athenians	carrier2
+	eccentricities	bare
+	ecton	carrier2
+	essex	carrier2
+	estimates	bare
+	ethnic	carrier2
+	ethylene	carrier2
+	excavation	carrier2
+	excellencies	bare
+	excellency	bare
+	excellently	carrier2
 	exchanged	carrier2
+	exchanges	carrier2
+	excrement	bare
+	executes	carrier2
+	executing	carrier2
+	exercising	carrier2
+	exigencies	bare
+	exodus	carrier2
+	expertly	carrier2
 	export	carrier2
+	extraterrestrial	bare
+	extricated	carrier2

@@ -90,7 +90,9 @@ describe('(a) the builder takes the teacher\'s own material, and trusts none of 
   });
 
   it('a teacher\'s recording makes a dictionary word with no recording usable, and replaces a bank recording', async () => {
-    expect(wordlist.get('fuzz')).toMatchObject({ hasClip: false, blocked: false });
+    // 2026-11-14 (R1-23K): fuzz is now in word_audio_shards/, while BANKS here sets shards: false.
+    expect(wordlist.get('fuzz')).toMatchObject({ recorded: false, kokoro: false, shards: true, hasClip: true, blocked: false });
+    expect(BANKS.words.fuzz || BANKS.kokoroWords.fuzz).toBeUndefined();
     const clip = wav(500);
     const built = await build({ words: ['fuzz', 'cat'], own: { fuzz: { clip } } });
     expect(built.manifest.words.used).toEqual(['fuzz', 'cat']);
@@ -346,9 +348,10 @@ const typeWords = async (page, text, n) => {
 describe('(c) the maker: "Edit this word", the store, and the file', () => {
   it('the panel is closed by default; the messages say what a word needs; sounds set in the panel make a name usable', async () => {
     const page = await openMaker();
-    await typeWords(page, 'zayden cat fuzz', 3);
+    // 2026-11-14 (R1-23K): din is recorded-only (kokoro: false, shards: false), so it has no recording on the maker page.
+    await typeWords(page, 'zayden cat din', 3);
     expect(page.says('zayden')).toBe('Not in the sound dictionary. Set its sounds to use it, or check the spelling.');
-    expect(page.says('fuzz')).toBe('No recording yet. Record it yourself, or choose another word.');
+    expect(page.says('din')).toBe('No recording yet. Record it yourself, or choose another word.');
     expect(page.says('cat')).toBe('Ready. 3 sounds: k, a, t.');
     // Closed: no panel anywhere, every toggle says so, and "My words" is not on the page while the store is empty.
     expect(page.d.querySelectorAll('.wp')).toHaveLength(0);
@@ -429,19 +432,19 @@ describe('(c) the maker: "Edit this word", the store, and the file', () => {
 
   it('a microphone that is refused or missing is said plainly', async () => {
     const refused = await openMaker({ microphone: 'refused' });
-    await typeWords(refused, 'fuzz', 1);
-    refused.row('fuzz').querySelector('.e button').click();
-    await refused.until(() => refused.button(refused.panel('fuzz'), 'record') && !refused.button(refused.panel('fuzz'), 'record').disabled, 'Record');
-    refused.button(refused.panel('fuzz'), 'record').click();
-    await refused.until(() => refused.panel('fuzz').querySelectorAll('.wp-said')[1].textContent, 'the message');
-    expect(refused.panel('fuzz').querySelectorAll('.wp-said')[1].textContent).toBe('The microphone was not allowed, so nothing was recorded. To record, allow the microphone for this site in the browser, then press Record it yourself again.');
+    await typeWords(refused, 'din', 1);
+    refused.row('din').querySelector('.e button').click();
+    await refused.until(() => refused.button(refused.panel('din'), 'record') && !refused.button(refused.panel('din'), 'record').disabled, 'Record');
+    refused.button(refused.panel('din'), 'record').click();
+    await refused.until(() => refused.panel('din').querySelectorAll('.wp-said')[1].textContent, 'the message');
+    expect(refused.panel('din').querySelectorAll('.wp-said')[1].textContent).toBe('The microphone was not allowed, so nothing was recorded. To record, allow the microphone for this site in the browser, then press Record it yourself again.');
     refused.dom.window.close();
     const none = await openMaker({ microphone: false });
-    await typeWords(none, 'fuzz', 1);
-    none.row('fuzz').querySelector('.e button').click();
-    await none.until(() => none.button(none.panel('fuzz'), 'record') && !none.button(none.panel('fuzz'), 'record').disabled, 'Record');
-    none.button(none.panel('fuzz'), 'record').click();
-    expect(none.panel('fuzz').querySelectorAll('.wp-said')[1].textContent).toBe('This browser cannot record on this page. You can choose another word.');
+    await typeWords(none, 'din', 1);
+    none.row('din').querySelector('.e button').click();
+    await none.until(() => none.button(none.panel('din'), 'record') && !none.button(none.panel('din'), 'record').disabled, 'Record');
+    none.button(none.panel('din'), 'record').click();
+    expect(none.panel('din').querySelectorAll('.wp-said')[1].textContent).toBe('This browser cannot record on this page. You can choose another word.');
     expect(none.micAsks).toBe(0);
     none.dom.window.close();
   });
@@ -540,12 +543,12 @@ describe('(c) the maker: "Edit this word", the store, and the file', () => {
   it('another tab\'s change reaches the page over the channel', async () => {
     const Channel = fakeChannels();
     const page = await openMaker({ channels: Channel });
-    await typeWords(page, 'fuzz', 1);
-    expect(page.says('fuzz')).toBe('No recording yet. Record it yourself, or choose another word.');
+    await typeWords(page, 'din', 1);
+    expect(page.says('din')).toBe('No recording yet. Record it yourself, or choose another word.');
     const otherTab = page.store.create({ indexedDB: page.idb, BroadcastChannel: Channel });
-    await otherTab.put('fuzz', { clip: { dataUri: wav(400) } });
-    await page.until(() => /^Ready\. Uses your recording\./.test(page.says('fuzz')), 'the other tab\'s recording');
-    expect(page.says('fuzz')).toBe('Ready. Uses your recording. 3 sounds: f, u, z.');
+    await otherTab.put('din', { clip: { dataUri: wav(400) } });
+    await page.until(() => /^Ready\. Uses your recording\./.test(page.says('din')), 'the other tab\'s recording');
+    expect(page.says('din')).toBe('Ready. Uses your recording. 3 sounds: d, i, n.');
     page.dom.window.close();
   });
 

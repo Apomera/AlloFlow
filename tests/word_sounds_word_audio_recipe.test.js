@@ -67,7 +67,7 @@ describe('the options', () => {
     expect(() => tool.parseArgs(['--bitrate', '320', '--out', scratch])).toThrow(/--bitrate is 24 to 128/);
   });
 
-  it('a store keeps one recipe: clips made another way are not mixed in', () => {
+  it('a store keeps one recipe: clips made another way are not mixed in, except fp32/fp16 across wasm and webgpu', () => {
     const dir = join(scratch, 'one-recipe');
     const bank = tool.openStore(dir, { freeBytes: () => 50 * 1024 ** 3 });
     bank.add('bat', tool.URI_PREFIX + Buffer.alloc(900, 1).toString('base64'));
@@ -75,6 +75,19 @@ describe('the options', () => {
     const meta = tool.engineMeta(tool.parseArgs(['--recipe', 'sentence', '--out', dir]));
     expect(() => tool.openStore(dir, { meta, textForm: 'carrier' })).toThrow(/made with another recipe/);
     expect(tool.openStore(dir).count()).toBe(1);
+
+    const wasmDir = join(scratch, 'wasm-webgpu-resume');
+    const wasmMeta = tool.engineMeta(tool.parseArgs(['--recipe', 'sentence', '--out', wasmDir, '--bitrate', '64']));
+    const gpuOpts = tool.parseArgs(['--recipe', 'sentence', '--out', wasmDir, '--bitrate', '64', '--device', 'webgpu', '--skip-bare-take']);
+    expect(gpuOpts).toMatchObject({ device: 'webgpu', skipBareTake: true });
+    const gpuMeta = tool.engineMeta(gpuOpts);
+    expect(gpuMeta.engine).toBe('kokoro-js@1.2.1 / onnx-community/Kokoro-82M-v1.0-ONNX (fp32, webgpu)');
+    const storeWasm = tool.openStore(wasmDir, { meta: wasmMeta, textForm: 'carrier', freeBytes: () => 50 * 1024 ** 3 });
+    storeWasm.add('bat', tool.URI_PREFIX + Buffer.alloc(900, 1).toString('base64'));
+    storeWasm.flush();
+    expect(tool.openStore(wasmDir, { meta: gpuMeta, textForm: 'carrier' }).count()).toBe(1);
+    const gpuQ8 = tool.engineMeta(tool.parseArgs(['--device', 'webgpu', '--out', wasmDir]));
+    expect(() => tool.openStore(wasmDir, { meta: gpuQ8, textForm: 'carrier' })).toThrow(/made with another recipe/);
   });
 });
 
@@ -225,5 +238,22 @@ describe('one word, with a pretend engine', () => {
     const voiced = await tool.voiceWordCarrier(entry, Object.assign(deps(engine), { bareSeconds: () => 0.5 }), options, 0);
     expect(voiced).toMatchObject({ ok: true, form: 'carrier' });
     expect(engine.calls).toEqual(['Here is the word... hat.']);
+  });
+
+  it('--skip-bare-take skips the upfront bare synthesis while checking phonemes and still falling back if both carriers fail', async () => {
+    const okEngine = pretend({ 'Here is the word... hat.': { wav: sentence(), phonemes: 'hˈɪɹ ɪz ðə wˈɜːd... hˈæt.' } });
+    okEngine.phonemes = async (words) => Object.fromEntries(words.map((word) => [word, 'hˈæt']));
+    const voiced = await tool.voiceWordCarrier(entry, deps(okEngine), Object.assign({}, options, { skipBareTake: true }), 0);
+    expect(voiced).toMatchObject({ ok: true, form: 'carrier', attempts: 1 });
+    expect(okEngine.calls).toEqual(['Here is the word... hat.']);
+
+    const failEngine = pretend({
+      'Here is the word... hat.': { wav: sentence({ gap: 0.03 }), phonemes: 'hˈɪɹ ɪz ðə wˈɜːd... hˈæt.' },
+      'The word is... hat.': { wav: sentence({ gap: 0.03 }), phonemes: 'ðə wˈɜːd ɪz... hˈæt.' },
+      hat: { wav: bare, phonemes: 'hˈæt' },
+    });
+    const fallback = await tool.voiceWordCarrier(entry, deps(failEngine), Object.assign({}, options, { skipBareTake: true }), 0);
+    expect(fallback).toMatchObject({ ok: true, form: 'bare', attempts: 3 });
+    expect(failEngine.calls).toEqual(['Here is the word... hat.', 'The word is... hat.', 'hat']);
   });
 });

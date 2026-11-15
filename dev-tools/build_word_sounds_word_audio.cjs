@@ -77,6 +77,8 @@ const MODEL_ID = 'onnx-community/Kokoro-82M-v1.0-ONNX';
 // q8 = model_quantized.onnx (88 MB, what the app plays); fp32 = model.onnx (310 MB), fp16 = model_fp16.onnx (155 MB).
 const DEFAULT_DTYPE = 'q8';
 const DTYPES = Object.freeze(['q8', 'fp16', 'fp32']);
+const DEFAULT_DEVICE = 'wasm';
+const DEVICES = Object.freeze(['wasm', 'webgpu']);
 const SHARD_FORMAT = 'alloflow-word-audio-shard/1';
 const INDEX_FORMAT = 'alloflow-word-audio-index/1';
 const URI_PREFIX = 'data:audio/webm;base64,';
@@ -762,8 +764,11 @@ function openStore(dir, options = {}) {
       catch (error) { throw new Error('Shard ' + file + ' is not readable JSON (' + error.message + '). Move it away before running: this tool will not write over it.'); }
       if (!data || typeof data !== 'object' || Array.isArray(data) || !data._meta || data._meta.format !== SHARD_FORMAT) throw new Error('Shard ' + file + ' is not a ' + SHARD_FORMAT + ' file. Move it away before running.');
       // One store, one recipe: clips made another way (model, carrier, trim, loudness, bit rate) are not mixed in.
+      // Same model and precision (fp16/fp32) across wasm and webgpu produce matching speech, so switching execution device is allowed.
+      const normalizeDevice = value => String(value || '').replace(/\((fp16|fp32), (?:wasm|webgpu)\)$/, '($1, device)');
       for (const key of ['engine', 'post']) {
-        if (typeof data._meta[key] === 'string' && data._meta[key] !== meta[key] && Object.keys(data).length > 1) {
+        const mismatch = key === 'engine' ? normalizeDevice(data._meta[key]) !== normalizeDevice(meta[key]) : data._meta[key] !== meta[key];
+        if (typeof data._meta[key] === 'string' && mismatch && Object.keys(data).length > 1) {
           throw new Error('Shard ' + file + ' was made with another recipe (' + key + ': "' + data._meta[key] + '"; this run: "' + meta[key] + '"). Use another --out, or the same options as that store.');
         }
       }
@@ -894,8 +899,9 @@ function createEngine(options) {
   const served = new Map([['/app/kokoro_tts_loader.js', 'kokoro_tts_loader.js'], ['/app/runtime_graph_delivery_policy.js', 'runtime_graph_delivery_policy.js'], ['/app/runtime_graph_host.js', 'runtime_graph_host.js']]);
   for (const id of manifest.graphs.kokoro.assets) served.set('/app/' + manifest.assets[id].path, manifest.assets[id].path);
   const lanes = Math.max(1, Math.min(4, options.lanes || 1));
-  // q8 goes through the app's loader, as it always has; any other model precision through directWorkerMain.
-  const dtype = options.dtype || DEFAULT_DTYPE, direct = dtype !== DEFAULT_DTYPE || !!options.direct;
+  // q8 + wasm goes through the app's loader, as it always has; any other precision or device through directWorkerMain.
+  const dtype = options.dtype || DEFAULT_DTYPE, device = options.device || DEFAULT_DEVICE;
+  const direct = dtype !== DEFAULT_DTYPE || device !== DEFAULT_DEVICE || !!options.direct;
   let server = null, context = null, pages = [], lastConsole = '';
   const state = { loadSeconds: 0, starts: 0, outside: new Set(), blocked: new Set(), modelFromDisk: 0, modelSaved: 0 };
 
@@ -962,8 +968,10 @@ function createEngine(options) {
     const { chromium } = require('playwright');
     await listen();
     fs.mkdirSync(profile, { recursive: true });
+    const launchArgs = ['--autoplay-policy=no-user-gesture-required', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'];
+    if (device === 'webgpu') launchArgs.push('--enable-unsafe-webgpu', '--ignore-gpu-blocklist');
     const launch = { headless: true, timeout: 180000, handleSIGINT: false, handleSIGTERM: false, handleSIGHUP: false, serviceWorkers: 'block',
-      args: ['--autoplay-policy=no-user-gesture-required', '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows'] };
+      args: launchArgs };
     if (browserName !== 'chromium') launch.channel = browserName;
     try { context = await chromium.launchPersistentContext(profile, launch); }
     catch (error) { throw new EngineError('The browser "' + browserName + '" did not start: ' + String(error.message).split('\n')[0]); }
@@ -1002,7 +1010,7 @@ function createEngine(options) {
             window.__wsDirect = (type, extra) => new Promise((resolve, reject) => { const id = ++seq; pending.set(id, { resolve, reject }); worker.postMessage(Object.assign({ type, id }, extra || {})); });
           }, { graphs: manifest, source: floatToWav.toString() + ';(' + directWorkerMain.toString() + ')();' });
           // First use downloads the model (fp32: 310 MB) into this profile's browser cache.
-          const ready = await withTimeout(page.evaluate(input => window.__wsDirect('init', input).then(reply => ({ ms: reply.ms, outputs: reply.outputs })), { modelId: MODEL_ID, dtype }), 30 * 60000, 'Loading the voice model');
+          const ready = await withTimeout(page.evaluate(input => window.__wsDirect('init', input).then(reply => ({ ms: reply.ms, outputs: reply.outputs })), { modelId: MODEL_ID, dtype, device }), 30 * 60000, 'Loading the voice model');
           state.modelOutputs = ready.outputs;
           pages.push(page);
           continue;
@@ -1087,9 +1095,9 @@ function createEngine(options) {
       return { wav: Buffer.from(got.wav, 'base64'), phonemes: got.phonemes, durations: got.durations, ms: got.ms };
     };
     const phonemes = (texts, lane) => evaluate(lane, list => window.__wsDirect('phonemes', { texts: list }).then(reply => reply.out), texts, 600000, 'Reading phonemes');
-    return { start, stop, synth: async (text, lane) => (await take(text, lane)).wav, synthTake: take, phonemes, decodeCheck, restart, state, profileName, name: browserName, origin, lanes, dtype };
+    return { start, stop, synth: async (text, lane) => (await take(text, lane)).wav, synthTake: take, phonemes, decodeCheck, restart, state, profileName, name: browserName, origin, lanes, dtype, device };
   }
-  return { start, stop, synth, decodeCheck, restart, state, profileName, name: browserName, origin, lanes, dtype: 'q8' };
+  return { start, stop, synth, decodeCheck, restart, state, profileName, name: browserName, origin, lanes, dtype: 'q8', device: DEFAULT_DEVICE };
 }
 
 // Float samples -> 16-bit WAV, as the loader's worker writes them (float32ToWav in kokoro_tts_loader.js, its
@@ -1138,7 +1146,7 @@ function directWorkerMain() {
       if (data.type === 'init') {
         const m = await library();
         const t0 = performance.now();
-        tts = await m.KokoroTTS.from_pretrained(data.modelId, { dtype: data.dtype, device: 'wasm' });
+        tts = await m.KokoroTTS.from_pretrained(data.modelId, { dtype: data.dtype, device: data.device || 'wasm' });
         let outputs = [];
         try { outputs = Array.from((tts.model.sessions && tts.model.sessions.model && tts.model.sessions.model.outputNames) || []); } catch (_) { /* unknown */ }
         self.postMessage({ id: data.id, ok: true, ms: performance.now() - t0, outputs });
@@ -1199,10 +1207,10 @@ function keepAwake() {
 // ---------------------------------------------------------------------------
 // The recipe options in use, or null for the bank's own recipe (every default).
 function recipeOf(options = {}) {
-  const dtype = options.dtype || DEFAULT_DTYPE, trim = options.trim || 'bank', bitrate = options.bitrate || 48;
+  const dtype = options.dtype || DEFAULT_DTYPE, device = options.device || DEFAULT_DEVICE, trim = options.trim || 'bank', bitrate = options.bitrate || 48;
   const loudness = options.loudness == null ? null : Number(options.loudness);
-  if (dtype === DEFAULT_DTYPE && !options.carrier && trim === 'bank' && loudness == null && bitrate === 48) return null;
-  return { dtype, carrier: options.carrier || '', carrierRetry: options.carrierRetry || '', trim, loudness, ceiling: options.ceiling == null ? LOUDNESS.ceiling : Number(options.ceiling), bitrate };
+  if (dtype === DEFAULT_DTYPE && device === DEFAULT_DEVICE && !options.carrier && trim === 'bank' && loudness == null && bitrate === 48) return null;
+  return { dtype, device, carrier: options.carrier || '', carrierRetry: options.carrierRetry || '', trim, loudness, ceiling: options.ceiling == null ? LOUDNESS.ceiling : Number(options.ceiling), bitrate };
 }
 // What the store's _meta and index say about how its clips were made: ENGINE itself for the bank recipe.
 function engineMeta(options = {}) {
@@ -1213,7 +1221,7 @@ function engineMeta(options = {}) {
   steps.push(recipe.trim === 'gentle' ? 'trim(0.3% peak, 60ms/120ms margins, 5ms/30ms fades)' : 'trim(1% peak, 30ms/60ms margins) + ramp(2ms/6ms)');
   if (recipe.loudness != null) steps.push('loudness ' + recipe.loudness + ' LUFS over the word (BS.1770, true peak <= ' + recipe.ceiling + ' dBTP)');
   steps.push('ffmpeg libopus ' + recipe.bitrate + 'kbps mono webm');
-  return Object.freeze(Object.assign({}, ENGINE, { engine: 'kokoro-js@1.2.1 / ' + MODEL_ID + ' (' + recipe.dtype + ', wasm)', post: steps.join(' + ') }));
+  return Object.freeze(Object.assign({}, ENGINE, { engine: 'kokoro-js@1.2.1 / ' + MODEL_ID + ' (' + recipe.dtype + ', ' + (recipe.device || DEFAULT_DEVICE) + ')', post: steps.join(' + ') }));
 }
 
 // The words of a carrier take, from its phoneme string: what follows the carrier's own phonemes.
@@ -1261,10 +1269,10 @@ async function voiceWordCarrier(entry, deps, options, lane) {
   const trimmer = options.trim === 'gentle' ? gentleTrim : trimWav;
   let attempts = 0, bare = null;
   const bareTake = async () => { if (!bare) { attempts++; bare = await takeOf(FORMS.bare(word)); } return bare; };
-  // The bare word's length (first to last louder sample): from a list of earlier lengths, or voiced now.
+  // The bare word's length (first to last louder sample): from a list of earlier lengths, or voiced now unless skipped.
   let bareSeconds = typeof deps.bareSeconds === 'function' ? Number(deps.bareSeconds(word)) || 0 : 0;
   let barePhonemes = null;
-  if (!(bareSeconds > 0)) {
+  if (!(bareSeconds > 0) && !options.skipBareTake) {
     const take = await bareTake();
     try { const g = gentleTrim(take.wav); bareSeconds = (g.last + 1 - g.first) / g.rate; } catch (_) { bareSeconds = 0; }
   }
@@ -1454,14 +1462,14 @@ async function run(todo, options, deps) {
 
 function parseArgs(argv) {
   const args = {};
-  const flags = ['plan', 'dry', 'resume', 'retry-failed', 'include-review', 'no-keep-awake', 'verbose', 'help', 'no-bare-fallback'];
+  const flags = ['plan', 'dry', 'resume', 'retry-failed', 'include-review', 'no-keep-awake', 'verbose', 'help', 'no-bare-fallback', 'skip-bare-take'];
   for (let i = 0; i < argv.length; i++) {
     const name = argv[i];
     if (!/^--[a-z-]+$/.test(name)) throw new Error('Unexpected argument: ' + name);
     const key = name.slice(2);
     if (flags.includes(key)) args[key] = true;
     else if (['limit', 'stage', 'only-list', 'out', 'work', 'browser', 'form', 'recycle', 'port', 'lanes',
-      'recipe', 'dtype', 'carrier', 'carrier-retry', 'trim', 'loudness', 'bitrate', 'bare-lengths'].includes(key)) {
+      'recipe', 'dtype', 'device', 'carrier', 'carrier-retry', 'trim', 'loudness', 'bitrate', 'bare-lengths'].includes(key)) {
       if (i + 1 >= argv.length) throw new Error('Missing value for ' + name);
       args[key] = argv[++i];
     } else throw new Error('Unknown option: ' + name);
@@ -1479,9 +1487,10 @@ function parseArgs(argv) {
   if (args.recipe != null && !RECIPES[args.recipe]) throw new Error('--recipe is one of ' + Object.keys(RECIPES).join(', '));
   const preset = args.recipe ? RECIPES[args.recipe] : {};
   const pick = (key, fallback) => (args[key] != null ? args[key] : preset[key] != null ? preset[key] : fallback);
-  Object.assign(options, { recipe: args.recipe || '', dtype: pick('dtype', DEFAULT_DTYPE), carrier: pick('carrier', ''), carrierRetry: pick('carrier-retry', ''), trim: pick('trim', 'bank'),
-    loudness: pick('loudness', null), bitrate: pick('bitrate', 48), bareLengths: args['bare-lengths'] ? path.resolve(args['bare-lengths']) : '', bareFallback: !args['no-bare-fallback'] });
+  Object.assign(options, { recipe: args.recipe || '', dtype: pick('dtype', DEFAULT_DTYPE), device: pick('device', DEFAULT_DEVICE), carrier: pick('carrier', ''), carrierRetry: pick('carrier-retry', ''), trim: pick('trim', 'bank'),
+    loudness: pick('loudness', null), bitrate: pick('bitrate', 48), bareLengths: args['bare-lengths'] ? path.resolve(args['bare-lengths']) : '', bareFallback: !args['no-bare-fallback'], skipBareTake: !!args['skip-bare-take'] });
   if (!DTYPES.includes(options.dtype)) throw new Error('--dtype is one of ' + DTYPES.join(', '));
+  if (!DEVICES.includes(options.device)) throw new Error('--device is one of ' + DEVICES.join(', '));
   for (const [key, value] of [['carrier', options.carrier], ['carrier-retry', options.carrierRetry]]) {
     if (value && String(value).split(CARRIER_SLOT).length !== 2) throw new Error('--' + key + ' needs ' + CARRIER_SLOT + ' once, for example "Here is the word... {word}."');
   }
@@ -1618,9 +1627,9 @@ async function main(argv) {
     process.exit(1);
   });
   const awake = options.keepAwake ? keepAwake() : null;
-  const engine = createEngine({ root: ROOT, work: options.work, browser: options.browser, port: options.port, lanes: options.lanes, log, verbose: options.verbose, dtype: options.dtype });
+  const engine = createEngine({ root: ROOT, work: options.work, browser: options.browser, port: options.port, lanes: options.lanes, log, verbose: options.verbose, dtype: options.dtype, device: options.device });
   const encoder = createEncoder(options.work, options.bitrate);
-  const recipe = { form: options.form, recycle: options.recycle, lanes: options.lanes, carrier: options.carrier, carrierRetry: options.carrierRetry, trim: options.trim, loudness: options.loudness, bareFallback: options.bareFallback };
+  const recipe = { form: options.form, recycle: options.recycle, lanes: options.lanes, carrier: options.carrier, carrierRetry: options.carrierRetry, trim: options.trim, loudness: options.loudness, bareFallback: options.bareFallback, skipBareTake: options.skipBareTake };
   const carrierDeps = {};
   const startedAt = new Date();
   log('Run started: ' + selection.todo.length + ' words to voice (' + process.argv.slice(2).join(' ') + '). Log: ' + logFile);
@@ -1663,7 +1672,7 @@ async function main(argv) {
 module.exports = { ROOT, DEFAULT_OUT, DEFAULT_WORK, ENGINE, FORMS, RETRY_FORM, GATES, REASONS, SHARD_FORMAT, INDEX_FORMAT, URI_PREFIX, MIN_FREE_BYTES, SHARD_EVERY, LOG_EVERY,
   loadParts, clipLookup, readCull, buildWorkList, applyOnlyList, selectWork, planText, reviewText, readWordFile,
   trimWav, measurePcm, checkClip, expectedSeconds, createEncoder, measureEncoded,
-  MODEL_ID, DEFAULT_DTYPE, DTYPES, RECIPE_GATES, GENTLE, CUT, LOUDNESS, RECIPES, recipeOf, engineMeta, wordPhonemes, finishClip, voiceWordCarrier, calibrateCarriers, readBareLengths, floatToWav, readPcm, pcmToWav, gentleTrim, cutCarrier, quietRuns, kWeighted, loudnessOf, truePeakDb, normalizeLoudness, carrierText, directWorkerMain,
+  MODEL_ID, DEFAULT_DTYPE, DTYPES, DEFAULT_DEVICE, DEVICES, RECIPE_GATES, GENTLE, CUT, LOUDNESS, RECIPES, recipeOf, engineMeta, wordPhonemes, finishClip, voiceWordCarrier, calibrateCarriers, readBareLengths, floatToWav, readPcm, pcmToWav, gentleTrim, cutCarrier, quietRuns, kWeighted, loudnessOf, truePeakDb, normalizeLoudness, carrierText, directWorkerMain,
   LowDiskError, EngineError, freeBytesAt, atomicWrite, openStore, readIndexWords, shardOf,
   createEngine, tendProcesses, keepAwake, voiceWord, run, parseArgs, main };
 if (require.main === module) {
