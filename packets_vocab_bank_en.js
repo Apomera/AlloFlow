@@ -6,7 +6,7 @@
 // data of its own: load() fetches packets_vocab/en-<n>.json once. Inputs: data/vendor/vocab/.
 (function (root) {
   'use strict';
-  var shards = [{"url":"packets_vocab/en-1.json","bytes":895846,"sha256":"d81c769656a36f2a53294a846575503fed7a1833d00915bc8825813d569551bf","words":3454,"senses":5338},{"url":"packets_vocab/en-2.json","bytes":694266,"sha256":"c59366fe6e9a8b530b3fcbf2f217ad18ac501f53fd558a93b9569f4dfbe83647","words":2780,"senses":4957}];
+  var shards = [{"url":"packets_vocab/en-1.json","bytes":895805,"sha256":"58c778be66410f94721261a425142e9d8ce92edb3997365db5d9685db46c4234","words":3407,"senses":5184},{"url":"packets_vocab/en-2.json","bytes":729969,"sha256":"014b7a56459de7dae430ab646d3c6ffd7cbeba39c8aeb50e1dec0e300961c773","words":2909,"senses":5224}];
   var credits = [{"set":"Simple English Wiktionary","author":"Wiktionary contributors","license":"CC BY-SA 4.0","url":"https://simple.wiktionary.org","deed":"https://creativecommons.org/licenses/by-sa/4.0/"},{"set":"English Wiktionary","author":"Wiktionary contributors","license":"CC BY-SA 4.0","url":"https://en.wiktionary.org","deed":"https://creativecommons.org/licenses/by-sa/4.0/"},{"set":"Open English WordNet 2025","author":"the Open English WordNet team","license":"CC BY 4.0","url":"https://en-word.net","deed":"https://creativecommons.org/licenses/by/4.0/"},{"set":"Princeton WordNet 3.1","author":"Princeton University","license":"WordNet License","url":"https://wordnet.princeton.edu","deed":"https://wordnet.princeton.edu/license-and-commercial-use"},{"set":"New Academic Word List 1.2 (word choice)","author":"Charles Browne, Brent Culligan and Joseph Phillips","license":"CC BY-SA 4.0","url":"https://www.newgeneralservicelist.com","deed":"https://creativecommons.org/licenses/by-sa/4.0/"}];
   var POS = { n: 'noun', v: 'verb', a: 'adjective', r: 'adverb' }, SRC = { s: 'simple', w: 'wiktionary', n: 'wordnet', a: 'alloflow' };
   var heads = null, all = [], byId = null, forms = {}, pending = null, got = {};
@@ -71,9 +71,9 @@
   }
   var api = {
     version: 1,
-    bytes: 1590112,
+    bytes: 1625774,
     credits: credits,
-    checking: "Checked and corrected with AI assistance on November 12 and 13, 2026 (the meanings marked checked). Not reviewed by a person. A teacher can edit every item.",
+    checking: "Checked and corrected with AI assistance on November 12, 13 and 14, 2026 (the meanings marked checked). Not reviewed by a person. A teacher can edit every item.",
     shards: shards,
     load: load,
     add: add,

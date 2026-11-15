@@ -36,5 +36,11 @@ assistance and was not reviewed by a person. The pass overlaps earlier reviews, 
 added. Unchecked meanings (`checked: ''`) come from the sources after automatic clean-up and safety filtering.
 A teacher can edit every item before a packet is made.
 
+On November 14, 2026, a fourth pass expanded the curated K–8 curriculum unit set to 504 headwords by adding
+or promoting 154 math and English language arts headwords (and adding secondary school meanings on everyday
+words such as area, mean, negative, positive, origin, range, similar, composite, expression, inequality,
+edge, and mood). Like the earlier passes, the work was checked and corrected with AI assistance and was not
+reviewed by a person.
+
 The bank's text stays under CC BY-SA 4.0; every packet that shows it carries the credits in
 `AlloVocabBank.credits`.

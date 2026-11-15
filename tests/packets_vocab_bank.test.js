@@ -250,9 +250,9 @@ describe('Packets vocabulary bank', () => {
     expect(root.AlloVocabBank.head('decomposer')).toBeNull();
   });
 
-  it('keeps the reviewed science and social-studies meanings first with their reviewed wrong answers', () => {
+  it('keeps the reviewed science, social-studies, math, and ELA meanings first with their reviewed wrong answers', () => {
     const unit = Object.entries(curation.words).filter(([, entry]) => entry.unit);
-    expect(unit.length).toBeGreaterThanOrEqual(350);
+    expect(unit.length).toBeGreaterThanOrEqual(500);
     for (const [word, entry] of unit) {
       const first = bank.senses(word)[0];
       expect(bank.head(word), word).toBe(word);
@@ -268,11 +268,28 @@ describe('Packets vocabulary bank', () => {
       ['federalism', /national government and states/], ['latitude', /north or south/],
       ['thermometer', /temperature/], ['neutron', /no electric charge/], ['tundra', /treeless biome/],
       ['pulley', /grooved wheel/], ['translucent', /some light pass through/], ['bill', /proposal for a law/],
+      ['numerator', /top number in a fraction/], ['quotient', /divide one number by another/],
+      ['perimeter', /outer boundary of a 2D shape/], ['parallelogram', /opposite sides are parallel/],
+      ['exponent', /multiplied by itself/], ['median', /middle number in an ordered list/],
+      ['meter', /100 centimeters/], ['personification', /human feelings, traits, or actions/],
+      ['protagonist', /main character/], ['homophone', /sounds the same/],
+      ['nonfiction', /real people, true events/], ['counterclaim', /opposing viewpoint/],
+      ['product', /multiply two or more numbers/], ['sum', /adding two or more numbers/],
+      ['difference', /subtracting one number from another/], ['factor', /divides another whole number evenly/],
     ]) expect(bank.senses(word)[0].def, word).toMatch(meaning);
     expect(bank.senses('consumer')[1].def).toMatch(/buys or uses goods/);
     expect(bank.senses('producer')[1].def).toMatch(/makes goods or provides services/);
     expect(bank.senses('plate')[1].def).toMatch(/moving slabs of rock/);
     expect(bank.senses('branch')[1].def).toMatch(/parts of a government/);
+    expect(bank.senses('area')[1].def).toMatch(/flat space inside a 2D shape/);
+    expect(bank.senses('mean')[1].def).toMatch(/average of a set of numbers/);
+    expect(bank.senses('origin')[1].def).toMatch(/\(0, 0\)/);
+    expect(bank.senses('negative')[1].def).toMatch(/Less than zero/);
+    expect(bank.senses('expression')[1].def).toMatch(/no equals sign/);
+    expect(bank.senses('inequality')[1].def).toMatch(/not equal/);
+    expect(bank.senses('meter')[1].def).toMatch(/stressed and unstressed beats/);
+    expect(bank.senses('product')[1].def).toMatch(/made, grown, or sold/);
+    expect(bank.senses('sum')[1].def).toMatch(/amount of money/);
   });
 
   it('applies the corrections file: school meaning first, wrong text fixed, rejects left out', () => {

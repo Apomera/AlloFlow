@@ -730,7 +730,7 @@ function build(opts) {
 }
 
 // ---- output -----------------------------------------------------------------------------------------
-const ABOUT = 'Word meanings from Simple English Wiktionary and English Wiktionary (CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/) and AlloFlow school vocabulary, word families from Open English WordNet 2025 (CC BY 4.0) and Princeton WordNet 3.1 (WordNet License). Checked and corrected in part with AI assistance on November 12 and 13, 2026. Not reviewed by a person. A teacher can edit every item. This data stays under CC BY-SA 4.0. Made by dev-tools/build_packets_vocab_bank.cjs.';
+const ABOUT = 'Word meanings from Simple English Wiktionary and English Wiktionary (CC BY-SA 4.0, https://creativecommons.org/licenses/by-sa/4.0/) and AlloFlow school vocabulary, word families from Open English WordNet 2025 (CC BY 4.0) and Princeton WordNet 3.1 (WordNet License). Checked and corrected in part with AI assistance on November 12, 13 and 14, 2026. Not reviewed by a person. A teacher can edit every item. This data stays under CC BY-SA 4.0. Made by dev-tools/build_packets_vocab_bank.cjs.';
 const CREDITS = [
   { set: 'Simple English Wiktionary', author: 'Wiktionary contributors', license: 'CC BY-SA 4.0', url: 'https://simple.wiktionary.org', deed: 'https://creativecommons.org/licenses/by-sa/4.0/' },
   { set: 'English Wiktionary', author: 'Wiktionary contributors', license: 'CC BY-SA 4.0', url: 'https://en.wiktionary.org', deed: 'https://creativecommons.org/licenses/by-sa/4.0/' },
@@ -738,7 +738,7 @@ const CREDITS = [
   { set: 'Princeton WordNet 3.1', author: 'Princeton University', license: 'WordNet License', url: 'https://wordnet.princeton.edu', deed: 'https://wordnet.princeton.edu/license-and-commercial-use' },
   { set: 'New Academic Word List 1.2 (word choice)', author: 'Charles Browne, Brent Culligan and Joseph Phillips', license: 'CC BY-SA 4.0', url: 'https://www.newgeneralservicelist.com', deed: 'https://creativecommons.org/licenses/by-sa/4.0/' },
 ];
-const CHECKING = 'Checked and corrected with AI assistance on November 12 and 13, 2026 (the meanings marked checked). Not reviewed by a person. A teacher can edit every item.';
+const CHECKING = 'Checked and corrected with AI assistance on November 12, 13 and 14, 2026 (the meanings marked checked). Not reviewed by a person. A teacher can edit every item.';
 
 // US spelling for what students read (2026-11-12): the sources mix in British forms (colour, centre, theatre).
 // A fixed list of whole words only; a headword that is itself British keeps its own spelling.

@@ -787,15 +787,15 @@
       "senses": {
         "acute|a|1": {
           "verdict": "fixed",
-          "def": "An ___ angle is smaller than 90 degrees",
-          "reason": "Source did not say it is about angles.",
+          "def": "Measuring less than 90 degrees, describing an angle smaller than a right angle",
+          "reason": "Polish K-8 math/ELA school wording (US English).",
           "distractors": [
-            "infinite|a|1",
-            "fluid|a|1",
-            "primitive|a|1",
-            "compact|a|1",
-            "mid|a|1",
-            "inferior|a|1"
+            "brittle|a|1",
+            "bumpy|a|w1",
+            "bustling|a|1",
+            "careful|a|w2",
+            "clenched|a|w1",
+            "cloudy|a|w1"
           ],
           "blanks": [
             "developing",
@@ -814,7 +814,8 @@
           "verdict": "reject",
           "reason": "Rare noun use (accent mark)."
         }
-      }
+      },
+      "unit": "a"
     },
     "adaptation": {
       "batch": 1,
@@ -3176,6 +3177,7 @@
       "batch": 50,
       "order": [
         "area|n|1",
+        "area|n|x1",
         "area|n|3",
         "area|n|2"
       ],
@@ -3235,8 +3237,33 @@
             "salt",
             "institute"
           ]
+        },
+        "area|n|x1": {
+          "verdict": "fixed",
+          "def": "The amount of flat space inside a 2D shape, measured in square units",
+          "reason": "Add K-8 geometry area sense behind the everyday place sense.",
+          "example": "Multiply length by width to find the area of a rectangle.",
+          "exampleEdited": true,
+          "distractors": [
+            "absurd|n|w1",
+            "academy|n|1",
+            "accumulation|n|2",
+            "acrobat|n|1",
+            "active|n|w3",
+            "actor|n|1"
+          ]
         }
-      }
+      },
+      "add": [
+        {
+          "id": "area|n|x1",
+          "def": "The amount of flat space inside a 2D shape, measured in square units",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 geometry area sense behind the everyday place sense."
+        }
+      ]
     },
     "arm": {
       "batch": 34,
@@ -13428,7 +13455,7 @@
           ]
         },
         "character|n|2": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "dream|n|2",
             "detail|n|1",
@@ -13449,7 +13476,9 @@
             "garments",
             "blobs",
             "pathways"
-          ]
+          ],
+          "def": "A person, animal, or figure who takes part in a story, play, or movie",
+          "reason": "Polish K-8 math/ELA school wording (US English)."
         },
         "character|n|3": {
           "verdict": "reject",
@@ -13503,7 +13532,8 @@
             "booth"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "characterization": {
       "batch": 4,
@@ -16558,8 +16588,8 @@
       "senses": {
         "coefficient|n|1": {
           "verdict": "fixed",
-          "def": "In maths, a number written in front of a letter to multiply it, like the 3 in 3x",
-          "reason": "Source text (\"acts as a measure of something\") was vague.",
+          "def": "In math, a number written in front of a variable to multiply it, like the 3 in 3x",
+          "reason": "Polish K-8 math/ELA school wording (US English).",
           "example": "In 3x, the coefficient of x is 3.",
           "exampleEdited": true,
           "distractors": [
@@ -16584,7 +16614,8 @@
             "birch"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "coffee": {
       "batch": 44,
@@ -17647,7 +17678,7 @@
       ],
       "senses": {
         "compare|v|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "multiply|v|1",
             "subtract|v|1",
@@ -17671,7 +17702,8 @@
           "verdict": "reject",
           "reason": "Computing term."
         }
-      }
+      },
+      "unit": "v"
     },
     "compass": {
       "batch": 62,
@@ -18011,7 +18043,8 @@
     "composite": {
       "batch": 23,
       "order": [
-        "composite|a|1"
+        "composite|a|1",
+        "composite|n|x1"
       ],
       "senses": {
         "composite|a|1": {
@@ -18046,8 +18079,33 @@
         "composite|n|1": {
           "verdict": "reject",
           "reason": "Repeats the adjective sense."
+        },
+        "composite|n|x1": {
+          "verdict": "fixed",
+          "def": "A whole number greater than 1 that has factors other than 1 and itself",
+          "reason": "Add K-8 composite number sense behind the everyday material sense.",
+          "example": "Six is a composite number because 2 and 3 divide it evenly.",
+          "exampleEdited": true,
+          "distractors": [
+            "axiom|n|1",
+            "batter|n|1",
+            "bedding|n|2",
+            "begging|n|w1",
+            "biscuit|n|2",
+            "blackness|n|w1"
+          ]
         }
-      }
+      },
+      "add": [
+        {
+          "id": "composite|n|x1",
+          "def": "A whole number greater than 1 that has factors other than 1 and itself",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 composite number sense behind the everyday material sense."
+        }
+      ]
     },
     "compound": {
       "batch": 62,
@@ -18486,7 +18544,7 @@
       ],
       "senses": {
         "cone|n|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "swirl|n|1",
             "coil|n|1",
@@ -18498,7 +18556,9 @@
             "outlet|n|1",
             "cube|n|1",
             "cylinder|n|1"
-          ]
+          ],
+          "example": "A traffic cone has a round flat base that narrows to one point.",
+          "exampleEdited": true
         },
         "cone|n|3": {
           "verdict": "reject",
@@ -18512,7 +18572,8 @@
           "verdict": "reject",
           "reason": "Rare verb; blank-only text."
         }
-      }
+      },
+      "unit": "n"
     },
     "configuration": {
       "batch": 17,
@@ -18599,7 +18660,7 @@
       ],
       "senses": {
         "conflict|n|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "submission|n|2",
             "attendance|n|2",
@@ -18619,7 +18680,9 @@
             "motors",
             "proposals",
             "roots"
-          ]
+          ],
+          "def": "A serious problem or struggle between characters, groups, or ideas in a story",
+          "reason": "Polish K-8 math/ELA school wording (US English)."
         },
         "conflict|n|2": {
           "verdict": "good",
@@ -18667,7 +18730,8 @@
             "prints"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "confound": {
       "batch": 27,
@@ -18769,7 +18833,7 @@
       ],
       "senses": {
         "congruent|a|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "indifferent|a|1",
             "plentiful|a|1",
@@ -18779,9 +18843,12 @@
             "noble|a|1",
             "nasty|a|1",
             "bound|a|1"
-          ]
+          ],
+          "example": "Two triangles with the exact same side lengths and angles are congruent.",
+          "exampleEdited": true
         }
-      }
+      },
+      "unit": "a"
     },
     "conifer": {
       "batch": 62,
@@ -19144,7 +19211,7 @@
           "reason": "Rare adjective meaning (\"In keeping\")."
         },
         "consonant|n|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "contraction|n|2",
             "nickname|n|1",
@@ -19167,9 +19234,12 @@
             "scissors",
             "residents",
             "rogues"
-          ]
+          ],
+          "def": "A speech sound or letter other than a vowel, such as b, t, or s",
+          "reason": "Polish K-8 math/ELA school wording (US English)."
         }
-      }
+      },
+      "unit": "n"
     },
     "constellation": {
       "batch": 62,
@@ -19728,7 +19798,7 @@
       ],
       "senses": {
         "contrast|v|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "multiply|v|1",
             "subtract|v|1",
@@ -19772,7 +19842,8 @@
             "flashes"
           ]
         }
-      }
+      },
+      "unit": "v"
     },
     "control": {
       "batch": 41,
@@ -20145,7 +20216,8 @@
           "verdict": "reject",
           "reason": "Rare adjective meaning (of equal rank)."
         }
-      }
+      },
+      "unit": "n"
     },
     "coordination": {
       "batch": 11,
@@ -22276,7 +22348,7 @@
       ],
       "senses": {
         "cylinder|n|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "cube|n|1",
             "mould|n|w2",
@@ -22297,9 +22369,12 @@
             "props",
             "beasts",
             "temptations"
-          ]
+          ],
+          "def": "A 3D shape with two flat, circular bases connected by a curved tube",
+          "reason": "Polish K-8 math/ELA school wording (US English)."
         }
-      }
+      },
+      "unit": "n"
     },
     "cytoplasm": {
       "batch": 62,
@@ -23933,7 +24008,7 @@
       ],
       "senses": {
         "denominator|n|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "factor|n|2",
             "par|n|2",
@@ -23952,9 +24027,12 @@
             "stoop",
             "objective",
             "extract"
-          ]
+          ],
+          "def": "The bottom number in a fraction, showing how many equal parts make a whole",
+          "reason": "Polish K-8 math/ELA school wording (US English)."
         }
-      }
+      },
+      "unit": "n"
     },
     "denote": {
       "batch": 26,
@@ -24719,7 +24797,8 @@
           "verdict": "reject",
           "reason": "Repeats the first sense."
         }
-      }
+      },
+      "unit": "n"
     },
     "diamond": {
       "batch": 55,
@@ -28340,7 +28419,8 @@
     "edge": {
       "batch": 37,
       "order": [
-        "edge|n|1"
+        "edge|n|1",
+        "edge|n|x1"
       ],
       "senses": {
         "edge|n|1": {
@@ -28368,8 +28448,33 @@
         "edge|v|2": {
           "verdict": "reject",
           "reason": "Rare or unneeded meaning for young readers (K-3); the bank keeps the everyday and school meanings."
+        },
+        "edge|n|x1": {
+          "verdict": "fixed",
+          "def": "A line segment where two flat faces of a 3D shape meet",
+          "reason": "Add K-8 geometry edge sense behind the everyday boundary sense.",
+          "example": "A cube has twelve straight edges of equal length.",
+          "exampleEdited": true,
+          "distractors": [
+            "aggregate|n|1",
+            "agony|n|1",
+            "aircraft|n|1",
+            "algae|n|w1",
+            "all|n|e2",
+            "allele|n|x1"
+          ]
         }
-      }
+      },
+      "add": [
+        {
+          "id": "edge|n|x1",
+          "def": "A line segment where two flat faces of a 3D shape meet",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 geometry edge sense behind the everyday boundary sense."
+        }
+      ]
     },
     "effectiveness": {
       "batch": 11,
@@ -31655,7 +31760,8 @@
     "expression": {
       "batch": 47,
       "order": [
-        "expression|n|1"
+        "expression|n|1",
+        "expression|n|x1"
       ],
       "senses": {
         "expression|n|1": {
@@ -31683,8 +31789,33 @@
         "expression|n|3": {
           "verdict": "reject",
           "reason": "Rare or unneeded meaning for young readers (K-3); the bank keeps the everyday and school meanings."
+        },
+        "expression|n|x1": {
+          "verdict": "fixed",
+          "def": "A group of numbers, variables, and operation signs with no equals sign, such as 3x + 5",
+          "reason": "Add K-8 algebra expression sense behind the everyday facial expression sense.",
+          "example": "Write an algebraic expression to represent five more than twice a number.",
+          "exampleEdited": true,
+          "distractors": [
+            "alley|n|1",
+            "alphabet|n|1",
+            "anger|n|1",
+            "animal|n|1",
+            "antique|n|1",
+            "antler|n|1"
+          ]
         }
-      }
+      },
+      "add": [
+        {
+          "id": "expression|n|x1",
+          "def": "A group of numbers, variables, and operation signs with no equals sign, such as 3x + 5",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 algebra expression sense behind the everyday facial expression sense."
+        }
+      ]
     },
     "extinct": {
       "batch": 1,
@@ -33746,7 +33877,7 @@
           "reason": "Same meaning as the story sense."
         },
         "fiction|n|2": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "play|n|1",
             "scene|n|2",
@@ -33768,7 +33899,8 @@
             "jumble"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "field": {
       "batch": 42,
@@ -36427,7 +36559,8 @@
           "verdict": "reject",
           "reason": "Rare verb use."
         }
-      }
+      },
+      "unit": "n"
     },
     "fracture": {
       "batch": 18,
@@ -37997,7 +38130,7 @@
       ],
       "senses": {
         "genre|n|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "story|n|1",
             "alarm|n|1",
@@ -38023,7 +38156,8 @@
             "proceeding"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "gentle": {
       "batch": 54,
@@ -45519,7 +45653,8 @@
     "inequality": {
       "batch": 5,
       "order": [
-        "inequality|n|1"
+        "inequality|n|1",
+        "inequality|n|x1"
       ],
       "senses": {
         "inequality|n|1": {
@@ -45546,8 +45681,33 @@
             "screech",
             "veil"
           ]
+        },
+        "inequality|n|x1": {
+          "verdict": "fixed",
+          "def": "A math statement using signs such as < or > to show that two amounts are not equal",
+          "reason": "Add K-8 algebra inequality sense behind the social-studies fairness sense.",
+          "example": "The inequality x > 4 means x can be any number greater than four.",
+          "exampleEdited": true,
+          "distractors": [
+            "blob|n|1",
+            "blocking|n|w1",
+            "bolt|n|1",
+            "bonfire|n|w1",
+            "boss|n|1",
+            "bow|n|x1"
+          ]
         }
-      }
+      },
+      "add": [
+        {
+          "id": "inequality|n|x1",
+          "def": "A math statement using signs such as < or > to show that two amounts are not equal",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 algebra inequality sense behind the social-studies fairness sense."
+        }
+      ]
     },
     "inertia": {
       "batch": 62,
@@ -45736,7 +45896,8 @@
           "verdict": "reject",
           "reason": "Defined with the word itself (\"That which is inferred\")."
         }
-      }
+      },
+      "unit": "n"
     },
     "inferior": {
       "batch": 23,
@@ -55030,6 +55191,7 @@
       "batch": 32,
       "order": [
         "mean|v|1",
+        "mean|n|x1",
         "mean|a|1"
       ],
       "senses": {
@@ -55070,8 +55232,33 @@
         "mean|n|w1": {
           "verdict": "reject",
           "reason": "Maths term (average), for older students."
+        },
+        "mean|n|x1": {
+          "verdict": "fixed",
+          "def": "The average of a set of numbers, found by adding them and dividing by how many numbers there are",
+          "reason": "Add K-8 statistics mean sense behind the everyday verb sense.",
+          "example": "To find the mean of 4, 6, and 8, add them and divide by 3.",
+          "exampleEdited": true,
+          "distractors": [
+            "ape|n|1",
+            "appearing|n|w1",
+            "armchair|n|1",
+            "attendant|n|w2",
+            "audit|n|1",
+            "avocado|n|1"
+          ]
         }
-      }
+      },
+      "add": [
+        {
+          "id": "mean|n|x1",
+          "def": "The average of a set of numbers, found by adding them and dividing by how many numbers there are",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 statistics mean sense behind the everyday verb sense."
+        }
+      ]
     },
     "meaningful": {
       "batch": 3,
@@ -55925,9 +56112,12 @@
             "accent|n|1",
             "theme|n|1",
             "setting|n|2"
-          ]
+          ],
+          "example": "Saying the classroom was a zoo is a vivid metaphor.",
+          "exampleEdited": true
         }
-      }
+      },
+      "unit": "n"
     },
     "meteor": {
       "batch": 62,
@@ -57538,7 +57728,8 @@
     "mood": {
       "batch": 56,
       "order": [
-        "mood|n|1"
+        "mood|n|1",
+        "mood|n|x1"
       ],
       "senses": {
         "mood|n|1": {
@@ -57554,8 +57745,33 @@
             "reward|n|1",
             "lunch|n|1"
           ]
+        },
+        "mood|n|x1": {
+          "verdict": "fixed",
+          "def": "The overall feeling a story, poem, or scene creates for the reader",
+          "reason": "Add K-8 ELA literary mood sense behind the everyday emotion sense.",
+          "example": "The quiet snowy setting gave the chapter a peaceful mood.",
+          "exampleEdited": true,
+          "distractors": [
+            "apex|n|2",
+            "approval|n|1",
+            "archway|n|w1",
+            "array|n|1",
+            "arrest|n|1",
+            "atlas|n|1"
+          ]
         }
-      }
+      },
+      "add": [
+        {
+          "id": "mood|n|x1",
+          "def": "The overall feeling a story, poem, or scene creates for the reader",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 ELA literary mood sense behind the everyday emotion sense."
+        }
+      ]
     },
     "moon": {
       "batch": 36,
@@ -58738,7 +58954,8 @@
             "recipe|n|1"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "nag": {
       "batch": 61,
@@ -58869,7 +59086,7 @@
       ],
       "senses": {
         "narrator|n|w1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "philosopher|n|w2",
             "resolution|n|1",
@@ -58878,9 +59095,12 @@
             "junior|n|1",
             "poem|n|1",
             "setting|n|2"
-          ]
+          ],
+          "example": "The narrator describes every event from a first-person point of view.",
+          "exampleEdited": true
         }
-      }
+      },
+      "unit": "n"
     },
     "narrow": {
       "batch": 49,
@@ -67170,7 +67390,8 @@
             "moored"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "plug": {
       "batch": 6,
@@ -69050,7 +69271,7 @@
       ],
       "senses": {
         "predict|v|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "suspect|v|1",
             "infer|v|1",
@@ -69074,7 +69295,8 @@
             "distract"
           ]
         }
-      }
+      },
+      "unit": "v"
     },
     "prediction": {
       "batch": 14,
@@ -69729,7 +69951,8 @@
           "verdict": "reject",
           "reason": "Hard, rare meaning."
         }
-      }
+      },
+      "unit": "n"
     },
     "primer": {
       "batch": 27,
@@ -72312,7 +72535,7 @@
       ],
       "senses": {
         "radius|n|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "diameter|n|w1",
             "morning|n|1",
@@ -72335,7 +72558,8 @@
             "instinct"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "rage": {
       "batch": 58,
@@ -74697,7 +74921,7 @@
           ]
         },
         "resolution|n|3": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "conflict|n|1",
             "theme|n|1",
@@ -74720,7 +74944,9 @@
             "calculus",
             "chemical",
             "liar"
-          ]
+          ],
+          "def": "The part of a story where the main problem is solved or settled",
+          "reason": "Polish K-8 math/ELA school wording (US English)."
         },
         "resolution|n|4": {
           "verdict": "fixed",
@@ -74770,7 +74996,8 @@
             "resort"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "resource": {
       "batch": 62,
@@ -75267,7 +75494,8 @@
             "shore"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "rich": {
       "batch": 52,
@@ -79845,7 +80073,8 @@
             "laughter"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "settled": {
       "batch": 48,
@@ -81587,7 +81816,8 @@
             "scholarship"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "simple": {
       "batch": 50,
@@ -81660,7 +81890,7 @@
       ],
       "senses": {
         "simplify|v|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "prepare|v|1",
             "impact|v|1",
@@ -81678,7 +81908,8 @@
             "brag"
           ]
         }
-      }
+      },
+      "unit": "v"
     },
     "simply": {
       "batch": 44,
@@ -84721,7 +84952,7 @@
       ],
       "senses": {
         "sphere|n|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "saucer|n|1",
             "scroll|n|1",
@@ -84744,7 +84975,8 @@
             "doorstep"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "spider": {
       "batch": 49,
@@ -85434,7 +85666,8 @@
           "verdict": "reject",
           "reason": "Rare or unneeded meaning for young readers (K-3); the bank keeps the everyday and school meanings."
         }
-      }
+      },
+      "unit": "n"
     },
     "squeak": {
       "batch": 54,
@@ -85929,9 +86162,12 @@
             "detail|n|1",
             "chapter|n|1",
             "simile|n|1"
-          ]
+          ],
+          "example": "The poem has four short stanzas of four lines each.",
+          "exampleEdited": true
         }
-      }
+      },
+      "unit": "n"
     },
     "star": {
       "batch": 40,
@@ -88362,7 +88598,7 @@
       ],
       "senses": {
         "summary|n|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "answer|n|2",
             "agreement|n|1",
@@ -88385,7 +88621,9 @@
             "bowling",
             "binding",
             "motivation"
-          ]
+          ],
+          "def": "A short retelling of the main points of an article, story, or idea",
+          "reason": "Polish K-8 math/ELA school wording (US English)."
         },
         "summary|a|1": {
           "verdict": "reject",
@@ -88395,7 +88633,8 @@
           "verdict": "reject",
           "reason": "Rare adjective use."
         }
-      }
+      },
+      "unit": "n"
     },
     "summer": {
       "batch": 42,
@@ -89488,7 +89727,7 @@
       ],
       "senses": {
         "syllable|n|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "name|n|1",
             "stuff|n|1",
@@ -89511,7 +89750,8 @@
             "pails"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "syllabus": {
       "batch": 27,
@@ -91151,7 +91391,7 @@
       ],
       "senses": {
         "theme|n|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "episode|n|2",
             "plot|n|1",
@@ -91172,13 +91412,16 @@
             "brackets",
             "teachers",
             "breezes"
-          ]
+          ],
+          "def": "The central message, big idea, or lesson a writer explores in a story",
+          "reason": "Polish K-8 math/ELA school wording (US English)."
         },
         "theme|v|1": {
           "verdict": "reject",
           "reason": "Defined with the noun itself."
         }
-      }
+      },
+      "unit": "n"
     },
     "theorem": {
       "batch": 28,
@@ -91319,7 +91562,7 @@
           ]
         },
         "thesis|n|2": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "scenario|n|1",
             "cinema|n|1",
@@ -91341,9 +91584,12 @@
             "features",
             "hogs",
             "disadvantages"
-          ]
+          ],
+          "def": "The main claim or central argument a writer supports in an essay",
+          "reason": "Polish K-8 math/ELA school wording (US English)."
         }
-      }
+      },
+      "unit": "n"
     },
     "thick": {
       "batch": 41,
@@ -92672,7 +92918,8 @@
           "verdict": "reject",
           "reason": "Rare or unneeded meaning for young readers (K-3); the bank keeps the everyday and school meanings."
         }
-      }
+      },
+      "unit": "n"
     },
     "tongue": {
       "batch": 46,
@@ -94461,7 +94708,7 @@
       ],
       "senses": {
         "triangle|n|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "oval|n|1",
             "fringe|n|1",
@@ -94471,7 +94718,9 @@
             "drop|n|1",
             "square|n|1",
             "circle|n|1"
-          ]
+          ],
+          "example": "A triangle has three corners and three straight sides.",
+          "exampleEdited": true
         },
         "triangle|n|2": {
           "verdict": "fixed",
@@ -94486,7 +94735,8 @@
             "scissors|n|1"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "tribe": {
       "batch": 15,
@@ -97745,7 +97995,7 @@
       ],
       "senses": {
         "vowel|n|1": {
-          "verdict": "good",
+          "verdict": "fixed",
           "distractors": [
             "omega|n|1",
             "beta|n|1",
@@ -97755,7 +98005,9 @@
             "objection|n|1",
             "constitution|n|x1",
             "consonant|n|1"
-          ]
+          ],
+          "example": "In English, almost every syllable has a vowel sound.",
+          "exampleEdited": true
         },
         "vowel|n|2": {
           "verdict": "good",
@@ -97783,7 +98035,8 @@
             "marsh"
           ]
         }
-      }
+      },
+      "unit": "n"
     },
     "wagon": {
       "batch": 58,
@@ -102976,6 +103229,3870 @@
           "reason": "Add or prioritize the K–8 curriculum meaning in plain US English."
         }
       ]
+    },
+    "origin": {
+      "batch": 63,
+      "order": [
+        "origin|n|1",
+        "origin|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "origin|n|1": {
+          "verdict": "fixed",
+          "def": "The beginning, starting point, or source of something",
+          "reason": "Rewrite awkward source blank-style definition as a clear everyday phrase.",
+          "example": "Historians traced the origin of the ancient trade route.",
+          "exampleEdited": true,
+          "distractors": [
+            "admiration|n|1",
+            "advance|n|2",
+            "age|n|2",
+            "anthem|n|1",
+            "arguing|n|w1",
+            "bacon|n|e2"
+          ]
+        },
+        "origin|n|x1": {
+          "verdict": "fixed",
+          "def": "The point (0, 0) where the x-axis and y-axis cross on a coordinate grid",
+          "reason": "Add K-8 coordinate geometry origin sense behind everyday beginning sense.",
+          "example": "Start at the origin and move three units right on the graph.",
+          "exampleEdited": true,
+          "distractors": [
+            "bail|n|2",
+            "balloon|n|w2",
+            "bamboo|n|1",
+            "banner|n|1",
+            "barbershop|n|w1",
+            "bark|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "origin|n|x1",
+          "def": "The point (0, 0) where the x-axis and y-axis cross on a coordinate grid",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 coordinate geometry origin sense behind everyday beginning sense."
+        }
+      ]
+    },
+    "negative": {
+      "batch": 63,
+      "order": [
+        "negative|a|1",
+        "negative|a|x1"
+      ],
+      "senses": {
+        "negative|a|1": {
+          "verdict": "good",
+          "distractors": [
+            "acting|a|w1",
+            "addressed|a|w1",
+            "adjusted|a|w1",
+            "adopted|a|w1",
+            "after|a|w1",
+            "aghast|a|w1"
+          ]
+        },
+        "negative|a|x1": {
+          "verdict": "fixed",
+          "def": "Less than zero, shown with a minus sign such as -5",
+          "reason": "Add K-8 negative number sense behind the everyday sense.",
+          "example": "Temperatures below zero on the thermometer are negative numbers.",
+          "exampleEdited": true,
+          "distractors": [
+            "alarming|a|1",
+            "amazed|a|w1",
+            "applied|a|w1",
+            "arranged|a|w1",
+            "ashamed|a|1",
+            "assigned|a|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "negative|a|x1",
+          "def": "Less than zero, shown with a minus sign such as -5",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 negative number sense behind the everyday sense."
+        }
+      ]
+    },
+    "positive": {
+      "batch": 63,
+      "order": [
+        "positive|a|1",
+        "positive|a|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "positive|a|1": {
+          "verdict": "good",
+          "distractors": [
+            "alarmed|a|1",
+            "anti|a|e1",
+            "assumed|a|w1",
+            "astonished|a|1",
+            "baking|a|w1",
+            "balanced|a|1"
+          ]
+        },
+        "positive|a|x1": {
+          "verdict": "fixed",
+          "def": "Greater than zero, or to the right or above zero on a number line",
+          "reason": "Add K-8 positive number sense behind the everyday sense.",
+          "example": "Every counting number greater than zero is a positive integer.",
+          "exampleEdited": true,
+          "distractors": [
+            "based|a|e1",
+            "battered|a|w1",
+            "bearded|a|w1",
+            "beaten|a|w1",
+            "bewildered|a|w1",
+            "blinking|a|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "positive|a|x1",
+          "def": "Greater than zero, or to the right or above zero on a number line",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 positive number sense behind the everyday sense."
+        }
+      ]
+    },
+    "range": {
+      "batch": 63,
+      "order": [
+        "range|n|2",
+        "range|n|x1"
+      ],
+      "senses": {
+        "range|n|2": {
+          "verdict": "fixed",
+          "def": "The span or interval between a lower limit and an upper limit",
+          "reason": "Rewrite awkward source blank-style definition as a clear everyday phrase.",
+          "example": "Prices were within a comfortable range for the school budget.",
+          "exampleEdited": true,
+          "distractors": [
+            "blot|n|1",
+            "bop|n|w1",
+            "bowling|n|1",
+            "boycott|n|x1",
+            "brag|n|w1",
+            "bridle|n|1"
+          ]
+        },
+        "range|n|x1": {
+          "verdict": "fixed",
+          "def": "The difference between the greatest and least values in a data set",
+          "reason": "Add K-8 statistics range sense behind everyday limit/variety sense.",
+          "example": "With scores from 70 to 95, the range of the data set is 25.",
+          "exampleEdited": true,
+          "distractors": [
+            "bran|n|1",
+            "brig|n|1",
+            "bully|n|1",
+            "buoyancy|n|x1",
+            "burger|n|1",
+            "burglar|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "range|n|x1",
+          "def": "The difference between the greatest and least values in a data set",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 statistics range sense behind everyday limit/variety sense."
+        }
+      ]
+    },
+    "similar": {
+      "batch": 63,
+      "order": [
+        "similar|a|1",
+        "similar|a|2"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "similar|a|1": {
+          "verdict": "fixed",
+          "def": "Alike in many ways, though not completely the same",
+          "reason": "Rewrite awkward source blank-style definition as a clear everyday phrase.",
+          "example": "The two leaf shapes looked very similar under the magnifying glass.",
+          "exampleEdited": true,
+          "distractors": [
+            "blown|a|w1",
+            "blunt|a|2",
+            "blurred|a|w1",
+            "blushing|a|w1",
+            "boiled|a|w1",
+            "booming|a|1"
+          ]
+        },
+        "similar|a|2": {
+          "verdict": "fixed",
+          "def": "Having the same shape, though possibly different sizes",
+          "reason": "Promote K-8 geometry similar-shapes sense cleanly at #2.",
+          "example": "Two triangles with equal angles are similar even if one is larger.",
+          "exampleEdited": true,
+          "distractors": [
+            "blocked|a|w1",
+            "born|a|w1",
+            "bothered|a|w1",
+            "bounded|a|e1",
+            "braced|a|w1",
+            "breezy|a|w1"
+          ]
+        }
+      }
+    },
+    "meter": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "meter|n|1",
+        "meter|n|2"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "meter|n|1": {
+          "verdict": "fixed",
+          "def": "A metric unit of length equal to 100 centimeters",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "A standard doorway is about one meter wide.",
+          "exampleEdited": true,
+          "distractors": [
+            "bearing|n|w1",
+            "behavior|n|2",
+            "birdhouse|n|w1",
+            "blues|n|2",
+            "bonnet|n|3",
+            "bracken|n|w1"
+          ]
+        },
+        "meter|n|2": {
+          "verdict": "fixed",
+          "def": "The regular pattern of stressed and unstressed beats in lines of poetry",
+          "reason": "Keep distinct everyday/secondary school meaning.",
+          "example": "She tapped out the steady meter of the poem while reading aloud.",
+          "exampleEdited": true,
+          "distractors": [
+            "brand|n|1",
+            "butler|n|1",
+            "buying|n|e1",
+            "buzz|n|2",
+            "bye|n|w1",
+            "cabinet|n|2"
+          ]
+        }
+      }
+    },
+    "numerator": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "numerator|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "numerator|n|1": {
+          "verdict": "fixed",
+          "def": "The top number in a fraction, showing how many equal parts are counted",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "In the fraction 3/4, the numerator is 3.",
+          "exampleEdited": true,
+          "distractors": [
+            "cable|n|1",
+            "calculus|n|1",
+            "calf|n|1",
+            "cam|n|w1",
+            "camping|n|1",
+            "canoe|n|1"
+          ]
+        }
+      }
+    },
+    "quotient": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "quotient|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "quotient|n|1": {
+          "verdict": "fixed",
+          "def": "The answer you get when you divide one number by another",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "When you divide 24 by 6, the quotient is 4.",
+          "exampleEdited": true,
+          "distractors": [
+            "a|n|1",
+            "brass|n|1",
+            "bull|n|1",
+            "bun|n|1",
+            "cabbage|n|1",
+            "canteen|n|1"
+          ]
+        }
+      }
+    },
+    "dividend": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "dividend|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "dividend|n|x1": {
+          "verdict": "fixed",
+          "def": "The number being divided into equal groups in a division problem",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "In 20 divided by 5 equals 4, the dividend is 20.",
+          "exampleEdited": true,
+          "distractors": [
+            "carbon|n|1",
+            "cargo|n|1",
+            "carnival|n|1",
+            "carrot|n|1",
+            "cartoon|n|1",
+            "cauldron|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "dividend|n|x1",
+          "def": "The number being divided into equal groups in a division problem",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "divisor": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "divisor|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "divisor|n|x1": {
+          "verdict": "fixed",
+          "def": "The number by which another number is divided in a division problem",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "In 20 divided by 5 equals 4, the divisor is 5.",
+          "exampleEdited": true,
+          "distractors": [
+            "carnivore|n|x1",
+            "cart|n|x1",
+            "cedar|n|1",
+            "census|n|x1",
+            "champ|n|w1",
+            "chanting|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "divisor|n|x1",
+          "def": "The number by which another number is divided in a division problem",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "remainder": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "remainder|n|2"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "remainder|n|2": {
+          "verdict": "fixed",
+          "def": "The amount left over when one whole number does not divide another evenly",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Dividing 17 by 5 gives 3 with a remainder of 2.",
+          "exampleEdited": true,
+          "distractors": [
+            "champion|n|1",
+            "charity|n|2",
+            "charter|n|x1",
+            "chatter|n|1",
+            "chewing|n|w1",
+            "chick|n|w1"
+          ]
+        }
+      }
+    },
+    "addend": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "addend|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "addend|n|x1": {
+          "verdict": "fixed",
+          "def": "Any of the numbers that are added together to find a sum",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "In 4 + 7 = 11, both 4 and 7 are addends.",
+          "exampleEdited": true,
+          "distractors": [
+            "chattering|n|w1",
+            "child|n|1",
+            "chimney|n|2",
+            "chlorophyll|n|w1",
+            "chore|n|1",
+            "circular|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "addend|n|x1",
+          "def": "Any of the numbers that are added together to find a sum",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "product": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "product|n|3",
+        "product|n|1"
+      ],
+      "senses": {
+        "product|n|3": {
+          "verdict": "fixed",
+          "def": "The result you get when you multiply two or more numbers together",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "The product of 6 and 7 is 42.",
+          "exampleEdited": true,
+          "distractors": [
+            "childhood|n|e3",
+            "circulation|n|3",
+            "clam|n|w1",
+            "clanking|n|1",
+            "clarinet|n|w1",
+            "classmate|n|w1"
+          ]
+        },
+        "product|n|1": {
+          "verdict": "fixed",
+          "def": "An item made, grown, or sold by a company or farm",
+          "reason": "Keep distinct everyday/secondary school meaning.",
+          "example": "Apples are the main farm product in this valley.",
+          "exampleEdited": true,
+          "distractors": [
+            "chap|n|w1",
+            "chill|n|1",
+            "clank|n|1",
+            "clasp|n|1",
+            "cling|n|w1",
+            "clubs|n|2"
+          ]
+        }
+      }
+    },
+    "sum": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "sum|n|2",
+        "sum|n|1"
+      ],
+      "senses": {
+        "sum|n|2": {
+          "verdict": "fixed",
+          "def": "The total amount found by adding two or more numbers together",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "The sum of 15 and 25 is 40.",
+          "exampleEdited": true,
+          "distractors": [
+            "classic|n|1",
+            "clutch|n|1",
+            "coaster|n|w3",
+            "cob|n|1",
+            "cod|n|1",
+            "code|n|2"
+          ]
+        },
+        "sum|n|1": {
+          "verdict": "fixed",
+          "def": "A specific amount of money",
+          "reason": "Keep distinct everyday/secondary school meaning.",
+          "example": "She saved a large sum for college.",
+          "exampleEdited": true,
+          "distractors": [
+            "blackbird|n|1",
+            "candy|n|1",
+            "caring|n|w1",
+            "cavern|n|2",
+            "celebrity|n|1",
+            "cog|n|w1"
+          ]
+        }
+      }
+    },
+    "difference": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "difference|n|x1",
+        "difference|n|x2"
+      ],
+      "senses": {
+        "difference|n|x1": {
+          "verdict": "fixed",
+          "def": "The result found by subtracting one number from another",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "The difference between 19 and 7 is 12.",
+          "exampleEdited": true,
+          "distractors": [
+            "collective|n|3",
+            "collie|n|w1",
+            "comic|n|1",
+            "commander|n|1",
+            "comment|n|1",
+            "compliment|n|1"
+          ]
+        },
+        "difference|n|x2": {
+          "verdict": "fixed",
+          "def": "A way in which two or more things are not alike",
+          "reason": "Keep distinct everyday/secondary school meaning.",
+          "example": "One clear difference between moths and butterflies is when they fly.",
+          "exampleEdited": true,
+          "distractors": [
+            "computation|n|w1",
+            "conception|n|3",
+            "condition|n|2",
+            "configuration|n|1",
+            "congress|n|2",
+            "console|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "difference|n|x1",
+          "def": "The result found by subtracting one number from another",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        },
+        {
+          "id": "difference|n|x2",
+          "def": "A way in which two or more things are not alike",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Keep distinct everyday/secondary school meaning."
+        }
+      ]
+    },
+    "factor": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "factor|n|2",
+        "factor|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "factor|n|2": {
+          "verdict": "fixed",
+          "def": "A whole number that divides another whole number evenly, or a number multiplied in a problem",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Since 3 times 4 equals 12, both 3 and 4 are factors of 12.",
+          "exampleEdited": true,
+          "distractors": [
+            "consumer|n|x1",
+            "contact|n|2",
+            "cooler|n|1",
+            "corpus|n|1",
+            "correlation|n|2",
+            "coughing|n|w1"
+          ]
+        },
+        "factor|n|1": {
+          "verdict": "fixed",
+          "def": "One of several things that help cause a result",
+          "reason": "Keep distinct everyday/secondary school meaning.",
+          "example": "Rainfall was a key factor in the strong harvest.",
+          "exampleEdited": true,
+          "distractors": [
+            "cop|n|w1",
+            "cow|n|1",
+            "crab|n|1",
+            "cracking|n|w1",
+            "crawling|n|w1",
+            "creak|n|1"
+          ]
+        }
+      }
+    },
+    "multiple": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "multiple|n|1",
+        "multiple|a|x1"
+      ],
+      "senses": {
+        "multiple|n|1": {
+          "verdict": "fixed",
+          "def": "A number made by multiplying a given whole number by 1, 2, 3, and so on",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Twelve, eighteen, and twenty-four are multiples of six.",
+          "exampleEdited": true,
+          "distractors": [
+            "crash|n|1",
+            "creeping|n|w1",
+            "crest|n|2",
+            "criteria|n|2",
+            "critique|n|1",
+            "cub|n|1"
+          ]
+        },
+        "multiple|a|x1": {
+          "verdict": "fixed",
+          "def": "Having more than one part, item, or choice",
+          "reason": "Keep distinct everyday/secondary school meaning.",
+          "example": "The quiz offered multiple ways to show your work.",
+          "exampleEdited": true,
+          "distractors": [
+            "brief|a|1",
+            "bright|a|2",
+            "burnt|a|w1",
+            "cautious|a|w1",
+            "celebrated|a|w1",
+            "charming|a|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "multiple|a|x1",
+          "def": "Having more than one part, item, or choice",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Keep distinct everyday/secondary school meaning."
+        }
+      ]
+    },
+    "decimal": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "decimal|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "decimal|n|1": {
+          "verdict": "fixed",
+          "def": "A base-ten number written with a dot to show tenths, hundredths, or smaller parts of a whole",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "You can write three quarters as the decimal 0.75.",
+          "exampleEdited": true,
+          "distractors": [
+            "curiosity|n|2",
+            "current|n|x1",
+            "cushion|n|1",
+            "custard|n|w1",
+            "customer|n|1",
+            "dam|n|1"
+          ]
+        }
+      }
+    },
+    "percent": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "percent|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "percent|n|1": {
+          "verdict": "fixed",
+          "def": "A number out of every 100, often shown with the % symbol",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Scoring 90 out of 100 points equals 90 percent.",
+          "exampleEdited": true,
+          "distractors": [
+            "crackle|n|1",
+            "dad|n|w1",
+            "dangling|n|w1",
+            "deciding|n|w1",
+            "deflection|n|w1",
+            "degree|n|3"
+          ]
+        }
+      }
+    },
+    "equivalent": {
+      "batch": 63,
+      "unit": "a",
+      "order": [
+        "equivalent|a|1"
+      ],
+      "senses": {
+        "equivalent|a|1": {
+          "verdict": "fixed",
+          "def": "Equal in value, amount, or meaning even when written differently, such as 1/2 and 2/4",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "The fractions 2/3 and 4/6 are equivalent fractions.",
+          "exampleEdited": true,
+          "distractors": [
+            "combined|a|w1",
+            "committed|a|w1",
+            "common|a|2",
+            "cracked|a|w1",
+            "creepy|a|2",
+            "cyclic|a|x1"
+          ]
+        }
+      }
+    },
+    "reciprocal": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "reciprocal|n|w1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "reciprocal|n|w1": {
+          "verdict": "fixed",
+          "def": "One of two numbers whose product equals 1, found by flipping the top and bottom of a fraction",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "The reciprocal of 3/5 is 5/3.",
+          "exampleEdited": true,
+          "distractors": [
+            "department|n|1",
+            "descriptor|n|w2",
+            "despite|n|w1",
+            "detail|n|1",
+            "detention|n|1",
+            "din|n|1"
+          ]
+        }
+      }
+    },
+    "integer": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "integer|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "integer|n|1": {
+          "verdict": "fixed",
+          "def": "Any positive or negative whole number, or zero, with no fraction or decimal part",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Numbers such as -3, 0, and 12 are all integers.",
+          "exampleEdited": true,
+          "distractors": [
+            "daddy|n|w1",
+            "dip|n|1",
+            "directive|n|1",
+            "disability|n|1",
+            "disgrace|n|1",
+            "dissertation|n|1"
+          ]
+        }
+      }
+    },
+    "perimeter": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "perimeter|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "perimeter|n|x1": {
+          "verdict": "fixed",
+          "def": "The total distance around the outer boundary of a 2D shape",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Add all four side lengths to find the perimeter of the garden.",
+          "exampleEdited": true,
+          "distractors": [
+            "creek|n|1",
+            "crisis|n|2",
+            "despair|n|1",
+            "ditch|n|1",
+            "diving|n|w2",
+            "dodging|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "perimeter|n|x1",
+          "def": "The total distance around the outer boundary of a 2D shape",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "capacity": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "capacity|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "capacity|n|1": {
+          "verdict": "fixed",
+          "def": "The greatest amount of liquid or material that a container can hold",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "The pitcher has a capacity of two liters.",
+          "exampleEdited": true,
+          "distractors": [
+            "dollar|n|w1",
+            "doormat|n|1",
+            "doorstep|n|e2",
+            "dragon|n|x1",
+            "dresser|n|w1",
+            "driver|n|x1"
+          ]
+        }
+      }
+    },
+    "circumference": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "circumference|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "circumference|n|1": {
+          "verdict": "fixed",
+          "def": "The distance all the way around the outside edge of a circle",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Measure around the bicycle wheel to find its circumference.",
+          "exampleEdited": true,
+          "distractors": [
+            "dressing|n|1",
+            "dryer|n|1",
+            "ducking|n|w2",
+            "earplug|n|w1",
+            "earring|n|1",
+            "economist|n|x1"
+          ]
+        }
+      }
+    },
+    "polygon": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "polygon|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "polygon|n|x1": {
+          "verdict": "fixed",
+          "def": "A closed flat shape made of three or more straight line segments",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Triangles, squares, and hexagons are all polygons.",
+          "exampleEdited": true,
+          "distractors": [
+            "elbow|n|2",
+            "electromagnet|n|x1",
+            "elevator|n|1",
+            "elf|n|1",
+            "email|n|1",
+            "emancipation|n|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "polygon|n|x1",
+          "def": "A closed flat shape made of three or more straight line segments",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "quadrilateral": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "quadrilateral|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "quadrilateral|n|x1": {
+          "verdict": "fixed",
+          "def": "Any flat polygon that has exactly four straight sides and four angles",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Every trapezoid and rectangle is a quadrilateral.",
+          "exampleEdited": true,
+          "distractors": [
+            "emigration|n|x1",
+            "entering|n|w1",
+            "entity|n|1",
+            "entrepreneur|n|x1",
+            "enzyme|n|1",
+            "epic|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "quadrilateral|n|x1",
+          "def": "Any flat polygon that has exactly four straight sides and four angles",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "parallelogram": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "parallelogram|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "parallelogram|n|x1": {
+          "verdict": "fixed",
+          "def": "A four-sided flat shape whose opposite sides are parallel and equal in length",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "A rectangle is a special parallelogram with four right angles.",
+          "exampleEdited": true,
+          "distractors": [
+            "epicenter|n|x1",
+            "equinox|n|x1",
+            "equity|n|x1",
+            "excitement|n|2",
+            "excuse|n|1",
+            "exercise|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "parallelogram|n|x1",
+          "def": "A four-sided flat shape whose opposite sides are parallel and equal in length",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "trapezoid": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "trapezoid|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "trapezoid|n|x1": {
+          "verdict": "fixed",
+          "def": "A four-sided flat shape with at least one pair of opposite parallel sides",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "The top edge of the desk is shaped like a wide trapezoid.",
+          "exampleEdited": true,
+          "distractors": [
+            "export|n|2",
+            "factorial|n|w1",
+            "fade|n|w1",
+            "failure|n|2",
+            "falcon|n|w1",
+            "fame|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "trapezoid|n|x1",
+          "def": "A four-sided flat shape with at least one pair of opposite parallel sides",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "rhombus": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "rhombus|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "rhombus|n|x1": {
+          "verdict": "fixed",
+          "def": "A four-sided flat shape whose four sides are all equal in length",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "A diamond shape on a playing card looks like a rhombus.",
+          "exampleEdited": true,
+          "distractors": [
+            "fair|n|1",
+            "famine|n|x1",
+            "fang|n|1",
+            "feudalism|n|x1",
+            "fiddle|n|1",
+            "fig|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "rhombus|n|x1",
+          "def": "A four-sided flat shape whose four sides are all equal in length",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "pentagon": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "pentagon|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "pentagon|n|x1": {
+          "verdict": "fixed",
+          "def": "A closed flat polygon with five straight sides and five angles",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Home plate on a baseball field is shaped like a pentagon.",
+          "exampleEdited": true,
+          "distractors": [
+            "dot|n|1",
+            "dropping|n|1",
+            "dwarf|n|2",
+            "finishing|n|w1",
+            "fir|n|1",
+            "fire|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "pentagon|n|x1",
+          "def": "A closed flat polygon with five straight sides and five angles",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "hexagon": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "hexagon|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "hexagon|n|x1": {
+          "verdict": "fixed",
+          "def": "A closed flat polygon with six straight sides and six angles",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Each cell of a honeycomb forms a neat hexagon.",
+          "exampleEdited": true,
+          "distractors": [
+            "firefly|n|1",
+            "firework|n|w1",
+            "fixing|n|w1",
+            "flashing|n|w1",
+            "flashlight|n|1",
+            "flexibility|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "hexagon|n|x1",
+          "def": "A closed flat polygon with six straight sides and six angles",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "octagon": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "octagon|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "octagon|n|x1": {
+          "verdict": "fixed",
+          "def": "A closed flat polygon with eight straight sides and eight angles",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "A standard red stop sign is a regular octagon.",
+          "exampleEdited": true,
+          "distractors": [
+            "fling|n|2",
+            "flipping|n|1",
+            "flock|n|1",
+            "flooding|n|w1",
+            "flour|n|1",
+            "flurry|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "octagon|n|x1",
+          "def": "A closed flat polygon with eight straight sides and eight angles",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "rectangle": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "rectangle|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "rectangle|n|1": {
+          "verdict": "fixed",
+          "def": "A four-sided flat shape with four right angles and equal opposite sides",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Most classroom doors and notebook pages are rectangles.",
+          "exampleEdited": true,
+          "distractors": [
+            "flute|n|1",
+            "folding|n|w1",
+            "football|n|2",
+            "footprint|n|2",
+            "formation|n|2",
+            "former|n|w1"
+          ]
+        }
+      }
+    },
+    "prism": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "prism|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "prism|n|1": {
+          "verdict": "fixed",
+          "def": "A 3D shape with two matching flat polygon bases connected by rectangle faces",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "A cereal box is an example of a rectangular prism.",
+          "exampleEdited": true,
+          "distractors": [
+            "formulation|n|x1",
+            "freckle|n|1",
+            "fulcrum|n|x1",
+            "furnace|n|1",
+            "gap|n|2",
+            "gasp|n|w1"
+          ]
+        }
+      }
+    },
+    "pyramid": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "pyramid|n|2"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "pyramid|n|2": {
+          "verdict": "fixed",
+          "def": "A 3D shape with a flat polygon base and triangular faces meeting at one top point",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "A square pyramid has a square base and four triangle faces.",
+          "exampleEdited": true,
+          "distractors": [
+            "gather|n|w1",
+            "gift|n|1",
+            "gnat|n|w1",
+            "granny|n|w1",
+            "grease|n|2",
+            "greens|n|2"
+          ]
+        }
+      }
+    },
+    "vertex": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "vertex|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "vertex|n|1": {
+          "verdict": "fixed",
+          "def": "A corner point where two rays, sides, or edges meet in a shape or angle",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "A triangle has three sides and three vertex points.",
+          "exampleEdited": true,
+          "distractors": [
+            "gliding|n|w1",
+            "grits|n|1",
+            "groceries|n|2",
+            "groom|n|2",
+            "groundwater|n|x1",
+            "guardrail|n|1"
+          ]
+        }
+      }
+    },
+    "angle": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "angle|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "angle|n|1": {
+          "verdict": "fixed",
+          "def": "The figure and opening formed where two straight lines or rays meet at a point",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "A right angle measures exactly ninety degrees.",
+          "exampleEdited": true,
+          "distractors": [
+            "guide|n|x1",
+            "gulp|n|1",
+            "gum|n|x1",
+            "gush|n|1",
+            "handball|n|1",
+            "handle|n|x1"
+          ]
+        }
+      }
+    },
+    "obtuse": {
+      "batch": 63,
+      "unit": "a",
+      "order": [
+        "obtuse|a|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "obtuse|a|x1": {
+          "verdict": "fixed",
+          "def": "Measuring more than 90 degrees and less than 180 degrees",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "An obtuse angle opens wider than the corner of a square.",
+          "exampleEdited": true,
+          "distractors": [
+            "brilliant|a|3",
+            "civil|a|2",
+            "clipped|a|w2",
+            "coated|a|e1",
+            "collected|a|w1",
+            "comforting|a|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "obtuse|a|x1",
+          "def": "Measuring more than 90 degrees and less than 180 degrees",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "symmetry": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "symmetry|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "symmetry|n|1": {
+          "verdict": "fixed",
+          "def": "Balanced proportions where one half of a shape matches the other half like a mirror image",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "A butterfly's wings show clear line symmetry.",
+          "exampleEdited": true,
+          "distractors": [
+            "handrail|n|w1",
+            "handshake|n|e2",
+            "headband|n|e2",
+            "headlight|n|1",
+            "headphone|n|1",
+            "heart|n|2"
+          ]
+        }
+      }
+    },
+    "parallel": {
+      "batch": 63,
+      "unit": "a",
+      "order": [
+        "parallel|a|w1"
+      ],
+      "senses": {
+        "parallel|a|w1": {
+          "verdict": "fixed",
+          "def": "Staying the exact same distance apart everywhere on a flat plane and never crossing",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Straight railroad tracks run parallel to each other.",
+          "exampleEdited": true,
+          "distractors": [
+            "daily|a|1",
+            "dazed|a|w1",
+            "deafening|a|1",
+            "decorated|a|w1",
+            "designed|a|w1",
+            "developed|a|w1"
+          ]
+        }
+      }
+    },
+    "perpendicular": {
+      "batch": 63,
+      "unit": "a",
+      "order": [
+        "perpendicular|a|1"
+      ],
+      "senses": {
+        "perpendicular|a|1": {
+          "verdict": "fixed",
+          "def": "Crossing or meeting at a 90-degree right angle",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "The vertical wall meets the flat floor at a perpendicular angle.",
+          "exampleEdited": true,
+          "distractors": [
+            "cheap|a|2",
+            "chopped|a|w1",
+            "coiled|a|w1",
+            "concealed|a|w1",
+            "confusing|a|1",
+            "connected|a|w1"
+          ]
+        }
+      }
+    },
+    "intersect": {
+      "batch": 63,
+      "unit": "v",
+      "order": [
+        "intersect|v|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "intersect|v|1": {
+          "verdict": "fixed",
+          "def": "To cross or meet each other at one or more shared points",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Two straight lines intersect at a single point on the grid.",
+          "exampleEdited": true,
+          "distractors": [
+            "access|v|1",
+            "admit|v|3",
+            "arrive|v|2",
+            "be|v|w3",
+            "blast|v|1",
+            "bold|v|1"
+          ]
+        }
+      }
+    },
+    "quadrant": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "quadrant|n|w2"
+      ],
+      "senses": {
+        "quadrant|n|w2": {
+          "verdict": "fixed",
+          "def": "One of the four sections created when the x-axis and y-axis divide a coordinate plane",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Points with two positive coordinates lie in the first quadrant.",
+          "exampleEdited": true,
+          "distractors": [
+            "headline|n|1",
+            "heartbreak|n|1",
+            "heather|n|1",
+            "highness|n|e2",
+            "hippopotamus|n|1",
+            "holder|n|2"
+          ]
+        }
+      }
+    },
+    "slope": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "slope|n|2",
+        "slope|n|1"
+      ],
+      "senses": {
+        "slope|n|2": {
+          "verdict": "fixed",
+          "def": "A number describing how steep a straight line is, found by dividing vertical change by horizontal change",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "A steeper line on a coordinate graph has a greater slope.",
+          "exampleEdited": true,
+          "distractors": [
+            "homeostasis|n|x1",
+            "honor|n|1",
+            "horror|n|2",
+            "host|n|1",
+            "hotdog|n|1",
+            "housework|n|1"
+          ]
+        },
+        "slope|n|1": {
+          "verdict": "fixed",
+          "def": "The slanted side of a hill or mountain",
+          "reason": "Keep distinct everyday/secondary school meaning.",
+          "example": "Skiers glided quickly down the snowy slope.",
+          "exampleEdited": true,
+          "distractors": [
+            "covers|n|2",
+            "crow|n|1",
+            "dealing|n|1",
+            "doughnut|n|w1",
+            "drone|n|w2",
+            "eight|n|1"
+          ]
+        }
+      }
+    },
+    "exponent": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "exponent|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "exponent|n|1": {
+          "verdict": "fixed",
+          "def": "A small raised number telling how many times a base number is multiplied by itself",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "In five raised to the third power, the exponent is 3.",
+          "exampleEdited": true,
+          "distractors": [
+            "hub|n|1",
+            "hubcap|n|w1",
+            "hull|n|1",
+            "humming|n|w2",
+            "humus|n|x1",
+            "hunter|n|x1"
+          ]
+        }
+      }
+    },
+    "variable": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "variable|n|2"
+      ],
+      "senses": {
+        "variable|n|2": {
+          "verdict": "fixed",
+          "def": "A letter or symbol in math that stands for an unknown or changing number",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "In the equation x + 4 = 10, the letter x is a variable.",
+          "exampleEdited": true,
+          "distractors": [
+            "icicle|n|1",
+            "icing|n|w2",
+            "identity|n|2",
+            "immigrant|n|1",
+            "impress|n|w1",
+            "impulse|n|1"
+          ]
+        }
+      }
+    },
+    "equation": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "equation|n|x1"
+      ],
+      "senses": {
+        "equation|n|x1": {
+          "verdict": "fixed",
+          "def": "A math statement with an equals sign showing that two expressions have the same value",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Write an equation to show that three packs cost fifteen dollars.",
+          "exampleEdited": true,
+          "distractors": [
+            "incumbent|n|1",
+            "indifference|n|w3",
+            "individual|n|1",
+            "instrument|n|1",
+            "intensity|n|2",
+            "internet|n|2"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "equation|n|x1",
+          "def": "A math statement with an equals sign showing that two expressions have the same value",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "evaluate": {
+      "batch": 63,
+      "unit": "v",
+      "order": [
+        "evaluate|v|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "evaluate|v|1": {
+          "verdict": "fixed",
+          "def": "To find the value of a math expression by substituting numbers, or to judge carefully",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Plug 4 in for x to evaluate the expression 2x + 3.",
+          "exampleEdited": true,
+          "distractors": [
+            "blow|v|3",
+            "brook|v|w1",
+            "come|v|1",
+            "conclude|v|2",
+            "copy|v|1",
+            "correlate|v|x1"
+          ]
+        }
+      }
+    },
+    "formula": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "formula|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "formula|n|1": {
+          "verdict": "fixed",
+          "def": "A math rule written with symbols that shows how different quantities connect",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Use the perimeter formula P = 2l + 2w to check your answer.",
+          "exampleEdited": true,
+          "distractors": [
+            "gull|n|1",
+            "handicap|n|1",
+            "haul|n|w2",
+            "highway|n|1",
+            "holler|n|1",
+            "in|n|w1"
+          ]
+        }
+      }
+    },
+    "ratio": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "ratio|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "ratio|n|1": {
+          "verdict": "fixed",
+          "def": "A comparison between two numbers or amounts, often written with a colon like 3:4",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "The ratio of red marbles to blue marbles in the jar is 2 to 5.",
+          "exampleEdited": true,
+          "distractors": [
+            "itching|n|w1",
+            "jellyfish|n|1",
+            "jetty|n|w1",
+            "jigsaw|n|1",
+            "joining|n|w1",
+            "journal|n|1"
+          ]
+        }
+      }
+    },
+    "proportion": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "proportion|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "proportion|n|1": {
+          "verdict": "fixed",
+          "def": "An equation stating that two ratios are equal, or how part size compares to a whole",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Solve the proportion 2/3 = x/9 to find the missing value.",
+          "exampleEdited": true,
+          "distractors": [
+            "kindness|n|w1",
+            "kitten|n|2",
+            "kneecap|n|e2",
+            "knuckle|n|1",
+            "ladybug|n|1",
+            "lane|n|2"
+          ]
+        }
+      }
+    },
+    "rate": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "rate|n|w1"
+      ],
+      "senses": {
+        "rate|n|w1": {
+          "verdict": "fixed",
+          "def": "A ratio comparing two quantities measured in different units, such as miles per hour",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Walking six miles in two hours gives a rate of three miles per hour.",
+          "exampleEdited": true,
+          "distractors": [
+            "keeper|n|w1",
+            "lantern|n|1",
+            "lap|n|1",
+            "lash|n|1",
+            "latch|n|1",
+            "launching|n|w1"
+          ]
+        }
+      }
+    },
+    "median": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "median|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "median|n|x1": {
+          "verdict": "fixed",
+          "def": "The middle number in an ordered list of numbers, or the average of the two middle numbers",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "When the scores 4, 7, 8, 10, and 12 are sorted, the median is 8.",
+          "exampleEdited": true,
+          "distractors": [
+            "leader|n|x1",
+            "ledge|n|w1",
+            "leopard|n|1",
+            "librarian|n|e3",
+            "lied|n|w1",
+            "lily|n|e3"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "median|n|x1",
+          "def": "The middle number in an ordered list of numbers, or the average of the two middle numbers",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "mode": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "mode|n|x1",
+        "mode|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "mode|n|x1": {
+          "verdict": "fixed",
+          "def": "The number or item that appears most often in a set of data",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "In the data set 2, 5, 5, 6, 8, the mode is 5.",
+          "exampleEdited": true,
+          "distractors": [
+            "initiation|n|2",
+            "interview|n|1",
+            "invertebrate|n|1",
+            "jog|n|w1",
+            "lair|n|w1",
+            "least|n|w1"
+          ]
+        },
+        "mode|n|1": {
+          "verdict": "fixed",
+          "def": "A particular way or style of doing or operating something",
+          "reason": "Keep distinct everyday/secondary school meaning.",
+          "example": "Switch the tablet into airplane mode before takeoff.",
+          "exampleEdited": true,
+          "distractors": [
+            "fort|n|e2",
+            "fruitcake|n|w1",
+            "goblin|n|1",
+            "hammering|n|w1",
+            "heartbeat|n|w2",
+            "helicopter|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "mode|n|x1",
+          "def": "The number or item that appears most often in a set of data",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "outlier": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "outlier|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "outlier|n|x1": {
+          "verdict": "fixed",
+          "def": "A data value that is much higher or lower than most of the other values in a set",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "One score of 12 among scores in the 80s and 90s is a clear outlier.",
+          "exampleEdited": true,
+          "distractors": [
+            "limited|n|w1",
+            "limping|n|w1",
+            "lining|n|w1",
+            "lion|n|1",
+            "litter|n|1",
+            "loan|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "outlier|n|x1",
+          "def": "A data value that is much higher or lower than most of the other values in a set",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "probability": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "probability|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "probability|n|1": {
+          "verdict": "fixed",
+          "def": "A measure between 0 and 1 of how likely an event is to happen",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "The probability of flipping heads on a fair coin is 1 out of 2.",
+          "exampleEdited": true,
+          "distractors": [
+            "loaf|n|1",
+            "locomotive|n|1",
+            "locus|n|1",
+            "lollipop|n|1",
+            "look|n|w2",
+            "lot|n|4"
+          ]
+        }
+      }
+    },
+    "estimate": {
+      "batch": 63,
+      "unit": "v",
+      "order": [
+        "estimate|v|1",
+        "estimate|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "estimate|v|1": {
+          "verdict": "fixed",
+          "def": "To find a close, sensible value near an exact answer by rounding or using mental math",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Before multiplying, estimate the total by rounding each price.",
+          "exampleEdited": true,
+          "distractors": [
+            "celebrate|v|2",
+            "cover|v|1",
+            "cram|v|1",
+            "dash|v|1",
+            "debug|v|2",
+            "degrade|v|x1"
+          ]
+        },
+        "estimate|n|1": {
+          "verdict": "fixed",
+          "def": "A close, reasonable value found by careful guessing or rounding",
+          "reason": "Keep distinct everyday/secondary school meaning.",
+          "example": "Her quick estimate was only three cents away from the exact sum.",
+          "exampleEdited": true,
+          "distractors": [
+            "hello|n|w1",
+            "hog|n|2",
+            "incident|n|1",
+            "landslide|n|w1",
+            "laying|n|w1",
+            "load|n|1"
+          ]
+        }
+      }
+    },
+    "verse": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "verse|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "verse|n|1": {
+          "verdict": "fixed",
+          "def": "Writing arranged in lines with rhythm, or a grouped section of a song or poem",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "The choir sang the first verse before the chorus began.",
+          "exampleEdited": true,
+          "distractors": [
+            "loom|n|1",
+            "lug|n|w1",
+            "madam|n|1",
+            "mailbox|n|e3",
+            "major|n|1",
+            "maker|n|w2"
+          ]
+        }
+      }
+    },
+    "rhyme": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "rhyme|n|1",
+        "rhyme|v|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "rhyme|n|1": {
+          "verdict": "fixed",
+          "def": "Words that end with the same vowel and ending sounds, such as star and far",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Each pair of lines in the short poem ends in a clear rhyme.",
+          "exampleEdited": true,
+          "distractors": [
+            "marsh|n|1",
+            "mast|n|1",
+            "matrix|n|3",
+            "melody|n|1",
+            "memory|n|2",
+            "mercy|n|2"
+          ]
+        },
+        "rhyme|v|1": {
+          "verdict": "fixed",
+          "def": "To share the same ending sound as another word",
+          "reason": "Keep distinct everyday/secondary school meaning.",
+          "example": "The words night and bright rhyme cleanly.",
+          "exampleEdited": true,
+          "distractors": [
+            "assemble|v|2",
+            "bellow|v|1",
+            "call|v|1",
+            "cheer|v|2",
+            "chuckle|v|1",
+            "comb|v|2"
+          ]
+        }
+      }
+    },
+    "personification": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "personification|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "personification|n|x1": {
+          "verdict": "fixed",
+          "def": "Giving human feelings, traits, or actions to animals, objects, or ideas in writing",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Saying the wind whispered through the pines is personification.",
+          "exampleEdited": true,
+          "distractors": [
+            "longing|n|w1",
+            "melt|n|w1",
+            "mere|n|w1",
+            "messenger|n|1",
+            "microphone|n|1",
+            "mill|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "personification|n|x1",
+          "def": "Giving human feelings, traits, or actions to animals, objects, or ideas in writing",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "alliteration": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "alliteration|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "alliteration|n|x1": {
+          "verdict": "fixed",
+          "def": "Repeating the same beginning consonant sound in two or more nearby words",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Saying busy bees buzz uses playful alliteration.",
+          "exampleEdited": true,
+          "distractors": [
+            "minivan|n|w1",
+            "mischief|n|1",
+            "mitosis|n|x1",
+            "mobile|n|1",
+            "mock|n|1",
+            "mom|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "alliteration|n|x1",
+          "def": "Repeating the same beginning consonant sound in two or more nearby words",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "hyperbole": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "hyperbole|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "hyperbole|n|x1": {
+          "verdict": "fixed",
+          "def": "Extreme exaggeration used in writing or speech for emphasis or humor, not meant as fact",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Saying my backpack weighs a ton uses hyperbole to show how heavy it feels.",
+          "exampleEdited": true,
+          "distractors": [
+            "monorail|n|1",
+            "moth|n|1",
+            "mount|n|2",
+            "mouthful|n|e2",
+            "muffin|n|1",
+            "muse|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "hyperbole|n|x1",
+          "def": "Extreme exaggeration used in writing or speech for emphasis or humor, not meant as fact",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "idiom": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "idiom|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "idiom|n|x1": {
+          "verdict": "fixed",
+          "def": "A common expression whose meaning differs from the literal words inside it",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "To say it is raining cats and dogs is a colorful idiom.",
+          "exampleEdited": true,
+          "distractors": [
+            "murmuring|n|w1",
+            "nephew|n|1",
+            "neutron|n|x1",
+            "nickname|n|1",
+            "nomad|n|x1",
+            "none|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "idiom|n|x1",
+          "def": "A common expression whose meaning differs from the literal words inside it",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "imagery": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "imagery|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "imagery|n|x1": {
+          "verdict": "fixed",
+          "def": "Descriptive words that appeal to sight, sound, touch, taste, or smell in a reader's mind",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "The crisp autumn imagery helped readers picture golden leaves drifting down.",
+          "exampleEdited": true,
+          "distractors": [
+            "noodle|n|1",
+            "norm|n|1",
+            "notation|n|x1",
+            "oar|n|1",
+            "octopus|n|1",
+            "ogre|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "imagery|n|x1",
+          "def": "Descriptive words that appeal to sight, sound, touch, taste, or smell in a reader's mind",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "onomatopoeia": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "onomatopoeia|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "onomatopoeia|n|x1": {
+          "verdict": "fixed",
+          "def": "A word whose spoken sound imitates the real sound it names, such as buzz or splash",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "The comic strip used words like crash and drip for lively onomatopoeia.",
+          "exampleEdited": true,
+          "distractors": [
+            "omnivore|n|x1",
+            "orange|n|2",
+            "other|n|1",
+            "ox|n|w2",
+            "pacing|n|w1",
+            "par|n|2"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "onomatopoeia|n|x1",
+          "def": "A word whose spoken sound imitates the real sound it names, such as buzz or splash",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "symbolism": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "symbolism|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "symbolism|n|x1": {
+          "verdict": "fixed",
+          "def": "Using an object, color, or image to stand for a deeper idea or meaning in a story",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "The rising dawn brought hope through simple symbolism at the end of the novel.",
+          "exampleEdited": true,
+          "distractors": [
+            "paradigm|n|1",
+            "parasitism|n|x1",
+            "parenthesis|n|1",
+            "passageway|n|e1",
+            "pastry|n|2",
+            "pecan|n|w2"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "symbolism|n|x1",
+          "def": "Using an object, color, or image to stand for a deeper idea or meaning in a story",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "irony": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "irony|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "irony|n|x1": {
+          "verdict": "fixed",
+          "def": "A contrast between what happens or is meant and what is actually expected or said",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "A fire station catching on fire is a familiar example of situational irony.",
+          "exampleEdited": true,
+          "distractors": [
+            "orphan|n|1",
+            "pedal|n|1",
+            "peg|n|1",
+            "pepper|n|1",
+            "person|n|3",
+            "petal|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "irony|n|x1",
+          "def": "A contrast between what happens or is meant and what is actually expected or said",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "allusion": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "allusion|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "allusion|n|x1": {
+          "verdict": "fixed",
+          "def": "A brief indirect mention of a well-known person, event, place, or story",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Calling the long trip an odyssey makes a brief allusion to ancient Greek poetry.",
+          "exampleEdited": true,
+          "distractors": [
+            "nothing|n|w1",
+            "passion|n|1",
+            "peep|n|1",
+            "perch|n|1",
+            "philosopher|n|w2",
+            "piece|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "allusion|n|x1",
+          "def": "A brief indirect mention of a well-known person, event, place, or story",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "protagonist": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "protagonist|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "protagonist|n|x1": {
+          "verdict": "fixed",
+          "def": "The main character at the center of a story, novel, or drama",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "The young inventor acts as the brave protagonist of the chapter book.",
+          "exampleEdited": true,
+          "distractors": [
+            "personal|n|e1",
+            "pier|n|1",
+            "piles|n|2",
+            "pine|n|2",
+            "pioneer|n|x1",
+            "pleading|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "protagonist|n|x1",
+          "def": "The main character at the center of a story, novel, or drama",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "antagonist": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "antagonist|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "antagonist|n|x1": {
+          "verdict": "fixed",
+          "def": "A character or opposing force that stands in the way of the main character in a story",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "The greedy mayor serves as the main antagonist in the play.",
+          "exampleEdited": true,
+          "distractors": [
+            "piercing|n|1",
+            "pluck|n|w2",
+            "plunge|n|1",
+            "poke|n|2",
+            "policeman|n|e2",
+            "portfolio|n|2"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "antagonist|n|x1",
+          "def": "A character or opposing force that stands in the way of the main character in a story",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "climax": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "climax|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "climax|n|x1": {
+          "verdict": "fixed",
+          "def": "The turning point and most intense moment of a story's plot",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Everything changes at the climax when the lost map is finally uncovered.",
+          "exampleEdited": true,
+          "distractors": [
+            "hi|n|w1",
+            "mini|n|w1",
+            "pal|n|1",
+            "pang|n|w1",
+            "ping|n|w1",
+            "poking|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "climax|n|x1",
+          "def": "The turning point and most intense moment of a story's plot",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "moral": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "moral|n|2"
+      ],
+      "senses": {
+        "moral|n|2": {
+          "verdict": "fixed",
+          "def": "A lesson about right behavior or wise choices taught by a story or fable",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Honesty builds trust was the clear moral of that short story.",
+          "exampleEdited": true,
+          "distractors": [
+            "portrait|n|1",
+            "possession|n|1",
+            "prey|n|1",
+            "prince|n|x1",
+            "produce|n|1",
+            "projection|n|x1"
+          ]
+        }
+      }
+    },
+    "foreshadowing": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "foreshadowing|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "foreshadowing|n|x1": {
+          "verdict": "fixed",
+          "def": "Hints or clues given early in a story that suggest events happening later",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "The rattling shutters provided gentle foreshadowing of the evening storm.",
+          "exampleEdited": true,
+          "distractors": [
+            "portal|n|w1",
+            "principal|n|2",
+            "print|n|1",
+            "production|n|3",
+            "provision|n|1",
+            "psychologist|n|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "foreshadowing|n|x1",
+          "def": "Hints or clues given early in a story that suggest events happening later",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "flashback": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "flashback|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "flashback|n|x1": {
+          "verdict": "fixed",
+          "def": "A scene in a story or movie that steps back to show an event from an earlier time",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "A sudden flashback showed how the two friends first met in third grade.",
+          "exampleEdited": true,
+          "distractors": [
+            "pulley|n|x1",
+            "pursuit|n|w2",
+            "quail|n|1",
+            "raindrop|n|e1",
+            "raising|n|w2",
+            "rake|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "flashback|n|x1",
+          "def": "A scene in a story or movie that steps back to show an event from an earlier time",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "dialogue": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "dialogue|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "dialogue|n|1": {
+          "verdict": "fixed",
+          "def": "Spoken conversation between characters in a story, play, or movie",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Quotation marks show where each character's dialogue begins and ends.",
+          "exampleEdited": true,
+          "distractors": [
+            "puffing|n|w2",
+            "pug|n|1",
+            "pun|n|w1",
+            "quake|n|1",
+            "rap|n|1",
+            "raspberry|n|1"
+          ]
+        }
+      }
+    },
+    "summarize": {
+      "batch": 63,
+      "unit": "v",
+      "order": [
+        "summarize|v|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "summarize|v|1": {
+          "verdict": "fixed",
+          "def": "To briefly explain the main ideas and key details of a text in your own words",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "After reading the article, write three sentences to summarize what you learned.",
+          "exampleEdited": true,
+          "distractors": [
+            "dismay|v|1",
+            "do|v|3",
+            "drool|v|1",
+            "dull|v|1",
+            "explore|v|2",
+            "facilitate|v|2"
+          ]
+        }
+      }
+    },
+    "paraphrase": {
+      "batch": 63,
+      "unit": "v",
+      "order": [
+        "paraphrase|v|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "paraphrase|v|x1": {
+          "verdict": "fixed",
+          "def": "To put someone else's spoken or written idea into your own words while keeping its meaning",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Use your own phrasing to paraphrase the paragraph for your notes.",
+          "exampleEdited": true,
+          "distractors": [
+            "act|v|2",
+            "founds|v|x1",
+            "generalize|v|x1",
+            "gnaw|v|w1",
+            "grind|v|1",
+            "grow|v|2"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "paraphrase|v|x1",
+          "def": "To put someone else's spoken or written idea into your own words while keeping its meaning",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "analyze": {
+      "batch": 63,
+      "unit": "v",
+      "order": [
+        "analyze|v|w3"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "analyze|v|w3": {
+          "verdict": "fixed",
+          "def": "To examine parts of a text, data set, or problem closely to understand how they work together",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Read the passage twice to analyze how the author builds suspense.",
+          "exampleEdited": true,
+          "distractors": [
+            "hatch|v|2",
+            "headquarter|v|x1",
+            "highlight|v|1",
+            "hoard|v|1",
+            "impeach|v|x1",
+            "indicate|v|1"
+          ]
+        }
+      }
+    },
+    "cause": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "cause|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "cause|n|1": {
+          "verdict": "fixed",
+          "def": "An event, reason, or action that makes something else happen",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Heavy spring rain was the main cause of the flooded soccer field.",
+          "exampleEdited": true,
+          "distractors": [
+            "quiver|n|1",
+            "razor|n|1",
+            "reactant|n|x1",
+            "reaction|n|x1",
+            "reception|n|2",
+            "redo|n|1"
+          ]
+        }
+      }
+    },
+    "effect": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "effect|n|1"
+      ],
+      "senses": {
+        "effect|n|1": {
+          "verdict": "fixed",
+          "def": "A result or change that happens because of an earlier event or action",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Slippery sidewalks were one immediate effect of the freezing sleet.",
+          "exampleEdited": true,
+          "distractors": [
+            "receiver|n|1",
+            "reed|n|1",
+            "regret|n|1",
+            "regular|n|1",
+            "rein|n|1",
+            "reliability|n|x1"
+          ]
+        }
+      }
+    },
+    "chronological": {
+      "batch": 63,
+      "unit": "a",
+      "order": [
+        "chronological|a|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "chronological|a|x1": {
+          "verdict": "fixed",
+          "def": "Arranged in exact time order, from what happened first to what happened last",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "A timeline lists historical inventions in chronological order.",
+          "exampleEdited": true,
+          "distractors": [
+            "curly|a|1",
+            "damaged|a|w2",
+            "decent|a|2",
+            "declared|a|w1",
+            "deserted|a|w1",
+            "destroyed|a|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "chronological|a|x1",
+          "def": "Arranged in exact time order, from what happened first to what happened last",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "sequence": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "sequence|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "sequence|n|1": {
+          "verdict": "fixed",
+          "def": "A connected series of events, steps, or numbers placed in a specific order",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Follow the numbered recipe steps in the right sequence.",
+          "exampleEdited": true,
+          "distractors": [
+            "relief|n|1",
+            "remark|n|1",
+            "renaissance|n|x1",
+            "reputation|n|1",
+            "reset|n|e2",
+            "returns|n|2"
+          ]
+        }
+      }
+    },
+    "synonym": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "synonym|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "synonym|n|x1": {
+          "verdict": "fixed",
+          "def": "A word that has the same or nearly the same meaning as another word",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Glad is a common synonym for happy.",
+          "exampleEdited": true,
+          "distractors": [
+            "revealing|n|w1",
+            "rewrite|n|w1",
+            "rider|n|w2",
+            "rig|n|1",
+            "right|n|2",
+            "ring|n|2"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "synonym|n|x1",
+          "def": "A word that has the same or nearly the same meaning as another word",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "antonym": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "antonym|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "antonym|n|x1": {
+          "verdict": "fixed",
+          "def": "A word that means the exact opposite of another word",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Cold is a familiar antonym for hot.",
+          "exampleEdited": true,
+          "distractors": [
+            "robbery|n|w2",
+            "robin|n|1",
+            "roller|n|w2",
+            "rowing|n|e2",
+            "rustling|n|w2",
+            "rut|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "antonym|n|x1",
+          "def": "A word that means the exact opposite of another word",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "homophone": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "homophone|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "homophone|n|x1": {
+          "verdict": "fixed",
+          "def": "A word that sounds the same as another word when spoken but has a different spelling and meaning",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Pair and pear are a classic example of a homophone set.",
+          "exampleEdited": true,
+          "distractors": [
+            "sap|n|1",
+            "savanna|n|x1",
+            "saving|n|2",
+            "saxophone|n|1",
+            "scar|n|1",
+            "score|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "homophone|n|x1",
+          "def": "A word that sounds the same as another word when spoken but has a different spelling and meaning",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "homograph": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "homograph|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "homograph|n|x1": {
+          "verdict": "fixed",
+          "def": "A word spelled the same way as another word but with a different meaning and sometimes a different sound",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Bat meaning wooden stick and bat meaning flying animal form a homograph pair.",
+          "exampleEdited": true,
+          "distractors": [
+            "scramble|n|1",
+            "scraping|n|w3",
+            "scrubbing|n|w1",
+            "secession|n|x1",
+            "selling|n|w1",
+            "sense|n|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "homograph|n|x1",
+          "def": "A word spelled the same way as another word but with a different meaning and sometimes a different sound",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "prefix": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "prefix|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "prefix|n|x1": {
+          "verdict": "fixed",
+          "def": "A letter or group of letters added to the beginning of a root word to change its meaning",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Adding the prefix un- turns the word fair into unfair.",
+          "exampleEdited": true,
+          "distractors": [
+            "sergeant|n|2",
+            "settler|n|x1",
+            "shawl|n|w1",
+            "shift|n|2",
+            "shine|n|1",
+            "shivering|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "prefix|n|x1",
+          "def": "A letter or group of letters added to the beginning of a root word to change its meaning",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "suffix": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "suffix|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "suffix|n|x1": {
+          "verdict": "fixed",
+          "def": "A letter or group of letters added to the end of a word to change its meaning or word form",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Adding the suffix -ful changes the noun help into helpful.",
+          "exampleEdited": true,
+          "distractors": [
+            "shoe|n|1",
+            "shutter|n|1",
+            "sidewalk|n|1",
+            "singer|n|e2",
+            "slate|n|1",
+            "smartphone|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "suffix|n|x1",
+          "def": "A letter or group of letters added to the end of a word to change its meaning or word form",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "context": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "context|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "context|n|1": {
+          "verdict": "fixed",
+          "def": "The surrounding words, sentences, or situation that help explain a word or event",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Use surrounding context clues in the sentence to figure out the new word.",
+          "exampleEdited": true,
+          "distractors": [
+            "safety|n|x1",
+            "saliva|n|1",
+            "sandbag|n|e3",
+            "scattering|n|w1",
+            "scout|n|1",
+            "scratching|n|w1"
+          ]
+        }
+      }
+    },
+    "noun": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "noun|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "noun|n|x1": {
+          "verdict": "fixed",
+          "def": "A part of speech that names a person, place, thing, or idea",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "The word mountain is a noun that names a place.",
+          "exampleEdited": true,
+          "distractors": [
+            "seagull|n|1",
+            "seashell|n|1",
+            "seeking|n|w1",
+            "settling|n|w1",
+            "sewing|n|w1",
+            "sharing|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "noun|n|x1",
+          "def": "A part of speech that names a person, place, thing, or idea",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "verb": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "verb|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "verb|n|x1": {
+          "verdict": "fixed",
+          "def": "A part of speech that tells an action, condition, or state of being",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Every complete English sentence needs at least one main verb.",
+          "exampleEdited": true,
+          "distractors": [
+            "shopping|n|w1",
+            "shrimp|n|w1",
+            "shrink|n|1",
+            "sight|n|2",
+            "sink|n|1",
+            "sip|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "verb|n|x1",
+          "def": "A part of speech that tells an action, condition, or state of being",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "adjective": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "adjective|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "adjective|n|x1": {
+          "verdict": "fixed",
+          "def": "A part of speech that describes or gives more detail about a noun or pronoun",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "In red apple, the describing word red works as an adjective.",
+          "exampleEdited": true,
+          "distractors": [
+            "sixth|n|1",
+            "smelling|n|w1",
+            "smog|n|e1",
+            "snort|n|1",
+            "snout|n|1",
+            "snowball|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "adjective|n|x1",
+          "def": "A part of speech that describes or gives more detail about a noun or pronoun",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "adverb": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "adverb|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "adverb|n|x1": {
+          "verdict": "fixed",
+          "def": "A part of speech that describes a verb, adjective, or another descriptive word, often telling how or when",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "In ran quickly, the word quickly serves as an adverb.",
+          "exampleEdited": true,
+          "distractors": [
+            "so|n|w1",
+            "soccer|n|w1",
+            "softball|n|w1",
+            "solstice|n|x1",
+            "somersault|n|w1",
+            "soot|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "adverb|n|x1",
+          "def": "A part of speech that describes a verb, adjective, or another descriptive word, often telling how or when",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "pronoun": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "pronoun|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "pronoun|n|x1": {
+          "verdict": "fixed",
+          "def": "A word such as she, they, it, or them used in place of a noun",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Replace Maya with the pronoun she in the second sentence.",
+          "exampleEdited": true,
+          "distractors": [
+            "smelt|n|1",
+            "snowman|n|1",
+            "soaring|n|w1",
+            "somebody|n|1",
+            "something|n|1",
+            "sophisticate|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "pronoun|n|x1",
+          "def": "A word such as she, they, it, or them used in place of a noun",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "preposition": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "preposition|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "preposition|n|x1": {
+          "verdict": "fixed",
+          "def": "A connecting word such as under, between, or during that links a noun or pronoun to another word",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "In on the shelf, the word on acts as a preposition.",
+          "exampleEdited": true,
+          "distractors": [
+            "sour|n|w2",
+            "sovereignty|n|x1",
+            "spite|n|1",
+            "splash|n|w2",
+            "spoil|n|w3",
+            "sponsorship|n|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "preposition|n|x1",
+          "def": "A connecting word such as under, between, or during that links a noun or pronoun to another word",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "conjunction": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "conjunction|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "conjunction|n|1": {
+          "verdict": "fixed",
+          "def": "A joining word such as and, but, or because that connects words, phrases, or clauses",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Use the conjunction but to join two contrasting ideas cleanly.",
+          "exampleEdited": true,
+          "distractors": [
+            "sounding|n|w2",
+            "spade|n|1",
+            "splat|n|w2",
+            "spoons|n|2",
+            "spotlight|n|1",
+            "spreading|n|w1"
+          ]
+        }
+      }
+    },
+    "interjection": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "interjection|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "interjection|n|x1": {
+          "verdict": "fixed",
+          "def": "A short word or exclamation such as wow, ouch, or hey showing sudden feeling",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Starting a sentence with Hooray uses an excited interjection.",
+          "exampleEdited": true,
+          "distractors": [
+            "sprout|n|1",
+            "squeak|n|1",
+            "squeezing|n|w1",
+            "squelch|n|1",
+            "squid|n|1",
+            "starving|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "interjection|n|x1",
+          "def": "A short word or exclamation such as wow, ouch, or hey showing sudden feeling",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "predicate": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "predicate|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "predicate|n|x1": {
+          "verdict": "fixed",
+          "def": "The part of a sentence or clause that contains the verb and tells what the subject does or is",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "In Birds sing loudly at dawn, sing loudly at dawn is the complete predicate.",
+          "exampleEdited": true,
+          "distractors": [
+            "state|n|x1",
+            "steak|n|1",
+            "steamboat|n|e3",
+            "stern|n|1",
+            "stilt|n|1",
+            "straining|n|w2"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "predicate|n|x1",
+          "def": "The part of a sentence or clause that contains the verb and tells what the subject does or is",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "clause": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "clause|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "clause|n|x1": {
+          "verdict": "fixed",
+          "def": "A group of words containing both a subject and a verb",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Because the bell rang is a dependent clause waiting for a main idea.",
+          "exampleEdited": true,
+          "distractors": [
+            "sailboat|n|w1",
+            "serving|n|2",
+            "slip|n|3",
+            "slop|n|1",
+            "sneer|n|1",
+            "snorting|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "clause|n|x1",
+          "def": "A group of words containing both a subject and a verb",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "phrase": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "phrase|n|2"
+      ],
+      "senses": {
+        "phrase|n|2": {
+          "verdict": "fixed",
+          "def": "A small group of words working together as a single unit without both a subject and a main verb",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "In the morning is a short prepositional phrase.",
+          "exampleEdited": true,
+          "distractors": [
+            "statement|n|1",
+            "structure|n|2",
+            "subduction|n|x1",
+            "substrate|n|1",
+            "sunglasses|n|1",
+            "suntan|n|1"
+          ]
+        }
+      }
+    },
+    "nonfiction": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "nonfiction|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "nonfiction|n|x1": {
+          "verdict": "fixed",
+          "def": "Writing based on real people, true events, facts, and genuine information rather than made-up stories",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "A science magazine or field guide is an example of nonfiction.",
+          "exampleEdited": true,
+          "distractors": [
+            "stride|n|2",
+            "stroking|n|w1",
+            "studio|n|1",
+            "submarine|n|1",
+            "summit|n|2",
+            "survival|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "nonfiction|n|x1",
+          "def": "Writing based on real people, true events, facts, and genuine information rather than made-up stories",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "biography": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "biography|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "biography|n|1": {
+          "verdict": "fixed",
+          "def": "A true written account of another person's real life written by someone else",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Our class read a short biography about astronaut Sally Ride.",
+          "exampleEdited": true,
+          "distractors": [
+            "sobbing|n|w1",
+            "solitary|n|1",
+            "somewhere|n|w1",
+            "strain|n|1",
+            "swallow|n|1",
+            "sweeping|n|w1"
+          ]
+        }
+      }
+    },
+    "autobiography": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "autobiography|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "autobiography|n|x1": {
+          "verdict": "fixed",
+          "def": "A true written story of a person's own life written by that person",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Benjamin Franklin wrote a famous autobiography describing his youth.",
+          "exampleEdited": true,
+          "distractors": [
+            "sweetheart|n|1",
+            "syndrome|n|1",
+            "tablet|n|1",
+            "tan|n|1",
+            "tantrum|n|1",
+            "tattoo|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "autobiography|n|x1",
+          "def": "A true written story of a person's own life written by that person",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "memoir": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "memoir|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "memoir|n|x1": {
+          "verdict": "fixed",
+          "def": "A true story written by someone about important memories or experiences from their own life",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Her touching memoir focused on the summer she spent learning to sail.",
+          "exampleEdited": true,
+          "distractors": [
+            "teapot|n|1",
+            "teasing|n|w1",
+            "tennis|n|1",
+            "terrier|n|w1",
+            "testing|n|w2",
+            "theorist|n|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "memoir|n|x1",
+          "def": "A true story written by someone about important memories or experiences from their own life",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "fable": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "fable|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "fable|n|1": {
+          "verdict": "fixed",
+          "def": "A short traditional tale, often with talking animals, meant to teach a clear moral lesson",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "The Tortoise and the Hare is a well-known fable.",
+          "exampleEdited": true,
+          "distractors": [
+            "thermostat|n|1",
+            "throbbing|n|w1",
+            "tick|n|1",
+            "tire|n|1",
+            "title|n|2",
+            "toboggan|n|w1"
+          ]
+        }
+      }
+    },
+    "folktale": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "folktale|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "folktale|n|x1": {
+          "verdict": "fixed",
+          "def": "A traditional story passed down aloud through a community from generation to generation",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Each culture shares its own clever heroes through regional folktale traditions.",
+          "exampleEdited": true,
+          "distractors": [
+            "terrace|n|1",
+            "there|n|w1",
+            "thicket|n|w1",
+            "toffee|n|1",
+            "ton|n|w1",
+            "tons|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "folktale|n|x1",
+          "def": "A traditional story passed down aloud through a community from generation to generation",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "drama": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "drama|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "drama|n|1": {
+          "verdict": "fixed",
+          "def": "A story written as dialogue and stage directions to be acted out on stage or screen",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Students practiced reading lines aloud from the one-act classroom drama.",
+          "exampleEdited": true,
+          "distractors": [
+            "toothpaste|n|1",
+            "topography|n|x1",
+            "toss|n|1",
+            "touching|n|w1",
+            "trace|n|2",
+            "trader|n|x1"
+          ]
+        }
+      }
+    },
+    "poetry": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "poetry|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "poetry|n|1": {
+          "verdict": "fixed",
+          "def": "Literature written in verse using rhythm, sound, and vivid language to express feelings or ideas",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Our April reading unit focuses on haiku and nature poetry.",
+          "exampleEdited": true,
+          "distractors": [
+            "tot|n|1",
+            "tracking|n|e2",
+            "trail|n|1",
+            "traveling|n|w1",
+            "trick|n|1",
+            "trunk|n|2"
+          ]
+        }
+      }
+    },
+    "claim": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "claim|n|1",
+        "claim|v|1"
+      ],
+      "senses": {
+        "claim|n|1": {
+          "verdict": "fixed",
+          "def": "A statement a writer or speaker puts forward as true and backs up with reasons and evidence",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Every strong opinion paragraph begins with a clear central claim.",
+          "exampleEdited": true,
+          "distractors": [
+            "trailing|n|w1",
+            "trainer|n|w2",
+            "traitor|n|1",
+            "tundra|n|x1",
+            "turtle|n|w1",
+            "twig|n|1"
+          ]
+        },
+        "claim|v|1": {
+          "verdict": "fixed",
+          "def": "To state that something is true or belongs to you",
+          "reason": "Keep distinct everyday/secondary school meaning.",
+          "example": "Both teams tried to claim victory after the close relay.",
+          "exampleEdited": true,
+          "distractors": [
+            "cotton|v|w1",
+            "doom|v|w1",
+            "drag|v|1",
+            "droop|v|1",
+            "dub|v|w1",
+            "exclaim|v|1"
+          ]
+        }
+      }
+    },
+    "counterclaim": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "counterclaim|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "counterclaim|n|x1": {
+          "verdict": "fixed",
+          "def": "An opposing viewpoint or argument raised to challenge a writer's main position",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "A thoughtful essay answers a common counterclaim with clear facts.",
+          "exampleEdited": true,
+          "distractors": [
+            "total|n|1",
+            "tram|n|2",
+            "trudge|n|1",
+            "tying|n|e2",
+            "unknown|n|w2",
+            "usher|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "counterclaim|n|x1",
+          "def": "An opposing viewpoint or argument raised to challenge a writer's main position",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "reasoning": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "reasoning|n|w1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "reasoning|n|w1": {
+          "verdict": "fixed",
+          "def": "Clear, logical thinking that explains how evidence supports a claim or conclusion",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Her essay combined accurate facts with strong step-by-step reasoning.",
+          "exampleEdited": true,
+          "distractors": [
+            "trauma|n|1",
+            "utterance|n|1",
+            "vaccine|n|x1",
+            "vacuole|n|x1",
+            "variance|n|1",
+            "vase|n|1"
+          ]
+        }
+      }
+    },
+    "persuade": {
+      "batch": 63,
+      "unit": "v",
+      "order": [
+        "persuade|v|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "persuade|v|1": {
+          "verdict": "fixed",
+          "def": "To convince someone to agree with a view or take an action using reasons and examples",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "The students wrote letters to persuade the city to plant more shade trees.",
+          "exampleEdited": true,
+          "distractors": [
+            "infer|v|1",
+            "inject|v|w3",
+            "inspect|v|1",
+            "instance|v|e1",
+            "invade|v|1",
+            "jab|v|1"
+          ]
+        }
+      }
+    },
+    "inform": {
+      "batch": 63,
+      "unit": "v",
+      "order": [
+        "inform|v|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "inform|v|1": {
+          "verdict": "fixed",
+          "def": "To share clear facts, details, and explanations so readers learn about a topic",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Science brochures inform readers about local watershed wildlife.",
+          "exampleEdited": true,
+          "distractors": [
+            "feed|v|1",
+            "flee|v|1",
+            "flicker|v|1",
+            "gut|v|2",
+            "hollow|v|e2",
+            "jut|v|w1"
+          ]
+        }
+      }
+    },
+    "entertain": {
+      "batch": 63,
+      "unit": "v",
+      "order": [
+        "entertain|v|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "entertain|v|1": {
+          "verdict": "fixed",
+          "def": "To amuse or hold the interest of readers or an audience with a story or performance",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Adventure comic books are written mostly to entertain young readers.",
+          "exampleEdited": true,
+          "distractors": [
+            "leap|v|1",
+            "lift|v|1",
+            "mash|v|1",
+            "may|v|1",
+            "miss|v|4",
+            "moor|v|1"
+          ]
+        }
+      }
+    },
+    "citation": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "citation|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "citation|n|x1": {
+          "verdict": "fixed",
+          "def": "A note showing the exact book, article, or website where information or a quote came from",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Always add a clear citation after using facts from a library book.",
+          "exampleEdited": true,
+          "distractors": [
+            "validity|n|2",
+            "vein|n|2",
+            "velocity|n|2",
+            "violin|n|1",
+            "virus|n|x1",
+            "visitor|n|e3"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "citation|n|x1",
+          "def": "A note showing the exact book, article, or website where information or a quote came from",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "plagiarism": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "plagiarism|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "plagiarism|n|x1": {
+          "verdict": "fixed",
+          "def": "Using another writer's exact words or ideas as your own without giving proper credit",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Quoting a sentence cleanly with the author's name avoids plagiarism.",
+          "exampleEdited": true,
+          "distractors": [
+            "vet|n|w1",
+            "vim|n|w1",
+            "vocabulary|n|3",
+            "voltage|n|x1",
+            "voter|n|x1",
+            "wag|n|w1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "plagiarism|n|x1",
+          "def": "Using another writer's exact words or ideas as your own without giving proper credit",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "credible": {
+      "batch": 63,
+      "unit": "a",
+      "order": [
+        "credible|a|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "credible|a|x1": {
+          "verdict": "fixed",
+          "def": "Trustworthy and believable because facts come from careful, reliable evidence",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Check whether a website uses a credible author before citing its data.",
+          "exampleEdited": true,
+          "distractors": [
+            "crushing|a|w1",
+            "dashed|a|w1",
+            "deflated|a|w1",
+            "descending|a|w1",
+            "dipped|a|w1",
+            "dirty|a|x1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "credible|a|x1",
+          "def": "Trustworthy and believable because facts come from careful, reliable evidence",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
+    },
+    "source": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "source|n|1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "source|n|1": {
+          "verdict": "fixed",
+          "def": "A book, article, person, or document where facts or materials originate",
+          "reason": "Put the K-8 Math & ELA curriculum meaning first in clear wording.",
+          "example": "Check at least two reliable sources when writing a research report.",
+          "exampleEdited": true,
+          "distractors": [
+            "spike|n|1",
+            "stinging|n|w1",
+            "strawberry|n|1",
+            "sweating|n|e2",
+            "swing|n|2",
+            "tension|n|1"
+          ]
+        }
+      }
+    },
+    "revision": {
+      "batch": 63,
+      "unit": "n",
+      "order": [
+        "revision|n|x1"
+      ],
+      "keepOnlyOrdered": true,
+      "senses": {
+        "revision|n|x1": {
+          "verdict": "fixed",
+          "def": "Improving a written draft by changing, adding, cutting, or reorganizing words and ideas",
+          "reason": "Add K-8 Math & ELA curriculum meaning.",
+          "example": "Strong writers make big improvements during the revision stage.",
+          "exampleEdited": true,
+          "distractors": [
+            "vertebrate|n|1",
+            "wailing|n|w1",
+            "wand|n|w1",
+            "warehouse|n|1",
+            "warrior|n|1",
+            "wasp|n|1"
+          ]
+        }
+      },
+      "add": [
+        {
+          "id": "revision|n|x1",
+          "def": "Improving a written draft by changing, adding, cutting, or reorganizing words and ideas",
+          "example": "",
+          "source": "alloflow",
+          "edited": true,
+          "reason": "Add K-8 Math & ELA curriculum meaning."
+        }
+      ]
     }
-  }
+  },
+  "updated": "2026-11-14"
 }
