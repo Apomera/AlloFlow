@@ -9,12 +9,19 @@
     && window.parent !== window;
   if (!active) return;
 
+  var lockedParentOrigin = '';
+
   function isAllowedParentOrigin(value) {
     try {
       var parsed = new URL(String(value || ''));
-      return parsed.protocol === 'http:'
-        && /^(?:localhost|127\.0\.0\.1|\[?::1\]?)$/i.test(parsed.hostname)
-        && parsed.origin !== window.location.origin;
+      if (parsed.protocol !== 'http:'
+        || !/^(?:localhost|127\.0\.0\.1|\[?::1\]?)$/i.test(parsed.hostname)
+        || parsed.origin === window.location.origin) {
+        return false;
+      }
+      if (window.location.port !== '3000' && parsed.port !== window.location.port) return false;
+      if (lockedParentOrigin && parsed.origin !== lockedParentOrigin) return false;
+      return true;
     } catch (_) {
       return false;
     }
@@ -255,9 +262,20 @@
       // non-empty incoming key (future secure-storage delivery) still wins.
       var incomingKey = typeof clone.apiKey === 'string' ? clone.apiKey.trim() : '';
       if (!incomingKey) {
-        var existingKey = '';
-        try { existingKey = String((JSON.parse(localStorage.getItem(key) || 'null') || {}).apiKey || ''); } catch (_) {}
-        clone.apiKey = existingKey;
+        var existingObj = null;
+        try { existingObj = JSON.parse(localStorage.getItem(key) || 'null'); } catch (_) {}
+        var sameDest = !!(existingObj && typeof existingObj === 'object'
+          && String(existingObj.backend || 'gemini') === String(clone.backend || 'gemini')
+          && String(existingObj.baseUrl || '') === String(clone.baseUrl || ''));
+        if (sameDest && existingObj.apiKey) {
+          clone.apiKey = String(existingObj.apiKey);
+          if (existingObj.apiKeyDestination && !clone.apiKeyDestination) {
+            clone.apiKeyDestination = String(existingObj.apiKeyDestination);
+          }
+        } else {
+          clone.apiKey = '';
+          delete clone.apiKeyDestination;
+        }
       }
     }
     var serialized = JSON.stringify(clone);
@@ -328,6 +346,7 @@
     var data = event && event.data;
     if (event.source !== window.parent || !isAllowedParentOrigin(event.origin)) return;
     if (!data || data.channel !== CHANNEL || data.version !== VERSION) return;
+    if (!lockedParentOrigin) lockedParentOrigin = event.origin;
     if (data.kind === 'image-response') {
       if (isNativeImageParentOrigin(event.origin)) receiveImage(event, data);
       return;
