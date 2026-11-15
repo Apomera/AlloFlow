@@ -152,7 +152,7 @@
   function hasAiSecrets(secrets) {
     return Object.keys(secrets).length > 0;
   }
-  function announceAiKeyChange() {
+  function notifyAiKeyLockListeners() {
     try {
       if (typeof root.dispatchEvent !== 'function' || typeof root.CustomEvent !== 'function') return;
       root.dispatchEvent(new root.CustomEvent('alloflow:ai-key-lock-changed'));
@@ -269,7 +269,7 @@
     store.setItem(AI_LOCKED_KEY, JSON.stringify(record));
     writeAiSession(payload, false);
     removePlaintextAiSecrets();
-    announceAiKeyChange();
+    notifyAiKeyLockListeners();
     return true;
   }
   async function unlockAiKey(code) {
@@ -283,7 +283,7 @@
       nextSession.apiKeyDestination = decrypted.apiKeyDestination;
     }
     writeAiSession(nextSession, false);
-    announceAiKeyChange();
+    notifyAiKeyLockListeners();
     return true;
   }
   // A failure here must never fail the access check that called it.
@@ -296,7 +296,7 @@
   function lockAiKey() {
     if (!lockedAiRecord() || !hasAiSecrets(aiSessionSecrets())) return false;
     writeAiSession({}, false);
-    announceAiKeyChange();
+    notifyAiKeyLockListeners();
     return true;
   }
   function forgetAiKey() {
@@ -304,7 +304,7 @@
     if (store) store.removeItem(AI_LOCKED_KEY);
     writeAiSession({}, false);
     removePlaintextAiSecrets();
-    announceAiKeyChange();
+    notifyAiKeyLockListeners();
   }
   // Called for every settings write. Returns the config for localStorage; keys
   // move to this tab, except an unchanged older plaintext key, which stays
@@ -454,7 +454,7 @@
     if (store && lockedAiRecord()) {
       store.removeItem(AI_LOCKED_KEY);
       writeAiSession(aiSessionSecrets(), true);
-      announceAiKeyChange();
+      notifyAiKeyLockListeners();
     }
     return { ok: true, reason: 'removed', retryAfterMs: 0 };
   }

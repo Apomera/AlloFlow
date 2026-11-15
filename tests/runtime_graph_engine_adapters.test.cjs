@@ -43,7 +43,7 @@ test('SDTurbo preserves verified WASM configuration and its model/tokenizer pipe
   assert.deepEqual(graphs, ['ort121', 'transformers331']); assert.equal(ort.env.wasm.wasmPaths, wasmPaths);
   assert.deepEqual(tokenizer, ['Xenova/clip-vit-base-patch16']); assert.equal(models.length, 3); assert.equal(sessions.length, 3);
   for (const options of sessions) assert.deepEqual([...options.executionProviders], ['webgpu']);
-  assert(models.every(url => url.startsWith('https://huggingface.co/schmuell/sd-turbo-ort-web/resolve/main/')));
+  assert(models.every(url => /^https:\/\/huggingface\.co\/schmuell\/sd-turbo-ort-web\/resolve\/[0-9a-f]{40}\//.test(url)));
 });
 
 class WorkerFixture {

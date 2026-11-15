@@ -54,7 +54,7 @@ const specs = [
   { name: 'Persona storage bridge', file: 'view_persona_chat_source.jsx', kind: 'promise', code: source =>
     block(source, 'var _ensureDeviceStorage = function') + ';this.load=_ensureDeviceStorage;' },
   { name: 'Device storage probe', file: 'text_utility_helpers_source.jsx', kind: 'probe', code: source =>
-    block(source, 'const openDeviceStorageProbe = () =>') + ';this.load=openDeviceStorageProbe;' },
+    block(source, 'const isLearnerContextActive = () =>') + '\n' + block(source, 'const openDeviceStorageProbe = () =>') + ';this.load=openDeviceStorageProbe;' },
   { name: 'Teacher Concept Quest bootstrap', file: 'teacher_source.jsx', kind: 'teacher', code: source => {
     const component = source.indexOf('const ConceptQuestTeacherControlsLoader');
     const effect = source.indexOf('useEffect(() => {', component);

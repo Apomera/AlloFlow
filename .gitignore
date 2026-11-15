@@ -306,3 +306,16 @@ __pycache__/
 # new files there are ignored. Files still tracked in it (data some tests read) stay tracked;
 # older reports are recoverable from history, e.g. git show 08d5e4b32:reports/<path>
 /reports/
+
+# Local test/audit scratch artifacts (2026-11-14)
+/.codex-test-tmp/
+/tmp/
+/artifacts/
+/dev-tools/scratch_bridgelab_20261026/
+/skyschool-*.jpg
+/skyschool-*.png
+/skyschool-*.json
+!/skyschool-city-tests.json
+/dbg1.png
+/ui_strings.js.codex-sync.tmp
+/syllable_table_en.js.syllable-build-*.tmp

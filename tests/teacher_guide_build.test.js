@@ -129,7 +129,7 @@ describe('teacher guide generated tool reference', () => {
     const document = documentFor(resolve(outputRoot, 'tool-reference.html'));
     expect(source).toContain('Generated public catalog');
     expect(document.querySelector('[data-tool-reference]')).not.toBeNull();
-    expect(document.querySelectorAll('[data-tool-card]')).toHaveLength(33);
+    expect(document.querySelectorAll('[data-tool-card]')).toHaveLength(39);
     expect(document.querySelectorAll('[data-tool-reference-category] option').length).toBeGreaterThan(2);
     expect(document.querySelector('[data-tool-reference-input][type="search"]')).not.toBeNull();
     expect(document.querySelector('[role="status"][aria-live="polite"]')).not.toBeNull();

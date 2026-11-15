@@ -91,7 +91,8 @@ concurrency:
 jobs:
   verify:
     name: Worker, security, runner, and image
-    runs-on: ubuntu-latest
+    # Pinned: Playwright 1.60.0 exits before download on ubuntu-latest (26.04)
+    runs-on: ubuntu-24.04
     defaults:
       run:
         working-directory: services/alloflow-remote-mcp

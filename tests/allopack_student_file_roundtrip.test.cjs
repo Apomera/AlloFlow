@@ -115,7 +115,7 @@ test('student import retains the previous split width so the real Restore Split 
     class Reader { readAsText(file) { this.onload({ target: { result: file.contents } }); } abort() {} }
     new Function('window', 'FileReader', 'localStorage', 'CustomEvent', read('misc_handlers_module.js'))(h.window, Reader, h.window.localStorage, h.window.CustomEvent);
     const source = read('misc_handlers_source.jsx');
-    const block = source.slice(anchorAt(source, 'const handleLoadProject ='), anchorAt(source, 'const handleRestoreView ='));
+    const block = source.slice(anchorAt(source, 'const handleLoadProject ='), anchorAt(source, 'function handleRestoreView('));
     const setters = Object.fromEntries([...new Set(block.match(/\bset[A-Z][A-Za-z]+\b/g))].map(name => [name, value => { state[name] = value; }]));
     const deps = {
       ...setters,
@@ -136,7 +136,7 @@ test('student import retains the previous split width so the real Restore Split 
 
 test('the live Inbox recognizes the saved student nickname without changing responses or borrowing another identity', async () => {
   const source = read('view_submission_inbox_module.js');
-  const start = anchorAt(source, 'const handleSubmissionFiles = '), end = anchorAt(source, 'const handleDecryptAll = ', start);
+  const start = anchorAt(source, 'const handleSubmissionFiles = '), end = anchorAt(source, 'const [mbPull, setMbPull] = ', start);
   const helperStart = anchorAt(source, 'function siStableIdentityValue('), helperEnd = anchorAt(source, 'function siSavedReviewState(', helperStart);
   assert(start > 0 && end > start && helperStart > 0 && helperEnd > helperStart);
   let queue = [];

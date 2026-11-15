@@ -86,6 +86,7 @@ describe('desktop app-build deployment guard', () => {
   it('builds the desktop flavor in an isolated, explicitly keyless environment', () => {
     const builder = readFileSync('desktop/scripts/build-desktop-web.cjs', 'utf8');
     const postbuild = readFileSync('desktop/web-app/postbuild.js', 'utf8');
+    const desktopPkg = JSON.parse(readFileSync('desktop/package.json', 'utf8'));
     const deploy = readFileSync('deploy.sh', 'utf8');
     const appSource = readFileSync('desktop/web-app/src/App.jsx', 'utf8');
     expect(builder).toContain("const isolatedOutput = args.includes('--isolated-output')");
@@ -105,7 +106,10 @@ describe('desktop app-build deployment guard', () => {
     expect(builder).toContain("text.replace(GOOGLE_API_KEY_PATTERN, '')");
     expect(builder).not.toContain("REACT_APP_API_KEY: 'desktop-user-provided'");
     expect(postbuild).toContain('process.env.BUILD_PATH');
-    expect(deploy).toContain('npm run web:build:isolated && npm run verify:web-build');
+    expect(desktopPkg.scripts['web:build:isolated']).toBe('node scripts/build-desktop-web.cjs --isolated-output');
+    expect(desktopPkg.scripts['verify:web-build']).toBe('node scripts/check-desktop-app-build.cjs');
+    expect(deploy).toContain('SKIP_DESKTOP_BUILD');
+    expect(deploy).toContain('--verified-candidate');
     const usedReactEnv = Array.from(new Set(appSource.match(/REACT_APP_[A-Z0-9_]+/g) || []));
     expect(usedReactEnv.length).toBeGreaterThan(0);
     for (const name of usedReactEnv) {
