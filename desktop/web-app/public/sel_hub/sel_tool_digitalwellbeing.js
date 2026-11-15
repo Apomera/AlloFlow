@@ -4430,12 +4430,21 @@ var EDUCATOR_GUIDES_DIGITAL = [
         }
 
         function openCounselorPacket(result, rows, picks) {
+          var escHtml = function(v) {
+            return String(v == null ? '' : v)
+              .replace(/&/g, '&amp;')
+              .replace(/</g, '&lt;')
+              .replace(/>/g, '&gt;')
+              .replace(/"/g, '&quot;')
+              .replace(/'/g, '&#39;');
+          };
+          var resultColor = /^#[0-9a-f]{3,8}$/i.test(String((result && result.color) || '')) ? String(result.color) : '#0e7490';
           var safeName = 'Digital Wellbeing Check-in';
           var dateStr = new Date().toLocaleDateString();
           var commitList = TOOLKIT_STRATEGIES.filter(function(s) { return tkCommitted[s.id]; });
           var trusted = trustedAdults || [];
           var html =
-            '<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>' + safeName + '</title>' +
+            '<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><meta charset="utf-8"><title>' + escHtml(safeName) + '</title>' +
             '<style>' +
               'body { font-family: system-ui, -apple-system, sans-serif; color: #0f172a; max-width: 720px; margin: 32px auto; padding: 24px; line-height: 1.55; }' +
               'h1 { color: #0e7490; margin: 0 0 4px; font-size: 22px; }' +
@@ -4454,36 +4463,37 @@ var EDUCATOR_GUIDES_DIGITAL = [
             '</style></head><body>' +
             '<button class="print-btn" onclick="window.print()">🖨️ Print this packet</button>' +
             '<h1>📱 Digital Wellbeing Check-in</h1>' +
-            '<div class="meta">Generated ' + dateStr + ' · This is a self-check, not a clinical diagnosis.</div>' +
+            '<div class="meta">Generated ' + escHtml(dateStr) + ' · This is a self-check, not a clinical diagnosis.</div>' +
             '<h2>Overall</h2>' +
-            '<div class="band" style="border-color: ' + result.color + '; background: ' + result.color + '15;">' +
-              '<div style="font-weight: 800; font-size: 18px; color: ' + result.color + ';">' + result.label + '</div>' +
-              '<div style="margin-top: 4px;">' + result.summary + '</div>' +
+            '<div class="band" style="border-color: ' + resultColor + '; background: ' + resultColor + '15;">' +
+              '<div style="font-weight: 800; font-size: 18px; color: ' + resultColor + ';">' + escHtml(result && result.label) + '</div>' +
+              '<div style="margin-top: 4px;">' + escHtml(result && result.summary) + '</div>' +
             '</div>' +
             '<h2>Where it shows up most</h2>' +
             rows.map(function(r) {
-              var c = r.pct >= 0.66 ? '#ef4444' : (r.pct >= 0.34 ? '#f59e0b' : '#10b981');
+              var pct = Math.max(0, Math.min(1, Number(r && r.pct) || 0));
+              var c = pct >= 0.66 ? '#ef4444' : (pct >= 0.34 ? '#f59e0b' : '#10b981');
               return '<div class="bar-row">' +
-                '<div class="bar-label">' + r.label + '</div>' +
-                '<div class="bar-track"><div class="bar-fill" style="width:' + (r.pct * 100) + '%; background:' + c + ';"></div></div>' +
-                '<div class="bar-pct">' + Math.round(r.pct * 100) + '%</div>' +
+                '<div class="bar-label">' + escHtml(r && r.label) + '</div>' +
+                '<div class="bar-track"><div class="bar-fill" style="width:' + (pct * 100) + '%; background:' + c + ';"></div></div>' +
+                '<div class="bar-pct">' + Math.round(pct * 100) + '%</div>' +
               '</div>';
             }).join('') +
             '<h2>Suggested first strategies</h2>' +
             picks.map(function(s) {
-              return '<div class="strat"><strong>' + s.icon + ' ' + s.title + '</strong><br>' +
-                '<em>Try first:</em> ' + s.first + '</div>';
+              return '<div class="strat"><strong>' + escHtml(s && s.icon) + ' ' + escHtml(s && s.title) + '</strong><br>' +
+                '<em>Try first:</em> ' + escHtml(s && s.first) + '</div>';
             }).join('') +
             (commitList.length > 0
               ? '<h2>Strategies I committed to</h2>' +
                 commitList.map(function(s) {
-                  return '<div class="strat" style="border-left-color: #10b981;"><strong>✓ ' + s.icon + ' ' + s.title + '</strong></div>';
+                  return '<div class="strat" style="border-left-color: #10b981;"><strong>✓ ' + escHtml(s && s.icon) + ' ' + escHtml(s && s.title) + '</strong></div>';
                 }).join('')
               : '') +
             (trusted.length > 0
               ? '<h2>My trusted-adult circle</h2><ul>' +
                 trusted.map(function(a) {
-                  return '<li><strong>' + (a.name || '') + '</strong> — ' + (a.role || 'trusted adult') + '</li>';
+                  return '<li><strong>' + escHtml((a && a.name) || '') + '</strong> — ' + escHtml((a && a.role) || 'trusted adult') + '</li>';
                 }).join('') + '</ul>'
               : '') +
             '<h2>Crisis numbers I have on hand</h2>' +
@@ -4498,6 +4508,7 @@ var EDUCATOR_GUIDES_DIGITAL = [
           try {
             var w = window.open('', '_blank', 'width=800,height=900');
             if (!w) { if (addToast) addToast('Pop-up was blocked. Allow pop-ups for this site and try again.', 'warning'); return; }
+            try { w.opener = null; } catch (_) {}
             w.document.open(); w.document.write(html); w.document.close();
             if (announceToSR) announceToSR('Packet opened in a new window');
             tryAwardBadge('packet_made', 'Bridge Builder');

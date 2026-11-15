@@ -1007,15 +1007,38 @@
     opts = opts || {};
     if (window.THREE) return Promise.resolve(window.THREE);
     if (window.__cg3dThreePromise) return window.__cg3dThreePromise;
+    if (!opts.threeUrl && typeof window.__alloLoadOptionalScript === 'function') {
+      var optPromise = window.__alloLoadOptionalScript('three-core', undefined, function () { return !!window.THREE; })
+        .then(function (ok) {
+          if (ok && window.THREE) return window.THREE;
+          throw new Error('failed to load three.js');
+        })
+        .catch(function (err) {
+          if (window.__cg3dThreePromise === optPromise) window.__cg3dThreePromise = null;
+          throw err;
+        });
+      window.__cg3dThreePromise = optPromise;
+      return optPromise;
+    }
+    var srcUrl = opts.threeUrl || THREE_URL;
+    if (window._isDesktopBundledApp === true && /^https?:/i.test(String(srcUrl))
+      && !/^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?:[:/]|$)/i.test(String(srcUrl))) {
+      return Promise.reject(new Error('External three.js CDN is disabled in Desktop mode'));
+    }
     window.__cg3dThreePromise = new Promise(function (resolve, reject) {
       try {
         var s = document.createElement('script');
-        s.src = opts.threeUrl || THREE_URL;
+        s.crossOrigin = 'anonymous';
+        s.referrerPolicy = 'no-referrer';
+        s.src = srcUrl;
         s.async = true;
         s.onload = function () { window.THREE ? resolve(window.THREE) : reject(new Error('three.js loaded but window.THREE missing')); };
         s.onerror = function () { reject(new Error('failed to load three.js')); };
         document.head.appendChild(s);
       } catch (e) { reject(e); }
+    }).catch(function (err) {
+      window.__cg3dThreePromise = null;
+      throw err;
     });
     return window.__cg3dThreePromise;
   }

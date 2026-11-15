@@ -523,13 +523,6 @@
   function ensureReaderFonts() {
     try {
       if (typeof document === 'undefined' || !document.head) return;
-      if (!document.getElementById('allo-reader-fonts-link')) {
-        var link = document.createElement('link');
-        link.id = 'allo-reader-fonts-link';
-        link.rel = 'stylesheet';
-        link.href = 'https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible&family=Lexend:wght@400;600&family=Andika&family=Gentium+Book+Plus&display=swap';
-        document.head.appendChild(link);
-      }
       if (!document.getElementById('allo-reader-fonts-css')) {
         var style = document.createElement('style');
         style.id = 'allo-reader-fonts-css';
@@ -1206,7 +1199,7 @@
     var tryBase = function (i) {
       if (i >= DATA_BASES.length) { cb(new Error(tr('readinglib_err_unreachable', 'Library data not reachable yet')), null, null); return; }
       var bust = DATA_BASES[i].indexOf('http') === 0 ? '?t=' + Date.now() : '';
-      fetch(DATA_BASES[i] + 'index.json' + bust)
+      fetch(DATA_BASES[i] + 'index.json' + bust, { credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .then(function (data) {
           if (!data || !Array.isArray(data.books)) throw new Error('bad index shape');
@@ -3271,7 +3264,13 @@
     // IndexedDB + a card in the local index. Returns the stored book (or throws).
     var importOne = function (r) {
       var ep = importEndpoint();
-      return fetch(ep + (ep.indexOf('?') === -1 ? '?' : '&') + 'id=' + r.id)
+      try {
+        var parsedEp = new URL(ep);
+        if (parsedEp.protocol !== 'https:' || parsedEp.username || parsedEp.password) throw new Error('Unsafe endpoint');
+      } catch (_) {
+        return Promise.reject(new Error('Import endpoint must use HTTPS without embedded credentials.'));
+      }
+      return fetch(ep + (ep.indexOf('?') === -1 ? '?' : '&') + 'id=' + encodeURIComponent(String(r.id || '')), { credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(function (res) { return res.json().then(function (d) { if (!res.ok) throw new Error((d && d.error) || ('HTTP ' + res.status)); return d; }); })
         .then(function (data) {
           var book = data && data.book;
@@ -3350,16 +3349,28 @@
         cover: (b.formats && (b.formats['image/jpeg'] || b.formats['image/png'])) || null,
       };
     };
+    var _isAllowedGutendexUrl = function (rawUrl) {
+      try {
+        var parsed = new URL(rawUrl);
+        return parsed.protocol === 'https:' && parsed.hostname.toLowerCase() === 'gutendex.com' && !parsed.username && !parsed.password;
+      } catch (_) {
+        return false;
+      }
+    };
     var doFetch = function (url, append) {
       var seq = ++reqSeq.current;
+      if (!_isAllowedGutendexUrl(url)) {
+        setStatus('error'); setError('Catalog URL must use HTTPS on gutendex.com.');
+        return;
+      }
       setStatus(append ? 'loadingMore' : 'loading'); setError('');
-      fetch(url)
+      fetch(url, { credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .then(function (data) {
           if (seq !== reqSeq.current) return;
           var list = (data.results || []).filter(function (b) { return b.copyright === false; }).map(mapResult);
           setResults(function (prev) { return append ? prev.concat(list) : list; });
-          setNextUrl(data.next || null);
+          setNextUrl(typeof data.next === 'string' && _isAllowedGutendexUrl(data.next) ? data.next : null);
           setStatus('ok');
         })
         .catch(function (err) {
@@ -3714,7 +3725,7 @@
       setCardsStatus('loading');
       var base = index.base || DATA_BASES[0];
       var bust = base.indexOf('http') === 0 ? '?t=' + Date.now() : '';
-      fetch(base + file + bust)
+      fetch(base + file + bust, { credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
         .then(function (data) {
           setExtraCards((data && Array.isArray(data.books)) ? data.books : []);
@@ -4003,7 +4014,7 @@
       if (!entry || !entry.file) return Promise.reject(new Error('Missing book file'));
       var base = index.base || DATA_BASES[0];
       var bust = base.indexOf('http') === 0 ? '?t=' + Date.now() : '';
-      return fetch(base + entry.file + bust)
+      return fetch(base + entry.file + bust, { credentials: 'omit', referrerPolicy: 'no-referrer' })
         .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); });
     };
 

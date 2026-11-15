@@ -763,16 +763,19 @@
       'What you’re feeling is real, and you don’t have to handle it alone. The people below are trained to listen — they won’t judge you, and you don’t need a reason to reach out. If you can, tell an adult you trust today, even if it feels hard. You matter, and this moment is not the whole story.');
     card.appendChild(body);
 
-    // Primary: 988 (call + text variant on a second line)
+    // Primary: 988 call + sibling SMS link (non-nested anchors, plain DOM textNodes)
     var btn988 = document.createElement('a');
     btn988.className = 'sel-cf-btn sel-cf-btn-primary';
     btn988.href = 'tel:988';
-    btn988.innerHTML = _sT('sel.safety.modal_call_988', 'Call 988 — Suicide &amp; Crisis Lifeline')
-      + '<span class="sel-cf-btn-sub">'
-      + _sT('sel.safety.modal_or_text', 'or tap here to text instead: ')
-      + '<a href="sms:988" style="color:inherit;text-decoration:underline">'
-      + _sT('sel.safety.modal_text_988', 'Text 988') + '</a></span>';
+    btn988.textContent = _sT('sel.safety.modal_call_988', 'Call 988 — Suicide & Crisis Lifeline');
     card.appendChild(btn988);
+
+    var btnSms988 = document.createElement('a');
+    btnSms988.className = 'sel-cf-btn sel-cf-btn-secondary';
+    btnSms988.href = 'sms:988';
+    btnSms988.textContent = _sT('sel.safety.modal_or_text', 'or tap here to text instead: ')
+      + _sT('sel.safety.modal_text_988', 'Text 988');
+    card.appendChild(btnSms988);
 
     // Secondary: Crisis Text Line
     var btn741 = document.createElement('a');
@@ -793,10 +796,14 @@
     var btnSave = document.createElement('button');
     btnSave.type = 'button';
     btnSave.className = 'sel-cf-btn sel-cf-btn-save';
-    btnSave.innerHTML = _sT('sel.safety.modal_save', 'Save what I wrote so I can show someone')
-      + '<span class="sel-cf-btn-sub">'
-      + _sT('sel.safety.modal_save_sub', 'Downloads a small file to your device. Nothing is sent anywhere.')
-      + '</span>';
+    btnSave.appendChild(document.createTextNode(
+      _sT('sel.safety.modal_save', 'Save what I wrote so I can show someone')
+    ));
+    var btnSaveSub = document.createElement('span');
+    btnSaveSub.className = 'sel-cf-btn-sub';
+    btnSaveSub.textContent = _sT('sel.safety.modal_save_sub',
+      'Downloads a small file to your device. Nothing is sent anywhere.');
+    btnSave.appendChild(btnSaveSub);
     btnSave.addEventListener('click', function() {
       _downloadSnippet(toolName, _lastSnippet);
     });

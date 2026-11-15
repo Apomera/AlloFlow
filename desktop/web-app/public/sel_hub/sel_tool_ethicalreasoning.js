@@ -710,6 +710,30 @@ window.SelHub = window.SelHub || {
           });
       };
 
+      var _syncSafetyBlock = function(userInput, scope) {
+        if (!userInput || typeof userInput !== 'string') return null;
+        var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
+          ? window.SelHub.safeRehearseCheck(userInput, { toolId: 'ethicalreasoning_' + (scope || 'dialogue'), onSafetyFlag: onSafetyFlag })
+          : (function() {
+              var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+              var flags = checker && checker.check ? checker.check(userInput) : [];
+              if (!flags || !flags.length) return { action: 'continue', severity: 'none' };
+              var top = flags.reduce(function(a, b) { return b.severity === 'critical' ? b : a; }, flags[0]);
+              if (onSafetyFlag) {
+                try { onSafetyFlag(Object.assign({}, top, { source: 'sel_rehearse_ethicalreasoning_' + (scope || 'dialogue'), context: userInput.substring(0, 100), aiGenerated: false })); } catch (_) {}
+              }
+              return { action: top.severity === 'critical' ? 'block' : 'continue', severity: top.severity };
+            })();
+        if (!safety || safety.action !== 'block') return null;
+        var msg = (window.SelHub && window.SelHub.rehearseBreakCharacterText)
+          ? window.SelHub.rehearseBreakCharacterText(safety.severity)
+          : 'Your safety matters. Please reach out to a trusted adult or call/text 988.';
+        if (window.SelHub && window.SelHub.showCrisisModal) {
+          try { window.SelHub.showCrisisModal({ toolName: 'Ethical Reasoning Lab', contentSnippet: userInput }); } catch (_) {}
+        }
+        return msg;
+      };
+
       var tab = d.tab || 'dilemmas';
       if (!_ethAiOn && tab === 'dialogue') tab = 'dilemmas';
       // AI-only badges are hidden without usable AI (earned ones stay), so the set stays completable.
@@ -723,6 +747,16 @@ window.SelHub = window.SelHub || {
       // ── Socratic dialogue with AI ──
       var askSocratic = function(userInput) {
         if (!_ethAiOn || !userInput) return;
+        var blockedMsg = _syncSafetyBlock(userInput, 'dilemma');
+        if (blockedMsg) {
+          updMulti({
+            dialogue: dialogueHistory.concat([{ role: 'student', text: userInput }, { role: 'socrates', text: blockedMsg }]),
+            aiLoading: false,
+            dialogueInput: '',
+            _ethicsTier: 3
+          });
+          return;
+        }
         upd('aiLoading', true);
         var dilemmaContext = selectedDilemma ? 'The dilemma is: ' + selectedDilemma.title + '. ' + selectedDilemma.scenario : '';
         var frameworkContext = selectedFramework ? 'The student is currently analyzing through the lens of: ' + (FRAMEWORKS.find(function(f) { return f.id === selectedFramework; }) || {}).name + '.' : '';
@@ -782,6 +816,12 @@ window.SelHub = window.SelHub || {
       // ── Generate AI debate feedback ──
       var getDebateFeedback = function() {
         if (!_ethAiOn) return;
+        var debateText = ((d.debateArgs || '') + '\n' + (d.debateCounter || '')).trim();
+        var blockedMsg = _syncSafetyBlock(debateText, 'debate');
+        if (blockedMsg) {
+          updMulti({ debateFeedback: blockedMsg, aiLoading: false, _ethicsTier: 3 });
+          return;
+        }
         upd('aiLoading', true);
         var topic = d.debateTopicObj;
         var side = d.debateSide;
@@ -801,7 +841,7 @@ window.SelHub = window.SelHub || {
           'Rate their argument strength: Developing / Solid / Compelling / Master Debater\n' +
           'Be encouraging and age-appropriate.';
 
-        _runSafetyAssess(((d.debateArgs || '') + '\n' + (d.debateCounter || '')).trim(), 'debate'); // triage student free-text before AI
+        _runSafetyAssess(debateText, 'debate'); // triage student free-text before AI
         callGemini(prompt).then(function(resp) {
           var completed = (d.debatesCompleted || 0) + 1;
           updMulti({ debateFeedback: resp, aiLoading: false, debatesCompleted: completed });
@@ -817,7 +857,6 @@ window.SelHub = window.SelHub || {
       // ── Generate Kohlberg assessment AI feedback ──
       var getKohlbergFeedback = function() {
         if (!_ethAiOn) return;
-        upd('aiLoading', true);
         var answers = d.kohlbergAnswers || {};
         var answerTexts = [];
         for (var i = 0; i < KOHLBERG_SCENARIOS.length; i++) {
@@ -826,9 +865,16 @@ window.SelHub = window.SelHub || {
             answerTexts.push('Scenario: ' + sc.scenario.substring(0, 80) + '... Answer: "' + answers[sc.id] + '"');
           }
         }
+        var joinedAnswers = answerTexts.join('\n');
+        var blockedMsg = _syncSafetyBlock(joinedAnswers, 'kohlberg');
+        if (blockedMsg) {
+          updMulti({ kohlbergFeedback: blockedMsg, aiLoading: false, _ethicsTier: 3 });
+          return;
+        }
+        upd('aiLoading', true);
 
         var prompt = 'You are a developmental psychologist analyzing a ' + (gradeLevel || '5th grade') + ' student\u2019s moral reasoning patterns.\n\n' +
-          'The student responded to ethical dilemmas as follows:\n' + answerTexts.join('\n') + '\n\n' +
+          'The student responded to ethical dilemmas as follows:\n' + joinedAnswers + '\n\n' +
           'Based on Kohlberg\u2019s stages of moral development, provide a warm, NON-JUDGMENTAL analysis in 3-4 paragraphs:\n' +
           '1. Describe the PATTERN in their reasoning (do they focus on consequences for themselves, rules and social order, or universal principles?)\n' +
           '2. Note which level their reasoning most aligns with (Pre-conventional: self-interest, Conventional: rules/social approval, Post-conventional: universal principles). Emphasize that ALL levels are normal and valid for their age.\n' +
@@ -836,7 +882,7 @@ window.SelHub = window.SelHub || {
           '4. End with an encouraging thought about their moral growth.\n\n' +
           'IMPORTANT: Be warm, encouraging, and age-appropriate. Never make the student feel judged. All levels are valid developmental stages. Frame everything as "your reasoning style" not "your level."';
 
-        _runSafetyAssess(answerTexts.join('\n'), 'kohlberg'); // triage student free-text before AI
+        _runSafetyAssess(joinedAnswers, 'kohlberg'); // triage student free-text before AI
         callGemini(prompt).then(function(resp) {
           updMulti({ kohlbergFeedback: resp, kohlbergComplete: true, aiLoading: false });
           ctx.awardXP(15);
@@ -1119,17 +1165,23 @@ window.SelHub = window.SelHub || {
 
                   // AI discussion button
                   _ethAiOn && h('button', { 'aria-label': 'AI discussion button', onClick: function() {
+                    var reflText = d.branchReflection || '';
+                    var blockedMsg = _syncSafetyBlock(reflText, 'branch');
+                    if (blockedMsg) {
+                      updMulti({ branchAIDiscussion: blockedMsg, aiLoading: false, _ethicsTier: 3 });
+                      return;
+                    }
                     upd('aiLoading', true);
                     var prompt = 'A ' + (gradeLevel || '5th grade') + ' student is exploring an ethical scenario.\n' +
                       'Scenario: ' + sc.scenario + '\n' +
                       'They chose: "' + chosen.text + '" (Framework: ' + chosen.framework + ')\n' +
-                      'Their reflection: "' + (d.branchReflection || 'No reflection yet') + '"\n\n' +
+                      'Their reflection: "' + (reflText || 'No reflection yet') + '"\n\n' +
                       'Provide a brief, encouraging response (3-4 sentences) that:\n' +
                       '1. Validates their thinking\n' +
                       '2. Offers one new perspective they might not have considered\n' +
                       '3. Asks one follow-up question\n' +
                       'Be warm, age-appropriate, and non-judgmental.';
-                    _runSafetyAssess(d.branchReflection || '', 'branch'); // triage student free-text before AI
+                    _runSafetyAssess(reflText, 'branch'); // triage student free-text before AI
                     callGemini(prompt).then(function(resp) {
                       updMulti({ branchAIDiscussion: resp, aiLoading: false });
                       ctx.awardXP(5);
@@ -1756,70 +1808,68 @@ window.SelHub = window.SelHub || {
                 csSocratic.length === 0 && h('p', { className: 'text-xs text-slate-600 italic text-center' }, 'Share your thinking to begin a Socratic dialogue about this case.'),
 
                 // Socratic input
-                h('div', { className: 'flex gap-2' },
-                  h('input', { 'aria-label': 'Socratic dialogue input for case study', type: 'text', value: d.caseStudySocraticInput || '', onChange: function(e) { upd('caseStudySocraticInput', e.target.value); },
-                    onKeyDown: function(e) {
-                      if (e.key === 'Enter' && d.caseStudySocraticInput && d.caseStudySocraticInput.trim() && _ethAiOn) {
-                        var userInput = d.caseStudySocraticInput;
-                        upd('aiLoading', true);
-                        var histCtx = csSocratic.length > 0 ? 'Previous dialogue:\n' + csSocratic.slice(-6).map(function(m) { return m.role + ': ' + m.text; }).join('\n') : '';
-                        var prompt = 'You are a Socratic philosophy teacher helping a ' + (gradeLevel || '5th grade') + ' student analyze an ethical case study.\n' +
-                          'Case: "' + cs.title + '": ' + cs.background + '\n' +
-                          'Socratic seed question for this case: ' + cs.socraticSeed + '\n' +
-                          histCtx + '\nStudent says: "' + userInput + '"\n\n' +
-                          'Respond with ONE thought-provoking follow-up question. Do NOT give answers. Be warm, challenging, 2-3 sentences max.';
-                        _runSafetyAssess(userInput, 'casestudy');
-                        callGemini(prompt).then(function(resp) {
-                          var newHist = csSocratic.concat([{ role: 'student', text: userInput }, { role: 'socrates', text: resp }]);
-                          updMulti({ caseStudySocratic: newHist, aiLoading: false, caseStudySocraticInput: '' });
-                          ctx.awardXP(5);
-                        }).catch(function() {
-                          upd('aiLoading', false);
-                          addToast('The case-study response could not be generated just now. Your writing is saved — try again.', 'error');
-                          if (announceToSR) announceToSR('The case-study response could not be generated just now. Your writing is saved — try again.');
-                        });
-                      }
-                    },
-                    placeholder: 'Share your reasoning...', disabled: aiLoading,
-                    className: 'flex-1 text-sm p-3 border border-slate-400 rounded-xl outline-none focus:ring-2 focus:ring-teal-300 disabled:opacity-40'
-                  }),
-                  h('button', { 'aria-label': 'Send Socratic response', disabled: aiLoading || !(d.caseStudySocraticInput && d.caseStudySocraticInput.trim()), onClick: function() {
-                    if (d.caseStudySocraticInput && d.caseStudySocraticInput.trim() && _ethAiOn) {
-                      var userInput = d.caseStudySocraticInput;
-                      upd('aiLoading', true);
-                      var histCtx = csSocratic.length > 0 ? 'Previous dialogue:\n' + csSocratic.slice(-6).map(function(m) { return m.role + ': ' + m.text; }).join('\n') : '';
-                      var prompt = 'You are a Socratic philosophy teacher helping a ' + (gradeLevel || '5th grade') + ' student analyze an ethical case study.\n' +
-                        'Case: "' + cs.title + '": ' + cs.background + '\n' +
-                        'Socratic seed question for this case: ' + cs.socraticSeed + '\n' +
-                        histCtx + '\nStudent says: "' + userInput + '"\n\n' +
-                        'Respond with ONE thought-provoking follow-up question. Do NOT give answers. Be warm, challenging, 2-3 sentences max.';
-                      _runSafetyAssess(userInput, 'casestudy'); // CRISIS-3: Send-button path now triages like the Enter path
-                      callGemini(prompt).then(function(resp) {
-                        var newHist = csSocratic.concat([{ role: 'student', text: userInput }, { role: 'socrates', text: resp }]);
-                        updMulti({ caseStudySocratic: newHist, aiLoading: false, caseStudySocraticInput: '' });
-                        ctx.awardXP(5);
-                      }).catch(function() {
-                        upd('aiLoading', false);
-                        addToast('The case-study response could not be generated just now. Your writing is saved — try again.', 'error');
-                        if (announceToSR) announceToSR('The case-study response could not be generated just now. Your writing is saved — try again.');
+                (function() {
+                  var submitCaseStudySocratic = function() {
+                    if (!(d.caseStudySocraticInput && d.caseStudySocraticInput.trim()) || !_ethAiOn || aiLoading) return;
+                    var userInput = d.caseStudySocraticInput;
+                    var blockedMsg = _syncSafetyBlock(userInput, 'casestudy');
+                    if (blockedMsg) {
+                      updMulti({
+                        caseStudySocratic: csSocratic.concat([{ role: 'student', text: userInput }, { role: 'socrates', text: blockedMsg }]),
+                        aiLoading: false,
+                        caseStudySocraticInput: '',
+                        _ethicsTier: 3
                       });
+                      return;
                     }
-                  },
-                    className: 'px-4 py-3 bg-teal-700 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors disabled:opacity-40'
-                  }, aiLoading ? '...' : '\u2192')
-                )
+                    upd('aiLoading', true);
+                    var histCtx = csSocratic.length > 0 ? 'Previous dialogue:\n' + csSocratic.slice(-6).map(function(m) { return m.role + ': ' + m.text; }).join('\n') : '';
+                    var prompt = 'You are a Socratic philosophy teacher helping a ' + (gradeLevel || '5th grade') + ' student analyze an ethical case study.\n' +
+                      'Case: "' + cs.title + '": ' + cs.background + '\n' +
+                      'Socratic seed question for this case: ' + cs.socraticSeed + '\n' +
+                      histCtx + '\nStudent says: "' + userInput + '"\n\n' +
+                      'Respond with ONE thought-provoking follow-up question. Do NOT give answers. Be warm, challenging, 2-3 sentences max.';
+                    _runSafetyAssess(userInput, 'casestudy');
+                    callGemini(prompt).then(function(resp) {
+                      var newHist = csSocratic.concat([{ role: 'student', text: userInput }, { role: 'socrates', text: resp }]);
+                      updMulti({ caseStudySocratic: newHist, aiLoading: false, caseStudySocraticInput: '' });
+                      ctx.awardXP(5);
+                    }).catch(function() {
+                      upd('aiLoading', false);
+                      addToast('The case-study response could not be generated just now. Your writing is saved — try again.', 'error');
+                      if (announceToSR) announceToSR('The case-study response could not be generated just now. Your writing is saved — try again.');
+                    });
+                  };
+                  return h('div', { className: 'flex gap-2' },
+                    h('input', { 'aria-label': 'Socratic dialogue input for case study', type: 'text', value: d.caseStudySocraticInput || '', onChange: function(e) { upd('caseStudySocraticInput', e.target.value); },
+                      onKeyDown: function(e) { if (e.key === 'Enter') submitCaseStudySocratic(); },
+                      placeholder: 'Share your reasoning...', disabled: aiLoading,
+                      className: 'flex-1 text-sm p-3 border border-slate-400 rounded-xl outline-none focus:ring-2 focus:ring-teal-300 disabled:opacity-40'
+                    }),
+                    h('button', { 'aria-label': 'Send Socratic response', disabled: aiLoading || !(d.caseStudySocraticInput && d.caseStudySocraticInput.trim()), onClick: submitCaseStudySocratic,
+                      className: 'px-4 py-3 bg-teal-700 text-white rounded-xl text-sm font-bold hover:bg-teal-700 transition-colors disabled:opacity-40'
+                    }, aiLoading ? '...' : '\u2192')
+                  );
+                })()
               ),
 
               // Mark complete & get AI insight
               _ethAiOn && d.caseStudyReflection && d.caseStudyReflection.length > 20 && !d.caseStudyAIResp && h('button', { onClick: function() {
+                var csRefl = d.caseStudyReflection || '';
+                var blockedMsg = _syncSafetyBlock(csRefl, 'casestudy_reflection');
+                if (blockedMsg) {
+                  updMulti({ caseStudyAIResp: blockedMsg, aiLoading: false, _ethicsTier: 3 });
+                  return;
+                }
                 upd('aiLoading', true);
                 var prompt = 'A ' + (gradeLevel || '5th grade') + ' student just analyzed an ethical case study.\n' +
                   'Case: "' + cs.title + '": ' + cs.background + '\n' +
                   'Competing values: ' + cs.competingValues.join('; ') + '\n' +
-                  'Student\u2019s analysis: "' + d.caseStudyReflection + '"\n\n' +
+                  'Student\u2019s analysis: "' + csRefl + '"\n\n' +
                   'Provide a brief (3-4 sentence), warm, insightful response that:\n' +
                   '1. Validates their reasoning\n2. Identifies which ethical framework(s) their thinking aligns with\n' +
                   '3. Offers one perspective they might not have considered\n4. Ends with an encouraging thought about their ethical growth.\nBe age-appropriate and non-judgmental.';
+                _runSafetyAssess(csRefl, 'casestudy_reflection');
                 callGemini(prompt).then(function(resp) {
                   var completed = (d.caseStudiesCompleted || []).slice();
                   if (completed.indexOf(cs.id) === -1) completed.push(cs.id);
@@ -1961,17 +2011,23 @@ window.SelHub = window.SelHub || {
 
               // Complete button
               _ethAiOn && d.valuesReflection && d.valuesReflection.length > 10 && h('button', { onClick: function() {
+                var valRefl = d.valuesReflection || '';
+                var blockedMsg = _syncSafetyBlock(valRefl, 'values');
+                if (blockedMsg) {
+                  updMulti({ valuesAIResp: blockedMsg, aiLoading: false, _ethicsTier: 3 });
+                  return;
+                }
                 upd('aiLoading', true);
                 var rankedNames = ranked.map(function(vid) { var v = VALUES_LIST.find(function(val) { return val.id === vid; }); return v ? v.name : vid; });
                 var prompt = 'A ' + (gradeLevel || '5th grade') + ' student completed a values clarification exercise.\n' +
                   'Their top 5 values, in order: ' + rankedNames.join(', ') + '\n' +
-                  'Why they ranked #1 highest: "' + d.valuesReflection + '"\n\n' +
+                  'Why they ranked #1 highest: "' + valRefl + '"\n\n' +
                   'Provide a warm, insightful analysis (3-4 sentences) that:\n' +
                   '1. Identifies the PATTERN in their values (are they more people-oriented, principle-oriented, self-growth oriented, community-oriented?)\n' +
                   '2. Notes how their top value might guide them in ethical dilemmas\n' +
                   '3. Gently mentions one value NOT in their top 5 that could complement their choices\n' +
                   '4. Affirms that their values are valid and will serve them well.\nBe warm, non-judgmental, and age-appropriate.';
-                _runSafetyAssess(d.valuesReflection || '', 'values'); // triage student free-text before AI
+                _runSafetyAssess(valRefl, 'values'); // triage student free-text before AI
                 callGemini(prompt).then(function(resp) {
                   updMulti({ valuesAIResp: resp, valuesComplete: true, aiLoading: false });
                   ctx.awardXP(10);

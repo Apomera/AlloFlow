@@ -331,7 +331,7 @@
   function llInterp(s, params) { if (s == null || !params) return s; Object.keys(params).forEach(function (k) { s = s.split('{' + k + '}').join(String(params[k])); }); return s; }
   function tr(en, params) { if (en && typeof en === 'string') STR_REG[en] = true; var p = LL_CUR.cache[LL_CUR.lang]; return llInterp((p && p[en] != null) ? p[en] : en, params); }
   function llCleanJson(raw) { var s = String(raw || '').trim().replace(/^```(?:json)?\s*/i, '').replace(/```\s*$/i, ''); var f = s.indexOf('{'), l = s.lastIndexOf('}'); return f >= 0 && l > f ? s.slice(f, l + 1) : s; }
-  function llSanitize(obj, wanted) { if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null; var out = {}, n = 0; wanted.forEach(function (k) { var v = obj[k]; if (typeof v === 'string') { v = v.trim().slice(0, 400); if (v) { out[k] = v; n++; } } }); return n ? out : null; }
+  function llSanitize(obj, wanted) { if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return null; var out = {}, n = 0; wanted.forEach(function (k) { var v = obj[k]; if (typeof v === 'string') { v = v.replace(/[<>]/g, '').trim().slice(0, 400); if (v) { out[k] = v; n++; } } }); return n ? out : null; }
   function llPrompt(langName, list) { return ['Translate these user-interface labels for a classroom poetry-writing app into natural, concise ' + langName + ' (buttons, tabs, headings — keep them short).', 'Keep any {tokens} and any emoji EXACTLY as written. No commentary.', 'Return ONLY a JSON object mapping each ENGLISH string (used verbatim as the key) to its ' + langName + ' translation.', JSON.stringify(list)].join(String.fromCharCode(10)); }
 
   // Poetic forms — middle-school friendly progression from no-rules to structured.
@@ -2732,11 +2732,13 @@
       setCmuLoading(true);
       setCmuResult(null);
       try {
-        if (typeof py.warmupPoetry === 'function') await py.warmupPoetry();
+        var useOfflineCheck = !!(typeof window !== 'undefined' && (window._isDesktopBundledApp === true || window.__alloStudentAiDisabled === true || window.__alloOfflineOnly === true)) || (typeof navigator !== 'undefined' && navigator.onLine === false);
+        if (!useOfflineCheck && typeof py.warmupPoetry === 'function') await py.warmupPoetry();
         var result = await py.runPoetryCheck({
           form: form,
           poemText: poemText,
           signal: aiRequestSignal(request),
+          offlineOnly: useOfflineCheck,
           targetWord: (form.id === 'acrostic' && acrosticTarget.trim()) ? acrosticTarget.trim() : null,
         });
         if (!aiRequestIsCurrent('cmu', request)) return;
@@ -2981,6 +2983,7 @@
       if (!poemText.trim()) return;
       var w = window.open('', '_blank', 'width=720,height=900');
       if (!w) { addToast && addToast(tr('Pop-up blocked. Allow pop-ups to print.'), 'error'); return; }
+      try { w.opener = null; } catch (_) {}
       // Escape user content for HTML.
       var escHtml = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
       var safeTitle = escHtml(poemTitle || 'Untitled');
@@ -2995,8 +2998,10 @@
           return '<div class="stanza-break" role="separator" aria-label="stanza break"></div>';
         }).join('\n');
       // Illustration: <figure> + <figcaption> for proper PDF tag-tree mapping; descriptive alt.
-      var illusHtml = illustration
-        ? '<figure class="art-fig"><img src="' + escHtml(illustration) + '" alt="' + escHtml('AI illustration inspired by the poem ' + (poemTitle || 'Untitled')) + '" /><figcaption>Illustration generated for this poem.</figcaption></figure>'
+      var safeIllus = (illustration && /^(?:data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=\s]+|https:\/\/[^\s"'<>]+|blob:[^\s"'<>]+)$/i.test(String(illustration).trim()))
+        ? String(illustration).trim() : '';
+      var illusHtml = safeIllus
+        ? '<figure class="art-fig"><img src="' + escHtml(safeIllus) + '" alt="' + escHtml('AI illustration inspired by the poem ' + (poemTitle || 'Untitled')) + '" /><figcaption>Illustration generated for this poem.</figcaption></figure>'
         : '';
       var html = '<!doctype html><html lang="en"><head><meta charset="utf-8">'
         + '<meta name="viewport" content="width=device-width,initial-scale=1">'
@@ -3067,11 +3072,12 @@
       if (!pool.length) { addToast && addToast(chapbookCurating ? 'Select at least one poem for this chapbook.' : tr('No poems to print yet.'), 'info'); return; }
       var w = window.open('', '_blank', 'width=720,height=900');
       if (!w) { addToast && addToast(tr('Pop-up blocked. Allow pop-ups to print.'), 'error'); return; }
+      try { w.opener = null; } catch (_) {}
       var esc = function (s) { return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
       var safeAuthor = esc(studentNickname || 'A poet');
       var dateStr = new Date().toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' });
       var filterLabel = filterFormId ? (FORMS.find(function (f) { return f.id === filterFormId; }) || { name: filterFormId }).name : '';
-      var coverTitle = chapbookCurating ? 'My Selected Poems' : (filterFormId ? esc(filterLabel + ' Collection') : tr('Selected Poems'));
+      var coverTitle = chapbookCurating ? 'My Selected Poems' : (filterFormId ? esc(filterLabel + ' Collection') : esc(tr('Selected Poems')));
 
       // Cover (header landmark) — large title, author, date, count.
       var coverHtml = '<header class="page cover" role="banner">'

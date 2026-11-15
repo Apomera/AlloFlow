@@ -105,7 +105,7 @@ function TimelineView(props) {
       setAltBusyIdx(idx);
       setAltStatus({
         idx,
-        message: 'Generating the picture description…'
+        message: _timelineReviewLabel(props.t, 'timeline.alt.generating', 'Generating the picture description…')
       });
       try {
         const [result] = await A.draftAlts([{
@@ -121,7 +121,7 @@ function TimelineView(props) {
         if (JSON.stringify(latest.generatedContent) !== request.snapshot || latest.leveledTextLanguage !== props.leveledTextLanguage) {
           setAltStatus({
             idx,
-            message: 'The sequence changed. Generate a description again for the updated picture.'
+            message: _timelineReviewLabel(props.t, 'timeline.alt.changed', 'The sequence changed. Generate a description again for the updated picture.')
           });
           return;
         }
@@ -134,12 +134,12 @@ function TimelineView(props) {
         });
         setAltStatus({
           idx,
-          message: 'Picture description updated.'
+          message: _timelineReviewLabel(props.t, 'timeline.alt.updated', 'Picture description updated.')
         });
       } catch (error) {
         if (altRequestRef.current === request) setAltStatus({
           idx,
-          message: 'Could not generate a picture description. Try again.'
+          message: _timelineReviewLabel(props.t, 'timeline.alt.failed', 'Could not generate a picture description. Try again.')
         });
       } finally {
         if (altRequestRef.current === request) {
@@ -267,6 +267,15 @@ function TimelineView(props) {
   var TimelineGame = props.TimelineGame;
   var playSound = props.playSound;
   var reducedMotion = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-reduced-motion: reduce)').matches : false;
+  var _timelineAiReady = function (kind) {
+    try {
+      if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind);
+    } catch (_) {}
+    return true;
+  };
+  var timelineTextAiUsable = _timelineAiReady('text');
+  var timelineImageAiUsable = _timelineAiReady('images');
   return /*#__PURE__*/React.createElement("div", {
     ref: timelineEditorRef,
     className: "space-y-6"
@@ -283,11 +292,13 @@ function TimelineView(props) {
   }, /*#__PURE__*/React.createElement("strong", null, t('simplified.udl_goal').split(':')[0], ":"), " ", t('timeline.udl_goal_desc')), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap gap-2 min-w-0"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleSetIsTimelineGameToTrue,
     className: "flex items-center gap-2 px-4 py-2 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm"
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 14
   }), " ", isTeacherMode ? t('timeline.preview_game') : t('timeline.launch_sequencer')), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleToggleIsEditingTimeline,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingTimeline ? 'bg-indigo-600 text-white hover:bg-indigo-700' : 'bg-white text-indigo-700 border border-indigo-200 hover:bg-indigo-50'}`
   }, isEditingTimeline ? /*#__PURE__*/React.createElement(CheckCircle2, {
@@ -323,8 +334,10 @@ function TimelineView(props) {
     placeholder: t('timeline.revise_placeholder'),
     className: "flex-grow min-w-[200px] text-sm border border-slate-400 rounded-lg px-3 py-1.5 outline-none focus:ring-2 focus:ring-indigo-300"
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleTimelineRevision(),
-    disabled: isRevisingTimeline || !timelineRevisionInput?.trim(),
+    disabled: isRevisingTimeline || !timelineRevisionInput?.trim() || !timelineTextAiUsable,
+    title: !timelineTextAiUsable ? _timelineReviewLabel(t, 'sidebar.needs_ai_setup', 'Needs AI setup') : undefined,
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
   }, isRevisingTimeline ? /*#__PURE__*/React.createElement(Loader2, {
     size: 14,
@@ -342,12 +355,14 @@ function TimelineView(props) {
   }), t('timeline.validation.issues_header', {
     count: generatedContent.data.validationIssues.length
   }) || `${generatedContent.data.validationIssues.length} structural issue(s) detected`, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: e => {
       e.preventDefault();
       e.stopPropagation();
       handleAutoFixTimeline();
     },
-    disabled: isAutoFixingTimeline,
+    disabled: isAutoFixingTimeline || !timelineTextAiUsable,
+    title: !timelineTextAiUsable ? _timelineReviewLabel(t, 'sidebar.needs_ai_setup', 'Needs AI setup') : undefined,
     className: "ml-auto flex items-center gap-1 px-2 py-1 rounded-full text-[11px] font-bold bg-amber-700 text-white hover:bg-amber-800 transition-colors disabled:opacity-50",
     "aria-busy": isAutoFixingTimeline
   }, isAutoFixingTimeline ? /*#__PURE__*/React.createElement(Loader2, {
@@ -388,11 +403,12 @@ function TimelineView(props) {
     const checked = items.filter(item => typeof item.verification?.factual === 'boolean' && typeof item.verification?.position === 'boolean').length;
     return _timelineReviewLabel(t, 'timeline.ai_review.coverage', 'AI review saved for {checked} of {total} items. No cited fact check.').replace('{checked}', String(checked)).replace('{total}', String(items.length));
   })()), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleVerifyTimelineAccuracy(),
-    disabled: isVerifyingTimeline,
+    disabled: isVerifyingTimeline || !timelineTextAiUsable,
     className: "flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed",
     "aria-busy": isVerifyingTimeline,
-    title: _timelineReviewLabel(t, 'timeline.ai_review.tooltip', 'Ask AI to review these items. No external sources are checked.')
+    title: !timelineTextAiUsable ? _timelineReviewLabel(t, 'sidebar.needs_ai_setup', 'Needs AI setup') : _timelineReviewLabel(t, 'timeline.ai_review.tooltip', 'Ask AI to review these items. No external sources are checked.')
   }, isVerifyingTimeline ? /*#__PURE__*/React.createElement(Loader2, {
     size: 14,
     className: reducedMotion ? '' : 'animate-spin',
@@ -411,6 +427,7 @@ function TimelineView(props) {
     "data-timeline-mode-chip": true,
     className: "bg-slate-100 text-slate-700 border border-slate-400 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm"
   }, TIMELINE_MODE_DEFINITIONS[generatedContent.data.mode].label) : generatedContent.data.autoDetected ? /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleLockTimelineMode,
     className: "bg-amber-50 text-amber-800 border border-amber-200 px-2 py-1 rounded-full text-[11px] font-bold shadow-sm hover:bg-amber-100 transition-colors",
     title: t('timeline.click_to_lock_tooltip') || 'Click to lock this mode for future generations',
@@ -543,12 +560,13 @@ function TimelineView(props) {
     alt: item.decorative ? '' : item.alt || `${item.date || ''}: ${item.event || ''}`,
     className: "w-12 h-12 object-contain rounded border border-slate-400 bg-white"
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleGenerateTimelineItemImage(idx, item.event, item.date),
-    disabled: isGeneratingTimelineImage[idx],
+    disabled: isGeneratingTimelineImage[idx] || !timelineImageAiUsable,
     "aria-busy": !!isGeneratingTimelineImage[idx],
     "aria-label": t('timeline.visuals.regen_button_aria') || 'Regenerate image for this item',
     className: "absolute inset-0 bg-black/60 rounded flex items-center justify-center opacity-0 group-hover/timgimg:opacity-100 focus:opacity-100 transition-opacity text-white disabled:opacity-80",
-    title: t('common.regenerate') || 'Regenerate'
+    title: !timelineImageAiUsable ? _timelineReviewLabel(t, 'sidebar.needs_ai_setup', 'Needs AI setup') : t('common.regenerate') || 'Regenerate'
   }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     className: reducedMotion ? '' : 'animate-spin',
@@ -556,12 +574,13 @@ function TimelineView(props) {
   }) : /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14
   }))) : /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleGenerateTimelineItemImage(idx, item.event, item.date),
-    disabled: isGeneratingTimelineImage[idx] || !item.event,
+    disabled: isGeneratingTimelineImage[idx] || !item.event || !timelineImageAiUsable,
     "aria-busy": !!isGeneratingTimelineImage[idx],
     "aria-label": t('timeline.visuals.regen_button_aria') || 'Generate image for this item',
     className: "w-12 h-12 rounded border-2 border-dashed border-indigo-200 text-indigo-500 hover:border-indigo-400 hover:bg-indigo-50 transition-colors flex items-center justify-center disabled:opacity-50 disabled:cursor-wait",
-    title: t('timeline.visuals.regen_button_aria') || 'Generate image'
+    title: !timelineImageAiUsable ? _timelineReviewLabel(t, 'sidebar.needs_ai_setup', 'Needs AI setup') : t('timeline.visuals.regen_button_aria') || 'Generate image'
   }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 14,
     className: reducedMotion ? '' : 'animate-spin',
@@ -569,6 +588,7 @@ function TimelineView(props) {
   }) : /*#__PURE__*/React.createElement(ImageIcon, {
     size: 14
   }))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.delete'),
     onClick: () => handleDeleteTimelineStep(idx),
     className: "p-1.5 text-slate-600 hover:text-red-500 hover:bg-red-50 rounded transition-colors mt-1",
@@ -581,11 +601,12 @@ function TimelineView(props) {
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex flex-wrap items-center gap-2"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('timeline.visuals.remove_text_btn') || 'Remove text from image',
     onClick: () => handleGenerateTimelineItemImage(idx, item.event, item.date, "Remove all text, labels, letters, and words from the image. Keep the illustration clean."),
-    disabled: isGeneratingTimelineImage[idx],
-    className: "min-h-8 text-[11px] bg-red-50 text-red-700 hover:bg-red-100 border border-red-100 px-2 py-1 rounded flex items-center justify-center gap-1 font-bold",
-    title: t('timeline.visuals.remove_text_tooltip') || 'Remove text/labels from this image'
+    disabled: isGeneratingTimelineImage[idx] || !timelineImageAiUsable,
+    className: "min-h-8 text-[11px] bg-red-50 text-red-700 hover:bg-red-100 border border-red-100 px-2 py-1 rounded flex items-center justify-center gap-1 font-bold disabled:opacity-50",
+    title: !timelineImageAiUsable ? _timelineReviewLabel(t, 'sidebar.needs_ai_setup', 'Needs AI setup') : t('timeline.visuals.remove_text_tooltip') || 'Remove text/labels from this image'
   }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 10,
     className: reducedMotion ? '' : 'animate-spin',
@@ -605,13 +626,14 @@ function TimelineView(props) {
     placeholder: t('timeline.visuals.refine_placeholder') || 'e.g., make it cuter',
     className: "text-xs border border-yellow-600 rounded px-2 py-1 flex-1 focus:outline-none focus:ring-1 focus:ring-yellow-400 min-w-0",
     onKeyDown: e => {
-      if (e.key === 'Enter' && timelineRefinementInputs[idx]) {
+      if (e.key === 'Enter' && timelineRefinementInputs[idx] && timelineImageAiUsable) {
         handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx]);
       }
     }
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleGenerateTimelineItemImage(idx, item.event, item.date, timelineRefinementInputs[idx]),
-    disabled: !timelineRefinementInputs[idx] || isGeneratingTimelineImage[idx],
+    disabled: !timelineRefinementInputs[idx] || isGeneratingTimelineImage[idx] || !timelineImageAiUsable,
     className: "bg-yellow-400 text-yellow-900 px-2 rounded hover:bg-yellow-500 disabled:opacity-50 shrink-0",
     "aria-label": t('common.apply_edit') || 'Apply edit'
   }, isGeneratingTimelineImage[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
@@ -621,6 +643,7 @@ function TimelineView(props) {
   }) : /*#__PURE__*/React.createElement(Send, {
     size: 10
   })))), renderTimelineAltField(item, idx)))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleAddTimelineStep,
     className: "w-full py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-600 font-bold text-xs hover:bg-indigo-50 hover:text-indigo-600 hover:border-indigo-600 transition-all flex items-center justify-center gap-2"
   }, /*#__PURE__*/React.createElement(Plus, {
@@ -667,7 +690,8 @@ function TimelineView(props) {
       className: "shrink-0 text-red-600"
     }), /*#__PURE__*/React.createElement("strong", null, t('timeline.validation.flagged') || 'Flagged'), /*#__PURE__*/React.createElement("span", {
       className: "text-red-700/70"
-    }, item.verification.factual === false ? '• factual' : '', item.verification.position === false ? ' • position' : ''), /*#__PURE__*/React.createElement("button", {
+    }, item.verification.factual === false ? `• ${_timelineReviewLabel(t, 'timeline.validation.factual_tag', 'factual')}` : '', item.verification.position === false ? ` • ${_timelineReviewLabel(t, 'timeline.validation.position_tag', 'position')}` : ''), /*#__PURE__*/React.createElement("button", {
+      type: "button",
       onClick: () => setDismissedVerifications(prev => {
         const next = new Set(prev);
         next.add(_vKey);
@@ -711,13 +735,14 @@ function TimelineView(props) {
   }, t('timeline.ready_title')), /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 mb-8 max-w-md"
   }, t('timeline.ready_desc')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleSetIsTimelineGameToTrue,
-    className: "px-8 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all flex items-center gap-3"
+    className: "px-8 py-4 bg-indigo-600 text-white font-bold text-lg rounded-xl shadow-lg hover:bg-indigo-700 hover:scale-105 motion-reduce:hover:scale-100 transition-all flex items-center gap-3"
   }, /*#__PURE__*/React.createElement(Gamepad2, {
     size: 24,
     className: "fill-current text-yellow-700"
   }), " ", t('timeline.start_activity'))))), isTimelineGame && /*#__PURE__*/React.createElement(ErrorBoundary, {
-    fallbackMessage: "Sequence Game encountered an error."
+    fallbackMessage: _timelineReviewLabel(t, 'timeline.game_error', 'Sequence Game encountered an error.')
   }, /*#__PURE__*/React.createElement(TimelineGame, {
     data: generatedContent?.data,
     onClose: closeTimeline,

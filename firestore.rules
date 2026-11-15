@@ -29,9 +29,13 @@ service cloud.firestore {
 
       // Assignment expiry ends participant access even while TTL/cleanup is
       // pending. Legacy live sessions have no assignment-expiry requirement.
+      function validAppId(id) {
+        return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[A-Za-z0-9_.:-]+$');
+      }
       function participantSessionOpen(data) {
-        return data.get('kind', '') != 'assignment'
-          || (data.get('expiresAt', null) is timestamp && data.expiresAt > request.time);
+        return data.get('kind', '') == 'assignment'
+          ? (data.get('expiresAt', null) is timestamp && data.expiresAt > request.time)
+          : (!('expiresAt' in data) || data.expiresAt == null || (data.expiresAt is timestamp && data.expiresAt > request.time));
       }
       function sessionParent(code) {
         return /databases/$(database)/documents/artifacts/$(appId)/public/data/sessions/$(code);
@@ -368,6 +372,42 @@ service cloud.firestore {
             ))
           );
         }
+        function classicEscapeTeamPlay() {
+          let oldEscape = resource.data.get('escapeRoomState', {});
+          let nextEscape = request.resource.data.get('escapeRoomState', {});
+          let changedEscape = oldEscape.diff(nextEscape).affectedKeys();
+          let mode = oldEscape.get('mode', '');
+          let oldTeams = oldEscape.get('teams', {});
+          let nextTeams = nextEscape.get('teams', {});
+          let myTeam = nextTeams.get(request.auth.uid, '');
+          let oldTeam = oldEscape.get('teamProgress', {}).get(myTeam, {});
+          let nextTeam = nextEscape.get('teamProgress', {}).get(myTeam, {});
+          return !(mode in ['', 'team-race', 'escape-room']) || (
+            oldEscape.get('isActive', false) == true
+            && resource.data.get('roster', {}).keys().hasAny([request.auth.uid])
+            && (!('teams' in changedEscape) || (
+              oldTeams.diff(nextTeams).affectedKeys().hasOnly([request.auth.uid])
+              && !(request.auth.uid in oldTeams)
+              && myTeam in ['Red', 'Blue', 'Green', 'Yellow', 'All']
+            ))
+            && (!('teamProgress' in changedEscape) || (
+              oldEscape.get('isPaused', false) == false
+              && myTeam in ['Red', 'Blue', 'Green', 'Yellow', 'All']
+              && oldEscape.get('teamProgress', {}).diff(nextEscape.get('teamProgress', {})).affectedKeys().hasOnly([myTeam])
+              && nextTeam is map
+              && oldTeam.diff(nextTeam).affectedKeys().hasOnly([
+                'progressVersion', 'solved', 'solvedAt', 'solvedPuzzles', 'misses', 'hintedAt',
+                'revealedHints', 'supportSteps', 'lives', 'maxLives', 'streak', 'wrongAttempts',
+                'isGameOver', 'isEscaped', 'hintsRemaining', 'currentRoom'
+              ])
+              && (!('solvedPuzzles' in nextTeam) || (nextTeam.solvedPuzzles is list && nextTeam.solvedPuzzles.size() <= 100))
+              && (!('solved' in nextTeam) || (nextTeam.solved is map && nextTeam.solved.keys().size() <= 100))
+              && (!('misses' in nextTeam) || (nextTeam.misses is map && nextTeam.misses.keys().size() <= 100))
+              && (!('revealedHints' in nextTeam) || (nextTeam.revealedHints is map && nextTeam.revealedHints.keys().size() <= 100))
+              && (!('supportSteps' in nextTeam) || (nextTeam.supportSteps is map && nextTeam.supportSteps.keys().size() <= 100))
+            ))
+          );
+        }
         function escapeRoomTeamPlay() {
           // Collaborative escape room: team progress is SHARED game state by
           // design (non-PII enums/ids, session-scoped) — any roster member
@@ -381,9 +421,11 @@ service cloud.firestore {
           let nextAction = nextAll.get('questActions', {}).get(request.auth.uid, {});
           let oldQuest = oldEscape.get('conceptQuest', {});
           let turnScoped = oldQuest.get('actionSchema', 0) == 1;
-          return oldEscape
+          return oldEscape.get('mode', '') in ['', 'team-race', 'escape-room', 'connected-room', 'concept-quest']
+            && oldEscape
               .diff(request.resource.data.get('escapeRoomState', {}))
               .affectedKeys().hasOnly(['teamProgress', 'teams'])
+            && classicEscapeTeamPlay()
             && connectedEscapePlay()
             && (
               oldEscape.get('mode', '') != 'concept-quest'
@@ -444,7 +486,7 @@ service cloud.firestore {
         // Students need GET by code; LIST would allow code enumeration.
         allow get: if authed() && participantSessionOpen(resource.data);
         allow list: if false;
-        allow create: if authed() && request.resource.data.hostId == request.auth.uid
+        allow create: if authed() && validAppId(appId) && request.resource.data.hostId == request.auth.uid
           && (request.resource.data.get('kind', '') != 'assignment'
             || (request.resource.data.expiresAt is timestamp
               && request.resource.data.expiresAt > request.time
@@ -525,7 +567,7 @@ service cloud.firestore {
               && (!('selfCheck' in d) || (d.selfCheck is list && d.selfCheck.size() <= 12));
           }
           allow get, list: if authed() && (arcadeHost() || resource.data.uid == request.auth.uid);
-          allow create: if authed() && arcadeSession().get('roster', {}).keys().hasAny([request.auth.uid])
+          allow create: if authed() && validAppId(appId) && arcadeSession().get('roster', {}).keys().hasAny([request.auth.uid])
             && participantSessionOpen(arcadeSession()) && arcadeSend(request.resource.data);
           allow update, delete: if arcadeHost();
         }
@@ -553,17 +595,30 @@ service cloud.firestore {
           && (isSessionHost() || participantParentOpen(code))
           && request.resource.data.expiresAt is timestamp
           && request.resource.data.expiresAt > request.time
-          && request.resource.data.expiresAt <= request.time + duration.value(1, 'd');
+          && request.resource.data.expiresAt <= request.time + duration.value(1, 'd')
+          && (!('iceFromGuest' in request.resource.data)
+            || (request.resource.data.iceFromGuest is list && request.resource.data.iceFromGuest.size() <= 64))
+          && (!('codename' in request.resource.data)
+            || (request.resource.data.codename is string && request.resource.data.codename.size() <= 80));
         allow delete: if isSignaling() && authed()
           && (request.auth.uid == peerUid || isSessionHost());
         allow update: if isSignaling() && authed() && (
           (request.auth.uid == peerUid
             && (isSessionHost() || participantParentOpen(code))
             && request.resource.data.diff(resource.data).affectedKeys()
-                .hasOnly(['offer', 'codename', 'createdAt', 'expiresAt', 'iceFromGuest']))
+                .hasOnly(['offer', 'codename', 'createdAt', 'expiresAt', 'iceFromGuest'])
+            && request.resource.data.expiresAt is timestamp
+            && request.resource.data.expiresAt > request.time
+            && request.resource.data.expiresAt <= request.time + duration.value(1, 'd')
+            && (!('iceFromGuest' in request.resource.data)
+              || (request.resource.data.iceFromGuest is list && request.resource.data.iceFromGuest.size() <= 64))
+            && (!('codename' in request.resource.data)
+              || (request.resource.data.codename is string && request.resource.data.codename.size() <= 80)))
           || (isSessionHost()
             && request.resource.data.diff(resource.data).affectedKeys()
-                .hasOnly(['answer', 'iceFromHost']))
+                .hasOnly(['answer', 'iceFromHost'])
+            && (!('iceFromHost' in request.resource.data)
+              || (request.resource.data.iceFromHost is list && request.resource.data.iceFromHost.size() <= 64)))
         );
       }
 
@@ -668,6 +723,7 @@ service cloud.firestore {
           // exact normalization stays in the contract.
           allow create: if authed()
             && boardOpen()
+            && request.resource.data.keys().size() <= 16
             && request.resource.data.uid == request.auth.uid
             && request.resource.data.text is string
             && request.resource.data.text.size() > 0
@@ -694,7 +750,11 @@ service cloud.firestore {
 
       // ── Per-user private data (teacher history, adventure images) ──────
       match /users/{uid}/{document=**} {
-        allow read, write: if authed() && request.auth.uid == uid;
+        allow read: if authed() && request.auth.uid == uid && validAppId(appId);
+        allow create, update: if authed() && request.auth.uid == uid
+          && validAppId(appId)
+          && request.resource.data.keys().size() <= 200;
+        allow delete: if authed() && request.auth.uid == uid && validAppId(appId);
       }
     }
 

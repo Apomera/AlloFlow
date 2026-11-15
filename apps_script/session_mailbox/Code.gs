@@ -157,6 +157,27 @@ function isToken(v, min, max) {
   return s.length >= (min || 10) && s.length <= (max || 96) && /^[A-Za-z0-9_-]+$/.test(s);
 }
 
+function mbTimingSafeEq_(suppliedRaw, expectedRaw) {
+  var supplied = String(suppliedRaw || '');
+  var expected = String(expectedRaw || '');
+  if (!supplied || !expected) return false;
+  if (typeof Utilities !== 'undefined' && Utilities && typeof Utilities.computeDigest === 'function'
+      && Utilities.DigestAlgorithm && Utilities.Charset) {
+    var d1 = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, supplied, Utilities.Charset.UTF_8);
+    var d2 = Utilities.computeDigest(Utilities.DigestAlgorithm.SHA_256, expected, Utilities.Charset.UTF_8);
+    if (d1.length !== d2.length) return false;
+    var digestDiff = 0;
+    for (var i = 0; i < d1.length; i++) digestDiff |= (d1[i] & 0xff) ^ (d2[i] & 0xff);
+    return digestDiff === 0;
+  }
+  var maxLen = Math.max(supplied.length, expected.length);
+  var diff = supplied.length ^ expected.length;
+  for (var j = 0; j < maxLen; j++) {
+    diff |= (supplied.charCodeAt(j % supplied.length) || 0) ^ (expected.charCodeAt(j % expected.length) || 0);
+  }
+  return diff === 0;
+}
+
 function newToken() {
   return Utilities.getUuid().replace(/-/g, '') + Utilities.getUuid().replace(/-/g, '').slice(0, 8);
 }
@@ -210,12 +231,12 @@ function participantToken(admin, code, uid, secret) {
 }
 
 function requestActor(p, code, secret, admin) {
-  if (admin && String(p.admin || '') === admin) return { role: 'teacher', uid: 'teacher' };
+  if (admin && mbTimingSafeEq_(p.admin, admin)) return { role: 'teacher', uid: 'teacher' };
   var uid = String(p.uid || '');
   var pt = String(p.pt || '');
   if (!/^mb-[A-Za-z0-9_-]{8,48}$/.test(uid) || !isToken(pt, 20, 96)) return null;
   var expected = participantToken(admin, code, uid, secret);
-  return pt === expected ? { role: 'participant', uid: uid } : null;
+  return mbTimingSafeEq_(pt, expected) ? { role: 'participant', uid: uid } : null;
 }
 
 function rateCheck(cache, key, limit) {
@@ -241,12 +262,13 @@ function handle(p) {
 
   var cache = CacheService.getScriptCache();
   var admin = props.getProperty('admin') || '';
-  var isAdmin = admin && String(p.admin || '') === admin;
+  var isAdmin = !!(admin && mbTimingSafeEq_(p.admin, admin));
 
   // Cheap ownership check so a reconnecting teacher can validate a pasted
   // admin token. On success it also (re)writes the Drive token note, so
   // deployments claimed before v3 gain the backup file.
   if (a === 'auth') {
+    if (!isAdmin && !rateCheck(cache, 'r:auth:fail', 30)) return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
     if (isAdmin) saveTokenNote(admin);
     return out({ ok: true, admin: !!isAdmin, claimed: !!admin, t: Date.now() });
   }
@@ -1647,7 +1669,7 @@ function assignmentActivityActor(p, context, admin) {
     uid,
     String(context.manifest.k || '')
   );
-  return pt === expected ? { uid: uid } : null;
+  return mbTimingSafeEq_(pt, expected) ? { uid: uid } : null;
 }
 
 function newAssignmentActivityState(context) {
@@ -3127,6 +3149,9 @@ function clonePack(cache, p) {
 function getPack(cache, p) {
   var id = String(p.id || '');
   if (!/^PK-[0-9a-f-]{36}$/i.test(id)) return out({ ok: false, e: 'bad-request' });
+  if (!rateCheck(cache, 'r:packid:' + id.slice(-12), PARTICIPANT_READS_PER_MIN * 4)) {
+    return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
+  }
   if (!rateCheck(cache, 'r:pack:' + id.slice(-12) + ':' + String(p.k || '').slice(0, 12), PARTICIPANT_READS_PER_MIN)) {
     return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
   }
@@ -3349,11 +3374,122 @@ function deliverForm(p) {
   return out({ ok: true, id: form.getId(), editUrl: form.getEditUrl(), url: form.getPublishedUrl(), items: built, quiz: isQuiz, t: Date.now() });
 }
 
+function fetchPageBlockedIpv4Parts_(parts) {
+  if (!parts || parts.length !== 4) return true;
+  var b0 = parts[0], b1 = parts[1], b2 = parts[2];
+  if (b0 === 0 || b0 === 10 || b0 === 127) return true;
+  if (b0 === 100 && b1 >= 64 && b1 <= 127) return true;
+  if (b0 === 169 && b1 === 254) return true;
+  if (b0 === 172 && b1 >= 16 && b1 <= 31) return true;
+  if (b0 === 192 && b1 === 0 && (b2 === 0 || b2 === 2)) return true;
+  if (b0 === 192 && b1 === 168) return true;
+  if (b0 === 198 && (b1 === 18 || b1 === 19)) return true;
+  if (b0 >= 224) return true;
+  return false;
+}
+
+function fetchPageParseIpv4Host_(h) {
+  var segs = String(h || '').split('.');
+  if (segs.length < 1 || segs.length > 4) return null;
+  var nums = [];
+  for (var i = 0; i < segs.length; i++) {
+    var seg = segs[i];
+    if (!/^(?:0x[0-9a-f]+|0[0-7]*|[1-9]\d*)$/i.test(seg)) return null;
+    var val = /^0x/i.test(seg) ? parseInt(seg.slice(2), 16) : (seg.length > 1 && seg.charAt(0) === '0' ? parseInt(seg, 8) : parseInt(seg, 10));
+    if (!isFinite(val) || val < 0 || val > 0xffffffff) return null;
+    nums.push(val);
+  }
+  var n = nums.length;
+  for (var j = 0; j < n - 1; j++) {
+    if (nums[j] > 255) return null;
+  }
+  var last = nums[n - 1];
+  if (n === 1) {
+    return [(last >>> 24) & 255, (last >>> 16) & 255, (last >>> 8) & 255, last & 255];
+  }
+  if (n === 2) {
+    if (last > 0xffffff) return null;
+    return [nums[0], (last >>> 16) & 255, (last >>> 8) & 255, last & 255];
+  }
+  if (n === 3) {
+    if (last > 0xffff) return null;
+    return [nums[0], nums[1], (last >>> 8) & 255, last & 255];
+  }
+  if (last > 255) return null;
+  return [nums[0], nums[1], nums[2], last];
+}
+
+function fetchPageBlockedIpv6_(h) {
+  var cleaned = String(h || '').split('%')[0];
+  var sides = cleaned.split('::');
+  if (sides.length > 2) return true;
+  function parseSide(str, allowV4Tail) {
+    if (!str) return [];
+    var parts = str.split(':');
+    var outGroups = [];
+    for (var i = 0; i < parts.length; i++) {
+      var part = parts[i];
+      if (!part) return null;
+      if (allowV4Tail && i === parts.length - 1 && part.indexOf('.') >= 0) {
+        var v4 = fetchPageParseIpv4Host_(part);
+        if (!v4) return null;
+        outGroups.push(((v4[0] & 255) << 8) | (v4[1] & 255));
+        outGroups.push(((v4[2] & 255) << 8) | (v4[3] & 255));
+      } else {
+        if (!/^[0-9a-f]{1,4}$/i.test(part)) return null;
+        outGroups.push(parseInt(part, 16));
+      }
+    }
+    return outGroups;
+  }
+  var left = parseSide(sides[0], sides.length === 1);
+  var right = sides.length === 2 ? parseSide(sides[1], true) : [];
+  if (left === null || right === null) return true;
+  var groups;
+  if (sides.length === 1) {
+    if (left.length !== 8) return true;
+    groups = left;
+  } else {
+    var missing = 8 - (left.length + right.length);
+    if (missing < 1) return true;
+    groups = left.slice();
+    for (var z = 0; z < missing; z++) groups.push(0);
+    for (var r = 0; r < right.length; r++) groups.push(right[r]);
+  }
+  if ((groups[0] & 0xfe00) === 0xfc00) return true; // fc00::/7 ULA
+  if ((groups[0] & 0xffc0) === 0xfe80) return true; // fe80::/10 link-local
+  if ((groups[0] & 0xff00) === 0xff00) return true; // ff00::/8 multicast
+  if (groups[0] === 0x0064 && groups[1] === 0xff9b && groups[2] === 0 && groups[3] === 0 && groups[4] === 0 && groups[5] === 0) return true; // 64:ff9b::/96
+  var firstFiveZero = groups[0] === 0 && groups[1] === 0 && groups[2] === 0 && groups[3] === 0 && groups[4] === 0;
+  if (firstFiveZero) {
+    if (groups[5] === 0xffff) {
+      return fetchPageBlockedIpv4Parts_([groups[6] >>> 8, groups[6] & 255, groups[7] >>> 8, groups[7] & 255]);
+    }
+    if (groups[5] === 0 && groups[6] === 0 && (groups[7] === 0 || groups[7] === 1)) return true;
+    if (groups[5] === 0) return fetchPageBlockedIpv4Parts_([groups[6] >>> 8, groups[6] & 255, groups[7] >>> 8, groups[7] & 255]);
+  }
+  return false;
+}
+
+function fetchPageExtractHost_(url) {
+  var authority = (String(url || '').match(/^https?:\/\/([^\/?#]+)/i) || [])[1] || '';
+  if (!authority || /[\\@\s]/.test(authority)) return '';
+  if (authority.charAt(0) === '[') {
+    var bracketMatch = authority.match(/^\[([^\]]+)\](?::\d+)?$/);
+    return bracketMatch ? bracketMatch[1] : '';
+  }
+  var stripped = authority.replace(/:\d+$/, '');
+  if (/[:\[\]]/.test(stripped)) return '';
+  return stripped;
+}
+
 function fetchPageBlockedHost(host) {
   var h = String(host || '').toLowerCase().replace(/^\[|\]$/g, '').replace(/\.$/, '');
   if (!h || h === 'localhost' || h === 'metadata.google' || /\.(local|internal|localhost|metadata\.google)$/.test(h)) return true;
+  if (h.indexOf(':') >= 0) return fetchPageBlockedIpv6_(h);
+  var ipv4 = fetchPageParseIpv4Host_(h);
+  if (ipv4) return fetchPageBlockedIpv4Parts_(ipv4);
   if (/^(127\.|10\.|0\.|169\.254\.|192\.168\.|172\.(1[6-9]|2\d|3[01])\.|100\.(6[4-9]|[7-9]\d|1[01]\d|12[0-7])\.|198\.1[89]\.)/.test(h)) return true;
-  if (h === '::1' || h === '::' || /^f[cd][0-9a-f]{0,2}:/.test(h) || /^fe[89ab][0-9a-f]?:/.test(h) || /^::ffff:/.test(h) || /^64:ff9b:/.test(h)) return true;
   if (/^(?:0x[0-9a-f]+|\d+)$/i.test(h)) return true;
   return false;
 }
@@ -3399,27 +3535,52 @@ function htmlToPlainText(html) {
 function fetchPage(cache, p) {
   var url = String(p.url || '').trim();
   if (url.length > 2048 || !/^https?:\/\/[^\s]+$/i.test(url)) return out({ ok: false, e: 'bad-url' });
-  var host = (url.match(/^https?:\/\/([^\/?#]+)/i) || [])[1] || '';
-  host = host.replace(/^[^@]*@/, '').replace(/:\d+$/, '');
+  var host = fetchPageExtractHost_(url);
   if (fetchPageBlockedHost(host)) return out({ ok: false, e: 'blocked-url' });
   if (!rateCheck(cache, 'r:fetchpage:t', FETCHPAGE_PER_MIN)) return out({ ok: false, e: 'rate-limited', retryAfterMs: 60000 });
   var res;
-  try {
-    res = UrlFetchApp.fetch(url, {
-      method: 'get',
-      muteHttpExceptions: true,
-      followRedirects: true,
-      validateHttpsCertificates: true,
-      headers: {
-        'User-Agent': 'Mozilla/5.0 (compatible; AlloFlowClassMailbox/' + VERSION + '; +https://alloflow-cdn.pages.dev)',
-        'Accept': 'text/html,application/xhtml+xml;q=0.9,text/plain;q=0.8,*/*;q=0.5',
-        'Accept-Language': 'en-US,en;q=0.8'
+  var currentUrl = url;
+  var status = 0;
+  for (var hop = 0; hop <= 5; hop++) {
+    try {
+      res = UrlFetchApp.fetch(currentUrl, {
+        method: 'get',
+        muteHttpExceptions: true,
+        followRedirects: false,
+        validateHttpsCertificates: true,
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (compatible; AlloFlowClassMailbox/' + VERSION + '; +https://alloflow-cdn.pages.dev)',
+          'Accept': 'text/html,application/xhtml+xml;q=0.9,text/plain;q=0.8,*/*;q=0.5',
+          'Accept-Language': 'en-US,en;q=0.8'
+        }
+      });
+    } catch (err) {
+      return out({ ok: false, e: 'fetch-error', d: String((err && err.message) || err).slice(0, 200) });
+    }
+    status = res.getResponseCode();
+    if (status >= 300 && status < 400) {
+      if (hop === 5) return out({ ok: false, e: 'too-many-redirects' });
+      var redirHeaders = res.getHeaders() || {};
+      var loc = String(redirHeaders.Location || redirHeaders.location || '').trim();
+      if (!loc) return out({ ok: false, e: 'bad-redirect' });
+      var nextUrl = '';
+      if (/^https?:\/\/[^\s]+$/i.test(loc)) {
+        nextUrl = loc;
+      } else {
+        var baseOrigin = (currentUrl.match(/^(https?:\/\/[^\/?#]+)/i) || [])[1] || '';
+        if (!baseOrigin) return out({ ok: false, e: 'bad-redirect' });
+        if (loc.indexOf('//') === 0) nextUrl = ((currentUrl.match(/^(https?:)/i) || [])[1] || 'https:') + loc;
+        else if (loc.charAt(0) === '/') nextUrl = baseOrigin + loc;
+        else nextUrl = currentUrl.replace(/[?#].*$/, '').replace(/[^\/]*$/, '') + loc;
       }
-    });
-  } catch (err) {
-    return out({ ok: false, e: 'fetch-error', d: String((err && err.message) || err).slice(0, 200) });
+      if (nextUrl.length > 2048 || !/^https?:\/\/[^\s]+$/i.test(nextUrl)) return out({ ok: false, e: 'bad-url' });
+      var nextHost = fetchPageExtractHost_(nextUrl);
+      if (fetchPageBlockedHost(nextHost)) return out({ ok: false, e: 'blocked-url' });
+      currentUrl = nextUrl;
+      continue;
+    }
+    break;
   }
-  var status = res.getResponseCode();
   if (status < 200 || status >= 300) return out({ ok: false, e: 'fetch-error', status: status });
   var headers = res.getHeaders() || {};
   var contentType = String(headers['Content-Type'] || headers['content-type'] || '').toLowerCase();

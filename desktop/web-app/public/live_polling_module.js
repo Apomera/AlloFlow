@@ -2274,7 +2274,22 @@
       if (!payload || typeof payload !== 'object' || Array.isArray(payload) || !this._isUidInActiveAudience(uid)) {
         return false;
       }
-      if (this.activePoll && payload.pollId === this.activePoll.id) return this.activePoll.submissionsLocked !== true;
+      if (this.activePoll && payload.pollId === this.activePoll.id) {
+        if (this.activePollResults && this.activePollResults.pollId === this.activePoll.id) return false;
+        if (this.activePoll.submissionsLocked === true) return false;
+        const poll = this.activePoll;
+        const response = payload.response;
+        if (payload.withdrawn === true) return poll.type === 'wordcloud';
+        if (poll.type === 'rating') return typeof response === 'number' && getRatingValues(normalizeRatingScale(poll)).includes(response);
+        if (poll.type === 'mcq') return typeof response === 'string' && (poll.options || []).includes(response);
+        if (poll.type === 'wordcloud' || poll.type === 'open' || poll.type === 'feedback' || isFeedbackPoll(poll)) {
+          return typeof response === 'string'
+            && response.length <= (isFeedbackPoll(poll) ? FEEDBACK_RESPONSE_MAX_LENGTH : LIVE_POLL_DRAFT_MAX_CHARS)
+            && !!response.trim()
+            && (poll.type !== 'wordcloud' || !!normalizeWordCloudTerm(response));
+        }
+        try { return JSON.stringify(payload).length <= CUSTOM_RESPONSE_PAYLOAD_MAX_CHARS; } catch (_) { return false; }
+      }
       if (!this.acceptResponse) return false;
       const pollId = payload.pollId;
       const validPollId = (typeof pollId === 'string'
@@ -2392,13 +2407,15 @@
       if (!fb || !this._isUidAllowed(uid)) return;
       const pc = new RTCPeerConnection(getRtcConfig());
       const codename = (typeof offerData.codename === 'string' && offerData.codename.slice(0, 64)) || 'Guest';
-      const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [], offerSdp: (offerData.offer && offerData.offer.sdp) || null };
+      const initialIce = Array.isArray(offerData.iceFromGuest) ? offerData.iceFromGuest.slice(0, 64) : [];
+      const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [], offerSdp: (offerData.offer && offerData.offer.sdp) || null, remoteDescSet: false, pendingIce: initialIce };
       this.peers.set(uid, peerRecord);
 
       pc.onicecandidate = (e) => {
         if (
           !e.candidate || this._stopped || !this._isUidAllowed(uid)
           || this.peers.get(uid) !== peerRecord
+          || peerRecord.sentIce.length >= 64
         ) return;
         peerRecord.sentIce.push(e.candidate.toJSON());
         fb.setDoc(signalingRef, { iceFromHost: peerRecord.sentIce }, { merge: true }).catch(() => {});
@@ -2453,6 +2470,7 @@
         dc.onmessage = (msg) => {
           try {
             if (this._stopped || !this._isUidAllowed(uid) || this.peers.get(uid) !== peerRecord) return;
+            if (typeof msg.data !== 'string' || msg.data.length > 65536) return;
             const parsed = JSON.parse(msg.data);
             if (parsed && parsed.type === 'confirmedResponse' && parsed.payload) {
               this._receiveConfirmedResponse(uid, codename, parsed.payload);
@@ -2507,6 +2525,14 @@
       try {
         await pc.setRemoteDescription(new RTCSessionDescription(offerData.offer));
         if (!this._isUidAllowed(uid) || this.peers.get(uid) !== peerRecord) { try { pc.close(); } catch (err) {} return; }
+        peerRecord.remoteDescSet = true;
+        if (Array.isArray(peerRecord.pendingIce) && peerRecord.pendingIce.length) {
+          const queued = peerRecord.pendingIce.slice(0, 64);
+          peerRecord.pendingIce = [];
+          queued.forEach((c) => {
+            try { pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {}); } catch (_) {}
+          });
+        }
         const answer = await pc.createAnswer();
         await pc.setLocalDescription(answer);
         if (!this._isUidAllowed(uid) || this.peers.get(uid) !== peerRecord) { try { pc.close(); } catch (err) {} return; }
@@ -2519,9 +2545,14 @@
 
     _addIceFromGuest(uid, candidates) {
       const peer = this.peers.get(uid);
-      if (!peer || !peer.pc) return;
-      candidates.forEach((c) => {
-        peer.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {});
+      if (!peer || !peer.pc || !Array.isArray(candidates)) return;
+      const bounded = candidates.slice(0, 64);
+      if (!peer.remoteDescSet) {
+        peer.pendingIce = bounded;
+        return;
+      }
+      bounded.forEach((c) => {
+        try { peer.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {}); } catch (_) {}
       });
     }
 
@@ -2909,7 +2940,7 @@
       this.dc = dc;
 
       pc.onicecandidate = (e) => {
-        if (this.pc !== pc || !e.candidate) return;
+        if (this.pc !== pc || !e.candidate || this.sentIce.length >= 64) return;
         this.sentIce.push(e.candidate.toJSON());
         fb.setDoc(signalingRef, { iceFromGuest: this.sentIce }, { merge: true }).catch(() => {});
       };
@@ -2929,6 +2960,7 @@
       dc.onmessage = (msg) => {
         try {
           if (this.pc !== pc || this.dc !== dc) return;
+          if (typeof msg.data !== 'string' || msg.data.length > 262144) return;
           const parsed = JSON.parse(msg.data);
           if (parsed && parsed.type === 'poll') this.onPoll(parsed.payload);
           else if (parsed && parsed.type === 'closePoll') this.onPollClose(parsed.payload);
@@ -2991,9 +3023,9 @@
         if (this.pc !== pc) return;
         await fb.setDoc(signalingRef, {
           offer: { type: offer.type, sdp: offer.sdp },
-          codename: this.codename,
+          codename: String(this.codename || 'Guest').slice(0, 64),
           createdAt: Date.now(),
-          expiresAt: Date.now() + SIGNALING_TTL_MS,
+          expiresAt: new Date(Date.now() + SIGNALING_TTL_MS),
         });
       } catch (err) {
         if (this.pc !== pc) return;
@@ -3011,8 +3043,8 @@
           pc.setRemoteDescription(new RTCSessionDescription(data.answer)).catch(() => {});
         }
         if (Array.isArray(data.iceFromHost)) {
-          data.iceFromHost.forEach((c) => {
-            pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {});
+          data.iceFromHost.slice(0, 64).forEach((c) => {
+            try { pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {}); } catch (_) {}
           });
         }
       }, (err) => {

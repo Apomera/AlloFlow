@@ -201,11 +201,12 @@
   // Search Mulberry by keyword → [{id, label, svgUrl}]. Fallback-safe: [] on any
   // failure (offline, API change) so the caller degrades to AI generation.
   function searchMulberrySymbols(query, lang) {
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) return Promise.resolve([]);
     var q = String(query == null ? '' : query).trim();
     if (!q) return Promise.resolve([]);
     var url = 'https://globalsymbols.com/api/v1/labels/search?query=' + encodeURIComponent(q)
       + '&symbolset=mulberry&language=' + mulberryLangCode(lang) + '&language_iso_format=639-3&limit=30';
-    return promiseWithTimeout(fetch(url).then(function (r) { return r.ok ? r.json() : []; }), 15000, 'Symbol search timed out').then(function (rows) {
+    return promiseWithTimeout(fetch(url, { credentials: 'omit' }).then(function (r) { return r.ok ? r.json() : []; }), 15000, 'Symbol search timed out').then(function (rows) {
       if (!Array.isArray(rows)) return [];
       var seen = {};
       return rows.map(function (row) {
@@ -220,21 +221,25 @@
   // Fetch an SVG (CORS `*`) → data: URI so the board stays portable + offline-
   // safe and embeds in .obf/.obz exports. Falls back to the URL if fetch fails.
   function fetchSymbolAsDataUri(url) {
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) return Promise.resolve('');
     if (!/^https:\/\//i.test(String(url || ''))) return Promise.resolve(url);
-    return promiseWithTimeout(fetch(url).then(function (r) { return r.ok ? r.blob() : null; }), 15000, 'Symbol download timed out').then(function (blob) {
+    return promiseWithTimeout(fetch(url, { credentials: 'omit' }).then(function (r) { return r.ok ? r.blob() : null; }), 15000, 'Symbol download timed out').then(function (blob) {
       if (!blob || blob.size > 512000) return url; // guard against anything unexpectedly large
       return new Promise(function (resolve) {
         var fr = new FileReader();
-        fr.onload = function () { resolve(fr.result || url); };
+        fr.onload = function () {
+          var safe = typeof portablePackImage === 'function' ? portablePackImage(fr.result) : fr.result;
+          resolve(safe || null);
+        };
         fr.onerror = function () { resolve(url); };
         fr.readAsDataURL(blob);
       });
     }).catch(function () { return url; });
   }
   // CSV cell: escape quotes AND neutralize spreadsheet formula injection. A field
-  // beginning with = + - @ (or tab/CR) becomes a live formula in Excel/Sheets — IEP
+  // beginning with = + - @ (or tab/CR, with optional leading spaces) becomes a live formula in Excel/Sheets — IEP
   // goal text, notes, and labels are user/AI-authored, so prefix a single quote.
-  var csvCell = function (s) { s = String(s == null ? '' : s); if (/^[=+\-@\t\r]/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
+  var csvCell = function (s) { s = String(s == null ? '' : s); if (/^(?:[\t\r\n ]*[=+\-@]|[\t\r])/.test(s)) s = "'" + s; return '"' + s.replace(/"/g, '""') + '"'; };
 
   // ── Print CSS injection ───────────────────────────────────────────────────
   (function injectPrintStyles() {
@@ -2989,6 +2994,12 @@
       setMulberryAdding(result.id);
       fetchSymbolAsDataUri(result.svgUrl).then(function (img) {
         if (!symbolWorkIsCurrent(work)) return;
+        if (img === null || (!img && typeof window !== 'undefined' && window._isDesktopBundledApp === true)) {
+          setMulberryAdding(null);
+          finishSymbolWork(work);
+          addToast && addToast('Symbol could not be verified safely.', 'error');
+          return;
+        }
         var label = ((mulberryQuery || result.label || '').trim()) || result.label || 'symbol';
         var entry = normalizeBankAsset({
           id: uid(), label: label, description: '', image: safeImgUrl(img) || result.svgUrl,
@@ -5826,8 +5837,20 @@
 
     var _ensureJSZip = function () {
       if (window.JSZip) return Promise.resolve(window.JSZip);
+      if (typeof window.__alloEnsureJSZip === 'function') {
+        return window.__alloEnsureJSZip().then(function (ok) {
+          if (ok && window.JSZip) return window.JSZip;
+          throw new Error('JSZip load failed');
+        });
+      }
+      if (window._isDesktopBundledApp === true) {
+        return Promise.reject(new Error('External JSZip CDN is disabled in Desktop mode'));
+      }
       return new Promise(function (resolve, reject) {
         var s = document.createElement('script');
+        s.integrity = 'sha384-+mbV2IY1Zk/X1p/nWllGySJSUN8uMs+gUAN10Or95UBH0fpj6GfKgPmgC5EXieXG';
+        s.crossOrigin = 'anonymous';
+        s.referrerPolicy = 'no-referrer';
         s.src = 'https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js';
         s.async = true;
         s.onload = function () { window.JSZip ? resolve(window.JSZip) : reject(new Error('JSZip missing')); };
@@ -10317,9 +10340,8 @@
       rows.push('--- WORD-LEVEL DATA ---');
       rows.push('codename,export_date,word,category,comm_function,growth_level,context_count,context_types,aac_uses,quest_correct,quest_wrong,familiarity_score,is_core,has_image');
       bank.forEach(function (w) {
-        var esc = function (s) { return '"' + (s || '').replace(/"/g, '""') + '"'; };
-        rows.push([codename, now, esc(w.displayLabel), w.category, w.commFn || '', w.growth, w.uniqueContextCount,
-          esc(w.contextTypes.join('|')), w.aacUses || 0, w.questCorrect || 0, w.questWrong || 0,
+        rows.push([csvCell(codename), now, csvCell(w.displayLabel), csvCell(w.category), csvCell(w.commFn || ''), csvCell(w.growth), w.uniqueContextCount,
+          csvCell((w.contextTypes || []).join('|')), w.aacUses || 0, w.questCorrect || 0, w.questWrong || 0,
           (w.famScore || 0).toFixed(3), w.isCore ? 1 : 0, w.image ? 1 : 0].join(','));
       });
       rows.push('');
@@ -10329,7 +10351,7 @@
       var coreTotal = bank.filter(function (w) { return w.isCore; }).length;
       var coreStrong = bank.filter(function (w) { return w.isCore && (w.growth === 'mastered' || w.growth === 'blooming'); }).length;
       var mluVal = metrics.meanSymbolsPerMessage === null ? '' : metrics.meanSymbolsPerMessage.toFixed(2);
-      rows.push([codename, now, bank.length,
+      rows.push([csvCell(codename), now, bank.length,
         bank.filter(function (w) { return w.growth === 'mastered'; }).length,
         bank.filter(function (w) { return w.growth === 'blooming'; }).length,
         bank.filter(function (w) { return w.growth === 'growing'; }).length,
@@ -10346,7 +10368,7 @@
         rows.push('codename,export_date,goal_id,goal_text,goal_type,target_count,current_count,trial_timestamp,trial_success,trial_context');
         activeGoals.forEach(function (g) {
           (g.trials || []).forEach(function (t) {
-            rows.push([codename, now, g.id, csvCell(g.text), g.type, g.targetCount, g.currentCount, t.ts, t.success ? 1 : 0, csvCell(t.context)].join(','));
+            rows.push([csvCell(codename), now, csvCell(g.id), csvCell(g.text), csvCell(g.type), g.targetCount, g.currentCount, t.ts, t.success ? 1 : 0, csvCell(t.context)].join(','));
           });
         });
       }
@@ -10358,7 +10380,7 @@
         rows.push('codename,export_date,wish_word,wish_note,wish_timestamp,wish_fulfilled');
         exportWishes.forEach(function (w) {
           var fulfilled = bank.some(function (b) { return b.key === symbolActivityKey(w.label) && b.contextTypes.length > 1; }) ? 1 : 0;
-          rows.push([codename, now, csvCell(w.label), csvCell(w.note), w.ts || '', fulfilled].join(','));
+          rows.push([csvCell(codename), now, csvCell(w.label), csvCell(w.note), csvCell(w.ts || ''), fulfilled].join(','));
         });
       }
       var csv = rows.join('\n');

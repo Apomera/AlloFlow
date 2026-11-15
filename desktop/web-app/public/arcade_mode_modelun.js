@@ -1477,6 +1477,8 @@
 
     // The state we display is either the session state (class mode) or local (solo).
     var modelUn = isSolo ? localState : (sessionState && sessionState.modelUn) || null;
+    var modelUnRef = React.useRef ? React.useRef(modelUn) : { current: modelUn };
+    modelUnRef.current = modelUn;
 
     // For class students who arrive before host has initialized state.
     if (!modelUn) {
@@ -1505,26 +1507,38 @@
       return h('div', { style: { padding: 20, textAlign: 'center', color: '#cbd5e1' } }, 'Setting up…');
     }
 
-    // Helper: write to session (class) or local (solo)
+    // Helper: write to session (class) or local (solo), merging nested maps onto
+    // the latest state so concurrent student/Chair writes do not clobber each other.
+    function mergeMunPatch(baseState, patch) {
+      var next = Object.assign({}, baseState || {}, patch || {});
+      var mapKeys = ['positionPapers', 'speeches', 'clauses', 'finalVotes', 'caucusSpeeches', 'backchannel'];
+      for (var mi = 0; mi < mapKeys.length; mi++) {
+        var mk = mapKeys[mi];
+        if (patch && patch[mk] && typeof patch[mk] === 'object' && !Array.isArray(patch[mk])) {
+          next[mk] = Object.keys(patch[mk]).length
+            ? Object.assign({}, (baseState && baseState[mk]) || {}, patch[mk])
+            : {};
+        }
+      }
+      if (patch && patch.assignedCountries) {
+        next.assignedCountries = Object.keys(patch.assignedCountries).length
+          ? Object.assign({}, (baseState && baseState.assignedCountries) || {}, patch.assignedCountries)
+          : {};
+      }
+      return next;
+    }
+
     function updateMUN(patch) {
       if (isSolo) {
         setLocalState(function (prev) {
-          var next = Object.assign({}, prev, patch);
-          // Nested merge for assignedCountries; an empty patch clears the roster
-          if (patch.assignedCountries) {
-            next.assignedCountries = Object.keys(patch.assignedCountries).length
-              ? Object.assign({}, prev.assignedCountries || {}, patch.assignedCountries)
-              : {};
-          }
+          var next = mergeMunPatch(prev, patch);
+          modelUnRef.current = next;
           return next;
         });
       } else if (typeof ctx.sessionUpdate === 'function') {
-        var merged = Object.assign({}, modelUn, patch);
-        if (patch.assignedCountries) {
-          merged.assignedCountries = Object.keys(patch.assignedCountries).length
-            ? Object.assign({}, modelUn.assignedCountries || {}, patch.assignedCountries)
-            : {};
-        }
+        var latest = modelUnRef.current || modelUn || {};
+        var merged = mergeMunPatch(latest, patch);
+        modelUnRef.current = merged;
         Promise.resolve(ctx.sessionUpdate({ modelUn: merged })).catch(function (err) {
           var kit = window.AlloHavenArcade && window.AlloHavenArcade.classWork;
           ctx.addToast(kit ? kit.message(err) : 'That did not send. Check your connection and try again.');
@@ -2108,34 +2122,53 @@
     var autoSave = autoSaveTuple[0];
     var setAutoSave = autoSaveTuple[1];
     var autoSaveTimerRef = React.useRef ? React.useRef(null) : { current: null };
+    var formRef = React.useRef ? React.useRef(form) : { current: form };
+    formRef.current = form;
+    var papersRef = React.useRef ? React.useRef(papers) : { current: papers };
+    papersRef.current = papers;
+    var lastSavedAtRef = React.useRef ? React.useRef(0) : { current: 0 };
+
+    React.useEffect(function() {
+      return function() {
+        if (autoSaveTimerRef.current) {
+          try { clearTimeout(autoSaveTimerRef.current); } catch (e) {}
+          autoSaveTimerRef.current = null;
+        }
+      };
+    }, []);
 
     var humanUids = Object.keys(assigned).filter(function(uid) { return uid.indexOf('ai_') !== 0; });
     var submittedCount = humanUids.filter(function(uid) { return papers[uid] && papers[uid].savedAt; }).length;
 
     function patchField(field, value) {
-      var next = Object.assign({}, form);
+      var next = Object.assign({}, formRef.current || form);
       next[field] = (value || '').slice(0, 1500); // doc-budget cap per field
+      formRef.current = next;
       setForm(next);
 
       // Debounce an auto-save 1.5s after the last keystroke (only if the
       // student has at least a stance — don't auto-save empty paper).
       if (autoSaveTimerRef.current) { try { clearTimeout(autoSaveTimerRef.current); } catch (e) {} }
-      var stanceLen = (field === 'stance' ? value : next.stance || '').trim().length;
+      var stanceLen = (next.stance || '').trim().length;
       if (stanceLen >= 20) {
-        setAutoSave({ pending: true, lastSavedAt: autoSave.lastSavedAt });
+        setAutoSave({ pending: true, lastSavedAt: lastSavedAtRef.current });
         autoSaveTimerRef.current = setTimeout(function() {
+          autoSaveTimerRef.current = null;
           if (!myCountry) return;
-          var nextPapers = Object.assign({}, modelUn.positionPapers || {});
-          nextPapers[myUid] = {
-            background: next.background || '',
-            stance:     next.stance || '',
-            solutions:  next.solutions || '',
-            allies:     next.allies || '',
+          var curForm = formRef.current || next;
+          var myPatch = {};
+          myPatch[myUid] = {
+            background: curForm.background || '',
+            stance:     curForm.stance || '',
+            solutions:  curForm.solutions || '',
+            allies:     curForm.allies || '',
             savedAt:    Date.now()
           };
-          updateMUN({ positionPapers: nextPapers });
-          setAutoSave({ pending: false, lastSavedAt: Date.now() });
-          if (!window.__alloHavenModelUNStats.positionPapersSubmitted) {
+          updateMUN({ positionPapers: Object.assign({}, papersRef.current || {}, myPatch) });
+          var nowSaved = Date.now();
+          lastSavedAtRef.current = nowSaved;
+          setAutoSave({ pending: false, lastSavedAt: nowSaved });
+          if (window.__alloHavenModelUNStats && !window.__alloHavenModelUNStats.positionPapersSubmitted) {
             bumpStat('positionPapersSubmitted', 1);
           }
         }, 1500);
@@ -2144,16 +2177,21 @@
 
     function savePaper() {
       if (!myCountry) return;
+      if (autoSaveTimerRef.current) {
+        try { clearTimeout(autoSaveTimerRef.current); } catch (e) {}
+        autoSaveTimerRef.current = null;
+      }
       setStatus(Object.assign({}, status, { saving: true }));
-      var nextPapers = Object.assign({}, papers);
-      nextPapers[myUid] = {
-        background: form.background || '',
-        stance: form.stance || '',
-        solutions: form.solutions || '',
-        allies: form.allies || '',
+      var curForm = formRef.current || form;
+      var myPatch = {};
+      myPatch[myUid] = {
+        background: curForm.background || '',
+        stance: curForm.stance || '',
+        solutions: curForm.solutions || '',
+        allies: curForm.allies || '',
         savedAt: Date.now()
       };
-      updateMUN({ positionPapers: nextPapers });
+      updateMUN({ positionPapers: Object.assign({}, papersRef.current || {}, myPatch) });
       setTimeout(function() { setStatus(Object.assign({}, status, { saving: false })); }, 400);
       bumpStat('positionPapersSubmitted', 1);
     }
@@ -2193,14 +2231,15 @@
         var name = myCountry ? myCountry.name : 'Delegation';
         var w = window.open('', '_blank', 'width=820,height=900');
         if (!w) return;
+        try { w.opener = null; } catch (e) {}
         var html =
-          '<!doctype html><html><head><meta charset="utf-8"><title>Position Paper — ' + name + '</title>' +
+          '<!doctype html><html><head><meta charset="utf-8"><title>Position Paper — ' + escapeHtml(name) + '</title>' +
           '<style>body{font-family:Georgia,serif;max-width:760px;margin:36px auto;color:#1f2937;line-height:1.55;padding:0 16px}' +
           'h1{font-size:22px;margin-bottom:0}h2{font-size:14px;color:#0f766e;text-transform:uppercase;letter-spacing:1px;margin-top:24px;margin-bottom:6px}' +
           '.meta{color:#6b7280;font-size:12px}p{white-space:pre-wrap;font-size:13px}' +
           '@media print{body{margin:0}}</style></head><body>' +
-          '<h1>Position Paper — ' + name + '</h1>' +
-          '<div class="meta">' + (committee ? committee.name : '') + ' · ' + (agenda ? agenda.title : '') + '</div>' +
+          '<h1>Position Paper — ' + escapeHtml(name) + '</h1>' +
+          '<div class="meta">' + escapeHtml(committee ? committee.name : '') + ' · ' + escapeHtml(agenda ? agenda.title : '') + '</div>' +
           '<h2>Country Background</h2><p>' + escapeHtml(form.background || '(not yet drafted)') + '</p>' +
           '<h2>Position / Stance</h2><p>' + escapeHtml(form.stance || '(not yet drafted)') + '</p>' +
           '<h2>Proposed Solutions</h2><p>' + escapeHtml(form.solutions || '(not yet drafted)') + '</p>' +
@@ -4853,14 +4892,22 @@
     var finalVotesRef = React.useRef(finalVotes);
     finalVotesRef.current = finalVotes;
     function castVote(iso, vote, reasoning, isAi, batch) {
-      var rec = { vote: vote, reasoning: reasoning || '', isAi: !!isAi, at: Date.now() };
+      if (vote !== 'Y' && vote !== 'N' && vote !== 'A') return;
+      if (isAi) {
+        if (!isHost && !isSolo) return;
+        var hasAiSeat = Object.keys(assigned).some(function(uid) { return uid.indexOf('ai_') === 0 && assigned[uid] === iso; });
+        if (!hasAiSeat) return;
+      } else {
+        if (!myCountry || iso !== myCountry.iso) return;
+      }
+      var rec = { vote: vote, reasoning: reasoning || '', isAi: !!isAi, uid: isAi ? ('ai_' + iso) : (myUid || ''), at: Date.now() };
       if (batch) batch[iso] = rec;
       var next = Object.assign({}, finalVotesRef.current, batch || {});
       next[iso] = rec;
       finalVotesRef.current = next;
       updateMUN({ finalVotes: next });
       // Achievement: voteCast
-      if (!isAi && !window.__alloHavenModelUNStats.voteCast) {
+      if (!isAi && window.__alloHavenModelUNStats && !window.__alloHavenModelUNStats.voteCast) {
         bumpStat('voteCast');
         if (typeof ctx.addToast === 'function') ctx.addToast('🏅 Achievement: Vote Cast');
       }
@@ -5310,6 +5357,7 @@
           if (typeof ctx.addToast === 'function') ctx.addToast('Browser blocked the export window — allow popups for this site.');
           return;
         }
+        try { w.opener = null; } catch (e) {}
         w.document.open(); w.document.write(html); w.document.close();
         setTimeout(function() { try { w.print(); } catch (e) {} }, 600);
       } catch (e) {
@@ -7146,23 +7194,28 @@
 
     function exportCsv() {
       var roster = (sessionState && sessionState.roster) || {};
+      var csvSafe = function(v) {
+        var s = v === null || v === undefined ? '' : String(v);
+        if (/^(?:[\t\r\n ]*[=+\-@|]|[\t\r])/.test(s)) s = "'" + s;
+        return '"' + s.replace(/"/g, '""') + '"';
+      };
       var lines = [];
-      lines.push(['Delegate', 'Country', 'Preparation', 'Speech Quality', 'Diplomatic Consistency', 'Coalition Building', 'Resolution Contribution', 'Overall'].concat(selfRated ? ['Rating type'] : []).join(','));
+      lines.push(['Delegate', 'Country', 'Preparation', 'Speech Quality', 'Diplomatic Consistency', 'Coalition Building', 'Resolution Contribution', 'Overall'].concat(selfRated ? ['Rating type'] : []).map(csvSafe).join(','));
       humanUids.forEach(function(uid) {
         var iso = assigned[uid]; var country = countryById(iso); if (!country) return;
         var name = roster[uid] ? roster[uid].name : (uid === 'me' ? 'You' : uid);
         var r = grades[uid] || {};
         var cell = function(d) { return r[d] && r[d].score ? r[d].score : ''; };
         lines.push([
-          '"' + String(name).replace(/"/g, '""') + '"',
-          '"' + country.name.replace(/"/g, '""') + '"',
-          cell('preparation'),
-          cell('speechQuality'),
-          cell('diplomaticConsistency'),
-          cell('coalitionBuilding'),
-          cell('resolutionContribution'),
-          cell('overall')
-        ].concat(selfRated ? ['Self-rated'] : []).join(','));
+          csvSafe(name),
+          csvSafe(country.name),
+          csvSafe(cell('preparation')),
+          csvSafe(cell('speechQuality')),
+          csvSafe(cell('diplomaticConsistency')),
+          csvSafe(cell('coalitionBuilding')),
+          csvSafe(cell('resolutionContribution')),
+          csvSafe(cell('overall'))
+        ].concat(selfRated ? [csvSafe('Self-rated')] : []).join(','));
       });
       var csv = lines.join('\n');
       try {
@@ -7676,8 +7729,9 @@
     var myCountry = myIso ? countryById(myIso) : null;
     if (!myCountry) return null;
 
-    var sessionCode = (ctx.session && ctx.session.code) || 'solo';
-    var storageKey = 'mun_notes:' + sessionCode + ':' + myUid;
+    var sessionCode = ctx.sessionCode || (ctx.session && ctx.session.code) || 'solo';
+    var committeeId = (modelUn && modelUn.committeeId) || 'default';
+    var storageKey = 'mun_notes:' + sessionCode + ':' + committeeId + ':' + (myUid || 'anon');
 
     var initial = '';
     try { initial = (typeof localStorage !== 'undefined' && localStorage.getItem(storageKey)) || ''; } catch (e) {}
@@ -7688,10 +7742,18 @@
     var openTuple = useState(false);
     var open = openTuple[0];
     var setOpen = openTuple[1];
+    var loadedKeyRef = React.useRef ? React.useRef(storageKey) : { current: storageKey };
 
     useEffect(function() {
+      if (loadedKeyRef.current !== storageKey) {
+        loadedKeyRef.current = storageKey;
+        var reloaded = '';
+        try { reloaded = (typeof localStorage !== 'undefined' && localStorage.getItem(storageKey)) || ''; } catch (e) {}
+        setNotes(reloaded);
+        return;
+      }
       try { if (typeof localStorage !== 'undefined') localStorage.setItem(storageKey, notes); } catch (e) {}
-    }, [notes]);
+    }, [notes, storageKey]);
 
     var hasNotes = !!(notes && notes.trim().length > 0);
 

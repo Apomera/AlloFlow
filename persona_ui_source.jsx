@@ -1305,7 +1305,21 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
     };
     const characterName = typeof character.name === 'string' && character.name.trim() ? character.name.trim().slice(0, 120) : t('persona.character_fallback');
     const characterRole = typeof character.role === 'string' ? character.role.trim().slice(0, 160) : '';
-    const characterAvatarUrl = typeof character.avatarUrl === 'string' ? character.avatarUrl : null;
+    const safeColumnAvatarUrl = (raw) => {
+        if (typeof raw !== 'string') return null;
+        const s = raw.trim();
+        if (!s || s.length > 5000000) return null;
+        if (/^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(s)) return s;
+        if (/^blob:/i.test(s)) {
+            try { const u = new URL(s); return u.protocol === 'blob:' ? s : null; } catch (_) { return null; }
+        }
+        if (/^(?:\.\.?\/|\/[^/])[^\\\s<>"]*$/.test(s) && !/(?:^|\/)\.\.(?:\/|$)/.test(s)) return s;
+        try {
+            const u = new URL(s);
+            return (u.protocol === 'https:' && !u.username && !u.password) ? u.href : null;
+        } catch (_) { return null; }
+    };
+    const characterAvatarUrl = safeColumnAvatarUrl(character.avatarUrl);
     const rapport = safeNumber(character.rapport ?? character.initialRapport, 0, 100, 30);
     const xp = safeNumber(character.accumulatedXP, 0, 300, 0);
     // Active objectives first — what the student can still pursue belongs on
@@ -1352,7 +1366,7 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
                                 : 'bg-rose-600 hover:bg-rose-700 text-white'
                             }`}
                         >
-                            <RefreshCw size={12} />
+                            <RefreshCw size={12} aria-hidden="true" />
                             {t('persona.generate_portrait')}
                         </button>
                     )}
@@ -1360,7 +1374,7 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
             )}
             {character.isUpdating && (
                 <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] z-30 pointer-events-auto" role="status" aria-live="polite" aria-label={t('persona.status_generating_portrait', { name: characterName })}>
-                    <RefreshCw size={32} className="text-white animate-spin motion-reduce:animate-none"/>
+                    <RefreshCw size={32} aria-hidden="true" className="text-white animate-spin motion-reduce:animate-none"/>
                 </div>
             )}
             <div className="absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-md p-2 text-white border-t border-white/10">
@@ -1373,7 +1387,7 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
                 <span>{t('persona.rapport_label')}</span>
                 <span className={`${rapport >= 70 ? 'text-green-600' : 'text-slate-600'}`}>{rapport}%</span>
             </div>
-            <div role="progressbar" aria-label={t('persona.rapport_label')} aria-valuemin={0} aria-valuemax={100} aria-valuenow={rapport} className="w-full h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-400">
+            <div role="progressbar" aria-label={(t('persona.rapport_label') || 'Rapport') + ': ' + characterName} aria-valuemin={0} aria-valuemax={100} aria-valuenow={rapport} className="w-full h-2 bg-slate-200 rounded-full overflow-hidden border border-slate-400">
                 <div
                     className={`h-full transition-all motion-reduce:transition-none duration-500 ${side === 'left' ? 'bg-indigo-500' : 'bg-rose-500'}`}
                     style={{ width: `${rapport}%` }}
@@ -1388,11 +1402,13 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
         </div>
         <div className="w-full max-w-[280px] text-left flex-1 overflow-y-auto custom-scrollbar mt-4 px-1">
             <h4 className="text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2 flex items-center gap-1">
-                 <Search size={10}/> {t('persona.objectives_label')}
+                 <Search size={10} aria-hidden="true"/> {t('persona.objectives_label')}
             </h4>
             <div className="space-y-2">
                 {sortedQuests.map((q, i) => {
                     const isLocked = rapport < q.difficulty;
+                    const completedLabel = t('common.completed') && t('common.completed') !== 'common.completed' ? t('common.completed') : 'Completed';
+                    const lockedLabel = t('common.locked') && t('common.locked') !== 'common.locked' ? t('common.locked') : 'Locked';
                     return (
                         <div key={i} className={`
                             p-2.5 rounded border text-[11px] leading-tight transition-all motion-reduce:transition-none relative overflow-hidden
@@ -1404,12 +1420,13 @@ const CharacterColumn = React.memo(({ character, side, onRetryPortrait }) => {
                         `}>
                             <div className="flex gap-2 items-start relative z-10">
                                  <div className="mt-0.5 shrink-0">
-                                    {q.isCompleted ? <CheckCircle2 size={12}/> :
-                                     isLocked ? <Lock size={12}/> :
-                                     <div className="w-3 h-3 border-2 border-indigo-200 rounded-full"></div>}
+                                    {q.isCompleted ? <CheckCircle2 size={12} aria-hidden="true"/> :
+                                     isLocked ? <Lock size={12} aria-hidden="true"/> :
+                                     <div aria-hidden="true" className="w-3 h-3 border-2 border-indigo-200 rounded-full"></div>}
                                  </div>
                                  <div className="flex-grow">
                                      <span className={`break-words [overflow-wrap:anywhere] font-bold block ${q.isCompleted ? 'line-through opacity-70' : ''}`}>
+                                         {q.isCompleted ? <span className="sr-only">{completedLabel}: </span> : isLocked ? <span className="sr-only">{lockedLabel}: </span> : null}
                                          {q.text}
                                      </span>
                                      {!q.isCompleted && isLocked && (

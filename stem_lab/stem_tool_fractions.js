@@ -101,6 +101,12 @@ window.StemLab = window.StemLab || {
 (function() {
   'use strict';
 
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+
   function normalizeFractionPair(n, d) {
     n = Number(n) || 0;
     d = Number(d) || 0;
@@ -6307,23 +6313,23 @@ window.StemLab = window.StemLab || {
         html += '<style>body{font-family:sans-serif;margin:40px;}h1{color:#9f1239;}ol{font-size:14pt;line-height:2.5;}li{margin-bottom:8px;}.answer-key{page-break-before:always;color:#16a34a;}svg{vertical-align:middle;}.q{display:inline-block;margin-right:20px;}</style></head><body>';
         html += '<h1>Fraction Worksheet</h1>';
         html += '<p>Name: ____________________________  Date: __________  Score: ___ / ' + generated.length + '</p>';
-        html += '<p>Topic: ' + ws.topic + ' · Grade ' + ws.grade + '</p>';
+        html += '<p>Topic: ' + escapeHtml(ws.topic) + ' · Grade ' + escapeHtml(ws.grade) + '</p>';
         html += '<ol>';
         generated.forEach(function(p) {
-          html += '<li><span class="q">' + (p.q || '') + '</span> _____________________</li>';
+          html += '<li><span class="q">' + escapeHtml(p.q || '') + '</span> _____________________</li>';
         });
         html += '</ol>';
         if (ws.includeAnswers) {
           html += '<div class="answer-key"><h2>Answer Key</h2><ol>';
           generated.forEach(function(p) {
-            html += '<li>' + p.answer + '</li>';
+            html += '<li>' + escapeHtml(p.answer) + '</li>';
           });
           html += '</ol></div>';
         }
         html += '</body></html>';
         try {
           var w = window.open('', '_blank');
-          if (w) { w.document.write(html); w.document.close(); setTimeout(function() { w.print(); }, 250); }
+          if (w) { w.opener = null; w.document.write(html); w.document.close(); setTimeout(function() { w.print(); }, 250); }
         } catch (e) { addToast('Could not open print window', 'error'); }
       };
 
@@ -7205,16 +7211,16 @@ window.StemLab = window.StemLab || {
         }
         var html = '<html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>Exit Ticket</title>';
         html += '<style>body{font-family:sans-serif;margin:30px;}h2{color:#9f1239;}.q{margin:15px 0;padding:8px;border-bottom:1px solid #ccc;}@media print{}</style></head><body>';
-        html += '<h2>Fraction Exit Ticket — ' + etTopic + '</h2>';
+        html += '<h2>Fraction Exit Ticket — ' + escapeHtml(etTopic) + '</h2>';
         html += '<p>Name: ____________________ Date: ________</p><hr>';
         probs.forEach(function(p, i) {
-          html += '<div class="q"><b>' + (i + 1) + '.</b> ' + p.q + ' &nbsp; Answer: ________________</div>';
+          html += '<div class="q"><b>' + (i + 1) + '.</b> ' + escapeHtml(p.q) + ' &nbsp; Answer: ________________</div>';
         });
-        html += '<hr><p style="font-size:8pt;color:#888;">Answer key: ' + probs.map(function(p) { return p.answer; }).join(', ') + '</p>';
+        html += '<hr><p style="font-size:8pt;color:#888;">Answer key: ' + probs.map(function(p) { return escapeHtml(p.answer); }).join(', ') + '</p>';
         html += '</body></html>';
         try {
           var w = window.open('', '_blank');
-          if (w) { w.document.write(html); w.document.close(); setTimeout(function() { w.print(); }, 250); }
+          if (w) { w.opener = null; w.document.write(html); w.document.close(); setTimeout(function() { w.print(); }, 250); }
         } catch (e) { addToast('Could not open print window', 'error'); }
       };
       return h('div', { className: 'space-y-3' },
@@ -8099,7 +8105,7 @@ window.StemLab = window.StemLab || {
         html += '</body></html>';
         try {
           var w = window.open('', '_blank');
-          if (w) { w.document.write(html); w.document.close(); setTimeout(function() { w.print(); }, 250); }
+          if (w) { w.opener = null; w.document.write(html); w.document.close(); setTimeout(function() { w.print(); }, 250); }
         } catch (e) { addToast('Could not open print window', 'error'); }
       };
 
@@ -8841,12 +8847,12 @@ window.StemLab = window.StemLab || {
           var fn = parseInt(parts[0]); var fd = parseInt(parts[1]);
           var dec = (fn / fd).toFixed(3).replace(/0+$/, '').replace(/\.$/, '');
           var pct = (fn / fd * 100).toFixed(1).replace(/\.0$/, '');
-          html += '<div class="row"><span class="frac">' + f + '</span><span class="dec">' + dec + '</span><span class="pct">' + pct + '%</span></div>';
+          html += '<div class="row"><span class="frac">' + escapeHtml(f) + '</span><span class="dec">' + escapeHtml(dec) + '</span><span class="pct">' + escapeHtml(pct) + '%</span></div>';
         });
         html += '</div></body></html>';
         try {
           var w = window.open('', '_blank');
-          if (w) { w.document.write(html); w.document.close(); setTimeout(function() { w.print(); }, 250); }
+          if (w) { w.opener = null; w.document.write(html); w.document.close(); setTimeout(function() { w.print(); }, 250); }
         } catch (e) { addToast('Could not open print window', 'error'); }
       };
 
@@ -9758,21 +9764,21 @@ window.StemLab = window.StemLab || {
         html += '<style>body{font-family:sans-serif;margin:30px;line-height:1.6;}h1{color:#9f1239;border-bottom:2px solid #9f1239;padding-bottom:8px;}.probe-item{display:inline-block;margin:5px 15px 5px 0;padding:4px 8px;border:1px solid #ddd;border-radius:4px;font-family:monospace;}@media print{.no-print{display:none;}}</style></head><body>';
         html += '<h1>Fraction CBM Probe</h1>';
         html += '<p>Name: ____________________________  Date: __________</p>';
-        html += '<p>Probe type: ' + pt.label + ' · Items: ' + generatedProbe.length + ' · Time: 2 min</p>';
+        html += '<p>Probe type: ' + escapeHtml(pt.label) + ' · Items: ' + generatedProbe.length + ' · Time: 2 min</p>';
         html += '<p>Score: ____ correct / ' + generatedProbe.length + ' total &nbsp; CWPM: ____</p>';
         html += '<hr><ol>';
         generatedProbe.forEach(function(p) {
-          html += '<li class="probe-item">' + (p.q || '') + '</li>';
+          html += '<li class="probe-item">' + escapeHtml(p.q || '') + '</li>';
         });
         html += '</ol>';
         html += '<hr><h2>Answer key</h2><ol>';
         generatedProbe.forEach(function(p) {
-          html += '<li>' + p.answer + '</li>';
+          html += '<li>' + escapeHtml(p.answer) + '</li>';
         });
         html += '</ol></body></html>';
         try {
           var w = window.open('', '_blank');
-          if (w) { w.document.write(html); w.document.close(); setTimeout(function() { w.print(); }, 250); }
+          if (w) { w.opener = null; w.document.write(html); w.document.close(); setTimeout(function() { w.print(); }, 250); }
         } catch (e) { addToast('Could not open print window', 'error'); }
       };
 

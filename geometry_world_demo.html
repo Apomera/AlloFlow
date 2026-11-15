@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
 <title>AlloFlow Geometry World — 3D Block-Based Math Explorer</title>
 <meta name="description" content="AI-powered 3D voxel geometry lessons. Build, measure, and explore volume in an immersive block world. VR-ready.">
 <style>
@@ -86,8 +87,8 @@ body{overflow:hidden;background:#000;font-family:'Inter',system-ui,sans-serif;co
 <!-- VR button -->
 <button id="vr-btn" onclick="enterVR()">🥽 Enter VR</button>
 
-<!-- Three.js from CDN -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<!-- Three.js bundled locally -->
+<script src="./vendor/three-r128/three.min.js"></script>
 
 <script>
 // ════════════════════════════════════════════════════════════

@@ -234,10 +234,16 @@ def cmd_apply(args: argparse.Namespace) -> Dict[str, Any]:
     if not validation["ok"]:
         raise SourceError("Patch plan validation failed:\n- " + "\n- ".join(validation["errors"]), 3)
 
+    raw_root = Path(args.root)
+    if raw_root.is_symlink():
+        raise SourceError("--root must not be a symlink.")
     total = 0
     for path in root.rglob("*"):
-        if any(part in COPY_EXCLUDE for part in path.parts):
+        rel_parts = path.relative_to(root).parts
+        if any(part in COPY_EXCLUDE for part in rel_parts):
             continue
+        if path.is_symlink():
+            raise SourceError(f"Refusing symlink inside source tree: {path.name}")
         if path.is_file():
             total += path.stat().st_size
             if total > MAX_COPY_BYTES:
@@ -246,6 +252,7 @@ def cmd_apply(args: argparse.Namespace) -> Dict[str, Any]:
     shutil.copytree(
         root,
         out_dir,
+        symlinks=True,
         ignore=shutil.ignore_patterns(*COPY_EXCLUDE),
     )
 

@@ -433,6 +433,13 @@
     return '';
   }
 
+  function _isSafeClassImage(value) {
+    if (typeof value !== 'string') return false;
+    var trimmed = value.trim();
+    if (!trimmed || trimmed.length > CLASS_IMAGE_LIMIT) return false;
+    return /^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(trimmed);
+  }
+
   function cleanClassDoc(data, uid, activity) {
     var doc = { uid: uid, activity: activity, expiresAt: new Date(Date.now() + CLASS_KEEP_MS) };
     Object.keys(CLASS_TEXT_LIMITS).forEach(function (field) {
@@ -441,7 +448,7 @@
       doc[field] = String(value).slice(0, CLASS_TEXT_LIMITS[field]);
     });
     CLASS_IMAGE_FIELDS.forEach(function (field) {
-      if (typeof data[field] === 'string' && data[field].length <= CLASS_IMAGE_LIMIT) doc[field] = data[field];
+      if (_isSafeClassImage(data[field])) doc[field] = data[field].trim();
     });
     if (data.awaitingTeacher === true) doc.awaitingTeacher = true;
     if (typeof data.score === 'number') doc.score = Math.max(1, Math.min(20, Math.round(data.score)));
@@ -455,7 +462,8 @@
     var fb = window.__alloFirebase;
     var db = ctx.firestoreDb || (fb && fb.db);
     var uid = ctx.sessionParticipantId || '';
-    if (!fb || !db || !ctx.sessionCode || !ctx.firestoreAppId || !fb.doc || !fb.setDoc || !fb.updateDoc || !fb.deleteDoc || !fb.onSnapshot || !fb.collection || !fb.query || !fb.where || !fb.getDocs) return { kind: 'legacy' };
+    if (!fb && !db) return { kind: 'legacy' };
+    if (!fb || !db || !ctx.sessionCode || !ctx.firestoreAppId || !fb.doc || !fb.setDoc || !fb.updateDoc || !fb.deleteDoc || !fb.onSnapshot || !fb.collection || !fb.query || !fb.where || !fb.getDocs) return { kind: 'unavailable' };
     var base = ['artifacts', ctx.firestoreAppId, 'public', 'data', 'sessions', ctx.sessionCode];
     var sessionRef = fb.doc.apply(null, [db].concat(base));
     if (sessionRef && (sessionRef.__alloMbRef || sessionRef.__alloLanRef)) return { kind: 'unavailable' };

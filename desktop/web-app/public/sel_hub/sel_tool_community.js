@@ -689,6 +689,21 @@ window.SelHub = window.SelHub || {
               upd({ _communityTier: _safety.tier || 0 });
             });
         };
+
+        var _syncSafetyBlock = function(userInput) {
+          if (!userInput || typeof userInput !== 'string') return null;
+          var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
+            ? window.SelHub.safeRehearseCheck(userInput, { toolId: 'community', onSafetyFlag: onSafetyFlag })
+            : { action: 'continue', severity: 'none' };
+          if (!safety || safety.action !== 'block') return null;
+          var msg = (window.SelHub && window.SelHub.rehearseBreakCharacterText)
+            ? window.SelHub.rehearseBreakCharacterText(safety.severity)
+            : 'Your safety matters. Please reach out to a trusted adult or call/text 988.';
+          if (window.SelHub && window.SelHub.showCrisisModal) {
+            try { window.SelHub.showCrisisModal({ toolName: 'Community & Belonging', contentSnippet: userInput }); } catch (_) {}
+          }
+          return msg;
+        };
         var aiLoading      = d.aiLoading || false;
 
         // Culture Quiz state
@@ -2027,39 +2042,15 @@ window.SelHub = window.SelHub || {
                 )
               ),
               h('div', { style: { display: 'flex', gap: 6 } },
-                h('input', {
-                  type: 'text', value: aiPrompt,
-                  'aria-label': 'Ask the community AI coach',
-                  onChange: function(e) { upd({ aiPrompt: e.target.value }); },
-                  onKeyDown: function(e) {
-                    if (e.key === 'Enter' && aiPrompt.trim()) {
-                      e.preventDefault();
-                      if (!_cmAiOn) return;
-                      upd({ aiLoading: true, aiResponse: null });
-                      var sysPrompt = 'You are a warm, encouraging cultural awareness coach for a ' + band + ' school student. ' +
-                        'The student asked: "' + aiPrompt + '"\n\n' +
-                        'Respond in 2-3 short paragraphs. Be age-appropriate for ' + band + ' school. ' +
-                        'Use encouraging language. If the question involves cultural sensitivity, model cultural humility. ' +
-                        'End with a reflective question to keep them thinking.';
-                      _runSafetyAssess(aiPrompt);
-                      callGemini(sysPrompt).then(function(result) {
-                        var text = typeof result === 'string' ? result : (result && result.text ? result.text : String(result));
-                        upd({ aiResponse: text, aiLoading: false, aiPrompt: '' });
-                        if (announceToSR) announceToSR('Community AI response ready');
-                        tryAwardBadge('ai_learner');
-                        awardXP(10);
-                        logPractice('ai_coach', 'custom');
-                        checkBadges();
-                      }).catch(function(err) { upd({ aiLoading: false }); addToast('Error: ' + err.message, 'error'); });
-                    }
-                  },
-                  placeholder: 'Ask a question about culture — please don’t share personal info like your name, school, or where you live.',
-                  style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: _comBg('#0f172a'), color: _comFg('#e2e8f0'), fontSize: 12 }
-                }),
-                h('button', { 'aria-label': aiLoading ? 'Community AI coach is responding' : 'Ask community AI coach',
-                  onClick: function() {
+                (function() {
+                  var submitCommunityCoach = function() {
                     if (!aiPrompt.trim()) { if (typeof addToast === 'function') addToast('Add a few words first, then press the button again.', 'info'); return; }
                     if (!_cmAiOn) return;
+                    var blockedMsg = _syncSafetyBlock(aiPrompt);
+                    if (blockedMsg) {
+                      upd({ aiResponse: blockedMsg, aiLoading: false, aiPrompt: '', _communityTier: 3 });
+                      return;
+                    }
                     upd({ aiLoading: true, aiResponse: null });
                     var sysPrompt = 'You are a warm, encouraging cultural awareness coach for a ' + band + ' school student. ' +
                       'The student asked: "' + aiPrompt + '"\n\n' +
@@ -2076,10 +2067,31 @@ window.SelHub = window.SelHub || {
                       logPractice('ai_coach', 'custom');
                       checkBadges();
                     }).catch(function(err) { upd({ aiLoading: false }); addToast('Error: ' + err.message, 'error'); });
-                  },
-                  disabled: aiLoading,
-                  style: { padding: '10px 16px', borderRadius: 8, background: _comSolid(ACCENT), color: _comFg('#fff'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' }
-                }, aiLoading ? '\u23F3' : '\u2191')
+                  };
+                  return [
+                    h('input', {
+                      key: 'cm-ai-input',
+                      type: 'text', value: aiPrompt,
+                      'aria-label': 'Ask the community AI coach',
+                      onChange: function(e) { upd({ aiPrompt: e.target.value }); },
+                      onKeyDown: function(e) {
+                        if (e.key === 'Enter' && aiPrompt.trim()) {
+                          e.preventDefault();
+                          submitCommunityCoach();
+                        }
+                      },
+                      placeholder: 'Ask a question about culture — please don’t share personal info like your name, school, or where you live.',
+                      style: { flex: 1, padding: '10px 12px', borderRadius: 8, border: '1px solid ' + ACCENT_MED, background: _comBg('#0f172a'), color: _comFg('#e2e8f0'), fontSize: 12 }
+                    }),
+                    h('button', {
+                      key: 'cm-ai-send',
+                      'aria-label': aiLoading ? 'Community AI coach is responding' : 'Ask community AI coach',
+                      onClick: submitCommunityCoach,
+                      disabled: aiLoading,
+                      style: { padding: '10px 16px', borderRadius: 8, background: _comSolid(ACCENT), color: _comFg('#fff'), border: 'none', fontWeight: 'bold', fontSize: 12, cursor: aiLoading ? 'wait' : 'pointer' }
+                    }, aiLoading ? '\u23F3' : '\u2191')
+                  ];
+                })()
               ),
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 } },
                 (band === 'elementary' ? ['What is Diwali?', 'Why do people speak different languages?', 'How can I be a good friend to everyone?', 'Why is my name important?'] :

@@ -114,5 +114,9 @@ const moduleSrc = `/**
 `;
 
 writeIfChanged('view_adventure_module.js', moduleSrc);
-writeIfChanged('desktop/web-app/public/view_adventure_module.js', moduleSrc);
+for (const dir of ['desktop/web-app/public', 'desktop/app-build', 'desktop/web-app/build']) {
+  if (dir === 'desktop/web-app/public' || fs.existsSync(dir)) {
+    writeIfChanged(dir + '/view_adventure_module.js', moduleSrc);
+  }
+}
 console.log('Wrote view_adventure_module.js (' + moduleSrc.length + ' bytes)');

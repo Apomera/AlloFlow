@@ -95,6 +95,7 @@ function SentenceFramesView(props) {
   // Components
   var DraftFeedbackInterface = props.DraftFeedbackInterface;
   var ErrorBoundary = props.ErrorBoundary;
+  const activeFieldRef = React.useRef(null);
   const scaffoldData = generatedContent?.data;
   const usableItems = Array.isArray(scaffoldData?.items) ? scaffoldData.items : [];
   const isUsableItem = item => item && typeof item.text === 'string' && item.text.trim();
@@ -104,6 +105,13 @@ function SentenceFramesView(props) {
       className: "rounded-xl border border-slate-300 bg-slate-50 p-5 text-slate-700"
     }, label('scaffolds.empty_resource', 'No writing prompts are available. Choose or regenerate a writing scaffold to begin.'));
   }
+  const textAiUsable = (() => {
+    try {
+      if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable('text');
+    } catch (_) {}
+    return true;
+  })();
   // A Mastery Check draft belongs to the scaffold it was started on.
   const sessionResourceId = gradingSession.resourceId;
   const ownsSession = prev => !!prev && String(prev.resourceId) === String(sessionResourceId);
@@ -136,6 +144,49 @@ function SentenceFramesView(props) {
   const wordBank = (Array.isArray(scaffoldData.wordBank) ? scaffoldData.wordBank : []).filter(w => typeof w === 'string' && w.trim()).map(w => w.trim()).slice(0, 40);
   const wordBankHeadingId = `scaffold-word-bank-${generatedContent?.id}`;
   const isDiscussionPrompts = scaffoldData.frameType === 'Discussion Prompts' || /^Discussion Prompts\b/.test(String(generatedContent?.meta || ''));
+  const insertWordBankTerm = word => {
+    if (!generatedContent || typeof handleStudentInput !== 'function') return;
+    const resId = generatedContent.id;
+    const data = generatedContent.data || {};
+    let targetKey = null;
+    const tracked = activeFieldRef.current && activeFieldRef.current.resourceId === resId ? activeFieldRef.current : null;
+    if (tracked && tracked.key != null) {
+      targetKey = tracked.key;
+    } else if (data.mode === 'list') {
+      const firstIdx = usableItems.findIndex(isUsableItem);
+      if (firstIdx >= 0) targetKey = firstIdx;
+    } else {
+      const firstBlank = scaffoldParagraphParts(data.text).find(p => p.responseKey);
+      if (firstBlank) targetKey = firstBlank.responseKey;
+    }
+    if (targetKey == null) return;
+    const currentVal = String(studentResponses[resId] && studentResponses[resId][targetKey] || '');
+    const el = tracked && tracked.el && tracked.el.isConnected ? tracked.el : null;
+    const hasSelection = el && typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number';
+    const start = hasSelection ? Math.max(0, Math.min(currentVal.length, el.selectionStart)) : currentVal.length;
+    const end = hasSelection ? Math.max(start, Math.min(currentVal.length, el.selectionEnd)) : start;
+    const before = currentVal.slice(0, start);
+    const after = currentVal.slice(end);
+    const needsLeadingSpace = before.length > 0 && !/[\s(\["'“‘/-]$/.test(before);
+    const needsTrailingSpace = after.length > 0 && !/^[\s.,!?;:)\]"'”’/-]/.test(after);
+    const inserted = (needsLeadingSpace ? ' ' : '') + word + (needsTrailingSpace ? ' ' : '');
+    const nextVal = before + inserted + after;
+    handleStudentInput(resId, targetKey, nextVal);
+    if (el) {
+      const caretPos = before.length + (needsLeadingSpace ? 1 : 0) + word.length;
+      const restoreFocus = () => {
+        try {
+          el.focus();
+          if (typeof el.setSelectionRange === 'function') el.setSelectionRange(caretPos, caretPos);
+        } catch (_) {}
+      };
+      if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(restoreFocus);
+      } else {
+        restoreFocus();
+      }
+    }
+  };
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-6"
   }, /*#__PURE__*/React.createElement("div", {
@@ -162,6 +213,7 @@ function SentenceFramesView(props) {
     onClick: onRetrySave,
     className: "min-h-11 rounded border border-red-300 px-2 py-1 underline focus-visible:ring-2 focus-visible:ring-red-600"
   }, label('common.retry', 'Try again')))), !isTeacherMode && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleResetScaffolds,
     "data-help-key": "scaffolds_reset",
     className: "min-h-11 flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-800 bg-white border border-rose-200 hover:bg-rose-50 px-3 py-1.5 rounded-full transition-colors shadow-sm",
@@ -169,7 +221,8 @@ function SentenceFramesView(props) {
     "aria-label": t('scaffolds.clear_all')
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12
-  }), " ", t('common.reset')), /*#__PURE__*/React.createElement("button", {
+  }), " ", t('common.reset')), textAiUsable && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: launchGradingSession,
     "data-help-key": "scaffolds_grading",
     className: `min-h-11 flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all shadow-sm ${isScaffoldComplete ? 'animate-pulse motion-reduce:animate-none ring-4 ring-rose-300 shadow-lg scale-105' : ''}`,
@@ -178,6 +231,7 @@ function SentenceFramesView(props) {
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 12
   }), " ", label('scaffolds.get_draft_feedback', 'Get feedback on my draft'))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleToggleIsEditingScaffolds,
     "data-help-key": "scaffolds_edit_toggle",
     className: `min-h-11 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingScaffolds ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-white text-rose-700 border border-rose-200 hover:bg-rose-50'}`
@@ -185,23 +239,35 @@ function SentenceFramesView(props) {
     size: 14
   }) : /*#__PURE__*/React.createElement(Pencil, {
     size: 14
-  }), isEditingScaffolds ? t('common.done_editing') : t('scaffolds.edit')))), !isTeacherMode && /*#__PURE__*/React.createElement("p", {
+  }), isEditingScaffolds ? t('common.done_editing') : t('scaffolds.edit')))), !isTeacherMode && textAiUsable && /*#__PURE__*/React.createElement("p", {
     "data-scaffold-feedback-purpose": true,
     className: "text-sm text-slate-700"
   }, label('scaffolds.feedback_purpose', 'Get AI feedback on your draft. This does not submit your work to your teacher.')), wordBank.length > 0 && /*#__PURE__*/React.createElement("section", {
     "data-scaffold-word-bank": true,
     "aria-labelledby": wordBankHeadingId,
     className: "bg-amber-50 border border-amber-200 rounded-xl p-4"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-baseline justify-between gap-2 mb-2"
   }, /*#__PURE__*/React.createElement("h4", {
     id: wordBankHeadingId,
-    className: "text-xs font-bold text-amber-900 uppercase tracking-wider mb-2"
-  }, label('scaffolds.word_bank', 'Word bank')), /*#__PURE__*/React.createElement("ul", {
+    className: "text-xs font-bold text-amber-900 uppercase tracking-wider"
+  }, label('scaffolds.word_bank', 'Word bank')), !isTeacherMode && !isEditingScaffolds && /*#__PURE__*/React.createElement("span", {
+    className: "text-[11px] font-medium text-amber-800"
+  }, label('scaffolds.word_bank_hint', 'Click a word to insert it'))), /*#__PURE__*/React.createElement("ul", {
     className: "flex flex-wrap gap-2"
   }, wordBank.map((word, i) => /*#__PURE__*/React.createElement("li", {
-    key: i,
+    key: i
+  }, !isTeacherMode && !isEditingScaffolds ? /*#__PURE__*/React.createElement("button", {
+    type: "button",
     dir: "auto",
-    className: "px-3 py-1 rounded-full bg-white border border-amber-300 text-sm font-semibold text-amber-950"
-  }, word)))), isSessionOpen ? /*#__PURE__*/React.createElement(ErrorBoundary, {
+    onMouseDown: e => e.preventDefault(),
+    onClick: () => insertWordBankTerm(word),
+    "aria-label": `${label('scaffolds.insert_word', 'Insert word')}: ${word}`,
+    className: "min-h-11 px-3 py-1.5 rounded-full bg-white border border-amber-300 text-sm font-semibold text-amber-950 hover:bg-amber-100 hover:border-amber-500 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 cursor-pointer"
+  }, word) : /*#__PURE__*/React.createElement("span", {
+    dir: "auto",
+    className: "inline-block px-3 py-1 rounded-full bg-white border border-amber-300 text-sm font-semibold text-amber-950"
+  }, word))))), isSessionOpen ? /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: label('scaffolds.draft_feedback_error', 'Draft feedback encountered an error. Please try again.')
   }, /*#__PURE__*/React.createElement(DraftFeedbackInterface, {
     status: gradingSession.status,
@@ -258,14 +324,19 @@ function SentenceFramesView(props) {
     "aria-label": `${label('scaffolds.student_response', 'Student response')} ${visibleItemNumbers[idx]}`,
     "aria-describedby": `scaffold-prompt-${generatedContent.id}-${idx}`,
     value: studentResponses[generatedContent.id]?.[idx] || '',
+    onFocus: e => {
+      activeFieldRef.current = {
+        resourceId: generatedContent.id,
+        key: idx,
+        el: e.currentTarget
+      };
+    },
     onChange: e => handleStudentInput(generatedContent.id, idx, e.target.value),
     "data-help-key": "scaffolds_student_input",
     className: "w-full mt-2 p-3 border border-slate-400 rounded-lg text-sm focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none resize-y bg-slate-50 focus:bg-white transition-all font-sans",
     rows: 3,
     placeholder: isDiscussionPrompts ? label('scaffolds.discussion_placeholder', 'Write your response to the question...') : t('scaffolds.sentence_placeholder')
   })), /*#__PURE__*/React.createElement("div", {
-    className: "mt-3 border-b border-slate-100 border-dashed w-full"
-  }), /*#__PURE__*/React.createElement("div", {
     className: "mt-3 border-b border-slate-100 border-dashed w-full"
   })))) : null)) : /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-4 sm:p-8 rounded-xl border border-slate-400 shadow-sm",
@@ -288,6 +359,13 @@ function SentenceFramesView(props) {
     key: i,
     type: "text",
     value: studentResponses[generatedContent.id]?.[responseKey] || '',
+    onFocus: e => {
+      activeFieldRef.current = {
+        resourceId: generatedContent.id,
+        key: responseKey,
+        el: e.currentTarget
+      };
+    },
     onChange: e => handleStudentInput(generatedContent.id, responseKey, e.target.value),
     dir: "auto",
     className: "placeholder:text-current placeholder:opacity-100 placeholder:font-normal inline-block w-44 max-w-full min-h-11 border-b-2 border-slate-300 mx-1 text-center text-indigo-700 font-bold focus:border-indigo-500 focus:outline-none bg-transparent min-w-[100px] px-1 focus:bg-indigo-50 rounded transition-colors",
@@ -308,7 +386,7 @@ function SentenceFramesView(props) {
   }) : generatedContent?.data.text_en && /*#__PURE__*/React.createElement("p", {
     className: "text-slate-600 italic leading-relaxed px-2 py-1"
   }, generatedContent?.data.text_en))), (isTeacherMode || generatedContent?.data.rubric) && /*#__PURE__*/React.createElement("div", {
-    className: "mt-1 pt-4 border-t border-rose-100 animate-in fade-in slide-in-from-bottom-4"
+    className: "mt-1 pt-4 border-t border-rose-100 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between items-center mb-3"
   }, /*#__PURE__*/React.createElement("h4", {
@@ -321,7 +399,8 @@ function SentenceFramesView(props) {
   }, canGenerateRubric && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: handleGenerateRubric,
-    disabled: isGeneratingRubric,
+    disabled: isGeneratingRubric || !textAiUsable,
+    title: !textAiUsable ? label('sidebar.needs_ai_setup', 'Needs AI setup') : undefined,
     "aria-busy": !!isGeneratingRubric,
     className: "text-xs bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-700 px-3 py-1.5 rounded-full font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
   }, isGeneratingRubric ? /*#__PURE__*/React.createElement(RefreshCw, {
@@ -330,6 +409,7 @@ function SentenceFramesView(props) {
   }) : /*#__PURE__*/React.createElement(Sparkles, {
     size: 12
   }), generatedContent?.data.rubric ? isIndependentMode ? label('scaffolds.regenerate_self_checklist', 'Regenerate Self-Checklist') : label('scaffolds.regenerate_rubric', 'Regenerate Rubric') : isIndependentMode ? label('scaffolds.generate_self_checklist', 'Generate Self-Checklist') : label('scaffolds.generate_rubric', 'Generate Rubric')), generatedContent?.data.rubric && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleToggleRubricZoom,
     className: `text-xs flex items-center gap-1 px-2 py-1 rounded transition-colors border ${rubricZoom ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-white text-slate-600 hover:text-indigo-600 border-slate-200'}`,
     title: t('scaffolds.rubric_toggle_tooltip')
@@ -338,6 +418,7 @@ function SentenceFramesView(props) {
   }) : /*#__PURE__*/React.createElement(Minimize, {
     size: 12
   }), rubricZoom ? t('scaffolds.rubric_normal') : t('scaffolds.rubric_fit')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.copy'),
     onClick: () => copyToClipboard(generatedContent?.data.rubric),
     className: "text-xs flex items-center gap-1 bg-white text-slate-600 hover:text-indigo-600 border border-slate-400 hover:border-indigo-200 px-2 py-1 rounded transition-colors",
@@ -375,8 +456,10 @@ function SentenceFramesView(props) {
     className: "w-full p-3 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-200 outline-none resize-y h-32 bg-white",
     placeholder: t('dashboard.grading.work_placeholder')
   }), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleAutoGrade,
-    disabled: !studentWorkInput.trim() || isGrading,
+    disabled: !studentWorkInput.trim() || isGrading || !textAiUsable,
+    title: !textAiUsable ? label('sidebar.needs_ai_setup', 'Needs AI setup') : undefined,
     className: "w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
   }, isGrading ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 16,
@@ -385,7 +468,7 @@ function SentenceFramesView(props) {
     size: 16,
     className: "text-yellow-700 fill-current"
   }), isGrading ? t('dashboard.grading.grade_work_loading') : t('dashboard.grading.grade_work_btn'))) : /*#__PURE__*/React.createElement("div", {
-    className: "animate-in fade-in slide-in-from-bottom-2"
+    className: "animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "bg-white rounded-lg border border-indigo-100 p-4 mb-4"
   }, /*#__PURE__*/React.createElement("div", {
@@ -422,6 +505,7 @@ function SentenceFramesView(props) {
   }), " ", t('dashboard.grading.grow_label')), /*#__PURE__*/React.createElement("p", {
     className: "text-orange-700"
   }, gradeText(gradeFeedback.grow))))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleSetGradingResultToNull,
     className: "text-xs text-indigo-500 hover:text-indigo-700 underline w-full text-center"
   }, t('dashboard.grading.grade_another'))))));

@@ -28,9 +28,33 @@
   // Blocked host fns are truthy; ask the host (old-host fallback).
   function _safetyAiUsable(fn) {
     try {
+      if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
       if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable('text', fn);
     } catch (_) {}
-    return !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) && !(fn && fn._alloQrBlocked);
+    return !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) && !(fn && fn._alloQrBlocked);
+  }
+
+  async function _safetyManagedGeminiAllowed(apiKey, isCanvasEnv) {
+    if (typeof window === 'undefined' || window.ALLOFLOW_MANAGED_AI_POLICY == null) return true;
+    try {
+      var policy = window.ALLOFLOW_MANAGED_AI_POLICY;
+      if (!policy || typeof policy !== 'object' || Array.isArray(policy) || policy.version !== 1 || !Array.isArray(policy.connections)) return false;
+      var endpoint = 'https://generativelanguage.googleapis.com/v1beta';
+      var matches = policy.connections.filter(function (row) {
+        if (!row || typeof row !== 'object' || row.backend !== 'gemini' || typeof row.baseUrl !== 'string') return false;
+        return row.baseUrl.replace(/\/+$/, '') === endpoint;
+      });
+      if (!matches.length) return false;
+      if (matches.some(function (row) { return (isCanvasEnv && row.canvasHost === true) || (!apiKey && row.keyless === true); })) return true;
+      if (apiKey && matches.some(function (row) { return Array.isArray(row.apiKeySha256) && row.apiKeySha256.length > 0; }) && typeof crypto !== 'undefined' && crypto.subtle) {
+        var digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(String(apiKey)));
+        var fp = Array.from(new Uint8Array(digest), function (b) { return b.toString(16).padStart(2, '0'); }).join('');
+        return matches.some(function (row) { return Array.isArray(row.apiKeySha256) && row.apiKeySha256.some(function (h) { return String(h).toLowerCase() === fp; }); });
+      }
+      return false;
+    } catch (_) {
+      return false;
+    }
   }
 
   var SafetyContentChecker = {
@@ -103,17 +127,21 @@
         // the inline script — but the guard avoids hard errors during HMR).
         var _isCanvasEnv = !!(typeof window !== 'undefined' && window._isCanvasEnv);
         var GEMINI_MODELS = (typeof window !== 'undefined' && window.GEMINI_MODELS) || {};
-        var safetyModel = GEMINI_MODELS.safety || 'gemini-2.5-flash-lite';
+        var rawModel = String(GEMINI_MODELS.safety || 'gemini-2.5-flash-lite').replace(/^models\//, '');
+        var safetyModel = /^[A-Za-z0-9][A-Za-z0-9._-]{0,199}$/.test(rawModel) && rawModel !== '.' && rawModel !== '..' ? rawModel : 'gemini-2.5-flash-lite';
         if (!text || text.length < 5 || (!apiKey && !_isCanvasEnv)) return;
         // Student AI-off / teacher policy: never send student text to Gemini (regex layer still runs).
         if (!_safetyAiUsable(typeof window !== 'undefined' ? window.callGemini : undefined)) return;
+        if (!(await _safetyManagedGeminiAllowed(apiKey, _isCanvasEnv))) return;
         var regexFlags = this.check(text);
         if (regexFlags.some(function (f) { return f.severity === 'critical'; })) return;
         try {
-            var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + safetyModel + ':generateContent' + (apiKey ? ('?key=' + apiKey) : '');
+            var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + safetyModel + ':generateContent';
+            var headers = { 'Content-Type': 'application/json' };
+            if (apiKey) headers['x-goog-api-key'] = String(apiKey);
             var resp = await fetch(url, {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: headers,
                 body: JSON.stringify({
                     contents: [{ parts: [{ text: 'You are a K-12 student safety classifier for an educational platform. Analyze this student message and respond with ONLY a JSON object. Be sensitive to context — educational discussions about difficult topics (history, health) are NOT flags.\nStudent message: "' + text.substring(0, 500) + '"\nRespond ONLY with this JSON (no markdown, no explanation):\n{"safe": true/false, "category": "none|self_harm|harm_to_others|bullying|inappropriate|off_task|concerning", "confidence": 0.0-1.0, "reason": "brief explanation"}' }] }],
                     generationConfig: { temperature: 0.1, maxOutputTokens: 100 }

@@ -48,6 +48,10 @@ function projectStudentActivityResource(resource) {
 function ActivityStructuredEditor(props) {
   const item = props.item;
   const change = props.onChange;
+  const [groupSizeDraft, setGroupSizeDraft] = React.useState(item && item.groupSize != null ? String(item.groupSize) : '4');
+  React.useEffect(() => {
+    setGroupSizeDraft(item && item.groupSize != null ? String(item.groupSize) : '4');
+  }, [item && item.groupSize]);
   const fieldClass = 'w-full rounded-lg border border-slate-400 p-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-violet-500';
   const label = (key, fallback) => {
     const value = props.t && props.t(key);
@@ -77,7 +81,19 @@ function ActivityStructuredEditor(props) {
       {textField(label('brainstorm.facilitation_notes', 'Facilitation notes (teacher)'), item.facilitationNotes, value => change('facilitationNotes', value), 4)}
       {listField(label('brainstorm.look_fors', 'Participation look-fors'), item.lookFors, value => change('lookFors', value))}
     </> : <>
-      <label className="block space-y-1"><span className="text-xs font-bold">{label('brainstorm.group_size', 'Home-group size')}</span><input type="number" min="2" max="6" className={fieldClass} aria-label={label('brainstorm.group_size', 'Home-group size')} value={item.groupSize || 4} onChange={event => change('groupSize', Math.max(2, Math.min(6, Number(event.target.value) || 2)))} /></label>
+      <label className="block space-y-1"><span className="text-xs font-bold">{label('brainstorm.group_size', 'Home-group size')}</span><input type="number" min="2" max="6" className={fieldClass} aria-label={label('brainstorm.group_size', 'Home-group size')} value={groupSizeDraft} onChange={event => {
+        const raw = event.target.value;
+        setGroupSizeDraft(raw);
+        const parsed = Number(raw);
+        if (raw !== '' && Number.isFinite(parsed) && parsed >= 2 && parsed <= 6) {
+          change('groupSize', Math.round(parsed));
+        }
+      }} onBlur={event => {
+        const parsed = Number(event.target.value);
+        const clamped = Math.max(2, Math.min(6, event.target.value !== '' && Number.isFinite(parsed) ? Math.round(parsed) : (Number(item && item.groupSize) || 4)));
+        setGroupSizeDraft(String(clamped));
+        change('groupSize', clamped);
+      }} /></label>
       {chunks.map((chunk, index) => <fieldset key={index} className="border border-emerald-300 rounded-lg p-3 space-y-2"><legend className="text-xs font-bold">{label('brainstorm.expert_group', 'Expert group')} {index + 1}</legend>
         {textField(label('brainstorm.expert_group_label', 'Expert group label') + ' ' + (index + 1), chunk.label, value => change('chunks', replaceAt(chunks, index, { ...chunk, label: value })), 1)}
         {textField(label('brainstorm.expert_packet', 'Expert packet') + ' ' + (index + 1), chunk.expertPacket, value => change('chunks', replaceAt(chunks, index, { ...chunk, expertPacket: value })), 5)}
@@ -147,6 +163,7 @@ function ActivityResponseField(props) {
   return <textarea
     data-activity-response={props.responseKey}
     value={value}
+    onFocus={function () { if (typeof props.onFocusKey === 'function') props.onFocusKey(props.responseKey); }}
     onChange={function (event) { props.onAnswer(props.responseKey, event.target.value); }}
     rows={2}
     aria-label={activityT(props.t, 'brainstorm.answer_aria', 'Your answer: {question}', { question: String(props.question || '').slice(0, 160) })}
@@ -250,8 +267,28 @@ function DiscussionKitBody(props) {
   var hasStems = stemCats.some(function (c) { return stems[c].length; });
   var lookFors = activityNonEmpty(item.lookFors);
   var answering = !isTeacherMode && typeof props.onAnswer === 'function';
+  var [activeResponseKey, setActiveResponseKey] = React.useState('');
+  var defaultStemKey = '';
+  if (item.openingQuestion) {
+    defaultStemKey = activityResponseKey(item, 'opening', item.openingQuestion);
+  } else {
+    var firstQSet = (Array.isArray(item.questionSets) ? item.questionSets : []).find(function (set) {
+      return activityNonEmpty(set && set.questions).length > 0;
+    });
+    if (firstQSet) {
+      defaultStemKey = activityResponseKey(item, 'question', activityNonEmpty(firstQSet.questions)[0]);
+    }
+  }
+  var insertTalkStem = function (stemText) {
+    var targetKey = activeResponseKey || defaultStemKey;
+    if (!answering || !targetKey) return;
+    var answers = props.answers || {};
+    var prev = typeof answers[targetKey] === 'string' ? answers[targetKey] : '';
+    var sep = prev && !/\s$/.test(prev) ? ' ' : '';
+    props.onAnswer(targetKey, prev + sep + stemText);
+  };
   var field = function (key, question) {
-    return answering ? <ActivityResponseField t={t} answers={props.answers} onAnswer={props.onAnswer} responseKey={key} question={question} /> : null;
+    return answering ? <ActivityResponseField t={t} answers={props.answers} onAnswer={props.onAnswer} onFocusKey={setActiveResponseKey} responseKey={key} question={question} /> : null;
   };
   return (
     <div data-help-key="brainstorm_discussion_card">
@@ -292,7 +329,27 @@ function DiscussionKitBody(props) {
                 <div key={cat} className="bg-slate-50 border border-slate-200 rounded-lg p-2.5">
                   <strong className="block text-[11px] uppercase tracking-wider text-slate-600 mb-1">{stemLabels[cat]}</strong>
                   <ul className="text-xs text-slate-700 space-y-1">
-                    {list.map(function (s, sIdx) { return <li key={sIdx}>&ldquo;{activityDisplayText(s)}&rdquo;</li>; })}
+                    {list.map(function (s, sIdx) {
+                      var stemText = activityDisplayText(s);
+                      return (
+                        <li key={sIdx}>
+                          {answering && defaultStemKey ? (
+                            <button
+                              type="button"
+                              data-talk-stem={stemText}
+                              onClick={function () { insertTalkStem(stemText); }}
+                              aria-label={activityT(t, 'brainstorm.insert_stem_aria', 'Insert talk stem: {stem}', { stem: stemText })}
+                              title={activityT(t, 'brainstorm.insert_stem_tip', 'Click to insert into your answer')}
+                              className="text-left inline-block rounded-md border border-indigo-200 bg-white px-2 py-1 text-xs text-slate-800 hover:bg-indigo-50 hover:border-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 transition-colors"
+                            >
+                              &ldquo;{stemText}&rdquo;
+                            </button>
+                          ) : (
+                            <>&ldquo;{stemText}&rdquo;</>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 </div>
               );
@@ -403,10 +460,18 @@ function JigsawBody(props) {
   );
 }
 
+function _brainstormAiDoor(kind, t) {
+  try {
+    return typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway(kind, t) : null;
+  } catch (_) { return null; }
+}
+
 function BrainstormView(props) {
   var t = props.t;
   var generatedContent = props.generatedContent;
   var isTeacherMode = props.isTeacherMode;
+  var textAiDoor = isTeacherMode ? _brainstormAiDoor('text', t) : null;
+  var imageAiDoor = isTeacherMode ? _brainstormAiDoor('images', t) : null;
   var isEditingBrainstorm = props.isEditingBrainstorm;
   var isGeneratingGuide = props.isGeneratingGuide;
   var isGeneratingBrainstormRubric = props.isGeneratingBrainstormRubric || {};
@@ -432,6 +497,7 @@ function BrainstormView(props) {
                         <p className="text-sm text-yellow-900 flex-grow"><strong>{t('brainstorm.udl_goal_label') || 'UDL Goal:'}</strong> {t('brainstorm.udl_goal_body') || 'Providing options for engagement. Connecting concepts to student lives and physical activities increases relevance and motivation.'}</p>
                         <div className="flex gap-2">
                             <button
+                                type="button"
                                 onClick={handleToggleIsEditingBrainstorm}
                                 className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingBrainstorm ? 'bg-yellow-700 text-white hover:bg-yellow-700' : 'bg-white text-yellow-700 border border-yellow-200 hover:bg-yellow-50'}`}
                             >
@@ -518,9 +584,11 @@ function BrainstormView(props) {
                                          </div>
                                      ) : (
                                          <button
+                                            type="button"
                                             onClick={() => handleGenerateGuide(idx)}
-                                            disabled={isGeneratingGuide[idx]}
+                                            disabled={isGeneratingGuide[idx] || !!textAiDoor?.disabled}
                                             aria-busy={!!isGeneratingGuide[idx]}
+                                            title={textAiDoor?.title || undefined}
                                             className="flex items-center gap-2 text-xs font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition-colors border border-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                          >
                                              {isGeneratingGuide[idx] ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <ListChecks size={14} aria-hidden="true"/>}
@@ -533,7 +601,7 @@ function BrainstormView(props) {
                                                  <summary className="inline-flex items-center gap-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 px-3 py-1.5 rounded-full border border-emerald-200 cursor-pointer list-none transition-colors">
                                                      <FileText size={14} />
                                                      {t('brainstorm.student_worksheet') || 'Student Worksheet'}
-                                                     <span className="text-emerald-700/70 ml-0.5 group-open:rotate-180 transition-transform">▾</span>
+                                                     <span className="text-emerald-700/70 ml-0.5 group-open:rotate-180 transition-transform motion-reduce:transition-none">▾</span>
                                                  </summary>
                                                  <div className="mt-2 bg-emerald-50/40 rounded-lg p-4 text-sm text-slate-700 border border-emerald-200" data-help-key="brainstorm_worksheet">
                                                      {idea.coverImage && (
@@ -548,6 +616,7 @@ function BrainstormView(props) {
                                                      <div className="mb-3 flex justify-end gap-2 flex-wrap">
                                                          {isTeacherMode && typeof handleOpenActivityInStudio === 'function' ? (
                                                              <button
+                                                                 type="button"
                                                                  onClick={() => handleOpenActivityInStudio(idx)}
                                                                  className="text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 px-2 py-1 rounded-full transition-colors border border-indigo-200 flex items-center gap-1"
                                                                  title={t('brainstorm.page_designer_tip') || 'Open this worksheet as editable Page Designer objects'}
@@ -556,11 +625,12 @@ function BrainstormView(props) {
                                                              </button>
                                                          ) : null}
                                                          <button
+                                                             type="button"
                                                              onClick={() => handleGenerateWorksheetCover(idx)}
-                                                             disabled={isGeneratingWorksheetCover[idx]}
+                                                             disabled={isGeneratingWorksheetCover[idx] || !!imageAiDoor?.disabled}
                                                              aria-busy={!!isGeneratingWorksheetCover[idx]}
                                                              className="text-[11px] font-bold text-emerald-700 hover:bg-emerald-100 px-2 py-1 rounded-full transition-colors border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1"
-                                                             title={idea.coverImage ? (t('brainstorm.regenerate_cover') || 'Regenerate cover image') : (t('brainstorm.generate_cover_tip') || 'Optional: add a cover illustration to this worksheet')}
+                                                             title={imageAiDoor?.title || (idea.coverImage ? (t('brainstorm.regenerate_cover') || 'Regenerate cover image') : (t('brainstorm.generate_cover_tip') || 'Optional: add a cover illustration to this worksheet'))}
                                                          >
                                                              {isGeneratingWorksheetCover[idx] ? <RefreshCw size={11} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <ImageIcon size={11} aria-hidden="true"/>}
                                                              {isGeneratingWorksheetCover[idx]
@@ -589,10 +659,12 @@ function BrainstormView(props) {
                                              </details>
                                          ) : (
                                              <button
+                                                 type="button"
                                                  aria-label={t('brainstorm.generate_worksheet') || 'Generate student worksheet'}
                                                  onClick={() => handleGenerateWorksheet(idx)}
-                                                 disabled={isGeneratingWorksheet[idx]}
+                                                 disabled={isGeneratingWorksheet[idx] || !!textAiDoor?.disabled}
                                                  aria-busy={!!isGeneratingWorksheet[idx]}
+                                                 title={textAiDoor?.title || undefined}
                                                  className="mt-3 flex items-center gap-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 px-3 py-1.5 rounded-full transition-colors border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                              >
                                                  {isGeneratingWorksheet[idx] ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <FileText size={14} aria-hidden="true"/>}
@@ -605,7 +677,7 @@ function BrainstormView(props) {
                                              <summary className="inline-flex items-center gap-2 text-xs font-bold text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full border border-violet-200 cursor-pointer list-none transition-colors">
                                                  <ListChecks size={14} />
                                                  {activityDisplayText(idea.rubric.title) || t('brainstorm.activity_rubric_title') || 'Activity Rubric'}
-                                                 <span className="text-violet-700/70 ml-0.5 group-open:rotate-180 transition-transform">&#9662;</span>
+                                                 <span className="text-violet-700/70 ml-0.5 group-open:rotate-180 transition-transform motion-reduce:transition-none">&#9662;</span>
                                              </summary>
                                              <div className="mt-2 overflow-x-auto rounded-lg border border-violet-200" data-help-key="brainstorm_rubric">
                                                  <table className="min-w-[760px] w-full text-xs text-left text-slate-700">
@@ -637,10 +709,12 @@ function BrainstormView(props) {
                                          </details>
                                      ) : isTeacherMode ? (
                                          <button
+                                             type="button"
                                              aria-label={t('brainstorm.generate_rubric_aria') || 'Generate activity rubric'}
                                              onClick={() => handleGenerateBrainstormRubric(idx)}
-                                             disabled={isGeneratingBrainstormRubric[idx]}
+                                             disabled={isGeneratingBrainstormRubric[idx] || !!textAiDoor?.disabled}
                                              aria-busy={!!isGeneratingBrainstormRubric[idx]}
+                                             title={textAiDoor?.title || undefined}
                                              className="mt-3 flex items-center gap-2 text-xs font-bold text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full transition-colors border border-violet-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                          >
                                              {isGeneratingBrainstormRubric[idx] ? <RefreshCw size={12} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <ListChecks size={14} aria-hidden="true"/>}

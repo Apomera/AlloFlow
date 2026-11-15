@@ -336,9 +336,20 @@ function BrandProfileEditor(props) {
     reader.readAsText(file);
     e.target.value = '';
   }
+  function safeRasterLogoSrc(raw) {
+    if (typeof raw !== 'string') return '';
+    var trimmed = raw.trim();
+    if (!trimmed || trimmed.length > 750 * 1024) return '';
+    return /^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(trimmed) ? trimmed : '';
+  }
   function onLogoFile(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
+    if (!/^image\/(?:png|jpe?g|webp|gif)$/i.test(String(file.type || ''))) {
+      addToast(t('brand.logo_raster_only', 'Please choose a PNG, JPEG, WebP, or GIF image'), 'error');
+      e.target.value = '';
+      return;
+    }
     if (file.size > 512 * 1024) {
       addToast(t('brand.logo_too_big', 'Logo is over 512 KB — please use a smaller image'), 'error');
       e.target.value = '';
@@ -346,10 +357,15 @@ function BrandProfileEditor(props) {
     }
     const reader = new FileReader();
     reader.onload = function () {
+      const safeSrc = safeRasterLogoSrc(String(reader.result || ''));
+      if (!safeSrc) {
+        addToast(t('brand.logo_raster_only', 'Please choose a PNG, JPEG, WebP, or GIF image'), 'error');
+        return;
+      }
       setDraft(function (d) {
         return Object.assign({}, d, {
           logo: {
-            src: String(reader.result || ''),
+            src: safeSrc,
             alt: d.logo && d.logo.alt || '',
             width: null,
             height: null
@@ -568,8 +584,8 @@ function BrandProfileEditor(props) {
     className: "text-xs font-bold uppercase tracking-wide text-slate-500"
   }, t('brand.logo', 'Logo (optional)')), /*#__PURE__*/React.createElement("div", {
     className: "mt-1 flex items-start gap-3"
-  }, draft.logo && draft.logo.src ? /*#__PURE__*/React.createElement("img", {
-    src: draft.logo.src,
+  }, draft.logo && safeRasterLogoSrc(draft.logo.src) ? /*#__PURE__*/React.createElement("img", {
+    src: safeRasterLogoSrc(draft.logo.src),
     alt: draft.logo.alt || '',
     className: "h-12 w-auto max-w-[96px] rounded border border-slate-200 bg-white object-contain"
   }) : null, /*#__PURE__*/React.createElement("div", {
@@ -582,7 +598,7 @@ function BrandProfileEditor(props) {
       fileInputRef.current && fileInputRef.current.click();
     },
     className: "px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-medium hover:bg-slate-100"
-  }, draft.logo && draft.logo.src ? t('brand.logo_replace', 'Replace') : t('brand.logo_upload', 'Upload logo')), draft.logo && draft.logo.src && /*#__PURE__*/React.createElement("button", {
+  }, draft.logo && safeRasterLogoSrc(draft.logo.src) ? t('brand.logo_replace', 'Replace') : t('brand.logo_upload', 'Upload logo')), draft.logo && safeRasterLogoSrc(draft.logo.src) && /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: removeLogo,
     className: "px-3 py-1.5 rounded-lg text-red-800 text-xs font-medium hover:bg-red-50"
@@ -590,10 +606,10 @@ function BrandProfileEditor(props) {
     ref: fileInputRef,
     "aria-label": t('brand.logo_file', 'Upload logo image file'),
     type: "file",
-    accept: "image/*",
+    accept: "image/png,image/jpeg,image/webp,image/gif",
     onChange: onLogoFile,
     className: "hidden"
-  })), draft.logo && draft.logo.src && /*#__PURE__*/React.createElement("input", {
+  })), draft.logo && safeRasterLogoSrc(draft.logo.src) && /*#__PURE__*/React.createElement("input", {
     "aria-label": t('brand.logo_alt', 'Logo alternative text'),
     value: draft.logo.alt || '',
     onChange: function (e) {
@@ -661,7 +677,7 @@ function BrandProfileEditor(props) {
       background: c.bg,
       fontFamily: bodyFont
     }
-  }, (draft.header.text || draft.header.showLogo && draft.logo && draft.logo.src) && /*#__PURE__*/React.createElement("div", {
+  }, (draft.header.text || draft.header.showLogo && draft.logo && safeRasterLogoSrc(draft.logo.src)) && /*#__PURE__*/React.createElement("div", {
     style: {
       background: c.heading,
       color: c.bg,
@@ -670,8 +686,8 @@ function BrandProfileEditor(props) {
       alignItems: 'center',
       gap: '8px'
     }
-  }, draft.header.showLogo && draft.logo && draft.logo.src && /*#__PURE__*/React.createElement("img", {
-    src: draft.logo.src,
+  }, draft.header.showLogo && draft.logo && safeRasterLogoSrc(draft.logo.src) && /*#__PURE__*/React.createElement("img", {
+    src: safeRasterLogoSrc(draft.logo.src),
     alt: draft.logo.alt || '',
     style: {
       maxHeight: '24px',

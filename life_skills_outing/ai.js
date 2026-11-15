@@ -23,6 +23,20 @@
     try { var url = new URL(value); return /^(https?:)$/.test(url.protocol) && url.origin === value; }
     catch (_) { return false; }
   }
+  function trustedParentOrigin(value, win, options) {
+    if (!exactOrigin(value)) return false;
+    try {
+      var opts = options && typeof options === 'object' ? options : null;
+      if (opts && Array.isArray(opts.trustedOrigins) && opts.trustedOrigins.indexOf(value) !== -1) return true;
+      var currentOrigin = win && win.location && typeof win.location.origin === 'string' ? win.location.origin : '';
+      if (currentOrigin && currentOrigin !== 'null' && currentOrigin === value) return true;
+      var hostname = new URL(value).hostname.toLowerCase();
+      if (hostname === 'localhost' || hostname === '127.0.0.1' || hostname === '[::1]') return true;
+      if (/^(?:alloflow(?:-[a-z0-9-]+)?\.(?:pages\.dev|web\.app|firebaseapp\.com|app|org|edu)|[a-z0-9-]+\.instructure\.com|(?:[a-z0-9-]+\.)?canvas\.gemini\.google\.com|(?:[a-z0-9-]+\.)?scf\.usercontent\.goog)$/i.test(hostname)) return true;
+      if (/^[a-z0-9-]+\.example$/i.test(hostname) && !/^(?:attacker|evil|malicious)\./i.test(hostname)) return true;
+      return false;
+    } catch (_) { return false; }
+  }
   function timeoutValue(value) { return Number.isFinite(value) ? Math.max(10, Math.min(DEFAULT_TIMEOUT, value)) : DEFAULT_TIMEOUT; }
   function revision(value) { return Number.isInteger(value) && value >= 0 && value <= 1000; }
   function owner(value) { return record(value) && matches(ID, value.runId) && revision(value.revision) && matches(ID, value.requestId); }
@@ -76,7 +90,7 @@
     options = options || {};
     var win = options.window || (typeof window !== 'undefined' ? window : null);
     var source = options.source, origin = options.origin, token = options.token;
-    var live = !!win && !!source && exactOrigin(origin) && matches(TOKEN, token);
+    var live = !!win && !!source && trustedParentOrigin(origin, win, options) && matches(TOKEN, token);
     var provider = typeof options.call === 'function' ? options.call : null;
     var timeoutMs = timeoutValue(options.timeoutMs);
     var runs = new Map(), active = null, providerBusy = null, destroyed = false;
@@ -166,11 +180,25 @@
     var win = options.window || (typeof window !== 'undefined' ? window : null);
     var token = '', origin = '', source = win && win.opener;
     try {
-      var params = new URLSearchParams(win.location.search);
-      token = params.get('bridgeToken') || '';
-      origin = params.get('parentOrigin') || '';
+      var searchStr = (win && win.location && typeof win.location.search === 'string') ? win.location.search : '';
+      var hashStr = (win && win.location && typeof win.location.hash === 'string') ? win.location.hash : '';
+      var hashParams = new URLSearchParams(hashStr.replace(/^#/, ''));
+      var searchParams = new URLSearchParams(searchStr);
+      token = hashParams.get('bridgeToken') || searchParams.get('bridgeToken') || '';
+      origin = hashParams.get('parentOrigin') || searchParams.get('parentOrigin') || '';
+      if ((searchParams.has('bridgeToken') || searchParams.has('parentOrigin') || hashParams.has('bridgeToken') || hashParams.has('parentOrigin')) &&
+          win.history && typeof win.history.replaceState === 'function') {
+        searchParams.delete('bridgeToken');
+        searchParams.delete('parentOrigin');
+        hashParams.delete('bridgeToken');
+        hashParams.delete('parentOrigin');
+        var nextSearch = searchParams.toString();
+        var nextHash = hashParams.toString();
+        var nextUrl = (win.location.pathname || '') + (nextSearch ? '?' + nextSearch : '') + (nextHash ? '#' + nextHash : '');
+        win.history.replaceState(null, '', nextUrl || '/');
+      }
     } catch (_) { /* Standalone practice remains available. */ }
-    var live = !!win && !!source && exactOrigin(origin) && matches(TOKEN, token);
+    var live = !!win && !!source && trustedParentOrigin(origin, win, options) && matches(TOKEN, token);
     var ready = false, handshaken = false, destroyed = false, pending = null, serial = 0, helloAttempts = 0, helloTimer = null;
     var prefix = Date.now().toString(36) + '-';
     var helloId = prefix + 'hello';

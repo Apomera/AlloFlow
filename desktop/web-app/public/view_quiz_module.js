@@ -15637,7 +15637,7 @@ function QuizViewContent(props) {
     }, t("ui_common.edit_response"))) : /*#__PURE__*/React.createElement("div", {
       className: "mt-2"
     }, /*#__PURE__*/React.createElement("textarea", {
-      "aria-label": "Your reflection",
+      "aria-label": quizT('quiz.your_reflection_aria', 'Your reflection'),
       value: refDraft,
       onChange: function (e) {
         setReflectionDraft(i, e.target.value);
@@ -15692,7 +15692,7 @@ function QuizViewContent(props) {
     }, t("ui_common.edit_response"))) : /*#__PURE__*/React.createElement("div", {
       className: "mt-2"
     }, /*#__PURE__*/React.createElement("textarea", {
-      "aria-label": "Your reflection",
+      "aria-label": quizT('quiz.your_reflection_aria', 'Your reflection'),
       value: refDraft,
       onChange: function (e) {
         setReflectionDraft(0, e.target.value);

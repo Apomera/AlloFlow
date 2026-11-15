@@ -18,8 +18,27 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
   const { t } = useContext(LanguageContext);
   const reportRef = useRef(null);
   useFocusTrap(reportRef, true, onClose);
-  const { stats, climax, xp, level } = adventureState;
-  const safeStats = stats || { successes: 0, failures: 0, decisions: 0, partials: 0, conceptsFound: [] };
+  const { stats, climax, xp, level } = adventureState || {};
+  const safeStats = {
+      successes: Math.max(0, Number(stats?.successes) || 0),
+      failures: Math.max(0, Number(stats?.failures) || 0),
+      partials: Math.max(0, Number(stats?.partials) || 0),
+      decisions: Math.max(0, Number(stats?.decisions) || 0),
+      conceptsFound: Array.isArray(stats?.conceptsFound)
+          ? Array.from(new Set(stats.conceptsFound.map(c => String(c || '').trim()).filter(Boolean)))
+          : []
+  };
+  const safeLevel = Math.max(1, Number(level) || 1);
+  const safeXp = Math.max(0, Number(xp) || 0);
+  const totalXpEarned = (() => {
+      let total = safeXp;
+      let step = 100;
+      for (let i = 1; i < safeLevel; i++) {
+          total += step;
+          step = Math.max(1, Math.floor(step * 1.5));
+      }
+      return total;
+  })();
   const totalDecisions = Math.max(1, safeStats.decisions);
   // Partial credit counts (2026-08-23): partials sat in the DENOMINATOR only, so a partial
   // scored identically to a misconception. Half credit matches the 3-band assessment's intent.
@@ -34,8 +53,8 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
   else if (proficiency >= 70) ratingLabel = t('adventure.mission_report.rating2_solid') || 'Solid Command';
   else if (proficiency >= 50) ratingLabel = t('adventure.mission_report.rating2_developing') || 'Developing';
   return (
-    <div ref={reportRef} role="dialog" aria-modal="true" aria-labelledby="adventure-mission-report-title" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-700 p-4">
-      <div className="bg-slate-900 w-full max-w-md rounded-3xl border-4 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] overflow-hidden relative transform scale-100 animate-in zoom-in-95 duration-500 flex flex-col max-h-[90vh]">
+    <div ref={reportRef} role="dialog" aria-modal="true" aria-labelledby="adventure-mission-report-title" className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-700 motion-reduce:animate-none p-4">
+      <div className="bg-slate-900 w-full max-w-md rounded-3xl border-4 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] overflow-hidden relative transform scale-100 animate-in zoom-in-95 duration-500 motion-reduce:animate-none flex flex-col max-h-[90vh]">
         <div className="bg-yellow-500 p-4 text-center shrink-0">
             <h2 id="adventure-mission-report-title" className="text-3xl font-black text-slate-900 uppercase tracking-widest drop-shadow-sm flex items-center justify-center gap-2">
                 <Trophy size={32} aria-hidden="true" /> {t('adventure.mission_report.title')}
@@ -50,9 +69,9 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
             <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none"></div>
             <div className="text-center mb-2 relative z-20">
                 <div className="text-xs font-bold text-yellow-500 uppercase tracking-widest mb-1">{t('adventure.mission_report.final_score')}</div>
-                <div className="text-6xl font-black text-white tracking-tighter drop-shadow-lg">{xp}</div>
+                <div className="text-6xl font-black text-white tracking-tighter drop-shadow-lg">{totalXpEarned}</div>
                 <div className="inline-block bg-indigo-600 px-3 py-1 rounded-full border border-indigo-400 shadow-sm text-sm font-bold mt-2">
-                    {t('adventure.mission_report.level_achieved', { level: level || 1 })}
+                    {t('adventure.mission_report.level_achieved', { level: safeLevel })}
                 </div>
             </div>
             <div className="relative z-20">
@@ -62,7 +81,7 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
                 </div>
                 <div role="progressbar" aria-label={performanceLabel} aria-valuemin={0} aria-valuemax={100} aria-valuenow={proficiency} className="h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700 relative">
                     <div
-                        className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-1000 ease-out"
+                        className="h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-1000 ease-out motion-reduce:transition-none"
                         style={{ width: `${proficiency}%` }}
                     ></div>
                 </div>
@@ -128,9 +147,10 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
              </p>
              ) : (
              <button
+                type="button"
                 onClick={onExport}
                 disabled={isProcessing}
-                className="w-full min-h-11 py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                className="w-full min-h-11 py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors motion-reduce:transition-none shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
              >
                  {isProcessing ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <BookOpen size={18} aria-hidden="true"/>}
                  {isProcessing ? t('adventure.storybook_writing') : t('adventure.storybook')}
@@ -138,23 +158,26 @@ const MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, on
              )}
              {/* Continue and New Game are not offered to a live student (the host passes neither):
                  the teacher runs the class story. New Game opens the same confirmed restart as Start over. */}
-             {(onContinue || onNewGame) && <div className="grid grid-cols-2 gap-3">
+             {(onContinue || onNewGame) && <div className={`grid ${onContinue && onNewGame ? 'grid-cols-2' : 'grid-cols-1'} gap-3`}>
                  {onContinue && <button
+                    type="button"
                     onClick={() => { onClose(); if(onContinue) onContinue(); }}
-                    className="w-full min-h-11 py-3 rounded-xl font-bold bg-green-700 text-white hover:bg-green-800 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                    className="w-full min-h-11 py-3 rounded-xl font-bold bg-green-700 text-white hover:bg-green-800 transition-colors motion-reduce:transition-none shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
                  >
                      <MapIcon size={18} aria-hidden="true" /> {t('adventure.start_sequel') || "Continue"}
                  </button>}
                  {onNewGame && <button aria-label={t('adventure.new_game') || "New Game"}
+                    type="button"
                     onClick={() => { onClose(); if(onNewGame) onNewGame(); }}
-                    className="w-full min-h-11 py-3 rounded-xl font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 hover:text-white transition-colors border border-slate-500 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                    className="w-full min-h-11 py-3 rounded-xl font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 hover:text-white transition-colors motion-reduce:transition-none border border-slate-500 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
                  >
                      <RefreshCw size={18} aria-hidden="true" /> {t('adventure.new_game') || "New Game"}
                  </button>}
              </div>}
              <button
+                type="button"
                 onClick={onClose}
-                className="w-full min-h-11 py-2 text-sm font-bold text-slate-200 hover:text-white transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+                className="w-full min-h-11 py-2 text-sm font-bold text-slate-200 hover:text-white transition-colors motion-reduce:transition-none rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
              >
                  {t('adventure.mission_report.confirm_exit')}
              </button>
@@ -254,6 +277,7 @@ const playGenerativeSoundscapeLegacy = (ctx, dest, params) => {
                 eleFilter.type = 'lowpass';
                 eleFilter.frequency.value = 800;
                 const crackleInterval = setInterval(() => {
+                     if (ctx.state !== 'running' || isAdventureAudioDocumentHidden()) return;
                      if(Math.random() > 0.8) {
                          const spike = ctx.currentTime;
                          eleGain.gain.setValueAtTime(0.05, spike);
@@ -276,16 +300,17 @@ const playGenerativeSoundscapeLegacy = (ctx, dest, params) => {
                 activeNodes.push(waveLFO, waveGain);
                 break;
             case 'machinery':
+                eleFilter.type = 'lowpass';
+                eleFilter.frequency.value = 420;
                 const clank = ctx.createOscillator();
                 clank.type = 'square';
                 clank.frequency.value = 100;
-                const clankGain = ctx.createGain();
                 clank.connect(eleFilter);
                 const rhythm = ctx.createOscillator();
                 rhythm.type = 'square';
                 rhythm.frequency.value = 4;
                 const rhythmGain = ctx.createGain();
-                rhythmGain.gain.value = 1;
+                rhythmGain.gain.value = 0.08;
                 rhythm.connect(rhythmGain);
                 rhythmGain.connect(eleGain.gain);
                 clank.start(now);
@@ -310,6 +335,7 @@ const playGenerativeSoundscapeLegacy = (ctx, dest, params) => {
                  eleFilter.frequency.value = 3000;
                  eleGain.gain.value = 0.02;
                  const birdInterval = setInterval(() => {
+                     if (ctx.state !== 'running' || isAdventureAudioDocumentHidden()) return;
                      if(Math.random() > 0.7) {
                          const osc = ctx.createOscillator();
                          osc.frequency.setValueAtTime(2000 + Math.random()*1000, ctx.currentTime);
@@ -328,8 +354,11 @@ const playGenerativeSoundscapeLegacy = (ctx, dest, params) => {
         }
         if (element.toLowerCase() !== 'machinery') {
             noise.start(now);
-            activeNodes.push(noise, eleFilter, eleGain);
+            activeNodes.push(noise);
+        } else {
+            try { noise.disconnect(); } catch (_) {}
         }
+        activeNodes.push(eleFilter, eleGain);
     }
     return activeNodes;
 };
@@ -758,44 +787,60 @@ const playGenerativeSoundscape = (ctx, dest, params, options = {}) => {
     const playDetail = (from, to, duration, volume) => {
         if (ctx.state !== 'running' || isAdventureAudioDocumentHidden()) return;
         const voiceToken = claimTransient();
+        const safeFrom = Math.max(30, Number(from) || 220);
+        const safeTo = Math.max(30, Number(to) || safeFrom);
+        const safeDuration = Math.max(0.03, Math.min(4, Number(duration) || 0.25));
+        const safeVolume = Math.max(0.0002, Math.min(0.25, Number(volume) || 0.02));
         if (!voiceToken) return;
         const now = ctx.currentTime;
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         const panner = typeof ctx.createStereoPanner === 'function' ? ctx.createStereoPanner() : null;
-        osc.type = 'sine';
-        osc.frequency.setValueAtTime(from, now);
-        osc.frequency.exponentialRampToValueAtTime(Math.max(30, to), now + duration);
-        gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-        osc.connect(gain);
-        if (panner) {
-            const startPan = rng() * 1.2 - 0.6;
-            const endPan = clampAdventureAudio(startPan + (rng() * 0.5 - 0.25) * motionFactor, -0.85, 0.85);
-            try {
-                panner.pan.setValueAtTime(startPan, now);
-                panner.pan.linearRampToValueAtTime(endPan, now + duration);
-            } catch (_) { panner.pan.value = startPan; }
-            gain.connect(panner);
-            panner.connect(textureDest);
-            if (detailReverb) panner.connect(detailReverb);
-        } else {
-            gain.connect(textureDest);
-            if (detailReverb) gain.connect(detailReverb);
-        }
-        osc.start(now);
-        osc.stop(now + duration + 0.02);
-        setTimeout(() => {
+        try {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(safeFrom, now);
+            osc.frequency.exponentialRampToValueAtTime(safeTo, now + safeDuration);
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(safeVolume, now + Math.min(0.015, safeDuration * 0.4));
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + safeDuration);
+            osc.connect(gain);
+            if (panner) {
+                const startPan = rng() * 1.2 - 0.6;
+                const endPan = clampAdventureAudio(startPan + (rng() * 0.5 - 0.25) * motionFactor, -0.85, 0.85);
+                try {
+                    panner.pan.setValueAtTime(startPan, now);
+                    panner.pan.linearRampToValueAtTime(endPan, now + safeDuration);
+                } catch (_) { panner.pan.value = startPan; }
+                gain.connect(panner);
+                panner.connect(textureDest);
+                if (detailReverb) panner.connect(detailReverb);
+            } else {
+                gain.connect(textureDest);
+                if (detailReverb) gain.connect(detailReverb);
+            }
+            osc.start(now);
+            osc.stop(now + safeDuration + 0.02);
+            setTimeout(() => {
+                releaseTransient(voiceToken);
+                try { osc.disconnect(); } catch (_) {}
+                try { gain.disconnect(); } catch (_) {}
+                try { panner?.disconnect(); } catch (_) {}
+            }, Math.max(80, safeDuration * 1000 + 100));
+        } catch (_) {
             releaseTransient(voiceToken);
             try { osc.disconnect(); } catch (_) {}
             try { gain.disconnect(); } catch (_) {}
             try { panner?.disconnect(); } catch (_) {}
-        }, Math.max(80, duration * 1000 + 100));
+        }
     };
 
     const playNoiseDetail = (from, to, duration, volume) => {
         if (ctx.state !== 'running' || isAdventureAudioDocumentHidden()) return;
+        const safeFrom = Math.max(40, Number(from) || 300);
+        const safeTo = Math.max(40, Number(to) || safeFrom);
+        duration = Math.max(0.03, Math.min(4, Number(duration) || 0.2));
+        const safeDuration = duration;
+        const safeVolume = Math.max(0.0002, Math.min(0.25, Number(volume) || 0.02));
         const voiceToken = claimTransient();
         if (!voiceToken) return;
         const now = ctx.currentTime;
@@ -803,39 +848,47 @@ const playGenerativeSoundscape = (ctx, dest, params, options = {}) => {
         const filter = ctx.createBiquadFilter();
         const gain = ctx.createGain();
         const panner = typeof ctx.createStereoPanner === 'function' ? ctx.createStereoPanner() : null;
-        source.buffer = createAdventureNoiseBuffer(ctx, duration + 0.05, Math.floor(rng() * 4));
-        filter.type = 'bandpass';
-        filter.Q.value = 0.75 + rng() * 1.4;
-        filter.frequency.setValueAtTime(Math.max(40, from), now);
-        filter.frequency.exponentialRampToValueAtTime(Math.max(40, to), now + duration);
-        gain.gain.setValueAtTime(0.0001, now);
-        gain.gain.exponentialRampToValueAtTime(volume, now + Math.min(0.018, duration * 0.2));
-        gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
-        source.connect(filter);
-        filter.connect(gain);
-        if (panner) {
-            const startPan = rng() * 1.4 - 0.7;
-            const endPan = clampAdventureAudio(startPan + (rng() * 0.6 - 0.3) * motionFactor, -0.9, 0.9);
-            try {
-                panner.pan.setValueAtTime(startPan, now);
-                panner.pan.linearRampToValueAtTime(endPan, now + duration);
-            } catch (_) { panner.pan.value = startPan; }
-            gain.connect(panner);
-            panner.connect(textureDest);
-            if (detailReverb) panner.connect(detailReverb);
-        } else {
-            gain.connect(textureDest);
-            if (detailReverb) gain.connect(detailReverb);
-        }
-        source.start(now);
-        source.stop(now + duration + 0.03);
-        setTimeout(() => {
+        try {
+            source.buffer = createAdventureNoiseBuffer(ctx, duration + 0.05, Math.floor(rng() * 4));
+            filter.type = 'bandpass';
+            filter.Q.value = 0.75 + rng() * 1.4;
+            filter.frequency.setValueAtTime(safeFrom, now);
+            filter.frequency.exponentialRampToValueAtTime(safeTo, now + safeDuration);
+            gain.gain.setValueAtTime(0.0001, now);
+            gain.gain.exponentialRampToValueAtTime(safeVolume, now + Math.min(0.018, safeDuration * 0.2));
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + safeDuration);
+            source.connect(filter);
+            filter.connect(gain);
+            if (panner) {
+                const startPan = rng() * 1.4 - 0.7;
+                const endPan = clampAdventureAudio(startPan + (rng() * 0.6 - 0.3) * motionFactor, -0.9, 0.9);
+                try {
+                    panner.pan.setValueAtTime(startPan, now);
+                    panner.pan.linearRampToValueAtTime(endPan, now + safeDuration);
+                } catch (_) { panner.pan.value = startPan; }
+                gain.connect(panner);
+                panner.connect(textureDest);
+                if (detailReverb) panner.connect(detailReverb);
+            } else {
+                gain.connect(textureDest);
+                if (detailReverb) gain.connect(detailReverb);
+            }
+            source.start(now);
+            source.stop(now + safeDuration + 0.03);
+            setTimeout(() => {
+                releaseTransient(voiceToken);
+                try { source.disconnect(); } catch (_) {}
+                try { filter.disconnect(); } catch (_) {}
+                try { gain.disconnect(); } catch (_) {}
+                try { panner?.disconnect(); } catch (_) {}
+            }, Math.max(80, safeDuration * 1000 + 100));
+        } catch (_) {
             releaseTransient(voiceToken);
             try { source.disconnect(); } catch (_) {}
             try { filter.disconnect(); } catch (_) {}
             try { gain.disconnect(); } catch (_) {}
             try { panner?.disconnect(); } catch (_) {}
-        }, Math.max(80, duration * 1000 + 100));
+        }
     };
 
     const motifScales = {
@@ -986,12 +1039,29 @@ const getAdventureAudioEngine = () => {
         return audioCtx;
     };
 
+    const fadingLayers = new Set();
+    const forceStopLayer = (layer) => {
+        if (!layer) return;
+        if (layer.autoStopTimer) { clearTimeout(layer.autoStopTimer); layer.autoStopTimer = null; }
+        if (layer.stopTimer) { clearTimeout(layer.stopTimer); layer.stopTimer = null; }
+        fadingLayers.delete(layer);
+        layer.stopping = true;
+        stopAdventureAudioNodes(layer.nodes);
+        try { layer.gain.disconnect(); } catch (_) {}
+    };
     const stopLayer = (layer, fadeSeconds = 1.2) => {
-        if (!layer || layer.stopping) return;
+        if (!layer) return;
+        if (fadeSeconds <= 0.05) {
+            forceStopLayer(layer);
+            return;
+        }
+        if (layer.stopping) return;
         layer.stopping = true;
         if (layer.autoStopTimer) { clearTimeout(layer.autoStopTimer); layer.autoStopTimer = null; }
+        fadingLayers.add(layer);
         rampGain(layer.gain, 0.0001, fadeSeconds);
         layer.stopTimer = setTimeout(() => {
+            fadingLayers.delete(layer);
             stopAdventureAudioNodes(layer.nodes);
             try { layer.gain.disconnect(); } catch (_) {}
         }, Math.max(60, fadeSeconds * 1000 + 80));
@@ -1110,6 +1180,9 @@ const getAdventureAudioEngine = () => {
         const oldLayer = currentAmbience;
         currentAmbience = null;
         stopLayer(oldLayer, fadeSeconds);
+        if (fadeSeconds <= 0.05 && fadingLayers.size > 0) {
+            Array.from(fadingLayers).forEach(forceStopLayer);
+        }
     };
 
     const setMuted = (muted) => {
@@ -1250,13 +1323,20 @@ const playAdventureEventSound = (type) => {
             osc = ctx.createOscillator();
             gain = ctx.createGain();
             panner = typeof ctx.createStereoPanner === 'function' ? ctx.createStereoPanner() : null;
-            const at = now + start;
+            const safeStart = Math.max(0, Number.isFinite(Number(start)) ? Number(start) : 0);
+            const safeDur = Math.max(0.03, Number.isFinite(Number(duration)) ? Number(duration) : 0.25);
+            const safeVol = Math.max(0.0002, Number.isFinite(Number(volume)) ? Number(volume) : 0.05);
+            const safeFreq = Math.max(30, Number.isFinite(Number(frequency)) ? Number(frequency) : 220);
+            const rawEndFreq = Number(endFrequency);
+            const at = now + safeStart;
             osc.type = wave;
-            osc.frequency.setValueAtTime(Math.max(30, frequency), at);
-            if (endFrequency) osc.frequency.exponentialRampToValueAtTime(Math.max(30, endFrequency), at + duration);
+            osc.frequency.setValueAtTime(safeFreq, at);
+            if (Number.isFinite(rawEndFreq) && rawEndFreq > 0) {
+                osc.frequency.exponentialRampToValueAtTime(Math.max(30, rawEndFreq), at + safeDur);
+            }
             gain.gain.setValueAtTime(0.0001, at);
-            gain.gain.exponentialRampToValueAtTime(volume, at + Math.min(0.018, duration * 0.2));
-            gain.gain.exponentialRampToValueAtTime(0.0001, at + duration);
+            gain.gain.exponentialRampToValueAtTime(safeVol, at + Math.min(0.018, safeDur * 0.2));
+            gain.gain.exponentialRampToValueAtTime(0.0001, at + safeDur);
             osc.connect(gain);
             if (panner) {
                 panner.pan.value = clampAdventureAudio(pan, -1, 1);
@@ -1265,9 +1345,9 @@ const playAdventureEventSound = (type) => {
             } else gain.connect(destination);
             osc.onended = cleanup;
             osc.start(at);
-            osc.stop(at + duration + 0.025);
+            osc.stop(at + safeDur + 0.025);
             playedAnyVoice = true;
-            setTimeout(cleanup, Math.max(80, (start + duration) * 1000 + 120));
+            setTimeout(cleanup, Math.max(80, (safeStart + safeDur) * 1000 + 120));
             return true;
         } catch (_) {
             cleanup();
@@ -1295,6 +1375,10 @@ const playAdventureEventSound = (type) => {
     const noise = ({ duration = 0.2, volume = 0.035, from = 300, to = 1400, pan = 0 }) => {
         const voiceToken = engine.claimVoice(eventPriority);
         if (!voiceToken) return false;
+        const safeDur = Math.max(0.03, Number.isFinite(Number(duration)) ? Number(duration) : 0.2);
+        const safeVol = Math.max(0.0002, Number.isFinite(Number(volume)) ? Number(volume) : 0.035);
+        const safeFrom = Math.max(40, Number.isFinite(Number(from)) ? Number(from) : 300);
+        const safeTo = Math.max(40, Number.isFinite(Number(to)) ? Number(to) : 1400);
         let source = null;
         let filter = null;
         let gain = null;
@@ -1311,14 +1395,14 @@ const playAdventureEventSound = (type) => {
             filter = ctx.createBiquadFilter();
             gain = ctx.createGain();
             panner = typeof ctx.createStereoPanner === 'function' ? ctx.createStereoPanner() : null;
-            source.buffer = createAdventureNoiseBuffer(ctx, duration + 0.05, variation);
+            source.buffer = createAdventureNoiseBuffer(ctx, safeDur + 0.05, variation);
             filter.type = 'bandpass';
             filter.Q.value = 0.8;
-            filter.frequency.setValueAtTime(from, now);
-            filter.frequency.exponentialRampToValueAtTime(to, now + duration);
+            filter.frequency.setValueAtTime(safeFrom, now);
+            filter.frequency.exponentialRampToValueAtTime(safeTo, now + safeDur);
             gain.gain.setValueAtTime(0.0001, now);
-            gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
-            gain.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+            gain.gain.exponentialRampToValueAtTime(safeVol, now + Math.min(0.01, safeDur * 0.3));
+            gain.gain.exponentialRampToValueAtTime(0.0001, now + safeDur);
             source.connect(filter);
             filter.connect(gain);
             if (panner) {
@@ -1328,9 +1412,9 @@ const playAdventureEventSound = (type) => {
             } else gain.connect(destination);
             source.onended = cleanup;
             source.start(now);
-            source.stop(now + duration + 0.03);
+            source.stop(now + safeDur + 0.03);
             playedAnyVoice = true;
-            setTimeout(cleanup, Math.max(80, duration * 1000 + 120));
+            setTimeout(cleanup, Math.max(80, safeDur * 1000 + 120));
             return true;
         } catch (_) {
             cleanup();
@@ -1472,7 +1556,7 @@ const ClimaxProgressBar = React.memo(({ climaxState }) => {
 const ADVENTURE_AMBIENCE_INTRO_HOLD_MS = 7000;   // swell + hold before the fade begins
 const ADVENTURE_AMBIENCE_OUTRO_FADE_S = 3.5;     // gentle fade, not a cut
 
-const AdventureAmbience = React.memo(({ sceneText, soundParams, themeSeed, active, volume = 0.3 }) => {
+const AdventureAmbience = React.memo(({ sceneText, soundParams, themeSeed, active, sfxEnabled = active, volume = 0.3 }) => {
     const engineRef = useRef(null);
     const lastSceneRef = useRef(null);   // scene identity: bookend fires once per scene, not per re-render
     const holdTimerRef = useRef(null);
@@ -1483,7 +1567,8 @@ const AdventureAmbience = React.memo(({ sceneText, soundParams, themeSeed, activ
         if (!active || !sceneText) {
             lastSceneRef.current = null;
             if (holdTimerRef.current) { clearTimeout(holdTimerRef.current); holdTimerRef.current = null; }
-            engine.setEnabled(false);
+            if (sfxEnabled) engine.setEnabled(true);
+            else engine.setEnabled(false);
             engine.stopAmbience(0.65);
             return;
         }
@@ -1579,10 +1664,32 @@ const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key
     };
     useEffect(() => {
         if (!open) return;
+        const trapSelector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
         const onKeyDown = event => {
             if (event.key === 'Escape') {
                 event.preventDefault();
                 closeDialog();
+                return;
+            }
+            if (event.key === 'Tab' && dialogRef.current) {
+                const focusables = Array.from(dialogRef.current.querySelectorAll(trapSelector))
+                    .filter(el => el.offsetParent !== null || el === document.activeElement);
+                if (!focusables.length) {
+                    event.preventDefault();
+                    dialogRef.current.focus();
+                    return;
+                }
+                const first = focusables[0];
+                const last = focusables[focusables.length - 1];
+                if (event.shiftKey) {
+                    if (document.activeElement === first || !dialogRef.current.contains(document.activeElement) || document.activeElement === dialogRef.current) {
+                        event.preventDefault();
+                        last.focus();
+                    }
+                } else if (document.activeElement === last || !dialogRef.current.contains(document.activeElement)) {
+                    event.preventDefault();
+                    first.focus();
+                }
             }
         };
         window.addEventListener('keydown', onKeyDown);
@@ -1656,7 +1763,7 @@ const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key
                     <input type="checkbox" checked={preferences.gentle} onChange={event => update({ gentle: event.target.checked })} className="h-5 w-5 accent-indigo-700" />
                     <span><span className="block">{translate('adventure.audio_gentle', 'Gentle sound mode')}</span><span className="block font-normal text-indigo-700">{translate('adventure.audio_gentle_note', 'Softer effects and calmer motion.')}</span></span>
                 </label>
-                <details className="mt-3 rounded-xl border border-violet-200 bg-violet-50/70 p-3">
+                <details className="mt-3 rounded-xl border border-violet-200 bg-violet-50/70 p-3" onToggle={event => { if (!event.currentTarget.open) getAdventureAudioEngine().stopPreview(0.15); }}>
                     <summary className="min-h-11 cursor-pointer select-none py-2 text-sm font-black text-violet-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700">
                         {translate('adventure.audio_sound_lab', 'Adventure Sound Lab')}
                     </summary>
@@ -1715,22 +1822,33 @@ const AdventureAudioControls = React.memo(({ soundEnabled = true, t = key => key
 
 const playDiceSound = () => {
   const engine = getAdventureAudioEngine();
-  if (!engine.canPlayEvent('dice', 250)) return;
+  if (!engine.canPlayEvent('dice', 250)) return () => {};
   const ctx = engine.resume();
   const destination = engine.getSfxBus();
-  if (!ctx || !destination) return;
+  if (!ctx || !destination) return () => {};
   const now = ctx.currentTime;
+  const activeClacks = [];
+  let cancelled = false;
   const playClack = (time, velocity, index) => {
     const voiceToken = engine.claimVoice(index < 2 ? 'event' : 'detail');
     if (!voiceToken) return false;
     let noise = null;
     let filter = null;
     let gain = null;
+    let cleaned = false;
+    let timerId = null;
     const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      if (timerId !== null) { clearTimeout(timerId); timerId = null; }
       engine.releaseVoice(voiceToken);
       try { noise?.disconnect(); } catch (_) {}
       try { filter?.disconnect(); } catch (_) {}
       try { gain?.disconnect(); } catch (_) {}
+    };
+    const stopAndCleanup = () => {
+      try { noise?.stop(); } catch (_) {}
+      cleanup();
     };
     try {
       noise = ctx.createBufferSource();
@@ -1749,7 +1867,8 @@ const playDiceSound = () => {
       noise.onended = cleanup;
       noise.start(time);
       noise.stop(time + 0.1);
-      setTimeout(cleanup, Math.max(120, (time - now + 0.1) * 1000 + 120));
+      timerId = setTimeout(cleanup, Math.max(120, (time - now + 0.1) * 1000 + 120));
+      activeClacks.push(stopAndCleanup);
       return true;
     } catch (_) {
       cleanup();
@@ -1764,6 +1883,11 @@ const playDiceSound = () => {
   playedClack = playClack(now + 0.45 + Math.random() * 0.1, 0.3, 4) || playedClack;
   playedClack = playClack(now + 0.7 + Math.random() * 0.1, 0.15, 5) || playedClack;
   if (playedClack) engine.focusEvent('event', 850);
+  return () => {
+    if (cancelled) return;
+    cancelled = true;
+    activeClacks.forEach(fn => { try { fn(); } catch (_) {} });
+  };
 };
 const getD20Rotation = (result, spins = 5) => {
     const index = result - 1;
@@ -1861,17 +1985,24 @@ const DiceOverlay = React.memo(({ result, onComplete }) => {
   const reduceMotion = typeof window !== 'undefined' && window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   useFocusTrap(diceRef, true, onComplete);
   const onCompleteRef = useRef(onComplete);
+  const completedRef = useRef(false);
   useEffect(() => {
-    onCompleteRef.current = onComplete;
+    onCompleteRef.current = () => {
+      if (completedRef.current) return;
+      completedRef.current = true;
+      if (typeof onComplete === 'function') onComplete();
+    };
   }, [onComplete]);
   const [currentRotation, setCurrentRotation] = useState(() => {
+      if (reduceMotion) return getD20Rotation(result, 0);
       const rX = Math.floor(Math.random() * 360);
       const rY = Math.floor(Math.random() * 360);
       return `rotateX(${rX}deg) rotateY(${rY}deg) rotateZ(0deg)`;
   });
   useEffect(() => {
-    playDiceSound();
-    const spinCount = 4 + Math.floor(Math.random() * 2);
+    completedRef.current = false;
+    const stopDiceSound = playDiceSound();
+    const spinCount = reduceMotion ? 0 : 4 + Math.floor(Math.random() * 2);
     const targetRotation = getD20Rotation(result, spinCount);
     const rollTimer = setTimeout(() => {
         setCurrentRotation(targetRotation);
@@ -1880,6 +2011,7 @@ const DiceOverlay = React.memo(({ result, onComplete }) => {
     return () => {
       clearTimeout(rollTimer);
       clearTimeout(endTimer);
+      if (typeof stopDiceSound === 'function') stopDiceSound();
     };
   }, [reduceMotion, result]);
   return (
@@ -1888,14 +2020,15 @@ const DiceOverlay = React.memo(({ result, onComplete }) => {
       role="dialog"
       aria-modal="true"
       aria-labelledby="adventure-dice-result"
-      className="fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm flex items-center justify-center"
-      onClick={onComplete}
+      className="fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm flex flex-col items-center justify-center"
+      onClick={() => onCompleteRef.current()}
     >
       <p id="adventure-dice-result" className="sr-only" role="status" aria-live="assertive">
         {t('adventure.dice_roll_result', { result })}
       </p>
       <button
-        onClick={(e) => { e.stopPropagation(); onComplete(); }}
+        type="button"
+        onClick={(e) => { e.stopPropagation(); onCompleteRef.current(); }}
         className="absolute top-6 right-6 min-w-11 min-h-11 text-white hover:text-white bg-black/50 hover:bg-black/70 p-2 rounded-full transition-colors z-[202] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black"
         title={t('common.skip_animation')}
         aria-label={t('common.skip_animation')}
@@ -1906,7 +2039,7 @@ const DiceOverlay = React.memo(({ result, onComplete }) => {
       <div className="dice-container" aria-hidden="true" onClick={(e) => e.stopPropagation()}>
         <div
           className="dice"
-          style={{ transform: currentRotation }}
+          style={{ transform: currentRotation, ...(reduceMotion ? { transition: 'none' } : {}) }}
         >
             {Array.from({ length: 20 }, (_, i) => {
                 const num = i + 1;
@@ -1922,22 +2055,41 @@ const DiceOverlay = React.memo(({ result, onComplete }) => {
             })}
         </div>
       </div>
+      <div aria-hidden="true" className="mt-6 rounded-full bg-slate-900/90 border border-indigo-400/50 px-4 py-1 text-sm font-black tracking-wider text-white shadow-lg">d20: {result}</div>
     </div>
   );
 });
 
 // ═══ AdventureShop (lines 10923-11011) ═══
-const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
+const AdventureShop = React.memo(({ gold, globalXP, energy = 100, inventory = [], chanceMode = true, activeXpBoost = 1, activeGoldBuffTurns = 0, onClose, onPurchase }) => {
   const shopRef = useRef(null);
+  const closeBtnRef = useRef(null);
+  const lastPurchasedIdRef = useRef(null);
   useFocusTrap(shopRef, true, onClose);
   const { t } = useContext(LanguageContext);
+  const getItemBlockReason = (item) => {
+    if (item.effectType === 'modifier' && chanceMode === false) return 'chance_off';
+    if (item.effectType === 'energy' && Number(energy) >= 100) return 'energy_full';
+    if (item.effectType === 'xp_boost' && Number(activeXpBoost) >= (Number(item.effectValue) || 2)) return 'boost_active';
+    return null;
+  };
+  useEffect(() => {
+    const purchasedId = lastPurchasedIdRef.current;
+    if (!purchasedId) return;
+    const item = ADVENTURE_SHOP_ITEMS.find(entry => entry.id === purchasedId);
+    if (!item) return;
+    if (gold < item.cost || getItemBlockReason(item)) {
+      lastPurchasedIdRef.current = null;
+      requestAnimationFrame(() => { closeBtnRef.current?.focus({ preventScroll: true }); });
+    }
+  }, [gold, energy, chanceMode, activeXpBoost]);
   return (
     <div
         ref={shopRef}
         role="dialog"
         aria-modal="true"
         aria-label={t('adventure.shop')}
-        className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200"
+        className="fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none"
         onClick={onClose}
     >
       <div className="bg-slate-900 border-4 border-indigo-500 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden relative flex flex-col max-h-[90vh]" onClick={e => e.stopPropagation()}>
@@ -1951,17 +2103,17 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
                 </h2>
                 <p className="text-white text-sm font-bold mt-1 ml-1">{t('adventure.shop_desc')}</p>
             </div>
-            <button onClick={onClose} className="min-w-11 min-h-11 bg-indigo-800 hover:bg-indigo-700 text-white p-2 rounded-full transition-colors border-2 border-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white" autoFocus aria-label={t('adventure.close_shop_aria')}>
+            <button ref={closeBtnRef} type="button" onClick={onClose} className="min-w-11 min-h-11 bg-indigo-800 hover:bg-indigo-700 text-white p-2 rounded-full transition-colors border-2 border-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white" autoFocus aria-label={t('adventure.close_shop_aria')}>
                 <X size={24} aria-hidden="true"/>
             </button>
         </div>
         <div className="bg-slate-800 p-2 sm:p-4 flex justify-between items-center border-b border-slate-700 shrink-0 gap-2 sm:gap-4 flex-wrap sm:flex-nowrap">
-            <div className="flex gap-6">
+            <div className="flex gap-6 flex-wrap">
                 <div className="flex items-center gap-2 bg-slate-700 px-4 py-2 rounded-xl border border-slate-600">
                     <span className="text-2xl" aria-hidden="true">💰</span>
                     <div>
                         <div className="text-[11px] text-slate-200 font-bold uppercase tracking-wider">{t('adventure.gold')}</div>
-                        <div className="text-xl font-black text-yellow-400 leading-none">{gold}</div>
+                        <div className="text-xl font-black text-yellow-400 leading-none" aria-live="polite" aria-atomic="true">{gold}</div>
                     </div>
                 </div>
                 <div className="flex items-center gap-2 bg-slate-700 px-4 py-2 rounded-xl border border-slate-600">
@@ -1977,17 +2129,40 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
             </div>
         </div>
         <div className="p-3 sm:p-6 overflow-y-auto custom-scrollbar bg-slate-900 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 flex-1 min-h-0">
-            {ADVENTURE_SHOP_ITEMS.map((item) => (
+            {ADVENTURE_SHOP_ITEMS.map((item) => {
+                const ownedCount = Array.isArray(inventory)
+                    ? inventory.reduce((total, entry) => {
+                        if (!entry) return total;
+                        const matches = entry.id === item.id || String(entry.id || '').startsWith(item.id + '_') || (entry.name && item.name && entry.name === item.name);
+                        return matches ? total + (Number(entry.quantity) || 1) : total;
+                    }, 0)
+                    : 0;
+                const blockReason = getItemBlockReason(item);
+                const canAfford = gold >= item.cost;
+                const isDisabled = !canAfford || !!blockReason;
+                const disabledLabel = blockReason === 'chance_off'
+                    ? (t('adventure.shop_chance_off') || 'Chance mode off')
+                    : blockReason === 'energy_full'
+                        ? (t('adventure.shop_energy_full') || 'Energy full')
+                        : blockReason === 'boost_active'
+                            ? (t('adventure.shop_boost_active') || (Number(activeGoldBuffTurns) > 0 ? 'Boost active' : 'Boost active'))
+                            : (t('adventure.need_more_gold', { amount: item.cost - gold }) || `Need ${item.cost - gold}G more`);
+                return (
                 <div key={item.id} className="bg-slate-800 border-2 border-slate-700 rounded-2xl p-3 sm:p-4 flex flex-col hover:border-indigo-500 transition-colors group relative overflow-hidden">
                     <div className="flex justify-between items-start mb-2 relative z-10">
                         <div className="text-2xl sm:text-4xl bg-slate-700 w-10 h-10 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center shadow-inner border border-slate-600" aria-hidden="true">
                             {item.icon}
                         </div>
-                        <div className="text-right">
+                        <div className="text-right flex flex-col items-end gap-1">
                             <div className="text-yellow-400 font-black text-lg">{item.cost} G</div>
                             <span className="inline-block max-w-36 truncate whitespace-nowrap text-[11px] font-bold uppercase text-slate-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700" title={t(`adventure.effects.${item.effectType}_label`) || t(`adventure.effects.${item.effectType}`) || item.effectType}>
                                 {t(`adventure.effects.${item.effectType}_label`) || t(`adventure.effects.${item.effectType}`) || item.effectType}
                             </span>
+                            {ownedCount > 0 && (
+                                <span className="inline-block text-[11px] font-bold text-emerald-200 bg-emerald-950/90 px-2 py-0.5 rounded border border-emerald-600">
+                                    {(t('adventure.shop_owned') || 'Owned')}: {ownedCount}
+                                </span>
+                            )}
                         </div>
                     </div>
                     <div className="relative z-10 flex flex-col flex-1">
@@ -1998,20 +2173,22 @@ const AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
                             {t(`adventure.shop_items.${item.id}_desc`) || item.description}
                         </p>
                         <button
-                            onClick={() => onPurchase(item)}
-                            disabled={gold < item.cost}
-                            className={`w-full py-2 sm:py-2.5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 ${
-                                gold >= item.cost
+                            type="button"
+                            onClick={() => { lastPurchasedIdRef.current = item.id; onPurchase(item); }}
+                            disabled={isDisabled}
+                            className={`w-full py-2 sm:py-2.5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-95 motion-reduce:transform-none shrink-0 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 ${
+                                !isDisabled
                                 ? 'bg-yellow-500 hover:bg-yellow-400 text-indigo-900 shadow-lg shadow-yellow-500/30 border-2 border-yellow-300 ring-1 ring-yellow-400/50'
                                 : 'bg-slate-700 text-slate-300 cursor-not-allowed'
                             }`}
                         >
-                            {gold >= item.cost ? t('adventure.buy_now') : t('adventure.no_gold')}
+                            {!isDisabled ? t('adventure.buy_now') : disabledLabel}
                         </button>
                     </div>
                     <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none"></div>
                 </div>
-            ))}
+                );
+            })}
         </div>
       </div>
     </div>
@@ -2177,12 +2354,15 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
         setSanitizingPortraitIdx(pending.charIdx);
         try {
             const sanitizedPortrait = await sanitizeAdventurePortraitFile(pending.file);
+            if (!portraitQueueMountedRef.current) return;
             if (onUploadPortrait) onUploadPortrait(pending.charIdx, sanitizedPortrait);
         } catch (error) {
-            setPortraitUploadError({ charIdx: pending.charIdx, message: 'This image could not be prepared securely. Please choose a different image.' });
+            if (portraitQueueMountedRef.current) {
+                setPortraitUploadError({ charIdx: pending.charIdx, message: 'This image could not be prepared securely. Please choose a different image.' });
+            }
         } finally {
-            pending.input.value = '';
-            setSanitizingPortraitIdx(null);
+            if (pending?.input) pending.input.value = '';
+            if (portraitQueueMountedRef.current) setSanitizingPortraitIdx(null);
         }
     };
     const handlePortraitFileChange = (charIdx, e) => {
@@ -2231,7 +2411,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
         setEditFieldValue('');
     };
     return (
-        <div ref={castRef} role="dialog" aria-modal="true" aria-labelledby="adventure-cast-lobby-title" className="fixed inset-0 z-[250] bg-gradient-to-br from-violet-950/95 to-indigo-950/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-500">
+        <div ref={castRef} role="dialog" aria-modal="true" aria-labelledby="adventure-cast-lobby-title" className="fixed inset-0 z-[250] bg-gradient-to-br from-violet-950/95 to-indigo-950/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-500 motion-reduce:animate-none">
             <div className="bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-8">
                 <div className="text-center mb-6">
                     <span className="text-4xl mb-2 block" aria-hidden="true">🎭</span>
@@ -2241,7 +2421,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
                     {characters.map((char, i) => (
                         <div key={char.id || i} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 p-4 flex flex-col items-center text-center transition-all hover:shadow-lg hover:border-violet-300 relative group/card">
-                            <button type="button" disabled={isPortraitSanitizing || isPortraitQueueBusy} onClick={() => { setPortraitUploadError(null); clearPendingPortraitUpload(); onRemoveCharacter(i); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-700 text-xs font-bold opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus:opacity-100 transition-opacity flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2" title={t('adventure.remove_character')} aria-label={(t('adventure.remove_character') || 'Remove character') + ': ' + (char.name || (i + 1))}>✕</button>
+                            <button type="button" disabled={isPortraitSanitizing || isPortraitQueueBusy} onClick={() => { setPortraitUploadError(null); clearPendingPortraitUpload(); onRemoveCharacter(i); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-700 text-xs font-bold opacity-85 sm:opacity-0 sm:group-hover/card:opacity-100 sm:group-focus-within/card:opacity-100 focus:opacity-100 transition-opacity flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2" title={t('adventure.remove_character')} aria-label={(t('adventure.remove_character') || 'Remove character') + ': ' + (char.name || (i + 1))}>✕</button>
                             <div role="group" className="w-24 h-24 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center overflow-hidden mb-3 shadow-inner" aria-busy={!!char.isGenerating} aria-label={char.isGenerating ? (t('adventure.generating_portrait_aria') || ('Generating portrait for ' + (char.name || 'character'))) : undefined}>
                                 {char.isGenerating ? (
                                     <div className="animate-spin motion-reduce:animate-none w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full" aria-hidden="true"></div>
@@ -2252,17 +2432,17 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                 )}
                             </div>
                             {editingField?.idx === i && editingField?.field === 'name' ? (
-                                <input type="text" aria-label={t('adventure.edit_name') || 'Edit character name'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter') saveFieldEdit(); if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus className="font-bold text-slate-800 text-sm text-center w-full px-2 py-0.5 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white"/>
+                                <input type="text" aria-label={t('adventure.edit_name') || 'Edit character name'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter') saveFieldEdit(); if (e.key === 'Escape') { e.stopPropagation(); setEditingField(null); setEditFieldValue(''); }}} autoFocus className="font-bold text-slate-800 text-sm text-center w-full px-2 py-0.5 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white"/>
                             ) : (
                                 <h3><button type="button" onClick={() => startFieldEdit(i, 'name')} className="min-w-11 min-h-11 px-2 font-bold text-slate-800 text-sm cursor-pointer hover:text-violet-700 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.edit_name')} aria-label={(t('adventure.edit_name') || 'Edit character name') + ': ' + char.name}>{char.name}</button></h3>
                             )}
                             {editingField?.idx === i && editingField?.field === 'role' ? (
-                                <input type="text" aria-label={t('adventure.edit_role') || 'Edit character role'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter') saveFieldEdit(); if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus className="text-xs text-violet-600 font-medium text-center w-full px-2 py-0.5 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white mt-0.5"/>
+                                <input type="text" aria-label={t('adventure.edit_role') || 'Edit character role'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter') saveFieldEdit(); if (e.key === 'Escape') { e.stopPropagation(); setEditingField(null); setEditFieldValue(''); }}} autoFocus className="text-xs text-violet-600 font-medium text-center w-full px-2 py-0.5 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white mt-0.5"/>
                             ) : (
                                 <button type="button" onClick={() => startFieldEdit(i, 'role')} className="min-w-11 min-h-11 px-2 text-xs text-violet-700 font-medium cursor-pointer hover:text-violet-800 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.edit_role')} aria-label={(t('adventure.edit_role') || 'Edit character role') + ': ' + char.role}>{char.role}</button>
                             )}
                             {editingField?.idx === i && editingField?.field === 'appearance' ? (
-                                <textarea aria-label={t('adventure.edit_appearance') || 'Edit character appearance'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveFieldEdit(); } if (e.key === 'Escape') { setEditingField(null); setEditFieldValue(''); }}} autoFocus rows={3} className="text-[11px] text-slate-600 mt-1 leading-relaxed w-full px-2 py-1 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white resize-none"/>
+                                <textarea aria-label={t('adventure.edit_appearance') || 'Edit character appearance'} value={editFieldValue} onChange={(e) => setEditFieldValue(e.target.value)} onBlur={saveFieldEdit} onKeyDown={(e) => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); saveFieldEdit(); } if (e.key === 'Escape') { e.stopPropagation(); setEditingField(null); setEditFieldValue(''); }}} autoFocus rows={3} className="text-[11px] text-slate-600 mt-1 leading-relaxed w-full px-2 py-1 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white resize-none"/>
                             ) : (
                                 <button type="button" onClick={() => startFieldEdit(i, 'appearance')} className="min-w-11 min-h-11 px-2 text-[11px] text-slate-700 mt-1 leading-relaxed cursor-pointer hover:text-slate-800 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" title={t('adventure.edit_appearance')} aria-label={(t('adventure.edit_appearance') || 'Edit character appearance') + ': ' + char.appearance}>{char.appearance}</button>
                             )}
@@ -2280,7 +2460,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                     </button>
                                     {editIdx === i ? (
                                         <div className="w-full flex gap-1 mt-1">
-                                            <input type="text" aria-label={t('adventure.portrait_refine_aria') || 'Describe how to refine portrait'} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} placeholder={t('adventure.portrait_refine_placeholder') || 'e.g. Add green glasses'} className="flex-1 text-xs px-2 py-1 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none" onKeyDown={(e) => { if (e.key === 'Enter' && editPrompt.trim()) { onRefinePortrait(i, editPrompt.trim()); setEditIdx(null); setEditPrompt(''); }}}/>
+                                            <input type="text" aria-label={t('adventure.portrait_refine_aria') || 'Describe how to refine portrait'} value={editPrompt} onChange={(e) => setEditPrompt(e.target.value)} placeholder={t('adventure.portrait_refine_placeholder') || 'e.g. Add green glasses'} className="flex-1 text-xs px-2 py-1 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none" onKeyDown={(e) => { if (e.key === 'Enter' && editPrompt.trim()) { onRefinePortrait(i, editPrompt.trim()); setEditIdx(null); setEditPrompt(''); } if (e.key === 'Escape') { e.stopPropagation(); setEditIdx(null); setEditPrompt(''); }}}/>
                                             <button type="button" aria-label={t('common.confirm') || 'Apply portrait refinement'} onClick={() => { if (editPrompt.trim()) { onRefinePortrait(i, editPrompt.trim()); setEditIdx(null); setEditPrompt(''); }}} className="min-w-11 min-h-11 px-2 py-2 bg-violet-700 text-white rounded-lg font-bold hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">✓</button>
                                             <button type="button" aria-label={t('common.cancel') || 'Cancel portrait refinement'} onClick={() => { setEditIdx(null); setEditPrompt(''); }} className="min-w-11 min-h-11 px-2 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2">✗</button>
                                         </div>
@@ -2292,7 +2472,8 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                                             <button type="button" onClick={() => {
                                                 const link = document.createElement('a');
                                                 link.href = char.portrait;
-                                                link.download = `${(char.name || 'character').replace(/\s+/g, '_')}_portrait.png`;
+                                                const ext = typeof char.portrait === 'string' && char.portrait.startsWith('data:image/jpeg') ? 'jpg' : 'png';
+                                                link.download = `${(char.name || 'character').replace(/\s+/g, '_')}_portrait.${ext}`;
                                                 document.body.appendChild(link);
                                                 link.click();
                                                 document.body.removeChild(link);
@@ -2348,16 +2529,16 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                     {isAdding ? (
                         <div className="bg-gradient-to-br from-violet-50 to-indigo-50 rounded-2xl border-2 border-dashed border-violet-300 p-4 flex flex-col items-center text-center">
                             <span className="text-2xl mb-2" aria-hidden="true">✨</span>
-                            <input type="text" aria-label={t('adventure.char_name_placeholder') || 'Character name'} value={newName} onChange={(e) => setNewName(e.target.value)} placeholder={t('adventure.char_name_placeholder')} className="w-full text-sm px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center font-bold"/>
-                            <input type="text" aria-label={t('adventure.role_placeholder') || 'Character role'} value={newRole} onChange={(e) => setNewRole(e.target.value)} placeholder={t('adventure.role_placeholder')} className="w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center"/>
-                            <input type="text" aria-label={t('adventure.appearance_placeholder') || 'Character appearance'} value={newAppearance} onChange={(e) => setNewAppearance(e.target.value)} placeholder={t('adventure.appearance_placeholder') || 'Appearance (e.g. tall, silver hair, blue robe)'} className="w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center" onKeyDown={(e) => { if (e.key === 'Enter' && newName.trim()) { onAddCharacter({ name: newName.trim(), role: newRole.trim() || 'Character', appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false }); setNewName(''); setNewRole(''); setNewAppearance(''); setIsAdding(false); }}}/>
+                            <input type="text" aria-label={t('adventure.char_name_placeholder') || 'Character name'} value={newName} onChange={(e) => setNewName(e.target.value)} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setIsAdding(false); setNewName(''); setNewRole(''); setNewAppearance(''); }}} placeholder={t('adventure.char_name_placeholder')} className="w-full text-sm px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center font-bold"/>
+                            <input type="text" aria-label={t('adventure.role_placeholder') || 'Character role'} value={newRole} onChange={(e) => setNewRole(e.target.value)} onKeyDown={(e) => { if (e.key === 'Escape') { e.stopPropagation(); setIsAdding(false); setNewName(''); setNewRole(''); setNewAppearance(''); }}} placeholder={t('adventure.role_placeholder')} className="w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center"/>
+                            <input type="text" aria-label={t('adventure.appearance_placeholder') || 'Character appearance'} value={newAppearance} onChange={(e) => setNewAppearance(e.target.value)} placeholder={t('adventure.appearance_placeholder') || 'Appearance (e.g. tall, silver hair, blue robe)'} className="w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center" onKeyDown={(e) => { if (e.key === 'Enter' && newName.trim()) { onAddCharacter({ id: `char_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: newName.trim(), role: newRole.trim() || 'Character', appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false }); setNewName(''); setNewRole(''); setNewAppearance(''); setIsAdding(false); } if (e.key === 'Escape') { e.stopPropagation(); setIsAdding(false); setNewName(''); setNewRole(''); setNewAppearance(''); }}}/>
                             <div className="flex gap-1.5 mt-1">
-                                <button type="button" onClick={() => { if (newName.trim()) { onAddCharacter({ name: newName.trim(), role: newRole.trim() || 'Character', appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false }); setNewName(''); setNewRole(''); setNewAppearance(''); setIsAdding(false); }}} className="min-h-11 px-3 py-2 bg-violet-700 text-white rounded-lg font-bold hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">Add</button>
+                                <button type="button" onClick={() => { if (newName.trim()) { onAddCharacter({ id: `char_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: newName.trim(), role: newRole.trim() || 'Character', appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false }); setNewName(''); setNewRole(''); setNewAppearance(''); setIsAdding(false); }}} className="min-h-11 px-3 py-2 bg-violet-700 text-white rounded-lg font-bold hover:bg-violet-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">Add</button>
                                 <button type="button" onClick={() => { setIsAdding(false); setNewName(''); setNewRole(''); setNewAppearance(''); }} className="min-h-11 px-3 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2">Cancel</button>
                             </div>
                         </div>
                     ) : (
-                        <button type="button" onClick={() => setIsAdding(true)} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border-2 border-dashed border-violet-600 p-4 flex flex-col items-center justify-center text-center transition-all hover:shadow-lg hover:border-violet-700 hover:from-violet-50 hover:to-indigo-50 min-h-[180px] cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
+                        <button type="button" onClick={() => setIsAdding(true)} className="bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border-2 border-dashed border-violet-600 p-4 flex flex-col items-center justify-center text-center transition-all motion-reduce:transition-none hover:shadow-lg hover:border-violet-700 hover:from-violet-50 hover:to-indigo-50 min-h-[180px] cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
                             <span className="text-4xl mb-2 group-hover:scale-110 transition-transform" aria-hidden="true">➕</span>
                             <span className="font-bold text-sm text-violet-600">{t('adventure.add_character')}</span>
                             <span className="text-[11px] text-slate-600 mt-0.5">{t('adventure.create_cast_member')}</span>
@@ -2369,7 +2550,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                         <span>Portraits ready</span>
                         <span>{portraitReadyCount} of {portraitTotal}</span>
                     </div>
-                    <div className="h-2.5 overflow-hidden rounded-full bg-slate-200 border border-slate-300" role="progressbar" aria-label="Cast portraits ready" aria-valuemin={0} aria-valuemax={portraitTotal} aria-valuenow={portraitReadyCount}>
+                    <div className="h-2.5 overflow-hidden rounded-full bg-slate-200 border border-slate-300" role="progressbar" aria-label="Cast portraits ready" aria-valuemin={0} aria-valuemax={Math.max(1, portraitTotal)} aria-valuenow={portraitReadyCount}>
                         <div className="h-full bg-gradient-to-r from-violet-600 to-indigo-600 transition-all duration-500 motion-reduce:transition-none" style={{ width: portraitProgressPercent + '%' }}></div>
                     </div>
                     <p className="mt-1.5 text-[11px] text-slate-600 text-center">
@@ -2380,7 +2561,7 @@ const CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGene
                     <button type="button" disabled={isPortraitQueueBusy || portraitReadyCount === portraitTotal} onClick={() => { characters.forEach((character, i) => { if (!character.portrait && !character.isGenerating && !character.isUserUploaded) enqueuePortrait(i); }); }} className="min-h-11 px-5 py-2.5 bg-violet-100 text-violet-700 font-bold rounded-xl hover:bg-violet-200 transition-all text-sm border border-violet-600 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
                         <span aria-hidden="true">🎨</span> {isPortraitQueueBusy ? 'Creating portraits…' : portraitReadyCount === portraitTotal ? 'Portraits Ready' : (t('adventure.generate_all') || 'Generate Missing Portraits')}
                     </button>
-                    <button type="button" disabled={isPortraitSanitizing} aria-describedby={isPortraitSanitizing ? 'adventure-portrait-sanitizing-status' : undefined} onClick={() => { window.AlloModules?.AdventureHandlers?.cancelAdventureEstablishingShot?.(); onConfirm(); }} className="min-h-11 px-6 py-2.5 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-800 shadow-lg hover:shadow-xl transition-all text-sm hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
+                    <button type="button" disabled={isPortraitSanitizing} aria-describedby={isPortraitSanitizing ? 'adventure-portrait-sanitizing-status' : undefined} onClick={() => { window.AlloModules?.AdventureHandlers?.cancelAdventureEstablishingShot?.(); onConfirm(); }} className="min-h-11 px-6 py-2.5 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-800 shadow-lg hover:shadow-xl transition-all text-sm hover:scale-105 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2">
                         <span aria-hidden="true">⚔️</span> {t('adventure.begin_adventure') || 'Begin Adventure'}
                     </button>
                 </div>

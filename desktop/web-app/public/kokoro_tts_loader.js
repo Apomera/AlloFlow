@@ -1178,7 +1178,10 @@
             if (data && data.type === 'allo-model-cache') {
                 const mc = window.AlloModules && window.AlloModules.AlloCommands && window.AlloModules.AlloCommands.modelCache;
                 const reply = (payload) => { try { w.postMessage(Object.assign({ type: 'allo-model-cache-reply', id: data.id }, payload)); } catch (_) {} };
-                if (!mc) { reply({ ok: false }); return; }
+                const safeModelUrl = typeof data.url === 'string' && data.url.length <= 2048
+                    && !/[\x00-\x20\x7f]/.test(data.url)
+                    && /^https:\/\/(?:huggingface\.co|cdn-lfs[^./]*\.huggingface\.co|cdn\.jsdelivr\.net)\//.test(data.url);
+                if (!mc || !safeModelUrl) { reply({ ok: false }); return; }
                 if (data.op === 'get') {
                     Promise.resolve(mc.match(data.url)).then((res) => {
                         if (!res) { reply({ ok: false }); return; }

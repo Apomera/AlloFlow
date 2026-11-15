@@ -86,6 +86,15 @@
     var executionState = null;
 
     function policyStatus() {
+      if (typeof window !== 'undefined') {
+        if (window._isDesktopBundledApp === true) return 'desktop-bundled-cloud-disabled';
+        if (window.__alloStudentAiDisabled === true || window.__alloStudentView === true || window.__alloAiSecretsLocked === true) {
+          return 'student-or-locked-ai-disabled';
+        }
+        if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.enabled === false) {
+          return 'managed-ai-policy-disabled';
+        }
+      }
       var current = now();
       var nowMs = current instanceof Date ? current.getTime() : dateValue(current);
       if (!Number.isFinite(nowMs)) return 'runtime-clock-invalid';

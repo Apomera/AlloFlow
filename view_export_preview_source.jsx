@@ -14,7 +14,11 @@ function _kwlMarkdownLines(d, esc, teacherCopy, t) {
       return;
     }
     if (kwl && b.teacherExample === true && items.length) out.push('  - _' + tx('outline.kwl_teacher_examples', 'Teacher examples (hidden from students)') + '_');
-    items.forEach(s => out.push('  - ' + esc(s)));
+    items.forEach((s) => {
+      const val = s && typeof s === 'object' ? (s.text || s.label || s.content || '') : s;
+      const line = esc(val);
+      if (line.trim()) out.push('  - ' + line);
+    });
   });
   return out;
 }
@@ -539,9 +543,19 @@ function _builderDocumentText(doc) {
   return parts.join(' ').replace(/\s+/g, ' ').trim();
 }
 
+function _builderCountWordSyllables(word) {
+  const cleaned = String(word || '').toLowerCase().replace(/[^a-z]/g, '');
+  if (!cleaned) return 0;
+  if (cleaned.length <= 3) return 1;
+  const stemmed = cleaned.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '').replace(/^y/, '');
+  const groups = stemmed.match(/[aeiouy]{1,2}/g);
+  return Math.max(1, groups ? groups.length : 1);
+}
+
 function _builderTextStatistics(text) {
   const normalized = String(text || '').replace(/[\u200B\uFEFF]/g, '').replace(/\s+/g, ' ').trim();
-  const words = normalized ? normalized.split(/\s+/).length : 0;
+  const wordTokens = normalized ? normalized.split(/\s+/) : [];
+  const words = wordTokens.length;
   let sentences = 0;
   if (normalized) {
     try {
@@ -550,12 +564,20 @@ function _builderTextStatistics(text) {
     } catch (_) {}
     if (!sentences) sentences = (normalized.match(/[.!?]+(?:["')\]]+)?(?=\s|$)/g) || []).length || 1;
   }
+  const syllables = wordTokens.reduce((sum, token) => sum + _builderCountWordSyllables(token), 0);
+  const fkRaw = words && sentences ? (0.39 * (words / sentences) + 11.8 * (syllables / words) - 15.59) : null;
+  const fkGrade = fkRaw === null ? null : Math.max(0, Math.round(fkRaw * 10) / 10);
+  const easeRaw = words && sentences ? (206.835 - 1.015 * (words / sentences) - 84.6 * (syllables / words)) : null;
+  const readingEase = easeRaw === null ? null : Math.round(Math.max(0, Math.min(100, easeRaw)));
   return {
     words,
     charactersWithSpaces: Array.from(normalized).length,
     charactersWithoutSpaces: Array.from(normalized.replace(/\s/g, '')).length,
     paragraphs: normalized ? 1 : 0,
     sentences,
+    syllables,
+    fkGrade,
+    readingEase,
     readingMinutes: words ? Math.max(1, Math.ceil(words / 225)) : 0,
     speakingMinutes: words ? Math.max(1, Math.ceil(words / 130)) : 0,
   };
@@ -1568,6 +1590,42 @@ function _builderFinalizeDocumentForExport(root) {
   _builderClearTrackedChangeTransientState(root);
   _builderStripReviewComments(root);
   _builderFinalizeTrackedChanges(root, 'accept');
+  root.removeAttribute?.('data-alloflow-split');
+  root.querySelectorAll('[data-alloflow-split]').forEach((el) => el.removeAttribute('data-alloflow-split'));
+  root.querySelectorAll('.alloflow-split-columns').forEach((splitWrap) => {
+    const parent = splitWrap.parentNode;
+    if (!parent) return;
+    const cols = Array.from(splitWrap.children).filter((ch) => (
+      ch.classList?.contains('alloflow-split-col')
+      || ch.classList?.contains('alloflow-split-left')
+      || ch.classList?.contains('alloflow-split-right')
+    ));
+    const moved = cols.length ? cols.flatMap((col) => Array.from(col.children)) : Array.from(splitWrap.children);
+    moved.sort((a, b) => {
+      const ai = parseInt(a.getAttribute?.('data-alloflow-orig-idx') || '', 10);
+      const bi = parseInt(b.getAttribute?.('data-alloflow-orig-idx') || '', 10);
+      if (Number.isFinite(ai) && Number.isFinite(bi)) return ai - bi;
+      if (Number.isFinite(ai)) return -1;
+      if (Number.isFinite(bi)) return 1;
+      return 0;
+    });
+    moved.forEach((node) => parent.insertBefore(node, splitWrap));
+    splitWrap.remove();
+    const children = Array.from(parent.children);
+    if (children.length > 1 && children.every((el) => el.hasAttribute?.('data-alloflow-orig-idx'))) {
+      children.sort((a, b) => parseInt(a.getAttribute('data-alloflow-orig-idx') || '0', 10) - parseInt(b.getAttribute('data-alloflow-orig-idx') || '0', 10));
+      children.forEach((el) => parent.appendChild(el));
+    }
+  });
+  root.querySelectorAll('[data-alloflow-orig-idx]').forEach((el) => el.removeAttribute('data-alloflow-orig-idx'));
+  root.querySelectorAll('[data-alloflow-step-hidden]').forEach((el) => el.removeAttribute('data-alloflow-step-hidden'));
+  root.querySelectorAll('[data-alloflow-unanswered]').forEach((el) => el.removeAttribute('data-alloflow-unanswered'));
+  root.querySelectorAll('#alloflow-term-popover,.alloflow-term-popover').forEach((el) => el.remove());
+  root.querySelectorAll('.alloflow-quiz-feedback').forEach((el) => {
+    el.setAttribute('hidden', '');
+    el.hidden = true;
+    el.textContent = '';
+  });
   return _builderPrepareCitationFieldsForExport(_builderRefreshFinalDocumentFields(root));
 }
 
@@ -3501,15 +3559,30 @@ function _builderClearOpenPagePrompt(root) {
   });
 }
 
-function _builderExportPreflight(doc, mode) {
+function _builderExportPreflight(doc, mode, options = {}) {
   const issues = [];
   const add = (severity, code, message, count) => issues.push({ severity, code, message, count: count || 1 });
   if (!doc || !doc.body || !doc.documentElement) {
     add('error', 'preview-missing', 'The editable preview is not ready.');
     return { issues, errors: 1, warnings: 0, passed: 0 };
   }
+  const _pfAllowedIds = Array.isArray(options?.builderResourceIds) ? new Set(options.builderResourceIds.map(String)) : null;
+  const _pfExcluded = (node) => {
+    if (!node || typeof node.closest !== 'function') return false;
+    if (node.closest('del[data-allo-change-id],.alloflow-reading-tools-shell,.allo-block-controls,.allo-block-remove')) return true;
+    if (options?.studentOnly && node.closest('.teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,.alloflow-teacher-copy-banner')) return true;
+    if (options?.builderViewFilter === 'teacher' && node.closest('.student-only,[data-allo-student-only]')) return true;
+    if (_pfAllowedIds) {
+      const sec = node.closest('[data-allo-resource-id],[data-resource-id]');
+      if (sec) {
+        const sid = sec.getAttribute('data-allo-resource-id') || sec.getAttribute('data-resource-id') || '';
+        if (sid && !_pfAllowedIds.has(String(sid))) return true;
+      }
+    }
+    return false;
+  };
   if (doc.body.getAttribute('data-allo-preview-error') === '1') add('error', 'preview-error', 'The preview contains a render error.');
-  const meaningful = _builderDocumentText(doc) || Array.from(doc.body.querySelectorAll('img,svg,math,table,form,input,textarea,select')).some((node) => !node.closest('del[data-allo-change-id]'));
+  const meaningful = _builderDocumentText(doc) || Array.from(doc.body.querySelectorAll('img,svg,math,table,form,input,textarea,select')).some((node) => !_pfExcluded(node));
   if (!meaningful) add('error', 'empty-document', 'The document has no exportable content.');
   if (!(doc.documentElement.getAttribute('lang') || '').trim()) add('warning', 'language', 'Set the document language for screen readers and spell-checkers.');
   if (!(doc.title || '').trim()) add('warning', 'title', 'Add a descriptive document title.');
@@ -3522,27 +3595,28 @@ function _builderExportPreflight(doc, mode) {
     previousLevel = heading.level;
   });
   if (skipped) add('warning', 'heading-order', `${skipped} heading level jump${skipped === 1 ? '' : 's'} may make navigation confusing.`, skipped);
-  const missingAlt = Array.from(doc.images || []).filter((img) => !img.hasAttribute('alt')).length;
+  const missingAlt = Array.from(doc.images || []).filter((img) => !_pfExcluded(img) && !img.hasAttribute('alt')).length;
   if (missingAlt) add('error', 'image-alt', `${missingAlt} image${missingAlt === 1 ? ' is' : 's are'} missing alternative text.`, missingAlt);
   const unlabeled = Array.from(doc.querySelectorAll('input,select,textarea')).filter((control) => {
+    if (_pfExcluded(control)) return false;
     if (control.type === 'hidden') return false;
     if (control.getAttribute('aria-label') || control.getAttribute('aria-labelledby') || control.closest('label')) return false;
     return !(control.id && Array.from(doc.querySelectorAll('label[for]')).some((label) => label.htmlFor === control.id));
   }).length;
   if (unlabeled) add('error', 'form-label', `${unlabeled} form control${unlabeled === 1 ? ' has' : 's have'} no accessible label.`, unlabeled);
-  const tablesWithoutHeaders = Array.from(doc.querySelectorAll('table')).filter((table) => !table.querySelector('th')).length;
-  const tablesWithoutCaptions = Array.from(doc.querySelectorAll('table')).filter((table) => !(table.querySelector('caption')?.textContent || '').trim() && !table.hasAttribute('aria-label') && !table.hasAttribute('aria-labelledby')).length;
+  const tablesWithoutHeaders = Array.from(doc.querySelectorAll('table')).filter((table) => !_pfExcluded(table) && !table.querySelector('th')).length;
+  const tablesWithoutCaptions = Array.from(doc.querySelectorAll('table')).filter((table) => !_pfExcluded(table) && !(table.querySelector('caption')?.textContent || '').trim() && !table.hasAttribute('aria-label') && !table.hasAttribute('aria-labelledby')).length;
   if (tablesWithoutCaptions) add('warning', 'table-caption', tablesWithoutCaptions + ' table' + (tablesWithoutCaptions === 1 ? ' has' : 's have') + ' no caption or accessible name.', tablesWithoutCaptions);
   if (tablesWithoutHeaders) add('warning', 'table-headers', `${tablesWithoutHeaders} table${tablesWithoutHeaders === 1 ? ' has' : 's have'} no header cells.`, tablesWithoutHeaders);
-  const unsafeLinks = Array.from(doc.querySelectorAll('a[href]')).filter((a) => /^\s*(javascript|vbscript|data):/i.test(a.getAttribute('href') || '')).length;
+  const unsafeLinks = Array.from(doc.querySelectorAll('a[href]')).filter((a) => !_pfExcluded(a) && /^\s*(javascript|vbscript|data):/i.test(a.getAttribute('href') || '')).length;
   if (unsafeLinks) add('error', 'unsafe-links', `${unsafeLinks} unsafe link${unsafeLinks === 1 ? '' : 's'} must be removed.`, unsafeLinks);
-  const appLinks = Array.from(doc.querySelectorAll('a[href]')).filter((a) => /^\s*resource:/i.test(a.getAttribute('href') || '')).length;
+  const appLinks = Array.from(doc.querySelectorAll('a[href]')).filter((a) => !_pfExcluded(a) && /^\s*resource:/i.test(a.getAttribute('href') || '')).length;
   if (appLinks) add('warning', 'resource-links', `${appLinks} link${appLinks === 1 ? '' : 's'} to AlloFlow resources will not open outside the app. Include those resources in this document or remove the links.`, appLinks);
   const seenIds = new Set();
   let duplicateIds = 0;
-  Array.from(doc.querySelectorAll('[id]')).forEach((node) => { const id = node.id; if (seenIds.has(id)) duplicateIds += 1; else seenIds.add(id); });
+  Array.from(doc.querySelectorAll('[id]')).filter((node) => !_pfExcluded(node)).forEach((node) => { const id = node.id; if (seenIds.has(id)) duplicateIds += 1; else seenIds.add(id); });
   if (duplicateIds) add('error', 'duplicate-ids', `${duplicateIds} duplicate element ID${duplicateIds === 1 ? '' : 's'} can break links and labels.`, duplicateIds);
-  const chrome = doc.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui]').length;
+  const chrome = Array.from(doc.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui]')).filter((n) => !_pfExcluded(n)).length;
   if (chrome) add('warning', 'editor-chrome', 'Editor-only controls will be removed from the exported file.', chrome);
   const references = _builderDocumentReferenceEntries(doc);
   const citationReferences = _builderCitationEntries(doc);
@@ -3552,7 +3626,7 @@ function _builderExportPreflight(doc, mode) {
   if (citationReferences.bibliography && !citationReferences.citations.length) add('warning', 'bibliography-empty', 'The bibliography has no cited sources yet.');
   const emptyFootnotes = references.footnotes.filter((entry) => !entry.broken && (!entry.text || entry.text === 'Empty footnote')).length;
   if (emptyFootnotes) add('warning', 'empty-footnotes', emptyFootnotes + ' footnote' + (emptyFootnotes === 1 ? ' is' : 's are') + ' empty.', emptyFootnotes);
-  const factsPending = Array.from(doc.querySelectorAll('[data-allo-facts-pending]')).reduce((sum, node) => sum + (parseInt(node.getAttribute('data-allo-facts-pending'), 10) || 0), 0);
+  const factsPending = Array.from(doc.querySelectorAll('[data-allo-facts-pending]')).filter((node) => !_pfExcluded(node)).reduce((sum, node) => sum + (parseInt(node.getAttribute('data-allo-facts-pending'), 10) || 0), 0);
   if (factsPending) add('warning', 'memory-aid-facts', factsPending + ' Memory Aid card' + (factsPending === 1 ? ' has' : 's have') + ' facts you have not checked yet. Students will see "Your teacher is still checking these facts" and cannot use recall practice. Check them in Memory Aid Studio first.', factsPending);
   const pendingChanges = _builderTrackedChangeEntries(doc).length;
   if (pendingChanges) add('warning', 'pending-changes', pendingChanges + ' pending revision' + (pendingChanges === 1 ? ' will' : 's will') + ' export using the final accepted view.', pendingChanges);
@@ -3602,35 +3676,105 @@ function _builderExportPreflight(doc, mode) {
   return { issues, errors, warnings, passed: Math.max(0, 8 - errors - warnings) };
 }
 
-function _builderH5PCompatibility(item) {
+function _builderH5PCompatibility(item, history) {
   const type = String(item?.type || '').toLowerCase();
   const plain = (value) => String(value == null ? '' : value).trim();
   if (type === 'quiz') {
     const questions = Array.isArray(item?.data?.questions) ? item.data.questions : [];
-    const allMcq = questions.length > 0 && questions.every((question) => !question?.type || question.type === 'mcq');
+    const normKind = (raw) => {
+      const k = String(raw || 'mcq').trim();
+      if (k === 'multiple-choice') return 'mcq';
+      if (k === 'shortAnswer') return 'short-answer';
+      if (k === 'order') return 'ordering';
+      return k;
+    };
+    const singleChoiceSetCompatible = questions.length > 0 && questions.every((question) => (
+      normKind(question?.type) === 'mcq' && (!Array.isArray(question?.options) || question.options.length <= 4)
+    ));
     let valid = 0;
     let adapted = 0;
     let manualReview = 0;
+    const _resolveChoiceIdx = (opts, candidate) => {
+      if (!Array.isArray(opts) || !opts.length || candidate === undefined || candidate === null || typeof candidate === 'boolean') return -1;
+      if (typeof candidate === 'number') {
+        return Number.isInteger(candidate) && candidate >= 0 && candidate < opts.length ? candidate : -1;
+      }
+      const s = plain(candidate);
+      if (!s) return -1;
+      const exact = opts.findIndex((o) => plain(o) === s);
+      if (exact >= 0) return exact;
+      const lower = s.toLowerCase();
+      const ci = opts.findIndex((o) => plain(o).toLowerCase() === lower);
+      if (ci >= 0) return ci;
+      if (/^[A-Za-z]$/.test(s)) {
+        const li = s.toUpperCase().charCodeAt(0) - 65;
+        if (li >= 0 && li < opts.length) return li;
+      }
+      if (/^\d+$/.test(s)) {
+        const ni = Number(s);
+        if (Number.isInteger(ni) && ni >= 0 && ni < opts.length) return ni;
+      }
+      return -1;
+    };
+    const _resolveMcqIdx = (q, opts) => {
+      if (!q || typeof q !== 'object') return -1;
+      const candidates = [q.correctIndex, q.correct, q.correctAnswer, q.answer];
+      for (let i = 0; i < candidates.length; i += 1) {
+        const idx = _resolveChoiceIdx(opts, candidates[i]);
+        if (idx >= 0) return idx;
+      }
+      return -1;
+    };
+    const _resolveMultiIndices = (q, opts) => {
+      const raw = Array.isArray(q && q.correctAnswers) ? q.correctAnswers : (Array.isArray(q && q.correctIndices) ? q.correctIndices : []);
+      if (!raw.length) return null;
+      const seen = new Set();
+      const out = [];
+      for (let i = 0; i < raw.length; i += 1) {
+        const idx = _resolveChoiceIdx(opts, raw[i]);
+        if (idx < 0) return null;
+        if (!seen.has(idx)) { seen.add(idx); out.push(idx); }
+      }
+      return out.length ? out : null;
+    };
+    const _resolveAnswerEvidenceIdx = (q, answers, evidence) => {
+      const resolveFirst = (list, cands) => {
+        for (let i = 0; i < cands.length; i += 1) {
+          const idx = _resolveChoiceIdx(list, cands[i]);
+          if (idx >= 0) return idx;
+        }
+        return -1;
+      };
+      return {
+        answerIdx: resolveFirst(answers, [q && q.correctAnswerIndex, q && q.correctAnswer, q && q.expectedAnswer, q && q.answer]),
+        evidenceIdx: resolveFirst(evidence, [q && q.correctEvidenceIndex, q && q.correctEvidence, q && q.expectedEvidence, q && q.evidence]),
+      };
+    };
     questions.forEach((question = {}) => {
-      const kind = question.type || 'mcq';
+      const kind = normKind(question.type);
       const prompt = plain(question.question);
       let ready = false;
       if (kind === 'mcq') {
         const options = Array.isArray(question.options) ? question.options.map(plain) : [];
-        const key = Number.isInteger(question.correctIndex) ? question.correctIndex : options.indexOf(plain(question.correctAnswer));
-        ready = !!prompt && options.length >= 2 && (!allMcq || options.length <= 4) && options.every(Boolean) && key >= 0;
+        const key = _resolveMcqIdx(question, options);
+        ready = !!prompt && options.length >= 2 && options.every(Boolean) && key >= 0;
       } else if (kind === 'multi-select') {
         const options = Array.isArray(question.options) ? question.options.map(plain) : [];
-        const keys = Array.isArray(question.correctAnswers) ? question.correctAnswers.map(plain) : [];
-        ready = !!prompt && options.length >= 2 && keys.length > 0 && keys.every((key) => options.includes(key));
+        const keys = _resolveMultiIndices(question, options);
+        ready = !!prompt && options.length >= 2 && !!keys;
       } else if (kind === 'fill-blank') {
-        ready = !!prompt && !!plain(question.expectedFill);
+        ready = !!prompt && !!plain(question.expectedFill || question.correctAnswer);
         if (ready && ['normalized', 'review-variants'].includes(question.fillBlankPolicy)) { adapted += 1; manualReview += 1; }
-      } else if (kind === 'short-answer' || kind === 'self-explanation') {
+      } else if (kind === 'short-answer' || kind === 'self-explanation' || kind === 'reasoning') {
         ready = !!prompt;
         if (ready) manualReview += 1;
-      } else if (kind === 'sequence-sense') {
-        ready = !!prompt && Array.isArray(question.items) && question.items.length >= 3;
+      } else if (kind === 'matching') {
+        const pairs = Array.isArray(question.pairs) ? question.pairs : [];
+        ready = !!prompt && pairs.length >= 2 && pairs.every((p) => !!plain(p?.left || p?.prompt) && !!plain(p?.right || p?.match || p?.answer));
+        if (ready) { adapted += 1; manualReview += 1; }
+      } else if (kind === 'ordering' || kind === 'sequence-sense') {
+        const seqItems = Array.isArray(question.items) ? question.items : [];
+        ready = !!prompt && seqItems.length >= (kind === 'sequence-sense' ? 3 : 2) && seqItems.every((entry) => !!plain(entry));
         if (ready) { adapted += 1; manualReview += 1; }
       } else if (kind === 'relation-mismatch') {
         const wrong = Number(question.wrongPairIndex);
@@ -3641,8 +3785,10 @@ function _builderH5PCompatibility(item) {
         if (ready) adapted += 1;
         if (ready && reasoning) manualReview += 1;
       } else if (kind === 'answer-evidence') {
-        ready = !!prompt && Array.isArray(question.answerOptions) && question.answerOptions.length >= 2 && question.answerOptions.includes(question.correctAnswer)
-          && Array.isArray(question.evidenceOptions) && question.evidenceOptions.length >= 2 && question.evidenceOptions.includes(question.correctEvidence);
+        const ansOpts = Array.isArray(question.answerOptions) ? question.answerOptions.map(plain) : [];
+        const evOpts = Array.isArray(question.evidenceOptions) ? question.evidenceOptions.map(plain) : [];
+        const ae = _resolveAnswerEvidenceIdx(question, ansOpts, evOpts);
+        ready = !!prompt && ansOpts.length >= 2 && ae.answerIdx >= 0 && evOpts.length >= 2 && ae.evidenceIdx >= 0;
         if (ready) adapted += 1;
         if (ready && (question.requireReasoning || question.explanationPrompt)) manualReview += 1;
       } else if (kind === 'numeric-response') {
@@ -3660,7 +3806,7 @@ function _builderH5PCompatibility(item) {
     return {
       type,
       unit: 'question',
-      library: allMcq ? 'Single Choice Set 1.11' : 'Question Set 1.21',
+      library: singleChoiceSetCompatible ? 'Single Choice Set 1.11' : 'Question Set 1.21',
       total: questions.length,
       valid,
       omitted: questions.length - valid,
@@ -3702,6 +3848,234 @@ function _builderH5PCompatibility(item) {
       ready: valid > 0,
     };
   }
+  if (type === 'simplified') {
+    let rawText = typeof item?.data === 'string'
+      ? item.data
+      : plain(item?.data?.text || item?.text || '');
+    const cutIdx = rawText.search(/\r?\n---\s*ENGLISH TRANSLATION\s*---\r?\n/i);
+    if (cutIdx !== -1) rawText = rawText.slice(0, cutIdx);
+    const cleanedText = rawText
+      .replace(/\[\[CHART:\s*\{[\s\S]*?\}\s*\]\]/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\*\*([^*]+)\*\*/g, '$1')
+      .replace(/\[([^\]]+)\]\([^)]+\)/g, '$1')
+      .replace(/\s+/g, ' ')
+      .trim();
+    const collectTerms = (src) => {
+      if (!src) return [];
+      if (typeof src === 'string') {
+        const trimmed = src.trim();
+        if (/^\s*[\[{]/.test(trimmed)) { try { return collectTerms(JSON.parse(trimmed)); } catch (_) {} }
+        return [plain(src)];
+      }
+      if (Array.isArray(src)) return src.flatMap(collectTerms);
+      if (typeof src === 'object') {
+        if (src.term || src.word) return [plain(src.term || src.word)];
+        if (src.data || src.terms || src.items || src.entries || src.glossary) {
+          return collectTerms(src.data || src.terms || src.items || src.entries || src.glossary);
+        }
+      }
+      return [];
+    };
+    const unitOfItem = (it) => {
+      const u = it && (it.unitId || (it.config && it.config.unitId));
+      return u && u !== 'all' && u !== 'uncategorized' ? String(u) : null;
+    };
+    const familyOfItem = (it) => {
+      const f = it && (it.sourceFamilyId || (it.config && it.config.sourceFamilyId));
+      return f ? String(f) : null;
+    };
+    const _targetUnit = unitOfItem(item);
+    const _targetFamily = familyOfItem(item);
+    const _histGlossaries = (Array.isArray(history) ? history : []).filter((h) => h && h.type === 'glossary').reverse();
+    let _scopedGlossaries = [];
+    if (_targetUnit || _targetFamily) {
+      const _inUnit = _histGlossaries.filter((g) => unitOfItem(g) === _targetUnit);
+      const _matched = (_targetFamily && (_inUnit.find((g) => familyOfItem(g) === _targetFamily) || _histGlossaries.find((g) => familyOfItem(g) === _targetFamily)))
+        || _inUnit[0] || null;
+      _scopedGlossaries = _matched ? [_matched] : [];
+    } else {
+      _scopedGlossaries = _histGlossaries;
+    }
+    const termSet = new Set();
+    const orderedTerms = []
+      .concat(collectTerms(item?.glossary))
+      .concat(collectTerms(item?.terms))
+      .concat(collectTerms(item?.wordBank))
+      .concat(collectTerms(_scopedGlossaries))
+      .map((term) => term.replace(/[*/:]/g, ' ').replace(/\s+/g, ' ').trim())
+      .filter((term) => term.length >= 2 && !termSet.has(term.toLowerCase()) && termSet.add(term.toLowerCase()))
+      .sort((a, b) => b.length - a.length);
+    const sentences = cleanedText ? cleanedText.split(/(?<=[.!?])\s+|\n+/).map((s) => s.trim()).filter(Boolean) : [];
+    const usedTerms = new Set();
+    const noBreakRe = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\u0e00-\u0e7f]/;
+    let valid = 0;
+    sentences.forEach((sentence) => {
+      if (!orderedTerms.length) return;
+      for (const term of orderedTerms) {
+        const key = term.toLowerCase();
+        if (usedTerms.has(key)) continue;
+        const escapedTerm = term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        let re;
+        if (noBreakRe.test(term)) {
+          re = new RegExp('()(' + escapedTerm + ')', 'iu');
+        } else {
+          try {
+            re = new RegExp('(^|[^\\p{L}\\p{N}_])(' + escapedTerm + ')(?=$|[^\\p{L}\\p{N}_])', 'iu');
+          } catch (_) {
+            re = new RegExp('(^|[^A-Za-z0-9_])(' + escapedTerm + ')(?=$|[^A-Za-z0-9_])', 'i');
+          }
+        }
+        if (re.test(sentence)) {
+          usedTerms.add(key);
+          valid += 1;
+          break;
+        }
+      }
+    });
+    const total = valid > 0 ? valid : (orderedTerms.length || 1);
+    return {
+      type,
+      unit: 'blank',
+      library: 'Question Set 1.21',
+      total,
+      valid,
+      omitted: valid > 0 ? 0 : total,
+      adapted: valid,
+      manualReview: 0,
+      embeddedMedia: 0,
+      omittedMedia: 0,
+      ready: valid > 0,
+    };
+  }
+  if (type === 'note-taking' || type === 'guided-notes') {
+    const nt = item?.data && typeof item.data === 'object' ? item.data : {};
+    const templateType = String(nt.templateType || nt.template || (type === 'guided-notes' ? 'guided-notes' : '')).trim().toLowerCase();
+    if (templateType === 'guided-notes' || templateType === 'guided') {
+      const blanks = Array.isArray(nt.blanks) ? nt.blanks : [];
+      const valid = blanks.filter((b) => {
+        const ans = plain(b?.answer || b?.expected);
+        const before = plain(b?.before || b?.prefix || '');
+        const after = plain(b?.after || b?.suffix || '');
+        return !!ans && !!(before || after || '_____');
+      }).length;
+      return {
+        type,
+        unit: 'blank',
+        library: 'Question Set 1.21',
+        total: blanks.length,
+        valid,
+        omitted: blanks.length - valid,
+        adapted: valid,
+        manualReview: 0,
+        embeddedMedia: 0,
+        omittedMedia: 0,
+        ready: valid > 0,
+      };
+    }
+    if (templateType === 'q-and-a') {
+      const pairs = Array.isArray(nt.pairs) ? nt.pairs : [];
+      const valid = pairs.filter((p) => !!plain(p?.question || p?.prompt)).length;
+      return {
+        type,
+        unit: 'prompt',
+        library: 'Question Set 1.21',
+        total: pairs.length,
+        valid,
+        omitted: pairs.length - valid,
+        adapted: valid,
+        manualReview: valid,
+        embeddedMedia: 0,
+        omittedMedia: 0,
+        ready: valid > 0,
+      };
+    }
+    if (templateType === 'double-entry') {
+      const entries = Array.isArray(nt.entries) ? nt.entries : [];
+      const valid = entries.filter((en) => !!(en && (plain(en.quote) || plain(en.response)))).length;
+      return {
+        type,
+        unit: 'prompt',
+        library: 'Question Set 1.21',
+        total: entries.length,
+        valid,
+        omitted: entries.length - valid,
+        adapted: valid,
+        manualReview: valid,
+        embeddedMedia: 0,
+        omittedMedia: 0,
+        ready: valid > 0,
+      };
+    }
+    if (templateType === 'outline') {
+      const sections = Array.isArray(nt.sections) ? nt.sections : (Array.isArray(nt.branches) ? nt.branches : []);
+      const valid = sections.filter((sec) => !!(sec && (plain(sec.heading || sec.title) || (Array.isArray(sec.points || sec.items) && (sec.points || sec.items).length)))).length;
+      return {
+        type,
+        unit: 'prompt',
+        library: 'Question Set 1.21',
+        total: sections.length,
+        valid,
+        omitted: sections.length - valid,
+        adapted: valid,
+        manualReview: valid,
+        embeddedMedia: 0,
+        omittedMedia: 0,
+        ready: valid > 0,
+      };
+    }
+    if (templateType === 'lab') {
+      const hasContent = !!(plain(nt.question) || plain(nt.hypothesis) || (Array.isArray(nt.materials) && nt.materials.length) || (Array.isArray(nt.procedure) && nt.procedure.length) || plain(nt.conclusion));
+      return {
+        type,
+        unit: 'prompt',
+        library: 'Question Set 1.21',
+        total: hasContent ? 1 : 0,
+        valid: hasContent ? 1 : 0,
+        omitted: 0,
+        adapted: hasContent ? 1 : 0,
+        manualReview: hasContent ? 1 : 0,
+        embeddedMedia: 0,
+        omittedMedia: 0,
+        ready: hasContent,
+      };
+    }
+    if (templateType === 'reading-response') {
+      const hasContent = !!(plain(nt.favoriteLine) || plain(nt.thinkings) || plain(nt.question) || (nt.connection && plain(typeof nt.connection === 'object' ? nt.connection.text : nt.connection)));
+      return {
+        type,
+        unit: 'prompt',
+        library: 'Question Set 1.21',
+        total: hasContent ? 1 : 0,
+        valid: hasContent ? 1 : 0,
+        omitted: 0,
+        adapted: hasContent ? 1 : 0,
+        manualReview: hasContent ? 1 : 0,
+        embeddedMedia: 0,
+        omittedMedia: 0,
+        ready: hasContent,
+      };
+    }
+    if (templateType === 'cornell' || templateType === '') {
+      const cues = Array.isArray(nt.cues) ? nt.cues : [];
+      const notes = Array.isArray(nt.notes) ? nt.notes : [];
+      const valid = Math.max(cues.length, notes.length) + (plain(nt.summary) ? 1 : 0);
+      return {
+        type,
+        unit: 'prompt',
+        library: 'Question Set 1.21',
+        total: valid,
+        valid,
+        omitted: 0,
+        adapted: valid,
+        manualReview: valid,
+        embeddedMedia: 0,
+        omittedMedia: 0,
+        ready: valid > 0,
+      };
+    }
+    return { type, unit: 'item', library: 'Question Set 1.21', total: 0, valid: 0, omitted: 0, adapted: 0, manualReview: 0, embeddedMedia: 0, omittedMedia: 0, ready: false };
+  }
   return { type, unit: 'item', library: '', total: 0, valid: 0, omitted: 0, embeddedMedia: 0, omittedMedia: 0, ready: false };
 }
 
@@ -3742,7 +4116,7 @@ function _builderReadingAccessReview(history, exportConfig) {
       math: 'includeMath', dbq: 'includeDbq', 'lesson-plan': 'includeLessonPlan', 'udl-advice': 'includeUdlAdvice',
       brainstorm: 'includeBrainstorm', 'concept-sort': 'includeConceptSort',
       timeline: 'includeTimeline', 'note-taking': 'includeNoteTaking', 'anchor-chart': 'includeAnchorChart',
-      directions: 'includeDirections', 'gemini-bridge': 'includeGeminiBridge',
+      directions: 'includeDirections', 'gemini-bridge': 'includeGeminiBridge', 'fluency-record': 'includeFluencyRecord',
     };
     const selected = source.filter((item) => {
       if (!item) return false;
@@ -3829,12 +4203,14 @@ function _builderResourceOptions(history, t) {
     ['includeAnchorChart', translate('sidebar.tool_anchor_chart') || 'Anchor Chart', 'anchor-chart'],
     ['includeDirections', translate('help_mode.tool_directions_title') || 'Lesson Directions', 'directions'],
     ['includeGeminiBridge', translate('sidebar.tool_bridge') || 'Gemini Bridge', 'gemini-bridge'],
+    ['includeFluencyRecord', translate('export.type_fluency_record') || '🎙️ Fluency Record', 'fluency-record'],
+    ['includeAlignmentReport', translate('export.type_alignment_report') || '🧭 Alignment Report', 'alignment-report'],
   ];
   const types = new Set(_builderReadingHistory(history).filter(Boolean).map(item => _builderIsOriginalReading(item) ? 'same-text-supported' : item.type));
   return entries.filter(([, , type]) => types.has(type));
 }
 function _builderResourceIncluded(config, key) {
-  return ['includeMemoryAid', 'includeAppliedChallenge', 'includeOriginalReading', 'includeConceptSort', 'includeTimeline', 'includeNoteTaking', 'includeAnchorChart', 'includeDirections', 'includeGeminiBridge'].includes(key) ? config?.[key] !== false : !!config?.[key];
+  return ['includeMemoryAid', 'includeAppliedChallenge', 'includeOriginalReading', 'includeConceptSort', 'includeTimeline', 'includeNoteTaking', 'includeAnchorChart', 'includeDirections', 'includeGeminiBridge', 'includeFluencyRecord', 'includeAlignmentReport'].includes(key) ? config?.[key] !== false : !!config?.[key];
 }
 function _builderBulkResourceUpdate(history, config, t) {
   const available = _builderResourceOptions(history, t);
@@ -3844,14 +4220,24 @@ function _builderBulkResourceUpdate(history, config, t) {
 function _builderSelectedResourceItems(history, config, t) {
   const options = _builderResourceOptions(history, t);
   const definitions = new Map(options.map(([key, label, type]) => [type, { key, label }]));
-  return _builderReadingHistory(history).filter(Boolean).flatMap((item, index) => {
+  const items = _builderReadingHistory(history).filter(Boolean).flatMap((item, index) => {
     const definition = definitions.get(_builderIsOriginalReading(item) ? 'same-text-supported' : item.type);
     if (!definition) return [];
     const candidate = item.title || item.data?.title || item.result?.title;
     const title = typeof candidate === 'string' && candidate.trim() ? candidate.replace(/<[^>]*>/g, '').trim().slice(0, 120) : definition.label;
     const contract = typeof window !== 'undefined' && window.AlloModules?.InstructionalContext;
     const roleLabel = ['analysis', 'simplified'].includes(item.type) ? contract?.getReadingRoleLabel?.(item) || '' : '';
-    return [{ id: String(item.id || index), title, type: definition.label, roleLabel, included: _builderResourceIncluded(config, definition.key) }];
+    return [{ id: String(item.id || index), configKey: definition.key, title, type: definition.label, roleLabel, included: _builderResourceIncluded(config, definition.key) }];
+  });
+  const order = Array.isArray(config?.resourceOrder) ? config.resourceOrder : [];
+  if (!order.length) return items;
+  return items.slice().sort((a, b) => {
+    const ia = order.indexOf(a.configKey);
+    const ib = order.indexOf(b.configKey);
+    if (ia === -1 && ib === -1) return 0;
+    if (ia === -1) return 1;
+    if (ib === -1) return -1;
+    return ia - ib;
   });
 }
 function _builderVisibleDocumentTitle(doc, fallback) {
@@ -4110,10 +4496,22 @@ const _BUILDER_RESPONSIVE_LAYOUT_CSS = `
 `;
 
 // Shared conversion boundaries for Builder live-document exports.
-function _builderCleanMarkdownRoot(doc) {
+function _builderCleanMarkdownRoot(doc, options = {}) {
   if (!doc?.body) throw new Error('The editable preview is not ready.');
   const root = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
-  root.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],script,style').forEach(node => node.remove());
+  if (options?.includeTeacherKey === false) _removeStudentPackageTeacherSections(root);
+  root.querySelectorAll('button.alloflow-inline-term').forEach((btn) => {
+    btn.replaceWith((btn.ownerDocument || doc).createTextNode(btn.textContent || ''));
+  });
+  root.querySelectorAll('.alloflow-venn-activity').forEach((act) => {
+    if (act.querySelector('.alloflow-venn-card')) {
+      act.querySelectorAll('.alloflow-venn-print-only').forEach(node => node.remove());
+    }
+  });
+  root.querySelectorAll('select.alloflow-cs-response[hidden], select.alloflow-venn-response[hidden]').forEach((sel) => {
+    sel.removeAttribute('hidden');
+  });
+  root.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-cloze-controls,.alloflow-cs-controls,.alloflow-cs-actions,.alloflow-venn-controls,.alloflow-venn-status,.alloflow-venn-place-button,.alloflow-venn-screen-instructions,.alloflow-tl-controls,.alloflow-tl-arrows,.alloflow-glossary-controls,.alloflow-glossary-card-controls,.alloflow-glossary-card-actions,.alloflow-glossary-card-status,.alloflow-gm-controls,.alloflow-gm-status,.alloflow-faq-controls,.alloflow-dir-controls,.alloflow-cornell-controls,.alloflow-ws-controls,.alloflow-quiz-feedback,.alloflow-quiz-check-btn,.alloflow-save-status,.alloflow-math-symbolbar,.alloflow-math-symbar,.alloflow-math-controls,.alloflow-dbq-evidence-tracker,.alloflow-export-save-tools,.alloflow-inline-chart svg,#allo-builder-edit-css,#allo-builder-view-filter,#allo-builder-paper-css,[data-allo-footnote-backlink],annotation,annotation-xml,[hidden],[aria-hidden="true"],script,style').forEach(node => node.remove());
   _builderStripEditorBreakMetadata(root);
   root.removeAttribute('contenteditable');
   root.querySelectorAll('[contenteditable]').forEach(node => node.removeAttribute('contenteditable'));
@@ -4136,10 +4534,13 @@ function _builderMarkdownFromRoot(root, options = {}) {
     } catch (_) { return ''; }
   };
   const mathBlocks = Array.from(root.querySelectorAll('math'));
-  const children = (node, depth) => Array.from(node.childNodes || []).map(child => render(child, depth)).join('');
-  const render = (node, depth = 0) => {
+  const children = (node, depth, preserveWs = false) => Array.from(node.childNodes || []).map(child => render(child, depth, preserveWs)).join('');
+  const render = (node, depth = 0, preserveWs = false) => {
     if (depth > 100) throw new Error('The document is too deeply nested to convert to Markdown.');
-    if (node.nodeType === 3) return escaped(node.nodeValue);
+    if (node.nodeType === 3) {
+      const rawText = String(node.nodeValue || '');
+      return escaped(preserveWs ? rawText : rawText.replace(/[ \t\r\n]+/g, ' '));
+    }
     if (node.nodeType !== 1) return '';
     const tag = node.tagName.toLowerCase();
     if (['script', 'style', 'head', 'template'].includes(tag)) return '';
@@ -4155,6 +4556,28 @@ function _builderMarkdownFromRoot(root, options = {}) {
     }
     if (tag === 'pre') { const value = node.textContent || '', mark = fence(value); return '\n\n' + mark + '\n' + value + '\n' + mark + '\n\n'; }
     if (tag === 'code') { const value = node.textContent || '', mark = fence(value); return mark + ' ' + value + ' ' + mark; }
+    if (tag === 'input') {
+      const iType = String(node.getAttribute('type') || 'text').toLowerCase();
+      if (iType === 'hidden') return '';
+      if (iType === 'checkbox' || iType === 'radio') {
+        const checked = !!(node.checked || node.hasAttribute('checked'));
+        return checked ? '[x] ' : '[ ] ';
+      }
+      const val = String(typeof node.value === 'string' && node.value ? node.value : (node.getAttribute('value') || '')).trim();
+      return val ? '[' + escaped(val) + ']' : '______';
+    }
+    if (tag === 'textarea') {
+      const val = String(typeof node.value === 'string' && node.value ? node.value : (node.textContent || '')).trim();
+      return val ? '\n\n> ' + escaped(val).replace(/\n/g, '\n> ') + '\n\n' : '\n\n______\n\n';
+    }
+    if (tag === 'select') {
+      const opts = Array.from(node.options || node.querySelectorAll('option') || []);
+      const idx = typeof node.selectedIndex === 'number' && node.selectedIndex >= 0 ? node.selectedIndex : -1;
+      const picked = (idx >= 0 ? opts[idx] : null) || opts.find(o => o && (o.selected || o.hasAttribute('selected')));
+      const rawVal = picked ? String(picked.getAttribute('value') != null ? picked.getAttribute('value') : (picked.value || '')).trim() : String(node.value || '').trim();
+      const label = picked && rawVal ? String(picked.textContent || rawVal).trim() : '';
+      return label ? ' — ' + escaped(label) : ' — ______';
+    }
     if (tag === 'table') {
       if (node.querySelector('[colspan]:not([colspan="1"]),[rowspan]:not([rowspan="1"]),table,math,img')) {
         warnings.add('Tables with merged cells, images, or math are retained as HTML. Check that your Markdown reader supports them.');
@@ -4171,19 +4594,23 @@ function _builderMarkdownFromRoot(root, options = {}) {
       const caption = node.caption ? escaped(node.caption.textContent) + '\n\n' : '';
       return '\n\n' + caption + line(rows[0]) + '\n' + line(Array(width).fill('---')) + '\n' + rows.slice(1).map(line).join('\n') + '\n\n';
     }
-    if (tag === 'a') { const label = children(node, depth + 1), href = link(node.getAttribute('href'), false); return href ? '[' + label + '](<' + href + '>)' : label; }
+    if (tag === 'a') {
+      if (node.hasAttribute('data-allo-footnote-backlink')) return '';
+      const label = children(node, depth + 1), href = link(node.getAttribute('href'), false);
+      return href ? '[' + label + '](<' + href + '>)' : label;
+    }
     if (tag === 'ul' || tag === 'ol') {
       const start = Number(node.getAttribute('start')) || 1;
       return '\n\n' + Array.from(node.children).filter(item => item.tagName === 'LI').map((item, index) => (tag === 'ol' ? (start + index) + '. ' : '- ') + children(item, depth + 1).trim().replace(/\n/g, '\n  ')).join('\n') + '\n\n';
     }
-    const inner = children(node, depth + 1);
+    const inner = children(node, depth + 1, preserveWs);
     if (/^h[1-6]$/.test(tag)) return '\n\n' + '#'.repeat(Number(tag[1])) + ' ' + inner.trim() + '\n\n';
     if (tag === 'strong' || tag === 'b') return '**' + inner + '**';
     if (tag === 'em' || tag === 'i') return '*' + inner + '*';
     if (tag === 'br') return '\n';
     if (tag === 'hr') return '\n\n---\n\n';
     if (tag === 'blockquote') return '\n\n' + inner.trim().replace(/^/gm, '> ') + '\n\n';
-    if (['p', 'div', 'section', 'article', 'figure', 'figcaption', 'main'].includes(tag)) return '\n\n' + inner.trim() + '\n\n';
+    if (['p', 'div', 'section', 'article', 'figure', 'figcaption', 'main'].includes(tag)) return '\n\n' + inner.trim().replace(/ +\u2014 +/g, ' \u2014 ') + '\n\n';
     return inner;
   };
   return { markdown: render(root).trim(), warnings: [...warnings] };
@@ -4305,45 +4732,185 @@ function _alloQuizToFormItems(quizData) {
   // Forms takes plain text: the Assess view's light markdown keeps its words, loses its markers.
   const md = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuizView && window.AlloModules.QuizView.markdown;
   const text = (v) => String(md ? md.plain(v) : (v == null ? '' : v)).replace(/\s+/g, ' ').trim();
+  const firstNonEmpty = (...vals) => {
+    for (const v of vals) {
+      if (v === 0 || v === false) return String(v);
+      const s = Array.isArray(v) ? v.map(text).filter(Boolean).join(' / ') : text(v);
+      if (s) return s;
+    }
+    return '';
+  };
   const items = [];
   questions.forEach((q) => {
     if (!q || typeof q !== 'object') return;
     const prompt = text(q.question || q.prompt || q.text);
     if (!prompt) return;
-    const type = String(q.type || 'mcq');
+    const rawType = String(q.type || 'mcq').trim();
+    const type = rawType === 'shortAnswer' ? 'short-answer' : (rawType === 'order' ? 'ordering' : rawType);
     const options = (Array.isArray(q.options) ? q.options : [])
       .map((o) => text(o && typeof o === 'object' ? (o.text || o.label || o.value) : o))
       .filter(Boolean);
     const explanation = text(q.explanation);
+    const rubric = text(q.rubric);
+    const helpCombined = [explanation, rubric].filter(Boolean).join(' ').trim() || undefined;
+    const _resolveFormChoiceIdx = (opts, candidate) => {
+      if (!Array.isArray(opts) || !opts.length || candidate === undefined || candidate === null || typeof candidate === 'boolean') return -1;
+      if (typeof candidate === 'number') return Number.isInteger(candidate) && candidate >= 0 && candidate < opts.length ? candidate : -1;
+      const rawCand = text(candidate);
+      if (!rawCand) return -1;
+      const exact = opts.indexOf(rawCand);
+      if (exact >= 0) return exact;
+      const lower = rawCand.toLowerCase();
+      const ci = opts.findIndex((o) => text(o).toLowerCase() === lower);
+      if (ci >= 0) return ci;
+      if (/^[A-Za-z]$/.test(rawCand)) {
+        const li = rawCand.toUpperCase().charCodeAt(0) - 65;
+        if (li >= 0 && li < opts.length) return li;
+      }
+      if (/^\d+$/.test(rawCand)) {
+        const ni = Number(rawCand);
+        if (Number.isInteger(ni) && ni >= 0 && ni < opts.length) return ni;
+      }
+      return -1;
+    };
     if ((type === 'mcq' || type === 'multiple-choice' || type === 'multi-select') && options.length >= 2) {
-      const raw = q.correctAnswers !== undefined ? q.correctAnswers : q.correctAnswer;
-      const list = Array.isArray(raw) ? raw : [raw];
+      const raw = q.correctAnswers !== undefined ? q.correctAnswers : (q.correctIndices !== undefined ? q.correctIndices : (q.correctIndex !== undefined ? q.correctIndex : (q.correct !== undefined ? q.correct : q.correctAnswer)));
+      const list = Array.isArray(raw) ? raw : (raw !== undefined && raw !== null ? [raw] : []);
       const answer = list
-        .map((a) => (typeof a === 'number' ? a : options.indexOf(text(a))))
+        .map((a) => _resolveFormChoiceIdx(options, a))
         .filter((i) => i >= 0 && i < options.length);
       items.push({
         type: type === 'multi-select' ? 'checkbox' : 'mc',
         prompt, options,
         answer: answer.length ? answer : undefined,
-        help: explanation || undefined,
+        help: helpCombined,
         points: 1,
       });
       return;
     }
+    if (type === 'answer-evidence') {
+      const answerOpts = (Array.isArray(q.answerOptions) ? q.answerOptions : []).map(text).filter(Boolean);
+      const evidenceOpts = (Array.isArray(q.evidenceOptions) ? q.evidenceOptions : []).map(text).filter(Boolean);
+      if (answerOpts.length >= 2 && evidenceOpts.length >= 2) {
+        const aCand = q.correctAnswerIndex !== undefined && q.correctAnswerIndex !== null ? q.correctAnswerIndex : q.correctAnswer;
+        const eCand = q.correctEvidenceIndex !== undefined && q.correctEvidenceIndex !== null ? q.correctEvidenceIndex : q.correctEvidence;
+        const aIdx = _resolveFormChoiceIdx(answerOpts, aCand);
+        const eIdx = _resolveFormChoiceIdx(evidenceOpts, eCand);
+        items.push({
+          type: 'mc', prompt, options: answerOpts,
+          answer: (aIdx >= 0 && aIdx < answerOpts.length) ? [aIdx] : undefined,
+          help: helpCombined, points: 1,
+        });
+        items.push({
+          type: 'mc',
+          prompt: prompt + ' \u2014 ' + (text(q.evidencePrompt) || 'Which evidence best supports that answer?'),
+          options: evidenceOpts,
+          answer: (eIdx >= 0 && eIdx < evidenceOpts.length) ? [eIdx] : undefined,
+          help: helpCombined, points: 1,
+        });
+        return;
+      }
+    }
+    if (type === 'matching' && Array.isArray(q.pairs) && q.pairs.length >= 2) {
+      const pairs = q.pairs
+        .map((p) => ({ left: text(p && (p.left || p.prompt)), right: text(p && (p.right || p.match || p.answer)) }))
+        .filter((p) => p.left && p.right);
+      const rightOptions = Array.from(new Set(pairs.map((p) => p.right)));
+      if (pairs.length >= 2 && rightOptions.length >= 2) {
+        pairs.forEach((pair, idx) => {
+          items.push({
+            type: 'mc',
+            prompt: prompt + ' \u2014 ' + pair.left,
+            options: rightOptions,
+            answer: [rightOptions.indexOf(pair.right)],
+            help: idx === 0 ? helpCombined : undefined,
+            points: 1,
+          });
+        });
+        return;
+      }
+    }
+    if (type === 'relation-mismatch' && Array.isArray(q.pairs) && q.pairs.length >= 2) {
+      const pairs = q.pairs
+        .map((pair) => ({ left: text(pair && (pair.left || pair.prompt)), right: text(pair && (pair.right || pair.match || pair.answer)) }))
+        .filter((pair) => pair.left && pair.right);
+      const wrong = Number(q.wrongPairIndex);
+      if (pairs.length >= 2 && Number.isInteger(wrong) && wrong >= 0 && wrong < pairs.length) {
+        items.push({
+          type: 'mc',
+          prompt: prompt + ' \u2014 Which displayed pair is the mismatch?',
+          options: pairs.map((pair) => pair.left + ' \u2194 ' + pair.right),
+          answer: [wrong],
+          help: helpCombined,
+          points: 1,
+        });
+        const candidates = (Array.isArray(q.candidatePartners) ? q.candidatePartners : []).map(text).filter(Boolean);
+        const partnerCand = q.correctPartnerForWrong !== undefined && q.correctPartnerForWrong !== null ? q.correctPartnerForWrong : q.correctPartnerIndex;
+        const repairIdx = _resolveFormChoiceIdx(candidates, partnerCand);
+        const correctPartner = repairIdx >= 0 ? candidates[repairIdx] : text(q.correctPartnerForWrong);
+        if (candidates.length >= 2 && repairIdx >= 0) {
+          items.push({
+            type: 'mc',
+            prompt: 'What should ' + pairs[wrong].left + ' pair with?',
+            options: candidates,
+            answer: [repairIdx],
+            points: 1,
+          });
+        } else if (correctPartner) {
+          items.push({
+            type: 'short',
+            prompt: 'What should ' + pairs[wrong].left + ' pair with?',
+            answer: correctPartner,
+            points: 1,
+          });
+        } else {
+          items.push({
+            type: 'paragraph',
+            prompt: 'What should ' + pairs[wrong].left + ' pair with?',
+            points: 0,
+          });
+        }
+        return;
+      }
+    }
+    if (type === 'ordering' || type === 'sequence-sense') {
+      const seqSource = Array.isArray(q.correctOrder) && q.correctOrder.length >= 2 ? q.correctOrder : (Array.isArray(q.items) ? q.items : []);
+      const seq = seqSource.map(text).filter(Boolean);
+      const seqOptions = Array.from(new Set(seq));
+      if (seq.length >= 2 && seqOptions.length >= 2) {
+        seq.forEach((stepLabel, pos) => {
+          items.push({
+            type: 'mc',
+            prompt: prompt + ' (Step ' + (pos + 1) + ' of ' + seq.length + ')',
+            options: seqOptions,
+            answer: [seqOptions.indexOf(stepLabel)],
+            help: pos === 0 ? helpCombined : undefined,
+            points: 1,
+          });
+        });
+        return;
+      }
+      if (seq.length >= 2) {
+        items.push({ type: 'short', prompt, answer: seq.join(' -> '), help: helpCombined, points: 1 });
+        return;
+      }
+    }
     if (type === 'short-answer' || type === 'fill-blank' || type === 'numeric-response') {
-      const expected = text(q.correctAnswer || q.expectedAnswer || q.expectedFill || q.correctValue
-        || (Array.isArray(q.correctAnswers) ? q.correctAnswers.join(' / ') : ''));
-      items.push({ type: 'short', prompt, answer: expected || undefined, help: explanation || undefined, points: 1 });
+      let expected = firstNonEmpty(q.correctAnswer, q.expectedAnswer, q.expectedFill, q.correctValue, q.correctAnswers, q.sampleAnswer, q.modelAnswer);
+      const unit = type === 'numeric-response' ? text(q.unit) : '';
+      if (expected && unit && !expected.toLowerCase().includes(unit.toLowerCase())) expected = expected + ' ' + unit;
+      items.push({ type: 'short', prompt, answer: expected || undefined, help: helpCombined, points: 1 });
       return;
     }
-    items.push({ type: 'paragraph', prompt, help: explanation || undefined, points: 0 });
+    items.push({ type: 'paragraph', prompt, help: helpCombined, points: 0 });
   });
   return items;
 }
 
-function _alloFormQuizzesFromHistory(history) {
+function _alloFormQuizzesFromHistory(history, exportConfig = null) {
+  const scopeIds = Array.isArray(exportConfig?.builderResourceIds) ? new Set(exportConfig.builderResourceIds.map((id) => String(id))) : null;
   return (Array.isArray(history) ? history : [])
-    .filter((item) => item && item.type === 'quiz' && item.data && Array.isArray(item.data.questions) && item.data.questions.length > 0)
+    .filter((item) => item && item.type === 'quiz' && item.data && Array.isArray(item.data.questions) && item.data.questions.length > 0 && (!scopeIds || (item.id != null && scopeIds.has(String(item.id)))))
     .map((item) => ({ key: String(item.id), title: String(item.title || item.meta || 'Quiz').slice(0, 120), item }));
 }
 // __ALLO_DRIVE_DELIVERY_END__
@@ -4360,9 +4927,33 @@ try {
   }
 } catch (_) {}
 
+function _shouldExportStudentOnlyHtml(exportConfig, builderViewFilter) {
+  return builderViewFilter === 'student' || exportConfig?.assessmentMode === true || (!exportConfig?.includeTeacherKey && !exportConfig?.includeAnswerKey);
+}
+
+function _builderPolishPlainTextClone(root, doc) {
+  if (!root || typeof root.querySelectorAll !== 'function') return;
+  const owner = root.ownerDocument || doc;
+  root.querySelectorAll('annotation, annotation-xml, [data-allo-footnote-backlink]').forEach((el) => el.remove());
+  root.querySelectorAll('img').forEach((img) => {
+    const alt = String(img.getAttribute('alt') || '').replace(/\s+/g, ' ').trim();
+    if (alt && owner) img.replaceWith(owner.createTextNode(' [Image: ' + alt + '] '));
+    else img.remove();
+  });
+  root.querySelectorAll('tr').forEach((tr) => {
+    const cells = Array.from(tr.children || []).filter((c) => {
+      const t = String(c.tagName || '').toLowerCase();
+      return t === 'td' || t === 'th';
+    });
+    cells.forEach((cell, idx) => {
+      if (idx < cells.length - 1 && owner) cell.appendChild(owner.createTextNode(' | '));
+    });
+  });
+}
+
 // The IMS export and Guided's student preview project the same marked teacher sections.
 function _removeStudentPackageTeacherSections(root) {
-  const teacherOnly = Array.from(root.querySelectorAll('.teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner'));
+  const teacherOnly = Array.from(root.querySelectorAll('.teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource'));
   teacherOnly.forEach(node => {
     const prior = node.previousElementSibling;
     if (prior?.classList.contains('page-break')) prior.remove();
@@ -4610,6 +5201,13 @@ function ExportPreviewView(props) {
       iframe.removeEventListener?.('alloflow-builder-document-written', applyLivePreviewOverlays);
     };
   }, [exportPreviewRef, exportPreviewMode, exportTheme, exportConfig, interactivePreviewMode, setExportPreviewMode, setExportTheme, setExportConfigAndRefresh, applyLivePreviewOverlays]);
+  React.useEffect(() => {
+    if (!exportConfig?.clozeWorksheet || typeof setExportConfigAndRefresh !== 'function') return;
+    const wantInteractive = exportPreviewMode === 'html';
+    if (!!exportConfig.clozeInteractive !== wantInteractive) {
+      setExportConfigAndRefresh(p => (p && p.clozeWorksheet ? { ...p, clozeInteractive: wantInteractive } : p));
+    }
+  }, [exportPreviewMode, exportConfig?.clozeWorksheet, exportConfig?.clozeInteractive, setExportConfigAndRefresh]);
   const [showNavigationPane, setShowNavigationPane] = React.useState(() => _readBuilderViewPreferences().navigationPane);
   const [navigationPaneTab, setNavigationPaneTab] = React.useState(() => _readBuilderViewPreferences().navigationTab);
   const [navigationPaneWidth, setNavigationPaneWidth] = React.useState(() => _readBuilderViewPreferences().navigationWidth);
@@ -4693,9 +5291,13 @@ function ExportPreviewView(props) {
   const paragraphContentWidth = _builderPageContentWidth(pageSetup);
   const [altExportBusy, setAltExportBusy] = React.useState('');
   const [pendingImageFile, setPendingImageFile] = React.useState(null);
+  const _activeScopeIds = Array.isArray(builderResourceIds)
+    ? builderResourceIds
+    : (Array.isArray(exportConfig?.builderResourceIds) ? exportConfig.builderResourceIds : null);
+  const _activeScopeSet = React.useMemo(() => (_activeScopeIds ? new Set(_activeScopeIds.map((id) => String(id))) : null), [_activeScopeIds]);
   const qtiAssessments = React.useMemo(() => (Array.isArray(history) ? history : [])
     .map((item, index) => ({ item, key: `${item?.id || 'quiz'}:${index}` }))
-    .filter(({ item }) => item?.type === 'quiz' && Array.isArray(item?.data?.questions)), [history]);
+    .filter(({ item }) => item?.type === 'quiz' && Array.isArray(item?.data?.questions) && (!_activeScopeSet || (item?.id != null && _activeScopeSet.has(String(item.id))))), [history, _activeScopeSet]);
   const [selectedQtiKey, setSelectedQtiKey] = React.useState('');
   React.useEffect(() => {
     if (!qtiAssessments.length) { if (selectedQtiKey) setSelectedQtiKey(''); return; }
@@ -4705,7 +5307,7 @@ function ExportPreviewView(props) {
   }, [qtiAssessments, selectedQtiKey]);
   const h5pActivities = React.useMemo(() => (Array.isArray(history) ? history : [])
     .map((item, index) => ({ item, key: `${item?.id || item?.type || 'activity'}:${index}` }))
-    .filter(({ item }) => ['quiz', 'glossary', 'flashcards'].includes(item?.type)), [history]);
+    .filter(({ item }) => (!_activeScopeSet || (item?.id != null && _activeScopeSet.has(String(item.id)))) && (['quiz', 'glossary', 'flashcards', 'simplified', 'guided-notes'].includes(item?.type) || (item?.type === 'note-taking' && ['', 'cornell', 'guided-notes', 'guided', 'q-and-a', 'double-entry', 'outline', 'lab', 'reading-response'].includes(String(item?.data?.templateType || item?.data?.template || '').trim().toLowerCase())))), [history, _activeScopeSet]);
   const [selectedH5PKey, setSelectedH5PKey] = React.useState('');
   React.useEffect(() => {
     if (!h5pActivities.length) { if (selectedH5PKey) setSelectedH5PKey(''); return; }
@@ -4716,7 +5318,7 @@ function ExportPreviewView(props) {
   const selectedH5PActivity = React.useMemo(() => (
     h5pActivities.find((entry) => entry.key === selectedH5PKey) || h5pActivities[h5pActivities.length - 1] || null
   ), [h5pActivities, selectedH5PKey]);
-  const h5pCompatibility = React.useMemo(() => _builderH5PCompatibility(selectedH5PActivity?.item), [selectedH5PActivity]);
+  const h5pCompatibility = React.useMemo(() => _builderH5PCompatibility(selectedH5PActivity?.item, history), [selectedH5PActivity, history]);
   const [imageAltText, setImageAltText] = React.useState('');
   const [imageDecorative, setImageDecorative] = React.useState(false);
   const [imageAltError, setImageAltError] = React.useState('');
@@ -7152,7 +7754,7 @@ function ExportPreviewView(props) {
     resumeTrackedEditingView(true);
     const payload = { ...citationSourceDraft, id: editingCitationSourceId || undefined };
     const result = _builderUpsertCitationSource(doc, payload, citationStyle);
-    const label = result.ok ? (editingCitationSourceId ? 'Updated source ?' : 'Added source ?') + (result.source.title || _builderCitationAuthorKey(result.source)) + '?' : 'Source update failed';
+    const label = result.ok ? (editingCitationSourceId ? 'Updated source \u201C' : 'Added source \u201C') + (result.source.title || _builderCitationAuthorKey(result.source)) + '\u201D' : 'Source update failed';
     if (finishDocumentReferenceMutation(result, label, result.ok ? 'source:' + result.source.id : '')) {
       setCitationSourceTarget(result.source.id);
       setShowSourceManager(false);
@@ -7174,7 +7776,7 @@ function ExportPreviewView(props) {
     const controller = typeof AbortController === 'function' ? new AbortController() : null;
     const timeout = window.setTimeout(() => controller?.abort(), 12000);
     setCitationDoiBusy(true);
-    setCitationImportFeedback({ tone: 'info', message: 'Looking up DOI metadata?' });
+    setCitationImportFeedback({ tone: 'info', message: 'Looking up DOI metadata\u2026' });
     try {
       const response = await window.fetch('https://api.crossref.org/works/' + encodeURIComponent(doi), {
         method: 'GET',
@@ -7241,7 +7843,7 @@ function ExportPreviewView(props) {
       skippedCount ? skippedCount + ' skipped because the 200-source limit was reached' : '',
       ...(parsed.warnings || []),
     ].filter(Boolean);
-    setCitationImportFeedback({ tone: addedCount ? 'success' : 'info', message: parts.join(' ? ') + '.' });
+    setCitationImportFeedback({ tone: addedCount ? 'success' : 'info', message: parts.join(' \u00b7 ') + '.' });
     if (!addedCount) return;
     if (result.references) {
       setDocumentReferences(result.references);
@@ -7736,7 +8338,12 @@ function ExportPreviewView(props) {
   }, [showExportPreview, toggleTrackChanges, openTrackedChanges, addToast]);
 
   const runBuilderPreflight = React.useCallback((modeOverride, announce = true) => {
-    const result = _builderExportPreflight(exportPreviewRef.current?.contentDocument, modeOverride || exportPreviewMode);
+    const scopeIds = Array.isArray(builderResourceIds) ? builderResourceIds : (Array.isArray(exportConfig?.builderResourceIds) ? exportConfig.builderResourceIds : null);
+    const result = _builderExportPreflight(exportPreviewRef.current?.contentDocument, modeOverride || exportPreviewMode, {
+      studentOnly: _shouldExportStudentOnlyHtml(exportConfig, builderViewFilter),
+      builderViewFilter,
+      builderResourceIds: scopeIds,
+    });
     setPreflightResult(result);
     if (announce && addToast) {
       if (result.errors) addToast(`Export preflight found ${result.errors} blocking issue${result.errors === 1 ? '' : 's'} and ${result.warnings} warning${result.warnings === 1 ? '' : 's'}.`, 'error');
@@ -7744,7 +8351,7 @@ function ExportPreviewView(props) {
       else addToast('Export preflight passed - no issues found.', 'success');
     }
     return result;
-  }, [exportPreviewRef, exportPreviewMode, addToast]);
+  }, [exportPreviewRef, exportPreviewMode, addToast, exportConfig, builderViewFilter, builderResourceIds]);
 
   const collectFindTextNodes = React.useCallback((doc) => {
     if (!doc?.body) return [];
@@ -7982,6 +8589,7 @@ function ExportPreviewView(props) {
       _builderClearReviewCommentTransientState(clone);
       _builderClearTrackedChangeTransientState(clone);
     }
+    if (options?.forExport && options?.includeTeacherKey === false) _removeStudentPackageTeacherSections(clone);
     _builderClearOpenPagePrompt(clone);
     // keepScripts: an LMS package carries the same page runtime as Download HTML.
     clone.querySelectorAll('.allo-block-controls,.allo-block-remove,.a11y-inspect-badge,[data-allo-crop-ui],#a11y-inspect-styles,#allo-builder-edit-css,#allo-builder-view-filter,#allo-builder-paper-css' + (options?.keepScripts ? '' : ',script:not([data-allo-citation-store])')).forEach((node) => node.remove());
@@ -7996,7 +8604,11 @@ function ExportPreviewView(props) {
       node.removeAttribute('aria-keyshortcuts');
     });
     const title = String((exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || doc.title || 'AlloFlow Document').trim();
-    return { doc, clone, title, html: '<!DOCTYPE html>\n' + clone.outerHTML };
+    let htmlOut = '<!DOCTYPE html>\n' + clone.outerHTML;
+    if (options?.forExport && options?.assessmentMode === true && typeof window !== 'undefined' && typeof window.AlloModules?.ExportHandlers?._alloSanitizeAssessmentStudentHtml === 'function') {
+      htmlOut = window.AlloModules.ExportHandlers._alloSanitizeAssessmentStudentHtml(htmlOut);
+    }
+    return { doc, clone, title, html: htmlOut };
   }, [exportPreviewRef, exportConfig]);
 
   const sanitizeAdvancedReviewSessionHtml = React.useCallback((html) => {
@@ -8797,7 +9409,8 @@ function ExportPreviewView(props) {
         addToast && addToast('The accessible Office exporter is still loading. Try again in a moment.', 'info');
         return;
       }
-      const clean = getCleanBuilderDocument({ forExport: true });
+      const studentOnly = _shouldExportStudentOnlyHtml(exportConfig, builderViewFilter);
+      const clean = getCleanBuilderDocument({ forExport: true, includeTeacherKey: !studentOnly, assessmentMode: exportConfig?.assessmentMode === true });
       if (!clean) throw new Error('The editable preview is not ready.');
       const result = await api.build({ html: clean.html, title: clean.title, format });
       if (typeof sink === 'function') {
@@ -8809,7 +9422,7 @@ function ExportPreviewView(props) {
     } catch (error) {
       addToast && addToast(`${format.toUpperCase()} export failed: ${error?.message || 'unknown error'}`, 'error');
     } finally { finishAlternativeExport(); }
-  }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, exportPreviewRef, runBuilderPreflight, addToast, getCleanBuilderDocument, downloadBuilderBlob]);
+  }, [beginAlternativeExport, finishAlternativeExport, altExportBusy, exportPreviewRef, runBuilderPreflight, addToast, getCleanBuilderDocument, downloadBuilderBlob, builderViewFilter, exportConfig]);
 
   // Send to my Drive. The Google Doc is the same accessible DOCX the Word
   // button builds, posted to the teacher's Class Mailbox, which files it in
@@ -8819,7 +9432,7 @@ function ExportPreviewView(props) {
   const [driveDeliveryLink, setDriveDeliveryLink] = React.useState(null);
   const [selectedFormQuizKey, setSelectedFormQuizKey] = React.useState('');
   const mailboxConfig = React.useMemo(() => _alloReadMailboxConfig(), [driveDeliveryBusy, driveDeliveryLink, altExportBusy]);
-  const formQuizzes = React.useMemo(() => _alloFormQuizzesFromHistory(history), [history]);
+  const formQuizzes = React.useMemo(() => _alloFormQuizzesFromHistory(history, exportConfig), [history, exportConfig]);
   const openMailboxSetup = React.useCallback(() => {
     if (typeof window !== 'undefined' && typeof window.__alloOpenMailboxSetup === 'function') {
       try { window.__alloOpenMailboxSetup(); return; } catch (_) {}
@@ -9004,7 +9617,7 @@ function ExportPreviewView(props) {
                       <h3 id="builder-citation-editor-title" className="text-sm font-black text-cyan-950">Edit citation</h3>
                       <p id="builder-citation-editor-help" className="mt-0.5 text-[10px] leading-snug text-cyan-900">Combine sources, adjust locators, and control how each source appears. Escape cancels.</p>
                     </div>
-                    <button type="button" onClick={() => closeCitationEditor(true)} className="rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-white" aria-label={t("export_preview.accessibility.close_citation_editor") || "Close citation editor"}>?</button>
+                    <button type="button" onClick={() => closeCitationEditor(true)} className="rounded px-1.5 py-0.5 text-lg leading-none text-slate-500 hover:bg-white" aria-label={t("export_preview.accessibility.close_citation_editor") || "Close citation editor"}>×</button>
                   </div>
                   <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-3">
                     {citationItemsDraft.map((item, index) => {
@@ -9015,16 +9628,16 @@ function ExportPreviewView(props) {
                           <div className="mb-2 flex items-center gap-1">
                             <label className="min-w-0 flex-1 text-[9px] font-bold uppercase text-slate-600">Source
                               <select value={item.sourceId} onChange={(event) => updateCitationItemDraft(index, { sourceId: event.target.value })} className="mt-0.5 h-8 w-full rounded border border-slate-300 bg-white px-1.5 text-[10px] font-semibold normal-case text-slate-800" aria-label={'Source ' + (index + 1) + ' in citation'}>
-                                {!sourceRecord && <option value={item.sourceId}>Missing source ? choose a replacement</option>}
+                                {!sourceRecord && <option value={item.sourceId}>Missing source — choose a replacement</option>}
                                 {(documentReferences.sources || []).map((source) => {
                                   const alreadyUsed = citationItemsDraft.some((candidate, candidateIndex) => candidateIndex !== index && candidate.sourceId === source.id);
-                                  return <option key={source.id} value={source.id} disabled={alreadyUsed}>{source.title || _builderCitationAuthorKey(source, citationStyle)}{alreadyUsed ? ' ? already cited' : ''}</option>;
+                                  return <option key={source.id} value={source.id} disabled={alreadyUsed}>{source.title || _builderCitationAuthorKey(source, citationStyle)}{alreadyUsed ? ' — already cited' : ''}</option>;
                                 })}
                               </select>
                             </label>
                             <div className="mt-3 flex shrink-0" role="group" aria-label={'Reorder source ' + (index + 1)}>
-                              <button type="button" onClick={() => moveCitationItemDraft(index, -1)} disabled={!index} className="h-8 w-7 rounded-l border border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30" aria-label={'Move source ' + (index + 1) + ' earlier'}>?</button>
-                              <button type="button" onClick={() => moveCitationItemDraft(index, 1)} disabled={index === citationItemsDraft.length - 1} className="h-8 w-7 border-y border-r border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30" aria-label={'Move source ' + (index + 1) + ' later'}>?</button>
+                              <button type="button" onClick={() => moveCitationItemDraft(index, -1)} disabled={!index} className="h-8 w-7 rounded-l border border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30" aria-label={'Move source ' + (index + 1) + ' earlier'}>↑</button>
+                              <button type="button" onClick={() => moveCitationItemDraft(index, 1)} disabled={index === citationItemsDraft.length - 1} className="h-8 w-7 border-y border-r border-slate-300 bg-white text-xs font-black text-slate-700 hover:bg-cyan-50 disabled:opacity-30" aria-label={'Move source ' + (index + 1) + ' later'}>↓</button>
                               <button type="button" onClick={() => removeCitationItemDraft(index)} disabled={citationItemsDraft.length === 1} className="h-8 rounded-r border-y border-r border-slate-300 bg-white px-2 text-[9px] font-bold text-red-700 hover:bg-red-50 disabled:opacity-30" aria-label={'Remove source ' + (index + 1) + ' from citation'}>Remove</button>
                             </div>
                           </div>
@@ -9042,7 +9655,7 @@ function ExportPreviewView(props) {
                     })}
                     <button type="button" onClick={addCitationItemDraft} disabled={citationItemsDraft.length >= _BUILDER_CITATION_ITEM_LIMIT || citationItemsDraft.length >= (documentReferences.sources?.length || 0)} className="h-8 w-full rounded border border-dashed border-cyan-500 bg-cyan-50 px-2 text-[10px] font-bold text-cyan-900 hover:bg-cyan-100 disabled:cursor-not-allowed disabled:opacity-40">+ Add another source</button>
                     <div className="rounded-lg border border-cyan-200 bg-cyan-50 px-2.5 py-2">
-                      <p className="text-[8px] font-black uppercase tracking-wide text-cyan-800">Preview ? {_BUILDER_CITATION_STYLES.find((style) => style.id === citationStyle)?.label || citationStyle}</p>
+                      <p className="text-[8px] font-black uppercase tracking-wide text-cyan-800">Preview · {_BUILDER_CITATION_STYLES.find((style) => style.id === citationStyle)?.label || citationStyle}</p>
                       <p className="mt-1 break-words text-[11px] font-semibold text-slate-800" aria-live="polite">{_builderFormatCitationCluster(citationItemsDraft, documentReferences.sources || [], citationStyle)}</p>
                     </div>
                     <p className="min-h-4 text-[10px] font-bold text-red-700" role="alert">{citationEditorError}</p>
@@ -9134,7 +9747,7 @@ function ExportPreviewView(props) {
                         {h5pActivities.length > 0 && <>
                           <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-2 pt-1">Interactive H5P</div>
                           {h5pActivities.length > 1 && <select aria-label={t("export_preview.accessibility.activity_to_export_as_h5p") || "Activity to export as H5P"} value={selectedH5PKey} onChange={(event) => setSelectedH5PKey(event.target.value)} disabled={!!altExportBusy} className="w-full border border-slate-300 rounded-md px-2 py-1 text-[11px] bg-white">
-                            {h5pActivities.map(({ item, key }, index) => <option key={key} value={key}>{item.title || `${item.type === 'quiz' ? 'Quiz' : 'Study cards'} ${index + 1}`}</option>)}
+                            {h5pActivities.map(({ item, key }, index) => <option key={key} value={key}>{item.title || `${item.type === 'quiz' ? 'Quiz' : item.type === 'simplified' ? 'Cloze reading' : item.type === 'note-taking' ? 'Study notes' : 'Study cards'} ${index + 1}`}</option>)}
                           </select>}
                           <button type="button" aria-describedby="h5p-compatibility-summary" disabled={!!altExportBusy || !h5pCompatibility.ready} onClick={() => runPackageExport('h5p')} className="w-full text-left px-2 py-1.5 text-[11px] font-medium text-fuchsia-700 hover:bg-fuchsia-50 rounded-lg disabled:opacity-50">{altExportBusy === 'h5p' ? 'Building H5P...' : 'H5P interactive activity (.h5p)'}</button>
                           <div id="h5p-compatibility-summary" role="status" className={`px-2 text-[10px] leading-tight ${h5pCompatibility.ready ? (h5pCompatibility.omitted || h5pCompatibility.omittedMedia ? 'text-amber-700' : 'text-emerald-700') : 'text-red-700'}`}>
@@ -9161,7 +9774,119 @@ function ExportPreviewView(props) {
                           let text = '';
                           try {
                             let _tClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
-                            _tClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style').forEach(el => el.remove());
+                            const _txtStudentOnly = typeof _shouldExportStudentOnlyHtml === 'function'
+                              ? _shouldExportStudentOnlyHtml(exportConfig, typeof builderViewFilter !== 'undefined' ? builderViewFilter : 'all')
+                              : (exportConfig?.assessmentMode === true || (!exportConfig?.includeTeacherKey && !exportConfig?.includeAnswerKey));
+                            if (_txtStudentOnly) {
+                              if (typeof _removeStudentPackageTeacherSections === 'function') _removeStudentPackageTeacherSections(_tClone);
+                              _tClone.querySelectorAll('.teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,#alloflow-interactive-object-profile').forEach((el) => {
+                                const prior = el.previousElementSibling;
+                                if (prior?.classList?.contains('page-break')) prior.remove();
+                                el.remove();
+                              });
+                            }
+                            _tClone.querySelectorAll('button.alloflow-inline-term').forEach((btn) => {
+                              btn.replaceWith(doc.createTextNode(btn.textContent || ''));
+                            });
+                            _tClone.querySelectorAll('.alloflow-venn-print-only').forEach((printEl) => {
+                              printEl.removeAttribute('hidden');
+                              const host = printEl.closest('.alloflow-venn-activity, [data-allo-activity-type="venn"], [data-allo-type="venn"], .alloflow-activity, .alloflow-card, section') || printEl.parentElement;
+                              if (host && host !== _tClone) {
+                                const filledPlacements = [];
+                                host.querySelectorAll('.alloflow-venn-card').forEach((card) => {
+                                  const btn = card.querySelector('button.alloflow-venn-card-button');
+                                  const sel = card.querySelector('select.alloflow-venn-response');
+                                  const cardLabel = (btn ? (btn.textContent || '') : Array.from(card.childNodes).filter((n) => n !== sel).map((n) => n.textContent || '').join(' ')).replace(/\s+/g, ' ').trim();
+                                  const opts = sel ? (sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll('option'))) : [];
+                                  const selOpt = sel && sel.selectedOptions && sel.selectedOptions[0];
+                                  const hasVal = (o) => o && !o.disabled && String(o.value != null ? o.value : (o.getAttribute && o.getAttribute('value') != null ? o.getAttribute('value') : o.textContent || '')).trim() !== '';
+                                  const opt = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute('selected')) && hasVal(o));
+                                  const chosenTxt = opt ? String(opt.textContent || opt.value || '').replace(/\s+/g, ' ').trim() : '';
+                                  if (cardLabel && chosenTxt) filledPlacements.push({ cardLabel, chosenTxt });
+                                });
+                                if (filledPlacements.length) {
+                                  const printCards = Array.from(printEl.querySelectorAll('.alloflow-venn-print-card'));
+                                  filledPlacements.forEach(({ cardLabel, chosenTxt }) => {
+                                    const matchCard = printCards.find((pc) => (pc.textContent || '').replace(/\s+/g, ' ').trim() === cardLabel);
+                                    if (matchCard) matchCard.textContent = cardLabel + ' — ' + chosenTxt;
+                                    else {
+                                      const p = doc.createElement('p');
+                                      p.className = 'alloflow-venn-card-text';
+                                      p.textContent = cardLabel + ' — ' + chosenTxt;
+                                      printEl.appendChild(p);
+                                    }
+                                  });
+                                }
+                                host.querySelectorAll('.alloflow-venn-screen-only, .alloflow-venn-digital-zones, .alloflow-venn-screen-instructions, .alloflow-venn-bank-label, .alloflow-venn-card, .alloflow-venn-diagram-wrap, .alloflow-venn-svg-wrap, .alloflow-venn-bank, .alloflow-venn-zones, .alloflow-venn-controls, .alloflow-venn-status, .alloflow-venn-interactive, .alloflow-venn-place-button, svg.alloflow-venn-svg').forEach((dup) => {
+                                  if (dup !== printEl && !printEl.contains(dup)) dup.remove();
+                                });
+                              }
+                            });
+                            _tClone.querySelectorAll('.alloflow-venn-card').forEach((card) => {
+                              const btn = card.querySelector('button.alloflow-venn-card-button');
+                              if (!btn) return;
+                              const sel = card.querySelector('select.alloflow-venn-response');
+                              const opts = sel ? (sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll('option'))) : [];
+                              const selOpt = sel && sel.selectedOptions && sel.selectedOptions[0];
+                              const hasVal = (o) => o && !o.disabled && String(o.value != null ? o.value : (o.getAttribute && o.getAttribute('value') != null ? o.getAttribute('value') : o.textContent || '')).trim() !== '';
+                              const opt = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute('selected')) && hasVal(o));
+                              const chosenTxt = opt ? String(opt.textContent || opt.value || '').replace(/\s+/g, ' ').trim() : '';
+                              const p = doc.createElement('p');
+                              p.className = 'alloflow-venn-card-text';
+                              p.textContent = (btn.textContent || '').replace(/\s+/g, ' ').trim() + (chosenTxt ? ' — ' + chosenTxt : '');
+                              btn.replaceWith(p);
+                              if (sel) sel.remove();
+                            });
+                            _tClone.querySelectorAll('select').forEach((sel) => {
+                              const isHid = sel.hasAttribute('hidden') || sel.getAttribute('aria-hidden') === 'true' || (sel.style && sel.style.display === 'none');
+                              const opts = sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll('option'));
+                              const selOpt = sel.selectedOptions && sel.selectedOptions[0];
+                              const hasVal = (o) => o && !o.disabled && String(o.value != null ? o.value : (o.getAttribute && o.getAttribute('value') != null ? o.getAttribute('value') : o.textContent || '')).trim() !== '';
+                              const opt = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute('selected')) && hasVal(o));
+                              const v = opt ? String(opt.textContent || opt.value || '').replace(/\s+/g, ' ').trim() : '';
+                              if (isHid) {
+                                if (v && typeof sel.matches === 'function' && sel.matches('select.alloflow-cs-response, select.alloflow-venn-response')) {
+                                  sel.replaceWith(doc.createTextNode(' — ' + v));
+                                } else {
+                                  sel.remove();
+                                }
+                                return;
+                              }
+                              sel.replaceWith(doc.createTextNode(v || ' ___ '));
+                            });
+                            _tClone.querySelectorAll('input, textarea').forEach((inp) => {
+                              const tag = (inp.tagName || '').toLowerCase();
+                              const itype = tag === 'input' ? String(inp.getAttribute('type') || inp.type || 'text').toLowerCase() : 'textarea';
+                              const isHid = itype === 'hidden' || itype === 'button' || itype === 'submit' || itype === 'reset' || inp.hasAttribute('hidden') || inp.getAttribute('aria-hidden') === 'true' || (inp.style && inp.style.display === 'none');
+                              if (isHid) { inp.remove(); return; }
+                              if (itype === 'checkbox' || itype === 'radio') {
+                                inp.replaceWith(doc.createTextNode((inp.checked || inp.hasAttribute('checked')) ? '[x] ' : '[ ] '));
+                                return;
+                              }
+                              const val = (tag === 'textarea' ? (inp.value || inp.textContent || '') : (inp.value || inp.getAttribute('value') || '')).trim();
+                              inp.replaceWith(doc.createTextNode(val || ' ___ '));
+                            });
+                            if (typeof _builderPolishPlainTextClone === 'function') {
+                              _builderPolishPlainTextClone(_tClone, doc);
+                            } else {
+                              _tClone.querySelectorAll('annotation, annotation-xml, [data-allo-footnote-backlink]').forEach((el) => el.remove());
+                              _tClone.querySelectorAll('img').forEach((img) => {
+                                const alt = String(img.getAttribute('alt') || '').replace(/\s+/g, ' ').trim();
+                                if (alt) img.replaceWith(doc.createTextNode(' [Image: ' + alt + '] '));
+                                else img.remove();
+                              });
+                              _tClone.querySelectorAll('tr').forEach((tr) => {
+                                const cells = Array.from(tr.children || []).filter((c) => {
+                                  const t = String(c.tagName || '').toLowerCase();
+                                  return t === 'td' || t === 'th';
+                                });
+                                cells.forEach((cell, idx) => {
+                                  if (idx < cells.length - 1) cell.appendChild(doc.createTextNode(' | '));
+                                });
+                              });
+                            }
+                            _tClone.querySelectorAll('details.allo-math-source, details.allo-chart-data > summary, details.allo-image-desc > summary').forEach((el) => el.remove());
+                            _tClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, #allo-builder-view-filter, #allo-builder-paper-css, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-step-pager, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-quiz-check-btn, .alloflow-save-status, .alloflow-math-symbolbar, .alloflow-math-symbar, .alloflow-math-controls, .alloflow-gm-controls, .alloflow-gm-status, .alloflow-faq-controls, .alloflow-dir-controls, .alloflow-glossary-card-actions, .alloflow-dbq-evidence-tracker, .alloflow-export-save-tools, .alloflow-venn-place-button, .alloflow-venn-screen-instructions, .alloflow-cloze-controls, .alloflow-cs-controls, .alloflow-cs-actions, .alloflow-venn-controls, .alloflow-venn-status, .alloflow-tl-controls, .alloflow-tl-arrows, .alloflow-glossary-controls, .alloflow-glossary-card-controls, .alloflow-glossary-card-status, .alloflow-cornell-controls, .alloflow-ws-controls, .alloflow-quiz-feedback, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], button, select, input, textarea, script, style').forEach(el => el.remove());
                             _tClone.querySelectorAll('h1,h2,h3,h4,h5,h6,p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
                             text = (_tClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
                           } catch (_) { text = (doc.body.innerText || doc.body.textContent || '').trim(); }
@@ -9176,7 +9901,10 @@ function ExportPreviewView(props) {
                           if (preflight.errors) { addToast('Markdown export stopped: fix the blocking preflight issues first.', 'error'); return; }
                           if (!beginAlternativeExport('markdown')) return;
                           try {
-                            const root = _builderCleanMarkdownRoot(doc);
+                            const _mdStudentOnly = typeof _shouldExportStudentOnlyHtml === 'function'
+                              ? _shouldExportStudentOnlyHtml(exportConfig, typeof builderViewFilter !== 'undefined' ? builderViewFilter : 'all')
+                              : (exportConfig?.assessmentMode === true || (!exportConfig?.includeTeacherKey && !exportConfig?.includeAnswerKey));
+                            const root = _builderCleanMarkdownRoot(doc, { includeTeacherKey: !_mdStudentOnly });
                             const math = Array.from(root.querySelectorAll('math'));
                             let spokenByBlock = null;
                             if (math.length) {
@@ -9202,19 +9930,134 @@ function ExportPreviewView(props) {
                           // a .md (for the "upload a source" path) — whichever the user prefers.
                           try {
                             const doc = exportPreviewRef.current?.contentDocument;
-                            const items = Array.isArray(history) ? history.filter(h => h && h.data != null) : [];
+                            const _nlmForceStudent = (typeof builderViewFilter !== 'undefined' && builderViewFilter === 'student') || exportConfig?.assessmentMode === true;
+                            const _showKey = !!(!_nlmForceStudent && exportConfig && (exportConfig.includeAnswerKey === true || exportConfig.includeTeacherKey === true));
+                            let _rawItems = Array.isArray(history) ? history.filter(h => h && h.data != null) : [];
+                            const _nlmScopeIds = (typeof builderResourceIds !== 'undefined' && Array.isArray(builderResourceIds))
+                              ? builderResourceIds
+                              : (Array.isArray(exportConfig?.builderResourceIds) ? exportConfig.builderResourceIds : null);
+                            if (_nlmScopeIds) {
+                              const _idSet = new Set(_nlmScopeIds.map((id) => String(id)));
+                              _rawItems = _rawItems.filter((h) => h && h.id != null && _idSet.has(String(h.id)));
+                            }
+                            const _NLM_TYPE_TO_KEY = {
+                              'simplified': 'includeSimplified', 'analysis': 'includeAnalysis', 'glossary': 'includeGlossary',
+                              'quiz': 'includeQuiz', 'flashcards': 'includeFlashcards', 'math': 'includeMath',
+                              'sentence-frames': 'includeSentenceFrames', 'outline': 'includeOutline', 'timeline': 'includeTimeline',
+                              'concept-sort': 'includeConceptSort', 'venn-diagram': 'includeVenn', 'word-search': 'includeWordSearch',
+                              'udl-advice': 'includeUdlAdvice', 'directions': 'includeDirections', 'dbq': 'includeDbq',
+                              'lesson-plan': 'includeLessonPlan', 'anchor-chart': 'includeAnchorChart', 'gemini-bridge': 'includeGeminiBridge',
+                              'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
+                              'note-taking': 'includeNoteTaking', 'faq': 'includeFaq', 'study-guide': 'includeStudyGuide',
+                              'word-wall': 'includeWordWall', 'fluency-record': 'includeFluencyRecord',
+                              'alignment-report': 'includeAlignmentReport', 'brainstorm': 'includeBrainstorm', 'image': 'includeImage',
+                              'same-text-supported': 'includeOriginalReading',
+                            };
+                            const _nlmContract = typeof window !== 'undefined' ? window.AlloModules?.InstructionalContext : null;
+                            const _nlmKeyFor = (it) => ((_nlmContract?.isSupportedOriginal?.(it) || it?.type === 'same-text-supported' || it?.isOriginalReading === true || it?.meta?.isOriginalReading === true)
+                              ? 'includeOriginalReading'
+                              : _NLM_TYPE_TO_KEY[it?.type]);
+                            if (Array.isArray(exportConfig?.resourceOrder) && exportConfig.resourceOrder.length > 0) {
+                              const _rRank = new Map();
+                              exportConfig.resourceOrder.forEach((k, idx) => { if (!_rRank.has(k)) _rRank.set(k, idx); });
+                              _rawItems = _rawItems.map((it, idx) => ({ it, idx })).sort((a, b) => {
+                                const ka = _nlmKeyFor(a.it), kb = _nlmKeyFor(b.it);
+                                const ra = _rRank.has(ka) ? _rRank.get(ka) : Number.MAX_SAFE_INTEGER;
+                                const rb = _rRank.has(kb) ? _rRank.get(kb) : Number.MAX_SAFE_INTEGER;
+                                return ra !== rb ? ra - rb : a.idx - b.idx;
+                              }).map((e) => e.it);
+                            }
+                            if (Array.isArray(exportConfig?.resourceItemOrder) && exportConfig.resourceItemOrder.length > 0) {
+                              const _iRank = new Map();
+                              exportConfig.resourceItemOrder.forEach((id, idx) => { const s = String(id); if (!_iRank.has(s)) _iRank.set(s, idx); });
+                              _rawItems = _rawItems.map((it, idx) => ({ it, idx })).sort((a, b) => {
+                                const ra = a.it?.id != null && _iRank.has(String(a.it.id)) ? _iRank.get(String(a.it.id)) : Number.MAX_SAFE_INTEGER;
+                                const rb = b.it?.id != null && _iRank.has(String(b.it.id)) ? _iRank.get(String(b.it.id)) : Number.MAX_SAFE_INTEGER;
+                                return ra !== rb ? ra - rb : a.idx - b.idx;
+                              }).map((e) => e.it);
+                            }
+                            const _nlmPaired = typeof _builderReadingHistory === 'function' ? _builderReadingHistory(_rawItems) : _rawItems;
+                            const items = _nlmPaired.filter((it) => {
+                              if (!it || it.data == null) return false;
+                              if ((it.type === 'alignment-report' || it.type === 'lesson-plan' || it.type === 'udl-advice' || it.type === 'analysis') && !_showKey) return false;
+                              if (!exportConfig) return true;
+                              const k = _nlmKeyFor(it);
+                              if (!k) return true;
+                              if (k === 'includeUdlAdvice') return exportConfig.includeUdlAdvice !== false && exportConfig.includeUdl !== false;
+                              return exportConfig[k] !== false;
+                            });
                             const hasLiveEdits = !!(doc?.body?.getAttribute && doc.body.getAttribute('data-allo-user-edited') === '1');
                             // The local date: toISOString() is UTC, so after 8 pm Eastern it read tomorrow.
                             const now = new Date();
                             const today = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-                            const title = (exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc && doc.title) || (items[0] && items[0].title) || 'AlloFlow Lesson';
+                            const title = (exportConfig && (exportConfig.title || exportConfig.docTitle || exportConfig.lessonTitle)) || (doc && doc.title) || (items[0] && items[0].title) || (_rawItems[0] && _rawItems[0].title) || 'AlloFlow Lesson';
                             const esc = (v) => (v == null ? '' : String(v));
                             const out = ['---', 'title: ' + esc(title), 'source: AlloFlow (Universal Design for Learning toolkit)', 'date_exported: ' + today, '---', '', '# ' + esc(title), ''];
                             if (items.length && !hasLiveEdits) {
+                              const _nlmShuffle = (list, seedPrefix, labelFn) => {
+                                const fnv = (v) => {
+                                  let h = 2166136261;
+                                  const s = String(v == null ? '' : v);
+                                  for (let i = 0; i < s.length; i += 1) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+                                  return h >>> 0;
+                                };
+                                const arr = (Array.isArray(list) ? list : []).map((entry, idx) => ({
+                                  entry,
+                                  idx,
+                                  hash: fnv(seedPrefix + ':' + idx + ':' + (labelFn ? labelFn(entry) : String(entry || ''))),
+                                }));
+                                if (arr.length <= 1) return arr.map((e) => e.entry);
+                                arr.sort((a, b) => (a.hash !== b.hash ? a.hash - b.hash : a.idx - b.idx));
+                                if (arr.every((e, i) => e.idx === i)) arr.push(arr.shift());
+                                return arr.map((e) => e.entry);
+                              };
                               items.forEach(it => {
                                 const ty = it.type, d = it.data;
                                 out.push('## ' + esc(it.title || (ty ? ty.charAt(0).toUpperCase() + ty.slice(1).replace(/[-_]/g, ' ') : 'Resource')), '');
-                                if (typeof d === 'string') { out.push(d.trim(), ''); }
+                                if (ty === 'simplified') {
+                                  let simTxt = typeof d === 'string' ? d : String((d && (d.text || d.content || d.summary)) || '');
+                                  const cutIdx = simTxt.search(/\r?\n---\s*ENGLISH TRANSLATION\s*---\r?\n/i);
+                                  if (cutIdx !== -1) simTxt = simTxt.slice(0, cutIdx);
+                                  simTxt = simTxt
+                                    .replace(/\[\[CHART:\s*\{[\s\S]*?\}\s*\]\]/gi, '')
+                                    .replace(/<[^>]+>/g, ' ')
+                                    .replace(/[ \t]+\n/g, '\n')
+                                    .replace(/\n{3,}/g, '\n\n')
+                                    .trim();
+                                  if (!_showKey && (it.clozeWorksheet || (d && d.clozeWorksheet) || exportConfig?.clozeWorksheet)) {
+                                    const _collectClozeTerms = (src) => {
+                                      if (!src) return [];
+                                      if (typeof src === 'string') return [src];
+                                      if (Array.isArray(src)) return src.flatMap(_collectClozeTerms);
+                                      if (typeof src === 'object') {
+                                        if (src.term || src.word) return [String(src.term || src.word)];
+                                        if (src.data || src.terms || src.items || src.entries || src.glossary) {
+                                          return _collectClozeTerms(src.data || src.terms || src.items || src.entries || src.glossary);
+                                        }
+                                      }
+                                      return [];
+                                    };
+                                    const _terms = []
+                                      .concat(_collectClozeTerms(it.glossary), _collectClozeTerms(it.terms), _collectClozeTerms(it.wordBank), _collectClozeTerms(_nlmPaired.filter((h) => h && h.type === 'glossary')))
+                                      .map((termVal) => String(termVal || '').trim())
+                                      .filter((termVal) => termVal.length >= 2)
+                                      .sort((a, b) => b.length - a.length);
+                                    const _seenT = new Set();
+                                    _terms.forEach((termVal) => {
+                                      const k = termVal.toLowerCase();
+                                      if (_seenT.has(k)) return;
+                                      _seenT.add(k);
+                                      const escTerm = termVal.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                                      try {
+                                        simTxt = simTxt.replace(new RegExp('(^|[^\\p{L}\\p{N}_])(' + escTerm + ')(?=$|[^\\p{L}\\p{N}_])', 'giu'), '$1_____');
+                                      } catch (_) {
+                                        simTxt = simTxt.replace(new RegExp('(^|[^A-Za-z0-9_])(' + escTerm + ')(?=$|[^A-Za-z0-9_])', 'gi'), '$1_____');
+                                      }
+                                    });
+                                  }
+                                  if (simTxt) out.push(simTxt, '');
+                                }
+                                else if (typeof d === 'string') { out.push(d.trim(), ''); }
                                 else if (ty === 'glossary' && Array.isArray(d)) {
                                   d.forEach(g => { if (!g) return; out.push('- **' + esc(g.term) + '** — ' + esc(g.def));
                                     if (typeof g.contextSentence === 'string' && g.contextSentence.trim()) out.push('  - _In the text:_ ' + esc(g.contextSentence.trim()));
@@ -9223,8 +10066,45 @@ function ExportPreviewView(props) {
                                   out.push('');
                                 }
                                 else if (ty === 'quiz' && d && Array.isArray(d.questions)) {
-                                  d.questions.forEach((q, i) => { out.push('**Q' + (i + 1) + '.** ' + esc(q.question), '');
-                                    (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + '. ' + esc(o))); out.push(''); });
+                                  const _normQt = (raw) => {
+                                    const k = String(raw || 'mcq').trim();
+                                    if (k === 'multiple-choice') return 'mcq';
+                                    if (k === 'shortAnswer') return 'short-answer';
+                                    if (k === 'order') return 'ordering';
+                                    return k;
+                                  };
+                                  d.questions.forEach((q, i) => {
+                                    if (!q) return;
+                                    const qt = _normQt(q.type);
+                                    out.push('**Q' + (i + 1) + '.** ' + esc(q.question), '');
+                                    if (qt === 'mcq' || qt === 'multi-select') {
+                                      (q.options || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + '. ' + esc(o)));
+                                    } else if (qt === 'fill-blank') {
+                                      if (Array.isArray(q.wordBank) && q.wordBank.length) out.push('Word bank: ' + q.wordBank.map((o) => esc(o)).join(', '));
+                                      else out.push('_Fill in the blank._');
+                                    } else if (qt === 'numeric-response') {
+                                      out.push('_Numeric answer' + (q.unit ? ' (' + esc(q.unit) + ')' : '') + '._');
+                                    } else if (qt === 'matching') {
+                                      (q.pairs || []).forEach((p, k) => { if (p) out.push((k + 1) + '. ' + esc(p.left || p.prompt || '') + ' -> ____'); });
+                                      const _rhsRaw = (q.pairs || []).map((p) => esc(p && (p.right || p.match || p.answer) || '')).filter(Boolean);
+                                      const _rhs = _showKey ? _rhsRaw : _nlmShuffle(_rhsRaw, (it.id || 'qz') + ':m:' + i);
+                                      if (_rhs.length) out.push('Match choices: ' + _rhs.join(' | '));
+                                    } else if (qt === 'ordering' || qt === 'sequence-sense') {
+                                      const _ordItems = _showKey ? (q.items || []) : _nlmShuffle(q.items || [], (it.id || 'qz') + ':o:' + i, (x) => esc(x));
+                                      _ordItems.forEach((stepIt, k) => out.push((k + 1) + '. ' + esc(stepIt)));
+                                    } else if (qt === 'answer-evidence') {
+                                      (q.answerOptions || []).forEach((o, k) => out.push(String.fromCharCode(65 + k) + '. ' + esc(o)));
+                                      if (Array.isArray(q.evidenceOptions) && q.evidenceOptions.length) {
+                                        out.push('Evidence options:');
+                                        q.evidenceOptions.forEach((e, k) => out.push('  ' + (k + 1) + '. ' + esc(e)));
+                                      }
+                                    } else if (qt === 'relation-mismatch') {
+                                      (q.pairs || []).forEach((p, k) => { if (p) out.push((k + 1) + '. ' + esc(p.left || '') + ' — ' + esc(p.right || '')); });
+                                    } else if (q.explanationPrompt) {
+                                      out.push('_' + esc(q.explanationPrompt) + '_');
+                                    }
+                                    out.push('');
+                                  });
                                   // Answer-key gating (export-format review #13, 2026-07-01): this export
                                   // travels — students, shared drives, NotebookLM — and it EMBEDDED the
                                   // full answer key unconditionally, while the HTML pack gates keys behind
@@ -9235,28 +10115,197 @@ function ExportPreviewView(props) {
                                   // checkbox in Export Options now controls this too (default OFF), so
                                   // the toggle is discoverable without a config file. Assessment mode
                                   // wins if both are set.
-                                  if (exportConfig && exportConfig.assessmentMode !== true && (exportConfig.includeAnswerKey === true || exportConfig.includeTeacherKey === true)) {
+                                  if (_showKey) {
                                     out.push('### Answer Key', '');
-                                    d.questions.forEach((q, i) => { const li = Array.isArray(q.options) ? q.options.indexOf(q.correctAnswer) : -1;
-                                      out.push('- **Q' + (i + 1) + ':** ' + (li >= 0 ? String.fromCharCode(65 + li) + '. ' : '') + esc(q.correctAnswer));
-                                      if (q.factCheck) out.push('  - ' + esc(q.factCheck)); });
+                                    d.questions.forEach((q, i) => {
+                                      if (!q) return;
+                                      const qt = _normQt(q.type);
+                                      let ansText = '';
+                                      if (qt === 'mcq') {
+                                        const opts = Array.isArray(q.options) ? q.options : [];
+                                        let idx = -1;
+                                        if (Number.isInteger(q.correctIndex) && opts[q.correctIndex] != null) idx = q.correctIndex;
+                                        else if (typeof q.correctIndex === 'string' && q.correctIndex.trim() !== '') {
+                                          const rawCi = q.correctIndex.trim();
+                                          if (/^\d+$/.test(rawCi)) { const n = parseInt(rawCi, 10); if (opts[n] != null) idx = n; }
+                                          else if (/^[A-Za-z]$/.test(rawCi)) { const n = rawCi.toUpperCase().charCodeAt(0) - 65; if (opts[n] != null) idx = n; }
+                                        }
+                                        if (idx < 0 && q.correctAnswer != null && opts.length) idx = opts.indexOf(q.correctAnswer);
+                                        const _ans = idx >= 0 && opts[idx] != null ? opts[idx] : q.correctAnswer;
+                                        const li = idx >= 0 ? idx : opts.indexOf(_ans);
+                                        ansText = (li >= 0 ? String.fromCharCode(65 + li) + '. ' : '') + esc(_ans || '');
+                                      } else if (qt === 'multi-select') {
+                                        const opts = Array.isArray(q.options) ? q.options : [];
+                                        const rawList = Array.isArray(q.correctAnswers) && q.correctAnswers.length
+                                          ? q.correctAnswers
+                                          : (Array.isArray(q.correctIndices) ? q.correctIndices.map((idx) => opts[idx]).filter((v) => v != null) : []);
+                                        ansText = rawList.map((a) => {
+                                          const li = opts.indexOf(a);
+                                          return (li >= 0 ? String.fromCharCode(65 + li) + '. ' : '') + esc(a);
+                                        }).join('; ');
+                                      } else if (qt === 'fill-blank') {
+                                        ansText = esc(q.expectedFill || q.correctAnswer || '');
+                                      } else if (qt === 'numeric-response') {
+                                        ansText = esc((q.correctValue != null ? String(q.correctValue) : (q.correctAnswer || '')) + (q.unit ? ' ' + q.unit : ''));
+                                      } else if (qt === 'matching') {
+                                        ansText = (q.pairs || []).map((p) => p ? (esc(p.left || p.prompt || '') + ' -> ' + esc(p.right || p.match || p.answer || '')) : '').filter(Boolean).join('; ');
+                                      } else if (qt === 'ordering' || qt === 'sequence-sense') {
+                                        ansText = (Array.isArray(q.correctOrder) ? q.correctOrder : (q.items || [])).map((x) => esc(x)).join(' -> ');
+                                      } else if (qt === 'answer-evidence') {
+                                        const aOpts = Array.isArray(q.answerOptions) ? q.answerOptions : [];
+                                        const eOpts = Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
+                                        const ansVal = Number.isInteger(q.correctAnswerIndex) && aOpts[q.correctAnswerIndex] != null ? aOpts[q.correctAnswerIndex] : q.correctAnswer;
+                                        const evVal = Number.isInteger(q.correctEvidenceIndex) && eOpts[q.correctEvidenceIndex] != null ? eOpts[q.correctEvidenceIndex] : q.correctEvidence;
+                                        ansText = [ansVal != null && String(ansVal).trim() ? esc(ansVal) : '', evVal != null && String(evVal).trim() ? 'Evidence: ' + esc(evVal) : ''].filter(Boolean).join(' | ');
+                                      } else if (qt === 'relation-mismatch') {
+                                        ansText = (Number.isInteger(q.wrongPairIndex) && Array.isArray(q.pairs) && q.pairs[q.wrongPairIndex]
+                                          ? 'Mismatch #' + (q.wrongPairIndex + 1) + (q.correctPartnerForWrong ? ' -> ' + esc(q.correctPartnerForWrong) : '')
+                                          : esc(q.correctAnswer || ''));
+                                      } else {
+                                        ansText = esc(q.sampleAnswer || q.correctAnswer || q.rubric || 'Teacher-reviewed response');
+                                      }
+                                      out.push('- **Q' + (i + 1) + ':** ' + ansText);
+                                      if (q.factCheck) out.push('  - ' + esc(q.factCheck));
+                                    });
                                     out.push('');
                                   } else {
                                     out.push('*Answer key omitted from this export (assessment integrity — anyone with this file can read it). Check "Teacher Answer Key" in Export Options to include it.*', '');
                                   }
                                 }
-                                else if (ty === 'outline' && d && Array.isArray(d.branches)) {
+                                else if (ty === 'outline' && d && (Array.isArray(d.branches) || (d.memoryPalace && typeof d.memoryPalace === 'object'))) {
                                   if (d.main) out.push('**' + esc(d.main) + '**', '');
-                                  _kwlMarkdownLines(d, esc, !!(exportConfig && exportConfig.assessmentMode !== true && (exportConfig.includeAnswerKey === true || exportConfig.includeTeacherKey === true)), t).forEach(line => out.push(line));
-                                  out.push('');
+                                  const rawStruct = String(d.structureType || '').trim();
+                                  const branches = Array.isArray(d.branches) ? d.branches.filter(Boolean) : [];
+                                  const entryTxt = (s) => esc(s && typeof s === 'object' ? (s.text || s.label || s.content || '') : s).trim();
+                                  if (/^venn(\s+diagram)?$/i.test(rawStruct) && branches.length >= 2) {
+                                    let orderedVenn = branches.slice(0, 3);
+                                    if (orderedVenn.length === 3) {
+                                      const overlapIdx = orderedVenn.findIndex((b) => /both|overlap|shared|common|similar|middle|center/i.test((b && b.title) || ''));
+                                      if (overlapIdx === 0) orderedVenn = [branches[1], branches[0], branches[2]];
+                                      else if (overlapIdx === 1) orderedVenn = [branches[0], branches[1], branches[2]];
+                                      else orderedVenn = [branches[0], branches[2], branches[1]];
+                                    }
+                                    const _vennUnsorted = exportConfig?.assessmentMode === true || (exportConfig?.vennExportMode === 'activity' && !_showKey);
+                                    if (_vennUnsorted) {
+                                      orderedVenn.forEach((z, zi) => {
+                                        out.push('### ' + esc((z && z.title) || ('Zone ' + (zi + 1))), '- _Sort items into this zone._', '');
+                                      });
+                                      const bank = _nlmShuffle(
+                                        orderedVenn.flatMap((b) => (Array.isArray(b && b.items) ? b.items : []).map(entryTxt).filter(Boolean)),
+                                        (it.id || 'venn') + ':' + (exportConfig?.assessmentMode ? 'a' : 'w')
+                                      );
+                                      if (bank.length) {
+                                        out.push('### Items to Sort');
+                                        bank.forEach((x) => out.push('- ' + x));
+                                        out.push('');
+                                      }
+                                    } else {
+                                      _kwlMarkdownLines({ ...d, branches: orderedVenn }, esc, _showKey, typeof t === 'function' ? t : undefined).forEach(line => out.push(line));
+                                      out.push('');
+                                    }
+                                  } else if (/^memory\s+palace$/i.test(rawStruct)) {
+                                    const store = d.memoryPalace && typeof d.memoryPalace === 'object' ? d.memoryPalace : {};
+                                    const own = (exportConfig?.includeStudentResponses !== false && store.myMnemonics && typeof store.myMnemonics === 'object') ? store.myMnemonics : {};
+                                    const rooms = branches.map((b, bi) => ({
+                                      key: 'b' + bi,
+                                      title: (b && b.title) || ('Room ' + (bi + 1)),
+                                      loci: (Array.isArray(b && b.items) ? b.items : []).map((loc, li) => {
+                                        const lid = 'b' + bi + '_i' + li;
+                                        const mnems = Array.isArray(b && b.mnemonics) ? b.mnemonics : [];
+                                        const ownTxt = typeof own[lid] === 'string' ? own[lid].trim() : '';
+                                        const mn = ownTxt || (mnems[li] != null ? String(mnems[li]).trim() : '');
+                                        return { text: entryTxt(loc), mnemonic: esc(mn).trim() };
+                                      }).filter((l) => l.text || l.mnemonic),
+                                    }));
+                                    (Array.isArray(store.extraRooms) ? store.extraRooms : []).forEach((r, ri) => {
+                                      if (!r || typeof r !== 'object') return;
+                                      rooms.push({ key: String(r.id || ('xr' + (ri + 1))), title: String(r.title || ('Room ' + (rooms.length + 1))), loci: [] });
+                                    });
+                                    const byKey = Object.create(null);
+                                    rooms.forEach((r) => { byKey[r.key] = r; });
+                                    (Array.isArray(store.extraLoci) ? store.extraLoci : []).forEach((e) => {
+                                      if (!e || typeof e !== 'object') return;
+                                      const room = (e.room != null && byKey[String(e.room)]) || rooms[0];
+                                      if (!room) return;
+                                      const lid = e.id != null ? String(e.id) : '';
+                                      const ownTxt = lid && typeof own[lid] === 'string' ? own[lid].trim() : '';
+                                      const txt = esc(e.label != null ? e.label : (e.text || '')).trim();
+                                      const mn = esc(ownTxt || (e.mnemonic != null ? String(e.mnemonic).trim() : '')).trim();
+                                      if (txt || mn) room.loci.push({ text: txt, mnemonic: mn });
+                                    });
+                                    rooms.forEach((room) => {
+                                      out.push('### ' + esc(room.title));
+                                      room.loci.forEach((l) => {
+                                        if (l.text && l.mnemonic) out.push('- **' + l.text + '** — _Mnemonic:_ ' + l.mnemonic);
+                                        else if (l.text) out.push('- ' + l.text);
+                                        else if (l.mnemonic) out.push('- _Mnemonic:_ ' + l.mnemonic);
+                                      });
+                                      out.push('');
+                                    });
+                                  } else {
+                                    _kwlMarkdownLines(d, esc, _showKey, typeof t === 'function' ? t : undefined).forEach(line => out.push(line));
+                                    out.push('');
+                                  }
                                 }
-                                else if (ty === 'timeline' && Array.isArray(d)) {
-                                  d.forEach(e => { if (e) out.push('- **' + esc(e.date) + ':** ' + esc(e.event)); }); out.push('');
+                                else if (ty === 'timeline' && (Array.isArray(d) || (d && (Array.isArray(d.items) || Array.isArray(d.events))))) {
+                                  const tlListRaw = Array.isArray(d) ? d : (Array.isArray(d.items) ? d.items : d.events);
+                                  const tlList = (exportConfig?.assessmentMode === true && !_showKey)
+                                    ? _nlmShuffle(tlListRaw, (it.id || 'tl') + ':a', (e) => esc((e && (e.date || e.event || e.title || e.description)) || ''))
+                                    : tlListRaw;
+                                  let wroteTl = false;
+                                  tlList.forEach(e => {
+                                    if (!e) return;
+                                    const dt = esc(e.date).trim();
+                                    const ev = esc(e.event || e.title || e.description || '').trim();
+                                    if (!dt && !ev) return;
+                                    out.push(dt && ev ? ('- **' + dt + ':** ' + ev) : ('- ' + (dt ? ('**' + dt + '**') : ev)));
+                                    wroteTl = true;
+                                  });
+                                  if (wroteTl) out.push('');
                                 }
-                                else if (ty === 'concept-sort' && d && Array.isArray(d.categories)) {
-                                  const its = Array.isArray(d.items) ? d.items : [];
-                                  d.categories.forEach(c => { if (!c) return; out.push('### ' + esc(c.label));
-                                    its.filter(x => x && x.categoryId === c.id).forEach(x => out.push('- ' + esc(x.content))); out.push(''); });
+                                else if (ty === 'concept-sort' && d && (Array.isArray(d.categories) || Array.isArray(d.items))) {
+                                  const cats = (Array.isArray(d.categories) ? d.categories : []).filter(c => c && c.id !== '__uncategorized' && !c.isUncategorized);
+                                  const its = Array.isArray(d.items) ? d.items.filter(Boolean) : [];
+                                  const catIds = new Set(cats.map(c => c.id));
+                                  if (!_showKey) {
+                                    if (cats.length) {
+                                      out.push('### Categories');
+                                      cats.forEach(c => out.push('- ' + esc(c.label)));
+                                      out.push('');
+                                    }
+                                    const sortable = _nlmShuffle(
+                                      its.filter(x => x.categoryId !== '__uncategorized'),
+                                      (it.id || 'cs') + ':' + (exportConfig?.assessmentMode ? 'a' : 'w'),
+                                      (x) => esc(x.text || x.label || x.content || '').trim()
+                                    );
+                                    if (sortable.length) {
+                                      out.push('### Items to Sort');
+                                      sortable.forEach(x => {
+                                        const lbl = esc(x.text || x.label || x.content || '').trim();
+                                        if (lbl) out.push('- ' + lbl);
+                                      });
+                                      out.push('');
+                                    }
+                                    out.push('*Category answer key omitted (check "Teacher Answer Key" in Export Options to include it).*', '');
+                                  } else {
+                                    cats.forEach(c => {
+                                      out.push('### ' + esc(c.label));
+                                      its.filter(x => x.categoryId === c.id).forEach(x => {
+                                        const lbl = esc(x.text || x.label || x.content || '').trim();
+                                        if (lbl) out.push('- ' + lbl);
+                                      });
+                                      out.push('');
+                                    });
+                                    const uncategorized = its.filter(x => !catIds.has(x.categoryId));
+                                    if (uncategorized.length) {
+                                      out.push('### Uncategorized');
+                                      uncategorized.forEach(x => {
+                                        const lbl = esc(x.text || x.label || x.content || '').trim();
+                                        if (lbl) out.push('- ' + lbl);
+                                      });
+                                      out.push('');
+                                    }
+                                  }
                                 }
                                 else if (ty === 'memory-aid' && d && typeof d === 'object') {
                                   // Memory Aid Studio: a structured section, never the raw object (it carries the
@@ -9315,10 +10364,411 @@ function ExportPreviewView(props) {
                                         : ' (' + maT('hook_unsourced_note', 'Fun fact from AI knowledge. Ask your teacher if you want to check it.') + ')';
                                       out.push('', '**' + maT('hook_heading', 'Did you know?') + '** ' + mdText + cite);
                                     }
-                                    out.push('');
-                                  });
-                                }
-                                else if (ty === 'image' && d && d.prompt) { out.push('_Image: ' + esc(d.prompt) + '_', ''); }
+                                      out.push('');
+                                    });
+                                  }
+                                  else if (ty === 'math' && d && typeof d === 'object') {
+                                    const probs = Array.isArray(d.problems) && d.problems.length
+                                      ? d.problems
+                                      : [{ question: d.problem, answer: d.answer, steps: d.steps, realWorld: d.realWorld, _verification: d._verification }];
+                                    const usable = probs.filter(p => p && (p.question || p.problem || p.answer || (Array.isArray(p.steps) && p.steps.length)));
+                                    let hasHiddenSolution = false;
+                                    usable.forEach((p, idx) => {
+                                      const qTxt = esc(p.question || p.problem || '').trim();
+                                      if (qTxt) out.push('**Problem ' + (idx + 1) + ':** ' + qTxt, '');
+                                      else out.push('**Problem ' + (idx + 1) + ':**', '');
+                                      if (p.realWorld && String(p.realWorld).trim()) out.push('_Real-world connection:_ ' + esc(p.realWorld).trim(), '');
+                                      const hasAns = p.answer != null && String(p.answer).trim() !== '';
+                                      const hasSteps = Array.isArray(p.steps) && p.steps.length > 0;
+                                      if (hasAns || hasSteps) {
+                                        if (_showKey) {
+                                          const pNeedsReview = !!(p._verification && p._verification.reviewRequired && !p._verification.teacherReviewed);
+                                          if (pNeedsReview) out.push('> **Teacher review recommended:** Verify automated solution steps before distributing.', '');
+                                          if (hasSteps) {
+                                            out.push('**Steps:**');
+                                            p.steps.forEach((s, si) => {
+                                              if (s == null) return;
+                                              const line = typeof s === 'object'
+                                                ? [esc(s.explanation || '').trim(), esc(s.latex || '').trim()].filter(Boolean).join(' — ')
+                                                : esc(s).trim();
+                                              if (line) out.push((si + 1) + '. ' + line);
+                                            });
+                                            out.push('');
+                                          }
+                                          if (hasAns) out.push('**Answer:** ' + esc(p.answer).trim(), '');
+                                        } else {
+                                          hasHiddenSolution = true;
+                                        }
+                                      }
+                                    });
+                                    if (!_showKey && hasHiddenSolution) {
+                                      out.push('*Solution steps and answers omitted (check "Teacher Answer Key" in Export Options to include them).*', '');
+                                    }
+                                  }
+                                  else if (ty === 'dbq' && d && typeof d === 'object') {
+                                    if (d.essentialQuestion) out.push('**Essential Question:** ' + esc(d.essentialQuestion).trim(), '');
+                                    if (d.historicalContext) out.push('**Historical Context:** ' + esc(d.historicalContext).trim(), '');
+                                    const synthPrompt = d.synthesisPrompt || d.synthesisQuestion || d.essayPrompt || '';
+                                    if (synthPrompt) out.push('**Synthesis Prompt:** ' + esc(synthPrompt).trim(), '');
+                                    const docs = Array.isArray(d.documents) ? d.documents : [];
+                                    docs.forEach((docItem, di) => {
+                                      if (!docItem || typeof docItem !== 'object') return;
+                                      out.push('### ' + esc(docItem.title || ('Document ' + (di + 1))), '');
+                                      if (docItem.source) out.push('_Source:_ ' + esc(docItem.source).trim(), '');
+                                      const body = esc(docItem.excerpt || docItem.content || docItem.text || '').trim();
+                                      if (body) {
+                                        body.split(/\r?\n/).forEach(ln => out.push('> ' + ln));
+                                        out.push('');
+                                      }
+                                      if (docItem.guidingQuestion) out.push('- **Guiding Question:** ' + esc(docItem.guidingQuestion).trim());
+                                      if (Array.isArray(docItem.sourcingQuestions)) {
+                                        docItem.sourcingQuestions.forEach(sq => { if (sq && String(sq).trim()) out.push('- **Sourcing:** ' + esc(sq).trim()); });
+                                      }
+                                      if (Array.isArray(docItem.analysisQuestions)) {
+                                        docItem.analysisQuestions.forEach(aq => { if (aq && String(aq).trim()) out.push('- **Analysis:** ' + esc(aq).trim()); });
+                                      }
+                                      out.push('');
+                                    });
+                                    const perspectives = Array.isArray(d.perspectives) ? d.perspectives.filter(Boolean) : [];
+                                    if (perspectives.length) {
+                                      out.push('### Competing Perspectives');
+                                      perspectives.forEach(p => {
+                                        if (typeof p === 'string') { if (p.trim()) out.push('- ' + esc(p).trim()); return; }
+                                        const lbl = esc(p.label || '').trim();
+                                        const desc = esc(p.description || '').trim();
+                                        if (lbl && desc) out.push('- **' + lbl + '**: ' + desc);
+                                        else if (lbl || desc) out.push('- ' + (lbl ? ('**' + lbl + '**') : desc));
+                                      });
+                                      out.push('');
+                                    }
+                                    const corrobClaims = Array.isArray(d.corroborationClaims) ? d.corroborationClaims : [];
+                                    const corrobPrompts = Array.isArray(d.corroborationPrompts) ? d.corroborationPrompts : [];
+                                    if (corrobClaims.length || corrobPrompts.length) {
+                                      out.push('### Corroboration');
+                                      corrobClaims.forEach(c => {
+                                        const cl = esc(c && typeof c === 'object' ? (c.claim || c.text || '') : c).trim();
+                                        if (cl) out.push('- ' + cl);
+                                      });
+                                      corrobPrompts.forEach(p => {
+                                        const pr = esc(p && typeof p === 'object' ? (p.prompt || p.question || p.text || '') : p).trim();
+                                        if (pr) out.push('- ' + pr);
+                                      });
+                                      out.push('');
+                                    }
+                                  }
+                                  else if (ty === 'note-taking' && d && typeof d === 'object') {
+                                    const tt = String(d.templateType || d.template || '').trim().toLowerCase();
+                                    const cues = Array.isArray(d.cues) ? d.cues : [];
+                                    const notes = Array.isArray(d.notes) ? d.notes : [];
+                                    if (tt === 'guided-notes' || Array.isArray(d.blanks)) {
+                                      const blanks = Array.isArray(d.blanks) ? d.blanks : [];
+                                      blanks.forEach((b, bi) => {
+                                        if (!b || typeof b !== 'object') return;
+                                        const rawAns = _showKey ? (b.answer || b.expected || b.studentAnswer) : b.studentAnswer;
+                                        const ans = rawAns != null && String(rawAns).trim() ? esc(rawAns).trim() : '';
+                                        const blankText = ans ? ('[' + ans + ']') : '_____';
+                                        const before = esc(b.before || b.prefix || '').trim();
+                                        const after = esc(b.after || b.suffix || '').trim();
+                                        const joinAfter = after ? (/^[,.;:!?)]/.test(after) ? after : ' ' + after) : '';
+                                        out.push((bi + 1) + '. ' + (before ? before + ' ' : '') + blankText + joinAfter);
+                                      });
+                                      if (blanks.length) out.push('');
+                                      if (d.notesExtra && String(d.notesExtra).trim()) out.push('**Additional Notes:** ' + esc(d.notesExtra).trim(), '');
+                                    } else if (tt === 'q-and-a' || Array.isArray(d.pairs)) {
+                                      const pairs = Array.isArray(d.pairs) ? d.pairs : [];
+                                      pairs.forEach((p, pi) => {
+                                        if (!p || typeof p !== 'object') return;
+                                        const qTxt = esc(p.question || p.prompt || '').trim();
+                                        const aTxt = esc(_showKey ? (p.answer || p.sampleAnswer || '') : (p.studentAnswer || '')).trim();
+                                        if (qTxt) out.push('**Q' + (pi + 1) + '.** ' + qTxt);
+                                        out.push(aTxt ? ('- **Answer:** ' + aTxt) : '- _Response:_ _____');
+                                      });
+                                      if (pairs.length) out.push('');
+                                    } else if (tt === 'double-entry' || Array.isArray(d.entries)) {
+                                      const heads = Array.isArray(d.columnHeads) && d.columnHeads.length === 2
+                                        ? d.columnHeads
+                                        : ['Quote / Passage', 'Response / Thinking'];
+                                      const entries = Array.isArray(d.entries) ? d.entries : [];
+                                      entries.forEach(en => {
+                                        if (!en || typeof en !== 'object') return;
+                                        const q = esc(en.quote || '').trim();
+                                        const r = esc(en.response || '').trim();
+                                        if (q || r) out.push('- **' + esc(heads[0]) + ':** ' + (q || '—') + ' | **' + esc(heads[1]) + ':** ' + (r || '_____'));
+                                      });
+                                      if (entries.length) out.push('');
+                                    } else if (tt === 'lab' || d.hypothesis || d.conclusion || Array.isArray(d.materials) || Array.isArray(d.procedure)) {
+                                      if (d.question) out.push('**Research Question:** ' + esc(d.question).trim(), '');
+                                      if (d.hypothesis) out.push('**Hypothesis:** ' + esc(d.hypothesis).trim(), '');
+                                      if (Array.isArray(d.materials) && d.materials.length) {
+                                        out.push('**Materials:**');
+                                        d.materials.forEach(m => { const mt = esc((m && m.text) || m || '').trim(); if (mt) out.push('- ' + mt); });
+                                        out.push('');
+                                      }
+                                      if (Array.isArray(d.procedure) && d.procedure.length) {
+                                        out.push('**Procedure:**');
+                                        d.procedure.forEach((p, pi) => { const pt = esc((p && p.text) || p || '').trim(); if (pt) out.push((pi + 1) + '. ' + pt); });
+                                        out.push('');
+                                      }
+                                      if (d.data) out.push('**Data / Observations:** ' + esc(d.data).trim(), '');
+                                      if (d.analysis) out.push('**Analysis:** ' + esc(d.analysis).trim(), '');
+                                      if (d.conclusion) out.push('**Conclusion:** ' + esc(d.conclusion).trim(), '');
+                                    } else if (tt === 'reading-response' || d.favoriteLine || d.thinkings) {
+                                      if (d.favoriteLine) out.push('**Favorite Line or Passage:** ' + esc(d.favoriteLine).trim(), '');
+                                      if (d.thinkings) out.push('**What This Made Me Think About:** ' + esc(d.thinkings).trim(), '');
+                                      const connTxt = d.connection && typeof d.connection === 'object' ? d.connection.text : d.connection;
+                                      if (connTxt) out.push('**Connection:** ' + esc(connTxt).trim(), '');
+                                      if (d.question) out.push('**One Question I Have:** ' + esc(d.question).trim(), '');
+                                    } else if (cues.length || notes.length || d.summary) {
+                                      const rowCount = Math.max(cues.length, notes.length);
+                                      for (let r = 0; r < rowCount; r += 1) {
+                                        const c = esc(cues[r] && (cues[r].text || cues[r])).trim();
+                                        const n = esc(notes[r] && (notes[r].text || notes[r])).trim();
+                                        if (c || n) out.push('- **' + (c || 'Cue') + ':** ' + n);
+                                      }
+                                      if (rowCount) out.push('');
+                                      if (d.summary) out.push('**Summary:** ' + esc(d.summary).trim(), '');
+                                    }
+                                  }
+                                  else if (ty === 'sentence-frames' && d && typeof d === 'object') {
+                                    const bank = Array.isArray(d.wordBank)
+                                      ? d.wordBank.map(w => esc(w && typeof w === 'object' ? (w.word || w.term || w.text || '') : w).trim()).filter(Boolean)
+                                      : [];
+                                    if (bank.length) out.push('**Word Bank:** ' + bank.join(', '), '');
+                                    const sfItems = Array.isArray(d.items) ? d.items.filter(Boolean) : [];
+                                    if (d.mode === 'paragraph' || (!sfItems.length && d.text)) {
+                                      if (d.text) out.push(esc(d.text).trim(), '');
+                                      if (d.text_en) out.push('_' + esc(d.text_en).trim() + '_', '');
+                                    } else if (sfItems.length) {
+                                      sfItems.forEach(entry => {
+                                        const tierRaw = esc(entry.tier || entry.level || '').trim();
+                                        const frameTxt = esc(entry.text || entry.frame || entry.starter || entry.sentence || '').trim();
+                                        const glossTxt = esc(entry.text_en || '').trim();
+                                        if (!frameTxt) return;
+                                        out.push('- ' + (tierRaw ? ('**[' + tierRaw.toUpperCase() + ']** ') : '') + frameTxt + (glossTxt ? (' _' + glossTxt + '_') : ''));
+                                      });
+                                      out.push('');
+                                    }
+                                    if (_showKey && d.rubric && String(d.rubric).trim()) {
+                                      out.push('**Teacher Rubric:** ' + esc(d.rubric).trim(), '');
+                                    }
+                                  }
+                                  else if (ty === 'faq' && Array.isArray(d)) {
+                                    d.forEach((faq, idx) => {
+                                      if (!faq || typeof faq !== 'object') return;
+                                      const q = String(faq.question || faq.q || '').trim();
+                                      const qEn = String(faq.question_en || '').trim();
+                                      const a = String(faq.answer || faq.a || '').trim();
+                                      const aEn = String(faq.answer_en || '').trim();
+                                      if (!q && !a) return;
+                                      out.push('### Q' + (idx + 1) + ': ' + esc(q || ('Question ' + (idx + 1))));
+                                      if (qEn && qEn !== q) out.push('_' + esc(qEn) + '_');
+                                      out.push('');
+                                      if (exportConfig?.assessmentMode === true && !_showKey) {
+                                        out.push('_Response:_ _____', '');
+                                      } else {
+                                        if (a) out.push(esc(a));
+                                        if (aEn && aEn !== a) out.push('', '_' + esc(aEn) + '_');
+                                        out.push('');
+                                      }
+                                    });
+                                  }
+                                  else if (ty === 'anchor-chart' && d && typeof d === 'object') {
+                                    const armed = !!(d.interactive && d.interactive.armed === true) && !_showKey;
+                                    let wroteAc = false;
+                                    if (d.bigIdea && String(d.bigIdea).trim()) {
+                                      out.push('**Big Idea:** ' + esc(d.bigIdea).trim(), '');
+                                      wroteAc = true;
+                                    }
+                                    const acSecs = Array.isArray(d.sections) ? d.sections : [];
+                                    acSecs.forEach((sec, si) => {
+                                      if (!sec || typeof sec !== 'object') return;
+                                      const sTitle = String(sec.label || sec.title || ('Section ' + (si + 1))).trim();
+                                      out.push('### ' + esc(sTitle), '');
+                                      wroteAc = true;
+                                      if (sec.summary && String(sec.summary).trim()) out.push(esc(sec.summary).trim(), '');
+                                      const bullets = Array.isArray(sec.bullets) ? sec.bullets : (Array.isArray(sec.points) ? sec.points : []);
+                                      if (bullets.length) {
+                                        let anyBullet = false;
+                                        bullets.forEach((b) => {
+                                          const bt = typeof b === 'string' ? b : (b && (b.text || b.label) || '');
+                                          if (!String(bt).trim() && !armed) return;
+                                          out.push('- ' + (armed ? '_____' : esc(bt).trim()));
+                                          anyBullet = true;
+                                        });
+                                        if (anyBullet) out.push('');
+                                      }
+                                      if (_showKey && sec.answerKey) {
+                                        const akText = Array.isArray(sec.answerKey)
+                                          ? sec.answerKey.map((x) => String(x || '').trim()).filter(Boolean).join('; ')
+                                          : String(sec.answerKey).trim();
+                                        if (akText) out.push('**Answer Key:** ' + esc(akText), '');
+                                      }
+                                    });
+                                    if (d.memoryHook && String(d.memoryHook).trim()) {
+                                      out.push('**Memory Hook:** ' + esc(d.memoryHook).trim(), '');
+                                      wroteAc = true;
+                                    }
+                                    if (!wroteAc) {
+                                      const acTx = String(d.text || d.content || d.summary || '').trim();
+                                      if (acTx) out.push(esc(acTx), '');
+                                    }
+                                  }
+                                  else if (ty === 'directions' && d) {
+                                    if (typeof d === 'string') {
+                                      if (d.trim()) out.push(esc(d).trim(), '');
+                                    } else if (typeof d === 'object') {
+                                      const dirBody = String(d.body || d.text || d.summary || '').trim();
+                                      if (dirBody) out.push(esc(dirBody), '');
+                                      const dirGoals = (Array.isArray(d.objectives) ? d.objectives : []).filter((g) => {
+                                        if (typeof g === 'string') return !!g.trim();
+                                        if (!g || typeof g !== 'object') return false;
+                                        const lbl = String(g.label || g.text || '').trim();
+                                        if (!lbl) return false;
+                                        if (!_showKey && (g.kind === 'game' || g.kind === 'xp')) return false;
+                                        return true;
+                                      });
+                                      if (dirGoals.length) {
+                                        out.push('### Your Goals', '');
+                                        dirGoals.forEach((g) => {
+                                          const lbl = typeof g === 'string' ? g.trim() : String(g.label || g.text || '').trim();
+                                          if (lbl) out.push('- [ ] ' + esc(lbl));
+                                        });
+                                        out.push('');
+                                      }
+                                      const cb = d.choiceBoard && typeof d.choiceBoard === 'object' ? d.choiceBoard : null;
+                                      if (cb && cb.enabled === true) {
+                                        out.push('### ' + esc(cb.title || 'Choice Board'), '');
+                                        if (cb.prompt && String(cb.prompt).trim()) out.push(esc(cb.prompt).trim(), '');
+                                        const cbItems = Array.isArray(cb.choices) ? cb.choices : (Array.isArray(cb.options) ? cb.options : []);
+                                        if (cbItems.length) {
+                                          cbItems.forEach((ch) => {
+                                            if (typeof ch === 'string') {
+                                              if (ch.trim()) out.push('- ' + esc(ch).trim());
+                                              return;
+                                            }
+                                            if (!ch || typeof ch !== 'object') return;
+                                            const cTitle = String(ch.title || ch.label || '').trim();
+                                            const cDesc = String(ch.description || ch.detail || ch.text || '').trim();
+                                            if (cTitle && cDesc) out.push('- **' + esc(cTitle) + ':** ' + esc(cDesc));
+                                            else if (cTitle || cDesc) out.push('- ' + esc(cTitle || cDesc));
+                                          });
+                                          out.push('');
+                                        }
+                                      }
+                                    }
+                                  }
+                                  else if (ty === 'fluency-record' && d && typeof d === 'object') {
+                                    if (!_showKey && exportConfig?.assessmentMode === true) {
+                                      out.push('*Fluency metrics and diagnostics omitted in assessment mode.*', '');
+                                    } else {
+                                      const m = d.metrics && typeof d.metrics === 'object' ? d.metrics : {};
+                                    const metricLines = [];
+                                    if (m.wcpm != null && String(m.wcpm).trim() !== '') metricLines.push('- **WCPM:** ' + esc(String(m.wcpm).trim()));
+                                    if (m.accuracy != null && String(m.accuracy).trim() !== '') {
+                                      const accRaw = String(m.accuracy).trim();
+                                      metricLines.push('- **Accuracy:** ' + esc(accRaw.endsWith('%') ? accRaw : (accRaw + '%')));
+                                    }
+                                    if (m.prosody != null && String(m.prosody).trim() !== '') metricLines.push('- **Prosody:** ' + esc(String(m.prosody).trim()));
+                                    if (m.totalWords != null && String(m.totalWords).trim() !== '') metricLines.push('- **Total Words:** ' + esc(String(m.totalWords).trim()));
+                                    if (m.errors != null && String(m.errors).trim() !== '') metricLines.push('- **Errors:** ' + esc(String(m.errors).trim()));
+                                    if (metricLines.length) {
+                                      out.push('### Fluency Metrics', '');
+                                      metricLines.forEach((ml) => out.push(ml));
+                                      out.push('');
+                                    }
+                                    const wds = Array.isArray(d.wordData) ? d.wordData : [];
+                                    if (wds.length) {
+                                      const statusCounts = {};
+                                      const flagged = [];
+                                      wds.forEach((wd) => {
+                                        if (!wd || typeof wd !== 'object') return;
+                                        const st = String(wd.status || 'unmarked').trim().toLowerCase();
+                                        statusCounts[st] = (statusCounts[st] || 0) + 1;
+                                        const wTxt = String(wd.word || '').trim();
+                                        if (wTxt && st && st !== 'correct' && st !== 'ok' && st !== 'accurate') {
+                                          flagged.push(esc(wTxt) + ' (' + esc(st) + ')');
+                                        }
+                                      });
+                                      out.push('### Word-Level Summary (' + wds.length + ' words)', '');
+                                      const summaryParts = Object.keys(statusCounts).map((k) => esc(k) + ': ' + statusCounts[k]);
+                                      if (summaryParts.length) out.push('- **Status Counts:** ' + summaryParts.join(', '));
+                                      if (flagged.length) out.push('- **Flagged Words:** ' + flagged.slice(0, 50).join(', '));
+                                      out.push('');
+                                    }
+                                    if (_showKey && d.feedback && String(d.feedback).trim()) {
+                                      out.push('**Teacher Feedback:** ' + esc(d.feedback).trim(), '');
+                                    }
+                                    }
+                                  }
+                                  else if (ty === 'applied-challenge' && d && typeof d === 'object') {
+                                    if (d.instructions && String(d.instructions).trim()) out.push(esc(d.instructions).trim(), '');
+                                    const br = d.brief && typeof d.brief === 'object' ? d.brief : null;
+                                    if (br) {
+                                      const briefLines = [];
+                                      [['context', 'Context'], ['role', 'Role'], ['audience', 'Audience'], ['drivingQuestion', 'Driving Question'], ['deliverable', 'Deliverable']].forEach(([k, lbl]) => {
+                                        if (br[k] && String(br[k]).trim()) briefLines.push('- **' + lbl + ':** ' + esc(br[k]).trim());
+                                      });
+                                      [['criteria', 'Criteria'], ['constraints', 'Constraints']].forEach(([k, lbl]) => {
+                                        const val = br[k];
+                                        if (Array.isArray(val)) {
+                                          const items = val.map((x) => esc(String(x || '').trim())).filter(Boolean);
+                                          if (items.length) briefLines.push('- **' + lbl + ':** ' + items.join('; '));
+                                        } else if (val && String(val).trim()) {
+                                          briefLines.push('- **' + lbl + ':** ' + esc(val).trim());
+                                        }
+                                      });
+                                      if (briefLines.length) {
+                                        out.push('### Design Brief', '');
+                                        briefLines.forEach((bl) => out.push(bl));
+                                        out.push('');
+                                      }
+                                    }
+                                    const acPhases = Array.isArray(d.phases) ? d.phases : [];
+                                    const acPrompts = d.supports && typeof d.supports === 'object' && d.supports.phasePrompts ? d.supports.phasePrompts : null;
+                                    const acWork = d.workspace && typeof d.workspace === 'object' ? d.workspace : null;
+                                    const renderedKeys = new Set();
+                                    acPhases.forEach((ph, pi) => {
+                                      if (!ph || typeof ph !== 'object') return;
+                                      const pKey = String(ph.id || ph.key || ('phase-' + (pi + 1)));
+                                      const pTitle = String(ph.title || ph.label || ('Phase ' + (pi + 1))).trim();
+                                      const pPrompt = String(ph.prompt || (acPrompts && !Array.isArray(acPrompts) && acPrompts[pKey]) || '').trim();
+                                      const pResp = String(ph.response || ph.content || (acWork && !Array.isArray(acWork) && acWork[pKey]) || '').trim();
+                                      if (!pPrompt && !pResp) return;
+                                      renderedKeys.add(pKey);
+                                      out.push('### ' + esc(pTitle), '');
+                                      if (pPrompt) out.push('_Prompt:_ ' + esc(pPrompt), '');
+                                      if (pResp) out.push(esc(pResp), '');
+                                    });
+                                    if (acPrompts && typeof acPrompts === 'object' && !Array.isArray(acPrompts)) {
+                                      Object.keys(acPrompts).forEach((k) => {
+                                        if (renderedKeys.has(k)) return;
+                                        const pPrompt = String(acPrompts[k] || '').trim();
+                                        const pResp = acWork && !Array.isArray(acWork) ? String(acWork[k] || '').trim() : '';
+                                        if (!pPrompt && !pResp) return;
+                                        renderedKeys.add(k);
+                                        out.push('### ' + esc(k), '');
+                                        if (pPrompt) out.push('_Prompt:_ ' + esc(pPrompt), '');
+                                        if (pResp) out.push(esc(pResp), '');
+                                      });
+                                    }
+                                    if (acWork && !Array.isArray(acWork)) {
+                                      Object.keys(acWork).forEach((k) => {
+                                        if (renderedKeys.has(k)) return;
+                                        const pResp = String(acWork[k] || '').trim();
+                                        if (!pResp) return;
+                                        out.push('### ' + esc(k), '', esc(pResp), '');
+                                      });
+                                    }
+                                    if (_showKey && d.teacherComment && String(d.teacherComment).trim()) {
+                                      out.push('**Teacher Comment:** ' + esc(d.teacherComment).trim(), '');
+                                    }
+                                  }
+                                  else if (ty === 'image' && d && (d.prompt || d.alt || d.caption || d.description)) {
+                                    if (d.alt) out.push('**Image Alt:** ' + esc(d.alt), '');
+                                    if (d.caption) out.push('**Caption:** ' + esc(d.caption), '');
+                                    if (d.description) out.push(esc(d.description), '');
+                                    if (d.prompt) out.push('_Image prompt: ' + esc(d.prompt) + '_', '');
+                                  }
                                 else {
                                   const tx = (d && (d.text || d.content || d.summary)) || '';
                                   if (tx) out.push(esc(tx).trim(), '');
@@ -9333,7 +10783,7 @@ function ExportPreviewView(props) {
                                 }
                               });
                             } else if (doc) {
-                              const root = _builderCleanMarkdownRoot(doc);
+                              const root = _builderCleanMarkdownRoot(doc, { includeTeacherKey: !_nlmForceStudent && !!exportConfig?.includeTeacherKey });
                               const converted = _builderMarkdownFromRoot(root, { baseURI: doc.baseURI });
                               out.push(converted.markdown);
                               converted.warnings.forEach(message => addToast(message, 'warning'));
@@ -9363,7 +10813,98 @@ function ExportPreviewView(props) {
                           let _clone = doc.documentElement.cloneNode(true);
                           try {
                             _clone = _builderFinalizeDocumentForExport(_clone);
-                            _clone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, script').forEach(el => el.remove());
+                            const _epubStudentOnly = typeof _shouldExportStudentOnlyHtml === 'function'
+                              ? _shouldExportStudentOnlyHtml(exportConfig, typeof builderViewFilter !== 'undefined' ? builderViewFilter : 'all')
+                              : (exportConfig?.assessmentMode === true || (!exportConfig?.includeTeacherKey && !exportConfig?.includeAnswerKey));
+                            if (_epubStudentOnly) {
+                              if (typeof _removeStudentPackageTeacherSections === 'function') _removeStudentPackageTeacherSections(_clone);
+                              _clone.querySelectorAll('.teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,#alloflow-interactive-object-profile').forEach((el) => {
+                                const prior = el.previousElementSibling;
+                                if (prior?.classList?.contains('page-break')) prior.remove();
+                                el.remove();
+                              });
+                            }
+                            _clone.querySelectorAll('button.alloflow-inline-term').forEach((btn) => {
+                              const span = doc.createElement('span');
+                              span.className = 'alloflow-inline-term';
+                              ['lang', 'dir', 'data-allo-term', 'data-allo-def', 'title'].forEach((attr) => {
+                                const val = btn.getAttribute(attr);
+                                if (val != null && val !== '') span.setAttribute(attr, val);
+                              });
+                              span.textContent = btn.textContent || '';
+                              btn.replaceWith(span);
+                            });
+                            _clone.querySelectorAll('.alloflow-venn-print-only').forEach((printEl) => {
+                              printEl.removeAttribute('hidden');
+                              if (printEl.style) printEl.style.display = 'block';
+                              const host = printEl.closest('.alloflow-venn-activity, [data-allo-activity-type="venn"], [data-allo-type="venn"], .alloflow-activity, .alloflow-card, section') || printEl.parentElement;
+                              if (host && host !== _clone) {
+                                const filledPlacements = [];
+                                host.querySelectorAll('.alloflow-venn-card').forEach((card) => {
+                                  const btn = card.querySelector('button.alloflow-venn-card-button');
+                                  const sel = card.querySelector('select.alloflow-venn-response');
+                                  const cardLabel = (btn ? (btn.textContent || '') : Array.from(card.childNodes).filter((n) => n !== sel).map((n) => n.textContent || '').join(' ')).replace(/\s+/g, ' ').trim();
+                                  const opts = sel ? (sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll('option'))) : [];
+                                  const selOpt = sel && sel.selectedOptions && sel.selectedOptions[0];
+                                  const hasVal = (o) => o && !o.disabled && String(o.value != null ? o.value : (o.getAttribute && o.getAttribute('value') != null ? o.getAttribute('value') : o.textContent || '')).trim() !== '';
+                                  const opt = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute('selected')) && hasVal(o));
+                                  const chosenTxt = opt ? String(opt.textContent || opt.value || '').replace(/\s+/g, ' ').trim() : '';
+                                  if (cardLabel && chosenTxt) filledPlacements.push({ cardLabel, chosenTxt });
+                                });
+                                if (filledPlacements.length) {
+                                  const printCards = Array.from(printEl.querySelectorAll('.alloflow-venn-print-card'));
+                                  filledPlacements.forEach(({ cardLabel, chosenTxt }) => {
+                                    const matchCard = printCards.find((pc) => (pc.textContent || '').replace(/\s+/g, ' ').trim() === cardLabel);
+                                    if (matchCard) matchCard.textContent = cardLabel + ' — ' + chosenTxt;
+                                    else {
+                                      const p = doc.createElement('p');
+                                      p.className = 'alloflow-venn-card-text';
+                                      p.textContent = cardLabel + ' — ' + chosenTxt;
+                                      printEl.appendChild(p);
+                                    }
+                                  });
+                                }
+                                host.querySelectorAll('.alloflow-venn-screen-only, .alloflow-venn-digital-zones, .alloflow-venn-screen-instructions, .alloflow-venn-bank-label, .alloflow-venn-card, .alloflow-venn-diagram-wrap, .alloflow-venn-svg-wrap, .alloflow-venn-bank, .alloflow-venn-zones, .alloflow-venn-controls, .alloflow-venn-status, .alloflow-venn-interactive, .alloflow-venn-place-button, svg.alloflow-venn-svg').forEach((dup) => {
+                                  if (dup !== printEl && !printEl.contains(dup)) dup.remove();
+                                });
+                              }
+                            });
+                            _clone.querySelectorAll('.alloflow-venn-card').forEach((card) => {
+                              const btn = card.querySelector('button.alloflow-venn-card-button');
+                              if (!btn) return;
+                              const sel = card.querySelector('select.alloflow-venn-response');
+                              const opts = sel ? (sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll('option'))) : [];
+                              const selOpt = sel && sel.selectedOptions && sel.selectedOptions[0];
+                              const hasVal = (o) => o && !o.disabled && String(o.value != null ? o.value : (o.getAttribute && o.getAttribute('value') != null ? o.getAttribute('value') : o.textContent || '')).trim() !== '';
+                              const opt = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute('selected')) && hasVal(o));
+                              const chosenTxt = opt ? String(opt.textContent || opt.value || '').replace(/\s+/g, ' ').trim() : '';
+                              const p = doc.createElement('p');
+                              p.className = 'alloflow-venn-card-text';
+                              p.textContent = (btn.textContent || '').replace(/\s+/g, ' ').trim() + (chosenTxt ? ' — ' + chosenTxt : '');
+                              btn.replaceWith(p);
+                              if (sel) sel.remove();
+                            });
+                            _clone.querySelectorAll('select.alloflow-cs-response, select.alloflow-venn-response').forEach((sel) => {
+                              const isHid = sel.hasAttribute('hidden') || sel.getAttribute('aria-hidden') === 'true' || (sel.style && sel.style.display === 'none');
+                              if (!isHid) return;
+                              const opts = sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll('option'));
+                              const selOpt = sel.selectedOptions && sel.selectedOptions[0];
+                              const hasVal = (o) => o && !o.disabled && String(o.value != null ? o.value : (o.getAttribute && o.getAttribute('value') != null ? o.getAttribute('value') : o.textContent || '')).trim() !== '';
+                              const opt = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute('selected')) && hasVal(o));
+                              const v = opt ? String(opt.textContent || opt.value || '').replace(/\s+/g, ' ').trim() : '';
+                              if (v) {
+                                const span = doc.createElement('span');
+                                span.className = 'alloflow-response-value';
+                                span.textContent = ' — ' + v;
+                                sel.replaceWith(span);
+                              }
+                            });
+                            _clone.querySelectorAll('svg').forEach((svg) => {
+                              if ((!svg.namespaceURI || svg.namespaceURI === 'http://www.w3.org/1999/xhtml') && !svg.getAttribute('xmlns')) {
+                                svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+                              }
+                            });
+                            _clone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, #allo-builder-view-filter, #allo-builder-paper-css, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-step-pager, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-quiz-check-btn, .alloflow-save-status, .alloflow-math-symbolbar, .alloflow-math-symbar, .alloflow-math-controls, .alloflow-gm-controls, .alloflow-gm-status, .alloflow-faq-controls, .alloflow-dir-controls, .alloflow-glossary-card-actions, .alloflow-dbq-evidence-tracker, .alloflow-export-save-tools, .alloflow-venn-place-button, .alloflow-venn-screen-instructions, .alloflow-cloze-controls, .alloflow-cs-controls, .alloflow-cs-actions, .alloflow-venn-controls, .alloflow-venn-status, .alloflow-tl-controls, .alloflow-tl-arrows, .alloflow-glossary-controls, .alloflow-glossary-card-controls, .alloflow-glossary-card-status, .alloflow-cornell-controls, .alloflow-ws-controls, .alloflow-quiz-feedback, .alloflow-inline-chart svg, annotation, annotation-xml, [data-allo-footnote-backlink], details.allo-math-source, select.alloflow-cs-response[hidden], select.alloflow-venn-response[hidden], [hidden], script').forEach(el => el.remove());
                             _clone.querySelectorAll('[data-allo-crop-tabindex-added]').forEach(el => { const added = el.getAttribute('data-allo-crop-tabindex-added') === 'added'; el.removeAttribute('data-allo-crop-tabindex-added'); if (added) el.removeAttribute('tabindex'); el.removeAttribute('aria-keyshortcuts'); });
                             _clone.querySelectorAll('[contenteditable]').forEach(el => el.removeAttribute('contenteditable'));
                             _builderStripEditorBreakMetadata(_clone);
@@ -9463,6 +11004,7 @@ function ExportPreviewView(props) {
                           // a transcribed equation), leaving the root in no namespace so conforming
                           // readers blank-render or reject the whole book.
                           if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
+                          xhtml = xhtml.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, '');
                           zip.file('OEBPS/content.xhtml', xhtml);
                           zip.file('OEBPS/nav.xhtml', `<?xml version="1.0" encoding="UTF-8"?><html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="${_escXml(lang)}" xml:lang="${_escXml(lang)}"><head><title>${xmlTitle} — Contents</title></head><body><nav epub:type="toc"><h1>Contents</h1><ol>${_navList}</ol></nav></body></html>`);
                           const blob = await zip.generateAsync({ type: 'blob', mimeType: 'application/epub+zip' });
@@ -9489,7 +11031,119 @@ function ExportPreviewView(props) {
                           let text = '';
                           try {
                             const _bClone = _builderFinalizeDocumentForExport(doc.body.cloneNode(true));
-                            _bClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, script, style').forEach(el => el.remove());
+                            const _brfStudentOnly = typeof _shouldExportStudentOnlyHtml === 'function'
+                              ? _shouldExportStudentOnlyHtml(exportConfig, typeof builderViewFilter !== 'undefined' ? builderViewFilter : 'all')
+                              : (exportConfig?.assessmentMode === true || (!exportConfig?.includeTeacherKey && !exportConfig?.includeAnswerKey));
+                            if (_brfStudentOnly) {
+                              if (typeof _removeStudentPackageTeacherSections === 'function') _removeStudentPackageTeacherSections(_bClone);
+                              _bClone.querySelectorAll('.teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,#alloflow-interactive-object-profile').forEach((el) => {
+                                const prior = el.previousElementSibling;
+                                if (prior?.classList?.contains('page-break')) prior.remove();
+                                el.remove();
+                              });
+                            }
+                            _bClone.querySelectorAll('button.alloflow-inline-term').forEach((btn) => {
+                              btn.replaceWith(doc.createTextNode(btn.textContent || ''));
+                            });
+                            _bClone.querySelectorAll('.alloflow-venn-print-only').forEach((printEl) => {
+                              printEl.removeAttribute('hidden');
+                              const host = printEl.closest('.alloflow-venn-activity, [data-allo-activity-type="venn"], [data-allo-type="venn"], .alloflow-activity, .alloflow-card, section') || printEl.parentElement;
+                              if (host && host !== _bClone) {
+                                const filledPlacements = [];
+                                host.querySelectorAll('.alloflow-venn-card').forEach((card) => {
+                                  const btn = card.querySelector('button.alloflow-venn-card-button');
+                                  const sel = card.querySelector('select.alloflow-venn-response');
+                                  const cardLabel = (btn ? (btn.textContent || '') : Array.from(card.childNodes).filter((n) => n !== sel).map((n) => n.textContent || '').join(' ')).replace(/\s+/g, ' ').trim();
+                                  const opts = sel ? (sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll('option'))) : [];
+                                  const selOpt = sel && sel.selectedOptions && sel.selectedOptions[0];
+                                  const hasVal = (o) => o && !o.disabled && String(o.value != null ? o.value : (o.getAttribute && o.getAttribute('value') != null ? o.getAttribute('value') : o.textContent || '')).trim() !== '';
+                                  const opt = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute('selected')) && hasVal(o));
+                                  const chosenTxt = opt ? String(opt.textContent || opt.value || '').replace(/\s+/g, ' ').trim() : '';
+                                  if (cardLabel && chosenTxt) filledPlacements.push({ cardLabel, chosenTxt });
+                                });
+                                if (filledPlacements.length) {
+                                  const printCards = Array.from(printEl.querySelectorAll('.alloflow-venn-print-card'));
+                                  filledPlacements.forEach(({ cardLabel, chosenTxt }) => {
+                                    const matchCard = printCards.find((pc) => (pc.textContent || '').replace(/\s+/g, ' ').trim() === cardLabel);
+                                    if (matchCard) matchCard.textContent = cardLabel + ' — ' + chosenTxt;
+                                    else {
+                                      const p = doc.createElement('p');
+                                      p.className = 'alloflow-venn-card-text';
+                                      p.textContent = cardLabel + ' — ' + chosenTxt;
+                                      printEl.appendChild(p);
+                                    }
+                                  });
+                                }
+                                host.querySelectorAll('.alloflow-venn-screen-only, .alloflow-venn-digital-zones, .alloflow-venn-screen-instructions, .alloflow-venn-bank-label, .alloflow-venn-card, .alloflow-venn-diagram-wrap, .alloflow-venn-svg-wrap, .alloflow-venn-bank, .alloflow-venn-zones, .alloflow-venn-controls, .alloflow-venn-status, .alloflow-venn-interactive, .alloflow-venn-place-button, svg.alloflow-venn-svg').forEach((dup) => {
+                                  if (dup !== printEl && !printEl.contains(dup)) dup.remove();
+                                });
+                              }
+                            });
+                            _bClone.querySelectorAll('.alloflow-venn-card').forEach((card) => {
+                              const btn = card.querySelector('button.alloflow-venn-card-button');
+                              if (!btn) return;
+                              const sel = card.querySelector('select.alloflow-venn-response');
+                              const opts = sel ? (sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll('option'))) : [];
+                              const selOpt = sel && sel.selectedOptions && sel.selectedOptions[0];
+                              const hasVal = (o) => o && !o.disabled && String(o.value != null ? o.value : (o.getAttribute && o.getAttribute('value') != null ? o.getAttribute('value') : o.textContent || '')).trim() !== '';
+                              const opt = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute('selected')) && hasVal(o));
+                              const chosenTxt = opt ? String(opt.textContent || opt.value || '').replace(/\s+/g, ' ').trim() : '';
+                              const p = doc.createElement('p');
+                              p.className = 'alloflow-venn-card-text';
+                              p.textContent = (btn.textContent || '').replace(/\s+/g, ' ').trim() + (chosenTxt ? ' — ' + chosenTxt : '');
+                              btn.replaceWith(p);
+                              if (sel) sel.remove();
+                            });
+                            _bClone.querySelectorAll('select').forEach((sel) => {
+                              const isHid = sel.hasAttribute('hidden') || sel.getAttribute('aria-hidden') === 'true' || (sel.style && sel.style.display === 'none');
+                              const opts = sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll('option'));
+                              const selOpt = sel.selectedOptions && sel.selectedOptions[0];
+                              const hasVal = (o) => o && !o.disabled && String(o.value != null ? o.value : (o.getAttribute && o.getAttribute('value') != null ? o.getAttribute('value') : o.textContent || '')).trim() !== '';
+                              const opt = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute('selected')) && hasVal(o));
+                              const v = opt ? String(opt.textContent || opt.value || '').replace(/\s+/g, ' ').trim() : '';
+                              if (isHid) {
+                                if (v && typeof sel.matches === 'function' && sel.matches('select.alloflow-cs-response, select.alloflow-venn-response')) {
+                                  sel.replaceWith(doc.createTextNode(' — ' + v));
+                                } else {
+                                  sel.remove();
+                                }
+                                return;
+                              }
+                              sel.replaceWith(doc.createTextNode(v || ' ___ '));
+                            });
+                            _bClone.querySelectorAll('input, textarea').forEach((inp) => {
+                              const tag = (inp.tagName || '').toLowerCase();
+                              const itype = tag === 'input' ? String(inp.getAttribute('type') || inp.type || 'text').toLowerCase() : 'textarea';
+                              const isHid = itype === 'hidden' || itype === 'button' || itype === 'submit' || itype === 'reset' || inp.hasAttribute('hidden') || inp.getAttribute('aria-hidden') === 'true' || (inp.style && inp.style.display === 'none');
+                              if (isHid) { inp.remove(); return; }
+                              if (itype === 'checkbox' || itype === 'radio') {
+                                inp.replaceWith(doc.createTextNode((inp.checked || inp.hasAttribute('checked')) ? '[x] ' : '[ ] '));
+                                return;
+                              }
+                              const val = (tag === 'textarea' ? (inp.value || inp.textContent || '') : (inp.value || inp.getAttribute('value') || '')).trim();
+                              inp.replaceWith(doc.createTextNode(val || ' ___ '));
+                            });
+                            if (typeof _builderPolishPlainTextClone === 'function') {
+                              _builderPolishPlainTextClone(_bClone, doc);
+                            } else {
+                              _bClone.querySelectorAll('annotation, annotation-xml, [data-allo-footnote-backlink]').forEach((el) => el.remove());
+                              _bClone.querySelectorAll('img').forEach((img) => {
+                                const alt = String(img.getAttribute('alt') || '').replace(/\s+/g, ' ').trim();
+                                if (alt) img.replaceWith(doc.createTextNode(' [Image: ' + alt + '] '));
+                                else img.remove();
+                              });
+                              _bClone.querySelectorAll('tr').forEach((tr) => {
+                                const cells = Array.from(tr.children || []).filter((c) => {
+                                  const t = String(c.tagName || '').toLowerCase();
+                                  return t === 'td' || t === 'th';
+                                });
+                                cells.forEach((cell, idx) => {
+                                  if (idx < cells.length - 1) cell.appendChild(doc.createTextNode(' | '));
+                                });
+                              });
+                            }
+                            _bClone.querySelectorAll('details.allo-math-source, details.allo-chart-data > summary, details.allo-image-desc > summary').forEach((el) => el.remove());
+                            _bClone.querySelectorAll('.allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], #a11y-inspect-styles, #allo-builder-edit-css, #allo-builder-view-filter, #allo-builder-paper-css, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-step-pager, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-quiz-check-btn, .alloflow-save-status, .alloflow-math-symbolbar, .alloflow-math-symbar, .alloflow-math-controls, .alloflow-gm-controls, .alloflow-gm-status, .alloflow-faq-controls, .alloflow-dir-controls, .alloflow-glossary-card-actions, .alloflow-dbq-evidence-tracker, .alloflow-export-save-tools, .alloflow-venn-place-button, .alloflow-venn-screen-instructions, .alloflow-cloze-controls, .alloflow-cs-controls, .alloflow-cs-actions, .alloflow-venn-controls, .alloflow-venn-status, .alloflow-tl-controls, .alloflow-tl-arrows, .alloflow-glossary-controls, .alloflow-glossary-card-controls, .alloflow-glossary-card-status, .alloflow-cornell-controls, .alloflow-ws-controls, .alloflow-quiz-feedback, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], button, select, input, textarea, script, style').forEach(el => el.remove());
                             _bClone.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach(el => { try { el.insertAdjacentText('beforebegin', '\n\n'); el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
                             _bClone.querySelectorAll('p,li,tr,figcaption,blockquote,div').forEach(el => { try { el.appendChild(doc.createTextNode('\n')); } catch (_) {} });
                             text = (_bClone.textContent || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
@@ -9731,7 +11385,7 @@ const _downloadBRF = (brf) => {
                         // worksheet export and a glossary to blank against, so it
                         // only appears when both are true.
                         const showCloze = key === 'includeSimplified'
-                          && exportPreviewMode === 'worksheet'
+                          && (exportPreviewMode === 'worksheet' || exportPreviewMode === 'html')
                           && exportConfig.includeSimplified
                           && history.some(h => h && h.type === 'glossary');
                         return (
@@ -9793,7 +11447,7 @@ const _downloadBRF = (brf) => {
                           {showCloze && (
                             <div className="ml-5 mb-1">
                               <label className="flex items-start gap-2 text-xs text-slate-700 cursor-pointer hover:bg-white rounded px-1 py-0.5" title={t("export_preview.accessibility.blanks_out_the_glossary_words_in_the_passage_and_adds_a_word") || "Blanks out the glossary words in the passage and adds a word bank. The answer key rides with the teacher copy."}>
-                                <input type="checkbox" checked={!!exportConfig.clozeWorksheet} onChange={(e) => setExportConfigAndRefresh(p => e.target.checked ? ({ ...p, clozeWorksheet: true, clozeMaxPerTerm: p.clozeMaxPerTerm ?? 1, clozeWordBankPosition: p.clozeWordBankPosition || 'top' }) : ({ ...p, clozeWorksheet: false }))} className="rounded mt-0.5" />
+                                <input type="checkbox" checked={!!exportConfig.clozeWorksheet} onChange={(e) => setExportConfigAndRefresh(p => e.target.checked ? ({ ...p, clozeWorksheet: true, clozeInteractive: exportPreviewMode === 'html', clozeMaxPerTerm: p.clozeMaxPerTerm ?? 1, clozeWordBankPosition: p.clozeWordBankPosition || 'top' }) : ({ ...p, clozeWorksheet: false, clozeInteractive: false }))} className="rounded mt-0.5" />
                                 <span>✏️ Fill in the blanks<span className="block text-[11px] text-slate-600 leading-tight">Blanks the glossary words and adds a word bank.</span></span>
                               </label>
                               {exportConfig.clozeWorksheet && (
@@ -9859,7 +11513,60 @@ const _downloadBRF = (brf) => {
                   <details className="rounded-lg border border-slate-300 bg-white p-2" data-builder-resource-list>
                     <summary className="cursor-pointer text-xs font-bold text-slate-700">{includedResourceCount} of {resourceItems.length} resources selected</summary>
                     <ol className="mt-2 space-y-1 text-xs text-slate-700">
-                      {resourceItems.map((item, index) => <li key={item.id + '-' + index} className="flex items-start gap-2"><span role="img" aria-label={item.included ? 'Selected' : 'Not selected'}>{item.included ? '✓' : '−'}</span><span>{item.title}<span className="block text-[10px] text-slate-500">{item.type}{item.roleLabel ? ' · ' + item.roleLabel : ''}</span></span></li>)}
+                      {(() => {
+                        const distinctKeys = [];
+                        resourceItems.forEach((it) => { if (it.configKey && !distinctKeys.includes(it.configKey)) distinctKeys.push(it.configKey); });
+                        const moveSidebarSection = (configKey, delta) => {
+                          if (!configKey) return;
+                          const curOrder = Array.isArray(exportConfig.resourceOrder) && exportConfig.resourceOrder.length
+                            ? [...exportConfig.resourceOrder.filter((k) => distinctKeys.includes(k)), ...distinctKeys.filter((k) => !exportConfig.resourceOrder.includes(k))]
+                            : distinctKeys;
+                          const idx = curOrder.indexOf(configKey);
+                          const nextIdx = idx + delta;
+                          if (idx === -1 || nextIdx < 0 || nextIdx >= curOrder.length) return;
+                          const swapped = [...curOrder];
+                          const tmp = swapped[idx];
+                          swapped[idx] = swapped[nextIdx];
+                          swapped[nextIdx] = tmp;
+                          const extras = Array.isArray(exportConfig.resourceOrder) ? exportConfig.resourceOrder.filter((k) => !swapped.includes(k)) : [];
+                          setExportConfigAndRefresh((p) => ({ ...p, resourceOrder: [...swapped, ...extras] }));
+                        };
+                        return resourceItems.map((item, index) => {
+                          const keyPos = item.configKey ? distinctKeys.indexOf(item.configKey) : -1;
+                          return (
+                            <li key={item.id + '-' + index} className="flex items-center gap-1.5 rounded px-1 py-0.5 hover:bg-slate-50">
+                              <label className="flex flex-1 min-w-0 items-start gap-2 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={!!item.included}
+                                  disabled={!item.configKey}
+                                  onChange={(e) => item.configKey && setExportConfigAndRefresh((p) => ({ ...p, [item.configKey]: e.target.checked }))}
+                                  aria-label={item.title}
+                                  className="mt-0.5 rounded shrink-0"
+                                />
+                                <span className="min-w-0">
+                                  <span className="block truncate">{item.title}</span>
+                                  <span className="block text-[10px] text-slate-500">{item.type}{item.roleLabel ? ' \u00b7 ' + item.roleLabel : ''}</span>
+                                </span>
+                              </label>
+                              {distinctKeys.length > 1 && item.configKey && (
+                                <span className="flex items-center gap-0.5 shrink-0">
+                                  <button type="button" onClick={() => moveSidebarSection(item.configKey, -1)} disabled={keyPos <= 0}
+                                    className="w-5 h-5 inline-flex items-center justify-center rounded border border-slate-300 bg-white text-[10px] font-bold text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 disabled:opacity-30"
+                                    aria-label={(t('export_preview.accessibility.move_section_up') || 'Move section up') + ': ' + item.title}
+                                    title={t('export_preview.accessibility.move_section_up') || 'Move section up'}
+                                  >↑</button>
+                                  <button type="button" onClick={() => moveSidebarSection(item.configKey, 1)} disabled={keyPos === -1 || keyPos >= distinctKeys.length - 1}
+                                    className="w-5 h-5 inline-flex items-center justify-center rounded border border-slate-300 bg-white text-[10px] font-bold text-slate-600 hover:bg-indigo-50 hover:text-indigo-700 disabled:opacity-30"
+                                    aria-label={(t('export_preview.accessibility.move_section_down') || 'Move section down') + ': ' + item.title}
+                                    title={t('export_preview.accessibility.move_section_down') || 'Move section down'}
+                                  >↓</button>
+                                </span>
+                              )}
+                            </li>
+                          );
+                        });
+                      })()}
                     </ol>
                   </details>
                 </React.Fragment>)}
@@ -9992,7 +11699,7 @@ const _downloadBRF = (brf) => {
                       substring, so aria-describedby goes after, not between. */}
                   <div className="flex gap-1" data-help-key="doc_builder_format" role="radiogroup" aria-label={t("export_preview.accessibility.export_format") || "Export format"} onKeyDown={handleRadioGroupKeyDown} aria-describedby="doc-builder-format-help">
                     {[['print', '📄 PDF'], ['worksheet', '📝 Worksheet'], ['html', '💻 HTML'], ['slides', '📊 Slides']].filter(([mode]) => !isRemediationDocument || mode !== 'worksheet').map(([m, label]) => (
-                      <button key={m} role="radio" aria-checked={exportPreviewMode === m} tabIndex={exportPreviewMode === m ? 0 : -1} onClick={() => setExportPreviewMode(m)} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
+                      <button key={m} role="radio" aria-checked={exportPreviewMode === m} tabIndex={exportPreviewMode === m ? 0 : -1} onClick={() => { setExportPreviewMode(m); if (exportConfig?.clozeWorksheet && typeof setExportConfigAndRefresh === 'function') setExportConfigAndRefresh(p => (p && p.clozeWorksheet ? { ...p, clozeInteractive: m === 'html' } : p)); }} className={`flex-1 text-xs font-bold py-1.5 rounded-lg transition-all ${exportPreviewMode === m ? 'bg-indigo-600 text-white' : 'bg-white border border-slate-400 text-slate-600 hover:bg-slate-100'}`}>{label}</button>
                     ))}
                   </div>
                   <p id="doc-builder-format-help" className="mt-1.5 text-[11px] leading-snug text-slate-600 bg-slate-50 border border-slate-200 rounded-lg px-2 py-1.5" role="status">
@@ -11917,7 +13624,7 @@ const _downloadBRF = (brf) => {
                               <section id="builder-source-manager" className="space-y-2 rounded border border-cyan-300 bg-white p-2" aria-label={t("export_preview.accessibility.source_manager") || "Source Manager"}>
                                 <div className="flex items-start justify-between gap-2">
                                   <div><h3 className="text-[10px] font-black text-cyan-950">Source Manager</h3><p className="text-[8px] leading-snug text-slate-500">{editingCitationSourceId ? 'Edit this reusable source.' : 'Add one source manually or import a group.'}</p></div>
-                                  <button type="button" onClick={() => { setShowSourceManager(false); resetCitationSourceDraft(); }} className="rounded px-1.5 py-0.5 text-sm leading-none text-slate-500 hover:bg-slate-100" aria-label={t("export_preview.accessibility.close_source_manager") || "Close Source Manager"}>?</button>
+                                  <button type="button" onClick={() => { setShowSourceManager(false); resetCitationSourceDraft(); }} className="rounded px-1.5 py-0.5 text-sm leading-none text-slate-500 hover:bg-slate-100" aria-label={t("export_preview.accessibility.close_source_manager") || "Close Source Manager"}>×</button>
                                 </div>
                                 {!editingCitationSourceId && (
                                   <div className="grid grid-cols-2 gap-1" role="tablist" aria-label={t("export_preview.accessibility.source_manager_mode") || "Source Manager mode"}>
@@ -12652,6 +14359,7 @@ const _downloadBRF = (brf) => {
                           <dl className="mt-2 grid grid-cols-2 gap-2 text-[10px]">
                             <div className="rounded-lg bg-indigo-50 px-2 py-1.5"><dt className="font-bold text-indigo-800">Reading time</dt><dd>{documentStatistics.readingMinutes || 0} min at 225 wpm</dd></div>
                             <div className="rounded-lg bg-violet-50 px-2 py-1.5"><dt className="font-bold text-violet-800">Speaking time</dt><dd>{documentStatistics.speakingMinutes || 0} min at 130 wpm</dd></div>
+                            <div className="col-span-2 rounded-lg bg-emerald-50 px-2 py-1.5" data-builder-readability-metric><dt className="font-bold text-emerald-800">Readability (Flesch–Kincaid)</dt><dd>{documentStatistics.words > 0 && documentStatistics.fkGrade != null ? `Grade ${documentStatistics.fkGrade} · Ease ${documentStatistics.readingEase}/100` : '—'}</dd></div>
                           </dl>
                           <div className="mt-2 rounded-lg border border-slate-200 bg-slate-50 p-2">
                             <div className="flex items-center gap-2">
@@ -13182,7 +14890,16 @@ async function updateExportPreview(deps) {
           else if (e.key === 'k' || e.key === 'K') {
             e.preventDefault();
             var url = prompt(t('toasts.link_url_prompt') || 'Enter link URL:');
-            if (url) _runKeyboardFormat('createLink', url, 'Hyperlink changed', 'inline');
+            if (url) {
+              var _ku = String(url).trim();
+              var _kScheme = _ku.match(/^\s*([a-zA-Z][a-zA-Z0-9+.-]*)\s*:/);
+              var _kOk = _ku.startsWith('#') || (!/^\s*\/\//.test(_ku) && (!_kScheme || ['http', 'https', 'mailto', 'tel'].includes(_kScheme[1].toLowerCase())));
+              if (!_kOk) {
+                addToast && addToast(t('toasts.link_url_blocked') || 'Only web (https/http), mailto:, tel:, and #anchor links are allowed.', 'error');
+                return;
+              }
+              _runKeyboardFormat('createLink', _ku, 'Hyperlink changed', 'inline');
+            }
           }
           else if (e.shiftKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); _runKeyboardFormat('insertUnorderedList', null, 'Bulleted list structure changed', 'structure'); }
           else if (e.shiftKey && (e.key === 'o' || e.key === 'O')) { e.preventDefault(); _runKeyboardFormat('insertOrderedList', null, 'Numbered list structure changed', 'structure'); }

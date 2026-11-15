@@ -91,28 +91,53 @@
     return preference === 'contrast' ? 'High Contrast' : preference === 'dark' ? 'Dark' : 'Light';
   }
 
-  function ogStorageRead(rootLike, key) {
+  function ogDraftKeys(rootLike) {
+    var base = OG_DRAFT_STORAGE_KEY;
+    var metaBase = OG_DRAFT_META_STORAGE_KEY;
     try {
-      return rootLike.localStorage ? rootLike.localStorage.getItem(key) : null;
+      if (rootLike && rootLike.__alloStudentView === true) {
+        var rawScope = String(rootLike.__alloActiveLearnerKey || 'student').trim().slice(0, 64) || 'student';
+        var suffix = '::' + encodeURIComponent(rawScope);
+        return { dataKey: base + suffix, metaKey: metaBase + suffix, student: true };
+      }
+    } catch (_) {}
+    return { dataKey: base, metaKey: metaBase, student: false };
+  }
+
+  function ogDraftStore(rootLike, student) {
+    try {
+      if (student && rootLike && rootLike.sessionStorage) return rootLike.sessionStorage;
+    } catch (_) {}
+    return rootLike && rootLike.localStorage ? rootLike.localStorage : null;
+  }
+
+  function ogStorageRead(rootLike, key, storeOverride) {
+    try {
+      var store = storeOverride || (rootLike && rootLike.localStorage);
+      return store ? store.getItem(key) : null;
     } catch (_) {
       return null;
     }
   }
 
-  function ogStorageWrite(rootLike, key, value) {
-    if (!rootLike.localStorage) throw new Error('Browser storage is unavailable.');
-    rootLike.localStorage.setItem(key, value);
+  function ogStorageWrite(rootLike, key, value, storeOverride) {
+    var store = storeOverride || (rootLike && rootLike.localStorage);
+    if (!store) throw new Error('Browser storage is unavailable.');
+    store.setItem(key, value);
   }
 
-  function ogStorageRemove(rootLike, key) {
+  function ogStorageRemove(rootLike, key, storeOverride) {
     try {
-      if (rootLike.localStorage) rootLike.localStorage.removeItem(key);
+      var store = storeOverride || (rootLike && rootLike.localStorage);
+      if (store) store.removeItem(key);
     } catch (_) {}
   }
 
   function ogReadDraftMeta(rootLike) {
     try {
-      var text = ogStorageRead(rootLike, OG_DRAFT_META_STORAGE_KEY);
+      var keys = ogDraftKeys(rootLike);
+      var store = ogDraftStore(rootLike, keys.student);
+      var text = ogStorageRead(rootLike, keys.metaKey, store);
       if (!text) return null;
       var meta = JSON.parse(text);
       return meta && meta.savedAt ? meta : null;
@@ -372,6 +397,8 @@
     var transportRef = React.useRef({ token: 0, timers: [], interval: null });
     var autosaveReadyRef = React.useRef(false);
     var autosaveTimerRef = React.useRef(null);
+    var mountedRef = React.useRef(true);
+    var streamRef = React.useRef(null);
     var recorderRef = React.useRef(null);
     var recorderChunksRef = React.useRef([]);
     var fileInputRef = React.useRef(null);
@@ -461,7 +488,23 @@
     }, []);
 
     React.useEffect(function () {
+      mountedRef.current = true;
       return function () {
+        mountedRef.current = false;
+        var recorder = recorderRef.current;
+        recorderRef.current = null;
+        if (recorder) {
+          try {
+            recorder.ondataavailable = null;
+            recorder.onstop = null;
+            if (recorder.state && recorder.state !== 'inactive') recorder.stop();
+          } catch (_) {}
+        }
+        var activeStream = streamRef.current;
+        streamRef.current = null;
+        if (activeStream && typeof activeStream.getTracks === 'function') {
+          try { activeStream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
+        }
         clearTransportSchedule(false);
       };
     }, []);
@@ -2694,6 +2737,13 @@
         return;
       }
       root.navigator.mediaDevices.getUserMedia({ audio: true }).then(function (stream) {
+        if (!mountedRef.current) {
+          if (stream && typeof stream.getTracks === 'function') {
+            try { stream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
+          }
+          return;
+        }
+        streamRef.current = stream;
         var recorder = new root.MediaRecorder(stream);
         recorderChunksRef.current = [];
         recorder.ondataavailable = function (ev) {
@@ -2701,8 +2751,12 @@
         };
         recorder.onstop = function () {
           var blob = new Blob(recorderChunksRef.current, { type: recorder.mimeType || 'audio/webm' });
-          stream.getTracks().forEach(function (track) { track.stop(); });
+          if (stream && typeof stream.getTracks === 'function') {
+            stream.getTracks().forEach(function (track) { track.stop(); });
+          }
+          if (streamRef.current === stream) streamRef.current = null;
           recorderRef.current = null;
+          if (!mountedRef.current) return;
           setRecording(false);
           if (blob.size) createOwnedSampleSlot(blob);
         };
@@ -2711,6 +2765,7 @@
         setRecording(true);
         ogAnnounce('Recording selected pad');
       }).catch(function (err) {
+        if (!mountedRef.current) return;
         setRecording(false);
         addToast('Recording was not started: ' + (err && err.message || 'permission unavailable'), 'error');
       });
@@ -2718,8 +2773,16 @@
 
     function stopRecording() {
       var recorder = recorderRef.current;
-      if (recorder && recorder.state !== 'inactive') recorder.stop();
-      else setRecording(false);
+      if (recorder && recorder.state !== 'inactive') {
+        recorder.stop();
+        return;
+      }
+      var activeStream = streamRef.current;
+      streamRef.current = null;
+      if (activeStream && typeof activeStream.getTracks === 'function') {
+        try { activeStream.getTracks().forEach(function (track) { track.stop(); }); } catch (_) {}
+      }
+      setRecording(false);
     }
 
     function toggleLoopMode() {
@@ -2831,9 +2894,10 @@
 
     function buildDraftPayload() {
       if (!C || !C.ogSerializeProject) throw new Error('Project serializer is unavailable.');
-      var text = C.ogSerializeProject(project);
-      var thin = false;
-      if (text.length > OG_DRAFT_SOFT_CHAR_LIMIT) {
+      var isStudent = !!(root && root.__alloStudentView === true);
+      var text = isStudent ? C.ogSerializeProject(project, { includeEmbeddedAudio: false }) : C.ogSerializeProject(project);
+      var thin = isStudent;
+      if (!thin && text.length > OG_DRAFT_SOFT_CHAR_LIMIT) {
         text = C.ogSerializeProject(project, { includeEmbeddedAudio: false });
         thin = true;
       }
@@ -2858,8 +2922,10 @@
           chars: payload.text.length,
           thin: payload.thin
         };
-        ogStorageWrite(root, OG_DRAFT_STORAGE_KEY, payload.text);
-        ogStorageWrite(root, OG_DRAFT_META_STORAGE_KEY, JSON.stringify(meta));
+        var keys = ogDraftKeys(root);
+        var store = ogDraftStore(root, keys.student);
+        ogStorageWrite(root, keys.dataKey, payload.text, store);
+        ogStorageWrite(root, keys.metaKey, JSON.stringify(meta), store);
         setDraftMeta(meta);
         setDraftStatus(ogDescribeDraftMeta(meta));
         if (manual) {
@@ -2877,7 +2943,9 @@
 
     function restoreDraft() {
       try {
-        var text = ogStorageRead(root, OG_DRAFT_STORAGE_KEY);
+        var keys = ogDraftKeys(root);
+        var store = ogDraftStore(root, keys.student);
+        var text = ogStorageRead(root, keys.dataKey, store);
         if (!text) throw new Error('No browser draft is available.');
         var next = C.ogParseProject(text);
         commitProject(next);
@@ -2897,8 +2965,10 @@
 
     function clearDraft() {
       clearPendingDraftAutosave();
-      ogStorageRemove(root, OG_DRAFT_STORAGE_KEY);
-      ogStorageRemove(root, OG_DRAFT_META_STORAGE_KEY);
+      var keys = ogDraftKeys(root);
+      var store = ogDraftStore(root, keys.student);
+      ogStorageRemove(root, keys.dataKey, store);
+      ogStorageRemove(root, keys.metaKey, store);
       setDraftMeta(null);
       setDraftStatus('Draft: cleared');
       addToast('Draft cleared.', 'success');

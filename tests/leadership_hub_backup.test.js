@@ -427,7 +427,7 @@ describe('the module-level save path, directly', () => {
   });
 
   it('saves once, then reports unchanged until the data actually changes', async () => {
-    localStorage.setItem('allo_adminhubdrive_config_v1', JSON.stringify({ url: 'https://x/exec', token: 't' }));
+    localStorage.setItem('allo_adminhubdrive_config_v1', JSON.stringify({ url: 'https://script.google.com/macros/s/X/exec', token: 't' }));
     localStorage.setItem('allo_sped_cases_v1', '[1]');
     let calls = 0;
     vi.spyOn(globalThis, 'fetch').mockImplementation(async () => { calls++; return { json: async () => ({ ok: true }) }; });
@@ -446,7 +446,7 @@ describe('the module-level save path, directly', () => {
   });
 
   it('never throws — a network failure returns an error status', async () => {
-    localStorage.setItem('allo_adminhubdrive_config_v1', JSON.stringify({ url: 'https://x/exec', token: 't' }));
+    localStorage.setItem('allo_adminhubdrive_config_v1', JSON.stringify({ url: 'https://script.google.com/macros/s/X/exec', token: 't' }));
     localStorage.setItem('allo_mtss_groups_v1', '{}');
     vi.spyOn(globalThis, 'fetch').mockRejectedValue(new Error('offline'));
     const result = await api().maybeDriveBackup();

@@ -83,7 +83,9 @@ const MAP_TOOLS = [
   ['playlab', 'playCatalog'],
   ['roadReady', 'permitMastery'],
   ['assessmentLiteracy', 'junkMastery'],
-  ['fisherLab', 'speciesCaught']
+  ['fisherLab', 'speciesCaught'],
+  ['physics', 'physicsMastery'],
+  ['wave', 'waveMastery']
 ];
 
 const SETTINGS_ONLY = { volume: 0.8, theme: 'dark', lastTab: 'quiz', tutorialSeen: true };

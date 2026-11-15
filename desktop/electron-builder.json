@@ -14,7 +14,10 @@
     "!schoolbox/**",
     "!build-resources/**",
     "!dist/**",
-    "!web-app/**"
+    "!web-app/**",
+    "!mcp/**",
+    "!scripts/**",
+    "!*.md"
   ],
   "extraResources": [
     {

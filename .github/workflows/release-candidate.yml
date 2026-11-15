@@ -65,6 +65,8 @@ jobs:
           ALLOFLOW_REQUIRE_RENDER_DEPS: '1'
           TZ: America/New_York
         run: npm run verify:gate
+      - name: Check first-party secrets and CORS policy
+        run: node dev-tools/check_secrets.cjs && node dev-tools/check_cors_strict.cjs --strict && node dev-tools/check_lti_surface.cjs && node dev-tools/check_firebase_security.cjs
       - name: Check final native regressions
         run: npm run test:native
       - name: Check all blocking unit tests

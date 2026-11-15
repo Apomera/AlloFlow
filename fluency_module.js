@@ -100,7 +100,9 @@
   }
 
   function _fluencyCsvCell(value) {
-      return '"' + String(value == null ? '' : value).replace(/"/g, '""') + '"';
+      var raw = String(value == null ? '' : value);
+      var safe = /^(?:[\t\r\n ]*[=+\-@]|[\t\r])/.test(raw) ? "'" + raw : raw;
+      return '"' + safe.replace(/"/g, '""') + '"';
   }
 
   function exportFluencyCSV(records, options) {
@@ -190,7 +192,7 @@
       var benchmarkGrade = _fluencyScoreSheetEscape(options.fluencyBenchmarkGrade || '');
       var benchmarkSeason = _fluencyScoreSheetEscape(options.fluencyBenchmarkSeason || '');
       var html = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><title>' + label('print.oral_fluency_title') + '</title>\n' +
-'<style>@import url(\'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap\');*{box-sizing:border-box;margin:0;padding:0}body{font-family:\'Inter\',sans-serif;color:#1e293b;padding:24px;line-height:1.4}@media print{body{padding:12px}}.sheet{max-width:750px;margin:0 auto;border:2px solid #e2e8f0;border-radius:12px;overflow:hidden}.hdr{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:20px 24px;display:flex;justify-content:space-between;align-items:center}.hdr h1{font-size:18px;font-weight:800}.fields{padding:16px 24px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.field{font-size:12px}.field label{font-weight:700;color:#64748b;display:block;margin-bottom:2px}.field .val{font-weight:600;color:#1e293b;padding:4px 0;border-bottom:1px dashed #cbd5e1;min-height:24px}.words{padding:20px 24px;line-height:2.2}.metrics{padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr;gap:16px}.mcol{padding:12px;background:white;border-radius:8px;border:1px solid #e2e8f0}.mcol h3{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}.mrow{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}.mrow .lbl{color:#475569}.mrow .vl{font-weight:700}.legend{padding:12px 24px;background:#faf5ff;border-top:1px solid #e2e8f0;display:flex;gap:16px;flex-wrap:wrap;font-size:10px;font-weight:600;color:#475569}@media print{.no-print{display:none!important}}</style></head><body>\n' +
+'<style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\',Roboto,sans-serif;color:#1e293b;padding:24px;line-height:1.4}@media print{body{padding:12px}}.sheet{max-width:750px;margin:0 auto;border:2px solid #e2e8f0;border-radius:12px;overflow:hidden}.hdr{background:linear-gradient(135deg,#4f46e5,#7c3aed);color:white;padding:20px 24px;display:flex;justify-content:space-between;align-items:center}.hdr h1{font-size:18px;font-weight:800}.fields{padding:16px 24px;background:#f8fafc;border-bottom:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}.field{font-size:12px}.field label{font-weight:700;color:#64748b;display:block;margin-bottom:2px}.field .val{font-weight:600;color:#1e293b;padding:4px 0;border-bottom:1px dashed #cbd5e1;min-height:24px}.words{padding:20px 24px;line-height:2.2}.metrics{padding:16px 24px;background:#f8fafc;border-top:1px solid #e2e8f0;display:grid;grid-template-columns:1fr 1fr;gap:16px}.mcol{padding:12px;background:white;border-radius:8px;border:1px solid #e2e8f0}.mcol h3{font-size:11px;font-weight:800;color:#64748b;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}.mrow{display:flex;justify-content:space-between;font-size:12px;margin-bottom:4px}.mrow .lbl{color:#475569}.mrow .vl{font-weight:700}.legend{padding:12px 24px;background:#faf5ff;border-top:1px solid #e2e8f0;display:flex;gap:16px;flex-wrap:wrap;font-size:10px;font-weight:600;color:#475569}@media print{.no-print{display:none!important}}</style></head><body>\n' +
 '<div class="sheet"><div class="hdr"><div><h1>📊 ' + label('print.oral_fluency_title') + '</h1><p>' + label('print.assessment_record') + '</p></div><div style="text-align:right;font-size:11px;"><div>Generated: ' + displayDate + '</div></div></div>\n' +
 '<div class="fields"><div class="field"><label>' + label('print.student') + '</label><div class="val">' + student + '</div></div><div class="field"><label>' + label('print.date') + '</label><div class="val">' + displayDate + '</div></div><div class="field"><label>' + label('print.grade_benchmark') + '</label><div class="val">' + benchmarkGrade + ' / ' + benchmarkSeason + '</div></div></div>\n' +
 '<div class="words">' + wordMarkup + '</div>\n' +
@@ -203,6 +205,7 @@
           : (typeof window !== 'undefined' && typeof window.open === 'function' ? window.open.bind(window) : null);
       var printWindow = openWindow ? openWindow('', '_blank') : null;
       if (printWindow && printWindow.document) {
+          try { printWindow.opener = null; } catch (_) {}
           printWindow.document.write(html);
           printWindow.document.close();
           return true;
@@ -514,6 +517,8 @@
   // "no" (student AI off, audio not approved for students) never falls through.
   function _fluencyCloudAllowed() {
     if (typeof window === 'undefined' || window.__alloStudentAiDisabled === true) return false;
+    if (window.__alloAiSecretsLocked === true || window._isDesktopBundledApp === true) return false;
+    if (window.ALLOFLOW_MANAGED_AI_POLICY && window.ALLOFLOW_MANAGED_AI_POLICY.managedDeployment && window.ALLOFLOW_MANAGED_AI_POLICY.aiAllowed === false) return false;
     if (_aiUsable('audio', window.callGeminiAudio)) return true;
     var cap = null;
     try { if (typeof window.__alloResolveGeminiAudioCapability === 'function') cap = window.__alloResolveGeminiAudioCapability(); } catch (_) { return false; }
@@ -543,7 +548,9 @@
               return null;
           }
       }
-      var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + defaultModel + ':generateContent' + (apiKey ? ('?key=' + apiKey) : '');
+      var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(String(defaultModel || 'gemini-3-flash-preview')) + ':generateContent';
+      var headers = { 'Content-Type': 'application/json' };
+      if (apiKey) headers['x-goog-api-key'] = apiKey;
       var payload = {
           contents: [{
               role: 'user',
@@ -559,7 +566,7 @@
       try {
           var response = await fetch(url, {
               method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
+              headers: headers,
               body: JSON.stringify(payload)
           });
           var data = await response.json();
@@ -604,6 +611,8 @@
   function alignTranscriptToReference(referenceText, transcript) {
     var ref = _tokenizeReference(referenceText);
     var hyp = _tokenizeReference(transcript);
+    if (ref.length > 2500) ref = ref.slice(0, 2500);
+    if (hyp.length > 2500) hyp = hyp.slice(0, 2500);
     var n = ref.length, m = hyp.length;
     if (!n) return { wordData: [], insertions: [] };
     // DP matrix (n+1)x(m+1); store backpointers.

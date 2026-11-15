@@ -943,7 +943,22 @@ window.SelHub = window.SelHub || {
 
       // ── Cultural Comparison ──
       var runComparison = function() {
-        if (!callGemini || !compCulture1.trim() || !compCulture2.trim()) return;
+        if (!_ceAiOn || !callGemini || !compCulture1.trim() || !compCulture2.trim()) return;
+        var ceInput = (compCulture1 + '\n' + compCulture2).trim();
+        var ceSafety = (window.SelHub && window.SelHub.safeRehearseCheck)
+          ? window.SelHub.safeRehearseCheck(ceInput, { toolId: 'cultureexplorer', onSafetyFlag: (ctx && ctx.onSafetyFlag) || null })
+          : { action: 'continue' };
+        if (ceSafety.action === 'block') {
+          var _ceMsg = (window.SelHub && window.SelHub.rehearseBreakCharacterText)
+            ? window.SelHub.rehearseBreakCharacterText(ceSafety.severity)
+            : 'Your safety matters. Please reach out to a trusted adult or call/text 988.';
+          updMulti({ aiLoading: false, compResult: null, followUpAnswer: _ceMsg, _lastTier: 3 });
+          if (typeof addToast === 'function') addToast(_ceMsg, 'info');
+          if (window.SelHub && window.SelHub.showCrisisModal) {
+            try { window.SelHub.showCrisisModal({ toolName: 'Culture Explorer', contentSnippet: ceInput }); } catch (_) {}
+          }
+          return;
+        }
         updMulti({ aiLoading: true, compResult: null });
         var topicObj = COMPARISON_TOPICS.find(function(t) { return t.id === compTopic; }) || COMPARISON_TOPICS[0];
         var depth = gradeBand === 'high' ? 'Provide historically grounded analysis with nuance.'

@@ -1073,3 +1073,1701 @@ describe('Colony Network battlefield shows the winter cluster', () => {
     expect(SRC_TEXT.includes("'👑 COLONY NETWORK · Cycle ' + qs.queenDay + ' / ' + BH_QUEEN_YEAR_CYCLES")).toBe(true);
   });
 });
+
+describe('phase 7 (candidate10): IPM meter, event quick-jump, RTS quick-build, and drone sweet-spot HUD', () => {
+  let host, root, latest, cfg;
+  beforeEach(() => {
+    resetStemLab(); window.__testHooks = {}; window.__RR_TEST_EXPORTS__ = {};
+    cfg = loadTool(TOOL, 'beehive');
+    const gradient = { addColorStop: vi.fn() };
+    vi.spyOn(window.HTMLCanvasElement.prototype, 'getContext').mockReturnValue(new Proxy({ measureText: (t) => ({ width: String(t).length * 6 }), createLinearGradient: () => gradient, createRadialGradient: () => gradient }, { get: (t, p) => (p in t ? t[p] : (t[p] = vi.fn())), set: (t, p, v) => ((t[p] = v), true) }));
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+  });
+  afterEach(() => {
+    if (root) act(() => root.unmount());
+    if (host) host.remove();
+    delete window.__testHooks;
+    delete window.__RR_TEST_EXPORTS__;
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  async function mountState(beehiveOverrides = {}) {
+    function App() {
+      const [data, setData] = React.useState({ beehive: Object.assign({ tutorialDone: true, motionPaused: true, soundOn: false }, beehiveOverrides) });
+      latest = data;
+      return cfg.render(makeCtx({ toolData: data, setToolData: setData }));
+    }
+    await act(async () => { root.render(React.createElement(App)); await Promise.resolve(); });
+  }
+
+  it('renders aria-hidden before->after Varroa meters and recommends the best seasonal IPM option', async () => {
+    // Day 100 is Winter (season === 3); with brood 500, oxalic acid dribble is ideal
+    await mountState({ viewMode: 'beekeeper', day: 100, brood: 500, varroaLevel: 28, showTreatModal: true });
+    const meter = host.querySelector('[data-treatment-id="oxalic"] [data-treatment-meter="oxalic"]');
+    expect(meter).toBeTruthy();
+    expect(meter.getAttribute('aria-hidden')).toBe('true');
+    expect(host.querySelectorAll('[data-treatment-id] [role="meter"], [data-treatment-id] [role="progressbar"]').length).toBe(0);
+    const oxalicBadge = host.querySelector('[data-treatment-id="oxalic"] [data-treatment-recommended="true"]');
+    expect(oxalicBadge).toBeTruthy();
+    expect(oxalicBadge.textContent).toContain('★ Best match now');
+  });
+
+  it('offers one-click Acknowledge & go to response on known events and focuses the matched control without spending AP', async () => {
+    await mountState({
+      viewMode: 'beekeeper',
+      day: 14,
+      actionPoints: 3,
+      varroaLevel: 26,
+      activeEvent: { id: 'varroa_spike', emoji: '🦟', label: 'Varroa Mite Surge', desc: 'Mites are surging.', effect: { varroaLevel: 20, morale: -10 }, lesson: 'Treat promptly.' }
+    });
+    const treatJump = host.querySelector('[data-event-respond="treat"]');
+    const ackOnly = host.querySelector('[data-event-acknowledge="true"]');
+    expect(treatJump).toBeTruthy();
+    expect(ackOnly).toBeTruthy();
+    const treatChoice = host.querySelector('[data-management-choice="varroa_treatment"]');
+    treatChoice.scrollIntoView = vi.fn();
+
+    await act(async () => { treatJump.click(); await Promise.resolve(); await Promise.resolve(); });
+    expect(latest.beehive.activeEvent).toBeNull();
+    expect(latest.beehive.actionPoints).toBe(3); // never auto-spends AP
+    expect(document.activeElement).toBe(treatChoice);
+    expect(treatChoice.scrollIntoView).toHaveBeenCalled();
+
+    // Unknown/fixture events omit the secondary jump button and acknowledge returns to #beehive-next-day
+    await act(async () => { root.unmount(); });
+    root = ReactDOMClient.createRoot(host);
+    await mountState({
+      viewMode: 'beekeeper',
+      day: 16,
+      actionPoints: 3,
+      activeEvent: { id: 'storm', emoji: '⚠', label: 'Sudden storm', desc: 'Foragers return early.', effect: { morale: -4 }, lesson: 'Storm.' }
+    });
+    expect(host.querySelector('[data-event-respond]')).toBeNull();
+    await act(async () => { host.querySelector('[data-event-acknowledge="true"]').click(); await Promise.resolve(); await Promise.resolve(); });
+    expect(document.activeElement).toBe(host.querySelector('#beehive-next-day'));
+  });
+
+  it('shows live resource pills and the zero-scroll Quick Build strip inside the Colony Network dock', async () => {
+    await mountState({
+      viewMode: 'queen',
+      queen: {
+        active: true, paused: true, speed: 1, day: 4, hiveHealth: 100, territory: 50,
+        resources: { nectar: 80, pollen: 60, wax: 40, royalJelly: 20 },
+        rival: { name: 'Thistle Crown', health: 100, strength: 360, stores: 35, structures: 3, pressure: 10, intel: 0 }
+      }
+    });
+    const dock = host.querySelector('[data-beehive-battlefield-dock="true"]');
+    expect(dock).toBeTruthy();
+    expect(dock.querySelectorAll('[data-dock-resource]').length).toBe(4);
+    const strip = dock.querySelector('[data-quick-build-strip="true"]');
+    expect(strip).toBeTruthy();
+    const firstQuickBuild = strip.querySelector('[data-quick-build]');
+    expect(firstQuickBuild).toBeTruthy();
+    const stId = firstQuickBuild.getAttribute('data-quick-build');
+
+    await act(async () => { firstQuickBuild.click(); await Promise.resolve(); });
+    expect(latest.beehive.queen.buildMode).toBe(stId);
+    expect(strip.querySelector('[data-quick-build-cancel="true"]')).toBeTruthy();
+
+    await act(async () => { strip.querySelector('[data-quick-build="' + stId + '"]').click(); await Promise.resolve(); });
+    expect(latest.beehive.queen.buildMode).toBeNull();
+  });
+
+  it('displays live DCA altitude sweet-spot and thermal lift pills in Drone Flight controls', async () => {
+    await mountState({
+      viewMode: 'drone',
+      drone: { active: false, difficulty: 'easy', pacing: 'live', courseSeed: 20260904 }
+    });
+    const launch = host.querySelector('[data-mobile-rail="drone-difficulty"] button');
+    await act(async () => { launch.click(); await Promise.resolve(); });
+
+    const controls = host.querySelector('[data-beehive-touch-controls="true"]');
+    expect(controls).toBeTruthy();
+    expect(controls.previousElementSibling && controls.previousElementSibling.id).toBe('beehive-drone-playfield');
+    expect(controls.querySelector('[data-flight-sweetspot-pill="true"]')).toBeTruthy();
+    expect(controls.querySelector('[data-flight-alt-band-pill="true"]').textContent).toMatch(/DCA|ft/);
+    expect(controls.querySelector('[data-flight-thermal-pill="true"]').textContent).toMatch(/Thermal|Updraft/);
+  });
+});
+
+describe('phase 8 (candidate11): quest jump, RTS care & advisor actions, sub-lab presets, and replay click-scrub', () => {
+  let host, root, latest, cfg;
+  beforeEach(() => {
+    resetStemLab(); window.__testHooks = {}; window.__RR_TEST_EXPORTS__ = {};
+    cfg = loadTool(TOOL, 'beehive');
+    const gradient = { addColorStop: vi.fn() };
+    vi.spyOn(window.HTMLCanvasElement.prototype, 'getContext').mockReturnValue(new Proxy({ measureText: (t) => ({ width: String(t).length * 6 }), createLinearGradient: () => gradient, createRadialGradient: () => gradient }, { get: (t, p) => (p in t ? t[p] : (t[p] = vi.fn())), set: (t, p, v) => ((t[p] = v), true) }));
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+  });
+  afterEach(() => {
+    if (root) act(() => root.unmount());
+    if (host) host.remove();
+    delete window.__testHooks;
+    delete window.__RR_TEST_EXPORTS__;
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  async function mountState(beehiveOverrides = {}) {
+    function App() {
+      const [data, setData] = React.useState({ beehive: Object.assign({ tutorialDone: true, motionPaused: true, soundOn: false }, beehiveOverrides) });
+      latest = data;
+      return cfg.render(makeCtx({ toolData: data, setToolData: setData }));
+    }
+    await act(async () => { root.render(React.createElement(App)); await Promise.resolve(); });
+  }
+
+  it('shows live quest progress and focuses the matching action control on click without spending AP', async () => {
+    await mountState({
+      viewMode: 'beekeeper',
+      focusLayout: true,
+      day: 4,
+      workers: 12000,
+      varroaLevel: 8,
+      honey: 25,
+      actionPoints: 3,
+    });
+    const questProg = host.querySelector('[data-quest-progress="true"]');
+    expect(questProg).toBeTruthy();
+    expect(questProg.textContent).toBe('12,000 / 20,000');
+
+    const questJump = host.querySelector('[data-quest-jump]');
+    expect(questJump).toBeTruthy();
+    const targetBtn = host.querySelector(questJump.getAttribute('data-quest-jump'));
+    expect(targetBtn).toBe(host.querySelector('[data-management-choice="feed_bees"]'));
+    targetBtn.scrollIntoView = vi.fn();
+
+    await act(async () => { questJump.click(); await Promise.resolve(); });
+    expect(latest.beehive.actionPoints).toBe(3); // never auto-spends AP
+    expect(document.activeElement).toBe(targetBtn);
+    expect(targetBtn.scrollIntoView).toHaveBeenCalled();
+
+    // Overview layout shows inline numeric badges for all season goals
+    await act(async () => { root.unmount(); });
+    root = ReactDOMClient.createRoot(host);
+    await mountState({ viewMode: 'beekeeper', focusLayout: false, day: 4, workers: 12000, varroaLevel: 8, honey: 25 });
+    const overviewBadges = host.querySelectorAll('[data-season-goal-progress="true"]');
+    expect(overviewBadges.length).toBe(3);
+    expect(overviewBadges[0].textContent).toBe('12,000 / 20,000');
+  });
+
+  it('provides zero-scroll Colony Care signals and one-click Strategic Advisor execution in Colony Network RTS', async () => {
+    await mountState({
+      viewMode: 'queen',
+      queen: {
+        active: true, paused: true, speed: 1, day: 4, hiveHealth: 100, territory: 50,
+        resources: { nectar: 30, pollen: 20, wax: 15, royalJelly: 10 },
+        rival: { name: 'Thistle Crown', health: 100, strength: 360, stores: 35, structures: 3, pressure: 10, intel: 0 }
+      }
+    });
+    const dock = host.querySelector('[data-beehive-battlefield-dock="true"]');
+    expect(dock.querySelectorAll('[data-quick-command]').length).toBe(3);
+
+    const careStrip = dock.querySelector('[data-quick-colony-strip="true"]');
+    expect(careStrip).toBeTruthy();
+    const careSignals = Array.from(careStrip.querySelectorAll('[data-quick-signal]'));
+    expect(careSignals.map((btn) => btn.getAttribute('data-quick-signal'))).toEqual(['emit_qmp', 'nasonov_call', 'lay_workers', 'build_comb']);
+
+    const advisorAct = host.querySelector('[data-strategic-advisor-act="scout_rival"]');
+    expect(advisorAct).toBeTruthy();
+    await act(async () => { advisorAct.click(); await Promise.resolve(); });
+    expect(latest.beehive.queen.rival.intel).toBeGreaterThan(0);
+
+    const qmpSignal = careStrip.querySelector('[data-quick-signal="emit_qmp"]');
+    expect(qmpSignal).toBeTruthy();
+    await act(async () => { qmpSignal.click(); await Promise.resolve(); });
+    expect(latest.beehive.queen.lastImpact.title).toBe('Emit QMP');
+  });
+
+  it('adds Waggle time-of-day sun presets, visual cues, and Thermoregulation single-variable weather presets', async () => {
+    await mountState({ viewMode: 'beekeeper', focusLayout: true, beeView: 'waggle', discoveryLesson: 'waggle' });
+    const waggleLab = host.querySelector('[data-waggle-lab]');
+    expect(waggleLab).toBeTruthy();
+    expect(waggleLab.querySelector('[data-waggle-wave="true"]')).toBeTruthy();
+    expect(waggleLab.querySelector('[data-waggle-sun-glyph="true"]')).toBeTruthy();
+    expect(waggleLab.querySelectorAll('.bee-discovery-button').length).toBe(2);
+
+    const noonPreset = waggleLab.querySelector('[data-waggle-sun-preset="180"]');
+    expect(noonPreset).toBeTruthy();
+    await act(async () => { noonPreset.click(); await Promise.resolve(); });
+    expect(latest.beehive.waggleLab.sun).toBe(180);
+
+    await act(async () => { root.unmount(); });
+    root = ReactDOMClient.createRoot(host);
+    await mountState({ viewMode: 'beekeeper', focusLayout: true, beeView: 'thermo', discoveryLesson: 'thermo' });
+    const frostPreset = host.querySelector('[data-thermo-preset="0"]');
+    expect(frostPreset).toBeTruthy();
+    await act(async () => { frostPreset.click(); await Promise.resolve(); });
+    expect(latest.beehive.thermHunt.outsideC).toBe(0);
+    expect(latest.beehive.thermHunt.beesFanning).toBe(30);
+    expect(latest.beehive.thermHunt.heaterBees).toBe(1200);
+  });
+
+  it('renders the DCA altitude band on the altitude replay lane and supports click-to-scrub', async () => {
+    const telemetry = [
+      { t: 0, altitude: 0, energy: 100, wind: 0, phase: 'launch', action: 'Launch', hazard: false },
+      { t: 1, altitude: 35, energy: 92, wind: 0.6, phase: 'flight', action: 'Powered climb', hazard: false },
+      { t: 4, altitude: 118, energy: 78, wind: 1.4, phase: 'flight', action: 'Powered climb', hazard: true },
+      { t: 9, altitude: 110, energy: 70, wind: 2.0, phase: 'congregation', action: 'Coast', hazard: false },
+      { t: 15, altitude: 96, energy: 64, wind: 0.8, phase: 'end', action: 'Coast', hazard: false }
+    ];
+    await mountState({
+      viewMode: 'drone',
+      drone: {
+        active: false, difficulty: 'easy', pacing: 'steps', courseSeed: 20260908,
+        lastRun: { pacing: 'steps', courseSeed: 20260908, difficulty: 'easy', success: true, reachedDca: true, maxAlt: 120, distance: 700, energyLeft: 64, telemetry }
+      }
+    });
+    const toggle = host.querySelector('[data-drone-saved-review-toggle]');
+    expect(toggle).toBeTruthy();
+    await act(async () => { toggle.click(); await Promise.resolve(); });
+
+    const altSvg = host.querySelector('svg[data-replay-chart="altitude"]');
+    const energySvg = host.querySelector('svg[data-replay-chart="energy"]');
+    const windSvg = host.querySelector('svg[data-replay-chart="wind"]');
+    expect(altSvg).toBeTruthy();
+    expect(altSvg.querySelector('rect[data-replay-dca-band="true"]')).toBeTruthy();
+    expect(energySvg.querySelector('rect[data-replay-dca-band="true"]')).toBeNull();
+    expect(windSvg.querySelector('rect[data-replay-dca-band="true"]')).toBeNull();
+
+    altSvg.getBoundingClientRect = () => ({ left: 0, top: 0, width: 640, height: 96, right: 640, bottom: 96, x: 0, y: 0, toJSON() {} });
+    await act(async () => {
+      altSvg.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 380, clientY: 48 }));
+      await Promise.resolve();
+    });
+    expect(latest.beehive.drone.replayIndex).toBe(3);
+  });
+});
+
+describe('phase 9 (candidate12): guided inspector & varietal jar shelf, clickable brood bars, RTS clock dock, and DCA gate range pill', () => {
+  let host, root, latest, cfg;
+  beforeEach(() => {
+    resetStemLab(); window.__testHooks = {}; window.__RR_TEST_EXPORTS__ = {};
+    cfg = loadTool(TOOL, 'beehive');
+    const gradient = { addColorStop: vi.fn() };
+    vi.spyOn(window.HTMLCanvasElement.prototype, 'getContext').mockReturnValue(new Proxy({ measureText: (t) => ({ width: String(t).length * 6 }), createLinearGradient: () => gradient, createRadialGradient: () => gradient }, { get: (t, p) => (p in t ? t[p] : (t[p] = vi.fn())), set: (t, p, v) => ((t[p] = v), true) }));
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+  });
+  afterEach(() => {
+    if (root) act(() => root.unmount());
+    if (host) host.remove();
+    delete window.__testHooks;
+    delete window.__RR_TEST_EXPORTS__;
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  async function mountState(beehiveOverrides = {}) {
+    function App() {
+      const [data, setData] = React.useState({ beehive: Object.assign({ tutorialDone: true, motionPaused: true, soundOn: false }, beehiveOverrides) });
+      latest = data;
+      return cfg.render(makeCtx({ toolData: data, setToolData: setData }));
+    }
+    await act(async () => { root.render(React.createElement(App)); await Promise.resolve(); });
+  }
+
+  it('steps through unexplored Hive Inspector layers with progress bar and renders varietal honey jar shelves', async () => {
+    await mountState({
+      viewMode: 'beekeeper',
+      showInspect: true,
+      inspectLayer: 'roles',
+      layersViewed: ['roles'],
+    });
+    expect(host.querySelector('[data-inspector-progress-bar="true"]')).toBeTruthy();
+    expect(host.querySelector('[data-inspector-progress-fill="11"]')).toBeTruthy();
+    const nextBtn = host.querySelector('[data-inspector-next-unexplored="honey_chem"]');
+    expect(nextBtn).toBeTruthy();
+
+    await act(async () => { nextBtn.click(); await Promise.resolve(); });
+    expect(latest.beehive.inspectLayer).toBe('honey_chem');
+    expect(latest.beehive.layersViewed).toContain('honey_chem');
+    expect(host.querySelector('[data-inspector-next-unexplored="lifecycle"]')).toBeTruthy();
+
+    await mountState({
+      viewMode: 'beekeeper',
+      showInspect: false,
+      focusLayout: false,
+      totalHarvested: 14,
+      varietals: {
+        buckwheat: { name: 'Dark Buckwheat', emoji: '🌾', note: 'Rich', lbs: 14, jars: 11, firstDay: 185, lastDay: 185 }
+      }
+    });
+    const shelf = host.querySelector('[data-varietal-jar-shelf="buckwheat"]');
+    expect(shelf).toBeTruthy();
+    expect(shelf.querySelectorAll('[data-varietal-jar]').length).toBe(8);
+    expect(shelf.querySelector('[data-varietal-jar-overflow="3"]').textContent).toBe('+3');
+  });
+
+  it('selects Brood Emergence Calendar days directly by clicking chart bars without changing colony time', async () => {
+    const BH = window.__RR_TEST_EXPORTS__.beehive;
+    const workers = Array(21).fill(0);
+    const drones = Array(24).fill(0);
+    workers[0] = 12; workers[3] = 100;
+    drones[0] = 3; drones[3] = 12;
+    await mountState({
+      ...BH.bhCreateNewColonyState(777, 1),
+      viewMode: 'beekeeper',
+      beeView: 'lifecycle',
+      showInspect: false,
+      day: 60,
+      workers: 20000,
+      drones: 15,
+      brood: 127,
+      broodCohorts: { schemaVersion: 1, workers, drones },
+    });
+
+    const bar4 = host.querySelector('[data-brood-bar-offset="4"]');
+    expect(bar4).toBeTruthy();
+    const before = structuredClone(latest.beehive);
+
+    await act(async () => { bar4.click(); await Promise.resolve(); });
+    expect(host.querySelector('#bee-brood-calendar-day').value).toBe('4');
+    expect(host.querySelector('[data-brood-reading-workers]').textContent).toBe('100');
+    expect(host.querySelector('[data-brood-reading-drones]').textContent).toBe('12');
+    expect(latest.beehive).toEqual(before);
+  });
+
+  it('steps +1 cycle while staying paused and toggles pause from the Colony Network quick dock', async () => {
+    await mountState({
+      viewMode: 'queen',
+      queen: {
+        active: true, paused: true, speed: 1, day: 4, hiveHealth: 100, territory: 50,
+        resources: { nectar: 80, pollen: 60, wax: 40, royalJelly: 20 },
+        rival: { name: 'Thistle Crown', health: 100, strength: 360, stores: 35, structures: 3, pressure: 10, intel: 0 }
+      }
+    });
+
+    const dock = host.querySelector('[data-beehive-battlefield-dock="true"]');
+    expect(dock).toBeTruthy();
+    expect(dock.querySelectorAll('[data-quick-command]').length).toBe(3);
+    const clockGroup = dock.querySelector('[data-dock-clock-controls="true"]');
+    expect(clockGroup).toBeTruthy();
+
+    await act(async () => {
+      clockGroup.querySelector('[data-dock-step-cycle="true"]').click();
+      await Promise.resolve();
+    });
+    expect(latest.beehive.queen.day).toBe(5);
+    expect(latest.beehive.queen.paused).toBe(true);
+    expect(latest.beehive.queen.lastImpact.kind).toBe('cycle');
+
+    await act(async () => {
+      dock.querySelector('[data-dock-pause-toggle="true"]').click();
+      await Promise.resolve();
+    });
+    expect(latest.beehive.queen.paused).toBe(false);
+  });
+
+  it('updates the Drone Flight live DCA gate range pill across en-route, over-DCA, and inside-gate states', async () => {
+    let droneRafCb = null;
+    await mountState({
+      viewMode: 'drone',
+      drone: { active: false, difficulty: 'easy', pacing: 'live', courseSeed: 20260909 }
+    });
+    vi.stubGlobal('requestAnimationFrame', vi.fn((cb) => { droneRafCb = cb; return 1; }));
+
+    const launch = host.querySelector('[data-mobile-rail="drone-difficulty"] button');
+    await act(async () => { launch.click(); await Promise.resolve(); });
+
+    const dcaPill = host.querySelector('[data-flight-dca-range-pill="true"]');
+    expect(dcaPill).toBeTruthy();
+    expect(dcaPill.getAttribute('data-dca-gate-state')).toBe('info');
+    expect(dcaPill.textContent).toContain('DCA gate:');
+    expect(typeof droneRafCb).toBe('function');
+
+    Object.assign(window.__testHooks.beehive.droneStateRef.current, { x: 0, z: -590, y: 60, paused: true, _nextInstrumentSync: 0 });
+    await act(async () => { droneRafCb(1000); await Promise.resolve(); });
+    expect(dcaPill.getAttribute('data-dca-gate-state')).toBe('warn');
+    expect(dcaPill.textContent).toMatch(/Over DCA/);
+
+    Object.assign(window.__testHooks.beehive.droneStateRef.current, { x: 0, z: -590, y: 115, paused: true, _nextInstrumentSync: 0 });
+    await act(async () => { droneRafCb(2000); await Promise.resolve(); });
+    expect(dcaPill.getAttribute('data-dca-gate-state')).toBe('good');
+    expect(dcaPill.textContent).toMatch(/Inside DCA gate/);
+  });
+});
+
+describe('phase 10 (candidate13): quiz answer review, guide quick chips & intervention priority spotlight, RTS doctrine scout, and replay reserve line', () => {
+  let host, root, latest, cfg;
+  beforeEach(() => {
+    resetStemLab(); window.__testHooks = {}; window.__RR_TEST_EXPORTS__ = {};
+    cfg = loadTool(TOOL, 'beehive');
+    const gradient = { addColorStop: vi.fn() };
+    vi.spyOn(window.HTMLCanvasElement.prototype, 'getContext').mockReturnValue(new Proxy({ measureText: (t) => ({ width: String(t).length * 6 }), createLinearGradient: () => gradient, createRadialGradient: () => gradient }, { get: (t, p) => (p in t ? t[p] : (t[p] = vi.fn())), set: (t, p, v) => ((t[p] = v), true) }));
+    vi.stubGlobal('requestAnimationFrame', vi.fn(() => 1));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+  });
+  afterEach(() => {
+    if (root) act(() => root.unmount());
+    if (host) host.remove();
+    delete window.__testHooks;
+    delete window.__RR_TEST_EXPORTS__;
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  async function mountState(beehiveOverrides = {}) {
+    function App() {
+      const [data, setData] = React.useState({ beehive: Object.assign({ tutorialDone: true, motionPaused: true, soundOn: false }, beehiveOverrides) });
+      latest = data;
+      return cfg.render(makeCtx({ toolData: data, setToolData: setData }));
+    }
+    await act(async () => { root.render(React.createElement(App)); await Promise.resolve(); });
+  }
+
+  it('shows a missed-first Bee Knowledge Quiz answer & explanation review on completion without mutating state schema', async () => {
+    const questions = [
+      { q: 'Which caste lays fertilized eggs?', opts: ['Worker', 'Queen'], ans: 1, explain: 'Only the mated queen lays fertilized diploid eggs.' },
+      { q: 'What does propolis seal?', opts: ['Comb cracks', 'Flower anthers'], ans: 0, explain: 'Resin-rich propolis seals gaps and inhibits microbes.' }
+    ];
+    await mountState({
+      viewMode: 'beekeeper', day: 5,
+      quizOpen: true, quizComplete: false, quizIdx: 0, quizScore: 0, quizAnswered: 0, quizFeedback: null, quizQuestions: questions
+    });
+
+    await act(async () => { host.querySelector('[aria-label="Answer: Queen"]').click(); await Promise.resolve(); });
+    await act(async () => { host.querySelector('[data-beehive-quiz-next="true"]').click(); await Promise.resolve(); });
+    await act(async () => { host.querySelector('[aria-label="Answer: Flower anthers"]').click(); await Promise.resolve(); });
+    await act(async () => { host.querySelector('[data-beehive-quiz-next="true"]').click(); await Promise.resolve(); });
+
+    expect(latest.beehive.quizComplete).toBe(true);
+    expect(latest.beehive.quizScore).toBe(1);
+    expect(Object.prototype.hasOwnProperty.call(latest.beehive, 'quizLog')).toBe(false);
+
+    const list = host.querySelector('[data-quiz-review-list="true"]');
+    expect(list).toBeTruthy();
+    const items = Array.from(list.querySelectorAll('[data-quiz-review-item]'));
+    expect(items).toHaveLength(2);
+    expect(items[0].getAttribute('data-quiz-review-item')).toBe('missed');
+    expect(items[0].textContent).toContain('Your answer: Flower anthers · Correct: Comb cracks');
+    expect(items[0].textContent).toContain('Resin-rich propolis seals gaps');
+    expect(items[1].getAttribute('data-quiz-review-item')).toBe('correct');
+    expect(items[1].textContent).toContain('Correct: Queen');
+  });
+
+  it('provides Field Guide quick-search chips with clear search and highlights priority Beekeeper colony interventions', async () => {
+    await mountState({
+      viewMode: 'beekeeper', showGuide: true, guideQuery: '',
+      actionPoints: 3, varroaLevel: 26, diseaseRisk: 0, honey: 40, inDearth: false
+    });
+
+    const chip = host.querySelector('[data-guide-quick-chip="varroa"]');
+    expect(chip).toBeTruthy();
+    expect(chip.getAttribute('aria-pressed')).toBe('false');
+    await act(async () => { chip.click(); await Promise.resolve(); });
+    expect(latest.beehive.guideQuery).toBe('Varroa');
+    expect(host.querySelector('[data-beehive-guide-results="true"]')).toBeTruthy();
+    const clearBtn = host.querySelector('[data-guide-search-clear="true"]');
+    expect(clearBtn).toBeTruthy();
+    await act(async () => { clearBtn.click(); await Promise.resolve(); });
+    expect(latest.beehive.guideQuery).toBe('');
+    expect(host.querySelector('[data-beehive-guide-results="true"]')).toBeNull();
+
+    const treat = host.querySelector('[data-management-action="Treat"]');
+    expect(treat.getAttribute('data-management-recommended')).toBe('true');
+    expect(treat.querySelector('[data-management-status="varroa_treatment"]').textContent).toContain('★ Suggested');
+    expect(host.querySelectorAll('[data-management-recommended="true"]').length).toBe(1);
+
+    await mountState({
+      viewMode: 'beekeeper', actionPoints: 2, varroaLevel: 5, diseaseRisk: 0, honey: 12, inDearth: true
+    });
+    const feed = host.querySelector('[data-management-action="Feed"]');
+    expect(feed.getAttribute('data-management-recommended')).toBe('true');
+    expect(feed.querySelector('[data-management-status="feed_bees"]').textContent).toContain('★ Suggested');
+  });
+
+  it('allows direct rival scouting from Competitor Intelligence and transitions to Refresh Intel', async () => {
+    await mountState({
+      viewMode: 'queen',
+      queen: {
+        active: true, paused: true, speed: 1, day: 4, hiveHealth: 100, territory: 50,
+        resources: { nectar: 80, pollen: 60, wax: 40, royalJelly: 20 },
+        rival: { name: 'Thistle Crown', health: 100, strength: 360, stores: 35, structures: 3, pressure: 10, intel: 0 }
+      }
+    });
+
+    const doctrineCard = host.querySelector('[data-rts-rival-doctrine="true"]');
+    const scoutBtn = doctrineCard.querySelector('[data-rts-doctrine-scout="true"]');
+    expect(scoutBtn).toBeTruthy();
+    expect(scoutBtn.textContent).toContain('Scout Rival');
+
+    await act(async () => { scoutBtn.click(); await Promise.resolve(); });
+    expect(latest.beehive.queen.rival.intel).toBeGreaterThan(0);
+    expect(latest.beehive.queen.lastImpact.title).toBe('Scout Rival');
+
+    const updatedBtn = host.querySelector('[data-rts-rival-doctrine="true"] [data-rts-doctrine-scout="true"]');
+    if ((latest.beehive.queen.rival.intel || 0) < 85) {
+      expect(updatedBtn).toBeTruthy();
+      expect(updatedBtn.textContent).toContain('Refresh Intel');
+    }
+  });
+
+  it('draws a 22% reserve warning line on the Energy replay chart only when percentage energy units are recorded', async () => {
+    await mountState({
+      viewMode: 'drone',
+      drone: {
+        active: false, paused: true,
+        lastRun: {
+          success: false, courseSeed: 2026, energyUnits: 'percent-of-difficulty-reserve',
+          telemetry: [
+            { t: 0, altitude: 20, energy: 80, wind: 1, phase: 'launch' },
+            { t: 8, altitude: 110, energy: 14, wind: 2, phase: 'end' }
+          ]
+        }
+      }
+    });
+    await act(async () => { host.querySelector('[data-drone-saved-review-toggle="true"]').click(); await Promise.resolve(); });
+    expect(host.querySelector('svg[data-replay-chart="energy"] [data-replay-reserve-line="true"]')).toBeTruthy();
+
+    await mountState({
+      viewMode: 'drone',
+      drone: {
+        active: false, paused: true,
+        lastRun: {
+          success: false, courseSeed: 2026,
+          telemetry: [
+            { t: 0, altitude: 20, energy: 80, wind: 1, phase: 'launch' },
+            { t: 8, altitude: 110, energy: 14, wind: 2, phase: 'end' }
+          ]
+        }
+      }
+    });
+    expect(host.querySelector('svg[data-replay-chart="energy"] [data-replay-reserve-line="true"]')).toBeNull();
+  });
+});
+
+describe('phase 11 (candidate14): worker balance presets, RTS brood queue shortcuts, drone spatial camera toggle & same-plan retry, conservation spotlight, and badge jumps', () => {
+  let host, root, latest, cfg, rafQueue;
+  beforeEach(() => {
+    resetStemLab(); window.__testHooks = {}; window.__RR_TEST_EXPORTS__ = {};
+    cfg = loadTool(TOOL, 'beehive');
+    const gradient = { addColorStop: vi.fn() };
+    vi.spyOn(window.HTMLCanvasElement.prototype, 'getContext').mockReturnValue(new Proxy({ measureText: (t) => ({ width: String(t).length * 6 }), createLinearGradient: () => gradient, createRadialGradient: () => gradient }, { get: (t, p) => (p in t ? t[p] : (t[p] = vi.fn())), set: (t, p, v) => ((t[p] = v), true) }));
+    rafQueue = [];
+    vi.stubGlobal('requestAnimationFrame', vi.fn((cb) => { rafQueue.push(cb); return rafQueue.length; }));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+  });
+  afterEach(() => {
+    if (root) act(() => root.unmount());
+    if (host) host.remove();
+    delete window.__testHooks;
+    delete window.__RR_TEST_EXPORTS__;
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  async function mountState(beehiveOverrides = {}) {
+    function App() {
+      const [data, setData] = React.useState({ beehive: Object.assign({ tutorialDone: true, motionPaused: true, soundOn: false }, beehiveOverrides) });
+      latest = data;
+      return cfg.render(makeCtx({ toolData: data, setToolData: setData }));
+    }
+    await act(async () => { root.render(React.createElement(App)); await Promise.resolve(); });
+  }
+
+  it('offers one-click Worker Balance scenario presets that update flows, clear stale answers, and leave colony data untouched', async () => {
+    await mountState({ viewMode: 'beekeeper', beeView: 'lifecycle', day: 45, honey: 22 });
+    const snapshotBefore = structuredClone(latest.beehive);
+    const lab = host.querySelector('[data-worker-balance-lab]');
+    expect(lab).toBeTruthy();
+
+    await act(async () => { lab.querySelector('[data-worker-balance-preset="growth"]').click(); await Promise.resolve(); });
+    expect(lab.querySelector('[data-worker-balance-flow="arrivals"]').value).toBe('3');
+    expect(lab.querySelector('[data-worker-balance-flow="losses"]').value).toBe('1');
+    expect(lab.querySelector('[data-worker-balance-preset="growth"]').getAttribute('aria-pressed')).toBe('true');
+
+    await act(async () => { lab.querySelector('input[value="increase"]').click(); await Promise.resolve(); });
+    await act(async () => { lab.querySelector('[data-worker-balance-check]').click(); await Promise.resolve(); });
+    expect(lab.querySelector('[data-worker-balance-equation]').textContent).toBe('100 + 40 − 5 = 135');
+
+    await act(async () => { lab.querySelector('[data-worker-balance-preset="same"]').click(); await Promise.resolve(); });
+    expect(lab.querySelector('[data-worker-balance-flow="arrivals"]').value).toBe('2');
+    expect(lab.querySelector('[data-worker-balance-flow="losses"]').value).toBe('2');
+    expect(lab.querySelector('[data-worker-balance-result]')).toBeNull();
+    expect(latest.beehive).toEqual(snapshotBefore);
+  });
+
+  it('allows queuing worker and drone brood directly from the RTS Production Queue card', async () => {
+    await mountState({
+      viewMode: 'queen',
+      queen: {
+        active: true, paused: true, speed: 1, day: 5, hiveHealth: 100, territory: 50,
+        resources: { nectar: 60, pollen: 40, wax: 20, royalJelly: 2 },
+        rival: { name: 'Thistle Crown', health: 100, strength: 300, stores: 30, structures: 2, pressure: 10, intel: 0 }
+      }
+    });
+
+    const queueCard = host.querySelector('[data-rts-production-queue="true"]');
+    const workerBtn = queueCard.querySelector('[data-rts-queue-order="lay_workers"]');
+    const droneBtn = queueCard.querySelector('[data-rts-queue-order="lay_drones"]');
+    expect(workerBtn).toBeTruthy();
+    expect(droneBtn).toBeTruthy();
+    expect(workerBtn.getAttribute('data-command-ready')).toBe('true');
+
+    await act(async () => { workerBtn.click(); await Promise.resolve(); });
+    expect(latest.beehive.queen.resources.royalJelly).toBe(1);
+    expect(host.querySelector('[data-rts-production-queue="true"] [data-rts-production-order="workers"]')).toBeTruthy();
+  });
+
+  it('toggles 3D perspective camera from the Spatial Cue card and lets debrief retry the exact same route plan', async () => {
+    await mountState({
+      viewMode: 'drone',
+      drone: { active: false, difficulty: 'easy', routePlan: 'boost-first', pacing: 'steps' }
+    });
+    const launch = host.querySelector('[data-mobile-rail="drone-difficulty"] button');
+    expect(launch).toBeTruthy();
+    await act(async () => { launch.click(); await Promise.resolve(); await Promise.resolve(); });
+
+    const camLabelBefore = host.querySelector('[data-flight-spatial-camera="true"]').textContent.toLowerCase();
+    const camToggle = host.querySelector('[data-flight-spatial-camera-toggle="true"]');
+    expect(camToggle).toBeTruthy();
+    await act(async () => { camToggle.click(); await Promise.resolve(); });
+    const camLabelAfter = host.querySelector('[data-flight-spatial-camera="true"]').textContent.toLowerCase();
+    expect(camLabelAfter).not.toBe(camLabelBefore);
+
+    const state = window.__testHooks.beehive.droneStateRef.current;
+    state.phase = 'end';
+    state.energy = 4;
+    state.maxAlt = 68;
+    state.distance = 420;
+    state.reachedDca = false;
+    state.obstacleHits = 1;
+    state.trafficHits = 1;
+    state.nectarCollected = 3;
+    state.nectarGoal = 8;
+    const rafCb = rafQueue.shift();
+    expect(rafCb).toBeTypeOf('function');
+    await act(async () => { rafCb(performance.now() + 16); await Promise.resolve(); await Promise.resolve(); });
+
+    expect(host.querySelector('[data-drone-debrief-coach="energy-budget"]')).toBeTruthy();
+    const samePlanBtn = host.querySelector('[data-flight-retry-same-plan="true"]');
+    expect(samePlanBtn).toBeTruthy();
+    await act(async () => { samePlanBtn.click(); await Promise.resolve(); await Promise.resolve(); });
+    expect(latest.beehive.drone.routePlan).toBe('boost-first');
+    expect(latest.beehive.drone.active).toBe(true);
+  });
+
+  it('highlights the urgent Conservation priority action and wires one-click jumps from Next Badges', async () => {
+    await mountState({
+      viewMode: 'beekeeper',
+      actionPoints: 3, pesticideExposure: 25, habitat: 45, layersViewed: ['roles'], showInspect: false
+    });
+    expect(host.querySelector('[data-conservation-impact="ban_pesticides"]').getAttribute('data-conservation-recommended')).toBe('true');
+    expect(host.querySelector('[data-conservation-spotlight="ban_pesticides"]')).toBeTruthy();
+
+    await mountState({
+      viewMode: 'beekeeper',
+      actionPoints: 2, pesticideExposure: 0, habitat: 45,
+      layersViewed: ['roles', 'comb', 'brood', 'waggle', 'thermoregulation', 'foraging', 'mites', 'seasons'],
+      showInspect: false
+    });
+    expect(host.querySelector('[data-conservation-impact="plant_wildflowers"]').getAttribute('data-conservation-recommended')).toBe('true');
+    expect(host.querySelector('[data-conservation-spotlight="plant_wildflowers"]')).toBeTruthy();
+
+    const inspectorJump = host.querySelector('[data-next-badge-jump="inspector"]');
+    expect(inspectorJump).toBeTruthy();
+    await act(async () => { inspectorJump.click(); await Promise.resolve(); });
+    expect(latest.beehive.showInspect).toBe(true);
+  });
+
+  it('lets learners click Colony History chart points and table rows directly to inspect recorded days', async () => {
+    const history = [
+      { d: 1, w: 18000, h: 65, v: 2, m: 82 },
+      { d: 2, w: 19500, h: 72, v: 4, m: 80 },
+      { d: 4, w: 22000, h: 88, v: 6, m: 78 }
+    ];
+    await mountState({ viewMode: 'beekeeper', day: 4, actionPoints: 3, history });
+    const snapshotBefore = structuredClone(latest.beehive);
+
+    expect(host.querySelector('[data-history-selected]').textContent).toContain('Day 4');
+    const guideInitial = host.querySelector('[data-history-selected-guide="true"]');
+    expect(guideInitial).toBeTruthy();
+    expect(guideInitial.getAttribute('data-day')).toBe('4');
+
+    const pointDay1 = host.querySelector('[data-history-point][data-day="1"]');
+    expect(pointDay1).toBeTruthy();
+    await act(async () => {
+      pointDay1.dispatchEvent(new MouseEvent('click', { bubbles: true, cancelable: true }));
+      await Promise.resolve();
+    });
+    expect(host.querySelector('[data-history-selected]').textContent).toContain('Day 1');
+    expect(host.querySelector('[data-history-selected-guide="true"]').getAttribute('data-day')).toBe('1');
+
+    const rowDay2 = host.querySelector('[data-history-row="2"]');
+    expect(rowDay2).toBeTruthy();
+    await act(async () => { rowDay2.click(); await Promise.resolve(); });
+    expect(host.querySelector('[data-history-selected]').textContent).toContain('Day 2');
+    expect(latest.beehive).toEqual(snapshotBefore);
+  });
+
+  it('connects Bee Science quick reference cards directly to their matching interactive views', async () => {
+    await mountState({ viewMode: 'beekeeper', beeView: 'scene', showInspect: false });
+    const region = host.querySelector('[data-science-reference-cards="true"]');
+    expect(region).toBeTruthy();
+
+    const expectedViews = ['waggle', 'castes', 'honey', 'threats'];
+    const buttons = expectedViews.map((id) => region.querySelector(`[data-science-card-open="${id}"]`));
+    buttons.forEach((btn) => {
+      expect(btn).toBeTruthy();
+      expect(btn.getAttribute('type')).toBe('button');
+      expect(btn.className).toContain('min-h-[44px]');
+    });
+
+    await act(async () => { region.querySelector('[data-science-card-open="waggle"]').click(); await Promise.resolve(); });
+    expect(latest.beehive.beeView).toBe('waggle');
+    expect(latest.beehive.visitedBeeViews).toContain('waggle');
+    expect(region.querySelector('[data-science-card-open="waggle"]').getAttribute('aria-pressed')).toBe('true');
+
+    await act(async () => { region.querySelector('[data-science-card-open="threats"]').click(); await Promise.resolve(); });
+    expect(latest.beehive.beeView).toBe('threats');
+    expect(latest.beehive.visitedBeeViews).toContain('threats');
+    expect(region.querySelector('[data-science-card-open="threats"]').getAttribute('aria-pressed')).toBe('true');
+    expect(region.querySelector('[data-science-card-open="waggle"]').getAttribute('aria-pressed')).toBe('false');
+  });
+
+  it('offers an in-place Resume flight button inside the paused Drone Route Inspector panel', async () => {
+    await mountState({ viewMode: 'drone', drone: { active: false, difficulty: 'easy', pacing: 'live' } });
+    const launch = host.querySelector('[data-mobile-rail="drone-difficulty"] button');
+    expect(launch).toBeTruthy();
+    await act(async () => { launch.click(); await Promise.resolve(); await Promise.resolve(); });
+
+    const pauseBtn = host.querySelector('[data-beehive-flight-pause="true"]');
+    expect(pauseBtn).toBeTruthy();
+    await act(async () => { pauseBtn.click(); await Promise.resolve(); });
+    expect(latest.beehive.drone.paused).toBe(true);
+
+    const routePanel = host.querySelector('[data-flight-route-panel="true"]');
+    expect(routePanel).toBeTruthy();
+    await act(async () => { routePanel.querySelector('summary').click(); await Promise.resolve(); });
+    expect(routePanel.open).toBe(true);
+
+    const resumeInMap = routePanel.querySelector('[data-route-resume-flight="true"]');
+    expect(resumeInMap).toBeTruthy();
+    await act(async () => { resumeInMap.click(); await Promise.resolve(); });
+    expect(latest.beehive.drone.paused).toBe(false);
+    expect(routePanel.open).toBe(false);
+  });
+
+  it('steps through flower patches with Prev/Next buttons in the Colony Network 3D Patch Explorer without spending resources', async () => {
+    await mountState({
+      viewMode: 'queen',
+      queen: {
+        active: true, paused: true, speed: 1, day: 5, hiveHealth: 100, territory: 50,
+        resources: { nectar: 60, pollen: 40, wax: 20, royalJelly: 2 },
+        rival: { name: 'Thistle Crown', health: 100, strength: 300, stores: 30, structures: 2, pressure: 10, intel: 0 }
+      }
+    });
+    const resourcesBefore = structuredClone(latest.beehive.queen.resources);
+    const explorer = host.querySelector('[data-rts-patch-explorer]');
+    expect(explorer).toBeTruthy();
+    expect(explorer.getAttribute('data-rts-patch-explorer')).toBe('all');
+
+    const prevBtn = host.querySelector('[data-rts-patch-step="prev"]');
+    const nextBtn = host.querySelector('[data-rts-patch-step="next"]');
+    expect(prevBtn).toBeTruthy();
+    expect(nextBtn).toBeTruthy();
+
+    await act(async () => { nextBtn.click(); await Promise.resolve(); });
+    expect(host.querySelector('[data-rts-patch-explorer]').getAttribute('data-rts-patch-explorer')).toBe('patch_a');
+
+    await act(async () => { nextBtn.click(); await Promise.resolve(); });
+    expect(host.querySelector('[data-rts-patch-explorer]').getAttribute('data-rts-patch-explorer')).toBe('patch_b');
+
+    await act(async () => { prevBtn.click(); await Promise.resolve(); });
+    expect(host.querySelector('[data-rts-patch-explorer]').getAttribute('data-rts-patch-explorer')).toBe('patch_a');
+
+    await act(async () => { prevBtn.click(); await Promise.resolve(); });
+    expect(host.querySelector('[data-rts-patch-explorer]').getAttribute('data-rts-patch-explorer')).toBe('patch_f');
+    expect(latest.beehive.queen.resources).toEqual(resourcesBefore);
+  });
+});
+
+describe('phase 13 (candidate16): simulation graphics and visual pedagogy enhancements', () => {
+  let host, root, latest, cfg;
+  let fillHistory, strokeHistory, rafCallbacks;
+
+  beforeEach(() => {
+    resetStemLab();
+    window.__testHooks = {};
+    window.__RR_TEST_EXPORTS__ = {};
+    cfg = loadTool(TOOL, 'beehive');
+    fillHistory = [];
+    strokeHistory = [];
+    rafCallbacks = [];
+    const gradient = { addColorStop: vi.fn() };
+    const ctxProxy = new Proxy({
+      measureText: (t) => ({ width: String(t).length * 6 }),
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+    }, {
+      get: (t, p) => (p in t ? t[p] : (t[p] = vi.fn())),
+      set: (t, p, v) => {
+        if (p === 'fillStyle') fillHistory.push(v);
+        if (p === 'strokeStyle') strokeHistory.push(v);
+        t[p] = v;
+        return true;
+      },
+    });
+    vi.spyOn(window.HTMLCanvasElement.prototype, 'getContext').mockReturnValue(ctxProxy);
+    vi.stubGlobal('requestAnimationFrame', vi.fn((cb) => { rafCallbacks.push(cb); return rafCallbacks.length; }));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+  });
+
+  afterEach(() => {
+    if (root) act(() => root.unmount());
+    if (host) host.remove();
+    delete window.__testHooks;
+    delete window.__RR_TEST_EXPORTS__;
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  async function mountState(beehiveOverrides = {}) {
+    function App() {
+      const [data, setData] = React.useState({ beehive: Object.assign({ tutorialDone: true, soundOn: false }, beehiveOverrides) });
+      latest = data;
+      return cfg.render(makeCtx({ toolData: data, setToolData: setData }));
+    }
+    await act(async () => { root.render(React.createElement(App)); await Promise.resolve(); });
+  }
+
+  it('renders live colony-driven SVG pedagogy schematics across Hive Inspector roles, honey chemistry, and thermoregulation tabs', async () => {
+    await mountState({
+      viewMode: 'beekeeper',
+      motionPaused: true,
+      showInspect: true,
+      inspectLayer: 'roles',
+      workers: 20000,
+      honey: 24,
+      syrup: 8,
+      day: 45,
+    });
+
+    const rolesSvg = host.querySelector('[data-inspector-polyethism-svg="true"]');
+    expect(rolesSvg).toBeTruthy();
+    expect(rolesSvg.getAttribute('role')).toBe('img');
+    expect(rolesSvg.getAttribute('aria-label')).toContain('nurses');
+    expect(rolesSvg.textContent).toContain('Inner Brood Core');
+    expect(rolesSvg.textContent).toContain('Open Meadow');
+
+    const honeyTab = host.querySelector('[data-inspection-tab="honey_chem"]');
+    expect(honeyTab).toBeTruthy();
+    await act(async () => { honeyTab.click(); await Promise.resolve(); });
+    const honeySvg = host.querySelector('[data-inspector-honey-svg="true"]');
+    expect(honeySvg).toBeTruthy();
+    expect(honeySvg.getAttribute('role')).toBe('img');
+    expect(honeySvg.getAttribute('data-syrup-lbs')).toBe('8');
+    expect(honeySvg.textContent).toContain('8 lb fed syrup');
+
+    const thermoTab = host.querySelector('[data-inspection-tab="temperature"]');
+    expect(thermoTab).toBeTruthy();
+    await act(async () => { thermoTab.click(); await Promise.resolve(); });
+    const summerThermo = host.querySelector('[data-inspector-thermo-svg="true"]');
+    expect(summerThermo).toBeTruthy();
+    expect(summerThermo.getAttribute('role')).toBe('img');
+    expect(summerThermo.getAttribute('data-thermo-mode')).toBe('cooling');
+
+    await mountState({
+      viewMode: 'beekeeper',
+      motionPaused: true,
+      showInspect: true,
+      inspectLayer: 'temperature',
+      workers: 12000,
+      day: 105,
+    });
+    const winterThermo = host.querySelector('[data-inspector-thermo-svg="true"]');
+    expect(winterThermo).toBeTruthy();
+    expect(winterThermo.getAttribute('data-thermo-mode')).toBe('cluster');
+  });
+
+  it('renders sky-aqua fed syrup comb/feeder visuals and summer entrance cooling streamlines on the 2D Beekeeper canvas', async () => {
+    await mountState({
+      viewMode: 'beekeeper',
+      beeView: 'scene',
+      motionPaused: false,
+      day: 45,
+      workers: 22000,
+      honey: 18,
+      syrup: 14,
+      pollen: 6,
+      brood: 5000,
+    });
+    expect(fillHistory).toContain('#38bdf8');
+    expect(strokeHistory.some((s) => typeof s === 'string' && s.includes('rgba(186,230,253,'))).toBe(true);
+
+    fillHistory.length = 0;
+    strokeHistory.length = 0;
+    await mountState({
+      viewMode: 'beekeeper',
+      beeView: 'scene',
+      motionPaused: false,
+      day: 105,
+      workers: 12000,
+      honey: 25,
+      syrup: 0,
+      pollen: 4,
+      brood: 1200,
+    });
+    expect(fillHistory).not.toContain('#38bdf8');
+    expect(strokeHistory.some((s) => typeof s === 'string' && s.includes('rgba(186,230,253,'))).toBe(false);
+  });
+
+  it('differentiates nurse, builder, guard, and forager spatial zones plus guard interception arcs on the 2D Colony Network canvas', async () => {
+    await mountState({
+      viewMode: 'queen',
+      queen: {
+        active: true,
+        paused: true,
+        speed: 1,
+        day: 5,
+        hiveHealth: 100,
+        territory: 55,
+        population: { nurses: 120, builders: 80, guards: 80, foragers: 120, scouts: 20 },
+        threats: [{ id: 't1', type: 'hornet', label: 'Hornet', icon: '🐝', hp: 80, maxHp: 100, strength: 100 }],
+        resources: { nectar: 80, pollen: 40, wax: 20, royalJelly: 10 },
+      },
+    });
+    expect(rafCallbacks.length).toBeGreaterThan(0);
+    await act(async () => {
+      rafCallbacks.slice().forEach((cb) => cb());
+      await Promise.resolve();
+    });
+    expect(fillHistory).toContain('#f472b6');
+    expect(fillHistory).toContain('#fbbf24');
+    expect(fillHistory).toContain('#fb7185');
+    expect(fillHistory).toContain('#34d399');
+    expect(strokeHistory).toContain('rgba(251,113,133,0.62)');
+  });
+
+  it('updates 3D Hive Interior entrance syrup feeder jar and returning forager pollen baskets without reallocating Three.js geometries', () => {
+    const THREE = {};
+    new Function('exports', 'module', readFileSync('vendor/three-r128/three.min.js', 'utf8'))(THREE, { exports: THREE });
+    const BH = window.__RR_TEST_EXPORTS__.beehive;
+    const model = BH.hive3dBuildScene(THREE, { scene: new THREE.Scene(), dark: false, contrast: false, wantShadow: false });
+
+    const beforeGeos = new Set();
+    model.anchor.traverse((o) => { if (o.geometry) beforeGeos.add(o.geometry); });
+
+    const feeder = model.meshes.entrance.getObjectByName('entrance-syrup-feeder');
+    expect(feeder).toBeTruthy();
+
+    model.frame(0, { season: 1, syrupFill: 0, pollenLevel: 0, traffic: 1 }, true);
+    expect(feeder.visible).toBe(false);
+    const carryingBees = model.meshes.foragers.children.filter((b) => Array.isArray(b.userData.pollenPellets));
+    expect(carryingBees.length).toBeGreaterThan(0);
+    expect(carryingBees[0].userData.pollenPellets[0].visible).toBe(false);
+
+    model.frame(100, { season: 1, syrupFill: 0.7, pollenLevel: 0.85, traffic: 1 }, true);
+    expect(feeder.visible).toBe(true);
+    const liquidMesh = feeder.children[3];
+    expect(liquidMesh.scale.y).toBeCloseTo(0.7);
+    expect(carryingBees[0].userData.pollenPellets[0].visible).toBe(true);
+    expect(carryingBees[0].userData.pollenPellets[0].scale.x).toBeGreaterThan(1.0);
+
+    model.frame(200, { season: 3, syrupFill: 0.4, pollenLevel: 0.85, traffic: 1 }, true);
+    expect(feeder.visible).toBe(true);
+    expect(carryingBees[0].userData.pollenPellets[0].visible).toBe(false);
+
+    const afterGeos = new Set();
+    model.anchor.traverse((o) => { if (o.geometry) afterGeos.add(o.geometry); });
+    expect(afterGeos).toEqual(beforeGeos);
+  });
+});
+
+describe('phase 14 (candidate17): complete inspector SVG schematics, 3D physiology/smoker, and 2D dearth/nectar cues', () => {
+  let host, root, latest, setBeehiveState, cfg;
+  let fillHistory, strokeHistory, rafCallbacks;
+
+  beforeEach(() => {
+    resetStemLab();
+    window.__testHooks = {};
+    window.__RR_TEST_EXPORTS__ = {};
+    cfg = loadTool(TOOL, 'beehive');
+    fillHistory = [];
+    strokeHistory = [];
+    rafCallbacks = [];
+    const gradient = { addColorStop: vi.fn() };
+    const ctxProxy = new Proxy({
+      measureText: (t) => ({ width: String(t).length * 6 }),
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+    }, {
+      get: (t, p) => (p in t ? t[p] : (t[p] = vi.fn())),
+      set: (t, p, v) => {
+        if (p === 'fillStyle') fillHistory.push(v);
+        if (p === 'strokeStyle') strokeHistory.push(v);
+        t[p] = v;
+        return true;
+      },
+    });
+    vi.spyOn(window.HTMLCanvasElement.prototype, 'getContext').mockReturnValue(ctxProxy);
+    vi.stubGlobal('requestAnimationFrame', vi.fn((cb) => { rafCallbacks.push(cb); return rafCallbacks.length; }));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+  });
+
+  afterEach(() => {
+    if (root) act(() => root.unmount());
+    if (host) host.remove();
+    delete window.__testHooks;
+    delete window.__RR_TEST_EXPORTS__;
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  async function mountState(beehiveOverrides = {}) {
+    function App() {
+      const [data, setData] = React.useState({ beehive: Object.assign({ tutorialDone: true, soundOn: false }, beehiveOverrides) });
+      latest = data;
+      setBeehiveState = (patch) => setData((prev) => ({ beehive: Object.assign({}, prev.beehive, patch) }));
+      return cfg.render(makeCtx({ toolData: data, setToolData: setData }));
+    }
+    await act(async () => { root.render(React.createElement(App)); await Promise.resolve(); });
+  }
+
+  it('renders live colony-driven SVG schematics for lifecycle, waggle, pheromones, anatomy, and native Hive Inspector tabs', async () => {
+    await mountState({
+      viewMode: 'beekeeper',
+      motionPaused: true,
+      showInspect: true,
+      inspectLayer: 'lifecycle',
+      workers: 22000,
+      brood: 6200,
+      drones: 450,
+      queenHealth: 88,
+      pollen: 6,
+      habitat: 82,
+      gardenPollinators: 3,
+      waggleLab: { dance: 75, sun: 0, fixedFood: true },
+      bkAnim: { type: 'smoke', startedAt: Date.now(), duration: 5000 },
+    });
+
+    const lifeSvg = host.querySelector('[data-inspector-lifecycle-svg="true"]');
+    expect(lifeSvg).toBeTruthy();
+    expect(lifeSvg.getAttribute('role')).toBe('img');
+    expect(lifeSvg.getAttribute('focusable')).toBe('false');
+    expect(lifeSvg.getAttribute('data-brood-count')).toBe('6200');
+    expect(lifeSvg.textContent).toContain('16d');
+    expect(lifeSvg.textContent).toContain('21d');
+    expect(lifeSvg.textContent).toContain('24d');
+    expect(lifeSvg.textContent).toContain('6.2K');
+
+    await act(async () => { host.querySelector('[data-inspection-tab="waggle"]').click(); await Promise.resolve(); });
+    const waggleSvg = host.querySelector('[data-inspector-waggle-svg="true"]');
+    expect(waggleSvg).toBeTruthy();
+    expect(waggleSvg.getAttribute('role')).toBe('img');
+    expect(waggleSvg.getAttribute('focusable')).toBe('false');
+    expect(waggleSvg.getAttribute('data-waggle-angle')).toBe('75');
+    expect(waggleSvg.textContent).toContain('θ = 75°');
+
+    await act(async () => { host.querySelector('[data-inspection-tab="pheromones"]').click(); await Promise.resolve(); });
+    const pherSvg = host.querySelector('[data-inspector-pheromones-svg="true"]');
+    expect(pherSvg).toBeTruthy();
+    expect(pherSvg.getAttribute('role')).toBe('img');
+    expect(pherSvg.getAttribute('focusable')).toBe('false');
+    expect(pherSvg.getAttribute('data-qmp-pct')).toBe('88');
+    expect(pherSvg.getAttribute('data-alarm-pct')).toBe('8');
+    expect(pherSvg.textContent).toContain('Calmed 💨');
+
+    await act(async () => { host.querySelector('[data-inspection-tab="anatomy"]').click(); await Promise.resolve(); });
+    const anatSvg = host.querySelector('[data-inspector-anatomy-svg="true"]');
+    expect(anatSvg).toBeTruthy();
+    expect(anatSvg.getAttribute('role')).toBe('img');
+    expect(anatSvg.getAttribute('focusable')).toBe('false');
+    expect(anatSvg.textContent).toContain('Corbicula (Pollen Basket)');
+    expect(anatSvg.textContent).toContain('Honey Crop · 40mg');
+
+    await act(async () => { host.querySelector('[data-inspection-tab="native"]').click(); await Promise.resolve(); });
+    const nativeSvg = host.querySelector('[data-inspector-native-svg="true"]');
+    expect(nativeSvg).toBeTruthy();
+    expect(nativeSvg.getAttribute('role')).toBe('img');
+    expect(nativeSvg.getAttribute('focusable')).toBe('false');
+    expect(nativeSvg.getAttribute('data-habitat-score')).toBe('82');
+    expect(nativeSvg.textContent).toContain('20,000+');
+    expect(nativeSvg.textContent).toContain('Yard Habitat: 82%');
+  });
+
+  it('updates 3D winter-cluster thermal core, phoretic mites on bees, and raycast-safe smoker plume without reallocating geometries', () => {
+    const THREE = {};
+    new Function('exports', 'module', readFileSync('vendor/three-r128/three.min.js', 'utf8'))(THREE, { exports: THREE });
+    const BH = window.__RR_TEST_EXPORTS__.beehive;
+    const model = BH.hive3dBuildScene(THREE, { scene: new THREE.Scene(), dark: false, contrast: false, wantShadow: false });
+
+    const beforeGeos = new Set();
+    model.anchor.traverse((o) => { if (o.geometry) beforeGeos.add(o.geometry); });
+
+    const clusterCore = model.anchor.getObjectByName('winter-cluster-core');
+    const smokePlume = model.anchor.getObjectByName('entrance-smoke-plume');
+    expect(clusterCore).toBeTruthy();
+    expect(smokePlume).toBeTruthy();
+    for (const puff of smokePlume.children) {
+      expect(model.picks).not.toContain(puff);
+    }
+
+    model.frame(0, { season: 3, varroa: 0.45, clusterWarmth: 0.85, smokeActive: false, traffic: 1 }, true);
+    expect(clusterCore.material.color.getHex()).toBe(0xf97316);
+    const warmScale = clusterCore.scale.x;
+    expect(smokePlume.visible).toBe(false);
+
+    model.frame(100, { season: 3, varroa: 0.45, clusterWarmth: 0.25, smokeActive: false, traffic: 1 }, true);
+    expect(clusterCore.material.color.getHex()).toBe(0xef4444);
+    expect(clusterCore.scale.x).toBeLessThan(warmScale);
+
+    model.frame(200, { season: 1, varroa: 0.45, clusterWarmth: 0.9, smokeActive: true, traffic: 1 }, true);
+    expect(smokePlume.visible).toBe(true);
+    const miteHouseBees = [];
+    model.meshes.brood_frames.traverse((o) => { if (o.userData && o.userData.phoreticMite) miteHouseBees.push(o); });
+    const miteForagers = model.meshes.foragers.children.filter((b) => b.userData && b.userData.phoreticMite);
+    expect(miteHouseBees.length).toBeGreaterThan(0);
+    expect(miteHouseBees.some((b) => b.userData.phoreticMite.visible)).toBe(true);
+    expect(miteForagers.some((b) => b.userData.phoreticMite.visible)).toBe(true);
+
+    model.frame(300, { season: 1, varroa: 0, smokeActive: false, traffic: 1 }, true);
+    expect(smokePlume.visible).toBe(false);
+    expect(miteHouseBees.every((b) => !b.userData.phoreticMite.visible)).toBe(true);
+    expect(miteForagers.every((b) => !b.userData.phoreticMite.visible)).toBe(true);
+
+    const afterGeos = new Set();
+    model.anchor.traverse((o) => { if (o.geometry) afterGeos.add(o.geometry); });
+    expect(afterGeos).toEqual(beforeGeos);
+  });
+
+  it('draws nectar-flow richness rings during healthy bloom and robbing-defense interception arcs during summer dearth including paused redraws', async () => {
+    await mountState({
+      viewMode: 'beekeeper',
+      beeView: 'scene',
+      motionPaused: true,
+      day: 45,
+      workers: 22000,
+      honey: 25,
+      pollen: 6,
+      brood: 5000,
+      habitat: 75,
+      gardenBonus: 10,
+      inDearth: false,
+    });
+    expect(strokeHistory).toContain('rgba(253,224,71,0.46)');
+    expect(fillHistory).toContain('#fef08a');
+    expect(strokeHistory).not.toContain('rgba(251,113,133,0.68)');
+
+    fillHistory.length = 0;
+    strokeHistory.length = 0;
+    const rafBefore = rafCallbacks.length;
+    await act(async () => {
+      setBeehiveState({ inDearth: true });
+      await Promise.resolve();
+    });
+    expect(rafCallbacks.length).toBeGreaterThan(rafBefore);
+    await act(async () => {
+      rafCallbacks.slice(rafBefore).forEach((cb) => cb());
+      await Promise.resolve();
+    });
+    expect(strokeHistory).toContain('rgba(251,113,133,0.68)');
+    expect(strokeHistory).not.toContain('rgba(253,224,71,0.46)');
+  });
+});
+
+describe('phase 15 (candidate18): shared-patch meadow genetics/guards, queen transition cues, outlook sparklines, preview click-scrub, and guide-to-science bridge', () => {
+  let host, root, latest, setBeehiveState, cfg;
+  let fillHistory, strokeHistory, rafCallbacks;
+
+  beforeEach(() => {
+    resetStemLab();
+    window.__testHooks = {};
+    window.__RR_TEST_EXPORTS__ = {};
+    cfg = loadTool(TOOL, 'beehive');
+    fillHistory = [];
+    strokeHistory = [];
+    rafCallbacks = [];
+    const gradient = { addColorStop: vi.fn() };
+    const ctxProxy = new Proxy({
+      measureText: (t) => ({ width: String(t).length * 6 }),
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+    }, {
+      get: (t, p) => (p in t ? t[p] : (t[p] = vi.fn())),
+      set: (t, p, v) => {
+        if (p === 'fillStyle') fillHistory.push(v);
+        if (p === 'strokeStyle') strokeHistory.push(v);
+        t[p] = v;
+        return true;
+      },
+    });
+    vi.spyOn(window.HTMLCanvasElement.prototype, 'getContext').mockReturnValue(ctxProxy);
+    vi.stubGlobal('requestAnimationFrame', vi.fn((cb) => { rafCallbacks.push(cb); return rafCallbacks.length; }));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+  });
+
+  afterEach(() => {
+    if (root) act(() => root.unmount());
+    if (host) host.remove();
+    delete window.__testHooks;
+    delete window.__RR_TEST_EXPORTS__;
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  async function mountState(beehiveOverrides = {}) {
+    function App() {
+      const [data, setData] = React.useState({ beehive: Object.assign({ tutorialDone: true, soundOn: false }, beehiveOverrides) });
+      latest = data;
+      setBeehiveState = (patch) => setData((prev) => ({ beehive: Object.assign({}, prev.beehive, patch) }));
+      return cfg.render(makeCtx({ toolData: data, setToolData: setData }));
+    }
+    await act(async () => { root.render(React.createElement(App)); await Promise.resolve(); });
+  }
+
+  it('shows inbound pollen baskets on Colony Network swarm bees and raycast-safe guard patrol around guard towers', () => {
+    const THREE = {};
+    new Function('exports', 'module', readFileSync('vendor/three-r128/three.min.js', 'utf8'))(THREE, { exports: THREE });
+    const BH = window.__RR_TEST_EXPORTS__.beehive;
+    const model = BH.queen3dBuildScene(THREE, { scene: new THREE.Scene(), dark: false, contrast: false, wantShadow: false });
+    const combSlotsBefore = model.meshes.comb_works.children.length;
+    const picksBefore = model.picks.length;
+    const beforeGeos = new Set();
+    model.anchor.traverse((o) => { if (o.geometry) beforeGeos.add(o.geometry); });
+
+    const guardPatrol = model.anchor.getObjectByName('home-guard-patrol');
+    expect(guardPatrol).toBeTruthy();
+    expect(model.meshes.comb_works.children.length).toBe(combSlotsBefore);
+    for (const guard of guardPatrol.children) {
+      expect(model.picks).not.toContain(guard);
+    }
+
+    model.frame(0, {
+      season: 1,
+      showGamePieces: true,
+      structures: [{ id: 'g1', type: 'guard', x: 1, y: 1, level: 2 }],
+      alarm: 0.4,
+      forageRate: 1,
+      homeHealth: 1,
+      rivalHealth: 1,
+    }, true);
+    expect(guardPatrol.visible).toBe(true);
+    expect(guardPatrol.children.some((g) => g.visible)).toBe(true);
+
+    const swarmBees = model.meshes.swarm.children;
+    expect(swarmBees[0].visible).toBe(true);
+    expect(swarmBees[0].userData.pollenPellets.every((p) => !p.visible)).toBe(true);
+    expect(swarmBees[6].visible).toBe(true);
+    expect(swarmBees[6].userData.pollenPellets.every((p) => p.visible)).toBe(true);
+
+    model.frame(100, {
+      season: 3,
+      showGamePieces: true,
+      structures: [{ id: 'g1', type: 'guard', x: 1, y: 1, level: 2 }],
+      alarm: 0.4,
+      forageRate: 1,
+      homeHealth: 1,
+      rivalHealth: 1,
+    }, true);
+    expect(guardPatrol.visible).toBe(false);
+    expect(swarmBees.every((b) => !b.visible)).toBe(true);
+
+    const afterGeos = new Set();
+    model.anchor.traverse((o) => { if (o.geometry) afterGeos.add(o.geometry); });
+    expect(afterGeos).toEqual(beforeGeos);
+    expect(model.picks.length).toBe(picksBefore);
+  });
+
+  it('switches 3D intro cage vs supersedure comb cells and redraws 2D queenTransition comb graphics on paused updates', async () => {
+    const THREE = {};
+    new Function('exports', 'module', readFileSync('vendor/three-r128/three.min.js', 'utf8'))(THREE, { exports: THREE });
+    const BH = window.__RR_TEST_EXPORTS__.beehive;
+    const model = BH.hive3dBuildScene(THREE, { scene: new THREE.Scene(), dark: false, contrast: false, wantShadow: false });
+    const beforeGeos = new Set();
+    model.anchor.traverse((o) => { if (o.geometry) beforeGeos.add(o.geometry); });
+
+    const introCage = model.anchor.getObjectByName('queen-intro-cage');
+    const supCells = model.anchor.getObjectByName('supersedure-cells');
+    expect(introCage).toBeTruthy();
+    expect(supCells).toBeTruthy();
+
+    model.frame(0, { season: 1, queenTransitionKind: 'requeen', layingRate: 0 }, true);
+    expect(introCage.visible).toBe(true);
+    expect(supCells.visible).toBe(false);
+    expect(model.meshes.queen.visible).toBe(false);
+
+    model.frame(100, { season: 1, queenTransitionKind: 'supersedure', layingRate: 0 }, true);
+    expect(introCage.visible).toBe(false);
+    expect(supCells.visible).toBe(true);
+    expect(model.meshes.queen.visible).toBe(false);
+
+    model.frame(200, { season: 1, queenTransitionKind: null, layingRate: 0.8 }, true);
+    expect(introCage.visible).toBe(false);
+    expect(supCells.visible).toBe(false);
+    expect(model.meshes.queen.visible).toBe(true);
+
+    const afterGeos = new Set();
+    model.anchor.traverse((o) => { if (o.geometry) afterGeos.add(o.geometry); });
+    expect(afterGeos).toEqual(beforeGeos);
+
+    await mountState({
+      viewMode: 'beekeeper',
+      beeView: 'scene',
+      motionPaused: true,
+      day: 24,
+      workers: 21000,
+      queenHealth: 0,
+      queenTransition: { kind: 'requeen', daysRemaining: 3, pendingHealth: 100 },
+    });
+    expect(fillHistory).toContain('rgba(226,232,240,0.68)');
+    expect(fillHistory).toContain('#92400e');
+    expect(fillHistory).toContain('#f8fafc');
+    expect(strokeHistory).toContain('#64748b');
+    expect(strokeHistory).not.toContain('#78350f');
+
+    fillHistory.length = 0;
+    strokeHistory.length = 0;
+    const rafBefore = rafCallbacks.length;
+    await act(async () => {
+      setBeehiveState({ queenTransition: { kind: 'supersedure', daysRemaining: 20, pendingHealth: 85 } });
+      await Promise.resolve();
+    });
+    expect(rafCallbacks.length).toBeGreaterThan(rafBefore);
+    await act(async () => {
+      rafCallbacks.slice(rafBefore).forEach((cb) => cb());
+      await Promise.resolve();
+    });
+    expect(fillHistory).toContain('#ca8a04');
+    expect(strokeHistory).toContain('#78350f');
+    expect(fillHistory).not.toContain('rgba(226,232,240,0.68)');
+  });
+
+  it('renders Colony Outlook metric sparklines with thresholds and supports click-to-inspect on the management timing chart', async () => {
+    await mountState({
+      viewMode: 'beekeeper',
+      focusLayout: false,
+      day: 12,
+      actionPoints: 4,
+      workers: 24000,
+      honey: 45,
+      varroaLevel: 12,
+      diseaseRisk: 8,
+    });
+
+    for (const key of ['workers', 'honey', 'varroa', 'disease']) {
+      const svg = host.querySelector(`[data-outlook-metric="${key}"] svg[data-outlook-sparkline="${key}"]`);
+      expect(svg).toBeTruthy();
+      expect(svg.getAttribute('aria-hidden')).toBe('true');
+      expect(svg.querySelector('polyline')).toBeTruthy();
+    }
+    expect(host.querySelector('[data-outlook-metric="honey"] [data-outlook-threshold]')).toBeTruthy();
+    expect(host.querySelector('[data-outlook-metric="varroa"] [data-outlook-threshold="20"]')).toBeTruthy();
+    expect(host.querySelector('[data-outlook-metric="disease"] [data-outlook-threshold="35"]')).toBeTruthy();
+    expect(host.querySelector('[data-outlook-metric="workers"] [data-outlook-threshold]')).toBeNull();
+
+    const previewDetails = host.querySelector('[data-management-preview]');
+    expect(previewDetails).toBeTruthy();
+    await act(async () => {
+      previewDetails.open = true;
+      previewDetails.dispatchEvent(new Event('toggle'));
+      await Promise.resolve();
+    });
+
+    const selectedTextBefore = host.querySelector('[data-preview-timeline-selected-day]').textContent;
+    expect(selectedTextBefore).toContain('Day 13');
+    const timingChart = host.querySelector('svg[data-management-preview-chart="true"]');
+    expect(timingChart).toBeTruthy();
+    timingChart.getBoundingClientRect = () => ({ left: 0, width: 600, top: 0, height: 240, right: 600, bottom: 240 });
+    await act(async () => {
+      timingChart.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 500, clientY: 120 }));
+      await Promise.resolve();
+    });
+    const selectedTextAfter = host.querySelector('[data-preview-timeline-selected-day]').textContent;
+    expect(selectedTextAfter).not.toBe(selectedTextBefore);
+    expect(selectedTextAfter).toContain('of 7');
+  });
+
+  it('opens the linked interactive science diagram directly from the Field Guide panel and closes the guide modal', async () => {
+    await mountState({
+      viewMode: 'drone',
+      beeView: 'scene',
+      showGuide: true,
+      guideSection: 'waggle',
+    });
+
+    const jumpBtn = host.querySelector('[data-guide-open-science-view="waggle"]');
+    expect(jumpBtn).toBeTruthy();
+    await act(async () => {
+      jumpBtn.click();
+      await Promise.resolve();
+    });
+
+    expect(latest.beehive.showGuide).toBe(false);
+    expect(latest.beehive.viewMode).toBe('beekeeper');
+    expect(latest.beehive.beeView).toBe('waggle');
+    expect(latest.beehive.visitedBeeViews).toContain('waggle');
+  });
+});
+
+describe('Beehive enhancement pass — phase 16 (candidate19)', () => {
+  let cfg;
+  let host;
+  let root;
+  let latest;
+  let setBeehiveState;
+  let rafCallbacks;
+
+  beforeEach(() => {
+    resetStemLab();
+    cfg = loadTool(TOOL, 'beehive');
+    rafCallbacks = [];
+    const gradient = { addColorStop: vi.fn() };
+    const ctxProxy = new Proxy({
+      measureText: (t) => ({ width: String(t).length * 6 }),
+      createLinearGradient: () => gradient,
+      createRadialGradient: () => gradient,
+    }, {
+      get: (t, p) => (p in t ? t[p] : (t[p] = vi.fn())),
+      set: (t, p, v) => { t[p] = v; return true; },
+    });
+    vi.spyOn(window.HTMLCanvasElement.prototype, 'getContext').mockImplementation((kind) => (kind === '2d' ? ctxProxy : null));
+    vi.stubGlobal('requestAnimationFrame', vi.fn((cb) => { rafCallbacks.push(cb); return rafCallbacks.length; }));
+    vi.stubGlobal('cancelAnimationFrame', vi.fn());
+    host = document.createElement('div');
+    document.body.appendChild(host);
+    root = ReactDOMClient.createRoot(host);
+  });
+
+  afterEach(() => {
+    if (root) act(() => root.unmount());
+    if (host) host.remove();
+    delete window.THREE;
+    delete window.AlloPostFXEnabled;
+    delete window.__testHooks;
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+  });
+
+  async function mountState(beehiveOverrides = {}) {
+    function App() {
+      const [data, setData] = React.useState({ beehive: Object.assign({ tutorialDone: true, soundOn: false }, beehiveOverrides) });
+      latest = data;
+      setBeehiveState = (patch) => setData((prev) => ({ beehive: Object.assign({}, prev.beehive, patch) }));
+      return cfg.render(makeCtx({ toolData: data, setToolData: setData }));
+    }
+    await act(async () => { root.render(React.createElement(App)); await Promise.resolve(); });
+  }
+
+  it('adds downwind queen pheromone plume rings and standalone predator ground shadows to the Drone Flight 3D scene', async () => {
+    const THREE = {};
+    new Function('exports', 'module', readFileSync('vendor/three-r128/three.min.js', 'utf8'))(THREE, { exports: THREE });
+    let capturedScene = null;
+    THREE.WebGLRenderer = function FakeWebGLRenderer(options) {
+      this.domElement = options.canvas;
+      this.shadowMap = { enabled: false, type: null };
+      this.outputEncoding = 0;
+      this.setPixelRatio = vi.fn();
+      this.setSize = vi.fn((w, h) => { options.canvas.width = w; options.canvas.height = h; });
+      this.setClearColor = vi.fn();
+      this.render = vi.fn((scene) => { capturedScene = scene; });
+      this.dispose = vi.fn();
+    };
+    window.THREE = THREE;
+    window.AlloPostFXEnabled = false;
+    window.__testHooks = {};
+    window.StemLab.ensureThree = vi.fn(() => Promise.resolve(THREE));
+
+    await mountState({ viewMode: 'drone', drone: { active: false, difficulty: 'easy', pacing: 'steps' } });
+    const launchBtn = host.querySelector('[data-mobile-rail="drone-difficulty"] button');
+    expect(launchBtn).toBeTruthy();
+    await act(async () => {
+      launchBtn.click();
+      await Promise.resolve();
+      await Promise.resolve();
+      await Promise.resolve();
+    });
+    const initCb = rafCallbacks.shift();
+    expect(typeof initCb).toBe('function');
+    await act(async () => { initCb(performance.now() + 16); await Promise.resolve(); });
+    expect(capturedScene).toBeTruthy();
+
+    const plume = capturedScene.getObjectByName('drone-queen-pheromone-plume');
+    expect(plume).toBeTruthy();
+    expect(plume.children).toHaveLength(3);
+    const queenBeacon = plume.parent;
+    expect(queenBeacon.children[1].geometry.type).toBe('TorusGeometry');
+    expect(queenBeacon.children[2]).toBe(plume);
+
+    const birdGroup = capturedScene.getObjectByName('drone-bee-eater-0');
+    const birdShadow = capturedScene.getObjectByName('drone-bird-shadow-0');
+    expect(birdGroup).toBeTruthy();
+    expect(birdShadow).toBeTruthy();
+    expect(birdShadow.parent).toBe(capturedScene);
+    expect(birdGroup.children.at(-1).geometry.type).toBe('TorusGeometry');
+
+    const ds = window.__testHooks.beehive.droneStateRef.current;
+    ds.phase = 'congregation';
+    ds.reachedDca = true;
+    ds.windNow = { x: 2.0, z: -1.0 };
+    ds.nearQueens = [{ x: 10, y: 120, z: -610, caught: false }];
+    ds.birds[0].x = 40;
+    ds.birds[0].y = 45;
+    ds.birds[0].z = -380;
+
+    const frameCb = rafCallbacks.shift();
+    expect(typeof frameCb).toBe('function');
+    await act(async () => { frameCb(performance.now() + 16); await Promise.resolve(); });
+
+    expect(queenBeacon.visible).toBe(true);
+    expect(plume.children[0].position.x).toBeGreaterThan(0);
+    expect(plume.children[0].position.z).toBeLessThan(0);
+    expect(plume.children[2].position.x).toBeGreaterThan(plume.children[0].position.x);
+    expect(birdShadow.visible).toBe(true);
+    const lowScaleX = birdShadow.scale.x;
+    const lowOpacity = birdShadow.material.opacity;
+
+    ds.birds[0].y = 140;
+    const frameCb2 = rafCallbacks.shift();
+    if (typeof frameCb2 === 'function') {
+      await act(async () => { frameCb2(performance.now() + 32); await Promise.resolve(); });
+      expect(birdShadow.scale.x).toBeGreaterThan(lowScaleX);
+      expect(birdShadow.material.opacity).toBeLessThan(lowOpacity);
+    }
+  });
+
+  it('provides Pollination Lab ecological presets that update flags while preserving custom metadata and colony state', async () => {
+    const custom = { pollen: true, contact: false, compatible: true, note: 'Field note', teacher: { keep: true } };
+    await mountState({ viewMode: 'beekeeper', beeView: 'pollination', discoveryLesson: 'pollination', motionPaused: true, day: 60, honey: 42, pollinationLab: custom });
+
+    const presets = host.querySelector('[data-pollination-presets="true"]');
+    expect(presets).toBeTruthy();
+    const buttons = Array.from(presets.querySelectorAll('[data-pollination-preset]'));
+    expect(buttons.map((b) => b.dataset.pollinationPreset)).toEqual([
+      'side_visit',
+      'cross_pollination',
+      'incompatible_pollen',
+      'clean_visitor',
+    ]);
+    expect(presets.querySelector('[data-pollination-preset="side_visit"]').getAttribute('aria-pressed')).toBe('true');
+
+    await act(async () => {
+      presets.querySelector('[data-pollination-preset="cross_pollination"]').click();
+      await Promise.resolve();
+    });
+    expect(latest.beehive.pollinationLab).toEqual({
+      pollen: true,
+      contact: true,
+      compatible: true,
+      note: 'Field note',
+      teacher: { keep: true },
+    });
+    expect(host.querySelector('#bee-pollen-contact').checked).toBe(true);
+    expect(host.querySelector('output[data-pollination-outcome]').dataset.pollinationOutcome).toBe('transfer');
+    expect(latest.beehive.day).toBe(60);
+    expect(latest.beehive.honey).toBe(42);
+
+    await act(async () => {
+      presets.querySelector('[data-pollination-preset="incompatible_pollen"]').click();
+      await Promise.resolve();
+    });
+    expect(latest.beehive.pollinationLab).toMatchObject({ pollen: true, contact: true, compatible: false });
+    expect(host.querySelector('output[data-pollination-outcome]').textContent).toContain('transfer still occurred');
+
+    await act(async () => {
+      presets.querySelector('[data-pollination-preset="clean_visitor"]').click();
+      await Promise.resolve();
+    });
+    expect(latest.beehive.pollinationLab).toMatchObject({ pollen: false, contact: true, compatible: true });
+    expect(host.querySelector('output[data-pollination-outcome]').dataset.pollinationOutcome).toBe('no-transfer');
+  });
+
+  it('renders an interactive daily food-pathway SVG in Honey Lab synced with the pathway controls', async () => {
+    await mountState({
+      viewMode: 'beekeeper',
+      day: 17,
+      honey: 31,
+      honeyInvestigation: { version: 'honey-stores-1', active: true, step: 1 },
+    });
+
+    const pathway = host.querySelector('svg[data-honey-pathway-svg="true"]');
+    expect(pathway).toBeTruthy();
+    expect(pathway.getAttribute('aria-hidden')).toBe('true');
+    expect(pathway.dataset.pathwayActive).toBe('stores');
+    const nodes = Array.from(pathway.querySelectorAll('[data-honey-pathway-node]'));
+    expect(nodes.map((n) => n.dataset.honeyPathwayNode)).toEqual(['forage', 'consumption', 'stores']);
+
+    await act(async () => {
+      pathway.querySelector('[data-honey-pathway-node="consumption"]').dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      await Promise.resolve();
+    });
+    expect(latest.beehive.honeyInvestigation.selectedCause).toBe('consumption');
+    expect(host.querySelector('svg[data-honey-pathway-svg="true"]').dataset.pathwayActive).toBe('consumption');
+    expect(host.querySelector('#bee-honey-cause').textContent).toContain('Compare consumption with incoming food');
+
+    const forageBtn = Array.from(host.querySelectorAll('.bhh-cause-controls button')).find((b) => b.textContent.includes('Forage'));
+    await act(async () => { forageBtn.click(); await Promise.resolve(); });
+    expect(host.querySelector('[data-honey-pathway-node="forage"]').dataset.selected).toBe('true');
+  });
+
+  it('lets learners click top-view brood slots and the close-up orientation map directly inside the Hive Interior panel', async () => {
+    await mountState({
+      viewMode: 'beekeeper',
+      day: 15,
+      workers: 24000,
+      honey: 40,
+      pollen: 12,
+      brood: 6000,
+      queenHealth: 90,
+      hive3dFrame: 0,
+    });
+
+    const openBtn = host.querySelector('[data-hive-interior-open]');
+    expect(openBtn).toBeTruthy();
+    await act(async () => { openBtn.click(); await Promise.resolve(); });
+
+    const slot4 = host.querySelector('[data-interior-slot="4"]');
+    expect(slot4).toBeTruthy();
+    await act(async () => { slot4.dispatchEvent(new MouseEvent('click', { bubbles: true })); await Promise.resolve(); });
+    expect(latest.beehive.hive3dFrame).toBe(4);
+    expect(host.querySelector('[data-interior-frame="4"]').getAttribute('aria-pressed')).toBe('true');
+
+    const lensToggle = host.querySelector('[data-interior-lens-toggle]');
+    expect(lensToggle).toBeTruthy();
+    await act(async () => { lensToggle.click(); await Promise.resolve(); });
+
+    const mapSvg = host.querySelector('svg[data-lens-map-diagram="true"]');
+    expect(mapSvg).toBeTruthy();
+    mapSvg.getBoundingClientRect = () => ({ left: 0, top: 0, width: 650, height: 345, right: 650, bottom: 345 });
+    // Target row = 8 (svgY = 47 + 22*8 = 223 => clientY = 233), col = 14 (svgX = 43 + 25*14 = 393 => clientX = 413).
+    await act(async () => {
+      mapSvg.dispatchEvent(new MouseEvent('click', { bubbles: true, clientX: 413, clientY: 233 }));
+      await Promise.resolve();
+    });
+
+    expect(host.querySelector('[data-interior-lens-row]').value).toBe('8');
+    expect(host.querySelector('[data-interior-lens-column]').value).toBe('14');
+    expect(mapSvg.querySelector('[data-lens-map-position]').getAttribute('cx')).toBe('393');
+    expect(mapSvg.querySelector('[data-lens-map-position]').getAttribute('cy')).toBe('223');
+    expect(latest.beehive.honey).toBe(40);
+    expect(latest.beehive.brood).toBe(6000);
+  });
+});

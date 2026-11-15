@@ -138,6 +138,7 @@ self.addEventListener('install', (event) => {
 // A waiting worker activates only after the person explicitly accepts the
 // in-app update prompt. This preserves interruption-free automatic updates
 // while making "Refresh now" deterministic when the timing is appropriate.
+const isTrustedTopWindow = (e) => !e.source || (e.source.frameType === 'top-level' && typeof e.source.url === 'string' && e.source.url.startsWith(self.location.origin + '/'));
 self.addEventListener('message', (event) => {
     if (event.data && event.data.type === 'ALLOFLOW_GET_RELEASE') {
         const reply = { type: 'ALLOFLOW_RELEASE', releaseId: RELEASE_ID, releaseBuiltAt: RELEASE_BUILT_AT };
@@ -145,7 +146,11 @@ self.addEventListener('message', (event) => {
         return;
     }
     if (event.data && event.data.type === 'ALLOFLOW_ACTIVATE_UPDATE') {
-        self.skipWaiting();
+        if (isTrustedTopWindow(event)) self.skipWaiting();
+        return;
+    }
+    if (event.data && event.data.type === 'ALLOFLOW_PURGE_RUNTIME_CACHE') {
+        if (isTrustedTopWindow(event)) event.waitUntil(caches.delete(CACHE_NAME));
     }
 });
 

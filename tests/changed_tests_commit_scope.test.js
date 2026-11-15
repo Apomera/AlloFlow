@@ -51,9 +51,9 @@ function run({ dirty = false, staged = '', unstaged = '', committed = '', args =
 }
 
 describe('deployment test scope after a source commit', () => {
-  it('defers a clean committed batch over 120 files to the full CI suite', () => {
+  it('returns no verdict for a clean committed batch over 120 files', () => {
     const result = run({ committed: paths(121) });
-    expect(result.exitCode).toBe(0);
+    expect(result.exitCode).toBe(2);
     expect(result.vitest).toHaveLength(0);
     expect(result.output).toContain('121 files changed');
     expect(result.output).toContain('8-shard unit job in CI');
@@ -100,7 +100,7 @@ describe('deployment test scope after a source commit', () => {
 
   it('skips the graph resolve when no changed file is importable by a test', () => {
     const result = run({ dirty: true, unstaged: 'a11y-audit/sel_hub_wcag_audit.md\nAlloFlowANTI.txt' });
-    expect(result.exitCode).toBe(0);
+    expect(result.exitCode).toBe(2);
     expect(result.vitest).toHaveLength(0);
     expect(result.output).toContain('none importable');
   });
@@ -134,11 +134,11 @@ describe('deployment test scope when vitest cannot resolve the import graph', ()
 
   it('runs the tests that name the changed file and reports the fallback', () => {
     const result = run({ committed: 'personas_module.js', related: crash, tests });
-    expect(result.exitCode).toBe(0);
+    expect(result.exitCode).toBe(2);
     expect(result.vitest).toHaveLength(2);
     expect(result.vitest[1].argv.slice(1)).toEqual(['run', 'tests/personas_render.test.js', 'tests/personas_source.test.js', '--maxWorkers=2']);
     expect(result.output).toContain('FALLBACK running 2 test file(s)');
-    expect(result.output).toContain('OK (fallback)');
+    expect(result.output).toContain('NO COMPLETE VERDICT (fallback)');
   });
 
   it('fails when a fallback test is red', () => {
@@ -156,7 +156,7 @@ describe('deployment test scope when vitest cannot resolve the import graph', ()
   it('batches a large selection so no single run reopens the whole tree', () => {
     const many = Object.fromEntries(Array.from({ length: 30 }, (_, i) => [`tests/p${String(i).padStart(2, '0')}.test.js`, 'personas_module.js']));
     const result = run({ committed: 'personas_module.js', related: crash, tests: many });
-    expect(result.exitCode).toBe(0);
+    expect(result.exitCode).toBe(2);
     expect(result.vitest.slice(1).map(call => call.argv.length - 3)).toEqual([25, 5]);
   });
 

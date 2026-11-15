@@ -1309,7 +1309,28 @@ const CharacterColumn = React.memo(({
   };
   const characterName = typeof character.name === 'string' && character.name.trim() ? character.name.trim().slice(0, 120) : t('persona.character_fallback');
   const characterRole = typeof character.role === 'string' ? character.role.trim().slice(0, 160) : '';
-  const characterAvatarUrl = typeof character.avatarUrl === 'string' ? character.avatarUrl : null;
+  const safeColumnAvatarUrl = raw => {
+    if (typeof raw !== 'string') return null;
+    const s = raw.trim();
+    if (!s || s.length > 5000000) return null;
+    if (/^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(s)) return s;
+    if (/^blob:/i.test(s)) {
+      try {
+        const u = new URL(s);
+        return u.protocol === 'blob:' ? s : null;
+      } catch (_) {
+        return null;
+      }
+    }
+    if (/^(?:\.\.?\/|\/[^/])[^\\\s<>"]*$/.test(s) && !/(?:^|\/)\.\.(?:\/|$)/.test(s)) return s;
+    try {
+      const u = new URL(s);
+      return u.protocol === 'https:' && !u.username && !u.password ? u.href : null;
+    } catch (_) {
+      return null;
+    }
+  };
+  const characterAvatarUrl = safeColumnAvatarUrl(character.avatarUrl);
   const rapport = safeNumber(character.rapport ?? character.initialRapport, 0, 100, 30);
   const xp = safeNumber(character.accumulatedXP, 0, 300, 0);
   // Active objectives first — what the student can still pursue belongs on
@@ -1354,7 +1375,8 @@ const CharacterColumn = React.memo(({
     "aria-busy": character.isUpdating ? 'true' : 'false',
     className: `px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1.5 transition-all motion-reduce:transition-none shadow-sm hover:shadow-md cursor-pointer z-10 relative disabled:opacity-60 disabled:cursor-not-allowed disabled:hover:shadow-sm ${side === 'left' ? 'bg-indigo-600 hover:bg-indigo-700 text-white' : 'bg-rose-600 hover:bg-rose-700 text-white'}`
   }, /*#__PURE__*/React.createElement(RefreshCw, {
-    size: 12
+    size: 12,
+    "aria-hidden": "true"
   }), t('persona.generate_portrait'))), character.isUpdating && /*#__PURE__*/React.createElement("div", {
     className: "absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-[1px] z-30 pointer-events-auto",
     role: "status",
@@ -1364,6 +1386,7 @@ const CharacterColumn = React.memo(({
     })
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 32,
+    "aria-hidden": "true",
     className: "text-white animate-spin motion-reduce:animate-none"
   })), /*#__PURE__*/React.createElement("div", {
     className: "absolute bottom-0 left-0 right-0 bg-black/60 backdrop-blur-md p-2 text-white border-t border-white/10"
@@ -1379,7 +1402,7 @@ const CharacterColumn = React.memo(({
     className: `${rapport >= 70 ? 'text-green-600' : 'text-slate-600'}`
   }, rapport, "%")), /*#__PURE__*/React.createElement("div", {
     role: "progressbar",
-    "aria-label": t('persona.rapport_label'),
+    "aria-label": (t('persona.rapport_label') || 'Rapport') + ': ' + characterName,
     "aria-valuemin": 0,
     "aria-valuemax": 100,
     "aria-valuenow": rapport,
@@ -1413,11 +1436,14 @@ const CharacterColumn = React.memo(({
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-2 flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Search, {
-    size: 10
+    size: 10,
+    "aria-hidden": "true"
   }), " ", t('persona.objectives_label')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
   }, sortedQuests.map((q, i) => {
     const isLocked = rapport < q.difficulty;
+    const completedLabel = t('common.completed') && t('common.completed') !== 'common.completed' ? t('common.completed') : 'Completed';
+    const lockedLabel = t('common.locked') && t('common.locked') !== 'common.locked' ? t('common.locked') : 'Locked';
     return /*#__PURE__*/React.createElement("div", {
       key: i,
       className: `
@@ -1429,16 +1455,23 @@ const CharacterColumn = React.memo(({
     }, /*#__PURE__*/React.createElement("div", {
       className: "mt-0.5 shrink-0"
     }, q.isCompleted ? /*#__PURE__*/React.createElement(CheckCircle2, {
-      size: 12
+      size: 12,
+      "aria-hidden": "true"
     }) : isLocked ? /*#__PURE__*/React.createElement(Lock, {
-      size: 12
+      size: 12,
+      "aria-hidden": "true"
     }) : /*#__PURE__*/React.createElement("div", {
+      "aria-hidden": "true",
       className: "w-3 h-3 border-2 border-indigo-200 rounded-full"
     })), /*#__PURE__*/React.createElement("div", {
       className: "flex-grow"
     }, /*#__PURE__*/React.createElement("span", {
       className: `break-words [overflow-wrap:anywhere] font-bold block ${q.isCompleted ? 'line-through opacity-70' : ''}`
-    }, q.text), !q.isCompleted && isLocked && /*#__PURE__*/React.createElement("span", {
+    }, q.isCompleted ? /*#__PURE__*/React.createElement("span", {
+      className: "sr-only"
+    }, completedLabel, ": ") : isLocked ? /*#__PURE__*/React.createElement("span", {
+      className: "sr-only"
+    }, lockedLabel, ": ") : null, q.text), !q.isCompleted && isLocked && /*#__PURE__*/React.createElement("span", {
       className: "text-[11px] uppercase font-bold opacity-70 mt-1 block"
     }, (() => {
       const value = t('persona.inquiry.bonus');

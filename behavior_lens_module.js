@@ -30036,7 +30036,7 @@ IMPORTANT rules for expert keys:
                             { fileName: file.name, savedAt: data.savedAt || null, _fullData: data }));
                     } catch (err) {
                         rejected += 1;
-                        warnLog('Failed to validate comparison file:', file.name, err);
+                        warnLog('Failed to validate comparison file:', err && err.name ? err.name : 'Error');
                     }
                     finishFile();
                 };

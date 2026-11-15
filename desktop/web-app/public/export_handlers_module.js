@@ -25,16 +25,27 @@
   // Renders a small <audio> card for embedded read-aloud playback in
   // the exported HTML. TTS truncated at 3000 chars (provider limit).
   // Returns '' on failure so callers can drop the embed silently.
+  const _escAudioHtml = (s) => String(s == null ? '' : s)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
   const generateExportAudio = async (text, label, deps) => {
     const { callTTS, selectedVoice } = deps || {};
     if (!text || !callTTS) return '';
     try {
       const truncated = text.substring(0, 3000);
       const audioData = await callTTS(truncated, selectedVoice || 'Puck', 1);
-      if (audioData && typeof audioData === 'string' && audioData.startsWith('data:')) {
-        return '\n          <div style="margin:12px 0;background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;">\n            <span style="font-size:1.3em;">🔊</span>\n            <div style="flex:1;">\n              <div style="font-size:0.75em;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Listen: ' + label + '</div>\n              <audio controls src="' + audioData + '" style="width:100%;height:32px;" preload="none"></audio>\n            </div>\n          </div>';
+      if (typeof audioData === 'string') {
+        const cleanSrc = audioData.trim();
+        if (/^data:audio\/[a-z0-9.+-]+(?:;[a-z0-9=._+-]+)*,[a-z0-9+/=%_\s-]+$/i.test(cleanSrc)) {
+          const safeLabel = _escAudioHtml(label || '');
+          const safeSrc = _escAudioHtml(cleanSrc);
+          return '\n          <div style="margin:12px 0;background:#f0f9ff;border:1px solid #bae6fd;border-radius:12px;padding:12px 16px;display:flex;align-items:center;gap:10px;">\n            <span style="font-size:1.3em;">🔊</span>\n            <div style="flex:1;">\n              <div style="font-size:0.75em;font-weight:700;color:#0369a1;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;">Listen: ' + safeLabel + '</div>\n              <audio controls src="' + safeSrc + '" style="width:100%;height:32px;" preload="none"></audio>\n            </div>\n          </div>';
+        }
       }
-    } catch (e) { console.warn('[Export] TTS generation failed for ' + label, e); }
+    } catch (e) { console.warn('[Export] TTS generation failed for ' + String(label || ''), e); }
     return '';
   };
 
@@ -604,23 +615,115 @@
     .replace(/([.!?])\s*\.+/g, '$1')
     .replace(/\.{2,}/g, '.')
     .trim();
-  const _alloTeacherOnlySelector = '.teacher-view,[data-allo-teacher-only],.answer-key';
+  const _alloTeacherOnlySelector = '.teacher-view,[data-allo-teacher-only],.answer-key,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource';
   const _alloIsTeacherOnlyNode = (node) => !!(node && node.closest && node.closest(_alloTeacherOnlySelector));
   const _alloAudioDocRoot = (root, opts) => {
     if (!root) return null;
     const clone = root.cloneNode(true);
     const scoped = (clone.querySelector && (clone.querySelector('body') || clone.querySelector('main'))) || clone;
+    const doc = scoped.ownerDocument || root.ownerDocument || (typeof document !== 'undefined' ? document : null);
     try {
       if (opts && opts.studentSafe) {
         const teacherOnly = scoped.querySelectorAll(_alloTeacherOnlySelector);
         for (let i = 0; i < teacherOnly.length; i++) teacherOnly[i].remove();
       }
-      const kill = scoped.querySelectorAll('#allo-reader-bar,#allo-reader-ruler,#allo-reader-style,#allo-reader-script,#allo-ka-style,#allo-ka-script,.allo-ka-bar,.allo-ka-audios,.alloflow-audio-downloads,.alloflow-reading-tools-shell,.alloflow-anno-colors,#alloflow-reader-line,.alloflow-reader-mask,.alloflow-export-save-tools,#alloflow-save-cta,#alloflow-savejson-cta,.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],script,style,button,input,select,textarea,audio,video,noscript');
-      for (let i = 0; i < kill.length; i++) kill[i].remove();
+      const chromeKill = scoped.querySelectorAll('#allo-reader-bar,#allo-reader-ruler,#allo-reader-style,#allo-reader-script,#allo-ka-style,#allo-ka-script,.allo-ka-bar,.allo-ka-audios,.alloflow-audio-downloads,.alloflow-reading-tools-shell,.alloflow-anno-colors,#alloflow-reader-line,.alloflow-reader-mask,.alloflow-export-save-tools,#alloflow-save-cta,#alloflow-savejson-cta,.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],.quiz-controls,.alloflow-cs-controls,.alloflow-tl-check-btn,.alloflow-tl-arrows,.alloflow-venn-controls,.alloflow-venn-print-only,script,style,noscript,audio,video');
+      for (let i = 0; i < chromeKill.length; i++) chromeKill[i].remove();
       const hidden = scoped.querySelectorAll('[hidden],[aria-hidden="true"]');
-      for (let i = 0; i < hidden.length; i++) hidden[i].remove();
+      for (let i = 0; i < hidden.length; i++) {
+        if (hidden[i].classList && (hidden[i].classList.contains('alloflow-cs-response') || hidden[i].classList.contains('alloflow-venn-response'))) continue;
+        hidden[i].remove();
+      }
+      if (doc) {
+        const inlineTerms = scoped.querySelectorAll('button.alloflow-inline-term');
+        for (let i = 0; i < inlineTerms.length; i++) {
+          const btn = inlineTerms[i];
+          if (btn.parentNode) btn.parentNode.replaceChild(doc.createTextNode(btn.textContent || ''), btn);
+        }
+        const vennActivities = scoped.querySelectorAll('.alloflow-venn-activity');
+        for (let i = 0; i < vennActivities.length; i++) {
+          const act = vennActivities[i];
+          const cards = act.querySelectorAll('.alloflow-venn-card');
+          if (cards.length > 0) {
+            const listWrap = doc.createElement('div');
+            listWrap.className = 'alloflow-venn-audio-summary';
+            const ul = doc.createElement('ul');
+            for (let j = 0; j < cards.length; j++) {
+              const card = cards[j];
+              const btn = card.querySelector('.alloflow-venn-card-button');
+              const resp = card.querySelector('.alloflow-venn-response');
+              const zVal = resp ? String(resp.value || '').trim() : '';
+              let zLabel = '';
+              if (zVal) {
+                const placeBtn = act.querySelector('[data-venn-place-zone="' + zVal + '"]');
+                zLabel = (placeBtn && placeBtn.getAttribute('data-venn-zone-label')) || zVal;
+              }
+              const cTxt = String((btn ? btn.textContent : card.textContent) || '').replace(/\s+/g, ' ').trim();
+              if (!cTxt) continue;
+              const li = doc.createElement('li');
+              li.className = 'alloflow-venn-audio-item';
+              li.textContent = zLabel ? (cTxt + ' — placed in ' + zLabel) : cTxt;
+              ul.appendChild(li);
+            }
+            if (ul.childNodes.length > 0) {
+              listWrap.appendChild(ul);
+              if (act.parentNode) act.parentNode.replaceChild(listWrap, act);
+            }
+          }
+        }
+        const vennCompanions = vennActivities.length > 0 ? scoped.querySelectorAll('.alloflow-venn-companion') : [];
+        for (let i = 0; i < vennCompanions.length; i++) vennCompanions[i].remove();
+        const csStrips = scoped.querySelectorAll('.alloflow-cs-strip');
+        for (let i = 0; i < csStrips.length; i++) {
+          const strip = csStrips[i];
+          const sel = strip.querySelector('select.alloflow-cs-response');
+          let catLabel = '';
+          if (sel && sel.value && sel.options && sel.selectedIndex >= 0) {
+            catLabel = String(sel.options[sel.selectedIndex].textContent || '').trim();
+          } else if (strip.closest) {
+            const dz = strip.closest('.alloflow-cs-dropzone[data-category-label]');
+            if (dz) catLabel = String(dz.getAttribute('data-category-label') || '').trim();
+          }
+          if (catLabel) {
+            const note = doc.createElement('span');
+            note.className = 'alloflow-cs-assigned';
+            note.textContent = ' (Category: ' + catLabel + ')';
+            strip.appendChild(note);
+          }
+        }
+        const formCtrls = scoped.querySelectorAll('.alloflow-cloze-input,.interactive-blank,input.alloflow-response-input,textarea,select,input[type="text"],input[type="number"],input:not([type])');
+        for (let i = 0; i < formCtrls.length; i++) {
+          const ctrl = formCtrls[i];
+          if (!ctrl.parentNode) continue;
+          if (ctrl.hasAttribute('hidden') || (ctrl.classList && (ctrl.classList.contains('alloflow-cs-response') || ctrl.classList.contains('alloflow-venn-response')))) {
+            ctrl.remove();
+            continue;
+          }
+          let replacement = ' blank ';
+          if (String(ctrl.tagName || '').toLowerCase() === 'select') {
+            const sVal = String(ctrl.value || '').trim();
+            const opt = (ctrl.options && ctrl.selectedIndex >= 0) ? ctrl.options[ctrl.selectedIndex] : null;
+            const oTxt = opt ? String(opt.textContent || '').trim() : '';
+            if (sVal && oTxt) replacement = ' ' + oTxt + ' ';
+          } else {
+            const rawVal = String((ctrl.value != null && ctrl.value !== '') ? ctrl.value : (ctrl.getAttribute('value') || ctrl.textContent || '')).trim();
+            if (rawVal) replacement = ' ' + rawVal + ' ';
+          }
+          ctrl.parentNode.replaceChild(doc.createTextNode(replacement), ctrl);
+        }
+      }
+      const kill = scoped.querySelectorAll('button,input,select,textarea');
+      for (let i = 0; i < kill.length; i++) kill[i].remove();
       const detailsSummaries = scoped.querySelectorAll('details > summary');
-      for (let i = 0; i < detailsSummaries.length; i++) detailsSummaries[i].remove();
+      for (let i = 0; i < detailsSummaries.length; i++) {
+        const sumEl = detailsSummaries[i];
+        const parentDetails = sumEl.parentElement;
+        const sTxt = String(sumEl.textContent || '').trim();
+        const isCompanionChrome = (parentDetails && parentDetails.classList && (parentDetails.classList.contains('alloflow-img-text') || parentDetails.classList.contains('alloflow-chart-text') || parentDetails.classList.contains('diagram-text-fallback')))
+          || (sumEl.closest && !!sumEl.closest('figure'))
+          || /^(?:text from this image|transcribed from\b)/i.test(sTxt);
+        if (isCompanionChrome) sumEl.remove();
+      }
       const annotations = scoped.querySelectorAll('annotation, annotation-xml, [data-allo-latex-src]');
       for (let i = 0; i < annotations.length; i++) annotations[i].remove();
     } catch (e) {}
@@ -729,8 +832,18 @@
           out.push('Table end.');
           continue;
         }
+        if (tag === 'summary') continue;
+        if (tag === 'dt' || tag === 'dd' || (node.classList && (node.classList.contains('alloflow-cs-strip') || node.classList.contains('alloflow-tl-strip') || node.classList.contains('alloflow-venn-audio-item')))) {
+          const itemTxt = txt(node);
+          if (itemTxt) out.push(itemTxt);
+          continue;
+        }
         if (tag === 'details') {
-          const sum = node.querySelector('summary');
+          let sum = null;
+          const ch = node.children || [];
+          for (let ci = 0; ci < ch.length; ci++) {
+            if (String(ch[ci].tagName || '').toLowerCase() === 'summary') { sum = ch[ci]; break; }
+          }
           const st = sum ? txt(sum) : '';
           if (st) out.push('Disclosure section. ' + st + '.');
           walk(node);
@@ -993,10 +1106,11 @@
     .replace(/~~([^~]+)~~/g, '$1').replace(/`([^`\n]+)`/g, '$1')
     .replace(/^#{1,6}\s+/gm, '').replace(/^\s*[-*•]\s+/gm, '').replace(/\s+/g, ' ').trim();
   const _alloKaEsc = (s) => String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
-  const _alloKaSplit = (t) => (String(t).match(/[^.!?]+[.!?]+["')\]]*|\S[^.!?]*$/g) || [t]).map((x) => String(x).trim()).filter(Boolean);
+  const _alloKaSplit = (t) => (String(t).match(/[^.!?。！？؟।]+[.!?。！？؟।]+["')\]]*|\S[^.!?。！？؟।]*$/g) || [t]).map((x) => String(x).trim()).filter(Boolean);
   const _alloKaIgnoredElement = (el) => {
     if (!el || el.nodeType !== 1) return false;
     const tag = String(el.tagName || '').toLowerCase();
+    if (tag === 'button' && el.classList && el.classList.contains('alloflow-inline-term')) return false;
     if (['script', 'style', 'template', 'noscript', 'button', 'input', 'select', 'textarea', 'audio', 'video'].indexOf(tag) !== -1) return true;
     if (el.getAttribute && el.getAttribute('aria-hidden') === 'true') return true;
     if (el.classList && (el.classList.contains('allo-ka-bar') || el.classList.contains('allo-ka-audios'))) return true;
@@ -1061,11 +1175,11 @@
     (linear.segments || []).forEach((segment) => {
       if (segment.type !== 'atom') return;
       for (let i = segment.start; i < segment.end; i++) {
-        if (chars[i] === '.' || chars[i] === '!' || chars[i] === '?') chars[i] = '\uFFFC';
+        if (chars[i] === '.' || chars[i] === '!' || chars[i] === '?' || chars[i] === '。' || chars[i] === '！' || chars[i] === '？' || chars[i] === '؟' || chars[i] === '।') chars[i] = '\uFFFC';
       }
     });
     const masked = chars.join('');
-    const matcher = /[^.!?]+[.!?]+["')\]]*|\S[^.!?]*$/g;
+    const matcher = /[^.!?。！？؟।]+[.!?。！？؟।]+["')\]]*|\S[^.!?。！？؟।]*$/g;
     const found = [];
     let match;
     while ((match = matcher.exec(masked)) !== null) {
@@ -1399,7 +1513,7 @@
       notice.appendChild(dismiss);
       (document.body || document.documentElement).appendChild(notice);
     } catch (_) {
-      try { console.warn('[Export] ' + text); } catch (_) {}
+      try { console.warn('[Export] notice (' + String(text || '').length + ' chars)'); } catch (_) {}
     }
   };
 
@@ -1424,7 +1538,7 @@
       if (prior && prior.classList && prior.classList.contains('page-break')) prior.remove();
       section.remove();
     });
-    studentDoc.querySelectorAll('.answer-key, .alloflow-teacher-copy-banner').forEach((node) => node.remove());
+    studentDoc.querySelectorAll('.answer-key, .alloflow-teacher-copy-banner, .alloflow-cs-answer-key, .alloflow-glossary-worksheet-key, .alloflow-math-solution, .alloflow-fluency-key, .alloflow-teacher-plan, .alloflow-teacher-annotations, .alloflow-teacher-annotations-by-resource').forEach((node) => node.remove());
     // The pack profile lists every resource, teacher-only ones included, with
     // its adapted grade level. Nothing in the student page reads it.
     studentDoc.querySelectorAll('#alloflow-interactive-object-profile').forEach((node) => node.remove());
@@ -1459,14 +1573,18 @@
       if (prior && prior.classList && prior.classList.contains('page-break')) prior.remove();
       section.remove();
     });
-    doc.querySelectorAll('.answer-key,.alloflow-teacher-copy-banner,.allo-block-controls,.allo-block-remove,del[data-allo-change-id],[data-allo-citation-store]').forEach((node) => node.remove());
+    doc.querySelectorAll('.answer-key,.alloflow-teacher-copy-banner,.alloflow-cs-answer-key,.alloflow-glossary-worksheet-key,.alloflow-math-solution,.alloflow-fluency-key,.alloflow-teacher-plan,.alloflow-teacher-annotations,.alloflow-teacher-annotations-by-resource,.allo-block-controls,.allo-block-remove,del[data-allo-change-id],[data-allo-citation-store],#alloflow-interactive-object-profile').forEach((node) => node.remove());
     doc.querySelectorAll('ins[data-allo-change-id]').forEach((node) => {
       if (!node.parentNode) return;
       while (node.firstChild) node.parentNode.insertBefore(node.firstChild, node);
       node.remove();
     });
     doc.querySelectorAll('.question[data-correct]').forEach((node) => node.setAttribute('data-correct', ''));
-    doc.querySelectorAll('.question[data-fill-answers]').forEach((node) => node.removeAttribute('data-fill-answers'));
+    doc.querySelectorAll('[data-fill-answers],[data-correct-multi],[data-sequence-key],[data-relation-key],[data-answer-evidence-key],[data-numeric-key],[data-matching-key],[data-ordering-key],[data-correct-label],[data-cloze-answer],[data-answer-zone],.alloflow-tl-strip[data-original-index]').forEach((node) => {
+      ['data-fill-answers', 'data-correct-multi', 'data-sequence-key', 'data-relation-key', 'data-answer-evidence-key', 'data-numeric-key', 'data-matching-key', 'data-ordering-key', 'data-correct-label', 'data-cloze-answer', 'data-answer-zone', 'data-original-index'].forEach((attr) => {
+        if (node.hasAttribute(attr)) node.removeAttribute(attr);
+      });
+    });
     doc.querySelectorAll('.alloflow-cs-strip[data-category-id],.alloflow-cs-item[data-category-id]').forEach((node) => node.setAttribute('data-category-id', ''));
     // A stale Builder iframe may still contain timeline answer metadata or
     // the canonical order. Remove both, then materialize a deterministic
@@ -1489,11 +1607,11 @@
       const response = container.querySelector('.alloflow-tl-response');
       if (response) response.value = '';
     });
-    doc.querySelectorAll('.alloflow-tl-check-btn').forEach((node) => node.remove());
+    doc.querySelectorAll('.alloflow-tl-check-btn,.alloflow-cs-check-btn,.alloflow-venn-check-button,.quiz-check-btn,.alloflow-cloze-check-btn,.alloflow-glossary-check-btn').forEach((node) => node.remove());
     if (!doc.getElementById('alloflow-assessment-export-safety')) {
       const style = doc.createElement('style');
       style.id = 'alloflow-assessment-export-safety';
-      style.textContent = '.quiz-controls,.alloflow-cs-controls,.alloflow-tl-check-btn{display:none!important}';
+      style.textContent = '.quiz-controls,.alloflow-cs-controls,.alloflow-tl-check-btn,.alloflow-cs-check-btn,.alloflow-venn-check-button,.quiz-check-btn,.alloflow-cloze-check-btn,.alloflow-glossary-check-btn{display:none!important}';
       doc.head.appendChild(style);
     }
     if (doc.title) doc.title = doc.title.replace(/^TEACHER COPY\s*[—:-]\s*/i, '');
@@ -2274,7 +2392,7 @@
   // Walks the active view + generatedContent and returns an array of
   // {type, text} items for screen-reader read-aloud. Pure function:
   // takes deps, returns array. No mutations, no DOM writes.
-  const _readClean = function(value) { return String(value == null ? '' : value).replace(/\\s+/g, ' ').trim(); };
+  const _readClean = function(value) { return String(value == null ? '' : value).replace(/\s+/g, ' ').trim(); };
   const _readHidden = function(el) {
     if (!el || el.nodeType !== 1) return true;
     if (el.hidden || el.hasAttribute('inert') || el.getAttribute('aria-hidden') === 'true') return true;
@@ -2282,7 +2400,7 @@
     return !!(el.style && (el.style.display === 'none' || el.style.visibility === 'hidden'));
   };
   const _readReferenced = function(el, attr, root) {
-    const ids = _readClean(el.getAttribute(attr)).split(/\\s+/).filter(Boolean);
+    const ids = _readClean(el.getAttribute(attr)).split(/\s+/).filter(Boolean);
     return _readClean(ids.map(function(id) {
       const match = root.ownerDocument && root.ownerDocument.getElementById(id);
       return match ? match.textContent : '';
@@ -2467,20 +2585,65 @@
       items.push({ type: 'heading', text: 'Glossary. ' + terms.length + ' total terms. ' + tier2 + ' academic, ' + tier3 + ' domain-specific.' });
       if (displayed.length !== terms.length) items.push({ type: 'status', text: 'Showing ' + displayed.length + ' filtered terms.' });
       displayed.forEach(function(term, i) {
-        items.push({ type: 'term', text: 'Term ' + (i + 1) + ': ' + term.term + '. ' + term.def });
+        const defText = term.def || term.definition || '';
+        items.push({ type: 'term', text: 'Term ' + (i + 1) + ': ' + term.term + (defText ? '. ' + defText : '') + (term.example ? ' Example: ' + term.example : '') });
       });
     } else if (activeView === 'quiz' && generatedContent && generatedContent.type === 'quiz') {
       const questions = (generatedContent.data && generatedContent.data.questions) || [];
       items.push({ type: 'heading', text: 'Exit Ticket. ' + questions.length + ' questions.' });
       const letters = ['A', 'B', 'C', 'D', 'E', 'F'];
+      const _qItemText = function(v) {
+        if (v == null) return '';
+        if (typeof v === 'object') return String(v.text || v.label || v.term || v.event || v.prompt || '').trim();
+        return String(v).trim();
+      };
       questions.forEach(function(q, i) {
-        items.push({ type: 'question', text: 'Question ' + (i + 1) + ': ' + q.question });
+        if (q.passage) items.push({ type: 'passage', text: 'Passage: ' + String(q.passage).trim() });
+        const qStem = String(q.question || q.prompt || q.statement || q.sentence || '').trim();
+        items.push({ type: 'question', text: 'Question ' + (i + 1) + ': ' + qStem });
+        if (q.type === 'multi-select') items.push({ type: 'note', text: 'Select all that apply.' });
         if (q.options && Array.isArray(q.options)) {
           q.options.forEach(function(opt, j) {
-            items.push({ type: 'option', text: 'Option ' + (letters[j] || j + 1) + ': ' + opt });
+            items.push({ type: 'option', text: 'Option ' + (letters[j] || j + 1) + ': ' + _qItemText(opt) });
+          });
+        } else if (q.type === 'true-false') {
+          items.push({ type: 'option', text: 'Option A: True' });
+          items.push({ type: 'option', text: 'Option B: False' });
+        }
+        const evList = q.evidenceOptions || q.evidence;
+        if (Array.isArray(evList) && evList.length > 0) {
+          evList.forEach(function(ev, j) {
+            items.push({ type: 'option', text: 'Evidence ' + (letters[j] || j + 1) + ': ' + _qItemText(ev) });
           });
         }
+        if (Array.isArray(q.pairs) && q.pairs.length > 0) {
+          q.pairs.forEach(function(pair, j) {
+            const left = pair && (pair.left || pair.term || pair.item || pair.a || '');
+            const right = pair && (pair.right || pair.match || pair.def || pair.definition || pair.b || '');
+            items.push({ type: 'option', text: 'Pair ' + (j + 1) + ': ' + String(left).trim() + (right ? ' — ' + String(right).trim() : '') });
+          });
+        } else if (Array.isArray(q.leftItems) || Array.isArray(q.rightItems)) {
+          (q.leftItems || []).forEach(function(l, j) { items.push({ type: 'option', text: 'Left ' + (j + 1) + ': ' + _qItemText(l) }); });
+          (q.rightItems || []).forEach(function(r, j) { items.push({ type: 'option', text: 'Right ' + (j + 1) + ': ' + _qItemText(r) }); });
+        }
+        const seqList = q.items || q.steps || q.events;
+        if (Array.isArray(seqList) && seqList.length > 0) {
+          seqList.forEach(function(seqItem, j) {
+            items.push({ type: 'option', text: 'Item ' + (j + 1) + ': ' + _qItemText(seqItem) });
+          });
+        }
+        if (Array.isArray(q.wordBank) && q.wordBank.length > 0) {
+          items.push({ type: 'note', text: 'Word bank: ' + q.wordBank.map(_qItemText).filter(Boolean).join(', ') });
+        }
       });
+      const reflections = (generatedContent.data && generatedContent.data.reflections) || [];
+      if (Array.isArray(reflections) && reflections.length > 0) {
+        items.push({ type: 'heading', text: 'Reflection prompts. ' + reflections.length + ' items.' });
+        reflections.forEach(function(refItem, ri) {
+          const rTxt = _qItemText(refItem);
+          if (rTxt) items.push({ type: 'reflection', text: 'Reflection ' + (ri + 1) + ': ' + rTxt });
+        });
+      }
     } else if (activeView === 'simplified' && generatedContent && generatedContent.type === 'simplified') {
       const txt = (generatedContent && typeof generatedContent.data === 'string') ? generatedContent.data : '';
       if (txt) {
@@ -2931,14 +3094,39 @@
     };
     const activeCfg = exportConfig || (typeof window !== 'undefined' && window.__alloActiveExportConfig) || null;
     const isAssessment = !!(activeCfg && activeCfg.assessmentMode === true);
-    const rawHistory = (typeof getExportableHistory === 'function' ? getExportableHistory() : []).filter(function(item) { return item && typeof item === 'object'; });
+    const showKeys = !isAssessment && (!activeCfg || activeCfg.includeTeacherKey !== false);
+    const _slideStableHash = function(val) {
+      const s = String(val == null ? '' : val);
+      let h = 2166136261;
+      for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 16777619) >>> 0;
+      }
+      return h;
+    };
+    const _builderIds = activeCfg && Array.isArray(activeCfg.builderResourceIds)
+      ? activeCfg.builderResourceIds.map(String)
+      : null;
+    const _builderIdSet = _builderIds ? new Set(_builderIds) : null;
+    const _teacherOnlySlideTypes = ['alignment-report', 'lesson-plan', 'udl-advice', 'analysis'];
+    const rawHistory = (typeof getExportableHistory === 'function' ? getExportableHistory() : []).filter(function(item) {
+      if (!item || typeof item !== 'object') return false;
+      const itemId = item.id != null ? String(item.id) : '';
+      if (_builderIdSet && (!itemId || !_builderIdSet.has(itemId))) return false;
+      const cfgKey = _SLIDE_RESOURCE_TYPE_TO_KEY[item.type] || '';
+      if (cfgKey && activeCfg && activeCfg[cfgKey] === false) return false;
+      if (item.type === 'simplified' && itemId.indexOf('reading-orig-') === 0 && activeCfg && activeCfg.includeOriginalReading === false) return false;
+      if (!showKeys && _teacherOnlySlideTypes.indexOf(item.type) !== -1) return false;
+      return true;
+    });
     const resourceOrder = activeCfg && Array.isArray(activeCfg.resourceOrder) ? activeCfg.resourceOrder : [];
     const itemOrder = activeCfg && Array.isArray(activeCfg.resourceItemOrder) ? activeCfg.resourceItemOrder : [];
     const orderedHistory = rawHistory.map(function(item, origIdx) {
       const key = _SLIDE_RESOURCE_TYPE_TO_KEY[item.type] || '';
       const typeRank = key && resourceOrder.length ? resourceOrder.indexOf(key) : -1;
       const itemId = item.id != null ? String(item.id) : '';
-      const itemRank = itemId && itemOrder.length ? itemOrder.indexOf(itemId) : -1;
+      let itemRank = itemId && itemOrder.length ? itemOrder.indexOf(itemId) : -1;
+      if (itemRank < 0 && itemId && _builderIds && _builderIds.length) itemRank = _builderIds.indexOf(itemId);
       return {
         item: item,
         origIdx: origIdx,
@@ -3118,13 +3306,89 @@
               fb.forEach(function(c) { const s = _safeTextVal(c); if (s) entries.push({ kind: 'p', text: '\u2022 ' + s }); });
             }
           } else if (d.venn && typeof d.venn === 'object') {
-            [['left', 'Left / Set A'], ['shared', 'Shared'], ['both', 'Shared'], ['overlap', 'Shared'], ['right', 'Right / Set B']].forEach(function(pair) {
+            const vennZones = [];
+            [['setA', 'Set A'], ['left', 'Left / Set A'], ['leftItems', 'Left / Set A'], ['shared', 'Shared'], ['both', 'Shared'], ['overlap', 'Shared'], ['sharedItems', 'Shared'], ['setB', 'Set B'], ['right', 'Right / Set B'], ['rightItems', 'Right / Set B']].forEach(function(pair) {
               const val = d.venn[pair[0]];
               if (!val) return;
               const arr = Array.isArray(val) ? val : (Array.isArray(val.items) ? val.items : [val]);
               const heading = (val && !Array.isArray(val) && (val.title || val.label)) || pair[1];
-              entries.push({ kind: 'h', text: heading });
-              arr.forEach(function(x) { const s = _safeTextVal(x); if (s) entries.push({ kind: 'p', text: '\u2022 ' + s, indent: 1 }); });
+              const list = arr.map(function(x) { return _safeTextVal(x); }).filter(Boolean);
+              if (list.length || heading) vennZones.push({ heading: heading, list: list });
+            });
+            if (showKeys) {
+              vennZones.forEach(function(z) {
+                entries.push({ kind: 'h', text: z.heading });
+                z.list.forEach(function(s) { entries.push({ kind: 'p', text: '\u2022 ' + s, indent: 1 }); });
+              });
+            } else if (vennZones.length) {
+              const bank = [];
+              vennZones.forEach(function(z, zi) {
+                entries.push({ kind: 'h', text: z.heading });
+                z.list.forEach(function(s, si) { bank.push({ text: s, hash: _slideStableHash(String(item.id || '') + ':venn:' + zi + ':' + si + ':' + s) }); });
+              });
+              if (bank.length) {
+                entries.push({ kind: 'h', text: 'Items to sort' });
+                bank.sort(function(a, b) { return a.hash - b.hash; }).forEach(function(b) {
+                  entries.push({ kind: 'p', text: '\u2022 ' + b.text, indent: 1 });
+                });
+              }
+            }
+          } else if (d.setA || d.setB || d.leftItems || d.rightItems || d.sharedItems) {
+            const topZones = [];
+            [['setA', 'Set A'], ['leftItems', 'Left / Set A'], ['shared', 'Shared'], ['sharedItems', 'Shared'], ['setB', 'Set B'], ['rightItems', 'Right / Set B']].forEach(function(pair) {
+              const val = d[pair[0]];
+              if (!val) return;
+              const arr = Array.isArray(val) ? val : (Array.isArray(val.items) ? val.items : [val]);
+              const heading = (val && !Array.isArray(val) && (val.title || val.label)) || pair[1];
+              const list = arr.map(function(x) { return _safeTextVal(x); }).filter(Boolean);
+              if (list.length || heading) topZones.push({ heading: heading, list: list });
+            });
+            if (showKeys) {
+              topZones.forEach(function(z) {
+                entries.push({ kind: 'h', text: z.heading });
+                z.list.forEach(function(s) { entries.push({ kind: 'p', text: '\u2022 ' + s, indent: 1 }); });
+              });
+            } else if (topZones.length) {
+              const bank = [];
+              topZones.forEach(function(z, zi) {
+                entries.push({ kind: 'h', text: z.heading });
+                z.list.forEach(function(s, si) { bank.push({ text: s, hash: _slideStableHash(String(item.id || '') + ':topvenn:' + zi + ':' + si + ':' + s) }); });
+              });
+              if (bank.length) {
+                entries.push({ kind: 'h', text: 'Items to sort' });
+                bank.sort(function(a, b) { return a.hash - b.hash; }).forEach(function(b) {
+                  entries.push({ kind: 'p', text: '\u2022 ' + b.text, indent: 1 });
+                });
+              }
+            }
+          } else if (Array.isArray(d.causes) || Array.isArray(d.effects)) {
+            if (Array.isArray(d.causes) && d.causes.length) {
+              entries.push({ kind: 'h', text: 'Causes' });
+              d.causes.forEach(function(c) { const s = _safeTextVal(c); if (s) entries.push({ kind: 'p', text: '\u2022 ' + s, indent: 1 }); });
+            }
+            if (Array.isArray(d.effects) && d.effects.length) {
+              entries.push({ kind: 'h', text: 'Effects' });
+              d.effects.forEach(function(ef) { const s = _safeTextVal(ef); if (s) entries.push({ kind: 'p', text: '\u2022 ' + s, indent: 1 }); });
+            }
+          } else if (d.problem || d.solution || Array.isArray(d.solutions)) {
+            if (d.problem) {
+              entries.push({ kind: 'h', text: 'Problem' });
+              const ps = _safeTextVal(d.problem);
+              if (ps) entries.push({ kind: 'p', text: ps, indent: 1 });
+            }
+            const sols = Array.isArray(d.solutions) ? d.solutions : (d.solution ? [d.solution] : []);
+            if (sols.length) {
+              entries.push({ kind: 'h', text: 'Solutions' });
+              sols.forEach(function(sol) { const s = _safeTextVal(sol); if (s) entries.push({ kind: 'p', text: '\u2022 ' + s, indent: 1 }); });
+            }
+          } else if (Array.isArray(d.loci) || Array.isArray(d.stops) || Array.isArray(d.rooms)) {
+            const stops = d.loci || d.stops || d.rooms || [];
+            stops.forEach(function(st, si) {
+              if (!st || typeof st !== 'object') { const s = _safeTextVal(st); if (s) entries.push({ kind: 'p', text: '\u2022 ' + s }); return; }
+              const locTitle = st.location || st.room || st.place || st.title || st.name || st.locus || ('Stop ' + (si + 1));
+              const concept = st.concept || st.fact || st.cue || st.description || st.text || st.item || st.content || '';
+              entries.push({ kind: 'h', text: locTitle });
+              if (concept) entries.push({ kind: 'p', text: '\u2022 ' + _safeTextVal(concept), indent: 1 });
             });
           } else if (d.plotDiagram && typeof d.plotDiagram === 'object') {
             const pd = d.plotDiagram;
@@ -3185,8 +3449,19 @@
           _pushLineChunks(title, entries, 8);
         }
       } else if (item.type === 'concept-sort' && d && typeof d === 'object') {
-        const cats = Array.isArray(d.categories) ? d.categories : [];
-        const sortItems = Array.isArray(d.items) ? d.items : [];
+        const cats = (Array.isArray(d.categories) ? d.categories : []).filter(function(c) { return !(c && c.id === '__uncategorized'); });
+        const rawSortItems = Array.isArray(d.items) ? d.items : [];
+        const sortItems = showKeys
+          ? rawSortItems
+          : rawSortItems
+              .filter(function(ci) { return !(ci && ci.categoryId === '__uncategorized'); })
+              .map(function(ci, idx) {
+                const rawLabel = typeof ci === 'string' || typeof ci === 'number' ? String(ci) : (ci && (ci.content || ci.text || ci.label || ci.name || ci.term));
+                const lbl = typeof rawLabel === 'string' || typeof rawLabel === 'number' ? String(rawLabel) : _safeTextVal(rawLabel);
+                return { ci: ci, hash: _slideStableHash(String(item.id || '') + ':cs:' + lbl + ':' + idx) };
+              })
+              .sort(function(a, b) { return a.hash - b.hash; })
+              .map(function(entry) { return entry.ci; });
         const catBadges = cats.map(function(c) {
           const label = typeof c === 'string' ? c : (c && (c.name || c.label || c.title)) || '';
           return label ? '<span style="display:inline-block;padding:4px 10px;border-radius:999px;background:#e0e7ff;color:#3730a3;font-weight:700;font-size:12px">' + _escSlide(label) + '</span>' : '';
@@ -3282,14 +3557,17 @@
             + '</div></div>');
         });
       } else if (item.type === 'anchor-chart' && d && Array.isArray(d.sections)) {
-        // Anchor chart: one slide per section (label + bullets); icons are skipped.
+        // Anchor chart: one slide per section (label + bullets/points); armed student/assessment copies mask bullets as blanks.
+        const _acMask = !showKeys && !!(d.interactive && d.interactive.armed === true);
         const sections = d.sections.slice(0, 12);
         sections.forEach(function(section, si) {
           const s = section && typeof section === 'object' ? section : {};
-          const bullets = (Array.isArray(s.bullets) ? s.bullets : []).map(function(b) { return typeof b === 'string' ? b : (b && (b.text || b.content || b.label)) || ''; }).filter(Boolean).slice(0, 8);
+          const rawBullets = Array.isArray(s.bullets) ? s.bullets : (Array.isArray(s.points) ? s.points : (Array.isArray(s.items) ? s.items : []));
+          const bullets = rawBullets.map(function(b) { return typeof b === 'string' ? b : (b && (b.text || b.content || b.label)) || ''; }).filter(Boolean).slice(0, 8);
+          const displayBullets = _acMask ? bullets.map(function() { return '________________'; }) : bullets;
           slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + ' &middot; ' + (si + 1) + '/' + sections.length + '</div><div class="slide-body">'
             + '<p style="font-size:16px;font-weight:700">' + _escSlide(s.label || s.title || s.heading || ('Section ' + (si + 1))) + '</p>'
-            + (bullets.length ? '<ul style="margin:6px 0 0 18px">' + bullets.map(function(b) { return '<li>' + _escSlide(b) + '</li>'; }).join('') + '</ul>' : '')
+            + (displayBullets.length ? '<ul style="margin:6px 0 0 18px">' + displayBullets.map(function(b) { return '<li>' + _escSlide(b) + '</li>'; }).join('') + '</ul>' : '')
             + '</div></div>');
         });
       } else if ((item.type === 'note-taking' || item.type === 'guided-notes') && d && typeof d === 'object') {
@@ -3357,8 +3635,8 @@
         const m = d.metrics && typeof d.metrics === 'object' ? d.metrics : {};
         const words = (Array.isArray(d.wordData) ? d.wordData : []).map(function(w) { return w && w.word ? String(w.word) : ''; }).filter(Boolean).join(' ').slice(0, 500);
         const metricBits = [];
-        if (m.accuracy != null) metricBits.push('Accuracy: ' + m.accuracy + '%');
-        if (m.wcpm != null || m.wpm != null) metricBits.push('Rate: ' + (m.wcpm != null ? m.wcpm : m.wpm) + ' WCPM');
+        if (showKeys && m.accuracy != null) metricBits.push('Accuracy: ' + m.accuracy + '%');
+        if (showKeys && (m.wcpm != null || m.wpm != null)) metricBits.push('Rate: ' + (m.wcpm != null ? m.wcpm : m.wpm) + ' WCPM');
         if (m.totalWords != null) metricBits.push('Words: ' + m.totalWords);
         slides.push('<div class="slide"><div class="slide-title">' + _escSlide(title) + '</div><div class="slide-body">'
           + (metricBits.length ? '<p style="font-weight:700;color:' + themeColor + '">' + _escSlide(metricBits.join('  ·  ')) + '</p>' : '')
@@ -3410,7 +3688,7 @@
       + '.slide-body table { margin-top: 8px; }'
       + '.slide-num { position: absolute; bottom: 8px; right: 16px; font-size: 10px; color: #94a3b8; font-weight: 600; }'
       + '</style></head><body>'
-      + slides.map(function(s, i) { return s.replace('</div></div>', '<div class="slide-num">' + (i + 1) + ' / ' + slides.length + '</div></div></div>'); }).join('\n')
+      + slides.map(function(s, i) { return s.replace(/<\/div>\s*$/, '<div class="slide-num">' + (i + 1) + ' / ' + slides.length + '</div></div>'); }).join('\n')
       + '</body></html>';
   };
 

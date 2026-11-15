@@ -681,7 +681,19 @@ window.AlloModules.TextUtilityHelpers = {
 try {
   if (typeof document !== 'undefined' && !window.__alloDeviceStorageProbeArmed) {
     window.__alloDeviceStorageProbeArmed = true;
+    const isLearnerContextActive = () => {
+      try {
+        if (window.__alloQrStudentMode) return true;
+        if (window.__alloSensitiveWorkspaceContext && window.__alloSensitiveWorkspaceContext.learner === true) return true;
+        if (typeof window.location !== 'undefined') {
+          const sp = new URLSearchParams(window.location.search || '');
+          if (sp.has('allo_mb') || sp.has('allo_qr') || /^(?:1|true|student)$/i.test(sp.get('allo_student') || '')) return true;
+        }
+      } catch (_) {}
+      return false;
+    };
     const openDeviceStorageProbe = () => {
+      if (isLearnerContextActive()) return;
       const ready = () => {
         try { window.alloDeviceStorage.__openProbePanel(); }
         catch (e) { console.warn('[DeviceStorage] probe panel failed:', e); }
@@ -704,6 +716,7 @@ try {
     window.__alloOpenDeviceStorageProbe = openDeviceStorageProbe;
     document.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.altKey && e.shiftKey && (e.key === 'D' || e.key === 'd')) {
+        if (isLearnerContextActive()) return;
         e.preventDefault();
         openDeviceStorageProbe();
       }

@@ -65,22 +65,38 @@
     else store.removeItem(STORAGE_KEY);
     publishVerifier(verifier);
   }
-  function readBackoff() {
-    var store = sessionStore();
-    if (!store) return { failures: 0, blockedUntil: 0 };
+  function parseBackoffRecord(raw) {
     try {
-      var value = JSON.parse(store.getItem(BACKOFF_KEY) || 'null');
+      var value = JSON.parse(raw || 'null');
       return value && Number.isInteger(value.failures) && value.failures >= 0
         && Number.isFinite(value.blockedUntil) && value.blockedUntil >= 0
-        ? value : { failures: 0, blockedUntil: 0 };
-    } catch (_) { return { failures: 0, blockedUntil: 0 }; }
+        ? value : null;
+    } catch (_) { return null; }
+  }
+  function readBackoff() {
+    var primary = localStore();
+    var fallback = sessionStore();
+    var parsed = (primary && parseBackoffRecord(primary.getItem(BACKOFF_KEY)))
+      || (fallback && parseBackoffRecord(fallback.getItem(BACKOFF_KEY)));
+    return parsed || { failures: 0, blockedUntil: 0 };
   }
   function writeBackoff(value) {
+    var primary = localStore();
+    var fallback = sessionStore();
+    if (!value || !value.failures) {
+      try { if (primary) primary.removeItem(BACKOFF_KEY); } catch (_) {}
+      try { if (fallback) fallback.removeItem(BACKOFF_KEY); } catch (_) {}
+      return;
+    }
+    var serialized = JSON.stringify(value);
     try {
-      var store = sessionStore();
-      if (!store) return;
-      if (!value || !value.failures) store.removeItem(BACKOFF_KEY);
-      else store.setItem(BACKOFF_KEY, JSON.stringify(value));
+      if (primary) {
+        primary.setItem(BACKOFF_KEY, serialized);
+        return;
+      }
+    } catch (_) {}
+    try {
+      if (fallback) fallback.setItem(BACKOFF_KEY, serialized);
     } catch (_) {}
   }
   function retryAfter(now) {
@@ -150,11 +166,60 @@
     var value = readStoredObject(sessionStore(), AI_SESSION_KEY);
     return !!(value && value.unsaved === true);
   }
+  var AI_BACKEND_DEFAULTS = {
+    gemini: '',
+    'alloflow-local': 'http://localhost:32173',
+    lmstudio: 'http://localhost:1234',
+    localai: 'http://localhost:8080',
+    ollama: 'http://localhost:11434',
+    openai: 'https://api.openai.com',
+    claude: 'https://api.anthropic.com',
+    'onnx-npu': 'http://localhost:11435',
+    custom: 'http://localhost:8080'
+  };
+  function aiCredentialDestination(config) {
+    try {
+      var cfg = config && typeof config === 'object' ? config : {};
+      var backend = String(cfg.backend || 'gemini');
+      var raw = cfg.baseUrl || AI_BACKEND_DEFAULTS[backend] || (backend === 'gemini' ? 'https://generativelanguage.googleapis.com' : '');
+      var url = new URL(raw);
+      if ((url.protocol !== 'http:' && url.protocol !== 'https:') || url.username || url.password) return '';
+      return backend + '|' + url.origin;
+    } catch (_) {
+      return '';
+    }
+  }
+  function storedAiConfigObject() {
+    var store = localStore();
+    if (!store) return null;
+    try {
+      var parsed = JSON.parse(store.getItem(AI_CONFIG_KEY) || 'null');
+      return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : null;
+    } catch (_) {
+      return null;
+    }
+  }
+  function sessionAiDestination() {
+    var store = sessionStore();
+    if (!store) return '';
+    try {
+      var parsed = JSON.parse(store.getItem(AI_SESSION_KEY) || 'null');
+      return parsed && typeof parsed.apiKeyDestination === 'string' ? parsed.apiKeyDestination : '';
+    } catch (_) {
+      return '';
+    }
+  }
   function writeAiSession(secrets, unsaved) {
     var store = sessionStore();
     if (!store) return;
-    if (hasAiSecrets(secrets)) store.setItem(AI_SESSION_KEY, JSON.stringify(Object.assign({}, secrets, { unsaved: !!unsaved })));
-    else store.removeItem(AI_SESSION_KEY);
+    if (hasAiSecrets(secrets)) {
+      var payload = Object.assign({}, secrets, { unsaved: !!unsaved });
+      if (!payload.apiKeyDestination && payload.apiKey) {
+        var existingDest = sessionAiDestination();
+        if (existingDest) payload.apiKeyDestination = existingDest;
+      }
+      store.setItem(AI_SESSION_KEY, JSON.stringify(payload));
+    } else store.removeItem(AI_SESSION_KEY);
   }
   function plaintextAiSecrets() {
     return pickAiSecrets(readStoredObject(localStore(), AI_CONFIG_KEY));
@@ -182,16 +247,27 @@
     };
   }
   async function writeLockedAiSecrets(code, options) {
-    var secrets = Object.assign({}, plaintextAiSecrets(), aiSessionSecrets());
+    var cfg = storedAiConfigObject();
+    var cfgDest = cfg ? aiCredentialDestination(cfg) : '';
+    var cfgMismatch = !!(cfg && cfg.apiKeyDestination && cfgDest && cfg.apiKeyDestination !== cfgDest);
+    var pt = plaintextAiSecrets();
+    if (cfgMismatch) delete pt.apiKey;
+    var sess = aiSessionSecrets();
+    var sessDest = sessionAiDestination();
+    if (sess.apiKey && sessDest && cfgDest && sessDest !== cfgDest) delete sess.apiKey;
+    var secrets = Object.assign({}, pt, sess);
     if (!hasAiSecrets(secrets)) return false;
+    var dest = sessDest || (!cfgMismatch && cfg && typeof cfg.apiKeyDestination === 'string' ? cfg.apiKeyDestination : '') || cfgDest;
+    var payload = Object.assign({}, secrets);
+    if (payload.apiKey && dest) payload.apiKeyDestination = dest;
     var crypto = cryptoApi();
     if (!crypto || typeof crypto.encryptJSON !== 'function') throw new Error('Encryption is unavailable.');
-    var record = await crypto.encryptJSON(secrets, normalizeCode(code), options && options.iterations);
+    var record = await crypto.encryptJSON(payload, normalizeCode(code), options && options.iterations);
     var store = localStore();
     if (!store) throw new Error('Device storage is unavailable.');
     // Ciphertext lands first: a failed write must not lose the only copy.
     store.setItem(AI_LOCKED_KEY, JSON.stringify(record));
-    writeAiSession(secrets, false);
+    writeAiSession(payload, false);
     removePlaintextAiSecrets();
     announceAiKeyChange();
     return true;
@@ -201,7 +277,12 @@
     if (!record || hasAiSecrets(aiSessionSecrets())) return false;
     var crypto = cryptoApi();
     if (!crypto || typeof crypto.decryptJSON !== 'function') throw new Error('Encryption is unavailable.');
-    writeAiSession(pickAiSecrets(await crypto.decryptJSON(record, normalizeCode(code))), false);
+    var decrypted = await crypto.decryptJSON(record, normalizeCode(code));
+    var nextSession = pickAiSecrets(decrypted);
+    if (nextSession.apiKey && decrypted && typeof decrypted.apiKeyDestination === 'string' && decrypted.apiKeyDestination) {
+      nextSession.apiKeyDestination = decrypted.apiKeyDestination;
+    }
+    writeAiSession(nextSession, false);
     announceAiKeyChange();
     return true;
   }
@@ -232,14 +313,25 @@
     var next = Object.assign({}, config);
     var plaintext = plaintextAiSecrets();
     var prior = aiSessionSecrets();
+    var priorDest = sessionAiDestination();
+    var computedDest = aiCredentialDestination(next);
+    var declaredDest = typeof next.apiKeyDestination === 'string' ? next.apiKeyDestination : '';
+    var destMismatch = !!(declaredDest && computedDest && declaredDest !== computedDest);
+    var dest = (!destMismatch && declaredDest) || computedDest;
     var secrets = {};
     AI_SECRET_FIELDS.forEach(function (field) {
       var value = typeof next[field] === 'string' ? next[field] : '';
+      if (field === 'apiKey' && destMismatch) { delete next[field]; return; }
       if (!value || (plaintext[field] === value && !prior[field])) return;
       secrets[field] = value;
       delete next[field];
     });
-    var changed = JSON.stringify(secrets) !== JSON.stringify(prior);
+    if (secrets.apiKey && dest && !destMismatch) {
+      next.apiKeyDestination = dest;
+      secrets.apiKeyDestination = dest;
+    }
+    var changed = JSON.stringify(pickAiSecrets(secrets)) !== JSON.stringify(prior)
+      || (!!secrets.apiKey && secrets.apiKeyDestination !== priorDest);
     if (hasAiSecrets(secrets)) {
       writeAiSession(secrets, changed || aiSessionUnsaved());
     } else if (hasAiSecrets(prior)) {

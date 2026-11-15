@@ -4283,17 +4283,52 @@
   // Driver: unzip with the host's JSZip (dependency-injected), build the pure
   // file map, and hand off. xml/rels come out as strings, media as base64.
   function stImportPptxFile(file, JSZipCtor, now) {
+    var MAX_PPTX_FILE_BYTES = 50 * 1024 * 1024;
+    var MAX_PPTX_ENTRIES = 2000;
+    var MAX_PPTX_SLIDES = 200;
+    var MAX_PPTX_DECODED_BYTES = 100 * 1024 * 1024;
     if (!JSZipCtor || typeof JSZipCtor.loadAsync !== 'function') {
       return Promise.reject(new Error('The file-import library (JSZip) is not loaded.'));
+    }
+    if (file && typeof file.size === 'number' && file.size > MAX_PPTX_FILE_BYTES) {
+      return Promise.reject(new Error('PowerPoint file exceeds the 50 MB size limit.'));
     }
     return JSZipCtor.loadAsync(file).then(function (zip) {
       var files = {};
       var jobs = [];
+      var entryCount = 0;
+      var slideCount = 0;
+      var decodedBytes = 0;
+      var limitError = null;
       zip.forEach(function (path, entry) {
-        if (entry.dir) return;
-        if (/\.(xml|rels)$/i.test(path)) jobs.push(entry.async('string').then(function (s) { files[path] = s; }));
-        else if (/^ppt\/media\//i.test(path)) jobs.push(entry.async('base64').then(function (s) { files[path] = s; }));
+        if (limitError || entry.dir) return;
+        entryCount += 1;
+        if (entryCount > MAX_PPTX_ENTRIES) {
+          limitError = new Error('PowerPoint archive exceeds the maximum entry limit.');
+          return;
+        }
+        if (/^ppt\/slides\/slide\d+\.xml$/i.test(path)) {
+          slideCount += 1;
+          if (slideCount > MAX_PPTX_SLIDES) {
+            limitError = new Error('PowerPoint archive exceeds the 200-slide limit.');
+            return;
+          }
+        }
+        if (/\.(xml|rels)$/i.test(path)) {
+          jobs.push(entry.async('string').then(function (s) {
+            decodedBytes += String(s || '').length;
+            if (decodedBytes > MAX_PPTX_DECODED_BYTES) throw new Error('PowerPoint archive exceeds the 100 MB extracted content limit.');
+            files[path] = s;
+          }));
+        } else if (/^ppt\/media\//i.test(path)) {
+          jobs.push(entry.async('base64').then(function (s) {
+            decodedBytes += Math.ceil(String(s || '').length * 3 / 4);
+            if (decodedBytes > MAX_PPTX_DECODED_BYTES) throw new Error('PowerPoint archive exceeds the 100 MB extracted content limit.');
+            files[path] = s;
+          }));
+        }
       });
+      if (limitError) return Promise.reject(limitError);
       return Promise.all(jobs).then(function () { return stImportPptxDoc(files, file && file.name, now); });
     });
   }
@@ -6531,6 +6566,10 @@
       var f = ev.target.files && ev.target.files[0];
       ev.target.value = '';
       if (!f) return;
+      if (typeof f.size === 'number' && f.size > 25 * 1024 * 1024) {
+        addToast(TT('studio.load_failed', 'Could not open: ') + 'file exceeds 25 MB limit', 'error');
+        return;
+      }
       var r = new FileReader();
       r.onload = function (e) {
         try {

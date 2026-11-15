@@ -326,6 +326,7 @@
     // does not fetch and parse is not downloaded at all.
     async function _configIsReal(lib, voiceId, signal) {
         try {
+            if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) return false;
             // Without PATH_MAP we cannot build the URL the library will use, so
             // there is nothing to pre-flight. Do not fail closed on a library
             // shape we do not recognise: the eviction, purge and corrupt-error
@@ -333,7 +334,7 @@
             // one export is missing would be worse than the bug being fixed.
             if (!lib || !lib.PATH_MAP) return true;
             const path = lib.PATH_MAP[voiceId];
-            const base = lib.HF_BASE || 'https://huggingface.co/diffusionstudio/piper-voices/resolve/main';
+            const base = lib.HF_BASE || 'https://huggingface.co/diffusionstudio/piper-voices/resolve/840e38a7e26d813bd6221b78cfbaefa3585b3f71';
             if (!path) return false;
             const res = await fetch(base + '/' + path + '.json', signal ? { signal } : undefined);
             if (!res.ok) {
@@ -429,6 +430,19 @@
                         return false;
                     }
                     _fireProgress('Downloading ' + voiceInfo.name + ' voice', 0.2);
+
+                    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+                        const storedList = typeof lib.stored === 'function' ? await lib.stored().catch(() => []) : [];
+                        if (Array.isArray(storedList) && storedList.includes(voiceId)) {
+                            _loadedVoices.add(baseLang);
+                            _currentLang = baseLang;
+                            _ready = true;
+                            _fireProgress('Ready', 1.0);
+                            return true;
+                        }
+                        _unavailableLangs.add(baseLang);
+                        return false;
+                    }
 
                     if (!(await _configIsReal(lib, voiceId, signal))) {
                         // Anything already sitting in OPFS for this voice came

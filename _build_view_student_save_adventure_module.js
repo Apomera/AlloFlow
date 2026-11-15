@@ -44,5 +44,10 @@ ${compiled}
 `;
 fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
 fs.mkdirSync(path.dirname(PUBLIC_OUTPUT), { recursive: true });
-fs.writeFileSync(PUBLIC_OUTPUT, outputCode, 'utf-8');
+for (const dir of ['desktop/web-app/public', 'desktop/app-build', 'desktop/web-app/build']) {
+    const absDir = path.join(ROOT, dir);
+    if (dir === 'desktop/web-app/public' || fs.existsSync(absDir)) {
+        fs.writeFileSync(path.join(absDir, 'view_student_save_adventure_module.js'), outputCode, 'utf-8');
+    }
+}
 console.log(`Built ${OUTPUT} and ${PUBLIC_OUTPUT} (${outputCode.split('\n').length} lines)`);

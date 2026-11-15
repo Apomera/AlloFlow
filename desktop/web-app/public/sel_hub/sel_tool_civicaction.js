@@ -834,6 +834,21 @@ window.SelHub = window.SelHub || {
           });
       };
 
+      var _syncSafetyBlock = function(userInput, scope) {
+        if (!userInput || typeof userInput !== 'string') return null;
+        var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
+          ? window.SelHub.safeRehearseCheck(userInput, { toolId: 'civicaction_' + (scope || 'general'), onSafetyFlag: onSafetyFlag })
+          : { action: 'continue', severity: 'none' };
+        if (!safety || safety.action !== 'block') return null;
+        var msg = (window.SelHub && window.SelHub.rehearseBreakCharacterText)
+          ? window.SelHub.rehearseBreakCharacterText(safety.severity)
+          : 'Your safety matters. Please reach out to a trusted adult or call/text 988.';
+        if (window.SelHub && window.SelHub.showCrisisModal) {
+          try { window.SelHub.showCrisisModal({ toolName: 'Civic Action', contentSnippet: userInput }); } catch (_) {}
+        }
+        return msg;
+      };
+
       var tab = d.tab || 'feelings';
       var selectedFeeling = d.feeling || null;
       var selectedCoping = d.coping || null;
@@ -924,6 +939,11 @@ window.SelHub = window.SelHub || {
       // ── AI counselor ──
       var askCounselor = function(question) {
         if (!_civAiOn) return;
+        var blockedMsg = _syncSafetyBlock(question, 'counselor');
+        if (blockedMsg) {
+          updMulti({ aiResponse: blockedMsg, aiLoading: false, _civicTier: 3 });
+          return;
+        }
         upd('aiLoading', true);
         var feeling = FEELINGS_MAP.find(function(f) { return f.id === selectedFeeling; });
         var prompt = 'You are a compassionate school counselor helping a ' + (gradeLevel || '5th grade') + ' student. ' +
@@ -943,9 +963,15 @@ window.SelHub = window.SelHub || {
       // ── Generate personalized action plan ──
       var generateActionPlan = function() {
         if (!_civAiOn) return;
+        var issue = d.issueText || '';
+        var blockedMsg = _syncSafetyBlock(issue, 'actionplan');
+        if (blockedMsg) {
+          updMulti({ aiResponse: blockedMsg, aiLoading: false, _civicTier: 3 });
+          if (typeof addToast === 'function') addToast(blockedMsg, 'info');
+          return;
+        }
         upd('aiLoading', true);
         var feeling = FEELINGS_MAP.find(function(f) { return f.id === selectedFeeling; });
-        var issue = d.issueText || '';
         var prompt = 'A ' + (gradeLevel || '5th grade') + ' student feels ' + (feeling ? feeling.label.toLowerCase() : 'concerned about the world') + '. ' +
           (issue ? 'They care about this issue: "' + issue + '". ' : '') +
           'Create a personalized, age-appropriate civic action plan with 3 concrete steps they can take this week. ' +
@@ -2135,6 +2161,11 @@ window.SelHub = window.SelHub || {
                 rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && _civAiOn && h('button',{
                   'aria-label': 'Get feedback on your response',
                   onClick: function() {
+                    var blockedMsg = _syncSafetyBlock(rightsScenarioAnswer, 'rightsprompt');
+                    if (blockedMsg) {
+                      updMulti({ aiResponse: blockedMsg, aiLoading: false, _civicTier: 3 });
+                      return;
+                    }
                     upd('aiLoading', true);
                     var prompt = 'You are a civic education teacher for ' + (gradeLevel || 'middle school') + ' students. The student is studying the section "' + activeSection.label + '" and was given this prompt about "' + item.title + '": "' + item.scenario + '" They responded: "' + rightsScenarioAnswer + '". Give brief, encouraging feedback (2-3 sentences). Highlight their reasoning. Stay historical and nonpartisan; do not endorse current political positions. Be warm and specific.';
                     _runSafetyAssess(rightsScenarioAnswer, 'rightsprompt');
@@ -2234,6 +2265,11 @@ window.SelHub = window.SelHub || {
                     }),
                     rightsScenarioAnswer && rightsScenarioAnswer.length > 15 && _civAiOn && h('button',{ 'aria-label': 'Get feedback on your response',
                       onClick: function() {
+                        var blockedMsg = _syncSafetyBlock(rightsScenarioAnswer, 'rightsscenario');
+                        if (blockedMsg) {
+                          updMulti({ aiResponse: blockedMsg, aiLoading: false, _civicTier: 3 });
+                          return;
+                        }
                         upd('aiLoading', true);
                         var prompt = 'You are a civic education teacher for ' + (gradeLevel || '5th grade') + ' students. A student was asked this scenario about rights: "' + right.scenario + '" They responded: "' + rightsScenarioAnswer + '". Give brief, encouraging feedback (2-3 sentences). Highlight their good reasoning and gently suggest any perspectives they might have missed. Be warm and supportive.';
                         _runSafetyAssess(rightsScenarioAnswer, 'rightsscenario');

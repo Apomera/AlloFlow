@@ -132,3 +132,51 @@
   Cache-Control: public, max-age=31536000, immutable
 /song_library/melodies-*
   Cache-Control: public, max-age=31536000, immutable
+# Dedicated student/app shell routes cannot be framed cross-origin while root / & /storage_bridge.html keep Canvas compatibility.
+/app/*
+  X-Frame-Options: SAMEORIGIN
+  Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'
+
+# Standalone OAuth import helper cannot be framed anywhere and leaks no Referer header.
+/classroom-import
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: frame-ancestors 'none'; object-src 'none'; base-uri 'self'
+/classroom-import.html
+  X-Frame-Options: DENY
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: frame-ancestors 'none'; object-src 'none'; base-uri 'self'
+
+# Standalone educator, demo, practice, and Research Hub companion pages restrict framing and strip Referer headers.
+/educator-evaluation*
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'
+/walkthrough-copilot*
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'
+/school-rewards-practice*
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'
+/accessibility_demo*
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'
+/geometry_world_demo*
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'
+/speech_device_test*
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'
+/life_skills_outing/*
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'
+/text_inquiry/*
+  X-Frame-Options: SAMEORIGIN
+  Referrer-Policy: no-referrer
+  Content-Security-Policy: frame-ancestors 'self'; object-src 'none'; base-uri 'self'

@@ -1,33 +1,6 @@
-// Behavioural deploy gate: run the tests affected by THIS deploy's changes.
-//
-// WHY THIS EXISTS. The blocking unit suite (npm run test:ci:shard, 8 shards in
-// .github/workflows/verify.yml) already runs the whole Vitest suite minus
-// tests/QUARANTINE.txt on every push and pull request. That gate is good and this
-// does not replace it.
-//
-// The hole it does not cover is timing. deploy.sh pushes and publishes to the CDN
-// in the SAME run, so the live site updates minutes before CI finishes judging the
-// commit. Everything deploy.sh checks today is STATIC â€” free variables, module
-// freshness, registry producers, render smoke. Nothing RUNS the test suite. On
-// 2026-08-11 two ReferenceError crashes (an undeclared __alloT in an SVG
-// aria-label, in Aquaculture Lab and Logic Lab) reached the live CDN; deploy.sh's
-// own line 163 already carries a note about a different bug that shipped because
-// "the vitest guard that covered it never ran here".
-//
-// Running all 2,236 test files locally would take long enough that it would be
-// skipped, which is how gates die. So this runs only what the change touches, via
-// vitest related, which resolves the affected set from the import graph. On a
-// representative deploy that is ~5 files / ~30 seconds.
-//
-// The file list comes from git, TRACKED files only. vitest --changed also counts
-// every untracked file (`git ls-files --others`); with 72,878 untracked scratch
-// files from other sessions on 2026-10-28 that turned a two-file commit into a
-// 2-hour silent run that the 120-file cap below never saw.
-//
-// Quarantined files are excluded for exactly the reason run_unit_shard.cjs excludes
-// them (audit finding H1): a gate that is permanently red gates nothing. Their
-// status stays public in the separate non-blocking quarantine job, and
-// check_quarantine fails if that list ever stops shrinking honestly.
+// Focused behavioral diagnostic: exit 0 = selected import-graph tests pass,
+// exit 1 = test failure, exit 2 = no complete verdict (cap, no tests, fallback).
+// Publishing requires independent exact-candidate CI and signed artifact proof.
 'use strict';
 
 const { spawnSync } = require('child_process');
@@ -59,24 +32,8 @@ const quarantined = readQuarantine();
 const base = resolveBase();
 
 // â”€â”€ Size cap â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
-// This gate is a FAST pre-publish check, not a substitute for the blocking
-// 8-shard CI job. On a typical deploy vitest --changed selects ~5 files and the
-// gate costs ~30s. On a very large batch (a full day of multi-session work) it
-// selected 106 files, ran for 20 minutes, and reported failures in 102 of them â€”
-// which sounded catastrophic and was not: the sampled failures reproduce at HEAD,
-// so they are pre-existing test debt beyond tests/QUARANTINE.txt, not regressions
-// from the change being deployed.
-//
-// Blocking a deploy on debt the change did not introduce is the exact fault audit
-// H1 named: a gate that cannot change colour gates nothing, and the next person
-// just sets SKIP_CHANGED_TESTS=1 forever. Distinguishing new red from old red
-// needs a baseline run against HEAD, which doubles an already slow pass. So above
-// the cap this defers to CI explicitly and says so, rather than pretending to a
-// verdict it cannot support.
-// The cap is measured from git, not from vitest. Asking `vitest list --changed`
-// how many files it would select costs a full module-graph resolve â€” 9 minutes on
-// this batch â€” so the cheap check has to come first or the gate is slow precisely
-// when it is about to decline to run.
+// Large scopes need complete CI evidence; declining to run is not a pass.
+// The publisher separately verifies the exact source and attested artifact.
 const MAX_CHANGED_FILES = 120;
 function changedFiles() {
   const staged = git(['diff', '--cached', '--name-only']);
@@ -93,8 +50,8 @@ const files = changedFiles();
 if (files.length > MAX_CHANGED_FILES) {
   console.log('check_changed_tests: ' + files.length + ' files changed â€” over the ' + MAX_CHANGED_FILES
     + '-file cap for a pre-publish check.');
-  console.log('check_changed_tests: SKIPPED â€” the blocking 8-shard unit job in CI covers this push.');
-  process.exit(0);
+  console.log('check_changed_tests: NO VERDICT â€” the blocking 8-shard unit job in CI covers this push.');
+  process.exit(2);
 }
 
 // Only a file a test can import can sit in a test's import graph, so a change of
@@ -104,7 +61,7 @@ const importable = files.filter((f) => /\.(?:[cm]?[jt]sx?|json)$/i.test(f));
 if (!importable.length) {
   console.log('check_changed_tests: no test files cover this change (' + files.length
     + ' changed, none importable) â€” nothing to run.');
-  process.exit(0);
+  process.exit(2);
 }
 
 const vitestArgs = [ROOT + '/node_modules/vitest/vitest.mjs', 'related', ...importable, '--run'];
@@ -131,12 +88,12 @@ const res = spawnSync(process.execPath, vitestArgs, {
 const output = String(res.stdout || '') + String(res.stderr || '');
 if (!QUIET) process.stdout.write(output);
 
-// "No test files found" is a PASS, not a failure: plenty of legitimate deploys
-// touch only assets, docs, or language packs. Vitest exits non-zero for it, so
-// without this the gate would block those deploys outright.
+// No selected tests is no behavioral verdict, including asset-only changes.
+// Full exact-candidate verification may still approve such a release.
+// Never turn a skipped selection into evidence of test success.
 if (/No test files found/i.test(output)) {
   console.log('check_changed_tests: no test files cover this change â€” nothing to run.');
-  process.exit(0);
+  process.exit(2);
 }
 
 // The import-graph resolve itself can exhaust file handles on this tree (Windows,
@@ -150,7 +107,7 @@ if (res.status !== 0 && fallback.isHandleExhaustion(output)) {
   console.log('check_changed_tests: vitest could not resolve the import graph (EMFILE: too many open files).');
   if (!selected.length) {
     console.log('check_changed_tests: fallback found no test that names the changed files; nothing to run.');
-    process.exit(0);
+    process.exit(2);
   }
   console.log('check_changed_tests: FALLBACK running ' + selected.length + ' test file(s) that name the changed files'
     + ' (narrower than the import graph; CI runs the full suite).');
@@ -168,8 +125,8 @@ if (res.status !== 0 && fallback.isHandleExhaustion(output)) {
       process.exit(1);
     }
   }
-  console.log('check_changed_tests: OK (fallback): every test that names a changed file passes.');
-  process.exit(0);
+  console.log('check_changed_tests: NO COMPLETE VERDICT (fallback): selected tests pass, but the import graph was not resolved.');
+  process.exit(2);
 }
 
 if (res.status !== 0) {

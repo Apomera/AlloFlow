@@ -5404,11 +5404,13 @@ function serveStatic(req, res, pathname) {
 }
 
 function serveBundledApp(req, res, pathname) {
+  const localPort = req && req.socket && Number.isInteger(req.socket.localPort) && req.socket.localPort > 0
+    ? String(req.socket.localPort) : '*';
   serveFromDir(req, res, STATIC_APP_DIR, pathname, {
     routePrefix: '/app/',
     fallbackToIndex: true,
     cacheStatic: true,
-    contentSecurityPolicy: "frame-ancestors 'self' http://127.0.0.1:* http://localhost:*; object-src 'none'; base-uri 'self'",
+    contentSecurityPolicy: `frame-ancestors 'self' http://127.0.0.1:${localPort} http://localhost:${localPort}; object-src 'none'; base-uri 'self'`,
   });
 }
 

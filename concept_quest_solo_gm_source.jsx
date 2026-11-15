@@ -144,6 +144,13 @@ const ConceptQuestSoloGMHelpers = (() => {
   return { LIMITS, context, questionView, sanitizeState, prompt, parseResponse, fallback, nextState };
 })();
 
+function _cqGmAiUsable(fn) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+}
+
 function ConceptQuestSoloGM({ quest, generatedContent, inputText, callGemini, t, gmState, onChange, enabled, onEnabledChange }) {
   // Narration uses the Assess view's light markdown (Concept Quest opens from it); plain text without it.
   const cqMd = window.AlloModules?.QuizView?.markdown || { inline: v => v == null ? '' : String(v), block: v => v == null ? '' : String(v), plain: v => v == null ? '' : String(v) };
@@ -156,7 +163,7 @@ function ConceptQuestSoloGM({ quest, generatedContent, inputText, callGemini, t,
   };
   const ctx = helpers.context(quest, generatedContent, inputText);
   const current = helpers.sanitizeState(gmState, ctx.scope);
-  const hasProvider = typeof callGemini === 'function';
+  const hasProvider = _cqGmAiUsable(callGemini);
   const aiEnabled = enabled !== false && hasProvider;
   const [busy, setBusy] = React.useState(false);
   const [failed, setFailed] = React.useState(false);

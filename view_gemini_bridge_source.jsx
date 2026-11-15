@@ -234,7 +234,7 @@ try { window.__alloBridgePure = { BRIDGE_PHRASES: BRIDGE_PHRASES, _bridgeTranscr
 // ── BridgeSendModal: Teacher-side bridge Send modal (gates on bridgeSendOpen + isTeacherMode). Includes nested bridgeChatOpen IIFE inside. ──
 function BridgeSendModal(props) {
   const {
-    activeSessionCode, addToast, appId, bridgeChatMessages,
+    activeSessionAppId, activeSessionCode, addToast, appId, bridgeChatMessages,
     bridgeChatOpen, bridgeF2FCustomLangA, bridgeF2FCustomLangB, bridgeF2FLang,
     bridgeF2FListening, bridgeF2FTeacherLang, bridgeF2FTranslating, bridgeHistory,
     bridgeHistoryOpen, bridgeOverrideGroups, bridgeSendOpen, bridgeSending,
@@ -321,7 +321,7 @@ function BridgeSendModal(props) {
               setBridgeSendOpen(false);
               if (activeSessionCode && isTeacherMode) {
                 try {
-                  const sRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+                  const sRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
                   updateDoc(sRef, { bridgePayload: deleteField(), bridgeChat: deleteField() }).catch(e => warnLog('Bridge cleanup error:', e));
                 } catch(e) { warnLog('Bridge cleanup error:', e); }
               }
@@ -942,7 +942,7 @@ function BridgeSendModal(props) {
                     }
                     if (activeSessionCode) {
                       try {
-                        const sessionRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+                        const sessionRef = doc(db, 'artifacts', activeSessionAppId || appId, 'public', 'data', 'sessions', activeSessionCode);
                         // Route the class broadcast through the FERPA Tier-2 gate (writeToSession)
                         // instead of a raw updateDoc, so it is enforced + auditable like every other
                         // session write. bridgePayload/bridgeReactions are allowlisted in
@@ -1821,7 +1821,11 @@ function BridgeMessageModal(props) {
                     // text) and restrict the image to safe schemes, since this is written via
                     // document.write into a new window.
                     const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
-                    const safeImg = (u) => (typeof u === 'string' && /^(data:image\/|blob:|https:)/i.test(u)) ? u : '';
+                    const safeImg = (u) => {
+                      if (typeof u !== 'string') return '';
+                      const s = u.trim();
+                      return (/^data:image\/(?:png|jpe?g|webp|gif);base64,/i.test(s) || /^blob:/i.test(s) || (!(typeof window !== 'undefined' && window._isDesktopBundledApp === true) && /^https:/i.test(s))) ? s : '';
+                    };
                     const _img = safeImg(bridgeMessage.imageUrl);
                     const printContent = `
                       <html lang="en"><head><title>${esc(t('bridge.bridge_message') || 'Bridge Message')}</title>
@@ -1844,7 +1848,12 @@ function BridgeMessageModal(props) {
                       ${bridgeMessage.terms?.length ? '<div class="lang-label">📖 Key Terms</div><div class="terms">' + bridgeMessage.terms.map(t2 => { const w = typeof t2 === 'object' ? t2.word : t2; const d = typeof t2 === 'object' && t2.definition ? t2.definition : ''; return '<span class="term">' + esc(w) + (d ? '<br/><small style="font-weight:400;color:#555">' + esc(d) + '</small>' : '') + '</span>'; }).join('') + '</div>' : ''}
                       </body></html>`;
                     const printWin = window.open('', '_blank', 'width=800,height=600');
-                    if (printWin) { printWin.document.write(printContent); printWin.document.close(); printWin.print(); }
+                    if (printWin) {
+                      try { printWin.opener = null; } catch (_) {}
+                      printWin.document.write(printContent);
+                      printWin.document.close();
+                      printWin.print();
+                    }
                   }}
                   style={{background:'rgba(168,85,247,0.15)',border:'1px solid rgba(168,85,247,0.25)',color:_dt.purpleAccent,padding:'10px 18px',borderRadius:'12px',fontSize:'13px',fontWeight:700,cursor:'pointer',transition:'all 0.2s',flex:1}}
                 >🖨️ Print</button>

@@ -82,10 +82,31 @@
   }, label('unavailable', 'The saved passage could not be matched to this lesson. Check the original source before using this claim.')));
 }
 function _aiUsable(kind, fn) {
+  if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
   try {
     if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable(kind, fn);
   } catch (_) {}
-  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  return typeof fn === 'function' && !fn._alloQrBlocked;
+}
+function _safePersonaChatAvatarUrl(raw) {
+  if (typeof raw !== 'string') return null;
+  var s = raw.trim();
+  if (!s || s.length > 5000000) return null;
+  if (/^data:image\/(?:png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=\s]+$/i.test(s)) return s;
+  if (/^blob:/i.test(s)) {
+    try {
+      var bu = new URL(s);
+      return bu.protocol === 'blob:' ? s : null;
+    } catch (_) {
+      return null;
+    }
+  }
+  if (/^(?:\.\.?\/|\/[^/])[^\\\s<>"]*$/.test(s) && !/(?:^|\/)\.\.(?:\/|$)/.test(s)) return s;
+  try {
+    var u = new URL(s);
+    if (u.protocol === 'https:' && !u.username && !u.password) return u.href;
+  } catch (_) {}
+  return null;
 }
 
 // Role Swap: the student answers the figure's stored questions AS the figure, citing the source. No AI.
@@ -270,7 +291,9 @@ function PersonaRoleSwap(props) {
       type: "button",
       key: q.id,
       "data-role-swap-question": q.id,
+      "data-role-swap-answered": done ? 'true' : undefined,
       "aria-pressed": active && active.id === q.id,
+      "aria-description": done ? label('answered', 'Answered') : undefined,
       onClick: function () {
         update(function (next) {
           next.active = q.id;
@@ -473,6 +496,9 @@ function PersonaChatView(props) {
     return value && value !== 'persona.role_swap.title' ? value : 'Role Swap: you answer as ' + names;
   }();
   var renderPersonaRoleSwap = function () {
+    var roleSwapSourceBinding = generatedContent && generatedContent.config && generatedContent.config.personaSource || (generatedContent && typeof generatedContent.sourceExcerpt === 'string' && generatedContent.sourceExcerpt.trim() ? {
+      excerpt: generatedContent.sourceExcerpt
+    } : null);
     return /*#__PURE__*/React.createElement(PersonaRoleSwap, {
       t: t,
       personaState: personaState,
@@ -482,7 +508,7 @@ function PersonaChatView(props) {
       sessionKey: (personaState.mode === 'panel' ? 'panel' : 'single') + ':' + roleSwapCharacters.map(function (c) {
         return c.name;
       }).join('|') + ':' + String(generatedContent && generatedContent.id || ''),
-      sourceBinding: generatedContent && generatedContent.config ? generatedContent.config.personaSource : null,
+      sourceBinding: roleSwapSourceBinding,
       onSave: typeof handleSavePersonaRoleSwap === 'function' ? handleSavePersonaRoleSwap : null,
       note: personaStudentTextAiOff ? renderPersonaAiOffNote() : null,
       onBack: personaStudentTextAiOff ? null : function () {
@@ -528,6 +554,10 @@ function PersonaChatView(props) {
   var panelChoicePending = _panelChoicePendingState[0];
   var setPanelChoicePending = _panelChoicePendingState[1];
   var panelChoicePendingRef = React.useRef(false);
+  var _singleChoicePendingState = React.useState(false);
+  var singleChoicePending = _singleChoicePendingState[0];
+  var setSingleChoicePending = _singleChoicePendingState[1];
+  var singleChoicePendingRef = React.useRef(false);
   var _personaSummaryOpenState = React.useState(false);
   var isPersonaSummaryOpen = _personaSummaryOpenState[0];
   var setIsPersonaSummaryOpen = _personaSummaryOpenState[1];
@@ -729,6 +759,22 @@ function PersonaChatView(props) {
       size: 16,
       "aria-hidden": "true"
     }), composerLabel('send', 'Send question'))));
+  };
+  var _rawHandlePersonaChatSubmit = handlePersonaChatSubmit;
+  handlePersonaChatSubmit = function (inputOverride, fromSuggestion) {
+    if (fromSuggestion) {
+      var text = typeof inputOverride === 'string' ? inputOverride : '';
+      if (singleChoicePendingRef.current || singleChoicePending || personaState.isLoading || !text.trim()) return;
+      singleChoicePendingRef.current = true;
+      setSingleChoicePending(true);
+      return Promise.resolve().then(function () {
+        return _rawHandlePersonaChatSubmit(text, true);
+      }).catch(function () {}).finally(function () {
+        singleChoicePendingRef.current = false;
+        setSingleChoicePending(false);
+      });
+    }
+    return _rawHandlePersonaChatSubmit(inputOverride, fromSuggestion);
   };
   var _handlePanelChoice = function (option) {
     if (panelChoicePendingRef.current || panelChoicePending || personaState.isLoading || !option || typeof option.text !== 'string' || !option.text.trim()) return;
@@ -1107,12 +1153,81 @@ function PersonaChatView(props) {
   var _dsReadReadyKey = _dsReadReadyState[0];
   var setDsReadReadyKey = _dsReadReadyState[1];
   var _dsResumeOfferVersionRef = React.useRef(null);
+  var _boundedSnapshotText = function (value, limit) {
+    if (typeof value !== 'string') return '';
+    var text = value.trim();
+    return text.length > limit ? text.slice(0, limit) : text;
+  };
+  var _boundedSnapshotNumber = function (value, min, max, fallback) {
+    var number = Number(value);
+    if (!Number.isFinite(number)) return fallback;
+    return Math.max(min, Math.min(max, Math.round(number)));
+  };
+  var _hasSavedRoleSwapWork = function (roleSwap) {
+    if (!roleSwap || typeof roleSwap !== 'object' || Array.isArray(roleSwap)) return false;
+    var answers = roleSwap.answers && typeof roleSwap.answers === 'object' && !Array.isArray(roleSwap.answers) ? roleSwap.answers : {};
+    var hasAnswer = Object.keys(answers).some(function (k) {
+      var entry = answers[k];
+      return Boolean(entry && typeof entry === 'object' && (String(entry.answer || '').trim() || String(entry.evidence || '').trim()));
+    });
+    if (hasAnswer) return true;
+    var checks = roleSwap.checks && typeof roleSwap.checks === 'object' && !Array.isArray(roleSwap.checks) ? roleSwap.checks : {};
+    return checks.inCharacter === true || checks.usesEvidence === true || checks.accurate === true;
+  };
+  var _sanitizeSnapshotRoleSwap = function (rawRoleSwap) {
+    if (!rawRoleSwap || typeof rawRoleSwap !== 'object' || Array.isArray(rawRoleSwap)) return null;
+    var key = _boundedSnapshotText(rawRoleSwap.key, 600);
+    if (!key) return null;
+    var active = _boundedSnapshotText(rawRoleSwap.active, 600);
+    var rawAnswers = rawRoleSwap.answers && typeof rawRoleSwap.answers === 'object' && !Array.isArray(rawRoleSwap.answers) ? rawRoleSwap.answers : {};
+    var answers = {};
+    Object.keys(rawAnswers).slice(0, 14).forEach(function (entryKey) {
+      var k = _boundedSnapshotText(entryKey, 600);
+      var entry = rawAnswers[entryKey];
+      if (!k || !entry || typeof entry !== 'object' || Array.isArray(entry)) return;
+      var speaker = _boundedSnapshotText(entry.speaker, 160);
+      var question = _boundedSnapshotText(entry.question, 500);
+      var answer = _boundedSnapshotText(entry.answer, 4000);
+      var evidence = _boundedSnapshotText(entry.evidence, 1000);
+      if (!question && !answer && !evidence) return;
+      answers[k] = {
+        speaker: speaker,
+        question: question,
+        answer: answer,
+        evidence: evidence
+      };
+    });
+    var rawChecks = rawRoleSwap.checks && typeof rawRoleSwap.checks === 'object' && !Array.isArray(rawRoleSwap.checks) ? rawRoleSwap.checks : {};
+    var checks = {
+      ...(rawChecks.inCharacter === true ? {
+        inCharacter: true
+      } : {}),
+      ...(rawChecks.usesEvidence === true ? {
+        usesEvidence: true
+      } : {}),
+      ...(rawChecks.accurate === true ? {
+        accurate: true
+      } : {})
+    };
+    var clean = {
+      key: key,
+      ...(active ? {
+        active: active
+      } : {}),
+      answers: answers,
+      checks: checks
+    };
+    return _hasSavedRoleSwapWork(clean) ? clean : null;
+  };
   var _getPersonaResumeContext = function (state) {
-    return JSON.stringify([state.mode, state.selectedCharacter && [state.selectedCharacter.id, state.selectedCharacter.name], (state.selectedCharacters || []).map(function (character) {
+    var base = [state.mode, state.selectedCharacter && [state.selectedCharacter.id, state.selectedCharacter.name], (state.selectedCharacters || []).map(function (character) {
       return character && [character.id, character.name];
     }), (state.chatHistory || []).length, (state.chatHistory || []).slice(-80).map(function (message) {
       return message && [message.role, message.text, message.speakerName];
-    })]);
+    })];
+    var cleanRoleSwap = _sanitizeSnapshotRoleSwap(state && state.roleSwap);
+    if (cleanRoleSwap) base.push(cleanRoleSwap);
+    return JSON.stringify(base);
   };
   var _dsResumeContext = _getPersonaResumeContext(personaState);
   var _dsConversationRef = React.useRef({
@@ -1139,16 +1254,42 @@ function PersonaChatView(props) {
   var _ensureDeviceStorage = function () {
     if (!window.__alloDeviceStoragePromise) {
       window.__alloDeviceStoragePromise = window.alloDeviceStorage ? Promise.resolve(window.alloDeviceStorage) : new Promise(function (resolve, reject) {
-        var s = document.createElement('script');
-        if (typeof window.__alloConfigureTrustedScript !== 'function') throw new Error('Trusted script delivery is unavailable.');
-        window.__alloConfigureTrustedScript(s, 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent');
-        s.onload = function () {
-          if (window.alloDeviceStorage) resolve(window.alloDeviceStorage);else reject(new Error('device storage module missing after load'));
+        if (typeof window.__alloConfigureTrustedScript !== 'function') {
+          reject(new Error('Trusted script delivery is unavailable.'));
+          return;
+        }
+        var localUrl = './allo_device_storage_module.js?v=ds6-media-removal-intent';
+        var cdnUrl = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent';
+        var attach = function (url, allowCdnFallback) {
+          var s = document.createElement('script');
+          try {
+            window.__alloConfigureTrustedScript(s, url);
+          } catch (err) {
+            if (allowCdnFallback) {
+              attach(cdnUrl, false);
+              return;
+            }
+            window.__alloDeviceStoragePromise = null;
+            reject(err);
+            return;
+          }
+          s.onload = function () {
+            if (window.alloDeviceStorage) resolve(window.alloDeviceStorage);else {
+              window.__alloDeviceStoragePromise = null;
+              reject(new Error('device storage module missing after load'));
+            }
+          };
+          s.onerror = function () {
+            if (allowCdnFallback && !window._isDesktopBundledApp) {
+              attach(cdnUrl, false);
+              return;
+            }
+            window.__alloDeviceStoragePromise = null;
+            reject(new Error('device storage module failed to load'));
+          };
+          document.head.appendChild(s);
         };
-        s.onerror = function () {
-          reject(new Error('device storage module failed to load'));
-        };
-        document.head.appendChild(s);
+        attach(localUrl, true);
       });
     }
     return window.__alloDeviceStoragePromise.then(function (ds) {
@@ -1172,16 +1313,6 @@ function PersonaChatView(props) {
       return ds.remove('persona_sessions', snapshotKeyToClear);
     }).catch(function () {});
   };
-  var _boundedSnapshotText = function (value, limit) {
-    if (typeof value !== 'string') return '';
-    var text = value.trim();
-    return text.length > limit ? text.slice(0, limit) : text;
-  };
-  var _boundedSnapshotNumber = function (value, min, max, fallback) {
-    var number = Number(value);
-    if (!Number.isFinite(number)) return fallback;
-    return Math.max(min, Math.min(max, Math.round(number)));
-  };
   var _sanitizeSnapshotCharacter = function (character) {
     if (!character || typeof character !== 'object' || Array.isArray(character)) return null;
     var requestedName = _boundedSnapshotText(character.name, 120);
@@ -1198,7 +1329,7 @@ function PersonaChatView(props) {
     }) : matchingCharacters.length === 1 ? matchingCharacters[0] : null;
     if (!authoritativeCharacter) return null;
     var name = _boundedSnapshotText(authoritativeCharacter.name, 120);
-    var avatarUrl = typeof authoritativeCharacter.avatarUrl === 'string' && authoritativeCharacter.avatarUrl.length < 300000 ? authoritativeCharacter.avatarUrl : null;
+    var avatarUrl = typeof authoritativeCharacter.avatarUrl === 'string' && authoritativeCharacter.avatarUrl.length < 300000 ? _safePersonaChatAvatarUrl(authoritativeCharacter.avatarUrl) : null;
     var resumedQuestCompletion = new Map();
     (Array.isArray(character.quests) ? character.quests : []).slice(0, 6).forEach(function (quest, index) {
       if (!quest || typeof quest !== 'object' || Array.isArray(quest)) return;
@@ -1279,7 +1410,8 @@ function PersonaChatView(props) {
     // A device can close while a response is in flight. Never restore a user
     // turn that has no following model response as if it were completed.
     while (chatHistory.length && chatHistory[chatHistory.length - 1].role === 'user') chatHistory.pop();
-    if (chatHistory.length < 2) return null;
+    var roleSwap = _sanitizeSnapshotRoleSwap(rawState.roleSwap);
+    if (chatHistory.length < 2 && (!roleSwap || chatHistory.length < 1)) return null;
     var selectedCharacters = (Array.isArray(rawState.selectedCharacters) ? rawState.selectedCharacters : []).slice(0, 2).map(_sanitizeSnapshotCharacter).filter(Boolean);
     var selectedCharacter = _sanitizeSnapshotCharacter(rawState.selectedCharacter);
     if (!['single', 'panel'].includes(rawState.mode)) return null;
@@ -1334,11 +1466,15 @@ function PersonaChatView(props) {
         questionCraft: questionCraft,
         suggestions: suggestions,
         panelSuggestions: panelSuggestions,
-        avatarUrl: mode === 'single' && selectedCharacter ? selectedCharacter.avatarUrl : null
+        avatarUrl: mode === 'single' && selectedCharacter ? selectedCharacter.avatarUrl : null,
+        ...(roleSwap ? {
+          roleSwap: roleSwap
+        } : {})
       }
     };
   };
   var _dsChatLen = (personaState.chatHistory || []).length;
+  var _dsRoleSwapSanitized = _sanitizeSnapshotRoleSwap(personaState.roleSwap);
   React.useEffect(function () {
     resumeActionPendingRef.current = false;
     setDsReadReadyKey(null);
@@ -1352,6 +1488,7 @@ function PersonaChatView(props) {
     _dsCheckedKeyRef.current = _personaSnapshotKey;
     setPersonaResumeOffer(null);
     var mountMsgs = _dsChatLen;
+    var mountHasRoleSwap = Boolean(_dsRoleSwapSanitized);
     var requestedConversationVersion = _dsConversationVersion;
     _ensureDeviceStorage().then(function (ds) {
       // v1 used one global key for every resource/student. Remove that unsafe
@@ -1377,7 +1514,7 @@ function PersonaChatView(props) {
         _clearPersonaSnapshot();
         return;
       }
-      if (normalizedSnapshot.state.chatHistory.length > mountMsgs) {
+      if (normalizedSnapshot.state.chatHistory.length > mountMsgs || Boolean(normalizedSnapshot.state.roleSwap) && !mountHasRoleSwap) {
         _dsResumeOfferVersionRef.current = requestedConversationVersion;
         setPersonaResumeOffer(normalizedSnapshot);
       }
@@ -1415,7 +1552,10 @@ function PersonaChatView(props) {
         return [message && message.role, _boundedSnapshotText(message && message.speakerName, 120), _boundedSnapshotText(message && message.text, 12000), _boundedSnapshotText(message && message.translation, 12000), _boundedSnapshotText(message && message.translationTarget, 120), _boundedSnapshotText(message && message.evidenceNote, 4000), _boundedSnapshotText(message && message.sourceEvidence && message.sourceEvidence.quote, 500), _boundedSnapshotText(message && message.sourceEvidence && message.sourceEvidence.excerptFingerprint, 30)];
       }),
       earnedBadges: (personaState.earnedBadges || []).slice(0, 20),
-      avatarUrl: typeof personaState.avatarUrl === 'string' ? _hashPersonaScope(personaState.avatarUrl) : ''
+      avatarUrl: typeof personaState.avatarUrl === 'string' ? _hashPersonaScope(personaState.avatarUrl) : '',
+      ...(_dsRoleSwapSanitized ? {
+        roleSwap: _dsRoleSwapSanitized
+      } : {})
     }));
   } catch (_) {}
   React.useEffect(function () {
@@ -1424,7 +1564,7 @@ function PersonaChatView(props) {
       clearTimeout(_dsSaveTimerRef.current);
       _dsSaveTimerRef.current = null;
     }
-    if (!_personaSnapshotEnabled || personaState.isLoading || _dsChatLen < 2 || personaResumeOffer) return undefined;
+    if (!_personaSnapshotEnabled || personaState.isLoading || _dsChatLen < 2 && !_dsRoleSwapSanitized || personaResumeOffer) return undefined;
     // Finish the initial read before a panel greeting can replace an older conversation.
     if (_dsReadReadyKey !== _personaSnapshotKey || _dsClosedRef.current) return undefined;
     var st = personaState;
@@ -1434,6 +1574,7 @@ function PersonaChatView(props) {
       _dsSaveTimerRef.current = null;
       if (_dsClosedRef.current || _dsConversationRef.current.version !== scheduledConversationVersion || _dsSaveGenerationRef.current !== scheduledSnapshotGeneration || !_personaSnapshotEnabledRef.current || _personaSnapshotLoadingRef.current || _personaSnapshotKeyRef.current !== scheduledSnapshotKey) return;
       var avatarOk = typeof st.avatarUrl === 'string' && st.avatarUrl.length < 300000;
+      var savedRoleSwap = _sanitizeSnapshotRoleSwap(st.roleSwap);
       var snap;
       try {
         snap = JSON.parse(JSON.stringify({
@@ -1453,7 +1594,10 @@ function PersonaChatView(props) {
             questionCraft: st.questionCraft && typeof st.questionCraft === 'object' && !Array.isArray(st.questionCraft) ? st.questionCraft : null,
             suggestions: st.suggestions || [],
             panelSuggestions: st.panelSuggestions || [],
-            avatarUrl: avatarOk ? st.avatarUrl : null
+            avatarUrl: avatarOk ? st.avatarUrl : null,
+            ...(savedRoleSwap ? {
+              roleSwap: savedRoleSwap
+            } : {})
           }
         }));
       } catch (_) {
@@ -1522,6 +1666,9 @@ function PersonaChatView(props) {
         reflectionSubmitted: false
       };
     });
+    if (snap.state.roleSwap && !personaStudentTextAiOff && (snap.state.chatHistory || []).length <= 1) {
+      _roleSwapOpenState[1](true);
+    }
     setPersonaResumeOffer(null);
   };
   var _handleDiscardSnapshot = function () {
@@ -1552,7 +1699,8 @@ function PersonaChatView(props) {
         selectedCharacters: [],
         mode: 'single',
         harmonyScore: 10,
-        earnedBadges: []
+        earnedBadges: [],
+        roleSwap: null
       };
     });
   };
@@ -1753,7 +1901,7 @@ function PersonaChatView(props) {
     size: 16
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold"
-  }, t('persona.auto_read_label'))), /*#__PURE__*/React.createElement("button", {
+  }, t('persona.auto_read_label'))), !showRoleSwap && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "persona_auto_send",
     "aria-label": personaAutoSend ? t('persona.turn_off_auto_send') : t('persona.turn_on_auto_send'),
@@ -1802,7 +1950,7 @@ function PersonaChatView(props) {
     size: 16
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold"
-  }, isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label'))), !personaStudentTextAiOff && /*#__PURE__*/React.createElement("button", {
+  }, isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label')))), !personaStudentTextAiOff && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "persona_topic_spark",
     onClick: _requestPersonaTopicSpark,
@@ -1914,9 +2062,9 @@ function PersonaChatView(props) {
       })
     }, /*#__PURE__*/React.createElement("div", {
       className: `w-8 h-8 rounded-full overflow-hidden bg-white border shrink-0 ${isActivePanelist ? 'border-yellow-400' : 'border-slate-300'}`
-    }, char?.avatarUrl ? /*#__PURE__*/React.createElement("img", {
+    }, _safePersonaChatAvatarUrl(char?.avatarUrl) ? /*#__PURE__*/React.createElement("img", {
       loading: "lazy",
-      src: char.avatarUrl,
+      src: _safePersonaChatAvatarUrl(char?.avatarUrl),
       alt: char.name,
       className: "w-full h-full object-cover"
     }) : /*#__PURE__*/React.createElement("span", {
@@ -1943,7 +2091,7 @@ function PersonaChatView(props) {
       className: "mb-1 flex justify-between font-bold"
     }, /*#__PURE__*/React.createElement("span", null, t('persona.rapport_label')), /*#__PURE__*/React.createElement("span", null, rapport, "%")), /*#__PURE__*/React.createElement("div", {
       role: "progressbar",
-      "aria-label": t('persona.rapport_label'),
+      "aria-label": (t('persona.rapport_label') || 'Rapport') + ': ' + (char?.name || t('persona.character_fallback') || 'Character'),
       "aria-valuemin": 0,
       "aria-valuemax": 100,
       "aria-valuenow": rapport,
@@ -1973,11 +2121,16 @@ function PersonaChatView(props) {
     }))), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h3", {
       className: "mb-2 flex items-center gap-1 font-black uppercase tracking-wide"
     }, /*#__PURE__*/React.createElement(Search, {
-      size: 12
+      size: 12,
+      "aria-hidden": "true"
     }), " ", t('persona.objectives_label')), quests.length ? /*#__PURE__*/React.createElement("ul", {
       className: "space-y-1.5"
     }, quests.map((quest, qIdx) => {
       const isLocked = rapport < Number(quest.difficulty || 0);
+      const rawCompleted = t('common.completed');
+      const rawLocked = t('common.locked');
+      const completedLabel = rawCompleted && rawCompleted !== 'common.completed' ? rawCompleted : 'Completed';
+      const lockedLabel = rawLocked && rawLocked !== 'common.locked' ? rawLocked : 'Locked';
       return /*#__PURE__*/React.createElement("li", {
         key: qIdx,
         className: `rounded-lg border px-2 py-1.5 ${quest.isCompleted ? 'border-green-200 bg-green-50 text-green-800' : isLocked ? 'border-slate-200 bg-slate-100 text-slate-600' : 'border-indigo-200 bg-white text-slate-800'}`
@@ -1985,14 +2138,20 @@ function PersonaChatView(props) {
         className: "flex items-start gap-1.5"
       }, quest.isCompleted ? /*#__PURE__*/React.createElement(CheckCircle2, {
         size: 12,
+        "aria-hidden": "true",
         className: "mt-0.5 shrink-0"
       }) : isLocked ? /*#__PURE__*/React.createElement(Lock, {
         size: 12,
+        "aria-hidden": "true",
         className: "mt-0.5 shrink-0"
       }) : /*#__PURE__*/React.createElement("span", {
         className: "mt-0.5 h-3 w-3 shrink-0 rounded-full border-2 border-indigo-400",
         "aria-hidden": "true"
-      }), /*#__PURE__*/React.createElement("span", null, quest.text)), !quest.isCompleted && isLocked && /*#__PURE__*/React.createElement("span", {
+      }), /*#__PURE__*/React.createElement("span", null, quest.isCompleted ? /*#__PURE__*/React.createElement("span", {
+        className: "sr-only"
+      }, completedLabel, ": ") : isLocked ? /*#__PURE__*/React.createElement("span", {
+        className: "sr-only"
+      }, lockedLabel, ": ") : null, quest.text)), !quest.isCompleted && isLocked && /*#__PURE__*/React.createElement("span", {
         className: "mt-1 block pl-4 text-[10px] font-bold opacity-70"
       }, inquiryLabel('bonus', 'Optional story bonus at rapport'), " ", quest.difficulty));
     })) : /*#__PURE__*/React.createElement("p", {
@@ -2043,6 +2202,9 @@ function PersonaChatView(props) {
     const isCharB = !isUser && msg.speakerName === personaState.selectedCharacters[1]?.name;
     const speakerLabel = isUser ? t('common.you') : msg.speakerName;
     const isMessagePlayingNow = _isPersonaMessagePlaying(idx);
+    const _panelTwoLang = String(msg.text || '').split(/\*{0,2}\s*English Translation\s*:?\s*\*{0,2}/i);
+    const panelMainText = _panelTwoLang[0].trim() || String(msg.text || '');
+    const panelTranslationText = msg.translation && String(msg.translation).trim() || (_panelTwoLang.length > 1 ? _panelTwoLang.slice(1).join(' ').trim() : null) || null;
     return /*#__PURE__*/React.createElement("div", {
       key: idx,
       className: `flex flex-col ${isUser ? 'items-end' : isCharB ? 'items-end' : 'items-start'}`
@@ -2054,8 +2216,8 @@ function PersonaChatView(props) {
       }) || 'Message from ' + speakerLabel + '. Click any sentence to hear it read aloud.' : undefined
     }, isMessagePlayingNow && /*#__PURE__*/React.createElement("div", {
       className: "absolute left-0 right-0 top-0 h-1 bg-gradient-to-r from-yellow-300 via-amber-400 to-yellow-300 animate-pulse motion-reduce:animate-none"
-    }), isUser ? msg.text.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1') : (() => {
-      const paragraphs = msg.text.split(/\n{2,}/);
+    }), isUser ? panelMainText.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1') : (() => {
+      const paragraphs = panelMainText.split(/\n{2,}/);
       let sentenceCounter = 0;
       return paragraphs.map((para, pIdx) => {
         const sentences = splitTextToSentences(para);
@@ -2077,14 +2239,16 @@ function PersonaChatView(props) {
           return /*#__PURE__*/React.createElement("span", {
             key: sIdx,
             onClick: e => {
+              if (e.target !== e.currentTarget && e.target.closest && e.target.closest('button, a, [role="button"]')) return;
               e.stopPropagation();
-              handleSpeak(msg.text, `persona-message-${idx}`, currentGlobalIdx);
+              handleSpeak(panelMainText, `persona-message-${idx}`, currentGlobalIdx);
             },
             onKeyDown: e => {
+              if (e.target !== e.currentTarget && e.target.closest && e.target.closest('button, a, [role="button"]')) return;
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
                 e.stopPropagation();
-                handleSpeak(msg.text, `persona-message-${idx}`, currentGlobalIdx);
+                handleSpeak(panelMainText, `persona-message-${idx}`, currentGlobalIdx);
               }
             },
             role: "button",
@@ -2097,7 +2261,7 @@ function PersonaChatView(props) {
           }, formatInteractiveText(cleanText.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1')), " ");
         }));
       });
-    })(), !isUser && msg.translation && /*#__PURE__*/React.createElement("div", {
+    })(), !isUser && panelTranslationText && /*#__PURE__*/React.createElement("div", {
       className: "mt-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3"
     }, /*#__PURE__*/React.createElement("div", {
       className: "flex items-center gap-2 mb-1"
@@ -2108,16 +2272,17 @@ function PersonaChatView(props) {
       "aria-label": t('persona.speak_translation'),
       onClick: e => {
         e.stopPropagation();
-        handleSpeak(msg.translation, `persona-panel-translation-${idx}`, 0);
+        handleSpeak(panelTranslationText, `persona-panel-translation-${idx}`, 0);
       },
-      className: "p-0.5 rounded text-indigo-700 hover:text-indigo-700 hover:bg-indigo-50"
+      className: "p-1.5 min-w-[28px] min-h-[28px] inline-flex items-center justify-center rounded text-indigo-700 hover:text-indigo-800 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 transition-colors motion-reduce:transition-none"
     }, /*#__PURE__*/React.createElement(Volume2, {
-      size: 12
+      size: 12,
+      "aria-hidden": "true"
     }))), /*#__PURE__*/React.createElement("p", {
       lang: window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English'),
       dir: "auto",
       className: "text-xs text-slate-500 leading-relaxed italic"
-    }, msg.translation)), !isUser && /*#__PURE__*/React.createElement(PersonaEvidenceNote, {
+    }, panelTranslationText)), !isUser && /*#__PURE__*/React.createElement(PersonaEvidenceNote, {
       message: msg,
       source: generatedContent?.config?.personaSource,
       t: t
@@ -2447,9 +2612,9 @@ function PersonaChatView(props) {
     className: 'w-full md:w-1/3 max-h-[25vh] md:max-h-none bg-slate-50 border-b md:border-b-0 md:border-r border-slate-200 p-3 sm:p-4 md:p-6 ' + (characterDetailsOpen ? 'flex' : 'hidden') + ' md:flex flex-col items-center text-center overflow-y-auto shrink-0 z-10 relative custom-scrollbar'
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-24 h-32 sm:w-32 sm:h-48 md:w-80 md:h-[28rem] bg-yellow-100 rounded-2xl border-4 border-white shadow-xl overflow-hidden mb-3 md:mb-6 shrink-0 relative group"
-  }, personaState.avatarUrl && /*#__PURE__*/React.createElement("img", {
+  }, _safePersonaChatAvatarUrl(personaState.avatarUrl) && /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
-    src: personaState.avatarUrl,
+    src: _safePersonaChatAvatarUrl(personaState.avatarUrl),
     alt: personaState.selectedCharacter.name,
     className: `w-full h-full object-cover transition-all motion-reduce:transition-none duration-500 hover:scale-105 ${personaState.isImageLoading ? 'blur-[2px] opacity-90 scale-105' : ''}`,
     style: {
@@ -2512,25 +2677,39 @@ function PersonaChatView(props) {
   }, /*#__PURE__*/React.createElement("h4", {
     className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest mb-3 flex items-center gap-1"
   }, /*#__PURE__*/React.createElement(Search, {
-    size: 12
+    size: 12,
+    "aria-hidden": "true"
   }), " ", inquiryLabel('topics', 'Topics to explore')), /*#__PURE__*/React.createElement("div", {
     className: "space-y-2"
-  }, personaState.selectedCharacter.quests.map((quest, qIdx) => /*#__PURE__*/React.createElement("div", {
-    key: qIdx,
-    className: `p-3 rounded-lg border text-xs transition-all motion-reduce:transition-none ${quest.isCompleted ? 'bg-green-50 border-green-200 text-green-800' : 'bg-white border-slate-100 text-slate-600'}`
-  }, /*#__PURE__*/React.createElement("div", {
-    className: "flex items-start gap-2"
-  }, /*#__PURE__*/React.createElement("div", {
-    className: `mt-0.5 ${quest.isCompleted ? 'text-green-500' : 'text-slate-600'}`
-  }, quest.isCompleted ? /*#__PURE__*/React.createElement(CheckCircle2, {
-    size: 14
-  }) : /*#__PURE__*/React.createElement("div", {
-    className: "w-3.5 h-3.5 rounded-full border-2 border-current"
-  })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
-    className: `font-bold block mb-0.5 ${quest.isCompleted ? 'line-through opacity-70' : ''}`
-  }, quest.text), !quest.isCompleted && /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] uppercase tracking-wider font-bold opacity-60"
-  }, inquiryLabel('bonus', 'Optional story bonus at rapport'), " ", quest.difficulty)))))))), /*#__PURE__*/React.createElement("div", {
+  }, personaState.selectedCharacter.quests.map((quest, qIdx) => {
+    const isQuestLocked = singleRapport < Number(quest.difficulty || 0);
+    const rawCompleted = t('common.completed');
+    const rawLocked = t('common.locked');
+    const completedLabel = rawCompleted && rawCompleted !== 'common.completed' ? rawCompleted : 'Completed';
+    const lockedLabel = rawLocked && rawLocked !== 'common.locked' ? rawLocked : 'Locked';
+    return /*#__PURE__*/React.createElement("div", {
+      key: qIdx,
+      className: `p-3 rounded-lg border text-xs transition-all motion-reduce:transition-none ${quest.isCompleted ? 'bg-green-50 border-green-200 text-green-800' : 'bg-white border-slate-100 text-slate-600'}`
+    }, /*#__PURE__*/React.createElement("div", {
+      className: "flex items-start gap-2"
+    }, /*#__PURE__*/React.createElement("div", {
+      className: `mt-0.5 ${quest.isCompleted ? 'text-green-500' : 'text-slate-600'}`
+    }, quest.isCompleted ? /*#__PURE__*/React.createElement(CheckCircle2, {
+      size: 14,
+      "aria-hidden": "true"
+    }) : /*#__PURE__*/React.createElement("div", {
+      "aria-hidden": "true",
+      className: "w-3.5 h-3.5 rounded-full border-2 border-current"
+    })), /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("span", {
+      className: `font-bold block mb-0.5 ${quest.isCompleted ? 'line-through opacity-70' : ''}`
+    }, quest.isCompleted ? /*#__PURE__*/React.createElement("span", {
+      className: "sr-only"
+    }, completedLabel, ": ") : isQuestLocked ? /*#__PURE__*/React.createElement("span", {
+      className: "sr-only"
+    }, lockedLabel, ": ") : null, quest.text), !quest.isCompleted && /*#__PURE__*/React.createElement("span", {
+      className: "text-[11px] uppercase tracking-wider font-bold opacity-60"
+    }, inquiryLabel('bonus', 'Optional story bonus at rapport'), " ", quest.difficulty))));
+  })))), /*#__PURE__*/React.createElement("div", {
     className: "flex-1 min-h-0 flex flex-col bg-white relative min-w-0"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -2591,7 +2770,7 @@ function PersonaChatView(props) {
     size: 16
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold"
-  }, t('persona.auto_read_label'))), /*#__PURE__*/React.createElement("button", {
+  }, t('persona.auto_read_label'))), !showRoleSwap && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "persona_auto_send",
     "aria-label": personaAutoSend ? t('persona.turn_off_auto_send') : t('persona.turn_on_auto_send'),
@@ -2606,7 +2785,7 @@ function PersonaChatView(props) {
     className: "text-xs font-bold hidden sm:inline"
   }, t('persona.auto_send'))), /*#__PURE__*/React.createElement("div", {
     className: "w-px h-6 bg-slate-300 mx-1"
-  }), /*#__PURE__*/React.createElement("button", {
+  }), isPersonaFreeResponse && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": showPersonaHints ? t('persona.hints_hide_tooltip') : t('persona.hints_show_tooltip'),
     "data-help-key": "persona_hints_toggle",
@@ -2624,10 +2803,10 @@ function PersonaChatView(props) {
     type: "button",
     "aria-label": isPersonaFreeResponse ? t('persona.mode_switch_mc') : t('persona.mode_switch_free'),
     "data-help-key": "persona_response_mode",
-    disabled: personaState.isLoading || panelChoicePending,
+    disabled: personaState.isLoading || panelChoicePending || singleChoicePending,
     "aria-pressed": isPersonaFreeResponse,
     onClick: () => {
-      if (personaState.isLoading || panelChoicePending) return;
+      if (personaState.isLoading || panelChoicePending || singleChoicePending) return;
       const newMode = !isPersonaFreeResponse;
       setIsPersonaFreeResponse(newMode);
       if (!newMode) setShowPersonaHints(true);
@@ -2640,7 +2819,7 @@ function PersonaChatView(props) {
     size: 16
   }), /*#__PURE__*/React.createElement("span", {
     className: "text-xs font-bold"
-  }, isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label'))), !personaStudentTextAiOff && /*#__PURE__*/React.createElement("button", {
+  }, isPersonaFreeResponse ? t('persona.mode_free_label') : t('persona.mode_mc_label')))), !personaStudentTextAiOff && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "data-help-key": "persona_topic_spark",
     onClick: _requestPersonaTopicSpark,
@@ -2771,12 +2950,12 @@ function PersonaChatView(props) {
     const isMessagePlayingNow = _isPersonaMessagePlaying(idx);
     let bubbleClass = 'bg-white text-slate-700 border-slate-200 rounded-bl-none font-serif text-base';
     let speakerName = isUser ? t('common.you') : personaState.selectedCharacter?.name || t('common.character');
-    let avatarUrl = !isUser ? personaState.avatarUrl || personaState.selectedCharacter?.avatarUrl || null : null;
+    let avatarUrl = !isUser ? _safePersonaChatAvatarUrl(personaState.avatarUrl || personaState.selectedCharacter?.avatarUrl || null) : null;
     if (!isUser && msg.speakerName && personaState.selectedCharacters.length > 0) {
       speakerName = msg.speakerName;
       const charIndex = personaState.selectedCharacters.findIndex(c => c.name === msg.speakerName);
       const charData = personaState.selectedCharacters.find(c => c.name === msg.speakerName);
-      if (charData) avatarUrl = charData.avatarUrl;
+      if (charData) avatarUrl = _safePersonaChatAvatarUrl(charData.avatarUrl);
       if (charIndex === 1) {
         bubbleClass = 'bg-rose-50 text-slate-800 border-rose-200 rounded-bl-none border';
       } else {
@@ -2790,13 +2969,13 @@ function PersonaChatView(props) {
       className: `flex flex-col ${isUser ? 'items-end' : 'items-start'}`
     }, /*#__PURE__*/React.createElement("div", {
       className: `flex gap-3 max-w-[85%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`
-    }, !isUser && avatarUrl && /*#__PURE__*/React.createElement("div", {
+    }, !isUser && _safePersonaChatAvatarUrl(avatarUrl) && /*#__PURE__*/React.createElement("div", {
       className: "flex-shrink-0 mt-1"
     }, /*#__PURE__*/React.createElement("div", {
       className: `w-8 h-8 rounded-full overflow-hidden border shadow-sm bg-white transition-all motion-reduce:transition-none ${isMessagePlayingNow ? 'border-yellow-400 ring-2 ring-yellow-200 shadow-yellow-100' : 'border-slate-400'}`
     }, /*#__PURE__*/React.createElement("img", {
       loading: "lazy",
-      src: avatarUrl,
+      src: _safePersonaChatAvatarUrl(avatarUrl),
       alt: speakerName,
       className: "w-full h-full object-cover"
     }))), /*#__PURE__*/React.createElement("div", {
@@ -2813,7 +2992,7 @@ function PersonaChatView(props) {
       const translationText = msg.translation && String(msg.translation).trim() || (_twoLang.length > 1 ? _twoLang.slice(1).join(' ').trim() : null) || null;
       const paragraphs = mainText.split(/\n{2,}/);
       let sentenceCounter = 0;
-      return /*#__PURE__*/React.createElement(React.Fragment, null, paragraphs.map((para, pIdx) => {
+      return /*#__PURE__*/React.createElement(React.Fragment, null, isUser ? mainText.replace(/\*([^*]+)\*/g, '$1').replace(/\*\*([^*]+)\*\*/g, '$1') : paragraphs.map((para, pIdx) => {
         const sentences = splitTextToSentences(para);
         if (sentences.length === 0) return null;
         return /*#__PURE__*/React.createElement("p", {
@@ -2832,6 +3011,7 @@ function PersonaChatView(props) {
           return /*#__PURE__*/React.createElement("span", {
             key: sIdx,
             onClick: e => {
+              if (e.target !== e.currentTarget && e.target.closest && e.target.closest('button, a, [role="button"]')) return;
               e.stopPropagation();
               handleSpeak(mainText, `persona-message-${idx}`, currentGlobalIdx);
             },
@@ -2839,9 +3019,11 @@ function PersonaChatView(props) {
             tabIndex: 0,
             "aria-label": cleanText + '. ' + t('common.click_to_read'),
             onKeyDown: e => {
+              if (e.target !== e.currentTarget && e.target.closest && e.target.closest('button, a, [role="button"]')) return;
               if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                e.currentTarget.click();
+                e.stopPropagation();
+                handleSpeak(mainText, `persona-message-${idx}`, currentGlobalIdx);
               }
             },
             className: `transition-colors motion-reduce:transition-none duration-200 rounded px-1 py-0.5 cursor-pointer hover:bg-yellow-100 ${isActive ? 'bg-yellow-200 text-slate-950 shadow-sm ring-1 ring-yellow-400' : ''} ${isHeader ? 'font-bold block mt-1' : ''}`,
@@ -2852,7 +3034,7 @@ function PersonaChatView(props) {
         message: msg,
         source: generatedContent?.config?.personaSource,
         t: t
-      }), translationText && /*#__PURE__*/React.createElement("div", {
+      }), !isUser && translationText && /*#__PURE__*/React.createElement("div", {
         className: "mt-3 rounded-xl border border-slate-200 bg-slate-50/80 p-3"
       }, /*#__PURE__*/React.createElement("div", {
         className: "flex items-center gap-2 mb-1"
@@ -2865,10 +3047,11 @@ function PersonaChatView(props) {
           e.stopPropagation();
           handleSpeak(translationText, `persona-translation-${idx}`, 0);
         },
-        className: "p-0.5 rounded text-indigo-700 hover:text-indigo-700 hover:bg-indigo-50 transition-colors motion-reduce:transition-none",
+        className: "p-1.5 min-w-[28px] min-h-[28px] inline-flex items-center justify-center rounded text-indigo-700 hover:text-indigo-800 hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 transition-colors motion-reduce:transition-none",
         title: t('common.click_to_read')
       }, /*#__PURE__*/React.createElement(Volume2, {
-        size: 12
+        size: 12,
+        "aria-hidden": "true"
       }))), /*#__PURE__*/React.createElement("p", {
         lang: window.AlloFlowLang?.bcp47Full?.(msg.translationTarget || msg.translationLanguage || 'English'),
         dir: "auto",
@@ -2881,22 +3064,25 @@ function PersonaChatView(props) {
       className: "animate-pulse motion-reduce:animate-none"
     })));
   }), personaState.isLoading && /*#__PURE__*/React.createElement("div", {
-    className: "flex items-start"
+    className: "flex items-start",
+    role: "status",
+    "aria-live": "polite"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex gap-3 max-w-[85%]"
-  }, personaState.selectedCharacter?.avatarUrl && /*#__PURE__*/React.createElement("div", {
+  }, personaState.selectedCharacter?.avatarUrl && _safePersonaChatAvatarUrl(personaState.selectedCharacter.avatarUrl) && /*#__PURE__*/React.createElement("div", {
     className: "flex-shrink-0 mt-1"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-8 h-8 rounded-full overflow-hidden border border-yellow-300 ring-2 ring-yellow-100 bg-white shadow-sm"
   }, /*#__PURE__*/React.createElement("img", {
     loading: "lazy",
-    src: personaState.selectedCharacter.avatarUrl,
+    src: _safePersonaChatAvatarUrl(personaState.selectedCharacter.avatarUrl),
     alt: personaState.selectedCharacter.name,
     className: "w-full h-full object-cover"
   }))), /*#__PURE__*/React.createElement("div", {
     className: "bg-white p-3 rounded-2xl border border-yellow-200 rounded-bl-none text-xs text-slate-600 italic flex items-center gap-2 shadow-sm"
   }, /*#__PURE__*/React.createElement(History, {
     size: 14,
+    "aria-hidden": "true",
     className: "animate-spin motion-reduce:animate-none text-yellow-600"
   }), /*#__PURE__*/React.createElement("span", null, t('persona.status_thinking', {
     name: personaState.selectedCharacter?.name
@@ -2942,8 +3128,9 @@ function PersonaChatView(props) {
   })), personaState.suggestions.map((q, i) => /*#__PURE__*/React.createElement("button", {
     type: "button",
     key: i,
+    disabled: singleChoicePending || personaState.isLoading,
     onClick: () => handlePersonaChatSubmit(typeof q === 'string' ? q : q.text, true),
-    className: `whitespace-normal text-left px-3 py-2 text-xs font-bold rounded-xl border transition-colors motion-reduce:transition-none shadow-sm ${isPersonaFreeResponse ? 'bg-yellow-50 text-yellow-800 border-yellow-200 hover:bg-yellow-100 flex-shrink-0 max-w-[75vw] sm:max-w-sm [overflow-wrap:anywhere]' : 'bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100 w-full sm:w-[48%] py-3 text-sm'}`
+    className: `whitespace-normal text-left px-3 py-2 text-xs font-bold rounded-xl border transition-colors motion-reduce:transition-none shadow-sm disabled:opacity-50 disabled:cursor-not-allowed ${isPersonaFreeResponse ? 'bg-yellow-50 text-yellow-800 border-yellow-200 hover:bg-yellow-100 flex-shrink-0 max-w-[75vw] sm:max-w-sm [overflow-wrap:anywhere]' : 'bg-indigo-50 text-indigo-900 border-indigo-200 hover:bg-indigo-100 w-full sm:w-[48%] py-3 text-sm'}`
   }, !isPersonaFreeResponse && /*#__PURE__*/React.createElement("span", {
     className: "mr-2 opacity-50"
   }, String.fromCharCode(65 + i), "."), typeof q === 'string' ? q : q.text))), !isPersonaFreeResponse && (personaState.suggestions || []).length > 0 && (personaState.suggestions || []).length < 6 && !personaState.isLoading && /*#__PURE__*/React.createElement("div", {

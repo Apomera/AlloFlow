@@ -23,6 +23,7 @@
  * Maximize2, Minimize2, X, RefreshCw, Send
  */
 function SocraticChat({
+  alloBotRef = null,
   chatStyles = {},
   handleSetShowSocraticChatToFalse,
   handleSocraticSubmit,
@@ -81,38 +82,98 @@ function SocraticChat({
   const titleId = 'socratic-chat-title';
   const descId = 'socratic-chat-desc';
   const logId = 'socratic-chat-log';
+  const socraticLabel = (key, fallback, vars) => {
+    try {
+      const translated = typeof t === 'function' ? t(key, vars) : '';
+      if (typeof translated === 'string' && translated && translated !== key) return translated;
+    } catch (_) {}
+    let out = fallback;
+    if (vars && typeof vars === 'object') {
+      Object.keys(vars).forEach((k) => {
+        out = out.replace(new RegExp(`\\{${k}\\}`, 'g'), String(vars[k] == null ? '' : vars[k]));
+      });
+    }
+    return out;
+  };
+  const canDictate = Boolean(
+    (recognitionRef && recognitionRef.current) ||
+    (typeof window !== 'undefined' && (window.SpeechRecognition || window.webkitSpeechRecognition))
+  );
+  const viewportW = typeof window !== 'undefined' && window.innerWidth ? window.innerWidth : 1024;
+  const viewportH = typeof window !== 'undefined' && window.innerHeight ? window.innerHeight : 768;
+  const hasCustomPos = Boolean(socraticPosition && socraticPosition.x !== null && socraticPosition.y !== null);
+  const panelW = Math.min(Math.max(200, viewportW - 16), isSocraticExpanded ? 768 : 320);
+  const panelH = Math.min(Math.max(220, viewportH - 16), isSocraticExpanded ? 704 : 448);
+  const clampedX = hasCustomPos ? Math.min(Math.max(8, viewportW - panelW - 8), Math.max(8, Number(socraticPosition.x) || 8)) : null;
+  const clampedY = hasCustomPos ? Math.min(Math.max(8, viewportH - panelH - 8), Math.max(8, Number(socraticPosition.y) || 8)) : null;
+  const defaultRight = viewportW < 440 ? '0.5rem' : '6rem';
+  const defaultBottom = viewportH < 520 ? '0.5rem' : '6rem';
+  const _speakSocraticMessage = (text) => {
+    const cleanText = String(text || '')
+      .replace(/\[([^\]\n]+)\]\([^)]+\)/g, '$1')
+      .replace(/[*_`~#>]+/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (!cleanText) return;
+    if (alloBotRef && alloBotRef.current && typeof alloBotRef.current.speak === 'function') {
+      alloBotRef.current.speak(cleanText);
+      return;
+    }
+    try {
+      if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+        window.speechSynthesis.cancel();
+        window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(cleanText));
+      }
+    } catch (err) {
+      if (typeof warnLog === 'function') warnLog('Socratic TTS replay failed:', err && err.message ? err.message : err);
+    }
+  };
+  const startSocraticDrag = (clientX, clientY, targetEl, currentTargetEl) => {
+    if (targetEl && targetEl.closest && targetEl.closest('button')) return false;
+    setIsSocraticDragging(true);
+    const rect = currentTargetEl.parentElement.getBoundingClientRect();
+    if (socraticDragOffset) socraticDragOffset.current = { x: clientX - rect.left, y: clientY - rect.top };
+    if (socraticLivePos) socraticLivePos.current = { x: rect.left, y: rect.top };
+    return true;
+  };
   const handleSubmitForm = (e) => {
     e.preventDefault();
-    if (!socraticInput.trim() || isSocraticThinking) return;
+    if (!String(socraticInput || '').trim() || isSocraticThinking) return;
     handleSocraticSubmit();
   };
+  const safeMessages = Array.isArray(socraticMessages) ? socraticMessages : [];
 
   return (
     <div
       ref={socraticChatRef}
-      className={`fixed z-[110] ${_container} rounded-2xl flex flex-col overflow-hidden animate-in slide-in-from-bottom-10 fade-in duration-300 ${isSocraticExpanded ? 'w-[48rem] h-[44rem]' : 'w-80 h-[28rem]'}`}
+      className={`fixed z-[110] ${_container} rounded-2xl flex flex-col overflow-hidden animate-in motion-reduce:animate-none slide-in-from-bottom-10 fade-in duration-300 ${isSocraticExpanded ? 'w-[48rem] h-[44rem]' : 'w-80 h-[28rem]'} max-w-[calc(100vw-1rem)] max-h-[calc(100dvh-1rem)]`}
       role="dialog"
       aria-labelledby={titleId}
       aria-describedby={descId}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape' && typeof handleSetShowSocraticChatToFalse === 'function') {
+          e.stopPropagation();
+          handleSetShowSocraticChatToFalse();
+        }
+      }}
       style={{
-        right: socraticPosition.x !== null ? 'auto' : '6rem',
-        bottom: socraticPosition.y !== null ? 'auto' : '6rem',
-        left: socraticPosition.x !== null ? `${socraticPosition.x}px` : 'auto',
-        top: socraticPosition.y !== null ? `${socraticPosition.y}px` : 'auto',
+        right: clampedX !== null ? 'auto' : defaultRight,
+        bottom: clampedY !== null ? 'auto' : defaultBottom,
+        left: clampedX !== null ? `${clampedX}px` : 'auto',
+        top: clampedY !== null ? `${clampedY}px` : 'auto',
         cursor: isSocraticDragging ? 'grabbing' : 'auto',
         willChange: isSocraticDragging ? 'left, top' : 'auto',
       }}
     >
       <p id={descId} className="sr-only">{t('socratic.placeholder')}</p>
       <div
-        className={`p-3 flex justify-between items-center shrink-0 cursor-grab active:cursor-grabbing select-none ${_header}`}
+        className={`p-3 flex justify-between items-center shrink-0 cursor-grab active:cursor-grabbing select-none touch-none ${_header}`}
         onMouseDown={(e) => {
-          if (e.target.closest('button')) return;
-          e.preventDefault();
-          setIsSocraticDragging(true);
-          const rect = e.currentTarget.parentElement.getBoundingClientRect();
-          socraticDragOffset.current = { x: e.clientX - rect.left, y: e.clientY - rect.top };
-          socraticLivePos.current = { x: rect.left, y: rect.top };
+          if (startSocraticDrag(e.clientX, e.clientY, e.target, e.currentTarget)) e.preventDefault();
+        }}
+        onTouchStart={(e) => {
+          const touch = e.touches && e.touches[0];
+          if (touch) startSocraticDrag(touch.clientX, touch.clientY, e.target, e.currentTarget);
         }}
         title={t('socratic.drag_hint')}
       >
@@ -124,7 +185,7 @@ function SocraticChat({
             type="button"
             onClick={handleToggleSocraticAutoRead}
             data-help-key="socratic_auto_read"
-            className={`p-1.5 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${socraticAutoRead ? _button : _secondaryButton}`}
+            className={`min-w-9 min-h-9 inline-flex items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${socraticAutoRead ? _button : _secondaryButton}`}
             title={t('socratic.auto_read')}
             aria-label={t('socratic.auto_read')}
             aria-pressed={socraticAutoRead}
@@ -135,7 +196,7 @@ function SocraticChat({
             type="button"
             onClick={handleToggleSocraticAutoSend}
             data-help-key="socratic_auto_send"
-            className={`p-1.5 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${socraticAutoSend ? _button : _secondaryButton}`}
+            className={`min-w-9 min-h-9 inline-flex items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${socraticAutoSend ? _button : _secondaryButton}`}
             title={t('socratic.auto_send')}
             aria-label={t('socratic.auto_send')}
             aria-pressed={socraticAutoSend}
@@ -146,14 +207,14 @@ function SocraticChat({
             type="button"
             onClick={handleToggleIsSocraticExpanded}
             data-help-key="socratic_expand"
-            className={`p-1.5 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${_secondaryButton}`}
+            className={`min-w-9 min-h-9 inline-flex items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${_secondaryButton}`}
             title={isSocraticExpanded ? t('socratic.collapse_tooltip') : t('socratic.expand_tooltip')}
             aria-label={isSocraticExpanded ? t('socratic.collapse_tooltip') : t('socratic.expand_tooltip')}
             aria-expanded={isSocraticExpanded}
           >
             {isSocraticExpanded ? <Minimize2 size={14} aria-hidden="true"/> : <Maximize2 size={14} aria-hidden="true"/>}
           </button>
-          <button type="button" data-help-key="socratic_close" data-help-ignore onClick={handleSetShowSocraticChatToFalse} className={`p-1.5 rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${_secondaryButton}`} aria-label={t('common.close')}>
+          <button type="button" data-help-key="socratic_close" data-help-ignore onClick={handleSetShowSocraticChatToFalse} className={`min-w-9 min-h-9 inline-flex items-center justify-center rounded transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${_secondaryButton}`} aria-label={t('common.close')}>
             <X size={14} aria-hidden="true"/>
           </button>
         </div>
@@ -167,10 +228,24 @@ function SocraticChat({
         aria-relevant="additions text"
         aria-label={t('socratic.title')}
       >
-        {socraticMessages.map((msg, i) => (
+        {safeMessages.map((msg, i) => (
           <div key={i} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
             <div className={`max-w-[90%] p-2.5 rounded-xl text-xs shadow-sm leading-relaxed ${msg.role === 'user' ? `${_userBubble} rounded-br-none` : `${_modelBubble} rounded-bl-none`}`}>
-              {msg.role === 'user' ? msg.text : renderFormattedText(msg.text)}
+              <div>{msg.role === 'user' ? msg.text : (typeof renderFormattedText === 'function' ? renderFormattedText(msg.text) : msg.text)}</div>
+              {msg.role !== 'user' && msg.text && (
+                <div className="mt-1.5 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => _speakSocraticMessage(msg.text)}
+                    className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded text-[11px] opacity-80 hover:opacity-100 underline-offset-2 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-teal-500"
+                    aria-label={socraticLabel('socratic.listen_reply', 'Read tutor reply aloud')}
+                    title={socraticLabel('socratic.listen_reply', 'Read tutor reply aloud')}
+                  >
+                    <Volume2 size={12} aria-hidden="true"/>
+                    <span>{socraticLabel('common.listen', 'Listen')}</span>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -186,22 +261,23 @@ function SocraticChat({
         <button
           type="button"
           onClick={() => {
+            if (!canDictate) return;
             if (isSocraticDictating) {
               setIsSocraticDictating(false);
-              if (recognitionRef.current) recognitionRef.current.stop();
+              if (recognitionRef && recognitionRef.current) recognitionRef.current.stop();
             } else {
               setIsSocraticDictating(true);
-              if (recognitionRef.current) {
+              if (recognitionRef && recognitionRef.current) {
                 try {
                   recognitionRef.current.start();
                 } catch(e) { warnLog('Caught error:', e?.message || e); }
               }
             }
           }}
-          disabled={isSocraticThinking}
-          className={`p-2 rounded-lg transition-colors shadow-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${isSocraticDictating ? 'bg-red-700 text-white animate-pulse motion-reduce:animate-none' : _secondaryButton}`}
-          title={t('socratic.mic_tooltip')}
-          aria-label={t('socratic.mic_tooltip')}
+          disabled={isSocraticThinking || !canDictate}
+          className={`p-2 rounded-lg transition-colors shadow-sm flex items-center justify-center disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${isSocraticDictating ? 'bg-red-700 text-white animate-pulse motion-reduce:animate-none' : _secondaryButton}`}
+          title={canDictate ? t('socratic.mic_tooltip') : socraticLabel('socratic.mic_unavailable', 'Voice input is not supported in this browser')}
+          aria-label={canDictate ? t('socratic.mic_tooltip') : socraticLabel('socratic.mic_unavailable', 'Voice input is not supported in this browser')}
           aria-pressed={isSocraticDictating}
         >
           <Mic size={16} aria-hidden="true"/>
@@ -209,6 +285,7 @@ function SocraticChat({
         <input aria-label={t('common.enter_socratic_input')}
           data-help-key="socratic_input"
           type="text"
+          maxLength={2000}
           value={socraticInput}
           onChange={(e) => setSocraticInput(e.target.value)}
           placeholder={isSocraticDictating ? t('socratic.listening') : t('socratic.placeholder')}
@@ -220,7 +297,7 @@ function SocraticChat({
         <button
           type="submit"
           aria-label={t('common.socratic_submit')}
-          disabled={!socraticInput.trim() || isSocraticThinking}
+          disabled={!String(socraticInput || '').trim() || isSocraticThinking}
           className={`p-2 rounded-lg disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 ${_button}`}
         >
           {isSocraticThinking ? <RefreshCw size={16} className="animate-spin motion-reduce:animate-none" aria-hidden="true"/> : <Send size={16} aria-hidden="true"/>}

@@ -145,7 +145,7 @@ jobs:
             desktop/dist/AlloFlow-Desktop-*.exe
             desktop/dist/AlloFlow-Desktop-*.exe.blockmap
             desktop/dist/*.yml
-            desktop/dist/builder-debug.yml
+            !desktop/dist/builder-*.yml
             desktop/dist/SHA256SUMS-windows.txt
             desktop/WINDOWS-INSTALL.md
           if-no-files-found: error
@@ -258,7 +258,7 @@ jobs:
             desktop/dist/AlloFlow-Desktop-*.dmg.blockmap
             desktop/dist/AlloFlow-Desktop-*.zip.blockmap
             desktop/dist/*.yml
-            desktop/dist/builder-debug.yml
+            !desktop/dist/builder-*.yml
           if-no-files-found: error
 
   draft-release:

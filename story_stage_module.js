@@ -1683,10 +1683,15 @@
         // Single <main> wraps the entire storybook for PDF tag-tree clarity.
         + '<main id="story-content" role="main" aria-labelledby="story-title">'
         + '<article aria-labelledby="story-title">';
+      var _safeStoryImgUrl = function (u) {
+        var s = String(u || '').trim();
+        return /^(?:data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=\s]+|https:\/\/[^\s"'<>]+|blob:[^\s"'<>]+)$/i.test(s) ? s : '';
+      };
       // ── Cover page (header landmark) ──
       html += '<header class="page cover">';
-      if (sceneImage) {
-        html += '<figure><img src="' + esc(sceneImage) + '" alt="' + esc('Cover illustration for ' + safeTitle) + '" style="width:300px;height:300px;border-radius:50%;object-fit:cover;border:6px solid rgba(255,255,255,0.3);margin-bottom:20px" /></figure>';
+      var _safeCoverImg = _safeStoryImgUrl(sceneImage);
+      if (_safeCoverImg) {
+        html += '<figure><img src="' + esc(_safeCoverImg) + '" alt="' + esc('Cover illustration for ' + safeTitle) + '" style="width:300px;height:300px;border-radius:50%;object-fit:cover;border:6px solid rgba(255,255,255,0.3);margin-bottom:20px" /></figure>';
       }
       html += '<h1 id="story-title">' + safeTitle + '</h1>';
       if (safeAuthor) html += '<p class="subtitle">Performed by ' + safeAuthor + '</p>';
@@ -1697,8 +1702,9 @@
       html += '<h2 id="cast-heading" style="text-align:center;margin-bottom:20px">Cast of Characters</h2>';
       html += '<ul class="cast-grid" style="list-style:none;padding:0">';
       chars.forEach(function (c) {
+        var _safeCastPortrait = _safeStoryImgUrl(c.portrait);
         html += '<li class="cast-card" style="border-color:' + esc(c.color) + '">'
-          + (c.portrait ? '<img src="' + esc(c.portrait) + '" alt="' + esc('Portrait of ' + c.name) + '" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:8px" />' : '')
+          + (_safeCastPortrait ? '<img src="' + esc(_safeCastPortrait) + '" alt="' + esc('Portrait of ' + c.name) + '" style="width:80px;height:80px;border-radius:50%;object-fit:cover;margin-bottom:8px" />' : '')
           + '<p class="name" style="color:' + esc(c.color) + '">' + esc(c.name) + '</p>'
           + (c.description ? '<p class="desc">' + esc(c.description) + '</p>' : '')
           + '</li>';
@@ -1708,12 +1714,13 @@
       pages.forEach(function (pageLines, pi) {
         html += '<section class="page" aria-labelledby="page-' + (pi + 1) + '-heading">';
         html += '<h2 id="page-' + (pi + 1) + '-heading" class="visually-hidden" style="position:absolute;left:-9999px">Page ' + (pi + 1) + '</h2>';
-        if (pageImages[pi]) {
+        var _safePageImg = _safeStoryImgUrl(pageImages[pi]);
+        if (_safePageImg) {
           // Build descriptive alt from the first non-empty line on the page.
           var firstLine = '';
           for (var fi = 0; fi < pageLines.length; fi++) { if (pageLines[fi].text && pageLines[fi].text.trim()) { firstLine = pageLines[fi].text.trim().slice(0, 80); break; } }
           var altText = 'Illustration for page ' + (pi + 1) + (firstLine ? ': ' + firstLine : '');
-          html += '<figure><img class="page-img" src="' + esc(pageImages[pi]) + '" alt="' + esc(altText) + '" /></figure>';
+          html += '<figure><img class="page-img" src="' + esc(_safePageImg) + '" alt="' + esc(altText) + '" /></figure>';
         }
         pageLines.forEach(function (line) {
           var ch = script.characters.find(function (c) { return c.id === line.speaker; });
@@ -1740,7 +1747,7 @@
       }
       html += '</article></main></body></html>';
       var w = window.open('', '_blank');
-      if (w) { w.document.open(); w.document.write(html); w.document.close(); }
+      if (w) { try { w.opener = null; } catch (_) {} w.document.open(); w.document.write(html); w.document.close(); }
     }, [script, storyTitle, performerName, sceneImage, pages, pageImages]);
 
     // Keep microphone ownership and late permission/results tied to one recording.
@@ -1834,6 +1841,10 @@
     var exportScript = useCallback(function () {
       if (!script) return;
       var esc = function (value) { return String(value == null ? '' : value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); };
+      var _safeStoryImgUrl = function (u) {
+        var s = String(u || '').trim();
+        return /^(?:data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=\s]+|https:\/\/[^\s"'<>]+|blob:[^\s"'<>]+)$/i.test(s) ? s : '';
+      };
       var color = function (value) { return /^#[0-9a-f]{6}$/i.test(value || '') ? value : '#475569'; };
       var chars = script.characters.filter(function (c) { return c.id !== 'stage'; });
       var html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>' + esc(storyTitle) + ' — LitLab Script</title>'
@@ -1850,8 +1861,9 @@
       if (performerName) html += '<p style="text-align:center;color:#6b7280">Performer: ' + esc(performerName) + '</p>';
       html += '<h2>Cast of Characters</h2><div class="cast">';
       chars.forEach(function (c) {
+        var _safeCastPortrait = _safeStoryImgUrl(c.portrait);
         html += '<div class="cast-card" style="border-color:' + color(c.color) + '">'
-          + (c.portrait ? '<img src="' + esc(c.portrait) + '" alt="Portrait of ' + esc(c.name || 'character') + '" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:8px" />' : '')
+          + (_safeCastPortrait ? '<img src="' + esc(_safeCastPortrait) + '" alt="Portrait of ' + esc(c.name || 'character') + '" style="width:60px;height:60px;border-radius:50%;object-fit:cover;margin-bottom:8px" />' : '')
           + '<div style="font-weight:bold;color:' + color(c.color) + '">' + esc(c.name) + '</div>'
           + '<div style="font-size:0.85em;color:#6b7280">' + esc(c.description || '') + '</div></div>';
       });
@@ -1870,7 +1882,7 @@
       html += '<div style="margin-top:30px;text-align:center;font-size:0.8em;color:#475569">Generated with AlloFlow LitLab</div>';
       html += '</body></html>';
       var w = window.open('', '_blank');
-      if (w) { w.document.write(html); w.document.close(); }
+      if (w) { try { w.opener = null; } catch (_) {} w.document.write(html); w.document.close(); }
     }, [script, storyTitle, performerName]);
 
     // ── Styles ──

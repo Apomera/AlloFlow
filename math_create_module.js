@@ -69,6 +69,10 @@
     var setStemLabTool = props.setStemLabTool;
 
     // Live region: the Lab's announceToSR stayed with the Lab.
+    function tr(key, fallback) {
+      var v = typeof t === 'function' ? t(key) : '';
+      return typeof v === 'string' && v.trim() && v !== key ? v : fallback;
+    }
     var _sr = React.useState('');
     var srMsg = _sr[0], setSrMsg = _sr[1];
     function announceToSR(msg) {
@@ -589,7 +593,7 @@
           className: "flex-1 h-1.5 bg-indigo-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
         }), /*#__PURE__*/React.createElement("span", {
           className: "text-sm font-bold text-indigo-700 w-8 text-center"
-        }, mathQuantity))), /*#__PURE__*/React.createElement("button", { "aria-label": "Generate math problems",
+        }, mathQuantity))), /*#__PURE__*/React.createElement("button", { "aria-label": tr("math.generate_problems_aria", "Generate math problems"),
           onClick: () => {
             // Resolve the mode ONCE and hand it to handleGenerateMath as
             // modeOverride. This button used to stage the mode and navigate to

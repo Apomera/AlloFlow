@@ -78,7 +78,15 @@ ${compiled}
       AssessmentReport: SiAssessmentReport,
       prepareAlloSheetSource: siPrepareAlloSheetSavedSource,
       getAlloSheetOptions: siSubmissionInboxAlloSheetOptions,
-      buildAlloSheetEnvelope: siBuildSubmissionInboxAlloSheetEnvelope
+      buildAlloSheetEnvelope: siBuildSubmissionInboxAlloSheetEnvelope,
+      studentAnnotations: siStudentAnnotations,
+      exportedQuizAutoGrades: siExportedQuizAutoGrades,
+      buildStudentFeedbackHtml: siBuildStudentFeedbackHtml,
+      buildBatchFeedbackHtml: siBuildBatchFeedbackHtml,
+      lookupTrustedHistoryPrompt: siLookupTrustedHistoryPrompt,
+      calibrationSamplesForKey: siCalibrationSamplesForKey,
+      workEvidence: siWorkEvidence,
+      buildLmsGradebookCsv: siBuildLmsGradebookCsv
     }
   };
   console.log('[CDN] SubmissionInbox loaded');

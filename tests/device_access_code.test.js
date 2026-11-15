@@ -211,4 +211,29 @@ describe('optional educator access code', () => {
     expect(result).not.toHaveProperty('key');
     expect(result).not.toHaveProperty('vault');
   });
+
+  it('persists retry backoff across tabs via localStorage even if sessionStorage is cleared', async () => {
+    await access.setCode('Correct-Horse', { iterations: FAST_ITERATIONS });
+    expect(await access.verify('wrong-1', { now: 1000 })).toMatchObject({ ok: false, retryAfterMs: 0 });
+    expect(await access.verify('wrong-2', { now: 1000 })).toMatchObject({ ok: false, retryAfterMs: 0 });
+    expect(await access.verify('wrong-3', { now: 1000 })).toMatchObject({ ok: false, retryAfterMs: 1000 });
+    // Opening a new browser tab starts with empty sessionStorage; backoff must still hold.
+    sessionStorage.clear();
+    expect(access.status(1500).retryAfterMs).toBe(500);
+    expect(await access.verify('Correct-Horse', { now: 1500 })).toMatchObject({ ok: false, reason: 'backoff', retryAfterMs: 500 });
+    expect(await access.verify('Correct-Horse', { now: 2000 })).toMatchObject({ ok: true, reason: 'verified' });
+    expect(localStorage.getItem('alloflow_educator_access_backoff_v1')).toBeNull();
+    expect(sessionStorage.getItem('alloflow_educator_access_backoff_v1')).toBeNull();
+  });
+
+  it('accepts words, phrases, mixed symbols, or 6+ digit numbers and rejects codes under 6 characters', async () => {
+    await expect(access.setCode('1234', { iterations: FAST_ITERATIONS })).rejects.toThrow('Use at least 6 characters.');
+    for (const candidate of ['river otter room 4', 'Psych-Lab!26', '482910']) {
+      localStorage.clear();
+      sessionStorage.clear();
+      window.APP_CONFIG = { _cfg_validation_key: '' };
+      await access.setCode(candidate, { iterations: FAST_ITERATIONS });
+      expect(await access.verify(candidate, { now: 1000 })).toMatchObject({ ok: true, reason: 'verified' });
+    }
+  });
 });

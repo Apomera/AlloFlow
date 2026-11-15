@@ -22,10 +22,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for bikeLab 1`] = `
 {
-  "buttons": 11,
+  "buttons": 22,
   "inputs": 0,
-  "lengthBucket": 70,
-  "sha": "0893cd1da0357157",
+  "lengthBucket": 111,
+  "sha": "103e74ccdbb8175e",
   "svgs": 0,
 }
 `;
@@ -92,10 +92,10 @@ exports[`career/nature long-tail render goldens (default state) > renders + pins
 
 exports[`career/nature long-tail render goldens (default state) > renders + pins a digest for lifeSkills 1`] = `
 {
-  "buttons": 66,
-  "inputs": 1,
-  "lengthBucket": 313,
-  "sha": "5239abaf3397cc97",
+  "buttons": 90,
+  "inputs": 2,
+  "lengthBucket": 362,
+  "sha": "3ef4e19d00434ed6",
   "svgs": 0,
 }
 `;

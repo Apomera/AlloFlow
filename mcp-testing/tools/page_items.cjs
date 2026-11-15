@@ -41,7 +41,7 @@ const last = Number(lastArg || first);
     const workerUrl = URL.createObjectURL(new Blob([atob(workerB64)], { type: 'text/javascript' }));
     pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
     const bytes = Uint8Array.from(atob(dataB64), (c) => c.charCodeAt(0));
-    const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+    const pdf = await pdfjsLib.getDocument({ data: bytes, isEvalSupported: false }).promise;
     const round = (n) => Math.round(n * 10) / 10;
     const result = [];
     for (let p = first; p <= Math.min(last, pdf.numPages); p++) {

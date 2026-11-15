@@ -47,7 +47,12 @@ function browserLaunchOptions() {
   const options = {
     headless: true,
     timeout: 30000,
-    args: ['--disable-background-networking', '--disable-component-update'],
+    args: [
+      '--disable-background-networking',
+      '--disable-component-update',
+      '--webrtc-ip-handling-policy=disable_non_proxied_udp',
+      '--force-webrtc-ip-handling-policy',
+    ],
   };
   const configured = process.env.ALLOFLOW_CHROMIUM_PATH;
   if (configured) {
@@ -63,7 +68,7 @@ function resolveAxe() {
   const configured = arg('--axe') || process.env.ALLOFLOW_AXE_PATH;
   const candidates = [
     configured,
-    path.resolve(process.cwd(), 'node_modules/axe-core/axe.min.js'),
+    path.resolve(__dirname, '../../../desktop/web-app/public/vendor/axe-core/axe.min.js'),
     path.resolve(__dirname, '../../../node_modules/axe-core/axe.min.js'),
   ].filter(Boolean);
   for (const candidate of candidates) {
@@ -90,7 +95,14 @@ async function main() {
   try {
     browser = await loaded.api.chromium.launch(browserLaunchOptions());
     const context = await browser.newContext({ viewport: { width: 1280, height: 900 } });
-    await context.route(/^https?:/, (route) => { blockedNetworkRequests += 1; route.abort(); });
+    await context.route('**/*', (route) => {
+      const url = route.request().url();
+      if (url.startsWith('file:') || url.startsWith('data:') || url.startsWith('blob:') || url === 'about:blank') {
+        return route.continue();
+      }
+      blockedNetworkRequests += 1;
+      return route.abort('blockedbyclient');
+    });
     const page = await context.newPage();
     await page.goto('file://' + resolved.replace(/\\/g, '/'), { waitUntil: 'load', timeout: 60000 });
 

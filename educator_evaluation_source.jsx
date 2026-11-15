@@ -126,7 +126,8 @@ const AE_PACKET_FORM_JS = [
   '  var blob=new Blob([JSON.stringify(response,null,2)],{type:"application/json"});',
   '  var url=URL.createObjectURL(blob);',
   '  var link=document.createElement("a");',
-  '  link.href=url;link.download="evaluation-response-"+(packet.teacherId||"educator")+".json";',
+  '  var safeTid=String(packet.teacherId||"educator").replace(/[^A-Za-z0-9._-]/g,"_").replace(/^\\.+/,"")||"educator";',
+  '  link.href=url;link.download="evaluation-response-"+safeTid+".json";',
   '  document.body.appendChild(link);link.click();document.body.removeChild(link);',
   '  setTimeout(function(){URL.revokeObjectURL(url);},1000);',
   '  status.textContent="Response downloaded. Send that file back to your evaluator as an email attachment.";',
@@ -1205,7 +1206,7 @@ function aeNormalizeWorkspace(value) {
     customRubric,
     sampleMode: aeBoolean(rawConfig.sampleMode, false),
     setupPath: rawConfig.setupPath == null || rawConfig.setupPath === '' ? '' : (['local', 'principal_share', 'district_portal'].includes(rawConfig.setupPath) ? rawConfig.setupPath : 'local'),
-    shareHelperUrl: /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec(?:[?#].*)?$/.test(aeString(rawConfig.shareHelperUrl, 500, '')) ? aeString(rawConfig.shareHelperUrl, 500, '') : '',
+    shareHelperUrl: /^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(aeString(rawConfig.shareHelperUrl, 500, '')) ? aeString(rawConfig.shareHelperUrl, 500, '') : '',
     shareHelperVerified: aeBoolean(rawConfig.shareHelperVerified, false),
     shareHelperChecklist: Array.from(new Set((Array.isArray(rawConfig.shareHelperChecklist) ? rawConfig.shareHelperChecklist : []).filter((step) => ['approval', 'project', 'code', 'index', 'manifest'].includes(step)))).slice(0, 5),
   };
@@ -2044,16 +2045,17 @@ function aeCsv(rows) {
   const headers = Object.keys(rows[0]);
   const cell = (value) => {
     let s = String(value == null ? '' : value);
-    if (/^[\t ]*[=+\-@]/.test(s)) s = "'" + s;
+    if (/^[\t\r\n ]*[=+\-@]/.test(s)) s = "'" + s;
     return /[",\r\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   return [headers.map(cell).join(','), ...rows.map((row) => headers.map((header) => cell(row[header])).join(','))].join('\r\n');
 }
 function aeDownload(name, type, content) {
+  const safeName = String(name || 'download').replace(/[^A-Za-z0-9._-]/g, '_').replace(/^\.+/, '') || 'download';
   const blob = new Blob([content], { type });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
-  a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove();
+  a.href = url; a.download = safeName; document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
@@ -3941,7 +3943,7 @@ function AePrincipalShareSetup({ workspace, updateConfig }) {
   const taskClass = (step) => 'ae-setup-task' + (completed.has(step) ? ' ae-setup-task-complete' : '');
   const saveUrl = () => {
     const value = String(url || '').trim();
-    if (value && !/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec(?:[?#].*)?$/.test(value)) {
+    if (value && !/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(value)) {
       setUrlMessage({ text: t("educator_evaluation.paste_the_deployed_apps_script_url_ending_in_exec_preview__1pd18ow", 'Paste the deployed Apps Script URL ending in /exec. Preview and /dev links were rejected.'), tone: 'warning' });
       return;
     }
@@ -6341,7 +6343,7 @@ function EducatorEvaluationPanel(props) {
     const interpretations = walks.filter((item) => item.interpretation).sort((a, b) => String(b.publishedAt).localeCompare(String(a.publishedAt))).slice(0, 8);
     const statement = selectedTeacher.educatorStatement && selectedTeacher.educatorStatement.text;
     const pieces = walks.length + publishedObs.length;
-    const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Growth snapshot (formative)</title><style>body{font:14px system-ui;color:#172033;max-width:850px;margin:40px auto;padding:0 24px}h1{color:#14532d}h2{color:#173e70}blockquote{margin:8px 0;padding:8px 14px;border-left:4px solid #16815d;background:#f2faf6}.notice{padding:12px;background:#eef6ff;border:1px solid #93b8e8}ul{padding-left:22px}</style></head><body>'
+    const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\'"><meta name="referrer" content="no-referrer"><title>Growth snapshot (formative)</title><style>body{font:14px system-ui;color:#172033;max-width:850px;margin:40px auto;padding:0 24px}h1{color:#14532d}h2{color:#173e70}blockquote{margin:8px 0;padding:8px 14px;border-left:4px solid #16815d;background:#f2faf6}.notice{padding:12px;background:#eef6ff;border:1px solid #93b8e8}ul{padding-left:22px}</style></head><body>'
       + t("educator_evaluation.h1_growth_snapshot_formative_h1_amqd0o", '<h1>Growth snapshot, formative</h1>')
       + t("educator_evaluation.p_strong_1qpg7me", '<p><strong>') + aeEsc(selectedTeacher.name) + t("educator_evaluation.strong_60hewm", '</strong> · ') + aeEsc(workspace.config.organization) + ' · ' + aeEsc(workspace.config.academicYear) + '</p>'
       + t("educator_evaluation.p_class_notice_strong_this_is_a_growth_document_not_an_eva_zfoig9", '<p class="notice"><strong>This is a growth document, not an evaluation.</strong> It contains no ratings, is generated identically for educator and evaluator, and only reflects records already published to the educator. It exists to support a growth conversation partway through the cycle.</p>')
@@ -6370,7 +6372,7 @@ function EducatorEvaluationPanel(props) {
     const calculation = isPortland
       ? (portlandRollup ? t("educator_evaluation.portland_professional_practice_roll_up_1h5ppvi", 'Portland Professional Practice roll-up: ') + portlandRollup.label + ', ' + portlandRollup.rule : t("educator_evaluation.incomplete_t03g3p", 'Incomplete'))
       : (score == null ? t("educator_evaluation.incomplete_t03g3p", 'Incomplete') : score.toFixed(2) + ' · ' + aeBand(score));
-    const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Evaluation workflow summary</title><style>body{font:14px system-ui;color:#172033;max-width:850px;margin:40px auto;padding:0 24px}h1{color:#173e70}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{border:1px solid #ccd5e2;padding:8px;text-align:left}.notice{padding:12px;background:#fff8e8;border:1px solid #e5bd59}</style></head><body><h1>Educator evaluation workflow summary</h1><p><strong>' + aeEsc(workspace.config.organization) + t("educator_evaluation.strong_60hewm", '</strong> · ') + aeEsc(workspace.config.academicYear) + '</p><h2>' + aeEsc(selectedTeacher.name) + ' · ' + aeEsc(selectedTeacher.code) + '</h2><p>' + aeEsc(selectedTeacher.assignment) + t("educator_evaluation.evaluator_1ytzpr7", ' · evaluator ') + aeEsc(selectedTeacher.evaluator) + t("educator_evaluation.p_h2_weighting_snapshot_h2_table_thead_tr_th_factor_th_th__1599hsa", '</p><h2>Weighting snapshot</h2><table><thead><tr><th>Factor</th><th>Weight</th></tr></thead><tbody>') + profile.map((part) => t("educator_evaluation.tr_td_1g3q9ur", '<tr><td>') + aeEsc(aeRubricDisplayLabel(part.label)) + t("educator_evaluation.td_td_18jyb6g", '</td><td>') + part.weight + t("educator_evaluation.td_tr_l9swhk", '%</td></tr>')).join('') + t("educator_evaluation.tbody_table_h2_c6xgxt", '</tbody></table><h2>') + aeEsc(aeRubricDisplayLabel(AE_ACTIVE_FW.practiceLabel)) + t("educator_evaluation.ratings_h2_table_thead_tr_th_domain_th_th_1ypdek7", ' ratings</h2><table><thead><tr><th>Domain</th><th>') + domainColumn + t("educator_evaluation.th_th_rating_th_tr_thead_tbody_qzy9bu", '</th><th>Rating</th></tr></thead><tbody>') + domainRows + t("educator_evaluation.tbody_table_p_strong_calculation_preview_strong_1od32ch", '</tbody></table><p><strong>Calculation preview:</strong> ') + aeEsc(calculation) + t("educator_evaluation.p_p_class_notice_strong_workflow_aid_only_strong_c1lwgn", '</p><p class="notice"><strong>Workflow aid only.</strong> ') + (AE_ACTIVE_FW.id === 'pa_act13' ? t("educator_evaluation.this_is_not_an_official_pde_rating_form_or_proof_of_peers__1y4a2ed", 'This is not an official PDE rating form or proof of PEERS release. Verify all inputs and complete the LEA-authorized process.') : t("educator_evaluation.this_is_not_an_official_pepg_summative_form_verify_all_inp_1w8tx29", 'This is not an official PEPG summative form. Verify all inputs against your district’s PEPG plan and complete the district-authorized process.')) + t("educator_evaluation.p_p_generated_i8zqd", '</p><p>Generated ') + aeEsc(aeDateTime(aeNow())) + t("educator_evaluation.p_body_html_us1kuj", '</p></body></html>');
+    const html = '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta http-equiv="Content-Security-Policy" content="default-src \'none\'; style-src \'unsafe-inline\'; base-uri \'none\'; form-action \'none\'"><meta name="referrer" content="no-referrer"><title>Evaluation workflow summary</title><style>body{font:14px system-ui;color:#172033;max-width:850px;margin:40px auto;padding:0 24px}h1{color:#173e70}table{border-collapse:collapse;width:100%;margin:14px 0}th,td{border:1px solid #ccd5e2;padding:8px;text-align:left}.notice{padding:12px;background:#fff8e8;border:1px solid #e5bd59}</style></head><body><h1>Educator evaluation workflow summary</h1><p><strong>' + aeEsc(workspace.config.organization) + t("educator_evaluation.strong_60hewm", '</strong> · ') + aeEsc(workspace.config.academicYear) + '</p><h2>' + aeEsc(selectedTeacher.name) + ' · ' + aeEsc(selectedTeacher.code) + '</h2><p>' + aeEsc(selectedTeacher.assignment) + t("educator_evaluation.evaluator_1ytzpr7", ' · evaluator ') + aeEsc(selectedTeacher.evaluator) + t("educator_evaluation.p_h2_weighting_snapshot_h2_table_thead_tr_th_factor_th_th__1599hsa", '</p><h2>Weighting snapshot</h2><table><thead><tr><th>Factor</th><th>Weight</th></tr></thead><tbody>') + profile.map((part) => t("educator_evaluation.tr_td_1g3q9ur", '<tr><td>') + aeEsc(aeRubricDisplayLabel(part.label)) + t("educator_evaluation.td_td_18jyb6g", '</td><td>') + part.weight + t("educator_evaluation.td_tr_l9swhk", '%</td></tr>')).join('') + t("educator_evaluation.tbody_table_h2_c6xgxt", '</tbody></table><h2>') + aeEsc(aeRubricDisplayLabel(AE_ACTIVE_FW.practiceLabel)) + t("educator_evaluation.ratings_h2_table_thead_tr_th_domain_th_th_1ypdek7", ' ratings</h2><table><thead><tr><th>Domain</th><th>') + domainColumn + t("educator_evaluation.th_th_rating_th_tr_thead_tbody_qzy9bu", '</th><th>Rating</th></tr></thead><tbody>') + domainRows + t("educator_evaluation.tbody_table_p_strong_calculation_preview_strong_1od32ch", '</tbody></table><p><strong>Calculation preview:</strong> ') + aeEsc(calculation) + t("educator_evaluation.p_p_class_notice_strong_workflow_aid_only_strong_c1lwgn", '</p><p class="notice"><strong>Workflow aid only.</strong> ') + (AE_ACTIVE_FW.id === 'pa_act13' ? t("educator_evaluation.this_is_not_an_official_pde_rating_form_or_proof_of_peers__1y4a2ed", 'This is not an official PDE rating form or proof of PEERS release. Verify all inputs and complete the LEA-authorized process.') : t("educator_evaluation.this_is_not_an_official_pepg_summative_form_verify_all_inp_1w8tx29", 'This is not an official PEPG summative form. Verify all inputs against your district’s PEPG plan and complete the district-authorized process.')) + t("educator_evaluation.p_p_generated_i8zqd", '</p><p>Generated ') + aeEsc(aeDateTime(aeNow())) + t("educator_evaluation.p_body_html_us1kuj", '</p></body></html>');
     aeDownload('evaluation-summary-' + selectedTeacher.code + '-' + aeToday() + '.html', 'text/html;charset=utf-8', html); commit(() => {}, { teacherId: selectedTeacher.id, event: 'EXPORTED', summary: t("educator_evaluation.educator_workflow_summary_exported_1qnrsc", 'Educator workflow summary exported'), entityType: 'evaluation', entityId: selectedTeacher.id }, 'Summary export created');
   };
   const [packetIncludeNames, setPacketIncludeNames] = React.useState(true);
@@ -6450,6 +6452,7 @@ function EducatorEvaluationPanel(props) {
       : t("educator_evaluation.strong_profile_display_names_were_replaced_with_the_educat_12wqjp0", '<strong>Profile/display names were replaced with the educator code and role labels.</strong> Free-text evidence, comments, statements, and reflections were not de-identified and may still name or identify people.');
     const readable = t("educator_evaluation.doctype_html_html_lang_en_head_meta_charset_utf_8_7un36s", '<!doctype html><html lang="en"><head><meta charset="utf-8">')
       + '<meta name="viewport" content="width=device-width, initial-scale=1">'
+      + '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; script-src \'unsafe-inline\'; style-src \'unsafe-inline\'; img-src data:; base-uri \'none\'; form-action \'none\'"><meta name="referrer" content="no-referrer">'
       + t("educator_evaluation.title_your_evaluation_title_1pwgui7", '<title>Your evaluation</title>')
       + t("educator_evaluation.style_body_font_16px_1_6_system_ui_sans_serif_color_172033_1jkfe2t", '<style>body{font:16px/1.6 system-ui,sans-serif;color:#172033;background:#f6f8fb;max-width:900px;margin:0 auto;padding:24px}')
       + t("educator_evaluation.h1_color_173e70_font_size_1_7rem_h2_color_173e70_font_size_1fmca8o", 'h1{color:#173e70;font-size:1.7rem}h2{color:#173e70;font-size:1.25rem;margin-top:28px}h3{color:#173e70;font-size:1.05rem;margin:0 0 8px}h4{margin:14px 0 5px}')
@@ -6492,7 +6495,12 @@ function EducatorEvaluationPanel(props) {
     aeDownload('evaluation-response-' + selectedTeacher.code + '-' + aeToday() + '.json', 'application/json', JSON.stringify(packet, null, 2));
     commit(() => {}, { teacherId: selectedTeacher.id, event: 'EXPORTED', summary: t("educator_evaluation.educator_response_packet_created_1dxrsw9", 'Educator response packet created'), entityType: 'evaluation', entityId: selectedTeacher.id }, 'Response packet created');
   };
-  const aiReflectionEnabled = !!(workspace.config && workspace.config.aiReflectionEnabled);
+  const aeAiBlocked = typeof window !== 'undefined' && (
+    window.__alloStudentAiDisabled === true ||
+    window.__alloAiSecretsLocked === true ||
+    (typeof window.callGemini === 'function' && typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable(window.callGemini))
+  );
+  const aiReflectionEnabled = !!(workspace.config && workspace.config.aiReflectionEnabled) && !aeAiBlocked;
   const askForReflection = () => {
     const teacherId = selectedTeacher && selectedTeacher.id;
     if (!teacherId) return;
@@ -6505,7 +6513,12 @@ function EducatorEvaluationPanel(props) {
       return true;
     };
     const ask = typeof window !== 'undefined' ? window.callGemini : null;
-    if (typeof ask !== 'function') {
+    const askUsable = typeof ask === 'function' && (
+      typeof window.__alloAiUsable === 'function'
+        ? !!window.__alloAiUsable(ask)
+        : (typeof window === 'undefined' || (window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true))
+    );
+    if (!askUsable) {
       setScopedReflection('error', t("educator_evaluation.no_ai_backend_is_configured_in_this_copy_so_this_stays_una_1bghxda", 'No AI backend is configured in this copy, so this stays unavailable.'));
       return;
     }

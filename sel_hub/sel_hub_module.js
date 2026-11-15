@@ -4652,6 +4652,7 @@
           setPacketSavedNotice('Print was blocked by the browser. Try Download text instead.');
           return;
         }
+        try { win.opener = null; } catch (e) {}
         win.document.open();
         win.document.write(html);
         win.document.close();
@@ -4893,12 +4894,21 @@
         // keys, and per-session crisiscompanion namespaced keys) via a scan so no
         // variant is missed.
         try {
+          var _selKeyRe = /^(alloflow_sel_|alloSel|sel_|crisisCompanion\.)/;
           var toRemove = [];
           for (var i = 0; i < localStorage.length; i++) {
             var k = localStorage.key(i);
-            if (k && /^(alloflow_sel_|alloSel|crisisCompanion\.)/.test(k)) toRemove.push(k);
+            if (k && _selKeyRe.test(k)) toRemove.push(k);
           }
           toRemove.forEach(function(k) { try { localStorage.removeItem(k); } catch (e) {} });
+          if (typeof sessionStorage !== 'undefined') {
+            var ssRemove = [];
+            for (var si = 0; si < sessionStorage.length; si++) {
+              var sk = sessionStorage.key(si);
+              if (sk && _selKeyRe.test(sk)) ssRemove.push(sk);
+            }
+            ssRemove.forEach(function(sk) { try { sessionStorage.removeItem(sk); } catch (e) {} });
+          }
         } catch (e) {}
         // Recovery must never bring back data after an explicit full reset.
         discardBuilderDraft(); setRemovedStations([]); setProjectSaveNotice('');

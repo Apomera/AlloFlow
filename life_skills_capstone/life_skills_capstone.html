@@ -440,7 +440,18 @@
   function missionFor(focus) { return MISSION_BY_FOCUS[validMissionFocus(focus) ? focus : 'kitchen']; }
   var requestedFocus = validMissionFocus(params.get('focus')) ? params.get('focus') : 'kitchen';
   var requestedSupport = Object.prototype.hasOwnProperty.call(SUPPORT_LABELS, params.get('support')) ? params.get('support') : 'guided';
+  var learnerRole = (params.get('role') === 'transition' || params.get('role') === 'adult') ? 'transition' : 'standard';
+  function adaptRoleCopy(text) {
+    if (learnerRole !== 'transition' || typeof text !== 'string') return text;
+    return text
+      .replace(/\bTell a responsible adult\b/g, 'Contact building maintenance, a supervisor, or a trusted support person')
+      .replace(/\btell a responsible adult\b/g, 'contact building maintenance, a supervisor, or a trusted support person')
+      .replace(/\bGet a responsible adult\b/g, 'Contact building maintenance or a trusted support person')
+      .replace(/\ba responsible adult\b/g, 'a supervisor, maintenance contact, or trusted support person');
+  }
   var storageKey = 'alloflow-life-capstone-3d-progress-v1';
+  var rawLearnerParam = String(params.get('learner') || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 48);
+  if (rawLearnerParam) storageKey = 'alloflow-life-capstone-3d-progress-v1:' + rawLearnerParam;
   function loadState() {
     try {
       var parsed = JSON.parse(window.localStorage.getItem(storageKey) || 'null');
@@ -537,8 +548,9 @@
   function postToOpener(payload) {
     try {
       var targetOrigin = resolveOpenerTargetOrigin();
-      if (targetOrigin && window.opener && !window.opener.closed) {
-        window.opener.postMessage(Object.assign({ source: 'alloflow-life-capstone-3d' }, payload), targetOrigin);
+      var openerWin = (window.opener && !window.opener.closed) ? window.opener : ((window.parent && window.parent !== window) ? window.parent : null);
+      if (targetOrigin && openerWin) {
+        openerWin.postMessage(Object.assign({ source: 'alloflow-life-capstone-3d' }, payload), targetOrigin);
       }
     } catch (_) {}
   }
@@ -641,7 +653,7 @@
     state.done[task.id] = true; saveState();
     var completed = doneCount();
     if (completed >= TASKS.length) { setFeedback((state.mode === 'challenge' ? 'Transfer challenge complete. ' : 'Capstone complete. ') + 'Review how each safer decision happened below.', 'good'); postProgressSnapshot(); postToOpener(Object.assign({ type: 'alloflow-life-capstone-3d-complete', score: completed, total: TASKS.length, missteps: state.missteps, hints: state.hints, mode: state.mode, missionFocus: state.missionFocus, support: state.support }, evidencePayload())); announce(state.mode === 'challenge' ? 'Transfer challenge complete. Mission evidence is ready.' : 'Capstone complete. Mission evidence is ready.'); }
-    else { postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-task-complete', task: task.id, outcome: state.outcomes[task.id] || '', completed: completed, total: TASKS.length, source: 'capstone', mode: state.mode, missionFocus: state.missionFocus, support: state.support }); setFeedback('Completed: ' + task.title + '. Evidence: ' + EVIDENCE_META[state.outcomes[task.id]].label + '. Next: ' + runTasks()[nextIndex()].title + '.', 'good'); announce('Completed ' + task.title + '. ' + EVIDENCE_META[state.outcomes[task.id]].label + '.'); }
+    else { postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-task-complete', task: task.id, outcome: state.outcomes[task.id] || '', completed: completed, total: TASKS.length, mode: state.mode, missionFocus: state.missionFocus, support: state.support }); setFeedback('Completed: ' + task.title + '. Evidence: ' + EVIDENCE_META[state.outcomes[task.id]].label + '. Next: ' + runTasks()[nextIndex()].title + '.', 'good'); announce('Completed ' + task.title + '. ' + EVIDENCE_META[state.outcomes[task.id]].label + '.'); }
   }
   function choose(choiceId) {
     var task = runTasks()[state.activeIndex];
@@ -659,7 +671,7 @@
     } else {
       state.risk[task.id] = true; state.missteps += 1;
       if (state.support === 'supported' && state.attempts[task.id] === 1) { if (!state.hinted[task.id]) state.hints += 1; state.hinted[task.id] = true; state.hintShown = true; }
-      saveState(); state.focused = task.id; setFeedback((state.hintShown ? 'Coaching cue: ' : '') + choice.feedback + ' The station is flagged in the scene until you correct it.', 'error'); announce('Try another response. ' + choice.feedback + (state.hintShown ? ' A first-step cue is now available.' : ''));
+      saveState(); state.focused = task.id; var roleFb = adaptRoleCopy(choice.feedback); setFeedback((state.hintShown ? 'Coaching cue: ' : '') + roleFb + ' The station is flagged in the scene until you correct it.', 'error'); announce('Try another response. ' + roleFb + (state.hintShown ? ' A first-step cue is now available.' : ''));
     }
     render(); renderScene();
   }
@@ -689,7 +701,7 @@
     var wrap = document.getElementById('choices'); wrap.innerHTML = '';
     if (state.procedureTarget === task.id) {
       wrap.setAttribute('aria-label', 'Action sequence choices'); var completedIds = procedureFor(task).slice(0, state.procedureStep).map(function (action) { return action.id; });
-      ensureProcedureChoices(task, false).forEach(function (action) { var button = document.createElement('button'); button.type = 'button'; button.className = 'choice procedure-choice'; button.disabled = completedIds.indexOf(action.id) >= 0; var phase = document.createElement('span'); phase.className = 'procedure-phase'; phase.textContent = button.disabled ? 'Done - ' + action.phase : action.phase; var label = document.createElement('span'); label.textContent = action.label; button.appendChild(phase); button.appendChild(label); button.addEventListener('click', function () { chooseProcedure(action.id, -1); }); wrap.appendChild(button); });
+      ensureProcedureChoices(task, false).forEach(function (action) { var button = document.createElement('button'); button.type = 'button'; button.className = 'choice procedure-choice'; button.disabled = completedIds.indexOf(action.id) >= 0; var phase = document.createElement('span'); phase.className = 'procedure-phase'; phase.textContent = button.disabled ? 'Done - ' + action.phase : action.phase; var label = document.createElement('span'); label.textContent = adaptRoleCopy(action.label); button.appendChild(phase); button.appendChild(label); button.addEventListener('click', function () { chooseProcedure(action.id, -1); }); wrap.appendChild(button); });
       return;
     }
     wrap.setAttribute('aria-label', 'Capstone choices');
@@ -697,7 +709,7 @@
     var choices = shuffled ? state.challengeChoices[task.id].map(function (id) { return task.choices.find(function (choice) { return choice.id === id; }); }).filter(Boolean) : task.choices;
     choices.forEach(function (choice) {
       var hideSafeCue = shuffled || state.support === 'independent';
-      var button = document.createElement('button'); button.type = 'button'; button.className = 'choice' + (choice.safe && !hideSafeCue ? ' safe' : ''); button.textContent = choice.label; button.disabled = false; button.addEventListener('click', function () { choose(choice.id); }); wrap.appendChild(button);
+      var button = document.createElement('button'); button.type = 'button'; button.className = 'choice' + (choice.safe && !hideSafeCue ? ' safe' : ''); button.textContent = adaptRoleCopy(choice.label); button.disabled = false; button.addEventListener('click', function () { choose(choice.id); }); wrap.appendChild(button);
     });
   }
   function renderTransferSummary(complete) {
@@ -746,10 +758,10 @@
     var contextBadge = document.getElementById('contextBadge'); contextBadge.textContent = context.label; contextBadge.setAttribute('data-shifted', String(shifted));
     document.getElementById('situation').textContent = context.situation;
     var procedurePhase = practicing ? PROCEDURE_PHASES[state.procedureStep] : null;
-    document.getElementById('instruction').textContent = practicing ? 'Step ' + (state.procedureStep + 1) + ' of 3 - ' + procedurePhase.label + ': choose the action that will ' + procedurePhase.cue + '.' : state.risk[task.id] ? 'Risk is still flagged. Choose the safer response to resolve the station.' : state.replayTarget === task.id ? 'Targeted replay: transfer the safer first move to this changed context with ' + SUPPORT_LABELS[state.support].toLowerCase() + '.' : state.done[task.id] ? 'This station is marked safe. Rehearse the safe response or practice its three actions.' : context.instruction;
+    document.getElementById('instruction').textContent = practicing ? 'Step ' + (state.procedureStep + 1) + ' of 3 - ' + procedurePhase.label + ': choose the action that will ' + procedurePhase.cue + '.' : state.risk[task.id] ? 'Risk is still flagged. Choose the safer response to resolve the station.' : state.replayTarget === task.id ? 'Targeted replay: transfer the safer first move to this changed context with ' + SUPPORT_LABELS[state.support].toLowerCase() + '.' : state.done[task.id] ? 'This station is marked safe. Rehearse the safe response or practice its three actions.' : adaptRoleCopy(context.instruction);
     renderChoices(task); renderProcedureProgress(task); renderSteps();
     var hintButton = document.getElementById('hintButton'); hintButton.hidden = practicing; hintButton.disabled = practicing; hintButton.textContent = state.hintShown ? (state.support === 'supported' ? 'First-step cue shown' : 'Hint shown') : (state.support === 'supported' ? 'Show first-step cue' : 'Show a hint');
-    var hintText = document.getElementById('hintText'); hintText.hidden = practicing || !state.hintShown; hintText.textContent = state.hintShown && !practicing ? task.hint : '';
+    var hintText = document.getElementById('hintText'); hintText.hidden = practicing || !state.hintShown; hintText.textContent = state.hintShown && !practicing ? adaptRoleCopy(task.hint) : '';
     var procedureButton = document.getElementById('procedureButton'); procedureButton.hidden = !(practicing || (state.done[task.id] && !replaying)); procedureButton.textContent = practicing ? 'Exit action practice' : state.procedures[task.id] ? 'Repractice 3D actions - practiced' : 'Practice 3D actions';
     var feedback = document.getElementById('feedback'); feedback.textContent = state.feedback; feedback.className = 'feedback' + (state.tone ? ' ' + state.tone : '');
     var challengeButton = document.getElementById('challengeButton'); challengeButton.disabled = !complete || replaying || practicing; challengeButton.textContent = state.mode === 'challenge' ? 'Replay transfer challenge' : 'Start transfer challenge';
@@ -774,7 +786,7 @@
     choices.forEach(function (action, index) {
       var completed = completedIds.indexOf(action.id) >= 0; var wrong = state.procedureWrongSlot === index; var color = completed ? '#4ade80' : wrong ? '#fb7185' : '#0e7490'; var labelColor = completed ? '#bbf7d0' : wrong ? '#fecdd3' : '#e0f2fe';
       var control = document.getElementById('actionControl' + (index + 1)); var label = document.getElementById('actionControlLabel' + (index + 1));
-      if (control) { control.setAttribute('color', color); control.setAttribute('material', 'color: ' + color + '; emissive: ' + color + '; emissiveIntensity: ' + (completed || wrong ? '.85' : '.45')); control.setAttribute('data-action-id', action.id); control.setAttribute('data-completed', String(completed)); control.setAttribute('aria-label', '3D action ' + (index + 1) + ': ' + action.label + (completed ? ', completed' : '')); }
+      if (control) { control.setAttribute('color', color); control.setAttribute('material', 'color: ' + color + '; emissive: ' + color + '; emissiveIntensity: ' + (completed || wrong ? '.85' : '.45')); control.setAttribute('data-action-id', action.id); control.setAttribute('data-completed', String(completed)); control.setAttribute('aria-label', '3D action ' + (index + 1) + ': ' + adaptRoleCopy(action.label) + (completed ? ', completed' : '')); }
       if (label) label.setAttribute('text', 'value: ' + String.fromCharCode(65 + index) + ' ' + action.scene + '; align: center; color: ' + labelColor + '; width: 2.2');
     });
   }
@@ -824,7 +836,7 @@
   function recordDebrief(field, value) { state.debrief[field] = value; saveState(); postProgressSnapshot(); render(); var message = field === 'confidence' ? 'Readiness saved.' : 'Next practice step saved.'; announce(message); if (state.debrief.confidence && state.debrief.nextStep) postToOpener({ type: 'alloflow-life-capstone-3d-debrief', confidence: state.debrief.confidence, nextStep: state.debrief.nextStep, mode: state.mode, missionFocus: state.missionFocus, support: state.support }); }
   function saveTeachBack() { var text = String(state.debriefDraft || '').trim(); if (!text) { state.teachBackMessage = 'Write a sentence before saving, or leave it blank to skip.'; render(); announce('Write a sentence before saving the teach-back.'); return; } state.debrief.teachBack = text; state.debriefDraft = text; state.teachBackMessage = 'Teach-back saved.'; saveState(); render(); postToOpener({ type: 'alloflow-life-capstone-3d-teach-back', mode: state.mode, missionFocus: state.missionFocus, support: state.support }); announce('Teach-back saved.'); }
   function beginChallenge() { state.procedureTarget = ''; state.procedureStep = 0; state.procedureError = false; state.procedureWrongSlot = -1; state.procedureUsed3d = false; state.procedureChoices = {}; state.procedureMistakes = {}; state.replayTarget = ''; state.replayFrom = ''; state.replayContextFrom = ''; state.mode = 'challenge'; state.support = 'independent'; state.order = shuffle(TASKS.map(function (task) { return task.id; })); state.challengeChoices = {}; state.contextTransfers = {}; assignShiftedContexts(); state.risk = {}; state.attempts = {}; state.hinted = {}; state.outcomes = {}; state.debrief = { confidence: '', nextStep: '', teachBack: '' }; state.debriefDraft = ''; state.teachBackMessage = ''; ensureChallengeChoices(); state.done = {}; state.missteps = 0; state.hints = 0; state.activeIndex = 0; state.focused = state.order[0]; state.hintShown = false; setFeedback('Context-shift challenge ready. Choose the safer response without the visual cue.'); saveState(); render(); renderScene(); postProgressSnapshot(); postToOpener({ type: 'alloflow-life-capstone-3d-challenge-start', mode: 'challenge', total: TASKS.length, missionFocus: state.missionFocus, support: state.support, contextShift: true }); announce('Transfer challenge started with changed situations, a new station order, and hidden answer cues.'); }
-  document.getElementById('hintButton').addEventListener('click', function () { var task = runTasks()[state.activeIndex]; if (!state.hinted[task.id]) state.hints += 1; state.hinted[task.id] = true; state.hintShown = true; saveState(); render(); announce('Hint: ' + task.hint); });
+  document.getElementById('hintButton').addEventListener('click', function () { var task = runTasks()[state.activeIndex]; if (!state.hinted[task.id]) state.hints += 1; state.hinted[task.id] = true; state.hintShown = true; saveState(); render(); announce('Hint: ' + adaptRoleCopy(task.hint)); });
   document.getElementById('focusButton').addEventListener('click', function () { focus(runTasks()[state.activeIndex].id, true); });
   document.getElementById('challengeButton').addEventListener('click', beginChallenge);
   document.getElementById('procedureButton').addEventListener('click', function () { if (state.procedureTarget) exitProcedure(); else beginProcedure(runTasks()[state.activeIndex].id); });
@@ -837,7 +849,9 @@
   document.querySelectorAll('[data-view]').forEach(function (button) { button.addEventListener('click', function () { setView(button.getAttribute('data-view')); }); });
   window.lifeSkillsCapstone = { focus: function (station, announceIt) { focus(station, announceIt); }, startChallenge: beginChallenge, startReplay: beginTargetedReplay, startProcedure: beginProcedure, chooseProcedureSlot: chooseProcedureSlot };
   window.addEventListener('message', function (event) {
-    if (!window.opener || event.source !== window.opener) return;
+    var fromOpener = window.opener && event.source === window.opener;
+    var fromParent = window.parent && window.parent !== window && event.source === window.parent;
+    if (!fromOpener && !fromParent) return;
     if (event.origin && event.origin !== 'null') {
       if (!isTrustedOpenerOrigin(event.origin)) return;
       verifiedOpenerOrigin = event.origin;

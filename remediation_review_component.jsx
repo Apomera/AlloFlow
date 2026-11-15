@@ -94,6 +94,11 @@ const _PdfPreservationReview = ({ result, captureToken, commitMetadata, onWorkbe
       if (current()) setMessage('The reference could not be located. Try again.');
     } finally { if (current()) setBusy(false); }
   };
+  const previewCspMeta = '<meta http-equiv="Content-Security-Policy" content="default-src \'none\'; img-src data: blob:; style-src \'unsafe-inline\'; font-src data:;">';
+  const strippedHtml = html.replace(/<meta\b[^>]*http-equiv\s*=\s*(?:"\s*refresh\s*"|'\s*refresh\s*'|refresh\b)[^>]*>/gi, '');
+  const previewHtml = /<head\b[^>]*>/i.test(strippedHtml)
+    ? strippedHtml.replace(/<head\b[^>]*>/i, match => match + previewCspMeta)
+    : previewCspMeta + strippedHtml;
   return <section aria-label="Preservation review" className="mt-3 rounded-lg border border-amber-300 bg-amber-50 p-3 text-slate-900">
     <h3 className="text-sm font-bold">Preservation review</h3>
     <p className="text-xs mt-1">{evidence.candidateRejectionCount ? `${evidence.candidateRejectionCount} suggestions were rejected to protect the document. ${pending} recorded items need acknowledgment.` : 'Inspect stable references for tables, cells, and images.'} Acknowledging an item does not resolve accessibility findings or change verification.</p>
@@ -121,7 +126,7 @@ const _PdfPreservationReview = ({ result, captureToken, commitMetadata, onWorkbe
       <button type="button" className="ml-2 rounded border px-2 py-1 text-xs" onClick={() => { cancelNavigation(); setExpanded(false); setMessage('Reference preview closed.'); if (inspectButton.current) inspectButton.current.focus(); }}>Close reference preview</button>
       {model.truncated && <p className="text-xs">This reference index is incomplete. Automatic location is unavailable; inspect the preview manually.</p>}
       {!model.references.length && <p className="text-xs">No tables, cells, or images were found.</p>}
-      <iframe ref={frame} title="Document preservation review preview" sandbox="allow-same-origin" srcDoc={html} className="mt-2 w-full h-80 border bg-white" />
+      <iframe ref={frame} title="Document preservation review preview" sandbox="allow-same-origin" srcDoc={previewHtml} className="mt-2 w-full h-80 border bg-white" />
     </div>}
   </section>;
 };

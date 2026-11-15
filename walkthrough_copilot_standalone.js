@@ -35,6 +35,7 @@
   // Connection CONFIG only: the deployment URL and the device token. No
   // observation content is ever persisted here.
   var STORE_KEY = 'allo_wcop_delivery_v1';
+  var TOKEN_KEY = 'allo_wcop_delivery_token_v1';
 
   var state = {
     stage: 'capture',
@@ -57,12 +58,34 @@
   function loadConnection() {
     try {
       var raw = window.localStorage.getItem(STORE_KEY);
-      if (!raw) return;
+      if (!raw) {
+        try { if (window.sessionStorage) window.sessionStorage.removeItem(TOKEN_KEY); } catch (err) { /* sessionStorage unavailable */ }
+        return;
+      }
+      var sessionToken = '';
+      try {
+        sessionToken = window.sessionStorage ? (window.sessionStorage.getItem(TOKEN_KEY) || '') : '';
+      } catch (err) { sessionToken = ''; }
       var saved = JSON.parse(raw);
       if (saved && typeof saved.execUrl === 'string') {
+        var legacyToken = typeof saved.token === 'string' ? saved.token : '';
+        var resolvedToken = sessionToken || legacyToken;
         state.delivery.execUrl = saved.execUrl;
-        state.delivery.token = typeof saved.token === 'string' ? saved.token : '';
+        state.delivery.token = resolvedToken;
         state.delivery.owner = typeof saved.owner === 'string' ? saved.owner : '';
+        if (Object.prototype.hasOwnProperty.call(saved, 'token')) {
+          try {
+            if (!sessionToken && legacyToken && window.sessionStorage) {
+              window.sessionStorage.setItem(TOKEN_KEY, legacyToken);
+            }
+          } catch (err) { /* sessionStorage unavailable */ }
+          try {
+            window.localStorage.setItem(STORE_KEY, JSON.stringify({
+              execUrl: state.delivery.execUrl,
+              owner: state.delivery.owner
+            }));
+          } catch (err) { /* private browsing */ }
+        }
       }
     } catch (err) { /* a missing or unreadable store is simply "not connected" */ }
   }
@@ -71,14 +94,20 @@
     try {
       window.localStorage.setItem(STORE_KEY, JSON.stringify({
         execUrl: state.delivery.execUrl,
-        token: state.delivery.token,
         owner: state.delivery.owner
       }));
     } catch (err) { /* private browsing: the connection just will not persist */ }
+    try {
+      if (window.sessionStorage) {
+        if (state.delivery.token) window.sessionStorage.setItem(TOKEN_KEY, state.delivery.token);
+        else window.sessionStorage.removeItem(TOKEN_KEY);
+      }
+    } catch (err) { /* sessionStorage unavailable */ }
   }
 
   function forgetConnection() {
     try { window.localStorage.removeItem(STORE_KEY); } catch (err) { /* nothing to clear */ }
+    try { if (window.sessionStorage) window.sessionStorage.removeItem(TOKEN_KEY); } catch (err) { /* nothing to clear */ }
     state.delivery = { execUrl: '', token: '', owner: '', selfTest: null, busy: false, message: '', tone: 'warn' };
   }
 

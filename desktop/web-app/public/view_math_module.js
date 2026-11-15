@@ -528,6 +528,14 @@ function MathView(props) {
   }, []);
   // State reads
   var t = typeof props.t === 'function' ? props.t : key => key;
+  var tr = function (key, fallback, vars) {
+    var value = typeof t === 'function' ? t(key) : '';
+    var text = typeof value === 'string' && value.trim() && value !== key ? value : fallback;
+    Object.keys(vars || {}).forEach(function (name) {
+      text = text.split('{' + name + '}').join(String(vars[name]));
+    });
+    return text;
+  };
   var generatedContentArtifact = props.generatedContent;
   React.useLayoutEffect(() => {
     if (activeManipulativeSessionRef.current && activeManipulativeSessionRef.current.artifact !== generatedContentArtifact) {
@@ -1456,7 +1464,10 @@ function MathView(props) {
     onInsert: (result, currentValue) => handleMathProblemEdit(pIdx, 'step_explanation', appendInlineMath(currentValue, result.latex), idx, problem.__viewKey, mathResourceId)
   }), `Open accessible math keyboard for explanation ${idx + 1} of problem ${pIdx + 1}`, !canHandleMathProblemEdit), step.explanation && /*#__PURE__*/React.createElement("div", {
     className: "rounded border border-slate-200 bg-white p-2 text-sm text-slate-800",
-    "aria-label": `Explanation ${idx + 1} preview for problem ${pIdx + 1}`
+    "aria-label": tr('math.explanation_preview_aria', 'Explanation {n} preview for problem {p}', {
+      n: idx + 1,
+      p: pIdx + 1
+    })
   }, formatInlineText(step.explanation, false)), /*#__PURE__*/React.createElement("input", {
     "aria-label": t('math.edit_step_latex') || `Edit step ${idx + 1} LaTeX expression`,
     type: "text",
@@ -1473,7 +1484,10 @@ function MathView(props) {
     onInsert: result => handleMathProblemEdit(pIdx, 'step_latex', result.latex, idx, problem.__viewKey, mathResourceId)
   }), `Open accessible math keyboard for expression ${idx + 1} of problem ${pIdx + 1}`, !canHandleMathProblemEdit), step.latex && /*#__PURE__*/React.createElement("div", {
     className: "overflow-x-auto rounded border border-slate-200 bg-white p-2 text-center text-slate-800",
-    "aria-label": `Expression ${idx + 1} preview for problem ${pIdx + 1}`
+    "aria-label": tr('math.expression_preview_aria', 'Expression {n} preview for problem {p}', {
+      n: idx + 1,
+      p: pIdx + 1
+    })
   }, /*#__PURE__*/React.createElement(MathSymbol, {
     text: step.latex
   }))) : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("div", {
@@ -1508,7 +1522,9 @@ function MathView(props) {
     onInsert: result => handleMathProblemEdit(pIdx, 'answer', result.latex, null, problem.__viewKey, mathResourceId)
   }), `Open accessible math keyboard for answer key ${pIdx + 1}`, !canHandleMathProblemEdit), problem.answer && /*#__PURE__*/React.createElement("div", {
     className: "mt-2 overflow-x-auto rounded border border-green-200 bg-white p-2 text-lg text-green-900",
-    "aria-label": `Answer key ${pIdx + 1} preview`
+    "aria-label": tr('math.answer_key_preview_aria', 'Answer key {p} preview', {
+      p: pIdx + 1
+    })
   }, /*#__PURE__*/React.createElement(MathSymbol, {
     text: problem.answer
   }))) : /*#__PURE__*/React.createElement("div", {
@@ -1745,7 +1761,7 @@ function MathView(props) {
       e.preventDefault();
       handleMathEdit(mathEditInput, mathResourceId);
     },
-    placeholder: "e.g. Make these easier, add 2 more division problems, change to a space theme...",
+    placeholder: tr('math.edit_placeholder_examples', 'e.g. Make these easier, add 2 more division problems, change to a space theme...'),
     className: "flex-1 px-3 py-2 text-sm border border-indigo-200 rounded-lg focus:ring-2 focus:ring-indigo-400 focus:border-indigo-400 outline-none bg-white placeholder-slate-400",
     "aria-label": t("a11y.edit_math_problems"),
     "aria-busy": isMathEditingChat || isProcessing,

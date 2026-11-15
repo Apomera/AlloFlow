@@ -1058,7 +1058,16 @@ const WebSearchProvider = {
         return {
             groundingChunks,
             searchEntryPoint: {
-                renderedContent: `<a href="${this.searxngUrl || 'https://duckduckgo.com'}/?q=${encodeURIComponent(evidence[0]?.title || '')}" target="_blank">Search results</a>`,
+                renderedContent: (() => {
+                    let safeOrigin = 'https://duckduckgo.com';
+                    try {
+                        const parsed = new URL(String(this.searxngUrl || 'https://duckduckgo.com'));
+                        if ((parsed.protocol === 'https:' || parsed.protocol === 'http:') && !parsed.username && !parsed.password) safeOrigin = parsed.origin;
+                    } catch (_) {}
+                    const esc = (v) => String(v || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+                    const href = esc(`${safeOrigin}/?q=${encodeURIComponent(evidence[0]?.title || '')}`);
+                    return `<a href="${href}" target="_blank" rel="noopener noreferrer">Search results</a>`;
+                })(),
             },
         };
     },
@@ -2680,7 +2689,7 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
             }
             if (!response.ok) {
                 const errBody = await response.text().catch(() => '');
-                throw new Error(`HTTP Error: ${response.status} ${response.statusText}${errBody ? ` - ${errBody.slice(0, 200)}` : ""}`);
+                throw new Error(`HTTP Error: ${response.status} ${response.statusText}${errBody ? ` (${errBody.length} chars)` : ""}`);
             }
 
             const data = await response.json();
@@ -2758,7 +2767,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         };
         throwIfAborted();
         const fluxUrl = 'http://localhost:7860/v1/images/generations';
-        try {
+        const allowFluxProbe = this._imageProvider === 'flux' || this.backend === 'flux' || /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\]):7860(?:\/|$)/i.test(String((this._imageConnection && this._imageConnection.baseUrl) || this.baseUrl || ''));
+        if (allowFluxProbe) try {
             const fluxResp = await this._requestFetch(fluxUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -2914,7 +2924,8 @@ TASK: Fix the syntax errors (missing commas, unclosed braces, escaped quotes, tr
         };
         throwIfAborted();
         const fluxEditUrl = 'http://localhost:7860/v1/images/edits';
-        try {
+        const allowFluxProbe = this._imageProvider === 'flux' || this.backend === 'flux' || /^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\]):7860(?:\/|$)/i.test(String((this._imageConnection && this._imageConnection.baseUrl) || this.baseUrl || ''));
+        if (allowFluxProbe) try {
             const fluxResp = await this._requestFetch(fluxEditUrl, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },

@@ -197,6 +197,7 @@
   function getTurnKey(quest) {
     var room = getRoom(quest, quest && quest.currentRoomId);
     var challenge = room && room.challenge || {};
+    if (challenge.correctIndex == null && quest && typeof quest.turnKey === 'string' && quest.turnKey) return quest.turnKey;
     var value = JSON.stringify([challenge.id, challenge.prompt, challenge.options, challenge.correctIndex]);
     var hash = 2166136261;
     for (var i = 0; i < value.length; i++) hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
@@ -251,6 +252,61 @@
 
   function sealQuest(quest) { return Object.assign({}, quest, { turnKey: getTurnKey(quest) }); }
   function sealResult(result) { return result.error ? result : Object.assign({}, result, { quest: sealQuest(result.quest) }); }
+
+  function sanitizePublicChallenge(challenge) {
+    if (!challenge || typeof challenge !== 'object') return null;
+    var clean = {
+      id: challenge.id,
+      concept: challenge.concept,
+      prompt: challenge.prompt,
+      options: Array.isArray(challenge.options) ? challenge.options.slice() : []
+    };
+    if (challenge.sourceIndex != null) clean.sourceIndex = challenge.sourceIndex;
+    if (challenge.question_en) clean.question_en = challenge.question_en;
+    if (challenge.imageUrl) clean.imageUrl = challenge.imageUrl;
+    if (challenge.imageAltText) clean.imageAltText = challenge.imageAltText;
+    if (Array.isArray(challenge.options_en)) clean.options_en = challenge.options_en.slice();
+    if (Array.isArray(challenge.optionImageUrls)) clean.optionImageUrls = challenge.optionImageUrls.slice();
+    if (Array.isArray(challenge.optionImageAltTexts)) clean.optionImageAltTexts = challenge.optionImageAltTexts.slice();
+    return clean;
+  }
+
+  // Strip unreleased questions, answer keys, explanations, GM undo history, and
+  // per-learner uid evidence before writing conceptQuest to the shared session doc.
+  function publicQuestState(quest) {
+    if (!quest || typeof quest !== 'object') return quest;
+    var turnKey = getTurnKey(quest);
+    var out = Object.assign({}, quest, { turnKey: turnKey });
+    delete out.assessmentBank;
+    delete out.gmUndo;
+    delete out.gmHistory;
+    if (Array.isArray(quest.rooms)) {
+      out.rooms = quest.rooms.map(function(room) {
+        if (!room || typeof room !== 'object') return room;
+        var cleanRoom = Object.assign({}, room);
+        delete cleanRoom.challenges;
+        if (room.id === quest.currentRoomId && room.challenge) {
+          cleanRoom.challenge = sanitizePublicChallenge(room.challenge);
+        } else {
+          delete cleanRoom.challenge;
+        }
+        return cleanRoom;
+      });
+    }
+    if (quest.learningTotals && typeof quest.learningTotals === 'object') {
+      out.learningTotals = Object.assign({}, quest.learningTotals, { learners: {} });
+    }
+    if (Array.isArray(quest.roundHistory)) {
+      out.roundHistory = quest.roundHistory.map(function(round) {
+        if (!round || typeof round !== 'object') return round;
+        var cleanRound = Object.assign({}, round);
+        delete cleanRound.learnerEvidence;
+        delete cleanRound.itemEvidenceKey;
+        return cleanRound;
+      });
+    }
+    return out;
+  }
 
   // New class sessions keep the whole supported assessment independently of
   // the map. Old sessions retain their room-local rotation; solo owns its own
@@ -898,6 +954,7 @@
     adjustEncounter: function() { return sealResult(adjustEncounter.apply(null, arguments)); },
     dismissEvent: dismissEvent,
     createDebrief: createDebrief,
-    coverage: coverage
+    coverage: coverage,
+    publicQuestState: publicQuestState
   };
 });

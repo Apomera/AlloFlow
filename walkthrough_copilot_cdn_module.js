@@ -1773,6 +1773,7 @@ const WCOP_STAGES = [
   { id: "copy", n: "Step 4", label: "Copy to your form" }
 ];
 const WCOP_STORE_KEY = "allo_wcop_delivery_v1";
+const WCOP_TOKEN_KEY = "allo_wcop_delivery_token_v1";
 const WCOP_TIERS = [
   {
     key: "practice",
@@ -1809,24 +1810,55 @@ function wcopPost(url, body) {
 function wcopLoadConnection() {
   try {
     const raw = window.localStorage.getItem(WCOP_STORE_KEY);
-    if (!raw) return { execUrl: "", token: "", owner: "" };
+    if (!raw) {
+      try {
+        if (window.sessionStorage) window.sessionStorage.removeItem(WCOP_TOKEN_KEY);
+      } catch (err) {
+      }
+      return { execUrl: "", token: "", owner: "" };
+    }
+    let token = "";
+    try {
+      token = window.sessionStorage ? window.sessionStorage.getItem(WCOP_TOKEN_KEY) || "" : "";
+    } catch (err) {
+      token = "";
+    }
     const saved = JSON.parse(raw);
-    return {
-      execUrl: typeof saved.execUrl === "string" ? saved.execUrl : "",
-      token: typeof saved.token === "string" ? saved.token : "",
-      owner: typeof saved.owner === "string" ? saved.owner : ""
-    };
+    const execUrl = saved && typeof saved.execUrl === "string" ? saved.execUrl : "";
+    const owner = saved && typeof saved.owner === "string" ? saved.owner : "";
+    const legacyToken = saved && typeof saved.token === "string" ? saved.token : "";
+    if (!token && legacyToken) {
+      token = legacyToken;
+      try {
+        if (window.sessionStorage) window.sessionStorage.setItem(WCOP_TOKEN_KEY, legacyToken);
+      } catch (err) {
+      }
+    }
+    if (saved && typeof saved === "object" && Object.prototype.hasOwnProperty.call(saved, "token")) {
+      try {
+        window.localStorage.setItem(WCOP_STORE_KEY, JSON.stringify({ execUrl, owner }));
+      } catch (err) {
+      }
+    }
+    return { execUrl, token, owner };
   } catch (err) {
     return { execUrl: "", token: "", owner: "" };
   }
 }
 function wcopSaveConnection(connection) {
+  const safeConn = connection && typeof connection === "object" ? connection : {};
   try {
     window.localStorage.setItem(WCOP_STORE_KEY, JSON.stringify({
-      execUrl: connection.execUrl,
-      token: connection.token,
-      owner: connection.owner
+      execUrl: safeConn.execUrl || "",
+      owner: safeConn.owner || ""
     }));
+  } catch (err) {
+  }
+  try {
+    if (window.sessionStorage) {
+      if (safeConn.token) window.sessionStorage.setItem(WCOP_TOKEN_KEY, String(safeConn.token));
+      else window.sessionStorage.removeItem(WCOP_TOKEN_KEY);
+    }
   } catch (err) {
   }
 }
@@ -2481,6 +2513,10 @@ function WalkthroughCopilotPanel(props) {
   function forget() {
     try {
       window.localStorage.removeItem(WCOP_STORE_KEY);
+    } catch (err) {
+    }
+    try {
+      if (window.sessionStorage) window.sessionStorage.removeItem(WCOP_TOKEN_KEY);
     } catch (err) {
     }
     setConnection({ execUrl: "", token: "", owner: "" });

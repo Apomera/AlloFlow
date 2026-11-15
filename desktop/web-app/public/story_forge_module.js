@@ -829,6 +829,12 @@ const sanitizeIllustrations = (obj) => {
   });
   return out;
 };
+const _cleanAudioBase64 = (value, maxLen = 2e7) => {
+  if (typeof value !== "string" || !value || value.length > maxLen) return "";
+  const compact = value.replace(/\s+/g, "");
+  return /^[A-Za-z0-9+/]+={0,2}$/.test(compact) ? compact : "";
+};
+const _safeAudioMimeType = (value) => typeof value === "string" && /^audio\/[a-z0-9.+-]{1,60}$/i.test(value.trim()) ? value.trim() : "audio/webm";
 const sanitizeAudioSegments = (obj) => {
   if (!obj || typeof obj !== "object") return {};
   const out = {};
@@ -838,14 +844,15 @@ const sanitizeAudioSegments = (obj) => {
     const clean = {};
     const safeAudio = (url) => typeof url === "string" && /^(data:audio\/|https?:\/\/)/i.test(url) && url.length <= 2e7 ? url : "";
     const aiAudioUrl = safeAudio(value.aiAudioUrl);
-    const studentAudioBase64 = typeof value.studentAudioBase64 === "string" && value.studentAudioBase64.length <= 2e7 ? value.studentAudioBase64 : "";
+    const rawStudentB64 = typeof value.studentAudioBase64 === "string" && value.studentAudioBase64.length <= 2e7 ? value.studentAudioBase64.trim() : "";
+    const studentAudioBase64 = /^[A-Za-z0-9+/_-]+={0,2}$/.test(rawStudentB64) ? rawStudentB64 : "";
     const sentenceAudios = Array.isArray(value.sentenceAudios) ? value.sentenceAudios.slice(0, 120).map(safeAudio).map((url) => url || null) : [];
     if (aiAudioUrl) clean.aiAudioUrl = aiAudioUrl;
     if (sentenceAudios.some(Boolean)) clean.sentenceAudios = sentenceAudios;
     if (Array.isArray(value.sentences)) clean.sentences = value.sentences.slice(0, 120).filter((s) => typeof s === "string").map((s) => s.slice(0, 500));
     if (studentAudioBase64) {
       clean.studentAudioBase64 = studentAudioBase64;
-      clean.studentAudioMimeType = typeof value.studentAudioMimeType === "string" && /^audio\//i.test(value.studentAudioMimeType) ? value.studentAudioMimeType.slice(0, 80) : "audio/webm";
+      clean.studentAudioMimeType = _safeAudioMimeType(value.studentAudioMimeType);
     }
     if (Object.keys(clean).length) out[String(k).slice(0, 64)] = clean;
   });
@@ -2179,8 +2186,9 @@ const getStoryForgeClassSharePreview = (payload = {}) => {
 const hydrateStoryForgeAudioSegments = (value) => Object.fromEntries(
   Object.entries(sanitizeAudioSegments(value)).map(([key, segment]) => {
     const hydrated = { ...segment };
-    if (hydrated.studentAudioBase64 && !hydrated.studentAudioUrl) {
-      hydrated.studentAudioUrl = `data:${hydrated.studentAudioMimeType || "audio/webm"};base64,${hydrated.studentAudioBase64}`;
+    const pureB64 = _cleanAudioBase64(hydrated.studentAudioBase64);
+    if (pureB64 && !hydrated.studentAudioUrl) {
+      hydrated.studentAudioUrl = `data:${_safeAudioMimeType(hydrated.studentAudioMimeType)};base64,${pureB64}`;
     }
     return [key, hydrated];
   })
@@ -2239,13 +2247,18 @@ const StoryForge = React.memo(({
     const v = t(key, params);
     return typeof v === "string" ? v : String(key || "");
   };
-  const sfTextAi = (() => {
+  const _sfAiCheck = (kind, fn) => {
+    if (!fn) return false;
     try {
-      if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return !!onCallGemini && !!window.__alloAiUsable("text", onCallGemini);
+      if (typeof window !== "undefined" && typeof window.__alloAiUsable === "function") return !!window.__alloAiUsable(kind, fn);
     } catch (_) {
     }
-    return !!onCallGemini && !onCallGemini._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
-  })();
+    return !fn._alloQrBlocked && !(typeof window !== "undefined" && window.__alloStudentAiDisabled === true);
+  };
+  const sfTextAi = _sfAiCheck("text", onCallGemini);
+  const sfVisionAi = _sfAiCheck("vision", onCallGeminiVision);
+  const sfImageEditAi = _sfAiCheck("image-edit", onCallGeminiImageEdit);
+  const sfImagenAi = _sfAiCheck("imagen", onCallImagen);
   const notifyAiUnavailable = () => {
     const message = ux("ai_unavailable", "AI tools are unavailable. You can keep writing and use the self-check.");
     if (addToast) addToast(message, "info");
@@ -3241,7 +3254,7 @@ const StoryForge = React.memo(({
   const [hwTargetParagraph, setHwTargetParagraph] = useState(null);
   const handleHandwritingCapture = (e, paragraphIdx) => {
     const file = e.target.files?.[0];
-    if (!file || !onCallGeminiVision) return;
+    if (!file || !sfVisionAi) return;
     e.target.value = "";
     setHwLoading(true);
     setHwTargetParagraph(paragraphIdx);
@@ -4712,7 +4725,7 @@ IMPORTANT: Respond entirely in ${langLabel}. All text output must be in ${langLa
     movePanelToIndex(idx, Math.max(0, Math.min(paragraphs.length - 1, target)));
   };
   const generateScaffolds = async () => {
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       sfAnnounce(ux("ai_unavailable", "AI tools are unavailable. You can keep writing and use the self-check."));
       return;
     }
@@ -4812,7 +4825,7 @@ Return ONLY JSON: { "frames": ["Frame 1 text...", "Frame 2 text...", ...] }`;
     const coachRequest = (coachRequestsRef.current.help || 0) + 1;
     coachRequestsRef.current.help = coachRequest;
     setCoachNotice("");
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -4876,7 +4889,7 @@ Return ONLY JSON: { "suggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 
   };
   const draftComicBubbles = async (targetIdx = null) => {
     const proposalVersion = projectRevisionRef.current;
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -4961,7 +4974,7 @@ Return ONLY JSON:
   };
   const tightenComicBubbles = async (targetIdx = null) => {
     const proposalVersion = projectRevisionRef.current;
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -5041,7 +5054,7 @@ Return ONLY JSON:
     }
   };
   const draftComicCameraPass = async (targetIdx = null) => {
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -5131,7 +5144,7 @@ Return ONLY JSON:
     }
   };
   const draftComicThumbnailPass = async (targetIdx = null) => {
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -5222,7 +5235,7 @@ Return ONLY JSON:
     }
   };
   const checkGrammarAndStyle = async () => {
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -5304,7 +5317,7 @@ Return ONLY JSON:
     return /NO TEXT/i.test(base) && /NO WORDS/i.test(base) ? base : `${base} STRICTLY NO TEXT, NO LABELS, NO WORDS IN THE IMAGE.`;
   };
   const draftComicContinuity = async () => {
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -5403,7 +5416,7 @@ Return ONLY JSON:
       setPromptPreview({ paragraphId, text: sourceText, idx, prompt: savedPrompt });
       return;
     }
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -5421,7 +5434,7 @@ Return ONLY the image prompt text, nothing else.`
     setPromptPreview({ paragraphId, text: sourceText, idx, prompt: imgPrompt });
   };
   const draftComicArtPrompts = async (targetIdx = null) => {
-    if (layoutMode !== "comic" || !onCallGemini) return;
+    if (layoutMode !== "comic" || !sfTextAi) return;
     const selectedPanels = paragraphs.map((p, idx) => ({ p, idx, sourceText: getIllustrationSourceText(p) })).filter(({ idx, sourceText }) => (typeof targetIdx === "number" ? idx === targetIdx : true) && sourceText.trim().length >= 20);
     if (selectedPanels.length === 0) {
       if (addToast) addToast(typeof targetIdx === "number" ? "Add more panel detail before drafting an art prompt." : "Add panel captions before drafting art prompts.", "info");
@@ -5500,7 +5513,7 @@ Return ONLY JSON:
     }
   };
   const confirmIllustration = async (customPrompt) => {
-    if (!promptPreview || !onCallImagen || window.AlloImageGeneration?.isEnabled() === false) return;
+    if (!promptPreview || !sfImagenAi || window.AlloImageGeneration?.isEnabled() === false) return;
     const { paragraphId, idx } = promptPreview;
     const imgPrompt = finalizeImagePrompt(customPrompt || promptPreview.prompt);
     setPromptPreview(null);
@@ -5509,7 +5522,7 @@ Return ONLY JSON:
       const style = getStyleDesc();
       let imageUrl = await onCallImagen(imgPrompt, 768, 0.8);
       const consistencyReference = getComicConsistencyReference(idx);
-      if (imageUrl && consistencyReference && onCallGeminiImageEdit) {
+      if (imageUrl && consistencyReference && sfImageEditAi) {
         try {
           const rawBase64 = getImageBase64Payload(imageUrl) || String(imageUrl || "").split(",")[1] || "";
           const refined = await onCallGeminiImageEdit(
@@ -5534,7 +5547,7 @@ Return ONLY JSON:
     }
   };
   const illustrateParagraph = async (paragraphId, text, idx) => {
-    if (!onCallImagen || window.AlloImageGeneration?.isEnabled() === false) return;
+    if (!sfImagenAi || window.AlloImageGeneration?.isEnabled() === false) return;
     setIllustrations((prev) => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: true } }));
     try {
       const style = getStyleDesc();
@@ -5543,7 +5556,7 @@ Return ONLY JSON:
       if (!sourceText) throw new Error("No illustration source text");
       let imgPrompt = finalizeImagePrompt(illustrations[paragraphId]?.prompt);
       if (!imgPrompt) {
-        if (!onCallGemini) throw new Error("No prompt writer available");
+        if (!sfTextAi) throw new Error("No prompt writer available");
         const sourceLimit = layoutMode === "comic" ? 1100 : 700;
         const promptResult = await onCallGemini(
           `Given this ${layoutMode === "comic" ? "comic panel plan" : "paragraph"} from a student's creative story:
@@ -5557,7 +5570,7 @@ Return ONLY the image prompt text, nothing else.`
       }
       let imageUrl = await onCallImagen(imgPrompt, 768, 0.8);
       const consistencyReference = getComicConsistencyReference(idx);
-      if (imageUrl && consistencyReference && onCallGeminiImageEdit) {
+      if (imageUrl && consistencyReference && sfImageEditAi) {
         try {
           const rawBase64 = getImageBase64Payload(imageUrl) || String(imageUrl || "").split(",")[1] || "";
           const refined = await onCallGeminiImageEdit(
@@ -5617,7 +5630,7 @@ Return ONLY the image prompt text, nothing else.`
     setIsDirty(true);
   };
   const refineIllustration = async (paragraphId, editPrompt) => {
-    if (!onCallGeminiImageEdit) {
+    if (!sfImageEditAi) {
       if (addToast) addToast(t("toasts.image_editing_available"), "error");
       return;
     }
@@ -5648,7 +5661,7 @@ Return ONLY the image prompt text, nothing else.`
     }
   };
   const generateCoverArt = async () => {
-    if (!onCallImagen || !onCallGemini || window.AlloImageGeneration?.isEnabled() === false) return;
+    if (!sfImagenAi || !sfTextAi || window.AlloImageGeneration?.isEnabled() === false) return;
     setCoverArtLoading(true);
     try {
       const style = getStyleDesc();
@@ -5671,7 +5684,7 @@ Return ONLY the image prompt text, nothing else.`
     setCoverArtLoading(false);
   };
   const detectCharacters = async () => {
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -5921,7 +5934,7 @@ Return ONLY JSON: { "characters": [{"name": "CharName", "description": "brief 5-
     sfAnnounce(ta("a11y.storyforge_narration_playback_stopped_because_the_audio_clip"));
   };
   const gradeStory = async () => {
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -6016,7 +6029,7 @@ Return ONLY JSON:
     const coachRequest = (coachRequestsRef.current.mentor || 0) + 1;
     coachRequestsRef.current.mentor = coachRequest;
     setCoachNotice("");
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -6044,10 +6057,11 @@ ${fullText.slice(0, 2400)}
       }
       let searchContext = "";
       let searchResults = [];
-      if (window.WebSearchProvider && keywords) {
+      const safeKeywords = typeof window.WebSearchProvider?.publicSearchQuery === "function" ? window.WebSearchProvider.publicSearchQuery(keywords) : keywords;
+      if (window.WebSearchProvider && safeKeywords) {
         try {
           const genreLabel3 = GENRE_TEMPLATES[genre]?.label || "";
-          const searchQuery = `${keywords} ${genreLabel3 ? genreLabel3 + " " : ""}famous public domain short story excerpt gutenberg`;
+          const searchQuery = `${safeKeywords} ${genreLabel3 ? genreLabel3 + " " : ""}famous public domain short story excerpt gutenberg`;
           sfAnnounce(ta("a11y.storyforge_searching_for_similar_master_stories"));
           const searchResult = await window.WebSearchProvider.search(searchQuery, 8);
           if (searchResult && searchResult.results && searchResult.results.length > 0) {
@@ -6112,7 +6126,7 @@ Match register and reading level to a ${targetGrade} student. Be specific, be ho
     setMentorLoading(false);
   };
   const suggestValenceArc = async () => {
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -6152,7 +6166,7 @@ Return ONLY JSON: {"valence":[n1, n2, ...]} with exactly ${paragraphs.length} in
     const coachRequest = (coachRequestsRef.current.senses || 0) + 1;
     coachRequestsRef.current.senses = coachRequest;
     setCoachNotice("");
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -6210,7 +6224,7 @@ Return ONLY JSON in this shape:
     const coachRequest = (coachRequestsRef.current.show || 0) + 1;
     coachRequestsRef.current.show = coachRequest;
     setCoachNotice("");
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -6263,7 +6277,7 @@ Return ONLY JSON:
     const coachRequest = (coachRequestsRef.current.arcs || 0) + 1;
     coachRequestsRef.current.arcs = coachRequest;
     setCoachNotice("");
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -6331,7 +6345,7 @@ Return ONLY JSON:
     const coachRequest = (coachRequestsRef.current.dialogue || 0) + 1;
     coachRequestsRef.current.dialogue = coachRequest;
     setCoachNotice("");
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -6666,7 +6680,7 @@ Return ONLY JSON:
     if (!issue) return "";
     if (issue.code === "unplaced-lettering" || issue.code === "gutter-lettering-conflict") return "Open lettering tools";
     if (issue.code === "missing-print-bleed") return "Open print setup";
-    if (issue.code === "continuity-sheet-incomplete") return onCallGemini ? "Draft continuity" : "Add continuity";
+    if (issue.code === "continuity-sheet-incomplete") return sfTextAi ? "Draft continuity" : "Add continuity";
     if (issue.code === "review-not-run") return layoutMode === "comic" ? "Open comic review" : "Open review";
     if (issue.code === "missing-story-title") return "Add title";
     if (issue.code === "missing-vocabulary") return "Add vocabulary";
@@ -6719,7 +6733,7 @@ Return ONLY JSON:
       changePhase("illustrate", "sf-comic-print-safety");
       return;
     }
-    if (issue.code === "continuity-sheet-incomplete" && onCallGemini) {
+    if (issue.code === "continuity-sheet-incomplete" && sfTextAi) {
       await draftComicContinuity();
       changePhase("illustrate", "sf-comic-continuity");
       return;
@@ -6747,7 +6761,7 @@ Return ONLY JSON:
     const coachRequest = (coachRequestsRef.current.revision || 0) + 1;
     coachRequestsRef.current.revision = coachRequest;
     setCoachNotice("");
-    if (!onCallGemini) {
+    if (!sfTextAi) {
       notifyAiUnavailable();
       return;
     }
@@ -6979,8 +6993,9 @@ Return ONLY JSON:
           chaptersHtml += `<div class="beat-label" aria-label="${escapeHtml(t("a11y.narrative_beat", { label: beatLabel2 }))}">${escapeHtml(beatLabel2)}</div>`;
         }
         chaptersHtml += `<p class="story-text">${safeText.replace(/\n/g, "<br/>")}</p>`;
-        if (audio?.studentAudioBase64) {
-          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;" aria-label="Audio narration for scene ${idx + 1}"></audio>`;
+        const pureB64 = _cleanAudioBase64(audio?.studentAudioBase64);
+        if (pureB64) {
+          chaptersHtml += `<audio controls src="data:${_safeAudioMimeType(audio?.studentAudioMimeType)};base64,${pureB64}" style="width:100%;margin-top:8px;" aria-label="Audio narration for scene ${idx + 1}"></audio>`;
         }
         chaptersHtml += `</article>`;
         if (idx < paragraphs.length - 1) chaptersHtml += `<div class="separator" aria-hidden="true">&mdash;</div>`;
@@ -7125,6 +7140,10 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
     try {
       const w = window.open("", "_blank");
       if (w) {
+        try {
+          w.opener = null;
+        } catch (_) {
+        }
         w.document.write(html);
         w.document.close();
       } else if (addToast) addToast(t("toasts.pop_up_blocked_allow_pop_3"), "error");
@@ -7211,6 +7230,10 @@ ${panelsHtml}
     try {
       const w = window.open("", "_blank");
       if (w) {
+        try {
+          w.opener = null;
+        } catch (_) {
+        }
         w.document.write(html);
         w.document.close();
       } else if (addToast) addToast(t("toasts.pop_up_blocked_allow_pop_3"), "error");
@@ -7476,6 +7499,10 @@ ${panelsHtml}
     try {
       const w = window.open("", "_blank");
       if (w) {
+        try {
+          w.opener = null;
+        } catch (_) {
+        }
         w.document.write(html);
         w.document.close();
       } else if (addToast) addToast(t("toasts.pop_up_blocked_allow_pop_3"), "error");
@@ -7577,6 +7604,10 @@ show();
     try {
       const w = window.open("", "_blank");
       if (w) {
+        try {
+          w.opener = null;
+        } catch (_) {
+        }
         w.document.write(html);
         w.document.close();
       } else if (addToast) addToast(t("toasts.pop_up_blocked_allow_pop_4"), "error");
@@ -8407,7 +8438,7 @@ show();
     {
       type: "button",
       onClick: generateScaffolds,
-      disabled: !onCallGemini || isProcessing,
+      disabled: !sfTextAi || isProcessing,
       className: "px-4 py-2 bg-rose-600 text-white rounded-full text-xs font-bold hover:bg-rose-700 transition-colors flex items-center gap-2 disabled:opacity-50"
     },
     /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
@@ -8426,7 +8457,7 @@ show();
       className: "px-4 py-2 rounded-full border border-slate-300 bg-white text-slate-700 text-xs font-bold hover:bg-slate-50"
     },
     showWritingTools ? "Hide tools" : "More tools"
-  ))), !onCallGemini && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs text-slate-600" }, ux("ai_unavailable", "AI tools are unavailable. You can keep writing and use the self-check.")), comicEditProposal && /* @__PURE__ */ React.createElement("section", { ref: comicEditPreviewRef, tabIndex: -1, "data-sf-comic-edit-preview": true, "aria-labelledby": "sf-comic-edit-title", className: "rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("h4", { id: "sf-comic-edit-title", className: "font-bold text-indigo-950" }, ux("comic_edit_preview", "Review comic bubble suggestions")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm text-indigo-900" }, ux("comic_edit_explanation", "Compare your current text with the suggestions. Applying replaces these bubble fields and any proposed directions, and saves a checkpoint for Undo.")), Object.entries(comicEditProposal.updates).map(([id, value]) => /* @__PURE__ */ React.createElement("div", { key: id, className: "mt-3 rounded-xl border border-indigo-200 bg-white p-3 text-sm text-slate-800" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, ux("panel", "Panel"), " ", paragraphs.findIndex((p) => p.id === id) + 1), /* @__PURE__ */ React.createElement("div", { className: "grid gap-3 sm:grid-cols-2" }, [["Current", comicEditProposal.before[id] || {}, comicEditProposal.beforeDirections[id] || {}], ["Suggested", value, comicEditProposal.directions[id] || comicEditProposal.beforeDirections[id] || {}]].map(([label, dialogue, direction]) => /* @__PURE__ */ React.createElement("div", { key: label }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold" }, ux(label.toLowerCase(), label)), /* @__PURE__ */ React.createElement("dl", null, Object.entries({ ...dialogue, ...direction }).map(([key, text]) => /* @__PURE__ */ React.createElement("div", { key }, /* @__PURE__ */ React.createElement("dt", { className: "font-medium" }, key), /* @__PURE__ */ React.createElement("dd", { className: "whitespace-pre-wrap break-words" }, text || "\u2014"))))))))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-apply-comic-edit": true, onClick: () => void applyComicEditProposal(), disabled: isProcessing || projectMutationBusy, className: "mt-3 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50" }, ux("apply_comic_edit", "Apply suggestions")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setComicEditProposal(null), className: "mt-3 ml-2 min-h-11 rounded-lg border border-indigo-400 px-4 py-2 font-bold text-indigo-900" }, ux("discard_comic_edit", "Keep my version"))), planProposal && /* @__PURE__ */ React.createElement("section", { ref: planPreviewRef, tabIndex: -1, "aria-labelledby": "sf-plan-preview-title", className: "rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("h4", { id: "sf-plan-preview-title", className: "font-bold text-indigo-900" }, ux("plan_preview", "Preview plan suggestions")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm text-indigo-900" }, ux("plan_preserves", "Applying updates planning prompts only. Your scenes, writing, dialogue, and artwork stay intact. A checkpoint is saved first.")), /* @__PURE__ */ React.createElement("ol", { className: "my-3 list-decimal space-y-2 pl-5 text-sm text-slate-800" }, planProposal.suggestions.map((item, i) => /* @__PURE__ */ React.createElement("li", { key: i }, item.scaffoldFrame))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => void applyPlanProposal(), disabled: isProcessing, className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50" }, ux("apply_plan", "Apply plan")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPlanProposal(null), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-800" }, ux("keep_draft", "Keep current plan")))), showWritingTools && /* @__PURE__ */ React.createElement(
+  ))), !sfTextAi && /* @__PURE__ */ React.createElement("p", { role: "status", className: "text-xs text-slate-600" }, ux("ai_unavailable", "AI tools are unavailable. You can keep writing and use the self-check.")), comicEditProposal && /* @__PURE__ */ React.createElement("section", { ref: comicEditPreviewRef, tabIndex: -1, "data-sf-comic-edit-preview": true, "aria-labelledby": "sf-comic-edit-title", className: "rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("h4", { id: "sf-comic-edit-title", className: "font-bold text-indigo-950" }, ux("comic_edit_preview", "Review comic bubble suggestions")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm text-indigo-900" }, ux("comic_edit_explanation", "Compare your current text with the suggestions. Applying replaces these bubble fields and any proposed directions, and saves a checkpoint for Undo.")), Object.entries(comicEditProposal.updates).map(([id, value]) => /* @__PURE__ */ React.createElement("div", { key: id, className: "mt-3 rounded-xl border border-indigo-200 bg-white p-3 text-sm text-slate-800" }, /* @__PURE__ */ React.createElement("p", { className: "font-bold" }, ux("panel", "Panel"), " ", paragraphs.findIndex((p) => p.id === id) + 1), /* @__PURE__ */ React.createElement("div", { className: "grid gap-3 sm:grid-cols-2" }, [["Current", comicEditProposal.before[id] || {}, comicEditProposal.beforeDirections[id] || {}], ["Suggested", value, comicEditProposal.directions[id] || comicEditProposal.beforeDirections[id] || {}]].map(([label, dialogue, direction]) => /* @__PURE__ */ React.createElement("div", { key: label }, /* @__PURE__ */ React.createElement("h5", { className: "font-bold" }, ux(label.toLowerCase(), label)), /* @__PURE__ */ React.createElement("dl", null, Object.entries({ ...dialogue, ...direction }).map(([key, text]) => /* @__PURE__ */ React.createElement("div", { key }, /* @__PURE__ */ React.createElement("dt", { className: "font-medium" }, key), /* @__PURE__ */ React.createElement("dd", { className: "whitespace-pre-wrap break-words" }, text || "\u2014"))))))))), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-apply-comic-edit": true, onClick: () => void applyComicEditProposal(), disabled: isProcessing || projectMutationBusy, className: "mt-3 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50" }, ux("apply_comic_edit", "Apply suggestions")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setComicEditProposal(null), className: "mt-3 ml-2 min-h-11 rounded-lg border border-indigo-400 px-4 py-2 font-bold text-indigo-900" }, ux("discard_comic_edit", "Keep my version"))), planProposal && /* @__PURE__ */ React.createElement("section", { ref: planPreviewRef, tabIndex: -1, "aria-labelledby": "sf-plan-preview-title", className: "rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("h4", { id: "sf-plan-preview-title", className: "font-bold text-indigo-900" }, ux("plan_preview", "Preview plan suggestions")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-sm text-indigo-900" }, ux("plan_preserves", "Applying updates planning prompts only. Your scenes, writing, dialogue, and artwork stay intact. A checkpoint is saved first.")), /* @__PURE__ */ React.createElement("ol", { className: "my-3 list-decimal space-y-2 pl-5 text-sm text-slate-800" }, planProposal.suggestions.map((item, i) => /* @__PURE__ */ React.createElement("li", { key: i }, item.scaffoldFrame))), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => void applyPlanProposal(), disabled: isProcessing, className: "min-h-11 rounded-lg bg-indigo-700 px-4 py-2 font-bold text-white disabled:opacity-50" }, ux("apply_plan", "Apply plan")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setPlanProposal(null), className: "min-h-11 rounded-lg border border-slate-400 bg-white px-4 py-2 font-bold text-slate-800" }, ux("keep_draft", "Keep current plan")))), showWritingTools && /* @__PURE__ */ React.createElement(
     "div",
     {
       id: "sf-writing-tools-panel",
@@ -8434,7 +8465,7 @@ show();
       "aria-label": ta("a11y.storyforge_attr_expanded_writing_tools"),
       className: "w-full rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm"
     },
-    /* @__PURE__ */ React.createElement("div", { className: `grid gap-4 ${layoutMode === "comic" && onCallGemini ? "lg:grid-cols-3" : "md:grid-cols-2"}` }, /* @__PURE__ */ React.createElement(
+    /* @__PURE__ */ React.createElement("div", { className: `grid gap-4 ${layoutMode === "comic" && sfTextAi ? "lg:grid-cols-3" : "md:grid-cols-2"}` }, /* @__PURE__ */ React.createElement(
       "section",
       {
         "aria-labelledby": "sf-writing-setup-heading",
@@ -8457,14 +8488,14 @@ show();
         },
         item.label
       ))) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => changePhase("configure"), className: "px-3 py-1 rounded-full text-[11px] font-bold bg-blue-100 text-blue-800 hover:bg-blue-200", title: ta("a11y.storyforge_attr_artifact_type_is_chosen_in_plan") }, "Comic \xB7 Change in Plan"))
-    ), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
+    ), layoutMode === "comic" && sfTextAi && /* @__PURE__ */ React.createElement(
       "section",
       {
         "aria-labelledby": "sf-comic-helpers-heading",
         className: "rounded-xl border border-blue-100 bg-blue-50/40 p-3"
       },
       /* @__PURE__ */ React.createElement("h4", { id: "sf-comic-helpers-heading", className: "text-xs font-black uppercase tracking-wider text-blue-800" }, "Comic helpers"),
-      /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-2" }, layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap items-center gap-2" }, layoutMode === "comic" && sfTextAi && /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -8475,7 +8506,7 @@ show();
         },
         /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
         " Draft Bubbles"
-      ), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
+      ), layoutMode === "comic" && sfTextAi && /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -8486,7 +8517,7 @@ show();
         },
         /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
         " Camera Pass"
-      ), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
+      ), layoutMode === "comic" && sfTextAi && /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -8497,7 +8528,7 @@ show();
         },
         /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
         " Thumbnail Pass"
-      ), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
+      ), layoutMode === "comic" && sfTextAi && /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -8727,7 +8758,7 @@ show();
     }, className: "mt-2 text-[11px] text-amber-500 hover:text-amber-700 font-bold" }, t("ui_common.dismiss"))),
     layoutMode === "comic" ? (
       /* ── Comic Panel Writing Mode — dialogue, thought, narration fields ── */
-      /* @__PURE__ */ React.createElement("div", { className: "p-3 space-y-2 bg-gradient-to-b from-slate-50 to-white" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-slate-700 uppercase tracking-widest" }, "Panel ", idx + 1, " Bubbles"), onCallGemini && /* @__PURE__ */ React.createElement(
+      /* @__PURE__ */ React.createElement("div", { className: "p-3 space-y-2 bg-gradient-to-b from-slate-50 to-white" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-black text-slate-700 uppercase tracking-widest" }, "Panel ", idx + 1, " Bubbles"), sfTextAi && /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -8738,7 +8769,7 @@ show();
         },
         /* @__PURE__ */ React.createElement(Sparkles, { size: 10 }),
         " Draft"
-      )), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black text-slate-600 uppercase tracking-widest" }, ta("a11y.storyforge_ui_panel_direction")), onCallGemini && /* @__PURE__ */ React.createElement(
+      )), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black text-slate-600 uppercase tracking-widest" }, ta("a11y.storyforge_ui_panel_direction")), sfTextAi && /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -8762,7 +8793,7 @@ show();
           "aria-label": ta("a11y.storyforge_aria_panel").replace("{0}", idx + 1).replace("{1}", label.toLowerCase())
         },
         options.map((opt) => /* @__PURE__ */ React.createElement("option", { key: opt.value || `${field}-none`, value: opt.value }, optLabel(field, opt.value, opt.label)))
-      ))))), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-teal-100 bg-teal-50/40 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black text-teal-700 uppercase tracking-widest" }, ta("a11y.storyforge_ui_thumbnail_rough")), onCallGemini && /* @__PURE__ */ React.createElement(
+      ))))), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-teal-100 bg-teal-50/40 p-2" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[10px] font-black text-teal-700 uppercase tracking-widest" }, ta("a11y.storyforge_ui_thumbnail_rough")), sfTextAi && /* @__PURE__ */ React.createElement(
         "button",
         {
           type: "button",
@@ -8877,7 +8908,7 @@ show();
         const pct = Math.min(100, Math.round(lettering.words / lettering.limit * 100));
         const color = lettering.level === "crowded" ? "bg-red-500" : lettering.level === "watch" ? "bg-amber-400" : "bg-green-500";
         const textColor = lettering.level === "crowded" ? "text-red-700" : lettering.level === "watch" ? "text-amber-700" : "text-green-700";
-        return /* @__PURE__ */ React.createElement("div", { id: `sf-lettering-${p.id}`, tabIndex: -1, "data-sf-focusable": true, className: "rounded-lg border border-slate-200 bg-white p-2 focus:ring-2 focus:ring-amber-400", "aria-label": ta("a11y.storyforge_aria_panel_lettering_budget").replace("{0}", idx + 1) }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-slate-600 uppercase tracking-widest" }, ta("a11y.storyforge_ui_lettering_budget")), onCallGemini && lettering.words > COMIC_BUBBLE_WORD_WARNING && /* @__PURE__ */ React.createElement(
+        return /* @__PURE__ */ React.createElement("div", { id: `sf-lettering-${p.id}`, tabIndex: -1, "data-sf-focusable": true, className: "rounded-lg border border-slate-200 bg-white p-2 focus:ring-2 focus:ring-amber-400", "aria-label": ta("a11y.storyforge_aria_panel_lettering_budget").replace("{0}", idx + 1) }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2 mb-1" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-black text-slate-600 uppercase tracking-widest" }, ta("a11y.storyforge_ui_lettering_budget")), sfTextAi && lettering.words > COMIC_BUBBLE_WORD_WARNING && /* @__PURE__ */ React.createElement(
           "button",
           {
             type: "button",
@@ -8912,7 +8943,7 @@ show();
         }
       )
     ),
-    onCallGeminiVision && /* @__PURE__ */ React.createElement("div", { className: `px-4 py-1.5 border-t flex items-center gap-2 flex-wrap ${layoutMode === "dark" ? "bg-slate-900 border-slate-700" : "bg-white border-slate-100"}` }, /* @__PURE__ */ React.createElement(
+    sfVisionAi && /* @__PURE__ */ React.createElement("div", { className: `px-4 py-1.5 border-t flex items-center gap-2 flex-wrap ${layoutMode === "dark" ? "bg-slate-900 border-slate-700" : "bg-white border-slate-100"}` }, /* @__PURE__ */ React.createElement(
       "label",
       {
         className: `inline-flex items-center gap-1.5 px-3 py-1.5 border-2 border-dashed rounded-lg text-xs font-bold cursor-pointer transition-all ${hwLoading && hwTargetParagraph === idx ? "opacity-50 pointer-events-none" : ""} ${layoutMode === "dark" ? "border-cyan-700 text-cyan-400 hover:bg-cyan-900/30" : "border-violet-300 text-violet-600 hover:bg-violet-50 hover:border-violet-400"}`,
@@ -9001,7 +9032,7 @@ show();
     /* @__PURE__ */ React.createElement(Sparkles, { size: 14 }),
     " ",
     coverArtLoading ? "Generating..." : coverArt ? "Redo Cover" : "Cover Art"
-  ), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
+  ), layoutMode === "comic" && sfTextAi && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -9037,7 +9068,7 @@ show();
       setIsDirty(true);
       return true;
     }
-  })), (coverArt || coverArtLoading) && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2" }, ta("a11y.storyforge_ui_cover_art")), coverArtLoading ? /* @__PURE__ */ React.createElement("div", { className: "w-48 h-48 mx-auto bg-purple-100 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-300" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 32, className: "text-purple-700 animate-spin motion-reduce:animate-none" })) : coverArt && /* @__PURE__ */ React.createElement("img", { src: coverArt, alt: coverArtwork?.altText || "Artifact cover art", className: "max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" })), layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { id: "sf-comic-continuity", tabIndex: -1, "data-sf-focusable": true, className: "bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-4 focus:ring-2 focus:ring-purple-400" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-widest" }, ta("a11y.storyforge_ui_comic_continuity")), onCallGemini && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: draftComicContinuity, disabled: isProcessing || !paragraphs.some((p) => (p.text || p.scaffoldFrame || "").trim().length > 0), className: "px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-[11px] font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }), " Draft Notes")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" }, [
+  })), (coverArt || coverArtLoading) && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-r from-purple-50 to-pink-50 border-2 border-purple-200 rounded-2xl p-4 text-center" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-500 uppercase tracking-widest mb-2" }, ta("a11y.storyforge_ui_cover_art")), coverArtLoading ? /* @__PURE__ */ React.createElement("div", { className: "w-48 h-48 mx-auto bg-purple-100 rounded-xl flex items-center justify-center border-2 border-dashed border-purple-300" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 32, className: "text-purple-700 animate-spin motion-reduce:animate-none" })) : coverArt && /* @__PURE__ */ React.createElement("img", { src: coverArt, alt: coverArtwork?.altText || "Artifact cover art", className: "max-w-xs mx-auto rounded-xl shadow-lg border-2 border-purple-200" })), layoutMode === "comic" && /* @__PURE__ */ React.createElement("div", { id: "sf-comic-continuity", tabIndex: -1, "data-sf-focusable": true, className: "bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-4 focus:ring-2 focus:ring-purple-400" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-purple-600 uppercase tracking-widest" }, ta("a11y.storyforge_ui_comic_continuity")), sfTextAi && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: draftComicContinuity, disabled: isProcessing || !paragraphs.some((p) => (p.text || p.scaffoldFrame || "").trim().length > 0), className: "px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-[11px] font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-1" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 12 }), " Draft Notes")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-3" }, [
     { field: "cast", label: "Cast", placeholder: "Mina: round glasses, red jacket, curious expression" },
     { field: "setting", label: "Setting", placeholder: "Library lab with teal lamps and brass shelves" },
     { field: "palette", label: "Palette", placeholder: "Teal, amber, ink black, warm paper white" },
@@ -9393,7 +9424,7 @@ show();
       setIsDirty(true);
       return true;
     }
-  })), illustrations[p.id]?.prompt && !illustrations[p.id]?.isLoading && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-purple-700 italic truncate", title: illustrations[p.id].prompt }, "Prompt: ", illustrations[p.id].prompt.substring(0, 80), "..."), layoutMode === "comic" && onCallGemini && /* @__PURE__ */ React.createElement(
+  })), illustrations[p.id]?.prompt && !illustrations[p.id]?.isLoading && /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-purple-700 italic truncate", title: illustrations[p.id].prompt }, "Prompt: ", illustrations[p.id].prompt.substring(0, 80), "..."), layoutMode === "comic" && sfTextAi && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -9591,7 +9622,7 @@ show();
       className: "px-4 py-2.5 bg-white text-slate-700 rounded-full text-sm font-bold hover:bg-slate-50 border border-slate-300"
     },
     showReviewTools ? "Hide review tools" : "More review tools"
-  ), showReviewTools && /* @__PURE__ */ React.createElement(React.Fragment, null, !gradingResult && !sfTextAi && typeof window !== "undefined" && typeof window.AlloAiSetupNotice === "function" && /* @__PURE__ */ React.createElement(window.AlloAiSetupNotice, { t }), !gradingResult && sfTextAi && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: checkSenses, disabled: !onCallGemini || sensesLoading || isProcessing, className: "px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200", title: t("tooltips.check_sensory") }, "\u{1F308} ", sensesLoading ? "Checking..." : "Senses Check"), !gradingResult && sfTextAi && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: findMentorStory, disabled: !onCallGemini || mentorLoading || isProcessing, className: "px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200", title: t("tooltips.find_mentor_story") }, "\u{1F393} ", mentorLoading ? "Searching..." : mentorMatch && !mentorMatch.error ? "Find another" : "Mentor Match"), !gradingResult && sfTextAi && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeShowTell, disabled: !onCallGemini || showTellLoading || isProcessing, className: "px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200", title: t("tooltips.find_telling_sentences") }, "\u{1F3AD} ", showTellLoading ? "Analyzing..." : "Show vs Tell"), !gradingResult && sfTextAi && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeCharacterArcs, disabled: !onCallGemini || arcLoading || isProcessing, className: "px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200", title: t("tooltips.audit_character_arc") }, "\u{1F3AC} ", arcLoading ? "Analyzing..." : "Character Arcs"), !gradingResult && sfTextAi && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeDialogue, disabled: !onCallGemini || dialogueLoading || isProcessing, className: "px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200", title: t("tooltips.tune_dialogue") }, "\u{1F4AC} ", dialogueLoading ? "Analyzing..." : "Dialogue Tune-Up"), !gradingResult && layoutMode === "comic" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeComicFlow, disabled: comicFlowLoading || isProcessing, className: "px-4 py-2.5 bg-blue-100 text-blue-700 rounded-full text-sm font-bold hover:bg-blue-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-blue-200", title: ta("a11y.storyforge_attr_audit_comic_pacing_shot_variety_lettering") }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " ", comicFlowLoading ? "Auditing..." : "Comic Flow"), !gradingResult && helpersAvailableForPlan() && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: synthesizeRevisionPlan, disabled: !onCallGemini || revisionPlanLoading || isProcessing, className: "px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200", title: t("tooltips.synthesize_revision_plan") }, "\u{1F5FA}\uFE0F ", revisionPlanLoading ? "Synthesizing..." : "Revision Plan")), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: gradeStory, disabled: !onCallGemini || isProcessing || !selfAssessmentSubmitted, className: "px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2", title: !selfAssessmentSubmitted ? "Complete or skip self-assessment first" : "Get AI feedback" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " ", feedbackLoading ? "Preparing feedback..." : "Get Feedback"), gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: reviseStory, className: "px-5 py-2.5 bg-amber-700 text-white rounded-full text-sm font-bold hover:bg-amber-800 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Revise Draft"))), isReviewStale && /* @__PURE__ */ React.createElement("div", { "data-sf-review-stale": true, role: "alert", className: "rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-black" }, ta("a11y.storyforge_ui_this_feedback_is_for_an_earlier")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs" }, ta("a11y.storyforge_ui_the_writing_or_comic_dialogue_changed")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearReviewState, className: "mt-3 rounded-full bg-amber-700 px-4 py-2 text-xs font-bold text-white hover:bg-amber-800" }, "Start fresh review")), !gradingResult && selfAssessmentSubmitted && !isCurrentDraftReviewed && !feedbackNotice && !feedbackLoading && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-indigo-900" }, ux("review_choices", "Complete a self-check or get AI feedback to continue. Your writing stays here if feedback is unavailable.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSelfAssessmentSubmitted(false), className: "mt-2 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white" }, ux("return_selfcheck", "Return to self-check"))), !onCallGemini && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, ux("ai_unavailable", "AI tools are unavailable. You can keep writing and use the self-check.")), feedbackLoading && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-indigo-900" }, ux("feedback_working", "Preparing feedback for this draft. You can cancel and keep writing.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-cancel-feedback": true, onClick: cancelFeedback, className: "mt-2 min-h-11 rounded-lg border border-indigo-400 bg-white px-4 py-2 text-sm font-bold text-indigo-900" }, ux("cancel_feedback", "Cancel feedback"))), feedbackNotice && !feedbackLoading && /* @__PURE__ */ React.createElement("div", { "data-sf-feedback-notice": true, role: "status", className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-indigo-900" }, feedbackNotice), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: gradeStory, disabled: !onCallGemini || isProcessing, className: "mt-2 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" }, ux("retry_feedback", "Retry feedback")), !isCurrentDraftReviewed && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
+  ), showReviewTools && /* @__PURE__ */ React.createElement(React.Fragment, null, !gradingResult && !sfTextAi && typeof window !== "undefined" && typeof window.AlloAiSetupNotice === "function" && /* @__PURE__ */ React.createElement(window.AlloAiSetupNotice, { t }), !gradingResult && sfTextAi && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: checkSenses, disabled: !sfTextAi || sensesLoading || isProcessing, className: "px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200", title: t("tooltips.check_sensory") }, "\u{1F308} ", sensesLoading ? "Checking..." : "Senses Check"), !gradingResult && sfTextAi && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: findMentorStory, disabled: !sfTextAi || mentorLoading || isProcessing, className: "px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200", title: t("tooltips.find_mentor_story") }, "\u{1F393} ", mentorLoading ? "Searching..." : mentorMatch && !mentorMatch.error ? "Find another" : "Mentor Match"), !gradingResult && sfTextAi && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeShowTell, disabled: !sfTextAi || showTellLoading || isProcessing, className: "px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200", title: t("tooltips.find_telling_sentences") }, "\u{1F3AD} ", showTellLoading ? "Analyzing..." : "Show vs Tell"), !gradingResult && sfTextAi && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeCharacterArcs, disabled: !sfTextAi || arcLoading || isProcessing, className: "px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200", title: t("tooltips.audit_character_arc") }, "\u{1F3AC} ", arcLoading ? "Analyzing..." : "Character Arcs"), !gradingResult && sfTextAi && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeDialogue, disabled: !sfTextAi || dialogueLoading || isProcessing, className: "px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200", title: t("tooltips.tune_dialogue") }, "\u{1F4AC} ", dialogueLoading ? "Analyzing..." : "Dialogue Tune-Up"), !gradingResult && layoutMode === "comic" && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: analyzeComicFlow, disabled: comicFlowLoading || isProcessing, className: "px-4 py-2.5 bg-blue-100 text-blue-700 rounded-full text-sm font-bold hover:bg-blue-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-blue-200", title: ta("a11y.storyforge_attr_audit_comic_pacing_shot_variety_lettering") }, /* @__PURE__ */ React.createElement(Eye, { size: 14 }), " ", comicFlowLoading ? "Auditing..." : "Comic Flow"), !gradingResult && helpersAvailableForPlan() && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: synthesizeRevisionPlan, disabled: !sfTextAi || revisionPlanLoading || isProcessing, className: "px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200", title: t("tooltips.synthesize_revision_plan") }, "\u{1F5FA}\uFE0F ", revisionPlanLoading ? "Synthesizing..." : "Revision Plan")), !gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: gradeStory, disabled: !sfTextAi || isProcessing || !selfAssessmentSubmitted, className: "px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2", title: !selfAssessmentSubmitted ? "Complete or skip self-assessment first" : "Get AI feedback" }, /* @__PURE__ */ React.createElement(Sparkles, { size: 16 }), " ", feedbackLoading ? "Preparing feedback..." : "Get Feedback"), gradingResult && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: reviseStory, className: "px-5 py-2.5 bg-amber-700 text-white rounded-full text-sm font-bold hover:bg-amber-800 transition-colors flex items-center gap-2" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 16 }), " Revise Draft"))), isReviewStale && /* @__PURE__ */ React.createElement("div", { "data-sf-review-stale": true, role: "alert", className: "rounded-2xl border-2 border-amber-300 bg-amber-50 p-4 text-amber-950" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm font-black" }, ta("a11y.storyforge_ui_this_feedback_is_for_an_earlier")), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs" }, ta("a11y.storyforge_ui_the_writing_or_comic_dialogue_changed")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: clearReviewState, className: "mt-3 rounded-full bg-amber-700 px-4 py-2 text-xs font-bold text-white hover:bg-amber-800" }, "Start fresh review")), !gradingResult && selfAssessmentSubmitted && !isCurrentDraftReviewed && !feedbackNotice && !feedbackLoading && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-indigo-900" }, ux("review_choices", "Complete a self-check or get AI feedback to continue. Your writing stays here if feedback is unavailable.")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setSelfAssessmentSubmitted(false), className: "mt-2 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white" }, ux("return_selfcheck", "Return to self-check"))), !sfTextAi && /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600" }, ux("ai_unavailable", "AI tools are unavailable. You can keep writing and use the self-check.")), feedbackLoading && /* @__PURE__ */ React.createElement("div", { role: "status", className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-indigo-900" }, ux("feedback_working", "Preparing feedback for this draft. You can cancel and keep writing.")), /* @__PURE__ */ React.createElement("button", { type: "button", "data-sf-cancel-feedback": true, onClick: cancelFeedback, className: "mt-2 min-h-11 rounded-lg border border-indigo-400 bg-white px-4 py-2 text-sm font-bold text-indigo-900" }, ux("cancel_feedback", "Cancel feedback"))), feedbackNotice && !feedbackLoading && /* @__PURE__ */ React.createElement("div", { "data-sf-feedback-notice": true, role: "status", className: "rounded-xl border border-indigo-200 bg-indigo-50 p-4" }, /* @__PURE__ */ React.createElement("p", { className: "text-sm text-indigo-900" }, feedbackNotice), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: gradeStory, disabled: !sfTextAi || isProcessing, className: "mt-2 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50" }, ux("retry_feedback", "Retry feedback")), !isCurrentDraftReviewed && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     setSelfAssessmentSubmitted(false);
     setFeedbackNotice("");
   }, className: "mt-2 ml-2 min-h-11 rounded-lg border border-indigo-400 bg-white px-4 py-2 text-sm font-bold text-indigo-900" }, ux("return_selfcheck", "Return to self-check"))), coachNotice && /* @__PURE__ */ React.createElement("p", { "data-sf-coach-notice": true, role: "status", className: "rounded-xl border border-amber-300 bg-amber-50 p-4 text-sm text-amber-950" }, coachNotice), !gradingResult && !selfAssessmentSubmitted && /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 border-2 border-violet-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start justify-between gap-3 mb-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h4", { className: "text-base font-black text-violet-800 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(Star, { size: 18 }), " Self-Assessment First"), /* @__PURE__ */ React.createElement("p", { className: "text-xs text-violet-700 mt-1" }, ux("rating_instructions", "Reread your draft and choose how you feel about each criterion. Ratings start at 3; adjust them to match your work."))), /* @__PURE__ */ React.createElement(
@@ -9683,7 +9714,7 @@ show();
     const wordDelta = totalWords - (revisionSnapshot.words || 0);
     const vocabDelta = vocabUsedCount - (revisionSnapshot.vocabUsed || 0);
     return /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold ${wordDelta > 0 ? "text-green-600" : wordDelta < 0 ? "text-red-500" : "text-slate-500"}` }, wordDelta > 0 ? "+" : "", wordDelta, " words"), /* @__PURE__ */ React.createElement("span", { className: `text-xs font-bold ${vocabDelta > 0 ? "text-green-600" : vocabDelta < 0 ? "text-red-500" : "text-slate-500"}` }, vocabDelta > 0 ? "+" : "", vocabDelta, " vocab terms"), readingLevel && revisionSnapshot.grade && /* @__PURE__ */ React.createElement("span", { className: "text-xs font-bold text-indigo-600" }, "Grade level: ", revisionSnapshot.grade, " \u2192 ", readingLevel.grade));
-  })())), /* @__PURE__ */ React.createElement("details", { "data-sf-analytics": true, className: "bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-sm font-bold text-slate-700 uppercase tracking-wider mb-3" }, t("headings.writing_analytics")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, totalWords), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ta("a11y.storyforge_ui_words"))), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, authoredText.split(/[.!?]+/).filter((text) => text.trim()).length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ta("a11y.storyforge_ui_sentences"))), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, paragraphs.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, artifactType === "comic" ? "Panels" : "Scenes")), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, vocabUsedCount, "/", vocabTerms.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ta("a11y.storyforge_ui_vocab_used"))), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${readingLevel ? "text-indigo-600" : "text-slate-600"}` }, readingLevel ? `${readingLevel.grade}` : "\u2014"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ux("reading_estimate", "Text complexity estimate")))), readingLevel && /* @__PURE__ */ React.createElement("div", { className: "mt-3 text-xs text-slate-600" }, "Avg ", readingLevel.avgWordsPerSentence, " ", ta("a11y.storyforge_ui_words_sentence_flesch_kincaid_grade_level"), " ", readingLevel.grade, /* @__PURE__ */ React.createElement("span", null, " \xB7 ", ux("estimate_note", "Approximate English text complexity, not a writing quality score."))), !readingLevel && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600" }, ux("estimate_threshold", "A complexity estimate is available for English drafts with at least 100 words.")), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest" }, ta("a11y.storyforge_ui_narrative_arc"), " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case tracking-normal text-slate-500 font-medium" }, ta("a11y.storyforge_ui_fortune_over_time"))), onCallGemini && /* @__PURE__ */ React.createElement(
+  })())), /* @__PURE__ */ React.createElement("details", { "data-sf-analytics": true, className: "bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer text-sm font-bold text-slate-700 uppercase tracking-wider mb-3" }, t("headings.writing_analytics")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-5 gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, totalWords), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ta("a11y.storyforge_ui_words"))), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, authoredText.split(/[.!?]+/).filter((text) => text.trim()).length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ta("a11y.storyforge_ui_sentences"))), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, paragraphs.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, artifactType === "comic" ? "Panels" : "Scenes")), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl font-black text-slate-800" }, vocabUsedCount, "/", vocabTerms.length), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ta("a11y.storyforge_ui_vocab_used"))), /* @__PURE__ */ React.createElement("div", { className: "text-center p-3 bg-slate-50 rounded-xl" }, /* @__PURE__ */ React.createElement("div", { className: `text-2xl font-black ${readingLevel ? "text-indigo-600" : "text-slate-600"}` }, readingLevel ? `${readingLevel.grade}` : "\u2014"), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-600 font-bold" }, ux("reading_estimate", "Text complexity estimate")))), readingLevel && /* @__PURE__ */ React.createElement("div", { className: "mt-3 text-xs text-slate-600" }, "Avg ", readingLevel.avgWordsPerSentence, " ", ta("a11y.storyforge_ui_words_sentence_flesch_kincaid_grade_level"), " ", readingLevel.grade, /* @__PURE__ */ React.createElement("span", null, " \xB7 ", ux("estimate_note", "Approximate English text complexity, not a writing quality score."))), !readingLevel && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-xs text-slate-600" }, ux("estimate_threshold", "A complexity estimate is available for English drafts with at least 100 words.")), /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-100" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between mb-2" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] font-bold text-slate-600 uppercase tracking-widest" }, ta("a11y.storyforge_ui_narrative_arc"), " ", /* @__PURE__ */ React.createElement("span", { className: "normal-case tracking-normal text-slate-500 font-medium" }, ta("a11y.storyforge_ui_fortune_over_time"))), sfTextAi && /* @__PURE__ */ React.createElement(
     "button",
     {
       type: "button",
@@ -9727,7 +9758,7 @@ show();
         }
       ), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-500 w-6 text-right tabular-nums" }, v > 0 ? "+" + v : v));
     })), anySet && match ? /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-violet-700 bg-violet-50 border border-violet-200 rounded-lg px-2 py-1.5" }, match.weak ? "Closest shape (loosely): " : "Your story looks like a ", /* @__PURE__ */ React.createElement("span", { className: "font-black" }, match.emoji, " ", match.label), match.weak ? "" : "!", " ", /* @__PURE__ */ React.createElement("span", { className: "text-slate-500 font-medium" }, ta("a11y.storyforge_ui_a_craft_lens_not_a_rule"))) : /* @__PURE__ */ React.createElement("div", { className: "mt-2 text-[11px] text-slate-500 italic" }, `Drag a point or tap "Suggest arc" to map your story's emotional ups & downs.`));
-  })()), wordFrequency.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700 uppercase tracking-wider mb-3" }, t("headings.word_frequency")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, wordFrequency.slice(0, 12).map(([word, count]) => /* @__PURE__ */ React.createElement("div", { key: word, className: `px-3 py-1.5 rounded-full text-xs font-bold border-2 ${count >= 4 ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-slate-50 border-slate-200 text-slate-600"}`, title: `"${word}" used ${count} times` }, word, " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px]" }, "\xD7", count)))), overusedWords.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-amber-600 font-medium" }, "Tip: Try varying your word choice \u2014 ", /* @__PURE__ */ React.createElement("strong", null, overusedWords.join(", ")), " ", overusedWords.length === 1 ? "appears" : "appear", " 4+ times. Use synonyms for variety!"))), !gradingResult && !isProcessing && onCallGemini && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(Star, { size: 48, className: "text-slate-600 mx-auto mb-4" }), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold" }, 'Click "Get Feedback" to receive AI-powered Glow & Grow feedback on your draft')), isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 48, className: "text-indigo-400 mx-auto mb-4 animate-spin motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-600 font-bold" }, ta("a11y.storyforge_ui_reading_your_draft_and_preparing_feedback"))), gradingResult && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "inline-block bg-gradient-to-r from-indigo-700 to-purple-700 text-white px-8 py-3 rounded-2xl text-2xl font-black shadow-lg", title: ta("a11y.storyforge_attr_ai_generated_estimate_draft_feedback_not") }, gradingResult.totalScore), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1.5 font-medium" }, ta("a11y.storyforge_ui_ai_estimate_draft_feedback_not_a"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-50 border-2 border-green-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-green-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16 }), " Glow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-green-800 leading-relaxed" }, gradingResult.feedback?.glow)), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), " Grow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-amber-800 leading-relaxed" }, gradingResult.feedback?.grow))), gradingResult.scores && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, t("headings.score_breakdown")), Object.keys(selfAssessment).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-violet-400" }), " ", ta("a11y.storyforge_ui_you")), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-indigo-500" }), " AI"))), /* @__PURE__ */ React.createElement("div", { className: "divide-y divide-slate-100" }, gradingResult.scores.map((s, i) => {
+  })()), wordFrequency.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 p-5 shadow-sm" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700 uppercase tracking-wider mb-3" }, t("headings.word_frequency")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, wordFrequency.slice(0, 12).map(([word, count]) => /* @__PURE__ */ React.createElement("div", { key: word, className: `px-3 py-1.5 rounded-full text-xs font-bold border-2 ${count >= 4 ? "bg-amber-100 border-amber-300 text-amber-800" : "bg-slate-50 border-slate-200 text-slate-600"}`, title: `"${word}" used ${count} times` }, word, " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px]" }, "\xD7", count)))), overusedWords.length > 0 && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-amber-600 font-medium" }, "Tip: Try varying your word choice \u2014 ", /* @__PURE__ */ React.createElement("strong", null, overusedWords.join(", ")), " ", overusedWords.length === 1 ? "appears" : "appear", " 4+ times. Use synonyms for variety!"))), !gradingResult && !isProcessing && sfTextAi && /* @__PURE__ */ React.createElement("div", { className: "bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(Star, { size: 48, className: "text-slate-600 mx-auto mb-4" }), /* @__PURE__ */ React.createElement("p", { className: "text-slate-600 font-bold" }, 'Click "Get Feedback" to receive AI-powered Glow & Grow feedback on your draft')), isProcessing && /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-50 border-2 border-indigo-200 rounded-2xl p-12 text-center" }, /* @__PURE__ */ React.createElement(RefreshCw, { size: 48, className: "text-indigo-400 mx-auto mb-4 animate-spin motion-reduce:animate-none" }), /* @__PURE__ */ React.createElement("p", { className: "text-indigo-600 font-bold" }, ta("a11y.storyforge_ui_reading_your_draft_and_preparing_feedback"))), gradingResult && /* @__PURE__ */ React.createElement("div", { className: "space-y-4" }, /* @__PURE__ */ React.createElement("div", { className: "text-center" }, /* @__PURE__ */ React.createElement("div", { className: "inline-block bg-gradient-to-r from-indigo-700 to-purple-700 text-white px-8 py-3 rounded-2xl text-2xl font-black shadow-lg", title: ta("a11y.storyforge_attr_ai_generated_estimate_draft_feedback_not") }, gradingResult.totalScore), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 mt-1.5 font-medium" }, ta("a11y.storyforge_ui_ai_estimate_draft_feedback_not_a"))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 md:grid-cols-2 gap-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-green-50 border-2 border-green-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-green-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(CheckCircle2, { size: 16 }), " Glow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-green-800 leading-relaxed" }, gradingResult.feedback?.glow)), /* @__PURE__ */ React.createElement("div", { className: "bg-amber-50 border-2 border-amber-200 rounded-2xl p-5" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-amber-700 uppercase tracking-wider mb-2 flex items-center gap-2" }, /* @__PURE__ */ React.createElement(HelpCircle, { size: 16 }), " Grow"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-amber-800 leading-relaxed" }, gradingResult.feedback?.grow))), gradingResult.scores && /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-2xl border-2 border-slate-200 overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "px-4 py-3 bg-slate-50 border-b border-slate-200 flex items-center justify-between" }, /* @__PURE__ */ React.createElement("h4", { className: "text-sm font-bold text-slate-700" }, t("headings.score_breakdown")), Object.keys(selfAssessment).length > 0 && /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-500 flex items-center gap-3" }, /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-violet-400" }), " ", ta("a11y.storyforge_ui_you")), /* @__PURE__ */ React.createElement("span", { className: "flex items-center gap-1" }, /* @__PURE__ */ React.createElement("span", { className: "inline-block w-2 h-2 rounded-full bg-indigo-500" }), " AI"))), /* @__PURE__ */ React.createElement("div", { className: "divide-y divide-slate-100" }, gradingResult.scores.map((s, i) => {
     const aiScoreNum = (() => {
       const m = String(s.score || "").match(/(\d+(?:\.\d+)?)/);
       return m ? parseFloat(m[1]) : null;

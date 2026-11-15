@@ -7232,10 +7232,10 @@
       ];
       // (wave has no list here: stem_tool_wave.js ships its own localStorage-persisted first-run tour.)
       var _tutPhysics = [
-        { text: 'Welcome to the Projectile Physics Lab! Adjust the angle and velocity sliders to set up your launch.', top: '25%', left: '50%' },
-        { text: 'Click "Launch" (or press Space) to fire the projectile. Watch it trace a parabolic arc!', top: '45%', left: '50%' },
-        { text: 'Tweak gravity and wind to see how forces change the trajectory. Use the arrow keys for fine control.', top: '65%', left: '50%' },
-        { text: 'Check the flight stats panel for max height, range, and flight time. Try challenge mode to predict landings!', top: '85%', left: '50%' }
+        { text: t('stem.physics.tut_step_1') || 'Welcome to the Projectile Physics Lab! Adjust launch angle, velocity, mass, gravity, and launch height sliders to set up your shot.', top: '25%', left: '50%' },
+        { text: t('stem.physics.tut_step_2') || 'Click "Launch!" (or focus the canvas and press Space) to fire. Use Arrow keys (±5) or Shift+Arrow (±1) for fine angle and velocity control.', top: '45%', left: '50%' },
+        { text: t('stem.physics.tut_step_3') || 'Toggle Air Drag and Gravity Presets (Earth, Moon, Mars, Jupiter) to see how forces reshape the trajectory, velocity vectors, and energy.', top: '65%', left: '50%' },
+        { text: t('stem.physics.tut_step_4') || 'Use the workspace tabs (Missions, Analyze, Notebook, Learn, All) to hit targets, compare runs, explore formulas, and test your knowledge!', top: '85%', left: '50%' }
       ];
       var _tutGalaxy = [
         { text: 'Welcome to the Galaxy Explorer! Switch between Galaxy Simulation and Star Lifespan modes using the tabs. Click and drag to orbit the galaxy, scroll to zoom.', top: '25%', left: '50%' },
@@ -8440,7 +8440,8 @@
               {
                 // @tool physics
                 id: 'physics', icon: '🎯', label: t('stem.tools_menu.physics_simulator') || 'Physics Simulator',
-                desc: t('stem.tools_menu.projectile_motion_velocity_vectors_and_trajectory') || 'Projectile motion, velocity vectors, and trajectory visualization.',
+                desc: t('stem.tools_menu.projectile_motion_velocity_vectors_and_trajectory') || 'Launch projectiles with real gravity and air drag: explore trajectories, velocity vectors, energy conservation, range vs. angle curves, and physics quizzes.',
+                aliases: ['Projectile Lab', 'projectile motion', 'trajectory', 'kinematics', 'ballistics', 'cannon'],
                 color: 'sky', ready: true
               },
               {
@@ -9183,6 +9184,14 @@
                 color: '#0ea5e9', accent: 'rgba(14,165,233,0.15)',
                 slot: '__alloflowOpticsLab', lsKey: 'opticsLab.state.v1', total: 30,
                 count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowOpticsLab', 'opticsLab.state.v1'), 'quizMastery'), 30); } },
+              { id: 'physics', icon: '🎯', label: t('stem.physics.atlas_mastery_label') || 'Projectile Mastery',
+                color: '#0ea5e9', accent: 'rgba(14,165,233,0.15)',
+                slot: '__alloflowPhysics', lsKey: 'physics.state.v1', total: 18,
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowPhysics', 'physics.state.v1'), 'physicsMastery'), 18); } },
+              { id: 'wave', icon: '〰️', label: t('stem.wave.atlas_mastery_label') || 'Wave Mastery',
+                color: '#0891b2', accent: 'rgba(8,145,178,0.15)',
+                slot: '__alloflowWave', lsKey: 'wave.state.v1', total: 22,
+                count: function () { return _atlasClamp(_atlasMapCount(_readSlot('__alloflowWave', 'wave.state.v1'), 'waveMastery'), 22); } },
               { id: 'statsLab', icon: '📊', label: t('stem.tools_menu.statslab_ap') || 'StatsLab AP',
                 color: '#a855f7', accent: 'rgba(168,85,247,0.15)',
                 slot: '__alloflowStatsLab', lsKey: 'statsLab.state.v1', total: 25,

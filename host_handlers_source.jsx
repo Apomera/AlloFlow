@@ -620,24 +620,33 @@ function returnToReadingPassage(citation) {
     }
   }
 const rehydrateHistoryWithImages = async (historyItems, localCache = []) => {
-      if (!__d.user && localCache.length === 0) return historyItems;
+      if (!Array.isArray(historyItems) || historyItems.length === 0) return historyItems;
+      const cacheList = Array.isArray(localCache) ? localCache : [];
       const hydrated = await Promise.all(historyItems.map(async (item) => {
-          if (item.type === 'scene' && item.imageId && !item.image) {
-              const cachedEntry = localCache.find(c => c.turn?.toString() === item.imageId || c.turn === parseInt(item.imageId));
+          if (item.type === 'scene' && !item.image && (item.imageId || item.imageTurn != null)) {
+              const turnKey = Number.isFinite(Number(item.imageTurn))
+                  ? Number(item.imageTurn)
+                  : (item.imageId != null ? parseInt(item.imageId, 10) : NaN);
+              const cachedEntry = cacheList.find(c =>
+                  (item.imageId != null && c.turn?.toString() === String(item.imageId)) ||
+                  (Number.isFinite(turnKey) && c.turn === turnKey)
+              );
               if (cachedEntry && cachedEntry.image) {
                   return { ...item, image: cachedEntry.image };
               }
-              try {
-                  const idbImage = await __d.adventureImageDB.getImage(parseInt(item.imageId));
-                  if (idbImage) {
-                      return { ...item, image: idbImage };
-                  }
-              } catch (idbErr) {
-                  __d.warnLog('IDB image fetch failed', idbErr);
-              }
-              if (__d.user) {
+              if (Number.isFinite(turnKey) && __d.adventureImageDB && typeof __d.adventureImageDB.getImage === 'function') {
                   try {
-                      const ref = __d.doc(__d.db, 'artifacts', __d.appId, 'users', __d.user.uid, 'adventure_images', item.imageId);
+                      const idbImage = await __d.adventureImageDB.getImage(turnKey);
+                      if (idbImage) {
+                          return { ...item, image: idbImage };
+                      }
+                  } catch (idbErr) {
+                      __d.warnLog('IDB image fetch failed', idbErr);
+                  }
+              }
+              if (__d.user && item.imageId) {
+                  try {
+                      const ref = __d.doc(__d.db, 'artifacts', __d.appId, 'users', __d.user.uid, 'adventure_images', String(item.imageId));
                       const snap = await __d.getDoc(ref);
                       if (snap.exists()) {
                           const data = snap.data();
@@ -2499,6 +2508,7 @@ const handlePrintGame = (withAnswerKey) => {
       const words = '<ul class="word-list">' + (__d.gameData.words || []).map(word => '<li dir="auto">' + esc(word) + '</li>').join('') + '</ul>';
       const win = window.open('', '', 'height=700,width=900');
       if (!win) { __d.addToast(__d.t('toasts.pop_up_blocked_allow_pop'), 'error'); return; }
+      try { win.opener = null; } catch (_) {}
       // Build both sheets from puzzle data. Live DOM carries found-word marks
       // and depends on app-only Tailwind styles that a new window does not have.
       win.document.write('<!doctype html><html lang="' + esc(document.documentElement.lang || 'en') + '" dir="' + direction + '"><head><meta charset="utf-8"><title>' + esc(__d.t('glossary.print_puzzle_title')) + '</title><style>' +
@@ -5303,26 +5313,50 @@ const handleAutoFillToggle = async (e, flowOptions = {}) => {
       }
   };
 const handleBroadcastOptions = async () => {
+      if (!__d.adventureState?.currentScene) {
+          __d.addToast(__d.t('adventure.guiding_hand_unavailable') || 'Start an adventure scene first.', 'info');
+          return;
+      }
       __d.setAdventureState(prev => ({ ...prev, isLoading: true }));
       __d.addToast(__d.t('adventure.generating_options_audio'), "info");
       try {
-          const newOptions = [];
-          for (const optText of __d.editingOptionsBuffer) {
-               if (!optText || !optText.trim()) continue;
-               let audioUrl = null;
-               if (typeof __d.callTTS === 'function') {
-                   try {
-                       const voiceId = __d.adventureState.voiceMap?.['Narrator'] || __d.selectedVoice || 'Leda';
-                       audioUrl = await __d.callTTS(optText, voiceId);
-                   } catch (e) {
-                       __d.warnLog("TTS generation failed for option:", optText, e);
-                   }
-               }
-               newOptions.push({
-                   action: optText,
-                   audio: audioUrl
-               });
-          }
+          const existingOpts = Array.isArray(__d.adventureState.currentScene?.options)
+              ? __d.adventureState.currentScene.options
+              : [];
+          const rawMode = typeof __d.adventureLanguageMode === 'string' ? __d.adventureLanguageMode : '';
+          const ttsLanguage = (rawMode && rawMode !== 'English' && rawMode !== 'All + English')
+              ? rawMode.replace(' + English', '').trim()
+              : undefined;
+          const voiceId = (typeof __d.adventureState.voiceMap?.['Narrator'] === 'string' && __d.adventureState.voiceMap['Narrator'])
+              || (typeof __d.selectedVoice === 'string' && __d.selectedVoice)
+              || 'Leda';
+          const optEntries = (__d.editingOptionsBuffer || [])
+              .map(rawOpt => {
+                  const optText = typeof rawOpt === 'string'
+                      ? rawOpt
+                      : (rawOpt && typeof rawOpt.action === 'string' ? rawOpt.action : '');
+                  const trimmed = String(optText || '').trim();
+                  if (!trimmed) return null;
+                  const reusedAudio = existingOpts.find(
+                      o => String(typeof o === 'object' ? o?.action : o || '').trim() === trimmed
+                          && typeof o?.audio === 'string'
+                          && o.audio
+                  )?.audio || null;
+                  return { action: optText, audio: reusedAudio };
+              })
+              .filter(Boolean);
+          const newOptions = await Promise.all(optEntries.map(async entry => {
+              if (entry.audio || typeof __d.callTTS !== 'function') return entry;
+              try {
+                  const audioUrl = ttsLanguage
+                      ? await __d.callTTS(entry.action, voiceId, 1, { language: ttsLanguage })
+                      : await __d.callTTS(entry.action, voiceId);
+                  return { action: entry.action, audio: audioUrl || null };
+              } catch (e) {
+                  __d.warnLog("TTS generation failed for option:", entry.action, e);
+                  return { action: entry.action, audio: null };
+              }
+          }));
           __d.setAdventureState(prev => ({
               ...prev,
               currentScene: {
@@ -5333,7 +5367,7 @@ const handleBroadcastOptions = async () => {
           }));
           __d.setAdventureFreeResponseEnabled(false);
           __d.setIsEditingOptions(false);
-          if (__d.activeSessionCode && __d.sessionData?.democracy?.isActive) {
+          if (typeof __d.activeSessionCode === 'string' && __d.activeSessionCode && __d.sessionData?.democracy?.isActive === true) {
               const targetAppId = __d.activeSessionAppId || __d.appId;
               const sessionRef = __d.doc(__d.db, 'artifacts', targetAppId, 'public', 'data', 'sessions', __d.activeSessionCode);
               const activeOptions = newOptions.map(option => String(option.action || '').trim()).filter(Boolean).slice(0, 12);
@@ -5352,8 +5386,16 @@ const handleBroadcastOptions = async () => {
       }
   };
 const handleUseItem = async (itemInput) => {
-      const item = (itemInput && itemInput.id) ? itemInput : __d.selectedInventoryItem;
+      const item = (itemInput && itemInput.id != null) ? itemInput : __d.selectedInventoryItem;
       if (!item) return;
+      if (!__d.isTeacherMode && typeof __d.activeSessionCode === 'string' && __d.activeSessionCode) {
+          __d.addToast(__d.t('adventure.status_messages.teacher_control') || "Teacher controls the adventure in live sessions.", "info");
+          return;
+      }
+      if (__d.adventureState?.isLoading === true || __d.showDice === true || Boolean(__d.pendingAdventureUpdate && typeof __d.pendingAdventureUpdate === 'object')) {
+          __d.addToast(__d.t('adventure.status_messages.turn_busy') || 'Finish the current turn before using an item.', 'info');
+          return;
+      }
       if (item.effectType === 'key_item') {
           __d.addToast(__d.t('adventure.toasts.key_item_usage', { item: item.name }), "info");
           return;
@@ -5364,17 +5406,31 @@ const handleUseItem = async (itemInput) => {
           return;
       }
       if (item.effectType === 'hint') {
-          if (!__d.lastTurnSnapshot.current) {
+          if (!__d.lastTurnSnapshot?.current) {
               __d.addToast(__d.t('adventure.toasts.rewind_limit'), "warning");
               return;
           }
+          window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(__d.setAdventureState);
+          __d.setFailedAdventureAction?.(null);
+          __d.setPendingAdventureUpdate?.(null);
+          __d.setShowDice?.(false);
           const restoredState = structuredClone(__d.lastTurnSnapshot.current);
-          const itemIndex = restoredState.inventory.findIndex(i => i.name === item.name);
+          const itemIndex = Array.isArray(restoredState.inventory)
+              ? restoredState.inventory.findIndex(i =>
+                  (item.id != null && i.id === item.id) || i.name === item.name
+              )
+              : -1;
           if (itemIndex > -1) {
               restoredState.inventory.splice(itemIndex, 1);
           }
           restoredState.isLoading = false;
           restoredState.isImageLoading = false;
+          restoredState.imagePolishStage = null;
+          restoredState.loadingStage = null;
+          __d.lastTurnSnapshot.current = null;
+          if (__d.lastReadTurnRef) {
+              __d.lastReadTurnRef.current = restoredState.turnCount || 0;
+          }
           __d.setAdventureState(restoredState);
           __d.addToast(__d.t('adventure.toasts.rewind_success'), "success");
           if (__d.alloBotRef.current) __d.alloBotRef.current.triggerReaction('👀');
@@ -5382,21 +5438,46 @@ const handleUseItem = async (itemInput) => {
           __d.setSelectedInventoryItem(null);
           return;
       }
+      if (__d.adventureState?.isGameOver) {
+          __d.addToast(__d.t('adventure.status_messages.game_over_items') || 'This adventure has ended — use Time Rewind or start a sequel.', 'info');
+          return;
+      }
+      if (item.effectType === 'energy' && (__d.adventureState?.energy ?? 100) >= 100) {
+          __d.addToast(__d.t('adventure.status_messages.energy_full') || 'Your energy is already full.', 'info');
+          return;
+      }
+      const requestedBoost = Number(item.effectValue) || 2;
+      if (item.effectType === 'xp_boost' && (__d.adventureState?.activeXpMultiplier || 1) >= requestedBoost) {
+          __d.addToast(__d.t('adventure.status_messages.xp_boost_active') || 'An XP boost is already active for this turn.', 'info');
+          return;
+      }
+      if (item.effectType === 'modifier' && !__d.adventureChanceMode) {
+          __d.addToast(__d.t('adventure.status_messages.luck_needs_chance') || 'Enable Chance Mode (Dice) in Adventure Settings to apply Luck Modifiers.', 'info');
+          return;
+      }
       __d.setAdventureState(prev => {
+          const inv = Array.isArray(prev.inventory) ? prev.inventory : [];
+          const matchIdx = inv.findIndex(i =>
+              item.id != null ? i.id === item.id : i.name === item.name
+          );
+          if (matchIdx === -1) return prev;
           let newEnergy = prev.energy;
           let newModifier = prev.activeRollModifier || 0;
           let newXpMult = prev.activeXpMultiplier || 1;
           let newGoldBuffTurns = prev.activeGoldBuffTurns || 0;
           if (item.effectType === 'energy') {
-              newEnergy = Math.min(100, newEnergy + (item.effectValue || 0));
+              if ((prev.energy ?? 100) >= 100) return prev;
+              newEnergy = Math.min(100, (prev.energy ?? 100) + (item.effectValue || 0));
           } else if (item.effectType === 'modifier') {
+              if (!__d.adventureChanceMode) return prev;
               newModifier += (item.effectValue || 0);
           } else if (item.effectType === 'xp_boost') {
-              newXpMult = item.effectValue || 2;
+              if ((prev.activeXpMultiplier || 1) >= requestedBoost) return prev;
+              newXpMult = requestedBoost;
           } else if (item.effectType === 'gold_boost') {
               newGoldBuffTurns += (item.effectValue || 3);
           }
-          const newInventory = prev.inventory.filter(i => i.id !== item.id);
+          const newInventory = inv.filter((_, idx) => idx !== matchIdx);
           return {
               ...prev,
               energy: newEnergy,
@@ -6046,6 +6127,15 @@ const enableGlobalVoiceAccess = async () => {
   };
 const handleGenerateReflectionPrompt = async () => {
       if (!__d.personaState.selectedCharacter && __d.personaState.mode !== 'panel') return;
+      const studentTextAiOff = (__d.isTeacherMode === false && (__d.studentProjectSettings?.allowStudentTextAi === false || (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', __d.callGemini))))
+          || (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true))
+          || Boolean(__d.callGemini && __d.callGemini._alloQrBlocked);
+      if (studentTextAiOff) {
+          __d.personaReflectionPromptRequestRef.current += 1;
+          __d.setIsGeneratingReflectionPrompt(false);
+          __d.setDynamicReflectionQuestion(__d.t('persona.default_reflection_prompt') || 'Reflect on what you learned from this conversation.');
+          return;
+      }
       const promptRequest = ++__d.personaReflectionPromptRequestRef.current;
       const reflectionIdentity = __d.personaReflectionIdentityRef.current;
       try { __d.personaReflectionPromptAbortRef.current?.controller?.abort(); } catch (_) {}
@@ -6107,10 +6197,15 @@ const processPersonaTtsQueue = async () => {
       __d.personaTtsQueueRunningRef.current = true;
       try {
           while (__d.personaAutoReadRef.current && __d.isPersonaChatOpen && !(typeof __d.isGlobalMuted === 'function' && __d.isGlobalMuted())) {
-              const entry = __d.personaTtsQueueRef.current.shift();
+              let entry = __d.personaTtsQueueRef.current.shift();
               if (!entry) break;
               __d.personaTtsQueuedMessageKeysRef.current.delete(entry.messageKey);
               if (entry.generation !== __d.personaTtsQueueGenerationRef.current) continue;
+              const rawQueuedText = String(entry.msg?.text || '');
+              const strippedQueuedText = rawQueuedText.split(/\*{0,2}\s*English Translation\s*:?\s*\*{0,2}/i)[0].trim() || rawQueuedText;
+              if (entry.msg && strippedQueuedText !== entry.msg.text) {
+                  entry = { ...entry, msg: { ...entry.msg, text: strippedQueuedText } };
+              }
               __d.setPanelTtsPending(prev => prev.filter(index => index !== entry.index));
               const completedPlaybackSessionId = await new Promise(resolve => {
                   const contentId = `persona-message-${entry.index}`;
@@ -7443,23 +7538,23 @@ const handleLaunchMathProbe = (grade, form, student) => {
     __d.addToast(__d.t('toasts.math_probe_ready_press_start') || 'Fixed math form ready. Review the settings, then press Start.', 'info');
   };
 const deleteStudentRecords = (studentName) => {
-    if (!studentName) return;
+    if (!studentName || studentName === '__proto__' || studentName === 'constructor' || studentName === 'prototype') return;
     __d.setProbeHistory(prev => {
-      if (!(studentName in prev)) return prev;
+      if (!Object.prototype.hasOwnProperty.call(prev, studentName)) return prev;
       const updated = { ...prev };
       delete updated[studentName];
       try { localStorage.setItem('alloflow_probe_history', JSON.stringify(updated)); } catch {}
       return updated;
     });
     __d.setInterventionLogs(prev => {
-      if (!(studentName in prev)) return prev;
+      if (!Object.prototype.hasOwnProperty.call(prev, studentName)) return prev;
       const updated = { ...prev };
       delete updated[studentName];
       try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(updated)); } catch {}
       return updated;
     });
     __d.setRtiGoals(prev => {
-      if (!(studentName in prev)) return prev;
+      if (!Object.prototype.hasOwnProperty.call(prev, studentName)) return prev;
       const updated = { ...prev };
       delete updated[studentName];
       try { localStorage.setItem('alloflow_rti_goals', JSON.stringify(updated)); } catch {}
@@ -7467,12 +7562,15 @@ const deleteStudentRecords = (studentName) => {
     });
   };
 const mergeStudentRecords = (fromName, toName) => {
-    if (!fromName || !toName || fromName === toName) return;
+    const isUnsafeKey = (k) => k === '__proto__' || k === 'constructor' || k === 'prototype';
+    if (!fromName || !toName || fromName === toName || isUnsafeKey(fromName) || isUnsafeKey(toName)) return;
     const recordTime = (v) => { const raw = v && v.timestamp; const n = typeof raw === 'number' ? raw : Date.parse(raw); return isFinite(n) ? n : 0; };
     __d.setProbeHistory(prev => {
-      if (!(fromName in prev)) return prev;
+      if (!Object.prototype.hasOwnProperty.call(prev, fromName)) return prev;
       const updated = { ...prev };
-      const merged = [...(updated[toName] || []), ...updated[fromName]];
+      const existingTo = Object.prototype.hasOwnProperty.call(updated, toName) && Array.isArray(updated[toName]) ? updated[toName] : [];
+      const fromArr = Array.isArray(updated[fromName]) ? updated[fromName] : [];
+      const merged = [...existingTo, ...fromArr];
       merged.sort((a, b) => recordTime(a) - recordTime(b));
       updated[toName] = merged;
       delete updated[fromName];
@@ -7480,17 +7578,19 @@ const mergeStudentRecords = (fromName, toName) => {
       return updated;
     });
     __d.setInterventionLogs(prev => {
-      if (!(fromName in prev)) return prev;
+      if (!Object.prototype.hasOwnProperty.call(prev, fromName)) return prev;
       const updated = { ...prev };
-      updated[toName] = [...(updated[toName] || []), ...updated[fromName]];
+      const existingTo = Object.prototype.hasOwnProperty.call(updated, toName) && Array.isArray(updated[toName]) ? updated[toName] : [];
+      const fromArr = Array.isArray(updated[fromName]) ? updated[fromName] : [];
+      updated[toName] = [...existingTo, ...fromArr];
       delete updated[fromName];
       try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(updated)); } catch {}
       return updated;
     });
     __d.setRtiGoals(prev => {
-      if (!(fromName in prev)) return prev;
+      if (!Object.prototype.hasOwnProperty.call(prev, fromName)) return prev;
       const updated = { ...prev };
-      if (!(toName in updated)) updated[toName] = updated[fromName];
+      if (!Object.prototype.hasOwnProperty.call(updated, toName)) updated[toName] = updated[fromName];
       delete updated[fromName];
       try { localStorage.setItem('alloflow_rti_goals', JSON.stringify(updated)); } catch {}
       return updated;
@@ -7796,33 +7896,63 @@ const openAdventureActionVote = () => {
   };
 const handleImportResearchJSON = (file) => {
     if (!file) return;
+    if (typeof file.size === 'number' && file.size > 10 * 1024 * 1024) {
+      if (__d.addToast) __d.addToast(__d.t('toasts.invalid_research_data_file'), 'error');
+      return;
+    }
+    const cleanRecordMap = (value) => {
+      if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
+      const out = {};
+      for (const [k, v] of Object.entries(value)) {
+        if (k === '__proto__' || k === 'constructor' || k === 'prototype') continue;
+        out[k] = v;
+      }
+      return out;
+    };
     const reader = new FileReader();
     reader.onload = (ev) => {
       try {
         const data = JSON.parse(ev.target.result);
-        if (data.probeHistory) {
-          __d.setProbeHistory(data.probeHistory);
-          try { localStorage.setItem('alloflow_probe_history', JSON.stringify(data.probeHistory)); } catch {}
+        if (!data || typeof data !== 'object' || Array.isArray(data)) {
+          throw new Error('Invalid research JSON root');
         }
-        if (data.surveyResponses) {
+        const nextProbeHistory = data.probeHistory !== undefined ? cleanRecordMap(data.probeHistory) : undefined;
+        if (data.probeHistory !== undefined && !nextProbeHistory) throw new Error('Invalid probeHistory');
+        if (data.surveyResponses !== undefined && !Array.isArray(data.surveyResponses)) throw new Error('Invalid surveyResponses');
+        if (data.fidelityLog !== undefined && !Array.isArray(data.fidelityLog)) throw new Error('Invalid fidelityLog');
+        let nextCounter;
+        if (data.sessionCounter !== undefined) {
+          const n = Number(data.sessionCounter);
+          if (!Number.isFinite(n) || n < 0) throw new Error('Invalid sessionCounter');
+          nextCounter = Math.trunc(n);
+        }
+        const nextExternalCbm = data.externalCBMScores !== undefined ? cleanRecordMap(data.externalCBMScores) : undefined;
+        if (data.externalCBMScores !== undefined && !nextExternalCbm) throw new Error('Invalid externalCBMScores');
+        const nextInterventionLogs = data.interventionLogs !== undefined ? cleanRecordMap(data.interventionLogs) : undefined;
+        if (data.interventionLogs !== undefined && !nextInterventionLogs) throw new Error('Invalid interventionLogs');
+        if (nextProbeHistory) {
+          __d.setProbeHistory(nextProbeHistory);
+          try { localStorage.setItem('alloflow_probe_history', JSON.stringify(nextProbeHistory)); } catch {}
+        }
+        if (data.surveyResponses !== undefined) {
           __d.setSurveyResponses(data.surveyResponses);
           try { localStorage.setItem('alloflow_survey_responses', JSON.stringify(data.surveyResponses)); } catch {}
         }
-        if (data.fidelityLog) {
+        if (data.fidelityLog !== undefined) {
           __d.setFidelityLog(data.fidelityLog);
           try { localStorage.setItem('alloflow_fidelity_log', JSON.stringify(data.fidelityLog)); } catch {}
         }
-        if (data.sessionCounter !== undefined) {
-          __d.setSessionCounter(data.sessionCounter);
-          try { localStorage.setItem('alloflow_session_counter', String(data.sessionCounter)); } catch {}
+        if (nextCounter !== undefined) {
+          __d.setSessionCounter(nextCounter);
+          try { localStorage.setItem('alloflow_session_counter', String(nextCounter)); } catch {}
         }
-        if (data.externalCBMScores) {
-          __d.setExternalCBMScores(data.externalCBMScores);
-          try { localStorage.setItem('alloflow_external_cbm', JSON.stringify(data.externalCBMScores)); } catch {}
+        if (nextExternalCbm) {
+          __d.setExternalCBMScores(nextExternalCbm);
+          try { localStorage.setItem('alloflow_external_cbm', JSON.stringify(nextExternalCbm)); } catch {}
         }
-        if (data.interventionLogs) {
-          __d.setInterventionLogs(data.interventionLogs);
-          try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(data.interventionLogs)); } catch {}
+        if (nextInterventionLogs) {
+          __d.setInterventionLogs(nextInterventionLogs);
+          try { localStorage.setItem('alloflow_intervention_logs', JSON.stringify(nextInterventionLogs)); } catch {}
         }
         // The Assessment Center module keeps its own copies of the research
         // stores; tell it the keys changed underneath it (same contract as a
@@ -9517,6 +9647,7 @@ const handlePrintResourceSheet = (item, options = {}) => {
           __d.addToast(__d.t('toasts.pop_up_blocked_allow_pop') || 'Allow pop-ups to open the printable sheet.', 'error');
           return true;
       }
+      try { win.opener = null; } catch (_) {}
       try { win.__alloflowPrintExport = true; } catch (_) {}
       win.document.open();
       win.document.write(html);
@@ -9998,7 +10129,16 @@ const saveAdventureFluencyResult = async (result) => {
     __d.addToast(__d.t('adventure.fluency_saved') || 'Reading practice saved to history.', 'success');
   };
 const handleShopPurchase = (item) => {
-      if (__d.adventureState.gold < item.cost) {
+      if (!item) return;
+      if (!__d.isTeacherMode && __d.activeSessionCode) {
+          __d.addToast(__d.t('adventure.status_messages.teacher_control') || "Teacher controls the adventure in live sessions.", "info");
+          return;
+      }
+      if (__d.adventureState?.isLoading) {
+          __d.addToast(__d.t('adventure.status_messages.turn_busy') || 'Finish the current turn before visiting the shop.', 'info');
+          return;
+      }
+      if ((__d.adventureState?.gold || 0) < item.cost) {
           __d.addToast(__d.t('adventure.status_messages.not_enough_gold'), "error");
           __d.playSound('incorrect');
           return;
@@ -10006,8 +10146,9 @@ const handleShopPurchase = (item) => {
       const localizedName = __d.t(`adventure.shop_items.${item.id}_name`) || item.name;
       const localizedDesc = __d.t(`adventure.shop_items.${item.id}_desc`) || item.description;
       __d.setAdventureState(prev => {
+          if ((prev.gold || 0) < item.cost) return prev;
           const newItem = {
-              id: Date.now(),
+              id: Date.now() + Math.random(),
               name: localizedName,
               image: null,
               icon: item.icon,
@@ -10018,8 +10159,8 @@ const handleShopPurchase = (item) => {
           };
           return {
               ...prev,
-              gold: prev.gold - item.cost,
-              inventory: [...prev.inventory, newItem]
+              gold: (prev.gold || 0) - item.cost,
+              inventory: [...(prev.inventory || []), newItem]
           };
       });
       __d.playSound('correct');
@@ -11049,7 +11190,27 @@ const handleAnalyzePOS = () => {
     __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
     __d.setIsImmersiveReaderActive(true);
   };
+const _canUseScaffoldAi = () => {
+    if (__d.isTeacherMode) return true;
+    try {
+        if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
+        if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable('text', __d.callGemini);
+    } catch (_) {}
+    return true;
+  };
+const _scaffoldTr = (key, fallback) => {
+    try {
+        const out = typeof __d.t === 'function' ? __d.t(key) : '';
+        return typeof out === 'string' && out && out !== key ? out : fallback;
+    } catch (_) {
+        return fallback;
+    }
+  };
 const launchGradingSession = () => {
+     if (!_canUseScaffoldAi()) {
+         if (typeof __d.addToast === 'function') __d.addToast(_scaffoldTr('scaffolds.feedback_ai_unavailable', 'AI draft feedback is currently unavailable.'), 'info');
+         return;
+     }
      let initialText = '';
      const responses = __d.studentResponses[__d.generatedContent?.id] || {};
      if (__d.generatedContent?.type === 'sentence-frames' && __d.generatedContent?.data) {
@@ -11088,6 +11249,10 @@ const launchGradingSession = () => {
 const submitGradingSession = async () => {
     const session = __d.gradingSession;
     if (!session || !session.draftText) return;
+    if (!_canUseScaffoldAi()) {
+        if (typeof __d.addToast === 'function') __d.addToast(_scaffoldTr('scaffolds.feedback_ai_unavailable', 'AI draft feedback is currently unavailable.'), 'info');
+        return;
+    }
     const resourceId = session.resourceId != null ? session.resourceId : (__d.generatedContent?.id ?? null);
     const isSameSession = prev => !!prev && prev.sessionId === session.sessionId && String(prev.resourceId) === String(session.resourceId);
     const state = (__d._resourceMutationStateRef && __d._resourceMutationStateRef.current) || {};
@@ -11127,7 +11292,7 @@ const submitGradingSession = async () => {
         }
     } catch (e) {
         __d.warnLog("Unhandled error:", e);
-        __d.addToast(e.message || "Grading failed.", "error");
+        __d.addToast((e && e.message) || _scaffoldTr('scaffolds.grading_failed', 'Grading failed.'), "error");
         __d.setGradingSession(prev => isSameSession(prev) ? { ...prev, status: resumeStatus } : prev);
     }
   };
@@ -11593,18 +11758,23 @@ const handleGenerateBingo = (activityData) => {
   };
 const handleSelectMainSearchOption = async (option) => {
       if (!option || !option.url) return;
-      if (__d.isGoogleRedirect(option.url)) {
-          window.open(option.url, '_blank');
+      let parsedUrl;
+      try { parsedUrl = new URL(String(option.url), window.location.href); } catch { return; }
+      if (parsedUrl.protocol !== 'http:' && parsedUrl.protocol !== 'https:') return;
+      const safeUrl = parsedUrl.toString();
+      if (__d.isGoogleRedirect(safeUrl)) {
+          const opened = window.open(safeUrl, '_blank', 'noopener,noreferrer');
+          if (opened) { try { opened.opener = null; } catch (_) {} }
           __d.setIsUrlSearchMode(false);
           __d.setSearchOptions([]);
           __d.setUrlToFetch('');
           __d.addToast(__d.t('quick_start.copy_paste_instruction'), "info");
           return;
       }
-      __d.setUrlToFetch(option.url);
+      __d.setUrlToFetch(safeUrl);
       __d.setIsUrlSearchMode(false);
       __d.setSearchOptions([]);
-      await __d.handleUrlFetch(option.url);
+      await __d.handleUrlFetch(safeUrl);
   };
 const ensureTitleHeading = (text) => {
         if (!text) return text;
@@ -11849,24 +12019,46 @@ const handleRetryAdventureTurn = () => {
       }
   };
 const handleAdventureCrashRecovery = () => {
-      if (__d.lastTurnSnapshot.current) {
+      window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(__d.setAdventureState);
+      __d.setPendingAdventureUpdate?.(null);
+      __d.setShowDice?.(false);
+      if (__d.lastTurnSnapshot?.current) {
           __d.debugLog("Crash Recovery: Restoring last valid adventure state...");
+          let clonedSnapshot = null;
+          try {
+              clonedSnapshot = typeof structuredClone === 'function'
+                  ? structuredClone(__d.lastTurnSnapshot.current)
+                  : JSON.parse(JSON.stringify(__d.lastTurnSnapshot.current));
+          } catch (e) {
+              clonedSnapshot = JSON.parse(JSON.stringify(__d.lastTurnSnapshot.current));
+          }
+          if (__d.lastReadTurnRef) {
+              __d.lastReadTurnRef.current = clonedSnapshot.turnCount || 0;
+          }
           __d.setAdventureState(prev => ({
-              ...__d.lastTurnSnapshot.current,
+              ...clonedSnapshot,
               isLoading: false,
-              isImageLoading: false
+              isImageLoading: false,
+              imagePolishStage: null,
+              loadingStage: null
           }));
           if (__d.failedAdventureAction) {
+               __d.setFailedAdventureAction?.(null);
                __d.addToast(__d.t('toasts.simulation_stabilized'), "info");
           } else {
                __d.addToast(__d.t('toasts.visual_glitch_rewind'), "warning");
           }
       } else {
           __d.warnLog("Crash Recovery: No snapshot available. Resetting to menu.");
+          __d.setFailedAdventureAction?.(null);
           __d.setAdventureState(prev => ({
               ...prev,
               currentScene: null,
-              isLoading: false
+              turnCount: 0,
+              isLoading: false,
+              isImageLoading: false,
+              imagePolishStage: null,
+              loadingStage: null
           }));
           __d.addToast(__d.t('toasts.critical_error_return'), "error");
       }

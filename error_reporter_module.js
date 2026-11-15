@@ -1883,7 +1883,7 @@
   // Clipboard write + button flash, shared by the diagnostics tabs. Mirrors the
   // existing per-tab copy handlers (async clipboard, execCommand fallback).
   function copyDiagnosticsText(text, btnId, resetLabel) {
-    text = redactSecrets(text);
+    text = redactOutgoing(text);
     var $ = function (id) { return document.getElementById(id); };
     var flash = function (label) {
       var b = $(btnId);
@@ -1963,7 +1963,7 @@
     };
     if ($('aer-sess-refresh')) $('aer-sess-refresh').onclick = refreshPanelIfOpen;
     if ($('aer-sess-copy')) $('aer-sess-copy').onclick = function () {
-      var text = redactSecrets(buildSessionDiagText());
+      var text = redactOutgoing(buildSessionDiagText());
       var btn = $('aer-sess-copy');
       var flash = function (label) {
         if (!btn) return;
@@ -1995,7 +1995,7 @@
       refreshPanelIfOpen();
     };
     if ($('aer-tts-copy')) $('aer-tts-copy').onclick = function () {
-      var text = redactSecrets(buildTtsDiagText());
+      var text = redactOutgoing(buildTtsDiagText());
       var btn = $('aer-tts-copy');
       var flash = function (label) {
         if (!btn) return;
@@ -2040,7 +2040,7 @@
     };
     if ($('aer-copy')) $('aer-copy').onclick = function () {
       var p = buildReportPayload();
-      var text = redactSecrets('== AlloFlow Error Report ==\n' +
+      var text = redactOutgoing('== AlloFlow Error Report ==\n' +
         'Type: ' + p.typeOfIssue + '\n' +
         'Browser: ' + p.browserDevice + '\n\n' +
         'Context:\n' + p.stepsRepro + '\n\n' +

@@ -34,6 +34,11 @@ MAX_IMAGE_BYTES = 3 * 1024 * 1024
 MAX_EMBEDDED_IMAGE_CHARS = 4 * 1024 * 1024
 MAX_IMAGE_BLOCKS = 100
 MAX_TEXT_CHARS = 2_000_000
+MAX_ZIP_ENTRIES = 2000
+MAX_ZIP_ENTRY_BYTES = 50 * 1024 * 1024
+MAX_ZIP_TOTAL_BYTES = 150 * 1024 * 1024
+MAX_ZLIB_BYTES = 64 * 1024 * 1024
+MAX_IMAGE_PIXELS = 80_000_000
 BLOCKED_DOCUMENT_TYPES = {"form", "signed-record", "legal-record"}
 ROOT_KEYS = {"schema_version", "document", "source_pages", "blocks", "review_notes"}
 DOCUMENT_KEYS = {
@@ -86,8 +91,28 @@ def write_json_new(path: Path, value: Any) -> None:
 
 
 def write_text_new(path: Path, value: str) -> None:
+    if path.is_symlink():
+        raise PortableError("Refusing to write output through a symlink.")
     with path.open("x", encoding="utf-8", newline="\n") as handle:
         handle.write(value)
+
+
+def safe_xml_fromstring(xml_data: bytes):
+    import xml.etree.ElementTree as ET
+
+    if re.search(rb"<!(?:DOCTYPE|ENTITY)\b", xml_data, re.IGNORECASE):
+        raise PortableError("XML external entities or DTD declarations are not allowed.")
+    return ET.fromstring(xml_data)
+
+
+def safe_zlib_decompress(raw: bytes, max_bytes: int = MAX_ZLIB_BYTES) -> bytes:
+    import zlib as _zlib
+
+    decompressor = _zlib.decompressobj()
+    out = decompressor.decompress(raw, max_bytes + 1)
+    if len(out) > max_bytes or (decompressor.unconsumed_tail and not decompressor.eof):
+        raise PortableError("Compressed stream exceeds the 64 MiB safety budget.")
+    return out
 
 
 def sha256_file(path: Path) -> str:
@@ -2070,8 +2095,10 @@ def extract_images_command(args: argparse.Namespace) -> Dict[str, Any]:
                 if color_type is None:
                     raise PortableError(f"Unsupported colour space for deterministic decode: {cs_label}.")
                 entry["colorSpace"] = cs_label
+                if width <= 0 or height <= 0 or width * height > MAX_IMAGE_PIXELS:
+                    raise PortableError("Image dimensions exceed the safety pixel cap.")
                 parms = _decode_parms(dictionary)
-                pixels = _zlib.decompress(raw)
+                pixels = safe_zlib_decompress(raw)
                 source_colors = 4 if transform == "cmyk" else (3 if color_type == 2 else 1)
                 if parms["predictor"] >= 10:
                     pixels = _undo_png_predictor(
@@ -2176,9 +2203,9 @@ def audit_source_command(args: argparse.Namespace) -> Dict[str, Any]:
             continue
         if b"/FlateDecode" in dictionary:
             try:
-                if text_pattern.search(_zlib.decompress(raw)):
+                if text_pattern.search(safe_zlib_decompress(raw)):
                     has_text = True
-            except _zlib.error:
+            except (_zlib.error, PortableError):
                 inflate_failures += 1
         elif b"/Filter" not in dictionary:
             if text_pattern.search(raw):
@@ -2242,10 +2269,8 @@ def audit_source_command(args: argparse.Namespace) -> Dict[str, Any]:
 
 
 def _docx_paragraphs(document_xml: bytes) -> List[Dict[str, Any]]:
-    import xml.etree.ElementTree as ET
-
     ns = {"w": "http://schemas.openxmlformats.org/wordprocessingml/2006/main"}
-    root = ET.fromstring(document_xml)
+    root = safe_xml_fromstring(document_xml)
     paragraphs: List[Dict[str, Any]] = []
     for paragraph in root.iter(f"{{{ns['w']}}}p"):
         text = "".join(node.text or "" for node in paragraph.iter(f"{{{ns['w']}}}t"))
@@ -2281,9 +2306,32 @@ def extract_office_command(args: argparse.Namespace) -> Dict[str, Any]:
 
     try:
         with zipfile.ZipFile(source) as archive:
+            infos = archive.infolist()
+            if len(infos) > MAX_ZIP_ENTRIES:
+                raise PortableError("The Office archive contains too many entries.")
+            cumulative_zip_bytes = 0
+            for info in infos:
+                parts = info.filename.split("/")
+                if info.filename.startswith("/") or ".." in parts:
+                    raise PortableError("The Office archive contains an unsafe entry path.")
+                if info.file_size > MAX_ZIP_ENTRY_BYTES:
+                    raise PortableError("An Office archive entry exceeds the 50 MiB safety cap.")
+                cumulative_zip_bytes += info.file_size
+                if cumulative_zip_bytes > MAX_ZIP_TOTAL_BYTES:
+                    raise PortableError("The Office archive exceeds the 150 MiB cumulative extraction cap.")
+
+            def read_zip_entry(entry_name: str) -> bytes:
+                info = archive.getinfo(entry_name)
+                if info.file_size > MAX_ZIP_ENTRY_BYTES:
+                    raise PortableError("An Office archive entry exceeds the 50 MiB safety cap.")
+                with archive.open(info) as handle:
+                    raw_entry = handle.read(MAX_ZIP_ENTRY_BYTES + 1)
+                if len(raw_entry) > MAX_ZIP_ENTRY_BYTES:
+                    raise PortableError("An Office archive entry exceeded the 50 MiB read cap.")
+                return raw_entry
+
             if receipt["kind"] == "docx":
-                with archive.open("word/document.xml") as handle:
-                    paragraphs = _docx_paragraphs(handle.read())
+                paragraphs = _docx_paragraphs(read_zip_entry("word/document.xml"))
                 for entry in paragraphs:
                     budget(entry["text"])
                 return {
@@ -2298,7 +2346,6 @@ def extract_office_command(args: argparse.Namespace) -> Dict[str, Any]:
                         "boxes are not extracted here - read the document for them."
                     ),
                 }
-            import xml.etree.ElementTree as ET
 
             slide_names = sorted(
                 (name for name in archive.namelist()
@@ -2308,8 +2355,7 @@ def extract_office_command(args: argparse.Namespace) -> Dict[str, Any]:
             a_ns = "http://schemas.openxmlformats.org/drawingml/2006/main"
             slides = []
             for slide_number, name in enumerate(slide_names, start=1):
-                with archive.open(name) as handle:
-                    root = ET.fromstring(handle.read())
+                root = safe_xml_fromstring(read_zip_entry(name))
                 texts = []
                 for paragraph in root.iter(f"{{{a_ns}}}p"):
                     text = "".join(node.text or "" for node in paragraph.iter(f"{{{a_ns}}}t"))
@@ -2707,10 +2753,9 @@ def _decompress_stream(dictionary: bytes, raw: bytes) -> Optional[bytes]:
         # runs to `endstream` (corpus round 1: every content stream of the
         # 1913 Form 1040 failed strict zlib.decompress this way).
         try:
-            decompressor = _zlib.decompressobj()
-            out = decompressor.decompress(raw)
+            out = safe_zlib_decompress(raw)
             return out if out else None
-        except _zlib.error:
+        except (_zlib.error, PortableError):
             return None
     if b"/Filter" not in dictionary:
         return raw
@@ -3906,7 +3951,7 @@ documents (interactive forms, signed records, legal records) are counted, not hi
 </html>
 """
     out_path = Path(args.out).resolve() if getattr(args, "out", None) else runs_dir / "scoreboard.html"
-    out_path.write_text(page, encoding="utf-8")
+    write_text_new(out_path, page)
     return {"ok": True, "scoreboard": out_path.name, "totals": totals, "rows": len(rows)}
 
 
@@ -4092,7 +4137,7 @@ belong to a person. Interactive forms, signed records, and legal records are ref
 </html>
 """
     out_path = Path(args.out).resolve() if getattr(args, "out", None) else run_dir / (safe_stem(doc_name) + "-evidence-summary.html")
-    out_path.write_text(page, encoding="utf-8")
+    write_text_new(out_path, page)
     return {
         "ok": True,
         "summary": out_path.name,

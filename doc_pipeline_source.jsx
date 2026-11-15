@@ -47183,7 +47183,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           }
           svgHtml = '<svg role="img" aria-label="' + escAttr(summaryText) + '" viewBox="0 0 ' + w + ' ' + h + '" style="width:100%;max-width:560px;height:auto;display:block;margin:0 auto;color:#1e293b;">' + yTicks + '<line x1="' + padL + '" y1="' + zeroY.toFixed(1) + '" x2="' + (w - padR) + '" y2="' + zeroY.toFixed(1) + '" stroke="currentColor" stroke-width="1.2"/>' + shapes + '</svg>';
       }
-      const tableHtml = '<table class="alloflow-chart-table" style="width:100%;max-width:560px;margin:10px auto 0;border-collapse:collapse;font-size:0.85em;"><thead><tr><th scope="col" style="padding:6px 8px;border:1px solid #cbd5e1;background:#f8fafc;text-align:left;">' + escAttr(xLabel) + '</th><th scope="col" style="padding:6px 8px;border:1px solid #cbd5e1;background:#f8fafc;text-align:right;">' + escAttr(yLabel) + '</th></tr></thead><tbody>' + points.map((p) => '<tr><td style="padding:5px 8px;border:1px solid #cbd5e1;">' + escAttr(p.label) + '</td><td style="padding:5px 8px;border:1px solid #cbd5e1;text-align:right;">' + escAttr(p.value + unit) + '</td></tr>').join('') + '</tbody></table>';
+      const tableHtml = '<table class="alloflow-chart-table" aria-label="' + escAttr(title) + '" style="width:100%;max-width:560px;margin:10px auto 0;border-collapse:collapse;font-size:0.85em;"><thead><tr><th scope="col" style="padding:6px 8px;border:1px solid #cbd5e1;background:#f8fafc;text-align:left;">' + escAttr(xLabel) + '</th><th scope="col" style="padding:6px 8px;border:1px solid #cbd5e1;background:#f8fafc;text-align:right;">' + escAttr(yLabel) + '</th></tr></thead><tbody>' + points.map((p) => '<tr><td style="padding:5px 8px;border:1px solid #cbd5e1;">' + escAttr(p.label) + '</td><td style="padding:5px 8px;border:1px solid #cbd5e1;text-align:right;">' + escAttr(p.value + unit) + '</td></tr>').join('') + '</tbody></table>';
       return '<figure class="alloflow-inline-chart" role="group" style="margin:16px 0;padding:14px;border:1px solid #cbd5e1;border-radius:10px;background:#ffffff;break-inside:avoid;page-break-inside:avoid;">' + svgHtml + '<figcaption style="text-align:center;font-weight:700;margin-top:8px;color:#334155;">' + escAttr(title) + '</figcaption>' + tableHtml + '</figure>';
   };
 
@@ -47356,6 +47356,24 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
   // place; a teacher copy keeps them, labelled. A KWL without the flags is unchanged.
   const _kwlHasTeacherExamples = (data) => !!(data && data.structureType === 'KWL Chart' && Array.isArray(data.branches)
       && data.branches.some(b => b && b.teacherExample === true));
+  const _sfHasTeacherKey = (data) => !!(data && typeof data === 'object' && (
+      data.teacherReference
+      || data.rubric
+      || (Array.isArray(data.modelAnswers) && data.modelAnswers.some((v) => v && String(v).trim()))
+      || (Array.isArray(data.sampleResponses) && data.sampleResponses.some((v) => v && String(v).trim()))
+      || (Array.isArray(data.items) && data.items.some((it) => it && typeof it === 'object' && ((it.modelAnswer && String(it.modelAnswer).trim()) || (it.sampleResponse && String(it.sampleResponse).trim()))))
+  ));
+  const _acHasTeacherKey = (item) => {
+      const d = item && item.data && typeof item.data === 'object' ? item.data : {};
+      return !!(item && item.meta && String(item.meta).trim())
+          || !!(d.interactive && (d.interactive.armed === true || d.interactive.rubric))
+          || (Array.isArray(d.sections) && d.sections.some((s) => s && s.answerKey));
+  };
+  const _vennHasTeacherKey = (item, cfgObj) => !!(
+      item && item.type === 'outline' && item.data
+      && /^venn(\s+diagram)?$/i.test(String(item.data.structureType || '').trim())
+      && cfgObj && cfgObj.vennExportMode === 'activity' && cfgObj.assessmentMode !== true
+  );
   const _kwlExportBranches = (data, isTeacher, labelT) => {
       const tFn = typeof labelT === 'function' ? labelT : t;
       const tx =(key, fallback) => { const v = typeof tFn === 'function' ? tFn(key) : ''; return v && v !== key ? v : fallback; };
@@ -47544,14 +47562,25 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       //   2. The boundary must be \p{L}/\p{N} based. A plain \b is ASCII-only in
       //      JS, so it matched NOTHING for Russian, Arabic, Greek or CJK and the
       //      cloze silently produced a passage with no blanks in it at all.
-      const _clozeIsOn = isWorksheet && cfg.clozeWorksheet === true && !originalReading;
+      const _clozeInteractive = !isTeacher && !isWorksheet && cfg.clozeWorksheet === true && cfg.clozeInteractive === true;
+      const _clozeIsOn = !originalReading && cfg.clozeWorksheet === true && (isWorksheet || cfg.clozeInteractive === true);
+      const _clozeCanSelfCheck = cfg.assessmentMode !== true;
       const _clozeGlossaryFor = it => { const g = typeof cfg.__clozeGlossaryFor === 'function' ? cfg.__clozeGlossaryFor(it) : cfg.__clozeGlossary; return Array.isArray(g) ? g : []; };
       // Fixed width, so the length of the line never gives the answer away. The
       // number is visible rather than an aria-label, because it has to survive
       // being printed on paper and it is what the answer key counts against.
       const _clozeMaxPerTerm = Number(cfg.clozeMaxPerTerm) > 0 ? Math.floor(Number(cfg.clozeMaxPerTerm)) : 0;
-      const _clozeBlank = (n) =>
-          `<span class="alloflow-cloze-blank" style="display:inline-block;min-width:120px;max-width:100%;border-bottom:1.5px solid #475569;margin:0 0 0 4px;text-align:center;line-height:1.5;"><span style="font-size:max(12px, 0.72em);font-weight:700;color:#64748b;">${n}</span></span>`;
+      const _clozeBlank = (n, ansObj) => {
+          if (_clozeInteractive) {
+              const bTitle = item.title || getDefaultTitle(item.type);
+              const partLbl = _uiRaw('export.cloze_blank_part', 'Blank {n}', { n });
+              const qLbl = (bTitle || 'Reading') + ' — ' + partLbl;
+              const rKey = String(item.id || 'simplified') + ':cloze:' + (n - 1) + ':cloze-blank';
+              const ansAttr = (_clozeCanSelfCheck && ansObj && ansObj.text) ? ` data-cloze-answer="${_escTxt(ansObj.text)}"` : '';
+              return `<span class="alloflow-cloze-blank alloflow-cloze-blank-wrap" style="display:inline-flex;align-items:baseline;gap:4px;margin:0 2px;vertical-align:baseline;"><span style="font-size:max(12px, 0.72em);font-weight:700;color:#64748b;">${n}</span><input type="text" class="interactive-blank alloflow-response-input alloflow-cloze-input" data-allo-cloze-idx="${n}"${ansAttr} data-allo-response-key="${_escTxt(rKey)}" data-allo-response-type="cloze-blank" data-allo-part-label="${_escTxt(partLbl)}" data-allo-question="${_escTxt(qLbl)}" aria-label="${_uiL('export.cloze_blank_aria', 'Blank {n}', { n })}" placeholder="___" style="width:120px;min-width:90px;max-width:100%;padding:2px 6px;border:none;border-bottom:2px solid #2563eb;border-radius:4px 4px 0 0;background:#eff6ff;font:inherit;color:#0f172a;text-align:center;" /></span>`;
+          }
+          return `<span class="alloflow-cloze-blank" style="display:inline-block;min-width:120px;max-width:100%;border-bottom:1.5px solid #475569;margin:0 0 0 4px;text-align:center;line-height:1.5;"><span style="font-size:max(12px, 0.72em);font-weight:700;color:#64748b;">${n}</span></span>`;
+      };
       const _clozeNormalizePassage = (rawValue, sectionTitle) => {
           let raw = typeof rawValue === 'string' ? rawValue : '';
           if (!raw) return { mainText: raw, translationText: '' };
@@ -47622,8 +47651,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   const english = entry && entry.term ? String(entry.term) : matched;
                   const matchedEnglish = String(matched).toLowerCase() === english.toLowerCase();
                   const bank = matchedEnglish ? english : (canonicalByEntry.get(entry) || matched);
-                  answers.push({ text: matched, term: english, bank });
-                  const blankSpan = _clozeBlank(answers.length);
+                  const ansObj = { text: matched, term: english, bank };
+                  answers.push(ansObj);
+                  const blankSpan = _clozeBlank(answers.length, ansObj);
                   return punct ? `<span style="white-space:nowrap;">${blankSpan}${punct}</span>` : `<span style="white-space:nowrap;">${blankSpan}</span>`;
               });
           }).join('');
@@ -47653,23 +47683,27 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const _clozeWordBankHTML = (answers) => {
           const counts = new Map();
           const labels = new Map();
+          const rawWords = new Map();
           answers.forEach(a => {
               const word = String(a.bank || a.text);
               const key = word.toLowerCase();
               counts.set(key, (counts.get(key) || 0) + 1);
               if (!labels.has(key)) {
                 labels.set(key, key === String(a.term).toLowerCase() ? word : `${word} (${a.term})`);
+                rawWords.set(key, String(a.text || word));
               }
           });
-          const chips = Array.from(labels.entries()).map(([key, label]) => {
+          const entries = Array.from(labels.entries()).map(([key, label]) => {
               const cnt = counts.get(key) || 1;
-              return (_clozeMaxPerTerm > 1 && cnt > 1) ? `${label} (×${cnt})` : label;
+              return { label: (_clozeMaxPerTerm > 1 && cnt > 1) ? `${label} (×${cnt})` : label, word: rawWords.get(key) || label, count: cnt };
           });
-          if (chips.length === 0) return '';
-          const ordered = _clozeShuffle(chips, chips.join('|'));
+          if (entries.length === 0) return '';
+          const ordered = _clozeShuffle(entries, entries.map(e => e.label).join('|'));
           return `<div class="alloflow-cloze-word-bank" style="break-inside:avoid;margin:12px 0 14px;border:2px dashed #2563eb;border-radius:10px;background:#eff6ff;padding:12px 14px;">
                   <div style="font-size:0.82em;font-weight:800;text-transform:uppercase;letter-spacing:0.06em;color:#1d4ed8;margin-bottom:8px;">${_escTxt(t('export.cloze_word_bank') || 'Word Bank')}</div>
-                  <div style="display:flex;flex-wrap:wrap;gap:8px;">${ordered.map(c => `<span style="display:inline-block;background:#ffffff;border:1px solid #93c5fd;border-radius:9999px;padding:4px 12px;font-size:0.95em;color:#1e293b;">☐ ${_escTxt(c)}</span>`).join('')}</div>
+                  <div style="display:flex;flex-wrap:wrap;gap:8px;">${ordered.map(e => _clozeInteractive
+                      ? `<button type="button" class="alloflow-cloze-chip" data-cloze-word="${_escTxt(e.word)}" data-cloze-count="${e.count || 1}" style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;border:1.5px solid #93c5fd;border-radius:9999px;padding:5px 12px;font-size:0.95em;color:#1e293b;font-weight:600;cursor:pointer;">${_escTxt(e.label)}</button>`
+                      : `<span style="display:inline-block;background:#ffffff;border:1px solid #93c5fd;border-radius:9999px;padding:4px 12px;font-size:0.95em;color:#1e293b;">☐ ${_escTxt(e.label)}</span>`).join('')}</div>
               </div>`;
       };
       const _inlineGlossaryFor = it => { const g = typeof cfg.__inlineGlossaryFor === 'function' ? cfg.__inlineGlossaryFor(it) : cfg.__clozeGlossary; return Array.isArray(g) ? g : []; };
@@ -47751,7 +47785,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         'glossary': 'includeGlossary', 'quiz': 'includeQuiz', 'faq': 'includeFaq',
           'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
         'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq', 'concept-sort': 'includeConceptSort',
-        'timeline': 'includeTimeline', 'note-taking': 'includeNoteTaking', 'anchor-chart': 'includeAnchorChart', 'directions': 'includeDirections', 'gemini-bridge': 'includeGeminiBridge'
+        'timeline': 'includeTimeline', 'note-taking': 'includeNoteTaking', 'anchor-chart': 'includeAnchorChart', 'directions': 'includeDirections', 'gemini-bridge': 'includeGeminiBridge', 'fluency-record': 'includeFluencyRecord', 'alignment-report': 'includeAlignmentReport'
       };
       const toggleKey = originalReading ? 'includeOriginalReading' : typeToggleMap[item.type];
       if (toggleKey && cfg[toggleKey] === false) return '';
@@ -47766,6 +47800,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       const title = item.title || (originalReading ? 'Original with supports' : getDefaultTitle(item.type));
       // Teacher copy traditionally hides student-facing resources to avoid duplication
       if (isTeacher) {
+          if (cfg.assessmentMode === true) return '';
           // One exception: the cloze answer key exists ONLY in the teacher copy,
           // so the passage has to be rendered here to produce it. The matching
           // relaxation in _willRenderForCtx has to stay in step with this line,
@@ -47789,10 +47824,31 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <ol style="columns:2;column-gap:32px;padding:8px 4px 8px 28px;margin:0;line-height:1.9;color:#1e293b;">${_keyBuilt.answers.map(a => `<li style="break-inside:avoid;">${_escTxt(a.text)}${String(a.text).toLowerCase() === String(a.term).toLowerCase() ? '' : ` <span style="color:#64748b;font-size:0.88em;">(${_escTxt(a.term)})</span>`}</li>`).join('')}</ol>
               </div>`;
           }
-          if (item.type === 'outline' && !_kwlHasTeacherExamples(item.data)) return '';
+          if (item.type === 'outline' && !_kwlHasTeacherExamples(item.data) && !_vennHasTeacherKey(item, cfg)) return '';
+          if (item.type === 'fluency-record' && !(item.meta && String(item.meta).trim())) return '';
+          if (item.type === 'anchor-chart' && !_acHasTeacherKey(item)) return '';
           if (item.type === 'image') return '';
           if (item.type === 'faq') return '';
-          if (item.type === 'sentence-frames') return '';
+          if (item.type === 'sentence-frames') {
+              if (!_sfHasTeacherKey(item.data)) return '';
+              const sfData = item.data;
+              const sfTitle = _escTxt((title || getDefaultTitle('sentence-frames')) + ' — ' + _uiRaw('export.teacher_key_suffix', 'Teacher Reference'));
+              const sfItems = Array.isArray(sfData.items) ? sfData.items : [];
+              const samples = Array.isArray(sfData.sampleResponses) ? sfData.sampleResponses : (Array.isArray(sfData.modelAnswers) ? sfData.modelAnswers : []);
+              const rowsHtml = sfItems.map((it, idx) => {
+                  const frameTxt = it && typeof it === 'object' ? (it.text || '') : String(it || '');
+                  const sample = (it && typeof it === 'object' && (it.modelAnswer || it.sampleResponse)) || samples[idx] || '';
+                  if (!frameTxt && !sample) return '';
+                  return `<li style="margin-bottom:8px;break-inside:avoid;"><strong>${_escTxt(frameTxt)}</strong>${sample ? `<div style="color:#065f46;margin-top:2px;">${_uiL('export.model_answer', 'Model response')}: ${_escTxt(sample)}</div>` : ''}</li>`;
+              }).filter(Boolean).join('');
+              const standaloneSamples = (!rowsHtml && samples.length) ? samples.map(s => `<li style="margin-bottom:6px;">${_escTxt(s)}</li>`).join('') : '';
+              return `<div class="section" id="${_escTxt(item.id)}-sf-key" style="border-left:4px solid #4f46e5;border-radius:12px;">
+                  <h2 class="resource-header" role="heading" aria-level="2" style="border-left:4px solid #4f46e5;background:#eef2ff;"><span aria-hidden="true">🔑 </span>${sfTitle}</h2>
+                  ${sfData.teacherReference ? `<div style="padding:8px 12px;background:#f8fafc;border-radius:6px;margin-bottom:10px;">${parseMarkdownToHTML(String(sfData.teacherReference), { minHeadingLevel: 3 })}</div>` : ''}
+                  ${(rowsHtml || standaloneSamples) ? `<ol style="padding-left:24px;margin:8px 0;color:#1e293b;">${rowsHtml || standaloneSamples}</ol>` : ''}
+                  ${sfData.rubric ? `<div style="margin-top:10px;padding:10px 12px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;"><strong>${_uiL('scaffolds.rubric', 'Grading Rubric')}</strong>${typeof sfData.rubric === 'string' ? parseMarkdownToHTML(sfData.rubric, { minHeadingLevel: 3 }) : `<pre style="white-space:pre-wrap;margin:4px 0 0;font-family:inherit;">${_escTxt(JSON.stringify(sfData.rubric, null, 2))}</pre>`}</div>` : ''}
+              </div>`;
+          }
       }
       const isRtl = isRtlLang(leveledTextLanguage);
       const align = isRtl ? 'right' : 'left';
@@ -47814,6 +47870,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         'fluency-record': { icon: '🎙️', color: '#0d9488', bg: '#f0fdfa', label: 'Fluency Record' },
         'timeline': { icon: '📅', color: '#4338ca', bg: '#eef2ff', label: 'Timeline' },
         'concept-sort': { icon: '🧩', color: '#6d28d9', bg: '#f5f3ff', label: 'Concept Sort' },
+        'directions': { icon: '🧭', color: '#d97706', bg: '#fffbeb', label: 'Directions' },
       };
       const tv = typeVisuals[item.type] || { icon: '📄', color: '#475569', bg: '#f8fafc', label: '' };
       if (originalReading) tv.label = 'Original with supports';
@@ -47831,11 +47888,70 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const appOnlyGoal = goal => !isTeacher && !(cfg && cfg.audience === 'teacher') && (goal.kind === 'game' || goal.kind === 'xp');
           const goals = (Array.isArray(data.objectives) ? data.objectives : []).filter(goal => goal && typeof goal.label === 'string' && goal.label.trim() && !appOnlyGoal(goal));
           const board = data.choiceBoard && data.choiceBoard.enabled === true ? data.choiceBoard : null;
-          const choices = board && Array.isArray(board.choices) ? board.choices.filter(choice => choice && typeof choice.label === 'string' && choice.label.trim()) : [];
-          const goalHtml = goals.length ? '<section><h3>' + _escTxt(label('directions.goals_heading', 'Your goals')) + '</h3><ul style="list-style:none;padding-left:0;">' + goals.map(goal => '<li style="margin:8px 0;"><span aria-hidden="true">&#x2610; </span>' + _escTxt(goal.label) + '</li>').join('') + '</ul></section>' : '';
-          const choiceHtml = choices.length ? '<section><h3>' + _escTxt(board.title || label('directions.choice_board_title', 'Choose an activity')) + '</h3>' + (board.prompt ? '<p>' + _escTxt(board.prompt) + '</p>' : '') + '<ul>' + choices.map(choice => '<li style="margin:8px 0;"><strong>' + _escTxt(choice.label) + '</strong>' + (choice.description ? '<p>' + _escTxt(choice.description) + '</p>' : '') + '</li>').join('') + '</ul></section>' : '';
+          const _rawChoices = board ? (Array.isArray(board.choices) ? board.choices : (Array.isArray(board.options) ? board.options : [])) : [];
+          const choices = _rawChoices.map(choice => {
+              if (typeof choice === 'string') return choice.trim() ? { label: choice.trim(), description: '' } : null;
+              if (!choice || typeof choice !== 'object') return null;
+              const lbl = String(choice.label || choice.title || '').trim();
+              return lbl ? { label: lbl, description: typeof choice.description === 'string' ? choice.description : '' } : null;
+          }).filter(Boolean);
+          const _dirId = String(item.id || 'directions');
+          const _dirIdJson = JSON.stringify(_dirId).replace(/</g, '\\u003c');
+          const _dirInteractive = !isWorksheet && !isTeacher && !(cfg && cfg.audience === 'teacher');
+          const _dirControlsHtml = (_dirInteractive && (goals.length > 0 || choices.length > 0))
+            ? '<div class="alloflow-dir-controls no-print" style="display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:8px 0 12px;">'
+              + (goals.length > 0 ? '<span class="alloflow-dir-progress" role="status" aria-live="polite" data-total="' + goals.length + '" data-template="' + _escTxt(label('directions.goals_progress', '{done} / {total} goals completed')) + '" style="display:inline-flex;align-items:center;padding:4px 10px;border-radius:9999px;font-size:12px;font-weight:700;background:#fffbeb;color:#78350f;border:1px solid #fcd34d;">' + _escTxt(label('directions.goals_progress', '{done} / {total} goals completed').replace('{done}', '0').replace('{total}', String(goals.length))) + '</span>' : '')
+              + '<button type="button" class="alloflow-dir-reset" style="padding:5px 12px;font-size:12px;font-weight:600;background:#ffffff;color:#0f172a;border:1px solid #94a3b8;border-radius:9999px;cursor:pointer;">' + _escTxt(label('ui_common.reset', 'Reset')) + '</button>'
+              + '</div>'
+            : '';
+          const _goalsHeading = _escTxt(label('directions.goals_heading', 'Your goals'));
+          const goalHtml = !goals.length ? '' : (_dirInteractive
+            ? '<section class="alloflow-dir-goals"><h3>' + _goalsHeading + '</h3><ul class="alloflow-dir-goal-list" style="list-style:none;padding-left:0;margin:8px 0;">' + goals.map((goal, gi) => '<li class="alloflow-dir-goal-item" style="margin:8px 0;padding:8px 12px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;color:#0f172a;"><label class="alloflow-dir-goal-label" style="display:flex;align-items:flex-start;gap:8px;cursor:pointer;"><input type="checkbox" class="alloflow-dir-goal-cb alloflow-response-input" value="' + gi + '" data-allo-response-key="' + _escTxt(_dirId + ':directions:goals') + '" data-allo-response-type="goal-checklist" data-allo-part-label="' + _goalsHeading + '" data-allo-question="' + _goalsHeading + '" style="margin-top:3px;flex-shrink:0;" /> <span class="alloflow-dir-goal-text">' + _escTxt(goal.label) + '</span></label></li>').join('') + '</ul></section>'
+            : '<section><h3>' + _goalsHeading + '</h3><ul style="list-style:none;padding-left:0;">' + goals.map(goal => '<li style="margin:8px 0;"><span aria-hidden="true">&#x2610; </span>' + _escTxt(goal.label) + '</li>').join('') + '</ul></section>');
+          const _choiceHeading = board ? _escTxt(board.title || label('directions.choice_board_title', 'Choose an activity')) : '';
+          const _choiceQuestion = board ? _escTxt(board.prompt || board.title || label('directions.choice_board_title', 'Choose an activity')) : '';
+          const choiceHtml = !choices.length ? '' : (_dirInteractive
+            ? '<section class="alloflow-dir-choices"><h3>' + _choiceHeading + '</h3>' + (board.prompt ? '<p>' + _escTxt(board.prompt) + '</p>' : '') + '<ul class="alloflow-dir-choice-list" role="radiogroup" aria-label="' + _choiceHeading + '" style="list-style:none;padding-left:0;margin:8px 0;">' + choices.map((choice, ci) => '<li class="alloflow-dir-choice-item" style="margin:8px 0;"><label class="alloflow-dir-choice-card mcq-label" style="display:flex;align-items:flex-start;gap:10px;padding:10px 12px;background:#ffffff;border:1px solid #cbd5e1;border-radius:8px;color:#0f172a;cursor:pointer;"><input type="radio" name="' + _escTxt(_dirId + '-dir-choice') + '" class="alloflow-dir-choice-rb alloflow-response-input" value="' + ci + '" data-allo-response-key="' + _escTxt(_dirId + ':directions:choice') + '" data-allo-response-type="choice-board" data-allo-part-label="' + _choiceHeading + '" data-allo-question="' + _choiceQuestion + '" style="margin-top:3px;flex-shrink:0;" /> <span class="alloflow-dir-choice-body" style="flex:1;"><strong>' + _escTxt(choice.label) + '</strong>' + (choice.description ? ' <span class="alloflow-dir-choice-desc" style="display:block;margin-top:4px;font-weight:normal;color:#334155;">' + _escTxt(choice.description) + '</span>' : '') + '</span></label></li>').join('') + '</ul></section>'
+            : '<section><h3>' + _choiceHeading + '</h3>' + (board.prompt ? '<p>' + _escTxt(board.prompt) + '</p>' : '') + '<ul>' + choices.map(choice => '<li style="margin:8px 0;"><strong>' + _escTxt(choice.label) + '</strong>' + (choice.description ? '<p>' + _escTxt(choice.description) + '</p>' : '') + '</li>').join('') + '</ul></section>');
+          const _dirStyle = (_dirInteractive && (goals.length > 0 || choices.length > 0))
+            ? '<style>'
+              + '.alloflow-directions-section .alloflow-dir-goal-item.is-checked{background:#ecfdf5;border-color:#10b981;color:#065f46;}'
+              + '.alloflow-directions-section .alloflow-dir-goal-item.is-checked .alloflow-dir-goal-text{text-decoration:line-through;opacity:0.88;}'
+              + '.alloflow-directions-section .alloflow-dir-choice-card.is-selected{background:#eff6ff;border-color:#2563eb;box-shadow:0 1px 4px rgba(37,99,235,0.14);}'
+              + '@media print{.alloflow-dir-controls{display:none !important;}}'
+              + '</style>'
+            : '';
+          const _dirScript = (_dirInteractive && (goals.length > 0 || choices.length > 0))
+            ? '<script>(function(){'
+              + 'var s=document.currentScript;'
+              + 'var sec=(s&&s.closest&&s.closest("[data-directions-section]"))||document.getElementById(' + _dirIdJson + ');'
+              + 'if(!sec||sec.dataset.alloDirBound==="1")return;'
+              + 'sec.dataset.alloDirBound="1";'
+              + 'var prog=sec.querySelector(".alloflow-dir-progress");'
+              + 'var cbs=Array.prototype.slice.call(sec.querySelectorAll(".alloflow-dir-goal-cb"));'
+              + 'var rbs=Array.prototype.slice.call(sec.querySelectorAll(".alloflow-dir-choice-rb"));'
+              + 'var resetBtn=sec.querySelector(".alloflow-dir-reset");'
+              + 'function syncDirState(){'
+              + 'var done=0;'
+              + 'cbs.forEach(function(cb){var item=cb.closest(".alloflow-dir-goal-item");if(cb.checked){done++;if(item)item.classList.add("is-checked");}else if(item){item.classList.remove("is-checked");}});'
+              + 'rbs.forEach(function(rb){var card=rb.closest(".alloflow-dir-choice-card");if(card){if(rb.checked)card.classList.add("is-selected");else card.classList.remove("is-selected");}});'
+              + 'if(prog){var tpl=prog.getAttribute("data-template")||"{done} / {total} goals completed";var tot=prog.getAttribute("data-total")||String(cbs.length);prog.textContent=tpl.replace("{done}",String(done)).replace("{total}",tot);}'
+              + '}'
+              + 'sec.addEventListener("change",syncDirState);'
+              + 'if(resetBtn){resetBtn.addEventListener("click",function(){'
+              + 'cbs.forEach(function(cb){cb.checked=false;});'
+              + 'rbs.forEach(function(rb){rb.checked=false;});'
+              + 'if(cbs[0])cbs[0].dispatchEvent(new Event("change",{bubbles:true}));'
+              + 'if(rbs[0])rbs[0].dispatchEvent(new Event("change",{bubbles:true}));'
+              + 'syncDirState();'
+              + '});}'
+              + 'syncDirState();'
+              + 'document.addEventListener("DOMContentLoaded",syncDirState);'
+              + 'setTimeout(syncDirState,0);'
+              + '})();<\/script>'
+            : '';
           const _dirParse = typeof _alloParseDocDirectionsMarkdown === 'function' ? _alloParseDocDirectionsMarkdown : _alloParsePreviewMarkdown;
-          return '<section class="section" id="' + _escTxt(item.id) + '" data-ka-readable style="border-left:4px solid #d97706;border-radius:12px;padding:16px;overflow-wrap:anywhere;"><h2 class="resource-header">' + _escTxt(title) + '</h2>' + _dirParse(body) + goalHtml + choiceHtml + '</section>';
+          return '<section class="section alloflow-directions-section" id="' + _escTxt(_dirId) + '" data-directions-section="' + _escTxt(_dirId) + '" data-ka-readable style="border-left:4px solid #d97706;border-radius:12px;padding:16px;overflow-wrap:anywhere;"><h2 class="resource-header">' + _escTxt(title) + '</h2>' + _dirParse(body) + _dirControlsHtml + goalHtml + choiceHtml + _dirStyle + _dirScript + '</section>';
       }
       if (item.type === 'simplified') {
           const sourceExcerptsHTML = studentSourceExcerptsHTML(item.data);
@@ -47905,6 +48021,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   ${_bankOnTop ? _bankHtml : ''}
                   <div class="alloflow-own-font" style="${_ownFontInline("Georgia,'Times New Roman',serif")}font-size:1.05em;line-height:2.4;color:#1e293b;padding:8px 4px;">${_clozeTransHtml}</div>
                   ${_bankOnTop ? '' : _bankHtml}
+                  ${_clozeInteractive ? `<div class="alloflow-cloze-controls no-print" data-cloze-section="${_escTxt(item.id)}" data-cloze-copy-score="${_uiL('export.cloze_score', '{correct} of {total} correct')}" data-cloze-copy-perfect="${_uiL('export.cloze_perfect', 'All {total} blanks correct!')}" style="display:flex;gap:8px;flex-wrap:wrap;margin:12px 4px 4px;align-items:center;">${_clozeCanSelfCheck ? `<button type="button" class="alloflow-cloze-check-btn" style="padding:8px 16px;background:#2563eb;color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em;"><span aria-hidden="true">🎯 </span>${_uiL('export.cloze_check', 'Check answers')}</button>` : ''}<button type="button" class="alloflow-cloze-reset-btn" style="padding:8px 14px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85em;"><span aria-hidden="true">↻ </span>${_uiL('ui_common.reset', 'Reset')}</button><div class="alloflow-cloze-results" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.95em;font-weight:700;color:#1e293b;margin-left:0.5rem;"></div></div>` : ''}
               </div>
               ${sourceExcerptsHTML}
           `;
@@ -47993,18 +48110,27 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const showSolutions = isTeacher && cfg.includeTeacherKey !== false;
               const wsHeading = showSolutions ? t('glossary.word_search_key') : _gl('glossary.word_search', 'Word Search');
               const wsDir = item.gameData.isRtl ? 'rtl' : 'ltr';
-              let gridHtml = `<div class="alloflow-word-search" dir="${wsDir}" style="margin-top:20px; page-break-inside:avoid;"><h3>${_escTxt(wsHeading)}</h3><div style="display:inline-block; border:2px solid #333; padding:2px;">`;
+              const wsInteractive = !isWorksheet && !showSolutions;
+              let gridHtml = `<div class="alloflow-word-search${wsInteractive ? ' alloflow-word-search-interactive' : ''}" dir="${wsDir}" style="margin-top:20px; page-break-inside:avoid;"><style>.alloflow-ws-cell[aria-pressed="true"]{background:#fef08a !important;color:#0f172a !important;font-weight:700;outline:2px solid #ca8a04;outline-offset:-2px;}.alloflow-ws-word[aria-pressed="true"]{text-decoration:line-through;opacity:0.6;background:#dcfce7 !important;border-color:#86efac !important;}@media print{.alloflow-ws-cell{border-color:#94a3b8 !important;}}</style><h3>${_escTxt(wsHeading)}</h3><div class="alloflow-ws-grid" style="display:inline-block; border:2px solid #333; padding:2px;">`;
               item.gameData.grid.forEach((row, r) => {
                   gridHtml += '<div style="display:flex;">';
                   row.forEach((char, c) => {
                       const isSol = showSolutions && (item.gameData.solutions || []).includes(`${r}-${c}`);
-                      gridHtml += `<div style="width:20px; height:20px; display:flex; align-items:center; justify-content:center; border:1px solid #ccc; font-family:monospace; font-size:10px; ${isSol ? 'outline:2px solid #000; outline-offset:-2px; font-weight:bold;' : ''}">${_escTxt(char)}</div>`;
+                      if (wsInteractive) {
+                          gridHtml += `<button type="button" class="alloflow-ws-cell" data-r="${r}" data-c="${c}" aria-pressed="false" aria-label="${_escTxt(String(char) + ' row ' + (r + 1) + ' column ' + (c + 1))}" style="width:22px;height:22px;padding:0;display:flex;align-items:center;justify-content:center;border:1px solid #ccc;background:#ffffff;color:#0f172a;font-family:monospace;font-size:11px;cursor:pointer;">${_escTxt(char)}</button>`;
+                      } else {
+                          gridHtml += `<div style="width:20px; height:20px; display:flex; align-items:center; justify-content:center; border:1px solid #ccc; font-family:monospace; font-size:10px; ${isSol ? 'outline:2px solid #000; outline-offset:-2px; font-weight:bold;' : ''}">${_escTxt(char)}</div>`;
+                      }
                   });
                   gridHtml += '</div>';
               });
               gridHtml += '</div>';
               if (!showSolutions && Array.isArray(item.gameData.words) && item.gameData.words.length > 0) {
-                  gridHtml += `<p dir="auto" style="margin-top:10px;font-size:0.9em;color:#334155;"><strong>${_escTxt(_gl('glossary.words_to_find', 'Words to find'))}:</strong> ${item.gameData.words.map(w => _escTxt(w)).join(' · ')}</p>`;
+                  if (wsInteractive) {
+                      gridHtml += `<div class="alloflow-ws-words" dir="auto" style="margin-top:10px;font-size:0.9em;color:#334155;display:flex;flex-wrap:wrap;align-items:center;gap:6px;"><strong>${_escTxt(_gl('glossary.words_to_find', 'Words to find'))}:</strong> ${item.gameData.words.map(w => `<button type="button" class="alloflow-ws-word" aria-pressed="false" data-word="${_escTxt(w)}" style="padding:2px 9px;border:1px solid #cbd5e1;border-radius:999px;background:#f8fafc;color:#1e293b;font-size:0.95em;cursor:pointer;">${_escTxt(w)}</button>`).join('')}</div>`;
+                  } else {
+                      gridHtml += `<p dir="auto" style="margin-top:10px;font-size:0.9em;color:#334155;"><strong>${_escTxt(_gl('glossary.words_to_find', 'Words to find'))}:</strong> ${item.gameData.words.map(w => _escTxt(w)).join(' · ')}</p>`;
+                  }
               }
               gridHtml += '</div>';
               return gridHtml;
@@ -48204,21 +48330,44 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const sid = String(item.id || 'glossary').replace(/[^A-Za-z0-9_-]+/g, '-');
               const picture = gItem => _glossPicture(gItem, 'width:48px;height:48px;object-fit:contain;vertical-align:middle;margin-inline-end:8px;');
               const field = 'min-height:44px;font:inherit;border:1px solid #64748b;border-radius:6px;';
+              const _gmCanSelfCheck = !isTeacher && !isWorksheet && cfg.assessmentMode !== true;
+              const _gmControlsHtml = !isWorksheet && _glossWorksheetVariant === 'matching'
+                  ? `<div class="alloflow-gm-controls no-print" style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:12px 0 0;">
+                      ${_gmCanSelfCheck ? `<button type="button" class="alloflow-gm-check-btn">${_uiL('glossary.check_matches', 'Check matches')}</button>` : ''}
+                      <button type="button" class="alloflow-gm-reset-btn">${_uiL('ui_common.reset', 'Reset')}</button>
+                      <span class="alloflow-gm-status" role="status" aria-live="polite" aria-atomic="true" data-score-tpl="${_uiL('glossary.match_score', '{correct} of {total} correct.')}" data-dup-tpl="${_uiL('glossary.match_duplicate', 'Duplicate letter: {letters}')}" style="font-size:0.92em;font-weight:700;color:#1e293b;"></span>
+                    </div>`
+                  : '';
               const body = _glossWorksheetVariant === 'matching'
                   ? `<div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,16em),1fr));gap:12px 28px;">
-                      <ol data-glossary-worksheet-words style="list-style:none;padding:0;margin:0;" aria-label="${_escTxt(_gl('glossary.worksheet_words', 'Words'))}">${plan.words.map((gItem, i) => `<li style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px;break-inside:avoid;page-break-inside:avoid;">${isWorksheet
-                          ? `<span>${i + 1}.</span>${fillableBlank(48)}${picture(gItem)}<strong>${_glossTermHtml(gItem)}</strong>`
-                          : `${picture(gItem)}<label for="gw-${sid}-${i}"><span>${i + 1}.</span> <strong>${_glossTermHtml(gItem)}</strong></label><input id="gw-${sid}-${i}" type="text" maxlength="3" size="3" autocomplete="off" data-allo-response-key="glossary-worksheet:${sid}:match:${i}" style="${field}width:4em;text-align:center;">`}</li>`).join('')}</ol>
-                      <ol data-glossary-worksheet-definitions style="list-style:none;padding:0;margin:0;" aria-label="${_escTxt(_gl('glossary.worksheet_definitions', 'Definitions'))}">${plan.order.map((wordIndex, k) => `<li style="margin:0 0 10px;break-inside:avoid;page-break-inside:avoid;"><strong>${_glossLetter(k)}.</strong> ${_glossDefinitionHtml(plan.words[wordIndex])}</li>`).join('')}</ol>
+                      <ol data-glossary-worksheet-words style="list-style:none;padding:0;margin:0;" aria-label="${_escTxt(_gl('glossary.worksheet_words', 'Words'))}">${plan.words.map((gItem, i) => {
+                          const _expectedLetter = _glossLetter(plan.order.indexOf(i));
+                          const _expectedAttr = _gmCanSelfCheck && _expectedLetter ? ` data-expected-letter="${_escTxt(_expectedLetter)}"` : '';
+                          return `<li style="display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:0 0 10px;break-inside:avoid;page-break-inside:avoid;">${isWorksheet
+                              ? `<span>${i + 1}.</span>${fillableBlank(48)}${picture(gItem)}<strong>${_glossTermHtml(gItem)}</strong>`
+                              : `${picture(gItem)}<label for="gw-${sid}-${i}"><span>${i + 1}.</span> <strong>${_glossTermHtml(gItem)}</strong></label><input id="gw-${sid}-${i}" type="text" class="interactive-blank alloflow-response-input" maxlength="3" size="3" autocomplete="off" data-allo-response-key="glossary-worksheet:${sid}:match:${i}" data-allo-response-type="match"${_expectedAttr} data-allo-part-label="${_escTxt(_gl('glossary.worksheet_match_part', 'Matching letter'))}" data-allo-question="${_escTxt(String(gItem.term || '').trim())}" style="${field}width:4em;text-align:center;">`}</li>`;
+                      }).join('')}</ol>
+                      <ol data-glossary-worksheet-definitions style="list-style:none;padding:0;margin:0;" aria-label="${_escTxt(_gl('glossary.worksheet_definitions', 'Definitions'))}">${plan.order.map((wordIndex, k) => `<li data-gloss-def-item="1" data-gloss-letter="${_escTxt(_glossLetter(k))}" style="margin:0 0 10px;break-inside:avoid;page-break-inside:avoid;"><strong>${_glossLetter(k)}.</strong> ${_glossDefinitionHtml(plan.words[wordIndex])}</li>`).join('')}</ol>
                     </div>`
                   : `<ol data-glossary-worksheet-words style="padding-inline-start:1.6em;margin:0;">${plan.words.map((gItem, i) => `<li style="margin:0 0 14px;break-inside:avoid;page-break-inside:avoid;">${picture(gItem)}${isWorksheet
                       ? `<strong>${_glossTermHtml(gItem)}</strong>${ruledLines(2)}`
-                      : `<label for="gw-${sid}-${i}"><strong>${_glossTermHtml(gItem)}</strong></label><textarea id="gw-${sid}-${i}" rows="3" data-allo-response-key="glossary-worksheet:${sid}:def:${i}" style="${field}display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:6px;"></textarea>`}</li>`).join('')}</ol>`;
+                      : `<label for="gw-${sid}-${i}"><strong>${_glossTermHtml(gItem)}</strong></label><textarea id="gw-${sid}-${i}" rows="3" class="interactive-textarea alloflow-response-input" data-allo-response-key="glossary-worksheet:${sid}:def:${i}:free-response" data-allo-response-type="free-response" data-allo-part-label="${_escTxt(_gl('export.def_col', 'Definition'))}" data-allo-question="${_escTxt(String(gItem.term || '').trim())}" style="${field}display:block;box-sizing:border-box;width:100%;margin-top:6px;padding:6px;"></textarea>`}</li>`).join('')}</ol>`;
               return `
                   <style>
                     .alloflow-glossary-worksheet [data-glossary-worksheet-words],.alloflow-glossary-worksheet [data-glossary-worksheet-definitions] { min-width:0; overflow-wrap:anywhere; }
                     .alloflow-glossary-worksheet li,.alloflow-glossary-worksheet label,.alloflow-glossary-worksheet strong { min-width:0; max-width:100%; }
-                    @media print { .alloflow-glossary-worksheet { padding:0 !important; border:0 !important; break-inside:auto !important; } }
+                    .alloflow-glossary-worksheet [data-gloss-def-item].is-used-def { opacity:0.55; transition:opacity .15s; }
+                    .alloflow-glossary-worksheet .interactive-blank.is-duplicate-letter { border-color:#d97706 !important; background:#fffbeb !important; color:#92400e !important; }
+                    .alloflow-glossary-worksheet .interactive-blank.is-match-correct { border-color:#047857 !important; background:#ecfdf5 !important; color:#065f46 !important; }
+                    .alloflow-glossary-worksheet .interactive-blank.is-match-wrong { border-color:#dc2626 !important; background:#fef2f2 !important; color:#991b1b !important; }
+                    .alloflow-gm-controls button { padding:8px 14px; border:1px solid #cbd5e1; border-radius:8px; font:inherit; font-weight:700; cursor:pointer; background:#f8fafc; color:#334155; }
+                    .alloflow-gm-controls .alloflow-gm-check-btn { background:#059669; border-color:#047857; color:#ffffff; }
+                    html[data-alloflow-theme="dark"] .alloflow-glossary-worksheet .alloflow-gm-status { color:#f8fafc !important; }
+                    html[data-alloflow-theme="dark"] .alloflow-glossary-worksheet .alloflow-gm-reset-btn { background:#1e293b !important; color:#f8fafc !important; border-color:#64748b !important; }
+                    html[data-alloflow-theme="dark"] .alloflow-glossary-worksheet .interactive-blank.is-duplicate-letter { background:#451a03 !important; color:#fde68a !important; border-color:#f59e0b !important; }
+                    html[data-alloflow-theme="dark"] .alloflow-glossary-worksheet .interactive-blank.is-match-correct { background:#064e3b !important; color:#a7f3d0 !important; border-color:#34d399 !important; }
+                    html[data-alloflow-theme="dark"] .alloflow-glossary-worksheet .interactive-blank.is-match-wrong { background:#7f1d1d !important; color:#fecaca !important; border-color:#f87171 !important; }
+                    @media print { .alloflow-glossary-worksheet { padding:0 !important; border:0 !important; break-inside:auto !important; } .alloflow-gm-controls { display:none !important; } }
                   </style>
                   <div class="section alloflow-glossary-worksheet" id="${_escTxt(item.id)}" data-glossary-worksheet="${_glossWorksheetVariant}" style="border-left:4px solid #059669;border-radius:12px;">
                       ${enhancedHeader}
@@ -48226,6 +48375,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           ? _gl('glossary.worksheet_matching_directions', 'Write the letter of the matching definition next to each word.')
                           : _gl('glossary.worksheet_lines_directions', 'Write what each word means in your own words.'))}</p>
                       ${body}
+                      ${_gmControlsHtml}
                       ${_glossCreditsHtml}
                   </div>
               `;
@@ -48245,17 +48395,22 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ? `<div style="font-size:0.95em;color:#1e293b;font-weight:600;">${translationsHtml || `<span data-glossary-translation-missing style="font-style:italic;color:#64748b;">${_escTxt(_gl('glossary.export_no_translations', '(no translations)'))}</span>`}</div>${gItem.def || gItem.definition ? `<div class="alloflow-glossary-card-reference" style="margin-top:8px;font-size:0.8em;color:#64748b;line-height:1.4;"><strong>${_escTxt(_gl('output.col_def', 'Definition'))}:</strong> ${_glossDefinitionHtml(gItem)}</div>` : ''}`
                               : `<div style="font-size:0.95em;line-height:1.5;color:#1e293b;">${_glossDefinitionHtml(gItem)}</div>${translationsHtml ? `<div style="margin-top:8px;color:#64748b;">${translationsHtml}</div>` : ''}`;
                           return `
-                              <div class="alloflow-glossary-card" data-card-idx="${idx}" style="border:2px dashed #94a3b8; border-radius:12px; overflow:hidden; background:white; break-inside:avoid; page-break-inside:avoid;">
-                                  <div class="alloflow-glossary-card-front" style="padding:16px 14px; text-align:center; min-height:110px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+                              <article class="alloflow-glossary-card flashcard" data-card-idx="${idx}" style="border:2px dashed #94a3b8; border-radius:12px; overflow:hidden; background:white; break-inside:avoid; page-break-inside:avoid; display:flex; flex-direction:column;">
+                                  <div class="alloflow-glossary-card-front" style="padding:16px 14px; text-align:center; min-height:110px; display:flex; flex-direction:column; align-items:center; justify-content:center; flex:1 1 auto;">
                                       ${imageHtml}
                                       <strong style="font-size:1.15em; color:#1e293b; line-height:1.3;">${_glossTermHtml(gItem)}</strong>
                                       ${gItem.term_en && gItem.term_en !== gItem.term ? `<div${_glossLangAttrs('English')} style="font-size:0.8em; color:#64748b; margin-top:4px;">(${_escTxt(gItem.term_en)})</div>` : ''}
                                   </div>
-                                  <div class="alloflow-glossary-card-fold" aria-hidden="true" style="border-top:2px dashed #cbd5e1; padding:3px 0; text-align:center; font-family:monospace; font-size:max(12px, 0.65em); color:#64748b; letter-spacing:0.1em; background:#f8fafc;">${_escTxt(_gl('glossary.export_fold_hint', '▼ fold here / click to flip ▼'))}</div>
+                                  <div class="alloflow-glossary-card-fold" aria-hidden="true" style="border-top:2px dashed #cbd5e1; padding:3px 0; text-align:center; font-family:monospace; font-size:max(12px, 0.65em); color:#64748b; letter-spacing:0.1em; background:#f8fafc;">${_escTxt(_gl('glossary.export_fold_hint', '▼ fold here / flip ▼'))}</div>
                                   <div class="alloflow-glossary-card-back" style="padding:14px; background:#f8fafc; min-height:90px;">
                                       ${backContent}
                                   </div>
-                              </div>
+                                  ${!isWorksheet ? `<div class="alloflow-glossary-card-actions" style="display:flex;flex-wrap:wrap;gap:6px;padding:8px 10px;border-top:1px solid #e2e8f0;background:#f8fafc;justify-content:center;">
+                                    <button type="button" class="flashcard-flip-btn" aria-expanded="false" style="padding:5px 10px;border:1px solid #93c5fd;border-radius:6px;background:#eff6ff;color:#1e40af;font-size:12px;font-weight:700;cursor:pointer;">${_escTxt(_gl('glossary.export_flip_btn', 'Flip card'))}</button>
+                                    <button type="button" class="flashcard-mark-btn" data-status="got-it" aria-pressed="false" style="padding:5px 10px;border:1px solid #86efac;border-radius:6px;background:#f0fdf4;color:#166534;font-size:12px;font-weight:600;cursor:pointer;">${_escTxt(_gl('glossary.export_got_it', 'Got it'))}</button>
+                                    <button type="button" class="flashcard-mark-btn" data-status="learning" aria-pressed="false" style="padding:5px 10px;border:1px solid #fcd34d;border-radius:6px;background:#fffbeb;color:#92400e;font-size:12px;font-weight:600;cursor:pointer;">${_escTxt(_gl('glossary.export_still_learning', 'Still learning'))}</button>
+                                  </div>` : ''}
+                              </article>
                           `;
                       }).join('')}
                   </div>
@@ -48266,12 +48421,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                        <strong>${_escTxt(_gl('glossary.export_howto_label', 'How to use:'))}</strong> ${_escTxt(showTranslations ? _gl('glossary.export_howto_paper_translation', "Cut around each card's dashed border. Fold along the middle dashed line so the term shows on one side and the translation on the other.") : _gl('glossary.export_howto_paper_definition', "Cut around each card's dashed border. Fold along the middle dashed line so the term shows on one side and the definition on the other."))}${hasAnyImages ? ' ' + _escTxt(_gl('glossary.export_images_cue', 'Cards with images give visual learners an extra cue.')) : ''}
                      </div>`
                   : `<div style="background:#eff6ff; border-left:4px solid #2563eb; padding:10px 14px; border-radius:4px; margin-bottom:14px; font-size:0.88em; color:#1e40af;">
-                       💡 ${_escTxt(showTranslations ? _gl('glossary.export_flip_help_translation', 'Click any card to flip and reveal the translation. Use the controls below to flip all at once.') : _gl('glossary.export_flip_help_definition', 'Click any card to flip and reveal the definition. Use the controls below to flip all at once.'))}
+                       💡 ${_escTxt(showTranslations ? _gl('glossary.export_flip_help_translation', 'Use Flip card (or click a card) to reveal the translation, then mark Got it or Still learning.') : _gl('glossary.export_flip_help_definition', 'Use Flip card (or click a card) to reveal the definition, then mark Got it or Still learning.'))}
                      </div>
-                     <div class="alloflow-glossary-card-controls" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px;">
+                     <div class="alloflow-glossary-card-controls" style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; align-items:center;">
                        <button type="button" class="alloflow-glossary-show-all" style="padding:6px 14px; background:#dbeafe; color:#1e40af; border:1px solid #93c5fd; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">${_escTxt(_gl('glossary.export_show_all', 'Show all'))}</button>
                        <button type="button" class="alloflow-glossary-hide-all" style="padding:6px 14px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">${_escTxt(_gl('glossary.export_hide_all', 'Hide all'))}</button>
                        <button type="button" class="alloflow-glossary-shuffle" style="padding:6px 14px; background:#fef3c7; color:#92400e; border:1px solid #fcd34d; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">🔀 ${_escTxt(_gl('glossary.export_shuffle', 'Shuffle'))}</button>
+                       <button type="button" class="alloflow-glossary-filter-learning" aria-pressed="false" style="padding:6px 14px; background:#fffbeb; color:#92400e; border:1px solid #fcd34d; border-radius:6px; font-size:0.85em; font-weight:600; cursor:pointer;">${_escTxt(_gl('glossary.export_review_learning', 'Review still learning'))}</button>
+                       <span class="alloflow-glossary-progress" role="status" aria-live="polite" style="font-size:0.85em;font-weight:600;color:#475569;"></span>
                      </div>`;
               return `
                   <style>
@@ -48279,13 +48436,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     .alloflow-glossary-card-front,.alloflow-glossary-card-back { min-width:0; overflow-wrap:anywhere; }
                     .alloflow-glossary-card-front > * { min-width:0; max-width:100%; }
                     .alloflow-glossary-card-controls > button { min-height:44px; max-width:100%; overflow-wrap:anywhere; }
+                    .alloflow-glossary-card[data-self-check="got-it"] { border-color:#16a34a !important; }
+                    .alloflow-glossary-card[data-self-check="learning"] { border-color:#d97706 !important; }
+                    .flashcard-mark-btn[aria-pressed="true"][data-status="got-it"] { background:#16a34a !important; color:#ffffff !important; border-color:#15803d !important; }
+                    .flashcard-mark-btn[aria-pressed="true"][data-status="learning"] { background:#d97706 !important; color:#ffffff !important; border-color:#b45309 !important; }
+                    .alloflow-glossary-filter-learning[aria-pressed="true"] { background:#92400e !important; color:#ffffff !important; border-color:#78350f !important; }
+                    .alloflow-glossary-card.alloflow-fc-filtered-out { display:none !important; }
                     @media print {
                       .alloflow-glossary-cards-section { padding:0 !important; border:0 !important; break-inside:auto !important; }
                       .alloflow-glossary-card-list { display:block !important; font-size:11pt !important; line-height:1.35 !important; }
                       .alloflow-glossary-card { display:grid !important; grid-template-columns:minmax(0,1fr) minmax(0,1fr); border-radius:0 !important; overflow:visible !important; margin:0 0 12pt; }
                       .alloflow-glossary-card-front,.alloflow-glossary-card-back { min-width:0; overflow-wrap:anywhere; padding:12pt !important; }
                       .alloflow-glossary-card-back { display:block !important; border-inline-start:2px dashed #777; }
-                      .alloflow-glossary-card-fold { display:none !important; }
+                      .alloflow-glossary-card-fold, .alloflow-glossary-card-actions, .alloflow-glossary-card-controls, .alloflow-glossary-progress { display:none !important; }
+                      .alloflow-glossary-card.alloflow-fc-filtered-out { display:grid !important; }
                       html[data-alloflow-theme] .alloflow-glossary-card,
                       html[data-alloflow-theme] .alloflow-glossary-card :is(.alloflow-glossary-card-front,.alloflow-glossary-card-back) { background:#ffffff !important; color:#000000 !important; border-color:#64748b !important; }
                       html[data-alloflow-theme] .alloflow-glossary-card :is(.alloflow-glossary-card-front,.alloflow-glossary-card-back) * { color:inherit !important; }
@@ -48410,7 +48574,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       const _lblDef = _escTxt(t('output.col_def') || 'Definition');
                       const _lblTrans = _escTxt(t('output.col_trans') || 'Translation');
                       return `
-                  <table data-gloss-table>
+                  <table class="alloflow-glossary-table" data-gloss-table>
                   <thead><tr>
                       ${hasAnyImages ? `<th scope="col" style="text-align: center; width: ${_glossImgPx + 24}px; max-width: 26%;">${_lblImage}</th>` : ''}
                       <th scope="col" style="text-align: ${align}; width: 22%;">${_lblTerm}</th>
@@ -48600,16 +48764,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           let innerContent = '';
           let _vennExportModeForFallback = 'completed';
           if (type === 'Venn Diagram') {
-               const setA = branches[0] || { title: 'Set A', items: [] };
-               const setB = branches[1] || { title: 'Set B', items: [] };
-               const shared = branches[2] || { title: 'Shared', items: [] };
+               const _vennOverlapIdx = branches.length === 3
+                 ? branches.findIndex(b => /both|overlap|shared|common|similar|middle|center/i.test(String(b?.title || '')))
+                 : -1;
+               const _vennSides = _vennOverlapIdx !== -1 ? [0, 1, 2].filter(idx => idx !== _vennOverlapIdx) : [0, 1];
+               const setA = branches[_vennSides[0]] || { title: 'Set A', items: [] };
+               const setB = branches[_vennSides[1]] || { title: 'Set B', items: [] };
+               const shared = (_vennOverlapIdx !== -1 ? branches[_vennOverlapIdx] : branches[2]) || { title: 'Shared', items: [] };
                const _vennRequestedMode = ['completed', 'activity', 'both'].includes(cfg.vennExportMode)
                  ? cfg.vennExportMode
                  : 'completed';
                // A graded export must not carry the completed reference or
                // machine-readable answer zones. Keep the sorter usable, but
                // leave checking to the teacher after submission.
-               const _vennMode = cfg.assessmentMode === true ? 'activity' : _vennRequestedMode;
+               const _vennMode = isTeacher ? 'completed' : (cfg.assessmentMode === true ? 'activity' : _vennRequestedMode);
                const _vennCanSelfCheck = cfg.assessmentMode !== true;
                _vennExportModeForFallback = _vennMode;
                const sharedCount = (shared.items || []).length;
@@ -48634,7 +48802,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         <span style="display: inline-block; width: 18px; height: 2px; background: #c4b5fd;"></span>
                       </div>
                       <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 7px; justify-content: center;">
-                        ${sharedOverflow.map(it => `<li style="font-size: 0.85em; font-weight: 600; color: #5b21b6; background: white; padding: 5px 12px; border-radius: 999px; border: 1.5px solid #c4b5fd; box-shadow: 0 1px 2px rgba(124,58,237,0.06);">${it}</li>`).join('')}
+                        ${sharedOverflow.map(it => `<li style="font-size: 0.85em; font-weight: 600; color: #5b21b6; background: white; padding: 5px 12px; border-radius: 999px; border: 1.5px solid #c4b5fd; box-shadow: 0 1px 2px rgba(124,58,237,0.06);">${_escTxt(it && typeof it === 'object' ? (it.text || it.label || '') : it)}</li>`).join('')}
                       </ul>
                     </div>`
                  : '';
@@ -48676,8 +48844,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   </style>
                   <div class="venn-print-wrapper">
                   <div style="text-align:center; margin-bottom: 32px;">
-                      <div role="heading" aria-level="3" class="venn-main-title" style="margin:0; font-size: 1.9em; background:transparent; color:#0f172a; font-weight: 800; letter-spacing: -0.02em;">${main}</div>
-                      ${main_en ? `<div style="font-size:1em; background:transparent; color:#475569; font-style:italic; margin-top:6px;">(${main_en})</div>` : ''}
+                      <div role="heading" aria-level="3" class="venn-main-title" style="margin:0; font-size: 1.9em; background:transparent; color:#0f172a; font-weight: 800; letter-spacing: -0.02em;">${_escTxt(main)}</div>
+                      ${main_en ? `<div style="font-size:1em; background:transparent; color:#475569; font-style:italic; margin-top:6px;">(${_escTxt(main_en)})</div>` : ''}
                       <div style="display: inline-flex; align-items: center; gap: 8px; margin-top: 12px;">
                         <span style="display:inline-block; width:8px; height:8px; border-radius:50%; background:#fb7185;"></span>
                         <span class="venn-compare-label" style="font-size: max(12px, 0.7em); font-weight: 700; background:transparent; color:#475569; text-transform: uppercase; letter-spacing: 0.08em;">Compare and Contrast</span>
@@ -48685,15 +48853,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       </div>
                   </div>
                   <div class="venn-visual-viewport" tabindex="0" role="region" aria-label="Scrollable Venn diagram">
-                  <div class="venn-visual" role="img" aria-label="Venn diagram comparing ${setA.title} and ${setB.title}" style="position: relative; width: 720px; height: 500px; margin: 0 auto; font-family: 'Inter', system-ui, sans-serif; page-break-inside: avoid; break-inside: avoid;">
+                  <div class="venn-visual" role="img" aria-label="Venn diagram comparing ${_escTxt(setA.title)} and ${_escTxt(setB.title)}" style="position: relative; width: 720px; height: 500px; margin: 0 auto; font-family: 'Inter', system-ui, sans-serif; page-break-inside: avoid; break-inside: avoid;">
                       <!-- Set A (Left Circle) -->
                       <div style="position: absolute; top: 0; left: 0; width: 440px;">
                           <!-- Header pill -->
                           <div style="text-align: center; margin-bottom: 14px; padding-right: 120px;">
                               <div role="heading" aria-level="4" class="venn-set-a-title" style="margin: 0; color:#9f1239; font-size: 1.2em; font-weight: 800; background: white; display: inline-block; padding: 8px 22px; border-radius: 999px; border: 2px solid #fda4af; box-shadow: 0 4px 10px -2px rgba(244,63,94,0.18); position: relative; z-index: 20; letter-spacing: 0.01em;">
-                                  ${setA.title}
+                                  ${_escTxt(setA.title)}
                               </div>
-                              ${setA.title_en ? `<div style="font-size:0.85em; background:transparent; color:#9f1239; margin-top:6px; font-style: italic;">(${setA.title_en})</div>` : ''}
+                              ${setA.title_en ? `<div style="font-size:0.85em; background:transparent; color:#9f1239; margin-top:6px; font-style: italic;">(${_escTxt(setA.title_en)})</div>` : ''}
                           </div>
                           <!-- Circle Body — solid fill so backdrop never bleeds through; radial gradient adds soft depth -->
                           <div data-venn-circle="A" style="width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle at 30% 35%, #ffe4e6 0%, #fecdd3 100%); border: 4px solid #fb7185; box-sizing: border-box; padding: 60px 174px 40px 44px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 12px 28px -8px rgba(244,63,94,0.28); z-index: 1; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
@@ -48707,9 +48875,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           <!-- Header pill -->
                           <div style="text-align: center; margin-bottom: 14px; padding-left: 120px;">
                               <div role="heading" aria-level="4" class="venn-set-b-title" style="margin: 0; color:#1e40af; font-size: 1.2em; font-weight: 800; background: white; display: inline-block; padding: 8px 22px; border-radius: 999px; border: 2px solid #93c5fd; box-shadow: 0 4px 10px -2px rgba(59,130,246,0.18); position: relative; z-index: 20; letter-spacing: 0.01em;">
-                                  ${setB.title}
+                                  ${_escTxt(setB.title)}
                               </div>
-                              ${setB.title_en ? `<div style="font-size:0.85em; background:transparent; color:#1e40af; margin-top:6px; font-style: italic;">(${setB.title_en})</div>` : ''}
+                              ${setB.title_en ? `<div style="font-size:0.85em; background:transparent; color:#1e40af; margin-top:6px; font-style: italic;">(${_escTxt(setB.title_en)})</div>` : ''}
                           </div>
                           <!-- Circle Body -->
                           <div data-venn-circle="B" style="width: 440px; height: 440px; border-radius: 50%; background: radial-gradient(circle at 70% 35%, #dbeafe 0%, #bfdbfe 100%); border: 4px solid #60a5fa; box-sizing: border-box; padding: 60px 44px 40px 174px; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; word-wrap: break-word; box-shadow: 0 12px 28px -8px rgba(59,130,246,0.28); z-index: 2; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
@@ -48724,10 +48892,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           <div role="heading" aria-level="4" class="venn-shared-title" style="font-size: 0.95em; font-weight: 800; letter-spacing: 0.06em; text-transform: uppercase; color:#6d28d9; margin: 0 0 14px 0; background: linear-gradient(to bottom, white, #faf5ff); display: inline-block; padding: 7px 18px; border-radius: 999px; border: 2px solid #c4b5fd; box-shadow: 0 4px 10px -2px rgba(124,58,237,0.25); position: relative;">
                               <span style="display: inline-flex; align-items: center; gap: 6px;">
                                 <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#a78bfa;"></span>
-                                ${shared.title || 'Shared'}
+                                ${_escTxt(shared.title || 'Shared')}
                                 <span style="display:inline-block; width:6px; height:6px; border-radius:50%; background:#a78bfa;"></span>
                               </span>
-                              ${shared.title_en ? `<br><span style="font-weight:normal; opacity:0.85; font-size: 0.85em; text-transform: none; letter-spacing: normal; background:transparent; color:#6d28d9;"> (${shared.title_en})</span>` : ''}
+                              ${shared.title_en ? `<br><span style="font-weight:normal; opacity:0.85; font-size: 0.85em; text-transform: none; letter-spacing: normal; background:transparent; color:#6d28d9;"> (${_escTxt(shared.title_en)})</span>` : ''}
                           </div>
                           <ul style="list-style: none; padding: 0; margin: 0;">
                                ${renderListShared(shared.items, shared.items_en, 5)}
@@ -48766,9 +48934,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                ].map((entry, index) => ({ ...entry, itemIndex: index }))
                 .sort((a, b) => _vennStableHash(`${item.id || ''}:${a.text}:${a.itemIndex}`) - _vennStableHash(`${item.id || ''}:${b.text}:${b.itemIndex}`));
                const _vennSectionId = `alloflow-venn-${String(item.id || 'activity').replace(/[^A-Za-z0-9_-]/g, '-').slice(0, 96)}`;
-               const _vennSetATitle = _escTxt(setA.title || 'Set A');
-               const _vennSetBTitle = _escTxt(setB.title || 'Set B');
-               const _vennSharedTitle = _escTxt(shared.title || 'Shared / Both');
+               const _vennSetATitleRaw = String(setA.title || 'Set A');
+               const _vennSetBTitleRaw = String(setB.title || 'Set B');
+               const _vennSharedTitleRaw = String(shared.title || 'Shared / Both');
+               const _vennSetATitle = _escTxt(_vennSetATitleRaw);
+               const _vennSetBTitle = _escTxt(_vennSetBTitleRaw);
+               const _vennSharedTitle = _escTxt(_vennSharedTitleRaw);
                const _vennDigitalCards = _vennActivityItems.map(entry => `
                  <div role="listitem" class="alloflow-venn-card" data-venn-item-index="${entry.itemIndex}"${_vennCanSelfCheck ? ` data-answer-zone="${entry.zone}"` : ''}>
                    <button type="button" class="alloflow-venn-card-button" aria-pressed="false">
@@ -48790,15 +48961,15 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                    ${entry.translation ? `<span class="alloflow-venn-card-translation">(${_escTxt(entry.translation)})</span>` : ''}
                  </div>
                `).join('');
-               const _renderVennZone = (zone, title, tone) => `
-                 <section class="alloflow-venn-zone alloflow-venn-zone-${tone}" aria-label="${title}">
-                   <h4>${title}</h4>
-                   <button type="button" class="alloflow-venn-place-button" data-venn-place-zone="${zone}" disabled>Place selected item in ${title}</button>
-                   <div class="alloflow-venn-zone-target" data-venn-zone-target="${zone}" role="list" aria-label="Items placed in ${title}"></div>
+               const _renderVennZone = (zone, rawTitle, tone) => `
+                 <section class="alloflow-venn-zone alloflow-venn-zone-${tone}" aria-label="${_escTxt(rawTitle)}">
+                   <h4>${_escTxt(rawTitle)}</h4>
+                   <button type="button" class="alloflow-venn-place-button" data-venn-place-zone="${zone}" data-venn-zone-label="${_escTxt(rawTitle)}" disabled>${_uiL('export.venn_place_in', 'Place selected item in {zone}', { zone: rawTitle })}</button>
+                   <div class="alloflow-venn-zone-target" data-venn-zone-target="${zone}" role="list" aria-label="${_uiL('export.venn_items_in', 'Items placed in {zone}', { zone: rawTitle })}"></div>
                  </section>
                `;
                const _vennCheckButton = _vennCanSelfCheck
-                 ? '<button type="button" class="alloflow-venn-check-button">&#127919; Check my sort</button>'
+                 ? '<button type="button" class="alloflow-venn-check-button"><span aria-hidden="true">&#127919; </span>' + _uiL('export.cs_check', 'Check my sort') + '</button>'
                  : '';
                const _vennActivityHtml = `
                  <style>
@@ -48838,6 +49009,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                    html[data-alloflow-theme="dark"] .alloflow-venn-card-button { background:#1e293b !important;color:#fff !important;border-color:#64748b !important; }
                    html[data-alloflow-theme="dark"] .alloflow-venn-card-translation { color:#cbd5e1 !important; }
                    @media (max-width:720px) { .alloflow-venn-digital-zones { grid-template-columns:1fr; } }
+                   .alloflow-venn-print-placements { margin-top:14px;border:1.5px solid #475569;border-radius:8px;padding:10px 12px;background:#f8fafc;break-inside:avoid; }
+                   .alloflow-venn-print-placements:empty { display:none !important; }
+                   .alloflow-venn-print-placements h4 { margin:0 0 6px;font-size:.95rem;color:#0f172a; }
+                   .alloflow-venn-print-placements ul { margin:0;padding-left:18px;font-size:.9rem;color:#1e293b; }
                    @media print {
                      .alloflow-venn-screen-only { display:none !important; }
                      .alloflow-venn-print-only { display:block !important; }
@@ -48860,36 +49035,37 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                      .alloflow-venn-completed-reference { break-before:page;page-break-before:always;margin-top:0;padding-top:0;border-top:0; }
                    }
                  </style>
-                 <div id="${_vennSectionId}" class="alloflow-venn-activity" data-alloflow-venn-mode="${_vennMode}">
+                 <div id="${_vennSectionId}" class="alloflow-venn-activity" data-alloflow-venn-mode="${_vennMode}" data-venn-copy-cleared="${_uiL('export.venn_cleared', 'Selection cleared.')}" data-venn-copy-selected="${_uiL('export.venn_selected', 'Selected {item}. Choose a Place button.')}" data-venn-copy-placed="${_uiL('export.venn_placed', '{item} placed in {zone}.')}" data-venn-copy-returned="${_uiL('export.venn_returned', '{item} returned to the item bank.')}" data-venn-copy-shuffled="${_uiL('export.venn_shuffled', 'Items shuffled.')}" data-venn-copy-reset="${_uiL('export.venn_reset', 'Sort reset.')}" data-venn-copy-score="${_uiL('export.venn_score', '{correct} of {total} correct. {remaining} still in the bank.')}" data-venn-copy-print-heading="${_uiL('export.venn_saved_placements', 'Your recorded placements:')}">
                    <div class="alloflow-venn-screen-only">
-                     <div class="alloflow-venn-screen-instructions"><strong>How to use:</strong> Select an item, then use a named Place button to move it into <strong>${_vennSetATitle} only</strong>, <strong>${_vennSharedTitle}</strong>, or <strong>${_vennSetBTitle} only</strong>. This works with touch, mouse, Enter, or Space.${_vennCanSelfCheck ? ' Use Check my sort when you are ready.' : ' Your teacher will review your placements after you submit.'}</div>
-                     <div class="alloflow-venn-digital-zones" role="group" aria-label="Venn sorting areas">
-                       ${_renderVennZone('setA', `${_vennSetATitle} only`, 'set-a')}
-                       ${_renderVennZone('shared', _vennSharedTitle, 'shared')}
-                       ${_renderVennZone('setB', `${_vennSetBTitle} only`, 'set-b')}
+                     <div class="alloflow-venn-screen-instructions"><strong>${_uiL('glossary.export_howto_label', 'How to use:')}</strong> ${_uiL('export.venn_howto', 'Select an item, then use a named Place button to move it into {zoneA}, {shared}, or {zoneB}. This works with touch, mouse, Enter, or Space.', { zoneA: _uiRaw('export.venn_only', '{label} only', { label: _vennSetATitleRaw }), shared: _vennSharedTitleRaw, zoneB: _uiRaw('export.venn_only', '{label} only', { label: _vennSetBTitleRaw }) })} ${_vennCanSelfCheck ? _uiL('export.venn_self_check_hint', 'Use Check my sort when you are ready.') : _uiL('export.venn_teacher_review_hint', 'Your teacher will review your placements after you submit.')}</div>
+                     <div class="alloflow-venn-digital-zones" role="group" aria-label="${_uiL('export.venn_zones_aria', 'Venn sorting areas')}">
+                       ${_renderVennZone('setA', _uiRaw('export.venn_only', '{label} only', { label: _vennSetATitleRaw }), 'set-a')}
+                       ${_renderVennZone('shared', _vennSharedTitleRaw, 'shared')}
+                       ${_renderVennZone('setB', _uiRaw('export.venn_only', '{label} only', { label: _vennSetBTitleRaw }), 'set-b')}
                      </div>
                      <div class="alloflow-venn-controls">
-                       <button type="button" class="alloflow-venn-shuffle-button">&#128256; Shuffle</button>
+                       <button type="button" class="alloflow-venn-shuffle-button"><span aria-hidden="true">&#128256; </span>${_uiL('ui_common.shuffle', 'Shuffle')}</button>
                        ${_vennCheckButton}
-                       <button type="button" class="alloflow-venn-return-button" disabled>Return selected to item bank</button>
-                       <button type="button" class="alloflow-venn-reset-button">&#8634; Reset</button>
+                       <button type="button" class="alloflow-venn-return-button" disabled>${_uiL('export.venn_return_bank', 'Return selected to item bank')}</button>
+                       <button type="button" class="alloflow-venn-reset-button"><span aria-hidden="true">&#8634; </span>${_uiL('ui_common.reset', 'Reset')}</button>
                        <div class="alloflow-venn-status" role="status" aria-live="polite" aria-atomic="true"></div>
                      </div>
-                     <div class="alloflow-venn-bank-label">Items to sort</div>
-                     <div class="alloflow-venn-bank" data-venn-bank role="list" aria-label="Items to sort">${_vennDigitalCards}</div>
+                     <div class="alloflow-venn-bank-label">${_uiL('export.venn_items_label', 'Items to sort')}</div>
+                     <div class="alloflow-venn-bank" data-venn-bank role="list" aria-label="${_uiL('export.venn_items_label', 'Items to sort')}">${_vennDigitalCards}</div>
                    </div>
                    <div class="alloflow-venn-print-only">
                      <div class="alloflow-venn-print-board">
-                       <h3 class="alloflow-venn-print-title">${_escTxt(main || 'Venn Diagram')} &mdash; sorting activity</h3>
-                       <p class="alloflow-venn-print-directions">Cut out the cards, then place each one in the correct part of the Venn diagram.</p>
-                       <div class="alloflow-venn-print-circles" role="img" aria-label="Blank Venn diagram comparing ${_vennSetATitle} and ${_vennSetBTitle}">
+                       <h3 class="alloflow-venn-print-title">${_escTxt(main || 'Venn Diagram')} &mdash; ${_uiL('export.venn_sorting_activity', 'sorting activity')}</h3>
+                       <p class="alloflow-venn-print-directions">${_uiL('export.venn_print_directions', 'Cut out the cards, then place each one in the correct part of the Venn diagram.')}</p>
+                       <div class="alloflow-venn-print-circles" role="img" aria-label="${_uiL('export.venn_blank_aria', 'Blank Venn diagram comparing {a} and {b}', { a: _vennSetATitleRaw, b: _vennSetBTitleRaw })}">
                          <div class="alloflow-venn-print-circle alloflow-venn-print-circle-a"></div>
                          <div class="alloflow-venn-print-circle alloflow-venn-print-circle-b"></div>
-                         <span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-a">${_vennSetATitle} only</span>
+                         <span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-a">${_uiL('export.venn_only', '{label} only', { label: _vennSetATitleRaw })}</span>
                          <span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-shared">${_vennSharedTitle}</span>
-                         <span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-b">${_vennSetBTitle} only</span>
+                         <span class="alloflow-venn-print-zone-label alloflow-venn-print-zone-label-b">${_uiL('export.venn_only', '{label} only', { label: _vennSetBTitleRaw })}</span>
                        </div>
-                       <div class="alloflow-venn-print-cards" role="list" aria-label="Cut-out Venn sorting cards">${_vennPrintCards}</div>
+                       <div class="alloflow-venn-print-cards" role="list" aria-label="${_uiL('export.venn_print_cards_aria', 'Cut-out Venn sorting cards')}">${_vennPrintCards}</div>
+                       <div class="alloflow-venn-print-placements"></div>
                      </div>
                    </div>
                  </div>
@@ -48905,11 +49081,43 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                      var selected = null;
                      if (!bank) return;
                      function cards() { return Array.prototype.slice.call(root.querySelectorAll('.alloflow-venn-card')); }
+                     var printPlacements = root.querySelector('.alloflow-venn-print-placements');
+                     function vennCopy(key, fallback, vars) {
+                       var text = root.getAttribute('data-venn-copy-' + key) || fallback;
+                       Object.keys(vars || {}).forEach(function (k) { text = text.split('{' + k + '}').join(String(vars[k])); });
+                       return text;
+                     }
+                     function syncPrintPlacements() {
+                       if (!printPlacements) return;
+                       printPlacements.innerHTML = '';
+                       var rows = [];
+                       cards().forEach(function (card) {
+                         var resp = card.querySelector('.alloflow-venn-response');
+                         var z = resp && resp.value;
+                         if (!z) return;
+                         var placeBtn = root.querySelector('[data-venn-place-zone="' + z + '"]');
+                         var zLabel = (placeBtn && placeBtn.getAttribute('data-venn-zone-label')) || z;
+                         var btn = card.querySelector('.alloflow-venn-card-button');
+                         rows.push({ label: ((btn && btn.textContent) || '').trim(), zone: zLabel });
+                       });
+                       if (!rows.length) return;
+                       var h = document.createElement('h4');
+                       h.textContent = vennCopy('print-heading', 'Your recorded placements:');
+                       var ul = document.createElement('ul');
+                       rows.forEach(function (r) {
+                         var li = document.createElement('li');
+                         li.textContent = r.zone + ' — ' + r.label;
+                         ul.appendChild(li);
+                       });
+                       printPlacements.appendChild(h);
+                       printPlacements.appendChild(ul);
+                     }
                      function announce(message) { if (status) status.textContent = message || ''; }
                      function setResponse(card, zone, emit) {
                        var response = card && card.querySelector('.alloflow-venn-response');
                        if (!response) return;
                        response.value = zone || '';
+                       syncPrintPlacements();
                        if (emit !== false) response.dispatchEvent(new Event('change', { bubbles: true }));
                      }
                      function restorePlacements() {
@@ -48920,6 +49128,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                          if (target) target.appendChild(card);
                          else bank.appendChild(card);
                        });
+                       syncPrintPlacements();
                      }
                      function clearMarks() { cards().forEach(function (card) { card.classList.remove('is-correct', 'is-wrong'); }); }
                      function clearSelection() {
@@ -48934,7 +49143,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                      }
                      function selectCard(card) {
                        clearMarks();
-                       if (selected === card) { clearSelection(); announce('Selection cleared.'); return; }
+                       if (selected === card) { clearSelection(); announce(vennCopy('cleared', 'Selection cleared.')); return; }
                        clearSelection();
                        selected = card;
                        card.classList.add('is-selected');
@@ -48942,7 +49151,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                        if (button) button.setAttribute('aria-pressed', 'true');
                        placeButtons.forEach(function (placeButton) { placeButton.disabled = false; });
                        if (returnButton) returnButton.disabled = card.parentElement === bank;
-                       announce('Selected ' + ((button && button.textContent) || 'item').trim() + '. Choose a Place button.');
+                       announce(vennCopy('selected', 'Selected {item}. Choose a Place button.', { item: ((button && button.textContent) || 'item').trim() }));
                      }
                      cards().forEach(function (card) {
                        var button = card.querySelector('.alloflow-venn-card-button');
@@ -48956,10 +49165,11 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                          var itemButton = selected.querySelector('.alloflow-venn-card-button');
                          var label = ((itemButton && itemButton.textContent) || 'Item').trim();
                          var zone = button.getAttribute('data-venn-place-zone') || '';
+                         var zoneLabel = button.getAttribute('data-venn-zone-label') || button.textContent.replace(/^Place selected item in\s*/i, '');
                          target.appendChild(selected);
                          setResponse(selected, zone);
                          clearSelection();
-                         announce(label + ' placed in ' + button.textContent.replace(/^Place selected item in\s*/i, '') + '.');
+                         announce(vennCopy('placed', '{item} placed in {zone}.', { item: label, zone: zoneLabel }));
                        });
                      });
                      if (returnButton) returnButton.addEventListener('click', function () {
@@ -48969,7 +49179,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                        bank.appendChild(selected);
                        setResponse(selected, '');
                        clearSelection();
-                       announce(label + ' returned to the item bank.');
+                       announce(vennCopy('returned', '{item} returned to the item bank.', { item: label }));
                      });
                      var shuffleButton = root.querySelector('.alloflow-venn-shuffle-button');
                      if (shuffleButton) shuffleButton.addEventListener('click', function () {
@@ -48979,14 +49189,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                          var temp = shuffled[i]; shuffled[i] = shuffled[j]; shuffled[j] = temp;
                        }
                        shuffled.forEach(function (card) { bank.appendChild(card); setResponse(card, ''); });
-                       clearSelection(); clearMarks(); announce('Items shuffled.');
+                       clearSelection(); clearMarks(); announce(vennCopy('shuffled', 'Items shuffled.'));
                      });
                      var resetButton = root.querySelector('.alloflow-venn-reset-button');
                      if (resetButton) resetButton.addEventListener('click', function () {
                        cards().sort(function (a, b) {
                          return Number(a.getAttribute('data-venn-item-index')) - Number(b.getAttribute('data-venn-item-index'));
                        }).forEach(function (card) { bank.appendChild(card); setResponse(card, ''); });
-                       clearSelection(); clearMarks(); announce('Sort reset.');
+                       clearSelection(); clearMarks(); announce(vennCopy('reset', 'Sort reset.'));
                      });
                      var checkButton = root.querySelector('.alloflow-venn-check-button');
                      if (checkButton) checkButton.addEventListener('click', function () {
@@ -49000,7 +49210,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                          if (answer && actual === answer) { correct += 1; card.classList.add('is-correct'); }
                          else card.classList.add('is-wrong');
                        });
-                       announce(correct + ' of ' + all.length + ' correct. ' + (all.length - placed) + ' item' + (all.length - placed === 1 ? '' : 's') + ' still in the bank.');
+                       var rem = all.length - placed;
+                       var remTxt = rem + ' item' + (rem === 1 ? '' : 's');
+                       announce(vennCopy('score', '{correct} of {total} correct. {remaining} still in the bank.', { correct: correct, total: all.length, remaining: remTxt }));
                      });
                      window.addEventListener('alloflow-responses-restored', restorePlacements);
                    })();
@@ -49065,8 +49277,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       `${b.title_en ? `<span style="font-size: max(12px, 0.75rem); color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${_escTxt(b.title_en)})</span>` : ''}` +
                       `</div>`}
                                   ${hasBranches ? `<div aria-hidden="true" style="width: 2px; height: 12px; background: ${c.border};${isDecision ? ' margin-top: 10px;' : ''}"></div><div class="flow-kids">
-                                      ${b.items.map((item, k) => `<div class="flow-kid" style="color: ${c.border};"><div style="background: white; border: 1px solid ${c.border}; padding: 8px; border-radius: 4px; font-size: max(12px, 0.75rem); color: ${c.accent}; text-align: center; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); width: 100%; box-sizing: border-box; flex: 1; min-width: 0; overflow-wrap: break-word; display: flex; flex-direction: column; justify-content: center;">${_escTxt(item)}${b.items_en?.[k] ? `<div style="font-size: max(12px, 0.65rem); color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${_escTxt(b.items_en[k])})</div>` : ''}</div></div>`).join('')}</div>` : `
-                                      ${b.items && b.items.length === 1 && b.items[0] ? `<div style="margin-top: 8px; background: ${c.bg}; color: ${c.accent}; font-size: max(12px, 0.75rem); padding: 4px 12px; border-radius: 9999px; border: 1px solid ${c.border};">${_escTxt(b.items[0])} ${b.items_en?.[0] ? `<span style="opacity: 0.85;">(${_escTxt(b.items_en[0])})</span>` : ''}</div>` : (isWorksheet ? `<div style="width:240px;margin-top:8px;">${ruledLines(2)}</div>` : '')}`}
+                                      ${b.items.map((item, k) => { const _fcTxt = item && typeof item === 'object' ? (item.text || item.label || item.content || '') : item; return `<div class="flow-kid" style="color: ${c.border};"><div style="background: white; border: 1px solid ${c.border}; padding: 8px; border-radius: 4px; font-size: max(12px, 0.75rem); color: ${c.accent}; text-align: center; box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); width: 100%; box-sizing: border-box; flex: 1; min-width: 0; overflow-wrap: break-word; display: flex; flex-direction: column; justify-content: center;">${_escTxt(_fcTxt)}${b.items_en?.[k] ? `<div style="font-size: max(12px, 0.65rem); color: ${c.accent}; opacity: 0.85; margin-top: 4px;">(${_escTxt(b.items_en[k])})</div>` : ''}</div></div>`; }).join('')}</div>` : (() => { const _fc0 = b.items && b.items.length === 1 ? b.items[0] : null; const _fc0Txt = _fc0 && typeof _fc0 === 'object' ? (_fc0.text || _fc0.label || _fc0.content || '') : _fc0; return `
+                                      ${_fc0Txt ? `<div style="margin-top: 8px; background: ${c.bg}; color: ${c.accent}; font-size: max(12px, 0.75rem); padding: 4px 12px; border-radius: 9999px; border: 1px solid ${c.border};">${_escTxt(_fc0Txt)} ${b.items_en?.[0] ? `<span style="opacity: 0.85;">(${_escTxt(b.items_en[0])})</span>` : ''}</div>` : (isWorksheet ? `<div style="width:240px;margin-top:8px;">${ruledLines(2)}</div>` : '')}`; })()}
                               </div>`;
                       }).join('')}
                       <div aria-hidden="true" style="height: 32px; width: 3px; background: #475569;"></div><div style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color: white; font-size: 0.85em; font-weight: bold; padding: 10px 28px; border-radius: 9999px; border: 2px solid #475569; box-shadow: 0 4px 8px -2px rgba(0,0,0,0.2); letter-spacing: 0.04em; text-transform: uppercase;">${t('organizer.labels.end')}</div></div></div></div>`;
@@ -49094,34 +49306,34 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     </style>
                     <div class="ce-print-wrapper">
                       <div style="text-align:center; margin-bottom: 28px;">
-                        <h3 style="margin:0; font-size: 1.7em; color: #1e293b; font-weight: 800; letter-spacing: -0.01em;">${main}</h3>
-                        ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:6px;">(${main_en})</div>` : ''}
+                        <h3 style="margin:0; font-size: 1.7em; color: #1e293b; font-weight: 800; letter-spacing: -0.01em;">${_escTxt(main)}</h3>
+                        ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:6px;">(${_escTxt(main_en)})</div>` : ''}
                         <div style="display:inline-flex; align-items:center; gap:8px; margin-top:10px; font-size:max(12px, 0.7em); font-weight:700; color:#475569; text-transform:uppercase; letter-spacing:0.08em;">
-                          <span>${causeLabel}</span>
+                          <span>${_escTxt(causeLabel)}</span>
                           <span aria-hidden="true" style="color:#64748b;">&rarr;</span>
-                          <span>${effectLabel}</span>
+                          <span>${_escTxt(effectLabel)}</span>
                         </div>
                       </div>
                       <div style="display: flex; flex-direction: column; gap: 18px; max-width: 860px; margin: 0 auto;">
                         ${branches.map((b, i) => {
                           const c = _pairColor(i);
                           // Render ALL items as effects, not just b.items[0] (was a long-standing bug).
-                          const effectItems = (b.items || []).filter(it => (typeof it === 'object' ? it.text : it));
+                          const effectItems = (b.items || []).filter(it => (it && typeof it === 'object' ? (it.text || it.label || it.content) : it));
                           const effectsHtml = effectItems.length === 0
                             ? `<div style="color:${c.accent}; opacity:0.6; font-style:italic; font-size:0.9em;">(no effects listed)</div>`
                             : effectItems.map((it, k) => {
-                                const text = typeof it === 'object' ? (it.text || '') : String(it);
+                                const text = it && typeof it === 'object' ? (it.text || it.label || it.content || '') : String(it == null ? '' : it);
                                 const trans = b.items_en?.[k];
-                                return `<div style="background:white; border-left:3px solid ${c.border}; padding:8px 12px; border-radius:6px; margin-bottom:6px; color:${c.accent}; font-weight:600; font-size:0.92em; box-shadow:0 1px 2px rgba(0,0,0,0.04);">${text}${trans ? `<div style="font-weight:normal; font-style:italic; opacity:0.8; font-size:0.85em; margin-top:2px;">(${trans})</div>` : ''}</div>`;
+                                return `<div style="background:white; border-left:3px solid ${c.border}; padding:8px 12px; border-radius:6px; margin-bottom:6px; color:${c.accent}; font-weight:600; font-size:0.92em; box-shadow:0 1px 2px rgba(0,0,0,0.04);">${_escTxt(text)}${trans ? `<div style="font-weight:normal; font-style:italic; opacity:0.8; font-size:0.85em; margin-top:2px;">(${_escTxt(trans)})</div>` : ''}</div>`;
                               }).join('');
                           return `<div class="ce-pair" role="group" aria-label="Cause and effect pair ${i + 1} of ${total}" style="display: flex; align-items: stretch; gap: 14px;">
                             <div class="ce-card" style="flex: 1; background: linear-gradient(135deg, ${c.bg} 0%, white 100%); border: 2px solid ${c.border}; padding: 16px 18px; border-radius: 12px; box-shadow: 0 2px 6px -2px rgba(0,0,0,0.08); position:relative;">
                               <div style="display:inline-flex; align-items:center; gap:6px; background:${c.border}; color:white; font-weight:800; font-size:max(12px, 0.7em); text-transform:uppercase; letter-spacing:0.08em; padding:3px 10px; border-radius:999px; margin-bottom:10px;">
                                 <span style="display:inline-block; width:18px; height:18px; border-radius:50%; background:white; color:${c.accent}; font-weight:800; display:inline-flex; align-items:center; justify-content:center; font-size:max(12px, 0.75em);">${i + 1}</span>
-                                ${causeLabel}
+                                ${_escTxt(causeLabel)}
                               </div>
-                              <div style="color: ${c.accent}; font-weight: 700; font-size:0.98em; line-height:1.3;">${b.title}</div>
-                              ${b.title_en ? `<div style="font-size:0.82em; color:${c.accent}; opacity: 0.8; font-style:italic; margin-top:3px;">(${b.title_en})</div>` : ''}
+                              <div style="color: ${c.accent}; font-weight: 700; font-size:0.98em; line-height:1.3;">${_escTxt(b.title)}</div>
+                              ${b.title_en ? `<div style="font-size:0.82em; color:${c.accent}; opacity: 0.8; font-style:italic; margin-top:3px;">(${_escTxt(b.title_en)})</div>` : ''}
                             </div>
                             <div aria-hidden="true" style="display:flex; align-items:center; flex-shrink:0; color: ${c.border};">
                               <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 1px 2px rgba(0,0,0,0.1));">
@@ -49130,7 +49342,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             </div>
                             <div class="ce-card" style="flex: 1.3; background: linear-gradient(135deg, ${c.soft} 0%, white 100%); border: 2px solid ${c.border}; padding: 16px 18px; border-radius: 12px; box-shadow: 0 2px 6px -2px rgba(0,0,0,0.08); position:relative;">
                               <div style="display:inline-flex; align-items:center; gap:6px; background:${c.accent}; color:white; font-weight:800; font-size:max(12px, 0.7em); text-transform:uppercase; letter-spacing:0.08em; padding:3px 10px; border-radius:999px; margin-bottom:10px;">
-                                ${effectLabel}${effectItems.length > 1 ? `s (${effectItems.length})` : ''}
+                                ${_escTxt(effectLabel)}${effectItems.length > 1 ? `s (${effectItems.length})` : ''}
                               </div>
                               ${effectsHtml}
                             </div>
@@ -49164,10 +49376,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     <div class="ps-print-wrapper" style="max-width: 860px; margin: 0 auto;">
                       <div class="ps-card" style="background: linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%); border: 2px solid #fca5a5; border-left: 6px solid #dc2626; padding: 22px 26px; margin-bottom: 24px; border-radius: 14px; box-shadow: 0 4px 10px -2px rgba(220,38,38,0.15); position: relative;">
                         <div style="display:inline-flex; align-items:center; gap:8px; background:#dc2626; color:white; font-weight:800; font-size:max(12px, 0.7em); text-transform:uppercase; letter-spacing:0.1em; padding:4px 12px; border-radius:999px; margin-bottom:12px;">
-                          <span aria-hidden="true">!</span> ${problemLabel}
+                          <span aria-hidden="true">!</span> ${_escTxt(problemLabel)}
                         </div>
-                        <h3 style="margin: 0; color: #7f1d1d; font-size: 1.4em; font-weight: 800; line-height:1.3;">${main}</h3>
-                        ${main_en ? `<div style="color: #991b1b; font-style: italic; margin-top:6px; font-size:0.9em;">(${main_en})</div>` : ''}
+                        <h3 style="margin: 0; color: #7f1d1d; font-size: 1.4em; font-weight: 800; line-height:1.3;">${_escTxt(main)}</h3>
+                        ${main_en ? `<div style="color: #991b1b; font-style: italic; margin-top:6px; font-size:0.9em;">(${_escTxt(main_en)})</div>` : ''}
                       </div>
                       <div aria-hidden="true" style="text-align: center; margin: -6px 0 18px;">
                         <svg width="44" height="44" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter: drop-shadow(0 2px 3px rgba(0,0,0,0.1));">
@@ -49175,33 +49387,33 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         </svg>
                       </div>
                       <div style="text-align:center; margin-bottom: 16px;">
-                        <h4 style="display:inline-block; margin:0; padding:6px 18px; color: #166534; font-size:0.9em; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; background:#f0fdf4; border:2px solid #86efac; border-radius:999px;">${solutionsLabel}</h4>
+                        <h4 style="display:inline-block; margin:0; padding:6px 18px; color: #166534; font-size:0.9em; font-weight:800; text-transform:uppercase; letter-spacing:0.08em; background:#f0fdf4; border:2px solid #86efac; border-radius:999px;">${_escTxt(solutionsLabel)}</h4>
                       </div>
                       <div style="display: grid; grid-template-columns: ${psGridCols}; gap: 14px;">
                         ${psSolutions.map((b, i) => `<div class="ps-card" style="background: linear-gradient(135deg, #f0fdf4 0%, white 100%); border: 2px solid #86efac; border-left: 5px solid #16a34a; padding: 16px 18px; border-radius: 12px; box-shadow: 0 2px 6px -2px rgba(22,163,74,0.12); position:relative;">
                           <div style="display:flex; align-items:flex-start; gap:10px; margin-bottom:8px;">
                             <span style="display:inline-flex; align-items:center; justify-content:center; flex-shrink:0; width:24px; height:24px; border-radius:50%; background:#16a34a; color:white; font-weight:800; font-size:0.85em;">${i + 1}</span>
-                            <h4 style="color: #166534; margin: 0; font-size:1em; font-weight:700; line-height:1.3;">${b.title}${b.title_en ? `<div style="color: #16a34a; font-size: max(12px, 0.78em); margin-top:2px; font-style:italic; font-weight:normal;">(${b.title_en})</div>` : ''}</h4>
+                            <h4 style="color: #166534; margin: 0; font-size:1em; font-weight:700; line-height:1.3;">${_escTxt(b.title)}${b.title_en ? `<div style="color: #16a34a; font-size: max(12px, 0.78em); margin-top:2px; font-style:italic; font-weight:normal;">(${_escTxt(b.title_en)})</div>` : ''}</h4>
                           </div>
                           <ul style="margin: 0; padding: 0; list-style: none; color: #14532d;">
                             ${(b.items || []).map((it, k) => {
-                              const text = typeof it === 'object' ? (it.text || '') : String(it);
+                              const text = it && typeof it === 'object' ? (it.text || it.label || it.content || '') : String(it == null ? '' : it);
                               const trans = b.items_en?.[k];
-                              return `<li style="display:flex; align-items:flex-start; gap:6px; margin-bottom: 5px; font-size:0.88em; line-height:1.4;"><span style="color:#16a34a; flex-shrink:0; margin-top:2px;" aria-hidden="true">&#10003;</span><span>${text}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em; color:#16a34a;">(${trans})</em>` : ''}</span></li>`;
+                              return `<li style="display:flex; align-items:flex-start; gap:6px; margin-bottom: 5px; font-size:0.88em; line-height:1.4;"><span style="color:#16a34a; flex-shrink:0; margin-top:2px;" aria-hidden="true">&#10003;</span><span>${_escTxt(text)}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em; color:#16a34a;">(${_escTxt(trans)})</em>` : ''}</span></li>`;
                             }).join('')}
                           </ul>
                         </div>`).join('')}
                       </div>
                       ${psOutcome ? `<div class="ps-card" style="margin-top: 22px; background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%); border: 2px solid #93c5fd; border-left: 6px solid #2563eb; padding: 20px 24px; border-radius: 14px; box-shadow: 0 3px 8px -2px rgba(37,99,235,0.15);">
                         <div style="display:inline-flex; align-items:center; gap:8px; background:#2563eb; color:white; font-weight:800; font-size:max(12px, 0.7em); text-transform:uppercase; letter-spacing:0.1em; padding:4px 12px; border-radius:999px; margin-bottom:10px;">
-                          ${psOutcome.title || 'Outcome'}
+                          ${_escTxt(psOutcome.title || 'Outcome')}
                         </div>
-                        ${psOutcome.title_en ? `<div style="color: #1e40af; font-style: italic; font-size:0.85em; margin-bottom:8px;">(${psOutcome.title_en})</div>` : ''}
+                        ${psOutcome.title_en ? `<div style="color: #1e40af; font-style: italic; font-size:0.85em; margin-bottom:8px;">(${_escTxt(psOutcome.title_en)})</div>` : ''}
                         <ul style="margin: 0; padding: 0; list-style: none; color: #1e3a8a;">
                           ${(psOutcome.items || []).map((it, k) => {
-                            const text = typeof it === 'object' ? (it.text || '') : String(it);
+                            const text = it && typeof it === 'object' ? (it.text || it.label || it.content || '') : String(it == null ? '' : it);
                             const trans = psOutcome.items_en?.[k];
-                            return `<li style="display:flex; align-items:flex-start; gap:8px; margin-bottom: 6px; font-size:0.92em;"><span style="color:#2563eb; flex-shrink:0; margin-top:2px;" aria-hidden="true">&#9656;</span><span>${text}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em; color:#2563eb;">(${trans})</em>` : ''}</span></li>`;
+                            return `<li style="display:flex; align-items:flex-start; gap:8px; margin-bottom: 6px; font-size:0.92em;"><span style="color:#2563eb; flex-shrink:0; margin-top:2px;" aria-hidden="true">&#9656;</span><span>${_escTxt(text)}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em; color:#2563eb;">(${_escTxt(trans)})</em>` : ''}</span></li>`;
                           }).join('')}
                         </ul>
                       </div>` : ''}
@@ -49210,9 +49422,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   const left = branches[0] || { title: 'Column A', items: [] };
                   const right = branches[1] || { title: 'Column B', items: [] };
                   const renderTChartItems = (items, items_en, color) => (items || []).map((it, i) => {
-                      const text = typeof it === 'object' ? (it.text || '') : String(it);
+                      const text = it && typeof it === 'object' ? (it.text || it.label || it.content || '') : String(it == null ? '' : it);
                       const trans = items_en?.[i];
-                      return `<li style="margin-bottom: 8px; padding: 8px 14px; background: white; border-left: 4px solid ${color}; border-radius: 8px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05); -webkit-print-color-adjust: exact; print-color-adjust: exact;">${text}${trans ? `<div style="font-weight: normal; font-style: italic; opacity: 0.75; font-size: 0.85em; margin-top: 2px;">(${trans})</div>` : ''}</li>`;
+                      return `<li style="margin-bottom: 8px; padding: 8px 14px; background: white; border-left: 4px solid ${color}; border-radius: 8px; font-weight: 600; box-shadow: 0 1px 2px rgba(0,0,0,0.05); -webkit-print-color-adjust: exact; print-color-adjust: exact;">${_escTxt(text)}${trans ? `<div style="font-weight: normal; font-style: italic; opacity: 0.75; font-size: 0.85em; margin-top: 2px;">(${_escTxt(trans)})</div>` : ''}</li>`;
                   }).join('');
                   innerContent = `
                     <style>
@@ -49226,13 +49438,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     </style>
                     <div class="tchart-print-wrapper">
                     <div style="text-align:center; margin-bottom: 30px;">
-                      <h3 style="margin:0; font-size: 1.6em; color: #2c3e50; font-weight: 800;">${main}</h3>
-                      ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:4px;">(${main_en})</div>` : ''}
+                      <h3 style="margin:0; font-size: 1.6em; color: #2c3e50; font-weight: 800;">${_escTxt(main)}</h3>
+                      ${main_en ? `<div style="font-size:1em; color:#64748b; font-style:italic; margin-top:4px;">(${_escTxt(main_en)})</div>` : ''}
                     </div>
-                    <div role="img" aria-label="T-Chart comparing ${left.title} and ${right.title}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; max-width: 800px; margin: 0 auto; border: 2px solid #cbd5e1; border-radius: 12px; overflow: hidden; background: white;">
+                    <div role="img" aria-label="T-Chart comparing ${_escTxt(left.title)} and ${_escTxt(right.title)}" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0; max-width: 800px; margin: 0 auto; border: 2px solid #cbd5e1; border-radius: 12px; overflow: hidden; background: white;">
                       <div style="padding: 20px; border-right: 2px solid #cbd5e1; background: linear-gradient(to bottom, rgba(207, 250, 254, 0.3), white);">
                         <h4 style="margin: 0 0 12px 0; padding: 10px; background: #cffafe; color: #155e75; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; border-radius: 8px; border: 1px solid #67e8f9; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                          ${left.title}${left.title_en ? `<div style="font-size: max(12px, 0.75em); font-weight: normal; opacity: 0.85; text-transform: none; letter-spacing: normal;">(${left.title_en})</div>` : ''}
+                          ${_escTxt(left.title)}${left.title_en ? `<div style="font-size: max(12px, 0.75em); font-weight: normal; opacity: 0.85; text-transform: none; letter-spacing: normal;">(${_escTxt(left.title_en)})</div>` : ''}
                         </h4>
                         <ul style="list-style: none; padding: 0; margin: 0; color: #155e75;">
                           ${renderTChartItems(left.items, left.items_en, '#22d3ee')}
@@ -49240,7 +49452,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       </div>
                       <div style="padding: 20px; background: linear-gradient(to bottom, rgba(224, 231, 255, 0.3), white);">
                         <h4 style="margin: 0 0 12px 0; padding: 10px; background: #e0e7ff; color: #3730a3; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; border-radius: 8px; border: 1px solid #a5b4fc; -webkit-print-color-adjust: exact; print-color-adjust: exact;">
-                          ${right.title}${right.title_en ? `<div style="font-size: max(12px, 0.75em); font-weight: normal; opacity: 0.85; text-transform: none; letter-spacing: normal;">(${right.title_en})</div>` : ''}
+                          ${_escTxt(right.title)}${right.title_en ? `<div style="font-size: max(12px, 0.75em); font-weight: normal; opacity: 0.85; text-transform: none; letter-spacing: normal;">(${_escTxt(right.title_en)})</div>` : ''}
                         </h4>
                         <ul style="list-style: none; padding: 0; margin: 0; color: #3730a3;">
                           ${renderTChartItems(right.items, right.items_en, '#818cf8')}
@@ -49266,7 +49478,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   }).join('');
                   const cardsHtml = branches.map((branch, bi) => {
                       const items = (branch.items || []).map((it, k) => {
-                          const text = typeof it === 'object' ? (it.text || '') : String(it);
+                          const text = it && typeof it === 'object' ? (it.text || it.label || it.content || '') : String(it == null ? '' : it);
                           const trans = branch.items_en?.[k];
                           return `<li style="margin-bottom: 6px; padding: 6px 10px; background: #faf5ff; border-left: 3px solid #c4b5fd; border-radius: 6px; color: #5b21b6; font-size: 0.9em; -webkit-print-color-adjust: exact; print-color-adjust: exact;">${_escTxt(text)}${trans ? `<div style="font-style: italic; opacity: 0.75; font-size: 0.85em;">(${_escTxt(trans)})</div>` : ''}</li>`;
                       }).join('');
@@ -49310,12 +49522,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         ? 'position: absolute; top: 50%; inset-inline-end: -43px; width: 40px; height: 2px; background: #99f6e4;'
                         : 'position: absolute; top: 50%; inset-inline-start: -43px; width: 40px; height: 2px; background: #99f6e4;';
                       const itemsHtml = (b.items || []).map((it, i) => {
-                          const text = typeof it === 'object' ? (it.text || '') : String(it);
-                          return `<li style="margin: 2px 0; font-size: 0.85em; color: #134e4a;">${text}${b.items_en?.[i] ? ` <span style="color: #5eead4; font-style: italic;">(${b.items_en[i]})</span>` : ''}</li>`;
+                          const text = it && typeof it === 'object' ? (it.text || it.label || it.content || '') : String(it == null ? '' : it);
+                          return `<li style="margin: 2px 0; font-size: 0.85em; color: #134e4a;">${_escTxt(text)}${b.items_en?.[i] ? ` <span style="color: #5eead4; font-style: italic;">(${_escTxt(b.items_en[i])})</span>` : ''}</li>`;
                       }).join('');
                       return `<div class="allo-hub-card" style="background: white; border: 3px solid #99f6e4; padding: 14px; border-radius: 16px; text-align: start; min-width: 0; width: 100%; max-width: 240px; box-sizing: border-box; position: relative; -webkit-print-color-adjust: exact; print-color-adjust: exact;">` +
-                          `<div style="color: #134e4a; font-weight: 800;">${b.title}</div>` +
-                          (b.title_en ? `<div style="font-size: 0.8em; color: #14b8a6; font-style: italic;">(${b.title_en})</div>` : '') +
+                          `<div style="color: #134e4a; font-weight: 800;">${_escTxt(b.title)}</div>` +
+                          (b.title_en ? `<div style="font-size: 0.8em; color: #14b8a6; font-style: italic;">(${_escTxt(b.title_en)})</div>` : '') +
                           (itemsHtml ? `<ul style="list-style: none; padding: 0; margin: 6px 0 0 0; text-align: start;">${itemsHtml}</ul>` : '') +
                           `<div class="allo-hub-link" aria-hidden="true" style="${lineStyle}"></div></div>`;
                   };
@@ -49327,13 +49539,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         .cmap-print-wrapper { page-break-inside: avoid; break-inside: avoid; }
                       }
                     </style>
-                    <div class="cmap-print-wrapper allo-hub-map" role="img" aria-label="Concept map: ${main}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin: 0 auto; padding: 20px;">
+                    <div class="cmap-print-wrapper allo-hub-map" role="img" aria-label="Concept map: ${_escTxt(main)}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin: 0 auto; padding: 20px;">
                       <div class="allo-hub-col" style="display: flex; flex-direction: column; gap: 20px; align-items: flex-end; flex: 1; min-width: 0;">
                         ${leftBranches.map(b => renderBranchCard(b, 'left')).join('')}
                       </div>
                       <div class="allo-hub-center" style="width: 200px; height: 200px; box-sizing: border-box; border-radius: 50%; background: linear-gradient(135deg, #14b8a6, #059669); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 20px; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.15); border: 5px solid #ccfbf1; flex-shrink: 0; z-index: 2;">
-                        <h3 style="margin: 0; font-size: 1.2em; color: inherit;">${main}</h3>
-                        ${main_en ? `<div style="font-size: 0.8em; opacity: 0.85; margin-top: 5px;">(${main_en})</div>` : ''}
+                        <h3 style="margin: 0; font-size: 1.2em; color: inherit;">${_escTxt(main)}</h3>
+                        ${main_en ? `<div style="font-size: 0.8em; opacity: 0.85; margin-top: 5px;">(${_escTxt(main_en)})</div>` : ''}
                       </div>
                       <div class="allo-hub-col" style="display: flex; flex-direction: column; gap: 20px; align-items: flex-start; flex: 1; min-width: 0;">
                         ${rightBranches.map(b => renderBranchCard(b, 'right')).join('')}
@@ -49354,13 +49566,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       const c = _pairColor(globalIdx);
                       const connectorPos = side === 'left' ? `inset-inline-end: -43px;` : `inset-inline-start: -43px;`;
                       const itemsHtml = (b.items || []).map((it, k) => {
-                          const text = typeof it === 'object' ? (it.text || '') : String(it);
+                          const text = it && typeof it === 'object' ? (it.text || it.label || it.content || '') : String(it == null ? '' : it);
                           const trans = b.items_en?.[k];
-                          return `<li style="margin: 3px 0; font-size: 0.82em; color: ${c.accent}; line-height: 1.35;">${text}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${trans})</em>` : ''}</li>`;
+                          return `<li style="margin: 3px 0; font-size: 0.82em; color: ${c.accent}; line-height: 1.35;">${_escTxt(text)}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${_escTxt(trans)})</em>` : ''}</li>`;
                       }).join('');
-                      return `<div class="mindmap-branch allo-hub-card" role="group" aria-label="Mind map branch ${globalIdx + 1} of ${total}: ${b.title}" style="background: linear-gradient(135deg, ${c.bg} 0%, white 100%); border: 3px solid ${c.border}; padding: 14px 18px; border-radius: 18px; text-align: start; min-width: 0; width: 100%; max-width: 240px; box-sizing: border-box; position: relative; box-shadow: 0 3px 8px -2px rgba(0,0,0,0.08);">
-                          <div style="color: ${c.accent}; font-weight: 800; font-size: 0.95em; line-height: 1.25;">${b.title}</div>
-                          ${b.title_en ? `<div style="font-size: max(12px, 0.78em); color: ${c.accent}; opacity: 0.8; font-style: italic; margin-top: 2px;">(${b.title_en})</div>` : ''}
+                      return `<div class="mindmap-branch allo-hub-card" role="group" aria-label="Mind map branch ${globalIdx + 1} of ${total}: ${_escTxt(b.title)}" style="background: linear-gradient(135deg, ${c.bg} 0%, white 100%); border: 3px solid ${c.border}; padding: 14px 18px; border-radius: 18px; text-align: start; min-width: 0; width: 100%; max-width: 240px; box-sizing: border-box; position: relative; box-shadow: 0 3px 8px -2px rgba(0,0,0,0.08);">
+                          <div style="color: ${c.accent}; font-weight: 800; font-size: 0.95em; line-height: 1.25;">${_escTxt(b.title)}</div>
+                          ${b.title_en ? `<div style="font-size: max(12px, 0.78em); color: ${c.accent}; opacity: 0.8; font-style: italic; margin-top: 2px;">(${_escTxt(b.title_en)})</div>` : ''}
                           ${itemsHtml ? `<ul style="list-style: none; padding: 0; margin: 8px 0 0 0; border-top: 1px solid ${c.soft}; padding-top: 8px;">${itemsHtml}</ul>` : ''}
                           <div class="allo-hub-link" aria-hidden="true" style="position: absolute; top: 50%; ${connectorPos} width: 40px; height: 3px; background: ${c.border}; border-radius: 2px;"></div>
                         </div>`;
@@ -49376,13 +49588,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       }
                     </style>
                     <div class="mindmap-print-wrapper">
-                      <div class="allo-hub-map" role="img" aria-label="Mind map: ${main}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin: 0 auto;">
+                      <div class="allo-hub-map" role="img" aria-label="Mind map: ${_escTxt(main)}" style="display: flex; justify-content: center; align-items: center; gap: 40px; max-width: 1000px; margin: 0 auto;">
                         <div class="allo-hub-col" style="display: flex; flex-direction: column; gap: 22px; align-items: flex-end; flex: 1; min-width: 0;">
                           ${leftBranches.map((b, i) => renderBranch(b, 'left', i)).join('')}
                         </div>
                         <div class="allo-hub-center" style="width: 210px; height: 210px; box-sizing: border-box; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #818cf8 0%, #6366f1 50%, #4f46e5 100%); color: white; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; padding: 24px; box-shadow: 0 12px 28px -6px rgba(99,102,241,0.45), inset 0 -8px 20px rgba(30,27,75,0.25); border: 5px solid #eef2ff; flex-shrink: 0; z-index: 2;">
-                          <h3 style="margin: 0; font-size: 1.25em; font-weight: 800; line-height: 1.2; color: inherit; text-shadow: 0 1px 2px rgba(30,27,75,0.3);">${main}</h3>
-                          ${main_en ? `<div style="font-size: max(12px, 0.78em); opacity: 0.9; margin-top: 6px; font-style: italic;">(${main_en})</div>` : ''}
+                          <h3 style="margin: 0; font-size: 1.25em; font-weight: 800; line-height: 1.2; color: inherit; text-shadow: 0 1px 2px rgba(30,27,75,0.3);">${_escTxt(main)}</h3>
+                          ${main_en ? `<div style="font-size: max(12px, 0.78em); opacity: 0.9; margin-top: 6px; font-style: italic;">(${_escTxt(main_en)})</div>` : ''}
                         </div>
                         <div class="allo-hub-col" style="display: flex; flex-direction: column; gap: 22px; align-items: flex-start; flex: 1; min-width: 0;">
                           ${rightBranches.map((b, i) => renderBranch(b, 'right', half + i)).join('')}
@@ -49407,19 +49619,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     <div class="palace-print-wrapper" style="max-width: 860px; margin: 0 auto;">
                       <div style="text-align: center; margin-bottom: 26px;">
                         <div class="alloflow-palace-header" style="background: linear-gradient(135deg, #1e1b4b 0%, #312e81 60%, #4338ca 100%); color: white; padding: 20px 40px; border-radius: 18px; display: inline-block; box-shadow: 0 8px 20px -4px rgba(30,27,75,0.4);">
-                          <h3 style="margin: 0; font-size: 1.45em; font-weight: 800; color: inherit;">&#127963; ${main}</h3>
-                          ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 5px; font-style: italic;">(${main_en})</div>` : ''}
+                          <h3 style="margin: 0; font-size: 1.45em; font-weight: 800; color: inherit;">&#127963; ${_escTxt(main)}</h3>
+                          ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 5px; font-style: italic;">(${_escTxt(main_en)})</div>` : ''}
                         </div>
                         <div style="font-size: max(12px, 0.72em); font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 10px;">Memory Palace &mdash; walk the rooms in order, picture each image vividly</div>
                       </div>
                       <div style="display: flex; flex-direction: column; gap: 14px;">
                         ${(() => { let locusNo = 0; const _rooms = _palaceRooms(); return _rooms.map((room, i) => {
                           const c = _pairColor(i);
-                          return `<div class="palace-room" role="group" aria-label="Room ${i + 1} of ${_rooms.length}: ${room.title}" style="background: linear-gradient(135deg, ${c.bg} 0%, white 70%); border: 2px solid ${c.border}; border-left-width: 8px; border-radius: 12px; padding: 14px 18px; box-shadow: 0 4px 10px -3px rgba(0,0,0,0.12); text-align: left;">
+                          return `<div class="palace-room" role="group" aria-label="Room ${i + 1} of ${_rooms.length}: ${_escTxt(room.title)}" style="background: linear-gradient(135deg, ${c.bg} 0%, white 70%); border: 2px solid ${c.border}; border-left-width: 8px; border-radius: 12px; padding: 14px 18px; box-shadow: 0 4px 10px -3px rgba(0,0,0,0.12); text-align: left;">
                             <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 10px;">
                               <span style="font-size: max(12px, 0.68em); font-weight: 800; color: white; background: ${c.border}; padding: 2px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">Room ${i + 1}</span>
-                              <span style="font-weight: 800; color: ${c.accent}; font-size: 1.05em;">${room.title}</span>
-                              ${room.title_en ? `<em style="font-size: 0.8em; color: ${c.accent}; opacity: 0.8;">(${room.title_en})</em>` : ''}
+                              <span style="font-weight: 800; color: ${c.accent}; font-size: 1.05em;">${_escTxt(room.title)}</span>
+                              ${room.title_en ? `<em style="font-size: 0.8em; color: ${c.accent}; opacity: 0.8;">(${_escTxt(room.title_en)})</em>` : ''}
                               ${room.mine ? `<span style="font-size: max(12px, 0.62em); font-weight: 800; color: ${c.accent}; border: 1px solid ${c.border}; padding: 1px 7px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">Yours</span>` : ''}
                             </div>
                             <ol style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px;">
@@ -49428,7 +49640,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                 const mn = l.mnemonic;
                                 return `<li style="display: flex; gap: 10px; align-items: flex-start;">
                                   <span aria-hidden="true" style="flex-shrink: 0; width: 24px; height: 24px; border-radius: 50%; background: ${c.border}; color: white; font-size: max(12px, 0.75em); font-weight: 800; display: flex; align-items: center; justify-content: center;">${locusNo}</span>
-                                  <span style="color: ${c.accent};"><strong>${l.text}</strong>${l.trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${l.trans})</em>` : ''}${mn ? `<br><em style="font-size: 0.9em; opacity: 0.85;">${l.ownImage ? 'Your picture' : 'Picture this'}: ${mn}</em>` : ''}</span>
+                                  <span style="color: ${c.accent};"><strong>${_escTxt(l.text)}</strong>${l.trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${_escTxt(l.trans)})</em>` : ''}${mn ? `<br><em style="font-size: 0.9em; opacity: 0.85;">${l.ownImage ? 'Your picture' : 'Picture this'}: ${_escTxt(mn)}</em>` : ''}</span>
                                 </li>`;
                               }).join('')}
                             </ol>
@@ -49456,8 +49668,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     <div class="cspace-print-wrapper" style="max-width: 860px; margin: 0 auto;">
                       <div style="text-align: center; margin-bottom: 26px;">
                         <div class="alloflow-cspace-header" style="background: linear-gradient(135deg, #312e81 0%, #4338ca 60%, #6366f1 100%); color: white; padding: 20px 40px; border-radius: 18px; display: inline-block; box-shadow: 0 8px 20px -4px rgba(49,46,129,0.4);">
-                          <h3 style="margin: 0; font-size: 1.45em; font-weight: 800; color: inherit;">${main}</h3>
-                          ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 5px; font-style: italic;">(${main_en})</div>` : ''}
+                          <h3 style="margin: 0; font-size: 1.45em; font-weight: 800; color: inherit;">${_escTxt(main)}</h3>
+                          ${main_en ? `<div style="opacity: 0.9; font-size: 0.9em; margin-top: 5px; font-style: italic;">(${_escTxt(main_en)})</div>` : ''}
                         </div>
                         <div style="font-size: max(12px, 0.72em); font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.08em; margin-top: 10px;">3D Concept Space &mdash; each strand is a depth plane</div>
                       </div>
@@ -49465,17 +49677,17 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         ${branches.map((b, i) => {
                           const c = _pairColor(i);
                           const inset = Math.min(i * 22, 88);
-                          return `<div class="cspace-plane" role="group" aria-label="Depth plane ${i + 1} of ${branches.length}: ${b.title}" style="margin-left: ${inset}px; margin-right: ${Math.max(0, 88 - inset)}px; background: linear-gradient(135deg, ${c.bg} 0%, white 70%); border: 2px solid ${c.border}; border-left-width: 8px; border-radius: 12px; padding: 12px 18px; box-shadow: 0 4px 10px -3px rgba(0,0,0,0.12); text-align: left;">
+                          return `<div class="cspace-plane" role="group" aria-label="Depth plane ${i + 1} of ${branches.length}: ${_escTxt(b.title)}" style="margin-left: ${inset}px; margin-right: ${Math.max(0, 88 - inset)}px; background: linear-gradient(135deg, ${c.bg} 0%, white 70%); border: 2px solid ${c.border}; border-left-width: 8px; border-radius: 12px; padding: 12px 18px; box-shadow: 0 4px 10px -3px rgba(0,0,0,0.12); text-align: left;">
                             <div style="display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 8px;">
                               <span style="font-size: max(12px, 0.68em); font-weight: 800; color: white; background: ${c.border}; padding: 2px 10px; border-radius: 999px; text-transform: uppercase; letter-spacing: 0.05em;">Plane ${i + 1}</span>
-                              <span style="font-weight: 800; color: ${c.accent}; font-size: 1.05em;">${b.title}</span>
-                              ${b.title_en ? `<em style="font-size: 0.8em; color: ${c.accent}; opacity: 0.8;">(${b.title_en})</em>` : ''}
+                              <span style="font-weight: 800; color: ${c.accent}; font-size: 1.05em;">${_escTxt(b.title)}</span>
+                              ${b.title_en ? `<em style="font-size: 0.8em; color: ${c.accent}; opacity: 0.8;">(${_escTxt(b.title_en)})</em>` : ''}
                             </div>
                             <ul style="list-style: none; display: flex; flex-wrap: wrap; gap: 7px; padding: 0; margin: 0;">
                               ${(b.items || []).map((it, k) => {
-                                const text = typeof it === 'object' ? (it.text || '') : String(it);
+                                const text = it && typeof it === 'object' ? (it.text || it.label || it.content || '') : String(it == null ? '' : it);
                                 const trans = b.items_en?.[k];
-                                return `<li style="margin: 0; font-size: 0.85em; font-weight: 600; color: ${c.accent}; background: white; border: 1.5px solid ${c.soft}; border-radius: 999px; padding: 4px 12px;">${text}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${trans})</em>` : ''}</li>`;
+                                return `<li style="margin: 0; font-size: 0.85em; font-weight: 600; color: ${c.accent}; background: white; border: 1.5px solid ${c.soft}; border-radius: 999px; padding: 4px 12px;">${_escTxt(text)}${trans ? ` <em style="opacity: 0.75; font-size: 0.9em;">(${_escTxt(trans)})</em>` : ''}</li>`;
                               }).join('')}
                             </ul>
                           </div>`;
@@ -49512,10 +49724,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                             </div>${b.kwlNote ? `<p style="margin: 12px 18px 0; font-size: 0.85em; font-weight: 700; color: #334155;">${_escTxt(b.kwlNote)}</p>${b.kwlPrompt ? (isWorksheet ? '<div aria-hidden="true" style="margin: 10px 18px 14px; height: 7.5em; background: repeating-linear-gradient(transparent, transparent 2.4em, #94a3b8 2.4em, #94a3b8 2.5em);"></div>' : `<textarea class="interactive-textarea alloflow-response-input" rows="5" data-allo-response-key="${_escTxt(String(item.id || 'outline') + ':kwl:' + i)}" data-allo-response-type="free-response" data-allo-question="${_escTxt(b.kwlNote)}" aria-label="${_escTxt(b.kwlNote)}" style="display:block; box-sizing:border-box; width:calc(100% - 36px); margin: 10px 18px 14px;"></textarea>`) : ''}` : ''}
                             <ul style="padding: 14px 18px; margin: 0; list-style: none; color: ${c.accent};">
                               ${branchItems.length ? branchItems.map((it, k) => {
-                                const text = typeof it === 'object' ? (it.text || '') : String(it);
+                                const text = it && typeof it === 'object' ? (it.text || it.label || it.content || '') : String(it == null ? '' : it);
                                 const trans = b.items_en?.[k];
                                 return `<li style="display:flex; gap:8px; align-items:flex-start; margin-bottom: 6px; font-size:0.9em; line-height:1.4;"><span style="color:${c.border}; flex-shrink:0; margin-top:2px;" aria-hidden="true">&#9656;</span><span>${_escTxt(text)}${trans ? ` <em style="color: ${c.accent}; opacity: 0.7; font-size: 0.9em;">(${_escTxt(trans)})</em>` : ''}</span></li>`;
-                              }).join('') : (isWorksheet && !b.kwlPrompt ? `<li>${ruledLines(3, b.scaffoldPrompt || b.prompt || '')}</li>` : '')}
+                              }).join('') : (!b.kwlPrompt ? (isWorksheet ? `<li>${ruledLines(3, b.scaffoldPrompt || b.prompt || '')}</li>` : (!isTeacher ? `<li><textarea class="interactive-textarea alloflow-response-input" rows="3" data-allo-response-key="${_escTxt(String(item.id || 'outline') + ':outline:' + i + ':free-response')}" data-allo-response-type="free-response" data-allo-part-label="${_escTxt(b.label || _uiRaw('export.outline_branch', 'Branch {n}', { n: i + 1 }))}" data-allo-question="${_escTxt((b.label ? b.label + ': ' : '') + (b.scaffoldPrompt || b.prompt || _uiRaw('export.outline_notes_prompt', 'Add your notes or ideas')))}" aria-label="${_escTxt((b.label ? b.label + ': ' : '') + (b.scaffoldPrompt || b.prompt || _uiRaw('export.outline_notes_prompt', 'Add your notes or ideas')))}" placeholder="${_escTxt(b.scaffoldPrompt || b.prompt || '')}" style="width:100%;box-sizing:border-box;"></textarea></li>` : '')) : '')}
                             </ul>
                           </div>`;
                         }).join('')}
@@ -49546,9 +49758,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               // Per-type framing so the relationships read sensibly aloud.
               let body = '';
               if (type === 'Venn Diagram') {
-                  const setA = branches[0] || { title: 'Set A', items: [] };
-                  const setB = branches[1] || { title: 'Set B', items: [] };
-                  const shared = branches[2] || { title: 'Shared', items: [] };
+                  const _vennOverlapIdx = branches.length === 3
+                    ? branches.findIndex(b => /both|overlap|shared|common|similar|middle|center/i.test(String(b?.title || '')))
+                    : -1;
+                  const _vennSides = _vennOverlapIdx !== -1 ? [0, 1, 2].filter(idx => idx !== _vennOverlapIdx) : [0, 1];
+                  const setA = branches[_vennSides[0]] || { title: 'Set A', items: [] };
+                  const setB = branches[_vennSides[1]] || { title: 'Set B', items: [] };
+                  const shared = (_vennOverlapIdx !== -1 ? branches[_vennOverlapIdx] : branches[2]) || { title: 'Shared', items: [] };
                   if (_vennExportModeForFallback === 'activity') {
                       const mixed = [setA, setB, shared].flatMap((branch) => (Array.isArray(branch.items) ? branch.items : []).map((value, index) => ({
                           text: value && typeof value === 'object' ? (value.text || value.label || value.content || '') : value,
@@ -49572,7 +49788,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   // so screen readers hear the relationship in reading order.
                   body = branches.map((b, i) => `
                       <p><strong>Cause ${i + 1}:</strong> ${escape(b.title)}${b.title_en ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(b.title_en)})</em>` : ''}</p>
-                      <p style="margin-left:1.5rem;"><strong>Effect:</strong> ${escape(b.items[0] || '')}${b.items_en && b.items_en[0] ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(b.items_en[0])})</em>` : ''}</p>
+                      <p style="margin-left:1.5rem;"><strong>Effect:</strong> ${escape((b.items && b.items[0] && typeof b.items[0] === 'object') ? (b.items[0].text || b.items[0].label || b.items[0].content || '') : ((b.items && b.items[0]) || ''))}${b.items_en && b.items_en[0] ? ` <em style="color:#64748b;font-size:0.9em;">(${escape(b.items_en[0])})</em>` : ''}</p>
                   `).join('');
               } else if (type === 'Problem Solution') {
                   body = `
@@ -49984,14 +50200,28 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               const target = norm(s);
               return opts.findIndex((o) => norm(o) === target);
           };
-          const hasCheckableFill = !quizGraded && quizQuestions.some((q) => q && q.type === 'fill-blank' && typeof q.expectedFill === 'string' && q.expectedFill.trim());
-          const hasCheckableMulti = !quizGraded && quizQuestions.some((q) => q && q.type === 'multi-select' && Array.isArray(q.correctAnswers) && q.correctAnswers.length > 0);
-          const hasCheckableNumeric = !quizGraded && quizQuestions.some((q) => q && q.type === 'numeric-response' && q.correctValue !== undefined && q.correctValue !== null && !Number.isNaN(Number(q.correctValue)));
-          const hasCheckableStructured = !quizGraded && quizQuestions.some((q) => q && (q.type === 'sequence-sense' || q.type === 'relation-mismatch' || q.type === 'answer-evidence'));
-          const hasSelfCheckableQuestions = hasCheckableFill || hasCheckableMulti || hasCheckableNumeric || hasCheckableStructured || quizQuestions.some((q) => !q?.type || q.type === 'mcq');
+          const _normDocQuizType = (raw) => {
+              const k = String(raw || 'mcq').trim();
+              if (k === 'multiple-choice') return 'mcq';
+              if (k === 'shortAnswer') return 'short-answer';
+              if (k === 'order') return 'ordering';
+              return k;
+          };
+          const hasCheckableFill = !quizGraded && quizQuestions.some((q) => q && _normDocQuizType(q.type) === 'fill-blank' && typeof q.expectedFill === 'string' && q.expectedFill.trim());
+          const hasCheckableMulti = !quizGraded && quizQuestions.some((q) => q && _normDocQuizType(q.type) === 'multi-select' && Array.isArray(q.correctAnswers) && q.correctAnswers.length > 0);
+          const hasCheckableNumeric = !quizGraded && quizQuestions.some((q) => q && _normDocQuizType(q.type) === 'numeric-response' && q.correctValue !== undefined && q.correctValue !== null && !Number.isNaN(Number(q.correctValue)));
+          const hasCheckableStructured = !quizGraded && quizQuestions.some((q) => {
+              const qt = _normDocQuizType(q?.type);
+              return (qt === 'sequence-sense' && Array.isArray(q?.items) && q.items.length >= 2 && (Boolean(q?.orderingPrinciple) || Number.isInteger(q?.intentionallyWrongIndex)))
+                  || (qt === 'relation-mismatch' && Array.isArray(q?.pairs) && q.pairs.length >= 2 && (Number.isInteger(q?.wrongPairIndex) || Boolean(q?.correctPartnerForWrong)))
+                  || (qt === 'answer-evidence' && (q?.correctAnswer != null || q?.expectedAnswer != null || q?.correctEvidence != null || q?.expectedEvidence != null))
+                  || (qt === 'matching' && Array.isArray(q?.pairs) && q.pairs.length >= 2)
+                  || (qt === 'ordering' && Array.isArray(q?.items) && q.items.length >= 2);
+          });
+          const hasSelfCheckableQuestions = hasCheckableFill || hasCheckableMulti || hasCheckableNumeric || hasCheckableStructured || quizQuestions.some((q) => _normDocQuizType(q?.type) === 'mcq');
           // Classify this resource's actual rendered formats, rather than the
           // other quizzes in a packet. Missing types retain legacy MCQ behavior.
-          const quizQuestionTypes = quizQuestions.map(q => q.type === 'shortAnswer' ? 'short-answer' : (q.type || 'mcq'));
+          const quizQuestionTypes = quizQuestions.map(q => _normDocQuizType(q?.type));
           const openResponsesOnly = quizQuestionTypes.length > 0 && quizQuestionTypes.every(type => type === 'short-answer' || type === 'self-explanation');
           const multipleChoiceOnly = quizQuestionTypes.length > 0 && quizQuestionTypes.every(type => type === 'mcq');
           const quizHeadingKey = openResponsesOnly ? 'output.quiz_open_responses' : multipleChoiceOnly ? 'output.quiz_mcq' : 'output.quiz_questions';
@@ -50004,7 +50234,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   <div class="quiz-box" data-quiz-id="${_escTxt(item.id)}">
                       <h3>${_escTxt(quizHeading)}</h3>
                       ${quizQuestions.map((q, i) => {
-                          const itemType = q.type === 'shortAnswer' ? 'short-answer' : (q.type || 'mcq');
+                          const itemType = _normDocQuizType(q.type);
                           const responseKey = quizId + ':q' + i;
                           const responseKeyAttr = _escTxt(responseKey);
                           const controlIdBase = ('allo_' + (isTeacher ? 'teacher_' : '') + quizId + '_' + i).replace(/[^A-Za-z0-9_-]/g, '_');
@@ -50024,7 +50254,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                           const stem = `<p><strong id="${questionId}">${i+1}. ${_escQuiz(q.question)}</strong>${q.question_en ? `<br><span id="${controlIdBase}_translation"${quizTranslationAttrs} style="font-weight:normal; font-style:italic; color:#666">(${_escQuiz(q.question_en)})</span>` : ''}</p>${criteriaHtml}${policyDirections ? `<p id="${controlIdBase}_directions" data-assessment-policy-directions>${_escTxt(policyDirections)}</p>` : ''}`;
                           const reasoningPrompt = q.requireReasoning || q.explanationPrompt ? String(q.explanationPrompt || 'Explain why your answer fits.') : '';
                           const reasoningLabel = `${_escQuiz(reasoningPrompt)} <span>(${q.requireReasoning ? 'required' : 'optional'}; reviewed separately from the choice score)</span>`;
-                          const reasoningHtml = reasoningPrompt ? `<div data-assessment-reasoning>${isWorksheet ? `<p class="alloflow-response-label">${reasoningLabel}</p>${ruledLines(3)}` : `<label id="${controlIdBase}_reasoning_label" for="${controlIdBase}_reasoning" class="alloflow-response-label">${reasoningLabel}</label><textarea id="${controlIdBase}_reasoning" class="interactive-textarea alloflow-response-input" data-allo-response-key="${responseKeyAttr}:reasoning"${labeledResponseAttrs(controlIdBase + '_reasoning_label')} rows="3"${q.requireReasoning ? ' required' : ''} style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>`}</div>` : '';
+                          const reasoningHtml = reasoningPrompt ? `<div data-assessment-reasoning>${isWorksheet ? `<p class="alloflow-response-label">${reasoningLabel}</p>${ruledLines(3)}` : `<label id="${controlIdBase}_reasoning_label" for="${controlIdBase}_reasoning" class="alloflow-response-label">${reasoningLabel}</label><textarea id="${controlIdBase}_reasoning" class="interactive-textarea alloflow-response-input" data-allo-response-key="${responseKeyAttr}:reasoning" data-allo-response-type="reasoning"${labeledResponseAttrs(controlIdBase + '_reasoning_label')} rows="3"${q.requireReasoning ? ' required' : ''} style="width:100%;padding:8px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem;resize:vertical"></textarea>`}</div>` : '';
                           if (itemType === 'multi-select') {
                               const options = Array.isArray(q.options) ? q.options : [];
                               const correctAnswers = Array.isArray(q.correctAnswers) ? q.correctAnswers : [];
@@ -50042,12 +50272,13 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                                   ${isWorksheet
                                                       ? fillableSquare()
                                                       : `<input type="checkbox" name="${controlIdBase}_multi" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:multi">`}
-                                                  <span>${optIdx < 26 ? `<span class="alloflow-option-letter" style="font-weight:700;margin-inline-end:4px;">${String.fromCharCode(65 + optIdx)}.</span>` : ''}${_escQuiz(opt)}</span>${!isWorksheet && !isTeacher && optIdx < 9 ? `<kbd class="alloflow-keycap" aria-hidden="true">${optIdx + 1}</kbd>` : ''}
+                                                  <span>${optIdx < 26 ? `<span class="alloflow-option-letter" style="font-weight:700;margin-inline-end:4px;">${String.fromCharCode(65 + optIdx)}.</span> ` : ''}${_escQuiz(opt)}</span>${!isWorksheet && !isTeacher && optIdx < 9 ? `<kbd class="alloflow-keycap" aria-hidden="true">${optIdx + 1}</kbd>` : ''}
                                               </label>
                                           `).join('')}
                                       </div>
                                   </fieldset>
                                   ${multiFeedback}
+                                  ${reasoningHtml}
                                   ${isTeacher && correctAnswers.length ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${correctAnswers.map(_escTxt).join(', ')}</p>` : ''}
                               </div>`;
                           }
@@ -50065,6 +50296,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                           : `<label id="${controlIdBase}_fill_label" for="${controlIdBase}_fill" class="alloflow-response-label">${_qL('output.quiz_answer', 'Answer')}</label><input id="${controlIdBase}_fill" type="text" class="interactive-blank alloflow-response-input" data-allo-response-key="${responseKeyAttr}:fill" aria-labelledby="${controlIdBase}_fill_label ${questionId}"${responseDescription} placeholder="${_qL('placeholders.missing_word', 'Type the missing word…')}" style="width:100%;max-width:300px;padding:6px 10px;border:1px solid #94a3b8;border-radius:6px;font-size:0.95rem"/>`}
                                   </div>
                                   ${fillFeedback}
+                                  ${reasoningHtml}
                                   ${isTeacher && q.expectedFill ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${_escQuiz(q.expectedFill)}${Array.isArray(q.acceptableAlternatives) && q.acceptableAlternatives.length > 0 ? ' <span style="font-weight:normal;font-style:italic">(also: ' + q.acceptableAlternatives.map(_escTxt).join(', ') + ')</span>' : ''}</p>` : ''}
                               </div>`;
                           }
@@ -50145,6 +50377,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                           : `<label id="${controlIdBase}_sequence_principle_label" for="${controlIdBase}_sequence_principle" class="alloflow-response-label">${shortSequence ? _qL('export.quiz_sequence_compact_principle', '2. Ordering principle:') : _qL('export.quiz_sequence_principle', "3. What's the ordering principle?")}</label><select id="${controlIdBase}_sequence_principle" class="alloflow-response-select" data-allo-response-key="${responseKeyAttr}:sequence-principle"${labeledResponseAttrs(controlIdBase + '_sequence_principle_label')}><option value="">${_qL('export.quiz_choose_principle', 'Choose a principle')}</option>${principleOpts.map((opt, optIdx) => `<option value="${optIdx}">${_escQuiz(opt)}</option>`).join('')}</select>`}
                                   </div>
                                   ${_seqFeedback}
+                                  ${reasoningHtml}
                                   ${isTeacher ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${shortSequence ? '' : misplacedKey + ' · '}correct order: ${correctOrderNumbers} · principle: <em>${_escQuiz(q.orderingPrinciple || '')}</em></p>` : ''}
                               </div>`;
                           }
@@ -50211,7 +50444,75 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                           : `<label id="${controlIdBase}_number_label" for="${controlIdBase}_number" class="alloflow-response-label">${_qL('export.quiz_value', 'Value')}</label><input id="${controlIdBase}_number" type="number" step="any" inputmode="decimal" class="alloflow-response-input alloflow-response-input-short" data-allo-response-key="${responseKeyAttr}:number"${labeledResponseAttrs(controlIdBase + '_number_label')}><label id="${controlIdBase}_unit_label" for="${controlIdBase}_unit" class="alloflow-response-label">${_qL('common.unit', 'Unit')}</label><input id="${controlIdBase}_unit" type="text" class="alloflow-response-input alloflow-response-input-short" data-allo-response-key="${responseKeyAttr}:unit"${labeledResponseAttrs(controlIdBase + '_unit_label')}>`}
                                   </div>
                                   ${_numFeedback}
+                                  ${reasoningHtml}
                                   ${isTeacher && q.correctValue !== undefined && q.correctValue !== null ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${_escTxt(q.correctValue)}${toleranceText}${acceptedUnits.length ? ` ${acceptedUnits.map(_escTxt).join(' / ')}` : ''}</p>` : ''}
+                              </div>`;
+                          }
+                          if (itemType === 'matching') {
+                              const pairs = Array.isArray(q.pairs) ? q.pairs : [];
+                              // Deterministic rotation/permutation so right-side options are shuffled without losing teacher-key agreement
+                              const rightOrder = pairs.map((_, idx) => idx);
+                              if (rightOrder.length > 1) {
+                                  let h = 0x811c9dc5;
+                                  for (const ch of String(quizId + ':' + i + '|' + pairs.map(p => p?.left || p?.prompt || '').join('|'))) { h ^= ch.codePointAt(0); h = Math.imul(h, 0x01000193) >>> 0; }
+                                  for (let j = rightOrder.length - 1; j > 0; j--) { h = Math.imul(h ^ (h >>> 15), 1 | h); h = (h + 0x6D2B79F5) | 0; const k = ((h ^ (h >>> 14)) >>> 0) % (j + 1); [rightOrder[j], rightOrder[k]] = [rightOrder[k], rightOrder[j]]; }
+                                  if (rightOrder.every((v, idx) => v === idx)) rightOrder.push(rightOrder.shift());
+                              }
+                              const expectedLetters = pairs.map((_, idx) => String.fromCharCode(65 + rightOrder.indexOf(idx)));
+                              const matchKeyAttr = !quizGraded && !isTeacher && !isWorksheet && pairs.length >= 2 ? ` data-matching-key="${_escTxt(encodeURIComponent(JSON.stringify(expectedLetters)))}"` : '';
+                              const matchFeedback = matchKeyAttr ? `<p id="${controlIdBase}_feedback" class="alloflow-quiz-feedback" hidden data-correct-label="${_qL('export.quiz_feedback_correct', 'Correct')}" data-review-label="${_qL('export.quiz_feedback_review', 'Review needed')}" data-unanswered-label="${_qL('export.quiz_feedback_unanswered', 'Unanswered')}" style="margin:0.5rem 0;font-weight:700;"></p>` : '';
+                              const choicesHtml = rightOrder.map((origIdx, letterIdx) => `<li style="margin:4px 0;"><strong>${String.fromCharCode(65 + letterIdx)}.</strong> ${_escQuiz(pairs[origIdx]?.right || pairs[origIdx]?.match || pairs[origIdx]?.answer || '')}</li>`).join('');
+                              return `
+                              <div class="question" data-item-type="matching"${matchKeyAttr}${questionGroupAttrs}>
+                                  ${stem}
+                                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:14px;margin:0.5rem 0;">
+                                      <div>
+                                          ${pairs.map((pair, pIdx) => {
+                                              const leftText = String(pair?.left || pair?.prompt || '');
+                                              if (isWorksheet) {
+                                                  return `<p style="margin:8px 0;"><strong>${pIdx + 1}.</strong> ${_escQuiz(leftText)} &rarr; ${fillableBlank(48)}</p>`;
+                                              }
+                                              return `<div style="margin:8px 0;display:flex;flex-wrap:wrap;align-items:center;gap:8px;"><label id="${controlIdBase}_match_${pIdx}_label" for="${controlIdBase}_match_${pIdx}" style="font-weight:600;flex:1 1 180px;">${pIdx + 1}. ${_escQuiz(leftText)}</label><select id="${controlIdBase}_match_${pIdx}" class="alloflow-response-input alloflow-response-select" data-allo-response-key="${responseKeyAttr}:match:${pIdx}" data-allo-response-type="matching" data-allo-part-label="Match ${pIdx + 1}"${labeledResponseAttrs(controlIdBase + '_match_' + pIdx + '_label')}><option value="">${_qL('export.quiz_choose_match', 'Choose match…')}</option>${rightOrder.map((origIdx, letterIdx) => { const ltr = String.fromCharCode(65 + letterIdx); const txt = String(pairs[origIdx]?.right || pairs[origIdx]?.match || pairs[origIdx]?.answer || ''); return `<option value="${ltr}">${ltr}. ${_escQuiz(txt)}</option>`; }).join('')}</select></div>`;
+                                          }).join('')}
+                                      </div>
+                                      <div style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 12px;">
+                                          <strong style="display:block;margin-bottom:6px;font-size:0.9rem;">${_qL('export.quiz_match_choices', 'Choices')}</strong>
+                                          <ul style="list-style:none;padding:0;margin:0;">${choicesHtml}</ul>
+                                      </div>
+                                  </div>
+                                  ${matchFeedback}
+                                  ${reasoningHtml}
+                                  ${isTeacher ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${pairs.map((p, idx) => `${idx + 1}→${expectedLetters[idx]} (${_escQuiz(p?.right || p?.match || p?.answer || '')})`).join('; ')}</p>` : ''}
+                              </div>`;
+                          }
+                          if (itemType === 'ordering') {
+                              const rawItems = Array.isArray(q.items) ? q.items : [];
+                              const canonicalItems = Array.isArray(q.correctOrder) && q.correctOrder.length === rawItems.length ? q.correctOrder : rawItems;
+                              const dispOrder = Array.isArray(q.presentedOrder) && q.presentedOrder.length === canonicalItems.length ? q.presentedOrder.slice() : canonicalItems.map((_, idx) => idx);
+                              if (!Array.isArray(q.presentedOrder) && dispOrder.length > 1) {
+                                  let h = 0x811c9dc5;
+                                  for (const ch of String(quizId + ':' + i + '|' + canonicalItems.join('|'))) { h ^= ch.codePointAt(0); h = Math.imul(h, 0x01000193) >>> 0; }
+                                  for (let j = dispOrder.length - 1; j > 0; j--) { h = Math.imul(h ^ (h >>> 15), 1 | h); h = (h + 0x6D2B79F5) | 0; const k = ((h ^ (h >>> 14)) >>> 0) % (j + 1); [dispOrder[j], dispOrder[k]] = [dispOrder[k], dispOrder[j]]; }
+                                  if (dispOrder.every((v, idx) => v === idx)) dispOrder.push(dispOrder.shift());
+                              }
+                              const expectedPositions = dispOrder.map((origIdx) => String(origIdx + 1));
+                              const orderKeyAttr = !quizGraded && !isTeacher && !isWorksheet && canonicalItems.length >= 2 ? ` data-ordering-key="${_escTxt(encodeURIComponent(JSON.stringify(expectedPositions)))}"` : '';
+                              const orderFeedback = orderKeyAttr ? `<p id="${controlIdBase}_feedback" class="alloflow-quiz-feedback" hidden data-correct-label="${_qL('export.quiz_feedback_correct', 'Correct')}" data-review-label="${_qL('export.quiz_feedback_review', 'Review needed')}" data-unanswered-label="${_qL('export.quiz_feedback_unanswered', 'Unanswered')}" style="margin:0.5rem 0;font-weight:700;"></p>` : '';
+                              return `
+                              <div class="question" data-item-type="ordering"${orderKeyAttr}${questionGroupAttrs}>
+                                  ${stem}
+                                  <ol style="list-style:none;padding:0;margin:0.5rem 0;">
+                                      ${dispOrder.map((origIdx, showIdx) => {
+                                          const text = String(canonicalItems[origIdx] ?? '');
+                                          if (isWorksheet) {
+                                              return `<li style="margin:8px 0;">${fillableBlank(36)} ${_escQuiz(text)}</li>`;
+                                          }
+                                          return `<li style="margin:8px 0;display:flex;flex-wrap:wrap;align-items:center;gap:8px;"><label id="${controlIdBase}_order_${showIdx}_label" for="${controlIdBase}_order_${showIdx}" style="flex:1 1 220px;">${_escQuiz(text)}</label><select id="${controlIdBase}_order_${showIdx}" class="alloflow-response-input alloflow-response-select" data-allo-response-key="${responseKeyAttr}:order:${showIdx}" data-allo-response-type="ordering" data-allo-part-label="Position ${showIdx + 1}"${labeledResponseAttrs(controlIdBase + '_order_' + showIdx + '_label')}><option value="">${_qL('export.quiz_choose_position', 'Position…')}</option>${canonicalItems.map((_, posIdx) => `<option value="${posIdx + 1}">${posIdx + 1}</option>`).join('')}</select></li>`;
+                                      }).join('')}
+                                  </ol>
+                                  ${orderFeedback}
+                                  ${reasoningHtml}
+                                  ${isTeacher ? `<p class="answer-key" style="color:#15803d;font-weight:bold;margin-top:10px;">${t('output.quiz_answer')}: ${canonicalItems.map((it, idx) => `${idx + 1}. ${_escQuiz(it)}`).join(' → ')}</p>` : ''}
                               </div>`;
                           }
                           // Default: MCQ render (existing behavior preserved)
@@ -50230,11 +50531,12 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                               ? fillableCircle()
                                               : `<input type="radio" name="${controlIdBase}_mcq" value="${optIdx}" data-allo-response-key="${responseKeyAttr}:mcq">`}
                                           ${Array.isArray(q.optionImageUrls) && q.optionImageUrls[optIdx] ? `<img src="${_escTxt(q.optionImageUrls[optIdx])}" alt="${_escTxt(typeof q.optionImageAltTexts?.[optIdx] === 'string' ? q.optionImageAltTexts[optIdx] : opt)}" style="display:block;max-width:140px;max-height:80px;object-fit:contain;border-radius:4px;border:1px solid #e2e8f0;margin-bottom:4px;background:#fff"/>` : ''}
-                                          <span>${optIdx < 26 ? `<span class="alloflow-option-letter" style="font-weight:700;margin-inline-end:4px;">${String.fromCharCode(65 + optIdx)}.</span>` : ''}${_escQuiz(opt)} ${q.options_en && q.options_en[optIdx] ? `<span${quizTranslationAttrs} style="color:#888; font-size:0.9em;">(${_escQuiz(q.options_en[optIdx])})</span>` : ''}</span>${!isWorksheet && !isTeacher && optIdx < 9 ? `<kbd class="alloflow-keycap" aria-hidden="true">${optIdx + 1}</kbd>` : ''}
+                                          <span>${optIdx < 26 ? `<span class="alloflow-option-letter" style="font-weight:700;margin-inline-end:4px;">${String.fromCharCode(65 + optIdx)}.</span> ` : ''}${_escQuiz(opt)} ${q.options_en && q.options_en[optIdx] ? `<span${quizTranslationAttrs} style="color:#888; font-size:0.9em;">(${_escQuiz(q.options_en[optIdx])})</span>` : ''}</span>${!isWorksheet && !isTeacher && optIdx < 9 ? `<kbd class="alloflow-keycap" aria-hidden="true">${optIdx + 1}</kbd>` : ''}
                                       </label>
                                   `).join('')}
                               </div>
                               ${feedbackId ? `<p id="${feedbackId}" class="alloflow-quiz-feedback" hidden data-correct-label="${_qL('export.quiz_feedback_correct', 'Correct')}" data-review-label="${_qL('export.quiz_feedback_review', 'Review needed')}" data-unanswered-label="${_qL('export.quiz_feedback_unanswered', 'Unanswered')}" style="margin:0.5rem 0;font-weight:700;"></p>` : ''}
+                              ${reasoningHtml}
                               ${isTeacher ? (() => { const _mcqLtr = correctIdx >= 0 && correctIdx < 26 ? String.fromCharCode(65 + correctIdx) : ''; const _rawAns = String(q.correctAnswer ?? ''); const _ansDisp = _mcqLtr && _rawAns.trim().toUpperCase() !== _mcqLtr ? `${_mcqLtr}. ${_escQuiz(_rawAns)}` : _escQuiz(_rawAns); return `<p class="answer-key" style="color: #15803d; font-weight: bold; margin-top: 10px;">${t('output.quiz_answer')}: ${_ansDisp}</p>`; })() : ''}
                               ${isTeacher && q.factCheck ? `<div style="background:#fffbeb; padding:10px; border:1px solid #fcd34d; border-radius:4px; font-size:0.9em; margin-top:10px; white-space: pre-line; color:#92400e;"><strong>AI Verification:</strong><br/>${parseMarkdownToHTML(q.factCheck)}</div>` : ''}
                           </div>
@@ -50242,7 +50544,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       }).join('')}
                       ${quizGraded ? `<p class="alloflow-graded-note" style="margin:1rem 0;font-weight:700;color:#1e293b">${_escTxt(quizGradedNote)}</p>` : isTeacher || isWorksheet ? '' : `
                           <div class="quiz-controls" style="margin:1rem 0;display:flex;gap:0.5rem;flex-wrap:wrap;align-items:center">
-                              ${hasSelfCheckableQuestions ? `<button type="button" class="quiz-check-btn" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem"><span aria-hidden="true">🎯 </span>${(hasCheckableFill || hasCheckableMulti) ? _qL('export.quiz_check_answers', 'Check my answers') : _qL('export.quiz_check_mcq', 'Check multiple-choice answers')}</button>` : '<button type="button" class="quiz-check-btn" hidden disabled></button>'}
+                              ${hasSelfCheckableQuestions ? `<button type="button" class="quiz-check-btn" style="padding:8px 16px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9rem"><span aria-hidden="true">🎯 </span>${(hasCheckableFill || hasCheckableMulti || hasCheckableNumeric || hasCheckableStructured) ? _qL('export.quiz_check_answers', 'Check my answers') : _qL('export.quiz_check_mcq', 'Check multiple-choice answers')}</button>` : '<button type="button" class="quiz-check-btn" hidden disabled></button>'}
                               <button type="button" class="quiz-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85rem"><span aria-hidden="true">↻ </span>${_qL('export.quiz_reset', 'Reset responses')}</button>
                               <div class="quiz-results" role="status" aria-live="polite" aria-atomic="true" data-answer-changed-label="${_qL('export.quiz_answer_changed', 'An answer changed. Check your answers again for an updated result.')}" data-reset-confirm-label="${_uiL('export.quiz_reset_confirm', 'This clears all your answers in this quiz. Press “{button}” again to confirm.', { button: _uiRaw('export.quiz_reset', 'Reset responses') })}" data-reset-label="${_qL('export.quiz_responses_cleared', 'Responses cleared.')}" style="font-size:0.95rem;font-weight:700;color:#1e293b;margin-left:0.5rem"></div>
                           </div>
@@ -50383,12 +50685,14 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   </div>
               `;
           }
+          const _faqShowFilter = !isWorksheet && !isTeacher && !(cfg && cfg.audience === 'teacher') && Array.isArray(item.data) && item.data.length >= 3;
           return `
               <div class="section alloflow-faq-section" id="${_escTxt(item.id)}" data-faq-section="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
-                  <div class="alloflow-faq-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
+                  <div class="alloflow-faq-controls no-print" style="display:flex;gap:8px;align-items:center;margin-bottom:12px;flex-wrap:wrap;">
                       <button type="button" class="alloflow-faq-expand" data-faq-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:#ecfeff;color:#155e75;border:1px solid #a5f3fc;border-radius:9999px;cursor:pointer;"><span aria-hidden="true">▾ </span>${_uiL('ui_common.show_all', 'Show all')}</button>
                       <button type="button" class="alloflow-faq-collapse" data-faq-target="${_escTxt(item.id)}" style="padding:6px 12px;font-size:12px;font-weight:600;background:white;color:#475569;border:1px solid #cbd5e1;border-radius:9999px;cursor:pointer;"><span aria-hidden="true">▸ </span>${_uiL('ui_common.hide_all', 'Hide all')}</button>
+                      ${_faqShowFilter ? `<input type="search" class="alloflow-faq-filter" aria-label="${_uiL('export.faq_filter_aria', 'Filter FAQ questions and answers')}" placeholder="${_uiL('export.faq_filter_placeholder', 'Filter questions…')}" style="padding:5px 10px;font-size:12px;border:1px solid #cbd5e1;border-radius:9999px;min-width:160px;background:#ffffff;color:#0f172a;" /><span class="alloflow-faq-status" role="status" aria-live="polite" style="font-size:12px;color:#155e75;font-weight:600;"></span>` : ''}
                       <span style="font-size:12px;color:#475569;font-style:italic;">${_uiL('export.faq_tap_hint', 'Tap a question to reveal its answer.')}</span>
                   </div>
                   <div class="quiz-box">
@@ -50431,14 +50735,87 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   </style>
                   <script>
                       (function() {
-                          var sec = document.getElementById(${_resourceIdJson});
+                          var script = document.currentScript;
+                          var sec = (script && script.closest && script.closest('[data-faq-section]')) || document.getElementById(${_resourceIdJson});
                           if (!sec || sec.dataset.alloRuntimeBound === '1') return;
                           sec.dataset.alloRuntimeBound = '1';
                           var items = sec.querySelectorAll('details.alloflow-faq-item');
                           var btnExpand = sec.querySelector('.alloflow-faq-expand');
                           var btnCollapse = sec.querySelector('.alloflow-faq-collapse');
+                          var filterInput = sec.querySelector('.alloflow-faq-filter');
+                          var statusEl = sec.querySelector('.alloflow-faq-status');
                           if (btnExpand) btnExpand.addEventListener('click', function () { items.forEach(function (d) { d.open = true; }); });
                           if (btnCollapse) btnCollapse.addEventListener('click', function () { items.forEach(function (d) { d.open = false; }); });
+                          function applyFilter() {
+                              if (!filterInput) return;
+                              var q = String(filterInput.value || '').trim().toLowerCase();
+                              if (!q) {
+                                  items.forEach(function (d) {
+                                      d.hidden = false;
+                                      if (d.dataset.alloPreFilterOpen !== undefined) {
+                                          d.open = d.dataset.alloPreFilterOpen === '1';
+                                          delete d.dataset.alloPreFilterOpen;
+                                      }
+                                  });
+                                  if (statusEl) statusEl.textContent = '';
+                                  return;
+                              }
+                              var matched = 0;
+                              items.forEach(function (d) {
+                                  if (d.dataset.alloPreFilterOpen === undefined) {
+                                      d.dataset.alloPreFilterOpen = d.open ? '1' : '0';
+                                  }
+                                  var hit = String(d.textContent || '').toLowerCase().indexOf(q) !== -1;
+                                  d.hidden = !hit;
+                                  if (hit) {
+                                      d.open = true;
+                                      matched++;
+                                  }
+                              });
+                              if (statusEl) statusEl.textContent = matched + ' / ' + items.length;
+                          }
+                          if (filterInput) {
+                              filterInput.addEventListener('input', applyFilter);
+                              filterInput.addEventListener('search', applyFilter);
+                          }
+                          var faqPrintActive = false;
+                          function openFaqForPrint() {
+                              if (faqPrintActive) return;
+                              faqPrintActive = true;
+                              items.forEach(function (d) {
+                                  if (!d.open) {
+                                      d.dataset.alloPrintOpened = '1';
+                                      d.open = true;
+                                  }
+                                  if (d.hidden) {
+                                      d.dataset.alloPrintUnhidden = '1';
+                                      d.hidden = false;
+                                  }
+                              });
+                          }
+                          function restoreFaqAfterPrint() {
+                              if (!faqPrintActive) return;
+                              faqPrintActive = false;
+                              items.forEach(function (d) {
+                                  if (d.dataset.alloPrintOpened === '1') {
+                                      d.open = false;
+                                      delete d.dataset.alloPrintOpened;
+                                  }
+                                  if (d.dataset.alloPrintUnhidden === '1') {
+                                      d.hidden = true;
+                                      delete d.dataset.alloPrintUnhidden;
+                                  }
+                              });
+                          }
+                          window.addEventListener('beforeprint', openFaqForPrint);
+                          window.addEventListener('afterprint', restoreFaqAfterPrint);
+                          if (typeof window.matchMedia === 'function') {
+                              var printMedia = window.matchMedia('print');
+                              var syncPrint = function (e) { if (e.matches) openFaqForPrint(); else restoreFaqAfterPrint(); };
+                              if (printMedia.addEventListener) printMedia.addEventListener('change', syncPrint);
+                              else if (printMedia.addListener) printMedia.addListener(syncPrint);
+                              if (printMedia.matches) openFaqForPrint();
+                          }
                       })();
                   </script>
               </div>
@@ -50604,7 +50981,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const sfData = item.data && typeof item.data === 'object' ? item.data : {};
           const { mode, items, text, text_en, wordBank, rubric } = sfData;
           const sfWordBank = (Array.isArray(wordBank) ? wordBank : []).filter((w) => typeof w === 'string' && w.trim()).slice(0, 40);
-          const wordBankHtml = sfWordBank.length ? `<div class="alloflow-sf-wordbank" style="margin-bottom:16px;padding:12px 16px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;"><div style="font-size:0.8em;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:#92400e;margin-bottom:8px;">${_uiL('scaffolds.word_bank', 'Word bank')}</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${sfWordBank.map((w) => `<span style="display:inline-block;padding:4px 12px;border-radius:9999px;background:#ffffff;border:1px solid #fcd34d;color:#78350f;font-size:0.9em;font-weight:600;">${_escTxt(w.trim())}</span>`).join('')}</div></div>` : '';
+          const wordBankHtml = sfWordBank.length ? `<div class="alloflow-sf-wordbank" style="margin-bottom:16px;padding:12px 16px;background:#fffbeb;border:1px solid #fde68a;border-radius:8px;"><div style="font-size:0.8em;font-weight:800;text-transform:uppercase;letter-spacing:0.04em;color:#92400e;margin-bottom:8px;">${_uiL('scaffolds.word_bank', 'Word bank')}</div><div style="display:flex;flex-wrap:wrap;gap:8px;">${sfWordBank.map((w) => (!isWorksheet && !isTeacher)
+              ? `<button type="button" class="alloflow-sf-chip" data-sf-word="${_escTxt(w.trim())}" style="display:inline-block;padding:4px 12px;border-radius:9999px;background:#ffffff;border:1.5px solid #fcd34d;color:#78350f;font-size:0.9em;font-weight:600;cursor:pointer;">+ ${_escTxt(w.trim())}</button>`
+              : `<span style="display:inline-block;padding:4px 12px;border-radius:9999px;background:#ffffff;border:1px solid #fcd34d;color:#78350f;font-size:0.9em;font-weight:600;">${_escTxt(w.trim())}</span>`).join('')}</div></div>` : '';
           const tierBadge = (tier) => {
               const map = { emerging: ['#0369a1', '#e0f2fe', '#7dd3fc', 'scaffolds.tier_emerging', 'Emerging'], expanding: ['#6d28d9', '#f3e8ff', '#c4b5fd', 'scaffolds.tier_expanding', 'Expanding'], bridging: ['#047857', '#d1fae5', '#6ee7b7', 'scaffolds.tier_bridging', 'Bridging'] };
               const cfgTier = map[String(tier || '').toLowerCase()];
@@ -50663,7 +51042,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               ? `<div class="alloflow-sf-rubric" style="margin-top:16px;padding:12px 16px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;"><div style="font-size:0.85em;font-weight:800;color:#334155;margin-bottom:6px;">${isIndependentMode ? _uiL('scaffolds.self_checklist', 'Self-Checklist') : _uiL('scaffolds.rubric', 'Grading Rubric')}</div>${typeof rubric === 'string' ? parseMarkdownToHTML(rubric, { minHeadingLevel: 3 }) : `<pre style="white-space:pre-wrap;margin:0;font-family:inherit;">${_escTxt(JSON.stringify(rubric, null, 2))}</pre>`}</div>`
               : '';
           return `
-              <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
+              <div class="section alloflow-sf-section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${wordBankHtml}
                   ${contentHtml}
@@ -50675,9 +51054,22 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               question: item.data.problem,
               answer: item.data.answer,
               steps: item.data.steps,
-              realWorld: item.data.realWorld
+              realWorld: item.data.realWorld,
+              manipulativeSupport: item.data.manipulativeSupport,
+              _verification: item.data._verification
           }];
           const graphData = _alloSanitizeRemediationBodyFragment(item.data.graphData);
+          const _renderDiagram = (typeof window !== 'undefined' && window.AlloModules && window.AlloModules.UtilsPure && typeof window.AlloModules.UtilsPure._renderDiagramSvg === 'function')
+              ? window.AlloModules.UtilsPure._renderDiagramSvg
+              : null;
+          const _mathDiagramHtml = (support, fallbackTitle) => {
+              if (!_renderDiagram || !support || typeof support !== 'object' || !support.tool) return '';
+              const rawSvg = _renderDiagram(support.tool, support.state, fallbackTitle || '');
+              if (!rawSvg) return '';
+              if (typeof DOMParser !== 'undefined') return _alloSanitizeRemediationBodyFragment(rawSvg);
+              return /^<svg[\s>]/i.test(String(rawSvg).trim()) ? String(rawSvg) : '';
+          };
+          const _mathSectionDiagram = (!graphData && item.data.manipulativeSupport) ? _mathDiagramHtml(item.data.manipulativeSupport, title || '') : '';
           // Build a screen-reader-speakable form of a LaTeX expression. The
           // visual span class="math-symbol" produces stylized HTML (fractions,
           // superscripts, etc.) that NVDA/JAWS would otherwise read character
@@ -50727,9 +51119,9 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           return `
               <div class="section alloflow-math-section" id="${_escTxt(item.id)}" data-math-section="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
-                  ${graphData ? `
-                    <div style="text-align:center; margin:20px 0; padding:20px; background:white; border:1px solid #cbd5e1; border-radius:8px;">
-                        ${graphData}
+                  ${(graphData || _mathSectionDiagram) ? `
+                    <div class="alloflow-math-diagram" style="text-align:center; margin:20px 0; padding:20px; background:white; border:1px solid #cbd5e1; border-radius:8px; overflow-x:auto;">
+                        ${graphData || _mathSectionDiagram}
                     </div>
                   ` : ''}
                   ${((isTeacher && _mathHideSolution) || _studentMathCollapsible) ? `
@@ -50740,14 +51132,20 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                     </div>
                   ` : ''}
                   <div style="background:#f8fafc; padding:20px; border:1px solid #e2e8f0; border-radius:8px;">
-                      ${problems.map((p, i) => `
+                      ${problems.map((p, i) => {
+                          const pDiagram = (i > 0 || !(_mathSectionDiagram || graphData)) && p.manipulativeSupport ? _mathDiagramHtml(p.manipulativeSupport, String(p.question || p.problem || title || '')) : '';
+                          const pNeedsReview = isTeacher && p._verification && p._verification.reviewRequired && !p._verification.teacherReviewed;
+                          const pQuestionText = (i + 1) + '. ' + String(p.question || p.problem || '');
+                          return `
                           <div class="alloflow-math-problem${_mathCompact ? ' alloflow-math-compact' : ''}" style="margin-bottom: ${_mathCompact ? 14 : 30}px; border-bottom: 1px dashed #cbd5e1; padding-bottom: ${_mathCompact ? 10 : 20}px; page-break-inside: avoid;">
+                              ${pNeedsReview ? `<div class="alloflow-math-verify-note teacher-view" style="margin:0 0 10px 25px;padding:8px 12px;background:#fefce8;border:1px solid #fde047;border-left:4px solid #ca8a04;border-radius:6px;font-size:0.85em;color:#854d0e;font-weight:600;">${_uiL('math.verify_review_notice', 'Teacher review recommended: verify automated solution steps before distributing.')}</div>` : ''}
                               <div class="alloflow-math-question" style="display: flex; gap: 10px; margin-bottom: 15px;">
                                   <span style="font-weight: bold; color: #475569; font-size: 1.1em;">${i + 1}.</span>
                                   <div class="alloflow-own-font" style="font-size:1.2em; ${_ownFontInline("'Times New Roman', serif")} font-weight:bold; color:#1e293b;">
                                       ${formatMath(p.question)}
                                   </div>
                               </div>
+                              ${pDiagram ? `<div class="alloflow-math-diagram" style="margin:0 0 14px 25px;padding:12px;background:white;border:1px solid #cbd5e1;border-radius:8px;text-align:center;overflow-x:auto;">${pDiagram}</div>` : ''}
                               ${isTeacher ? (_mathHideSolution ? `
                                   <!-- Teacher Key View — collapsed solution -->
                                   <details class="alloflow-math-solution"${_mathPrintOpenAttr} style="margin-left:25px;">
@@ -50770,18 +51168,21 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                                                 ${fillableBlank(180)}
                                             </div>
                                          </div>`
-                                      : `<div style="margin-left:25px; border:1px solid #cbd5e1; border-radius:8px; background:white; padding:12px 14px;">
+                                      : `<div class="alloflow-math-input-card" style="margin-left:25px; border:1px solid #cbd5e1; border-radius:8px; background:white; padding:12px 14px;">
                                             <label class="alloflow-response-label" for="${_escTxt(String(item.id || 'math') + '-p' + i + '-work')}" style="display:block; font-weight:600; margin-bottom:4px;">${_uiL('stem.physics.label_show_work', 'Show your work').trim()}</label>
-                                            <textarea id="${_escTxt(String(item.id || 'math') + '-p' + i + '-work')}" class="interactive-textarea alloflow-response-input" rows="5" data-allo-response-key="${_escTxt(String(item.id || 'math') + ':math:' + i + ':work')}" data-allo-response-type="free-response" data-allo-question="${_escTxt((i + 1) + '. ' + String(p.question || p.problem || ''))}" style="width:100%; box-sizing:border-box;"></textarea>
+                                            <textarea id="${_escTxt(String(item.id || 'math') + '-p' + i + '-work')}" class="interactive-textarea alloflow-response-input" rows="5" data-allo-response-key="${_escTxt(String(item.id || 'math') + ':math:' + i + ':work')}" data-allo-response-type="free-response" data-allo-part-label="${_uiL('export.math_work_part', 'Show work')}" data-allo-question="${_escTxt(pQuestionText)}" style="width:100%; box-sizing:border-box;"></textarea>
                                             <div style="margin-top:10px; display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                                                 <label for="${_escTxt(String(item.id || 'math') + '-p' + i + '-answer')}" style="font-weight:bold; color:#475569;">${_uiL('export.answer_label', 'Answer:')}</label>
-                                                <input type="text" id="${_escTxt(String(item.id || 'math') + '-p' + i + '-answer')}" class="interactive-blank alloflow-response-input" data-allo-response-key="${_escTxt(String(item.id || 'math') + ':math:' + i + ':answer')}" data-allo-response-type="free-response" style="min-width:12em; flex:1;">
+                                                <input type="text" id="${_escTxt(String(item.id || 'math') + '-p' + i + '-answer')}" class="interactive-blank alloflow-response-input" data-allo-response-key="${_escTxt(String(item.id || 'math') + ':math:' + i + ':answer')}" data-allo-response-type="free-response" data-allo-part-label="${_uiL('export.answer_part', 'Answer')}" data-allo-question="${_escTxt(pQuestionText)}" aria-label="${_uiL('export.math_answer_aria', 'Final answer for: {question}', { question: pQuestionText })}" style="min-width:12em; flex:1;">
+                                            </div>
+                                            <div class="alloflow-math-symbolbar no-print" role="toolbar" aria-label="${_uiL('export.math_symbols_toolbar', 'Insert math symbol')}" style="display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;">
+                                                ${['±', '×', '÷', '√', 'π', '²', '³', '≤', '≥', '≠', '≈', '°', '∠', '/'].map((sym) => `<button type="button" class="alloflow-math-sym-btn" data-math-sym="${sym}" aria-label="${_uiL('export.math_insert_sym', 'Insert {sym}', { sym })}" style="min-width:30px;height:28px;padding:0 6px;border:1px solid #cbd5e1;border-radius:6px;background:#f8fafc;color:#1e293b;font-weight:700;cursor:pointer;">${sym}</button>`).join('')}
                                             </div>
                                          </div>
                                          ${_studentMathCollapsible ? `<details class="alloflow-math-solution"${_mathPrintOpenAttr} style="margin-left:25px;margin-top:10px;"><summary style="list-style:none;cursor:pointer;display:inline-flex;align-items:center;gap:8px;padding:8px 14px;background:#ecfdf5;color:#065f46;font-size:0.85em;font-weight:700;border:1px solid #6ee7b7;border-radius:9999px;outline-offset:2px;"><span class="alloflow-math-caret" aria-hidden="true">▶</span> ${_uiL('export.math_show_solution', 'Show solution')}</summary><div style="margin-top:12px;">${_mathSolutionBodyHtml(p)}</div></details>` : ''}`}
                               `}
                           </div>
-                      `).join('')}
+                      `; }).join('')}
                   </div>
                   ${((isTeacher && _mathHideSolution) || _studentMathCollapsible) ? `
                     <style>
@@ -50790,7 +51191,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                         .alloflow-math-section details[open] .alloflow-math-caret { transform: rotate(90deg); display:inline-block; }
                         .alloflow-math-section summary:focus-visible { outline: 2px solid #065f46; border-radius: 9999px; }
                         @media print {
-                            .alloflow-math-controls { display: none !important; }
+                            .alloflow-math-controls, .alloflow-math-symbolbar { display: none !important; }
                             .alloflow-math-section details > *:not(summary) { display: block !important; }
                             .alloflow-math-section details summary { display: none !important; }
                         }
@@ -50837,27 +51238,34 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                   originalIndex,
                   responseId: _tlStableHash(`${item.id || 'timeline'}:${originalIndex}:${String(te?.event || '')}`).toString(36)
               }));
-              if (!isTeacher && (isWorksheet || cfg.assessmentMode)) {
+              const _tlShouldPreShuffle = !isTeacher && (isWorksheet || _tlInteractive || cfg.assessmentMode);
+              if (_tlShouldPreShuffle) {
                   const _tlSeedTag = cfg.assessmentMode ? 'assessment' : 'student';
                   _tlPresentation = _tlPresentation.slice().sort((a, b) => _tlStableHash(`${item.id || ''}:${a.responseId}:${_tlSeedTag}`) - _tlStableHash(`${item.id || ''}:${b.responseId}:${_tlSeedTag}`));
                   if (_tlPresentation.length > 1 && _tlPresentation.every((entry, index) => entry.originalIndex === index)) _tlPresentation.push(_tlPresentation.shift());
               }
+              const _tlValueLabels = {};
+              _tlPresentation.forEach((entry) => {
+                  _tlValueLabels[entry.responseId] = String((entry.te && entry.te.event) || '').slice(0, 180);
+              });
               const stripsHtml = `
-                  <div class="alloflow-tl-strips alloflow-tl-cuttable alloflow-cutout-sheet" data-tl-section="${_escTxt(item.id)}" role="list" aria-label="Timeline events to sequence" style="margin-top:8px;">
-                      ${_tlInteractive ? `<input type="hidden" class="alloflow-tl-response" data-allo-response-key="${_escTxt((item.id || 'timeline') + ':timeline-order')}" data-allo-response-type="timeline-order" data-allo-part-label="Event order" data-allo-question="${_escTxt(title || 'Timeline')}" aria-label="Student order for ${_escTxt(title || 'timeline')}" value="">` : ''}
+                  <div class="alloflow-tl-strips alloflow-tl-cuttable alloflow-cutout-sheet" data-tl-section="${_escTxt(item.id)}"${_tlShouldPreShuffle ? ' data-tl-shuffled="1"' : ''} role="list" aria-label="${_uiL('export.tl_events_aria', 'Timeline events to sequence')}" style="margin-top:8px;">
+                      ${_tlInteractive ? `<input type="hidden" class="alloflow-tl-response" data-allo-response-key="${_escTxt((item.id || 'timeline') + ':timeline-order')}" data-allo-response-type="timeline-order" data-allo-part-label="${_uiL('export.tl_event_order', 'Event order')}" data-allo-question="${_escTxt(title || 'Timeline')}" data-allo-value-labels="${_escTxt(JSON.stringify(_tlValueLabels))}" aria-label="${_uiL('export.tl_student_order_aria', 'Student order for {title}', { title: title || 'timeline' })}" value="">` : ''}
                       ${_tlPresentation.map(({ te, originalIndex, responseId }, idx) => `
                           <div class="alloflow-tl-strip"${_tlCanSelfCheck ? ` data-original-index="${originalIndex}"` : ''} data-initial-index="${idx}" data-tl-response-id="${responseId}" data-strip-idx="${idx}" role="listitem" style="display:flex;align-items:center;gap:14px;padding:14px 16px;border:2px dashed #94a3b8;border-radius:8px;margin-bottom:10px;background:white;break-inside:avoid;page-break-inside:avoid;">
                               <div class="alloflow-tl-scissor" style="font-family:monospace;font-size:max(12px, 0.75em);color:#64748b;min-width:28px;" aria-hidden="true">✂ ${idx + 1}</div>
                               ${_tlInteractive ? `<div class="alloflow-tl-arrows" style="display:flex;flex-direction:column;gap:2px;">
-                                  <button type="button" class="alloflow-tl-up" aria-label="Move event up" title="Move up" style="width:36px;height:36px;min-width:36px;min-height:36px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;cursor:pointer;font-size:13px;line-height:1;color:#475569;padding:0;">▲</button>
-                                  <button type="button" class="alloflow-tl-down" aria-label="Move event down" title="Move down" style="width:36px;height:36px;min-width:36px;min-height:36px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;cursor:pointer;font-size:13px;line-height:1;color:#475569;padding:0;">▼</button>
+                                  <button type="button" class="alloflow-tl-up" aria-label="${_uiL('export.tl_move_up', 'Move event up')}" title="${_uiL('export.tl_move_up', 'Move event up')}" style="width:36px;height:36px;min-width:36px;min-height:36px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;cursor:pointer;font-size:13px;line-height:1;color:#475569;padding:0;">▲</button>
+                                  <button type="button" class="alloflow-tl-down" aria-label="${_uiL('export.tl_move_down', 'Move event down')}" title="${_uiL('export.tl_move_down', 'Move event down')}" style="width:36px;height:36px;min-width:36px;min-height:36px;display:inline-flex;align-items:center;justify-content:center;border:1px solid #cbd5e1;background:#f8fafc;border-radius:6px;cursor:pointer;font-size:13px;line-height:1;color:#475569;padding:0;">▼</button>
                               </div>` : ''}
-                              ${te.image ? `<img src="${te.image}" alt="${String(te.alt || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"${te.decorative ? ' role="presentation"' : ''} style="width:${_tlImgPx}px;height:${_tlImgPx}px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;flex-shrink:0;" />` : ''}
-                              <div style="flex:1;font-size:1em;line-height:1.5;color:#1e293b;">
-                                  ${te.event}
-                                  ${te.event_en ? `<div style="color:#64748b;font-size:0.85em;margin-top:4px;font-style:italic;">${te.event_en}</div>` : ''}
+                              ${te.image ? `<img src="${_escTxt(te.image)}" alt="${_escTxt(te.alt || '')}"${te.decorative ? ' role="presentation"' : ''} style="width:${_tlImgPx}px;height:${_tlImgPx}px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:#f8fafc;flex-shrink:0;" />` : ''}
+                              <div class="alloflow-tl-event-body" style="flex:1;font-size:1em;line-height:1.5;color:#1e293b;">
+                                  ${_escTxt(te.event)}
+                                  ${te.event_en ? `<div style="color:#64748b;font-size:0.85em;margin-top:4px;font-style:italic;">${_escTxt(te.event_en)}</div>` : ''}
                               </div>
-                              <div style="border:1px solid #cbd5e1;border-radius:6px;padding:6px 10px;font-size:max(12px, 0.75em);color:#64748b;text-align:center;min-width:80px;background:#f8fafc;">date:<br/><span style="display:inline-block;border-bottom:1.5px solid #475569;height:1.2em;min-width:60px;margin-top:2px;"></span></div>
+                              <div class="alloflow-tl-date-box" style="border:1px solid #cbd5e1;border-radius:6px;padding:6px 10px;font-size:max(12px, 0.75em);color:#64748b;text-align:center;min-width:80px;background:#f8fafc;">${_uiL('export.tl_date_label', 'date:')}<br/>${_tlInteractive
+                                  ? `<input type="text" class="interactive-blank alloflow-response-input alloflow-tl-date-input" data-allo-response-key="${_escTxt((item.id || 'timeline') + ':timeline-date:' + responseId + ':free-response')}" data-allo-response-type="free-response" data-allo-part-label="${_uiL('export.tl_date_part', 'Date')}" data-allo-question="${_escTxt(String(te.event || '').slice(0, 180))}" aria-label="${_uiL('export.tl_date_aria', 'Date for: {event}', { event: String(te.event || '') })}" placeholder="___" style="width:92px;max-width:100%;margin-top:3px;padding:3px 6px;border:1px solid #cbd5e1;border-radius:4px;font:inherit;color:#0f172a;text-align:center;background:#ffffff;" />`
+                                  : '<span style="display:inline-block;border-bottom:1.5px solid #475569;height:1.2em;min-width:60px;margin-top:2px;"></span>'}</div>
                           </div>
                       `).join('')}
                   </div>
@@ -50873,35 +51281,35 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                       <ol style="margin:0;padding-left:28px;line-height:1.7;color:#475569;">
                           ${rawItems.map((te) => `
                               <li style="margin-bottom:8px;break-inside:avoid;">
-                                  <strong style="color:#4338ca;">${te.date}</strong> — ${te.event}
-                                  ${te.event_en ? ` <em style="color:#64748b;font-size:0.9em;">(${te.event_en})</em>` : ''}
+                                  <strong style="color:#4338ca;">${_escTxt(te.date)}</strong> — ${_escTxt(te.event)}
+                                  ${te.event_en ? ` <em style="color:#64748b;font-size:0.9em;">(${_escTxt(te.event_en)})</em>` : ''}
                               </li>
                           `).join('')}
                       </ol>
                   </div>
               `;
               const _tlDigitalInstructions = _tlCanSelfCheck
-                  ? 'Use the <strong>▲▼ arrows</strong> on each strip to reorder events into chronological sequence, then press <strong>Check Order</strong>. Your order is saved automatically. Or print and cut along the dashed lines to arrange physically.'
-                  : 'Use the <strong>▲▼ arrows</strong> on each strip to reorder events into chronological sequence. Your order is saved automatically and can be submitted to your teacher. Or print and cut along the dashed lines to arrange physically.';
+                  ? _uiRaw('export.tl_howto_digital_selfcheck', 'Use the ▲▼ arrows on each strip to reorder events into chronological sequence, then press Check Order. Your order is saved automatically. Or print and cut along the dashed lines to arrange physically.')
+                  : _uiRaw('export.tl_howto_digital_graded', 'Use the ▲▼ arrows on each strip to reorder events into chronological sequence. Your order is saved automatically and can be submitted to your teacher. Or print and cut along the dashed lines to arrange physically.');
               const instructionsHtml = `
                   <div style="background:#fefce8;border-left:4px solid #eab308;padding:12px 16px;border-radius:4px;margin-bottom:20px;font-size:0.9em;color:#713f12;break-inside:avoid;page-break-inside:avoid;">
-                      <strong>How to use:</strong> ${_tlInteractive
+                      <strong>${_uiL('glossary.export_howto_label', 'How to use:')}</strong> ${_escTxt(_tlInteractive
                           ? _tlDigitalInstructions
-                          : 'Cut along the dashed lines to separate each event. Mix them up and have students arrange them in chronological order. Each strip has a blank line where students can fill in the date once they figure out the sequence.'}
+                          : _uiRaw('export.tl_howto_paper', 'Cut along the dashed lines to separate each event. Mix them up and have students arrange them in chronological order. Each strip has a blank line where students can fill in the date once they figure out the sequence.'))}
                   </div>
               `;
               const interactiveControlsHtml = _tlInteractive ? `
-                  <div class="alloflow-tl-controls" data-tl-section="${_escTxt(item.id)}" style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px;align-items:center;">
-                      <button type="button" class="alloflow-tl-shuffle-btn" style="padding:8px 16px;background:#f8fafc;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85em;">🔀 Shuffle</button>
-                      ${_tlCanSelfCheck ? '<button type="button" class="alloflow-tl-check-btn" style="padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em;">🎯 Check Order</button>' : ''}
-                      <button type="button" class="alloflow-tl-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85em;">↻ Reset</button>
+                  <div class="alloflow-tl-controls" data-tl-section="${_escTxt(item.id)}" data-tl-copy-score="${_uiL('export.tl_score', '{correct} of {total} in the correct position')}" data-tl-copy-perfect="${_uiL('export.tl_perfect', 'Perfect! All {total} events in chronological order.')}" style="display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 6px;align-items:center;">
+                      <button type="button" class="alloflow-tl-shuffle-btn" style="padding:8px 16px;background:#f8fafc;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85em;"><span aria-hidden="true">🔀 </span>${_uiL('ui_common.shuffle', 'Shuffle')}</button>
+                      ${_tlCanSelfCheck ? '<button type="button" class="alloflow-tl-check-btn" style="padding:8px 16px;background:#4f46e5;color:white;border:none;border-radius:8px;font-weight:700;cursor:pointer;font-size:0.9em;"><span aria-hidden="true">🎯 </span>' + _uiL('export.tl_check_order', 'Check Order') + '</button>' : ''}
+                      <button type="button" class="alloflow-tl-reset-btn" style="padding:8px 16px;background:#f1f5f9;color:#475569;border:1px solid #cbd5e1;border-radius:8px;font-weight:600;cursor:pointer;font-size:0.85em;"><span aria-hidden="true">↻ </span>${_uiL('ui_common.reset', 'Reset')}</button>
                       <div class="alloflow-tl-results" role="status" aria-live="polite" aria-atomic="true" style="font-size:0.95em;font-weight:700;color:#1e293b;margin-left:0.5rem;"></div>
                   </div>
               ` : '';
               return `
                   <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                       ${enhancedHeader}
-                      ${progression ? `<div style="display:inline-block;background:#4338ca;color:white;padding:4px 12px;border-radius:999px;font-size:0.85em;font-weight:700;margin-bottom:12px;">${progression}</div>` : ''}
+                      ${progression ? `<div style="display:inline-block;background:#4338ca;color:white;padding:4px 12px;border-radius:999px;font-size:0.85em;font-weight:700;margin-bottom:12px;">${_escTxt(progression)}</div>` : ''}
                       ${instructionsHtml}
                       ${interactiveControlsHtml}
                       ${stripsHtml}
@@ -50912,22 +51320,22 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           return `
               <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
-                  ${progression ? `<div style="display:inline-block;background:#4338ca;color:white;padding:4px 12px;border-radius:999px;font-size:0.85em;font-weight:700;margin-bottom:12px;">${progression}</div>` : ''}
+                  ${progression ? `<div style="display:inline-block;background:#4338ca;color:white;padding:4px 12px;border-radius:999px;font-size:0.85em;font-weight:700;margin-bottom:12px;">${_escTxt(progression)}</div>` : ''}
                   <ol style="position: relative; padding-left: 24px; border-left: 3px solid #4338ca; margin-left: 10px; list-style: none;">
                       ${rawItems.map((t, i) => `
                           <li style="margin-bottom: 20px; position: relative;">
                               <div aria-hidden="true" style="position: absolute; left: -32px; top: 0; width: 16px; height: 16px; background: #4f46e5; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 0 2px #4338ca;"></div>
                               <div style="background: ${i % 2 === 0 ? '#f8fafc' : '#eef2ff'}; border: 1px solid #e2e8f0; padding: 10px; border-radius: 6px; display:flex; gap:12px; align-items:flex-start;">
-                                  ${t.image ? `<img src="${t.image}" alt="${String(t.alt || ((t.date ? t.date + ': ' : '') + (t.event || ''))).replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;')}"${t.decorative ? ' role="presentation"' : ''} style="width:${_tlImgPx}px;height:${_tlImgPx}px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:white;flex-shrink:0;" />` : ''}
+                                  ${t.image ? `<img src="${_escTxt(t.image)}" alt="${_escTxt(t.alt || ((t.date ? t.date + ': ' : '') + (t.event || '')))}"${t.decorative ? ' role="presentation"' : ''} style="width:${_tlImgPx}px;height:${_tlImgPx}px;object-fit:contain;border:1px solid #e2e8f0;border-radius:6px;background:white;flex-shrink:0;" />` : ''}
                                   <div style="flex:1;min-width:0;">
                                       <div style="margin-bottom: 4px;">
-                                          <span style="display:inline-block;background:#4338ca;color:white;padding:2px 10px;border-radius:999px;font-size:0.8em;font-weight:700;">${t.date}</span>
-                                          ${t.date_en ? `<span style="opacity:0.6; font-weight:normal; font-size:0.85em; margin-left:6px;">(${t.date_en})</span>` : ''}
+                                          <span style="display:inline-block;background:#4338ca;color:white;padding:2px 10px;border-radius:999px;font-size:0.8em;font-weight:700;">${_escTxt(t.date)}</span>
+                                          ${t.date_en ? `<span style="opacity:0.6; font-weight:normal; font-size:0.85em; margin-left:6px;">(${_escTxt(t.date_en)})</span>` : ''}
                                       </div>
                                       <div style="color: #334155;">
-                                          ${t.event}
+                                          ${_escTxt(t.event)}
                                       </div>
-                                      ${t.event_en ? `<div style="color: #64748b; font-size: 0.9em; margin-top: 4px; font-style: italic;">${t.event_en}</div>` : ''}
+                                      ${t.event_en ? `<div style="color: #64748b; font-size: 0.9em; margin-top: 4px; font-style: italic;">${_escTxt(t.event_en)}</div>` : ''}
                                   </div>
                               </div>
                           </li>
@@ -50938,21 +51346,26 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'concept-sort') {
           const categories = item.data.categories || [];
           const rawSortItems = item.data.items || [];
-          const sortItems = !isTeacher ? rawSortItems.filter(ci => !ci || ci.categoryId !== '__uncategorized') : rawSortItems;
+          const _csIndexedItems = rawSortItems.map((ci, rawIndex) => ({ ci, originalIndex: rawIndex }));
+          const _csFilteredEntries = !isTeacher
+              ? _csIndexedItems.filter(entry => !entry.ci || entry.ci.categoryId !== '__uncategorized')
+              : _csIndexedItems;
+          const sortItems = _csFilteredEntries.map(entry => entry.ci);
           const _csStableHash = (value) => {
               let h = 2166136261;
               const str = String(value == null ? '' : value);
               for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
               return h >>> 0;
           };
-          let _csPresentation = sortItems.map((ci, originalIndex) => ({
-              ci,
-              originalIndex,
-              _hash: _csStableHash(`${item.id || 'cs'}:${originalIndex}:${String(ci?.content || '')}:${cfg.assessmentMode ? 'a' : 'w'}`)
+          let _csPresentation = _csFilteredEntries.map((entry, filteredIdx) => ({
+              ci: entry.ci,
+              originalIndex: entry.originalIndex,
+              _filteredIdx: filteredIdx,
+              _hash: _csStableHash(`${item.id || 'cs'}:${entry.originalIndex}:${String(entry.ci?.content || '')}:${cfg.assessmentMode ? 'a' : 'w'}`)
           }));
-          if (!isTeacher && (isWorksheet || cfg.assessmentMode) && _csPresentation.length > 1) {
+          if (!isTeacher && (isWorksheet || cfg.conceptSortInteractive !== false || cfg.assessmentMode) && _csPresentation.length > 1) {
               _csPresentation = _csPresentation.slice().sort((a, b) => a._hash - b._hash);
-              if (_csPresentation.every((entry, index) => entry.originalIndex === index)) _csPresentation.push(_csPresentation.shift());
+              if (_csPresentation.every((entry, index) => entry._filteredIdx === index)) _csPresentation.push(_csPresentation.shift());
           }
           // Darker category hues keep the small labels and answer-key headers
           // readable with either white text or a dark export surface (WCAG AA).
@@ -50988,18 +51401,19 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 
           const stripsHtml = `
               <div role="list" aria-label="${_uiL('a11y.sortable_items', 'Sortable items')}" class="alloflow-cs-strips alloflow-cs-cutout alloflow-cutout-sheet" data-cs-section="${_escTxt(item.id)}">
-                  ${_csPresentation.map(({ ci }, idx) => {
+                  ${_csPresentation.map(({ ci, originalIndex }, idx) => {
                       const imgAlt = ci.imageAlt || ci.alt || ci.label || '';
                       const imageHtml = ci.image
                           ? `<div class="alloflow-cs-image-frame" style="flex-shrink:0;width:${_csImgPx}px;height:${_csImgPx}px;display:flex;align-items:center;justify-content:center;background:#f8fafc;border:1px solid #cbd5e1;border-radius:8px;padding:4px;box-sizing:border-box;overflow:hidden;"><img class="alloflow-cs-image" src="${_escTxt(ci.image)}" alt="${_escTxt(imgAlt)}" style="display:block;width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain;border:0;border-radius:4px;box-shadow:none;box-sizing:border-box;"/></div>`
                           : '';
+                      const csQuestionLabel = _escTxt(ci.content || _uiRaw('export.cs_item_n', 'Concept sort item {n}', { n: idx + 1 }));
                       return `
                           <div role="listitem" class="alloflow-cs-strip" data-strip-idx="${idx}" data-category-id="${_escTxt(ci.categoryId || '')}" style="display: flex; align-items: center; gap: 14px; padding: 14px 16px; border: 2px dashed #94a3b8; border-radius: 8px; margin-bottom: 10px; background: white; break-inside: avoid; page-break-inside: avoid;">
                               <div class="alloflow-cs-scissor" style="font-family: monospace; font-size: max(12px, 0.75em); color: #64748b; min-width: 28px;" aria-hidden="true">✂ ${idx + 1}</div>
                               ${imageHtml}
                               <div class="alloflow-cs-item-text" style="flex: 1; min-width: 0; font-size: 1em; line-height: 1.5; color: #1e293b; overflow-wrap: anywhere;">${_escTxt(ci.content)}</div>
                               ${!isTeacher && !(cfg.conceptSortInteractive !== false && !isWorksheet) ? `<div class="alloflow-cs-write" aria-hidden="true" style="flex: 0 1 9rem; min-width: 6rem; align-self: flex-end; font-size: max(12px, 0.75em); color: #475569;">${_uiL('export.cs_category', 'Category')}<div style="border-bottom: 1.5px solid #64748b; height: 1.6em;"></div></div>` : ''}
-                              ${!isTeacher && !isWorksheet ? `<select hidden class="alloflow-cs-response" data-allo-response-key="${_escTxt((item.id || 'concept-sort') + ':concept-sort:' + idx + ':category')}" data-allo-response-type="concept-sort" data-allo-part-label="${_uiL('export.cs_category', 'Category')}" data-allo-question="${_uiL('export.cs_item_n', 'Concept sort item {n}', { n: idx + 1 })}" aria-label="${_uiL('export.cs_item_placement', 'Category placement for concept sort item {n}', { n: idx + 1 })}"><option value="">${_uiL('export.cs_not_sorted', 'Not sorted')}</option>${categories.map(cat => `<option value="${_escTxt(cat.id)}">${_escTxt(cat.label)}</option>`).join('')}</select>` : ''}
+                              ${!isTeacher && !isWorksheet ? `<select hidden class="alloflow-cs-response" data-allo-response-key="${_escTxt((item.id || 'concept-sort') + ':concept-sort:' + originalIndex + ':category')}" data-allo-response-type="concept-sort" data-allo-part-label="${_uiL('export.cs_category', 'Category')}" data-allo-question="${csQuestionLabel}" aria-label="${_uiL('export.cs_item_placement', 'Category placement for concept sort item {n}', { n: idx + 1 })}"><option value="">${_uiL('export.cs_not_sorted', 'Not sorted')}</option>${categories.map(cat => `<option value="${_escTxt(cat.id)}">${_escTxt(cat.label)}</option>`).join('')}</select>` : ''}
                           </div>
                       `;
                   }).join('')}
@@ -51051,9 +51465,47 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const happDefs = (doc) => [
               { key: 'historical', label: _uiL('dbq.happ_historical', 'Historical Context'), prompt: (doc.happPrompts && doc.happPrompts.historical) || (doc.happ && doc.happ.historical) || _uiL('dbq.happ_historical_prompt', 'What was happening when this was created?') },
               { key: 'audience', label: _uiL('dbq.happ_audience', 'Audience'), prompt: (doc.happPrompts && doc.happPrompts.audience) || (doc.happ && doc.happ.audience) || _uiL('dbq.happ_audience_prompt', 'Who was this written for?') },
-              { key: 'purpose', label: _uiL('dbq.happ_purpose', 'Purpose'), prompt: (doc.happPrompts && doc.happ.purpose) || (doc.happ && doc.happ.purpose) || _uiL('dbq.happ_purpose_prompt', 'Why was this created?') },
+              { key: 'purpose', label: _uiL('dbq.happ_purpose', 'Purpose'), prompt: (doc.happPrompts && doc.happPrompts.purpose) || (doc.happ && doc.happ.purpose) || _uiL('dbq.happ_purpose_prompt', 'Why was this created?') },
               { key: 'pointOfView', label: _uiL('dbq.happ_point_of_view', 'Point of View'), prompt: (doc.happPrompts && doc.happPrompts.pointOfView) || (doc.happ && doc.happ.pointOfView) || _uiL('dbq.happ_point_of_view_prompt', 'What perspective does the author have?') }
           ];
+          const _dbqCleanProv = (doc) => {
+              const p = doc && doc.teacherProvenance;
+              if (!p || typeof p !== 'object' || p.provenance !== 'teacher') return { ...doc, _byline: '', _sourceText: doc && doc.source };
+              const clean = (k) => (typeof p[k] === 'string' ? p[k].trim().slice(0, 300) : '');
+              const titleOverride = clean('title');
+              const author = clean('author');
+              const date = clean('date');
+              const citation = clean('citation');
+              if (!titleOverride && !author && !date && !citation) return { ...doc, _byline: '', _sourceText: doc.source };
+              const recorded = String(doc.source || '').replace(/;?\s*author(?: and |\/)date not recorded\.?\s*$/i, '').trim();
+              const byline = [author && (_uiRaw('dbq.author_label', 'Author') + ': ' + author), date && (_uiRaw('dbq.date_label', 'Date') + ': ' + date)].filter(Boolean).join(' · ');
+              return { ...doc, title: titleOverride ? _uiRaw('dbq.document_title', 'Document {id}: {title}', { id: doc.id, title: titleOverride }) : doc.title, _byline: byline, _sourceText: citation || ((author || date) ? recorded : doc.source) };
+          };
+          const _dbqExcerptMeta = (doc) => {
+              const rawKind = String((doc && doc.excerptKind) || '').trim().toLowerCase();
+              const kind = ['verbatim', 'adapted', 'reconstructed'].includes(rawKind) ? rawKind : ((doc && (doc.documentType === 'linked' || doc.documentType === 'reconstructed')) ? 'reconstructed' : (rawKind ? 'adapted' : ''));
+              if (kind === 'reconstructed') return { prefix: _uiL('dbq.source_prefix_reconstructed', 'Reconstructed from:'), badge: _uiL('dbq.excerpt_badge_reconstructed', 'Reconstructed'), tone: '#9a3412', bg: '#ffedd5', border: '#fed7aa' };
+              if (kind === 'adapted') return { prefix: _uiL('dbq.source_prefix_adapted', 'Adapted from:'), badge: _uiL('dbq.excerpt_badge_adapted', 'Adapted'), tone: '#3730a3', bg: '#e0e7ff', border: '#c7d2fe' };
+              if (kind === 'verbatim') return { prefix: _uiL('dbq.source_prefix_verbatim', 'Source:'), badge: _uiL('dbq.excerpt_badge_verbatim', 'Quoted'), tone: '#065f46', bg: '#d1fae5', border: '#a7f3d0' };
+              return { prefix: _uiL('dbq.source_prefix_verbatim', 'Source:'), badge: '', tone: '', bg: '', border: '' };
+          };
+          const dbqPerspectives = Array.isArray(item.data.perspectives) ? item.data.perspectives.filter(Boolean) : [];
+          const perspectivesHtml = dbqPerspectives.length >= 2 ? `
+              <div class="alloflow-dbq-perspectives" style="background:#f5f3ff;border:1px solid #ddd6fe;border-radius:8px;padding:16px;margin-bottom:20px;">
+                  <strong style="display:block;font-size:1.05em;color:#5b21b6;margin-bottom:10px;"><span aria-hidden="true">⚖️ </span>${_uiL('dbq.competing_perspectives', 'Competing Perspectives')}</strong>
+                  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-bottom:12px;">
+                      ${dbqPerspectives.map((pov, pi) => {
+                          const povDocIds = Array.isArray(pov.docIds) ? pov.docIds : [];
+                          return `<div style="background:#ffffff;border:1px solid #c4b5fd;border-radius:6px;padding:12px;break-inside:avoid;">
+                              <div style="font-weight:700;color:${pi === 0 ? '#1e40af' : '#991b1b'};margin-bottom:4px;">${_escTxt(pov.label || '')}</div>
+                              ${pov.description ? `<p style="margin:0 0 8px;font-size:0.9em;color:#475569;">${_escTxt(pov.description)}</p>` : ''}
+                              ${povDocIds.length ? `<div style="display:flex;flex-wrap:wrap;gap:4px;">${povDocIds.map(id => `<span style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:0.78em;font-weight:700;background:#f1f5f9;border:1px solid #cbd5e1;color:#334155;">${_uiL('dbq.document_label', 'Document {id}', { id })}</span>`).join('')}</div>` : ''}
+                          </div>`;
+                      }).join('')}
+                  </div>
+                  <div style="font-size:0.88em;font-weight:700;color:#5b21b6;margin-bottom:4px;">${_uiL('dbq.perspective_question', 'Which perspective do you find more convincing? Why?')}</div>
+                  ${isWorksheet ? ruledLines(3) : dbqField('perspective', _uiRaw('dbq.perspective_question', 'Which perspective do you find more convincing? Why?'), 3)}
+              </div>` : '';
           const corrobHtml = (corrobClaims.length > 0 || corrobPrompts.length > 0) ? `
               <div class="alloflow-dbq-corroboration" style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin-bottom:20px;">
                   <strong style="display:block;font-size:1.05em;color:#065f46;margin-bottom:10px;"><span aria-hidden="true">🔗 </span>${_uiL('dbq.corroboration', 'Corroboration')}</strong>
@@ -51077,28 +51529,35 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               <div class="section" id="${_escTxt(item.id)}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
                   ${item.data.historicalContext ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin-bottom:20px;"><strong>${item.data.contextLabel ? _escTxt(String(item.data.contextLabel)) : ((item.data.isFictional === true || /\bfictional\b/i.test(String(item.meta || ''))) ? _uiL('dbq.context', 'Context') : _uiL('dbq.historical_context', 'Historical Context'))}:</strong><br/>${_escTxt(item.data.historicalContext)}</div>` : ''}
-                  ${docs.map((doc, di) => {
+                  ${docs.map((rawDoc, di) => {
+                      const doc = _dbqCleanProv(rawDoc || {});
+                      const exMeta = _dbqExcerptMeta(doc);
                       const imgSrc = doc.imageUrl || doc.image;
                       const starters = Array.isArray(doc.sentenceStarters) ? doc.sentenceStarters.filter((s) => typeof s === 'string' && s.trim()) : [];
                       const showHapp = !!(doc.happPrompts || doc.happ || item.data.includeHapp === true || item.data.happ === true);
                       const happHtml = showHapp ? `<div class="alloflow-dbq-happ" style="background:#eef2ff;border:1px solid #c7d2fe;border-radius:8px;padding:12px;margin:12px 0;"><strong style="display:block;color:#3730a3;font-size:max(12px,0.85em);margin-bottom:8px;">${_uiL('dbq.happ_heading', 'HAPP Source Analysis')}</strong><div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px;">${happDefs(doc).map((h) => `<div style="background:#ffffff;border:1px solid #e0e7ff;border-radius:6px;padding:8px;"><div style="font-weight:700;font-size:0.85em;color:#4338ca;">${h.label}</div><div style="font-size:0.8em;color:#64748b;font-style:italic;margin-bottom:4px;">${_escTxt(h.prompt)}</div>${isWorksheet ? ruledLines(2) : dbqField(di + ':happ:' + h.key, (doc.title || 'Doc') + ' ' + h.label, 2, starters[0] || '')}</div>`).join('')}</div></div>` : '';
                       return `
-                      <div style="border:2px solid #e2e8f0;border-radius:8px;margin-bottom:20px;overflow:hidden;">
-                          <div style="background:#f8fafc;padding:12px;border-bottom:1px solid #e2e8f0;">
-                              <strong style="font-size:1.1em;">${doc.title ? _escTxt(doc.title) : _uiL('dbq.document_label', 'Document {id}', { id: doc.id })}</strong>
-                              ${doc.source ? `<div style="font-size:0.85em;color:#64748b;margin-top:4px;font-style:italic;">${_uiL('dbq.source_prefix_verbatim', 'Source:')} ${_escTxt(doc.source)}</div>` : ''}
+                      <div class="alloflow-dbq-doc-card" style="border:2px solid #e2e8f0;border-radius:8px;margin-bottom:20px;overflow:hidden;">
+                          <div class="alloflow-dbq-doc-head" style="background:#f8fafc;padding:12px;border-bottom:1px solid #e2e8f0;">
+                              <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;">
+                                  <strong style="font-size:1.1em;">${doc.title ? _escTxt(doc.title) : _uiL('dbq.document_label', 'Document {id}', { id: doc.id })}</strong>
+                                  ${exMeta.badge ? `<span class="alloflow-dbq-excerpt-badge" style="display:inline-block;padding:2px 8px;border-radius:9999px;font-size:0.75em;font-weight:700;color:${exMeta.tone};background:${exMeta.bg};border:1px solid ${exMeta.border};">${exMeta.badge}</span>` : ''}
+                              </div>
+                              ${doc._byline ? `<div style="font-size:0.85em;color:#475569;margin-top:4px;font-weight:600;">${_escTxt(doc._byline)}</div>` : ''}
+                              ${doc._sourceText ? `<div style="font-size:0.85em;color:#64748b;margin-top:4px;font-style:italic;">${exMeta.prefix} ${_escTxt(doc._sourceText)}</div>` : ''}
                           </div>
                           <div style="padding:16px;">
                               ${imgSrc ? `<div style="margin-bottom:12px;text-align:center;"><img src="${_escTxt(imgSrc)}" alt="${_escTxt(doc.imageAltText || doc.title || 'Document visual')}" style="max-width:100%;max-height:320px;object-fit:contain;border-radius:6px;border:1px solid #cbd5e1;" /></div>` : ''}
-                              <div style="background:#fefce8;border-left:4px solid #eab308;padding:12px;border-radius:4px;margin-bottom:12px;font-size:0.95em;line-height:1.6;">${_escTxt(doc.excerpt || '')}</div>
+                              <div class="alloflow-dbq-excerpt" style="background:#fefce8;border-left:4px solid #eab308;padding:12px;border-radius:4px;margin-bottom:12px;font-size:0.95em;line-height:1.6;">${_escTxt(doc.excerpt || '')}</div>
                               ${happHtml}
                               ${doc.sourcingQuestions?.length > 0 ? `<div style="margin-bottom:8px;"><strong style="display:block;break-after:avoid;page-break-after:avoid;color:#7c3aed;font-size:max(12px, 0.85em);">${_uiL('dbq.sourcing_questions', 'Sourcing Questions')}:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.sourcingQuestions.map((q, qi) => `<li style="margin-bottom:4px;break-inside:avoid;">${_escTxt(q)}${starters.length ? `<div style="font-size:0.85em;color:#6d28d9;font-style:italic;margin-top:3px;">${_uiL('dbq.try_starter', 'Try starting with:')} “${_escTxt(starters[qi % starters.length])}”</div>` : ''}${isWorksheet ? ruledLines(_answerLines(q, 0, 2)) : ''}${dbqField(di + ':sourcing:' + qi, q, 2, starters[qi % starters.length] || '')}</li>`).join('')}</ol></div>` : ''}
                               ${doc.analysisQuestions?.length > 0 ? `<div><strong style="display:block;break-after:avoid;page-break-after:avoid;color:#2563eb;font-size:max(12px, 0.85em);">${_uiL('dbq.analysis_questions', 'Analysis Questions')}:</strong><ol style="margin:4px 0 0 20px;color:#475569;font-size:0.9em;">${doc.analysisQuestions.map((q, qi) => `<li style="margin-bottom:4px;break-inside:avoid;">${_escTxt(q)}${isWorksheet ? ruledLines(_answerLines(q, 0, 2)) : ''}${dbqField(di + ':analysis:' + qi, q)}</li>`).join('')}</ol></div>` : ''}
                           </div>
                       </div>
                   `; }).join('')}
+                  ${perspectivesHtml}
                   ${corrobHtml}
-                  ${item.data.synthesisPrompt ? `<div class="alloflow-dbq-synthesis${isWorksheet ? ' alloflow-dbq-synthesis-worksheet' : ''}" style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;break-inside:${isWorksheet ? 'auto' : 'avoid'};page-break-inside:${isWorksheet ? 'auto' : 'avoid'};"><strong style="font-size:1.1em;color:#166534;"><span aria-hidden="true">📝 </span>${_uiL('dbq.synthesis_prompt', 'Synthesis Essay Prompt')}:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${_escTxt(item.data.synthesisPrompt)}</p>${item.data.thesisStarter ? `<p class="alloflow-dbq-thesis-starter" style="margin:8px 0 0;font-style:italic;color:#1e293b;"><strong>${_uiL('ui_common.thesis_starter', 'Thesis starter')}:</strong> ${_escTxt(item.data.thesisStarter)}</p>` : ''}${isWorksheet ? `<div style="margin-top:16px;">${ruledLines(12, _uiRaw('export.dbq_your_essay', 'Your essay:'))}</div>` : ''}${dbqField('essay', item.data.synthesisPrompt, 8)}</div>` : ''}
+                  ${item.data.synthesisPrompt ? `<div class="alloflow-dbq-synthesis${isWorksheet ? ' alloflow-dbq-synthesis-worksheet' : ''}" style="background:linear-gradient(135deg,#eff6ff,#f0fdf4);border:2px solid #86efac;border-radius:8px;padding:20px;margin-bottom:20px;break-inside:${isWorksheet ? 'auto' : 'avoid'};page-break-inside:${isWorksheet ? 'auto' : 'avoid'};"><strong style="font-size:1.1em;color:#166534;"><span aria-hidden="true">📝 </span>${_uiL('dbq.synthesis_prompt', 'Synthesis Essay Prompt')}:</strong><p style="margin-top:8px;font-size:1em;line-height:1.7;color:#1e293b;">${_escTxt(item.data.synthesisPrompt)}</p>${item.data.thesisStarter ? `<p class="alloflow-dbq-thesis-starter" style="margin:8px 0 0;font-style:italic;color:#1e293b;"><strong>${_uiL('ui_common.thesis_starter', 'Thesis starter')}:</strong> ${_escTxt(item.data.thesisStarter)}</p>` : ''}${(!isTeacher && !isWorksheet && docs.length > 0) ? `<div class="alloflow-dbq-evidence-tracker no-print" style="margin:10px 0 6px;padding:8px 10px;background:#ffffff;border:1px solid #bbf7d0;border-radius:6px;"><div style="font-size:0.78em;font-weight:700;color:#166534;margin-bottom:6px;">${_uiL('dbq.evidence_tracker', 'Evidence Tracker')}</div><div style="display:flex;flex-wrap:wrap;gap:6px;">${docs.map((d) => `<span class="alloflow-dbq-evidence-pill" data-dbq-doc-id="${_escTxt(d.id)}" data-dbq-doc-label="${_uiL('dbq.document_label', 'Document {id}', { id: d.id })}" style="display:inline-flex;align-items:center;gap:4px;padding:3px 9px;border-radius:9999px;font-size:0.8em;font-weight:700;background:#f1f5f9;border:1px solid #cbd5e1;color:#334155;">⬜ ${_uiL('dbq.document_label', 'Document {id}', { id: d.id })}</span>`).join('')}</div></div>` : ''}${isWorksheet ? `<div style="margin-top:16px;">${ruledLines(12, _uiRaw('export.dbq_your_essay', 'Your essay:'))}</div>` : ''}${dbqField('essay', item.data.synthesisPrompt, 8)}</div>` : ''}
                   ${rubric.length > 0 ? `<div class="alloflow-dbq-rubric-wrap" style="margin-top:20px;break-inside:avoid;"><strong>${_uiL('dbq.rubric_tab', 'Rubric')}:</strong><style>.alloflow-dbq-rubric-wrap table{word-break:break-word;}@media screen and (max-width:600px){.alloflow-dbq-rubric-wrap table,.alloflow-dbq-rubric-wrap tbody,.alloflow-dbq-rubric-wrap tr,.alloflow-dbq-rubric-wrap td{display:block;width:auto !important;}.alloflow-dbq-rubric-wrap table{font-size:0.95em !important;}.alloflow-dbq-rubric-wrap tr.alloflow-dbq-rubric-head{position:absolute;width:1px !important;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;}.alloflow-dbq-rubric-wrap tr.alloflow-dbq-rubric-row{margin-top:10px;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;}.alloflow-dbq-rubric-wrap td{border:0 !important;border-top:1px solid #e2e8f0 !important;padding:8px 10px !important;font-size:1em !important;}.alloflow-dbq-rubric-wrap td:first-child{border-top:0 !important;background:#f1f5f9;}.alloflow-dbq-rubric-wrap td[data-level]::before{content:attr(data-level);display:block;font-weight:700;font-size:0.85em;margin-bottom:2px;}}@media print{.alloflow-dbq-rubric-wrap table{font-size:max(12px, 0.72em);}.alloflow-dbq-rubric-wrap th,.alloflow-dbq-rubric-wrap td{padding:5px 6px !important;}}</style><table role="table" style="width:100%;border-collapse:collapse;margin-top:8px;font-size:max(12px, 0.85em);table-layout:fixed;"><tr role="row" class="alloflow-dbq-rubric-head"><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f1f5f9;text-align:left;width:22%;">${_uiL('ui_common.criteria', 'Criteria')}</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fef2f2;text-align:center;">⭐ 1</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#fefce8;text-align:center;">⭐⭐ 2</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#f0fdf4;text-align:center;">⭐⭐⭐ 3</th><th role="columnheader" scope="col" style="border:1px solid #e2e8f0;padding:8px;background:#eff6ff;text-align:center;">⭐⭐⭐⭐ 4</th></tr>${rubric.map(r => `<tr role="row" class="alloflow-dbq-rubric-row"><td role="cell" style="border:1px solid #e2e8f0;padding:8px;font-weight:bold;">${_escTxt(r.criteria)}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 1 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['1'] || '')}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 2 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['2'] || '')}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 3 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['3'] || '')}</td><td role="cell" data-level="${_uiL('export.rubric_level', 'Level {n}', { n: 4 })}" style="border:1px solid #e2e8f0;padding:8px;font-size:0.85em;">${_escTxt(r['4'] || '')}</td></tr>`).join('')}</table></div>` : ''}
                   ${isTeacher && item.data.teacherNotes ? `<div class="teacher-view" data-allo-teacher-only="1" style="background:#faf5ff;border:1px solid #e9d5ff;border-radius:8px;padding:12px;margin-top:16px;font-size:0.85em;color:#6b21a8;"><strong>${_uiL('dbq.teacher_notes', 'Teacher Notes')}:</strong> ${_escTxt(item.data.teacherNotes)}</div>` : ''}
               </div>
@@ -51114,45 +51573,77 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
       } else if (item.type === 'fluency-record') {
         const { metrics = {}, wordData, audioRecording, mimeType, feedback } = item.data || {};
         const _wordList = Array.isArray(wordData) ? wordData : [];
+        const _accRaw = metrics && metrics.accuracy;
+        const _accStr = _accRaw != null && String(_accRaw).trim() !== '' && String(_accRaw).trim().toLowerCase() !== 'nan'
+            ? (String(_accRaw).trim().endsWith('%') ? _escTxt(_accRaw) : _escTxt(_accRaw) + '%')
+            : '—';
+        const _wcpmRaw = metrics && metrics.wcpm;
+        const _wcpmStr = _wcpmRaw != null && String(_wcpmRaw).trim() !== '' && String(_wcpmRaw).trim().toLowerCase() !== 'nan'
+            ? _escTxt(_wcpmRaw)
+            : '—';
         const heatmapHtml = _wordList.map(w => {
-            let colorStyle = "color: #64748b;";
-            if (w && w.status === 'correct') colorStyle = "color: #15803d; font-weight: bold;";
-            else if (w && w.status === 'missed') colorStyle = "color: #b91c1c; text-decoration: line-through;";
-            else if (w && w.status === 'stumbled') colorStyle = "color: #b45309; border-bottom: 2px dotted #f59e0b;";
-            return `<span style="margin-right: 4px; ${colorStyle}">${_escTxt(w && w.word)}</span>`;
+            const wordTxt = _escTxt(w && w.word);
+            if (w && w.status === 'correct') {
+                return `<span class="alloflow-fluency-word is-correct" style="margin-right: 4px; color: #15803d; font-weight: bold;">${wordTxt}</span>`;
+            }
+            if (w && w.status === 'missed') {
+                return `<span class="alloflow-fluency-word is-missed" style="margin-right: 4px; color: #b91c1c; text-decoration: line-through;">${wordTxt}<sup aria-hidden="true" class="alloflow-fluency-marker" style="font-weight:700;text-decoration:none;margin-left:1px;">[×]</sup><span class="sr-only"> (missed)</span></span>`;
+            }
+            if (w && w.status === 'stumbled') {
+                return `<span class="alloflow-fluency-word is-stumbled" style="margin-right: 4px; color: #b45309; border-bottom: 2px dotted #f59e0b;">${wordTxt}<sup aria-hidden="true" class="alloflow-fluency-marker" style="font-weight:700;margin-left:1px;">[~]</sup><span class="sr-only"> (hesitation)</span></span>`;
+            }
+            return `<span class="alloflow-fluency-word" style="margin-right: 4px; color: #64748b;">${wordTxt}</span>`;
         }).join('');
         return `
-            <div class="section" id="${_escTxt(item.id)}">
+            <style>
+              .alloflow-fluency-section .sr-only { position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-metric-acc { background:#052e16 !important; border-color:#166534 !important; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-metric-acc > div { color:#86efac !important; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-metric-wcpm { background:#172554 !important; border-color:#1e40af !important; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-metric-wcpm > div { color:#93c5fd !important; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-audio { background:#1e293b !important; border-color:#475569 !important; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-feedback { background:#451a03 !important; border-color:#b45309 !important; color:#fde68a !important; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-passage { background:#0f172a !important; border-color:#334155 !important; color:#e2e8f0 !important; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-word { color:#94a3b8 !important; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-word.is-correct { color:#4ade80 !important; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-word.is-stumbled { color:#fbbf24 !important; border-bottom-color:#fbbf24 !important; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-word.is-missed { color:#f87171 !important; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-key { color:#cbd5e1 !important; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-key-correct { color:#4ade80 !important; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-key-stumbled { color:#fbbf24 !important; }
+              html[data-alloflow-theme="dark"] .alloflow-fluency-section .alloflow-fluency-key-missed { color:#f87171 !important; }
+            </style>
+            <div class="section alloflow-fluency-section" id="${_escTxt(item.id)}">
                 <h2 class="resource-header" role="heading" aria-level="2">${_escTxt(title)}${_metaShown ? ` (${_escTxt(_metaShown)})` : ''}</h2>
                 <!-- Metrics Grid -->
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
-                    <div style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; text-align: center;">
+                <div class="alloflow-fluency-metrics" style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 20px;">
+                    <div class="alloflow-fluency-metric alloflow-fluency-metric-acc" style="background: #f0fdf4; padding: 15px; border-radius: 8px; border: 1px solid #bbf7d0; text-align: center;">
                         <div style="font-size: 0.8em; text-transform: uppercase; color: #166534; font-weight: bold;">Accuracy</div>
-                        <div style="font-size: 2em; font-weight: 900; color: #15803d;">${_escTxt(metrics.accuracy)}%</div>
+                        <div style="font-size: 2em; font-weight: 900; color: #15803d;">${_accStr}</div>
                     </div>
-                    <div style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe; text-align: center;">
+                    <div class="alloflow-fluency-metric alloflow-fluency-metric-wcpm" style="background: #eff6ff; padding: 15px; border-radius: 8px; border: 1px solid #bfdbfe; text-align: center;">
                         <div style="font-size: 0.8em; text-transform: uppercase; color: #1e40af; font-weight: bold;">Rate (WCPM)</div>
-                        <div style="font-size: 2em; font-weight: 900; color: #1e3a8a;">${_escTxt(metrics.wcpm)}</div>
+                        <div style="font-size: 2em; font-weight: 900; color: #1e3a8a;">${_wcpmStr}</div>
                     </div>
                 </div>
                 <!-- Audio Player (omitted in worksheet/paper mode) -->
                 ${isWorksheet
                     ? ''
                     : (audioRecording ? `
-                    <div style="margin-bottom: 20px; background: #f8fafc; padding: 10px; border-radius: 50px; border: 1px solid #e2e8f0;">
+                    <div class="alloflow-fluency-audio" style="margin-bottom: 20px; background: #f8fafc; padding: 10px; border-radius: 50px; border: 1px solid #e2e8f0;">
                         <audio controls src="data:${_escTxt(mimeType)};base64,${_escTxt(audioRecording)}" style="width: 100%;"></audio>
                     </div>
                 ` : '<p style="font-style:italic; color: #64748b;">No audio recording available.</p>')}
                 <!-- AI Feedback -->
-                ${feedback ? `<div style="background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fcd34d; margin-bottom: 20px; font-style: italic; color: #92400e;">
+                ${feedback ? `<div class="alloflow-fluency-feedback" style="background: #fffbeb; padding: 15px; border-radius: 8px; border: 1px solid #fcd34d; margin-bottom: 20px; font-style: italic; color: #92400e;">
                     <strong>AI Feedback:</strong> "${_escTxt(feedback)}"
                 </div>` : ''}
                 <!-- Detailed Analysis View -->
-                <div style="line-height: 1.8; font-family: serif; font-size: 1.1em; background: white; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
+                <div class="alloflow-fluency-passage" style="line-height: 1.8; font-family: serif; font-size: 1.1em; background: white; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
                     ${heatmapHtml}
                 </div>
-                <div style="margin-top: 10px; font-size: max(12px, 0.75em); color: #64748b; text-align: center;">
-                    Key: <span style="color:#15803d; font-weight:bold;">Correct</span> | <span style="color:#b45309; border-bottom: 2px dotted #f59e0b;">Hesitation</span> | <span style="color:#b91c1c; text-decoration: line-through;">Missed/Error</span>
+                <div class="alloflow-fluency-key" style="margin-top: 10px; font-size: max(12px, 0.75em); color: #64748b; text-align: center;">
+                    Key: <span class="alloflow-fluency-key-correct" style="color:#15803d; font-weight:bold;">Correct</span> | <span class="alloflow-fluency-key-stumbled" style="color:#b45309; border-bottom: 2px dotted #f59e0b;">Hesitation [~]</span> | <span class="alloflow-fluency-key-missed" style="color:#b91c1c; text-decoration: line-through;">Missed/Error [×]</span>
                 </div>
             </div>
         `;
@@ -51662,19 +52153,25 @@ function projectStudentGuideData(data, mode) {
                   const cornellTypable = noteTypable && !notes.some(n => n && noteText(n.text)) && !noteText(d.summary);
                   const cornellEmpty = cornellTypable && !cues.some(c => c && (noteText(c.text) || noteText(c.guidance)));
                   const rowCount = cornellEmpty ? 4 : Math.max(cues.length, notes.length, 1);
+                  const cornellSelfQuizReadyBase = !isTeacher && !isWorksheet && !cornellTypable;
                   const rowsHtml = Array.from({ length: rowCount }).map((_, i) => {
                       const cue = (cues[i] && cues[i].text) || '';
                       const note = (notes[i] && notes[i].text) || '';
                       const guidance = cues[i] && typeof cues[i].guidance === 'string' ? cues[i].guidance : '';
-                      if (cornellEmpty) return `<tr><td class="alloflow-note-cue" style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:35%; background:#f8fafc;">${noteField('cue:' + i, XL('note_cue_n', 'Cue or question {n}', { n: i + 1 }), 2)}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${noteField('notes:' + i, NL('notes_row_n', 'Notes for row {n}', { n: i + 1 }), 3)}</td></tr>`;
+                      if (cornellEmpty) return `<tr><td class="alloflow-note-cue" style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:35%; background:#f8fafc;">${noteField('cue:' + i, XL('note_cue_n', 'Cue or question {n}', { n: i + 1 }), 2)}</td><td class="alloflow-note-cell" style="border:1px solid #cbd5e1; padding:8px; vertical-align:top;">${noteField('notes:' + i, NL('notes_row_n', 'Notes for row {n}', { n: i + 1 }), 3)}</td></tr>`;
                       if (!cue.trim() && !note.trim() && !guidance.trim() && !isWorksheet) return '';
                       const guidanceHtml = guidance.trim() ? `<p data-cornell-print-guidance="true" style="margin:6px 0 0; font-size:0.85em; line-height:1.5; font-weight:normal; white-space:pre-wrap;">${escapeHtml(guidance)}</p>` : '';
                       const noteHtml = cornellTypable ? noteField('notes:' + i, cue.trim() ? XL('note_notes_for', 'Notes for: {cue}', { cue: cue.trim() }) : NL('notes_row_n', 'Notes for row {n}', { n: i + 1 }), 3) : isWorksheet && !note.trim() ? cornellWritingSpace('notes', Math.min(10, 4 + Math.ceil(Math.max(0, guidance.trim().length - 90) / 90))) : escapeHtml(note);
-                      return `<tr style="break-inside:avoid; page-break-inside:avoid;"><td class="alloflow-note-cue" style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:35%; background:#f8fafc;"><strong style="font-size:0.85em;">${escapeHtml(cue)}</strong>${guidanceHtml}</td><td style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; white-space:pre-wrap;">${noteHtml}</td></tr>`;
+                      const cellTab = cornellSelfQuizReadyBase ? ' tabindex="0"' : '';
+                      return `<tr style="break-inside:avoid; page-break-inside:avoid;"><td class="alloflow-note-cue" style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; width:35%; background:#f8fafc;"><strong style="font-size:0.85em;">${escapeHtml(cue)}</strong>${guidanceHtml}</td><td class="alloflow-note-cell"${cellTab} style="border:1px solid #cbd5e1; padding:8px; vertical-align:top; white-space:pre-wrap;">${noteHtml}</td></tr>`;
                   }).filter(Boolean).join('');
+                  const cornellSelfQuizReady = cornellSelfQuizReadyBase && Boolean(rowsHtml);
+                  const cornellControlsHtml = cornellSelfQuizReady
+                      ? `<div class="alloflow-cornell-controls no-print" style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;"><button type="button" class="alloflow-cornell-fold-btn" aria-pressed="false" data-cornell-label-cover="${_escTxt(XL('note_cover_self_quiz', 'Cover notes to self-quiz'))}" data-cornell-label-reveal="${_escTxt(XL('note_reveal_all', 'Reveal all notes'))}" style="padding:5px 12px;border-radius:6px;border:1px solid #6366f1;background:#eef2ff;color:#3730a3;font-size:0.85em;font-weight:600;cursor:pointer;">${_escTxt(XL('note_cover_self_quiz', 'Cover notes to self-quiz'))}</button><span class="alloflow-cornell-hint" style="font-size:0.8em;color:#475569;">${_escTxt(XL('note_fold_hint', 'Click or press Enter on any covered note cell to peek while studying.'))}</span></div>`
+                      : '';
                   const summary = d.summary || '';
                   const summaryHtml = String(summary).trim() || (!isWorksheet && summary) ? `<div style="background:#ecfdf5; border-left:4px solid #10b981; padding:12px; border-radius:6px;"><div style="font-size:max(12px, 0.75em); font-weight:bold; text-transform:uppercase; color:#065f46; margin-bottom:4px;">${escapeHtml(NL('summary_title', 'Summary'))}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${escapeHtml(summary)}</div></div>` : isWorksheet ? `<section data-cornell-summary-space="true" aria-label="${_escTxt(NL('summary_title', 'Summary'))}" style="margin-top:12px; border:1px solid #cbd5e1; border-radius:6px; padding:10px; break-inside:avoid; page-break-inside:avoid;"><h3 style="margin:0 0 6px; font-size:0.85em;">${escapeHtml(NL('summary_title', 'Summary'))}</h3>${cornellWritingSpace('summary')}</section>` : cornellTypable ? noteTypingSection(NL('summary_title', 'Summary'), '#ecfdf5', 'summary', 4) : '<div style="font-size:0.85em; color:#475569; font-style:italic;">' + escapeHtml(XL('note_no_summary', 'No summary written yet.')) + '</div>';
-                  return `<style>@media screen and (max-width:600px){.alloflow-cornell-table,.alloflow-cornell-table tbody,.alloflow-cornell-table tr,.alloflow-cornell-table td{display:block;width:auto !important;}.alloflow-cornell-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);}.alloflow-cornell-table tr{margin-bottom:8px;}}</style><table class="alloflow-cornell-table" style="width:100%; border-collapse:collapse; margin-bottom:12px;"><thead><tr><th scope="col" style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">${escapeHtml(NL('cues_column', 'Cues / Questions'))}</th><th scope="col" style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">${escapeHtml(NL('notes_column', 'Notes'))}</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="2" style="border:1px solid #cbd5e1; padding:12px; text-align:center; color:#64748b; font-style:italic;">' + escapeHtml(XL('note_no_rows', 'No rows filled in yet.')) + '</td></tr>'}</tbody></table>${summaryHtml}`;
+                  return `<div class="alloflow-cornell-wrap"><style>@media screen and (max-width:600px){.alloflow-cornell-table,.alloflow-cornell-table tbody,.alloflow-cornell-table tr,.alloflow-cornell-table td{display:block;width:auto !important;}.alloflow-cornell-table thead{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);}.alloflow-cornell-table tr{margin-bottom:8px;}}@media print{.alloflow-cornell-controls{display:none !important;}.alloflow-cornell-table.alloflow-cornell-folded td.alloflow-note-cell{color:inherit !important;background:#ffffff !important;filter:none !important;opacity:1 !important;}}.alloflow-cornell-table.alloflow-cornell-folded td.alloflow-note-cell:not(.alloflow-note-peek){color:transparent !important;background:#f1f5f9 !important;filter:blur(5px);user-select:none;cursor:pointer;}.alloflow-cornell-table.alloflow-cornell-folded td.alloflow-note-cell.alloflow-note-peek{cursor:pointer;background:#fefce8 !important;transition:background 0.15s ease;}</style>${cornellControlsHtml}<table class="alloflow-cornell-table" style="width:100%; border-collapse:collapse; margin-bottom:12px;"><thead><tr><th scope="col" style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">${escapeHtml(NL('cues_column', 'Cues / Questions'))}</th><th scope="col" style="border:1px solid #cbd5e1; background:#e0e7ff; padding:8px; text-align:left; font-size:0.85em; text-transform:uppercase;">${escapeHtml(NL('notes_column', 'Notes'))}</th></tr></thead><tbody>${rowsHtml || '<tr><td colspan="2" style="border:1px solid #cbd5e1; padding:12px; text-align:center; color:#64748b; font-style:italic;">' + escapeHtml(XL('note_no_rows', 'No rows filled in yet.')) + '</td></tr>'}</tbody></table></div>${summaryHtml}`;
               }
               if (tt === 'lab-report') {
                   const materials = (Array.isArray(d.materials) ? d.materials : []).map(m => (m && m.text || '').trim()).filter(Boolean);
@@ -51740,7 +52237,7 @@ function projectStudentGuideData(data, mode) {
                       const filled = ans
                           ? `<strong style="color:#065f46;">${escapeHtml(ans)}</strong>`
                           : guidedTypable
-                          ? `<input type="text" class="interactive-blank alloflow-response-input" data-allo-response-key="${_escTxt((item.id || 'note-taking') + ':note:blank:' + i)}" data-allo-response-type="free-response" data-allo-question="${_escTxt(XL('note_guided_n', 'Guided note {n}', { n: i + 1 }))}" aria-label="${_escTxt(XL('note_guided_missing_n', 'Missing words for guided note {n}', { n: i + 1 }))}" style="width:11em; max-width:100%; padding:4px 8px; border:1px solid #94a3b8; border-radius:6px; font:inherit;">`
+                          ? `<input type="text" class="interactive-blank alloflow-response-input" data-allo-response-key="${_escTxt((item.id || 'note-taking') + ':note:blank:' + i)}" data-allo-response-type="free-response" data-allo-part-label="${_escTxt(XL('note_guided_n', 'Guided note {n}', { n: i + 1 }))}" data-allo-question="${_escTxt(((b && (b.before || b.after)) ? ((b.before || '') + ' ___ ' + (b.after || '')).trim() : XL('note_guided_n', 'Guided note {n}', { n: i + 1 })))}" aria-label="${_escTxt(XL('note_guided_missing_n', 'Missing words for guided note {n}', { n: i + 1 }))}" style="width:11em; max-width:100%; padding:4px 8px; border:1px solid #94a3b8; border-radius:6px; font:inherit;">`
                           : (isWorksheet ? fillableBlank() : '<span style="color:#94a3b8;">________</span>');
                       return `<li style="font-size:0.95em; color:#1e293b; margin-bottom:4px;">${escapeHtml(b && b.before || '')}${filled}${escapeHtml(b && b.after || '')}</li>`;
                   }).join('');
@@ -51754,6 +52251,7 @@ function projectStudentGuideData(data, mode) {
               }
               if (tt === 'q-and-a') {
                   const pairs = (Array.isArray(d.pairs) ? d.pairs : []).filter(p => p && ((p.question || '').trim() || (p.answer || '').trim()));
+                  const qaHideAnswers = !isTeacher && cfg.assessmentMode === true;
                   // A student worksheet never prints the generated model answers.
                   if (isWorksheet) {
                       const asked = pairs.filter(p => (p.question || '').trim());
@@ -51761,8 +52259,10 @@ function projectStudentGuideData(data, mode) {
                           ? asked.map((p, i) => `<div data-note-writing-space="true" style="background:#ecfeff; border-radius:6px; padding:10px; margin-bottom:8px; break-inside:avoid; page-break-inside:avoid;"><div style="font-size:0.9em; font-weight:bold; color:#155e75; margin-bottom:4px;">${escapeHtml(NL('q_n', 'Q{n}', { n: i + 1 }))}. ${escapeHtml(p.question.trim())}</div>${ruledLines(3)}</div>`).join('')
                           : noteWritingSection(NL('heading_qa', 'Q&A Study Notes'), '#ecfeff', 8);
                   }
-                  const qaTypable = noteTypable && !pairs.some(p => noteText(p.answer));
-                  const pairsHtml = pairs.map((p, i) => `<div style="background:#ecfeff; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:0.9em; font-weight:bold; color:#155e75; margin-bottom:4px;">${escapeHtml(NL('q_n', 'Q{n}', { n: i + 1 }))}. ${escapeHtml((p.question || '').trim())}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${(p.answer || '').trim() ? escapeHtml(p.answer.trim()) : qaTypable ? noteField('answer:' + i, XL('note_answer_to', 'Answer to: {question}', { question: (p.question || '').trim().slice(0, 120) }), 3) :'<span style="color:#94a3b8; font-style:italic;">' + escapeHtml(NL('no_answer_yet', 'No answer written yet.')) + '</span>'}</div></div>`).join('');
+                  if (pairs.length === 0 && noteTypable) {
+                      return noteTypingSection(NL('heading_qa', 'Q&A Study Notes'), '#ecfeff', 'notes', 6);
+                  }
+                  const pairsHtml = pairs.map((p, i) => `<div style="background:#ecfeff; border-radius:6px; padding:10px; margin-bottom:8px;"><div style="font-size:0.9em; font-weight:bold; color:#155e75; margin-bottom:4px;">${escapeHtml(NL('q_n', 'Q{n}', { n: i + 1 }))}. ${escapeHtml((p.question || '').trim())}</div><div style="font-size:0.95em; color:#1e293b; line-height:1.5; white-space:pre-wrap;">${(!qaHideAnswers && noteText(p.answer)) ? escapeHtml(p.answer.trim()) : noteTypable ? noteField('answer:' + i, XL('note_answer_to', 'Answer to: {question}', { question: (p.question || '').trim().slice(0, 120) }), 3) : '<span style="color:#94a3b8; font-style:italic;">' + escapeHtml(NL('no_answer_yet', 'No answer written yet.')) + '</span>'}</div></div>`).join('');
                   return pairsHtml || '<div style="font-size:0.85em; color:#64748b; font-style:italic;">' + escapeHtml(XL('note_no_pairs', 'No question-and-answer pairs yet.')) + '</div>';
               }
               return '<div style="font-size:0.85em; color:#64748b; font-style:italic;">Unknown note-taking template.</div>';
@@ -51890,7 +52390,7 @@ function projectStudentGuideData(data, mode) {
                   return '<article class="memory-aid-cue-review" style="margin:0 0 18px;padding:16px;border:1px solid #fbbf24;border-radius:10px;background:#fffbeb;break-inside:avoid;">'
                       + '<h3>' + (index + 1) + '. ' + escapeHtml(c.target || _maT('memory_target', 'Memory target')) + '</h3>'
                       + '<p role="note">' + (ownReview ? _maT('cue_review_own', 'The facts changed or this saved cue has no recorded fact version. Check your earlier cue against the current facts before using it again.') : _maT('cue_review_student', 'The facts changed. The earlier memory cue is waiting for teacher review.')) + '</p>'
-                      + (!isWorksheet && factsVerified ? '<h4>' + _maT('facts_student_heading', 'Facts to remember') + '</h4><ul>' + listHtml(c.essentialFacts || c.facts) + '</ul>' : '') + '</article>';
+                      + (!isWorksheet && (isTeacher || cfg.assessmentMode !== true) && factsVerified ? '<h4>' + _maT('facts_student_heading', 'Facts to remember') + '</h4><ul>' + listHtml(c.essentialFacts || c.facts) + '</ul>' : '') + '</article>';
               }
               const visualImage = c.visualNeedsReview ? '' : normalizeImage(c.visualImage || c.imageUrl);
               const visualAlt = (specificVisualAlt(c) ? String(c.visualAlt).trim().slice(0, 800) : '') || placeholderAlt(c);
@@ -52044,16 +52544,17 @@ function projectStudentGuideData(data, mode) {
                   + '<p style="margin:4px 0;"><strong>' + _maT('export_feedback_accuracy_label', 'Accuracy check:') + '</strong> ' + escapeHtml(feedback.accuracyCheck) + '</p>'
                   + '<p style="margin:4px 0;"><strong>' + _maT('export_feedback_next_label', 'One next step:') + '</strong> ' + escapeHtml(feedback.nextStep) + '</p>'
                   + (feedback.question ? '<p style="margin:4px 0;"><strong>' + _maT('export_feedback_think_label', 'Think about:') + '</strong> ' + escapeHtml(feedback.question) + '</p>' : '') + '</section>' : '';
+              const _maHideAnswers = !isTeacher && cfg.assessmentMode === true;
               return '<article style="margin:0 0 18px;padding:16px;border:1px solid #cbd5e1;border-radius:10px;background:#fff;break-inside:avoid;page-break-inside:avoid;">'
                   + '<div style="display:flex;justify-content:space-between;gap:10px;align-items:flex-start;flex-wrap:wrap;">'
                   + '<h3 style="margin:0;color:#0f172a;">' + (index + 1) + '. ' + escapeHtml(c.target || _maT('memory_target', 'Memory target')) + '</h3>'
                   + '<div style="font-size:max(12px, 0.78em);color:#334155;">' + escapeHtml(typeLabels[c.type] || c.type || _maT('export_memory_aid_fallback', 'Memory aid')) + ' &middot; ' + escapeHtml(modeLabels[c.mode] || c.mode || _maT('mode_student_authored_compact', 'Student-authored')) + '</div></div>'
-                  + '<section style="margin-top:12px;padding:12px;border-left:4px solid #d97706;background:#fffbeb;border-radius:6px;"><h4 style="margin:0 0 6px;color:#78350f;">' + factsHeading + '</h4>'
-                  + (facts ? '<ul style="margin:0;padding-left:22px;">' + facts + '</ul>' : '<div>' + _maT('export_no_facts', 'No facts were supplied.') + '</div>') + factsReviewNote + '</section>'
+                  + (_maHideAnswers ? '' : '<section style="margin-top:12px;padding:12px;border-left:4px solid #d97706;background:#fffbeb;border-radius:6px;"><h4 style="margin:0 0 6px;color:#78350f;">' + factsHeading + '</h4>'
+                  + ((!isTeacher && !factsVerified) ? '' : (facts ? '<ul style="margin:0;padding-left:22px;">' + facts + '</ul>' : '<div>' + _maT('export_no_facts', 'No facts were supplied.') + '</div>')) + factsReviewNote + '</section>')
                   + hookHtml
                   + modeBlock
-                  + connectionsHtml
-                  + mappingHtml
+                  + (_maHideAnswers ? '' : connectionsHtml)
+                  + (_maHideAnswers ? '' : mappingHtml)
                   + visualHtml
                   + '<section style="margin-top:12px;padding:12px;border:2px solid #99f6e4;border-radius:8px;"><h4 style="margin:0 0 5px;color:#115e59;">' + _maT('export_create_remix_heading', 'Create, remix, or personalize your memory aid') + '</h4>'
                   + (c.studentPrompt ? '<p style="margin:0 0 8px;color:#475569;">' + escapeHtml(c.studentPrompt) + '</p>' : '')
@@ -52065,7 +52566,7 @@ function projectStudentGuideData(data, mode) {
                     + (studentFields
                         ? '<textarea class="interactive-textarea alloflow-response-input" data-allo-response-key="' + escapeHtml(responseKeyBase + ':card' + index + ':reasoning') + '" aria-label="' + escapeHtml(_maT('export_reasoning_field_aria', 'Explanation for {target}', { target: c.target || _maT('this_memory_target', 'this memory target') })) + '" placeholder="' + escapeHtml(_maT('export_reasoning_field_placeholder', 'Explain how your memory aid connects to the facts')) + '" style="min-height:72px;">' + escapeHtml(reasoning) + '</textarea>'
                         : '<div style="min-height:48px;padding:8px;border:1px solid #cbd5e1;border-radius:6px;background:#fff;white-space:pre-wrap;">' + (reasoning ? escapeHtml(reasoning) : '&nbsp;') + '</div>') + '</section>' : '')
-                  + feedbackHtml + '</article>';
+                  + (_maHideAnswers ? '' : feedbackHtml) + '</article>';
           }).join('');
           // Export preflight counts these to remind the teacher before students see "still checking".
           const factsPending = cards.filter((card) => card && typeof card === 'object' && !cardVerified(card)).length;
@@ -52327,13 +52828,13 @@ function projectStudentGuideData(data, mode) {
                   const ratingName = itemId + '-selfcheck-' + row.key;
                   const ratingChoices = selfRatingOptions.map(([value, label]) => isWorksheet
                       ? '<label class="alloflow-choice-label">' + fillableCircle() + esc(label) + '</label>'
-                      : '<label class="alloflow-choice-label"><input type="radio" name="' + esc(ratingName) + '" value="' + value + '" data-allo-response-key="' + esc(itemId + ':applied:selfcheck-' + row.key + ':rating') + '"> ' + esc(label) + '</label>').join(' ');
+                      : '<label class="alloflow-choice-label"><input type="radio" name="' + esc(ratingName) + '" value="' + value + '" data-allo-response-key="' + esc(itemId + ':applied:selfcheck-' + row.key + ':rating') + '" data-allo-response-type="self-check" data-allo-question-type="self-check"> ' + esc(label) + '</label>').join(' ');
                   return '<div class="ace-ledger-row"><h4 class="ace-h5">' + esc(rowLabel) + '</h4><p class="ace-p"><strong>' + esc(row.text) + '</strong></p><dl class="ace-dl">'
                       + '<dt>' + esc(L.selfRating) + '</dt><dd>' + (rated ? '<span class="ace-chip">' + esc(row.ratingLabel) + '</span>' : (isWorksheet ? '<div>' : '<div role="radiogroup" aria-label="' + esc(L.selfRating + ' (' + rowLabel + ')') + '">') + ratingChoices + '</div>') + '</dd>'
                       + '<dt>' + esc(L.selfWhere) + '</dt><dd>' + (row.note && row.note.trim() ? esc(row.note) : responseField('selfcheck-' + row.key, L.selfWhere + ' (' + rowLabel + ')', '', 'short')) + '</dd>'
                       + '</dl></div>';
               }).join('') + '</section>' : '';
-          const teacherCommentHtml = m.teacherComment && m.teacherComment.text ? '<section class="ace-panel ace-brief"><h3 class="ace-h3">' + esc(L.teacherComment) + '</h3><p class="ace-p ace-prewrap">' + esc(m.teacherComment.text) + '</p></section>' : '';
+          const teacherCommentHtml = (isTeacher || cfg.assessmentMode !== true) && m.teacherComment && m.teacherComment.text ? '<section class="ace-panel ace-brief"><h3 class="ace-h3">' + esc(L.teacherComment) + '</h3><p class="ace-p ace-prewrap">' + esc(m.teacherComment.text) + '</p></section>' : '';
           const st = m.stressTest;
           const stressHtml = st ? '<section class="ace-panel ace-stress"><h3 class="ace-h3">' + esc(L.stress) + '</h3>'
               + para(L.stressPoint, st.challenge) + para(L.stressWhy, st.whyItMatters) + para(L.stressQuestion, st.question) + '</section>' : '';
@@ -52354,7 +52855,7 @@ function projectStudentGuideData(data, mode) {
               const fillCoverage = text => Object.entries(counts).reduce((result, [key, value]) => result.split('{' + key + '}').join(String(value)), text);
               return fillCoverage(tx('applied_challenge.coverage.counts', 'Included: {workspaceFields} writing sections, {evidenceRows} evidence rows, {validationChecks} saved checks, and {selfChecks} self-ratings.')) + ' ' + (counts.shortenedFields ? fillCoverage(tx('applied_challenge.coverage.shortened', '{shortenedFields} long text fields were shortened for this review. Your saved work is complete.')) : tx('applied_challenge.coverage.complete', 'Text is included in full.'));
           })();
-          const feedbackHtml = fb ? '<section class="ace-panel ace-feedback"><h3 class="ace-h3">' + esc(L.feedback) + '</h3>'
+          const feedbackHtml = (isTeacher || cfg.assessmentMode !== true) && fb ? '<section class="ace-panel ace-feedback"><h3 class="ace-h3">' + esc(L.feedback) + '</h3>'
               + pre(feedbackCoverageText)
               + para(L.reviewStatus, m.feedbackOutdated ? tx('applied_challenge.feedback.earlier', 'Feedback for an earlier draft or brief. Review before relying on it.') : fb.statusLabel) + para(L.strength, fb.strength) + para(L.lesson, fb.lessonConnectionCheck)
               + para(L.feedbackEvidence, fb.evidenceOrConstraintCheck) + para(L.nextStep, fb.nextStep) + para(L.thinkAbout, fb.question) + '</section>' : '';
@@ -52433,13 +52934,14 @@ function projectStudentGuideData(data, mode) {
               : (layout === 'concept-map') ? _uiL('export.ac_branches', 'Central idea branches into') + '&#8230;' : '';
           const _acCaptionHtml = _acCaption ? ('<div class="alloflow-own-font" style="text-align:center;' + _acBFStyle + 'font-size:0.95em;color:#a16207;font-style:italic;margin-bottom:10px;">' + _acCaption + '</div>') : '';
           const _acInteractive = !isTeacher && !!(d.interactive && d.interactive.armed === true);
+          const _acBulletText = (b) => b && typeof b === 'object' ? (b.text || b.label || '') : b;
           const _acCard = (s, i) => {
-              const bullets = Array.isArray(s && s.bullets) ? s.bullets : [];
-              const label = (s && s.label) || _uiRaw('export.ac_section_n', 'Section {n}', { n: i + 1 });
+              const bullets = Array.isArray(s && s.bullets) ? s.bullets : (Array.isArray(s && s.points) ? s.points : []);
+              const label = (s && (s.label || s.title)) || _uiRaw('export.ac_section_n', 'Section {n}', { n: i + 1 });
               const icon = (s && (s.iconUrl || s.icon)) || '';
               const _iconAlt = s && typeof s.iconAlt === 'string' ? s.iconAlt.trim() : '';
               const m = _acMk[i % _acMk.length];
-              const rot = _acJit((s && (s.id || s.label)) || ('s' + i));
+              const rot = _acJit((s && (s.id || s.label || s.title)) || ('s' + i));
               const _isImg = typeof icon === 'string' && /^(data:|https?:)/.test(icon);
               const _iconHtml = icon ? (_isImg ? ('<img src="' + escapeHtml(icon).replace(/"/g, '&quot;') + '" alt="' + escapeHtml(_iconAlt).replace(/"/g, '&quot;') + '" style="height:1.5em;width:auto;vertical-align:-0.35em;margin-right:6px;" />') : (escapeHtml(icon) + ' ')) : '';
               const _badge = (layout === 'process') ? ('<div aria-hidden="true" class="alloflow-own-font" style="position:absolute;top:-12px;left:-12px;z-index:6;width:30px;height:30px;border-radius:999px;background:' + m.hex + ';color:#fff;display:flex;align-items:center;justify-content:center;' + _acTFStyle + 'font-size:15px;box-shadow:0 1px 3px rgba(0,0,0,0.3);">' + (i + 1) + '</div>') : '';
@@ -52449,11 +52951,13 @@ function projectStudentGuideData(data, mode) {
                       ? ('<ul style="margin:6px 0 0;padding-left:2px;list-style:none;">' + bullets.map((_, bIdx) => '<li style="display:flex;align-items:center;gap:8px;margin-bottom:6px;"><span style="color:' + m.hex + ';font-weight:bold;line-height:1.3;">&#8226;</span>' + (isWorksheet ? fillableBlank(200) : ('<input type="text" class="interactive-blank alloflow-response-input alloflow-own-font" data-allo-response-key="' + _escTxt(String(item.id || 'ac') + ':ac:' + String((s && s.id) || i) + ':' + bIdx + ':free-response') + '" data-allo-response-type="free-response" data-allo-question="' + _escTxt(label + ' (' + (bIdx + 1) + ')') + '" aria-label="' + _escTxt(label + ' ' + (bIdx + 1)) + '" placeholder="' + _uiL('placeholders.type_answer_here', 'Type your answer...') + '" style="' + _acBFStyle + 'flex:1;min-width:140px;font-size:1.05em;">')) + '</li>').join('') + '</ul>')
                       : ('<div class="alloflow-own-font" style="' + _acBFStyle + 'font-size:0.95em;color:#64748b;font-style:italic;">(' + _uiL('anchor_chart.section_left_blank', 'your teacher left this section blank') + ')</div>'))
                   : (bullets.length
-                      ? ('<ul style="margin:6px 0 0;padding-left:2px;list-style:none;">' + bullets.map(b => '<li style="display:flex;align-items:flex-start;gap:8px;margin-bottom:3px;"><span style="color:' + m.hex + ';font-weight:bold;line-height:1.3;">&#8226;</span><span class="alloflow-own-font" style="' + _acBFStyle + 'font-size:1.15em;color:#2d3748;line-height:1.3;">' + escapeHtml(b) + '</span></li>').join('') + '</ul>')
+                      ? ('<ul style="margin:6px 0 0;padding-left:2px;list-style:none;">' + bullets.map(b => '<li style="display:flex;align-items:flex-start;gap:8px;margin-bottom:3px;"><span style="color:' + m.hex + ';font-weight:bold;line-height:1.3;">&#8226;</span><span class="alloflow-own-font" style="' + _acBFStyle + 'font-size:1.15em;color:#2d3748;line-height:1.3;">' + escapeHtml(_acBulletText(b)) + '</span></li>').join('') + '</ul>')
                       : ('<div class="alloflow-own-font" style="' + _acBFStyle + 'font-size:0.95em;color:#9ca3af;font-style:italic;">(empty)</div>'));
+              const _akRaw = isTeacher && s && s.answerKey ? (Array.isArray(s.answerKey) ? s.answerKey.map((x) => String(x || '').trim()).filter(Boolean).join('; ') : String(s.answerKey).trim()) : '';
+              const _akHtml = _akRaw ? ('<div class="answer-key" style="margin-top:8px;padding:6px 8px;background:#eef2ff;border-left:3px solid #4f46e5;border-radius:4px;font-size:0.92em;color:#1e1b4b;"><strong>' + _uiL('brainstorm.answer_key', 'Answer Key') + ':</strong> ' + escapeHtml(_akRaw) + '</div>') : '';
               return '<div class="alloflow-anchor-card alloflow-own-font" style="position:relative;border-left:6px solid ' + m.hex + ';background:linear-gradient(180deg,' + m.soft + ' 0%,rgba(255,255,255,0.85) 60%);box-shadow:0 1px 0 rgba(0,0,0,0.04),0 2px 8px rgba(0,0,0,0.06);transform:rotate(' + rot + 'deg);border-radius:6px;padding:14px 14px 14px 18px;margin-bottom:' + _mb + ';break-inside:avoid;page-break-inside:avoid;">' + _badge
                   + '<div class="alloflow-own-font" style="' + _acTFStyle + 'font-size:1.4em;color:' + m.ink + ';letter-spacing:0.02em;line-height:1.1;">' + _iconHtml + escapeHtml(label) + '</div>'
-                  + _bulletsHtml + '</div>';
+                  + _bulletsHtml + _akHtml + '</div>';
           };
           let sectionsHtml;
           if (sections.length === 0) {
@@ -52471,6 +52975,9 @@ function projectStudentGuideData(data, mode) {
           const annotationsHtml = annotations.length > 0
               ? ('<div style="margin-top:14px;padding:10px;background:#fef3c7;border-left:4px solid #f59e0b;border-radius:4px;"><div style="font-size:max(12px, 0.75em);font-weight:bold;text-transform:uppercase;color:#92400e;margin-bottom:6px;">Critique Mode &#8212; Student Annotations (' + annotations.length + ')</div><ul style="margin:0;padding-left:18px;">' + annotations.slice(0, 12).map(a => '<li class="alloflow-own-font" style="' + _acBFStyle + 'font-size:1em;color:#1e293b;margin-bottom:3px;"><strong>' + escapeHtml(a.kind || 'note') + ':</strong> ' + escapeHtml(a.text || '') + '</li>').join('') + '</ul>' + (annotations.length > 12 ? ('<div style="font-size:max(12px, 0.75em);color:#92400e;margin-top:4px;font-style:italic;">&#8230; and ' + (annotations.length - 12) + ' more.</div>') : '') + '</div>')
               : '';
+          const _acRubricHtml = isTeacher && d.interactive && d.interactive.rubric
+              ? ('<div class="answer-key" style="margin-top:12px;padding:10px 12px;background:#eef2ff;border-left:4px solid #4f46e5;border-radius:4px;color:#1e1b4b;"><strong>' + _uiL('scaffolds.rubric', 'Grading Rubric') + ':</strong> ' + (typeof d.interactive.rubric === 'string' ? parseMarkdownToHTML(d.interactive.rubric, { minHeadingLevel: 3 }) : '<pre style="white-space:pre-wrap;margin:4px 0 0;font-family:inherit;">' + escapeHtml(JSON.stringify(d.interactive.rubric, null, 2)) + '</pre>') + '</div>')
+              : '';
           return `
               ${_acFontImport}
               <div class="section" id="${_escTxt(item.id)}" style="background:#fffdf7;border:1px solid #f0e6d2;border-radius:10px;padding:8px 14px 14px;">
@@ -52478,6 +52985,7 @@ function projectStudentGuideData(data, mode) {
                   ${_acCaptionHtml}
                   ${sectionsHtml}
                   ${annotationsHtml}
+                  ${_acRubricHtml}
               </div>
           `;
       }
@@ -52669,19 +53177,21 @@ function projectStudentGuideData(data, mode) {
         'memory-aid': { icon: '🧠', color: '#7e22ce', bg: '#faf5ff', label: 'Memory Aid' },
         'applied-challenge': { icon: '🛠️', color: '#0f766e', bg: '#f0fdfa', label: 'Applied Challenge' },
         'directions': { icon: '🧭', color: '#0369a1', bg: '#f0f9ff', label: 'Directions' },
+        'alignment-report': { icon: '🧭', color: '#0f766e', bg: '#f0fdfa', label: 'Alignment Report' },
       };
-      const _typeLabelKeys = { 'simplified': 'roster.type_adapted_text', 'analysis': 'meta.analysis_standard', 'glossary': 'roster.type_glossary', 'quiz': 'roster.type_quiz', 'outline': 'export.type_outline', 'faq': 'roster.type_faq', 'sentence-frames': 'roster.type_frames', 'image': 'export.type_image', 'math': 'stem.tools_menu.math', 'dbq': 'dbq.default_title', 'lesson-plan': 'tour.lesson_plan_title', 'udl-advice': 'export.type_udl_advice', 'brainstorm': 'roster.type_brainstorm', 'fluency-record': 'export.type_fluency_record', 'timeline': 'export.type_timeline', 'concept-sort': 'roster.type_concept_sort', 'note-taking': 'note_taking.notes_column', 'anchor-chart': 'sidebar.tool_anchor_chart', 'memory-aid': 'export.type_memory_aid', 'applied-challenge': 'export.type_applied_challenge', 'directions': 'export.type_directions' };
+      const _typeLabelKeys = { 'simplified': 'roster.type_adapted_text', 'analysis': 'meta.analysis_standard', 'glossary': 'roster.type_glossary', 'quiz': 'roster.type_quiz', 'outline': 'export.type_outline', 'faq': 'roster.type_faq', 'sentence-frames': 'roster.type_frames', 'image': 'export.type_image', 'math': 'stem.tools_menu.math', 'dbq': 'dbq.default_title', 'lesson-plan': 'tour.lesson_plan_title', 'udl-advice': 'export.type_udl_advice', 'brainstorm': 'roster.type_brainstorm', 'fluency-record': 'export.type_fluency_record', 'timeline': 'export.type_timeline', 'concept-sort': 'roster.type_concept_sort', 'note-taking': 'note_taking.notes_column', 'anchor-chart': 'sidebar.tool_anchor_chart', 'memory-aid': 'export.type_memory_aid', 'applied-challenge': 'export.type_applied_challenge', 'directions': 'export.type_directions', 'alignment-report': 'export.type_alignment_report' };
       const _willRenderForCtx = (item, isTeacher) => {
         const toggleMap = {
           'lesson-plan': 'includeLessonPlan', 'simplified': 'includeSimplified', 'outline': 'includeOutline',
           'glossary': 'includeGlossary', 'quiz': 'includeQuiz', 'faq': 'includeFaq',
           'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
           'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq', 'concept-sort': 'includeConceptSort',
-          'timeline': 'includeTimeline', 'note-taking': 'includeNoteTaking', 'anchor-chart': 'includeAnchorChart', 'directions': 'includeDirections', 'gemini-bridge': 'includeGeminiBridge'
+          'timeline': 'includeTimeline', 'note-taking': 'includeNoteTaking', 'anchor-chart': 'includeAnchorChart', 'directions': 'includeDirections', 'gemini-bridge': 'includeGeminiBridge', 'fluency-record': 'includeFluencyRecord', 'alignment-report': 'includeAlignmentReport'
         };
         const originalReading = !!readingContract?.isSupportedOriginal?.(item);
         const key = originalReading ? 'includeOriginalReading' : toggleMap[item.type];
         if (key && cfg[key] === false) return false;
+        if (!isTeacher && item.type === 'alignment-report') return false;
         if (item.type === 'analysis' || item.type === 'udl-advice' || item.type === 'brainstorm') {
           const studentKey = item.type === 'analysis' ? 'includeAnalysis'
                           : item.type === 'udl-advice' ? 'includeUdlAdvice' : 'includeBrainstorm';
@@ -52691,10 +53201,14 @@ function projectStudentGuideData(data, mode) {
           // Must stay in step with the matching gate in generateResourceHTML: on
           // a cloze worksheet the passage DOES render in the teacher copy,
           // because that is where the answer key comes from.
-          const clozeKey = item.type === 'simplified' && !originalReading && isWorksheet && cfg.clozeWorksheet === true;
-          // A KWL with teacher examples differs from its student copy, so the key keeps it.
+          const clozeKey = item.type === 'simplified' && !originalReading && cfg.clozeWorksheet === true && (isWorksheet || cfg.clozeInteractive === true);
+          // A KWL with teacher examples or an interactive Venn key differs from its student copy, so the key keeps it.
           const kwlKey = item.type === 'outline' && _kwlHasTeacherExamples(item.data);
-          if (!clozeKey && !kwlKey && (item.type === 'simplified' || item.type === 'outline' || item.type === 'image'
+          const vennKey = _vennHasTeacherKey(item, cfg);
+          const sfKey = item.type === 'sentence-frames' && _sfHasTeacherKey(item.data);
+          if (item.type === 'fluency-record' && !(item.meta && String(item.meta).trim())) return false;
+          if (item.type === 'anchor-chart' && !_acHasTeacherKey(item)) return false;
+          if (!clozeKey && !kwlKey && !vennKey && !sfKey && (item.type === 'simplified' || item.type === 'outline' || item.type === 'image'
               || item.type === 'faq' || item.type === 'sentence-frames')) return false;
         }
         return true;
@@ -52704,7 +53218,7 @@ function projectStudentGuideData(data, mode) {
       // generateResourceHTML only ever sees one item.
       const _packItemsAll = historyItems.slice();
       cfg.__inlineGlossaryFor = (it) => _alloRelatedClozeGlossary(_packItemsAll, it);
-      if (isWorksheet && cfg.clozeWorksheet === true) {
+      if (cfg.clozeWorksheet === true && (isWorksheet || cfg.clozeInteractive === true)) {
         cfg.__clozeGlossaryFor = (it) => _alloRelatedClozeGlossary(_packItemsAll, it);
       }
       const _materializeRenderable = (items, isTeacher) => {
@@ -53044,7 +53558,7 @@ function projectStudentGuideData(data, mode) {
           saveWorkTitle: 'Save your work', saveWorkDescription: 'Enter a name or nickname so your teacher can identify this submission.', saveWorkConfirm: 'Save work', saveAnswersTitle: 'Save your answers', saveAnswersDescription: 'Enter a name or nickname so your teacher can identify this answer file.', saveAnswersConfirm: 'Save answers', cancel: 'Cancel', saveMyAnswers: 'Save my answers', savedAnswers: 'Saved! Send the file to your teacher', saveErrorPrefix: 'Could not save your answers: ',
           saveToolsLabel: 'Save and submit your work', doneTitle: 'Done with your work?', answerFileDescription: 'Save a file of your answers and send it to your teacher.', answerFileHelp: 'Saves a .json file your teacher opens in AlloFlow.', encryptedMailboxDescription: 'Send your encrypted work directly to your teacher’s Class Mailbox. If sending fails, an encrypted file downloads instead.', encryptedFileDescription: 'Save an encrypted file with your answers and send it to your teacher.', encryptionHelp: 'Your responses are encrypted with your class key. Only your teacher can open them.', saveMyWork: 'Save my work', saving: 'Saving…', savedDownload: 'Saved — download started', saveAgain: 'Save my work again', saveUnavailable: 'Save unavailable (key missing)', encryptionUnavailable: 'Encryption is not available in this browser. Use a newer browser to save submissions.', sending: 'Sending to your teacher…', sent: 'Sent to your teacher', sentToTeacher: 'Your encrypted work was sent to your teacher', sendAgain: 'Send my work again', mailboxFallback: 'Could not reach your teacher’s Class Mailbox. An encrypted file will download instead; send that file to your teacher.', workSaveErrorPrefix: 'Could not save your work: ',
           skipToContent: 'Skip to content', readingToolsLabel: 'Reading and annotation tools', toolsLabel: 'Tools', accessibilityInfoLabel: 'Accessibility information', accessibilityTitle: 'Accessibility features', accessibilityDescription: 'This document includes semantic structure, heading hierarchy, table headers, landmarks, language metadata, logical reading order, and print-optimized layout. This is not an independently validated WCAG or PDF/UA conformance claim; verify it with an accessibility checker before relying on it for compliance. Created with AlloFlow.', submissionFor: 'Submission for {name}', worksheetLabel: 'Worksheet', savedLabel: 'Saved', encryptedClassKey: 'Encrypted with class key', encryptedFileHelp: 'This file contains encrypted responses. Open it in AlloFlow (Document Builder → Import submissions) with the matching class key file to decrypt it.', resourceIdLabel: 'Resource ID', printLinksTitle: 'Web links for this resource',
-          hudJumpSection: 'Jump to section', hudAllSections: 'All sections ({n})', hudStepMode: 'Step-by-step', hudStepModeTitle: 'Toggle between viewing all sections and one section at a time', hudPrevStep: 'Previous', hudNextStep: 'Next', hudPinReading: 'Pin reading', hudPinReadingTitle: 'Pin reading and glossary beside activities on wide screens', hudAnsweredCount: '{done} / {total} answered', hudAutosaveOn: 'Autosave: {name}', hudOneTimeMode: 'One-time session', hudPrint: 'Print', hudSaveJump: 'Save', savedLearnersLabel: 'Continue as a previous learner on this device:', unansweredSaveNotice: '{n} item(s) still unanswered. You can save now or click Cancel to finish first.', glossaryTermLabel: 'Glossary term definition', closeDefinition: 'Close definition',
+          hudJumpSection: 'Jump to section', hudAllSections: 'All sections ({n})', hudStepMode: 'Step-by-step', hudStepModeTitle: 'Toggle between viewing all sections and one section at a time', hudPrevStep: 'Previous', hudNextStep: 'Next', hudPinReading: 'Pin reading', hudPinReadingTitle: 'Pin reading and glossary beside activities on wide screens', hudAnsweredCount: '{done} / {total} answered', hudAutosaveOn: 'Autosave: {name}', hudOneTimeMode: 'One-time session', hudPrint: 'Print', hudSaveJump: 'Save', savedLearnersLabel: 'Continue as a previous learner on this device:', unansweredSaveNotice: '{n} item(s) still unanswered. You can save now or click Cancel to finish first.', glossaryTermLabel: 'Glossary term definition', closeDefinition: 'Close definition', dbqStatsCounter: '{words} words · {paras} paragraphs',
           rtTheme: "Theme", rtLight: "Light", rtDark: "Dark", rtSepia: "Sepia", rtHighContrast: "High Contrast", rtThemeAria: "Reading theme", rtLightTitle: "Light (teacher default)", rtDarkTitle: "Dark mode", rtSepiaTitle: "Sepia (warm, low-glare)", rtHcTitle: "High Contrast (WCAG AAA)", rtFont: "Font", rtFontAria: "Font family", rtFontAlways: "Always available", rtFontInternet: "Needs internet", rtFontThisDoc: "This document", rtFontDocument: "Document font ({font})", rtFontOriginal: "Original", rtFontSans: "Sans", rtFontReadable: "Readable (Verdana)", rtFontHumanist: "Humanist (Tahoma)", rtFontSerif: "Serif (Georgia)", rtFontBookSerif: "Book serif (Palatino)", rtFontRounded: "Rounded (Trebuchet)", rtFontDyslexia: "Dyslexia-friendly (Comic Sans)", rtFontMono: "Monospace", rtText: "Text", rtTextAria: "Text display", rtSmaller: "Smaller text", rtResetSize: "Back to normal text size", rtLarger: "Larger text", rtSpacing: "Spacing", rtLineSpacing: "Line spacing", rtLineSpacingTitle: "Cycle line spacing", rtLetter: "Letter", rtLetterSpacing: "Letter spacing", rtLetterSpacingTitle: "Cycle letter spacing", rtGuide: "Guide", rtGuideAria: "Reading guide", rtOff: "Off", rtLine: "Line", rtFocus: "Focus", rtGuideOffTitle: "Turn reading guide off", rtGuideLineTitle: "Line reader follows your pointer", rtGuideFocusTitle: "Focus mask follows your pointer", rtAnnotate: "Annotate", rtAnnoAria: "Annotations", rtNote: "Note", rtHighlight: "Highlight", rtVoice: "Voice", rtDraw: "Draw", rtUndo: "Undo", rtEraseMine: "Erase my marks", rtList: "List", rtSaveMine: "Save mine", rtNoteTitle: "Add a sticky note", rtHighlightTitle: "Highlight text", rtVoiceTitle: "Voice note: click to start recording (max 60s, stays on your device)", rtDrawTitle: "Draw: press and drag to draw freehand on the page", rtUndoTitle: "Undo last annotation (Ctrl/Cmd+Z)", rtEraseMineTitle: "Erase everything you have marked on this page. Your teacher's marks stay.", rtListTitle: "Show all annotations", rtSaveMineTitle: "Download my annotations as JSON", rtPen: "Pen:", rtSize: "Size:", rtThin: "Thin", rtMedium: "Medium", rtThick: "Thick", rtThinTitle: "Thin pen", rtMediumTitle: "Medium pen", rtThickTitle: "Thick pen", rtPenRed: "Red pen", rtPenBlue: "Blue pen", rtPenGreen: "Green pen", rtPenYellow: "Yellow pen", rtPenBlack: "Black pen", rtNoteColor: "Note color:", rtNoteYellow: "Yellow note", rtNoteGreen: "Green note", rtNoteBlue: "Blue note", rtNotePink: "Pink note", rtHighlightColor: "Highlight color:", rtHlYellow: "Yellow highlight", rtHlGreen: "Green highlight", rtHlBlue: "Blue highlight", rtHlPink: "Pink highlight", rtNoReadAloud: "Browser read-aloud is not available here.", rtAnnoSaveFailed: "Could not save annotations. Try a different browser.", rtMicDenied: "Microphone access was denied. Allow microphone access in your browser settings to record voice notes.", rtNoAnnotations: "No annotations to save yet — add a note or highlight first.", rtVoiceTooLong: "Voice note too long to save (over 500KB). Try a shorter clip.", rtVoiceUnsupportedBrowser: "Voice recording is not supported in this browser.", rtVoiceUnsupportedDevice: "Voice recording is not supported on this device.", rtVoiceEmpty: "Voice recording was empty.",
           rtReadAloud: "Read aloud", rtStopReadAloud: "Stop read aloud", rtTeacherNote: "Teacher note", rtYourNote: "Your note", rtCloseNote: "Close note", rtStickyNote: "Sticky note: {content}", rtStickyNoteFrom: "Sticky note from {author}: {content}", rtEmptyNote: "(empty)", rtVoiceNote: "Voice note", rtVoiceNoteFrom: "Voice note from {author}", rtTeacherVoiceNote: "Teacher voice note", rtCloseVoiceNote: "Close voice note", rtDrawing: "Drawing", rtDrawingFrom: "Drawing from {author}", rtTeacherFeedback: "Teacher feedback", rtYou: "You", rtEraseNothing: "Nothing to erase yet. Your highlights, notes and drawings will show up here.", rtEraseOne: "Erase your 1 mark on this page. Your teacher’s marks stay.", rtEraseCount: "Erase all {count} of your own marks on this page. Your teacher’s marks stay.", rtNoteToolActive: "Note tool active. Press Enter here to add a note.", rtHighlightToolActive: "Highlight tool active. Select text, then press Enter to highlight it.", rtSaveNote: "Save note", rtSaveClose: "Save and close", rtDeleteNote: "Delete note", rtDelete: "Delete", rtNoteContent: "Note content", rtRemoveAnnoTitle: "Remove all of your annotations?", rtRemoveAnnoOne: "This will permanently remove 1 note, highlight, sticker, or voice note. Teacher annotations will stay.", rtRemoveAnnoMany: "This will permanently remove {count} notes, highlights, stickers, and voice notes. Teacher annotations will stay.", rtRemoveAnnoConfirm: "Remove my annotations", rtConfirmTitle: "Please confirm", rtContinue: "Continue", rtCharLimit: "Character limit reached. Edit your response to make room for more text.",
           rtDownloadRequested: "Download requested — check your Downloads", rtDownloadFramedHelp: "If no file appeared, this page may be inside a system that blocks downloads. Open it in its own tab, then save again.", rtOpenInOwnTab: "Open this page in its own tab", rtNoStorage: "This browser will not keep your work on this device. Use Save my answers before you close the page.",
@@ -53292,12 +53806,14 @@ function projectStudentGuideData(data, mode) {
                         if (!nickname) return;
                         btn.disabled = true; btn.textContent = window.__alloflowText('saving', 'Saving…');
                         try {
+                            var _collectedAnnos = typeof window.__alloflowCollectAnnotations === 'function' ? window.__alloflowCollectAnnotations() : [];
                             var payload = {
                                 nickname: nickname,
                                 docTitle: document.title || 'Worksheet',
                                 timestamp: new Date().toISOString(),
                                 responses: _collectResponses(),
                                 responseManifest: _collectResponseManifest(),
+                                ...(_collectedAnnos.length ? { annotations: _collectedAnnos } : {}),
                                 schemaVersion: 3,
                                 storageVersion: 2,
                                 documentId: _documentId,
@@ -53911,9 +54427,12 @@ function projectStudentGuideData(data, mode) {
             .section { page-break-inside: auto; break-inside: auto; border: 1px solid #ccc; box-shadow: none; margin-bottom: 1.5rem; }
             .resource-header, .card, .question, .reflection-block, figure, .flowchart-step, .mindmap-branch, .outline-card, .ps-card, .ce-pair { page-break-inside: avoid; break-inside: avoid; }
             .quiz-box, .alloflow-dbq-synthesis-worksheet, .alloflow-ruled-response-long { page-break-inside: auto !important; break-inside: auto !important; }
-            .question.alloflow-question-long { page-break-inside: auto; break-inside: auto; }
-            .resource-header { background: #f5f5f5 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
-            .interactive-textarea { border: 1px solid #94a3b8; background-image: linear-gradient(#c0c0c0 1px, transparent 1px); break-inside: avoid; min-height: 100px; }
+            .question.alloflow-question-long { page-break-inside: auto !important; break-inside: auto !important; }
+            .resource-header { background: #f5f5f5 !important; color: #111827 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .interactive-textarea { border: 1px solid #94a3b8; background-image: linear-gradient(#c0c0c0 1px, transparent 1px); break-inside: avoid; min-height: 100px; overflow: visible !important; height: auto !important; }
+            html[data-alloflow-theme], html[data-alloflow-theme] body { background: #ffffff !important; color: #000000 !important; color-scheme: light !important; }
+            html[data-alloflow-theme] .section, html[data-alloflow-theme] .card, html[data-alloflow-theme] .quiz-box, html[data-alloflow-theme] .alloflow-bs-card, html[data-alloflow-theme] .interactive-textarea, html[data-alloflow-theme] .alloflow-print-answer, html[data-alloflow-theme] details, html[data-alloflow-theme] th, html[data-alloflow-theme] td, html[data-alloflow-theme] .alloflow-glossary-card, html[data-alloflow-theme] .alloflow-glossary-card-front, html[data-alloflow-theme] .alloflow-glossary-card-back { background: #ffffff !important; color: #000000 !important; border-color: #64748b !important; }
+            html[data-alloflow-theme] h1, html[data-alloflow-theme] h2, html[data-alloflow-theme] h3, html[data-alloflow-theme] h4, html[data-alloflow-theme] h5, html[data-alloflow-theme] h6, html[data-alloflow-theme] p, html[data-alloflow-theme] li { color: #000000 !important; }
             .allo-ta-counter { display: none; } /* counter is interactive-only */
             /* The decorative end-of-section mark could land alone on a page; headings and the name strip already separate sections. */
             .alloflow-section-terminator { display: none !important; }
@@ -53931,9 +54450,10 @@ function projectStudentGuideData(data, mode) {
             .alloflow-storage-note, #alloflow-download-help { display: none !important; }
             /* Anchor charts: tighter card spacing so a last short card does not take a page alone. */
             .alloflow-anchor-card { margin-bottom: 8px !important; padding: 9px 12px 9px 16px !important; box-shadow: none !important; transform: none !important; }
-            /* A textarea prints only its visible rows; the runtime adds a full copy before printing. */
-            textarea.alloflow-print-mirrored { display: none !important; }
+            /* A textarea prints only its visible rows; inputs may clip horizontally; the runtime mirrors typed values before printing. */
+            textarea.alloflow-print-mirrored, input.alloflow-print-mirrored, select.alloflow-print-mirrored { display: none !important; }
             .alloflow-print-answer { display: block; white-space: pre-wrap; overflow-wrap: anywhere; border: 1px solid #94a3b8; border-radius: 4px; padding: 6px 8px; margin: 4px 0; min-height: 2.5em; break-inside: auto; }
+            .alloflow-print-answer-inline { display: inline-block; white-space: pre-wrap; overflow-wrap: anywhere; border-bottom: 1.5px solid #334155; padding: 1px 6px; min-width: 60px; font-weight: 600; color: #0f172a; }
             textarea { resize: none; } textarea::placeholder { color: transparent; }
             .quiz-check-btn, .quiz-reset-btn { display: none !important; }
             .interactive-blank { border-bottom: 1px solid #333; }
@@ -54221,6 +54741,9 @@ function projectStudentGuideData(data, mode) {
           html[data-alloflow-theme="dark"] img { opacity: 0.92; }
 
           /* ─── Custom UDL Blocks Dark Mode Overrides ─── */
+          html[data-alloflow-theme="dark"] .cmap-print-wrapper, html[data-alloflow-theme="dark"] .mindmap-print-wrapper, html[data-alloflow-theme="dark"] .flowchart-print-wrapper, html[data-alloflow-theme="dark"] .ce-print-wrapper, html[data-alloflow-theme="dark"] .ps-print-wrapper, html[data-alloflow-theme="dark"] .fishbone-print-wrapper, html[data-alloflow-theme="dark"] .outline-print-wrapper { background: #0f172a !important; color: #f8fafc !important; }
+          html[data-alloflow-theme="dark"] .allo-hub-card, html[data-alloflow-theme="dark"] .flowchart-step, html[data-alloflow-theme="dark"] .outline-card, html[data-alloflow-theme="dark"] .ps-card, html[data-alloflow-theme="dark"] .ce-pair, html[data-alloflow-theme="dark"] .alloflow-kwl-card { background: #1e293b !important; color: #f8fafc !important; border-color: #64748b !important; }
+          html[data-alloflow-theme="dark"] .allo-hub-card *, html[data-alloflow-theme="dark"] .flowchart-step *, html[data-alloflow-theme="dark"] .outline-card *, html[data-alloflow-theme="dark"] .ps-card *, html[data-alloflow-theme="dark"] .ce-pair * { color: inherit !important; }
           html[data-alloflow-theme="dark"] .alloflow-glossary-card { background: #1e293b !important; border-color: #475569 !important; }
           html[data-alloflow-theme="dark"] .alloflow-glossary-card-front { background: #1e293b !important; color: #ffffff !important; }
           html[data-alloflow-theme="dark"] .alloflow-glossary-card-back { background: #0f172a !important; color: #ffffff !important; }
@@ -54524,10 +55047,11 @@ function projectStudentGuideData(data, mode) {
           @media print { .alloflow-resource-wrap[data-alloflow-step-hidden] { display: block !important; } .alloflow-term-popover { display: none !important; } .alloflow-inline-term { border: 0 !important; padding: 0 !important; background: none !important; color: inherit !important; } }
           .alloflow-inline-term { background: transparent; color: inherit; border: 0; border-bottom: 2px dotted #2563eb; padding: 0 1px; margin: 0; font: inherit; line-height: inherit; cursor: help; display: inline; text-align: inherit; }
           .alloflow-inline-term:hover, .alloflow-inline-term:focus-visible { background: rgba(37,99,235,0.12); outline: 2px solid #2563eb; outline-offset: 1px; border-radius: 3px; }
-          .alloflow-term-popover { position: fixed; z-index: 100001; max-width: min(360px, calc(100vw - 24px)); background: #ffffff; color: #0f172a; border: 2px solid #2563eb; border-radius: 12px; padding: 12px 14px; box-shadow: 0 14px 36px rgba(15,23,42,0.22); font-size: 0.92rem; line-height: 1.5; }
+          @media (max-width: 767px) { .alloflow-hud-bar { padding: 6px 8px; gap: 4px 6px; max-height: 36vh; overflow-y: auto; } .alloflow-hud-select { max-width: 100%; flex: 1 1 140px; } .alloflow-hud-btn, .alloflow-hud-select { min-height: 36px; font-size: 12px; } }
+          .alloflow-term-popover { box-sizing: border-box; position: fixed; z-index: 100001; max-width: min(360px, calc(100vw - 24px)); background: #ffffff; color: #0f172a; border: 2px solid #2563eb; border-radius: 12px; padding: 12px 14px; box-shadow: 0 14px 36px rgba(15,23,42,0.22); font-size: 0.92rem; line-height: 1.5; }
           .alloflow-term-popover-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 10px; margin-bottom: 6px; }
           .alloflow-term-popover-title { font-weight: 800; color: #1e3a8a; font-size: 1rem; }
-          .alloflow-term-popover-close { min-width: 28px; min-height: 28px; border: 1px solid #64748b; border-radius: 6px; background: #f8fafc; color: #0f172a; font-weight: 700; cursor: pointer; }
+          .alloflow-term-popover-close { min-width: 36px; min-height: 36px; border: 1px solid #64748b; border-radius: 6px; background: #f8fafc; color: #0f172a; font-weight: 700; cursor: pointer; }
           html[data-alloflow-theme="dark"] .alloflow-hud-bar { background: #0f172a; color: #f8fafc; border-bottom-color: #475569; }
           html[data-alloflow-theme="dark"] .alloflow-hud-btn, html[data-alloflow-theme="dark"] .alloflow-hud-select { background: #1e293b; color: #ffffff; border-color: #64748b; }
           html[data-alloflow-theme="dark"] .alloflow-hud-btn:hover, html[data-alloflow-theme="dark"] .alloflow-hud-select:hover { background: #334155; }
@@ -54539,6 +55063,29 @@ function projectStudentGuideData(data, mode) {
           html[data-alloflow-theme="dark"] .alloflow-term-popover { background: #1e293b; color: #f8fafc; border-color: #93c5fd; }
           html[data-alloflow-theme="dark"] .alloflow-term-popover-title { color: #bfdbfe; }
           html[data-alloflow-theme="dark"] .alloflow-term-popover-close { background: #0f172a; color: #ffffff; border-color: #64748b; }
+          html[data-alloflow-theme="dark"] .alloflow-faq-section details.alloflow-faq-item { background: #1e293b !important; border-color: #334155 !important; color: #f8fafc !important; }
+          html[data-alloflow-theme="dark"] .alloflow-faq-section details[open] { background: #0f172a !important; border-color: #22d3ee !important; border-left: 3px solid #22d3ee !important; }
+          html[data-alloflow-theme="dark"] .alloflow-faq-section details summary h3 { color: #67e8f9 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-faq-section :is(.alloflow-faq-answer, .alloflow-faq-answer p) { color: #e2e8f0 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-faq-section :is(.alloflow-faq-expand, .alloflow-faq-collapse, .alloflow-faq-filter) { background: #1e293b !important; color: #f8fafc !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-faq-section .alloflow-faq-status { color: #67e8f9 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-directions-section :is(.alloflow-dir-goal-item, .alloflow-dir-choice-card) { background: #1e293b !important; border-color: #475569 !important; color: #f8fafc !important; }
+          html[data-alloflow-theme="dark"] .alloflow-directions-section .alloflow-dir-choice-desc { color: #cbd5e1 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-directions-section .alloflow-dir-goal-item.is-checked { background: #064e3b !important; border-color: #10b981 !important; color: #ecfdf5 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-directions-section .alloflow-dir-choice-card.is-selected { background: #1e3a8a !important; border-color: #60a5fa !important; }
+          html[data-alloflow-theme="dark"] .alloflow-directions-section :is(.alloflow-dir-progress, .alloflow-dir-reset) { background: #1e293b !important; color: #f8fafc !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tl-strip { background: #1e293b !important; border-color: #64748b !important; color: #f8fafc !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tl-event-body { color: #f1f5f9 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tl-date-box { background: #0f172a !important; border-color: #475569 !important; color: #cbd5e1 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-tl-date-input { background: #1e293b !important; color: #f8fafc !important; border-color: #64748b !important; }
+          html[data-alloflow-theme="dark"] :is(.alloflow-tl-up, .alloflow-tl-down) { background: #0f172a !important; color: #e2e8f0 !important; border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] :is(.alloflow-dbq-perspectives, .alloflow-dbq-corroboration, .alloflow-dbq-happ, .alloflow-dbq-synthesis) { background: #1e293b !important; background-image: none !important; border-color: #475569 !important; color: #f1f5f9 !important; }
+          html[data-alloflow-theme="dark"] :is(.alloflow-dbq-perspectives, .alloflow-dbq-corroboration, .alloflow-dbq-happ) div[style*="background:#ffffff"],
+          html[data-alloflow-theme="dark"] .alloflow-dbq-evidence-tracker { background: #0f172a !important; border-color: #475569 !important; color: #f1f5f9 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-dbq-doc-card { border-color: #475569 !important; }
+          html[data-alloflow-theme="dark"] .alloflow-dbq-doc-head { background: #1e293b !important; border-bottom-color: #475569 !important; color: #f8fafc !important; }
+          html[data-alloflow-theme="dark"] .alloflow-dbq-excerpt { background: #292524 !important; color: #fef3c7 !important; border-left-color: #f59e0b !important; }
+          html[data-alloflow-theme="dark"] :is(.alloflow-dbq-synthesis p, .alloflow-dbq-synthesis strong, .alloflow-dbq-corroboration div, .alloflow-dbq-perspectives p) { color: #e2e8f0 !important; }
           html[data-alloflow-theme="sepia"] .alloflow-hud-bar { background: #f5ecd9; color: #4a3a2a; border-bottom-color: #c2b08a; }
           html[data-alloflow-theme="sepia"] .alloflow-hud-btn, html[data-alloflow-theme="sepia"] .alloflow-hud-select { background: #fdf6e3; color: #4a3a2a; border-color: #8c7352; }
           html[data-alloflow-theme="sepia"] .alloflow-hud-btn[aria-pressed="true"], html[data-alloflow-theme="sepia"] .alloflow-hud-primary { background: #4a3a2a; color: #fdf6e3; border-color: #4a3a2a; }
@@ -54886,19 +55433,46 @@ function projectStudentGuideData(data, mode) {
                 Array.prototype.forEach.call(document.querySelectorAll('.alloflow-print-mirrored'), function (node) { node.classList.remove('alloflow-print-mirrored'); });
                 // Fold-outs opened only for printing (FAQ answers) close again.
                 Array.prototype.forEach.call(document.querySelectorAll('details[data-alloflow-print-opened]'), function (node) { node.removeAttribute('data-alloflow-print-opened'); node.open = false; });
+                Array.prototype.forEach.call(document.querySelectorAll('.alloflow-cornell-table[data-alloflow-print-unfolded]'), function (tbl) { tbl.removeAttribute('data-alloflow-print-unfolded'); tbl.classList.add('alloflow-cornell-folded'); });
+                Array.prototype.forEach.call(document.querySelectorAll('.alloflow-question-long'), function (node) { node.classList.remove('alloflow-question-long'); });
               }
               function copyAnswers() {
                 clearAnswerCopies();
                 Array.prototype.forEach.call(document.querySelectorAll('details:not([open]):not(.alloflow-keep-closed-print)'), function (node) { node.setAttribute('data-alloflow-print-opened', ''); node.open = true; });
+                Array.prototype.forEach.call(document.querySelectorAll('.alloflow-cornell-table.alloflow-cornell-folded'), function (tbl) { tbl.classList.remove('alloflow-cornell-folded'); tbl.setAttribute('data-alloflow-print-unfolded', 'true'); });
                 Array.prototype.forEach.call(document.querySelectorAll('img[loading="lazy"]'), function (img) { img.loading = 'eager'; });
                 Array.prototype.forEach.call(document.querySelectorAll('textarea'), function (ta) {
                   if (!ta.value || !ta.value.trim() || ta.closest('.alloflow-note-editor, .alloflow-export-prompt-overlay, .alloflow-anno-confirm-backdrop')) return;
+                  var qWrap = ta.closest('.question');
+                  if (qWrap && (ta.value.length > 450 || ta.value.split(String.fromCharCode(10)).length > 7)) qWrap.classList.add('alloflow-question-long');
                   var copy = document.createElement('div');
                   copy.className = 'alloflow-print-answer';
                   copy.setAttribute('aria-hidden', 'true');
                   copy.textContent = ta.value;
                   ta.classList.add('alloflow-print-mirrored');
                   ta.insertAdjacentElement('afterend', copy);
+                });
+                Array.prototype.forEach.call(document.querySelectorAll('input.alloflow-response-input:not([type="checkbox"]):not([type="radio"]):not([type="hidden"]), input.interactive-blank:not([type="checkbox"]):not([type="radio"]):not([type="hidden"])'), function (inp) {
+                  if (!inp.value || !String(inp.value).trim() || inp.closest('.alloflow-export-prompt-overlay')) return;
+                  var span = document.createElement('span');
+                  span.className = 'alloflow-print-answer alloflow-print-answer-inline';
+                  span.setAttribute('aria-hidden', 'true');
+                  span.textContent = inp.value;
+                  inp.classList.add('alloflow-print-mirrored');
+                  inp.insertAdjacentElement('afterend', span);
+                });
+                Array.prototype.forEach.call(document.querySelectorAll('select.alloflow-response-input, select.alloflow-response-select, select.alloflow-cs-response, select.alloflow-venn-response'), function (sel) {
+                  var inInteractiveCard = !!(sel.closest && (sel.closest('.alloflow-cs-strip') || sel.closest('.alloflow-venn-card')));
+                  if ((sel.hidden && !inInteractiveCard) || !sel.value) return;
+                  var opt = sel.options && sel.options[sel.selectedIndex];
+                  var txt = (opt && opt.textContent) || sel.value;
+                  if (!txt || !txt.trim()) return;
+                  var span = document.createElement('span');
+                  span.className = 'alloflow-print-answer alloflow-print-answer-inline';
+                  span.setAttribute('aria-hidden', 'true');
+                  span.textContent = txt.trim();
+                  sel.classList.add('alloflow-print-mirrored');
+                  sel.insertAdjacentElement('afterend', span);
                 });
               }
               window.addEventListener('beforeprint', copyAnswers);
@@ -56634,6 +57208,49 @@ function projectStudentGuideData(data, mode) {
               if (moved) saveStudent();
             }
             window.__alloflowReprojectAnnotations = reprojectAll;
+            window.__alloflowCollectAnnotations = function () {
+              try {
+                return (Array.isArray(studentAnno) ? studentAnno : []).slice(0, 200).map(function (a) {
+                  if (!a || typeof a !== 'object' || a.pending === true) return null;
+                  var type = typeof a.kind === 'string' ? a.kind : (typeof a.type === 'string' ? a.type : 'note');
+                  var isBareHighlight = type === 'highlight' && typeof a.text === 'string'
+                    && !a.anchorText && !a.quote && !a.note && !a.content && !a.comment;
+                  var quote = typeof a.anchorText === 'string' ? a.anchorText.slice(0, 500)
+                    : (typeof a.quote === 'string' ? a.quote.slice(0, 500)
+                    : (isBareHighlight ? a.text.slice(0, 500) : ''));
+                  var rawNote = isBareHighlight ? ''
+                    : (typeof a.text === 'string' ? a.text
+                    : (typeof a.note === 'string' ? a.note
+                    : (typeof a.content === 'string' ? a.content : '')));
+                  var defaultColor = (type === 'draw' || type === 'drawing' || type === 'ink') ? 'red' : 'yellow';
+                  var entry = {
+                    id: (typeof a.id === 'string' || typeof a.id === 'number') ? String(a.id).slice(0, 80) : '',
+                    type: type,
+                    quote: quote,
+                    note: rawNote.slice(0, 2000),
+                    color: typeof a.color === 'string' ? a.color : defaultColor,
+                    blockIdx: Number.isInteger(a.blockIdx) ? a.blockIdx : null
+                  };
+                  if (type === 'draw' || type === 'drawing' || type === 'ink') {
+                    if (Array.isArray(a.points)) entry.points = a.points;
+                    if (typeof a.width === 'number' && Number.isFinite(a.width)) entry.width = a.width;
+                    if (typeof a.dataUrl === 'string') entry.dataUrl = a.dataUrl;
+                  }
+                  if (type === 'voice' || type === 'audio') {
+                    var ab64 = typeof a.audioBase64 === 'string' ? a.audioBase64 : (typeof a.audio === 'string' && !/^data:/i.test(a.audio) ? a.audio : '');
+                    var asrc = typeof a.audioSrc === 'string' ? a.audioSrc : (typeof a.audio === 'string' && /^data:/i.test(a.audio) ? a.audio : '');
+                    var amime = typeof a.mimeType === 'string' ? a.mimeType : (typeof a.mime === 'string' ? a.mime : '');
+                    var adur = (typeof a.durationSec === 'number' && Number.isFinite(a.durationSec)) ? a.durationSec
+                      : ((typeof a.duration === 'number' && Number.isFinite(a.duration)) ? a.duration : null);
+                    if (ab64) entry.audioBase64 = ab64;
+                    if (asrc) entry.audioSrc = asrc;
+                    if (amime) entry.mimeType = amime;
+                    if (adur !== null) entry.durationSec = adur;
+                  }
+                  return entry;
+                }).filter(Boolean);
+              } catch (e) { return []; }
+            };
 
             // Annotation mode state (off / note / highlight / voice / draw).
             // Sticker tool not exposed in export — teachers add stickers in-app;
@@ -57568,6 +58185,350 @@ function projectStudentGuideData(data, mode) {
             <p style="margin:0;">${t('output.generated_via')}</p>
         </footer>
         <script>
+            (function() {
+                function __alloInitWave7And12Runtime() {
+                    if (window.__alloWave7And12Bound) return;
+                    window.__alloWave7And12Bound = true;
+                // ── Wave 7 Interactive Handlers (Cloze, Sentence Frames, Math Symbolbar, DBQ Evidence Tracker) ──
+                (function() {
+                    var lastMathField = null;
+                    var lastClozeField = null;
+                    var lastSfField = null;
+                    document.addEventListener('focusin', function(e) {
+                        var el = e.target;
+                        if (!el || !el.closest) return;
+                        if (el.classList.contains('alloflow-cloze-input')) lastClozeField = el;
+                        if (el.closest('.alloflow-math-input-card') && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')) lastMathField = el;
+                        if (el.closest('.alloflow-sf-section') && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')) lastSfField = el;
+                    });
+                    var updateDbqPills = function(synth) {
+                        if (!synth) return;
+                        var ta = synth.querySelector('textarea');
+                        var text = String((ta && ta.value) || '').toLowerCase();
+                        synth.querySelectorAll('.alloflow-dbq-evidence-pill').forEach(function(pill) {
+                            var docId = String(pill.getAttribute('data-dbq-doc-id') || '').toLowerCase();
+                            var lbl = pill.getAttribute('data-dbq-doc-label') || ('Document ' + docId);
+                            var cited = !!docId && (text.indexOf('document ' + docId) >= 0 || text.indexOf('doc ' + docId) >= 0);
+                            pill.textContent = (cited ? '✅ ' : '⬜ ') + lbl;
+                            pill.style.background = cited ? '#dcfce7' : '#f1f5f9';
+                            pill.style.borderColor = cited ? '#86efac' : '#cbd5e1';
+                            pill.style.color = cited ? '#166534' : '#334155';
+                        });
+                    };
+                    var updateClozeChips = function(sec) {
+                        if (!sec) return;
+                        var usedCounts = {};
+                        sec.querySelectorAll('.alloflow-cloze-input').forEach(function(inp) {
+                            var v = String(inp.value || '').trim().toLowerCase();
+                            if (v) usedCounts[v] = (usedCounts[v] || 0) + 1;
+                        });
+                        sec.querySelectorAll('.alloflow-cloze-chip').forEach(function(chip) {
+                            var w = String(chip.getAttribute('data-cloze-word') || '').trim().toLowerCase();
+                            var needed = Math.max(1, parseInt(chip.getAttribute('data-cloze-count') || '1', 10) || 1);
+                            var used = !!w && (usedCounts[w] || 0) >= needed;
+                            chip.classList.toggle('alloflow-cloze-chip-used', used);
+                            if (used) {
+                                chip.setAttribute('data-chip-used', 'true');
+                                chip.style.opacity = '0.45';
+                                chip.style.textDecoration = 'line-through';
+                                chip.style.background = '#f1f5f9';
+                                chip.style.borderColor = '#cbd5e1';
+                            } else {
+                                chip.removeAttribute('data-chip-used');
+                                chip.style.opacity = '';
+                                chip.style.textDecoration = '';
+                                chip.style.background = '#ffffff';
+                                chip.style.borderColor = '#93c5fd';
+                            }
+                        });
+                    };
+                    var isWordBoundaryChar = function(c) {
+                        return !!c && ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c === '_' || c.charCodeAt(0) > 127);
+                    };
+                    var updateSfChips = function(sfSec) {
+                        if (!sfSec) return;
+                        var combined = Array.prototype.map.call(sfSec.querySelectorAll('.alloflow-response-input'), function(f) {
+                            return String(f.value || '').toLowerCase();
+                        }).join(' ');
+                        sfSec.querySelectorAll('.alloflow-sf-chip').forEach(function(chip) {
+                            var w = String(chip.getAttribute('data-sf-word') || '').trim().toLowerCase();
+                            var used = false;
+                            if (w && combined) {
+                                var checkStart = isWordBoundaryChar(w.charAt(0));
+                                var checkEnd = isWordBoundaryChar(w.charAt(w.length - 1));
+                                var pos = combined.indexOf(w);
+                                while (pos >= 0) {
+                                    var beforeOk = !checkStart || pos === 0 || !isWordBoundaryChar(combined.charAt(pos - 1));
+                                    var afterPos = pos + w.length;
+                                    var afterOk = !checkEnd || afterPos >= combined.length || !isWordBoundaryChar(combined.charAt(afterPos));
+                                    if (beforeOk && afterOk) { used = true; break; }
+                                    pos = combined.indexOf(w, pos + 1);
+                                }
+                            }
+                            chip.classList.toggle('alloflow-sf-chip-used', used);
+                            if (used) {
+                                chip.setAttribute('data-chip-used', 'true');
+                                chip.style.opacity = '0.45';
+                                chip.style.textDecoration = 'line-through';
+                            } else {
+                                chip.removeAttribute('data-chip-used');
+                                chip.style.opacity = '';
+                                chip.style.textDecoration = '';
+                            }
+                        });
+                    };
+                    var updateGlossaryMatching = function(sec) {
+                        if (!sec) return;
+                        var inputs = Array.from(sec.querySelectorAll('input[data-allo-response-type="match"]'));
+                        var counts = {};
+                        inputs.forEach(function(inp) {
+                            var rawVal = String(inp.value || '');
+                            var upVal = rawVal.toUpperCase();
+                            if (rawVal !== upVal) {
+                                try {
+                                    var selStart = inp.selectionStart;
+                                    var selEnd = inp.selectionEnd;
+                                    inp.value = upVal;
+                                    if (typeof selStart === 'number' && typeof selEnd === 'number' && document.activeElement === inp) {
+                                        inp.setSelectionRange(selStart, selEnd);
+                                    }
+                                } catch (_) { inp.value = upVal; }
+                            }
+                            var norm = upVal.trim();
+                            if (norm) counts[norm] = (counts[norm] || 0) + 1;
+                        });
+                        var dupLetters = [];
+                        inputs.forEach(function(inp) {
+                            var norm = String(inp.value || '').trim().toUpperCase();
+                            var isDup = !!(norm && (counts[norm] || 0) > 1);
+                            inp.classList.toggle('is-duplicate-letter', isDup);
+                            if (isDup && dupLetters.indexOf(norm) < 0) dupLetters.push(norm);
+                            if (!sec.dataset.gmChecked) {
+                                if (isDup) inp.setAttribute('aria-invalid', 'true');
+                                else inp.removeAttribute('aria-invalid');
+                            }
+                        });
+                        sec.querySelectorAll('[data-gloss-def-item]').forEach(function(li) {
+                            var letter = String(li.getAttribute('data-gloss-letter') || '').trim().toUpperCase();
+                            li.classList.toggle('is-used-def', !!(letter && (counts[letter] || 0) > 0));
+                        });
+                        var status = sec.querySelector('.alloflow-gm-status');
+                        if (status && !sec.dataset.gmChecked) {
+                            if (dupLetters.length > 0) {
+                                var dupTpl = status.getAttribute('data-dup-tpl') || 'Duplicate letter: {letters}';
+                                status.textContent = dupTpl.replace('{letters}', dupLetters.join(', '));
+                            } else {
+                                status.textContent = '';
+                            }
+                        }
+                    };
+                    var bindGlossaryMatching = function(sec) {
+                        if (!sec) return;
+                        var checkBtn = sec.querySelector('.alloflow-gm-check-btn');
+                        if (checkBtn && !checkBtn.getAttribute('data-gm-bound')) {
+                            checkBtn.setAttribute('data-gm-bound', '1');
+                            checkBtn.addEventListener('click', function() {
+                                updateGlossaryMatching(sec);
+                                var inputs = Array.from(sec.querySelectorAll('input[data-allo-response-type="match"]'));
+                                var total = 0, correct = 0;
+                                inputs.forEach(function(inp) {
+                                    var expected = String(inp.getAttribute('data-expected-letter') || '').trim().toUpperCase();
+                                    if (!expected) return;
+                                    total++;
+                                    var actual = String(inp.value || '').trim().toUpperCase();
+                                    var ok = actual === expected;
+                                    if (ok) correct++;
+                                    inp.classList.toggle('is-match-correct', ok);
+                                    inp.classList.toggle('is-match-wrong', !ok);
+                                    if (!ok) inp.setAttribute('aria-invalid', 'true');
+                                    else if (!inp.classList.contains('is-duplicate-letter')) inp.removeAttribute('aria-invalid');
+                                });
+                                sec.dataset.gmChecked = '1';
+                                var status = sec.querySelector('.alloflow-gm-status');
+                                if (status) {
+                                    var scoreTpl = status.getAttribute('data-score-tpl') || '{correct} of {total} correct.';
+                                    status.textContent = scoreTpl.replace('{correct}', String(correct)).replace('{total}', String(total));
+                                }
+                            });
+                        }
+                        var resetBtn = sec.querySelector('.alloflow-gm-reset-btn');
+                        if (resetBtn && !resetBtn.getAttribute('data-gm-bound')) {
+                            resetBtn.setAttribute('data-gm-bound', '1');
+                            resetBtn.addEventListener('click', function() {
+                                delete sec.dataset.gmChecked;
+                                sec.querySelectorAll('input[data-allo-response-type="match"]').forEach(function(inp) {
+                                    inp.value = '';
+                                    inp.classList.remove('is-match-correct', 'is-match-wrong', 'is-duplicate-letter');
+                                    inp.removeAttribute('aria-invalid');
+                                    try { inp.dispatchEvent(new Event('change', { bubbles: true })); } catch (_) {}
+                                });
+                                var status = sec.querySelector('.alloflow-gm-status');
+                                if (status) status.textContent = '';
+                                updateGlossaryMatching(sec);
+                            });
+                        }
+                        updateGlossaryMatching(sec);
+                    };
+                    var initWave7And12 = function() {
+                        document.querySelectorAll('.alloflow-dbq-synthesis').forEach(updateDbqPills);
+                        document.querySelectorAll('.alloflow-cloze-chip').forEach(function(c) {
+                            var s = c.closest('.section');
+                            if (s) updateClozeChips(s);
+                        });
+                        document.querySelectorAll('.alloflow-sf-section').forEach(updateSfChips);
+                        document.querySelectorAll('.alloflow-glossary-worksheet[data-glossary-worksheet="matching"]').forEach(bindGlossaryMatching);
+                    };
+                    initWave7And12();
+                    document.addEventListener('DOMContentLoaded', initWave7And12);
+                    window.addEventListener('alloflow-responses-restored', initWave7And12);
+                    var syncFieldState = function(el) {
+                        if (!el || !el.closest) return;
+                        if (el.tagName === 'TEXTAREA' && el.closest('.alloflow-dbq-synthesis')) {
+                            updateDbqPills(el.closest('.alloflow-dbq-synthesis'));
+                        }
+                        if (el.classList.contains('alloflow-cloze-input')) {
+                            updateClozeChips(el.closest('.section'));
+                        }
+                        if (el.closest('.alloflow-sf-section') && (el.tagName === 'TEXTAREA' || el.tagName === 'INPUT')) {
+                            updateSfChips(el.closest('.alloflow-sf-section'));
+                        }
+                        var gmSec = el.getAttribute && el.getAttribute('data-allo-response-type') === 'match' && el.closest('.alloflow-glossary-worksheet[data-glossary-worksheet="matching"]');
+                        if (gmSec) {
+                            delete gmSec.dataset.gmChecked;
+                            gmSec.querySelectorAll('input[data-allo-response-type="match"]').forEach(function(inp) {
+                                inp.classList.remove('is-match-correct', 'is-match-wrong');
+                            });
+                            updateGlossaryMatching(gmSec);
+                        }
+                    };
+                    document.addEventListener('input', function(e) { syncFieldState(e.target); }, true);
+                    document.addEventListener('change', function(e) { syncFieldState(e.target); }, true);
+                    var insertAtCursor = function(field, insertText) {
+                        if (!field) return;
+                        var start = typeof field.selectionStart === 'number' ? field.selectionStart : field.value.length;
+                        var end = typeof field.selectionEnd === 'number' ? field.selectionEnd : field.value.length;
+                        var before = field.value.slice(0, start);
+                        var after = field.value.slice(end);
+                        var sep = (before && before.slice(-1) !== ' ' && insertText.length > 1) ? ' ' : '';
+                        field.value = before + sep + insertText + after;
+                        field.focus();
+                        try { field.setSelectionRange(start + sep.length + insertText.length, start + sep.length + insertText.length); } catch (_) {}
+                        field.dispatchEvent(new Event('input', { bubbles: true }));
+                        field.dispatchEvent(new Event('change', { bubbles: true }));
+                    };
+                    document.addEventListener('click', function(e) {
+                        var tEl = e.target;
+                        if (!tEl || !tEl.closest) return;
+                        var clozeChip = tEl.closest('.alloflow-cloze-chip');
+                        if (clozeChip) {
+                            var sec = clozeChip.closest('.section');
+                            var inputs = sec ? Array.prototype.slice.call(sec.querySelectorAll('.alloflow-cloze-input')) : [];
+                            var target = (lastClozeField && sec && sec.contains(lastClozeField) && !lastClozeField.value) ? lastClozeField : (inputs.find(function(inp) { return !String(inp.value || '').trim(); }) || (lastClozeField && sec && sec.contains(lastClozeField) ? lastClozeField : inputs[0]));
+                            if (target) {
+                                target.value = clozeChip.getAttribute('data-cloze-word') || '';
+                                target.style.borderColor = '#2563eb';
+                                target.style.background = '#eff6ff';
+                                target.focus();
+                                target.dispatchEvent(new Event('input', { bubbles: true }));
+                                target.dispatchEvent(new Event('change', { bubbles: true }));
+                            }
+                            return;
+                        }
+                        var clozeCheck = tEl.closest('.alloflow-cloze-check-btn');
+                        if (clozeCheck) {
+                            var ctrl = clozeCheck.closest('.alloflow-cloze-controls');
+                            var sec = clozeCheck.closest('.section');
+                            var resEl = ctrl && ctrl.querySelector('.alloflow-cloze-results');
+                            var inputs = sec ? Array.prototype.slice.call(sec.querySelectorAll('.alloflow-cloze-input[data-cloze-answer]')) : [];
+                            var correct = 0;
+                            inputs.forEach(function(inp) {
+                                var expected = String(inp.getAttribute('data-cloze-answer') || '').trim().toLowerCase();
+                                var actual = String(inp.value || '').trim().toLowerCase();
+                                if (expected && actual === expected) {
+                                    correct++;
+                                    inp.style.borderColor = '#16a34a';
+                                    inp.style.background = '#f0fdf4';
+                                } else {
+                                    inp.style.borderColor = '#dc2626';
+                                    inp.style.background = '#fef2f2';
+                                }
+                            });
+                            if (resEl) {
+                                var tpl = (ctrl && ctrl.getAttribute('data-cloze-copy-score')) || '{correct} of {total} correct';
+                                var pTpl = (ctrl && ctrl.getAttribute('data-cloze-copy-perfect')) || 'All {total} blanks correct!';
+                                resEl.textContent = (correct === inputs.length && inputs.length > 0)
+                                    ? pTpl.split('{total}').join(String(inputs.length))
+                                    : tpl.split('{correct}').join(String(correct)).split('{total}').join(String(inputs.length));
+                            }
+                            return;
+                        }
+                        var clozeReset = tEl.closest('.alloflow-cloze-reset-btn');
+                        if (clozeReset) {
+                            var ctrl = clozeReset.closest('.alloflow-cloze-controls');
+                            var sec = clozeReset.closest('.section');
+                            var resEl = ctrl && ctrl.querySelector('.alloflow-cloze-results');
+                            if (sec) sec.querySelectorAll('.alloflow-cloze-input').forEach(function(inp) {
+                                inp.value = '';
+                                inp.style.borderColor = '#2563eb';
+                                inp.style.background = '#eff6ff';
+                                inp.dispatchEvent(new Event('input', { bubbles: true }));
+                                inp.dispatchEvent(new Event('change', { bubbles: true }));
+                            });
+                            if (resEl) resEl.textContent = '';
+                            return;
+                        }
+                        var sfChip = tEl.closest('.alloflow-sf-chip');
+                        if (sfChip) {
+                            var sfSec = sfChip.closest('.alloflow-sf-section');
+                            var sfFields = sfSec ? Array.prototype.slice.call(sfSec.querySelectorAll('.alloflow-response-input')) : [];
+                            var target = (lastSfField && sfSec && sfSec.contains(lastSfField)) ? lastSfField : (sfFields.find(function(f) { return !String(f.value || '').trim(); }) || sfFields[0]);
+                            insertAtCursor(target, sfChip.getAttribute('data-sf-word') || '');
+                            return;
+                        }
+                        var symBtn = tEl.closest('.alloflow-math-sym-btn');
+                        if (symBtn) {
+                            var card = symBtn.closest('.alloflow-math-input-card');
+                            var target = (lastMathField && card && card.contains(lastMathField)) ? lastMathField : (card && (card.querySelector('input.alloflow-response-input') || card.querySelector('textarea.alloflow-response-input')));
+                            insertAtCursor(target, symBtn.getAttribute('data-math-sym') || '');
+                            return;
+                        }
+                        var cornellBtn = tEl.closest('.alloflow-cornell-fold-btn');
+                        if (cornellBtn) {
+                            var cWrap = cornellBtn.closest('.alloflow-cornell-wrap');
+                            var cTbl = cWrap && cWrap.querySelector('.alloflow-cornell-table');
+                            if (cTbl) {
+                                var folded = !cTbl.classList.contains('alloflow-cornell-folded');
+                                cTbl.classList.toggle('alloflow-cornell-folded', folded);
+                                cornellBtn.setAttribute('aria-pressed', folded ? 'true' : 'false');
+                                cornellBtn.textContent = folded
+                                    ? (cornellBtn.getAttribute('data-cornell-label-reveal') || 'Reveal all notes')
+                                    : (cornellBtn.getAttribute('data-cornell-label-cover') || 'Cover notes to self-quiz');
+                                if (!folded) {
+                                    cTbl.querySelectorAll('.alloflow-note-peek').forEach(function(cell) { cell.classList.remove('alloflow-note-peek'); });
+                                }
+                            }
+                            return;
+                        }
+                        var cornellCell = tEl.closest('.alloflow-cornell-table.alloflow-cornell-folded td.alloflow-note-cell');
+                        if (cornellCell) {
+                            cornellCell.classList.toggle('alloflow-note-peek');
+                        }
+                    });
+                    document.addEventListener('keydown', function(e) {
+                        if (e.key !== 'Enter' && e.key !== ' ') return;
+                        var el = e.target;
+                        var cornellCell = el && el.closest && el.closest('.alloflow-cornell-table.alloflow-cornell-folded td.alloflow-note-cell');
+                        if (cornellCell) {
+                            e.preventDefault();
+                            cornellCell.classList.toggle('alloflow-note-peek');
+                        }
+                    });
+                })();
+                }
+                __alloInitWave7And12Runtime();
+            })();
+        </script>
+        <script>
             document.addEventListener('DOMContentLoaded', async () => {
                 // Runtime classes replace print-critical :has() selectors so
                 // older browsers retain safe page breaks and caption reserves.
@@ -57757,9 +58718,10 @@ function projectStudentGuideData(data, mode) {
                         'sequence-verdict': 'Is the order correct?', 'sequence-item': 'Misplaced item number', 'sequence-order': 'Correct order',
                         'sequence-principle': 'Ordering principle', 'wrong-pair': 'Wrong pair',
                         'partner': 'Correct partner', 'answer': 'Answer', 'evidence': 'Evidence',
-                        'number': 'Value', 'unit': 'Unit', 'reflection': 'Reflection'
+                        'number': 'Value', 'unit': 'Unit', 'reflection': 'Reflection',
+                        'reasoning': 'Reasoning', 'cloze-blank': 'Fill in the blank', 'match': 'Match', 'order': 'Order'
                     };
-                    const aiFreeformTypes = ['short-answer', 'self-explanation', 'reflection', 'free-response', 'sentence-frame'];
+                    const aiFreeformTypes = ['short-answer', 'self-explanation', 'reflection', 'free-response', 'sentence-frame', 'reasoning'];
                     Object.keys(_responseGroups).slice(0, 500).forEach((key) => {
                         const controls = _responseGroups[key] || [];
                         const control = controls[0];
@@ -57774,6 +58736,13 @@ function projectStudentGuideData(data, mode) {
                         if (questionEl) {
                             const prompt = questionEl.querySelector('p strong');
                             if (prompt) question = clean(prompt.textContent, 500).replace(/^\\d+\\.\\s*/, '');
+                        }
+                        if (!question && control.id) {
+                            const escId = (typeof CSS !== 'undefined' && typeof CSS.escape === 'function')
+                                ? CSS.escape(control.id)
+                                : String(control.id).replace(/[^A-Za-z0-9_-]/g, function(c){return String.fromCharCode(92)+c;});
+                            const forLbl = document.querySelector('label[for="' + escId + '"]');
+                            if (forLbl) question = clean(forLbl.textContent, 500);
                         }
                         if (!question) question = clean(control.getAttribute('aria-label'), 500);
                         if (!question) {
@@ -57804,6 +58773,17 @@ function projectStudentGuideData(data, mode) {
                                 const text = clean(option.textContent, 240);
                                 if (value && text) valueLabels[value] = text;
                             });
+                        } else if (control.hasAttribute('data-allo-value-labels')) {
+                            try {
+                                const parsedLabels = JSON.parse(control.getAttribute('data-allo-value-labels') || '{}');
+                                if (parsedLabels && typeof parsedLabels === 'object' && !Array.isArray(parsedLabels)) {
+                                    Object.keys(parsedLabels).slice(0, 80).forEach((k) => {
+                                        const vk = clean(k, 120);
+                                        const vt = clean(parsedLabels[k], 240);
+                                        if (vk && vt) valueLabels[vk] = vt;
+                                    });
+                                }
+                            } catch (_) {}
                         }
                         entries.push({
                             key: _responsePayloadKey(key),
@@ -57890,7 +58870,15 @@ function projectStudentGuideData(data, mode) {
                     const updateCounter = () => {
                         const len = tx.value.length;
                         const pct = len / max;
-                        counter.textContent = len + ' / ' + max + (isQuizResponse || len > 0 ? ' characters' : '');
+                        let counterTxt = len + ' / ' + max + (isQuizResponse || len > 0 ? ' characters' : '');
+                        if (tx.closest('.alloflow-dbq-synthesis')) {
+                            const rawVal = String(tx.value || '');
+                            const wordsCount = rawVal.split(String.fromCharCode(10)).join(' ').split(String.fromCharCode(13)).join(' ').split(String.fromCharCode(9)).join(' ').split(' ').filter(Boolean).length;
+                            const parasCount = rawVal.trim() ? rawVal.trim().split(String.fromCharCode(10)).filter((ln) => ln.trim().length > 0).length : 0;
+                            const statsLabel = window.__alloflowText ? window.__alloflowText('dbqStatsCounter', '{words} words · {paras} paragraphs', { words: wordsCount, paras: parasCount }) : (wordsCount + ' words · ' + parasCount + ' paragraphs');
+                            counterTxt += ' · ' + statsLabel;
+                        }
+                        counter.textContent = counterTxt;
                         counter.style.color = isQuizResponse ? 'inherit' : pct > 0.9 ? '#dc2626' : pct > 0.75 ? '#a16207' : '#475569';
                         if (limitNotice) limitNotice.textContent = len >= max ? (window.__alloflowText ? window.__alloflowText('rtCharLimit', 'Character limit reached. Edit your response to make room for more text.') : 'Character limit reached. Edit your response to make room for more text.') : '';
                     };
@@ -57929,7 +58917,7 @@ function projectStudentGuideData(data, mode) {
                     const resetBtn = quiz.querySelector('.quiz-reset-btn');
                     const resultsEl = quiz.querySelector('.quiz-results');
                     if (!checkBtn || !resetBtn || !resultsEl) return;
-                    const qSelector = '.question[data-correct], .question[data-fill-answers], .question[data-correct-multi], .question[data-sequence-key], .question[data-relation-key], .question[data-answer-evidence-key], .question[data-numeric-key]';
+                    const qSelector = '.question[data-correct], .question[data-fill-answers], .question[data-correct-multi], .question[data-sequence-key], .question[data-relation-key], .question[data-answer-evidence-key], .question[data-numeric-key], .question[data-matching-key], .question[data-ordering-key]';
                     const questions = quiz.querySelectorAll(qSelector);
                     // Fill-ins compare without case, extra spaces, or punctuation around the answer.
                     const fillNorm = (value) => String(value == null ? '' : value).toLowerCase().replace(/\\s+/g, ' ').replace(/^[\\s.,;:!?'"()\\[\\]-]+|[\\s.,;:!?'"()\\[\\]-]+$/g, '');
@@ -58113,6 +59101,22 @@ function projectStudentGuideData(data, mode) {
                                 mark(q, ok ? 'correct' : 'wrong');
                                 return;
                             }
+                            if (q.hasAttribute('data-matching-key')) {
+                                const expected = decodeKeyAttr(q, 'data-matching-key');
+                                const selects = Array.from(q.querySelectorAll('select[data-allo-response-key*=":match:"]'));
+                                if (!Array.isArray(expected) || !selects.length || selects.some((s) => !String(s.value || '').trim())) { mark(q, 'skipped'); return; }
+                                const allOk = expected.length === selects.length && selects.every((s, idx) => String(s.value || '').trim() === String(expected[idx] || '').trim());
+                                mark(q, allOk ? 'correct' : 'wrong');
+                                return;
+                            }
+                            if (q.hasAttribute('data-ordering-key')) {
+                                const expected = decodeKeyAttr(q, 'data-ordering-key');
+                                const selects = Array.from(q.querySelectorAll('select[data-allo-response-key*=":order:"]'));
+                                if (!Array.isArray(expected) || !selects.length || selects.some((s) => !String(s.value || '').trim())) { mark(q, 'skipped'); return; }
+                                const allOk = expected.length === selects.length && selects.every((s, idx) => String(s.value || '').trim() === String(expected[idx] || '').trim());
+                                mark(q, allOk ? 'correct' : 'wrong');
+                                return;
+                            }
                             const target = parseInt(q.getAttribute('data-correct'), 10);
                             const checked = q.querySelector('input[type="radio"]:checked');
                             if (!checked) mark(q, 'skipped');
@@ -58249,28 +59253,60 @@ function projectStudentGuideData(data, mode) {
                       var grid = section.querySelector('.alloflow-glossary-card-list');
                       if (!grid) return;
                       var cards = grid.querySelectorAll('.alloflow-glossary-card');
-                      cards.forEach(function(c) {
-                        c.classList.add(BACK_HIDDEN_CLASS);
-                        c.setAttribute('tabindex', '0');
-                        c.setAttribute('role', 'button');
-                        c.setAttribute('aria-pressed', 'false');
-                        var toggle = function() {
-                            var hidden = c.classList.toggle(BACK_HIDDEN_CLASS);
-                            c.setAttribute('aria-pressed', hidden ? 'false' : 'true');
-                        };
-                        c.addEventListener('click', toggle);
-                        c.addEventListener('keydown', function(e) {
-                            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggle(); }
+                      var progressEl = section.querySelector('.alloflow-glossary-progress');
+                    var filterBtn = section.querySelector('.alloflow-glossary-filter-learning');
+                    var updateCardProgress = function() {
+                        var total = cards.length, gotIt = 0, learning = 0;
+                        var onlyLearning = filterBtn && filterBtn.getAttribute('aria-pressed') === 'true';
+                        cards.forEach(function(c) {
+                            var st = c.getAttribute('data-self-check') || '';
+                            if (st === 'got-it') gotIt++;
+                            else if (st === 'learning') learning++;
+                            c.classList.toggle('alloflow-fc-filtered-out', !!(onlyLearning && st !== 'learning'));
                         });
-                      });
+                        if (progressEl) progressEl.textContent = (gotIt || learning) ? (gotIt + ' / ' + total + ' got it · ' + learning + ' still learning') : '';
+                    };
+                    var setCardOpen = function(c, open) {
+                        c.classList.toggle(BACK_HIDDEN_CLASS, !open);
+                        var flipBtn = c.querySelector('.flashcard-flip-btn');
+                        if (flipBtn) flipBtn.setAttribute('aria-expanded', open ? 'true' : 'false');
+                    };
+                    cards.forEach(function(c) {
+                        setCardOpen(c, false);
+                        var flipBtn = c.querySelector('.flashcard-flip-btn');
+                        var toggle = function() { setCardOpen(c, c.classList.contains(BACK_HIDDEN_CLASS)); };
+                        if (flipBtn) flipBtn.addEventListener('click', function(e) { e.stopPropagation(); toggle(); });
+                        c.addEventListener('click', function(e) {
+                            if (e.target && e.target.closest && e.target.closest('button, a, input, select, textarea')) return;
+                            toggle();
+                        });
+                        Array.prototype.forEach.call(c.querySelectorAll('.flashcard-mark-btn'), function(mb) {
+                            mb.addEventListener('click', function(e) {
+                                e.stopPropagation();
+                                var st = mb.getAttribute('data-status');
+                                var prev = c.getAttribute('data-self-check');
+                                var next = prev === st ? '' : st;
+                                if (next) c.setAttribute('data-self-check', next);
+                                else c.removeAttribute('data-self-check');
+                                Array.prototype.forEach.call(c.querySelectorAll('.flashcard-mark-btn'), function(b) {
+                                    b.setAttribute('aria-pressed', b.getAttribute('data-status') === next ? 'true' : 'false');
+                                });
+                                updateCardProgress();
+                            });
+                        });
+                    });
+                    if (filterBtn) filterBtn.addEventListener('click', function() {
+                        filterBtn.setAttribute('aria-pressed', filterBtn.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+                        updateCardProgress();
+                    });
                     var showBtn = section.querySelector('.alloflow-glossary-show-all');
                     var hideBtn = section.querySelector('.alloflow-glossary-hide-all');
                     var shufBtn = section.querySelector('.alloflow-glossary-shuffle');
                     if (showBtn) showBtn.addEventListener('click', function() {
-                        cards.forEach(function(c) { c.classList.remove(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'true'); });
+                        cards.forEach(function(c) { setCardOpen(c, true); });
                     });
                     if (hideBtn) hideBtn.addEventListener('click', function() {
-                        cards.forEach(function(c) { c.classList.add(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'false'); });
+                        cards.forEach(function(c) { setCardOpen(c, false); });
                     });
                     if (shufBtn) shufBtn.addEventListener('click', function() {
                         var nodes = Array.prototype.slice.call(cards);
@@ -58279,10 +59315,14 @@ function projectStudentGuideData(data, mode) {
                             var tmp = nodes[i]; nodes[i] = nodes[j]; nodes[j] = tmp;
                         }
                         nodes.forEach(function(c) { grid.appendChild(c); });
-                        cards.forEach(function(c) { c.classList.add(BACK_HIDDEN_CLASS); c.setAttribute('aria-pressed', 'false'); });
+                        cards.forEach(function(c) { setCardOpen(c, false); });
                     });
                     });
                 })();
+                document.addEventListener('click', function(e) {
+                    var wsTarget = e.target && e.target.closest ? e.target.closest('.alloflow-ws-cell, .alloflow-ws-word') : null;
+                    if (wsTarget) wsTarget.setAttribute('aria-pressed', wsTarget.getAttribute('aria-pressed') === 'true' ? 'false' : 'true');
+                });
                 // ── Concept-sort tap-to-place interaction (May 11 2026) ──
                 // Each section with .alloflow-cs-strips gets:
                 //   1. Click on a strip to select it (visual highlight).
@@ -58311,7 +59351,7 @@ function projectStudentGuideData(data, mode) {
                         '@media screen { .alloflow-cs-scissor { display: none !important; } }' +
                         '@media print {' +
                         '  .alloflow-cs-controls, .alloflow-cs-place-btn { display: none !important; }' +
-                        '  .alloflow-cs-dropzone-target { display: none !important; }' +
+                        '  .alloflow-cs-dropzone-target:not(.alloflow-cs-has-strips) { display: none !important; }' +
                         '}';
                     document.head.appendChild(csStyle);
                     sections.forEach(function(ctrl) {
@@ -58581,8 +59621,11 @@ function projectStudentGuideData(data, mode) {
                                 else { s.classList.add('alloflow-tl-wrong'); }
                             });
                             var total = strips.length;
-                            var msg = correct + ' of ' + total + ' in the correct position';
-                            if (correct === total) msg = '🎉 Perfect! All ' + total + ' events in chronological order.';
+                            var scoreTpl = ctrl.getAttribute('data-tl-copy-score') || '{correct} of {total} in the correct position';
+                            var perfectTpl = ctrl.getAttribute('data-tl-copy-perfect') || 'Perfect! All {total} events in chronological order.';
+                            var msg = (correct === total)
+                                ? ('🎉 ' + perfectTpl.split('{total}').join(String(total)))
+                                : scoreTpl.split('{correct}').join(String(correct)).split('{total}').join(String(total));
                             if (resultsEl) resultsEl.textContent = msg;
                         });
                         if (resetBtn) resetBtn.addEventListener('click', function() {
@@ -58600,13 +59643,13 @@ function projectStudentGuideData(data, mode) {
                             updateResponse();
                         });
                         // Wait until the shared response layer restores local
-                        // storage. Only a brand-new activity is auto-shuffled.
+                        // storage. Only a brand-new activity not already statically shuffled is auto-shuffled.
                         var initialized = false;
                         window.addEventListener('alloflow-responses-restored', function() {
                             if (initialized) return;
                             initialized = true;
                             if (applySavedOrder()) renumberScissors();
-                            else shuffleStrips();
+                            else if (container.getAttribute('data-tl-shuffled') !== '1') shuffleStrips();
                         });
                     });
                 })();
@@ -58723,7 +59766,7 @@ function projectStudentGuideData(data, mode) {
                     document.addEventListener('input', updateProgress, true);
                     document.addEventListener('change', updateProgress, true);
                     document.addEventListener('click', function (e) {
-                        if (e.target && e.target.closest && e.target.closest('.quiz-reset-btn, .alloflow-cs-place-btn, .alloflow-cs-reset-btn, .alloflow-tl-arrows button, .alloflow-tl-reset-btn')) setTimeout(updateProgress, 20);
+                        if (e.target && e.target.closest && e.target.closest('.quiz-reset-btn, .alloflow-cs-place-btn, .alloflow-cs-reset-btn, .alloflow-tl-arrows button, .alloflow-tl-reset-btn, .alloflow-cloze-chip, .alloflow-cloze-reset-btn, .alloflow-sf-chip, .alloflow-math-sym-btn, .alloflow-venn-place-button, .alloflow-venn-return-button, .alloflow-venn-reset-button, .alloflow-venn-shuffle-button')) setTimeout(updateProgress, 20);
                     }, true);
                     if (printBtn) printBtn.addEventListener('click', function () { try { window.print(); } catch (e) {} });
                     var subBtn = document.getElementById('alloflow-save-submission-btn');
@@ -58742,8 +59785,11 @@ function projectStudentGuideData(data, mode) {
                         var main = document.getElementById('main-export-content');
                         if (!main || !splitBtn) return;
                         if (!on && splitCols) {
-                            var origOrder = studentWraps;
+                            var origOrder = studentWraps.slice().sort(function (a, b) {
+                                return parseInt(a.getAttribute('data-alloflow-orig-idx') || '0', 10) - parseInt(b.getAttribute('data-alloflow-orig-idx') || '0', 10);
+                            });
                             origOrder.forEach(function (w) {
+                                w.removeAttribute('data-alloflow-orig-idx');
                                 if (splitPlaceholder && splitPlaceholder.parentNode) splitPlaceholder.parentNode.insertBefore(w, splitPlaceholder);
                                 else main.appendChild(w);
                             });
@@ -58752,12 +59798,14 @@ function projectStudentGuideData(data, mode) {
                             splitCols = null; splitPlaceholder = null;
                             document.documentElement.removeAttribute('data-alloflow-split');
                             splitBtn.setAttribute('aria-pressed', 'false');
+                            try { if (typeof window.__alloflowReprojectAnnotations === 'function') window.__alloflowReprojectAnnotations(); } catch (e) {}
                             return;
                         }
                         if (on && !splitCols && studentWraps.length >= 2) {
                             var leftItems = studentWraps.filter(function (w) { var tp = w.getAttribute('data-alloflow-resource-type'); return tp === 'simplified' || tp === 'glossary'; });
                             var rightItems = studentWraps.filter(function (w) { var tp = w.getAttribute('data-alloflow-resource-type'); return tp !== 'simplified' && tp !== 'glossary'; });
                             if (!leftItems.length || !rightItems.length) return;
+                            studentWraps.forEach(function (w, origIdx) { w.setAttribute('data-alloflow-orig-idx', String(origIdx)); });
                             splitPlaceholder = document.createComment('alloflow-split-anchor');
                             studentWraps[0].parentNode.insertBefore(splitPlaceholder, studentWraps[0]);
                             splitCols = document.createElement('div');
@@ -58770,6 +59818,7 @@ function projectStudentGuideData(data, mode) {
                             splitPlaceholder.parentNode.insertBefore(splitCols, splitPlaceholder);
                             document.documentElement.setAttribute('data-alloflow-split', '1');
                             splitBtn.setAttribute('aria-pressed', 'true');
+                            try { if (typeof window.__alloflowReprojectAnnotations === 'function') window.__alloflowReprojectAnnotations(); } catch (e) {}
                         }
                     };
                     if (splitBtn) splitBtn.addEventListener('click', function () { setSplit(splitBtn.getAttribute('aria-pressed') !== 'true'); });
@@ -58789,6 +59838,7 @@ function projectStudentGuideData(data, mode) {
                         if (stepPrev) stepPrev.disabled = stepIdx <= 0;
                         if (stepNext) stepNext.disabled = stepIdx >= studentWraps.length - 1;
                         if (jumpEl) jumpEl.value = stepOn ? (studentWraps[stepIdx].getAttribute('data-alloflow-resource-id') || '') : '';
+                        try { if (typeof window.__alloflowReprojectAnnotations === 'function') window.__alloflowReprojectAnnotations(); } catch (e) {}
                     };
                     if (stepBtn && studentWraps.length >= 2) stepBtn.addEventListener('click', function () { applyStep(!stepOn, stepIdx); });
                     if (stepPrev) stepPrev.addEventListener('click', function () { applyStep(true, stepIdx - 1); });
@@ -58803,10 +59853,26 @@ function projectStudentGuideData(data, mode) {
                             if (targetEl) { try { targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' }); } catch (e) { targetEl.scrollIntoView(); } }
                         });
                     }
+                    var _printSavedHud = null;
                     window.addEventListener('beforeprint', function () {
+                        _printSavedHud = { wasSplit: !!splitCols, wasStep: stepOn, savedStepIdx: stepIdx };
                         if (splitCols) setSplit(false);
                         if (stepOn) applyStep(false, 0);
+                    }, true);
+                    window.addEventListener('afterprint', function () {
+                        if (!_printSavedHud) return;
+                        var st = _printSavedHud;
+                        _printSavedHud = null;
+                        if (st.wasStep) applyStep(true, st.savedStepIdx);
+                        else if (st.wasSplit && window.innerWidth >= 1024) setSplit(true);
                     });
+                    window.addEventListener('resize', function () {
+                        if (splitCols && window.innerWidth < 1024) setSplit(false);
+                        if (termPopover && !termPopover.hidden) closePopover(false);
+                    });
+                    window.addEventListener('scroll', function () {
+                        if (termPopover && !termPopover.hidden) closePopover(false);
+                    }, { passive: true });
                     // Inline glossary popover runtime
                     var activeTermBtn = null;
                     var termPopover = null;
@@ -58824,7 +59890,7 @@ function projectStudentGuideData(data, mode) {
                             if (activeTermBtn) activeTermBtn.setAttribute('aria-expanded', 'false');
                             activeTermBtn = tbtn;
                             tbtn.setAttribute('aria-expanded', 'true');
-                            var hostMain = document.getElementById('main-export-content') || document.body;
+                            var hostMain = document.body || document.getElementById('main-export-content');
                             if (!termPopover) {
                                 termPopover = document.createElement('div');
                                 termPopover.id = 'alloflow-term-popover';
@@ -58841,15 +59907,21 @@ function projectStudentGuideData(data, mode) {
                                 var body = document.createElement('div'); body.className = 'alloflow-term-popover-body';
                                 termPopover.appendChild(head); termPopover.appendChild(body);
                                 hostMain.appendChild(termPopover);
+                            } else if (termPopover.parentNode !== hostMain) {
+                                hostMain.appendChild(termPopover);
                             }
                             termPopover.querySelector('#alloflow-term-popover-title').textContent = tbtn.getAttribute('data-allo-term') || tbtn.textContent || '';
                             termPopover.querySelector('.alloflow-term-popover-body').textContent = tbtn.getAttribute('data-allo-def') || '';
                             termPopover.hidden = false;
                             var rect = tbtn.getBoundingClientRect();
+                            var popRect = termPopover.getBoundingClientRect();
+                            var popW = popRect.width || 320;
+                            var popH = popRect.height || 140;
                             var vw = window.innerWidth || 800;
                             var vh = window.innerHeight || 600;
-                            var left = Math.max(12, Math.min(vw - 372, rect.left));
-                            var top = rect.bottom + 8 + 140 > vh ? Math.max(12, rect.top - 130) : rect.bottom + 8;
+                            var left = Math.max(12, Math.min(vw - popW - 12, rect.left));
+                            var rawTop = (rect.bottom + 8 + popH > vh) ? (rect.top - popH - 8) : (rect.bottom + 8);
+                            var top = Math.max(12, Math.min(vh - popH - 12, rawTop));
                             termPopover.style.left = left + 'px';
                             termPopover.style.top = top + 'px';
                             return;
@@ -58879,11 +59951,12 @@ function projectStudentGuideData(data, mode) {
       let _packHtml = _alloRewriteResourceLinks(rawHtml);
       if (cfg.assessmentMode === true) {
         _packHtml = _packHtml
-          .replace(/ data-correct="\d+"/g, ' data-correct=""')
+          .replace(/ data-correct="[^"]*"/g, ' data-correct=""')
           .replace(/ data-fill-answers="[^"]*"/g, '')
-          .replace(/ data-(?:correct-multi|sequence-key|relation-key|answer-evidence-key|numeric-key)="[^"]*"/g, '')
+          .replace(/ data-(?:correct-multi|sequence-key|relation-key|answer-evidence-key|numeric-key|cloze-answer|matching-key|ordering-key|expected-letter|answer-zone|correct-label|term-index|def-letter)="[^"]*"/g, '')
           .replace(/(<div[^>]*class="alloflow-cs-strip"[^>]*?) data-category-id="[^"]*"/g, '$1 data-category-id=""')
-          .replace(/<\/head>/i, '<style>.quiz-controls{display:none !important}.alloflow-cs-controls{display:none !important}</style></head>');
+          .replace(/(<div[^>]*class="alloflow-tl-strip"[^>]*?) data-original-index="[^"]*"/g, '$1 data-original-index=""')
+          .replace(/<\/head>/i, '<style>.quiz-controls,.alloflow-cs-controls,.alloflow-cloze-controls,.alloflow-venn-controls,.alloflow-match-controls,.alloflow-tl-controls,.alloflow-ac-controls,.alloflow-venn-check-btn,.alloflow-venn-check-button,.alloflow-match-check-btn,.alloflow-tl-check-btn,.alloflow-cs-check-btn,.alloflow-cloze-check-btn,[data-allo-self-check-btn]{display:none !important}</style></head>');
       }
       // Run WCAG sanitizer on the complete export HTML to guarantee accessibility
       const sanitized = sanitizeStyleForWCAG(_packHtml);

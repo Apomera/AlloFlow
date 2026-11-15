@@ -32,7 +32,7 @@ const last = Number(lastArg || first);
     pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
     const bytes = Uint8Array.from(atob(dataB64), (c) => c.charCodeAt(0));
     const csPages = await window.__alloCsPageTexts(bytes.slice());
-    const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+    const pdf = await pdfjsLib.getDocument({ data: bytes, isEvalSupported: false }).promise;
     const out = [];
     for (let p = first; p <= Math.min(last, pdf.numPages); p++) {
       const tc = await (await pdf.getPage(p)).getTextContent();

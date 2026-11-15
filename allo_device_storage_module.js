@@ -1438,6 +1438,102 @@
         note.style.cssText = 'opacity:.75;margin-bottom:6px;';
         note.textContent = 'Backend: ' + state.backendName + ' — data stays on this device.';
         out.appendChild(note);
+        var probeNotice = function (msg) {
+          var prev = out.querySelector('[data-allo-probe-alert="1"]');
+          if (prev) try { prev.remove(); } catch (_) {}
+          var al = document.createElement('div');
+          al.setAttribute('role', 'alert');
+          al.setAttribute('data-allo-probe-alert', '1');
+          al.style.cssText = 'margin-top:6px;padding:6px 8px;border-radius:6px;background:#fef2f2;color:#991b1b;font-weight:700;';
+          al.textContent = msg;
+          out.appendChild(al);
+        };
+        var isProbeBlockedForLearner = function () {
+          try {
+            if (window.__alloQrStudentMode) return true;
+            if (window.__alloSensitiveWorkspaceContext && window.__alloSensitiveWorkspaceContext.learner === true) return true;
+          } catch (_) {}
+          return false;
+        };
+        var isClinicalDeletionHeld = function (ns) {
+          if (ns !== 'protected_clinical_records') return false;
+          try {
+            if (Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SENSITIVE_RECORD_RETENTION_POLICY')) {
+              var pol = window.ALLOFLOW_SENSITIVE_RECORD_RETENTION_POLICY;
+              if (!pol || typeof pol !== 'object' || pol.allowManualDeletion === false || pol.legalHold === true) return true;
+            }
+            if (typeof localStorage !== 'undefined' && localStorage.getItem('alloflow_retention_legal_hold_v1') === '1') return true;
+            var sw = window.AlloModules && window.AlloModules.SensitiveWorkspace;
+            if (sw && typeof sw.getStatus === 'function') {
+              var st = sw.getStatus();
+              if (st && (st.phase === 'deleting' || st.phase === 'deletion-unverified' || st.legalHold === true || st.allowManualDeletion === false)) return true;
+            }
+          } catch (_) { return true; }
+          return false;
+        };
+        var verifyEducatorCodeForProbe = function (openerBtn) {
+          var dac = window.AlloModules && window.AlloModules.DeviceAccessCode;
+          if (!dac || typeof dac.isConfigured !== 'function' || !dac.isConfigured()) return Promise.resolve(true);
+          return new Promise(function (resolve) {
+            if (!document || !document.body) { resolve(false); return; }
+            var overlay = document.createElement('div');
+            overlay.setAttribute('role', 'dialog');
+            overlay.setAttribute('aria-modal', 'true');
+            overlay.style.cssText = 'position:fixed;inset:0;z-index:100001;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:16px;';
+            var box = document.createElement('form');
+            box.style.cssText = 'background:#fff;color:#0f172a;border-radius:12px;padding:18px;width:min(100%,380px);font:14px/1.45 system-ui,sans-serif;box-shadow:0 20px 50px rgba(0,0,0,.4);';
+            var heading = document.createElement('h3');
+            heading.textContent = 'Educator access code required';
+            heading.style.cssText = 'margin:0 0 8px;font-size:16px;';
+            var input = document.createElement('input');
+            input.type = 'password';
+            input.autocomplete = 'off';
+            input.placeholder = 'Enter educator access code';
+            input.style.cssText = 'width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #94a3b8;border-radius:8px;margin-bottom:8px;font:inherit;';
+            var err = document.createElement('div');
+            err.setAttribute('role', 'alert');
+            err.style.cssText = 'color:#b91c1c;min-height:18px;font-size:12px;margin-bottom:8px;';
+            var row = document.createElement('div');
+            row.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;';
+            var cancel = document.createElement('button');
+            cancel.type = 'button';
+            cancel.textContent = 'Cancel';
+            cancel.style.cssText = 'padding:6px 12px;border:1px solid #64748b;border-radius:8px;background:#fff;cursor:pointer;';
+            var submit = document.createElement('button');
+            submit.type = 'submit';
+            submit.textContent = 'Verify';
+            submit.style.cssText = 'padding:6px 12px;border:0;border-radius:8px;background:#1d4ed8;color:#fff;font-weight:700;cursor:pointer;';
+            row.appendChild(cancel);
+            row.appendChild(submit);
+            box.appendChild(heading);
+            box.appendChild(input);
+            box.appendChild(err);
+            box.appendChild(row);
+            overlay.appendChild(box);
+            document.body.appendChild(overlay);
+            var finish = function (ok) {
+              try { overlay.remove(); } catch (_) {}
+              if (openerBtn && openerBtn.focus) try { openerBtn.focus(); } catch (_) {}
+              resolve(!!ok);
+            };
+            cancel.onclick = function () { finish(false); };
+            box.onsubmit = function (ev) {
+              ev.preventDefault();
+              submit.disabled = true;
+              err.textContent = '';
+              Promise.resolve(dac.verify(input.value)).then(function (res) {
+                submit.disabled = false;
+                if (res && res.ok) { finish(true); return; }
+                err.textContent = res && res.reason === 'backoff' ? 'Too many attempts. Wait before trying again.' : 'Incorrect access code.';
+                input.focus();
+              }, function () {
+                submit.disabled = false;
+                err.textContent = 'Could not verify access code.';
+              });
+            };
+            try { input.focus(); } catch (_) {}
+          });
+        };
         list.forEach(function (info) {
           var line = document.createElement('div');
           line.style.cssText = 'display:flex;align-items:center;gap:8px;margin:3px 0;';
@@ -1449,22 +1545,32 @@
           exp.textContent = 'Export';
           exp.style.cssText = btnCss + 'padding:2px 8px;';
           exp.onclick = function () {
-            api.getAll(info.ns).then(function (rows) {
-              var blob = new Blob([JSON.stringify({ ns: info.ns, exportedAt: new Date().toISOString(), records: rows }, null, 2)], { type: 'application/json' });
-              var a = document.createElement('a');
-              a.href = URL.createObjectURL(blob);
-              a.download = 'alloflow_' + info.ns + '_export.json';
-              a.click();
-              setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
-            }).catch(function (e) { out.appendChild(document.createTextNode('\nExport failed: ' + (e.code || e.message))); });
+            if (isProbeBlockedForLearner()) { probeNotice('Export is disabled in student mode.'); return; }
+            verifyEducatorCodeForProbe(exp).then(function (ok) {
+              if (!ok) return;
+              api.getAll(info.ns).then(function (rows) {
+                var blob = new Blob([JSON.stringify({ ns: info.ns, exportedAt: new Date().toISOString(), records: rows }, null, 2)], { type: 'application/json' });
+                var a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = 'alloflow_' + info.ns + '_export.json';
+                a.click();
+                setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
+              }).catch(function (e) { out.appendChild(document.createTextNode('\nExport failed: ' + (e.code || e.message))); });
+            });
           };
           var del = document.createElement('button');
           del.type = 'button';
           del.textContent = 'Erase';
           del.style.cssText = btnCss + 'padding:2px 8px;color:#dc2626;';
           del.onclick = function () {
-            confirmDeviceStorageErase(info, del).then(function (confirmed) {
-              if (confirmed) api.clearNamespace(info.ns).then(function () { dataBtn.onclick(); });
+            if (isProbeBlockedForLearner()) { probeNotice('Erasing stored data is disabled in student mode.'); return; }
+            if (isClinicalDeletionHeld(info.ns)) { probeNotice('Manual clinical-record deletion is blocked by retention policy or legal hold.'); return; }
+            verifyEducatorCodeForProbe(del).then(function (ok) {
+              if (!ok) return;
+              if (isClinicalDeletionHeld(info.ns)) { probeNotice('Manual clinical-record deletion is blocked by retention policy or legal hold.'); return; }
+              confirmDeviceStorageErase(info, del).then(function (confirmed) {
+                if (confirmed) api.clearNamespace(info.ns).then(function () { dataBtn.onclick(); });
+              });
             });
           };
           line.appendChild(label); line.appendChild(exp); line.appendChild(del);

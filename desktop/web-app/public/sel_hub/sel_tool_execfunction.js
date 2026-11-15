@@ -1414,43 +1414,73 @@ window.SelHub = window.SelHub || {
               })
             ),
             h('div', { style: { display: 'flex', gap: '8px' } },
-              h('input', { 'aria-label': 'Tell the coach what is hard',
-                type: 'text', value: coachInput,
-                onChange: function(ev) { upd('coachInput', ev.target.value); },
-                onKeyDown: function(ev) {
-                  if (ev.key === 'Enter' && coachInput.trim() && !coachLoading && _efAiOn) {
-                    var msg = coachInput.trim();
-                    var hist = (coachHistory || []).concat([{ role: 'user', text: msg }]);
-                    upd({ coachHistory: hist, coachInput: '', coachLoading: true });
-                    var p = 'You are an executive function coach for a ' + band + ' school student. They said: "' + msg + '"\n\nDo three things, briefly:\n1. Name the EF domain at play (initiation, working memory, planning, time, or flexibility) in one sentence.\n2. Validate that this is a common EF struggle (not a character flaw).\n3. Offer ONE specific, concrete thing they can try in the next 10 minutes. Pick from: 5-minute rule, brain dump, lower-the-bar, future-self note, body doubling, Pomodoro, or backward planning. Be specific to their situation.\n\nWarm and direct. Max 4 sentences total.';
-                    if (window.SelHub && window.SelHub.safeCoach) {
-                      window.SelHub.safeCoach({ studentMessage: msg, coachPrompt: p, toolId: 'execfunction', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: hist }).then(function(result) { upd({ coachHistory: hist.concat([{ role: 'coach', text: result.response }]), coachLoading: false }); if (awardXP) awardXP(5, 'Asked for EF help'); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'I am having trouble connecting. But here is the thing: noticing that something is hard is itself an EF skill. That awareness is the start of any strategy.' }]), coachLoading: false }); });
-                    } else {
-                      callGemini(p, false).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false }); if (awardXP) awardXP(5, 'Asked for EF help'); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'I am having trouble connecting. But here is the thing: noticing that something is hard is itself an EF skill. That awareness is the start of any strategy.' }]), coachLoading: false }); });
-                    }
-                  }
-                },
-                disabled: coachLoading || !_efAiOn,
-                placeholder: coachLoading ? 'Coach is thinking...' : 'What is hard right now?',
-                style: { flex: 1, border: '2px solid #cffafe', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
-              }),
-              h('button', {
-                onClick: function() {
+              (function() {
+                var submitEfCoach = function(detailedPrompt) {
                   if (!coachInput.trim() || coachLoading || !_efAiOn) return;
                   var msg = coachInput.trim();
                   var hist = (coachHistory || []).concat([{ role: 'user', text: msg }]);
-                  upd({ coachHistory: hist, coachInput: '', coachLoading: true });
-                  var p = 'EF coach for ' + band + ' student. They said: "' + msg + '" Name the EF domain, validate it is common, offer ONE specific 10-minute strategy. Max 4 sentences.';
-                  if (window.SelHub && window.SelHub.safeCoach) {
-                    window.SelHub.safeCoach({ studentMessage: msg, coachPrompt: p, toolId: 'execfunction', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: hist }).then(function(result) { upd({ coachHistory: hist.concat([{ role: 'coach', text: result.response }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'Connection issue. Notice: you reached out for help. That alone is an EF win.' }]), coachLoading: false }); });
-                  } else {
-                    callGemini(p, false).then(function(r) { upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false }); }).catch(function() { upd({ coachHistory: hist.concat([{ role: 'coach', text: 'Connection issue. Notice: you reached out for help. That alone is an EF win.' }]), coachLoading: false }); });
+                  var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
+                    ? window.SelHub.safeRehearseCheck(msg, { toolId: 'execfunction', onSafetyFlag: onSafetyFlag })
+                    : (function() {
+                        var checker = (window.__alloShared && window.__alloShared.SafetyContentChecker) || window.SafetyContentChecker || null;
+                        var flags = checker && checker.check ? checker.check(msg) : [];
+                        if (!flags || !flags.length) return { action: 'continue', severity: 'none' };
+                        var top = flags.reduce(function(a, b) { return b.severity === 'critical' ? b : a; }, flags[0]);
+                        if (onSafetyFlag) {
+                          try { onSafetyFlag(Object.assign({}, top, { source: 'sel_rehearse_execfunction', context: msg.substring(0, 100), aiGenerated: false })); } catch (_) {}
+                        }
+                        return { action: top.severity === 'critical' ? 'block' : 'continue', severity: top.severity };
+                      })();
+                  if (safety && safety.action === 'block') {
+                    var blockMsg = (window.SelHub && window.SelHub.rehearseBreakCharacterText)
+                      ? window.SelHub.rehearseBreakCharacterText(safety.severity)
+                      : 'Your safety matters. Please reach out to a trusted adult or call/text 988.';
+                    upd({ coachHistory: hist.concat([{ role: 'coach', text: blockMsg }]), coachInput: '', coachLoading: false });
+                    if (window.SelHub && window.SelHub.showCrisisModal) {
+                      try { window.SelHub.showCrisisModal({ toolName: 'Executive Function Coach', contentSnippet: msg }); } catch (_) {}
+                    }
+                    return;
                   }
-                },
-                disabled: coachLoading || !coachInput.trim() || !_efAiOn,
-                'aria-label': 'Send to coach',
-                style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? CYAN_FILL : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
-              }, coachLoading ? '⏳' : '→')
+                  upd({ coachHistory: hist, coachInput: '', coachLoading: true });
+                  var p = detailedPrompt
+                    ? 'You are an executive function coach for a ' + band + ' school student. They said: "' + msg + '"\n\nDo three things, briefly:\n1. Name the EF domain at play (initiation, working memory, planning, time, or flexibility) in one sentence.\n2. Validate that this is a common EF struggle (not a character flaw).\n3. Offer ONE specific, concrete thing they can try in the next 10 minutes. Pick from: 5-minute rule, brain dump, lower-the-bar, future-self note, body doubling, Pomodoro, or backward planning. Be specific to their situation.\n\nWarm and direct. Max 4 sentences total.'
+                    : 'EF coach for ' + band + ' student. They said: "' + msg + '" Name the EF domain, validate it is common, offer ONE specific 10-minute strategy. Max 4 sentences.';
+                  var fallbackMsg = detailedPrompt
+                    ? 'I am having trouble connecting. But here is the thing: noticing that something is hard is itself an EF skill. That awareness is the start of any strategy.'
+                    : 'Connection issue. Notice: you reached out for help. That alone is an EF win.';
+                  if (window.SelHub && window.SelHub.safeCoach) {
+                    window.SelHub.safeCoach({ studentMessage: msg, coachPrompt: p, toolId: 'execfunction', band: band, callGemini: callGemini, onSafetyFlag: onSafetyFlag, codename: ctx.studentCodename || 'student', conversationHistory: hist }).then(function(result) {
+                      upd({ coachHistory: hist.concat([{ role: 'coach', text: result.response }]), coachLoading: false });
+                      if (detailedPrompt && awardXP) awardXP(5, 'Asked for EF help');
+                    }).catch(function() {
+                      upd({ coachHistory: hist.concat([{ role: 'coach', text: fallbackMsg }]), coachLoading: false });
+                    });
+                  } else {
+                    callGemini(p, false).then(function(r) {
+                      upd({ coachHistory: hist.concat([{ role: 'coach', text: r }]), coachLoading: false });
+                      if (detailedPrompt && awardXP) awardXP(5, 'Asked for EF help');
+                    }).catch(function() {
+                      upd({ coachHistory: hist.concat([{ role: 'coach', text: fallbackMsg }]), coachLoading: false });
+                    });
+                  }
+                };
+                return [
+                  h('input', { key: 'ef-coach-input', 'aria-label': 'Tell the coach what is hard',
+                    type: 'text', value: coachInput,
+                    onChange: function(ev) { upd('coachInput', ev.target.value); },
+                    onKeyDown: function(ev) { if (ev.key === 'Enter') submitEfCoach(true); },
+                    disabled: coachLoading || !_efAiOn,
+                    placeholder: coachLoading ? 'Coach is thinking...' : 'What is hard right now?',
+                    style: { flex: 1, border: '2px solid #cffafe', borderRadius: '10px', padding: '10px 14px', fontSize: '14px', fontFamily: 'inherit', boxSizing: 'border-box' }
+                  }),
+                  h('button', { key: 'ef-coach-send',
+                    onClick: function() { submitEfCoach(false); },
+                    disabled: coachLoading || !coachInput.trim() || !_efAiOn,
+                    'aria-label': 'Send to coach',
+                    style: { padding: '10px 16px', background: coachInput.trim() && !coachLoading ? CYAN_FILL : _efC('#d1d5db'), color: '#fff', border: 'none', borderRadius: '10px', fontWeight: 700, cursor: coachInput.trim() && !coachLoading ? 'pointer' : 'not-allowed', fontSize: '13px' }
+                  }, coachLoading ? '⏳' : '→')
+                ];
+              })()
             ),
             coachHistory.length === 0 && h('div', { style: { marginTop: '14px' } },
               h('div', { style: { fontSize: '11px', fontWeight: 600, color: _efC('#475569'), marginBottom: '6px' } }, 'Try one of these:'),

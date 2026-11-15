@@ -144,13 +144,16 @@
     checkCanceled(options.signal);
     var guide = guideIdFromUrl(url);
     if (guide === null) throw problem('Teaching research reads only the official WWC practice guides in its catalog.');
+    if (typeof window !== 'undefined' && window.__alloStudentAiDisabled === true) {
+      throw problem('Public guidance web retrieval is disabled while student AI restrictions are active.');
+    }
     var canonical = GUIDE_BASE + guide;
     var fetchPage = options.fetch || (typeof fetch === 'function' ? fetch : null);
     if (typeof fetchPage !== 'function') throw problem('Public guidance retrieval is unavailable in this environment.');
     // Same Jina reader URL used by UtilsPure, with no proxy chain or AI fallback.
     return bounded(async function (signal) {
       var response = await abortable(fetchPage('https://r.jina.ai/' + canonical, {
-        method: 'GET', headers: { Accept: 'text/plain' }, credentials: 'omit', redirect: 'error', signal: signal
+        method: 'GET', headers: { Accept: 'text/plain' }, credentials: 'omit', referrerPolicy: 'no-referrer', redirect: 'error', signal: signal
       }), signal);
       if (!response || !response.ok) throw problem('The public guidance reader did not return a successful response.');
       if (response.url && !safeProxyUrl(response.url, guide)) throw problem('The public guidance reader returned an unexpected destination.');

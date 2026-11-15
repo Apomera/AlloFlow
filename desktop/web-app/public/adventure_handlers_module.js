@@ -108,8 +108,15 @@ const normalizeAdventureTurn = (data, deps, chanceRoll, rollModifier) => {
     const previousRoll = data.rollDetails && typeof data.rollDetails === 'object' ? data.rollDetails : {};
     if (deps.adventureChanceMode) {
         const strategyRating = clamp(previousRoll.strategyRating, 1, 20, 10);
+        const safeRollModifier = clamp(rollModifier, -20, 20, 0);
         // The app owns the die. Never accept a replacement die or sum from the model.
-        data.rollDetails = { ...previousRoll, strategyRating, d20: chanceRoll, total: chanceRoll + rollModifier + strategyRating };
+        data.rollDetails = {
+            ...previousRoll,
+            strategyRating,
+            d20: chanceRoll,
+            ...(safeRollModifier ? { rollModifier: safeRollModifier } : {}),
+            total: chanceRoll + safeRollModifier + strategyRating
+        };
     }
     if (deps.adventureInputMode === 'debate') {
         const rating = clamp(deps.adventureChanceMode ? data.rollDetails.strategyRating : previousRoll.total ?? previousRoll.d20, 1, 20, 10);
@@ -138,6 +145,19 @@ const getAssistedKnowledgeContext = (state) => {
     : [];
   if (!learned.length) return '';
   return `\n--- GUIDING HAND KNOWLEDGE (ASSISTED, NOT DEMONSTRATED MASTERY) ---\n${learned.map((entry, index) => `${index + 1}. ${entry}`).join('\n')}\nUse this knowledge when it is relevant in later scenes, but never treat it as evidence that the student independently demonstrated the concept.\n`;
+};
+
+const buildAdventureLearningGoalsContext = (deps) => {
+  const { adventureLanguageMode, history, getAdventureGlossaryTerms } = deps || {};
+  const reading = resolveAdventureReadingSource(deps || {});
+  const readingHistory = getAdventureReadingHistory(history, reading);
+  const keyTerms = typeof getAdventureGlossaryTerms === 'function' ? getAdventureGlossaryTerms(readingHistory, adventureLanguageMode) : '';
+  const analysisItem = readingHistory.slice().reverse().find(h => h && h.type === 'analysis');
+  const keyConcepts = Array.isArray(analysisItem?.data?.concepts) ? analysisItem.data.concepts.join(', ') : '';
+  const parts = [];
+  if (keyTerms) parts.push(`Key Vocabulary to Reinforce: ${keyTerms}`);
+  if (keyConcepts) parts.push(`Key Concepts to Explore: ${keyConcepts}`);
+  return parts.length ? `\n--- LEARNING GOALS ---\n${parts.join('\n')}\n` : '';
 };
 
 // ── Adventure gloss language (fleet W3, 2026-08-16; L4 inventory row 23) ──
@@ -245,6 +265,8 @@ const getAdventureReadingHistory = (history, reading) => (Array.isArray(history)
 });
 
 let adventureLaunchInFlight = false;
+let adventureTurnInFlight = false;
+let adventureRunEpoch = 0;
 const executeStartAdventure = async (contextOverride = null, deps) => {
   const { adventureState, adventureTextInput, adventureInputMode, adventureLanguageMode, adventureChanceMode, adventureConsistentCharacters, adventureArtStyle, adventureCustomArtStyle, universalImageStyle, adventureCustomInstructions, adventureFreeResponseEnabled, history, inputText, sourceTopic, gradeLevel, standardsInput, studentInterests, isIndependentMode, isTeacherMode, factionResourceMode, enableFactionResources, selectedLanguages, currentUiLanguage, translationMode, resolveTranslationPolicy, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, alloBotRef, lastTurnSnapshot, lastReadTurnRef, pdfPreviewRef, exportPreviewRef, setActiveView, setAdventureState, setAdventureTextInput, setDiceResult, setFailedAdventureAction, setGeneratedContent, setGenerationStep, setHasSavedAdventure, setHistory, setIsResumingAdventure, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setShowNewGameSetup, callGemini, callGeminiVision, callImagen, addToast, t, warnLog, debugLog, cleanJson, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, handleScoreUpdate, getAdventureGlossaryTerms, generateAdventureImage, generateNarrativeLedger, generatePixelArtItem, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, DEBATE_INVISIBLE_INSTRUCTIONS, INVISIBLE_NARRATOR_INSTRUCTIONS, NARRATIVE_GUARDRAILS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES, aiBotsActive, narrativeLedger, isAdventureStoryMode, isImmersiveMode, isReviewingCharacters, isShopOpen, isSocialStoryMode, debateTopic, socialStoryFocus, stopPlayback, playSound, resetDebate } = deps;
   if (adventureLaunchInFlight || adventureState.isLoading || deps.isProcessing === true) return;
@@ -297,6 +319,14 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
         }
     } else {
         initialGold = Math.floor(globalPoints / 2);
+    }
+    let preLaunchState = null;
+    try {
+        preLaunchState = adventureState && typeof adventureState === 'object'
+            ? (typeof structuredClone === 'function' ? structuredClone(adventureState) : JSON.parse(JSON.stringify(adventureState)))
+            : null;
+    } catch (_) {
+        preLaunchState = adventureState ? { ...adventureState } : null;
     }
     const isSequel = Boolean(contextOverride);
     const startingLevel = isSequel ? Math.max(1, Number(adventureState.level) || 1) : 1;
@@ -352,11 +382,14 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
     setAdventureTextInput('');
     addToast(adventureInputMode === 'debate' ? t('adventure.status_messages.initiating_debate') : t('adventure.status_messages.starting'), "info");
     adventureLaunchInFlight = true;
+    adventureRunEpoch += 1;
+    adventureTurnInFlight = false;
+    const launchEpoch = adventureRunEpoch;
     let openingActive = true;
     try {
       if (adventureInputMode !== 'debate' && adventureInputMode !== 'system') {
           Promise.resolve(detectClimaxArchetype(sourceText, adventureCustomInstructions)).then(archetype => {
-              if (!openingActive || !archetype) return;
+              if (!openingActive || !archetype || launchEpoch !== adventureRunEpoch) return;
               debugLog("Adventure Archetype Detected:", archetype);
               setAdventureState(prev => ({
                   ...prev,
@@ -522,13 +555,30 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
               - Each character MUST have a unique, detailed visual description (hair, clothing, build, distinguishing features) for image generation consistency.` : ''}
           `;
       }
+      if (launchEpoch !== adventureRunEpoch) return;
+      if (deps.lastTurnSnapshot && 'current' in deps.lastTurnSnapshot) deps.lastTurnSnapshot.current = null;
       const result = await callGemini(prompt + buildAdventureModeInstruction(deps, true), true);
+      if (launchEpoch !== adventureRunEpoch) return;
       let sceneData;
       try {
           sceneData = JSON.parse(cleanJson(result));
-      } catch (parseErr) {
-          warnLog("Adventure Parse Error:", parseErr);
-          setAdventureState(prev => ({ ...prev, isLoading: false, loadingStage: null }));
+      } catch (fastParseErr) {
+          if (typeof resilientJsonParse === 'function') {
+              try {
+                  sceneData = await resilientJsonParse(result);
+              } catch (repairErr) {
+                  warnLog("Adventure Parse Error:", repairErr);
+                  sceneData = null;
+              }
+          } else {
+              warnLog("Adventure Parse Error:", fastParseErr);
+          }
+      }
+      if (launchEpoch !== adventureRunEpoch) return;
+      if (!sceneData || typeof sceneData !== 'object') {
+          setAdventureState(prev => (preLaunchState && preLaunchState.currentScene)
+              ? { ...preLaunchState, isLoading: false, loadingStage: null }
+              : { ...prev, isLoading: false, loadingStage: null, isShopOpen: false, isReviewingCharacters: false });
           addToast(t('toasts.adventure_start_failed_retry'), "error");
           return;
       }
@@ -552,6 +602,7 @@ const executeStartAdventure = async (contextOverride = null, deps) => {
               };
               initialInventory.push(newItem);
               const promise = generatePixelArtItem(newItemName, newItemDesc).then(url => {
+                  if (launchEpoch !== adventureRunEpoch) return;
                   setAdventureState(prev => ({
                       ...prev,
                       inventory: prev.inventory.map(i => i.id === newItem.id ? { ...i, image: url || null, isLoading: false } : i)
@@ -603,6 +654,7 @@ Opening scene: ${sceneText.substring(0, 1200)}
                   `, true);
                   const cleanedExtraction = cleanJson(extractionResult);
                   const extractedData = await resilientJsonParse(cleanedExtraction);
+                  if (launchEpoch !== adventureRunEpoch) return;
                   const extractedCharacters = Array.isArray(extractedData) ? extractedData : extractedData?.characters;
                   if (Array.isArray(extractedCharacters)) {
                       sceneCharacters = extractedCharacters
@@ -648,7 +700,9 @@ Opening scene: ${sceneText.substring(0, 1200)}
               }
           }
       }
-      setAdventureState(prev => ({
+      setAdventureState(prev => {
+        if (launchEpoch !== adventureRunEpoch) return prev;
+        return {
         ...prev,
         history: [],
         currentScene: sceneData,
@@ -669,7 +723,8 @@ Opening scene: ${sceneText.substring(0, 1200)}
         voiceMap: sceneData.voices || {},
         characters: sceneCharacters,
         isReviewingCharacters: sceneCharacters.length > 0,
-      }));
+      };
+      });
       // Cast confirmation owns the opening illustration. A temporary setting
       // here used a second provider request before the real scene art.
       const newAdventureItem = {
@@ -713,9 +768,10 @@ Opening scene: ${sceneText.substring(0, 1200)}
       }
       flyToElement('tour-tool-adventure');
     } catch (error) {
+      if (launchEpoch !== adventureRunEpoch) return;
       warnLog("Adventure Start Error:", error);
       addToast(t('toasts.adventure_start_failed'), "error");
-      setAdventureState(prev => adventureState.currentScene ? { ...adventureState, isLoading: false, loadingStage: null } : { ...prev, isLoading: false, loadingStage: null, isShopOpen: false, isReviewingCharacters: false });
+      setAdventureState(prev => (preLaunchState && preLaunchState.currentScene) ? { ...preLaunchState, isLoading: false, loadingStage: null } : { ...prev, isLoading: false, loadingStage: null, isShopOpen: false, isReviewingCharacters: false });
     } finally {
       openingActive = false;
       adventureLaunchInFlight = false;
@@ -758,6 +814,9 @@ const handleStartAdventure = async (deps) => {
       cancelAdventureEstablishingShot();
       window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(setAdventureState);
       stopPlayback();
+      adventureRunEpoch += 1;
+      adventureTurnInFlight = false;
+      if (lastTurnSnapshot && 'current' in lastTurnSnapshot) lastTurnSnapshot.current = null;
       setFailedAdventureAction(null);
       setPendingAdventureUpdate(null);
       setShowDice(false);
@@ -856,45 +915,74 @@ const handleResumeAdventure = async (deps) => {
           if (typeof savedConfig.learnerKey === 'string' && typeof _lessonKeyOf === 'function'
               && !adventureSaveMatchesLearner(savedConfig.learnerKey, {
                 isTeacher: !!isTeacherMode,
-                profileId: typeof deps.selectedProfileId === 'string' ? deps.selectedProfileId : undefined,
+                profileId: typeof deps.selectedProfileId === 'string' ? deps.selectedProfileId : '',
                 nickname: deps.studentNickname
               }, _lessonKeyOf)) {
               addToast(t('toasts.adventure_other_learner'), "error");
               setHasSavedAdventure(false);
               return;
           }
-          if (typeof setAdventureDifficulty === 'function' && savedConfig.difficulty) setAdventureDifficulty(savedConfig.difficulty);
-          if (typeof setAdventureInputMode === 'function' && savedConfig.inputMode) setAdventureInputMode(savedConfig.inputMode);
-          if (typeof setAdventureLanguageMode === 'function' && savedConfig.languageMode) setAdventureLanguageMode(savedConfig.languageMode);
-          if (typeof setAdventureChanceMode === 'function' && savedConfig.chanceMode !== undefined) setAdventureChanceMode(!!savedConfig.chanceMode);
-          if (typeof setAdventureFreeResponseEnabled === 'function' && savedConfig.freeResponse !== undefined) setAdventureFreeResponseEnabled(!!savedConfig.freeResponse);
-          if (typeof setAdventureTypingPaceEnabled === 'function' && savedConfig.typingPace !== undefined) setAdventureTypingPaceEnabled(!!savedConfig.typingPace);
-          if (typeof setAdventureFluencyEnabled === 'function' && savedConfig.sceneReadingPractice !== undefined) setAdventureFluencyEnabled(!!savedConfig.sceneReadingPractice);
-          if (typeof setAdventureConsistentCharacters === 'function' && savedConfig.consistentCharacters !== undefined) setAdventureConsistentCharacters(!!savedConfig.consistentCharacters);
-          if (typeof setIsAdventureStoryMode === 'function' && savedConfig.storyMode !== undefined) setIsAdventureStoryMode(!!savedConfig.storyMode);
-          if (typeof setIsSocialStoryMode === 'function' && savedConfig.socialStoryMode !== undefined) setIsSocialStoryMode(!!savedConfig.socialStoryMode);
-          if (typeof setSocialStoryFocus === 'function' && savedConfig.socialStoryFocus !== undefined) setSocialStoryFocus(savedConfig.socialStoryFocus || '');
-          if (typeof setAdventureArtStyle === 'function' && savedConfig.artStyle) setAdventureArtStyle(savedConfig.artStyle);
-          if (typeof setAdventureCustomArtStyle === 'function' && savedConfig.customArtStyle !== undefined) setAdventureCustomArtStyle(savedConfig.customArtStyle || '');
-          if (typeof setUseLowQualityVisuals === 'function' && savedConfig.lowQualityVisuals !== undefined) setUseLowQualityVisuals(!!savedConfig.lowQualityVisuals);
-          if (typeof setEnableFactionResources === 'function' && savedConfig.enableFactionResources !== undefined) setEnableFactionResources(!!savedConfig.enableFactionResources);
-          if (typeof setFactionResourceMode === 'function' && savedConfig.factionResourceMode) setFactionResourceMode(savedConfig.factionResourceMode);
+          adventureRunEpoch += 1;
+          adventureTurnInFlight = false;
+          if (lastTurnSnapshot && 'current' in lastTurnSnapshot) lastTurnSnapshot.current = null;
+          if (lastReadTurnRef && 'current' in lastReadTurnRef) lastReadTurnRef.current = Number(parsed.turnCount) || 0;
+          const _studentSettings = (isTeacherMode === false && deps.studentProjectSettings && typeof deps.studentProjectSettings === 'object')
+              ? deps.studentProjectSettings
+              : null;
+          const _perms = (_studentSettings && _studentSettings.adventurePermissions && typeof _studentSettings.adventurePermissions === 'object')
+              ? _studentSettings.adventurePermissions
+              : null;
+          const _allLocked = !!_perms?.lockAllSettings;
+          const _canSetting = (perm, defaultAllow = false) => !_allLocked && (!_perms || (defaultAllow ? _perms[perm] !== false : _perms[perm] === true));
+          if (typeof setAdventureDifficulty === 'function' && savedConfig.difficulty && _canSetting('allowDifficultySwitch', true)) setAdventureDifficulty(savedConfig.difficulty);
+          if (typeof setAdventureInputMode === 'function' && savedConfig.inputMode && _canSetting('allowModeSwitch', false)) setAdventureInputMode(savedConfig.inputMode);
+          if (typeof setAdventureLanguageMode === 'function' && savedConfig.languageMode && _canSetting('allowLanguageSwitch', true)) setAdventureLanguageMode(savedConfig.languageMode);
+          if (typeof setAdventureChanceMode === 'function' && savedConfig.chanceMode !== undefined && !_allLocked) setAdventureChanceMode(!!savedConfig.chanceMode);
+          if (typeof setAdventureFreeResponseEnabled === 'function') {
+              if (_studentSettings && _studentSettings.allowFreeResponse === false) {
+                  setAdventureFreeResponseEnabled(false);
+              } else if (savedConfig.freeResponse !== undefined && !_allLocked) {
+                  setAdventureFreeResponseEnabled(!!savedConfig.freeResponse);
+              }
+          }
+          if (typeof setAdventureTypingPaceEnabled === 'function' && savedConfig.typingPace !== undefined && !_allLocked) setAdventureTypingPaceEnabled(!!savedConfig.typingPace);
+          if (typeof setAdventureFluencyEnabled === 'function' && savedConfig.sceneReadingPractice !== undefined && !_allLocked) setAdventureFluencyEnabled(!!savedConfig.sceneReadingPractice);
+          if (typeof setAdventureConsistentCharacters === 'function' && savedConfig.consistentCharacters !== undefined && !_allLocked) setAdventureConsistentCharacters(!!savedConfig.consistentCharacters);
+          if (typeof deps.setAdventureProtagonistAge === 'function' && savedConfig.protagonistAge && !_allLocked) deps.setAdventureProtagonistAge(savedConfig.protagonistAge);
+          if (typeof deps.setAdventureCustomInstructions === 'function' && savedConfig.customInstructions !== undefined && _canSetting('allowCustomInstructions', false)) deps.setAdventureCustomInstructions(savedConfig.customInstructions || '');
+          if (typeof setIsAdventureStoryMode === 'function' && savedConfig.storyMode !== undefined && !_allLocked) setIsAdventureStoryMode(!!savedConfig.storyMode);
+          if (typeof setIsSocialStoryMode === 'function' && savedConfig.socialStoryMode !== undefined && !_allLocked) setIsSocialStoryMode(!!savedConfig.socialStoryMode);
+          if (typeof setSocialStoryFocus === 'function' && savedConfig.socialStoryFocus !== undefined && !_allLocked) setSocialStoryFocus(savedConfig.socialStoryFocus || '');
+          if (typeof setAdventureArtStyle === 'function' && savedConfig.artStyle && !_allLocked) setAdventureArtStyle(savedConfig.artStyle);
+          if (typeof setAdventureCustomArtStyle === 'function' && savedConfig.customArtStyle !== undefined && !_allLocked) setAdventureCustomArtStyle(savedConfig.customArtStyle || '');
+          if (typeof setUseLowQualityVisuals === 'function' && savedConfig.lowQualityVisuals !== undefined && _canSetting('allowVisualsToggle', true)) setUseLowQualityVisuals(!!savedConfig.lowQualityVisuals);
+          if (typeof setEnableFactionResources === 'function' && savedConfig.enableFactionResources !== undefined && !_allLocked) setEnableFactionResources(!!savedConfig.enableFactionResources);
+          if (typeof setFactionResourceMode === 'function' && savedConfig.factionResourceMode && !_allLocked) setFactionResourceMode(savedConfig.factionResourceMode);
+          const cleanParsed = (parsed && typeof parsed === 'object' && !Array.isArray(parsed))
+              ? Object.keys(parsed).reduce((acc, k) => {
+                  if (k !== '__proto__' && k !== 'constructor' && k !== 'prototype') acc[k] = parsed[k];
+                  return acc;
+                }, {})
+              : {};
+          const rawRollMod = (typeof cleanParsed.activeRollModifier === 'number' && Number.isFinite(cleanParsed.activeRollModifier)) ? cleanParsed.activeRollModifier : 0;
+          const rawXpMult = (typeof cleanParsed.activeXpMultiplier === 'number' && Number.isFinite(cleanParsed.activeXpMultiplier)) ? cleanParsed.activeXpMultiplier : 1;
           const safeState = {
-              ...parsed,
-              energy: (typeof parsed.energy === 'number' && !isNaN(parsed.energy)) ? parsed.energy : 100,
-              xp: (typeof parsed.xp === 'number' && !isNaN(parsed.xp)) ? parsed.xp : 0,
-              level: (typeof parsed.level === 'number' && !isNaN(parsed.level)) ? parsed.level : 1,
-              gold: (typeof parsed.gold === 'number' && !isNaN(parsed.gold)) ? parsed.gold : 0,
-              isShopOpen: parsed.isShopOpen || false,
-              narrativeLedger: parsed.narrativeLedger || '',
-              assistedKnowledge: Array.isArray(parsed.assistedKnowledge) ? parsed.assistedKnowledge.filter(Boolean).slice(-12) : [],
-              activeXpMultiplier: parsed.activeXpMultiplier || 1,
+              ...cleanParsed,
+              energy: (typeof cleanParsed.energy === 'number' && !isNaN(cleanParsed.energy)) ? cleanParsed.energy : 100,
+              xp: (typeof cleanParsed.xp === 'number' && !isNaN(cleanParsed.xp)) ? cleanParsed.xp : 0,
+              level: (typeof cleanParsed.level === 'number' && !isNaN(cleanParsed.level)) ? cleanParsed.level : 1,
+              gold: (typeof cleanParsed.gold === 'number' && !isNaN(cleanParsed.gold)) ? cleanParsed.gold : 0,
+              isShopOpen: cleanParsed.isShopOpen || false,
+              narrativeLedger: cleanParsed.narrativeLedger || '',
+              assistedKnowledge: Array.isArray(cleanParsed.assistedKnowledge) ? cleanParsed.assistedKnowledge.filter(Boolean).slice(-12) : [],
+              activeRollModifier: Math.max(-20, Math.min(20, rawRollMod)),
+              activeXpMultiplier: Math.max(0.1, Math.min(10, rawXpMult)),
               activeGoldBuff: false,
-              activeGoldBuffTurns: parsed.activeGoldBuffTurns || 0,
-              lastKeyItemTurn: (typeof parsed.lastKeyItemTurn === 'number' && !isNaN(parsed.lastKeyItemTurn)) ? parsed.lastKeyItemTurn : 0,
-              isImmersiveMode: parsed.isImmersiveMode || false,
-              climax: parsed.climax || { isActive: false, archetype: 'Auto', masteryScore: 0, attempts: 0 },
-              characters: parsed.characters || [],
+              activeGoldBuffTurns: cleanParsed.activeGoldBuffTurns || 0,
+              lastKeyItemTurn: (typeof cleanParsed.lastKeyItemTurn === 'number' && !isNaN(cleanParsed.lastKeyItemTurn)) ? cleanParsed.lastKeyItemTurn : 0,
+              isImmersiveMode: cleanParsed.isImmersiveMode || false,
+              climax: cleanParsed.climax || { isActive: false, archetype: 'Auto', masteryScore: 0, attempts: 0 },
+              characters: cleanParsed.characters || [],
               isReviewingCharacters: false
           };
           // Consent back-fill (2026-08-23): portraits uploaded BEFORE the cast-lobby consent
@@ -945,11 +1033,15 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
         addToast(t('adventure.status_messages.teacher_control') || "Teacher controls the adventure in live sessions.", "info");
         return;
     }
+    if (adventureTurnInFlight || adventureLaunchInFlight || adventureRestartPromptPending || deps.showDice === true || Boolean(deps.pendingAdventureUpdate && typeof deps.pendingAdventureUpdate === 'object')) return;
     SafetyContentChecker.aiCheck(currentInput, 'adventure', apiKey, handleAiSafetyFlag);
     window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(setAdventureState);
     lastTurnSnapshot.current = structuredClone(adventureState);
     stopPlayback();
     setAdventureState(prev => ({ ...prev, isLoading: true, pendingChoice: currentInput, loadingStage: 'Interpreting your response…' }));
+    adventureTurnInFlight = true;
+    const turnEpoch = adventureRunEpoch;
+    try {
     let archivedImageId = null;
     if (adventureState.sceneImage) {
         try {
@@ -958,14 +1050,17 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
             warnLog("Adventure Image Archive Error", archiveError);
         }
     }
+    if (turnEpoch !== adventureRunEpoch) return;
+    const archivedTurn = Number(adventureState.turnCount) || 1;
     setAdventureState(prev => ({
         ...prev,
         history: [
             ...prev.history,
             {
                 type: 'scene',
-                text: prev.currentScene.text,
-                imageId: archivedImageId,
+                text: prev.currentScene?.text || '',
+                imageId: archivedImageId || String(prev.turnCount || archivedTurn),
+                imageTurn: prev.turnCount || archivedTurn,
             },
             { type: 'choice', text: currentInput, source: 'freetext' }
         ],
@@ -1050,6 +1145,9 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
                 -15 failure, or -25 critical failure. Return the new "masteryScore".
                 Return "climaxResult":"victory" at 100+, "failure" at 0-, otherwise null,
                 and make the scene a clear continuation of the active climax.`;
+              if (isSocialStoryMode) {
+                  climaxInstruction += `\nUse collaborative, supportive, prosocial climax framing focused on empathy, communication, boundaries, and shared problem-solving${socialStoryFocus ? ` around "${socialStoryFocus}"` : ''} rather than combat or adversarial conflict.`;
+              }
           }
           const outcomeJsonFields = `
                 "outcomeType": "strategic_success | partial_success | misconception | neutral",
@@ -1059,14 +1157,15 @@ const handleAdventureTextSubmit = async (overrideInput = null, deps) => {
           `;
           let historyContext = "";
           if (adventureState.narrativeLedger) {
-              const recentHistory = adventureState.history.slice(-5);
+              const recentHistory = adventureState.history.slice(-15);
               const recentText = recentHistory.map(h => `${h.type.toUpperCase()}: ${h.text}`).join('\n');
-              historyContext = `--- PREVIOUS STORY SUMMARY (NARRATIVE LEDGER) ---\n${adventureState.narrativeLedger}\n\n--- RECENT LOG (Last 5 Turns) ---\n${recentText}\n`;
+              historyContext = `--- PREVIOUS STORY SUMMARY (NARRATIVE LEDGER) ---\n${adventureState.narrativeLedger}\n\n--- RECENT LOG (Last 15 Turns) ---\n${recentText}\n`;
           } else {
               const fullText = adventureState.history.map(h => `${h.type.toUpperCase()}: ${h.text}`).join('\n');
               historyContext = `--- FULL ADVENTURE LOG ---\n${fullText}\n`;
           }
           historyContext += getAssistedKnowledgeContext(adventureState);
+          historyContext += buildAdventureLearningGoalsContext(deps);
           let prompt = '';
       if (adventureInputMode === 'debate') {
           prompt = `
@@ -1262,6 +1361,7 @@ Do NOT force all characters into every scene — let the narrative decide natura
               `;
           }
           const result = await callGemini(prompt + buildAdventureModeInstruction(deps), true);
+          if (turnEpoch !== adventureRunEpoch) return;
           let data;
           try {
               data = await resilientJsonParse(result);
@@ -1289,17 +1389,22 @@ Do NOT force all characters into every scene — let the narrative decide natura
               roll = parseInt(data.rollDetails?.total || data.rollDetails?.d20 || 10, 10);
           }
           roll = Math.max(1, Math.min(20, isNaN(roll) ? 10 : roll));
+          if (turnEpoch !== adventureRunEpoch) return;
       setDiceResult(roll);
       data.choiceSource = 'freetext';
       setPendingAdventureUpdate(data);
       setShowDice(true);
     } catch (error) {
+      if (turnEpoch !== adventureRunEpoch) return;
       warnLog("Adventure Text Error:", error);
       const aiOff = !!error && (error.code === 'allo-qr-ai-disabled' || error.code === 'allo/no-api-key');
       addToast(error && error.adventureUnreadable ? t('toasts.adventure_reply_unreadable') : aiOff ? t('toasts.ai_available') : t('toasts.connection_failed'), "error");
       setFailedAdventureAction({ type: 'text', payload: currentInput });
       const snapshot = lastTurnSnapshot.current;
       setAdventureState(prev => snapshot ? { ...snapshot, isLoading: false, isImageLoading: false } : { ...prev, isLoading: false });
+    }
+    } finally {
+      adventureTurnInFlight = false;
     }
 };
 
@@ -1328,6 +1433,10 @@ const handleAdventureChoice = async (choice, deps) => {
         addToast(t('session.toast_teacher_control'), "info");
         return;
     }
+    if (adventureTurnInFlight || adventureLaunchInFlight || adventureRestartPromptPending || deps.showDice === true || Boolean(deps.pendingAdventureUpdate && typeof deps.pendingAdventureUpdate === 'object')) return;
+    adventureTurnInFlight = true;
+    const turnEpoch = adventureRunEpoch;
+    try {
     stopPlayback();
     playAdventureEventSound('decision_select');
     window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(setAdventureState);
@@ -1341,15 +1450,18 @@ const handleAdventureChoice = async (choice, deps) => {
             warnLog("Adventure Image Archive Error", archiveError);
         }
     }
+    if (turnEpoch !== adventureRunEpoch) return;
     const safeState = { ...adventureState };
+    const archivedTurn = Number(adventureState.turnCount) || 1;
     setAdventureState(prev => ({
       ...prev,
       history: [
           ...prev.history,
           {
               type: 'scene',
-              text: prev.currentScene.text,
-              imageId: archivedImageId
+              text: prev.currentScene?.text || '',
+              imageId: archivedImageId || String(prev.turnCount || archivedTurn),
+              imageTurn: prev.turnCount || archivedTurn
           },
           { type: 'choice', text: normalizedChoice, source: 'option' }
       ],
@@ -1456,6 +1568,9 @@ const handleAdventureChoice = async (choice, deps) => {
                - Write a tense scene describing the shift in momentum (e.g. "You gain ground, but..." or "You stumble, losing time...").
                - Update "masteryScore": [New Score] in the JSON (You must return this field).
           `;
+          if (isSocialStoryMode) {
+              climaxInstruction += `\nUse collaborative, supportive, prosocial climax framing focused on empathy, communication, boundaries, and shared problem-solving${socialStoryFocus ? ` around "${socialStoryFocus}"` : ''} rather than combat or adversarial conflict.`;
+          }
       }
       let modeContext = "";
       let narratorInstructions = INVISIBLE_NARRATOR_INSTRUCTIONS;
@@ -1485,14 +1600,15 @@ const handleAdventureChoice = async (choice, deps) => {
       }
       let historyContext = "";
       if (adventureState.narrativeLedger) {
-          const recentHistory = adventureState.history.slice(-5);
+          const recentHistory = adventureState.history.slice(-15);
           const recentText = recentHistory.map(h => `${h.type.toUpperCase()}: ${h.text}`).join('\n');
-          historyContext = `--- PREVIOUS STORY SUMMARY (NARRATIVE LEDGER) ---\n${adventureState.narrativeLedger}\n\n--- RECENT LOG (Last 5 Turns) ---\n${recentText}\n`;
+          historyContext = `--- PREVIOUS STORY SUMMARY (NARRATIVE LEDGER) ---\n${adventureState.narrativeLedger}\n\n--- RECENT LOG (Last 15 Turns) ---\n${recentText}\n`;
       } else {
           const fullText = adventureState.history.map(h => `${h.type.toUpperCase()}: ${h.text}`).join('\n');
           historyContext = `--- FULL ADVENTURE LOG ---\n${fullText}\n`;
       }
       historyContext += getAssistedKnowledgeContext(adventureState);
+      historyContext += buildAdventureLearningGoalsContext(deps);
       const prompt = `
         Continue the "${adventureInputMode === 'system' ? 'System Simulation' : 'Adventure'}" simulation.
         ${modeContext}
@@ -1511,7 +1627,7 @@ const handleAdventureChoice = async (choice, deps) => {
         ${socialStoryInstruction}
         ${adventureCustomInstructions ? `Custom Instructions: ${adventureCustomInstructions}` : ''}
         Level: ${adventureState.level}, Energy: ${adventureState.energy}/100, Inventory: [${currentInventoryNames}]
-        Previous Scene: "${adventureState.currentScene.text}"
+        Previous Scene: "${adventureState.currentScene?.text || ''}"
         Choice: "${normalizedChoice}"
         ${mechanicsInstruction}
         ${optionsInstruction}
@@ -1533,6 +1649,7 @@ const handleAdventureChoice = async (choice, deps) => {
         CRITICAL INSTRUCTIONS:
         1. INVENTORY SYNC: If your narrative text describes finding an item, loot, or object, you MUST include it in the 'inventoryUpdate' JSON field. Do not hallucinate items in text without adding them to data.
         2. REWARDS: Award 'goldAwarded' (10-50) frequently for successful actions, exploration, or smart decisions. Don't be stingy.
+        ${ADVENTURE_GUARDRAIL || ''}
         ${NARRATIVE_GUARDRAILS}
         Return JSON:
         {
@@ -1558,6 +1675,7 @@ const handleAdventureChoice = async (choice, deps) => {
         }
       `;
       const result = await callGemini(prompt + buildAdventureModeInstruction(deps), true);
+      if (turnEpoch !== adventureRunEpoch) return;
       let data;
       try {
           data = await resilientJsonParse(result);
@@ -1591,6 +1709,7 @@ const handleAdventureChoice = async (choice, deps) => {
           roll = parseInt(data.rollDetails?.total || data.rollDetails?.d20 || 10, 10);
       }
       roll = Math.max(1, Math.min(20, isNaN(roll) ? 10 : roll));
+      if (turnEpoch !== adventureRunEpoch) return;
       setDiceResult(roll);
       data.choiceSource = 'option';
       setPendingAdventureUpdate(data);
@@ -1608,6 +1727,7 @@ const handleAdventureChoice = async (choice, deps) => {
            }).catch(e => warnLog("Vote round refresh failed", e));
       }
     } catch (error) {
+      if (turnEpoch !== adventureRunEpoch) return;
       warnLog("Adventure Turn Error:", error);
       const aiOff = !!error && (error.code === 'allo-qr-ai-disabled' || error.code === 'allo/no-api-key');
       addToast(error && error.adventureUnreadable ? t('toasts.adventure_reply_unreadable') : aiOff ? t('toasts.ai_available') : t('toasts.connection_failed'), "error");
@@ -1618,6 +1738,9 @@ const handleAdventureChoice = async (choice, deps) => {
               isLoading: false
           };
       });
+    }
+    } finally {
+      adventureTurnInFlight = false;
     }
 };
 
@@ -1644,7 +1767,11 @@ const handleGuidingHand = async (item, deps) => {
     addToast(t('adventure.guiding_hand_climax') || 'Guiding Hand cannot resolve the final challenge.', 'warning');
     return false;
   }
+  if (adventureTurnInFlight || adventureLaunchInFlight || adventureRestartPromptPending || deps.showDice === true || Boolean(deps.pendingAdventureUpdate && typeof deps.pendingAdventureUpdate === 'object')) return false;
+  const turnEpoch = adventureRunEpoch;
+  adventureTurnInFlight = true;
 
+  try {
   window.AlloModules?.AdventureSessionHandlers?.cancelAdventureSceneImage?.(setAdventureState);
   const safeSnapshot = typeof structuredClone === 'function'
     ? structuredClone(adventureState)
@@ -1652,6 +1779,16 @@ const handleGuidingHand = async (item, deps) => {
   if (lastTurnSnapshot?.current !== undefined) lastTurnSnapshot.current = safeSnapshot;
   setAdventureState(prev => ({ ...prev, isLoading: true }));
   addToast(t('adventure.guiding_hand_started') || 'A guiding hand is stepping into the story...', 'info');
+  const archivedTurn = Number(adventureState.turnCount) || 1;
+  let archivedImageId = null;
+  if (adventureState.sceneImage && typeof deps.archiveAdventureImage === 'function') {
+    try {
+      archivedImageId = await deps.archiveAdventureImage(adventureState.sceneImage);
+    } catch (archiveError) {
+      warnLog('Adventure Image Archive Error', archiveError);
+    }
+  }
+  if (turnEpoch !== adventureRunEpoch) return false;
 
   try {
     let modeGuidance = 'Use an ally, a timely discovery, or a believable event that fits the current narrative.';
@@ -1730,9 +1867,11 @@ Return ONLY valid JSON:
 }`;
 
     const response = await callGemini(prompt, true);
+    if (turnEpoch !== adventureRunEpoch) return false;
     const parsed = await (typeof resilientJsonParse === 'function'
       ? resilientJsonParse(response)
       : JSON.parse(response));
+    if (turnEpoch !== adventureRunEpoch) return false;
     const knowledgeDrop = String(parsed?.knowledgeDrop || '').trim();
     const sceneText = String(parsed?.scene?.text || '').trim();
     if (knowledgeDrop.length < 12 || sceneText.length < 20) {
@@ -1773,7 +1912,12 @@ Return ONLY valid JSON:
         ...prev,
         history: [
           ...(prev.history || []),
-          { type: 'scene', text: String(prev.currentScene?.text || '') },
+          {
+            type: 'scene',
+            text: String(prev.currentScene?.text || ''),
+            imageId: archivedImageId || String(prev.turnCount || archivedTurn),
+            imageTurn: prev.turnCount || archivedTurn
+          },
           { type: 'assist', text: interventionSummary, source: 'guiding_hand' },
           { type: 'feedback', text: `${evaluation}\n${knowledgeHistory}`, assisted: true }
         ],
@@ -1801,10 +1945,14 @@ Return ONLY valid JSON:
     if (alloBotRef?.current?.triggerReaction) alloBotRef.current.triggerReaction('\u{1F91D}');
     return true;
   } catch (error) {
+    if (turnEpoch !== adventureRunEpoch) return false;
     warnLog('Guiding Hand failed', error);
     setAdventureState({ ...safeSnapshot, isLoading: false });
     addToast(t('adventure.guiding_hand_failed') || 'The intervention could not be generated. Guiding Hand was not consumed.', 'error');
     return false;
+  }
+  } finally {
+    adventureTurnInFlight = false;
   }
 };
 // Free-response Strategy Hint: a formative scaffold, not an answer.
@@ -1890,6 +2038,7 @@ MODE GUIDANCE:
 ${modeGuidance}
 ${isSocialStoryMode && socialStoryFocus ? `Social-story focus: ${String(socialStoryFocus).slice(0, 500)}` : ''}
 ${adventureCustomInstructions ? `Teacher instructions: ${String(adventureCustomInstructions).slice(0, 700)}` : ''}
+${deps.ADVENTURE_GUARDRAIL || ''}
 ${languageGuidance}
 
 Return a specific scaffold with ALL THREE parts:

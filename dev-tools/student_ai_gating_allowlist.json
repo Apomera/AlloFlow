@@ -231,39 +231,18 @@
       "reason": "Also requires props.visionFeedbackAvailable === true from the host. [2026-11-04 line 1684]"
     },
     {
-      "file": "concept_quest_solo_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "}, typeof callGemini === 'function' ? tr('solo_ai_setup_help', 'The AI narrates the adventure and respond",
-      "class": "fine",
-      "reason": "Mount nulls callGemini for AI-off learners (view_quiz_source: isTeacherMode || _quizAiOn(props.callGemini) ? props.callGemini : null), so typeof is truthful here. [2026-11-04 GAPS lane]"
-    },
-    {
-      "file": "concept_quest_solo_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "const [setupAi, setSetupAi] = React.useState(typeof callGemini === 'function');",
-      "class": "fine",
-      "reason": "Mount nulls callGemini for AI-off learners (view_quiz_source: isTeacherMode || _quizAiOn(props.callGemini) ? props.callGemini : null), so typeof is truthful here. [2026-11-04 GAPS lane]"
-    },
-    {
-      "file": "concept_quest_solo_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "const hasProvider = typeof callGemini === 'function';",
-      "class": "fine",
-      "reason": "Mount nulls callGemini for AI-off learners (view_quiz_source: isTeacherMode || _quizAiOn(props.callGemini) ? props.callGemini : null), so typeof is truthful here. [2026-11-04 GAPS lane]"
-    },
-    {
-      "file": "concept_quest_solo_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "disabled: typeof callGemini !== 'function'",
-      "class": "fine",
-      "reason": "Mount nulls callGemini for AI-off learners (view_quiz_source: isTeacherMode || _quizAiOn(props.callGemini) ? props.callGemini : null), so typeof is truthful here. [2026-11-04 GAPS lane]"
-    },
-    {
       "file": "content_engine_module.js",
       "rule": "typeof-ai-gate",
       "snippet": "var _currentCallGemini = function() { return (typeof window !== 'undefined' && typeof window.callGemini === 'function') ? window.callGemini : _depsCallGemini; };",
       "class": "fine",
       "reason": "Resolves the CURRENT window.callGemini (which the host swaps to the blocked fn for students) and rejects when absent; not an availability gate. [2026-11-04 line 423]"
+    },
+    {
+      "file": "device_access_code_module.js",
+      "rule": "raw-gemini-fetch",
+      "snippet": "var raw = cfg.baseUrl || AI_BACKEND_DEFAULTS[backend] || (backend === 'gemini' ? 'https://generativelanguage.googleapis.com' : '');",
+      "class": "fine",
+      "reason": "URL normalization string inside provider host check (not a direct Gemini fetch call). [2026-11-14 Pass 6]"
     },
     {
       "file": "dynamic_assessment_module.js",
@@ -298,9 +277,9 @@
     {
       "file": "fluency_module.js",
       "rule": "raw-gemini-fetch",
-      "snippet": "var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + defaultModel + ':generateContent' + (apiKey ? ('?key=' + apiKey) : '');",
+      "snippet": "var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + encodeURIComponent(String(defaultModel || 'gemini-3-flash-preview')) + ':generateContent';",
       "class": "fine",
-      "reason": "OLD-HOST FALLBACK ONLY: hosts whose callGeminiAudio advertises _alloJsonMaxOutputTokens route through it (keyless Canvas + JSON clamp, host policy). On older hosts this raw fetch runs only when _fluencyCloudAllowed() (host audio usable, or only a missing key with text AI usable). [2026-11-04 GAPS lane; w3 AUDIO-HOST]"
+      "reason": "OLD-HOST FALLBACK ONLY: modern hosts with callGeminiAudio._alloJsonMaxOutputTokens route through host transport; fallback now blocks managed/locked/desktop hosts and moves apiKey to x-goog-api-key header instead of URL query param. [2026-11-14 Pass 6]"
     },
     {
       "file": "generate_dispatcher_module.js",
@@ -427,13 +406,6 @@
       "snippet": "if (uiLang === 'English' || typeof window === 'undefined' || typeof window.callGemini !== 'function') return;",
       "class": "fine",
       "reason": "Background UI translation (uiLang !== 'English'); a blocked fn rejects and English stays. No visible control. [2026-11-04 line 3278]"
-    },
-    {
-      "file": "math_fluency_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "if (uiLang === 'English' || typeof window === 'undefined' || typeof window.callGemini !== 'function') return;",
-      "class": "fine",
-      "reason": "Background UI translation guard; fails closed, no visible control. [2026-11-04 line 1214]"
     },
     {
       "file": "math_helpers_module.js",
@@ -574,9 +546,16 @@
     {
       "file": "safety_checker_module.js",
       "rule": "raw-gemini-fetch",
-      "snippet": "var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + safetyModel + ':generateContent' + (apiKey ? ('?key=' + apiKey) : '');",
+      "snippet": "var endpoint = 'https://generativelanguage.googleapis.com/v1beta';",
       "class": "fine",
-      "reason": "aiCheck returns before the raw fetch unless __alloAiUsable(\"text\", window.callGemini) (old-host fallback: blocked tag + __alloStudentAiDisabled); regex layer still runs. [2026-11-04 GAPS lane]"
+      "reason": "Managed-Gemini policy endpoint string in _safetyManagedGeminiAllowed (not a fetch call). [2026-11-14 Pass 6]"
+    },
+    {
+      "file": "safety_checker_module.js",
+      "rule": "raw-gemini-fetch",
+      "snippet": "var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + safetyModel + ':generateContent';",
+      "class": "fine",
+      "reason": "aiCheck returns before the raw fetch unless __alloAiUsable(\"text\", window.callGemini) (old-host fallback: blocked tag + __alloStudentAiDisabled) and authenticates via x-goog-api-key header; regex layer still runs. [2026-11-14 Pass 6]"
     },
     {
       "file": "seating_chart_module.js",
@@ -885,14 +864,6 @@
       "snippet": "const vision = typeof window.callGeminiVision === \"function\" ? window.callGeminiVision : null;",
       "class": "fine",
       "reason": "Inside an isTeacherMode alt-text editor. [2026-11-04 line 426]"
-    },
-    {
-      "file": "voice_module.js",
-      "rule": "typeof-ai-gate",
-      "snippet": "if (typeof callGeminiAudio !== 'function') {",
-      "max": 2,
-      "class": "fine",
-      "reason": "Call-site guards inside the Gemini engine/grader: a blocked fn passes typeof and rejects (handled). Engine selection checks _alloQrBlocked + host audio capability. [2026-11-04 GAPS lane]"
     },
     {
       "file": "word_sounds_module.js",

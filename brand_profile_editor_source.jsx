@@ -240,9 +240,21 @@ function BrandProfileEditor(props) {
     e.target.value = '';
   }
 
+  function safeRasterLogoSrc(raw) {
+    if (typeof raw !== 'string') return '';
+    var trimmed = raw.trim();
+    if (!trimmed || trimmed.length > 750 * 1024) return '';
+    return /^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(trimmed) ? trimmed : '';
+  }
+
   function onLogoFile(e) {
     const file = e.target.files && e.target.files[0];
     if (!file) return;
+    if (!/^image\/(?:png|jpe?g|webp|gif)$/i.test(String(file.type || ''))) {
+      addToast(t('brand.logo_raster_only', 'Please choose a PNG, JPEG, WebP, or GIF image'), 'error');
+      e.target.value = '';
+      return;
+    }
     if (file.size > 512 * 1024) {
       addToast(t('brand.logo_too_big', 'Logo is over 512 KB — please use a smaller image'), 'error');
       e.target.value = '';
@@ -250,8 +262,13 @@ function BrandProfileEditor(props) {
     }
     const reader = new FileReader();
     reader.onload = function () {
+      const safeSrc = safeRasterLogoSrc(String(reader.result || ''));
+      if (!safeSrc) {
+        addToast(t('brand.logo_raster_only', 'Please choose a PNG, JPEG, WebP, or GIF image'), 'error');
+        return;
+      }
       setDraft(function (d) {
-        return Object.assign({}, d, { logo: { src: String(reader.result || ''), alt: (d.logo && d.logo.alt) || '', width: null, height: null } });
+        return Object.assign({}, d, { logo: { src: safeSrc, alt: (d.logo && d.logo.alt) || '', width: null, height: null } });
       });
     };
     reader.readAsDataURL(file);
@@ -352,16 +369,16 @@ function BrandProfileEditor(props) {
             <div className="mb-4">
               <span className="text-xs font-bold uppercase tracking-wide text-slate-500">{t('brand.logo', 'Logo (optional)')}</span>
               <div className="mt-1 flex items-start gap-3">
-                {draft.logo && draft.logo.src ? (
-                  <img src={draft.logo.src} alt={draft.logo.alt || ''} className="h-12 w-auto max-w-[96px] rounded border border-slate-200 bg-white object-contain" />
+                {draft.logo && safeRasterLogoSrc(draft.logo.src) ? (
+                  <img src={safeRasterLogoSrc(draft.logo.src)} alt={draft.logo.alt || ''} className="h-12 w-auto max-w-[96px] rounded border border-slate-200 bg-white object-contain" />
                 ) : null}
                 <div className="flex-1">
                   <div className="flex gap-2">
-                    <button type="button" onClick={function () { fileInputRef.current && fileInputRef.current.click(); }} className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-medium hover:bg-slate-100">{draft.logo && draft.logo.src ? t('brand.logo_replace', 'Replace') : t('brand.logo_upload', 'Upload logo')}</button>
-                    {draft.logo && draft.logo.src && <button type="button" onClick={removeLogo} className="px-3 py-1.5 rounded-lg text-red-800 text-xs font-medium hover:bg-red-50">{t('brand.logo_remove', 'Remove')}</button>}
-                    <input ref={fileInputRef} aria-label={t('brand.logo_file', 'Upload logo image file')} type="file" accept="image/*" onChange={onLogoFile} className="hidden" />
+                    <button type="button" onClick={function () { fileInputRef.current && fileInputRef.current.click(); }} className="px-3 py-1.5 rounded-lg bg-white border border-slate-300 text-slate-700 text-xs font-medium hover:bg-slate-100">{draft.logo && safeRasterLogoSrc(draft.logo.src) ? t('brand.logo_replace', 'Replace') : t('brand.logo_upload', 'Upload logo')}</button>
+                    {draft.logo && safeRasterLogoSrc(draft.logo.src) && <button type="button" onClick={removeLogo} className="px-3 py-1.5 rounded-lg text-red-800 text-xs font-medium hover:bg-red-50">{t('brand.logo_remove', 'Remove')}</button>}
+                    <input ref={fileInputRef} aria-label={t('brand.logo_file', 'Upload logo image file')} type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={onLogoFile} className="hidden" />
                   </div>
-                  {draft.logo && draft.logo.src && (
+                  {draft.logo && safeRasterLogoSrc(draft.logo.src) && (
                     <input aria-label={t('brand.logo_alt', 'Logo alternative text')} value={draft.logo.alt || ''} onChange={function (e) { setLogoAlt(e.target.value); }} placeholder={t('brand.logo_alt_ph', 'Logo alt text (required) — describe the logo')} className="mt-1 w-full px-2 py-1 border border-slate-300 rounded text-xs text-slate-800 outline-none focus:ring-2 focus:ring-blue-400" />
                   )}
                 </div>
@@ -388,9 +405,9 @@ function BrandProfileEditor(props) {
             <div className="flex-1 overflow-y-auto p-3">
               <span className="text-xs font-bold uppercase tracking-wide text-slate-500">{t('brand.preview', 'Preview')}</span>
               <div className="mt-1 rounded-lg overflow-hidden border border-slate-200" style={{ background: c.bg, fontFamily: bodyFont }}>
-                {(draft.header.text || (draft.header.showLogo && draft.logo && draft.logo.src)) && (
+                {(draft.header.text || (draft.header.showLogo && draft.logo && safeRasterLogoSrc(draft.logo.src))) && (
                   <div style={{ background: c.heading, color: c.bg, padding: '8px 10px', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    {draft.header.showLogo && draft.logo && draft.logo.src && <img src={draft.logo.src} alt={draft.logo.alt || ''} style={{ maxHeight: '24px', width: 'auto' }} />}
+                    {draft.header.showLogo && draft.logo && safeRasterLogoSrc(draft.logo.src) && <img src={safeRasterLogoSrc(draft.logo.src)} alt={draft.logo.alt || ''} style={{ maxHeight: '24px', width: 'auto' }} />}
                     <span style={{ fontSize: '12px', fontWeight: 700 }}>{draft.header.text}</span>
                   </div>
                 )}

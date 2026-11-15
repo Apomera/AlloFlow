@@ -93,6 +93,10 @@
 function ActivityStructuredEditor(props) {
   const item = props.item;
   const change = props.onChange;
+  const [groupSizeDraft, setGroupSizeDraft] = React.useState(item && item.groupSize != null ? String(item.groupSize) : '4');
+  React.useEffect(() => {
+    setGroupSizeDraft(item && item.groupSize != null ? String(item.groupSize) : '4');
+  }, [item && item.groupSize]);
   const fieldClass = 'w-full rounded-lg border border-slate-400 p-2 text-sm text-slate-800 bg-white focus:outline-none focus:ring-2 focus:ring-violet-500';
   const label = (key, fallback) => {
     const value = props.t && props.t(key);
@@ -180,8 +184,21 @@ function ActivityStructuredEditor(props) {
     max: "6",
     className: fieldClass,
     "aria-label": label('brainstorm.group_size', 'Home-group size'),
-    value: item.groupSize || 4,
-    onChange: event => change('groupSize', Math.max(2, Math.min(6, Number(event.target.value) || 2)))
+    value: groupSizeDraft,
+    onChange: event => {
+      const raw = event.target.value;
+      setGroupSizeDraft(raw);
+      const parsed = Number(raw);
+      if (raw !== '' && Number.isFinite(parsed) && parsed >= 2 && parsed <= 6) {
+        change('groupSize', Math.round(parsed));
+      }
+    },
+    onBlur: event => {
+      const parsed = Number(event.target.value);
+      const clamped = Math.max(2, Math.min(6, event.target.value !== '' && Number.isFinite(parsed) ? Math.round(parsed) : Number(item && item.groupSize) || 4));
+      setGroupSizeDraft(String(clamped));
+      change('groupSize', clamped);
+    }
   })), chunks.map((chunk, index) => /*#__PURE__*/React.createElement("fieldset", {
     key: index,
     className: "border border-emerald-300 rounded-lg p-3 space-y-2"
@@ -275,6 +292,9 @@ function ActivityResponseField(props) {
   return /*#__PURE__*/React.createElement("textarea", {
     "data-activity-response": props.responseKey,
     value: value,
+    onFocus: function () {
+      if (typeof props.onFocusKey === 'function') props.onFocusKey(props.responseKey);
+    },
     onChange: function (event) {
       props.onAnswer(props.responseKey, event.target.value);
     },
@@ -408,11 +428,32 @@ function DiscussionKitBody(props) {
   });
   var lookFors = activityNonEmpty(item.lookFors);
   var answering = !isTeacherMode && typeof props.onAnswer === 'function';
+  var [activeResponseKey, setActiveResponseKey] = React.useState('');
+  var defaultStemKey = '';
+  if (item.openingQuestion) {
+    defaultStemKey = activityResponseKey(item, 'opening', item.openingQuestion);
+  } else {
+    var firstQSet = (Array.isArray(item.questionSets) ? item.questionSets : []).find(function (set) {
+      return activityNonEmpty(set && set.questions).length > 0;
+    });
+    if (firstQSet) {
+      defaultStemKey = activityResponseKey(item, 'question', activityNonEmpty(firstQSet.questions)[0]);
+    }
+  }
+  var insertTalkStem = function (stemText) {
+    var targetKey = activeResponseKey || defaultStemKey;
+    if (!answering || !targetKey) return;
+    var answers = props.answers || {};
+    var prev = typeof answers[targetKey] === 'string' ? answers[targetKey] : '';
+    var sep = prev && !/\s$/.test(prev) ? ' ' : '';
+    props.onAnswer(targetKey, prev + sep + stemText);
+  };
   var field = function (key, question) {
     return answering ? /*#__PURE__*/React.createElement(ActivityResponseField, {
       t: t,
       answers: props.answers,
       onAnswer: props.onAnswer,
+      onFocusKey: setActiveResponseKey,
       responseKey: key,
       question: question
     }) : null;
@@ -470,9 +511,21 @@ function DiscussionKitBody(props) {
     }, stemLabels[cat]), /*#__PURE__*/React.createElement("ul", {
       className: "text-xs text-slate-700 space-y-1"
     }, list.map(function (s, sIdx) {
+      var stemText = activityDisplayText(s);
       return /*#__PURE__*/React.createElement("li", {
         key: sIdx
-      }, "“", activityDisplayText(s), "”");
+      }, answering && defaultStemKey ? /*#__PURE__*/React.createElement("button", {
+        type: "button",
+        "data-talk-stem": stemText,
+        onClick: function () {
+          insertTalkStem(stemText);
+        },
+        "aria-label": activityT(t, 'brainstorm.insert_stem_aria', 'Insert talk stem: {stem}', {
+          stem: stemText
+        }),
+        title: activityT(t, 'brainstorm.insert_stem_tip', 'Click to insert into your answer'),
+        className: "text-left inline-block rounded-md border border-indigo-200 bg-white px-2 py-1 text-xs text-slate-800 hover:bg-indigo-50 hover:border-indigo-400 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 transition-colors"
+      }, "“", stemText, "”") : /*#__PURE__*/React.createElement(React.Fragment, null, "“", stemText, "”"));
     })));
   }))) : null, isTeacherMode && item.facilitationNotes ? /*#__PURE__*/React.createElement("div", {
     className: "bg-slate-50 rounded-lg p-4 text-sm text-slate-700 border border-slate-300 mb-3"
@@ -598,10 +651,19 @@ function JigsawBody(props) {
     }, activityDisplayText(c && c.answer));
   }))) : null) : null);
 }
+function _brainstormAiDoor(kind, t) {
+  try {
+    return typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function' ? window.__alloAiSetupDoorway(kind, t) : null;
+  } catch (_) {
+    return null;
+  }
+}
 function BrainstormView(props) {
   var t = props.t;
   var generatedContent = props.generatedContent;
   var isTeacherMode = props.isTeacherMode;
+  var textAiDoor = isTeacherMode ? _brainstormAiDoor('text', t) : null;
+  var imageAiDoor = isTeacherMode ? _brainstormAiDoor('images', t) : null;
   var isEditingBrainstorm = props.isEditingBrainstorm;
   var isGeneratingGuide = props.isGeneratingGuide;
   var isGeneratingBrainstormRubric = props.isGeneratingBrainstormRubric || {};
@@ -632,6 +694,7 @@ function BrainstormView(props) {
   }, /*#__PURE__*/React.createElement("strong", null, t('brainstorm.udl_goal_label') || 'UDL Goal:'), " ", t('brainstorm.udl_goal_body') || 'Providing options for engagement. Connecting concepts to student lives and physical activities increases relevance and motivation.'), /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleToggleIsEditingBrainstorm,
     className: `flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingBrainstorm ? 'bg-yellow-700 text-white hover:bg-yellow-700' : 'bg-white text-yellow-700 border border-yellow-200 hover:bg-yellow-50'}`
   }, isEditingBrainstorm ? /*#__PURE__*/React.createElement(CheckCircle2, {
@@ -732,9 +795,11 @@ function BrainstormView(props) {
   }) : /*#__PURE__*/React.createElement("div", {
     className: "prose prose-sm max-w-none"
   }, renderFormattedText(idea.guide))) : /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleGenerateGuide(idx),
-    disabled: isGeneratingGuide[idx],
+    disabled: isGeneratingGuide[idx] || !!textAiDoor?.disabled,
     "aria-busy": !!isGeneratingGuide[idx],
+    title: textAiDoor?.title || undefined,
     className: "flex items-center gap-2 text-xs font-bold text-indigo-600 hover:bg-indigo-50 px-3 py-1.5 rounded-full transition-colors border border-indigo-200 disabled:opacity-50 disabled:cursor-not-allowed"
   }, isGeneratingGuide[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
@@ -750,7 +815,7 @@ function BrainstormView(props) {
   }, /*#__PURE__*/React.createElement(FileText, {
     size: 14
   }), t('brainstorm.student_worksheet') || 'Student Worksheet', /*#__PURE__*/React.createElement("span", {
-    className: "text-emerald-700/70 ml-0.5 group-open:rotate-180 transition-transform"
+    className: "text-emerald-700/70 ml-0.5 group-open:rotate-180 transition-transform motion-reduce:transition-none"
   }, "▾")), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 bg-emerald-50/40 rounded-lg p-4 text-sm text-slate-700 border border-emerald-200",
     "data-help-key": "brainstorm_worksheet"
@@ -765,6 +830,7 @@ function BrainstormView(props) {
   })), /*#__PURE__*/React.createElement("div", {
     className: "mb-3 flex justify-end gap-2 flex-wrap"
   }, isTeacherMode && typeof handleOpenActivityInStudio === 'function' ? /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleOpenActivityInStudio(idx),
     className: "text-[11px] font-bold text-indigo-700 hover:bg-indigo-100 px-2 py-1 rounded-full transition-colors border border-indigo-200 flex items-center gap-1",
     title: t('brainstorm.page_designer_tip') || 'Open this worksheet as editable Page Designer objects'
@@ -772,11 +838,12 @@ function BrainstormView(props) {
     size: 11,
     "aria-hidden": "true"
   }), " ", t('brainstorm.edit_in_page_designer') || 'Edit in Page Designer') : null, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: () => handleGenerateWorksheetCover(idx),
-    disabled: isGeneratingWorksheetCover[idx],
+    disabled: isGeneratingWorksheetCover[idx] || !!imageAiDoor?.disabled,
     "aria-busy": !!isGeneratingWorksheetCover[idx],
     className: "text-[11px] font-bold text-emerald-700 hover:bg-emerald-100 px-2 py-1 rounded-full transition-colors border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1",
-    title: idea.coverImage ? t('brainstorm.regenerate_cover') || 'Regenerate cover image' : t('brainstorm.generate_cover_tip') || 'Optional: add a cover illustration to this worksheet'
+    title: imageAiDoor?.title || (idea.coverImage ? t('brainstorm.regenerate_cover') || 'Regenerate cover image' : t('brainstorm.generate_cover_tip') || 'Optional: add a cover illustration to this worksheet')
   }, isGeneratingWorksheetCover[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 11,
     className: "animate-spin motion-reduce:animate-none",
@@ -795,10 +862,12 @@ function BrainstormView(props) {
   }) : /*#__PURE__*/React.createElement("div", {
     className: "prose prose-sm max-w-none"
   }, renderFormattedText(idea.worksheet)))) : /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('brainstorm.generate_worksheet') || 'Generate student worksheet',
     onClick: () => handleGenerateWorksheet(idx),
-    disabled: isGeneratingWorksheet[idx],
+    disabled: isGeneratingWorksheet[idx] || !!textAiDoor?.disabled,
     "aria-busy": !!isGeneratingWorksheet[idx],
+    title: textAiDoor?.title || undefined,
     className: "mt-3 flex items-center gap-2 text-xs font-bold text-emerald-700 hover:bg-emerald-50 px-3 py-1.5 rounded-full transition-colors border border-emerald-200 disabled:opacity-50 disabled:cursor-not-allowed"
   }, isGeneratingWorksheet[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
@@ -814,7 +883,7 @@ function BrainstormView(props) {
   }, /*#__PURE__*/React.createElement(ListChecks, {
     size: 14
   }), activityDisplayText(idea.rubric.title) || t('brainstorm.activity_rubric_title') || 'Activity Rubric', /*#__PURE__*/React.createElement("span", {
-    className: "text-violet-700/70 ml-0.5 group-open:rotate-180 transition-transform"
+    className: "text-violet-700/70 ml-0.5 group-open:rotate-180 transition-transform motion-reduce:transition-none"
   }, "▾")), /*#__PURE__*/React.createElement("div", {
     className: "mt-2 overflow-x-auto rounded-lg border border-violet-200",
     "data-help-key": "brainstorm_rubric"
@@ -861,10 +930,12 @@ function BrainstormView(props) {
   }, activityDisplayText(criterion.levels && criterion.levels['2'])), /*#__PURE__*/React.createElement("td", {
     className: "p-2 whitespace-pre-line"
   }, activityDisplayText(criterion.levels && criterion.levels['1'])))))))) : isTeacherMode ? /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('brainstorm.generate_rubric_aria') || 'Generate activity rubric',
     onClick: () => handleGenerateBrainstormRubric(idx),
-    disabled: isGeneratingBrainstormRubric[idx],
+    disabled: isGeneratingBrainstormRubric[idx] || !!textAiDoor?.disabled,
     "aria-busy": !!isGeneratingBrainstormRubric[idx],
+    title: textAiDoor?.title || undefined,
     className: "mt-3 flex items-center gap-2 text-xs font-bold text-violet-700 hover:bg-violet-50 px-3 py-1.5 rounded-full transition-colors border border-violet-200 disabled:opacity-50 disabled:cursor-not-allowed"
   }, isGeneratingBrainstormRubric[idx] ? /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,

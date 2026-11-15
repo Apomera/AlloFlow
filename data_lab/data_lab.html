@@ -57,12 +57,13 @@
   window.applyAlloFlowTheme = applyAlloFlowTheme;
   applyAlloFlowTheme(new URLSearchParams(window.location.search).get('theme'));
   function isTrustedThemeOrigin(origin) {
-    if (!origin || origin === 'null' || origin === window.location.origin) return true;
+    if (!origin) return false;
+    if (origin === 'null' || origin === window.location.origin) return true;
     try {
       var u = new URL(origin), h = u.hostname.toLowerCase();
       if (u.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')) return true;
       if (u.protocol !== 'https:') return false;
-      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(h) || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google') || h.endsWith('.run.app');
+      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(h) || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
     } catch (_) { return false; }
   }
   window.addEventListener('message', function (event) {
@@ -1090,19 +1091,22 @@
   }
 
   // ── Opener handshake (AI bridge, Video Studio pattern) ──────────────
+  var lockedOpenerOrigin = '';
   function isTrustedDataLabOpener(origin) {
-    if (!origin || origin === 'null' || origin === window.location.origin) return true;
+    if (!origin) return false;
+    if (lockedOpenerOrigin && origin !== lockedOpenerOrigin) return false;
+    if (origin === 'null' || origin === window.location.origin) return true;
     try {
       var u = new URL(origin), h = u.hostname.toLowerCase();
       if (u.protocol === 'http:' && (h === 'localhost' || h === '127.0.0.1' || h === '[::1]')) return true;
       if (u.protocol !== 'https:') return false;
-      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(h) || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google') || h.endsWith('.run.app');
+      return h === 'localhost' || h === '127.0.0.1' || h === 'alloflow-cdn.pages.dev' || h.endsWith('.alloflow-cdn.pages.dev') || h === 'alloflow.org' || h.endsWith('.alloflow.org') || h === 'alloflow.app' || h.endsWith('.alloflow.app') || h === 'alloflow.com' || h.endsWith('.alloflow.com') || h === 'alloflow.example' || h.endsWith('.alloflow.example') || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.pages\.dev$/.test(h) || h.endsWith('.usercontent.goog') || h.endsWith('.googleusercontent.com') || h.endsWith('.idx.google.com') || h.endsWith('.idx.google');
     } catch (_) { return false; }
   }
   function toOpener(payload) {
     try {
       var isHandshake = !!(payload && (payload.type === 'allodatalab-hello' || payload.type === 'allodatalab-closed'));
-      var targetOrigin = (openerOrigin && openerOrigin !== 'null') ? openerOrigin : ((isHandshake || openerOk) ? '*' : '');
+      var targetOrigin = (openerOrigin && openerOrigin !== 'null') ? openerOrigin : ((isHandshake || (openerOk && lockedOpenerOrigin === 'null')) ? '*' : '');
       if (targetOrigin && window.opener && !window.opener.closed) { window.opener.postMessage(payload, targetOrigin); return true; }
     } catch (_) {}
     return false;
@@ -1114,6 +1118,7 @@
     var fromOpener = !!(window.opener && event.source === window.opener && isTrustedDataLabOpener(event.origin));
     if (data.type === 'allodatalab-ready') {
       if (!fromOpener) return;
+      if (!lockedOpenerOrigin) lockedOpenerOrigin = event.origin;
       if (event.origin && event.origin !== 'null') openerOrigin = event.origin;
       openerOk = true;
       openerClosed = false;

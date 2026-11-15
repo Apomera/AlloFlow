@@ -32,16 +32,113 @@ var AlloNarrationText = (() => {
     if (typeof clean !== "string" || !clean.trim()) throw new Error("The markup could not be sanitized safely.");
     return clean;
   }
+  var _ALLO_INTERACTIVE_CHROME_SEL = ".alloflow-cloze-controls,.alloflow-cs-controls,.alloflow-cs-actions,.alloflow-venn-controls,.alloflow-venn-status,.alloflow-venn-place-button,.alloflow-venn-screen-instructions,.alloflow-tl-controls,.alloflow-tl-arrows,.alloflow-glossary-controls,.alloflow-glossary-card-controls,.alloflow-glossary-card-actions,.alloflow-glossary-card-status,.alloflow-gm-controls,.alloflow-gm-status,.alloflow-faq-controls,.alloflow-dir-controls,.alloflow-cornell-controls,.alloflow-ws-controls,.alloflow-quiz-feedback,.alloflow-quiz-check-btn,.alloflow-math-symbolbar,.alloflow-math-symbar,.alloflow-math-controls,.alloflow-dbq-evidence-tracker,.alloflow-export-save-tools,.alloflow-save-status";
+  function _alloChosenSelectText(sel) {
+    if (!sel) return "";
+    const opts = sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll("option"));
+    const selOpt = sel.selectedOptions && sel.selectedOptions[0];
+    const hasVal = (o) => o && !o.disabled && String(o.getAttribute && o.getAttribute("value") != null ? o.getAttribute("value") : o.value != null ? o.value : o.textContent || "").trim() !== "";
+    const chosen = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute("selected")) && hasVal(o)) || null;
+    return chosen ? String(chosen.textContent || chosen.value || "").replace(/\s+/g, " ").trim() : "";
+  }
+  function _alloDedupeVennActivityDom(root) {
+    if (!root || !root.querySelectorAll) return;
+    const doc = root.ownerDocument || root;
+    root.querySelectorAll(".alloflow-venn-activity").forEach((act) => {
+      if (act.querySelector(".alloflow-venn-card")) {
+        act.querySelectorAll(".alloflow-venn-print-only, .alloflow-venn-screen-instructions").forEach((el) => el.remove());
+        act.querySelectorAll(".alloflow-venn-card").forEach((card) => {
+          const btn = card.querySelector("button.alloflow-venn-card-button");
+          if (!btn) return;
+          const sel = card.querySelector("select.alloflow-venn-response");
+          const chosenText = _alloChosenSelectText(sel);
+          const p = doc.createElement("p");
+          p.className = "alloflow-venn-card-text";
+          p.textContent = (btn.textContent || "").replace(/\s+/g, " ").trim() + (chosenText ? " \u2014 " + chosenText : "");
+          btn.replaceWith(p);
+          if (sel) sel.remove();
+        });
+      }
+    });
+  }
+  function _alloReplaceFormControlsForText(doc, root, blankToken, alloFieldsOnly, emitEmptyBlank) {
+    if (!doc || !root || !root.querySelectorAll) return;
+    const alloSel = "input[data-allo-field],textarea[data-allo-field],select[data-allo-field],input[data-allo-response-key],textarea[data-allo-response-key],select[data-allo-response-key],.alloflow-response-input,.alloflow-response-select,.interactive-blank,.interactive-textarea,.alloflow-cs-response,.alloflow-venn-response";
+    root.querySelectorAll("input,textarea,select").forEach((el) => {
+      const tag = (el.tagName || "").toLowerCase();
+      const isHidden = el.hasAttribute("hidden") || el.getAttribute("aria-hidden") === "true" || el.style && el.style.display === "none";
+      const isAlloField = !alloFieldsOnly || typeof el.matches === "function" && el.matches(alloSel);
+      if (emitEmptyBlank === false && !isAlloField) {
+        el.remove();
+        return;
+      }
+      if (tag === "input") {
+        const type = String(el.getAttribute("type") || "text").toLowerCase();
+        if (type === "hidden" || type === "button" || type === "submit" || type === "reset") {
+          el.remove();
+          return;
+        }
+        if (type === "radio" || type === "checkbox") {
+          if (isHidden) {
+            el.remove();
+            return;
+          }
+          const checked = el.checked || el.hasAttribute("checked");
+          if (!alloFieldsOnly) el.replaceWith(doc.createTextNode(checked ? "[x] " : "[ ] "));
+          else el.remove();
+          return;
+        }
+        if (isHidden) {
+          el.remove();
+          return;
+        }
+        const val = String(el.value || el.getAttribute("value") || "").trim();
+        if (val) el.replaceWith(doc.createTextNode(val));
+        else if (emitEmptyBlank !== false && isAlloField) el.replaceWith(doc.createTextNode(blankToken));
+        else el.remove();
+        return;
+      }
+      if (tag === "textarea") {
+        if (isHidden) {
+          el.remove();
+          return;
+        }
+        const val = String(el.value || el.textContent || "").trim();
+        const outTxt = val || (emitEmptyBlank !== false && isAlloField ? blankToken : "");
+        if (!outTxt) {
+          el.remove();
+          return;
+        }
+        if (el.closest && el.closest("p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,caption,dt,dd,th,td")) {
+          el.replaceWith(doc.createTextNode(outTxt));
+        } else {
+          const p = doc.createElement("p");
+          p.textContent = outTxt;
+          el.replaceWith(p);
+        }
+        return;
+      }
+      if (tag === "select") {
+        const chosenTxt = _alloChosenSelectText(el);
+        if (isHidden) {
+          if (chosenTxt && typeof el.matches === "function" && el.matches("select.alloflow-cs-response, select.alloflow-venn-response")) {
+            el.replaceWith(doc.createTextNode(" \u2014 " + chosenTxt));
+          } else {
+            el.remove();
+          }
+          return;
+        }
+        if (chosenTxt) el.replaceWith(doc.createTextNode(chosenTxt));
+        else if (emitEmptyBlank !== false && isAlloField) el.replaceWith(doc.createTextNode(blankToken));
+        else el.remove();
+      }
+    });
+  }
   function _audioReadyText(html, narrationOptions) {
     const options = narrationOptions || {};
     const doc = new DOMParser().parseFromString(html || "", "text/html");
     const root = doc.body || doc.documentElement;
     if (!root) return "";
-    if (options.languageRuns) {
-      _narrationPrepareDocument(doc);
-      root.querySelectorAll("p,h1,h2,h3,h4,h5,h6,li,blockquote,dd,dt,tr,caption,figcaption,summary").forEach((el) => el.appendChild(doc.createTextNode(". ")));
-      return _narrationMergeRuns(_narrationTextRuns(root, options.language), true);
-    }
     let _preamble = "";
     let preambleRuns = [];
     const _note = root.querySelector("[data-allo-translation-note], [data-allo-plain-note]");
@@ -52,8 +149,22 @@ var AlloNarrationText = (() => {
         if (options.languageRuns) preambleRuns = [..._narrationTextRuns(_note, options.language), { text: ". ", language: _narrationLanguageOf(_note, options.language) }];
       }
     }
-    root.querySelectorAll(".allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], script, style, button, input, select").forEach((el) => el.remove());
-    root.querySelectorAll("details > summary").forEach((el) => el.remove());
+    if (options.languageRuns) {
+      _narrationPrepareDocument(doc, options);
+      root.querySelectorAll("[data-allo-translation-note], [data-allo-plain-note], details.allo-chart-data > summary, details.allo-image-desc > summary").forEach((el) => el.remove());
+      root.querySelectorAll("p,h1,h2,h3,h4,h5,h6,li,blockquote,dd,dt,tr,caption,figcaption,summary,.alloflow-cs-strip,.alloflow-tl-strip").forEach((el) => el.appendChild(doc.createTextNode(". ")));
+      return _narrationMergeRuns([...preambleRuns, ..._narrationTextRuns(root, options.language)], true);
+    }
+    _alloDedupeVennActivityDom(root);
+    _alloReplaceFormControlsForText(doc, root, " blank ", true, !options.languageRuns);
+    root.querySelectorAll("button.alloflow-inline-term").forEach((btn) => {
+      const span = doc.createElement("span");
+      if (btn.lang) span.lang = btn.lang;
+      span.textContent = btn.textContent || "";
+      btn.replaceWith(span);
+    });
+    root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], [data-allo-footnote-backlink], details.allo-math-source, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], script, style, button, input, select, textarea, ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+    root.querySelectorAll("details.allo-chart-data > summary, details.allo-image-desc > summary").forEach((el) => el.remove());
     root.querySelectorAll("details em, figcaption em").forEach((el) => {
       if (/verify|AI-estimated|AI-generated|Transcribed from the image/i.test(el.textContent || "")) el.remove();
     });
@@ -87,7 +198,7 @@ var AlloNarrationText = (() => {
         img.replaceWith(replacement);
       }
     });
-    root.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption").forEach((el) => {
+    root.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption, .alloflow-cs-strip, .alloflow-tl-strip").forEach((el) => {
       el.appendChild(doc.createTextNode(". "));
     });
     if (options.languageRuns) return _narrationMergeRuns([...preambleRuns, ..._narrationTextRuns(root, options.language)], true);
@@ -101,8 +212,16 @@ var AlloNarrationText = (() => {
     }
     return fallback || "en";
   }
-  function _narrationPrepareDocument(doc) {
-    doc.querySelectorAll('script,style,button,input,select,textarea,audio,video,template,[hidden],[aria-hidden="true"],.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],#allo-reader-bar,#allo-reader-ruler,annotation,annotation-xml,[data-allo-latex-src]').forEach((node) => node.remove());
+  function _narrationPrepareDocument(doc, options) {
+    _alloDedupeVennActivityDom(doc);
+    _alloReplaceFormControlsForText(doc, doc.body || doc, " blank ", true, !(options && options.languageRuns));
+    doc.querySelectorAll("button.alloflow-inline-term").forEach((btn) => {
+      const span = doc.createElement("span");
+      if (btn.lang) span.lang = btn.lang;
+      span.textContent = btn.textContent || "";
+      btn.replaceWith(span);
+    });
+    doc.querySelectorAll('script,style,button,input,select,textarea,audio,video,template,[hidden],[aria-hidden="true"],.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],[data-allo-footnote-backlink],details.allo-math-source,#allo-reader-bar,#allo-reader-ruler,.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-latex-src],' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((node) => node.remove());
     doc.querySelectorAll("[style]").forEach((node) => {
       if (node.style.display === "none" || node.style.visibility === "hidden") node.remove();
     });
@@ -159,7 +278,7 @@ var AlloNarrationText = (() => {
       return phrase ? phrase.replace(/\{n\}/g, String(n)) : fallback;
     };
     const doc = new DOMParser().parseFromString(html || "", "text/html");
-    if (options.languageRuns) _narrationPrepareDocument(doc);
+    _narrationPrepareDocument(doc, options);
     const readable = (node) => options.languageRuns ? _narrationTextRuns(node, options.language).some((run) => run.text.trim()) : !!(node.textContent || "").trim();
     const out = [], runs = [];
     const add = (node, ...parts) => {
@@ -182,6 +301,10 @@ var AlloNarrationText = (() => {
         }
         if (tag === "p" || tag === "blockquote" || tag === "figcaption") {
           if (txt && !node.closest("table")) add(node, node);
+          continue;
+        }
+        if (tag === "dt" || tag === "dd" || node.classList?.contains("alloflow-cs-strip") || node.classList?.contains("alloflow-tl-strip")) {
+          if (txt) add(node, node, ".");
           continue;
         }
         if (tag === "ul" || tag === "ol") {

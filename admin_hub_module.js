@@ -46,25 +46,62 @@ function _adminHubGroupByTool(keys) {
 function _adminHubKeyAllowed(key) {
   return typeof key === "string" && ADMIN_HUB_STORAGE_PREFIXES.some((p) => key.indexOf(p) === 0);
 }
+function _adminHubEvalInSampleMode() {
+  try {
+    const raw = localStorage.getItem("allo_educator_evaluation_workspace_v1");
+    if (!raw) return true;
+    const parsed = JSON.parse(raw);
+    return !!(parsed && parsed.config && parsed.config.sampleMode === true);
+  } catch (_) {
+    return true;
+  }
+}
 function _adminHubCollectBackup() {
   const keys = {};
   let count = 0;
   for (let i = 0; i < localStorage.length; i++) {
     const key = localStorage.key(i);
     if (!_adminHubKeyAllowed(key)) continue;
-    const value = localStorage.getItem(key);
-    if (typeof value === "string") {
-      keys[key] = value;
-      count++;
+    if (key === "allo_educator_evaluation_real_stash_v1" && _adminHubEvalInSampleMode()) continue;
+    let value = localStorage.getItem(key);
+    if (typeof value !== "string") continue;
+    if (key === "allo_wcop_delivery_v1") {
+      try {
+        const parsed = JSON.parse(value);
+        if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
+          const clean = { ...parsed };
+          delete clean.token;
+          delete clean.wr_admin_token;
+          value = JSON.stringify(clean);
+        }
+      } catch (_) {
+      }
     }
+    keys[key] = value;
+    count++;
   }
   return { format: ADMIN_HUB_BACKUP_FORMAT, version: 1, exportedAt: (/* @__PURE__ */ new Date()).toISOString(), keyCount: count, keys };
 }
 const ADMIN_HUB_DRIVE_CFG_KEY = "allo_adminhubdrive_config_v1";
+function _adminHubSafeDriveUrl(raw) {
+  try {
+    const url = new URL(String(raw || "").trim());
+    if (url.protocol !== "https:" || url.username || url.password || url.hash || url.search) return "";
+    if (url.hostname !== "script.google.com") return "";
+    const p = url.pathname || "";
+    if (/^\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(p)) return url.origin + p;
+    if (/^\/a\/macros\/[a-z0-9.-]+\/s\/[A-Za-z0-9_-]+\/exec$/i.test(p)) return url.origin + p;
+    return "";
+  } catch (_) {
+    return "";
+  }
+}
 function _adminHubDriveCfg() {
   try {
     const parsed = JSON.parse(localStorage.getItem(ADMIN_HUB_DRIVE_CFG_KEY) || "null");
-    return parsed && typeof parsed === "object" && typeof parsed.url === "string" && typeof parsed.token === "string" ? parsed : null;
+    if (!parsed || typeof parsed !== "object" || typeof parsed.url !== "string" || typeof parsed.token !== "string") return null;
+    const safeUrl = _adminHubSafeDriveUrl(parsed.url);
+    return safeUrl ? { ...parsed, url: safeUrl } : null;
   } catch (_) {
     return null;
   }
@@ -77,7 +114,9 @@ function _adminHubHash(text) {
   return String(h);
 }
 async function _adminHubDrivePost(url, body) {
-  const res = await fetch(url, { method: "POST", body: JSON.stringify(body) });
+  const safeUrl = _adminHubSafeDriveUrl(url);
+  if (!safeUrl) throw new Error("Invalid Drive backup script URL.");
+  const res = await fetch(safeUrl, { method: "POST", body: JSON.stringify(body) });
   return res.json();
 }
 async function _adminHubMaybeDriveBackup(opts) {
@@ -522,7 +561,21 @@ function AdminHubPanel(props) {
                 tt("adminhub.restore_confirm", "Restore this backup, dated {date}?").replace("{date}", stamp) + "\n\n" + breakdown + "\n\n" + tt("adminhub.restore_confirm_effect", "Data for these tools on this device will be replaced by the backup. Tools not listed are left alone, and nothing outside the Leadership Hub is touched.")
               );
               if (!ok) return;
-              for (const [k, v] of entries) localStorage.setItem(k, v);
+              for (const [k, v] of entries) {
+                if (k === "allo_wcop_delivery_v1") {
+                  try {
+                    const incoming = JSON.parse(v);
+                    const current = JSON.parse(localStorage.getItem(k) || "null");
+                    if (incoming && typeof incoming === "object" && !incoming.token && current && current.token && (!incoming.execUrl || incoming.execUrl === current.execUrl)) {
+                      incoming.token = current.token;
+                      localStorage.setItem(k, JSON.stringify(incoming));
+                      continue;
+                    }
+                  } catch (_) {
+                  }
+                }
+                localStorage.setItem(k, v);
+              }
               addToast(
                 (rejected > 0 ? tt("adminhub.restore_done_skipped", "Restored {count} items; {skipped} entries outside the hub were ignored. Reopen a tool to see its data.").replace("{skipped}", String(rejected)) : tt("adminhub.restore_done", "Restored {count} items. Reopen a tool to see its data.")).replace("{count}", String(entries.length)),
                 "success"

@@ -37,14 +37,16 @@ function normalizeOfflineStory(raw) {
     var choices = Array.isArray(scene.choices) ? scene.choices : (Array.isArray(scene.options) ? scene.options : []);
     var out = {
       id: _offlineStr(scene.id, OFFLINE_LIMITS.maxId),
-      text: typeof scene.text === 'string' ? scene.text.trim() : _offlineStr(scene.narration, OFFLINE_LIMITS.maxText),
+      text: typeof scene.text === 'string' ? scene.text.trim().slice(0, OFFLINE_LIMITS.maxText) : _offlineStr(scene.narration, OFFLINE_LIMITS.maxText),
       ending: scene.ending === true || scene.isEnding === true || scene.end === true,
       choices: choices.filter(function (c) { return c && typeof c === 'object'; }).map(function (c) {
         return { label: _offlineStr(c.label != null ? c.label : c.text, OFFLINE_LIMITS.maxLabel), to: _offlineStr(c.to != null ? c.to : (c.next != null ? c.next : c.goto), OFFLINE_LIMITS.maxId) };
       })
     };
-    if (typeof scene.sceneImage === 'string' && scene.sceneImage) {
-      out.sceneImage = scene.sceneImage;
+    var safeImg = typeof scene.sceneImage === 'string' ? scene.sceneImage.trim() : '';
+    var allowRemoteOfflineImg = !(typeof window !== 'undefined' && (window._isDesktopBundledApp === true || window.__alloOfflineOnly === true));
+    if (safeImg && (/^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(safeImg) || /^blob:/i.test(safeImg) || (allowRemoteOfflineImg && /^https:/i.test(safeImg)))) {
+      out.sceneImage = safeImg;
       if (typeof scene.sceneImageAlt === 'string') out.sceneImageAlt = scene.sceneImageAlt.slice(0, 300);
     }
     return out;
@@ -109,6 +111,7 @@ function validateOfflineStory(story) {
     scene.choices.forEach(function (choice, index) {
       if (!choice.label) add(errors, 'empty_label', scene.id, index);
       if (!graph.byId[choice.to]) add(errors, 'broken_choice', scene.id, index);
+      else if (choice.to === scene.id) add(warnings, 'self_loop', scene.id, index);
     });
   });
   if (!endings) add(errors, 'no_ending');
@@ -340,7 +343,8 @@ function offlineIssueText(t, issue, sceneNumber) {
     empty_label: 'A choice has no words.', broken_choice: 'A choice goes to a scene that does not exist.',
     dead_end: 'Add a choice, or mark it as an ending.', no_ending: 'Mark at least one scene as an ending.',
     unreachable: 'No choice leads here.', no_way_out: 'Players get stuck in a loop with no way to an ending.',
-    ending_has_choices: 'Endings do not show choices.'
+    ending_has_choices: 'Endings do not show choices.',
+    self_loop: 'A choice leads right back to the same scene.'
   }[issue.code] || issue.code;
   return where + offlineText(t, 'issue_' + issue.code, fallback);
 }
@@ -385,8 +389,14 @@ function AdventureOfflinePlayer(props) {
   var [path, setPath] = React.useState([story.start]);
   var headingRef = React.useRef(null);
   var firstRender = React.useRef(true);
+  var mountedStoryRef = React.useRef(story);
   var byId = React.useMemo(function () { return _offlineGraph(story).byId; }, [story]);
   var scene = byId[path[path.length - 1]] || byId[story.start];
+  React.useEffect(function () {
+    if (mountedStoryRef.current === story) return;
+    mountedStoryRef.current = story;
+    setPath([story.start]);
+  }, [story]);
   React.useEffect(function () {
     if (firstRender.current) { firstRender.current = false; return; }
     try { headingRef.current && headingRef.current.focus({ preventScroll: false }); } catch (_) {}
@@ -505,12 +515,22 @@ function AdventureOfflineEditor(props) {
             <div className="flex flex-wrap gap-2">
               {!scene.ending && scene.choices.length < OFFLINE_LIMITS.maxChoices && <button type="button" data-offline-add-choice onClick={function () {
                 update(function (s) {
-                  // Student flow: each new choice gets its own new scene, so nothing dangles or hides.
-                  if (studentMode && s.scenes.length < OFFLINE_LIMITS.maxScenes) {
-                    var fresh = _offlineNewId(s);
-                    s.scenes.push({ id: fresh, text: '', ending: false, choices: [] });
-                    s.scenes[index].choices.push({ label: '', to: fresh });
-                    return;
+                  // Student flow: reuse an empty unreachable scene first, otherwise create a fresh one.
+                  if (studentMode) {
+                    var graph = _offlineGraph(s);
+                    var reusable = s.scenes.find(function (o) {
+                      return o && o.id !== scene.id && !graph.reach[o.id] && !String(o.text || '').trim() && (!o.choices || !o.choices.length);
+                    });
+                    if (reusable) {
+                      s.scenes[index].choices.push({ label: '', to: reusable.id });
+                      return;
+                    }
+                    if (s.scenes.length < OFFLINE_LIMITS.maxScenes) {
+                      var fresh = _offlineNewId(s);
+                      s.scenes.push({ id: fresh, text: '', ending: false, choices: [] });
+                      s.scenes[index].choices.push({ label: '', to: fresh });
+                      return;
+                    }
                   }
                   var other = s.scenes.find(function (o) { return o.id !== scene.id; }); s.scenes[index].choices.push({ label: '', to: other ? other.id : scene.id });
                 });
@@ -574,6 +594,7 @@ function AdventureOfflinePanel(props) {
   var [notice, setNotice] = React.useState('');
   var [dirty, setDirty] = React.useState(false);
   var closeRef = React.useRef(null);
+  var panelRef = React.useRef(null);
   var openerRef = React.useRef(typeof document !== 'undefined' ? document.activeElement : null);
   var aiReady = !studentMode && _aiUsable('text', props.callGemini);
   var door = null;
@@ -581,7 +602,12 @@ function AdventureOfflinePanel(props) {
   var Notice = !studentMode && typeof window.AlloAiSetupNotice === 'function' ? window.AlloAiSetupNotice : null;
   var autosaveRef = React.useRef(null);
   var savedIdRef = React.useRef(null);
+  var previewBtnRef = React.useRef(null);
   var close = function () {
+    if (!studentMode && dirty && draft && typeof window !== 'undefined' && typeof window.confirm === 'function') {
+      var confirmDiscard = offlineText(t, 'confirm_discard', 'You have unsaved changes to this offline adventure. Close without saving?');
+      if (!window.confirm(confirmDiscard)) return;
+    }
     // A learner's unsaved words are kept on close (Escape included) rather than lost.
     try { if (autosaveRef.current) autosaveRef.current(); } catch (_) {}
     props.onClose();
@@ -589,7 +615,30 @@ function AdventureOfflinePanel(props) {
   };
   React.useEffect(function () {
     try { closeRef.current && closeRef.current.focus({ preventScroll: true }); } catch (_) {}
-    var onKey = function (event) { if (event.key === 'Escape') { event.stopPropagation(); close(); } };
+    var trapSelector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
+    var onKey = function (event) {
+      if (event.key === 'Escape') { event.stopPropagation(); close(); return; }
+      if (event.key === 'Tab' && panelRef.current) {
+        var focusables = Array.prototype.slice.call(panelRef.current.querySelectorAll(trapSelector))
+          .filter(function (el) { return el.offsetParent !== null || el === document.activeElement; });
+        if (!focusables.length) {
+          event.preventDefault();
+          try { closeRef.current && closeRef.current.focus({ preventScroll: true }); } catch (_) {}
+          return;
+        }
+        var first = focusables[0];
+        var last = focusables[focusables.length - 1];
+        if (event.shiftKey) {
+          if (document.activeElement === first || !panelRef.current.contains(document.activeElement)) {
+            event.preventDefault();
+            last.focus();
+          }
+        } else if (document.activeElement === last || !panelRef.current.contains(document.activeElement)) {
+          event.preventDefault();
+          first.focus();
+        }
+      }
+    };
     document.addEventListener('keydown', onKey, true);
     return function () { document.removeEventListener('keydown', onKey, true); };
   }, []);
@@ -639,7 +688,7 @@ function AdventureOfflinePanel(props) {
   };
   var titleId = studentMode ? 'adventure-student-story-dialog-title' : 'adventure-offline-dialog-title';
   return <div role="presentation" style={{ zIndex: 10100 }} className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 p-2 sm:p-4" onClick={function (e) { if (e.target === e.currentTarget) close(); }}>
-    <div role="dialog" aria-modal="true" aria-labelledby={titleId} data-adventure-offline-panel data-adventure-student-story={studentMode ? '' : undefined} style={adventureVisualTokens(props.theme)}
+    <div ref={panelRef} role="dialog" aria-modal="true" aria-labelledby={titleId} data-adventure-offline-panel data-adventure-student-story={studentMode ? '' : undefined} style={adventureVisualTokens(props.theme)}
       className="relative w-full max-w-4xl max-h-[calc(100vh-1rem)] overflow-y-auto rounded-2xl border border-[var(--av-line)] bg-[var(--av-wash)] p-4 sm:p-6 text-[var(--av-ink)] shadow-2xl">
       <div className="mb-3 flex items-start justify-between gap-3">
         <div>
@@ -657,14 +706,14 @@ function AdventureOfflinePanel(props) {
         {!draft && <button type="button" data-offline-blank onClick={function () { setDraft(_offlineBlankStory()); setDirty(true); }} className={OFFLINE_SECONDARY}>
           <Pencil size={14} aria-hidden="true" /> {offlineText(t, 'start_blank', 'Write my own')}
         </button>}
-        {draft && <button type="button" data-offline-preview aria-pressed={previewing} disabled={!check || !check.ok} onClick={function () { setPreviewing(!previewing); }} className={OFFLINE_SECONDARY}>
+        {draft && <button ref={previewBtnRef} type="button" data-offline-preview aria-pressed={previewing} disabled={!check || !check.ok} onClick={function () { setPreviewing(!previewing); }} className={OFFLINE_SECONDARY}>
           <Eye size={14} aria-hidden="true" /> {offlineText(t, 'preview', 'Preview')}
         </button>}
       </div>
       {!aiReady && Notice && <div className="mb-3" data-offline-ai-setup><Notice t={t} /></div>}
       {notice && <p role="status" aria-live="polite" className="m-0 mb-3 text-sm font-semibold">{notice}</p>}
       {draft && (previewing && check && check.ok
-        ? <AdventureOfflinePlayer story={draft} t={t} theme={props.theme} onExit={function () { setPreviewing(false); }} />
+        ? <AdventureOfflinePlayer story={draft} t={t} theme={props.theme} onExit={function () { setPreviewing(false); setTimeout(function () { try { previewBtnRef.current && previewBtnRef.current.focus({ preventScroll: true }); } catch (_) {} }, 0); }} />
         : <AdventureOfflineEditor story={draft} t={t} studentMode={studentMode} onChange={function (next) { setDraft(next); setDirty(true); }} />)}
       {draft && studentMode && <fieldset data-student-story-self-check className="m-0 mt-4 grid gap-1 rounded-xl border border-[var(--av-line)] px-3 py-2">
         <legend className="px-1 text-sm font-black">{offlineText(t, 'student_check_title', 'Check your story')}</legend>

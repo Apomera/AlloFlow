@@ -5,7 +5,8 @@
     "doc_pipeline_source.jsx": "Another session was editing this file on 2026-10-28. Captions, OCR tokens and alt-text previews are DOCUMENT TEXT (a document can be an IEP): replace with counts once that work is committed. lang/color/cache-key previews are safe.",
     "generate_dispatcher_source.jsx": "Another session was editing this file on 2026-10-28. Logs up to 1000 characters of the raw DBQ response: replace with its length once that work is committed.",
     "stem_lab/stem_tool_geo.js": "Another session was editing this file on 2026-10-28. Logs the raw Quiz Builder response: replace with its length once that work is committed.",
-    "host_handlers_source.jsx": "Logs a resource title (titles can name a student). host_handlers_module.js has a content-hash pin in ANTI, App.jsx and src/ANTI, and both ANTI copies held another session's uncommitted work on 2026-10-28: fix with the next host change and update the pin (log item.type only)."
+    "host_handlers_source.jsx": "Logs a resource title (titles can name a student). host_handlers_module.js has a content-hash pin in ANTI, App.jsx and src/ANTI, and both ANTI copies held another session's uncommitted work on 2026-10-28: fix with the next host change and update the pin (log item.type only).",
+    "behavior_lens_module.js": "UI-facing partial import mismatch error displayed to the clinician in toast notification; keep entry.name in error message intact for UX and existing behavior tests."
   },
   "accepted": {
     "AlloFlowANTI.txt": [
@@ -64,6 +65,12 @@
       {
         "key": "warnLog('Translation failed for one resource, continuing:', item.title || item.type, itemErr?.message)",
         "why": "content property `item.title`"
+      }
+    ],
+    "behavior_lens_module.js": [
+      {
+        "key": "throw new Error('this ' + partialKind + ' is for ' + entry.name + ' and is not a backup. Open ' + entry.name + ' first, then load it to add its records.')",
+        "why": "content property `entry.name`"
       }
     ]
   }

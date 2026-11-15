@@ -90,7 +90,7 @@ const server = http.createServer((req, res) => {
         pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
         const bytes = new Uint8Array(await (await fetch(pdfUrl)).arrayBuffer());
         const csPages = await window.__alloCsPageTexts(bytes.slice());
-        const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+        const pdf = await pdfjsLib.getDocument({ data: bytes, isEvalSupported: false }).promise;
         const norm = (s) => String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim().split(/\s+/).filter(Boolean);
         const bigrams = (toks) => {
           const m = new Map();

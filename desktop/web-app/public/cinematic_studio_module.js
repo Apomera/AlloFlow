@@ -356,6 +356,10 @@
   }
   // Decode the file's audio track and resample to 16kHz mono Float32 (what Whisper wants).
   function extractPcm16k(file) {
+    var MAX_MEDIA_BYTES = 150 * 1024 * 1024;
+    if (file && typeof file.size === 'number' && file.size > MAX_MEDIA_BYTES) {
+      return Promise.reject(new Error('Audio/video file exceeds the 150 MB transcription limit.'));
+    }
     return new Promise(function (resolve, reject) {
       var reader = new FileReader();
       reader.onerror = function () { reject(new Error('Could not read the file')); };
@@ -365,6 +369,11 @@
         var ac = new AC();
         ac.decodeAudioData(reader.result, function (decoded) {
           try {
+            if (!decoded || !Number.isFinite(decoded.duration) || decoded.duration <= 0 || decoded.duration > 3600) {
+              try { ac.close(); } catch (_) {}
+              reject(new Error('Audio/video duration exceeds the 60-minute transcription limit.'));
+              return;
+            }
             var targetRate = 16000;
             var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
             if (!OAC) { try { ac.close(); } catch (_) {} reject(new Error('This browser cannot resample audio for transcription. Import a transcript or .srt instead.')); return; }
@@ -449,6 +458,9 @@
       load: function (progressCb) {
         onProg = progressCb || null;
         if (ready) return Promise.resolve(true);
+        if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+          return Promise.reject(new Error('Remote speech model CDN is disabled in Desktop mode'));
+        }
         if (initPromise) return initPromise;
         ensureWorker();
         initPromise = new Promise(function (resolve, reject) {

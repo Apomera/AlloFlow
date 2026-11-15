@@ -107,6 +107,9 @@
   }
 
   function sourceList(settings) {
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+      return SOURCES.slice(0, 1);
+    }
     return settings.allowRemoteFallback ? SOURCES.slice() : SOURCES.slice(0, 1);
   }
 
@@ -115,6 +118,10 @@
     if (index >= sources.length) { reject(new Error('all MathLive sources failed')); return; }
     var candidate = sources[index];
     var script = document.createElement('script');
+    if (candidate && candidate.script && String(candidate.script).indexOf(LOCAL_ASSET_BASE) !== 0) {
+      script.crossOrigin = 'anonymous';
+      script.referrerPolicy = 'no-referrer';
+    }
     script.src = candidate.script;
     script.async = true;
     script.onload = function () {

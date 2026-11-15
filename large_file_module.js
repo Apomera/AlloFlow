@@ -13,6 +13,8 @@ const LargeFileHandler = {
   CHUNK_DURATION_SECONDS: 600,
   TARGET_SAMPLE_RATE: 16e3,
   MAX_CHUNK_SIZE_BYTES: 15 * 1024 * 1024,
+  MAX_FILE_SIZE_BYTES: 500 * 1024 * 1024,
+  MAX_AUDIO_DURATION_SECONDS: 4 * 3600,
   isProcessing: false,
   cancelRequested: false,
   needsChunking(file) {
@@ -43,58 +45,83 @@ const LargeFileHandler = {
     if (mins === 0) return `${secs}s`;
     return `${mins}m ${secs}s`;
   },
+  async _decodeMediaFile(file, readMessage, onProgress = () => {
+  }) {
+    if (!file) {
+      throw new Error("No media file selected.");
+    }
+    if (typeof file.size === "number" && file.size > this.MAX_FILE_SIZE_BYTES) {
+      throw new Error("File exceeds the 500 MB large-file safety limit.");
+    }
+    onProgress(0, 1, readMessage);
+    const arrayBuffer = await this.readFileAsArrayBuffer(file);
+    if (arrayBuffer && arrayBuffer.byteLength > this.MAX_FILE_SIZE_BYTES) {
+      throw new Error("File exceeds the 500 MB large-file safety limit.");
+    }
+    const audioCtx = getGlobalAudioContext();
+    if (!audioCtx) {
+      throw new Error("Web Audio API not supported");
+    }
+    onProgress(0, 1, "Decoding audio...");
+    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+    const totalDuration = audioBuffer.duration;
+    if (!Number.isFinite(totalDuration) || totalDuration < 0 || totalDuration > this.MAX_AUDIO_DURATION_SECONDS) {
+      throw new Error("Audio duration exceeds the 4-hour processing limit.");
+    }
+    return { audioCtx, audioBuffer };
+  },
+  async _chunkAndTranscribeAudioBuffer(audioCtx, audioBuffer, transcribeChunk, onProgress = () => {
+  }) {
+    const totalDuration = audioBuffer.duration;
+    const sampleRate = audioBuffer.sampleRate;
+    const numberOfChannels = audioBuffer.numberOfChannels;
+    const chunkCount = Math.ceil(totalDuration / this.CHUNK_DURATION_SECONDS);
+    onProgress(0, chunkCount, `Preparing ${chunkCount} chunks...`);
+    const transcripts = [];
+    for (let i = 0; i < chunkCount; i++) {
+      if (this.cancelRequested) {
+        throw new Error("Cancelled");
+      }
+      onProgress(i + 1, chunkCount, `Transcribing chunk ${i + 1} of ${chunkCount}...`);
+      const startSample = Math.floor(i * this.CHUNK_DURATION_SECONDS * sampleRate);
+      const endSample = Math.min(
+        Math.floor((i + 1) * this.CHUNK_DURATION_SECONDS * sampleRate),
+        audioBuffer.length
+      );
+      const chunkLength = endSample - startSample;
+      const chunkBuffer = audioCtx.createBuffer(
+        numberOfChannels,
+        chunkLength,
+        sampleRate
+      );
+      for (let channel = 0; channel < numberOfChannels; channel++) {
+        const sourceData = audioBuffer.getChannelData(channel);
+        const destData = chunkBuffer.getChannelData(channel);
+        for (let j = 0; j < chunkLength; j++) {
+          destData[j] = sourceData[startSample + j];
+        }
+      }
+      const wavBlob = this.audioBufferToWav(chunkBuffer);
+      const base64 = await this.blobToBase64(wavBlob);
+      const chunkTranscript = await transcribeChunk(base64, "audio/wav");
+      transcripts.push(chunkTranscript);
+    }
+    const fullTranscript = transcripts.join(" ");
+    return {
+      transcript: fullTranscript,
+      duration: totalDuration
+    };
+  },
   async processAudioFile(file, transcribeChunk, onProgress = () => {
   }) {
+    if (this.isProcessing) {
+      throw new Error("Another large file is already being processed.");
+    }
     this.isProcessing = true;
     this.cancelRequested = false;
     try {
-      onProgress(0, 1, "Reading file...");
-      const arrayBuffer = await this.readFileAsArrayBuffer(file);
-      const audioCtx = getGlobalAudioContext();
-      if (!audioCtx) {
-        throw new Error("Web Audio API not supported");
-      }
-      onProgress(0, 1, "Decoding audio...");
-      const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
-      const totalDuration = audioBuffer.duration;
-      const sampleRate = audioBuffer.sampleRate;
-      const numberOfChannels = audioBuffer.numberOfChannels;
-      const chunkCount = Math.ceil(totalDuration / this.CHUNK_DURATION_SECONDS);
-      onProgress(0, chunkCount, `Preparing ${chunkCount} chunks...`);
-      const transcripts = [];
-      for (let i = 0; i < chunkCount; i++) {
-        if (this.cancelRequested) {
-          throw new Error("Cancelled");
-        }
-        onProgress(i + 1, chunkCount, `Transcribing chunk ${i + 1} of ${chunkCount}...`);
-        const startSample = Math.floor(i * this.CHUNK_DURATION_SECONDS * sampleRate);
-        const endSample = Math.min(
-          Math.floor((i + 1) * this.CHUNK_DURATION_SECONDS * sampleRate),
-          audioBuffer.length
-        );
-        const chunkLength = endSample - startSample;
-        const chunkBuffer = audioCtx.createBuffer(
-          numberOfChannels,
-          chunkLength,
-          sampleRate
-        );
-        for (let channel = 0; channel < numberOfChannels; channel++) {
-          const sourceData = audioBuffer.getChannelData(channel);
-          const destData = chunkBuffer.getChannelData(channel);
-          for (let j = 0; j < chunkLength; j++) {
-            destData[j] = sourceData[startSample + j];
-          }
-        }
-        const wavBlob = this.audioBufferToWav(chunkBuffer);
-        const base64 = await this.blobToBase64(wavBlob);
-        const chunkTranscript = await transcribeChunk(base64, "audio/wav");
-        transcripts.push(chunkTranscript);
-      }
-      const fullTranscript = transcripts.join(" ");
-      return {
-        transcript: fullTranscript,
-        duration: totalDuration
-      };
+      const { audioCtx, audioBuffer } = await this._decodeMediaFile(file, "Reading file...", onProgress);
+      return await this._chunkAndTranscribeAudioBuffer(audioCtx, audioBuffer, transcribeChunk, onProgress);
     } finally {
       this.isProcessing = false;
     }
@@ -171,22 +198,24 @@ const LargeFileHandler = {
   },
   async extractAudioFromVideo(videoFile, onProgress = () => {
   }) {
-    onProgress(0, 1, "Extracting audio from video...");
-    const arrayBuffer = await this.readFileAsArrayBuffer(videoFile);
-    const audioCtx = getGlobalAudioContext();
-    if (!audioCtx) {
-      throw new Error("Web Audio API not supported");
-    }
-    const audioBuffer = await audioCtx.decodeAudioData(arrayBuffer.slice(0));
+    const { audioBuffer } = await this._decodeMediaFile(videoFile, "Extracting audio from video...", onProgress);
     const wavBlob = this.audioBufferToWav(audioBuffer);
-    const audioFileName = videoFile.name.replace(/\.[^.]+$/, ".wav");
+    const audioFileName = String(videoFile.name || "video").replace(/\.[^.]+$/, "") + ".wav";
     return new File([wavBlob], audioFileName, { type: "audio/wav" });
   },
   async processVideoFile(file, transcribeChunk, onProgress = () => {
   }) {
-    onProgress(0, 1, "Extracting audio from video...");
-    const audioFile = await this.extractAudioFromVideo(file, onProgress);
-    return this.processAudioFile(audioFile, transcribeChunk, onProgress);
+    if (this.isProcessing) {
+      throw new Error("Another large file is already being processed.");
+    }
+    this.isProcessing = true;
+    this.cancelRequested = false;
+    try {
+      const { audioCtx, audioBuffer } = await this._decodeMediaFile(file, "Extracting audio from video...", onProgress);
+      return await this._chunkAndTranscribeAudioBuffer(audioCtx, audioBuffer, transcribeChunk, onProgress);
+    } finally {
+      this.isProcessing = false;
+    }
   }
 };
 const LargeFileTranscriptionModal = React.memo(({

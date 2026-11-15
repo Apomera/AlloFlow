@@ -21,7 +21,6 @@ if (window.AlloModules && window.AlloModules.PyodideRuntime) {
 //   • Public API:
 //       PyodideRuntime.warmup()       — start download, returns promise
 //       PyodideRuntime.ready()        — true once loaded
-//       PyodideRuntime.run(code)      — eval Python, return JS value
 //       PyodideRuntime.runAudit(opts) — run report_checks.audit(...) and
 //                                       return findings array
 //
@@ -33,6 +32,15 @@ if (window.AlloModules && window.AlloModules.PyodideRuntime) {
 // and we've validated it still passes report_checks tests.
 const PYODIDE_VERSION = '0.27.5';
 const PYODIDE_CDN = `https://cdn.jsdelivr.net/pyodide/v${PYODIDE_VERSION}/full/`;
+const PYODIDE_JS_SRI = 'sha384-rm4QcPMX69sqmX2kWiJa3BF02sgdJkVyATWkw5NHAxBUAvmLXhToWZYaP2wCcyEe';
+
+function _canLoadExternalPyodide() {
+  if (typeof window === 'undefined') return false;
+  if (window._isDesktopBundledApp === true) return false;
+  if (window.__alloOfflineOnly === true) return false;
+  if (window.__alloStudentAiDisabled === true) return false;
+  return true;
+}
 
 // ── Embedded Python ──────────────────────────────────────────────────
 // Two sibling modules — report_checks (Report Writer) and poetry_checks
@@ -1475,10 +1483,107 @@ let _poetryPromise = null;  // separate gate for the pronouncing package install
 
 // Dynamically inject the Pyodide loader script. Returns a promise that
 // resolves once `window.loadPyodide` is callable.
+function _heuristicSyllablesJs(word) {
+  const cleaned = String(word || '').toLowerCase().replace(/[^a-z]/g, '');
+  if (!cleaned) return 0;
+  if (cleaned.length <= 3) return 1;
+  let w = cleaned.replace(/(?:[^laeiouy]es|ed|[^laeiouy]e)$/, '').replace(/^y/, '');
+  const groups = w.match(/[aeiouy]{1,2}/g);
+  return Math.max(1, groups ? groups.length : 1);
+}
+
+function _rhymeClassJs(word) {
+  const cleaned = String(word || '').toLowerCase().replace(/[^a-z]/g, '');
+  if (!cleaned) return '';
+  return cleaned.length <= 3 ? '~' + cleaned : '~' + cleaned.slice(-3);
+}
+
+function verifyFormJs(form, poemText, targetWord = null) {
+  const spec = form && typeof form === 'object' ? form : {};
+  const rawLines = String(poemText || '').split(/\r?\n/).map(l => l.trimEnd()).filter(l => l.trim().length > 0);
+  const findings = [];
+  if (Number.isFinite(spec.lineCount) && spec.lineCount > 0 && rawLines.length !== spec.lineCount) {
+    findings.push({
+      severity: 'high',
+      message: `${spec.name || 'Poem'}: expected ${spec.lineCount} lines, found ${rawLines.length}.`,
+    });
+  }
+  const expectedSyl = spec.syllablesPerLine;
+  const lineEntries = rawLines.map((text, idx) => {
+    const words = text.match(/[a-zA-Z']+/g) || [];
+    const syl = words.reduce((acc, w) => acc + _heuristicSyllablesJs(w), 0);
+    let exp = null;
+    if (Array.isArray(expectedSyl)) exp = expectedSyl[idx] != null ? expectedSyl[idx] : null;
+    else if (Number.isFinite(expectedSyl) && expectedSyl > 0) exp = expectedSyl;
+    const match = exp == null ? true : syl === exp;
+    if (!match) {
+      findings.push({
+        severity: 'medium',
+        message: `Line ${idx + 1}: ${syl} syllables (expected ${exp}).`,
+      });
+    }
+    const lastWord = words.length ? words[words.length - 1] : '';
+    return {
+      text,
+      syllables_actual: syl,
+      syllables_expected: exp,
+      syllables_match: match,
+      unknown_words: words,
+      stress_pattern: null,
+      rhyme_class: _rhymeClassJs(lastWord),
+    };
+  });
+  if (spec.id === 'acrostic' && targetWord) {
+    const target = String(targetWord).replace(/[^a-zA-Z]/g, '').toUpperCase();
+    for (let i = 0; i < Math.min(rawLines.length, target.length); i++) {
+      const m = rawLines[i].match(/[a-zA-Z]/);
+      const got = m ? m[0].toUpperCase() : '';
+      if (got !== target[i]) {
+        findings.push({
+          severity: 'high',
+          message: `Acrostic line ${i + 1}: starts with '${got || '?'}', expected '${target[i]}'.`,
+        });
+      }
+    }
+  } else if (spec.id === 'villanelle' && rawLines.length >= 6) {
+    [[0, 5], [0, 11], [0, 17]].forEach(([ref, tgt]) => {
+      if (tgt < rawLines.length && rawLines[ref].trim().toLowerCase() !== rawLines[tgt].trim().toLowerCase()) {
+        findings.push({ severity: 'medium', message: `Villanelle: line 1 should repeat at line ${tgt + 1}.` });
+      }
+    });
+    [[2, 8], [2, 14], [2, 18]].forEach(([ref, tgt]) => {
+      if (tgt < rawLines.length && rawLines[ref].trim().toLowerCase() !== rawLines[tgt].trim().toLowerCase()) {
+        findings.push({ severity: 'medium', message: `Villanelle: line 3 should repeat at line ${tgt + 1}.` });
+      }
+    });
+  } else if (spec.id === 'pantoum' && rawLines.length > 0 && rawLines.length % 4 !== 0) {
+    findings.push({ severity: 'medium', message: 'Pantoum: lines should be grouped into four-line stanzas.' });
+  } else if (spec.id === 'diamante' && rawLines.length !== 7) {
+    findings.push({ severity: 'high', message: `Diamante: expected 7 lines, found ${rawLines.length}.` });
+  } else if (spec.id === 'couplet' && rawLines.length % 2 !== 0) {
+    findings.push({ severity: 'medium', message: 'Couplet: expected an even number of lines.' });
+  } else if (spec.id === 'ballad' && rawLines.length > 0 && rawLines.length % 4 !== 0) {
+    findings.push({ severity: 'medium', message: 'Ballad: traditional stanzas are groups of 4 lines.' });
+  }
+  return {
+    form_id: spec.id || 'free',
+    overall_match: findings.length === 0,
+    findings,
+    lines: lineEntries,
+    source: 'js-heuristic',
+  };
+}
+
 function _loadPyodideScript() {
+  if (!_canLoadExternalPyodide()) {
+    return Promise.reject(new Error('External Pyodide runtime is disabled in offline or desktop mode.'));
+  }
   if (typeof window.loadPyodide === 'function') return Promise.resolve();
   return new Promise((resolve, reject) => {
     const script = document.createElement('script');
+    script.integrity = PYODIDE_JS_SRI;
+    script.crossOrigin = 'anonymous';
+    script.referrerPolicy = 'no-referrer';
     script.src = PYODIDE_CDN + 'pyodide.js';
     script.async = true;
     script.onload = () => resolve();
@@ -1508,19 +1613,8 @@ async function _init() {
 }
 
 async function _initPoetry() {
-  const py = await PyodideRuntime.warmup();
-  // Check whether pronouncing is already loaded — idempotent across hot reloads
-  const already = py.runPython('"pronouncing" in __import__("sys").modules');
-  if (already) return py;
-  console.log('[PyodideRuntime] Installing pronouncing (CMU dict) via micropip…');
-  const t = Date.now();
-  await py.loadPackage('micropip');
-  const micropip = py.pyimport('micropip');
-  await micropip.install('pronouncing');
-  // Re-import poetry_checks so its lazy `import pronouncing` resolves.
-  py.runPython('import importlib, poetry_checks; importlib.reload(poetry_checks)');
-  console.log(`[PyodideRuntime] pronouncing ready in ${((Date.now() - t) / 1000).toFixed(1)}s`);
-  return py;
+  // Never invoke micropip.install('pronouncing') at runtime from unpinned PyPI.
+  return await PyodideRuntime.warmup();
 }
 
 // ── Public API ──────────────────────────────────────────────────────
@@ -1534,12 +1628,6 @@ const PyodideRuntime = {
   /** True once Pyodide is loaded and report_checks is importable. */
   ready() {
     return _pyodide !== null;
-  },
-
-  /** Run an arbitrary Python expression. Used for smoke tests + debugging. */
-  async run(code) {
-    const py = await this.warmup();
-    return py.runPython(code);
   },
 
   /** Phase 2 smoke test — confirms Pyodide is alive end-to-end. */
@@ -1577,7 +1665,7 @@ const PyodideRuntime = {
     );
     try { return JSON.parse(result); }
     catch (e) {
-      console.error('[PyodideRuntime] audit() returned non-JSON:', result);
+      console.error('[PyodideRuntime] audit() returned non-JSON:', typeof result);
       return [];
     }
   },
@@ -1615,8 +1703,16 @@ const PyodideRuntime = {
    * @returns {Promise<object>}        Structured verification result; see
    *                                   poetry_checks.verify_form for shape.
    */
-  async runPoetryCheck({ form, poemText, targetWord = null } = {}) {
-    const py = await this.warmupPoetry();
+  async runPoetryCheck({ form, poemText, targetWord = null, offlineOnly = false } = {}) {
+    if (offlineOnly || !_canLoadExternalPyodide()) {
+      return verifyFormJs(form, poemText, targetWord);
+    }
+    let py;
+    try {
+      py = await this.warmupPoetry();
+    } catch (_) {
+      return verifyFormJs(form, poemText, targetWord);
+    }
     py.globals.set('_pc_form_json', JSON.stringify(form || {}));
     py.globals.set('_pc_poem_text', poemText || '');
     py.globals.set('_pc_target_word', targetWord);
@@ -1626,8 +1722,8 @@ const PyodideRuntime = {
     );
     try { return JSON.parse(result); }
     catch (e) {
-      console.error('[PyodideRuntime] runPoetryCheck returned non-JSON:', result);
-      return null;
+      console.error('[PyodideRuntime] runPoetryCheck returned non-JSON:', typeof result);
+      return verifyFormJs(form, poemText, targetWord);
     }
   },
 };

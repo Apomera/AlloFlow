@@ -212,7 +212,8 @@ function mtssSiblingCounts(storage) {
 
 function mtssCsv(dataset) {
   const esc = (v) => {
-    const s = v == null ? '' : String(v);
+    const raw = v == null ? '' : String(v);
+    const s = (/^[\t\r\n]/.test(raw) || /^\s*[=+\-@]/.test(raw)) ? "'" + raw : raw;
     return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   const board = mtssBoard(dataset);

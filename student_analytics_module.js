@@ -4109,7 +4109,7 @@ try {
               lastSession: data.lastSaved || data.timestamp || data.studentProgressSummary?.generatedAt || new Date().toISOString()
             });
           } catch (err) {
-            warnLog(`Failed to parse ${file.name}:`, err);
+            warnLog('Failed to parse imported student file:', err && err.name ? err.name : 'Error');
           }
         }
         allNewStudents = [...allNewStudents, ...chunkStudents];

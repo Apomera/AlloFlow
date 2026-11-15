@@ -5007,8 +5007,10 @@ If no errors, return {"errors":[]}.`, true); }
             // Phase 2: kick off Pyodide warmup in the background so the Python
             // audit pass at the end of generation doesn't have to wait for the
             // ~10MB download. Lazy loader is no-op if already warmed.
-            try { window.__alloLazyPyodide && window.__alloLazyPyodide(); } catch (_) {}
-            try { window.AlloModules?.PyodideRuntime?.warmup?.(); } catch (_) {}
+            if (!(typeof window !== 'undefined' && (window._isDesktopBundledApp === true || window.__alloStudentAiDisabled === true || window.__alloStudentView === true))) {
+                try { window.__alloLazyPyodide && window.__alloLazyPyodide(); } catch (_) {}
+                try { window.AlloModules?.PyodideRuntime?.warmup?.(); } catch (_) {}
+            }
             const verifiedChunks = factChunks.filter(c => c.verified);
             if (verifiedChunks.length === 0) { setGenerating(false); if (addToast) addToast(t('toasts.verified_fact_chunks'), 'error'); return; }
             const run = beginAiRun('sections');

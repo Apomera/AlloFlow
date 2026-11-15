@@ -1592,49 +1592,138 @@ var require_tmp_annotation_suite_entry = __commonJS({
     function importAnnotations(existing, payload, opts) {
       const o = opts || {};
       const out = { list: Array.isArray(existing) ? existing.slice() : [], added: 0, skipped: 0, error: null };
-      if (!payload) {
+      if (!payload || typeof payload !== "object") {
         out.error = "no-payload";
         return out;
       }
       let incoming = null;
       if (Array.isArray(payload)) incoming = payload;
       else if (payload && Array.isArray(payload.annotations)) incoming = payload.annotations;
-      if (!incoming) {
+      if (!incoming || incoming.length > 1e3) {
         out.error = "bad-shape";
         return out;
       }
-      const existingIds = {};
+      const point = function(v) {
+        return !!v && typeof v === "object" && !Array.isArray(v) && Number.isFinite(v.x) && Number.isFinite(v.y) && Math.abs(v.x) <= 1e5 && Math.abs(v.y) <= 1e5;
+      };
+      const rect = function(v) {
+        return point(v) && Number.isFinite(v.w) && Number.isFinite(v.h) && v.w >= 0 && v.h >= 0 && v.w <= 1e5 && v.h <= 1e5;
+      };
+      const existingIds = /* @__PURE__ */ new Set();
       out.list.forEach(function(a) {
-        if (a && a.id != null) existingIds[String(a.id)] = true;
+        if (a && a.id != null) existingIds.add(String(a.id));
       });
+      const docTitle = !Array.isArray(payload) && typeof payload.docTitle === "string" ? payload.docTitle.slice(0, 200) : "";
       incoming.forEach(function(raw) {
-        if (!raw || typeof raw !== "object") {
+        if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
           out.skipped++;
           return;
         }
-        if (!raw.kind && !STICKER_TYPES.includes(raw.type)) {
+        const kind = typeof raw.kind === "string" && raw.kind ? raw.kind : STICKER_TYPES.includes(raw.type) ? "sticker" : "";
+        if (!ANNOTATION_KINDS.includes(kind)) {
           out.skipped++;
           return;
         }
-        let id = raw.id;
-        if (id == null || existingIds[String(id)]) {
+        if (["content", "text", "authorName", "color", "createdAt", "importedFrom"].some(function(name) {
+          return raw[name] != null && typeof raw[name] !== "string";
+        })) {
+          out.skipped++;
+          return;
+        }
+        if (kind === "highlight") {
+          if (!Array.isArray(raw.rects) || !raw.rects.length && !validCardAnchor(raw.anchor) || raw.rects.length > 1e3 || !raw.rects.every(rect)) {
+            out.skipped++;
+            return;
+          }
+        } else {
+          if (!point(raw)) {
+            out.skipped++;
+            return;
+          }
+          if (kind === "sticker" && !STICKER_TYPES.includes(raw.type)) {
+            out.skipped++;
+            return;
+          }
+          if (kind === "voice" && (raw.pending || typeof raw.audioBase64 !== "string" || raw.audioBase64.length > VOICE_MAX_BYTES || !/^[A-Za-z0-9+/=]+$/.test(raw.audioBase64) || !/^audio\/[a-z0-9.+-]+(?:;codecs=[a-z0-9., -]+)?$/i.test(raw.mimeType || "audio/webm"))) {
+            out.skipped++;
+            return;
+          }
+          if (kind === "draw") {
+            const shape = raw.shape || "free";
+            const validDraw = rect(raw) && DRAW_SHAPES.includes(shape) && shape !== "erase" && Number.isFinite(raw.width) && raw.width > 0 && raw.width <= 100 && (shape === "free" ? Array.isArray(raw.points) && raw.points.length >= 2 && raw.points.length <= 2e4 && raw.points.every(point) : point(raw.start) && point(raw.end));
+            if (!validDraw) {
+              out.skipped++;
+              return;
+            }
+          }
+        }
+        let id = typeof raw.id === "string" && raw.id && !/^(__proto__|constructor|prototype)$/.test(raw.id) ? raw.id.slice(0, 120) : typeof raw.id === "number" && Number.isFinite(raw.id) ? raw.id : null;
+        if (id == null || existingIds.has(String(id))) {
           id = Date.now() + Math.floor(Math.random() * 1e3);
         }
-        existingIds[String(id)] = true;
-        let author = raw.author || "student";
-        let authorName = raw.authorName || "";
+        existingIds.add(String(id));
+        let author = raw.author === "teacher" || raw.author === "student" ? raw.author : "student";
+        let authorName = typeof raw.authorName === "string" ? raw.authorName.slice(0, 120) : "";
         if (o.forceAuthor) {
-          author = o.forceAuthor;
-          if (o.forceAuthorName != null) authorName = o.forceAuthorName;
+          author = o.forceAuthor === "teacher" || o.forceAuthor === "student" ? o.forceAuthor : "student";
+          if (o.forceAuthorName != null) authorName = String(o.forceAuthorName).slice(0, 120);
         }
-        const merged = Object.assign({}, raw, {
+        const merged = {
           id,
+          kind,
           author,
           authorName,
+          createdAt: typeof raw.createdAt === "string" ? raw.createdAt.slice(0, 64) : (/* @__PURE__ */ new Date()).toISOString(),
           // Mark as imported so future diff tools can tell where it came from.
-          importedFrom: payload && payload.docTitle || raw.importedFrom || "unknown",
+          importedFrom: docTitle || (typeof raw.importedFrom === "string" ? raw.importedFrom.slice(0, 200) : "") || "unknown",
           importedAt: (/* @__PURE__ */ new Date()).toISOString()
-        });
+        };
+        if (typeof raw.content === "string") merged.content = raw.content.slice(0, 2e4);
+        if (typeof raw.text === "string") merged.text = raw.text.slice(0, 2e4);
+        if (typeof raw.color === "string") merged.color = raw.color.slice(0, 64);
+        if (kind !== "highlight") {
+          merged.x = raw.x;
+          merged.y = raw.y;
+        } else if (point(raw)) {
+          merged.x = raw.x;
+          merged.y = raw.y;
+        }
+        if (kind === "sticker") merged.type = raw.type;
+        if (kind === "highlight") {
+          merged.rects = raw.rects.map(function(r) {
+            return { x: r.x, y: r.y, w: r.w, h: r.h };
+          });
+          if (validCardAnchor(raw.anchor)) {
+            merged.anchor = {
+              version: 1,
+              start: { field: raw.anchor.start.field, offset: raw.anchor.start.offset },
+              end: { field: raw.anchor.end.field, offset: raw.anchor.end.offset },
+              quote: raw.anchor.quote
+            };
+          }
+        }
+        if (kind === "voice") {
+          merged.audioBase64 = raw.audioBase64;
+          merged.mimeType = String(raw.mimeType || "audio/webm").slice(0, 80);
+          if (Number.isFinite(raw.durationSec) && raw.durationSec >= 0 && raw.durationSec <= VOICE_MAX_SECONDS * 2) {
+            merged.durationSec = raw.durationSec;
+          }
+        }
+        if (kind === "draw") {
+          const shape = raw.shape || "free";
+          merged.w = raw.w;
+          merged.h = raw.h;
+          merged.shape = shape;
+          merged.width = raw.width;
+          if (shape === "free") {
+            merged.points = raw.points.map(function(p) {
+              return { x: p.x, y: p.y };
+            });
+          } else {
+            merged.start = { x: raw.start.x, y: raw.start.y };
+            merged.end = { x: raw.end.x, y: raw.end.y };
+          }
+        }
         out.list.push(merged);
         out.added++;
       });

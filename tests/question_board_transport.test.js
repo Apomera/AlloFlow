@@ -48,6 +48,7 @@ function makeGsSandbox() {
         createFile: (name, content) => { driveFiles.set(name, String(content)); return fileObj(name); },
     };
     const services = {
+        Session: { getActiveUser: () => ({ getEmail: () => 'owner@example.test' }), getEffectiveUser: () => ({ getEmail: () => 'owner@example.test' }) },
         CacheService: { getScriptCache: () => cache },
         PropertiesService: { getScriptProperties: () => ({
             getProperty: k => (props.has(k) ? props.get(k) : null),
@@ -68,9 +69,11 @@ function makeGsSandbox() {
             base64EncodeWebSafe: bytes => Buffer.from(bytes).toString('base64url'),
         },
     };
-    const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle };');
+    const factory = new Function(...Object.keys(services), gsSource + '; return { handle: handle, setupMailboxOwner: setupMailboxOwner };');
     const gs = factory(...Object.values(services));
-    return { call: p => JSON.parse(gs.handle(p).getContent()), driveFiles };
+    const call = p => JSON.parse(gs.handle(p).getContent());
+    call.setupOwner = () => { gs.setupMailboxOwner(); return { ok: true, admin: props.get('admin') }; };
+    return { call, driveFiles };
 }
 
 const PACK = 'PK-92345678-1234-1234-1234-123456789012';
@@ -89,7 +92,7 @@ function memStorage() {
 }
 
 function hostBoard(call, overrides) {
-    const admin = call({ a: 'claim' }).admin;
+    const admin = call.setupOwner().admin;
     const activity = Object.assign({
         activityId: AID,
         type: 'question_board',

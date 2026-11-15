@@ -947,7 +947,17 @@ const QuickStartWizard = React.memo(({
   const selectSearchOption = async option => {
     if (!option || !option.url) return;
     if (isGoogleRedirect(option.url)) {
-      window.open(option.url, '_blank');
+      try {
+        const parsed = new URL(option.url);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:' || parsed.username || parsed.password) {
+          throw new Error('Unsafe URL');
+        }
+        const popup = window.open(parsed.href, '_blank', 'noopener,noreferrer');
+        if (popup) popup.opener = null;
+      } catch (_) {
+        if (addToast) addToast(t('toasts.copy_url_paste'), "info");
+        return;
+      }
       setLocalData(prev => ({
         ...prev,
         sourceMode: 'url'

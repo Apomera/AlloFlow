@@ -14,6 +14,7 @@ function freshWorkspace(options = {}) {
     canvasRecoveryError: 'old error', canvasRecoveryDecisionMade: false,
     canvasRecoveryDialogMode: 'choice', canvasRecoverySaveStatus: 'saved',
     lastSaved: 'old timestamp', canvasRecoveryRevision: 3,
+    gradeLevel: 'Middle School (6-8)', sourceLevel: 'auto',
     ...options,
   };
   const storage = new Map([['allo_wizard_completed', 'true'], ['unrelated-preference', 'keep']]);
@@ -42,6 +43,10 @@ function freshWorkspace(options = {}) {
     setCanvasRecoverySaveStatus: set('canvasRecoverySaveStatus'),
     setLastSaved: set('lastSaved'),
     setCanvasRecoveryRevision: set('canvasRecoveryRevision'),
+    gradeLevel: state.gradeLevel,
+    sourceLevel: state.sourceLevel,
+    setGradeLevel: set('gradeLevel'),
+    setSourceLevel: set('sourceLevel'),
     addToast: vi.fn(),
   };
   const run = Function(...Object.keys(deps), handler + '\nreturn startFreshCanvasWorkspace;')(...Object.values(deps));

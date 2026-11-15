@@ -1373,6 +1373,21 @@ window.SelHub = window.SelHub || {
       var band = ctx.gradeBand || 'elementary';
       var onSafetyFlag = ctx.onSafetyFlag || null;
 
+      var _syncSafetyBlock = function(userInput, scope) {
+        if (!userInput || typeof userInput !== 'string') return null;
+        var safety = (window.SelHub && window.SelHub.safeRehearseCheck)
+          ? window.SelHub.safeRehearseCheck(userInput, { toolId: 'decisions_' + (scope || 'general'), onSafetyFlag: onSafetyFlag })
+          : { action: 'continue', severity: 'none' };
+        if (!safety || safety.action !== 'block') return null;
+        var msg = (window.SelHub && window.SelHub.rehearseBreakCharacterText)
+          ? window.SelHub.rehearseBreakCharacterText(safety.severity)
+          : 'Your safety matters. Please reach out to a trusted adult or call/text 988.';
+        if (window.SelHub && window.SelHub.showCrisisModal) {
+          try { window.SelHub.showCrisisModal({ toolName: 'Decision Lab', contentSnippet: userInput }); } catch (_) {}
+        }
+        return msg;
+      };
+
       // ── Tool-scoped state ──
       var d = (ctx.toolData && ctx.toolData.decisions) || {};
       var upd = function(key, val) {
@@ -1847,6 +1862,13 @@ window.SelHub = window.SelHub || {
                 onClick: function() {
                   if (!dtReflection.trim()) { addToast('Write a bit about why you chose this!', 'info'); return; }
                   if (!_dcAiOn) return;
+                  var blockedMsg = _syncSafetyBlock(dtReflection, 'tree');
+                  if (blockedMsg) {
+                    upd('dtAiResp', blockedMsg);
+                    upd('dtAiLoad', false);
+                    upd('_decisionsTier', 3);
+                    return;
+                  }
                   upd('dtAiLoad', true);
                   var prompt = 'You are a decision-making coach for ' + band + ' school students.\n\n' +
                     'SCENARIO: "' + curDt.title + '"\n' + curDt.situation + '\n' +
@@ -2012,6 +2034,14 @@ window.SelHub = window.SelHub || {
               onClick: function() {
                 if (!edVerdict.trim() && !edSideA.trim() && !edSideB.trim()) { addToast('Write your thoughts first!', 'info'); return; }
                 if (!_dcAiOn) return;
+                var _edIn = (edSideA + '\n' + edSideB + '\n' + edVerdict);
+                var blockedMsg = _syncSafetyBlock(_edIn, 'dilemma');
+                if (blockedMsg) {
+                  upd('edAiResp', blockedMsg);
+                  upd('edAiLoad', false);
+                  upd('_decisionsTier', 3);
+                  return;
+                }
                 upd('edAiLoad', true);
                 upd('edAiResp', null);
                 var prompt = 'You are an ethics discussion facilitator for ' + band + ' school students.\n\n' +
@@ -2029,7 +2059,6 @@ window.SelHub = window.SelHub || {
                   'Keep it under 200 words. Use ' + (band === 'elementary' ? 'warm, simple language.' : band === 'middle' ? 'clear, engaging language.' : 'intellectually stimulating language.');
                 // Triage the student's free-text arguments/verdict before the AI (mirrors the Decision-Tree path).
                 if (window.SelHub && window.SelHub.assessSafety) {
-                  var _edIn = (edSideA + '\n' + edSideB + '\n' + edVerdict);
                   window.SelHub.assessSafety(_edIn, band, 'decisions', callGemini)
                     .catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
                     .then(function(_safety) {
@@ -2399,6 +2428,13 @@ window.SelHub = window.SelHub || {
               onClick: function() {
                 if (!rwReflection.trim()) { addToast('Write your reflection first!', 'info'); return; }
                 if (!_dcAiOn) return;
+                var blockedMsg = _syncSafetyBlock(rwReflection, 'realworld');
+                if (blockedMsg) {
+                  upd('rwAiResp', blockedMsg);
+                  upd('rwAiLoad', false);
+                  upd('_decisionsTier', 3);
+                  return;
+                }
                 upd('rwAiLoad', true);
                 upd('rwAiResp', null);
                 var prompt = 'You are a thoughtful history and ethics teacher for ' + band + ' school students.\n\n' +
@@ -2565,6 +2601,13 @@ window.SelHub = window.SelHub || {
               onClick: function() {
                 if (!advPrompt.trim()) { addToast('Describe your decision first!', 'info'); return; }
                 if (!_dcAiOn) return;
+                var blockedMsg = _syncSafetyBlock(advPrompt, 'advisor');
+                if (blockedMsg) {
+                  upd('advResponse', blockedMsg);
+                  upd('advLoading', false);
+                  upd('_decisionsTier', 3);
+                  return;
+                }
                 upd('advLoading', true);
                 upd('advResponse', null);
                 var systemPrompt = 'You are a wise, supportive decision-making advisor for ' + band + ' school students. ' +

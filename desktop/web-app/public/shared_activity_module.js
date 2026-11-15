@@ -20,7 +20,8 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
   const Views = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.QuestionBoardView;
   const packId = String(mailbox?.id || '');
   const activityId = String(activity?.activityId || '');
-  const scope = `${mailbox?.url || ""}:${packId}:${activityId}:${mode}`;
+  const learnerScope = typeof window !== 'undefined' && typeof window.__alloActiveLearnerKey === 'string' ? window.__alloActiveLearnerKey.trim().slice(0, 64) : '';
+  const scope = `${mailbox?.url || ""}:${packId}:${activityId}:${mode}:${learnerScope}`;
   const [board, setBoard] = React.useState(null);
   const [draft, setDraft] = React.useState('');
   const [error, setError] = React.useState('');
@@ -38,6 +39,7 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
       admin: isTeacher ? String(admin || '') : '',
       packSecret: String(mailbox?.secret || ''),
       isTeacher,
+      storageKeyScope: learnerScope,
       storage: (() => {
         try {
           return window.localStorage;
@@ -46,7 +48,7 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
         }
       })()
     });
-  }, [Transport, packId, activityId, admin, isTeacher, mailbox?.url, mailbox?.secret]);
+  }, [Transport, packId, activityId, admin, isTeacher, learnerScope, mailbox?.url, mailbox?.secret]);
   const transportRef = React.useRef(transport);
   transportRef.current = transport;
   const mutationRef = React.useRef(null);
@@ -56,13 +58,18 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
   // the server never uses it for authorization, uid does. There is nothing to
   // inherit it from: codenames live on the live-session roster and hosted
   // assignments are pseudonymous, so the board asks once and remembers.
-  const [displayName, setDisplayName] = React.useState(() => {
+  const readScopedDisplayName = React.useCallback(scopeKey => {
     try {
-      return String(localStorage.getItem('allo_display_name') || '').trim().slice(0, 40);
+      const raw = scopeKey ? localStorage.getItem(`allo_display_name:${scopeKey}`) : localStorage.getItem('allo_display_name');
+      return String(raw || '').trim().slice(0, 40);
     } catch (_) {
       return '';
     }
-  });
+  }, []);
+  const [displayName, setDisplayName] = React.useState(() => readScopedDisplayName(learnerScope));
+  React.useEffect(() => {
+    setDisplayName(readScopedDisplayName(learnerScope));
+  }, [learnerScope, readScopedDisplayName]);
   React.useEffect(() => {
     if (!transport || isTeacher) return;
     transport.setDisplayName(displayName);
@@ -71,9 +78,15 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
     const clean = String(next || '').slice(0, 40);
     setDisplayName(clean);
     try {
-      localStorage.setItem('allo_display_name', clean);
+      if (learnerScope) localStorage.setItem(`allo_display_name:${learnerScope}`, clean);else localStorage.setItem('allo_display_name', clean);
     } catch (_) {}
-  }, []);
+  }, [learnerScope]);
+  const handleQuestionBoardStartFresh = React.useCallback(() => {
+    if (!transport || isTeacher) return;
+    rememberName('');
+    setDraft('');
+    mutate(() => typeof transport.startFresh === 'function' ? transport.startFresh() : transport.load());
+  }, [transport, isTeacher, rememberName]);
   React.useEffect(() => {
     setBoard(null);
     setDraft('');
@@ -216,15 +229,25 @@ const AlloQuestionBoardPanel = React.memo(function AlloQuestionBoardPanel({
   }, "Question board controls"), error && /*#__PURE__*/React.createElement("p", {
     role: "alert",
     className: "rounded border border-rose-300 bg-rose-50 p-2 text-xs text-rose-900"
-  }, error), !isTeacher && /*#__PURE__*/React.createElement("label", {
-    className: "block text-xs font-bold text-slate-700"
-  }, "Your name", /*#__PURE__*/React.createElement("input", {
+  }, error), !isTeacher && /*#__PURE__*/React.createElement("div", {
+    className: "space-y-1"
+  }, /*#__PURE__*/React.createElement("div", {
+    className: "flex items-center justify-between gap-2"
+  }, /*#__PURE__*/React.createElement("label", {
+    htmlFor: `qb-name-${activityId}`,
+    className: "text-xs font-bold text-slate-700"
+  }, "Your name"), (displayName || actor?.uid) && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: handleQuestionBoardStartFresh,
+    className: "text-[11px] font-bold text-sky-700 underline hover:text-sky-900"
+  }, "Not you? Start fresh")), /*#__PURE__*/React.createElement("input", {
+    id: `qb-name-${activityId}`,
     type: "text",
     value: displayName,
     onChange: event => rememberName(event.target.value),
     maxLength: 40,
     placeholder: "So your teacher knows who asked",
-    className: "mt-1 w-full rounded border border-slate-300 p-2 text-sm font-normal"
+    className: "w-full rounded border border-slate-300 p-2 text-sm font-normal"
   })), React.createElement(Surface, {
     contract: Contract,
     board,
@@ -360,9 +383,9 @@ function _alloFilterAssignmentCenterRows(rows, filterValue) {
 function _alloBuildAssignmentCenterCsv(rows) {
   const cell = value => {
     const raw = String(value === undefined || value === null ? '' : value);
-    // Force teacher-authored formula-like titles to remain text in spreadsheet apps.
-    const text = /^[=+\-@]/.test(raw) ? "'" + raw : raw;
-    return /[",\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
+    // Force formula-like or leading control-character cells to remain text in spreadsheet apps.
+    const text = /^(?:[\t\r\n ]*[=+\-@]|[\t\r])/.test(raw) ? "'" + raw : raw;
+    return /[",\r\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
   };
   const header = ['Title', 'Lifecycle', 'Created', 'Expires', 'Delivery', 'Resources', 'Activity', 'Responses', 'Awaiting review', 'Approved', 'Hidden', 'Revealed', 'Last activity'];
   const body = (Array.isArray(rows) ? rows : []).map(row => {
@@ -953,8 +976,20 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
   const [busy, setBusy] = React.useState(false);
   const [error, setError] = React.useState('');
   const [lastUpdatedAt, setLastUpdatedAt] = React.useState(0);
+  const [credVersion, setCredVersion] = React.useState(0);
   activeActivityScopeRef.current = activityScope;
-  const storageKey = `allo_shared_activity_v1:${packId}:${activityId}`;
+  const learnerScope = typeof window !== 'undefined' && typeof window.__alloActiveLearnerKey === 'string' ? window.__alloActiveLearnerKey.trim().slice(0, 64) : '';
+  const storageKey = learnerScope ? `allo_shared_activity_v1:${learnerScope}:${packId}:${activityId}` : `allo_shared_activity_v1:${packId}:${activityId}`;
+  const identityModeHint = String(summary?.identityMode || effectiveActivity?.identityMode || (isRating || !isPoll && !isSignup && !isSurvey && !isQuestionBoard ? 'anonymous' : ''));
+  const useSessionOnlyCredStore = identityModeHint === 'anonymous';
+  const getCredStorage = React.useCallback(() => {
+    try {
+      if (useSessionOnlyCredStore && typeof sessionStorage !== 'undefined') return sessionStorage;
+      return localStorage;
+    } catch (_) {
+      return null;
+    }
+  }, [useSessionOnlyCredStore]);
   React.useEffect(() => {
     credentialRef.current = null;
     credentialRequestRef.current = null;
@@ -980,6 +1015,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     setError('');
     setBusy(false);
     setLastUpdatedAt(0);
+    setCredVersion(v => v + 1);
     return () => {
       if (scopeTokenRef.current === scopeToken) scopeTokenRef.current = null;
     };
@@ -991,20 +1027,24 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     if (scopeTokenRef.current !== scopeToken) throw new Error('Activity changed');
     credentialRef.current = credential;
     try {
-      const next = alloCredentialStoreWith(localStorage.getItem(storageKey), slotKey, credential, label);
-      localStorage.setItem(storageKey, JSON.stringify(next));
+      const storeApi = getCredStorage();
+      const raw = storeApi ? storeApi.getItem(storageKey) : null;
+      const next = alloCredentialStoreWith(raw, slotKey, credential, label);
+      if (storeApi) storeApi.setItem(storageKey, JSON.stringify(next));
     } catch (_) {}
+    setCredVersion(v => v + 1);
     return credential;
-  }, [storageKey, scopeToken]);
+  }, [getCredStorage, storageKey, scopeToken]);
 
   // "Someone else is answering": mint a FRESH identity rather than reusing
   // whatever is cached. The server issues a new uid per join, so this is the
   // whole fix.
   const startNewRespondent = React.useCallback(async (identityMode, label) => {
     credentialRef.current = null;
+    const storeApi = getCredStorage();
     let store = null;
     try {
-      store = alloNormalizeCredentialStore(localStorage.getItem(storageKey));
+      store = alloNormalizeCredentialStore(storeApi ? storeApi.getItem(storageKey) : null);
     } catch (_) {}
     const slotKey = alloCredentialSlotKey(identityMode, label, store);
     const existing = store && store.slots ? store.slots[slotKey] : null;
@@ -1016,9 +1056,10 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         pt: existing.pt
       };
       try {
-        const reactivated = alloCredentialStoreWith(localStorage.getItem(storageKey), slotKey, existing, label || existing.label);
-        localStorage.setItem(storageKey, JSON.stringify(reactivated));
+        const reactivated = alloCredentialStoreWith(storeApi ? storeApi.getItem(storageKey) : null, slotKey, existing, label || existing.label);
+        if (storeApi) storeApi.setItem(storageKey, JSON.stringify(reactivated));
       } catch (_) {}
+      setCredVersion(v => v + 1);
       return credentialRef.current;
     }
     const joined = await _alloMailboxCallWithRetry(mailboxUrl, {
@@ -1031,12 +1072,16 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       uid: joined.uid,
       pt: joined.pt
     }, slotKey, label);
-  }, [activityId, mailboxUrl, packId, packSecret, rememberCredential, storageKey]);
+  }, [activityId, getCredStorage, mailboxUrl, packId, packSecret, rememberCredential, storageKey]);
   const clearCredential = React.useCallback(() => {
     credentialRef.current = null;
     try {
       localStorage.removeItem(storageKey);
     } catch (_) {}
+    try {
+      if (typeof sessionStorage !== 'undefined') sessionStorage.removeItem(storageKey);
+    } catch (_) {}
+    setCredVersion(v => v + 1);
   }, [storageKey]);
   const ensureCredential = React.useCallback(async () => {
     if (scopeTokenRef.current !== scopeToken) throw new Error('Activity changed');
@@ -1044,7 +1089,8 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     const current = credentialRef.current;
     if (current?.uid && current?.pt) return current;
     try {
-      const saved = alloActiveCredential(localStorage.getItem(storageKey));
+      const storeApi = getCredStorage();
+      const saved = storeApi ? alloActiveCredential(storeApi.getItem(storageKey)) : null;
       if (saved) {
         credentialRef.current = saved;
         return saved;
@@ -1067,7 +1113,7 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     });
     credentialRequestRef.current = request;
     return request.promise;
-  }, [activityId, isTeacher, mailboxUrl, packId, packSecret, rememberCredential, storageKey, scopeToken]);
+  }, [activityId, getCredStorage, isTeacher, mailboxUrl, packId, packSecret, rememberCredential, storageKey, scopeToken]);
   const callStudentUpdate = React.useCallback(async payload => {
     let credential = await ensureCredential();
     const send = current => {
@@ -1200,6 +1246,35 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
       } catch (_) {}
     };
   }, [refresh]);
+  const handleSwitchRespondent = React.useCallback(async (targetMode, targetLabel = '') => {
+    if (isTeacher || scopeTokenRef.current !== scopeToken) return;
+    setBusy(true);
+    setError('');
+    setSaveNotice('');
+    setSurveyInvalidId('');
+    draftDirtyRef.current = false;
+    setPollPicks({});
+    setPollName('');
+    setSignupClaims([]);
+    setSignupName('');
+    setSurveyAnswers({});
+    setSurveyName('');
+    setTerm('');
+    setRatingValue(null);
+    try {
+      await startNewRespondent(targetMode || identityModeHint || 'anonymous', targetLabel);
+      await refresh({
+        quiet: false,
+        retryCredential: false
+      });
+    } catch (_) {
+      if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) {
+        setError('Could not start a fresh session on this device. Check the connection and try again.');
+      }
+    } finally {
+      if (activeActivityScopeRef.current === activityScope && scopeTokenRef.current === scopeToken) setBusy(false);
+    }
+  }, [activityScope, identityModeHint, isTeacher, refresh, scopeToken, startNewRespondent]);
   const submitTerm = async event => {
     event?.preventDefault?.();
     if (busy) return;
@@ -1303,6 +1378,9 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
         code: result?.e
       });
       draftDirtyRef.current = false;
+      if (summary?.identityMode === 'real_name' && payload?.nm && credentialRef.current?.uid) {
+        rememberCredential(credentialRef.current, alloCredentialSlotKey('real_name', payload.nm, null), payload.nm);
+      }
       applySharedActivitySummary(result, sequence, activityScope);
       setSaveNotice(message);
       addToast(message, 'success');
@@ -1342,6 +1420,16 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     length: ratingActivity.maxValue - ratingActivity.minValue + 1
   }, (_, index) => ratingActivity.minValue + index) : [];
   const threshold = summary?.minParticipants || effectiveActivity?.minParticipants || 3;
+  const credentialRoster = React.useMemo(() => {
+    if (isTeacher || isQuestionBoard) return [];
+    try {
+      const storeApi = getCredStorage();
+      return storeApi ? alloCredentialRoster(storeApi.getItem(storageKey)) : [];
+    } catch (_) {
+      return [];
+    }
+  }, [credVersion, getCredStorage, isQuestionBoard, isTeacher, storageKey]);
+  const activeCredentialSlot = credentialRoster.find(item => item.active) || null;
 
   // Deliberately placed AFTER every hook in this component. An early return
   // higher up would change hook order when the activity type changes and
@@ -1386,7 +1474,22 @@ const SharedAssignmentActivityPanel = React.memo(function SharedAssignmentActivi
     className: "mt-3 rounded-lg bg-emerald-50 p-3 text-sm font-bold text-emerald-800"
   }, saveNotice), (isPoll || isSignup || isSurvey) && summary && /*#__PURE__*/React.createElement("p", {
     className: "mt-3 text-xs text-slate-600"
-  }, summary.identityMode === 'real_name' ? isTeacher ? 'Names are shown with individual responses.' : 'The organizer can see your name and responses.' : summary.identityMode === 'codename' ? isTeacher ? 'Individual responses are shown under assigned codenames.' : 'The organizer can see responses under your assigned codename.' : 'The organizer sees anonymous combined results.', summary.closesAt ? ' Closes ' + new Date(summary.closesAt).toLocaleString() + '.' : ''), !isTeacher && isRating && /*#__PURE__*/React.createElement("form", {
+  }, summary.identityMode === 'real_name' ? isTeacher ? 'Names are shown with individual responses.' : 'The organizer can see your name and responses.' : summary.identityMode === 'codename' ? isTeacher ? 'Individual responses are shown under assigned codenames.' : 'The organizer can see responses under your assigned codename.' : 'The organizer sees anonymous combined results.', summary.closesAt ? ' Closes ' + new Date(summary.closesAt).toLocaleString() + '.' : ''), !isTeacher && summary && (credentialRoster.length > 0 || summary?.own) && /*#__PURE__*/React.createElement("div", {
+    className: "mt-2 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-slate-200 bg-white/80 px-2.5 py-1.5 text-[11px] text-slate-700"
+  }, /*#__PURE__*/React.createElement("span", null, activeCredentialSlot?.label ? `Responding as ${activeCredentialSlot.label}` : summary?.identityMode === 'anonymous' || isRating || !isPoll && !isSignup && !isSurvey ? 'Active session on this device (clears when tab closes)' : 'Active session saved on this device'), /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center gap-1.5"
+  }, credentialRoster.filter(item => item.label && !item.active).slice(0, 4).map(item => /*#__PURE__*/React.createElement("button", {
+    key: item.key,
+    type: "button",
+    disabled: busy,
+    onClick: () => handleSwitchRespondent(summary?.identityMode || 'real_name', item.label),
+    className: "rounded border border-sky-300 bg-sky-50 px-2 py-0.5 font-bold text-sky-900 hover:bg-sky-100 disabled:opacity-50"
+  }, item.label)), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    disabled: busy,
+    onClick: () => handleSwitchRespondent(summary?.identityMode || identityModeHint || 'anonymous', ''),
+    className: "rounded border border-slate-300 bg-slate-50 px-2 py-0.5 font-bold text-slate-800 hover:bg-slate-100 disabled:opacity-50"
+  }, "Not you? Start fresh"))), !isTeacher && isRating && /*#__PURE__*/React.createElement("form", {
     onSubmit: submitRating,
     className: "mt-4 rounded-xl border border-sky-100 bg-white p-3"
   }, /*#__PURE__*/React.createElement("fieldset", null, /*#__PURE__*/React.createElement("legend", {

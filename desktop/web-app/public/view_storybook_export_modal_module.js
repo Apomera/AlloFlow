@@ -92,11 +92,17 @@ function StorybookExportModal({
   const [progress, setProgress] = React.useState(null);
   const busy = !!isProcessing || localProcessing;
   const dialogRef = React.useRef(null);
+  const cancelBtnRef = React.useRef(null);
   const requestRef = React.useRef(null);
   React.useEffect(() => () => {
     requestRef.current?.abort();
     requestRef.current = null;
   }, []);
+  React.useEffect(() => {
+    if (busy && cancelBtnRef.current && typeof cancelBtnRef.current.focus === "function") {
+      cancelBtnRef.current.focus();
+    }
+  }, [busy]);
   _useStorybookDialogFocus(dialogRef, handleSetShowStorybookExportModalToFalse, busy);
   const runExport = async (includeImages) => {
     if (busy || requestRef.current) return;
@@ -137,7 +143,7 @@ function StorybookExportModal({
   return /* @__PURE__ */ React.createElement(
     "div",
     {
-      className: "fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200",
+      className: "fixed inset-0 bg-slate-900/80 backdrop-blur-sm z-[300] flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none",
       onClick: (event) => {
         if (!busy && event.target === event.currentTarget) handleSetShowStorybookExportModalToFalse();
       }
@@ -147,7 +153,7 @@ function StorybookExportModal({
       {
         ref: dialogRef,
         tabIndex: -1,
-        className: "bg-white rounded-2xl shadow-2xl max-h-[calc(100vh-2rem)] max-w-md w-full overflow-y-auto p-6 animate-in zoom-in-95 duration-300",
+        className: "bg-white rounded-2xl shadow-2xl max-h-[calc(100vh-2rem)] max-w-md w-full overflow-y-auto p-6 animate-in zoom-in-95 duration-300 motion-reduce:animate-none",
         role: "dialog",
         "aria-modal": "true",
         "aria-labelledby": "storybook-export-title",
@@ -177,7 +183,7 @@ function StorybookExportModal({
           onClick: () => runExport(true),
           disabled: busy,
           "aria-busy": busy,
-          className: "w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all flex items-center justify-center gap-3 shadow-lg hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed",
+          className: "min-h-11 w-full px-6 py-4 bg-gradient-to-r from-indigo-600 to-purple-600 text-white font-bold rounded-xl hover:from-indigo-700 hover:to-purple-700 transition-all motion-reduce:transition-none flex items-center justify-center gap-3 shadow-lg hover:scale-[1.02] motion-reduce:transform-none disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
           "data-help-key": "export_storybook_images"
         },
         /* @__PURE__ */ React.createElement(ImageIcon, { size: 20, "aria-hidden": "true" }),
@@ -189,7 +195,7 @@ function StorybookExportModal({
           onClick: () => runExport(false),
           disabled: busy,
           "aria-busy": busy,
-          className: "w-full px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed",
+          className: "min-h-11 w-full px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors motion-reduce:transition-none flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2",
           "data-help-key": "export_storybook_text"
         },
         /* @__PURE__ */ React.createElement(Type, { size: 20, "aria-hidden": "true" }),
@@ -197,6 +203,7 @@ function StorybookExportModal({
       ), /* @__PURE__ */ React.createElement(
         "button",
         {
+          ref: cancelBtnRef,
           type: "button",
           "data-alloflow-close-on-escape": "true",
           onClick: () => {
@@ -206,7 +213,7 @@ function StorybookExportModal({
             } else if (!busy) handleSetShowStorybookExportModalToFalse();
           },
           disabled: busy && !localProcessing,
-          className: "w-full px-4 py-2 text-slate-600 hover:text-slate-700 text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          className: "min-h-11 w-full px-4 py-2 text-slate-600 hover:text-slate-700 text-sm transition-colors motion-reduce:transition-none disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-600 focus-visible:ring-offset-2 rounded-lg"
         },
         localProcessing ? "Stop export" : t("common.cancel")
       )),

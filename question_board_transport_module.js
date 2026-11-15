@@ -137,7 +137,14 @@
         const packSecret = String(opts.packSecret || '');
         const isTeacher = !!opts.isTeacher;
         const storage = opts.storage || null;
-        const storageKey = 'allo_question_board_v1:' + packId + ':' + activityId;
+        const learnerScope = String(
+            opts.storageKeyScope ||
+            (typeof globalThis !== 'undefined' && typeof globalThis.__alloActiveLearnerKey === 'string' ? globalThis.__alloActiveLearnerKey : '') ||
+            ''
+        ).trim().slice(0, 64);
+        const storageKey = learnerScope
+            ? ('allo_question_board_v1:' + learnerScope + ':' + packId + ':' + activityId)
+            : ('allo_question_board_v1:' + packId + ':' + activityId);
 
         let credential = null;
         let displayName = String(opts.displayName || '').slice(0, 40);
@@ -205,6 +212,23 @@
             get uid() { return isTeacher ? '' : ((credential && credential.uid) || ''); },
 
             setDisplayName(next) { displayName = String(next || '').slice(0, 40); },
+
+            /** Clears the cached participant credential on shared devices and joins fresh. */
+            async startFresh() {
+                if (isTeacher) return { ok: false, reason: 'host-cannot-post', code: '', transport: false };
+                forget();
+                displayName = '';
+                try {
+                    const joined = await call(url, {
+                        a: 'joinactivity', id: packId, k: packSecret, aid: activityId
+                    });
+                    if (!joined || joined.ok === false) return refusal((joined && joined.e) || 'denied', false);
+                    remember({ uid: joined.uid, pt: joined.pt });
+                    return this.load();
+                } catch (e) {
+                    return refusal((e && e.code) || 'unreachable', true);
+                }
+            },
 
             /** The actor object the contract and both views expect. */
             actor() {

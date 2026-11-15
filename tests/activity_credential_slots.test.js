@@ -149,7 +149,7 @@ describe('two people on one device', () => {
 describe('the extracted panel actually uses it', () => {
   it('ensureCredential reads the active slot, not a bare credential', () => {
     const panel = readFileSync('shared_activity_source.jsx', 'utf8');
-    expect(panel).toContain('const saved = alloActiveCredential(localStorage.getItem(storageKey));');
+    expect(panel).toContain('const saved = storeApi ? alloActiveCredential(storeApi.getItem(storageKey)) : null;');
     expect(panel).not.toContain("const saved = JSON.parse(localStorage.getItem(storageKey) || 'null');");
     expect(panel).toContain('const startNewRespondent = React.useCallback(');
     for (const f of ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt']) {

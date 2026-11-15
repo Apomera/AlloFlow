@@ -14,8 +14,36 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
     return key ? tr(key, entry.name || '') : (entry.name || '');
   };
   const escapeState = sessionData?.escapeRoomState;
-  const quest = escapeState?.conceptQuest;
+  const rawQuest = escapeState?.conceptQuest;
   const engine = window.AlloModules?.ConceptQuestEngine;
+  const [hostQuest, setHostQuest] = React.useState(null);
+  const canUseHostDoc = (() => {
+    if (typeof setDoc !== 'function' || !db || !activeSessionCode || !appId) return false;
+    try {
+      const ref = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode);
+      return !!ref && !ref.__alloMbRef && !ref.__alloLanRef;
+    } catch (_) { return false; }
+  })();
+  React.useEffect(() => {
+    if (!canUseHostDoc || !rawQuest?.sessionId) { setHostQuest(null); return undefined; }
+    const hostRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode, 'boardHost', 'concept-quest');
+    const applySnap = snap => {
+      const data = typeof snap?.data === 'function' ? snap.data() : snap;
+      if (data?.quest?.sessionId === rawQuest.sessionId) setHostQuest(data.quest);
+    };
+    if (typeof onSnapshot === 'function') {
+      return onSnapshot(hostRef, applySnap, () => {});
+    }
+    if (typeof getDoc === 'function') {
+      let alive = true;
+      Promise.resolve(getDoc(hostRef)).then(snap => { if (alive) applySnap(snap); }).catch(() => {});
+      return () => { alive = false; };
+    }
+    return undefined;
+  }, [canUseHostDoc, appId, activeSessionCode, rawQuest?.sessionId]);
+  const quest = (canUseHostDoc && hostQuest && rawQuest && hostQuest.sessionId === rawQuest.sessionId && (hostQuest.gmRevision || 0) >= (rawQuest.gmRevision || 0))
+    ? hostQuest
+    : rawQuest;
   const progress = escapeState?.teamProgress?.All || {};
   const votes = engine?.currentVotes?.(quest, progress.questVotes, progress.questVoteTurns) || {};
   const turnKey = engine?.getTurnKey?.(quest) || quest?.turnKey || String(quest?.turn || 0);
@@ -59,9 +87,21 @@ const ConceptQuestTeacherControls = React.memo(function ConceptQuestTeacherContr
       return false;
     } finally { syncRef.current = false; setSyncing(false); }
   };
-  const syncQuest = (nextQuest, clearField) => {
+  const syncQuest = async (nextQuest, clearField) => {
     const nextKey = engine.getTurnKey(nextQuest);
-    const updates = { 'escapeRoomState.conceptQuest': { ...nextQuest, turnKey: nextKey, gmRevision: (quest.gmRevision || 0) + 1 }, 'escapeRoomState.teamProgress.All.isEscaped': nextQuest.phase === 'complete' };
+    const stampedQuest = { ...nextQuest, turnKey: nextKey, gmRevision: (quest.gmRevision || 0) + 1 };
+    let publishedQuest = stampedQuest;
+    if (canUseHostDoc && typeof engine.publicQuestState === 'function') {
+      try {
+        const hostRef = doc(db, 'artifacts', appId, 'public', 'data', 'sessions', activeSessionCode, 'boardHost', 'concept-quest');
+        await setDoc(hostRef, { quest: stampedQuest, sessionId: stampedQuest.sessionId, updatedAt: Date.now(), expiresAt: new Date(Date.now() + 2 * 86400000) });
+        setHostQuest(stampedQuest);
+        publishedQuest = engine.publicQuestState(stampedQuest);
+      } catch (hostErr) {
+        warnLog('Concept Quest private host write skipped:', hostErr);
+      }
+    }
+    const updates = { 'escapeRoomState.conceptQuest': publishedQuest, 'escapeRoomState.teamProgress.All.isEscaped': nextQuest.phase === 'complete' };
     if (clearField) updates[`escapeRoomState.teamProgress.All.${clearField}`] = {};
     if (nextKey !== turnKey) {
       updates['escapeRoomState.teamProgress.All.questActions'] = {};

@@ -678,6 +678,7 @@ const FlowTopologyBoard = ({ branches, t, isEditingOutline, handleOutlineChange,
       const svg = buildExportSvg().replace(/^<\?xml[^>]*>\s*/, '');
       const printWindow = window.open('', '_blank', 'width=1200,height=800');
       if (!printWindow) throw new Error('Print window blocked');
+      try { printWindow.opener = null; } catch (_) {}
       const safeTitle = String(topicTitle || 'Flow Chart').replace(/[&<>"]/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[character]));
       printWindow.document.open();
       printWindow.document.write(
@@ -1079,16 +1080,26 @@ const OrganizerReflectionBoard = ({ resource, learnerId, sessionCode, activityId
   // grep found exactly one occurrence in the repo, a getItem. The import button
   // could therefore never appear. kwlNotesKey is shared by both sides now so the
   // seed can never drift between writer and reader.
-  const kwlNotesKey = React.useMemo(() => {
+  const baseKwlNotesKey = React.useMemo(() => {
     if (type !== 'KWL Chart') return '';
     const seed = [resource?.data?.main || '', ...(resource?.data?.branches || []).slice(0, 3).map(branch => branch?.title || '')].join('|');
     let hash = 0; for (let i = 0; i < seed.length; i++) hash = ((hash << 5) - hash + seed.charCodeAt(i)) | 0;
     return 'alloflow_kwl_notes_' + Math.abs(hash);
   }, [type, resource?.data?.main, JSON.stringify((resource?.data?.branches || []).slice(0, 3).map(branch => branch?.title || ''))]);
+  const kwlNotesKey = React.useMemo(() => {
+    if (!baseKwlNotesKey) return '';
+    const scope = String(learnerId || '').trim();
+    if (!scope || scope === 'local') return baseKwlNotesKey;
+    let scopeHash = 0;
+    for (let i = 0; i < scope.length; i++) scopeHash = ((scopeHash << 5) - scopeHash + scope.charCodeAt(i)) | 0;
+    return baseKwlNotesKey + '_u_' + Math.abs(scopeHash);
+  }, [baseKwlNotesKey, learnerId]);
   let earlierKwlNotes = null;
   if (type === 'KWL Chart' && !isTeacherMode && kwlNotesKey) {
     try {
-      const saved = JSON.parse(window.localStorage.getItem(kwlNotesKey) || 'null');
+      const scopedRaw = window.localStorage.getItem(kwlNotesKey);
+      const raw = scopedRaw || (baseKwlNotesKey && baseKwlNotesKey !== kwlNotesKey ? window.localStorage.getItem(baseKwlNotesKey) : null);
+      const saved = JSON.parse(raw || 'null');
       if (Array.isArray(saved) && saved.length === 3 && saved.some(value => typeof value === 'string' && value.trim())) earlierKwlNotes = saved.map(value => String(value || '').slice(0, ORGANIZER_REFLECTION_MAX_CHARS));
     } catch (_) {}
   }

@@ -58,7 +58,7 @@ const server = http.createServer((req, res) => {
   const out = await page.evaluate(async ({ workerB64, pdfUrl, pageNo, wantItems }) => {
     const workerUrl = URL.createObjectURL(new Blob([atob(workerB64)], { type: 'text/javascript' }));
     pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
-    const pdf = await pdfjsLib.getDocument({ url: pdfUrl }).promise;
+    const pdf = await pdfjsLib.getDocument({ url: pdfUrl, isEvalSupported: false }).promise;
     const pg = await pdf.getPage(pageNo);
     const tc = await pg.getTextContent();
     const items = tc.items;

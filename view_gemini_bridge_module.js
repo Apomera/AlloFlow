@@ -372,6 +372,7 @@ try {
 }
 function BridgeSendModal(props) {
   const {
+    activeSessionAppId,
     activeSessionCode,
     addToast,
     appId,
@@ -489,7 +490,7 @@ function BridgeSendModal(props) {
           setBridgeSendOpen(false);
           if (activeSessionCode && isTeacherMode) {
             try {
-              const sRef = doc(db, "artifacts", appId, "public", "data", "sessions", activeSessionCode);
+              const sRef = doc(db, "artifacts", activeSessionAppId || appId, "public", "data", "sessions", activeSessionCode);
               updateDoc(sRef, { bridgePayload: deleteField(), bridgeChat: deleteField() }).catch((e2) => warnLog("Bridge cleanup error:", e2));
             } catch (e2) {
               warnLog("Bridge cleanup error:", e2);
@@ -1147,7 +1148,7 @@ Concept: ${bridgeSendText}`;
               }
               if (activeSessionCode) {
                 try {
-                  const sessionRef = doc(db, "artifacts", appId, "public", "data", "sessions", activeSessionCode);
+                  const sessionRef = doc(db, "artifacts", activeSessionAppId || appId, "public", "data", "sessions", activeSessionCode);
                   const _gate = typeof window !== "undefined" && window.__alloWriteToSession;
                   const _bridgeBroadcast = {
                     bridgePayload: {
@@ -2128,7 +2129,11 @@ function BridgeMessageModal(props) {
           "data-help-key": "bridge_message_print_btn",
           onClick: () => {
             const esc = (s) => String(s == null ? "" : s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]);
-            const safeImg = (u) => typeof u === "string" && /^(data:image\/|blob:|https:)/i.test(u) ? u : "";
+            const safeImg = (u) => {
+              if (typeof u !== "string") return "";
+              const s = u.trim();
+              return /^data:image\/(?:png|jpe?g|webp|gif);base64,/i.test(s) || /^blob:/i.test(s) || !(typeof window !== "undefined" && window._isDesktopBundledApp === true) && /^https:/i.test(s) ? s : "";
+            };
             const _img = safeImg(bridgeMessage.imageUrl);
             const printContent = `
                       <html lang="en"><head><title>${esc(t("bridge.bridge_message") || "Bridge Message")}</title>
@@ -2156,6 +2161,10 @@ function BridgeMessageModal(props) {
                       </body></html>`;
             const printWin = window.open("", "_blank", "width=800,height=600");
             if (printWin) {
+              try {
+                printWin.opener = null;
+              } catch (_) {
+              }
               printWin.document.write(printContent);
               printWin.document.close();
               printWin.print();

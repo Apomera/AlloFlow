@@ -453,6 +453,7 @@ function AdventureSetupEditor(props) {
   const resources = Array.isArray(state.systemResources) ? state.systemResources : [];
   const [removedResource, setRemovedResource] = React.useState(null);
   const [resourceAnnouncement, setResourceAnnouncement] = React.useState('');
+  const [resourceQtyDrafts, setResourceQtyDrafts] = React.useState({});
   const pendingResourceFocus = React.useRef(null);
   const resourceEditorRef = React.useRef(null);
   const resourcesLocked = locked() || typeof props.setAdventureState !== 'function';
@@ -469,6 +470,7 @@ function AdventureSetupEditor(props) {
   React.useEffect(() => {
     setRemovedResource(null);
     setResourceAnnouncement('');
+    setResourceQtyDrafts({});
     pendingResourceFocus.current = null;
   }, [state.currentScene]);
   const resourceNameKey = value => typeof value === 'string' ? value.trim().slice(0, 80).toLocaleLowerCase() : '';
@@ -605,18 +607,19 @@ function AdventureSetupEditor(props) {
     id: id + '-episode-length',
     freeResponse: props.adventureFreeResponseEnabled,
     includeFinale: true
-  })), props.isSocialStoryMode && /*#__PURE__*/React.createElement("label", {
+  })), toggle('isSocialStoryMode', 'setIsSocialStoryMode', label('adventure.social_story_mode_label', 'Social scenario mode'), label('social_mode_hint', 'Show a target social skill in Essential setup.'), 'allowModeSwitch'), props.isSocialStoryMode && /*#__PURE__*/React.createElement("label", {
     className: "as-field",
     htmlFor: id + '-social-focus'
   }, label('social_focus', 'Social skill to practise'), /*#__PURE__*/React.createElement("input", {
     id: id + '-social-focus',
     className: "as-control",
     type: "text",
+    "aria-describedby": describedBy('allowModeSwitch', 'social-focus'),
     value: props.socialStoryFocus || '',
-    disabled: locked() || typeof props.setSocialStoryFocus !== 'function',
-    onChange: e => change('setSocialStoryFocus', e.target.value),
+    disabled: locked('allowModeSwitch') || typeof props.setSocialStoryFocus !== 'function',
+    onChange: e => change('setSocialStoryFocus', e.target.value, 'allowModeSwitch'),
     placeholder: label('adventure.social_story_focus_placeholder', 'e.g., Sharing toys, Dealing with frustration')
-  })), props.adventureInputMode === 'system' && /*#__PURE__*/React.createElement("div", null, toggle('enableFactionResources', 'setEnableFactionResources', label('adventure.system_state_label', 'Track resources'), label('adventure.system_state_desc', 'Track how your decisions affect the system.')), props.enableFactionResources && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
+  }), fixedHint('allowModeSwitch', 'social-focus')), props.adventureInputMode === 'system' && /*#__PURE__*/React.createElement("div", null, toggle('enableFactionResources', 'setEnableFactionResources', label('adventure.system_state_label', 'Track resources'), label('adventure.system_state_desc', 'Track how your decisions affect the system.')), props.enableFactionResources && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("label", {
     className: "as-field",
     htmlFor: id + '-resource-mode'
   }, label('resource_setup', 'Resource setup'), /*#__PURE__*/React.createElement("select", {
@@ -643,34 +646,71 @@ function AdventureSetupEditor(props) {
     key: index
   }, /*#__PURE__*/React.createElement("div", {
     className: "as-grid"
-  }, [['name', label('resource_name', 'Resource name'), 'text'], ['quantity', label('resource_quantity', 'Starting value'), 'number'], ['unit', label('resource_unit', 'Unit'), 'text']].map(([key, title, type]) => /*#__PURE__*/React.createElement("label", {
-    className: "as-field",
-    key: key,
-    htmlFor: id + '-resource-' + index + '-' + key
-  }, title, " ", index + 1, /*#__PURE__*/React.createElement("input", {
-    id: id + '-resource-' + index + '-' + key,
-    className: "as-control",
-    "aria-label": title + ' ' + (index + 1),
-    "aria-invalid": key === 'name' && !!resourceNameIssue(index) ? true : undefined,
-    "aria-describedby": key === 'name' && resourceNameIssue(index) ? id + '-resource-' + index + '-issue' : undefined,
-    maxLength: key === 'name' ? 80 : key === 'unit' ? 30 : undefined,
-    type: type,
-    min: type === 'number' ? 0 : undefined,
-    step: type === 'number' ? 'any' : undefined,
-    max: type === 'number' && /^(%|percent|percentage)$/i.test(String(resource.unit || '').trim()) ? 100 : undefined,
-    value: resource[key] ?? '',
-    disabled: resourcesLocked,
-    onChange: e => {
-      const value = type === 'number' ? Math.min(/^(%|percent|percentage)$/i.test(String(resource.unit || '').trim()) ? 100 : Infinity, Math.max(0, Number(e.target.value) || 0)) : e.target.value;
-      editResources(rows => rows.map((row, i) => i === index ? {
-        ...row,
-        [key]: value
-      } : row));
-    }
-  }), key === 'name' && resourceNameIssue(index) && /*#__PURE__*/React.createElement("span", {
-    id: id + '-resource-' + index + '-issue',
-    className: "as-help"
-  }, resourceNameIssue(index))))), /*#__PURE__*/React.createElement("button", {
+  }, [['name', label('resource_name', 'Resource name'), 'text'], ['quantity', label('resource_quantity', 'Starting value'), 'number'], ['unit', label('resource_unit', 'Unit'), 'text']].map(([key, title, type]) => {
+    const isPercent = /^(%|percent|percentage)$/i.test(String(resource.unit || '').trim());
+    const hasDraft = type === 'number' && Object.prototype.hasOwnProperty.call(resourceQtyDrafts, index);
+    return /*#__PURE__*/React.createElement("label", {
+      className: "as-field",
+      key: key,
+      htmlFor: id + '-resource-' + index + '-' + key
+    }, title, " ", index + 1, /*#__PURE__*/React.createElement("input", {
+      id: id + '-resource-' + index + '-' + key,
+      className: "as-control",
+      "aria-label": title + ' ' + (index + 1),
+      "aria-invalid": key === 'name' && !!resourceNameIssue(index) ? true : undefined,
+      "aria-describedby": key === 'name' && resourceNameIssue(index) ? id + '-resource-' + index + '-issue' : undefined,
+      maxLength: key === 'name' ? 80 : key === 'unit' ? 30 : undefined,
+      type: type,
+      min: type === 'number' ? 0 : undefined,
+      step: type === 'number' ? 'any' : undefined,
+      max: type === 'number' && isPercent ? 100 : undefined,
+      value: hasDraft ? resourceQtyDrafts[index] : resource[key] ?? '',
+      disabled: resourcesLocked,
+      onChange: e => {
+        if (type === 'number') {
+          const raw = e.target.value;
+          setResourceQtyDrafts(prev => ({
+            ...prev,
+            [index]: raw
+          }));
+          if (raw.trim() !== '') {
+            const parsed = Number(raw);
+            if (Number.isFinite(parsed)) {
+              const clamped = Math.min(isPercent ? 100 : Infinity, Math.max(0, parsed));
+              editResources(rows => rows.map((row, i) => i === index ? {
+                ...row,
+                [key]: clamped
+              } : row));
+            }
+          }
+          return;
+        }
+        editResources(rows => rows.map((row, i) => i === index ? {
+          ...row,
+          [key]: e.target.value
+        } : row));
+      },
+      onBlur: type === 'number' ? () => {
+        const draftVal = Object.prototype.hasOwnProperty.call(resourceQtyDrafts, index) ? resourceQtyDrafts[index] : resource[key];
+        setResourceQtyDrafts(prev => {
+          const next = {
+            ...prev
+          };
+          delete next[index];
+          return next;
+        });
+        const parsed = Number(draftVal);
+        const clamped = Math.min(isPercent ? 100 : Infinity, Math.max(0, Number.isFinite(parsed) && String(draftVal ?? '').trim() !== '' ? parsed : 0));
+        editResources(rows => rows.map((row, i) => i === index ? {
+          ...row,
+          [key]: clamped
+        } : row));
+      } : undefined
+    }), key === 'name' && resourceNameIssue(index) && /*#__PURE__*/React.createElement("span", {
+      id: id + '-resource-' + index + '-issue',
+      className: "as-help"
+    }, resourceNameIssue(index)));
+  })), /*#__PURE__*/React.createElement("button", {
     type: "button",
     className: "as-button",
     style: {
@@ -722,7 +762,7 @@ function AdventureSetupEditor(props) {
     Normal: 'Standard energy loss and XP. Reasoning expectations follow the lesson.',
     Hard: '1.5× energy loss; 0.75× XP. Success thresholds stay the same.',
     Hardcore: '2.5× energy loss; 0.5× XP. Success thresholds stay the same.'
-  }[props.adventureDifficulty || 'Normal'])), toggle('isAdventureStoryMode', 'setIsAdventureStoryMode', label('adventure.story_mode_label', 'Peaceful mode'), label('adventure.story_mode_desc', 'Focus on exploration and puzzles.')), toggle('adventureChanceMode', 'setAdventureChanceMode', label('adventure.chance_mode_label', 'Chance mode'), label('adventure.chance_mode_desc', 'Chance rolls influence the story outcome.')), toggle('isSocialStoryMode', 'setIsSocialStoryMode', label('adventure.social_story_mode_label', 'Social scenario mode'), label('social_mode_hint', 'Show a target social skill in Essential setup.'))), /*#__PURE__*/React.createElement(AdventureSettingSection, {
+  }[props.adventureDifficulty || 'Normal'])), toggle('isAdventureStoryMode', 'setIsAdventureStoryMode', label('adventure.story_mode_label', 'Peaceful mode'), label('adventure.story_mode_desc', 'Focus on exploration and puzzles.')), toggle('adventureChanceMode', 'setAdventureChanceMode', label('adventure.chance_mode_label', 'Chance mode'), label('adventure.chance_mode_desc', 'Chance rolls influence the story outcome.'))), /*#__PURE__*/React.createElement(AdventureSettingSection, {
     title: label('visual_settings', 'Visuals'),
     summary: [label('adventure.art_style_label', 'Art style') + ': ' + label('adventure.art_' + (props.adventureArtStyle || 'auto'), props.adventureArtStyle || 'Auto'), label('adventure.protagonist_age_label', 'Protagonist age') + ': ' + label('adventure.protagonist_age_' + (props.adventureProtagonistAge || 'auto').replaceAll('-', '_'), {
       auto: 'Auto (match the audience)',
@@ -751,6 +791,8 @@ function AdventureSetupEditor(props) {
     "aria-label": label('custom_art', 'Custom art style'),
     "aria-describedby": describedBy('allowVisualsToggle', 'custom-art'),
     className: "as-control",
+    maxLength: 160,
+    placeholder: label('custom_art_placeholder', 'e.g., Watercolor picture book with soft outlines'),
     value: props.adventureCustomArtStyle || '',
     disabled: locked('allowVisualsToggle'),
     onChange: e => change('setAdventureCustomArtStyle', e.target.value, 'allowVisualsToggle')
@@ -1481,7 +1523,7 @@ function AdventureHistoryEntry({
     "aria-hidden": "true"
   }), label), /*#__PURE__*/React.createElement("div", {
     className: 'text-sm leading-relaxed whitespace-pre-wrap ' + (entry.type === 'scene' ? 'font-serif' : '')
-  }, renderFormattedText(typeof entry.text === 'string' ? entry.text : '', !immersive, choice)));
+  }, renderFormattedText(typeof entry.text === 'string' ? entry.text : '', !choice, immersive || theme === 'dark' || theme === 'contrast')));
 }
 function adventureRecentHistory(history) {
   const entries = Array.isArray(history) ? history : [];
@@ -1571,7 +1613,16 @@ function useAdventureDialogFocus(isOpen, dialogRef, onClose) {
     if (!dialog) return undefined;
     var previousFocus = document.activeElement;
     var getFocusable = function () {
-      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'));
+      return Array.from(dialog.querySelectorAll('button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])')).filter(function (el) {
+        if (!el || el.closest('[hidden], [aria-hidden="true"], [inert]')) return false;
+        var closedDetails = el.closest('details:not([open])');
+        if (closedDetails && !el.closest('summary')) return false;
+        if (typeof window !== 'undefined' && typeof window.getComputedStyle === 'function') {
+          var cs = window.getComputedStyle(el);
+          if (cs && (cs.display === 'none' || cs.visibility === 'hidden')) return false;
+        }
+        return true;
+      });
     };
     (getFocusable()[0] || dialog).focus();
     var onKeyDown = function (event) {
@@ -1589,10 +1640,10 @@ function useAdventureDialogFocus(isOpen, dialogRef, onClose) {
       }
       var first = focusable[0];
       var last = focusable[focusable.length - 1];
-      if (event.shiftKey && document.activeElement === first) {
+      if (event.shiftKey && (document.activeElement === first || document.activeElement === dialog || !dialog.contains(document.activeElement))) {
         event.preventDefault();
         last.focus();
-      } else if (!event.shiftKey && document.activeElement === last) {
+      } else if (!event.shiftKey && (document.activeElement === last || document.activeElement === dialog || !dialog.contains(document.activeElement))) {
         event.preventDefault();
         first.focus();
       }
@@ -1600,7 +1651,10 @@ function useAdventureDialogFocus(isOpen, dialogRef, onClose) {
     dialog.addEventListener('keydown', onKeyDown);
     return function () {
       dialog.removeEventListener('keydown', onKeyDown);
-      if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+      if (previousFocus && previousFocus.isConnected === false) previousFocus = null;
+      try {
+        if (previousFocus && typeof previousFocus.focus === 'function') previousFocus.focus();
+      } catch (_) {}
     };
   }, [isOpen, dialogRef]);
 }
@@ -1661,6 +1715,7 @@ function useAdventureTypingPace(enabled, text, dictationActive) {
   React.useEffect(function () {
     if (!enabled || !text) return undefined;
     var timer = setInterval(function () {
+      if (assistedRef.current || pausedAtRef.current || typeof document !== 'undefined' && document.hidden) return;
       setTick(function (value) {
         return value + 1;
       });
@@ -1702,15 +1757,21 @@ function useAdventureTypingPace(enabled, text, dictationActive) {
 function AdventureFluencyPractice(props) {
   var open = props.open;
   var t = props.t;
-  var sceneText = String(props.sceneText || '').trim();
+  var rawSceneText = String(props.sceneText || '').trim();
+  var sceneText = rawSceneText.replace(/^\s{0,3}#{1,6}\s+/gm, '').replace(/^\s*>\s?/gm, '').replace(/!\[[^\]]*\]\([^)]*\)/g, '').replace(/\[([^\]]+)\]\([^)]*\)/g, '$1').replace(/[*_`~]/g, '').replace(/^\s*(?:Narrator|AI|Scene)\s*:\s*/i, '').replace(/\n{3,}/g, '\n\n').trim();
   var dialogRef = React.useRef(null);
   var recorderRef = React.useRef(null);
   var streamRef = React.useRef(null);
   var chunksRef = React.useRef([]);
   var passageRef = React.useRef(null);
+  var runIdRef = React.useRef(0);
+  var stopAndAnalyzeRef = React.useRef(null);
   var _statusState = React.useState('idle');
   var status = _statusState[0];
   var setStatus = _statusState[1];
+  var _elapsedState = React.useState(0);
+  var elapsedSeconds = _elapsedState[0];
+  var setElapsedSeconds = _elapsedState[1];
   var _resultState = React.useState(null);
   var result = _resultState[0];
   var setResult = _resultState[1];
@@ -1734,32 +1795,66 @@ function AdventureFluencyPractice(props) {
     }
   }, []);
   var closePractice = React.useCallback(function () {
-    if (status === 'processing') return;
+    runIdRef.current += 1;
     if (recorderRef.current && recorderRef.current.state !== 'inactive') {
       try {
+        recorderRef.current.onstop = null;
+        recorderRef.current.onerror = null;
         recorderRef.current.stop();
       } catch (_) {}
     }
     recorderRef.current = null;
     stopTracks();
     setStatus('idle');
+    setElapsedSeconds(0);
     setResult(null);
     setError('');
     setSaved(false);
     props.onClose();
-  }, [props.onClose, status, stopTracks]);
+  }, [props.onClose, stopTracks]);
   useAdventureDialogFocus(open, dialogRef, closePractice);
   React.useEffect(function () {
-    return stopTracks;
+    return function () {
+      runIdRef.current += 1;
+      if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+        try {
+          recorderRef.current.onstop = null;
+          recorderRef.current.onerror = null;
+          recorderRef.current.stop();
+        } catch (_) {}
+      }
+      recorderRef.current = null;
+      stopTracks();
+    };
   }, [stopTracks]);
   React.useEffect(function () {
     if (!open) return;
+    runIdRef.current += 1;
     setStatus('idle');
+    setElapsedSeconds(0);
     setResult(null);
     setError('');
     setSaved(false);
     setAllowCloud(false);
   }, [open, props.sceneId]);
+  React.useEffect(function () {
+    if (status !== 'recording') {
+      setElapsedSeconds(0);
+      return undefined;
+    }
+    var timer = setInterval(function () {
+      var started = passageRef.current ? passageRef.current.startedAt : Date.now();
+      var secs = Math.max(0, Math.floor((Date.now() - started) / 1000));
+      setElapsedSeconds(secs);
+      if (secs >= 180 && stopAndAnalyzeRef.current) {
+        clearInterval(timer);
+        stopAndAnalyzeRef.current();
+      }
+    }, 500);
+    return function () {
+      clearInterval(timer);
+    };
+  }, [status]);
   var blobToBase64 = function (blob) {
     return new Promise(function (resolve, reject) {
       var reader = new FileReader();
@@ -1773,6 +1868,7 @@ function AdventureFluencyPractice(props) {
     });
   };
   var startRecording = async function () {
+    var runId = ++runIdRef.current;
     setError('');
     setResult(null);
     setSaved(false);
@@ -1789,6 +1885,14 @@ function AdventureFluencyPractice(props) {
       var stream = await navigator.mediaDevices.getUserMedia({
         audio: true
       });
+      if (runIdRef.current !== runId) {
+        stream.getTracks().forEach(function (track) {
+          try {
+            track.stop();
+          } catch (_) {}
+        });
+        return;
+      }
       streamRef.current = stream;
       var mimeCandidates = ['audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
       var mimeType = mimeCandidates.find(function (candidate) {
@@ -1813,13 +1917,30 @@ function AdventureFluencyPractice(props) {
       setStatus('recording');
     } catch (recordingError) {
       stopTracks();
-      setError(t('errors.microphone_access_denied') || 'Microphone access was denied or unavailable.');
-      setStatus('idle');
+      if (runIdRef.current === runId) {
+        setError(t('errors.microphone_access_denied') || 'Microphone access was denied or unavailable.');
+        setStatus('idle');
+      }
     }
+  };
+  var cancelProcessing = function () {
+    runIdRef.current += 1;
+    if (recorderRef.current && recorderRef.current.state !== 'inactive') {
+      try {
+        recorderRef.current.onstop = null;
+        recorderRef.current.onerror = null;
+        recorderRef.current.stop();
+      } catch (_) {}
+    }
+    recorderRef.current = null;
+    stopTracks();
+    setStatus('idle');
+    setError('');
   };
   var stopAndAnalyze = async function () {
     var recorder = recorderRef.current;
     if (!recorder || recorder.state === 'inactive') return;
+    var runId = ++runIdRef.current;
     setStatus('processing');
     setError('');
     try {
@@ -1837,18 +1958,30 @@ function AdventureFluencyPractice(props) {
       });
       stopTracks();
       recorderRef.current = null;
+      if (runIdRef.current !== runId) return;
       var captured = passageRef.current;
-      var durationSeconds = Math.max(1, (Date.now() - captured.startedAt) / 1000);
+      var durationMs = Date.now() - captured.startedAt;
+      if (!blob || blob.size === 0 || durationMs < 350) {
+        setError(t('adventure.fluency_too_short') || 'Recording was too short or empty. Please read the passage aloud and try again.');
+        setStatus('idle');
+        return;
+      }
+      var durationSeconds = Math.max(1, durationMs / 1000);
       var audioBase64 = await blobToBase64(blob);
+      if (runIdRef.current !== runId) return;
       var fluency = window.AlloModules && window.AlloModules.Fluency;
       if (!fluency) throw new Error(t('adventure.fluency_engine_unavailable') || 'Reading analysis is still loading. Please try again.');
       var analysis = null;
       if (typeof fluency.analyzeFluencyLocal === 'function') {
-        analysis = await fluency.analyzeFluencyLocal(audioBase64, blob.type || 'audio/webm', captured.text, {});
+        analysis = await fluency.analyzeFluencyLocal(audioBase64, blob.type || 'audio/webm', captured.text, {
+          language: captured.language
+        });
       }
+      if (runIdRef.current !== runId) return;
       if (!analysis && allowCloud && typeof fluency.analyzeFluencyWithGemini === 'function') {
         analysis = await fluency.analyzeFluencyWithGemini(audioBase64, blob.type || 'audio/webm', captured.text);
       }
+      if (runIdRef.current !== runId) return;
       if (!analysis || !Array.isArray(analysis.wordData)) {
         throw new Error(allowCloud ? t('adventure.fluency_analysis_failed') || 'The reading could not be analyzed. Your recording was not saved.' : t('adventure.fluency_local_unavailable') || 'On-device analysis is unavailable. Enable cloud analysis to use Google Gemini, or try again on a School Box device.');
       }
@@ -1894,10 +2027,12 @@ function AdventureFluencyPractice(props) {
     } catch (analysisError) {
       stopTracks();
       recorderRef.current = null;
+      if (runIdRef.current !== runId) return;
       setError(analysisError && analysisError.message ? analysisError.message : t('adventure.fluency_analysis_failed') || 'The reading could not be analyzed.');
       setStatus('idle');
     }
   };
+  stopAndAnalyzeRef.current = stopAndAnalyze;
   var saveResult = async function () {
     if (!result || typeof props.onSave !== 'function' || saved) return;
     try {
@@ -1908,6 +2043,11 @@ function AdventureFluencyPractice(props) {
     }
   };
   if (!open) return null;
+  var formatTimer = function (sec) {
+    var m = Math.floor(sec / 60);
+    var s = sec % 60;
+    return m + ':' + (s < 10 ? '0' : '') + s;
+  };
   return /*#__PURE__*/React.createElement("div", {
     role: "presentation",
     className: "fixed inset-0 z-[260] flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-3",
@@ -1921,79 +2061,91 @@ function AdventureFluencyPractice(props) {
     "aria-modal": "true",
     "aria-labelledby": "adventure-fluency-title",
     "aria-describedby": "adventure-fluency-description",
-    className: "w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border-2 border-rose-200 bg-white p-5 shadow-2xl focus:outline-none"
+    style: adventureVisualTokens(props.theme),
+    className: "w-full max-w-2xl max-h-[90vh] overflow-y-auto rounded-2xl border-2 border-[var(--av-line)] bg-[var(--av-surface)] text-[var(--av-ink)] p-5 shadow-2xl focus:outline-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex items-start justify-between gap-4"
   }, /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("h2", {
     id: "adventure-fluency-title",
-    className: "text-xl font-black text-slate-900 flex items-center gap-2"
+    className: "text-xl font-black text-[var(--av-ink)] flex items-center gap-2"
   }, /*#__PURE__*/React.createElement(Mic, {
     size: 20,
     "aria-hidden": "true"
   }), " ", t('adventure.fluency_title') || 'Practice reading this scene'), /*#__PURE__*/React.createElement("p", {
     id: "adventure-fluency-description",
-    className: "mt-1 text-sm text-slate-600"
+    className: "mt-1 text-sm text-[var(--av-muted)]"
   }, t('adventure.fluency_description') || 'Read the AI narrator\u2019s passage aloud. Results are descriptive practice only, not a benchmark score.')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: closePractice,
-    disabled: status === 'processing',
-    className: "min-w-11 min-h-11 rounded-full p-2 text-slate-700 hover:bg-slate-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-600",
+    className: "min-w-11 min-h-11 rounded-full p-2 text-[var(--av-ink)] hover:bg-[var(--av-wash)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]",
     "aria-label": t('common.close')
   }, /*#__PURE__*/React.createElement(X, {
     size: 20,
     "aria-hidden": "true"
   }))), /*#__PURE__*/React.createElement("div", {
-    className: "mt-4 max-h-56 overflow-y-auto rounded-xl border border-slate-300 bg-slate-50 p-4 text-sm font-medium leading-relaxed text-slate-800"
+    className: "mt-4 max-h-56 overflow-y-auto rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] p-4 text-sm font-medium leading-relaxed text-[var(--av-ink)]"
   }, sceneText), /*#__PURE__*/React.createElement("label", {
-    className: "mt-4 flex min-h-11 items-start gap-3 rounded-xl border border-sky-200 bg-sky-50 p-3 text-sm text-slate-700"
+    className: "mt-4 flex min-h-11 items-start gap-3 rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] p-3 text-sm text-[var(--av-muted)]"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
     checked: allowCloud,
     disabled: status === 'recording' || status === 'processing',
     onChange: event => setAllowCloud(event.target.checked),
-    className: "mt-0.5 h-5 w-5 shrink-0 rounded text-sky-700 focus-visible:ring-2 focus-visible:ring-sky-700"
+    className: "mt-0.5 h-5 w-5 shrink-0 rounded text-[var(--av-accent)] focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]"
   }), /*#__PURE__*/React.createElement("span", null, /*#__PURE__*/React.createElement("strong", {
-    className: "block text-slate-900"
+    className: "block text-[var(--av-ink)]"
   }, t('adventure.fluency_cloud_label') || 'Allow cloud analysis if on-device analysis is unavailable'), t('adventure.fluency_cloud_desc') || 'When enabled, this recording may be sent to Google Gemini for word-by-word analysis. The recording is not saved unless you choose Save below.')), error && /*#__PURE__*/React.createElement("div", {
     role: "alert",
-    className: "mt-4 rounded-xl border border-red-300 bg-red-50 p-3 text-sm font-bold text-red-800"
+    className: "mt-4 rounded-xl border border-red-400 bg-red-50 p-3 text-sm font-bold text-red-900"
   }, error), status === 'complete' && result && /*#__PURE__*/React.createElement("div", {
-    className: "mt-4 rounded-xl border border-indigo-200 bg-indigo-50 p-4"
+    className: "mt-4 rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] p-4"
   }, /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-2 gap-3 text-center"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "rounded-xl bg-white p-3 shadow-sm"
+    className: "rounded-xl border border-[var(--av-line)] bg-[var(--av-surface)] p-3 shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "text-3xl font-black text-indigo-700"
+    className: "text-3xl font-black text-[var(--av-accent)]"
   }, result.wcpm), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] font-bold uppercase tracking-wide text-slate-600"
+    className: "text-[11px] font-bold uppercase tracking-wide text-[var(--av-muted)]"
   }, t('fluency.wcpm_label') || 'Words correct per minute')), /*#__PURE__*/React.createElement("div", {
-    className: "rounded-xl bg-white p-3 shadow-sm"
+    className: "rounded-xl border border-[var(--av-line)] bg-[var(--av-surface)] p-3 shadow-sm"
   }, /*#__PURE__*/React.createElement("div", {
     className: "text-3xl font-black text-emerald-700"
   }, result.accuracy, "%"), /*#__PURE__*/React.createElement("div", {
-    className: "text-[11px] font-bold uppercase tracking-wide text-slate-600"
+    className: "text-[11px] font-bold uppercase tracking-wide text-[var(--av-muted)]"
   }, t('fluency.accuracy_score') || 'Accuracy'))), /*#__PURE__*/React.createElement("p", {
-    className: "mt-3 text-xs font-bold text-indigo-950"
+    className: "mt-3 text-xs font-bold text-[var(--av-ink)]"
   }, t('adventure.fluency_descriptive_note') || 'Adventure passages are AI-generated and uncalibrated. Use this result for practice and reflection only.'), result.feedback && /*#__PURE__*/React.createElement("p", {
-    className: "mt-2 text-sm text-slate-700"
+    className: "mt-2 text-sm text-[var(--av-muted)]"
   }, result.feedback)), /*#__PURE__*/React.createElement("div", {
     className: "mt-5 flex flex-wrap items-center justify-center gap-3"
-  }, status === 'recording' ? /*#__PURE__*/React.createElement("button", {
+  }, status === 'recording' ? /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center justify-center gap-3"
+  }, /*#__PURE__*/React.createElement("span", {
+    role: "timer",
+    "aria-live": "off",
+    className: "rounded-lg border border-[var(--av-line)] bg-[var(--av-wash)] px-3 py-2 text-xs font-black tabular-nums text-[var(--av-ink)]"
+  }, formatTimer(elapsedSeconds), " / 3:00"), /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: stopAndAnalyze,
     className: "min-h-11 rounded-xl bg-red-700 px-5 py-3 font-black text-white hover:bg-red-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "\\u25A0"), " ", t('fluency.stop_recording') || 'Stop and analyze') : status === 'processing' ? /*#__PURE__*/React.createElement("div", {
+  }, "\\u25A0"), " ", t('fluency.stop_recording') || 'Stop and analyze')) : status === 'processing' ? /*#__PURE__*/React.createElement("div", {
+    className: "flex flex-wrap items-center justify-center gap-2"
+  }, /*#__PURE__*/React.createElement("div", {
     role: "status",
     "aria-live": "polite",
-    className: "min-h-11 rounded-xl bg-indigo-100 px-5 py-3 font-black text-indigo-800"
+    className: "min-h-11 rounded-xl border border-[var(--av-line)] bg-[var(--av-wash)] px-5 py-3 font-black text-[var(--av-ink)]"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 16,
     className: "mr-2 inline animate-spin motion-reduce:animate-none",
     "aria-hidden": "true"
-  }), " ", t('fluency.processing') || 'Analyzing reading...') : /*#__PURE__*/React.createElement("button", {
+  }), " ", t('fluency.processing') || 'Analyzing reading...'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: cancelProcessing,
+    className: "min-h-11 rounded-xl border border-[var(--av-line)] bg-[var(--av-surface)] px-4 py-3 font-bold text-[var(--av-ink)] hover:bg-[var(--av-wash)] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)]"
+  }, t('common.cancel') || 'Cancel')) : /*#__PURE__*/React.createElement("button", {
     type: "button",
     onClick: startRecording,
     className: "min-h-11 rounded-xl bg-rose-700 px-5 py-3 font-black text-white hover:bg-rose-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-700 focus-visible:ring-offset-2"
@@ -2005,7 +2157,7 @@ function AdventureFluencyPractice(props) {
     type: "button",
     onClick: saveResult,
     disabled: saved,
-    className: "min-h-11 rounded-xl border-2 border-indigo-600 bg-white px-5 py-3 font-black text-indigo-700 hover:bg-indigo-50 disabled:cursor-default disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+    className: "min-h-11 rounded-xl border-2 border-[var(--av-accent)] bg-[var(--av-surface)] px-5 py-3 font-black text-[var(--av-accent)] hover:bg-[var(--av-wash)] disabled:cursor-default disabled:opacity-70 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2"
   }, saved ? t('adventure.fluency_saved') || 'Saved to reading history' : t('adventure.fluency_save') || 'Save to reading history'))));
 }
 function AdventureView(props) {
@@ -2038,6 +2190,13 @@ function AdventureView(props) {
       if (event.key === 'Escape') {
         event.stopPropagation();
         closeFullIllustration();
+      } else if (event.key === 'Tab') {
+        event.preventDefault();
+        try {
+          fullIllustrationCloseRef.current?.focus({
+            preventScroll: true
+          });
+        } catch (_) {}
       }
     };
     document.addEventListener('keydown', onKey, true);
@@ -2203,11 +2362,75 @@ function AdventureView(props) {
   }, [adventureState.currentScene, adventureState.isGameOver, adventureState.isLoading, adventureState.isImmersiveMode, failedAdventureAction]);
   var ledgerDialogRef = React.useRef(null);
   var inventoryDialogRef = React.useRef(null);
+  var immersiveInventoryRef = React.useRef(null);
+  var immersiveInventoryButtonRef = React.useRef(null);
+  var autoOpenedRecapRef = React.useRef(false);
   useAdventureDialogFocus(showLedger, ledgerDialogRef, handleSetShowLedgerToFalse);
   useAdventureDialogFocus(!!selectedInventoryItem, inventoryDialogRef, handleSetSelectedInventoryItemToNull);
+  React.useEffect(() => {
+    if (!adventureState.isGameOver) {
+      autoOpenedRecapRef.current = false;
+      return;
+    }
+    if (adventureState.isImmersiveMode && !autoOpenedRecapRef.current) {
+      autoOpenedRecapRef.current = true;
+      if (typeof props.setImmersiveShowChoices === 'function') props.setImmersiveShowChoices(true);else if (!immersiveShowChoices && typeof handleToggleImmersiveShowChoices === 'function') handleToggleImmersiveShowChoices();
+    }
+  }, [adventureState.isGameOver, adventureState.isImmersiveMode, immersiveShowChoices, handleToggleImmersiveShowChoices, props.setImmersiveShowChoices]);
+  React.useEffect(() => {
+    if (immersiveHideUI && showImmersiveInventory && typeof setShowImmersiveInventory === 'function') {
+      setShowImmersiveInventory(false);
+    }
+  }, [immersiveHideUI, showImmersiveInventory, setShowImmersiveInventory]);
+  React.useEffect(() => {
+    if (!showImmersiveInventory || typeof setShowImmersiveInventory !== 'function') return undefined;
+    const onDocClick = event => {
+      if (immersiveInventoryRef.current && !immersiveInventoryRef.current.contains(event.target)) {
+        setShowImmersiveInventory(false);
+      }
+    };
+    const onKey = event => {
+      if (event.key === 'Escape') {
+        event.stopPropagation();
+        setShowImmersiveInventory(false);
+        try {
+          immersiveInventoryButtonRef.current?.focus({
+            preventScroll: true
+          });
+        } catch (_) {}
+      }
+    };
+    document.addEventListener('click', onDocClick);
+    document.addEventListener('keydown', onKey, true);
+    return () => {
+      document.removeEventListener('click', onDocClick);
+      document.removeEventListener('keydown', onKey, true);
+    };
+  }, [showImmersiveInventory, setShowImmersiveInventory]);
   var _fluencyOpenState = React.useState(false);
   var adventureFluencyOpen = _fluencyOpenState[0];
   var setAdventureFluencyOpen = _fluencyOpenState[1];
+  var optionAudioRef = React.useRef(null);
+  var stopOptionAudio = React.useCallback(function () {
+    if (optionAudioRef.current) {
+      try {
+        optionAudioRef.current.pause();
+        optionAudioRef.current.currentTime = 0;
+      } catch (_) {}
+      optionAudioRef.current = null;
+    }
+  }, []);
+  React.useEffect(() => {
+    return () => stopOptionAudio();
+  }, [stopOptionAudio]);
+  React.useEffect(() => {
+    stopOptionAudio();
+  }, [adventureState.turnCount, adventureState.isGameOver, activeView, stopOptionAudio]);
+  React.useEffect(() => {
+    if (isDictationMode && typeof setIsDictationMode === 'function' && (activeView !== 'adventure' || !adventureFreeResponseEnabled || !adventureState.currentScene || adventureState.isLoading || adventureState.isGameOver)) {
+      setIsDictationMode(false);
+    }
+  }, [isDictationMode, activeView, adventureFreeResponseEnabled, adventureState.currentScene, adventureState.isLoading, adventureState.isGameOver, setIsDictationMode]);
   var typingPace = useAdventureTypingPace(adventureTypingPaceEnabled && adventureFreeResponseEnabled, adventureTextInput, isDictationMode);
   var handleAdventureTextChange = function (event) {
     typingPace.noteChange(event.target.value, event.nativeEvent);
@@ -2429,9 +2652,12 @@ function AdventureView(props) {
       title: t('common.listen'),
       onClick: event => {
         event.stopPropagation();
+        stopOptionAudio();
         if (typeof opt === 'object' && opt?.audio) {
+          if (typeof stopPlayback === 'function') stopPlayback();
           const audio = new Audio(opt.audio);
-          audio.play();
+          optionAudioRef.current = audio;
+          Promise.resolve(audio.play()).catch(() => {});
         } else if (handleSpeak) {
           handleSpeak(optionText, 'adventure-option-' + idx);
         }
@@ -2549,7 +2775,7 @@ function AdventureView(props) {
     callGemini: props.callGemini,
     t: t,
     theme: theme,
-    settings: adventureOfflineSettings(props, glossLanguage),
+    settings: adventureOfflineSettings(props, props.adventureLanguageMode && props.adventureLanguageMode !== 'English' ? props.adventureLanguageMode === 'All + English' ? Array.isArray(props.selectedLanguages) && props.selectedLanguages.length ? props.selectedLanguages.join(' + ') : glossLanguage : props.adventureLanguageMode : glossLanguage),
     onClose: () => setShowOfflinePanel(false)
   }), showStudentStoryPanel && studentStoryAllowed && /*#__PURE__*/React.createElement(AdventureOfflinePanel, {
     studentMode: true,
@@ -2564,13 +2790,19 @@ function AdventureView(props) {
     sceneText: adventureState.currentScene?.text,
     soundParams: adventureState.currentScene?.soundParams,
     themeSeed: adventureThemeSeed,
-    active: !adventureState.isGameOver && soundEnabled && activeView === 'adventure',
+    active: !adventureState.isGameOver && soundEnabled && activeView === 'adventure' && !!(props.adventureSoundEffects !== false),
+    sfxEnabled: soundEnabled && activeView === 'adventure',
     volume: 0.2
   }), adventureState.isShopOpen && /*#__PURE__*/React.createElement(ErrorBoundary, {
     fallbackMessage: "The adventure shop encountered an error."
   }, /*#__PURE__*/React.createElement(AdventureShop, {
     gold: adventureState.gold,
     globalXP: globalPoints,
+    energy: adventureState.energy,
+    inventory: adventureState.inventory,
+    chanceMode: props.adventureChanceMode,
+    activeXpBoost: adventureState.activeXpMultiplier,
+    activeGoldBuffTurns: adventureState.activeGoldBuffTurns,
     onClose: handleCloseShop,
     onPurchase: handleShopPurchase
   })), showLedger && /*#__PURE__*/React.createElement("div", {
@@ -2672,7 +2904,7 @@ function AdventureView(props) {
     className: "min-w-0 [overflow-wrap:anywhere]"
   }, t('adventure.title'))), /*#__PURE__*/React.createElement("div", {
     "data-adventure-toolbar": true,
-    className: "grid grid-cols-3 items-stretch gap-2 relative z-10 min-w-0 shrink-0 border-t border-[var(--av-line)] pt-3",
+    className: "grid grid-cols-2 sm:grid-cols-3 items-stretch gap-2 relative z-10 min-w-0 shrink-0 border-t border-[var(--av-line)] pt-3",
     role: "group",
     "aria-label": adventureSettingsText(t, 'header_tools', 'Story tools')
   }, /*#__PURE__*/React.createElement("button", {
@@ -2782,7 +3014,7 @@ function AdventureView(props) {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
-    className: `absolute -top-8 left-1/2 transform -translate-x-1/2 text-yellow-300 font-black text-lg animate-[ping_0.8s_ease-out_reverse] motion-reduce:animate-none motion-reduce:transform-none pointer-events-none z-20 whitespace-nowrap drop-shadow-md ${adventureEffects.xp < 0 ? 'text-red-400' : 'text-yellow-300'}`
+    className: `absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900/95 px-2.5 py-0.5 rounded-full border border-white/20 shadow-lg font-black text-sm animate-[ping_0.8s_ease-out_reverse] motion-reduce:animate-none motion-reduce:transform-none pointer-events-none z-20 whitespace-nowrap ${adventureEffects.xp < 0 ? 'text-red-300' : 'text-yellow-300'}`
   }, adventureEffects.xp > 0 ? '+' : '', adventureEffects.xp, " ", t('common.xp') || 'XP')), /*#__PURE__*/React.createElement("div", {
     "data-adventure-meter": "energy",
     className: `basis-28 flex-1 min-w-0 px-3 py-2.5 rounded-2xl text-xs font-bold border flex flex-wrap items-center gap-x-2 gap-y-2 relative transition-colors duration-200 motion-reduce:transition-none ${adventureInputMode === 'system' ? 'bg-[var(--av-surface)] border-[var(--av-line)]' : adventureEffects.energy < 0 ? 'border-red-600 bg-[var(--av-surface)]' : 'bg-[var(--av-surface)] border-[var(--av-line)]'}`,
@@ -2822,10 +3054,18 @@ function AdventureView(props) {
     role: "status",
     "aria-live": "polite",
     "aria-atomic": "true",
-    className: `absolute -top-8 left-1/2 transform -translate-x-1/2 font-black text-lg animate-[ping_0.8s_ease-out_reverse] motion-reduce:animate-none motion-reduce:transform-none pointer-events-none z-20 whitespace-nowrap drop-shadow-md ${adventureEffects.energy > 0 ? 'text-green-400' : 'text-red-500'}`
-  }, adventureEffects.energy > 0 ? '+' : '', adventureEffects.energy)), /*#__PURE__*/React.createElement("div", {
-    className: "bg-[var(--av-wash)] px-3 py-2 rounded-xl text-xs font-semibold border border-[var(--av-line)] flex flex-wrap items-center gap-1.5 text-[var(--av-ink)] min-w-0",
-    title: t('adventure.tooltips.gold', {
+    className: `absolute -top-8 left-1/2 transform -translate-x-1/2 bg-slate-900/95 px-2.5 py-0.5 rounded-full border border-white/20 shadow-lg font-black text-sm animate-[ping_0.8s_ease-out_reverse] motion-reduce:animate-none motion-reduce:transform-none pointer-events-none z-20 whitespace-nowrap ${adventureEffects.energy > 0 ? 'text-emerald-300' : 'text-red-300'}`
+  }, adventureEffects.energy > 0 ? '+' : '', adventureEffects.energy)), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setAdventureState(prev => ({
+      ...prev,
+      isShopOpen: true
+    })),
+    "aria-label": (t('adventure.shop_title') || 'Adventure Shop') + ' — ' + t('adventure.tooltips.gold', {
+      value: adventureState.gold
+    }),
+    className: "min-w-11 min-h-11 bg-[var(--av-wash)] hover:border-[var(--av-focus)] px-3 py-2 rounded-xl text-xs font-semibold border border-[var(--av-line)] flex flex-wrap items-center gap-1.5 text-[var(--av-ink)] transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]",
+    title: (t('adventure.shop_title') || 'Shop') + ': ' + t('adventure.tooltips.gold', {
       value: adventureState.gold
     })
   }, /*#__PURE__*/React.createElement("span", {
@@ -2843,7 +3083,23 @@ function AdventureView(props) {
     "aria-hidden": "true"
   }, "🔑"), /*#__PURE__*/React.createElement("span", null, adventureSettingsText(t, 'header_concepts', 'Concepts')), /*#__PURE__*/React.createElement("span", {
     className: "tabular-nums font-bold"
-  }, adventureState.stats.conceptsFound.length)), /*#__PURE__*/React.createElement(InventoryGrid, {
+  }, adventureState.stats.conceptsFound.length)), Number(adventureState.activeXpMultiplier) > 1 && Number(adventureState.activeXpBoostTurns) > 0 && /*#__PURE__*/React.createElement("div", {
+    role: "group",
+    className: "bg-[var(--av-wash)] px-3 py-2 rounded-xl text-xs font-semibold border border-[var(--av-line)] flex items-center gap-1.5 text-[var(--av-ink)] min-w-0",
+    title: (t('adventure.xp_boost_active') || `${adventureState.activeXpMultiplier}x XP boost`) + ` (${adventureState.activeXpBoostTurns})`
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "⚡"), /*#__PURE__*/React.createElement("span", {
+    className: "tabular-nums font-bold"
+  }, adventureState.activeXpMultiplier, "× ", t('common.xp') || 'XP', " (", adventureState.activeXpBoostTurns, ")")), props.adventureChanceMode !== false && Number(adventureState.activeRollModifier) !== 0 && /*#__PURE__*/React.createElement("div", {
+    role: "group",
+    className: "bg-[var(--av-wash)] px-3 py-2 rounded-xl text-xs font-semibold border border-[var(--av-line)] flex items-center gap-1.5 text-[var(--av-ink)] min-w-0",
+    title: t('adventure.roll_modifier_active') || 'Active d20 roll modifier'
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🎲"), /*#__PURE__*/React.createElement("span", {
+    className: "tabular-nums font-bold"
+  }, Number(adventureState.activeRollModifier) > 0 ? '+' : '', adventureState.activeRollModifier, " d20")), /*#__PURE__*/React.createElement(InventoryGrid, {
     inventory: adventureState.inventory,
     onSelect: handleSelectInventoryItem
   }), adventureInputMode === 'system' && enableFactionResources && (adventureState.systemResources || []).length > 0 && /*#__PURE__*/React.createElement(AdventureResourceSummary, {
@@ -2872,7 +3128,7 @@ function AdventureView(props) {
     className: "absolute inset-0 flex items-center justify-center z-20 pointer-events-none",
     "aria-hidden": "true"
   }, /*#__PURE__*/React.createElement("span", {
-    className: "text-[11px] font-black text-white drop-shadow-md tracking-wider"
+    className: "text-[11px] font-black text-white bg-black/75 px-1.5 rounded tracking-wider"
   }, debateMomentumValue, "/100"))), /*#__PURE__*/React.createElement("div", {
     className: "flex justify-between gap-3 text-xs font-semibold text-[var(--av-muted)] mt-1.5 px-1"
   }, /*#__PURE__*/React.createElement("span", null, t('adventure.debate_opponent')), /*#__PURE__*/React.createElement("span", null, t('adventure.debate_you')))), /*#__PURE__*/React.createElement("p", {
@@ -2962,24 +3218,25 @@ function AdventureView(props) {
     role: "status",
     className: "max-w-md my-auto text-center text-sm font-medium text-[var(--av-ink)]"
   }, adventureSettingsText(t, 'solo_needs_ai', "Adventure needs AI, which isn't available here. Join your teacher's live adventure to play.")) : hasSavedAdventure && !showNewGameSetup ? /*#__PURE__*/React.createElement("div", {
+    style: adventureVisualTokens(theme),
     className: "max-w-md w-full text-center space-y-6 my-auto"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "bg-white p-4 sm:p-8 rounded-3xl shadow-xl border-4 border-indigo-100"
+    className: "bg-[var(--av-surface)] text-[var(--av-ink)] p-4 sm:p-8 rounded-3xl shadow-[var(--av-shadow)] border-2 border-[var(--av-line)]"
   }, /*#__PURE__*/React.createElement("div", {
-    className: "w-20 h-20 bg-indigo-100 rounded-full flex items-center justify-center mx-auto mb-4 text-indigo-600 shadow-sm border-2 border-indigo-200"
+    className: "w-20 h-20 bg-[var(--av-wash)] rounded-full flex items-center justify-center mx-auto mb-4 text-[var(--av-accent)] shadow-sm border-2 border-[var(--av-line)]"
   }, /*#__PURE__*/React.createElement(MapIcon, {
     size: 40,
     "aria-hidden": "true"
   })), /*#__PURE__*/React.createElement("h2", {
-    className: "text-2xl font-black text-slate-800 mb-2"
+    className: "text-2xl font-black text-[var(--av-ink)] mb-2"
   }, t('adventure.paused_title')), /*#__PURE__*/React.createElement("p", {
-    className: "text-slate-600 mb-6 font-medium"
+    className: "text-[var(--av-muted)] mb-6 font-medium"
   }, t('adventure.paused_desc')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('adventure.resume'),
     "data-help-key": "adventure_resume_btn",
     onClick: handleResumeAdventure,
-    className: "min-h-11 w-full py-4 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black text-lg shadow-lg hover:scale-105 transition-all motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+    className: "min-h-11 w-full py-4 bg-[var(--av-accent)] text-[var(--av-surface)] border border-[var(--av-accent)] rounded-xl font-black text-lg shadow-lg hover:scale-105 hover:underline transition-all motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
   }, /*#__PURE__*/React.createElement(History, {
     size: 20,
     "aria-hidden": "true"
@@ -2987,12 +3244,13 @@ function AdventureView(props) {
     type: "button",
     "aria-label": t('adventure.start_overwrite'),
     onClick: handleSetShowNewGameSetupToTrue,
-    className: "min-h-11 text-slate-700 hover:text-red-700 font-bold text-xs flex items-center justify-center gap-2 transition-colors px-3 py-2 uppercase tracking-wider rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2"
+    className: "min-h-11 text-[var(--av-ink)] hover:text-red-700 font-bold text-xs flex items-center justify-center gap-2 transition-colors px-3 py-2 uppercase tracking-wider rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 12,
     "aria-hidden": "true"
   }), " ", t('adventure.start_overwrite'))) : /*#__PURE__*/React.createElement("div", {
-    className: "w-full max-w-5xl bg-white rounded-2xl shadow-xl border-2 border-indigo-100 overflow-hidden relative my-auto"
+    style: adventureVisualTokens(theme),
+    className: "w-full max-w-5xl bg-[var(--av-surface)] text-[var(--av-ink)] rounded-2xl shadow-[var(--av-shadow)] border-2 border-[var(--av-line)] overflow-hidden relative my-auto"
   }, hasSavedAdventure && /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('adventure.back_to_resume'),
@@ -3019,7 +3277,7 @@ function AdventureView(props) {
   }, props.sourceTopic && /*#__PURE__*/React.createElement("p", {
     className: "mb-3 text-sm font-semibold",
     style: adventureVisualTokens(theme)
-  }, props.sourceTopic), /*#__PURE__*/React.createElement(AdventureSetupSummary, props), /*#__PURE__*/React.createElement("div", {
+  }, props.sourceTopic), /*#__PURE__*/React.createElement(AdventureSetupSummary, props), /*#__PURE__*/React.createElement(AdventureLearningProfiles, props), /*#__PURE__*/React.createElement("div", {
     className: "py-4 mb-4 flex justify-center"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -3027,14 +3285,14 @@ function AdventureView(props) {
     onClick: () => executeStartAdventure(),
     disabled: adventureState.isLoading,
     "aria-busy": adventureState.isLoading,
-    className: "min-h-11 w-full md:w-auto px-8 sm:px-16 py-4 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg rounded-full shadow-xl hover:shadow-2xl hover:scale-105 transition-all motion-reduce:transform-none flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700 focus-visible:ring-offset-2"
+    className: "min-h-11 w-full md:w-auto px-8 sm:px-16 py-4 bg-[var(--av-accent)] text-[var(--av-surface)] border border-[var(--av-accent)] font-black text-lg rounded-full shadow-xl hover:shadow-2xl hover:scale-105 hover:underline transition-all motion-reduce:transform-none flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--av-focus)] focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--av-surface)]"
   }, /*#__PURE__*/React.createElement(Sparkles, {
     size: 20,
     className: "animate-pulse motion-reduce:animate-none",
     "aria-hidden": "true"
   }), t('adventure.start'))), isTeacherMode && /*#__PURE__*/React.createElement("div", {
     className: "-mt-4 mb-4 flex justify-center"
-  }, renderOfflineButton()), /*#__PURE__*/React.createElement(AdventureLearningProfiles, props), /*#__PURE__*/React.createElement(AdventureSetupFields, _extends({}, props, {
+  }, renderOfflineButton()), /*#__PURE__*/React.createElement(AdventureSetupFields, _extends({}, props, {
     hideSummary: true
   })))), studentStoryAllowed && /*#__PURE__*/React.createElement("div", {
     "data-adventure-student-story-entry": true,
@@ -3207,6 +3465,13 @@ function AdventureView(props) {
     const paragraphs = adventureState.currentScene.text.split(/\n{2,}/);
     let sentenceCounter = 0;
     return paragraphs.map((para, pIdx) => {
+      const isTable = para.trim().startsWith('|') || para.includes('\n|');
+      if (isTable) {
+        return /*#__PURE__*/React.createElement("div", {
+          key: pIdx,
+          className: "overflow-x-auto my-3 text-sm not-italic"
+        }, renderFormattedText(para, false, theme === 'dark' || theme === 'contrast'));
+      }
       const sentences = splitTextToSentences(para);
       if (sentences.length === 0) return null;
       return /*#__PURE__*/React.createElement("p", {
@@ -3232,18 +3497,20 @@ function AdventureView(props) {
           "aria-label": (t('adventure.read_aloud_title') || t('common.click_read_aloud') || 'Read aloud') + ': ' + cleanText.replace(/\*\*/g, '').trim(),
           title: t('adventure.read_aloud_title') || t('common.click_read_aloud'),
           onClick: e => {
+            if (e.target !== e.currentTarget && e.target?.closest?.('button, a, [role="button"]')) return;
             e.stopPropagation();
             handleSpeak(adventureState.currentScene.text, 'adventure-active', currentGlobalIdx);
           },
           onKeyDown: e => {
             if (e.key === 'Enter' || e.key === ' ') {
+              if (e.target !== e.currentTarget && e.target?.closest?.('button, a, [role="button"]')) return;
               e.preventDefault();
               e.stopPropagation();
               handleSpeak(adventureState.currentScene.text, 'adventure-active', currentGlobalIdx);
             }
           },
           className: `transition-colors duration-300 motion-reduce:transition-none rounded px-1 py-0.5 cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 ${isActive ? 'bg-yellow-200 text-black shadow-sm' : 'hover:bg-[var(--av-wash)]'} ${isHeader ? 'font-bold block text-lg mt-2' : ''}`
-        }, formatInteractiveText(cleanText), " ");
+        }, formatInteractiveText(cleanText.replace(/\*\*([^*]+)\*\*/g, '$1'), false, (theme === 'dark' || theme === 'contrast') && !isActive), " ");
       }));
     });
   })())))), adventureState.isGameOver && (() => {
@@ -3369,7 +3636,24 @@ function AdventureView(props) {
     style: {
       width: xpProgressPercent + '%'
     }
-  })))), /*#__PURE__*/React.createElement("div", {
+  }))), Number(adventureState.activeXpMultiplier) > 1 && Number(adventureState.activeXpBoostTurns) > 0 && /*#__PURE__*/React.createElement("div", {
+    className: "bg-black/60 backdrop-blur-md text-amber-200 border border-amber-400/40 px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1 shadow-sm tabular-nums",
+    title: (t('adventure.xp_boost_active') || `${adventureState.activeXpMultiplier}x XP boost`) + ` (${adventureState.activeXpBoostTurns})`
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "⚡"), /*#__PURE__*/React.createElement("span", null, adventureState.activeXpMultiplier, "× (", adventureState.activeXpBoostTurns, ")")), props.adventureChanceMode !== false && Number(adventureState.activeRollModifier) !== 0 && /*#__PURE__*/React.createElement("div", {
+    className: "bg-black/60 backdrop-blur-md text-indigo-200 border border-indigo-400/40 px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1 shadow-sm tabular-nums",
+    title: t('adventure.roll_modifier_active') || 'Active d20 roll modifier'
+  }, /*#__PURE__*/React.createElement("span", {
+    "aria-hidden": "true"
+  }, "🎲"), /*#__PURE__*/React.createElement("span", null, Number(adventureState.activeRollModifier) > 0 ? '+' : '', adventureState.activeRollModifier, " d20")), adventureInputMode === 'debate' && /*#__PURE__*/React.createElement("div", {
+    className: "bg-black/60 backdrop-blur-md text-white border border-white/20 px-2.5 py-1 rounded-full text-[11px] font-bold flex items-center gap-1 shadow-sm tabular-nums",
+    title: t('adventure.debate_you') + ': ' + debateMomentumValue + '%'
+  }, /*#__PURE__*/React.createElement(Scale, {
+    size: 12,
+    "aria-hidden": "true",
+    className: "text-teal-300"
+  }), /*#__PURE__*/React.createElement("span", null, debateMomentumValue, "%"))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-end gap-2"
   }, /*#__PURE__*/React.createElement("div", {
     className: "flex gap-2"
@@ -3430,15 +3714,30 @@ function AdventureView(props) {
   }, /*#__PURE__*/React.createElement(Minimize, {
     size: 16,
     "aria-hidden": "true"
-  }))), /*#__PURE__*/React.createElement("div", {
-    className: "bg-black/50 backdrop-blur-md text-yellow-300 border border-yellow-500/60 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm"
+  }))), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: () => setAdventureState(prev => ({
+      ...prev,
+      isShopOpen: true
+    })),
+    "aria-label": (t('adventure.shop_title') || 'Adventure Shop') + ' — ' + t('adventure.tooltips.gold', {
+      value: adventureState.gold
+    }),
+    title: (t('adventure.shop_title') || 'Shop') + ': ' + t('adventure.tooltips.gold', {
+      value: adventureState.gold
+    }),
+    className: "min-w-11 min-h-11 bg-black/50 backdrop-blur-md text-yellow-300 border border-yellow-500/60 hover:bg-white/20 px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1 shadow-sm transition-colors motion-reduce:transition-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-black"
   }, /*#__PURE__*/React.createElement("span", {
     className: "text-sm",
     "aria-hidden": "true"
-  }, "💰"), " ", adventureState.gold), /*#__PURE__*/React.createElement("div", {
+  }, "💰"), " ", adventureState.gold, Number(adventureState.activeGoldBuffTurns) > 0 && /*#__PURE__*/React.createElement("span", {
+    className: "ml-0.5 text-[10px] text-amber-200 tabular-nums"
+  }, "+", adventureState.activeGoldBuffTurns)), /*#__PURE__*/React.createElement("div", {
+    ref: immersiveInventoryRef,
     className: "relative"
   }, /*#__PURE__*/React.createElement("button", {
     type: "button",
+    ref: immersiveInventoryButtonRef,
     "aria-label": t('adventure.inventory'),
     "aria-expanded": showImmersiveInventory,
     "aria-controls": "adventure-immersive-inventory",
@@ -3482,11 +3781,11 @@ function AdventureView(props) {
     className: "text-amber-400/70 font-normal ml-0.5 text-[11px]"
   }, resource.unit)))))) : /*#__PURE__*/React.createElement("div", {
     className: "text-center text-[11px] text-amber-200/50 py-1 italic"
-  }, "No state variables yet")), /*#__PURE__*/React.createElement("div", null, adventureInputMode === 'system' && /*#__PURE__*/React.createElement("div", {
+  }, t('adventure.system_no_state_vars') || 'No state variables yet')), /*#__PURE__*/React.createElement("div", null, adventureInputMode === 'system' && /*#__PURE__*/React.createElement("div", {
     className: "text-[11px] font-bold text-indigo-300 uppercase tracking-wide mb-1 flex items-center gap-1"
   }, /*#__PURE__*/React.createElement("span", {
     "aria-hidden": "true"
-  }, "📜"), " Policies & Agreements"), adventureState.inventory.length > 0 ? /*#__PURE__*/React.createElement("div", {
+  }, "📜"), " ", t('adventure.policies_agreements') || 'Policies & Agreements'), adventureState.inventory.length > 0 ? /*#__PURE__*/React.createElement("div", {
     className: "grid grid-cols-4 gap-2"
   }, adventureState.inventory.map(item => /*#__PURE__*/React.createElement("button", {
     key: item.id,
@@ -3508,7 +3807,7 @@ function AdventureView(props) {
     className: "text-xs font-bold text-white"
   }, item.icon || item.name.charAt(0))))) : /*#__PURE__*/React.createElement("div", {
     className: "text-center text-[11px] text-white/50 py-2 italic"
-  }, adventureInputMode === 'system' ? 'No policies enacted' : t('adventure.inventory_empty'))))))), !immersiveHideUI && /*#__PURE__*/React.createElement("div", {
+  }, adventureInputMode === 'system' ? t('adventure.no_policies_enacted') || 'No policies enacted' : t('adventure.inventory_empty'))))))), !immersiveHideUI && /*#__PURE__*/React.createElement("div", {
     className: "absolute top-36 sm:top-40 bottom-0 left-0 right-0 px-2 sm:px-4 pb-2 z-30 flex flex-col justify-end pointer-events-none"
   }, /*#__PURE__*/React.createElement("div", {
     className: "pointer-events-auto bg-black/70 backdrop-blur-md border-t-2 border-white/20 p-3 pt-6 sm:p-6 rounded-2xl shadow-lg relative min-h-[200px] max-h-full overflow-hidden flex flex-col justify-center"
@@ -3674,6 +3973,13 @@ function AdventureView(props) {
     const paragraphs = adventureState.currentScene.text.split(/\n{2,}/);
     let sentenceCounter = 0;
     return paragraphs.map((para, pIdx) => {
+      const isTable = para.trim().startsWith('|') || para.includes('\n|');
+      if (isTable) {
+        return /*#__PURE__*/React.createElement("div", {
+          key: pIdx,
+          className: "overflow-x-auto my-3 text-sm not-italic"
+        }, renderFormattedText(para, false, true));
+      }
       const sentences = splitTextToSentences(para);
       if (sentences.length === 0) return null;
       return /*#__PURE__*/React.createElement("p", {
@@ -3698,11 +4004,13 @@ function AdventureView(props) {
           "aria-label": (t('adventure.read_aloud_title') || t('common.click_read_aloud') || 'Read aloud') + ': ' + cleanText.replace(/\*\*/g, '').trim(),
           title: t('adventure.read_aloud_title') || t('common.click_read_aloud'),
           onClick: e => {
+            if (e.target !== e.currentTarget && e.target?.closest?.('button, a, [role="button"]')) return;
             e.stopPropagation();
             handleSpeak(adventureState.currentScene.text, 'adventure-active', currentGlobalIdx);
           },
           onKeyDown: e => {
             if (e.key === 'Enter' || e.key === ' ') {
+              if (e.target !== e.currentTarget && e.target?.closest?.('button, a, [role="button"]')) return;
               e.preventDefault();
               e.stopPropagation();
               handleSpeak(adventureState.currentScene.text, 'adventure-active', currentGlobalIdx);
@@ -3754,7 +4062,7 @@ function AdventureView(props) {
       n: idx + 1
     }),
     type: "text",
-    value: opt,
+    value: typeof opt === 'string' ? opt : opt?.action || '',
     onChange: e => handleOptionBufferChange(idx, e.target.value),
     className: "flex-grow p-3 rounded-xl border-2 border-indigo-600 text-sm font-bold text-indigo-900 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-200 outline-none",
     placeholder: t('adventure.option_placeholder', {
@@ -3835,12 +4143,26 @@ function AdventureView(props) {
     className: "block"
   }, t('adventure.teacher_controls_live') || 'The teacher controls this class adventure.'), /*#__PURE__*/React.createElement("span", {
     className: "mt-1 block"
-  }, t('adventure.wait_for_action_round') || 'When a class-action round opens, submit your idea in the private live prompt. Free responses and votes are sent peer to peer.')) : renderAdventureComposer(false), handleAdventureHint && adventureFreeResponseEnabled && adventureState.currentScene && !adventureState.isGameOver && /*#__PURE__*/React.createElement("div", {
+  }, t('adventure.wait_for_action_round') || 'When a class-action round opens, submit your idea in the private live prompt. Free responses and votes are sent peer to peer.')) : /*#__PURE__*/React.createElement("div", {
+    className: "space-y-3"
+  }, isTeacherMode && activeSessionCode && typeof openAdventureActionVote === 'function' ? /*#__PURE__*/React.createElement("div", {
+    className: "rounded-xl border border-emerald-300 bg-emerald-50 p-3"
+  }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    onClick: openAdventureActionVote,
+    className: "min-h-11 w-full rounded-lg border border-emerald-700 bg-emerald-700 px-3 py-2 text-sm font-black text-white hover:bg-emerald-800 transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-emerald-800 focus-visible:ring-offset-2"
+  }, /*#__PURE__*/React.createElement(Users, {
+    size: 16,
+    "aria-hidden": "true"
+  }), " ", t('adventure.collect_class_actions') || 'Collect and vote on class actions'), /*#__PURE__*/React.createElement("p", {
+    className: "m-0 mt-2 text-[11px] leading-snug text-emerald-950"
+  }, t('adventure.collect_class_actions_privacy') || 'Student proposals and votes use the existing peer-to-peer Live Polling channel and are not written to the session document.')) : null, renderAdventureComposer(false)), handleAdventureHint && adventureFreeResponseEnabled && adventureState.currentScene && !adventureState.isGameOver && /*#__PURE__*/React.createElement("div", {
     className: "w-full mt-2 flex flex-col gap-2"
-  }, renderStrategyHintCard(false), renderStrategyHintButton(false)), adventureState.canStartSequel && /*#__PURE__*/React.createElement("div", {
-    className: "w-full mt-6 pt-6 border-t border-slate-200 animate-in fade-in slide-in-from-bottom-4 motion-reduce:animate-none flex flex-col items-center"
+  }, renderStrategyHintCard(false), renderStrategyHintButton(false)), adventureState.canStartSequel && (isTeacherMode || !activeSessionCode) && !soloStudentAiOff && /*#__PURE__*/React.createElement("div", {
+    style: adventureVisualTokens(theme),
+    className: "w-full mt-6 pt-6 border-t border-[var(--av-line)] animate-in fade-in slide-in-from-bottom-4 motion-reduce:animate-none flex flex-col items-center"
   }, /*#__PURE__*/React.createElement("p", {
-    className: "text-xs font-bold text-slate-600 uppercase tracking-widest mb-3"
+    className: "text-xs font-bold text-[var(--av-muted)] uppercase tracking-widest mb-3"
   }, t('adventure.sequel_prompt')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     "aria-label": t('adventure.start_sequel'),
@@ -3856,10 +4178,11 @@ function AdventureView(props) {
     onClose: () => setAdventureFluencyOpen(false),
     onSave: saveAdventureFluencyResult,
     t: t,
+    theme: theme,
     sceneText: adventureState.currentScene?.text || '',
     sceneId: adventureState.currentScene?.id || adventureState.turnCount,
     turnCount: adventureState.turnCount,
-    language: adventureLanguageMode,
+    language: adventureLanguageMode && adventureLanguageMode !== 'English' ? adventureLanguageMode === 'All + English' ? Array.isArray(selectedLanguages) && selectedLanguages.length ? selectedLanguages.join(', ') : glossLanguage : adventureLanguageMode : glossLanguage,
     gradeLevel: props.gradeLevel,
     stopPlayback: stopPlayback
   }), selectedInventoryItem && /*#__PURE__*/React.createElement("div", {
@@ -3980,7 +4303,7 @@ function normalizeOfflineStory(raw) {
     var choices = Array.isArray(scene.choices) ? scene.choices : Array.isArray(scene.options) ? scene.options : [];
     var out = {
       id: _offlineStr(scene.id, OFFLINE_LIMITS.maxId),
-      text: typeof scene.text === 'string' ? scene.text.trim() : _offlineStr(scene.narration, OFFLINE_LIMITS.maxText),
+      text: typeof scene.text === 'string' ? scene.text.trim().slice(0, OFFLINE_LIMITS.maxText) : _offlineStr(scene.narration, OFFLINE_LIMITS.maxText),
       ending: scene.ending === true || scene.isEnding === true || scene.end === true,
       choices: choices.filter(function (c) {
         return c && typeof c === 'object';
@@ -3991,8 +4314,10 @@ function normalizeOfflineStory(raw) {
         };
       })
     };
-    if (typeof scene.sceneImage === 'string' && scene.sceneImage) {
-      out.sceneImage = scene.sceneImage;
+    var safeImg = typeof scene.sceneImage === 'string' ? scene.sceneImage.trim() : '';
+    var allowRemoteOfflineImg = !(typeof window !== 'undefined' && (window._isDesktopBundledApp === true || window.__alloOfflineOnly === true));
+    if (safeImg && (/^data:image\/(png|jpeg|jpg|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(safeImg) || /^blob:/i.test(safeImg) || allowRemoteOfflineImg && /^https:/i.test(safeImg))) {
+      out.sceneImage = safeImg;
       if (typeof scene.sceneImageAlt === 'string') out.sceneImageAlt = scene.sceneImageAlt.slice(0, 300);
     }
     return out;
@@ -4107,7 +4432,7 @@ function validateOfflineStory(story) {
     if (scene.choices.length > OFFLINE_LIMITS.maxChoices) add(errors, 'too_big', scene.id);
     scene.choices.forEach(function (choice, index) {
       if (!choice.label) add(errors, 'empty_label', scene.id, index);
-      if (!graph.byId[choice.to]) add(errors, 'broken_choice', scene.id, index);
+      if (!graph.byId[choice.to]) add(errors, 'broken_choice', scene.id, index);else if (choice.to === scene.id) add(warnings, 'self_loop', scene.id, index);
     });
   });
   if (!endings) add(errors, 'no_ending');
@@ -4477,7 +4802,8 @@ function offlineIssueText(t, issue, sceneNumber) {
     no_ending: 'Mark at least one scene as an ending.',
     unreachable: 'No choice leads here.',
     no_way_out: 'Players get stuck in a loop with no way to an ending.',
-    ending_has_choices: 'Endings do not show choices.'
+    ending_has_choices: 'Endings do not show choices.',
+    self_loop: 'A choice leads right back to the same scene.'
   }[issue.code] || issue.code;
   return where + offlineText(t, 'issue_' + issue.code, fallback);
 }
@@ -4544,10 +4870,16 @@ function AdventureOfflinePlayer(props) {
   var [path, setPath] = React.useState([story.start]);
   var headingRef = React.useRef(null);
   var firstRender = React.useRef(true);
+  var mountedStoryRef = React.useRef(story);
   var byId = React.useMemo(function () {
     return _offlineGraph(story).byId;
   }, [story]);
   var scene = byId[path[path.length - 1]] || byId[story.start];
+  React.useEffect(function () {
+    if (mountedStoryRef.current === story) return;
+    mountedStoryRef.current = story;
+    setPath([story.start]);
+  }, [story]);
   React.useEffect(function () {
     if (firstRender.current) {
       firstRender.current = false;
@@ -4852,20 +5184,33 @@ function AdventureOfflineEditor(props) {
       "data-offline-add-choice": true,
       onClick: function () {
         update(function (s) {
-          // Student flow: each new choice gets its own new scene, so nothing dangles or hides.
-          if (studentMode && s.scenes.length < OFFLINE_LIMITS.maxScenes) {
-            var fresh = _offlineNewId(s);
-            s.scenes.push({
-              id: fresh,
-              text: '',
-              ending: false,
-              choices: []
+          // Student flow: reuse an empty unreachable scene first, otherwise create a fresh one.
+          if (studentMode) {
+            var graph = _offlineGraph(s);
+            var reusable = s.scenes.find(function (o) {
+              return o && o.id !== scene.id && !graph.reach[o.id] && !String(o.text || '').trim() && (!o.choices || !o.choices.length);
             });
-            s.scenes[index].choices.push({
-              label: '',
-              to: fresh
-            });
-            return;
+            if (reusable) {
+              s.scenes[index].choices.push({
+                label: '',
+                to: reusable.id
+              });
+              return;
+            }
+            if (s.scenes.length < OFFLINE_LIMITS.maxScenes) {
+              var fresh = _offlineNewId(s);
+              s.scenes.push({
+                id: fresh,
+                text: '',
+                ending: false,
+                choices: []
+              });
+              s.scenes[index].choices.push({
+                label: '',
+                to: fresh
+              });
+              return;
+            }
           }
           var other = s.scenes.find(function (o) {
             return o.id !== scene.id;
@@ -4988,6 +5333,7 @@ function AdventureOfflinePanel(props) {
   var [notice, setNotice] = React.useState('');
   var [dirty, setDirty] = React.useState(false);
   var closeRef = React.useRef(null);
+  var panelRef = React.useRef(null);
   var openerRef = React.useRef(typeof document !== 'undefined' ? document.activeElement : null);
   var aiReady = !studentMode && _aiUsable('text', props.callGemini);
   var door = null;
@@ -5001,7 +5347,12 @@ function AdventureOfflinePanel(props) {
   var Notice = !studentMode && typeof window.AlloAiSetupNotice === 'function' ? window.AlloAiSetupNotice : null;
   var autosaveRef = React.useRef(null);
   var savedIdRef = React.useRef(null);
+  var previewBtnRef = React.useRef(null);
   var close = function () {
+    if (!studentMode && dirty && draft && typeof window !== 'undefined' && typeof window.confirm === 'function') {
+      var confirmDiscard = offlineText(t, 'confirm_discard', 'You have unsaved changes to this offline adventure. Close without saving?');
+      if (!window.confirm(confirmDiscard)) return;
+    }
     // A learner's unsaved words are kept on close (Escape included) rather than lost.
     try {
       if (autosaveRef.current) autosaveRef.current();
@@ -5019,10 +5370,37 @@ function AdventureOfflinePanel(props) {
         preventScroll: true
       });
     } catch (_) {}
+    var trapSelector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
     var onKey = function (event) {
       if (event.key === 'Escape') {
         event.stopPropagation();
         close();
+        return;
+      }
+      if (event.key === 'Tab' && panelRef.current) {
+        var focusables = Array.prototype.slice.call(panelRef.current.querySelectorAll(trapSelector)).filter(function (el) {
+          return el.offsetParent !== null || el === document.activeElement;
+        });
+        if (!focusables.length) {
+          event.preventDefault();
+          try {
+            closeRef.current && closeRef.current.focus({
+              preventScroll: true
+            });
+          } catch (_) {}
+          return;
+        }
+        var first = focusables[0];
+        var last = focusables[focusables.length - 1];
+        if (event.shiftKey) {
+          if (document.activeElement === first || !panelRef.current.contains(document.activeElement)) {
+            event.preventDefault();
+            last.focus();
+          }
+        } else if (document.activeElement === last || !panelRef.current.contains(document.activeElement)) {
+          event.preventDefault();
+          first.focus();
+        }
       }
     };
     document.addEventListener('keydown', onKey, true);
@@ -5117,6 +5495,7 @@ function AdventureOfflinePanel(props) {
       if (e.target === e.currentTarget) close();
     }
   }, /*#__PURE__*/React.createElement("div", {
+    ref: panelRef,
     role: "dialog",
     "aria-modal": "true",
     "aria-labelledby": titleId,
@@ -5168,6 +5547,7 @@ function AdventureOfflinePanel(props) {
     size: 14,
     "aria-hidden": "true"
   }), " ", offlineText(t, 'start_blank', 'Write my own')), draft && /*#__PURE__*/React.createElement("button", {
+    ref: previewBtnRef,
     type: "button",
     "data-offline-preview": true,
     "aria-pressed": previewing,
@@ -5194,6 +5574,13 @@ function AdventureOfflinePanel(props) {
     theme: props.theme,
     onExit: function () {
       setPreviewing(false);
+      setTimeout(function () {
+        try {
+          previewBtnRef.current && previewBtnRef.current.focus({
+            preventScroll: true
+          });
+        } catch (_) {}
+      }, 0);
     }
   }) : /*#__PURE__*/React.createElement(AdventureOfflineEditor, {
     story: draft,

@@ -60,12 +60,20 @@ function SentenceFramesView(props) {
   // Components
   var DraftFeedbackInterface = props.DraftFeedbackInterface;
   var ErrorBoundary = props.ErrorBoundary;
+  const activeFieldRef = React.useRef(null);
   const scaffoldData = generatedContent?.data;
   const usableItems = Array.isArray(scaffoldData?.items) ? scaffoldData.items : [];
   const isUsableItem = item => item && typeof item.text === 'string' && item.text.trim();
   if (!scaffoldData || (scaffoldData.mode === 'list' ? !usableItems.some(isUsableItem) : typeof scaffoldData.text !== 'string' || !scaffoldData.text.trim())) {
     return <div role="status" className="rounded-xl border border-slate-300 bg-slate-50 p-5 text-slate-700">{label('scaffolds.empty_resource', 'No writing prompts are available. Choose or regenerate a writing scaffold to begin.')}</div>;
   }
+  const textAiUsable = (() => {
+    try {
+      if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
+      if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return window.__alloAiUsable('text');
+    } catch (_) {}
+    return true;
+  })();
   // A Mastery Check draft belongs to the scaffold it was started on.
   const sessionResourceId = gradingSession.resourceId;
   const ownsSession = prev => !!prev && String(prev.resourceId) === String(sessionResourceId);
@@ -84,6 +92,49 @@ function SentenceFramesView(props) {
   const wordBank = (Array.isArray(scaffoldData.wordBank) ? scaffoldData.wordBank : []).filter(w => typeof w === 'string' && w.trim()).map(w => w.trim()).slice(0, 40);
   const wordBankHeadingId = `scaffold-word-bank-${generatedContent?.id}`;
   const isDiscussionPrompts = scaffoldData.frameType === 'Discussion Prompts' || /^Discussion Prompts\b/.test(String(generatedContent?.meta || ''));
+  const insertWordBankTerm = (word) => {
+    if (!generatedContent || typeof handleStudentInput !== 'function') return;
+    const resId = generatedContent.id;
+    const data = generatedContent.data || {};
+    let targetKey = null;
+    const tracked = activeFieldRef.current && activeFieldRef.current.resourceId === resId ? activeFieldRef.current : null;
+    if (tracked && tracked.key != null) {
+      targetKey = tracked.key;
+    } else if (data.mode === 'list') {
+      const firstIdx = usableItems.findIndex(isUsableItem);
+      if (firstIdx >= 0) targetKey = firstIdx;
+    } else {
+      const firstBlank = scaffoldParagraphParts(data.text).find(p => p.responseKey);
+      if (firstBlank) targetKey = firstBlank.responseKey;
+    }
+    if (targetKey == null) return;
+    const currentVal = String((studentResponses[resId] && studentResponses[resId][targetKey]) || '');
+    const el = tracked && tracked.el && tracked.el.isConnected ? tracked.el : null;
+    const hasSelection = el && typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number';
+    const start = hasSelection ? Math.max(0, Math.min(currentVal.length, el.selectionStart)) : currentVal.length;
+    const end = hasSelection ? Math.max(start, Math.min(currentVal.length, el.selectionEnd)) : start;
+    const before = currentVal.slice(0, start);
+    const after = currentVal.slice(end);
+    const needsLeadingSpace = before.length > 0 && !/[\s(\["'“‘/-]$/.test(before);
+    const needsTrailingSpace = after.length > 0 && !/^[\s.,!?;:)\]"'”’/-]/.test(after);
+    const inserted = (needsLeadingSpace ? ' ' : '') + word + (needsTrailingSpace ? ' ' : '');
+    const nextVal = before + inserted + after;
+    handleStudentInput(resId, targetKey, nextVal);
+    if (el) {
+      const caretPos = before.length + (needsLeadingSpace ? 1 : 0) + word.length;
+      const restoreFocus = () => {
+        try {
+          el.focus();
+          if (typeof el.setSelectionRange === 'function') el.setSelectionRange(caretPos, caretPos);
+        } catch (_) {}
+      };
+      if (typeof window !== 'undefined' && typeof window.requestAnimationFrame === 'function') {
+        window.requestAnimationFrame(restoreFocus);
+      } else {
+        restoreFocus();
+      }
+    }
+  };
   return (
                   <div className="space-y-6">
                       <div className="bg-rose-50 p-4 rounded-lg border border-rose-100 mb-6 flex flex-wrap justify-between items-start gap-4" data-help-key="scaffolds_goal_panel">
@@ -99,6 +150,7 @@ function SentenceFramesView(props) {
                             {!isTeacherMode && (
                                 <>
                                 <button
+                                    type="button"
                                     onClick={handleResetScaffolds}
                                     data-help-key="scaffolds_reset"
                                     className="min-h-11 flex items-center gap-1 text-xs font-bold text-rose-600 hover:text-rose-800 bg-white border border-rose-200 hover:bg-rose-50 px-3 py-1.5 rounded-full transition-colors shadow-sm"
@@ -107,7 +159,9 @@ function SentenceFramesView(props) {
                                 >
                                     <RefreshCw size={12} /> {t('common.reset')}
                                 </button>
+                                {textAiUsable && (
                                 <button
+                                    type="button"
                                     onClick={launchGradingSession}
                                     data-help-key="scaffolds_grading"
                                     className={`min-h-11 flex items-center gap-1 text-xs font-bold text-white bg-rose-600 hover:bg-rose-700 px-3 py-1.5 rounded-full transition-all shadow-sm ${isScaffoldComplete ? 'animate-pulse motion-reduce:animate-none ring-4 ring-rose-300 shadow-lg scale-105' : ''}`}
@@ -116,10 +170,12 @@ function SentenceFramesView(props) {
                                 >
                                     <Sparkles size={12} /> {label('scaffolds.get_draft_feedback', 'Get feedback on my draft')}
                                 </button>
+                                )}
                                 </>
                             )}
                             {isTeacherMode && (
                             <button
+                                type="button"
                                 onClick={handleToggleIsEditingScaffolds}
                                 data-help-key="scaffolds_edit_toggle"
                                 className={`min-h-11 flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-bold transition-all shadow-sm ${isEditingScaffolds ? 'bg-rose-600 text-white hover:bg-rose-700' : 'bg-white text-rose-700 border border-rose-200 hover:bg-rose-50'}`}
@@ -130,12 +186,32 @@ function SentenceFramesView(props) {
                             )}
                         </div>
                     </div>
-                    {!isTeacherMode && <p data-scaffold-feedback-purpose className="text-sm text-slate-700">{label('scaffolds.feedback_purpose','Get AI feedback on your draft. This does not submit your work to your teacher.')}</p>}
+                    {!isTeacherMode && textAiUsable && <p data-scaffold-feedback-purpose className="text-sm text-slate-700">{label('scaffolds.feedback_purpose','Get AI feedback on your draft. This does not submit your work to your teacher.')}</p>}
                     {wordBank.length > 0 && (
                         <section data-scaffold-word-bank aria-labelledby={wordBankHeadingId} className="bg-amber-50 border border-amber-200 rounded-xl p-4">
-                            <h4 id={wordBankHeadingId} className="text-xs font-bold text-amber-900 uppercase tracking-wider mb-2">{label('scaffolds.word_bank', 'Word bank')}</h4>
+                            <div className="flex flex-wrap items-baseline justify-between gap-2 mb-2">
+                                <h4 id={wordBankHeadingId} className="text-xs font-bold text-amber-900 uppercase tracking-wider">{label('scaffolds.word_bank', 'Word bank')}</h4>
+                                {!isTeacherMode && !isEditingScaffolds && (
+                                    <span className="text-[11px] font-medium text-amber-800">{label('scaffolds.word_bank_hint', 'Click a word to insert it')}</span>
+                                )}
+                            </div>
                             <ul className="flex flex-wrap gap-2">
-                                {wordBank.map((word, i) => <li key={i} dir="auto" className="px-3 py-1 rounded-full bg-white border border-amber-300 text-sm font-semibold text-amber-950">{word}</li>)}
+                                {wordBank.map((word, i) => (
+                                    <li key={i}>
+                                        {(!isTeacherMode && !isEditingScaffolds) ? (
+                                            <button
+                                                type="button"
+                                                dir="auto"
+                                                onMouseDown={(e) => e.preventDefault()}
+                                                onClick={() => insertWordBankTerm(word)}
+                                                aria-label={`${label('scaffolds.insert_word', 'Insert word')}: ${word}`}
+                                                className="min-h-11 px-3 py-1.5 rounded-full bg-white border border-amber-300 text-sm font-semibold text-amber-950 hover:bg-amber-100 hover:border-amber-500 active:scale-95 transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600 cursor-pointer"
+                                            >{word}</button>
+                                        ) : (
+                                            <span dir="auto" className="inline-block px-3 py-1 rounded-full bg-white border border-amber-300 text-sm font-semibold text-amber-950">{word}</span>
+                                        )}
+                                    </li>
+                                ))}
                             </ul>
                         </section>
                     )}
@@ -189,6 +265,7 @@ function SentenceFramesView(props) {
                                                         aria-label={`${label('scaffolds.student_response', 'Student response')} ${visibleItemNumbers[idx]}`}
                                                         aria-describedby={`scaffold-prompt-${generatedContent.id}-${idx}`}
                                                         value={studentResponses[generatedContent.id]?.[idx] || ''}
+                                                        onFocus={(e) => { activeFieldRef.current = { resourceId: generatedContent.id, key: idx, el: e.currentTarget }; }}
                                                         onChange={(e) => handleStudentInput(generatedContent.id, idx, e.target.value)}
                                                         data-help-key="scaffolds_student_input"
                                                         className="w-full mt-2 p-3 border border-slate-400 rounded-lg text-sm focus:ring-2 focus:ring-rose-200 focus:border-rose-300 outline-none resize-y bg-slate-50 focus:bg-white transition-all font-sans"
@@ -197,7 +274,6 @@ function SentenceFramesView(props) {
                                                     />
                                                 </>
                                             )}
-                                            <div className="mt-3 border-b border-slate-100 border-dashed w-full"></div>
                                             <div className="mt-3 border-b border-slate-100 border-dashed w-full"></div>
                                          </div>
                                      </div>
@@ -223,6 +299,7 @@ function SentenceFramesView(props) {
                                             key={i}
                                             type="text"
                                             value={studentResponses[generatedContent.id]?.[responseKey] || ''}
+                                            onFocus={(e) => { activeFieldRef.current = { resourceId: generatedContent.id, key: responseKey, el: e.currentTarget }; }}
                                             onChange={(e) => handleStudentInput(generatedContent.id, responseKey, e.target.value)}
                                             dir="auto" className="placeholder:text-current placeholder:opacity-100 placeholder:font-normal inline-block w-44 max-w-full min-h-11 border-b-2 border-slate-300 mx-1 text-center text-indigo-700 font-bold focus:border-indigo-500 focus:outline-none bg-transparent min-w-[100px] px-1 focus:bg-indigo-50 rounded transition-colors"
                                             placeholder={part.replace(/[\[\]]/g, '')}
@@ -251,7 +328,7 @@ function SentenceFramesView(props) {
                         </div>
                     )}
                     {(isTeacherMode || generatedContent?.data.rubric) && (
-                    <div className="mt-1 pt-4 border-t border-rose-100 animate-in fade-in slide-in-from-bottom-4">
+                    <div className="mt-1 pt-4 border-t border-rose-100 animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-4">
                         <div className="flex justify-between items-center mb-3">
                                 <h4 className="font-bold text-rose-900 flex items-center gap-2">
                                 <ClipboardList size={18} className="text-rose-500"/> {isIndependentMode ? label('scaffolds.self_checklist', 'Self-Checklist') : label('scaffolds.rubric', 'Grading Rubric')}
@@ -261,7 +338,8 @@ function SentenceFramesView(props) {
                                         <button
                                         type="button"
                                         onClick={handleGenerateRubric}
-                                        disabled={isGeneratingRubric}
+                                        disabled={isGeneratingRubric || !textAiUsable}
+                                        title={!textAiUsable ? label('sidebar.needs_ai_setup', 'Needs AI setup') : undefined}
                                         aria-busy={!!isGeneratingRubric}
                                         className="text-xs bg-rose-50 text-rose-700 hover:bg-rose-100 border border-rose-700 px-3 py-1.5 rounded-full font-bold transition-colors flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
                                         >
@@ -274,6 +352,7 @@ function SentenceFramesView(props) {
                                     {generatedContent?.data.rubric && (
                                         <>
                                             <button
+                                                type="button"
                                                 onClick={handleToggleRubricZoom}
                                                 className={`text-xs flex items-center gap-1 px-2 py-1 rounded transition-colors border ${rubricZoom ? 'bg-rose-100 text-rose-700 border-rose-200' : 'bg-white text-slate-600 hover:text-indigo-600 border-slate-200'}`}
                                                 title={t('scaffolds.rubric_toggle_tooltip')}
@@ -282,6 +361,7 @@ function SentenceFramesView(props) {
                                                 {rubricZoom ? t('scaffolds.rubric_normal') : t('scaffolds.rubric_fit')}
                                             </button>
                                             <button
+                                                type="button"
                                                 aria-label={t('common.copy')}
                                                 onClick={() => copyToClipboard(generatedContent?.data.rubric)}
                                                 className="text-xs flex items-center gap-1 bg-white text-slate-600 hover:text-indigo-600 border border-slate-400 hover:border-indigo-200 px-2 py-1 rounded transition-colors"
@@ -331,8 +411,10 @@ function SentenceFramesView(props) {
                                             placeholder={t('dashboard.grading.work_placeholder')}
                                         />
                                         <button
+                                            type="button"
                                             onClick={handleAutoGrade}
-                                            disabled={!studentWorkInput.trim() || isGrading}
+                                            disabled={!studentWorkInput.trim() || isGrading || !textAiUsable}
+                                            title={!textAiUsable ? label('sidebar.needs_ai_setup', 'Needs AI setup') : undefined}
                                             className="w-full bg-indigo-600 text-white font-bold py-2 rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
                                         >
                                             {isGrading ? <RefreshCw size={16} className="animate-spin motion-reduce:animate-none"/> : <Sparkles size={16} className="text-yellow-700 fill-current"/>}
@@ -340,7 +422,7 @@ function SentenceFramesView(props) {
                                         </button>
                                     </div>
                                 ) : (
-                                    <div className="animate-in fade-in slide-in-from-bottom-2">
+                                    <div className="animate-in motion-reduce:animate-none fade-in slide-in-from-bottom-2">
                                         <div className="bg-white rounded-lg border border-indigo-100 p-4 mb-4">
                                             <div className="flex justify-between items-center mb-4 border-b border-indigo-50 pb-2">
                                                 <span className="font-bold text-indigo-900 text-lg">{t('dashboard.grading.total_score')}</span>
@@ -369,6 +451,7 @@ function SentenceFramesView(props) {
                                             </div>
                                         </div>
                                         <button
+                                            type="button"
                                             onClick={handleSetGradingResultToNull}
                                             className="text-xs text-indigo-500 hover:text-indigo-700 underline w-full text-center"
                                         >

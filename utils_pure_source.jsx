@@ -1158,13 +1158,147 @@ const fetchWithExponentialBackoff = async (url, options = {}, maxRetries = 5, pe
   throw new Error(`Failed to fetch ${_safeUrl} after ${maxRetries} retries.`);
 };
 
+const _parseIpv4Part = (part) => {
+    if (/^0x[0-9a-f]+$/i.test(part)) return parseInt(part, 16);
+    if (/^0[0-7]*$/.test(part)) return parseInt(part, 8);
+    if (/^[1-9]\d*$/.test(part)) return parseInt(part, 10);
+    return NaN;
+};
+const _parseIpv4ToUint32 = (host) => {
+    const parts = host.split('.');
+    if (parts.length < 1 || parts.length > 4 || parts.some((p) => !p)) return null;
+    const nums = parts.map(_parseIpv4Part);
+    if (nums.some((n) => !Number.isFinite(n) || n < 0)) return null;
+    if (parts.length === 1) return nums[0] <= 0xffffffff ? (nums[0] >>> 0) : null;
+    if (parts.length === 2) {
+        if (nums[0] > 0xff || nums[1] > 0xffffff) return null;
+        return (((nums[0] << 24) | nums[1]) >>> 0);
+    }
+    if (parts.length === 3) {
+        if (nums[0] > 0xff || nums[1] > 0xff || nums[2] > 0xffff) return null;
+        return (((nums[0] << 24) | (nums[1] << 16) | nums[2]) >>> 0);
+    }
+    if (nums.some((n) => n > 0xff)) return null;
+    return (((nums[0] << 24) | (nums[1] << 16) | (nums[2] << 8) | nums[3]) >>> 0);
+};
+const _isPrivateIpv4Uint32 = (n) => {
+    const a = (n >>> 24) & 0xff;
+    const b = (n >>> 16) & 0xff;
+    const c = (n >>> 8) & 0xff;
+    if (a === 0 || a === 10 || a === 127 || a >= 224) return true;
+    if (a === 100 && b >= 64 && b <= 127) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 0 && c === 0) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 198 && (b === 18 || b === 19)) return true;
+    return false;
+};
+const _parseIpv6Hextets = (addr) => {
+    const clean = addr.replace(/%.*/, '');
+    const halves = clean.split('::');
+    if (halves.length > 2) return null;
+    const parseSide = (side) => {
+        if (!side) return [];
+        const out = [];
+        const tokens = side.split(':');
+        for (let i = 0; i < tokens.length; i++) {
+            const tok = tokens[i];
+            if (tok.includes('.')) {
+                if (i !== tokens.length - 1 || (halves.length === 2 && side === halves[0])) return null;
+                const ipv4 = _parseIpv4ToUint32(tok);
+                if (ipv4 === null) return null;
+                out.push((ipv4 >>> 16) & 0xffff, ipv4 & 0xffff);
+            } else {
+                if (!/^[0-9a-f]{1,4}$/i.test(tok)) return null;
+                out.push(parseInt(tok, 16));
+            }
+        }
+        return out;
+    };
+    const left = parseSide(halves[0]);
+    if (!left) return null;
+    if (halves.length === 1) return left.length === 8 ? left : null;
+    const right = parseSide(halves[1]);
+    if (!right || left.length + right.length >= 8) return null;
+    return left.concat(new Array(8 - left.length - right.length).fill(0), right);
+};
+const _isPrivateOrLocalHost = (rawHost) => {
+    const host = String(rawHost || '').trim().toLowerCase().replace(/^\[|\]$/g, '').replace(/\.+$/, '');
+    if (!host) return true;
+    if (host === 'localhost' || host.endsWith('.localhost') || host.endsWith('.local')
+        || host.endsWith('.internal') || host.endsWith('.localdomain')) {
+        return true;
+    }
+    if (host.includes(':')) {
+        const h = _parseIpv6Hextets(host);
+        if (!h) return true;
+        if (h.every((v) => v === 0)) return true;
+        if (h.slice(0, 7).every((v) => v === 0) && h[7] === 1) return true;
+        if ((h[0] & 0xfe00) === 0xfc00 || (h[0] & 0xffc0) === 0xfe80 || (h[0] & 0xffc0) === 0xfec0 || (h[0] & 0xff00) === 0xff00) return true;
+        const isMappedV4 = h.slice(0, 5).every((v) => v === 0) && (h[5] === 0xffff || h[5] === 0);
+        const isNat64 = h[0] === 0x0064 && h[1] === 0xff9b && h.slice(2, 6).every((v) => v === 0);
+        if (isMappedV4 || isNat64) return _isPrivateIpv4Uint32(((h[6] << 16) | h[7]) >>> 0);
+        return false;
+    }
+    const ipv4 = _parseIpv4ToUint32(host);
+    if (ipv4 !== null) return _isPrivateIpv4Uint32(ipv4);
+    return false;
+};
+const _normalizeSafeExternalHttpUrl = (rawUrl) => {
+    let text = typeof rawUrl === 'string' ? rawUrl.trim() : '';
+    if (!text) throw new Error('Invalid URL format.');
+    if (!/^[a-zA-Z][a-zA-Z0-9+.-]*:(?:\/\/|[^0-9])/.test(text)) {
+        text = 'https://' + text;
+    }
+    let parsed;
+    try {
+        parsed = new URL(text);
+    } catch (_) {
+        throw new Error('Invalid URL format.');
+    }
+    if ((parsed.protocol !== 'http:' && parsed.protocol !== 'https:') || !/^https?:\/\//i.test(text)) {
+        throw new Error('Only http:// and https:// URLs are allowed.');
+    }
+    if (parsed.username || parsed.password) {
+        throw new Error('URLs with embedded credentials are not allowed.');
+    }
+    if (_isPrivateOrLocalHost(parsed.hostname)) {
+        throw new Error('Local or private network URLs are not allowed.');
+    }
+    return parsed.href;
+};
 const isGoogleRedirect = (url) => {
-    if (!url) return false;
-    return url.includes('google.com/url') || url.includes('google.com/search');
+    if (!url || typeof url !== 'string') return false;
+    const trimmed = url.trim();
+    if (!trimmed) return false;
+    try {
+        const parsed = new URL(/^[a-zA-Z][a-zA-Z0-9+.-]*:(?:\/\/|[^0-9])/.test(trimmed) ? trimmed : 'https://' + trimmed);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+        const host = parsed.hostname.toLowerCase();
+        if (host !== 'google.com' && !host.endsWith('.google.com')) return false;
+        return parsed.pathname === '/url' || parsed.pathname.startsWith('/url/')
+            || parsed.pathname === '/search' || parsed.pathname.startsWith('/search/');
+    } catch (_) {
+        return false;
+    }
 };
 const isYouTubeUrl = (url) => {
-    if (!url) return false;
-    return /(?:youtube\.com\/(?:watch|embed|shorts)|youtu\.be\/)/i.test(url);
+    if (!url || typeof url !== 'string') return false;
+    const trimmed = url.trim();
+    if (!trimmed) return false;
+    try {
+        const parsed = new URL(/^[a-zA-Z][a-zA-Z0-9+.-]*:(?:\/\/|[^0-9])/.test(trimmed) ? trimmed : 'https://' + trimmed);
+        if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') return false;
+        const host = parsed.hostname.toLowerCase();
+        if (host === 'youtu.be') return parsed.pathname.length > 1;
+        if (host === 'youtube.com' || host.endsWith('.youtube.com')) {
+            return /^\/(?:watch|embed|shorts)(?:\/|$)/i.test(parsed.pathname);
+        }
+        return false;
+    } catch (_) {
+        return false;
+    }
 };
 const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
     // Student AI-off / policy: no Gemini URL Context or YouTube transcript (blocked fns are truthy).
@@ -1262,10 +1396,13 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             return null;
         }
     };
+    if (isGoogleRedirect(targetUrl)) {
+        throw new Error("Cannot fetch Google Redirects directly. Please open the link, copy the final URL from the address bar, and paste it here.");
+    }
+    targetUrl = _normalizeSafeExternalHttpUrl(targetUrl);
     if (isYouTubeUrl(targetUrl) && cloudAiOk) {
         if (toastCallback) toastCallback("🎬 YouTube detected — extracting transcript via Gemini...", "info");
         try {
-            if (!targetUrl.startsWith('http')) targetUrl = 'https://' + targetUrl;
             const ytUrl = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODELS.default}:generateContent`;
             const ytPayload = {
                 contents: [{
@@ -1299,22 +1436,7 @@ const fetchAndCleanUrl = async (url, geminiCaller, toastCallback) => {
             if (toastCallback) toastCallback('YouTube transcript unavailable (' + failureCategory(ytErr) + '). Trying standard source import...', 'warning');
         }
     }
-    try {
-        if (isGoogleRedirect(targetUrl)) {
-            throw new Error("Cannot fetch Google Redirects directly. Please open the link, copy the final URL from the address bar, and paste it here.");
-        }
-        new URL(targetUrl);
-    } catch (e) {
-        if (e.message.startsWith("Cannot fetch")) throw e;
-        if (!targetUrl.startsWith('http')) {
-            targetUrl = 'https://' + targetUrl;
-            try { new URL(targetUrl); } catch (e) {
-                throw new Error("Invalid URL format.");
-            }
-        } else {
-            throw new Error("Invalid URL format.");
-        }
-    }
+    targetUrl = _normalizeSafeExternalHttpUrl(targetUrl);
     try {
         const jinaUrl = `https://r.jina.ai/${targetUrl}`;
         let response;

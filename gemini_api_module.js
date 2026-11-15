@@ -133,7 +133,10 @@ const createGeminiAPI = (deps) => {
     // The host's learner-role fence wins at request time, so a client built
     // with the teacher's device key cannot send it after a switch to student.
     const _pastedKeyFenced = () => {
-        try { return typeof window !== 'undefined' && typeof window.__alloPastedAiKeyFenceActive === 'function' && window.__alloPastedAiKeyFenceActive() === true; }
+        try {
+            if (typeof window !== 'undefined' && window.__alloAiSecretsLocked === true) return true;
+            return typeof window !== 'undefined' && typeof window.__alloPastedAiKeyFenceActive === 'function' && window.__alloPastedAiKeyFenceActive() === true;
+        }
         catch (_) { return true; }
     };
     const _resolveApiKey = () => (_pastedKeyFenced() ? '' : (_bootApiKey || _liveStoredGeminiKey()));
@@ -197,6 +200,12 @@ const createGeminiAPI = (deps) => {
       _requestSnapshots.add(captured); return captured;
     };
     const _authorizeRequest = async (request, operation = 'text', search = false) => {
+      if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) {
+        const disabledErr = new Error('AI is unavailable in this mode.');
+        disabledErr.code = 'allo/ai-disabled';
+        disabledErr.isConfig = true;
+        throw disabledErr;
+      }
       _runRequestControls(request.requestControls);
       let guard = _requestGuards.get(request);
       if (!guard) {

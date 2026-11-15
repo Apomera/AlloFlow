@@ -143,7 +143,7 @@
     if (ctx && typeof ctx.searchWeb === 'function') raw = await ctx.searchWeb(q, { limit: E.MAX_DISCOVERY_RESULTS, task: 'lumen-source-discovery' });
     else if (root && root.WebSearchProvider && typeof root.WebSearchProvider.search === 'function') raw = await root.WebSearchProvider.search(q, E.MAX_DISCOVERY_RESULTS, q);
     var candidates = E.normalizeDiscoveryResults(raw, q);
-    if (!candidates.length && textAiUsable(ctx)) {
+    if (!candidates.length && textAiUsable(ctx) && typeof ctx.callGemini === 'function') {
       var prompt = 'Find high-quality, text-based sources about this research topic. Return grounded web results only. Topic: "' + q + '"';
       raw = await ctx.callGemini(prompt, false, true, 0.2);
       candidates = E.normalizeDiscoveryResults(raw, q);

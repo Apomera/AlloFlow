@@ -158,17 +158,22 @@ describe('worker /submitPlugin structural sanity (non-blocking)', () => {
 });
 
 describe('worker GET /pluginSubmissions (token-gated reader)', () => {
-  function getList(env, token, withSource) {
-    const u = 'https://worker.test/pluginSubmissions' + (token ? ('?token=' + encodeURIComponent(token)) : '') + (withSource ? '&source=1' : '');
-    return worker.fetch(new Request(u, { method: 'GET' }), env);
+  function getList(env, token, withSource, queryToken) {
+    const qs = [];
+    if (queryToken) qs.push('token=' + encodeURIComponent(queryToken));
+    if (withSource) qs.push('source=1');
+    const u = 'https://worker.test/pluginSubmissions' + (qs.length ? ('?' + qs.join('&')) : '');
+    const headers = token ? { Authorization: 'Bearer ' + token } : {};
+    return worker.fetch(new Request(u, { method: 'GET', headers }), env);
   }
 
   it('is disabled (501) without ADMIN_TOKEN configured', async () => {
     expect((await getList({ PLUGIN_SUBMISSIONS: fakeKv() })).status).toBe(501);
   });
 
-  it('rejects a wrong token (401)', async () => {
+  it('rejects a wrong token or query-string token (401)', async () => {
     expect((await getList({ PLUGIN_SUBMISSIONS: fakeKv(), ADMIN_TOKEN: 'secret' }, 'nope')).status).toBe(401);
+    expect((await getList({ PLUGIN_SUBMISSIONS: fakeKv(), ADMIN_TOKEN: 'secret' }, null, false, 'secret')).status).toBe(401);
   });
 
   it('lists submissions with the correct token, omitting source by default', async () => {

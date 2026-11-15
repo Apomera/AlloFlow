@@ -39,6 +39,14 @@
       .slice(0, limit);
   }
 
+  function redactString(value) {
+    return String(value == null ? '' : value)
+      .replace(/[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}/gi, '[redacted]')
+      .replace(/\b\d{3}-\d{2}-\d{4}\b/g, '[redacted]')
+      .replace(/(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}\b/g, '[redacted]')
+      .replace(/\b(?:AIza[0-9A-Za-z_-]{20,}|sk-[A-Za-z0-9_-]{20,}|Bearer\s+[A-Za-z0-9._~+/=-]{16,})\b/g, '[redacted]');
+  }
+
   function safeUrl(value) {
     try {
       var parsed = new URL(String(value || '').trim());
@@ -180,7 +188,7 @@
 
   async function search(query, options) {
     options = options || {};
-    var safeQuery = clean(query, MAX_QUERY_CHARS);
+    var safeQuery = clean(redactString(query), MAX_QUERY_CHARS);
     var scope = scopeFor(options.scope);
     var searchQuery = scopedQuery(safeQuery, scope);
     var requested = Number(options.maxResults);
@@ -214,6 +222,7 @@
       response = await root.fetch(requestUrl, {
         method: 'GET',
         mode: 'cors',
+        credentials: 'omit',
         headers: { Accept: 'application/json' },
         referrerPolicy: 'no-referrer',
       });
@@ -250,6 +259,7 @@
       response = await root.fetch(requestUrl, {
         method: 'GET',
         mode: 'cors',
+        credentials: 'omit',
         headers: { Accept: 'application/json' },
         referrerPolicy: 'no-referrer',
       });

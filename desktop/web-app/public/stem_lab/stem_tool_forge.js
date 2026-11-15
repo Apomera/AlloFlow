@@ -363,9 +363,14 @@
   var _loaded = {};
   function loadScript(url) {
     return new Promise(function (resolve, reject) {
+      if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+        return reject(new Error('External script loading disabled in desktop app'));
+      }
       if (_loaded[url]) return resolve();
       var s = document.createElement('script');
       s.src = url; s.async = true;
+      s.crossOrigin = 'anonymous';
+      s.referrerPolicy = 'no-referrer';
       s.onload = function () { _loaded[url] = true; resolve(); };
       s.onerror = function () { reject(new Error('failed to load ' + url)); };
       document.head.appendChild(s);
@@ -589,14 +594,15 @@
     var aiText = (function () {
       try {
         if (typeof window === 'undefined') return false;
+        if (window.__alloStudentAiDisabled === true || window._alloQrBlocked === true) return false;
+        if (!ctx || typeof ctx.callGemini !== 'function' || ctx.callGemini._alloQrBlocked) return false;
+        if (typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text', ctx.callGemini)) return false;
         if (typeof window.__alloResolveAiCapability !== 'function') {
-          // No resolver (old host, or a stub ctx): fall back to the only other
-          // honest signal we have rather than claiming AI works.
-          return typeof ctx.callGemini === 'function';
+          return true;
         }
         var cap = window.__alloResolveAiCapability();
-        return !!(cap && cap.text) && typeof ctx.callGemini === 'function';
-      } catch (e) { return typeof ctx.callGemini === 'function'; }
+        return !!(cap && cap.text);
+      } catch (e) { return typeof window !== 'undefined' && window.__alloStudentAiDisabled !== true && window._alloQrBlocked !== true && !!(ctx && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked) && (typeof window.__alloAiUsable !== 'function' || window.__alloAiUsable('text', ctx.callGemini)); }
     })();
     // honor the 2nd-arg English fallback (ctx.t is single-arg & ignores it; see dev-tools/check_i18n_fallback.cjs)
     var t = function (k, f) { var v; try { v = (typeof ctx.t === 'function') ? ctx.t(k, f) : null; } catch (e) { v = null; } return (v == null) ? (f != null ? f : k) : v; };

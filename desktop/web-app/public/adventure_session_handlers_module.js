@@ -203,12 +203,12 @@ const handleDiceRollComplete = (deps) => {
               'Hardcore': { energyLossMult: 2.5,  rewardMult: 0.5 }
           };
           const rules = diffRules[adventureDifficulty] || diffRules['Normal'];
+          const CRIT_THRESHOLD = adventureChanceMode ? 28 : 18;
+          const SUCCESS_THRESHOLD = adventureChanceMode ? 22 : 12;
+          const PARTIAL_THRESHOLD = adventureChanceMode ? 16 : 6;
           let energyDelta = 0;
           if (data.rollDetails) {
             const score = data.rollDetails.total || data.rollDetails.d20 || 10;
-            const CRIT_THRESHOLD = adventureChanceMode ? 28 : 18;
-            const SUCCESS_THRESHOLD = adventureChanceMode ? 22 : 12;
-            const PARTIAL_THRESHOLD = adventureChanceMode ? 16 : 6;
             if (score >= CRIT_THRESHOLD) {
                 energyDelta = 10;
             } else if (score >= SUCCESS_THRESHOLD) {
@@ -264,9 +264,6 @@ const handleDiceRollComplete = (deps) => {
           let xpDelta = 0;
           if (data.rollDetails) {
               const score = data.rollDetails.total || data.rollDetails.d20 || 10;
-              const CRIT_THRESHOLD = adventureChanceMode ? 28 : 18;
-              const SUCCESS_THRESHOLD = adventureChanceMode ? 22 : 12;
-              const PARTIAL_THRESHOLD = adventureChanceMode ? 16 : 6;
               if (score >= CRIT_THRESHOLD) xpDelta = 100;
               else if (score >= SUCCESS_THRESHOLD) xpDelta = 50;
               else if (score >= PARTIAL_THRESHOLD) xpDelta = 25;
@@ -286,19 +283,25 @@ const handleDiceRollComplete = (deps) => {
           const safeXpDelta = xpDelta;
           let newXp = prev.xp + safeXpDelta;
           let newLevel = prev.level;
-          let newXpToNext = prev.xpToNextLevel;
+          let newXpToNext = (Number.isFinite(Number(prev.xpToNextLevel)) && Number(prev.xpToNextLevel) > 0)
+              ? Number(prev.xpToNextLevel)
+              : 100;
           let leveledUp = false;
           if (newXp < 0) {
               newXp = 0;
-          } else if (newXp >= newXpToNext) {
-              newLevel += 1;
-              newXp = newXp - newXpToNext;
-              newXpToNext = Math.floor(newXpToNext * 1.5);
-              leveledUp = true;
-              newEnergy = Math.min(100, newEnergy + 50);
+          } else {
+              while (newXp >= newXpToNext) {
+                  newLevel += 1;
+                  newXp = newXp - newXpToNext;
+                  newXpToNext = Math.floor(newXpToNext * 1.5);
+                  if (newXpToNext < 1) newXpToNext = 1;
+                  leveledUp = true;
+                  newEnergy = Math.min(100, newEnergy + 50);
+              }
           }
           let newInventory = [...prev.inventory];
           let inventoryChanges = [];
+          let removedItemNames = [];
           let keyItemAdded = false;
           if (data.inventoryUpdate) {
               if (data.inventoryUpdate.add) {
@@ -331,7 +334,16 @@ const handleDiceRollComplete = (deps) => {
               if (data.inventoryUpdate.remove) {
                   const removeTarget = data.inventoryUpdate.remove;
                   const itemsToRemove = Array.isArray(removeTarget) ? removeTarget : [removeTarget];
-                  newInventory = newInventory.filter(i => !itemsToRemove.includes(i.name));
+                  itemsToRemove.forEach((target) => {
+                      const targetName = typeof target === 'object' && target !== null ? target.name : target;
+                      const normalizedTarget = String(targetName || '').trim();
+                      if (!normalizedTarget) return;
+                      const matchIdx = newInventory.findIndex(i => String(i?.name || '').trim() === normalizedTarget);
+                      if (matchIdx >= 0) {
+                          newInventory.splice(matchIdx, 1);
+                          removedItemNames.push(normalizedTarget);
+                      }
+                  });
               }
           }
           const systemPolicy = data.systemResourcePolicy || prev.systemResourcePolicy || { enabled: true, mode: 'ai' };
@@ -400,11 +412,20 @@ const handleDiceRollComplete = (deps) => {
             if (adventureChanceMode) {
                 const d20 = data.rollDetails.d20 || 0;
                 const strat = data.rollDetails.strategyRating || (total - d20);
+                const luckBonus = Number.isFinite(Number(data.rollDetails.rollModifier))
+                    ? Number(data.rollDetails.rollModifier)
+                    : (Number(prev.activeRollModifier) || 0);
                 feedbackText += t('adventure.results.roll_calc', {
                     roll: d20,
                     strat: strat,
                     total: total
                 });
+                if (luckBonus !== 0) {
+                    const luckLabel = t('adventure.results.luck_bonus', { bonus: luckBonus > 0 ? `+${luckBonus}` : String(luckBonus) });
+                    feedbackText += (luckLabel && luckLabel !== 'adventure.results.luck_bonus')
+                        ? ` ${luckLabel}`
+                        : ` (${luckBonus > 0 ? `+${luckBonus}` : luckBonus} Luck)`;
+                }
             } else {
                 feedbackText += t('adventure.results.perf_score', { total: total });
             }
@@ -430,6 +451,20 @@ const handleDiceRollComplete = (deps) => {
           }
           feedbackText += ` (${extraInfo.join(', ')})`;
           const resolvedChoice = prev.pendingChoice || data.pendingChoice || '';
+          const expectedLessonKey = prev.lessonKey || null;
+          const triggerInventoryPixelArt = () => {
+              inventoryChanges.forEach(item => {
+                  generatePixelArtItem(item.name, item.genContext).then(url => {
+                      setAdventureState(curr => {
+                          if ((curr.lessonKey || null) !== expectedLessonKey) return curr;
+                          return {
+                              ...curr,
+                              inventory: curr.inventory.map(i => i.id === item.id ? { ...i, image: url || null, isLoading: false } : i)
+                          };
+                      });
+                  });
+              });
+          };
           if (finalResult === 'victory') {
               // prev.history already contains the final scene+choice (appended at
               // choice time) — re-adding them here double-counted the climactic
@@ -440,9 +475,10 @@ const handleDiceRollComplete = (deps) => {
               ];
               scheduleTurnEffects(() => {
                   generateNarrativeLedger(victoryHistory, deps);
-                  addToast(t('adventure.status_messages.log_updated'), "info");
                   playAdventureEventSound('critical_success');
                   addToast(t('adventure.climax.toast_victory'), "success");
+                  if (removedItemNames.length > 0) addToast(`Lost: ${removedItemNames.join(', ')}`, "error");
+                  triggerInventoryPixelArt();
                   setShowGlobalLevelUp(true);
                   try { window.dispatchEvent(new CustomEvent('alloflow:bot-celebrate', { detail: { kind: 'backflip', confetti: true } })); } catch (_) {}
               });
@@ -450,8 +486,26 @@ const handleDiceRollComplete = (deps) => {
                   ...prev,
                   isGameOver: true,
                   turnCount: nextTurn,
-                  history: [...prev.history, { type: 'feedback', text: data.feedback || data.evaluation || '', ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }],
-                  currentScene: data.scene, pendingChoice: null,
+                  history: victoryHistory,
+                  currentScene: { ...data.scene, charactersInScene: data.charactersInScene || [] }, pendingChoice: null,
+                  level: prev.level ?? 1,
+                  xp: prev.xp ?? 0,
+                  xpToNextLevel: prev.xpToNextLevel ?? 100,
+                  energy: currentEnergy,
+                  gold: prev.gold ?? 0,
+                  inventory: newInventory,
+                  lastKeyItemTurn: keyItemAdded ? nextTurn : prev.lastKeyItemTurn,
+                  sceneImage: null,
+                  sceneImagePreview: null,
+                  isImageLoading: false,
+                  imagePolishStage: null,
+                  loadingStage: null,
+                  systemResources: newSystemResources,
+                  systemResourcePolicy: systemPolicy,
+                  voiceMap: updatedVoices,
+                  activeRollModifier: 0,
+                  activeXpMultiplier: 1,
+                  activeGoldBuffTurns: Math.max(0, goldBuffTurns - 1),
                   climax: { ...updatedClimax, isActive: false, masteryScore: 100 },
                   canStartSequel: true,
                   isLoading: false,
@@ -460,28 +514,57 @@ const handleDiceRollComplete = (deps) => {
           } else if (finalResult === 'failure') {
               // Same dedup as the victory path (2026-07-16): scene+choice are already
               // in prev.history from choice time.
+              const climaxPenalty = Math.max(1, Math.round(20 * rules.energyLossMult));
+              const failureEnergy = Math.max(0, currentEnergy - climaxPenalty);
+              const failureGameOver = failureEnergy <= 0
+                  || !!data.isTerminalTurn
+                  || (!adventureFreeResponseEnabled && data.scene.options.length === 0);
               const failureHistory = [
                   ...prev.history,
                   { type: 'feedback', text: data.feedback || data.evaluation || '', ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }
               ];
               scheduleTurnEffects(() => {
                   generateNarrativeLedger(failureHistory, deps);
-                  addToast(t('adventure.status_messages.log_updated'), "info");
                   playAdventureEventSound('failure');
                   addToast(t('adventure.climax.toast_failure'), "error");
+                  if (removedItemNames.length > 0) addToast(`Lost: ${removedItemNames.join(', ')}`, "error");
+                  triggerInventoryPixelArt();
+                  if (failureEnergy <= 0 && !prev.isGameOver) {
+                      addToast(t('adventure.energy_depleted') || '⚡ Out of energy — the adventure ends here. Rest up and try again!', 'error');
+                  }
+                  if (!failureGameOver) {
+                      generateAdventureImage(data.scene.text, nextTurn, deps);
+                  }
               });
               return recordAdventureConsequence(prev, {
                   ...prev,
-                  history: [...prev.history, { type: 'feedback', text: data.feedback, ...(strategyHintUsed ? { support: 'strategy_hint' } : {}) }],
-                  currentScene: data.scene, pendingChoice: null,
-                  energy: Math.max(0, prev.energy - 20),
-                  isGameOver: !!data.isTerminalTurn,
+                  history: failureHistory,
+                  currentScene: { ...data.scene, charactersInScene: data.charactersInScene || [] }, pendingChoice: null,
+                  level: prev.level ?? 1,
+                  xp: prev.xp ?? 0,
+                  xpToNextLevel: prev.xpToNextLevel ?? 100,
+                  energy: failureEnergy,
+                  gold: prev.gold ?? 0,
+                  inventory: newInventory,
+                  lastKeyItemTurn: keyItemAdded ? nextTurn : prev.lastKeyItemTurn,
+                  isGameOver: failureGameOver,
                   turnCount: nextTurn,
+                  sceneImage: null,
+                  sceneImagePreview: null,
+                  isImageLoading: !failureGameOver,
+                  imagePolishStage: !failureGameOver ? 'generating' : null,
+                  loadingStage: !failureGameOver ? 'Painting scene art…' : null,
+                  systemResources: newSystemResources,
+                  systemResourcePolicy: systemPolicy,
+                  voiceMap: updatedVoices,
+                  activeRollModifier: 0,
+                  activeXpMultiplier: 1,
+                  activeGoldBuffTurns: Math.max(0, goldBuffTurns - 1),
                   climax: {
                       ...updatedClimax,
                       isActive: false,
                       masteryScore: 0,
-                      attempts: (prev.climax.attempts || 0) + 1
+                      attempts: (currentClimaxState.attempts || 0) + 1
                   },
                   isLoading: false,
                   stats: newStats
@@ -504,9 +587,11 @@ const handleDiceRollComplete = (deps) => {
               } else {
                   if (data.rollDetails) {
                       const score = data.rollDetails.total || data.rollDetails.d20 || 10;
-                      if (score >= 18) {
+                      const SFX_CRIT_THRESHOLD = adventureChanceMode ? 28 : 18;
+                      const SFX_SUCCESS_THRESHOLD = adventureChanceMode ? 22 : 12;
+                      if (score >= SFX_CRIT_THRESHOLD) {
                           playAdventureEventSound('critical_success');
-                      } else if (score >= 12) {
+                      } else if (score >= SFX_SUCCESS_THRESHOLD) {
                           playAdventureEventSound('success');
                       } else {
                           if (safeEnergyDelta < 0) {
@@ -536,7 +621,7 @@ const handleDiceRollComplete = (deps) => {
                       addToast(`Obtained: ${names}`, "success");
                       setTimeout(() => playAdventureEventSound('item_get'), 500);
                   }
-                  if (data.inventoryUpdate.remove) addToast(`Lost: ${data.inventoryUpdate.remove}`, "error");
+                  if (removedItemNames.length > 0) addToast(`Lost: ${removedItemNames.join(', ')}`, "error");
               }
               const stateNotification = data.systemStateUpdate || data.systemResourceUpdate;
               if (stateNotification) {
@@ -551,14 +636,7 @@ const handleDiceRollComplete = (deps) => {
                       addToast(`State Decreased: ${stateNames}`, "warning");
                   }
               }
-              inventoryChanges.forEach(item => {
-                  generatePixelArtItem(item.name, item.genContext).then(url => {
-                      setAdventureState(curr => ({
-                          ...curr,
-                          inventory: curr.inventory.map(i => i.id === item.id ? { ...i, image: url || null, isLoading: false } : i)
-                      }));
-                  });
-              });
+              triggerInventoryPixelArt();
               if (shouldContinue) {
                   generateAdventureImage(data.scene.text, nextTurn, deps);
               }
@@ -710,7 +788,22 @@ const buildAdventureConsistencyReference = async ({ portraitCharacters, protagon
 // One image pipeline per scene and mounted Adventure state owner. Keep a successful
 // result until the next scene so repeated callbacks cannot generate it again.
 const adventureSceneImageRequests = new WeakMap();
+const narrativeLedgerEpochs = new WeakMap();
+let narrativeLedgerFallbackEpoch = 0;
+const getNarrativeLedgerEpoch = (owner) => owner && (typeof owner === 'function' || typeof owner === 'object')
+  ? (narrativeLedgerEpochs.get(owner) || 0)
+  : narrativeLedgerFallbackEpoch;
+const bumpNarrativeLedgerEpoch = (owner) => {
+  const next = getNarrativeLedgerEpoch(owner) + 1;
+  if (owner && (typeof owner === 'function' || typeof owner === 'object')) {
+    narrativeLedgerEpochs.set(owner, next);
+  } else {
+    narrativeLedgerFallbackEpoch = next;
+  }
+  return next;
+};
 const cancelAdventureSceneImage = (setAdventureState) => {
+  bumpNarrativeLedgerEpoch(setAdventureState);
   const request = adventureSceneImageRequests.get(setAdventureState);
   if (!request) return false;
   request.cancelled = true;
@@ -978,8 +1071,7 @@ const runAdventureImage = async (sceneText, targetTurn, deps, request) => {
 const generateNarrativeLedger = async (currentHistory, deps) => {
   const { adventureState, pendingAdventureUpdate, adventureChanceMode, adventureDifficulty, adventureCustomInstructions, adventureLanguageMode, adventureInputMode, adventureFreeResponseEnabled, adventureConsistentCharacters, adventureProtagonistAge, isAdventureStoryMode, isImmersiveMode, isSocialStoryMode, aiBotsActive, narrativeLedger, currentUiLanguage, selectedLanguages, gradeLevel, studentInterests, sourceTopic, inputText, history, isIndependentMode, isTeacherMode, apiKey, appId, activeSessionAppId, activeSessionCode, globalPoints, sessionData, user, adventureArtStyle, adventureCustomArtStyle, imageGenerationStyle, imageAspectRatio, alloBotRef, lastTurnSnapshot, lastReadTurnRef, setAdventureState, setPendingAdventureUpdate, setShowDice, setShowGlobalLevelUp, setActiveView, setGenerationStep, setError, setHistory, setGeneratedContent, setHasSavedAdventure, setIsResumingAdventure, setDiceResult, setFailedAdventureAction, setAdventureEffects, setIsProcessing, useLowQualityVisuals, adventureImageDB, addToast, t, warnLog, debugLog, cleanJson, safeJsonParse, callGemini, callGeminiVision, callImagen, callGeminiImageEdit, archiveAdventureImage, SafetyContentChecker, handleAiSafetyFlag, playAdventureEventSound, playSound, handleScoreUpdate, getAdventureGlossaryTerms, generatePixelArtItem, generateAdventureImage, generateNarrativeLedger, detectClimaxArchetype, flyToElement, resilientJsonParse, storageDB, updateDoc, doc, db, ADVENTURE_GUARDRAIL, NARRATIVE_GUARDRAILS, INVISIBLE_NARRATOR_INSTRUCTIONS, SYSTEM_INVISIBLE_INSTRUCTIONS, SYSTEM_STATE_EXAMPLES } = deps;
   try { if (window._DEBUG_PHASE_L) console.log("[PhaseL] generateNarrativeLedger fired"); } catch(_) {}
-      setIsProcessing(true);
-      setGenerationStep("Consolidating adventure memory...");
+      const ledgerEpoch = bumpNarrativeLedgerEpoch(setAdventureState);
       try {
           const historyText = currentHistory.map(h => `${h.type.toUpperCase()}: ${h.text}`).join('\n');
           const prompt = `
@@ -1001,15 +1093,21 @@ const generateNarrativeLedger = async (currentHistory, deps) => {
             Return ONLY the updated summary text. Keep it under 300 words.
           `;
           const result = await callGemini(prompt);
-          setAdventureState(prev => ({
-              ...prev,
-              narrativeLedger: result
-          }));
-          addToast(t('adventure.status_messages.log_updated'), "success");
+          if (ledgerEpoch !== getNarrativeLedgerEpoch(setAdventureState)) return;
+          setAdventureState(prev => {
+              if (!prev || (!prev.currentScene && (!Array.isArray(prev.history) || prev.history.length === 0))) {
+                  return prev;
+              }
+              return {
+                  ...prev,
+                  narrativeLedger: result
+              };
+          });
+          if (ledgerEpoch === getNarrativeLedgerEpoch(setAdventureState)) {
+              addToast(t('adventure.status_messages.log_updated'), "success");
+          }
       } catch (e) {
           warnLog("Ledger Gen Error", e);
-      } finally {
-          setIsProcessing(false);
       }
 };
 

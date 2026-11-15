@@ -96,7 +96,8 @@
 
   var JOB_STATUSES = ['queued', 'running', 'input_required', 'completed', 'failed', 'cancelled'];
 
-  var SECRET_FIELD_RE = /(?:^|[_-])(?:api)?key$|token|secret|password|credential/i;
+  var SECRET_FIELD_RE = /(?:^|[_-])(?:api)?key$|token|secret|password|credential|passphrase/i;
+  var CAMEL_SECRET_FIELD_RE = /(?:^|[a-z])(?:Access|Refresh|Session|Auth|Bearer|Id|Api|Client|Private|Signing|Encryption)Key$|^(?:access|refresh|session|auth|bearer|id|api|client|private|signing|encryption)Key$|(?:^|[a-z])(?:Client|Api|App|Jwt|Webhook|Signing)Secret$|^(?:client|api|app|jwt|webhook|signing)Secret$|^privateKey$/;
   var UNSAFE_PATH_RE = /^(?:[A-Za-z]:[\\/]|\\\\|\/)/;
   // 10, not 8: a real AlloPack nests envelope > data > history[i] > data > visualPlan > panels[i] > labels[i] (9 levels).
   var MAX_SCAN_DEPTH = 10;
@@ -123,7 +124,11 @@
     for (var i = 0; i < keys.length; i++) {
       var k = keys[i];
       var p = path ? path + '.' + k : String(k);
-      if (typeof k === 'string' && SECRET_FIELD_RE.test(k)) {
+      if (typeof k === 'string' && (k === '__proto__' || k === 'constructor' || k === 'prototype')) {
+        out.push(err('unsafe-key', p, 'Prototype-polluting key "' + k + '" is not allowed in contract payloads.'));
+        continue;
+      }
+      if (typeof k === 'string' && (SECRET_FIELD_RE.test(k) || CAMEL_SECRET_FIELD_RE.test(k))) {
         out.push(err('secret-like-field', p, 'Field name "' + k + '" looks like a secret and is not allowed in contract payloads.'));
         continue;
       }

@@ -21,7 +21,8 @@
   var ORT_ESM = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/ort.webgpu.min.mjs';
   var ORT_WASM_BASE = 'https://cdn.jsdelivr.net/npm/onnxruntime-web@1.21.0/dist/';
   var TRANSFORMERS_ESM = 'https://cdn.jsdelivr.net/npm/@huggingface/transformers@3.3.1/+esm';
-  var MODEL_BASE = 'https://huggingface.co/schmuell/sd-turbo-ort-web/resolve/main/';
+  var MODEL_BASE = 'https://huggingface.co/schmuell/sd-turbo-ort-web/resolve/ace89b7d2cd849f9a73914cdbb8a3ea60c853dd1/';
+  var MAX_MODEL_BYTES = 2 * 1024 * 1024 * 1024;
   var MODELS = [
     { key: 'text_encoder', file: 'text_encoder/model.onnx' },
     { key: 'unet', file: 'unet/model.onnx' },
@@ -140,6 +141,7 @@
       catch (_) { cachePutPromise = null; }
     }
     var total = Number(response.headers.get('content-length')) || 0;
+    if (total > MAX_MODEL_BYTES) throw new Error(label + ' exceeds maximum model size limit');
     var reader = response.body.getReader();
     var received = 0;
     var buffer = total ? new Uint8Array(total) : null;
@@ -147,6 +149,10 @@
     for (;;) {
       var step = await reader.read();
       if (step.done) break;
+      if (received + step.value.length > MAX_MODEL_BYTES) {
+        try { if (typeof reader.cancel === 'function') reader.cancel(); } catch (_) {}
+        throw new Error(label + ' exceeded maximum model size limit');
+      }
       if (buffer) {
         if (received + step.value.length > buffer.length) {
           // Server lied about content-length — fall back to chunk collection.
@@ -174,6 +180,9 @@
 
   async function init(onProgress) {
     if (window._sdTurbo.ready) return true;
+    if (window._isDesktopBundledApp === true) {
+      throw new Error('Remote SD-Turbo download is disabled in Desktop mode');
+    }
     if (state.initPromise) return state.initPromise;
     state.initPromise = (async function () {
       if (!(await supported())) throw new Error('This device/browser has no WebGPU — local image generation is unavailable.');

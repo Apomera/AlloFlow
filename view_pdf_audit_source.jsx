@@ -1289,7 +1289,35 @@ function _normTokenForDiffShared(s) {
 // tests/view_pdf_audit_docx_spec.test.js extracts this function at runtime
 // (anti-drift pattern); keep the "// end _htmlToDocxSpec" marker intact.
 function _htmlToStructuredText(html, markdown) {
+  // Self-contained inside _htmlToStructuredText (extracted standalone by structured_text_export / wave4_6 tests).
+  const _chosenSelectText = (sel) => {
+    if (!sel) return '';
+    const opts = sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll('option'));
+    const selOpt = sel.selectedOptions && sel.selectedOptions[0];
+    const hasVal = (o) => o && !o.disabled && String(o.getAttribute && o.getAttribute('value') != null ? o.getAttribute('value') : (o.value != null ? o.value : o.textContent || '')).trim() !== '';
+    const chosen = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute('selected')) && hasVal(o)) || null;
+    return chosen ? String(chosen.textContent || chosen.value || '').replace(/\s+/g, ' ').trim() : '';
+  };
+  const _chromeSel = '.alloflow-cloze-controls,.alloflow-cs-controls,.alloflow-cs-actions,.alloflow-venn-controls,.alloflow-venn-status,.alloflow-venn-place-button,.alloflow-venn-screen-instructions,.alloflow-tl-controls,.alloflow-tl-arrows,.alloflow-glossary-controls,.alloflow-glossary-card-controls,.alloflow-glossary-card-actions,.alloflow-glossary-card-status,.alloflow-gm-controls,.alloflow-gm-status,.alloflow-faq-controls,.alloflow-dir-controls,.alloflow-cornell-controls,.alloflow-ws-controls,.alloflow-quiz-feedback,.alloflow-quiz-check-btn,.alloflow-math-symbolbar,.alloflow-math-symbar,.alloflow-math-controls,.alloflow-dbq-evidence-tracker,.alloflow-export-save-tools,.alloflow-save-status';
   const doc = new DOMParser().parseFromString(html || '', 'text/html');
+  doc.querySelectorAll('.alloflow-venn-activity').forEach((act) => {
+    if (act.querySelector('.alloflow-venn-card')) {
+      act.querySelectorAll('.alloflow-venn-print-only, .alloflow-venn-screen-instructions').forEach((el) => el.remove());
+      act.querySelectorAll('.alloflow-venn-card').forEach((card) => {
+        const btn = card.querySelector('button.alloflow-venn-card-button');
+        if (!btn) return;
+        const sel = card.querySelector('select.alloflow-venn-response');
+        const chosenText = _chosenSelectText(sel);
+        const p = doc.createElement('p');
+        p.className = 'alloflow-venn-card-text';
+        p.textContent = (btn.textContent || '').replace(/\s+/g, ' ').trim() + (chosenText ? ' — ' + chosenText : '');
+        btn.replaceWith(p);
+        if (sel) sel.remove();
+      });
+    }
+  });
+  doc.querySelectorAll('button.alloflow-inline-term').forEach((btn) => btn.replaceWith(doc.createTextNode(btn.textContent || '')));
+  doc.querySelectorAll('.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-inline-chart svg,.alloflow-glossary-card-actions,.alloflow-glossary-card-controls,.alloflow-glossary-progress,.alloflow-quiz-feedback,annotation,annotation-xml,[data-allo-footnote-backlink],details.allo-math-source,details.allo-chart-data > summary,details.allo-image-desc > summary,button,[hidden],[aria-hidden="true"],' + _chromeSel).forEach((el) => el.remove());
   const lines = [];
   const mdTick = String.fromCharCode(96);
   const clean = (value) => String(value || '').replace(/\s+/g, ' ').trim();
@@ -1307,11 +1335,13 @@ function _htmlToStructuredText(html, markdown) {
     if (tag === 'input') {
       const type = (node.getAttribute('type') || 'text').toLowerCase();
       if (type === 'checkbox' || type === 'radio') return node.checked || node.hasAttribute('checked') ? '[x]' : '[ ]';
-      return node.getAttribute('value') || node.getAttribute('placeholder') || '________';
+      return node.value || node.getAttribute('value') || node.getAttribute('placeholder') || '________';
+    }
+    if (tag === 'textarea') {
+      return String(node.value || node.textContent || '').trim() || '________';
     }
     if (tag === 'select') {
-      const selected = node.querySelector('option:checked') || node.querySelector('option[selected]') || node.querySelector('option');
-      return selected ? selected.textContent || '' : '';
+      return _chosenSelectText(node) || '________';
     }
     let text = Array.from(node.childNodes || []).map(inline).join('');
     if (markdown && tag === 'a' && node.getAttribute('href')) text = '[' + (text || node.getAttribute('href')) + '](' + node.getAttribute('href').replace(/([()\\])/g, '\\$1') + ')';
@@ -1395,8 +1425,9 @@ function _htmlToPlainTextExport(html) { return _htmlToStructuredText(html, false
 function _htmlToMarkdownExport(html) { return _htmlToStructuredText(html, true); }
 
 function _htmlToDocxSpec(html) {
+  const _cleanXml = (s) => String(s == null ? '' : s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, '');
   const doc = new DOMParser().parseFromString(html || '', 'text/html');
-  const title = (((doc.querySelector('title') || {}).textContent) || ((doc.querySelector('h1') || {}).textContent) || 'Accessible document').trim().slice(0, 200) || 'Accessible document';
+  const title = _cleanXml(((doc.querySelector('title') || {}).textContent) || ((doc.querySelector('h1') || {}).textContent) || 'Accessible document').trim().slice(0, 200) || 'Accessible document';
   const lang = (doc.documentElement.getAttribute('lang') || 'en').trim() || 'en';
   // RTL capture (export-format review #2, 2026-07-01): the pipeline sets dir="rtl" on the
   // accessible HTML for RTL languages, but the export spec never carried it — Arabic/
@@ -1407,21 +1438,62 @@ function _htmlToDocxSpec(html) {
   const rtl = _dirAttr === 'rtl' || (_dirAttr !== 'ltr' && /^(ar|he|iw|fa|ur|ps|sd|ug|yi|dv|ckb)([-_]|$)/i.test(lang));
   const blocks = [];
   const counts = { headings: 0, paragraphs: 0, images: 0, tables: 0, lists: 0, links: 0 };
-  // Footnotes (2026-06-14, A6): each note's data-fn-uid → a Word footnote id, plus
+  // Footnotes (2026-06-14, A6): each note's data-fn-uid or id → a Word footnote id, plus
   // its definition runs. Populated just before the walk; then the in-text anchors
   // emit a FootnoteReferenceRun instead of a superscript number, and the
   // end-of-doc notes section is skipped (it becomes Word's NATIVE footnote area,
   // not a trailing list). Declared early so inlineRuns can close over the map.
   const _fnIdByUid = {};
+  const _fnIdByHref = {};
   const _fnDefs = {};
-  const SKIP = { SCRIPT: 1, STYLE: 1, BUTTON: 1, SELECT: 1, INPUT: 1, TEXTAREA: 1, AUDIO: 1, VIDEO: 1, TEMPLATE: 1, NOSCRIPT: 1, IFRAME: 1, CANVAS: 1 };
+  const SKIP = { SCRIPT: 1, STYLE: 1, BUTTON: 1, AUDIO: 1, VIDEO: 1, TEMPLATE: 1, NOSCRIPT: 1, IFRAME: 1, CANVAS: 1 };
+  const _INLINE_TERM_RE = /\balloflow-inline-term\b/;
+  const _isInlineTermBtn = (el) => !!(el && el.tagName === 'BUTTON' && _INLINE_TERM_RE.test((el.className && String(el.className)) || (el.getAttribute && el.getAttribute('class')) || ''));
+  const _CHROME_CLS_RE = /allo-block-controls|allo-block-remove|allo-img-controls|allo-file-btn|alloflow-reading-tools-shell|alloflow-hud-bar|alloflow-step-pager|alloflow-term-popover|alloflow-export-prompt-overlay|alloflow-save-bar|alloflow-turnin-bar|alloflow-keycap|alloflow-quiz-feedback|alloflow-quiz-check-btn|alloflow-save-status|alloflow-cloze-controls|alloflow-venn-controls|alloflow-venn-status|alloflow-venn-place-button|alloflow-venn-screen-instructions|alloflow-cs-controls|alloflow-cs-actions|alloflow-tl-controls|alloflow-tl-arrows|alloflow-glossary-controls|alloflow-glossary-card-controls|alloflow-glossary-card-actions|alloflow-glossary-card-status|alloflow-gm-controls|alloflow-gm-status|alloflow-faq-controls|alloflow-dir-controls|alloflow-cornell-controls|alloflow-ws-controls|alloflow-math-symbolbar|alloflow-math-symbar|alloflow-math-controls|alloflow-dbq-evidence-tracker|alloflow-export-save-tools/;
+  // Self-contained inside _htmlToDocxSpec (extracted standalone by wave7_10 / wave11_14 tests).
+  const _readSelectedOptionText = (sel) => {
+    if (!sel) return '';
+    const opts = sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll('option'));
+    const selOpt = sel.selectedOptions && sel.selectedOptions[0];
+    const hasVal = (o) => o && !o.disabled && String(o.getAttribute && o.getAttribute('value') != null ? o.getAttribute('value') : (o.value != null ? o.value : o.textContent || '')).trim() !== '';
+    const chosen = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute('selected')) && hasVal(o)) || null;
+    return chosen ? String(chosen.textContent || chosen.value || '').replace(/\s+/g, ' ').trim() : '';
+  };
   const _isControlEl = (el) => {
-    if (SKIP[el.tagName]) return true;
+    if (_isInlineTermBtn(el)) return false;
+    if (el && el.id === 'alloflow-term-popover') return true;
+    const upperTag = String(el.tagName || '').toUpperCase();
+    if (upperTag === 'ANNOTATION' || upperTag === 'ANNOTATION-XML') return true;
+    if (upperTag === 'SELECT' && typeof el.matches === 'function' && el.matches('select.alloflow-cs-response, select.alloflow-venn-response')) return false;
+    if (el.hasAttribute && (el.hasAttribute('hidden') || el.hasAttribute('data-allo-page-element') || el.hasAttribute('data-allo-footnote-backlink'))) return true;
+    if (el.getAttribute && el.getAttribute('aria-hidden') === 'true') return true;
+    if (upperTag === 'INPUT' && String(el.getAttribute('type') || '').toLowerCase() === 'hidden') return true;
+    if (upperTag === 'SVG' && el.closest && el.closest('.alloflow-inline-chart')) return true;
+    if (SKIP[upperTag]) return true;
     // allo-block editor chrome (controls, remove buttons, upload labels) is
     // interactive scaffolding, not document content.
-    if (el.getAttribute && el.getAttribute('contenteditable') === 'false') return true;
+    if (el.getAttribute && el.getAttribute('contenteditable') === 'false' && !(el.querySelector && el.querySelector('.alloflow-venn-card, .alloflow-cs-strip, input, select, textarea'))) return true;
     const cls = (el.className && String(el.className)) || '';
-    return /allo-block-controls|allo-block-remove|allo-img-controls|allo-file-btn/.test(cls);
+    return _CHROME_CLS_RE.test(cls);
+  };
+  const _mathReadableText = (mathEl) => {
+    if (!mathEl) return '';
+    const spoken = _cleanXml(mathEl.getAttribute('aria-label') || mathEl.getAttribute('alttext') || '').replace(/\s+/g, ' ').trim();
+    if (spoken) return spoken;
+    const walkMath = (node) => {
+      if (!node) return '';
+      if (node.nodeType === 3) return _cleanXml(node.textContent || '');
+      if (node.nodeType !== 1) return '';
+      const t = (node.tagName || '').toLowerCase();
+      if (t === 'annotation' || t === 'annotation-xml') return '';
+      const ch = Array.from(node.children || []);
+      if (t === 'mfrac' && ch.length >= 2) return '(' + walkMath(ch[0]) + ')/(' + walkMath(ch[1]) + ')';
+      if (t === 'msup' && ch.length >= 2) return walkMath(ch[0]) + '^' + walkMath(ch[1]);
+      if (t === 'msub' && ch.length >= 2) return walkMath(ch[0]) + '_' + walkMath(ch[1]);
+      if (t === 'msqrt') return 'sqrt(' + Array.from(node.childNodes || []).map(walkMath).join('') + ')';
+      return Array.from(node.childNodes || []).map(walkMath).join(' ');
+    };
+    return _cleanXml(walkMath(mathEl).replace(/\s+/g, ' ').trim() || (mathEl.getAttribute('data-allo-latex') || '').trim());
   };
   const inlineRuns = (el, fmt) => {
     fmt = fmt || {};
@@ -1432,32 +1504,84 @@ function _htmlToDocxSpec(html) {
     for (let i = 0; i < kids.length; i++) {
       const n = kids[i];
       if (n.nodeType === 3) {
-        const txt = String(n.textContent || '').replace(/\s+/g, ' ');
+        const txt = _cleanXml(n.textContent || '').replace(/\s+/g, ' ');
         if (txt) out.push({ text: txt, bold: !!fmt.bold, italic: !!fmt.italic, underline: !!fmt.underline, strike: !!fmt.strike, highlight: !!fmt.highlight, code: !!fmt.code, lang: fmt.lang || null, link: fmt.link || null, sup: !!fmt.sup, sub: !!fmt.sub });
         continue;
       }
       if (n.nodeType !== 1 || _isControlEl(n)) continue;
-      const tag = n.tagName;
-      // Footnote anchor (A6): a <sup class="allo-fn-ref"> with a mapped note
+      const tag = String(n.tagName || '').toUpperCase();
+      // Footnote anchor (A6): a <sup class="allo-fn-ref"> or [data-allo-footnote-ref] with a mapped note
       // becomes a real Word footnote reference (auto-numbered by Word), not a
       // superscript digit. Falls through to plain superscript if unmapped.
-      if (tag === 'SUP' && n.classList && n.classList.contains('allo-fn-ref')) {
+      if (tag === 'SUP' && ((n.classList && n.classList.contains('allo-fn-ref')) || (n.hasAttribute && n.hasAttribute('data-allo-footnote-ref')))) {
         const _fuid = n.getAttribute('data-fn-uid');
-        const _fid = _fuid && _fnIdByUid[_fuid];
+        const _hrefEl = n.querySelector && n.querySelector('a[href^="#"]');
+        const _fhref = (_hrefEl && _hrefEl.getAttribute('href')) || n.getAttribute('href') || (_fuid ? '#fn-' + _fuid : '');
+        const _fid = (_fuid && _fnIdByUid[_fuid]) || (_fhref && _fnIdByHref[_fhref]);
         if (_fid) { out.push({ footnoteId: _fid }); continue; }
+      }
+      if (tag === 'A') {
+        const _ahref = n.getAttribute && n.getAttribute('href');
+        if (_ahref && _fnIdByHref[_ahref] && !(n.closest && n.closest('section.allo-footnotes, [data-allo-footnotes="1"]'))) {
+          out.push({ footnoteId: _fnIdByHref[_ahref] });
+          continue;
+        }
       }
       if (tag === 'BR') { out.push({ br: true }); continue; }
       // A picture inside a table cell, list item or heading used to vanish from Word/ODT/DAISY.
       if (tag === 'IMG') {
-        const _src = n.getAttribute('src') || '', _alt = (n.getAttribute('alt') || '').trim(), _data = /^data:image\//.test(_src);
+        const _src = n.getAttribute('src') || '', _alt = _cleanXml(n.getAttribute('alt') || '').trim(), _data = /^data:image\//.test(_src);
         if (_alt || _data) { out.push({ img: { src: _data ? _src : null, alt: _alt, width: n.getAttribute('width'), height: n.getAttribute('height') } }); counts.images++; }
         continue;
       }
-      // Fillable S0 fields → Word keeps visible blanks (real content
-      // controls are the S1+ question; an underscore run prints right).
-      if (tag === 'INPUT' && n.getAttribute('data-allo-field')) {
-        if (n.getAttribute('type') === 'checkbox') { out.push({ text: '☐ ', bold: !!fmt.bold, italic: !!fmt.italic, underline: false, link: null }); }
-        else { const _wm = (n.getAttribute('style') || '').match(/width:\s*(\d+)ch/); const w = Math.max(6, Math.min(40, parseInt((_wm && _wm[1]) || '12', 10))); out.push({ text: ' ' + '_'.repeat(w) + ' ', bold: false, italic: false, underline: false, link: null }); }
+      if (tag === 'MATH') {
+        const mText = _mathReadableText(n);
+        if (mText) out.push({ text: ' ' + mText + ' ', bold: !!fmt.bold, italic: false, underline: false, code: false, lang: fmt.lang || null, link: null });
+        continue;
+      }
+      // Fillable fields (INPUT/TEXTAREA/SELECT) keep filled values or visible blanks.
+      if (tag === 'INPUT') {
+        const inType = String(n.getAttribute('type') || 'text').toLowerCase();
+        if (inType === 'checkbox' || inType === 'radio') {
+          const isChecked = !!(n.checked || n.hasAttribute('checked'));
+          out.push({ text: isChecked ? '☑ ' : '☐ ', bold: !!fmt.bold, italic: !!fmt.italic, underline: false, link: null });
+        } else {
+          const val = _cleanXml((typeof n.value === 'string' && n.value ? n.value : n.getAttribute('value')) || '').trim();
+          if (val) {
+            out.push({ text: ' ' + val + ' ', bold: !!fmt.bold, italic: !!fmt.italic, underline: true, lang: fmt.lang || null, link: null });
+          } else {
+            const _wm = (n.getAttribute('style') || '').match(/width:\s*(\d+)ch/);
+            const w = Math.max(6, Math.min(40, parseInt((_wm && _wm[1]) || n.getAttribute('size') || '12', 10) || 12));
+            out.push({ text: ' ' + '_'.repeat(w) + ' ', bold: false, italic: false, underline: false, link: null });
+          }
+        }
+        continue;
+      }
+      if (tag === 'TEXTAREA') {
+        const val = _cleanXml((typeof n.value === 'string' && n.value ? n.value : n.textContent) || '').trim();
+        if (val) {
+          const taLines = val.split(/\r?\n/);
+          taLines.forEach((line, li) => {
+            if (li > 0) out.push({ br: true });
+            if (line) out.push({ text: line, bold: !!fmt.bold, italic: false, underline: false, lang: fmt.lang || null, link: null });
+          });
+        } else {
+          out.push({ text: ' ' + '_'.repeat(24) + ' ', bold: false, italic: false, underline: false, link: null });
+        }
+        continue;
+      }
+      if (tag === 'SELECT') {
+        const chosenText = _cleanXml(_readSelectedOptionText(n));
+        const isHid = (n.hasAttribute && n.hasAttribute('hidden')) || (n.getAttribute && n.getAttribute('aria-hidden') === 'true') || !!(n.style && n.style.display === 'none');
+        if (isHid) {
+          if (chosenText) {
+            out.push({ text: ' \u2014 ' + chosenText, bold: !!fmt.bold, italic: !!fmt.italic, underline: true, lang: fmt.lang || null, link: null });
+          }
+        } else if (chosenText) {
+          out.push({ text: ' ' + chosenText + ' ', bold: !!fmt.bold, italic: !!fmt.italic, underline: true, lang: fmt.lang || null, link: null });
+        } else {
+          out.push({ text: ' ' + '_'.repeat(14) + ' ', bold: false, italic: false, underline: false, link: null });
+        }
         continue;
       }
       const isNewLink = tag === 'A' && n.getAttribute('href') && !fmt.link;
@@ -1496,7 +1620,7 @@ function _htmlToDocxSpec(html) {
   };
   const pushImage = (img, fallbackAlt) => {
     const src = img.getAttribute('src') || '';
-    const alt = (img.getAttribute('alt') || fallbackAlt || '').trim();
+    const alt = _cleanXml(img.getAttribute('alt') || fallbackAlt || '').trim();
     // STEM (2026-06-10): Vision-classified equations carry LaTeX — the docx
     // builder turns it into Word-native editable math (OMML), fail-soft.
     blocks.push({ type: 'image', src: /^data:image\//.test(src) ? src : null, alt, width: img.getAttribute('width'), height: img.getAttribute('height'), latex: img.getAttribute('data-allo-latex') || null });
@@ -1532,27 +1656,56 @@ function _htmlToDocxSpec(html) {
       if (n.nodeType === 3) { if ((n.nodeValue || '').trim()) _pending.push(n); continue; } // loose text → accumulate
       if (n.nodeType !== 1 || _isControlEl(n)) continue;
       const tag = n.tagName;
-      if (tag !== 'IMG' && _INLINE[tag]) { _pending.push(n); continue; } // inline element → accumulate (IMG is block)
+      const upperTag = String(tag || '').toUpperCase();
+      if ((upperTag !== 'IMG' && _INLINE[upperTag]) || upperTag === 'INPUT' || upperTag === 'SELECT' || upperTag === 'MATH' || _isInlineTermBtn(n)) { _pending.push(n); continue; } // inline element → accumulate
       _flushInline(); // a block element ends the current inline paragraph
       // Footnotes section (A6): skip it here — its notes are emitted as Word's
       // native footnotes (collected before the walk), so it must NOT also appear
       // as a trailing list in the body.
-      if (n.classList && n.classList.contains('allo-footnotes')) continue;
-      // Page break (2026-06-13): the .allo-block-pagebreak div used to fall
-      // through to the generic DIV handler, which leaked its "— Page Break —"
-      // label text as a paragraph AND emitted no actual break. Now it becomes a
-      // real docx page break and the label never reaches the document.
-      if (n.classList && n.classList.contains('allo-block-pagebreak')) { blocks.push({ type: 'pagebreak' }); continue; }
+      if ((n.classList && n.classList.contains('allo-footnotes')) || (n.getAttribute && n.getAttribute('data-allo-footnotes') === '1' && Object.keys(_fnDefs).length > 0)) continue;
+      // Page break (2026-06-13 + [data-allo-page-break]): emit a real docx page break.
+      if ((n.classList && n.classList.contains('allo-block-pagebreak')) || (n.hasAttribute && n.hasAttribute('data-allo-page-break'))) { blocks.push({ type: 'pagebreak' }); continue; }
+      if (upperTag === 'TEXTAREA') { pushParagraph(inlineRuns({ childNodes: [n] }, {})); continue; }
+      const _selectedOptionText = (sel) => _readSelectedOptionText(sel);
+      if (n.classList && n.classList.contains('alloflow-venn-card')) {
+        const btn = n.querySelector('.alloflow-venn-card-button');
+        const label = _cleanXml((btn ? btn.textContent : n.textContent) || '').replace(/\s+/g, ' ').trim();
+        const placed = _cleanXml(_selectedOptionText(n.querySelector('select.alloflow-venn-response')));
+        if (label) pushParagraph([{ text: label + ' — ' + (placed || '_'.repeat(12)) }]);
+        continue;
+      }
+      if (n.classList && n.classList.contains('alloflow-cs-strip')) {
+        const clone = n.cloneNode ? n.cloneNode(true) : null;
+        if (clone && clone.querySelectorAll) {
+          clone.querySelectorAll('.alloflow-cs-controls,.alloflow-cs-actions,select,[hidden],[aria-hidden="true"]').forEach((c) => c.remove());
+        }
+        const label = _cleanXml((clone ? clone.textContent : n.textContent) || '').replace(/\s+/g, ' ').trim();
+        const placed = _cleanXml(_selectedOptionText(n.querySelector('select.alloflow-cs-response, select.alloflow-response-input')));
+        if (label) pushParagraph([{ text: label + ' — ' + (placed || '_'.repeat(12)) }]);
+        continue;
+      }
+      if (n.classList && n.classList.contains('alloflow-venn-print-only') && n.closest && n.closest('.alloflow-venn-activity') && n.closest('.alloflow-venn-activity').querySelector('.alloflow-venn-card')) continue;
       const _inTitlePage = n.closest && n.closest('.allo-titlepage');
       const h = /^H([1-6])$/.exec(tag);
       if (h) { const runs = inlineRuns(n, {}); if (_runsText(runs)) { blocks.push({ type: 'heading', level: parseInt(h[1], 10), runs, ...(_inTitlePage ? { centered: true } : {}) }); counts.headings++; } continue; }
-      if (tag === 'P' || tag === 'BLOCKQUOTE' || tag === 'PRE' || tag === 'DT' || tag === 'DD' || tag === 'FIGCAPTION' || tag === 'CAPTION') {
+      if (tag === 'PRE') {
+        const preRaw = _cleanXml(n.textContent || '').replace(/^\n+|\n+$/g, '');
+        const preLines = preRaw.split(/\r?\n/);
+        const preRuns = [];
+        preLines.forEach((line, idx) => {
+          if (idx > 0) preRuns.push({ br: true });
+          preRuns.push({ text: line || ' ', code: true });
+        });
+        pushParagraph(preRuns, { centered: !!_inTitlePage });
+        continue;
+      }
+      if (tag === 'P' || tag === 'BLOCKQUOTE' || tag === 'DT' || tag === 'DD' || tag === 'FIGCAPTION' || tag === 'CAPTION') {
         // Reference-list entries (APA/MLA/Chicago) get a hanging indent in docx;
         // title-page lines (title/author/affiliation/course) are centered in any
         // mode — a title page is inherently centered.
-        const isRef = (n.classList && n.classList.contains('allo-ref-entry')) || (n.closest && n.closest('.allo-references'));
+        const isRef = (n.classList && n.classList.contains('allo-ref-entry')) || (n.closest && n.closest('.allo-references, [data-allo-bibliography="1"]'));
         if (tag === 'P' && n.querySelector && n.querySelector('img')) pushMixedParagraph(n, { hanging: !!isRef, centered: !!_inTitlePage });
-        else pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : (tag === 'PRE' ? { code: true } : {})), { hanging: !!isRef, centered: !!_inTitlePage });
+        else pushParagraph(inlineRuns(n, tag === 'DT' ? { bold: true } : {}), { hanging: !!isRef, centered: !!_inTitlePage });
         continue;
       }
       if (tag === 'UL' || tag === 'OL') { const items = []; listItems(n, 0, items); if (items.length) { blocks.push({ type: 'list', ordered: tag === 'OL', items }); counts.lists++; } continue; }
@@ -1587,14 +1740,22 @@ function _htmlToDocxSpec(html) {
       if (tag === 'IMG') { pushImage(n, ''); continue; }
       if (tag === 'FIGURE') {
         const img = n.querySelector('img');
+        const svg = !img ? n.querySelector('svg') : null;
         const cap = n.querySelector('figcaption');
+        const tables = Array.from(n.querySelectorAll('table')).filter((tbl) => tbl.closest('figure') === n && tbl.parentElement.closest('table') === null);
         if (img) pushImage(img, cap ? String(cap.textContent || '').trim() : '');
+        else if (svg && !(svg.closest && svg.closest('.alloflow-inline-chart'))) {
+          const svgLabel = (svg.getAttribute('aria-label') || (svg.querySelector('title') && svg.querySelector('title').textContent) || '').replace(/\s+/g, ' ').trim();
+          if (svgLabel) pushParagraph([{ text: '[Diagram: ' + svgLabel + ']', italic: true }]);
+        }
         if (cap) pushParagraph(inlineRuns(cap, { italic: true }));
+        if (tables.length) tables.forEach((tbl) => walk({ childNodes: [tbl] }));
         continue;
       }
+      if (upperTag === 'DL') { walk(n); continue; }
       if (tag === 'HR') continue;
-      if (tag === 'DIV' || tag === 'MAIN' || tag === 'SECTION' || tag === 'ARTICLE' || tag === 'HEADER' || tag === 'FOOTER' || tag === 'NAV' || tag === 'ASIDE' || tag === 'DL' || tag === 'FORM') {
-        if (n.querySelector && n.querySelector('h1,h2,h3,h4,h5,h6,p,ul,ol,table,figure,img,blockquote,dl,pre,div,section,article')) walk(n);
+      if (tag === 'DIV' || tag === 'MAIN' || tag === 'SECTION' || tag === 'ARTICLE' || tag === 'HEADER' || tag === 'FOOTER' || tag === 'NAV' || tag === 'ASIDE' || tag === 'FORM') {
+        if (n.querySelector && n.querySelector('h1,h2,h3,h4,h5,h6,p,ul,ol,table,figure,img,blockquote,dl,dt,dd,pre,div,section,article,textarea,input,select,math,[data-allo-page-break],.alloflow-venn-card,.alloflow-cs-strip')) walk(n);
         else pushParagraph(inlineRuns(n, {}));
         continue;
       }
@@ -1604,17 +1765,26 @@ function _htmlToDocxSpec(html) {
         // cell values together digit-to-digit ("Q1Q2...101520"). allo-math-source is
         // a redundant "show source" panel (the equation is already rendered in the
         // body), so drop it entirely like the audio lane does; other panels keep
-        // their CONTENT, walked as real blocks (the data table stays a table). The
-        // toggle <summary> label and raw <math> (MathML is a foreign element, so its
-        // tagName is lowercase — normalize) are skipped.
+        // their CONTENT, walked as real blocks (the data table stays a table). Companion
+        // panels strip their toggle <summary>; regular <details> keep <summary> as a bold
+        // paragraph and convert direct <math> children to readable text.
         if (n.classList && n.classList.contains('allo-math-source')) continue;
         _flushInline();
+        const _isCompanionPanel = !!(n.classList && (n.classList.contains('allo-chart-data') || n.classList.contains('allo-image-desc')));
         const _dk = [];
         const _dkids = n.childNodes || [];
         for (let _di = 0; _di < _dkids.length; _di++) {
           const _dn = _dkids[_di];
           const _tn = (_dn.tagName || '').toUpperCase();
-          if (_dn.nodeType === 1 && (_tn === 'SUMMARY' || _tn === 'MATH')) continue;
+          if (_dn.nodeType === 1 && _tn === 'SUMMARY') {
+            if (!_isCompanionPanel) pushParagraph(inlineRuns(_dn, { bold: true }));
+            continue;
+          }
+          if (_dn.nodeType === 1 && _tn === 'MATH') {
+            const _mTxt = _mathReadableText(_dn);
+            if (_mTxt) pushParagraph([{ text: _mTxt }]);
+            continue;
+          }
           _dk.push(_dn);
         }
         walk({ childNodes: _dk });
@@ -1628,17 +1798,20 @@ function _htmlToDocxSpec(html) {
   // can resolve their ids. Each note's spoken text (minus the ↩ back-link) becomes
   // a Word footnote; document order = id order, matching the on-screen numbering. ──
   try {
-    const _fnSec = doc.querySelector('section.allo-footnotes');
+    const _fnSec = doc.querySelector('section.allo-footnotes, [data-allo-footnotes="1"]');
     if (_fnSec) {
       let _fnSeq = 0;
-      Array.from(_fnSec.querySelectorAll('ol > li[data-fn-uid]')).forEach((li) => {
-        const uid = li.getAttribute('data-fn-uid');
-        if (!uid || _fnIdByUid[uid]) return;
+      Array.from(_fnSec.querySelectorAll('li[data-fn-uid], li[id]')).forEach((li) => {
+        const uid = li.getAttribute('data-fn-uid') || '';
+        const lid = li.getAttribute('id') || '';
+        if (!uid && !lid) return;
+        if ((uid && _fnIdByUid[uid]) || (lid && _fnIdByHref['#' + lid])) return;
         const id = ++_fnSeq;
-        _fnIdByUid[uid] = id;
+        if (uid) _fnIdByUid[uid] = id;
+        if (lid) _fnIdByHref['#' + lid] = id;
         const _txtEl = li.querySelector('.allo-fn-text') || li;
         const _runs = inlineRuns(_txtEl, {});
-        _fnDefs[id] = (_runs && _runs.length) ? _runs : [{ text: (li.textContent || '').replace(/↩/g, '').trim() }];
+        _fnDefs[id] = (_runs && _runs.length) ? _runs : [{ text: _cleanXml(li.textContent || '').replace(/↩/g, '').trim() }];
       });
     }
   } catch (_) {}
@@ -1653,7 +1826,13 @@ function _htmlToDocxSpec(html) {
 // DAISY 3 (DTBook 2005-3). Pure string builders (no JSZip) so they unit-test
 // like _htmlToDocxSpec; the zip packaging lives in the export handlers.
 function _expXmlEsc(s) {
-  return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+  return String(s == null ? '' : s)
+    .replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;');
 }
 
 // Serialize a spec run-array to ODF inline markup (nested text:spans so we only
@@ -1681,6 +1860,7 @@ function _odtRuns(runs, footnotes) {
     if (r.code) t = '<text:span text:style-name="T_Code">' + t + '</text:span>';
     if (r.strike) t = '<text:span text:style-name="T_Strike">' + t + '</text:span>';
     if (r.highlight) t = '<text:span text:style-name="T_Highlight">' + t + '</text:span>';
+    if (r.underline) t = '<text:span text:style-name="T_Underline">' + t + '</text:span>';
     if (r.italic) t = '<text:span text:style-name="T_Italic">' + t + '</text:span>';
     if (r.bold) t = '<text:span text:style-name="T_Bold">' + t + '</text:span>';
     if (r.lang) t = '<text:span text:style-name="' + _odtLangStyleName(r.lang) + '">' + t + '</text:span>';
@@ -1878,13 +2058,18 @@ function _htmlToOdtContentXml(html, imageAssets) {
     '<style:style style:name="T_Code" style:family="text"><style:text-properties style:font-name="Liberation Mono"/></style:style>' +
     '<style:style style:name="T_Strike" style:family="text"><style:text-properties style:text-line-through-style="solid"/></style:style>' +
     '<style:style style:name="T_Highlight" style:family="text"><style:text-properties fo:background-color="#FFF59D"/></style:style>' +
+    '<style:style style:name="T_Underline" style:family="text"><style:text-properties style:text-underline-style="solid" style:text-underline-width="auto" style:text-underline-color="font-color"/></style:style>' +
     _odtLangStyles +
     '<style:style style:name="P_TableHeader" style:family="paragraph"><style:text-properties fo:font-weight="bold"/></style:style>' +
     '<style:style style:name="TableCell" style:family="table-cell"><style:table-cell-properties fo:border="0.75pt solid #94A3B8" fo:padding="0.06in"/></style:style>' +
     '<style:style style:name="TableHeaderCell" style:family="table-cell"><style:table-cell-properties fo:background-color="#E2E8F0" fo:border="0.75pt solid #64748B" fo:padding="0.06in"/></style:style>' +
     '<style:style style:name="P_PageBreak" style:family="paragraph"><style:paragraph-properties fo:break-before="page"/></style:style>' +
-    '<text:list-style style:name="L_Bullet"><text:list-level-style-bullet text:level="1" text:bullet-char="•"><style:list-level-properties text:space-before="0.25in" text:min-label-width="0.25in"/></text:list-level-style-bullet></text:list-style>' +
-    '<text:list-style style:name="L_Number"><text:list-level-style-number text:level="1" style:num-format="1" text:num-suffix="."><style:list-level-properties text:space-before="0.25in" text:min-label-width="0.25in"/></text:list-level-style-number></text:list-style>' +
+    '<text:list-style style:name="L_Bullet">' +
+    ['•', '◦', '▪', '•', '◦'].map((ch, idx) => '<text:list-level-style-bullet text:level="' + (idx + 1) + '" text:bullet-char="' + ch + '"><style:list-level-properties text:space-before="' + ((idx + 1) * 0.25).toFixed(2) + 'in" text:min-label-width="0.25in"/></text:list-level-style-bullet>').join('') +
+    '</text:list-style>' +
+    '<text:list-style style:name="L_Number">' +
+    [1, 2, 3, 4, 5].map((lvl) => '<text:list-level-style-number text:level="' + lvl + '" style:num-format="1" text:num-suffix="."><style:list-level-properties text:space-before="' + (lvl * 0.25).toFixed(2) + 'in" text:min-label-width="0.25in"/></text:list-level-style-number>').join('') +
+    '</text:list-style>' +
     '</office:automatic-styles>\n' +
     '<office:body><office:text>' + body.join('\n') + '</office:text></office:body>\n' +
     '</office:document-content>';
@@ -2096,6 +2281,105 @@ function _moClock(sec) {
   const s = (typeof sec === 'number' && isFinite(sec) && sec > 0) ? sec : 0;
   return (Math.round(s * 1000) / 1000) + 's';
 }
+const _ALLO_INTERACTIVE_CHROME_SEL = '.alloflow-cloze-controls,.alloflow-cs-controls,.alloflow-cs-actions,.alloflow-venn-controls,.alloflow-venn-status,.alloflow-venn-place-button,.alloflow-venn-screen-instructions,.alloflow-tl-controls,.alloflow-tl-arrows,.alloflow-glossary-controls,.alloflow-glossary-card-controls,.alloflow-glossary-card-actions,.alloflow-glossary-card-status,.alloflow-gm-controls,.alloflow-gm-status,.alloflow-faq-controls,.alloflow-dir-controls,.alloflow-cornell-controls,.alloflow-ws-controls,.alloflow-quiz-feedback,.alloflow-quiz-check-btn,.alloflow-math-symbolbar,.alloflow-math-symbar,.alloflow-math-controls,.alloflow-dbq-evidence-tracker,.alloflow-export-save-tools,.alloflow-save-status';
+function _alloChosenSelectText(sel) {
+  if (!sel) return '';
+  const opts = sel.options ? Array.from(sel.options) : Array.from(sel.querySelectorAll('option'));
+  const selOpt = sel.selectedOptions && sel.selectedOptions[0];
+  const hasVal = (o) => o && !o.disabled && String(o.getAttribute && o.getAttribute('value') != null ? o.getAttribute('value') : (o.value != null ? o.value : o.textContent || '')).trim() !== '';
+  const chosen = (hasVal(selOpt) ? selOpt : null) || opts.find((o) => (o.selected || o.hasAttribute('selected')) && hasVal(o)) || null;
+  return chosen ? String(chosen.textContent || chosen.value || '').replace(/\s+/g, ' ').trim() : '';
+}
+function _alloUnwrapInlineTermsToSpan(doc, root) {
+  if (!doc || !root || !root.querySelectorAll) return;
+  root.querySelectorAll('button.alloflow-inline-term').forEach((btn) => {
+    const span = doc.createElement('span');
+    span.className = 'alloflow-inline-term';
+    if (btn.lang) span.lang = btn.lang;
+    if (btn.dir) span.dir = btn.dir;
+    ['data-allo-term', 'data-allo-def', 'title'].forEach((attr) => {
+      const val = btn.getAttribute(attr);
+      if (val) span.setAttribute(attr, val);
+    });
+    span.textContent = btn.textContent || '';
+    btn.replaceWith(span);
+  });
+}
+function _alloDedupeVennActivityDom(root) {
+  if (!root || !root.querySelectorAll) return;
+  const doc = root.ownerDocument || root;
+  root.querySelectorAll('.alloflow-venn-activity').forEach((act) => {
+    if (act.querySelector('.alloflow-venn-card')) {
+      act.querySelectorAll('.alloflow-venn-print-only, .alloflow-venn-screen-instructions').forEach((el) => el.remove());
+      act.querySelectorAll('.alloflow-venn-card').forEach((card) => {
+        const btn = card.querySelector('button.alloflow-venn-card-button');
+        if (!btn) return;
+        const sel = card.querySelector('select.alloflow-venn-response');
+        const chosenText = _alloChosenSelectText(sel);
+        const p = doc.createElement('p');
+        p.className = 'alloflow-venn-card-text';
+        p.textContent = (btn.textContent || '').replace(/\s+/g, ' ').trim() + (chosenText ? ' — ' + chosenText : '');
+        btn.replaceWith(p);
+        if (sel) sel.remove();
+      });
+    }
+  });
+}
+function _alloReplaceFormControlsForText(doc, root, blankToken, alloFieldsOnly, emitEmptyBlank) {
+  if (!doc || !root || !root.querySelectorAll) return;
+  const alloSel = 'input[data-allo-field],textarea[data-allo-field],select[data-allo-field],input[data-allo-response-key],textarea[data-allo-response-key],select[data-allo-response-key],.alloflow-response-input,.alloflow-response-select,.interactive-blank,.interactive-textarea,.alloflow-cs-response,.alloflow-venn-response';
+  root.querySelectorAll('input,textarea,select').forEach((el) => {
+    const tag = (el.tagName || '').toLowerCase();
+    const isHidden = el.hasAttribute('hidden') || el.getAttribute('aria-hidden') === 'true' || (el.style && el.style.display === 'none');
+    const isAlloField = !alloFieldsOnly || (typeof el.matches === 'function' && el.matches(alloSel));
+    if (emitEmptyBlank === false && !isAlloField) { el.remove(); return; }
+    if (tag === 'input') {
+      const type = String(el.getAttribute('type') || 'text').toLowerCase();
+      if (type === 'hidden' || type === 'button' || type === 'submit' || type === 'reset') { el.remove(); return; }
+      if (type === 'radio' || type === 'checkbox') {
+        if (isHidden) { el.remove(); return; }
+        const checked = el.checked || el.hasAttribute('checked');
+        if (!alloFieldsOnly) el.replaceWith(doc.createTextNode(checked ? '[x] ' : '[ ] '));
+        else el.remove();
+        return;
+      }
+      if (isHidden) { el.remove(); return; }
+      const val = String(el.value || el.getAttribute('value') || '').trim();
+      if (val) el.replaceWith(doc.createTextNode(val));
+      else if (emitEmptyBlank !== false && isAlloField) el.replaceWith(doc.createTextNode(blankToken));
+      else el.remove();
+      return;
+    }
+    if (tag === 'textarea') {
+      if (isHidden) { el.remove(); return; }
+      const val = String(el.value || el.textContent || '').trim();
+      const outTxt = val || (emitEmptyBlank !== false && isAlloField ? blankToken : '');
+      if (!outTxt) { el.remove(); return; }
+      if (el.closest && el.closest('p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,caption,dt,dd,th,td')) {
+        el.replaceWith(doc.createTextNode(outTxt));
+      } else {
+        const p = doc.createElement('p');
+        p.textContent = outTxt;
+        el.replaceWith(p);
+      }
+      return;
+    }
+    if (tag === 'select') {
+      const chosenTxt = _alloChosenSelectText(el);
+      if (isHidden) {
+        if (chosenTxt && typeof el.matches === 'function' && el.matches('select.alloflow-cs-response, select.alloflow-venn-response')) {
+          el.replaceWith(doc.createTextNode(' — ' + chosenTxt));
+        } else {
+          el.remove();
+        }
+        return;
+      }
+      if (chosenTxt) el.replaceWith(doc.createTextNode(chosenTxt));
+      else if (emitEmptyBlank !== false && isAlloField) el.replaceWith(doc.createTextNode(blankToken));
+      else el.remove();
+    }
+  });
+}
 // Assign a stable id to every leaf text block + return the per-block spoken text.
 // Reuses existing ids when present so the SMIL references match the xhtml. Strips
 // non-spoken editor chrome (same intent as _audioReadyText) so audio == on-screen.
@@ -2103,8 +2387,15 @@ function _collectMoSegments(html) {
   const doc = new DOMParser().parseFromString(html || '', 'text/html');
   const root = doc.body || doc.documentElement;
   if (!root) return { segments: [], bodyHtml: '', lang: 'en' };
-  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], script, style, .allo-block-controls, .allo-block-remove').forEach((el) => el.remove());
-  const SEL = 'p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,caption,dt,dd,th,td';
+  _alloDedupeVennActivityDom(root);
+  _alloUnwrapInlineTermsToSpan(doc, root);
+  root.querySelectorAll('select.alloflow-cs-response[hidden], select.alloflow-venn-response[hidden]').forEach((sel) => {
+    const chosenTxt = _alloChosenSelectText(sel);
+    if (chosenTxt) sel.replaceWith(doc.createTextNode(' \u2014 ' + chosenTxt));
+    else sel.remove();
+  });
+  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], annotation, annotation-xml, [data-allo-footnote-backlink], details.allo-math-source, script, style, .allo-block-controls, .allo-block-remove, ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+  const SEL = 'p,h1,h2,h3,h4,h5,h6,li,blockquote,figcaption,caption,dt,dd,th,td,.alloflow-cs-strip,.alloflow-cs-card,.alloflow-tl-strip';
   const segments = [];
   // EPUB requires UNIQUE ids and the read-along SMIL references each segment by id. The AI HTML can
   // carry DUPLICATE ids (a real epubcheck RSC-005 + ambiguous media-overlay), and upstream dedup runs
@@ -2114,9 +2405,23 @@ function _collectMoSegments(html) {
   const _usedIds = new Set(Array.from(root.querySelectorAll('[id]')).map((el) => el.getAttribute('id')).filter(Boolean));
   let _uid = 0;
   const _freshMoId = () => { let _c; do { _uid++; _c = 'mo' + _uid; } while (_seen.has(_c) || _usedIds.has(_c)); return _c; };
-  Array.from(root.querySelectorAll(SEL)).forEach((el) => {
+  Array.from(root.querySelectorAll(SEL + ',textarea')).forEach((el) => {
+    const _tag = (el.tagName || '').toLowerCase();
+    if (_tag === 'textarea') {
+      if ((el.closest && el.closest(SEL)) || el.hasAttribute('hidden') || el.getAttribute('aria-hidden') === 'true' || (el.style && el.style.display === 'none')) return;
+      const taText = String(el.value || el.textContent || '').replace(/\s+/g, ' ').trim();
+      if (!taText) return;
+      let _id = el.getAttribute('id');
+      if (!_id || _seen.has(_id)) { _id = _freshMoId(); el.setAttribute('id', _id); }
+      _seen.add(_id);
+      segments.push({ id: _id, text: taText });
+      return;
+    }
     if (el.querySelector(SEL)) return; // only leaf blocks — don't double-speak a wrapper
-    const text = (el.textContent || '').replace(/\s+/g, ' ').trim();
+    const clone = el.cloneNode(true);
+    _alloReplaceFormControlsForText(doc, clone, ' blank ', true, true);
+    clone.querySelectorAll('[hidden],[aria-hidden="true"],button,input,select,textarea').forEach((n) => n.remove());
+    const text = (clone.textContent || '').replace(/\s+/g, ' ').trim();
     if (!text) return;
     let _id = el.getAttribute('id');
     if (!_id || _seen.has(_id)) { _id = _freshMoId(); el.setAttribute('id', _id); }
@@ -2133,6 +2438,7 @@ function _collectMoSegments(html) {
     const _xs = new XMLSerializer();
     bodyHtml = Array.from(root.childNodes).map((n) => _xs.serializeToString(n)).join('').replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, '');
   } catch (_) { bodyHtml = root.innerHTML; }
+  bodyHtml = bodyHtml.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, '');
   return { segments, bodyHtml, lang: (doc.documentElement.getAttribute('lang') || 'en') };
 }
 // The shared artifact-audio service serializes vetted clips as base64 so an
@@ -2378,6 +2684,20 @@ function _altFmtXhtmlFromHtml(html) {
   let xhtml;
   try {
     const d = new DOMParser().parseFromString(String(html), 'text/html');
+    _alloDedupeVennActivityDom(d);
+    d.querySelectorAll('.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-step-pager,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,#allo-builder-view-filter,#allo-builder-paper-css,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-footnote-backlink],details.allo-math-source,script,' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+    _alloReplaceFormControlsForText(d, d.body || d, ' ___ ', false, true);
+    _alloUnwrapInlineTermsToSpan(d, d);
+    const usedIds = new Set(Array.from(d.querySelectorAll('[id]')).map((el) => el.getAttribute('id')).filter(Boolean));
+    let secSeq = 0;
+    d.querySelectorAll('h1,h2,h3').forEach((h) => {
+      if (!h.getAttribute('id')) {
+        let candidate;
+        do { secSeq += 1; candidate = 'sec-' + secSeq; } while (usedIds.has(candidate));
+        h.setAttribute('id', candidate);
+        usedIds.add(candidate);
+      }
+    });
     xhtml = new XMLSerializer().serializeToString(d.documentElement).replace(/\sxmlns="([^"]+)"(?=[^<>]*\sxmlns="\1")/g, '');
   } catch (_) {
     xhtml = String(html).replace(/<br>/g, '<br/>').replace(/<hr>/g, '<hr/>').replace(/<img([^>]*[^/])>/g, '<img$1/>').replace(/&nbsp;/g, '&#160;');
@@ -2386,7 +2706,7 @@ function _altFmtXhtmlFromHtml(html) {
   // test was defeated by any child xmlns (one MathML or SVG equation), leaving the root
   // in no namespace so readers reject the book.
   if (!/^<html\b[^>]*\sxmlns=/i.test(xhtml)) xhtml = xhtml.replace(/^<html\b/i, '<html xmlns="http://www.w3.org/1999/xhtml"');
-  return xhtml;
+  return xhtml.replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F\uFFFE\uFFFF]/g, '');
 }
 
 // ePub 3 package as a file map. Caller zips it with 'mimetype' STORED FIRST — that
@@ -2398,11 +2718,12 @@ function _buildEpubPackageFiles(html, opts) {
   const uid = o.uid || _altFmtUid('alloflow-');
   const nowIso = o.modifiedIso || new Date().toISOString();
   const xmlTitle = _expXmlEsc(title);
+  const contentXhtml = _altFmtXhtmlFromHtml(html);
   // Declare svg/mathml on the content item or a reading system may refuse to render
   // an equation it was never told to expect.
   const props = [];
-  if (/<svg\b/i.test(html)) props.push('svg');
-  if (/<math\b/i.test(html)) props.push('mathml');
+  if (/<svg\b/i.test(contentXhtml)) props.push('svg');
+  if (/<math\b/i.test(contentXhtml)) props.push('mathml');
   const propAttr = props.length ? ' properties="' + props.join(' ') + '"' : '';
 
   const opf = '<?xml version="1.0" encoding="UTF-8"?>\n' +
@@ -2435,7 +2756,7 @@ function _buildEpubPackageFiles(html, opts) {
   // XML, and a heading starting with an inline tag silently lost its entry. Capture the
   // FULL heading, then strip inline tags.
   const navEsc = (s) => _expXmlEsc(String(s == null ? '' : s));
-  const headings = [...String(html).matchAll(/<h([1-3])[^>]*\bid="([^"]*)"[^>]*>([\s\S]*?)<\/h\1>/gi)];
+  const headings = [...String(contentXhtml).matchAll(/<h([1-3])[^>]*\bid="([^"]*)"[^>]*>([\s\S]*?)<\/h\1>/gi)];
   const navItems = headings.length > 0
     ? headings.map((m) => '<li><a href="content.xhtml#' + navEsc(m[2]) + '">' + (navEsc(m[3].replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim()) || 'Section') + '</a></li>').join('\n')
     : '<li><a href="content.xhtml">Document</a></li>';
@@ -2444,7 +2765,7 @@ function _buildEpubPackageFiles(html, opts) {
     'mimetype': 'application/epub+zip',
     'META-INF/container.xml': '<?xml version="1.0"?><container version="1.0" xmlns="urn:oasis:names:tc:opendocument:xmlns:container"><rootfiles><rootfile full-path="OEBPS/content.opf" media-type="application/oebps-package+xml"/></rootfiles></container>',
     'OEBPS/content.opf': opf,
-    'OEBPS/content.xhtml': _altFmtXhtmlFromHtml(html),
+    'OEBPS/content.xhtml': contentXhtml,
     'OEBPS/nav.xhtml': '<?xml version="1.0" encoding="UTF-8"?>\n' +
       '<html xmlns="http://www.w3.org/1999/xhtml" xmlns:epub="http://www.idpf.org/2007/ops" lang="' + _expXmlEsc(lang) + '" xml:lang="' + _expXmlEsc(lang) + '">\n' +
       '<head><title lang="en">Navigation</title></head>\n' +
@@ -2484,8 +2805,29 @@ function _buildDaisyPackageFiles(html, opts) {
 function _altFmtHtmlToPlainText(html) {
   try {
     const d = new DOMParser().parseFromString(String(html), 'text/html');
-    d.querySelectorAll('script, style, title, head, .allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], details.allo-math-source').forEach((el) => { try { el.remove(); } catch (_) {} });
-    d.querySelectorAll('details.allo-chart-data > summary').forEach((el) => { try { el.remove(); } catch (_) {} });
+    d.querySelectorAll('button.alloflow-inline-term').forEach((btn) => { try { btn.replaceWith(d.createTextNode(btn.textContent || '')); } catch (_) {} });
+    _alloDedupeVennActivityDom(d);
+    _alloReplaceFormControlsForText(d, d.body || d, ' ___ ', false, true);
+    d.querySelectorAll('script, style, title, head, .allo-block-controls, .allo-block-remove, .a11y-inspect-badge, [data-allo-crop-ui], details.allo-math-source, annotation, annotation-xml, [data-allo-footnote-backlink], .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-step-pager, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], button, select, input, textarea, ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => { try { el.remove(); } catch (_) {} });
+    d.querySelectorAll('img').forEach((img) => {
+      try {
+        const alt = String(img.getAttribute('alt') || '').replace(/\s+/g, ' ').trim();
+        if (alt) img.replaceWith(d.createTextNode(' [Image: ' + alt + '] '));
+        else img.remove();
+      } catch (_) {}
+    });
+    d.querySelectorAll('tr').forEach((tr) => {
+      try {
+        const cells = Array.from(tr.children || []).filter((c) => {
+          const t = String(c.tagName || '').toLowerCase();
+          return t === 'td' || t === 'th';
+        });
+        cells.forEach((cell, idx) => {
+          if (idx < cells.length - 1) cell.appendChild(d.createTextNode(' | '));
+        });
+      } catch (_) {}
+    });
+    d.querySelectorAll('details.allo-chart-data > summary, details.allo-image-desc > summary').forEach((el) => { try { el.remove(); } catch (_) {} });
     d.querySelectorAll('h1,h2,h3,h4,h5,h6').forEach((el) => { try { el.insertAdjacentText('beforebegin', '\n\n'); el.appendChild(d.createTextNode('\n')); } catch (_) {} });
     d.querySelectorAll('p,li,tr,figcaption,blockquote,div,br').forEach((el) => { try { el.appendChild(d.createTextNode('\n')); } catch (_) {} });
     return ((d.body && d.body.textContent) || '').replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
@@ -3108,11 +3450,6 @@ function _audioReadyText(html, narrationOptions) {
   const doc = new DOMParser().parseFromString(html || '', 'text/html');
   const root = doc.body || doc.documentElement;
   if (!root) return '';
-  if(options.languageRuns){
-    _narrationPrepareDocument(doc);
-    root.querySelectorAll('p,h1,h2,h3,h4,h5,h6,li,blockquote,dd,dt,tr,caption,figcaption,summary').forEach(el=>el.appendChild(doc.createTextNode('. ')));
-    return _narrationMergeRuns(_narrationTextRuns(root,options.language),true);
-  }
   // Speak the AI-translated / AI-simplified disclosure instead of silently
   // dropping it for listeners (audit 2026-06-13 [11]): capture it as a
   // spoken preamble BEFORE removing the visual banner.
@@ -3120,8 +3457,22 @@ function _audioReadyText(html, narrationOptions) {
   let preambleRuns = [];
   const _note = root.querySelector('[data-allo-translation-note], [data-allo-plain-note]');
   if (_note) { const _nt = (_note.textContent || '').replace(/\s+/g, ' ').trim(); if (_nt) { _preamble = _nt + '. '; if(options.languageRuns)preambleRuns=[..._narrationTextRuns(_note,options.language),{text:'. ',language:_narrationLanguageOf(_note,options.language)}]; } }
-  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], script, style, button, input, select').forEach((el) => el.remove());
-  root.querySelectorAll('details > summary').forEach((el) => el.remove());
+  if(options.languageRuns){
+    _narrationPrepareDocument(doc, options);
+    root.querySelectorAll('[data-allo-translation-note], [data-allo-plain-note], details.allo-chart-data > summary, details.allo-image-desc > summary').forEach((el) => el.remove());
+    root.querySelectorAll('p,h1,h2,h3,h4,h5,h6,li,blockquote,dd,dt,tr,caption,figcaption,summary,.alloflow-cs-strip,.alloflow-tl-strip').forEach(el=>el.appendChild(doc.createTextNode('. ')));
+    return _narrationMergeRuns([...preambleRuns,..._narrationTextRuns(root,options.language)],true);
+  }
+  _alloDedupeVennActivityDom(root);
+  _alloReplaceFormControlsForText(doc, root, ' blank ', true, !options.languageRuns);
+  root.querySelectorAll('button.alloflow-inline-term').forEach((btn) => {
+    const span = doc.createElement('span');
+    if (btn.lang) span.lang = btn.lang;
+    span.textContent = btn.textContent || '';
+    btn.replaceWith(span);
+  });
+  root.querySelectorAll('.allo-img-controls, [data-alloflow-picker], [data-alloflow-nomsg], [data-allo-translation-note], [data-allo-plain-note], [data-allo-footnote-backlink], details.allo-math-source, .alloflow-reading-tools-shell, .alloflow-hud-bar, #alloflow-term-popover, .alloflow-term-popover, .alloflow-export-prompt-overlay, .alloflow-save-bar, .alloflow-turnin-bar, .alloflow-keycap, .alloflow-inline-chart svg, [hidden], [aria-hidden="true"], script, style, button, input, select, textarea, ' + _ALLO_INTERACTIVE_CHROME_SEL).forEach((el) => el.remove());
+  root.querySelectorAll('details.allo-chart-data > summary, details.allo-image-desc > summary').forEach((el) => el.remove());
   root.querySelectorAll('details em, figcaption em').forEach((el) => { if (/verify|AI-estimated|AI-generated|Transcribed from the image/i.test(el.textContent || '')) el.remove(); });
   root.querySelectorAll('annotation, annotation-xml, [data-allo-latex-src]').forEach((el) => el.remove());
   const imageText = (node, caption, alt) => {
@@ -3154,7 +3505,7 @@ function _audioReadyText(html, narrationOptions) {
       img.replaceWith(replacement);
     }
   });
-  root.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption').forEach((el) => { el.appendChild(doc.createTextNode('. ')); });
+  root.querySelectorAll('p, h1, h2, h3, h4, h5, h6, li, blockquote, dd, dt, tr, caption, figcaption, .alloflow-cs-strip, .alloflow-tl-strip').forEach((el) => { el.appendChild(doc.createTextNode('. ')); });
   if(options.languageRuns)return _narrationMergeRuns([...preambleRuns,..._narrationTextRuns(root,options.language)],true);
   return _preamble + (root.textContent || '')
     .replace(/\s+/g, ' ')
@@ -3264,7 +3615,7 @@ on('allo-reader-toggle','click',function(){var p=$('allo-reader-panel'),t=$('all
 var ruler=$('allo-reader-ruler');
 d.addEventListener('mousemove',function(e){if(ruler&&root.getAttribute('data-allo-ruler')==='1')ruler.style.top=(e.clientY-ruler.offsetHeight/2)+'px';});
 var synth=window.speechSynthesis;
-function bodyText(){var b=d.body?d.body.cloneNode(true):null;if(!b)return '';var x=b.querySelector('#allo-reader-bar');if(x&&x.parentNode)x.parentNode.removeChild(x);var y=b.querySelector('#allo-reader-ruler');if(y&&y.parentNode)y.parentNode.removeChild(y);return (b.innerText||b.textContent||'').replace(/\\s+/g,' ').trim();}
+function bodyText(){var b=d.body?d.body.cloneNode(true):null;if(!b)return '';var x=b.querySelector('#allo-reader-bar');if(x&&x.parentNode)x.parentNode.removeChild(x);var y=b.querySelector('#allo-reader-ruler');if(y&&y.parentNode)y.parentNode.removeChild(y);var hid=b.querySelectorAll('[hidden],[aria-hidden="true"],script,style');for(var h=0;h<hid.length;h++){if(hid[h]&&hid[h].parentNode)hid[h].parentNode.removeChild(hid[h]);}return (b.innerText||b.textContent||'').replace(/_{3,}/g,' blank ').replace(/[\u2702\u2610\u2611\u2713]/g,' ').replace(/\\s+/g,' ').trim();}
 function speak(){if(!synth)return;synth.cancel();var txt=bodyText();if(!txt)return;var rate=$('allo-rd-rate');var r=rate?parseFloat(rate.value)||1:1;var lang=(root.getAttribute('lang')||(d.body&&d.body.getAttribute('lang'))||'').trim();var parts=txt.match(/[^.!?]+[.!?]*\\s*/g)||[txt];var buf='',q=[];for(var i=0;i<parts.length;i++){buf+=parts[i];if(buf.length>180){q.push(buf);buf='';}}if(buf)q.push(buf);for(var j=0;j<q.length;j++){var u=new SpeechSynthesisUtterance(q[j]);u.rate=r;if(lang)u.lang=lang;synth.speak(u);}}
 on('allo-rd-play','click',speak);
 on('allo-rd-stop','click',function(){if(synth)synth.cancel();});
@@ -3437,8 +3788,16 @@ function _narrationLanguageOf(node, fallback) {
   while(el){if(el.lang)return el.lang;el=el.parentElement;}
   return fallback || 'en';
 }
-function _narrationPrepareDocument(doc) {
-  doc.querySelectorAll('script,style,button,input,select,textarea,audio,video,template,[hidden],[aria-hidden="true"],.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],#allo-reader-bar,#allo-reader-ruler,annotation,annotation-xml,[data-allo-latex-src]').forEach(node=>node.remove());
+function _narrationPrepareDocument(doc, options) {
+  _alloDedupeVennActivityDom(doc);
+  _alloReplaceFormControlsForText(doc, doc.body || doc, ' blank ', true, !(options && options.languageRuns));
+  doc.querySelectorAll('button.alloflow-inline-term').forEach((btn) => {
+    const span = doc.createElement('span');
+    if (btn.lang) span.lang = btn.lang;
+    span.textContent = btn.textContent || '';
+    btn.replaceWith(span);
+  });
+  doc.querySelectorAll('script,style,button,input,select,textarea,audio,video,template,[hidden],[aria-hidden="true"],.allo-img-controls,[data-alloflow-picker],[data-alloflow-nomsg],[data-allo-footnote-backlink],details.allo-math-source,#allo-reader-bar,#allo-reader-ruler,.alloflow-reading-tools-shell,.alloflow-hud-bar,#alloflow-term-popover,.alloflow-term-popover,.alloflow-export-prompt-overlay,.alloflow-save-bar,.alloflow-turnin-bar,.alloflow-keycap,.alloflow-inline-chart svg,annotation,annotation-xml,[data-allo-latex-src],' + _ALLO_INTERACTIVE_CHROME_SEL).forEach(node=>node.remove());
   doc.querySelectorAll('[style]').forEach(node=>{if(node.style.display==='none'||node.style.visibility==='hidden')node.remove();});
 }
 function _narrationTextRuns(node, fallback) {
@@ -3476,7 +3835,7 @@ function _srStyleTextFromHtml(html, spokenLabels, narrationOptions) {
   const options=narrationOptions||{};
   const say = (node,key,fallback,n) => { const local=options.languageRuns?options.labelsByLanguage?.[_narrationLanguageOf(node,options.language).split('-')[0]]:spokenLabels; const phrase=local&&((Number(n)===1&&local[key+'One'])||local[key]);return phrase?phrase.replace(/\{n\}/g,String(n)):fallback; };
   const doc=new DOMParser().parseFromString(html||'','text/html');
-  if(options.languageRuns)_narrationPrepareDocument(doc);
+  _narrationPrepareDocument(doc, options);
   const readable=node=>options.languageRuns?_narrationTextRuns(node,options.language).some(run=>run.text.trim()):!!(node.textContent||'').trim();
   const out=[],runs=[];
   const add=(node,...parts)=>{
@@ -3491,6 +3850,7 @@ function _srStyleTextFromHtml(html, spokenLabels, narrationOptions) {
       const tag=node.tagName.toLowerCase(),txt=readable(node);
       if(/^h[1-6]$/.test(tag)){if(txt)add(node,say(node,'heading','Heading level '+tag[1],tag[1])+'. ',node,'.');continue;}
       if(tag==='p'||tag==='blockquote'||tag==='figcaption'){if(txt&&!node.closest('table'))add(node,node);continue;}
+      if(tag==='dt'||tag==='dd'||node.classList?.contains('alloflow-cs-strip')||node.classList?.contains('alloflow-tl-strip')){if(txt)add(node,node,'.');continue;}
       if(tag==='ul'||tag==='ol'){
         const items=Array.from(node.children).filter(c=>c.tagName&&c.tagName.toLowerCase()==='li');
         add(node,say(node,tag==='ul'?'list':'numbered',(tag==='ul'?'List, ':'Numbered list, ')+items.length+' item'+(items.length===1?'':'s'),items.length)+'.');
@@ -7648,7 +8008,7 @@ function PdfAuditView(props) {
     const _before = _sourceHtml;
     if (!_commitAsyncHtmlIfCurrent(_commitToken, (p) => ({ ...p, accessibleHtml: sp.html, _preCmdHtml: _before }))) {
       _setIssueEdit((prev) => ({ ...prev, [key]: { ...prev[key], saving: false } }));
-      addToast(t('pdf_audit.issue.edit_moved') || 'The document changed while the AI was working ? its stale result was discarded.', 'info'); return;
+      addToast(t('pdf_audit.issue.edit_moved') || 'The document changed while the AI was working — its stale result was discarded.', 'info'); return;
     }
     _setIssueEdit((prev) => { const n = { ...prev }; delete n[key]; return n; });
     _setIssueSourceOpen((prev) => ({ ...prev, [key]: false }));
@@ -17154,8 +17514,8 @@ ${topViolations.length > 0 ? '<div class="section"><h2>Most Common Violations (T
                                 }
                               }
                               if (!_commitAsyncHtmlIfCurrent(_commitToken, (prev) => ({ ...prev, ...(_reviewApi ? _reviewApi.mergeEvidence(prev, _commandEvidence) : {}), accessibleHtml: result.html, chunkState: null, chunkWeightedScore: null, chunkReport: null, _lastCmdDiff: _cmdDiff, _preCmdHtml: _preCmdHtml, _lastMiniAudit: result.miniAudit || null, _lastTableReadback: result.tableReadback || null }))) {
-                                setAgentActivityLog(prev => [...prev, { text: '? Stale result discarded ? document changed', type: 'info', time: new Date().toLocaleTimeString() }]);
-                                addToast(t('toasts.workbench_stale') || 'The document changed while Workbench was running ? its stale result was discarded.', 'info');
+                                setAgentActivityLog(prev => [...prev, { text: '⚠ Stale result discarded — document changed', type: 'info', time: new Date().toLocaleTimeString() }]);
+                                addToast(t('toasts.workbench_stale') || 'The document changed while Workbench was running — its stale result was discarded.', 'info');
                                 setIsAgentRunning(false); return;
                               }
                               // Re-audit + recompute so the headline score, "Remaining Issues" count, and the
@@ -21062,9 +21422,16 @@ Return ONLY the plain-language summary.`, false));
                   const savedRange = selection?.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
                   const url = await promptForPdfLink();
                   if (url && savedRange && savedRange.commonAncestorContainer?.isConnected) {
+                    const _safeUrl = String(url).trim();
+                    const _urlScheme = _safeUrl.match(/^\s*([a-zA-Z][a-zA-Z0-9+.-]*)\s*:/);
+                    const _urlOk = _safeUrl.startsWith('#') || (!/^\s*\/\//.test(_safeUrl) && (!_urlScheme || ['http', 'https', 'mailto', 'tel'].includes(_urlScheme[1].toLowerCase())));
+                    if (!_urlOk) {
+                      addToast && addToast(t('toasts.link_url_blocked') || 'Only web (https/http), mailto:, tel:, and #anchor links are allowed.', 'error');
+                      return;
+                    }
                     selection.removeAllRanges(); selection.addRange(savedRange);
                     pdfPreviewRef.current?.contentWindow?.focus();
-                    doc.execCommand('createLink', false, url.trim());
+                    doc.execCommand('createLink', false, _safeUrl);
                   }
                 }} className="w-7 h-7 rounded text-[11px] text-slate-600 hover:bg-indigo-100 transition-colors border border-transparent hover:border-indigo-600"
                   aria-label={t('pdf_audit.toolbar.insert_link') || 'Insert link'} title={t('pdf_audit.toolbar.insert_link') || 'Insert link'}>🔗</button>
@@ -21370,8 +21737,15 @@ Return ONLY the plain-language summary.`, false));
                           var savedRange = selection && selection.rangeCount ? selection.getRangeAt(0).cloneRange() : null;
                           var url = await promptForPdfLink();
                           if (url && savedRange && savedRange.commonAncestorContainer && savedRange.commonAncestorContainer.isConnected) {
+                            var _safeUrl = String(url).trim();
+                            var _urlScheme = _safeUrl.match(/^\s*([a-zA-Z][a-zA-Z0-9+.-]*)\s*:/);
+                            var _urlOk = _safeUrl.startsWith('#') || (!/^\s*\/\//.test(_safeUrl) && (!_urlScheme || ['http', 'https', 'mailto', 'tel'].includes(_urlScheme[1].toLowerCase())));
+                            if (!_urlOk) {
+                              if (typeof addToast === 'function') addToast(t('toasts.link_url_blocked') || 'Only web (https/http), mailto:, tel:, and #anchor links are allowed.', 'error');
+                              return;
+                            }
                             selection.removeAllRanges(); selection.addRange(savedRange); cw && cw.focus();
-                            doc.execCommand('createLink', false, url.trim());
+                            doc.execCommand('createLink', false, _safeUrl);
                           }
                         }
                         else if (e.shiftKey && (e.key === 'l' || e.key === 'L')) { e.preventDefault(); doc.execCommand('insertUnorderedList', false, null); }

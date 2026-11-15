@@ -98,11 +98,6 @@ function lhbFolder_() {
 }
 
 function doPost(e) {
-  var cache = CacheService.getScriptCache();
-  var failCount = parseInt((cache && cache.get('lhb_auth_fail')) || '0', 10) || 0;
-  if (failCount >= 20) {
-    return lhbJson_({ ok: false, error: 'rate-limited' });
-  }
   var data;
   try {
     data = JSON.parse((e && e.postData && e.postData.contents) || '{}');
@@ -112,7 +107,12 @@ function doPost(e) {
   var props = lhbProps_();
   var token = props.getProperty(LHB_PROP_TOKEN);
   if (!token) return lhbJson_({ ok: false, error: 'not-set-up', hint: 'Run setup() in the script editor first.' });
+  var cache = (typeof CacheService !== 'undefined' && CacheService && CacheService.getScriptCache) ? CacheService.getScriptCache() : null;
   if (!lhbTimingSafeTokenEq(data.token, token)) {
+    var failCount = parseInt((cache && cache.get('lhb_auth_fail')) || '0', 10) || 0;
+    if (failCount >= 20) {
+      return lhbJson_({ ok: false, error: 'rate-limited' });
+    }
     if (cache) cache.put('lhb_auth_fail', String(failCount + 1), 60);
     return lhbJson_({ ok: false, error: 'bad-token' });
   }
@@ -128,19 +128,41 @@ function doPost(e) {
     }
     var text = JSON.stringify(payload);
     if (text.length > LHB_MAX_BYTES) return lhbJson_({ ok: false, error: 'too-large' });
-    var folder = lhbFolder_();
-    var stamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), "yyyy-MM-dd-HHmm");
-    var name = 'alloflow-leadership-hub-backup-' + stamp + '.json';
-    folder.createFile(name, text, 'application/json');
-    var pruned = lhbPrune_(folder);
-    return lhbJson_({ ok: true, saved: name, kept: LHB_KEEP, pruned: pruned });
+    var saveCount = parseInt((cache && cache.get('lhb_save_rate')) || '0', 10) || 0;
+    if (saveCount >= 10) return lhbJson_({ ok: false, error: 'rate-limited' });
+    if (cache) cache.put('lhb_save_rate', String(saveCount + 1), 60);
+
+    var lock = (typeof LockService !== 'undefined' && LockService && LockService.getScriptLock) ? LockService.getScriptLock() : null;
+    if (lock && !lock.tryLock(10000)) return lhbJson_({ ok: false, error: 'busy' });
+    try {
+      var folder = lhbFolder_();
+      var now = new Date();
+      var tz = Session.getScriptTimeZone();
+      var stamp = Utilities.formatDate(now, tz, "yyyy-MM-dd-HHmm");
+      var basePrefix = 'alloflow-leadership-hub-backup-' + stamp;
+      var name = basePrefix + '.json';
+      if (folder.getFilesByName && folder.getFilesByName(name).hasNext()) {
+        name = basePrefix + '-' + Utilities.formatDate(now, tz, "ssSSS") + '.json';
+        var seq = 2;
+        while (folder.getFilesByName(name).hasNext() && seq < 50) {
+          name = basePrefix + '-' + Utilities.formatDate(now, tz, "ssSSS") + '-' + seq + '.json';
+          seq++;
+        }
+      }
+      folder.createFile(name, text, 'application/json');
+      var pruned = lhbPrune_(folder);
+      return lhbJson_({ ok: true, saved: name, kept: LHB_KEEP, pruned: pruned });
+    } finally {
+      if (lock) { try { lock.releaseLock(); } catch (ignore) {} }
+    }
   }
   return lhbJson_({ ok: false, error: 'unknown-action' });
 }
 
 /** Keep the newest LHB_KEEP backup files; trash the rest. Only files this
  *  script created are visible to it under drive.file, so nothing else can
- *  be swept up even by accident. */
+ *  be swept up even by accident. Same-minute bursts are collapsed first so
+ *  rapid repeated saves cannot push out older historical backups. */
 function lhbPrune_(folder) {
   var files = [];
   var it = folder.getFiles();
@@ -148,9 +170,39 @@ function lhbPrune_(folder) {
     var f = it.next();
     if (f.getName().indexOf('alloflow-leadership-hub-backup-') === 0) files.push(f);
   }
-  files.sort(function (a, b) { return b.getName() < a.getName() ? -1 : 1; });
+  files.sort(function (a, b) {
+    var an = a.getName(), bn = b.getName();
+    return an === bn ? 0 : (bn < an ? -1 : 1);
+  });
   var pruned = 0;
-  for (var i = LHB_KEEP; i < files.length; i++) { files[i].setTrashed(true); pruned++; }
+  var kept = [];
+  var seenMinute = {};
+  var burstDupes = [];
+  for (var i = 0; i < files.length; i++) {
+    var minuteKey = files[i].getName().slice(0, 46); // alloflow-leadership-hub-backup-YYYY-MM-DD-HHmm
+    if (!seenMinute[minuteKey]) {
+      seenMinute[minuteKey] = true;
+      kept.push(files[i]);
+    } else {
+      burstDupes.push(files[i]);
+    }
+  }
+  if (files.length > LHB_KEEP) {
+    var trashFirst = [];
+    var stillNeeded = files.length - LHB_KEEP;
+    for (var j = burstDupes.length - 1; j >= 0 && trashFirst.length < stillNeeded; j--) {
+      burstDupes[j].setTrashed(true);
+      trashFirst.push(burstDupes[j]);
+      pruned++;
+    }
+    if (pruned < stillNeeded) {
+      var remaining = files.filter(function (f) { return trashFirst.indexOf(f) === -1; });
+      for (var k = LHB_KEEP; k < remaining.length; k++) {
+        remaining[k].setTrashed(true);
+        pruned++;
+      }
+    }
+  }
   return pruned;
 }
 

@@ -125,6 +125,9 @@
   }
 
   function sourceUrls(urls, settings) {
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+      return urls.slice(0, 1);
+    }
     return settings.allowRemoteFallback ? urls.slice() : urls.slice(0, 1);
   }
 
@@ -134,6 +137,10 @@
         if (isReady()) { resolve({ url: 'preloaded', index: -1 }); return; }
         if (index >= urls.length) { reject(new Error('all script sources failed')); return; }
         var script = document.createElement('script');
+        if (index > 0 || (urls[index] && String(urls[index]).indexOf('https://') === 0)) {
+          script.crossOrigin = 'anonymous';
+          script.referrerPolicy = 'no-referrer';
+        }
         script.src = urls[index];
         script.async = true;
         script.onload = function () {
@@ -157,6 +164,10 @@
         if (existing) { resolve({ url: urls[index], index: index }); return; }
         var link = document.createElement('link');
         link.rel = 'stylesheet';
+        if (index > 0 || (urls[index] && String(urls[index]).indexOf('https://') === 0)) {
+          link.crossOrigin = 'anonymous';
+          link.referrerPolicy = 'no-referrer';
+        }
         link.href = urls[index];
         link.setAttribute('data-allo-temml-css', urls[index]);
         link.onload = function () { resolve({ url: urls[index], index: index }); };

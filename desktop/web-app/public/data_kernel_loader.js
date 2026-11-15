@@ -220,8 +220,12 @@
     var text = String(sql == null ? '' : sql).trim().replace(/;+\s*$/, '');
     if (!text) throw new Error('Enter a query first.');
     if (text.length > 5000) throw new Error('Query is limited to 5,000 characters.');
+    var stripped = text.replace(/'(?:''|[^'])*'/g, "''");
+    if (/[;]/.test(stripped) || /--/.test(stripped) || /\/\*/.test(stripped)) {
+      throw new Error('Multiple SQL statements or SQL comments are not allowed.');
+    }
     if (!/^(select|with|describe|summarize|show)\b/i.test(text)) throw new Error('Only read-only SELECT/WITH/DESCRIBE/SUMMARIZE/SHOW queries are allowed.');
-    if (/(\b(attach|call|copy|create|delete|detach|drop|export|import|install|insert|load|pragma|set|update|http[s]?:|read_csv|read_json|read_parquet|glob)\b)/i.test(text)) {
+    if (/(\b(attach|call|copy|create|delete|detach|drop|export|import|install|insert|load|pragma|pragma_[a-z0-9_]*|set|update|http[s]?:|read_csv|read_csv_auto|read_json|read_json_auto|read_json_objects|read_parquet|parquet_scan|csv_scan|json_scan|read_text|read_blob|duckdb_secrets|duckdb_settings|duckdb_extensions|glob)\b)/i.test(text)) {
       throw new Error('This workspace only permits queries against the local data table.');
     }
     return text;
@@ -282,11 +286,14 @@
             });
           },
           close: function () {
-            return Promise.resolve(connection && connection.close()).then(function () { return runtime.db.dropFile(fileName); });
+            return Promise.resolve(connection && connection.close()).finally(function () {
+              return runtime.db.dropFile(fileName);
+            });
           }
         };
       }).catch(function (error) {
         if (connection) { try { connection.close(); } catch (_) {} }
+        Promise.resolve(runtime.db.dropFile(fileName)).catch(function () {});
         throw error;
       });
     });

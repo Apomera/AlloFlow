@@ -839,6 +839,14 @@ const sanitizeIllustrations = (obj) => {
   return out;
 };
 
+const _cleanAudioBase64 = (value, maxLen = 20000000) => {
+  if (typeof value !== 'string' || !value || value.length > maxLen) return '';
+  const compact = value.replace(/\s+/g, '');
+  return /^[A-Za-z0-9+/]+={0,2}$/.test(compact) ? compact : '';
+};
+const _safeAudioMimeType = (value) => (
+  typeof value === 'string' && /^audio\/[a-z0-9.+-]{1,60}$/i.test(value.trim()) ? value.trim() : 'audio/webm'
+);
 const sanitizeAudioSegments = (obj) => {
   if (!obj || typeof obj !== 'object') return {};
   const out = {};
@@ -848,14 +856,15 @@ const sanitizeAudioSegments = (obj) => {
     const clean = {};
     const safeAudio = (url) => typeof url === 'string' && /^(data:audio\/|https?:\/\/)/i.test(url) && url.length <= 20000000 ? url : '';
     const aiAudioUrl = safeAudio(value.aiAudioUrl);
-    const studentAudioBase64 = typeof value.studentAudioBase64 === 'string' && value.studentAudioBase64.length <= 20000000 ? value.studentAudioBase64 : '';
+    const rawStudentB64 = typeof value.studentAudioBase64 === 'string' && value.studentAudioBase64.length <= 20000000 ? value.studentAudioBase64.trim() : '';
+    const studentAudioBase64 = /^[A-Za-z0-9+/_-]+={0,2}$/.test(rawStudentB64) ? rawStudentB64 : '';
     const sentenceAudios = Array.isArray(value.sentenceAudios) ? value.sentenceAudios.slice(0, 120).map(safeAudio).map(url => url || null) : [];
     if (aiAudioUrl) clean.aiAudioUrl = aiAudioUrl;
     if (sentenceAudios.some(Boolean)) clean.sentenceAudios = sentenceAudios;
     if (Array.isArray(value.sentences)) clean.sentences = value.sentences.slice(0, 120).filter(s => typeof s === 'string').map(s => s.slice(0, 500));
     if (studentAudioBase64) {
       clean.studentAudioBase64 = studentAudioBase64;
-      clean.studentAudioMimeType = typeof value.studentAudioMimeType === 'string' && /^audio\//i.test(value.studentAudioMimeType) ? value.studentAudioMimeType.slice(0, 80) : 'audio/webm';
+      clean.studentAudioMimeType = _safeAudioMimeType(value.studentAudioMimeType);
     }
     if (Object.keys(clean).length) out[String(k).slice(0, 64)] = clean;
   });
@@ -2289,8 +2298,9 @@ const getStoryForgeClassSharePreview = (payload = {}) => {
 const hydrateStoryForgeAudioSegments = (value) => Object.fromEntries(
   Object.entries(sanitizeAudioSegments(value)).map(([key, segment]) => {
     const hydrated = { ...segment };
-    if (hydrated.studentAudioBase64 && !hydrated.studentAudioUrl) {
-      hydrated.studentAudioUrl = `data:${hydrated.studentAudioMimeType || 'audio/webm'};base64,${hydrated.studentAudioBase64}`;
+    const pureB64 = _cleanAudioBase64(hydrated.studentAudioBase64);
+    if (pureB64 && !hydrated.studentAudioUrl) {
+      hydrated.studentAudioUrl = `data:${_safeAudioMimeType(hydrated.studentAudioMimeType)};base64,${pureB64}`;
     }
     return [key, hydrated];
   })
@@ -2368,7 +2378,15 @@ const StoryForge = React.memo(({
     return typeof v === 'string' ? v : String(key || '');
   };
   // The host may hand a blocked fn (truthy), and a keyless teacher's call returns nothing: ask the host.
-  const sfTextAi = (() => { try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!onCallGemini && !!window.__alloAiUsable('text', onCallGemini); } catch (_) {} return !!onCallGemini && !onCallGemini._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true); })();
+  const _sfAiCheck = (kind, fn) => {
+    if (!fn) return false;
+    try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+    return !fn._alloQrBlocked && !(typeof window !== 'undefined' && window.__alloStudentAiDisabled === true);
+  };
+  const sfTextAi = _sfAiCheck('text', onCallGemini);
+  const sfVisionAi = _sfAiCheck('vision', onCallGeminiVision);
+  const sfImageEditAi = _sfAiCheck('image-edit', onCallGeminiImageEdit);
+  const sfImagenAi = _sfAiCheck('imagen', onCallImagen);
   const notifyAiUnavailable = () => {
     const message = ux('ai_unavailable', 'AI tools are unavailable. You can keep writing and use the self-check.');
     if (addToast) addToast(message, 'info');
@@ -3396,7 +3414,7 @@ const StoryForge = React.memo(({
 
   const handleHandwritingCapture = (e, paragraphIdx) => {
     const file = e.target.files?.[0];
-    if (!file || !onCallGeminiVision) return;
+    if (!file || !sfVisionAi) return;
     e.target.value = '';
     setHwLoading(true);
     setHwTargetParagraph(paragraphIdx);
@@ -4945,7 +4963,7 @@ const StoryForge = React.memo(({
   };
 
   const generateScaffolds = async () => {
-    if (!onCallGemini) { sfAnnounce(ux('ai_unavailable', 'AI tools are unavailable. You can keep writing and use the self-check.')); return; }
+    if (!sfTextAi) { sfAnnounce(ux('ai_unavailable', 'AI tools are unavailable. You can keep writing and use the self-check.')); return; }
     const requestId = ++planRequestRef.current;
     const requestState = planStateRef.current;
     const sectionIds = paragraphs.map(p => p.id);
@@ -5044,7 +5062,7 @@ Return ONLY JSON: { "frames": ["Frame 1 text...", "Frame 2 text...", ...] }`;
     const coachRequest = (coachRequestsRef.current.help || 0) + 1;
     coachRequestsRef.current.help = coachRequest;
     setCoachNotice('');
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     setHelpMeParagraphIdx(idx);
     setHelpMeResult(null);
     const p = paragraphs[idx];
@@ -5095,7 +5113,7 @@ Return ONLY JSON: { "suggestions": ["Suggestion 1", "Suggestion 2", "Suggestion 
 
   const draftComicBubbles = async (targetIdx = null) => {
     const proposalVersion = projectRevisionRef.current;
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     const selectedPanels = paragraphs
       .map((p, idx) => ({ p, idx }))
       .filter(({ p, idx }) => (targetIdx === null || idx === targetIdx) && ((p.text || p.scaffoldFrame || '').trim().length > 0));
@@ -5180,7 +5198,7 @@ Return ONLY JSON:
 
   const tightenComicBubbles = async (targetIdx = null) => {
     const proposalVersion = projectRevisionRef.current;
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     const selectedPanels = paragraphs
       .map((p, idx) => {
         const dialogue = panelDialogue[p.id] || {};
@@ -5264,7 +5282,7 @@ Return ONLY JSON:
   };
 
   const draftComicCameraPass = async (targetIdx = null) => {
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     const selectedPanels = paragraphs
       .map((p, idx) => ({ p, idx }))
       .filter(({ p, idx }) => (typeof targetIdx === 'number' ? idx === targetIdx : true) && ((p.text || p.scaffoldFrame || '').trim().length > 0));
@@ -5352,7 +5370,7 @@ Return ONLY JSON:
   };
 
   const draftComicThumbnailPass = async (targetIdx = null) => {
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     const selectedPanels = paragraphs
       .map((p, idx) => ({ p, idx }))
       .filter(({ p, idx }) => (typeof targetIdx === 'number' ? idx === targetIdx : true) && ((p.text || p.scaffoldFrame || '').trim().length > 0));
@@ -5441,7 +5459,7 @@ Return ONLY JSON:
   };
 
   const checkGrammarAndStyle = async () => {
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     setGrammarLoading(true);
     try {
       const fullText = paragraphs.map((p, i) => `[P${i + 1}] ${p.text}`).join('\n\n');
@@ -5530,7 +5548,7 @@ Return ONLY JSON:
   };
 
   const draftComicContinuity = async () => {
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     const panelBrief = paragraphs
       .map((p, idx) => ({
         panel: idx + 1,
@@ -5632,7 +5650,7 @@ Return ONLY JSON:
       setPromptPreview({ paragraphId, text: sourceText, idx, prompt: savedPrompt });
       return;
     }
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     const style = getStyleDesc();
     const sourceLimit = layoutMode === 'comic' ? 1100 : 700;
     const promptResult = await onCallGemini(
@@ -5643,7 +5661,7 @@ Return ONLY JSON:
   };
 
   const draftComicArtPrompts = async (targetIdx = null) => {
-    if (layoutMode !== 'comic' || !onCallGemini) return;
+    if (layoutMode !== 'comic' || !sfTextAi) return;
     const selectedPanels = paragraphs
       .map((p, idx) => ({ p, idx, sourceText: getIllustrationSourceText(p) }))
       .filter(({ idx, sourceText }) => (typeof targetIdx === 'number' ? idx === targetIdx : true) && sourceText.trim().length >= 20);
@@ -5725,7 +5743,7 @@ Return ONLY JSON:
   };
 
   const confirmIllustration = async (customPrompt) => {
-    if (!promptPreview || !onCallImagen || window.AlloImageGeneration?.isEnabled() === false) return;
+    if (!promptPreview || !sfImagenAi || window.AlloImageGeneration?.isEnabled() === false) return;
     const { paragraphId, idx } = promptPreview;
     const imgPrompt = finalizeImagePrompt(customPrompt || promptPreview.prompt);
     setPromptPreview(null);
@@ -5735,7 +5753,7 @@ Return ONLY JSON:
       let imageUrl = await onCallImagen(imgPrompt, 768, 0.8);
 
       const consistencyReference = getComicConsistencyReference(idx);
-      if (imageUrl && consistencyReference && onCallGeminiImageEdit) {
+      if (imageUrl && consistencyReference && sfImageEditAi) {
         try {
           const rawBase64 = getImageBase64Payload(imageUrl) || String(imageUrl || '').split(',')[1] || '';
           const refined = await onCallGeminiImageEdit(
@@ -5759,7 +5777,7 @@ Return ONLY JSON:
   };
 
   const illustrateParagraph = async (paragraphId, text, idx) => {
-    if (!onCallImagen || window.AlloImageGeneration?.isEnabled() === false) return;
+    if (!sfImagenAi || window.AlloImageGeneration?.isEnabled() === false) return;
     setIllustrations(prev => ({ ...prev, [paragraphId]: { ...prev[paragraphId], isLoading: true } }));
     try {
       const style = getStyleDesc();
@@ -5768,7 +5786,7 @@ Return ONLY JSON:
       if (!sourceText) throw new Error('No illustration source text');
       let imgPrompt = finalizeImagePrompt(illustrations[paragraphId]?.prompt);
       if (!imgPrompt) {
-        if (!onCallGemini) throw new Error('No prompt writer available');
+        if (!sfTextAi) throw new Error('No prompt writer available');
         const sourceLimit = layoutMode === 'comic' ? 1100 : 700;
         const promptResult = await onCallGemini(
           `Given this ${layoutMode === 'comic' ? 'comic panel plan' : 'paragraph'} from a student's creative story:\n"${sourceText.substring(0, sourceLimit)}"\n\nWrite a concise image generation prompt (max 80 words) that captures the key visual scene described. Focus on the setting, characters, and action. Do NOT include any text, words, or letters in the image.\nArt style: ${style}.\nReturn ONLY the image prompt text, nothing else.`
@@ -5778,7 +5796,7 @@ Return ONLY JSON:
       let imageUrl = await onCallImagen(imgPrompt, 768, 0.8);
 
       const consistencyReference = getComicConsistencyReference(idx);
-      if (imageUrl && consistencyReference && onCallGeminiImageEdit) {
+      if (imageUrl && consistencyReference && sfImageEditAi) {
         try {
           const rawBase64 = getImageBase64Payload(imageUrl) || String(imageUrl || '').split(',')[1] || '';
           const refined = await onCallGeminiImageEdit(
@@ -5843,7 +5861,7 @@ Return ONLY JSON:
 
   // Student-directed image refinement ──
   const refineIllustration = async (paragraphId, editPrompt) => {
-    if (!onCallGeminiImageEdit) { if (addToast) addToast(t('toasts.image_editing_available'), 'error'); return; }
+    if (!sfImageEditAi) { if (addToast) addToast(t('toasts.image_editing_available'), 'error'); return; }
     const current = illustrations[paragraphId];
     if (!current?.imageUrl) return;
     setImageEditState(null);
@@ -5870,7 +5888,7 @@ Return ONLY JSON:
   };
 
   const generateCoverArt = async () => {
-    if (!onCallImagen || !onCallGemini || window.AlloImageGeneration?.isEnabled() === false) return;
+    if (!sfImagenAi || !sfTextAi || window.AlloImageGeneration?.isEnabled() === false) return;
     setCoverArtLoading(true);
     try {
       const style = getStyleDesc();
@@ -5895,7 +5913,7 @@ Return ONLY JSON:
   // ═══════════════════════════════════════════════════════════
 
   const detectCharacters = async () => {
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     setIsProcessing(true);
     try {
       const fullText = paragraphs.map(p => p.text).join('\n\n');
@@ -6141,7 +6159,7 @@ Return ONLY JSON:
   // ═══════════════════════════════════════════════════════════
 
   const gradeStory = async () => {
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     if (feedbackBusyRef.current || projectMutationBusyRef.current) return;
     const requestId = ++feedbackRequestRef.current;
     const requestState = feedbackStateRef.current;
@@ -6246,7 +6264,7 @@ Return ONLY JSON:
     const coachRequest = (coachRequestsRef.current.mentor || 0) + 1;
     coachRequestsRef.current.mentor = coachRequest;
     setCoachNotice('');
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     const fullText = authoredText;
     if (fullText.length < 80) {
       if (addToast) addToast(t('toasts.write_bit_more_before_finding'), 'info');
@@ -6267,10 +6285,13 @@ Return ONLY JSON:
       // Stage 2 — Serper-grounded web search for real PD short fiction
       let searchContext = '';
       let searchResults = [];
-      if (window.WebSearchProvider && keywords) {
+      const safeKeywords = typeof window.WebSearchProvider?.publicSearchQuery === 'function'
+        ? window.WebSearchProvider.publicSearchQuery(keywords)
+        : keywords;
+      if (window.WebSearchProvider && safeKeywords) {
         try {
           const genreLabel = GENRE_TEMPLATES[genre]?.label || '';
-          const searchQuery = `${keywords} ${genreLabel ? genreLabel + ' ' : ''}famous public domain short story excerpt gutenberg`;
+          const searchQuery = `${safeKeywords} ${genreLabel ? genreLabel + ' ' : ''}famous public domain short story excerpt gutenberg`;
           sfAnnounce(ta('a11y.storyforge_searching_for_similar_master_stories'));
           const searchResult = await window.WebSearchProvider.search(searchQuery, 8);
           if (searchResult && searchResult.results && searchResult.results.length > 0) {
@@ -6339,7 +6360,7 @@ Match register and reading level to a ${targetGrade} student. Be specific, be ho
   // ── Senses & Imagery Checker (ported from PoetTree, retargeted for prose) ──
   // ── AI-suggest the emotional fortune of each paragraph (Story Arc curve) ──
   const suggestValenceArc = async () => {
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     const written = paragraphs.filter(p => p.text.trim().length > 0);
     if (written.length < 2) { if (addToast) addToast(t('toasts.write_bit_more_before_checking') || 'Write a bit more first.', 'info'); return; }
     setValenceLoading(true);
@@ -6366,7 +6387,7 @@ Match register and reading level to a ${targetGrade} student. Be specific, be ho
     const coachRequest = (coachRequestsRef.current.senses || 0) + 1;
     coachRequestsRef.current.senses = coachRequest;
     setCoachNotice('');
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     const fullText = authoredText;
     if (fullText.length < 30) {
       if (addToast) addToast(t('toasts.write_bit_more_before_checking'), 'info');
@@ -6426,7 +6447,7 @@ Return ONLY JSON in this shape:
     const coachRequest = (coachRequestsRef.current.show || 0) + 1;
     coachRequestsRef.current.show = coachRequest;
     setCoachNotice('');
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     const fullText = authoredText;
     if (fullText.length < 60) {
       if (addToast) addToast(t('toasts.write_bit_more_before_checking_2'), 'info');
@@ -6487,7 +6508,7 @@ Return ONLY JSON:
     const coachRequest = (coachRequestsRef.current.arcs || 0) + 1;
     coachRequestsRef.current.arcs = coachRequest;
     setCoachNotice('');
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     const fullText = authoredText;
     const wordCount = fullText.split(/\s+/).filter(Boolean).length;
     if (wordCount < 80) {
@@ -6561,7 +6582,7 @@ Return ONLY JSON:
     const coachRequest = (coachRequestsRef.current.dialogue || 0) + 1;
     coachRequestsRef.current.dialogue = coachRequest;
     setCoachNotice('');
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     const fullText = authoredText;
     if (!(layoutMode === 'comic' && paragraphs.some(p => panelDialogue[p.id]?.speech)) && !fullText.includes('"') && !fullText.includes('“') && !fullText.includes('”')) {
       if (addToast) addToast(t('toasts.dialogue_detected_try_adding_quoted'), 'info');
@@ -6931,7 +6952,7 @@ Return ONLY JSON:
     if (!issue) return '';
     if (issue.code === 'unplaced-lettering' || issue.code === 'gutter-lettering-conflict') return 'Open lettering tools';
     if (issue.code === 'missing-print-bleed') return 'Open print setup';
-    if (issue.code === 'continuity-sheet-incomplete') return onCallGemini ? 'Draft continuity' : 'Add continuity';
+    if (issue.code === 'continuity-sheet-incomplete') return sfTextAi ? 'Draft continuity' : 'Add continuity';
     if (issue.code === 'review-not-run') return layoutMode === 'comic' ? 'Open comic review' : 'Open review';
     if (issue.code === 'missing-story-title') return 'Add title';
     if (issue.code === 'missing-vocabulary') return 'Add vocabulary';
@@ -6986,7 +7007,7 @@ Return ONLY JSON:
       changePhase('illustrate', 'sf-comic-print-safety');
       return;
     }
-    if (issue.code === 'continuity-sheet-incomplete' && onCallGemini) {
+    if (issue.code === 'continuity-sheet-incomplete' && sfTextAi) {
       await draftComicContinuity();
       changePhase('illustrate', 'sf-comic-continuity');
       return;
@@ -7016,7 +7037,7 @@ Return ONLY JSON:
     const coachRequest = (coachRequestsRef.current.revision || 0) + 1;
     coachRequestsRef.current.revision = coachRequest;
     setCoachNotice('');
-    if (!onCallGemini) { notifyAiUnavailable(); return; }
+    if (!sfTextAi) { notifyAiUnavailable(); return; }
     setRevisionPlanLoading(true);
     try {
       const fullText = authoredText;
@@ -7259,8 +7280,9 @@ Return ONLY JSON:
           chaptersHtml += `<div class="beat-label" aria-label="${escapeHtml(t("a11y.narrative_beat", { label: beatLabel }))}">${escapeHtml(beatLabel)}</div>`;
         }
         chaptersHtml += `<p class="story-text">${safeText.replace(/\n/g, '<br/>')}</p>`;
-        if (audio?.studentAudioBase64) {
-          chaptersHtml += `<audio controls src="data:audio/webm;base64,${audio.studentAudioBase64}" style="width:100%;margin-top:8px;" aria-label="Audio narration for scene ${idx + 1}"></audio>`;
+        const pureB64 = _cleanAudioBase64(audio?.studentAudioBase64);
+        if (pureB64) {
+          chaptersHtml += `<audio controls src="data:${_safeAudioMimeType(audio?.studentAudioMimeType)};base64,${pureB64}" style="width:100%;margin-top:8px;" aria-label="Audio narration for scene ${idx + 1}"></audio>`;
         }
         chaptersHtml += `</article>`;
         if (idx < paragraphs.length - 1) chaptersHtml += `<div class="separator" aria-hidden="true">&mdash;</div>`;
@@ -7408,7 +7430,7 @@ ${feedbackHtml ? `<aside class="feedback-aside" aria-label="Teacher feedback">${
 
     try {
       const w = window.open('', '_blank');
-      if (w) { w.document.write(html); w.document.close(); }
+      if (w) { try { w.opener = null; } catch (_) {} w.document.write(html); w.document.close(); }
       else if (addToast) addToast(t('toasts.pop_up_blocked_allow_pop_3'), 'error');
     } catch (e) {
       if (addToast) addToast(t('toasts.export_failed_2'), 'error');
@@ -7499,7 +7521,7 @@ ${panelsHtml}
 </body></html>`;
     try {
       const w = window.open('', '_blank');
-      if (w) { w.document.write(html); w.document.close(); }
+      if (w) { try { w.opener = null; } catch (_) {} w.document.write(html); w.document.close(); }
       else if (addToast) addToast(t('toasts.pop_up_blocked_allow_pop_3'), 'error');
     } catch (e) {
       if (addToast) addToast(t('toasts.export_failed_2'), 'error');
@@ -7804,7 +7826,7 @@ ${panelsHtml}
 </body></html>`;
     try {
       const w = window.open('', '_blank');
-      if (w) { w.document.write(html); w.document.close(); }
+      if (w) { try { w.opener = null; } catch (_) {} w.document.write(html); w.document.close(); }
       else if (addToast) addToast(t('toasts.pop_up_blocked_allow_pop_3'), 'error');
       setHasExported(true);
       awardXP(15, 'Exported comic production pack');
@@ -7918,7 +7940,7 @@ show();
 
     try {
       const w = window.open('', '_blank');
-      if (w) { w.document.write(html); w.document.close(); }
+      if (w) { try { w.opener = null; } catch (_) {} w.document.write(html); w.document.close(); }
       else if (addToast) addToast(t('toasts.pop_up_blocked_allow_pop_4'), 'error');
     } catch (e) {
       if (addToast) addToast(t('toasts.slideshow_export_failed'), 'error');
@@ -9290,7 +9312,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 <div className="flex gap-2 items-center flex-wrap sm:justify-end">
                   <button type="button"
                     onClick={generateScaffolds}
-                    disabled={!onCallGemini || isProcessing}
+                    disabled={!sfTextAi || isProcessing}
                     className="px-4 py-2 bg-rose-600 text-white rounded-full text-xs font-bold hover:bg-rose-700 transition-colors flex items-center gap-2 disabled:opacity-50"
                   >
                     <Sparkles size={14} /> {layoutMode === 'comic'
@@ -9310,7 +9332,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 </div>
               </div>
 
-              {!onCallGemini && <p role="status" className="text-xs text-slate-600">{ux('ai_unavailable', 'AI tools are unavailable. You can keep writing and use the self-check.')}</p>}
+              {!sfTextAi && <p role="status" className="text-xs text-slate-600">{ux('ai_unavailable', 'AI tools are unavailable. You can keep writing and use the self-check.')}</p>}
               {comicEditProposal && (
                 <section ref={comicEditPreviewRef} tabIndex={-1} data-sf-comic-edit-preview aria-labelledby="sf-comic-edit-title" className="rounded-2xl border-2 border-indigo-300 bg-indigo-50 p-4">
                   <h4 id="sf-comic-edit-title" className="font-bold text-indigo-950">{ux('comic_edit_preview', 'Review comic bubble suggestions')}</h4>
@@ -9345,7 +9367,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     aria-label={ta('a11y.storyforge_attr_expanded_writing_tools')}
                     className="w-full rounded-2xl border-2 border-slate-200 bg-white p-4 shadow-sm"
                   >
-                    <div className={`grid gap-4 ${layoutMode === 'comic' && onCallGemini ? 'lg:grid-cols-3' : 'md:grid-cols-2'}`}>
+                    <div className={`grid gap-4 ${layoutMode === 'comic' && sfTextAi ? 'lg:grid-cols-3' : 'md:grid-cols-2'}`}>
                       <section
                         aria-labelledby="sf-writing-setup-heading"
                         className="rounded-xl border border-rose-100 bg-rose-50/40 p-3"
@@ -9394,7 +9416,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                         </div>
                       </section>
 
-                      {layoutMode === 'comic' && onCallGemini && (
+                      {layoutMode === 'comic' && sfTextAi && (
                         <section
                           aria-labelledby="sf-comic-helpers-heading"
                           className="rounded-xl border border-blue-100 bg-blue-50/40 p-3"
@@ -9403,7 +9425,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                             Comic helpers
                           </h4>
                           <div className="mt-3 flex flex-wrap items-center gap-2">
-                  {layoutMode === 'comic' && onCallGemini && (
+                  {layoutMode === 'comic' && sfTextAi && (
                     <button type="button"
                       onClick={() => draftComicBubbles()}
                       disabled={isProcessing || !paragraphs.some(p => (p.text || p.scaffoldFrame || '').trim().length > 0)}
@@ -9413,7 +9435,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <Sparkles size={14} /> Draft Bubbles
                     </button>
                   )}
-                  {layoutMode === 'comic' && onCallGemini && (
+                  {layoutMode === 'comic' && sfTextAi && (
                     <button type="button"
                       onClick={() => draftComicCameraPass()}
                       disabled={isProcessing || !paragraphs.some(p => (p.text || p.scaffoldFrame || '').trim().length > 0)}
@@ -9423,7 +9445,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <Sparkles size={14} /> Camera Pass
                     </button>
                   )}
-                  {layoutMode === 'comic' && onCallGemini && (
+                  {layoutMode === 'comic' && sfTextAi && (
                     <button type="button"
                       onClick={() => draftComicThumbnailPass()}
                       disabled={isProcessing || !paragraphs.some(p => (p.text || p.scaffoldFrame || '').trim().length > 0)}
@@ -9433,7 +9455,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <Sparkles size={14} /> Thumbnail Pass
                     </button>
                   )}
-                  {layoutMode === 'comic' && onCallGemini && (
+                  {layoutMode === 'comic' && sfTextAi && (
                     <button type="button"
                       onClick={() => tightenComicBubbles()}
                       disabled={isProcessing || !paragraphs.some(p => getComicLetteringStats(panelDialogue[p.id] || {}).words > COMIC_BUBBLE_WORD_WARNING)}
@@ -9795,7 +9817,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     <div className="p-3 space-y-2 bg-gradient-to-b from-slate-50 to-white">
                       <div className="flex items-center justify-between gap-2">
                         <div className="text-[11px] font-black text-slate-700 uppercase tracking-widest">Panel {idx + 1} Bubbles</div>
-                        {onCallGemini && (
+                        {sfTextAi && (
                           <button
                             type="button"
                             onClick={() => draftComicBubbles(idx)}
@@ -9811,7 +9833,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <div className="rounded-lg border border-slate-200 bg-white p-2">
                         <div className="flex items-center justify-between gap-2 mb-1">
                           <div className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{ta('a11y.storyforge_ui_panel_direction')}</div>
-                          {onCallGemini && (
+                          {sfTextAi && (
                             <button
                               type="button"
                               onClick={() => draftComicCameraPass(idx)}
@@ -9849,7 +9871,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                       <div className="rounded-lg border border-teal-100 bg-teal-50/40 p-2">
                         <div className="flex items-center justify-between gap-2 mb-2">
                           <div className="text-[10px] font-black text-teal-700 uppercase tracking-widest">{ta('a11y.storyforge_ui_thumbnail_rough')}</div>
-                          {onCallGemini && (
+                          {sfTextAi && (
                             <button
                               type="button"
                               onClick={() => draftComicThumbnailPass(idx)}
@@ -9979,7 +10001,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           <div id={`sf-lettering-${p.id}`} tabIndex={-1} data-sf-focusable className="rounded-lg border border-slate-200 bg-white p-2 focus:ring-2 focus:ring-amber-400" aria-label={ta('a11y.storyforge_aria_panel_lettering_budget').replace('{0}', idx + 1)}>
                             <div className="flex flex-wrap items-center justify-between gap-2 mb-1">
                               <span className="text-[10px] font-black text-slate-600 uppercase tracking-widest">{ta('a11y.storyforge_ui_lettering_budget')}</span>
-                              {onCallGemini && lettering.words > COMIC_BUBBLE_WORD_WARNING && (
+                              {sfTextAi && lettering.words > COMIC_BUBBLE_WORD_WARNING && (
                                 <button
                                   type="button"
                                   onClick={() => tightenComicBubbles(idx)}
@@ -10027,7 +10049,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     />
                   )}
                   {/* ── Handwriting Capture Row ── */}
-                  {onCallGeminiVision && (
+                  {sfVisionAi && (
                     <div className={`px-4 py-1.5 border-t flex items-center gap-2 flex-wrap ${
                       layoutMode === 'dark' ? 'bg-slate-900 border-slate-700' : 'bg-white border-slate-100'
                     }`}>
@@ -10209,7 +10231,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   >
                     <Sparkles size={14} /> {coverArtLoading ? 'Generating...' : coverArt ? 'Redo Cover' : 'Cover Art'}
                   </button>
-                  {layoutMode === 'comic' && onCallGemini && (
+                  {layoutMode === 'comic' && sfTextAi && (
                     <button type="button"
                       onClick={() => draftComicArtPrompts()}
                       disabled={isProcessing || !paragraphs.some(p => getIllustrationSourceText(p).trim().length >= 20)}
@@ -10251,7 +10273,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 <div id="sf-comic-continuity" tabIndex={-1} data-sf-focusable className="bg-white rounded-2xl border-2 border-purple-100 shadow-sm p-4 focus:ring-2 focus:ring-purple-400">
                   <div className="flex items-center justify-between gap-3 mb-3">
                     <div className="text-[11px] font-bold text-purple-600 uppercase tracking-widest">{ta('a11y.storyforge_ui_comic_continuity')}</div>
-                    {onCallGemini && (
+                    {sfTextAi && (
                       <button type="button" onClick={draftComicContinuity} disabled={isProcessing || !paragraphs.some(p => (p.text || p.scaffoldFrame || '').trim().length > 0)} className="px-3 py-1.5 bg-purple-100 text-purple-700 rounded-full text-[11px] font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-1">
                         <Sparkles size={12} /> Draft Notes
                       </button>
@@ -10875,7 +10897,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                           Prompt: {illustrations[p.id].prompt.substring(0, 80)}...
                         </div>
                       )}
-                      {layoutMode === 'comic' && onCallGemini && (
+                      {layoutMode === 'comic' && sfTextAi && (
                         <button
                           type="button"
                           onClick={() => draftComicArtPrompts(idx)}
@@ -11238,27 +11260,27 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   <>
                   {!gradingResult && !sfTextAi && typeof window !== 'undefined' && typeof window.AlloAiSetupNotice === 'function' && <window.AlloAiSetupNotice t={t} />}
                   {!gradingResult && sfTextAi && (
-                    <button type="button" onClick={checkSenses} disabled={!onCallGemini || sensesLoading || isProcessing} className="px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200" title={t("tooltips.check_sensory")}>
+                    <button type="button" onClick={checkSenses} disabled={!sfTextAi || sensesLoading || isProcessing} className="px-4 py-2.5 bg-rose-100 text-rose-700 rounded-full text-sm font-bold hover:bg-rose-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-rose-200" title={t("tooltips.check_sensory")}>
                       🌈 {sensesLoading ? 'Checking...' : 'Senses Check'}
                     </button>
                   )}
                   {!gradingResult && sfTextAi && (
-                    <button type="button" onClick={findMentorStory} disabled={!onCallGemini || mentorLoading || isProcessing} className="px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200" title={t("tooltips.find_mentor_story")}>
+                    <button type="button" onClick={findMentorStory} disabled={!sfTextAi || mentorLoading || isProcessing} className="px-4 py-2.5 bg-fuchsia-100 text-fuchsia-700 rounded-full text-sm font-bold hover:bg-fuchsia-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-fuchsia-200" title={t("tooltips.find_mentor_story")}>
                       🎓 {mentorLoading ? 'Searching...' : (mentorMatch && !mentorMatch.error ? 'Find another' : 'Mentor Match')}
                     </button>
                   )}
                   {!gradingResult && sfTextAi && (
-                    <button type="button" onClick={analyzeShowTell} disabled={!onCallGemini || showTellLoading || isProcessing} className="px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200" title={t("tooltips.find_telling_sentences")}>
+                    <button type="button" onClick={analyzeShowTell} disabled={!sfTextAi || showTellLoading || isProcessing} className="px-4 py-2.5 bg-emerald-100 text-emerald-700 rounded-full text-sm font-bold hover:bg-emerald-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-emerald-200" title={t("tooltips.find_telling_sentences")}>
                       🎭 {showTellLoading ? 'Analyzing...' : 'Show vs Tell'}
                     </button>
                   )}
                   {!gradingResult && sfTextAi && (
-                    <button type="button" onClick={analyzeCharacterArcs} disabled={!onCallGemini || arcLoading || isProcessing} className="px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200" title={t("tooltips.audit_character_arc")}>
+                    <button type="button" onClick={analyzeCharacterArcs} disabled={!sfTextAi || arcLoading || isProcessing} className="px-4 py-2.5 bg-sky-100 text-sky-700 rounded-full text-sm font-bold hover:bg-sky-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-sky-200" title={t("tooltips.audit_character_arc")}>
                       🎬 {arcLoading ? 'Analyzing...' : 'Character Arcs'}
                     </button>
                   )}
                   {!gradingResult && sfTextAi && (
-                    <button type="button" onClick={analyzeDialogue} disabled={!onCallGemini || dialogueLoading || isProcessing} className="px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200" title={t("tooltips.tune_dialogue")}>
+                    <button type="button" onClick={analyzeDialogue} disabled={!sfTextAi || dialogueLoading || isProcessing} className="px-4 py-2.5 bg-orange-100 text-orange-700 rounded-full text-sm font-bold hover:bg-orange-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-orange-200" title={t("tooltips.tune_dialogue")}>
                       💬 {dialogueLoading ? 'Analyzing...' : 'Dialogue Tune-Up'}
                     </button>
                   )}
@@ -11268,14 +11290,14 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                     </button>
                   )}
                   {!gradingResult && helpersAvailableForPlan() && (
-                    <button type="button" onClick={synthesizeRevisionPlan} disabled={!onCallGemini || revisionPlanLoading || isProcessing} className="px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200" title={t("tooltips.synthesize_revision_plan")}>
+                    <button type="button" onClick={synthesizeRevisionPlan} disabled={!sfTextAi || revisionPlanLoading || isProcessing} className="px-4 py-2.5 bg-purple-100 text-purple-700 rounded-full text-sm font-bold hover:bg-purple-200 transition-colors disabled:opacity-50 flex items-center gap-2 border border-purple-200" title={t("tooltips.synthesize_revision_plan")}>
                       🗺️ {revisionPlanLoading ? 'Synthesizing...' : 'Revision Plan'}
                     </button>
                   )}
                   </>
                   )}
                   {!gradingResult && (
-                    <button type="button" onClick={gradeStory} disabled={!onCallGemini || isProcessing || (!selfAssessmentSubmitted)} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" title={!selfAssessmentSubmitted ? 'Complete or skip self-assessment first' : 'Get AI feedback'}>
+                    <button type="button" onClick={gradeStory} disabled={!sfTextAi || isProcessing || (!selfAssessmentSubmitted)} className="px-5 py-2.5 bg-indigo-600 text-white rounded-full text-sm font-bold hover:bg-indigo-700 transition-colors disabled:opacity-50 flex items-center gap-2" title={!selfAssessmentSubmitted ? 'Complete or skip self-assessment first' : 'Get AI feedback'}>
                       <Sparkles size={16} /> {feedbackLoading ? 'Preparing feedback...' : 'Get Feedback'}
                     </button>
                   )}
@@ -11303,7 +11325,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                   <button type="button" onClick={() => setSelfAssessmentSubmitted(false)} className="mt-2 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white">{ux('return_selfcheck', 'Return to self-check')}</button>
                 </div>
               )}
-              {!onCallGemini && <p className="text-sm text-slate-600">{ux('ai_unavailable', 'AI tools are unavailable. You can keep writing and use the self-check.')}</p>}
+              {!sfTextAi && <p className="text-sm text-slate-600">{ux('ai_unavailable', 'AI tools are unavailable. You can keep writing and use the self-check.')}</p>}
               {feedbackLoading && (
                 <div role="status" className="rounded-xl border border-indigo-200 bg-indigo-50 p-4">
                   <p className="text-sm text-indigo-900">{ux('feedback_working', 'Preparing feedback for this draft. You can cancel and keep writing.')}</p>
@@ -11313,7 +11335,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
               {feedbackNotice && !feedbackLoading && (
                 <div data-sf-feedback-notice role="status" className="rounded-xl border border-indigo-200 bg-indigo-50 p-4">
                   <p className="text-sm text-indigo-900">{feedbackNotice}</p>
-                  <button type="button" onClick={gradeStory} disabled={!onCallGemini || isProcessing} className="mt-2 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{ux('retry_feedback', 'Retry feedback')}</button>
+                  <button type="button" onClick={gradeStory} disabled={!sfTextAi || isProcessing} className="mt-2 min-h-11 rounded-lg bg-indigo-700 px-4 py-2 text-sm font-bold text-white disabled:opacity-50">{ux('retry_feedback', 'Retry feedback')}</button>
                   {!isCurrentDraftReviewed && <button type="button" onClick={() => { setSelfAssessmentSubmitted(false); setFeedbackNotice(''); }} className="mt-2 ml-2 min-h-11 rounded-lg border border-indigo-400 bg-white px-4 py-2 text-sm font-bold text-indigo-900">{ux('return_selfcheck', 'Return to self-check')}</button>}
                 </div>
               )}
@@ -11839,7 +11861,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
                 <div className="mt-4 pt-4 border-t border-slate-100">
                   <div className="flex items-center justify-between mb-2">
                     <div className="text-[11px] font-bold text-slate-600 uppercase tracking-widest">{ta('a11y.storyforge_ui_narrative_arc')} <span className="normal-case tracking-normal text-slate-500 font-medium">{ta('a11y.storyforge_ui_fortune_over_time')}</span></div>
-                    {onCallGemini && (
+                    {sfTextAi && (
                       <button type="button" data-sf-focusable onClick={suggestValenceArc} disabled={valenceLoading}
                         className="text-[11px] font-bold text-violet-600 hover:text-violet-800 disabled:opacity-50 inline-flex items-center gap-1">
                         {valenceLoading ? <span className="animate-spin motion-reduce:animate-none">⏳</span> : <Sparkles size={12} />} {valenceLoading ? 'Reading…' : 'Suggest arc'}
@@ -11916,7 +11938,7 @@ const comicAltCoverageLabel = layoutMode === 'comic'
 
               </details>
 
-              {!gradingResult && !isProcessing && onCallGemini && (
+              {!gradingResult && !isProcessing && sfTextAi && (
                 <div className="bg-slate-50 border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center">
                   <Star size={48} className="text-slate-600 mx-auto mb-4" />
                   <p className="text-slate-600 font-bold">Click "Get Feedback" to receive AI-powered Glow &amp; Grow feedback on your draft</p>

@@ -393,7 +393,7 @@ describe('Document Builder export boundary hardening', () => {
       title: 'Energy & Matter',
       data: { questions: [
         { question: 'Which is correct <now>?', options: ['Wrong', 'Right & safe'], correctAnswer: 'Right & safe' },
-        { question: 'Too many', options: ['A', 'B', 'C', 'D', 'E'], correctAnswer: 'A' },
+        { question: 'Incomplete', options: ['Only one'], correctAnswer: 'Only one' },
       ] },
     } });
 

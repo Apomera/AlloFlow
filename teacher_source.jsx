@@ -925,6 +925,29 @@ const alloClearTeacherPrivateLabels = (store, classKey) => {
   delete byClass[classKey];
   return { version: 1, byClass };
 };
+const ALLO_EDUCATOR_ACCESS_PROMPT_DISMISSED_KEY = 'alloflow_educator_access_prompt_dismissed_v1';
+const alloIsEducatorAccessCodeConfigured = () => {
+  if (typeof window === 'undefined') return false;
+  try {
+    if (window.AlloModules?.DeviceAccessCode && typeof window.AlloModules.DeviceAccessCode.isConfigured === 'function') {
+      return Boolean(window.AlloModules.DeviceAccessCode.isConfigured());
+    }
+    if (typeof window._alloEducatorAccessCodeRequired === 'function') {
+      return Boolean(window._alloEducatorAccessCodeRequired());
+    }
+  } catch (_) {}
+  return false;
+};
+const alloReadEducatorAccessPromptDismissed = storage => {
+  try { return storage?.getItem(ALLO_EDUCATOR_ACCESS_PROMPT_DISMISSED_KEY) === '1'; } catch (_) { return false; }
+};
+const alloWriteEducatorAccessPromptDismissed = (storage, dismissed) => {
+  try {
+    if (!storage) return;
+    if (dismissed) storage.setItem(ALLO_EDUCATOR_ACCESS_PROMPT_DISMISSED_KEY, '1');
+    else storage.removeItem(ALLO_EDUCATOR_ACCESS_PROMPT_DISMISSED_KEY);
+  } catch (_) {}
+};
 // In-app Classroom handoff (2026-09-25). The helper tab this panel opened may post the
 // codename-only roster JSON back instead of downloading a file. Accept only that window,
 // only from this origin, only the documented shape, and only under the file size limit.
@@ -1327,8 +1350,10 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
   }, [isOpen]);
   useEffect(() => { if (pendingHandoff) pendingHandoffCardRef.current?.focus(); }, [pendingHandoff]);
   useEffect(() => {
-    if (!privateLabelsAllowed) return undefined;
+    const studentPreviewActive = typeof window !== 'undefined' && window.__alloStudentView === true;
+    if (!privateLabelsAllowed || !isOpen || studentPreviewActive) return undefined;
     const onMessage = event => {
+      if (typeof window !== 'undefined' && window.__alloStudentView === true) return;
       const accepted = alloAcceptClassroomHandoff(event, classroomHelperRef.current, window.location.origin);
       if (!accepted) return;
       const roster = currentRosterRef.current;
@@ -1364,7 +1389,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     };
     window.addEventListener('message', onMessage);
     return () => window.removeEventListener('message', onMessage);
-  }, [privateLabelsAllowed]);
+  }, [privateLabelsAllowed, isOpen]);
   useEffect(() => {
     if (!rosterUpdateCompletion) return;
     const result = rosterUpdateCompletion;
@@ -1399,11 +1424,43 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       setReadingPreferencesStudent(null);
     }
   }, [readingPreferencesStudent, rosterKey?.students]);
+  const [accessCodeConfigured, setAccessCodeConfigured] = useState(() => privateLabelsAllowed ? alloIsEducatorAccessCodeConfigured() : false);
+  const [accessPromptDismissedForever, setAccessPromptDismissedForever] = useState(() => (privateLabelsAllowed && typeof window !== 'undefined') ? alloReadEducatorAccessPromptDismissed(window.localStorage) : false);
+  const [accessPromptHiddenSession, setAccessPromptHiddenSession] = useState(false);
+  useEffect(() => {
+    if (!privateLabelsAllowed || typeof window === 'undefined') return undefined;
+    const syncAccessPromptState = () => {
+      setAccessCodeConfigured(alloIsEducatorAccessCodeConfigured());
+      setAccessPromptDismissedForever(alloReadEducatorAccessPromptDismissed(window.localStorage));
+    };
+    syncAccessPromptState();
+    window.addEventListener('alloflow:educator-access-code-changed', syncAccessPromptState);
+    window.addEventListener('alloflow:module-registry-changed', syncAccessPromptState);
+    window.addEventListener('storage', syncAccessPromptState);
+    return () => {
+      window.removeEventListener('alloflow:educator-access-code-changed', syncAccessPromptState);
+      window.removeEventListener('alloflow:module-registry-changed', syncAccessPromptState);
+      window.removeEventListener('storage', syncAccessPromptState);
+    };
+  }, [isOpen, privateLabelsAllowed]);
   if (!isOpen) return null;
   const groups = rosterKey?.groups || {};
   const students = rosterKey?.students || {};
   const groupIds = Object.keys(groups);
   const studentCodenames = Object.keys(students);
+  const hasRosterOrPrivateLabels = showPrivateLabels || Object.keys(classPrivateLabels).length > 0 || studentCodenames.length > 0;
+  const showEducatorAccessPrompt = privateLabelsAllowed && !accessCodeConfigured && !accessPromptDismissedForever && !accessPromptHiddenSession && hasRosterOrPrivateLabels;
+  const handleOpenEducatorAccessSetup = () => {
+    if (typeof window !== 'undefined' && typeof window.__alloOpenStorageRecoveryManager === 'function') {
+      window.__alloOpenStorageRecoveryManager({ focusAccessCode: true });
+      return;
+    }
+    announceRoster(t('roster.educator_access_prompt_fallback') || 'Open Settings and choose Manage device storage to set an Educator access code.', 'info');
+  };
+  const handleDismissEducatorAccessForever = () => {
+    if (typeof window !== 'undefined') alloWriteEducatorAccessPromptDismissed(window.localStorage, true);
+    setAccessPromptDismissedForever(true);
+  };
   const normalizedStudentQuery = rosterStudentQuery.trim().toLocaleLowerCase();
   const matchesStudentQuery = name => !normalizedStudentQuery || name.toLocaleLowerCase().includes(normalizedStudentQuery);
   const sortCodenames = names => names.sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' }));
@@ -2254,6 +2311,35 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
               <li>This roster is stored on this device. Export a JSON backup before changing devices or clearing browser data.</li>
             </ul>
           </details>
+          {showEducatorAccessPrompt && (
+            <section data-testid="roster-educator-access-prompt" aria-labelledby="roster-educator-access-prompt-title" className="rounded-xl border border-amber-200 bg-amber-50/80 p-3 text-xs text-slate-800">
+              <div className="flex items-start gap-2">
+                <Lock size={15} className="mt-0.5 shrink-0 text-amber-800" aria-hidden="true" />
+                <div className="min-w-0 flex-1">
+                  <h3 id="roster-educator-access-prompt-title" className="font-black text-amber-950">
+                    {t('roster.educator_access_prompt_title') || 'Shared classroom device?'}
+                  </h3>
+                  <p className="mt-1 leading-relaxed text-slate-700">
+                    {t('roster.educator_access_prompt_body') || 'Teacher Mode is unlocked by default on this browser. Set an optional Educator access code (at least 6 characters: words, letters, phrases, or numbers) so students cannot open Teacher Mode or view private labels.'}
+                  </p>
+                  <div className="mt-2.5 flex flex-wrap gap-2">
+                    <button type="button" data-testid="roster-educator-access-set" onClick={handleOpenEducatorAccessSetup}
+                      className="min-h-11 rounded-lg bg-indigo-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-800 transition-colors motion-reduce:transition-none">
+                      {t('roster.educator_access_prompt_set') || 'Set educator access code'}
+                    </button>
+                    <button type="button" data-testid="roster-educator-access-personal" onClick={handleDismissEducatorAccessForever}
+                      className="min-h-11 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-amber-100 transition-colors motion-reduce:transition-none">
+                      {t('roster.educator_access_prompt_personal') || "Personal device, don't ask again"}
+                    </button>
+                    <button type="button" data-testid="roster-educator-access-later" onClick={() => setAccessPromptHiddenSession(true)}
+                      className="min-h-11 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 underline hover:bg-amber-100 transition-colors motion-reduce:transition-none">
+                      {t('roster.educator_access_prompt_later') || 'Not now'}
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </section>
+          )}
           {pendingHandoff && (
             <section ref={pendingHandoffCardRef} tabIndex={-1} aria-labelledby="classroom-handoff-title" className="rounded-xl border-2 border-blue-400 bg-blue-50 p-4 focus:outline-none focus:ring-2 focus:ring-blue-500">
               <h3 id="classroom-handoff-title" className="text-sm font-black text-blue-950">Roster from Google Classroom</h3>
@@ -9477,7 +9563,7 @@ const CicoCardsView = ({ rosterKey, onBack }) => {
 window.AlloModules.RosterKeyPanel             = RosterKeyPanel;
 window.AlloModules.CicoInternals = { key: ALLO_CICO_KEY, defaults: alloCicoDefaults, normalize: alloCicoNormalize, load: alloCicoLoad, save: alloCicoSave, score: alloCicoScore, trend: alloCicoTrend, addToStoreWorksheet: alloCicoAddToStoreWorksheet, studentCsv: alloCicoStudentCsv, triageRows: alloCicoTriageRows, localDate: alloCicoDate };
 window.AlloModules.TeacherPrivateLabelInternals = {
-  storageKey: ALLO_TEACHER_PRIVATE_LABELS_KEY, maxLength: ALLO_TEACHER_PRIVATE_LABEL_MAX, maxClasses: ALLO_TEACHER_PRIVATE_LABEL_CLASSES,
+  storageKey: ALLO_TEACHER_PRIVATE_LABELS_KEY, accessPromptDismissedKey: ALLO_EDUCATOR_ACCESS_PROMPT_DISMISSED_KEY, maxLength: ALLO_TEACHER_PRIVATE_LABEL_MAX, maxClasses: ALLO_TEACHER_PRIVATE_LABEL_CLASSES,
   classKey: alloTeacherPrivateLabelClassKey, normalizeLabel: alloNormalizeTeacherPrivateLabel,
   read: alloReadTeacherPrivateLabels, write: alloWriteTeacherPrivateLabels,
   setLabel: alloSetTeacherPrivateLabel, dropLabel: alloDropTeacherPrivateLabel, clearClass: alloClearTeacherPrivateLabels,

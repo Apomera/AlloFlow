@@ -86,7 +86,7 @@ function statusPageHtml_() {
     var actor = currentActor_(), config = configMap_(book_());
     ok = true;
     headline = 'Deployment check passed';
-    detail = 'The link works and you are signed in as ' + esc(actor.role) + '. You can close this tab and go back to AlloFlow to tick the last step. Then ask one staff member and one student to open the portal once, so each role has been seen working.';
+    detail = 'The link works and you are signed in as ' + actor.role + '. You can close this tab and go back to AlloFlow to tick the last step. Then ask one staff member and one student to open the portal once, so each role has been seen working.';
     rows = [['Service', SR_SERVICE], ['Script version', SR_VERSION], ['Repository schema', number_(config.schemaVersion) || 'not set up'], ['School', config.schoolName || ''], ['Academic year', config.academicYear || ''], ['Allowed domain', config.allowedDomain || ''], ['Your role', actor.role], ['Setup state', PropertiesService.getScriptProperties().getProperty('SR_SETUP_STATE') || 'not run']];
   } catch (err) {
     var failure = publicError_(err);
@@ -96,7 +96,7 @@ function statusPageHtml_() {
   }
   return '<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light dark"><title>School Rewards deployment check</title>'
     + '<style>body{font:16px/1.5 system-ui,sans-serif;margin:0;background:#f3f6fb;color:#172033}main{max-width:640px;margin:48px auto;padding:24px}h1{font-size:24px;margin:0 0 8px}.badge{display:inline-block;padding:6px 12px;border-radius:999px;font-weight:800}.ok{background:#e7f7ee;color:#17643b}.bad{background:#ffe9ed;color:#92182f}table{width:100%;border-collapse:collapse;margin-top:18px;background:#fff;border:1px solid #dce2eb;border-radius:12px}th,td{text-align:left;padding:10px 12px;border-bottom:1px solid #e1e6ed}th{width:42%;color:#455269}p{color:#344057}@media(prefers-color-scheme:dark){body{background:#0f1520;color:#e6ebf5}table{background:#161e2e;border-color:#3a4760}th,td{border-color:#3a4760}th{color:#c7d0e0}p{color:#d3dbe8}.ok{background:#12351f;color:#a8ecc0}.bad{background:#3d1520;color:#ffb3c0}}</style></head>'
-    + '<body><main><span class="badge ' + (ok ? 'ok' : 'bad') + '">' + (ok ? 'OK' : 'Failed') + '</span><h1>' + esc(headline) + '</h1><p>' + detail + '</p><table>'
+    + '<body><main><span class="badge ' + (ok ? 'ok' : 'bad') + '">' + (ok ? 'OK' : 'Failed') + '</span><h1>' + esc(headline) + '</h1><p>' + esc(detail) + '</p><table>'
     + rows.map(function(row) { return '<tr><th>' + esc(row[0]) + '</th><td>' + esc(row[1]) + '</td></tr>'; }).join('')
     + '</table><p><a href="?">Open the School Rewards portal</a></p></main></body></html>';
 }
@@ -4664,7 +4664,7 @@ function uuid_() { return Utilities.getUuid(); }
 function iso_(value) { if (!value) return ''; var date = new Date(String(value)); if (isNaN(date.getTime())) throw srError_('bad_date', 'Enter a date and time.'); return date.toISOString(); }
 function httpsUrl_(value) { var out = String(value || '').trim(); if (!out) return ''; if (!/^https:\/\//i.test(out) || out.length > 600) throw srError_('bad_url', 'Use an HTTPS URL.'); return out; }
 function webAppUrl_(value) { var out = String(value || '').trim(); if (!out) return ''; if (!/^https:\/\/script\.google\.com\/macros\/s\/[A-Za-z0-9_-]+\/exec$/.test(out)) throw srError_('bad_url', 'Use the Apps Script /exec URL.'); return out; }
-function safeRow_(values) { return values.map(function(value) { return typeof value === 'string' && /^[=+\-@]/.test(value) ? "'" + value : value; }); }
+function safeRow_(values) { return values.map(function(value) { return typeof value === 'string' && /^[\t\r\n ]*[=+\-@]/.test(value) ? "'" + value : value; }); }
 function assertPrivateStorage_(item) {
   try {
     if (!item || item.getSharingAccess() !== DriveApp.Access.PRIVATE || item.isShareableByEditors() || item.getEditors().length || item.getViewers().length) throw new Error('Storage sharing mismatch');

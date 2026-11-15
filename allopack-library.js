@@ -31,7 +31,10 @@
   form.addEventListener('reset', function () { search.value = ''; subject.value = ''; grade.value = ''; filter(); });
   // Retain the visitor's existing browser-app storage origin on either supported host.
   if (['https://alloflow.dev', 'https://alloflow-cdn.pages.dev'].includes(window.location.origin)) {
-    document.querySelectorAll('[data-pack-alias]').forEach(function (link) { link.href = '/p/' + link.dataset.packAlias; });
+    document.querySelectorAll('[data-pack-alias]').forEach(function (link) {
+      var alias = String(link.dataset.packAlias || '');
+      if (/^[A-Za-z0-9_-]+$/.test(alias)) link.href = '/p/' + alias;
+    });
   }
   document.querySelectorAll('[data-copy-pack]').forEach(function (button) {
     button.hidden = false;
@@ -58,9 +61,12 @@
       var status = document.getElementById('pack-copy-status');
       status.textContent = 'Preparing the JSON download…';
       async function readPack(url) {
-        var response = await fetch(url);
+        var response = await fetch(url, { credentials: 'omit', referrerPolicy: 'no-referrer' });
         if (!response.ok) throw new Error('Download unavailable');
+        var lenHdr = Number(response.headers && response.headers.get && response.headers.get('content-length'));
+        if (Number.isFinite(lenHdr) && lenHdr > 25 * 1024 * 1024) throw new Error('Pack exceeds maximum size');
         var bytes = await response.arrayBuffer();
+        if (bytes.byteLength > 25 * 1024 * 1024) throw new Error('Pack exceeds maximum size');
         var pack = JSON.parse(new TextDecoder().decode(bytes).replace(/^\uFEFF/, ''));
         if (!pack.allopack || !Array.isArray(pack.history)) throw new Error('The response is not an AlloPack');
         return bytes;
@@ -68,10 +74,15 @@
       try {
         var bytes;
         try { bytes = await readPack(link.href); }
-        catch (_) { bytes = await readPack('https://raw.githubusercontent.com/Apomera/AlloFlow/main/' + link.dataset.packDownload); }
+        catch (_) {
+          var relPath = String(link.dataset.packDownload || '').replace(/^\/+/, '');
+          if (!/^[A-Za-z0-9_./-]+\.json$/.test(relPath) || relPath.indexOf('..') !== -1) throw new Error('Invalid pack path');
+          bytes = await readPack('https://raw.githubusercontent.com/Apomera/AlloFlow/main/' + relPath);
+        }
+        var safeDownload = String(link.download || 'allopack.json').replace(/[^A-Za-z0-9._-]/g, '_').replace(/^\.+/, '') || 'allopack.json';
         var blobUrl = URL.createObjectURL(new Blob([bytes], {type:'application/json'}));
         var anchor = document.createElement('a');
-        anchor.href = blobUrl; anchor.download = link.download;
+        anchor.href = blobUrl; anchor.download = safeDownload;
         document.body.appendChild(anchor); anchor.click(); anchor.remove();
         setTimeout(function () { URL.revokeObjectURL(blobUrl); }, 1000);
         status.textContent = 'JSON download started. Use Load Project in AlloFlow to open it.';

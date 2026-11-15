@@ -56,6 +56,8 @@ function browserLaunchOptions(timeout = 30000) {
       '--disable-sync',
       '--metrics-recording-only',
       '--no-first-run',
+      '--webrtc-ip-handling-policy=disable_non_proxied_udp',
+      '--force-webrtc-ip-handling-policy',
     ],
   };
   const configured = process.env.ALLOFLOW_CHROMIUM_PATH;

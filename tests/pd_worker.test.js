@@ -233,13 +233,15 @@ describe('worker /submitPd deep server validation', () => {
 });
 
 describe('worker GET /pdSubmissions', () => {
-  function getList(env, token) {
-    const url = 'https://worker.test/pdSubmissions' + (token ? `?token=${encodeURIComponent(token)}` : '');
-    return worker.fetch(new Request(url, { method: 'GET' }), env);
+  function getList(env, token, queryToken) {
+    const url = 'https://worker.test/pdSubmissions' + (queryToken ? `?token=${encodeURIComponent(queryToken)}` : '');
+    const headers = token ? { Authorization: 'Bearer ' + token } : {};
+    return worker.fetch(new Request(url, { method: 'GET', headers }), env);
   }
-  it('is disabled without ADMIN_TOKEN and rejects a wrong token', async () => {
+  it('is disabled without ADMIN_TOKEN and rejects a wrong token or query-string token', async () => {
     expect((await getList({ PD_SUBMISSIONS: fakeKv() })).status).toBe(501);
     expect((await getList({ PD_SUBMISSIONS: fakeKv(), ADMIN_TOKEN: 'secret' }, 'wrong')).status).toBe(401);
+    expect((await getList({ PD_SUBMISSIONS: fakeKv(), ADMIN_TOKEN: 'secret' }, null, 'secret')).status).toBe(401);
   });
   it('lists submissions with the correct token', async () => {
     const env = { PD_SUBMISSIONS: fakeKv(), ADMIN_TOKEN: 'secret' };

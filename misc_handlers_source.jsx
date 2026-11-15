@@ -810,7 +810,7 @@ const handleLoadProject = (e, deps) => {
                         if (defs.difficulty) setAdventureDifficulty(defs.difficulty);
                         if (defs.mode) setAdventureInputMode(defs.mode);
                         if (defs.language) setAdventureLanguageMode(defs.language);
-                        if (defs.instructions) setAdventureCustomInstructions(defs.instructions);
+                        if (defs.instructions !== undefined) setAdventureCustomInstructions(defs.instructions || '');
                         if (defs.chanceMode !== undefined) setAdventureChanceMode(!!defs.chanceMode);
                         if (defs.freeResponse !== undefined) setAdventureFreeResponseEnabled(!!defs.freeResponse);
                         if (defs.typingPace !== undefined) setAdventureTypingPaceEnabled(!!defs.typingPace);
@@ -821,6 +821,7 @@ const handleLoadProject = (e, deps) => {
                         if (defs.socialStoryFocus !== undefined) setSocialStoryFocus(defs.socialStoryFocus || '');
                         if (defs.artStyle) setAdventureArtStyle(defs.artStyle);
                         if (defs.customArtStyle !== undefined) setAdventureCustomArtStyle(defs.customArtStyle || '');
+                        if (defs.protagonistAge !== undefined && typeof deps.setAdventureProtagonistAge === 'function') deps.setAdventureProtagonistAge(defs.protagonistAge || 'auto');
                         if (defs.lowQualityVisuals !== undefined) setUseLowQualityVisuals(!!defs.lowQualityVisuals);
                         if (defs.enableFactionResources !== undefined) setEnableFactionResources(!!defs.enableFactionResources);
                         if (defs.factionResourceMode) setFactionResourceMode(defs.factionResourceMode);
@@ -853,15 +854,15 @@ const handleLoadProject = (e, deps) => {
                     addToast(`Welcome back, ${savedNickname}!`, "success");
                 }
                 if (isStudentSave) {
-                     if (rawData.adventureSnapshot && rawData.adventureSnapshot.turnCount > 0) {
+                     if (rawData.adventureSnapshot && (rawData.adventureSnapshot.turnCount > 0 || rawData.adventureSnapshot.currentScene || rawData.adventureSnapshot.xp > 0 || rawData.adventureSnapshot.isGameOver)) {
                          const snapshot = rawData.adventureSnapshot;
                          setAdventureState(prev => ({
                              ...prev,
-                             xp: snapshot.xp || 0,
-                             gold: snapshot.gold || 0,
-                             energy: snapshot.energy || 100,
-                             level: snapshot.level || 1,
-                             xpToNextLevel: snapshot.xpToNextLevel || 100,
+                             xp: snapshot.xp ?? 0,
+                             gold: snapshot.gold ?? 0,
+                             energy: snapshot.energy ?? 100,
+                             level: snapshot.level ?? 1,
+                             xpToNextLevel: snapshot.xpToNextLevel ?? 100,
                              inventory: snapshot.inventory || [],
                              narrativeLedger: snapshot.narrativeLedger || '',
                               assistedKnowledge: Array.isArray(snapshot.assistedKnowledge) ? snapshot.assistedKnowledge.filter(Boolean).slice(-12) : [],
@@ -869,12 +870,24 @@ const handleLoadProject = (e, deps) => {
                              currentScene: snapshot.currentScene,
                              history: snapshot.history || [],
                              readingSource: snapshot.readingSource || null,
-                             turnCount: snapshot.turnCount || 0,
+                             readingMode: snapshot.readingMode || prev.readingMode,
+                             systemResources: Array.isArray(snapshot.systemResources) ? snapshot.systemResources : (prev.systemResources || []),
+                             characters: Array.isArray(snapshot.characters) ? snapshot.characters : (prev.characters || []),
+                             isCastConfirmed: snapshot.isCastConfirmed ?? prev.isCastConfirmed,
+                             activeRollModifier: snapshot.activeRollModifier ?? 0,
+                             activeXpMultiplier: snapshot.activeXpMultiplier ?? 1,
+                             activeXpBoostTurns: snapshot.activeXpBoostTurns ?? 0,
+                             activeGoldBuffTurns: snapshot.activeGoldBuffTurns ?? 0,
+                             lastKeyItemTurn: snapshot.lastKeyItemTurn ?? -5,
+                             turnCount: snapshot.turnCount ?? 0,
                              climax: snapshot.climax || { isActive: false, archetype: 'Auto', masteryScore: 0, attempts: 0 },
                              debateMomentum: snapshot.debateMomentum ?? 50,
-                             missionReportDismissed: snapshot.missionReportDismissed || false,
-                             isGameOver: false,
-                             isLoading: false
+                             missionReportDismissed: snapshot.missionReportDismissed ?? false,
+                             isGameOver: snapshot.isGameOver ?? false,
+                             isLoading: false,
+                             isImageLoading: false,
+                             loadingStage: null,
+                             imagePolishStage: null
                          }));
                          setHasSavedAdventure(true);
                          addToast(t('student.adventure_restored'), "success");
@@ -1083,16 +1096,24 @@ const handleLoadProject = (e, deps) => {
             // matrix, Journal entries, etc.). The window slot is keyed by
             // toolId; individual tools listen for the custom event and pull
             // their own slice via window.SelToolDataManager.get(toolId).
-            if (rawData.selToolData && typeof rawData.selToolData === 'object') {
+            if (rawData.selToolData && typeof rawData.selToolData === 'object' && !Array.isArray(rawData.selToolData)) {
                 try {
-                    window.__alloflowSelToolData = rawData.selToolData;
-                    // Also mirror each tool's per-tool localStorage key so
-                    // tools that read directly from localStorage on mount
-                    // (instead of via the manager) pick up the restore.
-                    Object.keys(rawData.selToolData || {}).forEach(function (toolId) {
+                    var isSafeSelLegacyKey = function (key) {
+                        return typeof key === 'string' && /^(?:alloSel[A-Za-z0-9_.:-]{1,80}|alloflow_sel_[a-z0-9_.:-]{1,80}|sel_[a-z0-9_.:-]{1,80})$/.test(key);
+                    };
+                    var safeSelData = Object.create(null);
+                    Object.keys(rawData.selToolData).forEach(function (toolId) {
+                        if (toolId === '__proto__' || toolId === 'constructor' || toolId === 'prototype') return;
+                        safeSelData[toolId] = rawData.selToolData[toolId];
+                    });
+                    window.__alloflowSelToolData = Object.assign({}, safeSelData);
+                    // Also mirror each SEL-scoped per-tool legacy key so tools that
+                    // read directly from localStorage on mount pick up the restore,
+                    // while refusing arbitrary/sensitive localStorage key overwrites.
+                    Object.keys(safeSelData).forEach(function (toolId) {
                         try {
-                            var slot = rawData.selToolData[toolId];
-                            if (slot && typeof slot === 'object' && slot._lsKey && typeof slot._lsKey === 'string') {
+                            var slot = safeSelData[toolId];
+                            if (slot && typeof slot === 'object' && isSafeSelLegacyKey(slot._lsKey)) {
                                 localStorage.setItem(slot._lsKey, JSON.stringify(slot._lsValue !== undefined ? slot._lsValue : slot));
                             }
                         } catch (e) {}
@@ -1424,8 +1445,15 @@ function handleRestoreView(item, options = {}, deps = {}) {
         setAdventureState(prev => ({
             ...prev,
             ...item.data.snapshot,
+            activeRollModifier: item.data.snapshot.activeRollModifier ?? 0,
+            activeXpMultiplier: item.data.snapshot.activeXpMultiplier ?? 1,
+            activeXpBoostTurns: item.data.snapshot.activeXpBoostTurns ?? 0,
+            activeGoldBuffTurns: item.data.snapshot.activeGoldBuffTurns ?? 0,
+            lastKeyItemTurn: item.data.snapshot.lastKeyItemTurn ?? -5,
             isLoading: false,
-            isImageLoading: false
+            isImageLoading: false,
+            loadingStage: null,
+            imagePolishStage: null
         }));
         addToast(t('adventure.toasts.state_restored'), "info");
     }

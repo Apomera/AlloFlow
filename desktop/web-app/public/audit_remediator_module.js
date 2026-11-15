@@ -280,11 +280,22 @@
     return actions;
   }
 
+  function _arAiUsable(kind, fn) {
+    if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+    if (typeof window !== 'undefined') {
+      if (window.__alloStudentAiDisabled === true) return false;
+      if (typeof window.__alloAiUsable === 'function') {
+        try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
+      }
+    }
+    return true;
+  }
+
   // ------------------------------------------------------------------
   // verifyClaimsBatch: ONE search-grounded call for ALL claims.
   // ------------------------------------------------------------------
   async function verifyClaimsBatch(claims, callGemini, cleanJson) {
-    if (!claims || claims.length === 0) return [];
+    if (!claims || claims.length === 0 || !_arAiUsable('text', callGemini)) return [];
     // Chunk if >30 claims (rare; safety bound)
     var chunkSize = 30;
     var chunks = [];
@@ -427,7 +438,7 @@
     });
     var checked = checkedSet[0]; var setChecked = checkedSet[1];
 
-    var [factCheckOn, setFactCheckOn] = useState(initialClaims.length > 0);
+    var [factCheckOn, setFactCheckOn] = useState(initialClaims.length > 0 && _arAiUsable('text', props.callGemini));
     var [phase, setPhase] = useState('confirm'); // confirm | applying | verifying | reAuditing | done | error
     var [progress, setProgress] = useState({ current: 0, total: 0, label: '' });
     var [verdicts, setVerdicts] = useState(null);
@@ -441,11 +452,11 @@
 
     async function handleApply() {
       var selected = initialActions.filter(function (a) { return a.target !== 'manual' && checked[a.id]; });
-      var totalSteps = selected.length + (factCheckOn && initialClaims.length > 0 ? 1 : 0) + 1; // +1 for re-audit
+      var totalSteps = selected.length + (factCheckOn && initialClaims.length > 0 && _arAiUsable('text', props.callGemini) ? 1 : 0) + 1; // +1 for re-audit
       var step = 0;
 
       // 1. Optional fact-check
-      if (factCheckOn && initialClaims.length > 0) {
+      if (factCheckOn && initialClaims.length > 0 && _arAiUsable('text', props.callGemini)) {
         step++;
         setPhase('verifying');
         setProgress({ current: step, total: totalSteps, label: 'Verifying ' + initialClaims.length + ' claim' + (initialClaims.length === 1 ? '' : 's') + ' with Google Search...' });

@@ -31,7 +31,7 @@ const headingsOnly = flag === '--headings-only';
     const workerUrl = URL.createObjectURL(new Blob([atob(workerB64)], { type: 'text/javascript' }));
     pdfjsLib.GlobalWorkerOptions.workerSrc = workerUrl;
     const bytes = Uint8Array.from(atob(dataB64), (c) => c.charCodeAt(0));
-    const pdf = await pdfjsLib.getDocument({ data: bytes }).promise;
+    const pdf = await pdfjsLib.getDocument({ data: bytes, isEvalSupported: false }).promise;
     const result = [];
     for (let p = first; p <= Math.min(last, pdf.numPages); p++) {
       const pg = await pdf.getPage(p);

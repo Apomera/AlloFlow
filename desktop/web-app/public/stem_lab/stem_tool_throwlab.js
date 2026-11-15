@@ -48,6 +48,12 @@ window.StemLab = window.StemLab || {
 
 (function() {
   'use strict';
+
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
   // ── Reduced motion CSS (WCAG 2.3.3) — shared across all STEAM Lab tools ──
   (function() {
     if (document.getElementById('allo-stem-motion-reduce-css')) return;
@@ -2233,10 +2239,10 @@ window.StemLab = window.StemLab || {
         // Earned badges (top 5)
         var earnedBadges = BADGES.filter(function(b) { return d.badgesEarned && d.badgesEarned[b.id]; }).slice(0, 5);
         var badgesHtml = earnedBadges.length
-          ? earnedBadges.map(function(b) { return '<span class="badge">' + b.emoji + ' ' + b.label + '</span>'; }).join('')
+          ? earnedBadges.map(function(b) { return '<span class="badge">' + escapeHtml(b.emoji) + ' ' + escapeHtml(b.label) + '</span>'; }).join('')
           : '<span class="badge-empty">No badges yet — keep throwing!</span>';
         var cardHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
-          + '<title>ThrowLab Trading Card — ' + name + '</title>'
+          + '<title>ThrowLab Trading Card — ' + escapeHtml(name) + '</title>'
           + '<style>'
           + '*{box-sizing:border-box} body{margin:30px;font-family:Georgia,serif;background:#0f172a;color:#f8fafc;display:flex;justify-content:center}'
           + '.card{width:380px;border:8px solid #fbbf24;border-radius:18px;background:linear-gradient(135deg,#fef3c7,#fde68a);color:#1a1a1a;padding:0;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.3)}'
@@ -2258,26 +2264,27 @@ window.StemLab = window.StemLab || {
           + '</style></head><body>'
           + '<div class="card">'
           + '  <div class="banner">'
-          + '    <span class="icon">' + modeIcon + '</span>'
-          + '    <div class="name">' + name + '</div>'
-          + '    <div class="sport">' + modeLbl + '</div>'
+          + '    <span class="icon">' + escapeHtml(modeIcon) + '</span>'
+          + '    <div class="name">' + escapeHtml(name) + '</div>'
+          + '    <div class="sport">' + escapeHtml(modeLbl) + '</div>'
           + '  </div>'
           + '  <div class="body">'
-          + '    <div class="preset">' + presetLbl + ' — ' + (lr.location || 'result').toUpperCase() + '</div>'
+          + '    <div class="preset">' + escapeHtml(presetLbl) + ' — ' + escapeHtml(String(lr.location || 'result').toUpperCase()) + '</div>'
           + '    <div class="svg-frame"><svg width="100%" height="120" viewBox="0 0 280 120" xmlns="http://www.w3.org/2000/svg">'
           + '      <line x1="0" y1="120" x2="280" y2="120" stroke="#475569" stroke-width="1"/>'
-          + '      <polyline points="' + pts + '" fill="none" stroke="#fbbf24" stroke-width="2.5"/>'
+          + '      <polyline points="' + escapeHtml(pts) + '" fill="none" stroke="#fbbf24" stroke-width="2.5"/>'
           + '    </svg></div>'
           + '    <div class="params">' + trial.speedMph + ' mph · ' + trial.spinRpm + ' rpm @ ' + trial.spinAxisDeg + '° axis · launch ' + trial.angleV.toFixed(1) + '°</div>'
-          + '    <div class="stat-line">' + statLine + '</div>'
+          + '    <div class="stat-line">' + escapeHtml(statLine) + '</div>'
           + '    <div class="badges">' + badgesHtml + '</div>'
-          + '    <div class="footer">ThrowLab — Sports Physics Lab · AlloFlow · ' + new Date().toLocaleDateString() + '</div>'
+          + '    <div class="footer">ThrowLab — Sports Physics Lab · AlloFlow · ' + escapeHtml(new Date().toLocaleDateString()) + '</div>'
           + '  </div>'
           + '</div>'
           + '</body></html>';
         try {
           var win = window.open('', '_blank');
           if (win) {
+            win.opener = null;
             win.document.write(cardHtml);
             win.document.close();
             setTimeout(function() { try { win.print(); } catch(e) {} }, 400);
@@ -2315,20 +2322,20 @@ window.StemLab = window.StemLab || {
           + '@media print{.scenario{break-inside:avoid}}'
           + '</style></head><body>'
           + '<h1>ThrowLab Activity Sheet — Sports Physics</h1>'
-          + '<div class="meta">Name: ____________________________________  Date: ' + dateStr + '</div>';
+          + '<div class="meta">Name: ____________________________________  Date: ' + escapeHtml(dateStr) + '</div>';
         SCENARIOS.forEach(function(sc) {
           var modeLbl = (MODES[sc.mode] || {}).label || sc.mode;
           var gravLbl = (GRAVITY_PRESETS.find(function(g) { return g.id === sc.gravityId; }) || {}).label || 'Earth';
           var setup = modeLbl + ' · gravity: ' + gravLbl
             + (sc.windMph ? ' · wind: ' + sc.windMph + ' mph @ ' + sc.windDirDeg + '°' : '');
           sheetHtml += '<div class="scenario">'
-            + '<h2><span class="icon">' + sc.icon + '</span>' + sc.label + '</h2>'
-            + '<div class="setup">Setup: ' + setup + '</div>'
-            + '<div class="teach">' + sc.teach + '</div>'
+            + '<h2><span class="icon">' + escapeHtml(sc.icon) + '</span>' + escapeHtml(sc.label) + '</h2>'
+            + '<div class="setup">Setup: ' + escapeHtml(setup) + '</div>'
+            + '<div class="teach">' + escapeHtml(sc.teach) + '</div>'
             + '<div class="qhead">Discussion Questions</div>'
             + '<ol>';
           (sc.questions || []).forEach(function(q) {
-            sheetHtml += '<li>' + q
+            sheetHtml += '<li>' + escapeHtml(q)
               + '<div class="answer-line"></div><div class="answer-line"></div><div class="answer-line"></div>'
               + '</li>';
           });
@@ -2339,6 +2346,7 @@ window.StemLab = window.StemLab || {
         try {
           var win = window.open('', '_blank');
           if (win) {
+            win.opener = null;
             win.document.write(sheetHtml);
             win.document.close();
             setTimeout(function() { try { win.print(); } catch(e) {} }, 300);

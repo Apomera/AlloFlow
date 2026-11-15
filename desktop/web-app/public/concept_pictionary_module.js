@@ -462,14 +462,19 @@ class PictionaryHost {
         } else if (data.offer && existing && existing.offerSdp && data.offer.sdp !== existing.offerSdp) {
           this._cleanupPeer(uid);
           this._acceptPeer(uid, data, change.doc.ref);
-        } else if (data.iceFromGuest && existing) {
-          (data.iceFromGuest || []).forEach((c) => {
-            try {
-              existing.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {
-              });
-            } catch (_) {
-            }
-          });
+        } else if (Array.isArray(data.iceFromGuest) && existing) {
+          const candidates = data.iceFromGuest.slice(0, 64);
+          if (existing.remoteDescSet) {
+            candidates.forEach((c) => {
+              try {
+                existing.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {
+                });
+              } catch (_) {
+              }
+            });
+          } else {
+            existing.pendingIce = candidates;
+          }
         }
       });
     }, (err) => {
@@ -481,10 +486,12 @@ class PictionaryHost {
     if (!fb) return;
     const pc = new RTCPeerConnection(_getRtcConfig());
     const codename = typeof offerData.codename === "string" && offerData.codename.slice(0, 64) || "Guest";
-    const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [], offerSdp: offerData.offer && offerData.offer.sdp || null };
+    const initialIce = Array.isArray(offerData.iceFromGuest) ? offerData.iceFromGuest.slice(0, 64) : [];
+    const peerRecord = { pc, dc: null, signalingRef, codename, sentIce: [], offerSdp: offerData.offer && offerData.offer.sdp || null, remoteDescSet: false, pendingIce: initialIce };
     this.peers.set(uid, peerRecord);
     pc.onicecandidate = (e) => {
       if (!e.candidate || this._stopped || this.peers.get(uid) !== peerRecord) return;
+      if (peerRecord.sentIce.length >= 64) return;
       peerRecord.sentIce.push(e.candidate.toJSON());
       fb.setDoc(signalingRef, { iceFromHost: peerRecord.sentIce }, { merge: true }).catch(() => {
       });
@@ -555,6 +562,8 @@ class PictionaryHost {
       dc.onmessage = (msg) => {
         try {
           if (this._stopped || this.peers.get(uid) !== peerRecord) return;
+          if (this._allowedUids && !this._allowedUids.has(uid)) return;
+          if (typeof msg.data !== "string" || msg.data.length > 131072) return;
           const parsed = JSON.parse(msg.data);
           if (!parsed || !parsed.type) return;
           if (parsed.type === "stroke" && parsed.payload) {
@@ -594,6 +603,18 @@ class PictionaryHost {
         } catch (_) {
         }
         return;
+      }
+      peerRecord.remoteDescSet = true;
+      if (Array.isArray(peerRecord.pendingIce) && peerRecord.pendingIce.length) {
+        const queued = peerRecord.pendingIce.slice(0, 64);
+        peerRecord.pendingIce = [];
+        queued.forEach((c) => {
+          try {
+            pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {
+            });
+          } catch (_) {
+          }
+        });
       }
       const answer = await pc.createAnswer();
       if (this._stopped || this.peers.get(uid) !== peerRecord) {
@@ -1062,7 +1083,7 @@ class PictionaryGuest {
     const pc = this.pc, dc = this.dc, signalingRef = this.signalingRef;
     this.pc.onicecandidate = (e) => {
       if (this.pc !== pc || this.dc !== dc) return;
-      if (!e.candidate) return;
+      if (!e.candidate || this.sentIce.length >= 64) return;
       this.sentIce.push(e.candidate.toJSON());
       fb.setDoc(this.signalingRef, { iceFromGuest: this.sentIce }, { merge: true }).catch(() => {
       });
@@ -1085,6 +1106,7 @@ class PictionaryGuest {
     this.dc.onmessage = (msg) => {
       if (this.pc !== pc || this.dc !== dc) return;
       try {
+        if (typeof msg.data !== "string" || msg.data.length > 262144) return;
         const parsed = JSON.parse(msg.data);
         if (!parsed || !parsed.type) return;
         if (parsed.type === "roundStart") {
@@ -1125,8 +1147,9 @@ class PictionaryGuest {
       if (this.pc !== pc) return;
       await fb.setDoc(this.signalingRef, {
         offer: { type: offer.type, sdp: offer.sdp },
-        codename: this.codename,
-        createdAt: Date.now()
+        codename: String(this.codename || "Guest").slice(0, 64),
+        createdAt: Date.now(),
+        expiresAt: new Date(Date.now() + 3e5)
       });
     } catch (err) {
       if (this.pc !== pc) return;
@@ -1144,9 +1167,12 @@ class PictionaryGuest {
         });
       }
       if (Array.isArray(data.iceFromHost)) {
-        data.iceFromHost.forEach((c) => {
-          this.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {
-          });
+        data.iceFromHost.slice(0, 64).forEach((c) => {
+          try {
+            this.pc.addIceCandidate(new RTCIceCandidate(c)).catch(() => {
+            });
+          } catch (_) {
+          }
         });
       }
     }, () => {

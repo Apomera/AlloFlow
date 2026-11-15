@@ -989,7 +989,8 @@ async function handlePdList(request, env, url) {
   if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pdSubmissions (or use `wrangler kv key list`).' }, 501, BUG_RESPONSE_HEADERS);
   if (!env.PD_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Missing PD_SUBMISSIONS KV binding.' }, 500, BUG_RESPONSE_HEADERS);
   if (await checkAdminAuthRateLimit(request, env, 'admin')) return jsonResponse({ ok: false, error: 'Too many authentication attempts.' }, 429, BUG_RESPONSE_HEADERS);
-  const token = url.searchParams.get('token') || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  const authorization = (request.headers.get('Authorization') || '').match(/^Bearer\s+(\S+)$/i);
+  const token = authorization ? authorization[1] : '';
   if (!token || !(await timingSafeTokenEq(token, env.ADMIN_TOKEN))) {
     await recordAdminAuthFailure(request, env, 'admin');
     return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401, BUG_RESPONSE_HEADERS);
@@ -1117,7 +1118,8 @@ async function handlePluginList(request, env, url) {
   if (!env.ADMIN_TOKEN) return jsonResponse({ ok: false, error: 'Admin read disabled: set the ADMIN_TOKEN secret to enable GET /pluginSubmissions (or use `wrangler kv key list`).' }, 501, BUG_RESPONSE_HEADERS);
   if (!env.PLUGIN_SUBMISSIONS) return jsonResponse({ ok: false, error: 'Missing PLUGIN_SUBMISSIONS KV binding.' }, 500, BUG_RESPONSE_HEADERS);
   if (await checkAdminAuthRateLimit(request, env, 'admin')) return jsonResponse({ ok: false, error: 'Too many authentication attempts.' }, 429, BUG_RESPONSE_HEADERS);
-  const token = url.searchParams.get('token') || (request.headers.get('Authorization') || '').replace(/^Bearer\s+/i, '');
+  const authorization = (request.headers.get('Authorization') || '').match(/^Bearer\s+(\S+)$/i);
+  const token = authorization ? authorization[1] : '';
   if (!token || !(await timingSafeTokenEq(token, env.ADMIN_TOKEN))) {
     await recordAdminAuthFailure(request, env, 'admin');
     return jsonResponse({ ok: false, error: 'Unauthorized.' }, 401, BUG_RESPONSE_HEADERS);
@@ -1905,15 +1907,21 @@ function sourceMetadataSafeUrl(value) {
   }
 }
 
+function safeMetadataCodePoint(cp) {
+  return Number.isInteger(cp) && cp >= 0 && cp <= 0x10FFFF && (cp < 0xD800 || cp > 0xDFFF)
+    ? String.fromCodePoint(cp)
+    : '\uFFFD';
+}
+
 function decodeSourceMetadata(value) {
   return String(value || '')
-    .replace(/&amp;/gi, '&')
     .replace(/&quot;/gi, '"')
     .replace(/&#39;|&apos;/gi, "'")
     .replace(/&lt;/gi, '<')
     .replace(/&gt;/gi, '>')
-    .replace(/&#(\d+);/g, (_, code) => String.fromCodePoint(Number(code)))
-    .replace(/&#x([0-9a-f]+);/gi, (_, code) => String.fromCodePoint(parseInt(code, 16)))
+    .replace(/&#(\d+);/g, (_, code) => safeMetadataCodePoint(Number(code)))
+    .replace(/&#x([0-9a-f]+);/gi, (_, code) => safeMetadataCodePoint(parseInt(code, 16)))
+    .replace(/&amp;/gi, '&')
     .replace(/\s+/g, ' ')
     .trim();
 }
@@ -2094,11 +2102,15 @@ async function handleSourceMetadata(request, env, url) {
   return jsonResponse(payload);
 }
 
-function searchClientKey(request) {
+async function searchClientKey(request) {
   const ip = request.headers.get('CF-Connecting-IP')
     || request.headers.get('X-Forwarded-For')
     || 'unknown';
-  return `searchrate:${String(ip).split(',')[0].trim()}`;
+  const cleanIp = String(ip).split(',')[0].trim();
+  const data = new TextEncoder().encode('alloflow-search-rate:' + cleanIp);
+  const digest = await crypto.subtle.digest('SHA-256', data);
+  const hex = Array.from(new Uint8Array(digest)).map(b => b.toString(16).padStart(2, '0')).join('');
+  return `searchrate:${hex.slice(0, 32)}`;
 }
 
 // Fixed-window counters in the SEARCH_RATE KV namespace. Approximate by
@@ -2113,7 +2125,8 @@ async function searchBudgetRefusal(request, env) {
   const perMinute = searchLimit(env, 'RATE_PER_MINUTE', SEARCH_DEFAULTS.ratePerMinute);
   const perDay = searchLimit(env, 'DAILY_BUDGET', SEARCH_DEFAULTS.dailyBudget);
 
-  const minuteKey = `${searchClientKey(request)}:${Math.floor(Date.now() / 60000)}`;
+  const clientKey = await searchClientKey(request);
+  const minuteKey = `${clientKey}:${Math.floor(Date.now() / 60000)}`;
   const dayKey = `searchday:${new Date().toISOString().slice(0, 10)}`;
 
   let minuteCount = 0;

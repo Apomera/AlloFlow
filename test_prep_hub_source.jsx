@@ -98,11 +98,11 @@ function testPrepRepoAssetPath(value) {
 function testPrepRepoAssetCandidates(value) {
   const path = testPrepRepoAssetPath(value);
   if (!path) return [];
-  return [
-    TEST_PREP_CDN_BASE + path,
-    TEST_PREP_GITHUB_RAW_BASE + path,
-    './' + path,
-  ].filter((candidate, index, candidates) => candidates.indexOf(candidate) === index);
+  const localFirst = typeof window !== 'undefined' && window._isDesktopBundledApp === true;
+  const candidates = localFirst
+    ? ['./' + path, TEST_PREP_CDN_BASE + path, TEST_PREP_GITHUB_RAW_BASE + path]
+    : [TEST_PREP_CDN_BASE + path, TEST_PREP_GITHUB_RAW_BASE + path, './' + path];
+  return candidates.filter((candidate, index) => candidates.indexOf(candidate) === index);
 }
 
 function testPrepNamedError(name, message) {
@@ -123,7 +123,7 @@ async function testPrepFetchCandidate(candidate, options, consumeResponse) {
   const timeoutMs = testPrepFetchTimeoutMs(input.timeoutMs);
   if (input.signal && input.signal.aborted) throw testPrepNamedError('AbortError', 'Test prep asset request was cancelled.');
   const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
-  const requestOptions = { cache: 'no-store' };
+  const requestOptions = { cache: 'no-store', credentials: 'omit', referrerPolicy: 'no-referrer' };
   if (controller) requestOptions.signal = controller.signal;
   else if (input.signal) requestOptions.signal = input.signal;
   let timeoutId = null;

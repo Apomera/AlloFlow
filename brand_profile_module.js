@@ -155,7 +155,7 @@
     if (!raw) return _emptyStore();
     var parsed;
     try { parsed = JSON.parse(raw); } catch (e) {
-      warnLog('Stored brand profiles corrupted — starting fresh. Raw:', raw && raw.slice(0, 200));
+      warnLog('Stored brand profiles corrupted — starting fresh. Raw length:', raw ? raw.length : 0);
       return _emptyStore();
     }
     return _migrate(parsed);
@@ -207,10 +207,18 @@
     var footer = src.footer && typeof src.footer === 'object'
       ? { text: String(src.footer.text || ''), showPageNumber: !!src.footer.showPageNumber }
       : { text: '', showPageNumber: false };
+    var MAX_LOGO_DATA_CHARS = 750 * 1024;
+    function _safeLogoSrc(raw) {
+      if (typeof raw !== 'string') return '';
+      var trimmed = raw.trim();
+      if (!trimmed || trimmed.length > MAX_LOGO_DATA_CHARS) return '';
+      return /^data:image\/(?:png|jpe?g|webp|gif);base64,[A-Za-z0-9+/=]+$/i.test(trimmed) ? trimmed : '';
+    }
+    var safeLogoUrl = (src.logo && typeof src.logo === 'object') ? _safeLogoSrc(src.logo.src) : '';
     var logo = null;
-    if (src.logo && typeof src.logo === 'object' && src.logo.src) {
+    if (safeLogoUrl) {
       logo = {
-        src: String(src.logo.src),
+        src: safeLogoUrl,
         alt: String(src.logo.alt || ''),
         width: Number(src.logo.width) || null,
         height: Number(src.logo.height) || null

@@ -792,7 +792,7 @@
     useEffect(function () {
       if (!isClassHost && !isClassStudent) return;
       var kit = getClassWork();
-      var chan = kit ? kit.channel(ctx) : { kind: 'legacy' };
+      var chan = kit ? kit.channel(ctx) : ((window.__alloFirebase || ctx.firestoreDb) ? { kind: 'unavailable' } : { kind: 'legacy' });
       if (chan.kind === 'unavailable') { setClassIssue('transport'); return; }
       if (chan.kind !== 'private') return;
       return chan.watch(isClassHost, 'realm', setPrivateDocs, setClassIssue);
@@ -809,7 +809,7 @@
     }
 
     function deliverClassWork(subId, data, legacyPayload) {
-      var chan = classKit ? classKit.channel(ctx) : { kind: 'legacy' };
+      var chan = classKit ? classKit.channel(ctx) : ((window.__alloFirebase || ctx.firestoreDb) ? { kind: 'unavailable' } : { kind: 'legacy' });
       if (chan.kind === 'private') return chan.send('realm', subId, data);
       if (chan.kind === 'unavailable') {
         var err = new Error('This class connection cannot carry game work.');
@@ -2501,14 +2501,14 @@
     useEffect(function() {
       if (!ctx.sessionCode) return;
       var kit = getClassWork();
-      var chan = kit ? kit.channel(ctx) : { kind: 'legacy' };
+      var chan = kit ? kit.channel(ctx) : ((window.__alloFirebase || ctx.firestoreDb) ? { kind: 'unavailable' } : { kind: 'legacy' });
       if (chan.kind === 'unavailable') { setPalaceIssue('transport'); return; }
       if (chan.kind !== 'private') return;
       return chan.watch(isHost, 'palace', function(docs) { setPalaceDocsRaw(docs); setPalaceDocsLoaded(true); }, setPalaceIssue);
     }, [ctx.sessionCode, isHost]);
     function palaceChannel() {
       var kit = getClassWork();
-      return kit ? kit.channel(ctx) : { kind: 'legacy' };
+      return kit ? kit.channel(ctx) : ((window.__alloFirebase || ctx.firestoreDb) ? { kind: 'unavailable' } : { kind: 'legacy' });
     }
 
     var rawPalace = sessionState && sessionState.collaborativeMemoryPalace;

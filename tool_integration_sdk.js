@@ -27,6 +27,7 @@
   function validateContract(contract, options) {
     var c = contract || {};
     var errors = [];
+    var warnings = [];
     var now = options && options.now ? new Date(options.now).getTime() : Date.now();
     if (c.schemaVersion !== 1) errors.push('schemaVersion must be 1');
     if (!/^[a-z0-9][a-z0-9_-]{1,79}$/.test(String(c.id || ''))) errors.push('id must be a stable lowercase identifier');
@@ -34,7 +35,10 @@
     var reviewedAt = Date.parse(String(c.reviewedAt || ''));
     var reviewAfter = Date.parse(String(c.reviewAfter || ''));
     if (!isFinite(reviewedAt) || !isFinite(reviewAfter) || reviewAfter <= reviewedAt) errors.push('review window is invalid');
-    if (isFinite(reviewAfter) && isFinite(now) && reviewAfter < now) errors.push('integration review is overdue');
+    if (isFinite(reviewAfter) && isFinite(now) && reviewAfter < now) {
+      if (options && options.allowOverdue === true) warnings.push('integration review is overdue');
+      else errors.push('integration review is overdue');
+    }
     if (!c.license || !nonEmpty(c.license.spdx || c.license.name)) errors.push('license metadata is required');
     if (!c.citation || !nonEmpty(c.citation.text)) errors.push('citation guidance is required');
     if (!Array.isArray(c.supportedMethodPacks) || !c.supportedMethodPacks.length || c.supportedMethodPacks.some(function (pack) { return METHOD_PACKS.indexOf(pack) === -1; })) errors.push('supportedMethodPacks is invalid');
@@ -43,7 +47,7 @@
     if (c.privacy && c.privacy.sanitizerRequired === true && !nonEmpty(c.privacy.sanitizerId)) errors.push('sanitizerId is required when sanitizerRequired is true');
     var required = c.reproducibility && c.reproducibility.requiredFields;
     if (!Array.isArray(required) || required.indexOf('softwareVersion') === -1 || required.indexOf('limitations') === -1 || required.some(function (field) { return RECEIPT_FIELDS.indexOf(field) === -1; })) errors.push('reproducibility.requiredFields is invalid');
-    return { ok: errors.length === 0, errors: errors };
+    return { ok: errors.length === 0, errors: errors, warnings: warnings };
   }
 
   function validateReceipt(receipt, contract) {
@@ -70,8 +74,13 @@
   function createAdapter(options) {
     options = options || {};
     var contract = clone(options.contract);
-    var contractCheck = validateContract(contract, options.validationOptions);
+    var vOpts = Object.assign({}, options.validationOptions || {});
+    if (vOpts.strictReviewWindow !== true && vOpts.allowOverdue === undefined) vOpts.allowOverdue = true;
+    var contractCheck = validateContract(contract, vOpts);
     if (!contractCheck.ok) throw new Error('Invalid integration contract: ' + contractCheck.errors.join('; '));
+    if (contractCheck.warnings && contractCheck.warnings.length && root && root.console && typeof root.console.warn === 'function') {
+      root.console.warn('[AlloFlowToolIntegration] ' + contract.id + ': ' + contractCheck.warnings.join('; '));
+    }
     if (typeof options.buildCapture !== 'function') throw new Error('buildCapture(payload) is required');
     if (contract.privacy && contract.privacy.sanitizerRequired === true && typeof options.sanitizeCapture !== 'function') throw new Error('sanitizeCapture(capture) is required by this contract');
 

@@ -837,10 +837,13 @@ window.SelHub = window.SelHub || {
       { id: 'professionals', label: __alloT('sel.crisiscompanion.steps.professionals.label', '5. Professionals + crisis lines'), sub: __alloT('sel.crisiscompanion.steps.professionals.sub', 'My therapist (if I have one), psychiatrist, doctor, school counselor, plus 24/7 crisis lines.'), placeholder: __alloT('sel.crisiscompanion.ui.e_g_988_lifeline_call_or', 'e.g., "988 Lifeline (call or text), Crisis Text Line (text HOME to 741741), Dr. ____ at clinic ____, school counselor"') },
       { id: 'environment', label: __alloT('sel.crisiscompanion.steps.environment.label', '6. Making my environment safer'), sub: __alloT('sel.crisiscompanion.steps.environment.sub', 'What can I (or someone I trust) do to put distance between me and anything I might use to hurt myself? This is the single most evidence-based step.'), placeholder: __alloT('sel.crisiscompanion.ui.e_g_give_my_medications_to', 'e.g., "Give my medications to mom to lock up. Stay out of the basement. Stay with someone overnight if it\'s really bad."') }
     ];
-    var entries = d.safetyPlan || lsGet(ccKey('crisisCompanion.safetyPlan.v1'), null) || {};
+    var cache = _SafetyPlan._cache || (_SafetyPlan._cache = Object.create(null));
+    var planKey = ccKey('crisisCompanion.safetyPlan.v1');
+    var entries = lsGet(planKey, null) || cache[planKey] || d.safetyPlan || {};
     function setStep(id, val) {
       var ne = Object.assign({}, entries); ne[id] = val;
-      upd('safetyPlan', ne);
+      cache[planKey] = ne;
+      upd('safetyPlanRev', Date.now());
       if (!lsSet(ccKey('crisisCompanion.safetyPlan.v1'), ne)) announce(__alloT('sel.crisiscompanion.ui.this_device_would_not_save_it', 'This device would not save it. Your work is still on screen — use Export or Print to keep a copy before you close this page.'));
     }
     function clearAll() {
@@ -850,6 +853,7 @@ window.SelHub = window.SelHub || {
       try {
         var win = window.open('', '_blank', 'width=720,height=900');
         if (!win) { announce(__alloT('sel.crisiscompanion.ui.could_not_open_print_window_your', 'Could not open print window — your browser may have blocked it.')); return; }
+        try { win.opener = null; } catch (_) {}
         var safeText = function(t) { return String(t || '').replace(/[<>&]/g, function(c) { return { '<':'&lt;', '>':'&gt;', '&':'&amp;' }[c]; }); };
         var html = '<!doctype html><html lang="' + String(document.documentElement.lang || 'en').replace(/[^\w-]/g, '') + '"' + (document.documentElement.dir === 'rtl' ? ' dir="rtl"' : '') + '><head><title>' + safeText(__alloT('sel.crisiscompanion.print.title', 'My Safety Plan')) + '</title>' +
           '<style>body{font-family:Georgia,serif;max-width:720px;margin:24px auto;padding:0 20px;color:#1e293b;line-height:1.6}' +
@@ -1508,6 +1512,7 @@ window.SelHub = window.SelHub || {
         if (!ccConfirmAction) return;
         if (ccConfirmAction.type === 'clear-safety-plan') {
           upd({ ccConfirmAction: null, safetyPlan: {} });
+          if (_SafetyPlan._cache) delete _SafetyPlan._cache[ccKey('crisisCompanion.safetyPlan.v1')];
           lsSet(ccKey('crisisCompanion.safetyPlan.v1'), {});
           announce(__alloT('sel.crisiscompanion.ui.safety_plan_cleared', 'Safety plan cleared.'));
           focusCrisisControl('cc-safety-plan-heading');

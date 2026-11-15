@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="referrer" content="no-referrer">
 <title>Accessibility &amp; AAC Demonstration | AlloFlow</title>
 <meta name="robots" content="index, follow">
 <link rel="canonical" href="https://apomera.github.io/AlloFlow/accessibility_demo.html">
@@ -28,9 +29,6 @@
     <link rel="stylesheet" href="promotion-wave3-shell.css">
     <link rel="stylesheet" href="promo-nav-breakpoint.css">
     <script src="site.js" defer></script>
-<script src="https://unpkg.com/lucide@1.31.0"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 /* ── Reset & Base ── */
 *, *::before, *::after { box-sizing: border-box; }
@@ -230,7 +228,7 @@ footer a { color: var(--purple); }
 <nav class="navbar" aria-label="Primary">
   <div class="navbar-inner">
     <a href="./" class="nav-logo">
-      <i data-lucide="layers" style="width:28px;height:28px"></i>
+      <svg aria-hidden="true" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:28px;height:28px"><polygon points="12 2 2 7 12 12 22 7 12 2"/><polyline points="2 12 12 17 22 12"/><polyline points="2 17 12 22 22 17"/></svg>
       AlloFlow
     </a>
     <div class="nav-links" data-site-nav="primary">
@@ -241,10 +239,10 @@ footer a { color: var(--purple); }
                 <a href="ways-to-use.html">Ways to Use</a>
                 <a href="for-districts.html">For Districts</a>
                 <a href="manuals.html">Manuals</a>
-                <a href="launch.html" class="cta-btn"><i data-lucide="rocket" aria-hidden="true" style="width:16px;height:16px"></i> Launch AlloFlow</a>
+                <a href="launch.html" class="cta-btn"><svg aria-hidden="true" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px"><path d="M4.5 16.5c-1.5 1.26-2 5-2 5s3.74-.5 5-2c.71-.84.7-2.13-.09-2.91a2.18 2.18 0 0 0-2.91-.09z"/><path d="m12 15-3-3a22 22 0 0 1 2-3.95A12.88 12.88 0 0 1 22 2c0 2.72-.78 7.5-6 11a22.35 22.35 0 0 1-4 2z"/></svg> Launch AlloFlow</a>
             </div>
     <button type="button" class="mobile-menu-btn" aria-expanded="false" aria-controls="mobileNav" aria-label="Open menu">
-      <i data-lucide="menu" style="width:24px;height:24px"></i>
+      <svg aria-hidden="true" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px"><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
     </button>
   </div>
 </nav>
@@ -666,7 +664,15 @@ footer a { color: var(--purple); }
       cell.setAttribute("aria-label", sym.label + ": " + sym.desc);
       cell.setAttribute("data-idx", i);
       cell.style.borderColor = sym.border;
-      cell.innerHTML = '<div class="symbol" style="background:' + sym.bg + ';">' + sym.emoji + '</div><div class="label">' + sym.label + '</div>';
+      var symBox = document.createElement("div");
+      symBox.className = "symbol";
+      symBox.style.background = sym.bg;
+      symBox.textContent = sym.emoji;
+      var symLbl = document.createElement("div");
+      symLbl.className = "label";
+      symLbl.textContent = sym.label;
+      cell.appendChild(symBox);
+      cell.appendChild(symLbl);
       cell.addEventListener("click", function () { tap(i); });
       row.appendChild(cell);
     });
@@ -688,11 +694,16 @@ footer a { color: var(--purple); }
     var srLog = document.getElementById("sr-log");
     if (srLog && t) {
       // Clear placeholder on first real entry
-      if (srLog.children.length === 1 && srLog.children[0].style.fontStyle === "italic") srLog.innerHTML = "";
+      if (srLog.children.length === 1 && srLog.children[0].style.fontStyle === "italic") srLog.textContent = "";
       var entry = document.createElement("div");
       entry.className = "entry";
-      var tagLabel = tag || "live";
-      entry.innerHTML = '<span class="role-tag tag-' + tagLabel + '">' + tagLabel + '</span> "' + t + '"';
+      var tagLabel = String(tag || "live");
+      var safeTagClass = tagLabel.replace(/[^a-z0-9_-]/gi, "");
+      var tagSpan = document.createElement("span");
+      tagSpan.className = "role-tag tag-" + safeTagClass;
+      tagSpan.textContent = tagLabel;
+      entry.appendChild(tagSpan);
+      entry.appendChild(document.createTextNode(' "' + String(t) + '"'));
       srLog.appendChild(entry);
       srLog.scrollTop = srLog.scrollHeight;
       // Keep max 12 entries
@@ -860,13 +871,28 @@ footer a { color: var(--purple); }
         var ariaSelected = el.getAttribute("aria-selected");
         var tabIdx = el.getAttribute("tabindex");
 
-        var html = '<span class="fi-tag">&lt;' + tag + '&gt;</span>';
-        if (role) html += ' <span class="fi-attr">role</span>=<span class="fi-val">"' + role + '"</span>';
-        if (ariaLabel) html += ' <span class="fi-attr">aria-label</span>=<span class="fi-val">"' + ariaLabel + '"</span>';
-        if (ariaLive) html += ' <span class="fi-attr">aria-live</span>=<span class="fi-val">"' + ariaLive + '"</span>';
-        if (ariaSelected !== null) html += ' <span class="fi-attr">aria-selected</span>=<span class="fi-val">"' + ariaSelected + '"</span>';
-        if (tabIdx !== null) html += ' <span class="fi-attr">tabindex</span>=<span class="fi-val">"' + tabIdx + '"</span>';
-        fiContent.innerHTML = html;
+        fiContent.textContent = "";
+        var tagSpan = document.createElement("span");
+        tagSpan.className = "fi-tag";
+        tagSpan.textContent = "<" + tag + ">";
+        fiContent.appendChild(tagSpan);
+        var appendFiAttr = function (attrName, attrVal) {
+          fiContent.appendChild(document.createTextNode(" "));
+          var aSpan = document.createElement("span");
+          aSpan.className = "fi-attr";
+          aSpan.textContent = attrName;
+          fiContent.appendChild(aSpan);
+          fiContent.appendChild(document.createTextNode("="));
+          var vSpan = document.createElement("span");
+          vSpan.className = "fi-val";
+          vSpan.textContent = '"' + attrVal + '"';
+          fiContent.appendChild(vSpan);
+        };
+        if (role) appendFiAttr("role", role);
+        if (ariaLabel) appendFiAttr("aria-label", ariaLabel);
+        if (ariaLive) appendFiAttr("aria-live", ariaLive);
+        if (ariaSelected !== null) appendFiAttr("aria-selected", ariaSelected);
+        if (tabIdx !== null) appendFiAttr("tabindex", tabIdx);
       }
     });
 
@@ -884,6 +910,5 @@ footer a { color: var(--purple); }
   document.addEventListener("DOMContentLoaded", function () { init(); initReveal(); initFocusLog(); });
 })();
 </script>
-<script>if(window.lucide)lucide.createIcons();</script>
 </body>
 </html>

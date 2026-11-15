@@ -2182,6 +2182,20 @@ function MemoryAidPracticePanel(props) {
     return /* @__PURE__ */ React.createElement("li", { key: attempt.id, "data-memory-attempt": attempt.id, className: "rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap items-center justify-between gap-2" }, /* @__PURE__ */ React.createElement("p", { className: "font-black text-slate-900" }, tr("practice_attempt_n", "Attempt {n}", { n: savedAttempts.length - attemptIndex }), " \xB7 ", attempt.supportMode === "none" ? tr("practice_without_cue", "Without hints") : tr("practice_with_cue", "With my cue")), /* @__PURE__ */ React.createElement("span", { className: "rounded-full px-2 py-1 font-bold " + (summary.current ? "bg-emerald-100 text-emerald-900" : "bg-amber-100 text-amber-950") }, !sameFacts ? tr("practice_earlier_facts", "Earlier facts \u2014 review only") : summary.current ? tr("practice_current_cue_version", "Current cue version") : tr("practice_earlier_cue_version", "Earlier cue version"))), date && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-slate-600" }, /* @__PURE__ */ React.createElement("time", { dateTime: date.iso }, date.label)), /* @__PURE__ */ React.createElement("p", { className: "mt-2" }, /* @__PURE__ */ React.createElement("strong", null, tr("practice_self_check_label", "Self-check:")), " ", tr("practice_self_check_count_labels", "Recalled: {recalled}/{total} \xB7 To revisit: {practice} \xB7 Unchecked: {unrated}", { recalled: summary.recalled, total: summary.total, practice: summary.needsPractice, unrated: summary.unrated })), /* @__PURE__ */ React.createElement("p", { className: "mt-1" }, /* @__PURE__ */ React.createElement("strong", null, tr("practice_confidence_label", "Confidence:")), " ", confidenceLabel), /* @__PURE__ */ React.createElement("p", { className: "mt-2 whitespace-pre-wrap leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, tr("practice_recall_response_label", "Recall response:")), " ", attempt.response || tr("practice_no_written_response", "No written response was saved.")), attempt.revisionPlan && /* @__PURE__ */ React.createElement("p", { className: "mt-2 whitespace-pre-wrap leading-relaxed" }, /* @__PURE__ */ React.createElement("strong", null, tr("practice_revision_goal_label", "Revision goal:")), " ", attempt.revisionPlan.strategy), /* @__PURE__ */ React.createElement("details", { className: "mt-3 rounded-lg border border-slate-200 bg-white p-2" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer py-2 font-bold" }, tr("history_details", "Facts and follow-up from this attempt")), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 space-y-2" }, attempt.facts.map((fact, i) => /* @__PURE__ */ React.createElement("li", { key: attempt.factKeys[i] }, /* @__PURE__ */ React.createElement("p", { className: "font-semibold" }, fact), /* @__PURE__ */ React.createElement("p", null, attempt.factChecks[i] === "recalled" ? tr("review_recalled_this", "I recalled this") : tr("review_needs_practice", "Needs more practice"))))), attempt.applicationQuestion && /* @__PURE__ */ React.createElement("p", { className: "mt-3 whitespace-pre-wrap" }, /* @__PURE__ */ React.createElement("strong", null, tr("history_application_question", "Application question at the time:")), " ", attempt.applicationQuestion), attempt.applicationResponse && /* @__PURE__ */ React.createElement("p", { className: "mt-2 whitespace-pre-wrap" }, /* @__PURE__ */ React.createElement("strong", null, tr("history_application_response", "My application explanation:")), " ", attempt.applicationResponse), attempt.applicationCheck && /* @__PURE__ */ React.createElement("p", { className: "mt-2" }, attempt.applicationCheck === "connected" ? tr("application_connected", "I explained the connection") : tr("application_revisit", "I want to revisit the connection")), attempt.revisionDraft && /* @__PURE__ */ React.createElement("p", { className: "mt-3 whitespace-pre-wrap" }, /* @__PURE__ */ React.createElement("strong", null, tr("history_revision_draft", "Revision draft:")), " ", attempt.revisionDraft)), canResume && /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onResume(attempt.id), "aria-label": tr("history_continue_aria", "Continue saved plan from attempt {n}", { n: savedAttempts.length - attemptIndex }), className: "mt-2 mr-2 min-h-11 rounded-xl border border-teal-300 bg-white px-3 py-2 font-bold text-teal-900" }, tr("history_continue", "Continue this saved plan")), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => onDeleteAttempt(attempt.id), "aria-label": tr("practice_delete_attempt_aria", "Delete private practice attempt {n} for {target}", { n: savedAttempts.length - attemptIndex, target: card.target }), className: "mt-2 min-h-10 rounded-xl border border-red-200 bg-white px-3 py-2 text-xs font-bold text-red-800 hover:bg-red-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600" }, tr("practice_delete_attempt", "Delete attempt")));
   }))));
 }
+function _maAiUsable(kind, fn) {
+  if (typeof fn !== "function" || fn._alloQrBlocked) return false;
+  if (typeof window !== "undefined") {
+    if (window.__alloStudentAiDisabled === true) return false;
+    if (typeof window.__alloAiUsable === "function") {
+      try {
+        return !!window.__alloAiUsable(kind, fn);
+      } catch (_) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
 function MemoryAidView(props) {
   const {
     generatedContent,
@@ -2346,10 +2360,13 @@ function MemoryAidView(props) {
   const practiceIsolationActive = !!activePracticeCardId;
   const addToast = typeof addToastProp === "function" ? addToastProp : function() {
   };
-  const callGemini = allowRuntimeAi && !learnerReadOnly ? callGeminiProp === void 0 ? typeof window !== "undefined" && window.callGemini : callGeminiProp : null;
-  const callImagen = allowRuntimeAi && typeof callImagenProp === "function" ? callImagenProp : null;
-  const callGeminiImageEdit = allowRuntimeAi ? callGeminiImageEditProp === void 0 ? typeof window !== "undefined" ? window.callGeminiImageEdit : null : callGeminiImageEditProp : null;
-  const callGeminiVision = allowRuntimeAi ? callGeminiVisionProp === void 0 ? typeof window !== "undefined" ? window.callGeminiVision : null : callGeminiVisionProp : null;
+  const _rawCallGemini = allowRuntimeAi && !learnerReadOnly ? callGeminiProp === void 0 ? typeof window !== "undefined" && window.callGemini : callGeminiProp : null;
+  const callGemini = _maAiUsable("text", _rawCallGemini) ? _rawCallGemini : null;
+  const callImagen = allowRuntimeAi && _maAiUsable("images", callImagenProp) ? callImagenProp : null;
+  const _rawCallGeminiImageEdit = allowRuntimeAi ? callGeminiImageEditProp === void 0 ? typeof window !== "undefined" ? window.callGeminiImageEdit : null : callGeminiImageEditProp : null;
+  const callGeminiImageEdit = _maAiUsable("imageEdit", _rawCallGeminiImageEdit) ? _rawCallGeminiImageEdit : null;
+  const _rawCallGeminiVision = allowRuntimeAi ? callGeminiVisionProp === void 0 ? typeof window !== "undefined" ? window.callGeminiVision : null : callGeminiVisionProp : null;
+  const callGeminiVision = _maAiUsable("vision", _rawCallGeminiVision) ? _rawCallGeminiVision : null;
   const handleSpeak = typeof handleSpeakProp === "function" ? handleSpeakProp : null;
   const handleDownloadAudio = typeof handleDownloadAudioProp === "function" ? handleDownloadAudioProp : null;
   const imageAssetTools = typeof window !== "undefined" && window.AlloModules ? window.AlloModules.ImageAssetTools : null;

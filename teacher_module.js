@@ -1031,6 +1031,35 @@ const alloClearTeacherPrivateLabels = (store, classKey) => {
   delete byClass[classKey];
   return { version: 1, byClass };
 };
+const ALLO_EDUCATOR_ACCESS_PROMPT_DISMISSED_KEY = "alloflow_educator_access_prompt_dismissed_v1";
+const alloIsEducatorAccessCodeConfigured = () => {
+  if (typeof window === "undefined") return false;
+  try {
+    if (window.AlloModules?.DeviceAccessCode && typeof window.AlloModules.DeviceAccessCode.isConfigured === "function") {
+      return Boolean(window.AlloModules.DeviceAccessCode.isConfigured());
+    }
+    if (typeof window._alloEducatorAccessCodeRequired === "function") {
+      return Boolean(window._alloEducatorAccessCodeRequired());
+    }
+  } catch (_) {
+  }
+  return false;
+};
+const alloReadEducatorAccessPromptDismissed = (storage) => {
+  try {
+    return storage?.getItem(ALLO_EDUCATOR_ACCESS_PROMPT_DISMISSED_KEY) === "1";
+  } catch (_) {
+    return false;
+  }
+};
+const alloWriteEducatorAccessPromptDismissed = (storage, dismissed) => {
+  try {
+    if (!storage) return;
+    if (dismissed) storage.setItem(ALLO_EDUCATOR_ACCESS_PROMPT_DISMISSED_KEY, "1");
+    else storage.removeItem(ALLO_EDUCATOR_ACCESS_PROMPT_DISMISSED_KEY);
+  } catch (_) {
+  }
+};
 const ALLO_CLASSROOM_HANDOFF_TYPE = "alloflow-classroom-roster";
 const ALLO_CLASSROOM_HANDOFF_REPLY = "alloflow-classroom-roster-received";
 const ALLO_CLASSROOM_HANDOFF_WINDOW = "alloflow-classroom-import";
@@ -1463,8 +1492,10 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     if (pendingHandoff) pendingHandoffCardRef.current?.focus();
   }, [pendingHandoff]);
   useEffect(() => {
-    if (!privateLabelsAllowed) return void 0;
+    const studentPreviewActive = typeof window !== "undefined" && window.__alloStudentView === true;
+    if (!privateLabelsAllowed || !isOpen || studentPreviewActive) return void 0;
     const onMessage = (event) => {
+      if (typeof window !== "undefined" && window.__alloStudentView === true) return;
       const accepted = alloAcceptClassroomHandoff(event, classroomHelperRef.current, window.location.origin);
       if (!accepted) return;
       const roster = currentRosterRef.current;
@@ -1507,7 +1538,7 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
     };
     window.addEventListener("message", onMessage);
     return () => window.removeEventListener("message", onMessage);
-  }, [privateLabelsAllowed]);
+  }, [privateLabelsAllowed, isOpen]);
   useEffect(() => {
     if (!rosterUpdateCompletion) return;
     const result = rosterUpdateCompletion;
@@ -1540,11 +1571,43 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       setReadingPreferencesStudent(null);
     }
   }, [readingPreferencesStudent, rosterKey?.students]);
+  const [accessCodeConfigured, setAccessCodeConfigured] = useState(() => privateLabelsAllowed ? alloIsEducatorAccessCodeConfigured() : false);
+  const [accessPromptDismissedForever, setAccessPromptDismissedForever] = useState(() => privateLabelsAllowed && typeof window !== "undefined" ? alloReadEducatorAccessPromptDismissed(window.localStorage) : false);
+  const [accessPromptHiddenSession, setAccessPromptHiddenSession] = useState(false);
+  useEffect(() => {
+    if (!privateLabelsAllowed || typeof window === "undefined") return void 0;
+    const syncAccessPromptState = () => {
+      setAccessCodeConfigured(alloIsEducatorAccessCodeConfigured());
+      setAccessPromptDismissedForever(alloReadEducatorAccessPromptDismissed(window.localStorage));
+    };
+    syncAccessPromptState();
+    window.addEventListener("alloflow:educator-access-code-changed", syncAccessPromptState);
+    window.addEventListener("alloflow:module-registry-changed", syncAccessPromptState);
+    window.addEventListener("storage", syncAccessPromptState);
+    return () => {
+      window.removeEventListener("alloflow:educator-access-code-changed", syncAccessPromptState);
+      window.removeEventListener("alloflow:module-registry-changed", syncAccessPromptState);
+      window.removeEventListener("storage", syncAccessPromptState);
+    };
+  }, [isOpen, privateLabelsAllowed]);
   if (!isOpen) return null;
   const groups = rosterKey?.groups || {};
   const students = rosterKey?.students || {};
   const groupIds = Object.keys(groups);
   const studentCodenames = Object.keys(students);
+  const hasRosterOrPrivateLabels = showPrivateLabels || Object.keys(classPrivateLabels).length > 0 || studentCodenames.length > 0;
+  const showEducatorAccessPrompt = privateLabelsAllowed && !accessCodeConfigured && !accessPromptDismissedForever && !accessPromptHiddenSession && hasRosterOrPrivateLabels;
+  const handleOpenEducatorAccessSetup = () => {
+    if (typeof window !== "undefined" && typeof window.__alloOpenStorageRecoveryManager === "function") {
+      window.__alloOpenStorageRecoveryManager({ focusAccessCode: true });
+      return;
+    }
+    announceRoster(t("roster.educator_access_prompt_fallback") || "Open Settings and choose Manage device storage to set an Educator access code.", "info");
+  };
+  const handleDismissEducatorAccessForever = () => {
+    if (typeof window !== "undefined") alloWriteEducatorAccessPromptDismissed(window.localStorage, true);
+    setAccessPromptDismissedForever(true);
+  };
   const normalizedStudentQuery = rosterStudentQuery.trim().toLocaleLowerCase();
   const matchesStudentQuery = (name) => !normalizedStudentQuery || name.toLocaleLowerCase().includes(normalizedStudentQuery);
   const sortCodenames = (names) => names.sort((a, b) => a.localeCompare(b, void 0, { numeric: true, sensitivity: "base" }));
@@ -2375,7 +2438,34 @@ const RosterKeyPanel = React.memo(({ isOpen, onClose, rosterKey, setRosterKey, o
       className: "min-h-9 rounded-lg border border-slate-400 bg-white px-2 text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-400"
     },
     ALLO_TEACHER_READING_THEME_OPTIONS.map((option) => /* @__PURE__ */ React.createElement("option", { key: option.id, value: option.id }, option.label))
-  ))), /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-indigo-800" }, "How does this roster connect to AlloFlow?"), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 ml-4 list-disc space-y-1" }, /* @__PURE__ */ React.createElement("li", null, "Use codenames only. Never enter student names or other identifying information in the digital roster."), /* @__PURE__ */ React.createElement("li", null, "Groups provide reusable differentiation settings and can be synced to an active live session."), /* @__PURE__ */ React.createElement("li", null, "Matching codenames are assigned to their roster group automatically when students join."), /* @__PURE__ */ React.createElement("li", null, "Reading favorites and the last selected reading theme follow a matched learner; personal choices override group and class suggestions."), /* @__PURE__ */ React.createElement("li", null, "The same codenames help identify imported student submissions."), /* @__PURE__ */ React.createElement("li", null, "This roster is stored on this device. Export a JSON backup before changing devices or clearing browser data."))), pendingHandoff && /* @__PURE__ */ React.createElement("section", { ref: pendingHandoffCardRef, tabIndex: -1, "aria-labelledby": "classroom-handoff-title", className: "rounded-xl border-2 border-blue-400 bg-blue-50 p-4 focus:outline-none focus:ring-2 focus:ring-blue-500" }, /* @__PURE__ */ React.createElement("h3", { id: "classroom-handoff-title", className: "text-sm font-black text-blue-950" }, "Roster from Google Classroom"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-blue-950" }, replaceRosterMessage(pendingHandoff.groupsCount, pendingHandoff.studentsCount, "Google Classroom"), pendingHandoff.mode === "link" ? " This class will also be linked to Google Classroom on this device, so later syncs keep every codename." : ""), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => cancelPendingHandoff(), className: "min-h-10 rounded-lg border border-blue-300 bg-white px-3 text-xs font-bold text-blue-900 hover:bg-blue-100" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: confirmPendingHandoff, className: "min-h-10 rounded-lg bg-blue-700 px-3 text-xs font-bold text-white hover:bg-blue-800" }, "Replace roster"))), rosterNotice && /* @__PURE__ */ React.createElement(
+  ))), /* @__PURE__ */ React.createElement("details", { className: "rounded-xl border border-indigo-100 bg-indigo-50/60 px-3 py-2 text-xs text-slate-700" }, /* @__PURE__ */ React.createElement("summary", { className: "cursor-pointer font-bold text-indigo-800" }, "How does this roster connect to AlloFlow?"), /* @__PURE__ */ React.createElement("ul", { className: "mt-2 ml-4 list-disc space-y-1" }, /* @__PURE__ */ React.createElement("li", null, "Use codenames only. Never enter student names or other identifying information in the digital roster."), /* @__PURE__ */ React.createElement("li", null, "Groups provide reusable differentiation settings and can be synced to an active live session."), /* @__PURE__ */ React.createElement("li", null, "Matching codenames are assigned to their roster group automatically when students join."), /* @__PURE__ */ React.createElement("li", null, "Reading favorites and the last selected reading theme follow a matched learner; personal choices override group and class suggestions."), /* @__PURE__ */ React.createElement("li", null, "The same codenames help identify imported student submissions."), /* @__PURE__ */ React.createElement("li", null, "This roster is stored on this device. Export a JSON backup before changing devices or clearing browser data."))), showEducatorAccessPrompt && /* @__PURE__ */ React.createElement("section", { "data-testid": "roster-educator-access-prompt", "aria-labelledby": "roster-educator-access-prompt-title", className: "rounded-xl border border-amber-200 bg-amber-50/80 p-3 text-xs text-slate-800" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-start gap-2" }, /* @__PURE__ */ React.createElement(Lock, { size: 15, className: "mt-0.5 shrink-0 text-amber-800", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("div", { className: "min-w-0 flex-1" }, /* @__PURE__ */ React.createElement("h3", { id: "roster-educator-access-prompt-title", className: "font-black text-amber-950" }, t("roster.educator_access_prompt_title") || "Shared classroom device?"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 leading-relaxed text-slate-700" }, t("roster.educator_access_prompt_body") || "Teacher Mode is unlocked by default on this browser. Set an optional Educator access code (at least 6 characters: words, letters, phrases, or numbers) so students cannot open Teacher Mode or view private labels."), /* @__PURE__ */ React.createElement("div", { className: "mt-2.5 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-testid": "roster-educator-access-set",
+      onClick: handleOpenEducatorAccessSetup,
+      className: "min-h-11 rounded-lg bg-indigo-700 px-3 py-1.5 text-xs font-bold text-white hover:bg-indigo-800 transition-colors motion-reduce:transition-none"
+    },
+    t("roster.educator_access_prompt_set") || "Set educator access code"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-testid": "roster-educator-access-personal",
+      onClick: handleDismissEducatorAccessForever,
+      className: "min-h-11 rounded-lg border border-amber-300 bg-white px-3 py-1.5 text-xs font-bold text-slate-800 hover:bg-amber-100 transition-colors motion-reduce:transition-none"
+    },
+    t("roster.educator_access_prompt_personal") || "Personal device, don't ask again"
+  ), /* @__PURE__ */ React.createElement(
+    "button",
+    {
+      type: "button",
+      "data-testid": "roster-educator-access-later",
+      onClick: () => setAccessPromptHiddenSession(true),
+      className: "min-h-11 rounded-lg px-2.5 py-1.5 text-xs font-semibold text-slate-700 underline hover:bg-amber-100 transition-colors motion-reduce:transition-none"
+    },
+    t("roster.educator_access_prompt_later") || "Not now"
+  ))))), pendingHandoff && /* @__PURE__ */ React.createElement("section", { ref: pendingHandoffCardRef, tabIndex: -1, "aria-labelledby": "classroom-handoff-title", className: "rounded-xl border-2 border-blue-400 bg-blue-50 p-4 focus:outline-none focus:ring-2 focus:ring-blue-500" }, /* @__PURE__ */ React.createElement("h3", { id: "classroom-handoff-title", className: "text-sm font-black text-blue-950" }, "Roster from Google Classroom"), /* @__PURE__ */ React.createElement("p", { className: "mt-1 text-xs text-blue-950" }, replaceRosterMessage(pendingHandoff.groupsCount, pendingHandoff.studentsCount, "Google Classroom"), pendingHandoff.mode === "link" ? " This class will also be linked to Google Classroom on this device, so later syncs keep every codename." : ""), /* @__PURE__ */ React.createElement("div", { className: "mt-3 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => cancelPendingHandoff(), className: "min-h-10 rounded-lg border border-blue-300 bg-white px-3 text-xs font-bold text-blue-900 hover:bg-blue-100" }, "Cancel"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: confirmPendingHandoff, className: "min-h-10 rounded-lg bg-blue-700 px-3 text-xs font-bold text-white hover:bg-blue-800" }, "Replace roster"))), rosterNotice && /* @__PURE__ */ React.createElement(
     "p",
     {
       role: rosterNoticeTone === "error" ? "alert" : "status",
@@ -7720,6 +7810,7 @@ window.AlloModules.RosterKeyPanel = RosterKeyPanel;
 window.AlloModules.CicoInternals = { key: ALLO_CICO_KEY, defaults: alloCicoDefaults, normalize: alloCicoNormalize, load: alloCicoLoad, save: alloCicoSave, score: alloCicoScore, trend: alloCicoTrend, addToStoreWorksheet: alloCicoAddToStoreWorksheet, studentCsv: alloCicoStudentCsv, triageRows: alloCicoTriageRows, localDate: alloCicoDate };
 window.AlloModules.TeacherPrivateLabelInternals = {
   storageKey: ALLO_TEACHER_PRIVATE_LABELS_KEY,
+  accessPromptDismissedKey: ALLO_EDUCATOR_ACCESS_PROMPT_DISMISSED_KEY,
   maxLength: ALLO_TEACHER_PRIVATE_LABEL_MAX,
   maxClasses: ALLO_TEACHER_PRIVATE_LABEL_CLASSES,
   classKey: alloTeacherPrivateLabelClassKey,

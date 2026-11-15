@@ -49,6 +49,12 @@ window.StemLab = window.StemLab || {
 (function() {
   'use strict';
 
+  function escapeHtml(value) {
+    return String(value == null ? '' : value).replace(/[&<>"']/g, function(ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+
   // ── Reduced-motion CSS (WCAG 2.3.3) — shared across STEAM Lab tools ──
   // Contrast theme: hovered buttons, owned by this tool (allo-playlab-hc-extra-css).
   (function() {
@@ -2082,12 +2088,12 @@ window.StemLab = window.StemLab || {
         }
         var earnedBadges = PLAYLAB_BADGES.filter(function(b) { return d.badgesEarned && d.badgesEarned[b.id]; }).slice(0, 5);
         var badgesHtml = earnedBadges.length
-          ? earnedBadges.map(function(b) { return '<span class="badge">' + b.emoji + ' ' + b.label + '</span>'; }).join('')
+          ? earnedBadges.map(function(b) { return '<span class="badge">' + escapeHtml(b.emoji) + ' ' + escapeHtml(b.label) + '</span>'; }).join('')
           : '<span class="badge-empty">No badges yet — keep running plays!</span>';
         var fieldColor = isSoccer ? '#10b981' : '#16a34a';
         var matchupColor = matchup ? matchup.color: 'var(--allo-stem-text-soft, #94a3b8)';
         var cardHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
-          + '<title>PlayLab Trading Card — ' + name + '</title>'
+          + '<title>PlayLab Trading Card — ' + escapeHtml(name) + '</title>'
           + '<style>'
           + '*{box-sizing:border-box} body{margin:30px;font-family:Georgia,serif;background:#0f172a;color:#f8fafc;display:flex;justify-content:center}'
           + '.card{width:380px;border:8px solid #fbbf24;border-radius:18px;background:linear-gradient(135deg,#fef3c7,#fde68a);color:#1a1a1a;padding:0;overflow:hidden;box-shadow:0 10px 40px rgba(0,0,0,0.3)}'
@@ -2099,7 +2105,7 @@ window.StemLab = window.StemLab || {
           + '.preset{background:#1e293b;color:#fbbf24;padding:6px 12px;border-radius:6px;display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin-bottom:10px}'
           + '.field-frame{background:' + fieldColor + ';border-radius:8px;padding:12px;margin-bottom:10px;text-align:center;color:#052e16;font-size:11px}'
           + '.field-frame .vs{font-size:14px;margin:4px 0;font-weight:bold}'
-          + '.matchup{padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid ' + matchupColor + ';background:rgba(0,0,0,0.04);font-size:11px}'
+          + '.matchup{padding:8px;border-radius:6px;margin-bottom:8px;border-left:3px solid ' + escapeHtml(matchupColor) + ';background:rgba(0,0,0,0.04);font-size:11px}'
           + '.stat-line{font-size:12px;color:#1a1a1a;font-weight:bold;margin-bottom:10px;padding:8px;background:rgba(30,41,59,0.05);border-radius:6px;border-left:3px solid #fbbf24}'
           + '.badges{display:flex;flex-wrap:wrap;gap:4px;margin-bottom:10px}'
           + '.badge{background:#1e293b;color:#fbbf24;padding:3px 8px;border-radius:999px;font-size:10px;font-weight:bold}'
@@ -2109,29 +2115,30 @@ window.StemLab = window.StemLab || {
           + '</style></head><body>'
           + '<div class="card">'
           + '  <div class="banner">'
-          + '    <span class="icon">' + sportIcon + '</span>'
-          + '    <div class="name">' + name + '</div>'
-          + '    <div class="sport">' + sportLbl + '</div>'
+          + '    <span class="icon">' + escapeHtml(sportIcon) + '</span>'
+          + '    <div class="name">' + escapeHtml(name) + '</div>'
+          + '    <div class="sport">' + escapeHtml(sportLbl) + '</div>'
           + '  </div>'
           + '  <div class="body">'
-          + '    <div class="preset">' + presetLbl + '</div>'
+          + '    <div class="preset">' + escapeHtml(presetLbl) + '</div>'
           + '    <div class="field-frame">'
           + '      <div>OFFENSE</div>'
-          + '      <div class="vs">' + presetLbl + '</div>'
+          + '      <div class="vs">' + escapeHtml(presetLbl) + '</div>'
           + '      <div>vs</div>'
-          + '      <div class="vs">' + defLbl + '</div>'
+          + '      <div class="vs">' + escapeHtml(defLbl) + '</div>'
           + '      <div>DEFENSE</div>'
           + '    </div>'
-          + '    <div class="matchup"><strong>' + matchupLine + '</strong></div>'
-          + '    <div class="stat-line">' + statLine + '</div>'
+          + '    <div class="matchup"><strong>' + escapeHtml(matchupLine) + '</strong></div>'
+          + '    <div class="stat-line">' + escapeHtml(statLine) + '</div>'
           + '    <div class="badges">' + badgesHtml + '</div>'
-          + '    <div class="footer">PlayLab — Tactical Play Design · AlloFlow · ' + new Date().toLocaleDateString() + '</div>'
+          + '    <div class="footer">PlayLab — Tactical Play Design · AlloFlow · ' + escapeHtml(new Date().toLocaleDateString()) + '</div>'
           + '  </div>'
           + '</div>'
           + '</body></html>';
         try {
           var win = window.open('', '_blank');
           if (win) {
+            win.opener = null;
             win.document.write(cardHtml);
             win.document.close();
             setTimeout(function() { try { win.print(); } catch(e) {} }, 400);
@@ -2157,7 +2164,7 @@ window.StemLab = window.StemLab || {
         }
         var dateStr = new Date().toLocaleDateString();
         var sheetHtml = '<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">'
-          + '<title>PlayLab Activity Sheet — ' + sportLabel + '</title>'
+          + '<title>PlayLab Activity Sheet — ' + escapeHtml(sportLabel) + '</title>'
           + '<style>'
           + 'body{font-family:Georgia,serif;max-width:780px;margin:30px auto;padding:0 20px;color:#1a1a1a;line-height:1.5}'
           + 'h1{font-size:22px;border-bottom:3px solid #1a1a1a;padding-bottom:6px;margin-bottom:6px}'
@@ -2173,16 +2180,16 @@ window.StemLab = window.StemLab || {
           + 'footer{font-size:10px;color:#94a3b8;text-align:center;margin-top:30px;padding-top:10px;border-top:1px solid #cbd5e1}'
           + '@media print{.scenario{break-inside:avoid}}'
           + '</style></head><body>'
-          + '<h1>PlayLab Activity Sheet — ' + sportLabel + '</h1>'
-          + '<div class="meta">Name: ____________________________________  Date: ' + dateStr + '</div>';
+          + '<h1>PlayLab Activity Sheet — ' + escapeHtml(sportLabel) + '</h1>'
+          + '<div class="meta">Name: ____________________________________  Date: ' + escapeHtml(dateStr) + '</div>';
         scenarios.forEach(function(sc) {
           sheetHtml += '<div class="scenario">'
-            + '<h2><span class="icon">' + sc.icon + '</span>' + sc.label + '</h2>'
-            + '<div class="teach">' + sc.teach + '</div>'
+            + '<h2><span class="icon">' + escapeHtml(sc.icon) + '</span>' + escapeHtml(sc.label) + '</h2>'
+            + '<div class="teach">' + escapeHtml(sc.teach) + '</div>'
             + '<div class="qhead">Discussion Questions</div>'
             + '<ol>';
           (sc.questions || []).forEach(function(q) {
-            sheetHtml += '<li>' + q
+            sheetHtml += '<li>' + escapeHtml(q)
               + '<div class="answer-line"></div><div class="answer-line"></div><div class="answer-line"></div>'
               + '</li>';
           });
@@ -2193,6 +2200,7 @@ window.StemLab = window.StemLab || {
         try {
           var win = window.open('', '_blank');
           if (win) {
+            win.opener = null;
             win.document.write(sheetHtml);
             win.document.close();
             setTimeout(function() { try { win.print(); } catch(e) {} }, 300);

@@ -206,11 +206,13 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
   };
   // Stringified into modules/workers: JS/WASM ops map to session Blob URLs (data
   // fetches stay ordinary). webpackIgnore: webpack's import() is undefined there.
-  function runtimeCapabilities(table, types, original, workerMode, depth) {
+  function runtimeCapabilities(table, types, original, workerMode, depth, desktop) {
     'use strict';
     Object.freeze(table); Object.freeze(types);
     var nativeFetch = globalThis.fetch && globalThis.fetch.bind(globalThis), NativeWorker = globalThis.Worker;
     var nativeScripts = globalThis.importScripts && globalThis.importScripts.bind(globalThis);
+    var originalOrigin = null;
+    try { originalOrigin = new URL(original).origin; } catch (_) {}
     var resolve = function (value, kinds) {
       var raw = String(value), url;
       if (Object.prototype.hasOwnProperty.call(table, raw)) url = table[raw];
@@ -223,6 +225,9 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
       try { return nativeFetch(resolve(raw), options); } catch (error) {
         var url; try { url = new URL(raw, original); } catch (_) { return Promise.reject(error); }
         if (/\.(?:m?js|cjs|wasm|data)(?:$|[?#])/i.test(url.pathname) || url.protocol === 'blob:') return Promise.reject(error);
+        if (desktop && (!originalOrigin || url.origin !== originalOrigin)) {
+          return Promise.reject(new Error('Desktop cross-origin runtime fetch is disabled'));
+        }
         return nativeFetch(value, options);
       }
     };
@@ -237,7 +242,7 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
       // Child workers inherit the complete guard, rather than executing a raw
       // approved body with unrestricted child imports.
       var source = '(' + runtimeCapabilities.toString() + ')(' + JSON.stringify(table) + ',' + JSON.stringify(types)
-        + ',' + JSON.stringify(original) + ',true,' + (depth + 1) + ');\n__alloRuntimeImportScripts(' + JSON.stringify(target) + ');';
+        + ',' + JSON.stringify(original) + ',true,' + (depth + 1) + ',' + JSON.stringify(Boolean(desktop)) + ');\n__alloRuntimeImportScripts(' + JSON.stringify(target) + ');';
       var url = URL.createObjectURL(new Blob([source], { type: 'text/javascript' })), instance;
       try { instance = new NativeWorker(url, options); } catch (error) { URL.revokeObjectURL(url); throw error; }
       var terminate = instance.terminate.bind(instance);
@@ -256,7 +261,7 @@ function _alloCreateRuntimeGraphDeliveryPolicy(input, environment) {
   function capabilityPrelude(mapping, original, workerMode) {
     var types = Object.create(null);
     Object.keys(assets).forEach(function (id) { if (mapping[id]) types[mapping[id]] = assets[id].kind; });
-    var code = '(' + runtimeCapabilities.toString() + ')(' + JSON.stringify(mapping) + ',' + JSON.stringify(types) + ',' + JSON.stringify(original || base.href) + ',' + workerMode + ',0)';
+    var code = '(' + runtimeCapabilities.toString() + ')(' + JSON.stringify(mapping) + ',' + JSON.stringify(types) + ',' + JSON.stringify(original || base.href) + ',' + workerMode + ',0,' + JSON.stringify(desktop) + ')';
     if (workerMode) return 'const __alloRuntimeCapabilities=' + code + ';\n'
       + 'globalThis.__alloRuntimeAssets=__alloRuntimeCapabilities.assets;globalThis.__alloRuntimeImport=__alloRuntimeCapabilities.imported;'
       + 'globalThis.__alloRuntimeImportScripts=__alloRuntimeCapabilities.scripts;globalThis.__alloRuntimeWorker=__alloRuntimeCapabilities.worker;'

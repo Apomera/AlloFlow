@@ -680,7 +680,7 @@
     var keys = Object.keys(UI_STRINGS.English), out = {}, n = 0;
     keys.forEach(function (k) {
       var v = obj[k];
-      if (typeof v === 'string') { v = v.trim().slice(0, 280); if (v) { out[k] = v; n++; } }
+      if (typeof v === 'string') { v = v.replace(/[<>]/g, '').trim().slice(0, 280); if (v) { out[k] = v; n++; } }
     });
     return n >= Math.floor(keys.length * 0.6) ? out : null; // reject partial/garbage responses
   }
@@ -696,7 +696,7 @@
   async function fetchUiPackUrl(url,waitMs) {
     var timer=null;
     try{
-      var request=window.fetch(url,{cache:'force-cache'}).then(function(response){
+      var request=window.fetch(url,{cache:'force-cache',credentials:'omit'}).then(function(response){
         if(!response||!response.ok)return null;
         return response.json();
       }).then(function(body){return sanitizeUiPack(body&&body.lingua);}).catch(function(){return null;});
@@ -711,6 +711,7 @@
     if (!slug) return null;
     var local=await fetchUiPackUrl('lang/'+slug+'.js',600);
     if(local)return local;
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) return null;
     var remote=await Promise.all([fetchUiPackUrl(LANG_CDN+slug+'.js',900),fetchUiPackUrl(LANG_RAW+slug+'.js',900)]);
     return remote[0]||remote[1]||null;
   }

@@ -409,7 +409,7 @@ function ClassMailboxSetupView(props) {
     className: "cursor-pointer font-black"
   }, t('mailbox.how_do_student_saving_and_submissions') || 'How do student saving and submissions work in each mode?'), /*#__PURE__*/React.createElement("ul", {
     className: "mt-2 list-disc ml-4 space-y-1 leading-relaxed"
-  }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, t('mailbox.mailbox_live_session_or_mailbox_hosted') || 'Mailbox live session or mailbox-hosted homework:'), " ", t('mailbox.save_submit_uploads_json') || 'Save & Submit uploads the complete student-work JSON automatically to your private Drive mailbox folder. If delivery fails, the student receives a backup download instead.'), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, t('mailbox.standard_firebase_live_session') || 'Standard Firebase live session:'), " ", t('mailbox.live_quiz_answer_content_travels_peer') || 'live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.'), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, t('mailbox.self_contained_non_live_homework') || 'Self-contained/non-live homework:'), " ", t('mailbox.work_stays_on_the_student_device') || 'work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.'), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, t('mailbox.teacher_review') || 'Teacher review:'), " ", t('mailbox.open_drive_alloflow_class_mailbox_download') || 'open Drive → “AlloFlow Class Mailbox,” download the submission JSON files, then use AlloFlow’s Submission Inbox to import, review, and grade them.')))), !mbConfig && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
+  }, /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, t('mailbox.mailbox_live_session_or_mailbox_hosted') || 'Mailbox live session or mailbox-hosted homework:'), " ", t('mailbox.save_submit_uploads_json') || 'Save & Submit uploads the complete student-work JSON automatically to your private Drive mailbox folder. If delivery fails, the student receives a backup download instead.'), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, t('mailbox.standard_firebase_live_session') || 'Standard Firebase live session:'), " ", t('mailbox.live_quiz_answer_content_travels_peer') || 'live quiz answer content travels peer-to-peer to the teacher. If that connection is unavailable, only a content-free submission receipt syncs and the answer remains unscored. Progress signals and supported activity metadata sync during the session; the complete portfolio is not retained as a permanent Firebase record.'), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, t('mailbox.self_contained_non_live_homework') || 'Self-contained/non-live homework:'), " ", t('mailbox.work_stays_on_the_student_device') || 'work stays on the student device until they download the submission file and send it through your approved LMS, email, or other school workflow.'), /*#__PURE__*/React.createElement("li", null, /*#__PURE__*/React.createElement("b", null, t('mailbox.teacher_review') || 'Teacher review:'), " ", t('mailbox.open_drive_alloflow_class_mailbox_download') || 'open AlloFlow’s Submission Inbox and click “Check Class Mailbox” to collect student submissions directly (or import downloaded files from your “AlloFlow Class Mailbox” Drive folder), then review and grade them.')))), !mbConfig && /*#__PURE__*/React.createElement("div", null, /*#__PURE__*/React.createElement("p", {
     className: "text-xs text-slate-700 mb-2 font-bold"
   }, t('mailbox.one_time_setup_about_3_5') || 'One-time setup (about 3–5 minutes):'), /*#__PURE__*/React.createElement("ol", {
     className: "text-xs text-slate-600 list-decimal ml-4 space-y-1.5 mb-3"
@@ -699,7 +699,9 @@ function ClassMailboxSetupView(props) {
     "aria-label": t('directions.body_aria') || 'Directions for students',
     rows: 3,
     className: "w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800"
-  }), /*#__PURE__*/React.createElement("input", {
+  }), /*#__PURE__*/React.createElement("div", {
+    className: "grid grid-cols-1 gap-1 sm:grid-cols-2"
+  }, /*#__PURE__*/React.createElement("input", {
     value: mbDirectionsDraft.due || '',
     onChange: e => setMbDirectionsDraft(p => ({
       ...(p || {}),
@@ -708,7 +710,39 @@ function ClassMailboxSetupView(props) {
     placeholder: t('directions.due_placeholder') || 'Due (optional, e.g. Friday)',
     "aria-label": t('directions.due_aria') || 'Due date',
     className: "w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800"
-  }), /*#__PURE__*/React.createElement("button", {
+  }), /*#__PURE__*/React.createElement("input", {
+    type: "datetime-local",
+    value: mbDirectionsDraft.dueAt || '',
+    onChange: e => {
+      const dueAt = e.target.value;
+      setMbDirectionsDraft(p => {
+        const prev = p || {};
+        const next = {
+          ...prev,
+          dueAt
+        };
+        if (dueAt) {
+          const dt = new Date(dueAt);
+          if (!Number.isNaN(dt.getTime())) {
+            const formatted = dt.toLocaleString([], {
+              dateStyle: 'medium',
+              timeStyle: 'short'
+            });
+            if (!String(prev.due || '').trim() || prev._dueAuto === prev.due) {
+              next.due = formatted;
+              next._dueAuto = formatted;
+            }
+          }
+        } else if (prev._dueAuto === prev.due) {
+          next.due = '';
+          delete next._dueAuto;
+        }
+        return next;
+      });
+    },
+    "aria-label": t('directions.due_datetime_aria') || 'Optional exact due date and time',
+    className: "w-full text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800"
+  })), /*#__PURE__*/React.createElement("button", {
     onClick: deriveDirectionsDraft,
     disabled: directionsDeriving,
     className: "w-full flex items-center justify-center gap-1 text-[11px] font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-1.5 transition-all disabled:opacity-60"

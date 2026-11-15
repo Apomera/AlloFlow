@@ -686,6 +686,10 @@
   function _loadScriptOnce(url) {
     return new Promise(function (resolve, reject) {
       try {
+        if (typeof window !== 'undefined' && window._isDesktopBundledApp === true && /^https?:/i.test(String(url))
+          && !/^https?:\/\/(?:localhost|127\.0\.0\.1|\[::1\])(?:[:/]|$)/i.test(String(url))) {
+          return reject(new Error('External ConceptGraph CDN is disabled in Desktop mode'));
+        }
         var sel = 'script[data-cg-src="' + url + '"]';
         var existing = document.querySelector(sel);
         if (existing) {
@@ -695,7 +699,14 @@
           return;
         }
         var s = document.createElement('script');
-        s.src = url; s.async = true; s.setAttribute('data-cg-src', url);
+        s.referrerPolicy = 'no-referrer';
+        if (typeof window !== 'undefined' && typeof window.__alloConfigureTrustedScript === 'function') {
+          try { window.__alloConfigureTrustedScript(s, url); }
+          catch (_) { s.src = url; }
+        } else {
+          s.src = url;
+        }
+        s.async = true; s.setAttribute('data-cg-src', url);
         s.onload = function () { s.setAttribute('data-cg-loaded', '1'); resolve(); };
         s.onerror = function () { reject(new Error('load failed: ' + url)); };
         document.head.appendChild(s);

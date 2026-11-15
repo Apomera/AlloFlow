@@ -152,7 +152,7 @@ describe('Persona interview UI resilience', () => {
     expect(viewSource).toContain('[_personaSnapshotKey, _personaSnapshotEnabled, _personaRetentionDays, personaState.isLoading, _dsChatLen');
     expect(viewSource).toContain('_dsTopicSparkCount, _dsSuggestionFingerprint');
     expect(viewSource).toContain("while (chatHistory.length && chatHistory[chatHistory.length - 1].role === 'user') chatHistory.pop();");
-    expect(viewSource).toContain('if (!_personaSnapshotEnabled || personaState.isLoading || _dsChatLen < 2 || personaResumeOffer)');
+    expect(viewSource).toContain('if (!_personaSnapshotEnabled || personaState.isLoading || (_dsChatLen < 2 && !_dsRoleSwapSanitized) || personaResumeOffer)');
     const resumeStart = viewSource.indexOf('var _handleResumeSnapshot = function ()');
     const resumeEnd = viewSource.indexOf('var _handleDiscardSnapshot', resumeStart);
     const resumeHandler = viewSource.slice(resumeStart, resumeEnd);

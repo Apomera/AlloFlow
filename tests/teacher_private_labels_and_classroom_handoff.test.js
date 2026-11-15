@@ -303,3 +303,80 @@ describe('in-app Google Classroom handoff', () => {
     expect(internals.acceptHandoff({ source: helper, origin: 'https://a.test', data: null }, helper, 'https://a.test')).toBeNull();
   });
 });
+
+describe('additive educator access code prompt in RosterKeyPanel', () => {
+  afterEach(() => {
+    delete window.__alloOpenStorageRecoveryManager;
+    delete window._alloEducatorAccessCodeRequired;
+    if (window.AlloModules) delete window.AlloModules.DeviceAccessCode;
+  });
+
+  const prompt = () => container.querySelector('[data-testid="roster-educator-access-prompt"]');
+
+  it('shows the non-blocking card in Teacher Mode when roster students exist and no code is set, and wires setup', async () => {
+    const openSpy = vi.fn();
+    window.__alloOpenStorageRecoveryManager = openSpy;
+    window._alloEducatorAccessCodeRequired = () => false;
+    await mount({ panel: { t: () => undefined } });
+    const card = prompt();
+    expect(card).not.toBeNull();
+    expect(card.textContent).toContain('Shared classroom device?');
+    expect(card.textContent).toContain('at least 6 characters: words, letters, phrases, or numbers');
+    await click(container.querySelector('[data-testid="roster-educator-access-set"]'));
+    expect(openSpy).toHaveBeenCalledWith({ focusAccessCode: true });
+  });
+
+  it('hides automatically when an Educator access code is configured on this browser', async () => {
+    let configured = false;
+    window._alloEducatorAccessCodeRequired = () => configured;
+    await mount({ panel: { t: () => undefined } });
+    expect(prompt()).not.toBeNull();
+    configured = true;
+    await act(async () => {
+      window.dispatchEvent(new CustomEvent('alloflow:educator-access-code-changed', { detail: { configured: true } }));
+    });
+    expect(prompt()).toBeNull();
+  });
+
+  it('supports one-click permanent opt-out for personal devices and session-only Not now dismissal', async () => {
+    window._alloEducatorAccessCodeRequired = () => false;
+    await mount({ panel: { t: () => undefined } });
+    expect(prompt()).not.toBeNull();
+    await click(container.querySelector('[data-testid="roster-educator-access-later"]'));
+    expect(prompt()).toBeNull();
+    expect(localStorage.getItem(internals.accessPromptDismissedKey)).toBeNull();
+
+    await act(async () => root.unmount());
+    root = null;
+    await mount({ panel: { t: () => undefined } });
+    expect(prompt()).not.toBeNull();
+    await click(container.querySelector('[data-testid="roster-educator-access-personal"]'));
+    expect(prompt()).toBeNull();
+    expect(localStorage.getItem(internals.accessPromptDismissedKey)).toBe('1');
+
+    await act(async () => root.unmount());
+    root = null;
+    await mount({ panel: { t: () => undefined } });
+    expect(prompt()).toBeNull();
+  });
+
+  it('never renders in parent mode, independent mode, or on an empty roster with hidden private labels', async () => {
+    window._alloEducatorAccessCodeRequired = () => false;
+    const emptyRoster = window.AlloModules.RosterIdentityInternals.normalizeRosterImport({
+      classId: 'CLS-empty', className: '', groups: {}, students: {}, learnerIds: {},
+      learnerPreferences: {}, progressHistory: {}, sessionHistory: [],
+    });
+    await mount({ roster: emptyRoster, panel: { t: () => undefined } });
+    expect(prompt()).toBeNull();
+    await act(async () => root.unmount());
+    root = null;
+
+    await mount({ panel: { isParentMode: true, t: () => undefined } });
+    expect(prompt()).toBeNull();
+    await act(async () => root.unmount());
+    root = null;
+
+    await mount({ panel: { isIndependentMode: true, t: () => undefined } });
+    expect(prompt()).toBeNull();
+  });
+});

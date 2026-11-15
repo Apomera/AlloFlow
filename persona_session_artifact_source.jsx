@@ -476,11 +476,38 @@ const PersonaSessionArtifact = (() => {
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
+    function resolveOwnerHtmlLocale(rawLanguage) {
+        const LANGUAGE_MAP = {
+            english: 'en', spanish: 'es', french: 'fr', german: 'de', portuguese: 'pt',
+            italian: 'it', russian: 'ru', 'simplified chinese': 'zh-CN', 'chinese (simplified)': 'zh-CN',
+            'traditional chinese': 'zh-TW', 'chinese (traditional)': 'zh-TW', chinese: 'zh-CN',
+            japanese: 'ja', korean: 'ko', vietnamese: 'vi', tagalog: 'tl', filipino: 'tl',
+            hindi: 'hi', bengali: 'bn', somali: 'so', swahili: 'sw', 'haitian creole': 'ht',
+            ukrainian: 'uk', polish: 'pl', turkish: 'tr', arabic: 'ar', hebrew: 'he',
+            urdu: 'ur', persian: 'fa', farsi: 'fa', pashto: 'ps', yiddish: 'yi',
+            'kurdish (sorani)': 'ckb', sorani: 'ckb', sindhi: 'sd', uyghur: 'ug', divehi: 'dv',
+        };
+        const RTL_SUBTAGS = new Set(['ar', 'he', 'iw', 'ur', 'fa', 'ps', 'yi', 'sd', 'ug', 'ckb', 'dv']);
+        const raw = cleanText(rawLanguage, 100);
+        const lower = raw.toLowerCase();
+        const stripped = lower.replace(/\s*\([^)]*\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+        let lang = LANGUAGE_MAP[lower] || LANGUAGE_MAP[stripped] || '';
+        if (!lang && /^[a-z]{2,3}(?:-[a-z0-9]{2,8})*$/i.test(raw)) {
+            lang = raw.split('-').map((part, idx) => (idx === 0 ? part.toLowerCase() : part.length === 2 ? part.toUpperCase() : part)).join('-');
+        }
+        if (!lang) lang = 'en';
+        const baseSubtag = lang.split('-')[0].toLowerCase();
+        const rtl = RTL_SUBTAGS.has(baseSubtag)
+            || /\b(?:arabic|hebrew|urdu|persian|farsi|pashto|yiddish|sorani|sindhi|uyghur|divehi)\b/i.test(raw);
+        return { lang, rtl };
+    }
+
     function buildOwnerHtmlDocument(artifact, options = {}) {
         const contract = getContract(options.contract);
         const validated = assertPrivateArtifact(artifact, contract);
         const title = cleanText(validated.title, 300) || 'Private Persona conversation';
         const language = cleanText(validated.language, 100) || 'English';
+        const locale = resolveOwnerHtmlLocale(language);
         const messages = Array.isArray(validated.session && validated.session.messages)
             ? validated.session.messages : [];
         const questionCraft = validated.session && isQuestionCraftSource(validated.session.questionCraft)
@@ -521,7 +548,7 @@ const PersonaSessionArtifact = (() => {
             return '<article class="turn ' + role + '"><header class="speaker">' + speaker + '</header>' + chunks + '</article>';
         }).join('\n');
 
-        const html = '<!DOCTYPE html>\n<html lang="' + escapeHtmlText(language) + '">\n<head>\n'
+        const html = '<!DOCTYPE html>\n<html lang="' + escapeHtmlText(locale.lang) + '"' + (locale.rtl ? ' dir="rtl"' : '') + '>\n<head>\n'
             + '<meta charset="UTF-8">\n<meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
             + '<title>' + escapeHtmlText(title) + '</title>\n'
             + '<style>\n'
@@ -530,8 +557,8 @@ const PersonaSessionArtifact = (() => {
             + '.meta{color:#6b7280;font-style:italic;margin-bottom:8px;}\n'
             + '.privacy{background:#fef3c7;border:1px solid #fcd34d;border-radius:8px;padding:10px 14px;font-family:system-ui,sans-serif;font-size:0.85em;color:#78350f;margin-bottom:28px;}\n'
             + '.turn{margin-bottom:18px;padding:14px 16px;border-radius:12px;page-break-inside:avoid;}\n'
-            + '.turn.learner{background:#eff6ff;border:1px solid #bfdbfe;margin-left:32px;}\n'
-            + '.turn.persona{background:#ffffff;border:1px solid #e5e7eb;margin-right:32px;box-shadow:0 1px 3px rgba(0,0,0,0.05);}\n'
+            + '.turn.learner{background:#eff6ff;border:1px solid #bfdbfe;margin-left:32px;margin-inline-start:32px;margin-inline-end:0;}\n'
+            + '.turn.persona{background:#ffffff;border:1px solid #e5e7eb;margin-right:32px;margin-inline-end:32px;margin-inline-start:0;box-shadow:0 1px 3px rgba(0,0,0,0.05);}\n'
             + '.speaker{font-family:system-ui,sans-serif;font-weight:700;font-size:0.8em;text-transform:uppercase;letter-spacing:0.06em;color:#4b5563;margin-bottom:6px;}\n'
             + '.turn.learner .speaker{color:#1d4ed8;}\n'
             + '.chunk{margin:0 0 8px;}\n'

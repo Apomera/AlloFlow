@@ -1238,9 +1238,19 @@
     var llAttemptedRef = useRef({});
     var setLlTick = useState(0)[1];
     LL_CUR.lang = uiLang; LL_CUR.cache = llCacheRef.current; LL_CUR.t = t; // publish snapshot for module-scope tr()/tt()
+    function _mfAiUsable(kind, fn) {
+      if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+      if (typeof window !== 'undefined') {
+        if (window.__alloStudentAiDisabled === true) return false;
+        if (typeof window.__alloAiUsable === 'function') {
+          try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
+        }
+      }
+      return true;
+    }
     function llTranslateBatch(list) {
       var cg = (typeof window !== 'undefined') && window.callGemini;
-      if (typeof cg !== 'function' || !list.length) return;
+      if (!_mfAiUsable('text', cg) || !list.length) return;
       var reqId = ++llReqRef.current, lang = uiLang;
       var att = llAttemptedRef.current[lang] || (llAttemptedRef.current[lang] = {});
       list.forEach(function (k) { att[k] = true; });
@@ -1256,7 +1266,7 @@
       }).catch(function () {});
     }
     useEffect(function () {
-      if (uiLang === 'English' || typeof window === 'undefined' || typeof window.callGemini !== 'function') return;
+      if (uiLang === 'English' || typeof window === 'undefined' || !_mfAiUsable('text', window.callGemini)) return;
       var cache = llCacheRef.current[uiLang] || {}, attempted = llAttemptedRef.current[uiLang] || {};
       var missing = Object.keys(STR_REG).filter(function (k) { return !cache[k] && !attempted[k]; });
       if (!missing.length) return;

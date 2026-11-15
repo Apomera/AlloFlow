@@ -190,7 +190,8 @@ function StudentSaveAdventurePanel({
   const saveTitleId = 'student-save-panel-title';
   const adventureTitleId = 'student-adventure-panel-title';
   const adventureProgressId = 'student-adventure-progress-label';
-  const unlockXp = Math.max(1, Number(studentProjectSettings?.adventureUnlockXP || 1));
+  const rawUnlockXp = Math.max(0, Number(studentProjectSettings?.adventureUnlockXP ?? 0) || 0);
+  const unlockXp = Math.max(1, rawUnlockXp || 1);
   const boundedPoints = Math.max(0, Math.min(globalPoints, unlockXp));
   const adventureProgress = Math.min(100, (boundedPoints / unlockXp) * 100);
   const adventureAvailable = isAdventureAvailable !== false;
@@ -204,6 +205,7 @@ function StudentSaveAdventurePanel({
   const themeContext = React.useContext(window.AlloThemeContext || StudentSaveThemeFallbackContext);
   const styles = getStudentSaveThemeStyles(themeContext);
   const [showStoryAuthor, setShowStoryAuthor] = React.useState(false);
+  const storyBtnRef = React.useRef(null);
   const offlineApi = window.AlloModules && window.AlloModules.AdventureOffline;
   const StoryPanel = offlineApi && typeof offlineApi.Panel === 'function' ? offlineApi.Panel : null;
   const studentStoryAllowed = !activeSessionCode && typeof setHistory === 'function' && !!StoryPanel
@@ -232,13 +234,13 @@ function StudentSaveAdventurePanel({
             <p className={cx('text-xs', styles.saveText)}>{t('student.save_banner_desc')}</p>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <button
             type="button"
             aria-label={t('student.load_file')}
             data-help-key="student_load_file"
             onClick={() => projectFileInputRef.current?.click()}
-            className={cx('px-4 py-2 font-bold text-xs rounded-xl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.secondary, styles.focusTeal, styles.focusOffset)}
+            className={cx('min-h-11 px-4 py-2 font-bold text-xs rounded-xl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.secondary, styles.focusTeal, styles.focusOffset)}
           >
             <FolderOpen size={14} aria-hidden="true"/> {t('student.load_file')}
           </button>
@@ -248,7 +250,7 @@ function StudentSaveAdventurePanel({
             data-help-key="student_save_work"
             disabled={hasSaveableWork === false}
             onClick={initiateSaveStudentProject}
-            className={cx('px-4 py-2 font-bold text-xs rounded-xl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryTeal, styles.focusTeal, styles.focusOffset, 'disabled:cursor-not-allowed disabled:opacity-50', isSaveActionPulsing ? 'student-save-history-pulse shadow-teal-500/50' : '')}
+            className={cx('min-h-11 px-4 py-2 font-bold text-xs rounded-xl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryTeal, styles.focusTeal, styles.focusOffset, 'disabled:cursor-not-allowed disabled:opacity-50', isSaveActionPulsing ? 'student-save-history-pulse shadow-teal-500/50' : '')}
           >
             <Download size={14} aria-hidden="true"/> {t('student.save_drive')}
           </button>
@@ -256,7 +258,7 @@ function StudentSaveAdventurePanel({
             type="button"
             data-help-key="student_submit_work"
             onClick={handleSetShowSubmitModalToTrue}
-            className={cx('px-4 py-2 font-bold text-xs rounded-xl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryIndigo, styles.focusIndigo, styles.focusOffset)}
+            className={cx('min-h-11 px-4 py-2 font-bold text-xs rounded-xl transition-colors flex items-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryIndigo, styles.focusIndigo, styles.focusOffset)}
             title={t('common.export_for_grading')}
           >
             <Send size={14} aria-hidden="true"/> {t('common.submit')}
@@ -269,18 +271,18 @@ function StudentSaveAdventurePanel({
           <div id={adventureTitleId} className={cx('text-sm font-bold flex items-center gap-2', styles.adventureTitle)}>
             <MapIcon size={16} aria-hidden="true" /> {t('adventure.title')}
           </div>
-          {globalPoints >= studentProjectSettings.adventureUnlockXP && (
+          {globalPoints >= rawUnlockXp && (
             <span className={cx('text-[11px] px-2 py-0.5 rounded-full font-bold flex items-center gap-1', styles.unlockedBadge)} role="status"><CheckCircle2 size={10} aria-hidden="true"/> {t('adventure.unlocked')}</span>
           )}
         </div>
         <div className="p-4">
-          {globalPoints < studentProjectSettings.adventureUnlockXP ? (
+          {globalPoints < rawUnlockXp ? (
             <div className="space-y-3">
               <div className={cx('flex items-center gap-3 mb-2', styles.muted)}>
                 <div className={cx('p-2 rounded-full', styles.iconBubble)} aria-hidden="true"><Lock size={20}/></div>
                 <div className="text-xs">
                   <strong className={cx('block', styles.adventureTitle)}>{t('adventure.locked_status')}</strong>
-                  {t('adventure.earn')} <span className={cx('font-bold', styles.accentText)}>{studentProjectSettings.adventureUnlockXP} XP</span> {t('adventure.to_unlock')}
+                  {t('adventure.earn')} <span className={cx('font-bold', styles.accentText)}>{rawUnlockXp} XP</span> {t('adventure.to_unlock')}
                 </div>
               </div>
               <div
@@ -292,12 +294,12 @@ function StudentSaveAdventurePanel({
                 aria-valuenow={boundedPoints}
               >
                 <div
-                  className={cx('h-full transition-all duration-1000', styles.progressFill)}
+                  className={cx('h-full transition-all duration-1000 motion-reduce:transition-none', styles.progressFill)}
                   style={{ width: `${adventureProgress}%` }}
                 ></div>
               </div>
               <div id={adventureProgressId} className={cx('text-[11px] text-right font-mono', styles.progressLabel)}>
-                {globalPoints} / {studentProjectSettings.adventureUnlockXP} XP
+                {globalPoints} / {rawUnlockXp} XP
               </div>
             </div>
           ) : (
@@ -306,7 +308,7 @@ function StudentSaveAdventurePanel({
                 type="button"
                 aria-label={t('common.start_adventure')}
                 data-help-key="adventure_start_btn" data-adventure-offline-start onClick={handleStartAdventure}
-                className={cx('w-full py-3 rounded-2xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryPurple, styles.focusPurple, styles.focusOffset)}
+                className={cx('min-h-11 w-full py-3 rounded-2xl font-bold transition-all active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryPurple, styles.focusPurple, styles.focusOffset)}
               >
                 <MapIcon size={18} aria-hidden="true"/> {t('adventure.start')}
               </button>
@@ -320,7 +322,7 @@ function StudentSaveAdventurePanel({
                       type="button"
                       data-help-key="adventure_resume_btn" onClick={handleResumeAdventure}
                       disabled={isResumingAdventure}
-                      className={cx('w-full py-3 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryPurple, styles.focusPurple, styles.focusOffset)}
+                      className={cx('min-h-11 w-full py-3 rounded-xl font-bold transition-all active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryPurple, styles.focusPurple, styles.focusOffset)}
                     >
                       {isResumingAdventure ? <RefreshCw size={18} className="animate-spin motion-reduce:animate-none" aria-hidden="true" /> : <History size={18} aria-hidden="true"/>}
                       {t('adventure.resume')}
@@ -329,7 +331,7 @@ function StudentSaveAdventurePanel({
                       type="button"
                       data-help-key="adventure_start_btn" onClick={handleStartAdventure}
                       disabled={isResumingAdventure}
-                      className={cx('w-full py-3 rounded-xl font-bold shadow-sm transition-all active:scale-95 flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.secondaryPurple, styles.focusPurple, styles.focusOffset)}
+                      className={cx('min-h-11 w-full py-3 rounded-xl font-bold shadow-sm transition-all active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.secondaryPurple, styles.focusPurple, styles.focusOffset)}
                     >
                       <Sparkles size={18} aria-hidden="true"/> {t('adventure.new_game')}
                     </button>
@@ -339,7 +341,7 @@ function StudentSaveAdventurePanel({
                     type="button"
                     aria-label={t('common.start_adventure')}
                     data-help-key="adventure_start_btn" onClick={handleStartAdventure}
-                    className={cx('w-full py-3 rounded-2xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryPurple, styles.focusPurple, styles.focusOffset)}
+                    className={cx('min-h-11 w-full py-3 rounded-2xl font-bold transition-all active:scale-95 motion-reduce:transform-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.primaryPurple, styles.focusPurple, styles.focusOffset)}
                   >
                     <Sparkles size={18} aria-hidden="true"/> {t('adventure.start')}
                   </button>
@@ -358,11 +360,12 @@ function StudentSaveAdventurePanel({
           )}
           {studentStoryAllowed && (
             <button
+              ref={storyBtnRef}
               type="button"
               aria-haspopup="dialog"
               data-adventure-student-story-open
               onClick={() => setShowStoryAuthor(true)}
-              className={cx('mt-3 w-full py-3 rounded-2xl font-bold transition-colors flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.secondaryPurple, styles.focusPurple, styles.focusOffset)}
+              className={cx('mt-3 min-h-11 w-full py-3 rounded-2xl font-bold transition-colors motion-reduce:transition-none flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2', styles.secondaryPurple, styles.focusPurple, styles.focusOffset)}
             >
               <Pencil size={16} aria-hidden="true"/> {studentStoryText}{hasStudentStory ? ' ✓' : ''}
             </button>
@@ -370,7 +373,7 @@ function StudentSaveAdventurePanel({
         </div>
       </section>
       )}
-      {showStoryAuthor && studentStoryAllowed && <StoryPanel studentMode history={history} setHistory={setHistory} t={t} theme={themeContext && themeContext.theme} onClose={() => setShowStoryAuthor(false)} />}
+      {showStoryAuthor && studentStoryAllowed && <StoryPanel studentMode history={history} setHistory={setHistory} t={t} theme={themeContext && themeContext.theme} onClose={() => { setShowStoryAuthor(false); setTimeout(() => { try { storyBtnRef.current?.focus(); } catch (_) {} }, 0); }} />}
     </>
   );
 }

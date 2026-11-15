@@ -877,6 +877,9 @@
   }
 
   function loadTransformersModule() {
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+      return Promise.reject(new Error('Remote transformers.js CDN is disabled in Desktop mode'));
+    }
     if (transformersModulePromise) return transformersModulePromise;
     notifyProgress({ phase: 'transformers-fetch' });
     // Dynamic ESM import via the shim. jsdelivr is widely allowlisted
@@ -968,12 +971,31 @@
     return null;
   }
 
+  function _voiceAiUsable(kind, fn) {
+    if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+    if (typeof window !== 'undefined') {
+      if (window.__alloStudentAiDisabled === true) return false;
+      if (typeof window.__alloAiUsable === 'function') {
+        try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
+      }
+    }
+    return true;
+  }
+
   // A stored recording arrives encoded. A worker has no Web Audio to decode it.
   function audioToPcm16k(audio) {
     if (audio instanceof Float32Array) return Promise.resolve(audio);
     var AC = window.AudioContext || window.webkitAudioContext;
     if (!AC) return Promise.reject(new Error('Web Audio is unavailable.'));
-    return fetch(audio).then(function (response) { return response.arrayBuffer(); }).then(function (encoded) {
+    var bytesPromise;
+    if (typeof Blob !== 'undefined' && audio instanceof Blob) {
+      bytesPromise = audio.arrayBuffer();
+    } else if (typeof audio === 'string' && /^(?:blob:|data:audio\/)/i.test(audio.trim())) {
+      bytesPromise = fetch(audio.trim()).then(function (response) { return response.arrayBuffer(); });
+    } else {
+      return Promise.reject(new Error('Unsupported audio source.'));
+    }
+    return bytesPromise.then(function (encoded) {
       var context = new AC();
       return context.decodeAudioData(encoded).then(function (decoded) {
         try { context.close(); } catch (_) {}
@@ -1012,7 +1034,10 @@
       }
       function answerCache(m) {
         var reply = { type: 'cache-reply', cacheId: m.cacheId };
-        var work = !cacheAdapter ? Promise.resolve(null)
+        var safeUrl = typeof m.url === 'string' && m.url.length <= 2048
+          && !/[\x00-\x20\x7f]/.test(m.url)
+          && /^https:\/\/(?:huggingface\.co|cdn-lfs[^./]*\.huggingface\.co|cdn\.jsdelivr\.net)\//.test(m.url);
+        var work = (!cacheAdapter || !safeUrl) ? Promise.resolve(null)
           : m.kind === 'put'
             ? Promise.resolve(cacheAdapter.put(m.url, new Response(m.buffer, { headers: { 'content-type': m.contentType || 'application/octet-stream' } }))).then(function () { return null; })
             : Promise.resolve(cacheAdapter.match(m.url));
@@ -1572,10 +1597,9 @@
 
     if (engine === 'gemini') {
       var callGeminiAudio = opts.callGeminiAudio;
-      if (typeof callGeminiAudio !== 'function') {
+      if (!_voiceAiUsable('audio', callGeminiAudio)) {
         return Promise.reject(new Error(
-          'engine=\'gemini\' requires opts.callGeminiAudio. ' +
-          'The caller (e.g. arcade plugin) must thread its AI bridge through.'
+          'engine=\'gemini\' requires an active opts.callGeminiAudio bridge.'
         ));
       }
       var startedAtG = Date.now();
@@ -2924,8 +2948,8 @@
     opts = opts || {};
     rubric = rubric || {};
     var callGeminiAudio = opts.callGeminiAudio;
-    if (typeof callGeminiAudio !== 'function') {
-      return Promise.reject(new Error('gradeAudioJustification requires opts.callGeminiAudio'));
+    if (!_voiceAiUsable('audio', callGeminiAudio)) {
+      return Promise.reject(new Error('gradeAudioJustification requires an active opts.callGeminiAudio'));
     }
     if (!audioBase64) {
       return Promise.reject(new Error('No audio data provided'));

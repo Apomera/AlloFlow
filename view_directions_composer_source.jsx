@@ -34,9 +34,101 @@ function DirectionsComposerView({
   const fallbackGoalState = React.useRef({ resource: legacyGoalRes || '', text: legacyGoalText || '' });
   const goalState = directionsGoalEditorState || fallbackGoalState;
   const previewLabel = t('common.preview');
-  const tx = (key, fallback) => { const value = t(key); return value && value !== key ? value : fallback; };
-  const boardTitleDefault = tx('directions.choice_board_title', 'Choose an activity');
-  const boardPromptDefault = tx('directions.choice_board_prompt', 'Pick one activity to work on first. You can return here and choose another later.');
+  const tr = (key, fallback, vars) => {
+    const value = typeof t === 'function' ? t(key) : '';
+    let text = typeof value === 'string' && value.trim() && value !== key ? value : fallback;
+    Object.keys(vars || {}).forEach(name => { text = text.split('{' + name + '}').join(String(vars[name])); });
+    return text;
+  };
+  let draftAiDoor = null;
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiSetupDoorway === 'function') {
+      draftAiDoor = window.__alloAiSetupDoorway('text', t);
+    } else if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' && !window.__alloAiUsable('text')) {
+      draftAiDoor = { disabled: true, title: tr('directions.ai_unavailable', 'AI setup required') };
+    }
+  } catch (_) {}
+  const boardTitleDefault = tr('directions.choice_board_title', 'Choose an activity');
+  const boardPromptDefault = tr('directions.choice_board_prompt', 'Pick one activity to work on first. You can return here and choose another later.');
+  const composerDialogRef = React.useRef(null);
+  const previewDialogRef = React.useRef(null);
+  const previewOpenRef = React.useRef(!!showDirectionsChoicePreview);
+  previewOpenRef.current = !!showDirectionsChoicePreview;
+  const getFocusableIn = container => {
+    if (!container || typeof container.querySelectorAll !== 'function') return [];
+    return Array.from(container.querySelectorAll('button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [href], [tabindex]:not([tabindex="-1"])'));
+  };
+  React.useEffect(() => {
+    const doc = typeof window !== 'undefined' ? window.document : null;
+    const prevFocus = doc && doc.activeElement;
+    const dialog = composerDialogRef.current;
+    if (!dialog) return () => {
+      if (prevFocus && typeof prevFocus.focus === 'function') prevFocus.focus();
+    };
+    const onKeyDown = e => {
+      if (previewOpenRef.current || e.key !== 'Tab') return;
+      const focusable = getFocusableIn(dialog);
+      if (!focusable.length) {
+        e.preventDefault();
+        if (typeof dialog.focus === 'function') dialog.focus();
+        return;
+      }
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (e.shiftKey && (!doc || doc.activeElement === first || (typeof dialog.contains === 'function' && !dialog.contains(doc.activeElement)))) {
+        e.preventDefault();
+        if (typeof last.focus === 'function') last.focus();
+      } else if (!e.shiftKey && (!doc || doc.activeElement === last || (typeof dialog.contains === 'function' && !dialog.contains(doc.activeElement)))) {
+        e.preventDefault();
+        if (typeof first.focus === 'function') first.focus();
+      }
+    };
+    if (typeof dialog.addEventListener === 'function') dialog.addEventListener('keydown', onKeyDown);
+    return () => {
+      if (typeof dialog.removeEventListener === 'function') dialog.removeEventListener('keydown', onKeyDown);
+      if (prevFocus && typeof prevFocus.focus === 'function') prevFocus.focus();
+    };
+  }, []);
+  React.useEffect(() => {
+    if (!showDirectionsChoicePreview) return undefined;
+    const doc = typeof window !== 'undefined' ? window.document : null;
+    const openerFocus = doc && doc.activeElement;
+    const dialog = previewDialogRef.current;
+    if (!dialog) return undefined;
+    const focusable = getFocusableIn(dialog);
+    const initial = focusable[0] || dialog;
+    if (initial && typeof initial.focus === 'function') initial.focus();
+    const onKeyDown = e => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowDirectionsChoicePreview(false);
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const items = getFocusableIn(dialog);
+      if (!items.length) {
+        e.preventDefault();
+        if (typeof dialog.focus === 'function') dialog.focus();
+        return;
+      }
+      const first = items[0];
+      const last = items[items.length - 1];
+      if (e.shiftKey && (!doc || doc.activeElement === first || (typeof dialog.contains === 'function' && !dialog.contains(doc.activeElement)))) {
+        e.preventDefault();
+        if (typeof last.focus === 'function') last.focus();
+      } else if (!e.shiftKey && (!doc || doc.activeElement === last || (typeof dialog.contains === 'function' && !dialog.contains(doc.activeElement)))) {
+        e.preventDefault();
+        if (typeof first.focus === 'function') first.focus();
+      }
+    };
+    if (typeof dialog.addEventListener === 'function') dialog.addEventListener('keydown', onKeyDown);
+    return () => {
+      if (typeof dialog.removeEventListener === 'function') dialog.removeEventListener('keydown', onKeyDown);
+      if (openerFocus && typeof openerFocus.focus === 'function') openerFocus.focus();
+    };
+  }, [showDirectionsChoicePreview, setShowDirectionsChoicePreview]);
+  const [numDrafts, setNumDrafts] = React.useState({});
   const [mbDirectionsGoalRes, updateGoalRes] = React.useState(() => goalState.current.resource);
   const [mbDirectionsGoalText, updateGoalText] = React.useState(() => goalState.current.text);
   const setMbDirectionsGoalRes = value => {
@@ -50,12 +142,12 @@ function DirectionsComposerView({
     if (legacySetGoalText) legacySetGoalText(value);
   };
   return (
-<div className="fixed inset-0 z-[395] bg-black/40 flex items-center justify-center p-4" onKeyDown={e => { if (e.key === 'Escape') { e.stopPropagation(); setShowDirectionsComposer(false); } }}>
-          <div data-help-key="directions_composer" role="dialog" aria-modal="true" aria-label={t('directions.title') || 'Lesson Directions'} className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
+<div className="fixed inset-0 z-[395] bg-black/40 flex items-center justify-center p-4" onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); if (showDirectionsChoicePreview) { setShowDirectionsChoicePreview(false); } else { setShowDirectionsComposer(false); } } }}>
+          <div ref={composerDialogRef} tabIndex={-1} data-help-key="directions_composer" role="dialog" aria-modal="true" aria-label={t('directions.title') || 'Lesson Directions'} className="bg-white rounded-2xl shadow-2xl border border-slate-200 w-full max-w-md p-4 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100dvh - 2rem)' }}>
             <div className="flex items-center gap-2 mb-1">
               <ClipboardList size={18} className="text-amber-600" aria-hidden="true" />
               <h2 className="text-sm font-bold text-slate-800 flex-1">{t('directions.title') || 'Lesson Directions'}</h2>
-              <button onClick={() => setShowDirectionsComposer(false)} aria-label={t('common.close') || 'Close'} className="text-slate-600 hover:text-slate-700 p-1 rounded-lg transition-all"><X size={16} /></button>
+              <button type="button" onClick={() => setShowDirectionsComposer(false)} aria-label={t('common.close') || 'Close'} className="text-slate-600 hover:text-slate-700 p-1 rounded-lg transition-all"><X size={16} /></button>
             </div>
             <p className="text-[11px] text-slate-500 mb-2">{t('directions.subtitle') || 'Student-facing. Students see this first — in class, on homework QRs, and on the take-home shelf.'}</p>
             <div className="space-y-2 min-h-0 flex-1 overflow-y-auto pr-1" data-directions-scroll>
@@ -87,30 +179,30 @@ function DirectionsComposerView({
                       };
                       return next;
                     })}
-                    aria-label="Offer an activity choice board"
+                    aria-label={tr('directions.choice_board_enable', 'Offer an activity choice board')}
                     className="mt-0.5 w-4 h-4 accent-indigo-600 flex-shrink-0"
                   />
-                  <span className="text-[11px] font-bold text-indigo-900">Offer an activity choice board</span>
+                  <span className="text-[11px] font-bold text-indigo-900">{tr('directions.choice_board_enable', 'Offer an activity choice board')}</span>
                 </label>
-                <p className="text-[10px] text-slate-500 mt-1 ml-6">Students will see these pack activities as large, selectable cards on the directions page.</p>
+                <p className="text-[10px] text-slate-600 mt-1 ml-6">{tr('directions.choice_board_hint', 'Students will see these pack activities as large, selectable cards on the directions page.')}</p>
                 {mbDirectionsDraft?.choiceBoard?.enabled === true && (
                   <div className="mt-2 ml-6 space-y-2">
                     <input
                       value={mbDirectionsDraft.choiceBoard.title || ''}
                       onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), choiceBoard: { ...(p?.choiceBoard || {}), enabled: true, title: e.target.value } }))}
-                      aria-label="Activity choice board title"
+                      aria-label={tr('directions.choice_board_title_aria', 'Activity choice board title')}
                       placeholder={boardTitleDefault}
                       className="w-full text-[11px] border border-indigo-200 rounded p-1.5 bg-white text-slate-800"
                     />
                     <textarea
                       value={mbDirectionsDraft.choiceBoard.prompt || ''}
                       onChange={e => setMbDirectionsDraft(p => ({ ...(p || {}), choiceBoard: { ...(p?.choiceBoard || {}), enabled: true, prompt: e.target.value } }))}
-                      aria-label="Activity choice board instructions"
+                      aria-label={tr('directions.choice_board_prompt_aria', 'Activity choice board instructions')}
                       placeholder={boardPromptDefault}
                       rows={2}
                       className="w-full text-[11px] border border-indigo-200 rounded p-1.5 bg-white text-slate-800"
                     />
-                    <div role="group" aria-label="Activities to include in the choice board" className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
+                    <div role="group" aria-label={tr('directions.choice_board_activities_group', 'Activities to include in the choice board')} className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
                       {_alloDirectionsGoalResources.map(it => {
                         const choices = Array.isArray(mbDirectionsDraft.choiceBoard.choices) ? mbDirectionsDraft.choiceBoard.choices : [];
                         const included = choices.some(choice => choice.resourceRef === it.id);
@@ -134,41 +226,43 @@ function DirectionsComposerView({
                                 next.choiceBoard = board;
                                 return next;
                               })}
-                              aria-label={'Include ' + (it.title || station.label) + ' in activity choice board'}
+                              aria-label={tr('directions.choice_board_include_aria', 'Include {title} in activity choice board', { title: it.title || station.label })}
                               className="mt-0.5 w-4 h-4 accent-indigo-600 flex-shrink-0"
                             />
                             <span className="min-w-0">
                               <span className="block text-[11px] font-bold text-slate-800 truncate">{station.icon || '•'} {it.title || station.label}</span>
-                              <span className="block text-[9px] text-slate-500">{station.label}</span>
+                              <span className="block text-[9px] text-slate-600">{station.label}</span>
                             </span>
                           </label>
                         );
                       })}
                     </div>
                     <div className="flex flex-wrap items-center justify-between gap-2 pt-1">
-                      <p className="text-[10px] text-slate-500">Choose 2–6 activities. Students can return to the directions page and choose another card later.</p>
+                      <p className="text-[10px] text-slate-600">{tr('directions.choice_board_range_hint', 'Choose 2–6 activities. Students can return to the directions page and choose another card later.')}</p>
                       <button
                         type="button"
                         onClick={() => setShowDirectionsChoicePreview(true)}
                         disabled={!_mbDirectionsChoiceReady}
-                        aria-label="Preview student choice board"
-                        className={'min-h-9 rounded-lg border px-2.5 py-1.5 text-[10px] font-bold transition-colors ' + (_mbDirectionsChoiceReady ? 'border-indigo-300 bg-indigo-50 text-indigo-800 hover:bg-indigo-100' : 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-400')}
+                        aria-label={tr('directions.choice_board_preview_aria', 'Preview student choice board')}
+                        className={'min-h-9 rounded-lg border px-2.5 py-1.5 text-[10px] font-bold transition-colors ' + (_mbDirectionsChoiceReady ? 'border-indigo-300 bg-indigo-50 text-indigo-800 hover:bg-indigo-100' : 'cursor-not-allowed border-slate-200 bg-slate-100 text-slate-500')}
                       >
-                        Preview student board
+                        {tr('directions.choice_board_preview_btn', 'Preview student board')}
                       </button>
                     </div>
                     {_mbDirectionsChoiceStaleCount > 0 && (
-                      <p role="alert" className="text-[10px] font-bold text-rose-700">{_mbDirectionsChoiceStaleCount} selected activit{_mbDirectionsChoiceStaleCount === 1 ? 'y is' : 'ies are'} no longer available in this pack. Remove {_mbDirectionsChoiceStaleCount === 1 ? 'it' : 'them'} before saving.</p>
+                      <p role="alert" className="text-[10px] font-bold text-rose-700">{_mbDirectionsChoiceStaleCount === 1
+                        ? tr('directions.choice_board_stale_one', '1 selected activity is no longer available in this pack. Remove it before saving.')
+                        : tr('directions.choice_board_stale_many', '{n} selected activities are no longer available in this pack. Remove them before saving.', { n: _mbDirectionsChoiceStaleCount })}</p>
                     )}
                     {_mbDirectionsChoiceDraftChoices.length === 1 && _mbDirectionsChoiceStaleCount === 0 && (
-                      <p role="alert" className="text-[10px] font-bold text-amber-700">Select one more activity to enable the choice board.</p>
+                      <p role="alert" className="text-[10px] font-bold text-amber-700">{tr('directions.choice_board_need_one_more', 'Select one more activity to enable the choice board.')}</p>
                     )}
                     {_mbDirectionsChoiceDraftChoices.length === 0 && _alloDirectionsGoalResources.length > 0 && (
-                      <p role="status" className="text-[10px] text-slate-500">Select at least two activities to preview or save this board.</p>
+                      <p role="status" className="text-[10px] text-slate-600">{tr('directions.choice_board_need_two', 'Select at least two activities to preview or save this board.')}</p>
                     )}
                     {_mbDirectionsChoiceDraftChoices.length > 0 && (
                       <div className="space-y-1.5 rounded-lg border border-slate-200 bg-slate-50 p-2">
-                        <p className="text-[10px] font-bold text-slate-700">Optional card descriptions</p>
+                        <p className="text-[10px] font-bold text-slate-700">{tr('directions.choice_board_descriptions', 'Optional card descriptions')}</p>
                         {_mbDirectionsChoiceDraftChoices.map(choice => (
                           <input
                             key={'description-' + choice.resourceRef}
@@ -181,23 +275,23 @@ function DirectionsComposerView({
                                 choices: (Array.isArray(p?.choiceBoard?.choices) ? p.choiceBoard.choices : []).map(item => item.resourceRef === choice.resourceRef ? { ...item, description: e.target.value } : item)
                               }
                             }))}
-                            aria-label={'Description for ' + choice.label}
-                            placeholder="Optional: what students will do here"
+                            aria-label={tr('directions.choice_board_desc_aria', 'Description for {label}', { label: choice.label })}
+                            placeholder={tr('directions.choice_board_desc_placeholder', 'Optional: what students will do here')}
                             className="w-full rounded border border-slate-300 bg-white p-1.5 text-[10px] text-slate-800"
                           />
                         ))}
                       </div>
                     )}
                     {showDirectionsChoicePreview && (
-                      <div className="fixed inset-0 z-[410] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowDirectionsChoicePreview(false)}>
-                        <div role="dialog" aria-modal="true" aria-labelledby="directions-choice-preview-title" className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-slate-50 p-4 shadow-2xl" onClick={e => e.stopPropagation()}>
+                      <div className="fixed inset-0 z-[410] flex items-center justify-center bg-black/50 p-4" onClick={() => setShowDirectionsChoicePreview(false)} onKeyDown={e => { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); setShowDirectionsChoicePreview(false); } }}>
+                        <div ref={previewDialogRef} tabIndex={-1} role="dialog" aria-modal="true" aria-labelledby="directions-choice-preview-title" className="max-h-[90vh] w-full max-w-2xl overflow-y-auto rounded-2xl bg-slate-50 p-4 shadow-2xl" onClick={e => e.stopPropagation()}>
                           <div className="mb-3 flex items-start gap-3">
                             <div className="min-w-0 flex-1">
-                              <p className="text-[10px] font-bold uppercase tracking-wide text-indigo-600">Student preview</p>
+                              <p className="text-[10px] font-bold uppercase tracking-wide text-indigo-700">{tr('directions.student_preview_badge', 'Student preview')}</p>
                               <h3 id="directions-choice-preview-title" className="text-base font-black text-slate-900">{mbDirectionsDraft.choiceBoard.title || boardTitleDefault}</h3>
                               <p className="mt-1 text-xs text-slate-600">{mbDirectionsDraft.choiceBoard.prompt || boardPromptDefault}</p>
                             </div>
-                            <button type="button" onClick={() => setShowDirectionsChoicePreview(false)} aria-label="Close student choice board preview" className="min-h-10 min-w-10 rounded-lg border border-slate-300 bg-white p-2 text-slate-600 hover:bg-slate-100"><X size={16} aria-hidden="true" /></button>
+                            <button type="button" onClick={() => setShowDirectionsChoicePreview(false)} aria-label={tr('directions.close_preview_aria', 'Close student choice board preview')} className="min-h-10 min-w-10 rounded-lg border border-slate-300 bg-white p-2 text-slate-600 hover:bg-slate-100"><X size={16} aria-hidden="true" /></button>
                           </div>
                           <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
                             {_mbDirectionsChoicePreviewItems.map(({ choice, resource }) => {
@@ -209,13 +303,13 @@ function DirectionsComposerView({
                                     <span className="block text-sm font-black text-slate-800">{choice.label}</span>
                                     <span className="mt-1 block text-[10px] font-bold uppercase tracking-wide text-indigo-700">{station.label}</span>
                                     {choice.description && <span className="mt-1 block text-xs leading-5 text-slate-600">{choice.description}</span>}
-                                    <span className="mt-2 block text-[11px] font-bold text-indigo-700">Open activity <ArrowRight size={12} className="inline" aria-hidden="true" /></span>
+                                    <span className="mt-2 block text-[11px] font-bold text-indigo-700">{tr('directions.open_activity', 'Open activity')} <ArrowRight size={12} className="inline" aria-hidden="true" /></span>
                                   </span>
                                 </article>
                               );
                             })}
                           </div>
-                          <p className="mt-3 text-[10px] text-slate-500">This preview shows the cards students will see on the directions page.</p>
+                          <p className="mt-3 text-[10px] text-slate-600">{tr('directions.preview_footer_note', 'This preview shows the cards students will see on the directions page.')}</p>
                         </div>
                       </div>
                     )}
@@ -228,9 +322,39 @@ function DirectionsComposerView({
                   <div key={o.id} className="flex items-center gap-1.5 mb-1">
                     <span className={'text-[9px] font-bold uppercase rounded px-1 py-0.5 flex-shrink-0 ' + (o.kind === 'xp' ? 'bg-indigo-50 text-indigo-700' : (o.kind === 'game' ? 'bg-emerald-50 text-emerald-700' : (o.kind === 'manual' ? 'bg-slate-100 text-slate-600' : 'bg-sky-50 text-sky-700')))}>{o.kind === 'manual' ? (t('directions.kind_manual') || 'self-check') : (o.kind === 'visited' ? (t('directions.kind_visited') || 'opened') : (o.kind === 'responded' ? (t('directions.kind_responded') || 'answered') : (o.kind === 'completed' ? (t('directions.kind_completed') || 'finished') : (o.kind === 'time' ? (t('directions.kind_time') || 'time') : o.kind))))}</span>
                     <input value={o.label} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; list[oi] = { ...list[oi], label: e.target.value }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.objective_label') || 'Goal label'} className="flex-1 min-w-0 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800" />
-                    {o.kind === 'xp' && <input type="number" min="1" max="1000" value={o.amount || 25} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; const amt = Math.max(1, Math.min(1000, Number(e.target.value) || 1)); list[oi] = { ...list[oi], amount: amt }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.xp_amount') || 'XP amount'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
-                    {o.kind === 'time' && <input type="number" min="1" max="240" value={o.minutes || 10} onChange={e => setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; const mins = Math.max(1, Math.min(240, Number(e.target.value) || 1)); list[oi] = { ...list[oi], minutes: mins }; return { ...(p || {}), objectives: list }; })} aria-label={t('directions.time_minutes') || 'Minutes'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
-                    <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: ((p && p.objectives) || []).filter(x => x.id !== o.id) }))} aria-label={t('directions.remove_objective') || 'Remove goal'} className="text-slate-600 hover:text-rose-600 p-0.5 flex-shrink-0"><X size={12} /></button>
+                    {o.kind === 'xp' && <input type="number" min="1" max="1000" value={Object.prototype.hasOwnProperty.call(numDrafts, o.id + ':xp') ? numDrafts[o.id + ':xp'] : (o.amount ?? 25)} onChange={e => {
+                      const raw = e.target.value;
+                      const key = o.id + ':xp';
+                      setNumDrafts(prev => ({ ...prev, [key]: raw }));
+                      const parsed = Number(raw);
+                      if (raw !== '' && Number.isFinite(parsed) && parsed >= 1 && parsed <= 1000) {
+                        setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; if (list[oi]) list[oi] = { ...list[oi], amount: Math.round(parsed) }; return { ...(p || {}), objectives: list }; });
+                      }
+                    }} onBlur={e => {
+                      const raw = e.target.value;
+                      const key = o.id + ':xp';
+                      const parsed = Number(raw);
+                      const amt = raw === '' ? (o.amount || 25) : Math.max(1, Math.min(1000, Number.isFinite(parsed) ? Math.round(parsed) : 1));
+                      setNumDrafts(prev => { const next = { ...prev }; delete next[key]; return next; });
+                      setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; if (list[oi]) list[oi] = { ...list[oi], amount: amt }; return { ...(p || {}), objectives: list }; });
+                    }} aria-label={t('directions.xp_amount') || 'XP amount'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
+                    {o.kind === 'time' && <input type="number" min="1" max="240" value={Object.prototype.hasOwnProperty.call(numDrafts, o.id + ':time') ? numDrafts[o.id + ':time'] : (o.minutes ?? 10)} onChange={e => {
+                      const raw = e.target.value;
+                      const key = o.id + ':time';
+                      setNumDrafts(prev => ({ ...prev, [key]: raw }));
+                      const parsed = Number(raw);
+                      if (raw !== '' && Number.isFinite(parsed) && parsed >= 1 && parsed <= 240) {
+                        setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; if (list[oi]) list[oi] = { ...list[oi], minutes: Math.round(parsed) }; return { ...(p || {}), objectives: list }; });
+                      }
+                    }} onBlur={e => {
+                      const raw = e.target.value;
+                      const key = o.id + ':time';
+                      const parsed = Number(raw);
+                      const mins = raw === '' ? (o.minutes || 10) : Math.max(1, Math.min(240, Number.isFinite(parsed) ? Math.round(parsed) : 1));
+                      setNumDrafts(prev => { const next = { ...prev }; delete next[key]; return next; });
+                      setMbDirectionsDraft(p => { const list = [...((p && p.objectives) || [])]; if (list[oi]) list[oi] = { ...list[oi], minutes: mins }; return { ...(p || {}), objectives: list }; });
+                    }} aria-label={t('directions.time_minutes') || 'Minutes'} className="w-14 text-[11px] border border-slate-200 rounded p-1 bg-white text-slate-800 flex-shrink-0" />}
+                    <button type="button" onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: ((p && p.objectives) || []).filter(x => x.id !== o.id) }))} aria-label={t('directions.remove_objective') || 'Remove goal'} className="text-slate-600 hover:text-rose-600 p-0.5 flex-shrink-0"><X size={12} /></button>
                   </div>
                 ))}
                 {/* Write-your-own comes FIRST: most goals a teacher actually wants
@@ -251,6 +375,7 @@ function DirectionsComposerView({
                     className="flex-1 min-w-0 text-[11px] border border-slate-300 rounded p-1.5 bg-white text-slate-800"
                   />
                   <button
+                    type="button"
                     onClick={() => {
                       if (!mbDirectionsGoalText.trim()) return;
                       setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'manual', label: mbDirectionsGoalText.trim() }] }));
@@ -264,7 +389,7 @@ function DirectionsComposerView({
                     chip row. A fixed row is how "+ Word Scramble" survived for weeks
                     pointing at a game that never reported a completion. */}
                 <div className="mt-2">
-                  <label className="block text-[10px] font-bold text-slate-500 mb-1" htmlFor="dir-goal-res">{t('directions.goal_attach') || 'Auto-check against a resource'}</label>
+                  <label className="block text-[10px] font-bold text-slate-600 mb-1" htmlFor="dir-goal-res">{t('directions.goal_attach') || 'Auto-check against a resource'}</label>
                   <select
                     id="dir-goal-res"
                     value={mbDirectionsGoalRes}
@@ -284,6 +409,7 @@ function DirectionsComposerView({
                       <div className="flex flex-wrap gap-1 mt-1.5">
                         {_opts.map(opt => (
                           <button
+                            type="button"
                             key={opt.kind + ':' + (opt.gameType || '')}
                             onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), {
                               id: generateUUID(),
@@ -301,7 +427,7 @@ function DirectionsComposerView({
                   })()}
                 </div>
                 <div className="flex flex-wrap gap-1 mt-2">
-                  <button onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'xp', amount: 25, label: 'Earn 25 XP' }] }))} className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-full px-2 py-0.5 transition-all">+ XP</button>
+                  <button type="button" onClick={() => setMbDirectionsDraft(p => ({ ...(p || {}), objectives: [...((p && p.objectives) || []), { id: generateUUID(), kind: 'xp', amount: 25, label: tr('directions.earn_xp_default', 'Earn {n} XP', { n: 25 }) }] }))} className="text-[10px] font-bold text-indigo-700 bg-indigo-50 border border-indigo-200 hover:border-indigo-400 rounded-full px-2 py-0.5 transition-all">{tr('directions.add_xp_btn', '+ XP')}</button>
                 </div>
                 <p className="text-[10px] text-slate-600 mt-1">{t('directions.objectives_note') || "Goals check off on the student's device — a formative guide, not a grade, and nothing is ever locked."}</p>
                 {(mbDirectionsDraft?.objectives || []).length > 0 && (
@@ -311,14 +437,14 @@ function DirectionsComposerView({
                   </label>
                 )}
               </div>
-              <button data-help-key="directions_draft" onClick={deriveDirectionsDraft} disabled={directionsDeriving} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60">
+              <button type="button" data-help-key="directions_draft" onClick={deriveDirectionsDraft} disabled={directionsDeriving || !!draftAiDoor?.disabled} title={draftAiDoor?.title || undefined} className="w-full flex items-center justify-center gap-2 text-xs font-bold text-indigo-800 hover:text-indigo-900 bg-indigo-50 border border-indigo-300 hover:border-indigo-400 rounded-lg p-2 transition-all disabled:opacity-60">
                 <Sparkles size={13} /> {directionsDeriving ? (t('directions.drafting') || 'Drafting…') : (t('directions.draft_for_me') || 'Draft for me (from lesson plan + pack)')}
               </button>
             </div>
             <div className="pt-3 shrink-0 bg-white">
               <div className="flex gap-2">
-                <button data-help-key="directions_add_pack" onClick={addDirectionsToPack} className="flex-1 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all">{t('directions.add') || 'Add to pack'}</button>
-                <button onClick={() => setShowDirectionsComposer(false)} className="text-xs text-slate-500 hover:text-slate-700 border border-slate-200 rounded-lg px-3 transition-all">{t('common.cancel') || 'Cancel'}</button>
+                <button type="button" data-help-key="directions_add_pack" onClick={addDirectionsToPack} className="flex-1 text-xs font-bold text-emerald-800 hover:text-emerald-900 bg-emerald-50 border border-emerald-300 hover:border-emerald-400 rounded-lg p-2 transition-all">{t('directions.add') || 'Add to pack'}</button>
+                <button type="button" onClick={() => setShowDirectionsComposer(false)} className="text-xs text-slate-600 hover:text-slate-700 border border-slate-200 rounded-lg px-3 transition-all">{t('common.cancel') || 'Cancel'}</button>
               </div>
               <p className="text-[10px] text-slate-600 text-center">{t('directions.review_note') || 'AI drafts are a starting point — review before adding. You know your students; the AI does not.'}</p>
             </div>

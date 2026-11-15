@@ -147,6 +147,7 @@ function ImageView(props) {
   var fillInTheBlank = props.fillInTheBlank;
   var generatedContent = props.generatedContent;
   var isTeacherMode = props.isTeacherMode;
+  var imageGenDoor = isTeacherMode ? _imageViewAiDoor('images', t) : null;
   var imageRefinementInput = props.imageRefinementInput;
   var isProcessing = props.isProcessing;
   var singleImageFileRef = props.singleImageFileRef;
@@ -319,9 +320,9 @@ function ImageView(props) {
     className: "bg-purple-50 p-3 rounded-lg border border-purple-100 mb-3"
   }, /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-purple-800"
-  }, /*#__PURE__*/React.createElement("strong", null, "UDL Goal:"), " Providing options for perception. Images and diagrams clarify abstract concepts and vocabulary for visual learners.", /*#__PURE__*/React.createElement("span", {
+  }, /*#__PURE__*/React.createElement("strong", null, imageText('visuals.udl_goal_label', 'UDL Goal:')), " ", imageText('visuals.udl_goal_body', 'Providing options for perception. Images and diagrams clarify abstract concepts and vocabulary for visual learners.'), /*#__PURE__*/React.createElement("span", {
     className: "block mt-1 font-semibold"
-  }, "Language Target: ", leveledTextLanguage, " ", fillInTheBlank ? "(Worksheet Mode)" : ""))), /*#__PURE__*/React.createElement("div", {
+  }, imageText('visuals.language_target', 'Language Target:'), " ", leveledTextLanguage, " ", fillInTheBlank ? imageText('visuals.worksheet_mode', '(Worksheet Mode)') : ""))), /*#__PURE__*/React.createElement("div", {
     className: "flex flex-col items-center"
   }, /*#__PURE__*/React.createElement("div", {
     className: "w-full max-w-2xl bg-slate-100 rounded-lg border border-slate-400 shadow-md p-2 mb-4 relative overflow-hidden"
@@ -395,17 +396,20 @@ function ImageView(props) {
       gap: '6px'
     }
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('visuals.upload_image') || 'Upload your own image',
     title: t('visuals.upload_image') || 'Upload your own image',
     onClick: () => singleImageFileRef.current?.click(),
     className: "flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-indigo-50 hover:border-indigo-300 hover:text-indigo-600 transition-all shadow-sm cursor-pointer"
   }, "📷 ", t('visuals.replace_image') || 'Replace'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('visuals.find_picture') || 'Find a symbol or photo',
     title: t('visuals.find_picture') || 'Find a symbol or photo',
     "aria-expanded": findOpen,
     onClick: toggleFind,
     className: "flex items-center gap-1 bg-white/90 backdrop-blur-sm border border-slate-400 rounded-lg px-3 py-1.5 text-xs font-bold text-slate-600 hover:bg-sky-50 hover:border-sky-300 hover:text-sky-800 transition-all shadow-sm cursor-pointer"
   }, "🔎 ", imageText('visuals.find_short', 'Find')), generatedContent?.data?.originalImage && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('visuals.restore_ai_image') || 'Restore AI image',
     title: t('visuals.restore_ai_image') || 'Restore AI image',
     onClick: () => updateImageResource(restoreSingleImage),
@@ -539,9 +543,11 @@ function ImageView(props) {
   }, t('visuals.image_not_saved')), /*#__PURE__*/React.createElement("p", {
     className: "text-xs"
   }, t('visuals.image_stripped'))), isTeacherMode && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleRestoreImage,
-    disabled: isProcessing,
+    disabled: isProcessing || !!imageGenDoor?.disabled,
     "aria-busy": isProcessing,
+    title: imageGenDoor?.title || t('common.regenerate') || 'Regenerate',
     "data-help-key": "visuals_regenerate",
     className: "flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-full font-bold hover:bg-indigo-700 transition-colors shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
   }, isProcessing ? /*#__PURE__*/React.createElement(RefreshCw, {
@@ -646,6 +652,7 @@ function ImageView(props) {
       flexWrap: 'wrap'
     }
   }, /*#__PURE__*/React.createElement("button", {
+    type: "button",
     onClick: handleDownloadImage,
     "data-help-key": "visuals_download",
     style: {
@@ -655,6 +662,7 @@ function ImageView(props) {
   }, /*#__PURE__*/React.createElement(Download, {
     size: 18
   }), " ", t('visuals.download')), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('visuals.upload_image') || 'Upload your own image',
     title: t('visuals.upload_image') || 'Upload your own image',
     onClick: () => singleImageFileRef.current?.click(),
@@ -664,6 +672,7 @@ function ImageView(props) {
       fontSize: '1.125rem'
     }
   }, "📷")), !usesVisualPanelGrid && /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('visuals.find_picture') || 'Find a symbol or photo',
     title: t('visuals.find_picture') || 'Find a symbol or photo',
     "aria-expanded": findOpen,
@@ -674,10 +683,14 @@ function ImageView(props) {
       fontSize: '1.125rem'
     }
   }, "🔎")), /*#__PURE__*/React.createElement("button", {
+    type: "button",
     "aria-label": t('common.regenerate'),
     onClick: handleRestoreImage,
+    disabled: isProcessing || !!imageGenDoor?.disabled,
+    "aria-busy": isProcessing,
+    title: imageGenDoor?.title || t('common.regenerate') || 'Regenerate',
     "data-help-key": "visuals_regenerate",
-    className: "min-h-11 flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-800 py-2 px-4 rounded-lg hover:bg-amber-100 transition-colors font-medium border border-amber-600"
+    className: "min-h-11 flex-none flex items-center justify-center gap-2 bg-amber-50 text-amber-800 py-2 px-4 rounded-lg hover:bg-amber-100 transition-colors font-medium border border-amber-600 disabled:opacity-50 disabled:cursor-not-allowed"
   }, /*#__PURE__*/React.createElement(RefreshCw, {
     size: 18
   })))));

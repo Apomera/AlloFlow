@@ -142,7 +142,61 @@
         var d = new Date();
         return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
       }
-      function isPrivateClassroomKey(key) { return key === 'alloflow_classroom_roster_state_v1' || key === 'alloflow_classroom_sync_keys'; }
+      var PRIVATE_RECOVERY_KEYS = {
+        alloflow_classroom_roster_state_v1: 1,
+        alloflow_classroom_sync_keys: 1,
+        alloflow_educator_access_code_v1: 1,
+        alloflow_educator_access_backoff_v1: 1,
+        alloflow_ai_secrets_locked_v1: 1,
+        allo_adminhubdrive_config_v1: 1,
+        allo_wcop_delivery_v1: 1,
+        allo_educator_evaluation_real_stash_v1: 1,
+        allo_educator_evaluation_workspace_v1: 1
+      };
+      function isPrivateClassroomKey(key) { return !!PRIVATE_RECOVERY_KEYS[key]; }
+      function getPrebootVerifier() {
+        try {
+          var raw = localStorage.getItem('alloflow_educator_access_code_v1');
+          if (!raw) return null;
+          var env = JSON.parse(raw);
+          if (env && env.kind === 'pwhash' && env.alg === 'PBKDF2-SHA256'
+              && Number.isInteger(env.iter) && env.iter >= 10000 && env.iter <= 2000000
+              && typeof env.salt === 'string' && typeof env.hash === 'string') return env;
+        } catch (e) {}
+        return null;
+      }
+      function b64Bytes(b64) {
+        var bin = atob(b64), out = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+        return out;
+      }
+      function verifyPrebootCode(code) {
+        var env = getPrebootVerifier();
+        if (!env) return Promise.resolve(true);
+        var text = String(code == null ? '' : code);
+        if (!text || !window.crypto || !window.crypto.subtle) return Promise.resolve(false);
+        var salt = b64Bytes(env.salt), expected = b64Bytes(env.hash);
+        var raw = new TextEncoder().encode(text.normalize('NFC'));
+        return window.crypto.subtle.importKey('raw', raw, { name: 'PBKDF2' }, false, ['deriveBits'])
+          .then(function (k) { return window.crypto.subtle.deriveBits({ name: 'PBKDF2', salt: salt, iterations: env.iter, hash: 'SHA-256' }, k, expected.length * 8); })
+          .then(function (bits) {
+            var actual = new Uint8Array(bits);
+            if (actual.length !== expected.length) return false;
+            var diff = 0;
+            for (var i = 0; i < actual.length; i++) diff |= actual[i] ^ expected[i];
+            return diff === 0;
+          }).catch(function () { return false; });
+      }
+      function isPrebootHoldActive() {
+        try {
+          if (localStorage.getItem('alloflow_retention_legal_hold_v1') === '1') return true;
+          if (Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SENSITIVE_RECORD_RETENTION_POLICY')) {
+            var pol = window.ALLOFLOW_SENSITIVE_RECORD_RETENTION_POLICY;
+            if (!pol || typeof pol !== 'object' || pol.allowManualDeletion === false || pol.legalHold === true) return true;
+          }
+        } catch (e) { return true; }
+        return false;
+      }
       function readDb(name) {
         return new Promise(function (resolve) {
           var out = { name: name, stores: {} };
@@ -172,18 +226,13 @@
           };
         });
       }
-      function backup(statusLine) {
+      function runBackup(statusLine) {
         statusLine.textContent = 'Preparing the file...';
         var local = {};
         try {
           for (var i = 0; i < localStorage.length; i++) {
             var k = localStorage.key(i);
             if (!isPrivateClassroomKey(k)) local[k] = localStorage.getItem(k);
-          }
-          var envelope = JSON.parse(localStorage.getItem('alloflow_classroom_roster_state_v1') || 'null');
-          if (envelope && envelope.version === 1 && Object.prototype.hasOwnProperty.call(envelope, 'roster')) {
-            if (envelope.roster === null) delete local.alloflow_roster_key;
-            else local.alloflow_roster_key = JSON.stringify(envelope.roster);
           }
         } catch (e) {}
         var list = (window.indexedDB && indexedDB.databases) ? indexedDB.databases().catch(function () { return []; }) : Promise.resolve([]);
@@ -193,6 +242,9 @@
           var skipped = 0;
           var json = JSON.stringify({ app: 'AlloFlow', savedAt: new Date().toISOString(), localStorage: local, indexedDB: databases }, function (key, value) {
             if (isPrivateClassroomKey(key)) return undefined;
+            if (value && typeof value === 'object' && value.ns === 'protected_clinical_records') {
+              return { ns: value.ns, skipped: 'protected clinical records excluded' };
+            }
             if ((typeof Blob !== 'undefined' && value instanceof Blob) || value instanceof ArrayBuffer || ArrayBuffer.isView(value)) { skipped++; return { skipped: 'binary data (audio or images) not included' }; }
             return value;
           });
@@ -206,7 +258,20 @@
           statusLine.textContent = 'Downloaded ' + a.download + '. Keep this file. Classroom private recovery keys are not included.' + (skipped ? ' Audio and images are not included.' : '');
         }).catch(function () { statusLine.textContent = 'The copy could not be made in this browser.'; });
       }
-      function clearAndReload() {
+      function backup(statusLine) {
+        if (!getPrebootVerifier()) return runBackup(statusLine);
+        var codeEl = document.getElementById('loader-access-code');
+        statusLine.textContent = 'Checking educator access code...';
+        return verifyPrebootCode(codeEl ? codeEl.value : '').then(function (ok) {
+          if (!ok) {
+            statusLine.textContent = 'Enter a valid educator access code above before downloading saved data.';
+            if (codeEl) codeEl.focus();
+            return;
+          }
+          return runBackup(statusLine);
+        });
+      }
+      function runClearAndReload() {
         try { localStorage.clear(); } catch (e) {}
         try { sessionStorage.clear(); } catch (e) {}
         var list = (window.indexedDB && indexedDB.databases) ? indexedDB.databases().catch(function () { return []; }) : Promise.resolve([]);
@@ -220,6 +285,23 @@
           }));
         }).then(reload, reload);
         setTimeout(reload, 3000);
+      }
+      function clearAndReload() {
+        var warnEl = document.getElementById('loader-clear-warning');
+        if (isPrebootHoldActive()) {
+          if (warnEl) warnEl.textContent = 'Saved data deletion is blocked by a deployment retention policy or legal hold.';
+          return;
+        }
+        if (!getPrebootVerifier()) { runClearAndReload(); return; }
+        var codeEl = document.getElementById('loader-access-code');
+        verifyPrebootCode(codeEl ? codeEl.value : '').then(function (ok) {
+          if (!ok) {
+            if (warnEl) warnEl.textContent = 'Enter a valid educator access code above before deleting saved data.';
+            if (codeEl) codeEl.focus();
+            return;
+          }
+          runClearAndReload();
+        });
       }
       function showHelp() {
         statusEl.textContent = 'Loading is taking longer than expected. Everything saved on this device is still here.';
@@ -246,6 +328,19 @@
         var backupBtn = button('Download a copy of saved work', 'secondary', function () { backup(backupLine); });
         backupBtn.id = 'loader-backup';
         panel.appendChild(el('p', 'Before clearing anything, download a copy of what this browser has saved (settings, projects and student work).', 'margin-top:0.75rem;'));
+        if (getPrebootVerifier()) {
+          var codeWrap = el('div', '', 'margin-top:0.75rem;');
+          var codeLabel = el('label', 'Educator access code (required for backup or clearing data)', 'display:block;font-weight:600;margin-bottom:0.25rem;');
+          codeLabel.htmlFor = 'loader-access-code';
+          var codeInput = el('input', '', 'width:100%;max-width:20rem;padding:0.4rem 0.6rem;border-radius:0.375rem;border:1px solid #64748b;background:#0f172a;color:#f8fafc;');
+          codeInput.id = 'loader-access-code';
+          codeInput.type = 'password';
+          codeInput.autocomplete = 'off';
+          codeInput.placeholder = 'Enter educator access code';
+          codeWrap.appendChild(codeLabel);
+          codeWrap.appendChild(codeInput);
+          panel.appendChild(codeWrap);
+        }
         panel.appendChild(backupBtn);
         panel.appendChild(backupLine);
         var confirmBox = el('div', '', 'margin-top:0.75rem;padding:0.75rem;border:1px solid #f87171;border-radius:0.375rem;');

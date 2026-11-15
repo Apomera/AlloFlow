@@ -267,7 +267,7 @@ describe('Persona core enhancement contracts', () => {
     await f.harness.api.handleGeneratePersonas();
     expect(f.callGemini).not.toHaveBeenCalled();
     expect(f.requestGenerationSourceChoice).not.toHaveBeenCalled();
-    expect(f.addToast).toHaveBeenCalledWith(expect.stringContaining('unavailable'), 'info');
+    expect(f.addToast).toHaveBeenCalledWith(expect.stringMatching(/unavailable|no longer in this lesson/i), 'info');
     expect(f.harness.generated).toBe(f.resource);
   });
 

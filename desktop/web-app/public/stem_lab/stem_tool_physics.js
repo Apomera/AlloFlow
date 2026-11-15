@@ -270,6 +270,122 @@ window.StemLab = window.StemLab || {
     }
     return (lo + hi) / 2;
   }
+  var PHYS_OBJECT_PRESETS = Object.freeze([
+    Object.freeze({ id: 'foam', mass: 1, velocity: 22, airResist: true }),
+    Object.freeze({ id: 'medicine', mass: 3, velocity: 25, airResist: true }),
+    Object.freeze({ id: 'shotput', mass: 7, velocity: 25, airResist: true }),
+    Object.freeze({ id: 'cannonball', mass: 10, velocity: 30, airResist: true })
+  ]);
+  var PHYS_DRAG_PROFILES = Object.freeze([
+    Object.freeze({ id: 'shuttlecock', massKg: 0.005, cd: 0.60, areaM2: 0.0028, dragK: 0.5 * 1.225 * 0.60 * 0.0028 }),
+    Object.freeze({ id: 'pingpong', massKg: 0.0027, cd: 0.47, areaM2: 0.001257, dragK: 0.5 * 1.225 * 0.47 * 0.001257 }),
+    Object.freeze({ id: 'baseball', massKg: 0.145, cd: 0.35, areaM2: 0.0043, dragK: 0.5 * 1.225 * 0.35 * 0.0043 }),
+    Object.freeze({ id: 'iron_cannonball', massKg: 5.0, cd: 0.47, areaM2: 0.0095, dragK: 0.5 * 1.225 * 0.47 * 0.0095 })
+  ]);
+  var PHYS_OBSTACLE_MISSIONS = Object.freeze([
+    Object.freeze({ id: 'cliff', fixedHeight: 20, fixedGravity: 9.8, drag: false, wall: null, pad: null, target: Object.freeze({ x: 80, y: 0, tol: 8 }), reward: 20 }),
+    Object.freeze({ id: 'wall', fixedHeight: 0, fixedGravity: 9.8, drag: false, wall: Object.freeze({ x: 50, h: 18 }), pad: null, target: Object.freeze({ x: 85, y: 0, tol: 8 }), reward: 30 }),
+    Object.freeze({ id: 'rooftop', fixedHeight: 0, fixedGravity: 9.8, drag: false, wall: Object.freeze({ x: 62, h: 15 }), pad: Object.freeze({ xMin: 62, xMax: 78, y: 15 }), target: null, reward: 35 }),
+    Object.freeze({ id: 'canyon_drag', fixedHeight: 25, fixedGravity: 9.8, drag: true, wall: Object.freeze({ x: 45, h: 20 }), pad: null, target: Object.freeze({ x: 75, y: 0, tol: 10 }), reward: 40 })
+  ]);
+  function physSimulateDragProfile(profileOrId, angle, vel, grav, height) {
+    var profile = typeof profileOrId === 'string'
+      ? PHYS_DRAG_PROFILES.find(function(p) { return p.id === profileOrId; })
+      : profileOrId;
+    height = height === undefined ? 0 : height;
+    if (!profile || !physFinite(profile.massKg) || profile.massKg <= 0 || !physFinite(profile.dragK) || profile.dragK < 0) {
+      return Object.assign(physOutcome('invalid'), { id: null, vacuumRange: null, rangeLossPct: null, terminalVelocity: null });
+    }
+    if (!physValidLaunch(angle, vel, grav, profile.massKg, height)) {
+      return Object.assign(physOutcome('invalid'), { id: profile.id || null, vacuumRange: null, rangeLossPct: null, terminalVelocity: null });
+    }
+    var vac = physVacuum(angle, vel, grav, height);
+    var rad = angle * Math.PI / 180;
+    var b = { mX: 0, mY: height, mVx: angle === 90 ? 0 : vel * Math.cos(rad), mVy: vel * Math.sin(rad), grav: grav, drag: profile.dragK, mass: profile.massKg, t: 0 };
+    var vt = grav > 0 && profile.dragK > 0 ? Math.sqrt(profile.massKg * grav / profile.dragK) : null;
+    if (grav === 0 && (height > 0 || b.mVy > 0)) {
+      return Object.assign(physOutcome('no-impact'), { id: profile.id || null, massKg: profile.massKg, cd: profile.cd, areaM2: profile.areaM2, dragK: profile.dragK, vacuumRange: vac.range, rangeLossPct: null, terminalVelocity: vt });
+    }
+    for (var steps = 0; steps < 20000; steps++) {
+      physStep(b, PHYS_DT);
+      if (b.landed) {
+        var vacR = vac && vac.status === 'landed' ? vac.range : null;
+        var lossPct = vacR && vacR > 0 ? Math.max(0, Math.min(100, (1 - b.mX / vacR) * 100)) : 0;
+        return {
+          status: 'landed', id: profile.id || null, massKg: profile.massKg, cd: profile.cd, areaM2: profile.areaM2, dragK: profile.dragK,
+          range: b.mX, maxH: b.maxH, time: b.t, apexT: b.apex ? b.apex.t : 0,
+          vacuumRange: vacR, rangeLossPct: lossPct, terminalVelocity: vt
+        };
+      }
+      if (b.status === 'invalid' || b.status === 'limit') {
+        return Object.assign(physOutcome(b.status), { id: profile.id || null, massKg: profile.massKg, cd: profile.cd, areaM2: profile.areaM2, dragK: profile.dragK, vacuumRange: vac ? vac.range : null, rangeLossPct: null, terminalVelocity: vt });
+      }
+    }
+    return Object.assign(physOutcome('limit'), { id: profile.id || null, massKg: profile.massKg, cd: profile.cd, areaM2: profile.areaM2, dragK: profile.dragK, vacuumRange: vac ? vac.range : null, rangeLossPct: null, terminalVelocity: vt });
+  }
+  function physNormObsPoint(p) {
+    if (Array.isArray(p)) return { t: p[0], x: p[1], y: p[2], vx: p[3], vy: p[4] };
+    if (p && typeof p === 'object') return { t: p.t, x: p.mX != null ? p.mX : p.x, y: p.mY != null ? p.mY : p.y, vx: p.mVx != null ? p.mVx : p.vx, vy: p.mVy != null ? p.mVy : p.vy };
+    return null;
+  }
+  function physEvaluateObstacleMission(rawPoints, missionOrId) {
+    var mission = typeof missionOrId === 'string'
+      ? PHYS_OBSTACLE_MISSIONS.find(function(m) { return m.id === missionOrId; })
+      : missionOrId;
+    if (!mission || !Array.isArray(rawPoints) || rawPoints.length < 2) {
+      return { cleared: false, outcome: 'invalid', landX: null, landY: null, hitX: null, hitY: null, wallClearY: null, missBy: null };
+    }
+    var pts = rawPoints.map(physNormObsPoint).filter(function(p) { return p && physFinite(p.x) && physFinite(p.y); });
+    if (pts.length < 2) {
+      return { cleared: false, outcome: 'invalid', landX: null, landY: null, hitX: null, hitY: null, wallClearY: null, missBy: null };
+    }
+    var last = pts[pts.length - 1];
+    var wallClearY = null;
+    if (mission.pad) {
+      var pad = mission.pad;
+      for (var pi = 1; pi < pts.length; pi++) {
+        var a = pts[pi - 1], b = pts[pi];
+        if ((a.x <= pad.xMin && b.x >= pad.xMin) && Math.abs(b.x - a.x) > 1e-9) {
+          var alphaW = (pad.xMin - a.x) / (b.x - a.x);
+          var yFront = a.y + alphaW * (b.y - a.y);
+          if (yFront < pad.y - 1e-6) {
+            return { cleared: false, outcome: 'blocked-front', landX: pad.xMin, landY: yFront, hitX: pad.xMin, hitY: yFront, wallClearY: yFront, missBy: Math.max(0, pad.xMin - a.x) };
+          }
+          wallClearY = yFront;
+        }
+        if (a.y >= pad.y && b.y <= pad.y && a.y > b.y) {
+          var alphaTop = (a.y - pad.y) / Math.max(1e-9, a.y - b.y);
+          var xPad = a.x + alphaTop * (b.x - a.x);
+          if (xPad >= pad.xMin && xPad <= pad.xMax) {
+            return { cleared: true, outcome: 'landed-pad', landX: xPad, landY: pad.y, hitX: xPad, hitY: pad.y, wallClearY: wallClearY, missBy: 0 };
+          }
+        }
+      }
+      var missPad = last.x < pad.xMin ? pad.xMin - last.x : last.x > pad.xMax ? last.x - pad.xMax : 0;
+      return { cleared: false, outcome: 'missed-pad', landX: last.x, landY: last.y, hitX: null, hitY: null, wallClearY: wallClearY, missBy: missPad };
+    }
+    if (mission.wall) {
+      var wall = mission.wall;
+      for (var wi = 1; wi < pts.length; wi++) {
+        var p0 = pts[wi - 1], p1 = pts[wi];
+        if ((p0.x <= wall.x && p1.x >= wall.x) || (p0.x >= wall.x && p1.x <= wall.x)) {
+          var dx = p1.x - p0.x;
+          var alphaWall = Math.abs(dx) > 1e-9 ? (wall.x - p0.x) / dx : 0;
+          var yAtWall = p0.y + alphaWall * (p1.y - p0.y);
+          wallClearY = yAtWall;
+          if (yAtWall <= wall.h) {
+            return { cleared: false, outcome: 'wall-blocked', landX: wall.x, landY: yAtWall, hitX: wall.x, hitY: yAtWall, wallClearY: yAtWall, neededY: wall.h, missBy: Math.max(0, wall.h - yAtWall) };
+          }
+        }
+      }
+    }
+    if (mission.target) {
+      var missBy = Math.abs(last.x - mission.target.x);
+      var hit = missBy <= mission.target.tol;
+      return { cleared: hit, outcome: hit ? 'hit-target' : 'missed-target', landX: last.x, landY: last.y, hitX: null, hitY: null, wallClearY: wallClearY, missBy: missBy };
+    }
+    return { cleared: false, outcome: 'invalid', landX: last.x, landY: last.y, hitX: null, hitY: null, wallClearY: wallClearY, missBy: null };
+  }
   // Investigation evidence is copied from completed runs, never recomputed
   // from current controls. Only primitives enter an archived observation.
   function physRecord(v) { return !!v && typeof v === 'object' && !Array.isArray(v); }
@@ -876,13 +992,140 @@ window.StemLab = window.StemLab || {
     return Object.freeze({ duration: duration, samples: Object.freeze(samples), cues: Object.freeze(cues), x0: x0, x1: x1,
       peakX: peakX, peakY: peakY, peakFraction: peakFraction, refY: ref });
   }
+  var PHYS_PLANET_ATMOSPHERES = Object.freeze([
+    Object.freeze({ id: 'earth', gravity: 9.8, rhoRatio: 1.0 }),
+    Object.freeze({ id: 'moon', gravity: 1.6, rhoRatio: 0.0 }),
+    Object.freeze({ id: 'mars', gravity: 3.7, rhoRatio: 0.016 }),
+    Object.freeze({ id: 'titan', gravity: 1.35, rhoRatio: 4.4 })
+  ]);
+  function physSimulateAtmosphereWind(angle, vel, grav, mass, height, rhoRatio, windVx) {
+    mass = mass == null ? 1 : mass;
+    var h0 = height === undefined ? 0 : height;
+    var rho = Math.max(0, physFinite(rhoRatio) ? rhoRatio : 0);
+    var wx = physFinite(windVx) ? Math.max(-50, Math.min(50, windVx)) : 0;
+    if (!physValidLaunch(angle, vel, grav, mass, h0) || vel <= 0 || grav <= 0) {
+      return Object.freeze({ status: 'invalid', range: NaN, maxH: NaN, time: NaN, impactSpeed: NaN, rhoRatio: rho, windVx: wx });
+    }
+    if (angle === 0 && h0 === 0) {
+      return Object.freeze({ status: 'landed', range: 0, maxH: 0, time: 0, impactSpeed: vel, rhoRatio: rho, windVx: wx });
+    }
+    var rad = angle * Math.PI / 180;
+    var vx0 = angle === 90 ? 0 : vel * Math.cos(rad), vy0 = vel * Math.sin(rad);
+    if (rho === 0) {
+      var vac = physVacuum(angle, vel, grav, h0);
+      if (vac.status !== 'landed') {
+        return Object.freeze({ status: vac.status, range: NaN, maxH: NaN, time: NaN, impactSpeed: NaN, rhoRatio: 0, windVx: wx });
+      }
+      var vacImpactSpeed = Math.hypot(vx0, Math.sqrt(vy0 * vy0 + 2 * grav * h0));
+      return Object.freeze({ status: 'landed', range: vac.range, maxH: vac.maxH, time: vac.time, impactSpeed: vacImpactSpeed, rhoRatio: 0, windVx: wx });
+    }
+    var kEff = (PHYS_DRAG_K * rho) / mass;
+    var x = 0, y = h0, vx = vx0, vy = vy0, t = 0, maxH = h0;
+    function deriv(ux, uy) {
+      var rvx = ux - wx, rvy = uy;
+      var relSpeed = Math.hypot(rvx, rvy);
+      var f = kEff * relSpeed;
+      return { x: ux, y: uy, vx: -f * rvx, vy: -grav - f * rvy };
+    }
+    for (var steps = 0; steps < 40000; steps++) {
+      var prevX = x, prevY = y, prevVx = vx, prevVy = vy, prevT = t;
+      var a = deriv(vx, vy);
+      var c = deriv(vx + a.vx * PHYS_DT / 2, vy + a.vy * PHYS_DT / 2);
+      var d = deriv(vx + c.vx * PHYS_DT / 2, vy + c.vy * PHYS_DT / 2);
+      var e = deriv(vx + d.vx * PHYS_DT, vy + d.vy * PHYS_DT);
+      x += PHYS_DT * (a.x + 2 * c.x + 2 * d.x + e.x) / 6;
+      y += PHYS_DT * (a.y + 2 * c.y + 2 * d.y + e.y) / 6;
+      vx += PHYS_DT * (a.vx + 2 * c.vx + 2 * d.vx + e.vx) / 6;
+      vy += PHYS_DT * (a.vy + 2 * c.vy + 2 * d.vy + e.vy) / 6;
+      t += PHYS_DT;
+      if (y > maxH) maxH = y;
+      if (![x, y, vx, vy, t].every(physFinite)) {
+        return Object.freeze({ status: 'invalid', range: NaN, maxH: NaN, time: NaN, impactSpeed: NaN, rhoRatio: rho, windVx: wx });
+      }
+      if (y <= 0) {
+        var denom = prevY - y;
+        var frac = denom > 0 ? Math.max(0, Math.min(1, prevY / denom)) : 1;
+        var landX = prevX + frac * (x - prevX);
+        var landT = prevT + frac * PHYS_DT;
+        var landVx = prevVx + frac * (vx - prevVx);
+        var landVy = prevVy + frac * (vy - prevVy);
+        return Object.freeze({ status: 'landed', range: landX, maxH: Math.max(h0, maxH), time: landT, impactSpeed: Math.hypot(landVx, landVy), rhoRatio: rho, windVx: wx });
+      }
+    }
+    return Object.freeze({ status: 'limit', range: x, maxH: Math.max(h0, maxH), time: t, impactSpeed: Math.hypot(vx, vy), rhoRatio: rho, windVx: wx });
+  }
+  function physTrajectoryHeightAtX(xTarget, angle, vel, grav, mass, height, dragOn) {
+    mass = mass == null ? 1 : mass;
+    var h0 = height === undefined ? 0 : height;
+    if (!physFinite(xTarget) || xTarget < 0 || !physValidLaunch(angle, vel, grav, mass, h0) || vel <= 0 || grav <= 0) return null;
+    if (xTarget === 0) return h0;
+    var rad = angle * Math.PI / 180;
+    var vx0 = angle === 90 ? 0 : vel * Math.cos(rad), vy0 = vel * Math.sin(rad);
+    if (!dragOn) {
+      var vac = physVacuum(angle, vel, grav, h0);
+      if (vac.status !== 'landed' || xTarget > vac.range + 0.06 || vx0 <= 1e-9) return null;
+      if (xTarget >= vac.range) return 0;
+      var t = xTarget / vx0;
+      return Math.max(0, h0 + vy0 * t - 0.5 * grav * t * t);
+    }
+    var b = { mX: 0, mY: h0, mVx: vx0, mVy: vy0, grav: grav, drag: PHYS_DRAG_K, mass: mass, t: 0 };
+    for (var steps = 0; steps < 20000; steps++) {
+      var prevX = b.mX, prevY = b.mY;
+      physStep(b, PHYS_DT);
+      if (b.mX >= xTarget && b.mX > prevX) {
+        var frac = (xTarget - prevX) / (b.mX - prevX);
+        return Math.max(0, prevY + frac * (b.mY - prevY));
+      }
+      if (b.landed) return (xTarget >= b.mX && xTarget <= b.mX + 0.06) ? 0 : null;
+      if (b.status === 'invalid' || b.status === 'limit') return null;
+    }
+    return null;
+  }
+  var PHYS_MASTERY_KEYS = Object.freeze(
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map(function(n) { return 'target_' + n; })
+      .concat(['challenge_1', 'challenge_2', 'challenge_3'])
+      .concat(PHYS_OBSTACLE_MISSIONS.map(function(m) { return 'obs_' + m.id; }))
+      .concat(['duel_victor'])
+  );
+  var PHYS_MASTERY_TOTAL = PHYS_MASTERY_KEYS.length;
+  function physComputeMastery(raw) {
+    var out = {};
+    if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return out;
+    if (raw.physicsMastery && typeof raw.physicsMastery === 'object' && !Array.isArray(raw.physicsMastery)) {
+      PHYS_MASTERY_KEYS.forEach(function(k) {
+        if (raw.physicsMastery[k] === true) out[k] = true;
+      });
+    }
+    var tr = Math.floor(typeof raw.targetRound === 'number' && isFinite(raw.targetRound) ? raw.targetRound : 0);
+    var completedRounds = Math.max(0, Math.min(10, tr - 1));
+    for (var r = 1; r <= completedRounds; r++) out['target_' + r] = true;
+    if (raw.targetMode === true && tr >= 1 && tr <= 10 && Array.isArray(raw.targetList) && raw.targetList.length > 0 && raw.targetList.every(function(t) { return !!t && t.destroyed === true; })) {
+      out['target_' + tr] = true;
+    }
+    for (var ci = 1; ci <= 3; ci++) {
+      if (raw['challenge' + ci + 'Done'] === true) out['challenge_' + ci] = true;
+    }
+    if (raw.obstacleDone && typeof raw.obstacleDone === 'object') {
+      PHYS_OBSTACLE_MISSIONS.forEach(function(m) {
+        if (raw.obstacleDone[m.id] === true) out['obs_' + m.id] = true;
+      });
+    }
+    if ((typeof raw.duelWins === 'number' && isFinite(raw.duelWins) ? raw.duelWins : 0) >= 1) {
+      out.duel_victor = true;
+    }
+    return out;
+  }
   try {
     window.StemLab._physics = { DT: PHYS_DT, DRAG_K: PHYS_DRAG_K, MODEL_VERSION: PHYS_MODEL_VERSION, step: physStep, recordSample: physRecordSample, simulate: physSimulate, vacuum: physVacuum, solveVelocity: physSolveVelocity, solveAngle: physSolveAngle, inspectSample: physInspectSample, recordedMoments: physRecordedMoments, formatSampleValue: physFormatSampleValue, compareMeasurements: physCompareMeasurements,
       RECORDED_FLIGHT_LIMITS: PHYS_RECORDED_FLIGHT_LIMITS, captureRecordedFlight: physCaptureRecordedFlight, normalizeRecordedFlights: physNormalizeRecordedFlights, restoreRecordedFlight: physRestoreRecordedFlight,
       findTrialRun: physFindTrialRun, normalizeInvestigationDraft: physNormalizeInvestigationDraft, normalizeInvestigations: physNormalizeInvestigations, compareRuns: physCompareRuns, createInvestigation: physCreateInvestigation, formatInvestigationReport: physFormatInvestigationReport,
       rangeSweep: physRangeSweep, rangeBand: physRangeBand, targetAngles: physTargetAngles, fitGravity: physFitGravity,
       sonifyPlan: physSonifyPlan, sonifyPlay: physSonifyPlay, SONIFY: PHYS_SONIFY, curveSonifyPlan: physCurveSonifyPlan, CURVE_SECONDS: PHYS_CURVE_SECONDS,
-      speedSweep: physSpeedSweep, doublingRatio: physDoublingRatio, DOUBLING_CHOICES: PHYS_DOUBLING_CHOICES };
+      speedSweep: physSpeedSweep, doublingRatio: physDoublingRatio, DOUBLING_CHOICES: PHYS_DOUBLING_CHOICES,
+      OBJECT_PRESETS: PHYS_OBJECT_PRESETS, DRAG_PROFILES: PHYS_DRAG_PROFILES, OBSTACLE_MISSIONS: PHYS_OBSTACLE_MISSIONS,
+      simulateDragProfile: physSimulateDragProfile, evaluateObstacleMission: physEvaluateObstacleMission,
+      PLANET_ATMOSPHERES: PHYS_PLANET_ATMOSPHERES, MASTERY_KEYS: PHYS_MASTERY_KEYS, MASTERY_TOTAL: PHYS_MASTERY_TOTAL,
+      simulateAtmosphereWind: physSimulateAtmosphereWind, trajectoryHeightAtX: physTrajectoryHeightAtX, computeMastery: physComputeMastery };
   } catch (e) {}
 
   // One reference run anchors every notebook comparison, including archived
@@ -978,6 +1221,34 @@ window.StemLab = window.StemLab || {
       comparison.modelCompatible && h('p', { style: { fontSize: 12, lineHeight: 1.5, margin: 0, overflowWrap: 'anywhere' } }, __alloT('stem.physics.report_model', 'Model version') + ': ' + first.modelVersion)
     );
   }
+  function PhysicsRestoreBridge(props) {
+    var React = props.React, setLabToolData = props.setLabToolData;
+    if (!React || typeof React.useEffect !== 'function') return null;
+    React.useEffect(function() {
+      function onPhysStateRestored() {
+        try {
+          var winSt = (typeof window !== 'undefined' && window.__alloflowPhysics) || null;
+          var lsSt = null;
+          try { lsSt = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('physics.state.v1') || 'null') : null; } catch (e) {}
+          var restoredSlot = winSt || lsSt || null;
+          if (restoredSlot && typeof restoredSlot === 'object' && restoredSlot.physicsMastery) {
+            setLabToolData(function(prev) {
+              if (!prev || !prev.physics) return prev;
+              var merged = physComputeMastery({
+                physicsMastery: Object.assign({}, prev.physics.physicsMastery || {}, restoredSlot.physicsMastery || {})
+              });
+              return Object.assign({}, prev, { physics: Object.assign({}, prev.physics, { physicsMastery: merged }) });
+            });
+          }
+        } catch (e) {}
+      }
+      if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+        window.addEventListener('alloflow-state-restored', onPhysStateRestored);
+        return function() { window.removeEventListener('alloflow-state-restored', onPhysStateRestored); };
+      }
+    }, [setLabToolData]);
+    return null;
+  }
 
   // WCAG 4.1.3: Status live region for dynamic content announcements
   (function() {
@@ -998,7 +1269,7 @@ window.StemLab = window.StemLab || {
     darkRemap: true, // paints its own dark panels; keeps the hub's dark text remap (WCAG 1.4.3)
     icon: '\uD83C\uDFB1',
     label: 'Physics Simulator',
-    desc: 'Launch projectiles, explore kinematics, and learn Newtons laws',
+    desc: "Launch projectiles, explore kinematics, and learn Newton's laws",
     color: 'sky',
     category: 'science',
     questHooks: [
@@ -1009,7 +1280,10 @@ window.StemLab = window.StemLab || {
       { id: 'complete_target_round', label: 'Complete a full target round', icon: '\uD83C\uDFC6', check: function(d) { return (d.targetRound || 1) >= 2; }, progress: function(d) { return (d.targetRound || 1) >= 2 ? 'Done!' : 'Round ' + (d.targetRound || 1); } },
       { id: 'launch_10_projectiles', label: 'Launch 10 projectiles', icon: '\uD83D\uDE80', check: function(d) { return (d.launchCount || 0) >= 10; }, progress: function(d) { return (d.launchCount || 0) + '/10'; } },
       { id: 'myth_3', label: 'Answer 3 physics myths (True or False)', icon: '\uD83E\uDDE0', check: function(d) { return (d.physMythsDone || 0) >= 3; }, progress: function(d) { return (d.physMythsDone || 0) + '/3 myths'; } },
-      { id: 'range_predict_2', label: 'Predict the farthest angle twice in the Range explorer', icon: '\uD83D\uDCC8', check: function(d) { return ((d.rangeExplorer && d.rangeExplorer.predictions) || 0) >= 2; }, progress: function(d) { return Math.min(2, (d.rangeExplorer && d.rangeExplorer.predictions) || 0) + '/2 predictions'; } }
+      { id: 'range_predict_2', label: 'Predict the farthest angle twice in the Range explorer', icon: '\uD83D\uDCC8', check: function(d) { return ((d.rangeExplorer && d.rangeExplorer.predictions) || 0) >= 2; }, progress: function(d) { return Math.min(2, (d.rangeExplorer && d.rangeExplorer.predictions) || 0) + '/2 predictions'; } },
+      { id: 'clear_2_obstacles', label: 'Clear 2 obstacle engineering missions', icon: '\uD83E\uDDF1', check: function(d) { var m = (d && d.obstacleDone) || {}; return Object.keys(m).filter(function(k) { return m[k] === true; }).length >= 2; }, progress: function(d) { var m = (d && d.obstacleDone) || {}; return Math.min(2, Object.keys(m).filter(function(k) { return m[k] === true; }).length) + '/2 obstacles'; } },
+      { id: 'win_artillery_duel', label: 'Win an Artillery Duel', icon: '\u2694\uFE0F', check: function(d) { return ((d && d.duelWins) || 0) >= 1; }, progress: function(d) { return ((d && d.duelWins) || 0) >= 1 ? 'Done!' : '0/1 duel won'; } },
+      { id: 'quiz_streak_3', label: 'Reach a 3-question streak in the Physics Quiz', icon: '\uD83D\uDD25', check: function(d) { return ((d && d.quizStreak) || 0) >= 3; }, progress: function(d) { return Math.min(3, (d && d.quizStreak) || 0) + '/3 streak'; } }
     ],
     render: function(ctx) {
       // Aliases — maps ctx properties to original variable names
@@ -1049,9 +1323,14 @@ window.StemLab = window.StemLab || {
       };
       var callGemini = (ctx.aiAvailable !== false && typeof ctx.callGemini === 'function' && !ctx.callGemini._alloQrBlocked && (!!ctx.isTeacherMode || _aiUsable('text', ctx.callGemini))) ? ctx.callGemini : null;
       var callTTS = ctx.callTTS;
+      var stopTTS = ctx.stopTTS;
       var callImagen = ctx.callImagen;
       var callGeminiVision = ctx.callGeminiVision;
       var gradeLevel = ctx.gradeLevel;
+      var hostGradeBand = ctx.gradeBand;
+      var saveSnapshot = ctx.saveSnapshot;
+      var getHint = ctx.getHint;
+      var aiHintsEnabled = ctx.aiHintsEnabled;
       var srOnly = ctx.srOnly;
       var a11yClick = ctx.a11yClick;
       var canvasA11yDesc = ctx.canvasA11yDesc;
@@ -1062,6 +1341,16 @@ window.StemLab = window.StemLab || {
       return (function() {
           // State initialization guard
           if (!labToolData || !labToolData.physics) {
+            var seededMastery = {};
+            try {
+              var winSeed = (typeof window !== 'undefined' && window.__alloflowPhysics) || null;
+              var lsSeed = null;
+              try { lsSeed = typeof localStorage !== 'undefined' ? JSON.parse(localStorage.getItem('physics.state.v1') || 'null') : null; } catch (e) {}
+              var slotSeed = winSeed || lsSeed || null;
+              if (slotSeed && typeof slotSeed === 'object' && slotSeed.physicsMastery) {
+                seededMastery = physComputeMastery({ physicsMastery: slotSeed.physicsMastery });
+              }
+            } catch (e) {}
             setLabToolData(function(prev) {
               return Object.assign({}, prev, { physics: {
                 angle: 45, velocity: 25, gravity: 9.8, mass: 1, launchHeight: 0, airResist: false,
@@ -1077,13 +1366,24 @@ window.StemLab = window.StemLab || {
                 simSpeed: 1.0,
                 // X-Y motion component graphs (Vx-vs-t + Vy-vs-t side-by-side)
                 showGraphs: false, analysisView: 'motion',
+                // Crosshair tape-measure probe & Planetary Atmosphere Explorer
+                showTapeMeasure: false, tapeMeasure: { x: 50, y: 15 },
+                atmoPlanet: 'earth', windSpeed: 0,
+                // Workspace focus tab & UDL personalization
+                workspaceTab: 'missions', userBand: null, quizTopic: 'all', quizHint: '', quizHintLoading: false, quizItem: null,
+                // Drag profiles & 2D obstacle engineering missions
+                dragProfileId: 'baseball',
+                obstacleMode: false, obstacleId: null, obstacleDone: {}, obstacleFeedback: null, obstaclePrev: null,
                 // Target Destruction Mode
                 targetMode: false, targetRound: 0, targetScore: 0, targetAttempts: 0,
-                targetList: null, targetConstraint: null, targetFeedback: null, targetShowScaffold: false,
+                targetList: null, targetConstraint: null, targetFeedback: null, targetShowScaffold: false, targetPrev: null,
+                challengePrev: null,
                 // Battle Mode
-                battleMode: false, battleType: null, battleRound: 0,
+                battleMode: false, battleType: null, battleRound: 0, duelWins: 0,
                 playerHP: 3, enemyHP: 3, enemyDist: 0, aiDifficulty: 'medium',
-                isPlayerTurn: true, battleConstraint: null, battleFeedback: null, battleLog: []
+                isPlayerTurn: true, battleConstraint: null, battleFeedback: null, battleLog: [], battlePrev: null,
+                // Canonical mastery atlas map
+                physicsMastery: seededMastery
               }});
             });
             // This transient state owns a stable AA pair because dark theme tokens
@@ -1132,15 +1432,32 @@ window.StemLab = window.StemLab || {
               result.revision = typeof result.revision === 'string' ? result.revision : '';
               result.reflectionComplete = result.reflectionComplete === true;
             }
-            var launchHeight = raw.targetMode || raw.challengeActive || raw.battleMode ? 0 : num(raw.launchHeight, 0, 50, 0);
+            var obsMission = raw.obstacleMode === true && typeof raw.obstacleId === 'string'
+              ? PHYS_OBSTACLE_MISSIONS.find(function(m) { return m.id === raw.obstacleId; })
+              : null;
+            var launchHeight = raw.targetMode || raw.challengeActive || raw.battleMode
+              ? 0
+              : obsMission
+                ? obsMission.fixedHeight
+                : num(raw.launchHeight, 0, 50, 0);
+            var obsDone = {};
+            if (isRecord(raw.obstacleDone)) {
+              PHYS_OBSTACLE_MISSIONS.forEach(function(m) {
+                if (raw.obstacleDone[m.id] === true) obsDone[m.id] = true;
+              });
+            }
             var state = Object.assign({}, raw, {
-              gravity: num(raw.gravity, 1, 25, 9.8),
+              gravity: obsMission ? obsMission.fixedGravity : num(raw.gravity, 1, 25, 9.8),
               mass: num(raw.mass, 1, 10, 1),
               angle: num(raw.angle, launchHeight > 0 ? 0 : 5, 85, 45),
               launchHeight: launchHeight,
               velocity: num(raw.velocity, 5, 50, 25),
-              airResist: raw.airResist === true,
+              airResist: obsMission ? !!obsMission.drag : raw.airResist === true,
               simSpeed: num(raw.simSpeed, 0, 1, 1),
+              dragProfileId: PHYS_DRAG_PROFILES.some(function(p) { return p.id === raw.dragProfileId; }) ? raw.dragProfileId : 'baseball',
+              obstacleMode: !!obsMission,
+              obstacleId: obsMission ? obsMission.id : null,
+              obstacleDone: obsDone,
               predictionResult: result,
               predictedRange: typeof raw.predictedRange === 'string' || finite(raw.predictedRange) ? raw.predictedRange : '',
               lastPredictionRange: finite(raw.lastPredictionRange) && raw.lastPredictionRange >= 0 ? raw.lastPredictionRange : null,
@@ -1151,26 +1468,101 @@ window.StemLab = window.StemLab || {
               targetList: Array.isArray(raw.targetList) ? raw.targetList.filter(function(t) {
                 return isRecord(t) && finite(t.x) && t.x >= 0 && finite(t.y) && finite(t.radius) && t.radius > 0;
               }).map(function(t, i) { return Object.assign({}, t, { id: counter(t.id == null ? i : t.id), destroyed: t.destroyed === true }); }) : null,
-              battleLog: Array.isArray(raw.battleLog) ? raw.battleLog.filter(function(v) { return typeof v === 'string'; }) : [],
+              battleMode: raw.battleMode === true,
+              battleType: raw.battleType === 'pass' ? 'pass' : raw.battleType === 'coach' ? 'coach' : (raw.battleMode === true ? 'coach' : null),
+              playerHP: Math.floor(num(raw.playerHP, 0, 5, 3)),
+              enemyHP: Math.floor(num(raw.enemyHP, 0, 5, 3)),
+              enemyDist: raw.battleMode === true ? num(raw.enemyDist, 40, 200, 90) : num(raw.enemyDist, 0, 200, 0),
+              aiDifficulty: ['easy', 'medium', 'hard'].indexOf(raw.aiDifficulty) >= 0 ? raw.aiDifficulty : 'medium',
+              isPlayerTurn: raw.isPlayerTurn !== false,
+              battleLog: Array.isArray(raw.battleLog) ? raw.battleLog.filter(function(v) { return typeof v === 'string'; }).slice(-12) : [],
               aiExplain: typeof raw.aiExplain === 'string' ? raw.aiExplain : '',
               aiError: typeof raw.aiError === 'string' ? raw.aiError : ''
             });
-            ['launchCount', 'targetsHit', 'targetScore', 'targetAttempts', 'predictionStreak', 'quizStreak', 'physMythsDone', 'liveTick', 'battleRound'].forEach(function(k) { state[k] = counter(raw[k]); });
+            ['launchCount', 'targetsHit', 'targetScore', 'targetAttempts', 'predictionStreak', 'quizStreak', 'physMythsDone', 'liveTick', 'battleRound', 'duelWins'].forEach(function(k) { state[k] = counter(raw[k]); });
+            state.showTapeMeasure = raw.showTapeMeasure === true;
+            var rawTape = isRecord(raw.tapeMeasure) ? raw.tapeMeasure : {};
+            state.tapeMeasure = {
+              x: Math.round(num(rawTape.x, 0, 500, 50) * 10) / 10,
+              y: Math.round(num(rawTape.y, 0, 200, 15) * 10) / 10
+            };
+            state.atmoPlanet = ['earth', 'moon', 'mars', 'titan'].indexOf(raw.atmoPlanet) >= 0 ? raw.atmoPlanet : 'earth';
+            state.windSpeed = Math.round(num(raw.windSpeed, -20, 20, 0));
             state.targetRound = Math.floor(num(raw.targetRound, 0, 10, 0));
             state.challengeTier = Math.floor(num(raw.challengeTier, 0, 3, 0));
+            var validTabs = ['missions', 'analyze', 'notebook', 'learn', 'all'];
+            var explicitTab = validTabs.indexOf(raw.tab) >= 0;
+            var normTab = explicitTab ? raw.tab
+              : validTabs.indexOf(raw.workspaceTab) >= 0 ? raw.workspaceTab : 'all';
+            state.workspaceTab = normTab;
+            if (explicitTab) state.tab = normTab;
+            else delete state.tab;
+            state.userBand = ['3-5', '6-8', '9-12'].indexOf(raw.userBand) >= 0 ? raw.userBand : null;
             state.targetConstraint = null;
             var constraint = raw.targetConstraint;
             if (isRecord(constraint) && finite(constraint.value)) {
               if (constraint.type === 'fixedAngle' && constraint.value >= 5 && constraint.value <= 85) state.targetConstraint = { type: constraint.type, value: constraint.value };
               if (constraint.type === 'fixedVelocity' && constraint.value >= 5 && constraint.value <= 50) state.targetConstraint = { type: constraint.type, value: constraint.value };
+              if (state.targetConstraint && finite(constraint.fixedGravity) && constraint.fixedGravity >= 1 && constraint.fixedGravity <= 25) {
+                state.targetConstraint.fixedGravity = constraint.fixedGravity;
+              }
             }
-            if (state.targetMode && state.targetConstraint) state[state.targetConstraint.type === 'fixedAngle' ? 'angle' : 'velocity'] = state.targetConstraint.value;
-            ['targetFeedback', 'challengeFeedback', 'battleFeedback'].forEach(function(k) {
+            if (state.targetMode && state.targetConstraint) {
+              state[state.targetConstraint.type === 'fixedAngle' ? 'angle' : 'velocity'] = state.targetConstraint.value;
+              if (finite(state.targetConstraint.fixedGravity)) state.gravity = state.targetConstraint.fixedGravity;
+            }
+            ['targetFeedback', 'challengeFeedback', 'battleFeedback', 'obstacleFeedback'].forEach(function(k) {
               state[k] = isRecord(raw[k]) && typeof raw[k].msg === 'string' ? Object.assign({}, raw[k]) : null;
             });
+            ['targetPrev', 'challengePrev', 'obstaclePrev', 'battlePrev'].forEach(function(k) {
+              var pv = raw[k];
+              state[k] = isRecord(pv) ? {
+                gravity: num(pv.gravity, 1, 25, 9.8),
+                airResist: pv.airResist === true,
+                launchHeight: num(pv.launchHeight, 0, 50, 0),
+                angle: num(pv.angle, num(pv.launchHeight, 0, 50, 0) > 0 ? 0 : 5, 85, 45),
+                velocity: num(pv.velocity, 5, 50, 25)
+              } : null;
+            });
+            state.quizTopic = ['all', 'range', 'height', 'time', 'velocity', 'conceptual'].indexOf(raw.quizTopic) >= 0 ? raw.quizTopic : 'all';
+            state.quizHint = typeof raw.quizHint === 'string' ? raw.quizHint.slice(0, 600) : '';
+            state.quizHintLoading = raw.quizHintLoading === true;
+            state.quizItem = null;
+            if (isRecord(raw.quizItem) && typeof raw.quizItem.prompt === 'string' && Array.isArray(raw.quizItem.options) && raw.quizItem.options.length > 0) {
+              var qOpts = raw.quizItem.options.map(function(o) {
+                return isRecord(o) && typeof o.label === 'string' ? { label: o.label.slice(0, 160), value: finite(o.value) ? o.value : null } : null;
+              }).filter(Boolean);
+              if (qOpts.length > 0 && Number.isInteger(raw.quizItem.correctIndex) && raw.quizItem.correctIndex >= 0 && raw.quizItem.correctIndex < qOpts.length) {
+                state.quizItem = {
+                  type: typeof raw.quizItem.type === 'string' ? raw.quizItem.type.slice(0, 32) : 'range',
+                  band: ['3-5', '6-8', '9-12'].indexOf(raw.quizItem.band) >= 0 ? raw.quizItem.band : '3-5',
+                  prompt: raw.quizItem.prompt.slice(0, 500),
+                  options: qOpts,
+                  correctIndex: raw.quizItem.correctIndex,
+                  unit: typeof raw.quizItem.unit === 'string' ? raw.quizItem.unit.slice(0, 16) : '',
+                  angle: finite(raw.quizItem.angle) ? raw.quizItem.angle : null,
+                  velocity: finite(raw.quizItem.velocity) ? raw.quizItem.velocity : null,
+                  gravity: finite(raw.quizItem.gravity) ? raw.quizItem.gravity : null,
+                  launchHeight: finite(raw.quizItem.launchHeight) ? raw.quizItem.launchHeight : 0,
+                  airResist: raw.quizItem.airResist === true,
+                  formula: typeof raw.quizItem.formula === 'string' ? raw.quizItem.formula.slice(0, 200) : '',
+                  explanation: typeof raw.quizItem.explanation === 'string' ? raw.quizItem.explanation.slice(0, 600) : '',
+                  simPreset: isRecord(raw.quizItem.simPreset) ? {
+                    angle: finite(raw.quizItem.simPreset.angle) ? raw.quizItem.simPreset.angle : 45,
+                    velocity: finite(raw.quizItem.simPreset.velocity) ? raw.quizItem.simPreset.velocity : 25,
+                    gravity: finite(raw.quizItem.simPreset.gravity) ? raw.quizItem.simPreset.gravity : 9.8,
+                    launchHeight: finite(raw.quizItem.simPreset.launchHeight) ? raw.quizItem.simPreset.launchHeight : 0,
+                    airResist: raw.quizItem.simPreset.airResist === true
+                  } : null
+                };
+              }
+            }
             state.quizOptions = Array.isArray(raw.quizOptions) ? raw.quizOptions.filter(function(v) { return finite(v) && v >= 0; }) : [];
-            state.quizActive = raw.quizActive === true && ['quizAngle', 'quizVel', 'quizGrav', 'quizAnswer'].every(function(k) { return finite(raw[k]) && raw[k] > 0; }) && state.quizOptions.length > 0;
+            var legacyQuizOk = raw.quizActive === true && ['quizAngle', 'quizVel', 'quizGrav', 'quizAnswer'].every(function(k) { return finite(raw[k]) && raw[k] > 0; }) && state.quizOptions.length > 0;
+            state.quizActive = raw.quizActive === true && (!!state.quizItem || legacyQuizOk);
             state.quizDiag = typeof raw.quizDiag === 'string' ? raw.quizDiag : '';
+            state.quizPicked = Number.isInteger(raw.quizPicked) && raw.quizPicked >= 0 ? raw.quizPicked : null;
+            state.quizFeedback = raw.quizFeedback === 'correct' || raw.quizFeedback === 'wrong' ? raw.quizFeedback : null;
             state.physMyth = isRecord(raw.physMyth) && ['s', 'why', 'tryIt'].every(function(k) { return typeof raw.physMyth[k] === 'string'; }) && typeof raw.physMyth.t === 'boolean' ? Object.assign({}, raw.physMyth) : null;
             state.investigations = physNormalizeInvestigations(raw.investigations);
             state.investigationDraft = physNormalizeInvestigationDraft(raw.investigationDraft, state.runLog);
@@ -1218,10 +1610,30 @@ window.StemLab = window.StemLab || {
                 drag: pairedResult(paired.drag)
               };
             }
+            state.physicsMastery = physComputeMastery(state);
             return state;
           }
           window.StemLab._physics.normalizeState = physNormalizeState;
           const d = physNormalizeState(labToolData.physics);
+          function physSyncMasterySlot(masteryMap) {
+            try {
+              var snap = { physicsMastery: masteryMap || {}, _ts: Date.now() };
+              if (typeof window !== 'undefined') window.__alloflowPhysics = snap;
+              if (typeof localStorage !== 'undefined') {
+                try { localStorage.setItem('physics.state.v1', JSON.stringify(snap)); } catch (e) {}
+              }
+            } catch (e) {}
+          }
+          var masterySig = JSON.stringify(d.physicsMastery || {});
+          try {
+            var prevWindowSlot = typeof window !== 'undefined' ? window.__alloflowPhysics : null;
+            var prevLsRaw = typeof localStorage !== 'undefined' ? localStorage.getItem('physics.state.v1') : null;
+            if (!prevWindowSlot || JSON.stringify(prevWindowSlot.physicsMastery || {}) !== masterySig || !prevLsRaw) {
+              physSyncMasterySlot(d.physicsMastery);
+            }
+          } catch (e) {
+            physSyncMasterySlot(d.physicsMastery);
+          }
           // Presentation belongs to the canvas, leaving recorded observations intact.
           // A retained path keeps its pattern when focus changes or another path leaves.
           function physTrajectoryPresentation(cv, contrastOverride, includeUndrawable) {
@@ -1277,6 +1689,13 @@ window.StemLab = window.StemLab || {
           }
 
           const upd = (key, val) => setLabToolData(prev => ({ ...prev, physics: { ...prev.physics, [key]: val } }));
+          function updTab(nextTab) {
+            setLabToolData(function(prev) {
+              var nextP = Object.assign({}, prev.physics, { workspaceTab: nextTab });
+              delete nextP.tab;
+              return Object.assign({}, prev, { physics: nextP });
+            });
+          }
           // Functional increment: safe from setTimeout chains (symmetry demo,
           // landing callbacks) where a captured `d` would be stale.
           const bump = (key, delta) => setLabToolData(prev => ({ ...prev, physics: { ...prev.physics, [key]: (physNormalizeState(prev.physics)[key] || 0) + (delta == null ? 1 : delta) } }));
@@ -1326,6 +1745,7 @@ window.StemLab = window.StemLab || {
             return true;
           }
           function physRevealInspection() {
+            if (d.workspaceTab !== 'all' && d.workspaceTab !== 'analyze') updTab('analyze');
             setTimeout(function() {
               var panel = document.querySelector('[data-physics-sample-inspector]');
               if (!panel) return;
@@ -1406,9 +1826,10 @@ window.StemLab = window.StemLab || {
             cv._launch(settings);
             return true;
           }
-          // Grade band drives the Learn panel and the Myths bank alike.
+          // Grade band drives the Learn panel, Quiz, AI Tutor default, and Myths bank alike.
           var physGradeLc = (gradeLevel || '5th Grade').toLowerCase();
-          var physBand = /9th|10|11|12|high/.test(physGradeLc) ? '9-12' : /6th|7th|8th/.test(physGradeLc) ? '6-8' : '3-5';
+          var physAutoBand = hostGradeBand === 'g912' ? '9-12' : hostGradeBand === 'g68' ? '6-8' : (hostGradeBand === 'k2' || hostGradeBand === 'g35') ? '3-5' : (/9th|10|11|12|high/.test(physGradeLc) ? '9-12' : /6th|7th|8th/.test(physGradeLc) ? '6-8' : '3-5');
+          var physBand = d.userBand || physAutoBand;
           // Tier challenges (completion is checked on landing in _onAnyLand).
           var TIER_CHALLENGES = [
             { tier: 1, label: '🥇 ' + __alloT('stem.physics.challenge_tier_1', 'Tier 1'), desc: __alloT('stem.physics.challenge_desc_1', 'Hit the 50m flag'), target: 50, tol: 10, reward: 10, req: '' },
@@ -1430,46 +1851,196 @@ window.StemLab = window.StemLab || {
             { round: 10, targets: [{x:85, y:0}],  constraint: {type:'fixedVelocity', value:38}, gravity: 9.8, drag: true, label: __alloT('stem.physics.target_ace', 'Ace'), desc: __alloT('stem.physics.target_r10_desc', 'Final challenge: drag ON, velocity locked at 38 m/s. Prove your mastery.'), xp: 60, tol: 12 },
           ];
 
-          function startTargetRound(roundNum) {
-            var activeCanvas = document.getElementById('physicsCanvas');
+          function physCancelActiveFlight() {
+            var activeCanvas = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
             if (activeCanvas && activeCanvas._cancelFlight) activeCanvas._cancelFlight();
-            var level = TARGET_LEVELS[Math.min(roundNum - 1, TARGET_LEVELS.length - 1)];
+          }
+          function physCaptureBaseline(s) {
+            return {
+              gravity: s.gravity, airResist: !!s.airResist, launchHeight: s.launchHeight,
+              angle: s.angle, velocity: s.velocity
+            };
+          }
+          function physReleaseOtherModes(s, keepMode) {
+            var patch = {};
+            if (keepMode !== 'target' && s.targetMode) {
+              Object.assign(patch, { targetMode: false, targetList: null, targetConstraint: null, targetFeedback: null, targetShowScaffold: false, targetPrev: null }, s.targetPrev || {});
+            }
+            if (keepMode !== 'challenge' && s.challengeActive) {
+              Object.assign(patch, { challengeActive: false, challengeTier: 0, challengeFeedback: null, challengePrev: null }, s.challengePrev || {});
+            }
+            if (keepMode !== 'obstacle' && s.obstacleMode) {
+              Object.assign(patch, { obstacleMode: false, obstacleId: null, obstacleFeedback: null, obstaclePrev: null }, s.obstaclePrev || {});
+            }
+            if (keepMode !== 'battle' && s.battleMode) {
+              Object.assign(patch, { battleMode: false, battleFeedback: null, battlePrev: null }, s.battlePrev || {});
+            }
+            return Object.assign({}, s, patch);
+          }
+
+          function startTargetRound(roundNum) {
+            physCancelActiveFlight();
+            var level = TARGET_LEVELS[Math.min(Math.max(1, roundNum) - 1, TARGET_LEVELS.length - 1)];
             var tgts = level.targets.map(function(t, i) {
               return { x: t.x, y: t.y || 0, radius: level.tol, destroyed: false, id: i };
             });
-            upd('targetRound', roundNum);
-            upd('targetList', tgts);
-            upd('targetConstraint', level.constraint);
-            upd('targetFeedback', null);
-            upd('targetAttempts', 0);
-            upd('targetShowScaffold', false);
-            // Remember the student's own world so End can put it back
-            // (rounds switch to Moon/Mars gravity and toggle drag).
-            if (!d.targetMode || !d.targetPrev) upd('targetPrev', { gravity: d.gravity, airResist: !!d.airResist, launchHeight: d.launchHeight, angle: d.angle });
-            // Apply level conditions
-            upd('gravity', level.gravity);
-            upd('airResist', level.drag);
-            upd('launchHeight', 0);
-            // Apply constraint
-            if (level.constraint.type === 'fixedAngle') {
-              upd('angle', level.constraint.value);
-            } else if (level.constraint.type === 'fixedVelocity') {
-              upd('velocity', level.constraint.value);
-            }
+            setLabToolData(function(prev) {
+              var s = physNormalizeState(prev.physics);
+              var wasTarget = !!s.targetMode && !!s.targetPrev;
+              var base = physReleaseOtherModes(s, 'target');
+              var savedPrev = wasTarget ? s.targetPrev : physCaptureBaseline(base);
+              var next = Object.assign({}, base, {
+                targetMode: true,
+                targetRound: level.round,
+                targetList: tgts,
+                targetConstraint: Object.assign({}, level.constraint, { fixedGravity: level.gravity }),
+                targetFeedback: null,
+                targetAttempts: 0,
+                targetShowScaffold: false,
+                targetPrev: savedPrev,
+                gravity: level.gravity,
+                airResist: !!level.drag,
+                launchHeight: 0,
+                angle: level.constraint.type === 'fixedAngle' ? level.constraint.value : Math.max(5, base.angle),
+                velocity: level.constraint.type === 'fixedVelocity' ? level.constraint.value : base.velocity
+              });
+              return Object.assign({}, prev, { physics: next });
+            });
             if (addToast) addToast('\u{1F3AF} ' + level.label + ': ' + level.desc, 'info');
           }
 
           function endTargetMode() {
-            var activeCanvas = document.getElementById('physicsCanvas');
-            if (activeCanvas && activeCanvas._cancelFlight) activeCanvas._cancelFlight();
-            upd('targetMode', false); upd('targetList', null); upd('targetConstraint', null); upd('targetFeedback', null); upd('targetShowScaffold', false);
-            var prev = d.targetPrev;
-            if (prev) {
-              upd('gravity', prev.gravity); upd('airResist', !!prev.airResist);
-              upd('launchHeight', typeof prev.launchHeight === 'number' ? prev.launchHeight : 0);
-              if (typeof prev.angle === 'number') upd('angle', prev.angle);
-              upd('targetPrev', null);
+            physCancelActiveFlight();
+            setLabToolData(function(prev) {
+              var s = physNormalizeState(prev.physics);
+              var restored = s.targetPrev || {};
+              return Object.assign({}, prev, { physics: Object.assign({}, s, restored, {
+                targetMode: false, targetList: null, targetConstraint: null, targetFeedback: null, targetShowScaffold: false, targetPrev: null
+              }) });
+            });
+          }
+
+          function endChallengeMode() {
+            physCancelActiveFlight();
+            setLabToolData(function(prev) {
+              var s = physNormalizeState(prev.physics);
+              var restored = s.challengePrev || {};
+              return Object.assign({}, prev, { physics: Object.assign({}, s, restored, {
+                challengeActive: false, challengeTier: 0, challengeFeedback: null, challengePrev: null
+              }) });
+            });
+          }
+
+          function startChallengeTier(tierNum) {
+            var ch = TIER_CHALLENGES.find(function(item) { return item.tier === tierNum; });
+            if (!ch) return;
+            physCancelActiveFlight();
+            if (d.challengeActive && d.challengeTier === tierNum) {
+              endChallengeMode();
+              if (addToast) addToast(__alloT('stem.physics.toast_challenge_left', 'Left challenge — settings restored.'), 'info');
+              return;
             }
+            setLabToolData(function(prev) {
+              var s = physNormalizeState(prev.physics);
+              var wasCh = !!s.challengeActive && !!s.challengePrev;
+              var base = physReleaseOtherModes(s, 'challenge');
+              var savedPrev = wasCh ? s.challengePrev : physCaptureBaseline(base);
+              return Object.assign({}, prev, { physics: Object.assign({}, base, {
+                challengeTier: ch.tier,
+                challengeActive: true,
+                challengeFeedback: null,
+                challengePrev: savedPrev,
+                gravity: ch.req === 'mars' ? 3.7 : savedPrev.gravity,
+                airResist: ch.req === 'airResist' ? true : !!savedPrev.airResist,
+                launchHeight: 0,
+                angle: Math.max(5, base.angle)
+              }) });
+            });
+            if (addToast) addToast('\uD83C\uDFC6 ' + ch.desc + ' — ' + __alloT('stem.physics.toast_fire_away', 'fire away!'), 'info');
+          }
+
+          function endObstacleMode() {
+            physCancelActiveFlight();
+            setLabToolData(function(prev) {
+              var s = physNormalizeState(prev.physics);
+              var restored = s.obstaclePrev || {};
+              return Object.assign({}, prev, { physics: Object.assign({}, s, restored, {
+                obstacleMode: false, obstacleId: null, obstacleFeedback: null, obstaclePrev: null
+              }) });
+            });
+          }
+
+          function startObstacleMission(missionId) {
+            var mission = PHYS_OBSTACLE_MISSIONS.find(function(m) { return m.id === missionId; });
+            if (!mission) return;
+            physCancelActiveFlight();
+            if (d.obstacleMode && d.obstacleId === mission.id) {
+              endObstacleMode();
+              return;
+            }
+            setLabToolData(function(prev) {
+              var s = physNormalizeState(prev.physics);
+              var wasObs = !!s.obstacleMode && !!s.obstaclePrev;
+              var base = physReleaseOtherModes(s, 'obstacle');
+              var savedPrev = wasObs ? s.obstaclePrev : physCaptureBaseline(base);
+              return Object.assign({}, prev, { physics: Object.assign({}, base, {
+                obstacleMode: true,
+                obstacleId: mission.id,
+                obstacleFeedback: null,
+                obstaclePrev: savedPrev,
+                launchHeight: mission.fixedHeight,
+                gravity: mission.fixedGravity,
+                airResist: !!mission.drag,
+                angle: mission.fixedHeight > 0 ? base.angle : Math.max(5, base.angle)
+              }) });
+            });
+            if (addToast) addToast('🧱 ' + __alloT('stem.physics.obstacle_toast_started', 'Obstacle engineering mission ready — clear the path and launch!'), 'info');
+          }
+
+          function endBattleMode() {
+            physCancelActiveFlight();
+            setLabToolData(function(prev) {
+              var s = physNormalizeState(prev.physics);
+              var restored = s.battlePrev || {};
+              return Object.assign({}, prev, { physics: Object.assign({}, s, restored, {
+                battleMode: false, battleFeedback: null, battlePrev: null
+              }) });
+            });
+          }
+
+          function startBattleMode(battleType, diff) {
+            var modeType = battleType === 'pass' ? 'pass' : 'coach';
+            var difficulty = ['easy', 'medium', 'hard'].indexOf(diff) >= 0 ? diff : 'medium';
+            physCancelActiveFlight();
+            setLabToolData(function(prev) {
+              var s = physNormalizeState(prev.physics);
+              var wasBattle = !!s.battleMode && !!s.battlePrev;
+              var base = physReleaseOtherModes(s, 'battle');
+              var savedPrev = wasBattle ? s.battlePrev : physCaptureBaseline(base);
+              var nextRound = (s.battleRound || 0) + 1;
+              var dist = 85 + (((nextRound - 1) * 17) % 45);
+              var intro = modeType === 'pass'
+                ? __alloT('stem.physics.battle_log_pass_start', '2P Pass & Play duel started. Target distance: ') + dist + ' m.'
+                : __alloT('stem.physics.battle_log_bot_start', 'Artillery Duel vs Bot started. Enemy outpost at ') + dist + ' m.';
+              return Object.assign({}, prev, { physics: Object.assign({}, base, {
+                battleMode: true,
+                battleType: modeType,
+                battleRound: nextRound,
+                playerHP: 3,
+                enemyHP: 3,
+                enemyDist: dist,
+                aiDifficulty: difficulty,
+                isPlayerTurn: true,
+                battleFeedback: null,
+                battleLog: [intro],
+                battlePrev: savedPrev,
+                launchHeight: 0,
+                gravity: 9.8,
+                airResist: false,
+                angle: Math.max(5, base.angle)
+              }) });
+            });
+            if (addToast) addToast('⚔️ ' + __alloT('stem.physics.battle_started_toast', 'Artillery Duel started!'), 'info');
           }
 
           function checkTargetHit(landingX) {
@@ -1494,9 +2065,18 @@ window.StemLab = window.StemLab || {
             var allDestroyed = tgts.every(function(t) { return t.destroyed; });
             if (hitAny && allDestroyed) {
               // Round complete!
-              var levelData = TARGET_LEVELS[Math.min((d.targetRound || 1) - 1, TARGET_LEVELS.length - 1)];
+              var completedRoundNum = Math.max(1, Math.min(10, d.targetRound || 1));
+              var levelData = TARGET_LEVELS[Math.min(completedRoundNum - 1, TARGET_LEVELS.length - 1)];
               upd('targetScore', (d.targetScore || 0) + levelData.xp);
               upd('targetFeedback', { type: 'success', msg: '\u2705 ' + __alloT('stem.physics.fb_all_destroyed', 'All targets destroyed!') + ' +' + levelData.xp + ' XP' });
+              setLabToolData(function(prev) {
+                var curP = (prev && prev.physics) || {};
+                var nextM = physComputeMastery(Object.assign({}, curP, {
+                  physicsMastery: Object.assign({}, curP.physicsMastery || {}, (function() { var o = {}; o['target_' + completedRoundNum] = true; return o; })())
+                }));
+                physSyncMasterySlot(nextM);
+                return Object.assign({}, prev, { physics: Object.assign({}, curP, { physicsMastery: nextM }) });
+              });
               if (awardStemXP) awardStemXP('targetMode', levelData.xp, 'Target Mode Round ' + d.targetRound);
               if (stemCelebrate) stemCelebrate();
               if (addToast) addToast('\u{1F4A5} ' + __alloT('stem.physics.round_prefix', 'Round ') + d.targetRound + ' ' + __alloT('stem.physics.toast_round_complete', 'complete!') + ' +' + levelData.xp + ' XP', 'success');
@@ -1570,13 +2150,15 @@ window.StemLab = window.StemLab || {
             }
             canvasRef._lastCanvas = canvasEl;
             if (d.simSpeed > 0 && canvasEl._inspection) physClearInspection();
-            var settingsKey = [d.angle, d.velocity, d.gravity, d.mass, d.launchHeight, !!d.airResist, !!d.targetMode, d.targetRound, !!d.challengeActive, d.challengeTier, !!d.battleMode, d.battleRound].join('|');
+            var settingsKey = [d.angle, d.velocity, d.gravity, d.mass, d.launchHeight, !!d.airResist, !!d.targetMode, d.targetRound, !!d.challengeActive, d.challengeTier, !!d.obstacleMode, d.obstacleId || '', !!d.battleMode, d.battleRound, d.enemyDist || 0].join('|');
             if (canvasEl._demo && canvasEl._demo.controlKey !== settingsKey && canvasEl._cancelSymmetryDemo) canvasEl._cancelSymmetryDemo();
             canvasEl._settingsKey = settingsKey;
             canvasEl._settings = {
               angle: d.angle, velocity: d.velocity, gravity: d.gravity, mass: d.mass, launchHeight: d.launchHeight,
               airResist: !!d.airResist, prediction: Number.isFinite(parseFloat(d.predictedRange)) && parseFloat(d.predictedRange) >= 0 ? parseFloat(d.predictedRange) : null,
               targetMode: !!d.targetMode, targetRound: d.targetRound, targetConstraint: d.targetConstraint, battleMode: !!d.battleMode,
+              battleRound: d.battleRound || 0, enemyDist: d.enemyDist || 0,
+              obstacleId: d.obstacleMode ? d.obstacleId : null,
               challengeTier: d.challengeActive ? d.challengeTier : null
             };
             canvasEl._demoLaunch = function (settings) { return fireLaunch(canvasEl, settings, true); };
@@ -1666,10 +2248,21 @@ window.StemLab = window.StemLab || {
                     var reqOk = ch.req === 'airResist' ? summary.drag : ch.req === 'mars' ? Math.abs(summary.grav - 3.7) < 0.05 : true;
                     var missBy = Math.abs(actualMX - ch.target);
                     if (reqOk && missBy <= ch.tol) {
-                      upd('challenge' + ch.tier + 'Done', true);
-                      upd('challengeActive', false);
-                      upd('challengeFeedback', { tier: ch.tier, type: 'success', msg: '✅ ' + ch.desc + ' — ' + __alloT('stem.physics.fb_challenge_done', 'done!') + ' +' + ch.reward + ' XP' });
-                      bump('targetsHit', 1);
+                      setLabToolData(function(prev) {
+                        var s = physNormalizeState(prev.physics);
+                        var restored = s.challengePrev || {};
+                        return Object.assign({}, prev, { physics: Object.assign({}, s, restored, (function() {
+                          var donePatch = {
+                            challengeActive: false, challengeTier: 0, challengePrev: null,
+                            targetsHit: (s.targetsHit || 0) + 1,
+                            challengeFeedback: { tier: ch.tier, type: 'success', msg: '✅ ' + ch.desc + ' — ' + __alloT('stem.physics.fb_challenge_done', 'done!') + ' +' + ch.reward + ' XP' }
+                          };
+                          donePatch['challenge' + ch.tier + 'Done'] = true;
+                          donePatch.physicsMastery = physComputeMastery(Object.assign({}, s, donePatch));
+                          physSyncMasterySlot(donePatch.physicsMastery);
+                          return donePatch;
+                        })()) });
+                      });
                       if (awardStemXP) awardStemXP('physicsChallenge', ch.reward, 'Physics challenge tier ' + ch.tier);
                       if (stemCelebrate) stemCelebrate();
                       if (addToast) addToast('🏆 ' + ch.desc + ' — ' + __alloT('stem.physics.fb_challenge_done', 'done!') + ' +' + ch.reward + ' XP', 'success');
@@ -1679,6 +2272,135 @@ window.StemLab = window.StemLab || {
                         : '⚠️ ' + __alloT('stem.physics.fb_challenge_req', 'Set the condition the challenge asks for first (air drag on, or Mars gravity).') });
                     }
                   }
+                }
+                // 2D Obstacle & Platform Engineering evaluation
+                if (d.obstacleMode && d.obstacleId && recordedTrail && recordedTrail.obstacleId === d.obstacleId) {
+                  var obsDef = PHYS_OBSTACLE_MISSIONS.find(function(m) { return m.id === d.obstacleId; });
+                  if (obsDef) {
+                    var obsRes = physEvaluateObstacleMission(recordedTrail, obsDef);
+                    if (obsRes.cleared) {
+                      var firstClear = !(d.obstacleDone && d.obstacleDone[obsDef.id]);
+                      setLabToolData(function(prev) {
+                        var s = physNormalizeState(prev.physics);
+                        var nextDone = Object.assign({}, s.obstacleDone || {});
+                        nextDone[obsDef.id] = true;
+                        var nextMastery = physComputeMastery(Object.assign({}, s, { obstacleDone: nextDone }));
+                        physSyncMasterySlot(nextMastery);
+                        return Object.assign({}, prev, { physics: Object.assign({}, s, {
+                          obstacleDone: nextDone,
+                          physicsMastery: nextMastery,
+                          targetsHit: (s.targetsHit || 0) + 1,
+                          obstacleFeedback: {
+                            type: 'success', id: obsDef.id,
+                            msg: '✅ ' + (obsRes.outcome === 'landed-pad'
+                              ? __alloT('stem.physics.obstacle_fb_pad_hit', 'Safe landing on rooftop pad at ') + obsRes.landX.toFixed(1) + ' m! +' + obsDef.reward + ' XP'
+                              : __alloT('stem.physics.obstacle_fb_cleared', 'Obstacle cleared and hit target at ') + obsRes.landX.toFixed(1) + ' m! +' + obsDef.reward + ' XP')
+                          }
+                        }) });
+                      });
+                      if (firstClear && awardStemXP) awardStemXP('obstacleMission', obsDef.reward, 'Obstacle mission: ' + obsDef.id);
+                      if (stemCelebrate) stemCelebrate();
+                      if (addToast) addToast('🧱 ' + __alloT('stem.physics.obstacle_toast_cleared', 'Obstacle mission complete!') + ' +' + obsDef.reward + ' XP', 'success');
+                    } else {
+                      var failMsg = (obsRes.outcome === 'wall-blocked' || obsRes.outcome === 'blocked-front')
+                        ? '🧱 ' + __alloT('stem.physics.obstacle_fb_blocked', 'Blocked by barrier at x=') + Math.round(obsRes.hitX) + 'm (height ' + obsRes.hitY.toFixed(1) + 'm) — raise angle or speed.'
+                        : '❌ ' + __alloT('stem.physics.fb_missed_by', 'Missed by ') + (obsRes.missBy != null ? obsRes.missBy.toFixed(1) : '?') + 'm (' + __alloT('stem.physics.obstacle_landed_at', 'landed at ') + (obsRes.landX != null ? obsRes.landX.toFixed(1) : '?') + 'm)';
+                      upd('obstacleFeedback', { type: 'miss', id: obsDef.id, msg: failMsg });
+                    }
+                  }
+                }
+                // Artillery Duel turn evaluation (vs Coach Bot or 2P Pass & Play)
+                if (d.battleMode && recordedTrail && recordedTrail.battleMission) {
+                  var bEnemyDist = d.enemyDist || 90;
+                  var bTol = 8;
+                  var bMissBy = Math.abs(actualMX - bEnemyDist);
+                  var bHit = bMissBy <= bTol;
+                  var bP1HpPre = d.playerHP != null ? d.playerHP : 3;
+                  var bP2HpPre = d.enemyHP != null ? d.enemyHP : 3;
+                  var bPreWin = bP1HpPre > 0 && bP2HpPre > 0 && bHit && (d.battleType !== 'pass' || d.isPlayerTurn) && (bP2HpPre - 1 <= 0);
+                  var bXpWon = bPreWin ? (d.battleType === 'pass' ? 30 : 35) : 0;
+                  var bCelebrate = bPreWin;
+                  setLabToolData(function(prev) {
+                    var s = physNormalizeState(prev.physics);
+                    if (!s.battleMode || s.playerHP <= 0 || s.enemyHP <= 0) return prev;
+                    var dist = s.enemyDist || 90;
+                    var miss = Math.abs(actualMX - dist);
+                    var hit = miss <= bTol;
+                    var pHP = s.playerHP;
+                    var eHP = s.enemyHP;
+                    var logs = (s.battleLog || []).slice(-8);
+                    var fb = null;
+                    var nextTurn = s.isPlayerTurn;
+                    if (s.battleType === 'pass') {
+                      if (s.isPlayerTurn) {
+                        if (hit) {
+                          eHP = Math.max(0, eHP - 1);
+                          logs.push('🎯 P1 hit at ' + actualMX.toFixed(1) + ' m! (P2 HP: ' + eHP + '/3)');
+                        } else {
+                          logs.push('💨 P1 landed at ' + actualMX.toFixed(1) + ' m (missed ' + dist + ' m by ' + miss.toFixed(1) + ' m).');
+                        }
+                        if (eHP <= 0) {
+                          fb = { type: 'success', msg: '🏆 ' + __alloT('stem.physics.battle_p1_wins', 'Player 1 wins the duel!') + ' +30 XP' };
+                        } else {
+                          nextTurn = false;
+                          fb = { type: hit ? 'success' : 'info', msg: (hit ? '💥 ' + __alloT('stem.physics.battle_direct_hit', 'Direct hit! ') : '') + __alloT('stem.physics.battle_p2_turn', 'Now Player 2 shoots at ') + dist + ' m.' };
+                        }
+                      } else {
+                        if (hit) {
+                          pHP = Math.max(0, pHP - 1);
+                          logs.push('🎯 P2 hit at ' + actualMX.toFixed(1) + ' m! (P1 HP: ' + pHP + '/3)');
+                        } else {
+                          logs.push('💨 P2 landed at ' + actualMX.toFixed(1) + ' m (missed ' + dist + ' m by ' + miss.toFixed(1) + ' m).');
+                        }
+                        if (pHP <= 0) {
+                          fb = { type: 'miss', msg: '💥 ' + __alloT('stem.physics.battle_p2_wins', 'Player 2 wins the duel!') };
+                        } else {
+                          nextTurn = true;
+                          fb = { type: hit ? 'success' : 'info', msg: (hit ? '💥 ' + __alloT('stem.physics.battle_direct_hit', 'Direct hit! ') : '') + __alloT('stem.physics.battle_p1_turn', 'Now Player 1 shoots at ') + dist + ' m.' };
+                        }
+                      }
+                    } else {
+                      if (hit) {
+                        eHP = Math.max(0, eHP - 1);
+                        logs.push('🎯 You hit at ' + actualMX.toFixed(1) + ' m! (Bot HP: ' + eHP + '/3)');
+                      } else {
+                        logs.push('💨 Your shot landed at ' + actualMX.toFixed(1) + ' m (missed by ' + miss.toFixed(1) + ' m).');
+                      }
+                      if (eHP <= 0) {
+                        fb = { type: 'success', msg: '🏆 ' + __alloT('stem.physics.battle_you_win', 'Victory! You defeated the artillery bot!') + ' +35 XP' };
+                      } else {
+                        var spread = s.aiDifficulty === 'hard' ? 4.5 : s.aiDifficulty === 'easy' ? 16 : 10.5;
+                        var deterministicJitter = ((((s.runCount || 1) * 7 + pHP + eHP) % 11) - 5) / 5;
+                        var botShot = dist + deterministicJitter * spread;
+                        var botHit = Math.abs(botShot - dist) <= bTol;
+                        if (botHit) {
+                          pHP = Math.max(0, pHP - 1);
+                          logs.push('🤖 Bot returned fire at ' + botShot.toFixed(1) + ' m — HIT! (Your HP: ' + pHP + '/3)');
+                        } else {
+                          logs.push('🤖 Bot returned fire at ' + botShot.toFixed(1) + ' m — missed!');
+                        }
+                        if (pHP <= 0) {
+                          fb = { type: 'miss', msg: '🤖 ' + __alloT('stem.physics.battle_bot_wins', 'Bot destroyed your outpost! Try again.') };
+                        } else {
+                          fb = { type: hit ? 'success' : 'info', msg: (hit ? '🎯 ' + __alloT('stem.physics.battle_hit_msg', 'Hit enemy outpost! ') : '💨 ' + __alloT('stem.physics.battle_miss_msg', 'Missed by ') + miss.toFixed(1) + ' m. ') + (botHit ? __alloT('stem.physics.battle_bot_hit_suffix', 'Bot counter-shot hit you!') : __alloT('stem.physics.battle_bot_miss_suffix', 'Bot counter-shot missed!')) };
+                        }
+                      }
+                      nextTurn = true;
+                    }
+                    var pWonDuel = s.battleType === 'pass' ? (s.isPlayerTurn && eHP <= 0 && s.enemyHP > 0) : (eHP <= 0 && s.enemyHP > 0);
+                    var nextDuelWins = (s.duelWins || 0) + (pWonDuel ? 1 : 0);
+                    var nextBattleMastery = physComputeMastery(Object.assign({}, s, { duelWins: nextDuelWins }));
+                    if (pWonDuel) physSyncMasterySlot(nextBattleMastery);
+                    return Object.assign({}, prev, { physics: Object.assign({}, s, {
+                      playerHP: pHP, enemyHP: eHP, isPlayerTurn: nextTurn,
+                      duelWins: nextDuelWins, physicsMastery: nextBattleMastery,
+                      battleLog: logs.slice(-8), battleFeedback: fb,
+                      targetsHit: hit ? (s.targetsHit || 0) + 1 : s.targetsHit
+                    }) });
+                  });
+                  if (bXpWon > 0 && awardStemXP) awardStemXP('battleWin', bXpWon, 'Won Artillery Duel');
+                  if (bCelebrate && stemCelebrate) stemCelebrate();
+                  if (bHit && addToast) addToast('⚔️ ' + __alloT('stem.physics.battle_toast_hit', 'Direct hit on opposing bastion!'), 'success');
                 }
                 var predicted = summary.prediction;
                 if (predicted == null || !isFinite(predicted)) return;
@@ -1699,6 +2421,31 @@ window.StemLab = window.StemLab || {
                 // fresh prediction won't double-score.
                 upd('lastPredictionRange', null);
               }, 0);
+            };
+            canvasEl._onDirectManipulate = function(patch) {
+              if (!patch || typeof patch !== 'object') return;
+              setLabToolData(function(prev) {
+                var s = physNormalizeState((prev && prev.physics) || {});
+                var angleLocked = !!(s.targetMode && s.targetConstraint && s.targetConstraint.type === 'fixedAngle');
+                var heightLocked = !!(s.targetMode || s.challengeActive || s.obstacleMode || s.battleMode);
+                var next = Object.assign({}, prev && prev.physics ? prev.physics : s);
+                if (patch.kind === 'angle' && !angleLocked && typeof patch.angle === 'number' && isFinite(patch.angle)) {
+                  next.angle = Math.max(s.launchHeight > 0 ? 0 : 5, Math.min(85, Math.round(patch.angle)));
+                } else if (patch.kind === 'height' && !heightLocked && typeof patch.launchHeight === 'number' && isFinite(patch.launchHeight)) {
+                  var nextH = Math.max(0, Math.min(50, Math.round(patch.launchHeight)));
+                  next.launchHeight = nextH;
+                  if (nextH === 0 && (next.angle == null || next.angle < 5)) next.angle = 5;
+                } else if (patch.kind === 'tape' && typeof patch.x === 'number' && isFinite(patch.x) && typeof patch.y === 'number' && isFinite(patch.y)) {
+                  next.showTapeMeasure = true;
+                  next.tapeMeasure = {
+                    x: Math.max(0, Math.min(500, Math.round(patch.x * 10) / 10)),
+                    y: Math.max(0, Math.min(200, Math.round(patch.y * 10) / 10))
+                  };
+                } else {
+                  return prev;
+                }
+                return Object.assign({}, prev, { physics: next });
+              });
             };
 
             // Canvas-drawn strings, rebound every render so the draw loop
@@ -1888,11 +2635,86 @@ window.StemLab = window.StemLab || {
               if (motionQuery && motionQuery.removeEventListener) motionQuery.removeEventListener('change', updateReducedMotion);
               if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', onPhysicsVisibilityChange);
               if (typeof document !== 'undefined') ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange'].forEach(function(name) { document.removeEventListener(name, onPhysicsFullscreenChange); });
+              canvasEl.removeEventListener('pointerdown', onPhysPointerDown);
+              canvasEl.removeEventListener('pointermove', onPhysPointerMove);
+              canvasEl.removeEventListener('pointerup', onPhysPointerUp);
+              canvasEl.removeEventListener('pointercancel', onPhysPointerUp);
               canvasEl._physCleanup = null;
               canvasEl._physScheduleFrame = null;
               canvasEl._restoreRecordedFlights = null;
               canvasEl._physInit = false;
             }
+            var activeDrag = null;
+            function getCanvasPointerPos(ev) {
+              var rect = typeof canvasEl.getBoundingClientRect === 'function'
+                ? canvasEl.getBoundingClientRect()
+                : { left: 0, top: 0, width: canvasEl.offsetWidth || 600, height: canvasEl.offsetHeight || 480 };
+              var wCss = rect.width || canvasEl.offsetWidth || 600;
+              var hCss = rect.height || canvasEl.offsetHeight || 480;
+              var scaleX = wCss > 0 ? (cW / dpr) / wCss : 1;
+              var scaleY = hCss > 0 ? (cH / dpr) / hCss : 1;
+              return { x: (ev.clientX - rect.left) * scaleX, y: (ev.clientY - rect.top) * scaleY };
+            }
+            function onPhysPointerDown(ev) {
+              if (!physAlive || launched || (ev.button != null && ev.button !== 0)) return;
+              var handles = canvasEl._dragHandles;
+              if (!handles) return;
+              var pt = getCanvasPointerPos(ev);
+              var mode = null;
+              if (canvasEl.dataset.showTape === 'true' && handles.tape && Math.hypot(pt.x - handles.tape.x, pt.y - handles.tape.y) <= 22) {
+                mode = 'tape';
+              } else if (!handles.angleLocked && handles.angle && Math.hypot(pt.x - handles.angle.x, pt.y - handles.angle.y) <= 18) {
+                mode = 'angle';
+              } else if (!handles.heightLocked && handles.height && Math.hypot(pt.x - handles.height.x, pt.y - handles.height.y) <= 16) {
+                mode = 'height';
+              }
+              if (!mode) return;
+              activeDrag = mode;
+              try { canvasEl.style.cursor = 'grabbing'; } catch (e) {}
+              if (typeof ev.preventDefault === 'function') ev.preventDefault();
+              if (canvasEl.setPointerCapture && ev.pointerId != null) {
+                try { canvasEl.setPointerCapture(ev.pointerId); } catch (e) {}
+              }
+            }
+            function onPhysPointerMove(ev) {
+              if (!physAlive) return;
+              var pt = getCanvasPointerPos(ev);
+              if (!activeDrag) {
+                var handles = canvasEl._dragHandles;
+                var hovering = handles && !launched && (
+                  (canvasEl.dataset.showTape === 'true' && handles.tape && Math.hypot(pt.x - handles.tape.x, pt.y - handles.tape.y) <= 22) ||
+                  (!handles.angleLocked && handles.angle && Math.hypot(pt.x - handles.angle.x, pt.y - handles.angle.y) <= 18) ||
+                  (!handles.heightLocked && handles.height && Math.hypot(pt.x - handles.height.x, pt.y - handles.height.y) <= 16)
+                );
+                try { canvasEl.style.cursor = hovering ? 'grab' : ''; } catch (e) {}
+                return;
+              }
+              if (typeof ev.preventDefault === 'function') ev.preventDefault();
+              var lv = canvasEl._launchView;
+              if (!lv || typeof canvasEl._onDirectManipulate !== 'function') return;
+              var sc = Math.max(0.01, lv.scale || 1);
+              if (activeDrag === 'angle') {
+                var dx = Math.max(0.5, pt.x - lv.x);
+                var dy = lv.y - pt.y;
+                canvasEl._onDirectManipulate({ kind: 'angle', angle: Math.atan2(dy, dx) * 180 / Math.PI });
+              } else if (activeDrag === 'height') {
+                canvasEl._onDirectManipulate({ kind: 'height', launchHeight: (lv.groundY - pt.y) / sc });
+              } else if (activeDrag === 'tape') {
+                canvasEl._onDirectManipulate({ kind: 'tape', x: (pt.x - lv.x) / sc, y: (lv.groundY - pt.y) / sc });
+              }
+            }
+            function onPhysPointerUp(ev) {
+              if (!activeDrag) return;
+              activeDrag = null;
+              try { canvasEl.style.cursor = ''; } catch (e) {}
+              if (canvasEl.releasePointerCapture && ev && ev.pointerId != null) {
+                try { canvasEl.releasePointerCapture(ev.pointerId); } catch (e) {}
+              }
+            }
+            canvasEl.addEventListener('pointerdown', onPhysPointerDown);
+            canvasEl.addEventListener('pointermove', onPhysPointerMove);
+            canvasEl.addEventListener('pointerup', onPhysPointerUp);
+            canvasEl.addEventListener('pointercancel', onPhysPointerUp);
 
             function onPhysicsVisibilityChange() {
               if (!physAlive) return;
@@ -2097,6 +2919,17 @@ window.StemLab = window.StemLab || {
                 try { JSON.parse(canvasEl.dataset.targetList || '[]').forEach(function(t) { rangeBound = Math.max(rangeBound, t.x + (t.radius || 0)); }); } catch (e) {}
               }
               if (!inspection && canvasEl._settings.challengeTier) rangeBound = Math.max(rangeBound, [50, 100, 200][canvasEl._settings.challengeTier - 1] || 0);
+              if (!inspection && canvasEl._settings.obstacleId) {
+                var obsFrame = PHYS_OBSTACLE_MISSIONS.find(function(m) { return m.id === canvasEl._settings.obstacleId; });
+                if (obsFrame) {
+                  if (obsFrame.wall) { rangeBound = Math.max(rangeBound, obsFrame.wall.x + 12); heightBound = Math.max(heightBound, obsFrame.wall.h * 1.35); }
+                  if (obsFrame.pad) { rangeBound = Math.max(rangeBound, obsFrame.pad.xMax + 10); heightBound = Math.max(heightBound, obsFrame.pad.y * 1.4); }
+                  if (obsFrame.target) rangeBound = Math.max(rangeBound, obsFrame.target.x + obsFrame.target.tol + 5);
+                }
+              }
+              if (!inspection && canvasEl._settings.battleMode && canvasEl._settings.enemyDist > 0) {
+                rangeBound = Math.max(rangeBound, canvasEl._settings.enemyDist + 16);
+              }
               var availableW = Math.max(40, cW / dpr - 88);
               var availableH = Math.max(40, groundYCSS - 138 - telemetryExtraHeight);
               // Elevated short flights need enough space to see the platform.
@@ -2104,16 +2937,26 @@ window.StemLab = window.StemLab || {
               scale = Math.max(0.001, Math.min(12,
                 availableW / (rangeBound * 1.2), availableH / (heightBound * 1.2)));
               canvasEl._dynScale = scale;
-              canvasEl._viewKey = [settings.angle, settings.velocity, settings.gravity, settings.launchHeight, cW, cH, telemetryExtraHeight, energyExtraHeight, canvasEl.dataset.showOverlay, canvasEl.dataset.targetList, canvasEl._settings.challengeTier, trails.length, inspection ? trails.indexOf(canvasEl._inspection.trail) + ':' + inspection.index + ':' + inspection.count + ':' + inspection.t : 'live'].join('|');
+              canvasEl._viewKey = [settings.angle, settings.velocity, settings.gravity, settings.launchHeight, cW, cH, telemetryExtraHeight, energyExtraHeight, canvasEl.dataset.showOverlay, canvasEl.dataset.targetList, canvasEl._settings.challengeTier, canvasEl._settings.obstacleId || '', canvasEl._settings.battleMode ? canvasEl._settings.enemyDist : 0, trails.length, inspection ? trails.indexOf(canvasEl._inspection.trail) + ':' + inspection.index + ':' + inspection.count + ':' + inspection.t : 'live'].join('|');
             }
 
             function launch(settings) {
               physClearInspection();
               var launchSettings = Object.assign({}, canvasEl._settings, settings || {});
               if (launchSettings.targetMode || launchSettings.challengeTier || launchSettings.battleMode) launchSettings.launchHeight = 0;
+              if (launchSettings.obstacleId) {
+                var obsSpec = PHYS_OBSTACLE_MISSIONS.find(function(m) { return m.id === launchSettings.obstacleId; });
+                if (obsSpec) {
+                  launchSettings.launchHeight = obsSpec.fixedHeight;
+                  launchSettings.gravity = obsSpec.fixedGravity;
+                  launchSettings.airResist = !!obsSpec.drag;
+                }
+              }
               var constraint = launchSettings.targetMode && launchSettings.targetConstraint;
               if (constraint && constraint.type === 'fixedAngle') launchSettings.angle = constraint.value;
               if (constraint && constraint.type === 'fixedVelocity') launchSettings.velocity = constraint.value;
+              if (constraint && typeof constraint.fixedGravity === 'number' && isFinite(constraint.fixedGravity)) launchSettings.gravity = constraint.fixedGravity;
+              if (launchSettings.challengeTier === 3) launchSettings.gravity = 3.7;
 
               var angle = launchSettings.angle;
 
@@ -2163,6 +3006,8 @@ window.StemLab = window.StemLab || {
               _newTrail.modelVersion = PHYS_MODEL_VERSION;
               _newTrail.prediction = launchSettings.prediction;
               _newTrail.mission = Object.freeze({ targetMode: !!launchSettings.targetMode, targetRound: launchSettings.targetRound, challengeTier: launchSettings.challengeTier });
+              _newTrail.obstacleId = launchSettings.obstacleId || null;
+              _newTrail.battleMission = launchSettings.battleMode ? { round: launchSettings.battleRound || 0 } : null;
               _newTrail.parameters = Object.freeze({ angle: angle, velocity: vel, gravity: grav, drag: drag > 0, mass: mass, launchHeight: launchHeight });
               trails.push(_newTrail);
               // Cap to 5 most recent so the comparison view stays readable.
@@ -2315,7 +3160,7 @@ window.StemLab = window.StemLab || {
               canvasEl._visualTelemetry = bands.header; canvasEl._visualEnergy = bands.footer;
               var description = bands.header.text + (bands.footer.text ? ' · ' + bands.footer.text : '');
               if (canvasEl.getAttribute('aria-description') !== description) canvasEl.setAttribute('aria-description', description);
-              var viewKey = [displayParams.angle, displayParams.velocity, displayParams.gravity, displayParams.launchHeight, cW, cH, telemetryExtraHeight, energyExtraHeight, canvasEl.dataset.showOverlay, canvasEl.dataset.targetList, canvasEl._settings.challengeTier, trails.length, inspection ? trails.indexOf(canvasEl._inspection.trail) + ':' + inspection.index + ':' + inspection.count + ':' + inspection.t : 'live'].join('|');
+              var viewKey = [displayParams.angle, displayParams.velocity, displayParams.gravity, displayParams.launchHeight, cW, cH, telemetryExtraHeight, energyExtraHeight, canvasEl.dataset.showOverlay, canvasEl.dataset.targetList, canvasEl._settings.challengeTier, canvasEl._settings.obstacleId || '', canvasEl._settings.battleMode ? canvasEl._settings.enemyDist : 0, trails.length, inspection ? trails.indexOf(canvasEl._inspection.trail) + ':' + inspection.index + ':' + inspection.count + ':' + inspection.t : 'live'].join('|');
               if (canvasEl._viewKey !== viewKey) fitPhysicsView(displayParams, inspection);
 
               ctx.clearRect(0, 0, cW, cH);
@@ -2983,6 +3828,31 @@ window.StemLab = window.StemLab || {
               ctx.beginPath(); ctx.arc(cxC * dpr, cyC * dpr, 7 * dpr, 0, Math.PI * 2); ctx.stroke();
               if (!launched) { ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(cxC * dpr, cyC * dpr, 3 * dpr, 0, Math.PI * 2); ctx.fill(); }
               reserveMarker(cxC, cyC, 7);
+              var aimDist = 34;
+              var aimX = cxC + Math.cos(rad) * aimDist, aimY = cyC - Math.sin(rad) * aimDist;
+              var cvAngleLocked = canvasEl.dataset.targetMode === 'true' && canvasEl.dataset.constraintType === 'fixedAngle';
+              var cvHeightLocked = canvasEl.dataset.targetMode === 'true' || !!canvasEl.dataset.obstacleId || canvasEl.dataset.battleMode === 'true' || !!(canvasEl._settings && canvasEl._settings.challengeTier);
+              if (!launched && !inspection && !cvAngleLocked && pointInPlot(aimX, aimY)) {
+                ctx.save();
+                ctx.strokeStyle = scene.accent;
+                ctx.lineWidth = 1.5 * dpr;
+                ctx.globalAlpha = highContrast ? 0.9 : 0.55;
+                ctx.setLineDash([3 * dpr, 3 * dpr]);
+                ctx.beginPath();
+                ctx.moveTo((cxC + Math.cos(rad) * 8) * dpr, (cyC - Math.sin(rad) * 8) * dpr);
+                ctx.lineTo(aimX * dpr, aimY * dpr);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.globalAlpha = highContrast ? 1 : 0.85;
+                ctx.beginPath();
+                ctx.arc(aimX * dpr, aimY * dpr, 5 * dpr, 0, Math.PI * 2);
+                ctx.stroke();
+                ctx.fillStyle = highContrast ? '#ffff00' : '#38bdf8';
+                ctx.beginPath();
+                ctx.arc(aimX * dpr, aimY * dpr, 2 * dpr, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.restore();
+              }
               var latestLanding = landingMarkers[landingMarkers.length - 1];
               if (inspection) {
                 var inspectedTrail = canvasEl._inspection.trail;
@@ -3085,6 +3955,115 @@ window.StemLab = window.StemLab || {
                 }
 
               }
+              // ── 2D Obstacle & Platform Engineering scenery ──
+              if (canvasEl.dataset.obstacleId) {
+                var cvObs = PHYS_OBSTACLE_MISSIONS.find(function(m) { return m.id === canvasEl.dataset.obstacleId; });
+                if (cvObs) {
+                  if (cvObs.pad) {
+                    var px1 = mToScreenX(cvObs.pad.xMin) * dpr;
+                    var px2 = mToScreenX(cvObs.pad.xMax) * dpr;
+                    var pyTop = mToScreenY(cvObs.pad.y) * dpr;
+                    ctx.save();
+                    ctx.fillStyle = highContrast ? '#111111' : '#334155';
+                    ctx.strokeStyle = highContrast ? '#ffffff' : '#94a3b8';
+                    ctx.lineWidth = 1.5 * dpr;
+                    ctx.fillRect(px1, pyTop, Math.max(12 * dpr, px2 - px1), groundY - pyTop);
+                    ctx.strokeRect(px1, pyTop, Math.max(12 * dpr, px2 - px1), groundY - pyTop);
+                    ctx.strokeStyle = '#34d399';
+                    ctx.lineWidth = 4 * dpr;
+                    ctx.beginPath(); ctx.moveTo(px1, pyTop); ctx.lineTo(px2, pyTop); ctx.stroke();
+                    ctx.restore();
+                    tag('obstacle-pad', [cvObs.pad.xMin + '–' + cvObs.pad.xMax + ' m @ ' + cvObs.pad.y + ' m'], (px1 + px2) / (2 * dpr), pyTop / dpr, '#6ee7b7', (px1 + px2) / (2 * dpr), pyTop / dpr - 22, 5);
+                  } else if (cvObs.wall) {
+                    var wx = mToScreenX(cvObs.wall.x) * dpr;
+                    var wyTop = mToScreenY(cvObs.wall.h) * dpr;
+                    var ww = Math.max(8 * dpr, 2 * scale * dpr);
+                    ctx.save();
+                    ctx.fillStyle = highContrast ? '#222222' : '#475569';
+                    ctx.strokeStyle = highContrast ? '#ffff00' : '#cbd5e1';
+                    ctx.lineWidth = 1.5 * dpr;
+                    ctx.fillRect(wx - ww / 2, wyTop, ww, groundY - wyTop);
+                    ctx.strokeRect(wx - ww / 2, wyTop, ww, groundY - wyTop);
+                    ctx.restore();
+                    tag('obstacle-wall', [cvObs.wall.h + ' m wall @ ' + cvObs.wall.x + ' m'], wx / dpr, wyTop / dpr, '#fde68a', wx / dpr, wyTop / dpr - 22, 5);
+                  }
+                  if (cvObs.target) {
+                    var otx = mToScreenX(cvObs.target.x) * dpr;
+                    var oty = groundY;
+                    ctx.save();
+                    ctx.fillStyle = 'rgba(34,197,94,0.18)';
+                    ctx.beginPath(); ctx.ellipse(otx, oty, cvObs.target.tol * scale * dpr, 4 * dpr, 0, 0, Math.PI * 2); ctx.fill();
+                    ctx.strokeStyle = '#fb7185'; ctx.lineWidth = 2 * dpr;
+                    ctx.beginPath(); ctx.arc(otx, oty - 6 * dpr, 6 * dpr, 0, Math.PI * 2); ctx.stroke();
+                    ctx.restore();
+                    tag('obstacle-target', [cvObs.target.x + ' m (±' + cvObs.target.tol + ' m)'], otx / dpr, oty / dpr - 6, '#fda4af', otx / dpr, oty / dpr - 26, 5);
+                  }
+                }
+              }
+              // ── Artillery Duel Bastion Target ──
+              if (canvasEl.dataset.battleMode === 'true') {
+                var bdX = parseFloat(canvasEl.dataset.enemyDist);
+                if (isFinite(bdX) && bdX > 0) {
+                  var bxScreen = mToScreenX(bdX) * dpr;
+                  var bH = 18 * dpr, bW = 24 * dpr;
+                  ctx.save();
+                  ctx.fillStyle = highContrast ? '#333333' : '#7f1d1d';
+                  ctx.strokeStyle = highContrast ? '#ffff00' : '#fca5a5';
+                  ctx.lineWidth = 1.5 * dpr;
+                  ctx.fillRect(bxScreen - bW / 2, groundY - bH, bW, bH);
+                  ctx.strokeRect(bxScreen - bW / 2, groundY - bH, bW, bH);
+                  ctx.fillStyle = 'rgba(248,113,113,0.18)';
+                  ctx.beginPath(); ctx.ellipse(bxScreen, groundY, 8 * scale * dpr, 3.5 * dpr, 0, 0, Math.PI * 2); ctx.fill();
+                  ctx.restore();
+                  tag('battle-outpost', [Math.round(bdX) + ' m Outpost'], bxScreen / dpr, (groundY - bH) / dpr, '#fca5a5', bxScreen / dpr, groundYCSS - 30, 5);
+                }
+              }
+              // ── Crosshair Tape-Measure Probe ──
+              var tapeHandle = null;
+              if (canvasEl.dataset.showTape === 'true') {
+                var tapeMX = parseFloat(canvasEl.dataset.tapeX);
+                var tapeMY = parseFloat(canvasEl.dataset.tapeY);
+                if (!isFinite(tapeMX) || tapeMX < 0) tapeMX = 50;
+                if (!isFinite(tapeMY) || tapeMY < 0) tapeMY = 15;
+                var tsx = Math.max(launcherX, Math.min(cssW - 22, mToScreenX(tapeMX)));
+                var tsy = Math.max(plotTop + 4, Math.min(groundYCSS, mToScreenY(tapeMY)));
+                tapeHandle = { x: tsx, y: tsy };
+                var tapeColor = highContrast ? '#ffff00' : '#38bdf8';
+                ctx.save();
+                ctx.beginPath();
+                ctx.rect(launcherX * dpr, plotTop * dpr, Math.max(0, cssW - launcherX - 20) * dpr, Math.max(0, groundYCSS - plotTop) * dpr);
+                ctx.clip();
+                ctx.strokeStyle = tapeColor;
+                ctx.lineWidth = 1.25 * dpr;
+                ctx.globalAlpha = highContrast ? 0.9 : 0.55;
+                ctx.setLineDash([4 * dpr, 4 * dpr]);
+                ctx.beginPath();
+                ctx.moveTo(launcherX * dpr, tsy * dpr);
+                ctx.lineTo(tsx * dpr, tsy * dpr);
+                ctx.moveTo(tsx * dpr, tsy * dpr);
+                ctx.lineTo(tsx * dpr, groundY);
+                ctx.stroke();
+                ctx.setLineDash([]);
+                ctx.globalAlpha = 1;
+                ctx.lineWidth = 2 * dpr;
+                ctx.beginPath();
+                ctx.arc(tsx * dpr, tsy * dpr, 8 * dpr, 0, Math.PI * 2);
+                ctx.moveTo((tsx - 13) * dpr, tsy * dpr); ctx.lineTo((tsx - 4) * dpr, tsy * dpr);
+                ctx.moveTo((tsx + 4) * dpr, tsy * dpr); ctx.lineTo((tsx + 13) * dpr, tsy * dpr);
+                ctx.moveTo(tsx * dpr, (tsy - 13) * dpr); ctx.lineTo(tsx * dpr, (tsy - 4) * dpr);
+                ctx.moveTo(tsx * dpr, (tsy + 4) * dpr); ctx.lineTo(tsx * dpr, (tsy + 13) * dpr);
+                ctx.stroke();
+                ctx.restore();
+                reserveMarker(tsx, tsy, 10);
+                tag('tape-probe', ['(' + tapeMX.toFixed(1) + ' m, ' + tapeMY.toFixed(1) + ' m)'], tsx, tsy, tapeColor, tsx + 18, tsy - 22, 10);
+              }
+              canvasEl._dragHandles = {
+                angle: { x: aimX, y: aimY },
+                height: { x: cxC, y: cyC },
+                tape: tapeHandle,
+                angleLocked: cvAngleLocked,
+                heightLocked: cvHeightLocked
+              };
               // Clamp annotation cards inside the plot and avoid label collisions.
               ctx.font = '600 ' + (12 * dpr) + 'px sans-serif';
               var tagPriority = { inspection: -1, apex: 0, prediction: 1, landing: 2, height: 3, ideal: 5 };
@@ -3304,15 +4283,6 @@ window.StemLab = window.StemLab || {
 
           ];
 
-          var CHALLENGES = [
-
-            { target: 50, label: '\uD83C\uDFAF ' + __alloT('stem.physics.challenge_land_50m', 'Land at 50m'), tolerance: 8 },
-
-            { target: 100, label: '\uD83C\uDFAF ' + __alloT('stem.physics.challenge_hit_100m_flag', 'Hit the 100m flag'), tolerance: 10 },
-
-            { target: 200, label: '\uD83C\uDFAF ' + __alloT('stem.physics.challenge_reach_200m', 'Reach 200m range'), tolerance: 12 },
-
-          ];
           // The recommendation names an action; with ~19 panels on the page a
           // student should not have to hunt for where that action lives. Each
           // step carries a `do` that performs or reveals it, so the guidance is
@@ -3387,7 +4357,10 @@ window.StemLab = window.StemLab || {
                   : {
                       text: __alloT('stem.physics.next_change_only_one', 'Change only angle, velocity, or gravity and compare the new trajectory.'),
                       cta: __alloT('stem.physics.next_go_log', 'Go to the experiment log'),
-                      run: function () { physScrollTo('[data-physics-run-log]'); }
+                      run: function () {
+                        if (d.workspaceTab !== 'all' && d.workspaceTab !== 'notebook') updTab('notebook');
+                        setTimeout(function() { physScrollTo('[data-physics-run-log]'); }, 40);
+                      }
                     };
           var physicsNext = physicsNextStep.text;
 
@@ -3518,6 +4491,65 @@ window.StemLab = window.StemLab || {
               return !!ok;
             } catch (e) { return false; }
           }
+          function physDownloadCsv(csvText, filename) {
+            if (!csvText || typeof document === 'undefined') return false;
+            try {
+              var href = '';
+              var revoke = null;
+              if (typeof Blob === 'function' && typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function') {
+                var blob = new Blob([csvText], { type: 'text/csv;charset=utf-8;' });
+                href = URL.createObjectURL(blob);
+                revoke = function() { try { URL.revokeObjectURL(href); } catch (e) {} };
+              } else {
+                href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csvText);
+              }
+              var a = document.createElement('a');
+              a.href = href;
+              a.download = filename || 'physics-data.csv';
+              a.style.display = 'none';
+              document.body.appendChild(a);
+              a.click();
+              document.body.removeChild(a);
+              if (revoke) setTimeout(revoke, 0);
+              return true;
+            } catch (e) { return false; }
+          }
+          function physOpenInDataStudio() {
+            var log = Array.isArray(d.runLog) ? d.runLog : [];
+            if (!log.length) {
+              if (addToast) addToast(__alloT('stem.physics.csv_nothing', 'Launch a projectile first \u2014 there is no flight data yet.'), 'warning');
+              return false;
+            }
+            var angleSet = {}, velSet = {};
+            log.forEach(function(r) { angleSet[String(r.angle)] = true; velSet[String(r.vel)] = true; });
+            var useVelX = Object.keys(angleSet).length <= 1 && Object.keys(velSet).length > 1;
+            var xKey = useVelX ? 'vel' : 'angle';
+            var xAxis = useVelX ? __alloT('stem.physics.slider_velocity', 'Velocity (m/s)') : __alloT('stem.physics.slider_angle', 'Angle (\u00B0)');
+            var rows = log.map(function(r) {
+              return {
+                label: __alloT('stem.physics.investigation_run', 'Run') + ' ' + r.n,
+                x: Number(r[xKey]),
+                value: Number(Number(r.range).toFixed(2))
+              };
+            });
+            setLabToolData(function(prev) {
+              return Object.assign({}, prev, {
+                _dataStudio: Object.assign({}, prev._dataStudio || {}, {
+                  studioMode: 'graph',
+                  chartType: 'scatter',
+                  dataSource: 'physics-runlog',
+                  chartTitle: __alloT('stem.physics.datastudio_chart_title', 'Projectile Lab \u2014 Experiment Log'),
+                  xAxisLabel: xAxis,
+                  yAxisLabel: __alloT('stem.physics.runlog_col_measured', 'Measured range') + ' (m)',
+                  showStats: true,
+                  showTrendline: true,
+                  dataRows: rows
+                })
+              });
+            });
+            if (typeof setStemLabTool === 'function') setStemLabTool('dataStudio');
+            return true;
+          }
 
 
           var analysisViews = [
@@ -3605,7 +4637,7 @@ window.StemLab = window.StemLab || {
               // A retained observation can prepare a repeat; it never replaces an active flight.
               if (!cv || !cv.isConnected || document.getElementById('physicsCanvas') !== cv ||
                   !Array.isArray(cv._trails) || cv._trails.indexOf(trail) < 0 || physRecordedSettingsBusy(cv) ||
-                  current.targetMode || current.challengeActive || current.battleMode ||
+                  current.targetMode || current.challengeActive || current.obstacleMode || current.battleMode ||
                   !physRecordedFlightParameters({ angle: patch.angle, velocity: patch.velocity, gravity: patch.gravity,
                     mass: patch.mass, launchHeight: patch.launchHeight, drag: patch.airResist }) ||
                   Object.keys(patch).every(function(key) { return current[key] === patch[key]; })) return prev;
@@ -3737,8 +4769,8 @@ window.StemLab = window.StemLab || {
                     h('p', null, (selected ? __alloT('stem.physics.graph_selected_sample', 'Selected sample') : __alloT('stem.physics.energy_latest_sample', 'Latest recorded sample')) + ' · t = ' + sample.t.toFixed(3) + ' s')),
                   h('div', { className: 'phys-force-construction-layout' },
                     h('div', { className: 'phys-force-construction-visual' }, forceScaleSupported && h('svg', { 'data-physics-force-construction-graph': true, 'data-scale-force': forceScale, viewBox: '0 0 320 220', role: 'img', focusable: 'false',
-                      'aria-label': __alloT('stem.physics.force_construction_aria', 'Recorded force addition') + ': t = ' + sample.t.toFixed(3) + ' s; ' +
-                        forceVectors.map(function(vector) { return vector.label + ': Fx = ' + physFormatSampleValue(vector.x) + ' N, Fy = ' + physFormatSampleValue(vector.y) + ' N'; }).join('; '),
+                      'aria-label': __alloT('stem.physics.force_construction_aria', 'Recorded force addition') + ': t = ' + sample.t.toFixed(3) + ' ' + __alloT('stem.physics.unit_s', 's') + '; ' +
+                        forceVectors.map(function(vector) { return vector.label + ': ' + __alloT('stem.physics.axis_fx', 'Fx') + ' = ' + physFormatSampleValue(vector.x) + ' ' + __alloT('stem.physics.unit_n', 'N') + ', ' + __alloT('stem.physics.axis_fy', 'Fy') + ' = ' + physFormatSampleValue(vector.y) + ' ' + __alloT('stem.physics.unit_n', 'N'); }).join('; '),
                       'aria-describedby': 'physics-force-construction-range physics-force-construction-help physics-force-scale-help' },
                       h('circle', { 'data-physics-force-construction-scale': true, 'data-value': forceScale, cx: originX, cy: originY, r: radius, fill: 'none', stroke: 'var(--phys-muted)', strokeWidth: 1.5, strokeDasharray: '5 4' }),
                       h('path', { d: 'M78 110H242M160 28V192', fill: 'none', stroke: 'var(--phys-line)', strokeDasharray: '2 4' }),
@@ -3819,8 +4851,8 @@ window.StemLab = window.StemLab || {
                     h('p', { 'data-physics-velocity-time': true }, selectedLabel + ' · t = ' + sample.t.toFixed(3) + ' s')),
                   h('svg', { 'data-physics-velocity-diagram': true, 'data-sample-index': sample.index, 'data-time': sample.t, 'data-run': sample.run == null ? 'unfinished' : sample.run,
                     'data-speed': sample.speed, 'data-scale-speed': scaleSpeed, viewBox: '0 0 280 228', role: 'img',
-                    'aria-label': __alloT('stem.physics.velocity_diagram_aria', 'Recorded velocity components') + ': t = ' + sample.t.toFixed(3) + ' s; Vx = ' + physFormatSampleValue(sample.vx) +
-                      ' m/s; Vy = ' + physFormatSampleValue(sample.vy) + ' m/s; ' + __alloT('stem.physics.metric_speed', 'Speed') + ' = ' + physFormatSampleValue(sample.speed) + ' m/s.',
+                    'aria-label': __alloT('stem.physics.velocity_diagram_aria', 'Recorded velocity components') + ': t = ' + sample.t.toFixed(3) + ' ' + __alloT('stem.physics.unit_s', 's') + '; ' + __alloT('stem.physics.axis_vx', 'Vx') + ' = ' + physFormatSampleValue(sample.vx) +
+                      ' ' + __alloT('stem.physics.unit_ms', 'm/s') + '; ' + __alloT('stem.physics.axis_vy', 'Vy') + ' = ' + physFormatSampleValue(sample.vy) + ' ' + __alloT('stem.physics.unit_ms', 'm/s') + '; ' + __alloT('stem.physics.metric_speed', 'Speed') + ' = ' + physFormatSampleValue(sample.speed) + ' ' + __alloT('stem.physics.unit_ms', 'm/s') + '.',
                     'aria-describedby': 'physics-velocity-construction-help physics-velocity-scale-help physics-velocity-component-note' },
                     h('circle', { 'data-physics-velocity-scale-circle': true, cx: ox, cy: oy, r: radius, fill: 'none', stroke: 'var(--phys-muted)', strokeWidth: 1.25, strokeDasharray: '2 5' }),
                     h('path', { d: 'M28 104H252M140 22V186', fill: 'none', stroke: 'var(--phys-muted)', strokeWidth: 1.25 }),
@@ -3911,7 +4943,7 @@ window.StemLab = window.StemLab || {
               }
               var changes = settings.filter(function(setting) { return parameters[setting.key] !== d[setting.key]; });
               var repeatBusy = physRecordedSettingsBusy(cv);
-              var repeatLocked = !!(d.targetMode || d.challengeActive || d.battleMode);
+              var repeatLocked = !!(d.targetMode || d.challengeActive || d.obstacleMode || d.battleMode);
               var repeatSupported = physRecordedFlightParameters({ angle: parameters.angle, velocity: parameters.velocity,
                 gravity: parameters.gravity, mass: parameters.mass, launchHeight: parameters.launchHeight, drag: parameters.airResist });
 
@@ -4035,11 +5067,140 @@ window.StemLab = window.StemLab || {
               var trails = cv && cv._trails ? cv._trails : [];
               var selectedPoint = physSelectedInspection(cv);
               var lastTrail = selectedPoint ? cv._inspection.trail : trails.length > 0 ? trails[trails.length - 1] : null;
+              var roundLimit = function(value) {
+                var magnitude = Math.pow(10, Math.floor(Math.log10(Math.max(value, 0.01))));
+                var scaled = value / magnitude;
+                var steps = [1, 2, 2.5, 5, 10];
+                for (var step = 0; step < steps.length; step++) if (scaled <= steps[step]) return steps[step] * magnitude;
+                return 10 * magnitude;
+              };
+              var tickNumber = function(value) {
+                if (Math.abs(value) < 0.000001) return '0';
+                return String(Number(value.toFixed(3)));
+              };
+              var predictionNode = (function() {
+                  var ang = parseFloat((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45);
+                  var vel = parseFloat(d.velocity || 25);
+                  var grav = parseFloat((typeof d.gravity === 'number' && isFinite(d.gravity)) ? d.gravity : 9.8);
+                  var height = d.launchHeight || 0;
+                  var massVal = parseFloat(d.mass) || 1;
+                  var vacuum = window.StemLab._physics.vacuum;
+                  var simulate = window.StemLab._physics.simulate;
+                  var rangeSweep = window.StemLab._physics.rangeSweep;
+                  var ideal = vacuum(ang, vel, grav, height);
+                  if (ideal.status !== 'landed') return null;
+                  var optimumAngle = ideal.optimumAngle;
+                  var maxR = vacuum(optimumAngle, vel, grav, height).range;
+                  if (!isFinite(maxR) || maxR <= 0) return null;
+                  var dragOn = !!d.airResist;
+                  var sweep = dragOn && typeof rangeSweep === 'function' ? rangeSweep(vel, grav, true, massVal, height) : null;
+                  var curDrag = dragOn && typeof simulate === 'function' ? simulate(ang, vel, grav, true, massVal, height) : null;
+                  var useDragModel = !!(sweep && curDrag && curDrag.status === 'landed' && isFinite(sweep.best && sweep.best.range) && sweep.best.range > 0);
+                  var dispOptAngle = useDragModel ? sweep.best.angle : optimumAngle;
+                  var dispOptRange = useDragModel ? sweep.best.range : maxR;
+                  var curR = useDragModel ? curDrag.range : ideal.range;
+                  var scaleMax = useDragModel ? Math.max(maxR, dispOptRange) : maxR;
+                  var rW = 260, rH = 226, rPL = 48, rPR = 12, rPT = 34, rPB = 52;
+                  var rIW = rW - rPL - rPR, rIH = rH - rPT - rPB;
+                  var rangeLimit = roundLimit(scaleMax * 1.08);
+                  var vacPts = [];
+                  if (useDragModel) {
+                    sweep.points.forEach(function(pt) {
+                      var sx = rPL + (pt.angle / 90) * rIW;
+                      var sy = rPT + rIH - (pt.vacuumRange / rangeLimit) * rIH;
+                      vacPts.push((vacPts.length === 0 ? 'M' : 'L') + sx.toFixed(1) + ',' + sy.toFixed(1));
+                    });
+                  }
+                  var pathPts = [];
+                  if (useDragModel) {
+                    sweep.points.forEach(function(pt) {
+                      var sx = rPL + (pt.angle / 90) * rIW;
+                      var sy = rPT + rIH - (pt.range / rangeLimit) * rIH;
+                      pathPts.push((pathPts.length === 0 ? 'M' : 'L') + sx.toFixed(1) + ',' + sy.toFixed(1));
+                    });
+                  } else {
+                    for (var ra = 0; ra <= 90; ra += 2) {
+                      var rVal = vacuum(ra, vel, grav, height).range;
+                      var sx = rPL + (ra / 90) * rIW;
+                      var sy = rPT + rIH - (rVal / rangeLimit) * rIH;
+                      pathPts.push((pathPts.length === 0 ? 'M' : 'L') + sx.toFixed(1) + ',' + sy.toFixed(1));
+                    }
+                  }
+                  var rangePath = pathPts.join(' ');
+                  var vacPath = vacPts.join(' ');
+                  var curSX = rPL + (ang / 90) * rIW;
+                  var curSY = rPT + rIH - (curR / rangeLimit) * rIH;
+                  var optSX = rPL + (dispOptAngle / 90) * rIW;
+                  var optSY = rPT + rIH - (dispOptRange / rangeLimit) * rIH;
+                  var axisLine2 = function (x1, y1, x2, y2, color, dash) {
+                    var p = { x1: x1, y1: y1, x2: x2, y2: y2, stroke: color || graphColors.axis, strokeWidth: dash ? 0.85 : 1.25 };
+                    if (dash) p.strokeDasharray = dash;
+                    return React.createElement('line', p);
+                  };
+                  var lbl2 = function (x, y, text, anchor) {
+                    return React.createElement('text', { x: x, y: y, fontSize: 18, fill: graphColors.ink, textAnchor: anchor || 'middle', fontFamily: 'system-ui, sans-serif', style: { fontSize: 18, fontVariantNumeric: 'tabular-nums' } }, text);
+                  };
+                  var angleReadout = function(label, angle, range, color) {
+                    return React.createElement('div', { style: { minWidth: 0, padding: '8px 10px', borderLeft: '3px solid ' + color, background: graphColors.panel, borderRadius: 6 } },
+                      React.createElement('div', { style: { fontSize: 13, lineHeight: 1.4, fontWeight: 700, color: graphColors.muted } }, label),
+                      React.createElement('div', { style: { fontSize: 18, lineHeight: 1.35, fontWeight: 800, color: graphColors.ink, fontVariantNumeric: 'tabular-nums' } }, angle.toFixed(1) + '° · ' + range.toFixed(1) + ' m')
+                    );
+                  };
+                  return React.createElement("div", { 'data-physics-range-card': true, 'data-air-drag': useDragModel ? 'true' : 'false', style: Object.assign({}, graphCardStyle, { marginTop: 14 }) },
+                    React.createElement("h4", { style: { margin: '0 0 5px', fontSize: 16, fontWeight: 800, color: graphColors.ink } },
+                      __alloT('stem.physics.graph_range_title', 'Range across launch angles')
+                    ),
+                    React.createElement('p', { style: { margin: '0 0 10px', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } },
+                      (useDragModel
+                        ? __alloT('stem.physics.graph_range_settings_drag', 'Air-drag simulation vs. dashed no-drag reference')
+                        : __alloT('stem.physics.graph_range_settings', 'Ideal prediction for current settings')) +
+                      ': v=' + vel + ' m/s · g=' + grav + ' m/s² · h₀=' + height + ' m' + (useDragModel ? ' · m=' + massVal + ' kg' : '')
+                    ),
+                    React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 10, marginBottom: 10 } },
+                      angleReadout(useDragModel ? __alloT('stem.physics.graph_current_angle_drag', 'Current angle (with drag)') : __alloT('stem.physics.graph_current_angle', 'Current angle'), ang, curR, graphColors.marker),
+                      angleReadout(useDragModel ? __alloT('stem.physics.graph_optimal_angle_drag', 'Best angle with air drag') : __alloT('stem.physics.graph_optimal_angle', 'Best angle without drag'), dispOptAngle, dispOptRange, graphColors.range)
+                    ),
+                    React.createElement("svg", { "data-physics-graph": "range", 'data-air-drag': useDragModel ? 'true' : 'false', 'data-launch-height': height, 'data-optimum-angle': dispOptAngle, style: { display: 'block', background: graphColors.surface, borderRadius: 8, width: '100%', maxWidth: 360, height: 'auto', margin: '0 auto' }, viewBox: "0 0 " + rW + " " + rH, width: "100%", role: "img", "aria-label": (useDragModel ? __alloT('stem.physics.aria_range_angle_drag_graph', 'Range versus angle with air drag. Launch height:') : __alloT('stem.physics.aria_range_angle_height_graph', 'Ideal range versus angle without air drag. Launch height:')) + ' ' + height + ' m. ' + __alloT('stem.physics.aria_range_angle_optimum', 'Maximum range at') + ' ' + dispOptAngle.toFixed(1) + '°.' },
+                      [0, rangeLimit / 2, rangeLimit].map(function(value) {
+                        var y = rPT + rIH - value / rangeLimit * rIH;
+                        return React.createElement('g', { key: value },
+                          value > 0 && axisLine2(rPL, y, rW - rPR, y, graphColors.grid, '2 5'),
+                          lbl2(rPL - 8, y + 5, tickNumber(value), 'end')
+                        );
+                      }),
+                      [30, 60, 90].map(function(a) {
+                        var x = rPL + a / 90 * rIW;
+                        return React.createElement('line', { key: a, x1: x, x2: x, y1: rPT, y2: rPT + rIH, stroke: graphColors.grid, strokeWidth: 0.75, strokeDasharray: '2 5' });
+                      }),
+                      axisLine2(rPL, rPT, rPL, rPT + rIH),
+                      axisLine2(rPL, rPT + rIH, rW - rPR, rPT + rIH),
+                      useDragModel && vacPath && React.createElement('path', { 'data-physics-vacuum-ref': true, d: vacPath, stroke: graphColors.muted, strokeWidth: 1.6, strokeDasharray: '5 4', fill: 'none', opacity: 0.8 }),
+                      axisLine2(optSX, optSY, optSX, rPT + rIH, graphColors.range, '5 4'),
+                      React.createElement('path', { d: rangePath, stroke: graphColors.range, strokeWidth: 2.8, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                      React.createElement('circle', { cx: optSX, cy: optSY, r: 4, fill: graphColors.range, stroke: graphColors.surface, strokeWidth: 1.5 }),
+                      axisLine2(curSX, curSY, curSX, rPT + rIH, graphColors.marker, '3 3'),
+                      React.createElement('circle', { cx: curSX, cy: curSY, r: 4.5, fill: graphColors.marker, stroke: graphColors.surface, strokeWidth: 1.5 }),
+                      lbl2(rPL, 18, __alloT('stem.physics.axis_range_m', 'range (m)'), 'start'),
+                      [0, 30, 60, 90].map(function (a) {
+                        var ax = rPL + (a / 90) * rIW;
+                        return React.createElement('text', { key: a, x: ax, y: rH - 29, fontSize: 18, fill: graphColors.ink, textAnchor: a === 0 ? 'start' : a === 90 ? 'end' : 'middle', fontFamily: 'system-ui, sans-serif', style: { fontSize: 18 } }, a + '°');
+                      }),
+                      lbl2(rPL + rIW / 2, rH - 5, __alloT('stem.physics.axis_launch_angle', 'launch angle (θ)'))
+                    ),
+                    React.createElement("p", { style: { margin: '10px 0 0', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } },
+                      useDragModel
+                        ? __alloT('stem.physics.sweep_note_drag_curve', 'Air drag bleeds speed quadratically, pulling the solid drag curve down and shifting the peak angle below the dashed no-drag curve (peak here: ') + dispOptAngle.toFixed(1) + '° vs. ' + optimumAngle.toFixed(1) + '°).'
+                        : height > 0
+                          ? __alloT('stem.physics.sweep_note_elevated', 'An elevated launch has a no-drag optimum below 45°. Complementary angles generally have different ranges when launch and landing heights differ.')
+                          : __alloT('stem.physics.sweep_note_ground', 'From ground level with no air drag, range peaks at 45°. Complementary angles such as 30° and 60° have equal range.')
+                    )
+                  );
+                })();
               if (!lastTrail || lastTrail.length === 0) {
                 return { motion: React.createElement("section", { 'data-physics-motion-panel': true, style: graphPanelStyle },
                   React.createElement("h3", { style: { margin: '0 0 6px', fontSize: 16, fontWeight: 800 } }, __alloT('stem.physics.motion_components', 'Motion Components')),
                   React.createElement("p", { style: { margin: 0, fontSize: 14, lineHeight: 1.55, color: graphColors.muted } }, __alloT('stem.physics.launch_to_see_vx_vy', 'Launch a projectile to see Vx-vs-t and Vy-vs-t.'))
-                ), energy: React.createElement('p', { className: 'phys-measured-help' }, __alloT('stem.physics.analysis_launch_energy', 'Launch a projectile to explore its energy.')) };
+                ), energy: React.createElement('p', { className: 'phys-measured-help' }, __alloT('stem.physics.analysis_launch_energy', 'Launch a projectile to explore its energy.')), prediction: predictionNode };
               }
               var pts = lastTrail;
               var graphHasDrag = !!lastTrail.drag;
@@ -4125,17 +5286,6 @@ window.StemLab = window.StemLab || {
               });
               var W = 260, H = 210, padL = 48, padR = 12, padT = 18, padB = 52;
               var innerW = W - padL - padR, innerH = H - padT - padB;
-              var roundLimit = function(value) {
-                var magnitude = Math.pow(10, Math.floor(Math.log10(Math.max(value, 0.01))));
-                var scaled = value / magnitude;
-                var steps = [1, 2, 2.5, 5, 10];
-                for (var step = 0; step < steps.length; step++) if (scaled <= steps[step]) return steps[step] * magnitude;
-                return 10 * magnitude;
-              };
-              var tickNumber = function(value) {
-                if (Math.abs(value) < 0.000001) return '0';
-                return String(Number(value.toFixed(3)));
-              };
               var vxLimit = roundLimit(Math.max(vxAbs * 1.12, 1));
               var vxYScale = innerH / vxLimit;
               var vxY0 = padT + innerH;
@@ -4393,103 +5543,7 @@ window.StemLab = window.StemLab || {
                     React.createElement('p', { id: 'physics-energy-sampling-help', className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_sampling_help', 'The timeline connects a representative set of recorded samples. The time control uses every recorded point.')),
                     current.impact && React.createElement('p', { 'data-physics-energy-impact': true, className: 'phys-energy-help', style: { color: graphColors.muted } }, __alloT('stem.physics.energy_impact_note', 'The final flight sample is at ground contact, before collision energy is redistributed.')));
                 })(),
-              prediction: (function() {
-                  var ang = parseFloat((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45);
-                  var vel = parseFloat(d.velocity || 25);
-                  var grav = parseFloat((typeof d.gravity === 'number' && isFinite(d.gravity)) ? d.gravity : 9.8);
-                  var height = d.launchHeight || 0;
-                  var vacuum = window.StemLab._physics.vacuum;
-                  var ideal = vacuum(ang, vel, grav, height);
-                  if (ideal.status !== 'landed') return null;
-                  var optimumAngle = ideal.optimumAngle;
-                  var maxR = vacuum(optimumAngle, vel, grav, height).range;
-                  if (!isFinite(maxR) || maxR <= 0) return null;
-                  var rW = 260, rH = 226, rPL = 48, rPR = 12, rPT = 34, rPB = 52;
-                  var rIW = rW - rPL - rPR, rIH = rH - rPT - rPB;
-                  var rangeLimit = roundLimit(maxR * 1.08);
-                  // Build sweep curve every 2°
-                  var pathPts = [];
-                  for (var ra = 0; ra <= 90; ra += 2) {
-                    var rVal = vacuum(ra, vel, grav, height).range;
-                    var sx = rPL + (ra / 90) * rIW;
-                    var sy = rPT + rIH - (rVal / rangeLimit) * rIH;
-                    pathPts.push((pathPts.length === 0 ? 'M' : 'L') + sx.toFixed(1) + ',' + sy.toFixed(1));
-                  }
-                  var rangePath = pathPts.join(' ');
-                  // Current-angle marker
-                  var curR = ideal.range;
-                  var curSX = rPL + (ang / 90) * rIW;
-                  var curSY = rPT + rIH - (curR / rangeLimit) * rIH;
-                  // Elevated launchers have a no-drag optimum below 45°.
-                  var optSX = rPL + (optimumAngle / 90) * rIW;
-                  var optSY = rPT + rIH - (maxR / rangeLimit) * rIH;
-                  var axisLine2 = function (x1, y1, x2, y2, color, dash) {
-                    var p = { x1: x1, y1: y1, x2: x2, y2: y2, stroke: color || graphColors.axis, strokeWidth: dash ? 0.85 : 1.25 };
-                    if (dash) p.strokeDasharray = dash;
-                    return React.createElement('line', p);
-                  };
-                  var lbl2 = function (x, y, text, anchor) {
-                    return React.createElement('text', { x: x, y: y, fontSize: 18, fill: graphColors.ink, textAnchor: anchor || 'middle', fontFamily: 'system-ui, sans-serif', style: { fontSize: 18, fontVariantNumeric: 'tabular-nums' } }, text);
-                  };
-                  var angleReadout = function(label, angle, range, color) {
-                    return React.createElement('div', { style: { minWidth: 0, padding: '8px 10px', borderLeft: '3px solid ' + color, background: graphColors.panel, borderRadius: 6 } },
-                      React.createElement('p', { style: { margin: '0 0 4px', fontSize: 13, fontWeight: 650, color: graphColors.muted } }, label),
-                      React.createElement('p', { style: { margin: 0, fontSize: 17, fontWeight: 750, lineHeight: 1.4, fontVariantNumeric: 'tabular-nums', color: graphColors.ink } }, angle.toFixed(1) + '° · ' + range.toFixed(1) + ' m')
-                    );
-                  };
-                  return React.createElement("div", { 'data-physics-range-card': true, style: Object.assign({}, graphCardStyle, { marginTop: 14 }) },
-                    React.createElement("h4", { style: { margin: '0 0 5px', fontSize: 16, fontWeight: 800, color: graphColors.ink } },
-                      __alloT('stem.physics.graph_range_title', 'Range across launch angles')
-                    ),
-                    React.createElement('p', { style: { margin: '0 0 10px', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } },
-                      __alloT('stem.physics.graph_range_settings', 'Ideal prediction for current settings') + ': v=' + vel + ' m/s · g=' + grav + ' m/s² · h₀=' + height + ' m'
-                    ),
-                    React.createElement('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 200px), 1fr))', gap: 10, marginBottom: 10 } },
-                      angleReadout(__alloT('stem.physics.graph_current_angle', 'Current angle'), ang, curR, graphColors.marker),
-                      angleReadout(__alloT('stem.physics.graph_optimal_angle', 'Best angle without drag'), optimumAngle, maxR, graphColors.range)
-                    ),
-                    React.createElement("svg", { "data-physics-graph": "range", 'data-launch-height': height, 'data-optimum-angle': optimumAngle, style: { display: 'block', background: graphColors.surface, borderRadius: 8, width: '100%', maxWidth: 360, height: 'auto', margin: '0 auto' }, viewBox: "0 0 " + rW + " " + rH, width: "100%", role: "img", "aria-label": __alloT('stem.physics.aria_range_angle_height_graph', 'Ideal range versus angle without air drag. Launch height:') + ' ' + height + ' m. ' + __alloT('stem.physics.aria_range_angle_optimum', 'Maximum range at') + ' ' + optimumAngle.toFixed(1) + '°.' },
-                      [0, rangeLimit / 2, rangeLimit].map(function(value) {
-                        var y = rPT + rIH - value / rangeLimit * rIH;
-                        return React.createElement('g', { key: value },
-                          value > 0 && axisLine2(rPL, y, rW - rPR, y, graphColors.grid, '2 5'),
-                          lbl2(rPL - 8, y + 5, tickNumber(value), 'end')
-                        );
-                      }),
-                      [30, 60, 90].map(function(a) {
-                        var x = rPL + a / 90 * rIW;
-                        return React.createElement('line', { key: a, x1: x, x2: x, y1: rPT, y2: rPT + rIH, stroke: graphColors.grid, strokeWidth: 0.75, strokeDasharray: '2 5' });
-                      }),
-                      // Y/X axes
-                      axisLine2(rPL, rPT, rPL, rPT + rIH),
-                      axisLine2(rPL, rPT + rIH, rW - rPR, rPT + rIH),
-                      // Height-aware optimum dashed vertical reference
-                      axisLine2(optSX, optSY, optSX, rPT + rIH, graphColors.range, '5 4'),
-                      // Range curve
-                      React.createElement('path', { d: rangePath, stroke: graphColors.range, strokeWidth: 2.8, fill: 'none', strokeLinecap: 'round', strokeLinejoin: 'round' }),
-                      React.createElement('circle', { cx: optSX, cy: optSY, r: 4, fill: graphColors.range, stroke: graphColors.surface, strokeWidth: 1.5 }),
-                      // Current-angle marker line + dot
-                      axisLine2(curSX, curSY, curSX, rPT + rIH, graphColors.marker, '3 3'),
-                      React.createElement('circle', { cx: curSX, cy: curSY, r: 4.5, fill: graphColors.marker, stroke: graphColors.surface, strokeWidth: 1.5 }),
-                      lbl2(rPL, 18, __alloT('stem.physics.axis_range_m', 'range (m)'), 'start'),
-                      // Fewer ticks keep the same labels readable on phones.
-                      [0, 30, 60, 90].map(function (a) {
-                        var ax = rPL + (a / 90) * rIW;
-                        return React.createElement('text', { key: a, x: ax, y: rH - 29, fontSize: 18, fill: graphColors.ink, textAnchor: a === 0 ? 'start' : a === 90 ? 'end' : 'middle', fontFamily: 'system-ui, sans-serif', style: { fontSize: 18 } }, a + '°');
-                      }),
-                      // Axis title
-                      lbl2(rPL + rIW / 2, rH - 5, __alloT('stem.physics.axis_launch_angle', 'launch angle (θ)'))
-                    ),
-                    React.createElement("p", { style: { margin: '10px 0 0', fontSize: 14, lineHeight: 1.55, color: graphColors.muted } },
-                      height > 0
-                        ? __alloT('stem.physics.sweep_note_elevated', 'An elevated launch has a no-drag optimum below 45°. Complementary angles generally have different ranges when launch and landing heights differ.')
-                        : __alloT('stem.physics.sweep_note_ground', 'From ground level with no air drag, range peaks at 45°. Complementary angles such as 30° and 60° have equal range.')
-                    ),
-                    d.airResist && React.createElement('p', { style: { margin: '8px 0 0', paddingTop: 8, borderTop: '1px solid ' + graphColors.border, fontSize: 14, lineHeight: 1.55, color: graphColors.muted } },
-                      __alloT('stem.physics.sweep_drag_model_note', 'This curve is the no-drag prediction. With air drag on, use measured launches to find the best angle.')
-                    )
-                  );
-                })()
+              prediction: predictionNode
             };
           }
 
@@ -4498,20 +5552,36 @@ window.StemLab = window.StemLab || {
                 React.createElement("div", null,
                   React.createElement("h3", { id: 'physics-flight-data-heading' }, __alloT('stem.physics.flight_data_title', 'Flight Data')),
                   React.createElement("p", null, __alloT('stem.physics.flight_data_select_help', 'Select a time to inspect that recorded moment on the trajectory and graphs.'))),
-                React.createElement("button", {
-                  type: "button",
-                  "aria-label": __alloT('stem.physics.aria_copy_csv', 'Copy the flight data as CSV for a spreadsheet'),
-                  onClick: function () {
-                    var csv = physFlightCsv();
-                    if (!csv) { if (addToast) addToast(__alloT('stem.physics.csv_nothing', 'Launch a projectile first \u2014 there is no flight data yet.'), 'warning'); return; }
-                    physCopyText(csv).then(function (ok) {
-                      var msg = ok ? __alloT('stem.physics.toast_csv_copied', 'Flight data copied as CSV. Paste it into a spreadsheet.') : __alloT('stem.physics.toast_csv_failed', 'Could not copy automatically. Select the table and copy it by hand.');
-                      if (addToast) addToast((ok ? '\uD83D\uDCCB ' : '\u26A0\uFE0F ') + msg, ok ? 'success' : 'warning');
-                      if (typeof announceToSR === 'function') announceToSR(msg);
-                    });
-                  },
-                  className: "px-2 py-1 rounded-lg text-[0.625rem] font-bold bg-white text-cyan-800 border border-cyan-300 hover:bg-cyan-100"
-                }, "\uD83D\uDCCB " + __alloT('stem.physics.copy_csv', 'Copy CSV'))
+                React.createElement("div", { className: "flex flex-wrap gap-1.5" },
+                  React.createElement("button", {
+                    type: "button",
+                    "aria-label": __alloT('stem.physics.aria_copy_csv', 'Copy the flight data as CSV for a spreadsheet'),
+                    style: { minHeight: 44 },
+                    onClick: function () {
+                      var csv = physFlightCsv();
+                      if (!csv) { if (addToast) addToast(__alloT('stem.physics.csv_nothing', 'Launch a projectile first \u2014 there is no flight data yet.'), 'warning'); return; }
+                      physCopyText(csv).then(function (ok) {
+                        var msg = ok ? __alloT('stem.physics.toast_csv_copied', 'Flight data copied as CSV. Paste it into a spreadsheet.') : __alloT('stem.physics.toast_csv_failed', 'Could not copy automatically. Select the table and copy it by hand.');
+                        if (addToast) addToast((ok ? '\uD83D\uDCCB ' : '\u26A0\uFE0F ') + msg, ok ? 'success' : 'warning');
+                        if (typeof announceToSR === 'function') announceToSR(msg);
+                      });
+                    },
+                    className: "px-2 py-1 rounded-lg text-[0.625rem] font-bold bg-white text-cyan-800 border border-cyan-300 hover:bg-cyan-100"
+                  }, "\uD83D\uDCCB " + __alloT('stem.physics.copy_csv', 'Copy CSV')),
+                  React.createElement("button", {
+                    type: "button",
+                    'data-physics-download-flight-csv': true,
+                    "aria-label": __alloT('stem.physics.aria_download_flight_csv', 'Download flight samples as a CSV file'),
+                    style: { minHeight: 44 },
+                    onClick: function () {
+                      var csv = physFlightCsv();
+                      if (!csv) { if (addToast) addToast(__alloT('stem.physics.csv_nothing', 'Launch a projectile first \u2014 there is no flight data yet.'), 'warning'); return; }
+                      var ok = physDownloadCsv(csv, 'projectile-flight-data.csv');
+                      if (addToast) addToast((ok ? '⬇ ' : '⚠️ ') + (ok ? __alloT('stem.physics.toast_flight_downloaded', 'Downloaded projectile-flight-data.csv') : __alloT('stem.physics.toast_csv_failed', 'Could not copy automatically. Select the table and copy it by hand.')), ok ? 'success' : 'warning');
+                    },
+                    className: "px-2 py-1 rounded-lg text-[0.625rem] font-bold bg-white text-cyan-800 border border-cyan-300 hover:bg-cyan-100"
+                  }, "⬇ " + __alloT('stem.physics.download_csv', 'Download CSV'))
+                )
               ),
               (function() {
                 var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
@@ -4633,6 +5703,56 @@ window.StemLab = window.StemLab || {
                 view.id === 'energy' ? h(React.Fragment, null, analysisReadings && analysisReadings.energy, analysisGraphs.energy) : physRenderAnalysisData()); }),
               analysisReadings && analysisReadings.help);
           }
+          var physTab = ['missions', 'analyze', 'notebook', 'learn', 'all'].indexOf(d.tab) >= 0 ? d.tab : (d.workspaceTab || 'all');
+          function showSec(id) {
+            return physTab === 'all' || physTab === id || d.tab === 'all' ||
+              (id === 'missions' && d.tab === 'missions') ||
+              (id === 'analyze' && d.tab === 'analyze') ||
+              (id === 'notebook' && d.tab === 'notebook') ||
+              (id === 'learn' && d.tab === 'learn');
+          }
+          function physSpeakText(id, text) {
+            if (!text) return;
+            var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
+            if (d.speakingId === id) {
+              if (typeof stopTTS === 'function') stopTTS();
+              upd('speakingId', null);
+              return;
+            }
+            if (typeof stopTTS === 'function') stopTTS();
+            if (typeof callTTS === 'function') {
+              upd('speakingId', id);
+              Promise.resolve(callTTS(text, null, 1, { force: true })).then(function() {
+                upd('speakingId', null);
+              }).catch(function() { upd('speakingId', null); });
+            } else if (typeof announceToSR === 'function') {
+              announceToSR(text);
+            }
+          }
+          function physSpeakButton(id, text, ariaLabel) {
+            if (typeof callTTS !== 'function' && typeof announceToSR !== 'function') return null;
+            var speaking = d.speakingId === id;
+            return React.createElement('button', {
+              type: 'button', 'data-physics-tts': id, 'aria-pressed': speaking,
+              'aria-label': ariaLabel || __alloT('stem.physics.read_aloud_aria', 'Read this explanation aloud'),
+              className: 'phys-tts-btn',
+              style: { minHeight: 44 },
+              onClick: function() { physSpeakText(id, text); }
+            }, speaking ? '⏹ ' + __alloT('stem.physics.stop_reading', 'Stop audio') : '🔊 ' + __alloT('stem.physics.read_aloud', 'Read aloud'));
+          }
+          function physSaveSnapshot() {
+            var label = d.angle + '\u00B0 ' + d.velocity + 'm/s (g=' + d.gravity + (d.airResist ? ', drag' : '') + ')';
+            var clean = Object.assign({}, d);
+            delete clean.speakingId;
+            delete clean.aiLoading;
+            delete clean.quizHintLoading;
+            delete clean.liveTick;
+            delete clean.physFsMode;
+            delete clean.tab;
+            if (typeof saveSnapshot === 'function') saveSnapshot('physics', label, clean);
+            else if (typeof setToolSnapshots === 'function') setToolSnapshots(function(prev) { return prev.concat([{ id: 'ph-' + Date.now(), tool: 'physics', label: label, data: clean, timestamp: Date.now() }]); });
+            if (addToast) addToast('\uD83D\uDCF8 ' + __alloT('stem.physics.toast_snapshot_saved', 'Snapshot saved!'), 'success');
+          }
 return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme": isContrast ? "contrast" : (isDark ? "dark" : "light"), className: "max-w-5xl mx-auto animate-in fade-in duration-200", style: d.physFsMode ? { position: 'fixed', inset: 0, zIndex: 9998, width: '100vw', height: '100vh', maxWidth: '100vw', margin: 0, overflowY: 'auto', background: themeSurface, color: themeInk, padding: '10px' } : { position: 'relative', background: themeSurface, color: themeInk } },
             React.createElement('style', { 'data-physics-visual-styles': true }, `
               #physics-fs-outer{--phys-panel:#fff;--phys-soft:#f3f7fa;--phys-ink:#172c40;--phys-muted:#486176;--phys-line:#c4d2de;--phys-accent:#086d89;--phys-selected:#e1f4f8;--phys-shadow:0 6px 22px rgba(20,47,69,.055);width:100%;min-width:0;box-sizing:border-box;flex:1 1 100%;font-variant-numeric:tabular-nums;line-height:1.5;container-type:inline-size}
@@ -4672,7 +5792,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer #physPredict{background:var(--phys-panel);color:var(--phys-ink);font-size:16px;min-height:36px;border-color:var(--phys-line);width:74px;text-align:center;border-radius:7px}
               #physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls])>[data-physics-air-drag]{grid-column:span 3}
               #physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls])>[data-physics-display-controls],#physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls])>[data-physics-playback]{grid-column:span 6}
-              #physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls])>[data-physics-gravity-presets],#physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls])>[data-physics-model-comparison]{grid-column:1/-1}
+              #physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls])>:is([data-physics-gravity-presets],[data-physics-object-presets],[data-physics-model-comparison]){grid-column:1/-1}
               #physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls]) :is(fieldset,[data-physics-playback]){background:var(--phys-soft);color:var(--phys-ink);border:1px solid var(--phys-line);border-radius:12px;padding:13px}
               #physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls]) legend{font-size:12px;color:var(--phys-muted);letter-spacing:.015em;padding:0 6px;font-weight:750}
               #physics-fs-outer :is([data-physics-controls],[data-physics-primary-controls]) button:not([data-physics-launch]){min-height:44px;padding:9px 11px;background:var(--phys-panel);color:var(--phys-ink);border:1px solid var(--phys-line);border-radius:9px;font-size:12px;line-height:1.4;box-shadow:none;white-space:normal;overflow-wrap:anywhere}
@@ -5091,6 +6211,35 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer [data-physics-row-sample]{display:block;margin-top:3px;font-size:12px;line-height:1.5;color:var(--phys-muted);white-space:normal}
               #physics-fs-outer [data-physics-flight-data]:focus-visible{outline:3px solid var(--phys-accent);outline-offset:3px}
               @container(max-width:460px){#physics-fs-outer .phys-graph-moments{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer .phys-graph-moments button:last-child{grid-column:1/-1}}
+              #physics-fs-outer [data-physics-workspace-tabs]{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:12px 14px;margin:0 0 16px;background:var(--phys-panel);border:1px solid var(--phys-line);border-radius:14px;box-shadow:var(--phys-shadow)}
+              #physics-fs-outer .phys-workspace-tablist{display:flex;flex-wrap:wrap;gap:6px;flex:1 1 auto;min-width:0}
+              #physics-fs-outer [data-physics-workspace-tab]{min-height:44px;min-width:0;padding:8px 14px;border:1px solid var(--phys-line);border-radius:10px;background:var(--phys-soft);color:var(--phys-ink);font-size:13px;font-weight:700;cursor:pointer;white-space:normal;overflow-wrap:anywhere}
+              #physics-fs-outer [data-physics-workspace-tab][aria-pressed="true"]{background:var(--phys-selected);color:var(--phys-accent);border-color:var(--phys-accent);box-shadow:inset 0 -2px var(--phys-accent)}
+              #physics-fs-outer [data-physics-band-picker]{display:flex;flex-wrap:wrap;align-items:center;gap:6px;min-width:0}
+              #physics-fs-outer [data-physics-band-picker]>span{font-size:12px;font-weight:700;color:var(--phys-muted);margin-right:2px}
+              #physics-fs-outer [data-physics-band-btn]{min-height:44px;min-width:0;padding:8px 11px;border:1px solid var(--phys-line);border-radius:9px;background:var(--phys-soft);color:var(--phys-ink);font-size:12px;font-weight:700;cursor:pointer;white-space:normal;overflow-wrap:anywhere}
+              #physics-fs-outer [data-physics-band-btn][aria-pressed="true"]{background:var(--phys-selected);color:var(--phys-accent);border-color:var(--phys-accent);box-shadow:inset 0 -2px var(--phys-accent)}
+              #physics-fs-outer .phys-tts-btn{display:inline-flex;align-items:center;gap:6px;min-height:44px;min-width:0;padding:8px 12px;border:1px solid var(--phys-line);border-radius:9px;background:var(--phys-panel);color:var(--phys-accent);font-size:12px;font-weight:700;cursor:pointer;white-space:normal;overflow-wrap:anywhere}
+              #physics-fs-outer .phys-tts-btn[aria-pressed="true"]{background:var(--phys-selected);border-color:var(--phys-accent);box-shadow:inset 0 -2px var(--phys-accent)}
+              #physics-fs-outer .phys-quiz-toolbar{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin-bottom:10px}
+              #physics-fs-outer .phys-quiz-toolbar select{min-height:44px;padding:6px 10px;border:1px solid var(--phys-line);border-radius:9px;background:var(--phys-panel);color:var(--phys-ink);font-size:13px;font-weight:600}
+              #physics-fs-outer .phys-object-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+              @container(max-width:620px){#physics-fs-outer .phys-object-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+              #physics-fs-outer [data-physics-controls] .phys-object-grid button{min-height:60px}
+              #physics-fs-outer .phys-tier3-panel{background:var(--phys-panel);color:var(--phys-ink);border:1px solid var(--phys-line);border-radius:14px;padding:14px;margin-bottom:12px}
+              #physics-fs-outer .phys-tier3-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,175px),1fr));gap:8px}
+              #physics-fs-outer .phys-tier3-card{background:var(--phys-soft);color:var(--phys-ink);border:1.5px solid var(--phys-line);border-radius:10px;padding:10px;min-height:44px;min-width:0;text-align:left;cursor:pointer;white-space:normal;overflow-wrap:anywhere}
+              #physics-fs-outer .phys-tier3-card[aria-pressed="true"]{background:var(--phys-selected);border-color:var(--phys-accent);box-shadow:inset 0 -2px var(--phys-accent)}
+              #physics-fs-outer .phys-tier3-btn{min-height:44px;min-width:44px;padding:8px 12px;border-radius:9px;border:1px solid var(--phys-line);background:var(--phys-soft);color:var(--phys-ink);font-size:12px;font-weight:700;cursor:pointer;white-space:normal;overflow-wrap:anywhere}
+              #physics-fs-outer .phys-tier3-btn:disabled{opacity:.55;cursor:not-allowed}
+              #physics-fs-outer .phys-tier3-btn[aria-pressed="true"]{background:var(--phys-selected);color:var(--phys-accent);border-color:var(--phys-accent);box-shadow:inset 0 -2px var(--phys-accent)}
+              #physics-fs-outer .phys-tier3-primary{min-height:44px;padding:8px 14px;border-radius:9px;border:1px solid #086d89;background:#086d89;color:#fff;font-size:12px;font-weight:750;cursor:pointer}
+              #physics-fs-outer[data-physics-theme="contrast"] .phys-tier3-primary{background:#ff0;color:#000;border-color:#ff0}
+              #physics-fs-outer .phys-tier3-select{min-height:44px;padding:6px 10px;border:1px solid var(--phys-line);border-radius:9px;background:var(--phys-panel);color:var(--phys-ink);font-size:13px;font-weight:600}
+              #physics-fs-outer .phys-tier3-muted{color:var(--phys-muted)}
+              #physics-fs-outer .phys-tier3-accent{color:var(--phys-accent)}
+              #physics-fs-outer .phys-tier3-status{margin-top:8px;padding:9px 12px;border-radius:9px;border:1px solid var(--phys-line);background:var(--phys-soft);color:var(--phys-ink);font-size:12px;font-weight:700}
+              #physics-fs-outer[data-physics-theme="contrast"] [data-physics-snapshot]{background:#000!important;background-image:none!important;color:#ff0!important;border:1px solid #ff0!important}
               @media(prefers-reduced-motion:reduce){#physics-fs-outer :is(button,input,summary){transition:none!important;animation:none!important}}
             `),
             (ctx.renderTutorial || function () { return null; })('physics', ctx._tutPhysics || []),
@@ -5166,15 +6315,23 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
 
               }, "\uD83D\uDE80 " + __alloT('stem.physics.launch', 'Launch!')),
 
-              React.createElement("button", { 'data-physics-air-drag': true, "aria-label": __alloT('stem.physics.aria_air_drag_currently', 'Air drag, currently ') + (d.airResist ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
+              (function() {
+                var curObsDrag = d.obstacleMode && d.obstacleId ? PHYS_OBSTACLE_MISSIONS.find(function(m) { return m.id === d.obstacleId; }) : null;
+                var dragLocked = !!(curObsDrag && typeof curObsDrag.drag === 'boolean');
+                return React.createElement("button", { 'data-physics-air-drag': true, "aria-label": __alloT('stem.physics.aria_air_drag_currently', 'Air drag, currently ') + (d.airResist ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + (dragLocked ? __alloT('stem.physics.aria_drag_locked', ' (locked by active mission).') : __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.')),
 
-                "aria-pressed": !!d.airResist,
+                  "aria-pressed": !!d.airResist,
 
-                onClick: function () { upd('airResist', !d.airResist); },
+                  disabled: dragLocked,
 
-                className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.airResist ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-700 border border-orange-200')
+                  title: dragLocked ? __alloT('stem.physics.drag_locked_mission', 'Locked by active obstacle mission.') : undefined,
 
-              }, "\uD83C\uDF2C\uFE0F " + __alloT('stem.physics.label_air_drag', 'Air Drag ') + (d.airResist ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF'))),
+                  onClick: function () { if (!dragLocked) upd('airResist', !d.airResist); },
+
+                  className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.airResist ? 'bg-orange-700 text-white shadow-md' : 'bg-orange-50 text-orange-700 border border-orange-200')
+
+                }, "\uD83C\uDF2C\uFE0F " + __alloT('stem.physics.label_air_drag', 'Air Drag ') + (d.airResist ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF')));
+              })(),
 
               // \u2500\u2500 Quantitative estimation challenge \u2500\u2500
               React.createElement("div", { className: "flex items-center gap-1.5 bg-fuchsia-50 border border-fuchsia-200 rounded-lg px-2 py-1", "data-physics-estimation-challenge": "true", title: __alloT('stem.physics.estimation_title_attr', 'Quantitative estimation challenge: closeness earns XP; inquiry reflections are never graded for matching.') },
@@ -5218,28 +6375,38 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               React.createElement('div', { className: 'phys-scene' },
               React.createElement('div', { className: 'phys-scene-tools' },
                 React.createElement('h3', null, __alloT('stem.physics.flight_view_heading', 'Flight view')),
-              React.createElement("button", {
-                'data-physics-fullscreen': true,
-                'aria-label': (physicsFullscreen ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen')) + __alloT('stem.physics.for_the_physics_canvas', ' for the physics canvas'),
-                title: physicsFullscreen ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen'),
-                onClick: function() {
-                  // Fullscreen the OUTER container (header + canvas + controls),
-                  // not just the canvas, so the sim controls stay usable in
-                  // fullscreen. The canvas grows to 70vh; controls flow below in
-                  // the scrollable fixed container.
-                  var el = document.getElementById('physics-fs-outer');
-                  if (d.physFsMode) { upd('physFsMode', false); return; }        // exit CSS fill-frame
-                  var inReal = el && (document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el);
-                  if (inReal) { try { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) { var pe = ex.call(document); if (pe && pe.catch) pe.catch(function(){}); } } catch (e) {} return; }
-                  var rq = el && (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen);
-                  if (rq && (document.fullscreenEnabled || document.webkitFullscreenEnabled)) {
-                    // real fullscreen where the host permits it; if it still rejects, fall back to CSS
-                    try { var pr = rq.call(el); if (pr && pr.catch) pr.catch(function(){ upd('physFsMode', true); }); return; } catch (e) {}
-                  }
-                  upd('physFsMode', true);                                        // sandboxed iframe — CSS fill-frame
-                },
-                className: 'phys-fullscreen-control'
-              }, React.createElement('span', { 'aria-hidden': true }, physicsFullscreen ? '✕' : '⛶'), React.createElement('span', null, physicsFullscreen ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen'))),
+                React.createElement('div', { className: 'flex flex-wrap items-center gap-2' },
+                  React.createElement('button', {
+                    type: 'button',
+                    'data-physics-tape-toggle': true,
+                    'aria-pressed': !!d.showTapeMeasure,
+                    'aria-label': __alloT('stem.physics.tape_toggle_aria', 'Toggle crosshair tape-measure probe on canvas'),
+                    className: 'phys-tier3-btn',
+                    onClick: function () { upd('showTapeMeasure', !d.showTapeMeasure); }
+                  }, '📏 ' + __alloT('stem.physics.tape_measure_btn', 'Tape Measure')),
+                  React.createElement("button", {
+                    'data-physics-fullscreen': true,
+                    'aria-label': (physicsFullscreen ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen')) + __alloT('stem.physics.for_the_physics_canvas', ' for the physics canvas'),
+                    title: physicsFullscreen ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen'),
+                    onClick: function() {
+                      // Fullscreen the OUTER container (header + canvas + controls),
+                      // not just the canvas, so the sim controls stay usable in
+                      // fullscreen. The canvas grows to 70vh; controls flow below in
+                      // the scrollable fixed container.
+                      var el = document.getElementById('physics-fs-outer');
+                      if (d.physFsMode) { upd('physFsMode', false); return; }        // exit CSS fill-frame
+                      var inReal = el && (document.fullscreenElement === el || document.webkitFullscreenElement === el || document.mozFullScreenElement === el);
+                      if (inReal) { try { var ex = document.exitFullscreen || document.webkitExitFullscreen || document.mozCancelFullScreen; if (ex) { var pe = ex.call(document); if (pe && pe.catch) pe.catch(function(){}); } } catch (e) {} return; }
+                      var rq = el && (el.requestFullscreen || el.webkitRequestFullscreen || el.mozRequestFullScreen);
+                      if (rq && (document.fullscreenEnabled || document.webkitFullscreenEnabled)) {
+                        // real fullscreen where the host permits it; if it still rejects, fall back to CSS
+                        try { var pr = rq.call(el); if (pr && pr.catch) pr.catch(function(){ upd('physFsMode', true); }); return; } catch (e) {}
+                      }
+                      upd('physFsMode', true);                                        // sandboxed iframe — CSS fill-frame
+                    },
+                    className: 'phys-fullscreen-control'
+                  }, React.createElement('span', { 'aria-hidden': true }, physicsFullscreen ? '✕' : '⛶'), React.createElement('span', null, physicsFullscreen ? __alloT('stem.physics.exit_fullscreen', 'Exit fullscreen') : __alloT('stem.physics.fullscreen', 'Fullscreen')))
+                )
               ),
             React.createElement("div", { id: "physics-fs-wrap", className: "relative rounded-xl overflow-hidden border-2 border-sky-300 shadow-lg mb-3", style: d.physFsMode ? { position: 'relative', height: 'calc(75vh + var(--physics-band-extra, 0px))', minHeight: 'calc(480px + var(--physics-band-extra, 0px))' } : { height: 'calc(480px + var(--physics-band-extra, 0px))' } },
 
@@ -5247,7 +6414,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
 
                 role: "application",
 
-                "aria-label": __alloT('stem.physics.aria_canvas', 'Physics projectile simulator — use arrow keys to adjust angle and velocity, Space to launch'),
+                "aria-label": __alloT('stem.physics.aria_canvas', 'Physics projectile simulator — use arrow keys for ±5 steps, Shift+Arrow for ±1 fine steps, and Space to launch'),
 
                 ref: canvasRef,
 
@@ -5265,6 +6432,9 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                 "data-show-vectors": d.showVectors ? 'true' : 'false',
                 "data-show-energy": d.showEnergy ? 'true' : 'false',
                 "data-target-mode": d.targetMode ? 'true' : 'false',
+                "data-obstacle-id": d.obstacleMode && d.obstacleId ? d.obstacleId : '',
+                "data-battle-mode": d.battleMode ? 'true' : 'false',
+                "data-enemy-dist": d.battleMode && d.enemyDist ? String(d.enemyDist) : '',
                 "data-target-list": d.targetList ? JSON.stringify(d.targetList) : '',
                 "data-constraint-type": d.targetConstraint ? d.targetConstraint.type : '',
                 "data-constraint-value": d.targetConstraint ? String(d.targetConstraint.value) : '',
@@ -5274,19 +6444,23 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                 // The number the NEXT landing will claim, so the draw loop can
                 // stamp the trail without reading React state.
                 "data-run-next": String((d.runCount || 0) + 1),
+                "data-show-tape": d.showTapeMeasure ? 'true' : 'false',
+                "data-tape-x": String(d.tapeMeasure.x),
+                "data-tape-y": String(d.tapeMeasure.y),
 
                 onKeyDown: function (e) {
 
                   // Keyboard and pointer controls follow the same mission locks.
                   var angleLocked = d.targetMode && d.targetConstraint && d.targetConstraint.type === 'fixedAngle';
                   var velocityLocked = d.targetMode && d.targetConstraint && d.targetConstraint.type === 'fixedVelocity';
-                  if (e.key === 'ArrowUp') { e.preventDefault(); if (!angleLocked) upd('angle', Math.min(85, ((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45) + 5)); }
+                  var keyStep = e.shiftKey ? 1 : 5;
+                  if (e.key === 'ArrowUp') { e.preventDefault(); if (!angleLocked) upd('angle', Math.min(85, ((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45) + keyStep)); }
 
-                  else if (e.key === 'ArrowDown') { e.preventDefault(); if (!angleLocked) upd('angle', Math.max(d.launchHeight > 0 ? 0 : 5, ((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45) - 5)); }
+                  else if (e.key === 'ArrowDown') { e.preventDefault(); if (!angleLocked) upd('angle', Math.max(d.launchHeight > 0 ? 0 : 5, ((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45) - keyStep)); }
 
-                  else if (e.key === 'ArrowRight') { e.preventDefault(); if (!velocityLocked) upd('velocity', Math.min(50, (d.velocity || 25) + 5)); }
+                  else if (e.key === 'ArrowRight') { e.preventDefault(); if (!velocityLocked) upd('velocity', Math.min(50, (d.velocity || 25) + keyStep)); }
 
-                  else if (e.key === 'ArrowLeft') { e.preventDefault(); if (!velocityLocked) upd('velocity', Math.max(5, (d.velocity || 25) - 5)); }
+                  else if (e.key === 'ArrowLeft') { e.preventDefault(); if (!velocityLocked) upd('velocity', Math.max(5, (d.velocity || 25) - keyStep)); }
 
                   else if (e.key === ' ') {
 
@@ -5302,11 +6476,94 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
 
                 },
 
-                style: { width: "100%", height: "100%", display: "block" }
+                style: { width: "100%", height: "100%", display: "block", touchAction: "none" }
 
               })
 
             ),
+
+            d.showTapeMeasure && (function () {
+              var tp = d.tapeMeasure || { x: 25, y: 10 };
+              var curAng = (typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45;
+              var curVel = (typeof d.velocity === 'number' && isFinite(d.velocity)) ? d.velocity : 25;
+              var curGrav = (typeof d.gravity === 'number' && isFinite(d.gravity)) ? d.gravity : 9.8;
+              var curMass = (typeof d.mass === 'number' && isFinite(d.mass)) ? d.mass : 1;
+              var curH = (typeof d.launchHeight === 'number' && isFinite(d.launchHeight)) ? d.launchHeight : 0;
+              var curDrag = !!d.airResist;
+              var distM = Math.hypot(tp.x, tp.y - curH);
+              var yAtX = physTrajectoryHeightAtX(tp.x, curAng, curVel, curGrav, curMass, curH, curDrag);
+              var simRef = curDrag ? physSimulate(curAng, curVel, curGrav, true, curMass, curH) : physVacuum(curAng, curVel, curGrav, curH);
+              var updateTape = function (nx, ny) {
+                var cx = Math.max(0, Math.min(500, isFinite(nx) ? nx : tp.x));
+                var cy = Math.max(0, Math.min(200, isFinite(ny) ? ny : tp.y));
+                upd('tapeMeasure', { x: Math.round(cx * 10) / 10, y: Math.round(cy * 10) / 10 });
+              };
+              return React.createElement('div', {
+                'data-physics-tape-panel': true,
+                role: 'region',
+                'aria-label': __alloT('stem.physics.tape_panel_aria', 'Crosshair tape-measure probe controls'),
+                className: 'phys-tier3-panel mb-3'
+              },
+                React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-2' },
+                  React.createElement('span', { className: 'text-xs font-bold uppercase tracking-wider' }, '📏 ' + __alloT('stem.physics.tape_probe_title', 'Crosshair Tape-Measure Probe')),
+                  React.createElement('span', { 'data-physics-tape-readout': true, className: 'text-xs font-bold phys-tier3-accent' },
+                    'Δ = ' + distM.toFixed(1) + ' m · (' + tp.x.toFixed(1) + ' m, ' + tp.y.toFixed(1) + ' m)' +
+                    (yAtX !== null ? (' · ' + __alloT('stem.physics.tape_arc_y', 'Arc y(x)') + ' = ' + yAtX.toFixed(1) + ' m') : '')
+                  )
+                ),
+                React.createElement('div', { className: 'flex flex-wrap items-end gap-2' },
+                  React.createElement('label', { htmlFor: 'physics-tape-x-input', className: 'text-xs font-bold flex flex-col gap-1', style: { minWidth: 0 } },
+                    React.createElement('span', null, __alloT('stem.physics.tape_x_label', 'Probe X (m)')),
+                    React.createElement('input', {
+                      id: 'physics-tape-x-input',
+                      type: 'number',
+                      min: 0, max: 500, step: 0.1,
+                      'data-physics-tape-x': true,
+                      'aria-label': __alloT('stem.physics.tape_x_aria', 'Tape-measure horizontal position in meters'),
+                      value: tp.x,
+                      onChange: function (e) { updateTape(parseFloat(e.target.value), tp.y); },
+                      style: { minHeight: 44, width: 92, padding: '6px 10px', borderRadius: 8, border: '1px solid var(--phys-line)', background: 'var(--phys-panel)', color: 'var(--phys-ink)' }
+                    })
+                  ),
+                  React.createElement('label', { htmlFor: 'physics-tape-y-input', className: 'text-xs font-bold flex flex-col gap-1', style: { minWidth: 0 } },
+                    React.createElement('span', null, __alloT('stem.physics.tape_y_label', 'Probe Y (m)')),
+                    React.createElement('input', {
+                      id: 'physics-tape-y-input',
+                      type: 'number',
+                      min: 0, max: 200, step: 0.1,
+                      'data-physics-tape-y': true,
+                      'aria-label': __alloT('stem.physics.tape_y_aria', 'Tape-measure vertical height in meters'),
+                      value: tp.y,
+                      onChange: function (e) { updateTape(tp.x, parseFloat(e.target.value)); },
+                      style: { minHeight: 44, width: 92, padding: '6px 10px', borderRadius: 8, border: '1px solid var(--phys-line)', background: 'var(--phys-panel)', color: 'var(--phys-ink)' }
+                    })
+                  ),
+                  React.createElement('button', {
+                    type: 'button',
+                    'data-physics-tape-snap': 'apex',
+                    'aria-label': __alloT('stem.physics.tape_snap_apex_aria', 'Snap tape measure to predicted apex'),
+                    className: 'phys-tier3-btn',
+                    onClick: function () {
+                      var vx0 = curVel * Math.cos(curAng * Math.PI / 180);
+                      var tPeak = curGrav > 0 ? Math.max(0, (curVel * Math.sin(curAng * Math.PI / 180)) / curGrav) : 0;
+                      var apexX = !curDrag ? (vx0 * tPeak) : ((simRef && physFinite(simRef.range)) ? simRef.range * 0.45 : (vx0 * tPeak * 0.85));
+                      var apexY = simRef && physFinite(simRef.maxH) ? simRef.maxH : curH;
+                      updateTape(apexX, apexY);
+                    }
+                  }, '▲ ' + __alloT('stem.physics.tape_snap_apex', 'Snap to Apex')),
+                  React.createElement('button', {
+                    type: 'button',
+                    'data-physics-tape-snap': 'landing',
+                    'aria-label': __alloT('stem.physics.tape_snap_landing_aria', 'Snap tape measure to predicted landing spot'),
+                    className: 'phys-tier3-btn',
+                    onClick: function () {
+                      var landX = (simRef && physFinite(simRef.range)) ? simRef.range : 0;
+                      updateTape(landX, 0);
+                    }
+                  }, '◎ ' + __alloT('stem.physics.tape_snap_landing', 'Snap to Landing'))
+                )
+              );
+            })(),
 
             (function() {
               var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
@@ -5384,10 +6641,12 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                 React.createElement("p", null, __alloT("stem.physics.launch_settings_help", "Adjust these values for the next launch."))),
 
               [{ k: 'angle', label: __alloT('stem.physics.slider_angle', 'Angle (\u00B0)'), min: d.launchHeight > 0 ? 0 : 5, max: 85, step: 1 }, { k: 'velocity', label: __alloT('stem.physics.slider_velocity', 'Velocity (m/s)'), min: 5, max: 50, step: 1 }, { k: 'gravity', label: __alloT('stem.physics.slider_gravity', 'Gravity (m/s\u00B2)'), min: 1, max: 25, step: 0.1 }, { k: 'mass', label: __alloT('stem.physics.slider_mass', 'Mass (kg)'), min: 1, max: 10, step: 1 }, { k: 'launchHeight', label: __alloT('stem.physics.slider_launch_height', 'Launch height (m)'), min: 0, max: 50, step: 1 }].map(function (s) {
-                var isLocked = (s.k === 'launchHeight' && (d.targetMode || d.challengeActive || d.battleMode)) || d.targetMode && d.targetConstraint && (
+                var curObs = d.obstacleMode && d.obstacleId ? PHYS_OBSTACLE_MISSIONS.find(function(m) { return m.id === d.obstacleId; }) : null;
+                var gravityLocked = (d.targetMode && d.targetConstraint && typeof d.targetConstraint.fixedGravity === 'number') || (d.challengeActive && d.challengeTier === 3) || !!(curObs && typeof curObs.fixedGravity === 'number');
+                var isLocked = (s.k === 'launchHeight' && (d.targetMode || d.challengeActive || d.obstacleMode || d.battleMode)) || (s.k === 'gravity' && gravityLocked) || (d.targetMode && d.targetConstraint && (
                   (d.targetConstraint.type === 'fixedAngle' && s.k === 'angle') ||
                   (d.targetConstraint.type === 'fixedVelocity' && s.k === 'velocity')
-                );
+                ));
                 return React.createElement("div", { key: s.k, className: "phys-parameter", 'data-physics-parameter-card': s.k, 'data-locked': isLocked ? 'true' : 'false' },
 
                   React.createElement("label", { htmlFor: 'physics-parameter-' + s.k }, isLocked ? '\u{1F512} ' + s.label : s.label),
@@ -5402,7 +6661,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                       if (s.k === 'launchHeight') {
                         setLabToolData(function(prev) {
                           var current = prev.physics || {};
-                          if (current.targetMode || current.challengeActive || current.battleMode) return prev;
+                          if (current.targetMode || current.challengeActive || current.obstacleMode || current.battleMode) return prev;
                           return Object.assign({}, prev, { physics: Object.assign({}, current, { launchHeight: newVal, angle: newVal === 0 ? Math.max(5, current.angle == null ? 45 : current.angle) : current.angle }) });
                         });
                       } else upd(s.k, newVal);
@@ -5423,7 +6682,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
 
             null,
 
-            physRenderAnalysisWorkspace(),
+            (showSec('analyze') || analysisOpen) && physRenderAnalysisWorkspace(),
 
             React.createElement("div", { 'data-physics-controls': true, className: "flex flex-wrap gap-1.5 mb-2" },
 
@@ -5445,8 +6704,17 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                     'aria-label': analysisEntry ? view.label + ' · ' + (enabled ? __alloT('stem.physics.analysis_current_view', 'Current analysis view') : __alloT('stem.physics.analysis_open_view', 'Open analysis view')) : view.aria + (enabled ? __alloT('stem.physics.state_on_lc', 'on') : __alloT('stem.physics.state_off_lc', 'off')) + __alloT('stem.physics.aria_click_to_toggle', '. Click to toggle.'),
                     'aria-pressed': enabled, onClick: function() {
                       if (view.id === 'graphs' || view.id === 'data') {
+                        if (d.workspaceTab !== 'all') updTab('analyze');
                         physOpenAnalysisView(view.id === 'data' ? 'data' : 'motion');
-                      } else upd(view.key, !d[view.key]);
+                      } else {
+                        var nextVal = !d[view.key];
+                        upd(view.key, nextVal);
+                        if (nextVal && d.workspaceTab !== 'all') {
+                          if (view.id === 'guide') updTab('learn');
+                          else if (view.id === 'formulas') updTab('analyze');
+                          else if (view.id === 'range') updTab('notebook');
+                        }
+                      }
                       // The explorer renders below the results: scroll it into view, but leave focus on this card.
                       if (view.id === 'range' && !d[view.key]) setTimeout(function() {
                         var panel = document.querySelector('[data-physics-range-explorer]');
@@ -5572,10 +6840,10 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               // preserving pause, stepping and playback-speed behavior.
               React.createElement("button", {
                 "aria-label": __alloT('stem.physics.aria_ground_symmetry_demo', 'Vacuum symmetry comparison: launch at 30 and 60 degrees from ground level with the same speed and gravity'),
-                disabled: !!d.targetMode,
-                title: d.targetMode ? __alloT('stem.physics.symmetry_target_disabled', 'End the target mission to compare two launch angles.') : undefined,
+                disabled: !!(d.targetMode || d.obstacleMode),
+                title: (d.targetMode || d.obstacleMode) ? __alloT('stem.physics.symmetry_target_disabled', 'End the active mission to compare two launch angles.') : undefined,
                 onClick: function () {
-                  if (d.targetMode) return;
+                  if (d.targetMode || d.obstacleMode) return;
                   var cv = document.getElementById('physicsCanvas');
                   if (!cv || !cv._startSymmetryDemo) return;
                   upd('showOverlay', true);
@@ -5587,21 +6855,22 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               React.createElement('button', {
                 type: 'button', 'data-physics-model-comparison-start': true,
                 'aria-label': __alloT('stem.physics.aria_model_comparison', 'Compare vacuum and air drag using the same launch settings'),
-                disabled: !!d.targetMode || !!d.challengeActive || !!d.battleMode,
-                title: d.targetMode || d.challengeActive || d.battleMode ? __alloT('stem.physics.model_comparison_mission_disabled', 'Finish or end the active mission before comparing models.') : undefined,
+                disabled: !!(d.targetMode || d.challengeActive || d.obstacleMode || d.battleMode),
+                title: (d.targetMode || d.challengeActive || d.obstacleMode || d.battleMode) ? __alloT('stem.physics.model_comparison_mission_disabled', 'Finish or end the active mission before comparing models.') : undefined,
                 onClick: function () {
-                  if (d.targetMode || d.challengeActive || d.battleMode) return;
+                  if (d.targetMode || d.challengeActive || d.obstacleMode || d.battleMode) return;
                   var cv = document.getElementById('physicsCanvas');
                   if (!cv || !cv._startModelComparison) return;
                   upd('modelComparison', null);
                   upd('showOverlay', true);
+                  if (d.workspaceTab !== 'all') updTab('analyze');
                   cv._startModelComparison();
                 },
                 style: { minHeight: 44, backgroundColor: isContrast ? '#000000' : (isDark ? '#164e63' : '#ecfeff'), color: themeInk, borderColor: isContrast ? '#ffffff' : (isDark ? '#67e8f9' : '#0e7490') },
                 className: 'px-3 py-2 rounded-lg text-xs font-bold border disabled:opacity-50 disabled:cursor-not-allowed'
               }, __alloT('stem.physics.model_comparison_start', 'Compare vacuum & air drag (2 flights)')),
 
-              d.modelComparison && (function () {
+              showSec('analyze') && d.modelComparison && (function () {
                 var comparison = d.modelComparison;
                 var parameters = comparison.parameters;
                 var rows = [
@@ -5699,14 +6968,75 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                 React.createElement('p', { id: 'physics-gravity-presets-help', className: 'mb-2 text-xs text-slate-600' }, __alloT('stem.physics.gravity_presets_help', 'Changes gravity only. Launch angle, velocity, mass, and air drag stay as you set them.')),
                 React.createElement('div', { className: 'phys-gravity-grid' },
               PRESETS.map(function (p) {
-
-                return React.createElement("button", { key: p.label, type: 'button', 'data-gravity-preset': p.gravity, 'aria-pressed': d.gravity === p.gravity, style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }, onClick: function () { upd('gravity', p.gravity); },
+                var curObsGrav = d.obstacleMode && d.obstacleId ? PHYS_OBSTACLE_MISSIONS.find(function(m) { return m.id === d.obstacleId; }) : null;
+                var gravPresetLocked = (d.targetMode && d.targetConstraint && typeof d.targetConstraint.fixedGravity === 'number') || (d.challengeActive && d.challengeTier === 3) || !!(curObsGrav && typeof curObsGrav.fixedGravity === 'number');
+                return React.createElement("button", { key: p.label, type: 'button', 'data-gravity-preset': p.gravity, 'aria-pressed': d.gravity === p.gravity, disabled: !!gravPresetLocked, style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' }, onClick: function () { if (!gravPresetLocked) upd('gravity', p.gravity); },
 
                   className: "px-2.5 py-1.5 rounded-lg text-xs font-bold transition-all " + (d.gravity === p.gravity ? 'bg-sky-700 text-white' : 'bg-sky-50 text-sky-700 border border-sky-200 hover:bg-sky-100')
 
                 }, React.createElement('span', { className: 'block' }, p.label), React.createElement('span', { className: 'block mt-1 font-normal' }, p.gravity + ' m/s²'));
 
-              })))
+              })),
+                (Math.abs(((typeof d.gravity === 'number' && isFinite(d.gravity)) ? d.gravity : 9.8) - 1.6) < 0.05 && !!d.airResist) && (function () {
+                  var curObsDrag = d.obstacleMode && d.obstacleId ? PHYS_OBSTACLE_MISSIONS.find(function (m) { return m.id === d.obstacleId; }) : null;
+                  var vacLocked = !!(curObsDrag && typeof curObsDrag.drag === 'boolean');
+                  return React.createElement('div', {
+                    'data-physics-moon-drag-warning': true,
+                    role: 'status',
+                    className: 'phys-tier3-status mt-2 flex flex-wrap items-center justify-between gap-2'
+                  },
+                    React.createElement('span', { className: 'text-xs' }, '🌙 ' + __alloT('stem.physics.moon_drag_warning', 'Science check: Moon gravity is 1.6 m/s², but the real Moon is a near-vacuum with no air drag.')),
+                    React.createElement('button', {
+                      type: 'button',
+                      'data-physics-moon-vacuum-fix': true,
+                      disabled: vacLocked,
+                      className: 'phys-tier3-btn',
+                      'aria-label': __alloT('stem.physics.moon_vacuum_fix_aria', 'Turn off air drag to match the Moon vacuum'),
+                      onClick: function () { if (!vacLocked) upd('airResist', false); }
+                    }, __alloT('stem.physics.moon_vacuum_fix', 'Switch to Lunar Vacuum (Drag OFF)'))
+                  );
+                })()
+              ),
+
+              React.createElement('fieldset', { 'data-physics-object-presets': true, 'aria-describedby': 'physics-object-presets-help', style: { width: '100%', minWidth: 0 }, className: 'rounded-xl border border-emerald-200 p-3' },
+                React.createElement('legend', { className: 'px-1 text-xs font-bold' }, __alloT('stem.physics.object_presets_legend', 'Launcher object presets')),
+                React.createElement('p', { id: 'physics-object-presets-help', className: 'mb-2 text-xs' }, __alloT('stem.physics.object_presets_help', 'Sets launcher mass (1–10 kg) and enables air drag for real-world objects.')),
+                React.createElement('div', { className: 'phys-object-grid' },
+                  (function () {
+                    var objMeta = {
+                      foam: { emoji: '🧽', label: __alloT('stem.physics.obj_foam', 'Foam Ball') },
+                      medicine: { emoji: '🏀', label: __alloT('stem.physics.obj_medicine', 'Medicine Ball') },
+                      shotput: { emoji: '⚫', label: __alloT('stem.physics.obj_shotput', 'Shot Put') },
+                      cannonball: { emoji: '💣', label: __alloT('stem.physics.obj_cannonball', 'Cannonball') }
+                    };
+                    var objLocked = !!(d.targetMode || d.obstacleMode || d.battleMode);
+                    return PHYS_OBJECT_PRESETS.map(function (op) {
+                      var meta = objMeta[op.id] || { emoji: '⚪', label: op.id };
+                      var selectedObj = Number(d.mass) === op.mass && !!d.airResist;
+                      return React.createElement('button', {
+                        key: op.id, type: 'button',
+                        'data-object-preset': op.id,
+                        'aria-pressed': selectedObj,
+                        disabled: objLocked,
+                        title: objLocked ? __alloT('stem.physics.object_preset_locked', 'Finish or leave the active mission or duel to apply an object preset.') : undefined,
+                        style: { minHeight: 44, minWidth: 0, whiteSpace: 'normal', overflowWrap: 'anywhere' },
+                        onClick: function () {
+                          if (objLocked) return;
+                          setLabToolData(function(prev) {
+                            var current = prev.physics || {};
+                            if (current.targetMode || current.obstacleMode || current.battleMode) return prev;
+                            return Object.assign({}, prev, { physics: Object.assign({}, current, { mass: op.mass, airResist: true }) });
+                          });
+                          if (addToast) addToast(__alloT('stem.physics.object_preset_applied', 'Object preset applied: ') + meta.label + ' (' + op.mass + ' kg)', 'info');
+                        }
+                      },
+                        React.createElement('span', { className: 'block font-bold' }, meta.emoji + ' ' + meta.label),
+                        React.createElement('span', { className: 'block mt-1 font-normal' }, op.mass + ' kg · ' + __alloT('stem.physics.drag_on_short', 'Drag ON'))
+                      );
+                    });
+                  })()
+                )
+              )
 
             ),
 
@@ -5744,11 +7074,49 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
             ),
 
             // ── XP & Stats Bar ──
-            React.createElement("div", { 'data-physics-stats': true, className: "flex items-center gap-3 mb-2 px-1" },
+            React.createElement("div", { 'data-physics-stats': true, className: "flex items-center flex-wrap gap-3 mb-2 px-1" },
               React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#cbd5e1' : '#475569') } }, "\uD83D\uDE80 " + __alloT('stem.physics.launches_count', 'Launches: ') + (d.launchCount || 0)),
               React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#fbbf24' : '#92400e') } }, "\uD83C\uDFAF " + __alloT('stem.physics.targets_count', 'Targets: ') + (d.targetsHit || 0)),
               d.predictionStreak > 0 && React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#f0abfc' : '#86198f') } }, "\uD83D\uDCCF " + __alloT('stem.physics.prediction_streak_count', 'Estimation streak: ') + d.predictionStreak),
-              d.quizStreak > 0 && React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#fdba74' : '#9a3412') } }, "\uD83D\uDD25 " + __alloT('stem.physics.streak_count', 'Streak: ') + d.quizStreak)
+              d.quizStreak > 0 && React.createElement("span", { className: "text-[0.6875rem] font-bold", style: { color: isContrast ? '#ffff00' : (isDark ? '#fdba74' : '#9a3412') } }, "\uD83D\uDD25 " + __alloT('stem.physics.streak_count', 'Streak: ') + d.quizStreak),
+              React.createElement("button", { type: "button", 'data-physics-snapshot': true, "aria-label": __alloT('stem.physics.snapshot', 'Snapshot'), onClick: physSaveSnapshot, style: { minHeight: 44, minWidth: 44 }, className: "ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-700 to-purple-700 rounded-full hover:from-indigo-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.physics.snapshot', 'Snapshot'))
+            ),
+
+            // ── Workspace Focus Tabs & Grade Band Override ──
+            React.createElement('div', { 'data-physics-workspace-tabs': true },
+              React.createElement('div', { className: 'phys-workspace-tablist', role: 'group', 'aria-label': __alloT('stem.physics.workspace_tabs_aria', 'Workspace focus tabs') },
+                [
+                  { id: 'missions', label: '🎯 ' + __alloT('stem.physics.tab_missions', 'Missions') },
+                  { id: 'analyze', label: '📊 ' + __alloT('stem.physics.tab_analyze', 'Analyze') },
+                  { id: 'notebook', label: '📓 ' + __alloT('stem.physics.tab_notebook', 'Notebook') },
+                  { id: 'learn', label: '📖 ' + __alloT('stem.physics.tab_learn', 'Learn & Quiz') },
+                  { id: 'all', label: __alloT('stem.physics.tab_all', 'All panels') }
+                ].map(function(tab) {
+                  var active = physTab === tab.id;
+                  return React.createElement('button', {
+                    key: tab.id, type: 'button',
+                    'data-physics-workspace-tab': tab.id,
+                    'aria-pressed': active,
+                    onClick: function() { updTab(tab.id); }
+                  }, tab.label);
+                })
+              ),
+              React.createElement('div', { 'data-physics-band-picker': true, role: 'group', 'aria-label': __alloT('stem.physics.band_picker_aria', 'Reading and math complexity level') },
+                React.createElement('span', null, __alloT('stem.physics.band_label', 'Level:')),
+                [
+                  { id: '3-5', label: __alloT('stem.physics.band_35', '3–5') },
+                  { id: '6-8', label: __alloT('stem.physics.band_68', '6–8') },
+                  { id: '9-12', label: __alloT('stem.physics.band_912', '9–12') }
+                ].map(function(b) {
+                  var pressed = physBand === b.id;
+                  return React.createElement('button', {
+                    key: b.id, type: 'button', 'data-physics-band-btn': b.id,
+                    'aria-pressed': pressed,
+                    'aria-label': __alloT('stem.physics.band_btn_aria_prefix', 'Select grade band ') + b.label,
+                    onClick: function() { upd('userBand', b.id); }
+                  }, b.label);
+                })
+              )
             ),
 
             // \u2500\u2500 Live "Show Your Work" Formulas Panel \u2500\u2500
@@ -5798,7 +7166,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
             // ── Guided investigation notebook ──
             // Draft selections refer to recent run IDs. Saved reports copy the
             // complete observations, so clearing the live log preserves evidence.
-            (function() {
+            showSec('notebook') && (function() {
               var h = React.createElement;
               var P = window.StemLab._physics;
               var log = Array.isArray(d.runLog) ? d.runLog : [];
@@ -5812,7 +7180,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               var fieldStyle = { width: '100%', minWidth: 0, background: palette.surface, color: palette.ink, border: '1px solid ' + (isContrast ? '#ffffff' : (isDark ? '#7895ad' : '#788d9e')), borderRadius: 9, padding: '10px 12px', fontSize: 14 };
               var actionStyle = { minHeight: 44, padding: '9px 13px', borderRadius: 9, border: '1px solid ' + palette.border, background: palette.surface, color: palette.accent, fontSize: 13, fontWeight: 700 };
               var cardStyle = { background: palette.panel, color: palette.ink, border: '1px solid ' + palette.border, borderRadius: 12, padding: 15, minWidth: 0 };
-              var activeMode = !!(d.targetMode || d.challengeActive || d.battleMode);
+              var activeMode = !!(d.targetMode || d.challengeActive || d.obstacleMode || d.battleMode);
               var activities = [
                 { id: 'speed_squared', title: __alloT('stem.physics.investigation_speed_title', 'Does doubling speed quadruple range?'),
                   question: __alloT('stem.physics.investigation_speed_question', 'How does doubling launch speed change range when air drag is off?'),
@@ -5860,7 +7228,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                 if (cv && cv._cancelFlight) cv._cancelFlight();
                 setLabToolData(function(prev) {
                   var current = prev.physics || {};
-                  if (current.targetMode || current.challengeActive || current.battleMode) return prev;
+                  if (current.targetMode || current.challengeActive || current.obstacleMode || current.battleMode) return prev;
                   return Object.assign({}, prev, { physics: Object.assign({}, current, activity.trials[index], {
                     showGraphs: true, showOverlay: true, investigationOpen: true,
                     investigationNotice: __alloT('stem.physics.investigation_trial_ready', 'Trial settings applied. Use Launch to collect a measured flight.')
@@ -5927,7 +7295,10 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                       activities.map(function(a) { return h('option', { key: a.id, value: a.id }, a.title); })
                     ),
                     activity && h('div', { style: { marginTop: 10, display: 'grid', gap: 8, fontSize: 13 } },
-                      h('h4', { 'data-physics-investigation-activity-title': true, style: { margin: 0, fontSize: 15, lineHeight: 1.5, fontWeight: 800, overflowWrap: 'anywhere' } }, activity.title),
+                      h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                        h('h4', { 'data-physics-investigation-activity-title': true, style: { margin: 0, fontSize: 15, lineHeight: 1.5, fontWeight: 800, overflowWrap: 'anywhere' } }, activity.title),
+                        physSpeakButton('activity-' + activity.id, activity.title + '. ' + activity.question + ' ' + activity.changed + ' ' + activity.held, __alloT('stem.physics.read_activity_aria', 'Read this investigation aloud'))
+                      ),
                       h('p', null, activity.changed), h('p', null, activity.held),
                       h('p', { 'data-physics-investigation-trial-progress': true, style: { margin: 0, fontWeight: 700 } }, trialRuns.filter(Boolean).length + '/2 ' + __alloT('stem.physics.investigation_recent_trials', 'trials matched in the recent log')),
                       h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 10, minWidth: 0 } }, activity.trials.map(function(trial, index) {
@@ -6024,7 +7395,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
             // This is where that instruction becomes checkable: each row names
             // what changed since the run above it and says outright when a
             // comparison confounds two changes at once.
-            (Array.isArray(d.runLog) ? d.runLog : []).length > 0 && (function () {
+            showSec('notebook') && (Array.isArray(d.runLog) ? d.runLog : []).length > 0 && (function () {
               var log = d.runLog;
               var historyCanvas = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
               var retainedTrails = historyCanvas && historyCanvas._trails || [];
@@ -6034,10 +7405,11 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                 React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2 flex-wrap" },
                   React.createElement("p", { className: "text-[0.6875rem] font-bold text-indigo-800 uppercase tracking-wider" },
                     "🧪 " + __alloT('stem.physics.runlog_title', 'Experiment log') + " (" + log.length + ")"),
-                  React.createElement("div", { className: "flex gap-1.5" },
+                  React.createElement("div", { className: "flex flex-wrap gap-1.5" },
                     React.createElement("button", {
                       type: "button",
                       "aria-label": __alloT('stem.physics.aria_copy_runlog', 'Copy the experiment log as CSV for a spreadsheet'),
+                      style: { minHeight: 44 },
                       onClick: function () {
                         var csv = physRunLogCsv();
                         if (!csv) return;
@@ -6051,7 +7423,29 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                     }, "📋 " + __alloT('stem.physics.copy_csv', 'Copy CSV')),
                     React.createElement("button", {
                       type: "button",
+                      'data-physics-download-runlog-csv': true,
+                      "aria-label": __alloT('stem.physics.aria_download_runlog_csv', 'Download the experiment log as a CSV file'),
+                      style: { minHeight: 44 },
+                      onClick: function () {
+                        var csv = physRunLogCsv();
+                        if (!csv) return;
+                        var ok = physDownloadCsv(csv, 'projectile-experiment-log.csv');
+                        if (addToast) addToast((ok ? '⬇ ' : '⚠️ ') + (ok ? __alloT('stem.physics.toast_runlog_downloaded', 'Downloaded projectile-experiment-log.csv') : __alloT('stem.physics.toast_csv_failed', 'Could not copy automatically. Select the table and copy it by hand.')), ok ? 'success' : 'warning');
+                      },
+                      className: "px-2 py-1 rounded-lg text-[0.625rem] font-bold bg-white text-indigo-800 border border-indigo-300 hover:bg-indigo-100"
+                    }, "⬇ " + __alloT('stem.physics.download_csv', 'Download CSV')),
+                    React.createElement("button", {
+                      type: "button",
+                      'data-physics-handoff-datastudio': true,
+                      "aria-label": __alloT('stem.physics.aria_open_in_datastudio', 'Send experiment log runs to Data Studio to graph and fit trendlines'),
+                      style: { minHeight: 44 },
+                      onClick: physOpenInDataStudio,
+                      className: "px-2 py-1 rounded-lg text-[0.625rem] font-bold bg-white text-indigo-800 border border-indigo-300 hover:bg-indigo-100"
+                    }, "📊 " + __alloT('stem.physics.open_in_datastudio', 'Open in Data Studio')),
+                    React.createElement("button", {
+                      type: "button",
                       "aria-label": __alloT('stem.physics.aria_clear_runlog', 'Clear the experiment log'),
+                      style: { minHeight: 44 },
                       onClick: function () { upd('runLog', []); },
                       className: "px-2 py-1 rounded-lg text-[0.625rem] font-bold bg-white text-slate-700 border border-slate-300 hover:bg-slate-100"
                     }, "🧹 " + __alloT('stem.physics.runlog_clear', 'Clear log'))
@@ -6140,7 +7534,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
 
             // ── Range explorer: predict the best angle, then read the whole
             // range-angle curve and fit g from the student's own flights ──
-            d.showRangeExplorer && (function() {
+            showSec('notebook') && d.showRangeExplorer && (function() {
               var h = React.createElement;
               var P = window.StemLab._physics;
               var rx = d.rangeExplorer;
@@ -6673,7 +8067,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               ]);
             })(),
 
-            d.showFormulas && (function() {
+            showSec('analyze') && d.showFormulas && (function() {
               var ang = parseFloat((typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45);
               var vel = parseFloat(d.velocity || 25);
               var grav = parseFloat((typeof d.gravity === 'number' && isFinite(d.gravity)) ? d.gravity : 9.8);
@@ -6734,17 +8128,17 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
 
             // ── Motion Component Graphs (Vx-vs-t, Vy-vs-t) ──
             // Explain the recorded model, even after launch controls change.
-            analysisOpen && analysisGraphs.prediction,
+            showSec('analyze') && analysisOpen && !d.showRangeExplorer && analysisGraphs.prediction,
 
             // ── Learn Panel (Newton's Laws & Projectile Motion) ──
             // Grade-banded like the Myths panel: 3-5 sees the concrete cards,
             // 6-8 adds Newton's 2nd law and energy, 9-12 adds drag. A toggle
             // shows everything for a student who wants to read ahead.
-            d.showLearn && (function () {
+            showSec('learn') && d.showLearn && (function () {
               var bandRank = { '3-5': 0, '6-8': 1, '9-12': 2 };
               var myRank = bandRank[physBand] || 0;
               var card = function (band, key, labelCls, label, body, isMyth) {
-                return { band: band, key: key, node: React.createElement("div", { key: key, className: isMyth ? "rounded-lg p-2 border border-amber-300 bg-amber-100/70" : "bg-white rounded-lg p-2 border border-emerald-100" },
+                return { band: band, key: key, textForTTS: label + ' ' + body, node: React.createElement("div", { key: key, className: isMyth ? "rounded-lg p-2 border border-amber-300 bg-amber-100/70" : "bg-white rounded-lg p-2 border border-emerald-100" },
                   React.createElement("span", { className: "font-bold " + labelCls }, label),
                   body
                 ) };
@@ -6762,15 +8156,19 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               ];
               var shown = cards.filter(function (c) { return d.learnShowAll || (bandRank[c.band] || 0) <= myRank; });
               var hidden = cards.length - shown.length;
-              return React.createElement("div", { className: "bg-emerald-50 rounded-xl border border-emerald-200 p-4 mb-3 animate-in fade-in duration-200" },
-                React.createElement("div", { className: "flex items-center justify-between gap-2 mb-2" },
+              return React.createElement("div", { 'data-physics-learning-panel': 'learn', className: "bg-emerald-50 rounded-xl border border-emerald-200 p-4 mb-3 animate-in fade-in duration-200" },
+                React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2 mb-2" },
                   React.createElement("h4", { className: "text-sm font-bold text-emerald-800" }, "📖 " + __alloT('stem.physics.physics_concepts', 'Physics Concepts')),
-                  (hidden > 0 || d.learnShowAll) && React.createElement("button", {
-                    type: "button",
-                    "aria-pressed": !!d.learnShowAll,
-                    onClick: function () { upd('learnShowAll', !d.learnShowAll); },
-                    className: "px-2 py-1 rounded-lg text-[0.625rem] font-bold border " + (d.learnShowAll ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-100')
-                  }, d.learnShowAll ? __alloT('stem.physics.learn_show_my_level', 'Show my level') : __alloT('stem.physics.learn_show_all', 'Show all concepts') + ' (+' + hidden + ')')
+                  React.createElement("div", { className: "flex items-center flex-wrap gap-2" },
+                    physSpeakButton('learn-panel', shown.map(function(c) { return c.textForTTS || ''; }).join(' '), __alloT('stem.physics.read_concepts_aria', 'Read visible physics concepts aloud')),
+                    (hidden > 0 || d.learnShowAll) && React.createElement("button", {
+                      type: "button",
+                      "aria-pressed": !!d.learnShowAll,
+                      style: { minHeight: 44 },
+                      onClick: function () { upd('learnShowAll', !d.learnShowAll); },
+                      className: "px-3 py-1 rounded-lg text-xs font-bold border " + (d.learnShowAll ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-emerald-800 border-emerald-300 hover:bg-emerald-100')
+                    }, d.learnShowAll ? __alloT('stem.physics.learn_show_my_level', 'Show my level') : __alloT('stem.physics.learn_show_all', 'Show all concepts') + ' (+' + hidden + ')')
+                  )
                 ),
                 React.createElement("div", { className: "grid grid-cols-1 gap-2 text-xs text-emerald-900" }, shown.map(function (c) { return c.node; }))
               );
@@ -6781,12 +8179,12 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
 
 
             // ═══ TARGET DESTRUCTION MODE UI ═══
-            React.createElement("div", { 'data-physics-learning-panel': 'mission', className: "bg-gradient-to-r from-red-50 to-amber-50 rounded-xl border border-red-200 p-3 mb-3" },
+            showSec('missions') && React.createElement("div", { 'data-physics-learning-panel': 'mission', className: "bg-gradient-to-r from-red-50 to-amber-50 rounded-xl border border-red-200 p-3 mb-3" },
               React.createElement("div", { className: "flex items-center justify-between mb-2" },
                 React.createElement("p", { className: "text-[0.6875rem] font-bold text-red-700 uppercase tracking-wider" }, "\u{1F3AF} " + __alloT('stem.physics.target_mode_title', 'Target Destruction Mode')),
                 !d.targetMode
                   ? React.createElement("button", { "aria-label": __alloT('stem.physics.start_mission', 'Start Mission'),
-                      onClick: function() { upd('targetMode', true); startTargetRound(1); },
+                      onClick: function() { startTargetRound(1); },
                       className: "px-3 py-1 bg-red-600 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-red-700 transition-all"
                     }, "\u25B6 " + __alloT('stem.physics.start_mission', 'Start Mission'))
                   : React.createElement("div", { className: "flex gap-1.5" },
@@ -6818,12 +8216,15 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               d.targetMode && React.createElement("div", { className: "space-y-2" },
                 // Round header
                 React.createElement("div", { className: "bg-white rounded-lg p-2 border border-red-100" },
-                  React.createElement("div", { className: "flex items-center justify-between" },
+                  React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2" },
                     React.createElement("span", { className: "text-xs font-bold text-red-800" },
                       __alloT('stem.physics.round_prefix', 'Round ') + (d.targetRound || 1) + "/" + TARGET_LEVELS.length + " — " +
                       (TARGET_LEVELS[Math.min((d.targetRound || 1) - 1, TARGET_LEVELS.length - 1)] || {}).label
                     ),
-                    React.createElement("span", { className: "text-[0.6875rem] font-bold text-amber-700" }, __alloT('stem.physics.score_prefix', 'Score: ') + (d.targetScore || 0) + " XP")
+                    React.createElement("div", { className: "flex items-center gap-2" },
+                      physSpeakButton('target-round', ((TARGET_LEVELS[Math.min((d.targetRound || 1) - 1, TARGET_LEVELS.length - 1)] || {}).label || '') + ': ' + ((TARGET_LEVELS[Math.min((d.targetRound || 1) - 1, TARGET_LEVELS.length - 1)] || {}).desc || ''), __alloT('stem.physics.read_mission_aria', 'Read current target mission aloud')),
+                      React.createElement("span", { className: "text-[0.6875rem] font-bold text-amber-700" }, __alloT('stem.physics.score_prefix', 'Score: ') + (d.targetScore || 0) + " XP")
+                    )
                   ),
                   React.createElement("p", { className: "text-[0.6875rem] text-slate-600 mt-1" },
                     (TARGET_LEVELS[Math.min((d.targetRound || 1) - 1, TARGET_LEVELS.length - 1)] || {}).desc
@@ -6833,9 +8234,13 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                 // Constraint indicator
                 d.targetConstraint && React.createElement("div", { className: "flex items-center gap-2 bg-red-100 rounded-lg px-3 py-1.5" },
                   React.createElement("span", { className: "text-xs font-bold text-red-700" },
-                    d.targetConstraint.type === 'fixedAngle'
-                      ? "\u{1F512} " + __alloT('stem.physics.lock_angle_prefix', 'Angle LOCKED at ') + d.targetConstraint.value + __alloT('stem.physics.lock_angle_suffix', '\u00B0 \u2014 adjust velocity or gravity to hit the target')
-                      : "\u{1F512} " + __alloT('stem.physics.lock_velocity_prefix', 'Velocity LOCKED at ') + d.targetConstraint.value + __alloT('stem.physics.lock_velocity_suffix', ' m/s \u2014 adjust angle or gravity to hit the target')
+                    (typeof d.targetConstraint.fixedGravity === 'number')
+                      ? (d.targetConstraint.type === 'fixedAngle'
+                          ? "\u{1F512} " + __alloT('stem.physics.lock_angle_grav_prefix', 'Angle LOCKED at ') + d.targetConstraint.value + "\u00B0, " + __alloT('stem.physics.lock_grav_mid', 'gravity fixed at ') + d.targetConstraint.fixedGravity + __alloT('stem.physics.lock_grav_vel_suffix', ' m/s\u00B2 \u2014 adjust velocity to hit the target')
+                          : "\u{1F512} " + __alloT('stem.physics.lock_vel_grav_prefix', 'Velocity LOCKED at ') + d.targetConstraint.value + " m/s, " + __alloT('stem.physics.lock_grav_mid', 'gravity fixed at ') + d.targetConstraint.fixedGravity + __alloT('stem.physics.lock_grav_ang_suffix', ' m/s\u00B2 \u2014 adjust angle to hit the target'))
+                      : (d.targetConstraint.type === 'fixedAngle'
+                          ? "\u{1F512} " + __alloT('stem.physics.lock_angle_prefix', 'Angle LOCKED at ') + d.targetConstraint.value + __alloT('stem.physics.lock_angle_suffix', '\u00B0 \u2014 adjust velocity or gravity to hit the target')
+                          : "\u{1F512} " + __alloT('stem.physics.lock_velocity_prefix', 'Velocity LOCKED at ') + d.targetConstraint.value + __alloT('stem.physics.lock_velocity_suffix', ' m/s \u2014 adjust angle or gravity to hit the target'))
                   )
                 ),
 
@@ -6879,22 +8284,27 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
             ),
 
             // ── Multi-Tier Challenges ──
-            React.createElement("div", { 'data-physics-learning-panel': 'challenges', className: "bg-gradient-to-r from-violet-50 to-pink-50 rounded-xl border border-violet-200 p-3 mb-3" },
-              React.createElement("p", { className: "text-[0.6875rem] font-bold text-violet-700 uppercase tracking-wider mb-2" }, "\uD83C\uDFC6 " + __alloT('stem.physics.challenges_title', 'Challenges')),
-              React.createElement("div", { className: "grid grid-cols-3 gap-2" },
+            showSec('missions') && React.createElement("div", { 'data-physics-learning-panel': 'challenges', className: "bg-gradient-to-r from-violet-50 to-pink-50 rounded-xl border border-violet-200 p-3 mb-3" },
+              React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2 mb-2" },
+                React.createElement("p", { className: "text-[0.6875rem] font-bold text-violet-700 uppercase tracking-wider m-0" }, "\uD83C\uDFC6 " + __alloT('stem.physics.challenges_title', 'Challenges')),
+                d.challengeActive && React.createElement("button", {
+                  type: "button",
+                  'data-physics-leave-challenge': true,
+                  'aria-label': __alloT('stem.physics.leave_challenge_aria', 'Leave active challenge and restore previous settings'),
+                  style: { minHeight: 44 },
+                  onClick: endChallengeMode,
+                  className: "px-3 py-1 bg-slate-700 text-white text-xs font-bold rounded-lg hover:bg-slate-600 transition-all"
+                }, "\u2716 " + __alloT('stem.physics.leave_challenge', 'Leave Challenge'))
+              ),
+              React.createElement("div", { className: "phys-tier3-grid" },
                 TIER_CHALLENGES.map(function(ch) {
                   var active = d.challengeTier === ch.tier && d.challengeActive;
                   var completed = d['challenge' + ch.tier + 'Done'];
                   return React.createElement("button", { key: ch.tier,
+                    type: "button",
                     "aria-pressed": !!active,
-                    onClick: function() {
-                      upd('challengeTier', ch.tier);
-                      upd('challengeActive', true);
-                      upd('challengeFeedback', null);
-                      if (ch.req === 'airResist') upd('airResist', true);
-                      if (ch.req === 'mars') upd('gravity', 3.7);
-                      addToast('\uD83C\uDFC6 ' + ch.desc + ' — ' + __alloT('stem.physics.toast_fire_away', 'fire away!'), 'info');
-                    },
+                    style: { minHeight: 44 },
+                    onClick: function() { startChallengeTier(ch.tier); },
                     className: "p-2 rounded-lg text-center transition-all border-2 " +
                       (completed ? 'bg-emerald-100 border-emerald-400' : active ? 'bg-violet-100 border-violet-400 shadow-md' : 'bg-white border-slate-200 hover:border-violet-600')
                   },
@@ -6910,11 +8320,149 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               }, d.challengeFeedback.msg)
             ),
 
+            // ── 2D Obstacle & Platform Engineering ──
+            showSec('missions') && (function() {
+              var obsMeta = {
+                cliff: { emoji: '🪨', title: __alloT('stem.physics.obs_title_cliff', 'Cliff Rescue'), desc: __alloT('stem.physics.obs_desc_cliff', 'Launch from h₀ = 20 m cliff to land at 80 m (±8 m).') },
+                wall: { emoji: '🧱', title: __alloT('stem.physics.obs_title_wall', 'Castle Wall'), desc: __alloT('stem.physics.obs_desc_wall', 'Clear an 18 m wall at x = 50 m and hit 85 m (±8 m).') },
+                rooftop: { emoji: '🏢', title: __alloT('stem.physics.obs_title_rooftop', 'Rooftop Landing'), desc: __alloT('stem.physics.obs_desc_rooftop', 'Land safely on a 15 m elevated rooftop (62–78 m).') },
+                canyon_drag: { emoji: '🌬️', title: __alloT('stem.physics.obs_title_canyon_drag', 'Canyon Drag Shot'), desc: __alloT('stem.physics.obs_desc_canyon_drag', 'With air drag ON from h₀ = 25 m, clear a 20 m wall at 45 m to hit 75 m.') }
+              };
+              var activeObs = d.obstacleMode && d.obstacleId ? PHYS_OBSTACLE_MISSIONS.find(function(m) { return m.id === d.obstacleId; }) : null;
+              var guideText = __alloT('stem.physics.obstacles_help', 'Choose an engineering barrier or elevated pad mission. Walls block low trajectories and elevated rooftops catch downward crossings.');
+              return React.createElement('section', { 'data-physics-learning-panel': 'obstacles', 'aria-labelledby': 'physics-obstacles-heading', className: 'phys-tier3-panel' },
+                React.createElement('div', { className: 'flex items-center justify-between flex-wrap gap-2 mb-2' },
+                  React.createElement('h4', { id: 'physics-obstacles-heading', className: 'text-xs font-bold uppercase tracking-wider m-0' }, '🧱 ' + __alloT('stem.physics.obstacles_title', '2D Obstacle & Platform Engineering')),
+                  React.createElement('div', { className: 'flex flex-wrap items-center gap-2' },
+                    physSpeakButton('obstacles-guide', guideText, __alloT('stem.physics.obstacles_speak_aria', 'Read obstacle engineering instructions aloud')),
+                    d.obstacleMode && React.createElement('button', {
+                      type: 'button',
+                      'data-physics-leave-obstacle': true,
+                      'aria-label': __alloT('stem.physics.leave_obstacle_aria', 'Leave active obstacle mission and restore previous settings'),
+                      className: 'phys-tier3-btn',
+                      onClick: endObstacleMode
+                    }, '\u2716 ' + __alloT('stem.physics.leave_obstacle', 'Leave Obstacle Mission'))
+                  )
+                ),
+                React.createElement('p', { className: 'text-xs phys-tier3-muted mb-2' }, guideText),
+                React.createElement('div', { className: 'phys-tier3-grid' },
+                  PHYS_OBSTACLE_MISSIONS.map(function(m) {
+                    var meta = obsMeta[m.id] || { emoji: '🎯', title: m.id, desc: '' };
+                    var active = !!(d.obstacleMode && d.obstacleId === m.id);
+                    var done = !!(d.obstacleDone && d.obstacleDone[m.id]);
+                    return React.createElement('button', {
+                      key: m.id,
+                      type: 'button',
+                      'data-physics-obstacle': m.id,
+                      'aria-pressed': active,
+                      className: 'phys-tier3-card',
+                      onClick: function() { startObstacleMission(m.id); }
+                    },
+                      React.createElement('span', { className: 'block text-xs font-bold' }, (done ? '\u2705 ' : '') + meta.emoji + ' ' + meta.title),
+                      React.createElement('span', { className: 'block text-xs phys-tier3-muted mt-1' }, meta.desc),
+                      React.createElement('span', { className: 'block text-xs font-bold phys-tier3-accent mt-1' }, '+' + m.reward + ' XP')
+                    );
+                  })
+                ),
+                activeObs && React.createElement('p', { 'data-physics-obstacle-active-spec': activeObs.id, className: 'text-xs phys-tier3-muted mt-2 mb-0' },
+                  __alloT('stem.physics.obs_locked_spec', 'Locked mission setup: ') + 'h₀ = ' + activeObs.fixedHeight + ' m · g = ' + activeObs.fixedGravity + ' m/s² · ' + (activeObs.drag ? __alloT('stem.physics.drag_on_short', 'Drag ON') : __alloT('stem.physics.drag_off_short', 'Drag OFF'))
+                ),
+                d.obstacleFeedback && React.createElement('p', { role: 'status', 'aria-live': 'polite', className: 'phys-tier3-status', 'data-physics-obstacle-feedback': d.obstacleFeedback.type || 'info' }, d.obstacleFeedback.msg)
+              );
+            })(),
+
+            // ── Artillery Duel (vs Coach Bot or 2P Pass & Play) ──
+            showSec('missions') && (function() {
+              var diffVal = d.aiDifficulty || 'medium';
+              var p1Hp = d.playerHP != null ? d.playerHP : 3;
+              var p2Hp = d.enemyHP != null ? d.enemyHP : 3;
+              var duelFinished = p1Hp <= 0 || p2Hp <= 0;
+              var turnText = duelFinished
+                ? __alloT('stem.physics.battle_over', 'Duel finished')
+                : d.isPlayerTurn
+                  ? __alloT('stem.physics.battle_turn_p1', 'Player 1 turn')
+                  : d.battleType === 'pass'
+                    ? __alloT('stem.physics.battle_turn_p2', 'Player 2 turn')
+                    : __alloT('stem.physics.battle_turn_bot', 'Bot turn');
+              return React.createElement('section', { 'data-physics-learning-panel': 'battle', 'aria-labelledby': 'physics-battle-heading', className: 'phys-tier3-panel' },
+                React.createElement('div', { className: 'flex items-center justify-between flex-wrap gap-2 mb-2' },
+                  React.createElement('h4', { id: 'physics-battle-heading', className: 'text-xs font-bold uppercase tracking-wider m-0' }, '⚔️ ' + __alloT('stem.physics.battle_title', 'Artillery Duel')),
+                  React.createElement('div', { className: 'flex flex-wrap items-center gap-2' },
+                    !d.battleMode && React.createElement('button', {
+                      type: 'button',
+                      'data-physics-battle-start': 'coach',
+                      'aria-label': __alloT('stem.physics.battle_vs_bot_aria', 'Start Artillery Duel against Bot'),
+                      className: 'phys-tier3-primary',
+                      onClick: function() { startBattleMode('coach', diffVal); }
+                    }, '🤖 ' + __alloT('stem.physics.battle_vs_bot', 'Duel vs Bot')),
+                    !d.battleMode && React.createElement('button', {
+                      type: 'button',
+                      'data-physics-battle-start': 'pass',
+                      'aria-label': __alloT('stem.physics.battle_pass_play_aria', 'Start 2-player Pass & Play Artillery Duel'),
+                      className: 'phys-tier3-btn',
+                      onClick: function() { startBattleMode('pass', diffVal); }
+                    }, '👥 ' + __alloT('stem.physics.battle_pass_play', '2P Pass & Play')),
+                    (!d.battleMode || d.battleType !== 'pass') && React.createElement('select', {
+                      'data-physics-battle-difficulty': true,
+                      'aria-label': __alloT('stem.physics.battle_diff_aria', 'Bot difficulty level'),
+                      className: 'phys-tier3-select',
+                      value: diffVal,
+                      onChange: function(e) { upd('aiDifficulty', e.target.value); }
+                    },
+                      React.createElement('option', { value: 'easy' }, __alloT('stem.physics.battle_diff_easy', 'Bot: Easy')),
+                      React.createElement('option', { value: 'medium' }, __alloT('stem.physics.battle_diff_medium', 'Bot: Medium')),
+                      React.createElement('option', { value: 'hard' }, __alloT('stem.physics.battle_diff_hard', 'Bot: Hard'))
+                    ),
+                    d.battleMode && React.createElement('button', {
+                      type: 'button',
+                      'data-physics-battle-rematch': true,
+                      className: 'phys-tier3-btn',
+                      onClick: function() { startBattleMode(d.battleType || 'coach', diffVal); }
+                    }, '🔄 ' + __alloT('stem.physics.battle_rematch', 'New Duel')),
+                    d.battleMode && React.createElement('button', {
+                      type: 'button',
+                      'data-physics-leave-battle': true,
+                      'aria-label': __alloT('stem.physics.leave_battle_aria', 'Leave Artillery Duel and restore previous settings'),
+                      className: 'phys-tier3-btn',
+                      onClick: endBattleMode
+                    }, '\u2716 ' + __alloT('stem.physics.leave_battle', 'Leave Duel'))
+                  )
+                ),
+                !d.battleMode && React.createElement('p', { className: 'text-xs phys-tier3-muted mb-0' },
+                  __alloT('stem.physics.battle_intro', 'Test your kinematics aim in a 3-HP outpost duel vs the Bot or pass-and-play with a partner.')
+                ),
+                d.battleMode && React.createElement('div', { 'data-physics-battle-hud': true, className: 'phys-tier3-grid mt-2' },
+                  React.createElement('div', { className: 'phys-tier3-card' },
+                    React.createElement('span', { className: 'block text-xs phys-tier3-muted' }, __alloT('stem.physics.battle_p1_hp', 'Player 1 HP')),
+                    React.createElement('strong', { className: 'block text-sm mt-1', 'data-physics-battle-p1hp': p1Hp }, p1Hp + ' / 3')
+                  ),
+                  React.createElement('div', { className: 'phys-tier3-card' },
+                    React.createElement('span', { className: 'block text-xs phys-tier3-muted' }, d.battleType === 'pass' ? __alloT('stem.physics.battle_p2_hp', 'Player 2 HP') : __alloT('stem.physics.battle_bot_hp', 'Bot Outpost HP')),
+                    React.createElement('strong', { className: 'block text-sm mt-1', 'data-physics-battle-p2hp': p2Hp }, p2Hp + ' / 3')
+                  ),
+                  React.createElement('div', { className: 'phys-tier3-card' },
+                    React.createElement('span', { className: 'block text-xs phys-tier3-muted' }, __alloT('stem.physics.battle_outpost_turn', 'Outpost & Turn')),
+                    React.createElement('strong', { className: 'block text-sm mt-1', 'data-physics-battle-dist': d.enemyDist || 0 }, Math.round(d.enemyDist || 0) + ' m (±8 m) · ' + turnText)
+                  )
+                ),
+                d.battleMode && d.battleFeedback && React.createElement('p', { role: 'status', 'aria-live': 'polite', className: 'phys-tier3-status', 'data-physics-battle-feedback': d.battleFeedback.type || 'info' }, d.battleFeedback.msg),
+                d.battleMode && Array.isArray(d.battleLog) && d.battleLog.length > 0 && React.createElement('ul', { 'data-physics-battle-log': true, className: 'mt-2 space-y-1 text-xs phys-tier3-muted list-none p-0 m-0' },
+                  d.battleLog.slice(-4).map(function(entry, idx) {
+                    return React.createElement('li', { key: idx }, entry);
+                  })
+                )
+              );
+            })(),
+
             // ── Kinematic Equations ──
 
-            React.createElement("div", { 'data-physics-learning-panel': 'equations', className: "bg-gradient-to-r from-sky-50 to-indigo-50 rounded-xl border border-sky-200 p-3 mb-3" },
+            showSec('analyze') && React.createElement("div", { 'data-physics-learning-panel': 'equations', className: "bg-gradient-to-r from-sky-50 to-indigo-50 rounded-xl border border-sky-200 p-3 mb-3" },
 
-              React.createElement("p", { className: "text-[0.6875rem] font-bold text-sky-700 uppercase tracking-wider mb-2" }, "\uD83D\uDCDD " + __alloT('stem.physics.kinematic_equations_general', 'Kinematic equations (no air drag)')),
+              React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2 mb-2" },
+                React.createElement("p", { className: "text-[0.6875rem] font-bold text-sky-700 uppercase tracking-wider" }, "\uD83D\uDCDD " + __alloT('stem.physics.kinematic_equations_general', 'Kinematic equations (no air drag)')),
+                React.createElement("button", { type: "button", 'data-physics-toggle-work': true, "aria-pressed": !!d.showFormulas, style: { minHeight: 44 }, onClick: function () { upd('showFormulas', !d.showFormulas); }, className: "px-3 py-1 rounded-lg text-xs font-bold border border-sky-300 bg-white text-sky-800 hover:bg-sky-100" },
+                  d.showFormulas ? __alloT('stem.physics.hide_work_numbers', 'Hide step-by-step numbers') : __alloT('stem.physics.show_work_numbers', 'Show step-by-step numbers'))
+              ),
               React.createElement('p', { className: 'text-xs text-slate-700 mb-2' }, __alloT('stem.physics.formula_height_definitions', 'h₀ is launch height above ground; landing is y = 0. Initial horizontal velocity is vx₀ = v cos(θ), and initial vertical velocity is vy₀ = v sin(θ).')),
 
               React.createElement("div", { className: "grid grid-cols-2 gap-2" },
@@ -6957,7 +8505,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
 
             ),
 
-            React.createElement("div", { 'data-physics-ideal-summary': true, 'aria-label': __alloT('stem.physics.ideal_current_prediction', 'Ideal prediction for the current launch settings, without air drag'), className: "grid grid-cols-3 gap-2 mb-3 text-center" },
+            showSec('analyze') && React.createElement("div", { 'data-physics-ideal-summary': true, 'aria-label': __alloT('stem.physics.ideal_current_prediction', 'Ideal prediction for the current launch settings, without air drag'), className: "grid grid-cols-3 gap-2 mb-3 text-center" },
 
               React.createElement("div", { className: "p-2 bg-sky-50 rounded-lg border border-sky-200" },
 
@@ -6985,129 +8533,532 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
 
             ),
 
-            // ── Calculate the Landing Quiz ──
-
-            React.createElement("div", { 'data-physics-learning-panel': 'quiz', className: "mt-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3" },
-
-              React.createElement("div", { className: "flex items-center justify-between mb-2" },
-
-                React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-700 uppercase tracking-wider" }, "\uD83C\uDFAF " + __alloT('stem.physics.predict_the_landing', 'Calculate the Landing')),
-
-                React.createElement("button", { "aria-label": __alloT('stem.physics.aria_generate_quiz', 'Generate range calculation quiz'),
-
-                  onClick: function () {
-
-                    var qAngles = [20, 30, 35, 40, 45, 50, 55, 60, 70];
-
-                    var qVels = [15, 20, 25, 30, 35, 40];
-
-                    var qGravs = [9.8, 1.6, 3.7, 24.8];
-
-                    var qa = qAngles[Math.floor(Math.random() * qAngles.length)];
-
-                    var qv = qVels[Math.floor(Math.random() * qVels.length)];
-
-                    var qg = qGravs[Math.floor(Math.random() * qGravs.length)];
-
-                    var qrad = qa * Math.PI / 180;
-
-                    var qRange = (qv * qv * Math.sin(2 * qrad)) / qg;
-
-                    var opts = [qRange];
-
-                    while (opts.length < 4) {
-
-                      var fake = qRange * (0.3 + Math.random() * 1.8);
-
-                      if (Math.abs(fake - qRange) > qRange * 0.15) opts.push(fake);
-
-                    }
-
-                    opts.sort(function () { return Math.random() - 0.5; });
-
-                    upd('quizActive', true); upd('quizAngle', qa); upd('quizVel', qv); upd('quizGrav', qg);
-
-                    upd('quizAnswer', qRange); upd('quizOptions', opts); upd('quizPicked', null); upd('quizFeedback', null);
-
-                  }, className: "px-3 py-1 bg-amber-700 text-white text-[0.6875rem] font-bold rounded-lg hover:bg-amber-700 transition-all"
-
-                }, d.quizActive ? "\uD83D\uDD04 " + __alloT('stem.physics.new_question', 'New Question') : "\u25B6 " + __alloT('stem.physics.start_quiz', 'Start Quiz'))
-
-              ),
-
-              d.quizActive && React.createElement("div", { className: "space-y-2" },
-                React.createElement('p', { className: 'text-xs text-slate-700' }, __alloT('stem.physics.quiz_ground_assumption', 'This calculation quiz assumes no air drag and launch and landing at ground level, regardless of the current simulator settings.')),
-
-                React.createElement("p", { className: "text-xs text-slate-600" }, __alloT('stem.physics.quiz_q_prefix', 'A projectile is launched at '), React.createElement("b", null, d.quizAngle + "\u00B0"), __alloT('stem.physics.quiz_q_with_velocity', ' with velocity '), React.createElement("b", null, d.quizVel + " m/s"), __alloT('stem.physics.quiz_q_and_gravity', ' and gravity '), React.createElement("b", null, d.quizGrav + " m/s\u00B2" + ({ '9.8': __alloT('stem.physics.planet_earth_paren', ' (Earth)'), '1.6': __alloT('stem.physics.planet_moon_paren', ' (Moon)'), '3.7': __alloT('stem.physics.planet_mars_paren', ' (Mars)'), '24.8': __alloT('stem.physics.planet_jupiter_paren', ' (Jupiter)') }[String(d.quizGrav)] || '')), __alloT('stem.physics.quiz_q_suffix', '. How far does it land?')),
-
-                React.createElement("div", { className: "grid grid-cols-2 gap-2" },
-
-                  (d.quizOptions || []).map(function (opt, oi) {
-
-                    var picked = d.quizPicked === oi;
-
-                    var correct = d.quizPicked !== null && Math.abs(opt - d.quizAnswer) < 0.5;
-
-                    var wrong = picked && !correct;
-
-                    return React.createElement("button", { key: oi, disabled: d.quizPicked !== null,
-
-                      onClick: function () {
-
-                        upd('quizPicked', oi);
-
-                        var isCorrect = Math.abs(opt - d.quizAnswer) < 0.5;
-
-                        upd('quizFeedback', isCorrect ? 'correct' : 'wrong');
-
-                        // Diagnostic breakdown: walk the formula with THESE numbers and
-                        // say how far off the pick was — velocity-squared is the usual trap.
-                        if (!isCorrect) {
-                          var qRatio = opt / d.quizAnswer;
-                          var qSin = Math.sin(2 * d.quizAngle * Math.PI / 180);
-                          var qDiag = __alloT('stem.physics.quiz_diag_walk', 'Walk it through: R = v²·sin(2θ)/g = ') + d.quizVel + '² × ' + qSin.toFixed(2) + ' / ' + d.quizGrav + ' = ' + d.quizAnswer.toFixed(1) + ' m. ' + __alloT('stem.physics.quiz_diag_pick_was', 'Your pick was ') + (qRatio > 1 ? qRatio.toFixed(1) + '× ' + __alloT('stem.physics.quiz_diag_too_far', 'too far') : __alloT('stem.physics.quiz_diag_only', 'only ') + (qRatio * 100).toFixed(0) + '% ' + __alloT('stem.physics.quiz_diag_of_true', 'of the true range')) + '. ' + __alloT('stem.physics.quiz_diag_lever', 'Remember the biggest lever: velocity enters SQUARED — small speed changes move the landing a lot.');
-                          var qWorld = { '1.6': __alloT('stem.physics.quiz_world_moon', 'Moon gravity is ~6× weaker than Earth’s, so everything flies ~6× farther.'), '3.7': __alloT('stem.physics.quiz_world_mars', 'Mars gravity is ~2.6× weaker than Earth’s — ranges stretch accordingly.'), '24.8': __alloT('stem.physics.quiz_world_jupiter', 'Jupiter’s gravity is ~2.5× Earth’s — flights are short and brutal.') }[String(d.quizGrav)];
-                          if (qWorld) qDiag += ' ' + qWorld;
-                          upd('quizDiag', qDiag);
-                        } else {
-                          upd('quizDiag', null);
-                        }
-
-                        if (isCorrect) { upd('quizStreak', (d.quizStreak || 0) + 1); awardStemXP('physicsQuiz', 10, 'Solved the landing calculation'); }
-
-                        else { upd('quizStreak', 0); }
-
-                      },
-
-                      className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " +
-
-                        (correct ? 'bg-emerald-100 border-emerald-400 text-emerald-700' : wrong ? 'bg-red-100 border-red-400 text-red-700' : d.quizPicked !== null ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-white border-amber-200 text-slate-700 hover:border-amber-400')
-
-                    }, opt.toFixed(1) + " m");
-
-                  })
-
+            // ── Aerodynamic Drag Profiles Explorer ──
+            showSec('analyze') && (function() {
+              var dragMeta = {
+                shuttlecock: { emoji: '🏸', label: __alloT('stem.physics.drag_profile_shuttlecock', 'Shuttlecock'), note: __alloT('stem.physics.drag_note_shuttlecock', 'Ultra-light and high Cd — slows rapidly and drops steeply.') },
+                pingpong: { emoji: '🏓', label: __alloT('stem.physics.drag_profile_pingpong', 'Ping-Pong Ball'), note: __alloT('stem.physics.drag_note_pingpong', 'Only 2.7 g — reaches low terminal speed early.') },
+                baseball: { emoji: '⚾', label: __alloT('stem.physics.drag_profile_baseball', 'Baseball'), note: __alloT('stem.physics.drag_note_baseball', 'Balanced density loses roughly a quarter to half of vacuum range at high speed.') },
+                iron_cannonball: { emoji: '💣', label: __alloT('stem.physics.drag_profile_iron_cannonball', 'Iron Cannonball'), note: __alloT('stem.physics.drag_note_iron_cannonball', 'High mass per cross-sectional area tracks close to vacuum.') }
+              };
+              var curAng = (typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45;
+              var curVel = (typeof d.velocity === 'number' && isFinite(d.velocity)) ? d.velocity : 25;
+              var curGrav = (typeof d.gravity === 'number' && isFinite(d.gravity)) ? d.gravity : 9.8;
+              var curH = (typeof d.launchHeight === 'number' && isFinite(d.launchHeight)) ? d.launchHeight : 0;
+              var activeProfId = d.dragProfileId || 'baseball';
+              var dragIntro = __alloT('stem.physics.drag_profiles_help', 'Compares real-world sea-level air drag (ρ = 1.225 kg/m³, F = ½ρCdAv²) at your current launch settings while the main simulator keeps its canonical drag constant.');
+              return React.createElement('section', { 'data-physics-learning-panel': 'drag-profiles', 'aria-labelledby': 'physics-drag-profiles-heading', className: 'phys-tier3-panel' },
+                React.createElement('div', { className: 'flex items-center justify-between flex-wrap gap-2 mb-2' },
+                  React.createElement('h4', { id: 'physics-drag-profiles-heading', className: 'text-xs font-bold uppercase tracking-wider m-0' }, '🌬️ ' + __alloT('stem.physics.drag_profiles_title', 'Aerodynamic Drag Profiles Explorer')),
+                  physSpeakButton('drag-profiles-guide', dragIntro, __alloT('stem.physics.drag_profiles_speak_aria', 'Read aerodynamic drag profile explanation aloud'))
                 ),
+                React.createElement('p', { className: 'text-xs phys-tier3-muted mb-2' }, dragIntro),
+                React.createElement('div', { className: 'phys-tier3-grid' },
+                  PHYS_DRAG_PROFILES.map(function(p) {
+                    var meta = dragMeta[p.id] || { emoji: '⚪', label: p.id, note: '' };
+                    var res = physSimulateDragProfile(p, curAng, curVel, curGrav, curH);
+                    var landed = res && res.status === 'landed' && physFinite(res.range);
+                    var massStr = p.massKg < 0.1 ? (p.massKg * 1000).toFixed(1) + ' g' : p.massKg.toFixed(2) + ' kg';
+                    var vtStr = res && physFinite(res.terminalVelocity) ? res.terminalVelocity.toFixed(1) + ' m/s' : '—';
+                    var vacStr = landed && physFinite(res.vacuumRange) ? res.vacuumRange.toFixed(1) + ' m' : '—';
+                    var rangeStr = landed ? res.range.toFixed(1) + ' m' : '—';
+                    var lossStr = landed && physFinite(res.rangeLossPct) ? res.rangeLossPct.toFixed(0) + '%' : '—';
+                    return React.createElement('button', {
+                      key: p.id,
+                      type: 'button',
+                      'data-physics-drag-profile': p.id,
+                      'data-range-loss': landed && physFinite(res.rangeLossPct) ? res.rangeLossPct.toFixed(1) : '',
+                      'aria-pressed': activeProfId === p.id,
+                      className: 'phys-tier3-card',
+                      onClick: function() { upd('dragProfileId', p.id); }
+                    },
+                      React.createElement('span', { className: 'block text-xs font-bold' }, meta.emoji + ' ' + meta.label),
+                      React.createElement('span', { className: 'block text-xs phys-tier3-muted mt-1' }, massStr + ' · Cd ' + p.cd.toFixed(2) + ' · vt ' + vtStr),
+                      React.createElement('span', { className: 'block text-xs font-bold phys-tier3-accent mt-1' }, rangeStr + ' / ' + vacStr + ' (' + lossStr + ' ' + __alloT('stem.physics.drag_loss_label', 'lost') + ')'),
+                      activeProfId === p.id && React.createElement('span', { className: 'block text-xs phys-tier3-muted mt-1' }, meta.note)
+                    );
+                  })
+                )
+              );
+            })(),
 
-                d.quizFeedback && React.createElement("p", { className: "text-xs font-bold " + (d.quizFeedback === 'correct' ? 'text-emerald-600' : 'text-red-600') },
+            // ── Planetary Atmosphere & Wind Explorer (Analyze Tab) ──
+            showSec('analyze') && (function () {
+              var planetMeta = {
+                earth: { emoji: '🌍', label: __alloT('stem.physics.atmo_earth', 'Earth'), sub: __alloT('stem.physics.atmo_earth_sub', 'g = 9.8 m/s² · ρ = 1.0× air') },
+                moon: { emoji: '🌙', label: __alloT('stem.physics.atmo_moon', 'Moon'), sub: __alloT('stem.physics.atmo_moon_sub', 'g = 1.6 m/s² · ρ = 0× vacuum') },
+                mars: { emoji: '🔴', label: __alloT('stem.physics.atmo_mars', 'Mars'), sub: __alloT('stem.physics.atmo_mars_sub', 'g = 3.7 m/s² · ρ = 0.016× thin CO₂') },
+                titan: { emoji: '🟠', label: __alloT('stem.physics.atmo_titan', 'Titan'), sub: __alloT('stem.physics.atmo_titan_sub', 'g = 1.35 m/s² · ρ = 4.4× dense N₂') }
+              };
+              var curAng = (typeof d.angle === 'number' && isFinite(d.angle)) ? d.angle : 45;
+              var curVel = (typeof d.velocity === 'number' && isFinite(d.velocity)) ? d.velocity : 25;
+              var curMass = (typeof d.mass === 'number' && isFinite(d.mass)) ? d.mass : 1;
+              var curH = (typeof d.launchHeight === 'number' && isFinite(d.launchHeight)) ? d.launchHeight : 0;
+              var activeAtmoId = d.atmoPlanet || 'earth';
+              var activePlanet = PHYS_PLANET_ATMOSPHERES.find(function (pl) { return pl.id === activeAtmoId; }) || PHYS_PLANET_ATMOSPHERES[0];
+              var windVal = (typeof d.windSpeed === 'number' && isFinite(d.windSpeed)) ? Math.max(-20, Math.min(20, d.windSpeed)) : 0;
+              var vacSim = physSimulateAtmosphereWind(curAng, curVel, activePlanet.gravity, curMass, curH, 0, 0);
+              var stillSim = physSimulateAtmosphereWind(curAng, curVel, activePlanet.gravity, curMass, curH, activePlanet.rhoRatio, 0);
+              var windSim = physSimulateAtmosphereWind(curAng, curVel, activePlanet.gravity, curMass, curH, activePlanet.rhoRatio, windVal);
+              var fmtM = function (sim, key) { return sim && physFinite(sim[key]) ? sim[key].toFixed(1) : '—'; };
+              var deltaWind = (windSim && stillSim && physFinite(windSim.range) && physFinite(stillSim.range)) ? (windSim.range - stillSim.range) : 0;
+              var deltaSign = deltaWind >= 0 ? '+' : '';
+              var windDirLbl = windVal > 0 ? ('+' + windVal + ' m/s ' + __alloT('stem.physics.wind_tailwind', 'tailwind'))
+                : (windVal < 0 ? (windVal + ' m/s ' + __alloT('stem.physics.wind_headwind', 'headwind'))
+                : ('0 m/s ' + __alloT('stem.physics.wind_calm', 'calm')));
+              var insightMsg = activePlanet.rhoRatio === 0
+                ? __alloT('stem.physics.atmo_insight_moon', 'On the Moon (ρ = 0), there is no air for wind to push against — vacuum, still-air, and wind ranges stay identical.')
+                : (activePlanet.id === 'titan'
+                  ? __alloT('stem.physics.atmo_insight_titan', 'Titan pairs low gravity (1.35 m/s²) with 4.4× Earth air density — heavy drag cuts flight while wind shifts range by ') + deltaSign + deltaWind.toFixed(1) + ' m.'
+                  : (activePlanet.id === 'mars'
+                    ? __alloT('stem.physics.atmo_insight_mars', 'Mars has weak gravity (3.7 m/s²) and thin CO₂ (0.016× air), producing near-vacuum arcs (wind shift ') + deltaSign + deltaWind.toFixed(1) + ' m).'
+                    : __alloT('stem.physics.atmo_insight_earth', 'On Earth (ρ = 1.0×), air drag trims vacuum range from ') + fmtM(vacSim, 'range') + ' m to ' + fmtM(stillSim, 'range') + ' m, and ' + windDirLbl + ' shifts it by ' + deltaSign + deltaWind.toFixed(1) + ' m.'));
+              var atmoIntro = __alloT('stem.physics.atmo_intro', 'Compare vacuum flight against real planetary air density and headwinds or tailwinds (-20 to +20 m/s) using your current launcher angle and speed.');
+              var applyLocked = !!(d.targetMode || d.obstacleMode || d.battleMode || (d.challengeActive && d.challengeTier === 3));
+              var cards = [
+                { id: 'vacuum', title: __alloT('stem.physics.atmo_card_vacuum', 'Vacuum (0× air)'), sim: vacSim },
+                { id: 'still', title: __alloT('stem.physics.atmo_card_still', 'Still Atmosphere'), sim: stillSim },
+                { id: 'wind', title: __alloT('stem.physics.atmo_card_wind', 'With Wind') + ' (' + windDirLbl + ')', sim: windSim }
+              ];
+              return React.createElement('section', {
+                'data-physics-learning-panel': 'atmosphere-wind',
+                'aria-labelledby': 'physics-atmo-wind-heading',
+                className: 'phys-tier3-panel mt-3'
+              },
+                React.createElement('div', { className: 'flex items-center justify-between flex-wrap gap-2 mb-2' },
+                  React.createElement('h4', { id: 'physics-atmo-wind-heading', className: 'text-xs font-bold uppercase tracking-wider m-0' }, '🪐 ' + __alloT('stem.physics.atmo_explorer_title', 'Planetary Atmosphere & Wind Explorer')),
+                  physSpeakButton('atmo-wind-guide', atmoIntro + ' ' + insightMsg, __alloT('stem.physics.atmo_speak_aria', 'Read planetary atmosphere and wind explanation aloud'))
+                ),
+                React.createElement('p', { className: 'text-xs phys-tier3-muted mb-2' }, atmoIntro),
+                React.createElement('div', { className: 'phys-tier3-grid mb-3' },
+                  PHYS_PLANET_ATMOSPHERES.map(function (pl) {
+                    var meta = planetMeta[pl.id] || { emoji: '🪐', label: pl.id, sub: '' };
+                    return React.createElement('button', {
+                      key: pl.id,
+                      type: 'button',
+                      'data-atmo-planet': pl.id,
+                      'aria-pressed': activeAtmoId === pl.id,
+                      className: 'phys-tier3-card',
+                      onClick: function () { upd('atmoPlanet', pl.id); }
+                    },
+                      React.createElement('span', { className: 'block text-xs font-bold' }, meta.emoji + ' ' + meta.label),
+                      React.createElement('span', { className: 'block text-xs phys-tier3-muted mt-1' }, meta.sub)
+                    );
+                  })
+                ),
+                React.createElement('div', { className: 'flex flex-wrap items-center justify-between gap-2 mb-3', style: { minWidth: 0 } },
+                  React.createElement('div', { className: 'flex flex-wrap items-center gap-2', style: { minWidth: 0, flex: '1 1 200px' } },
+                    React.createElement('label', { htmlFor: 'physics-atmo-wind-slider', className: 'text-xs font-bold' },
+                      __alloT('stem.physics.atmo_wind_label', 'Horizontal wind') + ': ' + windDirLbl
+                    ),
+                    React.createElement('input', {
+                      id: 'physics-atmo-wind-slider',
+                      type: 'range',
+                      min: -20,
+                      max: 20,
+                      step: 1,
+                      value: windVal,
+                      'data-physics-wind-slider': true,
+                      'aria-label': __alloT('stem.physics.atmo_wind_slider_aria', 'Horizontal wind speed in meters per second'),
+                      style: { minHeight: 44, width: '100%', maxWidth: 240 },
+                      onChange: function (e) { upd('windSpeed', parseFloat(e.target.value) || 0); }
+                    })
+                  ),
+                  React.createElement('div', { className: 'flex flex-wrap items-center gap-2', style: { minWidth: 0 } },
+                    React.createElement('button', {
+                      type: 'button',
+                      'data-physics-wind-reset': true,
+                      'aria-label': __alloT('stem.physics.atmo_wind_reset_aria', 'Reset horizontal wind to calm 0 meters per second'),
+                      className: 'phys-tier3-btn',
+                      onClick: function () { upd('windSpeed', 0); }
+                    }, __alloT('stem.physics.atmo_wind_reset', 'Calm (0 m/s)')),
+                    React.createElement('button', {
+                      type: 'button',
+                      'data-physics-apply-planet': true,
+                      disabled: applyLocked,
+                      'aria-label': __alloT('stem.physics.atmo_apply_planet_aria', 'Apply selected planet gravity and atmosphere to launcher'),
+                      className: 'phys-tier3-btn phys-tier3-primary',
+                      onClick: function () {
+                        if (applyLocked) return;
+                        setLabToolData(function (prev) {
+                          var cur = prev.physics || {};
+                          if (cur.targetMode || cur.obstacleMode || cur.battleMode || (cur.challengeActive && cur.challengeTier === 3)) return prev;
+                          return Object.assign({}, prev, { physics: Object.assign({}, cur, { gravity: activePlanet.gravity, airResist: activePlanet.rhoRatio > 0 }) });
+                        });
+                        if (addToast) addToast(__alloT('stem.physics.atmo_applied', 'Applied planet physics: ') + ((planetMeta[activePlanet.id] && planetMeta[activePlanet.id].label) || activePlanet.id), 'info');
+                      }
+                    }, __alloT('stem.physics.atmo_apply_planet', 'Apply Planet Gravity & Air'))
+                  )
+                ),
+                React.createElement('div', { className: 'phys-tier3-grid mb-2' },
+                  cards.map(function (c) {
+                    return React.createElement('div', { key: c.id, 'data-atmo-card': c.id, className: 'phys-tier3-card' },
+                      React.createElement('span', { className: 'block text-xs font-bold' }, c.title),
+                      React.createElement('span', { className: 'block text-xs font-bold phys-tier3-accent mt-1' }, __alloT('stem.physics.range_word', 'Range') + ': ' + fmtM(c.sim, 'range') + ' m'),
+                      React.createElement('span', { className: 'block text-xs phys-tier3-muted mt-1' }, __alloT('stem.physics.apex_word', 'Max H') + ': ' + fmtM(c.sim, 'maxH') + ' m · t = ' + fmtM(c.sim, 'time') + ' s')
+                    );
+                  })
+                ),
+                React.createElement('p', { 'data-atmo-insight': true, className: 'phys-tier3-status text-xs m-0' }, insightMsg)
+              );
+            })(),
 
-                  d.quizFeedback === 'correct' ? '\u2705 ' + __alloT('stem.physics.quiz_correct_prefix', 'Correct! R = v\u00B2sin(2\u03B8)/g = ') + d.quizAnswer.toFixed(1) + 'm' : '\u274C ' + __alloT('stem.physics.quiz_not_quite', 'Not quite.')),
-
-                d.quizFeedback === 'wrong' && d.quizDiag && React.createElement("p", { className: "text-xs leading-relaxed text-red-700 bg-red-50 rounded-lg p-2 border border-red-200" }, d.quizDiag),
-
-                d.quizStreak > 1 && React.createElement("p", { className: "text-xs font-bold text-amber-600" }, "\uD83D\uDD25 " + __alloT('stem.physics.streak_count', 'Streak: ') + d.quizStreak + "!")
-
-              )
-
-            ),
+            // ── Grade-Banded Multi-Concept Physics Quiz ──
+            showSec('learn') && (function() {
+              var quizBand = physBand;
+              var selectedTopic = d.quizTopic || 'all';
+              var planetTag = function(g) {
+                return ({ '9.8': __alloT('stem.physics.planet_earth_paren', ' (Earth)'), '1.6': __alloT('stem.physics.planet_moon_paren', ' (Moon)'), '3.7': __alloT('stem.physics.planet_mars_paren', ' (Mars)'), '24.8': __alloT('stem.physics.planet_jupiter_paren', ' (Jupiter)') }[String(g)] || '');
+              };
+              var buildNumericOpts = function(ans, unit, dec, extraVals) {
+                var used = {};
+                var correctLbl = ans.toFixed(dec) + ' ' + unit;
+                used[ans.toFixed(dec)] = true;
+                var list = [{ label: correctLbl, value: parseFloat(ans.toFixed(dec)), _ok: true }];
+                var cand = (extraVals || []).concat([ans * 0.5, ans * 2, ans * 1.45, ans * 0.68, ans + (dec === 2 ? 0.6 : 6), Math.max(0.1, ans - (dec === 2 ? 0.5 : 5))]);
+                for (var ci = 0; ci < cand.length && list.length < 4; ci++) {
+                  var v = cand[ci];
+                  if (typeof v !== 'number' || !isFinite(v) || v < 0) continue;
+                  var k = v.toFixed(dec);
+                  if (used[k] || Math.abs(v - ans) <= Math.max(0.25, Math.abs(ans) * 0.12)) continue;
+                  used[k] = true;
+                  list.push({ label: k + ' ' + unit, value: parseFloat(k), _ok: false });
+                }
+                for (var mul = 2.4; list.length < 4 && mul < 6; mul += 0.7) {
+                  var fv = Math.max(0.2, ans * mul);
+                  var fk = fv.toFixed(dec);
+                  if (!used[fk]) { used[fk] = true; list.push({ label: fk + ' ' + unit, value: parseFloat(fk), _ok: false }); }
+                }
+                list.sort(function() { return Math.random() - 0.5; });
+                var cIdx = list.findIndex(function(o) { return o._ok; });
+                return {
+                  options: list.map(function(o) { return { label: o.label, value: o.value }; }),
+                  correctIndex: cIdx >= 0 ? cIdx : 0
+                };
+              };
+              var generateQuizItem = function(band, topic) {
+                var chosen = topic === 'all' ? ['range', 'height', 'time', 'velocity', 'conceptual'][Math.floor(Math.random() * 5)] : topic;
+                var vacFn = window.StemLab._physics.vacuum;
+                if (chosen === 'conceptual') {
+                  var bank35 = [
+                    {
+                      prompt: __alloT('stem.physics.quiz_c35_speed', 'Keeping angle at 45° with no air drag, if you double launch speed from 15 m/s to 30 m/s, what happens to the range?'),
+                      choices: [__alloT('stem.physics.quiz_opt_4x', 'It becomes 4× farther (quadruples)'), __alloT('stem.physics.quiz_opt_2x', 'It becomes 2× farther (doubles)'), __alloT('stem.physics.quiz_opt_same', 'It stays the same'), __alloT('stem.physics.quiz_opt_half', 'It becomes half as far')],
+                      correctIndex: 0,
+                      formula: __alloT('stem.physics.quiz_f_v2', 'R = v² · sin(2θ) / g — speed is squared (2² = 4).'),
+                      explanation: __alloT('stem.physics.quiz_exp_v2', 'Because launch speed v is squared in the range formula, 2× speed produces 2 × 2 = 4× range.'),
+                      simPreset: { angle: 45, velocity: 30, gravity: 9.8, launchHeight: 0, airResist: false }
+                    },
+                    {
+                      prompt: __alloT('stem.physics.quiz_c35_mass', 'With air drag OFF, if you launch a 10 kg cannonball instead of a 1 kg ball at the same 45° angle and 25 m/s speed, what happens to its path?'),
+                      choices: [__alloT('stem.physics.quiz_opt_identical_arc', 'Exact same arc and landing spot'), __alloT('stem.physics.quiz_opt_10x_shorter', 'It falls 10× sooner'), __alloT('stem.physics.quiz_opt_half_dist', 'It lands half as far'), __alloT('stem.physics.quiz_opt_higher', 'It flies much higher')],
+                      correctIndex: 0,
+                      formula: __alloT('stem.physics.quiz_f_mass', 'In vacuum, acceleration a = g is independent of mass.'),
+                      explanation: __alloT('stem.physics.quiz_exp_mass', 'Without air drag, gravity accelerates every mass equally at g = 9.8 m/s², so 1 kg and 10 kg follow identical trajectories.'),
+                      simPreset: { angle: 45, velocity: 25, gravity: 9.8, launchHeight: 0, airResist: false }
+                    },
+                    {
+                      prompt: __alloT('stem.physics.quiz_c35_moon', 'On the Moon (g = 1.6 m/s²) vs. Earth (g = 9.8 m/s²), with the same launch angle and speed, how does Moon range compare?'),
+                      choices: [__alloT('stem.physics.quiz_opt_moon6x', 'About 6× farther on the Moon'), __alloT('stem.physics.quiz_opt_moon_same', 'The exact same range'), __alloT('stem.physics.quiz_opt_moon_short', 'About 6× shorter on the Moon'), __alloT('stem.physics.quiz_opt_moon_zero', 'It floats up and never lands')],
+                      correctIndex: 0,
+                      formula: __alloT('stem.physics.quiz_f_grav', 'R ∝ 1 / g; 9.8 ÷ 1.6 ≈ 6.1.'),
+                      explanation: __alloT('stem.physics.quiz_exp_moon', 'Weaker Moon gravity pulls downward ~6× more gently, keeping the projectile aloft longer so it travels ~6× farther.'),
+                      simPreset: { angle: 45, velocity: 25, gravity: 1.6, launchHeight: 0, airResist: false }
+                    }
+                  ];
+                  var bank68 = [
+                    {
+                      prompt: __alloT('stem.physics.quiz_c68_horiz_drop', 'A projectile is launched horizontally at 0° from a 10 m platform with no air drag while a second ball is dropped straight down from 10 m. Which lands first?'),
+                      choices: [__alloT('stem.physics.quiz_opt_same_time', 'Both hit the ground at the exact same time'), __alloT('stem.physics.quiz_opt_dropped_first', 'The dropped ball hits first'), __alloT('stem.physics.quiz_opt_launched_first', 'The fast horizontal ball hits first'), __alloT('stem.physics.quiz_opt_never', 'Only weight decides which hits first')],
+                      correctIndex: 0,
+                      formula: __alloT('stem.physics.quiz_f_indep', 'Vertical motion (vy₀ = 0, a = g) is independent of horizontal speed vx₀.'),
+                      explanation: __alloT('stem.physics.quiz_exp_indep', 'Without drag, horizontal velocity never alters vertical acceleration g, so both fall 10 m in t = √(2h/g) ≈ 1.43 s.'),
+                      simPreset: { angle: 0, velocity: 25, gravity: 9.8, launchHeight: 10, airResist: false }
+                    },
+                    {
+                      prompt: __alloT('stem.physics.quiz_c68_comp', 'From ground level with no air drag and the same speed, which angle lands at the exact same range as 30°?'),
+                      choices: [__alloT('stem.physics.quiz_opt_60deg', '60° (complementary angle)'), __alloT('stem.physics.quiz_opt_45deg', '45°'), __alloT('stem.physics.quiz_opt_15deg', '15°'), __alloT('stem.physics.quiz_opt_75deg', '75°')],
+                      correctIndex: 0,
+                      formula: __alloT('stem.physics.quiz_f_comp', 'sin(2·30°) = sin(60°) = sin(120°) = sin(2·60°).'),
+                      explanation: __alloT('stem.physics.quiz_exp_comp', 'Complementary ground-level angles (30° + 60° = 90°) yield equal sin(2θ) and therefore equal vacuum range.'),
+                      simPreset: { angle: 30, velocity: 25, gravity: 9.8, launchHeight: 0, airResist: false }
+                    },
+                    {
+                      prompt: __alloT('stem.physics.quiz_c68_apex_force', 'At the very highest point (apex) of a projectile arc in vacuum, what force acts on it and what is its vertical velocity vy?'),
+                      choices: [__alloT('stem.physics.quiz_opt_apex_g_zero', 'Gravity downward; vy = 0 m/s while vx stays constant'), __alloT('stem.physics.quiz_opt_apex_none', 'Zero gravity; both vx and vy are zero'), __alloT('stem.physics.quiz_opt_apex_fwd', 'A forward push plus upward force'), __alloT('stem.physics.quiz_opt_apex_vx0', 'vy is maximum and vx = 0 m/s')],
+                      correctIndex: 0,
+                      formula: __alloT('stem.physics.quiz_f_apex', 'At apex vy = 0, vx = v₀·cos(θ) ≠ 0, and gravity F = mg continues downward.'),
+                      explanation: __alloT('stem.physics.quiz_exp_apex', 'Gravity pulls downward throughout the entire flight; at the apex vertical motion reverses (vy = 0) while horizontal vx continues.'),
+                      simPreset: { angle: 45, velocity: 25, gravity: 9.8, launchHeight: 0, airResist: false }
+                    }
+                  ];
+                  var bank912 = [
+                    {
+                      prompt: __alloT('stem.physics.quiz_c912_drag_angle', 'With Air Drag ON at 40 m/s from ground level, how does the maximum-range angle compare to 45°?'),
+                      choices: [__alloT('stem.physics.quiz_opt_below45', 'Below 45° — flatter angles shorten flight time in air'), __alloT('stem.physics.quiz_opt_still45', 'Always 45° regardless of air drag'), __alloT('stem.physics.quiz_opt_above45', 'Above 45° — steeper launches fly farther'), __alloT('stem.physics.quiz_opt_90', '90° straight up')],
+                      correctIndex: 0,
+                      formula: __alloT('stem.physics.quiz_f_drag_opt', 'F_drag ∝ v² penalizes long hang times, shifting optimum angle below 45°.'),
+                      explanation: __alloT('stem.physics.quiz_exp_drag_opt', 'Lower angles spend less time fighting quadratic drag, so peak range shifts noticeably below 45°.'),
+                      simPreset: { angle: 40, velocity: 40, gravity: 9.8, launchHeight: 0, airResist: true }
+                    },
+                    {
+                      prompt: __alloT('stem.physics.quiz_c912_elevated', 'From a 20 m cliff with no air drag, which launch angle achieves maximum horizontal range?'),
+                      choices: [__alloT('stem.physics.quiz_opt_elev_below45', 'Below 45° — extra fall height already adds flight time'), __alloT('stem.physics.quiz_opt_still45_b', 'Still 45°'), __alloT('stem.physics.quiz_opt_above45_b', 'Above 45°'), __alloT('stem.physics.quiz_opt_0', '0° always maximizes range from any cliff')],
+                      correctIndex: 0,
+                      formula: __alloT('stem.physics.quiz_f_elev_opt', 'Elevated launch grants bonus air time, making forward vx₀ = v·cos(θ) more valuable (θ_opt < 45°).'),
+                      explanation: __alloT('stem.physics.quiz_exp_elev_opt', 'Because launching higher increases time-of-flight T even at lower angles, investing more speed horizontally lowers the optimal angle below 45°.'),
+                      simPreset: { angle: 35, velocity: 25, gravity: 9.8, launchHeight: 20, airResist: false }
+                    },
+                    {
+                      prompt: __alloT('stem.physics.quiz_c912_energy', 'When Air Drag is ON during flight, what happens to total mechanical energy (KE + PE)?'),
+                      choices: [__alloT('stem.physics.quiz_opt_kepe_loss', 'KE + PE steadily decreases as drag transfers energy to air'), __alloT('stem.physics.quiz_opt_kepe_const', 'KE + PE remains constant'), __alloT('stem.physics.quiz_opt_kepe_gain', 'KE + PE increases near landing'), __alloT('stem.physics.quiz_opt_ke_zero', 'KE drops to zero at apex')],
+                      correctIndex: 0,
+                      formula: __alloT('stem.physics.quiz_f_energy_drag', 'Non-conservative drag work W_drag < 0 reduces ΔE_mech = KE + PE.'),
+                      explanation: __alloT('stem.physics.quiz_exp_energy_drag', 'Air drag does negative work opposing motion, converting mechanical energy into heat and air motion.'),
+                      simPreset: { angle: 45, velocity: 35, gravity: 9.8, launchHeight: 0, airResist: true }
+                    }
+                  ];
+                  var cBank = band === '9-12' ? bank912.concat(bank68) : band === '6-8' ? bank68.concat(bank35) : bank35;
+                  var pick = cBank[Math.floor(Math.random() * cBank.length)];
+                  var tagged = pick.choices.map(function(lbl, idx) { return { label: lbl, value: null, _ok: idx === pick.correctIndex }; });
+                  tagged.sort(function() { return Math.random() - 0.5; });
+                  var newCorrectIdx = tagged.findIndex(function(o) { return o._ok; });
+                  return {
+                    type: 'conceptual', band: band, prompt: pick.prompt,
+                    options: tagged.map(function(o) { return { label: o.label, value: null }; }),
+                    correctIndex: newCorrectIdx >= 0 ? newCorrectIdx : 0, unit: '',
+                    angle: pick.simPreset.angle, velocity: pick.simPreset.velocity, gravity: pick.simPreset.gravity,
+                    launchHeight: pick.simPreset.launchHeight, airResist: pick.simPreset.airResist,
+                    formula: pick.formula, explanation: pick.explanation, simPreset: pick.simPreset
+                  };
+                }
+                if (chosen === 'velocity') {
+                  var vAngles = [30, 45, 60];
+                  var vVels = [20, 25, 30, 40];
+                  var qaV = vAngles[Math.floor(Math.random() * vAngles.length)];
+                  var qvV = vVels[Math.floor(Math.random() * vVels.length)];
+                  var askVx = Math.random() < 0.6;
+                  var qradV = qaV * Math.PI / 180;
+                  var vxAns = qvV * Math.cos(qradV);
+                  var vyAns = qvV * Math.sin(qradV);
+                  var ansV = askVx ? vxAns : vyAns;
+                  var optDataV = buildNumericOpts(ansV, 'm/s', 1, [askVx ? vyAns : vxAns, qvV, 0]);
+                  return {
+                    type: 'velocity', band: band,
+                    prompt: askVx
+                      ? __alloT('stem.physics.quiz_vel_vx_1', 'Launched at ') + qaV + '° ' + __alloT('stem.physics.quiz_vel_vx_2', 'and ') + qvV + ' m/s ' + __alloT('stem.physics.quiz_vel_vx_3', '(no air drag), what is the horizontal velocity vx at the highest point (apex)?')
+                      : __alloT('stem.physics.quiz_vel_vy_1', 'Launched at ') + qaV + '° ' + __alloT('stem.physics.quiz_vel_vy_2', 'and ') + qvV + ' m/s, ' + __alloT('stem.physics.quiz_vel_vy_3', 'what is the initial vertical velocity vy₀?'),
+                    options: optDataV.options, correctIndex: optDataV.correctIndex, unit: 'm/s',
+                    angle: qaV, velocity: qvV, gravity: 9.8, launchHeight: 0, airResist: false,
+                    formula: askVx ? 'vx = v · cos(θ)' : 'vy₀ = v · sin(θ)',
+                    explanation: askVx
+                      ? ('vx = ' + qvV + ' · cos(' + qaV + '°) = ' + vxAns.toFixed(1) + ' m/s. ' + __alloT('stem.physics.quiz_exp_vx_apex', 'At the apex only vy = 0; horizontal velocity vx stays constant without drag!'))
+                      : ('vy₀ = ' + qvV + ' · sin(' + qaV + '°) = ' + vyAns.toFixed(1) + ' m/s.'),
+                    simPreset: { angle: qaV, velocity: qvV, gravity: 9.8, launchHeight: 0, airResist: false }
+                  };
+                }
+                if (chosen === 'height') {
+                  var hAngles = band === '3-5' ? [30, 45, 60] : [25, 30, 45, 60, 75];
+                  var hVels = band === '3-5' ? [10, 20, 30] : [15, 20, 25, 30, 40];
+                  var hGravs = band === '3-5' ? [9.8, 1.6] : [9.8, 1.6, 3.7];
+                  var qaH = hAngles[Math.floor(Math.random() * hAngles.length)];
+                  var qvH = hVels[Math.floor(Math.random() * hVels.length)];
+                  var qgH = hGravs[Math.floor(Math.random() * hGravs.length)];
+                  var qh0H = band === '9-12' ? [0, 10, 20][Math.floor(Math.random() * 3)] : 0;
+                  var vacH = vacFn(qaH, qvH, qgH, qh0H);
+                  var vy0H = qvH * Math.sin(qaH * Math.PI / 180);
+                  var optDataH = buildNumericOpts(vacH.maxH, 'm', 1, [(qvH * qvH) / (2 * qgH), vacH.range, (vy0H * vy0H) / qgH]);
+                  return {
+                    type: 'height', band: band,
+                    prompt: __alloT('stem.physics.quiz_h_prefix', 'Launched at ') + qaH + '° ' + __alloT('stem.physics.quiz_q_with_velocity', 'with velocity ') + qvH + ' m/s, ' + __alloT('stem.physics.quiz_q_grav_word', 'gravity ') + qgH + ' m/s²' + planetTag(qgH) + (qh0H > 0 ? ', ' + __alloT('stem.physics.quiz_from_height', 'from h₀ = ') + qh0H + ' m' : '') + __alloT('stem.physics.quiz_h_suffix', ' (no drag). What is the maximum height above ground?'),
+                    options: optDataH.options, correctIndex: optDataH.correctIndex, unit: 'm',
+                    angle: qaH, velocity: qvH, gravity: qgH, launchHeight: qh0H, airResist: false,
+                    formula: qh0H > 0 ? 'H = h₀ + (v·sin(θ))² / (2g)' : 'H = (v·sin(θ))² / (2g)',
+                    explanation: 'H = ' + (qh0H > 0 ? qh0H + ' + ' : '') + vy0H.toFixed(1) + '² / (2 × ' + qgH + ') = ' + vacH.maxH.toFixed(1) + ' m.',
+                    simPreset: { angle: qaH, velocity: qvH, gravity: qgH, launchHeight: qh0H, airResist: false }
+                  };
+                }
+                if (chosen === 'time') {
+                  var tAngles = band === '3-5' ? [0, 30, 45, 60] : [0, 30, 45, 60, 70];
+                  var qaT = tAngles[Math.floor(Math.random() * tAngles.length)];
+                  var qvT = (band === '3-5' ? [15, 20, 30] : [15, 20, 25, 35])[Math.floor(Math.random() * (band === '3-5' ? 3 : 4))];
+                  var qgT = (band === '3-5' ? [9.8] : [9.8, 1.6, 3.7])[Math.floor(Math.random() * (band === '3-5' ? 1 : 3))];
+                  var qh0T = qaT === 0 ? 20 : (band === '9-12' ? [0, 10, 25][Math.floor(Math.random() * 3)] : 0);
+                  var vacT = vacFn(qaT, qvT, qgT, qh0T);
+                  var vy0T = qvT * Math.sin(qaT * Math.PI / 180);
+                  var optDataT = buildNumericOpts(vacT.time, 's', 2, [vacT.time / 2, vacT.time * 2, qvT / qgT]);
+                  return {
+                    type: 'time', band: band,
+                    prompt: __alloT('stem.physics.quiz_t_prefix', 'Launched at ') + qaT + '° ' + __alloT('stem.physics.quiz_q_with_velocity', 'with velocity ') + qvT + ' m/s, ' + __alloT('stem.physics.quiz_q_grav_word', 'gravity ') + qgT + ' m/s²' + planetTag(qgT) + (qh0T > 0 ? ', ' + __alloT('stem.physics.quiz_from_height', 'from h₀ = ') + qh0T + ' m' : '') + __alloT('stem.physics.quiz_t_suffix', ' (no drag). How long is it in flight?'),
+                    options: optDataT.options, correctIndex: optDataT.correctIndex, unit: 's',
+                    angle: qaT, velocity: qvT, gravity: qgT, launchHeight: qh0T, airResist: false,
+                    formula: qh0T > 0 ? 'T = (vy₀ + √(vy₀² + 2gh₀)) / g' : 'T = 2 · v · sin(θ) / g',
+                    explanation: 'T = (' + vy0T.toFixed(1) + ' + √(' + vy0T.toFixed(1) + '² + 2×' + qgT + '×' + qh0T + ')) / ' + qgT + ' = ' + vacT.time.toFixed(2) + ' s.',
+                    simPreset: { angle: qaT, velocity: qvT, gravity: qgT, launchHeight: qh0T, airResist: false }
+                  };
+                }
+                // Default: 'range'
+                var qAngles = band === '3-5' ? [30, 45, 60] : [20, 30, 35, 40, 45, 50, 55, 60, 70];
+                var qVels = band === '3-5' ? [10, 20, 30] : [15, 20, 25, 30, 35, 40];
+                var qGravs = band === '3-5' ? [9.8, 1.6] : [9.8, 1.6, 3.7, 24.8];
+                var qaR = qAngles[Math.floor(Math.random() * qAngles.length)];
+                var qvR = qVels[Math.floor(Math.random() * qVels.length)];
+                var qgR = qGravs[Math.floor(Math.random() * qGravs.length)];
+                var qh0R = band === '9-12' ? [0, 10, 20][Math.floor(Math.random() * 3)] : 0;
+                var vacR = vacFn(qaR, qvR, qgR, qh0R);
+                var optDataR = buildNumericOpts(vacR.range, 'm', 1, [qvR * qvR / qgR, qvR * Math.sin(2 * qaR * Math.PI / 180), vacR.maxH]);
+                return {
+                  type: 'range', band: band,
+                  prompt: __alloT('stem.physics.quiz_q_prefix', 'A projectile is launched at ') + qaR + '° ' + __alloT('stem.physics.quiz_q_with_velocity', 'with velocity ') + qvR + ' m/s ' + __alloT('stem.physics.quiz_q_and_gravity', 'and gravity ') + qgR + ' m/s²' + planetTag(qgR) + (qh0R > 0 ? ' ' + __alloT('stem.physics.quiz_from_height', 'from h₀ = ') + qh0R + ' m' : '') + __alloT('stem.physics.quiz_q_suffix', '. How far does it land?'),
+                  options: optDataR.options, correctIndex: optDataR.correctIndex, unit: 'm',
+                  angle: qaR, velocity: qvR, gravity: qgR, launchHeight: qh0R, airResist: false,
+                  formula: qh0R > 0 ? 'T = (vy₀ + √(vy₀² + 2gh₀)) / g; R = vx₀ × T' : 'R = v² · sin(2θ) / g',
+                  explanation: (qh0R > 0 ? 'T = ' + vacR.time.toFixed(2) + ' s; R = vx₀ × T = ' : 'R = ' + qvR + '² × sin(' + (2 * qaR) + '°) / ' + qgR + ' = ') + vacR.range.toFixed(1) + ' m.',
+                  simPreset: { angle: qaR, velocity: qvR, gravity: qgR, launchHeight: qh0R, airResist: false }
+                };
+              };
+              var legacyItem = !d.quizItem && d.quizActive && d.quizOptions && d.quizOptions.length > 0 ? (function() {
+                var idx = d.quizOptions.findIndex(function(v) { return Math.abs(v - d.quizAnswer) < 0.5; });
+                return {
+                  type: 'range', band: quizBand,
+                  prompt: __alloT('stem.physics.quiz_q_prefix', 'A projectile is launched at ') + d.quizAngle + '° ' + __alloT('stem.physics.quiz_q_with_velocity', 'with velocity ') + d.quizVel + ' m/s ' + __alloT('stem.physics.quiz_q_and_gravity', 'and gravity ') + d.quizGrav + ' m/s²' + planetTag(d.quizGrav) + __alloT('stem.physics.quiz_q_suffix', '. How far does it land?'),
+                  options: d.quizOptions.map(function(v) { return { label: v.toFixed(1) + ' m', value: v }; }),
+                  correctIndex: idx >= 0 ? idx : 0, unit: 'm',
+                  angle: d.quizAngle, velocity: d.quizVel, gravity: d.quizGrav, launchHeight: 0, airResist: false,
+                  formula: 'R = v² · sin(2θ) / g',
+                  explanation: 'R = ' + d.quizVel + '² × sin(' + (2 * d.quizAngle) + '°) / ' + d.quizGrav + ' = ' + d.quizAnswer.toFixed(1) + ' m.',
+                  simPreset: { angle: d.quizAngle, velocity: d.quizVel, gravity: d.quizGrav, launchHeight: 0, airResist: false }
+                };
+              })() : null;
+              var activeItem = d.quizItem || legacyItem;
+              var lockedSim = !!(d.targetMode || d.challengeActive || d.obstacleMode || d.battleMode);
+              return React.createElement("div", { 'data-physics-learning-panel': 'quiz', className: "mt-3 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl border border-amber-200 p-3" },
+                React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2 mb-2" },
+                  React.createElement("p", { className: "text-[0.6875rem] font-bold text-amber-700 uppercase tracking-wider" }, "\uD83C\uDFAF " + __alloT('stem.physics.physics_quiz_title', 'Physics Mastery Quiz') + ' (' + quizBand + ')'),
+                  React.createElement("div", { className: "phys-quiz-toolbar" },
+                    React.createElement("select", {
+                      'data-physics-quiz-topic': true,
+                      'aria-label': __alloT('stem.physics.quiz_topic_aria', 'Quiz topic filter'),
+                      value: selectedTopic,
+                      onChange: function(e) { upd('quizTopic', e.target.value); }
+                    },
+                      React.createElement("option", { value: 'all' }, __alloT('stem.physics.quiz_topic_all', 'All topics')),
+                      React.createElement("option", { value: 'range' }, __alloT('stem.physics.quiz_topic_range', 'Range (R)')),
+                      React.createElement("option", { value: 'height' }, __alloT('stem.physics.quiz_topic_height', 'Max Height (H)')),
+                      React.createElement("option", { value: 'time' }, __alloT('stem.physics.quiz_topic_time', 'Flight Time (T)')),
+                      React.createElement("option", { value: 'velocity' }, __alloT('stem.physics.quiz_topic_velocity', 'Velocity (vx, vy)')),
+                      React.createElement("option", { value: 'conceptual' }, __alloT('stem.physics.quiz_topic_conceptual', 'Concepts & Myths'))
+                    ),
+                    React.createElement("button", {
+                      type: "button",
+                      'data-physics-quiz-start': true,
+                      "aria-label": __alloT('stem.physics.aria_generate_quiz', 'Generate grade-banded physics quiz question'),
+                      style: { minHeight: 44 },
+                      onClick: function () {
+                        var item = generateQuizItem(quizBand, d.quizTopic || 'all');
+                        upd('quizItem', item);
+                        upd('quizActive', true);
+                        upd('quizPicked', null);
+                        upd('quizFeedback', null);
+                        upd('quizDiag', '');
+                        upd('quizHint', '');
+                        upd('quizHintLoading', false);
+                        if (item.angle != null && item.velocity != null && item.gravity != null) {
+                          upd('quizAngle', item.angle);
+                          upd('quizVel', item.velocity);
+                          upd('quizGrav', item.gravity);
+                        }
+                        var firstNum = item.options[item.correctIndex] && item.options[item.correctIndex].value;
+                        if (typeof firstNum === 'number' && isFinite(firstNum) && firstNum > 0) {
+                          upd('quizAnswer', firstNum);
+                          upd('quizOptions', item.options.map(function(o) { return typeof o.value === 'number' && isFinite(o.value) ? o.value : 0; }));
+                        } else {
+                          upd('quizOptions', []);
+                        }
+                      }, className: "px-3 py-1 bg-amber-700 text-white text-xs font-bold rounded-lg hover:bg-amber-700 transition-all"
+                    }, d.quizActive ? "\uD83D\uDD04 " + __alloT('stem.physics.new_question', 'New Question') : "\u25B6 " + __alloT('stem.physics.start_quiz', 'Start Quiz'))
+                  )
+                ),
+                d.quizActive && activeItem && React.createElement("div", { className: "space-y-2" },
+                  React.createElement("p", { className: "text-xs text-slate-700 font-semibold leading-relaxed", 'data-physics-quiz-prompt': true }, activeItem.prompt),
+                  React.createElement("div", { className: "flex flex-wrap items-center gap-2" },
+                    physSpeakButton('quiz-prompt', activeItem.prompt, __alloT('stem.physics.read_quiz_aria', 'Read quiz question aloud')),
+                    React.createElement("button", {
+                      type: "button", 'data-physics-quiz-hint': true, disabled: !!d.quizHintLoading, style: { minHeight: 44 },
+                      onClick: function() {
+                        var fallbackHint = __alloT('stem.physics.quiz_hint_formula_prefix', 'Formula / Key idea: ') + activeItem.formula;
+                        if (typeof getHint === 'function' && aiHintsEnabled) {
+                          upd('quizHintLoading', true);
+                          Promise.resolve(getHint('physics', { band: quizBand, topic: activeItem.type, angle: activeItem.angle, velocity: activeItem.velocity, gravity: activeItem.gravity, launchHeight: activeItem.launchHeight, formula: activeItem.formula }, __alloT('stem.physics.quiz_hint_prompt', 'Give a brief helpful hint without giving away the answer. Context: ') + activeItem.formula)).then(function(resp) {
+                            upd('quizHintLoading', false);
+                            var txt = resp ? String(resp).trim() : '';
+                            upd('quizHint', txt || fallbackHint);
+                          }).catch(function() { upd('quizHintLoading', false); upd('quizHint', fallbackHint); });
+                        } else {
+                          upd('quizHint', fallbackHint);
+                        }
+                      },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold border border-amber-300 bg-white text-amber-800 hover:bg-amber-100"
+                    }, d.quizHintLoading ? '⏳ ' + __alloT('stem.physics.thinking', 'Thinking...') : '💡 ' + __alloT('stem.physics.quiz_hint_btn', 'Hint')),
+                    activeItem.simPreset && React.createElement("button", {
+                      type: "button", 'data-physics-quiz-load': true, disabled: lockedSim, style: { minHeight: 44 },
+                      title: lockedSim ? __alloT('stem.physics.quiz_load_locked', 'Finish the active mission or challenge before loading a quiz setup.') : undefined,
+                      onClick: function() {
+                        if (lockedSim) return;
+                        var sp = activeItem.simPreset;
+                        var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
+                        if (cv && cv._cancelFlight) cv._cancelFlight();
+                        setLabToolData(function(prev) {
+                          var current = prev.physics || {};
+                          if (current.targetMode || current.challengeActive || current.obstacleMode || current.battleMode) return prev;
+                          return Object.assign({}, prev, { physics: Object.assign({}, current, {
+                            angle: sp.angle, velocity: sp.velocity, gravity: sp.gravity, launchHeight: sp.launchHeight || 0, airResist: !!sp.airResist, showOverlay: true
+                          }) });
+                        });
+                        if (addToast) addToast('🎯 ' + __alloT('stem.physics.quiz_loaded_toast', 'Quiz scenario loaded in simulator — click Launch! to verify!'), 'info');
+                        if (cv && cv.focus) cv.focus();
+                      },
+                      className: "px-3 py-1.5 rounded-lg text-xs font-bold border border-sky-300 bg-white text-sky-800 hover:bg-sky-100 disabled:opacity-50"
+                    }, '🎯 ' + __alloT('stem.physics.quiz_load_in_sim', 'Load in Simulator'))
+                  ),
+                  d.quizHint && React.createElement("p", { 'data-physics-quiz-hint-text': true, role: "status", className: "text-xs leading-relaxed text-amber-900 bg-amber-100/70 rounded-lg p-2 border border-amber-300" }, d.quizHint),
+                  React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 gap-2" },
+                    activeItem.options.map(function (opt, oi) {
+                      var picked = d.quizPicked === oi;
+                      var correct = d.quizPicked !== null && oi === activeItem.correctIndex;
+                      var wrong = picked && !correct;
+                      return React.createElement("button", { key: oi, type: "button", 'data-physics-quiz-option': oi, disabled: d.quizPicked !== null, style: { minHeight: 44 },
+                        onClick: function () {
+                          upd('quizPicked', oi);
+                          var isCorrect = oi === activeItem.correctIndex;
+                          upd('quizFeedback', isCorrect ? 'correct' : 'wrong');
+                          if (!isCorrect) {
+                            upd('quizDiag', activeItem.explanation + (activeItem.formula ? ' (' + activeItem.formula + ')' : ''));
+                          } else {
+                            upd('quizDiag', '');
+                          }
+                          if (isCorrect) { upd('quizStreak', (d.quizStreak || 0) + 1); awardStemXP('physicsQuiz', 10, 'Solved physics quiz question'); }
+                          else { upd('quizStreak', 0); }
+                        },
+                        className: "px-3 py-2 rounded-lg text-xs font-bold border-2 transition-all " +
+                          (correct ? 'bg-emerald-100 border-emerald-400 text-emerald-700' : wrong ? 'bg-red-100 border-red-400 text-red-700' : d.quizPicked !== null ? 'bg-slate-50 border-slate-200 text-slate-600' : 'bg-white border-amber-200 text-slate-700 hover:border-amber-400')
+                      }, opt.label);
+                    })
+                  ),
+                  d.quizFeedback && React.createElement("p", { className: "text-xs font-bold " + (d.quizFeedback === 'correct' ? 'text-emerald-600' : 'text-red-600') },
+                    d.quizFeedback === 'correct' ? '\u2705 ' + __alloT('stem.physics.quiz_correct_generic', 'Correct!') + ' ' + activeItem.explanation : '\u274C ' + __alloT('stem.physics.quiz_not_quite', 'Not quite.')),
+                  d.quizFeedback === 'wrong' && d.quizDiag && React.createElement("p", { className: "text-xs leading-relaxed text-red-700 bg-red-50 rounded-lg p-2 border border-red-200" }, d.quizDiag),
+                  d.quizStreak > 1 && React.createElement("p", { className: "text-xs font-bold text-amber-600" }, "\uD83D\uDD25 " + __alloT('stem.physics.streak_count', 'Streak: ') + d.quizStreak + "!")
+                )
+              );
+            })(),
 
             // \u2500\u2500 \uD83E\uDDE0 Physics Myths \u2014 grade-banded T/F misconceptions, each falsifiable IN the sim \u2500\u2500
             // Every myth here is a documented projectile misconception (impetus theory,
             // heavier-falls-faster, zero-velocity-at-apex...), and every verdict comes with
             // a "Try it" pointing at the sim feature that lets the student SEE the truth.
-            (function () {
-              var glp = (gradeLevel || '5th Grade').toLowerCase();
-              var mythBand = /9th|10|11|12|high/.test(glp) ? '9-12' : /6th|7th|8th/.test(glp) ? '6-8' : '3-5';
+            showSec('learn') && (function () {
+              var mythBand = physBand;
               var MYTHS_35 = [
                 { s: __alloT('stem.physics.myth35_1_s', 'A heavier cannonball falls faster, so it lands sooner.'), t: false, why: __alloT('stem.physics.myth35_1_why', 'Gravity speeds up EVERY mass equally (with air resistance off) \u2014 a 10 kg ball and a 1 kg ball trace the exact same arc. Galileo\u2019s big idea.'), tryIt: __alloT('stem.physics.myth35_1_tryit', 'Launch with mass = 1 kg, then slide mass to 10 kg and launch again. Same arc, same landing spot.') },
                 { s: __alloT('stem.physics.myth35_2_s', 'At the very top of the arc, the ball has stopped moving.'), t: false, why: __alloT('stem.physics.myth35_2_why', 'Only the UP-DOWN part of the motion pauses at the top. The ball keeps moving forward the whole time.'), tryIt: __alloT('stem.physics.myth35_2_tryit', 'Turn on Vectors and watch the horizontal arrow at the top of the arc \u2014 it never shrinks.') },
@@ -7139,7 +9090,10 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                 ),
                 React.createElement('p', { className: 'text-xs text-slate-700 mb-2' }, __alloT('stem.physics.myth_model_assumptions', 'Unless a question explicitly includes air resistance, assume no air drag. Range comparisons use equal launch and landing heights and hold the other launch settings constant.')),
                 myth && React.createElement("div", { className: "space-y-2" },
-                  React.createElement("p", { className: "text-xs font-bold text-slate-700" }, "\u201C" + myth.s + "\u201D"),
+                  React.createElement("div", { className: "flex items-center justify-between flex-wrap gap-2" },
+                    React.createElement("p", { className: "text-xs font-bold text-slate-700" }, "\u201C" + myth.s + "\u201D"),
+                    physSpeakButton('myth-card', myth.s + (myth.answered ? ' ' + myth.why + ' ' + myth.tryIt : ''), __alloT('stem.physics.read_myth_aria', 'Read this physics myth aloud'))
+                  ),
                   !myth.answered && React.createElement("div", { className: "grid grid-cols-2 gap-2" },
                     [true, false].map(function (val) {
                       return React.createElement("button", { key: String(val),
@@ -7168,10 +9122,8 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               );
             })(),
 
-            React.createElement("button", { "aria-label": __alloT('stem.physics.snapshot', 'Snapshot'), onClick: () => { setToolSnapshots(prev => [...prev, { id: 'ph-' + Date.now(), tool: 'physics', label: d.angle + '\u00B0 ' + d.velocity + 'm/s', data: { ...d }, timestamp: Date.now() }]); addToast('\uD83D\uDCF8 ' + __alloT('stem.physics.toast_snapshot_saved', 'Snapshot saved!'), 'success'); }, className: "mt-3 ml-auto px-4 py-2 text-xs font-bold text-white bg-gradient-to-r from-indigo-700 to-purple-700 rounded-full hover:from-indigo-700 hover:to-purple-700 shadow-md hover:shadow-lg transition-all" }, "\uD83D\uDCF8 " + __alloT('stem.physics.snapshot', 'Snapshot')),
-
             // === H7b'' inquiry widget: gravity-angle explorer ===
-            (function() {
+            showSec('notebook') && (function() {
               var h = React.createElement;
               var iq = d.gravityHunt || { gravity: 9.8, angle: 45, velocity: 30, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
               function setIQ(patch) { upd('gravityHunt', Object.assign({}, iq, patch)); }
@@ -7230,17 +9182,24 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                   })
                 ),
                 h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-                  h('button', { type: 'button', 'data-physics-apply-inquiry': true, disabled: !!(d.targetMode || d.challengeActive || d.battleMode), title: (d.targetMode || d.challengeActive || d.battleMode) ? __alloT('stem.physics.inquiry_mode_disabled', 'Leave the active mission, challenge, or battle before applying calculator settings.') : undefined, onClick: function() {
-                    if (d.targetMode || d.challengeActive || d.battleMode) return;
+                  h('button', { type: 'button', 'data-physics-apply-inquiry': true, disabled: !!(d.targetMode || d.challengeActive || d.obstacleMode || d.battleMode), title: (d.targetMode || d.challengeActive || d.obstacleMode || d.battleMode) ? __alloT('stem.physics.inquiry_mode_disabled', 'Leave the active mission, challenge, or battle before applying calculator settings.') : undefined, onClick: function() {
+                    if (d.targetMode || d.challengeActive || d.obstacleMode || d.battleMode) return;
                     var cv = document.getElementById('physicsCanvas');
                     if (cv && cv._cancelFlight) cv._cancelFlight();
                     setLabToolData(function(prev) {
                       var current = prev.physics || {};
-                      if (current.targetMode || current.challengeActive || current.battleMode) return prev;
+                      if (current.targetMode || current.challengeActive || current.obstacleMode || current.battleMode) return prev;
                       return Object.assign({}, prev, { physics: Object.assign({}, current, { angle: iq.angle, velocity: iq.velocity, gravity: iq.gravity, launchHeight: 0, airResist: false }) });
                     });
                     if (cv && cv.focus) cv.focus();
-                  }, className: 'px-3 py-2 rounded bg-indigo-700 text-white text-xs font-bold disabled:opacity-50' }, __alloT('stem.physics.iq_apply_ground_vacuum', 'Apply to simulator (ground level, no drag)')),
+                  }, className: 'px-3 py-2 rounded bg-indigo-700 text-white text-xs font-bold disabled:opacity-50', style: { minHeight: 44 } }, __alloT('stem.physics.iq_apply_ground_vacuum', 'Apply to simulator (ground level, no drag)')),
+                  h('button', { type: 'button', 'data-physics-sync-inquiry': true, onClick: function() {
+                    setIQ({
+                      angle: Math.max(5, Math.min(85, Math.round(d.angle || 45))),
+                      velocity: Math.max(5, Math.min(50, Math.round(d.velocity || 25))),
+                      gravity: parseFloat(Number(d.gravity || 9.8).toFixed(1))
+                    });
+                  }, className: 'px-3 py-2 rounded border border-indigo-300 bg-indigo-50 text-indigo-800 text-xs font-bold', style: { minHeight: 44 } }, '↙ ' + __alloT('stem.physics.iq_sync_from_launcher', 'Sync from launcher')),
                   h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, '\uD83D\uDCCB ' + __alloT('stem.physics.iq_log', 'Log')),
                   h('button', { onClick: function() { setIQ({ gravity: 9.8, angle: 45, velocity: 30, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
                     className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, '\u21BA ' + __alloT('stem.physics.iq_reset', 'Reset')),
@@ -7300,10 +9259,77 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
             })(),
 
 
+            // ── STEAM Atlas Mastery & Cross-Tool Bridges (Learn Tab) ──
+            showSec('learn') && (function () {
+              var masteryMap = d.physicsMastery || {};
+              var masteryCount = Object.keys(masteryMap).length;
+              var bridges = [
+                {
+                  id: 'throwlab',
+                  emoji: '⚾',
+                  title: __alloT('stem.physics.bridge_throwlab_title', 'ThrowLab: Release Biomechanics'),
+                  desc: __alloT('stem.physics.bridge_throwlab_desc', 'See how arm torque, stride, and release height h₀ generate the launch velocity v₀ you test here.'),
+                  cta: __alloT('stem.physics.bridge_open_throwlab', 'Open ThrowLab →'),
+                  aria: __alloT('stem.physics.bridge_throwlab_aria', 'Open ThrowLab biomechanics STEM tool')
+                },
+                {
+                  id: 'trajectoryComputing',
+                  emoji: '💻',
+                  title: __alloT('stem.physics.bridge_traj_title', 'Trajectory Computing: RK4 vs Euler'),
+                  desc: __alloT('stem.physics.bridge_traj_desc', 'Inspect the numerical integrator steps behind drag trajectories and compare time-step stability.'),
+                  cta: __alloT('stem.physics.bridge_open_traj', 'Open Trajectory Computing →'),
+                  aria: __alloT('stem.physics.bridge_traj_aria', 'Open Trajectory Computing numerical methods tool')
+                },
+                {
+                  id: 'machineLab',
+                  emoji: '⚙️',
+                  title: __alloT('stem.physics.bridge_machine_title', 'MachineLab: Catapult & Energy Transfer'),
+                  desc: __alloT('stem.physics.bridge_machine_desc', 'Design lever arms and mechanical advantage to launch payloads before predicting their parabolic arc.'),
+                  cta: __alloT('stem.physics.bridge_open_machine', 'Open MachineLab →'),
+                  aria: __alloT('stem.physics.bridge_machine_aria', 'Open MachineLab simple machines tool')
+                }
+              ];
+              return React.createElement('section', {
+                'data-physics-learning-panel': 'bridges',
+                'aria-labelledby': 'physics-bridges-heading',
+                className: 'phys-tier3-panel mt-3'
+              },
+                React.createElement('div', { className: 'flex items-center justify-between flex-wrap gap-2 mb-2' },
+                  React.createElement('h4', { id: 'physics-bridges-heading', className: 'text-xs font-bold uppercase tracking-wider m-0' }, '🧭 ' + __alloT('stem.physics.bridges_title', 'STEAM Atlas Mastery & Cross-Tool Bridges')),
+                  React.createElement('span', { 'data-physics-mastery-count': true, className: 'text-xs font-bold phys-tier3-accent' },
+                    masteryCount + ' / ' + PHYS_MASTERY_TOTAL + ' ' + __alloT('stem.physics.mastered_short', 'mastered')
+                  )
+                ),
+                React.createElement('p', { className: 'text-xs phys-tier3-muted mb-2' },
+                  __alloT('stem.physics.bridges_intro', 'Your Projectile Lab investigations sync live to the STEAM Mastery Atlas. Jump directly to companion labs sharing kinematics, RK4 simulation, and launcher mechanics:')
+                ),
+                React.createElement('div', { className: 'phys-tier3-grid' },
+                  bridges.map(function (br) {
+                    return React.createElement('button', {
+                      key: br.id,
+                      type: 'button',
+                      'data-physics-bridge': br.id,
+                      'aria-label': br.aria,
+                      className: 'phys-tier3-card',
+                      onClick: function () {
+                        if (typeof setStemLabTool === 'function') setStemLabTool(br.id);
+                        else if (addToast) addToast(__alloT('stem.physics.bridge_unavailable', 'Open the STEM Lab menu to switch to ') + br.title, 'info');
+                      }
+                    },
+                      React.createElement('span', { className: 'block text-xs font-bold' }, br.emoji + ' ' + br.title),
+                      React.createElement('span', { className: 'block text-xs phys-tier3-muted mt-1' }, br.desc),
+                      React.createElement('span', { className: 'block text-xs font-bold phys-tier3-accent mt-1' }, br.cta)
+                    );
+                  })
+                )
+              );
+            })(),
+
             // ── AI Physics Tutor (reading-level aware) ──
-            (function () {
+            showSec('learn') && (function () {
               if (typeof callGemini !== 'function') return null;
-              var aiLevel = d.aiLevel || 'grade5';
+              var defaultAiLevel = physBand === '9-12' ? 'hs' : physBand === '6-8' ? 'grade5' : 'plain';
+              var aiLevel = d.aiLevel || defaultAiLevel;
               var aiText = d.aiExplain || '';
               var aiLoading = !!d.aiLoading;
               var aiError = d.aiError || '';
@@ -7354,10 +9380,14 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                   }, aiLoading ? '\u23F3 ' + __alloT('stem.physics.thinking', 'Thinking...') : (aiText ? '\uD83D\uDD04 ' + __alloT('stem.physics.re_explain', 'Re-explain') : '\uD83E\uDDE0 ' + __alloT('stem.physics.explain', 'Explain')))
                 ),
                 aiError && React.createElement("p", { className: "text-[0.6875rem] text-rose-600", role: "alert" }, aiError),
-                aiText && React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed bg-white rounded-lg p-2 border border-purple-100" }, aiText),
+                aiText && React.createElement("div", { className: "bg-white rounded-lg p-2 border border-purple-100 space-y-2" },
+                  React.createElement("p", { className: "text-xs text-slate-700 leading-relaxed" }, aiText),
+                  physSpeakButton('ai-tutor', aiText, __alloT('stem.physics.read_ai_aria', 'Read AI explanation aloud'))
+                ),
                 !aiText && !aiLoading && !aiError && React.createElement("p", { className: "text-[0.6875rem] italic text-slate-600" }, __alloT('stem.physics.ai_empty_hint', 'Click \u201CExplain\u201D for the AI tutor to describe what happens at the current angle, velocity, and gravity settings.'))
               );
-            })()
+            })(),
+            React.createElement(PhysicsRestoreBridge, { setLabToolData: setLabToolData, React: React })
 
           )
       })();

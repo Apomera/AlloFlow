@@ -23,6 +23,27 @@
     "reading_library/books",
     "lang/*.js",
     "allopacks/media/*.png",
-    "allopacks/media/**/*.png"
+    "allopacks/media/**/*.png",
+    "*_source.jsx",
+    "--quiet",
+    "migration_sources",
+    "services",
+    "docker",
+    "tts-server",
+    "agent_skills",
+    "plugins",
+    "platform_packages",
+    "apps_script",
+    "catalog/cloudflare-worker",
+    "catalog/bug-digest-worker",
+    "verapdf",
+    "standards_snapshots",
+    "remotion-trailer",
+    "website",
+    "word_audio_shards",
+    "word_audio_bank_part*.json",
+    "word_audio_kokoro_bank.json",
+    "duckdb-assets",
+    "Sample audiobank.txt"
   ]
 }

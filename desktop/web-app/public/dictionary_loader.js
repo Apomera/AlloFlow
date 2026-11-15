@@ -184,6 +184,7 @@
     if (!w || /\s/.test(w)) return result(null, 'unsupported_word');
     const cached = readCache(w);
     if (cached !== undefined && !(cached === null && options.bypassMissingCache)) return result(cached, cached ? null : 'not_found');
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) return result(null, 'not_available');
     if (typeof fetch !== 'function') return result(null, 'not_available');
     // Another request can save useful help while this one is awaiting the provider.
     // Revalidate that same-word entry on failure; cancellation must still win.
@@ -193,7 +194,7 @@
       return result(recovered || null, recovered ? null : reason);
     };
     try {
-      const response = await fetch(API + encodeURIComponent(w), { signal: options.signal });
+      const response = await fetch(API + encodeURIComponent(w), { signal: options.signal, credentials: 'omit' });
       if (options.signal?.aborted) return result(null, 'cancelled');
       // A concurrent caller may have cached a usable entry while this request waited.
       // readCache validates it; a late miss must not erase successful offline help.

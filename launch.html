@@ -509,10 +509,20 @@
         announcer.textContent = text;
       }
 
+      function isSafeCanvasUrl(u) {
+        try {
+          const parsed = new URL(String(u || '').trim());
+          return parsed.protocol === 'https:' && parsed.hostname === 'gemini.google.com' && parsed.pathname.startsWith('/share/');
+        } catch (_) {
+          return false;
+        }
+      }
+
       function applyRelease(data, source) {
-        if (data && typeof data.canvas_url === 'string' && data.canvas_url) {
-          currentCanvasUrl = data.canvas_url;
-          launchBtn.setAttribute('href', data.canvas_url);
+        if (data && typeof data.canvas_url === 'string' && isSafeCanvasUrl(data.canvas_url)) {
+          const safeUrl = data.canvas_url.trim();
+          currentCanvasUrl = safeUrl;
+          launchBtn.setAttribute('href', safeUrl);
         }
         if (data && typeof data.version === 'string' && data.version) {
           currentVersion = data.version;

@@ -163,7 +163,19 @@ function FullPackRunView(props) {
     disabled: isRunActive,
     onClick: () => openExportPreview('print'),
     className: "min-h-10 rounded-lg bg-indigo-700 px-3 py-2 text-[11px] font-bold text-white hover:bg-indigo-600 disabled:cursor-not-allowed disabled:opacity-50"
-  }, t('fullpack.delivery_document_builder') || 'Open Document Builder'), /*#__PURE__*/React.createElement("button", {
+  }, t('fullpack.delivery_document_builder') || 'Open Document Builder'), typeof openExportPreview === 'function' && /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-testid": "full-pack-export-html",
+    disabled: isRunActive,
+    onClick: () => openExportPreview('html'),
+    className: "min-h-10 rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-[11px] font-bold text-indigo-900 hover:bg-indigo-100 disabled:cursor-not-allowed disabled:opacity-50"
+  }, t('fullpack.delivery_interactive_html') || 'Export Interactive HTML'), /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-testid": "full-pack-export-worksheet",
+    disabled: isRunActive,
+    onClick: () => openExportPreview('worksheet'),
+    className: "min-h-10 rounded-lg border border-slate-300 bg-white px-3 py-2 text-[11px] font-bold text-slate-800 hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-50"
+  }, t('fullpack.delivery_printable_worksheet') || 'Export Printable Worksheet')), /*#__PURE__*/React.createElement("button", {
     type: "button",
     disabled: isRunActive,
     onClick: createGuidedHomeworkShare,
@@ -325,10 +337,11 @@ function FullPackRunView(props) {
     };
     const _generationHelpersModule = window.AlloModules && window.AlloModules.GenerationHelpers;
     const fullPackEditableTypes = (() => {
-      const fallback = ['analysis', 'simplified', 'glossary', 'image', 'outline', 'sentence-frames', 'faq', 'timeline', 'persona', 'concept-sort', 'brainstorm', 'quiz', 'lesson-plan', 'adventure', 'dbq', 'note-taking', 'anchor-chart', 'alignment-report', 'math', 'gemini-bridge'];
+      const fallback = ['analysis', 'simplified', 'glossary', 'image', 'outline', 'sentence-frames', 'faq', 'timeline', 'persona', 'concept-sort', 'venn', 'brainstorm', 'quiz', 'lesson-plan', 'adventure', 'dbq', 'note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge', 'alignment-report', 'math', 'gemini-bridge'];
       const supplied = _generationHelpersModule && typeof _generationHelpersModule.getFullPackEditableResourceTypes === 'function' ? _generationHelpersModule.getFullPackEditableResourceTypes() : fallback;
       const cleaned = Array.isArray(supplied) ? supplied.map(type => String(type || '').trim()).filter(Boolean) : fallback;
-      return Array.from(new Set(cleaned.length ? cleaned : fallback));
+      const merged = cleaned.concat(['venn', 'dbq', 'timeline', 'concept-sort', 'sentence-frames', 'outline', 'math']).filter(type => !['full-pack', 'package-deliver', 'source-input', 'directions', '_final'].includes(type));
+      return Array.from(new Set(merged.length ? merged : fallback));
     })();
     const buildRows = run => {
       const resources = run && run.resources || {};

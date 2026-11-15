@@ -242,9 +242,17 @@
 
   async function removeSource(sourceId, ctx) {
     if (!sourceId) return { ok: false, reason: 'failed', count: 0, sources: [] };
-    return withMutation(ctx, function () {
+    var result = await withMutation(ctx, function () {
       return commit(ctx, function (E, project) { return E.removeSource(project, sourceId, Date.now()); });
     });
+    if (result && result.ok) {
+      try {
+        if (root && root.AlloResearchEvidence && typeof root.AlloResearchEvidence.purgeBySourceId === 'function') {
+          root.AlloResearchEvidence.purgeBySourceId(sourceId);
+        }
+      } catch (_) {}
+    }
+    return result;
   }
 
   // Excluding a source keeps the document but takes it out of retrieval — the
@@ -500,6 +508,13 @@
   var storagePrefix = 'alloflow.research-evidence.v1.';
   var closeViewer = null;
   var sequence = 0;
+  function activePrefix() {
+    try {
+      var k = root && typeof root.__alloActiveLearnerKey === 'string' ? root.__alloActiveLearnerKey.trim() : '';
+      if (k) return storagePrefix + 'u_' + encodeURIComponent(k.slice(0, 64)) + '.';
+    } catch (_) {}
+    return storagePrefix;
+  }
   function escapeMarkdown(value) {
     return String(value || '').replace(/[\\`*_{}\[\]()<>#!|~&]/g, '\\$&');
   }
@@ -538,7 +553,7 @@
         title: value.title, locatorLabel: value.locatorLabel, version: value.version,
         passage: value.passage, suppliedAt: value.suppliedAt };
       // Reserve room for the persistent recency field without shortening quotes.
-      if (citationBytes(storagePrefix + item.id, JSON.stringify(item)) + 64 > cacheLimits.itemBytes) return null;
+      if (citationBytes(activePrefix() + item.id, JSON.stringify(item)) + 64 > cacheLimits.itemBytes) return null;
       return item;
     } catch (_) { return null; }
   }
@@ -549,7 +564,7 @@
       if (citationBytes(key, raw) <= cacheLimits.itemBytes) {
         value = JSON.parse(raw);
         item = normaliseSnapshot(value);
-        if (item && key !== storagePrefix + item.id) item = null;
+        if (item && key !== activePrefix() + item.id) item = null;
       }
     } catch (_) {}
     var stamp = item && value && typeof value.__cacheLastUsed === 'number' && Number.isFinite(value.__cacheLastUsed)
@@ -561,7 +576,7 @@
     var old = citationMemory.get(item.id);
     if (old) citationMemoryBytes -= old.bytes;
     citationMemory.delete(item.id);
-    var bytes = citationBytes(storagePrefix + item.id, JSON.stringify(item)) + (raw ? raw.length * 2 : 0);
+    var bytes = citationBytes(activePrefix() + item.id, JSON.stringify(item)) + (raw ? raw.length * 2 : 0);
     citationMemory.set(item.id, { item: item, raw: raw, bytes: bytes, touched: Date.now() });
     citationMemoryBytes += bytes;
     var entries = Array.from(citationMemory.keys());
@@ -580,9 +595,10 @@
   }
   function citationScan(storage) {
     var records = new Map();
+    var pfx = activePrefix();
     for (var i = 0; i < storage.length; i++) {
       var key = storage.key(i);
-      if (typeof key !== 'string' || key.indexOf(storagePrefix) !== 0 || !citationId(key.slice(storagePrefix.length))) continue;
+      if (typeof key !== 'string' || key.indexOf(pfx) !== 0 || !citationId(key.slice(pfx.length))) continue;
       var raw = storage.getItem(key);
       if (raw !== null) records.set(key, citationRecord(key, raw));
     }
@@ -592,7 +608,8 @@
     return !!error && (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED');
   }
   function citationCandidates(records, protectedIds) {
-    return Array.from(records.values()).filter(function(record) { return !protectedIds.has(record.key.slice(storagePrefix.length)); })
+    var pfx = activePrefix();
+    return Array.from(records.values()).filter(function(record) { return !protectedIds.has(record.key.slice(pfx.length)); })
       .sort(function(a, b) { return a.used - b.used || a.key.localeCompare(b.key); });
   }
   function citationEvict(storage, records, candidates) {
@@ -615,13 +632,14 @@
   }
   function remember(items) {
     if (!Array.isArray(items)) return false;
+    var pfx = activePrefix();
     var batch = new Map(), batchBytes = 0;
     for (var i = 0; i < items.length; i++) {
       var item = normaliseSnapshot(items[i]);
       if (!item) return false;
       var prior = batch.get(item.id), cached = citationMemory.get(item.id);
       if ((prior && !citationSame(prior, item)) || (cached && !citationSame(cached.item, item))) return false;
-      if (!prior) { batch.set(item.id, item); batchBytes += 2 * citationBytes(storagePrefix + item.id, JSON.stringify(item)) + 64; }
+      if (!prior) { batch.set(item.id, item); batchBytes += 2 * citationBytes(pfx + item.id, JSON.stringify(item)) + 64; }
     }
     if (!batch.size) return true;
     // A single operation cannot promise both bounded retention and protection of
@@ -633,20 +651,20 @@
       records = citationScan(storage);
       var conflict = false;
       batch.forEach(function(item) {
-        var existing = records.get(storagePrefix + item.id);
+        var existing = records.get(pfx + item.id);
         if (existing && existing.item && !citationSame(existing.item, item)) conflict = true;
       });
       if (conflict) return false;
     } catch (_) { storage = null; }
     var retainedBytes = 0;
     batch.forEach(function(item) {
-      var existing = records && records.get(storagePrefix + item.id);
-      var itemBytes = citationBytes(storagePrefix + item.id, JSON.stringify(item));
+      var existing = records && records.get(pfx + item.id);
+      var itemBytes = citationBytes(pfx + item.id, JSON.stringify(item));
       retainedBytes += itemBytes + Math.max(itemBytes + 64, existing && existing.item ? existing.raw.length * 2 : 0);
     });
     if (retainedBytes > cacheLimits.memoryBytes) return false;
     batch.forEach(function(item) {
-      var record = records && records.get(storagePrefix + item.id);
+      var record = records && records.get(pfx + item.id);
       citationKeep(item, record && record.item ? record.raw : null, protectedIds);
     });
     if (!storage) return false;
@@ -654,7 +672,7 @@
     try {
       var pending = Array.from(batch.values());
       for (var j = 0; j < pending.length; j++) {
-        var current = pending[j], key = storagePrefix + current.id;
+        var current = pending[j], key = pfx + current.id;
         var existing = records.get(key), latest = storage.getItem(key);
         if (latest !== (existing ? existing.raw : null)) {
           var changed = latest === null ? null : citationRecord(key, latest);
@@ -691,7 +709,7 @@
       // Another context can remove a preceding batch member during later writes.
       // Confirm every member before reporting a durable save.
       for (var n = 0; n < pending.length; n++) {
-        var savedKey = storagePrefix + pending[n].id, savedRaw = storage.getItem(savedKey);
+        var savedKey = pfx + pending[n].id, savedRaw = storage.getItem(savedKey);
         var saved = savedRaw === null ? null : citationRecord(savedKey, savedRaw);
         if (!saved || !saved.item || !citationSame(saved.item, pending[n])) return false;
       }
@@ -700,13 +718,14 @@
   }
   function lookup(id) {
     if (!citationId(id)) return null;
+    var pfx = activePrefix();
     var cached = citationMemory.get(id), storage = null, record = null;
     if (!cached) {
       try {
         storage = citationStorage();
-        var raw = storage.getItem(storagePrefix + id);
+        var raw = storage.getItem(pfx + id);
         if (raw === null) return null;
-        record = citationRecord(storagePrefix + id, raw);
+        record = citationRecord(pfx + id, raw);
         if (!record.item) return null;
         citationKeep(record.item, raw);
         cached = citationMemory.get(id);
@@ -720,7 +739,7 @@
       cached.touched = Date.now();
       try {
         storage = storage || citationStorage();
-        var key = storagePrefix + id;
+        var key = pfx + id;
         if (storage.getItem(key) === cached.raw) {
           var updated = JSON.stringify(Object.assign({}, cached.item, { __cacheLastUsed: citationNow() }));
           storage.setItem(key, updated);
@@ -729,6 +748,35 @@
       } catch (_) {} // Reading a passage never requires a successful metadata write.
     }
     return Object.assign({}, cached.item);
+  }
+  function purgeBySourceId(sourceId) {
+    var sid = String(sourceId || '');
+    if (!sid) return 0;
+    var removed = 0;
+    Array.from(citationMemory.keys()).forEach(function(id) {
+      var entry = citationMemory.get(id);
+      if (entry && entry.item && entry.item.sourceId === sid) {
+        citationMemoryBytes -= entry.bytes;
+        citationMemory.delete(id);
+        removed++;
+      }
+    });
+    try {
+      var storage = citationStorage();
+      var toRemove = [];
+      for (var i = 0; i < storage.length; i++) {
+        var key = storage.key(i);
+        if (typeof key !== 'string' || key.indexOf(storagePrefix) !== 0) continue;
+        try {
+          var parsed = JSON.parse(storage.getItem(key) || 'null');
+          if (parsed && parsed.sourceId === sid) toRemove.push(key);
+        } catch (_) {}
+      }
+      toRemove.forEach(function(key) {
+        try { storage.removeItem(key); removed++; } catch (_) {}
+      });
+    } catch (_) {}
+    return removed;
   }
   function cite(text, items) {
     return String(text || '').replace(/\s*\[Your document (\d+)\]/gi, function(_, n) {
@@ -846,5 +894,5 @@
     if (!href || !/^#allo-doc-[a-z0-9-]+$/.test(href)) return;
     event.preventDefault(); event.stopPropagation(); show(href.slice(prefix.length), anchor);
   }, true);
-  root.AlloResearchEvidence = { snapshot: snapshot, remember: remember, lookup: lookup, cite: cite, finish: finish, exactExcerpts: exactExcerpts, show: show, passage: passage };
+  root.AlloResearchEvidence = { snapshot: snapshot, remember: remember, lookup: lookup, cite: cite, finish: finish, exactExcerpts: exactExcerpts, show: show, passage: passage, purgeBySourceId: purgeBySourceId };
 })(typeof window !== 'undefined' ? window : null);

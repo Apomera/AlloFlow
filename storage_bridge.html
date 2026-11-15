@@ -1245,7 +1245,115 @@
   }
 
   // Review mode (opened directly).
+  (function initReviewMode() {
+  if (window.top !== window.self) {
+    document.getElementById('review-ui').hidden = true;
+    return;
+  }
   document.getElementById('review-ui').hidden = false;
+  function getBridgeVerifier() {
+    try {
+      var raw = localStorage.getItem('alloflow_educator_access_code_v1');
+      if (!raw) return null;
+      var env = JSON.parse(raw);
+      if (env && env.kind === 'pwhash' && env.alg === 'PBKDF2-SHA256'
+          && Number.isInteger(env.iter) && env.iter >= 10000 && env.iter <= 2000000
+          && typeof env.salt === 'string' && typeof env.hash === 'string') return env;
+    } catch (_) {}
+    return null;
+  }
+  function b64ToBytes(b64) {
+    var bin = atob(b64);
+    var out = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+    return out;
+  }
+  function verifyBridgeCode(code) {
+    var env = getBridgeVerifier();
+    if (!env) return Promise.resolve(true);
+    var text = String(code == null ? '' : code);
+    if (!text || !window.crypto || !window.crypto.subtle) return Promise.resolve(false);
+    var salt = b64ToBytes(env.salt), expected = b64ToBytes(env.hash);
+    var enc = new TextEncoder().encode(text.normalize('NFC'));
+    return window.crypto.subtle.importKey('raw', enc, { name: 'PBKDF2' }, false, ['deriveBits'])
+      .then(function (key) {
+        return window.crypto.subtle.deriveBits({ name: 'PBKDF2', salt: salt, iterations: env.iter, hash: 'SHA-256' }, key, expected.length * 8);
+      })
+      .then(function (bits) {
+        var actual = new Uint8Array(bits);
+        if (actual.length !== expected.length) return false;
+        var diff = 0;
+        for (var i = 0; i < actual.length; i++) diff |= actual[i] ^ expected[i];
+        return diff === 0;
+      }).catch(function () { return false; });
+  }
+  function isClinicalHoldActive(ns) {
+    if (ns && ns !== 'protected_clinical_records') return false;
+    try {
+      if (Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SENSITIVE_RECORD_RETENTION_POLICY')) {
+        var pol = window.ALLOFLOW_SENSITIVE_RECORD_RETENTION_POLICY;
+        if (!pol || typeof pol !== 'object' || pol.allowManualDeletion === false || pol.legalHold === true) return true;
+      }
+      if (localStorage.getItem('alloflow_retention_legal_hold_v1') === '1') return true;
+    } catch (_) { return true; }
+    return false;
+  }
+  function requireBridgeEducatorCode(openerBtn) {
+    if (!getBridgeVerifier()) return Promise.resolve(true);
+    return new Promise(function (resolve) {
+      var overlay = document.createElement('div');
+      overlay.setAttribute('role', 'dialog');
+      overlay.setAttribute('aria-modal', 'true');
+      overlay.style.cssText = 'position:fixed;inset:0;z-index:100001;background:rgba(15,23,42,.72);display:flex;align-items:center;justify-content:center;padding:16px;';
+      var box = document.createElement('form');
+      box.style.cssText = 'background:#fff;color:#0f172a;border-radius:12px;padding:18px;width:min(100%,380px);font:14px/1.45 system-ui,sans-serif;box-shadow:0 20px 50px rgba(0,0,0,.4);';
+      var title = document.createElement('h3');
+      title.textContent = 'Educator access code required';
+      title.style.cssText = 'margin:0 0 8px;font-size:16px;';
+      var input = document.createElement('input');
+      input.type = 'password';
+      input.autocomplete = 'off';
+      input.placeholder = 'Enter educator access code';
+      input.style.cssText = 'width:100%;box-sizing:border-box;padding:8px 10px;border:1px solid #94a3b8;border-radius:8px;margin-bottom:8px;font:inherit;';
+      var err = document.createElement('div');
+      err.setAttribute('role', 'alert');
+      err.style.cssText = 'color:#b91c1c;min-height:18px;font-size:12px;margin-bottom:8px;';
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;gap:8px;justify-content:flex-end;';
+      var cancel = document.createElement('button');
+      cancel.type = 'button';
+      cancel.textContent = 'Cancel';
+      var submit = document.createElement('button');
+      submit.type = 'submit';
+      submit.textContent = 'Verify';
+      row.appendChild(cancel);
+      row.appendChild(submit);
+      box.appendChild(title);
+      box.appendChild(input);
+      box.appendChild(err);
+      box.appendChild(row);
+      overlay.appendChild(box);
+      document.body.appendChild(overlay);
+      var finish = function (ok) {
+        try { overlay.remove(); } catch (_) {}
+        if (openerBtn && openerBtn.focus) try { openerBtn.focus(); } catch (_) {}
+        resolve(!!ok);
+      };
+      cancel.onclick = function () { finish(false); };
+      box.onsubmit = function (ev) {
+        ev.preventDefault();
+        submit.disabled = true;
+        err.textContent = '';
+        verifyBridgeCode(input.value).then(function (ok) {
+          submit.disabled = false;
+          if (ok) { finish(true); return; }
+          err.textContent = 'Incorrect access code.';
+          input.focus();
+        });
+      };
+      try { input.focus(); } catch (_) {}
+    });
+  }
   function fmtBytes(n) {
     if (n == null) return '?';
     if (n < 1024) return n + ' B';
@@ -1299,15 +1407,23 @@
         var td = document.createElement('td');
         var view = document.createElement('button');
         view.textContent = 'View';
-        view.onclick = function () { showNs(ns); };
+        view.onclick = function () { requireBridgeEducatorCode(view).then(function (ok) { if (ok) showNs(ns); }); };
         var clear = document.createElement('button');
         clear.textContent = 'Erase';
         clear.className = 'danger';
         clear.style.marginLeft = '6px';
         clear.onclick = function () {
-          if (confirm('Erase all ' + byNs[ns].count + ' record(s) in "' + ns + '" from this device?')) {
-            kvClearNamespace(ns).then(refresh);
+          if (isClinicalHoldActive(ns)) {
+            alert('Manual clinical-record deletion is blocked by retention policy or legal hold.');
+            return;
           }
+          requireBridgeEducatorCode(clear).then(function (ok) {
+            if (!ok) return;
+            if (isClinicalHoldActive(ns)) { alert('Manual clinical-record deletion is blocked by retention policy or legal hold.'); return; }
+            if (confirm('Erase all ' + byNs[ns].count + ' record(s) in "' + ns + '" from this device?')) {
+              kvClearNamespace(ns).then(refresh);
+            }
+          });
         };
         td.appendChild(view); td.appendChild(clear); tr.appendChild(td);
         tbody.appendChild(tr);
@@ -1349,27 +1465,38 @@
     });
   };
   document.getElementById('btn-wipe').onclick = function () {
-    if (confirm('Erase EVERYTHING AlloFlow has stored on this device? This cannot be undone.') &&
-        confirm('Really erase all device storage?')) {
-      kvWipeAll().then(refresh);
+    if (isClinicalHoldActive('')) {
+      alert('Manual clinical-record deletion is blocked by retention policy or legal hold.');
+      return;
     }
+    requireBridgeEducatorCode(document.getElementById('btn-wipe')).then(function (ok) {
+      if (!ok || isClinicalHoldActive('')) return;
+      if (confirm('Erase EVERYTHING AlloFlow has stored on this device? This cannot be undone.') &&
+          confirm('Really erase all device storage?')) {
+        kvWipeAll().then(refresh);
+      }
+    });
   };
   document.getElementById('btn-export').onclick = function () {
-    kvAll().then(function (rows) {
-      var safe = rows.map(function (r) {
-        return { ns: r.ns, key: r.key, updatedAt: r.updatedAt,
-                 value: r.value instanceof Blob ? '[binary data ' + r.value.size + ' bytes — not exportable as JSON]' : r.value };
+    requireBridgeEducatorCode(document.getElementById('btn-export')).then(function (ok) {
+      if (!ok) return;
+      kvAll().then(function (rows) {
+        var safe = rows.map(function (r) {
+          return { ns: r.ns, key: r.key, updatedAt: r.updatedAt,
+                   value: r.value instanceof Blob ? '[binary data ' + r.value.size + ' bytes — not exportable as JSON]' : r.value };
+        });
+        var blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), records: safe }, null, 2)],
+                            { type: 'application/json' });
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'alloflow_device_storage_export.json';
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
       });
-      var blob = new Blob([JSON.stringify({ exportedAt: new Date().toISOString(), records: safe }, null, 2)],
-                          { type: 'application/json' });
-      var a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'alloflow_device_storage_export.json';
-      a.click();
-      setTimeout(function () { URL.revokeObjectURL(a.href); }, 5000);
     });
   };
   refresh();
+  })();
 })();
 </script>
 </body>

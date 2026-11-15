@@ -66,6 +66,9 @@
   }
 
   function ensureLib() {
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+      return Promise.reject(new Error('Remote translation CDN is disabled in Desktop mode'));
+    }
     if (_libPromise) return _libPromise;
     _libPromise = (function tryAt(i) {
       if (i >= TRANSFORMERS_URLS.length) return Promise.reject(new Error('transformers.js sources failed'));

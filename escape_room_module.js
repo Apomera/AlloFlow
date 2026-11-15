@@ -589,6 +589,7 @@
     var firebase = deps.firebase || {};
     var db = firebase.db;
     var doc = firebase.doc;
+    var setDoc = firebase.setDoc;
     var updateDoc = firebase.updateDoc;
     var shared = deps.shared || {};
     var safeGetItem = shared.safeGetItem || function(k) { try { return localStorage.getItem(k); } catch(e) { return null; } };
@@ -1003,6 +1004,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
         var sessionRef = doc(db, 'artifacts', state.activeSessionAppId, 'public', 'data', 'sessions', state.activeSessionCode);
         await updateDoc(sessionRef, {
           'escapeRoomState': {
+            mode: 'team-race',
             isActive: true,
             room: roomInfo,
             puzzles: puzzles,
@@ -1086,8 +1088,19 @@ ESCAPE_TYPE_CONTRACT + '\n' +
       allProgress.questActions = {};
       allProgress.questRoles = {};
       allProgress.isEscaped = false;
+        var publicQuest = typeof questEngine.publicQuestState === 'function' ? questEngine.publicQuestState(quest) : quest;
         if (doc && db && updateDoc) {
           var sessionRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode);
+          var hostQuestWritten = false;
+          if (typeof setDoc === 'function' && sessionRef && !sessionRef.__alloMbRef && !sessionRef.__alloLanRef) {
+            try {
+              var hostQuestRef = doc(db, 'artifacts', activeSessionAppId, 'public', 'data', 'sessions', activeSessionCode, 'boardHost', 'concept-quest');
+              await setDoc(hostQuestRef, { quest: quest, sessionId: quest.sessionId, updatedAt: Date.now(), expiresAt: new Date(Date.now() + 2 * 86400000) });
+              hostQuestWritten = true;
+            } catch (hostErr) {
+              warnLog('Concept Quest private host sync skipped:', hostErr);
+            }
+          }
           await updateDoc(sessionRef, {
             'escapeRoomState': {
               mode: 'concept-quest',
@@ -1100,7 +1113,7 @@ ESCAPE_TYPE_CONTRACT + '\n' +
               objects: [],
               teams: {},
               teamProgress: { All: allProgress },
-              conceptQuest: quest,
+              conceptQuest: hostQuestWritten ? publicQuest : quest,
               timeRemaining: 0,
               startedAt: Date.now(),
               hostId: user && user.uid || null

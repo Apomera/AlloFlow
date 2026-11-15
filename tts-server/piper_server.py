@@ -28,6 +28,31 @@ import re
 from urllib.parse import urlsplit
 
 
+def is_allowed_host(host_header):
+    """Allow only loopback Host headers to defeat DNS rebinding."""
+    if not isinstance(host_header, str):
+        return False
+    raw = host_header.strip().lower()
+    if not raw or any(ord(c) <= 32 or ord(c) == 127 for c in raw):
+        return False
+    if raw.startswith("["):
+        end = raw.find("]")
+        if end < 0:
+            return False
+        host = raw[1:end]
+        rest = raw[end + 1:]
+        if rest and not re.fullmatch(r":\d{1,5}", rest):
+            return False
+    else:
+        if ":" in raw:
+            host, port = raw.rsplit(":", 1)
+            if not re.fullmatch(r"\d{1,5}", port):
+                return False
+        else:
+            host = raw
+    return host in ("127.0.0.1", "localhost", "::1")
+
+
 def is_allowed_origin(origin):
     """Allow native clients, loopback apps and explicitly trusted web origins."""
     if origin is None:
@@ -86,6 +111,10 @@ VOICE_MAP = {
 }
 
 DEFAULT_VOICE = "en_US-amy-medium"
+ALLOWED_DOWNLOAD_VOICES = frozenset(VOICE_MAP.values()) | {DEFAULT_VOICE}
+MAX_REQUEST_BYTES = 65536
+MAX_TEXT_CHARS = 10000
+MAX_PCM_BYTES = 32 * 1024 * 1024
 
 # Cache of voice models we've already confirmed/downloaded this session
 _ready_voices = set()
@@ -128,6 +157,9 @@ def ensure_voice(voice_name):
         os.path.exists(model_path) and os.path.exists(config_path)
     ):
         _ready_voices.add(voice_name)
+        return True
+    if voice_name not in ALLOWED_DOWNLOAD_VOICES:
+        return False
         return True
 
     print(f"[Piper TTS] Downloading voice {voice_name}...", flush=True)
@@ -180,6 +212,9 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             self.send_header("Access-Control-Allow-Origin", origin)
 
     def _reject_untrusted_origin(self):
+        if not is_allowed_host(self.headers.get("Host")):
+            self._send_json(403, {"error": "Untrusted Host header."})
+            return True
         if is_allowed_origin(self.headers.get("Origin")):
             return False
         self._send_json(403, {"error": "Browser origin is not allowed; configure ALLOFLOW_TTS_ALLOWED_ORIGINS for your school app."})
@@ -204,8 +239,8 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
 
         try:
             length = int(self.headers.get("Content-Length", 0))
-            if length < 0 or length > 262144:
-                return self._send_json(413 if length > 262144 else 400, {"error": "Request body exceeds maximum size"})
+            if length < 0 or length > MAX_REQUEST_BYTES:
+                return self._send_json(413 if length > MAX_REQUEST_BYTES else 400, {"error": "Request body exceeds maximum size"})
             body = json.loads(self.rfile.read(length)) if length else {}
 
             if not isinstance(body, dict):
@@ -215,11 +250,12 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             speed = float(body.get("speed", 1.0))
             if not math.isfinite(speed) or speed <= 0:
                 return self._send_json(400, {"error": "Speed must be a finite positive number"})
+            speed = max(0.5, min(2.5, speed))
 
             if not text:
                 return self._send_json(400, {"error": "No input text"})
-            if not isinstance(text, str) or len(text) > 20000:
-                return self._send_json(400, {"error": "Input must be text up to 20000 characters"})
+            if not isinstance(text, str) or len(text) > MAX_TEXT_CHARS:
+                return self._send_json(400, {"error": f"Input must be text up to {MAX_TEXT_CHARS} characters"})
 
             if not ensure_voice(piper_voice):
                 # Fall back to the default voice if a specific one can't be fetched
@@ -231,6 +267,8 @@ class TTSHandler(http.server.BaseHTTPRequestHandler):
             raw_audio = synthesize(text, piper_voice, speed)
             if raw_audio is None:
                 return self._send_json(500, {"error": "Synthesis failed"})
+            if len(raw_audio) > MAX_PCM_BYTES:
+                return self._send_json(413, {"error": "Generated audio exceeded maximum size"})
 
             wav_audio = pcm_to_wav(raw_audio, 22050, 1)
             self.send_response(200)
@@ -315,6 +353,6 @@ if __name__ == "__main__":
     if _preflight():
         # Pre-download the default voice so the first request is fast
         ensure_voice(DEFAULT_VOICE)
-    server = http.server.HTTPServer(("127.0.0.1", PORT), TTSHandler)
+    server = http.server.ThreadingHTTPServer(("127.0.0.1", PORT), TTSHandler)
     print(f"[Piper TTS] ✅ Listening on http://127.0.0.1:{PORT}", flush=True)
     server.serve_forever()

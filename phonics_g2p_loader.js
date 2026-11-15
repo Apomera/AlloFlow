@@ -159,6 +159,9 @@
   }
 
   function loadFactory() {
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+      return Promise.reject(new Error('Remote eSpeak CDN is disabled in Desktop mode'));
+    }
     if (_factoryPromise) return _factoryPromise;
     _factoryPromise = (function tryAt(i) {
       if (i >= ESPEAK_URLS.length) return Promise.reject(new Error('espeak-ng sources failed'));

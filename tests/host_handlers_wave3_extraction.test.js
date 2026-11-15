@@ -66,6 +66,8 @@ describe('wave-3 host handler extraction', () => {
         expect(wrapper).toContain('const result = _alloHostHandlers().handleGlossaryChange(index, field, value, lang);');
         expect(wrapper.match(/_alloHostHandlers\(\)\.handleGlossaryChange\(/g)).toHaveLength(1);
         expect(wrapper).toContain('return result;');
+      } else if (name === 'handleCompleteGuidedMode') {
+        expect(host).toContain('const handleCompleteGuidedMode = summary => _alloHostHandlers().handleCompleteGuidedMode({ ...summary, deliveryEvidence: verifiedGuidedDeliveryEvidence });');
       } else {
         expect(host, name).toMatch(shim);
       }

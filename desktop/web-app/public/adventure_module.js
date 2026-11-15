@@ -93,8 +93,25 @@ var MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, onEx
   const { t } = useContext(LanguageContext);
   const reportRef = useRef(null);
   useFocusTrap(reportRef, true, onClose);
-  const { stats, climax, xp, level } = adventureState;
-  const safeStats = stats || { successes: 0, failures: 0, decisions: 0, partials: 0, conceptsFound: [] };
+  const { stats, climax, xp, level } = adventureState || {};
+  const safeStats = {
+    successes: Math.max(0, Number(stats?.successes) || 0),
+    failures: Math.max(0, Number(stats?.failures) || 0),
+    partials: Math.max(0, Number(stats?.partials) || 0),
+    decisions: Math.max(0, Number(stats?.decisions) || 0),
+    conceptsFound: Array.isArray(stats?.conceptsFound) ? Array.from(new Set(stats.conceptsFound.map((c) => String(c || "").trim()).filter(Boolean))) : []
+  };
+  const safeLevel = Math.max(1, Number(level) || 1);
+  const safeXp = Math.max(0, Number(xp) || 0);
+  const totalXpEarned = (() => {
+    let total = safeXp;
+    let step = 100;
+    for (let i = 1; i < safeLevel; i++) {
+      total += step;
+      step = Math.max(1, Math.floor(step * 1.5));
+    }
+    return total;
+  })();
   const totalDecisions = Math.max(1, safeStats.decisions);
   const efficiency = Math.round((safeStats.successes + (safeStats.partials || 0) * 0.5) / totalDecisions * 100);
   const proficiency = Math.max(0, Math.min(100, Number(climax?.masteryScore) || 0));
@@ -103,29 +120,31 @@ var MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, onEx
   if (proficiency >= 90) ratingLabel = t("adventure.mission_report.rating2_strong") || "Strong Command";
   else if (proficiency >= 70) ratingLabel = t("adventure.mission_report.rating2_solid") || "Solid Command";
   else if (proficiency >= 50) ratingLabel = t("adventure.mission_report.rating2_developing") || "Developing";
-  return /* @__PURE__ */ React.createElement("div", { ref: reportRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "adventure-mission-report-title", className: "fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-700 p-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 w-full max-w-md rounded-3xl border-4 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] overflow-hidden relative transform scale-100 animate-in zoom-in-95 duration-500 flex flex-col max-h-[90vh]" }, /* @__PURE__ */ React.createElement("div", { className: "bg-yellow-500 p-4 text-center shrink-0" }, /* @__PURE__ */ React.createElement("h2", { id: "adventure-mission-report-title", className: "text-3xl font-black text-slate-900 uppercase tracking-widest drop-shadow-sm flex items-center justify-center gap-2" }, /* @__PURE__ */ React.createElement(Trophy, { size: 32, "aria-hidden": "true" }), " ", t("adventure.mission_report.title")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-2 text-slate-900 font-bold text-sm opacity-80 mt-1" }, /* @__PURE__ */ React.createElement("span", null, t("adventure.mission_report.status_success")), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2022"), /* @__PURE__ */ React.createElement("span", null, (/* @__PURE__ */ new Date()).toLocaleDateString()))), /* @__PURE__ */ React.createElement("div", { className: "p-8 space-y-6 relative z-10 text-white overflow-y-auto custom-scrollbar flex-grow" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" }), /* @__PURE__ */ React.createElement("div", { className: "text-center mb-2 relative z-20" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-yellow-500 uppercase tracking-widest mb-1" }, t("adventure.mission_report.final_score")), /* @__PURE__ */ React.createElement("div", { className: "text-6xl font-black text-white tracking-tighter drop-shadow-lg" }, xp), /* @__PURE__ */ React.createElement("div", { className: "inline-block bg-indigo-600 px-3 py-1 rounded-full border border-indigo-400 shadow-sm text-sm font-bold mt-2" }, t("adventure.mission_report.level_achieved", { level: level || 1 }))), /* @__PURE__ */ React.createElement("div", { className: "relative z-20" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-xs font-bold mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-cyan-400 uppercase" }, performanceLabel), /* @__PURE__ */ React.createElement("span", { className: "text-white" }, proficiency, "/100 (", ratingLabel, ")")), /* @__PURE__ */ React.createElement("div", { role: "progressbar", "aria-label": performanceLabel, "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": proficiency, className: "h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700 relative" }, /* @__PURE__ */ React.createElement(
+  return /* @__PURE__ */ React.createElement("div", { ref: reportRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "adventure-mission-report-title", className: "fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in duration-700 motion-reduce:animate-none p-4" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 w-full max-w-md rounded-3xl border-4 border-yellow-500 shadow-[0_0_50px_rgba(234,179,8,0.3)] overflow-hidden relative transform scale-100 animate-in zoom-in-95 duration-500 motion-reduce:animate-none flex flex-col max-h-[90vh]" }, /* @__PURE__ */ React.createElement("div", { className: "bg-yellow-500 p-4 text-center shrink-0" }, /* @__PURE__ */ React.createElement("h2", { id: "adventure-mission-report-title", className: "text-3xl font-black text-slate-900 uppercase tracking-widest drop-shadow-sm flex items-center justify-center gap-2" }, /* @__PURE__ */ React.createElement(Trophy, { size: 32, "aria-hidden": "true" }), " ", t("adventure.mission_report.title")), /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-center gap-2 text-slate-900 font-bold text-sm opacity-80 mt-1" }, /* @__PURE__ */ React.createElement("span", null, t("adventure.mission_report.status_success")), /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2022"), /* @__PURE__ */ React.createElement("span", null, (/* @__PURE__ */ new Date()).toLocaleDateString()))), /* @__PURE__ */ React.createElement("div", { className: "p-8 space-y-6 relative z-10 text-white overflow-y-auto custom-scrollbar flex-grow" }, /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.05)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.05)_1px,transparent_1px)] bg-[size:20px_20px] pointer-events-none" }), /* @__PURE__ */ React.createElement("div", { className: "text-center mb-2 relative z-20" }, /* @__PURE__ */ React.createElement("div", { className: "text-xs font-bold text-yellow-500 uppercase tracking-widest mb-1" }, t("adventure.mission_report.final_score")), /* @__PURE__ */ React.createElement("div", { className: "text-6xl font-black text-white tracking-tighter drop-shadow-lg" }, totalXpEarned), /* @__PURE__ */ React.createElement("div", { className: "inline-block bg-indigo-600 px-3 py-1 rounded-full border border-indigo-400 shadow-sm text-sm font-bold mt-2" }, t("adventure.mission_report.level_achieved", { level: safeLevel }))), /* @__PURE__ */ React.createElement("div", { className: "relative z-20" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between text-xs font-bold mb-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-cyan-400 uppercase" }, performanceLabel), /* @__PURE__ */ React.createElement("span", { className: "text-white" }, proficiency, "/100 (", ratingLabel, ")")), /* @__PURE__ */ React.createElement("div", { role: "progressbar", "aria-label": performanceLabel, "aria-valuemin": 0, "aria-valuemax": 100, "aria-valuenow": proficiency, className: "h-4 bg-slate-800 rounded-full overflow-hidden border border-slate-700 relative" }, /* @__PURE__ */ React.createElement(
     "div",
     {
-      className: "h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-1000 ease-out",
+      className: "h-full bg-gradient-to-r from-cyan-600 to-cyan-400 transition-all duration-1000 ease-out motion-reduce:transition-none",
       style: { width: `${proficiency}%` }
     }
   )), /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-400 mt-1.5 leading-snug" }, t("adventure.mission_report.ai_estimate_note") || "Estimated by AI from story decisions \u2014 a reflection prompt, not a formal assessment."), Number(climax?.attempts) > 0 && /* @__PURE__ */ React.createElement("p", { className: "text-[10px] text-slate-300 mt-1 font-bold" }, (t("adventure.mission_report.climax_attempts") || "Final challenge attempts") + ": " + climax.attempts)), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-3 gap-2 relative z-20" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase text-green-400" }, t("adventure.mission_report.band_strong") || "Strong moves"), /* @__PURE__ */ React.createElement("span", { className: "text-xl font-black text-white" }, safeStats.successes || 0)), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase text-yellow-400" }, t("adventure.mission_report.band_partial") || "Partial credit"), /* @__PURE__ */ React.createElement("span", { className: "text-xl font-black text-white" }, safeStats.partials || 0)), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-2.5 rounded-xl border border-slate-700 flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-[10px] font-bold uppercase text-rose-400" }, t("adventure.mission_report.band_misconception") || "Misconceptions"), /* @__PURE__ */ React.createElement("span", { className: "text-xl font-black text-white" }, safeStats.failures || 0))), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-4 relative z-20" }, /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center", title: t("adventure.mission_report.efficiency_formula") || "Strong moves count fully, partial credit counts half, out of all decisions." }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2 text-yellow-400" }, /* @__PURE__ */ React.createElement(Zap, { size: 16, "aria-hidden": "true" }), " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase" }, t("adventure.mission_report.efficiency"))), /* @__PURE__ */ React.createElement("div", { className: "text-3xl font-black" }, efficiency, "%")), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800/50 p-4 rounded-xl border border-slate-700 flex flex-col items-center justify-center" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 mb-2 text-green-400" }, /* @__PURE__ */ React.createElement(Key, { size: 16, "aria-hidden": "true" }), " ", /* @__PURE__ */ React.createElement("span", { className: "text-[11px] font-bold uppercase" }, t("adventure.mission_report.concepts"))), /* @__PURE__ */ React.createElement("div", { className: "text-3xl font-black" }, safeStats.conceptsFound.length))), safeStats.conceptsFound.length > 0 && /* @__PURE__ */ React.createElement("div", { className: "mt-4 pt-4 border-t border-slate-700/50 relative z-20" }, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-300 font-bold uppercase mb-2" }, t("adventure.mission_report.concepts_secured")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap gap-2" }, safeStats.conceptsFound.map((c, i) => /* @__PURE__ */ React.createElement("span", { key: i, className: "px-2 py-1 rounded-md bg-cyan-900/30 text-cyan-200 text-xs border border-cyan-800/50" }, c))))), /* @__PURE__ */ React.createElement("div", { className: "p-4 bg-slate-800 border-t border-slate-700 flex flex-col gap-3 relative z-20 shrink-0" }, storybookXpNeeded > 0 ? /* @__PURE__ */ React.createElement("p", { "data-mission-storybook-locked": true, className: "flex items-start gap-2 text-sm text-slate-200" }, /* @__PURE__ */ React.createElement(Key, { size: 16, className: "shrink-0 mt-0.5", "aria-hidden": "true" }), /* @__PURE__ */ React.createElement("span", null, t("adventure.storybook_locked", { needed: storybookXpNeeded }))) : /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: onExport,
       disabled: isProcessing,
-      className: "w-full min-h-11 py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+      className: "w-full min-h-11 py-3 rounded-xl font-bold bg-indigo-600 text-white hover:bg-indigo-700 transition-colors motion-reduce:transition-none shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
     },
     isProcessing ? /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, className: "animate-spin motion-reduce:animate-none", "aria-hidden": "true" }) : /* @__PURE__ */ React.createElement(BookOpen, { size: 18, "aria-hidden": "true" }),
     isProcessing ? t("adventure.storybook_writing") : t("adventure.storybook")
-  ), (onContinue || onNewGame) && /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-3" }, onContinue && /* @__PURE__ */ React.createElement(
+  ), (onContinue || onNewGame) && /* @__PURE__ */ React.createElement("div", { className: `grid ${onContinue && onNewGame ? "grid-cols-2" : "grid-cols-1"} gap-3` }, onContinue && /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: () => {
         onClose();
         if (onContinue) onContinue();
       },
-      className: "w-full min-h-11 py-3 rounded-xl font-bold bg-green-700 text-white hover:bg-green-800 transition-colors shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+      className: "w-full min-h-11 py-3 rounded-xl font-bold bg-green-700 text-white hover:bg-green-800 transition-colors motion-reduce:transition-none shadow-lg flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
     },
     /* @__PURE__ */ React.createElement(MapIcon, { size: 18, "aria-hidden": "true" }),
     " ",
@@ -134,11 +153,12 @@ var MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, onEx
     "button",
     {
       "aria-label": t("adventure.new_game") || "New Game",
+      type: "button",
       onClick: () => {
         onClose();
         if (onNewGame) onNewGame();
       },
-      className: "w-full min-h-11 py-3 rounded-xl font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 hover:text-white transition-colors border border-slate-500 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+      className: "w-full min-h-11 py-3 rounded-xl font-bold bg-slate-700 text-slate-200 hover:bg-slate-600 hover:text-white transition-colors motion-reduce:transition-none border border-slate-500 flex items-center justify-center gap-2 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
     },
     /* @__PURE__ */ React.createElement(RefreshCw, { size: 18, "aria-hidden": "true" }),
     " ",
@@ -146,8 +166,9 @@ var MissionReportCard = React.memo(({ adventureState, globalLevel, onClose, onEx
   )), /* @__PURE__ */ React.createElement(
     "button",
     {
+      type: "button",
       onClick: onClose,
-      className: "w-full min-h-11 py-2 text-sm font-bold text-slate-200 hover:text-white transition-colors rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
+      className: "w-full min-h-11 py-2 text-sm font-bold text-slate-200 hover:text-white transition-colors motion-reduce:transition-none rounded-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800"
     },
     t("adventure.mission_report.confirm_exit")
   ))));
@@ -235,6 +256,7 @@ var playGenerativeSoundscapeLegacy = (ctx, dest, params) => {
         eleFilter.type = "lowpass";
         eleFilter.frequency.value = 800;
         const crackleInterval = setInterval(() => {
+          if (ctx.state !== "running" || isAdventureAudioDocumentHidden()) return;
           if (Math.random() > 0.8) {
             const spike = ctx.currentTime;
             eleGain.gain.setValueAtTime(0.05, spike);
@@ -258,16 +280,17 @@ var playGenerativeSoundscapeLegacy = (ctx, dest, params) => {
         activeNodes.push(waveLFO, waveGain);
         break;
       case "machinery":
+        eleFilter.type = "lowpass";
+        eleFilter.frequency.value = 420;
         const clank = ctx.createOscillator();
         clank.type = "square";
         clank.frequency.value = 100;
-        const clankGain = ctx.createGain();
         clank.connect(eleFilter);
         const rhythm = ctx.createOscillator();
         rhythm.type = "square";
         rhythm.frequency.value = 4;
         const rhythmGain = ctx.createGain();
-        rhythmGain.gain.value = 1;
+        rhythmGain.gain.value = 0.08;
         rhythm.connect(rhythmGain);
         rhythmGain.connect(eleGain.gain);
         clank.start(now);
@@ -292,6 +315,7 @@ var playGenerativeSoundscapeLegacy = (ctx, dest, params) => {
         eleFilter.frequency.value = 3e3;
         eleGain.gain.value = 0.02;
         const birdInterval = setInterval(() => {
+          if (ctx.state !== "running" || isAdventureAudioDocumentHidden()) return;
           if (Math.random() > 0.7) {
             const osc = ctx.createOscillator();
             osc.frequency.setValueAtTime(2e3 + Math.random() * 1e3, ctx.currentTime);
@@ -311,8 +335,14 @@ var playGenerativeSoundscapeLegacy = (ctx, dest, params) => {
     }
     if (element.toLowerCase() !== "machinery") {
       noise.start(now);
-      activeNodes.push(noise, eleFilter, eleGain);
+      activeNodes.push(noise);
+    } else {
+      try {
+        noise.disconnect();
+      } catch (_) {
+      }
     }
+    activeNodes.push(eleFilter, eleGain);
   }
   return activeNodes;
 };
@@ -725,54 +755,79 @@ const playGenerativeSoundscape = (ctx, dest, params, options = {}) => {
   const playDetail = (from, to, duration, volume) => {
     if (ctx.state !== "running" || isAdventureAudioDocumentHidden()) return;
     const voiceToken = claimTransient();
+    const safeFrom = Math.max(30, Number(from) || 220);
+    const safeTo = Math.max(30, Number(to) || safeFrom);
+    const safeDuration = Math.max(0.03, Math.min(4, Number(duration) || 0.25));
+    const safeVolume = Math.max(2e-4, Math.min(0.25, Number(volume) || 0.02));
     if (!voiceToken) return;
     const now = ctx.currentTime;
     const osc = ctx.createOscillator();
     const gain = ctx.createGain();
     const panner = typeof ctx.createStereoPanner === "function" ? ctx.createStereoPanner() : null;
-    osc.type = "sine";
-    osc.frequency.setValueAtTime(from, now);
-    osc.frequency.exponentialRampToValueAtTime(Math.max(30, to), now + duration);
-    gain.gain.setValueAtTime(1e-4, now);
-    gain.gain.exponentialRampToValueAtTime(volume, now + 0.015);
-    gain.gain.exponentialRampToValueAtTime(1e-4, now + duration);
-    osc.connect(gain);
-    if (panner) {
-      const startPan = rng() * 1.2 - 0.6;
-      const endPan = clampAdventureAudio(startPan + (rng() * 0.5 - 0.25) * motionFactor, -0.85, 0.85);
-      try {
-        panner.pan.setValueAtTime(startPan, now);
-        panner.pan.linearRampToValueAtTime(endPan, now + duration);
-      } catch (_) {
-        panner.pan.value = startPan;
+    try {
+      osc.type = "sine";
+      osc.frequency.setValueAtTime(safeFrom, now);
+      osc.frequency.exponentialRampToValueAtTime(safeTo, now + safeDuration);
+      gain.gain.setValueAtTime(1e-4, now);
+      gain.gain.exponentialRampToValueAtTime(safeVolume, now + Math.min(0.015, safeDuration * 0.4));
+      gain.gain.exponentialRampToValueAtTime(1e-4, now + safeDuration);
+      osc.connect(gain);
+      if (panner) {
+        const startPan = rng() * 1.2 - 0.6;
+        const endPan = clampAdventureAudio(startPan + (rng() * 0.5 - 0.25) * motionFactor, -0.85, 0.85);
+        try {
+          panner.pan.setValueAtTime(startPan, now);
+          panner.pan.linearRampToValueAtTime(endPan, now + safeDuration);
+        } catch (_) {
+          panner.pan.value = startPan;
+        }
+        gain.connect(panner);
+        panner.connect(textureDest);
+        if (detailReverb) panner.connect(detailReverb);
+      } else {
+        gain.connect(textureDest);
+        if (detailReverb) gain.connect(detailReverb);
       }
-      gain.connect(panner);
-      panner.connect(textureDest);
-      if (detailReverb) panner.connect(detailReverb);
-    } else {
-      gain.connect(textureDest);
-      if (detailReverb) gain.connect(detailReverb);
-    }
-    osc.start(now);
-    osc.stop(now + duration + 0.02);
-    setTimeout(() => {
+      osc.start(now);
+      osc.stop(now + safeDuration + 0.02);
+      setTimeout(() => {
+        releaseTransient(voiceToken);
+        try {
+          osc.disconnect();
+        } catch (_) {
+        }
+        try {
+          gain.disconnect();
+        } catch (_) {
+        }
+        try {
+          panner?.disconnect();
+        } catch (_) {
+        }
+      }, Math.max(80, safeDuration * 1e3 + 100));
+    } catch (_) {
       releaseTransient(voiceToken);
       try {
         osc.disconnect();
-      } catch (_) {
+      } catch (_2) {
       }
       try {
         gain.disconnect();
-      } catch (_) {
+      } catch (_2) {
       }
       try {
         panner?.disconnect();
-      } catch (_) {
+      } catch (_2) {
       }
-    }, Math.max(80, duration * 1e3 + 100));
+    }
   };
   const playNoiseDetail = (from, to, duration, volume) => {
     if (ctx.state !== "running" || isAdventureAudioDocumentHidden()) return;
+    const safeFrom = Math.max(40, Number(from) || 300);
+    const safeTo = Math.max(40, Number(to) || safeFrom);
+    duration = Math.max(0.03, Math.min(4, Number(duration) || 0.2));
+    const safeDuration = duration;
+    const safeVolume = Math.max(2e-4, Math.min(0.25, Number(volume) || 0.02));
     const voiceToken = claimTransient();
     if (!voiceToken) return;
     const now = ctx.currentTime;
@@ -780,53 +835,73 @@ const playGenerativeSoundscape = (ctx, dest, params, options = {}) => {
     const filter = ctx.createBiquadFilter();
     const gain = ctx.createGain();
     const panner = typeof ctx.createStereoPanner === "function" ? ctx.createStereoPanner() : null;
-    source.buffer = createAdventureNoiseBuffer(ctx, duration + 0.05, Math.floor(rng() * 4));
-    filter.type = "bandpass";
-    filter.Q.value = 0.75 + rng() * 1.4;
-    filter.frequency.setValueAtTime(Math.max(40, from), now);
-    filter.frequency.exponentialRampToValueAtTime(Math.max(40, to), now + duration);
-    gain.gain.setValueAtTime(1e-4, now);
-    gain.gain.exponentialRampToValueAtTime(volume, now + Math.min(0.018, duration * 0.2));
-    gain.gain.exponentialRampToValueAtTime(1e-4, now + duration);
-    source.connect(filter);
-    filter.connect(gain);
-    if (panner) {
-      const startPan = rng() * 1.4 - 0.7;
-      const endPan = clampAdventureAudio(startPan + (rng() * 0.6 - 0.3) * motionFactor, -0.9, 0.9);
-      try {
-        panner.pan.setValueAtTime(startPan, now);
-        panner.pan.linearRampToValueAtTime(endPan, now + duration);
-      } catch (_) {
-        panner.pan.value = startPan;
+    try {
+      source.buffer = createAdventureNoiseBuffer(ctx, duration + 0.05, Math.floor(rng() * 4));
+      filter.type = "bandpass";
+      filter.Q.value = 0.75 + rng() * 1.4;
+      filter.frequency.setValueAtTime(safeFrom, now);
+      filter.frequency.exponentialRampToValueAtTime(safeTo, now + safeDuration);
+      gain.gain.setValueAtTime(1e-4, now);
+      gain.gain.exponentialRampToValueAtTime(safeVolume, now + Math.min(0.018, safeDuration * 0.2));
+      gain.gain.exponentialRampToValueAtTime(1e-4, now + safeDuration);
+      source.connect(filter);
+      filter.connect(gain);
+      if (panner) {
+        const startPan = rng() * 1.4 - 0.7;
+        const endPan = clampAdventureAudio(startPan + (rng() * 0.6 - 0.3) * motionFactor, -0.9, 0.9);
+        try {
+          panner.pan.setValueAtTime(startPan, now);
+          panner.pan.linearRampToValueAtTime(endPan, now + safeDuration);
+        } catch (_) {
+          panner.pan.value = startPan;
+        }
+        gain.connect(panner);
+        panner.connect(textureDest);
+        if (detailReverb) panner.connect(detailReverb);
+      } else {
+        gain.connect(textureDest);
+        if (detailReverb) gain.connect(detailReverb);
       }
-      gain.connect(panner);
-      panner.connect(textureDest);
-      if (detailReverb) panner.connect(detailReverb);
-    } else {
-      gain.connect(textureDest);
-      if (detailReverb) gain.connect(detailReverb);
-    }
-    source.start(now);
-    source.stop(now + duration + 0.03);
-    setTimeout(() => {
+      source.start(now);
+      source.stop(now + safeDuration + 0.03);
+      setTimeout(() => {
+        releaseTransient(voiceToken);
+        try {
+          source.disconnect();
+        } catch (_) {
+        }
+        try {
+          filter.disconnect();
+        } catch (_) {
+        }
+        try {
+          gain.disconnect();
+        } catch (_) {
+        }
+        try {
+          panner?.disconnect();
+        } catch (_) {
+        }
+      }, Math.max(80, safeDuration * 1e3 + 100));
+    } catch (_) {
       releaseTransient(voiceToken);
       try {
         source.disconnect();
-      } catch (_) {
+      } catch (_2) {
       }
       try {
         filter.disconnect();
-      } catch (_) {
+      } catch (_2) {
       }
       try {
         gain.disconnect();
-      } catch (_) {
+      } catch (_2) {
       }
       try {
         panner?.disconnect();
-      } catch (_) {
+      } catch (_2) {
       }
-    }, Math.max(80, duration * 1e3 + 100));
+    }
   };
   const motifScales = {
     calm: [196, 246.94, 293.66, 392, 493.88],
@@ -973,15 +1048,41 @@ const getAdventureAudioEngine = () => {
     }
     return audioCtx;
   };
+  const fadingLayers = /* @__PURE__ */ new Set();
+  const forceStopLayer = (layer) => {
+    if (!layer) return;
+    if (layer.autoStopTimer) {
+      clearTimeout(layer.autoStopTimer);
+      layer.autoStopTimer = null;
+    }
+    if (layer.stopTimer) {
+      clearTimeout(layer.stopTimer);
+      layer.stopTimer = null;
+    }
+    fadingLayers.delete(layer);
+    layer.stopping = true;
+    stopAdventureAudioNodes(layer.nodes);
+    try {
+      layer.gain.disconnect();
+    } catch (_) {
+    }
+  };
   const stopLayer = (layer, fadeSeconds = 1.2) => {
-    if (!layer || layer.stopping) return;
+    if (!layer) return;
+    if (fadeSeconds <= 0.05) {
+      forceStopLayer(layer);
+      return;
+    }
+    if (layer.stopping) return;
     layer.stopping = true;
     if (layer.autoStopTimer) {
       clearTimeout(layer.autoStopTimer);
       layer.autoStopTimer = null;
     }
+    fadingLayers.add(layer);
     rampGain(layer.gain, 1e-4, fadeSeconds);
     layer.stopTimer = setTimeout(() => {
+      fadingLayers.delete(layer);
       stopAdventureAudioNodes(layer.nodes);
       try {
         layer.gain.disconnect();
@@ -1095,6 +1196,9 @@ const getAdventureAudioEngine = () => {
     const oldLayer = currentAmbience;
     currentAmbience = null;
     stopLayer(oldLayer, fadeSeconds);
+    if (fadeSeconds <= 0.05 && fadingLayers.size > 0) {
+      Array.from(fadingLayers).forEach(forceStopLayer);
+    }
   };
   const setMuted = (muted) => {
     if (masterGain && ctx) rampGain(masterGain, muted || documentHidden ? 1e-4 : 0.82, muted ? 0.05 : 0.2);
@@ -1232,13 +1336,20 @@ var playAdventureEventSound = (type) => {
       osc = ctx.createOscillator();
       gain = ctx.createGain();
       panner = typeof ctx.createStereoPanner === "function" ? ctx.createStereoPanner() : null;
-      const at = now + start;
+      const safeStart = Math.max(0, Number.isFinite(Number(start)) ? Number(start) : 0);
+      const safeDur = Math.max(0.03, Number.isFinite(Number(duration)) ? Number(duration) : 0.25);
+      const safeVol = Math.max(2e-4, Number.isFinite(Number(volume)) ? Number(volume) : 0.05);
+      const safeFreq = Math.max(30, Number.isFinite(Number(frequency)) ? Number(frequency) : 220);
+      const rawEndFreq = Number(endFrequency);
+      const at = now + safeStart;
       osc.type = wave;
-      osc.frequency.setValueAtTime(Math.max(30, frequency), at);
-      if (endFrequency) osc.frequency.exponentialRampToValueAtTime(Math.max(30, endFrequency), at + duration);
+      osc.frequency.setValueAtTime(safeFreq, at);
+      if (Number.isFinite(rawEndFreq) && rawEndFreq > 0) {
+        osc.frequency.exponentialRampToValueAtTime(Math.max(30, rawEndFreq), at + safeDur);
+      }
       gain.gain.setValueAtTime(1e-4, at);
-      gain.gain.exponentialRampToValueAtTime(volume, at + Math.min(0.018, duration * 0.2));
-      gain.gain.exponentialRampToValueAtTime(1e-4, at + duration);
+      gain.gain.exponentialRampToValueAtTime(safeVol, at + Math.min(0.018, safeDur * 0.2));
+      gain.gain.exponentialRampToValueAtTime(1e-4, at + safeDur);
       osc.connect(gain);
       if (panner) {
         panner.pan.value = clampAdventureAudio(pan, -1, 1);
@@ -1247,9 +1358,9 @@ var playAdventureEventSound = (type) => {
       } else gain.connect(destination);
       osc.onended = cleanup;
       osc.start(at);
-      osc.stop(at + duration + 0.025);
+      osc.stop(at + safeDur + 0.025);
       playedAnyVoice = true;
-      setTimeout(cleanup, Math.max(80, (start + duration) * 1e3 + 120));
+      setTimeout(cleanup, Math.max(80, (safeStart + safeDur) * 1e3 + 120));
       return true;
     } catch (_) {
       cleanup();
@@ -1272,6 +1383,10 @@ var playAdventureEventSound = (type) => {
   const noise = ({ duration = 0.2, volume = 0.035, from = 300, to = 1400, pan = 0 }) => {
     const voiceToken = engine.claimVoice(eventPriority);
     if (!voiceToken) return false;
+    const safeDur = Math.max(0.03, Number.isFinite(Number(duration)) ? Number(duration) : 0.2);
+    const safeVol = Math.max(2e-4, Number.isFinite(Number(volume)) ? Number(volume) : 0.035);
+    const safeFrom = Math.max(40, Number.isFinite(Number(from)) ? Number(from) : 300);
+    const safeTo = Math.max(40, Number.isFinite(Number(to)) ? Number(to) : 1400);
     let source = null;
     let filter = null;
     let gain = null;
@@ -1300,14 +1415,14 @@ var playAdventureEventSound = (type) => {
       filter = ctx.createBiquadFilter();
       gain = ctx.createGain();
       panner = typeof ctx.createStereoPanner === "function" ? ctx.createStereoPanner() : null;
-      source.buffer = createAdventureNoiseBuffer(ctx, duration + 0.05, variation);
+      source.buffer = createAdventureNoiseBuffer(ctx, safeDur + 0.05, variation);
       filter.type = "bandpass";
       filter.Q.value = 0.8;
-      filter.frequency.setValueAtTime(from, now);
-      filter.frequency.exponentialRampToValueAtTime(to, now + duration);
+      filter.frequency.setValueAtTime(safeFrom, now);
+      filter.frequency.exponentialRampToValueAtTime(safeTo, now + safeDur);
       gain.gain.setValueAtTime(1e-4, now);
-      gain.gain.exponentialRampToValueAtTime(volume, now + 0.01);
-      gain.gain.exponentialRampToValueAtTime(1e-4, now + duration);
+      gain.gain.exponentialRampToValueAtTime(safeVol, now + Math.min(0.01, safeDur * 0.3));
+      gain.gain.exponentialRampToValueAtTime(1e-4, now + safeDur);
       source.connect(filter);
       filter.connect(gain);
       if (panner) {
@@ -1317,9 +1432,9 @@ var playAdventureEventSound = (type) => {
       } else gain.connect(destination);
       source.onended = cleanup;
       source.start(now);
-      source.stop(now + duration + 0.03);
+      source.stop(now + safeDur + 0.03);
       playedAnyVoice = true;
-      setTimeout(cleanup, Math.max(80, duration * 1e3 + 120));
+      setTimeout(cleanup, Math.max(80, safeDur * 1e3 + 120));
       return true;
     } catch (_) {
       cleanup();
@@ -1436,7 +1551,7 @@ var ClimaxProgressBar = React.memo(({ climaxState }) => {
 });
 const ADVENTURE_AMBIENCE_INTRO_HOLD_MS = 7e3;
 const ADVENTURE_AMBIENCE_OUTRO_FADE_S = 3.5;
-var AdventureAmbience = React.memo(({ sceneText, soundParams, themeSeed, active, volume = 0.3 }) => {
+var AdventureAmbience = React.memo(({ sceneText, soundParams, themeSeed, active, sfxEnabled = active, volume = 0.3 }) => {
   const engineRef = useRef(null);
   const lastSceneRef = useRef(null);
   const holdTimerRef = useRef(null);
@@ -1449,7 +1564,8 @@ var AdventureAmbience = React.memo(({ sceneText, soundParams, themeSeed, active,
         clearTimeout(holdTimerRef.current);
         holdTimerRef.current = null;
       }
-      engine.setEnabled(false);
+      if (sfxEnabled) engine.setEnabled(true);
+      else engine.setEnabled(false);
       engine.stopAmbience(0.65);
       return;
     }
@@ -1547,10 +1663,31 @@ var AdventureAudioControls = React.memo(({ soundEnabled = true, t = (key) => key
   };
   useEffect(() => {
     if (!open) return;
+    const trapSelector = 'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), summary, [tabindex]:not([tabindex="-1"])';
     const onKeyDown = (event) => {
       if (event.key === "Escape") {
         event.preventDefault();
         closeDialog();
+        return;
+      }
+      if (event.key === "Tab" && dialogRef.current) {
+        const focusables = Array.from(dialogRef.current.querySelectorAll(trapSelector)).filter((el) => el.offsetParent !== null || el === document.activeElement);
+        if (!focusables.length) {
+          event.preventDefault();
+          dialogRef.current.focus();
+          return;
+        }
+        const first = focusables[0];
+        const last = focusables[focusables.length - 1];
+        if (event.shiftKey) {
+          if (document.activeElement === first || !dialogRef.current.contains(document.activeElement) || document.activeElement === dialogRef.current) {
+            event.preventDefault();
+            last.focus();
+          }
+        } else if (document.activeElement === last || !dialogRef.current.contains(document.activeElement)) {
+          event.preventDefault();
+          first.focus();
+        }
       }
     };
     window.addEventListener("keydown", onKeyDown);
@@ -1610,22 +1747,36 @@ var AdventureAudioControls = React.memo(({ soundEnabled = true, t = (key) => key
     /* @__PURE__ */ React.createElement("span", { className: "hidden xl:inline" }, translate("adventure.audio_short", "Sound mix"))
   ), open && /* @__PURE__ */ React.createElement("div", { className: "fixed inset-0 z-[300] flex items-center justify-center bg-black/55 p-4 backdrop-blur-sm", role: "presentation", onMouseDown: (event) => {
     if (event.target === event.currentTarget) closeDialog();
-  } }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "relative max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border-2 border-indigo-300 bg-white p-5 text-slate-800 shadow-2xl focus:outline-none", role: "dialog", "aria-modal": "true", "aria-labelledby": "adventure-audio-dialog-title" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeDialog, className: "absolute right-2 top-2 flex min-h-11 min-w-11 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700", "aria-label": translate("common.close", "Close") }, /* @__PURE__ */ React.createElement(X, { size: 18, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { id: "adventure-audio-dialog-title", className: "pr-10 font-black text-indigo-950" }, label), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] leading-snug text-slate-600" }, soundEnabled ? translate("adventure.audio_local_note", "Created on this device with procedural audio.") : translate("adventure.audio_muted_note", "App sound is currently muted."))), /* @__PURE__ */ React.createElement("span", { className: `mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${audioAvailable ? "bg-emerald-500" : "bg-slate-400"}`, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("label", { className: "mb-3 block text-xs font-bold", htmlFor: "adventure-ambience-level" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, translate("adventure.audio_ambience", "Ambience")), /* @__PURE__ */ React.createElement("output", null, ambiencePercent, "%")), /* @__PURE__ */ React.createElement("input", { id: "adventure-ambience-level", type: "range", min: "0", max: "100", step: "10", value: ambiencePercent, onChange: (event) => update({ ambience: Number(event.target.value) / 100 }), className: "min-h-11 w-full accent-indigo-700" }), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-[10px] font-normal leading-snug text-slate-600" }, translate("adventure.audio_ambience_hint", "Scene sound plays at the start of each scene, then fades out so reading and narration stay clear."))), /* @__PURE__ */ React.createElement("label", { className: "mb-3 block text-xs font-bold", htmlFor: "adventure-effects-level" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, translate("adventure.audio_effects", "Effects")), /* @__PURE__ */ React.createElement("output", null, effectsPercent, "%")), /* @__PURE__ */ React.createElement("input", { id: "adventure-effects-level", type: "range", min: "0", max: "100", step: "10", value: effectsPercent, onChange: (event) => update({ effects: Number(event.target.value) / 100 }), className: "min-h-11 w-full accent-indigo-700" })), /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-950" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: preferences.gentle, onChange: (event) => update({ gentle: event.target.checked }), className: "h-5 w-5 accent-indigo-700" }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "block" }, translate("adventure.audio_gentle", "Gentle sound mode")), /* @__PURE__ */ React.createElement("span", { className: "block font-normal text-indigo-700" }, translate("adventure.audio_gentle_note", "Softer effects and calmer motion.")))), /* @__PURE__ */ React.createElement("details", { className: "mt-3 rounded-xl border border-violet-200 bg-violet-50/70 p-3" }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer select-none py-2 text-sm font-black text-violet-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, translate("adventure.audio_sound_lab", "Adventure Sound Lab")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-3 border-t border-violet-200 pt-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-snug text-violet-900" }, translate("adventure.audio_sound_lab_note", "Audition procedural scene profiles without replacing the live adventure ambience.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-atmosphere" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_atmosphere", "Atmosphere")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-atmosphere", value: labProfile.atmosphere, onChange: (event) => updateLabProfile("atmosphere", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["calm", "joyful", "ethereal", "dark", "tense"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1))))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-element" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_environment", "Environment")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-element", value: labProfile.element, onChange: (event) => updateLabProfile("element", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["nature", "water", "rain", "ocean", "wind", "fire", "cave", "city", "machinery", "laboratory", "space", "crowd", "silence"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1))))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-space" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_space", "Acoustic space")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-space", value: labProfile.acousticSpace, onChange: (event) => updateLabProfile("acousticSpace", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["open", "room", "cave", "void"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1))))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-motion" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_motion", "Motion")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-motion", value: labProfile.motion, onChange: (event) => updateLabProfile("motion", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["still", "steady", "travel", "chase", "urgent"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1)))))), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-800", htmlFor: "adventure-lab-intensity" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, translate("adventure.audio_intensity", "Intensity")), /* @__PURE__ */ React.createElement("output", null, Math.round(labProfile.intensity * 100), "%")), /* @__PURE__ */ React.createElement("input", { id: "adventure-lab-intensity", type: "range", min: "10", max: "100", step: "10", value: Math.round(labProfile.intensity * 100), onChange: (event) => updateLabProfile("intensity", Number(event.target.value) / 100), className: "min-h-11 w-full accent-violet-700" })), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !soundEnabled, onClick: startLabPreview, className: "min-h-11 rounded-xl bg-violet-700 px-3 py-2 text-xs font-black text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, previewActive ? translate("adventure.audio_restart_preview", "Restart preview") : translate("adventure.audio_start_preview", "Preview ambience")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !previewActive, onClick: () => getAdventureAudioEngine().stopPreview(0.2), className: "min-h-11 rounded-xl border border-violet-400 bg-white px-3 py-2 text-xs font-black text-violet-900 hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, translate("adventure.audio_stop_preview", "Stop preview"))), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": translate("adventure.audio_event_previews", "Event cue previews"), className: "grid grid-cols-2 gap-2 sm:grid-cols-5" }, [["transition", "Transition"], ["success", "Success"], ["critical_success", "Big win"], ["failure", "Failure"], ["item_get", "Item"]].map(([type, text]) => /* @__PURE__ */ React.createElement("button", { key: type, type: "button", disabled: !soundEnabled, onClick: () => previewLabEvent(type), className: "min-h-11 rounded-lg border border-violet-300 bg-white px-2 py-2 text-[11px] font-bold text-violet-900 hover:bg-violet-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, text))), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "min-h-5 text-[11px] font-bold text-violet-900" }, previewActive ? translate("adventure.audio_preview_active", "Preview playing for up to 8 seconds.") : translate("adventure.audio_preview_idle", "Preview stopped.")), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-300 bg-white p-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: diagnostic.status === "running", onClick: runLabDiagnostic, className: "min-h-11 w-full rounded-lg border border-slate-400 px-3 py-2 text-xs font-black text-slate-800 hover:bg-slate-100 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, diagnostic.status === "running" ? translate("adventure.audio_check_running", "Rendering audio check\u2026") : translate("adventure.audio_run_check", "Run waveform check")), diagnostic.status === "complete" && diagnostic.result && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: `mt-2 rounded-md px-2 py-1.5 text-[11px] font-bold ${diagnostic.result.passed ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-950"}` }, diagnostic.result.supported === false ? diagnostic.result.reason : diagnostic.result.passed ? `Passed \xB7 peak ${diagnostic.result.peak} \xB7 RMS ${diagnostic.result.rms} \xB7 quiet tail ${diagnostic.result.tailPeak}` : `Needs review${diagnostic.result.reason ? ` \xB7 ${diagnostic.result.reason}` : ` \xB7 peak ${diagnostic.result.peak} \xB7 step ${diagnostic.result.maxStep} \xB7 tail ${diagnostic.result.tailPeak}`}`)))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => update(ADVENTURE_AUDIO_PREFS_DEFAULTS), className: "mt-3 min-h-11 w-full rounded-xl border border-indigo-300 px-3 py-2 text-xs font-bold text-indigo-800 transition-colors hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700" }, translate("adventure.audio_reset", "Reset sound settings")))));
+  } }, /* @__PURE__ */ React.createElement("div", { ref: dialogRef, tabIndex: -1, className: "relative max-h-[calc(100vh-2rem)] w-full max-w-md overflow-y-auto rounded-2xl border-2 border-indigo-300 bg-white p-5 text-slate-800 shadow-2xl focus:outline-none", role: "dialog", "aria-modal": "true", "aria-labelledby": "adventure-audio-dialog-title" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: closeDialog, className: "absolute right-2 top-2 flex min-h-11 min-w-11 items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 hover:text-slate-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700", "aria-label": translate("common.close", "Close") }, /* @__PURE__ */ React.createElement(X, { size: 18, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("div", { className: "mb-3 flex items-start justify-between gap-3" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { id: "adventure-audio-dialog-title", className: "pr-10 font-black text-indigo-950" }, label), /* @__PURE__ */ React.createElement("div", { className: "text-[11px] leading-snug text-slate-600" }, soundEnabled ? translate("adventure.audio_local_note", "Created on this device with procedural audio.") : translate("adventure.audio_muted_note", "App sound is currently muted."))), /* @__PURE__ */ React.createElement("span", { className: `mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${audioAvailable ? "bg-emerald-500" : "bg-slate-400"}`, "aria-hidden": "true" })), /* @__PURE__ */ React.createElement("label", { className: "mb-3 block text-xs font-bold", htmlFor: "adventure-ambience-level" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, translate("adventure.audio_ambience", "Ambience")), /* @__PURE__ */ React.createElement("output", null, ambiencePercent, "%")), /* @__PURE__ */ React.createElement("input", { id: "adventure-ambience-level", type: "range", min: "0", max: "100", step: "10", value: ambiencePercent, onChange: (event) => update({ ambience: Number(event.target.value) / 100 }), className: "min-h-11 w-full accent-indigo-700" }), /* @__PURE__ */ React.createElement("span", { className: "mt-1 block text-[10px] font-normal leading-snug text-slate-600" }, translate("adventure.audio_ambience_hint", "Scene sound plays at the start of each scene, then fades out so reading and narration stay clear."))), /* @__PURE__ */ React.createElement("label", { className: "mb-3 block text-xs font-bold", htmlFor: "adventure-effects-level" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, translate("adventure.audio_effects", "Effects")), /* @__PURE__ */ React.createElement("output", null, effectsPercent, "%")), /* @__PURE__ */ React.createElement("input", { id: "adventure-effects-level", type: "range", min: "0", max: "100", step: "10", value: effectsPercent, onChange: (event) => update({ effects: Number(event.target.value) / 100 }), className: "min-h-11 w-full accent-indigo-700" })), /* @__PURE__ */ React.createElement("label", { className: "flex min-h-11 cursor-pointer items-center gap-3 rounded-xl border border-indigo-200 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-950" }, /* @__PURE__ */ React.createElement("input", { type: "checkbox", checked: preferences.gentle, onChange: (event) => update({ gentle: event.target.checked }), className: "h-5 w-5 accent-indigo-700" }), /* @__PURE__ */ React.createElement("span", null, /* @__PURE__ */ React.createElement("span", { className: "block" }, translate("adventure.audio_gentle", "Gentle sound mode")), /* @__PURE__ */ React.createElement("span", { className: "block font-normal text-indigo-700" }, translate("adventure.audio_gentle_note", "Softer effects and calmer motion.")))), /* @__PURE__ */ React.createElement("details", { className: "mt-3 rounded-xl border border-violet-200 bg-violet-50/70 p-3", onToggle: (event) => {
+    if (!event.currentTarget.open) getAdventureAudioEngine().stopPreview(0.15);
+  } }, /* @__PURE__ */ React.createElement("summary", { className: "min-h-11 cursor-pointer select-none py-2 text-sm font-black text-violet-950 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, translate("adventure.audio_sound_lab", "Adventure Sound Lab")), /* @__PURE__ */ React.createElement("div", { className: "mt-2 space-y-3 border-t border-violet-200 pt-3" }, /* @__PURE__ */ React.createElement("p", { className: "text-[11px] leading-snug text-violet-900" }, translate("adventure.audio_sound_lab_note", "Audition procedural scene profiles without replacing the live adventure ambience.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 gap-2 sm:grid-cols-2" }, /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-atmosphere" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_atmosphere", "Atmosphere")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-atmosphere", value: labProfile.atmosphere, onChange: (event) => updateLabProfile("atmosphere", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["calm", "joyful", "ethereal", "dark", "tense"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1))))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-element" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_environment", "Environment")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-element", value: labProfile.element, onChange: (event) => updateLabProfile("element", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["nature", "water", "rain", "ocean", "wind", "fire", "cave", "city", "machinery", "laboratory", "space", "crowd", "silence"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1))))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-space" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_space", "Acoustic space")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-space", value: labProfile.acousticSpace, onChange: (event) => updateLabProfile("acousticSpace", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["open", "room", "cave", "void"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1))))), /* @__PURE__ */ React.createElement("label", { className: "text-xs font-bold text-slate-800", htmlFor: "adventure-lab-motion" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 block" }, translate("adventure.audio_motion", "Motion")), /* @__PURE__ */ React.createElement("select", { id: "adventure-lab-motion", value: labProfile.motion, onChange: (event) => updateLabProfile("motion", event.target.value), className: "min-h-11 w-full rounded-lg border border-slate-400 bg-white px-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, ["still", "steady", "travel", "chase", "urgent"].map((value) => /* @__PURE__ */ React.createElement("option", { key: value, value }, value.charAt(0).toUpperCase() + value.slice(1)))))), /* @__PURE__ */ React.createElement("label", { className: "block text-xs font-bold text-slate-800", htmlFor: "adventure-lab-intensity" }, /* @__PURE__ */ React.createElement("span", { className: "mb-1 flex justify-between" }, /* @__PURE__ */ React.createElement("span", null, translate("adventure.audio_intensity", "Intensity")), /* @__PURE__ */ React.createElement("output", null, Math.round(labProfile.intensity * 100), "%")), /* @__PURE__ */ React.createElement("input", { id: "adventure-lab-intensity", type: "range", min: "10", max: "100", step: "10", value: Math.round(labProfile.intensity * 100), onChange: (event) => updateLabProfile("intensity", Number(event.target.value) / 100), className: "min-h-11 w-full accent-violet-700" })), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-2 gap-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !soundEnabled, onClick: startLabPreview, className: "min-h-11 rounded-xl bg-violet-700 px-3 py-2 text-xs font-black text-white hover:bg-violet-800 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, previewActive ? translate("adventure.audio_restart_preview", "Restart preview") : translate("adventure.audio_start_preview", "Preview ambience")), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: !previewActive, onClick: () => getAdventureAudioEngine().stopPreview(0.2), className: "min-h-11 rounded-xl border border-violet-400 bg-white px-3 py-2 text-xs font-black text-violet-900 hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, translate("adventure.audio_stop_preview", "Stop preview"))), /* @__PURE__ */ React.createElement("div", { role: "group", "aria-label": translate("adventure.audio_event_previews", "Event cue previews"), className: "grid grid-cols-2 gap-2 sm:grid-cols-5" }, [["transition", "Transition"], ["success", "Success"], ["critical_success", "Big win"], ["failure", "Failure"], ["item_get", "Item"]].map(([type, text]) => /* @__PURE__ */ React.createElement("button", { key: type, type: "button", disabled: !soundEnabled, onClick: () => previewLabEvent(type), className: "min-h-11 rounded-lg border border-violet-300 bg-white px-2 py-2 text-[11px] font-bold text-violet-900 hover:bg-violet-100 disabled:opacity-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, text))), /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: "min-h-5 text-[11px] font-bold text-violet-900" }, previewActive ? translate("adventure.audio_preview_active", "Preview playing for up to 8 seconds.") : translate("adventure.audio_preview_idle", "Preview stopped.")), /* @__PURE__ */ React.createElement("div", { className: "rounded-lg border border-slate-300 bg-white p-2" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: diagnostic.status === "running", onClick: runLabDiagnostic, className: "min-h-11 w-full rounded-lg border border-slate-400 px-3 py-2 text-xs font-black text-slate-800 hover:bg-slate-100 disabled:opacity-60 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700" }, diagnostic.status === "running" ? translate("adventure.audio_check_running", "Rendering audio check\u2026") : translate("adventure.audio_run_check", "Run waveform check")), diagnostic.status === "complete" && diagnostic.result && /* @__PURE__ */ React.createElement("div", { role: "status", "aria-live": "polite", className: `mt-2 rounded-md px-2 py-1.5 text-[11px] font-bold ${diagnostic.result.passed ? "bg-emerald-50 text-emerald-900" : "bg-amber-50 text-amber-950"}` }, diagnostic.result.supported === false ? diagnostic.result.reason : diagnostic.result.passed ? `Passed \xB7 peak ${diagnostic.result.peak} \xB7 RMS ${diagnostic.result.rms} \xB7 quiet tail ${diagnostic.result.tailPeak}` : `Needs review${diagnostic.result.reason ? ` \xB7 ${diagnostic.result.reason}` : ` \xB7 peak ${diagnostic.result.peak} \xB7 step ${diagnostic.result.maxStep} \xB7 tail ${diagnostic.result.tailPeak}`}`)))), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => update(ADVENTURE_AUDIO_PREFS_DEFAULTS), className: "mt-3 min-h-11 w-full rounded-xl border border-indigo-300 px-3 py-2 text-xs font-bold text-indigo-800 transition-colors hover:bg-indigo-50 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-700" }, translate("adventure.audio_reset", "Reset sound settings")))));
 });
 var playDiceSound = () => {
   const engine = getAdventureAudioEngine();
-  if (!engine.canPlayEvent("dice", 250)) return;
+  if (!engine.canPlayEvent("dice", 250)) return () => {
+  };
   const ctx = engine.resume();
   const destination = engine.getSfxBus();
-  if (!ctx || !destination) return;
+  if (!ctx || !destination) return () => {
+  };
   const now = ctx.currentTime;
+  const activeClacks = [];
+  let cancelled = false;
   const playClack = (time, velocity, index) => {
     const voiceToken = engine.claimVoice(index < 2 ? "event" : "detail");
     if (!voiceToken) return false;
     let noise = null;
     let filter = null;
     let gain = null;
+    let cleaned = false;
+    let timerId = null;
     const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      if (timerId !== null) {
+        clearTimeout(timerId);
+        timerId = null;
+      }
       engine.releaseVoice(voiceToken);
       try {
         noise?.disconnect();
@@ -1639,6 +1790,13 @@ var playDiceSound = () => {
         gain?.disconnect();
       } catch (_) {
       }
+    };
+    const stopAndCleanup = () => {
+      try {
+        noise?.stop();
+      } catch (_) {
+      }
+      cleanup();
     };
     try {
       noise = ctx.createBufferSource();
@@ -1657,7 +1815,8 @@ var playDiceSound = () => {
       noise.onended = cleanup;
       noise.start(time);
       noise.stop(time + 0.1);
-      setTimeout(cleanup, Math.max(120, (time - now + 0.1) * 1e3 + 120));
+      timerId = setTimeout(cleanup, Math.max(120, (time - now + 0.1) * 1e3 + 120));
+      activeClacks.push(stopAndCleanup);
       return true;
     } catch (_) {
       cleanup();
@@ -1672,6 +1831,16 @@ var playDiceSound = () => {
   playedClack = playClack(now + 0.45 + Math.random() * 0.1, 0.3, 4) || playedClack;
   playedClack = playClack(now + 0.7 + Math.random() * 0.1, 0.15, 5) || playedClack;
   if (playedClack) engine.focusEvent("event", 850);
+  return () => {
+    if (cancelled) return;
+    cancelled = true;
+    activeClacks.forEach((fn) => {
+      try {
+        fn();
+      } catch (_) {
+      }
+    });
+  };
 };
 var getD20Rotation = (result, spins = 5) => {
   const index = result - 1;
@@ -1762,17 +1931,24 @@ var DiceOverlay = React.memo(({ result, onComplete }) => {
   const reduceMotion = typeof window !== "undefined" && window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   useFocusTrap(diceRef, true, onComplete);
   const onCompleteRef = useRef(onComplete);
+  const completedRef = useRef(false);
   useEffect(() => {
-    onCompleteRef.current = onComplete;
+    onCompleteRef.current = () => {
+      if (completedRef.current) return;
+      completedRef.current = true;
+      if (typeof onComplete === "function") onComplete();
+    };
   }, [onComplete]);
   const [currentRotation, setCurrentRotation] = useState(() => {
+    if (reduceMotion) return getD20Rotation(result, 0);
     const rX = Math.floor(Math.random() * 360);
     const rY = Math.floor(Math.random() * 360);
     return `rotateX(${rX}deg) rotateY(${rY}deg) rotateZ(0deg)`;
   });
   useEffect(() => {
-    playDiceSound();
-    const spinCount = 4 + Math.floor(Math.random() * 2);
+    completedRef.current = false;
+    const stopDiceSound = playDiceSound();
+    const spinCount = reduceMotion ? 0 : 4 + Math.floor(Math.random() * 2);
     const targetRotation = getD20Rotation(result, spinCount);
     const rollTimer = setTimeout(() => {
       setCurrentRotation(targetRotation);
@@ -1781,6 +1957,7 @@ var DiceOverlay = React.memo(({ result, onComplete }) => {
     return () => {
       clearTimeout(rollTimer);
       clearTimeout(endTimer);
+      if (typeof stopDiceSound === "function") stopDiceSound();
     };
   }, [reduceMotion, result]);
   return /* @__PURE__ */ React.createElement(
@@ -1790,16 +1967,17 @@ var DiceOverlay = React.memo(({ result, onComplete }) => {
       role: "dialog",
       "aria-modal": "true",
       "aria-labelledby": "adventure-dice-result",
-      className: "fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm flex items-center justify-center",
-      onClick: onComplete
+      className: "fixed inset-0 bg-black/60 z-[200] backdrop-blur-sm flex flex-col items-center justify-center",
+      onClick: () => onCompleteRef.current()
     },
     /* @__PURE__ */ React.createElement("p", { id: "adventure-dice-result", className: "sr-only", role: "status", "aria-live": "assertive" }, t("adventure.dice_roll_result", { result })),
     /* @__PURE__ */ React.createElement(
       "button",
       {
+        type: "button",
         onClick: (e) => {
           e.stopPropagation();
-          onComplete();
+          onCompleteRef.current();
         },
         className: "absolute top-6 right-6 min-w-11 min-h-11 text-white hover:text-white bg-black/50 hover:bg-black/70 p-2 rounded-full transition-colors z-[202] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-offset-2 focus-visible:ring-offset-black",
         title: t("common.skip_animation"),
@@ -1812,7 +1990,7 @@ var DiceOverlay = React.memo(({ result, onComplete }) => {
       "div",
       {
         className: "dice",
-        style: { transform: currentRotation }
+        style: { transform: currentRotation, ...reduceMotion ? { transition: "none" } : {} }
       },
       Array.from({ length: 20 }, (_, i) => {
         const num = i + 1;
@@ -1826,13 +2004,34 @@ var DiceOverlay = React.memo(({ result, onComplete }) => {
           num
         );
       })
-    ))
+    )),
+    /* @__PURE__ */ React.createElement("div", { "aria-hidden": "true", className: "mt-6 rounded-full bg-slate-900/90 border border-indigo-400/50 px-4 py-1 text-sm font-black tracking-wider text-white shadow-lg" }, "d20: ", result)
   );
 });
-var AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
+var AdventureShop = React.memo(({ gold, globalXP, energy = 100, inventory = [], chanceMode = true, activeXpBoost = 1, activeGoldBuffTurns = 0, onClose, onPurchase }) => {
   const shopRef = useRef(null);
+  const closeBtnRef = useRef(null);
+  const lastPurchasedIdRef = useRef(null);
   useFocusTrap(shopRef, true, onClose);
   const { t } = useContext(LanguageContext);
+  const getItemBlockReason = (item) => {
+    if (item.effectType === "modifier" && chanceMode === false) return "chance_off";
+    if (item.effectType === "energy" && Number(energy) >= 100) return "energy_full";
+    if (item.effectType === "xp_boost" && Number(activeXpBoost) >= (Number(item.effectValue) || 2)) return "boost_active";
+    return null;
+  };
+  useEffect(() => {
+    const purchasedId = lastPurchasedIdRef.current;
+    if (!purchasedId) return;
+    const item = ADVENTURE_SHOP_ITEMS.find((entry) => entry.id === purchasedId);
+    if (!item) return;
+    if (gold < item.cost || getItemBlockReason(item)) {
+      lastPurchasedIdRef.current = null;
+      requestAnimationFrame(() => {
+        closeBtnRef.current?.focus({ preventScroll: true });
+      });
+    }
+  }, [gold, energy, chanceMode, activeXpBoost]);
   return /* @__PURE__ */ React.createElement(
     "div",
     {
@@ -1840,18 +2039,33 @@ var AdventureShop = React.memo(({ gold, globalXP, onClose, onPurchase }) => {
       role: "dialog",
       "aria-modal": "true",
       "aria-label": t("adventure.shop"),
-      className: "fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200",
+      className: "fixed inset-0 z-[150] bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-200 motion-reduce:animate-none",
       onClick: onClose
     },
-    /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 border-4 border-indigo-500 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden relative flex flex-col max-h-[90vh]", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-600 p-3 sm:p-6 text-white flex justify-between items-center shrink-0 shadow-lg relative z-10" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black uppercase tracking-widest flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-yellow-400 text-indigo-900 p-2 rounded-lg shadow-inner border-2 border-indigo-800" }, /* @__PURE__ */ React.createElement(ShoppingBag, { size: 24, "aria-hidden": "true" })), t("adventure.shop")), /* @__PURE__ */ React.createElement("p", { className: "text-white text-sm font-bold mt-1 ml-1" }, t("adventure.shop_desc"))), /* @__PURE__ */ React.createElement("button", { onClick: onClose, className: "min-w-11 min-h-11 bg-indigo-800 hover:bg-indigo-700 text-white p-2 rounded-full transition-colors border-2 border-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white", autoFocus: true, "aria-label": t("adventure.close_shop_aria") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800 p-2 sm:p-4 flex justify-between items-center border-b border-slate-700 shrink-0 gap-2 sm:gap-4 flex-wrap sm:flex-nowrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-6" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-slate-700 px-4 py-2 rounded-xl border border-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, "\u{1F4B0}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, t("adventure.gold")), /* @__PURE__ */ React.createElement("div", { className: "text-xl font-black text-yellow-400 leading-none" }, gold))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-slate-700 px-4 py-2 rounded-xl border border-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, "\u{1F3C6}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, t("adventure.global_xp")), /* @__PURE__ */ React.createElement("div", { className: "text-xl font-black text-green-400 leading-none" }, globalXP)))), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-300 italic text-right ml-auto" }, t("adventure.xp_earn_tip"))), /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-6 overflow-y-auto custom-scrollbar bg-slate-900 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 flex-1 min-h-0" }, ADVENTURE_SHOP_ITEMS.map((item) => /* @__PURE__ */ React.createElement("div", { key: item.id, className: "bg-slate-800 border-2 border-slate-700 rounded-2xl p-3 sm:p-4 flex flex-col hover:border-indigo-500 transition-colors group relative overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-2 relative z-10" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl sm:text-4xl bg-slate-700 w-10 h-10 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center shadow-inner border border-slate-600", "aria-hidden": "true" }, item.icon), /* @__PURE__ */ React.createElement("div", { className: "text-right" }, /* @__PURE__ */ React.createElement("div", { className: "text-yellow-400 font-black text-lg" }, item.cost, " G"), /* @__PURE__ */ React.createElement("span", { className: "inline-block max-w-36 truncate whitespace-nowrap text-[11px] font-bold uppercase text-slate-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700", title: t(`adventure.effects.${item.effectType}_label`) || t(`adventure.effects.${item.effectType}`) || item.effectType }, t(`adventure.effects.${item.effectType}_label`) || t(`adventure.effects.${item.effectType}`) || item.effectType))), /* @__PURE__ */ React.createElement("div", { className: "relative z-10 flex flex-col flex-1" }, /* @__PURE__ */ React.createElement("h3", { className: "text-white font-bold text-lg mb-1 group-hover:text-indigo-300 transition-colors" }, t(`adventure.shop_items.${item.id}_name`) || item.name), /* @__PURE__ */ React.createElement("p", { className: "text-slate-300 text-xs leading-relaxed mb-2 sm:mb-4 min-h-[2em] flex-1 overflow-y-auto custom-scrollbar" }, t(`adventure.shop_items.${item.id}_desc`) || item.description), /* @__PURE__ */ React.createElement(
-      "button",
-      {
-        onClick: () => onPurchase(item),
-        disabled: gold < item.cost,
-        className: `w-full py-2 sm:py-2.5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-95 shrink-0 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 ${gold >= item.cost ? "bg-yellow-500 hover:bg-yellow-400 text-indigo-900 shadow-lg shadow-yellow-500/30 border-2 border-yellow-300 ring-1 ring-yellow-400/50" : "bg-slate-700 text-slate-300 cursor-not-allowed"}`
-      },
-      gold >= item.cost ? t("adventure.buy_now") : t("adventure.no_gold")
-    )), /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" })))))
+    /* @__PURE__ */ React.createElement("div", { className: "bg-slate-900 border-4 border-indigo-500 rounded-3xl shadow-2xl max-w-2xl w-full overflow-hidden relative flex flex-col max-h-[90vh]", onClick: (e) => e.stopPropagation() }, /* @__PURE__ */ React.createElement("div", { className: "bg-indigo-600 p-3 sm:p-6 text-white flex justify-between items-center shrink-0 shadow-lg relative z-10" }, /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("h2", { className: "text-2xl font-black uppercase tracking-widest flex items-center gap-3" }, /* @__PURE__ */ React.createElement("div", { className: "bg-yellow-400 text-indigo-900 p-2 rounded-lg shadow-inner border-2 border-indigo-800" }, /* @__PURE__ */ React.createElement(ShoppingBag, { size: 24, "aria-hidden": "true" })), t("adventure.shop")), /* @__PURE__ */ React.createElement("p", { className: "text-white text-sm font-bold mt-1 ml-1" }, t("adventure.shop_desc"))), /* @__PURE__ */ React.createElement("button", { ref: closeBtnRef, type: "button", onClick: onClose, className: "min-w-11 min-h-11 bg-indigo-800 hover:bg-indigo-700 text-white p-2 rounded-full transition-colors border-2 border-indigo-400 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white", autoFocus: true, "aria-label": t("adventure.close_shop_aria") }, /* @__PURE__ */ React.createElement(X, { size: 24, "aria-hidden": "true" }))), /* @__PURE__ */ React.createElement("div", { className: "bg-slate-800 p-2 sm:p-4 flex justify-between items-center border-b border-slate-700 shrink-0 gap-2 sm:gap-4 flex-wrap sm:flex-nowrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex gap-6 flex-wrap" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-slate-700 px-4 py-2 rounded-xl border border-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, "\u{1F4B0}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, t("adventure.gold")), /* @__PURE__ */ React.createElement("div", { className: "text-xl font-black text-yellow-400 leading-none", "aria-live": "polite", "aria-atomic": "true" }, gold))), /* @__PURE__ */ React.createElement("div", { className: "flex items-center gap-2 bg-slate-700 px-4 py-2 rounded-xl border border-slate-600" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl", "aria-hidden": "true" }, "\u{1F3C6}"), /* @__PURE__ */ React.createElement("div", null, /* @__PURE__ */ React.createElement("div", { className: "text-[11px] text-slate-200 font-bold uppercase tracking-wider" }, t("adventure.global_xp")), /* @__PURE__ */ React.createElement("div", { className: "text-xl font-black text-green-400 leading-none" }, globalXP)))), /* @__PURE__ */ React.createElement("div", { className: "text-xs text-slate-300 italic text-right ml-auto" }, t("adventure.xp_earn_tip"))), /* @__PURE__ */ React.createElement("div", { className: "p-3 sm:p-6 overflow-y-auto custom-scrollbar bg-slate-900 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 flex-1 min-h-0" }, ADVENTURE_SHOP_ITEMS.map((item) => {
+      const ownedCount = Array.isArray(inventory) ? inventory.reduce((total, entry) => {
+        if (!entry) return total;
+        const matches = entry.id === item.id || String(entry.id || "").startsWith(item.id + "_") || entry.name && item.name && entry.name === item.name;
+        return matches ? total + (Number(entry.quantity) || 1) : total;
+      }, 0) : 0;
+      const blockReason = getItemBlockReason(item);
+      const canAfford = gold >= item.cost;
+      const isDisabled = !canAfford || !!blockReason;
+      const disabledLabel = blockReason === "chance_off" ? t("adventure.shop_chance_off") || "Chance mode off" : blockReason === "energy_full" ? t("adventure.shop_energy_full") || "Energy full" : blockReason === "boost_active" ? t("adventure.shop_boost_active") || (Number(activeGoldBuffTurns) > 0 ? "Boost active" : "Boost active") : t("adventure.need_more_gold", { amount: item.cost - gold }) || `Need ${item.cost - gold}G more`;
+      return /* @__PURE__ */ React.createElement("div", { key: item.id, className: "bg-slate-800 border-2 border-slate-700 rounded-2xl p-3 sm:p-4 flex flex-col hover:border-indigo-500 transition-colors group relative overflow-hidden" }, /* @__PURE__ */ React.createElement("div", { className: "flex justify-between items-start mb-2 relative z-10" }, /* @__PURE__ */ React.createElement("div", { className: "text-2xl sm:text-4xl bg-slate-700 w-10 h-10 sm:w-16 sm:h-16 rounded-xl flex items-center justify-center shadow-inner border border-slate-600", "aria-hidden": "true" }, item.icon), /* @__PURE__ */ React.createElement("div", { className: "text-right flex flex-col items-end gap-1" }, /* @__PURE__ */ React.createElement("div", { className: "text-yellow-400 font-black text-lg" }, item.cost, " G"), /* @__PURE__ */ React.createElement("span", { className: "inline-block max-w-36 truncate whitespace-nowrap text-[11px] font-bold uppercase text-slate-300 bg-slate-900 px-2 py-0.5 rounded border border-slate-700", title: t(`adventure.effects.${item.effectType}_label`) || t(`adventure.effects.${item.effectType}`) || item.effectType }, t(`adventure.effects.${item.effectType}_label`) || t(`adventure.effects.${item.effectType}`) || item.effectType), ownedCount > 0 && /* @__PURE__ */ React.createElement("span", { className: "inline-block text-[11px] font-bold text-emerald-200 bg-emerald-950/90 px-2 py-0.5 rounded border border-emerald-600" }, t("adventure.shop_owned") || "Owned", ": ", ownedCount))), /* @__PURE__ */ React.createElement("div", { className: "relative z-10 flex flex-col flex-1" }, /* @__PURE__ */ React.createElement("h3", { className: "text-white font-bold text-lg mb-1 group-hover:text-indigo-300 transition-colors" }, t(`adventure.shop_items.${item.id}_name`) || item.name), /* @__PURE__ */ React.createElement("p", { className: "text-slate-300 text-xs leading-relaxed mb-2 sm:mb-4 min-h-[2em] flex-1 overflow-y-auto custom-scrollbar" }, t(`adventure.shop_items.${item.id}_desc`) || item.description), /* @__PURE__ */ React.createElement(
+        "button",
+        {
+          type: "button",
+          onClick: () => {
+            lastPurchasedIdRef.current = item.id;
+            onPurchase(item);
+          },
+          disabled: isDisabled,
+          className: `w-full py-2 sm:py-2.5 rounded-xl font-bold text-sm sm:text-base flex items-center justify-center gap-2 transition-all active:scale-95 motion-reduce:transform-none shrink-0 min-h-11 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-800 ${!isDisabled ? "bg-yellow-500 hover:bg-yellow-400 text-indigo-900 shadow-lg shadow-yellow-500/30 border-2 border-yellow-300 ring-1 ring-yellow-400/50" : "bg-slate-700 text-slate-300 cursor-not-allowed"}`
+        },
+        !isDisabled ? t("adventure.buy_now") : disabledLabel
+      )), /* @__PURE__ */ React.createElement("div", { className: "absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" }));
+    })))
   );
 });
 var sanitizeAdventurePortraitFile = (file, { maxDimension = 1024, quality = 0.88 } = {}) => new Promise((resolve, reject) => {
@@ -2007,12 +2221,15 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
     setSanitizingPortraitIdx(pending.charIdx);
     try {
       const sanitizedPortrait = await sanitizeAdventurePortraitFile(pending.file);
+      if (!portraitQueueMountedRef.current) return;
       if (onUploadPortrait) onUploadPortrait(pending.charIdx, sanitizedPortrait);
     } catch (error) {
-      setPortraitUploadError({ charIdx: pending.charIdx, message: "This image could not be prepared securely. Please choose a different image." });
+      if (portraitQueueMountedRef.current) {
+        setPortraitUploadError({ charIdx: pending.charIdx, message: "This image could not be prepared securely. Please choose a different image." });
+      }
     } finally {
-      pending.input.value = "";
-      setSanitizingPortraitIdx(null);
+      if (pending?.input) pending.input.value = "";
+      if (portraitQueueMountedRef.current) setSanitizingPortraitIdx(null);
     }
   };
   const handlePortraitFileChange = (charIdx, e) => {
@@ -2057,19 +2274,21 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
     setEditingField(null);
     setEditFieldValue("");
   };
-  return /* @__PURE__ */ React.createElement("div", { ref: castRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "adventure-cast-lobby-title", className: "fixed inset-0 z-[250] bg-gradient-to-br from-violet-950/95 to-indigo-950/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-500" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl mb-2 block", "aria-hidden": "true" }, "\u{1F3AD}"), /* @__PURE__ */ React.createElement("h2", { ref: castTitleRef, id: "adventure-cast-lobby-title", tabIndex: -1, className: "text-2xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2" }, t("adventure.cast_lobby") || "Meet Your Cast"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, t("adventure.cast_lobby_desc") || "Select any name, role, or description to edit. Portraits generate automatically.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6" }, characters.map((char, i) => /* @__PURE__ */ React.createElement("div", { key: char.id || i, className: "bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 p-4 flex flex-col items-center text-center transition-all hover:shadow-lg hover:border-violet-300 relative group/card" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: isPortraitSanitizing || isPortraitQueueBusy, onClick: () => {
+  return /* @__PURE__ */ React.createElement("div", { ref: castRef, role: "dialog", "aria-modal": "true", "aria-labelledby": "adventure-cast-lobby-title", className: "fixed inset-0 z-[250] bg-gradient-to-br from-violet-950/95 to-indigo-950/95 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in duration-500 motion-reduce:animate-none" }, /* @__PURE__ */ React.createElement("div", { className: "bg-white rounded-3xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto p-4 sm:p-8" }, /* @__PURE__ */ React.createElement("div", { className: "text-center mb-6" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl mb-2 block", "aria-hidden": "true" }, "\u{1F3AD}"), /* @__PURE__ */ React.createElement("h2", { ref: castTitleRef, id: "adventure-cast-lobby-title", tabIndex: -1, className: "text-2xl font-bold text-slate-800 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2" }, t("adventure.cast_lobby") || "Meet Your Cast"), /* @__PURE__ */ React.createElement("p", { className: "text-sm text-slate-600 mt-1" }, t("adventure.cast_lobby_desc") || "Select any name, role, or description to edit. Portraits generate automatically.")), /* @__PURE__ */ React.createElement("div", { className: "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6" }, characters.map((char, i) => /* @__PURE__ */ React.createElement("div", { key: char.id || i, className: "bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 p-4 flex flex-col items-center text-center transition-all hover:shadow-lg hover:border-violet-300 relative group/card" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: isPortraitSanitizing || isPortraitQueueBusy, onClick: () => {
     setPortraitUploadError(null);
     clearPendingPortraitUpload();
     onRemoveCharacter(i);
-  }, className: "absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-700 text-xs font-bold opacity-0 group-hover/card:opacity-100 group-focus-within/card:opacity-100 focus:opacity-100 transition-opacity flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2", title: t("adventure.remove_character"), "aria-label": (t("adventure.remove_character") || "Remove character") + ": " + (char.name || i + 1) }, "\u2715"), /* @__PURE__ */ React.createElement("div", { role: "group", className: "w-24 h-24 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center overflow-hidden mb-3 shadow-inner", "aria-busy": !!char.isGenerating, "aria-label": char.isGenerating ? t("adventure.generating_portrait_aria") || "Generating portrait for " + (char.name || "character") : void 0 }, char.isGenerating ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full", "aria-hidden": "true" }) : char.portrait ? /* @__PURE__ */ React.createElement("img", { src: char.portrait, alt: char.name, className: "w-full h-full object-cover rounded-full" }) : /* @__PURE__ */ React.createElement("span", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F3AD}")), editingField?.idx === i && editingField?.field === "name" ? /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.edit_name") || "Edit character name", value: editFieldValue, onChange: (e) => setEditFieldValue(e.target.value), onBlur: saveFieldEdit, onKeyDown: (e) => {
+  }, className: "absolute top-2 right-2 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 hover:text-red-700 text-xs font-bold opacity-85 sm:opacity-0 sm:group-hover/card:opacity-100 sm:group-focus-within/card:opacity-100 focus:opacity-100 transition-opacity flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-700 focus-visible:ring-offset-2", title: t("adventure.remove_character"), "aria-label": (t("adventure.remove_character") || "Remove character") + ": " + (char.name || i + 1) }, "\u2715"), /* @__PURE__ */ React.createElement("div", { role: "group", className: "w-24 h-24 rounded-full bg-violet-100 border-2 border-violet-200 flex items-center justify-center overflow-hidden mb-3 shadow-inner", "aria-busy": !!char.isGenerating, "aria-label": char.isGenerating ? t("adventure.generating_portrait_aria") || "Generating portrait for " + (char.name || "character") : void 0 }, char.isGenerating ? /* @__PURE__ */ React.createElement("div", { className: "animate-spin motion-reduce:animate-none w-6 h-6 border-2 border-violet-400 border-t-transparent rounded-full", "aria-hidden": "true" }) : char.portrait ? /* @__PURE__ */ React.createElement("img", { src: char.portrait, alt: char.name, className: "w-full h-full object-cover rounded-full" }) : /* @__PURE__ */ React.createElement("span", { className: "text-3xl", "aria-hidden": "true" }, "\u{1F3AD}")), editingField?.idx === i && editingField?.field === "name" ? /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.edit_name") || "Edit character name", value: editFieldValue, onChange: (e) => setEditFieldValue(e.target.value), onBlur: saveFieldEdit, onKeyDown: (e) => {
     if (e.key === "Enter") saveFieldEdit();
     if (e.key === "Escape") {
+      e.stopPropagation();
       setEditingField(null);
       setEditFieldValue("");
     }
   }, autoFocus: true, className: "font-bold text-slate-800 text-sm text-center w-full px-2 py-0.5 border border-violet-300 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none bg-white" }) : /* @__PURE__ */ React.createElement("h3", null, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => startFieldEdit(i, "name"), className: "min-w-11 min-h-11 px-2 font-bold text-slate-800 text-sm cursor-pointer hover:text-violet-700 hover:underline decoration-dashed underline-offset-2 transition-colors rounded focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2", title: t("adventure.edit_name"), "aria-label": (t("adventure.edit_name") || "Edit character name") + ": " + char.name }, char.name)), editingField?.idx === i && editingField?.field === "role" ? /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.edit_role") || "Edit character role", value: editFieldValue, onChange: (e) => setEditFieldValue(e.target.value), onBlur: saveFieldEdit, onKeyDown: (e) => {
     if (e.key === "Enter") saveFieldEdit();
     if (e.key === "Escape") {
+      e.stopPropagation();
       setEditingField(null);
       setEditFieldValue("");
     }
@@ -2079,6 +2298,7 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
       saveFieldEdit();
     }
     if (e.key === "Escape") {
+      e.stopPropagation();
       setEditingField(null);
       setEditFieldValue("");
     }
@@ -2089,6 +2309,11 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
   }, className: "min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2", title: t("adventure.upload_portrait") || "Upload your own portrait image" }, "\u{1F4F7} Upload"), editIdx === i ? /* @__PURE__ */ React.createElement("div", { className: "w-full flex gap-1 mt-1" }, /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.portrait_refine_aria") || "Describe how to refine portrait", value: editPrompt, onChange: (e) => setEditPrompt(e.target.value), placeholder: t("adventure.portrait_refine_placeholder") || "e.g. Add green glasses", className: "flex-1 text-xs px-2 py-1 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none", onKeyDown: (e) => {
     if (e.key === "Enter" && editPrompt.trim()) {
       onRefinePortrait(i, editPrompt.trim());
+      setEditIdx(null);
+      setEditPrompt("");
+    }
+    if (e.key === "Escape") {
+      e.stopPropagation();
       setEditIdx(null);
       setEditPrompt("");
     }
@@ -2104,7 +2329,8 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
   }, className: "min-w-11 min-h-11 px-2 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2" }, "\u2717")) : /* @__PURE__ */ React.createElement(React.Fragment, null, /* @__PURE__ */ React.createElement("button", { type: "button", "aria-label": (t("adventure.edit_nanobanana") || "Refine portrait") + ": " + char.name, onClick: () => setEditIdx(i), className: "min-h-11 px-3 py-2 bg-slate-100 text-slate-700 rounded-full hover:bg-slate-200 transition-all font-medium border border-slate-500 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2", title: t("adventure.edit_nanobanana") }, "\u270F\uFE0F Refine"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     const link = document.createElement("a");
     link.href = char.portrait;
-    link.download = `${(char.name || "character").replace(/\s+/g, "_")}_portrait.png`;
+    const ext = typeof char.portrait === "string" && char.portrait.startsWith("data:image/jpeg") ? "jpg" : "png";
+    link.download = `${(char.name || "character").replace(/\s+/g, "_")}_portrait.${ext}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -2112,17 +2338,40 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
     setPortraitUploadError(null);
     clearPendingPortraitUpload();
     portraitFileRefs.current["new-" + i]?.click();
-  }, className: "min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2", title: t("adventure.upload_portrait") || "Upload your own portrait image" }, "\u{1F4F7} Upload Photo")), portraitUploadError?.charIdx === i && /* @__PURE__ */ React.createElement("p", { id: `adventure-portrait-upload-error-${i}`, role: "alert", "aria-atomic": "true", className: "w-full mt-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800" }, portraitUploadError.message), pendingPortraitUpload?.charIdx === i && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": `adventure-portrait-consent-${i}`, className: "w-full mt-2 rounded-xl border border-amber-400 bg-amber-50 px-3 py-3 text-left" }, /* @__PURE__ */ React.createElement("p", { id: `adventure-portrait-consent-${i}`, className: "text-xs font-semibold leading-relaxed text-amber-950" }, "Uploaded images are used by AI to keep this character consistent \u2014 the image is sent to the AI provider configured for this app with each scene. Only upload images you have permission to use this way (for photos of students, check your school's AI/data agreement)."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { ref: portraitConsentButtonRef, type: "button", onClick: acceptPendingPortraitUpload, className: "min-h-11 px-4 py-2 rounded-lg bg-amber-800 text-white font-bold hover:bg-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 focus-visible:ring-offset-2" }, "Use image"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearPendingPortraitUpload(true), className: "min-h-11 px-4 py-2 rounded-lg border border-slate-500 bg-white text-slate-800 font-bold hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2" }, "Cancel"))), sanitizingPortraitIdx === i && /* @__PURE__ */ React.createElement("p", { id: "adventure-portrait-sanitizing-status", className: "mt-2 text-[11px] text-sky-800 font-semibold", role: "status", "aria-live": "polite" }, "Preparing image securely\u2026"), isPortraitQueued(i) && !char.isGenerating && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-violet-700 font-medium", role: "status", "aria-live": "polite" }, "Waiting its turn\u2026"), char.isGenerating && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-violet-700 animate-pulse motion-reduce:animate-none font-medium", role: "status", "aria-live": "polite" }, "Creating portrait\u2026"))), isAdding ? /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 rounded-2xl border-2 border-dashed border-violet-300 p-4 flex flex-col items-center text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl mb-2", "aria-hidden": "true" }, "\u2728"), /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.char_name_placeholder") || "Character name", value: newName, onChange: (e) => setNewName(e.target.value), placeholder: t("adventure.char_name_placeholder"), className: "w-full text-sm px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center font-bold" }), /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.role_placeholder") || "Character role", value: newRole, onChange: (e) => setNewRole(e.target.value), placeholder: t("adventure.role_placeholder"), className: "w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center" }), /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.appearance_placeholder") || "Character appearance", value: newAppearance, onChange: (e) => setNewAppearance(e.target.value), placeholder: t("adventure.appearance_placeholder") || "Appearance (e.g. tall, silver hair, blue robe)", className: "w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center", onKeyDown: (e) => {
+  }, className: "min-h-11 px-3 py-2 bg-sky-50 text-sky-700 rounded-full hover:bg-sky-100 transition-all font-medium border border-sky-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-sky-700 focus-visible:ring-offset-2", title: t("adventure.upload_portrait") || "Upload your own portrait image" }, "\u{1F4F7} Upload Photo")), portraitUploadError?.charIdx === i && /* @__PURE__ */ React.createElement("p", { id: `adventure-portrait-upload-error-${i}`, role: "alert", "aria-atomic": "true", className: "w-full mt-2 rounded-lg border border-red-300 bg-red-50 px-3 py-2 text-xs font-semibold text-red-800" }, portraitUploadError.message), pendingPortraitUpload?.charIdx === i && /* @__PURE__ */ React.createElement("div", { role: "group", "aria-labelledby": `adventure-portrait-consent-${i}`, className: "w-full mt-2 rounded-xl border border-amber-400 bg-amber-50 px-3 py-3 text-left" }, /* @__PURE__ */ React.createElement("p", { id: `adventure-portrait-consent-${i}`, className: "text-xs font-semibold leading-relaxed text-amber-950" }, "Uploaded images are used by AI to keep this character consistent \u2014 the image is sent to the AI provider configured for this app with each scene. Only upload images you have permission to use this way (for photos of students, check your school's AI/data agreement)."), /* @__PURE__ */ React.createElement("div", { className: "mt-2 flex flex-wrap gap-2" }, /* @__PURE__ */ React.createElement("button", { ref: portraitConsentButtonRef, type: "button", onClick: acceptPendingPortraitUpload, className: "min-h-11 px-4 py-2 rounded-lg bg-amber-800 text-white font-bold hover:bg-amber-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-800 focus-visible:ring-offset-2" }, "Use image"), /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => clearPendingPortraitUpload(true), className: "min-h-11 px-4 py-2 rounded-lg border border-slate-500 bg-white text-slate-800 font-bold hover:bg-slate-100 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2" }, "Cancel"))), sanitizingPortraitIdx === i && /* @__PURE__ */ React.createElement("p", { id: "adventure-portrait-sanitizing-status", className: "mt-2 text-[11px] text-sky-800 font-semibold", role: "status", "aria-live": "polite" }, "Preparing image securely\u2026"), isPortraitQueued(i) && !char.isGenerating && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-violet-700 font-medium", role: "status", "aria-live": "polite" }, "Waiting its turn\u2026"), char.isGenerating && /* @__PURE__ */ React.createElement("p", { className: "mt-2 text-[11px] text-violet-700 animate-pulse motion-reduce:animate-none font-medium", role: "status", "aria-live": "polite" }, "Creating portrait\u2026"))), isAdding ? /* @__PURE__ */ React.createElement("div", { className: "bg-gradient-to-br from-violet-50 to-indigo-50 rounded-2xl border-2 border-dashed border-violet-300 p-4 flex flex-col items-center text-center" }, /* @__PURE__ */ React.createElement("span", { className: "text-2xl mb-2", "aria-hidden": "true" }, "\u2728"), /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.char_name_placeholder") || "Character name", value: newName, onChange: (e) => setNewName(e.target.value), onKeyDown: (e) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      setIsAdding(false);
+      setNewName("");
+      setNewRole("");
+      setNewAppearance("");
+    }
+  }, placeholder: t("adventure.char_name_placeholder"), className: "w-full text-sm px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center font-bold" }), /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.role_placeholder") || "Character role", value: newRole, onChange: (e) => setNewRole(e.target.value), onKeyDown: (e) => {
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      setIsAdding(false);
+      setNewName("");
+      setNewRole("");
+      setNewAppearance("");
+    }
+  }, placeholder: t("adventure.role_placeholder"), className: "w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-600 focus:outline-none text-center" }), /* @__PURE__ */ React.createElement("input", { type: "text", "aria-label": t("adventure.appearance_placeholder") || "Character appearance", value: newAppearance, onChange: (e) => setNewAppearance(e.target.value), placeholder: t("adventure.appearance_placeholder") || "Appearance (e.g. tall, silver hair, blue robe)", className: "w-full text-xs px-3 py-1.5 mb-2 border border-violet-600 rounded-lg focus:ring-2 focus:ring-violet-400 focus:outline-none text-center", onKeyDown: (e) => {
     if (e.key === "Enter" && newName.trim()) {
-      onAddCharacter({ name: newName.trim(), role: newRole.trim() || "Character", appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false });
+      onAddCharacter({ id: `char_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: newName.trim(), role: newRole.trim() || "Character", appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false });
       setNewName("");
       setNewRole("");
       setNewAppearance("");
       setIsAdding(false);
     }
+    if (e.key === "Escape") {
+      e.stopPropagation();
+      setIsAdding(false);
+      setNewName("");
+      setNewRole("");
+      setNewAppearance("");
+    }
   } }), /* @__PURE__ */ React.createElement("div", { className: "flex gap-1.5 mt-1" }, /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => {
     if (newName.trim()) {
-      onAddCharacter({ name: newName.trim(), role: newRole.trim() || "Character", appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false });
+      onAddCharacter({ id: `char_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`, name: newName.trim(), role: newRole.trim() || "Character", appearance: newAppearance.trim() || newName.trim(), portrait: null, isGenerating: false });
       setNewName("");
       setNewRole("");
       setNewAppearance("");
@@ -2133,14 +2382,14 @@ var CastLobby = React.memo(({ characters, onUpdateCharacter, onConfirm, onGenera
     setNewName("");
     setNewRole("");
     setNewAppearance("");
-  }, className: "min-h-11 px-3 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2" }, "Cancel"))) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setIsAdding(true), className: "bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border-2 border-dashed border-violet-600 p-4 flex flex-col items-center justify-center text-center transition-all hover:shadow-lg hover:border-violet-700 hover:from-violet-50 hover:to-indigo-50 min-h-[180px] cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl mb-2 group-hover:scale-110 transition-transform", "aria-hidden": "true" }, "\u2795"), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sm text-violet-600" }, t("adventure.add_character")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 mt-0.5" }, t("adventure.create_cast_member")))), /* @__PURE__ */ React.createElement("div", { className: "mb-4 max-w-xl mx-auto", role: "status", "aria-live": "polite", "aria-atomic": "true" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 text-xs font-bold text-slate-700 mb-1.5" }, /* @__PURE__ */ React.createElement("span", null, "Portraits ready"), /* @__PURE__ */ React.createElement("span", null, portraitReadyCount, " of ", portraitTotal)), /* @__PURE__ */ React.createElement("div", { className: "h-2.5 overflow-hidden rounded-full bg-slate-200 border border-slate-300", role: "progressbar", "aria-label": "Cast portraits ready", "aria-valuemin": 0, "aria-valuemax": portraitTotal, "aria-valuenow": portraitReadyCount }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-violet-600 to-indigo-600 transition-all duration-500 motion-reduce:transition-none", style: { width: portraitProgressPercent + "%" } })), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[11px] text-slate-600 text-center" }, portraitReadyCount === portraitTotal ? "Your cast is ready." : isPortraitQueueBusy ? "Creating up to two portraits at a time. You can begin whenever you are ready." : "You can begin now or generate the remaining portraits for stronger visual consistency.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: isPortraitQueueBusy || portraitReadyCount === portraitTotal, onClick: () => {
+  }, className: "min-h-11 px-3 py-2 bg-slate-200 text-slate-700 rounded-lg font-bold hover:bg-slate-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-700 focus-visible:ring-offset-2" }, "Cancel"))) : /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => setIsAdding(true), className: "bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border-2 border-dashed border-violet-600 p-4 flex flex-col items-center justify-center text-center transition-all motion-reduce:transition-none hover:shadow-lg hover:border-violet-700 hover:from-violet-50 hover:to-indigo-50 min-h-[180px] cursor-pointer group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, /* @__PURE__ */ React.createElement("span", { className: "text-4xl mb-2 group-hover:scale-110 transition-transform", "aria-hidden": "true" }, "\u2795"), /* @__PURE__ */ React.createElement("span", { className: "font-bold text-sm text-violet-600" }, t("adventure.add_character")), /* @__PURE__ */ React.createElement("span", { className: "text-[11px] text-slate-600 mt-0.5" }, t("adventure.create_cast_member")))), /* @__PURE__ */ React.createElement("div", { className: "mb-4 max-w-xl mx-auto", role: "status", "aria-live": "polite", "aria-atomic": "true" }, /* @__PURE__ */ React.createElement("div", { className: "flex items-center justify-between gap-3 text-xs font-bold text-slate-700 mb-1.5" }, /* @__PURE__ */ React.createElement("span", null, "Portraits ready"), /* @__PURE__ */ React.createElement("span", null, portraitReadyCount, " of ", portraitTotal)), /* @__PURE__ */ React.createElement("div", { className: "h-2.5 overflow-hidden rounded-full bg-slate-200 border border-slate-300", role: "progressbar", "aria-label": "Cast portraits ready", "aria-valuemin": 0, "aria-valuemax": Math.max(1, portraitTotal), "aria-valuenow": portraitReadyCount }, /* @__PURE__ */ React.createElement("div", { className: "h-full bg-gradient-to-r from-violet-600 to-indigo-600 transition-all duration-500 motion-reduce:transition-none", style: { width: portraitProgressPercent + "%" } })), /* @__PURE__ */ React.createElement("p", { className: "mt-1.5 text-[11px] text-slate-600 text-center" }, portraitReadyCount === portraitTotal ? "Your cast is ready." : isPortraitQueueBusy ? "Creating up to two portraits at a time. You can begin whenever you are ready." : "You can begin now or generate the remaining portraits for stronger visual consistency.")), /* @__PURE__ */ React.createElement("div", { className: "flex flex-wrap justify-center gap-3" }, /* @__PURE__ */ React.createElement("button", { type: "button", disabled: isPortraitQueueBusy || portraitReadyCount === portraitTotal, onClick: () => {
     characters.forEach((character, i) => {
       if (!character.portrait && !character.isGenerating && !character.isUserUploaded) enqueuePortrait(i);
     });
   }, className: "min-h-11 px-5 py-2.5 bg-violet-100 text-violet-700 font-bold rounded-xl hover:bg-violet-200 transition-all text-sm border border-violet-600 disabled:opacity-50 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u{1F3A8}"), " ", isPortraitQueueBusy ? "Creating portraits\u2026" : portraitReadyCount === portraitTotal ? "Portraits Ready" : t("adventure.generate_all") || "Generate Missing Portraits"), /* @__PURE__ */ React.createElement("button", { type: "button", disabled: isPortraitSanitizing, "aria-describedby": isPortraitSanitizing ? "adventure-portrait-sanitizing-status" : void 0, onClick: () => {
     window.AlloModules?.AdventureHandlers?.cancelAdventureEstablishingShot?.();
     onConfirm();
-  }, className: "min-h-11 px-6 py-2.5 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-800 shadow-lg hover:shadow-xl transition-all text-sm hover:scale-105 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2694\uFE0F"), " ", t("adventure.begin_adventure") || "Begin Adventure"))));
+  }, className: "min-h-11 px-6 py-2.5 bg-violet-700 text-white font-bold rounded-xl hover:bg-violet-800 shadow-lg hover:shadow-xl transition-all text-sm hover:scale-105 motion-reduce:transform-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-700 focus-visible:ring-offset-2" }, /* @__PURE__ */ React.createElement("span", { "aria-hidden": "true" }, "\u2694\uFE0F"), " ", t("adventure.begin_adventure") || "Begin Adventure"))));
 });
 
   window.AlloModules.MissionReportCard = MissionReportCard;

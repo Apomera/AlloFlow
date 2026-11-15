@@ -115,9 +115,28 @@ function scanText(text) {
 }
 
 function shippedFiles() {
-  const out = execFileSync('git', ['ls-files', '--', '*_source.jsx', 'AlloFlowANTI.txt', 'stem_lab/stem_tool_*.js', 'sel_hub/*.js', 'error_reporter_module.js'], { cwd: ROOT, maxBuffer: 1 << 28 });
+  const out = execFileSync('git', ['ls-files', '--', '*_source.jsx', 'AlloFlowANTI.txt', 'stem_lab/stem_tool_*.js', 'sel_hub/*.js', 'error_reporter_module.js', '*_module.js', 'apps_script/**/*.gs', '_build_*.js'], { cwd: ROOT, maxBuffer: 1 << 28 });
+  const skip = /^(?:app|desktop|reports|artifacts|tmp|tests|dev-tools|_archive)\//;
+  const all = out.toString().split('\n').filter((f) => f && !skip.test(f));
+  const sources = new Set(all.filter((f) => !f.includes('/') && f.endsWith('_source.jsx')));
+  let buildText = '';
+  for (const b of all) {
+    if (b.startsWith('_build_')) {
+      try { buildText += fs.readFileSync(path.join(ROOT, b), 'utf8') + '\n'; } catch (_) {}
+    }
+  }
+  const files = [];
+  for (const f of all) {
+    if (f.startsWith('_build_')) continue;
+    if (f.endsWith('_module.js') && f !== 'error_reporter_module.js') {
+      if (f.includes('/')) continue;
+      const base = f.replace(/_module\.js$/, '');
+      if (sources.has(base + '_source.jsx') || buildText.includes(f)) continue;
+    }
+    files.push(f);
+  }
   // Shipped sources only: build mirrors and saved evidence copies are not code anyone runs.
-  return out.toString().split('\n').filter((f) => f && !/^(?:desktop|reports|artifacts|tmp|tests|dev-tools|_archive)\//.test(f));
+  return [...new Set(files)];
 }
 
 function selftest() {

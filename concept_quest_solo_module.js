@@ -201,6 +201,7 @@
   function getTurnKey(quest) {
     var room = getRoom(quest, quest && quest.currentRoomId);
     var challenge = room && room.challenge || {};
+    if (challenge.correctIndex == null && quest && typeof quest.turnKey === 'string' && quest.turnKey) return quest.turnKey;
     var value = JSON.stringify([challenge.id, challenge.prompt, challenge.options, challenge.correctIndex]);
     var hash = 2166136261;
     for (var i = 0; i < value.length; i++) hash = Math.imul(hash ^ value.charCodeAt(i), 16777619);
@@ -255,6 +256,61 @@
 
   function sealQuest(quest) { return Object.assign({}, quest, { turnKey: getTurnKey(quest) }); }
   function sealResult(result) { return result.error ? result : Object.assign({}, result, { quest: sealQuest(result.quest) }); }
+
+  function sanitizePublicChallenge(challenge) {
+    if (!challenge || typeof challenge !== 'object') return null;
+    var clean = {
+      id: challenge.id,
+      concept: challenge.concept,
+      prompt: challenge.prompt,
+      options: Array.isArray(challenge.options) ? challenge.options.slice() : []
+    };
+    if (challenge.sourceIndex != null) clean.sourceIndex = challenge.sourceIndex;
+    if (challenge.question_en) clean.question_en = challenge.question_en;
+    if (challenge.imageUrl) clean.imageUrl = challenge.imageUrl;
+    if (challenge.imageAltText) clean.imageAltText = challenge.imageAltText;
+    if (Array.isArray(challenge.options_en)) clean.options_en = challenge.options_en.slice();
+    if (Array.isArray(challenge.optionImageUrls)) clean.optionImageUrls = challenge.optionImageUrls.slice();
+    if (Array.isArray(challenge.optionImageAltTexts)) clean.optionImageAltTexts = challenge.optionImageAltTexts.slice();
+    return clean;
+  }
+
+  // Strip unreleased questions, answer keys, explanations, GM undo history, and
+  // per-learner uid evidence before writing conceptQuest to the shared session doc.
+  function publicQuestState(quest) {
+    if (!quest || typeof quest !== 'object') return quest;
+    var turnKey = getTurnKey(quest);
+    var out = Object.assign({}, quest, { turnKey: turnKey });
+    delete out.assessmentBank;
+    delete out.gmUndo;
+    delete out.gmHistory;
+    if (Array.isArray(quest.rooms)) {
+      out.rooms = quest.rooms.map(function(room) {
+        if (!room || typeof room !== 'object') return room;
+        var cleanRoom = Object.assign({}, room);
+        delete cleanRoom.challenges;
+        if (room.id === quest.currentRoomId && room.challenge) {
+          cleanRoom.challenge = sanitizePublicChallenge(room.challenge);
+        } else {
+          delete cleanRoom.challenge;
+        }
+        return cleanRoom;
+      });
+    }
+    if (quest.learningTotals && typeof quest.learningTotals === 'object') {
+      out.learningTotals = Object.assign({}, quest.learningTotals, { learners: {} });
+    }
+    if (Array.isArray(quest.roundHistory)) {
+      out.roundHistory = quest.roundHistory.map(function(round) {
+        if (!round || typeof round !== 'object') return round;
+        var cleanRound = Object.assign({}, round);
+        delete cleanRound.learnerEvidence;
+        delete cleanRound.itemEvidenceKey;
+        return cleanRound;
+      });
+    }
+    return out;
+  }
 
   // New class sessions keep the whole supported assessment independently of
   // the map. Old sessions retain their room-local rotation; solo owns its own
@@ -902,7 +958,8 @@
     adjustEncounter: function() { return sealResult(adjustEncounter.apply(null, arguments)); },
     dismissEvent: dismissEvent,
     createDebrief: createDebrief,
-    coverage: coverage
+    coverage: coverage,
+    publicQuestState: publicQuestState
   };
 });
 
@@ -1804,6 +1861,12 @@ const ConceptQuestSoloGMHelpers = (() => {
     nextState
   };
 })();
+function _cqGmAiUsable(fn) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+}
 function ConceptQuestSoloGM({
   quest,
   generatedContent,
@@ -1830,7 +1893,7 @@ function ConceptQuestSoloGM({
   };
   const ctx = helpers.context(quest, generatedContent, inputText);
   const current = helpers.sanitizeState(gmState, ctx.scope);
-  const hasProvider = typeof callGemini === 'function';
+  const hasProvider = _cqGmAiUsable(callGemini);
   const aiEnabled = enabled !== false && hasProvider;
   const [busy, setBusy] = React.useState(false);
   const [failed, setFailed] = React.useState(false);
@@ -2608,6 +2671,12 @@ function ConceptQuestTargetedPractice({
     })
   }, tr('solo_targeted_close', 'Close practice')));
 }
+function _cqAiUsable(fn) {
+  try {
+    if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn);
+  } catch (_) {}
+  return typeof fn === 'function' && !fn._alloQrBlocked && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true));
+}
 function ConceptQuestSolo({
   generatedContent,
   inputText = '',
@@ -2643,9 +2712,10 @@ function ConceptQuestSolo({
   };
   const sourceSignature = JSON.stringify([userId, context.appId, generatedContent]);
   const items = React.useMemo(() => solo.normalizeItems(generatedContent), [sourceSignature]);
+  const canUseAi = _cqAiUsable(callGemini);
   const [run, setRun] = React.useState(null);
   const [setupRole, setSetupRole] = React.useState('analyst');
-  const [setupAi, setSetupAi] = React.useState(typeof callGemini === 'function');
+  const [setupAi, setSetupAi] = React.useState(canUseAi);
   const [saved, setSaved] = React.useState({
     status: 'loading'
   });
@@ -3012,12 +3082,12 @@ function ConceptQuestSolo({
     className: "flex min-h-11 items-center gap-3 rounded-xl border border-indigo-200 bg-white p-3 font-bold"
   }, /*#__PURE__*/React.createElement("input", {
     type: "checkbox",
-    checked: setupAi,
+    checked: setupAi && canUseAi,
     onChange: event => setSetupAi(event.target.checked),
-    disabled: typeof callGemini !== 'function'
+    disabled: !canUseAi
   }), tr('solo_enable_ai', 'Use AI as the game master')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-600"
-  }, typeof callGemini === 'function' ? tr('solo_ai_setup_help', 'The AI narrates the adventure and responds to your investigations, conversations, and explanations using lesson context. Game rules and scores stay in the engine.') : tr('solo_scripted_setup_help', 'A scripted guide is available now. The adventure remains playable without an AI connection.')), /*#__PURE__*/React.createElement("p", {
+  }, canUseAi ? tr('solo_ai_setup_help', 'The AI narrates the adventure and responds to your investigations, conversations, and explanations using lesson context. Game rules and scores stay in the engine.') : tr('solo_scripted_setup_help', 'A scripted guide is available now. The adventure remains playable without an AI connection.')), /*#__PURE__*/React.createElement("p", {
     className: "text-sm text-slate-700"
   }, tr('solo_rules', 'Choose an ability and respond to each encounter. Correct answers power your ability. Review written answers against the guide. Explore every assessment item before completing the final boss.')), /*#__PURE__*/React.createElement("button", {
     type: "button",
@@ -3042,15 +3112,15 @@ function ConceptQuestSolo({
     quest: quest,
     generatedContent: generatedContent,
     inputText: inputText,
-    callGemini: callGemini,
+    callGemini: canUseAi ? callGemini : null,
     t: t,
     gmState: active.gmState,
     onChange: gmState => updateRun({
       gmState
     }),
-    enabled: active.aiEnabled,
+    enabled: active.aiEnabled && canUseAi,
     onEnabledChange: aiEnabled => updateRun({
-      aiEnabled
+      aiEnabled: aiEnabled && canUseAi
     })
   }), !confirmation && active.recapOpen && quest.lastRound && /*#__PURE__*/React.createElement("section", {
     className: "rounded-xl border-2 border-cyan-300 bg-cyan-50 p-4",

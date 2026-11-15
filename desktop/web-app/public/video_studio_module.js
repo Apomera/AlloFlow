@@ -3283,7 +3283,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
     try {
       if (!ev || !ev.data || typeof ev.data.type !== 'string') return;
       if (!vsTakeStore.token || ev.data.bridge !== vsTakeStore.token) return;
-      if (ev.origin && ev.origin !== STUDIO_ORIGIN) return;
+      if (!ev.origin || (ev.origin && ev.origin !== STUDIO_ORIGIN)) return;
+      if (!ev.source || (typeof window !== 'undefined' && ev.source === window)) return;
       if (vsTakeStore.studioWin && !vsTakeStore.studioWin.closed && ev.source !== vsTakeStore.studioWin) return;
       if ((!vsTakeStore.studioWin || vsTakeStore.studioWin.closed) && ev.source && typeof ev.source.postMessage === 'function') {
         vsTakeStore.studioWin = ev.source;
@@ -3370,7 +3371,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (!ev || !ev.data || typeof ev.data.type !== 'string') return;
       if (VS_DEMO_BRIDGE_TYPES.indexOf(ev.data.type) < 0) return;
       if (!vsTakeStore.token || ev.data.bridge !== vsTakeStore.token) return;
-      if (ev.origin && ev.origin !== STUDIO_ORIGIN) return;
+      if (!ev.origin || (ev.origin && ev.origin !== STUDIO_ORIGIN)) return;
+      if (!ev.source || (typeof window !== 'undefined' && ev.source === window)) return;
       if (vsTakeStore.studioWin && !vsTakeStore.studioWin.closed && ev.source !== vsTakeStore.studioWin) return;
       // Aliases so the handler bodies below read exactly as they did inside the
       // component — they were moved verbatim, only re-indented.
@@ -3379,6 +3381,12 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var demoPlanRef = vsDemoPlanRef;
       var postToStudio = vsPostToStudio;
       var studioWinRef = { current: (ev.source && typeof ev.source.postMessage === 'function') ? ev.source : vsTakeStore.studioWin };
+
+      if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) &&
+          (ev.data.type === 'allostudio-demoscript-request' || ev.data.type === 'allostudio-demoaudit-request')) {
+        postToStudio(studioWinRef.current, { type: ev.data.type.replace(/-request$/, '-response'), id: ev.data.id, error: 'ai-unavailable' });
+        return;
+      }
 
       if (ev.data.type === 'allostudio-closed') {
         // Demo half of the popup-closed teardown. The component keeps the
@@ -3651,8 +3659,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
                   if (!ev2 || !ev2.data || ev2.data.type !== 'allostudio-demodecision' || ev2.data.token !== token) return;
                   // Same trust boundary as vsDemoBridgeReceiver: right origin,
                   // right window, right bridge token — plus the one-shot token.
-                  if (ev2.origin && ev2.origin !== STUDIO_ORIGIN) return;
-                  if (vsTakeStore.token && ev2.data.bridge !== vsTakeStore.token) return;
+                  if (!ev2.origin || (ev2.origin && ev2.origin !== STUDIO_ORIGIN)) return;
+                  if (!vsTakeStore.token || ev2.data.bridge !== vsTakeStore.token) return;
                   if (vsTakeStore.studioWin && !vsTakeStore.studioWin.closed && ev2.source !== vsTakeStore.studioWin) return;
                   finish(String(ev2.data.choice || 'stop'));
                 }
@@ -3920,6 +3928,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
   function vsIsKnownBridgeWindow(source) {
     // Reachable from the no-React helper surface, where the take store below
     // never gets built. No store means no handles, which is the same answer.
+    if (!source || (typeof window !== 'undefined' && source === window) || source.closed === true) return false;
     var store = (typeof vsTakeStore !== 'undefined' && vsTakeStore) ? vsTakeStore : null;
     if (!store) return true;
     var known = [store.studioWin, store.coachWin].filter(function (w) { return w && !w.closed; });
@@ -3932,7 +3941,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (!ev || !ev.data || typeof ev.data.type !== 'string') return;
       if (VS_AI_BRIDGE_TYPES.indexOf(ev.data.type) < 0) return;
       if (!vsTakeStore.token || ev.data.bridge !== vsTakeStore.token) return;
-      if (ev.origin && ev.origin !== STUDIO_ORIGIN) return;
+      if (!ev.origin || (ev.origin && ev.origin !== STUDIO_ORIGIN)) return;
       if (!vsIsKnownBridgeWindow(ev.source)) return;
       // Aliases so the handler bodies below read as they did in the component.
       var propsRef = vsDemoHost;
@@ -3940,6 +3949,17 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       var addToast = vsHostToast;
       var T = vsHostT;
       var studioWinRef = { current: (ev.source && typeof ev.source.postMessage === 'function') ? ev.source : vsTakeStore.studioWin };
+
+      if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true) &&
+          ev.data.type !== 'allostudio-coach-overlay' && ev.data.type !== 'allostudio-ai-cancel' &&
+          ev.data.type !== 'allostudio-voices-request' && ev.data.type !== 'allostudio-kokoro-prepare-request' &&
+          ev.data.type !== 'allostudio-resource-cues-request' && ev.data.type !== 'allostudio-transcript' &&
+          ev.data.type !== 'allostudio-tts-request') {
+        if (/-request$/.test(ev.data.type)) {
+          postToStudio(studioWinRef.current, { type: ev.data.type.replace(/-request$/, '-response'), id: ev.data.id, error: 'ai-unavailable' });
+        }
+        return;
+      }
 
       if (ev.data.type === 'allostudio-coach-overlay') {
         // Optional desktop-only presentation. The external coach cannot call
@@ -4512,7 +4532,7 @@ function vsPcmToWav(pcmBytes, sampleRate) {
           vsAiForgetRequest(treq.id);
           postToStudio(tReplyTo, Object.assign({ type: 'allostudio-tts-response', id: treq.id }, payload));
         };
-        var ttsFn = (typeof window !== 'undefined') ? window.fetchTTSBytes : null;
+        var ttsFn = (typeof window !== 'undefined' && window.__alloStudentAiDisabled !== true && window.__alloAiSecretsLocked !== true) ? window.fetchTTSBytes : null;
         var ttsText = String(treq.text || '').slice(0, 600);
         var ttsLang = treq.language || 'English';
         // A Kokoro voice cannot pronounce another language: like callTTS, speak that line
@@ -4780,8 +4800,8 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       function onMsg(ev) {
         if (!ev || !ev.data || typeof ev.data.type !== 'string') return;
         if (!studioWinRef.current || ev.source !== studioWinRef.current) return;
-        if (ev.origin && ev.origin !== STUDIO_ORIGIN) return;
-        if (bridgeTokenRef.current && ev.data.bridge !== bridgeTokenRef.current) return;
+        if (!ev.origin || (ev.origin && ev.origin !== STUDIO_ORIGIN)) return;
+        if (!bridgeTokenRef.current || ev.data.bridge !== bridgeTokenRef.current) return;
         if (ev.data.type === 'allostudio-ready') {
           setStudioState('open');
           announce(T('video_studio.ready', 'Video Studio window is ready.'));

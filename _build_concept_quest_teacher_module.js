@@ -19,6 +19,9 @@ const moduleSource = `/** Concept Quest teacher co-GM controls. Generated from c
   var _firebase = window.__alloFirebase || {};
   var db = _shared.db;
   var doc = _firebase.doc || function() { return {}; };
+  var setDoc = _firebase.setDoc;
+  var getDoc = _firebase.getDoc;
+  var onSnapshot = _firebase.onSnapshot;
   var updateDoc = _firebase.updateDoc || function() { return Promise.resolve(); };
   var warnLog = _shared.warnLog || function() { console.warn.apply(console, arguments); };
   ${result.code}

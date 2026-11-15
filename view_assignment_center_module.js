@@ -115,7 +115,8 @@ function AssignmentCenterModal({
   onCreateLink = assignmentCenterNoop,
   onFilterChange = assignmentCenterNoop,
   onRefresh = assignmentCenterNoop,
-  onExportCsv = assignmentCenterNoop
+  onExportCsv = assignmentCenterNoop,
+  onOpenSubmissionInbox = null
 }) {
   const dialogRef = React.useRef(null);
   const backdropPressRef = React.useRef(false);
@@ -129,7 +130,8 @@ function AssignmentCenterModal({
   const awaitingCount = safeRows.reduce((sum, row) => sum + Math.max(0, Number(row && row.pendingCount) || 0), 0);
   const responseCount = safeRows.reduce((sum, row) => sum + Math.max(0, Number(row && row.participantCount) || 0), 0);
   const closedCount = safeRows.filter(row => row && row.lifecycle !== 'active').length;
-  const createDisabled = activityType === 'survey' && (!safeSurveyItems.some(item => String(item && item.text || '').trim()) || !activityIdentityMode || !surveyHostingAvailable);
+  const hasPollOptionLines = String(activityOptionsText || '').split(/\r?\n/).some(line => line.trim());
+  const createDisabled = activityType === 'survey' && (!safeSurveyItems.some(item => String(item && item.text || '').trim()) || !activityIdentityMode || !surveyHostingAvailable) || (activityType === 'availability' || activityType === 'signup') && (!hasPollOptionLines || !activityIdentityMode);
   const tx = (key, fallback, params) => assignmentCenterText(t, key, fallback, params);
   const handleActivityTypeChange = event => {
     const nextType = event.target.value;
@@ -257,7 +259,11 @@ function AssignmentCenterModal({
     rows: 6,
     placeholder: tx('share_collect.options_placeholder', 'Tue Mar 4, 3:15pm\nWed Mar 5, 3:15pm\nThu Mar 6, 3:15pm'),
     className: "mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
-  })), /*#__PURE__*/React.createElement("p", {
+  })), !hasPollOptionLines && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    "aria-live": "polite",
+    className: "mt-1 text-[10px] font-bold text-amber-700"
+  }, tx('share_collect.options_required_note', 'Enter at least one option line before creating the link.')), /*#__PURE__*/React.createElement("p", {
     className: "mt-1 text-[10px] leading-relaxed text-slate-600"
   }, tx('share_collect.options_note', 'Write times however you say them. AlloFlow does not convert time zones, so put the zone in the label if people are in more than one.'), activityType === 'signup' && tx('share_collect.signup_multiplier_note', ' Add "x 2" at the end of a line to give that slot two places.')), /*#__PURE__*/React.createElement("label", {
     className: "mt-3 block text-[11px] font-black text-slate-700"
@@ -541,7 +547,12 @@ function AssignmentCenterModal({
     onClick: onExportCsv,
     disabled: !safeRows.length,
     className: "min-h-9 rounded-lg border border-indigo-300 bg-white px-3 text-xs font-black text-indigo-900 disabled:opacity-60"
-  }, tx('share_collect.export_csv', 'Export aggregate CSV')))), showHostedMutationUpgradeNotice && /*#__PURE__*/React.createElement("p", {
+  }, tx('share_collect.export_csv', 'Export aggregate CSV')), typeof onOpenSubmissionInbox === 'function' && /*#__PURE__*/React.createElement("button", {
+    type: "button",
+    "data-assignment-open-inbox": "",
+    onClick: onOpenSubmissionInbox,
+    className: "min-h-9 rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-xs font-black text-emerald-900 hover:bg-emerald-100"
+  }, tx('share_collect.open_submission_inbox', 'Open Submission Inbox')))), showHostedMutationUpgradeNotice && /*#__PURE__*/React.createElement("p", {
     className: "mt-3 rounded-xl border border-amber-200 bg-amber-50 p-3 text-xs font-bold text-amber-900"
   }, tx('share_collect.mailbox_v12_note', 'Class Mailbox v12 is required only for deadline changes and fresh copies. Existing assignments and status viewing still work.')), /*#__PURE__*/React.createElement("div", {
     className: "mt-4 space-y-3"

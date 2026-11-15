@@ -113,6 +113,7 @@ function AssignmentCenterModal({
   onFilterChange = assignmentCenterNoop,
   onRefresh = assignmentCenterNoop,
   onExportCsv = assignmentCenterNoop,
+  onOpenSubmissionInbox = null,
 }) {
   const dialogRef = React.useRef(null);
   const backdropPressRef = React.useRef(false);
@@ -128,11 +129,17 @@ function AssignmentCenterModal({
   const awaitingCount = safeRows.reduce((sum, row) => sum + Math.max(0, Number(row && row.pendingCount) || 0), 0);
   const responseCount = safeRows.reduce((sum, row) => sum + Math.max(0, Number(row && row.participantCount) || 0), 0);
   const closedCount = safeRows.filter(row => row && row.lifecycle !== 'active').length;
-  const createDisabled = activityType === 'survey' && (
+  const hasPollOptionLines = String(activityOptionsText || '')
+    .split(/\r?\n/)
+    .some(line => line.trim());
+  const createDisabled = (activityType === 'survey' && (
     !safeSurveyItems.some(item => String((item && item.text) || '').trim())
     || !activityIdentityMode
     || !surveyHostingAvailable
-  );
+  )) || ((activityType === 'availability' || activityType === 'signup') && (
+    !hasPollOptionLines
+    || !activityIdentityMode
+  ));
   const tx = (key, fallback, params) => assignmentCenterText(t, key, fallback, params);
 
   const handleActivityTypeChange = event => {
@@ -276,6 +283,11 @@ function AssignmentCenterModal({
                         className="mt-1 w-full rounded-md border border-sky-300 bg-white px-2 py-2 text-sm font-semibold text-slate-800"
                       />
                     </label>
+                    {!hasPollOptionLines && (
+                      <p role="status" aria-live="polite" className="mt-1 text-[10px] font-bold text-amber-700">
+                        {tx('share_collect.options_required_note', 'Enter at least one option line before creating the link.')}
+                      </p>
+                    )}
                     <p className="mt-1 text-[10px] leading-relaxed text-slate-600">
                       {tx('share_collect.options_note', 'Write times however you say them. AlloFlow does not convert time zones, so put the zone in the label if people are in more than one.')}
                       {activityType === 'signup' && tx('share_collect.signup_multiplier_note', ' Add "x 2" at the end of a line to give that slot two places.')}
@@ -569,6 +581,16 @@ function AssignmentCenterModal({
             >
               {tx('share_collect.export_csv', 'Export aggregate CSV')}
             </button>
+            {typeof onOpenSubmissionInbox === 'function' && (
+              <button
+                type="button"
+                data-assignment-open-inbox=""
+                onClick={onOpenSubmissionInbox}
+                className="min-h-9 rounded-lg border border-emerald-300 bg-emerald-50 px-3 text-xs font-black text-emerald-900 hover:bg-emerald-100"
+              >
+                {tx('share_collect.open_submission_inbox', 'Open Submission Inbox')}
+              </button>
+            )}
           </div>
         </div>
 

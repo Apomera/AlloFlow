@@ -347,11 +347,11 @@ window.StemLab = window.StemLab || {
     { tier: 1, q: 'What should you keep for a return, warranty, or proof you paid?', a: 'receipt', h: 'It records what you bought and when.' },
     { tier: 1, q: 'What extra time do you add to a trip in case walking, traffic, or transit takes longer?', a: 'buffer', h: 'It gives your plan breathing room.' },
     { tier: 1, q: 'What short document lists your skills, experience, and contact information for a job?', a: 'resume', h: 'It helps employers understand what you can do.' },
-    { tier: 1, q: 'What short document summarizes skills, experience, and education for a job?', a: 'resume', h: 'It is usually shared with applications or interviews.' },
+    { tier: 1, q: 'What annual tax form from an employer reports wages earned and taxes withheld?', a: 'w-2', h: 'Employers send this form in January for tax filing.' },
     { tier: 1, q: 'What do you collect to support a resume claim: proof or guesses?', a: 'proof', h: 'Examples make claims easier to trust.' },
     { tier: 1, q: 'What practice conversation helps you prepare for job questions?', a: 'mock interview', h: 'It is a rehearsal before the real interview.' },
     { tier: 1, q: 'What should you do before replying when a message makes you upset?', a: 'pause', h: 'A short pause can prevent a bigger conflict.' },
-    { tier: 1, q: 'What do you call extra time added before a deadline or appointment?', a: 'buffer', h: 'It helps when something takes longer than expected.' },
+    { tier: 1, q: 'What written list of steps helps you finish a routine without forgetting anything?', a: 'checklist', h: 'Checking off each item reduces memory load.' },
     { tier: 1, q: 'Why should you empty pockets before washing clothes?', a: 'damage', h: 'Pens, coins, and tissues can damage clothing or the washer.' },
     { tier: 1, q: 'What is a credit score used for?', a: 'borrowing', h: 'Lenders check this before giving you a loan.' },
     { tier: 2, q: 'What is the #1 factor in your FICO credit score?', a: 'payment history', h: 'It accounts for 35% of your score.' },
@@ -593,6 +593,36 @@ window.StemLab = window.StemLab || {
       '3-5': 'Laundry uses science: water, detergent, motion, and time work together. Sorting helps colors and fabrics stay safe. Too much detergent can leave soap behind, and the dryer lint trap must be cleaned so air can move.',
       '6-8': 'Laundry is applied chemistry and materials science. Surfactants loosen oily soil, enzymes help break down protein or starch stains, agitation moves soil out of fibers, and water temperature changes cleaning power and fabric risk. The best setting depends on fabric, soil, color, and care labels.',
       '9-12': 'Advanced laundry science balances soil chemistry, fiber structure, mechanical action, thermal energy, and rinse efficiency. Cold water can clean many everyday loads with modern detergents, but sanitation, heavy oil, protein stains, dyes, wool, elastane, and dryer heat all require different decisions. Misconceptions like "more detergent is always cleaner" usually fail because residue and redeposition increase.'
+    }},
+    { title: 'Structured Decision-Making', icon: '\uD83E\uDDE0', tryIt: 'decision', content: {
+      'K-2': 'Good choices start by listing what matters most, looking at two options side by side, and picking the one that keeps you safe and helps with your goal.',
+      '3-5': 'A decision chart lets you compare choices fairly using the same rules, such as cost, time, safety, and what you give up when you choose one option.',
+      '6-8': 'Weighted decision matrices turn big choices into clear math: score each option on factors that matter, multiply by factor weights, and notice opportunity cost \u2014 what the next-best option offered.',
+      '9-12': 'Structured decision analysis combines multi-criteria utility scoring, opportunity cost, and sensitivity testing: check whether small changes in weights flip your top choice before committing money or time.'
+    }},
+    { title: 'Contracts & Fine Print Math', icon: '\uD83D\uDCDD', tryIt: 'contract', content: {
+      'K-2': 'Promises with rules should be read slowly with a trusted grown-up so you know what it costs now, later, and how to stop if you need to.',
+      '3-5': 'Contracts explain rules for phones, apartments, or memberships. Always add hidden fees, deposits, and cancel rules before deciding if a deal is fair.',
+      '6-8': 'A "$45 plan" can cost twice as much once device payments, activation fees, taxes, auto-renewal increases, and early termination penalties are included in the real monthly total.',
+      '9-12': 'Contract literacy models total multi-year cashflow: upfront move-in or activation cash, non-refundable deposit deductions, compounded renewal increases, and buyout versus remaining-term break-even points.'
+    }},
+    { title: 'Everyday Applied Science', icon: '\uD83D\uDD2C', tryIt: 'science', content: {
+      'K-2': 'Science powers things at home! Electricity flows through safe outlets, warm coats keep heat in, and handwashing removes tiny germs we cannot see.',
+      '3-5': 'Applied home science connects physics and safety: electrical circuits trip breakers when overloaded, GFCI outlets protect near water, and insulation slows heat moving out.',
+      '6-8': 'Household circuits follow P = V \u00D7 I: on a 120V/15A breaker, max load is 1,800 watts, so two 1,500W appliances trip the circuit. Heat transfer and public-health math explain comfort and disease spread.',
+      '9-12': 'Everyday physics and epidemiology turn rules into equations: circuit branch capacity (15A vs 20A at 120V), convective/conductive heat flow, and herd immunity thresholds (1 \u2212 1/R\u2080) let you verify claims quantitatively.'
+    }},
+    { title: 'Vehicle Physics & Maintenance', icon: '\uD83D\uDE97', tryIt: 'carcare', content: {
+      'K-2': 'Cars need clean oil, healthy tires, seatbelts, and plenty of space to stop safely \u2014 especially when roads are wet or icy.',
+      '3-5': 'Regular checks keep a vehicle safe: check tire air pressure when tires are cold, keep tread deep enough to grip rain, and save for maintenance before breakdowns happen.',
+      '6-8': 'Braking distance grows with speed squared (v\u00B2), not linearly! Doubling speed quadruples kinetic energy, while rain or ice cuts friction (\u03BC), and cold weather lowers tire PSI via Gay-Lussac\u2019s gas law.',
+      '9-12': 'Vehicle safety blends kinematics (d = v\u00B7t_reaction + v\u00B2/(2g\u03BC)), gas thermometry (P\u2081/T\u2081 = P\u2082/T\u2082 in Kelvin), oil viscosity ratings (5W-30), and sinking-fund reserves to budget predictable maintenance.'
+    }},
+    { title: 'Home Envelope & HVAC Systems', icon: '\uD83C\uDFE0', tryIt: 'homesys', content: {
+      'K-2': 'Homes stay comfortable by keeping warm air in during winter, cool air in during summer, and changing dusty air filters so people breathe cleanly.',
+      '3-5': 'Insulation (R-value) and weatherstripping keep rooms comfortable and lower power bills. Air filters catch dust and pollen, while heat pumps move heat efficiently.',
+      '6-8': 'Conductive heat loss follows Q = (A \u00D7 \u0394T) / R: doubling insulation R-value halves conduction, while sealing air leaks stops convective drafts. Heat pumps achieve COP 3.0+ by moving existing heat rather than burning fuel.',
+      '9-12': 'Building performance combines envelope resistance (Q = A\u00B7\u0394T/R), airtightness, MERV particulate filtration, and thermodynamic COP (Heat Moved / Electric Input) to estimate daily kWh consumption and utility costs.'
     }}
   ];
 
@@ -1798,6 +1828,1549 @@ window.StemLab = window.StemLab || {
   }
 
   // ═══════════════════════════════════════════════════════
+  // UDL, Domains, Zero-PII & Pure STEAM Simulation Helpers
+  // ═══════════════════════════════════════════════════════
+
+  var SUBTOOL_DOMAINS = [
+    { id: 'all', label: 'All 33', icon: '\uD83E\uDDED' },
+    { id: 'start', label: 'Start & Practice', icon: '\uD83C\uDFAF', ids: ['overview', 'challenge', 'battle', 'learn'] },
+    { id: 'money', label: 'Money & Decisions', icon: '\uD83D\uDCB0', ids: ['paycheck', 'budget', 'credit', 'insurance', 'contract', 'data', 'decision'] },
+    { id: 'career', label: 'Career & Advocacy', icon: '\uD83D\uDCBC', ids: ['workreadiness', 'resumebuilder', 'prooflocker', 'interviewstudio', 'records', 'communication', 'timemanagement', 'appointments'] },
+    { id: 'health', label: 'Health & Body', icon: '\uD83E\uDE7A', ids: ['dental', 'bodycare', 'sleep', 'meds'] },
+    { id: 'home', label: 'Home, Transit & Tech', icon: '\uD83C\uDFE0', ids: ['homesafety', 'digitalsafety', 'science', 'carcare', 'homerepair', 'homesys', 'transport'] },
+    { id: 'food', label: 'Food & Kitchen', icon: '\uD83C\uDF73', ids: ['foodconfidence', 'cooking', 'laundry'] }
+  ];
+
+  var SAM_RIVERA_PERSONA = {
+    name: 'Sam Rivera',
+    role: 'Community Library / Cafe Helper',
+    phone: '(555) 014-8200',
+    email: 'sam.rivera@example.test',
+    proofType: 'Work sample',
+    proofTitle: 'Weekend Book Cart & Supply Tracker',
+    proofSkill: 'Inventory checks, customer greeting, checklist accuracy',
+    proofEvidence: 'Organized 3 shelf carts per shift and logged restock counts with zero missed items (fictional sample by Sam Rivera).',
+    proofShare: 'Limited — Safe portfolio summary (no home address)',
+    resumeAction: 'Organized',
+    resumeContext: 'weekly library cart and supply checklist',
+    resumeSkill: 'checklist verification and teammate communication',
+    resumeResult: 'finished setup 10 minutes ahead of opening with zero mix-ups',
+    appointmentScript: 'Hi, I am Sam Rivera (practice profile). Please speak clearly and give me a written summary of my next steps before I leave.',
+    recordPlan: 'Sam Rivera (practice profile): Store state ID copy and W-2 in a locked home folder and ask before signing optional release boxes.',
+    workPlan: 'Sam Rivera (practice profile): Confirm Friday shift hours on the posted schedule and verify 0.5-hour meal break on my paystub.',
+    communicationPlan: 'Sam Rivera (practice profile): Use an I-statement ("I want to make sure I get the closing steps right — could we check the written list?").',
+    homePlan: 'Sam Rivera (practice profile): Test bedroom and hallway alarms on the 1st of each month and meet at the corner oak tree landmark outside.',
+    digitalPlan: 'Sam Rivera (practice profile): Switch email login to a 4-word passphrase plus authenticator-app 2FA and store backup codes offline.',
+    resumePlan: 'Sam Rivera (practice profile): Tailor 2 checklist-verified bullets for the community library assistant posting and omit street address.',
+    proofPlan: 'Sam Rivera (practice profile): Share read-only project photos during the interview while keeping supervisor phone numbers in private notes.',
+    interviewReflection: 'Sam Rivera (practice profile): Pausing 2 seconds before answering helped me share the 10-minute setup result clearly.',
+    interviewFollowUp: 'Hello Hiring Team, thank you for speaking with me today about the Library Assistant role. I enjoyed discussing checklist organization and look forward to next steps. Best, Sam Rivera (practice profile)'
+  };
+
+  var AAC_QUICK_SCRIPTS = {
+    appointments: [
+      'Please speak slowly and write down my next steps.',
+      'Can a support person join me during this visit?',
+      'Please explain that medical or form word in plain language.',
+      'Can I have a written copy of this schedule and cost before leaving?'
+    ],
+    transport: [
+      'Excuse me, does this route stop at the main transfer hub?',
+      'I need a few extra seconds to board safely.',
+      'Could you confirm the platform, gate, or stop number?',
+      'My planned trip was delayed. Where is the staffed help desk?'
+    ],
+    communication: [
+      'I need a two-minute pause so I can gather my thoughts.',
+      'When plans change at the last minute, it helps if we check the written list.',
+      'Can you show me an example once before I do it myself?',
+      'Let us check with a supervisor or trusted support person.'
+    ]
+  };
+
+  var SCAM_INSPECTOR_ITEMS = [
+    {
+      id: 'bank-phish',
+      title: 'Urgent Account Lock Text',
+      sender: 'alerts@mybank-verify-login.co',
+      headline: 'URGENT: Card frozen in 15 min! Tap link below to avoid $250 hold.',
+      link: 'https://bit.ly/3xVerifyAcct9',
+      tokens: [
+        'Lookalike sender domain: mybank-verify-login.co',
+        'Artificial 15-minute panic deadline',
+        'Shortened URL hides true web destination',
+        'Official banks do not unlock fraud holds via random text links'
+      ],
+      verdict: 'scam',
+      explain: 'Lookalike domains + extreme urgency + hidden URLs are phishing traits. Open the official app or dial the number on your physical card instead.'
+    },
+    {
+      id: 'sub-dark',
+      title: 'Free Trial with Pre-Checked Add-On',
+      sender: 'billing@streamclub.example',
+      headline: 'Claim FREE 7-day pass! ($49/mo VIP Shield pre-selected at bottom)',
+      link: 'https://streamclub.example/checkout',
+      tokens: [
+        'Pre-checked paid protection add-on in small font',
+        'Decline button styled as faint grey text link',
+        'Auto-renews at $49/mo unless canceled 48h prior',
+        'Countdown timer resets when you reload the page'
+      ],
+      verdict: 'dark',
+      explain: 'Pre-checked add-ons and fake countdown timers are dark patterns designed to nudge accidental recurring charges. Always uncheck extras and read cancellation terms.'
+    },
+    {
+      id: 'clinic-safe',
+      title: 'Expected Appointment Reminder',
+      sender: 'noreply@oakviewclinic.org',
+      headline: 'Reminder: Dental visit tomorrow at 2:30 PM. Call front desk to reschedule.',
+      link: 'No clickable password link requested',
+      tokens: [
+        'Matches a real appointment you scheduled',
+        'Asks for zero passwords, SSN, codes, or payments',
+        'Tells you to call the verified front desk if dates change',
+        'Zero panic or secrecy pressure'
+      ],
+      verdict: 'safe',
+      explain: 'Notice what is missing: no urgent panic, no shortened login URL, and no request for passwords, codes, or payment.'
+    },
+    {
+      id: 'otp-hijack',
+      title: 'Verify Your Hire with a 6-Digit Code',
+      sender: 'recruiter-hire99@gmail.com',
+      headline: 'Before onboarding, text me the 6-digit code just sent to your phone.',
+      link: 'No official HR portal provided',
+      tokens: [
+        'Personal free email for a supposed HR department',
+        'Asks you to hand over a 2-factor verification code',
+        '2FA codes authenticate YOUR device/account to an attacker',
+        'Skips verifiable interview or official portal steps'
+      ],
+      verdict: 'scam',
+      explain: 'Never share a 6-digit SMS or authenticator code with anyone. Attackers trigger password resets and ask you to read back the code.'
+    }
+  ];
+
+  var HOMESYS_QUIZ = [
+    {
+      id: 'hs-rvalue',
+      q: 'In Q = (A * dT) / R, doubling attic insulation from R-15 to R-30 (same area and indoor/outdoor temperature difference) does what to conductive heat flow?',
+      choices: ['Doubles heat loss', 'Cuts conductive heat loss in half', 'Leaves heat loss unchanged', 'Creates positive energy'],
+      answerIdx: 1,
+      explain: 'R-value sits in the denominator: Q = A * dT / R, so 2x R cuts conductive heat flow by 50%.'
+    },
+    {
+      id: 'hs-cop',
+      q: 'If a cold-climate heat pump runs at COP 3.0 vs electric baseboard resistance heat at COP 1.0 for the same heating load, roughly how much electricity does the heat pump use?',
+      choices: ['Three times as much electricity', 'The exact same electricity', 'About one-third as much electricity', 'Zero electricity'],
+      answerIdx: 2,
+      explain: 'COP (Coefficient of Performance) = Heat Moved / Electric Input, so COP 3.0 delivers 3 kWh of heat per 1 kWh of electricity.'
+    },
+    {
+      id: 'hs-airseal',
+      q: 'Why do building engineers pair air sealing with thicker insulation instead of using thick fiberglass batts alone?',
+      choices: ['Fiberglass heats itself', 'Insulation slows conduction while air sealing blocks convective drafts leaking through gaps', 'Air leaks lower indoor humidity to zero', 'Open bypasses raise the effective R-value'],
+      answerIdx: 1,
+      explain: 'Conduction and air leakage (convection/stack effect) are separate pathways — insulation resists conductive flow, while caulk/weatherstripping stops moving air.'
+    }
+  ];
+
+  function detectLifeSkillsPII(text) {
+    var s = String(text || '');
+    var reasons = [];
+    if (/\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/.test(s)) reasons.push('SSN-like 9-digit sequence');
+    var emailMatch = s.match(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g) || [];
+    var realEmails = emailMatch.filter(function(em) { return !/@example\.(test|com|org|net)$/i.test(em); });
+    if (realEmails.length) reasons.push('personal email address');
+    var phoneMatch = s.match(/(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g) || [];
+    var realPhones = phoneMatch.filter(function(ph) {
+      var digits = ph.replace(/\D/g, '');
+      if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
+      return !(digits.slice(0, 3) === '555' && digits.slice(3, 5) === '01');
+    });
+    if (realPhones.length) reasons.push('phone number');
+    if (/\b\d{2,5}\s+[A-Za-z0-9.'-]+\s+(?:St|Street|Ave|Avenue|Rd|Road|Blvd|Boulevard|Ln|Lane|Dr|Drive|Ct|Court|Way)\b/i.test(s)) {
+      reasons.push('street address');
+    }
+    return { hasPII: reasons.length > 0, reasons: reasons };
+  }
+
+  function calcEnvelopeHeatLoss(areaSqFt, deltaTF, rValue, cop, leakagePct) {
+    var area = Math.max(100, Number(areaSqFt) || 1200);
+    var dT = Math.abs(Number(deltaTF) || 0);
+    var rSafe = Math.max(1, Number(rValue) || 13);
+    var copSafe = Math.max(0.5, Number(cop) || 1);
+    var leakFactor = 1 + Math.max(0, Math.min(1.5, (Number(leakagePct) || 0) / 100));
+    var btuConduction = area * dT / rSafe;
+    var btuTotal = btuConduction * leakFactor;
+    var wattsThermal = btuTotal * 0.293071;
+    var wattsElectric = wattsThermal / copSafe;
+    var kwh24 = wattsElectric * 24 / 1000;
+    return {
+      btuHr: Math.round(btuTotal),
+      btuConduction: Math.round(btuConduction),
+      wattsElectric: Math.round(wattsElectric),
+      kwh24: Math.round(kwh24 * 10) / 10
+    };
+  }
+
+  function calcBacterialMultiples(minutes, doublingMin) {
+    var mins = Math.max(0, Number(minutes) || 0);
+    var dbl = Math.max(5, Number(doublingMin) || 20);
+    var generations = mins / dbl;
+    var factor = Math.pow(2, Math.min(20, generations));
+    return {
+      generations: Math.round(generations * 10) / 10,
+      factor: Math.round(factor)
+    };
+  }
+
+  function calcCaffeineRemaining(initialMg, hoursElapsed, halfLifeHours) {
+    var dose = Math.max(0, Number(initialMg) || 0);
+    var elapsed = Math.max(0, Number(hoursElapsed) || 0);
+    var hl = Math.max(1, Number(halfLifeHours) || 5);
+    return Math.round(dose * Math.pow(0.5, elapsed / hl) * 10) / 10;
+  }
+
+  function simulateCardPayoff(balance, aprPct, monthlyPay, maxMonths) {
+    var bal = Math.max(0, Number(balance) || 0);
+    var r = Math.max(0, Number(aprPct) || 0) / 100 / 12;
+    var pay = Math.max(1, Number(monthlyPay) || 0);
+    var cap = Math.max(12, Number(maxMonths) || 120);
+    var totalPaid = 0;
+    var totalInterest = 0;
+    var months = 0;
+    var series = [{ month: 0, balance: Math.round(bal) }];
+    var stalled = false;
+    while (bal > 0.01 && months < cap) {
+      var interest = bal * r;
+      if (pay <= interest && r > 0) {
+        stalled = true;
+      }
+      var principalAndInt = bal + interest;
+      var actualPay = Math.min(principalAndInt, pay);
+      bal = Math.max(0, principalAndInt - actualPay);
+      totalPaid += actualPay;
+      totalInterest += interest;
+      months += 1;
+      if (months % 6 === 0 || bal <= 0.01 || months === cap) {
+        series.push({ month: months, balance: Math.round(bal) });
+      }
+    }
+    return {
+      months: months,
+      totalPaid: Math.round(totalPaid),
+      totalInterest: Math.round(totalInterest),
+      endingBalance: Math.round(bal),
+      neverPaysOff: stalled || (bal > 0.01 && months >= cap),
+      series: series
+    };
+  }
+
+  var MOCK_OTC_COMBO_PRODUCTS = [
+    { id: 'multi_cold_day', label: 'Mock Daytime Multi-Cold', ingredients: { Acetaminophen: 650, Dextromethorphan: 20, Guaifenesin: 400 }, note: 'Combo label packs 3 ingredients in 1 caplet dose.' },
+    { id: 'pain_relief_acet', label: 'Mock Extra-Strength Relief', ingredients: { Acetaminophen: 1000 }, note: 'Single-ingredient pain/fever reliever.' },
+    { id: 'pm_sleep_aid', label: 'Mock PM Night Relief', ingredients: { Acetaminophen: 500, Diphenhydramine: 50 }, note: 'Combines pain reliever + sedating antihistamine.' },
+    { id: 'allergy_antihist', label: 'Mock Allergy Caplets', ingredients: { Diphenhydramine: 50 }, note: 'Same active antihistamine found in many PM blends.' },
+    { id: 'anti_inflam', label: 'Mock Joint & Fever Tabs', ingredients: { Ibuprofen: 400 }, note: 'Different active class (NSAID), check stomach/kidney warnings.' }
+  ];
+
+  var OTC_DAILY_LIMITS = {
+    Acetaminophen: 3000,
+    Ibuprofen: 1200,
+    Diphenhydramine: 150,
+    Dextromethorphan: 120,
+    Guaifenesin: 2400
+  };
+
+  function calcStephanCurvePH(eventsPerDay, baselinePH) {
+    var events = Math.max(1, Math.min(8, Math.round(Number(eventsPerDay) || 4)));
+    var base = (typeof baselinePH === 'number' && isFinite(baselinePH)) ? Math.max(6.2, Math.min(7.4, baselinePH)) : 6.9;
+    var recoveryMinutes = 38;
+    var dropPH = 1.45 + Math.min(0.65, events * 0.08);
+    var minPH = Number(Math.max(4.3, base - dropPH).toFixed(2));
+    var acidMinutesPerDay = Math.min(960, Math.round(events * recoveryMinutes));
+    var deminRisk = acidMinutesPerDay <= 80 ? 'low' : acidMinutesPerDay <= 160 ? 'moderate' : 'high';
+    var spacing = Math.max(25, Math.round(180 / Math.max(1, Math.min(4, Math.ceil(events / 2)))));
+    var series = [];
+    for (var t = 0; t <= 180; t += 10) {
+      var inWindow = t % spacing;
+      var pH = base;
+      if (t >= 10) {
+        var sinceDip = inWindow;
+        if (sinceDip <= 10) {
+          pH = base - (base - minPH) * (sinceDip === 0 ? 0.45 : 1);
+        } else {
+          var recoveryProgress = Math.min(1, 1 - Math.exp(-(sinceDip - 10) / 14));
+          pH = minPH + (base - minPH) * recoveryProgress;
+        }
+      }
+      series.push({ min: t, pH: Number(Math.max(4.2, Math.min(base, pH)).toFixed(2)) });
+    }
+    return {
+      eventsPerDay: events,
+      baselinePH: base,
+      criticalThreshold: 5.5,
+      minPH: minPH,
+      recoveryMinutes: recoveryMinutes,
+      acidMinutesPerDay: acidMinutesPerDay,
+      deminRisk: deminRisk,
+      series: series
+    };
+  }
+
+  function checkActiveIngredientOverlap(selectedIds, dosesPer24h) {
+    var ids = Array.isArray(selectedIds) ? selectedIds : [];
+    var doses = Math.max(1, Math.min(6, Math.round(Number(dosesPer24h) || 2)));
+    var totals = {};
+    var sources = {};
+    ids.forEach(function(id) {
+      var prod = MOCK_OTC_COMBO_PRODUCTS.find(function(p) { return p.id === id; });
+      if (!prod) return;
+      Object.keys(prod.ingredients).forEach(function(ing) {
+        totals[ing] = (totals[ing] || 0) + prod.ingredients[ing] * doses;
+        if (!sources[ing]) sources[ing] = [];
+        if (sources[ing].indexOf(prod.label) === -1) sources[ing].push(prod.label);
+      });
+    });
+    var breakdown = Object.keys(totals).map(function(ing) {
+      var limitMg = OTC_DAILY_LIMITS[ing] || 1000;
+      var totalMg = totals[ing];
+      var src = sources[ing] || [];
+      return {
+        ingredient: ing,
+        totalMg: totalMg,
+        limitMg: limitMg,
+        pctOfCeiling: Math.round((totalMg / limitMg) * 100),
+        sources: src,
+        duplicateRisk: src.length > 1,
+        exceedsMockCeiling: totalMg > limitMg
+      };
+    });
+    var overlaps = breakdown.filter(function(b) { return b.duplicateRisk; }).map(function(b) { return b.ingredient; });
+    var exceeded = breakdown.filter(function(b) { return b.exceedsMockCeiling; }).map(function(b) { return b.ingredient; });
+    return {
+      dosesPer24h: doses,
+      breakdown: breakdown,
+      overlaps: overlaps,
+      exceeded: exceeded,
+      hasRisk: overlaps.length > 0 || exceeded.length > 0
+    };
+  }
+
+  function calcStoppingDistanceFt(speedMph, mu, reactionSec) {
+    var speed = Math.max(5, Math.min(85, Number(speedMph) || 35));
+    var coef = Math.max(0.1, Math.min(1.0, Number(mu) || 0.75));
+    var react = Math.max(0.5, Math.min(3.0, Number(reactionSec) || 1.5));
+    var fps = speed * 5280 / 3600;
+    var reactionFt = fps * react;
+    var brakingFt = (fps * fps) / (2 * 32.174 * coef);
+    var totalFt = reactionFt + brakingFt;
+    return {
+      speedMph: speed,
+      mu: coef,
+      reactionSec: react,
+      reactionFt: Math.round(reactionFt),
+      brakingFt: Math.round(brakingFt),
+      totalFt: Math.round(totalFt),
+      carLengths: Number((totalFt / 15).toFixed(1))
+    };
+  }
+
+  function calcWaterLeakWaste(dripsPerMin, toiletState, ratePer1000Gal) {
+    var drips = Math.max(0, Math.min(300, Number(dripsPerMin) || 0));
+    var toiletGalDay = toiletState === 'running' ? 200 : toiletState === 'silent' ? 30 : 0;
+    var rate = Math.max(1, Math.min(50, Number(ratePer1000Gal) || 12));
+    var dripGalDay = drips * 1440 / 15140;
+    var galPerDay = Number((dripGalDay + toiletGalDay).toFixed(1));
+    var galPerMonth = Math.round(galPerDay * 30);
+    var galPerYear = Math.round(galPerDay * 365);
+    var monthlyCost = Number(((galPerMonth / 1000) * rate).toFixed(2));
+    var annualCost = Number(((galPerYear / 1000) * rate).toFixed(2));
+    return {
+      galPerDay: galPerDay,
+      galPerMonth: galPerMonth,
+      galPerYear: galPerYear,
+      monthlyCost: monthlyCost,
+      annualCost: annualCost
+    };
+  }
+
+  function calcBufferedSchedule(taskMin, stepsCount, cognitiveBufferPct, transitWaitMin) {
+    var base = Math.max(5, Number(taskMin) || 30) + Math.max(0, Math.round(Number(stepsCount) || 0)) * 5;
+    var pct = Math.max(0, Math.min(100, (typeof cognitiveBufferPct === 'number' && isFinite(cognitiveBufferPct)) ? cognitiveBufferPct : 25));
+    var wait = Math.max(0, Number(transitWaitMin) || 0);
+    var bufferMin = Math.round(base * pct / 100);
+    var totalRequiredMin = base + bufferMin + wait;
+    return {
+      baseTaskMin: base,
+      bufferMin: bufferMin,
+      transitWaitMin: wait,
+      totalRequiredMin: totalRequiredMin
+    };
+  }
+
+  function calcTransitBreakEven(singleFare, ridesPerWeek, monthlyPassCost) {
+    var fare = Math.max(0, Number(singleFare) || 0);
+    var ridesWk = Math.max(0, Number(ridesPerWeek) || 0);
+    var passCost = Math.max(0, Number(monthlyPassCost) || 0);
+    var ridesMonth = Math.round(ridesWk * 4.33);
+    var payPerRideMonthly = Number((ridesWk * 4.33 * fare).toFixed(2));
+    var monthlySavingsWithPass = Number((payPerRideMonthly - passCost).toFixed(2));
+    var breakEvenRidesPerMonth = fare > 0 ? Math.ceil(passCost / fare) : 0;
+    return {
+      ridesPerMonth: ridesMonth,
+      payPerRideMonthly: payPerRideMonthly,
+      monthlyPassCost: passCost,
+      monthlySavingsWithPass: monthlySavingsWithPass,
+      breakEvenRidesPerMonth: breakEvenRidesPerMonth,
+      recommended: monthlySavingsWithPass > 0 ? 'pass' : 'per-ride'
+    };
+  }
+
+  var MOCK_ONBOARDING_DOCS = [
+    { id: 'passport', label: 'U.S. Passport / Passport Card', category: 'A', desc: 'Establishes both identity and work authorization alone (List A).' },
+    { id: 'perm_res', label: 'Permanent Resident Card', category: 'A', desc: 'Establishes both identity and work authorization alone (List A).' },
+    { id: 'state_id', label: 'State Driver\'s License / State ID', category: 'B', desc: 'Establishes identity only (List B \u2014 pair with one List C document).' },
+    { id: 'school_id', label: 'School ID with Photograph', category: 'B', desc: 'Establishes identity only (List B \u2014 pair with one List C document).' },
+    { id: 'ssn_card', label: 'Unrestricted Social Security Card', category: 'C', desc: 'Establishes work authorization only (List C \u2014 pair with one List B ID).' },
+    { id: 'birth_cert', label: 'Certified Birth Certificate', category: 'C', desc: 'Establishes work authorization only (List C \u2014 pair with one List B ID).' },
+    { id: 'library_card', label: 'Community Library Card', category: 'none', desc: 'Useful locally, but not an official List A/B/C onboarding verifier.' }
+  ];
+
+  var FIRE_EXTINGUISHER_CLASSES = [
+    { id: 'grease', fuel: 'Cooking Oil / Grease Pan Fire', safeAction: 'Turn off burner heat & slide a metal lid or baking sheet across the pan (Class K extinguisher)', wrongAction: 'Pouring water causes a 1,700x steam flash explosion that throws burning oil across the room.', klass: 'K / Lid Smother' },
+    { id: 'electrical', fuel: 'Overheated Cord / Outlet / Appliance', safeAction: 'Unplug safely or shut off the main breaker if safe; use Class C CO\u2082/dry-chemical extinguisher', wrongAction: 'Spraying water creates an electrical conduction path back toward the person holding the extinguisher.', klass: 'C (De-energize)' },
+    { id: 'paper', fuel: 'Paper / Trash / Wood Ember', safeAction: 'Smother or douse with water or Class A/ABC multipurpose dry-chemical extinguisher', wrongAction: 'Leaving smoldering embers unattended without checking for re-ignition.', klass: 'A / ABC' },
+    { id: 'flammable', fuel: 'Paint Thinner / Solvents / Fuel Spill', safeAction: 'Evacuate and use Class B / ABC foam or dry chemical if small and exit is behind you', wrongAction: 'Spreading liquid fuel with a direct water stream widens the pool fire.', klass: 'B / ABC' }
+  ];
+
+  function sanitizePromptForZeroPII(text) {
+    var src = String(text || '');
+    var pii = detectLifeSkillsPII(src);
+    if (!pii.hasPII) return { sanitizedText: src, hadPII: false, reasons: [] };
+    var out = src
+      .replace(/\b\d{3}[-\s]?\d{2}[-\s]?\d{4}\b/g, '[REDACTED-ID]')
+      .replace(/[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}/g, function(em) {
+        return /@example\.(test|com|org|net)$/i.test(em) ? em : '[REDACTED-EMAIL]';
+      })
+      .replace(/(?:\+?1[-.\s]?)?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}/g, function(ph) {
+        var digits = ph.replace(/\D/g, '');
+        if (digits.length === 11 && digits[0] === '1') digits = digits.slice(1);
+        return (digits.slice(0, 3) === '555' && digits.slice(3, 5) === '01') ? ph : '[REDACTED-PHONE]';
+      })
+      .replace(/\b\d{2,5}\s+[A-Za-z0-9.'-]+\s+(?:St|Street|Ave|Avenue|Rd|Road|Blvd|Boulevard|Ln|Lane|Dr|Drive|Ct|Court|Way)\b/gi, '[REDACTED-ADDRESS]');
+    return { sanitizedText: out, hadPII: true, reasons: pii.reasons };
+  }
+
+  function calcContractTotalCost(monthlyBase, monthlyFees, upfrontDeposit, refundablePct, termMonths, renewalJumpPct, earlyCancelMonth, earlyTerminationFee) {
+    var base = Math.max(0, Number(monthlyBase) || 0);
+    var fees = Math.max(0, Number(monthlyFees) || 0);
+    var deposit = Math.max(0, Number(upfrontDeposit) || 0);
+    var refPct = Math.max(0, Math.min(100, (typeof refundablePct === 'number' && isFinite(refundablePct)) ? refundablePct : 80));
+    var months = Math.max(1, Math.min(36, Math.round(Number(termMonths) || 12)));
+    var jumpPct = Math.max(0, Math.min(50, Number(renewalJumpPct) || 0));
+    var cancelAt = Math.max(1, Math.min(months, Math.round(Number(earlyCancelMonth) || Math.min(6, months))));
+    var etf = Math.max(0, Number(earlyTerminationFee) || 0);
+    var effectiveMonthly = Number((base + fees).toFixed(2));
+    var moveInCash = Number((base + fees + deposit).toFixed(2));
+    var nonRefundableDeposit = Math.round(deposit * (1 - refPct / 100));
+    var firstTermNetCost = Math.round(effectiveMonthly * months + nonRefundableDeposit);
+    var renewalMonthly = Math.round(effectiveMonthly * (1 + jumpPct / 100));
+    var remainingMonthsAtCancel = Math.max(0, months - cancelAt);
+    var finishTermRemainingCost = Math.round(remainingMonthsAtCancel * effectiveMonthly);
+    var buyoutCost = Math.round(etf);
+    var earlyExitSavings = finishTermRemainingCost - buyoutCost;
+    return {
+      effectiveMonthly: effectiveMonthly,
+      moveInCash: moveInCash,
+      nonRefundableDeposit: nonRefundableDeposit,
+      firstTermNetCost: firstTermNetCost,
+      renewalMonthly: renewalMonthly,
+      remainingMonthsAtCancel: remainingMonthsAtCancel,
+      finishTermRemainingCost: finishTermRemainingCost,
+      buyoutCost: buyoutCost,
+      earlyExitSavings: earlyExitSavings,
+      betterExitOption: buyoutCost < finishTermRemainingCost ? 'buyout' : 'finish-term'
+    };
+  }
+
+  function calcShiftPaystubAudit(hourlyRate, scheduledHoursWk, unpaidBreakMinPerShift, shiftsPerWk, commuteCostPerShift, stubGrossPaid) {
+    var rate = Math.max(0, Number(hourlyRate) || 0);
+    var schedHrs = Math.max(0, Math.min(84, Number(scheduledHoursWk) || 0));
+    var breakMin = Math.max(0, Math.min(120, Number(unpaidBreakMinPerShift) || 0));
+    var shifts = Math.max(0, Math.min(7, Math.round(Number(shiftsPerWk) || 0)));
+    var commutePerShift = Math.max(0, Number(commuteCostPerShift) || 0);
+    var stubGross = Math.max(0, Number(stubGrossPaid) || 0);
+    var unpaidBreakHoursWk = Number(((shifts * breakMin) / 60).toFixed(2));
+    var netPaidHours = Number(Math.max(0, schedHrs - unpaidBreakHoursWk).toFixed(2));
+    var regularHours = Number(Math.min(40, netPaidHours).toFixed(2));
+    var overtimeHours = Number(Math.max(0, netPaidHours - 40).toFixed(2));
+    var regularPay = regularHours * rate;
+    var overtimePay = overtimeHours * rate * 1.5;
+    var expectedGross = Number((regularPay + overtimePay).toFixed(2));
+    var discrepancy = Number((expectedGross - stubGross).toFixed(2));
+    var weeklyCommute = Number((shifts * commutePerShift).toFixed(2));
+    var effectiveHourlyAfterCommute = netPaidHours > 0 ? Number(((expectedGross - weeklyCommute) / netPaidHours).toFixed(2)) : 0;
+    return {
+      unpaidBreakHoursWk: unpaidBreakHoursWk,
+      netPaidHours: netPaidHours,
+      regularHours: regularHours,
+      overtimeHours: overtimeHours,
+      expectedGross: expectedGross,
+      stubGross: stubGross,
+      discrepancy: discrepancy,
+      hasUnderpayment: discrepancy > 0.5,
+      weeklyCommute: weeklyCommute,
+      effectiveHourlyAfterCommute: effectiveHourlyAfterCommute
+    };
+  }
+
+  function calcCoAndAlarmSafety(coPpm, exposureHours, closedDoors, alarmSourceDb) {
+    var ppm = Math.max(0, Math.min(800, Number(coPpm) || 0));
+    var hrs = Math.max(0.25, Math.min(24, Number(exposureHours) || 1));
+    var doors = Math.max(0, Math.min(4, Math.round(Number(closedDoors) || 0)));
+    var srcDb = Math.max(65, Math.min(100, Number(alarmSourceDb) || 85));
+    var cohbPct = Number(Math.min(65, 0.8 + 0.018 * ppm * hrs).toFixed(1));
+    var coRisk = (ppm >= 150 || cohbPct >= 15) ? 'emergency' : ppm >= 36 ? 'danger' : ppm >= 9 ? 'elevated' : 'normal';
+    var pillowDb = Math.max(30, Math.round(srcDb - doors * 16));
+    return {
+      coPpm: ppm,
+      exposureHours: hrs,
+      cohbPct: cohbPct,
+      coRisk: coRisk,
+      pillowDb: pillowDb,
+      meetsSleeping75Db: pillowDb >= 75
+    };
+  }
+
+  function calcPasswordEntropyAndMfa(length, poolSize, guessesPerSecLog10, mfaEnabled) {
+    var len = Math.max(4, Math.min(40, Math.round(Number(length) || 12)));
+    var pool = Math.max(10, Math.min(95, Math.round(Number(poolSize) || 62)));
+    var rateLog = Math.max(6, Math.min(12, Number(guessesPerSecLog10) || 10));
+    var entropyBits = Number((len * (Math.log(pool) / Math.LN2)).toFixed(1));
+    var log10Seconds = entropyBits * Math.LOG10E * Math.LN2 - Math.log10(2) - rateLog;
+    var crackDisplay = log10Seconds < 0 ? 'Instant (<1 sec)' :
+      log10Seconds < 3.55 ? 'Seconds to Minutes' :
+      log10Seconds < 6.0 ? 'Hours to Days' :
+      log10Seconds < 8.5 ? 'Years' : 'Centuries+';
+    var strengthLabel = entropyBits < 40 ? 'Weak' : entropyBits < 60 ? 'Moderate' : entropyBits < 80 ? 'Strong' : 'Passphrase-Grade';
+    return {
+      entropyBits: entropyBits,
+      crackDisplay: crackDisplay,
+      strengthLabel: strengthLabel,
+      mfaEnabled: !!mfaEnabled,
+      automatedTakeoverReductionPct: mfaEnabled ? 99.9 : 0
+    };
+  }
+
+  function evaluateOnboardingIdCombo(selectedIds) {
+    var ids = Array.isArray(selectedIds) ? selectedIds : [];
+    var seen = {};
+    var listACount = 0, listBCount = 0, listCCount = 0, invalidCount = 0;
+    ids.forEach(function(id) {
+      if (seen[id]) return;
+      seen[id] = true;
+      var doc = MOCK_ONBOARDING_DOCS.find(function(item) { return item.id === id; });
+      if (!doc) return;
+      if (doc.category === 'A') listACount++;
+      else if (doc.category === 'B') listBCount++;
+      else if (doc.category === 'C') listCCount++;
+      else invalidCount++;
+    });
+    var verified = listACount >= 1 || (listBCount >= 1 && listCCount >= 1);
+    var overShared = (listACount >= 1 && (listBCount + listCCount > 0)) || listACount > 1 || listBCount > 1 || listCCount > 1;
+    var summary = !verified
+      ? 'Need either 1 List A document (e.g., Passport) OR 1 List B identity card + 1 List C work-authorization document.'
+      : overShared
+        ? 'Verified \u2014 but you selected extra documents beyond what is legally required. Share only the minimum needed.'
+        : 'Minimally verified: meets I-9 identity + work authorization cleanly with zero over-sharing!';
+    return {
+      listACount: listACount,
+      listBCount: listBCount,
+      listCCount: listCCount,
+      invalidCount: invalidCount,
+      verified: verified,
+      overShared: overShared,
+      summary: summary
+    };
+  }
+
+  function calcVitalTriageGuide(tempF, heartRate, systolicBp, hasRedFlag) {
+    var f = Math.max(95, Math.min(107, Number(tempF) || 98.6));
+    var hr = Math.max(40, Math.min(180, Math.round(Number(heartRate) || 76)));
+    var bp = Math.max(70, Math.min(230, Math.round(Number(systolicBp) || 118)));
+    var redFlag = !!hasRedFlag;
+    var tempC = Number(((f - 32) * 5 / 9).toFixed(1));
+    var tempBand = f >= 103 ? 'High fever' : f >= 100.4 ? 'Fever' : f >= 99.5 ? 'Low-grade' : 'Normal';
+    var careTier = (redFlag || f >= 104 || bp >= 180 || bp < 85 || hr >= 130) ? 'emergency-er' :
+      (f >= 102 || hr >= 110 || bp >= 160) ? 'urgent-care' :
+      (f >= 100.4 || hr >= 100 || bp >= 140) ? 'primary-telehealth' : 'self-care-monitor';
+    return {
+      tempF: f,
+      tempC: tempC,
+      heartRate: hr,
+      systolicBp: bp,
+      tempBand: tempBand,
+      careTier: careTier
+    };
+  }
+
+  function calcDeescalationTrajectory(openChoice, listenChoice, closeChoice) {
+    function delta(choice) {
+      return choice === 'repair' ? -18 : choice === 'escalate' ? 18 : 2;
+    }
+    var t0 = 65;
+    var t1 = Math.max(10, Math.min(100, t0 + delta(openChoice)));
+    var t2 = Math.max(10, Math.min(100, t1 + delta(listenChoice)));
+    var t3 = Math.max(10, Math.min(100, t2 + delta(closeChoice)));
+    var outcome = t3 <= 35 ? 'Collaborative repair' : t3 <= 65 ? 'Stabilized \u2014 follow up in writing' : 'High tension \u2014 pause & document';
+    return { series: [t0, t1, t2, t3], finalTension: t3, outcome: outcome };
+  }
+
+  function inferQuestionDomain(qObj) {
+    var txt = ((qObj && qObj.q || '') + ' ' + (qObj && qObj.a || '') + ' ' + (qObj && qObj.h || '')).toLowerCase();
+    if (/cooking|poultry|chicken|fridge|leftover|danger zone|maillard|recipe|detergent|lint trap|dryer|surfactant|can|meal|label/.test(txt)) return 'food';
+    if (/toothbrush|tooth|dental|plaque|sleep|bedtime|wind down|ergonomic|shoulder|numbness|medication|medicine|pharmacist|symptom|appointment|self-advocacy/.test(txt)) return 'health';
+    if (/tire|psi|gay-lussac|gfci|flapper|smoke|carbon monoxide|phishing|password|two-factor|2fa|heat loss|r-value|cop|solar|furnace|circuit|120v|bus|buffer|bleach|herd immunity/.test(txt)) return 'home';
+    if (/resume|interview|star|portfolio|o\*net|work schedule|pause|i statement|apology|priority matrix|consent|receipt|permission/.test(txt)) return 'career';
+    return 'money';
+  }
+
+  function buildQuizChoiceBank(targetQ, pool) {
+    if (!targetQ || !targetQ.a) return [];
+    var ans = String(targetQ.a);
+    var ansIsNum = /^[\-0-9.:]+$/.test(ans.trim());
+    var seen = {};
+    seen[ans.toLowerCase()] = true;
+    var distractors = [];
+    var candidates = Array.isArray(pool) ? pool : [];
+    var offset = 0;
+    for (var s = 0; s < String(targetQ.q || '').length; s++) offset += String(targetQ.q).charCodeAt(s);
+    for (var pass = 0; pass < 2 && distractors.length < 3; pass++) {
+      for (var i = 0; i < candidates.length && distractors.length < 3; i++) {
+        var cand = candidates[(i + offset) % candidates.length];
+        var val = cand && String(cand.a || '').trim();
+        if (!val || seen[val.toLowerCase()]) continue;
+        var valIsNum = /^[\-0-9.:]+$/.test(val);
+        if (pass === 0 && valIsNum !== ansIsNum) continue;
+        seen[val.toLowerCase()] = true;
+        distractors.push(val);
+      }
+    }
+    var fallbacks = ansIsNum ? ['12', '48', '100', '250'] : ['wait and guess', 'ignore the warning', 'skip verification', 'ask later'];
+    for (var f = 0; f < fallbacks.length && distractors.length < 3; f++) {
+      if (!seen[fallbacks[f]]) {
+        seen[fallbacks[f]] = true;
+        distractors.push(fallbacks[f]);
+      }
+    }
+    var combined = [ans].concat(distractors.slice(0, 3));
+    return combined.map(function(label, idx) {
+      var h = 0;
+      var key = label + '|' + targetQ.q;
+      for (var k = 0; k < key.length; k++) h = (h * 31 + key.charCodeAt(k)) % 10007;
+      return { label: label, sortKey: h * 10 + idx };
+    }).sort(function(a, b) { return a.sortKey - b.sortKey; }).map(function(item) { return item.label; });
+  }
+
+  function calcBayesBaseRate(prevalencePct, sensitivityPct, specificityPct, cohortSize) {
+    var cohort = Math.max(100, Math.round(Number(cohortSize) || 1000));
+    var prev = Math.max(0.1, Math.min(90, Number(prevalencePct) || 2)) / 100;
+    var sens = Math.max(1, Math.min(99.9, Number(sensitivityPct) || 95)) / 100;
+    var spec = Math.max(1, Math.min(99.9, Number(specificityPct) || 95)) / 100;
+    var trueCondition = Math.round(cohort * prev);
+    var noCondition = Math.max(0, cohort - trueCondition);
+    var truePositives = Math.round(trueCondition * sens);
+    var falseNegatives = Math.max(0, trueCondition - truePositives);
+    var trueNegatives = Math.round(noCondition * spec);
+    var falsePositives = Math.max(0, noCondition - trueNegatives);
+    var totalFlagged = truePositives + falsePositives;
+    var ppvPct = totalFlagged > 0 ? Math.round((truePositives / totalFlagged) * 1000) / 10 : 0;
+    var falseAlarmPct = totalFlagged > 0 ? Math.round((falsePositives / totalFlagged) * 1000) / 10 : 0;
+    return {
+      cohortSize: cohort,
+      trueCondition: trueCondition,
+      noCondition: noCondition,
+      truePositives: truePositives,
+      falsePositives: falsePositives,
+      falseNegatives: falseNegatives,
+      trueNegatives: trueNegatives,
+      totalFlagged: totalFlagged,
+      ppvPct: ppvPct,
+      falseAlarmPct: falseAlarmPct
+    };
+  }
+
+  function calcExpectedValueComparison(successProbPct, upsideDollars, downsideDollars, sunkCostAlreadySpent, safeAlternativeDollars) {
+    var p = Math.max(0, Math.min(100, Number(successProbPct) || 0)) / 100;
+    var up = Number(upsideDollars) || 0;
+    var down = Math.abs(Number(downsideDollars) || 0);
+    var sunk = Math.max(0, Number(sunkCostAlreadySpent) || 0);
+    var safeAlt = Number(safeAlternativeDollars) || 0;
+    var evForward = Math.round((p * up - (1 - p) * down) * 100) / 100;
+    var netAdvantage = Math.round((evForward - safeAlt) * 100) / 100;
+    var recommended = evForward >= safeAlt ? 'risky-option' : 'safe-alternative';
+    var sunkCostTrapActive = (evForward < safeAlt) && (sunk > 0);
+    return {
+      evForward: evForward,
+      safeAlternativeDollars: safeAlt,
+      netAdvantage: netAdvantage,
+      sunkCostIgnored: sunk,
+      sunkCostTrapActive: sunkCostTrapActive,
+      recommended: recommended
+    };
+  }
+
+  function calcCervicalAndLiftBiomechanics(neckTiltDeg, loadLbs, horizontalReachIn, activityMinutes, sweatIntensity) {
+    var deg = Math.max(0, Math.min(60, Number(neckTiltDeg) || 0));
+    var effectiveHeadLoadLbs = Math.round((12 + 0.8 * deg) * 10) / 10;
+    var load = Math.max(0, Number(loadLbs) || 0);
+    var reach = Math.max(7, Math.min(30, Number(horizontalReachIn) || 10));
+    var lumbarTorqueLbIn = Math.round(load * reach);
+    var safeLiftCeilingLbs = Math.round(51 * Math.min(1, 10 / reach));
+    var exceedsLiftGuideline = load > safeLiftCeilingLbs;
+    var mins = Math.max(0, Number(activityMinutes) || 0);
+    var rateOzPerHr = sweatIntensity === 'high' ? 28 : (sweatIntensity === 'moderate' ? 18 : 10);
+    var hydrationOz = Math.round((mins / 60) * rateOzPerHr);
+    return {
+      neckTiltDeg: deg,
+      effectiveHeadLoadLbs: effectiveHeadLoadLbs,
+      lumbarTorqueLbIn: lumbarTorqueLbIn,
+      safeLiftCeilingLbs: safeLiftCeilingLbs,
+      exceedsLiftGuideline: exceedsLiftGuideline,
+      hydrationOz: hydrationOz
+    };
+  }
+
+  function analyzeResumeAndStarMetrics(bulletText, starText, targetWpm) {
+    var b = String(bulletText || '').trim();
+    var bWords = b ? b.split(/\s+/).length : 0;
+    var hasActionVerb = /^(organized|built|created|led|tracked|prepared|checked|assisted|resolved|improved|cleaned|sorted|scheduled|verified|designed|managed|guided|delivered|assembled|reduced|completed)\b/i.test(b);
+    var hasQuantMetric = /\b\d+(\.\d+)?(%|x|\s*(min|minute|minutes|hr|hour|hours|items|carts|orders|guests|students|visitors|days|weeks|months|dollars|zero))\b|\bzero\b|\$\d+/i.test(b);
+    var hasOutcomeSignal = /\b(to\s+\w+|so\s+that|result|ahead|faster|reduced|improved|accurate|clear|zero|completed|saved|helped)\b/i.test(b);
+    var specificityScore = (hasActionVerb ? 35 : 0) + (hasQuantMetric ? 35 : 0) + (hasOutcomeSignal ? 30 : 0);
+    var bulletTip = specificityScore >= 100
+      ? 'Strong evidence bullet: clear action verb, measurable detail, and outcome!'
+      : (!hasActionVerb
+        ? 'Start with a concrete past-tense action verb (e.g., Organized, Verified, Prepared).'
+        : (!hasQuantMetric
+          ? 'Add one truthful count, frequency, or time detail (e.g., 3 carts/shift, 10 min early, zero mix-ups).'
+          : 'Add the outcome (how your work helped the team, customer, or schedule).'));
+    var s = String(starText || '').trim();
+    var starWords = s ? s.split(/\s+/).length : 0;
+    var wpm = Math.max(90, Math.min(200, Number(targetWpm) || 130));
+    var estimatedSeconds = starWords > 0 ? Math.round((starWords / wpm) * 60) : 0;
+    var paceBand = estimatedSeconds < 25 ? 'too-brief' : (estimatedSeconds <= 95 ? 'sweet-spot' : 'too-long');
+    return {
+      bulletWords: bWords,
+      hasActionVerb: hasActionVerb,
+      hasQuantMetric: hasQuantMetric,
+      hasOutcomeSignal: hasOutcomeSignal,
+      specificityScore: specificityScore,
+      bulletTip: bulletTip,
+      starWords: starWords,
+      targetWpm: wpm,
+      estimatedSeconds: estimatedSeconds,
+      paceBand: paceBand
+    };
+  }
+
+  function calcPanScalingAndMealPrep(origShape, origDimA, origDimB, newShape, newDimA, newDimB, recipeScale, batchCost, scaledServings) {
+    var areaOrig = origShape === 'round'
+      ? Math.PI * Math.pow(Math.max(4, Number(origDimA) || 8) / 2, 2)
+      : Math.max(4, Number(origDimA) || 8) * Math.max(4, Number(origDimB) || 8);
+    var areaNew = newShape === 'round'
+      ? Math.PI * Math.pow(Math.max(4, Number(newDimA) || 8) / 2, 2)
+      : Math.max(4, Number(newDimA) || 8) * Math.max(4, Number(newDimB) || 8);
+    var origAreaSqIn = Math.round(areaOrig * 10) / 10;
+    var newAreaSqIn = Math.round(areaNew * 10) / 10;
+    var scale = Math.max(0.25, Number(recipeScale) || 1);
+    var depthRatio = Math.round(((scale * areaOrig) / Math.max(1, areaNew)) * 100) / 100;
+    var panStatus = depthRatio > 1.25 ? 'deeper-overflow-risk' : (depthRatio < 0.75 ? 'shallower-faster-bake' : 'matched-depth');
+    var bakeTimeHint = panStatus === 'deeper-overflow-risk'
+      ? ('Batter is ~' + Math.round(depthRatio * 100) + '% as deep: lower oven ~15\u00B0F, add bake time, or split into 2 pans to prevent overflow.')
+      : (panStatus === 'shallower-faster-bake'
+        ? ('Batter is shallower (~' + Math.round(depthRatio * 100) + '% depth): check doneness 20\u201325% earlier so edges do not overbake.')
+        : ('Batter depth stays close to original (~' + Math.round(depthRatio * 100) + '%) \u2014 standard bake time applies.'));
+    var cost = Math.max(0, Number(batchCost) || 0);
+    var serv = Math.max(1, Number(scaledServings) || 4);
+    var costPerServing = Math.round((cost / serv) * 100) / 100;
+    var monthlyMealPrepCost = Math.round(costPerServing * 20);
+    var monthlyTakeoutSavings = Math.max(0, Math.round((14 - costPerServing) * 20));
+    return {
+      origAreaSqIn: origAreaSqIn,
+      newAreaSqIn: newAreaSqIn,
+      depthRatio: depthRatio,
+      panStatus: panStatus,
+      bakeTimeHint: bakeTimeHint,
+      costPerServing: costPerServing,
+      monthlyMealPrepCost: monthlyMealPrepCost,
+      monthlyTakeoutSavings: monthlyTakeoutSavings
+    };
+  }
+
+  function calcLaundryWaterAndThermal(gallonsPerLoad, inletTempF, washTempF, hardnessPpm, loadsPerWeek, electricRateKwh) {
+    var gal = Math.max(5, Math.min(45, Number(gallonsPerLoad) || 16));
+    var tIn = Math.max(35, Math.min(85, Number(inletTempF) || 55));
+    var tWash = Math.max(tIn, Math.min(140, Number(washTempF) || 60));
+    var deltaTF = Math.max(0, tWash - tIn);
+    var btuPerLoad = gal * 8.34 * deltaTF;
+    var kwhPerLoad = Math.round(((btuPerLoad / 3412) / 0.9) * 100) / 100;
+    var rate = Math.max(0.05, Number(electricRateKwh) || 0.16);
+    var loadsYr = Math.max(1, Number(loadsPerWeek) || 4) * 52;
+    var annualWarmWaterCost = Math.round(kwhPerLoad * rate * loadsYr);
+    var warmRefKwh = ((gal * 8.34 * Math.max(0, 105 - tIn)) / 3412) / 0.9;
+    var annualColdSavings = Math.max(0, Math.round((warmRefKwh - kwhPerLoad) * rate * loadsYr));
+    var ppm = Math.max(0, Math.min(400, Number(hardnessPpm) || 90));
+    var hardnessBand = ppm < 60
+      ? 'Soft (<60 ppm)'
+      : (ppm <= 120
+        ? 'Moderately Hard (60\u2013120 ppm)'
+        : (ppm <= 180 ? 'Hard (121\u2013180 ppm)' : 'Very Hard (>180 ppm)'));
+    var doseMultiplier = ppm < 60 ? 0.85 : (ppm <= 120 ? 1.0 : (ppm <= 180 ? 1.15 : 1.25));
+    var boosterTip = ppm < 60
+      ? 'Soft water lathers fast \u2014 use ~0.85x detergent to avoid suds residue.'
+      : (ppm <= 120
+        ? 'Standard 1.0x measured detergent works cleanly.'
+        : ('Ca\u00B2\u207A/Mg\u00B2\u207A ions bind surfactants \u2014 add washing soda/water conditioner or ~' + doseMultiplier.toFixed(2) + 'x detergent instead of over-pouring.'));
+    return {
+      deltaTF: deltaTF,
+      kwhPerLoad: kwhPerLoad,
+      annualWarmWaterCost: annualWarmWaterCost,
+      annualColdSavings: annualColdSavings,
+      hardnessPpm: ppm,
+      hardnessBand: hardnessBand,
+      doseMultiplier: doseMultiplier,
+      boosterTip: boosterTip
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════
+  // Wave 5: Inline Three.js 3D STEM Bays & Projection Helpers
+  // ═══════════════════════════════════════════════════════
+
+  function _lsMakeGeo(THREE, name, args) {
+    var Ctor = (THREE && typeof THREE[name] === 'function') ? THREE[name] : (THREE && THREE.BoxGeometry);
+    if (typeof Ctor !== 'function') return {};
+    if (!args || args.length === 0) return new Ctor();
+    if (args.length === 1) return new Ctor(args[0]);
+    if (args.length === 2) return new Ctor(args[0], args[1]);
+    if (args.length === 3) return new Ctor(args[0], args[1], args[2]);
+    return new Ctor(args[0], args[1], args[2], args[3]);
+  }
+
+  function _lsMakeMat(THREE, opts) {
+    if (!THREE) return opts || {};
+    var Ctor = THREE.MeshPhongMaterial || THREE.MeshLambertMaterial || THREE.MeshBasicMaterial;
+    return typeof Ctor === 'function' ? new Ctor(opts || {}) : (opts || {});
+  }
+
+  function _lsPlace(obj, x, y, z) {
+    if (!obj || !obj.position) return obj;
+    if (typeof obj.position.set === 'function') obj.position.set(x, y, z);
+    else { obj.position.x = x; obj.position.y = y; obj.position.z = z; }
+    return obj;
+  }
+
+  function _lsRot(obj, x, y, z) {
+    if (!obj || !obj.rotation) return obj;
+    if (typeof obj.rotation.set === 'function') obj.rotation.set(x, y, z);
+    else { obj.rotation.x = x; obj.rotation.y = y; obj.rotation.z = z; }
+    return obj;
+  }
+
+  function _lsAddMesh(THREE, parent, geoName, geoArgs, matOpts, pos, rot, partId) {
+    var geo = _lsMakeGeo(THREE, geoName, geoArgs);
+    var mat = _lsMakeMat(THREE, matOpts);
+    var mesh = (THREE && typeof THREE.Mesh === 'function') ? new THREE.Mesh(geo, mat) : { geometry: geo, material: mat, position: { x: 0, y: 0, z: 0 }, rotation: { x: 0, y: 0, z: 0 }, userData: {} };
+    if (pos) _lsPlace(mesh, pos[0], pos[1], pos[2]);
+    if (rot) _lsRot(mesh, rot[0], rot[1], rot[2]);
+    if (partId) mesh.userData = Object.assign({}, mesh.userData || {}, { partId: partId });
+    if (parent && typeof parent.add === 'function') parent.add(mesh);
+    return mesh;
+  }
+
+  function _lsAddSelectHalo(THREE, S, parts, selectedId) {
+    var target = null;
+    for (var i = 0; i < parts.length; i++) {
+      if (parts[i].id === selectedId) { target = parts[i]; break; }
+    }
+    if (!target) return;
+    var p = target.pos || [0, 0, 0];
+    var r = Math.max(0.32, Math.max(target.size[0] || 0.5, target.size[2] || 0.5) * 0.72);
+    _lsAddMesh(THREE, S.model, 'TorusGeometry', [r, 0.04, 10, 28], { color: 0xfacc15, emissive: 0xca8a04 }, [p[0], p[1], p[2]], [Math.PI / 2, 0, 0], target.id);
+  }
+
+  function _lsSetTargetHalf(THREE, S, targetArr, halfArr) {
+    if (THREE && typeof THREE.Vector3 === 'function') {
+      S.target = new THREE.Vector3(targetArr[0], targetArr[1], targetArr[2]);
+      S.half = new THREE.Vector3(halfArr[0], halfArr[1], halfArr[2]);
+    } else {
+      S.target = { x: targetArr[0], y: targetArr[1], z: targetArr[2] };
+      S.half = { x: halfArr[0], y: halfArr[1], z: halfArr[2] };
+    }
+  }
+
+  function _lsClamp(v, lo, hi, fallback) {
+    var n = Number(v);
+    if (!isFinite(n)) return fallback;
+    return Math.max(lo, Math.min(hi, n));
+  }
+
+  function projectLifeSkills3dPoint(pt, rotYDeg, rotXDeg, zoom, width, height) {
+    var ry = (Number(rotYDeg) || 0) * Math.PI / 180;
+    var rx = (Number(rotXDeg) || 0) * Math.PI / 180;
+    var cy = Math.cos(ry), sy = Math.sin(ry);
+    var cx = Math.cos(rx), sx = Math.sin(rx);
+    var x1 = pt[0] * cy - pt[2] * sy;
+    var z1 = pt[0] * sy + pt[2] * cy;
+    var y2 = pt[1] * cx - z1 * sx;
+    var z2 = pt[1] * sx + z1 * cx;
+    var scale = Math.min(width || 420, height || 260) * 0.145 * _lsClamp(zoom, 0.55, 2.2, 1);
+    var depthPersp = 1 / Math.max(0.55, 1 - z2 * 0.085);
+    return {
+      x: Math.round(((width || 420) * 0.5 + x1 * scale * depthPersp) * 10) / 10,
+      y: Math.round(((height || 260) * 0.53 - y2 * scale * depthPersp) * 10) / 10,
+      z: z2,
+      scale: depthPersp
+    };
+  }
+
+  var LS_3D_BAYS = {
+    homesys: {
+      id: 'homesys',
+      tab: 'homesys',
+      badgeId: 'homeExpert',
+      icon: '\uD83C\uDFE0',
+      shortTitle: 'Home Envelope',
+      title: '3D Home Energy Envelope, Airflow & Heat Pump Cutaway',
+      subtitle: 'Inspect conduction (Q = A \u00D7 \u0394T / R), air leakage, heat-pump COP, and HVAC/breaker shutoffs in 3D.',
+      rot: { y: 34, x: 22 },
+      half: [3.2, 2.3, 2.6],
+      parts: [
+        {
+          id: 'roof',
+          label: 'Attic Insulation (R-Value)',
+          color: '#f59e0b',
+          pos: [0, 1.32, 0],
+          size: [2.7, 0.42, 2.1],
+          where: 'Cutaway attic deck directly beneath the pitched roof trusses.',
+          does: 'Slows conductive heat transfer (BTU/hr = A \u00D7 \u0394T / R). Doubling R-value from R-15 to R-30 cuts conduction heat loss in half.',
+          check: 'Measure depth across attic joists without compressing batts, and keep soffit vents clear for moisture escape.',
+          risk: 'Thin or crushed insulation lets winter heat pour out through ceilings and triggers ice dams at roof eaves.'
+        },
+        {
+          id: 'wall',
+          label: 'Wall Studs & Vapor Barrier',
+          color: '#38bdf8',
+          pos: [-1.25, 0.05, 0],
+          size: [0.3, 1.85, 2.1],
+          where: 'Left exterior cutaway wall framing between foundation sill and top plate.',
+          does: 'Creates a continuous thermal and moisture control boundary between outdoor \u0394T swings and conditioned indoor rooms.',
+          check: 'Feel exterior wall outlets and baseboards on windy or cold days for cool drafts or dampness.',
+          risk: 'Thermal bridging through bare studs plus warm indoor air reaching cold sheathing causes hidden condensation and mold.'
+        },
+        {
+          id: 'seal',
+          label: 'Air Leak & Weatherstrip Seam',
+          color: '#ef4444',
+          pos: [0.05, 0.2, 1.1],
+          size: [0.95, 0.95, 0.25],
+          where: 'Front window/door perimeter frame where leakage bypass rings pulse.',
+          does: 'Measures infiltration multiplier (1 + leakage%). Tightening leaky seams often cuts total envelope BTU loss faster than window replacement.',
+          check: 'Inspect weatherstripping daylight gaps, caulk cracks, and hold an incense/smoke pencil near shut sashes.',
+          risk: 'Unsealed rim joists and door sweeps pull humid unconditioned air directly through the envelope, driving up kWh and dust.'
+        },
+        {
+          id: 'hvac',
+          label: 'Heat Pump Outdoor Unit (COP)',
+          color: '#10b981',
+          pos: [1.95, -0.45, 0.55],
+          size: [0.85, 0.95, 0.85],
+          where: 'Outside condenser cabinet beside the foundation pad with spinning fan.',
+          does: 'Moves existing thermal energy rather than making heat from friction: COP 3.0 delivers ~3 units of heat per 1 unit of electricity.',
+          check: 'Keep 24 inches of leaf/snow clearance around the coil fins and verify condensate drainage stays clear.',
+          risk: 'Blocked coil fins or iced fan blades force auxiliary resistance strips to kick on, tripling electric draw.'
+        },
+        {
+          id: 'duct',
+          label: 'Air Handler & MERV Filter',
+          color: '#06b6d4',
+          pos: [0.25, -0.35, -0.35],
+          size: [0.9, 1.15, 0.8],
+          where: 'Central utility bay blower housing and return-air filter slot.',
+          does: 'Pulls return air through MERV 8-11 filtration, exchanges heat at the coil, and pushes supply air through sealed ducts.',
+          check: 'Slide out the filter every 90 days; check arrows match airflow direction toward the blower and inspect for dust bypass.',
+          risk: 'A clogged filter starves static airflow, icing the evaporator coil in summer or overheating heat exchangers in winter.'
+        },
+        {
+          id: 'panel',
+          label: 'Thermostat & Main Disconnect',
+          color: '#6366f1',
+          pos: [-0.85, 0.15, -0.95],
+          size: [0.55, 0.85, 0.2],
+          where: 'Interior utility wall adjacent to the air handler.',
+          does: 'Balances indoor setpoint (68\u00B0F winter / 78\u00B0F summer saves ~5-10% per degree setback) and labels critical shutoff breakers.',
+          check: 'Verify every HVAC, water heater, and kitchen circuit label is legible and keep 36 inches clear in front of the panel.',
+          risk: 'Unlabeled breakers waste vital seconds during electrical smoke, flood contact, or compressor lockups.'
+        }
+      ],
+      buildScene: function(THREE, S, next) {
+        var p = next.params || {};
+        var rVal = _lsClamp(p.rVal, 5, 49, 15);
+        var cop = _lsClamp(p.cop, 1, 4.5, 3.0);
+        var leak = _lsClamp(p.leak, 0, 60, 20);
+        var deltaT = _lsClamp(p.deltaT, 5, 70, 35);
+        var sel = next.sel || 'roof';
+
+        // Floor slab
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [3.2, 0.18, 2.5], { color: 0x475569 }, [0, -1.0, 0]);
+        // Back wall + Cutaway left wall
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [2.8, 1.9, 0.14], { color: 0xcbd5e1 }, [0, 0, -1.08]);
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.16, 1.9, 2.2], { color: 0x0284c7, transparent: true, opacity: 0.72 }, [-1.32, 0, 0], null, 'wall');
+        // Insulation deck thickness proportional to R-value
+        var insH = 0.12 + (rVal / 49) * 0.42;
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [2.65, insH, 2.05], { color: rVal >= 30 ? 0xf59e0b : 0xfb7185 }, [0, 1.0 + insH * 0.5, 0], null, 'roof');
+        // Pitched cutaway roof slopes
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [1.75, 0.12, 2.35], { color: 0x334155 }, [-0.72, 1.56, 0], [0, 0, 0.46], 'roof');
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [1.75, 0.12, 2.35], { color: 0x334155, transparent: true, opacity: 0.55 }, [0.72, 1.56, 0], [0, 0, -0.46], 'roof');
+        // Front window seam + leakage rings scaled by leak & deltaT
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [1.0, 0.95, 0.1], { color: 0x93c5fd, transparent: true, opacity: 0.45 }, [0.05, 0.18, 1.05], null, 'seal');
+        var leakColor = leak >= 30 ? 0xef4444 : leak >= 15 ? 0xf59e0b : 0x22c55e;
+        var leakRings = leak > 8 ? (leak > 28 ? 3 : 2) : 1;
+        for (var li = 0; li < leakRings; li++) {
+          _lsAddMesh(THREE, S.model, 'TorusGeometry', [0.46 + li * 0.12, 0.035, 8, 24], { color: leakColor }, [0.05, 0.18, 1.12 + li * 0.08], null, 'seal');
+        }
+        // Delta-T heat-flow arrows (more prominent with high deltaT)
+        var arrowScale = 0.7 + (deltaT / 70) * 0.55;
+        _lsAddMesh(THREE, S.model, 'ConeGeometry', [0.12 * arrowScale, 0.34 * arrowScale, 10], { color: 0xf97316 }, [0.05, 1.12, 0.8], [Math.PI * 0.35, 0, 0], 'roof');
+        // Outdoor Heat Pump Condenser
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.82, 0.92, 0.82], { color: cop >= 2.8 ? 0x10b981 : 0xf59e0b }, [1.98, -0.44, 0.48], null, 'hvac');
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.28, 0.28, 0.08, 18], { color: 0x0f172a }, [1.98, 0.05, 0.48], null, 'hvac');
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.06, 0.06, 1.35, 10], { color: 0xb45309 }, [1.15, -0.5, 0.2], [0, 0, Math.PI / 2], 'hvac');
+        // Indoor Air Handler + Filter
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.76, 1.12, 0.7], { color: 0x06b6d4 }, [0.25, -0.34, -0.35], null, 'duct');
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.68, 0.12, 0.74], { color: 0xe2e8f0 }, [0.25, -0.78, -0.35], null, 'duct');
+        // Breaker / Thermostat Panel
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.46, 0.76, 0.14], { color: 0x4f46e5 }, [-0.85, 0.15, -0.94], null, 'panel');
+
+        _lsAddSelectHalo(THREE, S, LS_3D_BAYS.homesys.parts, sel);
+        _lsSetTargetHalf(THREE, S, [0.2, 0.25, 0], LS_3D_BAYS.homesys.half);
+      }
+    },
+
+    science: {
+      id: 'science',
+      tab: 'science',
+      badgeId: 'appliedSci',
+      icon: '\u26A1',
+      shortTitle: 'Circuit & Pressure',
+      title: '3D 120V/240V Circuit Load, NEC 80% Limit & Tire P-T Rig',
+      subtitle: 'Visualize P = V \u00D7 I current heat, NEC 80% continuous limits, and cold-weather Kelvin pressure drop.',
+      rot: { y: -26, x: 20 },
+      half: [3.3, 2.0, 2.2],
+      parts: [
+        {
+          id: 'breaker',
+          label: 'Breaker & NEC 80% Limit (1,440W)',
+          color: '#f59e0b',
+          pos: [-1.55, 0.45, -0.35],
+          size: [0.65, 1.0, 0.35],
+          where: 'Left electrical panel box feeding the copper branch conductor.',
+          does: 'Protects branch wiring from catastrophic short circuits (>100% rating), while NEC 210.19/210.20 caps 3+ hour continuous loads at 80% (1,440W on 15A/120V).',
+          check: 'Multiply Volts \u00D7 Amps \u00D7 0.80 before plugging in space heaters or clothes dryers.',
+          risk: 'A 1,500W space heater runs at 1,500W / 1,800W (83%): wires and receptacle tabs steadily overheat without tripping the breaker!'
+        },
+        {
+          id: 'bus',
+          label: 'Branch Copper Wire & GFCI Path',
+          color: '#ea580c',
+          pos: [-0.8, -0.1, -0.1],
+          size: [0.95, 0.24, 0.24],
+          where: 'Conduit and copper conductor bar linking breaker to outlets.',
+          does: 'Carries current (I = P / V). Because resistive heat scales with I\u00B2R, doubling current quadruples wire heating.',
+          check: 'Feel cords gently after 15 minutes; never bury extension cords under rugs or coil them tightly under load.',
+          risk: 'Undersized extension cords or loose outlet backstab springs develop I\u00B2R hot spots that char insulation inside walls.'
+        },
+        {
+          id: 'heater',
+          label: 'Continuous Appliance Load',
+          color: '#ef4444',
+          pos: [-0.45, 0.35, 0.55],
+          size: [0.7, 0.72, 0.6],
+          where: 'Space heater / high-wattage resistive appliance block on the left bench.',
+          does: 'Draws steady current for 3+ hours (e.g., 1,500W continuous), locking the circuit in the NEC continuous zone.',
+          check: 'Plug high-wattage heaters directly into a dedicated wall outlet on an unshared branch circuit.',
+          risk: 'Never run a 1,500W continuous heater through a power strip or alongside a microwave on the same 15A branch.'
+        },
+        {
+          id: 'outlet',
+          label: 'Parallel Wall Receptacles',
+          color: '#0284c7',
+          pos: [-1.1, -0.45, 0.55],
+          size: [0.6, 0.45, 0.4],
+          where: 'Dual duplex wall outlet feeding appliances in parallel at full 120V.',
+          does: 'Adds appliance currents together on the shared hot/neutral bus while holding each outlet at constant voltage.',
+          check: 'Test GFCI buttons monthly in wet zones (kitchen, bath, laundry, outdoor) so ground faults trip in milliseconds.',
+          risk: 'Adding a toaster or microwave to an outlet already carrying a 1,500W heater pushes current past 100% breaker rating.'
+        },
+        {
+          id: 'tire',
+          label: 'Tire Air Chamber (P1/T1 = P2/T2)',
+          color: '#0f172a',
+          pos: [1.35, 0.05, 0.1],
+          size: [1.15, 1.15, 0.52],
+          where: 'Right-hand test wheel mounted on pressure-temperature stand.',
+          does: 'Illustrates Gay-Lussac\u2019s Law in Kelvin: cooler ambient air drops gas molecule kinetic energy and sidewall PSI (~1 PSI per 10\u00B0F).',
+          check: 'Measure cold tire pressure with a gauge before driving and compare against the driver door-jamb placard (not max sidewall PSI).',
+          risk: 'Underinflated winter tires flex excessively, overheat highway sidewalls, lengthen braking, and waste fuel.'
+        },
+        {
+          id: 'gauge',
+          label: 'Kelvin Barometer & Valve Check',
+          color: '#14b981',
+          pos: [1.35, 0.92, 0.1],
+          size: [0.46, 0.46, 0.2],
+          where: 'Dial pressure gauge mounted directly atop the test wheel stem.',
+          does: 'Converts Fahrenheit to absolute Kelvin (+273.15) to predict exact cold-morning PSI drop or warm-highway pressure rise.',
+          check: 'Adjust air when tires have rested 3+ hours, and screw valve stem caps snugly back on to block grit and moisture.',
+          risk: 'Ignoring TPMS dashboard alerts after a cold snap leaves braking contact patches deformed.'
+        }
+      ],
+      buildScene: function(THREE, S, next) {
+        var p = next.params || {};
+        var usage = _lsClamp(p.circuitUsage, 0, 150, 56);
+        var overCont = !!p.overContinuous;
+        var pRatio = _lsClamp(p.pRatio, 0.6, 1.4, 0.91);
+        var sel = next.sel || 'breaker';
+
+        // Workbench deck
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [3.8, 0.16, 2.2], { color: 0x334155 }, [0, -0.95, 0]);
+        // Breaker Panel
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.65, 1.05, 0.34], { color: 0x475569 }, [-1.55, 0.25, -0.35], null, 'breaker');
+        var tripColor = usage > 100 ? 0xef4444 : overCont ? 0xf59e0b : 0x22c55e;
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.22, 0.16, 0.18], { color: tripColor }, [-1.55, 0.42, -0.14], [usage > 100 ? -0.55 : 0.3, 0, 0], 'breaker');
+        // Wire busbar color reflects electrical load
+        var wireColor = usage > 100 ? 0xef4444 : usage >= 80 ? 0xf59e0b : 0xd97706;
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.06, 0.06, 1.25, 12], { color: wireColor, emissive: overCont || usage > 100 ? 0x7c2d12 : 0x000000 }, [-0.95, -0.08, 0.1], [0, 0, Math.PI / 2], 'bus');
+        // Continuous heater box + glow
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.62, 0.72, 0.56], { color: overCont || usage > 100 ? 0xef4444 : 0x64748b }, [-0.45, -0.45, 0.55], null, 'heater');
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.44, 0.34, 0.08], { color: 0xfb923c, emissive: overCont || usage > 100 ? 0xea580c : 0x431407 }, [-0.45, -0.42, 0.85], null, 'heater');
+        // Wall Outlet
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.44, 0.54, 0.26], { color: 0x0284c7 }, [-1.2, -0.58, 0.58], null, 'outlet');
+        // Tire Assembly + P-T Inflation Ring
+        var tireRad = 0.56 * (0.86 + pRatio * 0.14);
+        _lsAddMesh(THREE, S.model, 'TorusGeometry', [tireRad, 0.18, 12, 28], { color: 0x1e293b }, [1.35, -0.05, 0.08], null, 'tire');
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [tireRad * 0.62, tireRad * 0.62, 0.26, 20], { color: 0x94a3b8 }, [1.35, -0.05, 0.08], [Math.PI / 2, 0, 0], 'tire');
+        // Pressure Gauge atop Tire
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.24, 0.24, 0.12, 18], { color: pRatio < 0.9 ? 0xf59e0b : 0x10b981 }, [1.35, 0.88, 0.08], [Math.PI / 2, 0, 0], 'gauge');
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.04, 0.2, 0.04], { color: 0x0f172a }, [1.35, 0.92, 0.16], [0, 0, (1 - pRatio) * 1.4], 'gauge');
+
+        _lsAddSelectHalo(THREE, S, LS_3D_BAYS.science.parts, sel);
+        _lsSetTargetHalf(THREE, S, [0, -0.05, 0.1], LS_3D_BAYS.science.half);
+      }
+    },
+
+    carcare: {
+      id: 'carcare',
+      tab: 'carcare',
+      badgeId: 'mechanic',
+      icon: '\uD83D\uDE97',
+      shortTitle: 'Vehicle Bay',
+      title: '3D Wheel, Tread Depth, Braking Zone & Under-Hood Safety Bay',
+      subtitle: 'Connect tread hydroplaning, stopping distance (v\u00B2 / 2\u03BCg), oil temperature viscosity, battery grounding, and pressurized coolant burn hazards.',
+      rot: { y: 32, x: 18 },
+      half: [3.4, 2.1, 2.3],
+      parts: [
+        {
+          id: 'tread',
+          label: 'Tire Tread Depth & Hydroplane Ribs',
+          color: '#10b981',
+          pos: [-1.45, 0.08, 0.25],
+          size: [1.15, 1.15, 0.6],
+          where: 'Left front tire assembly with visible wear-bar groove rings.',
+          does: 'Channels standing rainwater outward so rubber stays pressed against asphalt instead of riding up on a water wedge.',
+          check: 'Place a quarter upside down (4/32" rain replacement target) or penny (2/32" legal minimum, Replace Now). Never crawl under a car held only by a jack — use jack stands and chocks.',
+          risk: 'At <=2/32" tread depth in rain, tires hydroplane and lose steering/braking control even below highway speed.'
+        },
+        {
+          id: 'rotor',
+          label: 'Disc Brake Rotor & Caliper',
+          color: '#64748b',
+          pos: [-1.45, 0.08, -0.1],
+          size: [0.7, 0.7, 0.4],
+          where: 'Ventilated steel rotor inside the wheel hub gripped by the caliper.',
+          does: 'Converts vehicle kinetic energy (1/2 mv\u00B2) into heat via pad friction.',
+          check: 'Listen for metallic wear-indicator squeals, feel for steering wheel pulsation when braking, and check brake fluid level.',
+          risk: 'Grinding pads into bare steel scores rotors and extends emergency stopping distance dramatically.'
+        },
+        {
+          id: 'stopzone',
+          label: 'Reaction + Braking Zone (v\u00B2)',
+          color: '#ef4444',
+          pos: [0.05, -0.82, 0.55],
+          size: [2.8, 0.22, 0.65],
+          where: 'Road contact strip stretching forward from the tire footprint.',
+          does: 'Totals perception-reaction feet (1.5s \u00D7 speed) plus quadratic braking feet (v\u00B2 / 2\u03BCg) adjusted for dry, wet, or icy \u03BC.',
+          check: 'Count at least a 3-4 second following gap on dry roads, and 6-10+ seconds in rain, snow, or darkness.',
+          risk: 'Doubling speed multiplies braking distance by 4x; icy \u03BC = 0.15 multiplies braking distance by 5x.'
+        },
+        {
+          id: 'dipstick',
+          label: 'Oil Sump & Viscosity Dipstick',
+          color: '#f59e0b',
+          pos: [0.65, 0.02, -0.25],
+          size: [1.15, 1.05, 0.85],
+          where: 'Cutaway engine block core with yellow oil dipstick loop.',
+          does: 'Pumps multi-grade oil (like 5W-30) across bearings to prevent metal-to-metal scuffing across freezing starts and hot highway miles.',
+          check: 'Park level, shut engine off, wait 5 minutes, pull and wipe dipstick clean, re-insert fully, and read between MIN and MAX.',
+          risk: 'Low oil level or neglected sludge starves cam/crank bearings, seizing the engine in minutes.'
+        },
+        {
+          id: 'battery',
+          label: '12V Battery & Chassis Ground',
+          color: '#3b82f6',
+          pos: [1.75, 0.15, -0.25],
+          size: [0.72, 0.65, 0.55],
+          where: 'Right engine-bay shelf holding the 12V battery with red (+) and black (-) terminals.',
+          does: 'Supplies high cold-cranking amps to start the engine before the alternator takes over electrical loads (~13.8-14.4V).',
+          check: 'Check terminals for chalky corrosion and tight clamps. When jump-starting, connect the final negative (-) clamp to an unpainted metal chassis ground away from the battery.',
+          risk: 'Connecting the last jumper clamp onto the dead (-) post can ignite vented hydrogen gas.'
+        },
+        {
+          id: 'coolant',
+          label: 'Coolant Overflow & Burn Cap',
+          color: '#ec4899',
+          pos: [1.65, 0.1, 0.55],
+          size: [0.5, 0.6, 0.45],
+          where: 'Front-right translucent coolant reservoir marked with hot-surface cap.',
+          does: 'Pressurizes water/antifreeze (~15 psi) to raise boiling point past 250\u00B0F while carrying heat from engine block to radiator.',
+          check: 'Read COLD FULL/LOW marks ONLY through the translucent bottle side or squeeze the upper hose gently once cool.',
+          risk: 'NEVER open a hot pressurized radiator or coolant cap! Releasing pressure flashes superheated coolant into scalding steam.'
+        }
+      ],
+      buildScene: function(THREE, S, next) {
+        var p = next.params || {};
+        var tread = _lsClamp(p.tread, 2, 10, 6);
+        var totalFt = _lsClamp(p.totalFt, 40, 900, 145);
+        var oilTemp = _lsClamp(p.oilTemp, -20, 120, 70);
+        var sel = next.sel || 'tread';
+
+        // Shop bay floor
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [4.2, 0.16, 2.4], { color: 0x334155 }, [0, -0.95, 0]);
+        // Tire & Tread ribs
+        var treadColor = tread <= 2 ? 0xef4444 : tread <= 4 ? 0xf59e0b : 0x10b981;
+        _lsAddMesh(THREE, S.model, 'TorusGeometry', [0.55, 0.21, 12, 28], { color: 0x1e293b }, [-1.45, 0.08, 0.22], null, 'tread');
+        _lsAddMesh(THREE, S.model, 'TorusGeometry', [0.71, 0.045, 8, 28], { color: treadColor }, [-1.45, 0.08, 0.14], null, 'tread');
+        _lsAddMesh(THREE, S.model, 'TorusGeometry', [0.71, 0.045, 8, 28], { color: treadColor }, [-1.45, 0.08, 0.3], null, 'tread');
+        // Brake rotor & caliper
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.38, 0.38, 0.12, 20], { color: 0x94a3b8 }, [-1.45, 0.08, 0.04], [Math.PI / 2, 0, 0], 'rotor');
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.22, 0.3, 0.2], { color: 0xdc2626 }, [-1.14, 0.24, 0.04], null, 'rotor');
+        // Stopping distance strip scaled monotonically with totalFt
+        var stripLen = 0.8 + Math.min(2.6, totalFt / 240);
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [stripLen, 0.06, 0.5], { color: totalFt >= 250 ? 0xef4444 : 0xf59e0b }, [-0.8 + stripLen * 0.5, -0.84, 0.65], null, 'stopzone');
+        // Engine block + dipstick
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [1.05, 0.92, 0.85], { color: 0x64748b }, [0.65, -0.1, -0.25], null, 'dipstick');
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.035, 0.035, 0.85, 8], { color: oilTemp < 20 ? 0x38bdf8 : 0xfacc15 }, [0.35, 0.25, -0.12], [0, 0, 0.22], 'dipstick');
+        // 12V Battery
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.68, 0.56, 0.5], { color: 0x0f172a }, [1.75, -0.22, -0.25], null, 'battery');
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.05, 0.05, 0.12, 10], { color: 0xef4444 }, [1.56, 0.1, -0.25], null, 'battery');
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.05, 0.05, 0.12, 10], { color: 0x94a3b8 }, [1.94, 0.1, -0.25], null, 'battery');
+        // Pressurized Coolant Bottle
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.22, 0.24, 0.48, 16], { color: 0xec4899, transparent: true, opacity: 0.8 }, [1.68, -0.22, 0.55], null, 'coolant');
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.12, 0.12, 0.09, 14], { color: 0xfef08a }, [1.68, 0.06, 0.55], null, 'coolant');
+
+        _lsAddSelectHalo(THREE, S, LS_3D_BAYS.carcare.parts, sel);
+        _lsSetTargetHalf(THREE, S, [0.15, -0.05, 0.1], LS_3D_BAYS.carcare.half);
+      }
+    },
+
+    bodycare: {
+      id: 'bodycare',
+      tab: 'bodycare',
+      badgeId: 'ergoSolver',
+      icon: '\uD83E\uDDCD',
+      shortTitle: 'Ergonomics Rig',
+      title: '3D Cervical Spine, L5-S1 Lumbar Disc & Desk Geometry Rig',
+      subtitle: 'See how neck flexion angle, monitor height, and reach moment arm (Torque = Force \u00D7 Distance) load discs.',
+      rot: { y: -32, x: 18 },
+      half: [3.0, 2.4, 2.0],
+      parts: [
+        {
+          id: 'cervical',
+          label: 'Cervical Spine (C1-C7) & Text-Neck',
+          color: '#f59e0b',
+          pos: [-0.25, 0.72, 0.05],
+          size: [0.36, 0.55, 0.36],
+          where: 'Upper neck column tilting forward above the shoulders.',
+          does: 'Counterbalances the ~11 lb head. At 0\u00B0 neutral tilt, load is ~11 lb; at 45-60\u00B0 text-neck flexion, cervical tension reaches ~49-60 lb.',
+          check: 'Bring screens and books up toward eye height so ears align roughly over shoulders instead of jutting forward.',
+          risk: 'Sustained forward head tilt fatigues upper trapezius fibers and compresses cervical discs.'
+        },
+        {
+          id: 'head',
+          label: 'Cranium Center & 20-20-20 Gaze',
+          color: '#38bdf8',
+          pos: [-0.15, 1.25, 0.15],
+          size: [0.55, 0.55, 0.55],
+          where: 'Head sphere tilting forward with the active Neck Tilt Angle slider.',
+          does: 'Sets visual gaze angle toward the top third of your screen and reduces eye-strain convergence fatigue.',
+          check: 'Every 20 minutes, look 20 feet away for 20 seconds and blink slowly.',
+          risk: 'Downward phone/laptop staring locks neck extensors while triggering dry eyes and tension headaches.'
+        },
+        {
+          id: 'screen',
+          label: 'Monitor Top & Neutral Gaze Line',
+          color: '#06b6d4',
+          pos: [1.15, 0.75, 0],
+          size: [0.45, 0.85, 0.9],
+          where: 'Adjustable display panel resting on the right desk surface.',
+          does: 'Aligns the top bezel near seated eye height (~arm\u2019s length away) so head pitch stays near 0-15\u00B0.',
+          check: 'Place laptop on a stack of sturdy books and use an external keyboard/mouse when working longer than 20 minutes.',
+          risk: 'A low laptop screen pulls both neck and upper thoracic spine into a C-slump.'
+        },
+        {
+          id: 'lumbar',
+          label: 'L5-S1 Lumbar Disc & 90-90 Base',
+          color: '#ef4444',
+          pos: [-0.35, -0.3, 0],
+          size: [0.55, 0.55, 0.5],
+          where: 'Lower back disc ring seated between pelvis and ribcage.',
+          does: 'Absorbs torso weight plus external load torque (\u03C4 = r \u00D7 F). Supporting the natural inward curve keeps disc pressure balanced.',
+          check: 'Plant feet flat with knees near 90\u00B0, place a small cushion at the small of the back, and pivot whole body rather than twisting while lifting.',
+          risk: 'Reaching far away from your torso with a heavy load multiplies lower-back disc shear rapidly.'
+        },
+        {
+          id: 'elbow',
+          label: 'Shoulder & 90\u00B0 Forearm Lever',
+          color: '#10b981',
+          pos: [0.22, 0.18, 0.25],
+          size: [0.65, 0.35, 0.35],
+          where: 'Shoulder-to-wrist reaching link above the desktop.',
+          does: 'Reduces moment arm r when elbows rest naturally near the ribs at ~90-100\u00B0.',
+          check: 'Pull keyboard and mouse close so upper arms hang relaxed straight down from shoulders.',
+          risk: 'Over-reaching far ahead elevates deltoid fatigue, shoulder impingement, and wrist extension strain.'
+        },
+        {
+          id: 'load',
+          label: 'Carried Load & Moment Arm (r \u00D7 F)',
+          color: '#8b5cf6',
+          pos: [0.75, 0.1, 0.25],
+          size: [0.5, 0.48, 0.48],
+          where: 'Weighted box/backpack held forward at current reach distance.',
+          does: 'Demonstrates Torque = Force \u00D7 Reach Distance: moving a 20 lb box from 8 inches to 22 inches nearly triples lumbar torque.',
+          check: 'Hug heavy boxes close to your belly button, tighten core lightly, and lift with hips/legs.',
+          risk: 'Long-reach lifts or overstuffed one-shoulder bags overload posterior spinal ligaments.'
+        }
+      ],
+      buildScene: function(THREE, S, next) {
+        var p = next.params || {};
+        var neckDeg = _lsClamp(p.neckDeg, 0, 60, 15);
+        var loadLbs = _lsClamp(p.loadLbs, 2, 50, 15);
+        var reachIn = _lsClamp(p.reachIn, 6, 26, 12);
+        var screenH = _lsClamp(p.screenHeight, 1, 5, 3);
+        var sel = next.sel || 'cervical';
+        var neckRad = neckDeg * Math.PI / 180;
+        var reachM = 0.25 + (reachIn / 26) * 0.72;
+        var torqueLoad = loadLbs * reachIn;
+
+        // Floor & Desk
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [3.6, 0.14, 2.0], { color: 0x334155 }, [0, -1.05, 0]);
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [1.15, 0.12, 1.35], { color: 0x94a3b8 }, [1.05, -0.05, 0]);
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.1, 0.9, 0.1], { color: 0x64748b }, [1.45, -0.52, -0.5]);
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.1, 0.9, 0.1], { color: 0x64748b }, [1.45, -0.52, 0.5]);
+        // Chair seat + lumbar spine
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.72, 0.12, 0.72], { color: 0x1e293b }, [-0.45, -0.55, 0]);
+        var discColor = torqueLoad > 450 ? 0xef4444 : torqueLoad > 240 ? 0xf59e0b : 0x10b981;
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.2, 0.22, 0.18, 16], { color: discColor }, [-0.4, -0.3, 0], null, 'lumbar');
+        // Thoracic torso
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.22, 0.24, 0.82, 16], { color: 0x475569 }, [-0.36, 0.22, 0]);
+        // Articulated cervical column + cranium pitched by neckDeg
+        var neckColor = neckDeg >= 40 ? 0xef4444 : neckDeg >= 20 ? 0xf59e0b : 0x10b981;
+        var headX = -0.32 + Math.sin(neckRad) * 0.52;
+        var headY = 0.72 + Math.cos(neckRad) * 0.45;
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.09, 0.11, 0.36, 12], { color: neckColor }, [-0.34 + Math.sin(neckRad) * 0.18, 0.74, 0], [0, 0, -neckRad], 'cervical');
+        _lsAddMesh(THREE, S.model, 'SphereGeometry', [0.26, 18, 14], { color: 0x38bdf8 }, [headX, headY, 0], null, 'head');
+        // Forearm reach + held weight block scaled by loadLbs
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.065, 0.065, reachM, 10], { color: 0x10b981 }, [-0.15 + reachM * 0.5, 0.18, 0.26], [0, 0, Math.PI / 2], 'elbow');
+        var boxScale = 0.22 + (loadLbs / 50) * 0.26;
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [boxScale, boxScale, boxScale], { color: 0x8b5cf6 }, [-0.1 + reachM, 0.18, 0.26], null, 'load');
+        // Monitor placed dynamically with screenHeight
+        var scrY = 0.25 + (screenH - 1) * 0.18;
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [0.1, 0.62, 0.92], { color: 0x06b6d4 }, [1.18, scrY + 0.32, 0], null, 'screen');
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.05, 0.08, scrY + 0.05, 10], { color: 0x475569 }, [1.22, scrY * 0.5 - 0.02, 0], null, 'screen');
+
+        _lsAddSelectHalo(THREE, S, LS_3D_BAYS.bodycare.parts, sel);
+        _lsSetTargetHalf(THREE, S, [0.25, 0.2, 0], LS_3D_BAYS.bodycare.half);
+      }
+    },
+
+    dental: {
+      id: 'dental',
+      tab: 'dental',
+      badgeId: 'dentalReady',
+      icon: '\uD83E\uDDB7',
+      shortTitle: 'Molar & Enamel',
+      title: '3D Molar Cross-Section, Stephan pH 5.5 Curve & Floss Sulcus',
+      subtitle: 'Explore enamel demineralization below pH 5.5, dentin sensitivity, gumline sulcus cleaning, and fluoride buffer shield.',
+      rot: { y: 26, x: 20 },
+      half: [2.8, 2.3, 2.2],
+      parts: [
+        {
+          id: 'enamel',
+          label: 'Hydroxyapatite Enamel Crown',
+          color: '#e2e8f0',
+          pos: [0, 0.72, 0],
+          size: [1.35, 0.95, 1.2],
+          where: 'Outer white crystalline shell covering the molar cusps above the gumline.',
+          does: 'Hardest tissue in the human body, built from calcium-phosphate crystals. Begins dissolving below critical pH 5.5 during acid spikes.',
+          check: 'Brush gently with a soft brush angled 45\u00B0 toward the gumline; wait 30 minutes after sour/acidic drinks before brushing.',
+          risk: 'Repeated all-day sipping holds plaque below pH 5.5 (~38 min per exposure), etching white chalky spots into cavities.'
+        },
+        {
+          id: 'dentin',
+          label: 'Porous Dentin Tubules',
+          color: '#fde047',
+          pos: [0.05, 0.42, 0.22],
+          size: [0.9, 0.7, 0.7],
+          where: 'Warm yellowish layer directly beneath cutaway enamel crown.',
+          does: 'Supports enamel with microscopic fluid tubules connecting inward toward the tooth nerve.',
+          check: 'Use fluoride or potassium-nitrate toothpaste and avoid hard abrasive scrubbing if cold water stings.',
+          risk: 'Once decay breaches enamel into softer dentin, cavities spread much faster toward the nerve.'
+        },
+        {
+          id: 'pulp',
+          label: 'Pulp Chamber & Root Nerve',
+          color: '#ef4444',
+          pos: [0, 0.02, 0.25],
+          size: [0.45, 0.85, 0.45],
+          where: 'Central crimson chamber extending down twin roots below the gumline.',
+          does: 'Supplies blood nutrients and alerts you through pain nerves when heat, pressure, or deep bacteria threaten the tooth.',
+          check: 'Seek timely dental care for throbbing ache, facial swelling, or lingering hot/cold pain instead of waiting.',
+          risk: 'Untreated infection reaching the pulp can form a painful root-tip abscess.'
+        },
+        {
+          id: 'biofilm',
+          label: 'Plaque Biofilm & pH 5.5 Drop',
+          color: '#f59e0b',
+          pos: [0.68, 0.35, 0.25],
+          size: [0.6, 0.55, 0.6],
+          where: 'Right cusp groove and cervical margin coated with dynamic plaque ring.',
+          does: 'Converts dietary sugars rapidly into lactic/organic acids (Stephan Curve), driving surface pH under 5.5 until saliva buffers it back.',
+          check: 'Eat sweets alongside meals rather than grazing all afternoon, and swish plain water right after snacks.',
+          risk: 'Sticky candy and frequent sports drinks trap fermentable sugar on grooves and reset the 38-minute acid clock.'
+        },
+        {
+          id: 'sulcus',
+          label: 'Gumline Sulcus & C-Wrap Floss',
+          color: '#ec4899',
+          pos: [-0.55, -0.05, 0.15],
+          size: [1.35, 0.42, 1.25],
+          where: 'Pink gingival collar ringing the tooth neck with blue floss arc.',
+          does: 'Forms a tight protective seal (~1-3mm sulcus pocket) around the neck; daily C-wrap flossing disrupts bacteria toothbrush bristles miss.',
+          check: 'Slide floss gently beneath the gum margin in a C-shape hugging each side of the tooth rather than snapping straight down.',
+          risk: 'Undisturbed plaque in the sulcus triggers red, swollen, bleeding gingivitis.'
+        },
+        {
+          id: 'fluoride',
+          label: 'Saliva Buffer & Fluoride Shield',
+          color: '#14b981',
+          pos: [0, 1.22, -0.15],
+          size: [1.45, 0.3, 1.3],
+          where: 'Translucent teal mineral shield floating across the occlusal crown.',
+          does: 'Exchanges OH\u207B ions for F\u207B ions to form fluorapatite (critical pH ~4.5 instead of 5.5) while saliva neutralizes acids.',
+          check: 'Spit out excess toothpaste foam after brushing instead of rinsing away all topical fluoride right away.',
+          risk: 'Dry mouth or skipped nighttime brushing removes natural buffering protection during sleep.'
+        }
+      ],
+      buildScene: function(THREE, S, next) {
+        var p = next.params || {};
+        var snackScore = _lsClamp(p.snackScore, 1, 5, 2);
+        var routineDone = _lsClamp(p.routineDone, 0, 4, 2);
+        var sel = next.sel || 'enamel';
+
+        // Gumline / Gingiva base
+        _lsAddMesh(THREE, S.model, 'BoxGeometry', [2.6, 0.55, 1.9], { color: 0xf472b6 }, [0, -0.58, 0], null, 'sulcus');
+        // Twin molar roots
+        _lsAddMesh(THREE, S.model, 'ConeGeometry', [0.34, 1.0, 14], { color: 0xfef3c7 }, [-0.42, -0.62, -0.06], [Math.PI, 0, 0.08], 'pulp');
+        _lsAddMesh(THREE, S.model, 'ConeGeometry', [0.34, 1.0, 14], { color: 0xfef3c7 }, [0.42, -0.62, -0.06], [Math.PI, 0, -0.08], 'pulp');
+        // Enamel Crown + Cutaway Cusps (tinted more chalky warm when snackScore is high)
+        var enamelTint = snackScore >= 4 ? 0xfde68a : 0xf1f5f9;
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.78, 0.66, 0.88, 20], { color: enamelTint }, [-0.08, 0.42, -0.14], null, 'enamel');
+        _lsAddMesh(THREE, S.model, 'SphereGeometry', [0.34, 14, 12], { color: enamelTint }, [-0.38, 0.86, -0.28], null, 'enamel');
+        _lsAddMesh(THREE, S.model, 'SphereGeometry', [0.34, 14, 12], { color: enamelTint }, [0.28, 0.86, -0.28], null, 'enamel');
+        // Cutaway Dentin + Crimson Pulp
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.5, 0.44, 0.72, 16], { color: 0xfacc15 }, [0.06, 0.36, 0.2], null, 'dentin');
+        _lsAddMesh(THREE, S.model, 'CylinderGeometry', [0.18, 0.14, 0.64, 12], { color: 0xef4444 }, [0.04, 0.06, 0.3], null, 'pulp');
+        // Plaque Biofilm collar thickening with snackScore
+        var biofilmTube = 0.045 + snackScore * 0.022;
+        var biofilmColor = snackScore >= 4 ? 0xef4444 : snackScore >= 3 ? 0xf59e0b : 0x84cc16;
+        _lsAddMesh(THREE, S.model, 'TorusGeometry', [0.74, biofilmTube, 10, 26], { color: biofilmColor }, [0.02, 0.36, 0.04], [Math.PI / 2, 0, 0], 'biofilm');
+        // C-wrap Floss Ring around sulcus
+        _lsAddMesh(THREE, S.model, 'TorusGeometry', [0.82, 0.032, 8, 26], { color: 0x38bdf8 }, [0, -0.12, 0], [Math.PI / 2, 0, 0], 'sulcus');
+        // Fluoride Shield cap scaling opacity with routineDone (0..4)
+        var shieldOpacity = 0.18 + (routineDone / 4) * 0.45;
+        _lsAddMesh(THREE, S.model, 'TorusGeometry', [0.68, 0.055, 10, 24], { color: 0x14b981, transparent: true, opacity: shieldOpacity }, [0, 1.06, -0.06], [Math.PI / 2, 0, 0], 'fluoride');
+
+        _lsAddSelectHalo(THREE, S, LS_3D_BAYS.dental.parts, sel);
+        _lsSetTargetHalf(THREE, S, [0, 0.1, 0], LS_3D_BAYS.dental.half);
+      }
+    }
+  };
+
+  var _lsViewers = {};
+  var _lsPointerDrag = {};
+  function getLifeSkillsOrbitViewer(bayId) {
+    var bay = LS_3D_BAYS[bayId];
+    if (!bay) return null;
+    var factory = (typeof window !== 'undefined' && window.StemLab && typeof window.StemLab.makeOrbitViewer === 'function')
+      ? window.StemLab.makeOrbitViewer
+      : null;
+    if (_lsViewers[bayId] && _lsViewers[bayId]._lsFactory === factory) return _lsViewers[bayId];
+    if (_lsViewers[bayId] && typeof _lsViewers[bayId].dispose === 'function') {
+      try { _lsViewers[bayId].dispose(); } catch (_) {}
+    }
+    if (factory) {
+      var viewer = factory({
+        attr: 'data-lifeskills-3d-canvas',
+        clearColor: 0x0f172a,
+        fov: 42,
+        rot: bay.rot,
+        fitSlack: 1.08,
+        failMessage: 'WebGL preview paused — using live axonometric 3D blueprint.',
+        lights: function(THREE, scene) {
+          if (typeof THREE.AmbientLight === 'function') scene.add(new THREE.AmbientLight(0xffffff, 0.62));
+          if (typeof THREE.HemisphereLight === 'function') scene.add(new THREE.HemisphereLight(0xe0f2fe, 0x1e293b, 0.45));
+          if (typeof THREE.DirectionalLight === 'function') {
+            var key = new THREE.DirectionalLight(0xffffff, 0.85);
+            _lsPlace(key, 6, 9, 7);
+            scene.add(key);
+            var rim = new THREE.DirectionalLight(0x93c5fd, 0.35);
+            _lsPlace(rim, -5, 4, -6);
+            scene.add(rim);
+          }
+        },
+        build: function(THREE, S, next) {
+          bay.buildScene(THREE, S, next || {});
+        }
+      });
+      if (viewer && typeof viewer === 'object') viewer._lsFactory = factory;
+      _lsViewers[bayId] = viewer;
+      return viewer;
+    }
+    return {
+      _lsFactory: null,
+      attach: function() {},
+      push: function() {},
+      onStatusChange: function() {},
+      status: function() { return 'idle'; },
+      debug: function() { return { state: 'idle' }; },
+      dispose: function() {}
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════
   // Tool Registration
   // ═══════════════════════════════════════════════════════
 
@@ -1812,7 +3385,7 @@ window.StemLab = window.StemLab || {
       var h = React.createElement;
       var d = (ctx.toolData && ctx.toolData.lifeSkills) || {};
       // A saved project is INPUT: a student can hand-edit it or carry it
-      // across versions. These 69 keys hold free TEXT that is either
+      // across versions. These keys hold free TEXT that is either
       // .trim()-ed or handed straight to React as a child, so a stored
       // number throws "trim is not a function" and a stored object throws
       // "Objects are not valid as a React child". Either one blanks the
@@ -1824,20 +3397,21 @@ window.StemLab = window.StemLab || {
       // Non-strings become '' — these are all display/feedback strings, so
       // an empty one renders nothing, which is the honest fallback.
       var _LS_TEXT_KEYS = [
-        'appointmentScenarioFb', 'appointmentScriptMsg', 'bodyScenarioFb', 'ccDashFb', 'communicationPlanMsg',
-        'communicationScenarioFb', 'dentalScenarioFb', 'digitalPlanMsg', 'digitalScenarioFb', 'foodConfidenceScenarioFb',
-        'foodLabelFb', 'foodSafetyFb', 'homePlanMsg', 'homeSafetyScenarioFb', 'interviewDayMsg',
+        'aiPiiGuardMsg', 'appointmentScenarioFb', 'appointmentScriptMsg', 'battleDomain', 'battleMode', 'bodyScenarioFb', 'budgetSyncMsg', 'ccDashFb', 'ccRoadSurface', 'chalDomain', 'chalMode', 'commDeescClose', 'commDeescListen', 'commDeescOpen', 'commLogAsk', 'commLogFact', 'commLogMsg', 'communicationPlanMsg',
+        'communicationScenarioFb', 'crLastNote', 'dataChartRedesignNote', 'dentalScenarioFb', 'digitalPlanMsg', 'digitalScenarioFb', 'ergoSweat', 'fireClassFb', 'fireClassPick', 'foodConfidenceScenarioFb',
+        'foodLabelFb', 'foodSafetyFb', 'homeA', 'homePlanMsg', 'homeQ', 'homeSafetyScenarioFb', 'homesysQuizChoice', 'homesysQuizFb', 'hrToiletLeak', 'interviewDayMsg',
         'interviewFollowUpMessage', 'interviewInput', 'interviewPacketMsg', 'interviewPlanMsg', 'interviewProofCueMsg',
         'interviewProofNote', 'interviewReflectionMsg', 'interviewReflectionNote', 'interviewRehearsalMsg', 'interviewSavedStarAnswer',
         'interviewSavedTranscript', 'interviewScenarioFb', 'interviewSparkMsg', 'interviewStarAction', 'interviewStarMsg',
         'interviewStarResult', 'interviewStarSituation', 'interviewStarTask', 'interviewTranscriptMsg', 'kitchen3dMsg',
-        'laundry3dMsg', 'lifeSkills3dStatus', 'medLabelFb', 'medQuestionMsg', 'medScenarioFb',
-        'overviewPlanMsg', 'plumbFb', 'proofItemEvidence', 'proofItemMsg', 'proofItemShare',
+        'laundry3dMsg', 'learnFilter', 'lifeSkills3dStatus', 'lsDomain', 'lsInlineLab', 'lsLifeRole', 'lsSupportMode', 'lsTabSearch',
+        'medLabelFb', 'medQuestionMsg', 'medScenarioFb', 'outingMsg',
+        'overviewExportMsg', 'overviewPlanMsg', 'panNewShape', 'panOrigShape', 'plumbFb', 'proofItemEvidence', 'proofItemMsg', 'proofItemShare',
         'proofItemSkill', 'proofItemTitle', 'proofItemType', 'proofPlanMsg', 'proofScenarioFb',
         'recordPlanMsg', 'recordScenarioFb', 'repair3dMsg', 'resumeAction', 'resumeBulletMsg',
         'resumeContext', 'resumePlanMsg', 'resumeResult', 'resumeScenarioFb', 'resumeSkill',
-        'safety3dMsg', 'sleepScenarioFb', 'timePlanMsg', 'timeScenarioFb', 'transit3dMsg',
-        'transportPlanMsg', 'transportScenarioFb', 'workPlanMsg', 'workScenarioFb'
+        'safety3dMsg', 'scamInspectFb', 'scamInspectVerdict', 'sleepScenarioFb', 'timePlanMsg', 'timeScenarioFb', 'transit3dMsg',
+        'transportPlanMsg', 'transportScenarioFb', 'workAccommMsg', 'workAccommNeed', 'workPlanMsg', 'workScenarioFb'
       ];
       for (var _lsi = 0; _lsi < _LS_TEXT_KEYS.length; _lsi++) {
         var _lsk = _LS_TEXT_KEYS[_lsi];
@@ -2159,6 +3733,7 @@ window.StemLab = window.StemLab || {
         }
       };
       function openLifeSkillsOuting() {
+        var outingHints = arguments.length > 0 && arguments[0] && typeof arguments[0] === 'object' && typeof arguments[0].preventDefault !== 'function' ? arguments[0] : null;
         var base = 'https://alloflow-cdn.pages.dev/life_skills_outing/life_skills_outing.html';
         try {
           var host = String(window.location.hostname || '');
@@ -2173,6 +3748,12 @@ window.StemLab = window.StemLab || {
           token = Array.from(bytes, function(byte) { return byte.toString(16).padStart(2, '0'); }).join('');
         } catch (_) { /* The authored mission is still available without a bridge. */ }
         var destination = new URL(base);
+        if (outingHints) {
+          if (outingHints.context === 'work' || outingHints.context === 'community') destination.searchParams.set('context', outingHints.context);
+          if (outingHints.support === 'guided' || outingHints.support === 'try' || outingHints.support === 'independent') destination.searchParams.set('support', outingHints.support);
+          if (outingHints.language === 'plain' || outingHints.language === 'standard') destination.searchParams.set('language', outingHints.language);
+          if (outingHints.learner) destination.searchParams.set('learner', String(outingHints.learner));
+        }
         if (token && /^https?:$/.test(window.location.protocol)) {
           destination.searchParams.set('bridgeToken', token);
           destination.searchParams.set('parentOrigin', window.location.origin);
@@ -2216,7 +3797,7 @@ window.StemLab = window.StemLab || {
             safetyBase = window.location.origin + '/life_skills_safety/life_skills_safety.html';
           }
         } catch (_) {}
-        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark');
+        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark') + buildLifeSkills3dExtraQuery();
         var w = null;
         try { w = window.open(safetyBase + query, 'alloflow-life-safety-3d', 'width=1280,height=860'); } catch (_) { w = null; }
         if (!w) {
@@ -2237,7 +3818,7 @@ window.StemLab = window.StemLab || {
             repairBase = window.location.origin + '/life_skills_repair/life_skills_repair.html';
           }
         } catch (_) {}
-        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark');
+        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark') + buildLifeSkills3dExtraQuery();
         var w = null;
         try { w = window.open(repairBase + query, 'alloflow-life-repair-3d', 'width=1280,height=860'); } catch (_) { w = null; }
         if (!w) {
@@ -2258,7 +3839,7 @@ window.StemLab = window.StemLab || {
             kitchenBase = window.location.origin + '/life_skills_kitchen/life_skills_kitchen.html';
           }
         } catch (_) {}
-        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark');
+        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark') + buildLifeSkills3dExtraQuery();
         var w = null;
         try { w = window.open(kitchenBase + query, 'alloflow-life-kitchen-3d', 'width=1280,height=860'); } catch (_) { w = null; }
         if (!w) {
@@ -2279,7 +3860,7 @@ window.StemLab = window.StemLab || {
             laundryBase = window.location.origin + '/life_skills_laundry/life_skills_laundry.html';
           }
         } catch (_) {}
-        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark');
+        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark') + buildLifeSkills3dExtraQuery();
         var w = null;
         try { w = window.open(laundryBase + query, 'alloflow-life-laundry-3d', 'width=1280,height=860'); } catch (_) { w = null; }
         if (!w) {
@@ -2300,7 +3881,7 @@ window.StemLab = window.StemLab || {
             transitBase = window.location.origin + '/life_skills_transit/life_skills_transit.html';
           }
         } catch (_) {}
-        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark');
+        var query = '?v=1&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark') + buildLifeSkills3dExtraQuery();
         var w = null;
         try { w = window.open(transitBase + query, 'alloflow-life-transit-3d', 'width=1280,height=860'); } catch (_) { w = null; }
         if (!w) {
@@ -2312,6 +3893,14 @@ window.StemLab = window.StemLab || {
         upd('transit3dMsg', '3D transit lab opened in a new window.');
         announceToSR(__alloT('stem.lifeskills.sr_opened_the_3d_transit_and_street_safety_lab_in_a', 'Opened the 3D transit and street safety lab in a new window.'));
         try { w.focus(); } catch (_) {}
+      }
+
+      function buildLifeSkills3dExtraQuery() {
+        var extra = '';
+        if (asText(d.lsLifeRole) === 'transition') extra += '&role=transition';
+        var prof = String(ctx && ctx.activeProfileId || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 48);
+        if (prof) extra += '&learner=' + encodeURIComponent(prof);
+        return extra;
       }
 
       // ── Defaults ──
@@ -2330,13 +3919,40 @@ window.StemLab = window.StemLab || {
         var capstoneFoundationsComplete = capstoneFoundations.every(function(lab) { var record = lifeSkills3dPassport[lab.id] || {}; return !!record.complete || (Number(record.completed) || 0) >= (Number(record.total) || Number(lab.total) || 6); });
         var capstoneNeedsReplay = !!capstoneRecommendedLab && (Number(capstoneEvidenceRecord.coached) + Number(capstoneEvidenceRecord.selfCorrected) > 0);
         var capstoneSupport = capstoneFocusRecord.confidence === 'not-yet' || !(Number(capstoneFocusRecord.completed) || 0) ? 'supported' : capstoneNeedsReplay ? 'guided' : capstoneFoundationsComplete ? 'independent' : 'guided';
-        var query = '?v=3&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark') + '&focus=' + encodeURIComponent(capstoneFocusLab.id) + '&support=' + encodeURIComponent(capstoneSupport);
+        var query = '?v=3&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark') + '&focus=' + encodeURIComponent(capstoneFocusLab.id) + '&support=' + encodeURIComponent(capstoneSupport) + buildLifeSkills3dExtraQuery();
         var w = null;
         try { w = window.open(capstoneBase + query, 'alloflow-life-capstone-3d', 'width=1280,height=860'); } catch (_) { w = null; }
         if (!w) { announceToSR(__alloT('stem.lifeskills.sr_the_3d_day_in_the_life_capstone_was_blocked_allow', 'The 3D day-in-the-life capstone was blocked. Allow pop-ups for this page, then try again.')); upd('capstone3dMsg', 'Pop-up blocked — allow pop-ups for this page, then try again.'); return; }
         upd('capstone3dMsg', 'Adaptive 3D capstone opened with ' + capstoneSupport + ' support.');
         announceToSR('Opened an adaptive 3D capstone focused on ' + capstoneFocusLab.title + '.');
         try { w.focus(); } catch (_) {}
+      }
+      function buildLifeSkills3dUrl(id) {
+        var isLocal = false;
+        var origin = 'https://alloflow-cdn.pages.dev';
+        try {
+          var host = String(window.location && window.location.hostname || '');
+          if (/^(localhost|127\.0\.0\.1)$/i.test(host) || /alloflow/i.test(host)) {
+            isLocal = true;
+            origin = window.location.origin;
+          }
+        } catch (_) {}
+        var paths = {
+          capstone: '/life_skills_capstone/life_skills_capstone.html',
+          safety: '/life_skills_safety/life_skills_safety.html',
+          repair: '/life_skills_repair/life_skills_repair.html',
+          kitchen: '/life_skills_kitchen/life_skills_kitchen.html',
+          laundry: '/life_skills_laundry/life_skills_laundry.html',
+          transit: '/life_skills_transit/life_skills_transit.html'
+        };
+        var p = paths[id] || paths.capstone;
+        return (isLocal ? origin : 'https://alloflow-cdn.pages.dev') + p + '?v=3&source=lifeskills&mode=guided&theme=' + encodeURIComponent(ctx.theme || 'dark') + buildLifeSkills3dExtraQuery();
+      }
+      function openLifeSkillsInlineCompanion(id) {
+        var allowed = ['capstone', 'safety', 'repair', 'kitchen', 'laundry', 'transit'];
+        if (allowed.indexOf(id) === -1) return;
+        upd('lsInlineLab', id);
+        announceToSR('Opened ' + id + ' 3D workspace inline.');
       }
       function openLifeSkills3dById(id) {
         if (id === 'capstone') return openLifeSkillsCapstone3D();
@@ -2355,6 +3971,379 @@ window.StemLab = window.StemLab || {
       var TAB_IDS = ['appointments', 'battle', 'bodycare', 'budget', 'carcare', 'challenge', 'communication', 'contract', 'cooking', 'credit', 'data', 'decision', 'dental', 'digitalsafety', 'foodconfidence', 'homerepair', 'homesafety', 'homesys', 'insurance', 'interviewstudio', 'laundry', 'learn', 'meds', 'overview', 'paycheck', 'prooflocker', 'records', 'resumebuilder', 'science', 'sleep', 'timemanagement', 'transport', 'workreadiness'];
       var tab = TAB_IDS.indexOf(d.tab) !== -1 ? d.tab : 'overview';
       var glassCard = 'bg-white/70 backdrop-blur-md rounded-2xl border border-white/40 shadow-lg p-4';
+      var rawRole = asText(d.lsLifeRole);
+      var lsLifeRole = ['youth', 'teen', 'transition'].indexOf(rawRole) !== -1 ? rawRole : 'teen';
+      var rawSupport = asText(d.lsSupportMode);
+      var lsSupportMode = ['plain', 'standard', 'steam'].indexOf(rawSupport) !== -1 ? rawSupport : 'standard';
+      var rawDomain = asText(d.lsDomain);
+      var lsDomain = SUBTOOL_DOMAINS.some(function(dom) { return dom.id === rawDomain; }) ? rawDomain : 'all';
+      var lsTabSearch = asText(d.lsTabSearch);
+      var rawInlineLab = asText(d.lsInlineLab);
+      var lsInlineLab = ['capstone', 'safety', 'repair', 'kitchen', 'laundry', 'transit'].indexOf(rawInlineLab) !== -1 ? rawInlineLab : '';
+      var lsPinnedTabs = Array.isArray(d.lsPinnedTabs) ? d.lsPinnedTabs.filter(function(id) { return TAB_IDS.indexOf(id) !== -1; }).slice(0, 8) : [];
+      var effectiveBand = lsSupportMode === 'plain' ? 'K-2' : lsSupportMode === 'steam' ? '9-12' : gradeBand;
+      function adaptRoleProse(str) {
+        var text = String(str || '');
+        if (lsLifeRole !== 'transition') return text;
+        return text
+          .replace(/\btrusted grown-up or helper\b/gi, 'trusted support contact or clinician')
+          .replace(/\ba grown-up or helper\b/gi, 'a trusted support contact')
+          .replace(/\ba grown-up\b/gi, 'a trusted support contact')
+          .replace(/\bgrown-up\b/gi, 'trusted support contact')
+          .replace(/\btrusted adult\b/gi, 'trusted support contact')
+          .replace(/\bstudent\b/gi, 'young adult');
+      }
+      function roleGradeText(k2, g35, g68, g912) {
+        return adaptRoleProse(gradeText(effectiveBand, k2, g35, g68, g912));
+      }
+
+      function buildRoleAwareLearnerPhrase() {
+        var who = lsLifeRole === 'transition' ? 'a young adult learner' : ('a ' + effectiveBand + ' student');
+        var style = lsSupportMode === 'plain'
+          ? ' using clear, concrete, plain language'
+          : lsSupportMode === 'steam'
+            ? ' with quantitative STEM reasoning'
+            : '';
+        return who + style;
+      }
+
+      function renderLifeSkills3dBay(bayId, liveSummaryText, liveParams) {
+        var bay = LS_3D_BAYS[bayId];
+        if (!bay) return null;
+        var kRotY = 'ls3dRotY_' + bayId;
+        var kRotX = 'ls3dRotX_' + bayId;
+        var kZoom = 'ls3dZoom_' + bayId;
+        var kSel = 'ls3dSel_' + bayId;
+        var kLabels = 'ls3dLabels_' + bayId;
+        var kExp = 'ls3dExplored_' + bayId;
+        var kStatus = 'ls3dStatus_' + bayId;
+
+        var rotY = (typeof d[kRotY] === 'number' && isFinite(d[kRotY])) ? d[kRotY] : bay.rot.y;
+        var rotX = _lsClamp(d[kRotX], -65, 65, bay.rot.x);
+        var zoom = _lsClamp(d[kZoom], 0.6, 2.0, 1);
+        var selId = asText(d[kSel]) || bay.parts[0].id;
+        var activePart = bay.parts.find(function(pt) { return pt.id === selId; }) || bay.parts[0];
+        var showLabels = d[kLabels] !== false;
+        var exploredMap = (d[kExp] && typeof d[kExp] === 'object' && !Array.isArray(d[kExp])) ? d[kExp] : {};
+        var exploredCount = bay.parts.filter(function(pt) { return !!exploredMap[pt.id]; }).length;
+        var viewerStatus = asText(d[kStatus]) || 'idle';
+        var viewer = getLifeSkillsOrbitViewer(bayId);
+        var paramsObj = liveParams || {};
+        var sig = bayId + '|' + activePart.id + '|' + JSON.stringify(paramsObj);
+
+        if (viewer && typeof viewer.onStatusChange === 'function') {
+          viewer.onStatusChange(function(nextStatus) {
+            if (nextStatus && nextStatus !== viewerStatus) upd(kStatus, nextStatus);
+          });
+        }
+        if (viewer && typeof viewer.push === 'function') {
+          try {
+            viewer.push({
+              sig: sig,
+              sel: activePart.id,
+              params: paramsObj,
+              rotY: rotY,
+              rotX: rotX,
+              zoom: zoom,
+              static: true
+            });
+          } catch (_) {}
+        }
+
+        var isReady = viewerStatus === 'ready';
+
+        function selectPart(partId, announcePrefix) {
+          var part = bay.parts.find(function(pt) { return pt.id === partId; });
+          if (!part) return;
+          var nextMap = Object.assign({}, exploredMap);
+          nextMap[part.id] = 1;
+          var nextCount = bay.parts.filter(function(pt) { return !!nextMap[pt.id]; }).length;
+          var patch = {};
+          patch[kSel] = part.id;
+          patch[kExp] = nextMap;
+          updMulti(patch);
+          awardOnce('ls3d:bay:' + bayId + ':' + part.id, 5, 'Inspected ' + part.label + ' in ' + bay.shortTitle + ' 3D Bay', nextCount >= bay.parts.length ? bay.badgeId : undefined);
+          announceToSR((announcePrefix || '') + 'Selected 3D part: ' + part.label + '. ' + part.where);
+        }
+
+        function updateView(nextY, nextX, nextZoom, srText) {
+          var patch = {};
+          patch[kRotY] = Math.round(nextY);
+          patch[kRotX] = Math.round(_lsClamp(nextX, -65, 65, bay.rot.x));
+          patch[kZoom] = Math.round(_lsClamp(nextZoom, 0.6, 2.0, 1) * 100) / 100;
+          updMulti(patch);
+          if (srText) announceToSR(srText);
+        }
+
+        function resetView() {
+          updateView(bay.rot.y, bay.rot.x, 1, 'Reset ' + bay.shortTitle + ' 3D camera view.');
+        }
+
+        function handleViewportKeyDown(e) {
+          var key = e.key;
+          if (key === 'ArrowLeft') { e.preventDefault(); updateView(rotY - 12, rotX, zoom, 'Rotated 3D view left'); }
+          else if (key === 'ArrowRight') { e.preventDefault(); updateView(rotY + 12, rotX, zoom, 'Rotated 3D view right'); }
+          else if (key === 'ArrowUp') { e.preventDefault(); updateView(rotY, rotX + 8, zoom, 'Tilted 3D view up'); }
+          else if (key === 'ArrowDown') { e.preventDefault(); updateView(rotY, rotX - 8, zoom, 'Tilted 3D view down'); }
+          else if (key === '+' || key === '=') { e.preventDefault(); updateView(rotY, rotX, zoom + 0.15, 'Zoomed 3D view in'); }
+          else if (key === '-' || key === '_') { e.preventDefault(); updateView(rotY, rotX, zoom - 0.15, 'Zoomed 3D view out'); }
+          else if (key === '0' || key === 'r' || key === 'R' || key === 'Home') { e.preventDefault(); resetView(); }
+          else if (key === 'f' || key === 'F') {
+            e.preventDefault();
+            var idx = bay.parts.findIndex(function(pt) { return pt.id === activePart.id; });
+            var nextPart = bay.parts[(idx + 1) % bay.parts.length];
+            selectPart(nextPart.id, 'Focused next 3D component: ');
+          }
+        }
+
+        function onPointerDown(e) {
+          if (e.button && e.button !== 0) return;
+          _lsPointerDrag[bayId] = { x: e.clientX || 0, y: e.clientY || 0, rotY: rotY, rotX: rotX };
+        }
+        function onPointerMove(e) {
+          var st = _lsPointerDrag[bayId];
+          if (!st) return;
+          var dx = (e.clientX || 0) - st.x;
+          var dy = (e.clientY || 0) - st.y;
+          updateView(st.rotY + dx * 0.45, st.rotX - dy * 0.35, zoom);
+        }
+        function onPointerUp() {
+          delete _lsPointerDrag[bayId];
+        }
+
+        // Project 3D bounding wireframe corners + 6 interactive part nodes for axonometric SVG blueprint
+        var svgW = 460, svgH = 260;
+        var hx = bay.half[0] * 0.58, hy = bay.half[1] * 0.54, hz = bay.half[2] * 0.58;
+        var boxCorners = [
+          [-hx, -hy, -hz], [hx, -hy, -hz], [hx, hy, -hz], [-hx, hy, -hz],
+          [-hx, -hy, hz],  [hx, -hy, hz],  [hx, hy, hz],  [-hx, hy, hz]
+        ].map(function(pt) { return projectLifeSkills3dPoint(pt, rotY, rotX, zoom, svgW, svgH); });
+        var boxEdges = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+        var originPt = projectLifeSkills3dPoint([0, -0.35, 0], rotY, rotX, zoom, svgW, svgH);
+        var projectedParts = bay.parts.map(function(part) {
+          return {
+            part: part,
+            proj: projectLifeSkills3dPoint(part.pos, rotY, rotX, zoom, svgW, svgH)
+          };
+        }).sort(function(a, b) { return a.proj.z - b.proj.z; });
+
+        var ctrlBtnCls = 'px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-white border border-slate-600 hover:bg-slate-700 focus:outline-none focus:ring-2 focus:ring-teal-400';
+
+        return h('div', {
+          className: glassCard + ' space-y-3 border border-teal-200',
+          'data-lifeskills-3d-bay': bayId,
+          'data-lifeskills-3d-status': viewerStatus
+        },
+          h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+            h('div', null,
+              h('p', { className: 'text-[11px] uppercase font-bold text-teal-800' }, bay.icon + ' Interactive 3D STEM Bay'),
+              h('h5', { className: 'text-sm font-black text-slate-900' }, bay.title),
+              h('p', { className: 'text-xs text-slate-700 leading-relaxed' }, adaptRoleProse(bay.subtitle))
+            ),
+            h('div', { className: 'flex items-center gap-2 flex-wrap' },
+              h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-teal-50 text-teal-900 border border-teal-300' }, exploredCount + '/' + bay.parts.length + ' parts inspected'),
+              h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-slate-800 text-white' }, isReady ? 'WebGL 3D Active' : '3D Blueprint Active')
+            )
+          ),
+          liveSummaryText && h('div', { className: 'rounded-xl bg-teal-50 border border-teal-200 px-3 py-2 text-xs font-bold text-teal-900' }, 'Live telemetry synced to 3D bay: ' + liveSummaryText),
+          h('div', { className: 'grid lg:grid-cols-[1.25fr_0.95fr] gap-4 items-start' },
+            h('div', { className: 'space-y-2' },
+              h('div', { className: 'flex flex-wrap gap-1.5', role: 'toolbar', 'aria-label': bay.shortTitle + ' 3D camera controls' },
+                h('button', { type: 'button', onClick: function() { updateView(rotY - 15, rotX, zoom, 'Rotated left'); }, className: ctrlBtnCls, 'aria-label': 'Rotate 3D model left' }, '\u21BA Left'),
+                h('button', { type: 'button', onClick: function() { updateView(rotY + 15, rotX, zoom, 'Rotated right'); }, className: ctrlBtnCls, 'aria-label': 'Rotate 3D model right' }, '\u21BB Right'),
+                h('button', { type: 'button', onClick: function() { updateView(rotY, rotX + 10, zoom, 'Tilted up'); }, className: ctrlBtnCls, 'aria-label': 'Tilt 3D camera up' }, '\u25B2 Up'),
+                h('button', { type: 'button', onClick: function() { updateView(rotY, rotX - 10, zoom, 'Tilted down'); }, className: ctrlBtnCls, 'aria-label': 'Tilt 3D camera down' }, '\u25BC Down'),
+                h('button', { type: 'button', onClick: function() { updateView(rotY, rotX, zoom + 0.15, 'Zoomed in'); }, className: ctrlBtnCls, 'aria-label': 'Zoom in 3D view' }, '+ Zoom'),
+                h('button', { type: 'button', onClick: function() { updateView(rotY, rotX, zoom - 0.15, 'Zoomed out'); }, className: ctrlBtnCls, 'aria-label': 'Zoom out 3D view' }, '\u2212 Zoom'),
+                h('button', { type: 'button', onClick: resetView, className: ctrlBtnCls, 'aria-label': 'Reset 3D camera view' }, 'Reset View'),
+                h('button', {
+                  type: 'button',
+                  'aria-pressed': showLabels,
+                  onClick: function() { upd(kLabels, !showLabels); announceToSR(showLabels ? '3D callout labels hidden' : '3D callout labels shown'); },
+                  className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (showLabels ? 'bg-teal-800 text-white border-teal-700' : 'bg-white text-slate-800 border-slate-400')
+                }, showLabels ? 'Labels: On' : 'Labels: Off'),
+                h('button', {
+                  type: 'button',
+                  onClick: function() { speakLifeSkillsText(activePart.label + '. ' + activePart.does + ' Risk: ' + activePart.risk); },
+                  className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-indigo-800 text-white hover:bg-indigo-900'
+                }, '\uD83D\uDD0A Read Part')
+              ),
+              h('div', {
+                tabIndex: 0,
+                role: 'application',
+                'aria-label': bay.title + '. Arrow keys rotate, plus/minus zoom, F cycles parts, 0 resets.',
+                'data-lifeskills-3d-viewport': bayId,
+                onKeyDown: handleViewportKeyDown,
+                onPointerDown: onPointerDown,
+                onPointerMove: onPointerMove,
+                onPointerUp: onPointerUp,
+                onPointerLeave: onPointerUp,
+                onWheel: function(e) { if (!e.shiftKey) return; e.preventDefault(); updateView(rotY, rotX, zoom + (e.deltaY < 0 ? 0.1 : -0.1)); },
+                className: 'relative rounded-2xl overflow-hidden border border-slate-700 bg-slate-900 select-none focus:outline-none focus:ring-2 focus:ring-teal-500',
+                style: { minHeight: '260px', cursor: 'grab' }
+              },
+                h('div', {
+                  'data-lifeskills-3d-webgl-mount': bayId,
+                  ref: function(el) {
+                    if (viewer && typeof viewer.attach === 'function') viewer.attach(el);
+                  },
+                  style: { position: 'absolute', inset: 0 }
+                }),
+                h('svg', {
+                  viewBox: '0 0 ' + svgW + ' ' + svgH,
+                  'data-lifeskills-3d-fallback': isReady ? 'false' : 'true',
+                  'aria-hidden': 'true',
+                  style: {
+                    display: isReady ? 'none' : 'block',
+                    width: '100%',
+                    height: '260px',
+                    position: 'relative',
+                    zIndex: 1
+                  }
+                },
+                  h('rect', { x: 0, y: 0, width: svgW, height: svgH, fill: '#0f172a' }),
+                  boxEdges.map(function(edge, ei) {
+                    var a = boxCorners[edge[0]], b = boxCorners[edge[1]];
+                    return h('line', { key: 'e' + ei, x1: a.x, y1: a.y, x2: b.x, y2: b.y, stroke: '#334155', strokeWidth: 1.2, strokeDasharray: ei >= 4 ? '3 3' : undefined });
+                  }),
+                  projectedParts.map(function(item) {
+                    var part = item.part, pr = item.proj;
+                    var isSel = part.id === activePart.id;
+                    var rad = Math.max(9, Math.round(13 * pr.scale));
+                    return h('g', { key: part.id },
+                      h('line', { x1: originPt.x, y1: originPt.y, x2: pr.x, y2: pr.y, stroke: isSel ? '#facc15' : '#475569', strokeWidth: isSel ? 1.8 : 1, strokeDasharray: '2 3' }),
+                      isSel && h('circle', { cx: pr.x, cy: pr.y, r: rad + 6, fill: 'none', stroke: '#facc15', strokeWidth: 2.2 }),
+                      h('circle', { cx: pr.x, cy: pr.y, r: rad, fill: part.color, stroke: isSel ? '#ffffff' : '#0f172a', strokeWidth: isSel ? 2.4 : 1.5 }),
+                      showLabels && h('text', { x: pr.x + rad + 5, y: pr.y + 4, fill: isSel ? '#fef08a' : '#e2e8f0', fontSize: isSel ? '11' : '10', fontWeight: isSel ? '700' : '600' }, part.label.split(' (')[0])
+                    );
+                  })
+                ),
+                isReady && showLabels && h('div', { className: 'pointer-events-none absolute bottom-2 left-2 right-2 flex flex-wrap gap-1 z-10' },
+                  bay.parts.map(function(part) {
+                    var isSel = part.id === activePart.id;
+                    return h('span', { key: part.id, className: 'px-2 py-0.5 rounded-full text-[10px] font-bold ' + (isSel ? 'bg-amber-800 text-white border border-amber-300' : 'bg-slate-900/80 text-slate-100 border border-slate-700') }, part.label.split(' (')[0]);
+                  })
+                )
+              ),
+              h('p', { className: 'text-[11px] text-slate-700' }, 'Controls: Drag viewport or use Arrow keys to orbit, +/- to zoom, F to cycle parts, 0 to reset. Orbit yaw ' + Math.round(rotY) + '\u00B0 \u00B7 pitch ' + Math.round(rotX) + '\u00B0 \u00B7 zoom ' + zoom.toFixed(2) + 'x.')
+            ),
+            h('div', { className: 'space-y-3' },
+              h('div', { className: 'grid grid-cols-2 gap-1.5', role: 'group', 'aria-label': bay.shortTitle + ' 3D components' },
+                bay.parts.map(function(part) {
+                  var selected = activePart.id === part.id;
+                  var seen = !!exploredMap[part.id];
+                  return h('button', {
+                    key: part.id,
+                    type: 'button',
+                    'aria-pressed': selected,
+                    onClick: function() { selectPart(part.id); },
+                    className: 'text-left px-2.5 py-2 rounded-xl text-[11px] font-bold border transition-all ' + (selected ? 'bg-teal-800 text-white border-teal-900 shadow-sm' : seen ? 'bg-teal-50 text-teal-900 border-teal-300 hover:bg-teal-100' : 'bg-white text-slate-900 border-slate-300 hover:border-teal-400')
+                  },
+                    h('span', { className: 'inline-block w-2 h-2 rounded-full mr-1.5', style: { backgroundColor: part.color }, 'aria-hidden': 'true' }),
+                    part.label,
+                    seen && h('span', { className: 'ml-1', 'aria-label': 'inspected' }, '\u2713')
+                  );
+                })
+              ),
+              h('div', { className: 'rounded-2xl bg-slate-50 border border-slate-300 p-3 space-y-2', role: 'region', 'aria-label': 'Selected 3D part guide' },
+                h('p', { className: 'text-xs font-black text-slate-900' }, activePart.label),
+                h('p', { className: 'text-[11px] text-slate-800 leading-relaxed' }, h('strong', null, 'Where to look: '), activePart.where),
+                h('p', { className: 'text-[11px] text-slate-800 leading-relaxed' }, h('strong', null, 'What it does: '), activePart.does),
+                h('p', { className: 'text-[11px] text-slate-800 leading-relaxed' }, h('strong', null, 'How to check it: '), activePart.check),
+                h('p', { className: 'text-[11px] text-red-900 bg-red-50 border border-red-200 rounded-lg p-2 leading-relaxed font-medium' }, h('strong', null, 'What failure or risk looks like: '), activePart.risk)
+              )
+            )
+          )
+        );
+      }
+
+      function callGeminiZeroPii(promptText, userFields) {
+        if (typeof callGemini !== 'function') return Promise.reject(new Error('AI unavailable'));
+        var combined = (userFields || []).map(function(v) { return String(v || ''); }).join('\n');
+        var check = sanitizePromptForZeroPII(combined);
+        var scrubbedPrompt = sanitizePromptForZeroPII(promptText).sanitizedText;
+        if (check.hadPII) {
+          upd('aiPiiGuardMsg', 'Zero-PII AI Guard scrubbed personal details (' + check.reasons.join(', ') + ') before sending your practice prompt.');
+          announceToSR('Zero-PII AI Guard scrubbed personal information before sending.');
+        } else if (d.aiPiiGuardMsg) {
+          upd('aiPiiGuardMsg', '');
+        }
+        return callGemini(scrubbedPrompt);
+      }
+
+      function speakLifeSkillsText(text) {
+        var clean = String(text || '').trim();
+        if (!clean) return;
+        announceToSR(clean);
+        if (typeof callTTS === 'function') {
+          try {
+            var res = callTTS(clean, undefined, undefined, { force: true });
+            if (res && typeof res.catch === 'function') res.catch(function() {});
+            return;
+          } catch (_) {}
+        }
+        try {
+          if (typeof window !== 'undefined' && window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') {
+            window.speechSynthesis.cancel();
+            window.speechSynthesis.speak(new window.SpeechSynthesisUtterance(clean));
+          }
+        } catch (_) {}
+      }
+
+      function togglePinnedTab(tabId) {
+        if (TAB_IDS.indexOf(tabId) === -1) return;
+        var next = lsPinnedTabs.slice();
+        var pos = next.indexOf(tabId);
+        if (pos !== -1) next.splice(pos, 1);
+        else next = [tabId].concat(next).slice(0, 8);
+        upd('lsPinnedTabs', next);
+        announceToSR(pos !== -1 ? 'Removed pin for ' + tabId : 'Pinned ' + tabId + ' to quick bar');
+      }
+
+      function renderSisterToolBridge(toolId, label, note) {
+        if (typeof ctx.setStemLabTool !== 'function') return null;
+        return h('div', { className: 'rounded-xl bg-indigo-50 border border-indigo-200 p-2.5 flex items-center justify-between gap-2 flex-wrap' },
+          h('p', { className: 'text-[11px] text-indigo-900 leading-snug flex-1' }, note),
+          h('button', {
+            type: 'button',
+            onClick: function() { ctx.setStemLabTool(toolId); announceToSR('Switched to ' + label); },
+            className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-700 text-white hover:bg-indigo-800 shrink-0'
+          }, label + ' \u2192')
+        );
+      }
+
+      function renderPiiNotice(fields) {
+        var combined = (fields || []).map(function(v) { return String(v || ''); }).join(' | ');
+        var pii = detectLifeSkillsPII(combined);
+        if (!pii.hasPII) return null;
+        return h('div', { role: 'alert', className: 'rounded-xl bg-amber-50 border border-amber-400 p-2.5 text-[11px] text-amber-950 font-medium' },
+          '\u26A0\uFE0F Privacy Reminder: Looks like real contact or ID info (' + pii.reasons.join(', ') + '). Swap in a fictional placeholder like Sam Rivera / (555) 014-8200 / sam.rivera@example.test before exporting or sharing.'
+        );
+      }
+
+      function renderAacQuickStrip(domainKey, onPickText) {
+        var scripts = AAC_QUICK_SCRIPTS[domainKey];
+        if (!scripts || !scripts.length) return null;
+        return h('div', { className: 'rounded-xl bg-teal-50/80 border border-teal-200 p-3 space-y-2', 'data-lifeskills-aac-strip': domainKey },
+          h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+            h('p', { className: 'text-[11px] font-bold uppercase text-teal-900' }, '\uD83D\uDDE3\uFE0F One-Tap Spoken / AAC Quick Scripts'),
+            h('span', { className: 'text-[10px] font-medium text-teal-800' }, 'Tap to fill script box & read aloud')
+          ),
+          h('div', { className: 'flex flex-wrap gap-1.5' },
+            scripts.map(function(phrase, idx) {
+              return h('button', {
+                key: idx,
+                type: 'button',
+                onClick: function() {
+                  if (typeof onPickText === 'function') onPickText(phrase);
+                  speakLifeSkillsText(phrase);
+                },
+                className: 'px-2.5 py-1.5 rounded-lg text-[11px] font-bold bg-white border border-teal-300 text-teal-900 hover:bg-teal-100 text-left'
+              }, '\uD83D\uDD0A ' + phrase);
+            })
+          )
+        );
+      }
       var overviewFocus = d.overviewFocus || 'money';
       var overviewConfidence = (typeof d.overviewConfidence === 'number' && isFinite(d.overviewConfidence)) ? d.overviewConfidence : 3;
       var overviewNextStep = asText(d.overviewNextStep);
@@ -2501,6 +4490,7 @@ window.StemLab = window.StemLab || {
       var ccTread = (typeof d.ccTread === 'number' && isFinite(d.ccTread)) ? d.ccTread : 6;
       var ccMileage = d.ccMileage || 30000;
       var ccDashQ = (Number.isInteger(d.ccDashQ) && d.ccDashQ >= 0) ? d.ccDashQ : 0;
+      var ccDashScore = (typeof d.ccDashScore === 'number' && isFinite(d.ccDashScore)) ? d.ccDashScore : 0;
       var ccRecommended = OIL_GRADES.filter(function(g) { return ccOilTemp >= g.minF && ccOilTemp <= g.maxF; });
       var treadStatus = ccTread <= 2 ? 'REPLACE NOW' : ccTread <= 4 ? 'Replace Soon' : ccTread <= 6 ? 'Fair' : 'Good';
       var treadColor = ccTread <= 2 ? '#b91c1c' : ccTread <= 4 ? '#92400e' : ccTread <= 6 ? '#854d0e' : '#15803d';
@@ -2517,6 +4507,7 @@ window.StemLab = window.StemLab || {
       // HOME REPAIR STATE
       // ══════════════════════════════════════════
       var plumbQ = (Number.isInteger(d.plumbQ) && d.plumbQ >= 0) ? d.plumbQ : 0;
+      var plumbScore = (typeof d.plumbScore === 'number' && isFinite(d.plumbScore)) ? d.plumbScore : 0;
       var plumbCurrent = TOILET_PROBLEMS[plumbQ % TOILET_PROBLEMS.length];
       var paintL = d.paintL || 12, paintW = d.paintW || 10, paintH = d.paintH || 8;
       // Rendered into the tree and fed to arithmetic; an object throws.
@@ -2691,26 +4682,83 @@ window.StemLab = window.StemLab || {
         if (idx >= 3) checkBadge('laundryPro');
       }
 
+      var lsScoredMap = (d.lsScoredMap && typeof d.lsScoredMap === 'object' && !Array.isArray(d.lsScoredMap)) ? d.lsScoredMap : {};
+      function claimUniqueScenarioUpdate(scoredKey, scoreField, currentScore, patch, badgeId, badgeThreshold) {
+        var nextScored = Object.assign({}, lsScoredMap);
+        var earned = !nextScored[scoredKey];
+        if (earned) nextScored[scoredKey] = 1;
+        var nextScore = currentScore + (earned ? 1 : 0);
+        patch[scoreField] = nextScore;
+        patch.lsScoredMap = nextScored;
+        updMulti(patch);
+        if (earned && badgeId && nextScore >= (badgeThreshold || 3)) checkBadge(badgeId);
+        return earned;
+      }
+      var lsActionLog = (d.lsActionLog && typeof d.lsActionLog === 'object' && !Array.isArray(d.lsActionLog)) ? d.lsActionLog : {};
+      var _onceThisPass = {};
+      function awardOnce(actionKey, xp, reason, badgeId) {
+        if (badgeId) checkBadge(badgeId);
+        if (lsActionLog[actionKey] || _onceThisPass[actionKey]) return false;
+        _onceThisPass[actionKey] = true;
+        upd('lsActionLog', function(cur) {
+          var next = Object.assign({}, cur || {});
+          next[actionKey] = Date.now();
+          return next;
+        });
+        if (xp > 0) awardXP(xp, reason);
+        return true;
+      }
+      function syncCategoryToBudget(catName, monthlyDollars, label) {
+        var rounded = Math.max(0, Math.round(Number(monthlyDollars) || 0));
+        upd('budgetExp', function(cur) {
+          var next = Object.assign({}, cur || {});
+          next[catName] = rounded;
+          return next;
+        });
+        upd('budgetSyncMsg', 'Synced ' + (label || catName) + ' (' + fmtMoney(rounded) + '/mo) to ' + catName + ' in Budget & Planning.');
+        awardOnce('budgetSync:' + catName, 10, 'Synced ' + catName + ' to budget', 'budgeteer');
+        announceToSR('Synced ' + rounded + ' dollars per month to ' + catName + ' budget category');
+      }
+      function handleStandardScenario(choice, currentItem, actionsList, choiceField, fbField, scoreField, currentScore, idxVal, prefix, badgeId) {
+        var correct = choice === currentItem.best;
+        var action = actionsList.find(function(a) { return a.id === currentItem.best; });
+        var patch = {};
+        patch[choiceField] = choice;
+        patch[fbField] = (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : currentItem.best) + '. ') + currentItem.explain;
+        stemBeep(correct);
+        if (correct) {
+          claimUniqueScenarioUpdate(prefix + ':' + idxVal, scoreField, currentScore, patch, badgeId, 3);
+        } else {
+          updMulti(patch);
+        }
+      }
+
       function checkLaundryStain(choice) {
         var correct = choice === laundryCurrentStain.answer;
         stemBeep(correct);
-        updMulti({
+        var patch = {
           laundryStainChoice: choice,
-          laundryStainFb: correct ? '\u2705 Best choice. ' + laundryCurrentStain.science : '\u274C Try again. Best: ' + laundryCurrentStain.choices[laundryCurrentStain.answer] + '. ' + laundryCurrentStain.science,
-          laundryStainScore: laundryStainScore + (correct ? 1 : 0)
-        });
-        if (correct && laundryStainScore + 1 >= 3) checkBadge('laundryPro');
+          laundryStainFb: correct ? '\u2705 Best choice. ' + laundryCurrentStain.science : '\u274C Try again. Best: ' + laundryCurrentStain.choices[laundryCurrentStain.answer] + '. ' + laundryCurrentStain.science
+        };
+        if (correct) {
+          claimUniqueScenarioUpdate('lstain:' + (laundryStainIdx % LAUNDRY_STAINS.length), 'laundryStainScore', laundryStainScore, patch, 'laundryPro', 3);
+        } else {
+          updMulti(patch);
+        }
       }
 
       function answerLaundryMyth(answer) {
         var correct = answer === laundryCurrentMyth.answer;
         stemBeep(correct);
-        updMulti({
+        var patch = {
           laundryMythAnswer: answer,
-          laundryMythFb: correct ? '\u2705 Correct: ' + laundryCurrentMyth.truth + ' ' + laundryCurrentMyth.why : '\u274C Not quite: ' + laundryCurrentMyth.truth + ' ' + laundryCurrentMyth.why,
-          laundryMythScore: laundryMythScore + (correct ? 1 : 0)
-        });
-        if (correct && laundryMythScore + 1 >= 3) checkBadge('laundryPro');
+          laundryMythFb: correct ? '\u2705 Correct: ' + laundryCurrentMyth.truth + ' ' + laundryCurrentMyth.why : '\u274C Not quite: ' + laundryCurrentMyth.truth + ' ' + laundryCurrentMyth.why
+        };
+        if (correct) {
+          claimUniqueScenarioUpdate('lmyth:' + (laundryMythIdx % LAUNDRY_MYTHS.length), 'laundryMythScore', laundryMythScore, patch, 'laundryPro', 3);
+        } else {
+          updMulti(patch);
+        }
       }
 
       // ══════════════════════════════════════════
@@ -2744,15 +4792,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerDentalScenario(choice) {
-        var correct = choice === dentalCurrentScenario.best;
-        var action = DENTAL_ACTIONS.find(function(a) { return a.id === dentalCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          dentalScenarioChoice: choice,
-          dentalScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : dentalCurrentScenario.best) + '. ') + dentalCurrentScenario.explain,
-          dentalScenarioScore: dentalScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && dentalScenarioScore + 1 >= 3) checkBadge('toothTriage');
+        handleStandardScenario(choice, dentalCurrentScenario, DENTAL_ACTIONS, 'dentalScenarioChoice', 'dentalScenarioFb', 'dentalScenarioScore', dentalScenarioScore, (dentalScenarioIdx % DENTAL_SCENARIOS.length), 'dental', 'toothTriage');
       }
 
       // BODY CARE STATE
@@ -2786,15 +4826,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerBodyCareScenario(choice) {
-        var correct = choice === bodyCurrentScenario.best;
-        var action = BODYCARE_ACTIONS.find(function(a) { return a.id === bodyCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          bodyScenarioChoice: choice,
-          bodyScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : bodyCurrentScenario.best) + '. ') + bodyCurrentScenario.explain,
-          bodyScenarioScore: bodyScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && bodyScenarioScore + 1 >= 3) checkBadge('ergoSolver');
+        handleStandardScenario(choice, bodyCurrentScenario, BODYCARE_ACTIONS, 'bodyScenarioChoice', 'bodyScenarioFb', 'bodyScenarioScore', bodyScenarioScore, (bodyScenarioIdx % BODYCARE_SCENARIOS.length), 'body', 'ergoSolver');
       }
 
       // SLEEP & ENERGY STATE
@@ -2830,15 +4862,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerSleepScenario(choice) {
-        var correct = choice === sleepCurrentScenario.best;
-        var action = SLEEP_ACTIONS.find(function(a) { return a.id === sleepCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          sleepScenarioChoice: choice,
-          sleepScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : sleepCurrentScenario.best) + '. ') + sleepCurrentScenario.explain,
-          sleepScenarioScore: sleepScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && sleepScenarioScore + 1 >= 3) checkBadge('energyCoach');
+        handleStandardScenario(choice, sleepCurrentScenario, SLEEP_ACTIONS, 'sleepScenarioChoice', 'sleepScenarioFb', 'sleepScenarioScore', sleepScenarioScore, (sleepScenarioIdx % SLEEP_SCENARIOS.length), 'sleep', 'energyCoach');
       }
 
       // MEDICATION & LABELS STATE
@@ -2877,15 +4901,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerMedScenario(choice) {
-        var correct = choice === medCurrentScenario.best;
-        var action = MED_ACTIONS.find(function(a) { return a.id === medCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          medScenarioChoice: choice,
-          medScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : medCurrentScenario.best) + '. ') + medCurrentScenario.explain,
-          medScenarioScore: medScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && medScenarioScore + 1 >= 3) checkBadge('doseSafety');
+        handleStandardScenario(choice, medCurrentScenario, MED_ACTIONS, 'medScenarioChoice', 'medScenarioFb', 'medScenarioScore', medScenarioScore, (medScenarioIdx % MED_SCENARIOS.length), 'med', 'doseSafety');
       }
 
       // APPOINTMENTS & SELF-ADVOCACY STATE
@@ -2911,15 +4927,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerAppointmentScenario(choice) {
-        var correct = choice === appointmentCurrentScenario.best;
-        var action = APPOINTMENT_ACTIONS.find(function(a) { return a.id === appointmentCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          appointmentScenarioChoice: choice,
-          appointmentScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : appointmentCurrentScenario.best) + '. ') + appointmentCurrentScenario.explain,
-          appointmentScenarioScore: appointmentScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && appointmentScenarioScore + 1 >= 3) checkBadge('selfAdvocate');
+        handleStandardScenario(choice, appointmentCurrentScenario, APPOINTMENT_ACTIONS, 'appointmentScenarioChoice', 'appointmentScenarioFb', 'appointmentScenarioScore', appointmentScenarioScore, (appointmentScenarioIdx % APPOINTMENT_SCENARIOS.length), 'appt', 'selfAdvocate');
       }
 
       // HOME SAFETY STATE
@@ -2945,15 +4953,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerHomeSafetyScenario(choice) {
-        var correct = choice === homeSafetyCurrentScenario.best;
-        var action = HOME_SAFETY_ACTIONS.find(function(a) { return a.id === homeSafetyCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          homeSafetyScenarioChoice: choice,
-          homeSafetyScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : homeSafetyCurrentScenario.best) + '. ') + homeSafetyCurrentScenario.explain,
-          homeSafetyScenarioScore: homeSafetyScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && homeSafetyScenarioScore + 1 >= 3) checkBadge('safetyResponder');
+        handleStandardScenario(choice, homeSafetyCurrentScenario, HOME_SAFETY_ACTIONS, 'homeSafetyScenarioChoice', 'homeSafetyScenarioFb', 'homeSafetyScenarioScore', homeSafetyScenarioScore, (homeSafetyScenarioIdx % HOME_SAFETY_SCENARIOS.length), 'hsafe', 'safetyResponder');
       }
 
       // DIGITAL SAFETY STATE
@@ -2979,15 +4979,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerDigitalScenario(choice) {
-        var correct = choice === digitalCurrentScenario.best;
-        var action = DIGITAL_ACTIONS.find(function(a) { return a.id === digitalCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          digitalScenarioChoice: choice,
-          digitalScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : digitalCurrentScenario.best) + '. ') + digitalCurrentScenario.explain,
-          digitalScenarioScore: digitalScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && digitalScenarioScore + 1 >= 3) checkBadge('scamSpotter');
+        handleStandardScenario(choice, digitalCurrentScenario, DIGITAL_ACTIONS, 'digitalScenarioChoice', 'digitalScenarioFb', 'digitalScenarioScore', digitalScenarioScore, (digitalScenarioIdx % DIGITAL_SCENARIOS.length), 'dig', 'scamSpotter');
       }
 
       // RECORDS & PAPERWORK STATE
@@ -3015,15 +5007,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerRecordScenario(choice) {
-        var correct = choice === recordCurrentScenario.best;
-        var action = RECORD_ACTIONS.find(function(a) { return a.id === recordCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          recordScenarioChoice: choice,
-          recordScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : recordCurrentScenario.best) + '. ') + recordCurrentScenario.explain,
-          recordScenarioScore: recordScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && recordScenarioScore + 1 >= 3) checkBadge('formNavigator');
+        handleStandardScenario(choice, recordCurrentScenario, RECORD_ACTIONS, 'recordScenarioChoice', 'recordScenarioFb', 'recordScenarioScore', recordScenarioScore, (recordScenarioIdx % RECORD_SCENARIOS.length), 'rec', 'formNavigator');
       }
 
       // TRANSPORTATION & NAVIGATION STATE
@@ -3051,15 +5035,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerTransportScenario(choice) {
-        var correct = choice === transportCurrentScenario.best;
-        var action = TRANSPORT_ACTIONS.find(function(a) { return a.id === transportCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          transportScenarioChoice: choice,
-          transportScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : transportCurrentScenario.best) + '. ') + transportCurrentScenario.explain,
-          transportScenarioScore: transportScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && transportScenarioScore + 1 >= 3) checkBadge('routeNavigator');
+        handleStandardScenario(choice, transportCurrentScenario, TRANSPORT_ACTIONS, 'transportScenarioChoice', 'transportScenarioFb', 'transportScenarioScore', transportScenarioScore, (transportScenarioIdx % TRANSPORT_SCENARIOS.length), 'transp', 'routeNavigator');
       }
 
       // JOB READINESS & WORKPLACE STATE
@@ -3087,15 +5063,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerWorkScenario(choice) {
-        var correct = choice === workCurrentScenario.best;
-        var action = WORK_ACTIONS.find(function(a) { return a.id === workCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          workScenarioChoice: choice,
-          workScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : workCurrentScenario.best) + '. ') + workCurrentScenario.explain,
-          workScenarioScore: workScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && workScenarioScore + 1 >= 3) checkBadge('workplaceNavigator');
+        handleStandardScenario(choice, workCurrentScenario, WORK_ACTIONS, 'workScenarioChoice', 'workScenarioFb', 'workScenarioScore', workScenarioScore, (workScenarioIdx % WORK_SCENARIOS.length), 'work', 'workplaceNavigator');
       }
 
       // RESUME BUILDER & EVIDENCE REVIEW STATE
@@ -3132,15 +5100,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerResumeScenario(choice) {
-        var correct = choice === resumeCurrentScenario.best;
-        var action = RESUME_ACTIONS.find(function(a) { return a.id === resumeCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          resumeScenarioChoice: choice,
-          resumeScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : resumeCurrentScenario.best) + '. ') + resumeCurrentScenario.explain,
-          resumeScenarioScore: resumeScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && resumeScenarioScore + 1 >= 3) checkBadge('bulletBuilder');
+        handleStandardScenario(choice, resumeCurrentScenario, RESUME_ACTIONS, 'resumeScenarioChoice', 'resumeScenarioFb', 'resumeScenarioScore', resumeScenarioScore, (resumeScenarioIdx % RESUME_SCENARIOS.length), 'resume', 'bulletBuilder');
       }
 
       // PORTFOLIO & PROOF LOCKER STATE
@@ -3177,15 +5137,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerProofScenario(choice) {
-        var correct = choice === proofCurrentScenario.best;
-        var action = PROOF_ACTIONS.find(function(a) { return a.id === proofCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          proofScenarioChoice: choice,
-          proofScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : proofCurrentScenario.best) + '. ') + proofCurrentScenario.explain,
-          proofScenarioScore: proofScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && proofScenarioScore + 1 >= 3) checkBadge('portfolioCurator');
+        handleStandardScenario(choice, proofCurrentScenario, PROOF_ACTIONS, 'proofScenarioChoice', 'proofScenarioFb', 'proofScenarioScore', proofScenarioScore, (proofScenarioIdx % PROOF_SCENARIOS.length), 'proof', 'portfolioCurator');
       }
 
       // INTERVIEW PRACTICE STUDIO STATE
@@ -3272,15 +5224,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerInterviewScenario(choice) {
-        var correct = choice === interviewCurrentScenario.best;
-        var action = INTERVIEW_ACTIONS.find(function(a) { return a.id === interviewCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          interviewScenarioChoice: choice,
-          interviewScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : interviewCurrentScenario.best) + '. ') + interviewCurrentScenario.explain,
-          interviewScenarioScore: interviewScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && interviewScenarioScore + 1 >= 3) checkBadge('mockInterviewPro');
+        handleStandardScenario(choice, interviewCurrentScenario, INTERVIEW_ACTIONS, 'interviewScenarioChoice', 'interviewScenarioFb', 'interviewScenarioScore', interviewScenarioScore, (interviewScenarioIdx % INTERVIEW_SCENARIOS.length), 'intv', 'mockInterviewPro');
       }
 
       // The Read button, or the student's own Auto-read switch (off by default): force past the header
@@ -3360,19 +5304,19 @@ window.StemLab = window.StemLab || {
           if (nextHistory.length >= 5) checkBadge('mockInterviewPro');
           return;
         }
-        var historyStr = nextHistory.slice(-8).map(function(m) { return (m.role === 'student' ? 'Student' : interviewRole.interviewer) + ': ' + m.text; }).join('\n');
+        var historyStr = nextHistory.slice(-8).map(function(m) { return (m.role === 'student' ? 'Learner' : interviewRole.interviewer) + ': ' + m.text; }).join('\n');
         var prompt = [
-          'You are a supportive mock job interviewer modeled after the app persona interview pattern.',
+          'You are a supportive mock job interviewer modeled after the app persona interview pattern for ' + buildRoleAwareLearnerPhrase() + '.',
           'Interview role: ' + interviewRole.title + '. Interviewer: ' + interviewRole.interviewer + '. Tone: ' + interviewRole.tone + '.',
           'Focus areas: ' + interviewRole.focus + '.',
           'Current interview question: ' + interviewQuestion.q,
           'Recent transcript:',
           historyStr,
           'Respond as the interviewer with one concise follow-up question or comment, then give coaching feedback.',
-          'Be accessible: allow pauses, clarifying questions, notes, and accommodation scripts. Do not shame the student.',
+          'Be accessible: allow pauses, clarifying questions, notes, and accommodation scripts. Keep feedback encouraging and respectful.',
           'Return JSON only: {"reply":"interviewer response","feedback":"one praise plus one next step","score":0-4,"suggestions":["short response stem 1","short response stem 2","short response stem 3"]}.'
         ].join('\n');
-        callGemini(prompt).then(function(res) {
+        callGeminiZeroPii(prompt, [historyStr]).then(function(res) {
           var parsed = parseInterviewAIResponse(res, fallback);
           var replyText = String(parsed.reply || fallback.reply);
           var feedbackText = String(parsed.feedback || fallback.feedback);
@@ -3564,7 +5508,7 @@ window.StemLab = window.StemLab || {
         var transcript = (interviewSavedTranscript || interviewDisplayHistory.map(function(m) { return (m.role === 'student' ? 'Student' : (m.speaker || interviewRole.interviewer)) + ': ' + m.text; }).join('\n\n')).trim();
         var reflection = (interviewReflectionNote || interviewReflectionPrompt || '').trim();
         var followUp = (interviewFollowUpMessage || '').trim();
-        return [
+        var rawPacket = [
           'Interview Prep Packet',
           '',
           'Role target',
@@ -3618,6 +5562,7 @@ window.StemLab = window.StemLab || {
           'Practice note',
           'This packet is for rehearsal and self-advocacy. Bring truthful examples, ask clarifying questions when needed, and use appropriate access supports.'
         ].join('\n');
+        return sanitizePromptForZeroPII(rawPacket).sanitizedText;
       }
 
       function saveInterviewPrepPacket() {
@@ -3727,15 +5672,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerCommunicationScenario(choice) {
-        var correct = choice === communicationCurrentScenario.best;
-        var action = COMMUNICATION_ACTIONS.find(function(a) { return a.id === communicationCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          communicationScenarioChoice: choice,
-          communicationScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : communicationCurrentScenario.best) + '. ') + communicationCurrentScenario.explain,
-          communicationScenarioScore: communicationScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && communicationScenarioScore + 1 >= 3) checkBadge('conflictNavigator');
+        handleStandardScenario(choice, communicationCurrentScenario, COMMUNICATION_ACTIONS, 'communicationScenarioChoice', 'communicationScenarioFb', 'communicationScenarioScore', communicationScenarioScore, (communicationScenarioIdx % COMMUNICATION_SCENARIOS.length), 'comm', 'conflictNavigator');
       }
 
       // TIME MANAGEMENT & PLANNING STATE
@@ -3763,15 +5700,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerTimeScenario(choice) {
-        var correct = choice === timeCurrentScenario.best;
-        var action = TIME_ACTIONS.find(function(a) { return a.id === timeCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          timeScenarioChoice: choice,
-          timeScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : timeCurrentScenario.best) + '. ') + timeCurrentScenario.explain,
-          timeScenarioScore: timeScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && timeScenarioScore + 1 >= 3) checkBadge('taskNavigator');
+        handleStandardScenario(choice, timeCurrentScenario, TIME_ACTIONS, 'timeScenarioChoice', 'timeScenarioFb', 'timeScenarioScore', timeScenarioScore, (timeScenarioIdx % TIME_SCENARIOS.length), 'time', 'taskNavigator');
       }
 
       // FOOD CONFIDENCE STATE
@@ -3806,15 +5735,7 @@ window.StemLab = window.StemLab || {
       }
 
       function answerFoodConfidenceScenario(choice) {
-        var correct = choice === foodConfidenceCurrentScenario.best;
-        var action = FOOD_CONFIDENCE_ACTIONS.find(function(a) { return a.id === foodConfidenceCurrentScenario.best; });
-        stemBeep(correct);
-        updMulti({
-          foodConfidenceScenarioChoice: choice,
-          foodConfidenceScenarioFb: (correct ? '\u2705 Good call: ' : '\uD83D\uDD0E Best next step: ' + (action ? action.label : foodConfidenceCurrentScenario.best) + '. ') + foodConfidenceCurrentScenario.explain,
-          foodConfidenceScenarioScore: foodConfidenceScenarioScore + (correct ? 1 : 0)
-        });
-        if (correct && foodConfidenceScenarioScore + 1 >= 3) checkBadge('leftoverSafe');
+        handleStandardScenario(choice, foodConfidenceCurrentScenario, FOOD_CONFIDENCE_ACTIONS, 'foodConfidenceScenarioChoice', 'foodConfidenceScenarioFb', 'foodConfidenceScenarioScore', foodConfidenceScenarioScore, (foodConfidenceScenarioIdx % FOOD_CONFIDENCE_SCENARIOS.length), 'fconf', 'leftoverSafe');
       }
 
       function checkFoodLabelAnswer() {
@@ -3837,22 +5758,53 @@ window.StemLab = window.StemLab || {
       var chalFeedback = asText(d.chalFeedback);
       var chalStreak = d.chalStreak || 0;
       var chalScore = d.chalScore || 0;
-      var tierQs = CHALLENGE_QS.filter(function(q) { return q.tier === chalTier; });
-      var chalQ = tierQs.length ? tierQs[Math.abs(Math.trunc(chalIdx)) % tierQs.length] : null;
+      var chalMode = asText(d.chalMode) === 'choice' ? 'choice' : 'type';
+      var chalDomain = ['all', 'money', 'career', 'health', 'home', 'food'].indexOf(asText(d.chalDomain)) !== -1 ? asText(d.chalDomain) : 'all';
+      var lsMissedQueue = Array.isArray(d.lsMissedQueue) ? d.lsMissedQueue.slice(0, 12) : [];
+      var baseTierQs = CHALLENGE_QS.filter(function(q) { return q.tier === chalTier; });
+      var domainTierQs = chalDomain === 'all' ? baseTierQs : baseTierQs.filter(function(q) { return inferQuestionDomain(q) === chalDomain; });
+      var tierQs = domainTierQs.length ? domainTierQs : baseTierQs;
+      var chalStaticQ = tierQs.length ? tierQs[Math.abs(Math.trunc(chalIdx)) % tierQs.length] : null;
+      var chalQ = (d.chalAIQ && typeof d.chalAIQ === 'object' && typeof d.chalAIQ.q === 'string' && typeof d.chalAIQ.a === 'string') ? d.chalAIQ : chalStaticQ;
+
+      function applyChallengeResult(correct) {
+        var chalKey = d.chalAIQ ? ('chal_ai_' + chalTier + '_' + chalQ.q.slice(0, 48)) : ('chal_' + chalTier + '_' + chalQ.q.slice(0, 48));
+        var alreadyScored = !!(lsScoredMap && lsScoredMap[chalKey]);
+        var newStreak = !correct ? 0 : (alreadyScored ? chalStreak : chalStreak + 1);
+        var bonus = correct ? (newStreak >= 5 ? 3 : newStreak >= 3 ? 2 : 1) : 0;
+        var nextMissed = correct
+          ? lsMissedQueue.filter(function(item) { return item && item.q !== chalQ.q; })
+          : (lsMissedQueue.some(function(item) { return item && item.q === chalQ.q; })
+            ? lsMissedQueue
+            : [{ q: chalQ.q, a: chalQ.a, h: chalQ.h || '', domain: inferQuestionDomain(chalQ) }].concat(lsMissedQueue).slice(0, 12));
+        stemBeep(correct);
+        if (correct && !alreadyScored) {
+          var nextScored = Object.assign({}, lsScoredMap);
+          nextScored[chalKey] = 1;
+          updMulti({
+            chalFeedback: '\u2705 Correct!' + (bonus > 1 ? ' x' + bonus + ' streak!' : ''),
+            chalStreak: newStreak, chalScore: chalScore + 10 * bonus, chalAnswer: '', lsScoredMap: nextScored, lsMissedQueue: nextMissed
+          });
+          awardXP(10 * bonus, 'Challenge correct');
+          if (newStreak >= 3) checkBadge('quizStreak3');
+          if (newStreak >= 5) checkBadge('quizStreak5');
+        } else {
+          updMulti({
+            chalFeedback: correct ? '\u2705 Correct! (Already scored \u2014 click Skip for a new question)' : ('\u274C Answer: ' + chalQ.a),
+            chalStreak: newStreak, chalAnswer: '', lsMissedQueue: nextMissed
+          });
+        }
+      }
 
       function chalCheck() {
         if (!chalAnswer.trim() || !chalQ) return;
         var correct = answerMatches(chalAnswer, chalQ.a);
-        var newStreak = correct ? chalStreak + 1 : 0;
-        var bonus = correct ? (newStreak >= 5 ? 3 : newStreak >= 3 ? 2 : 1) : 0;
-        stemBeep(correct);
-        updMulti({
-          chalFeedback: correct ? ('\u2705 Correct!' + (bonus > 1 ? ' x' + bonus + ' streak!' : '')) : ('\u274C Answer: ' + chalQ.a),
-          chalStreak: newStreak, chalScore: chalScore + (correct ? 10 * bonus : 0), chalAnswer: ''
-        });
-        if (correct) awardXP(10 * bonus, 'Challenge correct');
-        if (newStreak >= 3) checkBadge('quizStreak3');
-        if (newStreak >= 5) checkBadge('quizStreak5');
+        applyChallengeResult(correct);
+      }
+
+      function chalPickChoice(choiceText) {
+        if (!chalQ || !String(choiceText || '').trim()) return;
+        applyChallengeResult(answerMatches(String(choiceText), chalQ.a));
       }
 
       // ══════════════════════════════════════════
@@ -3868,15 +5820,24 @@ window.StemLab = window.StemLab || {
       var battleWon = d.battleWon || false;
       var battleUseAI = d.battleUseAI || false;
       var battleOrder = d.battleOrder || [];
+      var battleMode = asText(d.battleMode) === 'choice' ? 'choice' : 'type';
+      var battleDomain = ['all', 'money', 'career', 'health', 'home', 'food'].indexOf(asText(d.battleDomain)) !== -1 ? asText(d.battleDomain) : 'all';
+      var battleCalmMode = !!d.battleCalmMode;
 
-      function startBattle(useAI) {
+      function startBattle(useAI, domainOverride) {
+        var dom = domainOverride || battleDomain;
         var order = [];
-        for (var j = 0; j < BATTLE_QS.length; j++) order.push(j);
+        for (var j = 0; j < BATTLE_QS.length; j++) {
+          if (dom === 'all' || inferQuestionDomain(BATTLE_QS[j]) === dom) order.push(j);
+        }
+        if (order.length === 0) {
+          for (var jj = 0; jj < BATTLE_QS.length; jj++) order.push(jj);
+        }
         for (var k = order.length - 1; k > 0; k--) { var sw = Math.floor(Math.random() * (k + 1)); var tmp = order[k]; order[k] = order[sw]; order[sw] = tmp; }
-        updMulti({ battleActive: true, battleRound: 0, battlePlayerHP: 100, battleEnemyHP: 100, battleAnswer: '', battleFeedback: '', battleOver: false, battleWon: false, battleUseAI: !!useAI, battleOrder: order, battleAIQ: null, battleAILoading: false });
+        updMulti({ battleActive: true, battleRound: 0, battlePlayerHP: 100, battleEnemyHP: 100, battleAnswer: '', battleFeedback: '', battleOver: false, battleWon: false, battleUseAI: !!useAI, battleOrder: order, battleAIQ: null, battleAILoading: false, battleHintedThisRound: false });
         if (useAI && callGemini) {
           upd('battleAILoading', true);
-          callGemini('Generate one life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, transportation and navigation, job readiness and workplace basics, resume building and evidence bullets, portfolio proof organization and privacy, interview practice and STAR answers, communication and conflict, time management and planning, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car maintenance, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+          callGeminiZeroPii('Generate one life skills question for ' + buildRoleAwareLearnerPhrase() + ' about taxes, insurance, records and paperwork, transportation and navigation, job readiness and workplace basics, resume building and evidence bullets, portfolio proof organization and privacy, interview practice and STAR answers, communication and conflict, time management and planning, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car maintenance, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}', []).then(function(res) {
             try { var p = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim()); updMulti({ battleAIQ: { q: p.q, a: p.a, h: p.h || 'Think practically!' }, battleAILoading: false }); } catch(e) { upd('battleAILoading', false); }
           }).catch(function() { upd('battleAILoading', false); });
         }
@@ -3888,26 +5849,60 @@ window.StemLab = window.StemLab || {
         return BATTLE_QS[battleOrder[battleRound % battleOrder.length]];
       }
 
-      function battleAttack() {
-        var q = getCurrentBattleQ();
-        if (!q || !battleAnswer.trim()) return;
-        var correct = answerMatches(battleAnswer, q.a);
+      function applyBattleOutcome(q, correct) {
+        if (!correct && battleCalmMode && !d.battleHintedThisRound) {
+          stemBeep(false);
+          updMulti({
+            battleFeedback: '\uD83D\uDCA1 Coaching pause (0 HP lost): ' + (q.h || 'Re-read carefully and try once more!'),
+            battleAnswer: '',
+            battleHintedThisRound: true
+          });
+          return;
+        }
         var dmg = correct ? 20 + Math.floor(Math.random() * 10) : 0;
         var enemyDmg = correct ? 0 : 15 + Math.floor(Math.random() * 10);
         var newEHP = Math.max(0, battleEnemyHP - dmg);
         var newPHP = Math.max(0, battlePlayerHP - enemyDmg);
         var over = newEHP <= 0 || newPHP <= 0;
         var won = newEHP <= 0;
+        var bKey = 'battle_' + String(q.q || '').slice(0, 48);
+        var alreadyScored = !!(lsScoredMap && lsScoredMap[bKey]);
+        var nextScored = (correct && !alreadyScored) ? Object.assign({}, lsScoredMap) : lsScoredMap;
+        if (correct && !alreadyScored) nextScored[bKey] = 1;
         stemBeep(correct);
-        updMulti({ battleEnemyHP: newEHP, battlePlayerHP: newPHP, battleFeedback: correct ? '\u2705 Hit! -' + dmg + ' damage!' : '\u274C Wrong! -' + enemyDmg + ' HP! Answer: ' + q.a, battleAnswer: '', battleOver: over, battleWon: won, battleRound: battleRound + 1, battleAIQ: null });
-        if (correct) awardXP(10, 'Battle hit');
+        updMulti({
+          battleEnemyHP: newEHP,
+          battlePlayerHP: newPHP,
+          battleFeedback: correct ? '\u2705 Hit! -' + dmg + ' damage!' : '\u274C Wrong! -' + enemyDmg + ' HP! Answer: ' + q.a,
+          battleAnswer: '',
+          battleOver: over,
+          battleWon: won,
+          battleRound: battleRound + 1,
+          battleAIQ: null,
+          battleHintedThisRound: false,
+          lsScoredMap: nextScored
+        });
+        if (correct && !alreadyScored) awardXP(10, 'Battle hit');
         if (over && won) { checkBadge('battleWin'); if (battleUseAI) checkBadge('aiBattle'); awardXP(25, 'Battle won'); }
         if (!over && battleUseAI && callGemini) {
           upd('battleAILoading', true);
-          callGemini('Generate one life skills question for a ' + gradeBand + ' student. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+          callGeminiZeroPii('Generate one life skills question for ' + buildRoleAwareLearnerPhrase() + '. Return JSON: {"q":"question","a":"short answer","h":"hint"}', []).then(function(res) {
             try { var p = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim()); updMulti({ battleAIQ: { q: p.q, a: p.a, h: p.h || 'Think!' }, battleAILoading: false }); } catch(e) { upd('battleAILoading', false); }
           }).catch(function() { upd('battleAILoading', false); });
         }
+      }
+
+      function battleAttack() {
+        var q = getCurrentBattleQ();
+        if (!q || !battleAnswer.trim()) return;
+        var correct = answerMatches(battleAnswer, q.a);
+        applyBattleOutcome(q, correct);
+      }
+
+      function battlePickChoice(choiceText) {
+        var q = getCurrentBattleQ();
+        if (!q || !String(choiceText || '').trim()) return;
+        applyBattleOutcome(q, answerMatches(String(choiceText), q.a));
       }
 
       // ── Learn read tracking ──
@@ -3918,13 +5913,13 @@ window.StemLab = window.StemLab || {
       }
 
       // ── Slider helper ──
-      function slider(label, value, min, max, step, key, fmt) {
+      function slider(label, value, min, max, step, key, fmt, onAfterChange) {
         return h('div', { className: 'space-y-1' },
           h('div', { className: 'flex justify-between items-center' },
             h('span', { className: 'text-[11px] font-bold text-slate-600 uppercase tracking-wide' }, label),
             h('span', { className: 'text-xs font-mono font-bold text-slate-700' }, fmt ? fmt(value) : value)
           ),
-          h('input', { type: 'range', min: min, max: max, step: step, value: value, onChange: function(e) { upd(key, parseFloat(e.target.value)); }, className: 'w-full h-1.5 rounded-full appearance-none cursor-pointer', style: { accentColor: '#0d9488' }, 'aria-valuetext': (fmt ? fmt(value) : String(value)), 'aria-label': label })
+          h('input', { type: 'range', min: min, max: max, step: step, value: value, onChange: function(e) { var v = parseFloat(e.target.value); upd(key, v); if (onAfterChange) onAfterChange(v); }, className: 'w-full h-1.5 rounded-full appearance-none cursor-pointer', style: { accentColor: '#0d9488' }, 'aria-valuetext': (fmt ? fmt(value) : String(value)), 'aria-label': label })
         );
       }
 
@@ -3934,17 +5929,25 @@ window.StemLab = window.StemLab || {
 
       var lifeSkillsTabKeyDown = function(e, index) {
         var nextIndex = -1;
+        var dir = 0;
         var total = SUBTOOLS.length;
-        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = (index + 1) % total;
-        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = (index + total - 1) % total;
-        else if (e.key === 'Home') nextIndex = 0;
-        else if (e.key === 'End') nextIndex = total - 1;
+        if (e.key === 'ArrowRight' || e.key === 'ArrowDown') { nextIndex = (index + 1) % total; dir = 1; }
+        else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') { nextIndex = (index + total - 1) % total; dir = -1; }
+        else if (e.key === 'Home') { nextIndex = 0; dir = 1; }
+        else if (e.key === 'End') { nextIndex = total - 1; dir = -1; }
         if (nextIndex < 0) return;
         e.preventDefault();
         var tabs = e.currentTarget.parentNode.querySelectorAll('[role="tab"]');
-        var nextTab = tabs[nextIndex];
-        if (nextTab) { nextTab.focus(); nextTab.click(); }
+        for (var hop = 0; hop < total; hop++) {
+          var nextTab = tabs[nextIndex];
+          if (nextTab && nextTab.style.display !== 'none') { nextTab.focus(); nextTab.click(); return; }
+          nextIndex = (nextIndex + dir + total) % total;
+        }
       };
+
+      var activeDomainObj = SUBTOOL_DOMAINS.find(function(dom) { return dom.id === lsDomain; }) || SUBTOOL_DOMAINS[0];
+      var domainAllowedIds = activeDomainObj && Array.isArray(activeDomainObj.ids) ? activeDomainObj.ids : null;
+      var searchNeedle = lsTabSearch.trim().toLowerCase();
 
       return h('div', { className: 'space-y-4' },
 
@@ -3957,7 +5960,7 @@ window.StemLab = window.StemLab || {
           h('div', { className: 'flex items-center justify-between flex-wrap gap-2' },
             h('div', null,
               h('h3', { className: 'text-base font-bold flex items-center gap-2' }, __alloT('stem.lifeskills.life_skills_lab', '\uD83E\uDDED Life Skills Lab')),
-              h('p', { className: 'text-[11px]' }, gradeText(gradeBand,
+              h('p', { className: 'text-[11px]' }, roleGradeText(
                 'Learn about money, safety, and how things work!',
                 'Essential knowledge: taxes, data analysis, home science',
                 'Applied STEM: financial literacy, data analysis, engineering principles',
@@ -3970,12 +5973,68 @@ window.StemLab = window.StemLab || {
           )
         ),
 
+        // UDL Role, Support Depth, Domain Filter & Tab Search Bar
+        h('div', { className: glassCard + ' space-y-2.5', 'data-lifeskills-udl-nav': 'true' },
+          h('div', { className: 'flex flex-wrap items-center justify-between gap-2' },
+            h('div', { className: 'flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Life stage role' },
+              h('span', { className: 'text-[10px] font-bold uppercase text-slate-600 mr-1' }, 'Role:'),
+              [{ id: 'youth', label: 'Youth 8-13' }, { id: 'teen', label: 'Teen 14-17' }, { id: 'transition', label: 'Transition 18-22' }].map(function(opt) {
+                var on = lsLifeRole === opt.id;
+                return h('button', { key: opt.id, type: 'button', 'aria-pressed': on, onClick: function() { upd('lsLifeRole', opt.id); announceToSR('Life role set to ' + opt.label); },
+                  className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' + (on ? 'bg-slate-900 text-white' : 'bg-white border border-slate-300 text-slate-700 hover:bg-slate-100')
+                }, opt.label);
+              })
+            ),
+            h('div', { className: 'flex items-center gap-1 flex-wrap', role: 'group', 'aria-label': 'Reading and STEM depth' },
+              h('span', { className: 'text-[10px] font-bold uppercase text-slate-600 mr-1' }, 'Support:'),
+              [{ id: 'plain', label: 'Plain' }, { id: 'standard', label: 'Standard' }, { id: 'steam', label: 'Deep STEAM' }].map(function(opt) {
+                var on = lsSupportMode === opt.id;
+                return h('button', { key: opt.id, type: 'button', 'aria-pressed': on, onClick: function() { upd('lsSupportMode', opt.id); announceToSR('Support depth set to ' + opt.label); },
+                  className: 'px-2 py-1 rounded-lg text-[11px] font-bold transition-all ' + (on ? 'bg-indigo-700 text-white' : 'bg-white border border-slate-300 text-slate-700 hover:bg-indigo-50')
+                }, opt.label);
+              })
+            ),
+            h('div', { className: 'flex items-center gap-1.5 flex-1 min-w-[180px] max-w-xs' },
+              h('input', {
+                type: 'search', value: lsTabSearch,
+                onChange: function(e) { upd('lsTabSearch', e.target.value); },
+                placeholder: 'Search 33 life skills tabs...',
+                'aria-label': 'Filter life skills tabs',
+                className: 'w-full px-2.5 py-1 rounded-lg text-xs border border-slate-300 bg-white text-slate-800'
+              }),
+              lsTabSearch && h('button', { type: 'button', onClick: function() { upd('lsTabSearch', ''); }, 'aria-label': 'Clear tab filter', className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-slate-200 text-slate-700' }, '\u2715')
+            )
+          ),
+          h('div', { className: 'flex flex-wrap gap-1.5 items-center', role: 'group', 'aria-label': 'Life skills domains' },
+            SUBTOOL_DOMAINS.map(function(dom) {
+              var on = lsDomain === dom.id;
+              return h('button', { key: dom.id, type: 'button', 'aria-pressed': on, onClick: function() { upd('lsDomain', dom.id); announceToSR('Showing domain ' + dom.label); },
+                className: 'px-2.5 py-1 rounded-full text-[11px] font-bold transition-all ' + (on ? 'bg-teal-700 text-white shadow-sm' : 'bg-slate-100 text-slate-700 hover:bg-teal-50 border border-slate-300')
+              }, dom.icon + ' ' + dom.label);
+            })
+          ),
+          lsPinnedTabs.length > 0 && h('div', { className: 'flex flex-wrap items-center gap-1.5 pt-1 border-t border-slate-200/80', 'data-lifeskills-pinned-bar': 'true' },
+            h('span', { className: 'text-[10px] font-bold uppercase text-amber-800' }, '\u2B50 Pinned:'),
+            lsPinnedTabs.map(function(pid) {
+              var foundSub = SUBTOOLS.find(function(s) { return s.id === pid; });
+              if (!foundSub) return null;
+              return h('button', { key: pid, type: 'button', onClick: function() { upd('tab', pid); },
+                className: 'px-2 py-0.5 rounded-lg text-[11px] font-bold ' + (tab === pid ? 'bg-amber-800 text-white' : 'bg-amber-50 text-amber-900 border border-amber-300 hover:bg-amber-100')
+              }, foundSub.icon + ' ' + foundSub.label);
+            })
+          )
+        ),
+
         // Sub-tool tabs
         h('div', { className: 'flex flex-wrap gap-1.5', role: 'tablist', },
           SUBTOOLS.map(function(st, tabIndex) {
             var active = tab === st.id;
+            var matchesDomain = !domainAllowedIds || domainAllowedIds.indexOf(st.id) !== -1;
+            var matchesSearch = !searchNeedle || (st.label + ' ' + st.id).toLowerCase().indexOf(searchNeedle) !== -1;
+            var matchesFilter = matchesDomain && matchesSearch;
             return h('button', { key: st.id, id: 'lifeskills-tab-' + st.id,
               'aria-controls': 'lifeskills-panel-' + st.id,
+              style: (!matchesFilter && !active) ? { display: 'none' } : undefined,
               onClick: function() { updMulti({ tab: st.id }); announceToSR('Switched to ' + st.label); },
               onKeyDown: function(e) { lifeSkillsTabKeyDown(e, tabIndex); },
               className: 'px-3 py-1.5 rounded-xl text-xs font-bold transition-all ' + (active ? 'bg-teal-700 text-white shadow-md' : 'bg-white/70 text-slate-600 hover:bg-teal-50 border border-slate-400'),
@@ -4030,6 +6089,9 @@ window.StemLab = window.StemLab || {
             for (var k = 0; k < 20 && (bg + 0.05) / (L(c) + 0.05) < 4.6; k++) c = c.map(function (v) { return v * 0.9; });
             return '#' + c.map(function (v) { return ('0' + Math.round(v).toString(16)).slice(-2); }).join('');
           })(meta.accent);
+          var isPinned = lsPinnedTabs.indexOf(tab) !== -1;
+          var roleBadge = lsLifeRole === 'transition' ? 'Transition 18-22' : lsLifeRole === 'youth' ? 'Youth 8-13' : 'Teen 14-17';
+          var supportBadge = lsSupportMode === 'steam' ? 'Deep STEAM' : lsSupportMode === 'plain' ? 'Plain Language' : 'Standard';
           return h('div', { role: 'tabpanel', id: 'lifeskills-panel-' + tab,
             'aria-labelledby': 'lifeskills-tab-' + tab, tabIndex: 0,
             style: {
@@ -4043,10 +6105,72 @@ window.StemLab = window.StemLab || {
           },
             h('div', { style: { fontSize: 28, flexShrink: 0 }, 'aria-hidden': 'true' }, meta.icon),
             h('div', { style: { flex: 1, minWidth: 220 } },
-              h('h3', { style: { color: heroInk, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+              h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                h('h3', { style: { color: heroInk, fontSize: 15, fontWeight: 900, margin: 0, lineHeight: 1.2 } }, meta.title),
+                h('span', { className: 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-white/80 border border-slate-300 text-slate-700' }, roleBadge + ' \u00B7 ' + supportBadge)
+              ),
               // Fixed ink: the band stays light in dark theme (light tool card), where the soft var is light.
-              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+              h('p', { style: { margin: '3px 0 0', color: '#475569', fontSize: lsSupportMode === 'plain' ? 12 : 11, lineHeight: 1.45, fontStyle: 'italic' } }, meta.hint)
+            ),
+            h('div', { className: 'flex items-center gap-1.5 shrink-0' },
+              h('button', { type: 'button', onClick: function() { speakLifeSkillsText(meta.title + '. ' + meta.hint); }, 'aria-label': 'Read section overview aloud', className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-300 text-slate-800 hover:bg-teal-50' }, '\uD83D\uDD0A Read'),
+              h('button', { type: 'button', 'aria-pressed': isPinned, onClick: function() { togglePinnedTab(tab); }, 'aria-label': isPinned ? 'Unpin ' + meta.title : 'Pin ' + meta.title, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold ' + (isPinned ? 'bg-amber-800 text-white' : 'bg-white border border-slate-300 text-slate-800 hover:bg-amber-50') }, isPinned ? '\u2605 Pinned' : '\u2B50 Pin')
             )
+          );
+        })(),
+
+        lsSupportMode === 'steam' && (function() {
+          var steamFormulaMap = {
+            paycheck: 'Marginal tax integral: Net = Gross - Sum(tierRate * slice) - FICA',
+            budget: 'Allocation constraint: Needs + Wants + Savings <= 100% Net Income',
+            credit: 'Amortization decay: Balance(n+1) = Balance(n) * (1 + r/12) - Payment',
+            insurance: 'Piecewise cost: Total = 12*Prem + min(OOP, Ded + Coins*excess + Copays)',
+            dental: 'Stephan pH curve: Plaque drops below 5.5 critical enamel pH ~38 min per sugar exposure',
+            meds: 'Cumulative 24h ceiling: Sum(mg/dose * doses across products) <= safe daily limit',
+            sleep: 'First-order clearance: C(t) = C0 * 0.5^(t / 5.5h) caffeine half-life decay',
+            science: 'Ohm/Watt + Ideal Gas: P = V*I (80% NEC continuous load cap); P1/T1(K) = P2/T2(K)',
+            carcare: 'Kinematics: d_total = v*t_react + v^2 / (2 * g * mu) braking distance',
+            homerepair: 'Volumetric leak: V_day = drips*1440/15140 + flapper_gal; Area = 2*(L+W)*H',
+            homesys: 'Thermal conduction: Q_dot = (Area * Delta_T) / R_value (BTU/h)',
+            foodconfidence: 'Edible yield unit price: Effective $/oz = Cost / (Weight_oz * Yield_fraction)',
+            cooking: 'Exponential growth: N(t) = N0 * 2^(t / 20min) inside 40-140F danger zone',
+            laundry: 'Surfactant + energy: Cold water & air-drying cut kWh load while lowering shrinkage',
+            transport: 'Break-even model: Rides_BE = PassCost / SingleFare; add transfer buffer',
+            timemanagement: 'Planning-fallacy model: Total = Base + Sum(steps*5m) + Buffer% + Wait'
+          };
+          var steamLine = steamFormulaMap[tab] || 'Quantitative decision lens: compare rates, thresholds, risk tradeoffs, and unit constraints.';
+          return h('div', { className: 'rounded-xl bg-indigo-950 text-indigo-50 px-3 py-2 flex items-center justify-between gap-2 flex-wrap border border-indigo-700', 'data-lifeskills-steam-lens': 'true' },
+            h('span', { className: 'text-[11px] font-mono leading-snug' }, '\uD83E\uDDEE Deep STEAM Lens: ' + steamLine),
+            h('button', { type: 'button', onClick: function() { speakLifeSkillsText(steamLine); }, className: 'px-2 py-0.5 rounded-lg text-[10px] font-bold bg-indigo-800 text-white hover:bg-indigo-700 shrink-0' }, '\uD83D\uDD0A Read Model')
+          );
+        })(),
+
+        lsInlineLab && (function() {
+          var labMeta = LIFE_SKILLS_3D_LABS.find(function(l) { return l.id === lsInlineLab; }) || { id: lsInlineLab, title: '3D Companion Lab' };
+          return h('div', { className: glassCard + ' space-y-2 border-2 border-teal-500/40', 'data-lifeskills-inline-workspace': lsInlineLab },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[10px] font-bold uppercase text-teal-800' }, 'Inline 3D Companion Workspace (No Popup Required)'),
+                h('h4', { className: 'text-sm font-black text-slate-800' }, labMeta.title)
+              ),
+              h('div', { className: 'flex items-center gap-2' },
+                h('button', { type: 'button', onClick: function() { openLifeSkills3dById(lsInlineLab); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-800 text-white hover:bg-slate-900' }, 'Open in New Window \u2197'),
+                h('button', { type: 'button', onClick: function() { upd('lsInlineLab', ''); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-400 text-slate-700 hover:bg-slate-100', 'aria-label': 'Close inline 3D workspace' }, '\u2715 Close')
+              )
+            ),
+            h('div', { className: 'flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Switch inline 3D companion lab' },
+              LIFE_SKILLS_3D_LABS.map(function(l) {
+                var activeLab = l.id === lsInlineLab;
+                return h('button', { key: l.id, type: 'button', 'aria-pressed': activeLab, onClick: function() { openLifeSkillsInlineCompanion(l.id); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold border ' + (activeLab ? 'bg-teal-700 text-white border-teal-700' : 'bg-white border-slate-300 text-slate-700 hover:border-teal-400') }, l.icon + ' ' + l.title);
+              })
+            ),
+            h('iframe', {
+              title: labMeta.title + ' inline workspace',
+              src: buildLifeSkills3dUrl(lsInlineLab),
+              className: 'w-full rounded-xl border border-slate-300 bg-slate-950',
+              style: { height: 420 },
+              sandbox: 'allow-scripts allow-same-origin allow-forms allow-popups'
+            })
           );
         })(),
 
@@ -4057,7 +6181,34 @@ window.StemLab = window.StemLab || {
             h('h4', { className: 'text-lg font-black text-slate-800' }, 'Get ready for an outing'),
             h('p', { className: 'text-sm text-slate-700' }, 'Prepare your clothes, pack your bag, and adjust your travel plan when the weather changes. Explore a 3D home or use the action buttons.'),
             h('p', { className: 'text-xs text-slate-600' }, 'Choose your setting, reading style, and support. Includes save, replay, and optional AI storytelling.'),
-            h('button', { type: 'button', onClick: openLifeSkillsOuting, className: 'px-4 py-2 rounded-xl bg-teal-800 text-white text-sm font-bold hover:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-700 focus:ring-offset-2', 'aria-label': 'Open Practice Mode in a new window' }, 'Open Practice Mode ↗'),
+            (function() {
+              var outingRuns = 0, outingDone = 0;
+              try {
+                if (typeof window !== 'undefined' && window.localStorage) {
+                  for (var oi = 0; oi < window.localStorage.length; oi++) {
+                    var ok = window.localStorage.key(oi);
+                    if (typeof ok === 'string' && ok.indexOf('alloflow-life-outing:v1:') === 0) {
+                      outingRuns++;
+                      try {
+                        var parsed = JSON.parse(window.localStorage.getItem(ok) || '{}');
+                        if (Array.isArray(parsed.commands) && parsed.commands.some(function(c) { return c && c.actionId === 'depart'; })) outingDone++;
+                      } catch (_) {}
+                    }
+                  }
+                }
+              } catch (_) {}
+              var mappedContext = lsLifeRole === 'transition' ? 'work' : 'community';
+              var mappedSupport = lsSupportMode === 'plain' ? 'guided' : lsSupportMode === 'steam' ? 'independent' : 'try';
+              var mappedLang = lsSupportMode === 'plain' ? 'plain' : 'standard';
+              var learnerSlug = String(ctx && ctx.activeProfileId || '').replace(/[^a-zA-Z0-9_-]/g, '').slice(0, 48);
+              return h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                h('button', { type: 'button', onClick: function() {
+                  openLifeSkillsOuting({ context: mappedContext, support: mappedSupport, language: mappedLang, learner: learnerSlug });
+                }, className: 'px-4 py-2 rounded-xl bg-teal-800 text-white text-sm font-bold hover:bg-teal-900 focus:outline-none focus:ring-2 focus:ring-teal-700 focus:ring-offset-2', 'aria-label': 'Open Practice Mode in a new window' }, 'Open Practice Mode \u2197'),
+                h('span', { className: 'px-2.5 py-1 rounded-full bg-teal-50 text-teal-900 border border-teal-200 text-[11px] font-bold', 'data-lifeskills-outing-readback': 'true' },
+                  'Preset: ' + (mappedContext === 'work' ? 'Work Outing' : 'Community Outing') + ' \u00B7 ' + (outingRuns ? (outingDone + '/' + outingRuns + ' missions departed') : 'Ready to launch'))
+              );
+            })(),
             d.outingMsg && h('p', { role: 'status', className: 'text-xs text-slate-700' }, asText(d.outingMsg))
           ),
           h('div', { className: glassCard + ' space-y-3 relative overflow-hidden', 'data-lifeskills-3d-passport': 'true' },
@@ -4072,7 +6223,8 @@ window.StemLab = window.StemLab || {
               ),
               h('div', { className: 'flex items-center gap-2 flex-wrap' },
                 h('span', { className: 'px-2 py-1 rounded-full bg-cyan-50 text-cyan-800 border border-cyan-200 text-[11px] font-bold' }, lifeSkills3dPassportHint),
-                lifeSkills3dNextLab && h('button', { type: 'button', onClick: function() { openLifeSkills3dById(lifeSkills3dNextLab.id); }, className: 'px-2 py-1 rounded-full bg-teal-700 text-white text-[11px] font-black hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-700', 'aria-label': 'Open suggested next lab: ' + lifeSkills3dNextLab.title }, 'Open next lab')
+                lifeSkills3dNextLab && h('button', { type: 'button', onClick: function() { openLifeSkills3dById(lifeSkills3dNextLab.id); }, className: 'px-2 py-1 rounded-full bg-teal-700 text-white text-[11px] font-black hover:bg-teal-800 focus:outline-none focus:ring-2 focus:ring-teal-700', 'aria-label': 'Open suggested next lab: ' + lifeSkills3dNextLab.title }, 'Open next lab'),
+                h('button', { type: 'button', onClick: function() { openLifeSkillsInlineCompanion('capstone'); }, className: 'px-2 py-1 rounded-full bg-slate-800 text-white text-[11px] font-black hover:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Open Capstone Inline')
               )
             ),
             h('div', { className: 'grid grid-cols-3 sm:grid-cols-6 gap-1.5 pt-1', 'data-lifeskills-3d-path': 'true', 'aria-hidden': 'true' },
@@ -4137,6 +6289,35 @@ window.StemLab = window.StemLab || {
                     h('span', { className: 'text-right' }, nextStep)
                   ),
                   h('p', { className: 'text-[10px] text-slate-600 mt-2 ml-1' }, transferEvidence ? 'Evidence: ' + transferEvidence + (contextEvidence ? ' | ' + contextEvidence : '') + (procedureEvidence ? ' | ' + procedureEvidence : '') + (transferFocusName ? ' | Next focus: ' + transferFocusName : '') : done ? 'Revisit for transfer practice.' + (contextEvidence ? ' ' + contextEvidence + '.' : '') + (procedureEvidence ? ' ' + procedureEvidence + '.' : '') : 'Open the scene and practice safely.')
+                );
+              })
+            )
+          ),
+          h('div', { className: glassCard + ' space-y-3 border border-teal-200', 'data-lifeskills-inline-3d-bays': 'true' },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[11px] uppercase font-bold text-teal-800' }, 'Instant Inline 3D STEM Bays'),
+                h('h4', { className: 'text-sm font-black text-slate-900' }, 'Jump directly into interactive 3D engineering, vehicle, health & ergonomics models')
+              ),
+              h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-teal-50 text-teal-900 border border-teal-300' }, '5 Live 3D Bays')
+            ),
+            h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-5 gap-2.5' },
+              ['homesys', 'science', 'carcare', 'bodycare', 'dental'].map(function(bid) {
+                var bay = LS_3D_BAYS[bid];
+                var seenMap = (d['ls3dExplored_' + bid] && typeof d['ls3dExplored_' + bid] === 'object') ? d['ls3dExplored_' + bid] : {};
+                var seenCount = bay.parts.filter(function(pt) { return !!seenMap[pt.id]; }).length;
+                return h('button', {
+                  key: bid,
+                  type: 'button',
+                  onClick: function() { updMulti({ tab: bay.tab, lsDomain: 'all' }); announceToSR('Opened 3D ' + bay.shortTitle + ' Bay'); },
+                  className: 'text-left rounded-xl border border-slate-300 bg-white p-3 hover:border-teal-500 hover:shadow-sm transition-all focus:outline-none focus:ring-2 focus:ring-teal-700'
+                },
+                  h('div', { className: 'flex items-center justify-between gap-1 mb-1' },
+                    h('span', { className: 'text-lg', 'aria-hidden': 'true' }, bay.icon),
+                    h('span', { className: 'px-1.5 py-0.5 rounded-full text-[10px] font-bold bg-slate-100 text-slate-800' }, seenCount + '/' + bay.parts.length + ' parts')
+                  ),
+                  h('p', { className: 'text-xs font-black text-slate-900' }, bay.shortTitle),
+                  h('p', { className: 'text-[10px] text-slate-700 leading-snug mt-0.5' }, bay.title)
                 );
               })
             )
@@ -4221,7 +6402,8 @@ window.StemLab = window.StemLab || {
             ),
             h('div', { className: 'space-y-2' },
               h('label', { className: 'block text-[11px] font-bold text-slate-600 uppercase' }, 'One small next step'),
-              h('textarea', { value: overviewNextStep, onChange: function(e) { upd('overviewNextStep', e.target.value); }, rows: 3, placeholder: __alloT('stem.lifeskills.example_compare_two_phone_plans_before_i_cho','Example: Compare two phone plans before I choose one.'), className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_one_small_next_step', 'One small next step') })
+              h('textarea', { value: overviewNextStep, onChange: function(e) { upd('overviewNextStep', e.target.value); }, rows: 3, placeholder: __alloT('stem.lifeskills.example_compare_two_phone_plans_before_i_cho','Example: Compare two phone plans before I choose one.'), className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_one_small_next_step', 'One small next step') }),
+              renderPiiNotice([overviewNextStep])
             ),
             h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
               h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, 'Suggested first activity: ' + overviewPath.steps[0] + '. Confidence can change after practice.'),
@@ -4232,17 +6414,61 @@ window.StemLab = window.StemLab || {
             ),
             d.overviewPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.overviewPlanSaved ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200') }, d.overviewPlanMsg)
           ),
+          (function() {
+            var readinessSummary = [
+              'Life Skills STEAM Readiness Summary (Zero-PII)',
+              'Focus Path: ' + overviewPath.title + ' (Confidence ' + overviewConfidence + '/5)',
+              'Learner Mode: ' + lsLifeRole + ' | Support: ' + lsSupportMode,
+              '3D Companion Passport: ' + lifeSkills3dCompletedLabs + '/' + LIFE_SKILLS_3D_LABS.length + ' labs (' + lifeSkills3dCompletedSteps + '/' + lifeSkills3dTotalSteps + ' scene steps)',
+              'Badges Earned: ' + Object.keys(d.badges || {}).length + '/' + LS_BADGES.length,
+              'Concept Topics Read: ' + Object.keys(learnRead || {}).length + '/' + LEARN_TOPICS.length
+            ].join('\n');
+            var exportMsg = asText(d.overviewExportMsg);
+            function copyReadinessSummary() {
+              function ok() { upd('overviewExportMsg', 'Portable Zero-PII readiness summary copied.'); announceToSR('Readiness summary copied'); }
+              function fail() { upd('overviewExportMsg', 'Clipboard unavailable — copy the summary box manually.'); }
+              try {
+                if (window.StemLab && typeof window.StemLab.writeClipboard === 'function') {
+                  Promise.resolve(window.StemLab.writeClipboard(readinessSummary)).then(ok, fail);
+                  return;
+                }
+                if (window.navigator && window.navigator.clipboard && typeof window.navigator.clipboard.writeText === 'function') {
+                  Promise.resolve(window.navigator.clipboard.writeText(readinessSummary)).then(ok, function() {
+                    if (lifeSkillsCopyViaExecCommand(readinessSummary)) ok(); else fail();
+                  });
+                  return;
+                }
+                if (lifeSkillsCopyViaExecCommand(readinessSummary)) { ok(); return; }
+              } catch (_) {}
+              fail();
+            }
+            return h('div', { className: glassCard + ' space-y-2.5', 'data-lifeskills-readiness-export': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Portable Readiness Summary (Zero-PII)'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Share progress counts without free-text notes or identifiers')
+                ),
+                h('div', { className: 'flex gap-2 flex-wrap' },
+                  h('button', { type: 'button', onClick: copyReadinessSummary, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-800' }, 'Copy Readiness Summary'),
+                  h('button', { type: 'button', onClick: function() { speakLifeSkillsText(readinessSummary); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-white border border-slate-400 text-slate-800 hover:bg-slate-100' }, '\uD83D\uDD0A Read Summary Aloud')
+                )
+              ),
+              h('pre', { className: 'text-[11px] font-mono bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-slate-700 whitespace-pre-wrap' }, readinessSummary),
+              exportMsg && h('p', { role: 'status', className: 'text-[11px] font-bold text-emerald-800' }, exportMsg)
+            );
+          })(),
           h('div', { className: glassCard + ' grid sm:grid-cols-3 gap-3' },
             h('div', { className: 'rounded-xl bg-teal-50 border border-teal-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-teal-800' }, 'Most practical first'), h('p', { className: 'text-sm font-black text-teal-900' }, 'Paycheck + Budget'), h('p', { className: 'text-[11px] text-teal-800 leading-relaxed' }, 'Start with what money comes in, then decide where it goes.')),
             h('div', { className: 'rounded-xl bg-indigo-50 border border-indigo-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-indigo-800' }, 'Best for confidence'), h('p', { className: 'text-sm font-black text-indigo-900' }, 'Home + Car + Laundry'), h('p', { className: 'text-[11px] text-indigo-800 leading-relaxed' }, 'Use everyday systems as low-stakes STEM practice.')),
             h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-amber-800' }, 'Best for review'), h('p', { className: 'text-sm font-black text-amber-900' }, 'Challenge + Learn'), h('p', { className: 'text-[11px] text-amber-800 leading-relaxed' }, 'Use quick questions, then read the matching concept card.'))
-          )
+          ),
+          renderSisterToolBridge('learningLab', 'Learning Lab (72-Skill Tracker)', 'Track long-term independent living, self-advocacy, and executive-function habits inside Learning Lab.')
         ),
 
         tab === 'paycheck' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard + ' space-y-3' },
             h('h4', { className: 'text-sm font-bold text-slate-700' }, __alloT('stem.lifeskills.paycheck_tax_calculator', '\uD83E\uDDFE Paycheck & Tax Calculator')),
-            h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand, 'See how much money you get to keep!', 'See what happens between gross pay and your bank account.', 'Calculate federal marginal tax, FICA, and state withholding.', 'Progressive marginal taxation with bracket visualization, FICA cap analysis, and effective rate computation.')),
+            h('p', { className: 'text-xs text-slate-600' }, roleGradeText( 'See how much money you get to keep!', 'See what happens between gross pay and your bank account.', 'Calculate federal marginal tax, FICA, and state withholding.', 'Progressive marginal taxation with bracket visualization, FICA cap analysis, and effective rate computation.')),
             h('div', { className: 'grid grid-cols-2 sm:grid-cols-5 gap-2' },
               h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.hourly_rate', 'Hourly Rate')), h('input', { type: 'number', step: '0.5', value: payRate, onChange: function(e) { upd('payRate', Math.max(0, parseFloat(e.target.value) || 0)); checkBadge('firstPay'); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1', 'aria-label': __alloT('stem.lifeskills.hourly_rate_dollars', 'Hourly rate in dollars') })),
               h('div', null, h('label', { className: 'text-[11px] font-bold text-slate-600' }, 'Hours/Week'), h('input', { type: 'number', value: payHours, onChange: function(e) { upd('payHours', Math.max(0, parseFloat(e.target.value) || 0)); }, className: 'w-full px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold mt-1', 'aria-label': __alloT('stem.lifeskills.hours_worked_per_week', 'Hours worked per week') })),
@@ -4268,7 +6494,7 @@ window.StemLab = window.StemLab || {
             )
           ),
           // Bracket table
-          (gradeBand === '6-8' || gradeBand === '9-12') && h('div', { className: glassCard },
+          (effectiveBand === '6-8' || effectiveBand === '9-12') && h('div', { className: glassCard },
             h('p', { className: 'text-[11px] font-bold text-slate-600 mb-1' },
               __alloT('stem.lifeskills.federal_tax_brackets', '\uD83D\uDCCA Federal Tax Brackets:') + ' ' + TAX_YEAR),
             // The untaxed first chunk, stated plainly. Without this the bracket
@@ -4292,6 +6518,21 @@ window.StemLab = window.StemLab || {
                 h('tr', { className: 'bg-orange-50 border-t' }, h('td', { className: 'px-2 py-1 font-bold text-orange-800', colSpan: 2 }, __alloT('stem.lifeskills.fica_ss_6_2_medicare_1_45', 'FICA (SS 6.2% + Medicare 1.45%)') + ' \u2014 from dollar one, no deduction'), h('td', { className: 'px-2 py-1 text-right font-bold text-orange-800' }, fmtMoney(ficaTotal)))
               )
             )
+          ),
+          h('div', { className: glassCard + ' space-y-2.5', 'data-lifeskills-paycheck-pipeline': 'true' },
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+              h('div', null,
+                h('p', { className: 'text-[10px] font-bold uppercase text-teal-800' }, 'Connected Household Money Pipeline'),
+                h('p', { className: 'text-xs font-bold text-slate-800' }, 'Estimated monthly take-home: ' + fmtMoney(Math.round(netAnnual / 12)) + '/mo')
+              ),
+              h('button', { type: 'button', onClick: function() {
+                updMulti({ budgetIncome: Math.round(netAnnual / 12), tab: 'budget' });
+                checkBadge('budgeteer');
+                announceToSR('Transferred ' + fmtMoney(Math.round(netAnnual / 12)) + ' monthly take-home to Budget tab');
+              }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-800' }, 'Send Monthly Take-Home (' + fmtMoney(Math.round(netAnnual / 12)) + '/mo) to Budget \u2192')
+            ),
+            renderSisterToolBridge('economicsLab', 'Economics Lab', 'Explore inflation, progressive taxation, and purchasing power inside Economics Lab.'),
+            renderSisterToolBridge('moneyMath', 'Money Math', 'Practice change-making, unit prices, and percentage discounts in Money Math.')
           )
         ),
 
@@ -4309,8 +6550,9 @@ window.StemLab = window.StemLab || {
             // literacy tab was missing. Chart-based scenarios only; the reasoning
             // fallacies (ice cream, percentage, survivor CEOs) stay text.
             (function() {
+              var dlMod = dlScenario % DL_SCENARIOS.length;
               var INK = '#334155', MUT = '#64748b';
-              if (dlScenario === 0) { // Truncated Y-axis: "crime rate" 970 vs 990
+              if (dlMod === 0) { // Truncated Y-axis: "crime rate" 970 vs 990
                 var mkBars = function(y0, y1) {
                   var W = 120, H = 96, padL = 28, padB = 16, vals = [970, 990], cols = ['#6366f1', '#ef4444'];
                   var sy = function(v) { return 8 + (H - padB - 8) * (1 - (v - y0) / (y1 - y0)); };
@@ -4327,7 +6569,7 @@ window.StemLab = window.StemLab || {
                   h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, __alloT('stem.lifeskills.y_axis_starts_at_950', '😱 Y-axis starts at 950')), mkBars(950, 1000), h('div', { className: 'text-[10px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.looks_like_a_huge_jump', 'Looks like a HUGE jump'))),
                   h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-700 mb-1' }, __alloT('stem.lifeskills.y_axis_starts_at_0', '✅ Y-axis starts at 0')), mkBars(0, 1000), h('div', { className: 'text-[10px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.same_data_barely_2', 'Same data — barely +2%'))));
               }
-              if (dlScenario === 2) { // Vanishing baseline: $3M(2022) -> $1M(2023) -> $2M(2024)
+              if (dlMod === 2) { // Vanishing baseline: $3M(2022) -> $1M(2023) -> $2M(2024)
                 var mkLine = function(pts) {
                   var W = 130, H = 96, padL = 22, padB = 16, maxV = 3.5, n = pts.length;
                   var px = function(i) { return padL + (W - padL - 6) * (n === 1 ? 0.5 : i / (n - 1)); };
@@ -4343,7 +6585,7 @@ window.StemLab = window.StemLab || {
                   h('div', null, h('div', { className: 'text-[10px] font-bold text-red-600 mb-1' }, __alloT('stem.lifeskills.cherry_picked_window', '😱 Cherry-picked window')), mkLine([['2023', 1], ['2024', 2]]), h('div', { className: 'text-[10px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.revenue_doubled', '"Revenue DOUBLED!"'))),
                   h('div', null, h('div', { className: 'text-[10px] font-bold text-emerald-700 mb-1' }, __alloT('stem.lifeskills.full_history', '✅ Full history')), mkLine([['2022', 3], ['2023', 1], ['2024', 2]]), h('div', { className: 'text-[10px] text-slate-500 text-center mt-0.5' }, __alloT('stem.lifeskills.down_from_3m_not_doubled', 'Down from $3M — not "doubled"'))));
               }
-              if (dlScenario === 5) { // 3D pie distortion: same data, but a 3D tilt makes the front 30% slice look bigger than the back 35% ones
+              if (dlMod === 5) { // 3D pie distortion: same data, but a 3D tilt makes the front 30% slice look bigger than the back 35% ones
                 var slices = [{ v: 30, c: '#6366f1' }, { v: 35, c: '#10b981' }, { v: 35, c: '#f59e0b' }];
                 var pie = function() {
                   var cx = 50, cy = 50, r = 44, ang = Math.PI * 0.2, paths = []; // start so the 30% slice sits at the bottom (front under tilt)
@@ -4378,9 +6620,13 @@ window.StemLab = window.StemLab || {
                 var revealed = dlRevealed;
                 return h('button', { key: oi, onClick: function() {
                   if (!dlRevealed) {
-                    updMulti({ dlAnswer: oi, dlRevealed: true, dlScore: dlScore + (oi === dlCurrent.correct ? 1 : 0) });
-                    stemBeep(oi === dlCurrent.correct);
-                    if (dlScore + (oi === dlCurrent.correct ? 1 : 0) >= 3) checkBadge('dataDetect');
+                    var right = oi === dlCurrent.correct;
+                    stemBeep(right);
+                    if (right) {
+                      claimUniqueScenarioUpdate('data:' + (dlScenario % DL_SCENARIOS.length), 'dlScore', dlScore, { dlAnswer: oi, dlRevealed: true }, 'dataDetect', 3);
+                    } else {
+                      updMulti({ dlAnswer: oi, dlRevealed: true });
+                    }
                   }
                 }, className: 'p-2 rounded-xl text-xs font-bold text-left transition-all border-2 ' + (revealed ? (isCorrect ? 'border-emerald-400 bg-emerald-50' : isSelected ? 'border-red-400 bg-red-50' : 'border-slate-200') : isSelected ? 'border-indigo-400 bg-indigo-50' : 'border-slate-200 hover:border-indigo-600') }, opt);
               })
@@ -4390,16 +6636,129 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-xs text-slate-600 mt-1' }, dlCurrent.explain)
             ),
             dlRevealed && h('button', { 'aria-label': __alloT('stem.lifeskills.next_scenario', 'Next Scenario'), onClick: function() { updMulti({ dlScenario: dlScenario + 1, dlAnswer: null, dlRevealed: false }); }, className: 'mt-2 px-4 py-2 text-xs font-bold bg-indigo-600 text-white rounded-xl' }, __alloT('stem.lifeskills.next_scenario_2', 'Next Scenario \u27A1'))
-          )
+          ),
+          (function() {
+            var yBase = (typeof d.dlAxisMin === 'number' && isFinite(d.dlAxisMin)) ? Math.max(0, Math.min(950, d.dlAxisMin)) : 900;
+            var yTop = 1000;
+            var v23 = 970, v24 = 990;
+            var h23 = Math.max(2, ((v23 - yBase) / (yTop - yBase)) * 100);
+            var h24 = Math.max(2, ((v24 - yBase) / (yTop - yBase)) * 100);
+            var realPctGain = ((v24 - v23) / v23) * 100;
+            var visualPctGain = ((h24 - h23) / h23) * 100;
+            var lieFactor = visualPctGain / realPctGain;
+            var note = asText(d.dataChartRedesignNote);
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-honest-chart-studio': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase text-indigo-800' }, '\uD83C\uDFA8 Art + Math Studio \u00B7 Tufte Lie Factor'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Honest-Chart Redesign Sandbox (2023 = 970, 2024 = 990)')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-black ' + (lieFactor > 2 ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800') },
+                  'Lie Factor: ' + lieFactor.toFixed(1) + 'x ' + (yBase === 0 ? '(Honest Zero Baseline)' : '(Truncated)'))
+              ),
+              slider('Y-Axis Baseline Minimum', yBase, 0, 950, 50, 'dlAxisMin', function(v) { return 'y = ' + Math.round(v); }),
+              h('div', { className: 'grid sm:grid-cols-2 gap-3 items-center' },
+                h('svg', { width: '100%', viewBox: '0 0 220 110', className: 'bg-slate-50 rounded-xl border border-slate-200 p-1', 'aria-label': 'Interactive chart with Y-axis baseline at ' + Math.round(yBase) },
+                  h('line', { x1: 38, y1: 12, x2: 38, y2: 88, stroke: '#475569', strokeWidth: 1.5 }),
+                  h('line', { x1: 38, y1: 88, x2: 205, y2: 88, stroke: '#475569', strokeWidth: 1.5 }),
+                  h('text', { x: 34, y: 90, fontSize: 9, fill: '#475569', textAnchor: 'end' }, '' + Math.round(yBase)),
+                  h('text', { x: 34, y: 16, fontSize: 9, fill: '#475569', textAnchor: 'end' }, '1000'),
+                  h('rect', { x: 64, y: 88 - (h23 * 0.72), width: 42, height: h23 * 0.72, fill: '#6366f1', rx: 3 }),
+                  h('rect', { x: 132, y: 88 - (h24 * 0.72), width: 42, height: h24 * 0.72, fill: lieFactor > 2 ? '#ef4444' : '#0ea5e9', rx: 3 }),
+                  h('text', { x: 85, y: 101, fontSize: 9, fill: '#1e293b', textAnchor: 'middle', fontWeight: 'bold' }, '2023 (970)'),
+                  h('text', { x: 153, y: 101, fontSize: 9, fill: '#1e293b', textAnchor: 'middle', fontWeight: 'bold' }, '2024 (990)')
+                ),
+                h('div', { className: 'space-y-2 text-xs text-slate-700' },
+                  h('p', null, 'Real data change: +2.06% (20 units on 970). Visual bar growth at y=' + Math.round(yBase) + ': +' + visualPctGain.toFixed(1) + '%.'),
+                  h('div', { className: 'flex gap-2 flex-wrap' },
+                    h('button', { type: 'button', onClick: function() { upd('dlAxisMin', 0); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-emerald-700 text-white' }, 'Fix to Honest Zero Baseline (y = 0)'),
+                    h('button', { type: 'button', onClick: function() { upd('dlAxisMin', 950); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-slate-200 text-slate-800' }, 'Test Truncated (y = 950)')
+                  ),
+                  h('label', { className: 'block text-[11px] font-bold text-slate-700' }, 'Redesign caption for readers',
+                    h('input', { type: 'text', value: note, onChange: function(e) { upd('dataChartRedesignNote', e.target.value); }, placeholder: 'Explain why y = 0 tells the truth...', className: 'mt-1 w-full px-2.5 py-1.5 rounded-lg border border-slate-300 bg-white text-xs text-slate-800' })
+                  ),
+                  renderPiiNotice([note])
+                )
+              ),
+              (function() {
+                var bPrev = (typeof d.bayesPrev === 'number' && isFinite(d.bayesPrev)) ? Math.max(0.5, Math.min(30, d.bayesPrev)) : 2;
+                var bSens = (typeof d.bayesSens === 'number' && isFinite(d.bayesSens)) ? Math.max(70, Math.min(99.5, d.bayesSens)) : 95;
+                var bSpec = (typeof d.bayesSpec === 'number' && isFinite(d.bayesSpec)) ? Math.max(70, Math.min(99.5, d.bayesSpec)) : 95;
+                var bayes = calcBayesBaseRate(bPrev, bSens, bSpec, 1000);
+                var tpPctWidth = bayes.totalFlagged > 0 ? Math.round((bayes.truePositives / bayes.totalFlagged) * 100) : 0;
+                return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-bayes-sim': 'true' },
+                  h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                    h('div', null,
+                      h('p', { className: 'text-[10px] font-bold uppercase text-indigo-800' }, '\uD83E\uDDEE Base-Rate Fallacy & Bayes Screening Studio'),
+                      h('h5', { className: 'text-sm font-black text-slate-800' }, 'Why "95% Accurate" Alerts Can Still Have High False Alarms (1,000-Person Cohort)')
+                    ),
+                    h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-black ' + (bayes.ppvPct < 50 ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-emerald-100 text-emerald-800 border border-emerald-300') },
+                      'Real Hits Given Flagged (PPV): ' + bayes.ppvPct + '%')
+                  ),
+                  h('div', { className: 'flex flex-wrap gap-1.5' },
+                    [
+                      { label: 'Rare Medical Screen (2%)', prev: 2, sens: 95, spec: 95 },
+                      { label: 'Fraud Text Filter (5%)', prev: 5, sens: 92, spec: 96 },
+                      { label: 'Common Flu Peak (25%)', prev: 25, sens: 90, spec: 94 }
+                    ].map(function(pre) {
+                      return h('button', { key: pre.label, type: 'button', onClick: function() { updMulti({ bayesPrev: pre.prev, bayesSens: pre.sens, bayesSpec: pre.spec }); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100' }, pre.label);
+                    })
+                  ),
+                  h('div', { className: 'grid sm:grid-cols-3 gap-2.5' },
+                    slider('True Base Rate (Prevalence)', bPrev, 0.5, 30, 0.5, 'bayesPrev', function(v) { return v.toFixed(1) + '%'; }),
+                    slider('True Positive Sensitivity', bSens, 70, 99.5, 0.5, 'bayesSens', function(v) { return v.toFixed(1) + '%'; }),
+                    slider('True Negative Specificity', bSpec, 70, 99.5, 0.5, 'bayesSpec', function(v) { return v.toFixed(1) + '%'; })
+                  ),
+                  h('svg', { width: '100%', viewBox: '0 0 240 28', role: 'img', 'aria-label': 'Out of ' + bayes.totalFlagged + ' positive alerts in 1000 checks, ' + bayes.truePositives + ' are true positives (' + bayes.ppvPct + ' percent) and ' + bayes.falsePositives + ' are false alarms (' + bayes.falseAlarmPct + ' percent)', className: 'rounded-xl bg-slate-100 border border-slate-200' },
+                    h('rect', { x: 4, y: 5, width: Math.max(2, Math.round(2.32 * tpPctWidth)), height: 18, rx: 3, fill: '#047857' }),
+                    h('rect', { x: 4 + Math.max(2, Math.round(2.32 * tpPctWidth)), y: 5, width: Math.max(0, 232 - Math.max(2, Math.round(2.32 * tpPctWidth))), height: 18, rx: 3, fill: '#d97706' })
+                  ),
+                  h('div', { className: 'grid sm:grid-cols-3 gap-2 text-[11px]' },
+                    h('div', { className: 'p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900' },
+                      h('p', { className: 'font-bold' }, 'True Positives'),
+                      h('p', null, bayes.truePositives + ' real cases caught out of ' + bayes.trueCondition)
+                    ),
+                    h('div', { className: 'p-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-900' },
+                      h('p', { className: 'font-bold' }, 'False Alarms'),
+                      h('p', null, bayes.falsePositives + ' flagged out of ' + bayes.noCondition + ' negative (' + bayes.falseAlarmPct + '% of alerts)')
+                    ),
+                    h('div', { className: 'p-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800' },
+                      h('p', { className: 'font-bold' }, 'Natural Frequency Rule'),
+                      h('p', null, bayes.truePositives + ' / ' + bayes.totalFlagged + ' alerts = ' + bayes.ppvPct + '% PPV')
+                    )
+                  )
+                );
+              })(),
+              h('div', { className: 'grid sm:grid-cols-2 gap-2' },
+                renderSisterToolBridge('statsLab', 'Stats Lab', 'Compare distributions, sample size, and misleading averages in Stats Lab.'),
+                renderSisterToolBridge('probability', 'Probability Lab', 'Explore conditional probability, tree diagrams, and Bayes\' rule in Probability Lab.')
+              )
+            );
+          })()
         ),
 
         // ═══ DECISIONS TAB ═══
         tab === 'decision' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.decision_matrix', '\uD83E\uDDE0 Decision Matrix')),
-            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.rate_each_option_on_each_criterion_1_5', 'Rate each option on each criterion (1-5). Weights determine importance.'))
+            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.rate_each_option_on_each_criterion_1_5', 'Rate each option on each criterion (1-5). Adjust criterion weights below to test sensitivity.'))
           ),
-          h('div', { className: glassCard },
+          h('div', { className: glassCard + ' space-y-3' },
+            h('div', { className: 'p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2' },
+              h('p', { className: 'text-[10px] font-bold uppercase text-slate-600' }, 'Criterion Importance Weights (1-5)'),
+              h('div', { className: 'grid sm:grid-cols-3 gap-2' },
+                dmCriteria.map(function(c, ci) {
+                  return h('label', { key: ci, className: 'block text-[11px] font-bold text-slate-700' }, c.name + ': w=' + c.weight,
+                    h('input', { type: 'range', min: 1, max: 5, step: 1, value: c.weight, 'aria-label': c.name + ' importance weight', onChange: function(e) {
+                      var nextW = parseInt(e.target.value, 10) || 1;
+                      var nextCrit = dmCriteria.map(function(item, idx) { return idx === ci ? Object.assign({}, item, { weight: nextW }) : item; });
+                      upd('dmCriteria', nextCrit);
+                      checkBadge('decisionPro');
+                    }, className: 'w-full h-1.5 rounded-full cursor-pointer' })
+                  );
+                })
+              )
+            ),
             h('table', { className: 'w-full text-[11px]' },
               h('caption', { className: 'sr-only' }, __alloT('stem.lifeskills.decision_matrix_2', '\uD83E\uDDE0 Decision Matrix')), h('thead', null, h('tr', { className: 'border-b border-slate-200' },
                 h('th', { scope: 'col', className: 'px-2 py-1 text-left' }, __alloT('stem.lifeskills.criteria_weight', 'Criteria (weight)')),
@@ -4422,52 +6781,179 @@ window.StemLab = window.StemLab || {
                 })
               )
             ),
-            // Results
-            h('div', { className: 'grid grid-cols-3 gap-2 mt-3' },
-              dmTotals.sort(function(a, b) { return b.total - a.total; }).map(function(t, i) {
-                return h('div', { key: t.index, className: 'text-center p-2 rounded-xl ' + (i === 0 ? 'bg-emerald-50 border-2 border-emerald-300' : 'bg-slate-50 border border-slate-400') },
-                  h('p', { className: 'text-[11px] font-bold ' + (i === 0 ? 'text-emerald-700' : 'text-slate-600') }, (i === 0 ? '\uD83C\uDFC6 ' : '') + t.option),
-                  h('p', { className: 'text-lg font-bold ' + (i === 0 ? 'text-emerald-700' : 'text-slate-600') }, t.total),
-                  h('div', { className: 'h-2 bg-slate-200 rounded-full mt-1 overflow-hidden' },
-                    h('div', { className: 'h-full rounded-full', style: { width: (dmMaxTotal > 0 ? t.total / dmMaxTotal * 100 : 0) + '%', background: i === 0 ? '#10b981' : '#94a3b8' } })
-                  )
-                );
-              })
-            )
-          )
+            // Results (non-mutating slice().sort) + Sensitivity / Flip Check
+            (function() {
+              var ranked = dmTotals.slice().sort(function(a, b) { return b.total - a.total; });
+              var first = ranked[0], second = ranked[1];
+              var margin = (first && second) ? (first.total - second.total) : 0;
+              var flipMsg = !second ? '' : margin === 0 ? ('Tie between ' + first.option + ' and ' + second.option + ' — adjusting any weight breaks the tie.') : (margin <= 3 ? ('Close call (' + margin + ' pt lead for ' + first.option + ') — a 1-point weight shift could flip the winner.') : (first.option + ' leads ' + second.option + ' by ' + margin + ' points across current weights.'));
+              return h('div', { className: 'space-y-2 mt-3' },
+                h('div', { className: 'grid grid-cols-3 gap-2' },
+                  ranked.map(function(t, i) {
+                    return h('div', { key: t.index, className: 'text-center p-2 rounded-xl ' + (i === 0 ? 'bg-emerald-50 border-2 border-emerald-300' : 'bg-slate-50 border border-slate-400') },
+                      h('p', { className: 'text-[11px] font-bold ' + (i === 0 ? 'text-emerald-700' : 'text-slate-600') }, (i === 0 ? '\uD83C\uDFC6 ' : '') + t.option),
+                      h('p', { className: 'text-lg font-bold ' + (i === 0 ? 'text-emerald-700' : 'text-slate-600') }, t.total),
+                      h('div', { className: 'h-2 bg-slate-200 rounded-full mt-1 overflow-hidden' },
+                        h('div', { className: 'h-full rounded-full', style: { width: (dmMaxTotal > 0 ? t.total / dmMaxTotal * 100 : 0) + '%', background: i === 0 ? '#10b981' : '#94a3b8' } })
+                      )
+                    );
+                  })
+                ),
+                flipMsg && h('p', { className: 'text-[11px] font-medium p-2 rounded-xl bg-purple-50 border border-purple-200 text-purple-900', 'data-lifeskills-decision-sensitivity': 'true' }, '\u2696\uFE0F Sensitivity check: ' + flipMsg)
+              );
+            })()
+          ),
+          (function() {
+            var evProb = (typeof d.evProb === 'number' && isFinite(d.evProb)) ? Math.max(5, Math.min(95, d.evProb)) : 40;
+            var evUpside = (typeof d.evUpside === 'number' && isFinite(d.evUpside)) ? Math.max(50, Math.min(2000, d.evUpside)) : 500;
+            var evDownside = (typeof d.evDownside === 'number' && isFinite(d.evDownside)) ? Math.max(0, Math.min(1000, d.evDownside)) : 200;
+            var evSunk = (typeof d.evSunk === 'number' && isFinite(d.evSunk)) ? Math.max(0, Math.min(1000, d.evSunk)) : 150;
+            var evSafe = (typeof d.evSafe === 'number' && isFinite(d.evSafe)) ? Math.max(0, Math.min(500, d.evSafe)) : 120;
+            var ev = calcExpectedValueComparison(evProb, evUpside, evDownside, evSunk, evSafe);
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-ev-sunkcost': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase text-purple-800' }, '\uD83D\uDCC8 Expected Value (EV), Opportunity Cost & Sunk-Cost Guard'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Forward-Looking Value vs Already-Spent Sunk Cost')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-black ' + (ev.recommended === 'risky-option' ? 'bg-emerald-100 text-emerald-800' : 'bg-blue-100 text-blue-800') },
+                  ev.recommended === 'risky-option' ? 'Take Risky Option (+' + fmtMoney(ev.netAdvantage) + ' EV edge)' : 'Choose Safe Alternative (' + fmtMoney(Math.abs(ev.netAdvantage)) + ' better EV)')
+              ),
+              h('div', { className: 'grid sm:grid-cols-3 gap-2.5' },
+                slider('Success Probability', evProb, 5, 95, 5, 'evProb', function(v) { return v + '%'; }),
+                slider('Potential Gain ($)', evUpside, 50, 2000, 50, 'evUpside', fmtMoney),
+                slider('Potential Loss ($)', evDownside, 0, 1000, 25, 'evDownside', fmtMoney)
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 gap-2.5' },
+                slider('Guaranteed Alternative Value (Opportunity Cost)', evSafe, 0, 500, 25, 'evSafe', fmtMoney),
+                slider('Already Spent / Non-Refundable Sunk Cost', evSunk, 0, 1000, 25, 'evSunk', fmtMoney)
+              ),
+              h('div', { className: 'grid sm:grid-cols-3 gap-2 text-[11px]' },
+                h('div', { className: 'p-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-800' },
+                  h('p', { className: 'font-bold' }, 'Forward EV'),
+                  h('p', { className: 'text-base font-black' }, (ev.evForward < 0 ? '-' : '') + fmtMoney(Math.abs(ev.evForward)))
+                ),
+                h('div', { className: 'p-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-900' },
+                  h('p', { className: 'font-bold' }, 'Safe Baseline'),
+                  h('p', { className: 'text-base font-black' }, fmtMoney(ev.safeAlternativeDollars))
+                ),
+                h('div', { className: 'p-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-900' },
+                  h('p', { className: 'font-bold' }, 'Ignored Sunk Cost'),
+                  h('p', { className: 'text-base font-black' }, fmtMoney(ev.sunkCostIgnored) + ' (spent)')
+                )
+              ),
+              ev.sunkCostTrapActive && h('p', { role: 'status', className: 'text-[11px] font-bold p-2 rounded-xl bg-amber-50 border border-amber-300 text-amber-900' },
+                '\u26A0\uFE0F Sunk-Cost Trap Alert: The ' + fmtMoney(ev.sunkCostIgnored) + ' already spent is gone regardless of what you pick next. Look only at forward EV (' + (ev.evForward < 0 ? '-' : '') + fmtMoney(Math.abs(ev.evForward)) + ') vs Safe Alternative (' + fmtMoney(ev.safeAlternativeDollars) + ').')
+            );
+          })(),
+          renderSisterToolBridge('behaviorLab', 'Behavior & Choice Lab', 'Investigate cognitive biases, loss aversion, and behavioral economics in Behavior Lab.')
         ),
 
         // ═══ CONTRACTS TAB ═══
         tab === 'contract' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.contract_trap_finder', '\uD83D\uDCDD Contract Trap Finder')),
-            h('p', { className: 'text-xs text-slate-600' }, 'Read the fine print. Find all ' + crCurrent.traps.length + ' hidden traps!')
+            h('p', { className: 'text-xs text-slate-600' }, 'Read every sentence in the fine print and click suspicious clauses to redline all ' + crCurrent.traps.length + ' hidden traps!')
           ),
-          h('div', { className: 'flex gap-1.5 mb-2' },
+          h('div', { className: 'flex gap-1.5 mb-2 flex-wrap' },
             CONTRACTS.map(function(c, i) {
-              return h('button', { key: i, onClick: function() { updMulti({ crLevel: i, crFound: [] }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (crLevel % CONTRACTS.length === i ? 'bg-teal-700 text-white' : 'bg-white border border-slate-400 text-slate-600') }, c.title);
+              return h('button', { key: i, onClick: function() { updMulti({ crLevel: i, crFound: [], crLastNote: '' }); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold ' + (crLevel % CONTRACTS.length === i ? 'bg-teal-700 text-white' : 'bg-white border border-slate-400 text-slate-600') }, c.title);
             })
           ),
-          h('div', { className: glassCard },
-            h('p', { className: 'text-xs text-slate-700 leading-relaxed whitespace-pre-line' }, crCurrent.text),
-            h('p', { className: 'text-[11px] font-bold text-amber-800 mt-3 mb-2' }, '\uD83D\uDD0D Traps found: ' + crFound.length + '/' + crCurrent.traps.length),
-            h('div', { className: 'grid grid-cols-2 gap-2' },
-              crCurrent.traps.map(function(trap) {
-                var found = crFound.indexOf(trap.id) >= 0;
-                return h('button', { key: trap.id, onClick: function() {
-                  if (!found) {
-                    var list = crFound.concat([trap.id]);
-                    upd('crFound', list);
-                    stemBeep(true);
-                    if (list.length >= crCurrent.traps.length) checkBadge('trapFinder');
-                    awardXP(10, 'Found trap: ' + trap.hint);
-                  }
-                }, className: 'p-2 rounded-xl text-left text-[11px] transition-all border ' + (found ? 'bg-red-50 border-red-600' : 'bg-white border-slate-200 hover:border-amber-600') },
-                  found ? h('div', null, h('p', { className: 'font-bold text-red-700' }, '\u26A0\uFE0F ' + trap.hint), h('p', { className: 'text-red-600 mt-0.5' }, trap.explain)) :
-                  h('p', { className: 'text-slate-600 italic' }, '\uD83D\uDD0D Click to investigate: ' + trap.hint)
-                );
-              })
-            )
+          h('div', { className: glassCard + ' space-y-3' },
+            (function() {
+              var trapMatchers = {
+                term: /termination|200/i, data: /128kbps|5gb/i, device: /device:|799/i, fees: /activation|taxes:/i,
+                deposit: /deposit|cleaning/i, renew: /auto-renews|market rate/i, late: /late fee/i, repairs: /repairs under/i,
+                annual: /annual maintenance|annual fee/i, cancel: /certified mail|cancel:/i, training: /personal training|auto-enrolled/i, freeze: /freeze:/i,
+                apr: /variable/i, minimum: /minimum payment/i, transfer: /balance transfer/i,
+                accrual: /accrues during school/i, capitalize: /capitalizes/i, idr: /income-driven/i, total: /total repayment/i
+              };
+              var rawSentences = crCurrent.text.split('. ');
+              var crLastNote = asText(d.crLastNote);
+              function discoverTrap(trap, customNote) {
+                var list = crFound.indexOf(trap.id) >= 0 ? crFound : crFound.concat([trap.id]);
+                updMulti({ crFound: list, crLastNote: customNote || ('\u26A0\uFE0F Trap flagged: ' + trap.hint + ' \u2014 ' + trap.explain) });
+                stemBeep(true);
+                if (list.length >= crCurrent.traps.length) checkBadge('trapFinder');
+                if (crFound.indexOf(trap.id) < 0) awardXP(10, 'Found trap: ' + trap.hint);
+              }
+              return h('div', { className: 'space-y-3' },
+                h('div', { className: 'flex flex-wrap gap-1.5 leading-relaxed bg-white border border-slate-200 rounded-xl p-3', 'data-lifeskills-contract-redliner': 'true' },
+                  rawSentences.map(function(seg, si) {
+                    var textSeg = seg + (seg.endsWith('.') ? '' : '.');
+                    var matchedTrap = crCurrent.traps.find(function(tr) { var rx = trapMatchers[tr.id]; return rx && rx.test(textSeg); }) || null;
+                    var flagged = matchedTrap && crFound.indexOf(matchedTrap.id) >= 0;
+                    return h('button', {
+                      key: si, type: 'button',
+                      onClick: function() {
+                        if (matchedTrap) discoverTrap(matchedTrap);
+                        else upd('crLastNote', '\u2139\uFE0F "' + textSeg + '" states a headline term \u2014 check the clauses next to it for hidden traps.');
+                      },
+                      className: 'text-left text-xs px-1.5 py-0.5 rounded transition-all ' + (flagged ? 'bg-red-100 text-red-900 font-bold border border-red-300' : 'hover:bg-amber-50 text-slate-800 border border-transparent hover:border-amber-300')
+                    }, textSeg);
+                  })
+                ),
+                crLastNote && h('p', { role: 'status', className: 'text-[11px] font-bold p-2 rounded-lg ' + (crLastNote[0] === '\u26A0' ? 'bg-red-50 text-red-800 border border-red-200' : 'bg-slate-50 text-slate-700 border border-slate-200') }, crLastNote),
+                h('p', { className: 'text-[11px] font-bold text-amber-800' }, '\uD83D\uDD0D Traps found: ' + crFound.length + '/' + crCurrent.traps.length),
+                h('div', { className: 'grid grid-cols-2 gap-2' },
+                  crCurrent.traps.map(function(trap, ti) {
+                    var found = crFound.indexOf(trap.id) >= 0;
+                    return h('button', { key: trap.id, onClick: function() {
+                      if (!found) discoverTrap(trap);
+                    }, className: 'p-2 rounded-xl text-left text-[11px] transition-all border ' + (found ? 'bg-red-50 border-red-600' : 'bg-white border-slate-200 hover:border-amber-600') },
+                      found ? h('div', null, h('p', { className: 'font-bold text-red-700' }, '\u26A0\uFE0F ' + trap.hint), h('p', { className: 'text-red-600 mt-0.5' }, trap.explain)) :
+                      h('p', { className: 'text-slate-600 italic' }, '\uD83D\uDD0D Clause #' + (ti + 1) + ' \u2014 Click to inspect')
+                    );
+                  })
+                )
+              );
+            })(),
+            (function() {
+              var cBase = (typeof d.crBaseMonthly === 'number' && isFinite(d.crBaseMonthly)) ? Math.max(10, Math.min(3500, d.crBaseMonthly)) : 1200;
+              var cFees = (typeof d.crHiddenFees === 'number' && isFinite(d.crHiddenFees)) ? Math.max(0, Math.min(400, d.crHiddenFees)) : 75;
+              var cDep = (typeof d.crDeposit === 'number' && isFinite(d.crDeposit)) ? Math.max(0, Math.min(3500, d.crDeposit)) : 1200;
+              var cRefPct = (typeof d.crRefundPct === 'number' && isFinite(d.crRefundPct)) ? Math.max(0, Math.min(100, d.crRefundPct)) : 80;
+              var cTerm = (typeof d.crTermMonths === 'number' && isFinite(d.crTermMonths)) ? Math.max(1, Math.min(36, d.crTermMonths)) : 12;
+              var cJump = (typeof d.crRenewJump === 'number' && isFinite(d.crRenewJump)) ? Math.max(0, Math.min(30, d.crRenewJump)) : 8;
+              var cCancelMo = (typeof d.crCancelMonth === 'number' && isFinite(d.crCancelMonth)) ? Math.max(1, Math.min(cTerm, d.crCancelMonth)) : Math.min(8, cTerm);
+              var cEtf = (typeof d.crEtf === 'number' && isFinite(d.crEtf)) ? Math.max(0, Math.min(3000, d.crEtf)) : 900;
+              var cash = calcContractTotalCost(cBase, cFees, cDep, cRefPct, cTerm, cJump, cCancelMo, cEtf);
+              var crSyncMsg = asText(d.budgetSyncMsg);
+              return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-contract-cashflow': 'true' },
+                h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                  h('div', null,
+                    h('p', { className: 'text-[10px] font-bold uppercase text-indigo-800' }, '\uD83D\uDCB2 Financial Mathematics \u00B7 True Contract Cashflow & Early-Exit Model'),
+                    h('h5', { className: 'text-sm font-black text-slate-800' }, 'Headline Price vs. True First-Term & Buyout Math')
+                  ),
+                  h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-indigo-50 text-indigo-900 border border-indigo-200' }, fmtMoney(cash.effectiveMonthly) + '/mo true cost')
+                ),
+                h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-3 gap-3' },
+                  slider('Base monthly rate ($)', cBase, 20, 2800, 10, 'crBaseMonthly', function(v) { return fmtMoney(v); }),
+                  slider('Hidden fees/add-ons ($/mo)', cFees, 0, 300, 5, 'crHiddenFees', function(v) { return fmtMoney(v); }),
+                  slider('Upfront deposit ($)', cDep, 0, 3000, 50, 'crDeposit', function(v) { return fmtMoney(v); }),
+                  slider('Refundable deposit (%)', cRefPct, 0, 100, 5, 'crRefundPct', function(v) { return v + '%'; }),
+                  slider('Year-2 renewal hike (%)', cJump, 0, 25, 1, 'crRenewJump', function(v) { return '+' + v + '%'; }),
+                  slider('Early buyout fee ($)', cEtf, 0, 2500, 50, 'crEtf', function(v) { return fmtMoney(v); })
+                ),
+                slider('Exit check at month (' + cCancelMo + ' of ' + cTerm + ')', cCancelMo, 1, cTerm, 1, 'crCancelMonth', function(v) { return 'Month ' + v; }),
+                h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 text-center' },
+                  h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-500' }, 'Day-1 Cash Needed'), h('p', { className: 'text-sm font-black text-slate-900' }, fmtMoney(cash.moveInCash))),
+                  h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-500' }, cTerm + '-Mo Net Cost'), h('p', { className: 'text-sm font-black text-indigo-800' }, fmtMoney(cash.firstTermNetCost))),
+                  h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-500' }, 'Non-Refundable Cut'), h('p', { className: 'text-sm font-black text-red-700' }, fmtMoney(cash.nonRefundableDeposit))),
+                  h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-500' }, 'Auto-Renew Rate'), h('p', { className: 'text-sm font-black text-amber-800' }, fmtMoney(cash.renewalMonthly) + '/mo'))
+                ),
+                h('p', { className: 'text-[11px] font-medium p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700' },
+                  'Early-exit comparison at Month ' + cCancelMo + ': Finishing ' + cash.remainingMonthsAtCancel + ' remaining months costs ' + fmtMoney(cash.finishTermRemainingCost) + ' vs. buyout fee ' + fmtMoney(cash.buyoutCost) + ' (' + (cash.betterExitOption === 'buyout' ? ('buyout saves ' + fmtMoney(cash.earlyExitSavings)) : ('holding term is cheaper by ' + fmtMoney(Math.abs(cash.earlyExitSavings)))) + ').'
+                ),
+                h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                  h('button', { type: 'button', onClick: function() { syncCategoryToBudget('Housing', Math.round(cash.effectiveMonthly), 'Contracts Lease Cashflow'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-800' }, 'Send as Housing (' + fmtMoney(Math.round(cash.effectiveMonthly)) + '/mo) to Budget'),
+                  h('button', { type: 'button', onClick: function() { syncCategoryToBudget('Subscriptions', Math.round(cash.effectiveMonthly), 'Contracts Plan Cashflow'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-purple-700 text-white hover:bg-purple-800' }, 'Send as Subscriptions to Budget')
+                ),
+                crSyncMsg && h('p', { role: 'status', className: 'text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-2' }, crSyncMsg)
+              );
+            })(),
+            renderSisterToolBridge('paperTrail', 'Paper Trail', 'Organize leases, receipts, IDs, and cancellation logs inside Paper Trail.')
           )
         ),
 
@@ -4476,7 +6962,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.records_lab', '\uD83D\uDCC1 Records & Paperwork Lab')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Practice keeping important papers safe and asking before sharing or signing.',
                   'Build a simple system for IDs, forms, receipts, deadlines, and private information.',
                   'Decode paperwork by purpose: identity, proof, consent, deadlines, storage, and privacy.',
@@ -4593,14 +7079,50 @@ window.StemLab = window.StemLab || {
               })
             ),
             h('textarea', { value: recordPlanNote, onChange: function(e) { upd('recordPlanNote', e.target.value); }, rows: 4, placeholder: __alloT('stem.lifeskills.write_one_record_form_or_deadline_action','Write one record, form, or deadline action.'), className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_paperwork_plan_note', 'Paperwork plan note') }),
-            h('button', { onClick: function() {
-              if (!recordPlanNote.trim()) { upd('recordPlanMsg', 'Write one paperwork step first.'); return; }
-              updMulti({ recordPlanMsg: 'Plan saved: ' + recordPlanNote.trim(), recordPlanSaved: Date.now() });
-              checkBadge('recordsReady');
-              announceToSR(__alloT('stem.lifeskills.sr_paperwork_plan_saved', 'Paperwork plan saved'));
-            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save paperwork plan'),
+            renderPiiNotice([recordPlanNote]),
+            h('div', { className: 'flex flex-wrap gap-2 items-center' },
+              h('button', { onClick: function() {
+                if (!recordPlanNote.trim()) { upd('recordPlanMsg', 'Write one paperwork step first.'); return; }
+                updMulti({ recordPlanMsg: 'Plan saved: ' + recordPlanNote.trim(), recordPlanSaved: Date.now() });
+                checkBadge('recordsReady');
+                announceToSR(__alloT('stem.lifeskills.sr_paperwork_plan_saved', 'Paperwork plan saved'));
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save paperwork plan'),
+              h('button', { type: 'button', onClick: function() { updMulti({ recordPlanNote: SAM_RIVERA_PERSONA.recordPlan, recordPlanMsg: '' }); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100' }, 'Load Sample (Sam Rivera)')
+            ),
             recordPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.recordPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, recordPlanMsg)
-          )
+          ),
+          (function() {
+            var pickedDocs = Array.isArray(d.recordsIdCombo) ? d.recordsIdCombo : ['state_id', 'ssn_card'];
+            var comboRes = evaluateOnboardingIdCombo(pickedDocs);
+            function toggleDoc(docId) {
+              var next = pickedDocs.indexOf(docId) !== -1
+                ? pickedDocs.filter(function(id) { return id !== docId; })
+                : pickedDocs.concat([docId]);
+              upd('recordsIdCombo', next);
+              if (evaluateOnboardingIdCombo(next).verified) awardOnce('records:idcombo', 10, 'Onboarding ID check', 'recordsReady');
+            }
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-id-matrix': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase text-indigo-800' }, '\uD83E\uDEAA Privacy & Verification Logic \u00B7 List A vs List B + List C Matrix'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Pick Minimum Documents Without Over-Sharing')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-bold ' + (comboRes.verified && !comboRes.overShared ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : comboRes.verified ? 'bg-amber-50 text-amber-900 border border-amber-200' : 'bg-slate-100 text-slate-700 border border-slate-300') },
+                  comboRes.verified ? (comboRes.overShared ? 'Verified (Over-Shared)' : 'Verified (Optimal)') : 'Incomplete')
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-3 gap-2' },
+                MOCK_ONBOARDING_DOCS.map(function(doc) {
+                  var on = pickedDocs.indexOf(doc.id) !== -1;
+                  return h('button', { key: doc.id, type: 'button', 'aria-pressed': on, onClick: function() { toggleDoc(doc.id); }, className: 'text-left p-2.5 rounded-xl border transition-all ' + (on ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-800 border-slate-300 hover:border-indigo-400') },
+                    h('p', { className: 'text-xs font-black' }, '[' + (doc.category === 'none' ? 'Local' : 'List ' + doc.category) + '] ' + doc.label),
+                    h('p', { className: 'text-[10px] mt-0.5 ' + (on ? 'text-slate-200' : 'text-slate-600') }, doc.desc)
+                  );
+                })
+              ),
+              h('p', { role: 'status', className: 'text-[11px] font-bold p-2.5 rounded-xl ' + (comboRes.verified && !comboRes.overShared ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, comboRes.summary),
+              renderSisterToolBridge('paperTrail', 'Paper Trail', 'Practice form fields, retention rules, and consent workflows in Paper Trail.')
+            );
+          })()
         ),
 
         tab === 'transport' && h('div', { className: 'space-y-4', 'data-lifeskills-transportation': 'true' },
@@ -4608,13 +7130,14 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.transportation_lab', '\uD83D\uDE8C Transportation & Navigation Lab')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Practice getting from one place to another with a trusted plan and a backup.',
                   'Plan trips by checking destination, route, time, fare, safety, and what to do if plans change.',
                   'Compare routes, transfers, access needs, payment, alerts, safer waiting places, and backup options.',
                   'Model transportation literacy as time management, wayfinding, accessibility, cost planning, situational awareness, and contingency planning.')),
                 h('div', { className: 'flex items-center gap-2 flex-wrap mt-3' },
                   h('button', { onClick: openLifeSkillsTransit3D, className: 'px-3 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-blue-700 to-emerald-700 hover:from-blue-800 hover:to-emerald-800 focus:outline-none focus:ring-2 focus:ring-blue-300', 'aria-label': __alloT('stem.lifeskills.a11y_open_the_3d_transit_and_street_safety_lab_in_a', 'Open the 3D transit and street safety lab in a new window') }, '\uD83C\uDF10 Open 3D transit lab \u2197'),
+                  h('button', { type: 'button', onClick: function() { openLifeSkillsInlineCompanion('transit'); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-white hover:bg-slate-900' }, 'Open Inline'),
                   d.transit3dMsg && h('span', { className: 'text-[11px] font-bold text-blue-800', role: 'status' }, d.transit3dMsg)
                 )
               ),
@@ -4623,7 +7146,12 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-2xl font-black text-sky-900 leading-none' }, Math.round(transportDone / TRANSPORT_CHECKS.length * 100) + '%')
               )
             ),
-            h('p', { className: 'text-[11px] text-slate-700 bg-sky-50 border border-sky-200 rounded-xl p-2 leading-relaxed' }, 'Practice only. For real travel, follow local rules and trusted guidance. If a place, ride, message, or pickup feels unsafe, move to a public safer place when possible and contact a trusted person or official help.')
+            h('p', { className: 'text-[11px] text-slate-700 bg-sky-50 border border-sky-200 rounded-xl p-2 leading-relaxed' }, 'Practice only. For real travel, follow local rules and trusted guidance. If a place, ride, message, or pickup feels unsafe, move to a public safer place when possible and contact a trusted person or official help.'),
+            renderAacQuickStrip('transport', function(phrase) { updMulti({ transportPlanNote: phrase, transportPlanMsg: '' }); }),
+            h('div', { className: 'grid sm:grid-cols-2 gap-2' },
+              renderSisterToolBridge('roadReady', 'Road Ready Lab', 'Practice defensive intersection scans, hazard recognition, and right-of-way rules.'),
+              renderSisterToolBridge('bikeLab', 'Bike & Mobility Lab', 'Explore visibility geometry, stopping distance, and helmet protection physics.')
+            )
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
             h('div', { className: glassCard + ' space-y-3' },
@@ -4727,6 +7255,7 @@ window.StemLab = window.StemLab || {
               })
             ),
             h('textarea', { value: transportPlanNote, onChange: function(e) { upd('transportPlanNote', e.target.value); }, rows: 4, placeholder: __alloT('stem.lifeskills.write_one_route_buffer_fare_or_backup_step','Write one route, buffer, fare, or backup step.'), className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_trip_plan_note', 'Trip plan note') }),
+            renderPiiNotice([transportPlanNote]),
             h('button', { onClick: function() {
               if (!transportPlanNote.trim()) { upd('transportPlanMsg', 'Write one trip plan step first.'); return; }
               updMulti({ transportPlanMsg: 'Plan saved: ' + transportPlanNote.trim(), transportPlanSaved: Date.now() });
@@ -4734,7 +7263,40 @@ window.StemLab = window.StemLab || {
               announceToSR(__alloT('stem.lifeskills.sr_trip_plan_saved', 'Trip plan saved'));
             }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save trip plan'),
             transportPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.transportPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, transportPlanMsg)
-          )
+          ),
+          (function() {
+            var trFare = (typeof d.transitSingleFare === 'number' && isFinite(d.transitSingleFare)) ? d.transitSingleFare : 2.75;
+            var trRides = (typeof d.transitRidesWeek === 'number' && isFinite(d.transitRidesWeek)) ? d.transitRidesWeek : 10;
+            var trPass = (typeof d.transitMonthlyPass === 'number' && isFinite(d.transitMonthlyPass)) ? d.transitMonthlyPass : 85;
+            var trRes = calcTransitBreakEven(trFare, trRides, trPass);
+            var trBestCost = Math.min(trRes.payPerRideMonthly, trRes.monthlyPassCost);
+            var trSyncMsg = asText(d.budgetSyncMsg);
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-transit-breakeven': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Quantitative transit model'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Transit Pass Break-Even & Transfer Buffer Calculator')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-bold ' + (trRes.recommended === 'pass' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-sky-50 text-sky-800 border border-sky-200') },
+                  trRes.recommended === 'pass' ? 'Monthly Pass Saves ' + fmtMoney(Math.round(trRes.monthlySavingsWithPass)) + '/mo' : 'Pay-Per-Ride Cheaper')
+              ),
+              h('div', { className: 'grid sm:grid-cols-3 gap-3' },
+                slider('Single fare', trFare, 0.5, 8, 0.25, 'transitSingleFare', function(v) { return '$' + v.toFixed(2); }),
+                slider('Rides per week', trRides, 1, 28, 1, 'transitRidesWeek', function(v) { return v + ' rides'; }),
+                slider('Monthly pass cost', trPass, 20, 220, 5, 'transitMonthlyPass', function(v) { return fmtMoney(v); })
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-500' }, 'Pay-Per-Ride'), h('p', { className: 'text-sm font-black text-slate-800' }, '$' + trRes.payPerRideMonthly.toFixed(2) + '/mo')),
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-500' }, 'Break-Even'), h('p', { className: 'text-sm font-black text-sky-800' }, trRes.breakEvenRidesPerMonth + ' rides/mo')),
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-500' }, 'Transfer Buffer'), h('p', { className: 'text-sm font-black text-indigo-800' }, Math.max(10, Math.round(trRides >= 10 ? 12 : 15)) + ' min min.'))
+              ),
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('p', { className: 'text-[11px] text-slate-600' }, 'Formula: Break-even rides = Monthly Pass / Single Fare. Plan at least 10-15 min transfer buffer for missed connections.'),
+                h('button', { type: 'button', onClick: function() { syncCategoryToBudget('Transportation', trBestCost, 'Transit fare/pass'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-800 shrink-0' }, 'Send Transit Cost (' + fmtMoney(Math.round(trBestCost)) + '/mo) to Budget')
+              ),
+              trSyncMsg && h('p', { role: 'status', className: 'text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-2' }, trSyncMsg)
+            );
+          })()
         ),
 
         tab === 'workreadiness' && h('div', { className: 'space-y-4', 'data-lifeskills-job-readiness': 'true' },
@@ -4742,7 +7304,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.job_readiness_lab', '\uD83D\uDCBC Job Readiness & Workplace Basics Lab')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Practice work habits: being ready, asking questions, staying safe, and helping with a task.',
                   'Build job-readiness habits for applications, interviews, schedules, tasks, and respectful communication.',
                   'Practice resumes, availability, interview answers, first-day planning, feedback, safety, and workplace questions.',
@@ -4857,14 +7419,78 @@ window.StemLab = window.StemLab || {
               })
             ),
             h('textarea', { value: workPlanNote, onChange: function(e) { upd('workPlanNote', e.target.value); }, rows: 4, placeholder: __alloT('stem.lifeskills.write_one_job_interview_schedule_or_workplac','Write one job, interview, schedule, or workplace question step.'), className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_work_readiness_plan_note', 'Work readiness plan note') }),
-            h('button', { onClick: function() {
-              if (!workPlanNote.trim()) { upd('workPlanMsg', 'Write one work readiness step first.'); return; }
-              updMulti({ workPlanMsg: 'Plan saved: ' + workPlanNote.trim(), workPlanSaved: Date.now() });
-              checkBadge('jobReady');
-              announceToSR(__alloT('stem.lifeskills.sr_work_readiness_plan_saved', 'Work readiness plan saved'));
-            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save work plan'),
+            renderPiiNotice([workPlanNote]),
+            h('div', { className: 'flex flex-wrap gap-2 items-center' },
+              h('button', { onClick: function() {
+                if (!workPlanNote.trim()) { upd('workPlanMsg', 'Write one work readiness step first.'); return; }
+                updMulti({ workPlanMsg: 'Plan saved: ' + workPlanNote.trim(), workPlanSaved: Date.now() });
+                checkBadge('jobReady');
+                announceToSR(__alloT('stem.lifeskills.sr_work_readiness_plan_saved', 'Work readiness plan saved'));
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save work plan'),
+              h('button', { type: 'button', onClick: function() { updMulti({ workPlanNote: SAM_RIVERA_PERSONA.workPlan, workPlanMsg: '' }); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100' }, 'Load Sample (Sam Rivera)')
+            ),
             workPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.workPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, workPlanMsg)
-          )
+          ),
+          (function() {
+            var wRate = (typeof d.workStubRate === 'number' && isFinite(d.workStubRate)) ? Math.max(7.25, Math.min(60, d.workStubRate)) : 18;
+            var wSchedHrs = (typeof d.workSchedHours === 'number' && isFinite(d.workSchedHours)) ? Math.max(5, Math.min(70, d.workSchedHours)) : 46;
+            var wShifts = (typeof d.workShifts === 'number' && isFinite(d.workShifts)) ? Math.max(1, Math.min(7, d.workShifts)) : 5;
+            var wBreakMin = (typeof d.workBreakMin === 'number' && isFinite(d.workBreakMin)) ? Math.max(0, Math.min(60, d.workBreakMin)) : 30;
+            var wCommute = (typeof d.workCommuteShift === 'number' && isFinite(d.workCommuteShift)) ? Math.max(0, Math.min(40, d.workCommuteShift)) : 4;
+            var wStubPaid = (typeof d.workStubPaid === 'number' && isFinite(d.workStubPaid)) ? Math.max(0, Math.min(5000, d.workStubPaid)) : 783;
+            var stub = calcShiftPaystubAudit(wRate, wSchedHrs, wBreakMin, wShifts, wCommute, wStubPaid);
+            var accommNeed = asText(d.workAccommNeed) || 'written-checklist';
+            var accommMap = {
+              'written-checklist': 'Could I receive a written checklist of opening/closing steps so I complete every item accurately?',
+              'quiet-break': 'Would a scheduled 5-minute sensory/focus reset between rush blocks be possible so my pacing stays strong?',
+              'advance-schedule': 'Could I get my weekly shift schedule 5+ days ahead so I can arrange reliable transit?'
+            };
+            var accommScript = 'Hi, to help me do my best work consistently: ' + (accommMap[accommNeed] || accommMap['written-checklist']);
+            var workAccommMsg = asText(d.workAccommMsg);
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-paystub-verifier': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase text-indigo-800' }, '\uD83E\uDDFE Workplace Mathematics \u00B7 FLSA 1.5x Overtime & Paystub Audit'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Timecard vs. Paystub & Net Commute-Adjusted Wage Verifier')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-bold ' + (stub.hasUnderpayment ? 'bg-red-50 text-red-800 border border-red-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200') },
+                  stub.hasUnderpayment ? ('Short by $' + stub.discrepancy.toFixed(2)) : 'Matches Expected Gross')
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-3 gap-3' },
+                slider('Hourly base rate ($/hr)', wRate, 10, 45, 0.5, 'workStubRate', function(v) { return '$' + v.toFixed(2) + '/hr'; }),
+                slider('Clocked/scheduled hrs/wk', wSchedHrs, 10, 65, 1, 'workSchedHours', function(v) { return v + ' hrs'; }),
+                slider('Unpaid meal break (min/shift)', wBreakMin, 0, 60, 15, 'workBreakMin', function(v) { return v + ' min'; }),
+                slider('Shifts per week', wShifts, 1, 7, 1, 'workShifts', function(v) { return v + ' shifts'; }),
+                slider('Round-trip commute ($/shift)', wCommute, 0, 30, 1, 'workCommuteShift', function(v) { return '$' + v; }),
+                slider('Paystub reported gross ($)', wStubPaid, 100, 2000, 9, 'workStubPaid', function(v) { return '$' + v; })
+              ),
+              h('div', { className: 'grid grid-cols-2 sm:grid-cols-4 gap-2 text-center' },
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-500' }, 'Net Paid Hrs'), h('p', { className: 'text-sm font-black text-slate-900' }, stub.netPaidHours + ' h (' + stub.overtimeHours + 'h OT)')),
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-500' }, 'Expected 1.5x Gross'), h('p', { className: 'text-sm font-black text-indigo-800' }, '$' + stub.expectedGross.toFixed(2))),
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-500' }, 'Discrepancy'), h('p', { className: 'text-sm font-black ' + (stub.hasUnderpayment ? 'text-red-700' : 'text-emerald-700') }, (stub.discrepancy >= 0 ? '+$' : '-$') + Math.abs(stub.discrepancy).toFixed(2))),
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-500' }, 'Net After Commute'), h('p', { className: 'text-sm font-black text-teal-800' }, '$' + stub.effectiveHourlyAfterCommute.toFixed(2) + '/hr'))
+              ),
+              h('div', { className: 'rounded-xl bg-indigo-50/70 border border-indigo-200 p-3 space-y-2' },
+                h('p', { className: 'text-[11px] font-bold uppercase text-indigo-900' }, 'Workplace Accommodation Script Builder (JAN-Aligned)'),
+                h('div', { className: 'flex flex-wrap gap-1.5' },
+                  [
+                    { id: 'written-checklist', label: 'Written Step Checklist' },
+                    { id: 'quiet-break', label: 'Brief Focus Reset' },
+                    { id: 'advance-schedule', label: 'Advance Shift Posting' }
+                  ].map(function(opt) {
+                    var active = accommNeed === opt.id;
+                    return h('button', { key: opt.id, type: 'button', onClick: function() { updMulti({ workAccommNeed: opt.id, workAccommMsg: '' }); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white border-indigo-200 text-indigo-900') }, opt.label);
+                  })
+                ),
+                h('p', { className: 'text-xs text-slate-800 bg-white border border-indigo-100 rounded-lg p-2 font-medium' }, accommScript),
+                h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                  h('button', { type: 'button', onClick: function() { updMulti({ workPlanNote: accommScript, workAccommMsg: 'Inserted into work readiness plan box above!' }); awardOnce('work:accomm', 10, 'Accommodation script built', 'jobReady'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-indigo-700 text-white hover:bg-indigo-800' }, 'Copy Script to Plan Box'),
+                  h('button', { type: 'button', onClick: function() { speakLifeSkillsText(accommScript); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-white border border-indigo-300 text-indigo-900 hover:bg-indigo-50' }, '\uD83D\uDD0A Read Script Aloud')
+                ),
+                workAccommMsg && h('p', { role: 'status', className: 'text-[11px] font-bold text-emerald-800' }, workAccommMsg)
+              )
+            );
+          })()
         ),
 
         tab === 'resumebuilder' && h('div', { className: 'space-y-4', 'data-lifeskills-resume-builder': 'true' },
@@ -4872,7 +7498,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.resume_builder_lab', '\uD83D\uDCC4 Resume Builder & Evidence Review Lab')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Practice naming strengths, helpful tasks, school projects, and ways you can show responsibility.',
                   'Build a simple resume habit: collect real examples, name skills, and ask a trusted helper to review.',
                   'Practice role matching, clean sections, action-result bullets, privacy checks, and truthful job vocabulary.',
@@ -4956,12 +7582,49 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-sm font-black text-slate-800 leading-relaxed' }, resumeBulletPreview),
               h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, 'Tip: If the result is hard to measure, use a clear outcome such as helped visitors find items, reduced confusion, finished before the deadline, or kept records accurate.')
             ),
-            h('button', { onClick: function() {
-              if (!resumeAction.trim() || !resumeContext.trim()) { upd('resumeBulletMsg', 'Add at least an action and context before saving the bullet.'); return; }
-              updMulti({ resumeBulletMsg: 'Bullet saved: ' + resumeBulletPreview, resumeBulletSaved: Date.now() });
-              checkBadge('bulletBuilder');
-              announceToSR(__alloT('stem.lifeskills.sr_resume_bullet_saved', 'Resume bullet saved'));
-            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save evidence bullet'),
+            (function() {
+              var resMetrics = analyzeResumeAndStarMetrics(resumeBulletPreview, '', 130);
+              return h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 p-3 space-y-2', 'data-lifeskills-resume-metrics': 'true' },
+                h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                  h('p', { className: 'text-[11px] font-bold uppercase text-slate-700' }, '\uD83D\uDCCA Evidence Specificity Meter'),
+                  h('span', { className: 'px-2 py-0.5 rounded-full text-[11px] font-black ' + (resMetrics.specificityScore >= 100 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-900') }, resMetrics.specificityScore + '/100')
+                ),
+                h('div', { className: 'flex flex-wrap gap-1.5 text-[11px] font-bold' },
+                  h('span', { className: 'px-2 py-0.5 rounded-lg ' + (resMetrics.hasActionVerb ? 'bg-emerald-100 text-emerald-800' : 'bg-white border border-slate-300 text-slate-600') }, (resMetrics.hasActionVerb ? '\u2713 ' : '\u25CB ') + 'Action Verb'),
+                  h('span', { className: 'px-2 py-0.5 rounded-lg ' + (resMetrics.hasQuantMetric ? 'bg-emerald-100 text-emerald-800' : 'bg-white border border-slate-300 text-slate-600') }, (resMetrics.hasQuantMetric ? '\u2713 ' : '\u25CB ') + 'Quantified Detail'),
+                  h('span', { className: 'px-2 py-0.5 rounded-lg ' + (resMetrics.hasOutcomeSignal ? 'bg-emerald-100 text-emerald-800' : 'bg-white border border-slate-300 text-slate-600') }, (resMetrics.hasOutcomeSignal ? '\u2713 ' : '\u25CB ') + 'Clear Outcome')
+                ),
+                h('p', { className: 'text-[11px] text-slate-700' }, resMetrics.bulletTip)
+              );
+            })(),
+            renderPiiNotice([resumeAction, resumeContext, resumeSkill, resumeResult]),
+            (Array.isArray(d.savedProofItems) && d.savedProofItems.length > 0) && h('div', { className: 'rounded-xl bg-teal-50/80 border border-teal-200 p-2.5 space-y-1.5', 'data-lifeskills-resume-proof-imports': 'true' },
+              h('p', { className: 'text-[10px] font-bold uppercase text-teal-900' }, 'Import from Proof Locker (' + d.savedProofItems.length + '):'),
+              h('div', { className: 'flex flex-wrap gap-1.5' },
+                d.savedProofItems.map(function(item, pi) {
+                  if (!item || typeof item !== 'object') return null;
+                  return h('button', { key: pi, type: 'button', onClick: function() {
+                    updMulti({ resumeContext: String(item.title || ''), resumeSkill: String(item.skill || ''), resumeBulletMsg: '' });
+                  }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-white border border-teal-300 text-teal-900 hover:bg-teal-100' }, '+ ' + String(item.title || 'Proof item'));
+                })
+              )
+            ),
+            h('div', { className: 'flex flex-wrap gap-2 items-center' },
+              h('button', { onClick: function() {
+                if (!resumeAction.trim() || !resumeContext.trim()) { upd('resumeBulletMsg', 'Add at least an action and context before saving the bullet.'); return; }
+                var curBullets = Array.isArray(d.savedResumeBullets) ? d.savedResumeBullets.filter(function(b) { return typeof b === 'string' && b !== resumeBulletPreview; }) : [];
+                var nextBullets = [resumeBulletPreview].concat(curBullets).slice(0, 10);
+                updMulti({ resumeBulletMsg: 'Bullet saved: ' + resumeBulletPreview, resumeBulletSaved: Date.now(), savedResumeBullets: nextBullets });
+                checkBadge('bulletBuilder');
+                announceToSR(__alloT('stem.lifeskills.sr_resume_bullet_saved', 'Resume bullet saved'));
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save evidence bullet'),
+              h('button', { type: 'button', onClick: function() {
+                updMulti({ resumeAction: SAM_RIVERA_PERSONA.resumeAction, resumeContext: SAM_RIVERA_PERSONA.resumeContext, resumeSkill: SAM_RIVERA_PERSONA.resumeSkill, resumeResult: SAM_RIVERA_PERSONA.resumeResult, resumeBulletMsg: '' });
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100' }, 'Load Fictional Sample (Sam Rivera)'),
+              h('button', { type: 'button', onClick: function() {
+                updMulti({ interviewProofNote: resumeBulletPreview, tab: 'interviewstudio' });
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100' }, 'Use in Interview Studio \u2192')
+            ),
             resumeBulletMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.resumeBulletSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, resumeBulletMsg)
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
@@ -5052,12 +7715,18 @@ window.StemLab = window.StemLab || {
               })
             ),
             h('textarea', { value: resumePlanNote, onChange: function(e) { upd('resumePlanNote', e.target.value); }, rows: 4, placeholder: __alloT('stem.lifeskills.write_one_resume_target_evidence_bullet_priv','Write one resume target, evidence bullet, privacy check, or review step.'), className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_resume_plan_note', 'Resume plan note') }),
-            h('button', { onClick: function() {
-              if (!resumePlanNote.trim()) { upd('resumePlanMsg', 'Write one resume step first.'); return; }
-              updMulti({ resumePlanMsg: 'Plan saved: ' + resumePlanNote.trim(), resumePlanSaved: Date.now() });
-              checkBadge('resumeReady');
-              announceToSR(__alloT('stem.lifeskills.sr_resume_plan_saved', 'Resume plan saved'));
-            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save resume plan'),
+            renderPiiNotice([resumePlanNote]),
+            h('div', { className: 'flex flex-wrap gap-2 items-center' },
+              h('button', { onClick: function() {
+                if (!resumePlanNote.trim()) { upd('resumePlanMsg', 'Write one resume step first.'); return; }
+                updMulti({ resumePlanMsg: 'Plan saved: ' + resumePlanNote.trim(), resumePlanSaved: Date.now() });
+                checkBadge('resumeReady');
+                announceToSR(__alloT('stem.lifeskills.sr_resume_plan_saved', 'Resume plan saved'));
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save resume plan'),
+              h('button', { type: 'button', onClick: function() {
+                updMulti({ resumePlanNote: SAM_RIVERA_PERSONA.resumePlan, resumePlanMsg: '' });
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100' }, 'Load Sample (Sam Rivera)')
+            ),
             resumePlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.resumePlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, resumePlanMsg)
           )
         ),
@@ -5067,7 +7736,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.proof_locker_lab', '\uD83D\uDDC2\uFE0F Portfolio & Proof Locker Lab')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Practice saving examples of things you made, learned, helped with, or practiced safely.',
                   'Collect projects, certificates, notes, and examples that show real skills while checking who can see them.',
                   'Build proof habits for resumes and interviews: label skills, add context, protect privacy, and sort by audience.',
@@ -5151,13 +7820,38 @@ window.StemLab = window.StemLab || {
               h('p', { className: 'text-sm font-black text-slate-800 leading-relaxed' }, proofItemPreview),
               h('p', { className: 'text-[11px] text-slate-700 leading-relaxed' }, 'Evidence note: ' + (proofItemEvidence.trim() || 'Add a short note about what this item proves and whether it is safe to share.'))
             ),
-            h('button', { onClick: function() {
-              if (!proofItemTitle.trim() || !proofItemSkill.trim()) { upd('proofItemMsg', 'Add at least a title and skill before saving the proof item.'); return; }
-              updMulti({ proofItemMsg: 'Proof item saved: ' + proofItemPreview, proofItemSaved: Date.now() });
-              checkBadge('proofLockerReady');
-              announceToSR(__alloT('stem.lifeskills.sr_proof_item_saved', 'Proof item saved'));
-            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save proof item'),
-            proofItemMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.proofItemSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, proofItemMsg)
+            renderPiiNotice([proofItemTitle, proofItemEvidence, proofItemShare]),
+            h('div', { className: 'flex flex-wrap gap-2 items-center' },
+              h('button', { onClick: function() {
+                if (!proofItemTitle.trim() || !proofItemSkill.trim()) { upd('proofItemMsg', 'Add at least a title and skill before saving the proof item.'); return; }
+                var newEntry = { title: proofItemTitle.trim(), type: proofItemType, skill: proofItemSkill.trim(), preview: proofItemPreview, share: proofItemShare.trim() };
+                var existingProofs = Array.isArray(d.savedProofItems) ? d.savedProofItems.filter(function(p) { return p && typeof p === 'object' && p.title !== newEntry.title; }) : [];
+                var nextProofs = [newEntry].concat(existingProofs).slice(0, 10);
+                updMulti({ proofItemMsg: 'Proof item saved: ' + proofItemPreview, proofItemSaved: Date.now(), savedProofItems: nextProofs });
+                checkBadge('proofLockerReady');
+                announceToSR(__alloT('stem.lifeskills.sr_proof_item_saved', 'Proof item saved'));
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save proof item'),
+              h('button', { type: 'button', onClick: function() {
+                updMulti({ proofItemType: SAM_RIVERA_PERSONA.proofType, proofItemTitle: SAM_RIVERA_PERSONA.proofTitle, proofItemSkill: SAM_RIVERA_PERSONA.proofSkill, proofItemEvidence: SAM_RIVERA_PERSONA.proofEvidence, proofItemShare: SAM_RIVERA_PERSONA.proofShare, proofItemMsg: '' });
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100' }, 'Load Fictional Sample (Sam Rivera)'),
+              h('button', { type: 'button', onClick: function() {
+                updMulti({ tab: 'resumebuilder', resumeContext: proofItemTitle.trim() || SAM_RIVERA_PERSONA.proofTitle, resumeSkill: proofItemSkill.trim() || SAM_RIVERA_PERSONA.proofSkill });
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100' }, 'Send to Resume Builder \u2192'),
+              h('button', { type: 'button', onClick: function() {
+                updMulti({ tab: 'interviewstudio', interviewProofNote: proofItemPreview });
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100' }, 'Send to Interview Studio \u2192')
+            ),
+            proofItemMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.proofItemSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, proofItemMsg),
+            (Array.isArray(d.savedProofItems) && d.savedProofItems.length > 0) && h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 p-2.5 space-y-1.5', 'data-lifeskills-saved-proofs': 'true' },
+              h('p', { className: 'text-[10px] font-bold uppercase text-slate-600' }, 'Saved Locker Items (' + d.savedProofItems.length + ')'),
+              d.savedProofItems.map(function(item, pi) {
+                if (!item || typeof item !== 'object') return null;
+                return h('div', { key: pi, className: 'flex items-center justify-between gap-2 text-[11px] bg-white border border-slate-200 rounded-lg px-2.5 py-1.5' },
+                  h('span', { className: 'font-bold text-slate-800 truncate' }, String(item.title || '') + ' (' + String(item.skill || '') + ')'),
+                  h('button', { type: 'button', onClick: function() { updMulti({ tab: 'resumebuilder', resumeContext: String(item.title || ''), resumeSkill: String(item.skill || '') }); }, className: 'text-[10px] font-bold text-teal-700 hover:underline shrink-0' }, 'Use in Resume \u2192')
+                );
+              })
+            )
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
             h('div', { className: glassCard + ' space-y-3' },
@@ -5242,12 +7936,18 @@ window.StemLab = window.StemLab || {
                 })
               ),
               h('textarea', { value: proofPlanNote, onChange: function(e) { upd('proofPlanNote', e.target.value); }, rows: 4, placeholder: __alloT('stem.lifeskills.write_one_proof_item_skill_label_privacy_che','Write one proof item, skill label, privacy check, or review step.'), className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_proof_locker_plan_note', 'Proof locker plan note') }),
-              h('button', { onClick: function() {
-                if (!proofPlanNote.trim()) { upd('proofPlanMsg', 'Write one proof locker step first.'); return; }
-                updMulti({ proofPlanMsg: 'Plan saved: ' + proofPlanNote.trim(), proofPlanSaved: Date.now() });
-                checkBadge('portfolioCurator');
-                announceToSR(__alloT('stem.lifeskills.sr_proof_locker_plan_saved', 'Proof locker plan saved'));
-              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save proof plan'),
+              renderPiiNotice([proofPlanNote]),
+              h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                h('button', { onClick: function() {
+                  if (!proofPlanNote.trim()) { upd('proofPlanMsg', 'Write one proof locker step first.'); return; }
+                  updMulti({ proofPlanMsg: 'Plan saved: ' + proofPlanNote.trim(), proofPlanSaved: Date.now() });
+                  checkBadge('portfolioCurator');
+                  announceToSR(__alloT('stem.lifeskills.sr_proof_locker_plan_saved', 'Proof locker plan saved'));
+                }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save proof plan'),
+                h('button', { type: 'button', onClick: function() {
+                  updMulti({ proofPlanNote: SAM_RIVERA_PERSONA.proofPlan, proofPlanMsg: '' });
+                }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100' }, 'Load Sample (Sam Rivera)')
+              ),
               proofPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.proofPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, proofPlanMsg)
             )
           )
@@ -5258,7 +7958,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.interview_studio_lab', '\uD83C\uDFA4 Interview Practice Studio')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Practice listening, answering one question, and asking for help when a question is confusing.',
                   'Rehearse common interview questions with sentence starters, kind coaching, and a simple reflection.',
                   'Practice guided or free-response interview answers using resume bullets, proof locker items, STAR structure, and prepared questions.',
@@ -5415,15 +8115,30 @@ window.StemLab = window.StemLab || {
                 )
               ),
               h('div', { className: 'space-y-3' },
+                ((Array.isArray(d.savedProofItems) && d.savedProofItems.length > 0) || (Array.isArray(d.savedResumeBullets) && d.savedResumeBullets.length > 0)) && h('div', { className: 'rounded-xl bg-amber-50/80 border border-amber-200 p-2.5 space-y-1.5', 'data-lifeskills-interview-imports': 'true' },
+                  h('p', { className: 'text-[10px] font-bold uppercase text-amber-900' }, 'Import saved proof or resume bullets:'),
+                  h('div', { className: 'flex flex-wrap gap-1.5' },
+                    (Array.isArray(d.savedProofItems) ? d.savedProofItems : []).map(function(item, pi) {
+                      if (!item || typeof item !== 'object') return null;
+                      return h('button', { key: 'p-' + pi, type: 'button', onClick: function() { upd('interviewProofNote', String(item.preview || item.title || '')); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-white border border-amber-300 text-amber-900 hover:bg-amber-100' }, '\uD83D\uDDC2\uFE0F ' + String(item.title || 'Proof'));
+                    }),
+                    (Array.isArray(d.savedResumeBullets) ? d.savedResumeBullets : []).map(function(bullet, bi) {
+                      if (typeof bullet !== 'string') return null;
+                      return h('button', { key: 'b-' + bi, type: 'button', onClick: function() { upd('interviewProofNote', bullet); }, className: 'px-2 py-1 rounded-lg text-[11px] font-bold bg-white border border-amber-300 text-amber-900 hover:bg-amber-100' }, '\uD83D\uDCC4 Bullet #' + (bi + 1));
+                    })
+                  )
+                ),
                 h('label', { className: 'text-[11px] font-bold text-slate-700' }, 'Proof item or real example',
                   h('textarea', { value: interviewProofNote, onChange: function(e) { upd('interviewProofNote', e.target.value); }, rows: 3, placeholder: interviewProofMatcher.proofPrompt, className: 'mt-1 w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_interview_proof_item_or_example', 'Interview proof item or example') })
                 ),
+                renderPiiNotice([interviewProofNote]),
                 h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
                   h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Answer cue'),
                   h('p', { className: 'text-xs text-slate-800 leading-relaxed font-medium' }, interviewProofCuePreview)
                 ),
                 h('div', { className: 'flex flex-wrap gap-2' },
                   h('button', { onClick: saveInterviewProofCue, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save proof cue'),
+                  h('button', { type: 'button', onClick: function() { upd('interviewProofNote', SAM_RIVERA_PERSONA.proofEvidence); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100' }, 'Load Sample (Sam Rivera)'),
                   h('button', { onClick: useInterviewProofCueInChat, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-amber-50 text-amber-900 border border-amber-200 hover:bg-amber-100 focus:outline-none focus:ring-2 focus:ring-amber-700' }, 'Use cue in chat')
                 ),
                 interviewProofCueMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (interviewProofCueSavedAt ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200'), role: 'status' }, interviewProofCueMsg)
@@ -5558,6 +8273,7 @@ window.StemLab = window.StemLab || {
                   h('button', { onClick: resetInterviewChat, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 border border-slate-300 hover:bg-slate-200 focus:outline-none focus:ring-2 focus:ring-slate-700' }, 'Reset chat')
                 ),
                 interviewFeedback && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200' }, 'Coach feedback: ' + interviewFeedback),
+                asText(d.aiPiiGuardMsg) && h('p', { role: 'status', className: 'text-[11px] font-bold p-2 rounded-lg bg-amber-50 text-amber-900 border border-amber-300' }, '\uD83D\uDEE1\uFE0F ' + asText(d.aiPiiGuardMsg)),
                 interviewSparkMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg bg-amber-50 text-amber-900 border border-amber-200' }, interviewSparkMsg),
                 interviewTranscriptMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200' }, interviewTranscriptMsg)
               ),
@@ -5650,6 +8366,24 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Practice answer'),
                 h('p', { className: 'text-xs text-slate-800 leading-relaxed font-medium' }, interviewStarPreview)
               ),
+              (function() {
+                var starWpm = (typeof d.starWpm === 'number' && isFinite(d.starWpm)) ? Math.max(100, Math.min(170, d.starWpm)) : 130;
+                var starMetrics = analyzeResumeAndStarMetrics('', interviewStarPreview, starWpm);
+                var paceLabel = starMetrics.paceBand === 'sweet-spot'
+                  ? 'Sweet spot (25\u201395s)'
+                  : (starMetrics.paceBand === 'too-brief' ? 'Too brief (<25s)' : 'Trim slightly (>95s)');
+                var paceCls = starMetrics.paceBand === 'sweet-spot'
+                  ? 'bg-emerald-100 text-emerald-800'
+                  : (starMetrics.paceBand === 'too-brief' ? 'bg-amber-100 text-amber-900' : 'bg-violet-100 text-violet-900');
+                return h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 p-3 space-y-2', 'data-lifeskills-star-pacing': 'true' },
+                  h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                    h('p', { className: 'text-[11px] font-bold uppercase text-slate-700' }, '\u23F1\uFE0F Spoken STAR Pacing & 60\u201390s Gauge'),
+                    h('span', { className: 'px-2 py-0.5 rounded-full text-[11px] font-black ' + paceCls }, starMetrics.starWords + ' words \u2248 ' + starMetrics.estimatedSeconds + 's \u00B7 ' + paceLabel)
+                  ),
+                  slider('Speaking Pace (words/min)', starWpm, 100, 170, 5, 'starWpm', function(v) { return Math.round(v) + ' WPM'; }),
+                  h('button', { type: 'button', onClick: function() { speakLifeSkillsText(interviewStarPreview); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-300 text-slate-800 hover:bg-violet-50' }, '\uD83D\uDD0A Read STAR Answer Aloud')
+                );
+              })(),
               h('div', { className: 'flex flex-wrap gap-2' },
                 h('button', { onClick: saveInterviewStarAnswer, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save STAR answer'),
                 h('button', { onClick: function() { upd('interviewInput', interviewStarPreview); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 focus:outline-none focus:ring-2 focus:ring-violet-700' }, 'Use in chat')
@@ -5671,12 +8405,18 @@ window.StemLab = window.StemLab || {
                 })
               ),
               h('textarea', { value: interviewReflectionNote, onChange: function(e) { upd('interviewReflectionNote', e.target.value); }, rows: 4, placeholder: __alloT('stem.lifeskills.write_one_interview_reflection_follow_up_que','Write one interview reflection, follow-up question, or support plan.'), className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_interview_reflection_note', 'Interview reflection note') }),
-              h('button', { onClick: function() {
-                if (!interviewReflectionNote.trim()) { upd('interviewReflectionMsg', 'Write one reflection step first.'); return; }
-                updMulti({ interviewReflectionMsg: 'Reflection saved: ' + interviewReflectionNote.trim(), interviewReflectionSaved: Date.now() });
-                checkBadge('interviewReady');
-                announceToSR(__alloT('stem.lifeskills.sr_interview_reflection_saved', 'Interview reflection saved'));
-              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save reflection'),
+              renderPiiNotice([interviewReflectionNote, interviewFollowUpMessage]),
+              h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                h('button', { onClick: function() {
+                  if (!interviewReflectionNote.trim()) { upd('interviewReflectionMsg', 'Write one reflection step first.'); return; }
+                  updMulti({ interviewReflectionMsg: 'Reflection saved: ' + interviewReflectionNote.trim(), interviewReflectionSaved: Date.now() });
+                  checkBadge('interviewReady');
+                  announceToSR(__alloT('stem.lifeskills.sr_interview_reflection_saved', 'Interview reflection saved'));
+                }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save reflection'),
+                h('button', { type: 'button', onClick: function() {
+                  updMulti({ interviewReflectionNote: SAM_RIVERA_PERSONA.interviewReflection, interviewFollowUpMessage: SAM_RIVERA_PERSONA.interviewFollowUp, interviewReflectionMsg: '' });
+                }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100' }, 'Load Reflection Sample (Sam Rivera)')
+              ),
               interviewReflectionMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.interviewReflectionSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, interviewReflectionMsg),
               h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
                 h('p', { className: 'text-xs font-black text-slate-800' }, 'Follow-up message frame'),
@@ -5716,7 +8456,8 @@ window.StemLab = window.StemLab || {
                 h('textarea', { readOnly: true, value: interviewPacketPreview, rows: 16, className: 'mt-1 w-full px-3 py-2 border border-slate-500 rounded-xl text-xs text-slate-800 bg-white resize-y font-mono leading-relaxed', 'aria-label': __alloT('stem.lifeskills.a11y_interview_prep_packet_preview', 'Interview prep packet preview') })
               )
             )
-          )
+          ),
+          renderSisterToolBridge('oratory', 'Public Speaking & Oratory Lab', 'Practice vocal pacing, pause control, and clear delivery in Oratory Lab.')
         ),
 
         tab === 'communication' && h('div', { className: 'space-y-4', 'data-lifeskills-communication': 'true' },
@@ -5724,7 +8465,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.communication_lab', '\uD83D\uDCAC Communication & Conflict Basics Lab')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Practice pausing, listening, asking for help, and using clear words.',
                   'Build communication habits for listening, asking questions, saying no, and fixing misunderstandings.',
                   'Practice I-statements, boundaries, tone-checking, repair attempts, and knowing when to get trusted support.',
@@ -5839,14 +8580,100 @@ window.StemLab = window.StemLab || {
               })
             ),
             h('textarea', { value: communicationPlanNote, onChange: function(e) { upd('communicationPlanNote', e.target.value); }, rows: 4, placeholder: __alloT('stem.lifeskills.write_one_conversation_boundary_repair_or_su','Write one conversation, boundary, repair, or support step.'), className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_conversation_plan_note', 'Conversation plan note') }),
-            h('button', { onClick: function() {
-              if (!communicationPlanNote.trim()) { upd('communicationPlanMsg', 'Write one communication step first.'); return; }
-              updMulti({ communicationPlanMsg: 'Plan saved: ' + communicationPlanNote.trim(), communicationPlanSaved: Date.now() });
-              checkBadge('communicationReady');
-              announceToSR(__alloT('stem.lifeskills.sr_communication_plan_saved', 'Communication plan saved'));
-            }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save communication plan'),
+            renderAacQuickStrip('communication', function(phrase) { updMulti({ communicationPlanNote: phrase, communicationPlanMsg: '' }); }),
+            renderPiiNotice([communicationPlanNote]),
+            h('div', { className: 'flex flex-wrap gap-2 items-center' },
+              h('button', { onClick: function() {
+                if (!communicationPlanNote.trim()) { upd('communicationPlanMsg', 'Write one communication step first.'); return; }
+                updMulti({ communicationPlanMsg: 'Plan saved: ' + communicationPlanNote.trim(), communicationPlanSaved: Date.now() });
+                checkBadge('communicationReady');
+                announceToSR(__alloT('stem.lifeskills.sr_communication_plan_saved', 'Communication plan saved'));
+              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save communication plan'),
+              h('button', { type: 'button', onClick: function() { updMulti({ communicationPlanNote: SAM_RIVERA_PERSONA.communicationPlan, communicationPlanMsg: '' }); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100' }, 'Load Sample (Sam Rivera)')
+            ),
             communicationPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.communicationPlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, communicationPlanMsg)
-          )
+          ),
+          (function() {
+            var validMoves = ['escalate', 'neutral', 'repair'];
+            var openC = validMoves.indexOf(asText(d.commDeescOpen)) !== -1 ? asText(d.commDeescOpen) : 'neutral';
+            var listenC = validMoves.indexOf(asText(d.commDeescListen)) !== -1 ? asText(d.commDeescListen) : 'repair';
+            var closeC = validMoves.indexOf(asText(d.commDeescClose)) !== -1 ? asText(d.commDeescClose) : 'repair';
+            var traj = calcDeescalationTrajectory(openC, listenC, closeC);
+            var fact = asText(d.commLogFact);
+            var ask = asText(d.commLogAsk);
+            var logMsg = asText(d.commLogMsg);
+            var opts = [
+              { id: 'escalate', label: 'Blame / Interrupt', cls: 'bg-red-50 text-red-800 border-red-300' },
+              { id: 'neutral', label: 'Flat / Brief', cls: 'bg-slate-100 text-slate-800 border-slate-300' },
+              { id: 'repair', label: 'I-Statement / Validate', cls: 'bg-emerald-50 text-emerald-800 border-emerald-300' }
+            ];
+            var xs = [24, 100, 178, 256];
+            var pts = traj.series.map(function(val, idx) {
+              var y = Math.round(78 - (Math.max(10, Math.min(100, val)) / 100) * 64);
+              return xs[idx] + ',' + y;
+            }).join(' ');
+            var turns = [
+              { title: 'Turn 1: Opening Tone', key: 'commDeescOpen', val: openC },
+              { title: 'Turn 2: Active Listening', key: 'commDeescListen', val: listenC },
+              { title: 'Turn 3: Next-Step Close', key: 'commDeescClose', val: closeC }
+            ];
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-deescalation-sim': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase text-orange-800' }, '\uD83D\uDCC9 Social Systems & Feedback Dynamics \u00B7 3-Turn Trajectory'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Conflict De-escalation Simulator & Written Issue Log')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-black border ' + (traj.finalTension <= 35 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : traj.finalTension <= 65 ? 'bg-amber-50 text-amber-900 border-amber-200' : 'bg-red-50 text-red-800 border-red-200') }, traj.finalTension + '/100 \u00B7 ' + traj.outcome)
+              ),
+              h('div', { className: 'grid sm:grid-cols-3 gap-2' },
+                turns.map(function(turn) {
+                  return h('div', { key: turn.key, className: 'rounded-xl bg-white border border-slate-200 p-2.5 space-y-1.5' },
+                    h('p', { className: 'text-[11px] font-black text-slate-800' }, turn.title),
+                    h('div', { className: 'grid gap-1' },
+                      opts.map(function(opt) {
+                        var active = turn.val === opt.id;
+                        return h('button', { key: opt.id, type: 'button', onClick: function() { upd(turn.key, opt.id); },
+                          className: 'text-left px-2 py-1 rounded-lg text-[11px] font-bold border transition-all ' + (active ? opt.cls + ' ring-2 ring-orange-500' : 'bg-slate-50 border-slate-200 text-slate-700 hover:border-orange-300')
+                        }, opt.label);
+                      })
+                    )
+                  );
+                })
+              ),
+              h('div', { className: 'rounded-xl bg-slate-50 border border-slate-200 p-3 space-y-1.5' },
+                h('svg', { viewBox: '0 0 280 90', role: 'img', 'aria-label': '3-turn conflict tension trajectory', className: 'w-full h-24 overflow-visible' },
+                  h('line', { x1: 20, y1: 14, x2: 260, y2: 14, stroke: '#fecaca', strokeWidth: 1, strokeDasharray: '3 3' }),
+                  h('line', { x1: 20, y1: 46, x2: 260, y2: 46, stroke: '#fde68a', strokeWidth: 1, strokeDasharray: '3 3' }),
+                  h('line', { x1: 20, y1: 78, x2: 260, y2: 78, stroke: '#cbd5e1', strokeWidth: 1 }),
+                  h('polyline', { fill: 'none', stroke: traj.finalTension <= 35 ? '#059669' : traj.finalTension <= 65 ? '#d97706' : '#dc2626', strokeWidth: 3, strokeLinecap: 'round', strokeLinejoin: 'round', points: pts }),
+                  traj.series.map(function(val, idx) {
+                    var y = Math.round(78 - (Math.max(10, Math.min(100, val)) / 100) * 64);
+                    var labels = ['Start', 'Turn 1', 'Turn 2', 'Turn 3'];
+                    return h('g', { key: idx },
+                      h('circle', { cx: xs[idx], cy: y, r: 4, fill: '#0f172a' }),
+                      h('text', { x: xs[idx], y: Math.max(10, y - 7), textAnchor: 'middle', fontSize: '9', fontWeight: 'bold', fill: '#334155' }, String(val)),
+                      h('text', { x: xs[idx], y: 88, textAnchor: 'middle', fontSize: '8', fill: '#475569' }, labels[idx])
+                    );
+                  })
+                ),
+                h('p', { className: 'text-[11px] text-slate-600' }, 'Each repair move (-18 tension) compounds empathy vs escalation (+18 tension per defensive move).')
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Written Issue Log Builder (Non-Blaming Documentation)'),
+                h('div', { className: 'grid sm:grid-cols-2 gap-2' },
+                  h('input', { type: 'text', value: fact, onChange: function(e) { upd('commLogFact', e.target.value); }, placeholder: 'Objective what-happened fact (time/date/step)', 'aria-label': 'Objective what-happened fact', className: 'px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white text-slate-800' }),
+                  h('input', { type: 'text', value: ask, onChange: function(e) { upd('commLogAsk', e.target.value); }, placeholder: 'Specific next-step request or check-in', 'aria-label': 'Specific next-step request', className: 'px-3 py-1.5 rounded-lg border border-slate-300 text-xs bg-white text-slate-800' })
+                ),
+                h('button', { type: 'button', onClick: function() {
+                  var f = fact.trim() || 'Closing checklist missed 1 station before handoff';
+                  var a = ask.trim() || 'Can we do a 2-minute shared checklist walkthrough before close?';
+                  updMulti({ commLogMsg: 'Fact: ' + f + ' | Request: ' + a });
+                  awardOnce('commDeescLog', 10, 'Built objective communication log', 'communicationReady');
+                }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-orange-700 text-white hover:bg-orange-800' }, 'Build Calm Written Log'),
+                logMsg && h('p', { role: 'status', className: 'text-[11px] font-bold p-2 rounded-lg bg-emerald-50 text-emerald-800 border border-emerald-200' }, logMsg)
+              )
+            );
+          })()
         ),
 
         tab === 'timemanagement' && h('div', { className: 'space-y-4', 'data-lifeskills-time-management': 'true' },
@@ -5854,7 +8681,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.time_management_lab', '\u23F3 Time Management & Planning Lab')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Practice knowing what comes next, using reminders, and starting with one small step.',
                   'Build planning habits for tasks, time estimates, reminders, priorities, and backup plans.',
                   'Practice priorities, deadlines, buffers, focus tools, checklists, calendars, and recovery plans.',
@@ -5969,14 +8796,49 @@ window.StemLab = window.StemLab || {
               })
             ),
             h('textarea', { value: timePlanNote, onChange: function(e) { upd('timePlanNote', e.target.value); }, rows: 4, placeholder: __alloT('stem.lifeskills.write_one_task_estimate_reminder_or_recovery','Write one task, estimate, reminder, or recovery step.'), className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_time_plan_note', 'Time plan note') }),
+            renderPiiNotice([timePlanNote]),
             h('button', { onClick: function() {
               if (!timePlanNote.trim()) { upd('timePlanMsg', 'Write one time-management step first.'); return; }
               updMulti({ timePlanMsg: 'Plan saved: ' + timePlanNote.trim(), timePlanSaved: Date.now() });
               checkBadge('timePlanner');
               announceToSR(__alloT('stem.lifeskills.sr_time_plan_saved', 'Time plan saved'));
             }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800 focus:outline-none focus:ring-2 focus:ring-slate-500' }, 'Save time plan'),
-            timePlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.timePlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, timePlanMsg)
-          )
+            timePlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.timePlanSaved ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, timePlanMsg),
+            renderSisterToolBridge('timeSchedule', 'Time & Schedule Lab', 'Build visual time blocks, transit buffers, and routine schedules in Time & Schedule Lab.')
+          ),
+          (function() {
+            var est = (typeof d.timeEstMin === 'number' && isFinite(d.timeEstMin)) ? d.timeEstMin : 30;
+            var prep = (typeof d.timePrepSteps === 'number' && isFinite(d.timePrepSteps)) ? d.timePrepSteps : 2;
+            var bufPct = (typeof d.timeBufferPct === 'number' && isFinite(d.timeBufferPct)) ? d.timeBufferPct : 25;
+            var wait = (typeof d.timeWaitMin === 'number' && isFinite(d.timeWaitMin)) ? d.timeWaitMin : 10;
+            var sch = calcBufferedSchedule(est, prep, bufPct, wait);
+            var total = Math.max(1, sch.totalRequiredMin);
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-time-buffer': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Executive-function timing model'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Planning-Fallacy Buffer Timeline')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-amber-50 text-amber-900 border border-amber-300' }, 'Total Lead Time: ' + sch.totalRequiredMin + ' min')
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-4 gap-3' },
+                slider('Core task', est, 10, 180, 5, 'timeEstMin', function(v) { return v + ' min'; }),
+                slider('Transition/prep steps', prep, 0, 6, 1, 'timePrepSteps', function(v) { return v + ' (+' + (v * 5) + 'm)'; }),
+                slider('Cognitive buffer', bufPct, 0, 60, 5, 'timeBufferPct', function(v) { return v + '%'; }),
+                slider('Transit / line wait', wait, 0, 45, 5, 'timeWaitMin', function(v) { return v + ' min'; })
+              ),
+              h('div', { className: 'h-5 rounded-full overflow-hidden flex border border-slate-300 bg-slate-100', role: 'img', 'aria-label': 'Buffered timeline: ' + sch.baseTaskMin + ' minutes base task, ' + sch.bufferMin + ' minutes cognitive buffer, ' + sch.transitWaitMin + ' minutes wait' },
+                h('div', { style: { width: (sch.baseTaskMin / total * 100) + '%', background: '#0f766e' }, title: 'Base + Prep' }),
+                h('div', { style: { width: (sch.bufferMin / total * 100) + '%', background: '#d97706' }, title: 'Buffer' }),
+                h('div', { style: { width: (sch.transitWaitMin / total * 100) + '%', background: '#2563eb' }, title: 'Transit/Wait' })
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-2 text-center text-[11px]' },
+                h('div', { className: 'rounded-lg bg-teal-50 p-1.5 font-bold text-teal-900' }, 'Base + Prep: ' + sch.baseTaskMin + 'm'),
+                h('div', { className: 'rounded-lg bg-amber-50 p-1.5 font-bold text-amber-900' }, 'Buffer: +' + sch.bufferMin + 'm'),
+                h('div', { className: 'rounded-lg bg-blue-50 p-1.5 font-bold text-blue-900' }, 'Wait/Travel: +' + sch.transitWaitMin + 'm')
+              )
+            );
+          })()
         ),
 
         // ═══ INSURANCE TAB ═══
@@ -6069,6 +8931,59 @@ window.StemLab = window.StemLab || {
               ' in bills. Below that, Plan ' + hiBreakEven.from + ' is cheaper; above it, Plan ' + hiBreakEven.to + '.')
           ),
 
+          (function() {
+            var simBills = (typeof d.hiSimBills === 'number' && isFinite(d.hiSimBills)) ? Math.max(0, Math.min(30000, d.hiSimBills)) : 3000;
+            var simA = calcPlanCost(hiPlanA, { visits: hiScene.visits, bills: simBills });
+            var simB = calcPlanCost(hiPlanB, { visits: hiScene.visits, bills: simBills });
+            var curvePts = [0, 2000, 5000, 10000, 15000, 20000, 25000, 30000].map(function(b) {
+              return {
+                bills: b,
+                a: calcPlanCost(hiPlanA, { visits: hiScene.visits, bills: b }).total,
+                b: calcPlanCost(hiPlanB, { visits: hiScene.visits, bills: b }).total
+              };
+            });
+            var maxTotal = curvePts.reduce(function(m, pt) { return Math.max(m, pt.a, pt.b); }, 1000);
+            var W = 260, H = 105, padL = 34, padB = 18;
+            var px = function(b) { return padL + (b / 30000) * (W - padL - 12); };
+            var py = function(val) { return 10 + (1 - val / maxTotal) * (H - padB - 10); };
+            var insSyncMsg = asText(d.budgetSyncMsg);
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-insurance-crossover': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Interactive piecewise crossover'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Annual Medical Bill Slider & Cost-Crossover Curve')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-teal-50 text-teal-800 border border-teal-200' },
+                  simA.total <= simB.total ? 'Plan A saves ' + fmtMoney(simB.total - simA.total) : 'Plan B saves ' + fmtMoney(simA.total - simB.total))
+              ),
+              slider('Simulated annual medical bills ($)', simBills, 0, 30000, 500, 'hiSimBills', fmtMoney),
+              h('div', { className: 'grid grid-cols-2 gap-2 text-center text-[11px]' },
+                h('div', { className: 'rounded-xl p-2 bg-teal-50 border border-teal-200' }, h('p', { className: 'font-bold text-teal-800' }, 'Plan A @ ' + fmtMoney(simBills)), h('p', { className: 'text-sm font-black text-teal-900' }, fmtMoney(simA.total) + '/yr')),
+                h('div', { className: 'rounded-xl p-2 bg-indigo-50 border border-indigo-200' }, h('p', { className: 'font-bold text-indigo-800' }, 'Plan B @ ' + fmtMoney(simBills)), h('p', { className: 'text-sm font-black text-indigo-900' }, fmtMoney(simB.total) + '/yr'))
+              ),
+              h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Insurance annual cost crossover chart from $0 to $30,000 in bills comparing Plan A and Plan B', className: 'rounded-lg bg-slate-50 border border-slate-200' },
+                h('line', { x1: padL, y1: 10, x2: padL, y2: H - padB, stroke: '#94a3b8', strokeWidth: 1 }),
+                h('line', { x1: padL, y1: H - padB, x2: W - 12, y2: H - padB, stroke: '#94a3b8', strokeWidth: 1 }),
+                h('polyline', { fill: 'none', stroke: '#0d9488', strokeWidth: 2, points: curvePts.map(function(pt) { return px(pt.bills).toFixed(1) + ',' + py(pt.a).toFixed(1); }).join(' ') }),
+                h('polyline', { fill: 'none', stroke: '#4f46e5', strokeWidth: 2, strokeDasharray: '4 2', points: curvePts.map(function(pt) { return px(pt.bills).toFixed(1) + ',' + py(pt.b).toFixed(1); }).join(' ') }),
+                hiBreakEven && hiBreakEven.bills <= 30000 && h('line', { x1: px(hiBreakEven.bills).toFixed(1), y1: 10, x2: px(hiBreakEven.bills).toFixed(1), y2: H - padB, stroke: '#d97706', strokeWidth: 1.5, strokeDasharray: '2 2' }),
+                h('line', { x1: px(simBills).toFixed(1), y1: 10, x2: px(simBills).toFixed(1), y2: H - padB, stroke: '#0f172a', strokeWidth: 1 }),
+                h('circle', { cx: px(simBills).toFixed(1), cy: py(simA.total).toFixed(1), r: 3, fill: '#0d9488' }),
+                h('circle', { cx: px(simBills).toFixed(1), cy: py(simB.total).toFixed(1), r: 3, fill: '#4f46e5' }),
+                h('text', { x: padL, y: H - 5, fontSize: 7, fill: '#475569' }, '$0'),
+                h('text', { x: px(15000), y: H - 5, fontSize: 7, fill: '#475569', textAnchor: 'middle' }, '$15k'),
+                h('text', { x: W - 12, y: H - 5, fontSize: 7, fill: '#475569', textAnchor: 'end' }, '$30k')
+              ),
+              h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                h('span', { className: 'text-[10px] font-bold text-teal-800' }, '\u2501 Plan A (Lower premium)'),
+                h('span', { className: 'text-[10px] font-bold text-indigo-800 mr-auto' }, '\u2505 Plan B (Lower OOP max)'),
+                h('button', { type: 'button', onClick: function() { syncCategoryToBudget('Insurance', hiPlanA.premium, 'Plan A Health Premium'); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-teal-700 text-white hover:bg-teal-800' }, 'Send Plan A Premium (' + fmtMoney(hiPlanA.premium) + '/mo) to Budget'),
+                h('button', { type: 'button', onClick: function() { syncCategoryToBudget('Insurance', hiPlanB.premium, 'Plan B Health Premium'); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-700 text-white hover:bg-indigo-800' }, 'Send Plan B Premium (' + fmtMoney(hiPlanB.premium) + '/mo) to Budget')
+              ),
+              insSyncMsg && h('p', { role: 'status', className: 'text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-2' }, insSyncMsg)
+            );
+          })(),
+
           // ── Why a deductible you never reach still costs you ──
           h('div', { className: glassCard },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.read_the_fine_print', '\uD83D\uDD0E Read the fine print')),
@@ -6085,7 +9000,7 @@ window.StemLab = window.StemLab || {
         tab === 'dental' && h('div', { className: 'space-y-4', 'data-lifeskills-dental-care': 'true' },
           h('div', { className: glassCard + ' space-y-2' },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.dental_care_lab', '\uD83E\uDDB7 Dental Care Lab')),
-            h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, gradeText(gradeBand,
+            h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, roleGradeText(
               'Practice tooth-care habits and learn when to ask a grown-up for help.',
               'Build a daily oral-care routine, spot tooth trouble, and compare snack choices.',
               'Connect enamel, plaque, acids, prevention, and dental plan math to everyday decisions.',
@@ -6176,7 +9091,42 @@ window.StemLab = window.StemLab || {
                 )
               )
             )
-          )
+          ),
+          (function() {
+              var eventsDay = (typeof d.stephanEventsPerDay === 'number' && isFinite(d.stephanEventsPerDay)) ? d.stephanEventsPerDay : 4;
+              var sc = calcStephanCurvePH(eventsDay, 6.9);
+              var W = 240, H = 95, padL = 28, padB = 18;
+              var px = function(min) { return padL + (min / 180) * (W - padL - 10); };
+              var py = function(pH) { return 10 + (1 - (pH - 4.0) / 3.4) * (H - padB - 10); };
+              var riskTone = sc.deminRisk === 'high' ? 'bg-red-50 text-red-800 border-red-200' : sc.deminRisk === 'moderate' ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200';
+              return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-stephan-curve': 'true' },
+                h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                  h('div', null,
+                    h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Enamel biofilm chemistry'),
+                    h('h5', { className: 'text-sm font-black text-slate-800' }, 'Stephan Curve Plaque pH & Sipping Frequency Simulator')
+                  ),
+                  h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-bold border ' + riskTone }, 'Acid Exposure: ' + sc.acidMinutesPerDay + ' min/day (' + sc.deminRisk + ')')
+                ),
+                slider('Sugary or acidic snack/sip events per day', sc.eventsPerDay, 1, 8, 1, 'stephanEventsPerDay', function(v) { return v + ' events/day (min pH ' + sc.minPH + ')'; }),
+                h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Stephan pH curve showing plaque pH dropping below critical 5.5 enamel threshold across ' + sc.eventsPerDay + ' daily exposures', className: 'rounded-lg bg-slate-50 border border-slate-200' },
+                  h('line', { x1: padL, y1: 10, x2: padL, y2: H - padB, stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('line', { x1: padL, y1: H - padB, x2: W - 10, y2: H - padB, stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('line', { x1: padL, y1: py(5.5).toFixed(1), x2: W - 10, y2: py(5.5).toFixed(1), stroke: '#dc2626', strokeWidth: 1.5, strokeDasharray: '4 2' }),
+                  h('text', { x: padL + 2, y: py(5.5) - 2, fontSize: 7, fill: '#dc2626', fontWeight: 'bold' }, 'Critical pH 5.5'),
+                  h('polyline', { fill: 'none', stroke: '#0d9488', strokeWidth: 2, points: sc.series.map(function(pt) { return px(pt.min).toFixed(1) + ',' + py(pt.pH).toFixed(1); }).join(' ') }),
+                  h('text', { x: padL, y: H - 5, fontSize: 7, fill: '#475569' }, '0m'),
+                  h('text', { x: px(90), y: H - 5, fontSize: 7, fill: '#475569', textAnchor: 'middle' }, '90m'),
+                  h('text', { x: W - 10, y: H - 5, fontSize: 7, fill: '#475569', textAnchor: 'end' }, '180m')
+                ),
+                h('p', { className: 'text-[11px] text-slate-600' }, 'Each sugary/acidic sip triggers ~38 min below pH 5.5. Having sweets with a meal instead of sipping across hours cuts total enamel acid minutes.'),
+                renderLifeSkills3dBay('dental', dentalSnack.name + ' (score ' + dentalSnack.score + '/5 risk) | ' + dentalRoutineDone + '/4 routine habits active', {
+                  snackName: dentalSnack.name,
+                  snackScore: dentalSnack.score,
+                  routineDone: dentalRoutineDone
+                }),
+                renderSisterToolBridge('titrationLab', 'Titration & pH Lab', 'Explore acid-base buffering and pH neutralization curves in Titration & pH Lab.')
+              );
+            })()
         ),
 
         tab === 'bodycare' && h('div', { className: 'space-y-4', 'data-lifeskills-body-care': 'true' },
@@ -6184,7 +9134,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.body_care_lab', '\uD83E\uDDCD Body Care & Ergonomics Lab')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Notice comfort, move gently, and ask a grown-up when something hurts.',
                   'Practice a comfortable setup, small movement breaks, and asking for help when your body sends a warning sign.',
                   'Use ergonomics to fit the task to the person: reach, light, screen height, support, breaks, and accessibility needs.',
@@ -6231,6 +9181,41 @@ window.StemLab = window.StemLab || {
               slider('Reach distance', bodyReach, 1, 5, 1, 'bodyReach', function(v) { return ['Cramped', 'Close', 'Relaxed', 'Reaching', 'Far'][v - 1] || v; }),
               slider('Light and glare', bodyLighting, 1, 5, 1, 'bodyLighting', function(v) { return ['Hard to see', 'Dim', 'Readable', 'Bright', 'Glare risk'][v - 1] || v; }),
               slider('Resets per hour', bodyBreaks, 0, 6, 1, 'bodyBreaks', function(v) { return v + ' reset' + (v === 1 ? '' : 's'); }),
+              (function() {
+                var eyeY = 34;
+                var screenY = 66 - (bodyScreenHeight - 1) * 9;
+                var screenX = 126 + (bodyReach - 3) * 14;
+                var neckStrain = bodyScreenHeight < 3 || bodyScreenHeight > 4;
+                var reachStrain = bodyReach < 2 || bodyReach > 4;
+                var lightStrain = bodyLighting < 2 || bodyLighting > 4;
+                var lightFill = bodyLighting >= 5 ? '#fef08a' : bodyLighting <= 1 ? '#334155' : '#e0f2fe';
+                var neckTilt = neckStrain ? (bodyScreenHeight < 3 ? 12 : -8) : 0;
+                return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2.5 space-y-1.5', 'data-lifeskills-ergo-svg': 'true' },
+                  h('div', { className: 'flex items-center justify-between text-[10px] font-bold uppercase text-slate-600' },
+                    h('span', null, '2D Ergonomic Fit Blueprint'),
+                    h('span', { className: bodyBreaks >= 2 ? 'text-emerald-700' : 'text-amber-700' }, 'Breaks: ' + bodyBreaks + '/hr')
+                  ),
+                  h('svg', { width: '100%', viewBox: '0 0 220 112', role: 'img', 'aria-label': 'Ergonomic desk diagram showing screen height ' + bodyScreenHeight + ', reach ' + bodyReach + ', lighting ' + bodyLighting + ', breaks ' + bodyBreaks + ' per hour', className: 'rounded-lg border border-slate-200' },
+                    h('rect', { x: 0, y: 0, width: 220, height: 112, fill: lightFill, opacity: bodyLighting <= 1 ? 0.25 : 0.45 }),
+                    h('line', { x1: 15, y1: 96, x2: 205, y2: 96, stroke: '#94a3b8', strokeWidth: 2 }),
+                    h('rect', { x: 96, y: 66, width: 102, height: 6, rx: 2, fill: '#64748b' }),
+                    h('rect', { x: 104, y: 72, width: 5, height: 24, fill: '#94a3b8' }),
+                    h('rect', { x: 184, y: 72, width: 5, height: 24, fill: '#94a3b8' }),
+                    // Seated person silhouette
+                    h('path', { d: 'M36,72 L66,72 L76,94', fill: 'none', stroke: '#334155', strokeWidth: 5, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                    h('line', { x1: 42, y1: 72, x2: 48, y2: 44, stroke: '#0f766e', strokeWidth: 6, strokeLinecap: 'round' }),
+                    h('circle', { cx: 48 + Math.round(neckTilt * 0.4), cy: eyeY, r: 9, fill: neckStrain ? '#f59e0b' : '#0f766e' }),
+                    // Forearm reach line
+                    h('line', { x1: 48, y1: 50, x2: screenX - 10, y2: 64, stroke: reachStrain ? '#ea580c' : '#14b8a6', strokeWidth: 4, strokeLinecap: 'round' }),
+                    // Monitor / book + stand
+                    h('line', { x1: screenX + 10, y1: screenY + 20, x2: screenX + 10, y2: 66, stroke: '#475569', strokeWidth: 3 }),
+                    h('rect', { x: screenX, y: screenY, width: 20, height: 22, rx: 2, fill: lightStrain ? '#f97316' : '#1e293b' }),
+                    // Sightline
+                    h('line', { x1: 56, y1: eyeY, x2: screenX, y2: screenY + 6, stroke: neckStrain ? '#dc2626' : '#059669', strokeWidth: 1.5, strokeDasharray: '3 2' }),
+                    h('text', { x: 110, y: 107, fontSize: 8, fill: '#334155', textAnchor: 'middle', fontWeight: 'bold' }, (neckStrain ? 'Neck tilt check · ' : 'Eye line neutral · ') + (reachStrain ? 'Adjust reach' : 'Arms relaxed'))
+                  )
+                );
+              })(),
               h('div', { className: 'space-y-1.5' },
                 bodySetupTips.length ? bodySetupTips.map(function(tip, i) {
                   return h('p', { key: i, className: 'text-[11px] rounded-lg bg-amber-50 border border-amber-200 text-amber-800 p-2 font-medium' }, '\uD83D\uDCA1 ' + tip);
@@ -6277,14 +9262,76 @@ window.StemLab = window.StemLab || {
                   bodyReset.steps.map(function(step) { return h('li', { key: step }, step); })
                 )
               ),
-              h('button', { onClick: function() { checkBadge('bodyCareReady'); awardXP(10, 'Body care reset practiced'); announceToSR(__alloT('stem.lifeskills.sr_body_care_reset_practiced', 'Body care reset practiced')); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800' }, 'Mark reset practiced')
+              h('button', { onClick: function() { awardOnce('bodyCareReset:' + bodyReset.id, 10, 'Body care reset practiced', 'bodyCareReady'); announceToSR(__alloT('stem.lifeskills.sr_body_care_reset_practiced', 'Body care reset practiced')); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800' }, 'Mark reset practiced')
             )
           ),
           h('div', { className: glassCard + ' grid sm:grid-cols-3 gap-3' },
             h('div', { className: 'rounded-xl bg-blue-50 border border-blue-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-800' }, 'Flexible posture'), h('p', { className: 'text-sm font-black text-blue-900' }, 'Change beats freeze'), h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, 'The best position is one you can comfortably change.')),
             h('div', { className: 'rounded-xl bg-emerald-50 border border-emerald-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-emerald-800' }, 'Accessibility'), h('p', { className: 'text-sm font-black text-emerald-900' }, 'Fit the environment'), h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, 'Seated, standing, wheeled, sensory, and assistive-tool needs all count.')),
             h('div', { className: 'rounded-xl bg-red-50 border border-red-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-red-800' }, 'Ask for help'), h('p', { className: 'text-sm font-black text-red-900' }, 'Do not ignore red flags'), h('p', { className: 'text-[11px] text-red-800 leading-relaxed' }, 'Numbness, weakness, severe pain, injury, or symptoms that do not improve need support.'))
-          )
+          ),
+          (function() {
+            var neckDeg = (typeof d.ergoNeckDeg === 'number' && isFinite(d.ergoNeckDeg)) ? Math.max(0, Math.min(60, d.ergoNeckDeg)) : 30;
+            var loadLbs = (typeof d.ergoLoadLbs === 'number' && isFinite(d.ergoLoadLbs)) ? Math.max(5, Math.min(65, d.ergoLoadLbs)) : 25;
+            var reachIn = (typeof d.ergoReachIn === 'number' && isFinite(d.ergoReachIn)) ? Math.max(7, Math.min(24, d.ergoReachIn)) : 14;
+            var actMin = (typeof d.ergoActMin === 'number' && isFinite(d.ergoActMin)) ? Math.max(15, Math.min(120, d.ergoActMin)) : 45;
+            var rawSweat = asText(d.ergoSweat);
+            var sweat = (rawSweat === 'low' || rawSweat === 'high') ? rawSweat : 'moderate';
+            var bio = calcCervicalAndLiftBiomechanics(neckDeg, loadLbs, reachIn, actMin, sweat);
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-biomechanics-sim': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase text-teal-800' }, '\uD83E\uDDB4 Spine Torque Physics (\u03C4 = F \u00D7 d) & Hydration Calculator'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Cervical Head Tilt, Safe Lifting Ceiling & Sweat Replacement')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-black ' + (bio.exceedsLiftGuideline ? 'bg-red-100 text-red-800' : 'bg-emerald-100 text-emerald-800') },
+                  bio.exceedsLiftGuideline ? ('Exceeds Close Ceiling (' + bio.safeLiftCeilingLbs + ' lb)') : ('Within Reach Limit (\u2264' + bio.safeLiftCeilingLbs + ' lb)'))
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-5 gap-2.5 items-end' },
+                slider('Neck Tilt Angle', neckDeg, 0, 60, 5, 'ergoNeckDeg', function(v) { return v + '\u00B0'; }),
+                slider('Lift Weight', loadLbs, 5, 65, 5, 'ergoLoadLbs', function(v) { return v + ' lb'; }),
+                slider('Reach Distance', reachIn, 7, 24, 1, 'ergoReachIn', function(v) { return v + ' in'; }),
+                slider('Active Minutes', actMin, 15, 120, 15, 'ergoActMin', function(v) { return v + ' min'; }),
+                h('label', { className: 'block text-[11px] font-bold text-slate-700' }, 'Sweat intensity',
+                  h('select', { value: sweat, onChange: function(e) { upd('ergoSweat', e.target.value); }, 'aria-label': 'Sweat intensity level', className: 'mt-1 w-full px-2 py-1.5 rounded-lg border border-slate-400 bg-white text-xs font-bold text-slate-800' },
+                    h('option', { value: 'low' }, 'Light (~10 oz/hr)'),
+                    h('option', { value: 'moderate' }, 'Moderate (~18 oz/hr)'),
+                    h('option', { value: 'high' }, 'Heavy (~28 oz/hr)')
+                  )
+                )
+              ),
+              h('svg', { width: '100%', viewBox: '0 0 240 46', role: 'img', 'aria-label': 'At ' + bio.neckTiltDeg + ' degrees neck tilt, effective cervical spine load is ' + bio.effectiveHeadLoadLbs + ' pounds; lifting ' + loadLbs + ' pounds at ' + reachIn + ' inches creates ' + bio.lumbarTorqueLbIn + ' pound-inches of lumbar torque', className: 'rounded-xl bg-slate-50 border border-slate-200 p-1' },
+                h('rect', { x: 8, y: 10, width: Math.round((bio.effectiveHeadLoadLbs / 60) * 180), height: 10, rx: 3, fill: bio.effectiveHeadLoadLbs >= 42 ? '#dc2626' : '#0d9488' }),
+                h('text', { x: 8, y: 34, fontSize: 8, fill: '#1e293b', fontWeight: 'bold' }, 'Cervical Load: ' + bio.effectiveHeadLoadLbs + ' lb (0\u00B0 neutral = 12 lb) \u00B7 Torque: ' + bio.lumbarTorqueLbIn + ' lb\u00B7in')
+              ),
+              h('div', { className: 'grid sm:grid-cols-3 gap-2 text-[11px]' },
+                h('div', { className: 'p-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-900' },
+                  h('p', { className: 'font-bold' }, 'Effective Neck Force'),
+                  h('p', { className: 'text-base font-black' }, bio.effectiveHeadLoadLbs + ' lb')
+                ),
+                h('div', { className: 'p-2 rounded-xl border ' + (bio.exceedsLiftGuideline ? 'bg-red-50 border-red-200 text-red-900' : 'bg-emerald-50 border-emerald-200 text-emerald-900') },
+                  h('p', { className: 'font-bold' }, 'Lumbar Torque & Ceiling'),
+                  h('p', { className: 'text-base font-black' }, bio.lumbarTorqueLbIn + ' lb\u00B7in (max ' + bio.safeLiftCeilingLbs + ' lb)')
+                ),
+                h('div', { className: 'p-2 rounded-xl bg-cyan-50 border border-cyan-200 text-cyan-900' },
+                  h('p', { className: 'font-bold' }, 'Fluid Replacement'),
+                  h('p', { className: 'text-base font-black' }, bio.hydrationOz + ' fl oz')
+                )
+              )
+            );
+          })(),
+          (function() {
+            var _neck = (typeof d.ergoNeckDeg === 'number' && isFinite(d.ergoNeckDeg)) ? _lsClamp(d.ergoNeckDeg, 0, 60, 15) : 15;
+            var _load = (typeof d.ergoLoadLbs === 'number' && isFinite(d.ergoLoadLbs)) ? _lsClamp(d.ergoLoadLbs, 2, 50, 15) : 15;
+            var _reach = (typeof d.ergoReachIn === 'number' && isFinite(d.ergoReachIn)) ? _lsClamp(d.ergoReachIn, 6, 26, 12) : 12;
+            return renderLifeSkills3dBay('bodycare', 'Neck tilt ' + _neck + '\u00B0 | Load ' + _load + ' lb @ ' + _reach + ' in reach | Screen height level ' + bodyScreenHeight + '/5', {
+              neckDeg: _neck,
+              loadLbs: _load,
+              reachIn: _reach,
+              screenHeight: bodyScreenHeight
+            });
+          })(),
+          renderSisterToolBridge('anatomy', 'Human Anatomy Lab', 'Explore musculoskeletal joints, spinal discs, and hydration physiology in Anatomy Lab.')
         ),
 
         tab === 'sleep' && h('div', { className: 'space-y-4', 'data-lifeskills-sleep-energy': 'true' },
@@ -6292,7 +9339,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.sleep_energy_lab', '\uD83C\uDF19 Sleep & Energy Lab')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Practice bedtime routines, wake-up routines, and asking for help when sleep feels hard.',
                   'Plan a wind-down routine, wake time, screen choices, and daytime energy supports.',
                   'Connect sleep routines to attention, mood, learning, light, caffeine timing, and recovery.',
@@ -6339,13 +9386,44 @@ window.StemLab = window.StemLab || {
               slider('Sleep target', sleepNeedHours, 6, 10.5, 0.5, 'sleepNeedHours', function(v) { return v + ' hours'; }),
               slider('Wind-down length', sleepWindDown, 10, 90, 5, 'sleepWindDown', function(v) { return v + ' minutes'; }),
               slider('Latest caffeine time', sleepCaffeineCutoff, 10, 19, 1, 'sleepCaffeineCutoff', function(v) { return fmtClockMinutes(v * 60); }),
+              slider('Caffeine dose (mg)', (typeof d.sleepCaffeineMg === 'number' && isFinite(d.sleepCaffeineMg)) ? d.sleepCaffeineMg : 100, 0, 300, 25, 'sleepCaffeineMg', function(v) { return v + ' mg'; }),
               slider('Exciting screen time near bed', sleepScreenMinutes, 0, 120, 5, 'sleepScreenMinutes', function(v) { return v + ' minutes'; }),
+              (function() {
+                var doseMg = (typeof d.sleepCaffeineMg === 'number' && isFinite(d.sleepCaffeineMg)) ? Math.max(0, Math.min(300, d.sleepCaffeineMg)) : 100;
+                var bedClockH = ((sleepBedMinutes % 1440) + 1440) % 1440 / 60;
+                var bedAdjH = bedClockH < 12 ? bedClockH + 24 : bedClockH;
+                var elapsedH = Math.max(0, bedAdjH - sleepCaffeineCutoff);
+                var series = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map(function(hr) {
+                  return { hour: hr, mg: calcCaffeineRemaining(doseMg, hr, 5.5) };
+                });
+                var bedMg = calcCaffeineRemaining(doseMg, elapsedH, 5.5);
+                var W = 220, H = 90, padL = 28, padB = 18;
+                var px = function(hr) { return padL + (hr / 12) * (W - padL - 10); };
+                var py = function(mg) { return 10 + (1 - (doseMg > 0 ? mg / Math.max(doseMg, 100) : 0)) * (H - padB - 10); };
+                var bedX = px(Math.min(12, elapsedH));
+                return h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2.5 space-y-1.5', 'data-lifeskills-caffeine-curve': 'true' },
+                  h('div', { className: 'flex items-center justify-between gap-2 text-[11px] font-bold flex-wrap' },
+                    h('span', { className: 'text-blue-900' }, '\u2615 Caffeine Half-Life Clearance (~5.5h half-life)'),
+                    h('span', { className: bedMg > 50 ? 'text-amber-700' : 'text-emerald-700' }, 'At bedtime (' + elapsedH.toFixed(1) + 'h later): ' + Math.round(bedMg) + ' mg remaining')
+                  ),
+                  h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Caffeine decay curve starting at ' + doseMg + ' mg leaving ' + Math.round(bedMg) + ' mg at bedtime ' + elapsedH.toFixed(1) + ' hours later', className: 'rounded-lg bg-slate-50 border border-slate-200' },
+                    h('line', { x1: padL, y1: 10, x2: padL, y2: H - padB, stroke: '#94a3b8', strokeWidth: 1 }),
+                    h('line', { x1: padL, y1: H - padB, x2: W - 10, y2: H - padB, stroke: '#94a3b8', strokeWidth: 1 }),
+                    doseMg > 0 && h('polyline', { fill: 'none', stroke: '#2563eb', strokeWidth: 2, points: series.map(function(pt) { return px(pt.hour).toFixed(1) + ',' + py(pt.mg).toFixed(1); }).join(' ') }),
+                    h('line', { x1: bedX.toFixed(1), y1: 10, x2: bedX.toFixed(1), y2: H - padB, stroke: bedMg > 50 ? '#d97706' : '#059669', strokeWidth: 1.5, strokeDasharray: '3 2' }),
+                    h('circle', { cx: bedX.toFixed(1), cy: py(bedMg).toFixed(1), r: 3.5, fill: bedMg > 50 ? '#d97706' : '#059669' }),
+                    h('text', { x: padL, y: H - 5, fontSize: 7, fill: '#475569' }, '0h'),
+                    h('text', { x: px(6), y: H - 5, fontSize: 7, fill: '#475569', textAnchor: 'middle' }, '6h'),
+                    h('text', { x: W - 10, y: H - 5, fontSize: 7, fill: '#475569', textAnchor: 'end' }, '12h')
+                  )
+                );
+              })(),
               h('div', { className: 'grid grid-cols-3 gap-2' },
                 h('div', { className: 'text-center p-2 rounded-xl bg-indigo-50 border border-indigo-100' }, h('p', { className: 'text-[10px] uppercase font-bold text-indigo-700' }, 'Wind down'), h('p', { className: 'text-sm font-black text-indigo-700' }, fmtClockMinutes(sleepWindDownStart))),
                 h('div', { className: 'text-center p-2 rounded-xl bg-blue-50 border border-blue-100' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-700' }, 'Bedtime'), h('p', { className: 'text-sm font-black text-blue-700' }, fmtClockMinutes(sleepBedMinutes))),
                 h('div', { className: 'text-center p-2 rounded-xl bg-emerald-50 border border-emerald-100' }, h('p', { className: 'text-[10px] uppercase font-bold text-emerald-700' }, 'Wake'), h('p', { className: 'text-sm font-black text-emerald-700' }, fmtClockMinutes(sleepWakeMinutes)))
               ),
-              h('button', { onClick: function() { checkBadge('sleepPlanner'); awardXP(10, 'Sleep plan saved'); announceToSR(__alloT('stem.lifeskills.sr_sleep_plan_saved', 'Sleep plan saved')); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-blue-700 text-white hover:bg-blue-800' }, 'Save sleep plan')
+              h('button', { onClick: function() { awardOnce('sleepPlanSaved', 10, 'Sleep plan saved', 'sleepPlanner'); announceToSR(__alloT('stem.lifeskills.sr_sleep_plan_saved', 'Sleep plan saved')); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-blue-700 text-white hover:bg-blue-800' }, 'Save sleep plan')
             )
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
@@ -6404,7 +9482,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.medication_labels_lab', '\uD83D\uDC8A Medication & Labels Lab')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Practice asking a grown-up and reading important label words.',
                   'Read sample labels, spot active ingredients, and practice asking for help when directions are confusing.',
                   'Build medication-label literacy: directions, warnings, storage, expiration, duplicate ingredients, and pharmacist questions.',
@@ -6503,6 +9581,7 @@ window.StemLab = window.StemLab || {
                 })
               ),
               h('textarea', { value: medQuestionNote, onChange: function(e) { upd('medQuestionNote', e.target.value); }, rows: 4, placeholder: __alloT('stem.lifeskills.write_a_question_you_would_ask_a_pharmacist','Write a question you would ask a pharmacist, prescriber, nurse, or trusted adult.'), className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_medication_question_note', 'Medication question note') }),
+              renderPiiNotice([medQuestionNote]),
               h('button', { onClick: function() {
                 if (!medQuestionNote.trim()) { upd('medQuestionMsg', 'Write one question first.'); return; }
                 updMulti({ medQuestionMsg: 'Question saved: ' + medQuestionNote.trim(), medQuestionSaved: Date.now() });
@@ -6512,6 +9591,51 @@ window.StemLab = window.StemLab || {
               medQuestionMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.medQuestionSaved ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200') }, medQuestionMsg)
             )
           ),
+          (function() {
+            var sel = Array.isArray(d.medOverlapSelected) ? d.medOverlapSelected : ['multi_cold_day', 'pain_relief_acet'];
+            var doses = (typeof d.medOverlapDoses === 'number' && isFinite(d.medOverlapDoses)) ? Math.max(1, Math.min(6, d.medOverlapDoses)) : 2;
+            var res = checkActiveIngredientOverlap(sel, doses);
+            function toggleProd(id) {
+              var next = sel.slice();
+              var idx = next.indexOf(id);
+              if (idx >= 0) next.splice(idx, 1); else next.push(id);
+              upd('medOverlapSelected', next);
+              checkBadge('medLabelReader');
+            }
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-med-overlap': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Mock active-ingredient stoichiometry (educational simulation only)'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Mock OTC Active-Ingredient Overlap & 24h Ceiling Checker')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-bold border ' + (res.hasRisk ? 'bg-red-50 text-red-800 border-red-200' : 'bg-emerald-50 text-emerald-800 border-emerald-200') },
+                  res.overlaps.length ? 'Duplicate: ' + res.overlaps.join(', ') : res.exceeded.length ? 'Over mock limit' : 'No overlaps in selection')
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                MOCK_OTC_COMBO_PRODUCTS.map(function(prod) {
+                  var on = sel.indexOf(prod.id) >= 0;
+                  return h('button', { key: prod.id, type: 'button', 'aria-pressed': on, onClick: function() { toggleProd(prod.id); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border text-left ' + (on ? 'bg-violet-700 text-white border-violet-700' : 'bg-white border-slate-300 text-slate-700 hover:border-violet-400') }, prod.label);
+                })
+              ),
+              slider('Mock doses per 24h for each selected product', doses, 1, 6, 1, 'medOverlapDoses', function(v) { return v + ' doses/24h'; }),
+              res.overlaps.length > 0 && h('p', { role: 'alert', className: 'text-[11px] font-bold p-2 rounded-lg bg-red-50 text-red-800 border border-red-200' },
+                '\u26A0\uFE0F Duplicate active ingredient spotted: ' + res.overlaps.join(', ') + '. Combining mock multi-symptom products stacks hidden totals!'),
+              res.breakdown.length > 0 ? h('div', { className: 'space-y-2' },
+                res.breakdown.map(function(item) {
+                  return h('div', { key: item.ingredient, className: 'rounded-xl bg-white border border-slate-200 p-2 space-y-1' },
+                    h('div', { className: 'flex justify-between text-[11px] font-bold' },
+                      h('span', { className: item.duplicateRisk ? 'text-red-700' : 'text-slate-800' }, item.ingredient + ' (' + item.sources.join(' + ') + ')'),
+                      h('span', { className: 'font-mono ' + (item.exceedsMockCeiling ? 'text-red-700' : 'text-slate-700') }, item.totalMg + ' / ' + item.limitMg + ' mg mock cap (' + item.pctOfCeiling + '%)')
+                    ),
+                    h('div', { className: 'h-2 rounded-full bg-slate-200 overflow-hidden' },
+                      h('div', { className: 'h-full rounded-full transition-all', style: { width: Math.min(100, item.pctOfCeiling) + '%', background: item.exceedsMockCeiling ? '#dc2626' : item.duplicateRisk ? '#d97706' : '#7c3aed' } })
+                    )
+                  );
+                })
+              ) : h('p', { className: 'text-[11px] text-slate-600' }, 'Select one or more mock labels above to sum active ingredients.'),
+              h('p', { className: 'text-[10px] text-slate-500' }, 'Educational mock calculation only — not medical dosing advice. Always verify real bottles with a pharmacist or prescriber.')
+            );
+          })(),
           h('div', { className: glassCard + ' grid sm:grid-cols-3 gap-3' },
             h('div', { className: 'rounded-xl bg-blue-50 border border-blue-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-800' }, 'Duplicate check'), h('p', { className: 'text-sm font-black text-blue-900' }, 'Active ingredients'), h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, 'Two products can share the same ingredient even if their front labels look different.')),
             h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-amber-800' }, 'Ask early'), h('p', { className: 'text-sm font-black text-amber-900' }, 'Confusing label?'), h('p', { className: 'text-[11px] text-amber-800 leading-relaxed' }, 'A pharmacist or trusted adult can explain directions, warnings, and storage.')),
@@ -6524,7 +9648,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.appointments_lab', '\uD83D\uDCC5 Appointments & Self-Advocacy Lab')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Practice telling a helper what you need and asking questions.',
                   'Prepare what to bring, what to say, and what to ask at appointments or support meetings.',
                   'Build self-advocacy with timelines, examples, questions, accommodations, and follow-up plans.',
@@ -6579,7 +9703,7 @@ window.StemLab = window.StemLab || {
                 h('p', { className: 'text-xs font-black text-slate-800 pt-2 border-t border-slate-100' }, 'Useful question'),
                 h('p', { className: 'text-[11px] text-cyan-700 font-medium leading-relaxed' }, appointmentType.question)
               ),
-              h('button', { onClick: function() { checkBadge('appointmentReady'); awardXP(10, 'Appointment prep practiced'); announceToSR(__alloT('stem.lifeskills.sr_appointment_prep_practiced', 'Appointment prep practiced')); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-cyan-700 text-white hover:bg-cyan-800' }, 'Mark prep practiced')
+              h('button', { onClick: function() { awardOnce('appointmentPrep:' + appointmentType.id, 10, 'Appointment prep practiced', 'appointmentReady'); announceToSR(__alloT('stem.lifeskills.sr_appointment_prep_practiced', 'Appointment prep practiced')); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-cyan-700 text-white hover:bg-cyan-800' }, 'Mark prep practiced')
             )
           ),
           h('div', { className: 'grid lg:grid-cols-2 gap-4' },
@@ -6616,15 +9740,58 @@ window.StemLab = window.StemLab || {
                 })
               ),
               h('textarea', { value: appointmentScriptNote, onChange: function(e) { upd('appointmentScriptNote', e.target.value); }, rows: 4, placeholder: __alloT('stem.lifeskills.write_a_sentence_you_could_say_or_show_durin','Write a sentence you could say or show during the appointment.'), className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_appointment_script_note', 'Appointment script note') }),
-              h('button', { onClick: function() {
-                if (!appointmentScriptNote.trim()) { upd('appointmentScriptMsg', 'Write one sentence first.'); return; }
-                updMulti({ appointmentScriptMsg: 'Script saved: ' + appointmentScriptNote.trim(), appointmentScriptSaved: Date.now() });
-                checkBadge('selfAdvocate');
-                announceToSR(__alloT('stem.lifeskills.sr_appointment_script_saved', 'Appointment script saved'));
-              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800' }, 'Save script'),
+              renderAacQuickStrip('appointments', function(phrase) { updMulti({ appointmentScriptNote: phrase, appointmentScriptMsg: '' }); }),
+              renderPiiNotice([appointmentScriptNote]),
+              h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                h('button', { onClick: function() {
+                  if (!appointmentScriptNote.trim()) { upd('appointmentScriptMsg', 'Write one sentence first.'); return; }
+                  updMulti({ appointmentScriptMsg: 'Script saved: ' + appointmentScriptNote.trim(), appointmentScriptSaved: Date.now() });
+                  checkBadge('selfAdvocate');
+                  announceToSR(__alloT('stem.lifeskills.sr_appointment_script_saved', 'Appointment script saved'));
+                }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800' }, 'Save script'),
+                h('button', { type: 'button', onClick: function() { updMulti({ appointmentScriptNote: SAM_RIVERA_PERSONA.appointmentScript, appointmentScriptMsg: '' }); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100' }, 'Load Sample (Sam Rivera)')
+              ),
               appointmentScriptMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.appointmentScriptSaved ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200') }, appointmentScriptMsg)
             )
           ),
+          (function() {
+            var vTempF = (typeof d.vitalTempF === 'number' && isFinite(d.vitalTempF)) ? Math.max(95, Math.min(106, d.vitalTempF)) : 98.6;
+            var vHr = (typeof d.vitalHr === 'number' && isFinite(d.vitalHr)) ? Math.max(45, Math.min(160, d.vitalHr)) : 76;
+            var vBp = (typeof d.vitalSystolic === 'number' && isFinite(d.vitalSystolic)) ? Math.max(80, Math.min(200, d.vitalSystolic)) : 118;
+            var vRedFlag = !!d.vitalRedFlag;
+            var vt = calcVitalTriageGuide(vTempF, vHr, vBp, vRedFlag);
+            var tierMap = {
+              'emergency-er': { label: 'Emergency / 911 / ER Now', cls: 'bg-red-50 text-red-900 border-red-300' },
+              'urgent-care': { label: 'Same-Day Urgent Care / Nurse Line', cls: 'bg-amber-50 text-amber-900 border-amber-300' },
+              'primary-telehealth': { label: 'Primary Care / Telehealth Visit', cls: 'bg-cyan-50 text-cyan-900 border-cyan-300' },
+              'self-care-monitor': { label: 'Home Rest, Hydration & Symptom Log', cls: 'bg-emerald-50 text-emerald-900 border-emerald-300' }
+            };
+            var tierMeta = tierMap[vt.careTier] || tierMap['self-care-monitor'];
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-vital-triage': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase text-cyan-800' }, '\uD83E\uDE7A Clinical Numeracy \u00B7 \u00B0C = (\u00B0F \u2212 32) \u00D7 5/9'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Vital-Signs Thermometer Converter & Care-Tier Triage')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-black border ' + tierMeta.cls }, tierMeta.label)
+              ),
+              h('div', { className: 'grid sm:grid-cols-3 gap-3' },
+                slider('Temperature (\u00B0F)', vTempF, 95, 106, 0.2, 'vitalTempF', function(v) { return Number(v).toFixed(1) + '\u00B0F (' + ((v - 32) * 5 / 9).toFixed(1) + '\u00B0C)'; }),
+                slider('Resting Heart Rate', vHr, 45, 160, 5, 'vitalHr', function(v) { return v + ' bpm'; }),
+                slider('Systolic Blood Pressure', vBp, 80, 200, 5, 'vitalSystolic', function(v) { return v + ' mmHg'; })
+              ),
+              h('label', { className: 'flex items-center gap-2 p-2.5 rounded-xl border border-red-200 bg-red-50/70 text-xs font-bold text-red-900 cursor-pointer' },
+                h('input', { type: 'checkbox', checked: vRedFlag, onChange: function(e) { upd('vitalRedFlag', e.target.checked); }, className: 'w-4 h-4' }),
+                'Severe red-flag symptom present (trouble breathing, chest pain, confusion, fainting)'
+              ),
+              h('div', { className: 'grid sm:grid-cols-3 gap-2 text-center' },
+                h('div', { className: 'p-2 rounded-xl bg-white border border-slate-200' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-600' }, 'Converted Reading'), h('p', { className: 'text-sm font-black text-slate-900' }, vt.tempF.toFixed(1) + '\u00B0F (' + vt.tempC.toFixed(1) + '\u00B0C)')),
+                h('div', { className: 'p-2 rounded-xl bg-white border border-slate-200' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-600' }, 'Temperature Band'), h('p', { className: 'text-sm font-black text-cyan-800' }, vt.tempBand)),
+                h('div', { className: 'p-2 rounded-xl bg-white border border-slate-200' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-600' }, 'Pulse / Systolic'), h('p', { className: 'text-sm font-black text-slate-900' }, vt.heartRate + ' bpm \u00B7 ' + vt.systolicBp + ' mmHg'))
+              ),
+              h('p', { className: 'text-[11px] text-slate-600 italic' }, 'Educational simulation only — not medical diagnosis or clinical advice. Trust emergency help or a licensed clinician when in doubt.')
+            );
+          })(),
           h('div', { className: glassCard + ' grid sm:grid-cols-3 gap-3' },
             h('div', { className: 'rounded-xl bg-blue-50 border border-blue-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-800' }, 'Say the reason'), h('p', { className: 'text-sm font-black text-blue-900' }, 'One clear sentence'), h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, 'Start with the main goal so the helper knows where to focus.')),
             h('div', { className: 'rounded-xl bg-emerald-50 border border-emerald-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-emerald-800' }, 'Ask clearly'), h('p', { className: 'text-sm font-black text-emerald-900' }, 'Repeat or write down'), h('p', { className: 'text-[11px] text-emerald-800 leading-relaxed' }, 'It is okay to ask for simpler words, notes, or more time.')),
@@ -6637,7 +9804,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.home_safety_lab', '\uD83D\uDEE1\uFE0F Home Safety Lab')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Practice safe choices at home: alarms, exits, helpers, and asking for emergency help.',
                   'Build a home safety plan for alarms, exits, cleaning products, first aid, and emergency contacts.',
                   'Use prevention plus response: check risks early, know when to leave, and choose the right kind of help.',
@@ -6651,6 +9818,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[11px] text-slate-600 bg-red-50 border border-red-200 rounded-xl p-2' }, 'Practice only. If there is immediate danger, smoke/fire, carbon monoxide alarm, serious injury, trouble breathing, or an unconscious person, leave if needed and call emergency help.'),
           h('div', { className: 'flex items-center gap-2 flex-wrap' },
             h('button', { onClick: openLifeSkillsSafety3D, className: 'px-3 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-red-700 to-orange-700 hover:from-red-800 hover:to-orange-800 focus:outline-none focus:ring-2 focus:ring-red-300', 'aria-label': __alloT('stem.lifeskills.a11y_open_the_3d_home_safety_walkthrough_in_a_new_wi', 'Open the 3D home safety walkthrough in a new window') }, '🌐 Open 3D safety walkthrough ↗'),
+            h('button', { type: 'button', onClick: function() { openLifeSkillsInlineCompanion('safety'); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-white hover:bg-slate-900' }, 'Open Inline'),
             d.safety3dMsg && h('span', { className: 'text-[11px] font-bold text-red-800', role: 'status' }, d.safety3dMsg)
           )
           ),
@@ -6732,20 +9900,78 @@ window.StemLab = window.StemLab || {
                 })
               ),
               h('textarea', { value: homePlanNote, onChange: function(e) { upd('homePlanNote', e.target.value); }, rows: 4, placeholder: __alloT('stem.lifeskills.write_one_part_of_your_emergency_plan','Write one part of your emergency plan.'), className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_home_safety_plan_note', 'Home safety plan note') }),
-              h('button', { onClick: function() {
-                if (!homePlanNote.trim()) { upd('homePlanMsg', 'Write one plan note first.'); return; }
-                updMulti({ homePlanMsg: 'Plan saved: ' + homePlanNote.trim(), homePlanSaved: Date.now() });
-                checkBadge('homeSafetyReady');
-                announceToSR(__alloT('stem.lifeskills.sr_home_safety_plan_saved', 'Home safety plan saved'));
-              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800' }, 'Save plan note'),
+              renderPiiNotice([homePlanNote]),
+              h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                h('button', { onClick: function() {
+                  if (!homePlanNote.trim()) { upd('homePlanMsg', 'Write one plan note first.'); return; }
+                  updMulti({ homePlanMsg: 'Plan saved: ' + homePlanNote.trim(), homePlanSaved: Date.now() });
+                  checkBadge('homeSafetyReady');
+                  announceToSR(__alloT('stem.lifeskills.sr_home_safety_plan_saved', 'Home safety plan saved'));
+                }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800' }, 'Save plan note'),
+                h('button', { type: 'button', onClick: function() { updMulti({ homePlanNote: SAM_RIVERA_PERSONA.homePlan, homePlanMsg: '' }); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100' }, 'Load Sample (Sam Rivera)')
+              ),
               homePlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.homePlanSaved ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200') }, homePlanMsg)
             )
           ),
+          (function() {
+            var hsCoPpm = (typeof d.hsCoPpm === 'number' && isFinite(d.hsCoPpm)) ? Math.max(0, Math.min(400, d.hsCoPpm)) : 15;
+            var hsCoHours = (typeof d.hsCoHours === 'number' && isFinite(d.hsCoHours)) ? Math.max(0.5, Math.min(12, d.hsCoHours)) : 2;
+            var hsDoors = (typeof d.hsClosedDoors === 'number' && isFinite(d.hsClosedDoors)) ? Math.max(0, Math.min(3, Math.round(d.hsClosedDoors))) : 1;
+            var hsAlarmDb = (typeof d.hsAlarmDb === 'number' && isFinite(d.hsAlarmDb)) ? Math.max(75, Math.min(100, d.hsAlarmDb)) : 85;
+            var co = calcCoAndAlarmSafety(hsCoPpm, hsCoHours, hsDoors, hsAlarmDb);
+            var firePick = asText(d.fireClassPick);
+            var fireFb = asText(d.fireClassFb);
+            var riskCls = co.coRisk === 'emergency' ? 'bg-red-100 text-red-900 border-red-300' :
+              co.coRisk === 'danger' ? 'bg-orange-100 text-orange-900 border-orange-300' :
+              co.coRisk === 'elevated' ? 'bg-amber-100 text-amber-900 border-amber-300' : 'bg-emerald-50 text-emerald-800 border-emerald-200';
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-co-alarm-sim': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase text-red-800' }, '\uD83D\uDEA8 Toxicology, Acoustics & Combustion Chemistry'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'CO Exposure, Closed-Door Alarm dB & Fire-Class Simulator')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-black border ' + riskCls }, co.cohbPct + '% est. COHb (' + co.coRisk.toUpperCase() + ')')
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 gap-3' },
+                slider('Carbon monoxide (CO) ppm', hsCoPpm, 0, 400, 5, 'hsCoPpm', function(v) { return v + ' ppm'; }),
+                slider('Exposure duration (hours)', hsCoHours, 0.5, 12, 0.5, 'hsCoHours', function(v) { return v + ' hr'; }),
+                slider('Closed doors between alarm & pillow', hsDoors, 0, 3, 1, 'hsClosedDoors', function(v) { return v + (v === 1 ? ' door' : ' doors'); }),
+                slider('Alarm sounder level at source', hsAlarmDb, 75, 100, 5, 'hsAlarmDb', function(v) { return v + ' dB'; })
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 gap-2 text-center' },
+                h('div', { className: 'p-2.5 rounded-xl border ' + riskCls },
+                  h('p', { className: 'text-[10px] font-bold uppercase' }, 'CO Dose Impact (' + co.coPpm + ' ppm \u00D7 ' + co.exposureHours + 'h)'),
+                  h('p', { className: 'text-sm font-black' }, co.cohbPct + '% est. COHb \u00B7 ' + (co.coRisk === 'normal' ? 'Baseline (<9 ppm)' : co.coRisk === 'elevated' ? 'Ventilate & inspect source' : 'Evacuate outside immediately & call 911'))
+                ),
+                h('div', { className: 'p-2.5 rounded-xl border ' + (co.meetsSleeping75Db ? 'bg-emerald-50 border-emerald-200 text-emerald-900' : 'bg-red-50 border-red-300 text-red-900') },
+                  h('p', { className: 'text-[10px] font-bold uppercase' }, 'Bedroom Pillow Level (~16 dB/door loss)'),
+                  h('p', { className: 'text-sm font-black' }, co.pillowDb + ' dB \u00B7 ' + (co.meetsSleeping75Db ? 'Meets NFPA 75 dB wake threshold' : 'Below 75 dB at pillow \u2014 add interconnected bedroom alarm!'))
+                )
+              ),
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                h('p', { className: 'text-xs font-black text-slate-800' }, 'Fire Fuel & Extinguisher Class Selector'),
+                h('div', { className: 'flex flex-wrap gap-2' },
+                  FIRE_EXTINGUISHER_CLASSES.map(function(item) {
+                    var active = firePick === item.id;
+                    return h('button', { key: item.id, type: 'button', onClick: function() {
+                      updMulti({
+                        fireClassPick: item.id,
+                        fireClassFb: '\u2705 Class ' + item.klass + ': ' + item.safeAction + ' (\u26A0\uFE0F Avoid: ' + item.wrongAction + ')'
+                      });
+                      awardOnce('fireClass:' + item.id, 5, 'Practiced fire class physics', 'homeSafetyReady');
+                    }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold border transition-all ' + (active ? 'bg-red-700 text-white border-red-700' : 'bg-slate-50 border-slate-300 text-slate-800 hover:border-red-400') }, item.fuel);
+                  })
+                ),
+                fireFb && h('p', { role: 'status', className: 'text-[11px] font-bold p-2.5 rounded-xl bg-emerald-50 text-emerald-900 border border-emerald-200' }, fireFb)
+              )
+            );
+          })(),
           h('div', { className: glassCard + ' grid sm:grid-cols-3 gap-3' },
             h('div', { className: 'rounded-xl bg-blue-50 border border-blue-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-800' }, 'Alarms'), h('p', { className: 'text-sm font-black text-blue-900' }, 'Test and respond'), h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, 'Smoke and CO alarms are warnings to act, not background noise.')),
             h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-amber-800' }, 'Cleaners'), h('p', { className: 'text-sm font-black text-amber-900' }, 'Never mix'), h('p', { className: 'text-[11px] text-amber-800 leading-relaxed' }, 'Use one product as directed and keep air moving.')),
             h('div', { className: 'rounded-xl bg-red-50 border border-red-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-red-800' }, 'Emergency'), h('p', { className: 'text-sm font-black text-red-900' }, 'Leave, call, meet'), h('p', { className: 'text-[11px] text-red-800 leading-relaxed' }, 'Get out when needed, call from safety, and meet at the plan spot.'))
-          )
+          ),
+          renderSisterToolBridge('firstResponse', 'First Response Triage Lab', 'Practice emergency scene sizing, CPR/AED timing, and urgent triage in First Response Lab.')
         ),
 
         tab === 'digitalsafety' && h('div', { className: 'space-y-4', 'data-lifeskills-digital-safety': 'true' },
@@ -6753,7 +9979,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.digital_safety_lab', '\uD83D\uDD10 Digital Safety Lab')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Practice asking before sharing, clicking, or talking to someone unsafe online.',
                   'Build safer habits for passwords, privacy, links, messages, and asking for help online.',
                   'Spot phishing, secure accounts, review privacy, and practice block/report/save-evidence decisions.',
@@ -6843,12 +10069,16 @@ window.StemLab = window.StemLab || {
                 })
               ),
               h('textarea', { value: digitalPlanNote, onChange: function(e) { upd('digitalPlanNote', e.target.value); }, rows: 4, placeholder: __alloT('stem.lifeskills.write_one_digital_safety_action_you_can_take','Write one digital safety action you can take.'), className: 'w-full px-3 py-2 border border-slate-500 rounded-xl text-sm text-slate-800 bg-white resize-y', 'aria-label': __alloT('stem.lifeskills.a11y_digital_safety_plan_note', 'Digital safety plan note') }),
-              h('button', { onClick: function() {
-                if (!digitalPlanNote.trim()) { upd('digitalPlanMsg', 'Write one digital safety step first.'); return; }
-                updMulti({ digitalPlanMsg: 'Plan saved: ' + digitalPlanNote.trim(), digitalPlanSaved: Date.now() });
-                checkBadge('digitalReady');
-                announceToSR(__alloT('stem.lifeskills.sr_digital_safety_plan_saved', 'Digital safety plan saved'));
-              }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800' }, 'Save digital plan'),
+              renderPiiNotice([digitalPlanNote]),
+              h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                h('button', { onClick: function() {
+                  if (!digitalPlanNote.trim()) { upd('digitalPlanMsg', 'Write one digital safety step first.'); return; }
+                  updMulti({ digitalPlanMsg: 'Plan saved: ' + digitalPlanNote.trim(), digitalPlanSaved: Date.now() });
+                  checkBadge('digitalReady');
+                  announceToSR(__alloT('stem.lifeskills.sr_digital_safety_plan_saved', 'Digital safety plan saved'));
+                }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-900 text-white hover:bg-slate-800' }, 'Save digital plan'),
+                h('button', { type: 'button', onClick: function() { updMulti({ digitalPlanNote: SAM_RIVERA_PERSONA.digitalPlan, digitalPlanMsg: '' }); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100' }, 'Load Sample (Sam Rivera)')
+              ),
               digitalPlanMsg && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (d.digitalPlanSaved ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-amber-50 text-amber-800 border border-amber-200') }, digitalPlanMsg)
             )
           ),
@@ -6856,7 +10086,98 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'rounded-xl bg-blue-50 border border-blue-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-blue-800' }, 'Accounts'), h('p', { className: 'text-sm font-black text-blue-900' }, 'Long, unique, 2FA'), h('p', { className: 'text-[11px] text-blue-800 leading-relaxed' }, 'Strong login habits reduce account-takeover risk.')),
             h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-amber-800' }, 'Scams'), h('p', { className: 'text-sm font-black text-amber-900' }, 'Pause under pressure'), h('p', { className: 'text-[11px] text-amber-800 leading-relaxed' }, 'Urgency, secrecy, and codes are common warning signs.')),
             h('div', { className: 'rounded-xl bg-red-50 border border-red-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-red-800' }, 'Harm'), h('p', { className: 'text-sm font-black text-red-900' }, 'Block, report, tell'), h('p', { className: 'text-[11px] text-red-800 leading-relaxed' }, 'Pressure, threats, harassment, or image abuse deserve support.'))
-          )
+          ),
+          (function() {
+            var pwLen = (typeof d.pwLen === 'number' && isFinite(d.pwLen)) ? Math.max(6, Math.min(32, Math.round(d.pwLen))) : 12;
+            var pwPool = [26, 62, 94].indexOf(Number(d.pwPool)) !== -1 ? Number(d.pwPool) : 62;
+            var pwRateLog = (typeof d.pwRateLog === 'number' && isFinite(d.pwRateLog)) ? Math.max(8, Math.min(12, Math.round(d.pwRateLog))) : 10;
+            var pwMfa = d.pwMfa !== false;
+            var ent = calcPasswordEntropyAndMfa(pwLen, pwPool, pwRateLog, pwMfa);
+            var poolBtns = [
+              { size: 26, label: 'Lowercase Only (26)' },
+              { size: 62, label: 'Mixed Letters + Digits (62)' },
+              { size: 94, label: 'Full Symbols / Passphrase (94)' }
+            ];
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-password-entropy': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase text-blue-800' }, '\uD83D\uDD12 Information Theory & Cybersecurity \u00B7 E = L \u00D7 log\u2082(N)'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Password / Passphrase Entropy & MFA Defense Simulator')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-black border ' + (ent.entropyBits >= 60 ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : ent.entropyBits >= 40 ? 'bg-amber-50 text-amber-900 border-amber-200' : 'bg-red-50 text-red-800 border-red-200') }, ent.entropyBits + ' bits (' + ent.strengthLabel + ')')
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 gap-3' },
+                slider('Length (characters / diceware span)', pwLen, 6, 32, 1, 'pwLen', function(v) { return v + ' chars'; }),
+                slider('Offline brute-force speed', pwRateLog, 8, 12, 1, 'pwRateLog', function(v) { return '10^' + v + ' guesses/sec'; })
+              ),
+              h('div', { className: 'flex flex-wrap gap-2 items-center' },
+                poolBtns.map(function(pb) {
+                  var active = pwPool === pb.size;
+                  return h('button', { key: pb.size, type: 'button', onClick: function() { upd('pwPool', pb.size); },
+                    className: 'px-2.5 py-1.5 rounded-xl text-[11px] font-bold border ' + (active ? 'bg-blue-700 text-white border-blue-700' : 'bg-white border-slate-300 text-slate-800 hover:border-blue-400')
+                  }, pb.label);
+                })
+              ),
+              h('label', { className: 'flex items-center gap-2 p-2.5 rounded-xl border border-blue-200 bg-blue-50/70 text-xs font-bold text-blue-900 cursor-pointer' },
+                h('input', { type: 'checkbox', checked: pwMfa, onChange: function(e) { upd('pwMfa', e.target.checked); }, className: 'w-4 h-4' }),
+                'Authenticator App / Passkey MFA Enabled (blocks ~99.9% of automated credential-stuffing attacks)'
+              ),
+              h('div', { className: 'grid sm:grid-cols-3 gap-2 text-center' },
+                h('div', { className: 'p-2 rounded-xl bg-white border border-slate-200' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-600' }, 'Shannon Entropy'), h('p', { className: 'text-sm font-black text-slate-900' }, ent.entropyBits + ' bits (' + ent.strengthLabel + ')')),
+                h('div', { className: 'p-2 rounded-xl bg-white border border-slate-200' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-600' }, 'Offline Crack Window'), h('p', { className: 'text-sm font-black text-blue-800' }, ent.crackDisplay)),
+                h('div', { className: 'p-2 rounded-xl bg-white border border-slate-200' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-600' }, 'MFA Automated Defense'), h('p', { className: 'text-sm font-black text-emerald-800' }, ent.automatedTakeoverReductionPct + '% blocked'))
+              )
+            );
+          })(),
+          (function() {
+            var sIdx = (Number.isInteger(d.scamInspectIdx) && d.scamInspectIdx >= 0) ? d.scamInspectIdx : 0;
+            var item = SCAM_INSPECTOR_ITEMS[sIdx % SCAM_INSPECTOR_ITEMS.length];
+            var verdict = asText(d.scamInspectVerdict);
+            var fb = asText(d.scamInspectFb);
+            function pickVerdict(choiceId) {
+              var ok = choiceId === item.verdict;
+              stemBeep(ok);
+              var msg = (ok ? '\u2705 Spot on! ' : '\u274C Look closer: ') + item.explain;
+              if (ok) {
+                claimUniqueScenarioUpdate('scam:' + item.id, 'digitalScenarioScore', digitalScenarioScore, { scamInspectVerdict: choiceId, scamInspectFb: msg }, 'digitalReady', 3);
+              } else {
+                updMulti({ scamInspectVerdict: choiceId, scamInspectFb: msg });
+              }
+            }
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-scam-inspector': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase text-indigo-800' }, '\uD83D\uDD75\uFE0F Technology Forensics \u00B7 Message & Dark-Pattern Inspector'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, item.title)
+                ),
+                h('button', { type: 'button', onClick: function() { updMulti({ scamInspectIdx: sIdx + 1, scamInspectVerdict: '', scamInspectFb: '' }); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-indigo-50 text-indigo-800 border border-indigo-200 hover:bg-indigo-100' }, 'Next Sample \u27A1')
+              ),
+              h('div', { className: 'rounded-xl bg-slate-900 text-slate-100 p-3 font-mono text-[11px] space-y-1.5' },
+                h('p', { className: 'text-cyan-300' }, 'From: ' + item.sender),
+                h('p', { className: 'font-sans text-xs font-bold text-white' }, item.headline),
+                h('p', { className: 'text-amber-300 break-all' }, 'Link: ' + item.link)
+              ),
+              h('ul', { className: 'grid sm:grid-cols-2 gap-1.5 text-[11px] text-slate-700' },
+                item.tokens.map(function(tok, ti) {
+                  return h('li', { key: ti, className: 'rounded-lg bg-slate-50 border border-slate-200 px-2.5 py-1.5 font-medium' }, '\uD83D\uDD0D ' + tok);
+                })
+              ),
+              h('div', { className: 'flex flex-wrap gap-2' },
+                [
+                  { id: 'scam', label: 'Phishing / Scam' },
+                  { id: 'dark', label: 'Manipulative Dark Pattern' },
+                  { id: 'safe', label: 'Likely Legitimate (Still Verify)' }
+                ].map(function(btn) {
+                  var selected = verdict === btn.id;
+                  return h('button', { key: btn.id, type: 'button', onClick: function() { pickVerdict(btn.id); },
+                    className: 'px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ' + (selected ? 'bg-slate-900 text-white border-slate-900' : 'bg-white border-slate-300 text-slate-800 hover:border-indigo-400')
+                  }, btn.label);
+                })
+              ),
+              fb && h('p', { role: 'status', className: 'text-[11px] font-bold p-2.5 rounded-xl ' + (fb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, fb),
+              renderSisterToolBridge('cyberDefense', 'Cyber Defense Lab', 'Inspect packet threats, password entropy, and phishing headers in Cyber Defense Lab.')
+            );
+          })()
         ),
 
         tab === 'science' && h('div', { className: 'space-y-4' },
@@ -6880,7 +10201,15 @@ window.StemLab = window.StemLab || {
           ),
           // Circuit Breaker
           h('div', { className: glassCard },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.circuit_load_calculator', '\u26A1 Circuit Load Calculator')),
+            h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, __alloT('stem.lifeskills.circuit_load_calculator', '\u26A1 Circuit Load Calculator')),
+              h('div', { className: 'flex gap-1.5', role: 'group', 'aria-label': 'Select circuit breaker amperage' },
+                [{ amps: 15, label: '15A Standard (1,800W)' }, { amps: 20, label: '20A Kitchen/Bath (2,400W)' }].map(function(opt) {
+                  var active = asAmps === opt.amps;
+                  return h('button', { key: opt.amps, type: 'button', 'aria-pressed': active, onClick: function() { upd('asAmps', opt.amps); checkBadge('appliedSci'); }, className: 'px-2 py-1 rounded-lg text-[10px] font-bold border ' + (active ? 'bg-slate-900 text-white border-slate-900' : 'bg-white border-slate-300 text-slate-700 hover:border-slate-500') }, opt.label);
+                })
+              )
+            ),
             h('p', { className: 'text-xs text-slate-600 mb-2' }, 'Circuit: ' + asVolts + 'V \u00D7 ' + asAmps + 'A = ' + asWatts + 'W max, but only ' + asContinuousW + 'W for anything running 3+ hours'),
             h('div', { className: 'flex flex-wrap gap-1.5' },
               COMMON_DEVICES.map(function(dev) {
@@ -6917,7 +10246,19 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'text-center p-2 bg-blue-50 rounded-xl' }, h('p', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.current_psi', 'Current PSI')), h('p', { className: 'text-lg font-bold text-blue-600' }, asTireP2.toFixed(1))),
               h('div', { className: 'text-center p-2 bg-amber-50 rounded-xl' }, h('p', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.psi_change', 'PSI Change')), h('p', { className: 'text-lg font-bold ' + (asTireP2 < asTireP1 ? 'text-red-600' : 'text-emerald-700') }, (asTireP2 - asTireP1 > 0 ? '+' : '') + (asTireP2 - asTireP1).toFixed(1)))
             ),
-            (gradeBand === '6-8' || gradeBand === '9-12') && h('p', { className: 'text-[11px] text-slate-600 mt-1 font-mono' }, 'P\u2081/T\u2081 = P\u2082/T\u2082 | ' + asTireP1 + '/' + t1K.toFixed(1) + 'K = ' + asTireP2.toFixed(1) + '/' + t2K.toFixed(1) + 'K')
+            (effectiveBand === '6-8' || effectiveBand === '9-12') && h('p', { className: 'text-[11px] text-slate-600 mt-1 font-mono' }, 'P\u2081/T\u2081 = P\u2082/T\u2082 | ' + asTireP1 + '/' + t1K.toFixed(1) + 'K = ' + asTireP2.toFixed(1) + '/' + t2K.toFixed(1) + 'K')
+          ),
+          renderLifeSkills3dBay('science', totalLoad + 'W / ' + asWatts + 'W (' + Math.round(circuitUsage) + '% circuit load' + (asOverContinuous ? ' - NEC 80% continuous alert' : '') + ') | Tire ' + asTireP2.toFixed(1) + ' PSI @ ' + asTireT2 + '\u00B0F', {
+            volts: asVolts,
+            amps: asAmps,
+            totalLoad: totalLoad,
+            circuitUsage: Math.round(circuitUsage),
+            overContinuous: asOverContinuous,
+            pRatio: asTireP1 > 0 ? (asTireP2 / asTireP1) : 1
+          }),
+          h('div', { className: 'grid sm:grid-cols-2 gap-3' },
+            renderSisterToolBridge('circuit', 'Circuit Builder Lab', 'Model series/parallel loads, voltage, current, and resistance in Circuit Builder.'),
+            renderSisterToolBridge('physics', 'Physics Sandbox', 'Explore pressure, temperature, forces, and motion in Physics Sandbox.')
           )
         ),
 
@@ -6927,6 +10268,18 @@ window.StemLab = window.StemLab || {
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.car_care_science', '\uD83D\uDE97 Car Care Science')),
             h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.oil_tires_battery_maintenance_and_dash', 'Oil, tires, battery, maintenance, and dashboard lights'))
           ),
+          (function() {
+            var _speedMph = (typeof d.ccSpeedMph === 'number' && isFinite(d.ccSpeedMph)) ? Math.max(15, Math.min(75, d.ccSpeedMph)) : 45;
+            var _muMap = { dry: 0.75, wet: 0.45, worn: 0.25, ice: 0.15 };
+            var _mu = _muMap[asText(d.ccRoadSurface)] || 0.75;
+            var _sd = calcStoppingDistanceFt(_speedMph, _mu, 1.5);
+            return renderLifeSkills3dBay('carcare', 'Tread ' + ccTread + '/32" (' + treadStatus + ') | Oil @ ' + ccOilTemp + '\u00B0F | Est. stop ' + _sd.totalFt + ' ft @ ' + _speedMph + ' mph', {
+              tread: ccTread,
+              oilTemp: ccOilTemp,
+              speedMph: _speedMph,
+              totalFt: _sd.totalFt
+            });
+          })(),
           // Oil Viscosity
           h('div', { className: glassCard },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.oil_viscosity_guide', '\uD83D\uDEE2\uFE0F Oil Viscosity Guide')),
@@ -6963,8 +10316,13 @@ window.StemLab = window.StemLab || {
                 return h('button', { key: i, onClick: function() {
                   var correct = c === ccCurrentDash.name;
                   stemBeep(correct);
-                  updMulti({ ccDashFb: correct ? '\u2705 Correct! ' + ccCurrentDash.desc : '\u274C Wrong! It\'s ' + ccCurrentDash.name + '. ' + ccCurrentDash.desc });
-                  if (correct) { awardXP(10, 'Dashboard quiz'); checkBadge('mechanic'); }
+                  var patch = { ccDashFb: correct ? '\u2705 Correct! ' + ccCurrentDash.desc : '\u274C Wrong! It\'s ' + ccCurrentDash.name + '. ' + ccCurrentDash.desc };
+                  if (correct) {
+                    var gained = claimUniqueScenarioUpdate('ccdash:' + (ccDashQ % DASH_LIGHTS.length), 'ccDashScore', ccDashScore, patch, 'mechanic', 3);
+                    if (gained) awardXP(10, 'Dashboard quiz');
+                  } else {
+                    updMulti(patch);
+                  }
                 }, className: 'p-2 rounded-xl text-xs font-bold border border-slate-400 hover:border-teal-600' }, c);
               })
             ),
@@ -6984,7 +10342,47 @@ window.StemLab = window.StemLab || {
                   h('span', { className: 'text-[11px] font-bold text-slate-600' }, '~' + fmtMoney(m.cost))
                 );
               })
+            ),
+            h('div', { className: 'mt-3 flex items-center justify-between gap-2 flex-wrap' },
+              h('button', { type: 'button', onClick: function() { syncCategoryToBudget('Transportation', 75, 'Auto maintenance reserve'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-800' }, 'Send Monthly Auto Maintenance Reserve ($75/mo) to Budget'),
+              asText(d.budgetSyncMsg) && h('span', { role: 'status', className: 'text-[11px] font-bold text-emerald-800' }, asText(d.budgetSyncMsg))
             )
+          ),
+          (function() {
+            var speedMph = (typeof d.ccSpeedMph === 'number' && isFinite(d.ccSpeedMph)) ? Math.max(15, Math.min(75, d.ccSpeedMph)) : 45;
+            var rawSurf = asText(d.ccRoadSurface);
+            var surfaceMap = { dry: { mu: 0.75, label: 'Dry Asphalt (mu=0.75)' }, wet: { mu: 0.45, label: 'Wet Rain (mu=0.45)' }, worn: { mu: 0.25, label: 'Wet + Bald Tires (mu=0.25)' }, ice: { mu: 0.15, label: 'Black Ice (mu=0.15)' } };
+            var surfKey = surfaceMap[rawSurf] ? rawSurf : 'dry';
+            var surf = surfaceMap[surfKey];
+            var sd = calcStoppingDistanceFt(speedMph, surf.mu, 1.5);
+            var scaleMax = Math.max(250, sd.totalFt);
+            var reactW = Math.round((sd.reactionFt / scaleMax) * 200);
+            var brakeW = Math.round((sd.brakingFt / scaleMax) * 200);
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-stopping-distance': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Kinematics + friction physics'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Stopping-Distance Physics Simulator (1.5s reaction)')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-red-50 text-red-800 border border-red-200' }, sd.totalFt + ' ft (' + sd.carLengths + ' car lengths)')
+              ),
+              slider('Vehicle speed (mph)', speedMph, 15, 75, 5, 'ccSpeedMph', function(v) { return v + ' mph'; }),
+              h('div', { className: 'flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Road surface condition' },
+                Object.keys(surfaceMap).map(function(k) {
+                  var on = k === surfKey;
+                  return h('button', { key: k, type: 'button', 'aria-pressed': on, onClick: function() { upd('ccRoadSurface', k); checkBadge('mechanic'); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold border ' + (on ? 'bg-teal-700 text-white border-teal-700' : 'bg-white border-slate-300 text-slate-700 hover:border-teal-400') }, surfaceMap[k].label);
+                })
+              ),
+              h('svg', { width: '100%', viewBox: '0 0 240 42', role: 'img', 'aria-label': 'Stopping distance bar: ' + sd.reactionFt + ' feet reaction plus ' + sd.brakingFt + ' feet braking equals ' + sd.totalFt + ' feet', className: 'rounded-lg bg-slate-50 border border-slate-200' },
+                h('rect', { x: 10, y: 10, width: Math.max(4, reactW), height: 14, rx: 3, fill: '#f59e0b' }),
+                h('rect', { x: 10 + Math.max(4, reactW), y: 10, width: Math.max(4, brakeW), height: 14, rx: 3, fill: '#dc2626' }),
+                h('text', { x: 10, y: 36, fontSize: 7.5, fill: '#334155', fontWeight: 'bold' }, 'Reaction ' + sd.reactionFt + 'ft + Braking ' + sd.brakingFt + 'ft = ' + sd.totalFt + 'ft (v^2 / 2*g*mu)')
+              )
+            );
+          })(),
+          h('div', { className: 'grid sm:grid-cols-2 gap-3' },
+            renderSisterToolBridge('autoRepair', 'Auto Repair Lab', 'Inspect engine, brake, and electrical systems in Auto Repair Lab.'),
+            renderSisterToolBridge('roadReady', 'Road Ready Lab', 'Practice hazard perception, right-of-way, and safe following distances in Road Ready.')
           )
         ),
 
@@ -6995,6 +10393,7 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.plumbing_paint_calculator_and_diy_diag', 'Plumbing, paint calculator, and DIY diagnostics')),
             h('div', { className: 'flex items-center gap-2 flex-wrap mt-3' },
               h('button', { onClick: openLifeSkillsRepair3D, className: 'px-3 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-sky-700 to-indigo-700 hover:from-sky-800 to-indigo-800 focus:outline-none focus:ring-2 focus:ring-sky-300', 'aria-label': __alloT('stem.lifeskills.a11y_open_the_3d_home_repair_and_systems_lab_in_a_ne', 'Open the 3D home repair and systems lab in a new window') }, '\uD83C\uDF10 Open 3D repair lab \u2197'),
+              h('button', { type: 'button', onClick: function() { openLifeSkillsInlineCompanion('repair'); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-white hover:bg-slate-900' }, 'Open Inline'),
               d.repair3dMsg && h('span', { className: 'text-[11px] font-bold text-sky-800', role: 'status' }, d.repair3dMsg)
             )
           ),
@@ -7007,8 +10406,13 @@ window.StemLab = window.StemLab || {
                 return h('button', { key: part.name, onClick: function() {
                   var correct = part.name === plumbCurrent.answer;
                   stemBeep(correct);
-                  updMulti({ plumbFb: correct ? '\u2705 Correct! ' + plumbCurrent.explain : '\u274C Not ' + part.name + '. Try again!' });
-                  if (correct) { checkBadge('handyman'); awardXP(15, 'Plumbing diagnosis'); }
+                  var patch = { plumbFb: correct ? '\u2705 Correct! ' + plumbCurrent.explain : '\u274C Not ' + part.name + '. Try again!' };
+                  if (correct) {
+                    var gained = claimUniqueScenarioUpdate('plumb:' + (plumbQ % TOILET_PROBLEMS.length), 'plumbScore', plumbScore, patch, 'handyman', 1);
+                    if (gained) awardXP(15, 'Plumbing diagnosis');
+                  } else {
+                    updMulti(patch);
+                  }
                 }, className: 'p-2 rounded-xl text-center text-[11px] font-bold border border-slate-400 hover:border-teal-600' },
                   h('span', { className: 'text-lg block' }, part.icon), part.name
                 );
@@ -7033,6 +10437,47 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'bg-slate-50 rounded-xl p-2' }, h('p', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.gallons_needed', 'Gallons Needed')), h('p', { className: 'text-sm font-bold text-teal-700' }, paintGallons)),
               h('div', { className: 'bg-slate-50 rounded-xl p-2' }, h('p', { className: 'text-[11px] font-bold text-slate-600' }, __alloT('stem.lifeskills.est_cost', 'Est. Cost')), h('p', { className: 'text-sm font-bold' }, fmtMoney(paintGallons * 30) + '-' + fmtMoney(paintGallons * 55)))
             )
+          ),
+          (function() {
+            var drips = (typeof d.hrDripsPerMin === 'number' && isFinite(d.hrDripsPerMin)) ? Math.max(0, Math.min(120, d.hrDripsPerMin)) : 30;
+            var rawToilet = asText(d.hrToiletLeak);
+            var toiletState = (rawToilet === 'none' || rawToilet === 'silent' || rawToilet === 'running') ? rawToilet : 'silent';
+            var waterRate = (typeof d.hrWaterRate === 'number' && isFinite(d.hrWaterRate)) ? Math.max(4, Math.min(30, d.hrWaterRate)) : 12;
+            var leakRes = calcWaterLeakWaste(drips, toiletState, waterRate);
+            var leakSyncMsg = asText(d.budgetSyncMsg);
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-water-leak': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Volumetric leak conservation'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Running-Toilet & Faucet Drip Cost Calculator')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-sky-50 text-sky-900 border border-sky-200' }, leakRes.galPerYear.toLocaleString() + ' gal/yr wasted')
+              ),
+              h('div', { className: 'flex flex-wrap gap-1.5', role: 'group', 'aria-label': 'Toilet flapper leak state' },
+                [{ id: 'none', label: 'No Toilet Leak' }, { id: 'silent', label: 'Silent Flapper Leak (+30 gal/d)' }, { id: 'running', label: 'Running Toilet (+200 gal/d)' }].map(function(opt) {
+                  var active = toiletState === opt.id;
+                  return h('button', { key: opt.id, type: 'button', 'aria-pressed': active, onClick: function() { upd('hrToiletLeak', opt.id); checkBadge('handyman'); }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-sky-700 text-white border-sky-700' : 'bg-white border-slate-300 text-slate-700 hover:border-sky-400') }, opt.label);
+                })
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 gap-3' },
+                slider('Faucet drips per minute', drips, 0, 120, 5, 'hrDripsPerMin', function(v) { return v + ' drips/min'; }),
+                slider('Water + sewer rate ($ per 1,000 gal)', waterRate, 4, 30, 1, 'hrWaterRate', function(v) { return fmtMoney(v) + '/kgal'; })
+              ),
+              h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-500' }, 'Daily Waste'), h('p', { className: 'text-sm font-black text-slate-800' }, leakRes.galPerDay + ' gal')),
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-500' }, 'Monthly Cost'), h('p', { className: 'text-sm font-black text-amber-800' }, '$' + leakRes.monthlyCost.toFixed(2))),
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-2' }, h('p', { className: 'text-[10px] font-bold uppercase text-slate-500' }, 'Annual Cost'), h('p', { className: 'text-sm font-black text-red-700' }, '$' + leakRes.annualCost.toFixed(2)))
+              ),
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('p', { className: 'text-[11px] text-slate-600' }, 'Drop-test check: food coloring in tank should not enter bowl after 10 minutes.'),
+                h('button', { type: 'button', onClick: function() { syncCategoryToBudget('Utilities', Math.max(10, Math.round(leakRes.monthlyCost)), 'Water leak utility impact'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-800' }, 'Send Monthly Water Leak Impact to Budget')
+              ),
+              leakSyncMsg && h('p', { role: 'status', className: 'text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-2' }, leakSyncMsg)
+            );
+          })(),
+          h('div', { className: 'grid sm:grid-cols-2 gap-3' },
+            renderSisterToolBridge('areaPerimeter', 'Area & Perimeter Lab', 'Model room wall geometry and floor layouts in Area & Perimeter Lab.'),
+            renderSisterToolBridge('ratioLab', 'Ratio & Proportion Lab', 'Practice coverage rates, dilution ratios, and unit scaling in Ratio Lab.')
           )
         ),
 
@@ -7047,17 +10492,20 @@ window.StemLab = window.StemLab || {
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-2' }, __alloT('stem.lifeskills.ai_home_advisor', '\uD83E\uDDE0 AI Home Advisor')),
             h('p', { className: 'text-xs text-slate-600 mb-2' }, __alloT('stem.lifeskills.ask_ai_about_any_home_system_question', 'Ask AI about any home system question:')),
             h('div', { className: 'flex gap-2' },
-              h('input', { 'aria-label': __alloT('stem.lifeskills.home_question_label', 'Ask a home maintenance question'), type: 'text', value: d.homeQ || '', onChange: function(e) { upd('homeQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && d.homeQ) {
+              h('input', { 'aria-label': __alloT('stem.lifeskills.home_question_label', 'Ask a home maintenance question'), type: 'text', value: asText(d.homeQ), onChange: function(e) { upd('homeQ', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter' && asText(d.homeQ).trim()) {
+                var qTxt = asText(d.homeQ);
                 upd('homeALoading', true);
-                callGemini('Answer this home maintenance question for a ' + gradeBand + ' student in 2-3 sentences: ' + d.homeQ).then(function(r) { updMulti({ homeA: r, homeALoading: false }); }).catch(function() { upd('homeALoading', false); });
+                callGeminiZeroPii('Answer this home maintenance question for ' + buildRoleAwareLearnerPhrase() + ' in 2-3 sentences: ' + qTxt, [qTxt]).then(function(r) { updMulti({ homeA: r, homeALoading: false }); checkBadge('homeExpert'); }).catch(function() { upd('homeALoading', false); });
               }}, placeholder: __alloT('stem.lifeskills.e_g_why_does_my_furnace_make_a_clickin', 'e.g. "Why does my furnace make a clicking sound?"'), className: 'flex-1 px-3 py-2 border border-slate-400 rounded-xl text-xs' }),
               h('button', { onClick: function() {
-                if (!d.homeQ) return;
+                var qTxt = asText(d.homeQ);
+                if (!qTxt.trim()) return;
                 upd('homeALoading', true);
-                callGemini('Answer this home maintenance question for a ' + gradeBand + ' student in 2-3 sentences: ' + d.homeQ).then(function(r) { updMulti({ homeA: r, homeALoading: false }); checkBadge('homeExpert'); }).catch(function() { upd('homeALoading', false); });
+                callGeminiZeroPii('Answer this home maintenance question for ' + buildRoleAwareLearnerPhrase() + ' in 2-3 sentences: ' + qTxt, [qTxt]).then(function(r) { updMulti({ homeA: r, homeALoading: false }); checkBadge('homeExpert'); }).catch(function() { upd('homeALoading', false); });
               }, disabled: d.homeALoading, className: 'px-4 py-2 text-xs font-bold bg-purple-600 text-white rounded-xl disabled:opacity-50' }, d.homeALoading ? '\uD83E\uDDE0...' : '\uD83E\uDDE0 Ask')
             ),
-            d.homeA && h('div', { className: 'mt-2 p-3 bg-purple-50 rounded-xl text-xs text-slate-700 whitespace-pre-line' }, d.homeA)
+            asText(d.aiPiiGuardMsg) && h('p', { role: 'status', className: 'mt-2 text-[11px] font-bold p-2 rounded-lg bg-amber-50 text-amber-900 border border-amber-300' }, '\uD83D\uDEE1\uFE0F ' + asText(d.aiPiiGuardMsg)),
+            asText(d.homeA) && h('div', { className: 'mt-2 p-3 bg-purple-50 rounded-xl text-xs text-slate-700 whitespace-pre-line' }, asText(d.homeA))
           ),
           // Quick info cards
           h('div', { className: 'grid grid-cols-2 gap-3' },
@@ -7097,21 +10545,117 @@ window.StemLab = window.StemLab || {
                 h('li', null, __alloT('stem.lifeskills.30_federal_solar_tax_credit_itc', '\u2022 30% federal solar tax credit (ITC)'))
               )
             )
-          )
+          ),
+          // Engineering Simulator: Building Envelope Heat Loss + Heat-Pump COP
+          (function() {
+            var hsArea = (typeof d.homesysArea === 'number' && isFinite(d.homesysArea)) ? Math.max(400, Math.min(2800, d.homesysArea)) : 1200;
+            var hsR = (typeof d.homesysRVal === 'number' && isFinite(d.homesysRVal)) ? Math.max(5, Math.min(49, d.homesysRVal)) : 15;
+            var hsDT = (typeof d.homesysDeltaT === 'number' && isFinite(d.homesysDeltaT)) ? Math.max(5, Math.min(70, d.homesysDeltaT)) : 35;
+            var hsCop = (typeof d.homesysCop === 'number' && isFinite(d.homesysCop)) ? Math.max(1, Math.min(4.5, d.homesysCop)) : 3.0;
+            var hsLeak = (typeof d.homesysLeak === 'number' && isFinite(d.homesysLeak)) ? Math.max(0, Math.min(60, d.homesysLeak)) : 20;
+            var loss = calcEnvelopeHeatLoss(hsArea, hsDT, hsR, hsCop, hsLeak);
+            var resistLoss = calcEnvelopeHeatLoss(hsArea, hsDT, hsR, 1.0, hsLeak);
+            var qIdx = (Number.isInteger(d.homesysQuizIdx) && d.homesysQuizIdx >= 0) ? d.homesysQuizIdx : 0;
+            var qScore = d.homesysQuizScore || 0;
+            var qCurrent = HOMESYS_QUIZ[qIdx % HOMESYS_QUIZ.length];
+            var qChoice = asText(d.homesysQuizChoice);
+            var qFb = asText(d.homesysQuizFb);
+            return h('div', { className: 'space-y-4' },
+              h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-envelope-sim': 'true' },
+                h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                  h('div', null,
+                    h('p', { className: 'text-[10px] font-bold uppercase text-cyan-800' }, '\uD83D\uDEE0\uFE0F Building Science Simulator \u00B7 Q = (A \u00D7 \u0394T) / R'),
+                    h('h5', { className: 'text-sm font-black text-slate-800' }, 'Envelope Heat-Loss & Heat-Pump COP Model')
+                  ),
+                  h('span', { className: 'px-2.5 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-[11px] font-black text-cyan-900' }, loss.btuHr + ' BTU/hr (' + loss.wattsElectric + ' W)')
+                ),
+                h('div', { className: 'grid sm:grid-cols-2 gap-3' },
+                  slider('Envelope area (sq ft)', hsArea, 400, 2800, 100, 'homesysArea', function(v) { return v + ' sq ft'; }),
+                  slider('Insulation R-value', hsR, 5, 49, 2, 'homesysRVal', function(v) { return 'R-' + v; }),
+                  slider('Indoor-Outdoor \u0394T (\u00B0F)', hsDT, 5, 70, 5, 'homesysDeltaT', function(v) { return v + '\u00B0F'; }),
+                  slider('Heating COP (1.0=baseboard, 3.5=HP)', hsCop, 1.0, 4.5, 0.5, 'homesysCop', function(v) { return 'COP ' + v.toFixed(1); }),
+                  slider('Air draft leakage (%)', hsLeak, 0, 60, 5, 'homesysLeak', function(v) { return v + '%'; })
+                ),
+                h('div', { className: 'grid grid-cols-3 gap-2 text-center' },
+                  h('div', { className: 'p-2 rounded-xl bg-amber-50 border border-amber-200' }, h('p', { className: 'text-[10px] font-bold uppercase text-amber-800' }, 'Heat Flow (Q)'), h('p', { className: 'text-sm font-black text-amber-900' }, loss.btuHr + ' BTU/h')),
+                  h('div', { className: 'p-2 rounded-xl bg-cyan-50 border border-cyan-200' }, h('p', { className: 'text-[10px] font-bold uppercase text-cyan-800' }, '24h Electric'), h('p', { className: 'text-sm font-black text-cyan-900' }, loss.kwh24 + ' kWh/day')),
+                  h('div', { className: 'p-2 rounded-xl bg-emerald-50 border border-emerald-200' }, h('p', { className: 'text-[10px] font-bold uppercase text-emerald-800' }, 'COP Savings vs 1.0'), h('p', { className: 'text-sm font-black text-emerald-900' }, (resistLoss.kwh24 - loss.kwh24).toFixed(1) + ' kWh/day saved'))
+                ),
+                (function() {
+                  var monthlyElectricCost = Math.round(loss.kwh24 * 30 * 0.16);
+                  return h('div', { className: 'flex items-center justify-between gap-2 flex-wrap pt-1' },
+                    h('span', { className: 'text-[11px] font-bold text-slate-600' }, 'Est. 30-day electric heating/cooling @ $0.16/kWh: ' + fmtMoney(monthlyElectricCost) + '/mo'),
+                    h('button', { type: 'button', onClick: function() { syncCategoryToBudget('Utilities', monthlyElectricCost, 'Home Systems HVAC Simulator'); },
+                      className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-cyan-700 text-white hover:bg-cyan-800'
+                    }, 'Send 30-Day Electric ($' + monthlyElectricCost + '/mo) to Budget Utilities')
+                  );
+                })(),
+                asText(d.budgetSyncMsg) && h('p', { role: 'status', className: 'text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-2' }, asText(d.budgetSyncMsg))
+              ),
+              h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-homesys-quiz': 'true' },
+                h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                  h('div', null,
+                    h('p', { className: 'text-[10px] font-bold uppercase text-slate-600' }, 'Offline Engineering Mastery Check (2/3 unlocks Home Systems Expert badge)'),
+                    h('h5', { className: 'text-sm font-black text-slate-800' }, 'Question ' + ((qIdx % HOMESYS_QUIZ.length) + 1) + '/' + HOMESYS_QUIZ.length)
+                  ),
+                  h('span', { className: 'px-2 py-1 rounded-full bg-slate-100 text-slate-800 text-[11px] font-bold' }, 'Score ' + qScore + '/' + HOMESYS_QUIZ.length)
+                ),
+                h('p', { className: 'text-xs font-bold text-slate-800 leading-relaxed' }, qCurrent.q),
+                h('div', { className: 'grid gap-1.5' },
+                  qCurrent.choices.map(function(ch, ci) {
+                    var picked = qChoice === String(ci);
+                    return h('button', { key: ci, type: 'button', onClick: function() {
+                      var ok = ci === qCurrent.answerIdx;
+                      stemBeep(ok);
+                      var fbMsg = (ok ? '\u2705 Correct! ' : '\u274C Not quite: ') + qCurrent.explain;
+                      if (ok) {
+                        claimUniqueScenarioUpdate('homesys:' + qCurrent.id, 'homesysQuizScore', qScore, { homesysQuizChoice: String(ci), homesysQuizFb: fbMsg }, 'homeExpert', 2);
+                      } else {
+                        updMulti({ homesysQuizChoice: String(ci), homesysQuizFb: fbMsg });
+                      }
+                    }, className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border transition-all ' + (picked ? (ci === qCurrent.answerIdx ? 'bg-emerald-50 border-emerald-500 text-emerald-900' : 'bg-red-50 border-red-400 text-red-900') : 'bg-white border-slate-300 text-slate-800 hover:border-cyan-500') }, ch);
+                  })
+                ),
+                qFb && h('p', { role: 'status', className: 'text-[11px] font-bold p-2 rounded-lg ' + (qFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-amber-50 text-amber-900 border border-amber-200') }, qFb),
+                h('button', { type: 'button', onClick: function() { updMulti({ homesysQuizIdx: qIdx + 1, homesysQuizChoice: '', homesysQuizFb: '' }); }, className: 'px-3 py-1.5 rounded-xl text-[11px] font-bold bg-cyan-700 text-white hover:bg-cyan-800' }, 'Next Engineering Question \u27A1')
+              ),
+              renderLifeSkills3dBay('homesys', 'Envelope R-' + hsR + ' | \u0394T ' + hsDT + '\u00B0F | Leakage ' + hsLeak + '% | COP ' + hsCop + ' (' + loss.wattsElectric + 'W draw)', {
+                rVal: hsR,
+                deltaT: hsDT,
+                leak: hsLeak,
+                cop: hsCop,
+                wattsElectric: loss.wattsElectric,
+                btuHr: loss.btuHr
+              }),
+              renderSisterToolBridge('heatLab', 'Heat & Energy Lab', 'Compare conduction, convection, radiation, and thermal insulation in Heat Lab.')
+            );
+          })()
         ),
 
         // ═══ BUDGET TAB ═══
         tab === 'budget' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.monthly_budget_builder', '\uD83D\uDCB0 Monthly Budget Builder')),
-            h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand, 'Plan how to spend your money!', 'Build a budget using the 50/30/20 rule.', 'Create a zero-based monthly budget with needs, wants, and savings.', 'Zero-based budgeting: every dollar gets a job. Analyze your spending against the 50/30/20 framework.'))
+            h('p', { className: 'text-xs text-slate-600' }, roleGradeText( 'Plan how to spend your money!', 'Build a budget using the 50/30/20 rule.', 'Create a zero-based monthly budget with needs, wants, and savings.', 'Zero-based budgeting: every dollar gets a job. Analyze your spending against the 50/30/20 framework.'))
           ),
           h('div', { className: glassCard + ' space-y-3' },
-            h('div', { className: 'flex items-center gap-3 mb-2' },
+            h('div', { className: 'flex items-center gap-3 flex-wrap mb-2' },
               h('label', { className: 'text-[11px] font-bold text-slate-600 uppercase' }, __alloT('stem.lifeskills.monthly_income', 'Monthly Income')),
               h('input', { 'aria-label': __alloT('stem.lifeskills.monthly_income', 'Monthly Income'), type: 'number', step: '100', value: budgetIncome, onChange: function(e) { upd('budgetIncome', Math.max(0, parseInt(e.target.value) || 0)); checkBadge('budgeteer'); }, className: 'w-32 px-2 py-1.5 border border-slate-400 rounded-lg text-sm font-bold' }),
-              h('span', { className: 'text-xs font-bold text-slate-600' }, fmtMoney(budgetIncome) + '/month')
+              h('span', { className: 'text-xs font-bold text-slate-600' }, fmtMoney(budgetIncome) + '/month'),
+              h('button', { type: 'button', onClick: function() { upd('budgetIncome', Math.round(netAnnual / 12)); checkBadge('budgeteer'); announceToSR('Synced monthly budget income from Paycheck tab'); }, className: 'ml-auto px-2.5 py-1 rounded-lg text-[11px] font-bold bg-teal-50 text-teal-800 border border-teal-200 hover:bg-teal-100' }, 'Sync from Paycheck (' + fmtMoney(Math.round(netAnnual / 12)) + '/mo)')
             ),
+            asText(d.budgetSyncMsg) && h('p', { role: 'status', className: 'text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-2' }, asText(d.budgetSyncMsg)),
+            (function() {
+              var insDeductible = (hiPlanA && Number(hiPlanA.deductible)) || 1500;
+              var carRepairShock = 600;
+              var combinedShock = insDeductible + carRepairShock;
+              var monthsToCover = savesTotal > 0 ? Math.ceil(combinedShock / savesTotal) : null;
+              return h('div', { className: 'rounded-xl p-2.5 border text-[11px] ' + (savesTotal >= 300 ? 'bg-emerald-50/80 border-emerald-200 text-emerald-950' : 'bg-amber-50 border-amber-200 text-amber-950'), 'data-lifeskills-budget-stress': 'true' },
+                h('p', { className: 'font-bold' }, 'Connected Household Stress Check (Health Deductible ' + fmtMoney(insDeductible) + ' + $600 Car Shock = ' + fmtMoney(combinedShock) + ')'),
+                h('p', { className: 'mt-0.5' }, monthsToCover ? ('At ' + fmtMoney(savesTotal) + '/mo in Savings, an emergency sinking fund covers both shocks in ' + monthsToCover + ' month' + (monthsToCover === 1 ? '' : 's') + '.') : 'Allocate positive monthly savings below to build an emergency buffer for health deductibles and car repairs.')
+              );
+            })(),
             // 50/30/20 bar
             h('div', { className: 'space-y-1' },
               h('div', { className: 'flex justify-between text-[11px] font-bold' },
@@ -7248,14 +10792,15 @@ window.StemLab = window.StemLab || {
                 className: 'w-full text-[12px] border border-emerald-300 rounded p-2 font-mono leading-snug mt-2', rows: 4 }),
               h('div', { className: 'text-[10px] italic text-slate-500' }, __alloT('stem.lifeskills.design_note_discrete_5_state_budget_ma', 'Design note: discrete 5-state budget marker; SVG stacked bar; no allocation score \u2014 by design.'))
             );
-          })()
+          })(),
+          renderSisterToolBridge('economicsLab', 'Economics & Inflation Lab', 'Explore purchasing power, CPI inflation, and macro interest rates in Economics Lab.')
         ),
 
         // ═══ CREDIT TAB ═══
         tab === 'credit' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.credit_loans', '\uD83D\uDCB3 Credit & Loans')),
-            h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand, 'Borrowing money costs extra \u2014 that\'s called interest!', 'Learn what makes a good credit score and how loans work.', 'Explore FICO score factors, compound interest, and loan amortization.', 'Credit optimization, compound interest modeling, amortization schedules, and debt cost analysis.'))
+            h('p', { className: 'text-xs text-slate-600' }, roleGradeText( 'Borrowing money costs extra \u2014 that\'s called interest!', 'Learn what makes a good credit score and how loans work.', 'Explore FICO score factors, compound interest, and loan amortization.', 'Credit optimization, compound interest modeling, amortization schedules, and debt cost analysis.'))
           ),
           // FICO Score Builder
           h('div', { className: glassCard + ' space-y-3' },
@@ -7321,6 +10866,10 @@ window.StemLab = window.StemLab || {
             ciResult.balance > 0 && h('div', { className: 'h-5 rounded-full overflow-hidden flex mt-2' },
               h('div', { style: { width: Math.round(ciResult.contributed / ciResult.balance * 100) + '%', background: '#2563eb' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, __alloT('stem.lifeskills.contributed', 'Contributed')),
               h('div', { style: { width: Math.round(ciResult.interest / ciResult.balance * 100) + '%', background: '#047857' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, __alloT('stem.lifeskills.interest', 'Interest'))
+            ),
+            h('div', { className: 'flex items-center gap-2 flex-wrap pt-1' },
+              h('button', { type: 'button', onClick: function() { syncCategoryToBudget('Retirement/Savings', Math.max(0, Math.round(ciMonthly)), 'Compound Interest Builder'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-800' }, 'Send Monthly Savings Add (' + fmtMoney(Math.max(0, Math.round(ciMonthly))) + '/mo) to Budget'),
+              asText(d.budgetSyncMsg) && h('span', { role: 'status', className: 'text-[11px] font-bold text-emerald-800' }, asText(d.budgetSyncMsg))
             )
           ),
           // Loan Calculator
@@ -7342,8 +10891,57 @@ window.StemLab = window.StemLab || {
               h('div', { style: { width: Math.round(loanPrincipal / loanResult.totalPaid * 100) + '%', background: '#2563eb' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, __alloT('stem.lifeskills.principal', 'Principal')),
               h('div', { style: { width: Math.round(loanResult.totalInterest / loanResult.totalPaid * 100) + '%', background: '#b91c1c' }, className: 'h-full flex items-center justify-center text-[11px] text-white font-bold' }, __alloT('stem.lifeskills.interest_2', 'Interest'))
             ),
-            (gradeBand === '6-8' || gradeBand === '9-12') && h('p', { className: 'text-[11px] text-slate-600 mt-1' }, '\uD83D\uDCA1 That ' + loanRate + '% rate costs you ' + fmtMoney(loanResult.totalInterest) + ' extra \u2014 a ' + (loanPrincipal > 0 ? Math.round(loanResult.totalInterest / loanPrincipal * 100) : 0) + '% markup on the loan.')
-          )
+            (effectiveBand === '6-8' || effectiveBand === '9-12') && h('p', { className: 'text-[11px] text-slate-600 mt-1' }, '\uD83D\uDCA1 That ' + loanRate + '% rate costs you ' + fmtMoney(loanResult.totalInterest) + ' extra \u2014 a ' + (loanPrincipal > 0 ? Math.round(loanResult.totalInterest / loanPrincipal * 100) : 0) + '% markup on the loan.')
+          ),
+          // Minimum-Payment Divergence Trajectory Simulator
+          (function() {
+            var ccBal = (typeof d.ccSimBalance === 'number' && isFinite(d.ccSimBalance)) ? Math.max(500, Math.min(10000, d.ccSimBalance)) : 3000;
+            var ccApr = (typeof d.ccSimApr === 'number' && isFinite(d.ccSimApr)) ? Math.max(5, Math.min(35, d.ccSimApr)) : 24;
+            var minPay = Math.max(25, Math.round(ccBal * 0.025));
+            var fastPay = (typeof d.ccSimFastPay === 'number' && isFinite(d.ccSimFastPay)) ? Math.max(minPay + 25, Math.min(1000, d.ccSimFastPay)) : Math.min(1000, minPay + 125);
+            var horizon = 60;
+            var slowRes = simulateCardPayoff(ccBal, ccApr, minPay, horizon);
+            var fastRes = simulateCardPayoff(ccBal, ccApr, fastPay, horizon);
+            var W = 240, H = 96, padL = 32, padB = 18;
+            var px = function(m) { return padL + (m / horizon) * (W - padL - 10); };
+            var py = function(bal) { return 10 + (1 - Math.min(1, bal / Math.max(1, ccBal))) * (H - padB - 10); };
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-credit-divergence': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase text-purple-800' }, '\uD83D\uDCB3 Compound Debt Trap vs Accelerated Payoff (5-Year Horizon)'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Minimum-Payment Divergence Trajectory')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-[11px] font-black text-emerald-800' }, 'Interest Saved: ' + fmtMoney(Math.max(0, slowRes.totalInterest - fastRes.totalInterest)))
+              ),
+              h('div', { className: 'grid sm:grid-cols-3 gap-2.5' },
+                slider('Starting Card Balance', ccBal, 500, 10000, 500, 'ccSimBalance', fmtMoney),
+                slider('Card APR (%)', ccApr, 5, 35, 1, 'ccSimApr', function(v) { return v + '%'; }),
+                slider('Your Monthly Payment', fastPay, minPay + 25, 1000, 25, 'ccSimFastPay', fmtMoney)
+              ),
+              h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Debt payoff comparison over 60 months showing minimum payment of ' + fmtMoney(minPay) + ' leaving ' + fmtMoney(slowRes.endingBalance) + ' vs aggressive payment of ' + fmtMoney(fastPay) + ' finishing in ' + fastRes.months + ' months', className: 'rounded-xl bg-slate-50 border border-slate-200' },
+                h('line', { x1: padL, y1: 10, x2: padL, y2: H - padB, stroke: '#94a3b8', strokeWidth: 1 }),
+                h('line', { x1: padL, y1: H - padB, x2: W - 10, y2: H - padB, stroke: '#94a3b8', strokeWidth: 1 }),
+                h('text', { x: padL - 4, y: 14, fontSize: 7, fill: '#475569', textAnchor: 'end' }, fmtMoney(ccBal)),
+                h('text', { x: padL - 4, y: H - padB, fontSize: 7, fill: '#475569', textAnchor: 'end' }, '$0'),
+                h('polyline', { fill: 'none', stroke: '#dc2626', strokeWidth: 2, strokeDasharray: '4 2', points: slowRes.series.map(function(pt) { return px(pt.month).toFixed(1) + ',' + py(pt.balance).toFixed(1); }).join(' ') }),
+                h('polyline', { fill: 'none', stroke: '#059669', strokeWidth: 2.5, points: fastRes.series.map(function(pt) { return px(pt.month).toFixed(1) + ',' + py(pt.balance).toFixed(1); }).join(' ') }),
+                h('text', { x: padL, y: H - 5, fontSize: 7, fill: '#475569' }, 'Mo 0'),
+                h('text', { x: px(30), y: H - 5, fontSize: 7, fill: '#475569', textAnchor: 'middle' }, 'Mo 30'),
+                h('text', { x: W - 10, y: H - 5, fontSize: 7, fill: '#475569', textAnchor: 'end' }, 'Mo 60')
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 gap-2 text-[11px]' },
+                h('div', { className: 'p-2 rounded-xl bg-red-50 border border-red-200 text-red-900' },
+                  h('p', { className: 'font-bold' }, 'Minimum (~' + fmtMoney(minPay) + '/mo)'),
+                  h('p', null, 'Interest accrued: ' + fmtMoney(slowRes.totalInterest) + ' \u00B7 Ending balance at 5 yr: ' + fmtMoney(slowRes.endingBalance))
+                ),
+                h('div', { className: 'p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900' },
+                  h('p', { className: 'font-bold' }, 'Target Plan (' + fmtMoney(fastPay) + '/mo)'),
+                  h('p', null, 'Paid off in ' + fastRes.months + ' months \u00B7 Total interest: ' + fmtMoney(fastRes.totalInterest))
+                )
+              )
+            );
+          })(),
+          renderSisterToolBridge('economicsLab', 'Economics & Interest Rates Lab', 'Explore APR, inflation, and compounding markets in Economics Lab.')
         ),
 
         // ═══ COOKING TAB ═══
@@ -7352,7 +10950,7 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.food_confidence_lab', '\uD83E\uDD57 Food Confidence Lab')),
-                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed max-w-2xl' }, roleGradeText(
                   'Practice simple food choices: wash, store, label, ask, and throw food out when it seems unsafe.',
                   'Build confidence with leftovers, storage, pantry meals, date labels, and safer food decisions.',
                   'Use food-safety judgment, meal planning, budget ingredients, and nutrition-label comparison tools.',
@@ -7498,15 +11096,76 @@ window.StemLab = window.StemLab || {
               h('div', { className: 'rounded-xl bg-amber-50 border border-amber-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-amber-800' }, 'Date labels'), h('p', { className: 'text-sm font-black text-amber-900' }, 'Quality vs safety'), h('p', { className: 'text-[11px] text-amber-800 leading-relaxed' }, 'Best-by dates are clues, not the only safety signal.')),
               h('div', { className: 'rounded-xl bg-red-50 border border-red-200 p-3' }, h('p', { className: 'text-[10px] uppercase font-bold text-red-800' }, 'When in doubt'), h('p', { className: 'text-sm font-black text-red-900' }, 'Throw it out'), h('p', { className: 'text-[11px] text-red-800 leading-relaxed' }, 'Do not taste-test food that might be unsafe.'))
             )
+          ),
+          (function() {
+            var aCost = (typeof d.foodUnitA_Cost === 'number' && isFinite(d.foodUnitA_Cost) && d.foodUnitA_Cost > 0) ? d.foodUnitA_Cost : 4.80;
+            var aOz = (typeof d.foodUnitA_Oz === 'number' && isFinite(d.foodUnitA_Oz) && d.foodUnitA_Oz > 0) ? d.foodUnitA_Oz : 16;
+            var aYield = (typeof d.foodUnitA_YieldPct === 'number' && isFinite(d.foodUnitA_YieldPct) && d.foodUnitA_YieldPct > 0) ? d.foodUnitA_YieldPct : 75;
+            var bCost = (typeof d.foodUnitB_Cost === 'number' && isFinite(d.foodUnitB_Cost) && d.foodUnitB_Cost > 0) ? d.foodUnitB_Cost : 3.90;
+            var bOz = (typeof d.foodUnitB_Oz === 'number' && isFinite(d.foodUnitB_Oz) && d.foodUnitB_Oz > 0) ? d.foodUnitB_Oz : 12;
+            var bYield = (typeof d.foodUnitB_YieldPct === 'number' && isFinite(d.foodUnitB_YieldPct) && d.foodUnitB_YieldPct > 0) ? d.foodUnitB_YieldPct : 100;
+            var aEdibleOz = aOz * (aYield / 100);
+            var bEdibleOz = bOz * (bYield / 100);
+            var aPerOz = aEdibleOz > 0 ? aCost / aEdibleOz : 0;
+            var bPerOz = bEdibleOz > 0 ? bCost / bEdibleOz : 0;
+            var weeklySpend = (typeof d.foodWeeklySpend === 'number' && isFinite(d.foodWeeklySpend) && d.foodWeeklySpend > 0) ? d.foodWeeklySpend : 85;
+            var monthlyGroceries = Math.round(weeklySpend * 4.33);
+            var foodSyncMsg = asText(d.budgetSyncMsg);
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-unit-price': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[11px] uppercase font-bold text-slate-600' }, 'Unit economics + edible yield'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Grocery Unit-Price ($/oz) & Edible-Yield Comparator')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-bold bg-emerald-50 text-emerald-800 border border-emerald-200' },
+                  aPerOz <= bPerOz ? 'Option A wins ($' + aPerOz.toFixed(2) + '/edible oz)' : 'Option B wins ($' + bPerOz.toFixed(2) + '/edible oz)')
+              ),
+              h('div', { className: 'flex flex-wrap gap-1.5' },
+                [
+                  { label: 'Produce: Fresh Whole vs Pre-Cut', aC: 4.80, aO: 16, aY: 75, bC: 3.90, bO: 12, bY: 100 },
+                  { label: 'Oats: Bulk Tub vs Single Cups', aC: 4.20, aO: 42, aY: 100, bC: 3.60, bO: 12, bY: 100 },
+                  { label: 'Chicken: Bone-In vs Boneless', aC: 5.50, aO: 32, aY: 68, bC: 6.80, bO: 24, bY: 100 }
+                ].map(function(pre) {
+                  return h('button', { key: pre.label, type: 'button', onClick: function() {
+                    updMulti({ foodUnitA_Cost: pre.aC, foodUnitA_Oz: pre.aO, foodUnitA_YieldPct: pre.aY, foodUnitB_Cost: pre.bC, foodUnitB_Oz: pre.bO, foodUnitB_YieldPct: pre.bY });
+                  }, className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-white border border-slate-300 text-slate-700 hover:border-emerald-400' }, pre.label);
+                })
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 gap-3' },
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                  h('p', { className: 'text-xs font-black text-slate-800' }, 'Option A: $' + aPerOz.toFixed(2) + '/edible oz (' + aEdibleOz.toFixed(1) + ' oz usable)'),
+                  slider('Price ($)', aCost, 1, 20, 0.1, 'foodUnitA_Cost', function(v) { return '$' + v.toFixed(2); }),
+                  slider('Package weight (oz)', aOz, 4, 64, 1, 'foodUnitA_Oz', function(v) { return v + ' oz'; }),
+                  slider('Edible yield (%)', aYield, 40, 100, 5, 'foodUnitA_YieldPct', function(v) { return v + '%'; })
+                ),
+                h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
+                  h('p', { className: 'text-xs font-black text-slate-800' }, 'Option B: $' + bPerOz.toFixed(2) + '/edible oz (' + bEdibleOz.toFixed(1) + ' oz usable)'),
+                  slider('Price ($)', bCost, 1, 20, 0.1, 'foodUnitB_Cost', function(v) { return '$' + v.toFixed(2); }),
+                  slider('Package weight (oz)', bOz, 4, 64, 1, 'foodUnitB_Oz', function(v) { return v + ' oz'; }),
+                  slider('Edible yield (%)', bYield, 40, 100, 5, 'foodUnitB_YieldPct', function(v) { return v + '%'; })
+                )
+              ),
+              slider('Weekly grocery target ($/wk)', weeklySpend, 30, 250, 5, 'foodWeeklySpend', function(v) { return fmtMoney(v) + '/wk (' + fmtMoney(Math.round(v * 4.33)) + '/mo)'; }),
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('p', { className: 'text-[11px] text-slate-600' }, 'Formula: Effective Unit Price = Cost / (Package oz * Edible Yield). Removes peels/bones/waste from comparison.'),
+                h('button', { type: 'button', onClick: function() { syncCategoryToBudget('Groceries', monthlyGroceries, 'Monthly groceries estimate'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-800' }, 'Send Weekly Grocery Estimate (' + fmtMoney(monthlyGroceries) + '/mo) to Budget')
+              ),
+              foodSyncMsg && h('p', { role: 'status', className: 'text-[11px] font-bold text-emerald-800 bg-emerald-50 border border-emerald-200 rounded-lg p-2' }, foodSyncMsg)
+            );
+          })(),
+          h('div', { className: 'grid sm:grid-cols-2 gap-3' },
+            renderSisterToolBridge('nutritionLab', 'Nutrition Lab', 'Analyze macronutrients, micronutrients, and meal balance in Nutrition Lab.'),
+            renderSisterToolBridge('unitConvert', 'Unit Converter', 'Convert ounces, grams, liters, and kitchen units in Unit Converter.')
           )
         ),
 
         tab === 'cooking' && h('div', { className: 'space-y-4' },
           h('div', { className: glassCard },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.cooking_food_safety', '\uD83C\uDF73 Cooking & Food Safety')),
-            h('p', { className: 'text-xs text-slate-600' }, gradeText(gradeBand, 'Cooking is science you can eat!', 'Learn food safety temps, scale recipes, and read nutrition labels.', 'Kitchen STEM: food safety microbiology, recipe ratios, and nutrition label analysis.', 'Food science: safe internal temps, danger zone microbiology, recipe scaling algebra, and FDA nutrition label literacy.')),
+            h('p', { className: 'text-xs text-slate-600' }, roleGradeText( 'Cooking is science you can eat!', 'Learn food safety temps, scale recipes, and read nutrition labels.', 'Kitchen STEM: food safety microbiology, recipe ratios, and nutrition label analysis.', 'Food science: safe internal temps, danger zone microbiology, recipe scaling algebra, and FDA nutrition label literacy.')),
             h('div', { className: 'flex items-center gap-2 flex-wrap mt-3' },
               h('button', { onClick: openLifeSkillsKitchen3D, className: 'px-3 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-emerald-700 to-orange-700 hover:from-emerald-800 hover:to-orange-800 focus:outline-none focus:ring-2 focus:ring-emerald-300', 'aria-label': __alloT('stem.lifeskills.a11y_open_the_3d_kitchen_and_food_safety_lab_in_a_ne', 'Open the 3D kitchen and food safety lab in a new window') }, '\uD83C\uDF10 Open 3D kitchen lab \u2197'),
+              h('button', { type: 'button', onClick: function() { openLifeSkillsInlineCompanion('kitchen'); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-white hover:bg-slate-900' }, 'Open Inline'),
               d.kitchen3dMsg && h('span', { className: 'text-[11px] font-bold text-emerald-800', role: 'status' }, d.kitchen3dMsg)
             )
           ),
@@ -7524,7 +11183,7 @@ window.StemLab = window.StemLab || {
               h('span', { className: 'text-[11px] font-bold text-teal-700' }, 'Desired: ' + cookDesiredServings + ' servings'),
               h('span', { className: 'text-[11px] text-slate-600 ml-auto' }, 'Scale: ' + cookScale.toFixed(2) + 'x')
             ),
-            slider('Servings', cookScale, 0.25, 4, 0.25, 'cookScale', function(v) { return Math.round(cookRecipe.servings * v) + ' servings (' + v + 'x)'; }),
+            slider('Servings', cookScale, 0.25, 4, 0.25, 'cookScale', function(v) { return Math.round(cookRecipe.servings * v) + ' servings (' + v + 'x)'; }, function(v) { if (v !== 1) checkBadge('recipeScale'); }),
             h('div', { className: 'mt-2' },
               h('table', { className: 'w-full text-[11px]' },
                 h('caption', { className: 'sr-only' }, __alloT('stem.lifeskills.servings', 'Servings')), h('thead', null, h('tr', { className: 'border-b border-slate-200' }, h('th', { scope: 'col', className: 'px-2 py-1 text-left' }, __alloT('stem.lifeskills.ingredient', 'Ingredient')), h('th', { scope: 'col', className: 'px-2 py-1 text-right' }, __alloT('stem.lifeskills.original', 'Original')), h('th', { scope: 'col', className: 'px-2 py-1 text-right text-teal-700 font-bold' }, __alloT('stem.lifeskills.scaled', 'Scaled')))),
@@ -7541,48 +11200,100 @@ window.StemLab = window.StemLab || {
                   })
                 )
               )
-            ),
-            cookScale !== 1 && h('div', null, (function() { checkBadge('recipeScale'); return null; })())
+            )
           ),
+          (function() {
+            var pOrigShape = asText(d.panOrigShape) === 'round' ? 'round' : 'rect';
+            var pNewShape = asText(d.panNewShape) === 'rect' ? 'rect' : 'round';
+            var pOrigA = (typeof d.panOrigA === 'number' && isFinite(d.panOrigA)) ? Math.max(6, Math.min(16, d.panOrigA)) : 8;
+            var pOrigB = (typeof d.panOrigB === 'number' && isFinite(d.panOrigB)) ? Math.max(6, Math.min(16, d.panOrigB)) : 8;
+            var pNewA = (typeof d.panNewA === 'number' && isFinite(d.panNewA)) ? Math.max(6, Math.min(16, d.panNewA)) : 9;
+            var pNewB = (typeof d.panNewB === 'number' && isFinite(d.panNewB)) ? Math.max(6, Math.min(16, d.panNewB)) : 13;
+            var cBatchCost = (typeof d.cookBatchCost === 'number' && isFinite(d.cookBatchCost)) ? Math.max(4, Math.min(60, d.cookBatchCost)) : 14;
+            var panPrep = calcPanScalingAndMealPrep(pOrigShape, pOrigA, pOrigB, pNewShape, pNewA, pNewB, cookScale, cBatchCost, Math.max(1, cookDesiredServings));
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-pan-mealprep': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase text-orange-800' }, '\uD83E\uDD67 Pan Geometry (A = \u03C0r\u00B2 vs L\u00D7W) & Meal-Prep Economics'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Pan Surface-Area Depth Checker & Budget Meal Prep')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full text-[11px] font-black ' + (panPrep.panStatus === 'deeper-overflow-risk' ? 'bg-red-100 text-red-800' : panPrep.panStatus === 'shallower-faster-bake' ? 'bg-amber-100 text-amber-900' : 'bg-emerald-100 text-emerald-800') },
+                  'Depth Ratio: ' + Math.round(panPrep.depthRatio * 100) + '%')
+              ),
+              h('div', { className: 'grid sm:grid-cols-2 lg:grid-cols-3 gap-2.5' },
+                h('div', { className: 'p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2' },
+                  h('label', { className: 'block text-[11px] font-bold text-slate-700' }, 'Original Pan Shape',
+                    h('select', { value: pOrigShape, onChange: function(e) { upd('panOrigShape', e.target.value); }, 'aria-label': 'Original pan shape', className: 'mt-1 w-full px-2 py-1 rounded-lg border border-slate-400 bg-white text-xs font-bold text-slate-800' },
+                      h('option', { value: 'rect' }, 'Square / Rect (L \u00D7 W)'),
+                      h('option', { value: 'round' }, 'Round (\u03C0r\u00B2)')
+                    )
+                  ),
+                  slider(pOrigShape === 'round' ? 'Original Diameter' : 'Original Length', pOrigA, 6, 16, 1, 'panOrigA', function(v) { return v + ' in'; }),
+                  pOrigShape === 'rect' && slider('Original Width', pOrigB, 6, 16, 1, 'panOrigB', function(v) { return v + ' in'; })
+                ),
+                h('div', { className: 'p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2' },
+                  h('label', { className: 'block text-[11px] font-bold text-slate-700' }, 'Target Pan Shape',
+                    h('select', { value: pNewShape, onChange: function(e) { upd('panNewShape', e.target.value); }, 'aria-label': 'Target pan shape', className: 'mt-1 w-full px-2 py-1 rounded-lg border border-slate-400 bg-white text-xs font-bold text-slate-800' },
+                      h('option', { value: 'round' }, 'Round (\u03C0r\u00B2)'),
+                      h('option', { value: 'rect' }, 'Square / Rect (L \u00D7 W)')
+                    )
+                  ),
+                  slider(pNewShape === 'round' ? 'Target Diameter' : 'Target Length', pNewA, 6, 16, 1, 'panNewA', function(v) { return v + ' in'; }),
+                  pNewShape === 'rect' && slider('Target Width', pNewB, 6, 16, 1, 'panNewB', function(v) { return v + ' in'; })
+                ),
+                h('div', { className: 'p-2.5 rounded-xl bg-slate-50 border border-slate-200 space-y-2' },
+                  slider('Scaled Batch Grocery Cost', cBatchCost, 4, 60, 1, 'cookBatchCost', fmtMoney),
+                  h('p', { className: 'text-[11px] text-slate-700' }, 'Area: ' + panPrep.origAreaSqIn + ' sq in \u2192 ' + panPrep.newAreaSqIn + ' sq in'),
+                  h('p', { className: 'text-[11px] font-bold text-emerald-800' }, 'Cost/Serving (' + Math.max(1, cookDesiredServings) + ' srv): ' + fmtMoney(panPrep.costPerServing) + ' \u00B7 Saves ' + fmtMoney(panPrep.monthlyTakeoutSavings) + '/mo vs $14 takeout')
+                )
+              ),
+              h('p', { className: 'text-[11px] font-medium p-2 rounded-xl bg-orange-50 border border-orange-200 text-orange-950' }, panPrep.bakeTimeHint),
+              h('div', { className: 'flex items-center gap-2 flex-wrap' },
+                h('button', { type: 'button', onClick: function() { syncCategoryToBudget('Groceries', Math.max(10, panPrep.monthlyMealPrepCost), 'Meal-prep batch calculator'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-800' }, 'Send 20-Meal Prep Estimate (' + fmtMoney(panPrep.monthlyMealPrepCost) + '/mo) to Budget Groceries'),
+                asText(d.budgetSyncMsg) && h('span', { role: 'status', className: 'text-[11px] font-bold text-emerald-800' }, asText(d.budgetSyncMsg))
+              )
+            );
+          })(),
           // Nutrition Label Quiz
-          h('div', { className: glassCard + ' space-y-3' },
-            h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.lifeskills.nutrition_label_quiz', '\uD83C\uDF4E Nutrition Label Quiz')),
-            h('p', { className: 'text-xs text-slate-600' }, 'Score: ' + nutritionScore + '/' + NUTRITION_LABELS.length),
-            h('div', { className: 'bg-white rounded-xl p-3 border border-slate-400 font-mono text-[11px] space-y-0.5' },
-              h('p', { className: 'text-xs font-bold text-center border-b border-slate-300 pb-1' }, '\uD83C\uDF4F ' + nutritionCurrent.title),
-              h('p', null, 'Serving Size: ' + nutritionCurrent.servingSize),
-              h('p', null, 'Servings Per Container: ' + nutritionCurrent.servings),
-              h('p', { className: 'font-bold border-t border-slate-200 pt-0.5' }, 'Calories: ' + nutritionCurrent.calories),
-              h('p', null, 'Total Fat: ' + nutritionCurrent.fat + 'g'),
-              h('p', null, 'Sodium: ' + nutritionCurrent.sodium + 'mg'),
-              h('p', null, 'Total Carbs: ' + nutritionCurrent.carbs + 'g'),
-              h('p', null, '  Sugars: ' + nutritionCurrent.sugar + 'g'),
-              h('p', null, 'Protein: ' + nutritionCurrent.protein + 'g')
-            ),
-            h('p', { className: 'text-xs font-bold text-slate-700' }, nutritionCurrent.question),
-            h('div', { className: 'flex gap-2' },
-              // Named by hand: the only text above this field is the quiz
-              // question itself, which changes every round, so there is no
-              // static caption to borrow. aria-labelledby pointing at that <p>
-              // would read better still, but it has no id to point at.
-              h('input', { 'aria-label': __alloT('stem.lifeskills.a11y_your_answer', 'Your answer'), type: 'text', value: nutritionAnswer, onChange: function(e) { upd('nutritionAnswer', e.target.value); }, onKeyDown: function(e) {
-                if (e.key === 'Enter' && nutritionAnswer.trim()) {
-                  var correct = nutritionAnswer.trim().replace(/[^0-9.]/g, '') === nutritionCurrent.answer;
-                  stemBeep(correct);
-                  updMulti({ nutritionFb: correct ? '\u2705 Correct! ' + nutritionCurrent.explain : '\u274C Answer: ' + nutritionCurrent.answer + '. ' + nutritionCurrent.explain, nutritionScore: nutritionScore + (correct ? 1 : 0) });
-                }
-              }, placeholder: __alloT('stem.lifeskills.your_answer', 'Your answer...'), className: 'flex-1 px-3 py-2 border border-slate-400 rounded-xl text-sm font-mono' }),
-              h('button', { 'aria-label': __alloT('stem.lifeskills.check', 'Check'), onClick: function() {
-                if (!nutritionAnswer.trim()) return;
-                var correct = nutritionAnswer.trim().replace(/[^0-9.]/g, '') === nutritionCurrent.answer;
-                stemBeep(correct);
-                updMulti({ nutritionFb: correct ? '\u2705 Correct! ' + nutritionCurrent.explain : '\u274C Answer: ' + nutritionCurrent.answer + '. ' + nutritionCurrent.explain, nutritionScore: nutritionScore + (correct ? 1 : 0) });
-              }, className: 'px-4 py-2 text-xs font-bold bg-teal-700 text-white rounded-xl' }, __alloT('stem.lifeskills.check_2', 'Check'))
-            ),
-            nutritionFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (nutritionFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, nutritionFb),
-            h('button', { 'aria-label': __alloT('stem.lifeskills.next_label', 'Next Label'), onClick: function() { updMulti({ nutritionIdx: nutritionIdx + 1, nutritionAnswer: '', nutritionFb: '' }); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-slate-100 text-slate-600 rounded-xl' }, __alloT('stem.lifeskills.next_label_2', 'Next Label \u27A1'))
-          ),
-          // Food Safety Temps
+          (function() {
+            function submitNutritionAnswer() {
+              if (!nutritionAnswer.trim()) return;
+              var correct = nutritionAnswer.trim().replace(/[^0-9.]/g, '') === nutritionCurrent.answer;
+              stemBeep(correct);
+              if (correct) {
+                claimUniqueScenarioUpdate('nutrition:' + (nutritionIdx % NUTRITION_LABELS.length), 'nutritionScore', nutritionScore, { nutritionFb: '\u2705 Correct! ' + nutritionCurrent.explain });
+              } else {
+                upd('nutritionFb', '\u274C Answer: ' + nutritionCurrent.answer + '. ' + nutritionCurrent.explain);
+              }
+            }
+            return h('div', { className: glassCard + ' space-y-3' },
+              h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.lifeskills.nutrition_label_quiz', '\uD83C\uDF4E Nutrition Label Quiz')),
+              h('p', { className: 'text-xs text-slate-600' }, 'Score: ' + nutritionScore + '/' + NUTRITION_LABELS.length),
+              h('div', { className: 'bg-white rounded-xl p-3 border border-slate-400 font-mono text-[11px] space-y-0.5' },
+                h('p', { className: 'text-xs font-bold text-center border-b border-slate-300 pb-1' }, '\uD83C\uDF4F ' + nutritionCurrent.title),
+                h('p', null, 'Serving Size: ' + nutritionCurrent.servingSize),
+                h('p', null, 'Servings Per Container: ' + nutritionCurrent.servings),
+                h('p', { className: 'font-bold border-t border-slate-200 pt-0.5' }, 'Calories: ' + nutritionCurrent.calories),
+                h('p', null, 'Total Fat: ' + nutritionCurrent.fat + 'g'),
+                h('p', null, 'Sodium: ' + nutritionCurrent.sodium + 'mg'),
+                h('p', null, 'Total Carbs: ' + nutritionCurrent.carbs + 'g'),
+                h('p', null, '  Sugars: ' + nutritionCurrent.sugar + 'g'),
+                h('p', null, 'Protein: ' + nutritionCurrent.protein + 'g')
+              ),
+              h('p', { className: 'text-xs font-bold text-slate-700' }, nutritionCurrent.question),
+              h('div', { className: 'flex gap-2' },
+                // Named by hand: the only text above this field is the quiz
+                // question itself, which changes every round, so there is no
+                // static caption to borrow. aria-labelledby pointing at that <p>
+                // would read better still, but it has no id to point at.
+                h('input', { 'aria-label': __alloT('stem.lifeskills.a11y_your_answer', 'Your answer'), type: 'text', value: nutritionAnswer, onChange: function(e) { upd('nutritionAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') submitNutritionAnswer(); }, placeholder: __alloT('stem.lifeskills.your_answer', 'Your answer...'), className: 'flex-1 px-3 py-2 border border-slate-400 rounded-xl text-sm font-mono' }),
+                h('button', { 'aria-label': __alloT('stem.lifeskills.check', 'Check'), onClick: submitNutritionAnswer, className: 'px-4 py-2 text-xs font-bold bg-teal-700 text-white rounded-xl' }, __alloT('stem.lifeskills.check_2', 'Check'))
+              ),
+              nutritionFb && h('p', { className: 'text-[11px] font-bold p-2 rounded-lg ' + (nutritionFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, nutritionFb),
+              h('button', { 'aria-label': __alloT('stem.lifeskills.next_label', 'Next Label'), onClick: function() { updMulti({ nutritionIdx: nutritionIdx + 1, nutritionAnswer: '', nutritionFb: '' }); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-slate-100 text-slate-600 rounded-xl' }, __alloT('stem.lifeskills.next_label_2', 'Next Label \u27A1'))
+            );
+          })(),
+          // Food Safety Temps + Danger-Zone Bacterial Growth Curve Simulator
           h('div', { className: glassCard + ' space-y-3' },
             h('p', { className: 'text-[11px] font-bold text-slate-600 uppercase mb-1' }, __alloT('stem.lifeskills.safe_internal_temperatures', '\uD83C\uDF21\uFE0F Safe Internal Temperatures')),
             h('p', { className: 'text-xs text-slate-600' }, 'Food safety score: ' + foodSafetyScore),
@@ -7599,6 +11310,35 @@ window.StemLab = window.StemLab || {
                 );
               })
             ),
+            (function() {
+              var mins = (typeof d.foodZoneMinutes === 'number' && isFinite(d.foodZoneMinutes)) ? Math.max(0, Math.min(180, d.foodZoneMinutes)) : 60;
+              var curGrow = calcBacterialMultiples(mins, 20);
+              var maxLog = calcBacterialMultiples(180, 20).generations;
+              var pts = [0, 20, 40, 60, 80, 100, 120, 140, 160, 180].map(function(m) {
+                var g = calcBacterialMultiples(m, 20);
+                return { m: m, factor: g.factor, gen: g.generations };
+              });
+              var W = 220, H = 90, padL = 28, padB = 18;
+              var px = function(m) { return padL + (m / 180) * (W - padL - 10); };
+              var py = function(gen) { return 10 + (1 - (maxLog > 0 ? gen / maxLog : 0)) * (H - padB - 10); };
+              return h('div', { className: 'p-3 rounded-xl bg-slate-50 border border-slate-200 space-y-2', 'data-lifeskills-bacteria-curve': 'true' },
+                h('div', { className: 'flex items-center justify-between gap-2 text-[11px] font-bold flex-wrap' },
+                  h('span', { className: 'text-orange-900' }, '\uD83E\uDDA0 Danger Zone Biology (40\u2013140\u00B0F, ~20 min doubling)'),
+                  h('span', { className: mins > 120 ? 'text-red-700' : 'text-amber-800' }, mins + ' min = ' + curGrow.generations + ' doublings (' + curGrow.factor + 'x population)')
+                ),
+                slider('Time left in Danger Zone (minutes)', mins, 0, 180, 10, 'foodZoneMinutes', function(v) { return v + ' min' + (v > 120 ? ' (UNSAFE > 2h)' : ''); }),
+                h('svg', { width: '100%', viewBox: '0 0 ' + W + ' ' + H, role: 'img', 'aria-label': 'Exponential bacterial growth at ' + mins + ' minutes showing ' + curGrow.factor + 'x population', className: 'bg-white rounded-lg border border-slate-200' },
+                  h('line', { x1: padL, y1: 10, x2: padL, y2: H - padB, stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('line', { x1: padL, y1: H - padB, x2: W - 10, y2: H - padB, stroke: '#94a3b8', strokeWidth: 1 }),
+                  h('line', { x1: px(120), y1: 10, x2: px(120), y2: H - padB, stroke: '#dc2626', strokeWidth: 1.5, strokeDasharray: '3 2' }),
+                  h('polyline', { fill: 'none', stroke: '#ea580c', strokeWidth: 2, points: pts.map(function(pt) { return px(pt.m).toFixed(1) + ',' + py(pt.gen).toFixed(1); }).join(' ') }),
+                  h('circle', { cx: px(mins).toFixed(1), cy: py(curGrow.generations).toFixed(1), r: 3.5, fill: '#b91c1c' }),
+                  h('text', { x: padL, y: H - 5, fontSize: 7, fill: '#475569' }, '0m'),
+                  h('text', { x: px(120), y: H - 5, fontSize: 7, fill: '#dc2626', textAnchor: 'middle' }, '2h Limit'),
+                  h('text', { x: W - 10, y: H - 5, fontSize: 7, fill: '#475569', textAnchor: 'end' }, '3h')
+                )
+              );
+            })(),
             // Quick quiz
             h('div', { className: 'mt-3 p-3 rounded-xl bg-white border border-slate-400' },
               h('p', { className: 'text-xs font-bold text-slate-700 mb-2' }, '\uD83E\uDDE0 Quick Quiz: What is the safe temp for ' + foodSafetyCurrent.food + '?'),
@@ -7607,13 +11347,21 @@ window.StemLab = window.StemLab || {
                   return h('button', { key: temp, onClick: function() {
                     var correct = temp === foodSafetyCurrent.tempF;
                     stemBeep(correct);
-                    updMulti({ foodSafetyFb: correct ? '\u2705 Correct! ' + foodSafetyCurrent.tempF + '\u00B0F for ' + foodSafetyCurrent.food : '\u274C It\'s ' + foodSafetyCurrent.tempF + '\u00B0F. ' + foodSafetyCurrent.danger, foodSafetyScore: foodSafetyScore + (correct ? 1 : 0) });
-                    if (correct && foodSafetyScore + 1 >= 5) checkBadge('chefSafe');
+                    if (correct) {
+                      claimUniqueScenarioUpdate('foodSafety:' + (foodSafetyQ % FOOD_SAFETY.length), 'foodSafetyScore', foodSafetyScore, { foodSafetyFb: '\u2705 Correct! ' + foodSafetyCurrent.tempF + '\u00B0F for ' + foodSafetyCurrent.food }, 'chefSafe', 5);
+                    } else {
+                      upd('foodSafetyFb', '\u274C It\'s ' + foodSafetyCurrent.tempF + '\u00B0F. ' + foodSafetyCurrent.danger);
+                    }
                   }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold border border-slate-400 hover:border-amber-600' }, temp + '\u00B0F');
                 })
               ),
               d.foodSafetyFb && h('p', { className: 'text-[11px] font-bold mt-2 p-2 rounded-lg ' + (d.foodSafetyFb[0] === '\u2705' ? 'bg-emerald-50 text-emerald-700' : 'bg-red-50 text-red-700') }, d.foodSafetyFb),
               h('button', { 'aria-label': __alloT('stem.lifeskills.next_food', 'Next Food'), onClick: function() { updMulti({ foodSafetyQ: foodSafetyQ + 1, foodSafetyFb: null }); }, className: 'mt-2 px-3 py-1.5 text-[11px] font-bold bg-amber-100 text-amber-700 rounded-xl' }, __alloT('stem.lifeskills.next_food_2', 'Next Food \u27A1'))
+            ),
+            h('div', { className: 'grid sm:grid-cols-3 gap-2' },
+              renderSisterToolBridge('kitchenLab', 'Kitchen Chemistry Lab', 'Explore Maillard browning, emulsions, pH, and heat transfer in Kitchen Lab.'),
+              renderSisterToolBridge('nutritionLab', 'Nutrition & Metabolism Lab', 'Model macronutrients, hydration, and daily energy balance in Nutrition Lab.'),
+              renderSisterToolBridge('bakingScience', 'Baking Science Lab', 'Test pan geometry, heat conduction, gluten, and leavening reactions in Baking Science Lab.')
             )
           )
         ),
@@ -7624,13 +11372,14 @@ window.StemLab = window.StemLab || {
             h('div', { className: 'flex items-start justify-between gap-3 flex-wrap' },
               h('div', null,
                 h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.laundry_lab_title', '\uD83E\uDDFA Laundry Lab')),
-                h('p', { className: 'text-xs text-slate-600 max-w-2xl' }, gradeText(gradeBand,
+                h('p', { className: 'text-xs text-slate-600 max-w-2xl' }, roleGradeText(
                   'Learn the steps for clean, safe clothes.',
                   'Practice sorting, choosing settings, and spotting laundry myths.',
                   'Explore detergent chemistry, stain science, water temperature, and fabric care.',
                   'Model laundry as applied chemistry: surfactants, enzymes, mechanical action, heat transfer, fiber structure, and residue control.')),
                 h('div', { className: 'flex items-center gap-2 flex-wrap mt-3' },
                   h('button', { onClick: openLifeSkillsLaundry3D, className: 'px-3 py-2 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-cyan-700 to-indigo-700 hover:from-cyan-800 hover:to-indigo-800 focus:outline-none focus:ring-2 focus:ring-cyan-300', 'aria-label': __alloT('stem.lifeskills.a11y_open_the_3d_laundry_and_clothing_care_lab_in_a', 'Open the 3D laundry and clothing care lab in a new window') }, '\uD83C\uDF10 Open 3D laundry lab \u2197'),
+                  h('button', { type: 'button', onClick: function() { openLifeSkillsInlineCompanion('laundry'); }, className: 'px-3 py-2 rounded-xl text-xs font-bold bg-slate-800 text-white hover:bg-slate-900' }, 'Open Inline'),
                   d.laundry3dMsg && h('span', { className: 'text-[11px] font-bold text-cyan-800', role: 'status' }, d.laundry3dMsg)
                 )
               ),
@@ -7737,7 +11486,7 @@ window.StemLab = window.StemLab || {
                     return h('p', { key: i, className: 'text-[11px] rounded-lg bg-red-50 border border-red-100 text-red-700 p-2' }, '\u26A0\uFE0F ' + issue);
                   })
                 ) : h('p', { className: 'text-[11px] rounded-lg bg-emerald-50 border border-emerald-100 text-emerald-700 p-2 font-bold' }, '\u2705 This load is balanced. Detergent, room to move, and fabric mix look reasonable.'),
-                h('button', { disabled: laundryIssues.length > 0 || laundrySelectedItems.length === 0, onClick: function() { checkBadge('laundryPro'); awardXP(10, 'Laundry load ready'); }, className: 'mt-2 px-3 py-2 rounded-xl text-xs font-bold ' + (laundryIssues.length > 0 || laundrySelectedItems.length === 0 ? 'bg-slate-100 text-slate-600 cursor-not-allowed' : 'bg-teal-700 text-white hover:bg-teal-800') }, 'Mark load ready')
+                h('button', { disabled: laundryIssues.length > 0 || laundrySelectedItems.length === 0, onClick: function() { awardOnce('laundryLoadReady', 10, 'Laundry load ready', 'laundryPro'); }, className: 'mt-2 px-3 py-2 rounded-xl text-xs font-bold ' + (laundryIssues.length > 0 || laundrySelectedItems.length === 0 ? 'bg-slate-100 text-slate-600 cursor-not-allowed' : 'bg-teal-700 text-white hover:bg-teal-800') }, 'Mark load ready')
               )
             )
           ),
@@ -7857,9 +11606,13 @@ window.StemLab = window.StemLab || {
                   h('li', null, 'Stop and check labels before using bleach, high heat, or a stain remover.')
                 )
               ),
-              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3' },
+              h('div', { className: 'rounded-xl bg-white border border-slate-200 p-3 space-y-2' },
                 h('p', { className: 'text-xs font-bold text-slate-700' }, 'Smart routine'),
-                h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, 'Full-but-not-stuffed loads, measured detergent, cold water for everyday items, and air drying delicate/stretch fabrics usually reduce cost while protecting clothing life.')
+                h('p', { className: 'text-[11px] text-slate-600 leading-relaxed' }, 'Full-but-not-stuffed loads, measured detergent, cold water for everyday items, and air drying delicate/stretch fabrics usually reduce cost while protecting clothing life.'),
+                h('div', { className: 'pt-1 flex items-center gap-2 flex-wrap' },
+                  h('button', { type: 'button', onClick: function() { syncCategoryToBudget('Utilities', Math.max(5, Math.round(laundryEstimatedCost)), 'Monthly laundry energy & detergent'); }, className: 'px-3 py-1.5 rounded-xl text-xs font-bold bg-teal-700 text-white hover:bg-teal-800' }, 'Send Monthly Laundry Cost (' + fmtMoney(Math.round(laundryEstimatedCost)) + '/mo) to Budget'),
+                  asText(d.budgetSyncMsg) && h('span', { role: 'status', className: 'text-[11px] font-bold text-emerald-800' }, asText(d.budgetSyncMsg))
+                )
               )
             )
           ),
@@ -7885,20 +11638,85 @@ window.StemLab = window.StemLab || {
                 )
               );
             })
-          )
+          ),
+          (function() {
+            var launGal = (typeof d.launGallons === 'number' && isFinite(d.launGallons)) ? Math.max(8, Math.min(35, d.launGallons)) : 16;
+            var launTemp = (typeof d.launWashTempF === 'number' && isFinite(d.launWashTempF)) ? Math.max(55, Math.min(130, d.launWashTempF)) : 60;
+            var launPpm = (typeof d.launHardnessPpm === 'number' && isFinite(d.launHardnessPpm)) ? Math.max(10, Math.min(300, d.launHardnessPpm)) : 110;
+            var lChem = calcLaundryWaterAndThermal(launGal, 55, launTemp, launPpm, laundryLoadsWeek, 0.16);
+            return h('div', { className: glassCard + ' space-y-3', 'data-lifeskills-laundry-chemistry': 'true' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('p', { className: 'text-[10px] font-bold uppercase text-cyan-800' }, '\u2697\uFE0F Water Hardness (Ca\u00B2\u207A/Mg\u00B2\u207A) & Thermal Energy (Q = m\u00B7c\u00B7\u0394T)'),
+                  h('h5', { className: 'text-sm font-black text-slate-800' }, 'Wash Temperature Physics & Ion-Chelation Dosing')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full bg-cyan-50 border border-cyan-200 text-[11px] font-black text-cyan-900' }, lChem.hardnessBand + ' \u00B7 ' + lChem.doseMultiplier.toFixed(2) + 'x dose')
+              ),
+              h('div', { className: 'grid sm:grid-cols-3 gap-2.5' },
+                slider('Washer Water per Load', launGal, 8, 35, 1, 'launGallons', function(v) { return v + ' gal'; }),
+                slider('Wash Water Temp', launTemp, 55, 130, 5, 'launWashTempF', function(v) { return v + '\u00B0F'; }),
+                slider('Tap Water Hardness (CaCO\u2083)', launPpm, 10, 300, 10, 'launHardnessPpm', function(v) { return v + ' ppm'; })
+              ),
+              h('div', { className: 'grid sm:grid-cols-3 gap-2 text-[11px]' },
+                h('div', { className: 'p-2 rounded-xl bg-blue-50 border border-blue-200 text-blue-900' },
+                  h('p', { className: 'font-bold' }, 'Thermal Energy / Load'),
+                  h('p', { className: 'text-base font-black' }, lChem.kwhPerLoad + ' kWh (\u0394T ' + lChem.deltaTF + '\u00B0F)')
+                ),
+                h('div', { className: 'p-2 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-900' },
+                  h('p', { className: 'font-bold' }, 'Savings vs 105\u00B0F Warm'),
+                  h('p', { className: 'text-base font-black' }, fmtMoney(lChem.annualColdSavings) + '/yr (Cost: ' + fmtMoney(lChem.annualWarmWaterCost) + '/yr)')
+                ),
+                h('div', { className: 'p-2 rounded-xl bg-amber-50 border border-amber-200 text-amber-900' },
+                  h('p', { className: 'font-bold' }, 'Surfactant Chemistry'),
+                  h('p', null, lChem.boosterTip)
+                )
+              )
+            );
+          })(),
+          renderSisterToolBridge('chemBalance', 'Chemical Equations & Reactions Lab', 'Explore ion chelation, pH, and reaction stoichiometry in Chem Balance Lab.')
         ),
 
         // ═══ CHALLENGE TAB ═══
         tab === 'challenge' && h('div', { className: 'space-y-4' },
-          h('div', { className: glassCard },
+          h('div', { className: glassCard + ' space-y-2' },
             h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.life_skills_challenge', '\uD83C\uDFAF Life Skills Challenge')),
-            h('div', { className: 'flex gap-2 mb-3' },
+            h('div', { className: 'flex gap-2 mb-2 flex-wrap' },
               [1, 2, 3].map(function(t) {
                 var labels = { 1: 'Easy', 2: 'Medium', 3: 'Hard' };
                 var colors = { 1: 'bg-emerald-100 text-emerald-700', 2: 'bg-amber-100 text-amber-700', 3: 'bg-red-100 text-red-700' };
-                return h('button', { key: t, onClick: function() { updMulti({ chalTier: t, chalIdx: 0, chalFeedback: '', chalAnswer: '' }); },
+                return h('button', { key: t, onClick: function() { updMulti({ chalTier: t, chalIdx: 0, chalFeedback: '', chalAnswer: '', chalAIQ: null }); },
                   className: 'px-3 py-1.5 rounded-lg text-[11px] font-bold ' + (chalTier === t ? colors[t] + ' ring-2 ring-offset-1' : 'bg-white text-slate-600 border border-slate-400') }, labels[t]);
               })
+            ),
+            h('div', { className: 'space-y-2 pt-1 border-t border-slate-200', 'data-lifeskills-quiz-mode': 'true' },
+              h('div', { className: 'flex flex-wrap items-center gap-2' },
+                h('span', { className: 'text-[10px] uppercase font-bold text-slate-600' }, 'Response mode:'),
+                [
+                  { id: 'type', label: 'Type Answer' },
+                  { id: 'choice', label: '4-Choice Bank' }
+                ].map(function(m) {
+                  var active = chalMode === m.id;
+                  return h('button', { key: m.id, type: 'button', onClick: function() { updMulti({ chalMode: m.id, chalFeedback: '' }); },
+                    className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-300 hover:border-teal-400')
+                  }, m.label);
+                })
+              ),
+              h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+                h('span', { className: 'text-[10px] uppercase font-bold text-slate-600' }, 'Domain:'),
+                [
+                  { id: 'all', label: 'All' },
+                  { id: 'money', label: 'Money' },
+                  { id: 'career', label: 'Career' },
+                  { id: 'health', label: 'Health' },
+                  { id: 'home', label: 'Home' },
+                  { id: 'food', label: 'Food' }
+                ].map(function(dom) {
+                  var active = chalDomain === dom.id;
+                  return h('button', { key: dom.id, type: 'button', onClick: function() { updMulti({ chalDomain: dom.id, chalIdx: 0, chalFeedback: '', chalAnswer: '', chalAIQ: null }); },
+                    className: 'px-2 py-0.5 rounded-full text-[11px] font-bold border ' + (active ? 'bg-teal-700 text-white border-teal-700' : 'bg-white text-slate-700 border-slate-300 hover:border-teal-400')
+                  }, dom.label);
+                })
+              )
             ),
             h('div', { className: 'flex gap-3 text-xs' },
               h('span', { className: 'font-bold text-teal-700' }, '\uD83C\uDFC6 ' + chalScore + ' pts'),
@@ -7906,29 +11724,83 @@ window.StemLab = window.StemLab || {
             )
           ),
           h('div', { className: glassCard + ' space-y-3' },
-            chalQ && h('p', { className: 'text-sm font-medium text-slate-700' }, chalQ.q),
+            chalQ && h('div', { className: 'flex items-center justify-between gap-2' },
+              h('p', { className: 'text-sm font-medium text-slate-700' }, chalQ.q),
+              h('span', { className: 'px-2 py-0.5 rounded-full bg-slate-100 text-slate-600 text-[10px] font-bold uppercase shrink-0' }, inferQuestionDomain(chalQ))
+            ),
+            chalMode === 'choice' && chalQ && h('div', { className: 'grid sm:grid-cols-2 gap-2' },
+              buildQuizChoiceBank(chalQ, CHALLENGE_QS).map(function(choice) {
+                return h('button', { key: choice, type: 'button', onClick: function() { chalPickChoice(choice); },
+                  className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border border-slate-300 bg-white text-slate-800 hover:border-teal-500 hover:bg-teal-50'
+                }, choice);
+              })
+            ),
             h('input', { type: 'text', value: chalAnswer, onChange: function(e) { upd('chalAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') chalCheck(); }, placeholder: __alloT('stem.lifeskills.type_your_answer', 'Type your answer...'), className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm focus:border-teal-400', 'aria-label': __alloT('stem.lifeskills.answer', 'Answer') }),
-            h('div', { className: 'flex gap-2' },
+            h('div', { className: 'flex gap-2 flex-wrap' },
               h('button', { onClick: chalCheck, className: 'px-4 py-2 text-sm font-bold bg-teal-700 hover:bg-teal-800 active:scale-95 transition-all text-white rounded-xl' }, __alloT('stem.lifeskills.check_3', 'Check')),
               h('button', { onClick: function() { upd('chalFeedback', '\uD83D\uDCA1 ' + (chalQ.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-700 rounded-xl' }, __alloT('stem.lifeskills.hint', '\uD83D\uDCA1 Hint')),
-              h('button', { onClick: function() { updMulti({ chalIdx: chalIdx + 1, chalFeedback: '', chalAnswer: '' }); }, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, __alloT('stem.lifeskills.skip', 'Skip \u27A1')),
+              h('button', { onClick: function() { updMulti({ chalIdx: chalIdx + 1, chalFeedback: '', chalAnswer: '', chalAIQ: null }); }, className: 'px-3 py-2 text-sm font-bold bg-slate-100 text-slate-600 rounded-xl' }, __alloT('stem.lifeskills.skip', 'Skip \u27A1')),
               callGemini && h('button', { onClick: function() {
                 upd('chalAILoading', true);
                 var tierLabel = chalTier === 1 ? 'easy' : chalTier === 2 ? 'medium' : 'hard';
-                callGemini('Generate one ' + tierLabel + ' life skills question for a ' + gradeBand + ' student about taxes, insurance, records and paperwork, transportation and navigation, job readiness and workplace basics, resume building and evidence bullets, portfolio proof organization and privacy, interview practice and STAR answers, communication and conflict, time management and planning, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car care, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}').then(function(res) {
+                callGeminiZeroPii('Generate one ' + tierLabel + ' life skills question for ' + buildRoleAwareLearnerPhrase() + ' about taxes, insurance, records and paperwork, transportation and navigation, job readiness and workplace basics, resume building and evidence bullets, portfolio proof organization and privacy, interview practice and STAR answers, communication and conflict, time management and planning, dental care, body care and ergonomics, sleep and energy routines, medication labels, appointments and self-advocacy, home safety, digital safety, food confidence, home repair, car care, laundry science, or data literacy. Return JSON: {"q":"question","a":"short answer","h":"hint"}', []).then(function(res) {
                   try { var p = JSON.parse(res.replace(/```json?\n?/g, '').replace(/```/g, '').trim()); updMulti({ chalAILoading: false, chalFeedback: '', chalAnswer: '', chalAIQ: p }); } catch(e) { updMulti({ chalAILoading: false }); }
                 }).catch(function() { upd('chalAILoading', false); });
               }, disabled: d.chalAILoading, className: 'px-3 py-2 text-sm font-bold bg-purple-100 text-purple-600 rounded-xl disabled:opacity-50' }, d.chalAILoading ? '\uD83E\uDDE0...' : '\u2728 AI Next')
             ),
             chalFeedback && h('p', { className: 'text-sm font-bold p-2 rounded-lg ' + (chalFeedback[0] === '\u2705' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700') }, chalFeedback)
+          ),
+          lsMissedQueue.length > 0 && h('div', { className: glassCard + ' space-y-2 border border-amber-200 bg-amber-50/40', 'data-lifeskills-missed-queue': 'true' },
+            h('p', { className: 'text-xs font-black text-amber-900' }, '\uD83D\uDD01 Missed Concepts Review Queue (' + lsMissedQueue.length + ')'),
+            h('div', { className: 'grid gap-2' },
+              lsMissedQueue.slice(0, 3).map(function(item, mi) {
+                return h('div', { key: mi, className: 'flex items-center justify-between gap-2 p-2 rounded-xl bg-white border border-amber-200' },
+                  h('span', { className: 'text-[11px] font-medium text-slate-700' }, item.q),
+                  h('button', { type: 'button', onClick: function() { updMulti({ chalAIQ: { q: item.q, a: item.a, h: item.h }, chalFeedback: '', chalAnswer: '' }); },
+                    className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold bg-amber-800 text-white hover:bg-amber-900 shrink-0'
+                  }, 'Practice Again')
+                );
+              })
+            )
           )
         ),
 
         // ═══ BATTLE TAB ═══
         tab === 'battle' && h('div', { className: 'space-y-4' },
-          h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-2' }, __alloT('stem.lifeskills.adulting_defense', '\u2694\uFE0F Adulting Defense')),
-            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.fight_ignorance_with_knowledge_answer_', 'Fight ignorance with knowledge! Answer life skills questions to defeat the Adulting Boss.'))
+          h('div', { className: glassCard + ' space-y-2' },
+            h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.adulting_defense', '\u2694\uFE0F Adulting Defense')),
+            h('p', { className: 'text-xs text-slate-600' }, __alloT('stem.lifeskills.fight_ignorance_with_knowledge_answer_', 'Fight ignorance with knowledge! Answer life skills questions to defeat the Adulting Boss.')),
+            h('div', { className: 'flex flex-wrap items-center gap-2 pt-1 border-t border-slate-200' },
+              h('span', { className: 'text-[10px] uppercase font-bold text-slate-600' }, 'Mode:'),
+              [
+                { id: 'type', label: 'Type Answer' },
+                { id: 'choice', label: '4-Choice Bank' }
+              ].map(function(m) {
+                var active = battleMode === m.id;
+                return h('button', { key: m.id, type: 'button', onClick: function() { upd('battleMode', m.id); },
+                  className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold border ' + (active ? 'bg-slate-900 text-white border-slate-900' : 'bg-white text-slate-700 border-slate-300 hover:border-teal-400')
+                }, m.label);
+              }),
+              h('button', { type: 'button', 'data-lifeskills-battle-calm': 'true', onClick: function() { upd('battleCalmMode', !battleCalmMode); },
+                className: 'px-2.5 py-1 rounded-lg text-[11px] font-bold border ' + (battleCalmMode ? 'bg-emerald-700 text-white border-emerald-700' : 'bg-white text-slate-700 border-slate-300 hover:border-emerald-400')
+              }, (battleCalmMode ? '\u2705 ' : '') + 'Calm Coaching Mode (1st miss gives hint + 0 HP lost)')
+            ),
+            h('div', { className: 'flex flex-wrap items-center gap-1.5' },
+              h('span', { className: 'text-[10px] uppercase font-bold text-slate-600' }, 'Domain:'),
+              [
+                { id: 'all', label: 'All' },
+                { id: 'money', label: 'Money' },
+                { id: 'career', label: 'Career' },
+                { id: 'health', label: 'Health' },
+                { id: 'home', label: 'Home' },
+                { id: 'food', label: 'Food' }
+              ].map(function(dom) {
+                var active = battleDomain === dom.id;
+                return h('button', { key: dom.id, type: 'button', onClick: function() { if (battleActive) startBattle(battleUseAI, dom.id); upd('battleDomain', dom.id); },
+                  className: 'px-2 py-0.5 rounded-full text-[11px] font-bold border ' + (active ? 'bg-teal-700 text-white border-teal-700' : 'bg-white text-slate-700 border-slate-300 hover:border-teal-400')
+                }, dom.label);
+              })
+            )
           ),
           !battleActive ? h('div', { className: glassCard + ' text-center space-y-3' },
             h('div', { className: 'text-5xl mb-2' }, '\uD83E\uDDED'),
@@ -7939,8 +11811,8 @@ window.StemLab = window.StemLab || {
             )
           ) : h('div', { className: glassCard },
             h('div', { className: 'space-y-2 mb-4' },
-              h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-xs font-bold text-emerald-700 w-16' }, __alloT('stem.lifeskills.you', '\uD83D\uDEE1\uFE0F You')), h('div', { className: 'flex-1 h-4 bg-slate-200 rounded-full overflow-hidden' }, h('div', { className: 'h-full rounded-full transition-all', style: { width: battlePlayerHP + '%', background: battlePlayerHP > 50 ? '#22c55e' : '#f59e0b' } })), h('span', { className: 'text-xs font-mono font-bold w-10 text-right' }, battlePlayerHP + '%')),
-              h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-xs font-bold text-red-600 w-16' }, __alloT('stem.lifeskills.boss', '\uD83D\uDC7E Boss')), h('div', { className: 'flex-1 h-4 bg-slate-200 rounded-full overflow-hidden' }, h('div', { role: 'progressbar', 'aria-valuemin': '0', 'aria-valuemax': '100', className: 'h-full bg-red-500 rounded-full transition-all', style: { width: battleEnemyHP + '%' } })), h('span', { className: 'text-xs font-mono font-bold w-10 text-right' }, battleEnemyHP + '%'))
+              h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-xs font-bold text-emerald-700 w-16' }, __alloT('stem.lifeskills.you', '\uD83D\uDEE1\uFE0F You')), h('div', { className: 'flex-1 h-4 bg-slate-200 rounded-full overflow-hidden' }, h('div', { role: 'progressbar', 'aria-label': 'Your HP', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': battlePlayerHP, className: 'h-full rounded-full transition-all', style: { width: battlePlayerHP + '%', background: battlePlayerHP > 50 ? '#22c55e' : '#f59e0b' } })), h('span', { className: 'text-xs font-mono font-bold w-10 text-right' }, battlePlayerHP + '%')),
+              h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-xs font-bold text-red-600 w-16' }, __alloT('stem.lifeskills.boss', '\uD83D\uDC7E Boss')), h('div', { className: 'flex-1 h-4 bg-slate-200 rounded-full overflow-hidden' }, h('div', { role: 'progressbar', 'aria-label': 'Adulting Boss HP', 'aria-valuemin': '0', 'aria-valuemax': '100', 'aria-valuenow': battleEnemyHP, className: 'h-full bg-red-500 rounded-full transition-all', style: { width: battleEnemyHP + '%' } })), h('span', { className: 'text-xs font-mono font-bold w-10 text-right' }, battleEnemyHP + '%'))
             ),
             battleOver ? h('div', { className: 'text-center py-4 space-y-2' },
               h('div', { className: 'text-4xl' }, battleWon ? '\uD83C\uDFC6' : '\uD83D\uDC7E'),
@@ -7958,12 +11830,19 @@ window.StemLab = window.StemLab || {
                 return h('div', { className: 'space-y-3' },
                   battleUseAI && h('span', { className: 'px-1.5 py-0.5 bg-purple-100 text-purple-600 text-[11px] font-bold rounded-full' }, __alloT('stem.lifeskills.ai', '\uD83E\uDDE0 AI')),
                   h('p', { className: 'text-sm font-medium text-slate-700' }, q.q),
-                  h('input', { 'aria-label': __alloT('stem.lifeskills.ai', '\uD83E\uDDE0 AI'), type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: __alloT('stem.lifeskills.answer','Answer...'), className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-red-400' }),
+                  battleMode === 'choice' && h('div', { className: 'grid sm:grid-cols-2 gap-2' },
+                    buildQuizChoiceBank(q, BATTLE_QS).map(function(choice) {
+                      return h('button', { key: choice, type: 'button', onClick: function() { battlePickChoice(choice); },
+                        className: 'text-left px-3 py-2 rounded-xl text-xs font-bold border border-slate-300 bg-white text-slate-800 hover:border-teal-500 hover:bg-teal-50'
+                      }, choice);
+                    })
+                  ),
+                  h('input', { 'aria-label': __alloT('stem.lifeskills.answer_battle', 'Answer to battle question'), type: 'text', value: battleAnswer, onChange: function(e) { upd('battleAnswer', e.target.value); }, onKeyDown: function(e) { if (e.key === 'Enter') battleAttack(); }, placeholder: __alloT('stem.lifeskills.answer','Answer...'), className: 'w-full px-4 py-2 border border-slate-400 rounded-xl text-sm font-mono focus:border-red-400' }),
                   h('div', { className: 'flex gap-2' },
                     h('button', { onClick: battleAttack, className: 'px-4 py-2 text-sm font-bold bg-red-600 hover:bg-red-700 active:scale-95 transition-all text-white rounded-xl' }, __alloT('stem.lifeskills.attack', '\u2694\uFE0F Attack!')),
                     h('button', { 'aria-label': __alloT('stem.lifeskills.hint_2', 'Hint'), onClick: function() { upd('battleFeedback', '\uD83D\uDCA1 ' + (q.h || 'No hint')); }, className: 'px-3 py-2 text-sm font-bold bg-amber-50 text-amber-700 rounded-xl' }, __alloT('stem.lifeskills.hint_3', '\uD83D\uDCA1 Hint'))
                   ),
-                  battleFeedback && h('p', { className: 'text-sm font-bold p-2 rounded-lg ' + (battleFeedback[0] === '\u2705' ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700') }, battleFeedback)
+                  battleFeedback && h('p', { className: 'text-sm font-bold p-2 rounded-lg ' + (battleFeedback[0] === '\u2705' ? 'bg-green-50 text-green-700' : battleFeedback.indexOf('\uD83D\uDCA1') === 0 ? 'bg-amber-50 text-amber-900' : 'bg-red-50 text-red-700') }, battleFeedback)
                 );
               })()
             )
@@ -7971,23 +11850,50 @@ window.StemLab = window.StemLab || {
         ),
 
         // ═══ LEARN TAB ═══
-        tab === 'learn' && h('div', { className: 'space-y-4' },
-          h('div', { className: glassCard },
-            h('h4', { className: 'text-sm font-bold text-slate-700 mb-3' }, __alloT('stem.lifeskills.learn_life_skills_concepts', '\uD83D\uDCDA Learn \u2014 Life Skills Concepts')),
-            h('p', { className: 'text-xs text-slate-600 mb-4' }, 'Explore key topics adapted to your grade level (' + gradeBand + ').')
-          ),
-          LEARN_TOPICS.map(function(topic) {
-            var content = topic.content[gradeBand] || topic.content['3-5'];
-            return h('div', { key: topic.title, className: glassCard + ' space-y-3' },
-              h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-lg' }, topic.icon), h('h5', { className: 'text-sm font-bold text-slate-700' }, topic.title)),
-              h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, content),
-              h('div', { className: 'flex gap-2 pt-2 border-t border-slate-100' },
-                h('button', { 'aria-label': __alloT('stem.lifeskills.try_it', 'Try It'), onClick: function() { markLearnRead(topic.title); updMulti({ tab: topic.tryIt }); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-violet-50 text-violet-600 rounded-lg' }, __alloT('stem.lifeskills.try_it_2', '\uD83D\uDD2C Try It')),
-                callTTS && h('button', { 'aria-label': __alloT('stem.lifeskills.read_aloud', 'Read Aloud'), onClick: function() { markLearnRead(topic.title); callTTS(content, undefined, undefined, { force: true }); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-blue-50 text-blue-600 rounded-lg' }, __alloT('stem.lifeskills.read_aloud_2', '\uD83D\uDD0A Read Aloud'))
+        tab === 'learn' && (function() {
+          var learnQuery = asText(d.learnFilter);
+          var learnQueryNorm = learnQuery.trim().toLowerCase();
+          var learnDoneCount = Object.keys(learnRead || {}).length;
+          var visibleTopics = LEARN_TOPICS.filter(function(topic) {
+            if (!learnQueryNorm) return true;
+            var rawBody = adaptRoleProse(topic.content[effectiveBand] || topic.content['3-5'] || '');
+            return (topic.title + ' ' + rawBody).toLowerCase().indexOf(learnQueryNorm) !== -1;
+          });
+          return h('div', { className: 'space-y-4', 'data-lifeskills-learn': 'true' },
+            h('div', { className: glassCard + ' space-y-3' },
+              h('div', { className: 'flex items-center justify-between gap-2 flex-wrap' },
+                h('div', null,
+                  h('h4', { className: 'text-sm font-bold text-slate-700 mb-1' }, __alloT('stem.lifeskills.learn_life_skills_concepts', '\uD83D\uDCDA Learn \u2014 Life Skills Concepts')),
+                  h('p', { className: 'text-xs text-slate-600' }, 'Explore key topics adapted to your grade level (' + effectiveBand + ').')
+                ),
+                h('span', { className: 'px-2.5 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200 text-[11px] font-bold' }, learnDoneCount + '/' + LEARN_TOPICS.length + ' topics mastered')
+              ),
+              h('div', { className: 'h-2 rounded-full bg-slate-200 overflow-hidden', role: 'progressbar', 'aria-valuenow': learnDoneCount, 'aria-valuemin': 0, 'aria-valuemax': LEARN_TOPICS.length, 'aria-label': 'Learn topics mastery progress' },
+                h('div', { className: 'h-full bg-teal-600 rounded-full transition-all', style: { width: Math.round((learnDoneCount / Math.max(1, LEARN_TOPICS.length)) * 100) + '%' } })
+              ),
+              h('div', { className: 'flex items-center gap-2' },
+                h('input', { type: 'search', value: learnQuery, onChange: function(e) { upd('learnFilter', e.target.value); }, placeholder: 'Search concept topics (tax, pH, medication, lease...)', 'aria-label': 'Filter concept topics', className: 'flex-1 px-3 py-1.5 border border-slate-400 rounded-xl text-xs bg-white text-slate-800' }),
+                learnQuery && h('button', { type: 'button', onClick: function() { upd('learnFilter', ''); }, className: 'px-2.5 py-1.5 rounded-xl text-xs font-bold bg-slate-100 text-slate-700 hover:bg-slate-200' }, 'Clear')
               )
-            );
-          })
-        ),
+            ),
+            visibleTopics.length === 0 ? h('div', { className: glassCard + ' text-xs text-slate-600' }, 'No concept topics matched "' + learnQuery + '". Try clearing the filter.') :
+            visibleTopics.map(function(topic) {
+              var content = adaptRoleProse(topic.content[effectiveBand] || topic.content['3-5']);
+              var mastered = !!(learnRead && learnRead[topic.title]);
+              return h('div', { key: topic.title, className: glassCard + ' space-y-3' },
+                h('div', { className: 'flex items-center justify-between gap-2' },
+                  h('div', { className: 'flex items-center gap-2' }, h('span', { className: 'text-lg' }, topic.icon), h('h5', { className: 'text-sm font-bold text-slate-700' }, topic.title)),
+                  mastered && h('span', { className: 'px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200' }, '\u2705 Read')
+                ),
+                h('p', { className: 'text-xs text-slate-600 leading-relaxed' }, content),
+                h('div', { className: 'flex gap-2 pt-2 border-t border-slate-100' },
+                  h('button', { 'aria-label': __alloT('stem.lifeskills.try_it', 'Try It'), onClick: function() { markLearnRead(topic.title); updMulti({ tab: topic.tryIt }); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-violet-50 text-violet-600 rounded-lg' }, __alloT('stem.lifeskills.try_it_2', '\uD83D\uDD2C Try It')),
+                  h('button', { 'aria-label': __alloT('stem.lifeskills.read_aloud', 'Read Aloud'), onClick: function() { markLearnRead(topic.title); speakLifeSkillsText(content); }, className: 'px-3 py-1.5 text-[11px] font-bold bg-blue-50 text-blue-600 rounded-lg' }, __alloT('stem.lifeskills.read_aloud_2', '\uD83D\uDD0A Read Aloud'))
+                )
+              );
+            })
+          );
+        })(),
 
         // Badges panel
         h('details', { className: glassCard },

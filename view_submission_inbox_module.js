@@ -185,13 +185,1502 @@ function siWorkEvidence(payload, teacherHistory) {
     totalXP: num(stats.totalXP),
     quizzesTaken: num(stats.quizzesTaken),
     notebookEntries: num(notebook.total),
+    annotations: siStudentAnnotations(p),
     // Not a verdict, and labelled as such in the UI. The student device counts
     // pastes that landed in a writable answer field; a pasted research citation
     // and a pasted answer are indistinguishable here.
     pastesIntoAnswers: num(stats.pasteEventResponseCount)
   };
-  evidence.isEmpty = activities.length === 0 && games.length === 0 && evidence.totalXP === null && evidence.quizzesTaken === null && evidence.notebookEntries === null;
+  evidence.isEmpty = activities.length === 0 && games.length === 0 && evidence.annotations.length === 0 && evidence.totalXP === null && evidence.quizzesTaken === null && evidence.notebookEntries === null;
   return evidence;
+}
+function siStudentAnnotations(payload) {
+  var p = payload && typeof payload === "object" ? payload : {};
+  var list = Array.isArray(p.annotations) ? p.annotations : [];
+  var DRAW_HEX = {
+    red: "#dc2626",
+    blue: "#2563eb",
+    green: "#16a34a",
+    yellow: "#ca8a04",
+    black: "#111827"
+  };
+  return list.slice(0, 200).map(function(a) {
+    if (!a || typeof a !== "object" || Array.isArray(a) || a.pending === true) return null;
+    var rawKind = String(a.kind || a.type || "").trim().toLowerCase();
+    var isBareHighlight = rawKind === "highlight" && typeof a.text === "string" && !a.anchorText && !a.quote && !a.note && !a.content && !a.comment;
+    var quote = siResponseText(a.quote || a.anchorText || (isBareHighlight ? a.text : "") || "", 600);
+    var note = isBareHighlight ? "" : siResponseText(a.note || a.text || a.content || a.comment || a.transcript || "", 2e3);
+    var base = {
+      id: siResponseText(typeof a.id === "number" ? String(a.id) : a.id || "", 80),
+      color: siResponseText(a.color || "yellow", 24) || "yellow",
+      quote,
+      note,
+      blockIdx: Number.isInteger(a.blockIdx) ? a.blockIdx : null,
+      createdAt: siResponseText(a.createdAt || "", 60)
+    };
+    if (rawKind === "draw" || rawKind === "drawing" || rawKind === "ink") {
+      var rawPts = Array.isArray(a.points) ? a.points : Array.isArray(a.strokes) && Array.isArray(a.strokes[0]) ? a.strokes[0] : null;
+      var pts = Array.isArray(rawPts) ? rawPts.slice(0, 800).map(function(pt) {
+        if (!pt || typeof pt !== "object") return null;
+        var px = Number(pt.x), py = Number(pt.y);
+        return Number.isFinite(px) && Number.isFinite(py) ? { x: Math.round(px * 100) / 100, y: Math.round(py * 100) / 100 } : null;
+      }).filter(Boolean) : [];
+      var rawDataUrl = typeof a.dataUrl === "string" ? a.dataUrl.trim() : "";
+      var safeDataUrl = /^data:image\/(?:png|jpeg|webp);base64,[A-Za-z0-9+/=]+$/i.test(rawDataUrl) && rawDataUrl.length <= 2e6 ? rawDataUrl : "";
+      if (pts.length < 2 && !safeDataUrl) return null;
+      var col = siResponseText(a.color || "red", 24) || "red";
+      base.type = "draw";
+      base.color = col;
+      base.strokeHex = DRAW_HEX[col.toLowerCase()] || (/^#[0-9a-f]{3,8}$/i.test(col) ? col : "#dc2626");
+      base.strokeWidth = Math.max(1, Math.min(16, Number(a.width || a.strokeWidth) || 4));
+      if (pts.length >= 2) base.points = pts;
+      if (safeDataUrl) base.dataUrl = safeDataUrl;
+      return base;
+    }
+    if (rawKind === "voice" || rawKind === "audio") {
+      var rawB64Str = typeof a.audioBase64 === "string" ? a.audioBase64 : typeof a.audio === "string" && !/^data:/i.test(a.audio.trim()) ? a.audio : "";
+      var rawB64 = rawB64Str.replace(/\s+/g, "");
+      var rawAudioSrc = typeof a.audioSrc === "string" ? a.audioSrc.trim() : typeof a.dataUrl === "string" && /^data:audio\//i.test(a.dataUrl.trim()) ? a.dataUrl.trim() : typeof a.audio === "string" && /^data:audio\//i.test(a.audio.trim()) ? a.audio.trim() : "";
+      var rawMime = String(a.mimeType || a.mime || "").trim().toLowerCase();
+      var mime = /^audio\/[a-z0-9.+-]+$/i.test(rawMime) ? rawMime : "audio/webm";
+      var audioSrc = "";
+      if (rawB64 && rawB64.length <= 2e6 && /^[A-Za-z0-9+/=]+$/.test(rawB64)) {
+        audioSrc = "data:" + mime + ";base64," + rawB64;
+      } else if (/^data:audio\/[a-z0-9.+-]+;base64,[A-Za-z0-9+/=]+$/i.test(rawAudioSrc) && rawAudioSrc.length <= 2e6) {
+        audioSrc = rawAudioSrc;
+      }
+      if (!audioSrc && !note) return null;
+      base.type = "voice";
+      base.color = "purple";
+      if (audioSrc) base.audioSrc = audioSrc;
+      var rawDur = typeof a.durationSec === "number" && Number.isFinite(a.durationSec) && a.durationSec >= 0 ? a.durationSec : typeof a.duration === "number" && Number.isFinite(a.duration) && a.duration >= 0 ? a.duration : null;
+      if (rawDur !== null) base.durationSec = Math.round(rawDur * 100) / 100;
+      return base;
+    }
+    if (!quote && !note) return null;
+    base.type = rawKind === "highlight" ? "highlight" : "note";
+    return base;
+  }).filter(Boolean);
+}
+function siFnv1aHash(value) {
+  var h = 2166136261;
+  var text = String(value == null ? "" : value);
+  for (var i = 0; i < text.length; i++) {
+    h ^= text.charCodeAt(i);
+    h = Math.imul(h, 16777619);
+  }
+  return h >>> 0;
+}
+function siResolveVennBranches(branches) {
+  var list = Array.isArray(branches) ? branches : [];
+  if (list.length === 3) {
+    var overlapIdx = list.findIndex(function(b) {
+      return /both|overlap|shared|common|similar|middle|center/i.test(String(b && b.title || ""));
+    });
+    if (overlapIdx !== -1) {
+      var sideIndices = [0, 1, 2].filter(function(i) {
+        return i !== overlapIdx;
+      });
+      return {
+        setA: list[sideIndices[0]] || {},
+        setB: list[sideIndices[1]] || {},
+        shared: list[overlapIdx] || {}
+      };
+    }
+  }
+  return {
+    setA: list[0] || {},
+    setB: list[1] || {},
+    shared: list[2] || {}
+  };
+}
+function siExportedQuizAutoGrades(payload, history) {
+  var p = payload && typeof payload === "object" ? payload : {};
+  var responses = p.responses && typeof p.responses === "object" && !Array.isArray(p.responses) ? p.responses : {};
+  var manifest = siResponseManifestMap(p);
+  var quizMap = /* @__PURE__ */ Object.create(null);
+  var resourceMap = /* @__PURE__ */ Object.create(null);
+  var defaultTypeMap = /* @__PURE__ */ Object.create(null);
+  function registerQuizzes(arr) {
+    (Array.isArray(arr) ? arr : []).forEach(function(item) {
+      if (!item || typeof item !== "object") return;
+      var itemWithheld = item.data && item.data.answerKeysWithheld === true;
+      if (itemWithheld) return;
+      if (item.type === "quiz" && item.id != null && item.data && Array.isArray(item.data.questions)) {
+        quizMap[String(item.id)] = item;
+      }
+      if (item.type === "quiz" && !quizMap.quiz && item.data && Array.isArray(item.data.questions)) {
+        quizMap.quiz = item;
+      }
+      if (item.id != null && item.data != null) {
+        resourceMap[String(item.id)] = item;
+      }
+      if (item.type && item.data != null && !defaultTypeMap[String(item.type)]) {
+        defaultTypeMap[String(item.type)] = item;
+      }
+    });
+  }
+  registerQuizzes(p.content);
+  registerQuizzes(history);
+  var SI_SHORT_TYPE_IDS = { ac: "anchor-chart", sf: "sentence-frames", nt: "note-taking", quiz: "quiz", math: "math" };
+  function findTypedResource(resId, expectedType) {
+    var direct = resourceMap[resId];
+    if (direct && direct.type === expectedType) return direct;
+    if (resId === expectedType || SI_SHORT_TYPE_IDS[resId] === expectedType) {
+      return defaultTypeMap[expectedType] || null;
+    }
+    return null;
+  }
+  var fnv1aHash = siFnv1aHash;
+  function seedShuffleOrder(len, seedStr) {
+    var order = [];
+    for (var i = 0; i < len; i++) order.push(i);
+    if (len <= 1) return order;
+    var h = 2166136261;
+    for (var ch of String(seedStr || "")) {
+      h ^= ch.codePointAt(0);
+      h = Math.imul(h, 16777619) >>> 0;
+    }
+    for (var j = order.length - 1; j > 0; j--) {
+      h = Math.imul(h ^ h >>> 15, 1 | h);
+      h = h + 1831565813 | 0;
+      var k = ((h ^ h >>> 14) >>> 0) % (j + 1);
+      var tmp = order[j];
+      order[j] = order[k];
+      order[k] = tmp;
+    }
+    if (order.every(function(v, idx) {
+      return v === idx;
+    })) order.push(order.shift());
+    return order;
+  }
+  function normFillText(val, exact) {
+    var s = String(val == null ? "" : val).trim();
+    if (exact) return s;
+    return s.toLowerCase().replace(/\s+/g, " ").replace(/^[.,!?;:'"()]+|[.,!?;:'"()]+$/g, "").trim();
+  }
+  function resolveListAnswerIdx(list, target) {
+    if (!Array.isArray(list) || !list.length) return -1;
+    if (Number.isInteger(target) && target >= 0 && target < list.length) return target;
+    if (target == null) return -1;
+    var st = String(target).trim();
+    if (/^\d+$/.test(st)) {
+      var n = Number(st);
+      if (n >= 0 && n < list.length) return n;
+    }
+    var normTarget = normFillText(st, false);
+    if (normTarget) {
+      var textMatchIdx = list.findIndex(function(opt) {
+        return normFillText(opt, false) === normTarget;
+      });
+      if (textMatchIdx >= 0) return textMatchIdx;
+    }
+    if (/^[A-Za-z]$/.test(st) && list.length <= 26) {
+      var letterIdx = st.toUpperCase().charCodeAt(0) - 65;
+      if (letterIdx >= 0 && letterIdx < list.length) return letterIdx;
+    }
+    return -1;
+  }
+  function scoreListSelection(rawVal, opts, expectedIdx, partName) {
+    if (!Array.isArray(opts) || expectedIdx < 0 || expectedIdx >= opts.length) return null;
+    var pickedIdx = -1;
+    if (/^\d+$/.test(rawVal)) pickedIdx = Number(rawVal);
+    else if (/^[A-Za-z]$/.test(rawVal) && opts.length <= 26) pickedIdx = rawVal.toUpperCase().charCodeAt(0) - 65;
+    else {
+      var normR = normFillText(rawVal, false);
+      pickedIdx = opts.findIndex(function(o) {
+        return normFillText(o, false) === normR;
+      });
+    }
+    var ok = pickedIdx === expectedIdx;
+    return {
+      score: ok ? 100 : 0,
+      status: ok ? "correct" : "incorrect",
+      feedback: ok ? "Auto-scored against " + partName + " key (correct)." : "Auto-scored against " + partName + " key (expected " + String.fromCharCode(65 + expectedIdx) + ").",
+      origin: "teacher-edit"
+    };
+  }
+  function normMathAnswer(val) {
+    var s = String(val == null ? "" : val).trim();
+    s = s.replace(/^\$+|\$+$/g, "").replace(/^\\\(|\\\)$/g, "").trim();
+    s = s.replace(/\\frac\{([^}]+)\}\{([^}]+)\}/g, "$1/$2");
+    return s.toLowerCase().replace(/\s+/g, "");
+  }
+  var out = /* @__PURE__ */ Object.create(null);
+  Object.keys(responses).slice(0, SI_RESPONSE_ENTRY_LIMIT).forEach(function(key) {
+    var raw = siResponseText(responses[key], 4e3);
+    if (!raw) return;
+    var bare = String(key).replace(/^allo-response:/, "");
+    var csMatch = bare.match(/^(.+):concept-sort:(\d+):category$/);
+    if (csMatch) {
+      var csItem = findTypedResource(csMatch[1], "concept-sort");
+      var csIdx = Number(csMatch[2]);
+      var csData = csItem && csItem.data && typeof csItem.data === "object" ? csItem.data : null;
+      var csItems = csData && Array.isArray(csData.items) ? csData.items : [];
+      var csCats = csData && Array.isArray(csData.categories) ? csData.categories : [];
+      var targetItem = csItems[csIdx];
+      if (!targetItem || targetItem.categoryId === "__uncategorized") {
+        var activeCsItems = csItems.filter(function(ci) {
+          return !ci || ci.categoryId !== "__uncategorized";
+        });
+        targetItem = activeCsItems[csIdx];
+      }
+      if (!targetItem || targetItem.categoryId == null || targetItem.categoryId === "__uncategorized") return;
+      var expectedCatId = String(targetItem.categoryId).trim();
+      var catObj = csCats.find(function(c) {
+        return c && String(c.id || "").trim() === expectedCatId;
+      });
+      var expectedCatLabel = catObj && catObj.label ? String(catObj.label).trim() : expectedCatId;
+      var rawTrim = raw.trim();
+      var csOk = rawTrim === expectedCatId || expectedCatLabel && normFillText(rawTrim, false) === normFillText(expectedCatLabel, false);
+      out[key] = {
+        score: csOk ? 100 : 0,
+        status: csOk ? "correct" : "incorrect",
+        feedback: csOk ? "Auto-scored against concept sort key (" + expectedCatLabel + ")." : "Auto-scored against concept sort key (expected " + expectedCatLabel + ").",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    var clozeMatch = bare.match(/^(.+):cloze:(\d+):cloze-blank$/);
+    if (clozeMatch) {
+      var clozeResId = clozeMatch[1];
+      var clozeIdx = Number(clozeMatch[2]);
+      var simpItem = findTypedResource(clozeResId, "simplified");
+      if (!simpItem && (clozeResId === "simplified" || clozeResId === "adapted")) simpItem = defaultTypeMap["simplified"] || null;
+      var clozeUnitOf = function(it) {
+        var u = it && (it.unitId || it.config && it.config.unitId);
+        return u && u !== "all" && u !== "uncategorized" ? String(u) : null;
+      };
+      var clozeFamilyOf = function(it) {
+        var f = it && (it.sourceFamilyId || it.config && it.config.sourceFamilyId);
+        return f ? String(f) : null;
+      };
+      var simpUnit = clozeUnitOf(simpItem);
+      var simpFamily = clozeFamilyOf(simpItem);
+      var glossaryCands = [];
+      Object.keys(resourceMap).forEach(function(rid) {
+        var candG = resourceMap[rid];
+        if (candG && candG.type === "glossary" && Array.isArray(candG.data) && candG.data.length) glossaryCands.push(candG);
+      });
+      var glossItem = null;
+      if (glossaryCands.length && (simpUnit || simpFamily)) {
+        glossItem = simpFamily && (glossaryCands.find(function(g) {
+          return clozeFamilyOf(g) === simpFamily && (!simpUnit || clozeUnitOf(g) === simpUnit);
+        }) || glossaryCands.find(function(g) {
+          return clozeFamilyOf(g) === simpFamily;
+        })) || simpUnit && glossaryCands.find(function(g) {
+          return clozeUnitOf(g) === simpUnit;
+        }) || null;
+        if (!glossItem && !glossaryCands.some(function(g) {
+          return !!(clozeUnitOf(g) || clozeFamilyOf(g));
+        })) {
+          glossItem = defaultTypeMap["glossary"] || glossaryCands[0] || null;
+        }
+      } else {
+        glossItem = defaultTypeMap["glossary"] || glossaryCands[0] || null;
+      }
+      if (!simpItem || typeof simpItem.data !== "string" || !glossItem || !Array.isArray(glossItem.data) || !glossItem.data.length) return;
+      var computeClozeAnswers = function(passageRaw, simpTitle, simpLang2, glossaryList, maxPerTerm) {
+        var text = String(passageRaw || "");
+        text = text.replace(/^\s*#{1,6}[ \t]+(?:Your Document References|Research Review|Source Excerpts)\b[\s\S]*$/mi, "");
+        var firstH = text.match(/^\s*#{1,3}[ \t]+([^\n]+)(?:\r?\n|$)/);
+        if (firstH && simpTitle) {
+          var normTitle = function(v) {
+            return String(v || "").toLowerCase().replace(/[^\p{L}\p{N}]+/gu, " ").trim();
+          };
+          var hNorm = normTitle(firstH[1]), sNorm = normTitle(simpTitle);
+          if (hNorm && sNorm && (hNorm === sNorm || sNorm.indexOf(hNorm) >= 0 || hNorm.indexOf(sNorm) >= 0)) {
+            text = text.slice(firstH[0].length);
+          }
+        }
+        var splitIdx = text.search(/\r?\n---\s*ENGLISH TRANSLATION\s*---\r?\n/i);
+        if (splitIdx !== -1) text = text.slice(0, splitIdx);
+        text = text.replace(/\\n\\n/g, "\n\n").replace(/\\n/g, "\n").replace(/\\t/g, "	").replace(/\\"/g, '"');
+        text = text.replace(/\[\[CHART:\s*\{[\s\S]*?\}\s*\]\]/gi, "");
+        text = text.replace(/\[([^\]]+)\]\(([^)]+)\)/g, "$1");
+        text = text.replace(/\*\*(\S(?:.*?\S)?)\*\*/g, "$1").replace(/\*(\S(?:.*?\S)?)\*/g, "$1");
+        var termMap = /* @__PURE__ */ Object.create(null);
+        glossaryList.forEach(function(gEntry) {
+          if (!gEntry || gEntry.isSelected === false) return;
+          if (gEntry.term) termMap[String(gEntry.term).toLowerCase()] = gEntry;
+          if (simpLang2 && simpLang2 !== "English" && gEntry.translations && gEntry.translations[simpLang2]) {
+            var trStr = String(gEntry.translations[simpLang2]);
+            var possible = (trStr.indexOf(":") >= 0 ? trStr.split(":")[0] : trStr).trim();
+            if (possible.length > 1) termMap[possible.toLowerCase()] = gEntry;
+          }
+        });
+        var sortedTerms = Object.keys(termMap).sort(function(a, b) {
+          return b.length - a.length;
+        });
+        if (!sortedTerms.length) return [];
+        var escRe = function(s) {
+          return String(s).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+        };
+        var noBreakRe = /[\u3040-\u30ff\u3400-\u4dbf\u4e00-\u9fff\uf900-\ufaff\u0e00-\u0e7f]/;
+        var boundaried = [], substringy = [];
+        sortedTerms.forEach(function(term) {
+          (noBreakRe.test(term) ? substringy : boundaried).push(escRe(term));
+        });
+        var pattern;
+        try {
+          var branches = [];
+          if (boundaried.length) branches.push("(?<![\\p{L}\\p{N}])(?:" + boundaried.join("|") + ")(?![\\p{L}\\p{N}])");
+          if (substringy.length) branches.push("(?:" + substringy.join("|") + ")");
+          pattern = new RegExp("(" + branches.join("|") + ")", "giu");
+        } catch (reErr) {
+          pattern = new RegExp("\\b(" + sortedTerms.map(escRe).join("|") + ")\\b", "gi");
+        }
+        var termCounts = /* @__PURE__ */ Object.create(null);
+        var built = [];
+        String(text).split(/(<[^>]*>)/).forEach(function(seg) {
+          if (!seg || seg.charAt(0) === "<") return;
+          seg.replace(pattern, function(full, matched) {
+            var entry = termMap[String(matched).toLowerCase()] || null;
+            var countKey = entry && entry.term ? String(entry.term).toLowerCase() : String(matched).toLowerCase();
+            var seenCount = termCounts[countKey] || 0;
+            if (maxPerTerm > 0 && seenCount >= maxPerTerm) return full;
+            termCounts[countKey] = seenCount + 1;
+            built.push({ text: matched, term: entry && entry.term ? String(entry.term) : matched });
+            return full;
+          });
+        });
+        return built;
+      };
+      var simpLang = simpItem.language || simpItem.config && simpItem.config.language || p.language || "English";
+      var clozeAnswersAll = computeClozeAnswers(simpItem.data, simpItem.title, simpLang, glossItem.data, 0);
+      var observedMax = -1, observedCount = 0;
+      var seenClozeKeys = /* @__PURE__ */ Object.create(null);
+      Object.keys(responses).concat(Object.keys(manifest)).forEach(function(k) {
+        if (seenClozeKeys[k]) return;
+        seenClozeKeys[k] = true;
+        var km = String(k).replace(/^allo-response:/, "").match(/^(.+):cloze:(\d+):cloze-blank$/);
+        if (km && km[1] === clozeResId) {
+          observedCount++;
+          var kn = Number(km[2]);
+          if (kn > observedMax) observedMax = kn;
+        }
+      });
+      var clozeAnswers = clozeAnswersAll;
+      if (observedMax >= 0 && clozeAnswersAll.length > observedMax + 1) {
+        var clozeAnswersOne = computeClozeAnswers(simpItem.data, simpItem.title, simpLang, glossItem.data, 1);
+        if (clozeAnswersOne.length >= observedMax + 1 && clozeAnswersOne.length < clozeAnswersAll.length && (clozeAnswersOne.length === observedCount || clozeAnswersOne.length === observedMax + 1)) {
+          clozeAnswers = clozeAnswersOne;
+        }
+      }
+      var expectedCloze = clozeAnswers[clozeIdx];
+      if (!expectedCloze || !expectedCloze.text) return;
+      var stuCloze = normFillText(raw, false);
+      var clozeOk = stuCloze === normFillText(expectedCloze.text, false) || expectedCloze.term && stuCloze === normFillText(expectedCloze.term, false);
+      out[key] = {
+        score: clozeOk ? 100 : 0,
+        status: clozeOk ? "correct" : "incorrect",
+        feedback: clozeOk ? "Auto-scored against cloze key (" + expectedCloze.text + ")." : "Auto-scored against cloze key (expected " + expectedCloze.text + ").",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    var vennMatch = bare.match(/^(.+):venn:(\d+):placement$/);
+    if (vennMatch) {
+      var vennResId = vennMatch[1];
+      var vennItem = resourceMap[vennResId];
+      var isVennResource = function(it) {
+        return it && (it.type === "venn" && it.data || it.type === "outline" && it.data && it.data.structureType === "Venn Diagram");
+      };
+      if (!isVennResource(vennItem)) {
+        if (vennResId === "venn" || vennResId === "outline") {
+          vennItem = isVennResource(defaultTypeMap["venn"]) ? defaultTypeMap["venn"] : null;
+          if (!vennItem) {
+            var resIds = Object.keys(resourceMap);
+            for (var vi = 0; vi < resIds.length; vi++) {
+              if (isVennResource(resourceMap[resIds[vi]])) {
+                vennItem = resourceMap[resIds[vi]];
+                break;
+              }
+            }
+          }
+        } else {
+          vennItem = null;
+        }
+      }
+      var vennIdx = Number(vennMatch[2]);
+      var vennData = vennItem && vennItem.data && typeof vennItem.data === "object" ? vennItem.data : null;
+      if (!vennData) return;
+      var vBranches = Array.isArray(vennData.branches) ? vennData.branches : null;
+      var vResolved = vBranches ? siResolveVennBranches(vBranches) : null;
+      var vSetA = vResolved ? vResolved.setA : vennData.setA || {};
+      var vSetB = vResolved ? vResolved.setB : vennData.setB || {};
+      var vShared = vResolved ? vResolved.shared : vennData.shared || {};
+      var extractVennZone = function(branch, zone) {
+        var list = branch && Array.isArray(branch.items) ? branch.items : [];
+        return list.map(function(entry) {
+          var txt = entry && typeof entry === "object" ? String(entry.text || entry.label || entry.content || "") : String(entry == null ? "" : entry);
+          return txt.trim() ? zone : null;
+        }).filter(Boolean);
+      };
+      var zones = extractVennZone(vSetA, "setA").concat(extractVennZone(vSetB, "setB")).concat(extractVennZone(vShared, "shared"));
+      var expectedZone = zones[vennIdx];
+      if (!expectedZone) return;
+      var zoneLabelMap = {
+        setA: vSetA && vSetA.title ? vSetA.title : "Set A",
+        shared: vShared && vShared.title ? vShared.title : "Shared",
+        setB: vSetB && vSetB.title ? vSetB.title : "Set B"
+      };
+      var rawZone = raw.trim();
+      var vennOk = rawZone === expectedZone || normFillText(rawZone, false) === normFillText(zoneLabelMap[expectedZone], false);
+      out[key] = {
+        score: vennOk ? 100 : 0,
+        status: vennOk ? "correct" : "incorrect",
+        feedback: vennOk ? "Auto-scored against Venn key (" + zoneLabelMap[expectedZone] + ")." : "Auto-scored against Venn key (expected " + zoneLabelMap[expectedZone] + ").",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    var gwMatch = bare.match(/^glossary-worksheet:(.+):match:(\d+)$/);
+    if (gwMatch) {
+      var gwSid = gwMatch[1];
+      var gwIdx = Number(gwMatch[2]);
+      var gwItem = null;
+      var gwIds = Object.keys(resourceMap);
+      for (var gwi = 0; gwi < gwIds.length; gwi++) {
+        var candGw = resourceMap[gwIds[gwi]];
+        if (candGw && candGw.type === "glossary" && Array.isArray(candGw.data)) {
+          var candSid = String(candGw.id || "glossary").replace(/[^A-Za-z0-9_-]+/g, "-");
+          if (candSid === gwSid) {
+            gwItem = candGw;
+            break;
+          }
+        }
+      }
+      if (!gwItem && defaultTypeMap["glossary"] && Array.isArray(defaultTypeMap["glossary"].data)) {
+        gwItem = defaultTypeMap["glossary"];
+      }
+      if (!gwItem || !Array.isArray(gwItem.data)) return;
+      var gwPairs = gwItem.data.filter(function(gEntry) {
+        return gEntry && String(gEntry.term == null ? "" : gEntry.term).trim() && String(gEntry.def || gEntry.definition || "").trim();
+      });
+      if (gwIdx < 0 || gwIdx >= gwPairs.length) return;
+      var gwSeedStr = gwItem.glossaryWorksheetSeed != null ? String(gwItem.glossaryWorksheetSeed) : (gwItem.id || "") + "|" + gwPairs.map(function(gEntry) {
+        return gEntry.term;
+      }).join("|");
+      var gwH = 2166136261;
+      for (var gwCh of gwSeedStr) {
+        gwH ^= gwCh.codePointAt(0);
+        gwH = Math.imul(gwH, 16777619) >>> 0;
+      }
+      var gwRandom = function() {
+        gwH = gwH + 1831565813 | 0;
+        var x = Math.imul(gwH ^ gwH >>> 15, 1 | gwH);
+        x = x + Math.imul(x ^ x >>> 7, 61 | x) ^ x;
+        return ((x ^ x >>> 14) >>> 0) / 4294967296;
+      };
+      var gwOrder = gwPairs.map(function(_, i) {
+        return i;
+      });
+      for (var oi = gwOrder.length - 1; oi > 0; oi--) {
+        var oj = Math.floor(gwRandom() * (oi + 1));
+        var otmp = gwOrder[oi];
+        gwOrder[oi] = gwOrder[oj];
+        gwOrder[oj] = otmp;
+      }
+      if (gwOrder.length > 1 && gwOrder.every(function(v, i) {
+        return v === i;
+      })) gwOrder.push(gwOrder.shift());
+      var letterIndex = gwOrder.indexOf(gwIdx);
+      if (letterIndex < 0) return;
+      var expectedLetterGw = "";
+      var ln = letterIndex + 1;
+      while (ln > 0) {
+        expectedLetterGw = String.fromCharCode(65 + (ln - 1) % 26) + expectedLetterGw;
+        ln = Math.floor((ln - 1) / 26);
+      }
+      var stuLetter = raw.trim().toUpperCase().replace(/\.$/, "");
+      var gwOk = stuLetter === expectedLetterGw;
+      out[key] = {
+        score: gwOk ? 100 : 0,
+        status: gwOk ? "correct" : "incorrect",
+        feedback: gwOk ? "Auto-scored against glossary matching key (" + expectedLetterGw + ")." : "Auto-scored against glossary matching key (expected " + expectedLetterGw + ").",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    var tlDateMatch = bare.match(/^(.+):timeline:(\d+):date$/);
+    var tlDateHashMatch = !tlDateMatch ? bare.match(/^(.+):timeline-date:([a-z0-9]+)(?::free-response)?$/) : null;
+    if (tlDateMatch || tlDateHashMatch) {
+      var tldItem = findTypedResource((tlDateMatch || tlDateHashMatch)[1], "timeline");
+      var tldRawItems = !tldItem ? [] : Array.isArray(tldItem.data) ? tldItem.data : tldItem.data && Array.isArray(tldItem.data.items) ? tldItem.data.items : tldItem.data && Array.isArray(tldItem.data.events) ? tldItem.data.events : [];
+      var tldEntry = null;
+      if (tlDateMatch) {
+        tldEntry = tldRawItems[Number(tlDateMatch[2])];
+      } else if (tldItem) {
+        for (var tldi = 0; tldi < tldRawItems.length; tldi++) {
+          var tldCand = tldRawItems[tldi];
+          var tldHash = siFnv1aHash((tldItem.id || "timeline") + ":" + tldi + ":" + String(tldCand && (tldCand.event || tldCand.title || tldCand.description) || "")).toString(36);
+          if (tldHash === tlDateHashMatch[2]) {
+            tldEntry = tldCand;
+            break;
+          }
+        }
+      }
+      var expectedDate = tldEntry && tldEntry.date != null ? String(tldEntry.date).trim() : "";
+      if (!expectedDate) return;
+      var dateOk = normFillText(raw, false) === normFillText(expectedDate, false);
+      out[key] = {
+        score: dateOk ? 100 : 0,
+        status: dateOk ? "correct" : "incorrect",
+        feedback: dateOk ? "Auto-scored against timeline date key (" + expectedDate + ")." : "Auto-scored against timeline date key (expected " + expectedDate + ").",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    var tlMatch = bare.match(/^(.+):timeline-order$/);
+    if (tlMatch) {
+      var tlItem = findTypedResource(tlMatch[1], "timeline");
+      var tlRawItems = !tlItem ? [] : Array.isArray(tlItem.data) ? tlItem.data : tlItem.data && Array.isArray(tlItem.data.items) ? tlItem.data.items : tlItem.data && Array.isArray(tlItem.data.events) ? tlItem.data.events : [];
+      if (!Array.isArray(tlRawItems) || tlRawItems.length < 2) return;
+      var canonicalIds = tlRawItems.map(function(te, originalIndex) {
+        return fnv1aHash((tlItem.id || "timeline") + ":" + originalIndex + ":" + String(te && (te.event || te.title || te.description) || "")).toString(36);
+      });
+      var submittedIds = null;
+      if (/^\s*\[/.test(raw)) {
+        try {
+          submittedIds = JSON.parse(raw);
+        } catch (e) {
+          submittedIds = null;
+        }
+      }
+      if (!Array.isArray(submittedIds) || !submittedIds.length) return;
+      var exactPositions = 0;
+      for (var ti = 0; ti < canonicalIds.length; ti++) {
+        if (submittedIds[ti] === canonicalIds[ti]) exactPositions++;
+      }
+      var tlScore = Math.round(exactPositions / canonicalIds.length * 100);
+      var tlStatus = exactPositions === canonicalIds.length ? "correct" : exactPositions > 0 ? "partially-correct" : "incorrect";
+      out[key] = {
+        score: tlScore,
+        status: tlStatus,
+        feedback: "Auto-scored against timeline sequence (" + exactPositions + " of " + canonicalIds.length + " positions exact).",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    var mathMatch = bare.match(/^(.+):math:(\d+):answer$/);
+    if (mathMatch) {
+      var mathItem = findTypedResource(mathMatch[1], "math");
+      var mIdx = Number(mathMatch[2]);
+      var mData = mathItem && mathItem.data && typeof mathItem.data === "object" ? mathItem.data : null;
+      var probs = mData ? Array.isArray(mData.problems) ? mData.problems : [mData] : [];
+      var prob = probs[mIdx];
+      if (!prob || typeof prob !== "object") return;
+      if (prob._verification && prob._verification.reviewRequired === true && !prob._verification.teacherReviewed && prob._verification.verified !== true) return;
+      var rawKeyAns = prob.verifiedAnswer != null ? prob.verifiedAnswer : prob.finalAnswer != null ? prob.finalAnswer : prob.answer;
+      if (rawKeyAns == null) return;
+      var keyAnsStr = String(rawKeyAns).trim();
+      if (!keyAnsStr || keyAnsStr.length > 80 || /\n/.test(keyAnsStr)) return;
+      var normStuMath = normMathAnswer(raw);
+      var normKeyMath = normMathAnswer(keyAnsStr);
+      if (!normKeyMath) return;
+      var mathNumStu = Number(normStuMath);
+      var mathNumKey = Number(normKeyMath);
+      var mathOk = normStuMath === normKeyMath || normStuMath !== "" && Number.isFinite(mathNumStu) && Number.isFinite(mathNumKey) && Math.abs(mathNumStu - mathNumKey) <= 1e-6;
+      out[key] = {
+        score: mathOk ? 100 : 0,
+        status: mathOk ? "correct" : "incorrect",
+        feedback: mathOk ? "Auto-scored against math answer key (" + keyAnsStr + ")." : "Auto-scored against math answer key (expected " + keyAnsStr + ").",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    var gnBlankMatch = bare.match(/^(.+):note:blank:(\d+)$/);
+    if (gnBlankMatch) {
+      var gnItem = findTypedResource(gnBlankMatch[1], "note-taking");
+      var gnBlanks = gnItem && gnItem.data && Array.isArray(gnItem.data.blanks) ? gnItem.data.blanks : null;
+      var gnBlank = gnBlanks ? gnBlanks[Number(gnBlankMatch[2])] : null;
+      var gnExpected = gnBlank ? String(gnBlank.answer || gnBlank.expected || "").trim() : "";
+      if (!gnExpected) return;
+      var gnOk = normFillText(raw, false) === normFillText(gnExpected, false);
+      out[key] = {
+        score: gnOk ? 100 : 0,
+        status: gnOk ? "correct" : "incorrect",
+        feedback: gnOk ? "Auto-scored against guided-notes key (" + gnExpected + ")." : "Auto-scored against guided-notes key (expected " + gnExpected + ").",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    var acBlankMatch = bare.match(/^(.+):ac:([^:]+):(\d+)(?::free-response)?$/);
+    if (acBlankMatch) {
+      var acItem = findTypedResource(acBlankMatch[1], "anchor-chart");
+      var acSections = acItem && acItem.data && Array.isArray(acItem.data.sections) ? acItem.data.sections : [];
+      var acSec = acSections.find(function(s) {
+        return s && String(s.id) === acBlankMatch[2];
+      }) || (/^\d+$/.test(acBlankMatch[2]) ? acSections[Number(acBlankMatch[2])] : null);
+      if (!acSec || typeof acSec !== "object") return;
+      var acBIdx = Number(acBlankMatch[3]);
+      var acBullets = Array.isArray(acSec.bullets) ? acSec.bullets : Array.isArray(acSec.points) ? acSec.points : [];
+      var acKeyRaw = Array.isArray(acSec.answerKey) ? acSec.answerKey[acBIdx] : typeof acSec.answerKey === "string" && acBullets.length <= 1 ? acSec.answerKey : null;
+      var acBulletRaw = acBullets[acBIdx];
+      var acBulletTxt = acBulletRaw && typeof acBulletRaw === "object" ? acBulletRaw.answer || acBulletRaw.expected || acBulletRaw.text || acBulletRaw.label || "" : acBulletRaw || "";
+      var acExpected = String(acKeyRaw != null && String(acKeyRaw).trim() ? acKeyRaw : acBulletTxt).trim();
+      if (!acExpected || acExpected.length > 160 || /[\r\n]/.test(acExpected)) return;
+      var acOk = normFillText(raw, false) === normFillText(acExpected, false);
+      out[key] = {
+        score: acOk ? 100 : 0,
+        status: acOk ? "correct" : "incorrect",
+        feedback: acOk ? "Auto-scored against anchor chart key (" + acExpected + ")." : "Auto-scored against anchor chart key (expected " + acExpected + ").",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    var m = bare.match(/^(.+):q(\d+):(mcq|multi|fill|number|unit|match|order|answer|evidence|wrong-pair|partner|sequence-verdict|sequence-item|sequence-order|sequence-principle)(?::(\d+))?$/);
+    if (!m) return;
+    var quizId = m[1];
+    var qIdx = Number(m[2]);
+    var part = m[3];
+    var subIdx = m[4] != null ? Number(m[4]) : null;
+    var quiz = quizMap[quizId] || (quizId === "quiz" ? defaultTypeMap.quiz : null);
+    var q = quiz && quiz.data && Array.isArray(quiz.data.questions) ? quiz.data.questions[qIdx] : null;
+    if (!q || typeof q !== "object") return;
+    if (part === "mcq") {
+      var opts = Array.isArray(q.options) ? q.options : [];
+      var resolveMcqKey = function(cand) {
+        if (cand == null || typeof cand === "boolean") return -1;
+        return resolveListAnswerIdx(opts, cand);
+      };
+      var correctIdx = resolveMcqKey(q.correct);
+      if (correctIdx < 0) correctIdx = resolveMcqKey(q.correctIndex);
+      if (correctIdx < 0) correctIdx = resolveMcqKey(q.correctAnswer);
+      if (correctIdx < 0) correctIdx = resolveMcqKey(q.answer);
+      if (correctIdx < 0) correctIdx = resolveMcqKey(q.correctOption);
+      if (correctIdx < 0) correctIdx = resolveMcqKey(q.answerIndex);
+      var mcqGrade = scoreListSelection(raw, opts, correctIdx, "quiz");
+      if (mcqGrade) out[key] = mcqGrade;
+      return;
+    }
+    if (part === "answer" || part === "evidence") {
+      var aeOpts = part === "answer" ? Array.isArray(q.answerOptions) ? q.answerOptions : [] : Array.isArray(q.evidenceOptions) ? q.evidenceOptions : [];
+      var aeTarget = part === "answer" ? q.correctAnswerIndex != null ? q.correctAnswerIndex : q.answerIndex != null ? q.answerIndex : q.correctAnswer != null ? q.correctAnswer : q.expectedAnswer : q.correctEvidenceIndex != null ? q.correctEvidenceIndex : q.evidenceIndex != null ? q.evidenceIndex : q.correctEvidence != null ? q.correctEvidence : q.expectedEvidence;
+      var aeIdx = resolveListAnswerIdx(aeOpts, aeTarget);
+      var aeGrade = scoreListSelection(raw, aeOpts, aeIdx, "answer-evidence " + part);
+      if (aeGrade) out[key] = aeGrade;
+      return;
+    }
+    if (part === "multi") {
+      var optsM = Array.isArray(q.options) ? q.options : [];
+      var rawCorr = Array.isArray(q.correctAnswers) && q.correctAnswers.length ? q.correctAnswers : Array.isArray(q.correctIndices) ? q.correctIndices : [];
+      if (!rawCorr.length) return;
+      var toOptIdx = function(entry) {
+        if (Number.isInteger(entry)) return entry >= 0 && entry < optsM.length ? entry : -1;
+        var st = String(entry == null ? "" : entry).trim();
+        if (/^\d+$/.test(st)) {
+          var numIdx = Number(st);
+          return numIdx >= 0 && numIdx < optsM.length ? numIdx : -1;
+        }
+        var normSt = normFillText(st, false);
+        var textIdx = normSt ? optsM.findIndex(function(o) {
+          return normFillText(o, false) === normSt;
+        }) : -1;
+        if (textIdx >= 0) return textIdx;
+        if (/^[A-Za-z]$/.test(st) && optsM.length <= 26) {
+          var letterIdx = st.toUpperCase().charCodeAt(0) - 65;
+          return letterIdx >= 0 && letterIdx < optsM.length ? letterIdx : -1;
+        }
+        return -1;
+      };
+      var expectedSet = Array.from(new Set(rawCorr.map(toOptIdx).filter(function(n) {
+        return n >= 0 && n < optsM.length;
+      })));
+      if (!expectedSet.length) return;
+      var parsed = null;
+      if (/^\s*\[/.test(raw)) {
+        try {
+          parsed = JSON.parse(raw);
+        } catch (e) {
+          parsed = null;
+        }
+      }
+      var pickedArr = Array.isArray(parsed) ? parsed : raw.split(/[;,]/).map(function(s) {
+        return s.trim();
+      }).filter(Boolean);
+      var pickedSet = Array.from(new Set(pickedArr.map(toOptIdx).filter(function(n) {
+        return n >= 0;
+      })));
+      var allSelectedCorrect = pickedSet.length > 0 && pickedSet.every(function(idx) {
+        return expectedSet.indexOf(idx) >= 0;
+      });
+      var exactMulti = allSelectedCorrect && pickedSet.length === expectedSet.length;
+      var scoreM = exactMulti ? 100 : allSelectedCorrect ? 50 : 0;
+      out[key] = {
+        score: scoreM,
+        status: exactMulti ? "correct" : allSelectedCorrect ? "partially-correct" : "incorrect",
+        feedback: exactMulti ? "Auto-scored against quiz key (all correct selections matched)." : allSelectedCorrect ? "Auto-scored against quiz key (partially correct)." : "Auto-scored against quiz key (selection mismatch).",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    if (part === "fill") {
+      var policy = q.fillBlankPolicy || (q.spellingPolicy === "exact" ? "exact" : "normalized");
+      if (policy === "review-variants") return;
+      var accepted = [q.expectedFill].concat(Array.isArray(q.acceptableAnswers) ? q.acceptableAnswers : []).concat(Array.isArray(q.acceptableAlternatives) ? q.acceptableAlternatives : []).filter(function(v) {
+        return typeof v === "string" && v.trim();
+      });
+      if (!accepted.length) return;
+      var isExact = policy === "exact";
+      var stuFill = normFillText(raw, isExact);
+      var fillOk = accepted.some(function(ans) {
+        return normFillText(ans, isExact) === stuFill;
+      });
+      out[key] = {
+        score: fillOk ? 100 : 0,
+        status: fillOk ? "correct" : "incorrect",
+        feedback: fillOk ? "Auto-scored against quiz key (correct)." : "Auto-scored against quiz key (expected " + accepted[0].trim() + ").",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    if (part === "unit") {
+      var unitList = [q.unit].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).filter(function(u) {
+        return typeof u === "string" && u.trim();
+      });
+      if (!unitList.length) return;
+      var stuUnit = normFillText(raw, false);
+      var unitOk = unitList.some(function(u) {
+        return normFillText(u, false) === stuUnit;
+      });
+      out[key] = {
+        score: unitOk ? 100 : 0,
+        status: unitOk ? "correct" : "incorrect",
+        feedback: unitOk ? "Auto-scored against unit key (correct)." : "Auto-scored against unit key (expected " + unitList[0].trim() + ").",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    if (part === "number") {
+      if (q.correctValue == null || Number.isNaN(Number(q.correctValue))) return;
+      var numAns = Number(raw);
+      if (Number.isNaN(numAns)) return;
+      var targetNum = Number(q.correctValue);
+      var tol = Math.abs(Number(q.tolerance) || 0);
+      var numOk = Math.abs(numAns - targetNum) <= (tol > 0 ? tol + 1e-9 : 1e-9);
+      var expectedUnits = [q.unit].concat(Array.isArray(q.acceptableUnits) ? q.acceptableUnits : []).filter(function(u) {
+        return typeof u === "string" && u.trim();
+      });
+      var unitKey = key.replace(/:number$/, ":unit");
+      var pairedUnit = Object.prototype.hasOwnProperty.call(responses, unitKey) ? siResponseText(responses[unitKey], 120) : "";
+      var unitWrong = numOk && expectedUnits.length > 0 && pairedUnit !== "" && !expectedUnits.some(function(u) {
+        return normFillText(u, false) === normFillText(pairedUnit, false);
+      });
+      out[key] = {
+        score: numOk ? unitWrong ? 50 : 100 : 0,
+        status: numOk ? unitWrong ? "partially-correct" : "correct" : "incorrect",
+        feedback: unitWrong ? "Value matches numeric key, but expected unit " + expectedUnits[0].trim() + "." : numOk ? "Auto-scored against numeric key (within tolerance)." : "Auto-scored against numeric key (expected " + targetNum + ").",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    if (part === "match" && subIdx !== null) {
+      var pairs = Array.isArray(q.pairs) ? q.pairs : [];
+      if (subIdx < 0 || subIdx >= pairs.length || pairs.length < 2) return;
+      var rightOrder = seedShuffleOrder(pairs.length, quizId + ":" + qIdx + "|" + pairs.map(function(pair) {
+        return pair && (pair.left || pair.prompt) || "";
+      }).join("|"));
+      var expectedLetter = String.fromCharCode(65 + rightOrder.indexOf(subIdx));
+      var expectedRight = String(pairs[subIdx] && (pairs[subIdx].right || pairs[subIdx].match || pairs[subIdx].answer) || "");
+      var manifestLabels = manifest[key] && manifest[key].valueLabels ? manifest[key].valueLabels : {};
+      var labelForRaw = manifestLabels[raw] ? String(manifestLabels[raw]) : "";
+      var matchOk = raw.trim().toUpperCase() === expectedLetter || expectedRight && normFillText(labelForRaw || raw, false) === normFillText(expectedRight, false);
+      out[key] = {
+        score: matchOk ? 100 : 0,
+        status: matchOk ? "correct" : "incorrect",
+        feedback: matchOk ? "Auto-scored against matching key (correct)." : "Auto-scored against matching key (expected " + expectedLetter + ").",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    if (part === "order" && subIdx !== null) {
+      var rawItems = Array.isArray(q.items) ? q.items : [];
+      var canonical = Array.isArray(q.correctOrder) && q.correctOrder.length === rawItems.length ? q.correctOrder : rawItems;
+      if (subIdx < 0 || subIdx >= canonical.length || canonical.length < 2) return;
+      var dispOrder = Array.isArray(q.presentedOrder) && q.presentedOrder.length === canonical.length ? q.presentedOrder.slice() : seedShuffleOrder(canonical.length, quizId + ":" + qIdx + "|" + canonical.join("|"));
+      var expectedPos = String(dispOrder[subIdx] + 1);
+      var orderOk = raw.trim() === expectedPos;
+      out[key] = {
+        score: orderOk ? 100 : 0,
+        status: orderOk ? "correct" : "incorrect",
+        feedback: orderOk ? "Auto-scored against ordering key (correct)." : "Auto-scored against ordering key (expected position " + expectedPos + ").",
+        origin: "teacher-edit"
+      };
+      return;
+    }
+    if (part === "wrong-pair") {
+      var rmPairs = Array.isArray(q.pairs) ? q.pairs : [];
+      if (rmPairs.length < 2) return;
+      var rmWrongTarget = q.wrongPairIndex != null ? q.wrongPairIndex : q.wrongPair;
+      var rmPairLabels = rmPairs.map(function(_, idx) {
+        return "Pair #" + (idx + 1);
+      });
+      var rmWrongIdx = resolveListAnswerIdx(rmPairLabels, rmWrongTarget);
+      if (rmWrongIdx < 0 && typeof rmWrongTarget === "string") {
+        rmWrongIdx = rmPairs.findIndex(function(pr) {
+          if (!pr || typeof pr !== "object") return false;
+          var desc = [pr.left, pr.right, pr.prompt, pr.match, pr.answer].filter(Boolean).join(" ");
+          return desc && normFillText(desc, false) === normFillText(rmWrongTarget, false);
+        });
+      }
+      if (rmWrongIdx < 0 || rmWrongIdx >= rmPairs.length) return;
+      var rmWpGrade = scoreListSelection(raw, rmPairLabels, rmWrongIdx, "relation-mismatch wrong pair");
+      if (rmWpGrade) out[key] = rmWpGrade;
+      return;
+    }
+    if (part === "partner") {
+      var rmCands = Array.isArray(q.candidatePartners) ? q.candidatePartners : [];
+      var rmPartnerTarget = q.correctPartnerIndex != null ? q.correctPartnerIndex : q.correctPartnerForWrong != null ? q.correctPartnerForWrong : q.correctPartner;
+      var rmPartnerIdx = resolveListAnswerIdx(rmCands, rmPartnerTarget);
+      var rmPartnerGrade = scoreListSelection(raw, rmCands, rmPartnerIdx, "relation-mismatch partner");
+      if (rmPartnerGrade) out[key] = rmPartnerGrade;
+      return;
+    }
+    if (part === "sequence-verdict" || part === "sequence-item" || part === "sequence-order" || part === "sequence-principle") {
+      var ssItems = Array.isArray(q.items) ? q.items : [];
+      if (ssItems.length < 2) return;
+      var ssPresented = Array.isArray(q.presentedOrder) && q.presentedOrder.length === ssItems.length ? q.presentedOrder : ssItems.map(function(_, idx) {
+        return idx;
+      });
+      var ssMisplaced = (function() {
+        if (ssPresented.every(function(v, idx) {
+          return v === idx;
+        })) return [];
+        var found = [];
+        ssPresented.forEach(function(_, skip) {
+          var prev = -1;
+          var sorted = ssPresented.every(function(val, idx) {
+            if (idx === skip) return true;
+            var ok = val >= prev;
+            prev = val;
+            return ok;
+          });
+          if (sorted) found.push(skip);
+        });
+        if (found.length) return found;
+        var authored = q.intentionallyWrongIndex;
+        return Number.isInteger(authored) && authored >= 0 && authored < ssItems.length ? [authored] : ssPresented.map(function(_, idx) {
+          return idx;
+        });
+      })();
+      if (part === "sequence-verdict") {
+        var expectedVerdict = ssMisplaced.length === 0 ? "yes" : "no";
+        var stuVerdict = normFillText(raw, false);
+        if (stuVerdict !== "yes" && stuVerdict !== "no") return;
+        var svOk = stuVerdict === expectedVerdict;
+        out[key] = {
+          score: svOk ? 100 : 0,
+          status: svOk ? "correct" : "incorrect",
+          feedback: svOk ? "Auto-scored against sequence-sense verdict key (correct)." : "Auto-scored against sequence-sense verdict key (expected " + expectedVerdict + ").",
+          origin: "teacher-edit"
+        };
+        return;
+      }
+      if (part === "sequence-item") {
+        if (!ssMisplaced.length) return;
+        var stuItemNum = Number(raw.trim());
+        if (!Number.isInteger(stuItemNum) || stuItemNum < 1) return;
+        var siOk = ssMisplaced.indexOf(stuItemNum - 1) >= 0;
+        out[key] = {
+          score: siOk ? 100 : 0,
+          status: siOk ? "correct" : "incorrect",
+          feedback: siOk ? "Auto-scored against sequence-sense misplaced-item key (correct)." : "Auto-scored against sequence-sense misplaced-item key (expected #" + ssMisplaced.map(function(p2) {
+            return p2 + 1;
+          }).join(" or #") + ").",
+          origin: "teacher-edit"
+        };
+        return;
+      }
+      if (part === "sequence-order") {
+        var canonNums = ssItems.map(function(_, canonIdx) {
+          return ssPresented.indexOf(canonIdx) + 1;
+        });
+        if (canonNums.some(function(n) {
+          return n < 1;
+        })) return;
+        var stuNums = (raw.match(/\d+/g) || []).map(Number);
+        if (!stuNums.length) return;
+        var exactSeq = 0;
+        for (var sqi = 0; sqi < canonNums.length; sqi++) {
+          if (stuNums[sqi] === canonNums[sqi]) exactSeq++;
+        }
+        var fullSeq = stuNums.length === canonNums.length && exactSeq === canonNums.length;
+        var partSeq = !fullSeq && stuNums.length === canonNums.length && exactSeq > 0;
+        out[key] = {
+          score: fullSeq ? 100 : partSeq ? Math.round(exactSeq / canonNums.length * 100) : 0,
+          status: fullSeq ? "correct" : partSeq ? "partially-correct" : "incorrect",
+          feedback: fullSeq ? "Auto-scored against sequence-sense order key (correct)." : "Auto-scored against sequence-sense order key (expected " + canonNums.join(", ") + ").",
+          origin: "teacher-edit"
+        };
+        return;
+      }
+      if (part === "sequence-principle") {
+        var ssPList = Array.isArray(q.principleOptions) && q.principleOptions.length ? q.principleOptions : ["chronological", "cause-effect", "process", "size", "hierarchy"];
+        var ssPIdx = resolveListAnswerIdx(ssPList, q.orderingPrinciple);
+        var ssPGrade = scoreListSelection(raw, ssPList, ssPIdx, "sequence-sense principle");
+        if (ssPGrade) out[key] = ssPGrade;
+      }
+    }
+  });
+  return out;
+}
+function siAnnotationDrawSvgHtml(anno) {
+  if (!anno || !Array.isArray(anno.points) || anno.points.length < 2) return "";
+  var minX = anno.points[0].x, maxX = anno.points[0].x, minY = anno.points[0].y, maxY = anno.points[0].y;
+  for (var i = 1; i < anno.points.length; i++) {
+    if (anno.points[i].x < minX) minX = anno.points[i].x;
+    if (anno.points[i].x > maxX) maxX = anno.points[i].x;
+    if (anno.points[i].y < minY) minY = anno.points[i].y;
+    if (anno.points[i].y > maxY) maxY = anno.points[i].y;
+  }
+  var sw = Math.max(1, Math.min(16, Number(anno.strokeWidth) || 4));
+  var pad = sw + 4;
+  var bx = minX - pad, by = minY - pad;
+  var bw = Math.max(20, maxX - minX + pad * 2);
+  var bh = Math.max(20, maxY - minY + pad * 2);
+  var d = anno.points.map(function(pt, idx) {
+    return (idx === 0 ? "M" : "L") + Math.round((pt.x - bx) * 10) / 10 + " " + Math.round((pt.y - by) * 10) / 10;
+  }).join(" ");
+  var stroke = /^#[0-9a-f]{3,8}$/i.test(String(anno.strokeHex || "")) ? anno.strokeHex : "#dc2626";
+  return '<svg role="img" aria-label="Student drawing" viewBox="0 0 ' + bw + " " + bh + '" style="display:block;max-width:100%;max-height:160px;background:#f8fafc;border:1px solid #cbd5e1;border-radius:6px;margin-top:4px;"><path d="' + d + '" fill="none" stroke="' + stroke + '" stroke-width="' + sw + '" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+}
+function siBuildStudentFeedbackBody(row, rowGrades, summary, escHtml) {
+  var p = row && row.payload && typeof row.payload === "object" ? row.payload : row && typeof row === "object" ? row : {};
+  var nickname = siResponseText(row && row.nickname || p.nickname || p.studentName || "Student", 120) || "Student";
+  var docTitle = siResponseText(row && row.docTitle || p.docTitle || "Worksheet", 200) || "Worksheet";
+  var timestamp = siResponseText(row && row.timestamp || p.timestamp || p.exportedAt || "", 80);
+  var gradesMap = rowGrades && typeof rowGrades === "object" ? rowGrades : {};
+  var entries = siResponseEntryModels(p);
+  var annos = siStudentAnnotations(p);
+  var sumObj = summary && typeof summary === "object" ? summary : {};
+  var scoredKeys = Object.keys(gradesMap);
+  var scoredCount = typeof sumObj.scored === "number" ? sumObj.scored : scoredKeys.length;
+  var totalCount = typeof sumObj.total === "number" ? sumObj.total : entries.length;
+  var avgText = typeof sumObj.average === "number" && Number.isFinite(sumObj.average) ? sumObj.average + "/100" : "\u2014";
+  var responseCards = entries.map(function(entry) {
+    var g = gradesMap[entry.key];
+    var scoreBadge = g && typeof g.score === "number" ? '<span style="display:inline-block;padding:2px 9px;border-radius:999px;background:#dcfce7;color:#14532d;font-weight:700;font-size:12px;">' + escHtml(g.score + "/100") + (g.status ? " \xB7 " + escHtml(g.status) : "") + "</span>" : '<span style="display:inline-block;padding:2px 9px;border-radius:999px;background:#f1f5f9;color:#475569;font-weight:600;font-size:12px;">Not scored</span>';
+    return '<article class="card" style="border:1px solid #cbd5e1;border-radius:10px;padding:12px 14px;margin-bottom:10px;background:#ffffff;break-inside:avoid;"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:10px;margin-bottom:6px;"><div style="font-weight:700;color:#0f172a;">' + escHtml(entry.question) + (entry.partLabel ? ' <span style="color:#475569;font-weight:600;font-size:0.9em;">(' + escHtml(entry.partLabel) + ")</span>" : "") + "</div>" + scoreBadge + '</div><div style="background:#f8fafc;border-left:3px solid #94a3b8;padding:8px 10px;border-radius:4px;color:#1e293b;white-space:pre-wrap;overflow-wrap:anywhere;">' + (entry.answered ? escHtml(entry.displayValue) : "<em>No answer submitted</em>") + "</div>" + (g && g.feedback ? '<p style="margin:8px 0 0;color:#334155;font-size:0.92em;"><strong>Feedback:</strong> ' + escHtml(g.feedback) + "</p>" : "") + "</article>";
+  }).join("");
+  var annoSection = annos.length ? '<section style="margin-top:20px;"><h2 style="font-size:1.05rem;color:#0f172a;margin:0 0 10px;">Highlights &amp; Notes (' + escHtml(annos.length) + ")</h2>" + annos.map(function(a) {
+    var extra = a.type === "draw" ? a.points ? siAnnotationDrawSvgHtml(a) : '<div style="font-size:0.85em;color:#475569;">[Student drawing attached]</div>' : a.type === "voice" ? '<div style="font-size:0.85em;color:#475569;">[Voice note attached]</div>' : "";
+    return '<div class="card" style="border:1px solid #e2e8f0;border-left:4px solid #f59e0b;border-radius:8px;padding:10px 12px;margin-bottom:8px;background:#fffbeb;break-inside:avoid;">' + (a.quote ? '<div style="font-size:0.9em;color:#475569;margin-bottom:4px;">&ldquo;' + escHtml(a.quote) + "&rdquo;</div>" : "") + (a.note ? '<div style="color:#0f172a;white-space:pre-wrap;">' + escHtml(a.note) + "</div>" : "") + extra + "</div>";
+  }).join("") + "</section>" : "";
+  return {
+    title: docTitle + " - " + nickname + " Feedback",
+    html: '<header style="background:#ffffff;border:1px solid #cbd5e1;border-radius:12px;padding:16px 18px;margin-bottom:18px;"><h1 style="margin:0 0 6px;font-size:1.35rem;color:#0f172a;">' + escHtml(docTitle) + '</h1><div style="color:#334155;font-size:0.95rem;"><strong>Student:</strong> ' + escHtml(nickname) + (timestamp ? " &nbsp;|&nbsp; <strong>Submitted:</strong> " + escHtml(timestamp) : "") + " &nbsp;|&nbsp; <strong>Average:</strong> " + escHtml(avgText) + " &nbsp;|&nbsp; <strong>Scored:</strong> " + escHtml(scoredCount + " / " + totalCount) + "</div></header><main>" + (responseCards || '<p style="color:#475569;">No captured responses in this submission.</p>') + annoSection + "</main>"
+  };
+}
+function siBuildStudentFeedbackHtml(row, rowGrades, summary) {
+  function escHtml(value) {
+    return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  var body = siBuildStudentFeedbackBody(row, rowGrades, summary, escHtml);
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + escHtml(body.title) + "</title><style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5;color:#0f172a;background:#f8fafc;max-width:820px;margin:0 auto;padding:24px;}@media print{body{background:#fff;padding:12px;}.card{break-inside:avoid;}}</style></head><body>" + body.html + "</body></html>";
+}
+function siBuildBatchFeedbackHtml(items, docLabel) {
+  function escHtml(value) {
+    return String(value == null ? "" : value).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
+  }
+  var safeItems = Array.isArray(items) ? items : [];
+  var sheets = safeItems.map(function(entry, idx) {
+    var r = entry && entry.row ? entry.row : {};
+    var body = siBuildStudentFeedbackBody(r, entry && entry.rowGrades, entry && entry.summary, escHtml);
+    return '<section class="student-feedback-sheet" style="' + (idx < safeItems.length - 1 ? "margin-bottom:28px;padding-bottom:20px;border-bottom:2px dashed #cbd5e1;" : "") + '">' + body.html + "</section>" + (idx < safeItems.length - 1 ? '<div class="student-page-break"></div>' : "");
+  }).join("");
+  var title = siResponseText(docLabel || "Class Feedback Packet", 200) || "Class Feedback Packet";
+  return '<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>' + escHtml(title) + '</title><style>body{font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;line-height:1.5;color:#0f172a;background:#f8fafc;max-width:820px;margin:0 auto;padding:24px;}@media print{body{background:#fff;padding:12px;}.card{break-inside:avoid;}.student-page-break{page-break-after:always;break-after:page;}.student-feedback-sheet{border-bottom:none !important;margin-bottom:0 !important;padding-bottom:0 !important;}.no-print{display:none !important;}}</style></head><body><div class="no-print" style="display:flex;justify-content:space-between;align-items:center;gap:12px;background:#eef2ff;border:1px solid #c7d2fe;border-radius:10px;padding:10px 14px;margin-bottom:18px;"><span style="font-weight:700;color:#312e81;">' + escHtml(title) + " (" + escHtml(String(safeItems.length)) + ')</span><button type="button" onclick="window.print()" style="padding:6px 14px;background:#4f46e5;color:#fff;border:none;border-radius:8px;font-weight:700;cursor:pointer;">Print / Save PDF</button></div>' + (sheets || '<p style="color:#475569;">No graded student feedback sheets yet.</p>') + "</body></html>";
+}
+function siLookupTrustedHistoryPrompt(responseKey, history) {
+  if (!responseKey || !Array.isArray(history) || !history.length) return "";
+  var bare = String(responseKey).replace(/^allo-response:/, "");
+  var qMatch = bare.match(/^(.+):q(\d+):/);
+  if (qMatch) {
+    var quiz = history.find(function(item) {
+      return item && item.type === "quiz" && String(item.id) === qMatch[1];
+    }) || (qMatch[1] === "quiz" ? history.find(function(item) {
+      return item && item.type === "quiz";
+    }) : null);
+    var qIdx = Number(qMatch[2]);
+    var q = quiz && quiz.data && Array.isArray(quiz.data.questions) ? quiz.data.questions[qIdx] : null;
+    if (q && typeof q === "object") {
+      var parts = [];
+      if (q.question) parts.push("Question prompt: " + siResponseText(q.question, 600));
+      if (q.rubric) parts.push("Item rubric: " + siResponseText(q.rubric, 600));
+      if (q.sampleAnswer || q.explanation) parts.push("Reference note: " + siResponseText(q.sampleAnswer || q.explanation, 500));
+      if (parts.length) return parts.join(" | ");
+    }
+  }
+  var dbqAny = bare.match(/^(.+):dbq:(.+)$/);
+  if (dbqAny) {
+    var dbq = history.find(function(item) {
+      return item && item.type === "dbq" && String(item.id) === dbqAny[1];
+    }) || (dbqAny[1] === "dbq" ? history.find(function(item) {
+      return item && item.type === "dbq";
+    }) : null);
+    var dData = dbq && dbq.data && typeof dbq.data === "object" ? dbq.data : null;
+    if (dData) {
+      var dbqSub = dbqAny[2].replace(/:free-response$/, "");
+      if (dbqSub === "essay" || dbqSub.indexOf("essay") === 0) {
+        var essayQ = dData.synthesisPrompt || dData.synthesisQuestion || dData.essayPrompt;
+        if (essayQ) return "DBQ essay prompt: " + siResponseText(essayQ, 700);
+      }
+      if (dbqSub === "perspective") {
+        var pSummary = Array.isArray(dData.perspectives) && dData.perspectives.length ? dData.perspectives.map(function(pr) {
+          return typeof pr === "string" ? pr : pr && (pr.label || pr.view || pr.stance || pr.summary) || "";
+        }).filter(Boolean).join(" vs. ") : "";
+        return "DBQ competing perspectives prompt" + (pSummary ? ": " + siResponseText(pSummary, 600) : "");
+      }
+      var corrobClaimMatch = dbqSub.match(/^corrob:(\d+)$/);
+      if (corrobClaimMatch && Array.isArray(dData.corroborationClaims)) {
+        var cClaim = dData.corroborationClaims[Number(corrobClaimMatch[1])];
+        var cClaimTxt = cClaim && typeof cClaim === "object" ? cClaim.claim || cClaim.prompt || cClaim.text || "" : cClaim || "";
+        if (cClaimTxt) return "DBQ corroboration prompt: " + siResponseText(cClaimTxt, 600);
+      }
+      var corrobPromptMatch = dbqSub.match(/^corrob-prompt:(\d+)$/);
+      if (corrobPromptMatch && Array.isArray(dData.corroborationPrompts)) {
+        var cPrompt = dData.corroborationPrompts[Number(corrobPromptMatch[1])];
+        var cPromptTxt = cPrompt && typeof cPrompt === "object" ? cPrompt.prompt || cPrompt.question || cPrompt.text || "" : cPrompt || "";
+        if (cPromptTxt) return "DBQ corroboration prompt: " + siResponseText(cPromptTxt, 600);
+      }
+      var happMatch = dbqSub.match(/^(\d+):happ:([A-Za-z]+)$/);
+      if (happMatch && Array.isArray(dData.documents)) {
+        var happDoc = dData.documents[Number(happMatch[1])];
+        var happLabel = happDoc ? happDoc.title || happDoc.source || "" : "";
+        return "DBQ HAPP (" + siResponseText(happMatch[2], 40) + ") prompt" + (happLabel ? " for " + siResponseText(happLabel, 300) : "");
+      }
+      var dbqDocMatch = dbqSub.match(/^(\d+):(sourcing|analysis):(\d+)$/);
+      if (dbqDocMatch && Array.isArray(dData.documents)) {
+        var docItem = dData.documents[Number(dbqDocMatch[1])];
+        var qList = docItem ? dbqDocMatch[2] === "sourcing" ? docItem.sourcingQuestions : docItem.analysisQuestions : null;
+        var qItem = Array.isArray(qList) ? qList[Number(dbqDocMatch[3])] : null;
+        if (qItem) return "DBQ prompt: " + siResponseText(qItem, 600);
+      }
+    }
+  }
+  var mMatch = bare.match(/^(.+):math:(\d+):/);
+  if (mMatch) {
+    var mathRes = history.find(function(item) {
+      return item && item.type === "math" && String(item.id) === mMatch[1];
+    }) || (mMatch[1] === "math" ? history.find(function(item) {
+      return item && item.type === "math";
+    }) : null);
+    var mProbs = mathRes && mathRes.data ? Array.isArray(mathRes.data.problems) ? mathRes.data.problems : [mathRes.data] : [];
+    var mp = mProbs[Number(mMatch[2])];
+    if (mp && mp.question) return "Math prompt: " + siResponseText(mp.question, 600);
+  }
+  var gwMatch = bare.match(/^glossary-worksheet:(.+):def:(\d+)(?::free-response)?$/);
+  if (gwMatch) {
+    var gwSid = gwMatch[1];
+    var gwIdx = Number(gwMatch[2]);
+    var glossItems = history.filter(function(item) {
+      return item && item.type === "glossary";
+    });
+    var gwRes = glossItems.find(function(item) {
+      var rawId = String(item.id == null ? "glossary" : item.id);
+      var sanId = rawId.replace(/[^A-Za-z0-9_-]+/g, "-");
+      return rawId === gwSid || sanId === gwSid;
+    }) || (glossItems.length === 1 ? glossItems[0] : null);
+    var gwArr = gwRes && gwRes.data ? Array.isArray(gwRes.data) ? gwRes.data : gwRes.data.terms || gwRes.data.items || gwRes.data.entries || gwRes.data.glossary || [] : [];
+    var gwEntry = Array.isArray(gwArr) ? gwArr[gwIdx] : null;
+    var gwTerm = gwEntry ? typeof gwEntry === "string" ? gwEntry : gwEntry.term || gwEntry.word || gwEntry.name || (Array.isArray(gwEntry) ? gwEntry[0] : "") || "" : "";
+    var gwPos = gwEntry && gwEntry.partOfSpeech ? " (" + String(gwEntry.partOfSpeech).trim() + ")" : "";
+    if (gwTerm) return "Glossary definition prompt for: " + siResponseText(gwTerm, 200) + gwPos;
+  }
+  var tlMatch = bare.match(/^(.+):timeline:(\d+):date$/);
+  var tlHashMatch = !tlMatch ? bare.match(/^(.+):timeline-date:([a-z0-9]+)(?::free-response)?$/) : null;
+  if (tlMatch || tlHashMatch) {
+    var tlId = (tlMatch || tlHashMatch)[1];
+    var tlRes = history.find(function(item) {
+      return item && item.type === "timeline" && String(item.id) === tlId;
+    }) || (tlId === "timeline" ? history.find(function(item) {
+      return item && item.type === "timeline";
+    }) : null);
+    var tlEvents = tlRes && tlRes.data ? Array.isArray(tlRes.data) ? tlRes.data : tlRes.data.events || tlRes.data.items || [] : [];
+    var tlEv = null;
+    if (tlMatch) {
+      tlEv = Array.isArray(tlEvents) ? tlEvents[Number(tlMatch[2])] : null;
+    } else if (tlRes && Array.isArray(tlEvents)) {
+      for (var tli = 0; tli < tlEvents.length; tli++) {
+        var tlCand = tlEvents[tli];
+        if (siFnv1aHash((tlRes.id || "timeline") + ":" + tli + ":" + String(tlCand && (tlCand.event || tlCand.title || tlCand.description) || "")).toString(36) === tlHashMatch[2]) {
+          tlEv = tlCand;
+          break;
+        }
+      }
+    }
+    if (tlEv) {
+      var tlLabel = tlEv.title || tlEv.event || tlEv.label || tlEv.heading || tlEv.description || tlEv.summary || "";
+      if (tlLabel) return "Timeline date prompt for: " + siResponseText(tlLabel, 500);
+    }
+  }
+  var ntMatch = bare.match(/^(.+):note:(.+)$/);
+  if (ntMatch) {
+    var ntRes = history.find(function(item) {
+      return item && item.type === "note-taking" && String(item.id) === ntMatch[1];
+    }) || (ntMatch[1] === "note-taking" ? history.find(function(item) {
+      return item && item.type === "note-taking";
+    }) : null);
+    var ntData = ntRes && ntRes.data && typeof ntRes.data === "object" ? ntRes.data : null;
+    var ntKey = ntMatch[2].replace(/:free-response$/, "");
+    if (ntData) {
+      if (ntKey === "summary") return "Note-taking summary prompt";
+      var ntBlankMatch = ntKey.match(/^blank:(\d+)$/);
+      if (ntBlankMatch && Array.isArray(ntData.blanks)) {
+        var nb = ntData.blanks[Number(ntBlankMatch[1])];
+        if (nb) {
+          var nbTxt = ((nb.before || nb.prefix || "") + " ___ " + (nb.after || nb.suffix || "")).replace(/\s+/g, " ").trim();
+          if (nbTxt) return "Note-taking guided blank prompt: " + siResponseText(nbTxt, 500);
+        }
+      }
+      var ntEntryMatch = ntKey.match(/^(?:response|quote):(\d+)$/);
+      if (ntEntryMatch && Array.isArray(ntData.entries)) {
+        var ne = ntData.entries[Number(ntEntryMatch[1])];
+        var neTxt = ne && typeof ne === "object" ? ne.quote || ne.prompt || ne.left || ne.text || "" : ne || "";
+        if (neTxt) return "Note-taking entry prompt: " + siResponseText(neTxt, 500);
+      }
+      var ntPairMatch = ntKey.match(/^answer:(\d+)$/);
+      if (ntPairMatch && Array.isArray(ntData.pairs)) {
+        var np = ntData.pairs[Number(ntPairMatch[1])];
+        var npTxt = np && typeof np === "object" ? np.question || np.prompt || "" : "";
+        if (npTxt) return "Note-taking question prompt: " + siResponseText(npTxt, 500);
+      }
+      var ntSubIdxMatch = ntKey.match(/^(?:notes|q|qa|answer|blank|guided|prompt|row|section)[:\-_](\d+)/);
+      if (ntSubIdxMatch) {
+        var nIdx = Number(ntSubIdxMatch[1]);
+        var nList = ntData.cues || ntData.rows || ntData.questions || ntData.qa || ntData.items || ntData.sections || ntData.prompts || ntData.lines || ntData.notes || [];
+        var nItem = Array.isArray(nList) ? nList[nIdx] : null;
+        if (nItem) {
+          var nText = typeof nItem === "string" ? nItem : nItem.cue || nItem.question || nItem.prompt || nItem.topic || nItem.heading || nItem.title || nItem.text || nItem.line || "";
+          if (nText) return "Note-taking prompt: " + siResponseText(nText, 500);
+        }
+      }
+      var ntTitle = ntRes.title || ntData.title || "";
+      return "Note-taking prompt (" + siResponseText(ntKey, 80) + ")" + (ntTitle ? " \u2014 " + siResponseText(ntTitle, 120) : "");
+    }
+  }
+  var sfMatch = bare.match(/^(.+):(?:(\d+)|paragraph-(\d+)):sentence-frame$/);
+  if (sfMatch) {
+    var sfRes = history.find(function(item) {
+      return item && item.type === "sentence-frames" && String(item.id) === sfMatch[1];
+    }) || (sfMatch[1] === "sf" ? history.find(function(item) {
+      return item && item.type === "sentence-frames";
+    }) : null);
+    var sfData = sfRes && sfRes.data && typeof sfRes.data === "object" ? sfRes.data : null;
+    if (sfData) {
+      if (sfMatch[2] != null && Array.isArray(sfData.items)) {
+        var sfEntry = sfData.items[Number(sfMatch[2])];
+        var sfTxt = sfEntry && typeof sfEntry === "object" ? sfEntry.frame || sfEntry.stem || sfEntry.text || sfEntry.prompt || "" : sfEntry || "";
+        if (sfTxt) return "Sentence frame prompt: " + siResponseText(sfTxt, 500);
+      } else if (sfMatch[3] != null && typeof sfData.text === "string") {
+        var sfBlankRe = /(\[(?!\s*\d+(?:\s*[,;-]\s*\d+)*\s*\])[^\]\n]*\](?!\()|_{3,})/g;
+        var sfParts = sfData.text.split(sfBlankRe);
+        var pIdx = Number(sfMatch[3]);
+        var cue = sfParts[pIdx] && sfParts[pIdx].charAt(0) === "[" ? sfParts[pIdx].slice(1, -1).trim() : "";
+        var around = ((sfParts[pIdx - 1] || "").slice(-120) + " ___ " + (sfParts[pIdx + 1] || "").slice(0, 120)).replace(/\s+/g, " ").trim();
+        var sfParagraphTxt = around || cue;
+        if (sfParagraphTxt) return "Sentence frame prompt: " + siResponseText(sfParagraphTxt, 500);
+      }
+    }
+  }
+  var outMatch = bare.match(/^(.+):(kwl|outline):(\d+)(?::free-response)?$/);
+  if (outMatch) {
+    var outRes = history.find(function(item) {
+      return item && item.type === "outline" && String(item.id) === outMatch[1];
+    }) || (outMatch[1] === "outline" ? history.find(function(item) {
+      return item && item.type === "outline";
+    }) : null);
+    var branches = outRes && outRes.data && Array.isArray(outRes.data.branches) ? outRes.data.branches : [];
+    var ob = branches[Number(outMatch[3])];
+    if (ob) {
+      var oTxt = outMatch[2] === "kwl" ? ob.kwlNote || ob.title || ob.label || "" : [ob.label || ob.title || "", ob.scaffoldPrompt || ob.prompt || ""].filter(Boolean).join(" \u2014 ");
+      if (oTxt) return "Organizer prompt: " + siResponseText(oTxt, 500);
+    }
+  }
+  var acMatch = bare.match(/^(.+):ac:([^:]+):(\d+)(?::free-response)?$/);
+  if (acMatch) {
+    var acRes = history.find(function(item) {
+      return item && item.type === "anchor-chart" && String(item.id) === acMatch[1];
+    }) || (acMatch[1] === "ac" ? history.find(function(item) {
+      return item && item.type === "anchor-chart";
+    }) : null);
+    var sections = acRes && acRes.data && Array.isArray(acRes.data.sections) ? acRes.data.sections : [];
+    var sec = sections.find(function(s) {
+      return s && String(s.id) === acMatch[2];
+    }) || (/^\d+$/.test(acMatch[2]) ? sections[Number(acMatch[2])] : null);
+    if (sec) {
+      var bIdx = Number(acMatch[3]);
+      var acList = Array.isArray(sec.bullets) ? sec.bullets : Array.isArray(sec.points) ? sec.points : [];
+      var rawBullet = acList[bIdx];
+      var secBullet = rawBullet && typeof rawBullet === "object" ? rawBullet.text || rawBullet.label || "" : rawBullet || "";
+      var acTxt = [sec.label || sec.title || "", secBullet || "Item #" + (bIdx + 1)].filter(Boolean).join(": ");
+      if (acTxt) return "Anchor chart prompt: " + siResponseText(acTxt, 500);
+    }
+  }
+  var clozePromptMatch = bare.match(/^(.+):cloze:(\d+):cloze-blank$/);
+  if (clozePromptMatch) {
+    var clzRes = history.find(function(item) {
+      return item && item.type === "simplified" && String(item.id) === clozePromptMatch[1];
+    }) || (clozePromptMatch[1] === "simplified" || clozePromptMatch[1] === "adapted" ? history.find(function(item) {
+      return item && item.type === "simplified";
+    }) : null);
+    var clzTitle = clzRes && clzRes.title || "";
+    if (clzRes || clozePromptMatch[1] === "simplified" || clozePromptMatch[1] === "adapted") {
+      return "Cloze blank #" + (Number(clozePromptMatch[2]) + 1) + (clzTitle ? " in " + siResponseText(clzTitle, 240) : "");
+    }
+  }
+  var reflMatch = bare.match(/^(.+):reflection:(\d+)(?::(?:free-response|reflection))?$/);
+  if (reflMatch) {
+    var rqRes = history.find(function(item) {
+      return item && item.type === "quiz" && String(item.id) === reflMatch[1];
+    }) || (reflMatch[1] === "quiz" ? history.find(function(item) {
+      return item && item.type === "quiz";
+    }) : null);
+    var reflList = rqRes && rqRes.data && Array.isArray(rqRes.data.reflections) ? rqRes.data.reflections : [];
+    var reflEntry = reflList[Number(reflMatch[2])];
+    var reflTxt = reflEntry && typeof reflEntry === "object" ? reflEntry.prompt || reflEntry.question || reflEntry.text || "" : reflEntry || "";
+    if (reflTxt) return "Reflection prompt: " + siResponseText(reflTxt, 600);
+  }
+  var gmMatch = bare.match(/^glossary-worksheet:(.+):match:(\d+)$/);
+  if (gmMatch) {
+    var gmSid = gmMatch[1];
+    var gmIdx = Number(gmMatch[2]);
+    var gmItems = history.filter(function(item) {
+      return item && item.type === "glossary";
+    });
+    var gmRes = gmItems.find(function(item) {
+      var rawId = String(item.id == null ? "glossary" : item.id);
+      var sanId = rawId.replace(/[^A-Za-z0-9_-]+/g, "-");
+      return rawId === gmSid || sanId === gmSid;
+    }) || (gmItems.length === 1 ? gmItems[0] : null);
+    var gmArrRaw = gmRes && gmRes.data ? Array.isArray(gmRes.data) ? gmRes.data : gmRes.data.terms || gmRes.data.items || gmRes.data.entries || gmRes.data.glossary || [] : [];
+    var gmArr = Array.isArray(gmArrRaw) ? gmArrRaw.filter(function(gEntry) {
+      return gEntry && String(gEntry.term == null ? "" : gEntry.term).trim() && String(gEntry.def || gEntry.definition || "").trim();
+    }) : [];
+    var gmEntry = gmArr[gmIdx];
+    var gmTerm = gmEntry ? typeof gmEntry === "string" ? gmEntry : gmEntry.term || gmEntry.word || gmEntry.name || (Array.isArray(gmEntry) ? gmEntry[0] : "") || "" : "";
+    var gmPos = gmEntry && gmEntry.partOfSpeech ? " (" + String(gmEntry.partOfSpeech).trim() + ")" : "";
+    if (gmTerm) return "Glossary matching prompt for: " + siResponseText(gmTerm, 200) + gmPos;
+  }
+  var vennMatch = bare.match(/^(.+):venn:(\d+):placement$/);
+  if (vennMatch) {
+    var isVnItem = function(item) {
+      return item && (item.type === "outline" || item.type === "venn-diagram" || item.type === "venn");
+    };
+    var vnRes = history.find(function(item) {
+      return isVnItem(item) && String(item.id) === vennMatch[1];
+    }) || (vennMatch[1] === "venn" || vennMatch[1] === "outline" || vennMatch[1] === "venn-diagram" ? history.find(isVnItem) : null);
+    var vnData = vnRes && vnRes.data && typeof vnRes.data === "object" ? vnRes.data : null;
+    var vnList = [];
+    if (vnData) {
+      var vnZones = null;
+      if (Array.isArray(vnData.branches) && vnData.branches.length) {
+        var vnResolved = siResolveVennBranches(vnData.branches);
+        vnZones = [vnResolved.setA, vnResolved.setB, vnResolved.shared];
+      } else if (vnData.setA || vnData.setB || vnData.shared) {
+        vnZones = [vnData.setA, vnData.setB, vnData.shared];
+      }
+      if (vnZones) {
+        vnZones.forEach(function(br) {
+          var brItems = br && Array.isArray(br.items) ? br.items : [];
+          brItems.forEach(function(entry) {
+            var txt = entry && typeof entry === "object" ? String(entry.text || entry.label || entry.content || "").trim() : String(entry == null ? "" : entry).trim();
+            if (txt) vnList.push(txt);
+          });
+        });
+      } else if (Array.isArray(vnData.vennItems)) {
+        vnList = vnData.vennItems;
+      } else if (Array.isArray(vnData.items)) {
+        vnList = vnData.items;
+      }
+    }
+    var vnItem = vnList[Number(vennMatch[2])];
+    var vnTxt = vnItem && typeof vnItem === "object" ? vnItem.text || vnItem.label || vnItem.name || vnItem.content || vnItem.item || "" : vnItem || "";
+    if (vnTxt) return "Venn diagram placement for: " + siResponseText(vnTxt, 300);
+  }
+  var csPromptMatch = bare.match(/^(.+):concept-sort:(\d+):category$/);
+  if (csPromptMatch) {
+    var csRes = history.find(function(item) {
+      return item && item.type === "concept-sort" && String(item.id) === csPromptMatch[1];
+    }) || (csPromptMatch[1] === "concept-sort" ? history.find(function(item) {
+      return item && item.type === "concept-sort";
+    }) : null);
+    var csData = csRes && csRes.data && typeof csRes.data === "object" ? csRes.data : null;
+    var csList = csData ? Array.isArray(csData.items) ? csData.items : Array.isArray(csData.cards) ? csData.cards : [] : [];
+    var csPromptIdx = Number(csPromptMatch[2]);
+    var csEntry = csList[csPromptIdx];
+    if (!csEntry || csEntry.categoryId === "__uncategorized") {
+      var csActive = csList.filter(function(ci) {
+        return !ci || ci.categoryId !== "__uncategorized";
+      });
+      csEntry = csActive[csPromptIdx];
+    }
+    var csTxt = csEntry && typeof csEntry === "object" ? csEntry.content || csEntry.text || csEntry.label || csEntry.name || csEntry.term || "" : csEntry || "";
+    if (csTxt) return "Concept sort item: " + siResponseText(csTxt, 300);
+  }
+  var maMatch = bare.match(/^(.+):card(\d+):(draft|reasoning)$/);
+  if (maMatch) {
+    var maRes = history.find(function(item) {
+      if (!item || item.type !== "memory-aid") return false;
+      var normId = String(item.id == null ? "memory-aid" : item.id).replace(/[^A-Za-z0-9_:-]/g, "-").slice(0, 120);
+      return String(item.id) === maMatch[1] || normId === maMatch[1];
+    }) || (maMatch[1] === "memory-aid" ? history.find(function(item) {
+      return item && item.type === "memory-aid";
+    }) : null);
+    var maData = maRes && maRes.data && typeof maRes.data === "object" ? maRes.data : null;
+    var maCards = maData ? Array.isArray(maData.cards) ? maData.cards : Array.isArray(maData.targets) ? maData.targets : [] : [];
+    var maCard = maCards[Number(maMatch[2])];
+    if (maCard && typeof maCard === "object") {
+      var maTarget = maCard.target || maCard.term || "";
+      var maSub = maMatch[3] === "draft" ? maCard.studentPrompt || "" : maCard.reasoningPrompt || "";
+      if (maTarget || maSub) {
+        return "Memory aid " + maMatch[3] + " prompt" + (maTarget ? " (" + siResponseText(maTarget, 200) + ")" : "") + (maSub ? ": " + siResponseText(maSub, 400) : "");
+      }
+    }
+  }
+  var appliedMatch = bare.match(/^(.+):applied:(.+)$/);
+  if (appliedMatch) {
+    var apRes = history.find(function(item) {
+      return item && item.type === "applied-challenge" && String(item.id) === appliedMatch[1];
+    }) || (appliedMatch[1] === "applied-challenge" ? history.find(function(item) {
+      return item && item.type === "applied-challenge";
+    }) : null);
+    var apData = apRes && apRes.data && typeof apRes.data === "object" ? apRes.data : null;
+    if (apData) {
+      var apSub = appliedMatch[2].replace(/:free-response$/, "");
+      var AP_PHASE_LABELS = {
+        workingQuestion: "1. Frame the challenge",
+        stakeholders: "2. Map people, systems, and constraints",
+        possibilities: "3. Generate possibilities",
+        evidence: "4. Connect evidence and lesson ideas",
+        assumptions: "5. Name assumptions and uncertainties",
+        tradeoffs: "6. Weigh tradeoffs and alternatives",
+        response: "7. Build the deliverable",
+        testReflection: "8. Test or challenge the draft",
+        revision: "9. Keep or revise after checking",
+        transferReflection: "10. Explain the transfer"
+      };
+      if (Object.prototype.hasOwnProperty.call(AP_PHASE_LABELS, apSub)) {
+        var apPhasePrompts = apData.supports && apData.supports.phasePrompts && typeof apData.supports.phasePrompts === "object" ? apData.supports.phasePrompts : {};
+        var apBrief = apData.brief && typeof apData.brief === "object" ? apData.brief : {};
+        var apPromptTxt = apPhasePrompts[apSub] || (apSub === "workingQuestion" ? apBrief.drivingQuestion || apBrief.question || "" : "");
+        return "Applied challenge (" + AP_PHASE_LABELS[apSub] + ")" + (apPromptTxt ? ": " + siResponseText(apPromptTxt, 500) : "");
+      }
+      var apLedgerMatch = apSub.match(/^ledger-(\d+)-(claim|evidence|tradeoff)$/);
+      if (apLedgerMatch) {
+        return "Applied challenge evidence ledger row " + apLedgerMatch[1] + " (" + apLedgerMatch[2] + ")";
+      }
+      var apSelfMatch = apSub.match(/^selfcheck-(.+?)(?::rating)?$/);
+      if (apSelfMatch) {
+        var apScKey = apSelfMatch[1];
+        var apBriefSc = apData.brief && typeof apData.brief === "object" ? apData.brief : {};
+        var apScText = "";
+        var cIdxM = apScKey.match(/^criterion-(\d+)$/);
+        var kIdxM = apScKey.match(/^constraint-(\d+)$/);
+        if (cIdxM && Array.isArray(apBriefSc.criteria)) apScText = apBriefSc.criteria[Number(cIdxM[1])] || "";
+        else if (kIdxM && Array.isArray(apBriefSc.constraints)) apScText = apBriefSc.constraints[Number(kIdxM[1])] || "";
+        if (!apScText && Array.isArray(apBriefSc.criteriaItems)) {
+          var foundCrit = apBriefSc.criteriaItems.find(function(r) {
+            return r && String(r.id) === apScKey;
+          });
+          if (foundCrit && foundCrit.text) apScText = foundCrit.text;
+        }
+        if (!apScText && Array.isArray(apBriefSc.constraintItems)) {
+          var foundCons = apBriefSc.constraintItems.find(function(r) {
+            return r && String(r.id) === apScKey;
+          });
+          if (foundCons && foundCons.text) apScText = foundCons.text;
+        }
+        return "Applied challenge self-check: " + siResponseText(apScText || apScKey, 400);
+      }
+      return "Applied challenge (" + siResponseText(apSub, 100) + ")";
+    }
+  }
+  var dirMatch = bare.match(/^(.+):directions:(goals|goal:(\d+)|choice)$/);
+  if (dirMatch) {
+    var dirRes = history.find(function(item) {
+      return item && item.type === "directions" && String(item.id) === dirMatch[1];
+    }) || (dirMatch[1] === "directions" ? history.find(function(item) {
+      return item && item.type === "directions";
+    }) : null);
+    var dirData = dirRes && dirRes.data && typeof dirRes.data === "object" ? dirRes.data : null;
+    if (dirData) {
+      var dirGoals = (Array.isArray(dirData.objectives) ? dirData.objectives : []).filter(function(g) {
+        return g && typeof g.label === "string" && g.label.trim() && g.kind !== "game" && g.kind !== "xp";
+      });
+      if (dirMatch[2] === "goals") {
+        var gLabels = dirGoals.map(function(g) {
+          return g.label.trim();
+        });
+        return gLabels.length ? "Directions goals: " + siResponseText(gLabels.join("; "), 500) : "Directions goals checklist";
+      }
+      if (dirMatch[3] != null) {
+        var oneGoal = dirGoals[Number(dirMatch[3])];
+        if (oneGoal && oneGoal.label) return "Directions goal: " + siResponseText(oneGoal.label, 400);
+      }
+      if (dirMatch[2] === "choice") {
+        var dirBoard = dirData.choiceBoard && typeof dirData.choiceBoard === "object" ? dirData.choiceBoard : {};
+        var dirChoicePrompt = dirBoard.prompt || dirBoard.title || dirRes.title || "";
+        return "Directions activity choice" + (dirChoicePrompt ? ": " + siResponseText(dirChoicePrompt, 400) : "");
+      }
+    }
+  }
+  return "";
+}
+function siResponseResourcePrefix(key) {
+  var bare = String(key || "").replace(/^allo-response:/, "");
+  if (!bare) return "";
+  var m = bare.match(/^(.+?):(?:q\d+:|dbq:|math:\d+:|timeline(?:-date)?:|note:|(?:\d+|paragraph-\d+):sentence-frame$|(?:kwl|outline):|ac:|cloze:|reflection:|venn:|concept-sort:|card\d+:|applied:|directions:)/);
+  if (m && m[1]) return m[1];
+  var colon = bare.indexOf(":");
+  return colon > 0 ? bare.slice(0, colon) : bare;
+}
+function siCalibrationSamplesForKey(anchors, responseKey, exemplar, scope) {
+  var list = Array.isArray(anchors) ? anchors : [];
+  var sc = scope && typeof scope === "object" ? scope : null;
+  var scopeDocId = sc && sc.docId ? String(sc.docId).trim() : "";
+  var scopeAssignId = sc && sc.assignmentId ? String(sc.assignmentId).trim() : "";
+  var scopeFormId = sc && sc.formId ? String(sc.formId).trim() : "";
+  var scopeDocTitle = sc && sc.docTitle ? String(sc.docTitle).trim() : "";
+  var scopedList = list.filter(function(a) {
+    if (!a) return false;
+    if (a.docId && scopeDocId && String(a.docId).trim() !== scopeDocId) return false;
+    if (a.assignmentId && scopeAssignId && String(a.assignmentId).trim() !== scopeAssignId) return false;
+    if (a.formId && scopeFormId && String(a.formId).trim() !== scopeFormId) return false;
+    if (a.docTitle && scopeDocTitle && String(a.docTitle).trim() !== scopeDocTitle) return false;
+    return true;
+  });
+  var targetPrefix = siResponseResourcePrefix(responseKey);
+  var specific = scopedList.filter(function(a) {
+    return a.fromResponseKey && a.fromResponseKey === responseKey;
+  });
+  var unkeyed = scopedList.filter(function(a) {
+    return !a.fromResponseKey;
+  });
+  var sameResourceFallback = scopedList.filter(function(a) {
+    if (!a.fromResponseKey || a.fromResponseKey === responseKey) return false;
+    var anchorPrefix = siResponseResourcePrefix(a.fromResponseKey);
+    return !targetPrefix || !anchorPrefix || anchorPrefix === targetPrefix;
+  });
+  var ordered = specific.length > 0 ? specific.concat(unkeyed) : unkeyed.concat(sameResourceFallback);
+  var samples = ordered.slice(0, 5).map(function(a) {
+    return {
+      studentResponse: a.studentResponse,
+      teacherScore: a.teacherScore,
+      teacherFeedback: a.teacherFeedback || ""
+    };
+  });
+  var ex = typeof exemplar === "string" ? exemplar.trim() : "";
+  if (ex && samples.length < 5) {
+    samples.push({
+      studentResponse: ex,
+      teacherScore: 95,
+      teacherFeedback: "Teacher-provided exemplar \u2014 full credit anchor."
+    });
+  }
+  return samples.slice(0, 5);
 }
 function siRoleSwapNorm(value) {
   return String(value || "").toLocaleLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, " ").trim().replace(/^["'….\s]+|["'….\s]+$/g, "");
@@ -360,8 +1849,8 @@ function siStudentStoryPlayable(model) {
 }
 var SI_RESPONSE_MANIFEST_SCHEMA_VERSION = 1;
 var SI_RESPONSE_ENTRY_LIMIT = 500;
-var SI_AI_FREEFORM_RESPONSE_TYPES = ["short-answer", "self-explanation", "reflection", "free-response", "sentence-frame"];
-var SI_AI_FREEFORM_RESPONSE_SUFFIXES = ["short", "explanation", "reflection", "free-response", "short-answer", "self-explanation", "sentence-frame"];
+var SI_AI_FREEFORM_RESPONSE_TYPES = ["short-answer", "self-explanation", "reflection", "free-response", "sentence-frame", "reasoning"];
+var SI_AI_FREEFORM_RESPONSE_SUFFIXES = ["short", "explanation", "reflection", "free-response", "short-answer", "self-explanation", "sentence-frame", "reasoning"];
 var SI_STRUCTURED_RESPONSE_SUFFIXES = [
   "mcq",
   "multi",
@@ -374,7 +1863,14 @@ var SI_STRUCTURED_RESPONSE_SUFFIXES = [
   "answer",
   "evidence",
   "number",
-  "unit"
+  "unit",
+  "cloze-blank",
+  "match",
+  "order",
+  "goals",
+  "choice",
+  "placement",
+  "category"
 ];
 function siResponseText(value, max) {
   var text = "";
@@ -387,6 +1883,13 @@ function siResponseText(value, max) {
     }
   }
   return text.replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]+/g, " ").trim().slice(0, max || 4e3);
+}
+function siIsSelfCheckResponse(key, responseType, questionType) {
+  var rt = siResponseText(responseType, 60).toLowerCase();
+  var qt = siResponseText(questionType, 60).toLowerCase();
+  if (rt === "self-check" || qt === "self-check") return true;
+  var k = siResponseText(key, 240).toLowerCase();
+  return /:applied:selfcheck-[^:]+:rating(?::|$)/i.test(k);
 }
 function siResponseManifestMap(payload) {
   var p = payload && typeof payload === "object" ? payload : {};
@@ -405,11 +1908,15 @@ function siResponseManifestMap(payload) {
       var safeLabel = siResponseText(rawLabels[value], 240);
       if (safeValue && safeLabel) labels[safeValue] = safeLabel;
     });
+    var qType = siResponseText(entry.questionType, 60).toLowerCase();
+    var isSelfCheck = siIsSelfCheckResponse(key, entry.responseType, qType);
     out[key] = {
       key,
       question: siResponseText(entry.question, 500),
       partLabel: siResponseText(entry.partLabel, 120),
       responseType: siResponseText(entry.responseType, 60).toLowerCase(),
+      questionType: qType,
+      isSelfCheck,
       valueLabels: labels,
       manualReview: entry.manualReview === true
     };
@@ -418,11 +1925,15 @@ function siResponseManifestMap(payload) {
 }
 function siResponseRequiresManualReview(entry) {
   if (!entry) return true;
+  if (entry.isSelfCheck === true || siIsSelfCheckResponse(entry.key, entry.responseType, entry.questionType)) return false;
   var key = siResponseText(entry.key, 240).toLowerCase();
   var type = siResponseText(entry.responseType, 60).toLowerCase();
-  var suffix = key.split(":").pop();
+  var keyParts = key.split(":");
+  var suffix = keyParts.pop();
+  var prevPart = keyParts.length ? keyParts[keyParts.length - 1] : "";
   if (key.indexOf("allo-mcq:") === 0) return true;
   if (SI_STRUCTURED_RESPONSE_SUFFIXES.indexOf(suffix) >= 0) return true;
+  if (/^\d+$/.test(suffix) && (prevPart === "match" || prevPart === "order")) return true;
   if (key.indexOf("allo-ta:") === 0) return false;
   if (key.indexOf("allo-bx:") === 0) return true;
   if (entry.payloadSchemaVersion >= 3 || entry.manifestDeclared === true) {
@@ -475,6 +1986,7 @@ function siResponseEntryModels(payload) {
     var hasStoredResponse = Object.prototype.hasOwnProperty.call(responses, key);
     var rawText = hasStoredResponse ? siResponseText(responses[key], 12e3) : "";
     var answered = hasStoredResponse && rawText !== "";
+    var isSelfCheck = !!(meta && meta.isSelfCheck || siIsSelfCheckResponse(key, meta && meta.responseType, meta && meta.questionType));
     var model = {
       key,
       rawText,
@@ -482,6 +1994,8 @@ function siResponseEntryModels(payload) {
       question: meta && meta.question || "Response " + (index + 1),
       partLabel: meta && meta.partLabel || "",
       responseType: meta && meta.responseType || "legacy-response",
+      questionType: meta && meta.questionType || "",
+      isSelfCheck,
       valueLabels: meta && meta.valueLabels || /* @__PURE__ */ Object.create(null),
       manualReview: !!(meta && meta.manualReview),
       hasManifest: !!meta,
@@ -493,8 +2007,8 @@ function siResponseEntryModels(payload) {
       manifestSupported,
       payloadSchemaVersion
     };
-    model.requiresManualReview = !answered || siResponseRequiresManualReview(model);
-    model.aiGradable = answered && !model.requiresManualReview;
+    model.requiresManualReview = isSelfCheck ? false : !answered || siResponseRequiresManualReview(model);
+    model.aiGradable = answered && !isSelfCheck && !model.requiresManualReview;
     return model;
   });
 }
@@ -518,7 +2032,15 @@ function siAssessmentSnapshot(value) {
 function siAssessmentComparable(value) {
   return siResponseText(value, 500).replace(/\s+/g, " ").trim().toLowerCase();
 }
-function siAssessmentAnswerForGrading(type, row) {
+function siNormQuizType(raw) {
+  var k = String(raw == null ? "mcq" : raw).trim();
+  if (k === "multiple-choice") return "mcq";
+  if (k === "shortAnswer") return "short-answer";
+  if (k === "order") return "ordering";
+  return k || "mcq";
+}
+function siAssessmentAnswerForGrading(rawType, row) {
+  var type = siNormQuizType(rawType);
   var a = row && row.answer && typeof row.answer === "object" && !Array.isArray(row.answer) ? row.answer : null;
   var response = siResponseText(row && row.response, 4e3);
   if (a && a.idk === true) return { idk: true };
@@ -545,10 +2067,11 @@ function siAssessmentAnswerForGrading(type, row) {
     return fill ? a && typeof a.aiVerdict === "string" ? { text: fill, aiVerdict: a.aiVerdict } : { text: fill } : null;
   }
   if (type === "sequence-sense" || type === "relation-mismatch") return a;
+  if (type === "matching" || type === "ordering") return a || (response ? { text: response } : null);
   return null;
 }
 function siAssessmentGrade(question, row, policy, submitted) {
-  var type = question && question.type || "mcq";
+  var type = siNormQuizType(question && question.type || "mcq");
   if (row.answer && row.answer.idk === true) return { verdict: "skipped", scorable: false, fraction: null };
   var grader = typeof window !== "undefined" && window.AlloModules && window.AlloModules.QuizLiveAggregators;
   var scorable = SI_ASSESSMENT_REVIEW_TYPES.indexOf(type) < 0 && !!grader && typeof grader.gradePresentationResponse === "function" && (typeof grader.presentationQuestionIsGameScorable !== "function" || grader.presentationQuestionIsGameScorable(question) === true);
@@ -615,7 +2138,7 @@ function siAssessmentReport(value, resourceId, history, content) {
       question = null;
       versionUnverified = true;
     }
-    var type = siResponseText(question && question.type || row.type || "mcq", 60);
+    var type = siResponseText(siNormQuizType(question && question.type || row.type || "mcq"), 60);
     var result = question ? siAssessmentGrade(question, { answered, hasResponse, answer: row.answer, response: row.response }, data.scoringPolicy, snap.status === "submitted") : { verdict: row.answer && row.answer.idk === true ? "skipped" : answered ? "review" : hasResponse ? "incomplete" : "unanswered", scorable: false };
     var reference = question && SI_ASSESSMENT_REVIEW_TYPES.indexOf(type) >= 0 ? siResponseText(question.expectedAnswer || question.rubric || question.sampleAnswer || "", 800) : "";
     return {
@@ -1454,6 +2977,105 @@ function siBuildGradebookSummary(entries, groupByStudent) {
   });
   return { averages, students };
 }
+function siCsvCell(s) {
+  const raw = s == null ? "" : String(s);
+  const trimmed = raw.replace(/[\r\n]+/g, " ").trim();
+  let v = trimmed;
+  if (typeof s !== "number" && !/^-?\d+(?:\.\d+)?$/.test(trimmed) && (/^[=+\-@\t\r]/.test(raw) || /^[=+\-@\t\r]/.test(trimmed))) {
+    v = "'" + trimmed;
+  }
+  return /[",]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
+}
+function siBuildLmsGradebookCsv(entries, preset) {
+  const list = Array.isArray(entries) ? entries : [];
+  const rawPreset = String(preset || "alloflow").toLowerCase().trim();
+  const mode = rawPreset === "canvas" || rawPreset === "google-classroom" || rawPreset === "schoology" ? rawPreset : "alloflow";
+  const esc = siCsvCell;
+  const avgFor = (entry) => {
+    const gMap = entry && entry.grades || {};
+    const scores = Object.keys(gMap).map((k) => gMap[k] && gMap[k].score).filter((s) => typeof s === "number" && Number.isFinite(s));
+    return {
+      gMap,
+      scores,
+      avg: scores.length ? Math.round(scores.reduce((a, b) => a + b, 0) / scores.length) : ""
+    };
+  };
+  const docTitles = Array.from(new Set(list.map((e) => e && e.docTitle ? String(e.docTitle).trim() : "").filter(Boolean)));
+  let headers;
+  const rows = [];
+  if (mode === "canvas") {
+    const assignHeader = (docTitles.length === 1 ? docTitles[0] : "AlloFlow Gradebook Score") + " (100)";
+    headers = ["Student", "ID", "SIS User ID", "SIS Login ID", "Section", assignHeader];
+    rows.push(headers.map(esc).join(","));
+    for (const entry of list) {
+      const { avg } = avgFor(entry);
+      rows.push([entry.nickname || "", "", entry.nickname || "", "", entry.className || "", avg].map(esc).join(","));
+    }
+  } else if (mode === "google-classroom") {
+    headers = ["Student Name", "Class", "Assignment", "Grade", "Max Points", "Submitted At", "Graded At", "Review State"];
+    rows.push(headers.map(esc).join(","));
+    for (const entry of list) {
+      const { avg } = avgFor(entry);
+      rows.push([
+        entry.nickname || "",
+        entry.className || "",
+        entry.docTitle || "",
+        avg,
+        100,
+        entry.submittedAt || "",
+        entry.gradedAt || "",
+        entry.review && entry.review.state || "legacy-unreviewed"
+      ].map(esc).join(","));
+    }
+  } else if (mode === "schoology") {
+    headers = ["First Name", "Last Name", "Unique User ID", "Section", "Assignment", "Score", "Max Points", "Review State"];
+    rows.push(headers.map(esc).join(","));
+    for (const entry of list) {
+      const { avg } = avgFor(entry);
+      const nick = String(entry.nickname || "").trim();
+      const parts = nick ? nick.split(/\s+/) : [""];
+      const first = parts[0] || "";
+      const last = parts.length > 1 ? parts.slice(1).join(" ") : "";
+      rows.push([
+        first,
+        last,
+        nick,
+        entry.className || "",
+        entry.docTitle || "",
+        avg,
+        100,
+        entry.review && entry.review.state || "legacy-unreviewed"
+      ].map(esc).join(","));
+    }
+  } else {
+    const itemKeys = [];
+    list.forEach((entry) => {
+      Object.keys(entry && entry.grades || {}).forEach((k) => {
+        if (itemKeys.indexOf(k) < 0) itemKeys.push(k);
+      });
+    });
+    headers = ["Nickname", "Class", "Document", "SubmittedAt", "GradedAt", "AverageScore", "ScoredCount", "ExpectedCount", "ReviewState"].concat(itemKeys.map((k) => "Item: " + k));
+    rows.push(headers.map(esc).join(","));
+    for (const entry of list) {
+      const { gMap, scores, avg } = avgFor(entry);
+      const expectedCount = entry.review && typeof entry.review.expectedResponseCount === "number" ? entry.review.expectedResponseCount : Object.keys(entry.responses || gMap).length;
+      const baseCols = [
+        entry.nickname,
+        entry.className,
+        entry.docTitle,
+        entry.submittedAt,
+        entry.gradedAt,
+        avg,
+        scores.length,
+        expectedCount,
+        entry.review && entry.review.state || "legacy-unreviewed"
+      ];
+      const itemCols = itemKeys.map((k) => gMap[k] && typeof gMap[k].score === "number" ? gMap[k].score : "");
+      rows.push(baseCols.concat(itemCols).map(esc).join(","));
+    }
+  }
+  return { csv: rows.join("\n"), rowCount: Math.max(0, rows.length - 1), preset: mode, headers };
+}
 function siCreateSessionAutosave() {
   let pending = null;
   let delayTimer = null;
@@ -1541,6 +3163,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
   const [queue, setQueue] = useState([]);
   const [decryptingAll, setDecryptingAll] = useState(false);
   const [expandedRow, setExpandedRow] = useState(null);
+  const [queueViewMode, setQueueViewMode] = useState("student");
   const [workStoryModels, setWorkStoryModels] = useState({});
   React.useEffect(() => {
     const P = window.AlloModules && window.AlloModules.Provenance;
@@ -1588,6 +3211,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
   const [alloSheetFeedback, setAlloSheetFeedback] = useState({ kind: "", text: "" });
   const [gradebookGroupBy, setGradebookGroupBy] = useState("submission");
   const [expandedStudent, setExpandedStudent] = useState(null);
+  const [lmsCsvPreset, setLmsCsvPreset] = useState("alloflow");
   const sessionLoadedRef = useRef(false);
   const sessionAutosaveRef = useRef(null);
   if (!sessionAutosaveRef.current) sessionAutosaveRef.current = siCreateSessionAutosave();
@@ -1952,12 +3576,13 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
               }
               const declaresSubmission = p && p.kind === "alloflow-student-submission";
               const looksResponseShaped = p && (p.responses && typeof p.responses === "object" || p.answers && typeof p.answers === "object");
-              if (p && (declaresSubmission || looksResponseShaped) && !p.ciphertext) {
+              const declaresAnnotations = p && (p.kind === "alloflow-annotations" || Array.isArray(p.annotations) && !p.ciphertext);
+              if (p && (declaresSubmission || looksResponseShaped || declaresAnnotations) && !p.ciphertext) {
                 const importedNickname = ["nickname", "studentName", "studentNickname"].map((key) => Object.prototype.hasOwnProperty.call(p, key) && typeof p[key] === "string" ? siStableIdentityValue(p[key]) : "").find(Boolean) || "?";
                 const normalizedPayload = p.responses ? { ...p, nickname: importedNickname } : {
                   ...p,
                   nickname: importedNickname,
-                  timestamp: p.timestamp || p.submissionDate || null,
+                  timestamp: p.timestamp || p.submissionDate || p.exportedAt || null,
                   docTitle: p.docTitle || "AlloFlow assignment",
                   responses: p.answers || {}
                 };
@@ -2239,30 +3864,38 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       addToast && addToast(tr("Gemini API not ready. Open a regular AlloFlow window first so the API key loads."), "error");
       return;
     }
-    const calibrationSamples = [];
-    if (Array.isArray(anchors) && anchors.length > 0) {
-      anchors.forEach((a) => {
-        calibrationSamples.push({
-          studentResponse: a.studentResponse,
-          teacherScore: a.teacherScore,
-          teacherFeedback: a.teacherFeedback || ""
-        });
-      });
-    }
-    if (r.exemplar && r.exemplar.trim() && calibrationSamples.length < 5) {
-      calibrationSamples.push({
-        studentResponse: r.exemplar.trim(),
-        teacherScore: 95,
-        teacherFeedback: "Teacher-provided exemplar \u2014 full credit anchor."
-      });
-    }
-    const cappedSamples = calibrationSamples.slice(0, 5);
     const allResponseEntries = siResponseEntryModels(row.payload);
-    const aiGradableKeys = new Set(allResponseEntries.filter((entry) => entry.aiGradable).map((entry) => entry.key));
+    const entryByKey = new Map(allResponseEntries.map((entry) => [entry.key, entry]));
     const anchoredKeys = /* @__PURE__ */ new Set();
+    const matchedAnchors = [];
     anchors.forEach((a) => {
-      if (a.fromSubmissionIdx === idx && a.fromResponseKey && aiGradableKeys.has(a.fromResponseKey)) anchoredKeys.add(a.fromResponseKey);
+      if (a.fromSubmissionIdx !== idx || !a.fromResponseKey) return;
+      const entry = entryByKey.get(a.fromResponseKey);
+      if (!entry || !entry.answered || !entry.aiGradable) return;
+      if (a.studentResponse && String(a.studentResponse) !== String(entry.rawText)) return;
+      anchoredKeys.add(a.fromResponseKey);
+      matchedAnchors.push(a);
     });
+    if (matchedAnchors.length > 0) {
+      setReviewedRows((previous) => {
+        if (!previous[idx]) return previous;
+        const next = { ...previous };
+        delete next[idx];
+        return next;
+      });
+      setGrades((prev) => {
+        const rowGrades = { ...prev[idx] || {} };
+        matchedAnchors.forEach((a) => {
+          rowGrades[a.fromResponseKey] = {
+            score: a.teacherScore,
+            status: "correct",
+            feedback: "\u{1F4CC} Teacher-anchored: " + (a.teacherFeedback || tr("(no note)")),
+            origin: "teacher-anchor"
+          };
+        });
+        return { ...prev, [idx]: rowGrades };
+      });
+    }
     const structuredResponseCount = allResponseEntries.filter((entry) => entry.requiresManualReview).length;
     const responseEntries = allResponseEntries.filter((entry) => entry.rawText && entry.aiGradable && !anchoredKeys.has(entry.key));
     if (responseEntries.length === 0) {
@@ -2279,30 +3912,25 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       delete next[idx];
       return next;
     });
-    setGrades((prev) => {
-      const rowGrades = { ...prev[idx] || {} };
-      anchors.forEach((a) => {
-        if (a.fromSubmissionIdx === idx && a.fromResponseKey && aiGradableKeys.has(a.fromResponseKey)) {
-          rowGrades[a.fromResponseKey] = {
-            score: a.teacherScore,
-            status: "correct",
-            feedback: "\u{1F4CC} Teacher-anchored: " + (a.teacherFeedback || tr("(no note)")),
-            origin: "teacher-anchor"
-          };
-        }
-      });
-      return { ...prev, [idx]: rowGrades };
-    });
     let ok = 0, fail = 0;
+    const rowScope = {
+      docId: row.payload && row.payload.docId || "",
+      assignmentId: row.payload && row.payload.assignmentId || "",
+      formId: row.payload && row.payload.formId || "",
+      docTitle: row.docTitle || row.payload && row.payload.docTitle || ""
+    };
     for (let i = 0; i < responseEntries.length; i++) {
       const entry = responseEntries[i];
       const key = entry.key;
       const value = entry.rawText;
       try {
         const itemContext = contextText;
+        const trustedPrompt = siLookupTrustedHistoryPrompt(key, history);
+        const fullItemContext = trustedPrompt ? itemContext ? itemContext + "\n" + trustedPrompt : trustedPrompt : itemContext;
+        const cappedSamples = siCalibrationSamplesForKey(anchors, key, r.exemplar, rowScope);
         const result = await QH.gradeFreeformAnswerWithCalibration({
           rubric: rubricText,
-          context: itemContext,
+          context: fullItemContext,
           studentResponse: String(value),
           calibrationSamples: cappedSamples,
           callGemini
@@ -2407,12 +4035,18 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       addToast && addToast(tr("Manual score saved."), "success");
       return;
     }
+    const anchorRow = queue[pendingAnchor.submissionIdx];
+    const anchorPayload = anchorRow && anchorRow.payload && typeof anchorRow.payload === "object" ? anchorRow.payload : {};
     setAnchors((prev) => [...prev, {
       studentResponse: pendingAnchor.responseText,
       teacherScore: score,
       teacherFeedback: feedback,
       fromSubmissionIdx: pendingAnchor.submissionIdx,
-      fromResponseKey: pendingAnchor.responseKey
+      fromResponseKey: pendingAnchor.responseKey,
+      docId: anchorPayload.docId || "",
+      assignmentId: anchorPayload.assignmentId || "",
+      formId: anchorPayload.formId || "",
+      docTitle: anchorRow && anchorRow.docTitle || anchorPayload.docTitle || ""
     }]);
     setPendingAnchor(null);
     addToast && addToast("Anchor added (" + score + "/100). It will calibrate every future grading run.", "success");
@@ -2439,8 +4073,9 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
   };
   const rowGradeSummary = (idx) => {
     const row = queue[idx];
-    const entries = row && row.payload ? siResponseEntryModels(row.payload).concat(siRoleSwapItems(row.payload, history).concat(siStudentStoryItems(row.payload)).map((rs) => ({ key: rs.key, requiresManualReview: true, expectedCountKnown: true }))) : [];
     const rowGrades = grades[idx] || {};
+    const rawEntries = row && row.payload ? siResponseEntryModels(row.payload).concat(siRoleSwapItems(row.payload, history).concat(siStudentStoryItems(row.payload)).map((rs) => ({ key: rs.key, requiresManualReview: true, expectedCountKnown: true }))) : [];
+    const entries = rawEntries.filter((entry) => !entry.isSelfCheck || Object.prototype.hasOwnProperty.call(rowGrades, entry.key));
     const valid = entries.map((entry) => ({ entry, grade: rowGrades[entry.key] })).filter((item) => {
       const grade = item.grade;
       if (!grade || grade.status === "error" || typeof grade.score !== "number" || !Number.isFinite(grade.score) || grade.score < 0 || grade.score > 100) return false;
@@ -2528,6 +4163,119 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       addToast && addToast("Could not save: " + err.message, "error");
     }
   };
+  const autoScoreRowObjectiveItems = (idx) => {
+    const row = queue[idx];
+    if (!row || !row.payload) return;
+    const auto = siExportedQuizAutoGrades(row.payload, history);
+    const autoKeys = Object.keys(auto);
+    if (!autoKeys.length) {
+      addToast && addToast(tr("No objective quiz answers matched project quiz answer keys."), "info");
+      return;
+    }
+    const existingRow = grades[idx] || {};
+    const toApply = {};
+    let added = 0;
+    autoKeys.forEach((k) => {
+      if (!existingRow[k]) {
+        toApply[k] = auto[k];
+        added++;
+      }
+    });
+    if (!added) {
+      addToast && addToast(tr("All matched objective quiz responses are already scored."), "info");
+      return;
+    }
+    setGrades((previous) => ({
+      ...previous,
+      [idx]: { ...previous[idx] || {}, ...toApply }
+    }));
+    setReviewedRows((previous) => {
+      if (!previous[idx]) return previous;
+      const next = { ...previous };
+      delete next[idx];
+      return next;
+    });
+    addToast && addToast(tr("Auto-scored {n} objective quiz response(s).", { n: added }), "success");
+  };
+  const autoScoreAllObjective = () => {
+    const nextByRow = {};
+    let totalAdded = 0;
+    let rowsTouched = 0;
+    queue.forEach((row, idx) => {
+      if (!row || row.status !== "decrypted" || !row.payload) return;
+      const auto = siExportedQuizAutoGrades(row.payload, history);
+      const existingRow = grades[idx] || {};
+      const patch = {};
+      Object.keys(auto).forEach((k) => {
+        if (!existingRow[k]) {
+          patch[k] = auto[k];
+          totalAdded++;
+        }
+      });
+      if (Object.keys(patch).length > 0) {
+        nextByRow[idx] = patch;
+        rowsTouched++;
+      }
+    });
+    if (!totalAdded) {
+      addToast && addToast(tr("No new objective responses matched project answer keys across decrypted rows."), "info");
+      return;
+    }
+    setGrades((previous) => {
+      const updated = { ...previous };
+      Object.keys(nextByRow).forEach((idxKey) => {
+        updated[idxKey] = { ...updated[idxKey] || {}, ...nextByRow[idxKey] };
+      });
+      return updated;
+    });
+    setReviewedRows((previous) => {
+      const next = { ...previous };
+      Object.keys(nextByRow).forEach((idxKey) => {
+        delete next[idxKey];
+      });
+      return next;
+    });
+    addToast && addToast(tr("Auto-scored {n} objective response(s) across {rows} submission(s).", { n: totalAdded, rows: rowsTouched }), "success");
+  };
+  const downloadBatchFeedbackPacket = () => {
+    const items = queue.map((row, idx) => ({ row, idx, rowGrades: grades[idx] || {} })).filter((entry) => entry.row && entry.row.status === "decrypted" && entry.row.payload && Object.keys(entry.rowGrades).length > 0).map((entry) => ({ row: entry.row, rowGrades: entry.rowGrades, summary: rowGradeSummary(entry.idx) }));
+    if (!items.length) {
+      addToast && addToast(tr("Grade or score at least one submission before creating a batch feedback packet."), "warn");
+      return;
+    }
+    const html = siBuildBatchFeedbackHtml(items, items[0].row.docTitle || items[0].row.payload.docTitle || "Class Feedback Packet");
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "alloflow_batch_feedback_" + (/* @__PURE__ */ new Date()).toISOString().slice(0, 10) + ".html";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      if (a.parentNode) a.parentNode.removeChild(a);
+    }, 200);
+    addToast && addToast(tr("Downloaded batch feedback packet ({n} students).", { n: items.length }), "success");
+  };
+  const downloadStudentFeedbackSheet = (idx) => {
+    const row = queue[idx];
+    if (!row || !row.payload) return;
+    const html = siBuildStudentFeedbackHtml(row, grades[idx] || {}, rowGradeSummary(idx));
+    const safeDoc = String(row.docTitle || row.payload.docTitle || "worksheet").replace(/[^A-Za-z0-9_-]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 60) || "worksheet";
+    const safeNick = String(row.nickname || row.payload.nickname || "student").replace(/[^A-Za-z0-9_-]+/g, "_").replace(/^_+|_+$/g, "").slice(0, 40) || "student";
+    const blob = new Blob([html], { type: "text/html;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = safeDoc + "_" + safeNick + "_feedback.html";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      if (a.parentNode) a.parentNode.removeChild(a);
+    }, 200);
+    addToast && addToast(tr("Downloaded feedback sheet for {student}.", { student: row.nickname || row.payload.nickname || tr("Student") }), "success");
+  };
   const saveAllGradedToGradebook = () => {
     const candidates = queue.map((r, i) => i).filter((i) => Object.keys(grades[i] || {}).length > 0);
     if (candidates.length === 0) {
@@ -2566,12 +4314,9 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       addToast && addToast(tr("Gradebook is empty."), "warn");
       return;
     }
-    const esc = (s) => {
-      const v = (s == null ? "" : String(s)).replace(/\r?\n/g, " ").trim();
-      return /[",]/.test(v) ? '"' + v.replace(/"/g, '""') + '"' : v;
-    };
+    const esc = siCsvCell;
     const headers = ["Nickname", "Class", "Document", "SubmittedAt", "GradedAt", "Source", "ResponseKey", "StudentResponse", "Score", "Status", "AIFeedback", "ReviewState", "Rubric"];
-    const rows = [headers.join(",")];
+    const rows = [headers.map(esc).join(",")];
     for (const entry of gradebookEntries) {
       const respKeys = Object.keys(entry.grades || {});
       if (respKeys.length === 0) {
@@ -2585,7 +4330,7 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       }
     }
     const csv = rows.join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     const dateStr = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
@@ -2598,6 +4343,26 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       if (a.parentNode) a.parentNode.removeChild(a);
     }, 200);
     addToast && addToast("Downloaded gradebook CSV (" + (rows.length - 1) + " row" + (rows.length - 1 === 1 ? "" : "s") + ").", "success");
+  };
+  const exportGradebookSummaryCsv = () => {
+    if (gradebookEntries.length === 0) {
+      addToast && addToast(tr("Gradebook is empty."), "warn");
+      return;
+    }
+    const built = siBuildLmsGradebookCsv(gradebookEntries, lmsCsvPreset);
+    const blob = new Blob(["\uFEFF" + built.csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    const dateStr = (/* @__PURE__ */ new Date()).toISOString().slice(0, 10);
+    a.href = url;
+    a.download = "alloflow_gradebook_summary_" + built.preset + "_" + dateStr + ".csv";
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      URL.revokeObjectURL(url);
+      if (a.parentNode) a.parentNode.removeChild(a);
+    }, 200);
+    addToast && addToast(tr("Downloaded {preset} summary CSV ({n} submissions).", { preset: built.preset, n: built.rowCount }), "success");
   };
   const gradebookSummary = React.useMemo(
     () => gradebookOpen ? siBuildGradebookSummary(gradebookEntries, gradebookGroupBy === "student") : null,
@@ -2625,6 +4390,13 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       onClick: () => saveRowToGradebook(idx),
       style: { padding: "8px 16px", background: "#15803d", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
     }, tr("\u{1F4BE} Save to gradebook")),
+    /* @__PURE__ */ React.createElement("button", {
+      key: "feedback-sheet",
+      type: "button",
+      title: tr("Download a printable HTML feedback sheet for this student"),
+      onClick: () => downloadStudentFeedbackSheet(idx),
+      style: { padding: "8px 14px", background: "#eff6ff", color: "#1e40af", border: "1px solid #93c5fd", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
+    }, tr("\u{1F4C4} Download feedback sheet")),
     /* @__PURE__ */ React.createElement(
       "span",
       { key: "status", role: "status", "aria-live": "polite", style: { fontSize: "0.78rem", color: "#64748b" } },
@@ -3617,6 +5389,20 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   }
                 }, "\u{1F3AF} Grade entire queue (" + (counts.decrypted || 0) + ")"),
                 !bulkGrading && (() => {
+                  const unscoredAutoCount = queue.reduce((acc, row, i) => {
+                    if (!row || row.status !== "decrypted" || !row.payload) return acc;
+                    const auto = siExportedQuizAutoGrades(row.payload, history);
+                    const rowGrades = grades[i] || {};
+                    return acc + Object.keys(auto).filter((k) => !rowGrades[k]).length;
+                  }, 0);
+                  return unscoredAutoCount > 0 && /* @__PURE__ */ React.createElement("button", {
+                    type: "button",
+                    onClick: autoScoreAllObjective,
+                    title: tr("Auto-score objective quiz, Venn, concept-sort, timeline, and math items across all decrypted submissions"),
+                    style: { padding: "8px 14px", background: "#0369a1", color: "white", border: "none", borderRadius: 8, fontWeight: 700, fontSize: "0.85rem", cursor: "pointer" }
+                  }, "\u26A1 Auto-score objective (" + unscoredAutoCount + ")");
+                })(),
+                !bulkGrading && (() => {
                   const gradedCount = queue.filter((_, i) => Object.keys(grades[i] || {}).length > 0).length;
                   return gradedCount > 0 && /* @__PURE__ */ React.createElement("button", {
                     type: "button",
@@ -3864,7 +5650,27 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                   onClick: exportGradebookCsv,
                   title: tr("Download all saved grades as a CSV spreadsheet"),
                   style: { padding: "6px 12px", background: "white", color: "#166534", border: "1px solid #86efac", borderRadius: 6, fontWeight: 600, cursor: "pointer", fontSize: "0.8rem" }
-                }, tr("\u2B07 Export CSV"))
+                }, tr("\u2B07 Export CSV")),
+                /* @__PURE__ */ React.createElement(
+                  "select",
+                  {
+                    "aria-label": tr("Summary CSV LMS format"),
+                    "data-lms-csv-preset": lmsCsvPreset,
+                    value: lmsCsvPreset,
+                    onChange: (e) => setLmsCsvPreset(e.target.value),
+                    style: { padding: "5px 8px", background: "white", color: "#166534", border: "1px solid #86efac", borderRadius: 6, fontWeight: 600, cursor: "pointer", fontSize: "0.8rem" }
+                  },
+                  /* @__PURE__ */ React.createElement("option", { value: "alloflow" }, tr("AlloFlow")),
+                  /* @__PURE__ */ React.createElement("option", { value: "canvas" }, tr("Canvas")),
+                  /* @__PURE__ */ React.createElement("option", { value: "google-classroom" }, tr("Google Classroom")),
+                  /* @__PURE__ */ React.createElement("option", { value: "schoology" }, tr("Schoology"))
+                ),
+                /* @__PURE__ */ React.createElement("button", {
+                  type: "button",
+                  onClick: exportGradebookSummaryCsv,
+                  title: tr("Download a 1-row-per-student LMS summary CSV with item score columns"),
+                  style: { padding: "6px 12px", background: "white", color: "#166534", border: "1px solid #86efac", borderRadius: 6, fontWeight: 600, cursor: "pointer", fontSize: "0.8rem" }
+                }, tr("\u2B07 Summary CSV"))
               )
             ),
             gradebookOpen && /* @__PURE__ */ React.createElement(
@@ -4145,12 +5951,121 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
               tr("Each submission is decrypted in your browser. Nothing leaves this device.")
             )
           ),
-          // Queue table
+          // Queue view-mode toggle + Batch feedback packet action
+          queue.length > 0 && (counts.decrypted || 0) > 0 && /* @__PURE__ */ React.createElement(
+            "div",
+            { style: { display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 8, marginBottom: 10 } },
+            /* @__PURE__ */ React.createElement(
+              "div",
+              { role: "group", "aria-label": tr("Submission review layout"), style: { display: "inline-flex", background: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: 8, padding: 2, gap: 2 } },
+              /* @__PURE__ */ React.createElement("button", {
+                type: "button",
+                "data-si-view-mode": "student",
+                "aria-pressed": queueViewMode === "student",
+                onClick: () => setQueueViewMode("student"),
+                style: { padding: "5px 12px", borderRadius: 6, border: "none", cursor: "pointer", fontSize: "0.8rem", fontWeight: 700, background: queueViewMode === "student" ? "#4f46e5" : "transparent", color: queueViewMode === "student" ? "white" : "#334155" }
+              }, tr("By Student")),
+              /* @__PURE__ */ React.createElement("button", {
+                type: "button",
+                "data-si-view-mode": "question",
+                "aria-pressed": queueViewMode === "question",
+                onClick: () => setQueueViewMode("question"),
+                style: { padding: "5px 12px", borderRadius: 6, border: "none", cursor: "pointer", fontSize: "0.8rem", fontWeight: 700, background: queueViewMode === "question" ? "#4f46e5" : "transparent", color: queueViewMode === "question" ? "white" : "#334155" }
+              }, tr("By Question"))
+            ),
+            queue.some((_, i) => Object.keys(grades[i] || {}).length > 0) && /* @__PURE__ */ React.createElement("button", {
+              type: "button",
+              "data-si-batch-feedback": "true",
+              onClick: downloadBatchFeedbackPacket,
+              title: tr("Download one printable HTML packet combining every graded student feedback sheet"),
+              style: { padding: "6px 12px", background: "#eff6ff", color: "#1e40af", border: "1px solid #93c5fd", borderRadius: 8, fontWeight: 700, fontSize: "0.8rem", cursor: "pointer" }
+            }, tr("\u{1F5A8} Batch feedback packet"))
+          ),
+          // Queue table / By-Question view
           queue.length === 0 ? /* @__PURE__ */ React.createElement(
             "div",
             { role: "status", "aria-live": "polite", style: { padding: "40px 20px", textAlign: "center", color: "#475569", fontSize: "0.95rem", border: "2px dashed #e2e8f0", borderRadius: 12 } },
             tr("No submissions loaded yet. Load your class key, then add files.")
-          ) : /* @__PURE__ */ React.createElement(
+          ) : queueViewMode === "question" && (counts.decrypted || 0) > 0 ? (() => {
+            const groupsMap = /* @__PURE__ */ Object.create(null);
+            const groupOrder = [];
+            queue.forEach((row, rowIdx) => {
+              if (!row || row.status !== "decrypted" || !row.payload) return;
+              siResponseEntryModels(row.payload).forEach((entry) => {
+                if (!Object.prototype.hasOwnProperty.call(groupsMap, entry.key)) {
+                  groupsMap[entry.key] = {
+                    key: entry.key,
+                    question: entry.question,
+                    partLabel: entry.partLabel,
+                    responseType: entry.responseType,
+                    items: []
+                  };
+                  groupOrder.push(groupsMap[entry.key]);
+                }
+                groupsMap[entry.key].items.push({ rowIdx, row, entry, grade: (grades[rowIdx] || {})[entry.key] });
+              });
+            });
+            return /* @__PURE__ */ React.createElement(
+              "div",
+              { "data-si-by-question-view": "true", role: "region", "aria-label": tr("Responses grouped by question"), style: { display: "flex", flexDirection: "column", gap: 12 } },
+              groupOrder.length === 0 ? /* @__PURE__ */ React.createElement("div", { style: { padding: 20, textAlign: "center", color: "#475569", border: "1px solid #e2e8f0", borderRadius: 10 } }, tr("No responses captured across decrypted submissions.")) : groupOrder.map((grp, gIdx) => /* @__PURE__ */ React.createElement(
+                "section",
+                { key: grp.key || gIdx, style: { border: "1px solid #cbd5e1", borderRadius: 10, padding: "12px 14px", background: "white" } },
+                /* @__PURE__ */ React.createElement(
+                  "div",
+                  { style: { display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 8, flexWrap: "wrap", paddingBottom: 8, borderBottom: "1px solid #e2e8f0", marginBottom: 8 } },
+                  /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 700, color: "#0f172a", fontSize: "0.92rem" } }, grp.question),
+                  /* @__PURE__ */ React.createElement(
+                    "div",
+                    { style: { fontSize: "0.75rem", color: "#475569", fontWeight: 600 } },
+                    (grp.partLabel ? grp.partLabel + " \xB7 " : "") + grp.items.filter((it) => it.grade && typeof it.grade.score === "number").length + " / " + grp.items.length + " " + tr("scored")
+                  )
+                ),
+                /* @__PURE__ */ React.createElement(
+                  "div",
+                  { style: { display: "flex", flexDirection: "column", gap: 8 } },
+                  grp.items.map((item, sIdx) => {
+                    const sc = item.grade ? scoreColor(item.grade.score) : null;
+                    const anchored = isResponseAnchored(item.rowIdx, grp.key);
+                    return /* @__PURE__ */ React.createElement(
+                      "div",
+                      { key: sIdx, style: { display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 10, padding: "8px 10px", borderRadius: 8, background: "#f8fafc", border: "1px solid #e2e8f0" } },
+                      /* @__PURE__ */ React.createElement(
+                        "div",
+                        { style: { flex: 1, minWidth: 0 } },
+                        /* @__PURE__ */ React.createElement("div", { style: { fontWeight: 700, color: "#1e293b", fontSize: "0.8rem", marginBottom: 3 } }, item.row.nickname),
+                        /* @__PURE__ */ React.createElement(
+                          "div",
+                          { style: { fontSize: "0.84rem", color: "#0f172a", whiteSpace: "pre-wrap", overflowWrap: "anywhere" } },
+                          item.entry.answered ? item.entry.displayValue : /* @__PURE__ */ React.createElement("em", { style: { color: "#9a3412" } }, tr("No answer submitted"))
+                        ),
+                        item.grade && /* @__PURE__ */ React.createElement(
+                          "div",
+                          { style: { display: "flex", alignItems: "center", gap: 8, marginTop: 4, fontSize: "0.76rem" } },
+                          /* @__PURE__ */ React.createElement("span", { style: { padding: "2px 8px", borderRadius: 999, background: sc.bg, color: sc.color, fontWeight: 700 } }, (typeof item.grade.score === "number" ? item.grade.score : "\u2013") + "/100"),
+                          item.grade.feedback && /* @__PURE__ */ React.createElement("span", { style: { color: "#475569" } }, item.grade.feedback)
+                        )
+                      ),
+                      /* @__PURE__ */ React.createElement(
+                        "div",
+                        { style: { display: "flex", gap: 6, flexShrink: 0, alignItems: "center" } },
+                        /* @__PURE__ */ React.createElement("button", {
+                          type: "button",
+                          onClick: () => openManualScoreForm(item.rowIdx, item.entry),
+                          style: { padding: "3px 9px", borderRadius: 999, background: "#e0f2fe", color: "#075985", border: "1px solid #7dd3fc", fontWeight: 700, fontSize: "0.72rem", cursor: "pointer" }
+                        }, item.grade ? tr("Edit score") : tr("Score")),
+                        !item.entry.requiresManualReview && !item.entry.isSelfCheck && item.entry.answered && !anchored && /* @__PURE__ */ React.createElement("button", {
+                          type: "button",
+                          onClick: () => openAnchorForm(item.rowIdx, grp.key, String(item.entry.rawText)),
+                          style: { padding: "3px 9px", borderRadius: 999, background: "#fffbeb", color: "#92400e", border: "1px solid #fcd34d", fontWeight: 600, fontSize: "0.72rem", cursor: "pointer" }
+                        }, tr("\u{1F4CC} Anchor"))
+                      )
+                    );
+                  })
+                )
+              ))
+            );
+          })() : /* @__PURE__ */ React.createElement(
             "div",
             {
               role: "region",
@@ -4214,11 +6129,32 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                         const prior = previousGradesFor(row.payload.nickname, row.payload.docTitle);
                         const others = prior.filter((p) => p.submittedAt !== row.payload.timestamp);
                         if (others.length === 0) return null;
-                        const lastDate = others.map((p) => p.gradedAt).filter(Boolean).sort().pop();
-                        return /* @__PURE__ */ React.createElement("div", {
-                          style: { marginTop: 4, display: "inline-block", padding: "2px 8px", borderRadius: 999, background: "#fef3c7", color: "#92400e", fontSize: "0.7rem", fontWeight: 600 },
-                          title: tr("This student already has ") + others.length + " graded submission" + (others.length === 1 ? "" : "s") + " for this document in the gradebook. Most recent: " + (lastDate ? new Date(lastDate).toLocaleString() : "unknown")
-                        }, "\u{1F501} Previously graded" + (others.length > 1 ? " (" + others.length + "x)" : "") + (lastDate ? " " + new Date(lastDate).toLocaleDateString() : ""));
+                        const sortedPrior = others.slice().sort((a, b) => String(a.gradedAt || a.submittedAt || "").localeCompare(String(b.gradedAt || b.submittedAt || "")));
+                        const latestPrior = sortedPrior[sortedPrior.length - 1];
+                        const lastDate = latestPrior && latestPrior.gradedAt ? latestPrior.gradedAt : "";
+                        const priorScores = latestPrior && latestPrior.grades ? Object.values(latestPrior.grades).map((g) => g && g.score).filter((s) => typeof s === "number" && Number.isFinite(s)) : [];
+                        const priorAvg = priorScores.length ? Math.round(priorScores.reduce((a, b) => a + b, 0) / priorScores.length) : null;
+                        const currAvg = rowGradeSummary(idx).average;
+                        const delta = currAvg !== null && priorAvg !== null ? currAvg - priorAvg : null;
+                        const currResps = row.payload.responses && typeof row.payload.responses === "object" ? row.payload.responses : {};
+                        const priorResps = latestPrior && latestPrior.responses && typeof latestPrior.responses === "object" ? latestPrior.responses : {};
+                        const changedCount = Object.keys(currResps).filter((k) => String(currResps[k] || "").trim() !== String(priorResps[k] || "").trim()).length;
+                        return /* @__PURE__ */ React.createElement(
+                          "div",
+                          { style: { marginTop: 4, display: "flex", flexWrap: "wrap", gap: 4, alignItems: "center" } },
+                          /* @__PURE__ */ React.createElement("span", {
+                            style: { display: "inline-block", padding: "2px 8px", borderRadius: 999, background: "#fef3c7", color: "#92400e", fontSize: "0.7rem", fontWeight: 600 },
+                            title: tr("This student already has ") + others.length + " graded submission" + (others.length === 1 ? "" : "s") + " for this document in the gradebook. Most recent: " + (lastDate ? new Date(lastDate).toLocaleString() : "unknown")
+                          }, "\u{1F501} Previously graded" + (others.length > 1 ? " (" + others.length + "x)" : "") + (lastDate ? " " + new Date(lastDate).toLocaleDateString() : "")),
+                          delta !== null && /* @__PURE__ */ React.createElement("span", {
+                            "data-si-growth-delta": String(delta),
+                            style: { display: "inline-block", padding: "2px 7px", borderRadius: 999, background: delta > 0 ? "#dcfce7" : delta < 0 ? "#fee2e2" : "#f1f5f9", color: delta > 0 ? "#166534" : delta < 0 ? "#991b1b" : "#475569", fontSize: "0.68rem", fontWeight: 700 }
+                          }, (delta > 0 ? "+" : "") + delta + " pts vs prior"),
+                          changedCount > 0 && /* @__PURE__ */ React.createElement("span", {
+                            "data-si-changed-responses": String(changedCount),
+                            style: { display: "inline-block", padding: "2px 7px", borderRadius: 999, background: "#e0f2fe", color: "#075985", fontSize: "0.68rem", fontWeight: 600 }
+                          }, changedCount + " updated")
+                        );
                       })()
                     ),
                     /* @__PURE__ */ React.createElement(
@@ -4249,8 +6185,18 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                         { style: { background: "#fafafa", padding: "12px 16px", borderTop: "1px solid #e2e8f0", borderBottom: "1px solid #e2e8f0" } },
                         /* @__PURE__ */ React.createElement(
                           "div",
-                          { style: { fontWeight: 700, color: "#475569", fontSize: "0.8rem", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" } },
-                          "Decrypted responses (" + siResponseEntryModels(row.payload).length + ")"
+                          { style: { display: "flex", flexWrap: "wrap", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 8 } },
+                          /* @__PURE__ */ React.createElement(
+                            "div",
+                            { style: { fontWeight: 700, color: "#475569", fontSize: "0.8rem", textTransform: "uppercase", letterSpacing: "0.05em" } },
+                            "Decrypted responses (" + siResponseEntryModels(row.payload).length + ")"
+                          ),
+                          Object.keys(siExportedQuizAutoGrades(row.payload, history)).length > 0 && /* @__PURE__ */ React.createElement("button", {
+                            type: "button",
+                            title: tr("Score objective quiz answers in this worksheet against your project quiz answer keys"),
+                            onClick: () => autoScoreRowObjectiveItems(idx),
+                            style: { padding: "4px 10px", background: "#eef2ff", color: "#3730a3", border: "1px solid #a5b4fc", borderRadius: 6, fontWeight: 700, fontSize: "0.74rem", cursor: "pointer" }
+                          }, tr("\u26A1 Auto-score objective items"))
                         ),
                         row.payload.takeHome && siTakeHomeResult(row.payload.takeHome),
                         /* Applied Challenge Studio export: the response keys carry
@@ -4328,16 +6274,26 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                   /* @__PURE__ */ React.createElement("code", { style: { display: "block", whiteSpace: "pre-wrap", overflowWrap: "anywhere" } }, String(entry.rawText).slice(0, 12e3))
                                 )
                               ),
-                              entry.requiresManualReview ? /* @__PURE__ */ React.createElement("button", { type: "button", onClick: () => openManualScoreForm(idx, entry), title: tr("Score this response yourself. It is not sent to the free-response AI grader."), style: { display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, background: "#e0f2fe", color: "#075985", border: "1px solid #7dd3fc", fontWeight: 700, fontSize: "0.72rem", flexShrink: 0, whiteSpace: "nowrap", cursor: "pointer" } }, g && g.origin === "teacher-edit" ? tr("Edit score") : tr("Score manually")) : entry.answered && (isAnchored ? /* @__PURE__ */ React.createElement(
-                                "span",
-                                { style: { display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 999, background: "#fde68a", color: "#92400e", fontWeight: 700, fontSize: "0.72rem", flexShrink: 0 } },
-                                "\u{1F4CC} Anchor " + anchorScore + "/100"
-                              ) : /* @__PURE__ */ React.createElement("button", {
-                                type: "button",
-                                onClick: () => openAnchorForm(idx, k, String(v)),
-                                title: tr("Mark this response as a calibration anchor. The AI will use it as an example to match your scoring."),
-                                style: { padding: "2px 8px", background: "#fffbeb", color: "#92400e", border: "1px solid #fcd34d", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }
-                              }, tr("\u{1F4CC} Anchor")))
+                              /* @__PURE__ */ React.createElement(
+                                "div",
+                                { style: { display: "flex", gap: 6, flexShrink: 0, alignItems: "center" } },
+                                /* @__PURE__ */ React.createElement("button", {
+                                  type: "button",
+                                  onClick: () => openManualScoreForm(idx, entry),
+                                  title: entry.requiresManualReview ? tr("Score this response yourself. It is not sent to the free-response AI grader.") : tr("Manually override or enter a teacher score for this response."),
+                                  style: { display: "inline-flex", alignItems: "center", padding: "3px 9px", borderRadius: 999, background: "#e0f2fe", color: "#075985", border: "1px solid #7dd3fc", fontWeight: 700, fontSize: "0.72rem", flexShrink: 0, whiteSpace: "nowrap", cursor: "pointer" }
+                                }, g && g.origin === "teacher-edit" ? tr("Edit score") : entry.requiresManualReview ? tr("Score manually") : tr("Score")),
+                                !entry.requiresManualReview && !entry.isSelfCheck && entry.answered && (isAnchored ? /* @__PURE__ */ React.createElement(
+                                  "span",
+                                  { style: { display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 8px", borderRadius: 999, background: "#fde68a", color: "#92400e", fontWeight: 700, fontSize: "0.72rem", flexShrink: 0 } },
+                                  "\u{1F4CC} Anchor " + anchorScore + "/100"
+                                ) : /* @__PURE__ */ React.createElement("button", {
+                                  type: "button",
+                                  onClick: () => openAnchorForm(idx, k, String(v)),
+                                  title: tr("Mark this response as a calibration anchor. The AI will use it as an example to match your scoring."),
+                                  style: { padding: "2px 8px", background: "#fffbeb", color: "#92400e", border: "1px solid #fcd34d", borderRadius: 999, fontSize: "0.72rem", fontWeight: 600, cursor: "pointer", flexShrink: 0, whiteSpace: "nowrap" }
+                                }, tr("\u{1F4CC} Anchor")))
+                              )
                             ),
                             g && /* @__PURE__ */ React.createElement(
                               "div",
@@ -4385,6 +6341,43 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
                                 }),
                                 moreActivities > 0 && /* @__PURE__ */ React.createElement("span", { key: "act-more", style: Object.assign({}, chip, { color: "#64748b" }) }, tr("+{n} more", { n: moreActivities }))
                               )
+                            ),
+                            ev.annotations && ev.annotations.length > 0 && /* @__PURE__ */ React.createElement(
+                              "div",
+                              { style: { marginBottom: 8 } },
+                              /* @__PURE__ */ React.createElement("div", { style: subheading }, tr("Highlights & notes ({n})", { n: ev.annotations.length })),
+                              ev.annotations.slice(0, 50).map(function(anno, i) {
+                                const annoLabel = anno.type === "highlight" ? tr("Highlight") : anno.type === "draw" ? tr("Drawing") : anno.type === "voice" ? tr("Voice note") : tr("Note");
+                                const drawSvgSpec = (() => {
+                                  if (anno.type !== "draw" || !Array.isArray(anno.points) || anno.points.length < 2) return null;
+                                  let minX = anno.points[0].x, maxX = anno.points[0].x, minY = anno.points[0].y, maxY = anno.points[0].y;
+                                  for (let pi = 1; pi < anno.points.length; pi++) {
+                                    if (anno.points[pi].x < minX) minX = anno.points[pi].x;
+                                    if (anno.points[pi].x > maxX) maxX = anno.points[pi].x;
+                                    if (anno.points[pi].y < minY) minY = anno.points[pi].y;
+                                    if (anno.points[pi].y > maxY) maxY = anno.points[pi].y;
+                                  }
+                                  const pad = (anno.strokeWidth || 4) + 4;
+                                  const bx = minX - pad, by = minY - pad;
+                                  const bw = Math.max(20, maxX - minX + pad * 2), bh = Math.max(20, maxY - minY + pad * 2);
+                                  const d = anno.points.map((pt, idx2) => (idx2 === 0 ? "M" : "L") + Math.round((pt.x - bx) * 10) / 10 + " " + Math.round((pt.y - by) * 10) / 10).join(" ");
+                                  return { bw, bh, d };
+                                })();
+                                return /* @__PURE__ */ React.createElement(
+                                  "div",
+                                  { key: "anno-" + i, style: { marginBottom: 5, background: "white", border: "1px solid #fde68a", borderLeft: "4px solid #f59e0b", borderRadius: 6, padding: "6px 8px", fontSize: "0.8rem", color: "#1e293b" } },
+                                  /* @__PURE__ */ React.createElement("div", { style: { fontSize: "0.68rem", fontWeight: 700, color: "#92400e", textTransform: "uppercase", marginBottom: 2 } }, annoLabel),
+                                  anno.quote && /* @__PURE__ */ React.createElement("div", { style: { fontStyle: "italic", color: "#475569", marginBottom: anno.note ? 3 : 0 } }, "\u201C" + anno.quote + "\u201D"),
+                                  anno.note && /* @__PURE__ */ React.createElement("div", { style: { whiteSpace: "pre-wrap", overflowWrap: "anywhere" } }, anno.note),
+                                  drawSvgSpec && /* @__PURE__ */ React.createElement(
+                                    "svg",
+                                    { role: "img", "aria-label": tr("Student drawing"), viewBox: "0 0 " + drawSvgSpec.bw + " " + drawSvgSpec.bh, style: { display: "block", maxWidth: "100%", maxHeight: 160, background: "#f8fafc", border: "1px solid #cbd5e1", borderRadius: 4, marginTop: 4 } },
+                                    /* @__PURE__ */ React.createElement("path", { d: drawSvgSpec.d, fill: "none", stroke: anno.strokeHex || "#dc2626", strokeWidth: anno.strokeWidth || 4, strokeLinecap: "round", strokeLinejoin: "round" })
+                                  ),
+                                  anno.type === "draw" && anno.dataUrl && !drawSvgSpec && /* @__PURE__ */ React.createElement("img", { src: anno.dataUrl, alt: tr("Student drawing"), style: { display: "block", maxWidth: "100%", maxHeight: 160, border: "1px solid #cbd5e1", borderRadius: 4, marginTop: 4 } }),
+                                  anno.type === "voice" && anno.audioSrc && /* @__PURE__ */ React.createElement("audio", { controls: true, preload: "metadata", src: anno.audioSrc, style: { width: "100%", maxWidth: 320, height: 32, marginTop: 4 } })
+                                );
+                              })
                             ),
                             (ev.interviews.length > 0 || ev.roleSwaps.length > 0) && /* @__PURE__ */ React.createElement(
                               "div",
@@ -4834,7 +6827,15 @@ function SubmissionInboxOpen({ isOpen, onClose, rosterKey, t, addToast, onOpenAl
       AssessmentReport: SiAssessmentReport,
       prepareAlloSheetSource: siPrepareAlloSheetSavedSource,
       getAlloSheetOptions: siSubmissionInboxAlloSheetOptions,
-      buildAlloSheetEnvelope: siBuildSubmissionInboxAlloSheetEnvelope
+      buildAlloSheetEnvelope: siBuildSubmissionInboxAlloSheetEnvelope,
+      studentAnnotations: siStudentAnnotations,
+      exportedQuizAutoGrades: siExportedQuizAutoGrades,
+      buildStudentFeedbackHtml: siBuildStudentFeedbackHtml,
+      buildBatchFeedbackHtml: siBuildBatchFeedbackHtml,
+      lookupTrustedHistoryPrompt: siLookupTrustedHistoryPrompt,
+      calibrationSamplesForKey: siCalibrationSamplesForKey,
+      workEvidence: siWorkEvidence,
+      buildLmsGradebookCsv: siBuildLmsGradebookCsv
     }
   };
   console.log('[CDN] SubmissionInbox loaded');

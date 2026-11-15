@@ -4908,9 +4908,11 @@ function vsPcmToWav(pcmBytes, sampleRate) {
       if (h === 'localhost' || h === '127.0.0.1') return true;
       if (u.protocol !== 'https:') return false;
       return h === 'alloflow-cdn.pages.dev'
-        || /(^|\.)pages\.dev$/.test(h)
-        || /(^|\.)web\.app$/.test(h)
-        || /(^|\.)firebaseapp\.com$/.test(h)
+        || h.endsWith('.alloflow-cdn.pages.dev')
+        || /^(?:[a-z0-9-]+\.)*alloflow(?:-[a-z0-9-]+)*\.(?:pages\.dev|web\.app|firebaseapp\.com)$/.test(h)
+        || h === 'alloflow.org' || h.endsWith('.alloflow.org')
+        || h === 'alloflow.app' || h.endsWith('.alloflow.app')
+        || h === 'alloflow.com' || h.endsWith('.alloflow.com')
         // Gemini Canvas hosts. The list was missing usercontent.goog, which is
         // the origin Canvas actually serves from, so a teacher working on the
         // primary surface was warned that their own app was an unrecognised
@@ -4920,10 +4922,9 @@ function vsPcmToWav(pcmBytes, sampleRate) {
         || /(^|\.)googleusercontent\.com$/.test(h)
         || /(^|\.)usercontent\.goog$/.test(h)
         || h === 'usercontent.goog'
+        || /(^|\.)idx\.google\.com$/.test(h)
         || /(^|\.)idx\.google$/.test(h)
-        || h === 'idx.google'
-        || /(^|\.)run\.app$/.test(h)
-        || h === 'run.app';
+        || h === 'idx.google';
     } catch (_) { return false; }
   }
   var unknownOriginSendApproved = false;

@@ -2685,7 +2685,11 @@
       "evidence_complete", "evidence_sufficient", "unscored_items", "data_quality_issues"
     ].join(","));
     (sessions || []).forEach(function (s) {
-      function txt(x) { return '"' + String(x || "").replace(/"/g, '""') + '"'; }
+      function txt(x) {
+        var raw = String(x === undefined || x === null ? "" : x);
+        var safe = /^(?:[\t\r\n ]*[=+\-@]|[\t\r])/.test(raw) ? "'" + raw : raw;
+        return '"' + safe.replace(/"/g, '""') + '"';
+      }
       function num(x) { return x === null || x === undefined ? "" : (typeof x === "number" ? x.toFixed(4) : String(x)); }
       var trResults = (s.itemResults || []).filter(function (r) { return r.phase === "transfer"; });
       var trSum = sumItemResultScores(trResults);
@@ -2857,7 +2861,11 @@
     ].join(","));
     itemStats.forEach(function (it) {
       function num(x) { return x === null || x === undefined ? "" : (typeof x === "number" ? x.toFixed(3) : String(x)); }
-      function txt(x) { return '"' + String(x || "").replace(/"/g, '""') + '"'; }
+      function txt(x) {
+        var raw = String(x === undefined || x === null ? "" : x);
+        var safe = /^(?:[\t\r\n ]*[=+\-@]|[\t\r])/.test(raw) ? "'" + raw : raw;
+        return '"' + safe.replace(/"/g, '""') + '"';
+      }
       rows.push([
         txt(it.itemId), txt(it.construct), txt(it.domain), txt(it.difficulty), txt(it.gradeBand),
         it.n, it.pretestN, num(it.pretestPassRate),
@@ -6573,9 +6581,22 @@
       if (!live.mounted || version !== live.version || live.api !== (window.AlloModules && window.AlloModules.IdentifierRedaction) || (options.signal && options.signal.aborted)) throw cancelled();
       return approved;
     }
+    function isUsableProvider(provider, k) {
+      if (typeof provider !== "function" || provider._alloQrBlocked) return false;
+      var w = typeof window !== "undefined" ? window : null;
+      if (w && w.__alloStudentAiDisabled === true) return false;
+      if (w && typeof w.__alloAiUsable === "function") {
+        try { return !!w.__alloAiUsable(k === "imageEdit" ? "imageEdit" : "text", provider); } catch (_) { return false; }
+      }
+      return true;
+    }
     function wrap(provider, kind) {
       live.providers[kind] = provider;
-      if (typeof provider !== "function" || !enabled) return provider;
+      if (!isUsableProvider(provider, kind)) {
+        live.providers[kind] = null;
+        return null;
+      }
+      if (!enabled) return provider;
       var wrapped = async function () {
         var args = Array.prototype.slice.call(arguments);
         daRequireWorkspace(workspace);

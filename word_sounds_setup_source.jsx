@@ -5088,7 +5088,10 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         // setup: the current setup as data; setupKey: its signature, to mark a proposal made for an older setup.
         const send = async ({ message, mode, setup, setupKey }) => {
             const text = String(message || '').trim();
-            if (!enabled || !text || typeof callGemini !== 'function') return false;
+            const plannerAiUsable = typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function'
+                ? window.__alloAiUsable('text', callGemini)
+                : (typeof window === 'undefined' || (!window.__alloStudentAiDisabled && !window._alloQrBlocked)) && typeof callGemini === 'function' && !callGemini._alloQrBlocked;
+            if (!enabled || !text || !plannerAiUsable) return false;
             if (pending.current) pending.current.abort();
             const request = ++latest.current;
             const controller = new AbortController();
@@ -5968,7 +5971,8 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
         React.useEffect(() => {
             const prefix = WS_CORE.packAudioLanguageKey(wordSoundsLanguage) + '|';
             const ask = aiSyllableWanted.filter(word => !aiSyllableAsked.current.has(prefix + WS_CORE.packAudioKey(word))).slice(0, 40);
-            if (!ask.length || typeof callGemini !== 'function') return;
+            const syllableAiAllowed = Boolean(aiSyllableUsable) && (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function' ? window.__alloAiUsable('text', callGemini) : (typeof callGemini === 'function' && !callGemini._alloQrBlocked && (typeof window === 'undefined' || (!window.__alloStudentAiDisabled && !window._alloQrBlocked))));
+            if (!ask.length || !syllableAiAllowed) return;
             const controller = new AbortController();
             const forget = () => ask.forEach(word => aiSyllableAsked.current.delete(prefix + WS_CORE.packAudioKey(word)));
             const timer = setTimeout(() => {

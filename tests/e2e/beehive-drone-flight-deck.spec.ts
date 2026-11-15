@@ -728,11 +728,11 @@ test('Butterfly observation fits phones, supports keyboard and themes, and recov
 });
 
 test('Butterfly poses stay frozen during inspection and respect model time and reduced motion',async({page})=>{
-  await page.emulateMedia({reducedMotion:'no-preference'});await mount(page);const button=page.locator('[data-flight-inspection-view="butterfly"]');await button.click();
+  await mount(page);await page.emulateMedia({reducedMotion:'no-preference'});await expect(page.locator('[data-beehive-root]')).toHaveAttribute('data-reduced-motion','false');await expect(page.locator('[data-beehive-drone-canvas]')).toHaveAttribute('data-flight-renderer','three-webgl');const button=page.locator('[data-flight-inspection-view="butterfly"]');await button.click();
   async function poses(){return page.evaluate(()=>{const w=window as any;return Array.from({length:8},(_,i)=>{const g=w.__flightWorld.getObjectByName('drone-butterfly-'+i);return {position:g.position.toArray(),yaw:g.rotation.y,wing:g.userData.wings[0].pivot.rotation.z};});});}
   const held=await physics(page),initial=await poses();await button.click();expect(await poses()).toEqual(initial);expect(await physics(page)).toEqual(held);
   await page.evaluate(()=>{(window as any).__testHooks.beehive.droneStateRef.current.simulationClock+=2;});await button.click();expect(await poses()).not.toEqual(initial);expect(await physics(page)).toEqual(held);
-  await page.emulateMedia({reducedMotion:'reduce'});await expect.poll(()=>page.evaluate(()=>matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);await button.click();const reduced=await poses();
+  await page.emulateMedia({reducedMotion:'reduce'});await expect.poll(()=>page.evaluate(()=>matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);await expect(page.locator('[data-beehive-root]')).toHaveAttribute('data-reduced-motion','true');await expect(page.locator('[data-beehive-drone-canvas]')).toHaveAttribute('data-flight-renderer','three-webgl');await button.click();const reduced=await poses();
   await page.evaluate(()=>{(window as any).__testHooks.beehive.droneStateRef.current.simulationClock+=3;});await button.click();expect(await poses()).toEqual(reduced);expect(await physics(page)).toEqual(held);
 });
 

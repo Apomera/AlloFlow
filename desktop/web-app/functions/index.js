@@ -90,10 +90,12 @@ async function verifyCaller(req) {
 }
 
 function clientIpHash(req) {
-  const forwarded = String(req.get("X-Forwarded-For") || req.ip || "").split(",")[0].trim();
-  if (!forwarded) return "";
+  const fastly = String(req.get("Fastly-Client-IP") || "").trim();
+  const xffParts = String(req.get("X-Forwarded-For") || "").split(",").map((s) => s.trim()).filter(Boolean);
+  const candidate = fastly || (xffParts.length ? xffParts[xffParts.length - 1] : String(req.ip || "").trim());
+  if (!candidate) return "";
   const salt = String(process.env.GCLOUD_PROJECT || process.env.GOOGLE_CLOUD_PROJECT || "alloflow");
-  return crypto.createHash("sha256").update(salt + ":ip:" + forwarded).digest("hex");
+  return crypto.createHash("sha256").update(salt + ":ip:" + candidate).digest("hex");
 }
 
 async function enforceRateLimit(uid, scope = "search", limit = SEARCH_REQUESTS_PER_MINUTE, req = null) {

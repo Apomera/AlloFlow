@@ -937,7 +937,15 @@ window.SelHub = window.SelHub || {
       var band = ctx.gradeBand || 'middle';
       var onSafetyFlag = ctx.onSafetyFlag || null;
       // Usable AI? Never typeof alone: a host-blocked fn is truthy (2026-11-04 AI-off sweep).
-      var _cftAiOn = ctx.aiAvailable !== false && (function (fn) { try { if (typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('text', fn); } catch (_) {} return typeof fn === 'function' && !fn._alloQrBlocked && window.__alloStudentAiDisabled !== true; })(callGemini);
+      var _cftFnUsable = function(kind, fn) {
+        if (ctx.aiAvailable === false) return false;
+        if (typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true)) return false;
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable(kind, fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked;
+      };
+      var _cftAiOn = _cftFnUsable('text', callGemini);
+      var _cftImgAiOn = _cftFnUsable('images', callImagen);
+      var _cftVisionAiOn = _cftFnUsable('vision', ctx.callGeminiVision);
       var _cftAO = (window.AlloModules && window.AlloModules.AdventureOffline) || null;
       var _cftTheme = _cftHC ? 'contrast' : (_cftL ? 'light' : 'dark');
       var _cftTr = typeof ctx.t === 'function' ? ctx.t : function(k) { return k; };
@@ -1090,7 +1098,7 @@ window.SelHub = window.SelHub || {
       }
 
       function ensurePortrait(charId, mood) {
-        if (!callImagen) return;
+        if (!callImagen || !_cftImgAiOn) return;
         var char = CAST[charId];
         if (!char) return;
         var entry = portraits[charId] || {};
@@ -1124,7 +1132,7 @@ window.SelHub = window.SelHub || {
 
         calmPromise.then(function(baseUrl) {
           if (!baseUrl) { _setLoading(charId, mood, false); return; }
-          if (!window.callGeminiImageEdit) {
+          if (!_cftFnUsable('images', window.callGeminiImageEdit)) {
             // Edit endpoint unavailable: fall back to calm portrait for this mood.
             var fallbackPatch = {};
             fallbackPatch[mood] = baseUrl;
@@ -1209,7 +1217,7 @@ window.SelHub = window.SelHub || {
           return callGemini(p.prompt, true).catch(function() { return null; });
         });
         var safetyP = (window.SelHub && window.SelHub.assessSafety)
-          ? window.SelHub.assessSafety(msg, band, 'conflicttheater', callGemini).catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
+          ? window.SelHub.assessSafety(msg, band, 'conflicttheater', _cftAiOn ? callGemini : null).catch(function() { return { tier: 0, rationale: '', category: 'none' }; })
           : Promise.resolve({ tier: 0, rationale: '', category: 'none' });
 
         Promise.all(charPromises.concat([safetyP])).then(function(results) {
@@ -1278,6 +1286,7 @@ window.SelHub = window.SelHub || {
             && !coachHintDismissed
             && !ending
             && Object.keys(newPrinciples).length === 0
+            && _cftAiOn
             && callGemini;
           if (shouldHint) {
             var hintTranscript = updatedDialogue.slice(-8).map(function(m) {
@@ -1333,7 +1342,7 @@ window.SelHub = window.SelHub || {
           // Cross-session memory: when scenario ends, generate a per-character
           // memory note via Gemini and persist to ctx.toolData.conflicttheater.memory.
           // Fire-and-forget — does not block UI. Falls back gracefully on failure.
-          if (ending && callGemini) {
+          if (ending && _cftAiOn && callGemini) {
             scenario.characterIds.forEach(function(cid) {
               var ch = CAST[cid];
               if (!ch) return;
@@ -1683,7 +1692,7 @@ window.SelHub = window.SelHub || {
               'Create a short branching scene: what happens, what someone could say, and how the other person reacts. Saved to your work.')
           ),
           // ── Conflict Replay launch card (camera wave; hidden when AI/vision is off) ──
-          ctx.callGeminiVision ? h('button', {
+          _cftVisionAiOn ? h('button', {
             'aria-label': 'Open Conflict Replay: act a scene, record it, and watch the tagged replay',
             onClick: function() { upd('mode', 'replay'); announceSR('Conflict Replay opened.'); },
             style: { width: '100%', textAlign: 'left', marginTop: 14, padding: 12, borderRadius: 12, border: '1px dashed #f59e0b', background: _cftBg('#1e293b'), color: _cftFg('#e2e8f0'), cursor: 'pointer' }
@@ -2213,7 +2222,13 @@ window.SelHub = window.SelHub || {
     var updR = function(patch) { var next = Object.assign({}, r, patch); upd('replay', next); };
     var step = r.step || 'consent';
     var take = r.take || 1;
-    var vision = ctx.callGeminiVision;
+    var visionUsable = (ctx.aiAvailable !== false)
+      && !(typeof window !== 'undefined' && (window.__alloStudentAiDisabled === true || window.__alloAiSecretsLocked === true))
+      && (function(fn) {
+        try { if (typeof window !== 'undefined' && typeof window.__alloAiUsable === 'function') return !!window.__alloAiUsable('vision', fn); } catch (_) {}
+        return typeof fn === 'function' && !fn._alloQrBlocked;
+      })(ctx.callGeminiVision);
+    var vision = visionUsable ? ctx.callGeminiVision : null;
     var exit = function() { _crRelease(true); if (ctx.updateMulti) ctx.updateMulti('conflicttheater', { mode: 'select', replay: { savedTags: r.savedTags || null } }); else upd('mode', 'select'); };
     var card = function(children, extra) { return h('div', Object.assign({ style: { padding: 14, borderRadius: 12, background: bg('#1e293b'), border: '1px solid #334155', marginBottom: 12 } }, extra || {}), children); };
     var caption = h('p', { role: 'note', style: { fontSize: 11, color: fg('#94a3b8'), fontStyle: 'italic', margin: '8px 0 0' } }, '🔍 ' + _CR_CAPTION);
@@ -2272,6 +2287,7 @@ window.SelHub = window.SelHub || {
             var fr = new FileReader();
             fr.onload = function() {
               var b64 = String(fr.result || '').split(',')[1] || '';
+              if (!vision) { _crT.takes[take - 1] = null; _crT.analyzing = false; updR({ step: 'replay' }); return; }
               vision(_CR_PROMPT, b64, blob.type || 'video/webm').then(function(res) {
                 var parsed = _crParse(res);
                 if (parsed && parsed.crisis) {

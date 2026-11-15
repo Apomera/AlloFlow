@@ -136,7 +136,8 @@ function spedRollup(cases, today) {
 }
 function spedCsv(cases, today) {
   const esc = (v) => {
-    const s = v == null ? "" : String(v);
+    const raw = v == null ? "" : String(v);
+    const s = /^[\t\r\n]/.test(raw) || /^\s*[=+\-@]/.test(raw) ? "'" + raw : raw;
     return /[",\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
   };
   const head = ["student_code", "type", "provider", "key_date", "due_date", "days_until_due", "status", "completed_at"];

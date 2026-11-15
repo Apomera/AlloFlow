@@ -73,6 +73,7 @@ const ASSET_ORIGIN = 'https://alloflow-render.local';
           lib.GlobalWorkerOptions.workerSrc = `${origin}/build/pdf.worker.min.mjs`;
           window.__pdfDoc = await lib.getDocument({
             data: bytes,
+            isEvalSupported: false,
             cMapUrl: `${origin}/cmaps/`,
             cMapPacked: true,
             standardFontDataUrl: `${origin}/standard_fonts/`,
@@ -81,7 +82,7 @@ const ASSET_ORIGIN = 'https://alloflow-render.local';
           lib = window.pdfjsLib;
           const workerUrl = URL.createObjectURL(new Blob([atob(workerB64)], { type: 'text/javascript' }));
           lib.GlobalWorkerOptions.workerSrc = workerUrl;
-          window.__pdfDoc = await lib.getDocument({ data: bytes, disableFontFace: true }).promise;
+          window.__pdfDoc = await lib.getDocument({ data: bytes, disableFontFace: true, isEvalSupported: false }).promise;
         }
       }
       const pg = await window.__pdfDoc.getPage(pageNum);

@@ -8304,7 +8304,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
 
     h += '<div class="steps"><strong>\uD83D\uDCD0 Build Steps:</strong><ol>';
     h += '<li>Get <strong>' + physicalPieces + '</strong> (or snap cubes)</li>';
-    if (Object.keys(m.materialCounts || {}).length > 1) h += '<li>Match the digital color key: <strong>' + materialPieces + '</strong></li>';
+    if (Object.keys(m.materialCounts || {}).length > 1) h += '<li>Match the digital color key: <strong>' + escapeReportHtml(materialPieces) + '</strong></li>';
     if (m.isSolidPrism) {
       h += '<li>Build the <strong>bottom layer</strong>: ' + m.L + ' blocks long \u00d7 ' + m.W + ' blocks wide = <strong>' + (m.L * m.W) + ' cubes</strong></li>';
       h += '<li>Stack <strong>' + m.H + ' complete layers</strong> on top of each other</li>';
@@ -15477,8 +15477,8 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
             + '.footer{margin-top:24px;padding-top:8px;border-top:1px solid #e2e8f0;font-size:10px;color:#94a3b8;text-align:center}'
             + '@media print{body{margin:12px}}</style></head><body>';
           h += '<h1>\uD83D\uDCCB MTSS Progress Monitoring Report</h1>';
-          h += '<p><strong>Tool:</strong> ' + r.tool + ' v' + r.version + ' &bull; <strong>Date:</strong> ' + r.sessionLocalDate + ' &bull; <strong>Duration:</strong> ' + r.sessionDuration + '</p>';
-          h += '<div class="tier">' + r.rtiTierSuggestion + '</div>';
+          h += '<p><strong>Tool:</strong> ' + escapeReportHtml(r.tool) + ' v' + escapeReportHtml(r.version) + ' &bull; <strong>Date:</strong> ' + escapeReportHtml(r.sessionLocalDate) + ' &bull; <strong>Duration:</strong> ' + escapeReportHtml(r.sessionDuration) + '</p>';
+          h += '<div class="tier">' + escapeReportHtml(r.rtiTierSuggestion) + '</div>';
 
           h += '<h2>Performance Metrics</h2><div>';
           // Numerator and denominator must come from the SAME model. This printed
@@ -15546,7 +15546,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               var earned = !!earnedBadges[a.id];
               h += '<div style="display:inline-flex;align-items:center;gap:4px;padding:4px 10px;border-radius:6px;font-size:12px;'
                 + (earned ? 'background:#dcfce7;border:1px solid #86efac;color:#166534' : 'background:#f1f5f9;border:1px solid #e2e8f0;color:#94a3b8;opacity:0.5')
-                + '">' + a.icon + ' ' + a.name + '</div>';
+                + '">' + escapeReportHtml(a.icon) + ' ' + escapeReportHtml(a.name) + '</div>';
             });
             h += '</div>';
           }
@@ -15554,15 +15554,15 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           h += '<h2>Standards Addressed</h2><ul>';
           r.standardsAddressed.forEach(function(s) {
             var desc = s === '5.MD.C.3' ? 'Recognize volume as an attribute of solid figures' : s === '5.MD.C.4' ? 'Measure volume by counting unit cubes' : s === '5.MD.C.5' ? 'Relate volume to multiplication and addition' : s;
-            h += '<li><strong>' + s + '</strong> \u2014 ' + desc + '</li>';
+            h += '<li><strong>' + escapeReportHtml(s) + '</strong> \u2014 ' + escapeReportHtml(desc) + '</li>';
           });
           h += '</ul>';
           if (r.measurementDetails && r.measurementDetails.length > 0) {
             h += '<h2>Measurement-Level Evidence</h2><table><tr><th>#</th><th>Time</th><th>Structure</th><th>Measured V</th><th>Committed estimate</th><th>Absolute % difference (descriptive, ungraded)</th><th>Surface</th><th>Blocks</th><th>Materials</th></tr>';
             r.measurementDetails.forEach(function(m) {
-              h += '<tr><td>' + m.sequence + '</td><td>' + (m.elapsed || '&mdash;') + '</td><td>' + m.shape + (m.dimensions ? '<br><small>' + m.dimensions + '</small>' : '') + '</td>';
+              h += '<tr><td>' + m.sequence + '</td><td>' + (m.elapsed ? escapeReportHtml(m.elapsed) : '&mdash;') + '</td><td>' + escapeReportHtml(m.shape) + (m.dimensions ? '<br><small>' + escapeReportHtml(m.dimensions) + '</small>' : '') + '</td>';
               h += '<td>' + (m.occupiedVolume === null ? '&mdash;' : formatVolume(m.occupiedVolume)) + '</td><td>' + (m.prediction === null ? '&mdash;' : formatVolume(m.prediction)) + '</td><td>' + (m.predictionPercentError === null ? '&mdash;' : m.predictionPercentError + '%') + '</td>';
-              h += '<td>' + (m.surfaceArea === null ? '&mdash;' : m.surfaceArea) + '</td><td>' + (m.blocks === null ? '&mdash;' : m.blocks) + '</td><td>' + (m.materials.length ? m.materials.join(', ') : '&mdash;') + '</td></tr>';
+              h += '<td>' + (m.surfaceArea === null ? '&mdash;' : m.surfaceArea) + '</td><td>' + (m.blocks === null ? '&mdash;' : m.blocks) + '</td><td>' + (m.materials.length ? escapeReportHtml(m.materials.join(', ')) : '&mdash;') + '</td></tr>';
             });
             h += '</table>';
           }
@@ -15570,9 +15570,9 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           if (r.questionDetails && r.questionDetails.length > 0) {
             h += '<h2>Question-Level Detail</h2><table><tr><th>#</th><th>NPC</th><th>Question</th><th>Result</th><th>Time</th></tr>';
             r.questionDetails.forEach(function(q, i) {
-              h += '<tr><td>' + (i + 1) + '</td><td>' + (q.npc || '\u2014') + '</td><td style="font-size:11px">' + (q.question || '\u2014') + '</td>';
+              h += '<tr><td>' + (i + 1) + '</td><td>' + (q.npc ? escapeReportHtml(q.npc) : '\u2014') + '</td><td style="font-size:11px">' + (q.question ? escapeReportHtml(q.question) : '\u2014') + '</td>';
               h += '<td style="color:' + (q.correct ? '#22c55e' : '#ef4444') + ';font-weight:700">' + (q.correct ? '\u2713 Correct' : '\u2717 Incorrect') + '</td>';
-              h += '<td>' + (q.elapsedSeconds === null ? (q.timestamp || '\u2014') : q.elapsedSeconds + 's') + '</td></tr>';
+              h += '<td>' + (q.elapsedSeconds === null ? (q.timestamp ? escapeReportHtml(q.timestamp) : '\u2014') : q.elapsedSeconds + 's') + '</td></tr>';
             });
             h += '</table>';
           }
@@ -15628,7 +15628,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
           h += '</body></html>';
 
           var win = window.open('', '_blank');
-          if (win) { win.document.write(h); win.document.close(); }
+          if (win) { win.opener = null; win.document.write(h); win.document.close(); }
 
           return report;
         };
@@ -16348,6 +16348,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
         }
         var win = window.open('', '_blank');
         if (!win) { if (addToast) addToast('Allow pop-ups to open the print preview, then try again.', 'info'); return false; }
+        win.opener = null;
         try {
           win.document.open(); win.document.write(generateWorksheetHTML(target, options)); win.document.close();
           if (eng && eng.logEvent) eng.logEvent('worksheet_preview', {lesson:target.title, format:mode || 'student'});
@@ -17084,7 +17085,7 @@ function __alloOneWord(s) { if (String(s).indexOf('1 ') < 0) return s; var irr =
               onClick: function() {
                 var card = generateManipulativeCard(measureResult, currentLesson.title);
                 var win = window.open('', '_blank');
-                if (win) { win.document.write(card); win.document.close(); win.print(); }
+                if (win) { win.opener = null; win.document.write(card); win.document.close(); win.print(); }
                 if (addToast) addToast('\uD83E\uDDF1 Build card ready to print!', 'success');
                 var eng = window[engineKey];
                 if (eng && eng.logEvent) eng.logEvent('manipulative_card', { L: measureResult.L, W: measureResult.W, H: measureResult.H, V: measuredVolume(measureResult), boundingVolume: measureResult.boundingVolume });

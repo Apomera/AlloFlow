@@ -2644,6 +2644,17 @@ function MemoryAidPracticePanel(props) {
   );
 }
 
+function _maAiUsable(kind, fn) {
+  if (typeof fn !== 'function' || fn._alloQrBlocked) return false;
+  if (typeof window !== 'undefined') {
+    if (window.__alloStudentAiDisabled === true) return false;
+    if (typeof window.__alloAiUsable === 'function') {
+      try { return !!window.__alloAiUsable(kind, fn); } catch (_) { return false; }
+    }
+  }
+  return true;
+}
+
 function MemoryAidView(props) {
   const {
     generatedContent, isTeacherMode, isProcessing: hostIsProcessing, handleNoteUpdate,
@@ -2801,10 +2812,13 @@ function MemoryAidView(props) {
   const staleActivePractice = !!staleActivePracticeCardId;
   const practiceIsolationActive = !!activePracticeCardId;
   const addToast = typeof addToastProp === 'function' ? addToastProp : function () {};
-  const callGemini = allowRuntimeAi && !learnerReadOnly ? (callGeminiProp === undefined ? (typeof window !== 'undefined' && window.callGemini) : callGeminiProp) : null;
-  const callImagen = allowRuntimeAi && typeof callImagenProp === 'function' ? callImagenProp : null;
-  const callGeminiImageEdit = allowRuntimeAi ? (callGeminiImageEditProp === undefined ? (typeof window !== 'undefined' ? window.callGeminiImageEdit : null) : callGeminiImageEditProp) : null;
-  const callGeminiVision = allowRuntimeAi ? (callGeminiVisionProp === undefined ? (typeof window !== 'undefined' ? window.callGeminiVision : null) : callGeminiVisionProp) : null;
+  const _rawCallGemini = allowRuntimeAi && !learnerReadOnly ? (callGeminiProp === undefined ? (typeof window !== 'undefined' && window.callGemini) : callGeminiProp) : null;
+  const callGemini = _maAiUsable('text', _rawCallGemini) ? _rawCallGemini : null;
+  const callImagen = allowRuntimeAi && _maAiUsable('images', callImagenProp) ? callImagenProp : null;
+  const _rawCallGeminiImageEdit = allowRuntimeAi ? (callGeminiImageEditProp === undefined ? (typeof window !== 'undefined' ? window.callGeminiImageEdit : null) : callGeminiImageEditProp) : null;
+  const callGeminiImageEdit = _maAiUsable('imageEdit', _rawCallGeminiImageEdit) ? _rawCallGeminiImageEdit : null;
+  const _rawCallGeminiVision = allowRuntimeAi ? (callGeminiVisionProp === undefined ? (typeof window !== 'undefined' ? window.callGeminiVision : null) : callGeminiVisionProp) : null;
+  const callGeminiVision = _maAiUsable('vision', _rawCallGeminiVision) ? _rawCallGeminiVision : null;
   const handleSpeak = typeof handleSpeakProp === 'function' ? handleSpeakProp : null;
   const handleDownloadAudio = typeof handleDownloadAudioProp === 'function' ? handleDownloadAudioProp : null;
   const imageAssetTools = typeof window !== 'undefined' && window.AlloModules

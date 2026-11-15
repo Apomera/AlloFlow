@@ -39,8 +39,23 @@
   // contributions. Any configured policy blocks this POST;
   // these payloads are never rerouted to a bug-report endpoint.
   function communityFeedbackBlocked() {
-    try { return Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SUPPORT_REPORTING_POLICY'); }
+    try {
+      return Object.prototype.hasOwnProperty.call(window, 'ALLOFLOW_SUPPORT_REPORTING_POLICY')
+        || window._isDesktopBundledApp === true
+        || window.__alloStudentView === true;
+    }
     catch (_) { return true; }
+  }
+  function scrubFeedbackText(text, maxLen) {
+    var s = String(text == null ? '' : text).trim().slice(0, maxLen || 1000);
+    try {
+      var ir = window.AlloModules && window.AlloModules.IdentifierRedaction;
+      if (ir) {
+        if (typeof ir.scrubPersonalInfo === 'function') s = ir.scrubPersonalInfo(s);
+        if (typeof ir.scrubRosterNames === 'function') s = ir.scrubRosterNames(s);
+      }
+    } catch (_) {}
+    return s;
   }
   var COMMUNITY_BLOCK_MESSAGE = 'Community feedback is disabled in this managed deployment. Your draft stays in this window. Contact your school\'s support team.';
 
@@ -75,7 +90,7 @@
     return out;
   }
   function loadEnglish() {
-    if (EN || EN_LOADING) return;
+    if (EN || EN_LOADING || communityFeedbackBlocked()) return;
     EN_LOADING = true;
     try {
       var cached = localStorage.getItem(EN_CACHE_KEY);
@@ -119,7 +134,7 @@
 
   // Public: called from the host's help-mode click handler.
   function offerFor(ctx) {
-    if (!ctx || !document.body) return;
+    if (!ctx || !document.body || window._isDesktopBundledApp === true || window.__alloStudentView === true) return;
     lastContext = { key: ctx.key || '', current: ctx.current || '', language: currentLanguage(ctx) };
     if (!communityFeedbackBlocked()) loadEnglish();
     ensurePill();
@@ -219,12 +234,12 @@
       if (!suggested) { errEl.textContent = 'Please enter your suggested translation.'; errEl.style.display = 'block'; return; }
       var curEl = panel.querySelector('#allo-tfb-current');
       var payload = {
-        language: ($('allo-tfb-lang').value || lang).trim(),
-        key: ctx.key || '',
-        current: ctx.current || (curEl ? (curEl.value || '').trim() : ''),
-        suggested: suggested,
-        english: english,
-        note: ($('allo-tfb-note').value || '').trim()
+        language: String($('allo-tfb-lang').value || lang).trim().slice(0, 60),
+        key: String(ctx.key || '').trim().slice(0, 160),
+        current: scrubFeedbackText(ctx.current || (curEl ? curEl.value : ''), 1000),
+        suggested: scrubFeedbackText(suggested, 1000),
+        english: String(english || '').trim().slice(0, 1000),
+        note: scrubFeedbackText($('allo-tfb-note').value, 500)
       };
       var sendBtn = $('allo-tfb-send');
       sendBtn.disabled = true; sendBtn.textContent = 'Sending…'; errEl.style.display = 'none';

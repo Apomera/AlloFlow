@@ -128,9 +128,14 @@ if (typeof window !== 'undefined') (function () {
   'use strict';
   if (window.AlloBraille && typeof window.AlloBraille.toUEB === 'function') return;
 
-  var BUILD_URL = 'https://cdn.jsdelivr.net/npm/liblouis-build/build-no-tables-utf16.js';
+  var BUILD_URL = 'https://cdn.jsdelivr.net/npm/liblouis-build@3.2.0-rc/build-no-tables-utf16.js';
+  var BUILD_SRI = 'sha384-3Vz78wWt7SvsOjLwy4TxCA4j+7dd+Uvm5v5QAu0nYgfuPbg/cjGOh9CopBroasyS';
   var EASY_URL = 'https://cdn.jsdelivr.net/npm/liblouis@0.4.0/easy-api.js';
-  var TABLES_URL = 'https://cdn.jsdelivr.net/npm/liblouis-build/tables/';
+  var EASY_SRI = 'sha384-OAr26nwiJiYKNHBnvR/EnsmSQ/QZzaZE31CCJz3XnwgQrfr3ySzBXI52LAJ+HbZ3';
+  var TABLES_URL = 'https://cdn.jsdelivr.net/npm/liblouis-build@3.2.0-rc/tables/';
+  var SRI_BY_URL = {};
+  SRI_BY_URL[BUILD_URL] = BUILD_SRI;
+  SRI_BY_URL[EASY_URL] = EASY_SRI;
   // UEB Grade 2 (contracted), with the Unicode display table so translateString
   // returns Unicode braille cells that we map to Braille-ASCII below.
   var TABLE_LIST = 'unicode.dis,en-ueb-g2.ctb';
@@ -143,8 +148,14 @@ if (typeof window !== 'undefined') (function () {
   var _readyPromise = null;
 
   function loadScript(src) {
+    if (typeof window !== 'undefined' && window._isDesktopBundledApp === true) {
+      return Promise.reject(new Error('External liblouis CDN is disabled in Desktop mode'));
+    }
     return new Promise(function (resolve, reject) {
       var s = document.createElement('script');
+      if (SRI_BY_URL[src]) s.integrity = SRI_BY_URL[src];
+      s.crossOrigin = 'anonymous';
+      s.referrerPolicy = 'no-referrer';
       s.src = src;
       s.async = true;
       s.onload = function () { resolve(); };

@@ -201,12 +201,11 @@ function wrDeliver_(request) {
     return wrError_('bad_recipient', 'A valid teacher email address is required. Feedback is never shared by link.');
   }
 
-  // Optional, on by default: keep delivery inside the deploying account's
-  // domain so a typo cannot send staff feedback to a personal address.
-  var allowedDomain = wrProps_().getProperty(WR_PROP_DOMAIN) || '';
-  var restrict = request.restrictToDomain !== false;
-  if (restrict && allowedDomain && wrDomainOf_(teacherEmail) !== allowedDomain) {
-    return wrError_('outside_domain', 'That address is outside ' + allowedDomain + '. Correct it, or turn off the domain restriction deliberately.');
+  // Always enforce WR_PROP_DOMAIN when configured in Script Properties so a
+  // caller-controlled restrictToDomain=false flag cannot bypass it.
+  var allowedDomain = (wrProps_().getProperty(WR_PROP_DOMAIN) || '').trim().toLowerCase();
+  if (allowedDomain && wrDomainOf_(teacherEmail) !== allowedDomain) {
+    return wrError_('outside_domain', 'That address is outside ' + allowedDomain + '. Ask your Apps Script administrator to update the allowed domain property.');
   }
 
   var disclosure = wrString_(request.disclosure, 2000);
