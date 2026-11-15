@@ -40,9 +40,14 @@
     "standards_snapshots",
     "remotion-trailer",
     "website",
-    "word_audio_shards",
+    "stem_lab",
+    "video_studio",
+    "song_library",
+    "sel_hub",
+    "reading_library",
+    "audio_banks",
+    "data/*",
     "word_audio_bank_part*.json",
-    "word_audio_kokoro_bank.json",
     "duckdb-assets",
     "Sample audiobank.txt"
   ]

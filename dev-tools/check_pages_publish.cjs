@@ -159,6 +159,29 @@ function requiredPublication(root = ROOT, config = loadConfig(root), onFile = ()
     for (const reference of sitemapReferences(fs.readFileSync(path.join(root, 'sitemap.xml'), 'utf8'))) requireReference('index.html', reference);
     // Include the complete generated guide even if a chapter temporarily drops from navigation.
     for (const name of fs.readdirSync(path.join(root, 'guide'))) if (name.endsWith('.html')) queue.push(`guide/${name}`);
+    // Include Packets pages and their dynamically resolved runtime sound/symbol/vocab banks.
+    for (const name of fs.readdirSync(root)) if (/^packets.*\.html$/.test(name)) queue.push(name);
+    if (fs.existsSync(path.join(root, 'packets-make.html'))) {
+        for (const bank of ['audio_bank/phonemes.json', 'audio_bank/isolation.json', 'audio_bank/instructions.json', 'word_audio_kokoro_bank.json', 'audio_bank_kokoro.json']) {
+            required.add(bank);
+        }
+    }
+    const shardIndexPath = path.join(root, 'word_audio_shards/index.json');
+    if (fs.existsSync(shardIndexPath)) {
+        required.add('word_audio_shards/index.json');
+        const shardIndex = JSON.parse(fs.readFileSync(shardIndexPath, 'utf8'));
+        if (shardIndex && shardIndex.shards && typeof shardIndex.shards === 'object') {
+            for (const entry of Object.values(shardIndex.shards)) {
+                if (entry && typeof entry.file === 'string') required.add(`word_audio_shards/${entry.file}`);
+            }
+        }
+    }
+    for (const dir of ['word_sounds_symbols', 'packets_vocab']) {
+        const dirPath = path.join(root, dir);
+        if (fs.existsSync(dirPath)) {
+            for (const name of fs.readdirSync(dirPath)) if (name.endsWith('.json')) required.add(`${dir}/${name}`);
+        }
+    }
     while (queue.length) {
         const file = queue.shift();
         if (visited.has(file)) continue;

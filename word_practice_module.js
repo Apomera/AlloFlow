@@ -850,9 +850,29 @@ window.AlloWordPracticeAnnotationAssets = {"runtime":"(()=>{var vn=(e,t)=>()=>{t
     checkAbort(context);
     const initialStale = pack.items.filter(item => item.wordAudioStatus === 'stale-language' || item.phonemes.some(sound => sound.audioStatus === 'stale-language'));
     initialStale.forEach(item => errors.push(staleAudioMessage(context, item.word)));
+    const voicePref = String(context.selectedVoice || '').trim();
+    const allowAfHeartShard = !/^(af_|am_|bf_|bm_)/i.test(voicePref) || voicePref.toLowerCase() === 'af_heart';
     if (typeof root.loadWordAudioBank === 'function' && pack.items.some(item => !item.wordAudio && defaultEnglish(core.fieldLanguage(item, 'term', pack.language)))) {
       try { await boundedWait(root.loadWordAudioBank(), 6000, 'The word library took too long to respond.', context.signal); }
       catch (error) { if (error.name === 'AbortError') throw error; }
+    }
+    if (allowAfHeartShard && typeof root.prefetchWordShardAudio === 'function') {
+      const missingShardWords = [];
+      const seenShardWords = new Set();
+      for (const item of pack.items) {
+        if (!item || item.wordAudio) continue;
+        if (!defaultEnglish(core.fieldLanguage(item, 'term', pack.language))) continue;
+        const wordKey = core.key(item.word);
+        if (!wordKey || wordKey.includes(' ') || seenShardWords.has(wordKey)) continue;
+        if (wordBankSources(root._CACHE_WORD_AUDIO_BANK, wordKey).length) continue;
+        if (wordBankSources(root._CACHE_WORD_SHARD_CLIPS, wordKey).length) continue;
+        seenShardWords.add(wordKey);
+        missingShardWords.push(wordKey);
+      }
+      if (missingShardWords.length) {
+        try { await boundedWait(root.prefetchWordShardAudio(missingShardWords, { signal: context.signal }), 8000, 'The word library took too long to respond.', context.signal); }
+        catch (error) { if (error && error.name === 'AbortError') throw error; }
+      }
     }
     await warmPhonemeBank(pack, context);
     let audioChars = pack.items.reduce((sum, item) => sum + item.wordAudio.length + (item.wordAudioOriginal ? item.wordAudioOriginal.audio.length : 0)
@@ -891,10 +911,29 @@ window.AlloWordPracticeAnnotationAssets = {"runtime":"(()=>{var vn=(e,t)=>()=>{t
             if (clip) break;
           }
           if (!clip && defaultEnglish(language) && !wordKey.includes(' ')) {
-            for (const source of wordBankSources(root._CACHE_WORD_AUDIO_BANK, wordKey)) {
-              const candidate = await portableClip(source, context, language, { source: 'recorded_bank', language: 'en-US', provider: 'kokoro', resolvedVoice: 'af_heart' });
-              if (candidate.status === 'stale-language') noteMismatch(item, candidate, false);
-              else if (candidate.audio) { clip = candidate; break; }
+            const bankList = allowAfHeartShard
+              ? [root._CACHE_WORD_AUDIO_BANK, root._CACHE_WORD_SHARD_CLIPS]
+              : [root._CACHE_WORD_AUDIO_BANK];
+            let staleBank = false;
+            for (const bank of bankList) {
+              for (const source of wordBankSources(bank, wordKey)) {
+                const candidate = await portableClip(source, context, language, { source: 'recorded_bank', language: 'en-US', provider: 'kokoro', resolvedVoice: 'af_heart' });
+                if (candidate.status === 'stale-language') { noteMismatch(item, candidate, false); staleBank = true; break; }
+                else if (candidate.audio) { clip = candidate; break; }
+              }
+              if (clip || staleBank) break;
+            }
+            if (!clip && !staleBank && allowAfHeartShard && typeof root.getWordShardAudio === 'function') {
+              try {
+                const shardSource = await boundedWait(root.getWordShardAudio(wordKey, { signal: context.signal }), 6000, 'The word library took too long to respond.', context.signal);
+                if (shardSource) {
+                  const candidate = await portableClip(shardSource, context, language, { source: 'recorded_bank', language: 'en-US', provider: 'kokoro', resolvedVoice: 'af_heart' });
+                  if (candidate.status === 'stale-language') noteMismatch(item, candidate, false);
+                  else if (candidate.audio) clip = candidate;
+                }
+              } catch (error) {
+                if (error && error.name === 'AbortError') throw error;
+              }
             }
           }
           if (!clip && !ttsUnavailable && typeof context.callTTS === 'function') {

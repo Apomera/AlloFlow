@@ -6276,11 +6276,28 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
         return { asset: undefined, source: null, context: spokenContext };
       }
       const selected = WS_CORE.selectSyllableCountAudio({ word, language, voice, savedAsset: asset || library?.[key],
-        bankAsset: typeof window !== 'undefined' ? window._CACHE_WORD_AUDIO_BANK?.[key] : null,
+        bankAsset: typeof window !== 'undefined' ? (window._CACHE_WORD_AUDIO_BANK?.[key] || (WS_CORE.isSyllableLanguageSupported(language) ? window._CACHE_WORD_SHARD_CLIPS?.[key] : null)) : null,
         prepared: item?.activityItems?.syllable_counting, recordedTask: item?.activityItems?.syllable_blending, allowSavedProfileMismatch: true });
       return { asset: selected.asset, source: selected.audioSource, profile: selected.profile,
         context: WS_CORE.createSyllableCountAudioContext({ asset: selected.asset, voice, language }) };
     };
+    const wsAllowsWordShardAudio = (language, voice) => {
+      const langRaw = String(language || "English").trim().toLowerCase();
+      const usEnglish =
+        !langRaw ||
+        langRaw === "english" ||
+        langRaw === "en" ||
+        /^en[-_]us$/.test(langRaw) ||
+        (/\b(?:us|american)\b/.test(langRaw) && !/\b(?:uk|british|au|australian)\b/.test(langRaw));
+      if (!usEnglish) return false;
+      const voiceRaw = String(voice || "").trim().toLowerCase();
+      return !/^(af_|am_|bf_|bm_)/i.test(voiceRaw) || voiceRaw === "af_heart";
+    };
+    const wsWordAudioBankWithShards = () => (
+      typeof window === "undefined"
+        ? {}
+        : Object.assign({}, window._CACHE_WORD_AUDIO_BANK || {}, window._CACHE_WORD_SHARD_CLIPS || {})
+    );
     const syllableCountContextKey = (word, language, item, audioContext) => {
       const matches = syllableCountWordKey(item?.targetWord || item?.word || item?.term) === syllableCountWordKey(word);
       const recorded = matches ? item?.activityItems?.syllable_blending : null;
@@ -12449,10 +12466,14 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           if (specialMap[normalizedKey])
             normalizedKey = specialMap[normalizedKey];
           const bankKey =
+            isPhoneme && lower.trim() === "y" &&
             typeof window.__ALLO_PHONEME_AUDIO_BANK !== "undefined" &&
-              window.__ALLO_PHONEME_AUDIO_BANK[normalizedKey]
-              ? normalizedKey
-              : lower;
+            window.__ALLO_PHONEME_AUDIO_BANK["y"]
+              ? "y"
+              : typeof window.__ALLO_PHONEME_AUDIO_BANK !== "undefined" &&
+                window.__ALLO_PHONEME_AUDIO_BANK[normalizedKey]
+                ? normalizedKey
+                : lower;
           if (
             englishPhonemeAudio && typeof window.__ALLO_PHONEME_AUDIO_BANK !== "undefined" &&
             window.__ALLO_PHONEME_AUDIO_BANK[bankKey]
@@ -12568,6 +12589,54 @@ function WordSoundsSyllableCountReview({ word, language, resolution, audioContex
           }
           // A vowel-less ASCII string ("bl", "st") is a sound chunk, not a word: never TTS it.
           const ttsWholeWord = !/^[a-z]+$/i.test(text) || /[aeiouy]/i.test(text);
+          if (
+            typeof window !== "undefined" &&
+            !isPhoneme &&
+            ttsWholeWord &&
+            !/\s/.test(lower.trim()) &&
+            wsAllowsWordShardAudio(wordSoundsLanguage, voiceForTts)
+          ) {
+            const cachedShardUri = window._CACHE_WORD_SHARD_CLIPS && window._CACHE_WORD_SHARD_CLIPS[lower];
+            if (cachedShardUri) {
+              debugLog("⚡ using word_audio_shards cache for:", text);
+              if (typeof heardClipSinkRef !== "undefined" && heardClipSinkRef.current) {
+                heardClipSinkRef.current(text, cachedShardUri, {
+                  provider: "kokoro",
+                  voice: "af_heart",
+                  language: "en",
+                  source: "recorded_bank",
+                });
+              }
+              return loadAndPlay(cachedShardUri);
+            }
+            if (typeof window.getWordShardAudio === "function") {
+              let shardTimer;
+              let fetchedShardUri = null;
+              try {
+                fetchedShardUri = await Promise.race([
+                  window.getWordShardAudio(lower, { retry: false }),
+                  new Promise((resolve) => { shardTimer = setTimeout(() => resolve(null), 6000); }),
+                ]);
+              } catch (_) {
+                fetchedShardUri = null;
+              } finally {
+                clearTimeout(shardTimer);
+              }
+              if (playImmediately && playbackStale()) return { ok: false, status: "cancelled" };
+              if (fetchedShardUri) {
+                debugLog("⚡ fetched word_audio_shards clip for:", text);
+                if (typeof heardClipSinkRef !== "undefined" && heardClipSinkRef.current) {
+                  heardClipSinkRef.current(text, fetchedShardUri, {
+                    provider: "kokoro",
+                    voice: "af_heart",
+                    language: "en",
+                    source: "recorded_bank",
+                  });
+                }
+                return loadAndPlay(fetchedShardUri);
+              }
+            }
+          }
           if (callTTS && voiceForTts && !isPhoneme && ttsWholeWord && !wsStudentDeviceVoiceOnly()) {
             if (ttsInflight.current.has(text)) {
               debugLog(
@@ -17314,7 +17383,10 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   audioCache.current.has(text.toLowerCase())) ||
                 (typeof window !== "undefined" &&
                   window._CACHE_WORD_AUDIO_BANK &&
-                  window._CACHE_WORD_AUDIO_BANK[text.toLowerCase()]);
+                  window._CACHE_WORD_AUDIO_BANK[text.toLowerCase()]) ||
+                (typeof window !== "undefined" &&
+                  window._CACHE_WORD_SHARD_CLIPS &&
+                  window._CACHE_WORD_SHARD_CLIPS[text.toLowerCase()]);
               if (cached) return true;
               // No cache entry even though no throw: treat as failure + retry.
               throw new Error("prefetch completed without caching a URL");
@@ -17331,9 +17403,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           warnLog("Audio prefetch exhausted retries for", text, lastErr && lastErr.message);
           return false;
         };
-        wordsNeedingAudio.forEach(async (w) => {
-          const text = wordKey(w), request = {};
+        const prefetchEntries = wordsNeedingAudio.map((w) => {
+          const text = wordKey(w);
+          const request = {};
           audioPrefetchRequestsRef.current.set(text, request);
+          return { text, request };
+        });
+        const runPerWordPrefetch = async ({ text, request }) => {
           const ok = await tryPrefetch(text, request);
           if (ok !== null && isMountedRef.current && setWsPreloadedWords && audioPrefetchRequestsRef.current.get(text) === request) {
             if (ok) audioLiveFailuresRef.current.delete(text);
@@ -17366,7 +17442,36 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
               }),
             );
           }
-        });
+        };
+        (async () => {
+          const activeVoice = wordSoundsVoiceRef.current || selectedVoice;
+          if (
+            typeof window !== "undefined" &&
+            typeof window.prefetchWordShardAudio === "function" &&
+            wsAllowsWordShardAudio(wordSoundsLanguage, activeVoice)
+          ) {
+            const shardBatch = prefetchEntries
+              .map((entry) => entry.text)
+              .filter((text) =>
+                !/\s/.test(text) &&
+                (/[aeiouy]/i.test(text) || !/^[a-z]+$/i.test(text)) &&
+                !(window._CACHE_WORD_AUDIO_BANK && window._CACHE_WORD_AUDIO_BANK[text]) &&
+                !(window._CACHE_WORD_SHARD_CLIPS && window._CACHE_WORD_SHARD_CLIPS[text])
+              );
+            if (shardBatch.length) {
+              let batchTimer;
+              try {
+                await Promise.race([
+                  window.prefetchWordShardAudio(shardBatch, { retry: false }),
+                  new Promise((resolve) => { batchTimer = setTimeout(resolve, 6000); }),
+                ]);
+              } catch (_) { /* Per-word tryPrefetch still handles fallback. */ }
+              finally { clearTimeout(batchTimer); }
+            }
+          }
+          if (!isMountedRef.current) return;
+          await Promise.all(prefetchEntries.map(runPerWordPrefetch));
+        })();
       }, [preloadedWords, setWsPreloadedWords, isTeacherSpokenWord]);
       // Review panel play button. A success is recorded by handleAudio itself;
       // a play that really failed is recorded here as a runtime failure, so the
@@ -17406,7 +17511,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           if (asset) heard[item.text] = asset;
         }
         if (!Object.keys(heard).length || !isMountedRef.current) return;
-        const bank = (typeof window !== "undefined" && window._CACHE_WORD_AUDIO_BANK) || {};
+        const bank = wsWordAudioBankWithShards();
         setWsPreloadedWords((prev) => mergeHeardWordSoundsClips(prev, heard, bank));
       };
       heardClipSinkRef.current = canSaveHeardClips ? (text, src, profile) => {
@@ -18242,6 +18347,13 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
             await Promise.race([window.loadWordAudioBank({ retry: true }), new Promise(resolve => { bankTimer = setTimeout(resolve, 6000); })]);
           } catch (_) { /* The normal per-word retry can still use another provider. */ }
           finally { clearTimeout(bankTimer); }
+        }
+        if (typeof window.loadWordShardIndex === 'function') {
+          let shardIndexTimer;
+          try {
+            await Promise.race([window.loadWordShardIndex({ retry: true }), new Promise(resolve => { shardIndexTimer = setTimeout(resolve, 6000); })]);
+          } catch (_) { /* The normal per-word retry can still use another provider. */ }
+          finally { clearTimeout(shardIndexTimer); }
         }
         if (!isMountedRef.current || audioRetryWordsRef.current !== preloadedWords) return;
         // Flip _audioRequested so the prefetch effect picks them up again, and
@@ -25376,7 +25488,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                 heard[text] = asset;
               });
               if (!Object.keys(heard).length) return;
-              const bank = (typeof window !== "undefined" && window._CACHE_WORD_AUDIO_BANK) || {};
+              const bank = wsWordAudioBankWithShards();
               setWsPreloadedWords((prev) => mergeHeardWordSoundsClips(prev, heard, bank));
             },
           });

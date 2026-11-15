@@ -5643,7 +5643,9 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                 prepared && WS_CORE.isTeacherSpokenSyllableCount(word, { language: wordSoundsLanguage, prepared, recordedTask: preparedSyllableFor(word),
                     audioContext: WS_CORE.createSyllableCountAudioContext({ language: wordSoundsLanguage, voice: selectedVoice }) }));
             if (!committed && !saved && spokenReview && !options.explicitListen) return null;
-            const bank = WS_CORE.isSyllableLanguageSupported(wordSoundsLanguage) ? window._CACHE_WORD_AUDIO_BANK?.[key] : null;
+            const bank = WS_CORE.isSyllableLanguageSupported(wordSoundsLanguage)
+                ? (window._CACHE_WORD_AUDIO_BANK?.[key] || window._CACHE_WORD_SHARD_CLIPS?.[key])
+                : null;
             const cached = countBankAssetCache.current.get(key);
             if (cached && cached.source === bank && cached.saved === (committed || saved) && cached.voice === selectedVoice && cached.language === wordSoundsLanguage) return cached.asset;
             const selected = WS_CORE.selectSyllableCountAudio({ word, savedAsset: committed || saved, bankAsset: bank,
@@ -5687,6 +5689,15 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                 let timeout;
                 try { await Promise.race([window.loadWordAudioBank({ retry: true }), new Promise(resolve => { timeout = setTimeout(resolve, 6000); })]); }
                 finally { clearTimeout(timeout); }
+                if (!active()) return null;
+                asset = syllableCountAudioFor(word, { explicitListen: true });
+            }
+            const countBankKey = WS_CORE.packAudioKey(word);
+            const countBankVoice = String(selectedVoice || '').trim().toLowerCase();
+            if (!asset && WS_CORE.isSyllableLanguageSupported(wordSoundsLanguage) && countBankVoice === 'af_heart' && !window._CACHE_WORD_AUDIO_BANK?.[countBankKey] && !window._CACHE_WORD_SHARD_CLIPS?.[countBankKey] && typeof window.getWordShardAudio === 'function') {
+                let shardTimeout;
+                try { await Promise.race([window.getWordShardAudio(word, { retry: true }), new Promise(resolve => { shardTimeout = setTimeout(resolve, 6000); })]); }
+                finally { clearTimeout(shardTimeout); }
                 if (!active()) return null;
                 asset = syllableCountAudioFor(word, { explicitListen: true });
             }
@@ -7094,13 +7105,61 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                  } catch (_) { if (!isGenerationActive()) return; packRecordedWordBank = null; }
                  finally { clearTimeout(bankTimeout); }
              }
-             const recordedBankAssetFor = (text) => {
-                 if (!packRecordedWordBank) return null;
+             const generationVoicePref = String(generationVoiceRef.current || '').trim();
+             const allowWordShards = packIsEnglish && (!/^(af_|am_|bf_|bm_)/i.test(generationVoicePref) || generationVoicePref.toLowerCase() === 'af_heart');
+             if (allowWordShards && typeof window !== 'undefined' && typeof window.prefetchWordShardAudio === 'function') {
+                 const shardWordSet = new Set();
+                 const addShardCandidate = (raw) => {
+                     const k = normalizePackKey(raw);
+                     if (!k || k.includes(' ')) return;
+                     if (packedTtsAssets[k] || packRecordedWordBank?.[k] || window._CACHE_WORD_SHARD_CLIPS?.[k]) return;
+                     shardWordSet.add(k);
+                 };
+                 processed.forEach((item) => {
+                     const w = item.targetWord || item.word || item.term;
+                     const b = item.activityItems || {};
+                     if (!teacherSpokenCountOnly(item, packedTtsAssets, generationVoiceRef.current || '')) addShardCandidate(w);
+                     [
+                         ...(b.blending?.options || []),
+                         ...(b.rhyming?.options || []),
+                         ...(b.manipulation?.options || []),
+                         ...(b.syllable_blending?.options || []),
+                         ...(b.orthography?.options || []),
+                         ...(b.sound_sort?.options || []),
+                         ...(b.sound_sort?.distractors || []),
+                         ...(b.word_families?.options || []),
+                         ...(b.word_families?.distractors || []),
+                         ...(b.decoding?.choices || []),
+                         ...(b.read_sentence?.options || []),
+                         ...(b.read_passage?.options || []),
+                         ...(b.sentence_match?.sequence || []),
+                         ...(b.sentence_match?.extras || []),
+                     ].forEach(addShardCandidate);
+                 });
+                 const missingShardWords = [...shardWordSet];
+                 if (missingShardWords.length) {
+                     let shardTimeout;
+                     try {
+                         await awaitGeneration(Promise.race([
+                             window.prefetchWordShardAudio(missingShardWords),
+                             new Promise((resolve) => { shardTimeout = setTimeout(resolve, 8000); }),
+                         ]));
+                         if (!isGenerationActive()) return;
+                     } catch (_) {
+                         if (!isGenerationActive()) return;
+                     } finally {
+                         clearTimeout(shardTimeout);
+                     }
+                 }
+             }
+             const recordedBankAssetFor = (text, allowShard = true) => {
                  const key = normalizePackKey(text);
                  // Single words only: sentences, prompts and phoneme prompts
                  // always go to TTS so their voice stays consistent.
                  if (!key || key.includes(' ')) return null;
-                 const src = packRecordedWordBank[key];
+                 const coreSrc = packRecordedWordBank ? packRecordedWordBank[key] : null;
+                 const shardSrc = (!coreSrc && allowShard && allowWordShards && typeof window !== 'undefined') ? window._CACHE_WORD_SHARD_CLIPS?.[key] : null;
+                 const src = coreSrc || shardSrc;
                  if (typeof src !== 'string') return null;
                  const match = src.match(/^data:([^;,]+);base64,(.+)$/i);
                  return match ? { mime: match[1], base64: match[2], provenance: WS_CORE.packAudioProvenance({ provider: 'kokoro', engine: 'kokoro', resolvedVoice: 'af_heart', language: 'en' }, 'recorded_bank') } : null;
@@ -7198,7 +7257,7 @@ function WordSoundsSyllableRecordingEditor({ word, language, board, onSave, onBe
                      }
                      // Recorded bank beats synthesis — and still supplies words
                      // when the TTS gate has aborted or no backend exists.
-                     const recorded = recordedBankAssetFor(text);
+                     const recorded = recordedBankAssetFor(text, !notWordTasks.has(text));
                      if (recorded) {
                          packedTtsAssets[key] = recorded;
                          packedFromRecordedBank += 1;

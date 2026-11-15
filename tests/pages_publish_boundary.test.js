@@ -12,13 +12,17 @@ describe('GitHub Pages promotion publication', () => {
             'reports/perception-walk/qa-results.json', 'desktop/web-app/public/index.html',
             'tests/pages_publish_boundary.test.js', 'dev-tools/check_pages_publish.cjs',
             'app/index.html', 'lang/french.js', 'reading_library/books/alice/chapter1.json',
-            'allopacks/media/water_cycle_grade6/wc-img-puddle-time.png'
+            'allopacks/media/water_cycle_grade6/wc-img-puddle-time.png',
+            'stem_lab/stem_tool_wave.js'
         ]) expect(published(file), file).toBe(false);
         for (const file of [
             'index.html', 'tool-water-cycle.html', 'manual-water-cycle.html', 'guide/index.html',
             'docs/manuals/catalog.json', 'docs/google_classroom_import.md', 'assets/alloflow-social-preview.png',
             'examples/water_cycle.json', 'lang/manifest.json', 'allopacks/current/water_cycle_grade6.allopack.json',
-            'allopacks/media/water_cycle_grade6/wc-img-puddle-time.webp', 'vendor/lucide.js'
+            'allopacks/media/water_cycle_grade6/wc-img-puddle-time.webp', 'vendor/lucide.js',
+            'packets.html', 'packets-make.html', 'packets-vocab.html', 'word_audio_kokoro_bank.json',
+            'word_audio_shards/index.json', 'word_audio_shards/a-01.json',
+            'word_sounds_symbols/en-1.json', 'packets_vocab/en-1.json'
         ]) expect(published(file), file).toBe(true);
     });
 
@@ -28,11 +32,13 @@ describe('GitHub Pages promotion publication', () => {
         expect(result.errors).toEqual([]);
     }, 180000);
 
-    it('detects a real exclusion of an existing required stylesheet', () => {
+    it('detects a real exclusion of an existing required stylesheet or packet audio bank', () => {
         const config = loadConfig();
-        config.exclude.push('shared.css');
+        config.exclude.push('shared.css', 'word_audio_shards', 'word_audio_kokoro_bank.json');
         const result = requiredPublication(undefined, config);
         expect(result.errors).toContain('shared.css: required promotion dependency is excluded');
+        expect(result.errors).toContain('word_audio_shards/index.json: required promotion dependency is excluded');
+        expect(result.errors).toContain('word_audio_kokoro_bank.json: required promotion dependency is excluded');
     }, 180000);
 
     it('keeps the selected tracked source comfortably below the Pages size limit', () => {

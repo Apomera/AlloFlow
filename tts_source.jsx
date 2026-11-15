@@ -635,6 +635,42 @@ const createTTS = (deps) => {
         .replace(/\n{2,}/g, '. ')
         .replace(/\n/g, ', ')
         .replace(/\s{2,}/g, ' ').trim();
+    const _isUsEnglishSpeechProfile = (profile) => {
+        if (!profile) return false;
+        const base = String(profile.baseLanguage || '').trim();
+        if (!/^english$/i.test(base) && !/^en(?:[-_]us)?$/i.test(base)) return false;
+        const loc = String(profile.locale || '').trim();
+        if (loc && !/^en(?:[-_]us)?$/i.test(loc)) return false;
+        const dial = String(profile.dialect || '').trim();
+        if (dial && !/^(?:us|u\.s\.|u\.s\.a\.|usa|american|american english|general american)$/i.test(dial)) return false;
+        return true;
+    };
+    const _tryWordShardAudio = async (rawText, profile, targetVoice, signal) => {
+        if (typeof window === 'undefined' || typeof window.getWordShardAudio !== 'function') return null;
+        if (String(targetVoice || '').trim().toLowerCase() !== 'af_heart') return null;
+        if (!_isUsEnglishSpeechProfile(profile)) return null;
+        const cleaned = cleanTextForLocalTTS(rawText);
+        if (!cleaned || /\s/.test(cleaned)) return null;
+        const token = cleaned.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g, '');
+        if (!token || !/^[A-Za-z][A-Za-z'-]*$/.test(token)) return null;
+        if (signal && signal.aborted) {
+            const abortErr = new Error('TTS request aborted');
+            abortErr.name = 'AbortError';
+            throw abortErr;
+        }
+        try {
+            const clip = await window.getWordShardAudio(token, signal ? { signal } : undefined);
+            if (signal && signal.aborted) {
+                const abortErr = new Error('TTS request aborted');
+                abortErr.name = 'AbortError';
+                throw abortErr;
+            }
+            return clip || null;
+        } catch (err) {
+            if (err && err.name === 'AbortError') throw err;
+            return null;
+        }
+    };
     // ── Spoken math pre-pass (2026-07-05) ──
     // Substitute delimited math ($x^2$, $$..$$, \(..\), \[..\]) with a spoken
     // rendering via Speech Rule Engine (sre_loader.js → window.AlloMathSpeech)
@@ -890,6 +926,13 @@ let piperLoadPromise = null;
             const localText = cleanTextForLocalTTS(text);
             if (!localText.trim()) return null;
             if (lang === 'en') {
+                if (word === true && (speed == null || Number(speed) === 1) && (!KOKORO_VOICE_PREFIX.test(voice) || voice.toLowerCase() === 'af_heart')) {
+                    const shardUrl = await _tryWordShardAudio(localText, profile, 'af_heart', signal);
+                    if (shardUrl) {
+                        note('student-on-device-word-shard');
+                        return shardUrl;
+                    }
+                }
                 if (!KOKORO_VOICE_PREFIX.test(voice)) return null;
                 if (!(window._kokoroTTS && window._kokoroTTS.ready)) {
                     if (typeof window.__loadKokoroTTS !== 'function' || !(await kokoroModelOnDevice())) return null;
@@ -1043,6 +1086,14 @@ let piperLoadPromise = null;
                 return null;
             }
             try {
+                if (_callOpts.word === true && (speed == null || Number(speed) === 1) && !_forceRefresh) {
+                    const shardUrl = await _tryWordShardAudio(text, _speechProfile, voiceName, _signal);
+                    if (shardUrl) {
+                        _ttsTrace('calltts:word-shard-ok', { voice: 'af_heart' });
+                        return _emitResolvedProfile(shardUrl,
+                            _resolutionProfile('local', 'kokoro-word-shard', null, 'af_heart', 1));
+                    }
+                }
                 if (!window._kokoroTTS?.ready) await ensureKokoroTts(undefined, _signal);
                 if (!window._kokoroTTS?.ready) return null;
                 const localUrl = await window._kokoroTTS.speak(cleanTextForLocalTTS(text), voiceName, speed, _kokoroWordOpts({ signal: _signal, force: _forceRefresh }));
@@ -1271,6 +1322,20 @@ let piperLoadPromise = null;
                     // A passage that began on the fallback voice keeps it (see _kokoroLock).
                     const _kokoroLockedOut = _isKokoroVoice && _kokoroLock && _kokoroLock.engine === 'fallback';
                     if (_kokoroLockedOut) _ttsTrace('calltts:kokoro-locked', null);
+                    const _canvasKokoroVoice = _kokoroVoicePrefix.test(String(voiceName || '')) ? voiceName : 'af_heart';
+                    if (!_kokoroLockedOut && _callOpts.word === true && (speed == null || Number(speed) === 1) && !_forceRefresh) {
+                        const _canvasShardUrl = await _tryWordShardAudio(localTtsText, _speechProfile, _canvasKokoroVoice, _signal);
+                        if (_canvasShardUrl) {
+                            _ttsTrace('calltts:word-shard-ok', { voice: 'af_heart', fallbackFrom: _isKokoroVoice ? null : 'gemini' });
+                            if (_isKokoroVoice && _kokoroLock && !_kokoroLock.engine) _kokoroLock.engine = 'kokoro';
+                            return _emitResolvedProfile(
+                                _canvasShardUrl,
+                                _resolutionProfile('local', 'kokoro-word-shard', null, 'af_heart', 1, {
+                                    fallbackFrom: _isKokoroVoice ? null : 'gemini'
+                                })
+                            );
+                        }
+                    }
                     if (!_kokoroLockedOut && (!window._kokoroTTS || !window._kokoroTTS.ready)) await ensureKokoroTts(undefined, _signal);
                     if (!_kokoroLockedOut && window._kokoroTTS) {
                         // callTTS promises one COMPLETE playable URL. The streaming
@@ -1422,6 +1487,18 @@ let piperLoadPromise = null;
         var _kokoroPreferred = typeof voiceName === 'string' && KOKORO_VOICE_PREFIX.test(voiceName);
         var _localTtsChosen = (_provTtsEarly === 'local' || (_provTtsEarly === 'auto' && _provIsLocalAI)) && typeof voiceName === 'string' && voiceName !== 'browser';
         var _kokoroKeyless = !_isCanvasEnv && !_cloudKeyUsable() && !_providerHandlesTts && typeof voiceName === 'string' && voiceName !== 'browser';
+        if ((_kokoroPreferred || _localTtsChosen || _kokoroKeyless) && _isEnglish && !(_kokoroLock && _kokoroLock.engine === 'fallback') && _callOpts.word === true && (speed == null || Number(speed) === 1) && !_forceRefresh) {
+            const _targetKokoroVoice = _kokoroPreferred ? voiceName : 'af_heart';
+            const _shardUrl = await _tryWordShardAudio(text, _speechProfile, _targetKokoroVoice, _signal);
+            if (_shardUrl) {
+                _routeNote('kokoro-word-shard', _kokoroPreferred ? 'kokoro voice selected' : 'keyless reroute');
+                if (_kokoroLock && !_kokoroLock.engine) _kokoroLock.engine = 'kokoro';
+                return _emitResolvedProfile(
+                    _shardUrl,
+                    _resolutionProfile('local', 'kokoro-word-shard', null, 'af_heart', 1)
+                );
+            }
+        }
         if (_kokoroPreferred || _localTtsChosen || _kokoroKeyless) {
             if (!_isEnglish) {
                 console.log('[TTS] Kokoro voice "' + voiceName + '" cannot pronounce ' + _language + ' — deferring to cloud voices for this call');
