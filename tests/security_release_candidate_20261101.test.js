@@ -170,7 +170,7 @@ describe('exact source, artifact and independently verified release evidence', (
     expect(() => gate.createCandidate({ root: f.root, output: path.join(f.root, 'local') }, { ...f.deps, env: {} })).toThrow(/reviewed CI/);
   });
 });
-describe('producer and publication integration, inspected without running deploy.sh', () => {
+describe('producer and publication integration, inspected without running deploy_verified_candidate.sh', () => {
   it('admits only a no-source sign-only job following successful final-byte checks', () => {
     const text = fs.readFileSync(path.join(ROOT, '.github/workflows/release-candidate.yml'), 'utf8'), workflow = YAML.parse(text);
     expect(workflow.permissions).toEqual({ contents: 'read' });
@@ -193,7 +193,7 @@ describe('producer and publication integration, inspected without running deploy
     }
   });
   it('retires legacy publishing and validates the private copy immediately before the sole publisher', () => {
-    const source = fs.readFileSync(path.join(ROOT, 'deploy.sh'), 'utf8');
+    const source = fs.readFileSync(path.join(ROOT, 'dev-tools/deploy_verified_candidate.sh'), 'utf8');
     expect(source).toContain('"${1:-}" != "--verified-candidate"');
     expect(source).not.toMatch(/git (?:commit|push)|node build\.js|npm run build|npx/);
     expect(source).not.toMatch(/firebase deploy|ALLOFLOW_FIREBASE_PROJECT/);

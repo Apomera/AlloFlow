@@ -109,7 +109,7 @@ describe('desktop app-build deployment guard', () => {
     expect(desktopPkg.scripts['web:build:isolated']).toBe('node scripts/build-desktop-web.cjs --isolated-output');
     expect(desktopPkg.scripts['verify:web-build']).toBe('node scripts/check-desktop-app-build.cjs');
     expect(deploy).toContain('SKIP_DESKTOP_BUILD');
-    expect(deploy).toContain('--verified-candidate');
+    expect(deploy).toContain('npm run web:build:isolated && npm run verify:web-build');
     const usedReactEnv = Array.from(new Set(appSource.match(/REACT_APP_[A-Z0-9_]+/g) || []));
     expect(usedReactEnv.length).toBeGreaterThan(0);
     for (const name of usedReactEnv) {

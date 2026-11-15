@@ -3321,6 +3321,16 @@ window.StemLab = window.StemLab || {
 
   var _lsViewers = {};
   var _lsPointerDrag = {};
+  var _lsBayRefCallbacks = {};
+  function getLifeSkillsBayRefCallback(bayId) {
+    if (!_lsBayRefCallbacks[bayId]) {
+      _lsBayRefCallbacks[bayId] = function(el) {
+        var viewer = getLifeSkillsOrbitViewer(bayId);
+        if (viewer && typeof viewer.attach === 'function') viewer.attach(el || null);
+      };
+    }
+    return _lsBayRefCallbacks[bayId];
+  }
   function getLifeSkillsOrbitViewer(bayId) {
     var bay = LS_3D_BAYS[bayId];
     if (!bay) return null;
@@ -4184,9 +4194,7 @@ window.StemLab = window.StemLab || {
               },
                 h('div', {
                   'data-lifeskills-3d-webgl-mount': bayId,
-                  ref: function(el) {
-                    if (viewer && typeof viewer.attach === 'function') viewer.attach(el);
-                  },
+                  ref: getLifeSkillsBayRefCallback(bayId),
                   style: { position: 'absolute', inset: 0 }
                 }),
                 h('svg', {

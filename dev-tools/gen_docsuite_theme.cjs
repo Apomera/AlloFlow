@@ -85,8 +85,8 @@ const APPSUITE_EXTRA = ['teacher_source.jsx', 'misc_components_source.jsx', 'gam
   'adventure_source.jsx', 'allo_provenance_module.js', 'anchor_charts_source.jsx', 'annotation_suite_source.jsx',
   'applied_challenge_source.jsx', 'math_fluency_module.js', 'memory_aid_source.jsx', 'module_scope_extras_source.jsx',
   'note_taking_templates_source.jsx', 'studio_response_module.js', 'word_sounds_module.js', 'word_sounds_setup_source.jsx',
-  // ResourceImagesPanel is mounted inside ANTI's scoped main region.
-  'image_asset_editor_source.jsx'];
+  // ResourceImagesPanel, AltTextStudio, and WordPractice are mounted inside ANTI's scoped main region.
+  'image_asset_editor_source.jsx', 'alt_text_source.jsx', 'word_practice_module.js'];
 const SELSUITE_FILES = [
   'sel_hub/sel_tool_civicaction.js',
   'sel_hub/sel_tool_cultureexplorer.js',
